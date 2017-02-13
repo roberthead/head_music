@@ -1,8 +1,6 @@
 # HeadMusic
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/head_music`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+The *head_music* ruby gem models the elements of western music theory, such as note names, scales, key signatures, intervals, and chords.
 
 ## Installation
 
