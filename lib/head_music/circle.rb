@@ -19,6 +19,10 @@ class HeadMusic::Circle
     @pitch_classes = pitch_classes_by_interval(interval)
   end
 
+  def index(pitch_class)
+    @pitch_classes.index(HeadMusic::Spelling.get(pitch_class).pitch_class)
+  end
+
   private_class_method :new
 
   private

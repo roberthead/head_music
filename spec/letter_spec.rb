@@ -9,7 +9,7 @@ describe HeadMusic::Letter do
       specify { expect(letter).to eq 'A' }
     end
 
-    context "fetched with 'c#7'" do
+    context "fetched with 'd#7'" do
       subject(:letter) { HeadMusic::Letter.get('d#7') }
 
       specify { expect(letter.pitch_class).to eq 2 }
@@ -26,8 +26,9 @@ describe HeadMusic::Letter do
   describe '.from_pitch_class' do
     specify { expect(HeadMusic::Letter.from_pitch_class(4)).to eq 'E' }
     specify { expect(HeadMusic::Letter.from_pitch_class(5)).to eq 'F' }
-    specify { expect(HeadMusic::Letter.from_pitch_class(8)).to eq 'G' }
-    specify { expect(HeadMusic::Letter.from_pitch_class(10)).to eq 'A' }
+    specify { expect(HeadMusic::Letter.from_pitch_class(6)).to eq 'F' }
+    specify { expect(HeadMusic::Letter.from_pitch_class(8)).to eq 'A' }
+    specify { expect(HeadMusic::Letter.from_pitch_class(10)).to eq 'B' }
     specify { expect(HeadMusic::Letter.from_pitch_class(11)).to eq 'B' }
     specify { expect(HeadMusic::Letter.from_pitch_class(12)).to eq 'C' }
   end

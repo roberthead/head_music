@@ -67,6 +67,6 @@ describe HeadMusic::Pitch do
 
   describe 'construction from a number' do
     specify { expect(HeadMusic::Pitch.from_number(60)).to eq 'C4' }
-    specify { expect(HeadMusic::Pitch.from_number(70)).to eq 'A#4' }
+    specify { expect(HeadMusic::Pitch.from_number(70)).to eq 'Bb4' }
   end
 end

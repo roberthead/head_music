@@ -5,7 +5,7 @@ class HeadMusic::Spelling
   attr_reader :accidental
   attr_reader :pitch_class
 
-  SPELLING_MATCHER = /([A-G])([b#]*)(\-?\d+)?/
+  SPELLING_MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/
 
   def self.get(identifier)
     @spellings ||= {}
@@ -14,19 +14,17 @@ class HeadMusic::Spelling
 
   def self.from_name(name)
     return nil unless name == name.to_s
-    match = name.match(SPELLING_MATCHER)
+    match = name.to_s.match(SPELLING_MATCHER)
     if match
       letter_name, accidental_string, _octave = match.captures
       letter = HeadMusic::Letter.get(letter_name)
-      if letter
-        return new(letter, HeadMusic::Accidental.get(accidental_string))
-      end
+      new(letter, HeadMusic::Accidental.get(accidental_string)) if letter
     end
   end
 
   def self.from_number(number)
     return nil unless number == number.to_i
-    pitch_class_number = number % 12
+    pitch_class_number = number.to_i % 12
     letter = HeadMusic::Letter.from_pitch_class(pitch_class_number)
     if letter.pitch_class != pitch_class_number
       accidental = HeadMusic::Accidental.for_interval(pitch_class_number - letter.pitch_class.to_i)

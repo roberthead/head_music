@@ -13,27 +13,29 @@ class HeadMusic::Letter
     'B' => 11,
   }
 
+  PREFERRED_SPELLINGS = %w[C C# D Eb E F F# G Ab A Bb B]
+
   def self.all
     NAMES.map { |letter_name| get(letter_name)}
   end
 
-  def self.get(name)
+  def self.get(identifier)
     @letters ||= {}
+    @letters[identifier] ||= from_name(identifier) || from_pitch_class(identifier)
+  end
+
+  def self.from_name(name)
     name = name.to_s.first.upcase
-    if NAMES.include?(name)
-      @letters[name] ||= new(name)
-    end
+    new(name) if NAMES.include?(name)
   end
 
   def self.from_pitch_class(pitch_class)
     @letters ||= {}
+    return nil if pitch_class.to_s == pitch_class
     pitch_class = pitch_class.to_i % 12
-    name =
-      NAMES.detect { |name| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[name] } ||
-      NAMES.detect { |name| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[name]+1 }
-    if NAMES.include?(name)
-      @letters[name] ||= new(name)
-    end
+    name = NAMES.detect { |name| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[name] }
+    name ||= PREFERRED_SPELLINGS[pitch_class].first
+    return new(name) if NAMES.include?(name)
   end
 
   attr_reader :name

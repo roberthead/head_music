@@ -21,16 +21,35 @@ class HeadMusic::KeySignature
   end
 
   def num_sharps
-    (HeadMusic::Circle.of_fifths.pitch_classes.index(tonic_pitch_class) - scale_type_adjustment) % 12
+    (HeadMusic::Circle.of_fifths.index(tonic_pitch_class) - scale_type_adjustment) % 12
   end
 
   def num_flats
-    (HeadMusic::Circle.of_fourths.pitch_classes.index(tonic_pitch_class) + scale_type_adjustment) % 12
+    (HeadMusic::Circle.of_fourths.index(tonic_pitch_class) + scale_type_adjustment) % 12
+  end
+
+  def sharps_or_flats
+    return sharps if @tonic_spelling.to_s =~ /#/
+    return flats if @tonic_spelling.to_s =~ /b/
+    num_sharps <= num_flats ? sharps : flats
   end
 
   private
 
   def scale_type_adjustment
     scale_type == :minor ? 3 : 0
+  end
+
+  def major?
+    @scale_type.to_sym == :major
+  end
+
+  def minor?
+    @scale_type.to_sym == :minor
+  end
+
+  def relative_major_pitch_class
+    return tonic_pitch_class if major?
+    return (tonic_pitch_class.to_i + 3) % 12 if minor?
   end
 end

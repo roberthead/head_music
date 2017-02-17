@@ -54,4 +54,31 @@ describe HeadMusic::Spelling do
     its(:pitch_class) { is_expected.to eq 0 }
     it { is_expected.to eq 'B#' }
   end
+
+  context "given a pitch class" do
+    subject(:spelling) { HeadMusic::Spelling.get(HeadMusic::PitchClass.get(3)) }
+
+    its(:letter) { is_expected.to eq 'E' }
+    its(:accidental) { is_expected.to eq 'b' }
+    its(:pitch_class) { is_expected.to eq 3 }
+    it { is_expected.to eq 'Eb' }
+  end
+
+  context "given a pitch class number" do
+    subject(:spelling) { HeadMusic::Spelling.get(1) }
+
+    its(:letter) { is_expected.to eq 'C' }
+    its(:accidental) { is_expected.to eq '#' }
+    its(:pitch_class) { is_expected.to eq 1 }
+    it { is_expected.to eq 'C#' }
+  end
+
+  context "given the pitch class number for F#/Gb" do
+    subject(:spelling) { HeadMusic::Spelling.get(6) }
+
+    its(:letter) { is_expected.to eq 'F' }
+    its(:accidental) { is_expected.to eq '#' }
+    its(:pitch_class) { is_expected.to eq 6 }
+    it { is_expected.to eq 'F#' }
+  end
 end
