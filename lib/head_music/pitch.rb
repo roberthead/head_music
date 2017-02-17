@@ -38,6 +38,8 @@ class HeadMusic::Pitch
     (octave + 1) * 12 + pitch_class.to_i
   end
 
+  alias_method :midi, :midi_note_number
+
   def to_s
     name
   end
