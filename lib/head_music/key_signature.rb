@@ -7,9 +7,9 @@ class HeadMusic::KeySignature
 
   delegate :pitch_class, to: :tonic_spelling, prefix: :tonic
 
-  def initialize(tonic_spelling, scale_type = :major)
+  def initialize(tonic_spelling, scale_type = nil)
     @tonic_spelling = tonic_spelling
-    @scale_type = scale_type
+    @scale_type = scale_type || scale_type
   end
 
   def sharps

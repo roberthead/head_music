@@ -1,8 +1,6 @@
 require 'spec_helper'
 
 RSpec.describe HeadMusic::Accidental do
-  subject(:accidental) {  }
-
   describe '.get' do
     specify { expect(HeadMusic::Accidental.get('#').semitones).to eq 1 }
     specify { expect(HeadMusic::Accidental.get(1)).to eq '#' }
@@ -11,7 +9,7 @@ RSpec.describe HeadMusic::Accidental do
     specify { expect(HeadMusic::Accidental.get('')).to be_nil }
   end
 
-  describe '.semitones' do
+  describe '#semitones' do
     specify { expect(HeadMusic::Accidental.get('#').semitones).to eq 1 }
     specify { expect(HeadMusic::Accidental.get('##').semitones).to eq 2 }
     specify { expect(HeadMusic::Accidental.get('b').semitones).to eq -1 }

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.describe HeadMusic::KeySignature do
-  let(:scale_type) { :major }
+  let(:scale_type) { nil }
   subject(:key_signature) { HeadMusic::KeySignature.new(tonic, scale_type) }
 
   context 'in the key of C major' do
