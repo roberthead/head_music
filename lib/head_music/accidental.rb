@@ -8,9 +8,13 @@ class HeadMusic::Accidental
 
   attr_reader :string
 
-  def self.get(string)
+  def self.get(identifier)
     @accidentals ||= {}
-    @accidentals[string] ||= new(string)
+    @accidentals[identifier] ||= for_symbol(identifier) || for_interval(identifier)
+  end
+
+  def self.for_symbol(identifier)
+    new(identifier) if ACCIDENTAL_SEMITONES.keys.include?(identifier)
   end
 
   def self.for_interval(semitones)

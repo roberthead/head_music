@@ -5,7 +5,7 @@ describe HeadMusic::Spelling do
     subject(:spelling) { HeadMusic::Spelling.get('C') }
 
     its(:letter) { is_expected.to eq 'C' }
-    its(:accidental) { is_expected.to eq '' }
+    its(:accidental) { is_expected.to be_nil }
     its(:pitch_class) { is_expected.to eq 0 }
     it { is_expected.to eq 'C' }
   end

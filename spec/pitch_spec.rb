@@ -18,7 +18,7 @@ describe HeadMusic::Pitch do
       subject(:spelling) { HeadMusic::Pitch.get('C4') }
 
       its(:letter) { is_expected.to eq 'C' }
-      its(:accidental) { is_expected.to eq '' }
+      its(:accidental) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
       its(:octave) { is_expected.to eq 4 }
       its(:midi_note_number) { is_expected.to eq 60 }
