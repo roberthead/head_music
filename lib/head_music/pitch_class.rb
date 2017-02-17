@@ -1,6 +1,8 @@
 class HeadMusic::PitchClass
   attr_reader :number
 
+  PREFERRED_SPELLINGS = %w[C C# D Eb E F F# G Ab A Bb B]
+
   def self.get(number)
     @pitch_classes ||= {}
     number = number.to_i % 12

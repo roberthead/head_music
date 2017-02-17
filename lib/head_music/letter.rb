@@ -13,8 +13,6 @@ class HeadMusic::Letter
     'B' => 11,
   }
 
-  PREFERRED_SPELLINGS = %w[C C# D Eb E F F# G Ab A Bb B]
-
   def self.all
     NAMES.map { |letter_name| get(letter_name)}
   end
@@ -34,7 +32,7 @@ class HeadMusic::Letter
     return nil if pitch_class.to_s == pitch_class
     pitch_class = pitch_class.to_i % 12
     name = NAMES.detect { |name| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[name] }
-    name ||= PREFERRED_SPELLINGS[pitch_class].first
+    name ||= HeadMusic::PitchClass::PREFERRED_SPELLINGS[pitch_class].first
     return new(name) if NAMES.include?(name)
   end
 
