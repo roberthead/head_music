@@ -9,6 +9,12 @@ describe Pitch do
         expect(described_class.get(instance)).to be instance
       end
     end
+
+    context 'when given a spelling without an octave' do
+      it 'defaults to octave 4' do
+        expect(Pitch.get("G")).to eq "G4"
+      end
+    end
   end
 
   subject(:pitch) { Pitch.get('G#3') }
