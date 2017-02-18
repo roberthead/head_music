@@ -10,15 +10,15 @@ class HeadMusic::Accidental
 
   def self.get(identifier)
     @accidentals ||= {}
-    @accidentals[identifier] ||= for_symbol(identifier) || for_interval(identifier)
+    for_symbol(identifier) || for_interval(identifier)
   end
 
   def self.for_symbol(identifier)
-    new(identifier) if ACCIDENTAL_SEMITONES.keys.include?(identifier)
+    @accidentals[identifier.to_s] ||= new(identifier.to_s) if ACCIDENTAL_SEMITONES.keys.include?(identifier.to_s)
   end
 
   def self.for_interval(semitones)
-    ACCIDENTAL_SEMITONES.key(semitones.to_i)
+    @accidentals[semitones.to_i] ||= ACCIDENTAL_SEMITONES.key(semitones.to_i)
   end
 
   def initialize(string)

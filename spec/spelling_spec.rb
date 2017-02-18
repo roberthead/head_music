@@ -1,6 +1,16 @@
 require 'spec_helper'
 
 describe Spelling do
+  describe '.get' do
+    context 'when given an instance' do
+      let(:instance) { described_class.get('A#5') }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
+  end
+
   context "for 'C'" do
     subject(:spelling) { Spelling.get('C') }
 

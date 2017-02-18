@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Circle do
   subject(:circle) { Circle.of_fifths }
 
-  describe '.pitch_classes' do
+  describe '#pitch_classes' do
     it 'lists all the pitch classes starting at C' do
       expect(circle.pitch_classes).to eq([
         PitchClass.get(0),
@@ -22,7 +22,7 @@ describe Circle do
     end
   end
 
-  describe '.index' do
+  describe '#index' do
     specify { expect(circle.index('Eb')).to eq 9 }
     specify { expect(circle.index('Db')).to eq 7 }
     specify { expect(circle.index('C#')).to eq 7 }

@@ -19,12 +19,12 @@ class HeadMusic::Letter
 
   def self.get(identifier)
     @letters ||= {}
-    @letters[identifier] ||= from_name(identifier) || from_pitch_class(identifier)
+    from_name(identifier) || from_pitch_class(identifier)
   end
 
   def self.from_name(name)
     name = name.to_s.first.upcase
-    new(name) if NAMES.include?(name)
+    @letters[name] ||= new(name) if NAMES.include?(name)
   end
 
   def self.from_pitch_class(pitch_class)
@@ -33,7 +33,7 @@ class HeadMusic::Letter
     pitch_class = pitch_class.to_i % 12
     name = NAMES.detect { |name| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[name] }
     name ||= HeadMusic::PitchClass::PREFERRED_SPELLINGS[pitch_class].first
-    return new(name) if NAMES.include?(name)
+    @letters[name] ||= new(name) if NAMES.include?(name)
   end
 
   attr_reader :name

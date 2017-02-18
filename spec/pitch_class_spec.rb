@@ -1,20 +1,35 @@
 require 'spec_helper'
 
 describe PitchClass do
-  subject(:pitch_class) { PitchClass.get(number) }
+  describe '.get' do
+    subject(:pitch_class) { PitchClass.get(identifier) }
 
-  context 'when constructed with a number between zero and eleven' do
-    let(:number) { rand(12) }
+    context 'when constructed with a number between zero and eleven' do
+      let(:identifier) { rand(12) }
 
-    specify { expect(pitch_class.number).to eq number }
-    specify { expect(pitch_class.to_i).to eq number }
-  end
+      specify { expect(pitch_class.number).to eq identifier }
+      specify { expect(pitch_class.to_i).to eq identifier }
+    end
 
-  context 'when constructed with a midi note number' do
-    let(:number) { 53 } # F3
+    context 'when constructed with a midi note number' do
+      let(:identifier) { 53 } # F3
 
-    specify { expect(pitch_class.number).to eq 5 } # F
-    specify { expect(pitch_class).to eq 5 }
+      specify { expect(pitch_class).to eq 5 }
+    end
+
+    context 'when given a spelling' do
+      let(:identifier) { 'D#-1' }
+
+      specify { expect(pitch_class).to eq 3 }
+    end
+
+    context 'when given an instance' do
+      let(:instance) { described_class.get(7) }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
   end
 
   describe 'equality' do

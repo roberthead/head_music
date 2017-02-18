@@ -1,24 +1,30 @@
-# A Spelling is a pitch class with a letter and an accidental
+# A Spelling is a pitch class with a letter and possibly an accidental
 
 class HeadMusic::Spelling
+  SPELLING_MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/
+
+  attr_reader :pitch_class
   attr_reader :letter
   attr_reader :accidental
-  attr_reader :pitch_class
 
-  SPELLING_MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/
+  delegate :number, to: :pitch_class, prefix: true
 
   def self.get(identifier)
     @spellings ||= {}
-    @spellings[identifier] ||= from_name(identifier) || from_number(identifier)
+    from_name(identifier) || from_number(identifier)
+  end
+
+  def self.match(string)
+    string.to_s.match(SPELLING_MATCHER)
   end
 
   def self.from_name(name)
-    return nil unless name == name.to_s
-    match = name.to_s.match(SPELLING_MATCHER)
-    if match
-      letter_name, accidental_string, _octave = match.captures
+    if match(name)
+      letter_name, accidental_string, _octave = match(name).captures
       letter = HeadMusic::Letter.get(letter_name)
-      new(letter, HeadMusic::Accidental.get(accidental_string)) if letter
+      return nil unless letter
+      accidental = HeadMusic::Accidental.get(accidental_string)
+      fetch_or_create(letter, accidental)
     end
   end
 
@@ -26,10 +32,13 @@ class HeadMusic::Spelling
     return nil unless number == number.to_i
     pitch_class_number = number.to_i % 12
     letter = HeadMusic::Letter.from_pitch_class(pitch_class_number)
-    if letter.pitch_class != pitch_class_number
-      accidental = HeadMusic::Accidental.for_interval(pitch_class_number - letter.pitch_class.to_i)
-    end
-    new(letter, accidental)
+    accidental = HeadMusic::Accidental.for_interval(pitch_class_number - letter.pitch_class.to_i)
+    fetch_or_create(letter, accidental)
+  end
+
+  def self.fetch_or_create(letter, accidental)
+    key = [letter, accidental].join
+    @spellings[key] ||= new(letter, accidental)
   end
 
   def initialize(letter, accidental = nil)

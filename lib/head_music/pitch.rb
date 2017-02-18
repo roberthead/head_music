@@ -14,15 +14,22 @@ class HeadMusic::Pitch
   def self.from_name(name)
     return nil unless name == name.to_s
     spelling = HeadMusic::Spelling.get(name)
-    octave = name.scan(/-?\d+$/).first.to_i
-    new(spelling, octave) if spelling && (-1..9).include?(octave)
+    octave = name.to_s.scan(/-?\d+$/).first.to_i
+    fetch_or_create(spelling, octave)
   end
 
   def self.from_number(number)
     return nil unless number == number.to_i
     spelling = HeadMusic::Spelling.from_number(number)
     octave = (number.to_i / 12) - 1
-    new(spelling, octave) if spelling && (-1..9).include?(octave)
+    fetch_or_create(spelling, octave)
+  end
+
+  def self.fetch_or_create(spelling, octave)
+    if spelling && (-1..9).include?(octave)
+      key = [spelling, octave].join
+      @pitches[key] ||= new(spelling, octave)
+    end
   end
 
   def initialize(spelling, octave)

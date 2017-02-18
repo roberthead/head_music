@@ -3,8 +3,8 @@ class HeadMusic::Quality
 
   def self.get(identifier)
     @qualities ||= {}
-    identifier = identifier.to_sym
-    @qualities[identifier] = new(identifier) if QUALITY_NAMES.include?(identifier)
+    identifier = identifier.to_s.to_sym
+    @qualities[identifier] ||= new(identifier) if QUALITY_NAMES.include?(identifier)
   end
 
   attr_reader :name

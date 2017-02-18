@@ -7,6 +7,14 @@ describe Quality do
     specify { expect(Quality.get(:diminished)).to be }
     specify { expect(Quality.get(:augmented)).to be }
     specify { expect(Quality.get(:salad)).to be_nil }
+
+    context 'when given an instance' do
+      let(:instance) { described_class.get(:diminished) }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
   end
 
   describe 'equality' do

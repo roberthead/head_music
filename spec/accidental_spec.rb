@@ -7,6 +7,14 @@ describe Accidental do
     specify { expect(Accidental.get('foo')).to be_nil }
     specify { expect(Accidental.get(nil)).to be_nil }
     specify { expect(Accidental.get('')).to be_nil }
+
+    context 'when given an instance' do
+      let(:instance) { described_class.get('#') }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
   end
 
   describe '#semitones' do

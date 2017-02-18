@@ -3,9 +3,10 @@ class HeadMusic::PitchClass
 
   PREFERRED_SPELLINGS = %w[C C# D Eb E F F# G Ab A Bb B]
 
-  def self.get(number)
+  def self.get(identifier)
     @pitch_classes ||= {}
-    number = number.to_i % 12
+    number = Spelling.get(identifier).pitch_class.to_i if Spelling.match(identifier)
+    number ||= identifier.to_i % 12
     @pitch_classes[number] ||= new(number)
   end
 
@@ -14,7 +15,7 @@ class HeadMusic::PitchClass
   end
 
   def initialize(pitch_class_or_midi_number)
-    @number = pitch_class_or_midi_number % 12
+    @number = pitch_class_or_midi_number.to_i % 12
   end
 
   def to_i

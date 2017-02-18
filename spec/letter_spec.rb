@@ -21,13 +21,27 @@ describe Letter do
 
       specify { expect(letter).to be_nil }
     end
+
+    context 'when given an instance' do
+      let(:instance) { described_class.get('C#4') }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
   end
 
   describe '.from_pitch_class' do
+    specify { expect(Letter.from_pitch_class(0)).to eq 'C' }
+    specify { expect(Letter.from_pitch_class(1)).to eq 'C' }
+    specify { expect(Letter.from_pitch_class(2)).to eq 'D' }
+    specify { expect(Letter.from_pitch_class(3)).to eq 'E' }
     specify { expect(Letter.from_pitch_class(4)).to eq 'E' }
     specify { expect(Letter.from_pitch_class(5)).to eq 'F' }
     specify { expect(Letter.from_pitch_class(6)).to eq 'F' }
+    specify { expect(Letter.from_pitch_class(7)).to eq 'G' }
     specify { expect(Letter.from_pitch_class(8)).to eq 'A' }
+    specify { expect(Letter.from_pitch_class(9)).to eq 'A' }
     specify { expect(Letter.from_pitch_class(10)).to eq 'B' }
     specify { expect(Letter.from_pitch_class(11)).to eq 'B' }
     specify { expect(Letter.from_pitch_class(12)).to eq 'C' }

@@ -1,6 +1,16 @@
 require 'spec_helper'
 
 describe Pitch do
+  describe '.get' do
+    context 'when given an instance' do
+      let(:instance) { described_class.get(65) }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
+  end
+
   subject(:pitch) { Pitch.get('G#3') }
 
   it { is_expected.to be == 'G#3' }

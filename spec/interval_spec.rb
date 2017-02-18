@@ -1,6 +1,16 @@
 require 'spec_helper'
 
 describe Interval do
+  describe '.get' do
+    context 'when given an instance' do
+      let(:instance) { described_class.get(7) }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
+  end
+
   context 'given a simple interval' do
     subject(:interval) { Interval.get(2) }
 

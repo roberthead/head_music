@@ -9,7 +9,7 @@ class HeadMusic::Interval
 
   def self.get(semitones)
     @intervals_memo ||= {}
-    @intervals_memo[semitones] ||= new(semitones)
+    @intervals_memo[semitones.to_i] ||= new(semitones.to_i)
   end
 
   def self.named(name)
