@@ -7,8 +7,7 @@ class HeadMusic::Pitch
   delegate :letter, :accidental, :pitch_class, to: :spelling
 
   def self.get(value)
-    @pitches ||= {}
-    @pitches[value] ||= from_name(value) || from_number(value)
+    from_name(value) || from_number(value)
   end
 
   def self.from_name(name)
@@ -24,6 +23,7 @@ class HeadMusic::Pitch
   end
 
   def self.fetch_or_create(spelling, octave)
+    @pitches ||= {}
     if spelling && (-1..9).include?(octave)
       key = [spelling, octave].join
       @pitches[key] ||= new(spelling, octave)
