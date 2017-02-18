@@ -37,12 +37,12 @@ describe PitchClass do
   end
 
   describe 'addition' do
-    specify { expect(PitchClass.get(60) + 3).to eq PitchClass.get(63) }
-    specify { expect(PitchClass.get(4) + Interval.get(3)).to eq PitchClass.get(7) }
+    specify { expect(PitchClass.get(11) + 3).to eq PitchClass.get(2) }
+    specify { expect(PitchClass.get(5) + Interval.get(2)).to eq PitchClass.get(7) }
   end
 
   describe 'subtraction' do
-    specify { expect(PitchClass.get(60) - 3).to eq PitchClass.get(57) }
+    specify { expect(PitchClass.get(60) - 3).to eq PitchClass.get(9) }
     specify { expect(PitchClass.get(4) - Interval.get(3)).to eq PitchClass.get(1) }
   end
 
