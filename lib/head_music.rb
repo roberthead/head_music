@@ -10,6 +10,7 @@ require "head_music/key_signature"
 require "head_music/letter"
 require "head_music/pitch_class"
 require "head_music/pitch"
+require "head_music/quality"
 require "head_music/scale"
 require "head_music/spelling"
 

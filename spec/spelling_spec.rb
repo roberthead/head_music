@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe HeadMusic::Spelling do
+describe Spelling do
   context "for 'C'" do
-    subject(:spelling) { HeadMusic::Spelling.get('C') }
+    subject(:spelling) { Spelling.get('C') }
 
     its(:letter) { is_expected.to eq 'C' }
     its(:accidental) { is_expected.to be_nil }
@@ -11,7 +11,7 @@ describe HeadMusic::Spelling do
   end
 
   context "for 'F#'" do
-    subject(:spelling) { HeadMusic::Spelling.get('F#') }
+    subject(:spelling) { Spelling.get('F#') }
 
     its(:letter) { is_expected.to eq 'F' }
     its(:accidental) { is_expected.to eq '#' }
@@ -20,7 +20,7 @@ describe HeadMusic::Spelling do
   end
 
   context "for 'Bb'" do
-    subject(:spelling) { HeadMusic::Spelling.get('Bb') }
+    subject(:spelling) { Spelling.get('Bb') }
 
     its(:letter) { is_expected.to eq 'B' }
     its(:accidental) { is_expected.to eq 'b' }
@@ -29,7 +29,7 @@ describe HeadMusic::Spelling do
   end
 
   context "for 'Eb7'" do
-    subject(:spelling) { HeadMusic::Spelling.get('Eb7') }
+    subject(:spelling) { Spelling.get('Eb7') }
 
     its(:letter) { is_expected.to eq 'E' }
     its(:accidental) { is_expected.to eq 'b' }
@@ -38,7 +38,7 @@ describe HeadMusic::Spelling do
   end
 
   context "for 'Cb'" do
-    subject(:spelling) { HeadMusic::Spelling.get('Cb') }
+    subject(:spelling) { Spelling.get('Cb') }
 
     its(:letter) { is_expected.to eq 'C' }
     its(:accidental) { is_expected.to eq 'b' }
@@ -47,7 +47,7 @@ describe HeadMusic::Spelling do
   end
 
   context "for 'B#'" do
-    subject(:spelling) { HeadMusic::Spelling.get('B#') }
+    subject(:spelling) { Spelling.get('B#') }
 
     its(:letter) { is_expected.to eq 'B' }
     its(:accidental) { is_expected.to eq '#' }
@@ -56,7 +56,7 @@ describe HeadMusic::Spelling do
   end
 
   context "given a pitch class" do
-    subject(:spelling) { HeadMusic::Spelling.get(HeadMusic::PitchClass.get(3)) }
+    subject(:spelling) { Spelling.get(PitchClass.get(3)) }
 
     its(:letter) { is_expected.to eq 'E' }
     its(:accidental) { is_expected.to eq 'b' }
@@ -65,7 +65,7 @@ describe HeadMusic::Spelling do
   end
 
   context "given a pitch class number" do
-    subject(:spelling) { HeadMusic::Spelling.get(1) }
+    subject(:spelling) { Spelling.get(1) }
 
     its(:letter) { is_expected.to eq 'C' }
     its(:accidental) { is_expected.to eq '#' }
@@ -74,7 +74,7 @@ describe HeadMusic::Spelling do
   end
 
   context "given the pitch class number for F#/Gb" do
-    subject(:spelling) { HeadMusic::Spelling.get(6) }
+    subject(:spelling) { Spelling.get(6) }
 
     its(:letter) { is_expected.to eq 'F' }
     its(:accidental) { is_expected.to eq '#' }

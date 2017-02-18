@@ -1,21 +1,21 @@
 require 'spec_helper'
 
-describe HeadMusic::Pitch do
-  subject(:pitch) { HeadMusic::Pitch.get('G#3') }
+describe Pitch do
+  subject(:pitch) { Pitch.get('G#3') }
 
   it { is_expected.to be == 'G#3' }
   it { is_expected.not_to be == 'Ab3' }
 
-  it { is_expected.to be < HeadMusic::Pitch.get('D4') }
-  it { is_expected.to be > HeadMusic::Pitch.get('D3') }
+  it { is_expected.to be < Pitch.get('D4') }
+  it { is_expected.to be > Pitch.get('D3') }
 
-  it { is_expected.to be_enharmonic(HeadMusic::Pitch.get('Ab3')) }
-  it { is_expected.not_to be_enharmonic(HeadMusic::Pitch.get('C7')) }
-  it { is_expected.not_to be_enharmonic(HeadMusic::Pitch.get('G#4')) }
+  it { is_expected.to be_enharmonic(Pitch.get('Ab3')) }
+  it { is_expected.not_to be_enharmonic(Pitch.get('C7')) }
+  it { is_expected.not_to be_enharmonic(Pitch.get('G#4')) }
 
   describe 'construction from a string' do
     context "for 'C'" do
-      subject(:spelling) { HeadMusic::Pitch.get('C4') }
+      subject(:spelling) { Pitch.get('C4') }
 
       its(:letter) { is_expected.to eq 'C' }
       its(:accidental) { is_expected.to be_nil }
@@ -26,7 +26,7 @@ describe HeadMusic::Pitch do
     end
 
     context "for 'F#-1'" do
-      subject(:spelling) { HeadMusic::Pitch.get('F#-1') }
+      subject(:spelling) { Pitch.get('F#-1') }
 
       its(:letter) { is_expected.to eq 'F' }
       its(:accidental) { is_expected.to eq '#' }
@@ -37,7 +37,7 @@ describe HeadMusic::Pitch do
     end
 
     context "for 'Bb5'" do
-      subject(:spelling) { HeadMusic::Pitch.get('Bb5') }
+      subject(:spelling) { Pitch.get('Bb5') }
 
       its(:letter) { is_expected.to eq 'B' }
       its(:accidental) { is_expected.to eq 'b' }
@@ -48,7 +48,7 @@ describe HeadMusic::Pitch do
     end
 
     context "for 'Eb7'" do
-      subject(:spelling) { HeadMusic::Pitch.get('Eb7') }
+      subject(:spelling) { Pitch.get('Eb7') }
 
       its(:letter) { is_expected.to eq 'E' }
       its(:accidental) { is_expected.to eq 'b' }
@@ -59,14 +59,14 @@ describe HeadMusic::Pitch do
     end
 
     context "for 'biscuit'" do
-      subject(:spelling) { HeadMusic::Pitch.get('biscuit') }
+      subject(:spelling) { Pitch.get('biscuit') }
 
       it { is_expected.to be_nil }
     end
   end
 
   describe 'construction from a number' do
-    specify { expect(HeadMusic::Pitch.from_number(60)).to eq 'C4' }
-    specify { expect(HeadMusic::Pitch.from_number(70)).to eq 'Bb4' }
+    specify { expect(Pitch.from_number(60)).to eq 'C4' }
+    specify { expect(Pitch.from_number(70)).to eq 'Bb4' }
   end
 end

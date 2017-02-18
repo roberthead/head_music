@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-RSpec.describe HeadMusic::KeySignature do
+describe KeySignature do
   let(:scale_type) { nil }
-  subject(:key_signature) { HeadMusic::KeySignature.new(tonic, scale_type) }
+  subject(:key_signature) { KeySignature.new(tonic, scale_type) }
 
   context 'in the key of C major' do
-    let(:tonic) { HeadMusic::Spelling.get('C') }
+    let(:tonic) { Spelling.get('C') }
 
     specify { expect(key_signature.num_sharps).to eq 0 }
     specify { expect(key_signature.num_flats).to eq 0 }
@@ -13,7 +13,7 @@ RSpec.describe HeadMusic::KeySignature do
   end
 
   context 'in the key of Eb major' do
-    let(:tonic) { HeadMusic::Spelling.get('Eb') }
+    let(:tonic) { Spelling.get('Eb') }
 
     specify { expect(key_signature.num_sharps).to eq 9 }
     specify { expect(key_signature.num_flats).to eq 3 }
@@ -23,7 +23,7 @@ RSpec.describe HeadMusic::KeySignature do
   end
 
   context 'in the key of F# major' do
-    let(:tonic) { HeadMusic::Spelling.get('F#') }
+    let(:tonic) { Spelling.get('F#') }
 
     specify { expect(key_signature.num_sharps).to eq 6 }
     specify { expect(key_signature.num_flats).to eq 6 }
@@ -33,14 +33,14 @@ RSpec.describe HeadMusic::KeySignature do
   end
 
   context 'in the key of Gb major' do
-    let(:tonic) { HeadMusic::Spelling.get('Gb') }
+    let(:tonic) { Spelling.get('Gb') }
 
     specify { expect(key_signature.sharps_or_flats).to eq %w[Bb Eb Ab Db Gb Cb] }
   end
 
   context 'in the key of C minor' do
     let(:scale_type) { :minor }
-    let(:tonic) { HeadMusic::Spelling.get('C') }
+    let(:tonic) { Spelling.get('C') }
 
     specify { expect(key_signature.num_sharps).to eq 9 }
     specify { expect(key_signature.num_flats).to eq 3 }
@@ -51,7 +51,7 @@ RSpec.describe HeadMusic::KeySignature do
 
   context 'in the key of B minor' do
     let(:scale_type) { :minor }
-    let(:tonic) { HeadMusic::Spelling.get('B') }
+    let(:tonic) { Spelling.get('B') }
 
     specify { expect(key_signature.num_sharps).to eq 2 }
     specify { expect(key_signature.num_flats).to eq 10 }

@@ -9,7 +9,7 @@ class HeadMusic::KeySignature
 
   def initialize(tonic_spelling, scale_type = nil)
     @tonic_spelling = tonic_spelling
-    @scale_type = scale_type || scale_type
+    @scale_type = scale_type || :major
   end
 
   def sharps

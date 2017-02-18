@@ -1,13 +1,22 @@
 require 'spec_helper'
 
-RSpec.describe HeadMusic::Interval do
-  let(:perfect_unison) { HeadMusic::Interval.named(:perfect_unison) }
-  let(:major_third) { HeadMusic::Interval.named(:major_third) }
-  let(:minor_third) { HeadMusic::Interval.named(:minor_third) }
-  let(:perfect_fourth) { HeadMusic::Interval.named(:perfect_fourth) }
-  let(:perfect_fifth) { HeadMusic::Interval.named(:perfect_fifth) }
-  let(:perfect_octave) { HeadMusic::Interval.named(:perfect_octave) }
-  let(:perfect_11th) { HeadMusic::Interval.get(17) }
+describe Interval do
+  context 'given a simple interval' do
+    subject(:interval) { Interval.get(2) }
+
+    it { is_expected.to be == 2 }
+    it { is_expected.to be_simple }
+    it { is_expected.to eq interval.simplified }
+    it { is_expected.not_to be_compound }
+  end
+
+  let(:perfect_unison) { Interval.named(:perfect_unison) }
+  let(:major_third) { Interval.named(:major_third) }
+  let(:minor_third) { Interval.named(:minor_third) }
+  let(:perfect_fourth) { Interval.named(:perfect_fourth) }
+  let(:perfect_fifth) { Interval.named(:perfect_fifth) }
+  let(:perfect_octave) { Interval.named(:perfect_octave) }
+  let(:perfect_11th) { Interval.get(17) }
 
   specify { expect(major_third).to be > minor_third }
 
