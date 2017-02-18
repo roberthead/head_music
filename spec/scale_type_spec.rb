@@ -1,9 +1,19 @@
 require 'spec_helper'
 
 describe ScaleType do
-  describe 'new' do
+  describe '.get' do
+    context 'when given an instance' do
+      let(:instance) { described_class.get(:major) }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
+  end
+
+  describe '.new' do
     it 'is public' do
-      expect { ScaleType.new([12]) }.not_to raise_error
+      expect { ScaleType.new(:monotonic, [12]) }.not_to raise_error
     end
   end
 
@@ -24,6 +34,9 @@ describe ScaleType do
       it 'consists entirely of whole and half steps' do
         expect(subject.ascending_intervals.uniq.sort).to eq [1, 2]
       end
+
+      its(:name) { is_expected.to eq mode }
+      its(:to_s) { is_expected.to eq mode.to_s }
     end
   end
 
@@ -39,6 +52,13 @@ describe ScaleType do
     subject(:dorian) { ScaleType.dorian }
 
     its(:ascending_intervals) { are_expected.to eq [2, 1, 2, 2, 2, 1, 2] }
+    its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
+  end
+
+  describe '.minor_pentatonic' do
+    subject(:minor_pentatonic) { ScaleType.minor_pentatonic }
+
+    its(:ascending_intervals) { are_expected.to eq [3, 2, 2, 3, 2] }
     its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
   end
 
