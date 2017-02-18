@@ -2,17 +2,17 @@ require 'spec_helper'
 
 describe Octave do
   describe '.get' do
-    it 'returns nil for nonsense' do
-      expect(Octave.get('foo')).to be nil
-      expect(Octave.get(1.5)).to be nil
-      expect(Octave.get(15)).to be nil
-    end
-
     it 'returns an instance when given an octave number' do
       expect(Octave.get(4)).to eq 4
       expect(Octave.get(-1)).to eq -1
       expect(Octave.get(10)).to eq 10
       expect(Octave.get('5')).to eq 5
+    end
+
+    it 'falls back to 4' do
+      expect(Octave.get('foo')).to eq 4
+      expect(Octave.get(1.5)).to eq 4
+      expect(Octave.get(15)).to eq 4
     end
 
     context 'when given an instance' do

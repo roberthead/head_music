@@ -1,7 +1,7 @@
 # A Spelling is a pitch class with a letter and possibly an accidental
 
 class HeadMusic::Spelling
-  SPELLING_MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/
+  MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/
 
   attr_reader :pitch_class
   attr_reader :letter
@@ -15,7 +15,7 @@ class HeadMusic::Spelling
   end
 
   def self.match(string)
-    string.to_s.match(SPELLING_MATCHER)
+    string.to_s.match(MATCHER)
   end
 
   def self.from_name(name)

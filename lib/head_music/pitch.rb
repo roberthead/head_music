@@ -1,8 +1,6 @@
 class HeadMusic::Pitch
   include Comparable
 
-  DEFAULT_OCTAVE = 4
-
   attr_reader :spelling
   attr_reader :octave
 
@@ -15,11 +13,7 @@ class HeadMusic::Pitch
 
   def self.from_name(name)
     return nil unless name == name.to_s
-    fetch_or_create(HeadMusic::Spelling.get(name), octave_from_name(name))
-  end
-
-  def self.octave_from_name(name)
-    (name.to_s.scan(/-?\d+$/).first || DEFAULT_OCTAVE).to_i
+    fetch_or_create(HeadMusic::Spelling.get(name), HeadMusic::Octave.get(name).to_i)
   end
 
   def self.from_number(number)
