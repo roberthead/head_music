@@ -4,7 +4,10 @@ class HeadMusic::Pitch
   attr_reader :spelling
   attr_reader :octave
 
-  delegate :letter, :accidental, :pitch_class, to: :spelling
+  delegate :letter, to: :spelling
+  delegate :accidental, :sharp?, :flat?, to: :spelling
+  delegate :pitch_class, to: :spelling
+
   delegate :smallest_interval_to, to: :pitch_class
 
   def self.get(value)

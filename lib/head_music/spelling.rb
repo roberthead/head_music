@@ -63,6 +63,14 @@ class HeadMusic::Spelling
     name
   end
 
+  def sharp?
+    accidental && accidental == '#'
+  end
+
+  def flat?
+    accidental && accidental == 'b'
+  end
+
   def ==(value)
     to_s == value.to_s
   end

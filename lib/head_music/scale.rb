@@ -18,12 +18,27 @@ class HeadMusic::Scale
   def pitches
     @pitches ||= begin
       pitches = [root_pitch]
-      letters_cycle = Letter::NAMES
+      letters_cycle = HeadMusic::Letter::NAMES
       letters_cycle = letters_cycle.rotate while letters_cycle.first != root_pitch.letter.to_s
-      scale_type.intervals.each do |semitones|
-        letters_cycle = letters_cycle.rotate((semitones + 1) / 2)
-        number = pitches.last.to_i + semitones
-        pitch = HeadMusic::Pitch.from_number_and_letter(number, letters_cycle.first)
+      semitones_from_root = 0
+      if scale_type.parent
+        parent_scale_pitches = HeadMusic::Scale.get(root_pitch, scale_type.parent_name).pitches
+      end
+      scale_type.intervals.each_with_index do |semitones, i|
+        semitones_from_root += semitones
+        pitch_number = root_pitch.pitch_class.to_i + semitones_from_root
+        if scale_type.intervals.length == 7
+          current_letter = letters_cycle[(i + 1) % 7]
+        elsif scale_type.intervals.length < 7 && scale_type.parent
+          current_letter = parent_scale_pitches.detect { |parent_scale_pitches|
+            parent_scale_pitches.pitch_class == (root_pitch + semitones_from_root).to_i % 12
+          }.letter
+        elsif root_pitch.flat?
+          current_letter = HeadMusic::PitchClass::FLAT_SPELLINGS[pitch_number % 12]
+        else
+          current_letter = HeadMusic::PitchClass::SHARP_SPELLINGS[pitch_number % 12]
+        end
+        pitch = HeadMusic::Pitch.from_number_and_letter(pitch_number, current_letter)
         pitches << pitch
       end
       pitches

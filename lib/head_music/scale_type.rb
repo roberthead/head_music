@@ -86,6 +86,6 @@ class HeadMusic::ScaleType
   end
 
   def parent
-    self.class.get(parent_name) if parent_name
+    @parent ||= self.class.get(parent_name) if parent_name
   end
 end

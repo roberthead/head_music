@@ -2,6 +2,8 @@ class HeadMusic::PitchClass
   attr_reader :number
 
   PREFERRED_SPELLINGS = %w[C C# D Eb E F F# G Ab A Bb B]
+  SHARP_SPELLINGS = %w[C C# D D# E F F# G G# A A# B]
+  FLAT_SPELLINGS = %w[C Db D Eb E F Gb G Ab A Bb B]
 
   def self.get(identifier)
     @pitch_classes ||= {}

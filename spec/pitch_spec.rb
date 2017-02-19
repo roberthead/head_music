@@ -12,7 +12,7 @@ describe Pitch do
 
     context 'when given a spelling without an octave' do
       it 'defaults to octave 4' do
-        expect(Pitch.get("G")).to eq "G4"
+        expect(Pitch.get('G')).to eq 'G4'
       end
     end
 
@@ -23,9 +23,9 @@ describe Pitch do
   end
 
   describe 'math' do
-    specify { expect(Pitch.get(60) + 12).to eq "C5" }
-    specify { expect(Pitch.get("F#5") + 17).to eq "B6" }
-    specify { expect(Pitch.get("F#5") - 7).to eq "B4" }
+    specify { expect(Pitch.get(60) + 12).to eq 'C5' }
+    specify { expect(Pitch.get('F#5') + 17).to eq 'B6' }
+    specify { expect(Pitch.get('F#5') - 7).to eq 'B4' }
   end
 
   describe 'comparison' do
