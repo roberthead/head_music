@@ -8,8 +8,8 @@ class HeadMusic::Interval
   attr_reader :semitones
 
   def self.get(semitones)
-    @intervals_memo ||= {}
-    @intervals_memo[semitones.to_i] ||= new(semitones.to_i)
+    @intervals ||= {}
+    @intervals[semitones.to_i] ||= new(semitones.to_i)
   end
 
   def self.named(name)

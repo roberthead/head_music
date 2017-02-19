@@ -1,29 +1,37 @@
 class HeadMusic::Scale
-  PATTERNS = {
-    major: [0, 2, 4, 5, 7, 9, 11, 12],
-    minor: [0, 2, 3, 5, 7, 8, 10, 12],
-    minor_pentatonic: [0, nil, 3, 5, 7, nil, 10, 12],
-  }
-
-  attr_reader :pattern
-
-  def self.major
+  def self.get(root_pitch, scale_type_name = nil)
+    root_pitch = HeadMusic::Pitch.get(root_pitch)
+    scale_type_name ||= :major
+    scale_type ||= HeadMusic::ScaleType.get(scale_type_name)
     @scales ||= {}
-    @scales[:major] ||=  new(PATTERNS[:major])
+    @scales[root_pitch.to_s] ||= {}
+    @scales[root_pitch.to_s][scale_type.name] ||= new(root_pitch, scale_type)
   end
 
-  def self.minor
-    @scales ||= {}
-    @scales[:minor] ||=  new(PATTERNS[:minor])
+  attr_reader :root_pitch, :scale_type
+
+  def initialize(root_pitch, scale_type)
+    @root_pitch = HeadMusic::Pitch.get(root_pitch)
+    @scale_type = HeadMusic::ScaleType.get(scale_type)
   end
 
-  def self.minor_pentatonic
-    @scales ||= {}
-    @scales[:minor_pentatonic] ||=  new(PATTERNS[:minor_pentatonic])
+  def pitches
+    @pitches ||= begin
+      pitches = [root_pitch]
+      letters_cycle = Letter::NAMES
+      letters_cycle = letters_cycle.rotate while letters_cycle.first != root_pitch.letter.to_s
+      scale_type.intervals.each do |semitones|
+        letters_cycle = letters_cycle.rotate((semitones + 1) / 2)
+        number = pitches.last.to_i + semitones
+        pitch = HeadMusic::Pitch.from_number_and_letter(number, letters_cycle.first)
+        pitches << pitch
+      end
+      pitches
+    end
   end
 
-  def initialize(pattern)
-    @pattern = pattern
+  def pitch_names
+    pitches.map(&:spelling).map(&:to_s)
   end
 
   def in(spelling)

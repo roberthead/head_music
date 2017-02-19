@@ -5,6 +5,7 @@ class HeadMusic::Pitch
   attr_reader :octave
 
   delegate :letter, :accidental, :pitch_class, to: :spelling
+  delegate :smallest_interval_to, to: :pitch_class
 
   def self.get(value)
     from_name(value) || from_number(value)
@@ -20,6 +21,17 @@ class HeadMusic::Pitch
     spelling = HeadMusic::Spelling.from_number(number)
     octave = (number.to_i / 12) - 1
     fetch_or_create(spelling, octave)
+  end
+
+  def self.from_number_and_letter(number, letter)
+    letter = HeadMusic::Letter.get(letter)
+    natural_letter_pitch = get(HeadMusic::Letter.get(letter).pitch_class)
+    natural_letter_pitch += 12 while (number - natural_letter_pitch.to_i) >= 12
+    natural_letter_pitch = get(natural_letter_pitch)
+    accidental_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::PitchClass.get(number))
+    accidental = HeadMusic::Accidental.for_interval(accidental_interval)
+    spelling = HeadMusic::Spelling.fetch_or_create(letter, accidental)
+    fetch_or_create(spelling, natural_letter_pitch.octave)
   end
 
   def self.fetch_or_create(spelling, octave)
@@ -55,6 +67,14 @@ class HeadMusic::Pitch
 
   def enharmonic?(other)
     self.midi_note_number == other.midi_note_number
+  end
+
+  def +(value)
+    Pitch.get(self.to_i + value.to_i)
+  end
+
+  def -(value)
+    Pitch.get(self.to_i - value.to_i)
   end
 
   def ==(value)

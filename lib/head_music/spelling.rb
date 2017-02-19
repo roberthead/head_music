@@ -10,7 +10,6 @@ class HeadMusic::Spelling
   delegate :number, to: :pitch_class, prefix: true
 
   def self.get(identifier)
-    @spellings ||= {}
     from_name(identifier) || from_number(identifier)
   end
 
@@ -32,11 +31,19 @@ class HeadMusic::Spelling
     return nil unless number == number.to_i
     pitch_class_number = number.to_i % 12
     letter = HeadMusic::Letter.from_pitch_class(pitch_class_number)
-    accidental = HeadMusic::Accidental.for_interval(pitch_class_number - letter.pitch_class.to_i)
+    from_number_and_letter(number, letter)
+  end
+
+  def self.from_number_and_letter(number, letter)
+    letter = HeadMusic::Letter.get(letter)
+    natural_letter_pitch_class = HeadMusic::Letter.get(letter).pitch_class
+    accidental_interval = letter.pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(number))
+    accidental = HeadMusic::Accidental.for_interval(accidental_interval)
     fetch_or_create(letter, accidental)
   end
 
   def self.fetch_or_create(letter, accidental)
+    @spellings ||= {}
     key = [letter, accidental].join
     @spellings[key] ||= new(letter, accidental)
   end

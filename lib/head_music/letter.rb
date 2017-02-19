@@ -18,11 +18,11 @@ class HeadMusic::Letter
   end
 
   def self.get(identifier)
-    @letters ||= {}
     from_name(identifier) || from_pitch_class(identifier)
   end
 
   def self.from_name(name)
+    @letters ||= {}
     name = name.to_s.first.upcase
     @letters[name] ||= new(name) if NAMES.include?(name)
   end

@@ -66,6 +66,7 @@ class HeadMusic::ScaleType
 
   attr_reader :name, :ascending_intervals, :descending_intervals
   delegate :to_s, to: :name
+  alias_method :intervals, :ascending_intervals
 
   def initialize(name, ascending_intervals, descending_intervals = nil)
     @name = name

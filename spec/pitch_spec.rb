@@ -15,23 +15,36 @@ describe Pitch do
         expect(Pitch.get("G")).to eq "G4"
       end
     end
+
+    context 'when given a midi note number' do
+      specify { expect(Pitch.get(60)).to eq 'C4' }
+      specify { expect(Pitch.get(70)).to eq 'Bb4' }
+    end
   end
 
-  subject(:pitch) { Pitch.get('G#3') }
+  describe 'math' do
+    specify { expect(Pitch.get(60) + 12).to eq "C5" }
+    specify { expect(Pitch.get("F#5") + 17).to eq "B6" }
+    specify { expect(Pitch.get("F#5") - 7).to eq "B4" }
+  end
 
-  it { is_expected.to be == 'G#3' }
-  it { is_expected.not_to be == 'Ab3' }
+  describe 'comparison' do
+    subject(:pitch) { Pitch.get('G#3') }
 
-  it { is_expected.to be < Pitch.get('D4') }
-  it { is_expected.to be > Pitch.get('D3') }
+    it { is_expected.to be == 'G#3' }
+    it { is_expected.not_to be == 'Ab3' }
 
-  it { is_expected.to be_enharmonic(Pitch.get('Ab3')) }
-  it { is_expected.not_to be_enharmonic(Pitch.get('C7')) }
-  it { is_expected.not_to be_enharmonic(Pitch.get('G#4')) }
+    it { is_expected.to be < Pitch.get('D4') }
+    it { is_expected.to be > Pitch.get('D3') }
+
+    it { is_expected.to be_enharmonic(Pitch.get('Ab3')) }
+    it { is_expected.not_to be_enharmonic(Pitch.get('C7')) }
+    it { is_expected.not_to be_enharmonic(Pitch.get('G#4')) }
+  end
 
   describe 'construction from a string' do
     context "for 'C'" do
-      subject(:spelling) { Pitch.get('C4') }
+      subject(:pitch) { Pitch.get('C4') }
 
       its(:letter) { is_expected.to eq 'C' }
       its(:accidental) { is_expected.to be_nil }
@@ -42,7 +55,7 @@ describe Pitch do
     end
 
     context "for 'F#-1'" do
-      subject(:spelling) { Pitch.get('F#-1') }
+      subject(:pitch) { Pitch.get('F#-1') }
 
       its(:letter) { is_expected.to eq 'F' }
       its(:accidental) { is_expected.to eq '#' }
@@ -53,7 +66,7 @@ describe Pitch do
     end
 
     context "for 'Bb5'" do
-      subject(:spelling) { Pitch.get('Bb5') }
+      subject(:pitch) { Pitch.get('Bb5') }
 
       its(:letter) { is_expected.to eq 'B' }
       its(:accidental) { is_expected.to eq 'b' }
@@ -64,7 +77,7 @@ describe Pitch do
     end
 
     context "for 'Eb7'" do
-      subject(:spelling) { Pitch.get('Eb7') }
+      subject(:pitch) { Pitch.get('Eb7') }
 
       its(:letter) { is_expected.to eq 'E' }
       its(:accidental) { is_expected.to eq 'b' }
@@ -75,14 +88,9 @@ describe Pitch do
     end
 
     context "for 'biscuit'" do
-      subject(:spelling) { Pitch.get('biscuit') }
+      subject(:pitch) { Pitch.get('biscuit') }
 
       it { is_expected.to be_nil }
     end
-  end
-
-  describe 'construction from a number' do
-    specify { expect(Pitch.from_number(60)).to eq 'C4' }
-    specify { expect(Pitch.from_number(70)).to eq 'Bb4' }
   end
 end
