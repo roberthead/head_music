@@ -26,7 +26,7 @@ describe Octave do
 
   describe '.new' do
     it 'is private' do
-      expect { Octave.new(5) }.to raise_error
+      expect { Octave.new(5) }.to raise_error NoMethodError
     end
   end
 
