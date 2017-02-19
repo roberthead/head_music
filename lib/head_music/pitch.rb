@@ -88,5 +88,9 @@ class HeadMusic::Pitch
     self.midi_note_number <=> other.midi_note_number
   end
 
+  def scale(scale_type_name = nil)
+    HeadMusic::Scale.get(self, scale_type_name)
+  end
+
   private_class_method :new
 end
