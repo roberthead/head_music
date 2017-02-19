@@ -8,6 +8,7 @@ class HeadMusic::Spelling
   attr_reader :accidental
 
   delegate :number, to: :pitch_class, prefix: true
+  delegate :to_i, to: :pitch_class_number
 
   def self.get(identifier)
     from_name(identifier) || from_number(identifier)
@@ -73,6 +74,10 @@ class HeadMusic::Spelling
 
   def ==(value)
     to_s == value.to_s
+  end
+
+  def scale(scale_type_name = nil)
+    HeadMusic::Scale.get(self, scale_type_name)
   end
 
   private_class_method :new

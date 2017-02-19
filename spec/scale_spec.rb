@@ -39,6 +39,12 @@ describe Scale do
     its(:pitch_names) { are_expected.to eq %w[F# G# A B C# D E# F#] }
   end
 
+  context 'for D harmonic minor' do
+    subject(:scale) { Scale.get('D', :harmonic_minor) }
+
+    its(:pitch_names) { are_expected.to eq %w[D E F G A Bb C# D] }
+  end
+
   context 'for Bb dorian' do
     subject(:scale) { Scale.get('Bb', :dorian) }
 

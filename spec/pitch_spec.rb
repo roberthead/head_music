@@ -10,9 +10,15 @@ describe Pitch do
       end
     end
 
-    context 'when given a spelling without an octave' do
+    context 'when given a spelling string without an octave' do
       it 'defaults to octave 4' do
         expect(Pitch.get('G')).to eq 'G4'
+      end
+    end
+
+    context 'when given a spelling instance' do
+      it 'defaults to octave 4' do
+        expect(Pitch.get(Spelling.get('G#'))).to eq 'G#4'
       end
     end
 
