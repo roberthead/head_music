@@ -13,7 +13,7 @@ describe ScaleType do
 
   describe '.new' do
     it 'is public' do
-      expect { ScaleType.new(:monotonic, [12]) }.not_to raise_error
+      expect { ScaleType.new(:monotonic, {ascending: [12]}) }.not_to raise_error
     end
   end
 
@@ -60,6 +60,15 @@ describe ScaleType do
 
     its(:ascending_intervals) { are_expected.to eq [3, 2, 2, 3, 2] }
     its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
+    its(:parent) { is_expected.to eq ScaleType.minor }
+  end
+
+  describe '.major_pentatonic' do
+    subject(:major_pentatonic) { ScaleType.major_pentatonic }
+
+    its(:ascending_intervals) { are_expected.to eq [2, 2, 3, 2, 3] }
+    its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
+    its(:parent) { is_expected.to eq ScaleType.major }
   end
 
   describe 'equality' do

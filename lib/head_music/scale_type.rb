@@ -16,17 +16,13 @@ class HeadMusic::ScaleType
   HARMONIC_MINOR = [W, H, W, W, H, WH, H]
   MELODIC_MINOR_ASCENDING = [W, H, W, W, W, W, H]
 
-  CHROMATIC = [H, H, H, H, H, H, H, H, H, H, H, H]
-  MINOR_PENTATONIC = [3, 2, 2, 3, 2]
-  MAJOR_PENTATONIC = MINOR_PENTATONIC.rotate
-
   MODE_NAMES = {
-    i: [:ionian, :major, :maj],
+    i: [:ionian, :major],
     ii: [:dorian],
     iii: [:phrygian],
     iv: [:lydian],
     v: [:mixolydian],
-    vi: [:aeolian, :minor, :natural_minor, :min],
+    vi: [:aeolian, :minor, :natural_minor],
     vii: [:locrian],
   }
   SCALE_TYPES = {}
@@ -40,14 +36,19 @@ class HeadMusic::ScaleType
   SCALE_TYPES[:harmonic_minor] = { ascending: HARMONIC_MINOR }
   SCALE_TYPES[:melodic_minor] = { ascending: MELODIC_MINOR_ASCENDING, descending: VI.reverse }
 
+  CHROMATIC = [H, H, H, H, H, H, H, H, H, H, H, H]
   SCALE_TYPES[:chromatic] = { ascending: CHROMATIC }
 
-  SCALE_TYPES[:minor_pentatonic] = { ascending: MINOR_PENTATONIC }
-  SCALE_TYPES[:major_pentatonic] = { ascending: MAJOR_PENTATONIC }
+  MINOR_PENTATONIC = [3, 2, 2, 3, 2]
+  SCALE_TYPES[:minor_pentatonic] = { ascending: MINOR_PENTATONIC, parent_name: :minor }
+  SCALE_TYPES[:major_pentatonic] = { ascending: MINOR_PENTATONIC.rotate, parent_name: :major }
+  SCALE_TYPES[:egyptian_pentatonic] = { ascending: MINOR_PENTATONIC.rotate(2), parent_name: :minor }
+  SCALE_TYPES[:blues_minor_pentatonic] = { ascending: MINOR_PENTATONIC.rotate(3), parent_name: :minor }
+  SCALE_TYPES[:blues_major_pentatonic] = { ascending: MINOR_PENTATONIC.rotate(4), parent_name: :major }
 
+  # exotic scales
   SCALE_TYPES[:octatonic] = { ascending: [W, H, W, H, W, H, W, H] }
   SCALE_TYPES[:whole_tone] = { ascending: [W, W, W, W, W, W] }
-  SCALE_TYPES[:monotonic] = { ascending: [12] }
 
   class << self
     SCALE_TYPES.keys.each do |name|
@@ -60,18 +61,20 @@ class HeadMusic::ScaleType
   def self.get(name)
     @scale_types ||= {}
     name = name.to_s.to_sym
-    intervals = SCALE_TYPES[name]
-    @scale_types[name] ||= new(name, intervals[:ascending], intervals[:descending])
+    attributes = SCALE_TYPES[name]
+    @scale_types[name] ||= new(name, attributes)
   end
 
-  attr_reader :name, :ascending_intervals, :descending_intervals
-  delegate :to_s, to: :name
+  attr_reader :name, :ascending_intervals, :descending_intervals, :parent_name
   alias_method :intervals, :ascending_intervals
 
-  def initialize(name, ascending_intervals, descending_intervals = nil)
+  delegate :to_s, to: :name
+
+  def initialize(name, attributes)
     @name = name
-    @ascending_intervals = ascending_intervals
-    @descending_intervals = descending_intervals || ascending_intervals.reverse
+    @ascending_intervals = attributes[:ascending]
+    @descending_intervals = attributes[:descending] || ascending_intervals.reverse
+    @parent_name = attributes[:parent_name]
   end
 
   def ==(other)
@@ -80,5 +83,9 @@ class HeadMusic::ScaleType
 
   def state
     [ascending_intervals, descending_intervals]
+  end
+
+  def parent
+    self.class.get(parent_name) if parent_name
   end
 end
