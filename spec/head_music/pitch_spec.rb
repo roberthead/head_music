@@ -104,13 +104,13 @@ describe Pitch do
     context 'without an argument' do
       subject(:scale) { Pitch.get('D4').scale }
 
-      its(:pitch_names) { are_expected.to eq %w[D E F# G A B C# D] }
+      its(:spellings) { are_expected.to eq %w[D E F# G A B C# D] }
     end
 
     context 'passed a scale type' do
       subject(:scale) { Pitch.get('E').scale(:minor) }
 
-      its(:pitch_names) { are_expected.to eq %w[E F# G A B C D E] }
+      its(:spellings) { are_expected.to eq %w[E F# G A B C D E] }
     end
   end
 
