@@ -2,6 +2,7 @@ require "head_music/version"
 
 require "active_support/core_ext/module/delegation"
 require "active_support/core_ext/string/access"
+require "humanize"
 
 require "head_music/accidental"
 require "head_music/circle"

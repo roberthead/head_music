@@ -46,8 +46,18 @@ class HeadMusic::FunctionalInterval
     octaves == 0
   end
 
+  def simple_name
+    [quality_name, simple_number_name].join(' ')
+  end
+
   def name
-    [quality, number_name].join(' ')
+    if number < NUMBER_NAMES.length
+      [quality_name, number_name].join(' ')
+    elsif simple_name == 'perfect unison'
+      string = "#{octaves.humanize} octaves"
+    else
+      "#{octaves.humanize} octaves and #{quality.article} #{simple_name}"
+    end
   end
 
   def shorthand

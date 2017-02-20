@@ -47,5 +47,9 @@ class HeadMusic::Quality
     SHORTHAND[name]
   end
 
+  def article
+    %w[a e i o u h].include?(name.to_s.first) ? 'an' : 'a'
+  end
+
   private_class_method :new
 end
