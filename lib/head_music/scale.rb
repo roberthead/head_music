@@ -32,23 +32,6 @@ class HeadMusic::Scale
     pitches.map(&:spelling).map(&:to_s)
   end
 
-  def in(spelling)
-    spelling = HeadMusic::Spelling.get(spelling.to_s)
-    spellings = []
-    letter_index = HeadMusic::Letter::all.index(spelling.letter)
-    starting_pitch_class = spelling.pitch_class
-    pattern.each do |interval_from_tonic|
-      letter = HeadMusic::Letter.all[letter_index]
-      if interval_from_tonic
-        accidental_interval = letter.pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(starting_pitch_class + interval_from_tonic))
-        accidental = HeadMusic::Accidental.for_interval(accidental_interval)
-        spellings << HeadMusic::Spelling.get([letter, accidental].join)
-      end
-      letter_index = (letter_index + 1) % 7
-    end
-    spellings
-  end
-
   def letter_cycle
     @letter_cycle ||= root_pitch.letter_cycle
   end
