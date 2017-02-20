@@ -59,6 +59,7 @@ class HeadMusic::Pitch
   end
 
   alias_method :midi, :midi_note_number
+  alias_method :number, :midi_note_number
 
   def to_s
     name

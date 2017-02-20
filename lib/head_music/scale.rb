@@ -36,8 +36,12 @@ class HeadMusic::Scale
     @letter_cycle ||= root_pitch.letter_cycle
   end
 
-  def root_pitch_class
-    @root_pitch_class ||= root_pitch.pitch_class
+  def root_pitch_number
+    @root_pitch_number ||= root_pitch.number
+  end
+
+  def degree(degree_number)
+    pitches[degree_number - 1]
   end
 
   private
@@ -66,7 +70,7 @@ class HeadMusic::Scale
   end
 
   def pitch_for_step(step, semitones_from_root)
-    pitch_number = root_pitch_class.to_i + semitones_from_root
+    pitch_number = root_pitch_number + semitones_from_root
     letter = letter_for_step(step, semitones_from_root)
     HeadMusic::Pitch.from_number_and_letter(pitch_number, letter)
   end
