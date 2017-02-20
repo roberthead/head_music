@@ -5,6 +5,7 @@ require "active_support/core_ext/string/access"
 
 require "head_music/accidental"
 require "head_music/circle"
+require "head_music/functional_interval"
 require "head_music/interval"
 require "head_music/key_signature"
 require "head_music/letter"
