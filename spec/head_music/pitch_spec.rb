@@ -119,4 +119,42 @@ describe Pitch do
 
     its(:letter_cycle) { is_expected.to eq %w[D E F G A B C] }
   end
+
+  describe 'addition' do
+    let(:pitch) { Pitch.get('A4') }
+
+    context 'when adding an interval' do
+      it 'returns the new pitch' do
+        expect(pitch + Interval.get(9)).to eq 'F#5'
+      end
+    end
+
+    context 'when adding an integer' do
+      it 'returns the new pitch' do
+        expect(pitch + 9).to eq 'F#5'
+      end
+    end
+  end
+
+  describe 'subtraction' do
+    let(:pitch) { Pitch.get('A5') }
+
+    context 'when subtracting an interval' do
+      it 'returns the new pitch' do
+        expect(pitch - Interval.get(10)).to eq 'B4'
+      end
+    end
+
+    context 'when subtracting an integer' do
+      it 'returns the new pitch' do
+        expect(pitch - 10).to eq 'B4'
+      end
+    end
+
+    context 'when subtracting a pitch' do
+      it 'returns the interval' do
+        expect(pitch - Pitch.get('B4')).to eq 10
+      end
+    end
+  end
 end

@@ -78,7 +78,13 @@ class HeadMusic::Pitch
   end
 
   def -(value)
-    Pitch.get(self.to_i - value.to_i)
+    if value.is_a?(HeadMusic::Pitch)
+      # return an interval
+      HeadMusic::Interval.get(self.to_i - value.to_i)
+    else
+      # assume value represents an interval in semitones and return another pitch
+      HeadMusic::Pitch.get(self.to_i - value.to_i)
+    end
   end
 
   def ==(value)

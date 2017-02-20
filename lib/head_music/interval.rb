@@ -21,7 +21,7 @@ class HeadMusic::Interval
     @semitones = semitones
   end
 
-  def simplified
+  def simple
     HeadMusic::Interval.get(semitones % 12)
   end
 

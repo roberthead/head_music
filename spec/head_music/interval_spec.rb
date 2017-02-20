@@ -16,7 +16,7 @@ describe Interval do
 
     it { is_expected.to be == 2 }
     it { is_expected.to be_simple }
-    it { is_expected.to eq interval.simplified }
+    it { is_expected.to eq interval.simple }
     it { is_expected.not_to be_compound }
   end
 
@@ -44,5 +44,5 @@ describe Interval do
   specify { expect(perfect_octave).not_to be_compound }
   specify { expect(perfect_11th).to be_compound }
 
-  specify { expect(perfect_11th.simplified).to eq(perfect_fourth) }
+  specify { expect(perfect_11th.simple).to eq(perfect_fourth) }
 end

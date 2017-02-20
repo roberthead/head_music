@@ -52,4 +52,32 @@ describe Letter do
 
     its(:cycle) { is_expected.to eq %w[D E F G A B C] }
   end
+
+  describe 'position' do
+    specify { expect(Letter.get('C').position).to eq 3 }
+  end
+
+  describe 'steps_to' do
+    specify { expect(Letter.get('C').steps_to('G')).to eq 4 }
+    specify { expect(Letter.get('A').steps_to('E')).to eq 4 }
+    specify { expect(Letter.get('F#').steps_to('F#')).to eq 0 }
+    specify { expect(Letter.get('F#').steps_to('E')).to eq 6 }
+    specify { expect(Letter.get('F#').steps_to('E', :descending)).to eq 1 }
+
+    it 'inverts' do
+      Letter::NAMES.each do |from_letter_name|
+        Letter::NAMES.each do |to_letter_name|
+          from_letter = Letter.get(from_letter_name)
+          to_letter = Letter.get(to_letter_name)
+          steps_up = from_letter.steps_to(to_letter, :ascending)
+          steps_down = from_letter.steps_to(to_letter, :descending)
+          if from_letter_name == to_letter_name
+            expect(steps_up + steps_down).to eq 0
+          else
+            expect(steps_up + steps_down).to eq Letter::NAMES.length
+          end
+        end
+      end
+    end
+  end
 end

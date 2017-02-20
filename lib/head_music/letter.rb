@@ -54,6 +54,22 @@ class HeadMusic::Letter
     to_s == value.to_s
   end
 
+  def position
+    NAMES.index(self.to_s) + 1
+  end
+
+  def steps_to(other, direction = :ascending)
+    other = Letter.get(other)
+    other_position = other.position
+    if direction == :descending
+      other_position -= NAMES.length if other_position > position
+      position - other_position
+    else
+      other_position += NAMES.length if other_position < position
+      other_position - position
+    end
+  end
+
   def cycle
     cycle = NAMES
     while cycle.first != self.to_s
