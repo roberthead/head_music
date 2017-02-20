@@ -11,6 +11,15 @@ describe FunctionalInterval do
     its(:shorthand) { is_expected.to eq 'P5' }
     it { is_expected.to be_simple }
     it { is_expected.not_to be_compound }
+
+    describe 'simplification' do
+      its(:simple_number) { is_expected.to eq subject.number }
+      its(:simple_name) { is_expected.to eq subject.name }
+    end
+
+    describe 'inversion' do
+      its(:inversion) { is_expected.to eq 'perfect fourth' }
+    end
   end
 
   context 'given a compound interval' do
@@ -23,6 +32,15 @@ describe FunctionalInterval do
     its(:shorthand) { is_expected.to eq 'm13' }
     it { is_expected.not_to be_simple }
     it { is_expected.to be_compound }
+
+    describe 'simplification' do
+      its(:simple_number) { is_expected.to eq 6 }
+      its(:simple_name) { is_expected.to eq 'minor sixth' }
+    end
+
+    describe 'inversion' do
+      its(:inversion) { is_expected.to eq 'major third' }
+    end
   end
 
   describe 'naming' do
@@ -35,6 +53,11 @@ describe FunctionalInterval do
     specify { expect(FunctionalInterval.new('B2', 'B4').name).to eq 'perfect fifteenth' }
     specify { expect(FunctionalInterval.new('B2', 'E5').name).to eq 'two octaves and a perfect fourth' }
     specify { expect(FunctionalInterval.new('B2', 'B5').name).to eq 'three octaves' }
+    specify { expect(FunctionalInterval.new('B2', 'C6').name).to eq 'three octaves and a minor second' }
     specify { expect(FunctionalInterval.new('C3', 'C#6').name).to eq 'three octaves and an augmented unison' }
+
+    specify { expect(FunctionalInterval.new('C#4', 'Fb4').name).to eq 'doubly diminished fourth' }
+    specify { expect(FunctionalInterval.new('Eb4', 'A#4').name).to eq 'doubly augmented fourth' }
+    specify { expect(FunctionalInterval.new('Cb4', 'F#4').name).to eq 'doubly augmented fourth' }
   end
 end

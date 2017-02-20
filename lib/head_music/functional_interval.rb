@@ -14,6 +14,9 @@ class HeadMusic::FunctionalInterval
 
   attr_reader :lower_pitch, :higher_pitch
 
+  delegate :to_s, to: :name
+  delegate :==, to: :to_s
+
   def initialize(pitch1, pitch2)
     @lower_pitch, @higher_pitch = [HeadMusic::Pitch.get(pitch1), HeadMusic::Pitch.get(pitch2)].sort
   end
@@ -71,11 +74,7 @@ class HeadMusic::FunctionalInterval
   def quality_name
     starting_quality = QUALITY[simple_number_name.to_sym].keys.first
     delta = simple_semitones - QUALITY[simple_number_name.to_sym][starting_quality]
-    if starting_quality == :perfect
-      HeadMusic::Quality::PERFECT_INTERVAL_MODIFICATION[delta]
-    elsif starting_quality == :major
-      HeadMusic::Quality::MAJOR_INTERVAL_MODIFICATION[delta]
-    end
+    HeadMusic::Quality::from(starting_quality, delta)
   end
 
   def simple_number_name
@@ -86,5 +85,13 @@ class HeadMusic::FunctionalInterval
     NUMBER_NAMES[number - 1] || begin
       number.to_s + NAME_SUFFIXES[number % 10]
     end
+  end
+
+  def inversion
+    inverted_low_pitch = lower_pitch
+    while inverted_low_pitch < higher_pitch
+      inverted_low_pitch += 12
+    end
+    HeadMusic::FunctionalInterval.new(higher_pitch, inverted_low_pitch)
   end
 end

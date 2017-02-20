@@ -60,6 +60,20 @@ describe Pitch do
       it { is_expected.to eq 'C4' }
     end
 
+    context "for 'Cb4'" do
+      subject(:pitch) { Pitch.get('Cb4') }
+
+      its(:octave) { is_expected.to eq 4 }
+      its(:midi_note_number) { is_expected.to eq 59 }
+    end
+
+    context "for 'B#4'" do
+      subject(:pitch) { Pitch.get('B#4') }
+
+      its(:octave) { is_expected.to eq 4 }
+      its(:midi_note_number) { is_expected.to eq 72 }
+    end
+
     context "for 'F#-1'" do
       subject(:pitch) { Pitch.get('F#-1') }
 

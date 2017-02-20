@@ -7,6 +7,7 @@ class HeadMusic::Pitch
   delegate :letter, :letter_cycle, to: :spelling
   delegate :accidental, :sharp?, :flat?, to: :spelling
   delegate :pitch_class, to: :spelling
+  delegate :semitones, to: :accidental, prefix: true, allow_nil: true
 
   delegate :smallest_interval_to, to: :pitch_class
 
@@ -55,7 +56,7 @@ class HeadMusic::Pitch
   end
 
   def midi_note_number
-    (octave + 1) * 12 + pitch_class.to_i
+    (octave + 1) * 12 + letter.pitch_class.to_i + accidental_semitones.to_i
   end
 
   alias_method :midi, :midi_note_number

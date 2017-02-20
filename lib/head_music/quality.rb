@@ -32,6 +32,14 @@ class HeadMusic::Quality
     @qualities[identifier] ||= new(identifier) if NAMES.include?(identifier)
   end
 
+  def self.from(starting_quality, delta)
+    if starting_quality == :perfect
+      PERFECT_INTERVAL_MODIFICATION[delta].to_s.gsub(/_+/, ' ')
+    elsif starting_quality == :major
+      MAJOR_INTERVAL_MODIFICATION[delta].to_s.gsub(/_+/, ' ')
+    end
+  end
+
   attr_reader :name
   delegate :to_s, to: :name
 
