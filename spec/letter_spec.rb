@@ -46,4 +46,10 @@ describe Letter do
     specify { expect(Letter.from_pitch_class(11)).to eq 'B' }
     specify { expect(Letter.from_pitch_class(12)).to eq 'C' }
   end
+
+  describe '#cycle' do
+    subject(:letter) { Letter.get('D') }
+
+    its(:cycle) { is_expected.to eq %w[D E F G A B C] }
+  end
 end

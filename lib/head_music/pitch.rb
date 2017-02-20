@@ -4,7 +4,7 @@ class HeadMusic::Pitch
   attr_reader :spelling
   attr_reader :octave
 
-  delegate :letter, to: :spelling
+  delegate :letter, :letter_cycle, to: :spelling
   delegate :accidental, :sharp?, :flat?, to: :spelling
   delegate :pitch_class, to: :spelling
 

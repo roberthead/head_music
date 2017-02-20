@@ -113,4 +113,10 @@ describe Pitch do
       its(:pitch_names) { are_expected.to eq %w[E F# G A B C D E] }
     end
   end
+
+  describe '#letter_cycle' do
+    subject(:pitch) { Pitch.get('D') }
+
+    its(:letter_cycle) { is_expected.to eq %w[D E F G A B C] }
+  end
 end

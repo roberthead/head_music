@@ -9,6 +9,7 @@ class HeadMusic::Spelling
 
   delegate :number, to: :pitch_class, prefix: true
   delegate :to_i, to: :pitch_class_number
+  delegate :cycle, to: :letter, prefix: true
 
   def self.get(identifier)
     from_name(identifier) || from_number(identifier)

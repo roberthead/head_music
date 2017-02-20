@@ -54,5 +54,13 @@ class HeadMusic::Letter
     to_s == value.to_s
   end
 
+  def cycle
+    cycle = NAMES
+    while cycle.first != self.to_s
+      cycle = cycle.rotate
+    end
+    cycle
+  end
+
   private_class_method :new
 end
