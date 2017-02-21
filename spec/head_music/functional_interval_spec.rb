@@ -1,6 +1,20 @@
 require 'spec_helper'
 
 describe FunctionalInterval do
+  describe '.get' do
+    let(:maj3) { FunctionalInterval.get(:major_third) }
+    let(:aug4) { FunctionalInterval.get(:augmented_fourth) }
+    let(:dim5) { FunctionalInterval.get('diminished fifth') }
+
+    specify { expect(maj3.lower_pitch).to eq 'C4' }
+    specify { expect(aug4.lower_pitch).to eq 'C4' }
+    specify { expect(dim5.lower_pitch).to eq 'C4' }
+
+    specify { expect(maj3.higher_pitch).to eq 'E4' }
+    specify { expect(aug4.higher_pitch).to eq 'F#4' }
+    specify { expect(dim5.higher_pitch).to eq 'Gb4' }
+  end
+
   context 'given a simple interval' do
     subject { FunctionalInterval.new('A4', 'E5') }
 

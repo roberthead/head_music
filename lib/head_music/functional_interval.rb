@@ -2,20 +2,62 @@ class HeadMusic::FunctionalInterval
   NUMBER_NAMES = %w[unison second third fourth fifth sixth seventh octave ninth tenth eleventh twelfth thirteenth fourteenth fifteenth sixteenth seventeenth]
   NAME_SUFFIXES = Hash.new('th').merge({ 1 => 'st', 2 => 'nd', 3 => 'rd' })
 
-  QUALITY = {
-    unison: {perfect: 0},
-    second: {major: 2},
-    third: {major: 4},
-    fourth: {perfect: 5},
-    fifth: {perfect: 7},
-    sixth: {major: 9},
-    seventh: {major: 11},
+  QUALITY_SEMITONES = {
+    unison: { perfect: 0 },
+    second: { major: 2 },
+    third: { major: 4 },
+    fourth: { perfect: 5 },
+    fifth: { perfect: 7 },
+    sixth: { major: 9 },
+    seventh: { major: 11 },
+    octave: { perfect: 12 },
+    ninth: { major: 14 },
+    tenth: { major: 16 },
+    eleventh: { perfect: 17 },
+    twelfth: { perfect: 19 },
+    thirteenth: { major: 21 },
+    fourteenth: { major: 23 },
+    fifteenth: { perfect: 24 },
+    sixteenth: { major: 26 },
+    seventeenth: { major: 28 }
   }
 
   attr_reader :lower_pitch, :higher_pitch
 
   delegate :to_s, to: :name
   delegate :==, to: :to_s
+
+  def self.get(name)
+    words = name.to_s.split(/[_ ]+/)
+    quality_name, degree_name = words[0..-2].join(' '), words.last
+    lower_pitch = HeadMusic::Pitch.get('C4')
+    steps = NUMBER_NAMES.index(degree_name)
+    higher_letter = lower_pitch.letter.steps(steps)
+    semitones = degree_quality_semitones.dig(degree_name.to_sym, quality_name.to_sym)
+    higher_pitch = HeadMusic::Pitch.from_number_and_letter(lower_pitch + semitones, higher_letter)
+    new(lower_pitch, higher_pitch)
+  end
+
+  def self.degree_quality_semitones
+    @degree_quality_semitones ||= begin
+      degree_quality_semitones = QUALITY_SEMITONES
+      QUALITY_SEMITONES.each do |degree_name, qualities|
+        default_quality = qualities.keys.first
+        if default_quality == :perfect
+          modification_hash = HeadMusic::Quality::PERFECT_INTERVAL_MODIFICATION.invert
+        else
+          modification_hash = HeadMusic::Quality::MAJOR_INTERVAL_MODIFICATION.invert
+        end
+        default_semitones = qualities[default_quality]
+        modification_hash.each do |quality_name, delta|
+          if quality_name != default_quality
+            degree_quality_semitones[degree_name][quality_name] = default_semitones + delta
+          end
+        end
+      end
+      degree_quality_semitones
+    end
+  end
 
   def initialize(pitch1, pitch2)
     @lower_pitch, @higher_pitch = [HeadMusic::Pitch.get(pitch1), HeadMusic::Pitch.get(pitch2)].sort
@@ -72,8 +114,8 @@ class HeadMusic::FunctionalInterval
   end
 
   def quality_name
-    starting_quality = QUALITY[simple_number_name.to_sym].keys.first
-    delta = simple_semitones - QUALITY[simple_number_name.to_sym][starting_quality]
+    starting_quality = QUALITY_SEMITONES[simple_number_name.to_sym].keys.first
+    delta = simple_semitones - QUALITY_SEMITONES[simple_number_name.to_sym][starting_quality]
     HeadMusic::Quality::from(starting_quality, delta)
   end
 

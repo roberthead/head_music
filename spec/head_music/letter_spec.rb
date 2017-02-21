@@ -57,6 +57,10 @@ describe Letter do
     specify { expect(Letter.get('C').position).to eq 3 }
   end
 
+  describe 'steps' do
+    specify { expect(Letter.get('C').steps(5)).to eq 'A' }
+  end
+
   describe 'steps_to' do
     specify { expect(Letter.get('C').steps_to('G')).to eq 4 }
     specify { expect(Letter.get('A').steps_to('E')).to eq 4 }

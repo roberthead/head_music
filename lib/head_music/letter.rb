@@ -58,6 +58,10 @@ class HeadMusic::Letter
     NAMES.index(self.to_s) + 1
   end
 
+  def steps(num)
+    cycle[num]
+  end
+
   def steps_to(other, direction = :ascending)
     other = Letter.get(other)
     other_position = other.position

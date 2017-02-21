@@ -30,7 +30,7 @@ class HeadMusic::Pitch
   def self.from_number_and_letter(number, letter)
     letter = HeadMusic::Letter.get(letter)
     natural_letter_pitch = get(HeadMusic::Letter.get(letter).pitch_class)
-    natural_letter_pitch += 12 while (number - natural_letter_pitch.to_i) >= 11
+    natural_letter_pitch += 12 while (number - natural_letter_pitch.to_i).to_i >= 11
     natural_letter_pitch = get(natural_letter_pitch)
     accidental_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::PitchClass.get(number))
     accidental = HeadMusic::Accidental.for_interval(accidental_interval)
