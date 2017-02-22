@@ -6,6 +6,7 @@ require "humanize"
 
 require "head_music/accidental"
 require "head_music/circle"
+require "head_music/consonance"
 require "head_music/functional_interval"
 require "head_music/interval"
 require "head_music/key_signature"

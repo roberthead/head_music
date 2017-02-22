@@ -20,4 +20,9 @@ describe Quality do
   describe 'equality' do
     specify { expect(Quality.get(:major)).to eq :major }
   end
+
+  describe 'predicate_methods' do
+    specify { expect(Quality.get(:major)).to be_major }
+    specify { expect(Quality.get(:major)).not_to be_minor }
+  end
 end

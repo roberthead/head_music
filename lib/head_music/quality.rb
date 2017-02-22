@@ -59,5 +59,9 @@ class HeadMusic::Quality
     %w[a e i o u h].include?(name.to_s.first) ? 'an' : 'a'
   end
 
+  NAMES.each do |method_name|
+    define_method(:"#{method_name}?") { name == method_name }
+  end
+
   private_class_method :new
 end

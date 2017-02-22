@@ -15,6 +15,32 @@ describe FunctionalInterval do
     specify { expect(dim5.higher_pitch).to eq 'Gb4' }
   end
 
+  describe 'predicate methods' do
+    context 'given a major third' do
+      let(:maj3) { FunctionalInterval.get(:major_third) }
+
+      specify { expect(maj3).not_to be_perfect }
+      specify { expect(maj3).to be_major }
+      specify { expect(maj3).not_to be_minor }
+      specify { expect(maj3).not_to be_diminished }
+      specify { expect(maj3).not_to be_doubly_diminished }
+      specify { expect(maj3).not_to be_augmented }
+      specify { expect(maj3).not_to be_doubly_augmented }
+
+      specify { expect(maj3).not_to be_unison }
+      specify { expect(maj3).not_to be_second }
+      specify { expect(maj3).to be_third }
+      specify { expect(maj3).not_to be_fourth }
+      specify { expect(maj3).not_to be_fifth }
+      specify { expect(maj3).not_to be_sixth }
+      specify { expect(maj3).not_to be_seventh }
+      specify { expect(maj3).not_to be_octave }
+
+      specify { expect(maj3).to be_skip }
+      specify { expect(maj3).not_to be_step }
+    end
+  end
+
   context 'given a simple interval' do
     subject { FunctionalInterval.new('A4', 'E5') }
 

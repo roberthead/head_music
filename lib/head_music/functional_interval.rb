@@ -26,6 +26,7 @@ class HeadMusic::FunctionalInterval
 
   delegate :to_s, to: :name
   delegate :==, to: :to_s
+  delegate :perfect?, :major?, :minor?, :diminished?, :augmented?, :doubly_diminished?, :doubly_augmented?, to: :quality
 
   def self.get(name)
     words = name.to_s.split(/[_ ]+/)
@@ -135,5 +136,35 @@ class HeadMusic::FunctionalInterval
       inverted_low_pitch += 12
     end
     HeadMusic::FunctionalInterval.new(higher_pitch, inverted_low_pitch)
+  end
+
+  def consonance
+    if quality.perfect?
+      if [number, simple_number].include?(4)
+        HeadMusic::Consonance.get(:dissonant)
+      else
+        HeadMusic::Consonance.get(:perfect)
+      end
+    elsif quality.major? || quality.minor?
+      if [number, simple_number] & [3, 6].empty?
+        HeadMusic::Consonance.get(:dissonant)
+      else
+        HeadMusic::Consonance.get(:imperfect)
+      end
+    else
+      HeadMusic::Consonance.get(:dissonant)
+    end
+  end
+
+  def skip?
+    number > 2
+  end
+
+  def step?
+    number <= 2
+  end
+
+  NUMBER_NAMES.each do |method_name|
+    define_method(:"#{method_name}?") { number_name == method_name }
   end
 end
