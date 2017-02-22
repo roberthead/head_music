@@ -42,8 +42,8 @@ class HeadMusic::Scale
     end
   end
 
-  def spellings
-    pitches.map(&:spelling).map(&:to_s)
+  def spellings(direction: :ascending, octaves: 1)
+    pitches(direction: direction, octaves: octaves).map(&:spelling).map(&:to_s)
   end
 
   def pitch_names(direction: :ascending, octaves: 1)
