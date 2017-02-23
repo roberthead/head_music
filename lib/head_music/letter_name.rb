@@ -1,4 +1,4 @@
-class HeadMusic::Letter
+class HeadMusic::LetterName
   # Defines the natural relationship between the natural letter-named notes
 
   NAMES = ('A'..'G').to_a
@@ -63,7 +63,7 @@ class HeadMusic::Letter
   end
 
   def steps_to(other, direction = :ascending)
-    other = Letter.get(other)
+    other = LetterName.get(other)
     other_position = other.position
     if direction == :descending
       other_position -= NAMES.length if other_position > position

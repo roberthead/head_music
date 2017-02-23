@@ -22,7 +22,7 @@ class HeadMusic::Spelling
   def self.from_name(name)
     if match(name)
       letter_name, accidental_string, _octave = match(name).captures
-      letter = HeadMusic::Letter.get(letter_name)
+      letter = HeadMusic::LetterName.get(letter_name)
       return nil unless letter
       accidental = HeadMusic::Accidental.get(accidental_string)
       fetch_or_create(letter, accidental)
@@ -32,13 +32,13 @@ class HeadMusic::Spelling
   def self.from_number(number)
     return nil unless number == number.to_i
     pitch_class_number = number.to_i % 12
-    letter = HeadMusic::Letter.from_pitch_class(pitch_class_number)
+    letter = HeadMusic::LetterName.from_pitch_class(pitch_class_number)
     from_number_and_letter(number, letter)
   end
 
   def self.from_number_and_letter(number, letter)
-    letter = HeadMusic::Letter.get(letter)
-    natural_letter_pitch_class = HeadMusic::Letter.get(letter).pitch_class
+    letter = HeadMusic::LetterName.get(letter)
+    natural_letter_pitch_class = HeadMusic::LetterName.get(letter).pitch_class
     accidental_interval = letter.pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(number))
     accidental = HeadMusic::Accidental.for_interval(accidental_interval)
     fetch_or_create(letter, accidental)
@@ -51,7 +51,7 @@ class HeadMusic::Spelling
   end
 
   def initialize(letter, accidental = nil)
-    @letter = HeadMusic::Letter.get(letter.to_s)
+    @letter = HeadMusic::LetterName.get(letter.to_s)
     @accidental = HeadMusic::Accidental.get(accidental.to_s)
     accidental_semitones = @accidental ? @accidental.semitones : 0
     @pitch_class = HeadMusic::PitchClass.get(letter.pitch_class + accidental_semitones)
