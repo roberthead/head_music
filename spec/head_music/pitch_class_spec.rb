@@ -59,4 +59,11 @@ describe PitchClass do
     specify { expect(PitchClass.get(11).smallest_interval_to(0)).to eq 1 }
     specify { expect(PitchClass.get(0).smallest_interval_to(11)).to eq -1 }
   end
+
+  describe '#enharmonic?' do
+    subject { PitchClass.get('G#') }
+
+    it { is_expected.to be_enharmonic(PitchClass.get('Ab')) }
+    it { is_expected.not_to be_enharmonic(PitchClass.get('A')) }
+  end
 end

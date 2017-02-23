@@ -92,4 +92,14 @@ describe Spelling do
 
     its(:letter_cycle) { is_expected.to eq %w[D E F G A B C] }
   end
+
+
+  describe '#enharmonic?' do
+    specify { expect(Spelling.get('G#')).to be_enharmonic(Spelling.get('Ab')) }
+    specify { expect(Spelling.get('G#')).not_to be_enharmonic(Spelling.get('G')) }
+    specify { expect(Spelling.get('G#')).not_to be_enharmonic(Spelling.get('A')) }
+
+    specify { expect(Spelling.get('C')).to be_enharmonic(Spelling.get('B#')) }
+    specify { expect(Spelling.get('B#')).to be_enharmonic(Spelling.get('C')) }
+  end
 end

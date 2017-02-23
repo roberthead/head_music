@@ -35,6 +35,7 @@ class HeadMusic::PitchClass
   def ==(value)
     to_i == value.to_i
   end
+  alias_method :enharmonic?, :==
 
   def intervals_to(other)
     delta = other.to_i - to_i

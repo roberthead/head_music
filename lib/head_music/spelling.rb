@@ -1,5 +1,4 @@
-# A Spelling is a pitch class with a letter and possibly an accidental
-
+# A Spelling is a pitch class with a letter name and possibly an accidental
 class HeadMusic::Spelling
   MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/
 
@@ -10,6 +9,7 @@ class HeadMusic::Spelling
   delegate :number, to: :pitch_class, prefix: true
   delegate :to_i, to: :pitch_class_number
   delegate :cycle, to: :letter, prefix: true
+  delegate :enharmonic?, to: :pitch_class
 
   def self.get(identifier)
     from_name(identifier) || from_number(identifier)
