@@ -1,4 +1,4 @@
-class HeadMusic::RhythmicValue
+class HeadMusic::RhythmicUnit
   MULTIPLES = ['whole', 'double whole', 'longa', 'maxima']
   DIVISIONS = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second', 'sixty-fourth', 'hundred twenty-eighth note', 'two hundred fifty-sixth note']
 

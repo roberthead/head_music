@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe RhythmicValue do
-  subject(:rhythmic_value) { RhythmicValue.get(name) }
+describe RhythmicUnit do
+  subject(:rhythmic_value) { RhythmicUnit.get(name) }
 
   context 'for :whole' do
     let(:name) { :whole }
