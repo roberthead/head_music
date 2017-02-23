@@ -8,6 +8,7 @@ class HeadMusic::Octave
   def self.get(identifier)
     from_number(identifier) || from_name(identifier) || default
   end
+  singleton_class.send(:alias_method, :[], :get)
 
   def self.from_number(identifier)
     return nil unless identifier.to_s == identifier.to_i.to_s

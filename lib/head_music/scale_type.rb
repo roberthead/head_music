@@ -64,6 +64,7 @@ class HeadMusic::ScaleType
     attributes = SCALE_TYPES[name]
     @scale_types[name] ||= new(name, attributes)
   end
+  singleton_class.send(:alias_method, :[], :get)
 
   attr_reader :name, :ascending_intervals, :descending_intervals, :parent_name
   alias_method :intervals, :ascending_intervals

@@ -1,16 +1,17 @@
 class HeadMusic::Circle
   def self.of_fifths
-    by_interval(HeadMusic::Interval.named(:perfect_fifth))
+    get(7)
   end
 
   def self.of_fourths
-    by_interval(HeadMusic::Interval.named(:perfect_fourth))
+    get(5)
   end
 
-  def self.by_interval(interval)
+  def self.get(interval = 7)
     @circles ||= {}
     @circles[interval.to_i] ||= new(interval)
   end
+  singleton_class.send(:alias_method, :[], :get)
 
   attr_reader :interval, :pitch_classes
 

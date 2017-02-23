@@ -5,6 +5,7 @@ class HeadMusic::Consonance
     @consonances ||= {}
     @consonances[name.to_sym] ||= new(name) if LEVELS.include?(name.to_s)
   end
+  singleton_class.send(:alias_method, :[], :get)
 
   attr_reader :name
 
