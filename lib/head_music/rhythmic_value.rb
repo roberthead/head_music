@@ -1,13 +1,14 @@
 class HeadMusic::RhythmicValue
   PPQN = PULSES_PER_QUARTER_NOTE = 960
 
-  attr_reader :unit, :dots
+  attr_reader :unit, :dots, :tied_value
 
   delegate :name, to: :unit, prefix: true
 
-  def initialize(unit, dots: nil)
+  def initialize(unit, dots: nil, tied_value: nil)
     @unit = HeadMusic::RhythmicUnit.get(unit)
     @dots = [0, 1, 2, 3].include?(dots) ? dots : 0
+    @tied_value = tied_value
   end
 
   def unit_value
@@ -16,6 +17,10 @@ class HeadMusic::RhythmicValue
 
   def relative_value
     unit_value * multiplier
+  end
+
+  def total_value
+    relative_value + (tied_value ? tied_value.total_value : 0)
   end
 
   def multiplier
@@ -27,15 +32,11 @@ class HeadMusic::RhythmicValue
   end
 
   def ticks
-    PPQN * 4 * relative_value
+    PPQN * 4 * total_value
   end
 
   def measures
     relative_value >= 1 ? relative_value : 0
-  end
-
-  def ticks
-    PPQN * 4 * relative_value
   end
 
   def per_whole
@@ -53,7 +54,15 @@ class HeadMusic::RhythmicValue
     end
   end
 
-  def name
+  def single_value_name
     [name_modifier_prefix, unit_name].reject(&:nil?).join(' ')
+  end
+
+  def name
+    if tied_value
+      [single_value_name, tied_value.name].reject(&:nil?).join(' tied to ')
+    else
+      single_value_name
+    end
   end
 end
