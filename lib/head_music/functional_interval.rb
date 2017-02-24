@@ -33,7 +33,7 @@ class HeadMusic::FunctionalInterval
     quality_name, degree_name = words[0..-2].join(' '), words.last
     lower_pitch = HeadMusic::Pitch.get('C4')
     steps = NUMBER_NAMES.index(degree_name)
-    higher_letter = lower_pitch.letter.steps(steps)
+    higher_letter = lower_pitch.letter_name.steps(steps)
     semitones = degree_quality_semitones.dig(degree_name.to_sym, quality_name.to_sym)
     higher_pitch = HeadMusic::Pitch.from_number_and_letter(lower_pitch + semitones, higher_letter)
     new(lower_pitch, higher_pitch)
@@ -70,7 +70,7 @@ class HeadMusic::FunctionalInterval
   end
 
   def simple_number
-    @simple_number ||= @lower_pitch.letter.steps_to(@higher_pitch.letter) + 1
+    @simple_number ||= @lower_pitch.letter_name.steps_to(@higher_pitch.letter_name) + 1
   end
 
   def simple_semitones

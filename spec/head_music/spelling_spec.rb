@@ -13,7 +13,7 @@ describe Spelling do
     context "for 'C'" do
       subject(:spelling) { Spelling.get('C') }
 
-      its(:letter) { is_expected.to eq 'C' }
+      its(:letter_name) { is_expected.to eq 'C' }
       its(:accidental) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
       it { is_expected.to eq 'C' }
@@ -22,7 +22,7 @@ describe Spelling do
     context "for 'F#'" do
       subject(:spelling) { Spelling.get('F#') }
 
-      its(:letter) { is_expected.to eq 'F' }
+      its(:letter_name) { is_expected.to eq 'F' }
       its(:accidental) { is_expected.to eq '#' }
       its(:pitch_class) { is_expected.to eq 6 }
       it { is_expected.to eq 'F#' }
@@ -45,7 +45,7 @@ describe Spelling do
     context "for 'B#'" do
       subject(:spelling) { Spelling.get('B#') }
 
-      its(:letter) { is_expected.to eq 'B' }
+      its(:letter_name) { is_expected.to eq 'B' }
       its(:accidental) { is_expected.to eq '#' }
       its(:pitch_class) { is_expected.to eq 0 }
       it { is_expected.to eq 'B#' }
@@ -87,10 +87,10 @@ describe Spelling do
     end
   end
 
-  describe '#letter_cycle' do
+  describe '#letter_name_cycle' do
     subject(:spelling) { Spelling.get('D') }
 
-    its(:letter_cycle) { is_expected.to eq %w[D E F G A B C] }
+    its(:letter_name_cycle) { is_expected.to eq %w[D E F G A B C] }
   end
 
 

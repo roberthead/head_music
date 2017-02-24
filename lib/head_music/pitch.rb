@@ -4,7 +4,7 @@ class HeadMusic::Pitch
   attr_reader :spelling
   attr_reader :octave
 
-  delegate :letter, :letter_cycle, to: :spelling
+  delegate :letter_name, :letter_name_cycle, to: :spelling
   delegate :accidental, :sharp?, :flat?, to: :spelling
   delegate :pitch_class, to: :spelling
   delegate :semitones, to: :accidental, prefix: true, allow_nil: true
@@ -28,14 +28,14 @@ class HeadMusic::Pitch
     fetch_or_create(spelling, octave)
   end
 
-  def self.from_number_and_letter(number, letter)
-    letter = HeadMusic::LetterName.get(letter)
-    natural_letter_pitch = get(HeadMusic::LetterName.get(letter).pitch_class)
+  def self.from_number_and_letter(number, letter_name)
+    letter_name = HeadMusic::LetterName.get(letter_name)
+    natural_letter_pitch = get(HeadMusic::LetterName.get(letter_name).pitch_class)
     natural_letter_pitch += 12 while (number - natural_letter_pitch.to_i).to_i >= 11
     natural_letter_pitch = get(natural_letter_pitch)
     accidental_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::PitchClass.get(number))
     accidental = HeadMusic::Accidental.for_interval(accidental_interval)
-    spelling = HeadMusic::Spelling.fetch_or_create(letter, accidental)
+    spelling = HeadMusic::Spelling.fetch_or_create(letter_name, accidental)
     fetch_or_create(spelling, natural_letter_pitch.octave)
   end
 
@@ -57,7 +57,7 @@ class HeadMusic::Pitch
   end
 
   def midi_note_number
-    (octave + 1) * 12 + letter.pitch_class.to_i + accidental_semitones.to_i
+    (octave + 1) * 12 + letter_name.pitch_class.to_i + accidental_semitones.to_i
   end
 
   alias_method :midi, :midi_note_number
@@ -69,6 +69,10 @@ class HeadMusic::Pitch
 
   def to_i
     midi_note_number
+  end
+
+  def natural
+    HeadMusic::Pitch.get(self.to_s.gsub(/[#b]/, ''))
   end
 
   def enharmonic?(other)
@@ -99,6 +103,18 @@ class HeadMusic::Pitch
 
   def scale(scale_type_name = nil)
     HeadMusic::Scale.get(self, scale_type_name)
+  end
+
+  def natural_steps(num_steps)
+    target_letter_name = self.letter_name.steps(num_steps)
+    direction = num_steps >= 0 ? 1 : -1
+    octaves_delta = (num_steps.abs / 7) * direction
+    if num_steps < 0 && target_letter_name.position > letter_name.position
+      octaves_delta -= 1
+    elsif num_steps > 0 && target_letter_name.position < letter_name.position
+      octaves_delta += 1
+    end
+    HeadMusic::Pitch.get([target_letter_name, octave + octaves_delta].join)
   end
 
   private_class_method :new

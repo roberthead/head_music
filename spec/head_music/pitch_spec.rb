@@ -52,7 +52,7 @@ describe Pitch do
     context "for 'C'" do
       subject(:pitch) { Pitch.get('C4') }
 
-      its(:letter) { is_expected.to eq 'C' }
+      its(:letter_name) { is_expected.to eq 'C' }
       its(:accidental) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
       its(:octave) { is_expected.to eq 4 }
@@ -77,7 +77,7 @@ describe Pitch do
     context "for 'F#-1'" do
       subject(:pitch) { Pitch.get('F#-1') }
 
-      its(:letter) { is_expected.to eq 'F' }
+      its(:letter_name) { is_expected.to eq 'F' }
       its(:accidental) { is_expected.to eq '#' }
       its(:pitch_class) { is_expected.to eq 6 }
       its(:octave) { is_expected.to eq -1 }
@@ -88,7 +88,7 @@ describe Pitch do
     context "for 'Bb5'" do
       subject(:pitch) { Pitch.get('Bb5') }
 
-      its(:letter) { is_expected.to eq 'B' }
+      its(:letter_name) { is_expected.to eq 'B' }
       its(:accidental) { is_expected.to eq 'b' }
       its(:pitch_class) { is_expected.to eq 10 }
       its(:octave) { is_expected.to eq 5 }
@@ -99,7 +99,7 @@ describe Pitch do
     context "for 'Eb7'" do
       subject(:pitch) { Pitch.get('Eb7') }
 
-      its(:letter) { is_expected.to eq 'E' }
+      its(:letter_name) { is_expected.to eq 'E' }
       its(:accidental) { is_expected.to eq 'b' }
       its(:pitch_class) { is_expected.to eq 3 }
       its(:octave) { is_expected.to eq 7 }
@@ -128,10 +128,10 @@ describe Pitch do
     end
   end
 
-  describe '#letter_cycle' do
+  describe '#letter_name_cycle' do
     subject(:pitch) { Pitch.get('D') }
 
-    its(:letter_cycle) { is_expected.to eq %w[D E F G A B C] }
+    its(:letter_name_cycle) { is_expected.to eq %w[D E F G A B C] }
   end
 
   describe 'addition' do

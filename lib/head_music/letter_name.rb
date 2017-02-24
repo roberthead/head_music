@@ -1,7 +1,5 @@
 class HeadMusic::LetterName
-  # Defines the natural relationship between the natural letter-named notes
-
-  NAMES = ('A'..'G').to_a
+  NAMES = %w[C D E F G A B]
 
   NATURAL_PITCH_CLASS_NUMBERS = {
     'C' => 0,
@@ -23,18 +21,18 @@ class HeadMusic::LetterName
   singleton_class.send(:alias_method, :[], :get)
 
   def self.from_name(name)
-    @letters ||= {}
+    @letter_names ||= {}
     name = name.to_s.first.upcase
-    @letters[name] ||= new(name) if NAMES.include?(name)
+    @letter_names[name] ||= new(name) if NAMES.include?(name)
   end
 
   def self.from_pitch_class(pitch_class)
-    @letters ||= {}
+    @letter_names ||= {}
     return nil if pitch_class.to_s == pitch_class
     pitch_class = pitch_class.to_i % 12
     name = NAMES.detect { |name| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[name] }
     name ||= HeadMusic::PitchClass::PREFERRED_SPELLINGS[pitch_class].first
-    @letters[name] ||= new(name) if NAMES.include?(name)
+    @letter_names[name] ||= new(name) if NAMES.include?(name)
   end
 
   attr_reader :name
@@ -60,7 +58,7 @@ class HeadMusic::LetterName
   end
 
   def steps(num)
-    cycle[num]
+    HeadMusic::LetterName.get(cycle[num % NAMES.length])
   end
 
   def steps_to(other, direction = :ascending)

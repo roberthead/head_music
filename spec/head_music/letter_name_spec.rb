@@ -3,23 +3,23 @@ require 'spec_helper'
 describe LetterName do
   describe '.get' do
     context "fetched with 'A'" do
-      subject(:letter) { LetterName.get('A') }
+      subject(:letter_name) { LetterName.get('A') }
 
-      specify { expect(letter.pitch_class).to eq 9 }
-      specify { expect(letter).to eq 'A' }
+      specify { expect(letter_name.pitch_class).to eq 9 }
+      specify { expect(letter_name).to eq 'A' }
     end
 
     context "fetched with 'd#7'" do
-      subject(:letter) { LetterName.get('d#7') }
+      subject(:letter_name) { LetterName.get('d#7') }
 
-      specify { expect(letter.pitch_class).to eq 2 }
-      specify { expect(letter).to eq 'D' }
+      specify { expect(letter_name.pitch_class).to eq 2 }
+      specify { expect(letter_name).to eq 'D' }
     end
 
     context "fetched with 'X'" do
-      subject(:letter) { LetterName.get('X') }
+      subject(:letter_name) { LetterName.get('X') }
 
-      specify { expect(letter).to be_nil }
+      specify { expect(letter_name).to be_nil }
     end
 
     context 'when given an instance' do
@@ -48,17 +48,14 @@ describe LetterName do
   end
 
   describe '#cycle' do
-    subject(:letter) { LetterName.get('D') }
+    subject(:letter_name) { LetterName.get('D') }
 
     its(:cycle) { is_expected.to eq %w[D E F G A B C] }
   end
 
-  describe 'position' do
-    specify { expect(LetterName.get('C').position).to eq 3 }
-  end
-
   describe 'steps' do
     specify { expect(LetterName.get('C').steps(5)).to eq 'A' }
+    specify { expect(LetterName.get('C').steps(8)).to eq 'D' }
   end
 
   describe 'steps_to' do
