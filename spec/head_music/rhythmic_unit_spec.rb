@@ -1,13 +1,13 @@
 require 'spec_helper'
 
 describe RhythmicUnit do
-  subject(:rhythmic_value) { RhythmicUnit.get(name) }
+  subject(:rhythmic_unit) { RhythmicUnit.get(name) }
 
   context 'for :whole' do
     let(:name) { :whole }
 
     its(:relative_value) { is_expected.to eq 1 }
-    its(:note_head) { is_expected.to eq :open }
+    its(:notehead) { is_expected.to eq :open }
     it { is_expected.not_to have_stem }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'semibreve' }
@@ -17,7 +17,7 @@ describe RhythmicUnit do
     let(:name) { :half }
 
     its(:relative_value) { is_expected.to eq 1.0/2 }
-    its(:note_head) { is_expected.to eq :open }
+    its(:notehead) { is_expected.to eq :open }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'minim' }
@@ -27,7 +27,7 @@ describe RhythmicUnit do
     let(:name) { :quarter }
 
     its(:relative_value) { is_expected.to eq 1.0/4 }
-    its(:note_head) { is_expected.to eq :closed }
+    its(:notehead) { is_expected.to eq :closed }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'crotchet' }
@@ -37,7 +37,7 @@ describe RhythmicUnit do
     let(:name) { :eighth }
 
     its(:relative_value) { is_expected.to eq 1.0/8 }
-    its(:note_head) { is_expected.to eq :closed }
+    its(:notehead) { is_expected.to eq :closed }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 1 }
     its(:british_name) { is_expected.to eq 'quaver' }
@@ -47,7 +47,7 @@ describe RhythmicUnit do
     let(:name) { :sixteenth }
 
     its(:relative_value) { is_expected.to eq 1.0/16 }
-    its(:note_head) { is_expected.to eq :closed }
+    its(:notehead) { is_expected.to eq :closed }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 2 }
     its(:british_name) { is_expected.to eq 'semiquaver' }
@@ -57,7 +57,7 @@ describe RhythmicUnit do
     let(:name) { 'thirty-second' }
 
     its(:relative_value) { is_expected.to eq 1.0/32 }
-    its(:note_head) { is_expected.to eq :closed }
+    its(:notehead) { is_expected.to eq :closed }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 3 }
     its(:british_name) { is_expected.to eq 'demisemiquaver' }
@@ -67,10 +67,18 @@ describe RhythmicUnit do
     let(:name) { 'double whole' }
 
     its(:relative_value) { is_expected.to eq 2 }
-    its(:note_head) { is_expected.to eq :breve }
+    its(:notehead) { is_expected.to eq :breve }
     it { is_expected.not_to have_stem }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'breve' }
+  end
+
+  context 'when given an instance' do
+    let(:instance) { described_class.get(:quarter) }
+
+    it 'returns that instance' do
+      expect(described_class.get(instance)).to be instance
+    end
   end
 
   describe '.new' do
