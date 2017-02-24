@@ -73,4 +73,12 @@ describe Clef do
     specify { expect(clef.space_pitch(6)).to eq 'D4' }
     specify { expect(clef.line_pitch(7)).to eq 'E4' }
   end
+
+  context 'when given an instance' do
+    let(:instance) { described_class.get(:french) }
+
+    it 'returns that instance' do
+      expect(described_class.get(instance)).to be instance
+    end
+  end
 end

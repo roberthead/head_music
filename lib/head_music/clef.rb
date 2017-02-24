@@ -20,14 +20,16 @@ class HeadMusic::Clef
   def self.get(name)
     name = name.to_s
     @clefs ||= {}
-    @clefs[name.to_s.to_sym] = new(name)
+    key = name.to_s.downcase.gsub(/\W+/, '_').to_sym
+    @clefs[key] ||= new(name)
   end
 
   attr_reader :name, :pitch, :line
+  delegate :to_s, to: :name
 
   def initialize(name)
     @name = name.to_s
-    clef_data = CLEFS.detect { |clef| clef[:names].include?(name) }
+    clef_data = CLEFS.detect { |clef| clef[:names].map(&:downcase).include?(name.downcase) }
     @pitch = HeadMusic::Pitch.get(clef_data[:pitch])
     @line = clef_data[:line]
   end
@@ -50,5 +52,9 @@ class HeadMusic::Clef
       steps = (space_number - line) * 2 + 1
       pitch.natural_steps(steps)
     end
+  end
+
+  def ==(other)
+    to_s == other.to_s
   end
 end
