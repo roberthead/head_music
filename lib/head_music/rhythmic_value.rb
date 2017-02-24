@@ -27,16 +27,8 @@ class HeadMusic::RhythmicValue
     (0..dots).reduce(0) { |sum, i| sum += (1.0/2)**i }
   end
 
-  def measures
-    @denominator > 1 ? 0 : relative_value
-  end
-
   def ticks
     PPQN * 4 * total_value
-  end
-
-  def measures
-    relative_value >= 1 ? relative_value : 0
   end
 
   def per_whole
