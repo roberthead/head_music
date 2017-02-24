@@ -23,6 +23,7 @@ require 'head_music/rhythmic_value'
 require 'head_music/scale'
 require 'head_music/scale_type'
 require 'head_music/spelling'
+require 'head_music/staff'
 
 module HeadMusic
 end
