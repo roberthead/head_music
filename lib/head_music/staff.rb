@@ -7,6 +7,6 @@ class HeadMusic::Staff
   def initialize(default_clef, instrument: nil, line_count: nil)
     @default_clef = HeadMusic::Clef.get(default_clef)
     @line_count = line_count || DEFAULT_LINE_COUNT
-    @instrument = instrument
+    @instrument = HeadMusic::Instrument.get(instrument) if instrument
   end
 end

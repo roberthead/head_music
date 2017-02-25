@@ -12,6 +12,6 @@ describe Staff do
 
     its(:clef) { is_expected.to eq :alto }
     its(:line_count) { is_expected.to be 5 }
-    its(:instrument) { is_expected.to be :viola }
+    its(:instrument) { is_expected.to eq :viola }
   end
 end
