@@ -43,7 +43,6 @@ describe RhythmicValue do
     its(:total_value) { is_expected.to eq 0.5 }
   end
 
-
   context 'for a half tied to a quarter tied to an eighth' do
     subject(:value) { RhythmicValue.new(:half, tied_value: second_value) }
     let(:second_value) { RhythmicValue.new(:quarter, tied_value: third_value) }
