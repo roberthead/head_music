@@ -20,7 +20,7 @@ class HeadMusic::Clef
   def self.get(name)
     name = name.to_s
     @clefs ||= {}
-    key = name.to_s.downcase.gsub(/\W+/, '_').to_sym
+    key = HeadMusic::Utilities::HashKey.for(name)
     @clefs[key] ||= new(name)
   end
 

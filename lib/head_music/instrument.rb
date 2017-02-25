@@ -14,7 +14,7 @@ class HeadMusic::Instrument
 
   def self.get(name)
     @instruments ||= {}
-    key = name.to_s.downcase.gsub(/\W+/, '_').to_sym
+    key = HeadMusic::Utilities::HashKey.for(name)
     @instruments[key] ||= new(name.to_s)
   end
 
@@ -26,11 +26,11 @@ class HeadMusic::Instrument
   end
 
   def data
-    @data ||= INSTRUMENTS[key]
+    @data ||= INSTRUMENTS[hash_key]
   end
 
-  def key
-    name.to_s.downcase.gsub(/\W+/, '_').to_sym
+  def hash_key
+    HeadMusic::Utilities::HashKey.for(name)
   end
 
   def family

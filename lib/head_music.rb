@@ -25,7 +25,7 @@ require 'head_music/scale'
 require 'head_music/scale_type'
 require 'head_music/spelling'
 require 'head_music/staff'
-require 'head_music/system'
+require 'head_music/utilities/hash_key'
 
 module HeadMusic
 end
