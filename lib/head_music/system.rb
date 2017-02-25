@@ -1,7 +1,7 @@
 class HeadMusic::System
   attr_reader :staves
 
-  def initialize(staves:)
+  def initialize(staves: [])
     @staves = staves
   end
 
