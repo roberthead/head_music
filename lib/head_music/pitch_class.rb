@@ -7,7 +7,7 @@ class HeadMusic::PitchClass
 
   def self.get(identifier)
     @pitch_classes ||= {}
-    number = Spelling.get(identifier).pitch_class.to_i if Spelling.match(identifier)
+    number = HeadMusic::Spelling.get(identifier).pitch_class.to_i if HeadMusic::Spelling.match(identifier)
     number ||= identifier.to_i % 12
     @pitch_classes[number] ||= new(number)
   end

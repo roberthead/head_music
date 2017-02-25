@@ -80,7 +80,7 @@ class HeadMusic::Pitch
   end
 
   def +(value)
-    Pitch.get(self.to_i + value.to_i)
+    HeadMusic::Pitch.get(self.to_i + value.to_i)
   end
 
   def -(value)

@@ -62,7 +62,7 @@ class HeadMusic::LetterName
   end
 
   def steps_to(other, direction = :ascending)
-    other = LetterName.get(other)
+    other = HeadMusic::LetterName.get(other)
     other_position = other.position
     if direction == :descending
       other_position -= NAMES.length if other_position > position
