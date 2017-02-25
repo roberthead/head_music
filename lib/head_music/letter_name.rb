@@ -31,7 +31,7 @@ class HeadMusic::LetterName
     return nil if pitch_class.to_s == pitch_class
     pitch_class = pitch_class.to_i % 12
     name = NAMES.detect { |name| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[name] }
-    name ||= HeadMusic::PitchClass::PREFERRED_SPELLINGS[pitch_class].first
+    name ||= HeadMusic::PitchClass::SHARP_SPELLINGS[pitch_class].first
     @letter_names[name] ||= new(name) if NAMES.include?(name)
   end
 

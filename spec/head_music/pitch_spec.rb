@@ -24,7 +24,7 @@ describe Pitch do
 
     context 'when given a midi note number' do
       specify { expect(Pitch.get(60)).to eq 'C4' }
-      specify { expect(Pitch.get(70)).to eq 'Bb4' }
+      specify { expect(Pitch.get(70)).to eq 'A#4' }
     end
   end
 

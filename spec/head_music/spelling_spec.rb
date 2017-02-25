@@ -55,7 +55,7 @@ describe Spelling do
       subject(:spelling) { Spelling.get(PitchClass.get(3)) }
 
       its(:pitch_class) { is_expected.to eq 3 }
-      it { is_expected.to eq 'Eb' }
+      it { is_expected.to eq 'D#' }
     end
 
     context "given a pitch class number" do
