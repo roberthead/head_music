@@ -1,0 +1,16 @@
+## Customize the test machine
+machine:
+  timezone:
+    America/Los_Angeles # Set the timezone
+
+  # Version of ruby to use
+  ruby:
+    version:
+      2.3.0
+
+## Customize deployment commands
+deployment:
+  staging:
+    branch: master
+    heroku:
+      appname: juxtacompose
