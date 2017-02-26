@@ -8,8 +8,10 @@ class HeadMusic::Meter
 
   def self.get(identifier)
     identifer = identifer.to_s
-    identifier = NAMED[identifier.to_sym] || identifier
-    new(*identifier.split('/').map(&:to_i))
+    hash_key = HeadMusic::Utilities::HashKey.for(identifier)
+    time_signature_string = NAMED[hash_key] || identifier
+    @meters ||= {}
+    @meters[hash_key] ||= new(*time_signature_string.split('/').map(&:to_i))
   end
 
   def initialize(top_number, bottom_number)
