@@ -7,10 +7,3 @@ machine:
   ruby:
     version:
       2.3.0
-
-## Customize deployment commands
-deployment:
-  staging:
-    branch: master
-    heroku:
-      appname: juxtacompose
