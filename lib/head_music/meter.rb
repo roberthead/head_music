@@ -42,11 +42,52 @@ class HeadMusic::Meter
     compound? ? top_number / 3 : top_number
   end
 
+  def counts_per_measure
+    top_number
+  end
+
+  def beat_strength(count, ticks: 0)
+    return 100 if count == 1 && ticks == 0
+    return 80 if strong_counts.include?(count) && ticks == 0
+    return 60 if ticks == 0
+    divisions = (1..5).map { |sixths| RhythmicValue::PPQN * sixths / 6 }
+    return 40 if divisions.include?(ticks)
+    20
+  end
+
+  def count_unit
+    HeadMusic::RhythmicUnit.for_denominator_value(bottom_number)
+  end
+
+  def beat_unit
+    @beat_unit ||=
+      if compound?
+        unit = HeadMusic::RhythmicUnit.for_denominator_value(bottom_number / 2)
+        HeadMusic::RhythmicValue.new(unit, dots: 1)
+      else
+        HeadMusic::RhythmicValue.new(count_unit)
+      end
+  end
+
   def to_s
     [top_number, bottom_number].join('/')
   end
 
   def ==(other)
     to_s == other.to_s
+  end
+
+  def strong_counts
+    @strong_counts ||= begin
+      (1..counts_per_measure).select do |count|
+        count == 1 ||
+        count == counts_per_measure / 2.0 + 1 ||
+        (
+          counts_per_measure % 3 == 0 &&
+          counts_per_measure > 6 &&
+          count % 3 == 1
+        )
+      end
+    end
   end
 end

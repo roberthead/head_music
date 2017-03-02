@@ -7,9 +7,14 @@ class HeadMusic::RhythmicUnit
 
   def self.get(name)
     @rhythmic_units ||= {}
-    @rhythmic_units[name.to_s] ||= new(name.to_s)
+    hash_key = HeadMusic::Utilities::HashKey.for(name)
+    @rhythmic_units[hash_key] ||= new(name.to_s)
   end
   singleton_class.send(:alias_method, :[], :get)
+
+  def self.for_denominator_value(denominator)
+    get(DIVISIONS[Math.log2(denominator).to_i])
+  end
 
   attr_reader :name, :numerator, :denominator
   delegate :to_s, to: :name

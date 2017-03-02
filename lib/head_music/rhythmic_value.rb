@@ -4,6 +4,7 @@ class HeadMusic::RhythmicValue
   attr_reader :unit, :dots, :tied_value
 
   delegate :name, to: :unit, prefix: true
+  delegate :to_s, to: :name
 
   def initialize(unit, dots: nil, tied_value: nil)
     @unit = HeadMusic::RhythmicUnit.get(unit)
@@ -56,5 +57,9 @@ class HeadMusic::RhythmicValue
     else
       single_value_name
     end
+  end
+
+  def ==(other)
+    to_s == other.to_s
   end
 end
