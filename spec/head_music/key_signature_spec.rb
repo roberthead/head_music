@@ -1,6 +1,24 @@
 require 'spec_helper'
 
 describe KeySignature do
+  context '.get' do
+    context 'when given an instance' do
+      let(:instance) { described_class.get('F# major') }
+
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
+    end
+
+    context 'when given only a tonic' do
+      subject(:key_signature) { KeySignature.get('Eb') }
+
+      it 'assumes the major quality' do
+        expect(key_signature).to eq 'Eb major'
+      end
+    end
+  end
+
   let(:scale_type) { nil }
   subject(:key_signature) { KeySignature.new(tonic, scale_type) }
 

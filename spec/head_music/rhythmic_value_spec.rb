@@ -53,10 +53,4 @@ describe RhythmicValue do
     its(:relative_value) { is_expected.to eq 0.5 }
     its(:total_value) { is_expected.to eq 7.0 / 8 }
   end
-
-  describe 'DIVISIONS' do
-    it 'lists tick values' do
-      expect(RhythmicValue::DIVISIONS).to eq [320, 480, 640]
-    end
-  end
 end

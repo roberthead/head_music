@@ -14,6 +14,18 @@ class HeadMusic::Meter
     @meters[hash_key] ||= new(*time_signature_string.split('/').map(&:to_i))
   end
 
+  def self.default
+    get('4/4')
+  end
+
+  def self.common_time
+    get(:common_time)
+  end
+
+  def self.cut_time
+    get(:cut_time)
+  end
+
   def initialize(top_number, bottom_number)
     @top_number, @bottom_number = top_number, bottom_number
   end
@@ -46,12 +58,23 @@ class HeadMusic::Meter
     top_number
   end
 
-  def beat_strength(count, ticks: 0)
-    return 100 if count == 1 && ticks == 0
-    return 80 if strong_counts.include?(count) && ticks == 0
-    return 60 if ticks == 0
-    return 40 if HeadMusic::RhythmicValue::DIVISIONS.include?(ticks)
+  def beat_strength(count, tick: 0)
+    return 100 if count == 1 && tick == 0
+    return 80 if strong_counts.include?(count) && tick == 0
+    return 60 if tick == 0
+    return 40 if strong_ticks.include?(tick)
     20
+  end
+
+  def ticks_per_count
+    @ticks_per_count ||= count_unit.ticks
+  end
+
+  def strong_ticks
+    @strong_ticks ||=
+      [2,3,4].map do |sixths|
+        ticks_per_count * (sixths / 6.0)
+      end
   end
 
   def count_unit

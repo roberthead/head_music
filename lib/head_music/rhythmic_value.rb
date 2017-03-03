@@ -1,7 +1,4 @@
 class HeadMusic::RhythmicValue
-  PPQN = PULSES_PER_QUARTER_NOTE = 960
-  DIVISIONS = (2..4).map { |sixths| PPQN * sixths / 6 }
-
   attr_reader :unit, :dots, :tied_value
 
   delegate :name, to: :unit, prefix: true
@@ -30,7 +27,7 @@ class HeadMusic::RhythmicValue
   end
 
   def ticks
-    PPQN * 4 * total_value
+    HeadMusic::RhythmicUnit::PPQN * 4 * total_value
   end
 
   def per_whole

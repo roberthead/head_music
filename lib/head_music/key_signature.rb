@@ -1,15 +1,28 @@
 class HeadMusic::KeySignature
   attr_reader :tonic_spelling
-  attr_reader :scale_type
+  attr_reader :quality_name
 
   SHARPS = %w{F# C# G# D# A# E# B#}
   FLATS = %w{Bb Eb Ab Db Gb Cb Fb}
 
-  delegate :pitch_class, to: :tonic_spelling, prefix: :tonic
+  def self.default
+    @default ||= new('C', :major)
+  end
 
-  def initialize(tonic_spelling, scale_type = nil)
+  def self.get(identifier)
+    return identifier if identifier.is_a?(HeadMusic::KeySignature)
+    @key_signatures ||= {}
+    tonic_spelling, quality_name = identifier.split(/\s/)
+    hash_key = HeadMusic::Utilities::HashKey.for(identifier)
+    @key_signatures[hash_key] ||= new(tonic_spelling, quality_name)
+  end
+
+  delegate :pitch_class, to: :tonic_spelling, prefix: :tonic
+  delegate :to_s, to: :name
+
+  def initialize(tonic_spelling, quality_name = nil)
     @tonic_spelling = tonic_spelling
-    @scale_type = scale_type || :major
+    @quality_name = quality_name || :major
   end
 
   def sharps
@@ -21,11 +34,11 @@ class HeadMusic::KeySignature
   end
 
   def num_sharps
-    (HeadMusic::Circle.of_fifths.index(tonic_pitch_class) - scale_type_adjustment) % 12
+    (HeadMusic::Circle.of_fifths.index(tonic_pitch_class) - quality_name_adjustment) % 12
   end
 
   def num_flats
-    (HeadMusic::Circle.of_fourths.index(tonic_pitch_class) + scale_type_adjustment) % 12
+    (HeadMusic::Circle.of_fourths.index(tonic_pitch_class) + quality_name_adjustment) % 12
   end
 
   def sharps_or_flats
@@ -34,18 +47,26 @@ class HeadMusic::KeySignature
     num_sharps <= num_flats ? sharps : flats
   end
 
+  def name
+    [tonic_spelling.to_s, quality_name.to_s].join(' ')
+  end
+
+  def ==(other)
+    self.to_s == other.to_s
+  end
+
   private
 
-  def scale_type_adjustment
-    scale_type == :minor ? 3 : 0
+  def quality_name_adjustment
+    quality_name == :minor ? 3 : 0
   end
 
   def major?
-    @scale_type.to_sym == :major
+    @quality_name.to_sym == :major
   end
 
   def minor?
-    @scale_type.to_sym == :minor
+    @quality_name.to_sym == :minor
   end
 
   def relative_major_pitch_class

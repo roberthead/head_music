@@ -1,9 +1,11 @@
 class HeadMusic::RhythmicUnit
   MULTIPLES = ['whole', 'double whole', 'longa', 'maxima']
-  DIVISIONS = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second', 'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth']
+  FRACTIONS = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second', 'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth']
 
   BRITISH_MULTIPLE_NAMES = %w[semibreve breve longa maxima]
   BRITISH_DIVISION_NAMES = %w[semibreve minim crotchet quaver semiquaver demisemiquaver hemidemisemiquaver semihemidemisemiquaver demisemihemidemisemiquaver]
+
+  PPQN = PULSES_PER_QUARTER_NOTE = 960
 
   def self.get(name)
     @rhythmic_units ||= {}
@@ -13,7 +15,7 @@ class HeadMusic::RhythmicUnit
   singleton_class.send(:alias_method, :[], :get)
 
   def self.for_denominator_value(denominator)
-    get(DIVISIONS[Math.log2(denominator).to_i])
+    get(FRACTIONS[Math.log2(denominator).to_i])
   end
 
   attr_reader :name, :numerator, :denominator
@@ -22,11 +24,15 @@ class HeadMusic::RhythmicUnit
   def initialize(canonical_name)
     @name ||= canonical_name
     @numerator ||= MULTIPLES.include?(name) ? 2**MULTIPLES.index(name) : 1
-    @denominator ||= DIVISIONS.include?(name) ? 2**DIVISIONS.index(name) : 1
+    @denominator ||= FRACTIONS.include?(name) ? 2**FRACTIONS.index(name) : 1
   end
 
   def relative_value
     @numerator.to_f / @denominator
+  end
+
+  def ticks
+    PPQN * 4 * relative_value
   end
 
   def notehead
@@ -45,7 +51,7 @@ class HeadMusic::RhythmicUnit
   end
 
   def flags
-    DIVISIONS.include?(name) ? [DIVISIONS.index(name) - 2, 0].max : 0
+    FRACTIONS.include?(name) ? [FRACTIONS.index(name) - 2, 0].max : 0
   end
 
   def has_stem?
@@ -55,8 +61,8 @@ class HeadMusic::RhythmicUnit
   def british_name
     if MULTIPLES.include?(name)
       BRITISH_MULTIPLE_NAMES[MULTIPLES.index(name)]
-    elsif DIVISIONS.include?(name)
-      BRITISH_DIVISION_NAMES[DIVISIONS.index(name)]
+    elsif FRACTIONS.include?(name)
+      BRITISH_DIVISION_NAMES[FRACTIONS.index(name)]
     end
   end
 

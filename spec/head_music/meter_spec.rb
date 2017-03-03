@@ -24,6 +24,7 @@ describe Meter do
       its(:counts_per_measure) { are_expected.to eq 3 }
       its(:beat_unit) { is_expected.to eq :quarter }
       its(:strong_counts) { are_expected.to eq [1] }
+      its(:ticks_per_count) { are_expected.to eq 960 }
     end
 
     context 'given 6/8' do
@@ -40,6 +41,7 @@ describe Meter do
       its(:counts_per_measure) { are_expected.to eq 6 }
       its(:beat_unit) { is_expected.to eq 'dotted quarter' }
       its(:strong_counts) { are_expected.to eq [1, 4] }
+      its(:ticks_per_count) { are_expected.to eq 480 }
     end
 
     context 'given 9/8' do
@@ -56,6 +58,7 @@ describe Meter do
       its(:counts_per_measure) { are_expected.to eq 9 }
       its(:beat_unit) { is_expected.to eq 'dotted quarter' }
       its(:strong_counts) { are_expected.to eq [1, 4, 7] }
+      its(:ticks_per_count) { are_expected.to eq 480 }
     end
 
     context 'given :common_time' do
@@ -72,6 +75,7 @@ describe Meter do
       its(:counts_per_measure) { are_expected.to eq 4 }
       its(:beat_unit) { is_expected.to eq 'quarter' }
       its(:strong_counts) { are_expected.to eq [1, 3] }
+      its(:ticks_per_count) { are_expected.to eq 960 }
     end
 
     context 'given :cut_time' do
@@ -88,6 +92,7 @@ describe Meter do
       its(:counts_per_measure) { are_expected.to eq 2 }
       its(:beat_unit) { is_expected.to eq :half }
       its(:strong_counts) { are_expected.to eq [1, 2] }
+      its(:ticks_per_count) { are_expected.to eq 1920 }
     end
   end
 
@@ -99,8 +104,13 @@ describe Meter do
       specify { expect(meter.beat_strength(4)).to be > meter.beat_strength(3) }
       specify { expect(meter.beat_strength(3)).to eq meter.beat_strength(5) }
       specify { expect(meter.beat_strength(3)).to eq meter.beat_strength(2) }
-      specify { expect(meter.beat_strength(3)).to be > meter.beat_strength(1, ticks: RhythmicValue::PPQN / 2) }
-      specify { expect(meter.beat_strength(1, ticks: RhythmicValue::PPQN / 2)).to be > meter.beat_strength(1, ticks: RhythmicValue::PPQN / 2 + Random.rand(RhythmicValue::PPQN / 6 - 1) + 1) }
+      specify { expect(meter.beat_strength(3)).to be > meter.beat_strength(1, tick: 240) }
+      specify { expect(meter.beat_strength(1, tick: 240)).to be > meter.beat_strength(1, tick: 270) }
     end
+  end
+
+  describe 'named meter class methods' do
+    specify { expect(Meter.common_time).to eq Meter.get('4/4') }
+    specify { expect(Meter.cut_time).to eq Meter.get('2/2') }
   end
 end
