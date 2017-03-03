@@ -1,8 +1,7 @@
 class HeadMusic::Scale
   def self.get(root_pitch, scale_type_name = nil)
     root_pitch = HeadMusic::Pitch.get(root_pitch)
-    scale_type_name ||= :major
-    scale_type ||= HeadMusic::ScaleType.get(scale_type_name)
+    scale_type ||= HeadMusic::ScaleType.get(scale_type_name || :major)
     @scales ||= {}
     @scales[root_pitch.to_s] ||= {}
     @scales[root_pitch.to_s][scale_type.name] ||= new(root_pitch, scale_type)
@@ -18,28 +17,32 @@ class HeadMusic::Scale
   def pitches(direction: :ascending, octaves: 1)
     @pitches ||= {}
     @pitches[direction] ||= {}
-    @pitches[direction][octaves] ||= begin
-      letter_name_cycle = root_pitch.letter_name_cycle
-      semitones_from_root = 0
-      [root_pitch].tap do |pitches|
-        if [:ascending, :both].include?(direction)
+    @pitches[direction][octaves] ||= determine_scale_pitches(direction, octaves)
+  end
+
+  def determine_scale_pitches(direction, octaves)
+    letter_name_cycle = root_pitch.letter_name_cycle
+    semitones_from_root = 0
+    [root_pitch].tap do |pitches|
+      [:ascending, :descending].each do |single_direction|
+        if [single_direction, :both].include?(direction)
           (1..octaves).each do |i|
-            scale_type.ascending_intervals.each_with_index do |semitones, i|
-              semitones_from_root += semitones
-              pitches << pitch_for_step(i+1, semitones_from_root, :ascending)
-            end
-          end
-        end
-        if [:descending, :both].include?(direction)
-          (1..octaves).each do |i|
-            scale_type.descending_intervals.each_with_index do |semitones, i|
-              semitones_from_root -= semitones
-              pitches << pitch_for_step(i+1, semitones_from_root, :descending)
+            direction_intervals(single_direction).each_with_index do |semitones, i|
+              semitones_from_root += semitones * direction_sign(single_direction)
+              pitches << pitch_for_step(i+1, semitones_from_root, single_direction)
             end
           end
         end
       end
     end
+  end
+
+  def direction_sign(direction)
+    direction == :descending ? -1 : 1
+  end
+
+  def direction_intervals(direction)
+    scale_type.send("#{direction}_intervals")
   end
 
   def spellings(direction: :ascending, octaves: 1)
