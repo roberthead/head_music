@@ -1,6 +1,8 @@
 # HeadMusic
 
 ![Build status](https://circleci.com/gh/roberthead/head_music.svg?style=shield&circle-token=8b39a6f5e809e9baa321e0f13aa06c70c6511794)
+[![Code Climate](https://codeclimate.com/github/roberthead/head_music/badges/gpa.svg)](https://codeclimate.com/github/roberthead/head_music)
+[![Test Coverage](https://codeclimate.com/github/roberthead/head_music/badges/coverage.svg)](https://codeclimate.com/github/roberthead/head_music/coverage)
 
 The *head_music* ruby gem models the elements of western music theory, such as note names, scales, key signatures, intervals, and chords.
 
