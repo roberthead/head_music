@@ -50,8 +50,7 @@ class HeadMusic::Meter
     return 100 if count == 1 && ticks == 0
     return 80 if strong_counts.include?(count) && ticks == 0
     return 60 if ticks == 0
-    divisions = (1..5).map { |sixths| RhythmicValue::PPQN * sixths / 6 }
-    return 40 if divisions.include?(ticks)
+    return 40 if HeadMusic::RhythmicValue::DIVISIONS.include?(ticks)
     20
   end
 
