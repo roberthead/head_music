@@ -32,6 +32,9 @@ require 'head_music/scale_type'
 require 'head_music/spelling'
 require 'head_music/staff'
 require 'head_music/voice'
+require 'head_music/style/analysis'
+require 'head_music/style/rule'
+require 'head_music/style/rules/require_notes'
 require 'head_music/utilities/hash_key'
 
 module HeadMusic

@@ -15,6 +15,10 @@ class HeadMusic::Voice
     }
   end
 
+  def notes
+    @placements.select(&:note?)
+  end
+
   private
 
   def insert_into_placements(placement)

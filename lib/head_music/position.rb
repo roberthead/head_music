@@ -43,7 +43,7 @@ class HeadMusic::Position
 
   private
 
-  def ensure_state(composition, measure_number, count, tick)
+  def ensure_state(composition, measure_number, count, tick = nil)
     @composition = composition
     @measure_number = measure_number.to_i
     @count = (count || 1).to_i
