@@ -11,7 +11,6 @@ class HeadMusic::Circle
     @circles ||= {}
     @circles[interval.to_i] ||= new(interval)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   attr_reader :interval, :pitch_classes
 

@@ -10,7 +10,6 @@ class HeadMusic::RhythmicUnit
     hash_key = HeadMusic::Utilities::HashKey.for(name)
     @rhythmic_units[hash_key] ||= new(name.to_s)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   def self.for_denominator_value(denominator)
     get(FRACTIONS[Math.log2(denominator).to_i])

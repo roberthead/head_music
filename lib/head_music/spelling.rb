@@ -13,7 +13,6 @@ class HeadMusic::Spelling
   def self.get(identifier)
     from_name(identifier) || from_number(identifier)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   def self.match(string)
     string.to_s.match(MATCHER)

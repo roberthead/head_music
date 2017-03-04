@@ -11,7 +11,6 @@ class HeadMusic::Interval
     @intervals ||= {}
     @intervals[semitones.to_i] ||= new(semitones.to_i)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   def self.named(name)
     name = name.to_s

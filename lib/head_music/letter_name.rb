@@ -18,7 +18,6 @@ class HeadMusic::LetterName
   def self.get(identifier)
     from_name(identifier) || from_pitch_class(identifier)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   def self.from_name(name)
     @letter_names ||= {}

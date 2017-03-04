@@ -64,7 +64,6 @@ class HeadMusic::ScaleType
     attributes = SCALE_TYPES[name]
     @scale_types[name] ||= new(name, attributes)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   def self.default
     get(:major)

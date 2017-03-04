@@ -14,7 +14,6 @@ class HeadMusic::Pitch
   def self.get(value)
     from_name(value) || from_number(value)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   def self.from_name(name)
     return nil unless name == name.to_s

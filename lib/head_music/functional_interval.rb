@@ -38,7 +38,6 @@ class HeadMusic::FunctionalInterval
     higher_pitch = HeadMusic::Pitch.from_number_and_letter(lower_pitch + semitones, higher_letter)
     new(lower_pitch, higher_pitch)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   def self.degree_quality_semitones
     @degree_quality_semitones ||= begin

@@ -10,7 +10,6 @@ class HeadMusic::PitchClass
     number ||= identifier.to_i % 12
     @pitch_classes[number] ||= new(number)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   class << self
     alias_method :[], :get

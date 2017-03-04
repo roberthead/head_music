@@ -11,7 +11,6 @@ class HeadMusic::Accidental
   def self.get(identifier)
     for_symbol(identifier) || for_interval(identifier)
   end
-  singleton_class.send(:alias_method, :[], :get)
 
   def self.for_symbol(identifier)
     @accidentals ||= {}
