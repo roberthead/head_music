@@ -5,8 +5,6 @@ class HeadMusic::RhythmicUnit
   BRITISH_MULTIPLE_NAMES = %w[semibreve breve longa maxima]
   BRITISH_DIVISION_NAMES = %w[semibreve minim crotchet quaver semiquaver demisemiquaver hemidemisemiquaver semihemidemisemiquaver demisemihemidemisemiquaver]
 
-  PPQN = PULSES_PER_QUARTER_NOTE = 960
-
   def self.get(name)
     @rhythmic_units ||= {}
     hash_key = HeadMusic::Utilities::HashKey.for(name)
@@ -32,7 +30,7 @@ class HeadMusic::RhythmicUnit
   end
 
   def ticks
-    PPQN * 4 * relative_value
+    HeadMusic::Rhythm::PPQN * 4 * relative_value
   end
 
   def notehead

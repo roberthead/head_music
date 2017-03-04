@@ -29,6 +29,18 @@ class HeadMusic::Position
     self.values <=> other.values
   end
 
+  def strength
+    meter.beat_strength(count, tick: tick)
+  end
+
+  def strong?
+    strength >= 80
+  end
+
+  def weak?
+    !strong?
+  end
+
   private
 
   def ensure_state(composition, measure_number, count, tick)

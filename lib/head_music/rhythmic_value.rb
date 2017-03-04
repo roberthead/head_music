@@ -27,7 +27,7 @@ class HeadMusic::RhythmicValue
   end
 
   def ticks
-    HeadMusic::RhythmicUnit::PPQN * 4 * total_value
+    HeadMusic::Rhythm::PPQN * 4 * total_value
   end
 
   def per_whole

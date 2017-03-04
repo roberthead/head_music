@@ -13,6 +13,53 @@ describe Position do
   its(:tick) { is_expected.to eq 480 }
   its(:to_s) { is_expected.to eq "3:2:480" }
 
+  describe '#strength' do
+    context 'for the downbeat' do
+      let(:count) { 1 }
+      let(:tick) { 0 }
+
+      its(:strength) { is_expected.to eq 100 }
+      it { is_expected.to be_strong }
+      it { is_expected.not_to be_weak }
+    end
+
+    context 'for the middle beat' do
+      let(:count) { 3 }
+      let(:tick) { 0 }
+
+      its(:strength) { is_expected.to eq 80 }
+      it { is_expected.to be_strong }
+      it { is_expected.not_to be_weak }
+    end
+
+    context 'for an off-beat' do
+      let(:count) { 4 }
+      let(:tick) { 0 }
+
+      its(:strength) { is_expected.to eq 60 }
+      it { is_expected.not_to be_strong }
+      it { is_expected.to be_weak }
+    end
+
+    context 'for a division' do
+      let(:count) { 1 }
+      let(:tick) { RhythmicUnit.get(:eighth).ticks }
+
+      its(:strength) { is_expected.to eq 40 }
+      it { is_expected.not_to be_strong }
+      it { is_expected.to be_weak }
+    end
+
+    context 'for a division' do
+      let(:count) { 1 }
+      let(:tick) { RhythmicUnit.get('thirty-second').ticks }
+
+      its(:strength) { is_expected.to eq 20 }
+      it { is_expected.not_to be_strong }
+      it { is_expected.to be_weak }
+    end
+  end
+
   describe 'value rollover' do
     context 'in 4/4' do
       context 'given too many ticks' do
