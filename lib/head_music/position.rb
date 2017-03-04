@@ -1,4 +1,6 @@
 class HeadMusic::Position
+  include Comparable
+
   attr_reader :composition, :measure_number, :count, :tick
   delegate :to_s, to: :code
   delegate :meter, to: :composition
@@ -12,15 +14,19 @@ class HeadMusic::Position
   end
 
   def code
-    [measure_number, count, tick].join(':')
+    values.join(':')
   end
 
   def state
     [composition.name, code].join(' ')
   end
 
-  def ==(other)
-    self.state == other.state
+  def values
+    [measure_number, count, tick]
+  end
+
+  def <=>(other)
+    self.values <=> other.values
   end
 
   private

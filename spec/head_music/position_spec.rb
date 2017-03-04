@@ -62,4 +62,41 @@ describe Position do
       end
     end
   end
+
+  describe 'comparison' do
+    context 'when the measures are unequal' do
+      let(:position1) { Position.new(composition, 1, 4, tick) }
+      let(:position2) { Position.new(composition, 2, 1, tick) }
+
+      specify { expect(position1).to be < position2 }
+      specify { expect([position2, position1].sort).to eq [position1, position2] }
+    end
+
+    context 'when the measures are equal' do
+      context 'when the counts are unequal' do
+        let(:position1) { Position.new(composition, measure_number, 3, 0) }
+        let(:position2) { Position.new(composition, measure_number, 2, 120) }
+
+        specify { expect(position1).to be > position2 }
+        specify { expect([position1, position2].sort).to eq [position2, position1] }
+      end
+
+      context 'when the counts are equal' do
+        context 'when the ticks are unequal' do
+          let(:position1) { Position.new(composition, measure_number, count, 0) }
+          let(:position2) { Position.new(composition, measure_number, count, 120) }
+
+          specify { expect(position1).to be < position2 }
+          specify { expect([position2, position1].sort).to eq [position1, position2] }
+        end
+
+        context 'when the ticks are equal' do
+          let(:position1) { Position.new(composition, measure_number, count, tick) }
+          let(:position2) { Position.new(composition, measure_number, count, tick) }
+
+          specify { expect(position1).to be == position2 }
+        end
+      end
+    end
+  end
 end
