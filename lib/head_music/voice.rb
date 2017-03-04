@@ -1,10 +1,11 @@
 class HeadMusic::Voice
   include Comparable
 
-  attr_reader :composition, :placements
+  attr_reader :composition, :placements, :role
 
   def initialize(composition: nil, role: nil)
     @composition = composition || Composition.new(name: "Composition")
+    @role = role
     @placements = []
   end
 

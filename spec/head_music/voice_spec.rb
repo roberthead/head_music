@@ -26,4 +26,10 @@ describe Voice do
       end
     end
   end
+
+  describe 'role' do
+    subject(:voice) { Voice.new(composition: composition, role: 'Cantus Firmus') }
+
+    its(:role) { is_expected.to eq 'Cantus Firmus' }
+  end
 end
