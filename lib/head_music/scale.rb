@@ -1,10 +1,16 @@
 class HeadMusic::Scale
-  def self.get(root_pitch, scale_type_name = nil)
+  SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
+
+  def self.get(root_pitch, scale_type = nil)
+    if root_pitch.is_a?(String) && scale_type =~ SCALE_REGEX
+      root_pitch, scale_type = root_pitch.split(/\s+/)
+    end
     root_pitch = HeadMusic::Pitch.get(root_pitch)
-    scale_type ||= HeadMusic::ScaleType.get(scale_type_name || :major)
+    scale_type = HeadMusic::ScaleType.get(scale_type || :major)
     @scales ||= {}
-    @scales[root_pitch.to_s] ||= {}
-    @scales[root_pitch.to_s][scale_type.name] ||= new(root_pitch, scale_type)
+    name = [root_pitch.to_s, scale_type].join(' ')
+    hash_key = HeadMusic::Utilities::HashKey.for(name)
+    @scales[hash_key] ||= new(root_pitch, scale_type)
   end
 
   attr_reader :root_pitch, :scale_type

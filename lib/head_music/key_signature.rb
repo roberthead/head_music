@@ -1,6 +1,7 @@
 class HeadMusic::KeySignature
   attr_reader :tonic_spelling
-  attr_reader :quality_name
+  attr_reader :scale_type
+  attr_reader :scale
 
   SHARPS = %w{F# C# G# D# A# E# B#}
   FLATS = %w{Bb Eb Ab Db Gb Cb Fb}
@@ -12,65 +13,56 @@ class HeadMusic::KeySignature
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::KeySignature)
     @key_signatures ||= {}
-    tonic_spelling, quality_name = identifier.split(/\s/)
+    tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
     hash_key = HeadMusic::Utilities::HashKey.for(identifier)
-    @key_signatures[hash_key] ||= new(tonic_spelling, quality_name)
+    @key_signatures[hash_key] ||= new(tonic_spelling, scale_type_name)
   end
 
   delegate :pitch_class, to: :tonic_spelling, prefix: :tonic
   delegate :to_s, to: :name
+  delegate :pitches, to: :scale
 
-  def initialize(tonic_spelling, quality_name = nil)
-    @tonic_spelling = tonic_spelling
-    @quality_name = quality_name || :major
+  def initialize(tonic_spelling, scale_type = nil)
+    @tonic_spelling = HeadMusic::Spelling.get(tonic_spelling)
+    @scale_type = HeadMusic::ScaleType.get(scale_type) if scale_type
+    @scale_type ||= HeadMusic::ScaleType.default
+    @scale_type = @scale_type.parent || @scale_type
+    @scale = HeadMusic::Scale.get(@tonic_spelling, @scale_type)
   end
 
   def sharps
-    SHARPS.first(num_sharps)
+    pitches.map(&:spelling).uniq.select { |spelling|
+      spelling.sharp?
+    }.map(&:to_s).sort_by { |sharp|
+      SHARPS.index(sharp)
+    }
   end
 
   def flats
-    FLATS.first(num_flats)
+    pitches.map(&:spelling).uniq.select { |spelling|
+      spelling.flat?
+    }.map(&:to_s).sort_by { |flat|
+      FLATS.index(flat)
+    }
   end
 
   def num_sharps
-    (HeadMusic::Circle.of_fifths.index(tonic_pitch_class) - quality_name_adjustment) % 12
+    sharps.length
   end
 
   def num_flats
-    (HeadMusic::Circle.of_fourths.index(tonic_pitch_class) + quality_name_adjustment) % 12
+    flats.length
   end
 
   def sharps_or_flats
-    return sharps if @tonic_spelling.to_s =~ /#/
-    return flats if @tonic_spelling.to_s =~ /b/
-    num_sharps <= num_flats ? sharps : flats
+    flats.length > 0 ? flats : sharps
   end
 
   def name
-    [tonic_spelling.to_s, quality_name.to_s].join(' ')
+    [tonic_spelling.to_s, scale_type.to_s].join(' ')
   end
 
   def ==(other)
-    self.to_s == other.to_s
-  end
-
-  private
-
-  def quality_name_adjustment
-    quality_name == :minor ? 3 : 0
-  end
-
-  def major?
-    @quality_name.to_sym == :major
-  end
-
-  def minor?
-    @quality_name.to_sym == :minor
-  end
-
-  def relative_major_pitch_class
-    return tonic_pitch_class if major?
-    return (tonic_pitch_class.to_i + 3) % 12 if minor?
+    self.sharps_or_flats == self.class.get(other).sharps_or_flats
   end
 end

@@ -66,6 +66,10 @@ class HeadMusic::ScaleType
   end
   singleton_class.send(:alias_method, :[], :get)
 
+  def self.default
+    get(:major)
+  end
+
   attr_reader :name, :ascending_intervals, :descending_intervals, :parent_name
   alias_method :intervals, :ascending_intervals
 
