@@ -112,6 +112,12 @@ describe Pitch do
 
       it { is_expected.to be_nil }
     end
+
+    context "for nil" do
+      subject(:pitch) { Pitch.get(nil) }
+
+      it { is_expected.to be_nil }
+    end
   end
 
   describe '#scale' do

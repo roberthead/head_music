@@ -1,9 +1,10 @@
 class HeadMusic::Composition
-  attr_reader :name, :key_signature, :meter, :measures
+  attr_reader :name, :key_signature, :meter, :measures, :voices
 
   def initialize(name:, key_signature: nil, meter: nil)
     ensure_attributes(name, key_signature, meter)
     add_measure
+    add_voice
   end
 
   def add_measure
@@ -15,6 +16,11 @@ class HeadMusic::Composition
     number.times do
       @measures << HeadMusic::Measure.new(self)
     end
+  end
+
+  def add_voice
+    @voices ||= []
+    @voices << HeadMusic::Voice.new(self)
   end
 
   private
