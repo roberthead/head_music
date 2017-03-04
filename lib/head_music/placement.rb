@@ -1,4 +1,6 @@
 class HeadMusic::Placement
+  include Comparable
+
   attr_reader :voice, :position, :rhythmic_value, :pitch
   delegate :composition, to: :voice
 
@@ -12,6 +14,10 @@ class HeadMusic::Placement
 
   def rest?
     !note?
+  end
+
+  def <=>(other)
+    self.position <=> other.position
   end
 
   private
