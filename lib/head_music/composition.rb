@@ -20,7 +20,7 @@ class HeadMusic::Composition
 
   def add_voice
     @voices ||= []
-    @voices << HeadMusic::Voice.new(self)
+    @voices << HeadMusic::Voice.new(composition: self)
   end
 
   private

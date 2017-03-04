@@ -3,8 +3,8 @@ class HeadMusic::Voice
 
   attr_reader :composition, :placements
 
-  def initialize(composition = nil)
-    @composition = composition || Composition.new(name: "Unnamed")
+  def initialize(composition: nil, role: nil)
+    @composition = composition || Composition.new(name: "Composition")
     @placements = []
   end
 
