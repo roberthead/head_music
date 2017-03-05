@@ -21,7 +21,7 @@ class HeadMusic::Style::Annotation
   end
 
   def description
-    [range_string, message].join(': ')
+    [range_string, message].join(' – ')
   end
 
   alias_method :to_s, :description
