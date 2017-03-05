@@ -7,6 +7,8 @@ class HeadMusic::Style::Rules::CantusFirmus < HeadMusic::Style::Rule
     HeadMusic::Style::Rules::AtLeastEightNotes,
     HeadMusic::Style::Rules::UpToThirteenNotes,
     HeadMusic::Style::Rules::NoRests,
+    HeadMusic::Style::Rules::StartOnTonic,
+    HeadMusic::Style::Rules::EndOnTonic,
   ]
 
   def self.fitness(voice)

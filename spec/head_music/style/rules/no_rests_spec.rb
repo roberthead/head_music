@@ -29,7 +29,7 @@ describe HeadMusic::Style::Rules::NoRests do
       expect(analysis.annotations.length).to eq 1
     end
 
-    describe 'the annotation' do
+    describe 'annotation' do
       subject(:annotation) { analysis.annotations.first }
 
       its(:start_position) { is_expected.to eq "8:1" }

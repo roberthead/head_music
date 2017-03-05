@@ -4,7 +4,7 @@ end
 class HeadMusic::Style::Rules::NoRests < HeadMusic::Style::Rule
   def self.fitness(voice)
     rests_count = voice.rests.length
-    1 * GOLDEN_RATIO_INVERSE**rests_count
+    1 * HeadMusic::GOLDEN_RATIO_INVERSE**rests_count
   end
 
   def self.annotations(voice)

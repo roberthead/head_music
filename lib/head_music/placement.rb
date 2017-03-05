@@ -3,6 +3,7 @@ class HeadMusic::Placement
 
   attr_reader :voice, :position, :rhythmic_value, :pitch
   delegate :composition, to: :voice
+  delegate :spelling, to: :pitch, allow_nil: true
 
   def initialize(voice, position, rhythmic_value, pitch)
     ensure_attributes(voice, position, rhythmic_value, pitch)

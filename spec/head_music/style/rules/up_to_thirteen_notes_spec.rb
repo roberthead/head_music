@@ -33,7 +33,7 @@ describe HeadMusic::Style::Rules::UpToThirteenNotes do
       expect(analysis.annotations.length).to eq 1
     end
 
-    describe 'the annotation' do
+    describe 'annotation' do
       subject(:annotation) { analysis.annotations.first }
 
       its(:range_string) { is_expected.to eq "14:1:000 to 16:1:000" }

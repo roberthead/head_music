@@ -12,7 +12,7 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
       expect(analysis.annotations.length).to eq 1
     end
 
-    describe 'the annotation' do
+    describe 'annotation' do
       subject(:annotation) { analysis.annotations.first }
 
       its(:range_string) { is_expected.to eq "1:1:000 to 2:1:000" }

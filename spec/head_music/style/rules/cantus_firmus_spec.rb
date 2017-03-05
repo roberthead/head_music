@@ -74,5 +74,33 @@ describe HeadMusic::Style::Rules::CantusFirmus do
         expect(analysis.annotations.length).to eq 1
       end
     end
+
+    context 'when it does not start on the tonic' do
+      before do
+        %w[F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each_with_index do |pitch, bar|
+          voice.place("#{bar + 1}:1", :whole, pitch)
+        end
+      end
+
+      its(:score) { is_expected.to be < 1 }
+
+      it 'is annotated' do
+        expect(analysis.annotations.length).to eq 1
+      end
+    end
+
+    context 'when it does not end on the tonic' do
+      before do
+        %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4].each_with_index do |pitch, bar|
+          voice.place("#{bar + 1}:1", :whole, pitch)
+        end
+      end
+
+      its(:score) { is_expected.to be < 1 }
+
+      it 'is annotated' do
+        expect(analysis.annotations.length).to eq 1
+      end
+    end
   end
 end
