@@ -10,9 +10,16 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
 
     it 'is annotated' do
       expect(analysis.annotations.length).to eq 1
-      annotation = analysis.annotations.first
-      expect(annotation.start_position).to eq "1:1"
-      expect(annotation.range_string).to eq "1:1:000 to 2:1:000"
+    end
+
+    describe 'the annotation' do
+      subject(:annotation) { analysis.annotations.first }
+
+      its(:range_string) { is_expected.to eq "1:1:000 to 2:1:000" }
+
+      it 'has a message' do
+        expect(annotation.message.length).to be > 8
+      end
     end
   end
 

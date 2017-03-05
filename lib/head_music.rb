@@ -37,6 +37,7 @@ require 'head_music/style/rule'
 
 # rules
 require 'head_music/style/rules/at_least_eight_notes'
+require 'head_music/style/rules/no_rests'
 require 'head_music/style/rules/require_notes'
 require 'head_music/style/rules/up_to_thirteen_notes'
 

@@ -6,6 +6,7 @@ class HeadMusic::Style::Rules::CantusFirmus < HeadMusic::Style::Rule
   RULESET = [
     HeadMusic::Style::Rules::AtLeastEightNotes,
     HeadMusic::Style::Rules::UpToThirteenNotes,
+    HeadMusic::Style::Rules::NoRests,
   ]
 
   def self.fitness(voice)
