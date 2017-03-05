@@ -47,7 +47,7 @@ class HeadMusic::Position
   end
 
   def +(rhythmic_value)
-    if rhythmic_value.is_a?(HeadMusic::RhythmicUnit)
+    if [HeadMusic::RhythmicUnit, Symbol, String].include?(rhythmic_value.class)
       rhythmic_value = HeadMusic::RhythmicValue.new(rhythmic_value)
     end
     self.class.new(composition, measure_number, count, tick + rhythmic_value.ticks)
@@ -73,7 +73,7 @@ class HeadMusic::Position
   end
 
   def roll_over_ticks
-    while @tick > meter.ticks_per_count
+    while @tick >= meter.ticks_per_count
       @tick -= meter.ticks_per_count.to_i
       @count += 1
     end

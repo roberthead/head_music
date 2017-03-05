@@ -85,6 +85,16 @@ describe Position do
         end
       end
 
+      context 'given exactly one beat worth of ticks' do
+        let(:measure_number) { 3 }
+        let(:count) { 2 }
+        let(:tick) { 960 }
+
+        it 'rolls over to the next count' do
+          expect(position).to eq "3:3:000"
+        end
+      end
+
       context 'given too many counts' do
         let(:measure_number) { 3 }
         let(:count) { 9 }

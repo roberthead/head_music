@@ -34,9 +34,19 @@ require 'head_music/staff'
 require 'head_music/style/analysis'
 require 'head_music/style/annotation'
 require 'head_music/style/rule'
+
+# rules
+require 'head_music/style/rules/at_least_eight_notes'
 require 'head_music/style/rules/require_notes'
+require 'head_music/style/rules/up_to_thirteen_notes'
+
+# rulesets
+require 'head_music/style/rules/cantus_firmus'
+
 require 'head_music/utilities/hash_key'
 require 'head_music/voice'
 
 module HeadMusic
+  GOLDEN_RATIO = (1 + 5**0.5) / 2.0
+  GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO
 end
