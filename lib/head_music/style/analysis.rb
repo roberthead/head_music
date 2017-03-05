@@ -10,7 +10,11 @@ module HeadMusic
 
       # returns a score between 0 and 1
       def score
-        rule.fitness(subject)
+        @score ||= rule.fitness(subject)
+      end
+
+      def annotations
+        @annotations ||= rule.annotations(subject)
       end
     end
   end

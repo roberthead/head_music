@@ -16,6 +16,10 @@ class HeadMusic::Placement
     !note?
   end
 
+  def next_position
+    position + rhythmic_value
+  end
+
   def <=>(other)
     self.position <=> other.position
   end

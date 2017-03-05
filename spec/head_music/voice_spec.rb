@@ -39,7 +39,7 @@ describe Voice do
     its(:notes) { are_expected.to eq [note1, note2] }
   end
 
-  describe 'role' do
+  context 'when a role is provided' do
     subject(:voice) { Voice.new(composition: composition, role: 'Cantus Firmus') }
 
     its(:role) { is_expected.to eq 'Cantus Firmus' }

@@ -7,14 +7,16 @@ class HeadMusic::Position
 
   def initialize(composition, code_or_measure, count = nil, tick = nil)
     if code_or_measure.is_a?(String) && code_or_measure =~ /\D/
-      ensure_state(composition, *code_or_measure.split(/\D+/))
+      measure, count, tick = code_or_measure.split(/\D+/)
+      ensure_state(composition, measure, count, tick)
     else
       ensure_state(composition, code_or_measure, count, tick)
     end
   end
 
   def code
-    values.join(':')
+    tick_string = tick.to_s.rjust(3, '0')
+    [measure_number, count, tick_string].join(':')
   end
 
   def state
@@ -26,6 +28,9 @@ class HeadMusic::Position
   end
 
   def <=>(other)
+    if other.is_a?(String) && other =~ /\D/
+      other = self.class.new(composition, other)
+    end
     self.values <=> other.values
   end
 
@@ -39,6 +44,17 @@ class HeadMusic::Position
 
   def weak?
     !strong?
+  end
+
+  def +(rhythmic_value)
+    if rhythmic_value.is_a?(HeadMusic::RhythmicUnit)
+      rhythmic_value = HeadMusic::RhythmicValue.new(rhythmic_value)
+    end
+    self.class.new(composition, measure_number, count, tick + rhythmic_value.ticks)
+  end
+
+  def start_of_next_measure
+    self.class.new(composition, measure_number + 1, 1, 0)
   end
 
   private

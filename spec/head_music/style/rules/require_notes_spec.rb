@@ -7,6 +7,13 @@ describe HeadMusic::Style::Rules::RequireNotes do
 
   context 'when no notes' do
     its(:score) { is_expected.to eq 0 }
+
+    it 'is annotated' do
+      expect(analysis.annotations.length).to eq 1
+      annotation = analysis.annotations.first
+      expect(annotation.start_position).to eq "1:1"
+      expect(annotation.range_string).to eq "1:1:000 to 2:1:000"
+    end
   end
 
   context 'with one note and six rests' do
@@ -21,6 +28,11 @@ describe HeadMusic::Style::Rules::RequireNotes do
     end
 
     its(:score) { is_expected.to be < 0.25 }
+
+    specify { expect(analysis.annotations.length).to eq 1 }
+    specify { expect(analysis.annotations.first.start_position).to eq "3:1" }
+    specify { expect(analysis.annotations.first.end_position).to eq "6:1" }
+    specify { expect(analysis.annotations.first.range_string).to eq '3:1:000 to 6:1:000' }
   end
 
   context 'with a few notes' do

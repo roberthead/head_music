@@ -19,4 +19,8 @@ describe Placement do
 
     it { is_expected.to be_rest }
   end
+
+  describe '#next_position' do
+    specify { expect(placement.next_position).to eq "2:2:720" }
+  end
 end

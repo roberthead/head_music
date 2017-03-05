@@ -35,6 +35,7 @@ require 'head_music/voice'
 require 'head_music/style/analysis'
 require 'head_music/style/rule'
 require 'head_music/style/rules/require_notes'
+require 'head_music/style/annotation'
 require 'head_music/utilities/hash_key'
 
 module HeadMusic

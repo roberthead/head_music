@@ -12,6 +12,19 @@ describe Position do
   its(:count) { is_expected.to eq 2 }
   its(:tick) { is_expected.to eq 480 }
   its(:to_s) { is_expected.to eq "3:2:480" }
+  its(:start_of_next_measure) { is_expected.to eq "4:1:000" }
+
+  context 'when there are a small number of ticks' do
+    let(:tick) { 60 }
+
+    its(:code) { is_expected.to eq "3:2:060" }
+  end
+
+  context 'when there are no ticks' do
+    let(:tick) { 0 }
+
+    its(:code) { is_expected.to eq "3:2:000" }
+  end
 
   describe '#strength' do
     context 'for the downbeat' do
@@ -106,6 +119,39 @@ describe Position do
         it 'rolls over to a subsequent measure' do
           expect(position).to eq Position.new(composition, "4:3:0")
         end
+      end
+    end
+  end
+
+  describe 'addition' do
+    context 'when adding a rhythmic unit' do
+      context 'within a measure' do
+        let(:expected_position) { Position.new(composition, measure_number, count+1, tick) }
+
+        specify { expect(position + RhythmicUnit.get(:quarter)).to eq expected_position }
+      end
+
+      context 'across a measure' do
+        let(:expected_position) { Position.new(composition, measure_number+1, count, tick) }
+
+        specify { expect(position + RhythmicUnit.get(:whole)).to eq expected_position }
+      end
+    end
+
+    context 'when adding a rhythmic value' do
+      context 'within a measure' do
+        let(:expected_position) { Position.new(composition, '3.4.480') }
+
+        specify { expect(position + RhythmicValue.new(:half)).to eq expected_position }
+      end
+
+      context 'across a measure' do
+        let(:expected_position) { Position.new(composition, '4.1.480') }
+
+        specify { expect(RhythmicValue.new(:half, dots: 1).relative_value).to eq 0.75 }
+        specify { expect(RhythmicValue.new(:half, dots: 1).ticks).to eq 960 * 3 }
+
+        specify { expect(position + RhythmicValue.new(:half, dots: 1)).to eq expected_position }
       end
     end
   end

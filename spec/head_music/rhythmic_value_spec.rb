@@ -4,6 +4,16 @@ describe RhythmicValue do
   subject(:value) { RhythmicValue.new(unit, dots: dots) }
   let(:dots) { nil }
 
+  context 'for a dotted half' do
+    let(:unit) { RhythmicUnit.get(:half) }
+    let(:dots) { 1 }
+
+    its(:name) { is_expected.to eq 'dotted half' }
+    its(:ticks) { are_expected.to eq 960 * 3 }
+    its(:relative_value) { is_expected.to eq 3.0/4 }
+    its(:total_value) { is_expected.to eq 3.0/4 }
+  end
+
   context 'for a dotted quarter' do
     let(:unit) { RhythmicUnit.get(:quarter) }
     let(:dots) { 1 }
