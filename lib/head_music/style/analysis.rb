@@ -14,7 +14,7 @@ module HeadMusic
       end
 
       def annotations
-        @annotations ||= rule.annotations(subject)
+        @annotations ||= rule.annotations(subject) || []
       end
     end
   end
