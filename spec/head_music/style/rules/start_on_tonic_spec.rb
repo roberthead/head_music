@@ -7,7 +7,7 @@ describe HeadMusic::Style::Rules::StartOnTonic do
   subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
 
   context 'with no notes' do
-    its(:score) { is_expected.to eq 0 }
+    its(:fitness) { is_expected.to eq 0 }
   end
 
   context 'when the first note is the tonic' do
@@ -15,7 +15,7 @@ describe HeadMusic::Style::Rules::StartOnTonic do
       voice.place("1:1", :whole, 'C')
     end
 
-    its(:score) { is_expected.to eq 1 }
+    its(:fitness) { is_expected.to eq 1 }
   end
 
   context 'when the first note is NOT the tonic' do
@@ -23,7 +23,7 @@ describe HeadMusic::Style::Rules::StartOnTonic do
       voice.place('1:1', :whole, 'D')
     end
 
-    its(:score) { is_expected.to be < 1 }
+    its(:fitness) { is_expected.to be < 1 }
 
     it 'is annotated' do
       expect(analysis.annotations.length).to eq 1

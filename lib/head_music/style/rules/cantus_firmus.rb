@@ -10,6 +10,7 @@ class HeadMusic::Style::Rules::CantusFirmus < HeadMusic::Style::Rule
     HeadMusic::Style::Rules::StartOnTonic,
     HeadMusic::Style::Rules::EndOnTonic,
     HeadMusic::Style::Rules::StepDownToFinalNote,
+    HeadMusic::Style::Rules::NotesSameLength,
   ]
 
   def self.fitness(voice)

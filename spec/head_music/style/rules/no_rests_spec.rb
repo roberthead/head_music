@@ -12,7 +12,7 @@ describe HeadMusic::Style::Rules::NoRests do
       end
     end
 
-    its(:score) { is_expected.to eq 1 }
+    its(:fitness) { is_expected.to eq 1 }
     its(:annotations) { are_expected.to eq [] }
   end
 
@@ -23,7 +23,7 @@ describe HeadMusic::Style::Rules::NoRests do
       end
     end
 
-    its(:score) { is_expected.to be < 1 }
+    its(:fitness) { is_expected.to be < 1 }
 
     it 'is annotated' do
       expect(analysis.annotations.length).to eq 1

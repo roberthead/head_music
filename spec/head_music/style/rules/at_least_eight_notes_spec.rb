@@ -6,7 +6,7 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
   subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
 
   context 'when no notes' do
-    its(:score) { is_expected.to be < 0.1 }
+    its(:fitness) { is_expected.to be < 0.1 }
 
     it 'is annotated' do
       expect(analysis.annotations.length).to eq 1
@@ -35,7 +35,7 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
       voice.place("5.1", :whole)
     end
 
-    its(:score) { is_expected.to be < 0.25 }
+    its(:fitness) { is_expected.to be < 0.25 }
 
     specify { expect(analysis.annotations.length).to eq 1 }
     specify { expect(analysis.annotations.first.start_position).to eq "3:1" }
@@ -54,8 +54,8 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
       voice.place("3:1", :whole, 'D')
     end
 
-    its(:score) { is_expected.to be > 0 }
-    its(:score) { is_expected.to be < 1 }
+    its(:fitness) { is_expected.to be > 0 }
+    its(:fitness) { is_expected.to be < 1 }
   end
 
   context 'with just enough notes' do
@@ -70,7 +70,7 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
       voice.place("6.1", :whole, 'E')
     end
 
-    its(:score) { is_expected.to eq 1 }
+    its(:fitness) { is_expected.to eq 1 }
 
     its(:annotations) { are_expected.to eq [] }
   end
@@ -93,7 +93,7 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
       voice.place("8.1", :whole, 'F#')
     end
 
-    its(:score) { is_expected.to eq 1 }
+    its(:fitness) { is_expected.to eq 1 }
 
     its(:annotations) { are_expected.to eq [] }
   end

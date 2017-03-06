@@ -9,8 +9,8 @@ module HeadMusic
       end
 
       # returns a score between 0 and 1
-      def score
-        @score ||= rule.fitness(subject)
+      def fitness
+        @fitness ||= rule.fitness(subject)
       end
 
       def annotations

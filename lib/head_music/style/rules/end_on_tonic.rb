@@ -4,11 +4,11 @@ end
 class HeadMusic::Style::Rules::EndOnTonic < HeadMusic::Style::Rule
   def self.fitness(voice)
     return 0 unless voice.notes.first
-    score = 1
+    fitness = 1
     if !ends_on_tonic?(voice)
-      score *= HeadMusic::GOLDEN_RATIO_INVERSE
+      fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
     end
-    score
+    fitness
   end
 
   def self.annotations(voice)

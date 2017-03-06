@@ -5,13 +5,13 @@ class HeadMusic::Style::Rules::UpToThirteenNotes < HeadMusic::Style::Rule
   MAXIMUM_NOTES = 13
 
   def self.fitness(voice)
-    score = 1
+    fitness = 1
     overage = voice.notes.length - MAXIMUM_NOTES
     while overage > 0
-      score *= HeadMusic::GOLDEN_RATIO_INVERSE
+      fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
       overage -= 1
     end
-    score
+    fitness
   end
 
   def self.annotations(voice)

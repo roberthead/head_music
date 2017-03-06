@@ -14,7 +14,7 @@ describe HeadMusic::Style::Rules::UpToThirteenNotes do
       expect(voice.notes.length).to eq 13
     end
 
-    its(:score) { is_expected.to eq 1 }
+    its(:fitness) { is_expected.to eq 1 }
     its(:annotations) { are_expected.to eq [] }
   end
 
@@ -26,8 +26,8 @@ describe HeadMusic::Style::Rules::UpToThirteenNotes do
       expect(voice.notes.length).to eq 15
     end
 
-    its(:score) { is_expected.to be < 1 }
-    its(:score) { is_expected.to be > 0 }
+    its(:fitness) { is_expected.to be < 1 }
+    its(:fitness) { is_expected.to be > 0 }
 
     it 'is annotated' do
       expect(analysis.annotations.length).to eq 1

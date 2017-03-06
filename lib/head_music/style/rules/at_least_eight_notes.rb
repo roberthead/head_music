@@ -5,13 +5,9 @@ class HeadMusic::Style::Rules::AtLeastEightNotes < HeadMusic::Style::Rule
   MINIMUM_NOTES = 8
 
   def self.fitness(voice)
-    score = 1
+    return 0 if voice.notes.length == 0
     deficiency = MINIMUM_NOTES - voice.notes.length
-    while deficiency > 0
-      score *= HeadMusic::GOLDEN_RATIO_INVERSE
-      deficiency -= 1
-    end
-    score
+    deficiency > 0 ? HeadMusic::GOLDEN_RATIO_INVERSE**deficiency : 1
   end
 
   def self.annotations(voice)

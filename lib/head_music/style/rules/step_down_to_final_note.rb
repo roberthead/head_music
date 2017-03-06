@@ -4,15 +4,15 @@ end
 class HeadMusic::Style::Rules::StepDownToFinalNote < HeadMusic::Style::Rule
   def self.fitness(voice)
     return 0 unless voice.notes.length >= 2
-    score = 1
+    fitness = 1
     melodic_interval = voice.melodic_intervals.last
     if !melodic_interval.step?
-      score *= HeadMusic::GOLDEN_RATIO_INVERSE
+      fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
     end
     if !melodic_interval.downward?
-      score *= HeadMusic::GOLDEN_RATIO_INVERSE
+      fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
     end
-    score
+    fitness
   end
 
   def self.annotations(voice)

@@ -20,7 +20,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
           end
         end
 
-        its(:score) { is_expected.to eq 1 }
+        its(:fitness) { is_expected.to eq 1 }
       end
     end
   end
@@ -38,8 +38,8 @@ describe HeadMusic::Style::Rules::CantusFirmus do
         end
       end
 
-      its(:score) { is_expected.to be < 1 }
-      its(:score) { is_expected.to be > 0 }
+      its(:fitness) { is_expected.to be < 1 }
+      its(:fitness) { is_expected.to be > 0 }
 
       it 'is annotated' do
         expect(analysis.annotations.length).to eq 1
@@ -53,8 +53,8 @@ describe HeadMusic::Style::Rules::CantusFirmus do
         end
       end
 
-      its(:score) { is_expected.to be < 1 }
-      its(:score) { is_expected.to be > 0 }
+      its(:fitness) { is_expected.to be < 1 }
+      its(:fitness) { is_expected.to be > 0 }
 
       it 'is annotated' do
         expect(analysis.annotations.length).to eq 1
@@ -68,7 +68,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
         end
       end
 
-      its(:score) { is_expected.to be < 1 }
+      its(:fitness) { is_expected.to be < 1 }
 
       it 'is annotated' do
         expect(analysis.annotations.length).to eq 1
@@ -82,7 +82,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
         end
       end
 
-      its(:score) { is_expected.to be < 1 }
+      its(:fitness) { is_expected.to be < 1 }
 
       it 'is annotated' do
         expect(analysis.annotations.length).to eq 1
@@ -96,7 +96,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
         end
       end
 
-      its(:score) { is_expected.to be < 1 }
+      its(:fitness) { is_expected.to be < 1 }
 
       it 'is annotated' do
         expect(analysis.annotations.length).to eq 1
@@ -110,7 +110,26 @@ describe HeadMusic::Style::Rules::CantusFirmus do
         end
       end
 
-      its(:score) { is_expected.to be < 1 }
+      its(:fitness) { is_expected.to be < 1 }
+
+      it 'is annotated' do
+        expect(analysis.annotations.length).to eq 1
+      end
+    end
+
+    context 'when notes are not of equal rhythmic value' do
+      before do
+        voice.place("1:1", :whole, 'D4')
+        voice.place("2:1", :half, 'E4')
+        voice.place("2:3", :half, 'F4')
+        voice.place("3:1", :whole, 'E4')
+        voice.place("2:1", :half, 'E4')
+        voice.place("2:3", :half, 'F4')
+        voice.place("3:1", :whole, 'E4')
+        voice.place("4:1", :whole, 'D4')
+      end
+
+      its(:fitness) { is_expected.to be < 1 }
 
       it 'is annotated' do
         expect(analysis.annotations.length).to eq 1

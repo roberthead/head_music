@@ -7,7 +7,7 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
   subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
 
   context 'with no notes' do
-    its(:score) { is_expected.to eq 0 }
+    its(:fitness) { is_expected.to eq 0 }
   end
 
   context 'with one notes' do
@@ -15,7 +15,7 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("1:1", :whole, 'C')
     end
 
-    its(:score) { is_expected.to eq 0 }
+    its(:fitness) { is_expected.to eq 0 }
   end
 
   context 'when the last melodic interval is a downward step' do
@@ -25,7 +25,7 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("3:1", :whole, 'C')
     end
 
-    its(:score) { is_expected.to eq 1 }
+    its(:fitness) { is_expected.to eq 1 }
   end
 
   context 'when the last melodic interval is an upward step' do
@@ -35,7 +35,7 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("3:1", :whole, 'C4')
     end
 
-    its(:score) { is_expected.to eq GOLDEN_RATIO_INVERSE }
+    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE }
   end
 
   context 'when the last melodic interval is a larger downward interval' do
@@ -46,7 +46,7 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("4:1", :whole, 'C')
     end
 
-    its(:score) { is_expected.to eq GOLDEN_RATIO_INVERSE }
+    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE }
   end
 
   context 'when the last melodic interval is a larger upward interval' do
@@ -57,6 +57,6 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("4:1", :whole, 'C4')
     end
 
-    its(:score) { is_expected.to eq GOLDEN_RATIO_INVERSE**2 }
+    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE**2 }
   end
 end
