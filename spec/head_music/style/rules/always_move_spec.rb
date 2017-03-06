@@ -3,10 +3,11 @@ require 'spec_helper'
 describe HeadMusic::Style::Rules::AlwaysMove do
   let(:voice) { Voice.new }
   let(:rule) { described_class }
-  subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
+  subject(:annotation) { rule.analyze(voice) }
 
   context 'with no notes' do
     its(:fitness) { is_expected.to eq 1 }
+    its(:message) { is_expected.to be_nil }
   end
 
   context 'with one note' do
@@ -15,51 +16,35 @@ describe HeadMusic::Style::Rules::AlwaysMove do
     end
 
     its(:fitness) { is_expected.to eq 1 }
+    its(:message) { is_expected.to be_nil }
   end
 
   context 'with motion' do
     before do
-      voice.place("1:1", :whole, 'C')
-      voice.place("2:1", :whole, 'D')
-      voice.place("3:1", :whole, 'E')
-      voice.place("4:1", :whole, 'D')
-      voice.place("5:1", :whole, 'C')
-      voice.place("6:1", :whole, 'G3')
-      voice.place("7:1", :whole, 'A3')
-      voice.place("8:1", :whole, 'D')
-      voice.place("9:1", :breve, 'C')
+      %w[C D E D C G3 A3 D C].each_with_index do |pitch, bar|
+        voice.place("#{bar+1}:1", :whole, pitch)
+      end
     end
 
     its(:fitness) { is_expected.to eq 1 }
+    its(:message) { is_expected.to be_nil }
   end
 
   context 'with a repeated note' do
     before do
-      voice.place("1:1", :whole, 'C')
-      voice.place("2:1", :whole, 'D')
-      voice.place("3:1", :whole, 'E')
-      voice.place("4:1", :whole, 'E')
-      voice.place("5:1", :whole, 'C')
-      voice.place("6:1", :whole, 'G3')
-      voice.place("7:1", :whole, 'A3')
-      voice.place("8:1", :whole, 'D')
-      voice.place("9:1", :breve, 'C')
+      %w[C D E E C G3 A3 D C].each_with_index do |pitch, bar|
+        voice.place("#{bar+1}:1", :whole, pitch)
+      end
     end
 
     its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE }
+    its(:message) { is_expected.not_to be_empty }
+    its(:marks_count) { is_expected.to eq 1 }
 
-    it 'is annotated' do
-      expect(analysis.annotations.length).to eq 1
-    end
+    describe 'mark' do
+      subject(:mark) { annotation.marks.first }
 
-    describe 'annotation' do
-      subject(:annotation) { analysis.annotations.first }
-
-      its(:range_string) { is_expected.to eq "3:1:000 to 5:1:000" }
-
-      it 'has a message' do
-        expect(annotation.message.length).to be > 8
-      end
+      its(:code) { is_expected.to eq "3:1:000 to 5:1:000" }
     end
   end
 end

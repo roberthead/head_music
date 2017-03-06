@@ -4,7 +4,7 @@ describe HeadMusic::Style::Rules::UpToThirteenNotes do
   let(:composition) { Composition.new(name: 'Majestic D', key_signature: 'D dorian') }
   let(:voice) { Voice.new(composition: composition, role: 'Cantus firmus') }
   let(:rule) { described_class }
-  subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
+  subject(:annotation) { rule.analyze(voice) }
 
   context 'when exactly 13 notes' do
     before do
@@ -15,7 +15,7 @@ describe HeadMusic::Style::Rules::UpToThirteenNotes do
     end
 
     its(:fitness) { is_expected.to eq 1 }
-    its(:annotations) { are_expected.to eq [] }
+    its(:marks_count) { is_expected.to eq 0 }
   end
 
   context 'when more than 13 notes' do
@@ -28,19 +28,8 @@ describe HeadMusic::Style::Rules::UpToThirteenNotes do
 
     its(:fitness) { is_expected.to be < 1 }
     its(:fitness) { is_expected.to be > 0 }
-
-    it 'is annotated' do
-      expect(analysis.annotations.length).to eq 1
-    end
-
-    describe 'annotation' do
-      subject(:annotation) { analysis.annotations.first }
-
-      its(:range_string) { is_expected.to eq "14:1:000 to 16:1:000" }
-
-      it 'has a message' do
-        expect(annotation.message.length).to be > 8
-      end
-    end
+    its(:marks_count) { is_expected.to eq 1 }
+    its(:first_mark_code) { is_expected.to eq "14:1:000 to 16:1:000" }
+    its(:message) { is_expected.not_to be_empty }
   end
 end

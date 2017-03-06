@@ -1,8 +1,7 @@
-module HeadMusic::Style::Rules
+module HeadMusic::Style::Rulesets
 end
 
-class HeadMusic::Style::Rules::CantusFirmus < HeadMusic::Style::Rule
-  MINIMUM_NOTES = 7
+class HeadMusic::Style::Rulesets::CantusFirmus
   RULESET = [
     HeadMusic::Style::Rules::AlwaysMove,
     HeadMusic::Style::Rules::AtLeastEightNotes,
@@ -14,11 +13,7 @@ class HeadMusic::Style::Rules::CantusFirmus < HeadMusic::Style::Rule
     HeadMusic::Style::Rules::UpToThirteenNotes,
   ]
 
-  def self.fitness(voice)
-    RULESET.map { |rule| rule.fitness(voice) }.reduce(1, :*)
-  end
-
-  def self.annotations(voice)
-    RULESET.map { |rule| rule.annotations(voice) }.reject(&:nil?).reduce([], :+)
+  def self.analyze(voice)
+    RULESET.map { |rule| rule.analyze(voice) }
   end
 end

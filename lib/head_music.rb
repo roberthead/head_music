@@ -31,11 +31,12 @@ require 'head_music/scale'
 require 'head_music/scale_type'
 require 'head_music/spelling'
 require 'head_music/staff'
+
 require 'head_music/style/analysis'
 require 'head_music/style/annotation'
+require 'head_music/style/mark'
 require 'head_music/style/rule'
 
-# rules
 require 'head_music/style/rules/always_move'
 require 'head_music/style/rules/at_least_eight_notes'
 require 'head_music/style/rules/end_on_tonic'
@@ -45,8 +46,7 @@ require 'head_music/style/rules/start_on_tonic'
 require 'head_music/style/rules/step_down_to_final_note'
 require 'head_music/style/rules/up_to_thirteen_notes'
 
-# rulesets
-require 'head_music/style/rules/cantus_firmus'
+require 'head_music/style/rulesets/cantus_firmus'
 
 require 'head_music/utilities/hash_key'
 require 'head_music/voice'

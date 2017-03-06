@@ -2,21 +2,19 @@ module HeadMusic::Style::Rules
 end
 
 class HeadMusic::Style::Rules::EndOnTonic < HeadMusic::Style::Rule
-  def self.fitness(voice)
-    return 0 unless voice.notes.first
-    fitness = 1
-    if !ends_on_tonic?(voice)
-      fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
+  def self.analyze(voice)
+    fitness = fitness(voice)
+    if fitness < 1
+      message = 'End on the tonic'
+      mark = HeadMusic::Style::Mark.for(voice.notes.last)
     end
-    fitness
+    HeadMusic::Style::Annotation.new(subject: voice, fitness: fitness, marks: mark, message: message)
   end
 
-  def self.annotations(voice)
-    if fitness(voice) < 1
-      start_position = voice.notes.last ? voice.notes.last.position : "1:1"
-      end_position = start_position.start_of_next_bar
-      [HeadMusic::Style::Annotation.new(voice, start_position, end_position, "End on the tonic")]
-    end
+  def self.fitness(voice)
+    return 1 if voice.notes.empty?
+    return 1 if ends_on_tonic?(voice)
+    HeadMusic::GOLDEN_RATIO_INVERSE
   end
 
   def self.ends_on_tonic?(voice)

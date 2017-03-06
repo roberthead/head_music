@@ -73,6 +73,7 @@ class HeadMusic::Position
   end
 
   def roll_over_ticks
+    # TODO account for meter changes in bars
     while @tick >= meter.ticks_per_count
       @tick -= meter.ticks_per_count.to_i
       @count += 1
@@ -80,6 +81,7 @@ class HeadMusic::Position
   end
 
   def roll_over_counts
+    # TODO account for meter changes in bars
     while @count > meter.counts_per_bar
       @count -= meter.counts_per_bar
       @bar_number += 1

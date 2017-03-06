@@ -3,7 +3,7 @@ require 'spec_helper'
 describe HeadMusic::Style::Rules::NoRests do
   let(:voice) { Voice.new }
   let(:rule) { described_class }
-  subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
+  subject(:annotation) { rule.analyze(voice) }
 
   context 'when there are no rests' do
     before do
@@ -13,7 +13,7 @@ describe HeadMusic::Style::Rules::NoRests do
     end
 
     its(:fitness) { is_expected.to eq 1 }
-    its(:annotations) { are_expected.to eq [] }
+    its(:marks_count) { is_expected.to eq 0 }
   end
 
   context 'when there are rests' do
@@ -24,21 +24,12 @@ describe HeadMusic::Style::Rules::NoRests do
     end
 
     its(:fitness) { is_expected.to be < 1 }
+    its(:message) { is_expected.not_to be_empty }
 
-    it 'is annotated' do
-      expect(analysis.annotations.length).to eq 1
-    end
+    describe 'mark' do
+      subject(:mark) { annotation.marks.first }
 
-    describe 'annotation' do
-      subject(:annotation) { analysis.annotations.first }
-
-      its(:start_position) { is_expected.to eq "8:1" }
-      its(:end_position) { is_expected.to eq "9:1" }
-      its(:range_string) { is_expected.to eq "8:1:000 to 9:1:000" }
-
-      it 'has a message' do
-        expect(annotation.message.length).to be > 8
-      end
+      its(:code) { is_expected.to eq "8:1:000 to 9:1:000" }
     end
   end
 end

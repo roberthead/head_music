@@ -4,10 +4,10 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
   let(:composition) { Composition.new(name: "CF in C") }
   let(:voice) { Voice.new(composition: composition) }
   let(:rule) { described_class }
-  subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
+  subject(:annotation) { rule.analyze(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 0 }
+    its(:fitness) { is_expected.to eq 1 }
   end
 
   context 'with one note' do
@@ -15,7 +15,7 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("1:1", :whole, 'C')
     end
 
-    its(:fitness) { is_expected.to eq 0 }
+    its(:fitness) { is_expected.to eq 1 }
   end
 
   context 'when the last melodic interval is a descending step' do

@@ -2,27 +2,18 @@ module HeadMusic::Style::Rules
 end
 
 class HeadMusic::Style::Rules::AlwaysMove < HeadMusic::Style::Rule
-  def self.fitness(voice)
-    return 1 unless voice.notes.length > 1
-    repeats = voice.melodic_intervals.map(&:shorthand).select { |shorthand| shorthand == 'PU' }.length
-    HeadMusic::GOLDEN_RATIO_INVERSE**repeats
+  def self.analyze(voice)
+    marks = marks(voice)
+    fitness = HeadMusic::GOLDEN_RATIO_INVERSE**marks.length
+    message = "Always move to another note." if fitness < 1
+    HeadMusic::Style::Annotation.new(subject: voice, fitness: fitness, marks: marks, message: message)
   end
 
-  def self.annotations(voice)
-    list = []
-    if fitness(voice) < 1
-      previous_note = nil
-      voice.notes.each_with_index do |note, i|
-        if previous_note
-          if note.pitch == previous_note.pitch
-            start_position = previous_note.position
-            end_position = note.next_position
-            list << HeadMusic::Style::Annotation.new(voice, start_position, end_position, "Always move to another note.")
-          end
-        end
-        previous_note = note
+  def self.marks(voice)
+    voice.melodic_intervals.map.with_index do |interval, i|
+      if interval.shorthand == 'PU'
+        HeadMusic::Style::Mark.for_all(voice.notes[i..i+1])
       end
-    end
-    list
+    end.reject(&:nil?)
   end
 end

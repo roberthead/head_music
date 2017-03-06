@@ -1,20 +1,16 @@
 module HeadMusic
   module Style
     class Analysis
-      attr_reader :rule, :subject
+      attr_reader :ruleset, :subject, :annotations
 
-      def initialize(rule, subject)
-        @rule = rule
+      def initialize(ruleset, subject)
+        @ruleset = ruleset
         @subject = subject
+        @annotations = @ruleset.analyze(subject)
       end
 
-      # returns a score between 0 and 1
       def fitness
-        @fitness ||= rule.fitness(subject)
-      end
-
-      def annotations
-        @annotations ||= rule.annotations(subject) || []
+        annotations.map(&:fitness).reduce(1, :*)
       end
     end
   end

@@ -4,21 +4,21 @@ end
 class HeadMusic::Style::Rules::UpToThirteenNotes < HeadMusic::Style::Rule
   MAXIMUM_NOTES = 13
 
-  def self.fitness(voice)
-    fitness = 1
-    overage = voice.notes.length - MAXIMUM_NOTES
-    while overage > 0
-      fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
-      overage -= 1
+  def self.analyze(voice)
+    fitness = fitness(voice)
+    if fitness < 1
+      mark = mark(voice)
     end
-    fitness
+    message = "Remove notes until you have at most thirteen notes." if fitness < 1
+    HeadMusic::Style::Annotation.new(subject: voice, fitness: fitness, marks: mark, message: message)
   end
 
-  def self.annotations(voice)
-    if fitness(voice) < 1
-      start_position = voice.notes[MAXIMUM_NOTES].position
-      end_position = voice.notes.last.next_position
-      [HeadMusic::Style::Annotation.new(voice, start_position, end_position, "Remove notes until you have at most thirteen notes.")]
-    end
+  def self.fitness(voice)
+    overage = voice.notes.length - MAXIMUM_NOTES
+    overage > 0 ? HeadMusic::GOLDEN_RATIO_INVERSE**overage : 1
+  end
+
+  def self.mark(voice)
+    Style::Mark.for_all(voice.notes[13..-1])
   end
 end

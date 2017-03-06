@@ -4,7 +4,7 @@ describe HeadMusic::Style::Rules::NotesSameLength do
   let(:composition) { Composition.new(name: "CF in C") }
   let(:voice) { Voice.new(composition: composition) }
   let(:rule) { described_class }
-  subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
+  subject(:annotation) { rule.analyze(voice) }
 
   context 'with no notes' do
     its(:fitness) { is_expected.to eq 1 }
@@ -52,19 +52,8 @@ describe HeadMusic::Style::Rules::NotesSameLength do
     end
 
     its(:fitness) { is_expected.to be < 1 }
-
-    it 'is annotated' do
-      expect(analysis.annotations.length).to eq 1
-    end
-
-    describe 'annotation' do
-      subject(:annotation) { analysis.annotations.first }
-
-      its(:range_string) { is_expected.to eq "1:1:000 to 5:1:000" }
-
-      it 'has a message' do
-        expect(annotation.message.length).to be > 8
-      end
-    end
+    its(:message) { is_expected.not_to be_empty }
+    its(:marks_count) { is_expected.to eq 4 }
+    its(:first_mark_code) { is_expected.to eq "2:1:000 to 2:3:000" }
   end
 end

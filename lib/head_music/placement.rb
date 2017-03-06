@@ -5,7 +5,7 @@ class HeadMusic::Placement
   delegate :composition, to: :voice
   delegate :spelling, to: :pitch, allow_nil: true
 
-  def initialize(voice, position, rhythmic_value, pitch)
+  def initialize(voice, position, rhythmic_value, pitch = nil)
     ensure_attributes(voice, position, rhythmic_value, pitch)
   end
 

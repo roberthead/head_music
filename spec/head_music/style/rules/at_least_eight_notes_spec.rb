@@ -3,24 +3,17 @@ require 'spec_helper'
 describe HeadMusic::Style::Rules::AtLeastEightNotes do
   let(:voice) { Voice.new }
   let(:rule) { described_class }
-  subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
+  subject(:annotation) { rule.analyze(voice) }
 
   context 'with no notes' do
     its(:fitness) { is_expected.to be < 0.1 }
+    its(:marks_count) { is_expected.to eq 1}
 
-    it 'is annotated' do
-      expect(analysis.annotations.length).to eq 1
+    it 'marks the trouble spots' do
+      expect(annotation.marks.first.code).to eq '1:1:000 to 2:1:000'
     end
 
-    describe 'annotation' do
-      subject(:annotation) { analysis.annotations.first }
-
-      its(:range_string) { is_expected.to eq "1:1:000 to 2:1:000" }
-
-      it 'has a message' do
-        expect(annotation.message.length).to be > 8
-      end
-    end
+    its(:message) { is_expected.not_to be_empty }
   end
 
   context 'with one note and some rests' do
@@ -36,11 +29,13 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
     end
 
     its(:fitness) { is_expected.to be < 0.25 }
+    its(:marks_count) { is_expected.to eq 1 }
 
-    specify { expect(analysis.annotations.length).to eq 1 }
-    specify { expect(analysis.annotations.first.start_position).to eq "3:1" }
-    specify { expect(analysis.annotations.first.end_position).to eq "6:1" }
-    specify { expect(analysis.annotations.first.range_string).to eq '3:1:000 to 6:1:000' }
+    describe 'mark' do
+      subject(:mark) { annotation.marks.first }
+
+      its(:code) { is_expected.to eq "3:1:000 to 6:1:000" }
+    end
   end
 
   context 'with one too few notes' do
@@ -71,8 +66,6 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
     end
 
     its(:fitness) { is_expected.to eq 1 }
-
-    its(:annotations) { are_expected.to eq [] }
   end
 
   context 'with plenty of notes' do
@@ -94,7 +87,5 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
     end
 
     its(:fitness) { is_expected.to eq 1 }
-
-    its(:annotations) { are_expected.to eq [] }
   end
 end

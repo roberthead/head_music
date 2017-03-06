@@ -2,30 +2,33 @@ module HeadMusic::Style::Rules
 end
 
 class HeadMusic::Style::Rules::StepDownToFinalNote < HeadMusic::Style::Rule
+  def self.analyze(voice)
+    fitness = fitness(voice)
+    if fitness < 1
+      message = 'Step down to final note.'
+      mark = HeadMusic::Style::Mark.for_all(voice.notes[-2..-1])
+    end
+    HeadMusic::Style::Annotation.new(subject: voice, fitness: fitness, marks: mark, message: message)
+  end
+
   def self.fitness(voice)
-    return 0 unless voice.notes.length >= 2
+    return 1 unless voice.notes.length >= 2
     fitness = 1
-    melodic_interval = voice.melodic_intervals.last
-    if !melodic_interval.step?
-      fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
-    end
-    if !melodic_interval.descending?
-      fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
-    end
+    fitness *= HeadMusic::GOLDEN_RATIO_INVERSE unless step?(voice)
+    fitness *= HeadMusic::GOLDEN_RATIO_INVERSE unless descending?(voice)
     fitness
   end
 
-  def self.annotations(voice)
-    if fitness(voice) < 1
-      melodic_interval = voice.melodic_intervals.last
-      if melodic_interval.nil?
-        start_position = voice.placements.last ? voice.placements.last.position : '1:1'
-        end_position = start_position.start_of_next_bar
-      else
-        start_position = voice.notes[-2].position
-        end_position = voice.notes[-1].next_position
-      end
-      [HeadMusic::Style::Annotation.new(voice, start_position, end_position, "Step down to final note.")]
-    end
+  def self.descending?(voice)
+    last_melodic_interval(voice).descending?
+  end
+
+  def self.step?(voice)
+    last_melodic_interval(voice).step?
+  end
+
+  def self.last_melodic_interval(voice)
+    @last_melodic_interval ||= {}
+    @last_melodic_interval[voice] ||= voice.melodic_intervals.last
   end
 end

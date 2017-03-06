@@ -1,28 +1,28 @@
 class HeadMusic::Style::Annotation
-  attr_reader :start_position, :end_position, :message
+  attr_reader :fitness, :message, :marks, :subject
 
-  # Note: message should be a directive.
-  # For example:
-  #   "Reduce frequency of skips"
-  #   "Make strong beats consonant"
-  #   "Use the notes in the key signature"
-
-  delegate :composition, to: :voice
-
-  def initialize(voice, start_position, end_position, message)
-    @voice = voice
-    @start_position = start_position
-    @end_position = end_position
+  def initialize(subject:, fitness:, message: nil, marks: nil)
+    @subject = subject
+    @fitness = fitness
     @message = message
+    @marks = [marks].flatten.compact
   end
 
-  def range_string
-    [start_position.code, end_position.code].join(' to ')
+  def voice
+    subject if subject.is_a?(HeadMusic::Voice)
   end
 
-  def description
-    [range_string, message].join(' – ')
+  def composition
+    voice ? voice.composition : subject
   end
 
-  alias_method :to_s, :description
+  def marks_count
+    marks ? marks.length : 0
+  end
+
+  def first_mark_code
+    marks.first.code if marks.first
+  end
+
+  alias_method :to_s, :message
 end

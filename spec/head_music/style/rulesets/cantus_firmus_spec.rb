@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::CantusFirmus do
+describe HeadMusic::Style::Rulesets::CantusFirmus do
   context 'with Fuxian examples' do
-    let(:rule) { described_class }
-    subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
+    let(:ruleset) { described_class }
+    subject(:analysis) { HeadMusic::Style::Analysis.new(ruleset, voice) }
 
     [
       { key: 'D dorian', pitches: %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] },
@@ -12,11 +12,10 @@ describe HeadMusic::Style::Rules::CantusFirmus do
     ].each do |fux_example|
       context "#{fux_example[:pitches].join(' ')} in #{fux_example[:key]}" do
         let(:composition) { Composition.new(name: "CF in #{fux_example[:key]}", key_signature: fux_example[:key]) }
-        let(:voice) do
-          Voice.new(composition: composition).tap do |voice|
-            fux_example[:pitches].each_with_index do |pitch, bar|
-              voice.place("#{bar + 1}:1", :whole, pitch)
-            end
+        let(:voice) { Voice.new(composition: composition) }
+        before do
+          fux_example[:pitches].each_with_index do |pitch, bar|
+            voice.place("#{bar + 1}:1", :whole, pitch)
           end
         end
 
@@ -40,10 +39,6 @@ describe HeadMusic::Style::Rules::CantusFirmus do
 
       its(:fitness) { is_expected.to be < 1 }
       its(:fitness) { is_expected.to be > 0 }
-
-      it 'is annotated' do
-        expect(analysis.annotations.length).to eq 1
-      end
     end
 
     context 'with fewer than 8 notes' do
@@ -55,10 +50,6 @@ describe HeadMusic::Style::Rules::CantusFirmus do
 
       its(:fitness) { is_expected.to be < 1 }
       its(:fitness) { is_expected.to be > 0 }
-
-      it 'is annotated' do
-        expect(analysis.annotations.length).to eq 1
-      end
     end
 
     context 'with a rest in the line' do
@@ -69,10 +60,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
       end
 
       its(:fitness) { is_expected.to be < 1 }
-
-      it 'is annotated' do
-        expect(analysis.annotations.length).to eq 1
-      end
+      its(:fitness) { is_expected.to be > 0 }
     end
 
     context 'when it does not start on the tonic' do
@@ -83,10 +71,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
       end
 
       its(:fitness) { is_expected.to be < 1 }
-
-      it 'is annotated' do
-        expect(analysis.annotations.length).to eq 1
-      end
+      its(:fitness) { is_expected.to be > 0 }
     end
 
     context 'when it does not end on the tonic' do
@@ -97,10 +82,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
       end
 
       its(:fitness) { is_expected.to be < 1 }
-
-      it 'is annotated' do
-        expect(analysis.annotations.length).to eq 1
-      end
+      its(:fitness) { is_expected.to be > 0 }
     end
 
     context 'when it skips to the final note' do
@@ -111,10 +93,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
       end
 
       its(:fitness) { is_expected.to be < 1 }
-
-      it 'is annotated' do
-        expect(analysis.annotations.length).to eq 1
-      end
+      its(:fitness) { is_expected.to be > 0 }
     end
 
     context 'when notes are not of equal rhythmic value' do
@@ -130,10 +109,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
       end
 
       its(:fitness) { is_expected.to be < 1 }
-
-      it 'is annotated' do
-        expect(analysis.annotations.length).to eq 1
-      end
+      its(:fitness) { is_expected.to be > 0 }
     end
 
     context 'when a note repeats' do
@@ -144,10 +120,7 @@ describe HeadMusic::Style::Rules::CantusFirmus do
       end
 
       its(:fitness) { is_expected.to be < 1 }
-
-      it 'is annotated' do
-        expect(analysis.annotations.length).to eq 1
-      end
+      its(:fitness) { is_expected.to be > 0 }
     end
   end
 end
