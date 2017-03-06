@@ -37,6 +37,21 @@ describe Voice do
     its(:rests) { are_expected.to eq [rest1, rest2] }
   end
 
+  describe '#notes_not_in_key' do
+    context 'with some accidentals' do
+      before do
+        %w[C D E F# G E C Bb3 C].each_with_index do |pitch, bar|
+          voice.place("#{bar + 1}:1", :whole, pitch)
+        end
+      end
+
+      it 'returns the notes not in the key' do
+        expect(voice.notes_not_in_key.length).to eq 2
+        expect(voice.notes_not_in_key.map(&:pitch)).to eq %w[F#4 Bb3]
+      end
+    end
+  end
+
   describe 'melody' do
     before do
       %w[G3 C4 D4 Eb4 F4 Eb G3].each_with_index do |pitch, bar|

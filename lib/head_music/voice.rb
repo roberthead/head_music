@@ -2,6 +2,7 @@ class HeadMusic::Voice
   include Comparable
 
   attr_reader :composition, :placements, :role
+  delegate :key_signature, to: :composition
 
   def initialize(composition: nil, role: nil)
     @composition = composition || Composition.new(name: "Composition")
@@ -17,6 +18,11 @@ class HeadMusic::Voice
 
   def notes
     @placements.select(&:note?)
+  end
+
+  def notes_not_in_key
+    key_pitches = key_signature.pitches
+    notes.reject { |note| key_pitches.include? note.pitch }
   end
 
   def pitches
