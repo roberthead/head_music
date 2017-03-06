@@ -15,7 +15,7 @@ class HeadMusic::Style::Rules::NotesSameLength < HeadMusic::Style::Rule
     if fitness(voice) < 1
       start_position = voice.notes.length > 0 ? voice.notes.first.position : '1:1'
       end_position = voice.notes.length > 0 ? voice.notes.last.next_position : '2:1'
-      [HeadMusic::Style::Annotation.new(voice, start_position, end_position, "Add more notes")]
+      [HeadMusic::Style::Annotation.new(voice, start_position, end_position, "Use consistent rhythmic unit.")]
     end
   end
 end

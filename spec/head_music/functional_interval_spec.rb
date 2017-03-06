@@ -58,8 +58,8 @@ describe FunctionalInterval do
     it { is_expected.not_to be_step }
     it { is_expected.not_to be_skip }
     it { is_expected.to be_leap }
-    it { is_expected.to be_upward }
-    it { is_expected.not_to be_downward }
+    it { is_expected.to be_ascending }
+    it { is_expected.not_to be_descending }
 
     describe 'simplification' do
       its(:simple_number) { is_expected.to eq subject.number }

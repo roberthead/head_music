@@ -63,16 +63,27 @@ class HeadMusic::FunctionalInterval
   def initialize(pitch1, pitch2)
     pitch1 = HeadMusic::Pitch.get(pitch1)
     pitch2 = HeadMusic::Pitch.get(pitch2)
-    @direction = pitch1 < pitch2 ? :upward : :downward
+    set_direction(pitch1, pitch2)
     @lower_pitch, @higher_pitch = [pitch1, pitch2].sort
   end
 
-  def downward?
-    direction == :downward
+  def set_direction(pitch1, pitch2)
+    @direction =
+      if pitch1 == pitch2
+        :none
+      elsif pitch1 < pitch2
+        :ascending
+      else
+        :descending
+      end
   end
 
-  def upward?
-    direction == :upward
+  def descending?
+    direction == :descending
+  end
+
+  def ascending?
+    direction == :ascending
   end
 
   def number
@@ -118,7 +129,8 @@ class HeadMusic::FunctionalInterval
   end
 
   def shorthand
-    [quality.shorthand, number].join
+    step_shorthand = number == 1 ? 'U' : number
+    [quality.shorthand, step_shorthand].join
   end
 
   def quality

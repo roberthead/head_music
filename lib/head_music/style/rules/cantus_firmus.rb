@@ -4,13 +4,14 @@ end
 class HeadMusic::Style::Rules::CantusFirmus < HeadMusic::Style::Rule
   MINIMUM_NOTES = 7
   RULESET = [
+    HeadMusic::Style::Rules::AlwaysMove,
     HeadMusic::Style::Rules::AtLeastEightNotes,
-    HeadMusic::Style::Rules::UpToThirteenNotes,
-    HeadMusic::Style::Rules::NoRests,
-    HeadMusic::Style::Rules::StartOnTonic,
     HeadMusic::Style::Rules::EndOnTonic,
-    HeadMusic::Style::Rules::StepDownToFinalNote,
+    HeadMusic::Style::Rules::NoRests,
     HeadMusic::Style::Rules::NotesSameLength,
+    HeadMusic::Style::Rules::StartOnTonic,
+    HeadMusic::Style::Rules::StepDownToFinalNote,
+    HeadMusic::Style::Rules::UpToThirteenNotes,
   ]
 
   def self.fitness(voice)

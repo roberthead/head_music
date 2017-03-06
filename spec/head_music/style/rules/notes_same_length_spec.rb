@@ -10,7 +10,7 @@ describe HeadMusic::Style::Rules::NotesSameLength do
     its(:fitness) { is_expected.to eq 1 }
   end
 
-  context 'with one notes' do
+  context 'with one note' do
     before do
       voice.place("1:1", :whole, 'C')
     end

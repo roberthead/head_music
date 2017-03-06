@@ -36,6 +36,7 @@ require 'head_music/style/annotation'
 require 'head_music/style/rule'
 
 # rules
+require 'head_music/style/rules/always_move'
 require 'head_music/style/rules/at_least_eight_notes'
 require 'head_music/style/rules/end_on_tonic'
 require 'head_music/style/rules/no_rests'

@@ -5,7 +5,7 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
   let(:rule) { described_class }
   subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
 
-  context 'when no notes' do
+  context 'with no notes' do
     its(:fitness) { is_expected.to be < 0.1 }
 
     it 'is annotated' do

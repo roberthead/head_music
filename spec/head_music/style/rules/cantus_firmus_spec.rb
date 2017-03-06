@@ -123,10 +123,24 @@ describe HeadMusic::Style::Rules::CantusFirmus do
         voice.place("2:1", :half, 'E4')
         voice.place("2:3", :half, 'F4')
         voice.place("3:1", :whole, 'E4')
-        voice.place("2:1", :half, 'E4')
-        voice.place("2:3", :half, 'F4')
-        voice.place("3:1", :whole, 'E4')
-        voice.place("4:1", :whole, 'D4')
+        voice.place("4:1", :half, 'G4')
+        voice.place("4:3", :half, 'F4')
+        voice.place("5:1", :whole, 'E4')
+        voice.place("6:1", :whole, 'D4')
+      end
+
+      its(:fitness) { is_expected.to be < 1 }
+
+      it 'is annotated' do
+        expect(analysis.annotations.length).to eq 1
+      end
+    end
+
+    context 'when a note repeats' do
+      before do
+        %w[D4 E4 F4 G4 F4 E4 E4 F4 E4 D4].each_with_index do |pitch, bar|
+          voice.place("#{bar + 1}:1", :whole, pitch)
+        end
       end
 
       its(:fitness) { is_expected.to be < 1 }

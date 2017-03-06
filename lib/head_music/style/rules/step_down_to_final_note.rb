@@ -9,7 +9,7 @@ class HeadMusic::Style::Rules::StepDownToFinalNote < HeadMusic::Style::Rule
     if !melodic_interval.step?
       fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
     end
-    if !melodic_interval.downward?
+    if !melodic_interval.descending?
       fitness *= HeadMusic::GOLDEN_RATIO_INVERSE
     end
     fitness
