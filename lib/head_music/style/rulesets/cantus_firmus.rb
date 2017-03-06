@@ -5,6 +5,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
   RULESET = [
     HeadMusic::Style::Rules::AlwaysMove,
     HeadMusic::Style::Rules::AtLeastEightNotes,
+    HeadMusic::Style::Rules::Diatonic,
     HeadMusic::Style::Rules::EndOnTonic,
     HeadMusic::Style::Rules::LimitRange,
     HeadMusic::Style::Rules::NoRests,

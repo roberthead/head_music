@@ -21,8 +21,8 @@ class HeadMusic::Voice
   end
 
   def notes_not_in_key
-    key_pitches = key_signature.pitches
-    notes.reject { |note| key_pitches.include? note.pitch }
+    key_spellings = key_signature.pitches.map(&:spelling).uniq
+    notes.reject { |note| key_spellings.include? note.pitch.spelling }
   end
 
   def pitches
