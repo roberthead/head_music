@@ -37,7 +37,7 @@ describe Voice do
     its(:rests) { are_expected.to eq [rest1, rest2] }
   end
 
-  describe '#melodic_intervals' do
+  describe 'melody' do
     before do
       %w[G3 C4 D4 Eb4 F4 Eb G3].each_with_index do |pitch, bar|
         voice.place("#{bar + 1}:1", :whole, pitch)
@@ -47,6 +47,12 @@ describe Voice do
     it 'determines the intervals' do
       expect(voice.melodic_intervals.map(&:shorthand)).to eq %w[P4 M2 m2 M2 M2 m6]
     end
+
+    its(:range) { is_expected.to eq 'minor seventh' }
+    its(:highest_pitch) { is_expected.to eq 'F4' }
+    its(:lowest_pitch) { is_expected.to eq 'G3' }
+    its(:highest_notes) { are_expected.to eq [voice.notes[4]] }
+    its(:lowest_notes) { is_expected.to eq [voice.notes.first, voice.notes.last] }
   end
 
   context 'when a role is provided' do

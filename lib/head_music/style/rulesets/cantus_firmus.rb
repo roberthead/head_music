@@ -6,6 +6,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
     HeadMusic::Style::Rules::AlwaysMove,
     HeadMusic::Style::Rules::AtLeastEightNotes,
     HeadMusic::Style::Rules::EndOnTonic,
+    HeadMusic::Style::Rules::LimitRange,
     HeadMusic::Style::Rules::NoRests,
     HeadMusic::Style::Rules::NotesSameLength,
     HeadMusic::Style::Rules::StartOnTonic,

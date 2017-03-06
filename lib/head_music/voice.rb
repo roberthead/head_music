@@ -27,6 +27,27 @@ class HeadMusic::Voice
     @placements.select(&:rest?)
   end
 
+  def highest_pitch
+    pitches.sort.last
+  end
+
+  def lowest_pitch
+    pitches.sort.first
+  end
+
+  def highest_notes
+    notes.select { |note| note.pitch == highest_pitch }
+  end
+
+  def lowest_notes
+    notes.select { |note| note.pitch == lowest_pitch }
+  end
+
+  def range
+    HeadMusic::FunctionalInterval.new(lowest_pitch, highest_pitch)
+  end
+
+  # TODO refactor
   def melodic_intervals
     intervals = []
     last_pitch = nil
