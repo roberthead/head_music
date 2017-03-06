@@ -8,6 +8,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
     HeadMusic::Style::Rules::Diatonic,
     HeadMusic::Style::Rules::EndOnTonic,
     HeadMusic::Style::Rules::LimitRange,
+    HeadMusic::Style::Rules::MostlyConjunct,
     HeadMusic::Style::Rules::NoRests,
     HeadMusic::Style::Rules::NotesSameLength,
     HeadMusic::Style::Rules::StartOnTonic,
