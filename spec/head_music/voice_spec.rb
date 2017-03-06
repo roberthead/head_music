@@ -37,6 +37,18 @@ describe Voice do
     its(:rests) { are_expected.to eq [rest1, rest2] }
   end
 
+  describe '#melodic_intervals' do
+    before do
+      %w[G3 C4 D4 Eb4 F4 Eb G3].each_with_index do |pitch, bar|
+        voice.place("#{bar + 1}:1", :whole, pitch)
+      end
+    end
+
+    it 'determines the intervals' do
+      expect(voice.melodic_intervals.map(&:shorthand)).to eq %w[P4 M2 m2 M2 M2 m6]
+    end
+  end
+
   context 'when a role is provided' do
     subject(:voice) { Voice.new(composition: composition, role: 'Cantus Firmus') }
 

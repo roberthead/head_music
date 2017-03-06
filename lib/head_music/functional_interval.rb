@@ -22,7 +22,7 @@ class HeadMusic::FunctionalInterval
     seventeenth: { major: 28 }
   }
 
-  attr_reader :lower_pitch, :higher_pitch
+  attr_reader :lower_pitch, :higher_pitch, :direction
 
   delegate :to_s, to: :name
   delegate :==, to: :to_s
@@ -61,7 +61,18 @@ class HeadMusic::FunctionalInterval
   end
 
   def initialize(pitch1, pitch2)
-    @lower_pitch, @higher_pitch = [HeadMusic::Pitch.get(pitch1), HeadMusic::Pitch.get(pitch2)].sort
+    pitch1 = HeadMusic::Pitch.get(pitch1)
+    pitch2 = HeadMusic::Pitch.get(pitch2)
+    @direction = pitch1 < pitch2 ? :upward : :downward
+    @lower_pitch, @higher_pitch = [pitch1, pitch2].sort
+  end
+
+  def downward?
+    direction == :downward
+  end
+
+  def upward?
+    direction == :upward
   end
 
   def number
@@ -156,12 +167,16 @@ class HeadMusic::FunctionalInterval
     end
   end
 
-  def skip?
-    number > 2
-  end
-
   def step?
     number <= 2
+  end
+
+  def skip?
+    number == 3
+  end
+
+  def leap?
+    number > 3
   end
 
   NUMBER_NAMES.each do |method_name|

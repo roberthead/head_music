@@ -19,8 +19,24 @@ class HeadMusic::Voice
     @placements.select(&:note?)
   end
 
+  def pitches
+    notes.map(&:pitch)
+  end
+
   def rests
     @placements.select(&:rest?)
+  end
+
+  def melodic_intervals
+    intervals = []
+    last_pitch = nil
+    pitches.each_with_index do |pitch, i|
+      if i > 0
+        intervals << FunctionalInterval.new(last_pitch, pitch)
+      end
+      last_pitch = pitch
+    end
+    intervals
   end
 
   private

@@ -6,13 +6,15 @@ describe FunctionalInterval do
     let(:aug4) { FunctionalInterval.get(:augmented_fourth) }
     let(:dim5) { FunctionalInterval.get('diminished fifth') }
 
-    specify { expect(maj3.lower_pitch).to eq 'C4' }
-    specify { expect(aug4.lower_pitch).to eq 'C4' }
-    specify { expect(dim5.lower_pitch).to eq 'C4' }
+    describe 'default position' do
+      specify { expect(maj3.lower_pitch).to eq 'C4' }
+      specify { expect(aug4.lower_pitch).to eq 'C4' }
+      specify { expect(dim5.lower_pitch).to eq 'C4' }
 
-    specify { expect(maj3.higher_pitch).to eq 'E4' }
-    specify { expect(aug4.higher_pitch).to eq 'F#4' }
-    specify { expect(dim5.higher_pitch).to eq 'Gb4' }
+      specify { expect(maj3.higher_pitch).to eq 'E4' }
+      specify { expect(aug4.higher_pitch).to eq 'F#4' }
+      specify { expect(dim5.higher_pitch).to eq 'Gb4' }
+    end
   end
 
   describe 'predicate methods' do
@@ -36,12 +38,13 @@ describe FunctionalInterval do
       specify { expect(maj3).not_to be_seventh }
       specify { expect(maj3).not_to be_octave }
 
-      specify { expect(maj3).to be_skip }
       specify { expect(maj3).not_to be_step }
+      specify { expect(maj3).to be_skip }
+      specify { expect(maj3).not_to be_leap }
     end
   end
 
-  context 'given a simple interval' do
+  context 'given two pitches comprising a simple interval' do
     subject { FunctionalInterval.new('A4', 'E5') }
 
     its(:name) { is_expected.to eq 'perfect fifth' }
@@ -51,6 +54,12 @@ describe FunctionalInterval do
     its(:shorthand) { is_expected.to eq 'P5' }
     it { is_expected.to be_simple }
     it { is_expected.not_to be_compound }
+
+    it { is_expected.not_to be_step }
+    it { is_expected.not_to be_skip }
+    it { is_expected.to be_leap }
+    it { is_expected.to be_upward }
+    it { is_expected.not_to be_downward }
 
     describe 'simplification' do
       its(:simple_number) { is_expected.to eq subject.number }
