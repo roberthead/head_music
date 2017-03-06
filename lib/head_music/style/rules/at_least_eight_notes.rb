@@ -14,7 +14,7 @@ class HeadMusic::Style::Rules::AtLeastEightNotes < HeadMusic::Style::Rule
     if fitness(voice) < 1
       if voice.notes && voice.notes.last
         start_position = voice.notes.last.position
-        end_position = voice.placements.last.position.start_of_next_measure
+        end_position = voice.placements.last.position.start_of_next_bar
       else
         start_position = HeadMusic::Position.new(voice.composition, "1:1")
         end_position = HeadMusic::Position.new(voice.composition, "2:1")

@@ -20,7 +20,7 @@ class HeadMusic::Style::Rules::StepDownToFinalNote < HeadMusic::Style::Rule
       melodic_interval = voice.melodic_intervals.last
       if melodic_interval.nil?
         start_position = voice.placements.last ? voice.placements.last.position : '1:1'
-        end_position = start_position.start_of_next_measure
+        end_position = start_position.start_of_next_bar
       else
         start_position = voice.notes[-2].position
         end_position = voice.notes[-1].next_position

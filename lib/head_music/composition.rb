@@ -1,20 +1,20 @@
 class HeadMusic::Composition
-  attr_reader :name, :key_signature, :meter, :measures, :voices
+  attr_reader :name, :key_signature, :meter, :bars, :voices
 
   def initialize(name:, key_signature: nil, meter: nil)
     ensure_attributes(name, key_signature, meter)
-    add_measure
+    add_bar
     add_voice
   end
 
-  def add_measure
-    add_measures(1)
+  def add_bar
+    add_bars(1)
   end
 
-  def add_measures(number)
-    @measures ||= []
+  def add_bars(number)
+    @bars ||= []
     number.times do
-      @measures << HeadMusic::Measure.new(self)
+      @bars << HeadMusic::Bar.new(self)
     end
   end
 

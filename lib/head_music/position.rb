@@ -1,22 +1,22 @@
 class HeadMusic::Position
   include Comparable
 
-  attr_reader :composition, :measure_number, :count, :tick
+  attr_reader :composition, :bar_number, :count, :tick
   delegate :to_s, to: :code
   delegate :meter, to: :composition
 
-  def initialize(composition, code_or_measure, count = nil, tick = nil)
-    if code_or_measure.is_a?(String) && code_or_measure =~ /\D/
-      measure, count, tick = code_or_measure.split(/\D+/)
-      ensure_state(composition, measure, count, tick)
+  def initialize(composition, code_or_bar, count = nil, tick = nil)
+    if code_or_bar.is_a?(String) && code_or_bar =~ /\D/
+      bar, count, tick = code_or_bar.split(/\D+/)
+      ensure_state(composition, bar, count, tick)
     else
-      ensure_state(composition, code_or_measure, count, tick)
+      ensure_state(composition, code_or_bar, count, tick)
     end
   end
 
   def code
     tick_string = tick.to_s.rjust(3, '0')
-    [measure_number, count, tick_string].join(':')
+    [bar_number, count, tick_string].join(':')
   end
 
   def state
@@ -24,7 +24,7 @@ class HeadMusic::Position
   end
 
   def values
-    [measure_number, count, tick]
+    [bar_number, count, tick]
   end
 
   def <=>(other)
@@ -50,18 +50,18 @@ class HeadMusic::Position
     if [HeadMusic::RhythmicUnit, Symbol, String].include?(rhythmic_value.class)
       rhythmic_value = HeadMusic::RhythmicValue.new(rhythmic_value)
     end
-    self.class.new(composition, measure_number, count, tick + rhythmic_value.ticks)
+    self.class.new(composition, bar_number, count, tick + rhythmic_value.ticks)
   end
 
-  def start_of_next_measure
-    self.class.new(composition, measure_number + 1, 1, 0)
+  def start_of_next_bar
+    self.class.new(composition, bar_number + 1, 1, 0)
   end
 
   private
 
-  def ensure_state(composition, measure_number, count, tick = nil)
+  def ensure_state(composition, bar_number, count, tick = nil)
     @composition = composition
-    @measure_number = measure_number.to_i
+    @bar_number = bar_number.to_i
     @count = (count || 1).to_i
     @tick = (tick || 0).to_i
     roll_over_units
@@ -80,9 +80,9 @@ class HeadMusic::Position
   end
 
   def roll_over_counts
-    while @count > meter.counts_per_measure
-      @count -= meter.counts_per_measure
-      @measure_number += 1
+    while @count > meter.counts_per_bar
+      @count -= meter.counts_per_bar
+      @bar_number += 1
     end
   end
 end

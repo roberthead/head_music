@@ -50,11 +50,11 @@ class HeadMusic::Meter
     top_number == 4
   end
 
-  def beats_per_measure
+  def beats_per_bar
     compound? ? top_number / 3 : top_number
   end
 
-  def counts_per_measure
+  def counts_per_bar
     top_number
   end
 
@@ -101,12 +101,12 @@ class HeadMusic::Meter
 
   def strong_counts
     @strong_counts ||= begin
-      (1..counts_per_measure).select do |count|
+      (1..counts_per_bar).select do |count|
         count == 1 ||
-        count == counts_per_measure / 2.0 + 1 ||
+        count == counts_per_bar / 2.0 + 1 ||
         (
-          counts_per_measure % 3 == 0 &&
-          counts_per_measure > 6 &&
+          counts_per_bar % 3 == 0 &&
+          counts_per_bar > 6 &&
           count % 3 == 1
         )
       end

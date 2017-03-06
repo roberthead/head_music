@@ -7,8 +7,8 @@ describe Composition do
     expect(composition.name).to eq 'Fruit Salad'
   end
 
-  it 'initializes one measure' do
-    expect(composition.measures.length).to eq 1
+  it 'initializes one bar' do
+    expect(composition.bars.length).to eq 1
   end
 
   it 'defaults to the key of C major' do

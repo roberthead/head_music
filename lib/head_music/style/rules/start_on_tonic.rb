@@ -14,7 +14,7 @@ class HeadMusic::Style::Rules::StartOnTonic < HeadMusic::Style::Rule
   def self.annotations(voice)
     if fitness(voice) < 1
       start_position = Position.new(voice.composition, "1:1")
-      end_position = start_position.start_of_next_measure
+      end_position = start_position.start_of_next_bar
       [HeadMusic::Style::Annotation.new(voice, start_position, end_position, "Start on the tonic")]
     end
   end
