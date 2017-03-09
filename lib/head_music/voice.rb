@@ -53,17 +53,10 @@ class HeadMusic::Voice
     HeadMusic::FunctionalInterval.new(lowest_pitch, highest_pitch)
   end
 
-  # TODO refactor
   def melodic_intervals
-    intervals = []
-    last_pitch = nil
-    pitches.each_with_index do |pitch, i|
-      if i > 0
-        intervals << FunctionalInterval.new(last_pitch, pitch)
-      end
-      last_pitch = pitch
-    end
-    intervals
+    pitches.map.with_index do |pitch, i|
+      HeadMusic::MelodicInterval.new(self, pitches[i-1], pitch) if i > 0
+    end.reject(&:nil?)
   end
 
   private
