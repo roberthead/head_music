@@ -13,5 +13,6 @@ describe MelodicInterval do
   its(:functional_interval) { is_expected.to eq "perfect fourth" }
   its(:position_start) { is_expected.to eq '2:1' }
   its(:position_end) { is_expected.to eq '2:4' }
+  its(:notes) { are_expected.to eq [note1, note2] }
   its(:to_s) { is_expected.to eq 'ascending perfect fourth' }
 end

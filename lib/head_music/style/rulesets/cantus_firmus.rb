@@ -11,6 +11,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
     HeadMusic::Style::Rules::MostlyConjunct,
     HeadMusic::Style::Rules::NoRests,
     HeadMusic::Style::Rules::NotesSameLength,
+    HeadMusic::Style::Rules::RecoverLeaps,
     HeadMusic::Style::Rules::StartOnTonic,
     HeadMusic::Style::Rules::StepDownToFinalNote,
     HeadMusic::Style::Rules::UpToThirteenNotes,

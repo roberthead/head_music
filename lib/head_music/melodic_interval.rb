@@ -19,6 +19,10 @@ class HeadMusic::MelodicInterval
     second_note.next_position
   end
 
+  def notes
+    [first_note, second_note]
+  end
+
   def to_s
     [direction, functional_interval].join(' ')
   end

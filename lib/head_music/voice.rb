@@ -59,6 +59,10 @@ class HeadMusic::Voice
     end.reject(&:nil?)
   end
 
+  def leaps
+    melodic_intervals.select(&:leap?)
+  end
+
   private
 
   def insert_into_placements(placement)
