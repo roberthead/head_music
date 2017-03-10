@@ -8,7 +8,7 @@ class HeadMusic::MelodicInterval
   end
 
   def functional_interval
-    @functional_interval ||= HeadMusic::FunctionalInterval.new(first_note, second_note)
+    @functional_interval ||= HeadMusic::FunctionalInterval.new(first_note.pitch, second_note.pitch)
   end
 
   def position_start
@@ -17,6 +17,10 @@ class HeadMusic::MelodicInterval
 
   def position_end
     second_note.next_position
+  end
+
+  def to_s
+    [direction, functional_interval].join(' ')
   end
 
   def method_missing(method_name, *args, &block)

@@ -54,8 +54,8 @@ class HeadMusic::Voice
   end
 
   def melodic_intervals
-    pitches.map.with_index do |pitch, i|
-      HeadMusic::MelodicInterval.new(self, pitches[i-1], pitch) if i > 0
+    notes.map.with_index do |note, i|
+      HeadMusic::MelodicInterval.new(self, notes[i-1], note) if i > 0
     end.reject(&:nil?)
   end
 

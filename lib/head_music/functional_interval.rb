@@ -25,7 +25,6 @@ class HeadMusic::FunctionalInterval
   attr_reader :lower_pitch, :higher_pitch, :direction
 
   delegate :to_s, to: :name
-  delegate :==, to: :to_s
   delegate :perfect?, :major?, :minor?, :diminished?, :augmented?, :doubly_diminished?, :doubly_augmented?, to: :quality
 
   def self.get(name)
@@ -189,6 +188,10 @@ class HeadMusic::FunctionalInterval
 
   def leap?
     number > 3
+  end
+
+  def ==(other)
+    self.to_s.gsub(/\W/, '_') == other.to_s.gsub(/\W/, '_')
   end
 
   NUMBER_NAMES.each do |method_name|
