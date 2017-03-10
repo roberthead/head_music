@@ -4,6 +4,39 @@ class HeadMusic::RhythmicValue
   delegate :name, to: :unit, prefix: true
   delegate :to_s, to: :name
 
+  def self.get(identifier)
+    case identifier
+    when RhythmicValue
+      identifier
+    when RhythmicUnit
+      new(identifier)
+    when Symbol, String
+      identifier = identifier.to_s.downcase.strip.gsub(/\W+/, '_')
+      from_words(identifier)
+    end
+  end
+
+  def self.from_words(identifier)
+    new(unit_from_words(identifier), dots: dots_from_words(identifier))
+  end
+
+  def self.unit_from_words(identifier)
+    identifier.gsub(/^\w*dotted_/, '')
+  end
+
+  def self.dots_from_words(identifier)
+    return 0 unless identifier =~ /dotted/
+    modifier, _ = identifier.split(/_*dotted_*/)
+    case modifier
+    when /tripl\w/
+      3
+    when /doubl\w/
+      2
+    else
+      1
+    end
+  end
+
   def initialize(unit, dots: nil, tied_value: nil)
     @unit = HeadMusic::RhythmicUnit.get(unit)
     @dots = [0, 1, 2, 3].include?(dots) ? dots : 0

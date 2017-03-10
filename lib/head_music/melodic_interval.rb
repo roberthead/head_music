@@ -11,6 +11,14 @@ class HeadMusic::MelodicInterval
     @functional_interval ||= HeadMusic::FunctionalInterval.new(first_note, second_note)
   end
 
+  def position_start
+    first_note.position
+  end
+
+  def position_end
+    second_note.next_position
+  end
+
   def method_missing(method_name, *args, &block)
     functional_interval.send(method_name, *args, &block)
   end

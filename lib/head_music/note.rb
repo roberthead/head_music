@@ -1,14 +1,18 @@
 class HeadMusic::Note
-  attr_reader :pitch, :rhythmic_value
+  attr_accessor :pitch, :rhythmic_value, :voice, :position
 
-  delegate :ticks, to: :rhythmic_value
-
-  def initialize(pitch, rhythmic_unit, rhythmic_value_modifiers = {})
+  def initialize(pitch, rhythmic_value, voice = nil, position = nil)
     @pitch = HeadMusic::Pitch.get(pitch)
-    @rhythmic_value = HeadMusic::RhythmicValue.new(rhythmic_unit, rhythmic_value_modifiers)
+    @rhythmic_value = HeadMusic::RhythmicValue.get(rhythmic_value)
+    @voice = voice || Voice.new
+    @position = position || HeadMusic::Position.new(@voice.composition, '1:1')
   end
 
-  def duration
-    rhythmic_value.total_value
+  def placement
+    @placement ||= HeadMusic::Placement.new(voice, position, rhythmic_value, pitch)
+  end
+
+  def method_missing(method_name, *args, &block)
+    placement.send(method_name, *args, &block)
   end
 end
