@@ -5,7 +5,7 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
     { key: 'D dorian', pitches: %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] },
     { key: 'E phrygian', pitches: %w[E4 C4 D4 C4 A3 A4 G4 E4 F4 E4] },
 
-    # this one fails the RecoverLeaps rule
+    # this one fails the RecoverLargeLeaps rule
     # maybe change rule to allow spelling of the tonic chord?
     { key: 'F lydian', pitches: %w[F4 G4 A4 F4 D4 E4 F4 C5 A4 F4 G4 F4] },
   ]

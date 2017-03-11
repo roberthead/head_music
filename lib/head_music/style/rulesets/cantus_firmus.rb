@@ -12,7 +12,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
     HeadMusic::Style::Rules::NoRests,
     HeadMusic::Style::Rules::NotesSameLength,
     HeadMusic::Style::Rules::PermittedIntervals,
-    HeadMusic::Style::Rules::RecoverLeaps,
+    HeadMusic::Style::Rules::RecoverLargeLeaps,
     HeadMusic::Style::Rules::StartOnTonic,
     HeadMusic::Style::Rules::StepDownToFinalNote,
     HeadMusic::Style::Rules::UpToThirteenNotes,

@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::RecoverLeaps < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::RecoverLargeLeaps < HeadMusic::Style::Rule
   def self.analyze(voice)
     marks, fitness = check(voice)
     if fitness < 1

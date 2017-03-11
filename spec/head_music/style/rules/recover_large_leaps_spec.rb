@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::RecoverLeaps do
+describe HeadMusic::Style::Rules::RecoverLargeLeaps do
   let(:composition) { Composition.new(name: "Majestic D", key_signature: 'D dorian') }
   let(:voice) { Voice.new(composition: composition) }
   let(:rule) { described_class }
