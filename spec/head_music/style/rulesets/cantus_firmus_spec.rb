@@ -30,7 +30,7 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
   end
 
   describe 'when in D dorian' do
-    let(:composition) { Composition.new(name: 'Majestic D', key_signature: 'D dorian') }
+    let(:composition) { Composition.new(key_signature: 'D dorian') }
     let(:voice) { Voice.new(composition: composition, role: 'Cantus firmus') }
     let(:rule) { described_class }
     subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
@@ -130,7 +130,7 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
 
     context 'when the range is large' do
       before do
-        %w[D4 A3 D4 E4 F4 D4 A4 F4 D5 D4].each_with_index do |pitch, bar|
+        %w[D4 A3 B3 D4 E4 F4 D4 A4 F4 D5].each_with_index do |pitch, bar|
           voice.place("#{bar + 1}:1", :whole, pitch)
         end
       end

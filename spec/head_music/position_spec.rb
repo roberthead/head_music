@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Position do
   subject(:position) { Position.new(composition, bar_number, count, tick) }
-  let(:composition) { Composition.new(name: 'Back Beat') }
+  let(:composition) { Composition.new }
   let(:bar_number) { 3 }
   let(:count) { 2 }
   let(:tick) { 480 }

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Rules::EndOnTonic do
-  let(:composition) { Composition.new(name: "CF in C") }
+  let(:composition) { Composition.new }
   let(:voice) { Voice.new(composition: composition) }
   let(:rule) { described_class }
   subject(:annotation) { rule.analyze(voice) }

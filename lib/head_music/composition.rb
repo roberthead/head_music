@@ -1,7 +1,7 @@
 class HeadMusic::Composition
   attr_reader :name, :key_signature, :meter, :bars, :voices
 
-  def initialize(name:, key_signature: nil, meter: nil)
+  def initialize(name: nil, key_signature: nil, meter: nil)
     ensure_attributes(name, key_signature, meter)
     add_bar
     add_voice
@@ -26,7 +26,7 @@ class HeadMusic::Composition
   private
 
   def ensure_attributes(name, key_signature, meter)
-    @name = name
+    @name = name || 'Composition'
     @key_signature = HeadMusic::KeySignature.get(key_signature) if key_signature
     @key_signature ||= HeadMusic::KeySignature.default
     @meter = HeadMusic::Meter.get(meter) if meter

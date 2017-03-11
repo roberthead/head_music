@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Style::Annotation do
-  let(:composition) { Composition.new(name: 'Compy 386') }
+  let(:composition) { Composition.new }
   let(:voice) { Voice.new(composition: composition) }
   let(:fitness) { 0.5 }
   let(:message) { "Put the beautiful stuff here." }

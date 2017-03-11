@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Placement do
-  let(:composition) { Composition.new(name: 'Dances with Wolverine') }
+  let(:composition) { Composition.new }
   let(:voice) { composition.voices.first }
   let(:position) { '2:2:240' }
   let(:pitch) { Pitch.get('F#4') }

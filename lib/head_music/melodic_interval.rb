@@ -23,6 +23,10 @@ class HeadMusic::MelodicInterval
     [first_note, second_note]
   end
 
+  def pitches
+    notes.map(&:pitch)
+  end
+
   def to_s
     [direction, functional_interval].join(' ')
   end

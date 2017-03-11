@@ -6,6 +6,7 @@ require 'humanize'
 
 require 'head_music/accidental'
 require 'head_music/bar'
+require 'head_music/chord'
 require 'head_music/circle'
 require 'head_music/clef'
 require 'head_music/composition'

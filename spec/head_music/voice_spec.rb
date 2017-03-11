@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Voice do
-  let(:composition) { Composition.new(name: 'Invention') }
+  let(:composition) { Composition.new }
 
   subject(:voice) { Voice.new(composition: composition) }
 

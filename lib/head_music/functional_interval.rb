@@ -189,6 +189,7 @@ class HeadMusic::FunctionalInterval
   def leap?
     number > 3
   end
+  alias_method :large_leap?, :leap?
 
   def ==(other)
     self.to_s.gsub(/\W/, '_') == other.to_s.gsub(/\W/, '_')
