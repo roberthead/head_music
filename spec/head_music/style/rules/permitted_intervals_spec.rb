@@ -30,7 +30,7 @@ describe HeadMusic::Style::Rules::PermittedIntervals do
     its(:marks) { are_expected.to be_empty }
   end
 
-  context 'with an octave skip' do
+  context 'with an octave leap' do
     before do
       %w[C D E C C5 B A F G E F D C].each_with_index do |pitch, bar|
         voice.place("#{bar + 1}:1", :whole, pitch)
@@ -59,7 +59,7 @@ describe HeadMusic::Style::Rules::PermittedIntervals do
       end
     end
 
-    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE }
+    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq "6:1:000 to 8:1:000" }
   end
 
@@ -70,7 +70,7 @@ describe HeadMusic::Style::Rules::PermittedIntervals do
       end
     end
 
-    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE }
+    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq "4:1:000 to 6:1:000" }
   end
 
@@ -81,7 +81,7 @@ describe HeadMusic::Style::Rules::PermittedIntervals do
       end
     end
 
-    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE }
+    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq "4:1:000 to 6:1:000" }
   end
 end

@@ -4,7 +4,7 @@ end
 class HeadMusic::Style::Rules::Diatonic < HeadMusic::Style::Rule
   def self.analyze(voice)
     marks = marks(voice)
-    fitness = HeadMusic::GOLDEN_RATIO_INVERSE**marks.length
+    fitness = HeadMusic::PENALTY_FACTOR**marks.length
     message = "Use only notes in the key signature." if fitness < 1
     HeadMusic::Style::Annotation.new(subject: voice, fitness: fitness, marks: marks, message: message)
   end

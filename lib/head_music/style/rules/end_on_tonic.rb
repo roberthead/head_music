@@ -14,7 +14,7 @@ class HeadMusic::Style::Rules::EndOnTonic < HeadMusic::Style::Rule
   def self.fitness(voice)
     return 1 if voice.notes.empty?
     return 1 if ends_on_tonic?(voice)
-    HeadMusic::GOLDEN_RATIO_INVERSE
+    HeadMusic::PENALTY_FACTOR
   end
 
   def self.ends_on_tonic?(voice)

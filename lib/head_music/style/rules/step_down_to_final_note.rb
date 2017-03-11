@@ -14,8 +14,8 @@ class HeadMusic::Style::Rules::StepDownToFinalNote < HeadMusic::Style::Rule
   def self.fitness(voice)
     return 1 unless voice.notes.length >= 2
     fitness = 1
-    fitness *= HeadMusic::GOLDEN_RATIO_INVERSE unless step?(voice)
-    fitness *= HeadMusic::GOLDEN_RATIO_INVERSE unless descending?(voice)
+    fitness *= HeadMusic::PENALTY_FACTOR unless step?(voice)
+    fitness *= HeadMusic::PENALTY_FACTOR unless descending?(voice)
     fitness
   end
 

@@ -16,8 +16,8 @@ class HeadMusic::Style::Rules::RecoverLargeLeaps < HeadMusic::Style::Rule
     voice.melodic_intervals[1..-1].to_a.each.with_index do |interval, i|
       previous_interval = voice.melodic_intervals[i]
       if previous_interval.leap?
-        fitness *= HeadMusic::GOLDEN_RATIO_INVERSE unless direction_changed?(previous_interval, interval)
-        fitness *= HeadMusic::GOLDEN_RATIO_INVERSE unless interval.step?
+        fitness *= HeadMusic::PENALTY_FACTOR unless direction_changed?(previous_interval, interval)
+        fitness *= HeadMusic::SMALL_PENALTY_FACTOR unless interval.step?
         unless direction_changed?(previous_interval, interval) && interval.step?
           marks << HeadMusic::Style::Mark.for_all((previous_interval.notes + interval.notes).uniq)
         end

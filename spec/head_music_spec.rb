@@ -8,6 +8,6 @@ describe HeadMusic do
 
   it 'defines the golden ratio' do
     expect(HeadMusic::GOLDEN_RATIO).to be_within(0.001).of(1.618)
-    expect(HeadMusic::GOLDEN_RATIO_INVERSE).to be_within(0.001).of(0.618)
+    expect(HeadMusic::PENALTY_FACTOR).to be_within(0.001).of(0.618)
   end
 end

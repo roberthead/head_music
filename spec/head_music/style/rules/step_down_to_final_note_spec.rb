@@ -35,7 +35,7 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("3:1", :whole, 'C4')
     end
 
-    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE }
+    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
   end
 
   context 'when the last melodic interval is a larger descending interval' do
@@ -46,7 +46,7 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("4:1", :whole, 'C')
     end
 
-    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE }
+    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
   end
 
   context 'when the last melodic interval is a larger ascending interval' do
@@ -57,6 +57,6 @@ describe HeadMusic::Style::Rules::StepDownToFinalNote do
       voice.place("4:1", :whole, 'C4')
     end
 
-    its(:fitness) { is_expected.to eq GOLDEN_RATIO_INVERSE**2 }
+    its(:fitness) { is_expected.to eq PENALTY_FACTOR**2 }
   end
 end

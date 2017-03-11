@@ -37,7 +37,7 @@ describe HeadMusic::Style::Rules::AlwaysMove do
       end
     end
 
-    its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE }
+    its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
     its(:message) { is_expected.not_to be_empty }
     its(:marks_count) { is_expected.to eq 1 }
 

@@ -4,7 +4,7 @@ end
 class HeadMusic::Style::Rules::NoRests < HeadMusic::Style::Rule
   def self.analyze(voice)
     rests = voice.rests
-    fitness = HeadMusic::GOLDEN_RATIO_INVERSE**rests.length
+    fitness = HeadMusic::PENALTY_FACTOR**rests.length
     if rests.length > 0
       message = "Change rests to notes."
       marks = rests.map { |rest| HeadMusic::Style::Mark.for_all(rest) }

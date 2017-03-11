@@ -13,7 +13,7 @@ class HeadMusic::Style::Rules::AtLeastEightNotes < HeadMusic::Style::Rule
 
   def self.fitness(voice)
     deficiency = MINIMUM_NOTES - voice.notes.length
-    deficiency > 0 ? HeadMusic::GOLDEN_RATIO_INVERSE**deficiency : 1
+    deficiency > 0 ? HeadMusic::PENALTY_FACTOR**deficiency : 1
   end
 
   def self.mark(voice)

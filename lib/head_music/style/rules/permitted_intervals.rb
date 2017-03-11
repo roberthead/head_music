@@ -7,7 +7,7 @@ class HeadMusic::Style::Rules::PermittedIntervals < HeadMusic::Style::Rule
 
   def self.analyze(voice)
     marks = marks(voice)
-    fitness = GOLDEN_RATIO_INVERSE**marks.count
+    fitness = PENALTY_FACTOR**marks.count
     if fitness < 1
       message = "Use only m2, M2, m3, M3, P4, P5, m6 (ascending only), P8."
     end

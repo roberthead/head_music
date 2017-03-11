@@ -15,7 +15,7 @@ class HeadMusic::Style::Rules::LimitRange < HeadMusic::Style::Rule
 
   def self.fitness(voice)
     return 1 unless voice.notes.length > 0
-    HeadMusic::GOLDEN_RATIO_INVERSE**overage(voice)
+    HeadMusic::PENALTY_FACTOR**overage(voice)
   end
 
   def self.overage(voice)

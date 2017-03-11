@@ -15,7 +15,7 @@ class HeadMusic::Style::Rules::UpToThirteenNotes < HeadMusic::Style::Rule
 
   def self.fitness(voice)
     overage = voice.notes.length - MAXIMUM_NOTES
-    overage > 0 ? HeadMusic::GOLDEN_RATIO_INVERSE**overage : 1
+    overage > 0 ? HeadMusic::PENALTY_FACTOR**overage : 1
   end
 
   def self.mark(voice)

@@ -13,7 +13,7 @@ class HeadMusic::Style::Rules::NotesSameLength < HeadMusic::Style::Rule
 
   def self.fitness(voice)
     distinct_values = [distinct_values(voice), 1].max
-    HeadMusic::GOLDEN_RATIO_INVERSE**(distinct_values-1)
+    HeadMusic::PENALTY_FACTOR**(distinct_values-1)
   end
 
   def self.distinct_values(voice)

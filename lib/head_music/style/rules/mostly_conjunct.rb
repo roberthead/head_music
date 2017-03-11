@@ -15,8 +15,8 @@ class HeadMusic::Style::Rules::MostlyConjunct < HeadMusic::Style::Rule
     intervals = voice.melodic_intervals.length
     steps = voice.melodic_intervals.count { |interval| interval.step? }
     fitness = 1
-    fitness *= HeadMusic::GOLDEN_RATIO_INVERSE if steps.to_f / intervals < 0.5
-    fitness *= HeadMusic::GOLDEN_RATIO_INVERSE if steps.to_f / intervals < 0.25
+    fitness *= HeadMusic::PENALTY_FACTOR if steps.to_f / intervals < 0.5
+    fitness *= HeadMusic::PENALTY_FACTOR if steps.to_f / intervals < 0.25
     fitness
   end
 

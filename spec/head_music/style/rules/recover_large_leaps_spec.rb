@@ -39,7 +39,7 @@ describe HeadMusic::Style::Rules::RecoverLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to be < GOLDEN_RATIO_INVERSE }
+      its(:fitness) { is_expected.to be < PENALTY_FACTOR }
       its(:fitness) { is_expected.to be > 0 }
     end
   end

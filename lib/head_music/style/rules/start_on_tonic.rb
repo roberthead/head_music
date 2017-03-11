@@ -14,7 +14,7 @@ class HeadMusic::Style::Rules::StartOnTonic < HeadMusic::Style::Rule
   def self.fitness(voice)
     return 1 if voice.notes.empty?
     return 1 if starts_on_tonic?(voice)
-    HeadMusic::GOLDEN_RATIO_INVERSE
+    HeadMusic::PENALTY_FACTOR
   end
 
   def self.starts_on_tonic?(voice)
