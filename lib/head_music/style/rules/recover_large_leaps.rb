@@ -5,7 +5,7 @@ end
 # one should normally move by step in the opposite direction
 # unless another leap (in either direction) creates a consonant triad.
 # - Brian
-class HeadMusic::Style::Rules::RecoverLargeLeaps < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::RecoverLargeLeaps
   def self.analyze(voice)
     marks, fitness = check(voice)
     if fitness < 1

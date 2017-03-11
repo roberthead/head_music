@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::PermittedIntervals < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::PermittedIntervals
   PERMITTED_ASCENDING = %w[m2 M2 m3 M3 P4 P5 m6 P8]
   PERMITTED_DESCENDING = %w[m2 M2 m3 M3 P4 P5 P8]
 

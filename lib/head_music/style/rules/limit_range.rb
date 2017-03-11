@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::LimitRange < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::LimitRange
   MAXIMUM_RANGE = 10
 
   def self.analyze(voice)

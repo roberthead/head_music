@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::NoRests < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::NoRests
   def self.analyze(voice)
     rests = voice.rests
     fitness = HeadMusic::PENALTY_FACTOR**rests.length

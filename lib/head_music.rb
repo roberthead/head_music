@@ -37,7 +37,6 @@ require 'head_music/staff'
 require 'head_music/style/analysis'
 require 'head_music/style/annotation'
 require 'head_music/style/mark'
-require 'head_music/style/rule'
 
 require 'head_music/style/rules/always_move'
 require 'head_music/style/rules/at_least_eight_notes'

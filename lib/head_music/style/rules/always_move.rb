@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::AlwaysMove < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::AlwaysMove
   def self.analyze(voice)
     marks = marks(voice)
     fitness = HeadMusic::PENALTY_FACTOR**marks.length

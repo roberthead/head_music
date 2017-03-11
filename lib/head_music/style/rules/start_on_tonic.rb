@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::StartOnTonic < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::StartOnTonic
   def self.analyze(voice)
     fitness = fitness(voice)
     if fitness < 1

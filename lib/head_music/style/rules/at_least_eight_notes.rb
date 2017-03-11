@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::AtLeastEightNotes < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::AtLeastEightNotes
   MINIMUM_NOTES = 8
 
   def self.analyze(voice)

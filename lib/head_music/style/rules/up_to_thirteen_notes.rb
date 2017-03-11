@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::UpToThirteenNotes < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::UpToThirteenNotes
   MAXIMUM_NOTES = 13
 
   def self.analyze(voice)

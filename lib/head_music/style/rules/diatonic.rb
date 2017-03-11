@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rules
 end
 
-class HeadMusic::Style::Rules::Diatonic < HeadMusic::Style::Rule
+class HeadMusic::Style::Rules::Diatonic
   def self.analyze(voice)
     marks = marks(voice)
     fitness = HeadMusic::PENALTY_FACTOR**marks.length
