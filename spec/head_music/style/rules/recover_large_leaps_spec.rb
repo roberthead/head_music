@@ -28,11 +28,10 @@ describe HeadMusic::Style::Rules::RecoverLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to be < 1 }
-      its(:fitness) { is_expected.to be > 0 }
+      its(:fitness) { is_expected.to eq SMALL_PENALTY_FACTOR }
     end
 
-    context 'not recovered' do
+    context 'not recovered at all' do
       before do
         %w[D4 F4 E4 D4 G4 B4 G4 F4 E4 D4].each_with_index do |pitch, bar|
           voice.place("#{bar + 1}:1", :whole, pitch)
@@ -40,7 +39,6 @@ describe HeadMusic::Style::Rules::RecoverLargeLeaps do
       end
 
       its(:fitness) { is_expected.to be < PENALTY_FACTOR }
-      its(:fitness) { is_expected.to be > 0 }
     end
   end
 end
