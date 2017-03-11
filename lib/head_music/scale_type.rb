@@ -60,9 +60,9 @@ class HeadMusic::ScaleType
 
   def self.get(name)
     @scale_types ||= {}
-    name = name.to_s.to_sym
-    attributes = SCALE_TYPES[name]
-    @scale_types[name] ||= new(name, attributes)
+    identifier = HeadMusic::Utilities::HashKey.for(name)
+    attributes = SCALE_TYPES[identifier]
+    @scale_types[identifier] ||= new(identifier, attributes)
   end
 
   def self.default

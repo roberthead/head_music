@@ -9,6 +9,12 @@ describe ScaleType do
         expect(described_class.get(instance)).to be instance
       end
     end
+
+    context 'when given a string' do
+      subject(:instance) { described_class.get('Minor') }
+
+      it { is_expected.to eq ScaleType.minor }
+    end
   end
 
   describe '.new' do
