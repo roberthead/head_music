@@ -1,8 +1,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::EndOnTonic do
-  let(:composition) { Composition.new }
-  let(:voice) { Voice.new(composition: composition) }
+  let(:voice) { Voice.new }
   subject { described_class.new(voice) }
 
   context 'with no notes' do

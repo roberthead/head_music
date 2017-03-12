@@ -160,15 +160,15 @@ class HeadMusic::FunctionalInterval
     HeadMusic::FunctionalInterval.new(higher_pitch, inverted_low_pitch)
   end
 
-  def consonance
+  def consonance(style = :standard_practice)
     if quality.perfect?
-      if [number, simple_number].include?(4)
+      if [number, simple_number].include?(4) && style == :two_part_harmonic
         HeadMusic::Consonance.get(:dissonant)
       else
         HeadMusic::Consonance.get(:perfect)
       end
     elsif quality.major? || quality.minor?
-      if [number, simple_number] & [3, 6].empty?
+      if ([number, simple_number] & [3, 6]).empty?
         HeadMusic::Consonance.get(:dissonant)
       else
         HeadMusic::Consonance.get(:imperfect)

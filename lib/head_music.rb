@@ -40,6 +40,7 @@ require 'head_music/style/mark'
 
 require 'head_music/style/annotations/always_move'
 require 'head_music/style/annotations/at_least_eight_notes'
+require 'head_music/style/annotations/consonant_climax'
 require 'head_music/style/annotations/diatonic'
 require 'head_music/style/annotations/end_on_tonic'
 require 'head_music/style/annotations/limit_range'

@@ -180,5 +180,15 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
       its(:fitness) { is_expected.to be < 1 }
       its(:fitness) { is_expected.to be > 0 }
     end
+
+    context 'when the melody climaxes on a dissonant scale degree' do
+      before do
+        %w[D E F A C5 A G F E D].each_with_index do |pitch, bar|
+          voice.place("#{bar+1}:1", :whole, pitch)
+        end
+      end
+
+      its(:fitness) { is_expected.to be < 1 }
+    end
   end
 end

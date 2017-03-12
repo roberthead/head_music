@@ -2,7 +2,6 @@ require 'spec_helper'
 
 describe Voice do
   let(:composition) { Composition.new }
-
   subject(:voice) { Voice.new(composition: composition) }
 
   its(:composition) { is_expected.to eq composition }
