@@ -116,7 +116,7 @@ describe FunctionalInterval do
     specify { expect(FunctionalInterval.get(:minor_third).consonance).to be_imperfect }
     specify { expect(FunctionalInterval.get(:major_third).consonance).to be_imperfect }
     specify { expect(FunctionalInterval.get(:perfect_fourth).consonance).to be_perfect }
-    specify { expect(FunctionalInterval.get(:perfect_fourth).consonance(:two_part_harmonic)).to be_dissonant }
+    specify { expect(FunctionalInterval.get(:perfect_fourth).consonance(:two_part_harmony)).to be_dissonant }
     specify { expect(FunctionalInterval.get(:augmented_fourth).consonance).to be_dissonant }
     specify { expect(FunctionalInterval.get(:diminished_fifth).consonance).to be_dissonant }
     specify { expect(FunctionalInterval.get(:perfect_fifth).consonance).to be_perfect }

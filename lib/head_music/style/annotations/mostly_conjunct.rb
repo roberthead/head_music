@@ -3,23 +3,24 @@ end
 
 class HeadMusic::Style::Annotations::MostlyConjunct < HeadMusic::Style::Annotation
   def message
-    "Use only notes in the key signature."
+    "Use mostly conjunct motion."
   end
 
   def marks
-    if conjunct_intervals_per_interval < 0.5
-      fitness = conjunct_intervals_per_interval < 0.25 ? HeadMusic::PENALTY_FACTOR : HeadMusic::SMALL_PENALTY_FACTOR
-      melodic_intervals.map.with_index do |interval, i|
-        HeadMusic::Style::Mark.for_all(notes[i..i+1]) if !interval.step?
-      end
-    end
+    marks_for_skips_and_leaps if conjunct_ratio <= 0.5
   end
 
   private
 
-  def conjunct_intervals_per_interval
-    intervals = melodic_intervals
+  def marks_for_skips_and_leaps
+    melodic_intervals.map.with_index do |interval, i|
+      HeadMusic::Style::Mark.for_all(notes[i..i+1], fitness: HeadMusic::SMALL_PENALTY_FACTOR) unless interval.step?
+    end.reject(&:nil?)
+  end
+
+  def conjunct_ratio
+    return 1 if melodic_intervals.empty?
     steps = melodic_intervals.count { |interval| interval.step? }
-    steps.to_f / intervals.length
+    steps.to_f / melodic_intervals.length
   end
 end

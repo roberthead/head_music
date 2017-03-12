@@ -27,12 +27,11 @@ class HeadMusic::Scale
   end
 
   def determine_scale_pitches(direction, octaves)
-    letter_name_cycle = root_pitch.letter_name_cycle
     semitones_from_root = 0
     [root_pitch].tap do |pitches|
       [:ascending, :descending].each do |single_direction|
         if [single_direction, :both].include?(direction)
-          (1..octaves).each do |i|
+          (1..octaves).each do
             direction_intervals(single_direction).each_with_index do |semitones, i|
               semitones_from_root += semitones * direction_sign(single_direction)
               pitches << pitch_for_step(i+1, semitones_from_root, single_direction)

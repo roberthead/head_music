@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe KeySignature do
-  context '.get' do
+  context '.new' do
     subject(:key_signature) { KeySignature.new(tonic, scale_type) }
 
     context 'when given an instance' do
@@ -133,5 +133,9 @@ describe KeySignature do
       specify { expect(key_signature.num_sharps).to eq 2 }
       specify { expect(key_signature.sharps_or_flats).to eq %w{F# C#} }
     end
+  end
+
+  describe '#spellings' do
+    specify { expect(KeySignature.get('D major').spellings).to eq %w[D E F# G A B C#] }
   end
 end

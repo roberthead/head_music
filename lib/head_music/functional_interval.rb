@@ -121,7 +121,7 @@ class HeadMusic::FunctionalInterval
     if number < NUMBER_NAMES.length
       [quality_name, number_name].join(' ')
     elsif simple_name == 'perfect unison'
-      string = "#{octaves.humanize} octaves"
+      "#{octaves.humanize} octaves"
     else
       "#{octaves.humanize} octaves and #{quality.article} #{simple_name}"
     end
@@ -161,17 +161,17 @@ class HeadMusic::FunctionalInterval
   end
 
   def consonance(style = :standard_practice)
-    if quality.perfect?
-      if [number, simple_number].include?(4) && style == :two_part_harmonic
+    if perfect?
+      if fourth? && style == :two_part_harmony
         HeadMusic::Consonance.get(:dissonant)
       else
         HeadMusic::Consonance.get(:perfect)
       end
-    elsif quality.major? || quality.minor?
-      if ([number, simple_number] & [3, 6]).empty?
-        HeadMusic::Consonance.get(:dissonant)
-      else
+    elsif major? || minor?
+      if third? || sixth?
         HeadMusic::Consonance.get(:imperfect)
+      else
+        HeadMusic::Consonance.get(:dissonant)
       end
     else
       HeadMusic::Consonance.get(:dissonant)
@@ -196,6 +196,6 @@ class HeadMusic::FunctionalInterval
   end
 
   NUMBER_NAMES.each do |method_name|
-    define_method(:"#{method_name}?") { number_name == method_name }
+    define_method(:"#{method_name}?") { number_name == method_name || simple_number_name == method_name }
   end
 end

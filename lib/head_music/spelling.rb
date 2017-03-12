@@ -37,8 +37,8 @@ class HeadMusic::Spelling
 
   def self.from_number_and_letter(number, letter_name)
     letter_name = HeadMusic::LetterName.get(letter_name)
-    natural_letter_pitch_class = HeadMusic::LetterName.get(letter_name).pitch_class
-    accidental_interval = letter_name.pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(number))
+    natural_letter_pitch_class = letter_name.pitch_class
+    accidental_interval = natural_letter_pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(number))
     accidental = HeadMusic::Accidental.for_interval(accidental_interval)
     fetch_or_create(letter_name, accidental)
   end

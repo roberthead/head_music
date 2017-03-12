@@ -7,7 +7,7 @@ class HeadMusic::Meter
   }
 
   def self.get(identifier)
-    identifer = identifer.to_s
+    identifier = identifier.to_s
     hash_key = HeadMusic::Utilities::HashKey.for(identifier)
     time_signature_string = NAMED[hash_key] || identifier
     @meters ||= {}

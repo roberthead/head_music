@@ -30,20 +30,16 @@ class HeadMusic::KeySignature
     @scale = HeadMusic::Scale.get(@tonic_spelling, @scale_type)
   end
 
+  def spellings
+    pitches.map(&:spelling).uniq
+  end
+
   def sharps
-    pitches.map(&:spelling).uniq.select { |spelling|
-      spelling.sharp?
-    }.map(&:to_s).sort_by { |sharp|
-      SHARPS.index(sharp)
-    }
+    spellings.select(&:sharp?).sort_by { |sharp| SHARPS.index(sharp.to_s) }
   end
 
   def flats
-    pitches.map(&:spelling).uniq.select { |spelling|
-      spelling.flat?
-    }.map(&:to_s).sort_by { |flat|
-      FLATS.index(flat)
-    }
+    spellings.select(&:flat?).sort_by { |flat| FLATS.index(flat.to_s) }
   end
 
   def num_sharps

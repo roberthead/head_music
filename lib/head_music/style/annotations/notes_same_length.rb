@@ -32,7 +32,7 @@ class HeadMusic::Style::Annotations::NotesSameLength < HeadMusic::Style::Annotat
     return [] if notes.empty?
     occurrences = occurrences_by_rhythmic_value
     highest_count = occurrences.values.sort.last
-    occurrences.select { |rhythmic_value, count| count == highest_count }.keys
+    occurrences.select { |_rhythmic_value, count| count == highest_count }.keys
   end
 
   def occurrences_by_rhythmic_value
