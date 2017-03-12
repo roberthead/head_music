@@ -1,10 +1,14 @@
 $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
 require 'rspec/its'
-require 'head_music'
 require "simplecov"
+require 'head_music'
 
 include HeadMusic
 
+if ENV['CIRCLE_ARTIFACTS']
+  dir = File.join(ENV['CIRCLE_ARTIFACTS'], "coverage")
+  SimpleCov.coverage_dir(dir)
+end
 SimpleCov.start
 
 class HeadMusic::Style::Annotation
