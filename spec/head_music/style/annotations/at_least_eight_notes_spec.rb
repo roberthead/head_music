@@ -1,19 +1,13 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::AtLeastEightNotes do
+describe HeadMusic::Style::Annotations::AtLeastEightNotes do
   let(:voice) { Voice.new }
-  let(:rule) { described_class }
-  subject(:annotation) { rule.analyze(voice) }
+  subject { described_class.new(voice) }
 
   context 'with no notes' do
     its(:fitness) { is_expected.to be < 0.1 }
     its(:marks_count) { is_expected.to eq 1}
-
-    it 'marks the trouble spots' do
-      expect(annotation.marks.first.code).to eq '1:1:000 to 2:1:000'
-    end
-
-    its(:message) { is_expected.not_to be_empty }
+    its(:first_mark_code) { is_expected.to eq '1:1:000 to 2:1:000' }
   end
 
   context 'with one note and some rests' do
@@ -30,12 +24,7 @@ describe HeadMusic::Style::Rules::AtLeastEightNotes do
 
     its(:fitness) { is_expected.to be < 0.25 }
     its(:marks_count) { is_expected.to eq 1 }
-
-    describe 'mark' do
-      subject(:mark) { annotation.marks.first }
-
-      its(:code) { is_expected.to eq "3:1:000 to 6:1:000" }
-    end
+    its(:first_mark_code) { is_expected.to eq "3:1:000 to 6:1:000" }
   end
 
   context 'with one too few notes' do

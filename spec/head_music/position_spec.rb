@@ -107,7 +107,7 @@ describe Position do
     end
 
     context 'in 6/8' do
-      let(:composition) { Composition.new(name: 'Sway', meter: '6/8') }
+      let(:composition) { Composition.new(meter: '6/8') }
 
       context 'given too many ticks' do
         let(:bar_number) { 3 }

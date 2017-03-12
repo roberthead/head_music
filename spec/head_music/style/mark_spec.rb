@@ -1,12 +1,13 @@
 require 'spec_helper'
 
 describe Style::Mark do
-  let(:composition) { Composition.new(name: 'Back Beat') }
+  let(:composition) { Composition.new }
   let(:start_position) { Position.new(composition, "3:2:480") }
   let(:end_position) { Position.new(composition, "4:1") }
-  subject(:mark) { Style::Mark.new(start_position, end_position) }
+  subject(:mark) { Style::Mark.new(start_position, end_position, fitness: 0.9) }
 
   its(:code) { is_expected.to eq '3:2:480 to 4:1:000' }
+  its(:fitness) { is_expected.to eq 0.9 }
 
   describe '.for' do
     let(:voice) { Voice.new(composition: composition) }

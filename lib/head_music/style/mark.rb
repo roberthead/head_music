@@ -1,26 +1,27 @@
 class HeadMusic::Style::Mark
-  attr_reader :start_position, :end_position, :placements
+  attr_reader :start_position, :end_position, :placements, :fitness
 
-  def self.for(placement)
-    new(placement.position, placement.next_position, placement)
+  def self.for(placement, fitness: nil)
+    new(placement.position, placement.next_position, placements: [placement], fitness: fitness)
   end
 
-  def self.for_all(placements)
+  def self.for_all(placements, fitness: nil)
     placements = [placements].flatten
     start_position = placements.map { |placement| placement.position }.sort.first
     end_position = placements.map { |placement| placement.next_position }.sort.last
-    new(start_position, end_position, placements)
+    new(start_position, end_position, placements: placements, fitness: fitness)
   end
 
-  def self.for_each(placements)
+  def self.for_each(placements, fitness: nil)
     placements = [placements].flatten
-    placements.map { |placement| new(placement.position, placement.next_position, placement) }
+    placements.map { |placement| new(placement.position, placement.next_position, placements: placement, fitness: fitness) }
   end
 
-  def initialize(start_position, end_position, placements = [])
+  def initialize(start_position, end_position, placements: [], fitness: nil)
     @start_position = start_position
     @end_position = end_position
-    @placements = [placements].flatten
+    @placements = [placements].flatten.compact
+    @fitness = fitness || HeadMusic::PENALTY_FACTOR
   end
 
   def code

@@ -1,10 +1,9 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::UpToThirteenNotes do
-  let(:composition) { Composition.new(name: 'Majestic D', key_signature: 'D dorian') }
+describe HeadMusic::Style::Annotations::UpToThirteenNotes do
+  let(:composition) { Composition.new(key_signature: 'D dorian') }
   let(:voice) { Voice.new(composition: composition, role: 'Cantus firmus') }
-  let(:rule) { described_class }
-  subject(:annotation) { rule.analyze(voice) }
+  subject { described_class.new(voice) }
 
   context 'when exactly 13 notes' do
     before do

@@ -1,9 +1,8 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::NoRests do
+describe HeadMusic::Style::Annotations::NoRests do
   let(:voice) { Voice.new }
-  let(:rule) { described_class }
-  subject(:annotation) { rule.analyze(voice) }
+  subject { described_class.new(voice) }
 
   context 'when there are no rests' do
     before do
@@ -25,11 +24,6 @@ describe HeadMusic::Style::Rules::NoRests do
 
     its(:fitness) { is_expected.to be < 1 }
     its(:message) { is_expected.not_to be_empty }
-
-    describe 'mark' do
-      subject(:mark) { annotation.marks.first }
-
-      its(:code) { is_expected.to eq "8:1:000 to 9:1:000" }
-    end
+    its(:first_mark_code) { is_expected.to eq "8:1:000 to 9:1:000" }
   end
 end

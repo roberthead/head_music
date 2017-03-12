@@ -11,8 +11,7 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
   ]
 
   context 'with Fuxian examples' do
-    let(:ruleset) { described_class }
-    subject(:analysis) { HeadMusic::Style::Analysis.new(ruleset, voice) }
+    subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
     FUX_EXAMPLES.each do |fux_example|
       context "#{fux_example[:pitches].join(' ')} in #{fux_example[:key]}" do
@@ -32,8 +31,7 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
   describe 'when in D dorian' do
     let(:composition) { Composition.new(key_signature: 'D dorian') }
     let(:voice) { Voice.new(composition: composition, role: 'Cantus firmus') }
-    let(:rule) { described_class }
-    subject(:analysis) { HeadMusic::Style::Analysis.new(rule, voice) }
+    subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
     context 'with more than 13 notes' do
       before do

@@ -1,10 +1,9 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::EndOnTonic do
+describe HeadMusic::Style::Annotations::EndOnTonic do
   let(:composition) { Composition.new }
   let(:voice) { Voice.new(composition: composition) }
-  let(:rule) { described_class }
-  subject(:annotation) { rule.analyze(voice) }
+  subject { described_class.new(voice) }
 
   context 'with no notes' do
     its(:fitness) { is_expected.to eq 1 }

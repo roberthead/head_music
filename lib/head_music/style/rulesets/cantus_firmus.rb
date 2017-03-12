@@ -3,22 +3,22 @@ end
 
 class HeadMusic::Style::Rulesets::CantusFirmus
   RULESET = [
-    HeadMusic::Style::Rules::AlwaysMove,
-    HeadMusic::Style::Rules::AtLeastEightNotes,
-    HeadMusic::Style::Rules::Diatonic,
-    HeadMusic::Style::Rules::EndOnTonic,
-    HeadMusic::Style::Rules::LimitRange,
-    HeadMusic::Style::Rules::MostlyConjunct,
-    HeadMusic::Style::Rules::NoRests,
-    HeadMusic::Style::Rules::NotesSameLength,
-    HeadMusic::Style::Rules::PermittedIntervals,
-    HeadMusic::Style::Rules::RecoverLargeLeaps,
-    HeadMusic::Style::Rules::StartOnTonic,
-    HeadMusic::Style::Rules::StepDownToFinalNote,
-    HeadMusic::Style::Rules::UpToThirteenNotes,
+    HeadMusic::Style::Annotations::AlwaysMove,
+    HeadMusic::Style::Annotations::AtLeastEightNotes,
+    HeadMusic::Style::Annotations::Diatonic,
+    HeadMusic::Style::Annotations::EndOnTonic,
+    HeadMusic::Style::Annotations::LimitRange,
+    HeadMusic::Style::Annotations::MostlyConjunct,
+    HeadMusic::Style::Annotations::NoRests,
+    HeadMusic::Style::Annotations::NotesSameLength,
+    HeadMusic::Style::Annotations::PermittedIntervals,
+    HeadMusic::Style::Annotations::RecoverLargeLeaps,
+    HeadMusic::Style::Annotations::StartOnTonic,
+    HeadMusic::Style::Annotations::StepDownToFinalNote,
+    HeadMusic::Style::Annotations::UpToThirteenNotes,
   ]
 
   def self.analyze(voice)
-    RULESET.map { |rule| rule.analyze(voice) }
+    RULESET.map { |rule| rule.new(voice) }
   end
 end

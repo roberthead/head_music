@@ -1,10 +1,9 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::RecoverLargeLeaps do
-  let(:composition) { Composition.new(name: "Majestic D", key_signature: 'D dorian') }
+describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
+  let(:composition) { Composition.new(key_signature: 'D dorian') }
   let(:voice) { Voice.new(composition: composition) }
-  let(:rule) { described_class }
-  subject(:annotation) { rule.analyze(voice) }
+  subject { described_class.new(voice) }
 
   context 'with no notes' do
     its(:fitness) { is_expected.to eq 1 }
@@ -28,7 +27,7 @@ describe HeadMusic::Style::Rules::RecoverLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq SMALL_PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq PENALTY_FACTOR }
       its(:first_mark_code) { is_expected.to eq "4:1:000 to 7:1:000" }
     end
 

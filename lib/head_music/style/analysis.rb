@@ -6,7 +6,10 @@ module HeadMusic
       def initialize(ruleset, subject)
         @ruleset = ruleset
         @subject = subject
-        @annotations = @ruleset.analyze(subject)
+      end
+
+      def annotations
+        @annotations ||= @ruleset.analyze(subject)
       end
 
       def fitness

@@ -1,9 +1,8 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::LimitRange do
+describe HeadMusic::Style::Annotations::LimitRange do
   let(:voice) { Voice.new }
-  let(:rule) { described_class }
-  subject(:annotation) { rule.analyze(voice) }
+  subject { described_class.new(voice) }
 
   context 'when there are no notes' do
     its(:fitness) { is_expected.to eq 1 }
@@ -34,7 +33,7 @@ describe HeadMusic::Style::Rules::LimitRange do
     it 'marks all instances of the highest and lowest note' do
       bars = [1, 8, 16, 17]
       codes = bars.map { |bar| "#{bar}:1:000 to #{bar+1}:1:000" }
-      expect(annotation.marks.map(&:code)).to eq codes
+      expect(subject.marks.map(&:code)).to eq codes
     end
   end
 end

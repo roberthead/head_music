@@ -1,13 +1,13 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::AlwaysMove do
+describe HeadMusic::Style::Annotations::AlwaysMove do
   let(:voice) { Voice.new }
-  let(:rule) { described_class }
-  subject(:annotation) { rule.analyze(voice) }
+  subject { described_class.new(voice) }
+
+  its(:message) { is_expected.to eq 'Always move to a different note.' }
 
   context 'with no notes' do
     its(:fitness) { is_expected.to eq 1 }
-    its(:message) { is_expected.to be_nil }
   end
 
   context 'with one note' do
@@ -16,7 +16,6 @@ describe HeadMusic::Style::Rules::AlwaysMove do
     end
 
     its(:fitness) { is_expected.to eq 1 }
-    its(:message) { is_expected.to be_nil }
   end
 
   context 'with motion' do
@@ -27,7 +26,6 @@ describe HeadMusic::Style::Rules::AlwaysMove do
     end
 
     its(:fitness) { is_expected.to eq 1 }
-    its(:message) { is_expected.to be_nil }
   end
 
   context 'with a repeated note' do
@@ -40,11 +38,6 @@ describe HeadMusic::Style::Rules::AlwaysMove do
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
     its(:message) { is_expected.not_to be_empty }
     its(:marks_count) { is_expected.to eq 1 }
-
-    describe 'mark' do
-      subject(:mark) { annotation.marks.first }
-
-      its(:code) { is_expected.to eq "3:1:000 to 5:1:000" }
-    end
+    its(:first_mark_code) { is_expected.to eq "3:1:000 to 5:1:000" }
   end
 end

@@ -1,28 +1,32 @@
 class HeadMusic::Style::Annotation
-  attr_reader :fitness, :message, :marks, :subject
+  attr_reader :voice
 
-  def initialize(subject:, fitness:, message: nil, marks: nil)
-    @subject = subject
-    @fitness = fitness
-    @message = message
-    @marks = [marks].flatten.compact
+  delegate(
+    :composition,
+    :highest_notes,
+    :lowest_notes,
+    :melodic_intervals,
+    :notes,
+    :notes_not_in_key,
+    :placements,
+    :range,
+    :rests,
+    to: :voice
+  )
+
+  def initialize(voice)
+    @voice = voice
   end
 
-  def voice
-    subject if subject.is_a?(HeadMusic::Voice)
+  def fitness
+    [marks].flatten.compact.map(&:fitness).reduce(1, :*)
   end
 
-  def composition
-    voice ? voice.composition : subject
+  def marks
+    raise NotImplementedError
   end
 
-  def marks_count
-    marks ? marks.length : 0
+  def message
+    raise NotImplementedError
   end
-
-  def first_mark_code
-    marks.first.code if marks.first
-  end
-
-  alias_method :to_s, :message
 end

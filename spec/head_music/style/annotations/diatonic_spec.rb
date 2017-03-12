@@ -1,10 +1,9 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Rules::Diatonic do
-  let(:composition) { Composition.new(name: 'Song', key_signature: 'D dorian') }
+describe HeadMusic::Style::Annotations::Diatonic do
+  let(:composition) { Composition.new(key_signature: 'D dorian') }
   let(:voice) { Voice.new(composition: composition) }
-  let(:rule) { described_class }
-  subject(:annotation) { rule.analyze(voice) }
+  subject { described_class.new(voice) }
 
   context 'when there are no notes' do
     its(:fitness) { is_expected.to eq 1 }
