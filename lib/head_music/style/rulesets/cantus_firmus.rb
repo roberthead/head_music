@@ -7,6 +7,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
     HeadMusic::Style::Annotations::AtLeastEightNotes,
     HeadMusic::Style::Annotations::ConsonantClimax,
     HeadMusic::Style::Annotations::Diatonic,
+    HeadMusic::Style::Annotations::DirectionChanges,
     HeadMusic::Style::Annotations::EndOnTonic,
     HeadMusic::Style::Annotations::LimitRange,
     HeadMusic::Style::Annotations::MostlyConjunct,

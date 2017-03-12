@@ -5,6 +5,8 @@ describe HeadMusic::Style::Annotations::Diatonic do
   let(:voice) { Voice.new(composition: composition) }
   subject { described_class.new(voice) }
 
+  its(:message) { is_expected.not_to be_empty }
+
   context 'when there are no notes' do
     its(:fitness) { is_expected.to eq 1 }
     its(:marks_count) { is_expected.to eq 0 }
@@ -31,6 +33,5 @@ describe HeadMusic::Style::Annotations::Diatonic do
     its(:fitness) { is_expected.to be < 1 }
     its(:fitness) { is_expected.to be > 0 }
     its(:marks_count) { is_expected.to eq 2 }
-    its(:message) { is_expected.not_to be_empty }
   end
 end

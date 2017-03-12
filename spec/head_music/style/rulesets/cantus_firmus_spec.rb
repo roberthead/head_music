@@ -189,6 +189,18 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
       end
 
       its(:fitness) { is_expected.to be < 1 }
+      its(:fitness) { is_expected.to be > 0 }
+    end
+
+    context 'when the direction changes infrequently' do
+      before do
+        %w[D4 E4 F4 G4 F4 G4 A4 B4 C5 D5].each_with_index do |pitch, bar|
+          voice.place("#{bar + 1}:1", :whole, pitch)
+        end
+      end
+
+      its(:fitness) { is_expected.to be < 1 }
+      its(:fitness) { is_expected.to be > 0 }
     end
   end
 end

@@ -3,7 +3,7 @@ end
 
 class HeadMusic::Style::Annotations::EndOnTonic < HeadMusic::Style::Annotation
   def message
-    'End on the tonic'
+    'End on the tonic.'
   end
 
   def marks
