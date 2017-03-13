@@ -11,7 +11,7 @@ class HeadMusic::Style::Annotations::RecoverLargeLeaps < HeadMusic::Style::Annot
   end
 
   def marks
-    melodic_intervals[1..-1].to_a.map.with_index do |interval, i|
+    melodic_intervals.drop(1).to_a.map.with_index do |interval, i|
       previous_interval = melodic_intervals[i]
       if unrecovered_leap?(previous_interval, interval)
         HeadMusic::Style::Mark.for_all((previous_interval.notes + interval.notes).uniq)

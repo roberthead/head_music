@@ -27,7 +27,7 @@ class HeadMusic::Style::Annotations::DirectionChanges < HeadMusic::Style::Annota
   end
 
   def melodic_intervals_changing_direction
-    melodic_intervals[1..-1].select.with_index do |interval, i|
+    melodic_intervals.drop(1).select.with_index do |interval, i|
       previous_direction = melodic_intervals[i].direction
       interval.direction != previous_direction
     end

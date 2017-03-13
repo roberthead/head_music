@@ -16,14 +16,14 @@ class HeadMusic::Chord
   end
 
   def intervals
-    pitches[1..-1].map.with_index do |pitch, i|
+    pitches.drop(1).map.with_index do |pitch, i|
       FunctionalInterval.new(pitches[i], pitch)
     end
   end
 
   def invert
     inverted_pitch = pitches[0] + HeadMusic::Interval.get(12)
-    new_pitches = pitches[1..-1] + [inverted_pitch]
+    new_pitches = pitches.drop(1) + [inverted_pitch]
     HeadMusic::Chord.new(new_pitches)
   end
 end
