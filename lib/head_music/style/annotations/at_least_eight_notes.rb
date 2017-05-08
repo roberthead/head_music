@@ -15,7 +15,7 @@ class HeadMusic::Style::Annotations::AtLeastEightNotes < HeadMusic::Style::Annot
   private
 
   def no_placements_mark
-    return Style::Mark.new(
+    return HeadMusic::Style::Mark.new(
       HeadMusic::Position.new(composition, "1:1"),
       HeadMusic::Position.new(composition, "2:1"),
       fitness: HeadMusic::PENALTY_FACTOR**MINIMUM_NOTES
@@ -25,7 +25,7 @@ class HeadMusic::Style::Annotations::AtLeastEightNotes < HeadMusic::Style::Annot
   def deficiency_mark
     deficiency = [MINIMUM_NOTES - notes.length, 0].max
     if deficiency > 0
-      Style::Mark.for_all(placements, fitness: HeadMusic::PENALTY_FACTOR**deficiency)
+      HeadMusic::Style::Mark.for_all(placements, fitness: HeadMusic::PENALTY_FACTOR**deficiency)
     end
   end
 end
