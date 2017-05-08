@@ -11,7 +11,7 @@ class HeadMusic::Style::Annotations::DirectionChanges < HeadMusic::Style::Annota
   def marks
     if overage > 0
       penalty_exponent = overage**0.5
-      HeadMusic::Style::Mark.for_all(notes, fitness: PENALTY_FACTOR**penalty_exponent)
+      HeadMusic::Style::Mark.for_all(notes, fitness: HeadMusic::PENALTY_FACTOR**penalty_exponent)
     end
   end
 
