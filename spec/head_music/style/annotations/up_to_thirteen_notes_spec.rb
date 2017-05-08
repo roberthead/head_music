@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::UpToThirteenNotes do
   let(:composition) { Composition.new(key_signature: 'D dorian') }
-  let(:voice) { Voice.new(composition: composition, role: 'Cantus firmus') }
+  let(:voice) { Voice.new(composition: composition, role: 'Cantus Firmus') }
   subject { described_class.new(voice) }
 
   context 'when exactly 13 notes' do

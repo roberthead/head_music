@@ -28,7 +28,7 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
 
   describe 'when in D dorian' do
     let(:composition) { Composition.new(key_signature: 'D dorian') }
-    let(:voice) { Voice.new(composition: composition, role: 'Cantus firmus') }
+    let(:voice) { Voice.new(composition: composition, role: 'Cantus Firmus') }
     subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
     context 'with more than 13 notes' do

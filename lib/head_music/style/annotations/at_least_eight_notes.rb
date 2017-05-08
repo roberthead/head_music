@@ -16,8 +16,8 @@ class HeadMusic::Style::Annotations::AtLeastEightNotes < HeadMusic::Style::Annot
 
   def no_placements_mark
     return Style::Mark.new(
-      Position.new(composition, "1:1"),
-      Position.new(composition, "2:1"),
+      HeadMusic::Position.new(composition, "1:1"),
+      HeadMusic::Position.new(composition, "2:1"),
       fitness: HeadMusic::PENALTY_FACTOR**MINIMUM_NOTES
     )
   end

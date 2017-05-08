@@ -5,7 +5,7 @@ class HeadMusic::Voice
   delegate :key_signature, to: :composition
 
   def initialize(composition: nil, role: nil)
-    @composition = composition || Composition.new
+    @composition = composition || HeadMusic::Composition.new
     @role = role
     @placements = []
   end

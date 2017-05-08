@@ -17,7 +17,7 @@ class HeadMusic::Chord
 
   def intervals
     pitches.drop(1).map.with_index do |pitch, i|
-      FunctionalInterval.new(pitches[i], pitch)
+      HeadMusic::FunctionalInterval.new(pitches[i], pitch)
     end
   end
 
