@@ -22,6 +22,10 @@ class HeadMusic::Style::Annotation
     [marks].flatten.compact.map(&:fitness).reduce(1, :*)
   end
 
+  def perfect?
+    fitness == 1
+  end
+
   def marks
     raise NotImplementedError
   end
