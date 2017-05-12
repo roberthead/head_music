@@ -26,6 +26,14 @@ class HeadMusic::Style::Annotation
     fitness == 1
   end
 
+  def start_position
+    [marks].flatten.compact.map(&:start_position).sort.first
+  end
+
+  def end_position
+    [marks].flatten.compact.map(&:end_position).sort.last
+  end
+
   def marks
     raise NotImplementedError
   end
