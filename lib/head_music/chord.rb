@@ -3,7 +3,7 @@ class HeadMusic::Chord
 
   def initialize(pitches)
     raise ArgumentError if pitches.length < 3
-    @pitches = pitches.map { |pitch| Pitch.get(pitch) }.sort
+    @pitches = pitches.map { |pitch| HeadMusic::Pitch.get(pitch) }.sort
   end
 
   def consonant_triad?
