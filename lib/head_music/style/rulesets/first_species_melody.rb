@@ -8,7 +8,7 @@ class HeadMusic::Style::Rulesets::FirstSpeciesMelody
     HeadMusic::Style::Annotations::SingableIntervals,
     HeadMusic::Style::Annotations::StartOnPerfectConsonance,
     HeadMusic::Style::Annotations::EndOnPerfectConsonance,
-    # HeadMusic::Style::Annotations::StepUpToFinalNote,
+    HeadMusic::Style::Annotations::StepUpToFinalNote,
   ]
 
   def self.analyze(voice)
