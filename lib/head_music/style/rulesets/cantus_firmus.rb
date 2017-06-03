@@ -13,7 +13,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
     HeadMusic::Style::Annotations::MostlyConjunct,
     HeadMusic::Style::Annotations::NoRests,
     HeadMusic::Style::Annotations::NotesSameLength,
-    HeadMusic::Style::Annotations::PermittedIntervals,
+    HeadMusic::Style::Annotations::SingableIntervals,
     HeadMusic::Style::Annotations::RecoverLargeLeaps,
     HeadMusic::Style::Annotations::StartOnTonic,
     HeadMusic::Style::Annotations::StepDownToFinalNote,

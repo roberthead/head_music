@@ -3,6 +3,7 @@ class HeadMusic::Composition
 
   def initialize(name: nil, key_signature: nil, meter: nil)
     ensure_attributes(name, key_signature, meter)
+    @voices = []
   end
 
   def add_bar
@@ -17,8 +18,8 @@ class HeadMusic::Composition
   end
 
   def add_voice(role: nil)
-    @voices ||= []
     @voices << HeadMusic::Voice.new(composition: self, role: role)
+    @voices.last
   end
 
   private

@@ -9,7 +9,7 @@ describe Style::Mark do
   its(:code) { is_expected.to eq '3:2:480 to 4:1:000' }
   its(:fitness) { is_expected.to eq 0.9 }
 
-  describe '.for' do
+  describe '.for_all' do
     let(:voice) { Voice.new }
     let(:note) { Placement.new(voice, "5:3", :quarter, 'D5') }
     let(:rest) { Placement.new(voice, "5:4", :quarter) }

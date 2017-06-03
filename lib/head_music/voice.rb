@@ -63,6 +63,10 @@ class HeadMusic::Voice
     melodic_intervals.select(&:leap?)
   end
 
+  def cantus_firmus?
+    role && role =~ /cantus.?firmus/i
+  end
+
   private
 
   def insert_into_placements(placement)

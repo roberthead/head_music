@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::PermittedIntervals do
+describe HeadMusic::Style::Annotations::SingableIntervals do
   let(:composition) { Composition.new(name: "CF in C Major", key_signature: 'C Major') }
   let(:voice) { Voice.new(composition: composition) }
   subject { described_class.new(voice) }
