@@ -161,21 +161,9 @@ class HeadMusic::FunctionalInterval
   end
 
   def consonance(style = :standard_practice)
-    if perfect?
-      if fourth? && style == :two_part_harmony
-        HeadMusic::Consonance.get(:dissonant)
-      else
-        HeadMusic::Consonance.get(:perfect)
-      end
-    elsif major? || minor?
-      if third? || sixth?
-        HeadMusic::Consonance.get(:imperfect)
-      else
-        HeadMusic::Consonance.get(:dissonant)
-      end
-    else
+    consonance_for_perfect(style) ||
+      consonance_for_major_and_minor ||
       HeadMusic::Consonance.get(:dissonant)
-    end
   end
 
   def consonance?(style = :standard_practice)
@@ -213,5 +201,19 @@ class HeadMusic::FunctionalInterval
 
   NUMBER_NAMES.each do |method_name|
     define_method(:"#{method_name}?") { number_name == method_name || simple_number_name == method_name }
+  end
+
+  private
+
+  def consonance_for_perfect(style = :standard_practice)
+    HeadMusic::Consonance.get(dissonant_fourth?(style) ? :dissonant : :perfect) if perfect?
+  end
+
+  def consonance_for_major_and_minor
+    HeadMusic::Consonance.get((third? || sixth?) ? :imperfect : :dissonant) if (major? || minor?)
+  end
+
+  def dissonant_fourth?(style = :standard_practice)
+    fourth? && style == :two_part_harmony
   end
 end

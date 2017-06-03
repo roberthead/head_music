@@ -59,22 +59,15 @@ class HeadMusic::Meter
   end
 
   def beat_strength(count, tick: 0)
-    return 100 if count == 1 && tick == 0
-    return 80 if strong_counts.include?(count) && tick == 0
-    return 60 if tick == 0
+    return 100 if downbeat?(count, tick)
+    return 80 if strong_beat?(count, tick)
+    return 60 if beat?(count, tick)
     return 40 if strong_ticks.include?(tick)
     20
   end
 
   def ticks_per_count
     @ticks_per_count ||= count_unit.ticks
-  end
-
-  def strong_ticks
-    @strong_ticks ||=
-      [2,3,4].map do |sixths|
-        ticks_per_count * (sixths / 6.0)
-      end
   end
 
   def count_unit
@@ -102,14 +95,37 @@ class HeadMusic::Meter
   def strong_counts
     @strong_counts ||= begin
       (1..counts_per_bar).select do |count|
-        count == 1 ||
-        count == counts_per_bar / 2.0 + 1 ||
-        (
-          counts_per_bar % 3 == 0 &&
-          counts_per_bar > 6 &&
-          count % 3 == 1
-        )
+        downbeat?(count) || strong_beat_in_duple?(count) || strong_beat_in_triple?(count)
       end
     end
+  end
+
+  def strong_ticks
+    @strong_ticks ||=
+      [2,3,4].map do |sixths|
+        ticks_per_count * (sixths / 6.0)
+      end
+  end
+
+  private
+
+  def downbeat?(count, tick = 0)
+    beat?(count, tick) && count == 1
+  end
+
+  def strong_beat?(count, tick = 0)
+    beat?(count, tick) && (strong_beat_in_duple?(count, tick) || strong_beat_in_triple?(count, tick))
+  end
+
+  def strong_beat_in_duple?(count, tick = 0)
+    beat?(count, tick) && (count == counts_per_bar / 2.0 + 1)
+  end
+
+  def strong_beat_in_triple?(count, tick = 0)
+    beat?(count, tick) && counts_per_bar % 3 == 0 && counts_per_bar > 6 && count % 3 == 1
+  end
+
+  def beat?(count, tick)
+    tick == 0
   end
 end
