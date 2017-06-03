@@ -14,6 +14,9 @@ class HeadMusic::Style::Annotation
     to: :voice
   )
 
+  delegate :key_signature, to: :composition
+  delegate :tonic_spelling, to: :key_signature
+
   def initialize(voice)
     @voice = voice
   end
@@ -40,5 +43,21 @@ class HeadMusic::Style::Annotation
 
   def message
     raise NotImplementedError
+  end
+
+  def first_note
+    notes && notes.first
+  end
+
+  def last_note
+    notes && notes.last
+  end
+
+  def other_voices
+    @other_voices ||= voice.composition.voices.select { |part| part != voice }
+  end
+
+  def cantus_firmus
+    other_voices.detect(&:cantus_firmus?) || other_voices.first
   end
 end

@@ -7,6 +7,6 @@ class HeadMusic::Style::Annotations::NoRests < HeadMusic::Style::Annotation
   end
 
   def marks
-    rests.map { |rest| HeadMusic::Style::Mark.for(rest) }
+    HeadMusic::Style::Mark.for_each(rests)
   end
 end

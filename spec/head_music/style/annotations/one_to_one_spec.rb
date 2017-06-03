@@ -13,8 +13,8 @@ describe HeadMusic::Style::Annotations::OneToOne do
   context 'with another voice' do
     let!(:cantus_firmus) do
       counterpoint.composition.add_voice(role: "cantus firmus").tap do |cantus|
-        %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each_with_index do |pitch, bar|
-          cantus.place("#{bar + 1}:1", :whole, pitch)
+        %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
+          cantus.place("#{bar}:1", :whole, pitch)
         end
       end
     end
@@ -33,8 +33,8 @@ describe HeadMusic::Style::Annotations::OneToOne do
 
     context 'with a whole note for each whole note in the Cantus' do
       before do
-        %w[D5 C5 B4 A4 G4 A4 B4 C5 B4 C5 D5].each_with_index do |pitch, bar|
-          counterpoint.place("#{bar + 1}:1", :whole, pitch)
+        %w[D5 C5 B4 A4 G4 A4 B4 C5 B4 C5 D5].each.with_index(1) do |pitch, bar|
+          counterpoint.place("#{bar}:1", :whole, pitch)
         end
       end
 
@@ -43,8 +43,8 @@ describe HeadMusic::Style::Annotations::OneToOne do
 
     context 'with an extra note' do
       before do
-        %w[D5 C5 B4 A4 G4 A4 B4 C5 A4 B4 C5 D5].each_with_index do |pitch, bar|
-          counterpoint.place("#{bar + 1}:1", :whole, pitch)
+        %w[D5 C5 B4 A4 G4 A4 B4 C5 A4 B4 C5 D5].each.with_index(1) do |pitch, bar|
+          counterpoint.place("#{bar}:1", :whole, pitch)
         end
       end
 
@@ -53,8 +53,8 @@ describe HeadMusic::Style::Annotations::OneToOne do
 
     context 'with a missing note' do
       before do
-        %w[D5 C5 B4 G4 A4 B4 C5 A4 C5 D5].each_with_index do |pitch, bar|
-          counterpoint.place("#{bar + 1}:1", :whole, pitch)
+        %w[D5 C5 B4 G4 A4 B4 C5 A4 C5 D5].each.with_index(1) do |pitch, bar|
+          counterpoint.place("#{bar}:1", :whole, pitch)
         end
       end
 

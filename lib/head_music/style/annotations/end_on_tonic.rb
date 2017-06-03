@@ -15,10 +15,10 @@ class HeadMusic::Style::Annotations::EndOnTonic < HeadMusic::Style::Annotation
   private
 
   def ends_on_tonic?
-    notes &&
-    notes.last &&
-    composition &&
-    composition.key_signature &&
-    composition.key_signature.tonic_spelling == notes.last.spelling
+    tonic_spelling == last_note_spelling
+  end
+
+  def last_note_spelling
+    last_note && last_note.spelling
   end
 end

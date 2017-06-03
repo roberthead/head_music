@@ -20,10 +20,6 @@ class HeadMusic::Style::Annotations::StartOnPerfectConsonance < HeadMusic::Style
   end
 
   def functional_interval
-    HeadMusic::FunctionalInterval.new(composition.key_signature.tonic_spelling, first_note.spelling)
-  end
-
-  def first_note
-    notes.first
+    HeadMusic::FunctionalInterval.new(tonic_spelling, first_note.spelling)
   end
 end

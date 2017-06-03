@@ -39,8 +39,8 @@ describe Voice do
   describe '#notes_not_in_key' do
     context 'with some accidentals' do
       before do
-        %w[C D E F# G E C Bb3 C].each_with_index do |pitch, bar|
-          voice.place("#{bar + 1}:1", :whole, pitch)
+        %w[C D E F# G E C Bb3 C].each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1", :whole, pitch)
         end
       end
 
@@ -53,8 +53,8 @@ describe Voice do
 
   describe 'melody' do
     before do
-      %w[G3 C4 D4 Eb4 F4 Eb G3].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[G3 C4 D4 Eb4 F4 Eb G3].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 

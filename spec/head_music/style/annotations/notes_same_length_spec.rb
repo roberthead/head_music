@@ -18,8 +18,8 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
 
   context 'with eight whole notes' do
     before do
-      %w[C D E F G F A G F D E C].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C D E F G F A G F D E C].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -28,8 +28,8 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
 
   context 'when ending on a longer note' do
     before do
-      %w[C D E F G F A G F D].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C D E F G F A G F D].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
       voice.place(voice.notes.last.next_position, :breve, 'C')
     end

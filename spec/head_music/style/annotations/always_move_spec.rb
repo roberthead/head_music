@@ -20,8 +20,8 @@ describe HeadMusic::Style::Annotations::AlwaysMove do
 
   context 'with motion' do
     before do
-      %w[C D E D C G3 A3 D C].each_with_index do |pitch, bar|
-        voice.place("#{bar+1}:1", :whole, pitch)
+      %w[C D E D C G3 A3 D C].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -30,8 +30,8 @@ describe HeadMusic::Style::Annotations::AlwaysMove do
 
   context 'with a repeated note' do
     before do
-      %w[C D E E C G3 A3 D C].each_with_index do |pitch, bar|
-        voice.place("#{bar+1}:1", :whole, pitch)
+      %w[C D E E C G3 A3 D C].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 

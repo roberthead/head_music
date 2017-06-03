@@ -11,12 +11,13 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StartOnPerfectConsonance }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnPerfectConsonance }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StepUpToFinalNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::LimitRange }
 
   context 'when given an error-free counterpoint line' do
     let(:counterpoint) do
       Voice.new(composition: composition, role: 'Counterpoint').tap do |voice|
-        %w[D5 A4 C5 A4 B4 D5 C5 B4 A4 C5 D5].each_with_index do |pitch, bar|
-          voice.place("#{bar + 1}:1", :whole, pitch)
+        %w[D5 A4 C5 A4 B4 D5 C5 B4 A4 C5 D5].each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1", :whole, pitch)
         end
       end
     end

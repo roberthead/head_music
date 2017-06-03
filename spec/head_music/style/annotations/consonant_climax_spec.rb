@@ -12,8 +12,8 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
     context 'when the high note occurs once' do
       context 'on the 3rd scale degree' do
         before do
-          %w[C D E D C G3 A3 D C].each_with_index do |pitch, bar|
-            voice.place("#{bar+1}:1", :whole, pitch)
+          %w[C D E D C G3 A3 D C].each.with_index(1) do |pitch, bar|
+            voice.place("#{bar}:1", :whole, pitch)
           end
         end
 
@@ -22,8 +22,8 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
 
       context 'on the 7th scale degree' do
         before do
-          %w[C D E G B G F E D C].each_with_index do |pitch, bar|
-            voice.place("#{bar+1}:1", :whole, pitch)
+          %w[C D E G B G F E D C].each.with_index(1) do |pitch, bar|
+            voice.place("#{bar}:1", :whole, pitch)
           end
         end
 
@@ -34,8 +34,8 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
     context 'when the high note occurs twice' do
       context 'on the 3rd scale degree' do
         before do
-          %w[C D E D E C G3 A3 D C].each_with_index do |pitch, bar|
-            voice.place("#{bar+1}:1", :whole, pitch)
+          %w[C D E D E C G3 A3 D C].each.with_index(1) do |pitch, bar|
+            voice.place("#{bar}:1", :whole, pitch)
           end
         end
 
@@ -44,8 +44,8 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
 
       context 'on the 7th scale degree' do
         before do
-          %w[C D E G B A B G E D C].each_with_index do |pitch, bar|
-            voice.place("#{bar+1}:1", :whole, pitch)
+          %w[C D E G B A B G E D C].each.with_index(1) do |pitch, bar|
+            voice.place("#{bar}:1", :whole, pitch)
           end
         end
 

@@ -20,8 +20,8 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
 
   context 'with only permitted intervals' do
     before do
-      %w[C E D G F E D A G B C5].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C E D G F E D A G B C5].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -31,8 +31,8 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
 
   context 'with an octave leap' do
     before do
-      %w[C D E C C5 B A F G E F D C].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C D E C C5 B A F G E F D C].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -42,8 +42,8 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
 
   context 'with an ascending minor sixth' do
     before do
-      %w[C D E C5 B A G E F D C].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C D E C5 B A G E F D C].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -53,8 +53,8 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
 
   context 'with a descending minor sixth' do
     before do
-      %w[C E G A B C5 E D C].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C E G A B C5 E D C].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -64,8 +64,8 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
 
   context 'with a major sixth' do
     before do
-      %w[C D E D B A G E F D C].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C D E D B A G E F D C].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -75,8 +75,8 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
 
   context 'with a tritone' do
     before do
-      %w[C D E F B A B C5].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C D E F B A B C5].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 

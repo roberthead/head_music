@@ -12,11 +12,9 @@ class HeadMusic::Style::Annotations::StartOnTonic < HeadMusic::Style::Annotation
     end
   end
 
-  def starts_on_tonic?
-    composition.key_signature.tonic_spelling == first_note.spelling
-  end
+  private
 
-  def first_note
-    notes.first
+  def starts_on_tonic?
+    tonic_spelling == first_note.spelling
   end
 end

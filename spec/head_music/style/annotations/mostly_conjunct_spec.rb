@@ -18,8 +18,8 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
 
   context 'with a scale' do
     before do
-      %w[C D E F G A B C5].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C D E F G A B C5].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -28,8 +28,8 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
 
   context 'with half skips and leaps' do
     before do
-      %w[C4 D4 E4 G4 F4 A4 C5 B4 G4 D4 C4].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C4 D4 E4 G4 F4 A4 C5 B4 G4 D4 C4].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -39,8 +39,8 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
 
   context 'with more than half skips and leaps' do
     before do
-      %w[C4 E4 G4 F4 A4 C5 B4 G4 D4 C4].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C4 E4 G4 F4 A4 C5 B4 G4 D4 C4].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -50,8 +50,8 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
 
   context 'with mostly skips and leaps' do
     before do
-      %w[C E G B G B G E D C].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[C E G B G B G E D C].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 

@@ -10,8 +10,8 @@ describe HeadMusic::Style::Annotations::LimitRange do
 
   context 'when the range is small' do
     before do
-      %w[D4 E4 F4 A4 G4 F4 G4 E4 D4].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[D4 E4 F4 A4 G4 F4 G4 E4 D4].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -21,8 +21,8 @@ describe HeadMusic::Style::Annotations::LimitRange do
 
   context 'when the range is large' do
     before do
-      %w[G3 C4 D4 Eb4 C4 G4 Eb4 C5 C4 Eb4 D4 C4 G4 Eb4 C4 G3 G3 C4].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[G3 C4 D4 Eb4 C4 G4 Eb4 C5 C4 Eb4 D4 C4 G4 Eb4 C4 G3 G3 C4].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 

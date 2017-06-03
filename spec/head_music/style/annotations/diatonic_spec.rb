@@ -14,8 +14,8 @@ describe HeadMusic::Style::Annotations::Diatonic do
 
   context 'when the notes are in the key' do
     before do
-      %w[D4 E4 F4 G4 A4 B4 G4 B4 A4 G4 F4 E4 D4].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[D4 E4 F4 G4 A4 B4 G4 B4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
@@ -25,8 +25,8 @@ describe HeadMusic::Style::Annotations::Diatonic do
 
   context 'when a note is not in the key' do
     before do
-      %w[D4 E4 F#4 G4 A4 B4 G4 B4 A4 G4 F#4 E4 D4].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[D4 E4 F#4 G4 A4 B4 G4 B4 A4 G4 F#4 E4 D4].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
     end
 

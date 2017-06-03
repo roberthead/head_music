@@ -13,7 +13,14 @@ module HeadMusic
       end
 
       def fitness
-        annotations.map(&:fitness).reduce(1, :*)
+        return 1.0 if annotations.length == 0
+        fitness_scores.sum.to_f / fitness_scores.length
+      end
+
+      private
+
+      def fitness_scores
+        annotations.map(&:fitness)
       end
     end
   end

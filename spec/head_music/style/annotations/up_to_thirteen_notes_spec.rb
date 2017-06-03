@@ -7,8 +7,8 @@ describe HeadMusic::Style::Annotations::UpToThirteenNotes do
 
   context 'when exactly 13 notes' do
     before do
-      %w[D4 E4 F4 G4 A4 B4 G4 B4 A4 G4 F4 E4 D4].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[D4 E4 F4 G4 A4 B4 G4 B4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
       expect(voice.notes.length).to eq 13
     end
@@ -19,8 +19,8 @@ describe HeadMusic::Style::Annotations::UpToThirteenNotes do
 
   context 'when more than 13 notes' do
     before do
-      %w[D4 E4 F4 G4 A4 B4 G4 A4 G4 F4 E4 D4 C4 E4 D4].each_with_index do |pitch, bar|
-        voice.place("#{bar + 1}:1", :whole, pitch)
+      %w[D4 E4 F4 G4 A4 B4 G4 A4 G4 F4 E4 D4 C4 E4 D4].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
       end
       expect(voice.notes.length).to eq 15
     end

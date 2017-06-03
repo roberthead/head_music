@@ -7,9 +7,9 @@ class HeadMusic::Style::Annotations::OneToOne < HeadMusic::Style::Annotation
   end
 
   def marks
-    if other_voice && other_voice.notes.length > 0
+    if cantus_firmus && cantus_firmus.notes.length > 0
       HeadMusic::Style::Mark.for_each(
-        notes_without_match(voice, other_voice) + notes_without_match(other_voice, voice)
+        notes_without_match(voice, cantus_firmus) + notes_without_match(cantus_firmus, voice)
       )
     end
   end
@@ -20,13 +20,5 @@ class HeadMusic::Style::Annotations::OneToOne < HeadMusic::Style::Annotation
     voice1.notes.reject do |voice1_note|
       voice2.notes.map(&:position).include?(voice1_note.position)
     end
-  end
-
-  def other_voice
-    other_voices.detect(&:cantus_firmus?) || other_voices.first
-  end
-
-  def other_voices
-    @other_voices ||= voice.composition.voices.select { |part| part != voice }
   end
 end
