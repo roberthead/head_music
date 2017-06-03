@@ -178,6 +178,22 @@ class HeadMusic::FunctionalInterval
     end
   end
 
+  def consonance?(style = :standard_practice)
+    consonance(style).perfect? || consonance(style).imperfect?
+  end
+
+  def perfect_consonance?(style = :standard_practice)
+    consonance(style).perfect?
+  end
+
+  def imperfect_consonance?(style = :standard_practice)
+    consonance(style).imperfect?
+  end
+
+  def dissonance?(style = :standard_practice)
+    consonance(style).dissonant?
+  end
+
   def step?
     number <= 2
   end

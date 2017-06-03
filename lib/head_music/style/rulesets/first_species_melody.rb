@@ -6,6 +6,8 @@ class HeadMusic::Style::Rulesets::FirstSpeciesMelody
     HeadMusic::Style::Annotations::OneToOne,
     HeadMusic::Style::Annotations::NotesSameLength,
     HeadMusic::Style::Annotations::SingableIntervals,
+    HeadMusic::Style::Annotations::StartOnPerfectConsonance,
+    HeadMusic::Style::Annotations::EndOnPerfectConsonance,
     # HeadMusic::Style::Annotations::StepUpToFinalNote,
   ]
 

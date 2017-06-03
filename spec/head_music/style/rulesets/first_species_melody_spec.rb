@@ -15,9 +15,10 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
 
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NotesSameLength }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableIntervals }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StartOnPerfectConsonance }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnPerfectConsonance }
   # specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StepUpToFinalNote }
   # specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnPerfectConsonance }
-  # specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StartOnPerfectConsonance }
 
   context 'when given an error-free counterpoint line' do
     let(:counterpoint) do
