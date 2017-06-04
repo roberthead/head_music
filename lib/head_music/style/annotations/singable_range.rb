@@ -1,7 +1,7 @@
 module HeadMusic::Style::Annotations
 end
 
-class HeadMusic::Style::Annotations::LimitRange < HeadMusic::Style::Annotation
+class HeadMusic::Style::Annotations::SingableRange < HeadMusic::Style::Annotation
   MAXIMUM_RANGE = 10
 
   def message

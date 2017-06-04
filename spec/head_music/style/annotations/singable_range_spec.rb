@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::LimitRange do
+describe HeadMusic::Style::Annotations::SingableRange do
   let(:voice) { Voice.new }
   subject { described_class.new(voice) }
 

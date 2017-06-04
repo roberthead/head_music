@@ -9,7 +9,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
     HeadMusic::Style::Annotations::Diatonic,
     HeadMusic::Style::Annotations::DirectionChanges,
     HeadMusic::Style::Annotations::EndOnTonic,
-    HeadMusic::Style::Annotations::LimitRange,
+    HeadMusic::Style::Annotations::SingableRange,
     HeadMusic::Style::Annotations::MostlyConjunct,
     HeadMusic::Style::Annotations::NoRests,
     HeadMusic::Style::Annotations::NotesSameLength,
