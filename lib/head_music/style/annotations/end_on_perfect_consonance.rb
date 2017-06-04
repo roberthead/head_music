@@ -16,10 +16,6 @@ class HeadMusic::Style::Annotations::EndOnPerfectConsonance < HeadMusic::Style::
   private
 
   def ends_on_perfect_consonance?
-    functional_interval.perfect_consonance?(:two_part_harmony)
-  end
-
-  def functional_interval
-    HeadMusic::FunctionalInterval.new(tonic_spelling, last_note.spelling)
+    functional_interval_from_tonic(last_note).perfect_consonance?(:two_part_harmony)
   end
 end

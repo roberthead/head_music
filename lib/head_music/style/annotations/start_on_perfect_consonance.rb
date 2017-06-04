@@ -16,10 +16,6 @@ class HeadMusic::Style::Annotations::StartOnPerfectConsonance < HeadMusic::Style
   private
 
   def starts_on_perfect_consonance?
-    functional_interval.perfect_consonance?(:two_part_harmony)
-  end
-
-  def functional_interval
-    HeadMusic::FunctionalInterval.new(tonic_spelling, first_note.spelling)
+    functional_interval_from_tonic(first_note).perfect_consonance?(:two_part_harmony)
   end
 end

@@ -60,4 +60,8 @@ class HeadMusic::Style::Annotation
   def cantus_firmus
     other_voices.detect(&:cantus_firmus?) || other_voices.first
   end
+
+  def functional_interval_from_tonic(note)
+    HeadMusic::FunctionalInterval.new(tonic_spelling, note.spelling)
+  end
 end
