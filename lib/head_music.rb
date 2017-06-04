@@ -4,6 +4,8 @@ require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/string/access'
 require 'humanize'
 
+require 'head_music/named_rudiment'
+
 require 'head_music/accidental'
 require 'head_music/bar'
 require 'head_music/chord'

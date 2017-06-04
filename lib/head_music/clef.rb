@@ -1,4 +1,6 @@
 class HeadMusic::Clef
+  include HeadMusic::NamedRudiment
+
   CLEFS = [
     { pitch: 'G4', line: 2, names: ['treble', 'G-clef'], modern: true },
     { pitch: 'G4', line: 1, names: ['French', 'French violin'] },
@@ -18,14 +20,10 @@ class HeadMusic::Clef
   ]
 
   def self.get(name)
-    name = name.to_s
-    @clefs ||= {}
-    key = HeadMusic::Utilities::HashKey.for(name)
-    @clefs[key] ||= new(name)
+    get_by_name(name)
   end
 
-  attr_reader :name, :pitch, :line
-  delegate :to_s, to: :name
+  attr_reader :pitch, :line
 
   def initialize(name)
     @name = name.to_s

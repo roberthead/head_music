@@ -1,4 +1,6 @@
 class HeadMusic::Instrument
+  include HeadMusic::NamedRudiment
+
   INSTRUMENTS = {
     violin: {
       name: "violin",
@@ -13,13 +15,8 @@ class HeadMusic::Instrument
   }
 
   def self.get(name)
-    @instruments ||= {}
-    key = HeadMusic::Utilities::HashKey.for(name)
-    @instruments[key] ||= new(name.to_s)
+    get_by_name(name)
   end
-
-  attr_reader :name
-  delegate :to_s, to: :name
 
   def initialize(name)
     @name = name.to_s
@@ -27,10 +24,6 @@ class HeadMusic::Instrument
 
   def data
     @data ||= INSTRUMENTS[hash_key]
-  end
-
-  def hash_key
-    HeadMusic::Utilities::HashKey.for(name)
   end
 
   def family

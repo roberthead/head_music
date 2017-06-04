@@ -61,7 +61,7 @@ class HeadMusic::Meter
   def beat_strength(count, tick: 0)
     return 100 if downbeat?(count, tick)
     return 80 if strong_beat?(count, tick)
-    return 60 if beat?(count, tick)
+    return 60 if beat?(tick)
     return 40 if strong_ticks.include?(tick)
     20
   end
@@ -110,22 +110,22 @@ class HeadMusic::Meter
   private
 
   def downbeat?(count, tick = 0)
-    beat?(count, tick) && count == 1
+    beat?(tick) && count == 1
   end
 
   def strong_beat?(count, tick = 0)
-    beat?(count, tick) && (strong_beat_in_duple?(count, tick) || strong_beat_in_triple?(count, tick))
+    beat?(tick) && (strong_beat_in_duple?(count, tick) || strong_beat_in_triple?(count, tick))
   end
 
   def strong_beat_in_duple?(count, tick = 0)
-    beat?(count, tick) && (count == counts_per_bar / 2.0 + 1)
+    beat?(tick) && (count == counts_per_bar / 2.0 + 1)
   end
 
   def strong_beat_in_triple?(count, tick = 0)
-    beat?(count, tick) && counts_per_bar % 3 == 0 && counts_per_bar > 6 && count % 3 == 1
+    beat?(tick) && counts_per_bar % 3 == 0 && counts_per_bar > 6 && count % 3 == 1
   end
 
-  def beat?(count, tick)
+  def beat?(tick)
     tick == 0
   end
 end
