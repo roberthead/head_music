@@ -7,7 +7,7 @@ class HeadMusic::Style::Rulesets::FirstSpeciesMelody
     HeadMusic::Style::Annotations::NotesSameLength,
     HeadMusic::Style::Annotations::SingableIntervals,
     HeadMusic::Style::Annotations::StartOnPerfectConsonance,
-    HeadMusic::Style::Annotations::EndOnPerfectConsonance,
+    HeadMusic::Style::Annotations::EndOnTonic,
     HeadMusic::Style::Annotations::StepUpToFinalNote,
     HeadMusic::Style::Annotations::SingableRange,
     HeadMusic::Style::Annotations::LimitOctaveLeaps,

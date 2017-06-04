@@ -9,7 +9,7 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NotesSameLength }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableIntervals }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StartOnPerfectConsonance }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnPerfectConsonance }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnTonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StepUpToFinalNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableRange }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::LimitOctaveLeaps }
