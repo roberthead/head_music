@@ -51,6 +51,15 @@ describe Spelling do
       it { is_expected.to eq 'B#' }
     end
 
+    context "for 'bb'" do
+      subject(:spelling) { Spelling.get('bb') }
+
+      its(:letter_name) { is_expected.to eq 'B' }
+      its(:accidental) { is_expected.to eq 'b' }
+      its(:pitch_class) { is_expected.to eq 10 }
+      it { is_expected.to eq 'Bb' }
+    end
+
     context "given a pitch class" do
       subject(:spelling) { Spelling.get(PitchClass.get(3)) }
 

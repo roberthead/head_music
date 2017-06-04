@@ -1,5 +1,5 @@
 class HeadMusic::Spelling
-  MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/
+  MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/i
 
   attr_reader :pitch_class
   attr_reader :letter_name
