@@ -11,7 +11,7 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
       improper_climaxes = highest_notes.select.with_index do |note, i|
         tonic_pitch = HeadMusic::Pitch.get(tonic_spelling)
         interval = HeadMusic::FunctionalInterval.new(tonic_pitch, note.pitch)
-        interval.consonance.dissonant? || i > 0
+        interval.consonance(:melodic).dissonant? || i > 0
       end
       HeadMusic::Style::Mark.for_each(improper_climaxes)
     end

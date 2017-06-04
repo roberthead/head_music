@@ -64,4 +64,8 @@ class HeadMusic::Style::Annotation
   def functional_interval_from_tonic(note)
     HeadMusic::FunctionalInterval.new(tonic_spelling, note.spelling)
   end
+
+  def consonance_style
+    voice.composition.voices.length <= 2 ? :two_part_harmony : :common_practice
+  end
 end
