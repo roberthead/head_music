@@ -54,6 +54,14 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
     its(:fitness) { is_expected.to be < 1 }
   end
 
+  context 'when the first note is the dominant below' do
+    before do
+      voice.place("1:1", :whole, 'G3')
+    end
+
+    its(:fitness) { is_expected.to be < 1 }
+  end
+
   context 'when the first note is an imperfect consonance' do
     before do
       voice.place("1:1", :whole, 'A')

@@ -6,7 +6,7 @@ class HeadMusic::Style::Annotations::StartOnPerfectConsonance < HeadMusic::Style
   MESSAGE = 'Start on the tonic or a perfect consonance above the tonic.'
 
   def marks
-    if first_note && !starts_on_perfect_consonance?
+    if first_note && ((bass_voice? && !starts_on_tonic?) || !starts_on_perfect_consonance?)
       HeadMusic::Style::Mark.for(first_note)
     end
   end

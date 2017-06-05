@@ -81,8 +81,12 @@ class HeadMusic::Style::Annotation
     HeadMusic::FunctionalInterval.new(tonic_spelling, note.spelling)
   end
 
-  def consonance_style
-    voices.length <= 2 ? :two_part_harmony : :common_practice
+  def bass_voice?
+    lower_voices.empty?
+  end
+
+  def starts_on_tonic?
+    tonic_spelling == first_note.spelling
   end
 
   private

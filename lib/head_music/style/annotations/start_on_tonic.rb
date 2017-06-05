@@ -9,10 +9,4 @@ class HeadMusic::Style::Annotations::StartOnTonic < HeadMusic::Style::Annotation
       HeadMusic::Style::Mark.for(first_note)
     end
   end
-
-  private
-
-  def starts_on_tonic?
-    tonic_spelling == first_note.spelling
-  end
 end
