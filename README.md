@@ -24,7 +24,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+HeadMusic can be used as a foundation to build larger applications that notate, analyze, play, or generate music in the language of music theory.
 
 ## Development
 
