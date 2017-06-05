@@ -12,6 +12,7 @@ class HeadMusic::Style::Rulesets::FirstSpeciesMelody
     HeadMusic::Style::Annotations::SingableRange,
     HeadMusic::Style::Annotations::LimitOctaveLeaps,
     HeadMusic::Style::Annotations::DistinctVoices,
+    HeadMusic::Style::Annotations::ConsonantDownbeats,
   ]
 
   def self.analyze(voice)

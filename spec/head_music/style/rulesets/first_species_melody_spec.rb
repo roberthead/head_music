@@ -15,6 +15,8 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::LimitOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::DistinctVoices }
 
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ConsonantDownbeats }
+
   context 'when given an error-free counterpoint line' do
     let(:counterpoint) do
       Voice.new(composition: composition, role: 'Counterpoint').tap do |voice|
