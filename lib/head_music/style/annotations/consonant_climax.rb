@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotation
-  def message
-    "Peak on a consonant high note one time."
-  end
+  MESSAGE = "Peak on a consonant high note one time."
 
   def marks
     if notes

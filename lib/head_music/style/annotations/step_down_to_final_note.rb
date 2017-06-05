@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::StepDownToFinalNote < HeadMusic::Style::Annotation
-  def message
-    'Step down to final note.'
-  end
+  MESSAGE = 'Step down to final note.'
 
   def marks
     if !last_melodic_interval.nil?

@@ -3,9 +3,7 @@ end
 
 # marks the voice if the first note is not the first or fifth scale degree of the key.
 class HeadMusic::Style::Annotations::StartOnPerfectConsonance < HeadMusic::Style::Annotation
-  def message
-    'Start on the tonic or a perfect consonance above the tonic.'
-  end
+  MESSAGE = 'Start on the tonic or a perfect consonance above the tonic.'
 
   def marks
     if first_note && !starts_on_perfect_consonance?

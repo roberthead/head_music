@@ -1,4 +1,6 @@
 class HeadMusic::Style::Annotation
+  MESSAGE = 'Write music.'
+
   attr_reader :voice
 
   delegate(
@@ -42,7 +44,7 @@ class HeadMusic::Style::Annotation
   end
 
   def message
-    raise NotImplementedError
+    self.class::MESSAGE
   end
 
   def first_note

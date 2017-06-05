@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::DistinctVoices < HeadMusic::Style::Annotation
-  def message
-    "Avoid crossing or overlapping voices."
-  end
+  MESSAGE = "Avoid crossing or overlapping voices."
 
   def marks
     crossings + overlappings

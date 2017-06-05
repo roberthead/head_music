@@ -6,9 +6,7 @@ end
 # unless another leap (in either direction) creates a consonant triad.
 # - Brian
 class HeadMusic::Style::Annotations::RecoverLargeLeaps < HeadMusic::Style::Annotation
-  def message
-    "Recover leaps by step in the opposite direction."
-  end
+  MESSAGE = "Recover leaps by step in the opposite direction."
 
   def marks
     melodic_intervals.drop(1).to_a.map.with_index do |interval, i|

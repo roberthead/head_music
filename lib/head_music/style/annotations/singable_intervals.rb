@@ -5,9 +5,7 @@ class HeadMusic::Style::Annotations::SingableIntervals < HeadMusic::Style::Annot
   PERMITTED_ASCENDING = %w[m2 M2 m3 M3 P4 P5 m6 P8]
   PERMITTED_DESCENDING = %w[m2 M2 m3 M3 P4 P5 P8]
 
-  def message
-    "Use only m2, M2, m3, M3, P4, P5, m6 (ascending), P8."
-  end
+  MESSAGE = "Use only m2, M2, m3, M3, P4, P5, m6 (ascending), P8."
 
   def marks
     melodic_intervals.reject { |interval| permitted?(interval) }.map do |unpermitted_interval|

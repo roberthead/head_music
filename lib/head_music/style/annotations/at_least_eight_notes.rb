@@ -4,9 +4,7 @@ end
 class HeadMusic::Style::Annotations::AtLeastEightNotes < HeadMusic::Style::Annotation
   MINIMUM_NOTES = 8
 
-  def message
-    "Write at least eight notes."
-  end
+  MESSAGE = "Write at least eight notes."
 
   def marks
     placements.empty? ? no_placements_mark : deficiency_mark

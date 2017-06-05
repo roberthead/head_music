@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::Diatonic < HeadMusic::Style::Annotation
-  def message
-    "Use only notes in the key signature."
-  end
+  MESSAGE = "Use only notes in the key signature."
 
   def marks
     HeadMusic::Style::Mark.for_each(notes_not_in_key)

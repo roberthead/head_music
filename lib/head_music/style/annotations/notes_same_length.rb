@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::NotesSameLength < HeadMusic::Style::Annotation
-  def message
-    'Use consistent rhythmic unit.'
-  end
+  MESSAGE = 'Use consistent rhythmic unit.'
 
   def marks
     preferred_value = first_most_common_rhythmic_value

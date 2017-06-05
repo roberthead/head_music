@@ -4,9 +4,7 @@ end
 class HeadMusic::Style::Annotations::SingableRange < HeadMusic::Style::Annotation
   MAXIMUM_RANGE = 10
 
-  def message
-    'Limit melodic range to a 10th.'
-  end
+  MESSAGE = 'Limit melodic range to a 10th.'
 
   def marks
     if overage > 0

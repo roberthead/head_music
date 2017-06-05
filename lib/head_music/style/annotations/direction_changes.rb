@@ -4,9 +4,7 @@ end
 class HeadMusic::Style::Annotations::DirectionChanges < HeadMusic::Style::Annotation
   MAXIMUM_NOTES_PER_DIRECTION = 3
 
-  def message
-    "Balance ascending and descending motion."
-  end
+  MESSAGE = "Balance ascending and descending motion."
 
   def marks
     if overage > 0

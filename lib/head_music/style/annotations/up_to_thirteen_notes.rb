@@ -4,9 +4,7 @@ end
 class HeadMusic::Style::Annotations::UpToThirteenNotes < HeadMusic::Style::Annotation
   MAXIMUM_NOTES = 13
 
-  def message
-    'Write up to thirteen notes.'
-  end
+  MESSAGE = 'Write up to thirteen notes.'
 
   def marks
     if overage > 0

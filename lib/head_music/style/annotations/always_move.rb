@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::AlwaysMove < HeadMusic::Style::Annotation
-  def message
-    "Always move to a different note."
-  end
+  MESSAGE = "Always move to a different note."
 
   def marks
     melodic_intervals.map.with_index do |interval, i|

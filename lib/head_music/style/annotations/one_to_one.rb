@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::OneToOne < HeadMusic::Style::Annotation
-  def message
-    'Place a note for each note in the other voice.'
-  end
+  MESSAGE = 'Place a note for each note in the other voice.'
 
   def marks
     if cantus_firmus && cantus_firmus.notes.length > 0

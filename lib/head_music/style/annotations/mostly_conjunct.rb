@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::MostlyConjunct < HeadMusic::Style::Annotation
-  def message
-    "Use mostly conjunct motion."
-  end
+  MESSAGE = "Use mostly conjunct motion."
 
   def marks
     marks_for_skips_and_leaps if conjunct_ratio <= 0.5

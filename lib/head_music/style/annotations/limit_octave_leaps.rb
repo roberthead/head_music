@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::LimitOctaveLeaps < HeadMusic::Style::Annotation
-  def message
-    "Use a maximum of one octave skip."
-  end
+  MESSAGE = "Use a maximum of one octave skip."
 
   def marks
     if octave_leaps.length > 1

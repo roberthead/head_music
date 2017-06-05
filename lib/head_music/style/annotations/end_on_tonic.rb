@@ -2,9 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::EndOnTonic < HeadMusic::Style::Annotation
-  def message
-    'End on the tonic.'
-  end
+  MESSAGE = 'End on the tonic.'
 
   def marks
     if !notes.empty? && !ends_on_tonic?
