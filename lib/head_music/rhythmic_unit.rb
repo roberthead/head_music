@@ -19,8 +19,8 @@ class HeadMusic::RhythmicUnit
 
   def initialize(canonical_name)
     @name ||= canonical_name
-    ensure_numerator
-    ensure_denominator
+    @numerator = 2**numerator_exponent
+    @denominator = 2**denominator_exponent
   end
 
   def relative_value
@@ -68,15 +68,11 @@ class HeadMusic::RhythmicUnit
 
   private
 
-  def ensure_numerator
-    @numerator ||= 2**MULTIPLES.index(name) if MULTIPLES.include?(name)
-    @numerator ||= 2**BRITISH_MULTIPLE_NAMES.index(name) if BRITISH_MULTIPLE_NAMES.include?(name)
-    @numerator ||= 1
+  def numerator_exponent
+    MULTIPLES.index(name) || BRITISH_MULTIPLE_NAMES.index(name) || 0
   end
 
-  def ensure_denominator
-    @denominator ||= 2**FRACTIONS.index(name) if FRACTIONS.include?(name)
-    @denominator ||= 2**BRITISH_DIVISION_NAMES.index(name) if BRITISH_DIVISION_NAMES.include?(name)
-    @denominator ||= 1
+  def denominator_exponent
+    FRACTIONS.index(name) || BRITISH_DIVISION_NAMES.index(name) || 0
   end
 end
