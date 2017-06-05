@@ -3,7 +3,7 @@ end
 
 class HeadMusic::Style::Annotations::LimitOctaveLeaps < HeadMusic::Style::Annotation
   def message
-    "Limit one octave skips to one (or none)."
+    "Use a maximum of one octave skip."
   end
 
   def marks

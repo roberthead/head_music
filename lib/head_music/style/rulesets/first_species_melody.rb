@@ -11,6 +11,7 @@ class HeadMusic::Style::Rulesets::FirstSpeciesMelody
     HeadMusic::Style::Annotations::StepUpToFinalNote,
     HeadMusic::Style::Annotations::SingableRange,
     HeadMusic::Style::Annotations::LimitOctaveLeaps,
+    HeadMusic::Style::Annotations::DistinctVoices, # TODO: move to harmony or composition ruleset
   ]
 
   def self.analyze(voice)

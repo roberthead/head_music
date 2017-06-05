@@ -18,11 +18,17 @@ class HeadMusic::Placement
   end
 
   def next_position
-    position + rhythmic_value
+    @next_position ||= position + rhythmic_value
   end
 
   def <=>(other)
     self.position <=> other.position
+  end
+
+  def during?(other_placement)
+    (other_placement.position >= position && other_placement.position < next_position) ||
+    (other_placement.next_position > position && other_placement.next_position <= next_position) ||
+    (other_placement.position <= position && other_placement.next_position >= next_position)
   end
 
   private

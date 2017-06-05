@@ -64,7 +64,23 @@ class HeadMusic::Voice
   end
 
   def cantus_firmus?
-    role && role =~ /cantus.?firmus/i
+    role.to_s =~ /cantus.?firmus/i
+  end
+
+  def note_at(position)
+    notes.detect { |note| note.position == position }
+  end
+
+  def notes_during(placement)
+    notes.select { |note| note.during?(placement) }
+  end
+
+  def note_preceding(position)
+    notes.select { |note| note.position < position }.last
+  end
+
+  def note_following(position)
+    notes.detect { |note| note.position > position }
   end
 
   private

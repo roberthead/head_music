@@ -22,5 +22,11 @@ describe Placement do
 
   describe '#next_position' do
     specify { expect(placement.next_position).to eq "2:2:720" }
+
+    context 'when the rhythmic value is longer than a measure' do
+      let(:rhythmic_value) { RhythmicValue.new(:breve) }
+
+      specify { expect(placement.next_position).to eq "4:2:240" }
+    end
   end
 end

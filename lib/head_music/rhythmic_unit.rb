@@ -1,27 +1,26 @@
 class HeadMusic::RhythmicUnit
+  include HeadMusic::NamedRudiment
+
   MULTIPLES = ['whole', 'double whole', 'longa', 'maxima']
   FRACTIONS = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second', 'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth']
 
   BRITISH_MULTIPLE_NAMES = %w[semibreve breve longa maxima]
   BRITISH_DIVISION_NAMES = %w[semibreve minim crotchet quaver semiquaver demisemiquaver hemidemisemiquaver semihemidemisemiquaver demisemihemidemisemiquaver]
 
-  def self.get(name)
-    @rhythmic_units ||= {}
-    hash_key = HeadMusic::Utilities::HashKey.for(name)
-    @rhythmic_units[hash_key] ||= new(name.to_s)
-  end
-
   def self.for_denominator_value(denominator)
     get(FRACTIONS[Math.log2(denominator).to_i])
   end
 
-  attr_reader :name, :numerator, :denominator
-  delegate :to_s, to: :name
+  attr_reader :numerator, :denominator
+
+  def self.get(name)
+    get_by_name(name)
+  end
 
   def initialize(canonical_name)
     @name ||= canonical_name
-    @numerator ||= MULTIPLES.include?(name) ? 2**MULTIPLES.index(name) : 1
-    @denominator ||= FRACTIONS.include?(name) ? 2**FRACTIONS.index(name) : 1
+    ensure_numerator
+    ensure_denominator
   end
 
   def relative_value
@@ -60,8 +59,24 @@ class HeadMusic::RhythmicUnit
       BRITISH_MULTIPLE_NAMES[MULTIPLES.index(name)]
     elsif FRACTIONS.include?(name)
       BRITISH_DIVISION_NAMES[FRACTIONS.index(name)]
+    elsif BRITISH_MULTIPLE_NAMES.include?(name) || BRITISH_DIVISION_NAMES.include?(name)
+      name
     end
   end
 
   private_class_method :new
+
+  private
+
+  def ensure_numerator
+    @numerator ||= 2**MULTIPLES.index(name) if MULTIPLES.include?(name)
+    @numerator ||= 2**BRITISH_MULTIPLE_NAMES.index(name) if BRITISH_MULTIPLE_NAMES.include?(name)
+    @numerator ||= 1
+  end
+
+  def ensure_denominator
+    @denominator ||= 2**FRACTIONS.index(name) if FRACTIONS.include?(name)
+    @denominator ||= 2**BRITISH_DIVISION_NAMES.index(name) if BRITISH_DIVISION_NAMES.include?(name)
+    @denominator ||= 1
+  end
 end

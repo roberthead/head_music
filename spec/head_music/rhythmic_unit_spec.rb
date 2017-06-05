@@ -73,6 +73,16 @@ describe RhythmicUnit do
     its(:british_name) { is_expected.to eq 'breve' }
   end
 
+  context 'for "breve"' do
+    let(:name) { 'breve' }
+
+    its(:relative_value) { is_expected.to eq 2 }
+    its(:notehead) { is_expected.to eq :breve }
+    it { is_expected.not_to have_stem }
+    its(:flags) { are_expected.to eq 0 }
+    its(:british_name) { is_expected.to eq 'breve' }
+  end
+
   context 'when given an instance' do
     let(:instance) { described_class.get(:quarter) }
 

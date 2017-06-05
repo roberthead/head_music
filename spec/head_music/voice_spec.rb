@@ -75,4 +75,98 @@ describe Voice do
     its(:role) { is_expected.to eq 'Cantus Firmus' }
     it { is_expected.to be_cantus_firmus }
   end
+
+  describe 'note_at' do
+    let(:pitches) { %w[C E G F A G E D C] }
+
+    before do
+      pitches.each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
+      end
+    end
+
+    subject { voice.note_at(position) }
+
+    context 'for a downbeat with a note' do
+      let(:position) { Position.new(composition, "5:1:000") }
+
+      its(:pitch) { is_expected.to eq 'A4' }
+    end
+
+    context 'for an offbeat in the middle of the duration of a note' do
+      let(:position) { Position.new(composition, "5:2:000") }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'for a tick in the middle of the duration of a note' do
+      let(:position) { Position.new(composition, "5:1:001") }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'for a downbeat where there is no note' do
+      let(:pitches) { ['C', 'E', 'G', 'F', nil, 'G', 'E', 'D', 'C'] }
+      let(:position) { Position.new(composition, "5:1:000") }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe 'notes_during' do
+    let(:pitches) { %w[C E G F A G E D C] }
+    let(:placement) { Placement.new(composition, position, rhythmic_value) }
+
+    before do
+      pitches.each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
+      end
+    end
+
+    subject(:notes_during) { voice.notes_during(placement) }
+
+    context 'for a downbeat with a note' do
+      let(:position) { Position.new(composition, "5:1:000") }
+      let(:rhythmic_value) { :quarter }
+
+      specify do
+        expect(notes_during.map(&:pitch).map(&:to_s)).to match ['A4']
+      end
+    end
+
+    context 'for an offbeat in the middle of the duration of a note' do
+      let(:position) { Position.new(composition, "5:2:000") }
+      let(:rhythmic_value) { :quarter }
+
+      specify do
+        expect(notes_during.map(&:pitch).map(&:to_s)).to match ['A4']
+      end
+    end
+
+    context 'for a tick in the middle of the duration of a note' do
+      let(:position) { Position.new(composition, "5:1:001") }
+      let(:rhythmic_value) { :'thirty-second' }
+
+      specify do
+        expect(notes_during.map(&:pitch).map(&:to_s)).to match ['A4']
+      end
+    end
+
+    context 'for a downbeat where there is no note' do
+      let(:pitches) { ['C', 'E', 'G', 'F', nil, 'G', 'E', 'D', 'C'] }
+      let(:position) { Position.new(composition, "5:1:000") }
+      let(:rhythmic_value) { :'thirty-second' }
+
+      it { is_expected.to eq [] }
+    end
+
+    context 'for a duration where there are multiple notes during the placement' do
+      let(:position) { Position.new(composition, "4:3:000") }
+      let(:rhythmic_value) { :breve }
+
+      specify do
+        expect(notes_during.map(&:pitch).map(&:to_s)).to eq %w[F4 A4 G4]
+      end
+    end
+  end
 end

@@ -53,12 +53,24 @@ class HeadMusic::Style::Annotation
     notes && notes.last
   end
 
+  def voices
+    @voices ||= voice.composition.voices
+  end
+
   def other_voices
-    @other_voices ||= voice.composition.voices.select { |part| part != voice }
+    @other_voices ||= voices.select { |part| part != voice }
   end
 
   def cantus_firmus
-    other_voices.detect(&:cantus_firmus?) || other_voices.first
+    @cantus_firmus ||= voices.detect(&:cantus_firmus?) || other_voices.first
+  end
+
+  def higher_voices
+    @higher_voices ||= voices.select { |part| part.highest_pitch > voice.highest_pitch }.sort_by(&:highest_pitch).reverse
+  end
+
+  def lower_voices
+    @lower_voices ||= voices.select { |part| part.lowest_pitch < voice.lowest_pitch }.sort_by(&:lowest_pitch).reverse
   end
 
   def functional_interval_from_tonic(note)
@@ -66,6 +78,6 @@ class HeadMusic::Style::Annotation
   end
 
   def consonance_style
-    voice.composition.voices.length <= 2 ? :two_part_harmony : :common_practice
+    voices.length <= 2 ? :two_part_harmony : :common_practice
   end
 end
