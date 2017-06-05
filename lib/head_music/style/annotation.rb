@@ -5,6 +5,8 @@ class HeadMusic::Style::Annotation
 
   delegate(
     :composition,
+    :highest_pitch,
+    :lowest_pitch,
     :highest_notes,
     :lowest_notes,
     :melodic_intervals,
@@ -68,11 +70,11 @@ class HeadMusic::Style::Annotation
   end
 
   def higher_voices
-    @higher_voices ||= voices.select { |part| part.highest_pitch > voice.highest_pitch }.sort_by(&:highest_pitch).reverse
+    @higher_voices ||= unsorted_higher_voices.sort_by(&:highest_pitch).reverse
   end
 
   def lower_voices
-    @lower_voices ||= voices.select { |part| part.lowest_pitch < voice.lowest_pitch }.sort_by(&:lowest_pitch).reverse
+    @lower_voices ||= unsorted_lower_voices.sort_by(&:lowest_pitch).reverse
   end
 
   def functional_interval_from_tonic(note)
@@ -81,5 +83,15 @@ class HeadMusic::Style::Annotation
 
   def consonance_style
     voices.length <= 2 ? :two_part_harmony : :common_practice
+  end
+
+  private
+
+  def unsorted_higher_voices
+    other_voices.select { |part| part.highest_pitch > highest_pitch }
+  end
+
+  def unsorted_lower_voices
+    other_voices.select { |part| part.lowest_pitch < lowest_pitch }
   end
 end
