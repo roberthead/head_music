@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::DistinctVoices do
+describe HeadMusic::Style::Annotations::AvoidCrossingVoices do
   let(:composition) { Composition.new(key_signature: 'D dorian') }
   let(:cantus_firmus) { composition.add_voice(role: :cantus_firmus) }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
@@ -28,13 +28,6 @@ describe HeadMusic::Style::Annotations::DistinctVoices do
     context 'and the voices cross' do
       let(:cantus_firmus_pitches) { %w[C D E D G F E D C] }
       let(:counterpoint_pitches) { %w[C5 B G F E A G B C5] }
-
-      its(:fitness) { is_expected.to be < 1 }
-    end
-
-    context 'and the voices overlap' do
-      let(:cantus_firmus_pitches) { %w[C D E D A F E D C] }
-      let(:counterpoint_pitches) { %w[C5 B G F C5 A G B C5] }
 
       its(:fitness) { is_expected.to be < 1 }
     end
