@@ -12,13 +12,13 @@ class HeadMusic::Composition
   end
 
   def meter_at(bar_number)
-    last_meter_change = bars(bar_number)[earliest_bar_number..bar_number].reverse.detect(&:meter)
-    last_meter_change ? last_meter_change.meter : meter
+    meter_change = last_meter_change(bar_number)
+    meter_change ? meter_change.meter : meter
   end
 
   def key_signature_at(bar_number)
-    last_key_signature_change = bars(bar_number)[earliest_bar_number..bar_number].reverse.detect(&:key_signature)
-    last_key_signature_change ? last_key_signature_change.key_signature : key_signature
+    key_signature_change = last_key_signature_change(bar_number)
+    key_signature_change ? key_signature_change.key_signature : key_signature
   end
 
   def bars(last = latest_bar_number)
@@ -53,5 +53,13 @@ class HeadMusic::Composition
     @key_signature ||= HeadMusic::KeySignature.default
     @meter = HeadMusic::Meter.get(meter) if meter
     @meter ||= HeadMusic::Meter.default
+  end
+
+  def last_meter_change(bar_number)
+    bars(bar_number)[earliest_bar_number..bar_number].reverse.detect(&:meter)
+  end
+
+  def last_key_signature_change(bar_number)
+    bars(bar_number)[earliest_bar_number..bar_number].reverse.detect(&:key_signature)
   end
 end
