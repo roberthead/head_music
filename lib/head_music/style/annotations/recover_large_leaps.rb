@@ -20,7 +20,7 @@ class HeadMusic::Style::Annotations::RecoverLargeLeaps < HeadMusic::Style::Annot
   private
 
   def unrecovered_leap?(first_interval, second_interval)
-    first_interval.leap? &&
+    first_interval.large_leap? &&
     !spelling_consonant_triad?(first_interval, second_interval) &&
     (
       !direction_changed?(first_interval, second_interval) ||

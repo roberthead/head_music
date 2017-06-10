@@ -27,6 +27,10 @@ class HeadMusic::Position
     [bar_number, count, tick]
   end
 
+  def within_placement?(placement)
+    placement.position <= self && placement.next_position > self
+  end
+
   def <=>(other)
     if other.is_a?(String) && other =~ /\D/
       other = self.class.new(composition, other)

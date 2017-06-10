@@ -187,20 +187,23 @@ class HeadMusic::FunctionalInterval
   end
 
   def skip?
-    number == 3
+    number >= 3
   end
 
   def leap?
+    number >= 3
+  end
+
+  def large_leap?
     number > 3
   end
-  alias_method :large_leap?, :leap?
 
   def ==(other)
     self.to_s.gsub(/\W/, '_') == other.to_s.gsub(/\W/, '_')
   end
 
   NUMBER_NAMES.each do |method_name|
-    define_method(:"#{method_name}?") { number_name == method_name || simple_number_name == method_name }
+    define_method(:"#{method_name}?") { number_name == method_name }
   end
 
   private

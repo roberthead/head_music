@@ -40,7 +40,8 @@ describe FunctionalInterval do
 
       specify { expect(maj3).not_to be_step }
       specify { expect(maj3).to be_skip }
-      specify { expect(maj3).not_to be_leap }
+      specify { expect(maj3).to be_leap }
+      specify { expect(maj3).not_to be_large_leap }
     end
   end
 
@@ -56,8 +57,9 @@ describe FunctionalInterval do
     it { is_expected.not_to be_compound }
 
     it { is_expected.not_to be_step }
-    it { is_expected.not_to be_skip }
+    it { is_expected.to be_skip }
     it { is_expected.to be_leap }
+    it { is_expected.to be_large_leap }
     it { is_expected.to be_ascending }
     it { is_expected.not_to be_descending }
 

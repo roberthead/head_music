@@ -3,7 +3,11 @@ end
 
 class HeadMusic::Style::Rulesets::FirstSpeciesHarmony
   RULESET = [
-    # HeadMusic::Style::Annotations::ConsonantOnStrongBeats,
+    HeadMusic::Style::Annotations::AvoidCrossingVoices,
+    HeadMusic::Style::Annotations::AvoidOverlappingVoices,
+    HeadMusic::Style::Annotations::ConsonantDownbeats,
+    HeadMusic::Style::Annotations::NoUnisonsInMiddle,
+    HeadMusic::Style::Annotations::OneToOne,
   ]
 
   def self.analyze(voice)

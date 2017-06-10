@@ -63,12 +63,16 @@ class HeadMusic::Voice
     melodic_intervals.select(&:leap?)
   end
 
+  def large_leaps
+    melodic_intervals.select(&:large_leap?)
+  end
+
   def cantus_firmus?
     role.to_s =~ /cantus.?firmus/i
   end
 
   def note_at(position)
-    notes.detect { |note| note.position == position }
+    notes.detect { |note| position.within_placement?(note) }
   end
 
   def notes_during(placement)

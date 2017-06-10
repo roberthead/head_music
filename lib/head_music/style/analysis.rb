@@ -8,6 +8,10 @@ module HeadMusic
         @subject = subject
       end
 
+      def messages
+        annotations.reject(&:perfect?).map(&:message)
+      end
+
       def annotations
         @annotations ||= @ruleset.analyze(subject)
       end

@@ -3,18 +3,20 @@ end
 
 class HeadMusic::Style::Rulesets::FirstSpeciesMelody
   RULESET = [
-    HeadMusic::Style::Annotations::OneToOne,
-    HeadMusic::Style::Annotations::NotesSameLength,
-    HeadMusic::Style::Annotations::StartOnPerfectConsonance,
     HeadMusic::Style::Annotations::AlwaysMove,
+    HeadMusic::Style::Annotations::Diatonic,
+    HeadMusic::Style::Annotations::DirectionChanges,
+    HeadMusic::Style::Annotations::EndOnTonic,
+    HeadMusic::Style::Annotations::LimitOctaveLeaps,
+    HeadMusic::Style::Annotations::MostlyConjunct,
+    HeadMusic::Style::Annotations::NoRests,
+    HeadMusic::Style::Annotations::NotesSameLength,
+    HeadMusic::Style::Annotations::RecoverLargeLeaps,
     HeadMusic::Style::Annotations::SingableIntervals,
     HeadMusic::Style::Annotations::SingableRange,
-    HeadMusic::Style::Annotations::LimitOctaveLeaps,
-    HeadMusic::Style::Annotations::ConsonantDownbeats,
-    HeadMusic::Style::Annotations::AvoidCrossingVoices,
-    HeadMusic::Style::Annotations::AvoidOverlappingVoices,
+    HeadMusic::Style::Annotations::StartOnPerfectConsonance,
+    HeadMusic::Style::Annotations::StepOutOfUnison,
     HeadMusic::Style::Annotations::StepUpToFinalNote,
-    HeadMusic::Style::Annotations::EndOnTonic,
   ]
 
   def self.analyze(voice)

@@ -202,4 +202,41 @@ describe Position do
       end
     end
   end
+
+  describe '#within_placement?' do
+    let(:voice) { composition.add_voice }
+    let!(:placement) { Placement.new(voice, '3:2:000', :quarter) }
+
+    context 'when the position is before the start of the placement' do
+      subject(:position) { Position.new(composition, 3, 1, 0) }
+
+      it { is_expected.not_to be_within_placement(placement) }
+    end
+
+    context 'when the position is at the start of the placement' do
+      subject(:position) { Position.new(composition, 3, 2, 0) }
+
+      it { is_expected.to be_within_placement(placement) }
+    end
+
+    context 'when the position is after the start of the placement' do
+      context 'and before the end of the placement' do
+        subject(:position) { Position.new(composition, 3, 2, 240) }
+
+        it { is_expected.to be_within_placement(placement) }
+      end
+
+      context 'and at the end of the placement' do
+        subject(:position) { Position.new(composition, 3, 3, 0) }
+
+        it { is_expected.not_to be_within_placement(placement) }
+      end
+
+      context 'and after the end of the placement' do
+        subject(:position) { Position.new(composition, 3, 4, 0) }
+
+        it { is_expected.not_to be_within_placement(placement) }
+      end
+    end
+  end
 end

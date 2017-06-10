@@ -96,13 +96,13 @@ describe Voice do
     context 'for an offbeat in the middle of the duration of a note' do
       let(:position) { Position.new(composition, "5:2:000") }
 
-      it { is_expected.to be_nil }
+      its(:pitch) { is_expected.to eq 'A4' }
     end
 
     context 'for a tick in the middle of the duration of a note' do
       let(:position) { Position.new(composition, "5:1:001") }
 
-      it { is_expected.to be_nil }
+      its(:pitch) { is_expected.to eq 'A4' }
     end
 
     context 'for a downbeat where there is no note' do

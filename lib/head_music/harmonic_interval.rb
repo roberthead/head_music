@@ -31,7 +31,9 @@ class HeadMusic::HarmonicInterval
     pitches.last
   end
 
-  delegate :to_s, to: :functional_interval
+  def to_s
+    "#{functional_interval} at #{position}"
+  end
 
   def method_missing(method_name, *args, &block)
     functional_interval.send(method_name, *args, &block)
