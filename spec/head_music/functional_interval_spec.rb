@@ -45,6 +45,16 @@ describe FunctionalInterval do
     end
   end
 
+  describe 'comparison' do
+    let!(:maj3) { FunctionalInterval.get(:major_third) }
+    let!(:min3) { FunctionalInterval.get(:minor_third) }
+    let(:perfect5) { FunctionalInterval.get(:perfect_fifth) }
+
+    specify { expect(maj3).to be > min3 }
+    specify { expect(min3).to be < maj3 }
+    specify { expect(perfect5).to be > maj3 }
+  end
+
   context 'given two pitches comprising a simple interval' do
     subject { FunctionalInterval.new('A4', 'E5') }
 
@@ -60,8 +70,6 @@ describe FunctionalInterval do
     it { is_expected.to be_skip }
     it { is_expected.to be_leap }
     it { is_expected.to be_large_leap }
-    it { is_expected.to be_ascending }
-    it { is_expected.not_to be_descending }
 
     describe 'simplification' do
       its(:simple_number) { is_expected.to eq subject.number }

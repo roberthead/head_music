@@ -66,7 +66,7 @@ class HeadMusic::Style::Annotation
   end
 
   def cantus_firmus
-    @cantus_firmus ||= voices.detect(&:cantus_firmus?) || other_voices.first
+    @cantus_firmus ||= other_voices.detect(&:cantus_firmus?) || other_voices.first
   end
 
   def higher_voices

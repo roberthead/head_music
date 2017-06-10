@@ -1,4 +1,6 @@
 class HeadMusic::FunctionalInterval
+  include Comparable
+
   NUMBER_NAMES = %w[unison second third fourth fifth sixth seventh octave ninth tenth eleventh twelfth thirteenth fourteenth fifteenth sixteenth seventeenth]
   NAME_SUFFIXES = Hash.new('th').merge({ 1 => 'st', 2 => 'nd', 3 => 'rd' })
 
@@ -22,7 +24,7 @@ class HeadMusic::FunctionalInterval
     seventeenth: { major: 28 }
   }
 
-  attr_reader :lower_pitch, :higher_pitch, :direction
+  attr_reader :lower_pitch, :higher_pitch
 
   delegate :to_s, to: :name
   delegate :perfect?, :major?, :minor?, :diminished?, :augmented?, :doubly_diminished?, :doubly_augmented?, to: :quality
@@ -62,27 +64,7 @@ class HeadMusic::FunctionalInterval
   def initialize(pitch1, pitch2)
     pitch1 = HeadMusic::Pitch.get(pitch1)
     pitch2 = HeadMusic::Pitch.get(pitch2)
-    set_direction(pitch1, pitch2)
     @lower_pitch, @higher_pitch = [pitch1, pitch2].sort
-  end
-
-  def set_direction(pitch1, pitch2)
-    @direction =
-      if pitch1 == pitch2
-        :none
-      elsif pitch1 < pitch2
-        :ascending
-      else
-        :descending
-      end
-  end
-
-  def descending?
-    direction == :descending
-  end
-
-  def ascending?
-    direction == :ascending
   end
 
   def number
@@ -198,8 +180,11 @@ class HeadMusic::FunctionalInterval
     number > 3
   end
 
-  def ==(other)
-    self.to_s.gsub(/\W/, '_') == other.to_s.gsub(/\W/, '_')
+  def <=>(other)
+    if !other.is_a?(FunctionalInterval)
+      other = self.class.get(other)
+    end
+    self.semitones <=> other.semitones
   end
 
   NUMBER_NAMES.each do |method_name|

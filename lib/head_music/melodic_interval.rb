@@ -24,11 +24,42 @@ class HeadMusic::MelodicInterval
   end
 
   def pitches
-    notes.map(&:pitch)
+    [first_pitch, second_pitch]
+  end
+
+  def first_pitch
+    @first_pitch ||= first_note.pitch
+  end
+
+  def second_pitch
+    @second_pitch ||= second_note.pitch
   end
 
   def to_s
     [direction, functional_interval].join(' ')
+  end
+
+  def ascending?
+    direction == :ascending
+  end
+
+  def descending?
+    direction == :descending
+  end
+
+  def moving?
+    ascending? || descending?
+  end
+
+  def direction
+    @direction ||=
+      if first_pitch < second_pitch
+        :ascending
+      elsif first_pitch > second_pitch
+        :descending
+      else
+        :none
+      end
   end
 
   def method_missing(method_name, *args, &block)
