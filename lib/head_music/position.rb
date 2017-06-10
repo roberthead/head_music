@@ -3,15 +3,18 @@ class HeadMusic::Position
 
   attr_reader :composition, :bar_number, :count, :tick
   delegate :to_s, to: :code
-  delegate :meter, to: :composition
 
   def initialize(composition, code_or_bar, count = nil, tick = nil)
     if code_or_bar.is_a?(String) && code_or_bar =~ /\D/
-      bar, count, tick = code_or_bar.split(/\D+/)
-      ensure_state(composition, bar, count, tick)
+      bar_number, count, tick = code_or_bar.split(/\D+/)
+      ensure_state(composition, bar_number, count, tick)
     else
       ensure_state(composition, code_or_bar, count, tick)
     end
+  end
+
+  def meter
+    composition.meter_at(bar_number)
   end
 
   def code
@@ -77,7 +80,6 @@ class HeadMusic::Position
   end
 
   def roll_over_ticks
-    # TODO account for meter changes in bars
     while @tick >= meter.ticks_per_count
       @tick -= meter.ticks_per_count.to_i
       @count += 1
@@ -85,7 +87,6 @@ class HeadMusic::Position
   end
 
   def roll_over_counts
-    # TODO account for meter changes in bars
     while @count > meter.counts_per_bar
       @count -= meter.counts_per_bar
       @bar_number += 1

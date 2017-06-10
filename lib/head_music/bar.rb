@@ -1,14 +1,16 @@
+# Representation of a bar in a composition
+# Encapsulates meter and key signature changes
 class HeadMusic::Bar
   attr_reader :composition
+  attr_accessor :key_signature, :meter
 
-  delegate :key_signature, :meter, to: :composition
-
-  def initialize(composition)
+  def initialize(composition, key_signature: nil, meter: nil)
     @composition = composition
+    @key_signature = HeadMusic::KeySignature.get(key_signature) if key_signature
+    @meter = HeadMusic::Meter.get(meter) if meter
   end
 
-  # TODO: encapsulate key changes and meter changes
-  # Assume the key and meter of the previous bar
-  # all the way back to the first bar,
-  # which defaults to the key and meter of the composition
+  def to_s
+    ['Bar', key_signature, meter].reject(&:nil?).join(' ')
+  end
 end

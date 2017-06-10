@@ -1,25 +1,48 @@
 class HeadMusic::Composition
-  attr_reader :name, :key_signature, :meter, :bars, :voices
+  attr_reader :name, :key_signature, :meter, :voices
 
   def initialize(name: nil, key_signature: nil, meter: nil)
     ensure_attributes(name, key_signature, meter)
     @voices = []
   end
 
-  def add_bar
-    add_bars(1)
-  end
-
-  def add_bars(number)
-    @bars ||= []
-    number.times do
-      @bars << HeadMusic::Bar.new(self)
-    end
-  end
-
   def add_voice(role: nil)
     @voices << HeadMusic::Voice.new(composition: self, role: role)
     @voices.last
+  end
+
+  def meter_at(bar_number)
+    last_meter_change = bars(bar_number)[earliest_bar_number..bar_number].reverse.detect(&:meter)
+    last_meter_change ? last_meter_change.meter : meter
+  end
+
+  def key_signature_at(bar_number)
+    last_key_signature_change = bars(bar_number)[earliest_bar_number..bar_number].reverse.detect(&:key_signature)
+    last_key_signature_change ? last_key_signature_change.key_signature : key_signature
+  end
+
+  def bars(last = latest_bar_number)
+    @bars ||= []
+    (earliest_bar_number..last).each do |bar_number|
+      @bars[bar_number] ||= Bar.new(self)
+    end
+    @bars[earliest_bar_number..last]
+  end
+
+  def change_key_signature(bar_number, key_signature)
+    bars(bar_number).last.key_signature = key_signature
+  end
+
+  def change_meter(bar_number, meter)
+    bars(bar_number).last.meter = meter
+  end
+
+  def earliest_bar_number
+    [voices.map(&:earliest_bar_number), 1].flatten.min
+  end
+
+  def latest_bar_number
+    [voices.map(&:earliest_bar_number), 1].flatten.max
   end
 
   private
