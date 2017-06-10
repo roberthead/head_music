@@ -51,6 +51,10 @@ class HeadMusic::MelodicInterval
     ascending? || descending?
   end
 
+  def repetition?
+    !moving?
+  end
+
   def direction
     @direction ||=
       if first_pitch < second_pitch

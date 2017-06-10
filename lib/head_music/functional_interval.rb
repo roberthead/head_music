@@ -71,6 +71,10 @@ class HeadMusic::FunctionalInterval
     simple_number + octaves * 7
   end
 
+  def steps
+    number - 1
+  end
+
   def simple_number
     @simple_number ||= @lower_pitch.letter_name.steps_to(@higher_pitch.letter_name) + 1
   end

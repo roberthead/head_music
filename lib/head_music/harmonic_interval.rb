@@ -4,7 +4,7 @@ class HeadMusic::HarmonicInterval
   def initialize(voice1, voice2, position)
     @voice1 = voice1
     @voice2 = voice2
-    @position = position
+    @position = position.is_a?(String) ? Position.new(voice1.composition, position) : position
   end
 
   def functional_interval
@@ -16,11 +16,19 @@ class HeadMusic::HarmonicInterval
   end
 
   def notes
-    voices.map { |voice| voice.note_at(position) }.reject(&:nil?)
+    @notes ||= voices.map { |voice| voice.note_at(position) }.reject(&:nil?).sort_by(&:pitch)
+  end
+
+  def lower_note
+    notes.first
+  end
+
+  def upper_note
+    notes.last
   end
 
   def pitches
-    notes.map(&:pitch).sort_by(&:to_i)
+    @pitches ||= notes.map(&:pitch).sort_by(&:to_i)
   end
 
   def lower_pitch
