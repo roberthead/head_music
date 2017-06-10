@@ -6,7 +6,7 @@ class HeadMusic::Style::Rulesets::FirstSpeciesHarmony
     HeadMusic::Style::Annotations::AvoidCrossingVoices,
     HeadMusic::Style::Annotations::AvoidOverlappingVoices,
     HeadMusic::Style::Annotations::ConsonantDownbeats,
-    HeadMusic::Style::Annotations::LessDirectMotion,
+    HeadMusic::Style::Annotations::PreferContraryMotion,
     HeadMusic::Style::Annotations::NoUnisonsInMiddle,
     HeadMusic::Style::Annotations::OneToOne,
   ]

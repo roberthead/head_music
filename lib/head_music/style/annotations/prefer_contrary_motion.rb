@@ -1,7 +1,7 @@
 module HeadMusic::Style::Annotations
 end
 
-class HeadMusic::Style::Annotations::LessDirectMotion < HeadMusic::Style::Annotation
+class HeadMusic::Style::Annotations::PreferContraryMotion < HeadMusic::Style::Annotation
   MESSAGE = "Prefer contrary motion."
 
   def marks
