@@ -17,6 +17,7 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesHarmony do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AvoidOverlappingVoices }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ConsonantDownbeats }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::PreferContraryMotion }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::PreferImperfect }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NoUnisonsInMiddle }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::OneToOne }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AvoidCrossingVoices }
