@@ -43,6 +43,7 @@ require 'head_music/style/annotation'
 require 'head_music/style/mark'
 
 require 'head_music/style/annotations/always_move'
+require 'head_music/style/annotations/approach_perfection_contrarily'
 require 'head_music/style/annotations/at_least_eight_notes'
 require 'head_music/style/annotations/avoid_crossing_voices'
 require 'head_music/style/annotations/avoid_overlapping_voices'

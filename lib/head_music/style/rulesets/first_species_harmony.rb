@@ -3,6 +3,7 @@ end
 
 class HeadMusic::Style::Rulesets::FirstSpeciesHarmony
   RULESET = [
+    HeadMusic::Style::Annotations::ApproachPerfectionContrarily,
     HeadMusic::Style::Annotations::AvoidCrossingVoices,
     HeadMusic::Style::Annotations::AvoidOverlappingVoices,
     HeadMusic::Style::Annotations::ConsonantDownbeats,
