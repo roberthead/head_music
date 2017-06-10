@@ -36,6 +36,20 @@ class HeadMusic::Motion
     upper_melodic_interval.direction != lower_melodic_interval.direction
   end
 
+  def notes
+    upper_notes + lower_notes
+  end
+
+  def contrapuntal_motion
+    [:parallel, :similar, :oblique, :contrary, :repetition].detect do |motion_type|
+      send("#{motion_type}?")
+    end
+  end
+
+  def to_s
+    "#{contrapuntal_motion} motion from #{first_harmonic_interval} to #{second_harmonic_interval}"
+  end
+
   private
 
   def upper_melodic_interval

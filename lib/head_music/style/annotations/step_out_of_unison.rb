@@ -13,12 +13,10 @@ class HeadMusic::Style::Annotations::StepOutOfUnison < HeadMusic::Style::Annotat
   private
 
   def skips_following_unisons
-    puts melodic_intervals_following_unisons.map(&:to_s)
     melodic_intervals_following_unisons.select(&:skip?)
   end
 
   def melodic_intervals_following_unisons
-    puts unisons.map(&:to_s)
     unisons.map do |unison|
       note1 = voice.note_at(unison.position)
       note2 = voice.note_following(unison.position)

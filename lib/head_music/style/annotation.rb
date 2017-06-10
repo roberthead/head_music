@@ -89,10 +89,18 @@ class HeadMusic::Style::Annotation
     tonic_spelling == first_note.spelling
   end
 
+  def motions
+    downbeat_harmonic_intervals.map.with_index do |harmonic_interval, i|
+      next_harmonic_interval = downbeat_harmonic_intervals[i+1]
+      HeadMusic::Motion.new(harmonic_interval, next_harmonic_interval) if next_harmonic_interval
+    end.reject(&:nil?)
+  end
+
   def downbeat_harmonic_intervals
-    cantus_firmus.notes.map do |cantus_firmus_note|
-      HarmonicInterval.new(cantus_firmus_note.voice, voice, cantus_firmus_note.position)
-    end
+    @downbeat_harmonic_intervals ||= cantus_firmus.notes.map do |cantus_firmus_note|
+      interval = HeadMusic::HarmonicInterval.new(cantus_firmus_note.voice, voice, cantus_firmus_note.position)
+      interval.notes.length == 2 ? interval : nil
+    end.reject(&:nil?)
   end
 
   private
