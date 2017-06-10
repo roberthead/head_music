@@ -19,10 +19,4 @@ class HeadMusic::Style::Annotations::ConsonantDownbeats < HeadMusic::Style::Anno
   def dissonant_intervals
     downbeat_harmonic_intervals.select { |interval| interval.dissonance?(:two_part_harmony) }
   end
-
-  def downbeat_harmonic_intervals
-    cantus_firmus.notes.map do |cantus_firmus_note|
-      HarmonicInterval.new(cantus_firmus_note.voice, voice, cantus_firmus_note.position)
-    end
-  end
 end

@@ -89,6 +89,12 @@ class HeadMusic::Style::Annotation
     tonic_spelling == first_note.spelling
   end
 
+  def downbeat_harmonic_intervals
+    cantus_firmus.notes.map do |cantus_firmus_note|
+      HarmonicInterval.new(cantus_firmus_note.voice, voice, cantus_firmus_note.position)
+    end
+  end
+
   private
 
   def unsorted_higher_voices
