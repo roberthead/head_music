@@ -28,7 +28,7 @@ class HeadMusic::Style::Annotations::NoUnisonsInMiddle < HeadMusic::Style::Annot
     cantus_firmus.notes.map do |cantus_firmus_note|
       counterpoint_notes = voice.notes_during(cantus_firmus_note)
       counterpoint_notes.map { |note|
-        HarmonicInterval.new(cantus_firmus_note.voice, voice, note.position)
+        HeadMusic::HarmonicInterval.new(cantus_firmus_note.voice, voice, note.position)
       }
     end.flatten
   end

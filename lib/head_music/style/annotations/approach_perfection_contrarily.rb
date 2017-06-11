@@ -2,7 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::ApproachPerfectionContrarily < HeadMusic::Style::Annotation
-  MESSAGE = 'Step down to final note.'
+  MESSAGE = 'Approach perfect consonances by contrary motion.'
 
   def marks
     motions_to_perfect_consonance_approached_directly.map do |bad_motion|

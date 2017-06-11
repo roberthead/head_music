@@ -8,7 +8,7 @@ class HeadMusic::MelodicInterval
   end
 
   def functional_interval
-    @functional_interval ||= HeadMusic::FunctionalInterval.new(first_note.pitch, second_note.pitch)
+    @functional_interval ||= HeadMusic::FunctionalInterval.new(first_pitch, second_pitch)
   end
 
   def position_start

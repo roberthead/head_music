@@ -24,7 +24,7 @@ class HeadMusic::Composition
   def bars(last = latest_bar_number)
     @bars ||= []
     (earliest_bar_number..last).each do |bar_number|
-      @bars[bar_number] ||= Bar.new(self)
+      @bars[bar_number] ||= HeadMusic::Bar.new(self)
     end
     @bars[earliest_bar_number..last]
   end

@@ -45,4 +45,10 @@ describe HeadMusic::Style::Annotations::StepOutOfUnison do
       its(:fitness) { is_expected.to eq 1 }
     end
   end
+
+  context 'when the first note is missing' do
+    let(:counterpoint_pitches) { [nil] + %w[E4 C5 B4 D5 A4 E5 D5 A4 G4 C4] }
+
+    its(:fitness) { is_expected.to eq 1 }
+  end
 end

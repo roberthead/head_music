@@ -23,7 +23,7 @@ class HeadMusic::Style::Annotations::AvoidCrossingVoices < HeadMusic::Style::Ann
           marks << HeadMusic::Style::Mark.for_all(crossed_notes)
         end
       end
-    end
+    end.flatten
   end
 
   def crossings_of_higher_voices
@@ -31,10 +31,10 @@ class HeadMusic::Style::Annotations::AvoidCrossingVoices < HeadMusic::Style::Ann
       higher_voices.each do |higher_voice|
         higher_voice.notes.each do |higher_voice_note|
           notes_during = voice.notes_during(higher_voice_note)
-          crossed_notes = notes_during.select { |note| note.pitch > lower_voice_note.pitch }
+          crossed_notes = notes_during.select { |note| note.pitch > higher_voice_note.pitch }
           marks << HeadMusic::Style::Mark.for_all(crossed_notes)
         end
       end
-    end
+    end.flatten
   end
 end

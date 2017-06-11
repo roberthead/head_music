@@ -17,19 +17,23 @@ class HeadMusic::Style::Annotations::StepOutOfUnison < HeadMusic::Style::Annotat
   end
 
   def melodic_intervals_following_unisons
-    unisons.map do |unison|
-      note1 = voice.note_at(unison.position)
-      note2 = voice.note_following(unison.position)
-      MelodicInterval.new(voice, note1, note2) if note2
-    end.reject(&:nil?)
+    @melodic_intervals_following_unisons ||=
+      perfect_unisons.map do |unison|
+        note1 = voice.note_at(unison.position)
+        note2 = voice.note_following(unison.position)
+        HeadMusic::MelodicInterval.new(voice, note1, note2) if note1 && note2
+      end.reject(&:nil?)
   end
 
-  def unisons
-    harmonic_intervals.select { |interval| interval.perfect_consonance? && interval.unison? }
+  def perfect_unisons
+    @unisons ||= harmonic_intervals.select(&:perfect_consonance?).select(&:unison?)
   end
 
   def harmonic_intervals
-    positions.map { |position| HarmonicInterval.new(cantus_firmus, voice, position) }
+    @harmonic_intervals ||=
+      positions.map { |position|
+        HeadMusic::HarmonicInterval.new(cantus_firmus, voice, position)
+      }
   end
 
   def positions

@@ -2,7 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::PreferImperfect < HeadMusic::Style::Annotation
-  MESSAGE = "Use consonant harmonic intervals."
+  MESSAGE = "Prefer imperfect harmonic intervals."
 
   def marks
     if ratio_of_perfect_intervals > 0.5
