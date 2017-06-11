@@ -24,7 +24,7 @@ class HeadMusic::Style::Annotations::AvoidOverlappingVoices < HeadMusic::Style::
         end
         marks << HeadMusic::Style::Mark.for_each(overlapped_notes)
       end
-    end.flatten
+    end.flatten.compact
   end
 
   def overlappings_of_higher_voices
@@ -37,6 +37,6 @@ class HeadMusic::Style::Annotations::AvoidOverlappingVoices < HeadMusic::Style::
         end
         marks << HeadMusic::Style::Mark.for_each(overlapped_notes)
       end
-    end.flatten
+    end.flatten.compact
   end
 end

@@ -31,5 +31,14 @@ describe HeadMusic::Style::Annotations::AvoidOverlappingVoices do
 
       its(:fitness) { is_expected.to be < 1 }
     end
+
+    context 'and there are no notes in the counterpoint' do
+      let(:cantus_firmus_pitches) { %w[C D E D A F E D C] }
+      let(:counterpoint_pitches) { %w[] }
+
+      specify do
+        expect { subject.fitness }.not_to raise_error
+      end
+    end
   end
 end

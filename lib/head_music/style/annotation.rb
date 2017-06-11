@@ -117,10 +117,10 @@ class HeadMusic::Style::Annotation
   end
 
   def unsorted_higher_voices
-    other_voices.select { |part| part.highest_pitch > highest_pitch }
+    other_voices.select { |part| part.highest_pitch && highest_pitch && part.highest_pitch > highest_pitch }
   end
 
   def unsorted_lower_voices
-    other_voices.select { |part| part.lowest_pitch < lowest_pitch }
+    other_voices.select { |part| part.lowest_pitch && lowest_pitch && part.lowest_pitch < lowest_pitch }
   end
 end
