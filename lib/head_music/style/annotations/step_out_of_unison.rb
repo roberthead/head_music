@@ -22,21 +22,10 @@ class HeadMusic::Style::Annotations::StepOutOfUnison < HeadMusic::Style::Annotat
         note1 = voice.note_at(unison.position)
         note2 = voice.note_following(unison.position)
         HeadMusic::MelodicInterval.new(voice, note1, note2) if note1 && note2
-      end.reject(&:nil?)
+      end.compact
   end
 
   def perfect_unisons
     @unisons ||= harmonic_intervals.select(&:perfect_consonance?).select(&:unison?)
-  end
-
-  def harmonic_intervals
-    @harmonic_intervals ||=
-      positions.map { |position|
-        HeadMusic::HarmonicInterval.new(cantus_firmus, voice, position)
-      }
-  end
-
-  def positions
-    voices.map(&:notes).flatten.map(&:position).sort.uniq(&:to_s)
   end
 end

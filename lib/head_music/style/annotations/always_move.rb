@@ -9,6 +9,6 @@ class HeadMusic::Style::Annotations::AlwaysMove < HeadMusic::Style::Annotation
       if interval.shorthand == 'PU'
         HeadMusic::Style::Mark.for_all(notes[i..i+1])
       end
-    end.reject(&:nil?)
+    end.compact
   end
 end

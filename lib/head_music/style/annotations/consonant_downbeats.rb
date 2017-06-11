@@ -13,7 +13,7 @@ class HeadMusic::Style::Annotations::ConsonantDownbeats < HeadMusic::Style::Anno
   private
 
   def dissonant_pairs
-    dissonant_intervals.map(&:notes).reject(&:nil?)
+    dissonant_intervals.map(&:notes).compact
   end
 
   def dissonant_intervals

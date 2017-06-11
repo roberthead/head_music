@@ -12,11 +12,11 @@ class HeadMusic::HarmonicInterval
   end
 
   def voices
-    [voice1, voice2].reject(&:nil?)
+    [voice1, voice2].compact
   end
 
   def notes
-    @notes ||= voices.map { |voice| voice.note_at(position) }.reject(&:nil?).sort_by(&:pitch)
+    @notes ||= voices.map { |voice| voice.note_at(position) }.compact.sort_by(&:pitch)
   end
 
   def lower_note
@@ -37,6 +37,16 @@ class HeadMusic::HarmonicInterval
 
   def upper_pitch
     pitches.last
+  end
+
+  def pitch_orientation
+    if lower_pitch < upper_pitch
+      if lower_note.voice == voice1
+        :up
+      elsif lower_note.voice == voice2
+        :down
+      end
+    end
   end
 
   def to_s

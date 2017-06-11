@@ -13,7 +13,7 @@ class HeadMusic::Style::Annotations::MostlyConjunct < HeadMusic::Style::Annotati
   def marks_for_skips_and_leaps
     melodic_intervals.map.with_index do |interval, i|
       HeadMusic::Style::Mark.for_all(notes[i..i+1], fitness: HeadMusic::SMALL_PENALTY_FACTOR) unless interval.step?
-    end.reject(&:nil?)
+    end.compact
   end
 
   def conjunct_ratio

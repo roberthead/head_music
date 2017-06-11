@@ -14,7 +14,7 @@ class HeadMusic::Style::Annotations::RecoverLargeLeaps < HeadMusic::Style::Annot
       if unrecovered_leap?(previous_interval, interval)
         HeadMusic::Style::Mark.for_all((previous_interval.notes + interval.notes).uniq)
       end
-    end.reject(&:nil?)
+    end.compact
   end
 
   private

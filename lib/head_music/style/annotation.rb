@@ -49,6 +49,8 @@ class HeadMusic::Style::Annotation
     self.class::MESSAGE
   end
 
+  protected
+
   def first_note
     notes && notes.first
   end
@@ -93,17 +95,26 @@ class HeadMusic::Style::Annotation
     downbeat_harmonic_intervals.map.with_index do |harmonic_interval, i|
       next_harmonic_interval = downbeat_harmonic_intervals[i+1]
       HeadMusic::Motion.new(harmonic_interval, next_harmonic_interval) if next_harmonic_interval
-    end.reject(&:nil?)
+    end.compact
   end
 
   def downbeat_harmonic_intervals
-    @downbeat_harmonic_intervals ||= cantus_firmus.notes.map do |cantus_firmus_note|
-      interval = HeadMusic::HarmonicInterval.new(cantus_firmus_note.voice, voice, cantus_firmus_note.position)
-      interval.notes.length == 2 ? interval : nil
-    end.reject(&:nil?)
+    @downbeat_harmonic_intervals ||=
+      cantus_firmus.notes.map { |cantus_firmus_note|
+        HeadMusic::HarmonicInterval.new(cantus_firmus_note.voice, voice, cantus_firmus_note.position)
+      }.reject { |interval| interval.notes.length < 2 }
   end
 
-  private
+  def harmonic_intervals
+    @harmonic_intervals ||=
+      positions.map { |position|
+        HeadMusic::HarmonicInterval.new(cantus_firmus, voice, position)
+      }.reject { |harmonic_interval| harmonic_interval.notes.length < 2 }
+  end
+
+  def positions
+    @positions ||= voices.map(&:notes).flatten.map(&:position).sort.uniq(&:to_s)
+  end
 
   def unsorted_higher_voices
     other_voices.select { |part| part.highest_pitch > highest_pitch }

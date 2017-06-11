@@ -79,12 +79,12 @@ class HeadMusic::RhythmicValue
   end
 
   def single_value_name
-    [name_modifier_prefix, unit_name].reject(&:nil?).join(' ')
+    [name_modifier_prefix, unit_name].compact.join(' ')
   end
 
   def name
     if tied_value
-      [single_value_name, tied_value.name].reject(&:nil?).join(' tied to ')
+      [single_value_name, tied_value.name].compact.join(' tied to ')
     else
       single_value_name
     end

@@ -11,6 +11,6 @@ class HeadMusic::Bar
   end
 
   def to_s
-    ['Bar', key_signature, meter].reject(&:nil?).join(' ')
+    ['Bar', key_signature, meter].compact.join(' ')
   end
 end

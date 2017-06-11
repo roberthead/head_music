@@ -5,36 +5,28 @@ class HeadMusic::Style::Annotations::AvoidCrossingVoices < HeadMusic::Style::Ann
   MESSAGE = "Avoid crossing voices."
 
   def marks
-    crossings
+    crossings.map do |crossing|
+      HeadMusic::Style::Mark.for_all(crossing.notes)
+    end
   end
 
   private
 
   def crossings
-    crossings_of_lower_voices + crossings_of_higher_voices
+    harmonic_intervals.select do |harmonic_interval|
+      harmonic_interval.pitch_orientation && harmonic_interval.pitch_orientation != predominant_pitch_orientation
+    end
   end
 
-  def crossings_of_lower_voices
-    [].tap do |marks|
-      lower_voices.each do |lower_voice|
-        lower_voice.notes.each do |lower_voice_note|
-          notes_during = voice.notes_during(lower_voice_note)
-          crossed_notes = notes_during.select { |note| note.pitch < lower_voice_note.pitch }
-          marks << HeadMusic::Style::Mark.for_all(crossed_notes)
-        end
-      end
-    end.flatten
+  def predominant_pitch_orientation
+    pitch_orientations
+      .compact
+      .group_by { |orientation| orientation }
+      .max { |a, b| a[1].length <=> b[1].length }
+      .first
   end
 
-  def crossings_of_higher_voices
-    [].tap do |marks|
-      higher_voices.each do |higher_voice|
-        higher_voice.notes.each do |higher_voice_note|
-          notes_during = voice.notes_during(higher_voice_note)
-          crossed_notes = notes_during.select { |note| note.pitch > higher_voice_note.pitch }
-          marks << HeadMusic::Style::Mark.for_all(crossed_notes)
-        end
-      end
-    end.flatten
+  def pitch_orientations
+    harmonic_intervals.map(&:pitch_orientation).compact.uniq
   end
 end
