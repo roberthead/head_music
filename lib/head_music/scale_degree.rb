@@ -21,7 +21,7 @@ class HeadMusic::ScaleDegree
     scale_degree_usual_spelling.accidental
     accidental_semitones = spelling.accidental && spelling.accidental.semitones || 0
     usual_accidental_semitones = scale_degree_usual_spelling.accidental && scale_degree_usual_spelling.accidental.semitones || 0
-    Accidental.for_interval(accidental_semitones - usual_accidental_semitones)
+    HeadMusic::Accidental.for_interval(accidental_semitones - usual_accidental_semitones)
   end
 
   def to_s

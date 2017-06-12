@@ -43,7 +43,7 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
   end
 
   def step_between_highest_notes?
-    MelodicInterval.new(voice, highest_notes.first, notes_between_highest_notes.first).step?
+    HeadMusic::MelodicInterval.new(voice, highest_notes.first, notes_between_highest_notes.first).step?
   end
 
   def single_note_between_highest_notes?

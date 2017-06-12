@@ -191,8 +191,12 @@ class HeadMusic::FunctionalInterval
     self.semitones <=> other.semitones
   end
 
-  NUMBER_NAMES.each do |method_name|
-    define_method(:"#{method_name}?") { number_name == method_name }
+  NUMBER_NAMES.each do |interval_name|
+    define_method(:"#{interval_name}?") { number_name == interval_name }
+  end
+
+  NUMBER_NAMES.first(8).each do |method_name|
+    define_method(:"#{method_name}_or_compound?") { simple_number_name == method_name }
   end
 
   private
@@ -202,10 +206,10 @@ class HeadMusic::FunctionalInterval
   end
 
   def consonance_for_major_and_minor
-    HeadMusic::Consonance.get((third? || sixth?) ? :imperfect : :dissonant) if (major? || minor?)
+    HeadMusic::Consonance.get((third_or_compound? || sixth_or_compound?) ? :imperfect : :dissonant) if (major? || minor?)
   end
 
   def dissonant_fourth?(style = :standard_practice)
-    fourth? && style == :two_part_harmony
+    fourth_or_compound? && style == :two_part_harmony
   end
 end

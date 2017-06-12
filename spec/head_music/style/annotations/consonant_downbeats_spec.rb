@@ -43,4 +43,13 @@ describe HeadMusic::Style::Annotations::ConsonantDownbeats do
 
     its(:fitness) { is_expected.to be < HeadMusic::PENALTY_FACTOR }
   end
+
+  context 'when the intervals are compound' do
+    let(:composition) { Composition.new(key_signature: 'G mixolydian') }
+
+    let(:cantus_firmus_pitches) { %w[G3 A3 B3 A3 C B3 A3 G3] }
+    let(:counterpoint_pitches) { %w[D5 C5 G A G G F# G] }
+
+    its(:fitness) { is_expected.to eq 1 }
+  end
 end

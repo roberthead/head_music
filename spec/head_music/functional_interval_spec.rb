@@ -95,6 +95,9 @@ describe FunctionalInterval do
     describe 'simplification' do
       its(:simple_number) { is_expected.to eq 6 }
       its(:simple_name) { is_expected.to eq 'minor sixth' }
+      it { is_expected.not_to be_sixth }
+      it { is_expected.to be_sixth_or_compound }
+      it { is_expected.to be_consonance }
     end
 
     describe 'inversion' do
@@ -127,6 +130,7 @@ describe FunctionalInterval do
     specify { expect(FunctionalInterval.get(:major_third).consonance).to be_imperfect }
     specify { expect(FunctionalInterval.get(:perfect_fourth).consonance).to be_perfect }
     specify { expect(FunctionalInterval.get(:perfect_fourth).consonance(:two_part_harmony)).to be_dissonant }
+    specify { expect(FunctionalInterval.get(:perfect_eleventh).consonance(:two_part_harmony)).to be_dissonant }
     specify { expect(FunctionalInterval.get(:augmented_fourth).consonance).to be_dissonant }
     specify { expect(FunctionalInterval.get(:diminished_fifth).consonance).to be_dissonant }
     specify { expect(FunctionalInterval.get(:perfect_fifth).consonance).to be_perfect }
