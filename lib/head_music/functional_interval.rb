@@ -185,7 +185,7 @@ class HeadMusic::FunctionalInterval
   end
 
   def <=>(other)
-    if !other.is_a?(FunctionalInterval)
+    if !other.is_a?(HeadMusic::FunctionalInterval)
       other = self.class.get(other)
     end
     self.semitones <=> other.semitones

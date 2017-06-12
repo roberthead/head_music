@@ -6,9 +6,9 @@ class HeadMusic::RhythmicValue
 
   def self.get(identifier)
     case identifier
-    when RhythmicValue
+    when HeadMusic::RhythmicValue
       identifier
-    when RhythmicUnit
+    when HeadMusic::RhythmicUnit
       new(identifier)
     when Symbol, String
       identifier = identifier.to_s.downcase.strip.gsub(/\W+/, '_')
