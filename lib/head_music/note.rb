@@ -15,6 +15,10 @@ class HeadMusic::Note
     @placement ||= HeadMusic::Placement.new(voice, position, rhythmic_value, pitch)
   end
 
+  def to_s
+    "#{pitch} at #{position}"
+  end
+
   def method_missing(method_name, *args, &block)
     placement.send(method_name, *args, &block)
   end

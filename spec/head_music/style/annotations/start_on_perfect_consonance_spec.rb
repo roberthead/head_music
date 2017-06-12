@@ -8,6 +8,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
     end
   end
   let(:voice) { composition.add_voice(role: 'counterpoint') }
+
   subject { described_class.new(voice) }
 
   context 'with no notes' do
@@ -78,9 +79,22 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
     its(:fitness) { is_expected.to be <= HeadMusic::PENALTY_FACTOR }
   end
 
-
   context 'when the intervals are compound' do
     let(:composition) { Composition.new(key_signature: 'G mixolydian') }
+    let!(:cantus_firmus) do
+      composition.add_voice(role: 'cantus firmus').tap do |voice|
+        cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1:0", :whole, pitch)
+        end
+      end
+    end
+    let(:voice) do
+      composition.add_voice(role: 'counterpoint').tap do |voice|
+        counterpoint_pitches.each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1:0", :whole, pitch)
+        end
+      end
+    end
 
     let(:cantus_firmus_pitches) { %w[G3 A3 B3 A3 C B3 A3 G3] }
     let(:counterpoint_pitches) { %w[D5 C5 G A G G F# G] }

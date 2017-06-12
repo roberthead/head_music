@@ -84,7 +84,11 @@ class HeadMusic::Style::Annotation
   end
 
   def functional_interval_from_tonic(note)
-    HeadMusic::FunctionalInterval.new(tonic_spelling, note.spelling)
+    tonic_to_use = tonic_pitch
+    while tonic_to_use > note.pitch
+      tonic_to_use -= Interval.named(:perfect_octave)
+    end
+    HeadMusic::FunctionalInterval.new(tonic_to_use, note.pitch)
   end
 
   def bass_voice?
@@ -127,5 +131,9 @@ class HeadMusic::Style::Annotation
 
   def unsorted_lower_voices
     other_voices.select { |part| part.lowest_pitch && lowest_pitch && part.lowest_pitch < lowest_pitch }
+  end
+
+  def tonic_pitch
+    @tonic_pitch ||= HeadMusic::Pitch.get(tonic_spelling)
   end
 end

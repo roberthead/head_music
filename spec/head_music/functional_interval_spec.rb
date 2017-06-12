@@ -91,13 +91,14 @@ describe FunctionalInterval do
     its(:shorthand) { is_expected.to eq 'm13' }
     it { is_expected.not_to be_simple }
     it { is_expected.to be_compound }
+    it { is_expected.to be_imperfect_consonance }
+    it { is_expected.to be_consonance }
 
     describe 'simplification' do
       its(:simple_number) { is_expected.to eq 6 }
       its(:simple_name) { is_expected.to eq 'minor sixth' }
       it { is_expected.not_to be_sixth }
       it { is_expected.to be_sixth_or_compound }
-      it { is_expected.to be_consonance }
     end
 
     describe 'inversion' do

@@ -24,10 +24,6 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
       HeadMusic::FunctionalInterval.new(tonic_pitch, highest_pitch)
   end
 
-  def tonic_pitch
-    @tonic_pitch ||= HeadMusic::Pitch.get(tonic_spelling)
-  end
-
   def highest_pitch_appears_once?
     highest_notes.length == 1
   end

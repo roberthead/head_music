@@ -31,6 +31,10 @@ class HeadMusic::Placement
     (other_placement.position <= position && other_placement.next_position >= next_position)
   end
 
+  def to_s
+    "#{pitch ? pitch : 'rest'} at #{position}"
+  end
+
   private
 
   def ensure_attributes(voice, position, rhythmic_value, pitch)
