@@ -92,4 +92,8 @@ class HeadMusic::ScaleType
   def parent
     @parent ||= self.class.get(parent_name) if parent_name
   end
+
+  def diatonic?
+    intervals.length == 7
+  end
 end
