@@ -20,7 +20,7 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
 
   context 'with only permitted intervals' do
     before do
-      %w[C E D G F E D A G B C5].each.with_index(1) do |pitch, bar|
+      %w[C E D G G F E D A G B C5].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end
     end

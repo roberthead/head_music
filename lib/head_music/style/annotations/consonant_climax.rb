@@ -2,16 +2,56 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotation
-  MESSAGE = "Peak on a consonant high note one time."
+  MESSAGE = "Peak on a consonant high note one time or twice with a step between."
 
   def marks
-    if notes
-      improper_climaxes = highest_notes.select.with_index do |note, i|
-        tonic_pitch = HeadMusic::Pitch.get(tonic_spelling)
-        interval = HeadMusic::FunctionalInterval.new(tonic_pitch, note.pitch)
-        interval.consonance(:melodic).dissonant? || i > 0
-      end
-      HeadMusic::Style::Mark.for_each(improper_climaxes)
-    end
+    HeadMusic::Style::Mark.for_each(highest_notes) if !adherent_climax?
+  end
+
+  private
+
+  def adherent_climax?
+    notes? && highest_pitch_consonant_with_tonic? &&
+      ( highest_pitch_appears_once? || highest_pitch_appears_twice_with_step_between? )
+  end
+
+  def highest_pitch_consonant_with_tonic?
+    functional_interval_to_highest_pitch.consonance?(:melodic)
+  end
+
+  def functional_interval_to_highest_pitch
+    @functional_interval_to_highest_pitch ||=
+      HeadMusic::FunctionalInterval.new(tonic_pitch, highest_pitch)
+  end
+
+  def tonic_pitch
+    @tonic_pitch ||= HeadMusic::Pitch.get(tonic_spelling)
+  end
+
+  def highest_pitch_appears_once?
+    highest_notes.length == 1
+  end
+
+  def highest_pitch_appears_twice_with_step_between?
+    highest_pitch_appears_twice? &&
+    single_note_between_highest_notes? &&
+    step_between_highest_notes?
+  end
+
+  def highest_pitch_appears_twice?
+    highest_notes.length == 2
+  end
+
+  def step_between_highest_notes?
+    MelodicInterval.new(voice, highest_notes.first, notes_between_highest_notes.first).step?
+  end
+
+  def single_note_between_highest_notes?
+    notes_between_highest_notes.length == 1
+  end
+
+  def notes_between_highest_notes
+    indexes = highest_notes.map { |note| notes.index(note) }
+    notes[(indexes.first + 1)..(indexes.last - 1)] || []
   end
 end

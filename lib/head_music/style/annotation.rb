@@ -33,6 +33,10 @@ class HeadMusic::Style::Annotation
     fitness == 1
   end
 
+  def notes?
+    first_note
+  end
+
   def start_position
     [marks].flatten.compact.map(&:start_position).sort.first
   end
@@ -113,7 +117,8 @@ class HeadMusic::Style::Annotation
   end
 
   def positions
-    @positions ||= voices.map(&:notes).flatten.map(&:position).sort.uniq(&:to_s)
+    @positions ||=
+      voices.map(&:notes).flatten.map(&:position).sort.uniq(&:to_s)
   end
 
   def unsorted_higher_voices

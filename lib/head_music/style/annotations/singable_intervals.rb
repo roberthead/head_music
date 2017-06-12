@@ -2,10 +2,10 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::SingableIntervals < HeadMusic::Style::Annotation
-  PERMITTED_ASCENDING = %w[m2 M2 m3 M3 P4 P5 m6 P8]
-  PERMITTED_DESCENDING = %w[m2 M2 m3 M3 P4 P5 P8]
+  PERMITTED_ASCENDING = %w[PU m2 M2 m3 M3 P4 P5 m6 P8]
+  PERMITTED_DESCENDING = %w[PU m2 M2 m3 M3 P4 P5 P8]
 
-  MESSAGE = "Use only m2, M2, m3, M3, P4, P5, m6 (ascending), P8."
+  MESSAGE = "Use only PU, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
 
   def marks
     melodic_intervals.reject { |interval| permitted?(interval) }.map do |unpermitted_interval|

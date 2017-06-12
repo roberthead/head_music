@@ -3,7 +3,7 @@ end
 
 class HeadMusic::Style::Rulesets::FirstSpeciesMelody
   RULESET = [
-    HeadMusic::Style::Annotations::AlwaysMove,
+    HeadMusic::Style::Annotations::ConsonantClimax,
     HeadMusic::Style::Annotations::Diatonic,
     HeadMusic::Style::Annotations::DirectionChanges,
     HeadMusic::Style::Annotations::EndOnTonic,

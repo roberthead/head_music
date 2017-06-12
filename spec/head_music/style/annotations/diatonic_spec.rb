@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::Diatonic do
   let(:composition) { Composition.new(key_signature: 'D dorian') }
-  let(:voice) { Voice.new(composition: composition) }
+  let(:voice) { composition.add_voice }
   subject { described_class.new(voice) }
 
   its(:message) { is_expected.not_to be_empty }
@@ -33,5 +33,15 @@ describe HeadMusic::Style::Annotations::Diatonic do
     its(:fitness) { is_expected.to be < 1 }
     its(:fitness) { is_expected.to be > 0 }
     its(:marks_count) { is_expected.to eq 2 }
+  end
+
+  context 'with a raised leading tone in the cadence' do
+    before do
+      %w[D E F D B3 C D B3 C D A3 B3 C# D].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
+      end
+    end
+
+    its(:fitness) { is_expected.to eq 1 }
   end
 end
