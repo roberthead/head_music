@@ -9,7 +9,7 @@ class HeadMusic::ScaleDegree
 
   def initialize(key_signature, spelling)
     @key_signature = key_signature
-    @spelling = Spelling.get(spelling)
+    @spelling = HeadMusic::Spelling.get(spelling)
   end
 
   def degree
@@ -46,6 +46,6 @@ class HeadMusic::ScaleDegree
   private
 
   def scale_degree_usual_spelling
-    Spelling.get(scale.spellings[degree - 1])
+    HeadMusic::Spelling.get(scale.spellings[degree - 1])
   end
 end
