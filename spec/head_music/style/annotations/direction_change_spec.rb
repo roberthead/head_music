@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::DirectionChanges do
+describe HeadMusic::Style::Annotations::DirectionChange do
   let(:composition) { Composition.new(key_signature: 'D dorian') }
   let(:voice) { Voice.new(composition: composition) }
   subject { described_class.new(voice) }
@@ -16,7 +16,18 @@ describe HeadMusic::Style::Annotations::DirectionChanges do
       end
     end
 
-    its(:fitness) { is_expected.to be < PENALTY_FACTOR }
+    its(:fitness) { is_expected.to be <= PENALTY_FACTOR }
+    its(:first_mark_code) { is_expected.to eq '1:1:000 to 9:1:000' }
+  end
+
+  context 'when the notes are all descending' do
+    before do
+      %w[D5 C5 B A G F E D].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
+      end
+    end
+
+    its(:fitness) { is_expected.to be <= PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq '1:1:000 to 9:1:000' }
   end
 
@@ -27,19 +38,17 @@ describe HeadMusic::Style::Annotations::DirectionChanges do
       end
     end
 
-    its(:fitness) { is_expected.to be < PENALTY_FACTOR }
-    its(:first_mark_code) { is_expected.to eq '1:1:000 to 10:1:000' }
+    its(:fitness) { is_expected.to be >= PENALTY_FACTOR }
   end
 
-  context 'when the direction changes infrequently' do
+  context 'when the direction changes twice' do
     before do
       %w[D4 E4 F4 G4 F4 G4 A4 B4 C5 D5].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end
     end
 
-    its(:fitness) { is_expected.to be < 1 }
-    its(:first_mark_code) { is_expected.to eq '1:1:000 to 11:1:000' }
+    its(:fitness) { is_expected.to eq 1 }
   end
 
   context 'when the direction changes frequently' do

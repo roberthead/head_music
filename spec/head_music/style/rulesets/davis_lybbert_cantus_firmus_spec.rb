@@ -7,13 +7,13 @@ describe HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AtLeastEightNotes }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ConsonantClimax }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::Diatonic }
-  # specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::DirectionChanges }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::DirectionChange }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnTonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::LimitOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::MostlyConjunct }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NoRests }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NotesSameLength }
-  # specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::RecoverLargeLeaps }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingleLargeLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableIntervals }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableRange }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StartOnTonic }
