@@ -4,8 +4,12 @@ end
 class HeadMusic::Style::Annotations::MostlyConjunct < HeadMusic::Style::Annotation
   MESSAGE = "Use mostly conjunct motion."
 
+  MINIMUM_CONJUNCT_PORTION = HeadMusic::GOLDEN_RATIO_INVERSE ** 2
+  # ~38%
+  # Fux is 5/13 for lydian cantus firmus
+
   def marks
-    marks_for_skips_and_leaps if conjunct_ratio <= 0.5
+    marks_for_skips_and_leaps if conjunct_ratio < MINIMUM_CONJUNCT_PORTION
   end
 
   private
@@ -18,7 +22,6 @@ class HeadMusic::Style::Annotations::MostlyConjunct < HeadMusic::Style::Annotati
 
   def conjunct_ratio
     return 1 if melodic_intervals.empty?
-    steps = melodic_intervals.count { |interval| interval.step? }
-    steps.to_f / melodic_intervals.length
+    melodic_intervals.count(&:step?).to_f / melodic_intervals.length
   end
 end

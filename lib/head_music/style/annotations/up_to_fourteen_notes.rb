@@ -1,14 +1,14 @@
 module HeadMusic::Style::Annotations
 end
 
-class HeadMusic::Style::Annotations::UpToThirteenNotes < HeadMusic::Style::Annotation
-  MAXIMUM_NOTES = 13
+class HeadMusic::Style::Annotations::UpToFourteenNotes < HeadMusic::Style::Annotation
+  MAXIMUM_NOTES = 14
 
   MESSAGE = 'Write up to thirteen notes.'
 
   def marks
     if overage > 0
-      HeadMusic::Style::Mark.for_each(notes[13..-1])
+      HeadMusic::Style::Mark.for_each(notes[MAXIMUM_NOTES..-1])
     end
   end
 

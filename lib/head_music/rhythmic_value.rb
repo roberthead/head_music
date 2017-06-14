@@ -56,7 +56,7 @@ class HeadMusic::RhythmicValue
   end
 
   def multiplier
-    (0..dots).reduce(0) { |sum, i| sum + (1.0/2)**i }
+    (0..dots).reduce(0) { |sum, i| sum + 0.5**i }
   end
 
   def ticks

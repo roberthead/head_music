@@ -1,3 +1,10 @@
+module HeadMusic
+  GOLDEN_RATIO = (1 + 5**0.5) / 2.0
+  GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO
+  PENALTY_FACTOR = GOLDEN_RATIO_INVERSE
+  SMALL_PENALTY_FACTOR = GOLDEN_RATIO_INVERSE**0.5
+end
+
 require 'head_music/version'
 
 require 'active_support/core_ext/module/delegation'
@@ -70,7 +77,7 @@ require 'head_music/style/annotations/start_on_tonic'
 require 'head_music/style/annotations/step_down_to_final_note'
 require 'head_music/style/annotations/step_out_of_unison'
 require 'head_music/style/annotations/step_up_to_final_note'
-require 'head_music/style/annotations/up_to_thirteen_notes'
+require 'head_music/style/annotations/up_to_fourteen_notes'
 
 require 'head_music/style/rulesets/cantus_firmus'
 require 'head_music/style/rulesets/first_species_melody'
@@ -78,10 +85,3 @@ require 'head_music/style/rulesets/first_species_harmony'
 
 require 'head_music/utilities/hash_key'
 require 'head_music/voice'
-
-module HeadMusic
-  GOLDEN_RATIO = (1 + 5**0.5) / 2.0
-  GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO
-  PENALTY_FACTOR = GOLDEN_RATIO_INVERSE
-  SMALL_PENALTY_FACTOR = GOLDEN_RATIO_INVERSE**0.5
-end

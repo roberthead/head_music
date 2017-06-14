@@ -18,7 +18,7 @@ class HeadMusic::Style::Rulesets::CantusFirmus
     HeadMusic::Style::Annotations::SingableRange,
     HeadMusic::Style::Annotations::StartOnTonic,
     HeadMusic::Style::Annotations::StepDownToFinalNote,
-    HeadMusic::Style::Annotations::UpToThirteenNotes,
+    HeadMusic::Style::Annotations::UpToFourteenNotes,
   ]
 
   def self.analyze(voice)

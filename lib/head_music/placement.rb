@@ -40,7 +40,7 @@ class HeadMusic::Placement
   def ensure_attributes(voice, position, rhythmic_value, pitch)
     @voice = voice
     ensure_position(position)
-    @rhythmic_value = rhythmic_value
+    @rhythmic_value = HeadMusic::RhythmicValue.get(rhythmic_value)
     @pitch = HeadMusic::Pitch.get(pitch)
   end
 

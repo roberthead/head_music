@@ -4,7 +4,7 @@ describe HeadMusic::Style::Annotation do
   let(:voice) { Voice.new }
 
   context 'when the voice is compliant' do
-    subject(:annotation) { HeadMusic::Style::Annotations::UpToThirteenNotes.new(voice) }
+    subject(:annotation) { HeadMusic::Style::Annotations::UpToFourteenNotes.new(voice) }
 
     it { is_expected.to be_perfect }
   end

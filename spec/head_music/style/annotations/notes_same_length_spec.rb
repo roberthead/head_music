@@ -37,6 +37,17 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
     its(:fitness) { is_expected.to eq 1 }
   end
 
+  context 'when ending on a shorter note' do
+    before do
+      %w[C D E F G F A G F D].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
+      end
+      voice.place(voice.notes.last.next_position, :half, 'C')
+    end
+
+    its(:fitness) { is_expected.to be < 1 }
+  end
+
   context 'when notes are not of equal rhythmic value' do
     before do
       voice.place("1:1", :whole, 'D4')

@@ -5,12 +5,32 @@ class HeadMusic::Style::Annotations::NotesSameLength < HeadMusic::Style::Annotat
   MESSAGE = 'Use consistent rhythmic unit.'
 
   def marks
-    preferred_value = first_most_common_rhythmic_value
-    wrong_length_notes = all_but_last_note.select { |note| note.rhythmic_value != preferred_value }
-    HeadMusic::Style::Mark.for_each(wrong_length_notes)
+    HeadMusic::Style::Mark.for_each(all_wrong_length_notes)
   end
 
   private
+
+  def all_wrong_length_notes
+    (wrong_length_notes + [wrong_length_last_note]).compact
+  end
+
+  def wrong_length_notes
+    all_but_last_note.select.with_index do |note|
+      note.rhythmic_value != first_most_common_rhythmic_value
+    end
+  end
+
+  def wrong_length_last_note
+    last_note unless acceptable_duration_of_last_note?
+  end
+
+  def acceptable_duration_of_last_note?
+    last_note.nil? ||
+      [
+        first_most_common_rhythmic_value.total_value,
+        first_most_common_rhythmic_value.total_value * 2
+      ].include?(last_note.rhythmic_value.total_value)
+  end
 
   def all_but_last_note
     notes[0..-2]
@@ -21,9 +41,11 @@ class HeadMusic::Style::Annotations::NotesSameLength < HeadMusic::Style::Annotat
   end
 
   def first_most_common_rhythmic_value
-    candidates = most_common_rhythmic_values
-    first_match = notes.detect { |note| candidates.include?(note.rhythmic_value) }
-    first_match ? first_match.rhythmic_value : nil
+    @first_most_common_rhythmic_value ||= begin
+      candidates = most_common_rhythmic_values
+      first_match = notes.detect { |note| candidates.include?(note.rhythmic_value) }
+      first_match ? first_match.rhythmic_value : nil
+    end
   end
 
   def most_common_rhythmic_values
