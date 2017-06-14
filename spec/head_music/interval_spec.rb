@@ -20,12 +20,12 @@ describe Interval do
     it { is_expected.not_to be_compound }
   end
 
-  let(:perfect_unison) { Interval.named(:perfect_unison) }
-  let(:major_third) { Interval.named(:major_third) }
-  let(:minor_third) { Interval.named(:minor_third) }
-  let(:perfect_fourth) { Interval.named(:perfect_fourth) }
-  let(:perfect_fifth) { Interval.named(:perfect_fifth) }
-  let(:perfect_octave) { Interval.named(:perfect_octave) }
+  let(:perfect_unison) { Interval.get(:perfect_unison) }
+  let(:major_third) { Interval.get(:major_third) }
+  let(:minor_third) { Interval.get(:minor_third) }
+  let(:perfect_fourth) { Interval.get(:perfect_fourth) }
+  let(:perfect_fifth) { Interval.get(:perfect_fifth) }
+  let(:perfect_octave) { Interval.get(:perfect_octave) }
   let(:perfect_11th) { Interval.get(17) }
 
   specify { expect(major_third).to be > minor_third }

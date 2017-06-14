@@ -11,6 +11,10 @@ describe HeadMusic::Style::Rulesets::CantusFirmus do
     { key: 'C ionian', pitches: %w[C E F E G F E D C] },
   ]
 
+  DAVID_AND_LYBBERT_EXAMPLES = [
+    { key: 'C ionian', pitches: %w[C E F E G F E D C] },
+  ]
+
   context 'when given an error-free counterpoint line' do
     let(:composition) { Composition.new(key_signature: 'D dorian') }
     let(:cantus_firmus_pitches) { %w[D F E D G F A G F E D] }

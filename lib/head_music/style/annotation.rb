@@ -86,7 +86,7 @@ class HeadMusic::Style::Annotation
   def functional_interval_from_tonic(note)
     tonic_to_use = tonic_pitch
     while tonic_to_use > note.pitch
-      tonic_to_use -= HeadMusic::Interval.named(:perfect_octave)
+      tonic_to_use -= HeadMusic::Interval.get(:perfect_octave)
     end
     HeadMusic::FunctionalInterval.new(tonic_to_use, note.pitch)
   end

@@ -7,14 +7,11 @@ class HeadMusic::Interval
 
   attr_reader :semitones
 
-  def self.get(semitones)
+  def self.get(identifier)
     @intervals ||= {}
-    @intervals[semitones.to_i] ||= new(semitones.to_i)
-  end
-
-  def self.named(name)
-    name = name.to_s
-    get(NAMES.index(name)) if NAMES.include?(name)
+    candidate = identifier.to_s.downcase.gsub(/\W+/, '_')
+    semitones = NAMES.index(candidate) || identifier.to_i
+    @intervals[semitones] ||= new(semitones.to_i)
   end
 
   def initialize(semitones)
