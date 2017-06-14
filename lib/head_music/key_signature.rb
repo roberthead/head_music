@@ -14,7 +14,7 @@ class HeadMusic::KeySignature
     return identifier if identifier.is_a?(HeadMusic::KeySignature)
     @key_signatures ||= {}
     tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
-    hash_key = HeadMusic::Utilities::HashKey.for(identifier)
+    hash_key = HeadMusic::Utilities::HashKey.for(identifier.gsub(/#/, 'sharp').gsub(/b/, 'flat'))
     @key_signatures[hash_key] ||= new(tonic_spelling, scale_type_name)
   end
 

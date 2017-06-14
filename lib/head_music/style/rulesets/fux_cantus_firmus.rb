@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rulesets
 end
 
-class HeadMusic::Style::Rulesets::CantusFirmus
+class HeadMusic::Style::Rulesets::FuxCantusFirmus
   RULESET = [
     HeadMusic::Style::Annotations::AlwaysMove,
     HeadMusic::Style::Annotations::AtLeastEightNotes,
