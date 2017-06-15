@@ -4,7 +4,7 @@ end
 class HeadMusic::Style::Annotations::DirectionChange < HeadMusic::Style::Annotation
   MAXIMUM_NOTES_PER_DIRECTION = 5
 
-  MESSAGE = "Change melodic direction frequently."
+  MESSAGE = "Change melodic direction occasionally."
 
   def marks
     if overage > 0
