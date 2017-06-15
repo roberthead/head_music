@@ -11,6 +11,7 @@ module HeadMusic
       def messages
         annotations.reject(&:perfect?).map(&:message)
       end
+      alias_method :annotation_messages, :messages
 
       def annotations
         @annotations ||= @ruleset.analyze(subject)

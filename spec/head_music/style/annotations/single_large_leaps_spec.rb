@@ -30,9 +30,19 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
       its(:fitness) { is_expected.to eq 1 }
     end
 
-    context 'followed by large leap' do
+    context 'followed by large leap in the opposite direction' do
       before do
         %w[D4 F4 E4 D4 G4 D4 E4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1", :whole, pitch)
+        end
+      end
+
+      its(:fitness) { is_expected.to eq 1 }
+    end
+
+    context 'followed by leap in the same direction' do
+      before do
+        %w[D4 A4 C#5 D5].each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1", :whole, pitch)
         end
       end

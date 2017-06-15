@@ -21,4 +21,7 @@ class HeadMusic::Style::Annotations::ApproachPerfectionContrarily < HeadMusic::S
       motion.second_harmonic_interval.perfect_consonance?
     end
   end
+
+  # Side effect is that you can't enter a perfect consonance by skip,
+  # which is a rule.
 end

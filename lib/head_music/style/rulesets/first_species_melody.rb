@@ -11,7 +11,6 @@ class HeadMusic::Style::Rulesets::FirstSpeciesMelody
     HeadMusic::Style::Annotations::MostlyConjunct,
     HeadMusic::Style::Annotations::NoRests,
     HeadMusic::Style::Annotations::NotesSameLength,
-    HeadMusic::Style::Annotations::RecoverLargeLeaps,
     HeadMusic::Style::Annotations::SingableIntervals,
     HeadMusic::Style::Annotations::SingableRange,
     HeadMusic::Style::Annotations::StartOnPerfectConsonance,

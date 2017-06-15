@@ -28,4 +28,8 @@ class HeadMusic::Style::Mark
   def code
     [start_position, end_position].join(' to ')
   end
+
+  def to_s
+    code
+  end
 end

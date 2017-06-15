@@ -29,8 +29,8 @@ class HeadMusic::Style::Annotation
   end
 end
 
-def fux_examples
-  @fux_examples ||= [
+def fux_cantus_firmus_examples
+  @fux_cantus_firmus_examples ||= [
     { key: 'D dorian', pitches: %w[D F E D G F A G F E D] },
     { key: 'E phrygian', pitches: %w[E C D C A3 A G E F E] },
     { key: 'F lydian', pitches: %w[F G A F D E F C5 A F G F] },
@@ -41,8 +41,8 @@ def fux_examples
   ]
 end
 
-def davis_and_lybbert_examples
-  @davis_and_lybbert_examples ||= [
+def davis_and_lybbert_cantus_firmus_examples
+  @davis_and_lybbert_cantus_firmus_examples ||= [
     { key: 'C major', pitches: %w[C3 E3 D3 G3 A3 G3 E3 F3 D3 C3] },
     { key: 'C major', pitches: %w[C3 D3 E3 G3 A3 F3 E3 D3 C3] },
     { key: 'G major', pitches: %w[G3 F#3 G3 E3 D3 B2 C3 D3 B2 A2 G2] },

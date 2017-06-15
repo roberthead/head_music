@@ -21,7 +21,7 @@ describe HeadMusic::Style::Rulesets::FuxCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::UpToFourteenNotes }
 
   context 'with Fux examples' do
-    fux_examples.each do |cf_example|
+    fux_cantus_firmus_examples.each do |cf_example|
       context "#{cf_example[:pitches].join(' ')} in #{cf_example[:key]}" do
         let(:composition) { Composition.new(name: "CF in #{cf_example[:key]}", key_signature: cf_example[:key]) }
         let(:voice) { Voice.new(composition: composition) }
@@ -38,7 +38,7 @@ describe HeadMusic::Style::Rulesets::FuxCantusFirmus do
   end
 
   context 'with Davis and Lybbert examples' do
-    davis_and_lybbert_examples.each do |cf_example|
+    davis_and_lybbert_cantus_firmus_examples.each do |cf_example|
       context "#{cf_example[:pitches].join(' ')} in #{cf_example[:key]}" do
         let(:composition) { Composition.new(name: "CF in #{cf_example[:key]}", key_signature: cf_example[:key]) }
         let(:voice) { Voice.new(composition: composition) }

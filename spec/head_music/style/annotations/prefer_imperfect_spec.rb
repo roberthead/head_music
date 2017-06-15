@@ -32,8 +32,8 @@ describe HeadMusic::Style::Annotations::PreferImperfect do
     its(:fitness) { is_expected.to eq 1 }
   end
 
-  context 'with slightly more than half perfect consonances' do
-    let(:counterpoint_pitches) { %w[D5 C4 B4 D5 E5 C5 B4 D5 A4 C5 D5] }
+  context 'with half perfect consonances in the middle' do
+    let(:counterpoint_pitches) { %w[D5 C5 B4 D5 E5 C5 C5 D5 F5 C5 D5] }
     let(:cantus_firmus_pitches) {%w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
     its(:fitness) { is_expected.to be < 1 }

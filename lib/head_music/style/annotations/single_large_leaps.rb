@@ -6,7 +6,7 @@ end
 # unless another leap (in either direction) creates a consonant triad.
 # - Brian
 class HeadMusic::Style::Annotations::SingleLargeLeaps < HeadMusic::Style::Annotation
-  MESSAGE = "Recover leaps by step or opposite direction."
+  MESSAGE = "Recover leaps by step, repetition, opposite direction, or spelling triad."
 
   def marks
     melodic_intervals.drop(1).to_a.map.with_index do |interval, i|
@@ -23,7 +23,8 @@ class HeadMusic::Style::Annotations::SingleLargeLeaps < HeadMusic::Style::Annota
     return false unless first_interval.large_leap?
     return false if spelling_consonant_triad?(first_interval, second_interval, third_interval)
     return false if second_interval.step?
-    !direction_changed?(first_interval, second_interval) || second_interval.large_leap?
+    return false if second_interval.repetition?
+    !direction_changed?(first_interval, second_interval) && second_interval.leap?
   end
 
   def spelling_consonant_triad?(first_interval, second_interval, third_interval)
