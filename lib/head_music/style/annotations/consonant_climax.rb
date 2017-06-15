@@ -20,7 +20,9 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
   end
 
   def adherent_low_pitch?
-    notes? && lowest_pitch_consonant_with_tonic? &&
+    notes? &&
+    only_goes_down? &&
+    lowest_pitch_consonant_with_tonic? &&
       ( lowest_pitch_appears_once? || lowest_pitch_appears_twice_with_step_between? )
   end
 
@@ -94,5 +96,9 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
   def notes_between_lowest_notes
     indexes = lowest_notes.map { |note| notes.index(note) }
     notes[(indexes.first + 1)..(indexes.last - 1)] || []
+  end
+
+  def only_goes_down?
+    first_note && first_note.pitch == highest_pitch
   end
 end
