@@ -26,8 +26,7 @@ describe HeadMusic::Style::Annotations::PrepareOctaveLeaps do
       end
     end
 
-    it { is_expected.not_to be_adherent }
-    its(:first_mark_code) { is_expected.to eq "1:1:000 to 3:1:000" }
+    it { is_expected.to be_adherent }
   end
 
   context 'ending with an octave leap' do

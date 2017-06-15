@@ -153,5 +153,21 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       it { is_expected.to be_adherent }
       its(:annotation_messages) { are_expected.to eq [] }
     end
+
+    context 'davis and lybbert first species first illustration (p 16)' do
+      let(:key) { 'C major' }
+      let(:counterpoint_pitches) {  %w[G4 G3 A3 B3 C4 D4 E4 A3 B3 C4] }
+      let(:cantus_firmus_pitches) { %w[C3 E3 D3 G3 A3 G3 E3 F3 D3 C3] }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context 'davis and lybbert first species second illustration (p 16)' do
+      let(:key) { 'D minor' }
+      let(:cantus_firmus_pitches) { %w[D5 F5 E5 G5  F5 D5  A5 G5 F5 E5  D5] }
+      let(:counterpoint_pitches) {  %w[D3 D4 C4 Bb3 A3 Bb3 F3 G3 A3 C#4 D4] }
+
+      it { is_expected.to be_adherent }
+    end
   end
 end

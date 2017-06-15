@@ -14,7 +14,7 @@ class HeadMusic::Style::Annotations::PrepareOctaveLeaps < HeadMusic::Style::Anno
 
   def external_entries
     melodic_intervals.map.with_index do |melodic_interval, i|
-      if melodic_interval.octave? && (i == 0 || !melodic_interval.spans?(notes[i-1].pitch))
+      if melodic_interval.octave? && i > 0 && !melodic_interval.spans?(notes[i-1].pitch)
         notes[[i-1, 0].max..(i+1)]
       end
     end.compact
