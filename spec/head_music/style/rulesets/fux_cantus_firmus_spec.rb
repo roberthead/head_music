@@ -7,8 +7,8 @@ describe HeadMusic::Style::Rulesets::FuxCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AtLeastEightNotes }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ConsonantClimax }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::Diatonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::DirectionChanges }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnTonic }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::FrequentDirectionChanges }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::LimitOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::MostlyConjunct }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NoRests }

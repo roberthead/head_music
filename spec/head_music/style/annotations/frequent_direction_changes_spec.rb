@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::DirectionChanges do
+describe HeadMusic::Style::Annotations::FrequentDirectionChanges do
   let(:composition) { Composition.new(key_signature: 'D dorian') }
   let(:voice) { Voice.new(composition: composition) }
   subject { described_class.new(voice) }

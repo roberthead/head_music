@@ -2,10 +2,6 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::DirectionChanges < HeadMusic::Style::Annotation
-  MAXIMUM_NOTES_PER_DIRECTION = 3
-
-  MESSAGE = "Change melodic direction frequently."
-
   def marks
     if overage > 0
       penalty_exponent = overage**0.5
@@ -17,7 +13,7 @@ class HeadMusic::Style::Annotations::DirectionChanges < HeadMusic::Style::Annota
 
   def overage
     return 0 if notes.length < 2
-    [notes_per_direction - MAXIMUM_NOTES_PER_DIRECTION, 0].max
+    [notes_per_direction - self.class.maximum_notes_per_direction, 0].max
   end
 
   def notes_per_direction

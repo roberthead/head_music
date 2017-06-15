@@ -7,9 +7,9 @@ describe HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AtLeastEightNotes }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ConsonantClimax }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::Diatonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::DirectionChange }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnTonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::LimitOctaveLeaps }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ModerateDirectionChanges }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::MostlyConjunct }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NoRests }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NotesSameLength }
