@@ -89,12 +89,15 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
   end
 
   def notes_between_highest_notes
-    indexes = highest_notes.map { |note| notes.index(note) }
-    notes[(indexes.first + 1)..(indexes.last - 1)] || []
+    notes_between(highest_notes)
   end
 
   def notes_between_lowest_notes
-    indexes = lowest_notes.map { |note| notes.index(note) }
+    notes_between(lowest_notes)
+  end
+
+  def notes_between(edge_notes)
+    indexes = edge_notes.map { |note| notes.index(note) }
     notes[(indexes.first + 1)..(indexes.last - 1)] || []
   end
 
