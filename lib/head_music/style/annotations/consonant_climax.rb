@@ -11,7 +11,7 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
   private
 
   def adherent_climax?
-    adherent_high_pitch? || adherent_low_pitch?
+    descending_melody? ? adherent_low_pitch? : adherent_high_pitch?
   end
 
   def adherent_high_pitch?
@@ -21,7 +21,6 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
 
   def adherent_low_pitch?
     notes? &&
-    only_goes_down? &&
     lowest_pitch_consonant_with_tonic? &&
       ( lowest_pitch_appears_once? || lowest_pitch_appears_twice_with_step_between? )
   end
@@ -101,7 +100,14 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
     notes[(indexes.first + 1)..(indexes.last - 1)] || []
   end
 
-  def only_goes_down?
-    first_note && first_note.pitch == highest_pitch
+  def descending_melody?
+    # account for the possibility of opening with an octave leap
+    notes.length > 1 &&
+    [first_note.pitch, second_note.pitch].include?(highest_pitch) &&
+    highest_pitch.spelling == tonic_spelling
+  end
+
+  def second_note
+    notes && notes[1]
   end
 end
