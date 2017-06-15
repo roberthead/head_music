@@ -22,7 +22,7 @@ describe HeadMusic::Style::Annotations::AvoidOverlappingVoices do
       let(:cantus_firmus_pitches) { %w[C D E F G F E D C] }
       let(:counterpoint_pitches) { %w[C5 B G A B A G B C5] }
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'and the voices overlap' do

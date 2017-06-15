@@ -5,7 +5,7 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
   subject { described_class.new(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with one note' do
@@ -13,7 +13,7 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
       voice.place("1:1", :whole, 'C')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with eight whole notes' do
@@ -23,7 +23,7 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when ending on a longer note' do
@@ -34,7 +34,7 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
       voice.place(voice.notes.last.next_position, :breve, 'C')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when ending on a shorter note' do

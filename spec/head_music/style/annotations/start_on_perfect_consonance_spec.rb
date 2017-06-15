@@ -12,7 +12,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
   subject { described_class.new(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the first note is a perfect unison' do
@@ -20,7 +20,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
       voice.place("1:1", :whole, 'C4')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the first note is an augmented unison' do
@@ -36,7 +36,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
       voice.place("1:1", :whole, 'G4')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the first note is a perfect octave above' do
@@ -44,7 +44,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
       voice.place("1:1", :whole, 'C5')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the first note is a perfect fifth below' do
@@ -99,6 +99,6 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
     let(:cantus_firmus_pitches) { %w[G3 A3 B3 A3 C B3 A3 G3] }
     let(:counterpoint_pitches) { %w[D5 C5 G A G G F# G] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 end

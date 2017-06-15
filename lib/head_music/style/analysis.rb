@@ -9,7 +9,7 @@ module HeadMusic
       end
 
       def messages
-        annotations.reject(&:perfect?).map(&:message)
+        annotations.reject(&:adherent?).map(&:message)
       end
       alias_method :annotation_messages, :messages
 
@@ -20,6 +20,10 @@ module HeadMusic
       def fitness
         return 1.0 if annotations.length == 0
         fitness_scores.inject(:+).to_f / fitness_scores.length
+      end
+
+      def adherent?
+        fitness == 1
       end
 
       private

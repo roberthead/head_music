@@ -6,7 +6,7 @@ describe HeadMusic::Style::Annotations::DirectionChange do
   subject { described_class.new(voice) }
 
   context 'when there are no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the notes are all ascending' do
@@ -48,7 +48,7 @@ describe HeadMusic::Style::Annotations::DirectionChange do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the direction changes frequently' do
@@ -58,6 +58,6 @@ describe HeadMusic::Style::Annotations::DirectionChange do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 end

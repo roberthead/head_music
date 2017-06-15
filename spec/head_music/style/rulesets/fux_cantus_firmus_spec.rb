@@ -31,7 +31,7 @@ describe HeadMusic::Style::Rulesets::FuxCantusFirmus do
           end
         end
 
-        its(:fitness) { is_expected.to eq 1 }
+        it { is_expected.to be_adherent }
         its(:messages) { are_expected.to eq [] }
       end
     end

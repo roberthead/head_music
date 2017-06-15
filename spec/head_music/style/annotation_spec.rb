@@ -6,13 +6,13 @@ describe HeadMusic::Style::Annotation do
   context 'when the voice is compliant' do
     subject(:annotation) { HeadMusic::Style::Annotations::UpToFourteenNotes.new(voice) }
 
-    it { is_expected.to be_perfect }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the voice is not compliant' do
     subject(:annotation) { HeadMusic::Style::Annotations::AtLeastEightNotes.new(voice) }
 
-    it { is_expected.not_to be_perfect }
+    it { is_expected.not_to be_adherent }
   end
 
   context 'when there are multiple marks' do

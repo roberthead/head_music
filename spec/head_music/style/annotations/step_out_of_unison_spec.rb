@@ -23,13 +23,13 @@ describe HeadMusic::Style::Annotations::StepOutOfUnison do
   context 'with no notes' do
     let(:counterpoint_pitches) { [] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with no unisons' do
     let(:counterpoint_pitches) { %w[D5 A4 C5 B4 D5 A4 E5 D5 A4 C5 D5] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with a unison at the beginning' do
@@ -42,13 +42,13 @@ describe HeadMusic::Style::Annotations::StepOutOfUnison do
     context 'and a step outward' do
       let(:counterpoint_pitches) { %w[D4 E4 C5 B4 D5 A4 E5 D5 A4 G4 C4] }
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
   end
 
   context 'when the first note is missing' do
     let(:counterpoint_pitches) { [nil] + %w[E4 C5 B4 D5 A4 E5 D5 A4 G4 C4] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 end

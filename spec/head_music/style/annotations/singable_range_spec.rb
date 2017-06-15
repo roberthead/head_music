@@ -5,7 +5,7 @@ describe HeadMusic::Style::Annotations::SingableRange do
   subject { described_class.new(voice) }
 
   context 'when there are no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the range is small' do
@@ -15,7 +15,7 @@ describe HeadMusic::Style::Annotations::SingableRange do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
     its(:marks_count) { is_expected.to eq 0 }
   end
 

@@ -6,7 +6,7 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
   subject { described_class.new(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with leaps' do
@@ -17,7 +17,7 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'followed by skip in the opposite direction' do
@@ -27,7 +27,7 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'followed by large leap in the opposite direction' do
@@ -37,7 +37,7 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'followed by leap in the same direction' do
@@ -57,7 +57,7 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'not recovered, but spelling a triad' do
@@ -67,7 +67,7 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'when recovered by skip spelling a triad' do
@@ -80,7 +80,7 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
       its(:first_mark_code) { is_expected.to eq nil }
     end
   end

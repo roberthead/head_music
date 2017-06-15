@@ -6,7 +6,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
   subject { described_class.new(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with leaps' do
@@ -17,7 +17,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'recovered by skip in the opposite direction' do
@@ -49,7 +49,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'when the leap is recovered by skip spelling a triad' do
@@ -62,7 +62,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
       its(:first_mark_code) { is_expected.to eq nil }
     end
   end

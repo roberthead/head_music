@@ -13,9 +13,10 @@ describe HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::MostlyConjunct }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NoRests }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NotesSameLength }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingleLargeLeaps }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::PrepareOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableIntervals }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableRange }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingleLargeLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StartOnTonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StepDownToFinalNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::UpToFourteenNotes }
@@ -33,7 +34,7 @@ describe HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus do
           end
         end
 
-        its(:fitness) { is_expected.to eq 1 }
+        it { is_expected.to be_adherent }
         its(:messages) { are_expected.to eq [] }
       end
     end
@@ -51,7 +52,7 @@ describe HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus do
           end
         end
 
-        its(:fitness) { is_expected.to eq 1 }
+        it { is_expected.to be_adherent }
         its(:messages) { are_expected.to eq [] }
       end
     end

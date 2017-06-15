@@ -23,13 +23,13 @@ describe HeadMusic::Style::Annotations::PreferImperfect do
   context 'with no notes' do
     let(:counterpoint_pitches) { [] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with mostly imperfect consonances' do
     let(:counterpoint_pitches) { %w[D5 A4 C5 B4 E5 A4 C5 D5 A4 C5 D5] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with half perfect consonances in the middle' do

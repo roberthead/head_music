@@ -5,7 +5,7 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
   subject { described_class.new(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with notes' do
@@ -17,7 +17,7 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
           end
         end
 
-        its(:fitness) { is_expected.to eq 1 }
+        it { is_expected.to be_adherent }
       end
 
       context 'on the 7th scale degree' do
@@ -40,7 +40,7 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
             end
           end
 
-          its(:fitness) { is_expected.to eq 1 }
+          it { is_expected.to be_adherent }
         end
 
         context 'with one skip between' do

@@ -23,7 +23,7 @@ describe HeadMusic::Style::Annotations::ApproachPerfectionContrarily do
   context 'with no notes' do
     let(:counterpoint_pitches) { [] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with perfect harmonic intervals' do
@@ -31,7 +31,7 @@ describe HeadMusic::Style::Annotations::ApproachPerfectionContrarily do
       let(:counterpoint_pitches) { %w[C5 B A] }
       let(:cantus_firmus_pitches) { %w[C E F] }
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'approached by similar motion' do
@@ -52,7 +52,7 @@ describe HeadMusic::Style::Annotations::ApproachPerfectionContrarily do
       let(:counterpoint_pitches) { %w[C5 B B] }
       let(:cantus_firmus_pitches) { %w[C D E] }
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
   end
 end

@@ -13,7 +13,7 @@ describe HeadMusic::Style::Annotations::UpToFourteenNotes do
       expect(voice.notes.length).to eq 14
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
     its(:marks_count) { is_expected.to eq 0 }
   end
 

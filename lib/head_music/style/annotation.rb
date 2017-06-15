@@ -29,7 +29,7 @@ class HeadMusic::Style::Annotation
     [marks].flatten.compact.map(&:fitness).reduce(1, :*)
   end
 
-  def perfect?
+  def adherent?
     fitness == 1
   end
 

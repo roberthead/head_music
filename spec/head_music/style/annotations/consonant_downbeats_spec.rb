@@ -23,13 +23,13 @@ describe HeadMusic::Style::Annotations::ConsonantDownbeats do
   context 'with no notes' do
     let(:counterpoint_pitches) { [] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with only consonant notes' do
     let(:counterpoint_pitches) { %w[D5 A4 C5 B4 D5 A4 E5 D5 A4 C5 D5] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with a perfect fourth' do
@@ -50,6 +50,6 @@ describe HeadMusic::Style::Annotations::ConsonantDownbeats do
     let(:cantus_firmus_pitches) { %w[G3 A3 B3 A3 C B3 A3 G3] }
     let(:counterpoint_pitches) { %w[D5 C5 G A G G F# G] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 end

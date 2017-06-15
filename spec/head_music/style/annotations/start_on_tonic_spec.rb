@@ -5,7 +5,7 @@ describe HeadMusic::Style::Annotations::StartOnTonic do
   subject { described_class.new(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the first note is the tonic' do
@@ -13,7 +13,7 @@ describe HeadMusic::Style::Annotations::StartOnTonic do
       voice.place("1:1", :whole, 'C')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the first note is NOT the tonic' do

@@ -5,7 +5,7 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
   subject { described_class.new(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with one note' do
@@ -13,7 +13,7 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
       voice.place("1:1", :whole, 'C')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with a scale' do
@@ -23,7 +23,7 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with half skips and leaps' do
@@ -33,7 +33,7 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with more than half skips and leaps' do

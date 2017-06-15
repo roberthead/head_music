@@ -25,13 +25,13 @@ describe HeadMusic::Style::Annotations::EndOnPerfectConsonance do
   context 'when there are no notes' do
     let(:counterpoint_pitches) { [] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the last note is a perfect unison' do
     let(:counterpoint_pitches) { %w[G4 F4 C4 B3 C4] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the last note is an augmented unison' do
@@ -43,13 +43,13 @@ describe HeadMusic::Style::Annotations::EndOnPerfectConsonance do
   context 'when the last note is a perfect fifth above' do
     let(:counterpoint_pitches) { %w[G4 F4 G4 A4 G4] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the last note is a perfect octave above' do
     let(:counterpoint_pitches) { %w[G4 A4 G4 B4 C5] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'when the last note is a perfect fifth below' do

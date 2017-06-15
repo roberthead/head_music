@@ -6,7 +6,7 @@ describe HeadMusic::Style::Annotations::LimitOctaveLeaps do
   subject { described_class.new(voice) }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with no octave leaps' do
@@ -16,7 +16,7 @@ describe HeadMusic::Style::Annotations::LimitOctaveLeaps do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with one octave leap' do
@@ -26,7 +26,7 @@ describe HeadMusic::Style::Annotations::LimitOctaveLeaps do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with two octave leaps' do

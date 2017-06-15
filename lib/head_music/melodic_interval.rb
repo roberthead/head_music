@@ -55,6 +55,18 @@ class HeadMusic::MelodicInterval
     !moving?
   end
 
+  def spans?(pitch)
+    pitch >= low_pitch && pitch <= high_pitch
+  end
+
+  def high_pitch
+    pitches.sort.last
+  end
+
+  def low_pitch
+    pitches.sort.first
+  end
+
   def direction
     @direction ||=
       if first_pitch < second_pitch

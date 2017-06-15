@@ -54,7 +54,7 @@ describe HeadMusic::Style::Annotations::AtLeastEightNotes do
       voice.place("6.1", :whole, 'E')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with plenty of notes' do
@@ -75,6 +75,6 @@ describe HeadMusic::Style::Annotations::AtLeastEightNotes do
       voice.place("8.1", :whole, 'F#')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 end

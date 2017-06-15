@@ -8,7 +8,7 @@ describe HeadMusic::Style::Annotations::Diatonic do
   its(:message) { is_expected.not_to be_empty }
 
   context 'when there are no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
     its(:marks_count) { is_expected.to eq 0 }
   end
 
@@ -19,7 +19,7 @@ describe HeadMusic::Style::Annotations::Diatonic do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
     its(:marks_count) { is_expected.to eq 0 }
   end
 
@@ -42,6 +42,6 @@ describe HeadMusic::Style::Annotations::Diatonic do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 end

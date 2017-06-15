@@ -27,13 +27,13 @@ describe HeadMusic::Style::Annotations::PreferContraryMotion do
   context 'with no notes' do
     let(:counterpoint_pitches) { [] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with one note' do
     let(:counterpoint_pitches) { %w[F4] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with all parallel motion' do
@@ -46,7 +46,7 @@ describe HeadMusic::Style::Annotations::PreferContraryMotion do
     let(:counterpoint_pitches) { %w[D5 A4 G4 B4 D5 F5 A5 D5 A4 C5 D5] }
     let(:cantus_firmus_pitches) {%w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with a little more than half direct motion' do
@@ -58,6 +58,6 @@ describe HeadMusic::Style::Annotations::PreferContraryMotion do
   context 'with mostly contrary motion' do
     let(:counterpoint_pitches) { %w[D5 A4 B4 C5 B4 D5 C5 D5 A4 C5 D5] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 end

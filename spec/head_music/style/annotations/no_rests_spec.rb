@@ -11,7 +11,7 @@ describe HeadMusic::Style::Annotations::NoRests do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
     its(:marks_count) { is_expected.to eq 0 }
   end
 

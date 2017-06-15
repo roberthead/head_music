@@ -7,7 +7,7 @@ describe HeadMusic::Style::Annotations::AlwaysMove do
   its(:message) { is_expected.to eq 'Always move to a different note.' }
 
   context 'with no notes' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with one note' do
@@ -15,7 +15,7 @@ describe HeadMusic::Style::Annotations::AlwaysMove do
       voice.place("1:1", :whole, 'C')
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with motion' do
@@ -25,7 +25,7 @@ describe HeadMusic::Style::Annotations::AlwaysMove do
       end
     end
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with a repeated note' do

@@ -7,7 +7,7 @@ describe HeadMusic::Style::Annotations::OneToOne do
   subject { described_class.new(counterpoint) }
 
   context 'without another voice' do
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with another voice' do
@@ -38,7 +38,7 @@ describe HeadMusic::Style::Annotations::OneToOne do
         end
       end
 
-      its(:fitness) { is_expected.to eq 1 }
+      it { is_expected.to be_adherent }
     end
 
     context 'with an extra note' do

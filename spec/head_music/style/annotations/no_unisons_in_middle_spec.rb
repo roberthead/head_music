@@ -23,19 +23,19 @@ describe HeadMusic::Style::Annotations::NoUnisonsInMiddle do
   context 'with no notes' do
     let(:counterpoint_pitches) { [] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with no unisons' do
     let(:counterpoint_pitches) { %w[D5 A4 C5 B4 D5 A4 E5 D5 A4 C5 D5] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with a unison at the beginning and end' do
     let(:counterpoint_pitches) { %w[D4 A4 C5 B4 D5 A4 E5 D5 A4 G4 D4] }
 
-    its(:fitness) { is_expected.to eq 1 }
+    it { is_expected.to be_adherent }
   end
 
   context 'with a unison in the middle' do
