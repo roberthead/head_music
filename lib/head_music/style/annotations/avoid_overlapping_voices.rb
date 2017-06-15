@@ -15,25 +15,21 @@ class HeadMusic::Style::Annotations::AvoidOverlappingVoices < HeadMusic::Style::
   end
 
   def overlappings_of_lower_voices
-    [].tap do |marks|
-      lower_voices.each do |lower_voice|
-        overlapped_notes = voice.notes.select do |note|
-          preceding_note = lower_voice.note_preceding(note.position)
-          following_note = lower_voice.note_following(note.position)
-          (preceding_note && preceding_note.pitch > note.pitch) || (following_note && following_note.pitch > note.pitch)
-        end
-        marks << HeadMusic::Style::Mark.for_each(overlapped_notes)
-      end
-    end.flatten.compact
+    overlappings_for_voices(lower_voices, :>)
   end
 
   def overlappings_of_higher_voices
+    overlappings_for_voices(higher_voices, :<)
+  end
+
+  def overlappings_for_voices(voices, comparison_operator)
     [].tap do |marks|
-      higher_voices.each do |higher_voice|
+      voices.each do |higher_voice|
         overlapped_notes = voice.notes.select do |note|
           preceding_note = higher_voice.note_preceding(note.position)
           following_note = higher_voice.note_following(note.position)
-          (preceding_note && preceding_note.pitch < note.pitch) || (following_note && following_note.pitch < note.pitch)
+          (preceding_note && preceding_note.pitch.send(comparison_operator, note.pitch)) ||
+            (following_note && following_note.pitch.send(comparison_operator, note.pitch))
         end
         marks << HeadMusic::Style::Mark.for_each(overlapped_notes)
       end
