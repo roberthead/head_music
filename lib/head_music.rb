@@ -80,11 +80,12 @@ require 'head_music/style/annotations/start_on_perfect_consonance'
 require 'head_music/style/annotations/start_on_tonic'
 require 'head_music/style/annotations/step_down_to_final_note'
 require 'head_music/style/annotations/step_out_of_unison'
+require 'head_music/style/annotations/step_to_final_note'
 require 'head_music/style/annotations/step_up_to_final_note'
 require 'head_music/style/annotations/up_to_fourteen_notes'
 
 require 'head_music/style/rulesets/fux_cantus_firmus'
-require 'head_music/style/rulesets/davis_lybbert_cantus_firmus'
+require 'head_music/style/rulesets/modern_cantus_firmus'
 require 'head_music/style/rulesets/first_species_melody'
 require 'head_music/style/rulesets/first_species_harmony'
 

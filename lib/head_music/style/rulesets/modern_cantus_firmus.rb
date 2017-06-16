@@ -1,7 +1,7 @@
 module HeadMusic::Style::Rulesets
 end
 
-class HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus
+class HeadMusic::Style::Rulesets::ModernCantusFirmus
   RULESET = [
     HeadMusic::Style::Annotations::AlwaysMove,
     HeadMusic::Style::Annotations::AtLeastEightNotes,
@@ -18,7 +18,7 @@ class HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus
     HeadMusic::Style::Annotations::SingableRange,
     HeadMusic::Style::Annotations::SingleLargeLeaps,
     HeadMusic::Style::Annotations::StartOnTonic,
-    HeadMusic::Style::Annotations::StepDownToFinalNote,
+    HeadMusic::Style::Annotations::StepToFinalNote,
     HeadMusic::Style::Annotations::UpToFourteenNotes,
   ]
 
