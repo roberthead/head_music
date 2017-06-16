@@ -7,10 +7,10 @@ class HeadMusic::Style::Rulesets::FirstSpeciesHarmony
     HeadMusic::Style::Annotations::AvoidCrossingVoices,
     HeadMusic::Style::Annotations::AvoidOverlappingVoices,
     HeadMusic::Style::Annotations::ConsonantDownbeats,
-    HeadMusic::Style::Annotations::PreferContraryMotion,
-    HeadMusic::Style::Annotations::PreferImperfect,
     HeadMusic::Style::Annotations::NoUnisonsInMiddle,
     HeadMusic::Style::Annotations::OneToOne,
+    HeadMusic::Style::Annotations::PreferContraryMotion,
+    HeadMusic::Style::Annotations::PreferImperfect,
   ]
 
   def self.analyze(voice)

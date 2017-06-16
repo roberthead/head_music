@@ -2,7 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::AvoidCrossingVoices < HeadMusic::Style::Annotation
-  MESSAGE = "Avoid crossing voices."
+  MESSAGE = "Avoid crossing voices. Maintain the high-low relationship between voices."
 
   def marks
     crossings.map do |crossing|

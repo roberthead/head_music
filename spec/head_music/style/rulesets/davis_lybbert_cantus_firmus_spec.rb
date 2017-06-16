@@ -35,7 +35,6 @@ describe HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus do
         end
 
         it { is_expected.to be_adherent }
-        its(:messages) { are_expected.to eq [] }
       end
     end
   end
@@ -53,7 +52,6 @@ describe HeadMusic::Style::Rulesets::DavisLybbertCantusFirmus do
         end
 
         it { is_expected.to be_adherent }
-        its(:messages) { are_expected.to eq [] }
       end
     end
   end

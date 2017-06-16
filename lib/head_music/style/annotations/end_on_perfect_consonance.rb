@@ -3,7 +3,7 @@ end
 
 # marks the voice if the first note is not the first or fifth scale degree of the key.
 class HeadMusic::Style::Annotations::EndOnPerfectConsonance < HeadMusic::Style::Annotation
-  MESSAGE = 'End on the tonic or the fifth scale degree.'
+  MESSAGE = 'End on the first or the fifth scale degree.'
 
   def marks
     if last_note && !ends_on_perfect_consonance?

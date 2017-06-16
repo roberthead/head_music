@@ -43,7 +43,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:counterpoint_pitches) { %w[A A G A B C5 C5 B D5 C#5 D5] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 6 (with errors)' do
@@ -61,7 +60,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:counterpoint_pitches) { %w[D3 D3 A3 F3 E3 D3 F3 C D C# D] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 11' do
@@ -70,7 +68,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:counterpoint_pitches) { %w[B C5 F G A C5 B E5 D5 E5] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 12 (with errors)' do
@@ -88,7 +85,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:counterpoint_pitches) { %w[E3 A3 D3 E3 F3 F3 C4 C4 D4 E4] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 13' do
@@ -97,7 +93,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:cantus_firmus_pitches) { %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 14' do
@@ -106,7 +101,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:counterpoint_pitches) { %w[F3 E3 F3 A3 Bb3 G3 A3 E3 F3 D3 E3 F3] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 15 (with errors)' do
@@ -124,7 +118,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:cantus_firmus_pitches) { %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3  G3] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 21' do
@@ -133,7 +126,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:counterpoint_pitches) {  %w[G3 A3 G3 E3 E3 C3 G3 B3 C4 A3 F#3 G3 F#3 G3] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 22' do
@@ -142,7 +134,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:cantus_firmus_pitches) { %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3  A3] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'fux chapter one figure 23' do
@@ -151,7 +142,6 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
       let(:counterpoint_pitches) {  %w[A3 A3 G3 F3 E3 E3 D3 C3 G3 A3 G#3 A3] }
 
       it { is_expected.to be_adherent }
-      its(:annotation_messages) { are_expected.to eq [] }
     end
 
     context 'davis and lybbert first species first illustration (p 16)' do

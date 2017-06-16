@@ -2,7 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotation
-  MESSAGE = "Peak on a consonant high note one time or twice with a step between."
+  MESSAGE = "Peak on a consonant high or low note one time or twice with a step between."
 
   def marks
     HeadMusic::Style::Mark.for_each(highest_notes) if !adherent_climax?

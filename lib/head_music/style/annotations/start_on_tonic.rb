@@ -2,7 +2,7 @@ module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::StartOnTonic < HeadMusic::Style::Annotation
-  MESSAGE = 'Start on the tonic.'
+  MESSAGE = 'Start on the first scale degree.'
 
   def marks
     if first_note && !starts_on_tonic?
