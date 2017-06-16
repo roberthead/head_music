@@ -3,7 +3,6 @@ require 'spec_helper'
 describe HeadMusic::Style::Rulesets::FuxCantusFirmus do
   subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
-
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AlwaysMove }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AtLeastEightNotes }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ConsonantClimax }
