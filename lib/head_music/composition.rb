@@ -45,6 +45,14 @@ class HeadMusic::Composition
     [voices.map(&:earliest_bar_number), 1].flatten.max
   end
 
+  def cantus_firmus
+    voices.detect(&:cantus_firmus?)
+  end
+
+  def counterpoint
+    voices.reject(&:cantus_firmus?).first
+  end
+
   private
 
   def ensure_attributes(name, key_signature, meter)
