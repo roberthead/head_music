@@ -20,100 +20,41 @@ describe HeadMusic::Style::Rulesets::FuxCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StepDownToFinalNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::UpToFourteenNotes }
 
-  describe 'Population A — Correct' do
-    context 'from Fux' do
-      fux_cantus_firmus_examples.each do |cf_example|
-        context "#{cf_example[:pitches].join(' ')} in #{cf_example[:key]}" do
-          let(:composition) { Composition.new(name: "CF in #{cf_example[:key]}", key_signature: cf_example[:key]) }
-          let(:voice) { Voice.new(composition: composition) }
+  describe 'adherence' do
+    context 'with Fux examples' do
+      fux_cantus_firmus_examples.each do |example|
+        context example.description do
+          let(:voice) { example.composition.cantus_firmus }
 
-          before do
-            cf_example[:pitches].each.with_index(1) do |pitch, bar|
-              voice.place("#{bar}:1", :whole, pitch)
+          if example.expected_messages.length > 0
+            it { is_expected.not_to be_adherent }
+
+            example.expected_messages.each do |expected_message|
+              its(:messages) { are_expected.to include(expected_message) }
             end
+          else
+            it { is_expected.to be_adherent }
           end
-
-          it { is_expected.to be_adherent }
-          its(:messages) { are_expected.to eq [] }
         end
       end
     end
-  end
 
-  describe 'Population B — Incorrect' do
+    context 'with Fux examples with errors introduced' do
+      fux_cantus_firmus_examples_with_errors.each do |example|
+        context example.description do
+          let(:voice) { example.composition.cantus_firmus }
 
-  end
+          if example.expected_messages.length > 0
+            it { is_expected.not_to be_adherent }
 
-  describe 'Population C — Error introduced' do
-    context 'modified from Fux' do
-      fux_cantus_firmus_examples_with_errors.each do |cf_example|
-        context "#{cf_example[:pitches].join(' ')} in #{cf_example[:key]} when #{cf_example[:modification]}" do
-          let(:composition) { Composition.new(name: "CF in #{cf_example[:key]}", key_signature: cf_example[:key]) }
-          let(:voice) { Voice.new(composition: composition) }
-
-          before do
-            cf_example[:pitches].each.with_index(1) do |pitch, bar|
-              voice.place("#{bar}:1", :whole, pitch)
+            example.expected_messages.each do |expected_message|
+              its(:messages) { are_expected.to include(expected_message) }
             end
+          else
+            it { is_expected.to be_adherent }
           end
-
-          it { is_expected.not_to be_adherent }
-          its(:messages) { are_expected.to include(cf_example[:expected_message]) }
         end
       end
     end
-  end
-
-  context 'from other authors' do
-    # context 'with Theory and Analysis examples' do
-    #   theory_and_analysis_cantus_firmus_examples.each do |cf_example|
-    #     context "#{cf_example[:pitches].join(' ')} in #{cf_example[:key]}" do
-    #       let(:composition) { Composition.new(name: "CF in #{cf_example[:key]}", key_signature: cf_example[:key]) }
-    #       let(:voice) { Voice.new(composition: composition) }
-    #
-    #       before do
-    #         cf_example[:pitches].each.with_index(1) do |pitch, bar|
-    #           voice.place("#{bar}:1", :whole, pitch)
-    #         end
-    #       end
-    #
-    #       its(:messages) { are_expected.to eq [] }
-    #     end
-    #   end
-    # end
-    #
-    # context 'with Schoenberg examples' do
-    #   schoenberg_cantus_firmus_examples.each do |cf_example|
-    #     context "#{cf_example[:pitches].join(' ')} in #{cf_example[:key]}" do
-    #       let(:composition) { Composition.new(name: "CF in #{cf_example[:key]}", key_signature: cf_example[:key]) }
-    #       let(:voice) { Voice.new(composition: composition) }
-    #
-    #       before do
-    #         cf_example[:pitches].each.with_index(1) do |pitch, bar|
-    #           voice.place("#{bar}:1", :whole, pitch)
-    #         end
-    #       end
-    #
-    #       its(:messages) { are_expected.to eq [] }
-    #     end
-    #   end
-    # end
-    #
-    # context 'with Davis and Lybbert examples' do
-    #   davis_and_lybbert_cantus_firmus_examples.each do |cf_example|
-    #     context "#{cf_example[:pitches].join(' ')} in #{cf_example[:key]}" do
-    #       let(:composition) { Composition.new(name: "CF in #{cf_example[:key]}", key_signature: cf_example[:key]) }
-    #       let(:voice) { Voice.new(composition: composition) }
-    #
-    #       before do
-    #         cf_example[:pitches].each.with_index(1) do |pitch, bar|
-    #           voice.place("#{bar}:1", :whole, pitch)
-    #         end
-    #       end
-    #
-    #       its(:messages) { are_expected.to eq [] }
-    #     end
-    #   end
-    # end
   end
 end
