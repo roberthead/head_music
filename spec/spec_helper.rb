@@ -42,9 +42,9 @@ def fux_cantus_firmus_examples
   ].map { |params| CompositionContext.from_cantus_firmus_params(params) }
 end
 
-def theory_and_analysis_cantus_firmus_examples
-  @theory_and_analysis_cantus_firmus_examples ||= [
-    { source: 'Clendinning', name: 'Clendinning CF in F major', key: 'F major', pitches: %w[F E C D F G F E F A E F] },
+def clendinning_cantus_firmus_examples
+  @clendinning_cantus_firmus_examples ||= [
+    { source: 'Clendinning', name: 'Clendinning CF in F major', key: 'F major', pitches: %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3] },
     { source: 'Clendinning', name: 'Clendinning CF in D minor', key: 'D minor', pitches: %w[D3 A3 G3 F3 E3 D3 F3 E3 D3] },
     { source: 'Clendinning', name: 'Clendinning CF in C major (treble)', key: 'C major', pitches: %w[C D F E F G A G E D C] },
     { source: 'Clendinning', name: 'Clendinning CF in C major (bass)', key: 'C major', pitches: %w[C3 E3 F3 G3 E3 A3 G3 E3 F3 E3 D3 C3] },
@@ -157,4 +157,136 @@ def fux_cantus_firmus_examples_with_errors
       expected_message: 'Write up to fourteen notes.'
     },
   ].map { |params| CompositionContext.from_cantus_firmus_params(params) }
+end
+
+def fux_first_species_examples
+  [
+    {
+      source: 'Fux chapter one figure 5',
+      key: 'D dorian',
+      cantus_firmus_pitches: %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4],
+      counterpoint_pitches: %w[A A G A B C5 C5 B D5 C#5 D5],
+    },
+    {
+      source: 'fux chapter one figure 6 (with errors)',
+      key: 'D dorian',
+      cantus_firmus_pitches: %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4],
+      counterpoint_pitches: %w[G3 D A3 F3 E3 D3 F3 C D C# D],
+      expected_message: 'Start on the tonic or a perfect consonance above the tonic (unless bass voice).',
+    },
+    {
+      source: 'fux chapter one figure 6 (corrected)',
+      key: 'D dorian',
+      cantus_firmus_pitches: %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4],
+      counterpoint_pitches: %w[D3 D3 A3 F3 E3 D3 F3 C D C# D],
+    },
+    {
+      source: 'fux chapter one figure 11',
+      key: 'E phrygian',
+      cantus_firmus_pitches: %w[E C D C A3 A4 G E F E],
+      counterpoint_pitches: %w[B C5 F G A C5 B E5 D5 E5],
+    },
+    {
+      source: 'fux chapter one figure 12 (with errors)',
+      key: 'E phrygian',
+      cantus_firmus_pitches: %w[E C D C A3 A4 G E F E],
+      counterpoint_pitches: %w[E3 A3 D3 E3 F3 F3 B3 C4 D4 E4],
+      expected_message: 'Use only PU, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line.',
+    },
+    {
+      source: 'fux chapter one figure 12 (corrected)',
+      key: 'E phrygian',
+      cantus_firmus_pitches: %w[E C D C A3 A4 G E F E],
+      counterpoint_pitches:  %w[E3 A3 D3 E3 F3 F3 C4 C4 D4 E4],
+    },
+    {
+      source: 'fux chapter one figure 13',
+      key: 'F lydian',
+      counterpoint_pitches: %w[F E C F F G A G C F E F],
+      cantus_firmus_pitches: %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3],
+    },
+    {
+      source: 'fux chapter one figure 14',
+      key: 'F ionian',
+      cantus_firmus_pitches: %w[F3 G3 A3 F3 D3  E3 F3 C4 A3 F3 G3 F3],
+      counterpoint_pitches:  %w[F3 E3 F3 A3 Bb3 G3 A3 E3 F3 D3 E3 F3],
+    },
+    {
+      source: 'fux chapter one figure 15 (with errors)',
+      key: 'G mixolydian',
+      counterpoint_pitches:  %w[G4 E4 D4 G4 G4 G4 A4 B4 G4 E5 D5 G4 F#4 G4],
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3  G3],
+      expected_message: 'Use only PU, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line.',
+    },
+    {
+      source: 'fux chapter one figure 15 (corrected)',
+      key: 'G mixolydian',
+      counterpoint_pitches:  %w[G4 E4 D4 G4 G4 G4 A4 B4 G4 C5 A4 G4 F#4 G4],
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3  G3],
+    },
+    {
+      source: 'Fux chapter one figure 21',
+      key: 'G ionian',
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4  B3 A3  G3],
+      counterpoint_pitches:  %w[G3 A3 G3 E3 E3 C3 G3 B3 C4 A3 F#3 G3 F#3 G3],
+    },
+    {
+      source: 'Fux chapter one figure 22',
+      key: 'A aeolian',
+      counterpoint_pitches:  %w[A4 E4 G4 F4 E4 C5 A4 B4 B4 A4 G#4 A4],
+      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3  A3],
+    },
+    {
+      source: 'Fux chapter one figure 23',
+      key: 'A aeolian',
+      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3  A3],
+      counterpoint_pitches:  %w[A3 A3 G3 F3 E3 E3 D3 C3 G3 A3 G#3 A3],
+    },
+  ].map { |params| CompositionContext.from_params(params) }
+end
+
+def clendinning_first_species_examples
+  [
+    {
+      source: 'Clendinning 3e Ex 9.1',
+      key: 'F major',
+      counterpoint_pitches:  %w[F4 E4 C4 D4 F4 G4 F4 E4 F4 A4 E4 F4],
+      cantus_firmus_pitches: %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3],
+    },
+    {
+      source: 'Clendinning 3e Ex 9.2',
+      key: 'D minor',
+      counterpoint_pitches:  %w[D5 C5 Bb4 D5 E5 F5 D5 C#5 D5],
+      cantus_firmus_pitches: %w[D3 A3 G3 F3 E3 D3 F3 E3 D3],
+    },
+    # {
+    #   source: 'Clendinning 3e p 170',
+    #   key: 'C major',
+    #   cantus_firmus_pitches: %w[C D  F  E F G A  G  E  D  C],
+    #   counterpoint_pitches:  %w[C B3 A3 C D C F3 G3 G3 B3 C],
+    # },
+    {
+      source: 'Clendinning 3e Ex 9.4',
+      key: 'C major',
+      cantus_firmus_pitches: %w[C D  F  E  F  G  A  G  E  D  C],
+      counterpoint_pitches:  %w[C B3 A3 G3 F3 E3 F3 G3 G3 B3 C],
+    },
+  ].map { |params| CompositionContext.from_params(params) }
+end
+
+def davis_and_lybbert_first_species_examples
+  [
+    {
+      source: 'Davis and Lybbert first illustration (p 16)',
+      key: 'C major',
+      counterpoint_pitches:  %w[G4 G3 A3 B3 C4 D4 E4 A3 B3 C4],
+      cantus_firmus_pitches: %w[C3 E3 D3 G3 A3 G3 E3 F3 D3 C3],
+    },
+    {
+      source: 'Davis and Lybbert second illustration (p 16)',
+      key: 'D minor',
+      cantus_firmus_pitches: %w[D5 F5 E5 G5  F5 D5  A5 G5 F5 E5  D5],
+      counterpoint_pitches:  %w[D3 D4 C4 Bb3 A3 Bb3 F3 G3 A3 C#4 D4],
+    },
+  ].map { |params| CompositionContext.from_params(params) }
 end

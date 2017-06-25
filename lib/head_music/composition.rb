@@ -45,11 +45,11 @@ class HeadMusic::Composition
     [voices.map(&:earliest_bar_number), 1].flatten.max
   end
 
-  def cantus_firmus
+  def cantus_firmus_voice
     voices.detect(&:cantus_firmus?)
   end
 
-  def counterpoint
+  def counterpoint_voice
     voices.reject(&:cantus_firmus?).first
   end
 

@@ -1,8 +1,8 @@
 class CompositionContext
   attr_reader :composition, :source, :expected_messages
 
-  delegate :pitches, to: :cantus_firmus, prefix: true
-  delegate :pitches, to: :counterpoint, prefix: true
+  delegate :pitches, to: :cantus_firmus_voice, prefix: :cantus_firmus
+  delegate :pitches, to: :counterpoint_voice, prefix: :counterpoint
 
   def self.from_cantus_firmus_params(params)
     from_params(params.merge({cantus_firmus_pitches: params[:pitches], cantus_firmus_durations: params[:durations]}))
@@ -71,7 +71,7 @@ class CompositionContext
 
   def counterpoint_string
     if counterpoint_pitches && counterpoint_pitches.length > 0
-      counterpoint_pitches.map(&:to_s).join(' ') + ' (ctp)'
+      counterpoint_pitches.map(&:to_s).join(' ') + ' (CPT)'
     end
   end
 end

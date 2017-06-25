@@ -25,13 +25,13 @@ describe HeadMusic::Style::Rulesets::ModernCantusFirmus do
     context 'with Fux examples' do
       fux_cantus_firmus_examples.each do |example|
         context example.description do
-          let(:voice) { example.composition.cantus_firmus }
+          let(:voice) { example.composition.cantus_firmus_voice }
 
           if example.expected_messages.length > 0
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
-              its(:messages) { are_expected.to include(expected_message) }
+              its(:annotation_messages) { are_expected.to include(expected_message) }
             end
           else
             it { is_expected.to be_adherent }
@@ -41,15 +41,15 @@ describe HeadMusic::Style::Rulesets::ModernCantusFirmus do
     end
 
     context 'with Clendinning examples' do
-      theory_and_analysis_cantus_firmus_examples.each do |example|
+      clendinning_cantus_firmus_examples.each do |example|
         context example.description do
-          let(:voice) { example.composition.cantus_firmus }
+          let(:voice) { example.composition.cantus_firmus_voice }
 
           if example.expected_messages.length > 0
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
-              its(:messages) { are_expected.to include(expected_message) }
+              its(:annotation_messages) { are_expected.to include(expected_message) }
             end
           else
             it { is_expected.to be_adherent }
@@ -61,13 +61,13 @@ describe HeadMusic::Style::Rulesets::ModernCantusFirmus do
     context 'with Davis and Lybbert examples' do
       davis_and_lybbert_cantus_firmus_examples.each do |example|
         context example.description do
-          let(:voice) { example.composition.cantus_firmus }
+          let(:voice) { example.composition.cantus_firmus_voice }
 
           if example.expected_messages.length > 0
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
-              its(:messages) { are_expected.to include(expected_message) }
+              its(:annotation_messages) { are_expected.to include(expected_message) }
             end
           else
             it { is_expected.to be_adherent }
@@ -79,13 +79,13 @@ describe HeadMusic::Style::Rulesets::ModernCantusFirmus do
     context 'with Schoenberg examples' do
       schoenberg_cantus_firmus_examples.each do |example|
         context example.description do
-          let(:voice) { example.composition.cantus_firmus }
+          let(:voice) { example.composition.cantus_firmus_voice }
 
           if example.expected_messages.length > 0
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
-              its(:messages) { are_expected.to include(expected_message) }
+              its(:annotation_messages) { are_expected.to include(expected_message) }
             end
           else
             it { is_expected.to be_adherent }
