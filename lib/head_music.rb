@@ -11,8 +11,13 @@ require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/string/access'
 require 'humanize'
 
+# utilities
+require 'head_music/utilities/hash_key'
+
+# modules
 require 'head_music/named_rudiment'
 
+# rudiments
 require 'head_music/accidental'
 require 'head_music/bar'
 require 'head_music/chord'
@@ -26,6 +31,7 @@ require 'head_music/harmonic_interval'
 require 'head_music/instrument'
 require 'head_music/interval'
 require 'head_music/key_signature'
+require 'head_music/language'
 require 'head_music/letter_name'
 require 'head_music/melodic_interval'
 require 'head_music/meter'
@@ -45,11 +51,14 @@ require 'head_music/scale_degree'
 require 'head_music/scale_type'
 require 'head_music/spelling'
 require 'head_music/staff'
+require 'head_music/voice'
 
+# analysis
 require 'head_music/style/analysis'
 require 'head_music/style/annotation'
 require 'head_music/style/mark'
 
+# annotations
 require 'head_music/style/annotations/always_move'
 require 'head_music/style/annotations/approach_perfection_contrarily'
 require 'head_music/style/annotations/at_least_eight_notes'
@@ -84,10 +93,8 @@ require 'head_music/style/annotations/step_to_final_note'
 require 'head_music/style/annotations/step_up_to_final_note'
 require 'head_music/style/annotations/up_to_fourteen_notes'
 
+# rulesets
 require 'head_music/style/rulesets/fux_cantus_firmus'
 require 'head_music/style/rulesets/modern_cantus_firmus'
 require 'head_music/style/rulesets/first_species_melody'
 require 'head_music/style/rulesets/first_species_harmony'
-
-require 'head_music/utilities/hash_key'
-require 'head_music/voice'
