@@ -11,7 +11,7 @@ describe ScaleDegree do
         let(:spelling) { Spelling.get('D') }
 
         its(:degree) { is_expected.to eq 2 }
-        its(:accidental) { is_expected.to eq nil }
+        its(:sign) { is_expected.to eq nil }
         its(:name_for_degree) { is_expected.to eq 'supertonic' }
 
         it { is_expected.to eq '2' }
@@ -20,15 +20,15 @@ describe ScaleDegree do
       context "and the spelling 'Db'" do
         let(:spelling) { Spelling.get('Db') }
 
-        it { is_expected.to eq 'b2' }
+        it { is_expected.to eq '♭2' }
       end
 
       context "and the spelling 'B'" do
         let(:spelling) { Spelling.get('B') }
 
-        it { is_expected.to eq '#7' }
+        it { is_expected.to eq '♯7' }
         its(:degree) { is_expected.to eq 7 }
-        its(:accidental) { is_expected.to eq '#' }
+        its(:sign) { is_expected.to eq '♯' }
         its(:name_for_degree) { is_expected.to eq 'leading tone' }
       end
     end

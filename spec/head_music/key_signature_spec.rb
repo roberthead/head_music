@@ -5,7 +5,7 @@ describe KeySignature do
     subject(:key_signature) { KeySignature.new(tonic, scale_type) }
 
     context 'when given an instance' do
-      let(:instance) { described_class.get('F# major') }
+      let(:instance) { described_class.get('F♯ major') }
 
       it 'returns that instance' do
         expect(described_class.get(instance)).to be instance
@@ -13,13 +13,13 @@ describe KeySignature do
     end
 
     context 'when given only a tonic' do
-      let(:tonic) { 'Eb' }
+      let(:tonic) { 'E♭' }
       let(:scale_type) { nil }
 
       it 'assumes a major key' do
-        expect(key_signature).to eq 'Eb major'
+        expect(key_signature).to eq 'E♭ major'
         expect(key_signature.num_flats).to eq 3
-        expect(key_signature.sharps_or_flats).to eq ['Bb', 'Eb', 'Ab']
+        expect(key_signature.sharps_or_flats).to eq ['B♭', 'E♭', 'A♭']
       end
     end
 
@@ -34,24 +34,24 @@ describe KeySignature do
         specify { expect(key_signature.sharps_or_flats).to eq [] }
       end
 
-      context 'in the key of Eb major' do
-        let(:tonic) { Spelling.get('Eb') }
+      context 'in the key of E♭ major' do
+        let(:tonic) { Spelling.get('E♭') }
 
         specify { expect(key_signature.num_flats).to eq 3 }
-        specify { expect(key_signature.sharps_or_flats).to eq ['Bb', 'Eb', 'Ab'] }
+        specify { expect(key_signature.sharps_or_flats).to eq ['B♭', 'E♭', 'A♭'] }
       end
 
-      context 'in the key of F# major' do
-        let(:tonic) { Spelling.get('F#') }
+      context 'in the key of F♯ major' do
+        let(:tonic) { Spelling.get('F♯') }
 
         specify { expect(key_signature.num_sharps).to eq 6 }
-        specify { expect(key_signature.sharps_or_flats).to eq %w{F# C# G# D# A# E#} }
+        specify { expect(key_signature.sharps_or_flats).to eq %w{F♯ C♯ G♯ D♯ A♯ E♯} }
       end
 
-      context 'in the key of Gb major' do
-        let(:tonic) { Spelling.get('Gb') }
+      context 'in the key of G♭ major' do
+        let(:tonic) { Spelling.get('G♭') }
 
-        specify { expect(key_signature.sharps_or_flats).to eq %w[Bb Eb Ab Db Gb Cb] }
+        specify { expect(key_signature.sharps_or_flats).to eq %w[B♭ E♭ A♭ D♭ G♭ C♭] }
       end
     end
 
@@ -62,7 +62,7 @@ describe KeySignature do
         let(:tonic) { Spelling.get('C') }
 
         specify { expect(key_signature.num_flats).to eq 3 }
-        specify { expect(key_signature.sharps_or_flats).to eq ['Bb', 'Eb', 'Ab'] }
+        specify { expect(key_signature.sharps_or_flats).to eq ['B♭', 'E♭', 'A♭'] }
       end
 
       context 'in the key of B minor' do
@@ -70,7 +70,7 @@ describe KeySignature do
 
         specify { expect(key_signature.num_sharps).to eq 2 }
 
-        specify { expect(key_signature.sharps_or_flats).to eq ['F#', 'C#'] }
+        specify { expect(key_signature.sharps_or_flats).to eq ['F♯', 'C♯'] }
       end
     end
 
@@ -80,24 +80,24 @@ describe KeySignature do
 
       specify { expect(key_signature.num_flats).to eq 2 }
 
-      specify { expect(key_signature.flats).to eq ['Bb', 'Eb'] }
-      specify { expect(key_signature.sharps_or_flats).to eq ['Bb', 'Eb'] }
+      specify { expect(key_signature.flats).to eq ['B♭', 'E♭'] }
+      specify { expect(key_signature.sharps_or_flats).to eq ['B♭', 'E♭'] }
     end
   end
 
   describe 'equality' do
     context 'given a major key' do
       subject(:key_signature) { KeySignature.new(tonic, scale_type) }
-      let(:tonic) { 'Eb' }
+      let(:tonic) { 'E♭' }
       let(:scale_type) { :major }
 
       it 'is equal to itself' do
-        expect(key_signature).to eq KeySignature.get('Eb major')
+        expect(key_signature).to eq KeySignature.get('E♭ major')
       end
 
       it 'is not equal to other major keys' do
         expect(key_signature).not_to eq KeySignature.get('E major')
-        expect(key_signature).not_to eq KeySignature.get('Bb major')
+        expect(key_signature).not_to eq KeySignature.get('B♭ major')
       end
 
       it 'is equal to the relative minor' do
@@ -131,11 +131,11 @@ describe KeySignature do
       let(:scale_type) { :major_pentatonic }
 
       specify { expect(key_signature.num_sharps).to eq 2 }
-      specify { expect(key_signature.sharps_or_flats).to eq %w{F# C#} }
+      specify { expect(key_signature.sharps_or_flats).to eq %w{F♯ C♯} }
     end
   end
 
-  describe '#spellings' do
-    specify { expect(KeySignature.get('D major').spellings).to eq %w[D E F# G A B C#] }
+  describe '♯spellings' do
+    specify { expect(KeySignature.get('D major').spellings).to eq %w[D E F♯ G A B C♯] }
   end
 end

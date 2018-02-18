@@ -5,9 +5,9 @@ class HeadMusic::Pitch
   attr_reader :octave
 
   delegate :letter_name, :letter_name_cycle, to: :spelling
-  delegate :accidental, :sharp?, :flat?, to: :spelling
+  delegate :sign, :sharp?, :flat?, to: :spelling
   delegate :pitch_class, to: :spelling
-  delegate :semitones, to: :accidental, prefix: true, allow_nil: true
+  delegate :semitones, to: :sign, prefix: true, allow_nil: true
 
   delegate :smallest_interval_to, to: :pitch_class
 
@@ -32,17 +32,17 @@ class HeadMusic::Pitch
     natural_letter_pitch = get(HeadMusic::LetterName.get(letter_name).pitch_class)
     natural_letter_pitch += 12 while (number - natural_letter_pitch.to_i).to_i >= 11
     natural_letter_pitch = get(natural_letter_pitch)
-    accidental_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::PitchClass.get(number))
-    accidental = HeadMusic::Accidental.for_interval(accidental_interval)
-    spelling = HeadMusic::Spelling.fetch_or_create(letter_name, accidental)
+    sign_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::PitchClass.get(number))
+    sign = HeadMusic::Sign.by(:semitones, sign_interval) if sign_interval != 0
+    spelling = HeadMusic::Spelling.fetch_or_create(letter_name, sign)
     fetch_or_create(spelling, natural_letter_pitch.octave)
   end
 
   def self.fetch_or_create(spelling, octave)
     @pitches ||= {}
     if spelling && (-1..9).include?(octave)
-      key = [spelling, octave].join
-      @pitches[key] ||= new(spelling, octave)
+      hash_key = [spelling, octave].join
+      @pitches[hash_key] ||= new(spelling, octave)
     end
   end
 
@@ -56,7 +56,7 @@ class HeadMusic::Pitch
   end
 
   def midi_note_number
-    (octave + 1) * 12 + letter_name.pitch_class.to_i + accidental_semitones.to_i
+    (octave + 1) * 12 + letter_name.pitch_class.to_i + sign_semitones.to_i
   end
 
   alias_method :midi, :midi_note_number
@@ -93,7 +93,8 @@ class HeadMusic::Pitch
   end
 
   def ==(value)
-    to_s == value.to_s
+    other = HeadMusic::Pitch.get(value)
+    to_s == other.to_s
   end
 
   def <=>(other)

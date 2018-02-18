@@ -41,12 +41,22 @@ describe HeadMusic::Sign do
     specify { expect(HeadMusic::Sign.get('bb')).to eq 'bb' }
   end
 
-  describe '.for_cents' do
+  describe '.by' do
     specify { expect(HeadMusic::Sign.by(:cents, 100)).to eq '#' }
     specify { expect(HeadMusic::Sign.by(:semitones, 1)).to eq '#' }
     specify { expect(HeadMusic::Sign.by(:cents, -100)).to eq 'b' }
     specify { expect(HeadMusic::Sign.by(:semitones, -1)).to eq :flat }
     specify { expect(HeadMusic::Sign.by(:cents, 0)).to eq :natural }
     specify { expect(HeadMusic::Sign.by(:semitones, 0)).to eq '♮' }
+  end
+
+  describe '.matcher' do
+    specify { expect(HeadMusic::Sign.matcher).to match '#' }
+    specify { expect(HeadMusic::Sign.matcher).not_to match 'h' }
+  end
+
+  describe '.symbol?' do
+    specify { expect(HeadMusic::Sign.symbol?('#')).to be_truthy }
+    specify { expect(HeadMusic::Sign.symbol?('j')).to be_falsey }
   end
 end

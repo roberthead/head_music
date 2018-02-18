@@ -3,8 +3,6 @@ class HeadMusic::Octave
 
   DEFAULT = 4
 
-  MATCHER = /(-?\d+)$/
-
   def self.get(identifier)
     from_number(identifier) || from_name(identifier) || default
   end
@@ -18,7 +16,7 @@ class HeadMusic::Octave
 
   def self.from_name(string)
     if string.to_s.match(HeadMusic::Spelling::MATCHER)
-      _letter, _accidental, octave_string = string.to_s.match(HeadMusic::Spelling::MATCHER).captures
+      _letter, _sign, octave_string = string.to_s.match(HeadMusic::Spelling::MATCHER).captures
       @octaves ||= {}
       @octaves[octave_string.to_i] ||= new(octave_string.to_i) if octave_string
     end

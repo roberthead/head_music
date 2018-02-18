@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Spelling do
   describe '.get' do
     context 'when given an instance' do
-      let(:instance) { described_class.get('A#5') }
+      let(:instance) { described_class.get('A♯5') }
 
       it 'returns that instance' do
         expect(described_class.get(instance)).to be instance
@@ -14,18 +14,18 @@ describe Spelling do
       subject(:spelling) { Spelling.get('C') }
 
       its(:letter_name) { is_expected.to eq 'C' }
-      its(:accidental) { is_expected.to be_nil }
+      its(:sign) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
       it { is_expected.to eq 'C' }
     end
 
-    context "for 'F#'" do
-      subject(:spelling) { Spelling.get('F#') }
+    context "for 'F♯'" do
+      subject(:spelling) { Spelling.get('F♯') }
 
       its(:letter_name) { is_expected.to eq 'F' }
-      its(:accidental) { is_expected.to eq '#' }
+      its(:sign) { is_expected.to eq '♯' }
       its(:pitch_class) { is_expected.to eq 6 }
-      it { is_expected.to eq 'F#' }
+      it { is_expected.to eq 'F♯' }
     end
 
     context "for 'Bb'" do
@@ -42,20 +42,20 @@ describe Spelling do
       it { is_expected.to eq 'Cb' }
     end
 
-    context "for 'B#'" do
-      subject(:spelling) { Spelling.get('B#') }
+    context "for 'B♯'" do
+      subject(:spelling) { Spelling.get('B♯') }
 
       its(:letter_name) { is_expected.to eq 'B' }
-      its(:accidental) { is_expected.to eq '#' }
+      its(:sign) { is_expected.to eq '♯' }
       its(:pitch_class) { is_expected.to eq 0 }
-      it { is_expected.to eq 'B#' }
+      it { is_expected.to eq 'B♯' }
     end
 
     context "for 'bb'" do
       subject(:spelling) { Spelling.get('bb') }
 
       its(:letter_name) { is_expected.to eq 'B' }
-      its(:accidental) { is_expected.to eq 'b' }
+      its(:sign) { is_expected.to eq 'b' }
       its(:pitch_class) { is_expected.to eq 10 }
       it { is_expected.to eq 'Bb' }
     end
@@ -64,51 +64,51 @@ describe Spelling do
       subject(:spelling) { Spelling.get(PitchClass.get(3)) }
 
       its(:pitch_class) { is_expected.to eq 3 }
-      it { is_expected.to eq 'D#' }
+      it { is_expected.to eq 'D♯' }
     end
 
     context "given a pitch class number" do
       subject(:spelling) { Spelling.get(1) }
 
       its(:pitch_class) { is_expected.to eq 1 }
-      it { is_expected.to eq 'C#' }
+      it { is_expected.to eq 'C♯' }
     end
 
-    context "given the pitch class number for F#/Gb" do
+    context "given the pitch class number for F♯/Gb" do
       subject(:spelling) { Spelling.get(6) }
 
       its(:pitch_class) { is_expected.to eq 6 }
-      it { is_expected.to eq 'F#' }
+      it { is_expected.to eq 'F♯' }
     end
   end
 
-  describe '#scale' do
+  describe '♯scale' do
     context 'without an argument' do
       subject(:scale) { Spelling.get('D').scale }
 
-      its(:spellings) { are_expected.to eq %w[D E F# G A B C# D] }
+      its(:spellings) { are_expected.to eq %w[D E F♯ G A B C♯ D] }
     end
 
     context 'passed a scale type' do
       subject(:scale) { Spelling.get('E').scale(:minor) }
 
-      its(:spellings) { are_expected.to eq %w[E F# G A B C D E] }
+      its(:spellings) { are_expected.to eq %w[E F♯ G A B C D E] }
     end
   end
 
-  describe '#letter_name_cycle' do
+  describe '♯letter_name_cycle' do
     subject(:spelling) { Spelling.get('D') }
 
     its(:letter_name_cycle) { is_expected.to eq %w[D E F G A B C] }
   end
 
 
-  describe '#enharmonic?' do
-    specify { expect(Spelling.get('G#')).to be_enharmonic(Spelling.get('Ab')) }
-    specify { expect(Spelling.get('G#')).not_to be_enharmonic(Spelling.get('G')) }
-    specify { expect(Spelling.get('G#')).not_to be_enharmonic(Spelling.get('A')) }
+  describe '♯enharmonic?' do
+    specify { expect(Spelling.get('G♯')).to be_enharmonic(Spelling.get('Ab')) }
+    specify { expect(Spelling.get('G♯')).not_to be_enharmonic(Spelling.get('G')) }
+    specify { expect(Spelling.get('G♯')).not_to be_enharmonic(Spelling.get('A')) }
 
-    specify { expect(Spelling.get('C')).to be_enharmonic(Spelling.get('B#')) }
-    specify { expect(Spelling.get('B#')).to be_enharmonic(Spelling.get('C')) }
+    specify { expect(Spelling.get('C')).to be_enharmonic(Spelling.get('B♯')) }
+    specify { expect(Spelling.get('B♯')).to be_enharmonic(Spelling.get('C')) }
   end
 end

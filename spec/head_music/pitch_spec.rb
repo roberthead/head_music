@@ -53,7 +53,7 @@ describe Pitch do
       subject(:pitch) { Pitch.get('C4') }
 
       its(:letter_name) { is_expected.to eq 'C' }
-      its(:accidental) { is_expected.to be_nil }
+      its(:sign) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
       its(:octave) { is_expected.to eq 4 }
       its(:midi_note_number) { is_expected.to eq 60 }
@@ -78,7 +78,7 @@ describe Pitch do
       subject(:pitch) { Pitch.get('F#-1') }
 
       its(:letter_name) { is_expected.to eq 'F' }
-      its(:accidental) { is_expected.to eq '#' }
+      its(:sign) { is_expected.to eq '#' }
       its(:pitch_class) { is_expected.to eq 6 }
       its(:octave) { is_expected.to eq -1 }
       its(:midi_note_number) { is_expected.to eq 6 }
@@ -89,7 +89,7 @@ describe Pitch do
       subject(:pitch) { Pitch.get('Bb5') }
 
       its(:letter_name) { is_expected.to eq 'B' }
-      its(:accidental) { is_expected.to eq 'b' }
+      its(:sign) { is_expected.to eq 'b' }
       its(:pitch_class) { is_expected.to eq 10 }
       its(:octave) { is_expected.to eq 5 }
       its(:midi_note_number) { is_expected.to eq 82 }
@@ -100,7 +100,7 @@ describe Pitch do
       subject(:pitch) { Pitch.get('Eb7') }
 
       its(:letter_name) { is_expected.to eq 'E' }
-      its(:accidental) { is_expected.to eq 'b' }
+      its(:sign) { is_expected.to eq 'b' }
       its(:pitch_class) { is_expected.to eq 3 }
       its(:octave) { is_expected.to eq 7 }
       its(:midi_note_number) { is_expected.to eq 99 }
@@ -124,13 +124,13 @@ describe Pitch do
     context 'without an argument' do
       subject(:scale) { Pitch.get('D4').scale }
 
-      its(:spellings) { are_expected.to eq %w[D E F# G A B C# D] }
+      its(:spellings) { are_expected.to eq %w[D E F♯ G A B C♯ D] }
     end
 
     context 'passed a scale type' do
       subject(:scale) { Pitch.get('E').scale(:minor) }
 
-      its(:spellings) { are_expected.to eq %w[E F# G A B C D E] }
+      its(:spellings) { are_expected.to eq %w[E F♯ G A B C D E] }
     end
   end
 

@@ -16,21 +16,20 @@ class HeadMusic::ScaleDegree
     scale.letter_name_cycle.index(spelling.letter_name.to_s) + 1
   end
 
-  def accidental
-    spelling.accidental
-    scale_degree_usual_spelling.accidental
-    accidental_semitones = spelling.accidental && spelling.accidental.semitones || 0
-    usual_accidental_semitones = scale_degree_usual_spelling.accidental && scale_degree_usual_spelling.accidental.semitones || 0
-    HeadMusic::Accidental.for_interval(accidental_semitones - usual_accidental_semitones)
+  def sign
+    sign_semitones = spelling.sign && spelling.sign.semitones || 0
+    usual_sign_semitones = scale_degree_usual_spelling.sign && scale_degree_usual_spelling.sign.semitones || 0
+    delta = sign_semitones - usual_sign_semitones
+    HeadMusic::Sign.by(:semitones, delta) if delta != 0
   end
 
   def to_s
-    "#{accidental}#{degree}"
+    "#{sign}#{degree}"
   end
 
   def <=>(other)
     if other.is_a?(HeadMusic::ScaleDegree)
-      [degree, accidental.semitones] <=> [other.degree, other.accidental.semitones]
+      [degree, sign.semitones] <=> [other.degree, other.sign.semitones]
     else
       to_s <=> other.to_s
     end
@@ -39,7 +38,7 @@ class HeadMusic::ScaleDegree
   def name_for_degree
     if scale_type.diatonic?
       NAME_FOR_DIATONIC_DEGREE[degree] ||
-      (scale_type.intervals.last == 1 || accidental == '#' ? 'leading tone' : 'subtonic')
+      (scale_type.intervals.last == 1 || sign == '#' ? 'leading tone' : 'subtonic')
     end
   end
 

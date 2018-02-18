@@ -1,9 +1,9 @@
 class HeadMusic::Spelling
-  MATCHER = /^\s*([A-G])([b#]*)(\-?\d+)?\s*$/i
+  MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(\-?\d+)?\s*$/i
 
   attr_reader :pitch_class
   attr_reader :letter_name
-  attr_reader :accidental
+  attr_reader :sign
 
   delegate :number, to: :pitch_class, prefix: true
   delegate :to_i, to: :pitch_class_number
@@ -11,6 +11,7 @@ class HeadMusic::Spelling
   delegate :enharmonic?, to: :pitch_class
 
   def self.get(identifier)
+    return identifier if identifier.is_a?(HeadMusic::Spelling)
     from_name(identifier) || from_number(identifier)
   end
 
@@ -20,11 +21,11 @@ class HeadMusic::Spelling
 
   def self.from_name(name)
     if match(name)
-      letter_name, accidental_string, _octave = match(name).captures
+      letter_name, sign_string, _octave = match(name).captures
       letter_name = HeadMusic::LetterName.get(letter_name)
       return nil unless letter_name
-      accidental = HeadMusic::Accidental.get(accidental_string)
-      fetch_or_create(letter_name, accidental)
+      sign = HeadMusic::Sign.get(sign_string)
+      fetch_or_create(letter_name, sign)
     end
   end
 
@@ -38,26 +39,26 @@ class HeadMusic::Spelling
   def self.from_number_and_letter(number, letter_name)
     letter_name = HeadMusic::LetterName.get(letter_name)
     natural_letter_pitch_class = letter_name.pitch_class
-    accidental_interval = natural_letter_pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(number))
-    accidental = HeadMusic::Accidental.for_interval(accidental_interval)
-    fetch_or_create(letter_name, accidental)
+    sign_interval = natural_letter_pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(number))
+    sign = HeadMusic::Sign.by(:semitones, sign_interval) if sign_interval != 0
+    fetch_or_create(letter_name, sign)
   end
 
-  def self.fetch_or_create(letter_name, accidental)
+  def self.fetch_or_create(letter_name, sign)
     @spellings ||= {}
-    key = [letter_name, accidental].join
-    @spellings[key] ||= new(letter_name, accidental)
+    hash_key = [letter_name, sign].join
+    @spellings[hash_key] ||= new(letter_name, sign)
   end
 
-  def initialize(letter_name, accidental = nil)
+  def initialize(letter_name, sign = nil)
     @letter_name = HeadMusic::LetterName.get(letter_name.to_s)
-    @accidental = HeadMusic::Accidental.get(accidental.to_s)
-    accidental_semitones = @accidental ? @accidental.semitones : 0
-    @pitch_class = HeadMusic::PitchClass.get(letter_name.pitch_class + accidental_semitones)
+    @sign = HeadMusic::Sign.get(sign)
+    sign_semitones = @sign ? @sign.semitones : 0
+    @pitch_class = HeadMusic::PitchClass.get(letter_name.pitch_class + sign_semitones)
   end
 
   def name
-    [letter_name, accidental].join
+    [letter_name, sign.to_s].join
   end
 
   def to_s
@@ -65,15 +66,16 @@ class HeadMusic::Spelling
   end
 
   def sharp?
-    accidental && accidental == '#'
+    sign && sign == '#'
   end
 
   def flat?
-    accidental && accidental == 'b'
+    sign && sign == 'b'
   end
 
   def ==(value)
-    to_s == value.to_s
+    other = HeadMusic::Spelling.get(value)
+    to_s == other.to_s
   end
 
   def scale(scale_type_name = nil)
