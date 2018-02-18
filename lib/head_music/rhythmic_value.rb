@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::RhythmicValue
   attr_reader :unit, :dots, :tied_value
 

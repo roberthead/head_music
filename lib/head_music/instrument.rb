@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Instrument
   include HeadMusic::NamedRudiment
 
@@ -12,7 +14,7 @@ class HeadMusic::Instrument
       family: :string,
       default_system: [:treble, :bass]
     }
-  }
+  }.freeze
 
   def self.get(name)
     get_by_name(name)

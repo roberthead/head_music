@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Motion
   attr_reader :first_harmonic_interval, :second_harmonic_interval
 

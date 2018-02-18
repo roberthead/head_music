@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# Represents a key signature.
 class HeadMusic::KeySignature
   attr_reader :tonic_spelling
   attr_reader :scale_type

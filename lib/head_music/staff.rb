@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Staff
   DEFAULT_LINE_COUNT = 5
 

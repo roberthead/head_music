@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::MelodicInterval
   attr_reader :voice, :first_note, :second_note
 

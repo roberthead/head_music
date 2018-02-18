@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic
   module NamedRudiment
     attr_reader :name

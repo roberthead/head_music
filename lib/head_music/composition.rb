@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Composition
   attr_reader :name, :key_signature, :meter, :voices
 

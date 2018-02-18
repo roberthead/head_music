@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::HarmonicInterval
   attr_reader :voice1, :voice2, :position
 

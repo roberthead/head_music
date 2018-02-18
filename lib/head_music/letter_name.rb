@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class HeadMusic::LetterName
-  NAMES = %w[C D E F G A B]
+  NAMES = %w[C D E F G A B].freeze
 
   NATURAL_PITCH_CLASS_NUMBERS = {
     'C' => 0,

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Clef
   include HeadMusic::NamedRudiment
 
@@ -17,7 +19,7 @@ class HeadMusic::Clef
     { pitch: 'C4', line: 5, names: ['baritone'] },
 
     { pitch: nil, line: 3, names: ['neutral', 'percussion'] }
-  ]
+  ].freeze
 
   def self.get(name)
     get_by_name(name)

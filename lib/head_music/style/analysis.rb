@@ -18,7 +18,7 @@ module HeadMusic
       end
 
       def fitness
-        return 1.0 if annotations.length == 0
+        return 1.0 if annotations.empty?
         @fitness ||= fitness_scores.inject(:+).to_f / fitness_scores.length
       end
 

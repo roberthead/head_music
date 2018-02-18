@@ -1,3 +1,8 @@
+# frozen_string_literal: true
+
+# Represents the spelling of a pitch, such as C# or Db.
+# Composite of a LetterName and an optional Sign.
+# Does not include the octave. See Pitch for that.
 class HeadMusic::Spelling
   MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(\-?\d+)?\s*$/i
 
@@ -20,13 +25,12 @@ class HeadMusic::Spelling
   end
 
   def self.from_name(name)
-    if match(name)
-      letter_name, sign_string, _octave = match(name).captures
-      letter_name = HeadMusic::LetterName.get(letter_name)
-      return nil unless letter_name
-      sign = HeadMusic::Sign.get(sign_string)
-      fetch_or_create(letter_name, sign)
-    end
+    return nil unless match(name)
+    letter_name, sign_string, _octave = match(name).captures
+    letter_name = HeadMusic::LetterName.get(letter_name)
+    return nil unless letter_name
+    sign = HeadMusic::Sign.get(sign_string)
+    fetch_or_create(letter_name, sign)
   end
 
   def self.from_number(number)

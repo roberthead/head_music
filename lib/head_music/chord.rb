@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Chord
   attr_reader :pitches
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Note is like a placement, except:
 #   - always has a pitch
 #   - doesn't require voice and position

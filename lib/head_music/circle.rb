@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Circle
   def self.of_fifths
     get(7)

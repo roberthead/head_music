@@ -17,7 +17,7 @@ class HeadMusic::Style::Rulesets::FirstSpeciesMelody
     HeadMusic::Style::Annotations::StartOnPerfectConsonance,
     HeadMusic::Style::Annotations::StepOutOfUnison,
     HeadMusic::Style::Annotations::StepUpToFinalNote,
-  ]
+  ].freeze
 
   def self.analyze(voice)
     RULESET.map { |rule| rule.new(voice) }

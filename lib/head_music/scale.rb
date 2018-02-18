@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Scale
   SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
 

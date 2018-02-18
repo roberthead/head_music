@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 class HeadMusic::Meter
   attr_reader :top_number, :bottom_number
 
   NAMED = {
     common_time: '4/4',
     cut_time: '2/2'
-  }
+  }.freeze
 
   def self.get(identifier)
     identifier = identifier.to_s
@@ -43,7 +45,7 @@ class HeadMusic::Meter
   end
 
   def triple?
-    top_number % 3 == 0
+    (top_number % 3).zero?
   end
 
   def quadruple?
@@ -122,10 +124,10 @@ class HeadMusic::Meter
   end
 
   def strong_beat_in_triple?(count, tick = 0)
-    beat?(tick) && counts_per_bar % 3 == 0 && counts_per_bar > 6 && count % 3 == 1
+    beat?(tick) && (counts_per_bar % 3).zero? && counts_per_bar > 6 && count % 3 == 1
   end
 
   def beat?(tick)
-    tick == 0
+    tick.zero?
   end
 end

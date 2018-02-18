@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::Language
   include Comparable
   include HeadMusic::NamedRudiment
@@ -10,7 +12,7 @@ class HeadMusic::Language
     { name: 'Italian', native_name: 'Italiano', abbreviation: 'it' },
     { name: 'Spanish', native_name: 'Español', abbreviation: 'es' },
     { name: 'Russian', native_name: 'русский', abbreviation: 'ru' },
-  ]
+  ].freeze
 
   LANGUAGES.map { |language| ::HeadMusic::Utilities::HashKey.for(language[:name]) }.each do |language_key|
     define_singleton_method(language_key) { HeadMusic::Language.get(language_key) }

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Representation of a bar in a composition
 # Encapsulates meter and key signature changes
 class HeadMusic::Bar

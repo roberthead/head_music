@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class HeadMusic::Consonance
-  LEVELS = %w[perfect imperfect dissonant]
+  LEVELS = %w[perfect imperfect dissonant].freeze
 
   def self.get(name)
     @consonances ||= {}

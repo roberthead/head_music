@@ -20,7 +20,7 @@ class HeadMusic::Style::Rulesets::ModernCantusFirmus
     HeadMusic::Style::Annotations::StartOnTonic,
     HeadMusic::Style::Annotations::StepToFinalNote,
     HeadMusic::Style::Annotations::UpToFourteenNotes,
-  ]
+  ].freeze
 
   def self.analyze(voice)
     RULESET.map { |rule| rule.new(voice) }

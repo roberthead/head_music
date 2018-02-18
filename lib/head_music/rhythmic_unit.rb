@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 class HeadMusic::RhythmicUnit
   include HeadMusic::NamedRudiment
 
-  MULTIPLES = ['whole', 'double whole', 'longa', 'maxima']
-  FRACTIONS = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second', 'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth']
+  MULTIPLES = ['whole', 'double whole', 'longa', 'maxima'].freeze
+  FRACTIONS = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second', 'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth'].freeze
 
   BRITISH_MULTIPLE_NAMES = %w[semibreve breve longa maxima]
   BRITISH_DIVISION_NAMES = %w[semibreve minim crotchet quaver semiquaver demisemiquaver hemidemisemiquaver semihemidemisemiquaver demisemihemidemisemiquaver]

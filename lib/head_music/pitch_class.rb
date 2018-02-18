@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::PitchClass
   attr_reader :number
 

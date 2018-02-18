@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class HeadMusic::FunctionalInterval
   include Comparable
 
@@ -96,7 +98,7 @@ class HeadMusic::FunctionalInterval
   end
 
   def simple?
-    octaves == 0
+    octaves.zero?
   end
 
   def simple_name
@@ -125,7 +127,7 @@ class HeadMusic::FunctionalInterval
   def quality_name
     starting_quality = QUALITY_SEMITONES[simple_number_name.to_sym].keys.first
     delta = simple_semitones - QUALITY_SEMITONES[simple_number_name.to_sym][starting_quality]
-    HeadMusic::Quality::from(starting_quality, delta)
+    HeadMusic::Quality.from(starting_quality, delta)
   end
 
   def simple_number_name
@@ -133,16 +135,12 @@ class HeadMusic::FunctionalInterval
   end
 
   def number_name
-    NUMBER_NAMES[number - 1] || begin
-      number.to_s + NAME_SUFFIXES[number % 10]
-    end
+    NUMBER_NAMES[number - 1] || (number.to_s + NAME_SUFFIXES[number % 10])
   end
 
   def inversion
     inverted_low_pitch = lower_pitch
-    while inverted_low_pitch < higher_pitch
-      inverted_low_pitch += 12
-    end
+    inverted_low_pitch += 12 while inverted_low_pitch < higher_pitch
     HeadMusic::FunctionalInterval.new(higher_pitch, inverted_low_pitch)
   end
 
@@ -185,10 +183,8 @@ class HeadMusic::FunctionalInterval
   end
 
   def <=>(other)
-    if !other.is_a?(HeadMusic::FunctionalInterval)
-      other = self.class.get(other)
-    end
-    self.semitones <=> other.semitones
+    other = self.class.get(other) unless other.is_a?(HeadMusic::FunctionalInterval)
+    semitones <=> other.semitones
   end
 
   NUMBER_NAMES.each do |interval_name|
@@ -206,7 +202,7 @@ class HeadMusic::FunctionalInterval
   end
 
   def consonance_for_major_and_minor
-    HeadMusic::Consonance.get((third_or_compound? || sixth_or_compound?) ? :imperfect : :dissonant) if (major? || minor?)
+    HeadMusic::Consonance.get(third_or_compound? || sixth_or_compound? ? :imperfect : :dissonant) if major? || minor?
   end
 
   def dissonant_fourth?(style = :standard_practice)

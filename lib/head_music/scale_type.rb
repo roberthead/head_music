@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 class HeadMusic::ScaleType
   H = 1 # whole step
   W = 2 # half step
   WH = W + H # augmented second
 
   # Modal
-  I = [W, W, H, W, W, W, H]
+  I = [W, W, H, W, W, W, H].freeze
   II = I.rotate
   III = I.rotate(2)
   IV = I.rotate(3)
@@ -13,8 +15,8 @@ class HeadMusic::ScaleType
   VII = I.rotate(6)
 
   # Tonal
-  HARMONIC_MINOR = [W, H, W, W, H, WH, H]
-  MELODIC_MINOR_ASCENDING = [W, H, W, W, W, W, H]
+  HARMONIC_MINOR = [W, H, W, W, H, WH, H].freeze
+  MELODIC_MINOR_ASCENDING = [W, H, W, W, W, W, H].freeze
 
   MODE_NAMES = {
     i: [:ionian, :major],
@@ -24,7 +26,7 @@ class HeadMusic::ScaleType
     v: [:mixolydian],
     vi: [:aeolian, :minor, :natural_minor],
     vii: [:locrian],
-  }
+  }.freeze
   SCALE_TYPES = {}
   MODE_NAMES.each do |roman_numeral, aliases|
     intervals = { ascending: const_get(roman_numeral.upcase) }
@@ -36,10 +38,10 @@ class HeadMusic::ScaleType
   SCALE_TYPES[:harmonic_minor] = { ascending: HARMONIC_MINOR }
   SCALE_TYPES[:melodic_minor] = { ascending: MELODIC_MINOR_ASCENDING, descending: VI.reverse }
 
-  CHROMATIC = [H, H, H, H, H, H, H, H, H, H, H, H]
+  CHROMATIC = [H, H, H, H, H, H, H, H, H, H, H, H].freeze
   SCALE_TYPES[:chromatic] = { ascending: CHROMATIC }
 
-  MINOR_PENTATONIC = [3, 2, 2, 3, 2]
+  MINOR_PENTATONIC = [3, 2, 2, 3, 2].freeze
   SCALE_TYPES[:minor_pentatonic] = { ascending: MINOR_PENTATONIC, parent_name: :minor }
   SCALE_TYPES[:major_pentatonic] = { ascending: MINOR_PENTATONIC.rotate, parent_name: :major }
   SCALE_TYPES[:egyptian_pentatonic] = { ascending: MINOR_PENTATONIC.rotate(2), parent_name: :minor }
@@ -49,6 +51,7 @@ class HeadMusic::ScaleType
   # exotic scales
   SCALE_TYPES[:octatonic] = { ascending: [W, H, W, H, W, H, W, H] }
   SCALE_TYPES[:whole_tone] = { ascending: [W, W, W, W, W, W] }
+  SCALE_TYPES.freeze
 
   class << self
     SCALE_TYPES.keys.each do |name|

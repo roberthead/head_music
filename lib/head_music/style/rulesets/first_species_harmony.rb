@@ -11,7 +11,7 @@ class HeadMusic::Style::Rulesets::FirstSpeciesHarmony
     HeadMusic::Style::Annotations::OneToOne,
     HeadMusic::Style::Annotations::PreferContraryMotion,
     HeadMusic::Style::Annotations::PreferImperfect,
-  ]
+  ].freeze
 
   def self.analyze(voice)
     RULESET.map { |rule| rule.new(voice) }
