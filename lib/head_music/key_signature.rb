@@ -55,7 +55,7 @@ class HeadMusic::KeySignature
   end
 
   def name
-    [tonic_spelling.to_s, scale_type.to_s].join(' ')
+    [tonic_spelling, scale_type].join(' ')
   end
 
   def ==(other)

@@ -58,7 +58,7 @@ class HeadMusic::Spelling
   end
 
   def name
-    [letter_name, sign.to_s].join
+    [letter_name, sign].join
   end
 
   def to_s

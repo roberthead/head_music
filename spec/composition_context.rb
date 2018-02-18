@@ -65,13 +65,13 @@ class CompositionContext
 
   def cantus_firmus_string
     if cantus_firmus_pitches && cantus_firmus_pitches.length > 0
-      cantus_firmus_pitches.map(&:to_s).join(' ') + ' (CF)'
+      cantus_firmus_pitches.join(' ') + ' (CF)'
     end
   end
 
   def counterpoint_string
     if counterpoint_pitches && counterpoint_pitches.length > 0
-      counterpoint_pitches.map(&:to_s).join(' ') + ' (CPT)'
+      counterpoint_pitches.join(' ') + ' (CPT)'
     end
   end
 end
