@@ -54,7 +54,7 @@ class CompositionContext
 
   def pitches_description
     @pitches_description ||=
-      [counterpoint_string, cantus_firmus_string].map(&:to_s).select { |s| s.length > 0 }.join(' against ')
+      [counterpoint_string, cantus_firmus_string].map(&:to_s).select { |s| !s.empty? }.join(' against ')
   end
 
   def method_missing(method_name, *args, &block)
@@ -64,13 +64,13 @@ class CompositionContext
   private
 
   def cantus_firmus_string
-    if cantus_firmus_pitches && cantus_firmus_pitches.length > 0
+    if cantus_firmus_pitches && !cantus_firmus_pitches.empty?
       cantus_firmus_pitches.join(' ') + ' (CF)'
     end
   end
 
   def counterpoint_string
-    if counterpoint_pitches && counterpoint_pitches.length > 0
+    if counterpoint_pitches && !counterpoint_pitches.empty?
       counterpoint_pitches.join(' ') + ' (CPT)'
     end
   end

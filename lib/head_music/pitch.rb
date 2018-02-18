@@ -92,8 +92,8 @@ class HeadMusic::Pitch
     end
   end
 
-  def ==(value)
-    other = HeadMusic::Pitch.get(value)
+  def ==(other)
+    other = HeadMusic::Pitch.get(other)
     to_s == other.to_s
   end
 

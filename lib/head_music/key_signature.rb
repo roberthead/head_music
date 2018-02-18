@@ -3,8 +3,8 @@ class HeadMusic::KeySignature
   attr_reader :scale_type
   attr_reader :scale
 
-  SHARPS = %w{F♯ C♯ G♯ D♯ A♯ E♯ B♯}
-  FLATS = %w{B♭ E♭ A♭ D♭ G♭ C♭ F♭}
+  SHARPS = %w[F♯ C♯ G♯ D♯ A♯ E♯ B♯].freeze
+  FLATS = %w[B♭ E♭ A♭ D♭ G♭ C♭ F♭].freeze
 
   def self.default
     @default ||= new('C', :major)
@@ -51,7 +51,7 @@ class HeadMusic::KeySignature
   end
 
   def sharps_or_flats
-    flats.length > 0 ? flats : sharps
+    !flats.empty? ? flats : sharps
   end
 
   def name
@@ -59,6 +59,6 @@ class HeadMusic::KeySignature
   end
 
   def ==(other)
-    self.sharps_or_flats == self.class.get(other).sharps_or_flats
+    sharps_or_flats == self.class.get(other).sharps_or_flats
   end
 end

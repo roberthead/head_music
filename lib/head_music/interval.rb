@@ -3,7 +3,7 @@ class HeadMusic::Interval
 
   private_class_method :new
 
-  NAMES = %w{perfect_unison minor_second major_second minor_third major_third perfect_fourth tritone perfect_fifth minor_sixth major_sixth minor_seventh major_seventh perfect_octave}
+  NAMES = %w[perfect_unison minor_second major_second minor_third major_third perfect_fourth tritone perfect_fifth minor_sixth major_sixth minor_seventh major_seventh perfect_octave]
 
   attr_reader :semitones
 

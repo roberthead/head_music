@@ -73,8 +73,8 @@ class HeadMusic::Spelling
     sign && sign == 'b'
   end
 
-  def ==(value)
-    other = HeadMusic::Spelling.get(value)
+  def ==(other)
+    other = HeadMusic::Spelling.get(other)
     to_s == other.to_s
   end
 

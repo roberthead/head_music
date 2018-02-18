@@ -15,7 +15,7 @@ class HeadMusic::Style::Annotations::SingableRange < HeadMusic::Style::Annotatio
   private
 
   def overage
-    notes.length > 0 ? [range.number - MAXIMUM_RANGE, 0].max : 0
+    !notes.empty? ? [range.number - MAXIMUM_RANGE, 0].max : 0
   end
 
   def extremes

@@ -48,8 +48,8 @@ class HeadMusic::LetterName
     HeadMusic::PitchClass.get(NATURAL_PITCH_CLASS_NUMBERS[name])
   end
 
-  def ==(value)
-    to_s == value.to_s
+  def ==(other)
+    to_s == other.to_s
   end
 
   def position
