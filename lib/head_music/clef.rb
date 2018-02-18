@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A clef assigns pitches to the lines and spaces of a staff.
 class HeadMusic::Clef
   include HeadMusic::NamedRudiment
 
@@ -18,7 +19,7 @@ class HeadMusic::Clef
     { pitch: 'C4', line: 4, names: ['tenor'], modern: true },
     { pitch: 'C4', line: 5, names: ['baritone'] },
 
-    { pitch: nil, line: 3, names: ['neutral', 'percussion'] }
+    { pitch: nil, line: 3, names: %w[neutral percussion] }
   ].freeze
 
   def self.get(name)

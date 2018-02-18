@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A Chord is a collection of three or more pitches
 class HeadMusic::Chord
   attr_reader :pitches
 
@@ -9,12 +10,27 @@ class HeadMusic::Chord
   end
 
   def consonant_triad?
-    pitches.length == 3 &&
-    (
-      intervals.map(&:shorthand).sort == %w[M3 m3] ||
-      invert.intervals.map(&:shorthand).sort == %w[M3 m3] ||
-      invert.invert.intervals.map(&:shorthand).sort == %w[M3 m3]
-    )
+    return false unless three_pitches?
+    root_triad? || first_inversion_triad? || second_inversion_triad?
+  end
+
+  def root_triad?
+    intervals.map(&:shorthand).sort == %w[M3 m3]
+  end
+
+  def first_inversion_triad?
+    invert.invert.intervals.map(&:shorthand).sort == %w[M3 m3]
+  end
+
+  def second_inversion_triad?
+    invert.intervals.map(&:shorthand).sort == %w[M3 m3]
+  end
+
+  # TODO
+  def reduction; end
+
+  def three_pitches?
+    pitches.length == 3
   end
 
   def intervals

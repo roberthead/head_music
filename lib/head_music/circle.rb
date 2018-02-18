@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# A Circle of Fifths or Fourths shows relationships between pitch classes
+# TODO: Replace or empower with IntervalCycle (?)
+# https://en.wikipedia.org/wiki/Interval_cycle
 class HeadMusic::Circle
   def self.of_fifths
     get(7)

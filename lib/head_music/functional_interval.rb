@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
+# Represents a functional interval.
 class HeadMusic::FunctionalInterval
   include Comparable
 
-  NUMBER_NAMES = %w[unison second third fourth fifth sixth seventh octave ninth tenth eleventh twelfth thirteenth fourteenth fifteenth sixteenth seventeenth]
-  NAME_SUFFIXES = Hash.new('th').merge({ 1 => 'st', 2 => 'nd', 3 => 'rd' })
+  NUMBER_NAMES = %w[
+    unison second third fourth fifth sixth seventh octave
+    ninth tenth eleventh twelfth thirteenth fourteenth fifteenth
+    sixteenth seventeenth
+  ].freeze
+  NAME_SUFFIXES = Hash.new('th').merge(1 => 'st', 2 => 'nd', 3 => 'rd').freeze
 
   QUALITY_SEMITONES = {
     unison: { perfect: 0 },
@@ -24,7 +29,7 @@ class HeadMusic::FunctionalInterval
     fifteenth: { perfect: 24 },
     sixteenth: { major: 26 },
     seventeenth: { major: 28 }
-  }
+  }.freeze
 
   attr_reader :lower_pitch, :higher_pitch
 
@@ -33,7 +38,8 @@ class HeadMusic::FunctionalInterval
 
   def self.get(name)
     words = name.to_s.split(/[_ ]+/)
-    quality_name, degree_name = words[0..-2].join(' '), words.last
+    quality_name = words[0..-2].join(' ')
+    degree_name = words.last
     lower_pitch = HeadMusic::Pitch.get('C4')
     steps = NUMBER_NAMES.index(degree_name)
     higher_letter = lower_pitch.letter_name.steps(steps)
@@ -47,11 +53,12 @@ class HeadMusic::FunctionalInterval
       degree_quality_semitones = QUALITY_SEMITONES
       QUALITY_SEMITONES.each do |degree_name, qualities|
         default_quality = qualities.keys.first
-        if default_quality == :perfect
-          modification_hash = HeadMusic::Quality::PERFECT_INTERVAL_MODIFICATION.invert
-        else
-          modification_hash = HeadMusic::Quality::MAJOR_INTERVAL_MODIFICATION.invert
-        end
+        modification_hash =
+          if default_quality == :perfect
+            HeadMusic::Quality::PERFECT_INTERVAL_MODIFICATION.invert
+          else
+            HeadMusic::Quality::MAJOR_INTERVAL_MODIFICATION.invert
+          end
         default_semitones = qualities[default_quality]
         modification_hash.each do |quality_name, delta|
           if quality_name != default_quality

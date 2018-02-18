@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A composition is a portion of music.
 class HeadMusic::Composition
   attr_reader :name, :key_signature, :meter, :voices
 

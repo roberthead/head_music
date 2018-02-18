@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Consonance is a description of intervals that sound more pleasing.
 class HeadMusic::Consonance
   LEVELS = %w[perfect imperfect dissonant].freeze
 
@@ -17,7 +18,7 @@ class HeadMusic::Consonance
   end
 
   def ==(other)
-    self.to_s == other.to_s
+    to_s == other.to_s
   end
 
   LEVELS.each do |method_name|

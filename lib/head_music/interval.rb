@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# An interval is the distance between two pitches.
 class HeadMusic::Interval
   include Comparable
 
