@@ -53,7 +53,7 @@ class HeadMusic::KeySignature
     flats.length
   end
 
-  def sharps_or_flats
+  def signs
     !flats.empty? ? flats : sharps
   end
 
@@ -62,6 +62,6 @@ class HeadMusic::KeySignature
   end
 
   def ==(other)
-    sharps_or_flats == self.class.get(other).sharps_or_flats
+    signs == self.class.get(other).signs
   end
 end

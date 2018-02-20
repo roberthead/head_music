@@ -6,7 +6,10 @@ class HeadMusic::Interval
 
   private_class_method :new
 
-  NAMES = %w[perfect_unison minor_second major_second minor_third major_third perfect_fourth tritone perfect_fifth minor_sixth major_sixth minor_seventh major_seventh perfect_octave].freeze
+  NAMES = %w[
+    perfect_unison minor_second major_second minor_third major_third perfect_fourth tritone perfect_fifth
+    minor_sixth major_sixth minor_seventh major_seventh perfect_octave
+  ].freeze
 
   attr_reader :semitones
 
@@ -26,7 +29,7 @@ class HeadMusic::Interval
   end
 
   def simple?
-    (0..12).include?(semitones)
+    (0..12).cover?(semitones)
   end
 
   def compound?
@@ -37,15 +40,15 @@ class HeadMusic::Interval
     semitones
   end
 
-  def +(value)
-    HeadMusic::Interval.get(to_i + value.to_i)
+  def +(other)
+    HeadMusic::Interval.get(to_i + other.to_i)
   end
 
-  def -(value)
-    HeadMusic::Interval.get((to_i - value.to_i).abs)
+  def -(other)
+    HeadMusic::Interval.get((to_i - other.to_i).abs)
   end
 
   def <=>(other)
-    self.to_i <=> other.to_i
+    to_i <=> other.to_i
   end
 end

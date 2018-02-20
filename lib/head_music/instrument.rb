@@ -1,18 +1,19 @@
 # frozen_string_literal: true
 
+# An instrument can be assigned to a staff.
 class HeadMusic::Instrument
   include HeadMusic::NamedRudiment
 
   INSTRUMENTS = {
     violin: {
-      name: "violin",
+      name: 'violin',
       family: :string,
       default_clef: :treble
     },
     piano: {
-      name: "piano",
+      name: 'piano',
       family: :string,
-      default_system: [:treble, :bass]
+      default_system: %i[treble bass]
     }
   }.freeze
 
