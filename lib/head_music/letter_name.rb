@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Music has seven lette names that are used to identify pitches and pitch classes.
 class HeadMusic::LetterName
   NAMES = %w[C D E F G A B].freeze
 
@@ -11,10 +12,10 @@ class HeadMusic::LetterName
     'G' => 7,
     'A' => 9,
     'B' => 11,
-  }
+  }.freeze
 
   def self.all
-    NAMES.map { |letter_name| get(letter_name)}
+    NAMES.map { |letter_name| get(letter_name) }
   end
 
   def self.get(identifier)
@@ -55,7 +56,7 @@ class HeadMusic::LetterName
   end
 
   def position
-    NAMES.index(self.to_s) + 1
+    NAMES.index(to_s) + 1
   end
 
   def steps(num)
@@ -76,9 +77,7 @@ class HeadMusic::LetterName
 
   def cycle
     cycle = NAMES
-    while cycle.first != self.to_s
-      cycle = cycle.rotate
-    end
+    cycle = cycle.rotate while cycle.first != to_s
     cycle
   end
 

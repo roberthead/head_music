@@ -4,9 +4,8 @@ describe MelodicInterval do
   let(:voice) { Voice.new }
   let(:note1) { Note.new('D4', :quarter, voice, '2:1') }
   let(:note2) { Note.new('G4', :quarter, voice, '2:3') }
-  subject(:melodic_interval) { described_class.new(voice, note1, note2) }
+  subject(:melodic_interval) { described_class.new(note1, note2) }
 
-  its(:voice) { is_expected.to eq voice }
   its(:first_note) { is_expected.to eq note1 }
   its(:second_note) { is_expected.to eq note2 }
 

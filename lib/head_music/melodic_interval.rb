@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
+# A melodic interval is the distance between one note and the next.
 class HeadMusic::MelodicInterval
-  attr_reader :voice, :first_note, :second_note
+  attr_reader :first_note, :second_note
 
-  def initialize(voice, note1, note2)
-    @voice = voice
+  def initialize(note1, note2)
     @first_note = note1
     @second_note = note2
   end
@@ -88,6 +88,10 @@ class HeadMusic::MelodicInterval
   end
 
   def method_missing(method_name, *args, &block)
-    functional_interval.send(method_name, *args, &block)
+    respond_to_missing?(method_name) ? functional_interval.send(method_name, *args, &block) : super
+  end
+
+  def respond_to_missing?(method_name, *_args)
+    functional_interval.respond_to?(method_name)
   end
 end

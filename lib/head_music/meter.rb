@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
+# Meter is the rhythmic size of a measure, such as 4/4 or 6/8
 class HeadMusic::Meter
   attr_reader :top_number, :bottom_number
 
   NAMED = {
     common_time: '4/4',
-    cut_time: '2/2'
+    cut_time: '2/2',
   }.freeze
 
   def self.get(identifier)
@@ -29,7 +30,8 @@ class HeadMusic::Meter
   end
 
   def initialize(top_number, bottom_number)
-    @top_number, @bottom_number = top_number, bottom_number
+    @top_number = top_number
+    @bottom_number = bottom_number
   end
 
   def simple?
@@ -79,8 +81,7 @@ class HeadMusic::Meter
   def beat_unit
     @beat_unit ||=
       if compound?
-        unit = HeadMusic::RhythmicUnit.for_denominator_value(bottom_number / 2)
-        HeadMusic::RhythmicValue.new(unit, dots: 1)
+        HeadMusic::RhythmicValue.new(HeadMusic::RhythmicUnit.for_denominator_value(bottom_number / 2), dots: 1)
       else
         HeadMusic::RhythmicValue.new(count_unit)
       end
@@ -103,10 +104,7 @@ class HeadMusic::Meter
   end
 
   def strong_ticks
-    @strong_ticks ||=
-      [2,3,4].map do |sixths|
-        ticks_per_count * (sixths / 6.0)
-      end
+    @strong_ticks ||= [2, 3, 4].map { |sixths| ticks_per_count * (sixths / 6.0) }
   end
 
   private

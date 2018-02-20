@@ -6,3 +6,9 @@ Style/SymbolArray:
 
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
+
+Style/TrailingCommaInLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+Layout/DotPosition:
+  EnforcedStyle: trailing

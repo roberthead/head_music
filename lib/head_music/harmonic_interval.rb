@@ -56,6 +56,10 @@ class HeadMusic::HarmonicInterval
   end
 
   def method_missing(method_name, *args, &block)
-    functional_interval.send(method_name, *args, &block)
+    respond_to_missing?(method_name) ? functional_interval.send(method_name, *args, &block) : super
+  end
+
+  def respond_to_missing?(method_name, *_args)
+    functional_interval.respond_to?(method_name)
   end
 end
