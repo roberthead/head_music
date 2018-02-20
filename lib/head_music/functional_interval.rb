@@ -36,37 +36,62 @@ class HeadMusic::FunctionalInterval
   delegate :to_s, to: :name
   delegate :perfect?, :major?, :minor?, :diminished?, :augmented?, :doubly_diminished?, :doubly_augmented?, to: :quality
 
-  def self.get(name)
-    words = name.to_s.split(/[_ ]+/)
-    quality_name = words[0..-2].join(' ')
-    degree_name = words.last
+  # Representation of the name of the functional interval
+  class Name
+    attr_reader :identifier
+
+    def initialize(identifier)
+      @identifier = identifier
+    end
+
+    def words
+      identifier.to_s.split(/[_ ]+/)
+    end
+
+    def quality_name
+      words[0..-2].join(' ').to_sym
+    end
+
+    def degree_name
+      words.last
+    end
+  end
+
+  def self.get(identifier)
+    name = Name.new(identifier)
     lower_pitch = HeadMusic::Pitch.get('C4')
-    steps = NUMBER_NAMES.index(degree_name)
+    steps = NUMBER_NAMES.index(name.degree_name)
     higher_letter = lower_pitch.letter_name.steps(steps)
-    semitones = degree_quality_semitones.dig(degree_name.to_sym, quality_name.to_sym)
+    semitones = _degree_quality_semitones.dig(name.degree_name.to_sym, name.quality_name)
     higher_pitch = HeadMusic::Pitch.from_number_and_letter(lower_pitch + semitones, higher_letter)
     new(lower_pitch, higher_pitch)
   end
 
-  def self.degree_quality_semitones
-    @degree_quality_semitones ||= begin
-      degree_quality_semitones = QUALITY_SEMITONES
-      QUALITY_SEMITONES.each do |degree_name, qualities|
-        default_quality = qualities.keys.first
-        modification_hash =
-          if default_quality == :perfect
-            HeadMusic::Quality::PERFECT_INTERVAL_MODIFICATION.invert
-          else
-            HeadMusic::Quality::MAJOR_INTERVAL_MODIFICATION.invert
-          end
-        default_semitones = qualities[default_quality]
-        modification_hash.each do |quality_name, delta|
-          if quality_name != default_quality
-            degree_quality_semitones[degree_name][quality_name] = default_semitones + delta
-          end
+  def self._degree_quality_semitones
+    @_degree_quality_semitones ||= begin
+      {}.tap do |degree_quality_semitones|
+        QUALITY_SEMITONES.each do |degree_name, qualities|
+          default_quality = qualities.keys.first
+          default_semitones = qualities[default_quality]
+          degree_quality_semitones[degree_name] = _semitones_for_degree(default_quality, default_semitones)
         end
       end
-      degree_quality_semitones
+    end
+  end
+
+  def self._semitones_for_degree(quality, default_semitones)
+    {}.tap do |semitones|
+      _degree_quality_modifications(quality).each do |current_quality, delta|
+        semitones[current_quality] = default_semitones + delta
+      end
+    end
+  end
+
+  def self._degree_quality_modifications(quality)
+    if quality == :perfect
+      HeadMusic::Quality::PERFECT_INTERVAL_MODIFICATION.invert
+    else
+      HeadMusic::Quality::MAJOR_INTERVAL_MODIFICATION.invert
     end
   end
 
@@ -113,7 +138,7 @@ class HeadMusic::FunctionalInterval
   end
 
   def name
-    if number < NUMBER_NAMES.length
+    if named_number?
       [quality_name, number_name].join(' ')
     elsif simple_name == 'perfect unison'
       "#{octaves.humanize} octaves"
@@ -174,11 +199,11 @@ class HeadMusic::FunctionalInterval
   end
 
   def step?
-    number <= 2
+    number == 2
   end
 
   def skip?
-    number >= 3
+    number == 3
   end
 
   def leap?
@@ -203,6 +228,10 @@ class HeadMusic::FunctionalInterval
   end
 
   private
+
+  def named_number?
+    number < NUMBER_NAMES.length
+  end
 
   def consonance_for_perfect(style = :standard_practice)
     HeadMusic::Consonance.get(dissonant_fourth?(style) ? :dissonant : :perfect) if perfect?

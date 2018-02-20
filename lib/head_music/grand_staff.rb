@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A grand staff is a group of staves for a single instrument, such as a piano.
 class HeadMusic::GrandStaff
   GRAND_STAVES = {
     piano: {
@@ -17,7 +18,7 @@ class HeadMusic::GrandStaff
         { clef: :bass, instrument: :pedals }
       ]
     }
-  }
+  }.freeze
 
   def self.get(name)
     @grand_staves ||= {}
@@ -38,11 +39,8 @@ class HeadMusic::GrandStaff
   end
 
   def staves
-    @staves ||= begin
-      data[:staves].map { |staff|
-        HeadMusic::Staff.new(staff[:clef], instrument: staff[:instrument] || instrument)
-      }
-    end
+    @staves ||=
+      data[:staves].map { |staff| HeadMusic::Staff.new(staff[:clef], instrument: staff[:instrument] || instrument) }
   end
 
   def brace_staves_index_first

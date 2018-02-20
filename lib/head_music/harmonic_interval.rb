@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A harmonic interval is the functional interval between two notes sounding together.
 class HeadMusic::HarmonicInterval
   attr_reader :voice1, :voice2, :position
 
@@ -42,12 +43,11 @@ class HeadMusic::HarmonicInterval
   end
 
   def pitch_orientation
-    if lower_pitch < upper_pitch
-      if lower_note.voice == voice1
-        :up
-      elsif lower_note.voice == voice2
-        :down
-      end
+    return if lower_pitch == upper_pitch
+    if lower_note.voice == voice1
+      :up
+    elsif lower_note.voice == voice2
+      :down
     end
   end
 

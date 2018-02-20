@@ -5,15 +5,15 @@ class HeadMusic::Style::Annotations::StepOutOfUnison < HeadMusic::Style::Annotat
   MESSAGE = "Exit a unison by step."
 
   def marks
-    skips_following_unisons.map do |skip|
+    leaps_following_unisons.map do |skip|
       HeadMusic::Style::Mark.for_all(skip.notes)
     end.flatten
   end
 
   private
 
-  def skips_following_unisons
-    melodic_intervals_following_unisons.select(&:skip?)
+  def leaps_following_unisons
+    melodic_intervals_following_unisons.select(&:leap?)
   end
 
   def melodic_intervals_following_unisons

@@ -18,6 +18,32 @@ describe FunctionalInterval do
   end
 
   describe 'predicate methods' do
+    context 'given a perfect unison' do
+      let(:unison) { FunctionalInterval.get(:perfect_unison) }
+
+      specify { expect(unison).to be_perfect }
+      specify { expect(unison).not_to be_major }
+      specify { expect(unison).not_to be_minor }
+      specify { expect(unison).not_to be_diminished }
+      specify { expect(unison).not_to be_doubly_diminished }
+      specify { expect(unison).not_to be_augmented }
+      specify { expect(unison).not_to be_doubly_augmented }
+
+      specify { expect(unison).to be_unison }
+      specify { expect(unison).not_to be_second }
+      specify { expect(unison).not_to be_third }
+      specify { expect(unison).not_to be_fourth }
+      specify { expect(unison).not_to be_fifth }
+      specify { expect(unison).not_to be_sixth }
+      specify { expect(unison).not_to be_seventh }
+      specify { expect(unison).not_to be_octave }
+
+      specify { expect(unison).not_to be_step }
+      specify { expect(unison).not_to be_skip }
+      specify { expect(unison).not_to be_leap }
+      specify { expect(unison).not_to be_large_leap }
+    end
+
     context 'given a major third' do
       let(:maj3) { FunctionalInterval.get(:major_third) }
 
@@ -67,7 +93,7 @@ describe FunctionalInterval do
     it { is_expected.not_to be_compound }
 
     it { is_expected.not_to be_step }
-    it { is_expected.to be_skip }
+    it { is_expected.not_to be_skip }
     it { is_expected.to be_leap }
     it { is_expected.to be_large_leap }
 
