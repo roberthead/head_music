@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Language do
@@ -25,6 +27,6 @@ describe Language do
   context '.french' do
     subject(:language) { Language.french }
 
-    its(:native_name) { is_expected.to eq 'Français'}
+    its(:native_name) { is_expected.to eq 'Français' }
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
@@ -15,8 +17,8 @@ class HeadMusic::Style::Annotations::NotesSameLength < HeadMusic::Style::Annotat
   end
 
   def wrong_length_notes
-    all_but_last_note.select.with_index do |note|
-      note.rhythmic_value != first_most_common_rhythmic_value
+    all_but_last_note.reject do |note|
+      note.rhythmic_value == first_most_common_rhythmic_value
     end
   end
 
@@ -28,7 +30,7 @@ class HeadMusic::Style::Annotations::NotesSameLength < HeadMusic::Style::Annotat
     last_note.nil? ||
       [
         first_most_common_rhythmic_value.total_value,
-        first_most_common_rhythmic_value.total_value * 2
+        first_most_common_rhythmic_value.total_value * 2,
       ].include?(last_note.rhythmic_value.total_value)
   end
 
@@ -56,7 +58,7 @@ class HeadMusic::Style::Annotations::NotesSameLength < HeadMusic::Style::Annotat
   end
 
   def occurrences_by_rhythmic_value
-    rhythmic_values.inject(Hash.new(0)) { |hash, value| hash[value] += 1; hash }
+    rhythmic_values.each_with_object(Hash.new(0)) { |value, hash| hash[value] += 1; }
   end
 
   def rhythmic_values

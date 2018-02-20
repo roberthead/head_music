@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe MelodicInterval do
@@ -9,7 +11,7 @@ describe MelodicInterval do
   its(:first_note) { is_expected.to eq note1 }
   its(:second_note) { is_expected.to eq note2 }
 
-  its(:functional_interval) { is_expected.to eq "perfect fourth" }
+  its(:functional_interval) { is_expected.to eq 'perfect fourth' }
   its(:position_start) { is_expected.to eq '2:1' }
   its(:position_end) { is_expected.to eq '2:4' }
   its(:notes) { are_expected.to eq [note1, note2] }

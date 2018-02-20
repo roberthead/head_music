@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::PrepareOctaveLeaps do
@@ -37,7 +39,7 @@ describe HeadMusic::Style::Annotations::PrepareOctaveLeaps do
     end
 
     it { is_expected.not_to be_adherent }
-    its(:first_mark_code) { is_expected.to eq "5:1:000 to 7:1:000" }
+    its(:first_mark_code) { is_expected.to eq '5:1:000 to 7:1:000' }
   end
 
   context 'with a properly prepared octave leap in the middle' do
@@ -58,7 +60,7 @@ describe HeadMusic::Style::Annotations::PrepareOctaveLeaps do
     end
 
     it { is_expected.not_to be_adherent }
-    its(:first_mark_code) { is_expected.to eq "2:1:000 to 5:1:000" }
+    its(:first_mark_code) { is_expected.to eq '2:1:000 to 5:1:000' }
   end
 
   context 'with an octave leap in the middle exited outside' do
@@ -69,6 +71,6 @@ describe HeadMusic::Style::Annotations::PrepareOctaveLeaps do
     end
 
     it { is_expected.not_to be_adherent }
-    its(:first_mark_code) { is_expected.to eq "3:1:000 to 6:1:000" }
+    its(:first_mark_code) { is_expected.to eq '3:1:000 to 6:1:000' }
   end
 end

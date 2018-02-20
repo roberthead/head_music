@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 def fux_first_species_harmony_examples
@@ -48,7 +50,7 @@ def fux_first_species_harmony_examples
     {
       source: 'fux chapter one figure 14',
       key: 'F ionian',
-      cantus_firmus_pitches: %w[F3 G3 A3 F3 D3  E3 F3 C4 A3 F3 G3 F3],
+      cantus_firmus_pitches: %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3],
       counterpoint_pitches:  %w[F3 E3 F3 A3 Bb3 G3 A3 E3 F3 D3 E3 F3],
       expected_message: 'Avoid crossing voices. Maintain the high-low relationship between voices.',
     },
@@ -56,18 +58,18 @@ def fux_first_species_harmony_examples
       source: 'fux chapter one figure 15 (with melodic errors)',
       key: 'G mixolydian',
       counterpoint_pitches:  %w[G4 E4 D4 G4 G4 G4 A4 B4 G4 E5 D5 G4 F#4 G4],
-      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3  G3],
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3 G3],
     },
     {
       source: 'fux chapter one figure 15 (corrected)',
       key: 'G mixolydian',
       counterpoint_pitches:  %w[G4 E4 D4 G4 G4 G4 A4 B4 G4 C5 A4 G4 F#4 G4],
-      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3  G3],
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3 G3],
     },
     {
       source: 'Fux chapter one figure 21',
       key: 'G ionian',
-      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4  B3 A3  G3],
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3 G3],
       counterpoint_pitches:  %w[G3 A3 G3 E3 E3 C3 G3 B3 C4 A3 F#3 G3 F#3 G3],
       expected_message: 'Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes.',
     },
@@ -75,12 +77,12 @@ def fux_first_species_harmony_examples
       source: 'Fux chapter one figure 22',
       key: 'A aeolian',
       counterpoint_pitches:  %w[A4 E4 G4 F4 E4 C5 A4 B4 B4 A4 G#4 A4],
-      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3  A3],
+      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3 A3],
     },
     {
       source: 'Fux chapter one figure 23',
       key: 'A aeolian',
-      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3  A3],
+      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3 A3],
       counterpoint_pitches:  %w[A3 A3 G3 F3 E3 E3 D3 C3 G3 A3 G#3 A3],
     },
   ].map { |params| CompositionContext.from_params(params) }
@@ -105,7 +107,7 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesHarmony do
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }
 
-          if example.expected_messages.length > 0
+          if !example.expected_messages.empty?
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
@@ -123,7 +125,7 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesHarmony do
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }
 
-          if example.expected_messages.length > 0
+          if !example.expected_messages.empty?
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
@@ -141,7 +143,7 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesHarmony do
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }
 
-          if example.expected_messages.length > 0
+          if !example.expected_messages.empty?
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|

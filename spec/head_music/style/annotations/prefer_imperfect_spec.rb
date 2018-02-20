@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::PreferImperfect do
@@ -34,7 +36,7 @@ describe HeadMusic::Style::Annotations::PreferImperfect do
 
   context 'with half perfect consonances in the middle' do
     let(:counterpoint_pitches) { %w[D5 C5 B4 D5 E5 C5 C5 D5 F5 C5 D5] }
-    let(:cantus_firmus_pitches) {%w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
+    let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
     its(:fitness) { is_expected.to be < 1 }
   end

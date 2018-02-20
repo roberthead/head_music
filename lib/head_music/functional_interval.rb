@@ -28,7 +28,7 @@ class HeadMusic::FunctionalInterval
     fourteenth: { major: 23 },
     fifteenth: { perfect: 24 },
     sixteenth: { major: 26 },
-    seventeenth: { major: 28 }
+    seventeenth: { major: 28 },
   }.freeze
 
   attr_reader :lower_pitch, :higher_pitch

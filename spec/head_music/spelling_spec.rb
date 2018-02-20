@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Spelling do
@@ -60,21 +62,21 @@ describe Spelling do
       it { is_expected.to eq 'Bb' }
     end
 
-    context "given a pitch class" do
+    context 'given a pitch class' do
       subject(:spelling) { Spelling.get(PitchClass.get(3)) }
 
       its(:pitch_class) { is_expected.to eq 3 }
       it { is_expected.to eq 'D♯' }
     end
 
-    context "given a pitch class number" do
+    context 'given a pitch class number' do
       subject(:spelling) { Spelling.get(1) }
 
       its(:pitch_class) { is_expected.to eq 1 }
       it { is_expected.to eq 'C♯' }
     end
 
-    context "given the pitch class number for F♯/Gb" do
+    context 'given the pitch class number for F♯/Gb' do
       subject(:spelling) { Spelling.get(6) }
 
       its(:pitch_class) { is_expected.to eq 6 }
@@ -101,7 +103,6 @@ describe Spelling do
 
     its(:letter_name_cycle) { is_expected.to eq %w[D E F G A B C] }
   end
-
 
   describe '♯enharmonic?' do
     specify { expect(Spelling.get('G♯')).to be_enharmonic(Spelling.get('Ab')) }

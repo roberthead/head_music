@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Motion do
@@ -17,8 +19,8 @@ describe Motion do
     end
   end
 
-  let(:first_harmonic_interval) { HarmonicInterval.new(lower_voice, upper_voice, "1:1") }
-  let(:second_harmonic_interval) { HarmonicInterval.new(lower_voice, upper_voice, "2:1") }
+  let(:first_harmonic_interval) { HarmonicInterval.new(lower_voice, upper_voice, '1:1') }
+  let(:second_harmonic_interval) { HarmonicInterval.new(lower_voice, upper_voice, '2:1') }
 
   subject { Motion.new(first_harmonic_interval, second_harmonic_interval) }
 

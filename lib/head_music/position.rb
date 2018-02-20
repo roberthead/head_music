@@ -37,10 +37,8 @@ class HeadMusic::Position
   end
 
   def <=>(other)
-    if other.is_a?(String) && other =~ /\D/
-      other = self.class.new(composition, other)
-    end
-    self.values <=> other.values
+    other = self.class.new(composition, other) if other.is_a?(String) && other =~ /\D/
+    values <=> other.values
   end
 
   def strength

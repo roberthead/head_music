@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rspec/its'
 require 'simplecov'
@@ -18,7 +20,7 @@ class HeadMusic::Style::Annotation
   end
 
   def first_mark_code
-    first_mark.code if first_mark
+    first_mark&.code
   end
 
   def first_mark
@@ -78,83 +80,83 @@ def fux_cantus_firmus_examples_with_errors
     {
       name: 'Fux CF in D with a repeated note',
       key: 'D dorian', pitches: %w[D F E D G F F A G F E D],
-      expected_message: 'Always move to a different note.'
+      expected_message: 'Always move to a different note.',
     },
     {
       name: 'Fux CF in C with too few notes',
       key: 'C ionian', pitches: %w[C E F G E D C],
-      expected_message: 'Write at least eight notes.'
+      expected_message: 'Write at least eight notes.',
     },
     {
       name: 'Fux CF in C with dissonant climax',
       key: 'C ionian', pitches: %w[C E F E B A G F E D C],
-      expected_message: 'Peak on a consonant high or low note one time or twice with a step between.'
+      expected_message: 'Peak on a consonant high or low note one time or twice with a step between.',
     },
     {
       name: 'Fux CF in D with chromatic notes added',
       key: 'D dorian', pitches: %w[D F# E D G F# A G F# E D],
-      expected_message: 'Use only notes in the key signature.'
+      expected_message: 'Use only notes in the key signature.',
     },
     {
       name: 'Fux CF in D ending on third scale degree',
       key: 'D dorian', pitches: %w[D F E D G F A G F],
-      expected_message: 'End on the first scale degree.'
+      expected_message: 'End on the first scale degree.',
     },
     {
       name: 'Fux CF in C with direction change removed',
       key: 'C ionian', pitches: %w[C E F G F E D C],
-      expected_message: 'Change melodic direction frequently.'
+      expected_message: 'Change melodic direction frequently.',
     },
     {
       name: 'Fux CF in D with two octave leaps added',
       key: 'D dorian', pitches: %w[D F F5 E5 D5 D A G F A G F E D],
-      expected_message: 'Use a maximum of one octave leap.'
+      expected_message: 'Use a maximum of one octave leap.',
     },
     {
       name: 'Fux CF in G with less conjunct motion',
       key: 'G mixolydian', pitches: %w[G3 C B3 G3 C E D G E C D A3 G3],
-      expected_message: 'Use mostly conjunct motion.'
+      expected_message: 'Use mostly conjunct motion.',
     },
     {
       name: 'Fux CF in D with reset added',
       key: 'D dorian', pitches: ['D', 'F', 'E', 'D', 'G', 'F', 'A', nil, 'G', 'F', 'E', 'D'],
-      expected_message: 'Place a note in each measure.'
+      expected_message: 'Place a note in each measure.',
     },
     {
       name: 'Fux CF in D with one measure of half notes',
       key: 'D dorian', pitches: %w[D F E D G F A G F E D],
-      durations: [:whole, :whole, :whole, :half, :half, :whole],
-      expected_message: 'Use consistent rhythmic unit.'
+      durations: %i[whole whole whole half half whole],
+      expected_message: 'Use consistent rhythmic unit.',
     },
     {
       name: 'Fux CF in D with unrecovered large leap',
       key: 'D dorian', pitches: %w[D F E D G A G F E D],
-      expected_message: 'Recover large leaps by step in the opposite direction.'
+      expected_message: 'Recover large leaps by step in the opposite direction.',
     },
     {
       name: 'Fux CF in A with non-singable interval',
       key: 'A aeolian', pitches: %w[A3 C B3 F E D C B3 A3],
-      expected_message: 'Use only PU, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line.'
+      expected_message: 'Use only PU, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line.',
     },
     {
       name: 'Fux CF in G with non-singable range',
       key: 'G mixolydian', pitches: %w[G3 C B3 G3 G4 F D5 C5 G E C D B3 A3 G3],
-      expected_message: 'Limit melodic range to a 10th.'
+      expected_message: 'Limit melodic range to a 10th.',
     },
     {
       name: 'Fux CF in A starting on 5th scale degree',
       key: 'A aeolian', pitches: %w[E C B3 D C E F E D C B3 A3],
-      expected_message: 'Start on the first scale degree.'
+      expected_message: 'Start on the first scale degree.',
     },
     {
       name: 'Fux CF in D skipping down to final note',
       key: 'D dorian', pitches: %w[D F E D G F A G F D],
-      expected_message: 'Step down to the final note.'
+      expected_message: 'Step down to the final note.',
     },
     {
       name: 'Fux CF in G with too many notes',
       key: 'G mixolydian', pitches: %w[G3 C B3 G3 C E D G E C D C B3 A3 G3],
-      expected_message: 'Write up to fourteen notes.'
+      expected_message: 'Write up to fourteen notes.',
     },
   ].map { |params| CompositionContext.from_cantus_firmus_params(params) }
 end
@@ -208,38 +210,38 @@ def fux_first_species_examples
     {
       source: 'fux chapter one figure 14',
       key: 'F ionian',
-      cantus_firmus_pitches: %w[F3 G3 A3 F3 D3  E3 F3 C4 A3 F3 G3 F3],
+      cantus_firmus_pitches: %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3],
       counterpoint_pitches:  %w[F3 E3 F3 A3 Bb3 G3 A3 E3 F3 D3 E3 F3],
     },
     {
       source: 'fux chapter one figure 15 (with errors)',
       key: 'G mixolydian',
       counterpoint_pitches:  %w[G4 E4 D4 G4 G4 G4 A4 B4 G4 E5 D5 G4 F#4 G4],
-      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3  G3],
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3 G3],
       expected_message: 'Use only PU, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line.',
     },
     {
       source: 'fux chapter one figure 15 (corrected)',
       key: 'G mixolydian',
       counterpoint_pitches:  %w[G4 E4 D4 G4 G4 G4 A4 B4 G4 C5 A4 G4 F#4 G4],
-      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3  G3],
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3 G3],
     },
     {
       source: 'Fux chapter one figure 21',
       key: 'G ionian',
-      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4  B3 A3  G3],
+      cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3 G3],
       counterpoint_pitches:  %w[G3 A3 G3 E3 E3 C3 G3 B3 C4 A3 F#3 G3 F#3 G3],
     },
     {
       source: 'Fux chapter one figure 22',
       key: 'A aeolian',
       counterpoint_pitches:  %w[A4 E4 G4 F4 E4 C5 A4 B4 B4 A4 G#4 A4],
-      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3  A3],
+      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3 A3],
     },
     {
       source: 'Fux chapter one figure 23',
       key: 'A aeolian',
-      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3  A3],
+      cantus_firmus_pitches: %w[A3 C4 B3 D4 C4 E4 F4 E4 D4 C4 B3 A3],
       counterpoint_pitches:  %w[A3 A3 G3 F3 E3 E3 D3 C3 G3 A3 G#3 A3],
     },
   ].map { |params| CompositionContext.from_params(params) }
@@ -268,7 +270,7 @@ def clendinning_first_species_examples
     {
       source: 'Clendinning 3e Ex 9.4',
       key: 'C major',
-      cantus_firmus_pitches: %w[C D  F  E  F  G  A  G  E  D  C],
+      cantus_firmus_pitches: %w[C D F E F G A G E D C],
       counterpoint_pitches:  %w[C B3 A3 G3 F3 E3 F3 G3 G3 B3 C],
     },
   ].map { |params| CompositionContext.from_params(params) }
@@ -285,7 +287,7 @@ def davis_and_lybbert_first_species_examples
     {
       source: 'Davis and Lybbert second illustration (p 16)',
       key: 'D minor',
-      cantus_firmus_pitches: %w[D5 F5 E5 G5  F5 D5  A5 G5 F5 E5  D5],
+      cantus_firmus_pitches: %w[D5 F5 E5 G5 F5 D5 A5 G5 F5 E5 D5],
       counterpoint_pitches:  %w[D3 D4 C4 Bb3 A3 Bb3 F3 G3 A3 C#4 D4],
     },
   ].map { |params| CompositionContext.from_params(params) }

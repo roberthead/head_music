@@ -42,7 +42,7 @@ class HeadMusic::Pitch
 
   def self.fetch_or_create(spelling, octave)
     @pitches ||= {}
-    if spelling && (-1..9).include?(octave)
+    if spelling && (-1..9).cover?(octave)
       hash_key = [spelling, octave].join
       @pitches[hash_key] ||= new(spelling, octave)
     end
@@ -61,8 +61,8 @@ class HeadMusic::Pitch
     (octave + 1) * 12 + letter_name.pitch_class.to_i + sign_semitones.to_i
   end
 
-  alias_method :midi, :midi_note_number
-  alias_method :number, :midi_note_number
+  alias midi midi_note_number
+  alias number midi_note_number
 
   def to_s
     name
@@ -73,24 +73,24 @@ class HeadMusic::Pitch
   end
 
   def natural
-    HeadMusic::Pitch.get(self.to_s.gsub(/[#b]/, ''))
+    HeadMusic::Pitch.get(to_s.gsub(/[#b]/, ''))
   end
 
   def enharmonic?(other)
-    self.midi_note_number == other.midi_note_number
+    midi_note_number == other.midi_note_number
   end
 
   def +(value)
-    HeadMusic::Pitch.get(self.to_i + value.to_i)
+    HeadMusic::Pitch.get(to_i + value.to_i)
   end
 
   def -(value)
     if value.is_a?(HeadMusic::Pitch)
       # return an interval
-      HeadMusic::Interval.get(self.to_i - value.to_i)
+      HeadMusic::Interval.get(to_i - value.to_i)
     else
       # assume value represents an interval in semitones and return another pitch
-      HeadMusic::Pitch.get(self.to_i - value.to_i)
+      HeadMusic::Pitch.get(to_i - value.to_i)
     end
   end
 
@@ -100,7 +100,7 @@ class HeadMusic::Pitch
   end
 
   def <=>(other)
-    self.midi_note_number <=> other.midi_note_number
+    midi_note_number <=> other.midi_note_number
   end
 
   def scale(scale_type_name = nil)
@@ -108,7 +108,7 @@ class HeadMusic::Pitch
   end
 
   def natural_steps(num_steps)
-    target_letter_name = self.letter_name.steps(num_steps)
+    target_letter_name = letter_name.steps(num_steps)
     direction = num_steps >= 0 ? 1 : -1
     octaves_delta = (num_steps.abs / 7) * direction
     if num_steps < 0 && target_letter_name.position > letter_name.position

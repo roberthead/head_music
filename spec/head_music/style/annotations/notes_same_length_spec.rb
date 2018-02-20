@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::NotesSameLength do
@@ -10,7 +12,7 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
 
   context 'with one note' do
     before do
-      voice.place("1:1", :whole, 'C')
+      voice.place('1:1', :whole, 'C')
     end
 
     it { is_expected.to be_adherent }
@@ -50,19 +52,19 @@ describe HeadMusic::Style::Annotations::NotesSameLength do
 
   context 'when notes are not of equal rhythmic value' do
     before do
-      voice.place("1:1", :whole, 'D4')
-      voice.place("2:1", :half, 'E4')
-      voice.place("2:3", :half, 'F4')
-      voice.place("3:1", :whole, 'E4')
-      voice.place("2:1", :half, 'E4')
-      voice.place("2:3", :half, 'F4')
-      voice.place("3:1", :whole, 'E4')
-      voice.place("4:1", :whole, 'D4')
+      voice.place('1:1', :whole, 'D4')
+      voice.place('2:1', :half, 'E4')
+      voice.place('2:3', :half, 'F4')
+      voice.place('3:1', :whole, 'E4')
+      voice.place('2:1', :half, 'E4')
+      voice.place('2:3', :half, 'F4')
+      voice.place('3:1', :whole, 'E4')
+      voice.place('4:1', :whole, 'D4')
     end
 
     its(:fitness) { is_expected.to be < 1 }
     its(:message) { is_expected.not_to be_empty }
     its(:marks_count) { is_expected.to eq 4 }
-    its(:first_mark_code) { is_expected.to eq "2:1:000 to 2:3:000" }
+    its(:first_mark_code) { is_expected.to eq '2:1:000 to 2:3:000' }
   end
 end

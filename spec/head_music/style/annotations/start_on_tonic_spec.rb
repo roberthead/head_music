@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::StartOnTonic do
@@ -10,7 +12,7 @@ describe HeadMusic::Style::Annotations::StartOnTonic do
 
   context 'when the first note is the tonic' do
     before do
-      voice.place("1:1", :whole, 'C')
+      voice.place('1:1', :whole, 'C')
     end
 
     it { is_expected.to be_adherent }
@@ -23,7 +25,7 @@ describe HeadMusic::Style::Annotations::StartOnTonic do
 
     its(:fitness) { is_expected.to be < 1 }
     its(:marks_count) { is_expected.to eq 1 }
-    its(:first_mark_code) { is_expected.to eq "1:1:000 to 2:1:000" }
+    its(:first_mark_code) { is_expected.to eq '1:1:000 to 2:1:000' }
     its(:message) { is_expected.not_to be_empty }
   end
 end

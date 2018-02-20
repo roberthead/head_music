@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::SingableIntervals do
-  let(:composition) { Composition.new(name: "CF in C Major", key_signature: 'C Major') }
+  let(:composition) { Composition.new(name: 'CF in C Major', key_signature: 'C Major') }
   let(:voice) { Voice.new(composition: composition) }
   subject { described_class.new(voice) }
 
@@ -11,7 +13,7 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
 
   context 'with one note' do
     before do
-      voice.place("1:1", :whole, 'C')
+      voice.place('1:1', :whole, 'C')
     end
 
     it { is_expected.to be_adherent }
@@ -59,7 +61,7 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
     end
 
     its(:fitness) { is_expected.to eq PENALTY_FACTOR }
-    its(:first_mark_code) { is_expected.to eq "6:1:000 to 8:1:000" }
+    its(:first_mark_code) { is_expected.to eq '6:1:000 to 8:1:000' }
   end
 
   context 'with a major sixth' do
@@ -70,7 +72,7 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
     end
 
     its(:fitness) { is_expected.to eq PENALTY_FACTOR }
-    its(:first_mark_code) { is_expected.to eq "4:1:000 to 6:1:000" }
+    its(:first_mark_code) { is_expected.to eq '4:1:000 to 6:1:000' }
   end
 
   context 'with a tritone' do
@@ -81,6 +83,6 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
     end
 
     its(:fitness) { is_expected.to eq PENALTY_FACTOR }
-    its(:first_mark_code) { is_expected.to eq "4:1:000 to 6:1:000" }
+    its(:first_mark_code) { is_expected.to eq '4:1:000 to 6:1:000' }
   end
 end

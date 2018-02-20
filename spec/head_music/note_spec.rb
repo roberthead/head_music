@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Note do
-  subject(:note) { Note.new("F#5", :quarter) }
+  subject(:note) { Note.new('F#5', :quarter) }
 
   its(:pitch) { is_expected.to eq 'F#5' }
   its(:rhythmic_value) { is_expected.to be_a(HeadMusic::RhythmicValue) }

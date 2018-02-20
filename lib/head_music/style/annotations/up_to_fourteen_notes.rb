@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
@@ -7,9 +9,7 @@ class HeadMusic::Style::Annotations::UpToFourteenNotes < HeadMusic::Style::Annot
   MESSAGE = 'Write up to fourteen notes.'
 
   def marks
-    if overage > 0
-      HeadMusic::Style::Mark.for_each(notes[MAXIMUM_NOTES..-1])
-    end
+    HeadMusic::Style::Mark.for_each(notes[MAXIMUM_NOTES..-1]) if overage > 0
   end
 
   private

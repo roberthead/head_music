@@ -3,18 +3,18 @@
 class HeadMusic::PitchClass
   attr_reader :number
 
-  SHARP_SPELLINGS = %w[C C# D D# E F F# G G# A A# B]
-  FLAT_SPELLINGS = %w[C Db D Eb E F Gb G Ab A Bb B]
+  SHARP_SPELLINGS = %w[C C# D D# E F F# G G# A A# B].freeze
+  FLAT_SPELLINGS = %w[C Db D Eb E F Gb G Ab A Bb B].freeze
 
   def self.get(identifier)
     @pitch_classes ||= {}
-    number = HeadMusic::Spelling.get(identifier).pitch_class.to_i if HeadMusic::Spelling.match(identifier)
+    number = HeadMusic::Spelling.get(identifier).pitch_class.to_i if HeadMusic::Spelling.matching_string(identifier)
     number ||= identifier.to_i % 12
     @pitch_classes[number] ||= new(number)
   end
 
   class << self
-    alias_method :[], :get
+    alias [] get
   end
 
   def initialize(pitch_class_or_midi_number)
@@ -36,7 +36,7 @@ class HeadMusic::PitchClass
   def ==(value)
     to_i == value.to_i
   end
-  alias_method :enharmonic?, :==
+  alias enharmonic? ==
 
   def intervals_to(other)
     delta = other.to_i - to_i

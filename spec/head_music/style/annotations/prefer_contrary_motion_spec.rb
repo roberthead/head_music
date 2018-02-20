@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::PreferContraryMotion do
@@ -44,7 +46,7 @@ describe HeadMusic::Style::Annotations::PreferContraryMotion do
 
   context 'with half direct motion' do
     let(:counterpoint_pitches) { %w[D5 A4 G4 B4 D5 F5 A5 D5 A4 C5 D5] }
-    let(:cantus_firmus_pitches) {%w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
+    let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
     it { is_expected.to be_adherent }
   end

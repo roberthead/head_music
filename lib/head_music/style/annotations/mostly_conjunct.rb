@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::MostlyConjunct < HeadMusic::Style::Annotation
-  MESSAGE = "Use mostly conjunct motion."
+  MESSAGE = 'Use mostly conjunct motion.'
 
-  MINIMUM_CONJUNCT_PORTION = HeadMusic::GOLDEN_RATIO_INVERSE ** 2
+  MINIMUM_CONJUNCT_PORTION = HeadMusic::GOLDEN_RATIO_INVERSE**2
   # ~38%
   # Fux is 5/13 for lydian cantus firmus
 
@@ -16,7 +18,7 @@ class HeadMusic::Style::Annotations::MostlyConjunct < HeadMusic::Style::Annotati
 
   def marks_for_skips_and_leaps
     melodic_intervals.map.with_index do |interval, i|
-      HeadMusic::Style::Mark.for_all(notes[i..i+1], fitness: HeadMusic::SMALL_PENALTY_FACTOR) unless interval.step?
+      HeadMusic::Style::Mark.for_all(notes[i..i + 1], fitness: HeadMusic::SMALL_PENALTY_FACTOR) unless interval.step?
     end.compact
   end
 

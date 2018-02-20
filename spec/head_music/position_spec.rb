@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Position do
@@ -11,19 +13,19 @@ describe Position do
   its(:bar_number) { is_expected.to eq 3 }
   its(:count) { is_expected.to eq 2 }
   its(:tick) { is_expected.to eq 480 }
-  its(:to_s) { is_expected.to eq "3:2:480" }
-  its(:start_of_next_bar) { is_expected.to eq "4:1:000" }
+  its(:to_s) { is_expected.to eq '3:2:480' }
+  its(:start_of_next_bar) { is_expected.to eq '4:1:000' }
 
   context 'when there are a small number of ticks' do
     let(:tick) { 60 }
 
-    its(:code) { is_expected.to eq "3:2:060" }
+    its(:code) { is_expected.to eq '3:2:060' }
   end
 
   context 'when there are no ticks' do
     let(:tick) { 0 }
 
-    its(:code) { is_expected.to eq "3:2:000" }
+    its(:code) { is_expected.to eq '3:2:000' }
   end
 
   describe '#strength' do
@@ -91,7 +93,7 @@ describe Position do
         let(:tick) { 960 }
 
         it 'rolls over to the next count' do
-          expect(position).to eq "3:3:000"
+          expect(position).to eq '3:3:000'
         end
       end
 
@@ -101,7 +103,7 @@ describe Position do
         let(:tick) { 0 }
 
         it 'rolls over to a subsequent bar' do
-          expect(position).to eq Position.new(composition, "5:1:0")
+          expect(position).to eq Position.new(composition, '5:1:0')
         end
       end
     end
@@ -127,7 +129,7 @@ describe Position do
         let(:tick) { 0 }
 
         it 'rolls over to a subsequent bar' do
-          expect(position).to eq Position.new(composition, "4:3:0")
+          expect(position).to eq Position.new(composition, '4:3:0')
         end
       end
     end
@@ -136,13 +138,13 @@ describe Position do
   describe 'addition' do
     context 'when adding a rhythmic unit' do
       context 'within a bar' do
-        let(:expected_position) { Position.new(composition, bar_number, count+1, tick) }
+        let(:expected_position) { Position.new(composition, bar_number, count + 1, tick) }
 
         specify { expect(position + RhythmicUnit.get(:quarter)).to eq expected_position }
       end
 
       context 'across a bar' do
-        let(:expected_position) { Position.new(composition, bar_number+1, count, tick) }
+        let(:expected_position) { Position.new(composition, bar_number + 1, count, tick) }
 
         specify { expect(position + RhythmicUnit.get(:whole)).to eq expected_position }
       end

@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::LimitOctaveLeaps < HeadMusic::Style::Annotation
-  MESSAGE = "Use a maximum of one octave leap."
+  MESSAGE = 'Use a maximum of one octave leap.'
 
   def marks
     if octave_leaps.length > 1

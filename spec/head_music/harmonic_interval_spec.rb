@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::HarmonicInterval do
@@ -19,11 +21,11 @@ describe HeadMusic::HarmonicInterval do
     expect(harmonic_interval.notes).to eq([low_note, high_note])
   end
 
-  its(:pitches) { are_expected.to eq(['F3', 'D4']) }
+  its(:pitches) { are_expected.to eq(%w[F3 D4]) }
   its(:upper_pitch) { is_expected.to eq 'D4' }
   its(:lower_pitch) { is_expected.to eq 'F3' }
 
-  its(:functional_interval) { is_expected.to eq "major sixth" }
+  its(:functional_interval) { is_expected.to eq 'major sixth' }
 
   its(:to_s) { is_expected.to eq 'major sixth at 2:1:000' }
 end

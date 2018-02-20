@@ -1,14 +1,16 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::EndOnPerfectConsonance do
   let(:composition) { Composition.new(key_signature: 'C major') }
   let!(:cantus_firmus) do
     composition.add_voice(role: 'cantus firmus').tap do |voice|
-      voice.place("1:1", :whole, 'C4')
-      voice.place("2:1", :whole, 'D4')
-      voice.place("3:1", :whole, 'E4')
-      voice.place("4:1", :whole, 'D4')
-      voice.place("5:1", :whole, 'C4')
+      voice.place('1:1', :whole, 'C4')
+      voice.place('2:1', :whole, 'D4')
+      voice.place('3:1', :whole, 'E4')
+      voice.place('4:1', :whole, 'D4')
+      voice.place('5:1', :whole, 'C4')
     end
   end
   let(:counterpoint_pitches) { nil }

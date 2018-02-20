@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe RhythmicUnit do
@@ -16,7 +18,7 @@ describe RhythmicUnit do
   context 'for :half' do
     let(:name) { :half }
 
-    its(:relative_value) { is_expected.to eq 1.0/2 }
+    its(:relative_value) { is_expected.to eq 1.0 / 2 }
     its(:notehead) { is_expected.to eq :open }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 0 }
@@ -26,7 +28,7 @@ describe RhythmicUnit do
   context 'for :quarter' do
     let(:name) { :quarter }
 
-    its(:relative_value) { is_expected.to eq 1.0/4 }
+    its(:relative_value) { is_expected.to eq 1.0 / 4 }
     its(:notehead) { is_expected.to eq :closed }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 0 }
@@ -36,7 +38,7 @@ describe RhythmicUnit do
   context 'for :eighth' do
     let(:name) { :eighth }
 
-    its(:relative_value) { is_expected.to eq 1.0/8 }
+    its(:relative_value) { is_expected.to eq 1.0 / 8 }
     its(:notehead) { is_expected.to eq :closed }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 1 }
@@ -46,7 +48,7 @@ describe RhythmicUnit do
   context 'for :sixteenth' do
     let(:name) { :sixteenth }
 
-    its(:relative_value) { is_expected.to eq 1.0/16 }
+    its(:relative_value) { is_expected.to eq 1.0 / 16 }
     its(:notehead) { is_expected.to eq :closed }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 2 }
@@ -56,7 +58,7 @@ describe RhythmicUnit do
   context 'for thirty-second' do
     let(:name) { 'thirty-second' }
 
-    its(:relative_value) { is_expected.to eq 1.0/32 }
+    its(:relative_value) { is_expected.to eq 1.0 / 32 }
     its(:notehead) { is_expected.to eq :closed }
     it { is_expected.to have_stem }
     its(:flags) { are_expected.to eq 3 }

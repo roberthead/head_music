@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::SingleLargeLeaps < HeadMusic::Style::Annotations::RecoverLargeLeaps
-  MESSAGE = "Recover leaps by step, repetition, opposite direction, or spelling triad."
+  MESSAGE = 'Recover leaps by step, repetition, opposite direction, or spelling triad.'
 
   private
 

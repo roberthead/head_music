@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic
   module Style
     class Analysis
@@ -11,7 +13,7 @@ module HeadMusic
       def messages
         annotations.reject(&:adherent?).map(&:message)
       end
-      alias_method :annotation_messages, :messages
+      alias annotation_messages messages
 
       def annotations
         @annotations ||= @ruleset.analyze(subject)

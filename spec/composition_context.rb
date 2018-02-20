@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CompositionContext
   attr_reader :composition, :source, :expected_messages
 
@@ -5,7 +7,7 @@ class CompositionContext
   delegate :pitches, to: :counterpoint_voice, prefix: :counterpoint
 
   def self.from_cantus_firmus_params(params)
-    from_params(params.merge({cantus_firmus_pitches: params[:pitches], cantus_firmus_durations: params[:durations]}))
+    from_params(params.merge(cantus_firmus_pitches: params[:pitches], cantus_firmus_durations: params[:durations]))
   end
 
   def self.from_params(params)
@@ -26,7 +28,7 @@ class CompositionContext
     pitches = pitches_from_string(pitches_string)
     durations = [durations].flatten.compact
     pitches.each.with_index(1) do |pitch, bar|
-      voice.place("#{bar}:1", durations[bar-1] || durations.first || 'whole', pitch)
+      voice.place("#{bar}:1", durations[bar - 1] || durations.first || 'whole', pitch)
     end
   end
 
@@ -46,15 +48,15 @@ class CompositionContext
 
   def description
     @description ||= begin
-      [source, key, pitches_description].compact.select { |element|
-        element.to_s.strip.length > 0
-      }.join(' ')
+      [source, key, pitches_description].compact.reject do |element|
+        element.to_s.strip.empty?
+      end.join(' ')
     end
   end
 
   def pitches_description
     @pitches_description ||=
-      [counterpoint_string, cantus_firmus_string].map(&:to_s).select { |s| !s.empty? }.join(' against ')
+      [counterpoint_string, cantus_firmus_string].map(&:to_s).reject(&:empty?).join(' against ')
   end
 
   def method_missing(method_name, *args, &block)
@@ -64,14 +66,10 @@ class CompositionContext
   private
 
   def cantus_firmus_string
-    if cantus_firmus_pitches && !cantus_firmus_pitches.empty?
-      cantus_firmus_pitches.join(' ') + ' (CF)'
-    end
+    cantus_firmus_pitches.join(' ') + ' (CF)' if cantus_firmus_pitches && !cantus_firmus_pitches.empty?
   end
 
   def counterpoint_string
-    if counterpoint_pitches && !counterpoint_pitches.empty?
-      counterpoint_pitches.join(' ') + ' (CPT)'
-    end
+    counterpoint_pitches.join(' ') + ' (CPT)' if counterpoint_pitches && !counterpoint_pitches.empty?
   end
 end

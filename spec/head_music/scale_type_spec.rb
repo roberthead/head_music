@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe ScaleType do
@@ -19,7 +21,7 @@ describe ScaleType do
 
   describe '.new' do
     it 'is public' do
-      expect { ScaleType.new(:monotonic, {ascending: [12]}) }.not_to raise_error
+      expect { ScaleType.new(:monotonic, ascending: [12]) }.not_to raise_error
     end
   end
 
@@ -31,7 +33,7 @@ describe ScaleType do
     its(:descending_intervals) { are_expected.to eq [2, 2, 1, 2, 2, 1, 2] }
   end
 
-  [:ionian, :dorian, :phrygian, :lydian, :mixolydian, :aeolian, :locrian].each do |mode|
+  %i[ionian dorian phrygian lydian mixolydian aeolian locrian].each do |mode|
     describe "#{mode} mode" do
       subject { ScaleType.send(mode) }
 

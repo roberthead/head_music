@@ -13,9 +13,9 @@ class HeadMusic::Voice
   end
 
   def place(position, rhythmic_value, pitch = nil)
-    HeadMusic::Placement.new(self, position, rhythmic_value, pitch).tap { |placement|
+    HeadMusic::Placement.new(self, position, rhythmic_value, pitch).tap do |placement|
       insert_into_placements(placement)
-    }
+    end
   end
 
   def notes
@@ -58,7 +58,7 @@ class HeadMusic::Voice
   def melodic_intervals
     @melodic_intervals ||=
       notes.map.with_index do |note, i|
-        HeadMusic::MelodicInterval.new(notes[i-1], note) if i > 0
+        HeadMusic::MelodicInterval.new(notes[i - 1], note) if i > 0
       end.compact
   end
 

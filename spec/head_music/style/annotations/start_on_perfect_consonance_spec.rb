@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
   let(:composition) { Composition.new(key_signature: 'C major') }
   let!(:cantus_firmus) do
     composition.add_voice(role: 'cantus firmus').tap do |voice|
-      voice.place("1:1", :whole, 'C4')
+      voice.place('1:1', :whole, 'C4')
     end
   end
   let(:voice) { composition.add_voice(role: 'counterpoint') }
@@ -17,7 +19,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
 
   context 'when the first note is a perfect unison' do
     before do
-      voice.place("1:1", :whole, 'C4')
+      voice.place('1:1', :whole, 'C4')
     end
 
     it { is_expected.to be_adherent }
@@ -25,7 +27,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
 
   context 'when the first note is an augmented unison' do
     before do
-      voice.place("1:1", :whole, 'C#4')
+      voice.place('1:1', :whole, 'C#4')
     end
 
     its(:fitness) { is_expected.to be <= HeadMusic::PENALTY_FACTOR }
@@ -33,7 +35,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
 
   context 'when the first note is a perfect fifth above' do
     before do
-      voice.place("1:1", :whole, 'G4')
+      voice.place('1:1', :whole, 'G4')
     end
 
     it { is_expected.to be_adherent }
@@ -41,7 +43,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
 
   context 'when the first note is a perfect octave above' do
     before do
-      voice.place("1:1", :whole, 'C5')
+      voice.place('1:1', :whole, 'C5')
     end
 
     it { is_expected.to be_adherent }
@@ -49,7 +51,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
 
   context 'when the first note is a perfect fifth below' do
     before do
-      voice.place("1:1", :whole, 'F3')
+      voice.place('1:1', :whole, 'F3')
     end
 
     its(:fitness) { is_expected.to be < 1 }
@@ -57,7 +59,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
 
   context 'when the first note is the dominant below' do
     before do
-      voice.place("1:1", :whole, 'G3')
+      voice.place('1:1', :whole, 'G3')
     end
 
     its(:fitness) { is_expected.to be < 1 }
@@ -65,7 +67,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
 
   context 'when the first note is an imperfect consonance' do
     before do
-      voice.place("1:1", :whole, 'A')
+      voice.place('1:1', :whole, 'A')
     end
 
     its(:fitness) { is_expected.to be < 1 }
@@ -73,7 +75,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
 
   context 'when the first note is a dissonance' do
     before do
-      voice.place("1:1", :whole, 'A')
+      voice.place('1:1', :whole, 'A')
     end
 
     its(:fitness) { is_expected.to be <= HeadMusic::PENALTY_FACTOR }

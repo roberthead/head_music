@@ -19,7 +19,7 @@ class HeadMusic::Clef
     { pitch: 'C4', line: 4, names: ['tenor'], modern: true },
     { pitch: 'C4', line: 5, names: ['baritone'] },
 
-    { pitch: nil, line: 3, names: %w[neutral percussion] }
+    { pitch: nil, line: 3, names: %w[neutral percussion] },
   ].freeze
 
   def self.get(name)

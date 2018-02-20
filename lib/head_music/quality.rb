@@ -9,7 +9,7 @@ class HeadMusic::Quality
     augmented: 'A',
     doubly_diminished: 'dd',
     doubly_augmented: 'AA',
-  }
+  }.freeze
   NAMES = SHORTHAND.keys
 
   PERFECT_INTERVAL_MODIFICATION = {
@@ -17,16 +17,16 @@ class HeadMusic::Quality
     -1 => :diminished,
     0 => :perfect,
     1 => :augmented,
-    2 => :doubly_augmented
-  }
+    2 => :doubly_augmented,
+  }.freeze
 
   MAJOR_INTERVAL_MODIFICATION = {
     -2 => :diminished,
     -1 => :minor,
     0 => :major,
     1 => :augmented,
-    2 => :doubly_augmented
-  }
+    2 => :doubly_augmented,
+  }.freeze
 
   def self.get(identifier)
     @qualities ||= {}
@@ -50,7 +50,7 @@ class HeadMusic::Quality
   end
 
   def ==(other)
-    self.to_s == other.to_s
+    to_s == other.to_s
   end
 
   def shorthand

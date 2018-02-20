@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
@@ -5,9 +7,7 @@ class HeadMusic::Style::Annotations::EndOnTonic < HeadMusic::Style::Annotation
   MESSAGE = 'End on the first scale degree.'
 
   def marks
-    if !notes.empty? && !ends_on_tonic?
-      HeadMusic::Style::Mark.for(notes.last)
-    end
+    HeadMusic::Style::Mark.for(notes.last) if !notes.empty? && !ends_on_tonic?
   end
 
   private
@@ -17,6 +17,6 @@ class HeadMusic::Style::Annotations::EndOnTonic < HeadMusic::Style::Annotation
   end
 
   def last_note_spelling
-    last_note && last_note.spelling
+    last_note&.spelling
   end
 end

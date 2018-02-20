@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::PreferContraryMotion < HeadMusic::Style::Annotation
-  MESSAGE = "Prefer contrary motion. Move voices in different melodic directions."
+  MESSAGE = 'Prefer contrary motion. Move voices in different melodic directions.'
 
   def marks
     return nil if notes.length < 2

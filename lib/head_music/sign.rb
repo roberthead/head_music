@@ -8,7 +8,7 @@ class HeadMusic::Sign
   def self.all
     @all ||= [
       new(identifier: :sharp, name: 'sharp', ascii: '#', unicode: '♯', html_entity: '&#9839;', cents: 100),
-      new(identifier: :flat, name: 'flat', ascii: 'b', unicode: "♭", html_entity: '&#9837;', cents: -100),
+      new(identifier: :flat, name: 'flat', ascii: 'b', unicode: '♭', html_entity: '&#9837;', cents: -100),
       new(identifier: :natural, name: 'natural', ascii: '', unicode: '♮', html_entity: '&#9838;', cents: 0),
       new(identifier: :double_sharp, name: 'double sharp', ascii: '##', unicode: '𝄪', html_entity: '&#119082;', cents: 200),
       new(identifier: :double_flat, name: 'double flat', ascii: 'bb', unicode: '𝄫', html_entity: '&#119083;', cents: -200),
@@ -36,9 +36,7 @@ class HeadMusic::Sign
 
   def self.by(key, value)
     all.detect do |sign|
-      if %i[cents semitones].include?(key.to_sym)
-        sign.send(key) == value
-      end
+      sign.send(key) == value if %i[cents semitones].include?(key.to_sym)
     end
   end
 
@@ -56,7 +54,7 @@ class HeadMusic::Sign
 
   def <=>(other)
     other = HeadMusic::Sign.get(other)
-    self.cents <=> other.cents
+    cents <=> other.cents
   end
 
   private

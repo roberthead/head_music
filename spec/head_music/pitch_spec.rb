@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Pitch do
@@ -113,7 +115,7 @@ describe Pitch do
       it { is_expected.to be_nil }
     end
 
-    context "for nil" do
+    context 'for nil' do
       subject(:pitch) { Pitch.get(nil) }
 
       it { is_expected.to be_nil }

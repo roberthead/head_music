@@ -12,3 +12,6 @@ Style/TrailingCommaInLiteral:
 
 Layout/DotPosition:
   EnforcedStyle: trailing
+
+Metrics/ClassLength:
+  Max: 120

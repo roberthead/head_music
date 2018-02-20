@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
@@ -24,7 +26,7 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }
 
-          if example.expected_messages.length > 0
+          if !example.expected_messages.empty?
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
@@ -42,7 +44,7 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }
 
-          if example.expected_messages.length > 0
+          if !example.expected_messages.empty?
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
@@ -60,7 +62,7 @@ describe HeadMusic::Style::Rulesets::FirstSpeciesMelody do
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }
 
-          if example.expected_messages.length > 0
+          if !example.expected_messages.empty?
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|

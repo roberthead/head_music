@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::OneToOne do
@@ -12,7 +14,7 @@ describe HeadMusic::Style::Annotations::OneToOne do
 
   context 'with another voice' do
     let!(:cantus_firmus) do
-      counterpoint.composition.add_voice(role: "cantus firmus").tap do |cantus|
+      counterpoint.composition.add_voice(role: 'cantus firmus').tap do |cantus|
         %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           cantus.place("#{bar}:1", :whole, pitch)
         end
@@ -25,7 +27,7 @@ describe HeadMusic::Style::Annotations::OneToOne do
 
     context 'with only one note' do
       before do
-        counterpoint.place("1:1", :whole, 'D5')
+        counterpoint.place('1:1', :whole, 'D5')
       end
 
       its(:fitness) { is_expected.to be < HeadMusic::PENALTY_FACTOR }

@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::NoUnisonsInMiddle < HeadMusic::Style::Annotation
-  MESSAGE = "Unisons may only be used in the first and last note."
+  MESSAGE = 'Unisons may only be used in the first and last note.'
 
   def marks
     unison_pairs.map do |notes|

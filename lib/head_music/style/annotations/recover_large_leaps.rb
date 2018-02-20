@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
@@ -6,12 +8,12 @@ end
 # unless another leap (in either direction) creates a consonant triad.
 # - Brian
 class HeadMusic::Style::Annotations::RecoverLargeLeaps < HeadMusic::Style::Annotation
-  MESSAGE = "Recover large leaps by step in the opposite direction."
+  MESSAGE = 'Recover large leaps by step in the opposite direction.'
 
   def marks
     melodic_intervals.drop(1).to_a.map.with_index do |interval, i|
       previous_interval = melodic_intervals[i]
-      if unrecovered_leap?(previous_interval, interval, melodic_intervals[i+2])
+      if unrecovered_leap?(previous_interval, interval, melodic_intervals[i + 2])
         HeadMusic::Style::Mark.for_all((previous_interval.notes + interval.notes).uniq)
       end
     end.compact
@@ -21,11 +23,11 @@ class HeadMusic::Style::Annotations::RecoverLargeLeaps < HeadMusic::Style::Annot
 
   def unrecovered_leap?(first_interval, second_interval, third_interval)
     first_interval.large_leap? &&
-    !spelling_consonant_triad?(first_interval, second_interval, third_interval) &&
-    (
-      !direction_changed?(first_interval, second_interval) ||
-      !second_interval.step?
-    )
+      !spelling_consonant_triad?(first_interval, second_interval, third_interval) &&
+      (
+        !direction_changed?(first_interval, second_interval) ||
+        !second_interval.step?
+      )
   end
 
   def spelling_consonant_triad?(first_interval, second_interval, third_interval)

@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Style::Mark do
   let(:composition) { Composition.new }
-  let(:start_position) { Position.new(composition, "3:2:480") }
-  let(:end_position) { Position.new(composition, "4:1") }
+  let(:start_position) { Position.new(composition, '3:2:480') }
+  let(:end_position) { Position.new(composition, '4:1') }
   subject(:mark) { Style::Mark.new(start_position, end_position, fitness: 0.9) }
 
   its(:code) { is_expected.to eq '3:2:480 to 4:1:000' }
@@ -11,8 +13,8 @@ describe Style::Mark do
 
   describe '.for_all' do
     let(:voice) { Voice.new }
-    let(:note) { Placement.new(voice, "5:3", :quarter, 'D5') }
-    let(:rest) { Placement.new(voice, "5:4", :quarter) }
+    let(:note) { Placement.new(voice, '5:3', :quarter, 'D5') }
+    let(:rest) { Placement.new(voice, '5:4', :quarter) }
 
     context 'given a single note' do
       subject(:mark) { Style::Mark.for_all(note) }

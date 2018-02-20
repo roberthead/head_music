@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotation
-  MESSAGE = "Peak on a consonant high or low note one time or twice with a step between."
+  MESSAGE = 'Peak on a consonant high or low note one time or twice with a step between.'
 
   def marks
-    HeadMusic::Style::Mark.for_each(highest_notes) if !adherent_climax?
+    HeadMusic::Style::Mark.for_each(highest_notes) unless adherent_climax?
   end
 
   private
@@ -16,13 +18,13 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
 
   def adherent_high_pitch?
     notes? && highest_pitch_consonant_with_tonic? &&
-      ( highest_pitch_appears_once? || highest_pitch_appears_twice_with_step_between? )
+      (highest_pitch_appears_once? || highest_pitch_appears_twice_with_step_between?)
   end
 
   def adherent_low_pitch?
     notes? &&
-    lowest_pitch_consonant_with_tonic? &&
-      ( lowest_pitch_appears_once? || lowest_pitch_appears_twice_with_step_between? )
+      lowest_pitch_consonant_with_tonic? &&
+      (lowest_pitch_appears_once? || lowest_pitch_appears_twice_with_step_between?)
   end
 
   def highest_pitch_consonant_with_tonic?
@@ -53,14 +55,14 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
 
   def highest_pitch_appears_twice_with_step_between?
     highest_pitch_appears_twice? &&
-    single_note_between_highest_notes? &&
-    step_between_highest_notes?
+      single_note_between_highest_notes? &&
+      step_between_highest_notes?
   end
 
   def lowest_pitch_appears_twice_with_step_between?
     lowest_pitch_appears_twice? &&
-    single_note_between_lowest_notes? &&
-    step_between_lowest_notes?
+      single_note_between_lowest_notes? &&
+      step_between_lowest_notes?
   end
 
   def highest_pitch_appears_twice?
@@ -103,8 +105,8 @@ class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotat
   def descending_melody?
     # account for the possibility of opening with an octave leap
     notes.length > 1 &&
-    [first_note.pitch, second_note.pitch].include?(highest_pitch) &&
-    highest_pitch.spelling == tonic_spelling
+      [first_note.pitch, second_note.pitch].include?(highest_pitch) &&
+      highest_pitch.spelling == tonic_spelling
   end
 
   def second_note

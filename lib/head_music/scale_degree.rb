@@ -3,7 +3,7 @@
 class HeadMusic::ScaleDegree
   include Comparable
 
-  NAME_FOR_DIATONIC_DEGREE = [nil, 'tonic', 'supertonic', 'mediant', 'subdominant', 'dominant', 'submediant']
+  NAME_FOR_DIATONIC_DEGREE = [nil, 'tonic', 'supertonic', 'mediant', 'subdominant', 'dominant', 'submediant'].freeze
 
   attr_reader :key_signature, :spelling
   delegate :scale, to: :key_signature
@@ -19,8 +19,8 @@ class HeadMusic::ScaleDegree
   end
 
   def sign
-    sign_semitones = spelling.sign && spelling.sign.semitones || 0
-    usual_sign_semitones = scale_degree_usual_spelling.sign && scale_degree_usual_spelling.sign.semitones || 0
+    sign_semitones = spelling.sign&.semitones || 0
+    usual_sign_semitones = scale_degree_usual_spelling.sign&.semitones || 0
     delta = sign_semitones - usual_sign_semitones
     HeadMusic::Sign.by(:semitones, delta) if delta != 0
   end
@@ -40,7 +40,7 @@ class HeadMusic::ScaleDegree
   def name_for_degree
     if scale_type.diatonic?
       NAME_FOR_DIATONIC_DEGREE[degree] ||
-      (scale_type.intervals.last == 1 || sign == '#' ? 'leading tone' : 'subtonic')
+        (scale_type.intervals.last == 1 || sign == '#' ? 'leading tone' : 'subtonic')
     end
   end
 

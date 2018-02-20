@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
@@ -28,7 +30,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
       end
 
       its(:fitness) { is_expected.to eq PENALTY_FACTOR }
-      its(:first_mark_code) { is_expected.to eq "4:1:000 to 7:1:000" }
+      its(:first_mark_code) { is_expected.to eq '4:1:000 to 7:1:000' }
     end
 
     context 'not recovered, not spelling a triad' do
@@ -39,7 +41,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
       end
 
       its(:fitness) { is_expected.to eq PENALTY_FACTOR }
-      its(:first_mark_code) { is_expected.to eq "4:1:000 to 7:1:000" }
+      its(:first_mark_code) { is_expected.to eq '4:1:000 to 7:1:000' }
     end
 
     context 'not recovered, but spelling a triad' do

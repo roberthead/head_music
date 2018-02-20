@@ -20,13 +20,13 @@ class HeadMusic::Spelling
     from_name(identifier) || from_number(identifier)
   end
 
-  def self.match(string)
+  def self.matching_string(string)
     string.to_s.match(MATCHER)
   end
 
   def self.from_name(name)
-    return nil unless match(name)
-    letter_name, sign_string, _octave = match(name).captures
+    return nil unless matching_string(name)
+    letter_name, sign_string, _octave = matching_string(name).captures
     letter_name = HeadMusic::LetterName.get(letter_name)
     return nil unless letter_name
     sign = HeadMusic::Sign.get(sign_string)

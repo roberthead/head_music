@@ -7,17 +7,17 @@ class HeadMusic::GrandStaff
       instrument: :piano,
       staves: [
         { clef: :treble, instrument: :piano },
-        { clef: :bass, instrument: :piano }
-      ]
+        { clef: :bass, instrument: :piano },
+      ],
     },
     organ: {
       instrument: :organ,
       staves: [
         { clef: :treble, instrument: :organ },
         { clef: :bass, instrument: :organ },
-        { clef: :bass, instrument: :pedals }
-      ]
-    }
+        { clef: :bass, instrument: :pedals },
+      ],
+    },
   }.freeze
 
   def self.get(name)

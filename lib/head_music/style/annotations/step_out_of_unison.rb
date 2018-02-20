@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::StepOutOfUnison < HeadMusic::Style::Annotation
-  MESSAGE = "Exit a unison by step."
+  MESSAGE = 'Exit a unison by step.'
 
   def marks
     leaps_following_unisons.map do |skip|

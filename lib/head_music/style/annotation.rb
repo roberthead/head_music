@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# An Annotation encapsulates an issue with or comment on a voice
 class HeadMusic::Style::Annotation
   MESSAGE = 'Write music.'
 
@@ -56,11 +59,11 @@ class HeadMusic::Style::Annotation
   protected
 
   def first_note
-    notes && notes.first
+    notes&.first
   end
 
   def last_note
-    notes && notes.last
+    notes&.last
   end
 
   def voices
@@ -68,7 +71,7 @@ class HeadMusic::Style::Annotation
   end
 
   def other_voices
-    @other_voices ||= voices.select { |part| part != voice }
+    @other_voices ||= voices.reject { |part| part == voice }
   end
 
   def cantus_firmus
@@ -85,9 +88,7 @@ class HeadMusic::Style::Annotation
 
   def functional_interval_from_tonic(note)
     tonic_to_use = tonic_pitch
-    while tonic_to_use > note.pitch
-      tonic_to_use -= HeadMusic::Interval.get(:perfect_octave)
-    end
+    tonic_to_use -= HeadMusic::Interval.get(:perfect_octave) while tonic_to_use > note.pitch
     HeadMusic::FunctionalInterval.new(tonic_to_use, note.pitch)
   end
 
@@ -101,23 +102,23 @@ class HeadMusic::Style::Annotation
 
   def motions
     downbeat_harmonic_intervals.map.with_index do |harmonic_interval, i|
-      next_harmonic_interval = downbeat_harmonic_intervals[i+1]
+      next_harmonic_interval = downbeat_harmonic_intervals[i + 1]
       HeadMusic::Motion.new(harmonic_interval, next_harmonic_interval) if next_harmonic_interval
     end.compact
   end
 
   def downbeat_harmonic_intervals
     @downbeat_harmonic_intervals ||=
-      cantus_firmus.notes.map { |cantus_firmus_note|
-        HeadMusic::HarmonicInterval.new(cantus_firmus_note.voice, voice, cantus_firmus_note.position)
-      }.reject { |interval| interval.notes.length < 2 }
+      cantus_firmus.notes.
+      map { |note| HeadMusic::HarmonicInterval.new(note.voice, voice, note.position) }.
+      reject { |interval| interval.notes.length < 2 }
   end
 
   def harmonic_intervals
     @harmonic_intervals ||=
-      positions.map { |position|
-        HeadMusic::HarmonicInterval.new(cantus_firmus, voice, position)
-      }.reject { |harmonic_interval| harmonic_interval.notes.length < 2 }
+      positions.
+      map { |position| HeadMusic::HarmonicInterval.new(cantus_firmus, voice, position) }.
+      reject { |harmonic_interval| harmonic_interval.notes.length < 2 }
   end
 
   def positions

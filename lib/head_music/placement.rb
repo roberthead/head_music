@@ -24,13 +24,13 @@ class HeadMusic::Placement
   end
 
   def <=>(other)
-    self.position <=> other.position
+    position <=> other.position
   end
 
   def during?(other_placement)
     (other_placement.position >= position && other_placement.position < next_position) ||
-    (other_placement.next_position > position && other_placement.next_position <= next_position) ||
-    (other_placement.position <= position && other_placement.next_position >= next_position)
+      (other_placement.next_position > position && other_placement.next_position <= next_position) ||
+      (other_placement.position <= position && other_placement.next_position >= next_position)
   end
 
   def to_s
@@ -47,10 +47,10 @@ class HeadMusic::Placement
   end
 
   def ensure_position(position)
-    if position.is_a?(HeadMusic::Position)
-      @position = position
-    else
-      @position = HeadMusic::Position.new(composition, position)
-    end
+    @position = if position.is_a?(HeadMusic::Position)
+                  position
+                else
+                  HeadMusic::Position.new(composition, position)
+                end
   end
 end

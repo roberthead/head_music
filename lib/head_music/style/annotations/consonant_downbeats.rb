@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::ConsonantDownbeats < HeadMusic::Style::Annotation
-  MESSAGE = "Use consonant harmonic intervals on every downbeat."
+  MESSAGE = 'Use consonant harmonic intervals on every downbeat.'
 
   def marks
     dissonant_pairs.map do |dissonant_pair|

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic
   GOLDEN_RATIO = (1 + 5**0.5) / 2.0
   GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO

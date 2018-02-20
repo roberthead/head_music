@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Placement do
-  let(:composition) { Composition.new.tap { |composition| composition.add_voice } }
+  let(:composition) { Composition.new.tap(&:add_voice) }
   let(:voice) { composition.voices.first }
   let(:position) { '2:2:240' }
   let(:pitch) { Pitch.get('F#4') }
@@ -21,12 +23,12 @@ describe Placement do
   end
 
   describe '#next_position' do
-    specify { expect(placement.next_position).to eq "2:2:720" }
+    specify { expect(placement.next_position).to eq '2:2:720' }
 
     context 'when the rhythmic value is longer than a measure' do
       let(:rhythmic_value) { RhythmicValue.new(:breve) }
 
-      specify { expect(placement.next_position).to eq "4:2:240" }
+      specify { expect(placement.next_position).to eq '4:2:240' }
     end
   end
 end

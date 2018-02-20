@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
@@ -6,9 +8,7 @@ class HeadMusic::Style::Annotations::EndOnPerfectConsonance < HeadMusic::Style::
   MESSAGE = 'End on the first or the fifth scale degree.'
 
   def marks
-    if last_note && !ends_on_perfect_consonance?
-      HeadMusic::Style::Mark.for(last_note)
-    end
+    HeadMusic::Style::Mark.for(last_note) if last_note && !ends_on_perfect_consonance?
   end
 
   private

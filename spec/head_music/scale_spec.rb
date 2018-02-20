@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Scale do
@@ -54,11 +56,11 @@ describe Scale do
     end
 
     context 'two octaves up and down' do
-      specify {
+      specify do
         expect(
           Scale.get('C4', :melodic_minor).pitch_names(direction: :both, octaves: 2)
         ).to eq %w[C4 D4 E♭4 F4 G4 A4 B4 C5 D5 E♭5 F5 G5 A5 B5 C6 B♭5 A♭5 G5 F5 E♭5 D5 C5 B♭4 A♭4 G4 F4 E♭4 D4 C4]
-      }
+      end
     end
   end
 end

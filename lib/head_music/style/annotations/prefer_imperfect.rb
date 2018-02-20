@@ -1,13 +1,13 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
 class HeadMusic::Style::Annotations::PreferImperfect < HeadMusic::Style::Annotation
-  MESSAGE = "Prefer imperfect harmonic intervals."
+  MESSAGE = 'Prefer imperfect harmonic intervals.'
 
   def marks
-    if ratio_of_perfect_intervals >= 0.5
-      HeadMusic::Style::Mark.for_all(perfect_intervals.map(&:notes).flatten)
-    end
+    HeadMusic::Style::Mark.for_all(perfect_intervals.map(&:notes).flatten) if ratio_of_perfect_intervals >= 0.5
   end
 
   private

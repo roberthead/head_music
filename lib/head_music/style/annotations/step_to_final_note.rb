@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
@@ -11,7 +13,7 @@ class HeadMusic::Style::Annotations::StepToFinalNote < HeadMusic::Style::Annotat
   private
 
   def step_to_final_note?
-    last_melodic_interval && last_melodic_interval.step?
+    last_melodic_interval&.step?
   end
 
   def last_melodic_interval

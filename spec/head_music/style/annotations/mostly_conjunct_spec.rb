@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::MostlyConjunct do
@@ -10,7 +12,7 @@ describe HeadMusic::Style::Annotations::MostlyConjunct do
 
   context 'with one note' do
     before do
-      voice.place("1:1", :whole, 'C')
+      voice.place('1:1', :whole, 'C')
     end
 
     it { is_expected.to be_adherent }

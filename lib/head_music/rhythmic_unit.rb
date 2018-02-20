@@ -6,8 +6,8 @@ class HeadMusic::RhythmicUnit
   MULTIPLES = ['whole', 'double whole', 'longa', 'maxima'].freeze
   FRACTIONS = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second', 'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth'].freeze
 
-  BRITISH_MULTIPLE_NAMES = %w[semibreve breve longa maxima]
-  BRITISH_DIVISION_NAMES = %w[semibreve minim crotchet quaver semiquaver demisemiquaver hemidemisemiquaver semihemidemisemiquaver demisemihemidemisemiquaver]
+  BRITISH_MULTIPLE_NAMES = %w[semibreve breve longa maxima].freeze
+  BRITISH_DIVISION_NAMES = %w[semibreve minim crotchet quaver semiquaver demisemiquaver hemidemisemiquaver semihemidemisemiquaver demisemihemidemisemiquaver].freeze
 
   def self.for_denominator_value(denominator)
     get(FRACTIONS[Math.log2(denominator).to_i])

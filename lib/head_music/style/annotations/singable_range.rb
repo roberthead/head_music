@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module HeadMusic::Style::Annotations
 end
 
@@ -7,9 +9,7 @@ class HeadMusic::Style::Annotations::SingableRange < HeadMusic::Style::Annotatio
   MESSAGE = 'Limit melodic range to a 10th.'
 
   def marks
-    if overage > 0
-      HeadMusic::Style::Mark.for_each(extremes, fitness: HeadMusic::PENALTY_FACTOR**overage)
-    end
+    HeadMusic::Style::Mark.for_each(extremes, fitness: HeadMusic::PENALTY_FACTOR**overage) if overage > 0
   end
 
   private

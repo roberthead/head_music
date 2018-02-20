@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::SingableRange do
@@ -32,7 +34,7 @@ describe HeadMusic::Style::Annotations::SingableRange do
 
     it 'marks all instances of the highest and lowest note' do
       bars = [1, 8, 16, 17]
-      codes = bars.map { |bar| "#{bar}:1:000 to #{bar+1}:1:000" }
+      codes = bars.map { |bar| "#{bar}:1:000 to #{bar + 1}:1:000" }
       expect(subject.marks.map(&:code)).to eq codes
     end
   end

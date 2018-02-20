@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Clef do
@@ -6,7 +8,7 @@ describe Clef do
   context 'treble clef' do
     let(:name) { :treble }
 
-    its(:clef_type) { is_expected.to eq "G-clef" }
+    its(:clef_type) { is_expected.to eq 'G-clef' }
 
     specify { expect(clef.space_pitch(-1)).to eq 'B3' }
     specify { expect(clef.line_pitch(0)).to eq 'C4' }
@@ -29,7 +31,7 @@ describe Clef do
   context 'alto clef' do
     let(:name) { :alto }
 
-    its(:clef_type) { is_expected.to eq "C-clef" }
+    its(:clef_type) { is_expected.to eq 'C-clef' }
 
     specify { expect(clef.space_pitch(-1)).to eq 'C3' }
     specify { expect(clef.line_pitch(0)).to eq 'D3' }
@@ -52,7 +54,7 @@ describe Clef do
   context 'bass clef' do
     let(:name) { :bass }
 
-    its(:clef_type) { is_expected.to eq "F-clef" }
+    its(:clef_type) { is_expected.to eq 'F-clef' }
 
     specify { expect(clef.space_pitch(-1)).to eq 'D2' }
     specify { expect(clef.line_pitch(0)).to eq 'E2' }

@@ -4,9 +4,7 @@ class HeadMusic::Scale
   SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
 
   def self.get(root_pitch, scale_type = nil)
-    if root_pitch.is_a?(String) && scale_type =~ SCALE_REGEX
-      root_pitch, scale_type = root_pitch.split(/\s+/)
-    end
+    root_pitch, scale_type = root_pitch.split(/\s+/) if root_pitch.is_a?(String) && scale_type =~ SCALE_REGEX
     root_pitch = HeadMusic::Pitch.get(root_pitch)
     scale_type = HeadMusic::ScaleType.get(scale_type || :major)
     @scales ||= {}
@@ -31,13 +29,12 @@ class HeadMusic::Scale
   def determine_scale_pitches(direction, octaves)
     semitones_from_root = 0
     [root_pitch].tap do |pitches|
-      [:ascending, :descending].each do |single_direction|
-        if [single_direction, :both].include?(direction)
-          (1..octaves).each do
-            direction_intervals(single_direction).each_with_index do |semitones, i|
-              semitones_from_root += semitones * direction_sign(single_direction)
-              pitches << pitch_for_step(i+1, semitones_from_root, single_direction)
-            end
+      %i[ascending descending].each do |single_direction|
+        next unless [single_direction, :both].include?(direction)
+        (1..octaves).each do
+          direction_intervals(single_direction).each_with_index do |semitones, i|
+            semitones_from_root += semitones * direction_sign(single_direction)
+            pitches << pitch_for_step(i + 1, semitones_from_root, single_direction)
           end
         end
       end
@@ -79,9 +76,9 @@ class HeadMusic::Scale
   end
 
   def parent_scale_pitch_for(semitones_from_root)
-    parent_scale_pitches.detect { |parent_scale_pitch|
+    parent_scale_pitches.detect do |parent_scale_pitch|
       parent_scale_pitch.pitch_class == (root_pitch + semitones_from_root).to_i % 12
-    }
+    end
   end
 
   def letter_for_step(step, semitones_from_root, direction)

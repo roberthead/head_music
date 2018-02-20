@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
+# A ScaleType represents a particular scale pattern, such as major, lydian, or minor pentatonic.
 class HeadMusic::ScaleType
   H = 1 # whole step
   W = 2 # half step
-  WH = W + H # augmented second
 
   # Modal
   I = [W, W, H, W, W, W, H].freeze
@@ -15,48 +15,73 @@ class HeadMusic::ScaleType
   VII = I.rotate(6)
 
   # Tonal
-  HARMONIC_MINOR = [W, H, W, W, H, WH, H].freeze
+  HARMONIC_MINOR = [W, H, W, W, H, 3, H].freeze
   MELODIC_MINOR_ASCENDING = [W, H, W, W, W, W, H].freeze
 
   MODE_NAMES = {
-    i: [:ionian, :major],
+    i: %i[ionian major],
     ii: [:dorian],
     iii: [:phrygian],
     iv: [:lydian],
     v: [:mixolydian],
-    vi: [:aeolian, :minor, :natural_minor],
+    vi: %i[aeolian minor natural_minor],
     vii: [:locrian],
   }.freeze
-  SCALE_TYPES = {}
-  MODE_NAMES.each do |roman_numeral, aliases|
-    intervals = { ascending: const_get(roman_numeral.upcase) }
-    SCALE_TYPES[roman_numeral] = intervals
-    aliases.each do |name|
-      SCALE_TYPES[name.to_sym] = intervals
-    end
-  end
-  SCALE_TYPES[:harmonic_minor] = { ascending: HARMONIC_MINOR }
-  SCALE_TYPES[:melodic_minor] = { ascending: MELODIC_MINOR_ASCENDING, descending: VI.reverse }
 
   CHROMATIC = [H, H, H, H, H, H, H, H, H, H, H, H].freeze
-  SCALE_TYPES[:chromatic] = { ascending: CHROMATIC }
 
   MINOR_PENTATONIC = [3, 2, 2, 3, 2].freeze
-  SCALE_TYPES[:minor_pentatonic] = { ascending: MINOR_PENTATONIC, parent_name: :minor }
-  SCALE_TYPES[:major_pentatonic] = { ascending: MINOR_PENTATONIC.rotate, parent_name: :major }
-  SCALE_TYPES[:egyptian_pentatonic] = { ascending: MINOR_PENTATONIC.rotate(2), parent_name: :minor }
-  SCALE_TYPES[:blues_minor_pentatonic] = { ascending: MINOR_PENTATONIC.rotate(3), parent_name: :minor }
-  SCALE_TYPES[:blues_major_pentatonic] = { ascending: MINOR_PENTATONIC.rotate(4), parent_name: :major }
 
-  # exotic scales
-  SCALE_TYPES[:octatonic] = { ascending: [W, H, W, H, W, H, W, H] }
-  SCALE_TYPES[:whole_tone] = { ascending: [W, W, W, W, W, W] }
-  SCALE_TYPES.freeze
+  def self._modes
+    {}.tap do |modes|
+      MODE_NAMES.each do |roman_numeral, aliases|
+        intervals = { ascending: const_get(roman_numeral.upcase) }
+        modes[roman_numeral] = intervals
+        aliases.each { |name| modes[name] = intervals }
+      end
+    end
+  end
+
+  def self._minor_scales
+    {
+      harmonic_minor: { ascending: HARMONIC_MINOR },
+      melodic_minor: { ascending: MELODIC_MINOR_ASCENDING, descending: VI.reverse },
+    }
+  end
+
+  def self._chromatic_scales
+    { chromatic: { ascending: CHROMATIC } }
+  end
+
+  def self._pentatonic_scales
+    {
+      minor_pentatonic: { ascending: MINOR_PENTATONIC, parent_name: :minor },
+      major_pentatonic: { ascending: MINOR_PENTATONIC.rotate, parent_name: :major },
+      egyptian_pentatonic: { ascending: MINOR_PENTATONIC.rotate(2), parent_name: :minor },
+      blues_minor_pentatonic: { ascending: MINOR_PENTATONIC.rotate(3), parent_name: :minor },
+      blues_major_pentatonic: { ascending: MINOR_PENTATONIC.rotate(4), parent_name: :major },
+    }
+  end
+
+  def self._exotic_scales
+    {
+      octatonic: { ascending: [W, H, W, H, W, H, W, H] },
+      whole_tone: { ascending: [W, W, W, W, W, W] },
+    }
+  end
+
+  SCALE_TYPES = {}.tap do |scales|
+    scales.merge!(_modes)
+    scales.merge!(_minor_scales)
+    scales.merge!(_chromatic_scales)
+    scales.merge!(_pentatonic_scales)
+    scales.merge!(_exotic_scales)
+  end.freeze
 
   class << self
-    SCALE_TYPES.keys.each do |name|
+    SCALE_TYPES.each_key do |name|
       define_method(name) do
-        self.get(name)
+        get(name)
       end
     end
   end
@@ -73,7 +98,7 @@ class HeadMusic::ScaleType
   end
 
   attr_reader :name, :ascending_intervals, :descending_intervals, :parent_name
-  alias_method :intervals, :ascending_intervals
+  alias intervals ascending_intervals
 
   delegate :to_s, to: :name
 
@@ -85,7 +110,7 @@ class HeadMusic::ScaleType
   end
 
   def ==(other)
-    self.state == other.state
+    state == other.state
   end
 
   def state
