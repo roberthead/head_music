@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A pitch is a named frequency represented by a spelling and an octive.
 class HeadMusic::Pitch
   include Comparable
 
@@ -80,17 +81,17 @@ class HeadMusic::Pitch
     midi_note_number == other.midi_note_number
   end
 
-  def +(value)
-    HeadMusic::Pitch.get(to_i + value.to_i)
+  def +(other)
+    HeadMusic::Pitch.get(to_i + other.to_i)
   end
 
-  def -(value)
-    if value.is_a?(HeadMusic::Pitch)
+  def -(other)
+    if other.is_a?(HeadMusic::Pitch)
       # return an interval
-      HeadMusic::Interval.get(to_i - value.to_i)
+      HeadMusic::Interval.get(to_i - other.to_i)
     else
       # assume value represents an interval in semitones and return another pitch
-      HeadMusic::Pitch.get(to_i - value.to_i)
+      HeadMusic::Pitch.get(to_i - other.to_i)
     end
   end
 
@@ -111,9 +112,9 @@ class HeadMusic::Pitch
     target_letter_name = letter_name.steps(num_steps)
     direction = num_steps >= 0 ? 1 : -1
     octaves_delta = (num_steps.abs / 7) * direction
-    if num_steps < 0 && target_letter_name.position > letter_name.position
+    if num_steps.negative? && target_letter_name.position > letter_name.position
       octaves_delta -= 1
-    elsif num_steps > 0 && target_letter_name.position < letter_name.position
+    elsif num_steps.positive? && target_letter_name.position < letter_name.position
       octaves_delta += 1
     end
     HeadMusic::Pitch.get([target_letter_name, octave + octaves_delta].join)

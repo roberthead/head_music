@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A pitch class is a set of notes separated by octaves.
 class HeadMusic::PitchClass
   attr_reader :number
 
@@ -25,22 +26,24 @@ class HeadMusic::PitchClass
     number
   end
 
-  def +(semitones)
-    HeadMusic::PitchClass.get(to_i + semitones.to_i)
+  # Pass in the number of semitones
+  def +(other)
+    HeadMusic::PitchClass.get(to_i + other.to_i)
   end
 
-  def -(semitones)
-    HeadMusic::PitchClass.get(to_i - semitones.to_i)
+  # Pass in the number of semitones
+  def -(other)
+    HeadMusic::PitchClass.get(to_i - other.to_i)
   end
 
-  def ==(value)
-    to_i == value.to_i
+  def ==(other)
+    to_i == other.to_i
   end
   alias enharmonic? ==
 
   def intervals_to(other)
     delta = other.to_i - to_i
-    inverse = delta > 0 ? delta - 12 : delta + 12
+    inverse = delta.positive? ? delta - 12 : delta + 12
     [delta, inverse].sort_by(&:abs).map { |interval| HeadMusic::Interval.get(interval) }
   end
 

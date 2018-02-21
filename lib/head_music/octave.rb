@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# The Octave identifier is a number used in scientific pitch notation.
 class HeadMusic::Octave
   include Comparable
 
@@ -17,11 +18,10 @@ class HeadMusic::Octave
   end
 
   def self.from_name(string)
-    if string.to_s.match?(HeadMusic::Spelling::MATCHER)
-      _letter, _sign, octave_string = string.to_s.match(HeadMusic::Spelling::MATCHER).captures
-      @octaves ||= {}
-      @octaves[octave_string.to_i] ||= new(octave_string.to_i) if octave_string
-    end
+    return unless string.to_s.match?(HeadMusic::Spelling::MATCHER)
+    _letter, _sign, octave_string = string.to_s.match(HeadMusic::Spelling::MATCHER).captures
+    @octaves ||= {}
+    @octaves[octave_string.to_i] ||= new(octave_string.to_i) if octave_string
   end
 
   def self.default

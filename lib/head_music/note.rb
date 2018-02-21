@@ -22,6 +22,10 @@ class HeadMusic::Note
   end
 
   def method_missing(method_name, *args, &block)
-    placement.send(method_name, *args, &block)
+    respond_to_missing?(method_name) ? placement.send(method_name, *args, &block) : super
+  end
+
+  def respond_to_missing?(method_name, *_args)
+    placement.respond_to?(method_name)
   end
 end
