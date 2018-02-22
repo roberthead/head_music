@@ -55,19 +55,21 @@ class HeadMusic::FunctionalInterval
     def degree_name
       words.last
     end
+
+    def steps
+      NUMBER_NAMES.index(degree_name)
+    end
+
+    def higher_letter
+      HeadMusic::Pitch.middle_c.letter_name.steps(steps)
+    end
   end
 
   def self.get(identifier)
     name = Name.new(identifier)
-    steps = NUMBER_NAMES.index(name.degree_name)
-    higher_letter = middle_c.letter_name.steps(steps)
     semitones = _degree_quality_semitones.dig(name.degree_name.to_sym, name.quality_name)
-    higher_pitch = HeadMusic::Pitch.from_number_and_letter(middle_c + semitones, higher_letter)
-    new(middle_c, higher_pitch)
-  end
-
-  def self.middle_c
-    @middle_c ||= HeadMusic::Pitch.get('C4')
+    higher_pitch = HeadMusic::Pitch.from_number_and_letter(HeadMusic::Pitch.middle_c + semitones, name.higher_letter)
+    new(HeadMusic::Pitch.middle_c, higher_pitch)
   end
 
   def self._degree_quality_semitones

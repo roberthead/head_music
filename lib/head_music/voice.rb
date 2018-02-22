@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# A Voice is a stream of music with some indepedence that is conceptually one part or for one performer.
+# The melodic lines in counterpoint are each a voice.
 class HeadMusic::Voice
   include Comparable
 
@@ -58,7 +60,7 @@ class HeadMusic::Voice
   def melodic_intervals
     @melodic_intervals ||=
       notes.map.with_index do |note, i|
-        HeadMusic::MelodicInterval.new(notes[i - 1], note) if i > 0
+        HeadMusic::MelodicInterval.new(notes[i - 1], note) if i.positive?
       end.compact
   end
 

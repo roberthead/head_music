@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A placement is a note or rest at a position within a voice in a composition
 class HeadMusic::Placement
   include Comparable
 
@@ -28,9 +29,7 @@ class HeadMusic::Placement
   end
 
   def during?(other_placement)
-    (other_placement.position >= position && other_placement.position < next_position) ||
-      (other_placement.next_position > position && other_placement.next_position <= next_position) ||
-      (other_placement.position <= position && other_placement.next_position >= next_position)
+    starts_during?(other_placement) || ends_during?(other_placement) || within?(other_placement)
   end
 
   def to_s
@@ -38,6 +37,18 @@ class HeadMusic::Placement
   end
 
   private
+
+  def starts_during?(other_placement)
+    (other_placement.next_position > position && other_placement.next_position <= next_position)
+  end
+
+  def ends_during?(other_placement)
+    (other_placement.position >= position && other_placement.position < next_position)
+  end
+
+  def within?(other_placement)
+    (other_placement.position <= position && other_placement.next_position >= next_position)
+  end
 
   def ensure_attributes(voice, position, rhythmic_value, pitch)
     @voice = voice

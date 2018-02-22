@@ -10,7 +10,7 @@ describe RhythmicUnit do
 
     its(:relative_value) { is_expected.to eq 1 }
     its(:notehead) { is_expected.to eq :open }
-    it { is_expected.not_to have_stem }
+    it { is_expected.not_to be_stemmed }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'semibreve' }
   end
@@ -20,7 +20,7 @@ describe RhythmicUnit do
 
     its(:relative_value) { is_expected.to eq 1.0 / 2 }
     its(:notehead) { is_expected.to eq :open }
-    it { is_expected.to have_stem }
+    it { is_expected.to be_stemmed }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'minim' }
   end
@@ -30,7 +30,7 @@ describe RhythmicUnit do
 
     its(:relative_value) { is_expected.to eq 1.0 / 4 }
     its(:notehead) { is_expected.to eq :closed }
-    it { is_expected.to have_stem }
+    it { is_expected.to be_stemmed }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'crotchet' }
   end
@@ -40,7 +40,7 @@ describe RhythmicUnit do
 
     its(:relative_value) { is_expected.to eq 1.0 / 8 }
     its(:notehead) { is_expected.to eq :closed }
-    it { is_expected.to have_stem }
+    it { is_expected.to be_stemmed }
     its(:flags) { are_expected.to eq 1 }
     its(:british_name) { is_expected.to eq 'quaver' }
   end
@@ -50,7 +50,7 @@ describe RhythmicUnit do
 
     its(:relative_value) { is_expected.to eq 1.0 / 16 }
     its(:notehead) { is_expected.to eq :closed }
-    it { is_expected.to have_stem }
+    it { is_expected.to be_stemmed }
     its(:flags) { are_expected.to eq 2 }
     its(:british_name) { is_expected.to eq 'semiquaver' }
   end
@@ -60,7 +60,7 @@ describe RhythmicUnit do
 
     its(:relative_value) { is_expected.to eq 1.0 / 32 }
     its(:notehead) { is_expected.to eq :closed }
-    it { is_expected.to have_stem }
+    it { is_expected.to be_stemmed }
     its(:flags) { are_expected.to eq 3 }
     its(:british_name) { is_expected.to eq 'demisemiquaver' }
   end
@@ -70,7 +70,7 @@ describe RhythmicUnit do
 
     its(:relative_value) { is_expected.to eq 2 }
     its(:notehead) { is_expected.to eq :breve }
-    it { is_expected.not_to have_stem }
+    it { is_expected.not_to be_stemmed }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'breve' }
   end
@@ -80,7 +80,7 @@ describe RhythmicUnit do
 
     its(:relative_value) { is_expected.to eq 2 }
     its(:notehead) { is_expected.to eq :breve }
-    it { is_expected.not_to have_stem }
+    it { is_expected.not_to be_stemmed }
     its(:flags) { are_expected.to eq 0 }
     its(:british_name) { is_expected.to eq 'breve' }
   end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# A scale degree is a number indicating the ordinality of the spelling in the key signature.
+# TODO: Rewrite to accept a tonal_center and a scale type.
 class HeadMusic::ScaleDegree
   include Comparable
 
@@ -38,10 +40,9 @@ class HeadMusic::ScaleDegree
   end
 
   def name_for_degree
-    if scale_type.diatonic?
-      NAME_FOR_DIATONIC_DEGREE[degree] ||
-        (scale_type.intervals.last == 1 || sign == '#' ? 'leading tone' : 'subtonic')
-    end
+    return unless scale_type.diatonic?
+    NAME_FOR_DIATONIC_DEGREE[degree] ||
+      (scale_type.intervals.last == 1 || sign == '#' ? 'leading tone' : 'subtonic')
   end
 
   private

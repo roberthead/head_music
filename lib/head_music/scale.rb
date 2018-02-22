@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A scale contains ordered pitches starting at a tonal center.
 class HeadMusic::Scale
   SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
 
@@ -26,6 +27,28 @@ class HeadMusic::Scale
     @pitches[direction][octaves] ||= determine_scale_pitches(direction, octaves)
   end
 
+  def spellings(direction: :ascending, octaves: 1)
+    pitches(direction: direction, octaves: octaves).map(&:spelling).map(&:to_s)
+  end
+
+  def pitch_names(direction: :ascending, octaves: 1)
+    pitches(direction: direction, octaves: octaves).map(&:name)
+  end
+
+  def letter_name_cycle
+    @letter_name_cycle ||= root_pitch.letter_name_cycle
+  end
+
+  def root_pitch_number
+    @root_pitch_number ||= root_pitch.number
+  end
+
+  def degree(degree_number)
+    pitches[degree_number - 1]
+  end
+
+  private
+
   def determine_scale_pitches(direction, octaves)
     semitones_from_root = 0
     [root_pitch].tap do |pitches|
@@ -48,28 +71,6 @@ class HeadMusic::Scale
   def direction_intervals(direction)
     scale_type.send("#{direction}_intervals")
   end
-
-  def spellings(direction: :ascending, octaves: 1)
-    pitches(direction: direction, octaves: octaves).map(&:spelling).map(&:to_s)
-  end
-
-  def pitch_names(direction: :ascending, octaves: 1)
-    pitches(direction: direction, octaves: octaves).map(&:name)
-  end
-
-  def letter_name_cycle
-    @letter_name_cycle ||= root_pitch.letter_name_cycle
-  end
-
-  def root_pitch_number
-    @root_pitch_number ||= root_pitch.number
-  end
-
-  def degree(degree_number)
-    pitches[degree_number - 1]
-  end
-
-  private
 
   def parent_scale_pitches
     HeadMusic::Scale.get(root_pitch, scale_type.parent_name).pitches if scale_type.parent

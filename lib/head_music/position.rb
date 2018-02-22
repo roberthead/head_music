@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A position is a moment in time within the rhythmic framework of a composition.
 class HeadMusic::Position
   include Comparable
 
@@ -53,11 +54,9 @@ class HeadMusic::Position
     !strong?
   end
 
-  def +(rhythmic_value)
-    if [HeadMusic::RhythmicUnit, Symbol, String].include?(rhythmic_value.class)
-      rhythmic_value = HeadMusic::RhythmicValue.new(rhythmic_value)
-    end
-    self.class.new(composition, bar_number, count, tick + rhythmic_value.ticks)
+  def +(other)
+    other = HeadMusic::RhythmicValue.new(other) if [HeadMusic::RhythmicUnit, Symbol, String].include?(other.class)
+    self.class.new(composition, bar_number, count, tick + other.ticks)
   end
 
   def start_of_next_bar

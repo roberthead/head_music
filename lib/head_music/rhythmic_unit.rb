@@ -1,13 +1,20 @@
 # frozen_string_literal: true
 
+# A rhythmic unit is a rudiment of duration consisting of doublings and divisions of a whole note.
 class HeadMusic::RhythmicUnit
   include HeadMusic::NamedRudiment
 
   MULTIPLES = ['whole', 'double whole', 'longa', 'maxima'].freeze
-  FRACTIONS = ['whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second', 'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth'].freeze
+  FRACTIONS = [
+    'whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second',
+    'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth',
+  ].freeze
 
   BRITISH_MULTIPLE_NAMES = %w[semibreve breve longa maxima].freeze
-  BRITISH_DIVISION_NAMES = %w[semibreve minim crotchet quaver semiquaver demisemiquaver hemidemisemiquaver semihemidemisemiquaver demisemihemidemisemiquaver].freeze
+  BRITISH_DIVISION_NAMES = %w[
+    semibreve minim crotchet quaver semiquaver demisemiquaver
+    hemidemisemiquaver semihemidemisemiquaver demisemihemidemisemiquaver
+  ].freeze
 
   def self.for_denominator_value(denominator)
     get(FRACTIONS[Math.log2(denominator).to_i])
@@ -34,32 +41,25 @@ class HeadMusic::RhythmicUnit
   end
 
   def notehead
-    case relative_value
-    when 8
-      :maxima
-    when 4
-      :longa
-    when 2
-      :breve
-    when 0.5, 1
-      :open
-    else
-      :closed
-    end
+    return :maxima if relative_value == 8
+    return :longa if relative_value == 4
+    return :breve if relative_value == 2
+    return :open if [0.5, 1].include? relative_value
+    :closed
   end
 
   def flags
     FRACTIONS.include?(name) ? [FRACTIONS.index(name) - 2, 0].max : 0
   end
 
-  def has_stem?
+  def stemmed?
     relative_value < 1
   end
 
   def british_name
-    if MULTIPLES.include?(name)
+    if multiple?
       BRITISH_MULTIPLE_NAMES[MULTIPLES.index(name)]
-    elsif FRACTIONS.include?(name)
+    elsif fraction?
       BRITISH_DIVISION_NAMES[FRACTIONS.index(name)]
     elsif BRITISH_MULTIPLE_NAMES.include?(name) || BRITISH_DIVISION_NAMES.include?(name)
       name
@@ -69,6 +69,14 @@ class HeadMusic::RhythmicUnit
   private_class_method :new
 
   private
+
+  def multiple?
+    MULTIPLES.include?(name)
+  end
+
+  def fraction?
+    FRACTIONS.include?(name)
+  end
 
   def numerator_exponent
     MULTIPLES.index(name) || BRITISH_MULTIPLE_NAMES.index(name) || 0

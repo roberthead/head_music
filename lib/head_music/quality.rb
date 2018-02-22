@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A quality is a categorization of an interval.
 class HeadMusic::Quality
   SHORTHAND = {
     perfect: 'P',

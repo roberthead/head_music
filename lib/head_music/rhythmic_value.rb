@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A rhythmic value is a duration composed of a rhythmic unit, any number of dots, and a tied value.
 class HeadMusic::RhythmicValue
   attr_reader :unit, :dots, :tied_value
 

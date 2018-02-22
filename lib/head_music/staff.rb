@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A staff is a set of lines and spaces that provides context for a pitch
 class HeadMusic::Staff
   DEFAULT_LINE_COUNT = 5
 
