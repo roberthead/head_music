@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Rulesets
-end
+# Module for rulesets
+module HeadMusic::Style::Rulesets; end
 
+# Rules for the cantus firmus according to Fux.
 class HeadMusic::Style::Rulesets::FuxCantusFirmus
   RULESET = [
     HeadMusic::Style::Annotations::AlwaysMove,

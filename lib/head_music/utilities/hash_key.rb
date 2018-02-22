@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# A namespace for utilities classes and modules
 module HeadMusic::Utilities; end
 
 # Util for converting an object to a consistent hash key

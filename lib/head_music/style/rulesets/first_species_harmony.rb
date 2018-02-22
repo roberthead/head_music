@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Rulesets
-end
+# Module for rulesets
+module HeadMusic::Style::Rulesets; end
 
+# Rules for first species harmony
 class HeadMusic::Style::Rulesets::FirstSpeciesHarmony
   RULESET = [
     HeadMusic::Style::Annotations::ApproachPerfectionContrarily,

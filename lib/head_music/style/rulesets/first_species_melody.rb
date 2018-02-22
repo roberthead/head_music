@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Rulesets
-end
+# Module for rulesets
+module HeadMusic::Style::Rulesets; end
 
+# Rules for first species melodies
 class HeadMusic::Style::Rulesets::FirstSpeciesMelody
   RULESET = [
     HeadMusic::Style::Annotations::ConsonantClimax,

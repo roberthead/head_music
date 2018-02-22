@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Rulesets
-end
+# Module for rulesets
+module HeadMusic::Style::Rulesets; end
 
+# Modern rules for the cantus firmus
 class HeadMusic::Style::Rulesets::ModernCantusFirmus
   RULESET = [
     HeadMusic::Style::Annotations::AlwaysMove,
