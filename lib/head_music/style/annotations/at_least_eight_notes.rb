@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Annotations
-end
+# Module for Annotations.
+module HeadMusic::Style::Annotations; end
 
+# A counterpoint guideline
 class HeadMusic::Style::Annotations::AtLeastEightNotes < HeadMusic::Style::Annotation
   MINIMUM_NOTES = 8
 
@@ -23,8 +24,7 @@ class HeadMusic::Style::Annotations::AtLeastEightNotes < HeadMusic::Style::Annot
   end
 
   def deficiency_mark
-    if notes.length < MINIMUM_NOTES
-      HeadMusic::Style::Mark.for_all(placements, fitness: notes.length.to_f / MINIMUM_NOTES)
-    end
+    return unless notes.length < MINIMUM_NOTES
+    HeadMusic::Style::Mark.for_all(placements, fitness: notes.length.to_f / MINIMUM_NOTES)
   end
 end

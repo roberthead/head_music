@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Annotations
-end
+# Module for Annotations.
+module HeadMusic::Style::Annotations; end
 
+# A counterpoint guideline
 class HeadMusic::Style::Annotations::ConsonantClimax < HeadMusic::Style::Annotation
   MESSAGE = 'Peak on a consonant high or low note one time or twice with a step between.'
 

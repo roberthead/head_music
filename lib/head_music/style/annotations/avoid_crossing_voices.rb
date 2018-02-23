@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Annotations
-end
+# Module for Annotations.
+module HeadMusic::Style::Annotations; end
 
+# A counterpoint guideline
 class HeadMusic::Style::Annotations::AvoidCrossingVoices < HeadMusic::Style::Annotation
   MESSAGE = 'Avoid crossing voices. Maintain the high-low relationship between voices.'
 

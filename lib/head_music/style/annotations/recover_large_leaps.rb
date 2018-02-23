@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Annotations
-end
+# Module for Annotations.
+module HeadMusic::Style::Annotations; end
 
 # Ok, so a rule might be that after the first leap (after previous steps)
 # one should normally move by step in the opposite direction
@@ -11,15 +11,18 @@ class HeadMusic::Style::Annotations::RecoverLargeLeaps < HeadMusic::Style::Annot
   MESSAGE = 'Recover large leaps by step in the opposite direction.'
 
   def marks
-    melodic_intervals.drop(1).to_a.map.with_index do |interval, i|
-      previous_interval = melodic_intervals[i]
-      if unrecovered_leap?(previous_interval, interval, melodic_intervals[i + 2])
-        HeadMusic::Style::Mark.for_all((previous_interval.notes + interval.notes).uniq)
+    melodic_intervals.each_cons(3).map do |intervals|
+      if unrecovered_leap?(intervals[0], intervals[1], intervals[2])
+        HeadMusic::Style::Mark.for_all(notes_in_intervals(intervals))
       end
     end.compact
   end
 
   private
+
+  def notes_in_intervals(intervals)
+    (intervals[0].notes + intervals[1].notes).uniq
+  end
 
   def unrecovered_leap?(first_interval, second_interval, third_interval)
     first_interval.large_leap? &&

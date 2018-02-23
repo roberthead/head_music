@@ -5,7 +5,7 @@ module HeadMusic::Style; end
 
 # An analysis of music according to a ruleset.
 class HeadMusic::Style::Analysis
-  attr_reader :ruleset, :subject, :annotations
+  attr_reader :ruleset, :subject
 
   def initialize(ruleset, subject)
     @ruleset = ruleset

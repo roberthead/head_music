@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Annotations
-end
+# Module for Annotations.
+module HeadMusic::Style::Annotations; end
 
 # marks the voice if the first note is not the first or fifth scale degree of the key.
 class HeadMusic::Style::Annotations::EndOnPerfectConsonance < HeadMusic::Style::Annotation

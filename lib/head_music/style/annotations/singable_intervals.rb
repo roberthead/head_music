@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Annotations
-end
+# Module for Annotations.
+module HeadMusic::Style::Annotations; end
 
+# A counterpoint guideline
 class HeadMusic::Style::Annotations::SingableIntervals < HeadMusic::Style::Annotation
   PERMITTED_ASCENDING = %w[PU m2 M2 m3 M3 P4 P5 m6 P8].freeze
   PERMITTED_DESCENDING = %w[PU m2 M2 m3 M3 P4 P5 P8].freeze

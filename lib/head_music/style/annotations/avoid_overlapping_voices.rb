@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module HeadMusic::Style::Annotations
-end
+# Module for Annotations.
+module HeadMusic::Style::Annotations; end
 
+# A counterpoint guideline
 class HeadMusic::Style::Annotations::AvoidOverlappingVoices < HeadMusic::Style::Annotation
   MESSAGE = 'Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes.'
 
@@ -26,15 +27,19 @@ class HeadMusic::Style::Annotations::AvoidOverlappingVoices < HeadMusic::Style::
 
   def overlappings_for_voices(voices, comparison_operator)
     [].tap do |marks|
-      voices.each do |higher_voice|
-        overlapped_notes = voice.notes.select do |note|
-          preceding_note = higher_voice.note_preceding(note.position)
-          following_note = higher_voice.note_following(note.position)
-          (preceding_note && preceding_note.pitch.send(comparison_operator, note.pitch)) ||
-            (following_note && following_note.pitch.send(comparison_operator, note.pitch))
-        end
+      voices.each do |a_voice|
+        overlapped_notes = overlappings_with_voice(a_voice, comparison_operator)
         marks << HeadMusic::Style::Mark.for_each(overlapped_notes)
       end
     end.flatten.compact
+  end
+
+  def overlappings_with_voice(other_voice, comparison_operator)
+    voice.notes.drop(1).select do |note|
+      preceding_note = other_voice.note_preceding(note.position)
+      following_note = other_voice.note_following(note.position)
+      preceding_note&.pitch&.send(comparison_operator, note.pitch) ||
+        following_note&.pitch&.send(comparison_operator, note.pitch)
+    end
   end
 end
