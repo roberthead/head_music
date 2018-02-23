@@ -125,6 +125,10 @@ class HeadMusic::ScaleType
     intervals.length == 7
   end
 
+  def whole_tone?
+    intervals.length == 6 && intervals.uniq == [2]
+  end
+
   def pentatonic?
     intervals.length == 5
   end

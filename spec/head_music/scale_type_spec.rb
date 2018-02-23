@@ -47,7 +47,8 @@ describe ScaleType do
       its(:to_s) { is_expected.to eq mode.to_s }
 
       it { is_expected.to be_diatonic }
-      it { is_expected.not_to be_pentatonic }
+      it { is_expected.not_to be_whole_tone }
+    it { is_expected.not_to be_pentatonic }
       it { is_expected.not_to be_chromatic }
     end
   end
@@ -60,6 +61,7 @@ describe ScaleType do
 
     it { is_expected.to eq ScaleType.ionian }
     it { is_expected.to be_diatonic }
+    it { is_expected.not_to be_whole_tone }
     it { is_expected.not_to be_pentatonic }
     it { is_expected.not_to be_chromatic }
   end
@@ -71,6 +73,19 @@ describe ScaleType do
     its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
 
     it { is_expected.to be_diatonic }
+    it { is_expected.not_to be_whole_tone }
+    it { is_expected.not_to be_pentatonic }
+    it { is_expected.not_to be_chromatic }
+  end
+
+  describe '.whole_tone' do
+    subject(:whole_tone) { ScaleType.whole_tone }
+
+    its(:ascending_intervals) { are_expected.to eq [2, 2, 2, 2, 2, 2] }
+    its(:descending_intervals) { are_expected.to eq subject.ascending_intervals }
+
+    it { is_expected.not_to be_diatonic }
+    it { is_expected.to be_whole_tone }
     it { is_expected.not_to be_pentatonic }
     it { is_expected.not_to be_chromatic }
   end
@@ -83,6 +98,7 @@ describe ScaleType do
     its(:parent) { is_expected.to eq ScaleType.minor }
 
     it { is_expected.not_to be_diatonic }
+    it { is_expected.not_to be_whole_tone }
     it { is_expected.to be_pentatonic }
     it { is_expected.not_to be_chromatic }
   end
@@ -95,6 +111,7 @@ describe ScaleType do
     its(:parent) { is_expected.to eq ScaleType.major }
 
     it { is_expected.not_to be_diatonic }
+    it { is_expected.not_to be_whole_tone }
     it { is_expected.to be_pentatonic }
     it { is_expected.not_to be_chromatic }
   end
@@ -107,6 +124,7 @@ describe ScaleType do
     its(:parent) { is_expected.to be_nil }
 
     it { is_expected.not_to be_diatonic }
+    it { is_expected.not_to be_whole_tone }
     it { is_expected.not_to be_pentatonic }
     it { is_expected.to be_chromatic }
   end
