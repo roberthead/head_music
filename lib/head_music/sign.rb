@@ -25,7 +25,7 @@ class HeadMusic::Sign
   end
 
   def self.symbol?(candidate)
-    /^(#{matcher})$/.match?(candidate)
+    candidate =~ /^(#{matcher})$/
   end
 
   def self.get(identifier)

@@ -18,7 +18,7 @@ class HeadMusic::Octave
   end
 
   def self.from_name(string)
-    return unless string.to_s.match?(HeadMusic::Spelling::MATCHER)
+    return unless string.to_s =~ HeadMusic::Spelling::MATCHER
     _letter, _sign, octave_string = string.to_s.match(HeadMusic::Spelling::MATCHER).captures
     @octaves ||= {}
     @octaves[octave_string.to_i] ||= new(octave_string.to_i) if octave_string

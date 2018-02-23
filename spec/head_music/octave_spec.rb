@@ -26,6 +26,10 @@ describe Octave do
     end
   end
 
+  describe '.from_name' do
+    specify { expect(Octave.from_name('F#5')).to eq 5 }
+  end
+
   describe '.new' do
     it 'is private' do
       expect { Octave.new(5) }.to raise_error NoMethodError
