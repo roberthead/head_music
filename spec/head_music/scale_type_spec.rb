@@ -45,6 +45,10 @@ describe ScaleType do
 
       its(:name) { is_expected.to eq mode }
       its(:to_s) { is_expected.to eq mode.to_s }
+
+      it { is_expected.to be_diatonic }
+      it { is_expected.not_to be_pentatonic }
+      it { is_expected.not_to be_chromatic }
     end
   end
 
@@ -53,7 +57,11 @@ describe ScaleType do
 
     its(:ascending_intervals) { are_expected.to eq [2, 2, 1, 2, 2, 2, 1] }
     its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
+
     it { is_expected.to eq ScaleType.ionian }
+    it { is_expected.to be_diatonic }
+    it { is_expected.not_to be_pentatonic }
+    it { is_expected.not_to be_chromatic }
   end
 
   describe '.dorian' do
@@ -61,6 +69,10 @@ describe ScaleType do
 
     its(:ascending_intervals) { are_expected.to eq [2, 1, 2, 2, 2, 1, 2] }
     its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
+
+    it { is_expected.to be_diatonic }
+    it { is_expected.not_to be_pentatonic }
+    it { is_expected.not_to be_chromatic }
   end
 
   describe '.minor_pentatonic' do
@@ -69,6 +81,10 @@ describe ScaleType do
     its(:ascending_intervals) { are_expected.to eq [3, 2, 2, 3, 2] }
     its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
     its(:parent) { is_expected.to eq ScaleType.minor }
+
+    it { is_expected.not_to be_diatonic }
+    it { is_expected.to be_pentatonic }
+    it { is_expected.not_to be_chromatic }
   end
 
   describe '.major_pentatonic' do
@@ -77,6 +93,22 @@ describe ScaleType do
     its(:ascending_intervals) { are_expected.to eq [2, 2, 3, 2, 3] }
     its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
     its(:parent) { is_expected.to eq ScaleType.major }
+
+    it { is_expected.not_to be_diatonic }
+    it { is_expected.to be_pentatonic }
+    it { is_expected.not_to be_chromatic }
+  end
+
+  describe '.chromatic' do
+    subject(:chromatic) { ScaleType.chromatic }
+
+    its(:ascending_intervals) { are_expected.to eq [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] }
+    its(:descending_intervals) { are_expected.to eq subject.ascending_intervals }
+    its(:parent) { is_expected.to be_nil }
+
+    it { is_expected.not_to be_diatonic }
+    it { is_expected.not_to be_pentatonic }
+    it { is_expected.to be_chromatic }
   end
 
   describe 'equality' do

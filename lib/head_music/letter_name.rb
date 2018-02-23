@@ -76,9 +76,11 @@ class HeadMusic::LetterName
   end
 
   def cycle
-    cycle = NAMES
-    cycle = cycle.rotate while cycle.first != to_s
-    cycle
+    @cycle ||= begin
+      cycle = NAMES
+      cycle = cycle.rotate while cycle.first != to_s
+      cycle
+    end
   end
 
   private_class_method :new

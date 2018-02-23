@@ -14,6 +14,8 @@ class HeadMusic::Scale
     @scales[hash_key] ||= new(root_pitch, scale_type)
   end
 
+  delegate :letter_name_cycle, to: :root_pitch
+
   attr_reader :root_pitch, :scale_type
 
   def initialize(root_pitch, scale_type)
@@ -35,10 +37,6 @@ class HeadMusic::Scale
     pitches(direction: direction, octaves: octaves).map(&:name)
   end
 
-  def letter_name_cycle
-    @letter_name_cycle ||= root_pitch.letter_name_cycle
-  end
-
   def root_pitch_number
     @root_pitch_number ||= root_pitch.number
   end
@@ -51,16 +49,21 @@ class HeadMusic::Scale
 
   def determine_scale_pitches(direction, octaves)
     semitones_from_root = 0
-    [root_pitch].tap do |pitches|
-      %i[ascending descending].each do |single_direction|
-        next unless [single_direction, :both].include?(direction)
-        (1..octaves).each do
-          direction_intervals(single_direction).each_with_index do |semitones, i|
-            semitones_from_root += semitones * direction_sign(single_direction)
-            pitches << pitch_for_step(i + 1, semitones_from_root, single_direction)
-          end
-        end
+    pitches = [root_pitch]
+    %i[ascending descending].each do |single_direction|
+      next unless [single_direction, :both].include?(direction)
+      (1..octaves).each do
+        pitches += octave_scale_pitches(single_direction, semitones_from_root)
+        semitones_from_root += 12 * direction_sign(single_direction)
       end
+    end
+    pitches
+  end
+
+  def octave_scale_pitches(direction, semitones_from_root)
+    direction_intervals(direction).map.with_index do |semitones, i|
+      semitones_from_root += semitones * direction_sign(direction)
+      pitch_for_step(i + 1, semitones_from_root, direction)
     end
   end
 
@@ -82,22 +85,39 @@ class HeadMusic::Scale
     end
   end
 
-  def letter_for_step(step, semitones_from_root, direction)
-    pitch_class_number = (root_pitch.pitch_class.to_i + semitones_from_root) % 12
-    if scale_type.intervals.length == 7
-      direction == :ascending ? letter_name_cycle[step % 7] : letter_name_cycle[-step % 7]
-    elsif scale_type.intervals.length < 7 && parent_scale_pitches
-      parent_scale_pitch_for(semitones_from_root).letter_name
-    elsif root_pitch.flat?
-      HeadMusic::PitchClass::FLAT_SPELLINGS[pitch_class_number]
-    else
-      HeadMusic::PitchClass::SHARP_SPELLINGS[pitch_class_number]
-    end
-  end
-
   def pitch_for_step(step, semitones_from_root, direction)
     pitch_number = root_pitch_number + semitones_from_root
     letter_name = letter_for_step(step, semitones_from_root, direction)
     HeadMusic::Pitch.from_number_and_letter(pitch_number, letter_name)
+  end
+
+  def letter_for_step(step, semitones_from_root, direction)
+    diatonic_letter_for_step(direction, step) ||
+      child_scale_letter_for_step(semitones_from_root) ||
+      flat_letter_for_step(semitones_from_root) ||
+      sharp_letter_for_step(semitones_from_root)
+  end
+
+  def diatonic_letter_for_step(direction, step)
+    return unless scale_type.diatonic?
+    direction == :ascending ? letter_name_cycle[step % 7] : letter_name_cycle[-step % 7]
+  end
+
+  def child_scale_letter_for_step(semitones_from_root)
+    return unless scale_type.parent
+    parent_scale_pitch_for(semitones_from_root).letter_name
+  end
+
+  def flat_letter_for_step(semitones_from_root)
+    return unless root_pitch.flat?
+    HeadMusic::PitchClass::FLAT_SPELLINGS[pitch_class_number(semitones_from_root)]
+  end
+
+  def sharp_letter_for_step(semitones_from_root)
+    HeadMusic::PitchClass::SHARP_SPELLINGS[pitch_class_number(semitones_from_root)]
+  end
+
+  def pitch_class_number(semitones_from_root)
+    (root_pitch.pitch_class.to_i + semitones_from_root) % 12
   end
 end

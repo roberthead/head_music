@@ -124,4 +124,12 @@ class HeadMusic::ScaleType
   def diatonic?
     intervals.length == 7
   end
+
+  def pentatonic?
+    intervals.length == 5
+  end
+
+  def chromatic?
+    intervals.length == 12
+  end
 end

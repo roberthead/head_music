@@ -21,6 +21,7 @@ describe Scale do
       specify { expect(Scale.get('F♯', :major_pentatonic).spellings).to eq %w[F♯ G♯ A♯ C♯ D♯ F♯] }
       specify { expect(Scale.get('G♭', :major_pentatonic).spellings).to eq %w[G♭ A♭ B♭ D♭ E♭ G♭] }
       specify { expect(Scale.get('F', :minor_pentatonic).spellings).to eq %w[F A♭ B♭ C E♭ F] }
+      specify { expect(Scale.get('F', :major).spellings).to eq %w[F G A B♭ C D E F] }
       specify { expect(Scale.get('C', :whole_tone).spellings).to eq %w[C D E F♯ G♯ A♯ C] }
       specify { expect(Scale.get('C♯', :whole_tone).spellings).to eq %w[C♯ D♯ F G A B C♯] }
       specify { expect(Scale.get('D♭', :whole_tone).spellings).to eq %w[D♭ E♭ F G A B D♭] }
