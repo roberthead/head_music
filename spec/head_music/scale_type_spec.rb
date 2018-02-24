@@ -48,7 +48,7 @@ describe ScaleType do
 
       it { is_expected.to be_diatonic }
       it { is_expected.not_to be_whole_tone }
-    it { is_expected.not_to be_pentatonic }
+      it { is_expected.not_to be_pentatonic }
       it { is_expected.not_to be_chromatic }
     end
   end

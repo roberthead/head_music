@@ -71,8 +71,8 @@ describe RhythmicValue do
 
         its(:name) { is_expected.to eq 'triple-dotted half' }
         its(:ticks) { are_expected.to eq 3600 }
-        its(:relative_value) { is_expected.to eq (0.5 + 0.25 + 0.125 + 0.0625) }
-        its(:total_value) { is_expected.to eq (0.5 + 0.5 / 2 + 0.5 / 4 + 0.5 / 8) }
+        its(:relative_value) { is_expected.to eq(0.5 + 0.25 + 0.125 + 0.0625) }
+        its(:total_value) { is_expected.to eq(0.5 + 0.5 / 2 + 0.5 / 4 + 0.5 / 8) }
       end
     end
 

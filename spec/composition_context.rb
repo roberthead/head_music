@@ -12,12 +12,16 @@ class CompositionContext
 
   def self.from_params(params)
     composition = Composition.new(name: name_from_params(params), key_signature: KeySignature.get(params[:key]))
+    add_voices(composition, params)
+    expected_messages = params[:expected_messages] || [params[:expected_message]].compact
+    new(composition: composition, source: params[:source], expected_messages: expected_messages)
+  end
+
+  def self.add_voices(composition, params)
     cantus_firmus = composition.add_voice(role: 'cantus firmus')
     add_pitches_to_voice(cantus_firmus, params[:cantus_firmus_pitches], params[:cantus_firmus_durations])
     counterpoint = composition.add_voice(role: 'counterpoint')
     add_pitches_to_voice(counterpoint, params[:counterpoint_pitches], params[:counterpoint_durations])
-    expected_messages = params[:expected_messages] || [params[:expected_message]].compact
-    new(composition: composition, source: params[:source], expected_messages: expected_messages)
   end
 
   def self.name_from_params(params)
@@ -60,7 +64,11 @@ class CompositionContext
   end
 
   def method_missing(method_name, *args, &block)
-    composition.send(method_name, *args, &block)
+    respond_to_missing?(method_name) ? composition.send(method_name, *args, &block) : super
+  end
+
+  def respond_to_missing?(method_name, *_args)
+    composition.respond_to?(method_name)
   end
 
   private

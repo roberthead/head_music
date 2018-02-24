@@ -55,11 +55,11 @@ describe PitchClass do
   end
 
   describe '#smallest_interval_to' do
-    specify { expect(PitchClass.get(7).smallest_interval_to(5)).to eq -2 }
-    specify { expect(PitchClass.get(1).smallest_interval_to(10)).to eq -3 }
-    specify { expect(PitchClass.get(10).smallest_interval_to(1)).to eq 3 }
-    specify { expect(PitchClass.get(11).smallest_interval_to(0)).to eq 1 }
-    specify { expect(PitchClass.get(0).smallest_interval_to(11)).to eq -1 }
+    specify { expect(PitchClass.get(7).smallest_interval_to(5)).to eq(-2) }
+    specify { expect(PitchClass.get(1).smallest_interval_to(10)).to eq(-3) }
+    specify { expect(PitchClass.get(10).smallest_interval_to(1)).to eq(3) }
+    specify { expect(PitchClass.get(11).smallest_interval_to(0)).to eq(1) }
+    specify { expect(PitchClass.get(0).smallest_interval_to(11)).to eq(-1) }
   end
 
   describe '#enharmonic?' do

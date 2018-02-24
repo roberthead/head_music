@@ -82,7 +82,7 @@ describe Pitch do
       its(:letter_name) { is_expected.to eq 'F' }
       its(:sign) { is_expected.to eq '#' }
       its(:pitch_class) { is_expected.to eq 6 }
-      its(:octave) { is_expected.to eq -1 }
+      its(:octave) { is_expected.to eq(-1) }
       its(:midi_note_number) { is_expected.to eq 6 }
       it { is_expected.to eq 'F#-1' }
     end

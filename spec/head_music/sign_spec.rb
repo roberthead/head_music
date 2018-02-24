@@ -32,10 +32,10 @@ describe HeadMusic::Sign do
   end
 
   describe '#semitones' do
-    specify { expect(HeadMusic::Sign.get('#').semitones).to eq 1 }
-    specify { expect(HeadMusic::Sign.get('##').semitones).to eq 2 }
-    specify { expect(HeadMusic::Sign.get('b').semitones).to eq -1 }
-    specify { expect(HeadMusic::Sign.get('bb').semitones).to eq -2 }
+    specify { expect(HeadMusic::Sign.get('#').semitones).to eq(1) }
+    specify { expect(HeadMusic::Sign.get('##').semitones).to eq(2) }
+    specify { expect(HeadMusic::Sign.get('b').semitones).to eq(-1) }
+    specify { expect(HeadMusic::Sign.get('bb').semitones).to eq(-2) }
   end
 
   describe 'equality' do
