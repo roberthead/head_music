@@ -1,3 +1,15 @@
+Layout/DotPosition:
+  EnforcedStyle: trailing
+
+Metrics/BlockLength:
+  Exclude:
+    - 'Gemfile'
+    - 'Rakefile'
+    - 'spec/**/*.rb'
+
+Metrics/ClassLength:
+  Max: 120
+
 Metrics/LineLength:
   Max: 120
 
@@ -9,9 +21,3 @@ Style/ClassAndModuleChildren:
 
 Style/TrailingCommaInLiteral:
   EnforcedStyleForMultiline: consistent_comma
-
-Layout/DotPosition:
-  EnforcedStyle: trailing
-
-Metrics/ClassLength:
-  Max: 120
