@@ -95,7 +95,7 @@ end
 
 # In Logic Pro X, the 'beat' is determined by the denominator, even if compound.
 # Logic then divides the beat into 'divisions' that are a sixteenth in length.
-# Each division is then divided into 240 ticks (960 PPQN / 4 sixteenths-per-quarter)
+# Each division is then divided into 240 ticks (960 PPQN / 4 sixteenths-per-quarter = 240 ticks per sixteenth note)
 
 # Tempo specifies the beat unit, usually the traditional beat unit in the case of compound meters,
 # so 6/8 would specify [dotted-quarter] = 132 (or whatever).
