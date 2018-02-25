@@ -101,10 +101,9 @@ class HeadMusic::Style::Annotation
   end
 
   def motions
-    downbeat_harmonic_intervals.map.with_index do |harmonic_interval, i|
-      next_harmonic_interval = downbeat_harmonic_intervals[i + 1]
-      HeadMusic::Motion.new(harmonic_interval, next_harmonic_interval) if next_harmonic_interval
-    end.compact
+    downbeat_harmonic_intervals.each_cons(2).map do |harmonic_interval_pair|
+      HeadMusic::Motion.new(*harmonic_interval_pair)
+    end
   end
 
   def downbeat_harmonic_intervals

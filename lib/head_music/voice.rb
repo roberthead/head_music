@@ -59,9 +59,7 @@ class HeadMusic::Voice
 
   def melodic_intervals
     @melodic_intervals ||=
-      notes.map.with_index do |note, i|
-        HeadMusic::MelodicInterval.new(notes[i - 1], note) if i.positive?
-      end.compact
+      notes.each_cons(2).map { |note_pair| HeadMusic::MelodicInterval.new(*note_pair) }
   end
 
   def leaps

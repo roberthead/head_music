@@ -61,9 +61,9 @@ class HeadMusic::Scale
   end
 
   def octave_scale_pitches(direction, semitones_from_root)
-    direction_intervals(direction).map.with_index do |semitones, i|
+    direction_intervals(direction).map.with_index(1) do |semitones, i|
       semitones_from_root += semitones * direction_sign(direction)
-      pitch_for_step(i + 1, semitones_from_root, direction)
+      pitch_for_step(i, semitones_from_root, direction)
     end
   end
 

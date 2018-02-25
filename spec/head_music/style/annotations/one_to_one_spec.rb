@@ -65,7 +65,7 @@ describe HeadMusic::Style::Annotations::OneToOne do
 
     context 'with half notes' do
       before do
-        %w[D5 C5 B4 G4 A4 B4 C5 A4 C5 D5 C5 B4 G4 A4 B4 C5 A4 C5 D5].each_with_index do |pitch, pulse|
+        %w[D5 C5 B4 G4 A4 B4 C5 A4 C5 D5 C5 B4 G4 A4 B4 C5 A4 C5 D5].each.with_index do |pitch, pulse|
           counterpoint.place("#{pulse / 2 + 1}:#{(pulse % 2) * 2 + 1}", :half, pitch)
         end
       end

@@ -34,8 +34,8 @@ class HeadMusic::Chord
   end
 
   def intervals
-    pitches.drop(1).map.with_index do |pitch, i|
-      HeadMusic::FunctionalInterval.new(pitches[i], pitch)
+    pitches.each_cons(2).map do |pitch_pair|
+      HeadMusic::FunctionalInterval.new(*pitch_pair)
     end
   end
 
