@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-describe MelodicInterval do
-  let(:voice) { Voice.new }
-  let(:note1) { Note.new('D4', :quarter, voice, '2:1') }
-  let(:note2) { Note.new('G4', :quarter, voice, '2:3') }
+describe HeadMusic::MelodicInterval do
+  let(:voice) { HeadMusic::Voice.new }
+  let(:note1) { HeadMusic::Note.new('D4', :quarter, voice, '2:1') }
+  let(:note2) { HeadMusic::Note.new('G4', :quarter, voice, '2:3') }
   subject(:melodic_interval) { described_class.new(note1, note2) }
 
   its(:first_note) { is_expected.to eq note1 }

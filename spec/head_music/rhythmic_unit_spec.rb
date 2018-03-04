@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-describe RhythmicUnit do
-  subject(:rhythmic_unit) { RhythmicUnit.get(name) }
+describe HeadMusic::RhythmicUnit do
+  subject(:rhythmic_unit) { described_class.get(name) }
 
   context 'for :whole' do
     let(:name) { :whole }
@@ -95,7 +95,7 @@ describe RhythmicUnit do
 
   describe '.new' do
     it 'is private' do
-      expect { Octave.new(5) }.to raise_error NoMethodError
+      expect { described_class.new(5) }.to raise_error NoMethodError
     end
   end
 end

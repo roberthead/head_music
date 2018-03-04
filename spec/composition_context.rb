@@ -3,6 +3,8 @@
 class CompositionContext
   attr_reader :composition, :source, :expected_messages
 
+  delegate :cantus_firmus_voice, to: :composition
+  delegate :counterpoint_voice, to: :composition
   delegate :pitches, to: :cantus_firmus_voice, prefix: :cantus_firmus
   delegate :pitches, to: :counterpoint_voice, prefix: :counterpoint
 
@@ -11,7 +13,10 @@ class CompositionContext
   end
 
   def self.from_params(params)
-    composition = Composition.new(name: name_from_params(params), key_signature: KeySignature.get(params[:key]))
+    composition = HeadMusic::Composition.new(
+      name: name_from_params(params),
+      key_signature: HeadMusic::KeySignature.get(params[:key])
+    )
     add_voices(composition, params)
     expected_messages = params[:expected_messages] || [params[:expected_message]].compact
     new(composition: composition, source: params[:source], expected_messages: expected_messages)
@@ -37,7 +42,7 @@ class CompositionContext
   end
 
   def self.pitches_from_string(pitches_string)
-    [pitches_string].flatten.map { |pitch| Pitch.from_name(pitch) }
+    [pitches_string].flatten.map { |pitch| HeadMusic::Pitch.from_name(pitch) }
   end
 
   def initialize(composition:, source: nil, expected_messages: [])
@@ -74,10 +79,10 @@ class CompositionContext
   private
 
   def cantus_firmus_string
-    cantus_firmus_pitches.join(' ') + ' (CF)' if cantus_firmus_pitches && !cantus_firmus_pitches.empty?
+    cantus_firmus_pitches.join(' ') + ' (CF)' if cantus_firmus_pitches&.any?
   end
 
   def counterpoint_string
-    counterpoint_pitches.join(' ') + ' (CPT)' if counterpoint_pitches && !counterpoint_pitches.empty?
+    counterpoint_pitches.join(' ') + ' (CPT)' if counterpoint_pitches&.any?
   end
 end

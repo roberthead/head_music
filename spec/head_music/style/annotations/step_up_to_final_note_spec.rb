@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::StepUpToFinalNote do
-  let(:voice) { Voice.new }
+  let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 
   context 'with no notes' do
@@ -25,7 +25,7 @@ describe HeadMusic::Style::Annotations::StepUpToFinalNote do
       voice.place('3:1', :whole, 'C')
     end
 
-    its(:fitness) { is_expected.to be <= PENALTY_FACTOR }
+    its(:fitness) { is_expected.to be <= HeadMusic::PENALTY_FACTOR }
   end
 
   context 'when the last melodic interval is an ascending step' do
@@ -46,7 +46,7 @@ describe HeadMusic::Style::Annotations::StepUpToFinalNote do
       voice.place('4:1', :whole, 'C')
     end
 
-    its(:fitness) { is_expected.to be < PENALTY_FACTOR }
+    its(:fitness) { is_expected.to be < HeadMusic::PENALTY_FACTOR }
   end
 
   context 'when the last melodic interval is a larger ascending interval' do
@@ -57,6 +57,6 @@ describe HeadMusic::Style::Annotations::StepUpToFinalNote do
       voice.place('4:1', :whole, 'C4')
     end
 
-    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
+    its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
   end
 end

@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::StartOnTonic do
-  let(:voice) { Voice.new }
+  let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 
   context 'with no notes' do

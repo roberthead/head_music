@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe Meter do
+describe HeadMusic::Meter do
   describe '.get' do
     context 'when given an instance' do
       let(:instance) { described_class.get('5/4') }
@@ -13,7 +13,7 @@ describe Meter do
     end
 
     context 'given 3/4' do
-      subject(:meter) { Meter.get('3/4') }
+      subject(:meter) { described_class.get('3/4') }
 
       it { is_expected.to be_simple }
       it { is_expected.not_to be_compound }
@@ -30,7 +30,7 @@ describe Meter do
     end
 
     context 'given 6/8' do
-      subject(:meter) { Meter.get('6/8') }
+      subject(:meter) { described_class.get('6/8') }
 
       it { is_expected.not_to be_simple }
       it { is_expected.to be_compound }
@@ -47,7 +47,7 @@ describe Meter do
     end
 
     context 'given 9/8' do
-      subject(:meter) { Meter.get('9/8') }
+      subject(:meter) { described_class.get('9/8') }
 
       it { is_expected.not_to be_simple }
       it { is_expected.to be_compound }
@@ -64,7 +64,7 @@ describe Meter do
     end
 
     context 'given :common_time' do
-      subject(:meter) { Meter.get(:common_time) }
+      subject(:meter) { described_class.get(:common_time) }
 
       it { is_expected.to be_simple }
       it { is_expected.not_to be_compound }
@@ -81,7 +81,7 @@ describe Meter do
     end
 
     context 'given :cut_time' do
-      subject(:meter) { Meter.get(:cut_time) }
+      subject(:meter) { described_class.get(:cut_time) }
 
       it { is_expected.to be_simple }
       it { is_expected.not_to be_compound }
@@ -100,7 +100,7 @@ describe Meter do
 
   describe '#beat_strength' do
     context 'for 6/8' do
-      subject(:meter) { Meter.get('6/8') }
+      subject(:meter) { described_class.get('6/8') }
 
       specify { expect(meter.beat_strength(1)).to be > meter.beat_strength(4) }
       specify { expect(meter.beat_strength(4)).to be > meter.beat_strength(3) }
@@ -112,7 +112,7 @@ describe Meter do
   end
 
   describe 'named meter class methods' do
-    specify { expect(Meter.common_time).to eq Meter.get('4/4') }
-    specify { expect(Meter.cut_time).to eq Meter.get('2/2') }
+    specify { expect(described_class.common_time).to eq described_class.get('4/4') }
+    specify { expect(described_class.cut_time).to eq described_class.get('2/2') }
   end
 end

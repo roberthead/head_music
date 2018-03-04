@@ -54,7 +54,7 @@ class HeadMusic::KeySignature
   end
 
   def signs
-    !flats.empty? ? flats : sharps
+    flats.any? ? flats : sharps
   end
 
   def name

@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::AlwaysMove do
-  let(:voice) { Voice.new }
+  let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 
   its(:message) { is_expected.to eq 'Always move to a different note.' }

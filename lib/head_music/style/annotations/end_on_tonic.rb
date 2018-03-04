@@ -8,7 +8,7 @@ class HeadMusic::Style::Annotations::EndOnTonic < HeadMusic::Style::Annotation
   MESSAGE = 'End on the first scale degree.'
 
   def marks
-    HeadMusic::Style::Mark.for(notes.last) if !notes.empty? && !ends_on_tonic?
+    HeadMusic::Style::Mark.for(notes.last) if notes.any? && !ends_on_tonic?
   end
 
   private

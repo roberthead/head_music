@@ -2,24 +2,24 @@
 
 require 'spec_helper'
 
-describe LetterName do
+describe HeadMusic::LetterName do
   describe '.get' do
     context "fetched with 'A'" do
-      subject(:letter_name) { LetterName.get('A') }
+      subject(:letter_name) { described_class.get('A') }
 
       specify { expect(letter_name.pitch_class).to eq 9 }
       specify { expect(letter_name).to eq 'A' }
     end
 
     context "fetched with 'd#7'" do
-      subject(:letter_name) { LetterName.get('d#7') }
+      subject(:letter_name) { described_class.get('d#7') }
 
       specify { expect(letter_name.pitch_class).to eq 2 }
       specify { expect(letter_name).to eq 'D' }
     end
 
     context "fetched with 'X'" do
-      subject(:letter_name) { LetterName.get('X') }
+      subject(:letter_name) { described_class.get('X') }
 
       specify { expect(letter_name).to be_nil }
     end
@@ -34,50 +34,50 @@ describe LetterName do
   end
 
   describe '.from_pitch_class' do
-    specify { expect(LetterName.from_pitch_class(0)).to eq 'C' }
-    specify { expect(LetterName.from_pitch_class(1)).to eq 'C' }
-    specify { expect(LetterName.from_pitch_class(2)).to eq 'D' }
-    specify { expect(LetterName.from_pitch_class(3)).to eq 'D' }
-    specify { expect(LetterName.from_pitch_class(4)).to eq 'E' }
-    specify { expect(LetterName.from_pitch_class(5)).to eq 'F' }
-    specify { expect(LetterName.from_pitch_class(6)).to eq 'F' }
-    specify { expect(LetterName.from_pitch_class(7)).to eq 'G' }
-    specify { expect(LetterName.from_pitch_class(8)).to eq 'G' }
-    specify { expect(LetterName.from_pitch_class(9)).to eq 'A' }
-    specify { expect(LetterName.from_pitch_class(10)).to eq 'A' }
-    specify { expect(LetterName.from_pitch_class(11)).to eq 'B' }
-    specify { expect(LetterName.from_pitch_class(12)).to eq 'C' }
+    specify { expect(described_class.from_pitch_class(0)).to eq 'C' }
+    specify { expect(described_class.from_pitch_class(1)).to eq 'C' }
+    specify { expect(described_class.from_pitch_class(2)).to eq 'D' }
+    specify { expect(described_class.from_pitch_class(3)).to eq 'D' }
+    specify { expect(described_class.from_pitch_class(4)).to eq 'E' }
+    specify { expect(described_class.from_pitch_class(5)).to eq 'F' }
+    specify { expect(described_class.from_pitch_class(6)).to eq 'F' }
+    specify { expect(described_class.from_pitch_class(7)).to eq 'G' }
+    specify { expect(described_class.from_pitch_class(8)).to eq 'G' }
+    specify { expect(described_class.from_pitch_class(9)).to eq 'A' }
+    specify { expect(described_class.from_pitch_class(10)).to eq 'A' }
+    specify { expect(described_class.from_pitch_class(11)).to eq 'B' }
+    specify { expect(described_class.from_pitch_class(12)).to eq 'C' }
   end
 
   describe '#cycle' do
-    subject(:letter_name) { LetterName.get('D') }
+    subject(:letter_name) { described_class.get('D') }
 
     its(:cycle) { is_expected.to eq %w[D E F G A B C] }
   end
 
   describe 'steps' do
-    specify { expect(LetterName.get('C').steps(5)).to eq 'A' }
-    specify { expect(LetterName.get('C').steps(8)).to eq 'D' }
+    specify { expect(described_class.get('C').steps(5)).to eq 'A' }
+    specify { expect(described_class.get('C').steps(8)).to eq 'D' }
   end
 
   describe 'steps_to' do
-    specify { expect(LetterName.get('C').steps_to('G')).to eq 4 }
-    specify { expect(LetterName.get('A').steps_to('E')).to eq 4 }
-    specify { expect(LetterName.get('F#').steps_to('F#')).to eq 0 }
-    specify { expect(LetterName.get('F#').steps_to('E')).to eq 6 }
-    specify { expect(LetterName.get('F#').steps_to('E', :descending)).to eq 1 }
+    specify { expect(described_class.get('C').steps_to('G')).to eq 4 }
+    specify { expect(described_class.get('A').steps_to('E')).to eq 4 }
+    specify { expect(described_class.get('F#').steps_to('F#')).to eq 0 }
+    specify { expect(described_class.get('F#').steps_to('E')).to eq 6 }
+    specify { expect(described_class.get('F#').steps_to('E', :descending)).to eq 1 }
 
     it 'inverts' do
-      LetterName::NAMES.each do |from_letter_name|
-        LetterName::NAMES.each do |to_letter_name|
-          from_letter = LetterName.get(from_letter_name)
-          to_letter = LetterName.get(to_letter_name)
+      described_class::NAMES.each do |from_letter_name|
+        described_class::NAMES.each do |to_letter_name|
+          from_letter = described_class.get(from_letter_name)
+          to_letter = described_class.get(to_letter_name)
           steps_up = from_letter.steps_to(to_letter, :ascending)
           steps_down = from_letter.steps_to(to_letter, :descending)
           if from_letter_name == to_letter_name
             expect(steps_up + steps_down).to eq 0
           else
-            expect(steps_up + steps_down).to eq LetterName::NAMES.length
+            expect(steps_up + steps_down).to eq described_class::NAMES.length
           end
         end
       end

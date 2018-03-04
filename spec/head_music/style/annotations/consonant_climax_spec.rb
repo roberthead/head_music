@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::ConsonantClimax do
-  let(:voice) { Voice.new }
+  let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 
   context 'with no notes' do
@@ -52,7 +52,7 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
             end
           end
 
-          its(:fitness) { is_expected.to be <= PENALTY_FACTOR }
+          its(:fitness) { is_expected.to be <= HeadMusic::PENALTY_FACTOR }
         end
 
         context 'with more than one note between' do
@@ -62,7 +62,7 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
             end
           end
 
-          its(:fitness) { is_expected.to be <= PENALTY_FACTOR }
+          its(:fitness) { is_expected.to be <= HeadMusic::PENALTY_FACTOR }
         end
       end
 
@@ -73,7 +73,7 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
           end
         end
 
-        its(:fitness) { is_expected.to be < PENALTY_FACTOR }
+        its(:fitness) { is_expected.to be < HeadMusic::PENALTY_FACTOR }
       end
     end
 
@@ -84,7 +84,7 @@ describe HeadMusic::Style::Annotations::ConsonantClimax do
         end
       end
 
-      its(:fitness) { is_expected.to be < PENALTY_FACTOR }
+      its(:fitness) { is_expected.to be < HeadMusic::PENALTY_FACTOR }
     end
   end
 end

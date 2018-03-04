@@ -29,25 +29,25 @@ class HeadMusic::Placement
   end
 
   def during?(other_placement)
-    starts_during?(other_placement) || ends_during?(other_placement) || within?(other_placement)
+    starts_during?(other_placement) || ends_during?(other_placement) || wraps?(other_placement)
   end
 
   def to_s
-    "#{pitch ? pitch : 'rest'} at #{position}"
+    "#{rhythmic_value} #{pitch ? pitch : 'rest'} at #{position}"
   end
 
   private
 
   def starts_during?(other_placement)
-    (other_placement.next_position > position && other_placement.next_position <= next_position)
+    position >= other_placement.position && position < other_placement.next_position
   end
 
   def ends_during?(other_placement)
-    (other_placement.position >= position && other_placement.position < next_position)
+    next_position > other_placement.position && next_position <= other_placement.next_position
   end
 
-  def within?(other_placement)
-    (other_placement.position <= position && other_placement.next_position >= next_position)
+  def wraps?(other_placement)
+    position <= other_placement.position && next_position >= other_placement.next_position
   end
 
   def ensure_attributes(voice, position, rhythmic_value, pitch)

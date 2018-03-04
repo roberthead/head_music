@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::LimitOctaveLeaps do
-  let(:composition) { Composition.new(key_signature: 'C major') }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'C major') }
   let(:voice) { composition.add_voice(role: :counterpoint) }
   subject { described_class.new(voice) }
 
@@ -38,6 +38,6 @@ describe HeadMusic::Style::Annotations::LimitOctaveLeaps do
       end
     end
 
-    its(:fitness) { is_expected.to be <= PENALTY_FACTOR }
+    its(:fitness) { is_expected.to be <= HeadMusic::PENALTY_FACTOR }
   end
 end

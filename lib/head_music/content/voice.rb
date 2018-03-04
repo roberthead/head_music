@@ -100,6 +100,10 @@ class HeadMusic::Voice
     placements.last.position.bar_number
   end
 
+  def to_s
+    "#{role}: #{pitches.first(10).map(&:to_s)}"
+  end
+
   private
 
   def insert_into_placements(placement)

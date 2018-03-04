@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-describe Position do
-  subject(:position) { Position.new(composition, bar_number, count, tick) }
-  let(:composition) { Composition.new }
+describe HeadMusic::Position do
+  subject(:position) { described_class.new(composition, bar_number, count, tick) }
+  let(:composition) { HeadMusic::Composition.new }
   let(:bar_number) { 3 }
   let(:count) { 2 }
   let(:tick) { 480 }
@@ -58,7 +58,7 @@ describe Position do
 
     context 'for a division' do
       let(:count) { 1 }
-      let(:tick) { RhythmicUnit.get(:eighth).ticks }
+      let(:tick) { HeadMusic::RhythmicUnit.get(:eighth).ticks }
 
       its(:strength) { is_expected.to eq 40 }
       it { is_expected.not_to be_strong }
@@ -67,7 +67,7 @@ describe Position do
 
     context 'for a division' do
       let(:count) { 1 }
-      let(:tick) { RhythmicUnit.get('thirty-second').ticks }
+      let(:tick) { HeadMusic::RhythmicUnit.get('thirty-second').ticks }
 
       its(:strength) { is_expected.to eq 20 }
       it { is_expected.not_to be_strong }
@@ -83,7 +83,7 @@ describe Position do
         let(:tick) { 1000 }
 
         it 'rolls over to the next count' do
-          expect(position).to eq Position.new(composition, 3, 3, 40)
+          expect(position).to eq described_class.new(composition, 3, 3, 40)
         end
       end
 
@@ -103,13 +103,13 @@ describe Position do
         let(:tick) { 0 }
 
         it 'rolls over to a subsequent bar' do
-          expect(position).to eq Position.new(composition, '5:1:0')
+          expect(position).to eq described_class.new(composition, '5:1:0')
         end
       end
     end
 
     context 'in 6/8' do
-      let(:composition) { Composition.new(meter: '6/8') }
+      let(:composition) { HeadMusic::Composition.new(meter: '6/8') }
 
       context 'given too many ticks' do
         let(:bar_number) { 3 }
@@ -119,7 +119,7 @@ describe Position do
         it 'rolls over to a subsequent count' do
           expect(composition.meter).to eq '6/8'
           expect(position.meter).to eq '6/8'
-          expect(position).to eq Position.new(composition, 3, 5, 240)
+          expect(position).to eq described_class.new(composition, 3, 5, 240)
         end
       end
 
@@ -129,7 +129,7 @@ describe Position do
         let(:tick) { 0 }
 
         it 'rolls over to a subsequent bar' do
-          expect(position).to eq Position.new(composition, '4:3:0')
+          expect(position).to eq described_class.new(composition, '4:3:0')
         end
       end
     end
@@ -138,40 +138,40 @@ describe Position do
   describe 'addition' do
     context 'when adding a rhythmic unit' do
       context 'within a bar' do
-        let(:expected_position) { Position.new(composition, bar_number, count + 1, tick) }
+        let(:expected_position) { described_class.new(composition, bar_number, count + 1, tick) }
 
-        specify { expect(position + RhythmicUnit.get(:quarter)).to eq expected_position }
+        specify { expect(position + HeadMusic::RhythmicUnit.get(:quarter)).to eq expected_position }
       end
 
       context 'across a bar' do
-        let(:expected_position) { Position.new(composition, bar_number + 1, count, tick) }
+        let(:expected_position) { described_class.new(composition, bar_number + 1, count, tick) }
 
-        specify { expect(position + RhythmicUnit.get(:whole)).to eq expected_position }
+        specify { expect(position + HeadMusic::RhythmicUnit.get(:whole)).to eq expected_position }
       end
     end
 
     context 'when adding a rhythmic value' do
       context 'within a bar' do
-        let(:expected_position) { Position.new(composition, '3.4.480') }
+        let(:expected_position) { described_class.new(composition, '3.4.480') }
 
-        specify { expect(position + RhythmicValue.new(:half)).to eq expected_position }
+        specify { expect(position + HeadMusic::RhythmicValue.new(:half)).to eq expected_position }
       end
 
       context 'across a bar' do
-        let(:expected_position) { Position.new(composition, '4.1.480') }
+        let(:expected_position) { described_class.new(composition, '4.1.480') }
 
-        specify { expect(RhythmicValue.new(:half, dots: 1).relative_value).to eq 0.75 }
-        specify { expect(RhythmicValue.new(:half, dots: 1).ticks).to eq 960 * 3 }
+        specify { expect(HeadMusic::RhythmicValue.new(:half, dots: 1).relative_value).to eq 0.75 }
+        specify { expect(HeadMusic::RhythmicValue.new(:half, dots: 1).ticks).to eq 960 * 3 }
 
-        specify { expect(position + RhythmicValue.new(:half, dots: 1)).to eq expected_position }
+        specify { expect(position + HeadMusic::RhythmicValue.new(:half, dots: 1)).to eq expected_position }
       end
     end
   end
 
   describe 'comparison' do
     context 'when the bars are unequal' do
-      let(:position1) { Position.new(composition, 1, 4, tick) }
-      let(:position2) { Position.new(composition, 2, 1, tick) }
+      let(:position1) { described_class.new(composition, 1, 4, tick) }
+      let(:position2) { described_class.new(composition, 2, 1, tick) }
 
       specify { expect(position1).to be < position2 }
       specify { expect([position2, position1].sort).to eq [position1, position2] }
@@ -179,8 +179,8 @@ describe Position do
 
     context 'when the bars are equal' do
       context 'when the counts are unequal' do
-        let(:position1) { Position.new(composition, bar_number, 3, 0) }
-        let(:position2) { Position.new(composition, bar_number, 2, 120) }
+        let(:position1) { described_class.new(composition, bar_number, 3, 0) }
+        let(:position2) { described_class.new(composition, bar_number, 2, 120) }
 
         specify { expect(position1).to be > position2 }
         specify { expect([position1, position2].sort).to eq [position2, position1] }
@@ -188,16 +188,16 @@ describe Position do
 
       context 'when the counts are equal' do
         context 'when the ticks are unequal' do
-          let(:position1) { Position.new(composition, bar_number, count, 0) }
-          let(:position2) { Position.new(composition, bar_number, count, 120) }
+          let(:position1) { described_class.new(composition, bar_number, count, 0) }
+          let(:position2) { described_class.new(composition, bar_number, count, 120) }
 
           specify { expect(position1).to be < position2 }
           specify { expect([position2, position1].sort).to eq [position1, position2] }
         end
 
         context 'when the ticks are equal' do
-          let(:position1) { Position.new(composition, bar_number, count, tick) }
-          let(:position2) { Position.new(composition, bar_number, count, tick) }
+          let(:position1) { described_class.new(composition, bar_number, count, tick) }
+          let(:position2) { described_class.new(composition, bar_number, count, tick) }
 
           specify { expect(position1).to be == position2 }
         end
@@ -207,35 +207,35 @@ describe Position do
 
   describe '#within_placement?' do
     let(:voice) { composition.add_voice }
-    let!(:placement) { Placement.new(voice, '3:2:000', :quarter) }
+    let!(:placement) { HeadMusic::Placement.new(voice, '3:2:000', :quarter) }
 
     context 'when the position is before the start of the placement' do
-      subject(:position) { Position.new(composition, 3, 1, 0) }
+      subject(:position) { described_class.new(composition, 3, 1, 0) }
 
       it { is_expected.not_to be_within_placement(placement) }
     end
 
     context 'when the position is at the start of the placement' do
-      subject(:position) { Position.new(composition, 3, 2, 0) }
+      subject(:position) { described_class.new(composition, 3, 2, 0) }
 
       it { is_expected.to be_within_placement(placement) }
     end
 
     context 'when the position is after the start of the placement' do
       context 'and before the end of the placement' do
-        subject(:position) { Position.new(composition, 3, 2, 240) }
+        subject(:position) { described_class.new(composition, 3, 2, 240) }
 
         it { is_expected.to be_within_placement(placement) }
       end
 
       context 'and at the end of the placement' do
-        subject(:position) { Position.new(composition, 3, 3, 0) }
+        subject(:position) { described_class.new(composition, 3, 3, 0) }
 
         it { is_expected.not_to be_within_placement(placement) }
       end
 
       context 'and after the end of the placement' do
-        subject(:position) { Position.new(composition, 3, 4, 0) }
+        subject(:position) { described_class.new(composition, 3, 4, 0) }
 
         it { is_expected.not_to be_within_placement(placement) }
       end

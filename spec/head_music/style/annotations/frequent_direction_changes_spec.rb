@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::FrequentDirectionChanges do
-  let(:composition) { Composition.new(key_signature: 'D dorian') }
-  let(:voice) { Voice.new(composition: composition) }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
+  let(:voice) { HeadMusic::Voice.new(composition: composition) }
   subject { described_class.new(voice) }
 
   context 'when there are no notes' do
@@ -18,7 +18,7 @@ describe HeadMusic::Style::Annotations::FrequentDirectionChanges do
       end
     end
 
-    its(:fitness) { is_expected.to be < PENALTY_FACTOR }
+    its(:fitness) { is_expected.to be < HeadMusic::PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq '1:1:000 to 9:1:000' }
   end
 
@@ -29,7 +29,7 @@ describe HeadMusic::Style::Annotations::FrequentDirectionChanges do
       end
     end
 
-    its(:fitness) { is_expected.to be < PENALTY_FACTOR }
+    its(:fitness) { is_expected.to be < HeadMusic::PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq '1:1:000 to 10:1:000' }
   end
 

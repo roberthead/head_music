@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::ApproachPerfectionContrarily do
-  let(:composition) { Composition.new(key_signature: 'C major') }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'C major') }
   let(:cantus_firmus_pitches) { [] }
   let!(:cantus_firmus) do
     composition.add_voice(role: :cantus_firmus).tap do |voice|

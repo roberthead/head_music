@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-describe PitchClass do
+describe HeadMusic::PitchClass do
   describe '.get' do
-    subject(:pitch_class) { PitchClass.get(identifier) }
+    subject(:pitch_class) { described_class.get(identifier) }
 
     context 'when constructed with a number between zero and eleven' do
       let(:identifier) { rand(12) }
@@ -35,37 +35,37 @@ describe PitchClass do
   end
 
   describe 'equality' do
-    specify { expect(PitchClass.get(53)).to eq PitchClass.get(5) }
+    specify { expect(described_class.get(53)).to eq described_class.get(5) }
   end
 
   describe 'addition' do
-    specify { expect(PitchClass.get(11) + 3).to eq PitchClass.get(2) }
-    specify { expect(PitchClass.get(5) + Interval.get(2)).to eq PitchClass.get(7) }
+    specify { expect(described_class.get(11) + 3).to eq described_class.get(2) }
+    specify { expect(described_class.get(5) + HeadMusic::Interval.get(2)).to eq described_class.get(7) }
   end
 
   describe 'subtraction' do
-    specify { expect(PitchClass.get(60) - 3).to eq PitchClass.get(9) }
-    specify { expect(PitchClass.get(4) - Interval.get(3)).to eq PitchClass.get(1) }
+    specify { expect(described_class.get(60) - 3).to eq described_class.get(9) }
+    specify { expect(described_class.get(4) - HeadMusic::Interval.get(3)).to eq described_class.get(1) }
   end
 
   describe '#intervals_to' do
-    specify { expect(PitchClass.get(7).intervals_to(5).map(&:to_i)).to eq [-2, 10] }
-    specify { expect(PitchClass.get(1).intervals_to(10).map(&:to_i)).to eq [-3, 9] }
-    specify { expect(PitchClass.get(10).intervals_to(1).map(&:to_i)).to eq [3, -9] }
+    specify { expect(described_class.get(7).intervals_to(5).map(&:to_i)).to eq [-2, 10] }
+    specify { expect(described_class.get(1).intervals_to(10).map(&:to_i)).to eq [-3, 9] }
+    specify { expect(described_class.get(10).intervals_to(1).map(&:to_i)).to eq [3, -9] }
   end
 
   describe '#smallest_interval_to' do
-    specify { expect(PitchClass.get(7).smallest_interval_to(5)).to eq(-2) }
-    specify { expect(PitchClass.get(1).smallest_interval_to(10)).to eq(-3) }
-    specify { expect(PitchClass.get(10).smallest_interval_to(1)).to eq(3) }
-    specify { expect(PitchClass.get(11).smallest_interval_to(0)).to eq(1) }
-    specify { expect(PitchClass.get(0).smallest_interval_to(11)).to eq(-1) }
+    specify { expect(described_class.get(7).smallest_interval_to(5)).to eq(-2) }
+    specify { expect(described_class.get(1).smallest_interval_to(10)).to eq(-3) }
+    specify { expect(described_class.get(10).smallest_interval_to(1)).to eq(3) }
+    specify { expect(described_class.get(11).smallest_interval_to(0)).to eq(1) }
+    specify { expect(described_class.get(0).smallest_interval_to(11)).to eq(-1) }
   end
 
   describe '#enharmonic?' do
-    subject { PitchClass.get('G#') }
+    subject { described_class.get('G#') }
 
-    it { is_expected.to be_enharmonic(PitchClass.get('Ab')) }
-    it { is_expected.not_to be_enharmonic(PitchClass.get('A')) }
+    it { is_expected.to be_enharmonic(described_class.get('Ab')) }
+    it { is_expected.not_to be_enharmonic(described_class.get('A')) }
   end
 end

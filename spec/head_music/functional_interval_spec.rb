@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-describe FunctionalInterval do
+describe HeadMusic::FunctionalInterval do
   describe '.get' do
-    let(:maj3) { FunctionalInterval.get(:major_third) }
-    let(:aug4) { FunctionalInterval.get(:augmented_fourth) }
-    let(:dim5) { FunctionalInterval.get('diminished fifth') }
+    let(:maj3) { described_class.get(:major_third) }
+    let(:aug4) { described_class.get(:augmented_fourth) }
+    let(:dim5) { described_class.get('diminished fifth') }
 
     describe 'default position' do
       specify { expect(maj3.lower_pitch).to eq 'C4' }
@@ -21,7 +21,7 @@ describe FunctionalInterval do
 
   describe 'predicate methods' do
     context 'given a perfect unison' do
-      let(:unison) { FunctionalInterval.get(:perfect_unison) }
+      let(:unison) { described_class.get(:perfect_unison) }
 
       specify { expect(unison).to be_perfect }
       specify { expect(unison).not_to be_major }
@@ -47,7 +47,7 @@ describe FunctionalInterval do
     end
 
     context 'given a major third' do
-      let(:maj3) { FunctionalInterval.get(:major_third) }
+      let(:maj3) { described_class.get(:major_third) }
 
       specify { expect(maj3).not_to be_perfect }
       specify { expect(maj3).to be_major }
@@ -74,9 +74,9 @@ describe FunctionalInterval do
   end
 
   describe 'comparison' do
-    let!(:maj3) { FunctionalInterval.get(:major_third) }
-    let!(:min3) { FunctionalInterval.get(:minor_third) }
-    let(:perfect5) { FunctionalInterval.get(:perfect_fifth) }
+    let!(:maj3) { described_class.get(:major_third) }
+    let!(:min3) { described_class.get(:minor_third) }
+    let(:perfect5) { described_class.get(:perfect_fifth) }
 
     specify { expect(maj3).to be > min3 }
     specify { expect(min3).to be < maj3 }
@@ -84,7 +84,7 @@ describe FunctionalInterval do
   end
 
   context 'given two pitches comprising a simple interval' do
-    subject { FunctionalInterval.new('A4', 'E5') }
+    subject { described_class.new('A4', 'E5') }
 
     its(:name) { is_expected.to eq 'perfect fifth' }
     its(:number) { is_expected.to eq 5 }
@@ -110,7 +110,7 @@ describe FunctionalInterval do
   end
 
   context 'given a compound interval' do
-    subject { FunctionalInterval.new('E3', 'C5') }
+    subject { described_class.new('E3', 'C5') }
 
     its(:name) { is_expected.to eq 'minor thirteenth' }
     its(:number) { is_expected.to eq 13 }
@@ -135,38 +135,38 @@ describe FunctionalInterval do
   end
 
   describe 'naming' do
-    specify { expect(FunctionalInterval.new('B2', 'B4').number_name).to eq 'fifteenth' }
-    specify { expect(FunctionalInterval.new('B2', 'C#5').number_name).to eq 'sixteenth' }
-    specify { expect(FunctionalInterval.new('B2', 'D#5').number_name).to eq 'seventeenth' }
-    specify { expect(FunctionalInterval.new('B2', 'E5').number_name).to eq '18th' }
+    specify { expect(described_class.new('B2', 'B4').number_name).to eq 'fifteenth' }
+    specify { expect(described_class.new('B2', 'C#5').number_name).to eq 'sixteenth' }
+    specify { expect(described_class.new('B2', 'D#5').number_name).to eq 'seventeenth' }
+    specify { expect(described_class.new('B2', 'E5').number_name).to eq '18th' }
 
-    specify { expect(FunctionalInterval.new('B4', 'B4').name).to eq 'perfect unison' }
-    specify { expect(FunctionalInterval.new('B2', 'B4').name).to eq 'perfect fifteenth' }
-    specify { expect(FunctionalInterval.new('B2', 'E5').name).to eq 'two octaves and a perfect fourth' }
-    specify { expect(FunctionalInterval.new('B2', 'B5').name).to eq 'three octaves' }
-    specify { expect(FunctionalInterval.new('B2', 'C6').name).to eq 'three octaves and a minor second' }
-    specify { expect(FunctionalInterval.new('C3', 'C#6').name).to eq 'three octaves and an augmented unison' }
+    specify { expect(described_class.new('B4', 'B4').name).to eq 'perfect unison' }
+    specify { expect(described_class.new('B2', 'B4').name).to eq 'perfect fifteenth' }
+    specify { expect(described_class.new('B2', 'E5').name).to eq 'two octaves and a perfect fourth' }
+    specify { expect(described_class.new('B2', 'B5').name).to eq 'three octaves' }
+    specify { expect(described_class.new('B2', 'C6').name).to eq 'three octaves and a minor second' }
+    specify { expect(described_class.new('C3', 'C#6').name).to eq 'three octaves and an augmented unison' }
 
-    specify { expect(FunctionalInterval.new('C#4', 'Fb4').name).to eq 'doubly diminished fourth' }
-    specify { expect(FunctionalInterval.new('Eb4', 'A#4').name).to eq 'doubly augmented fourth' }
-    specify { expect(FunctionalInterval.new('Cb4', 'F#4').name).to eq 'doubly augmented fourth' }
+    specify { expect(described_class.new('C#4', 'Fb4').name).to eq 'doubly diminished fourth' }
+    specify { expect(described_class.new('Eb4', 'A#4').name).to eq 'doubly augmented fourth' }
+    specify { expect(described_class.new('Cb4', 'F#4').name).to eq 'doubly augmented fourth' }
   end
 
   describe 'consonance' do
-    specify { expect(FunctionalInterval.get(:minor_second).consonance).to be_dissonant }
-    specify { expect(FunctionalInterval.get(:major_second).consonance).to be_dissonant }
-    specify { expect(FunctionalInterval.get(:minor_third).consonance).to be_imperfect }
-    specify { expect(FunctionalInterval.get(:major_third).consonance).to be_imperfect }
-    specify { expect(FunctionalInterval.get(:perfect_fourth).consonance).to be_perfect }
-    specify { expect(FunctionalInterval.get(:perfect_fourth).consonance(:two_part_harmony)).to be_dissonant }
-    specify { expect(FunctionalInterval.get(:perfect_eleventh).consonance(:two_part_harmony)).to be_dissonant }
-    specify { expect(FunctionalInterval.get(:augmented_fourth).consonance).to be_dissonant }
-    specify { expect(FunctionalInterval.get(:diminished_fifth).consonance).to be_dissonant }
-    specify { expect(FunctionalInterval.get(:perfect_fifth).consonance).to be_perfect }
-    specify { expect(FunctionalInterval.get(:minor_sixth).consonance).to be_imperfect }
-    specify { expect(FunctionalInterval.get(:major_sixth).consonance).to be_imperfect }
-    specify { expect(FunctionalInterval.get(:minor_seventh).consonance).to be_dissonant }
-    specify { expect(FunctionalInterval.get(:major_seventh).consonance).to be_dissonant }
-    specify { expect(FunctionalInterval.get(:perfect_octave).consonance).to be_perfect }
+    specify { expect(described_class.get(:minor_second).consonance).to be_dissonant }
+    specify { expect(described_class.get(:major_second).consonance).to be_dissonant }
+    specify { expect(described_class.get(:minor_third).consonance).to be_imperfect }
+    specify { expect(described_class.get(:major_third).consonance).to be_imperfect }
+    specify { expect(described_class.get(:perfect_fourth).consonance).to be_perfect }
+    specify { expect(described_class.get(:perfect_fourth).consonance(:two_part_harmony)).to be_dissonant }
+    specify { expect(described_class.get(:perfect_eleventh).consonance(:two_part_harmony)).to be_dissonant }
+    specify { expect(described_class.get(:augmented_fourth).consonance).to be_dissonant }
+    specify { expect(described_class.get(:diminished_fifth).consonance).to be_dissonant }
+    specify { expect(described_class.get(:perfect_fifth).consonance).to be_perfect }
+    specify { expect(described_class.get(:minor_sixth).consonance).to be_imperfect }
+    specify { expect(described_class.get(:major_sixth).consonance).to be_imperfect }
+    specify { expect(described_class.get(:minor_seventh).consonance).to be_dissonant }
+    specify { expect(described_class.get(:major_seventh).consonance).to be_dissonant }
+    specify { expect(described_class.get(:perfect_octave).consonance).to be_perfect }
   end
 end

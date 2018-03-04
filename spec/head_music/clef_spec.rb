@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-describe Clef do
-  subject(:clef) { Clef.get(name) }
+describe HeadMusic::Clef do
+  subject(:clef) { described_class.get(name) }
 
   context 'treble clef' do
     let(:name) { :treble }

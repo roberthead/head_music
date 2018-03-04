@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-describe Motion do
-  let(:composition) { Composition.new }
+describe HeadMusic::Motion do
+  let(:composition) { HeadMusic::Composition.new }
   let(:upper_voice) do
     composition.add_voice(role: :melody).tap do |voice|
       upper_voice_pitches.each.with_index(1) do |pitch, bar|
@@ -19,10 +19,10 @@ describe Motion do
     end
   end
 
-  let(:first_harmonic_interval) { HarmonicInterval.new(lower_voice, upper_voice, '1:1') }
-  let(:second_harmonic_interval) { HarmonicInterval.new(lower_voice, upper_voice, '2:1') }
+  let(:first_harmonic_interval) { HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, '1:1') }
+  let(:second_harmonic_interval) { HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, '2:1') }
 
-  subject { Motion.new(first_harmonic_interval, second_harmonic_interval) }
+  subject { described_class.new(first_harmonic_interval, second_harmonic_interval) }
 
   context 'when the lower voice repeats the note' do
     let(:lower_voice_pitches) { %w[C4 C4] }

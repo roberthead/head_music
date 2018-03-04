@@ -28,7 +28,7 @@ describe HeadMusic::Style::Rulesets::FuxCantusFirmus do
         context example.description do
           let(:voice) { example.composition.cantus_firmus_voice }
 
-          if !example.expected_messages.empty?
+          if example.expected_messages.any?
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|
@@ -46,7 +46,7 @@ describe HeadMusic::Style::Rulesets::FuxCantusFirmus do
         context example.description do
           let(:voice) { example.composition.cantus_firmus_voice }
 
-          if !example.expected_messages.empty?
+          if example.expected_messages.any?
             it { is_expected.not_to be_adherent }
 
             example.expected_messages.each do |expected_message|

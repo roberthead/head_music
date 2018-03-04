@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
-  let(:composition) { Composition.new(key_signature: 'C major') }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'C major') }
   let!(:cantus_firmus) do
     composition.add_voice(role: 'cantus firmus').tap do |voice|
       voice.place('1:1', :whole, 'C4')
@@ -82,7 +82,7 @@ describe HeadMusic::Style::Annotations::StartOnPerfectConsonance do
   end
 
   context 'when the intervals are compound' do
-    let(:composition) { Composition.new(key_signature: 'G mixolydian') }
+    let(:composition) { HeadMusic::Composition.new(key_signature: 'G mixolydian') }
     let!(:cantus_firmus) do
       composition.add_voice(role: 'cantus firmus').tap do |voice|
         cantus_firmus_pitches.each.with_index(1) do |pitch, bar|

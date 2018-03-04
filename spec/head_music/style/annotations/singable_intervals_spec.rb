@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::SingableIntervals do
-  let(:composition) { Composition.new(name: 'CF in C Major', key_signature: 'C Major') }
-  let(:voice) { Voice.new(composition: composition) }
+  let(:composition) { HeadMusic::Composition.new(name: 'CF in C Major', key_signature: 'C Major') }
+  let(:voice) { HeadMusic::Voice.new(composition: composition) }
   subject { described_class.new(voice) }
 
   context 'with no notes' do
@@ -60,7 +60,7 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
       end
     end
 
-    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
+    its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq '6:1:000 to 8:1:000' }
   end
 
@@ -71,7 +71,7 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
       end
     end
 
-    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
+    its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq '4:1:000 to 6:1:000' }
   end
 
@@ -82,7 +82,7 @@ describe HeadMusic::Style::Annotations::SingableIntervals do
       end
     end
 
-    its(:fitness) { is_expected.to eq PENALTY_FACTOR }
+    its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq '4:1:000 to 6:1:000' }
   end
 end

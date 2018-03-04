@@ -96,4 +96,8 @@ class HeadMusic::RhythmicValue
   def ==(other)
     to_s == other.to_s
   end
+
+  def to_s
+    name.tr('_', '-')
+  end
 end

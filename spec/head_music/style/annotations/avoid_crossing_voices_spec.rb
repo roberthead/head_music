@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::AvoidCrossingVoices do
-  let(:composition) { Composition.new(key_signature: 'D dorian') }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
   let(:cantus_firmus) { composition.add_voice(role: :cantus_firmus) }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
   subject { described_class.new(counterpoint) }

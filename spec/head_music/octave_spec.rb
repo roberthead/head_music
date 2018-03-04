@@ -2,19 +2,19 @@
 
 require 'spec_helper'
 
-describe Octave do
+describe HeadMusic::Octave do
   describe '.get' do
     it 'returns an instance when given an octave number' do
-      expect(Octave.get(4)).to eq 4
-      expect(Octave.get(-1)).to eq(-1)
-      expect(Octave.get(10)).to eq 10
-      expect(Octave.get('5')).to eq 5
+      expect(described_class.get(4)).to eq 4
+      expect(described_class.get(-1)).to eq(-1)
+      expect(described_class.get(10)).to eq 10
+      expect(described_class.get('5')).to eq 5
     end
 
     it 'falls back to 4' do
-      expect(Octave.get('foo')).to eq 4
-      expect(Octave.get(1.5)).to eq 4
-      expect(Octave.get(15)).to eq 4
+      expect(described_class.get('foo')).to eq 4
+      expect(described_class.get(1.5)).to eq 4
+      expect(described_class.get(15)).to eq 4
     end
 
     context 'when given an instance' do
@@ -27,18 +27,18 @@ describe Octave do
   end
 
   describe '.from_name' do
-    specify { expect(Octave.from_name('F#5')).to eq 5 }
+    specify { expect(described_class.from_name('F#5')).to eq 5 }
   end
 
   describe '.new' do
     it 'is private' do
-      expect { Octave.new(5) }.to raise_error NoMethodError
+      expect { described_class.new(5) }.to raise_error NoMethodError
     end
   end
 
   describe 'comparison' do
-    specify { expect(Octave.get(2)).to be < Octave.get(3) }
-    specify { expect(Octave.get(5)).to be > Octave.get(-1) }
-    specify { expect(Octave.get(7)).to be == Octave.get(7) }
+    specify { expect(described_class.get(2)).to be < described_class.get(3) }
+    specify { expect(described_class.get(5)).to be > described_class.get(-1) }
+    specify { expect(described_class.get(7)).to be == described_class.get(7) }
   end
 end

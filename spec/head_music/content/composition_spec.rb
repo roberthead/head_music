@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-describe Composition do
-  subject(:composition) { Composition.new(name: 'Fruit Salad') }
+describe HeadMusic::Composition do
+  subject(:composition) { described_class.new(name: 'Fruit Salad') }
 
   it 'assigns a name' do
     expect(composition.name).to eq 'Fruit Salad'

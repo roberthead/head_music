@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-describe Consonance do
+describe HeadMusic::Consonance do
   describe 'predicate_methods' do
-    specify { expect(Consonance.get(:imperfect)).not_to be_perfect }
-    specify { expect(Consonance.get(:imperfect)).to be_imperfect }
-    specify { expect(Consonance.get(:imperfect)).not_to be_dissonant }
+    specify { expect(described_class.get(:imperfect)).not_to be_perfect }
+    specify { expect(described_class.get(:imperfect)).to be_imperfect }
+    specify { expect(described_class.get(:imperfect)).not_to be_dissonant }
   end
 
   context 'when given an instance' do

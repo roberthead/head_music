@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::Diatonic do
-  let(:composition) { Composition.new(key_signature: 'D dorian') }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
   let(:voice) { composition.add_voice }
   subject { described_class.new(voice) }
 

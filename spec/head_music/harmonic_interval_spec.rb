@@ -3,10 +3,10 @@
 require 'spec_helper'
 
 describe HeadMusic::HarmonicInterval do
-  let(:composition) { Composition.new }
+  let(:composition) { HeadMusic::Composition.new }
   let!(:high_voice) { composition.add_voice(role: :melody) }
   let!(:low_voice) { composition.add_voice(role: :bass_line) }
-  let(:position) { Position.new(composition, '2:1') }
+  let(:position) { HeadMusic::Position.new(composition, '2:1') }
   let!(:high_note) { high_voice.place(position, :quarter, 'D4') }
   let!(:low_note) { low_voice.place(position, :whole, 'F3') }
   subject(:harmonic_interval) { described_class.new(high_voice, low_voice, position) }

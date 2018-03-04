@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe GrandStaff do
+describe HeadMusic::GrandStaff do
   describe '.get' do
     context 'given an instance' do
       let(:instance) { described_class.get('#') }
@@ -13,7 +13,7 @@ describe GrandStaff do
     end
 
     context 'given :piano' do
-      subject(:grand_staff) { GrandStaff.get(:piano) }
+      subject(:grand_staff) { described_class.get(:piano) }
 
       its(:instrument) { is_expected.to eq :piano }
 
@@ -30,7 +30,7 @@ describe GrandStaff do
     end
 
     context 'given :organ' do
-      subject(:grand_staff) { GrandStaff.get(:organ) }
+      subject(:grand_staff) { described_class.get(:organ) }
 
       its(:instrument) { is_expected.to eq :organ }
 

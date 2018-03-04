@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# A composition is a portion of music.
+# A composition is musical content.
 class HeadMusic::Composition
   attr_reader :name, :key_signature, :meter, :voices
 
@@ -54,6 +54,10 @@ class HeadMusic::Composition
 
   def counterpoint_voice
     voices.reject(&:cantus_firmus?).first
+  end
+
+  def to_s
+    "#{name} — #{voices.count} voice(s)"
   end
 
   private

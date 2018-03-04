@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Analysis do
-  let(:voice) { Voice.new }
+  let(:voice) { HeadMusic::Voice.new }
   let(:ruleset) { HeadMusic::Style::Rulesets::FuxCantusFirmus }
   subject(:analysis) { HeadMusic::Style::Analysis.new(ruleset, voice) }
 

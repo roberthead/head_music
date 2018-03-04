@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
-  let(:composition) { Composition.new(key_signature: 'D dorian') }
-  let(:voice) { Voice.new(composition: composition) }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
+  let(:voice) { HeadMusic::Voice.new(composition: composition) }
   subject { described_class.new(voice) }
 
   context 'with no notes' do
@@ -29,7 +29,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
       its(:first_mark_code) { is_expected.to eq '4:1:000 to 7:1:000' }
     end
 
@@ -40,7 +40,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
         end
       end
 
-      its(:fitness) { is_expected.to eq PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
       its(:first_mark_code) { is_expected.to eq '4:1:000 to 7:1:000' }
     end
 
@@ -55,7 +55,7 @@ describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
     end
 
     context 'when the leap is recovered by skip spelling a triad' do
-      let(:composition) { Composition.new(key_signature: 'F lydian') }
+      let(:composition) { HeadMusic::Composition.new(key_signature: 'F lydian') }
 
       before do
         # FUX example

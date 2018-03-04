@@ -2,15 +2,15 @@
 
 require 'spec_helper'
 
-describe Voice do
-  let(:composition) { Composition.new }
-  subject(:voice) { Voice.new(composition: composition) }
+describe HeadMusic::Voice do
+  let(:composition) { HeadMusic::Composition.new }
+  subject(:voice) { described_class.new(composition: composition) }
 
   its(:composition) { is_expected.to eq composition }
 
   describe '#place' do
     it 'adds a placement' do
-      position = Position.new(composition, '5:1:0')
+      position = HeadMusic::Position.new(composition, '5:1:0')
       expect do
         voice.place(position, :quarter)
       end.to change {
@@ -19,8 +19,8 @@ describe Voice do
     end
 
     describe 'sorting' do
-      let!(:placement1) { voice.place(Position.new(composition, '5:1:0'), :quarter) }
-      let!(:placement2) { voice.place(Position.new(composition, '4:3:0'), :quarter) }
+      let!(:placement1) { voice.place(HeadMusic::Position.new(composition, '5:1:0'), :quarter) }
+      let!(:placement2) { voice.place(HeadMusic::Position.new(composition, '4:3:0'), :quarter) }
 
       it 'sorts by position' do
         expect(voice.placements).to eq [placement2, placement1]
@@ -29,10 +29,10 @@ describe Voice do
   end
 
   describe '#notes and #rests' do
-    let!(:note1) { voice.place(Position.new(composition, '1:1:0'), :quarter, 'D') }
-    let!(:rest1) { voice.place(Position.new(composition, '1:2:0'), :quarter) }
-    let!(:note2) { voice.place(Position.new(composition, '1:3:0'), :quarter, 'G') }
-    let!(:rest2) { voice.place(Position.new(composition, '1:4:0'), :quarter) }
+    let!(:note1) { voice.place(HeadMusic::Position.new(composition, '1:1:0'), :quarter, 'D') }
+    let!(:rest1) { voice.place(HeadMusic::Position.new(composition, '1:2:0'), :quarter) }
+    let!(:note2) { voice.place(HeadMusic::Position.new(composition, '1:3:0'), :quarter, 'G') }
+    let!(:rest2) { voice.place(HeadMusic::Position.new(composition, '1:4:0'), :quarter) }
 
     its(:notes) { are_expected.to eq [note1, note2] }
     its(:rests) { are_expected.to eq [rest1, rest2] }
@@ -72,7 +72,7 @@ describe Voice do
   end
 
   context 'when a role is provided' do
-    subject(:voice) { Voice.new(composition: composition, role: 'Cantus Firmus') }
+    subject(:voice) { described_class.new(composition: composition, role: 'Cantus Firmus') }
 
     its(:role) { is_expected.to eq 'Cantus Firmus' }
     it { is_expected.to be_cantus_firmus }
@@ -90,26 +90,26 @@ describe Voice do
     subject { voice.note_at(position) }
 
     context 'for a downbeat with a note' do
-      let(:position) { Position.new(composition, '5:1:000') }
+      let(:position) { HeadMusic::Position.new(composition, '5:1:000') }
 
       its(:pitch) { is_expected.to eq 'A4' }
     end
 
     context 'for an offbeat in the middle of the duration of a note' do
-      let(:position) { Position.new(composition, '5:2:000') }
+      let(:position) { HeadMusic::Position.new(composition, '5:2:000') }
 
       its(:pitch) { is_expected.to eq 'A4' }
     end
 
     context 'for a tick in the middle of the duration of a note' do
-      let(:position) { Position.new(composition, '5:1:001') }
+      let(:position) { HeadMusic::Position.new(composition, '5:1:001') }
 
       its(:pitch) { is_expected.to eq 'A4' }
     end
 
     context 'for a downbeat where there is no note' do
       let(:pitches) { ['C', 'E', 'G', 'F', nil, 'G', 'E', 'D', 'C'] }
-      let(:position) { Position.new(composition, '5:1:000') }
+      let(:position) { HeadMusic::Position.new(composition, '5:1:000') }
 
       it { is_expected.to be_nil }
     end
@@ -117,7 +117,7 @@ describe Voice do
 
   describe 'notes_during' do
     let(:pitches) { %w[C E G F A G E D C] }
-    let(:placement) { Placement.new(composition, position, rhythmic_value) }
+    let(:placement) { HeadMusic::Placement.new(composition, position, rhythmic_value) }
 
     before do
       pitches.each.with_index(1) do |pitch, bar|
@@ -128,7 +128,7 @@ describe Voice do
     subject(:notes_during) { voice.notes_during(placement) }
 
     context 'for a downbeat with a note' do
-      let(:position) { Position.new(composition, '5:1:000') }
+      let(:position) { HeadMusic::Position.new(composition, '5:1:000') }
       let(:rhythmic_value) { :quarter }
 
       specify do
@@ -137,7 +137,7 @@ describe Voice do
     end
 
     context 'for an offbeat in the middle of the duration of a note' do
-      let(:position) { Position.new(composition, '5:2:000') }
+      let(:position) { HeadMusic::Position.new(composition, '5:2:000') }
       let(:rhythmic_value) { :quarter }
 
       specify do
@@ -146,7 +146,7 @@ describe Voice do
     end
 
     context 'for a tick in the middle of the duration of a note' do
-      let(:position) { Position.new(composition, '5:1:001') }
+      let(:position) { HeadMusic::Position.new(composition, '5:1:001') }
       let(:rhythmic_value) { :'thirty-second' }
 
       specify do
@@ -156,14 +156,14 @@ describe Voice do
 
     context 'for a downbeat where there is no note' do
       let(:pitches) { ['C', 'E', 'G', 'F', nil, 'G', 'E', 'D', 'C'] }
-      let(:position) { Position.new(composition, '5:1:000') }
+      let(:position) { HeadMusic::Position.new(composition, '5:1:000') }
       let(:rhythmic_value) { :'thirty-second' }
 
       it { is_expected.to eq [] }
     end
 
     context 'for a duration where there are multiple notes during the placement' do
-      let(:position) { Position.new(composition, '4:3:000') }
+      let(:position) { HeadMusic::Position.new(composition, '4:3:000') }
       let(:rhythmic_value) { :breve }
 
       specify do

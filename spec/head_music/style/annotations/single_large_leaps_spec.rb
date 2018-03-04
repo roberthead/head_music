@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::SingleLargeLeaps do
-  let(:composition) { Composition.new(key_signature: 'D dorian') }
-  let(:voice) { Voice.new(composition: composition) }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
+  let(:voice) { HeadMusic::Voice.new(composition: composition) }
   subject { described_class.new(voice) }
 
   context 'with no notes' do
@@ -73,7 +73,7 @@ describe HeadMusic::Style::Annotations::SingleLargeLeaps do
     end
 
     context 'when recovered by skip spelling a triad' do
-      let(:composition) { Composition.new(key_signature: 'F lydian') }
+      let(:composition) { HeadMusic::Composition.new(key_signature: 'F lydian') }
 
       before do
         # FUX example

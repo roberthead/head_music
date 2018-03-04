@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe Instrument do
+describe HeadMusic::Instrument do
   context 'when given an instance' do
     let(:instance) { described_class.get('guitar') }
 
@@ -12,14 +12,14 @@ describe Instrument do
   end
 
   context 'when piano' do
-    subject(:piano) { Instrument.get(:piano) }
+    subject(:piano) { described_class.get(:piano) }
 
     its(:name) { is_expected.to eq 'piano' }
     its(:default_system) { is_expected.to eq %i[treble bass] }
   end
 
   context 'when violin' do
-    subject(:violin) { Instrument.get(:violin) }
+    subject(:violin) { described_class.get(:violin) }
 
     its(:name) { is_expected.to eq 'violin' }
     its(:default_clef) { is_expected.to eq :treble }

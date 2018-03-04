@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 describe HeadMusic::Style::Annotations::UpToFourteenNotes do
-  let(:composition) { Composition.new(key_signature: 'D dorian') }
-  let(:voice) { Voice.new(composition: composition, role: 'Cantus Firmus') }
+  let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
+  let(:voice) { HeadMusic::Voice.new(composition: composition, role: 'Cantus Firmus') }
   subject { described_class.new(voice) }
 
   context 'when exactly 14 notes' do

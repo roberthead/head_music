@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe Interval do
+describe HeadMusic::Interval do
   describe '.get' do
     context 'when given an instance' do
       let(:instance) { described_class.get(7) }
@@ -14,7 +14,7 @@ describe Interval do
   end
 
   context 'given a simple interval' do
-    subject(:interval) { Interval.get(2) }
+    subject(:interval) { described_class.get(2) }
 
     it { is_expected.to be == 2 }
     it { is_expected.to be_simple }
@@ -22,13 +22,13 @@ describe Interval do
     it { is_expected.not_to be_compound }
   end
 
-  let(:perfect_unison) { Interval.get(:perfect_unison) }
-  let(:major_third) { Interval.get(:major_third) }
-  let(:minor_third) { Interval.get(:minor_third) }
-  let(:perfect_fourth) { Interval.get(:perfect_fourth) }
-  let(:perfect_fifth) { Interval.get(:perfect_fifth) }
-  let(:perfect_octave) { Interval.get(:perfect_octave) }
-  let(:perfect_11th) { Interval.get(17) }
+  let(:perfect_unison) { described_class.get(:perfect_unison) }
+  let(:major_third) { described_class.get(:major_third) }
+  let(:minor_third) { described_class.get(:minor_third) }
+  let(:perfect_fourth) { described_class.get(:perfect_fourth) }
+  let(:perfect_fifth) { described_class.get(:perfect_fifth) }
+  let(:perfect_octave) { described_class.get(:perfect_octave) }
+  let(:perfect_11th) { described_class.get(17) }
 
   specify { expect(major_third).to be > minor_third }
 

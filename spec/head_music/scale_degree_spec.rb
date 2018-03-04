@@ -2,15 +2,15 @@
 
 require 'spec_helper'
 
-describe ScaleDegree do
+describe HeadMusic::ScaleDegree do
   describe '.for' do
-    subject(:scale_degree) { ScaleDegree.new(key_signature, spelling) }
+    subject(:scale_degree) { described_class.new(key_signature, spelling) }
 
     context 'when given the key of C minor' do
-      let(:key_signature) { KeySignature.get('C minor') }
+      let(:key_signature) { HeadMusic::KeySignature.get('C minor') }
 
       context "and the spelling 'D'" do
-        let(:spelling) { Spelling.get('D') }
+        let(:spelling) { HeadMusic::Spelling.get('D') }
 
         its(:degree) { is_expected.to eq 2 }
         its(:sign) { is_expected.to eq nil }
@@ -20,13 +20,13 @@ describe ScaleDegree do
       end
 
       context "and the spelling 'Db'" do
-        let(:spelling) { Spelling.get('Db') }
+        let(:spelling) { HeadMusic::Spelling.get('Db') }
 
         it { is_expected.to eq '♭2' }
       end
 
       context "and the spelling 'B'" do
-        let(:spelling) { Spelling.get('B') }
+        let(:spelling) { HeadMusic::Spelling.get('B') }
 
         it { is_expected.to eq '♯7' }
         its(:degree) { is_expected.to eq 7 }

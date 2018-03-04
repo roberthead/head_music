@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-describe KeySignature do
+describe HeadMusic::KeySignature do
   context '.new' do
-    subject(:key_signature) { KeySignature.new(tonic, scale_type) }
+    subject(:key_signature) { described_class.new(tonic, scale_type) }
 
     context 'when given an instance' do
       let(:instance) { described_class.get('F♯ major') }
@@ -29,7 +29,7 @@ describe KeySignature do
       let(:scale_type) { :major }
 
       context 'in the key of C major' do
-        let(:tonic) { Spelling.get('C') }
+        let(:tonic) { HeadMusic::Spelling.get('C') }
 
         specify { expect(key_signature.num_sharps).to eq 0 }
         specify { expect(key_signature.num_flats).to eq 0 }
@@ -37,21 +37,21 @@ describe KeySignature do
       end
 
       context 'in the key of E♭ major' do
-        let(:tonic) { Spelling.get('E♭') }
+        let(:tonic) { HeadMusic::Spelling.get('E♭') }
 
         specify { expect(key_signature.num_flats).to eq 3 }
         specify { expect(key_signature.signs).to eq ['B♭', 'E♭', 'A♭'] }
       end
 
       context 'in the key of F♯ major' do
-        let(:tonic) { Spelling.get('F♯') }
+        let(:tonic) { HeadMusic::Spelling.get('F♯') }
 
         specify { expect(key_signature.num_sharps).to eq 6 }
         specify { expect(key_signature.signs).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯] }
       end
 
       context 'in the key of G♭ major' do
-        let(:tonic) { Spelling.get('G♭') }
+        let(:tonic) { HeadMusic::Spelling.get('G♭') }
 
         specify { expect(key_signature.signs).to eq %w[B♭ E♭ A♭ D♭ G♭ C♭] }
       end
@@ -61,14 +61,14 @@ describe KeySignature do
       let(:scale_type) { :minor }
 
       context 'in the key of C minor' do
-        let(:tonic) { Spelling.get('C') }
+        let(:tonic) { HeadMusic::Spelling.get('C') }
 
         specify { expect(key_signature.num_flats).to eq 3 }
         specify { expect(key_signature.signs).to eq ['B♭', 'E♭', 'A♭'] }
       end
 
       context 'in the key of B minor' do
-        let(:tonic) { Spelling.get('B') }
+        let(:tonic) { HeadMusic::Spelling.get('B') }
 
         specify { expect(key_signature.num_sharps).to eq 2 }
 
@@ -89,46 +89,46 @@ describe KeySignature do
 
   describe 'equality' do
     context 'given a major key' do
-      subject(:key_signature) { KeySignature.new(tonic, scale_type) }
+      subject(:key_signature) { described_class.new(tonic, scale_type) }
       let(:tonic) { 'E♭' }
       let(:scale_type) { :major }
 
       it 'is equal to itself' do
-        expect(key_signature).to eq KeySignature.get('E♭ major')
+        expect(key_signature).to eq described_class.get('E♭ major')
       end
 
       it 'is not equal to other major keys' do
-        expect(key_signature).not_to eq KeySignature.get('E major')
-        expect(key_signature).not_to eq KeySignature.get('B♭ major')
+        expect(key_signature).not_to eq described_class.get('E major')
+        expect(key_signature).not_to eq described_class.get('B♭ major')
       end
 
       it 'is equal to the relative minor' do
-        expect(key_signature).to eq KeySignature.get('C minor')
+        expect(key_signature).to eq described_class.get('C minor')
       end
 
       it 'is equal to the relative modes' do
-        expect(key_signature).to eq KeySignature.get('Eb ionian')
-        expect(key_signature).to eq KeySignature.get('F dorian')
-        expect(key_signature).to eq KeySignature.get('G phrygian')
-        expect(key_signature).to eq KeySignature.get('Ab lydian')
-        expect(key_signature).to eq KeySignature.get('Bb mixolydian')
-        expect(key_signature).to eq KeySignature.get('C aeolian')
-        expect(key_signature).to eq KeySignature.get('D locrian')
+        expect(key_signature).to eq described_class.get('Eb ionian')
+        expect(key_signature).to eq described_class.get('F dorian')
+        expect(key_signature).to eq described_class.get('G phrygian')
+        expect(key_signature).to eq described_class.get('Ab lydian')
+        expect(key_signature).to eq described_class.get('Bb mixolydian')
+        expect(key_signature).to eq described_class.get('C aeolian')
+        expect(key_signature).to eq described_class.get('D locrian')
       end
 
       it 'is not equal to modes with the wrong final' do
-        expect(key_signature).not_to eq KeySignature.get('C ionian')
-        expect(key_signature).not_to eq KeySignature.get('Eb dorian')
-        expect(key_signature).not_to eq KeySignature.get('Eb phrygian')
-        expect(key_signature).not_to eq KeySignature.get('Eb lydian')
-        expect(key_signature).not_to eq KeySignature.get('Eb mixolydian')
-        expect(key_signature).not_to eq KeySignature.get('Eb aeolian')
-        expect(key_signature).not_to eq KeySignature.get('Eb locrian')
+        expect(key_signature).not_to eq described_class.get('C ionian')
+        expect(key_signature).not_to eq described_class.get('Eb dorian')
+        expect(key_signature).not_to eq described_class.get('Eb phrygian')
+        expect(key_signature).not_to eq described_class.get('Eb lydian')
+        expect(key_signature).not_to eq described_class.get('Eb mixolydian')
+        expect(key_signature).not_to eq described_class.get('Eb aeolian')
+        expect(key_signature).not_to eq described_class.get('Eb locrian')
       end
     end
 
     context 'given a pentatonic scale type' do
-      subject(:key_signature) { KeySignature.new(tonic, scale_type) }
+      subject(:key_signature) { described_class.new(tonic, scale_type) }
       let(:tonic) { 'D' }
       let(:scale_type) { :major_pentatonic }
 
@@ -138,6 +138,6 @@ describe KeySignature do
   end
 
   describe '♯spellings' do
-    specify { expect(KeySignature.get('D major').spellings).to eq %w[D E F♯ G A B C♯] }
+    specify { expect(described_class.get('D major').spellings).to eq %w[D E F♯ G A B C♯] }
   end
 end
