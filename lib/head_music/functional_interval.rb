@@ -36,8 +36,8 @@ class HeadMusic::FunctionalInterval
   delegate :to_s, to: :name
   delegate :perfect?, :major?, :minor?, :diminished?, :augmented?, :doubly_diminished?, :doubly_augmented?, to: :quality
 
-  # Representation of the name of the functional interval
-  class Name
+  # Interprets a string or symbol
+  class Parser
     attr_reader :identifier
 
     def initialize(identifier)
@@ -65,39 +65,76 @@ class HeadMusic::FunctionalInterval
     end
   end
 
-  def self.get(identifier)
-    name = Name.new(identifier)
-    semitones = _degree_quality_semitones.dig(name.degree_name.to_sym, name.quality_name)
-    higher_pitch = HeadMusic::Pitch.from_number_and_letter(HeadMusic::Pitch.middle_c + semitones, name.higher_letter)
-    new(HeadMusic::Pitch.middle_c, higher_pitch)
-  end
+  # Accepts a name and a quality and returns the number of semitones
+  class SemitoneCount
+    attr_reader :count
 
-  def self._degree_quality_semitones
-    @_degree_quality_semitones ||= begin
-      {}.tap do |degree_quality_semitones|
-        QUALITY_SEMITONES.each do |degree_name, qualities|
-          default_quality = qualities.keys.first
-          default_semitones = qualities[default_quality]
-          degree_quality_semitones[degree_name] = _semitones_for_degree(default_quality, default_semitones)
+    def initialize(name, quality_name)
+      @count ||= SemitoneCount.degree_quality_semitones.dig(name, quality_name)
+    end
+
+    def self.degree_quality_semitones
+      @_degree_quality_semitones ||= begin
+        {}.tap do |degree_quality_semitones|
+          QUALITY_SEMITONES.each do |degree_name, qualities|
+            default_quality = qualities.keys.first
+            default_semitones = qualities[default_quality]
+            degree_quality_semitones[degree_name] = _semitones_for_degree(default_quality, default_semitones)
+          end
         end
       end
     end
-  end
 
-  def self._semitones_for_degree(quality, default_semitones)
-    {}.tap do |semitones|
-      _degree_quality_modifications(quality).each do |current_quality, delta|
-        semitones[current_quality] = default_semitones + delta
+    def self._semitones_for_degree(quality, default_semitones)
+      {}.tap do |semitones|
+        _degree_quality_modifications(quality).each do |current_quality, delta|
+          semitones[current_quality] = default_semitones + delta
+        end
+      end
+    end
+
+    def self._degree_quality_modifications(quality)
+      if quality == :perfect
+        HeadMusic::Quality::PERFECT_INTERVAL_MODIFICATION.invert
+      else
+        HeadMusic::Quality::MAJOR_INTERVAL_MODIFICATION.invert
       end
     end
   end
 
-  def self._degree_quality_modifications(quality)
-    if quality == :perfect
-      HeadMusic::Quality::PERFECT_INTERVAL_MODIFICATION.invert
-    else
-      HeadMusic::Quality::MAJOR_INTERVAL_MODIFICATION.invert
+  # Accepts the letter name count between two notes and categorizes the interval
+  class Category
+    attr_reader :letter_name_count
+
+    def initialize(number)
+      @letter_name_count = number
     end
+
+    def step?
+      letter_name_count == 2
+    end
+
+    def skip?
+      letter_name_count == 3
+    end
+
+    def leap?
+      letter_name_count >= 3
+    end
+
+    def large_leap?
+      letter_name_count > 3
+    end
+  end
+
+  delegate :step?, :skip?, :leap?, :large_leap?, to: :category
+
+  # Accepts a name and returns the interval with middle c on the bottom
+  def self.get(identifier)
+    name = Parser.new(identifier)
+    semitones = SemitoneCount.new(name.degree_name.to_sym, name.quality_name).count
+    higher_pitch = HeadMusic::Pitch.from_number_and_letter(HeadMusic::Pitch.middle_c + semitones, name.higher_letter)
+    new(HeadMusic::Pitch.middle_c, higher_pitch)
   end
 
   def initialize(pitch1, pitch2)
@@ -106,36 +143,58 @@ class HeadMusic::FunctionalInterval
     @lower_pitch, @higher_pitch = [pitch1, pitch2].sort
   end
 
-  def number
-    simple_number + octaves * 7
+  class Quality
   end
 
-  def steps
-    number - 1
+  # Encapsulate the distance methods of the interval
+  class Size
+    attr_reader :low_pitch, :high_pitch
+
+    def initialize(pitch1, pitch2)
+      @low_pitch, @high_pitch = *[pitch1, pitch2].sort
+    end
+
+    def simple_number
+      @simple_number ||= @low_pitch.letter_name.steps_to(@high_pitch.letter_name) + 1
+    end
+
+    def octaves
+      @octaves ||= (high_pitch.number - low_pitch.number) / 12
+    end
+
+    # returns the ordinality of the interval
+    def number
+      simple_number + octaves * 7
+    end
+
+    def simple?
+      octaves.zero?
+    end
+
+    def compound?
+      !simple?
+    end
+
+    def simple_semitones
+      semitones % 12
+    end
+
+    def semitones
+      (high_pitch - low_pitch).to_i
+    end
+
+    def steps
+      number - 1
+    end
   end
 
-  def simple_number
-    @simple_number ||= @lower_pitch.letter_name.steps_to(@higher_pitch.letter_name) + 1
+  def size
+    @size ||= Size.new(@lower_pitch, @higher_pitch)
   end
 
-  def simple_semitones
-    semitones % 12
-  end
+  delegate :simple_number, :octaves, :number, :simple?, :compound?, :semitones, :simple_semitones, :steps, to: :size
 
-  def semitones
-    (@higher_pitch - @lower_pitch).to_i
-  end
-
-  def octaves
-    (higher_pitch.number - lower_pitch.number) / 12
-  end
-
-  def compound?
-    !simple?
-  end
-
-  def simple?
-    octaves.zero?
+  class Consonance
   end
 
   def simple_name
@@ -180,6 +239,7 @@ class HeadMusic::FunctionalInterval
     inverted_low_pitch += 12 while inverted_low_pitch < higher_pitch
     HeadMusic::FunctionalInterval.new(higher_pitch, inverted_low_pitch)
   end
+  alias invert inversion
 
   def consonance(style = :standard_practice)
     consonance_for_perfect(style) ||
@@ -190,6 +250,7 @@ class HeadMusic::FunctionalInterval
   def consonance?(style = :standard_practice)
     consonance(style).perfect? || consonance(style).imperfect?
   end
+  alias consonant? consonance?
 
   def perfect_consonance?(style = :standard_practice)
     consonance(style).perfect?
@@ -201,22 +262,6 @@ class HeadMusic::FunctionalInterval
 
   def dissonance?(style = :standard_practice)
     consonance(style).dissonant?
-  end
-
-  def step?
-    number == 2
-  end
-
-  def skip?
-    number == 3
-  end
-
-  def leap?
-    number >= 3
-  end
-
-  def large_leap?
-    number > 3
   end
 
   def <=>(other)
@@ -233,6 +278,10 @@ class HeadMusic::FunctionalInterval
   end
 
   private
+
+  def category
+    @category ||= Category.new(number)
+  end
 
   def named_number?
     number < NUMBER_NAMES.length
