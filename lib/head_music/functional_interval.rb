@@ -66,11 +66,11 @@ class HeadMusic::FunctionalInterval
   end
 
   # Accepts a name and a quality and returns the number of semitones
-  class SemitoneCount
+  class Semitones
     attr_reader :count
 
     def initialize(name, quality_name)
-      @count ||= SemitoneCount.degree_quality_semitones.dig(name, quality_name)
+      @count ||= Semitones.degree_quality_semitones.dig(name, quality_name)
     end
 
     def self.degree_quality_semitones
@@ -104,46 +104,27 @@ class HeadMusic::FunctionalInterval
 
   # Accepts the letter name count between two notes and categorizes the interval
   class Category
-    attr_reader :letter_name_count
+    attr_reader :number
 
     def initialize(number)
-      @letter_name_count = number
+      @number = number
     end
 
     def step?
-      letter_name_count == 2
+      number == 2
     end
 
     def skip?
-      letter_name_count == 3
+      number == 3
     end
 
     def leap?
-      letter_name_count >= 3
+      number >= 3
     end
 
     def large_leap?
-      letter_name_count > 3
+      number > 3
     end
-  end
-
-  delegate :step?, :skip?, :leap?, :large_leap?, to: :category
-
-  # Accepts a name and returns the interval with middle c on the bottom
-  def self.get(identifier)
-    name = Parser.new(identifier)
-    semitones = SemitoneCount.new(name.degree_name.to_sym, name.quality_name).count
-    higher_pitch = HeadMusic::Pitch.from_number_and_letter(HeadMusic::Pitch.middle_c + semitones, name.higher_letter)
-    new(HeadMusic::Pitch.middle_c, higher_pitch)
-  end
-
-  def initialize(pitch1, pitch2)
-    pitch1 = HeadMusic::Pitch.get(pitch1)
-    pitch2 = HeadMusic::Pitch.get(pitch2)
-    @lower_pitch, @higher_pitch = [pitch1, pitch2].sort
-  end
-
-  class Quality
   end
 
   # Encapsulate the distance methods of the interval
@@ -176,7 +157,7 @@ class HeadMusic::FunctionalInterval
     end
 
     def simple_semitones
-      semitones % 12
+      @simple_semitones ||= semitones % 12
     end
 
     def semitones
@@ -188,50 +169,93 @@ class HeadMusic::FunctionalInterval
     end
   end
 
-  def size
-    @size ||= Size.new(@lower_pitch, @higher_pitch)
-  end
+  # Accepts a number and number of semitones and privides the naming methods.
+  class Naming
+    attr_reader :number, :semitones
 
-  delegate :simple_number, :octaves, :number, :simple?, :compound?, :semitones, :simple_semitones, :steps, to: :size
+    def initialize(number:, semitones:)
+      @number = number
+      @semitones = semitones
+    end
 
-  class Consonance
-  end
+    def simple_semitones
+      @simple_semitones ||= semitones % 12
+    end
 
-  def simple_name
-    [quality_name, simple_number_name].join(' ')
-  end
+    def simple_number
+      @simple_number ||= (number - 1) % 7 + 1
+    end
 
-  def name
-    if named_number?
-      [quality_name, number_name].join(' ')
-    elsif simple_name == 'perfect unison'
-      "#{octaves.humanize} octaves"
-    else
-      "#{octaves.humanize} octaves and #{quality.article} #{simple_name}"
+    def simple_name
+      [quality_name, simple_number_name].join(' ')
+    end
+
+    def quality_name
+      starting_quality = QUALITY_SEMITONES[simple_number_name.to_sym].keys.first
+      delta = simple_semitones - QUALITY_SEMITONES[simple_number_name.to_sym][starting_quality]
+      HeadMusic::Quality.from(starting_quality, delta)
+    end
+
+    def simple_number_name
+      NUMBER_NAMES[simple_number - 1]
+    end
+
+    def number_name
+      NUMBER_NAMES[number - 1] || (number.to_s + NAME_SUFFIXES[number % 10])
+    end
+
+    def name
+      if named_number?
+        [quality_name, number_name].join(' ')
+      elsif simple_name == 'perfect unison'
+        "#{octaves.humanize} octaves"
+      else
+        "#{octaves.humanize} octaves and #{quality.article} #{simple_name}"
+      end
+    end
+
+    def shorthand
+      step_shorthand = number == 1 ? 'U' : number
+      [quality.shorthand, step_shorthand].join
+    end
+
+    private
+
+    def named_number?
+      number < NUMBER_NAMES.length
+    end
+
+    def quality
+      @quality ||= HeadMusic::Quality.get(quality_name)
+    end
+
+    def octaves
+      @octaves ||= semitones / 12
     end
   end
 
-  def shorthand
-    step_shorthand = number == 1 ? 'U' : number
-    [quality.shorthand, step_shorthand].join
+  delegate :step?, :skip?, :leap?, :large_leap?, to: :category
+  delegate :simple_number, :octaves, :number, :simple?, :compound?, :semitones, :simple_semitones, :steps, to: :size
+  delegate(
+    :simple_semitones, :simple_name, :quality_name, :simple_number_name, :number_name, :name, :shorthand, to: :naming
+  )
+
+  # Accepts a name and returns the interval with middle c on the bottom
+  def self.get(identifier)
+    name = Parser.new(identifier)
+    semitones = Semitones.new(name.degree_name.to_sym, name.quality_name).count
+    higher_pitch = HeadMusic::Pitch.from_number_and_letter(HeadMusic::Pitch.middle_c + semitones, name.higher_letter)
+    new(HeadMusic::Pitch.middle_c, higher_pitch)
+  end
+
+  def initialize(pitch1, pitch2)
+    pitch1 = HeadMusic::Pitch.get(pitch1)
+    pitch2 = HeadMusic::Pitch.get(pitch2)
+    @lower_pitch, @higher_pitch = [pitch1, pitch2].sort
   end
 
   def quality
     HeadMusic::Quality.get(quality_name)
-  end
-
-  def quality_name
-    starting_quality = QUALITY_SEMITONES[simple_number_name.to_sym].keys.first
-    delta = simple_semitones - QUALITY_SEMITONES[simple_number_name.to_sym][starting_quality]
-    HeadMusic::Quality.from(starting_quality, delta)
-  end
-
-  def simple_number_name
-    NUMBER_NAMES[simple_number - 1]
-  end
-
-  def number_name
-    NUMBER_NAMES[number - 1] || (number.to_s + NAME_SUFFIXES[number % 10])
   end
 
   def inversion
@@ -279,8 +303,16 @@ class HeadMusic::FunctionalInterval
 
   private
 
+  def size
+    @size ||= Size.new(@lower_pitch, @higher_pitch)
+  end
+
   def category
     @category ||= Category.new(number)
+  end
+
+  def naming
+    @naming ||= Naming.new(number: number, semitones: semitones)
   end
 
   def named_number?
