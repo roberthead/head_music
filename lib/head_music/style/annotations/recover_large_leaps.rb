@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # Ok, so a rule might be that after the first leap (after previous steps)
 # one should normally move by step in the opposite direction
 # unless another leap (in either direction) creates a consonant triad.
 # - Brian
-class HeadMusic::Style::Annotations::RecoverLargeLeaps < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::RecoverLargeLeaps < HeadMusic::Style::Annotation
   MESSAGE = 'Recover large leaps by step in the opposite direction.'
 
   def marks

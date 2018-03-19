@@ -91,16 +91,16 @@ def fux_first_species_harmony_examples
   FUX_FIRST_SPECIES_HARMONY_EXAMPLES.map { |params| CompositionContext.from_params(params) }
 end
 
-describe HeadMusic::Style::Rulesets::FirstSpeciesHarmony do
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ApproachPerfectionContrarily }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AvoidCrossingVoices }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AvoidOverlappingVoices }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ConsonantDownbeats }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::PreferContraryMotion }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::PreferImperfect }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NoUnisonsInMiddle }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::OneToOne }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AvoidCrossingVoices }
+describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ApproachPerfectionContrarily }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidCrossingVoices }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidOverlappingVoices }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantDownbeats }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PreferImperfect }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoUnisonsInMiddle }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::OneToOne }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidCrossingVoices }
 
   context 'adherence' do
     subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::StepOutOfUnison < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Annotation
   MESSAGE = 'Exit a unison by step.'
 
   def marks

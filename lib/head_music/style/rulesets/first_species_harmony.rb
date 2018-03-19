@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
 # Module for rulesets
-module HeadMusic::Style::Rulesets; end
+module HeadMusic::Style::Guides; end
 
 # Rules for first species harmony
-class HeadMusic::Style::Rulesets::FirstSpeciesHarmony
+class HeadMusic::Style::Guides::FirstSpeciesHarmony
   RULESET = [
-    HeadMusic::Style::Annotations::ApproachPerfectionContrarily,
-    HeadMusic::Style::Annotations::AvoidCrossingVoices,
-    HeadMusic::Style::Annotations::AvoidOverlappingVoices,
-    HeadMusic::Style::Annotations::ConsonantDownbeats,
-    HeadMusic::Style::Annotations::NoUnisonsInMiddle,
-    HeadMusic::Style::Annotations::OneToOne,
-    HeadMusic::Style::Annotations::PreferContraryMotion,
-    HeadMusic::Style::Annotations::PreferImperfect,
+    HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
+    HeadMusic::Style::Guidelines::AvoidCrossingVoices,
+    HeadMusic::Style::Guidelines::AvoidOverlappingVoices,
+    HeadMusic::Style::Guidelines::ConsonantDownbeats,
+    HeadMusic::Style::Guidelines::NoUnisonsInMiddle,
+    HeadMusic::Style::Guidelines::OneToOne,
+    HeadMusic::Style::Guidelines::PreferContraryMotion,
+    HeadMusic::Style::Guidelines::PreferImperfect,
   ].freeze
 
   def self.analyze(voice)

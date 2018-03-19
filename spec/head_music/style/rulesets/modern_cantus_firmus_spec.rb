@@ -2,26 +2,26 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Rulesets::ModernCantusFirmus do
+describe HeadMusic::Style::Guides::ModernCantusFirmus do
   subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AlwaysMove }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::AtLeastEightNotes }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ConsonantClimax }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::Diatonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::EndOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::LimitOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::ModerateDirectionChanges }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::MostlyConjunct }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NoRests }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::NotesSameLength }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::PrepareOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableIntervals }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingableRange }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::SingleLargeLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StartOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::StepToFinalNote }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Annotations::UpToFourteenNotes }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AtLeastEightNotes }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::Diatonic }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::EndOnTonic }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ModerateDirectionChanges }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRests }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NotesSameLength }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingleLargeLeaps }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnTonic }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepToFinalNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::UpToFourteenNotes }
 
   describe 'adherence' do
     context 'with Fux examples' do

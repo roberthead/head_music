@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::MostlyConjunct < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::MostlyConjunct < HeadMusic::Style::Annotation
   MESSAGE = 'Use mostly conjunct motion.'
 
   MINIMUM_CONJUNCT_PORTION = HeadMusic::GOLDEN_RATIO_INVERSE**2

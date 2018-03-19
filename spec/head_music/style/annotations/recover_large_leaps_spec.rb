@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::RecoverLargeLeaps do
+describe HeadMusic::Style::Guidelines::RecoverLargeLeaps do
   let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
   let(:voice) { HeadMusic::Voice.new(composition: composition) }
   subject { described_class.new(voice) }

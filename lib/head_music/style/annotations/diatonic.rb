@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::Diatonic < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::Diatonic < HeadMusic::Style::Annotation
   MESSAGE = 'Use only notes in the key signature.'
 
   def marks

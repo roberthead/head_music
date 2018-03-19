@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::StartOnTonic < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::StartOnTonic < HeadMusic::Style::Annotation
   MESSAGE = 'Start on the first scale degree.'
 
   def marks

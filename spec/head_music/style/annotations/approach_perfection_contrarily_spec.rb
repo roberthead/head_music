@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::ApproachPerfectionContrarily do
+describe HeadMusic::Style::Guidelines::ApproachPerfectionContrarily do
   let(:composition) { HeadMusic::Composition.new(key_signature: 'C major') }
   let(:cantus_firmus_pitches) { [] }
   let!(:cantus_firmus) do

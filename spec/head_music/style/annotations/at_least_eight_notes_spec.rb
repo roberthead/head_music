@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::AtLeastEightNotes do
+describe HeadMusic::Style::Guidelines::AtLeastEightNotes do
   let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 

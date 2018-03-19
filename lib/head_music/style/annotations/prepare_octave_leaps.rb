@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::PrepareOctaveLeaps < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::PrepareOctaveLeaps < HeadMusic::Style::Annotation
   MESSAGE = 'Enter and exit an octave leap from within.'
 
   def marks

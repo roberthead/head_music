@@ -1,25 +1,25 @@
 # frozen_string_literal: true
 
 # Module for rulesets
-module HeadMusic::Style::Rulesets; end
+module HeadMusic::Style::Guides; end
 
 # Rules for first species melodies
-class HeadMusic::Style::Rulesets::FirstSpeciesMelody
+class HeadMusic::Style::Guides::FirstSpeciesMelody
   RULESET = [
-    HeadMusic::Style::Annotations::ConsonantClimax,
-    HeadMusic::Style::Annotations::Diatonic,
-    HeadMusic::Style::Annotations::EndOnTonic,
-    HeadMusic::Style::Annotations::FrequentDirectionChanges,
-    HeadMusic::Style::Annotations::LimitOctaveLeaps,
-    HeadMusic::Style::Annotations::MostlyConjunct,
-    HeadMusic::Style::Annotations::NoRests,
-    HeadMusic::Style::Annotations::NotesSameLength,
-    HeadMusic::Style::Annotations::PrepareOctaveLeaps,
-    HeadMusic::Style::Annotations::SingableIntervals,
-    HeadMusic::Style::Annotations::SingableRange,
-    HeadMusic::Style::Annotations::StartOnPerfectConsonance,
-    HeadMusic::Style::Annotations::StepOutOfUnison,
-    HeadMusic::Style::Annotations::StepUpToFinalNote,
+    HeadMusic::Style::Guidelines::ConsonantClimax,
+    HeadMusic::Style::Guidelines::Diatonic,
+    HeadMusic::Style::Guidelines::EndOnTonic,
+    HeadMusic::Style::Guidelines::FrequentDirectionChanges,
+    HeadMusic::Style::Guidelines::LimitOctaveLeaps,
+    HeadMusic::Style::Guidelines::MostlyConjunct,
+    HeadMusic::Style::Guidelines::NoRests,
+    HeadMusic::Style::Guidelines::NotesSameLength,
+    HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
+    HeadMusic::Style::Guidelines::SingableIntervals,
+    HeadMusic::Style::Guidelines::SingableRange,
+    HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
+    HeadMusic::Style::Guidelines::StepOutOfUnison,
+    HeadMusic::Style::Guidelines::StepUpToFinalNote,
   ].freeze
 
   def self.analyze(voice)

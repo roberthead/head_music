@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::NoRests < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NoRests < HeadMusic::Style::Annotation
   MESSAGE = 'Place a note in each measure.'
 
   def marks

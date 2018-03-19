@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::StepOutOfUnison do
+describe HeadMusic::Style::Guidelines::StepOutOfUnison do
   let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
   let(:cantus_firmus_pitches) { %w[D4 C4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
   let!(:cantus_firmus) do

@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::ApproachPerfectionContrarily < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::ApproachPerfectionContrarily < HeadMusic::Style::Annotation
   MESSAGE = 'Approach perfect consonances by contrary motion.'
 
   def marks

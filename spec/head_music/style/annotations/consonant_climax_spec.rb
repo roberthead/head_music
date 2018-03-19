@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::ConsonantClimax do
+describe HeadMusic::Style::Guidelines::ConsonantClimax do
   let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 

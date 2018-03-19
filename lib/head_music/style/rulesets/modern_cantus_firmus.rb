@@ -1,28 +1,28 @@
 # frozen_string_literal: true
 
 # Module for rulesets
-module HeadMusic::Style::Rulesets; end
+module HeadMusic::Style::Guides; end
 
 # Modern rules for the cantus firmus
-class HeadMusic::Style::Rulesets::ModernCantusFirmus
+class HeadMusic::Style::Guides::ModernCantusFirmus
   RULESET = [
-    HeadMusic::Style::Annotations::AlwaysMove,
-    HeadMusic::Style::Annotations::AtLeastEightNotes,
-    HeadMusic::Style::Annotations::ConsonantClimax,
-    HeadMusic::Style::Annotations::Diatonic,
-    HeadMusic::Style::Annotations::EndOnTonic,
-    HeadMusic::Style::Annotations::LimitOctaveLeaps,
-    HeadMusic::Style::Annotations::ModerateDirectionChanges,
-    HeadMusic::Style::Annotations::MostlyConjunct,
-    HeadMusic::Style::Annotations::NoRests,
-    HeadMusic::Style::Annotations::NotesSameLength,
-    HeadMusic::Style::Annotations::PrepareOctaveLeaps,
-    HeadMusic::Style::Annotations::SingableIntervals,
-    HeadMusic::Style::Annotations::SingableRange,
-    HeadMusic::Style::Annotations::SingleLargeLeaps,
-    HeadMusic::Style::Annotations::StartOnTonic,
-    HeadMusic::Style::Annotations::StepToFinalNote,
-    HeadMusic::Style::Annotations::UpToFourteenNotes,
+    HeadMusic::Style::Guidelines::AlwaysMove,
+    HeadMusic::Style::Guidelines::AtLeastEightNotes,
+    HeadMusic::Style::Guidelines::ConsonantClimax,
+    HeadMusic::Style::Guidelines::Diatonic,
+    HeadMusic::Style::Guidelines::EndOnTonic,
+    HeadMusic::Style::Guidelines::LimitOctaveLeaps,
+    HeadMusic::Style::Guidelines::ModerateDirectionChanges,
+    HeadMusic::Style::Guidelines::MostlyConjunct,
+    HeadMusic::Style::Guidelines::NoRests,
+    HeadMusic::Style::Guidelines::NotesSameLength,
+    HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
+    HeadMusic::Style::Guidelines::SingableIntervals,
+    HeadMusic::Style::Guidelines::SingableRange,
+    HeadMusic::Style::Guidelines::SingleLargeLeaps,
+    HeadMusic::Style::Guidelines::StartOnTonic,
+    HeadMusic::Style::Guidelines::StepToFinalNote,
+    HeadMusic::Style::Guidelines::UpToFourteenNotes,
   ].freeze
 
   def self.analyze(voice)

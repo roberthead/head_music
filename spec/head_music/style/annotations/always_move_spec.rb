@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::AlwaysMove do
+describe HeadMusic::Style::Guidelines::AlwaysMove do
   let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 

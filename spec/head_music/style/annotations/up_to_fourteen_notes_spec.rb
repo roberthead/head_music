@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::UpToFourteenNotes do
+describe HeadMusic::Style::Guidelines::UpToFourteenNotes do
   let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
   let(:voice) { HeadMusic::Voice.new(composition: composition, role: 'Cantus Firmus') }
   subject { described_class.new(voice) }

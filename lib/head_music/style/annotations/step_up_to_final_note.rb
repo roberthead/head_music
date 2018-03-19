@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::StepUpToFinalNote < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::StepUpToFinalNote < HeadMusic::Style::Annotation
   MESSAGE = 'Step up to final note.'
 
   def marks

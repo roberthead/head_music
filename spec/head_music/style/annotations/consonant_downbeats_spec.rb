@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::ConsonantDownbeats do
+describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
   let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
   let!(:cantus_firmus) do
     composition.add_voice(role: :cantus_firmus).tap do |voice|

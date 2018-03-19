@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::AtLeastEightNotes < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::AtLeastEightNotes < HeadMusic::Style::Annotation
   MINIMUM_NOTES = 8
 
   MESSAGE = 'Write at least eight notes.'

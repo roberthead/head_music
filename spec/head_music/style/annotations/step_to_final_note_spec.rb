@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::StepToFinalNote do
+describe HeadMusic::Style::Guidelines::StepToFinalNote do
   let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 

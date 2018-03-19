@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A melodic line should have direction changes.
-class HeadMusic::Style::Annotations::DirectionChanges < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::DirectionChanges < HeadMusic::Style::Annotation
   def marks
     return unless overage.positive?
     penalty_exponent = overage**0.5

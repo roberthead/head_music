@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::LimitOctaveLeaps do
+describe HeadMusic::Style::Guidelines::LimitOctaveLeaps do
   let(:composition) { HeadMusic::Composition.new(key_signature: 'C major') }
   let(:voice) { composition.add_voice(role: :counterpoint) }
   subject { described_class.new(voice) }

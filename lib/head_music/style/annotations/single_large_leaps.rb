@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::SingleLargeLeaps < HeadMusic::Style::Annotations::RecoverLargeLeaps
+class HeadMusic::Style::Guidelines::SingleLargeLeaps < HeadMusic::Style::Guidelines::RecoverLargeLeaps
   MESSAGE = 'Recover leaps by step, repetition, opposite direction, or spelling triad.'
 
   private

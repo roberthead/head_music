@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::OneToOne < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::OneToOne < HeadMusic::Style::Annotation
   MESSAGE = 'Place a note for each note in the other voice.'
 
   def marks

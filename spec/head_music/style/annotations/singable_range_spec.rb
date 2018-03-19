@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::SingableRange do
+describe HeadMusic::Style::Guidelines::SingableRange do
   let(:voice) { HeadMusic::Voice.new }
   subject { described_class.new(voice) }
 

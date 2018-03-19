@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::EndOnPerfectConsonance do
+describe HeadMusic::Style::Guidelines::EndOnPerfectConsonance do
   let(:composition) { HeadMusic::Composition.new(key_signature: 'C major') }
   let!(:cantus_firmus) do
     composition.add_voice(role: 'cantus firmus').tap do |voice|

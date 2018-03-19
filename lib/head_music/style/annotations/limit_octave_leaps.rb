@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline: Use a maximum of one octave leap.
-class HeadMusic::Style::Annotations::LimitOctaveLeaps < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::LimitOctaveLeaps < HeadMusic::Style::Annotation
   MESSAGE = 'Use a maximum of one octave leap.'
 
   def marks

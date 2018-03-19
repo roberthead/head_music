@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # Module for Annotations.
-module HeadMusic::Style::Annotations; end
+module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Annotations::NoUnisonsInMiddle < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NoUnisonsInMiddle < HeadMusic::Style::Annotation
   MESSAGE = 'Unisons may only be used in the first and last note.'
 
   def marks

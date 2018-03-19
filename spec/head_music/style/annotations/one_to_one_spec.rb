@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Style::Annotations::OneToOne do
+describe HeadMusic::Style::Guidelines::OneToOne do
   let(:composition) { HeadMusic::Composition.new(key_signature: 'D dorian') }
   let(:counterpoint) { composition.add_voice(role: 'counterpoint') }
 

@@ -6,19 +6,19 @@ describe HeadMusic::Style::Annotation do
   let(:voice) { HeadMusic::Voice.new }
 
   context 'when the voice is compliant' do
-    subject(:annotation) { HeadMusic::Style::Annotations::UpToFourteenNotes.new(voice) }
+    subject(:annotation) { HeadMusic::Style::Guidelines::UpToFourteenNotes.new(voice) }
 
     it { is_expected.to be_adherent }
   end
 
   context 'when the voice is not compliant' do
-    subject(:annotation) { HeadMusic::Style::Annotations::AtLeastEightNotes.new(voice) }
+    subject(:annotation) { HeadMusic::Style::Guidelines::AtLeastEightNotes.new(voice) }
 
     it { is_expected.not_to be_adherent }
   end
 
   context 'when there are multiple marks' do
-    subject(:annotation) { HeadMusic::Style::Annotations::Diatonic.new(voice) }
+    subject(:annotation) { HeadMusic::Style::Guidelines::Diatonic.new(voice) }
 
     before do
       voice.place('1:1:0', :whole, 'C4')
