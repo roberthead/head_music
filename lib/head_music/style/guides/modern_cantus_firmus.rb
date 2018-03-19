@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Module for rulesets
+# Module for guides
 module HeadMusic::Style::Guides; end
 
 # Modern rules for the cantus firmus

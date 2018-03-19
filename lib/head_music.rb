@@ -96,8 +96,8 @@ require 'head_music/style/annotations/step_to_final_note'
 require 'head_music/style/annotations/step_up_to_final_note'
 require 'head_music/style/annotations/up_to_fourteen_notes'
 
-# rulesets
-require 'head_music/style/rulesets/fux_cantus_firmus'
-require 'head_music/style/rulesets/modern_cantus_firmus'
-require 'head_music/style/rulesets/first_species_melody'
-require 'head_music/style/rulesets/first_species_harmony'
+# guides
+require 'head_music/style/guides/fux_cantus_firmus'
+require 'head_music/style/guides/modern_cantus_firmus'
+require 'head_music/style/guides/first_species_melody'
+require 'head_music/style/guides/first_species_harmony'

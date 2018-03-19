@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Module for rulesets
+# Module for guides
 module HeadMusic::Style::Guides; end
 
 # Rules for the cantus firmus according to Fux.
