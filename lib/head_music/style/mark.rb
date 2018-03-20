@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # A mark is a fragment of music with an optional fitness score assigned.
-# Marks are collected into annotations which comment on the fragments.
+# Marks are collected into annotations which comment on a voice.
 class HeadMusic::Style::Mark
   attr_reader :start_position, :end_position, :placements, :fitness
 
