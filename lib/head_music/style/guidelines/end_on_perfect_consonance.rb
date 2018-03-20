@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Module for Annotations.
+# Module for style guidelines.
 module HeadMusic::Style::Guidelines; end
 
 # marks the voice if the first note is not the first or fifth scale degree of the key.

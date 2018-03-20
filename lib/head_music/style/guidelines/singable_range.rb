@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Module for Annotations.
+# Module for style guidelines.
 module HeadMusic::Style::Guidelines; end
 
 # A voice shouldn't expend the range of a 10th.

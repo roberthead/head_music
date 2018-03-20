@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
-# A module for style analysis and rules.
+# A module for style analysis and guidelines.
 module HeadMusic::Style; end
 
-# An analysis of music according to a ruleset.
+# An analysis of music according to a style guide.
 class HeadMusic::Style::Analysis
-  attr_reader :ruleset, :subject
+  attr_reader :guide, :subject
 
-  def initialize(ruleset, subject)
-    @ruleset = ruleset
+  def initialize(guide, subject)
+    @guide = guide
     @subject = subject
   end
 
@@ -18,7 +18,7 @@ class HeadMusic::Style::Analysis
   alias annotation_messages messages
 
   def annotations
-    @annotations ||= @ruleset.analyze(subject)
+    @annotations ||= @guide.analyze(subject)
   end
 
   def fitness

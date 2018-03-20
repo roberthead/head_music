@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Module for Annotations.
+# Module for style guidelines.
 module HeadMusic::Style::Guidelines; end
 
 # Ok, so a rule might be that after the first leap (after previous steps)

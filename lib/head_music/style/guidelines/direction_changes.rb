@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Module for Annotations.
+# Module for style guidelines.
 module HeadMusic::Style::Guidelines; end
 
 # A melodic line should have direction changes.
