@@ -5,11 +5,11 @@ module HeadMusic::Style; end
 
 # An analysis of music according to a style guide.
 class HeadMusic::Style::Analysis
-  attr_reader :guide, :subject
+  attr_reader :guide, :voice
 
-  def initialize(guide, subject)
+  def initialize(guide, voice)
     @guide = guide
-    @subject = subject
+    @voice = voice
   end
 
   def messages
@@ -18,7 +18,7 @@ class HeadMusic::Style::Analysis
   alias annotation_messages messages
 
   def annotations
-    @annotations ||= @guide.analyze(subject)
+    @annotations ||= @guide.analyze(voice)
   end
 
   def fitness

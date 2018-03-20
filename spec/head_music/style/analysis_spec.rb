@@ -8,7 +8,7 @@ describe HeadMusic::Style::Analysis do
   subject(:analysis) { HeadMusic::Style::Analysis.new(guide, voice) }
 
   its(:guide) { is_expected.to eq HeadMusic::Style::Guides::FuxCantusFirmus }
-  its(:subject) { is_expected.to be voice }
+  its(:voice) { is_expected.to be voice }
   its(:annotations) { are_expected.to be_an(Array) }
   its(:fitness) { is_expected.to be_a(Float) }
 end
