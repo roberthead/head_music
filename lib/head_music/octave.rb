@@ -39,5 +39,13 @@ class HeadMusic::Octave
     to_i <=> other.to_i
   end
 
+  def +(other)
+    self.class.get(to_i + other.to_i)
+  end
+
+  def -(other)
+    self.class.get(to_i - other.to_i)
+  end
+
   private_class_method :new
 end

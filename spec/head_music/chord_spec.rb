@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 describe HeadMusic::Chord do
-  xdescribe '#reduction' do
+  describe '#reduction' do
     subject(:chord) { described_class.new(%w[D4 B4 G5]) }
 
     its(:reduction) { is_expected.to eq described_class.new(%w[D4 G4 B4]) }
@@ -28,6 +28,18 @@ describe HeadMusic::Chord do
 
         it { is_expected.to be_consonant_triad }
       end
+
+      context 'spread' do
+        subject(:chord) { described_class.new(%w[B3 F#4 D5]) }
+
+        it { is_expected.to be_consonant_triad }
+      end
+
+      context 'spread wide' do
+        subject(:chord) { described_class.new(%w[D3 Bb4 G6]) }
+
+        it { is_expected.to be_consonant_triad }
+      end
     end
 
     context 'given a major chord' do
@@ -49,8 +61,14 @@ describe HeadMusic::Chord do
         it { is_expected.to be_consonant_triad }
       end
 
-      xcontext 'spread' do
-        subject(:chord) { described_class.new(%w[D4 B4 G5]) }
+      context 'spread' do
+        subject(:chord) { described_class.new(%w[B3 F#4 D#5]) }
+
+        it { is_expected.to be_consonant_triad }
+      end
+
+      context 'spread wide' do
+        subject(:chord) { described_class.new(%w[D3 B4 G6]) }
 
         it { is_expected.to be_consonant_triad }
       end
