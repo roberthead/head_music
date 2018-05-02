@@ -119,9 +119,17 @@ class HeadMusic::Pitch
     HeadMusic::Pitch.get([target_letter_name(num_steps), octave + octaves_delta(num_steps)].join)
   end
 
+  def frequency
+    tuning.frequency_for(self)
+  end
+
   private_class_method :new
 
   private
+
+  def tuning
+    @tuning ||= HeadMusic::Tuning.new
+  end
 
   def octaves_delta(num_steps)
     octaves_delta = (num_steps.abs / 7) * (num_steps >= 0 ? 1 : -1)

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Note is like a placement, except:
+# Note quacks like a placement, but requires a different set of construction arguments
 #   - always has a pitch
-#   - doesn't require voice and position
+#   - receives a voice and position if unspecified
 class HeadMusic::Note
   attr_accessor :pitch, :rhythmic_value, :voice, :position
 

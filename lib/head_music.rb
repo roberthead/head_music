@@ -46,6 +46,7 @@ require 'head_music/scale_type'
 require 'head_music/sign'
 require 'head_music/spelling'
 require 'head_music/staff'
+require 'head_music/tuning'
 
 # content
 require 'head_music/content/bar'

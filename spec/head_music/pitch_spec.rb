@@ -74,6 +74,7 @@ describe HeadMusic::Pitch do
 
       its(:octave) { is_expected.to eq 4 }
       its(:midi_note_number) { is_expected.to eq 72 }
+      its(:frequency) { is_expected.to be_within(0.1).of(523.2) }
     end
 
     context "for 'F#-1'" do
@@ -84,6 +85,7 @@ describe HeadMusic::Pitch do
       its(:pitch_class) { is_expected.to eq 6 }
       its(:octave) { is_expected.to eq(-1) }
       its(:midi_note_number) { is_expected.to eq 6 }
+      its(:frequency) { is_expected.to be_within(0.1).of(11.5) }
       it { is_expected.to eq 'F#-1' }
     end
 
@@ -95,6 +97,7 @@ describe HeadMusic::Pitch do
       its(:pitch_class) { is_expected.to eq 10 }
       its(:octave) { is_expected.to eq 5 }
       its(:midi_note_number) { is_expected.to eq 82 }
+      its(:frequency) { is_expected.to be_within(0.1).of(932.3) }
       it { is_expected.to eq 'Bb5' }
     end
 
@@ -106,6 +109,7 @@ describe HeadMusic::Pitch do
       its(:pitch_class) { is_expected.to eq 3 }
       its(:octave) { is_expected.to eq 7 }
       its(:midi_note_number) { is_expected.to eq 99 }
+      its(:frequency) { is_expected.to be_within(0.1).of(2489.0) }
       it { is_expected.to eq 'Eb7' }
     end
 
