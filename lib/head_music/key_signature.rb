@@ -57,6 +57,9 @@ class HeadMusic::KeySignature
     flats.any? ? flats : sharps
   end
 
+  alias sharps_and_flats signs
+  alias accidentals signs
+
   def name
     [tonic_spelling, scale_type].join(' ')
   end

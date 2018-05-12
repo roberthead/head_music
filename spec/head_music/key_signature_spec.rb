@@ -84,6 +84,8 @@ describe HeadMusic::KeySignature do
 
       specify { expect(key_signature.flats).to eq ['B♭', 'E♭'] }
       specify { expect(key_signature.signs).to eq ['B♭', 'E♭'] }
+      specify { expect(key_signature.sharps_and_flats).to eq ['B♭', 'E♭'] }
+      specify { expect(key_signature.accidentals).to eq ['B♭', 'E♭'] }
     end
   end
 
