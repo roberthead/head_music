@@ -63,9 +63,33 @@ describe HeadMusic::PitchClass do
   end
 
   describe '#enharmonic?' do
-    subject { described_class.get('G#') }
+    specify { expect(described_class.get('G#')).to be_enharmonic(described_class.get('Ab')) }
+    specify { expect(described_class.get('G#')).not_to be_enharmonic(described_class.get('A')) }
 
-    it { is_expected.to be_enharmonic(described_class.get('Ab')) }
-    it { is_expected.not_to be_enharmonic(described_class.get('A')) }
+    specify { expect(described_class.get('Cb')).to be_enharmonic(described_class.get('B')) }
+    specify { expect(described_class.get('E#')).to be_enharmonic(described_class.get('F')) }
+    specify { expect(described_class.get('F##')).to be_enharmonic(described_class.get('G')) }
+  end
+
+  describe '#white_key?' do
+    specify { expect(described_class.get('C')).to be_white_key }
+    specify { expect(described_class.get('B')).to be_white_key }
+
+    specify { expect(described_class.get('G#')).not_to be_white_key }
+    specify { expect(described_class.get('Gb')).not_to be_white_key }
+
+    specify { expect(described_class.get('Fb')).to be_white_key }
+    specify { expect(described_class.get('B#')).to be_white_key }
+  end
+
+  describe '#black_key?' do
+    specify { expect(described_class.get('C')).not_to be_black_key }
+    specify { expect(described_class.get('B')).not_to be_black_key }
+
+    specify { expect(described_class.get('G#')).to be_black_key }
+    specify { expect(described_class.get('Gb')).to be_black_key }
+
+    specify { expect(described_class.get('Fb')).not_to be_black_key }
+    specify { expect(described_class.get('B#')).not_to be_black_key }
   end
 end

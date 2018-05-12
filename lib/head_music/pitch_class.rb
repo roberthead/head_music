@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# A pitch class is a set of notes separated by octaves.
+# A pitch class is a set of pitches separated by octaves.
 class HeadMusic::PitchClass
   attr_reader :number
 
@@ -49,6 +49,14 @@ class HeadMusic::PitchClass
 
   def smallest_interval_to(other)
     intervals_to(other).first
+  end
+
+  def white_key?
+    [0,2,4,5,7,9,11].include?(number)
+  end
+
+  def black_key?
+    !white_key?
   end
 
   private_class_method :new
