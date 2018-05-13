@@ -88,6 +88,9 @@ class HeadMusic::Pitch
     midi_note_number == other.midi_note_number
   end
 
+  alias enharmonic_equivalent? enharmonic?
+  alias equivalent? enharmonic?
+
   def +(other)
     HeadMusic::Pitch.get(to_i + other.to_i)
   end

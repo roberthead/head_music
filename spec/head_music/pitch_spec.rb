@@ -46,6 +46,8 @@ describe HeadMusic::Pitch do
     it { is_expected.to be > described_class.get('D3') }
 
     it { is_expected.to be_enharmonic(described_class.get('Ab3')) }
+    it { is_expected.to be_enharmonic_equivalent(described_class.get('Ab3')) }
+    it { is_expected.to be_equivalent(described_class.get('Ab3')) }
     it { is_expected.not_to be_enharmonic(described_class.get('C7')) }
     it { is_expected.not_to be_enharmonic(described_class.get('G#4')) }
   end
