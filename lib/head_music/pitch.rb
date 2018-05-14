@@ -130,6 +130,10 @@ class HeadMusic::Pitch
     tuning.frequency_for(self)
   end
 
+  def octave_equivalent?(other)
+    spelling == other.spelling && octave != other.octave
+  end
+
   private_class_method :new
 
   private

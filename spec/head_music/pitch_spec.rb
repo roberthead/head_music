@@ -148,6 +148,12 @@ describe HeadMusic::Pitch do
     its(:letter_name_cycle) { is_expected.to eq %w[D E F G A B C] }
   end
 
+  describe '#octave_equivalent?' do
+    specify { expect(described_class.get('D1')).to be_octave_equivalent(described_class.get('D4')) }
+    specify { expect(described_class.get('D4')).not_to be_octave_equivalent(described_class.get('D4')) }
+    specify { expect(described_class.get('E5')).not_to be_octave_equivalent(described_class.get('F♭6')) }
+  end
+
   describe 'addition' do
     let(:pitch) { described_class.get('A4') }
 
