@@ -14,6 +14,10 @@ class HeadMusic::Pitch
 
   delegate :smallest_interval_to, to: :pitch_class
 
+  def self.definition
+    'A pitch is a named frequency represented by a spelling and an octave, such as B♭3.'
+  end
+
   def self.get(value)
     from_name(value) || from_number(value)
   end

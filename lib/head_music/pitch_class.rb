@@ -14,6 +14,10 @@ class HeadMusic::PitchClass
     @pitch_classes[number] ||= new(number)
   end
 
+  def self.definition
+    'A pitch class is a set of pitches with a given spelling in all octaves.'
+  end
+
   class << self
     alias [] get
   end

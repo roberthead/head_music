@@ -92,4 +92,11 @@ describe HeadMusic::PitchClass do
     specify { expect(described_class.get('Fb')).not_to be_black_key }
     specify { expect(described_class.get('B#')).not_to be_black_key }
   end
+
+  describe '.definition' do
+    specify { expect(HeadMusic::PitchClass.definition).to match /set/i }
+    specify { expect(HeadMusic::PitchClass.definition).to match /pitch/i }
+    specify { expect(HeadMusic::PitchClass.definition).to match /spelling/i }
+    specify { expect(HeadMusic::PitchClass.definition).to match /octave/i }
+  end
 end

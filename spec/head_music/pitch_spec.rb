@@ -185,4 +185,9 @@ describe HeadMusic::Pitch do
       end
     end
   end
+
+  describe '.definition' do
+    specify { expect(HeadMusic::Pitch.definition).to match /frequency/i }
+    specify { expect(HeadMusic::Pitch.definition).to match /spelling/i }
+  end
 end
