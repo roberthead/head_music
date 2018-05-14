@@ -28,6 +28,10 @@ class HeadMusic::Pitch
     get('C4')
   end
 
+  def self.concert_a
+    get('A4')
+  end
+
   def self.from_name(name)
     return nil unless name == name.to_s
     fetch_or_create(HeadMusic::Spelling.get(name), HeadMusic::Octave.get(name).to_i)
