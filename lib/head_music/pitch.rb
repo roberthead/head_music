@@ -14,6 +14,8 @@ class HeadMusic::Pitch
 
   delegate :smallest_interval_to, to: :pitch_class
 
+  delegate :octave_equivalent?, to: :octave_equivalence
+
   def self.definition
     'A pitch is a named frequency represented by a spelling and an octave, such as B♭3.'
   end
@@ -130,13 +132,13 @@ class HeadMusic::Pitch
     tuning.frequency_for(self)
   end
 
-  def octave_equivalent?(other)
-    spelling == other.spelling && octave != other.octave
-  end
-
   private_class_method :new
 
   private
+
+  def octave_equivalence
+    @octave_equivalence ||= HeadMusic::OctaveEquivalence.get(self)
+  end
 
   def tuning
     @tuning ||= HeadMusic::Tuning.new
