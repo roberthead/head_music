@@ -84,7 +84,7 @@ describe HeadMusic::Spelling do
     end
   end
 
-  describe '♯scale' do
+  describe '#scale' do
     context 'without an argument' do
       subject(:scale) { described_class.get('D').scale }
 
@@ -98,13 +98,13 @@ describe HeadMusic::Spelling do
     end
   end
 
-  describe '♯letter_name_cycle' do
+  describe '#letter_name_cycle' do
     subject(:spelling) { described_class.get('D') }
 
     its(:letter_name_cycle) { is_expected.to eq %w[D E F G A B C] }
   end
 
-  describe '♯enharmonic?' do
+  describe '#enharmonic?' do
     specify { expect(described_class.get('G♯')).to be_enharmonic(described_class.get('Ab')) }
     specify { expect(described_class.get('G♯')).not_to be_enharmonic(described_class.get('G')) }
     specify { expect(described_class.get('G♯')).not_to be_enharmonic(described_class.get('A')) }
