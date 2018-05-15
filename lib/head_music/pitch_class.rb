@@ -3,19 +3,19 @@
 # A pitch class is a set of pitches separated by octaves.
 class HeadMusic::PitchClass
   attr_reader :number
+  attr_reader :spelling
 
   SHARP_SPELLINGS = %w[C C# D D# E F F# G G# A A# B].freeze
   FLAT_SPELLINGS = %w[C Db D Eb E F Gb G Ab A Bb B].freeze
 
   def self.get(identifier)
     @pitch_classes ||= {}
-    number = HeadMusic::Spelling.get(identifier).pitch_class.to_i if HeadMusic::Spelling.matching_string(identifier)
+    if HeadMusic::Spelling.matching_string(identifier)
+      spelling = HeadMusic::Spelling.get(identifier)
+      number = spelling.pitch_class.to_i
+    end
     number ||= identifier.to_i % 12
     @pitch_classes[number] ||= new(number)
-  end
-
-  def self.definition
-    'A pitch class is a set of pitches with a given spelling in all octaves.'
   end
 
   class << self
@@ -28,6 +28,14 @@ class HeadMusic::PitchClass
 
   def to_i
     number
+  end
+
+  def sharp_spelling
+    SHARP_SPELLINGS[number]
+  end
+
+  def flat_spelling
+    FLAT_SPELLINGS[number]
   end
 
   # Pass in the number of semitones

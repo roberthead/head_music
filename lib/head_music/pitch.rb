@@ -14,14 +14,11 @@ class HeadMusic::Pitch
 
   delegate :smallest_interval_to, to: :pitch_class
 
+  delegate :enharmonic_equivalent?, :enharmonic?, to: :enharmonic_equivalence
   delegate :octave_equivalent?, to: :octave_equivalence
 
-  def self.definition
-    'A pitch is a named frequency represented by a spelling and an octave, such as B♭3.'
-  end
-
   def self.get(value)
-    from_name(value) || from_number(value)
+    from_pitch_class(value) || from_name(value) || from_number(value)
   end
 
   def self.middle_c
@@ -30,6 +27,11 @@ class HeadMusic::Pitch
 
   def self.concert_a
     get('A4')
+  end
+
+  def self.from_pitch_class(pitch_class)
+    return nil unless pitch_class.is_a?(HeadMusic::PitchClass)
+    fetch_or_create(pitch_class.sharp_spelling)
   end
 
   def self.from_name(name)
@@ -59,7 +61,8 @@ class HeadMusic::Pitch
     get(natural_letter_pitch)
   end
 
-  def self.fetch_or_create(spelling, octave)
+  def self.fetch_or_create(spelling, octave = nil)
+    octave ||= HeadMusic::Octave::DEFAULT
     return unless spelling && (-1..9).cover?(octave)
     @pitches ||= {}
     hash_key = [spelling, octave].join
@@ -93,13 +96,6 @@ class HeadMusic::Pitch
   def natural
     HeadMusic::Pitch.get(to_s.gsub(/[#b]/, ''))
   end
-
-  def enharmonic?(other)
-    midi_note_number == other.midi_note_number
-  end
-
-  alias enharmonic_equivalent? enharmonic?
-  alias equivalent? enharmonic?
 
   def +(other)
     HeadMusic::Pitch.get(to_i + other.to_i)
@@ -140,8 +136,12 @@ class HeadMusic::Pitch
 
   private
 
+  def enharmonic_equivalence
+    @enharmonic_equivalence ||= EnharmonicEquivalence.get(self)
+  end
+
   def octave_equivalence
-    @octave_equivalence ||= HeadMusic::OctaveEquivalence.get(self)
+    @octave_equivalence ||= OctaveEquivalence.get(self)
   end
 
   def tuning
@@ -169,5 +169,55 @@ class HeadMusic::Pitch
   def target_letter_name(num_steps)
     @target_letter_name ||= {}
     @target_letter_name[num_steps] ||= letter_name.steps(num_steps)
+  end
+
+  # Enharmonic equivalence occurs when two pitches are spelled differently but refer to the same frequency, such as D♯ and E♭.
+  class EnharmonicEquivalence
+    def self.get(pitch)
+      pitch = HeadMusic::Pitch.get(pitch)
+      @enharmonic_equivalences ||= {}
+      @enharmonic_equivalences[pitch.to_s] ||= new(pitch)
+    end
+
+    attr_reader :pitch
+
+    delegate :pitch_class, to: :pitch
+
+    def initialize(pitch)
+      @pitch = HeadMusic::Pitch.get(pitch)
+    end
+
+    def enharmonic_equivalent?(other)
+      other = HeadMusic::Pitch.get(other)
+      pitch.midi_note_number == other.midi_note_number && pitch.spelling != other.spelling
+    end
+
+    alias enharmonic? enharmonic_equivalent?
+    alias equivalent? enharmonic_equivalent?
+
+    private_class_method :new
+  end
+
+  # Octave equivalence is the functional equivalence of pitches with the same spelling separated by one or more octaves.
+  class OctaveEquivalence
+    def self.get(pitch)
+      @octave_equivalences ||= {}
+      @octave_equivalences[pitch.to_s] ||= new(pitch)
+    end
+
+    attr_reader :pitch
+
+    def initialize(pitch)
+      @pitch = pitch
+    end
+
+    def octave_equivalent?(other)
+      other = HeadMusic::Pitch.get(other)
+      pitch.spelling == other.spelling && pitch.octave != other.octave
+    end
+
+    alias equivalent? octave_equivalent?
+
+    private_class_method :new
   end
 end

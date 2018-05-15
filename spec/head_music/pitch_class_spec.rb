@@ -20,6 +20,12 @@ describe HeadMusic::PitchClass do
     end
 
     context 'when given a spelling' do
+      let(:identifier) { 'D' }
+
+      specify { expect(pitch_class).to eq 2 }
+    end
+
+    context 'when given a spelling and an octave' do
       let(:identifier) { 'D#-1' }
 
       specify { expect(pitch_class).to eq 3 }
@@ -91,12 +97,5 @@ describe HeadMusic::PitchClass do
 
     specify { expect(described_class.get('Fb')).not_to be_black_key }
     specify { expect(described_class.get('B#')).not_to be_black_key }
-  end
-
-  describe '.definition' do
-    specify { expect(HeadMusic::PitchClass.definition).to match /set/i }
-    specify { expect(HeadMusic::PitchClass.definition).to match /pitch/i }
-    specify { expect(HeadMusic::PitchClass.definition).to match /spelling/i }
-    specify { expect(HeadMusic::PitchClass.definition).to match /octave/i }
   end
 end

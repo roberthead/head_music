@@ -13,6 +13,9 @@ describe HeadMusic::Octave do
 
     it 'falls back to 4' do
       expect(described_class.get('foo')).to eq 4
+      expect(described_class.get('C')).to eq 4
+      expect(described_class.get('D')).to eq 4
+      expect(described_class.get('')).to eq 4
       expect(described_class.get(1.5)).to eq 4
       expect(described_class.get(15)).to eq 4
     end

@@ -28,6 +28,11 @@ describe HeadMusic::Pitch do
       specify { expect(described_class.get(60)).to eq 'C4' }
       specify { expect(described_class.get(70)).to eq 'A#4' }
     end
+
+    context 'when given a pitch class' do
+      specify { expect(described_class.get(HeadMusic::PitchClass.get('C'))).to eq 'C4' }
+      specify { expect(described_class.get(HeadMusic::PitchClass.get('D'))).to eq 'D4' }
+    end
   end
 
   describe 'math' do
@@ -47,7 +52,7 @@ describe HeadMusic::Pitch do
 
     it { is_expected.to be_enharmonic(described_class.get('Ab3')) }
     it { is_expected.to be_enharmonic_equivalent(described_class.get('Ab3')) }
-    it { is_expected.to be_equivalent(described_class.get('Ab3')) }
+
     it { is_expected.not_to be_enharmonic(described_class.get('C7')) }
     it { is_expected.not_to be_enharmonic(described_class.get('G#4')) }
   end
@@ -190,10 +195,5 @@ describe HeadMusic::Pitch do
         expect(pitch - described_class.get('B4')).to eq 10
       end
     end
-  end
-
-  describe '.definition' do
-    specify { expect(HeadMusic::Pitch.definition).to match /frequency/i }
-    specify { expect(HeadMusic::Pitch.definition).to match /spelling/i }
   end
 end
