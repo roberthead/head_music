@@ -94,7 +94,7 @@ class HeadMusic::Spelling
     @enharmonic_equivalence ||= EnharmonicEquivalence.get(self)
   end
 
-  # Enharmonic equivalence occurs when two spellings refer to the same pitch class, such as D♯ and E♭.
+  # Enharmonic equivalence occurs when two spellings refer to the same pitch class, such as D# and Eb.
   class EnharmonicEquivalence
     def self.get(spelling)
       spelling = HeadMusic::Spelling.get(spelling)

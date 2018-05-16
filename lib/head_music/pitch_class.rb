@@ -64,7 +64,7 @@ class HeadMusic::PitchClass
   end
 
   def white_key?
-    [0,2,4,5,7,9,11].include?(number)
+    [0, 2, 4, 5, 7, 9, 11].include?(number)
   end
 
   def black_key?

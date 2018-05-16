@@ -171,7 +171,7 @@ class HeadMusic::Pitch
     @target_letter_name[num_steps] ||= letter_name.steps(num_steps)
   end
 
-  # Enharmonic equivalence occurs when two pitches are spelled differently but refer to the same frequency, such as D♯ and E♭.
+  # An enharmonic equivalent pitch is the same frequency spelled differently, such as D# and Eb.
   class EnharmonicEquivalence
     def self.get(pitch)
       pitch = HeadMusic::Pitch.get(pitch)
