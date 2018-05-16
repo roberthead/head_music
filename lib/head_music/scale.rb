@@ -9,8 +9,8 @@ class HeadMusic::Scale
     root_pitch = HeadMusic::Pitch.get(root_pitch)
     scale_type = HeadMusic::ScaleType.get(scale_type || :major)
     @scales ||= {}
-    name = [root_pitch, scale_type].join(' ')
-    hash_key = HeadMusic::Utilities::HashKey.for(name)
+    identifier = [root_pitch, scale_type].join(' ').gsub(/#|♯/, 'sharp').gsub(/(\w)[b♭]/, '\\1flat')
+    hash_key = HeadMusic::Utilities::HashKey.for(identifier)
     @scales[hash_key] ||= new(root_pitch, scale_type)
   end
 

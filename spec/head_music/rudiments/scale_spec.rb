@@ -27,6 +27,7 @@ describe HeadMusic::Scale do
       specify { expect(described_class.get('D♭', :whole_tone).spellings).to eq %w[D♭ E♭ F G A B D♭] }
       specify { expect(described_class.get('C', :chromatic).spellings).to eq %w[C C♯ D D♯ E F F♯ G G♯ A A♯ B C] }
       specify { expect(described_class.get('C♯', :chromatic).spellings).to eq %w[C♯ D D♯ E F F♯ G G♯ A A♯ B C C♯] }
+      specify { expect(described_class.get('C♯', :major).spellings).to eq %w[C♯ D♯ E♯ F♯ G♯ A♯ B♯ C♯] }
     end
 
     describe 'options' do

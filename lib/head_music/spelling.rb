@@ -13,7 +13,7 @@ class HeadMusic::Spelling
   delegate :number, to: :pitch_class, prefix: true
   delegate :to_i, to: :pitch_class_number
   delegate :cycle, to: :letter_name, prefix: true
-  delegate :enharmonic?, to: :pitch_class
+  delegate :enharmonic?, to: :enharmonic_equivalence
 
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::Spelling)
@@ -87,6 +87,12 @@ class HeadMusic::Spelling
   end
 
   private_class_method :new
+
+  private
+
+  def enharmonic_equivalence
+    @enharmonic_equivalence ||= EnharmonicEquivalence.get(self)
+  end
 
   # Enharmonic equivalence occurs when two spellings refer to the same pitch class, such as D♯ and E♭.
   class EnharmonicEquivalence

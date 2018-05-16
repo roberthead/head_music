@@ -50,6 +50,13 @@ describe HeadMusic::KeySignature do
         specify { expect(key_signature.signs).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯] }
       end
 
+      context 'in the key of C♯ major' do
+        let(:tonic) { HeadMusic::Spelling.get('C♯') }
+
+        specify { expect(key_signature.num_sharps).to eq 7 }
+        specify { expect(key_signature.signs).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯ B♯] }
+      end
+
       context 'in the key of G♭ major' do
         let(:tonic) { HeadMusic::Spelling.get('G♭') }
 
