@@ -67,4 +67,14 @@ class HeadMusic::KeySignature
   def ==(other)
     signs == self.class.get(other).signs
   end
+
+  def to_s
+    if sharps.any?
+      sharps.length == 1 ? '1 sharp' : "#{sharps.length} sharps"
+    elsif flats.any?
+      flats.length == 1 ? '1 flat' : "#{flats.length} flats"
+    else
+      'no sharps or flats'
+    end
+  end
 end

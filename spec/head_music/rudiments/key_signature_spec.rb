@@ -142,4 +142,10 @@ describe HeadMusic::KeySignature do
   describe '#spellings' do
     specify { expect(described_class.get('D major').spellings).to eq %w[D E F♯ G A B C♯] }
   end
+
+  describe '#to_s' do
+    specify { expect(described_class.get('D major').to_s).to eq '2 sharps' }
+    specify { expect(described_class.get('D minor').to_s).to eq '1 flat' }
+    specify { expect(described_class.get('C major').to_s).to eq 'no sharps or flats' }
+  end
 end
