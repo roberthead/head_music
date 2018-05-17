@@ -30,7 +30,7 @@ class CompositionContext
   end
 
   def self.name_from_params(params)
-    @name ||= params[:name] || [params[:source], params[:key]].compact.join(' ') || 'Composition'
+    params[:name] || [params[:source], params[:key]].compact.join(' ') || 'Composition'
   end
 
   def self.add_pitches_to_voice(voice, pitches_string, durations = nil)

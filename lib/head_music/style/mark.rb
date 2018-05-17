@@ -12,8 +12,8 @@ class HeadMusic::Style::Mark
   def self.for_all(placements, fitness: nil)
     placements = [placements].flatten.compact
     return [] if placements.empty?
-    start_position = placements.map(&:position).sort.first
-    end_position = placements.map(&:next_position).sort.last
+    start_position = placements.map(&:position).min
+    end_position = placements.map(&:next_position).max
     new(start_position, end_position, placements: placements, fitness: fitness)
   end
 

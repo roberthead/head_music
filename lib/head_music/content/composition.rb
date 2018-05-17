@@ -66,8 +66,7 @@ class HeadMusic::Composition
     @name = name || 'Composition'
     @key_signature = HeadMusic::KeySignature.get(key_signature) if key_signature
     @key_signature ||= HeadMusic::KeySignature.default
-    @meter = HeadMusic::Meter.get(meter) if meter
-    @meter ||= HeadMusic::Meter.default
+    @meter = meter ? HeadMusic::Meter.get(meter) : HeadMusic::Meter.default
   end
 
   def last_meter_change(bar_number)

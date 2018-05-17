@@ -29,6 +29,6 @@ class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Annotati
   end
 
   def perfect_unisons
-    @unisons ||= harmonic_intervals.select(&:perfect_consonance?).select(&:unison?)
+    @perfect_unisons ||= harmonic_intervals.select(&:perfect_consonance?).select(&:unison?)
   end
 end

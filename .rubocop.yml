@@ -19,5 +19,11 @@ Style/SymbolArray:
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
 
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
   EnforcedStyleForMultiline: consistent_comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+AllCops:
+  TargetRubyVersion: 2.4

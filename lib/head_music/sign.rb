@@ -17,7 +17,7 @@ class HeadMusic::Sign
   end
 
   def self.symbols
-    @sign_symbols ||= all.map { |sign| [sign.ascii, sign.unicode] }.flatten.reject { |s| s.nil? || s.empty? }
+    @symbols ||= all.map { |sign| [sign.ascii, sign.unicode] }.flatten.reject { |s| s.nil? || s.empty? }
   end
 
   def self.matcher

@@ -38,11 +38,11 @@ class HeadMusic::Voice
   end
 
   def highest_pitch
-    pitches.sort.last
+    pitches.max
   end
 
   def lowest_pitch
-    pitches.sort.first
+    pitches.min
   end
 
   def highest_notes

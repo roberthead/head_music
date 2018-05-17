@@ -74,7 +74,7 @@ class HeadMusic::FunctionalInterval
     end
 
     def self.degree_quality_semitones
-      @_degree_quality_semitones ||= begin
+      @degree_quality_semitones ||= begin
         {}.tap do |degree_quality_semitones|
           QUALITY_SEMITONES.each do |degree_name, qualities|
             default_quality = qualities.keys.first

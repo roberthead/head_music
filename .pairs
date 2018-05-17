@@ -1,0 +1,8 @@
+# .pairs - configuration for 'git pair'
+# place in project or home directory
+pairs:
+  rh: Rob Head; robert.head
+email:
+  prefix: pair
+  domain: gmail.com
+  no_solo_prefix: true

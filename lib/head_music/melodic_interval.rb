@@ -62,11 +62,11 @@ class HeadMusic::MelodicInterval
   end
 
   def high_pitch
-    pitches.sort.last
+    pitches.max
   end
 
   def low_pitch
-    pitches.sort.first
+    pitches.min
   end
 
   def direction

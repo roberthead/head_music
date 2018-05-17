@@ -41,11 +41,11 @@ class HeadMusic::Style::Annotation
   end
 
   def start_position
-    [marks].flatten.compact.map(&:start_position).sort.first
+    [marks].flatten.compact.map(&:start_position).min
   end
 
   def end_position
-    [marks].flatten.compact.map(&:end_position).sort.last
+    [marks].flatten.compact.map(&:end_position).max
   end
 
   def marks
