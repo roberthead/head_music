@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Represents a functional interval.
+# A functional interval is the distance between two spelled pitches.
 class HeadMusic::FunctionalInterval
   include Comparable
 
