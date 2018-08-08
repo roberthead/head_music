@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# A note is a pitch with a duration.
+#
 # Note quacks like a placement, but requires a different set of construction arguments
 #   - always has a pitch
 #   - receives a voice and position if unspecified
