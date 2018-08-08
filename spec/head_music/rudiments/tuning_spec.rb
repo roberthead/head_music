@@ -35,10 +35,16 @@ describe HeadMusic::Tuning do
         it { is_expected.to be_within(0.01).of(880.0) }
       end
 
-      context 'C0' do
-        let(:pitch_name) { 'C0' }
+      context 'A0 (lowest note of piano)' do
+        let(:pitch_name) { 'A0' }
 
-        it { is_expected.to be_within(0.1).of(16.3) }
+        it { is_expected.to be_within(0.01).of(27.5) }
+      end
+
+      context 'C-1 (subsonic frequency)' do
+        let(:pitch_name) { 'C-1' }
+
+        it { is_expected.to be_within(0.01).of(8.175) }
       end
     end
   end

@@ -10,11 +10,12 @@ describe HeadMusic::FunctionalInterval do
 
     describe 'default position' do
       specify { expect(maj3.lower_pitch).to eq 'C4' }
-      specify { expect(aug4.lower_pitch).to eq 'C4' }
-      specify { expect(dim5.lower_pitch).to eq 'C4' }
-
       specify { expect(maj3.higher_pitch).to eq 'E4' }
+
+      specify { expect(aug4.lower_pitch).to eq 'C4' }
       specify { expect(aug4.higher_pitch).to eq 'F#4' }
+
+      specify { expect(dim5.lower_pitch).to eq 'C4' }
       specify { expect(dim5.higher_pitch).to eq 'Gb4' }
     end
   end
@@ -74,13 +75,16 @@ describe HeadMusic::FunctionalInterval do
   end
 
   describe 'comparison' do
-    let!(:maj3) { described_class.get(:major_third) }
     let!(:min3) { described_class.get(:minor_third) }
+    let!(:maj3) { described_class.get(:major_third) }
+    let(:aug4) { described_class.get(:augmented_fourth) }
+    let(:dim5) { described_class.get(:diminished_fifth) }
     let(:perfect5) { described_class.get(:perfect_fifth) }
 
     specify { expect(maj3).to be > min3 }
     specify { expect(min3).to be < maj3 }
     specify { expect(perfect5).to be > maj3 }
+    specify { expect(aug4).to be == dim5 }
   end
 
   context 'given two pitches comprising a simple interval' do
