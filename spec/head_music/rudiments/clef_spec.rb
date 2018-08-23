@@ -8,6 +8,7 @@ describe HeadMusic::Clef do
   context 'treble clef' do
     let(:name) { :treble }
 
+    it { is_expected.to be_modern }
     its(:clef_type) { is_expected.to eq 'G-clef' }
 
     specify { expect(clef.space_pitch(-1)).to eq 'B3' }
@@ -31,6 +32,7 @@ describe HeadMusic::Clef do
   context 'alto clef' do
     let(:name) { :alto }
 
+    it { is_expected.to be_modern }
     its(:clef_type) { is_expected.to eq 'C-clef' }
 
     specify { expect(clef.space_pitch(-1)).to eq 'C3' }
@@ -54,6 +56,7 @@ describe HeadMusic::Clef do
   context 'bass clef' do
     let(:name) { :bass }
 
+    it { is_expected.to be_modern }
     its(:clef_type) { is_expected.to eq 'F-clef' }
 
     specify { expect(clef.space_pitch(-1)).to eq 'D2' }
@@ -74,6 +77,14 @@ describe HeadMusic::Clef do
     specify { expect(clef.line_pitch(6)).to eq 'C4' }
     specify { expect(clef.space_pitch(6)).to eq 'D4' }
     specify { expect(clef.line_pitch(7)).to eq 'E4' }
+  end
+
+  context 'mezzo-soprano clef' do
+    let(:name) { 'mezzo-soprano' }
+
+    it { is_expected.not_to be_modern }
+
+    specify { expect(clef.line_pitch(2)).to eq 'C4' }
   end
 
   describe '.get' do

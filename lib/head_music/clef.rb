@@ -17,7 +17,7 @@ class HeadMusic::Clef
     { pitch: 'C4', line: 2, names: ['mezzo-soprano'] },
     { pitch: 'C4', line: 3, names: ['alto', 'viola', 'counter-tenor', 'countertenor', 'C-clef'], modern: true },
     { pitch: 'C4', line: 4, names: ['tenor'], modern: true },
-    { pitch: 'C4', line: 5, names: ['baritone'] },
+    { pitch: 'C4', line: 5, names: ['baritone'] },  # TODO: wat? distinguish between this and baritone F clef.
 
     { pitch: nil, line: 3, names: %w[neutral percussion] },
   ].freeze
@@ -33,6 +33,7 @@ class HeadMusic::Clef
     clef_data = CLEFS.detect { |clef| clef[:names].map(&:downcase).include?(name.downcase) }
     @pitch = HeadMusic::Pitch.get(clef_data[:pitch])
     @line = clef_data[:line]
+    @modern = clef_data[:modern]
   end
 
   def clef_type
@@ -53,6 +54,10 @@ class HeadMusic::Clef
       steps = (space_number - line) * 2 + 1
       pitch.natural_steps(steps)
     end
+  end
+
+  def modern?
+    @modern
   end
 
   def ==(other)
