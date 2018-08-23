@@ -87,6 +87,24 @@ describe HeadMusic::Clef do
     specify { expect(clef.line_pitch(2)).to eq 'C4' }
   end
 
+  context 'the tenor clef' do
+    context "when constructed with the name 'tenor'" do
+      let(:name) { 'tenor' }
+
+      it 'returns to the choral tenor clef' do
+        expect(clef.clef_type).to eq 'G-clef'
+      end
+    end
+
+    context "when constructed with the name 'tenor C-clef'" do
+      let(:name) { 'tenor C-clef' }
+
+      it 'returns to the choral tenor clef' do
+        expect(clef.clef_type).to eq 'C-clef'
+      end
+    end
+  end
+
   describe '.get' do
     context 'when given an instance' do
       let(:instance) { described_class.get(:french) }

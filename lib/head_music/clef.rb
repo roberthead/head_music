@@ -7,7 +7,7 @@ class HeadMusic::Clef
   CLEFS = [
     { pitch: 'G4', line: 2, names: ['treble', 'G-clef'], modern: true },
     { pitch: 'G4', line: 1, names: ['French', 'French violin'] },
-    { pitch: 'G3', line: 2, names: ['choral tenor', 'tenor'], modern: true },
+    { pitch: 'G3', line: 2, names: ['choral tenor', 'tenor', 'tenor G-clef'], modern: true },
 
     { pitch: 'F3', line: 3, names: ['baritone'] },
     { pitch: 'F3', line: 4, names: ['bass', 'F-clef'], modern: true },
@@ -16,8 +16,8 @@ class HeadMusic::Clef
     { pitch: 'C4', line: 1, names: ['soprano'] },
     { pitch: 'C4', line: 2, names: ['mezzo-soprano'] },
     { pitch: 'C4', line: 3, names: ['alto', 'viola', 'counter-tenor', 'countertenor', 'C-clef'], modern: true },
-    { pitch: 'C4', line: 4, names: ['tenor'], modern: true },
-    { pitch: 'C4', line: 5, names: ['baritone'] },  # TODO: wat? distinguish between this and baritone F clef.
+    { pitch: 'C4', line: 4, names: ['tenor', 'tenor C-clef'], modern: true },
+    { pitch: 'C4', line: 5, names: ['baritone', 'baritone C-clef'] },
 
     { pitch: nil, line: 3, names: %w[neutral percussion] },
   ].freeze
