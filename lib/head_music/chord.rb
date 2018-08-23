@@ -10,19 +10,22 @@ class HeadMusic::Chord
   end
 
   def consonant_triad?
-    return false unless three_pitches?
     reduction.root_triad? || reduction.first_inversion_triad? || reduction.second_inversion_triad?
   end
 
   def root_triad?
+    return false unless triad?
     intervals.map(&:shorthand).sort == %w[M3 m3]
   end
 
+  # TODO: look up definition of first and second inversion triads. Can they be spread?
   def first_inversion_triad?
+    return false unless triad?
     invert.invert.intervals.map(&:shorthand).sort == %w[M3 m3]
   end
 
   def second_inversion_triad?
+    return false unless triad?
     invert.intervals.map(&:shorthand).sort == %w[M3 m3]
   end
 
@@ -30,7 +33,7 @@ class HeadMusic::Chord
     @reduction ||= HeadMusic::Chord.new(reduction_pitches)
   end
 
-  def three_pitches?
+  def triad?
     pitches.length == 3
   end
 
