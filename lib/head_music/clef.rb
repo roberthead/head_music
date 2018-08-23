@@ -40,7 +40,7 @@ class HeadMusic::Clef
     "#{pitch.letter_name}-clef"
   end
 
-  def line_pitch(line_number)
+  def pitch_for_line(line_number)
     @line_pitches ||= {}
     @line_pitches[line_number] ||= begin
       steps = (line_number - line) * 2
@@ -48,7 +48,7 @@ class HeadMusic::Clef
     end
   end
 
-  def space_pitch(space_number)
+  def pitch_for_space(space_number)
     @space_pitches ||= {}
     @space_pitches[space_number] ||= begin
       steps = (space_number - line) * 2 + 1
