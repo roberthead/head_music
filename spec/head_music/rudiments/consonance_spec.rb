@@ -23,11 +23,13 @@ describe HeadMusic::Consonance do
     end
   end
 
-  context 'when given an instance' do
-    let(:instance) { described_class.get('#') }
+  describe '.get' do
+    context 'when given an instance' do
+      let(:instance) { described_class.get('#') }
 
-    it 'returns that instance' do
-      expect(described_class.get(instance)).to be instance
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
     end
   end
 end

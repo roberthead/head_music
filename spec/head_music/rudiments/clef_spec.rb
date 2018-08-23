@@ -76,11 +76,13 @@ describe HeadMusic::Clef do
     specify { expect(clef.line_pitch(7)).to eq 'E4' }
   end
 
-  context 'when given an instance' do
-    let(:instance) { described_class.get(:french) }
+  describe '.get' do
+    context 'when given an instance' do
+      let(:instance) { described_class.get(:french) }
 
-    it 'returns that instance' do
-      expect(described_class.get(instance)).to be instance
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
     end
   end
 end

@@ -85,11 +85,13 @@ describe HeadMusic::RhythmicUnit do
     its(:british_name) { is_expected.to eq 'breve' }
   end
 
-  context 'when given an instance' do
-    let(:instance) { described_class.get(:quarter) }
+  describe '.get' do
+    context 'when given an instance' do
+      let(:instance) { described_class.get(:quarter) }
 
-    it 'returns that instance' do
-      expect(described_class.get(instance)).to be instance
+      it 'returns that instance' do
+        expect(described_class.get(instance)).to be instance
+      end
     end
   end
 
