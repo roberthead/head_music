@@ -98,4 +98,28 @@ describe HeadMusic::PitchClass do
     specify { expect(described_class.get('Fb')).not_to be_black_key }
     specify { expect(described_class.get('B#')).not_to be_black_key }
   end
+
+  describe '#to_s' do
+    specify { expect(described_class.get('C').to_integer_notation).to eq '0' }
+    specify { expect(described_class.get('C#').to_integer_notation).to eq '1' }
+    specify { expect(described_class.get('Db').to_integer_notation).to eq '1' }
+    specify { expect(described_class.get('D').to_integer_notation).to eq '2' }
+    specify { expect(described_class.get('D#').to_integer_notation).to eq '3' }
+    specify { expect(described_class.get('Eb').to_integer_notation).to eq '3' }
+    specify { expect(described_class.get('E').to_integer_notation).to eq '4' }
+    specify { expect(described_class.get('E#').to_integer_notation).to eq '5' }
+    specify { expect(described_class.get('Fb').to_integer_notation).to eq '4' }
+    specify { expect(described_class.get('F').to_integer_notation).to eq '5' }
+    specify { expect(described_class.get('F#').to_integer_notation).to eq '6' }
+    specify { expect(described_class.get('Gb').to_integer_notation).to eq '6' }
+    specify { expect(described_class.get('G').to_integer_notation).to eq '7' }
+    specify { expect(described_class.get('G#').to_integer_notation).to eq '8' }
+    specify { expect(described_class.get('Ab').to_integer_notation).to eq '8' }
+    specify { expect(described_class.get('A').to_integer_notation).to eq '9' }
+    specify { expect(described_class.get('A#').to_integer_notation).to eq 't' }
+    specify { expect(described_class.get('Bb').to_integer_notation).to eq 't' }
+    specify { expect(described_class.get('B').to_integer_notation).to eq 'e' }
+    specify { expect(described_class.get('B#').to_integer_notation).to eq '0' }
+    specify { expect(described_class.get('Cb5').to_integer_notation).to eq 'e' }
+  end
 end

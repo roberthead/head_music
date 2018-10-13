@@ -7,6 +7,7 @@ class HeadMusic::PitchClass
 
   SHARP_SPELLINGS = %w[C C# D D# E F F# G G# A A# B].freeze
   FLAT_SPELLINGS = %w[C Db D Eb E F Gb G Ab A Bb B].freeze
+  INTEGER_NOTATION = %w[0 1 2 3 4 5 6 7 8 9 t e].freeze
 
   def self.get(identifier)
     @pitch_classes ||= {}
@@ -28,6 +29,10 @@ class HeadMusic::PitchClass
 
   def to_i
     number
+  end
+
+  def to_integer_notation
+    INTEGER_NOTATION[number]
   end
 
   def sharp_spelling
