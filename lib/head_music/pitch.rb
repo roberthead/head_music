@@ -10,6 +10,7 @@ class HeadMusic::Pitch
   delegate :letter_name, :letter_name_cycle, to: :spelling
   delegate :sign, :sharp?, :flat?, to: :spelling
   delegate :pitch_class, to: :spelling
+  delegate :number, to: :pitch_class, prefix: true
   delegate :semitones, to: :sign, prefix: true, allow_nil: true
 
   delegate :smallest_interval_to, to: :pitch_class
@@ -94,7 +95,7 @@ class HeadMusic::Pitch
   end
 
   def natural
-    HeadMusic::Pitch.get(to_s.gsub(/[#b]/, ''))
+    HeadMusic::Pitch.get(to_s.gsub(HeadMusic::Sign.matcher, ''))
   end
 
   def +(other)
@@ -130,6 +131,15 @@ class HeadMusic::Pitch
 
   def frequency
     tuning.frequency_for(self)
+  end
+
+  def steps_to(other)
+    other = HeadMusic::Pitch.get(other)
+    if other.natural.pitch_class_number >= natural.pitch_class_number
+      letter_name.steps_to(other.letter_name) + 7 * (other.octave - octave)
+    else
+      letter_name.steps_to(other.letter_name) + 7 * (other.octave - octave - 1)
+    end
   end
 
   private_class_method :new
