@@ -12,6 +12,10 @@ if ENV['CIRCLE_ARTIFACTS']
 end
 SimpleCov.start
 
+RSpec.configure do |config|
+  config.example_status_persistence_file_path = "spec/examples.txt"
+end
+
 class HeadMusic::Style::Annotation
   def marks_count
     marks_array.length
