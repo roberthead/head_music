@@ -3,10 +3,43 @@
 require 'spec_helper'
 
 describe HeadMusic::FunctionalInterval do
+  describe 'constructor' do
+    let(:c_flat_4) { HeadMusic::Pitch.get('Cb') }
+    let(:c_4) { HeadMusic::Pitch.get('C') }
+    let(:c_sharp_4) { HeadMusic::Pitch.get('C#') }
+    let(:e_4) { HeadMusic::Pitch.get('E') }
+    let(:e_flat_4) { HeadMusic::Pitch.get('Eb') }
+    let(:c_5) { HeadMusic::Pitch.get('C5') }
+
+    let(:maj3) { described_class.get(:major_third) }
+    let(:min3) { described_class.get(:minor_third) }
+    let(:dim3) { described_class.get(:diminished_third) }
+    let(:aug3) { described_class.get(:augmented_third) }
+    let(:dim8) { described_class.get(:diminished_octave) }
+    let(:perf8) { described_class.get(:perfect_octave) }
+    let(:aug8) { described_class.get(:augmented_octave) }
+
+    specify { expect(described_class.new(c_sharp_4, e_4).name).to eq min3.name }
+    specify { expect(described_class.new(c_4, e_4).name).to eq maj3.name }
+    specify { expect(described_class.new(c_flat_4, e_4).name).to eq aug3.name }
+    specify { expect(described_class.new(c_sharp_4, e_flat_4).name).to eq dim3.name }
+    specify { expect(described_class.new(c_sharp_4, c_5).name).to eq dim8.name }
+    specify { expect(described_class.new(c_4, c_5).name).to eq perf8.name }
+    specify { expect(described_class.new(c_flat_4, c_5).name).to eq aug8.name }
+
+    specify { expect(aug8.simple_number_name).to eq 'octave' }
+    specify { expect(aug8.quality_name).to eq 'augmented' }
+    specify { expect(aug8.name).to eq 'augmented octave' }
+
+    let(:dim8) { described_class.get(:diminished_octave) }
+  end
+
   describe '.get' do
     let(:maj3) { described_class.get(:major_third) }
     let(:aug4) { described_class.get(:augmented_fourth) }
     let(:dim5) { described_class.get('diminished fifth') }
+    let(:dim8) { described_class.get(:diminished_octave) }
+    let(:p15) { described_class.get(:perfect_fifteenth) }
 
     describe 'default position' do
       specify { expect(maj3.lower_pitch).to eq 'C4' }
@@ -17,6 +50,18 @@ describe HeadMusic::FunctionalInterval do
 
       specify { expect(dim5.lower_pitch).to eq 'C4' }
       specify { expect(dim5.higher_pitch).to eq 'Gb4' }
+
+      specify { expect(dim5.quality_name).to eq 'diminished' }
+
+      specify { expect(dim8.lower_pitch).to eq 'C4' }
+      specify { expect(dim8.higher_pitch).to eq 'Cb5' }
+
+      specify { expect(dim8.simple_number).to eq 8 }
+      specify { expect(dim8.quality_name).to eq 'diminished' }
+
+      specify { expect(p15.number).to eq 15 }
+      specify { expect(p15.simple_number).to eq 8 }
+      specify { expect(p15.quality_name).to eq 'perfect' }
     end
   end
 
@@ -149,11 +194,13 @@ describe HeadMusic::FunctionalInterval do
     specify { expect(described_class.new('B2', 'E5').name).to eq 'two octaves and a perfect fourth' }
     specify { expect(described_class.new('B2', 'B5').name).to eq 'three octaves' }
     specify { expect(described_class.new('B2', 'C6').name).to eq 'three octaves and a minor second' }
-    specify { expect(described_class.new('C3', 'C#6').name).to eq 'three octaves and an augmented unison' }
+    specify { expect(described_class.new('C3', 'D#6').name).to eq 'three octaves and an augmented second' }
 
     specify { expect(described_class.new('C#4', 'Fb4').name).to eq 'doubly diminished fourth' }
     specify { expect(described_class.new('Eb4', 'A#4').name).to eq 'doubly augmented fourth' }
     specify { expect(described_class.new('Cb4', 'F#4').name).to eq 'doubly augmented fourth' }
+
+    specify { expect(described_class.new('C4', 'Cb5').name).to eq 'diminished octave' }
   end
 
   describe 'consonance' do
@@ -171,6 +218,7 @@ describe HeadMusic::FunctionalInterval do
     specify { expect(described_class.get(:major_sixth).consonance).to be_imperfect }
     specify { expect(described_class.get(:minor_seventh).consonance).to be_dissonant }
     specify { expect(described_class.get(:major_seventh).consonance).to be_dissonant }
+    specify { expect(described_class.get(:diminished_octave).consonance).to be_dissonant }
     specify { expect(described_class.get(:perfect_octave).consonance).to be_perfect }
   end
 end

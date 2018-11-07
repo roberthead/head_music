@@ -135,17 +135,16 @@ class HeadMusic::FunctionalInterval
       @low_pitch, @high_pitch = *[pitch1, pitch2].sort
     end
 
+    def number
+      @number ||= @low_pitch.steps_to(@high_pitch) + 1
+    end
+
     def simple_number
-      @simple_number ||= @low_pitch.letter_name.steps_to(@high_pitch.letter_name) + 1
+      @simple_number ||= octave_equivalent? ? 8 : (number - 1) % 7 + 1
     end
 
     def octaves
-      @octaves ||= (high_pitch.number - low_pitch.number) / 12
-    end
-
-    # returns the ordinality of the interval
-    def number
-      simple_number + octaves * 7
+      @octaves ||= number / 8
     end
 
     def simple?
@@ -167,6 +166,12 @@ class HeadMusic::FunctionalInterval
     def steps
       number - 1
     end
+
+    private
+
+    def octave_equivalent?
+      number > 1 && (number - 1) % 7 == 0
+    end
   end
 
   # Accepts a number and number of semitones and privides the naming methods.
@@ -183,7 +188,7 @@ class HeadMusic::FunctionalInterval
     end
 
     def simple_number
-      @simple_number ||= (number - 1) % 7 + 1
+      @simple_number ||= octave_equivalent? ? 8 : (number - 1) % 7 + 1
     end
 
     def simple_name
@@ -192,7 +197,8 @@ class HeadMusic::FunctionalInterval
 
     def quality_name
       starting_quality = QUALITY_SEMITONES[simple_number_name.to_sym].keys.first
-      delta = simple_semitones - QUALITY_SEMITONES[simple_number_name.to_sym][starting_quality]
+      delta = simple_semitones - (QUALITY_SEMITONES[simple_number_name.to_sym][starting_quality] % 12)
+      delta -= 12 while delta >= 6
       HeadMusic::Quality.from(starting_quality, delta)
     end
 
@@ -207,7 +213,7 @@ class HeadMusic::FunctionalInterval
     def name
       if named_number?
         [quality_name, number_name].join(' ')
-      elsif simple_name == 'perfect unison'
+      elsif simple_name == 'perfect octave'
         "#{octaves.humanize} octaves"
       else
         "#{octaves.humanize} octaves and #{quality.article} #{simple_name}"
@@ -231,6 +237,10 @@ class HeadMusic::FunctionalInterval
 
     def octaves
       @octaves ||= semitones / 12
+    end
+
+    def octave_equivalent?
+      number > 1 && (number - 1) % 7 == 0
     end
   end
 
