@@ -173,6 +173,14 @@ describe HeadMusic::Pitch do
         expect(pitch + 9).to eq 'F#5'
       end
     end
+
+    context 'when adding a functional interval' do
+      it 'returns the new pitch' do
+        expect(pitch + HeadMusic::FunctionalInterval.get(:major_sixth)).to eq 'F#5'
+        expect(pitch + HeadMusic::FunctionalInterval.get(:minor_sixth)).to eq 'F5'
+        expect(pitch + HeadMusic::FunctionalInterval.get(:augmented_fifth)).to eq 'E#5'
+      end
+    end
   end
 
   describe 'subtraction' do

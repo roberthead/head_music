@@ -146,8 +146,8 @@ describe HeadMusic::FunctionalInterval do
   context 'given two pitches comprising an augmented octave' do
     subject { described_class.new('A4', 'A#5') }
 
-    specify { expect(aug8.simple_number_name).to eq 'octave' }
-    specify { expect(aug8.quality_name).to eq 'augmented' }
+    its(:simple_number_name) { is_expected.to eq 'octave' }
+    its(:quality_name) { is_expected.to eq 'augmented' }
 
     its(:name) { is_expected.to eq 'augmented octave' }
     its(:number) { is_expected.to eq 8 }
@@ -169,7 +169,7 @@ describe HeadMusic::FunctionalInterval do
     end
 
     describe 'inversion' do
-      specify { expect(subject.inversion.name).to eq :diminished_unison }
+      specify { expect(subject.inversion.name).to eq 'diminished octave' }
     end
   end
 
@@ -235,5 +235,10 @@ describe HeadMusic::FunctionalInterval do
     specify { expect(described_class.get(:major_seventh).consonance).to be_dissonant }
     specify { expect(described_class.get(:diminished_octave).consonance).to be_dissonant }
     specify { expect(described_class.get(:perfect_octave).consonance).to be_perfect }
+  end
+
+  describe 'above' do
+    specify { expect(described_class.get(:perfect_fifth).above('C4')).to eq 'G4' }
+    specify { expect(described_class.get(:major_third).above('A4')).to eq 'C#5' }
   end
 end

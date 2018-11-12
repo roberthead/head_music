@@ -13,6 +13,7 @@ class HeadMusic::Pitch
   delegate :number, to: :pitch_class, prefix: true
   delegate :pitch_class_number, to: :natural, prefix: true
   delegate :semitones, to: :sign, prefix: true, allow_nil: true
+  delegate :steps_to, to: :letter_name, prefix: true
 
   delegate :smallest_interval_to, to: :pitch_class
 
@@ -100,7 +101,13 @@ class HeadMusic::Pitch
   end
 
   def +(other)
-    HeadMusic::Pitch.get(to_i + other.to_i)
+    if other.is_a?(HeadMusic::FunctionalInterval)
+      # return a pitch
+      other.above(self)
+    else
+      # assume value represents an interval in semitones and return another pitch
+      HeadMusic::Pitch.get(to_i + other.to_i)
+    end
   end
 
   def -(other)
@@ -142,10 +149,6 @@ class HeadMusic::Pitch
   private_class_method :new
 
   private
-
-  def letter_name_steps_to(other)
-    letter_name.steps_to(other.letter_name)
-  end
 
   def octave_changes_to(other)
     other.octave - octave - octave_adjustment_to(other)

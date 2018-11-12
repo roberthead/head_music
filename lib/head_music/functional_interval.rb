@@ -274,7 +274,9 @@ class HeadMusic::FunctionalInterval
 
   def inversion
     inverted_low_pitch = lower_pitch
-    inverted_low_pitch += 12 while inverted_low_pitch < higher_pitch
+    while inverted_low_pitch < higher_pitch
+      inverted_low_pitch = HeadMusic::Pitch.fetch_or_create(lower_pitch.spelling, inverted_low_pitch.octave + 1)
+    end
     HeadMusic::FunctionalInterval.new(higher_pitch, inverted_low_pitch)
   end
   alias invert inversion
@@ -300,6 +302,11 @@ class HeadMusic::FunctionalInterval
 
   def dissonance?(style = :standard_practice)
     consonance(style).dissonant?
+  end
+
+  def above(pitch)
+    pitch = HeadMusic::Pitch.get(pitch)
+    HeadMusic::Pitch.from_number_and_letter(pitch + semitones, pitch.letter_name.steps(number - 1))
   end
 
   def <=>(other)
