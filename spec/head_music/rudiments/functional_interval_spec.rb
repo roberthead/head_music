@@ -3,22 +3,26 @@
 require 'spec_helper'
 
 describe HeadMusic::FunctionalInterval do
+  let(:c_flat_4) { HeadMusic::Pitch.get('Cb') }
+  let(:c_4) { HeadMusic::Pitch.get('C') }
+  let(:c_sharp_4) { HeadMusic::Pitch.get('C#') }
+  let(:e_4) { HeadMusic::Pitch.get('E') }
+  let(:e_flat_4) { HeadMusic::Pitch.get('Eb') }
+  let(:c_5) { HeadMusic::Pitch.get('C5') }
+
+  let(:maj3) { described_class.get(:major_third) }
+  let(:min3) { described_class.get(:minor_third) }
+  let(:dim3) { described_class.get(:diminished_third) }
+  let(:aug3) { described_class.get(:augmented_third) }
+  let(:aug4) { described_class.get(:augmented_fourth) }
+  let(:dim5) { described_class.get('diminished fifth') }
+  let(:p5) { described_class.get(:perfect_fifth) }
+  let(:dim8) { described_class.get(:diminished_octave) }
+  let(:perf8) { described_class.get(:perfect_octave) }
+  let(:aug8) { described_class.get(:augmented_octave) }
+  let(:p15) { described_class.get(:perfect_fifteenth) }
+
   describe 'constructor' do
-    let(:c_flat_4) { HeadMusic::Pitch.get('Cb') }
-    let(:c_4) { HeadMusic::Pitch.get('C') }
-    let(:c_sharp_4) { HeadMusic::Pitch.get('C#') }
-    let(:e_4) { HeadMusic::Pitch.get('E') }
-    let(:e_flat_4) { HeadMusic::Pitch.get('Eb') }
-    let(:c_5) { HeadMusic::Pitch.get('C5') }
-
-    let(:maj3) { described_class.get(:major_third) }
-    let(:min3) { described_class.get(:minor_third) }
-    let(:dim3) { described_class.get(:diminished_third) }
-    let(:aug3) { described_class.get(:augmented_third) }
-    let(:dim8) { described_class.get(:diminished_octave) }
-    let(:perf8) { described_class.get(:perfect_octave) }
-    let(:aug8) { described_class.get(:augmented_octave) }
-
     specify { expect(described_class.new(c_sharp_4, e_4).name).to eq min3.name }
     specify { expect(described_class.new(c_4, e_4).name).to eq maj3.name }
     specify { expect(described_class.new(c_flat_4, e_4).name).to eq aug3.name }
@@ -26,21 +30,9 @@ describe HeadMusic::FunctionalInterval do
     specify { expect(described_class.new(c_sharp_4, c_5).name).to eq dim8.name }
     specify { expect(described_class.new(c_4, c_5).name).to eq perf8.name }
     specify { expect(described_class.new(c_flat_4, c_5).name).to eq aug8.name }
-
-    specify { expect(aug8.simple_number_name).to eq 'octave' }
-    specify { expect(aug8.quality_name).to eq 'augmented' }
-    specify { expect(aug8.name).to eq 'augmented octave' }
-
-    let(:dim8) { described_class.get(:diminished_octave) }
   end
 
   describe '.get' do
-    let(:maj3) { described_class.get(:major_third) }
-    let(:aug4) { described_class.get(:augmented_fourth) }
-    let(:dim5) { described_class.get('diminished fifth') }
-    let(:dim8) { described_class.get(:diminished_octave) }
-    let(:p15) { described_class.get(:perfect_fifteenth) }
-
     describe 'default position' do
       specify { expect(maj3.lower_pitch).to eq 'C4' }
       specify { expect(maj3.higher_pitch).to eq 'E4' }
@@ -118,16 +110,10 @@ describe HeadMusic::FunctionalInterval do
     end
   end
 
-  describe 'comparison' do
-    let!(:min3) { described_class.get(:minor_third) }
-    let!(:maj3) { described_class.get(:major_third) }
-    let(:aug4) { described_class.get(:augmented_fourth) }
-    let(:dim5) { described_class.get(:diminished_fifth) }
-    let(:perfect5) { described_class.get(:perfect_fifth) }
-
+  describe 'size comparison' do
     specify { expect(maj3).to be > min3 }
     specify { expect(min3).to be < maj3 }
-    specify { expect(perfect5).to be > maj3 }
+    specify { expect(p5).to be > maj3 }
     specify { expect(aug4).to be == dim5 }
   end
 
@@ -154,6 +140,36 @@ describe HeadMusic::FunctionalInterval do
 
     describe 'inversion' do
       its(:inversion) { is_expected.to eq 'perfect fourth' }
+    end
+  end
+
+  context 'given two pitches comprising an augmented octave' do
+    subject { described_class.new('A4', 'A#5') }
+
+    specify { expect(aug8.simple_number_name).to eq 'octave' }
+    specify { expect(aug8.quality_name).to eq 'augmented' }
+
+    its(:name) { is_expected.to eq 'augmented octave' }
+    its(:number) { is_expected.to eq 8 }
+    its(:number_name) { is_expected.to eq 'octave' }
+    its(:quality) { is_expected.to eq :augmented }
+    its(:shorthand) { is_expected.to eq 'A8' }
+
+    it { is_expected.to be_simple }
+    it { is_expected.not_to be_compound }
+
+    it { is_expected.not_to be_step }
+    it { is_expected.not_to be_skip }
+    it { is_expected.to be_leap }
+    it { is_expected.to be_large_leap }
+
+    describe 'simplification' do
+      its(:simple_number) { is_expected.to eq subject.number }
+      its(:simple_name) { is_expected.to eq subject.name }
+    end
+
+    describe 'inversion' do
+      specify { expect(subject.inversion.name).to eq :diminished_unison }
     end
   end
 
