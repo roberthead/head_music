@@ -11,6 +11,7 @@ class HeadMusic::Pitch
   delegate :sign, :sharp?, :flat?, to: :spelling
   delegate :pitch_class, to: :spelling
   delegate :number, to: :pitch_class, prefix: true
+  delegate :pitch_class_number, to: :natural, prefix: true
   delegate :semitones, to: :sign, prefix: true, allow_nil: true
 
   delegate :smallest_interval_to, to: :pitch_class
@@ -135,16 +136,28 @@ class HeadMusic::Pitch
 
   def steps_to(other)
     other = HeadMusic::Pitch.get(other)
-    if other.natural.pitch_class_number >= natural.pitch_class_number
-      letter_name.steps_to(other.letter_name) + 7 * (other.octave - octave)
-    else
-      letter_name.steps_to(other.letter_name) + 7 * (other.octave - octave - 1)
-    end
+    letter_name_steps_to(other) + 7 * octave_changes_to(other)
   end
 
   private_class_method :new
 
   private
+
+  def letter_name_steps_to(other)
+    letter_name.steps_to(other.letter_name)
+  end
+
+  def octave_changes_to(other)
+    other.octave - octave - octave_adjustment_to(other)
+  end
+
+  def octave_adjustment_to(other)
+    (pitch_class_above?(other) ? 1 : 0)
+  end
+
+  def pitch_class_above?(other)
+    natural_pitch_class_number > other.natural_pitch_class_number
+  end
 
   def enharmonic_equivalence
     @enharmonic_equivalence ||= EnharmonicEquivalence.get(self)

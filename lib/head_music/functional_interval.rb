@@ -148,7 +148,7 @@ class HeadMusic::FunctionalInterval
     end
 
     def simple?
-      octaves.zero?
+      number <= 8
     end
 
     def compound?
@@ -170,7 +170,7 @@ class HeadMusic::FunctionalInterval
     private
 
     def octave_equivalent?
-      number > 1 && (number - 1) % 7 == 0
+      number > 1 && ((number - 1) % 7).zero?
     end
   end
 
@@ -240,14 +240,18 @@ class HeadMusic::FunctionalInterval
     end
 
     def octave_equivalent?
-      number > 1 && (number - 1) % 7 == 0
+      number > 1 && ((number - 1) % 7).zero?
     end
   end
 
   delegate :step?, :skip?, :leap?, :large_leap?, to: :category
-  delegate :simple_number, :octaves, :number, :simple?, :compound?, :semitones, :simple_semitones, :steps, to: :size
   delegate(
-    :simple_semitones, :simple_name, :quality_name, :simple_number_name, :number_name, :name, :shorthand, to: :naming
+    :simple_number, :octaves, :number, :simple?, :compound?, :semitones, :simple_semitones, :steps,
+    to: :size
+  )
+  delegate(
+    :simple_semitones, :simple_name, :quality_name, :simple_number_name, :number_name, :name, :shorthand,
+    to: :naming
   )
 
   # Accepts a name and returns the interval with middle c on the bottom

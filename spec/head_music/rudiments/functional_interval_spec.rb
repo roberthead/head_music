@@ -50,15 +50,14 @@ describe HeadMusic::FunctionalInterval do
 
       specify { expect(dim5.lower_pitch).to eq 'C4' }
       specify { expect(dim5.higher_pitch).to eq 'Gb4' }
-
       specify { expect(dim5.quality_name).to eq 'diminished' }
 
       specify { expect(dim8.lower_pitch).to eq 'C4' }
       specify { expect(dim8.higher_pitch).to eq 'Cb5' }
-
       specify { expect(dim8.simple_number).to eq 8 }
       specify { expect(dim8.quality_name).to eq 'diminished' }
 
+      specify { expect(p15.higher_pitch).to eq 'C6' }
       specify { expect(p15.number).to eq 15 }
       specify { expect(p15.simple_number).to eq 8 }
       specify { expect(p15.quality_name).to eq 'perfect' }

@@ -201,8 +201,8 @@ describe HeadMusic::Pitch do
     subject(:pitch) { described_class.get('F♯3') }
 
     specify { expect(pitch.steps_to(described_class.get('C4'))).to eq 4 }
-    specify { expect(pitch.steps_to(described_class.get('C3'))).to eq -3 }
-    specify { expect(pitch.steps_to(described_class.get('Fb2'))).to eq -7 }
+    specify { expect(pitch.steps_to(described_class.get('C3'))).to eq(-3) }
+    specify { expect(pitch.steps_to(described_class.get('Fb2'))).to eq(-7) }
     specify { expect(pitch.steps_to(described_class.get('Fb3'))).to eq 0 }
     specify { expect(pitch.steps_to(described_class.get('Fb4'))).to eq 7 }
     specify { expect(pitch.steps_to(described_class.get('Fb5'))).to eq 14 }
