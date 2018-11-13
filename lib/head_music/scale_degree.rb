@@ -17,7 +17,7 @@ class HeadMusic::ScaleDegree
   end
 
   def degree
-    scale.letter_name_cycle.index(spelling.letter_name.to_s) + 1
+    scale.letter_name_series_ascending.index(spelling.letter_name.to_s) + 1
   end
 
   def sign
@@ -41,6 +41,7 @@ class HeadMusic::ScaleDegree
 
   def name_for_degree
     return unless scale_type.diatonic?
+
     NAME_FOR_DIATONIC_DEGREE[degree] ||
       (scale_type.intervals.last == 1 || sign == '#' ? 'leading tone' : 'subtonic')
   end

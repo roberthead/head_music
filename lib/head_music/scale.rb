@@ -2,7 +2,7 @@
 
 # A scale contains ordered pitches starting at a tonal center.
 class HeadMusic::Scale
-  SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
+  SCALE_REGEX = /^[A-G][#b]?\s+\w+$/.freeze
 
   def self.get(root_pitch, scale_type = nil)
     root_pitch, scale_type = root_pitch.split(/\s+/) if root_pitch.is_a?(String) && scale_type =~ SCALE_REGEX
@@ -15,7 +15,7 @@ class HeadMusic::Scale
     @scales[hash_key] ||= new(root_pitch, scale_type)
   end
 
-  delegate :letter_name_cycle, to: :root_pitch
+  delegate :letter_name_series_ascending, :letter_name_series_descending, to: :root_pitch
 
   attr_reader :root_pitch, :scale_type
 
@@ -53,6 +53,7 @@ class HeadMusic::Scale
     pitches = [root_pitch]
     %i[ascending descending].each do |single_direction|
       next unless [single_direction, :both].include?(direction)
+
       (1..octaves).each do
         pitches += octave_scale_pitches(single_direction, semitones_from_root)
         semitones_from_root += 12 * direction_sign(single_direction)
@@ -101,16 +102,19 @@ class HeadMusic::Scale
 
   def diatonic_letter_for_step(direction, step)
     return unless scale_type.diatonic?
-    direction == :ascending ? letter_name_cycle[step % 7] : letter_name_cycle[-step % 7]
+
+    direction == :ascending ? letter_name_series_ascending[step % 7] : letter_name_series_descending[step % 7]
   end
 
   def child_scale_letter_for_step(semitones_from_root)
     return unless scale_type.parent
+
     parent_scale_pitch_for(semitones_from_root).letter_name
   end
 
   def flat_letter_for_step(semitones_from_root)
     return unless root_pitch.flat?
+
     HeadMusic::PitchClass::FLAT_SPELLINGS[pitch_class_number(semitones_from_root)]
   end
 

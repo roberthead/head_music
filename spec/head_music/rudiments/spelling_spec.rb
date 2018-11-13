@@ -98,10 +98,11 @@ describe HeadMusic::Spelling do
     end
   end
 
-  describe '#letter_name_cycle' do
+  describe '#letter_name_series_* methods' do
     subject(:spelling) { described_class.get('D') }
 
-    its(:letter_name_cycle) { is_expected.to eq %w[D E F G A B C] }
+    its(:letter_name_series_ascending) { is_expected.to eq %w[D E F G A B C] }
+    its(:letter_name_series_descending) { is_expected.to eq %w[D C B A G F E] }
   end
 
   describe '#enharmonic?' do

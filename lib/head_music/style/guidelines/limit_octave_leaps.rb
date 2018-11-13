@@ -9,6 +9,7 @@ class HeadMusic::Style::Guidelines::LimitOctaveLeaps < HeadMusic::Style::Annotat
 
   def marks
     return if octave_leaps.length <= 1
+
     octave_leaps.map do |leap|
       HeadMusic::Style::Mark.for_all(leap.notes)
     end

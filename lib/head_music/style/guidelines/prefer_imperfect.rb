@@ -15,6 +15,7 @@ class HeadMusic::Style::Guidelines::PreferImperfect < HeadMusic::Style::Annotati
 
   def ratio_of_perfect_intervals
     return 0 if downbeat_harmonic_intervals_in_middle.nil?
+
     perfect_intervals.length.to_f / downbeat_harmonic_intervals.length
   end
 

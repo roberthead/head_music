@@ -7,7 +7,8 @@ class HeadMusic::Pitch
   attr_reader :spelling
   attr_reader :octave
 
-  delegate :letter_name, :letter_name_cycle, to: :spelling
+  delegate :letter_name, to: :spelling
+  delegate :series_ascending, :series_descending, to: :letter_name, prefix: true
   delegate :sign, :sharp?, :flat?, to: :spelling
   delegate :pitch_class, to: :spelling
   delegate :number, to: :pitch_class, prefix: true
@@ -34,16 +35,19 @@ class HeadMusic::Pitch
 
   def self.from_pitch_class(pitch_class)
     return nil unless pitch_class.is_a?(HeadMusic::PitchClass)
+
     fetch_or_create(pitch_class.sharp_spelling)
   end
 
   def self.from_name(name)
     return nil unless name == name.to_s
+
     fetch_or_create(HeadMusic::Spelling.get(name), HeadMusic::Octave.get(name).to_i)
   end
 
   def self.from_number(number)
     return nil unless number == number.to_i
+
     spelling = HeadMusic::Spelling.from_number(number)
     octave = (number.to_i / 12) - 1
     fetch_or_create(spelling, octave)
@@ -67,6 +71,7 @@ class HeadMusic::Pitch
   def self.fetch_or_create(spelling, octave = nil)
     octave ||= HeadMusic::Octave::DEFAULT
     return unless spelling && (-1..9).cover?(octave)
+
     @pitches ||= {}
     hash_key = [spelling, octave].join
     @pitches[hash_key] ||= new(spelling, octave)
@@ -111,7 +116,10 @@ class HeadMusic::Pitch
   end
 
   def -(other)
-    if other.is_a?(HeadMusic::Pitch)
+    if other.is_a?(HeadMusic::FunctionalInterval)
+      # return a pitch
+      other.below(self)
+    elsif other.is_a?(HeadMusic::Pitch)
       # return an interval
       HeadMusic::Interval.get(to_i - other.to_i)
     else
@@ -194,6 +202,6 @@ class HeadMusic::Pitch
 
   def target_letter_name(num_steps)
     @target_letter_name ||= {}
-    @target_letter_name[num_steps] ||= letter_name.steps(num_steps)
+    @target_letter_name[num_steps] ||= letter_name.steps_up(num_steps)
   end
 end

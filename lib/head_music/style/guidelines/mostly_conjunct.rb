@@ -25,6 +25,7 @@ class HeadMusic::Style::Guidelines::MostlyConjunct < HeadMusic::Style::Annotatio
 
   def conjunct_ratio
     return 1 if melodic_intervals.empty?
+
     melodic_intervals.count(&:step?).to_f / melodic_intervals.length
   end
 end

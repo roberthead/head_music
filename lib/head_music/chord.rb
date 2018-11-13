@@ -6,6 +6,7 @@ class HeadMusic::Chord
 
   def initialize(pitches)
     raise ArgumentError if pitches.length < 3
+
     @pitches = pitches.map { |pitch| HeadMusic::Pitch.get(pitch) }.sort
   end
 
@@ -15,17 +16,20 @@ class HeadMusic::Chord
 
   def root_triad?
     return false unless triad?
+
     intervals.map(&:shorthand).sort == %w[M3 m3]
   end
 
   # TODO: look up definition of first and second inversion triads. Can they be spread?
   def first_inversion_triad?
     return false unless triad?
+
     invert.invert.intervals.map(&:shorthand).sort == %w[M3 m3]
   end
 
   def second_inversion_triad?
     return false unless triad?
+
     invert.intervals.map(&:shorthand).sort == %w[M3 m3]
   end
 

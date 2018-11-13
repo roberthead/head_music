@@ -61,7 +61,7 @@ class HeadMusic::FunctionalInterval
     end
 
     def higher_letter
-      HeadMusic::Pitch.middle_c.letter_name.steps(steps)
+      HeadMusic::Pitch.middle_c.letter_name.steps_up(steps)
     end
   end
 
@@ -306,7 +306,12 @@ class HeadMusic::FunctionalInterval
 
   def above(pitch)
     pitch = HeadMusic::Pitch.get(pitch)
-    HeadMusic::Pitch.from_number_and_letter(pitch + semitones, pitch.letter_name.steps(number - 1))
+    HeadMusic::Pitch.from_number_and_letter(pitch + semitones, pitch.letter_name.steps_up(number - 1))
+  end
+
+  def below(pitch)
+    pitch = HeadMusic::Pitch.get(pitch)
+    HeadMusic::Pitch.from_number_and_letter(pitch - semitones, pitch.letter_name.steps_down(number - 1))
   end
 
   def <=>(other)

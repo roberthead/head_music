@@ -8,7 +8,7 @@ Metrics/BlockLength:
     - 'spec/**/*.rb'
 
 Metrics/ClassLength:
-  Max: 150
+  Max: 155
 
 Metrics/LineLength:
   Max: 120
@@ -27,3 +27,6 @@ Style/TrailingCommaInHashLiteral:
 
 AllCops:
   TargetRubyVersion: 2.4
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false

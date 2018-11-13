@@ -82,8 +82,10 @@ class HeadMusic::MelodicInterval
 
   def spells_consonant_triad_with?(other_interval)
     return false if step? || other_interval.step?
+
     combined_pitches = (pitches + other_interval.pitches).uniq
     return false if combined_pitches.length < 3
+
     HeadMusic::Chord.new(combined_pitches).consonant_triad?
   end
 

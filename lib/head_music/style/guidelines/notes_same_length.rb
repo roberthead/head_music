@@ -53,6 +53,7 @@ class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotati
 
   def most_common_rhythmic_values
     return [] if notes.empty?
+
     occurrences = occurrences_by_rhythmic_value
     highest_count = occurrences.values.max
     occurrences.select { |_rhythmic_value, count| count == highest_count }.keys

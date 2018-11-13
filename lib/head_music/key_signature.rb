@@ -15,6 +15,7 @@ class HeadMusic::KeySignature
 
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::KeySignature)
+
     @key_signatures ||= {}
     tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
     hash_key = HeadMusic::Utilities::HashKey.for(identifier.gsub(/#|♯/, ' sharp').gsub(/(\w)[b♭]/, '\\1 flat'))

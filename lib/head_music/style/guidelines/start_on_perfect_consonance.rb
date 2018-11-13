@@ -9,6 +9,7 @@ class HeadMusic::Style::Guidelines::StartOnPerfectConsonance < HeadMusic::Style:
 
   def marks
     return unless first_note && ((bass_voice? && !starts_on_tonic?) || !starts_on_perfect_consonance?)
+
     HeadMusic::Style::Mark.for(first_note)
   end
 

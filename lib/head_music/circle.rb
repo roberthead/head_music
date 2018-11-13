@@ -37,6 +37,7 @@ class HeadMusic::Circle
       loop do
         next_pitch_class = list.last + interval
         break if next_pitch_class == list.first
+
         list << next_pitch_class
       end
     end

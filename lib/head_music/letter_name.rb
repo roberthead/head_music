@@ -31,6 +31,7 @@ class HeadMusic::LetterName
   def self.from_pitch_class(pitch_class)
     @letter_names ||= {}
     return nil if pitch_class.to_s == pitch_class
+
     pitch_class = pitch_class.to_i % 12
     name = NAMES.detect { |candidate| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[candidate] }
     name ||= HeadMusic::PitchClass::SHARP_SPELLINGS[pitch_class].first
@@ -59,8 +60,12 @@ class HeadMusic::LetterName
     NAMES.index(to_s) + 1
   end
 
-  def steps(num)
-    HeadMusic::LetterName.get(cycle[num % NAMES.length])
+  def steps_up(num)
+    HeadMusic::LetterName.get(series_ascending[num % NAMES.length])
+  end
+
+  def steps_down(num)
+    HeadMusic::LetterName.get(series_descending[num % NAMES.length])
   end
 
   def steps_to(other, direction = :ascending)
@@ -75,11 +80,19 @@ class HeadMusic::LetterName
     end
   end
 
-  def cycle
-    @cycle ||= begin
-      cycle = NAMES
-      cycle = cycle.rotate while cycle.first != to_s
-      cycle
+  def series_ascending
+    @series_ascending ||= begin
+      series = NAMES
+      series = series.rotate while series.first != to_s
+      series
+    end
+  end
+
+  def series_descending
+    @series_descending ||= begin
+      series = NAMES.reverse
+      series = series.rotate while series.first != to_s
+      series
     end
   end
 

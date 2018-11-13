@@ -24,6 +24,7 @@ class HeadMusic::GrandStaff
     @grand_staves ||= {}
     hash_key = HeadMusic::Utilities::HashKey.for(name)
     return nil unless GRAND_STAVES.key?(hash_key)
+
     @grand_staves[hash_key] ||= new(hash_key)
   end
 

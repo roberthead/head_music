@@ -241,4 +241,9 @@ describe HeadMusic::FunctionalInterval do
     specify { expect(described_class.get(:perfect_fifth).above('C4')).to eq 'G4' }
     specify { expect(described_class.get(:major_third).above('A4')).to eq 'C#5' }
   end
+
+  describe 'below' do
+    specify { expect(described_class.get(:perfect_fifth).below('G4')).to eq 'C4' }
+    specify { expect(described_class.get(:major_third).below('C#5')).to eq 'A4' }
+  end
 end

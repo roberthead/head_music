@@ -92,11 +92,13 @@ class HeadMusic::Voice
 
   def earliest_bar_number
     return 1 if notes.empty?
+
     placements.first.position.bar_number
   end
 
   def latest_bar_number
     return 1 if notes.empty?
+
     placements.last.position.bar_number
   end
 

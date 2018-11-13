@@ -33,7 +33,7 @@ class HeadMusic::Placement
   end
 
   def to_s
-    "#{rhythmic_value} #{pitch ? pitch : 'rest'} at #{position}"
+    "#{rhythmic_value} #{pitch.presence || 'rest'} at #{position}"
   end
 
   private

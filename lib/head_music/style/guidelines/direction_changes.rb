@@ -7,6 +7,7 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::DirectionChanges < HeadMusic::Style::Annotation
   def marks
     return unless overage.positive?
+
     penalty_exponent = overage**0.5
     HeadMusic::Style::Mark.for_all(notes, fitness: HeadMusic::PENALTY_FACTOR**penalty_exponent)
   end
@@ -15,6 +16,7 @@ class HeadMusic::Style::Guidelines::DirectionChanges < HeadMusic::Style::Annotat
 
   def overage
     return 0 if notes.length < 2
+
     [notes_per_direction - self.class.maximum_notes_per_direction, 0].max
   end
 

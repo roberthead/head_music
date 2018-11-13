@@ -29,6 +29,7 @@ class HeadMusic::RhythmicValue
 
   def self.dots_from_words(identifier)
     return 0 unless identifier.match?(/dotted/)
+
     modifier, = identifier.split(/_*dotted_*/)
     case modifier
     when /tripl\w/

@@ -49,15 +49,26 @@ describe HeadMusic::LetterName do
     specify { expect(described_class.from_pitch_class(12)).to eq 'C' }
   end
 
-  describe '#cycle' do
+  describe '#series_ascending' do
     subject(:letter_name) { described_class.get('D') }
 
-    its(:cycle) { is_expected.to eq %w[D E F G A B C] }
+    its(:series_ascending) { is_expected.to eq %w[D E F G A B C] }
   end
 
-  describe 'steps' do
-    specify { expect(described_class.get('C').steps(5)).to eq 'A' }
-    specify { expect(described_class.get('C').steps(8)).to eq 'D' }
+  describe '#series_descending' do
+    subject(:letter_name) { described_class.get('D') }
+
+    its(:series_descending) { is_expected.to eq %w[D C B A G F E] }
+  end
+
+  describe 'steps_up' do
+    specify { expect(described_class.get('C').steps_up(5)).to eq 'A' }
+    specify { expect(described_class.get('C').steps_up(8)).to eq 'D' }
+  end
+
+  describe 'steps_down' do
+    specify { expect(described_class.get('C').steps_down(5)).to eq 'E' }
+    specify { expect(described_class.get('C').steps_down(8)).to eq 'B' }
   end
 
   describe 'steps_to' do

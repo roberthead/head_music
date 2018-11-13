@@ -44,6 +44,7 @@ class HeadMusic::HarmonicInterval
 
   def pitch_orientation
     return if lower_pitch == upper_pitch
+
     if lower_note.voice == voice1
       :up
     elsif lower_note.voice == voice2

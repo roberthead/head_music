@@ -9,6 +9,7 @@ class HeadMusic::Style::Guidelines::StepDownToFinalNote < HeadMusic::Style::Anno
 
   def marks
     return if last_melodic_interval.nil?
+
     fitness = 1
     fitness *= HeadMusic::PENALTY_FACTOR unless step?
     fitness *= HeadMusic::PENALTY_FACTOR unless descending?

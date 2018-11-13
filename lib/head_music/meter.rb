@@ -67,6 +67,7 @@ class HeadMusic::Meter
     return 80 if strong_beat?(count, tick)
     return 60 if beat?(tick)
     return 40 if strong_ticks.include?(tick)
+
     20
   end
 

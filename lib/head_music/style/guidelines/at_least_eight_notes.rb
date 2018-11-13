@@ -25,6 +25,7 @@ class HeadMusic::Style::Guidelines::AtLeastEightNotes < HeadMusic::Style::Annota
 
   def deficiency_mark
     return unless notes.length < MINIMUM_NOTES
+
     HeadMusic::Style::Mark.for_all(placements, fitness: notes.length.to_f / MINIMUM_NOTES)
   end
 end

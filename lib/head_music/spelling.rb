@@ -4,7 +4,7 @@
 # Composite of a LetterName and an optional Sign.
 # Does not include the octave. See Pitch for that.
 class HeadMusic::Spelling
-  MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(\-?\d+)?\s*$/i
+  MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(\-?\d+)?\s*$/i.freeze
 
   attr_reader :pitch_class
   attr_reader :letter_name
@@ -12,11 +12,12 @@ class HeadMusic::Spelling
 
   delegate :number, to: :pitch_class, prefix: true
   delegate :to_i, to: :pitch_class_number
-  delegate :cycle, to: :letter_name, prefix: true
+  delegate :series_ascending, :series_descending, to: :letter_name, prefix: true
   delegate :enharmonic?, to: :enharmonic_equivalence
 
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::Spelling)
+
     from_name(identifier) || from_number(identifier)
   end
 
@@ -26,15 +27,18 @@ class HeadMusic::Spelling
 
   def self.from_name(name)
     return nil unless matching_string(name)
+
     letter_name, sign_string, _octave = matching_string(name).captures
     letter_name = HeadMusic::LetterName.get(letter_name)
     return nil unless letter_name
+
     sign = HeadMusic::Sign.get(sign_string)
     fetch_or_create(letter_name, sign)
   end
 
   def self.from_number(number)
     return nil unless number == number.to_i
+
     pitch_class_number = number.to_i % 12
     letter_name = HeadMusic::LetterName.from_pitch_class(pitch_class_number)
     from_number_and_letter(number, letter_name)

@@ -147,10 +147,16 @@ describe HeadMusic::Pitch do
     end
   end
 
-  describe '#letter_name_cycle' do
+  describe '#letter_name_series_ascending' do
     subject(:pitch) { described_class.get('D') }
 
-    its(:letter_name_cycle) { is_expected.to eq %w[D E F G A B C] }
+    its(:letter_name_series_ascending) { is_expected.to eq %w[D E F G A B C] }
+  end
+
+  describe '#letter_name_series_descending' do
+    subject(:pitch) { described_class.get('D') }
+
+    its(:letter_name_series_descending) { is_expected.to eq %w[D C B A G F E] }
   end
 
   describe '#octave_equivalent?' do
@@ -201,6 +207,14 @@ describe HeadMusic::Pitch do
     context 'when subtracting a pitch' do
       it 'returns the interval' do
         expect(pitch - described_class.get('B4')).to eq 10
+      end
+    end
+
+    context 'when subtracting a functional interval' do
+      it 'returns the new pitch' do
+        expect(pitch - HeadMusic::FunctionalInterval.get(:major_sixth)).to eq 'C5'
+        expect(pitch - HeadMusic::FunctionalInterval.get(:minor_sixth)).to eq 'C#5'
+        expect(pitch - HeadMusic::FunctionalInterval.get(:augmented_fifth)).to eq 'Db5'
       end
     end
   end

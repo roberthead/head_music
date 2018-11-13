@@ -45,6 +45,7 @@ class HeadMusic::RhythmicUnit
     return :longa if relative_value == 4
     return :breve if relative_value == 2
     return :open if [0.5, 1].include? relative_value
+
     :closed
   end
 

@@ -30,6 +30,7 @@ class HeadMusic::Sign
 
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::Sign)
+
     all.detect do |sign|
       sign.representions.include?(identifier)
     end
