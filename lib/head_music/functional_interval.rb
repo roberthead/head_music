@@ -41,7 +41,7 @@ class HeadMusic::FunctionalInterval
     attr_reader :identifier
 
     def initialize(identifier)
-      @identifier = identifier
+      @identifier = expand(identifier)
     end
 
     def words
@@ -62,6 +62,25 @@ class HeadMusic::FunctionalInterval
 
     def higher_letter
       HeadMusic::Pitch.middle_c.letter_name.steps_up(steps)
+    end
+
+    def expand(identifier)
+      if identifier =~ /[A-Z]\d{1,2}/i
+        number = NUMBER_NAMES[identifier.gsub(/[A-Z]/i, '').to_i - 1]
+        if identifier =~ /P/i
+          quality = 'perfect'
+        elsif identifier =~ /M/
+          quality = 'major'
+        elsif identifier =~ /m/
+          quality = 'minor'
+        elsif identifier =~ /d/i
+          quality = 'diminished'
+        elsif identifier =~ /A/i
+          quality = 'augmented'
+        end
+        return [quality, number].join('_').to_sym
+      end
+      return identifier
     end
   end
 

@@ -39,12 +39,13 @@ Don't need anything beyond seventh chords to analyze pre-Romantic music.
 
 ## User stories
 
+
+### Done
+
     As a developer
     When instantiating a FunctionalInterval
     When passing an abbreviation, such as 'P5' or 'm2'
     I want to receive that instance.
-
-### Done
 
     As a developer
     Given a pitch
