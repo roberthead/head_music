@@ -4,17 +4,16 @@ require 'spec_helper'
 
 describe HeadMusic::Tuning do
   it { is_expected.to respond_to(:reference_pitch) }
-  it { is_expected.to respond_to(:reference_frequency) }
+  it { is_expected.to respond_to(:reference_pitch_pitch) }
+  it { is_expected.to respond_to(:reference_pitch_frequency) }
 
   context 'when not given any arguments' do
-    subject { described_class.new }
+    subject(:tuning) { described_class.new }
 
-    its(:reference_pitch) { is_expected.to eq 'A4' }
-    its(:reference_frequency) { is_expected.to eq 440.0 }
+    its(:reference_pitch_pitch) { is_expected.to eq 'A4' }
+    its(:reference_pitch_frequency) { is_expected.to eq 440.0 }
 
     describe '#frequency_for' do
-      let(:tuning) { described_class.new }
-
       subject { tuning.frequency_for(pitch_name) }
 
       context 'C4' do
@@ -45,6 +44,23 @@ describe HeadMusic::Tuning do
         let(:pitch_name) { 'C-1' }
 
         it { is_expected.to be_within(0.01).of(8.175) }
+      end
+    end
+  end
+
+  context 'when set to A4=415' do
+    subject(:tuning) { described_class.new(reference_pitch: HeadMusic::ReferencePitch.modern_baroque) }
+
+    its(:reference_pitch_pitch) { is_expected.to eq 'A4' }
+    its(:reference_pitch_frequency) { is_expected.to eq 415.0 }
+
+    describe '#frequency_for' do
+      subject { tuning.frequency_for(pitch_name) }
+
+      context 'C4' do
+        let(:pitch_name) { 'C4' }
+
+        it { is_expected.to be_within(0.001).of(246.76) }
       end
     end
   end
