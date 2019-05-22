@@ -11,6 +11,8 @@ describe HeadMusic::ReferencePitch do
 
     its(:pitch) { is_expected.to eq 'A4' }
     its(:frequency) { is_expected.to eq 440.0 }
+    its(:description) { is_expected.to eq 'A=440' }
+    its(:to_s) { is_expected.to eq 'A=440' }
   end
 
   context '.a440' do
@@ -18,6 +20,7 @@ describe HeadMusic::ReferencePitch do
 
     its(:pitch) { is_expected.to eq 'A4' }
     its(:frequency) { is_expected.to eq 440.0 }
+    its(:description) { is_expected.to eq 'A=440' }
   end
 
   context '.scientific' do
@@ -25,6 +28,7 @@ describe HeadMusic::ReferencePitch do
 
     its(:pitch) { is_expected.to eq 'C4' }
     its(:frequency) { is_expected.to eq 256.0 }
+    its(:description) { is_expected.to eq 'C=256' }
   end
 
   context '.french' do
@@ -32,5 +36,14 @@ describe HeadMusic::ReferencePitch do
 
     its(:pitch) { is_expected.to eq 'A4' }
     its(:frequency) { is_expected.to eq 435 }
+    its(:description) { is_expected.to eq 'A=435' }
+  end
+
+  context '.old_philharmonic' do
+    subject(:tuning) { described_class.old_philharmonic }
+
+    its(:pitch) { is_expected.to eq 'A4' }
+    its(:frequency) { is_expected.to eq 452.4 }
+    its(:description) { is_expected.to eq 'A=452.4' }
   end
 end

@@ -13,6 +13,14 @@ class HeadMusic::ReferencePitch
     @frequency = frequency || DEFAULT_FREQUENCY
   end
 
+  def description
+    [pitch.letter_name, '%g' % ('%.2f' % frequency)].join('=')
+  end
+
+  def to_s
+    description
+  end
+
   # Also known as the modern pitch standard, concert pitch, Stuttgart pitch, Scheibler pitch, and ISO 16
   def self.a440
     @a440 ||= new(frequency: 440.0)
@@ -33,7 +41,7 @@ class HeadMusic::ReferencePitch
     @new_philharmonic ||= new(frequency: 439.0)
   end
 
-  # Also called philosophic pitch
+  # Also called philosophic pitch, Sauveur pitch, or Verdi tuning
   def self.scientific
     @scientific ||= new(pitch: 'C4', frequency: 256.0)
   end
