@@ -23,8 +23,12 @@ Dyad
     - returns major and minor if a perfect fifth
     - returns minor and diminished if minor third
     - returns major and augmented if major third
+    - returns augmented if augmented fifth
+    - returns diminished if diminished fifth
+    - should it take into account enharmonics? I think yes.
   .possible_seventh_chords
-    - ...
+    - as above, with either seventh added
+    - returns 3rd inversion if second
 
 the dyad will be super helpful in analyzing two-part counterpoint.
 
