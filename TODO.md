@@ -14,6 +14,17 @@ T (neutral or restless)
 
 Make a new basic class called a PitchGroup, which can be analyzed as a dyad, triad, larger chord, etc.
 Replaces Chord?
+PitchList? Does it need to be ordered? I think yes, groups of pitches are inherently sortable from low to high. In which case PitchGroup is fine.
+A PitchGroup is unlike a Pitch Set in that the pitches have spellings with octaves rather than octave-less 0-11 designations.
+
+PitchGroup
+.size?
+.single_pitch?
+.dyad?
+.triad? (must be stacked thirds to be a 'triad')
+
+Should every group of pitches have one or more strategies for describing it? Such as Dyad?
+
 
 Make new analysis classes:
 Dyad
@@ -29,6 +40,11 @@ Dyad
   .possible_seventh_chords
     - as above, with either seventh added
     - returns 3rd inversion if second
+  .possible_chords
+    possible_triads + possible_seventh_chords
+  .possible_enharmonic_triads
+  .possible_enharmonic_seventh_chords
+  .possible_enharmonic_chords
 
 the dyad will be super helpful in analyzing two-part counterpoint.
 
