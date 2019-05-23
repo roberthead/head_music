@@ -3,64 +3,85 @@
 # A reference pitch has a pitch and a frequency
 # With no arguments, it assumes that A4 = 440.0 Hz
 class HeadMusic::ReferencePitch
+  include HeadMusic::NamedRudiment
+
   DEFAULT_PITCH_NAME = 'A4'
   DEFAULT_FREQUENCY = 440.0
 
+  NAMED_REFERENCE_PITCHES = [
+    { name: 'Baroque', pitch: 'A4', frequency: 415.0 },
+    { name: 'Classical', pitch: 'A4', frequency: 430.0 },
+    { name: 'Scientific', pitch: 'C4', frequency: 256.0 },
+    { name: 'Verdi', pitch: 'A4', frequency: 432.0 }, # Pythagorean tuning
+    { name: 'French', pitch: 'A4', frequency: 435.0 },
+    { name: 'New Philharmonic', pitch: 'A4', frequency: 439.0 },
+    { name: 'A440', pitch: 'A4', frequency: 440.0 },
+    { name: 'Sydney Symphony Orchestra', pitch: 'A4', frequency: 441.0 },
+    { name: 'New York Philharmonic', pitch: 'A4', frequency: 442.0 },
+    { name: 'Berlin Philharmonic', pitch: 'A4', frequency: 443.0 },
+    { name: 'Boston Symphony Orchestra', pitch: 'A4', frequency: 444.0 },
+    { name: 'Old Philharmonic', pitch: 'A4', frequency: 452.4 },
+    { name: 'Chorton', pitch: 'A4', frequency: 466.0 },
+  ].freeze
+
+  ALIASES = {
+    kammerton: :baroque,
+    chamber: :baroque,
+    haydn: :classical,
+    mozart: :classical,
+    philosophic: :scientific,
+    sauveur: :scientific,
+    schiller: :scientific,
+    continental: :french,
+    international: :french,
+    low: :new_philharmonic,
+    concert: :a440,
+    stuttgart: :a440,
+    scheibler: :a440,
+    iso_16: :a440,
+    high: :old_philharmonic,
+    choir: :chorton,
+  }.freeze
+
+  NAMED_REFERENCE_PITCH_NAMES = NAMED_REFERENCE_PITCHES.map { |pitch_data| pitch_data[:name] }
+
   attr_reader :pitch, :frequency
 
-  def initialize(pitch: nil, frequency: nil)
-    @pitch = HeadMusic::Pitch.get(pitch || DEFAULT_PITCH_NAME)
-    @frequency = frequency || DEFAULT_FREQUENCY
+  def self.get(name)
+    return name if name.is_a?(self)
+    get_by_name(name)
+  end
+
+  def initialize(name = 'A440')
+    @name = name.to_s
+    reference_pitch_data = NAMED_REFERENCE_PITCHES.detect do |candidate|
+      candidate_name_key = HeadMusic::Utilities::HashKey.for(candidate[:name])
+      [candidate_name_key, candidate_name_key.to_s.delete('_').to_sym].include?(normalized_name)
+    end || {}
+    @pitch = HeadMusic::Pitch.get(reference_pitch_data.fetch(:pitch, DEFAULT_PITCH_NAME))
+    @frequency = reference_pitch_data.fetch(:frequency, DEFAULT_FREQUENCY)
   end
 
   def description
-    [pitch.letter_name, '%g' % ('%.2f' % frequency)].join('=')
+    [
+      pitch.letter_name,
+      format(
+        '%<with_digits>g',
+        with_digits: format('%.2f', frequency)
+      ),
+    ].join('=')
   end
 
   def to_s
     description
   end
 
-  # Also known as the modern pitch standard, concert pitch, Stuttgart pitch, Scheibler pitch, and ISO 16
-  def self.a440
-    @a440 ||= new(frequency: 440.0)
-  end
+  private
 
-  # The pitch standard established by French law in 1859. Also called continental pitch and international pitch.
-  def self.french
-    @french ||= new(frequency: 435.0)
-  end
-
-  # British standard in mid-19th century. Also called high pitch.
-  def self.old_philharmonic
-    @old_philharmonic ||= new(frequency: 452.4)
-  end
-
-  # British standard in 1896. Also called low pitch.
-  def self.new_philharmonic
-    @new_philharmonic ||= new(frequency: 439.0)
-  end
-
-  # Also called philosophic pitch, Sauveur pitch, or Verdi tuning
-  def self.scientific
-    @scientific ||= new(pitch: 'C4', frequency: 256.0)
-  end
-
-  # the Schiller Institute's recommended tuning for A of 432 Hz[7][8] is for the Pythagorean ratio of 27:16, rather than the logarithmic ratio of equal temperament tuning.
-  def self.schiller
-    @schiller ||= new(frequency: 432.0)
-  end
-
-  # used by modern period instrument groups
-  def self.modern_baroque
-    @modern_baroque ||= new(frequency: 415.0)
-  end
-
-  def self.modern_new_york_philharmonic
-    @new_york_philharmonic ||= new(frequency: 442.0)
-  end
-
-  def self.modern_european_symphonic
-    @european_symphonic ||= new(frequency: 443.0)
+  def normalized_name
+    @normalized_name ||= begin
+      key = HeadMusic::Utilities::HashKey.for(name.to_s.gsub(/\W?(pitch|tuning|tone)/, ''))
+      ALIASES[key] || key
+    end
   end
 end

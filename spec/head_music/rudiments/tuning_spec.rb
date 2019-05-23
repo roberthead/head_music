@@ -48,8 +48,25 @@ describe HeadMusic::Tuning do
     end
   end
 
-  context 'when set to A4=415' do
-    subject(:tuning) { described_class.new(reference_pitch: HeadMusic::ReferencePitch.modern_baroque) }
+  context 'when passed the baroque name reference pitch' do
+    subject(:tuning) { described_class.new(reference_pitch: HeadMusic::ReferencePitch.get('baroque')) }
+
+    its(:reference_pitch_pitch) { is_expected.to eq 'A4' }
+    its(:reference_pitch_frequency) { is_expected.to eq 415.0 }
+
+    describe '#frequency_for' do
+      subject { tuning.frequency_for(pitch_name) }
+
+      context 'C4' do
+        let(:pitch_name) { 'C4' }
+
+        it { is_expected.to be_within(0.001).of(246.76) }
+      end
+    end
+  end
+
+  context 'when passed the name of the baroque reference pitch' do
+    subject(:tuning) { described_class.new(reference_pitch: 'baroque') }
 
     its(:reference_pitch_pitch) { is_expected.to eq 'A4' }
     its(:reference_pitch_frequency) { is_expected.to eq 415.0 }

@@ -54,12 +54,12 @@ describe HeadMusic::FunctionalInterval do
       specify { expect(p15.simple_number).to eq 8 }
       specify { expect(p15.quality_name).to eq 'perfect' }
 
-      specify { expect(described_class.get('P5').name).to eq 'perfect fifth'}
-      specify { expect(described_class.get('M3').name).to eq 'major third'}
-      specify { expect(described_class.get('m3').name).to eq 'minor third'}
-      specify { expect(described_class.get('A4').name).to eq 'augmented fourth'}
-      specify { expect(described_class.get('d5').name).to eq 'diminished fifth'}
-      specify { expect(described_class.get('M10').name).to eq 'major tenth'}
+      specify { expect(described_class.get('P5').name).to eq 'perfect fifth' }
+      specify { expect(described_class.get('M3').name).to eq 'major third' }
+      specify { expect(described_class.get('m3').name).to eq 'minor third' }
+      specify { expect(described_class.get('A4').name).to eq 'augmented fourth' }
+      specify { expect(described_class.get('d5').name).to eq 'diminished fifth' }
+      specify { expect(described_class.get('M10').name).to eq 'major tenth' }
     end
   end
 

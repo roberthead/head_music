@@ -7,8 +7,8 @@ class HeadMusic::Tuning
 
   delegate :pitch, :frequency, to: :reference_pitch, prefix: true
 
-  def initialize(reference_pitch: nil)
-    @reference_pitch = reference_pitch || HeadMusic::ReferencePitch.a440
+  def initialize(reference_pitch: :a440)
+    @reference_pitch = HeadMusic::ReferencePitch.get(reference_pitch)
   end
 
   def frequency_for(pitch)

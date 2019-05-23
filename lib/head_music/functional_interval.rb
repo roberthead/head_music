@@ -31,6 +31,14 @@ class HeadMusic::FunctionalInterval
     seventeenth: { major: 28 },
   }.freeze
 
+  QUALITY_ABBREVIATIONS = {
+    P: 'perfect',
+    M: 'major',
+    m: 'minor',
+    d: 'diminished',
+    A: 'augmented',
+  }.freeze
+
   attr_reader :lower_pitch, :higher_pitch
 
   delegate :to_s, to: :name
@@ -65,22 +73,17 @@ class HeadMusic::FunctionalInterval
     end
 
     def expand(identifier)
-      if identifier =~ /[A-Z]\d{1,2}/i
+      if /[A-Z]\d{1,2}/i.match?(identifier)
         number = NUMBER_NAMES[identifier.gsub(/[A-Z]/i, '').to_i - 1]
-        if identifier =~ /P/i
-          quality = 'perfect'
-        elsif identifier =~ /M/
-          quality = 'major'
-        elsif identifier =~ /m/
-          quality = 'minor'
-        elsif identifier =~ /d/i
-          quality = 'diminished'
-        elsif identifier =~ /A/i
-          quality = 'augmented'
-        end
-        return [quality, number].join('_').to_sym
+        return [quality_for(identifier[0]), number].join('_').to_sym
       end
-      return identifier
+      identifier
+    end
+
+    def quality_for(abbreviation)
+      QUALITY_ABBREVIATIONS[abbreviation.to_sym] ||
+        QUALITY_ABBREVIATIONS[abbreviation.upcase.to_sym] ||
+        QUALITY_ABBREVIATIONS[abbreviation.downcase.to_sym]
     end
   end
 
