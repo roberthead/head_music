@@ -2,6 +2,8 @@
 
 # A pitch class is a set of pitches separated by octaves.
 class HeadMusic::PitchClass
+  include Comparable
+
   attr_reader :number
   attr_reader :spelling
 
@@ -57,6 +59,10 @@ class HeadMusic::PitchClass
     to_i == other.to_i
   end
   alias enharmonic? ==
+
+  def <=>(other)
+    to_i <=> other.to_i
+  end
 
   def intervals_to(other)
     delta = other.to_i - to_i

@@ -1,8 +1,5 @@
 # TODO
 
-dyad
-triad
-
 open consonance (P5 P8)
 soft consonance (m3 M3 m6 M6)
 mild dissonance (M2 m7)
@@ -12,20 +9,51 @@ P4 (consonant or dissonant)
 T (neutral or restless)
 
 
-Make a new basic class called a PitchGroup, which can be analyzed as a dyad, triad, larger chord, etc.
-Replaces Chord?
-PitchList? Does it need to be ordered? I think yes, groups of pitches are inherently sortable from low to high. In which case PitchGroup is fine.
-A PitchGroup is unlike a Pitch Set in that the pitches have spellings with octaves rather than octave-less 0-11 designations.
+PitchSet
+PitchSet::Analysis
 
-PitchGroup
+Replaces Chord
+
+A PitchSet is unlike a PitchClassSet in that the pitches have spellings with octaves rather than Spellings only or octave-less 0-11 designations.
+
+PitchSet
 .size?
-.single_pitch?
+.monad?
 .dyad?
 .triad? (must be stacked thirds to be a 'triad')
+.trichord? (all 3-pitch sets)
 
 Should every group of pitches have one or more strategies for describing it? Such as Dyad?
 
 
+
+Set (superclass?)
+PitchSet
+  EmptySet
+  Monad
+  Dyad
+  Trichord (or Triad)
+    - triad?
+  Tetrachord (or Tetrad)
+    - seventh_chord?
+  Pentachord (or Pentad)
+  Hexachord (or Hexad)
+  Heptachords (or Heptad or, sometimes, mixing Latin and Greek roots, "Septachord")
+  Octachords (Octad)
+  Nonachords (Nonad)
+  Decachords (Decad)
+  Undecachords
+  Dodecachord
+
+PitchClassSet
+  .normal_form? (most compact)
+  .prime_form (most compact normal form of the original or any inversion)
+PitchCollection is a superset of Scale? No. PitchCollection is synonymous with PitchSet
+
+DurationSet?
+
+PitchSetAnalysis
+- Strategy pattern
 Make new analysis classes:
 Dyad
   .interval
