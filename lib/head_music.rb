@@ -20,7 +20,6 @@ require 'head_music/utilities/hash_key'
 require 'head_music/named_rudiment'
 
 # rudiments
-require 'head_music/chord'
 require 'head_music/circle'
 require 'head_music/clef'
 require 'head_music/consonance'
