@@ -34,7 +34,7 @@ class HeadMusic::PitchSet
   end
 
   def invert
-    inverted_pitch = pitches[0] + HeadMusic::Interval.get(12)
+    inverted_pitch = pitches[0] + HeadMusic::FunctionalInterval.get('perfect octave')
     new_pitches = pitches.drop(1) + [inverted_pitch]
     HeadMusic::PitchSet.new(new_pitches)
   end
@@ -83,6 +83,14 @@ class HeadMusic::PitchSet
     [%w[m3 M3], %w[M3 P4], %w[P4 m3]].include? reduction_intervals.map(&:shorthand)
   end
 
+  def diminished_triad?
+    [%w[m3 m3], %w[m3 A4], %w[A4 m3]].include? reduction_intervals.map(&:shorthand)
+  end
+
+  def augmented_triad?
+    [%w[M3 M3], %w[M3 d4], %w[d4 M3]].include? reduction_intervals.map(&:shorthand)
+  end
+
   def root_triad?
     trichord? && reduction_intervals.all?(&:third?)
   end
@@ -93,6 +101,29 @@ class HeadMusic::PitchSet
 
   def second_inversion_triad?
     trichord? && reduction.invert.intervals.all?(&:third?)
+  end
+
+  def seventh_chord?
+    root_position_seventh_chord? ||
+      first_inversion_seventh_chord? ||
+      second_inversion_seventh_chord? ||
+      third_inversion_seventh_chord?
+  end
+
+  def root_position_seventh_chord?
+    tetrachord? && reduction_intervals.all?(&:third?)
+  end
+
+  def first_inversion_seventh_chord?
+    tetrachord? && reduction.invert.invert.invert.intervals.all?(&:third?)
+  end
+
+  def second_inversion_seventh_chord?
+    tetrachord? && reduction.invert.invert.intervals.all?(&:third?)
+  end
+
+  def third_inversion_seventh_chord?
+    tetrachord? && reduction.invert.intervals.all?(&:third?)
   end
 
   private
