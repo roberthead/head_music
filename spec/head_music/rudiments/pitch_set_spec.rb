@@ -369,6 +369,9 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_second_inversion_seventh_chord }
         it { is_expected.to be_third_inversion_seventh_chord }
         it { is_expected.to be_tertial }
+        it { is_expected.not_to be_ninth_chord }
+        it { is_expected.not_to be_eleventh_chord }
+        it { is_expected.not_to be_thirteenth_chord }
       end
     end
 
@@ -380,6 +383,8 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_seventh_chord }
         it { is_expected.to be_ninth_chord }
         it { is_expected.to be_tertial }
+        it { is_expected.not_to be_eleventh_chord }
+        it { is_expected.not_to be_thirteenth_chord }
       end
 
       context 'given a spread ninth chord with the 7th in the bass' do
@@ -389,6 +394,47 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_seventh_chord }
         it { is_expected.to be_ninth_chord }
         it { is_expected.to be_tertial }
+        it { is_expected.not_to be_eleventh_chord }
+        it { is_expected.not_to be_thirteenth_chord }
+      end
+    end
+
+    context 'when the set has six pitch classes with six different letter names' do
+      context 'given an eleventh chord cluster' do
+        subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G]) }
+
+        it { is_expected.to be_tertial }
+        it { is_expected.not_to be_triad }
+        it { is_expected.not_to be_seventh_chord }
+        it { is_expected.not_to be_ninth_chord }
+        it { is_expected.to be_eleventh_chord }
+        it { is_expected.not_to be_thirteenth_chord }
+      end
+    end
+
+    context 'when the set has seven pitch classes with seven different letter names' do
+      context 'given an eleventh chord cluster' do
+        subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G A]) }
+
+        it { is_expected.to be_tertial }
+        it { is_expected.not_to be_triad }
+        it { is_expected.not_to be_seventh_chord }
+        it { is_expected.not_to be_ninth_chord }
+        it { is_expected.not_to be_eleventh_chord }
+        it { is_expected.to be_thirteenth_chord }
+      end
+    end
+
+    context 'when the set has eight pitch classes with seven different letter names' do
+      context 'given an eleventh chord cluster' do
+        subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G# A]) }
+
+        it { is_expected.not_to be_tertial }
+        it { is_expected.not_to be_triad }
+        it { is_expected.not_to be_seventh_chord }
+        it { is_expected.not_to be_ninth_chord }
+        it { is_expected.not_to be_eleventh_chord }
+        it { is_expected.not_to be_thirteenth_chord }
       end
     end
   end

@@ -152,6 +152,14 @@ class HeadMusic::PitchSet
     pentachord? && tertial?
   end
 
+  def eleventh_chord?
+    hexachord? && tertial?
+  end
+
+  def thirteenth_chord?
+    heptachord? && tertial?
+  end
+
   def tertial?
     return false unless intervals.any?
 
