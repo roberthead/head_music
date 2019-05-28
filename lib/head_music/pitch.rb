@@ -64,7 +64,8 @@ class HeadMusic::Pitch
 
   def self.natural_letter_pitch(number, letter_name)
     natural_letter_pitch = get(HeadMusic::LetterName.get(letter_name).pitch_class)
-    natural_letter_pitch += 12 while (number - natural_letter_pitch.to_i).to_i >= 11
+    natural_letter_pitch += 12 while (number.to_i - natural_letter_pitch.to_i) >= 6
+    natural_letter_pitch -= 12 while (number.to_i - natural_letter_pitch.to_i) <= -6
     get(natural_letter_pitch)
   end
 

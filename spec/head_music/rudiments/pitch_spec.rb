@@ -35,10 +35,11 @@ describe HeadMusic::Pitch do
     end
   end
 
-  describe 'math' do
-    specify { expect(described_class.get(60) + 12).to eq 'C5' }
-    specify { expect(described_class.get('F#5') + 17).to eq 'B6' }
-    specify { expect(described_class.get('F#5') - 7).to eq 'B4' }
+  describe '.natural_letter_pitch' do
+    specify { expect(described_class.natural_letter_pitch(70, 'B')).to eq('B4') }
+    specify { expect(described_class.natural_letter_pitch(58, 'A')).to eq('A3') }
+    specify { expect(described_class.natural_letter_pitch(42, 'F')).to eq('F2') }
+    specify { expect(described_class.natural_letter_pitch(42, 'G')).to eq('G2') }
   end
 
   describe 'comparison' do
@@ -175,6 +176,10 @@ describe HeadMusic::Pitch do
     end
 
     context 'when adding an integer' do
+      specify { expect(described_class.get(60) + 12).to eq 'C5' }
+      specify { expect(described_class.get('F#5') + 17).to eq 'B6' }
+      specify { expect(described_class.get('F#5') - 7).to eq 'B4' }
+
       it 'returns the new pitch' do
         expect(pitch + 9).to eq 'F#5'
       end
