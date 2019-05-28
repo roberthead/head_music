@@ -120,7 +120,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.to be_root_triad }
+          it { is_expected.to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
           it { is_expected.to be_tertial }
@@ -131,7 +131,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.not_to be_root_triad }
+          it { is_expected.not_to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
           it { is_expected.to be_tertial }
@@ -142,7 +142,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.not_to be_root_triad }
+          it { is_expected.not_to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
           it { is_expected.to be_tertial }
@@ -153,7 +153,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.to be_root_triad }
+          it { is_expected.to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
           it { is_expected.to be_tertial }
@@ -164,7 +164,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.not_to be_root_triad }
+          it { is_expected.not_to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
           it { is_expected.to be_tertial }
@@ -177,7 +177,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.to be_root_triad }
+          it { is_expected.to be_root_position_triad }
           it { is_expected.not_to be_first_inversion_triad }
           it { is_expected.not_to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
@@ -191,7 +191,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.not_to be_root_triad }
+          it { is_expected.not_to be_root_position_triad }
           it { is_expected.to be_first_inversion_triad }
           it { is_expected.not_to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
@@ -204,7 +204,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.not_to be_root_triad }
+          it { is_expected.not_to be_root_position_triad }
           it { is_expected.not_to be_first_inversion_triad }
           it { is_expected.to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
@@ -217,7 +217,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.to be_root_triad }
+          it { is_expected.to be_root_position_triad }
           it { is_expected.not_to be_first_inversion_triad }
           it { is_expected.not_to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
@@ -230,7 +230,7 @@ describe HeadMusic::PitchSet do
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
-          it { is_expected.not_to be_root_triad }
+          it { is_expected.not_to be_root_position_triad }
           it { is_expected.not_to be_first_inversion_triad }
           it { is_expected.to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
@@ -245,7 +245,7 @@ describe HeadMusic::PitchSet do
 
         it { is_expected.to be_triad }
         it { is_expected.not_to be_consonant_triad }
-        it { is_expected.to be_root_triad }
+        it { is_expected.to be_root_position_triad }
         it { is_expected.not_to be_first_inversion_triad }
         it { is_expected.not_to be_second_inversion_triad }
         it { is_expected.not_to be_major_triad }
@@ -259,7 +259,7 @@ describe HeadMusic::PitchSet do
 
         it { is_expected.to be_triad }
         it { is_expected.not_to be_consonant_triad }
-        it { is_expected.not_to be_root_triad }
+        it { is_expected.not_to be_root_position_triad }
         it { is_expected.to be_first_inversion_triad }
         it { is_expected.not_to be_second_inversion_triad }
         it { is_expected.not_to be_major_triad }
@@ -274,7 +274,7 @@ describe HeadMusic::PitchSet do
 
         it { is_expected.to be_triad }
         it { is_expected.not_to be_consonant_triad }
-        it { is_expected.to be_root_triad }
+        it { is_expected.to be_root_position_triad }
         it { is_expected.not_to be_first_inversion_triad }
         it { is_expected.not_to be_second_inversion_triad }
         it { is_expected.not_to be_major_triad }
@@ -289,7 +289,7 @@ describe HeadMusic::PitchSet do
 
         it { is_expected.to be_triad }
         it { is_expected.not_to be_consonant_triad }
-        it { is_expected.not_to be_root_triad }
+        it { is_expected.not_to be_root_position_triad }
         it { is_expected.not_to be_first_inversion_triad }
         it { is_expected.to be_second_inversion_triad }
         it { is_expected.not_to be_major_triad }
@@ -303,7 +303,7 @@ describe HeadMusic::PitchSet do
         subject(:set) { HeadMusic::PitchSet.new(%w[C4 D4 F4]) }
 
         it { is_expected.not_to be_consonant_triad }
-        it { is_expected.not_to be_root_triad }
+        it { is_expected.not_to be_root_position_triad }
         it { is_expected.not_to be_first_inversion_triad }
         it { is_expected.not_to be_second_inversion_triad }
         it { is_expected.not_to be_major_triad }

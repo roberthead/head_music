@@ -97,7 +97,7 @@ class HeadMusic::PitchSet
     [%w[M3 M3], %w[M3 d4], %w[d4 M3]].include? reduction_intervals.map(&:shorthand)
   end
 
-  def root_triad?
+  def root_position_triad?
     trichord? && reduction_intervals.all?(&:third?)
   end
 
