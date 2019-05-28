@@ -3,6 +3,15 @@
 # A PitchSet is a collection of one or more pitches.
 # See also: PitchClassSet
 class HeadMusic::PitchSet
+  TERTIAL_SONORITIES = {
+    implied_triad: [3],
+    triad: [3, 5],
+    seventh_chord: [3, 5, 7],
+    ninth_chord: [2, 3, 5, 7],
+    eleventh_chord: [2, 3, 4, 5, 7],
+    thirteenth_chord: [2, 3, 4, 5, 6, 7],
+  }.freeze
+
   attr_reader :pitches
 
   delegate :intervals, to: :reduction, prefix: true
@@ -31,6 +40,16 @@ class HeadMusic::PitchSet
     @intervals ||= pitches.each_cons(2).map do |pitch_pair|
       HeadMusic::FunctionalInterval.new(*pitch_pair)
     end
+  end
+
+  def intervals_above_bass_pitch
+    @intervals_above_bass_pitch ||= pitches_above_bass_pitch.map do |pitch|
+      HeadMusic::FunctionalInterval.new(bass_pitch, pitch)
+    end
+  end
+
+  def pitches_above_bass_pitch
+    @pitches_above_bass_pitch ||= pitches[1..-1]
   end
 
   def invert
@@ -109,17 +128,6 @@ class HeadMusic::PitchSet
     trichord? && reduction.invert.intervals.all?(&:third?)
   end
 
-  def tertial?
-    return false unless intervals.any?
-
-    inversion = reduction
-    pitches.length.times do
-      return true if inversion.intervals.all?(&:third?)
-      inversion = inversion.invert
-    end
-    false
-  end
-
   def seventh_chord?
     tetrachord? && tertial?
   end
@@ -138,6 +146,25 @@ class HeadMusic::PitchSet
 
   def third_inversion_seventh_chord?
     tetrachord? && reduction.invert.intervals.all?(&:third?)
+  end
+
+  def ninth_chord?
+    pentachord? && tertial?
+  end
+
+  def tertial?
+    return false unless intervals.any?
+
+    inversion = reduction
+    pitches.length.times do
+      return true if TERTIAL_SONORITIES.value?(inversion.simple_interval_numbers_above_bass_pitch)
+      inversion = inversion.invert
+    end
+    false
+  end
+
+  def simple_interval_numbers_above_bass_pitch
+    @simple_interval_numbers_above_bass_pitch ||= intervals_above_bass_pitch.map(&:simple_number).sort
   end
 
   private

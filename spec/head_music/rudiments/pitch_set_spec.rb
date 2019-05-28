@@ -38,6 +38,16 @@ describe HeadMusic::PitchSet do
     its(:reduction) { is_expected.to eq described_class.new(%w[D4 G4 B4]) }
   end
 
+  describe '#intervals_above_bass_pitch' do
+    context 'given a 9th chord' do
+      subject(:set) { described_class.new(%w[C E G Bb D5]) }
+
+      specify { expect(set.intervals.map(&:shorthand)).to eq %w[M3 m3 m3 M3] }
+      specify { expect(set.intervals_above_bass_pitch.map(&:shorthand)).to eq %w[M3 P5 m7 M9] }
+      specify { expect(set.simple_interval_numbers_above_bass_pitch).to eq [2, 3, 5, 7] }
+    end
+  end
+
   describe 'analysis' do
     context 'when the set has zero pitches' do
       subject(:set) { HeadMusic::PitchSet.new([]) }
@@ -358,6 +368,26 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_first_inversion_seventh_chord }
         it { is_expected.not_to be_second_inversion_seventh_chord }
         it { is_expected.to be_third_inversion_seventh_chord }
+        it { is_expected.to be_tertial }
+      end
+    end
+
+    context 'when the set has five pitches' do
+      context 'given a ninth chord in root position' do
+        subject(:set) { HeadMusic::PitchSet.new(%w[C E G Bb D5]) }
+
+        it { is_expected.not_to be_triad }
+        it { is_expected.not_to be_seventh_chord }
+        it { is_expected.to be_ninth_chord }
+        it { is_expected.to be_tertial }
+      end
+
+      context 'given a spread ninth chord with the 7th in the bass' do
+        subject(:set) { HeadMusic::PitchSet.new(%w[Bb2 D4 G4 C5 E5]) }
+
+        it { is_expected.not_to be_triad }
+        it { is_expected.not_to be_seventh_chord }
+        it { is_expected.to be_ninth_chord }
         it { is_expected.to be_tertial }
       end
     end
