@@ -68,7 +68,7 @@ class HeadMusic::PitchSet
   end
 
   def triad?
-    root_triad? || first_inversion_triad? || second_inversion_triad?
+    trichord? && tertial?
   end
 
   def consonant_triad?
@@ -103,11 +103,19 @@ class HeadMusic::PitchSet
     trichord? && reduction.invert.intervals.all?(&:third?)
   end
 
+  def tertial?
+    return false unless intervals.any?
+
+    inversion = reduction
+    pitches.length.times do
+      return true if inversion.intervals.all?(&:third?)
+      inversion = inversion.invert
+    end
+    false
+  end
+
   def seventh_chord?
-    root_position_seventh_chord? ||
-      first_inversion_seventh_chord? ||
-      second_inversion_seventh_chord? ||
-      third_inversion_seventh_chord?
+    tetrachord? && tertial?
   end
 
   def root_position_seventh_chord?

@@ -57,6 +57,7 @@ describe HeadMusic::PitchSet do
       it { is_expected.not_to be_decachord }
       it { is_expected.not_to be_undecachord }
       it { is_expected.not_to be_dodecachord }
+      it { is_expected.not_to be_tertial }
     end
 
     context 'when the set has one pitch' do
@@ -77,6 +78,7 @@ describe HeadMusic::PitchSet do
       it { is_expected.not_to be_decachord }
       it { is_expected.not_to be_undecachord }
       it { is_expected.not_to be_dodecachord }
+      it { is_expected.not_to be_tertial }
     end
 
     context 'when the set has two pitches' do
@@ -97,6 +99,18 @@ describe HeadMusic::PitchSet do
       it { is_expected.not_to be_decachord }
       it { is_expected.not_to be_undecachord }
       it { is_expected.not_to be_dodecachord }
+
+      context 'when the pitches are a third apart' do
+        subject(:set) { HeadMusic::PitchSet.new(%w[D4 F#4]) }
+
+        it { is_expected.to be_tertial }
+      end
+
+      context 'when the pitches are a compound sixth apart' do
+        subject(:set) { HeadMusic::PitchSet.new(%w[F#4 D6]) }
+
+        it { is_expected.to be_tertial }
+      end
     end
 
     context 'when the set has three pitches' do
@@ -109,6 +123,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_root_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
+          it { is_expected.to be_tertial }
         end
 
         context 'in first inversion' do
@@ -119,6 +134,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_root_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
+          it { is_expected.to be_tertial }
         end
 
         context 'in second inversion' do
@@ -129,6 +145,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_root_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
+          it { is_expected.to be_tertial }
         end
 
         context 'spread' do
@@ -139,6 +156,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_root_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
+          it { is_expected.to be_tertial }
         end
 
         context 'spread wide' do
@@ -149,6 +167,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_root_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
+          it { is_expected.to be_tertial }
         end
       end
 
@@ -164,6 +183,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
           it { is_expected.not_to be_diminished_triad }
+          it { is_expected.to be_tertial }
         end
 
         context 'in first inversion' do
@@ -176,6 +196,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
+          it { is_expected.to be_tertial }
         end
 
         context 'in second inversion' do
@@ -188,6 +209,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
+          it { is_expected.to be_tertial }
         end
 
         context 'spread' do
@@ -200,6 +222,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
+          it { is_expected.to be_tertial }
         end
 
         context 'spread wide' do
@@ -213,6 +236,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
           it { is_expected.not_to be_diminished_triad }
+          it { is_expected.to be_tertial }
         end
       end
 
@@ -227,6 +251,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_major_triad }
         it { is_expected.not_to be_minor_triad }
         it { is_expected.to be_diminished_triad }
+        it { is_expected.to be_tertial }
       end
 
       context 'when given an inverted diminished triad' do
@@ -241,6 +266,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_minor_triad }
         it { is_expected.to be_diminished_triad }
         it { is_expected.not_to be_augmented_triad }
+        it { is_expected.to be_tertial }
       end
 
       context 'when given an augmented triad' do
@@ -255,6 +281,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_minor_triad }
         it { is_expected.not_to be_diminished_triad }
         it { is_expected.to be_augmented_triad }
+        it { is_expected.to be_tertial }
       end
 
       context 'when given an augmented triad in second inversion' do
@@ -269,6 +296,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_minor_triad }
         it { is_expected.not_to be_diminished_triad }
         it { is_expected.to be_augmented_triad }
+        it { is_expected.to be_tertial }
       end
 
       context 'when given a non-triad' do
@@ -280,6 +308,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_second_inversion_triad }
         it { is_expected.not_to be_major_triad }
         it { is_expected.not_to be_minor_triad }
+        it { is_expected.not_to be_tertial }
       end
     end
 
@@ -293,6 +322,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_first_inversion_seventh_chord }
         it { is_expected.not_to be_second_inversion_seventh_chord }
         it { is_expected.not_to be_third_inversion_seventh_chord }
+        it { is_expected.to be_tertial }
       end
 
       context 'given a seventh chord in first inversion' do
@@ -304,6 +334,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.to be_first_inversion_seventh_chord }
         it { is_expected.not_to be_second_inversion_seventh_chord }
         it { is_expected.not_to be_third_inversion_seventh_chord }
+        it { is_expected.to be_tertial }
       end
 
       context 'given a seventh chord in second inversion' do
@@ -315,6 +346,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_first_inversion_seventh_chord }
         it { is_expected.to be_second_inversion_seventh_chord }
         it { is_expected.not_to be_third_inversion_seventh_chord }
+        it { is_expected.to be_tertial }
       end
 
       context 'given a seventh chord in third inversion' do
@@ -326,6 +358,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_first_inversion_seventh_chord }
         it { is_expected.not_to be_second_inversion_seventh_chord }
         it { is_expected.to be_third_inversion_seventh_chord }
+        it { is_expected.to be_tertial }
       end
     end
   end
