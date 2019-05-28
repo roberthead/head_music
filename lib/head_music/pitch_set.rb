@@ -39,6 +39,12 @@ class HeadMusic::PitchSet
     HeadMusic::PitchSet.new(new_pitches)
   end
 
+  def uninvert
+    inverted_pitch = pitches[-1] - HeadMusic::FunctionalInterval.get('perfect octave')
+    new_pitches = [inverted_pitch] + pitches[0..-2]
+    HeadMusic::PitchSet.new(new_pitches)
+  end
+
   def bass_pitch
     @bass_pitch ||= pitches.first
   end
@@ -96,7 +102,7 @@ class HeadMusic::PitchSet
   end
 
   def first_inversion_triad?
-    trichord? && reduction.invert.invert.intervals.all?(&:third?)
+    trichord? && reduction.uninvert.intervals.all?(&:third?)
   end
 
   def second_inversion_triad?
@@ -123,11 +129,11 @@ class HeadMusic::PitchSet
   end
 
   def first_inversion_seventh_chord?
-    tetrachord? && reduction.invert.invert.invert.intervals.all?(&:third?)
+    tetrachord? && reduction.uninvert.intervals.all?(&:third?)
   end
 
   def second_inversion_seventh_chord?
-    tetrachord? && reduction.invert.invert.intervals.all?(&:third?)
+    tetrachord? && reduction.uninvert.uninvert.intervals.all?(&:third?)
   end
 
   def third_inversion_seventh_chord?
