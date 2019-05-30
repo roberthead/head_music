@@ -16,14 +16,14 @@ describe HeadMusic::PitchSet do
     specify { expect(set).not_to eq(described_class.new(%w[D5 F#5 A5 D6])) }
 
     its(:size) { is_expected.to eq 3 }
-    its(:pitch_class_size) { is_expected.to eq 3 }
+    its(:pitch_class_set_size) { is_expected.to eq 3 }
   end
 
   context 'given a triad with doubling' do
     subject(:set) { described_class.new(%w[D5 F#5 A5 D6]) }
 
     its(:size) { is_expected.to eq 4 }
-    its(:pitch_class_size) { is_expected.to eq 3 }
+    its(:pitch_class_set_size) { is_expected.to eq 3 }
   end
 
   context 'given duplicate pitches' do

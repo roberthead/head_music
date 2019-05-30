@@ -78,4 +78,42 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_undecachord }
     it { is_expected.not_to be_dodecachord }
   end
+
+  context 'when the set has nine pitches and seven pitch classes' do
+    subject(:set) { HeadMusic::PitchClassSet.new(%w[C D E F G A B C5 D5]) }
+
+    it { is_expected.not_to be_empty }
+    it { is_expected.not_to be_empty_set }
+    it { is_expected.not_to be_monad }
+    it { is_expected.not_to be_dyad }
+    it { is_expected.not_to be_trichord }
+    it { is_expected.not_to be_tetrachord }
+    it { is_expected.not_to be_pentachord }
+    it { is_expected.not_to be_hexachord }
+    it { is_expected.to be_heptachord }
+    it { is_expected.not_to be_octachord }
+    it { is_expected.not_to be_nonachord }
+    it { is_expected.not_to be_decachord }
+    it { is_expected.not_to be_undecachord }
+    it { is_expected.not_to be_dodecachord }
+  end
+
+  context 'when the set has nine unique pitches classes' do
+    subject(:set) { HeadMusic::PitchClassSet.new(%w[C D E F G A B C#5 F#5]) }
+
+    it { is_expected.not_to be_empty }
+    it { is_expected.not_to be_empty_set }
+    it { is_expected.not_to be_monad }
+    it { is_expected.not_to be_dyad }
+    it { is_expected.not_to be_trichord }
+    it { is_expected.not_to be_tetrachord }
+    it { is_expected.not_to be_pentachord }
+    it { is_expected.not_to be_hexachord }
+    it { is_expected.not_to be_heptachord }
+    it { is_expected.not_to be_octachord }
+    it { is_expected.to be_nonachord }
+    it { is_expected.not_to be_decachord }
+    it { is_expected.not_to be_undecachord }
+    it { is_expected.not_to be_dodecachord }
+  end
 end

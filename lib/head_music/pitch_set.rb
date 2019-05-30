@@ -18,7 +18,7 @@ class HeadMusic::PitchSet
   delegate :empty?, :empty_set?, to: :pitch_class_set
   delegate :monad?, :dyad?, :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_class_set
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_class_set
-  delegate :size, to: :pitch_class_set, prefix: :pitch_class
+  delegate :size, to: :pitch_class_set, prefix: true
 
   def initialize(pitches)
     @pitches = pitches.map { |pitch| HeadMusic::Pitch.get(pitch) }.sort.uniq
@@ -93,10 +93,6 @@ class HeadMusic::PitchSet
 
   def size
     pitches.length
-  end
-
-  def pitch_class_size
-    pitch_classes.length
   end
 
   def triad?
