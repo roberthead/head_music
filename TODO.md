@@ -1,5 +1,8 @@
 # TODO
 
+Rename Interval to ChromaticInterval
+Rename FunctionalInterval to DiatonicInterval
+
 open consonance (P5 P8)
 soft consonance (m3 M3 m6 M6)
 mild dissonance (M2 m7)

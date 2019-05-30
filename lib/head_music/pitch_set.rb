@@ -14,7 +14,7 @@ class HeadMusic::PitchSet
 
   attr_reader :pitches
 
-  delegate :intervals, to: :reduction, prefix: true
+  delegate :functional_intervals, to: :reduction, prefix: true
   delegate :empty?, :empty_set?, to: :pitch_class_set
   delegate :monad?, :dyad?, :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_class_set
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_class_set
@@ -36,8 +36,8 @@ class HeadMusic::PitchSet
     @reduction ||= HeadMusic::PitchSet.new(reduction_pitches)
   end
 
-  def intervals
-    @intervals ||= pitches.each_cons(2).map do |pitch_pair|
+  def functional_intervals
+    @functional_intervals ||= pitches.each_cons(2).map do |pitch_pair|
       HeadMusic::FunctionalInterval.new(*pitch_pair)
     end
   end
@@ -49,7 +49,14 @@ class HeadMusic::PitchSet
   end
 
   def pitches_above_bass_pitch
-    @pitches_above_bass_pitch ||= pitches[1..-1]
+    @pitches_above_bass_pitch ||= pitches.drop(1)
+  end
+
+  def integer_notation
+    @integer_notation ||= begin
+      return [] if pitches.empty?
+      functional_intervals_above_bass_pitch.map { |interval| interval.semitones % 12 }.flatten.sort.unshift(0)
+    end
   end
 
   def invert
@@ -101,31 +108,31 @@ class HeadMusic::PitchSet
   end
 
   def major_triad?
-    [%w[M3 m3], %w[m3 P4], %w[P4 M3]].include? reduction_intervals.map(&:shorthand)
+    [%w[M3 m3], %w[m3 P4], %w[P4 M3]].include? reduction_functional_intervals.map(&:shorthand)
   end
 
   def minor_triad?
-    [%w[m3 M3], %w[M3 P4], %w[P4 m3]].include? reduction_intervals.map(&:shorthand)
+    [%w[m3 M3], %w[M3 P4], %w[P4 m3]].include? reduction_functional_intervals.map(&:shorthand)
   end
 
   def diminished_triad?
-    [%w[m3 m3], %w[m3 A4], %w[A4 m3]].include? reduction_intervals.map(&:shorthand)
+    [%w[m3 m3], %w[m3 A4], %w[A4 m3]].include? reduction_functional_intervals.map(&:shorthand)
   end
 
   def augmented_triad?
-    [%w[M3 M3], %w[M3 d4], %w[d4 M3]].include? reduction_intervals.map(&:shorthand)
+    [%w[M3 M3], %w[M3 d4], %w[d4 M3]].include? reduction_functional_intervals.map(&:shorthand)
   end
 
   def root_position_triad?
-    trichord? && reduction_intervals.all?(&:third?)
+    trichord? && reduction_functional_intervals.all?(&:third?)
   end
 
   def first_inversion_triad?
-    trichord? && reduction.uninvert.intervals.all?(&:third?)
+    trichord? && reduction.uninvert.functional_intervals.all?(&:third?)
   end
 
   def second_inversion_triad?
-    trichord? && reduction.invert.intervals.all?(&:third?)
+    trichord? && reduction.invert.functional_intervals.all?(&:third?)
   end
 
   def seventh_chord?
@@ -133,19 +140,19 @@ class HeadMusic::PitchSet
   end
 
   def root_position_seventh_chord?
-    tetrachord? && reduction_intervals.all?(&:third?)
+    tetrachord? && reduction_functional_intervals.all?(&:third?)
   end
 
   def first_inversion_seventh_chord?
-    tetrachord? && reduction.uninvert.intervals.all?(&:third?)
+    tetrachord? && reduction.uninvert.functional_intervals.all?(&:third?)
   end
 
   def second_inversion_seventh_chord?
-    tetrachord? && reduction.uninvert.uninvert.intervals.all?(&:third?)
+    tetrachord? && reduction.uninvert.uninvert.functional_intervals.all?(&:third?)
   end
 
   def third_inversion_seventh_chord?
-    tetrachord? && reduction.invert.intervals.all?(&:third?)
+    tetrachord? && reduction.invert.functional_intervals.all?(&:third?)
   end
 
   def ninth_chord?
@@ -161,18 +168,22 @@ class HeadMusic::PitchSet
   end
 
   def tertial?
-    return false unless intervals.any?
+    return false unless functional_intervals.any?
 
     inversion = reduction
     pitches.length.times do
-      return true if TERTIAL_SONORITIES.value?(inversion.simple_interval_numbers_above_bass_pitch)
+      return true if TERTIAL_SONORITIES.value?(inversion.scale_degrees_above_bass_pitch)
       inversion = inversion.invert
     end
     false
   end
 
-  def simple_interval_numbers_above_bass_pitch
-    @simple_interval_numbers_above_bass_pitch ||= functional_intervals_above_bass_pitch.map(&:simple_number).sort
+  def scale_degrees
+    @scale_degrees ||= pitches.empty? ? [] : scale_degrees_above_bass_pitch.unshift(1)
+  end
+
+  def scale_degrees_above_bass_pitch
+    @scale_degrees_above_bass_pitch ||= functional_intervals_above_bass_pitch.map(&:simple_number).sort - [8]
   end
 
   private
