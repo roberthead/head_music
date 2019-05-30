@@ -48,10 +48,6 @@ class HeadMusic::Style::Annotation
     [marks].flatten.compact.map(&:end_position).max
   end
 
-  def marks
-    raise NotImplementedError
-  end
-
   def message
     self.class::MESSAGE
   end

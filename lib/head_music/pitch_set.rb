@@ -16,7 +16,8 @@ class HeadMusic::PitchSet
 
   delegate :diatonic_intervals, to: :reduction, prefix: true
   delegate :empty?, :empty_set?, to: :pitch_class_set
-  delegate :monad?, :dyad?, :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_class_set
+  delegate :monochord?, :monad?, :dichord?, :dyad?, to: :pitch_class_set
+  delegate :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_class_set
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_class_set
   delegate :size, to: :pitch_class_set, prefix: true
 

@@ -32,13 +32,15 @@ class HeadMusic::PitchClassSet
     @size ||= pitch_classes.length
   end
 
-  def monad?
+  def monochord?
     pitch_classes.length == 1
   end
+  alias monad? monochord?
 
-  def dyad?
+  def dichord?
     pitch_classes.length == 2
   end
+  alias dyad? dichord?
 
   def trichord?
     pitch_classes.length == 3
