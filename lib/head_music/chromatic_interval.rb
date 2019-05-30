@@ -40,6 +40,9 @@ class HeadMusic::ChromaticInterval
     semitones
   end
 
+  # diatonic set theory
+  alias specific_interval semitones
+
   def +(other)
     HeadMusic::ChromaticInterval.get(to_i + other.to_i)
   end

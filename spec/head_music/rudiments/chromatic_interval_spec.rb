@@ -20,6 +20,8 @@ describe HeadMusic::ChromaticInterval do
     it { is_expected.to be_simple }
     it { is_expected.to eq interval.simple }
     it { is_expected.not_to be_compound }
+
+    its(:specific_interval) { is_expected.to eq 2 }
   end
 
   context 'given some intervals' do

@@ -189,6 +189,10 @@ class HeadMusic::FunctionalInterval
       number - 1
     end
 
+    def simple_steps
+      steps % 7
+    end
+
     private
 
     def octave_equivalent?
@@ -268,7 +272,7 @@ class HeadMusic::FunctionalInterval
 
   delegate :step?, :skip?, :leap?, :large_leap?, to: :category
   delegate(
-    :simple_number, :octaves, :number, :simple?, :compound?, :semitones, :simple_semitones, :steps,
+    :simple_number, :octaves, :number, :simple?, :compound?, :semitones, :simple_semitones, :steps, :simple_steps,
     to: :size
   )
   delegate(
@@ -335,6 +339,10 @@ class HeadMusic::FunctionalInterval
     pitch = HeadMusic::Pitch.get(pitch)
     HeadMusic::Pitch.from_number_and_letter(pitch - semitones, pitch.letter_name.steps_down(number - 1))
   end
+
+  # diatonic set theory
+  alias specific_interval simple_semitones
+  alias diatonic_generic_interval simple_steps
 
   def <=>(other)
     other = self.class.get(other) unless other.is_a?(HeadMusic::FunctionalInterval)

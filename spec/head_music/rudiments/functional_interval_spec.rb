@@ -255,4 +255,18 @@ describe HeadMusic::FunctionalInterval do
     specify { expect(described_class.get(:major_third).below('C#5')).to eq 'A4' }
     specify { expect(described_class.get(:perfect_octave).below('Bb4')).to eq 'Bb3' }
   end
+
+  describe 'diatonic set theory' do
+    specify { expect(described_class.get(:major_third).diatonic_generic_interval).to eq 2 }
+    specify { expect(described_class.get(:major_third).specific_interval).to eq 4 }
+
+    specify { expect(described_class.get(:augmented_fourth).diatonic_generic_interval).to eq 3 }
+    specify { expect(described_class.get(:augmented_fourth).specific_interval).to eq 6 }
+
+    specify { expect(described_class.get(:minor_sixth).diatonic_generic_interval).to eq 5 }
+    specify { expect(described_class.get(:minor_sixth).specific_interval).to eq 8 }
+
+    specify { expect(described_class.get(:minor_tenth).diatonic_generic_interval).to eq 2 }
+    specify { expect(described_class.get(:minor_tenth).specific_interval).to eq 3 }
+  end
 end
