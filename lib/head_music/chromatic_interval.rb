@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # An interval is the distance between two pitches.
-class HeadMusic::Interval
+class HeadMusic::ChromaticInterval
   include Comparable
 
   private_class_method :new
@@ -25,7 +25,7 @@ class HeadMusic::Interval
   end
 
   def simple
-    HeadMusic::Interval.get(semitones % 12)
+    HeadMusic::ChromaticInterval.get(semitones % 12)
   end
 
   def simple?
@@ -41,11 +41,11 @@ class HeadMusic::Interval
   end
 
   def +(other)
-    HeadMusic::Interval.get(to_i + other.to_i)
+    HeadMusic::ChromaticInterval.get(to_i + other.to_i)
   end
 
   def -(other)
-    HeadMusic::Interval.get((to_i - other.to_i).abs)
+    HeadMusic::ChromaticInterval.get((to_i - other.to_i).abs)
   end
 
   def <=>(other)

@@ -171,7 +171,7 @@ describe HeadMusic::Pitch do
 
     context 'when adding an interval' do
       it 'returns the new pitch' do
-        expect(pitch + HeadMusic::Interval.get(9)).to eq 'F#5'
+        expect(pitch + HeadMusic::ChromaticInterval.get(9)).to eq 'F#5'
       end
     end
 
@@ -199,7 +199,7 @@ describe HeadMusic::Pitch do
 
     context 'when subtracting an interval' do
       it 'returns the new pitch' do
-        expect(pitch - HeadMusic::Interval.get(10)).to eq 'B4'
+        expect(pitch - HeadMusic::ChromaticInterval.get(10)).to eq 'B4'
       end
     end
 

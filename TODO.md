@@ -1,6 +1,6 @@
 # TODO
 
-Rename Interval to ChromaticInterval
+Rename ChromaticInterval to ChromaticInterval
 Rename FunctionalInterval to DiatonicInterval
 
 open consonance (P5 P8)

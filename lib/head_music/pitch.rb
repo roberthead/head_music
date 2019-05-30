@@ -122,7 +122,7 @@ class HeadMusic::Pitch
       other.below(self)
     elsif other.is_a?(HeadMusic::Pitch)
       # return an interval
-      HeadMusic::Interval.get(to_i - other.to_i)
+      HeadMusic::ChromaticInterval.get(to_i - other.to_i)
     else
       # assume value represents an interval in semitones and return another pitch
       HeadMusic::Pitch.get(to_i - other.to_i)

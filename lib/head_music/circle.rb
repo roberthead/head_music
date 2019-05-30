@@ -20,7 +20,7 @@ class HeadMusic::Circle
   attr_reader :interval, :pitch_classes
 
   def initialize(interval)
-    @interval = HeadMusic::Interval.get(interval.to_i)
+    @interval = HeadMusic::ChromaticInterval.get(interval.to_i)
     @pitch_classes = pitch_classes_by_interval(interval)
   end
 

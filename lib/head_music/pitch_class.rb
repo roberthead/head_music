@@ -67,7 +67,7 @@ class HeadMusic::PitchClass
   def intervals_to(other)
     delta = other.to_i - to_i
     inverse = delta.positive? ? delta - 12 : delta + 12
-    [delta, inverse].sort_by(&:abs).map { |interval| HeadMusic::Interval.get(interval) }
+    [delta, inverse].sort_by(&:abs).map { |interval| HeadMusic::ChromaticInterval.get(interval) }
   end
 
   def smallest_interval_to(other)
