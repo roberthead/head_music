@@ -8,49 +8,22 @@ sharp dissonance (m2 M7)
 P4 (consonant or dissonant)
 T (neutral or restless)
 
-
-PitchSet
-PitchSet::Analysis
-
-Replaces Chord
-
-A PitchSet is unlike a PitchClassSet in that the pitches have spellings with octaves rather than Spellings only or octave-less 0-11 designations.
-
-PitchSet
-.size?
-.monad?
-.dyad?
-.triad? (must be stacked thirds to be a 'triad')
-.trichord? (all 3-pitch sets)
-
-Should every group of pitches have one or more strategies for describing it? Such as Dyad?
-
-
-
-Set (superclass?)
-PitchSet
-  EmptySet
-  Monad
-  Dyad
-  Trichord (or Triad)
-    - triad?
-  Tetrachord (or Tetrad)
-    - seventh_chord?
-  Pentachord (or Pentad)
-  Hexachord (or Hexad)
-  Heptachords (or Heptad or, sometimes, mixing Latin and Greek roots, "Septachord")
-  Octachords (Octad)
-  Nonachords (Nonad)
-  Decachords (Decad)
-  Undecachords
-  Dodecachord
-
-PitchClassSet
-  .normal_form? (most compact)
-  .prime_form (most compact normal form of the original or any inversion)
-PitchCollection is a superset of Scale? No. PitchCollection is synonymous with PitchSet
-
+Sets
 DurationSet?
+
+Sonority
+- #valid?
+- symbol
+- long symbol
+- root
+- pitch_classes
+
+SonorityName
+> Sonority
+name (for example, "major minor seventh" or "dominant seventh")
+abbreviation
+
+
 
 PitchSetAnalysis
 - Strategy pattern
@@ -103,3 +76,38 @@ FunctionalInterval
 Pitch addition and subtraction
   - define `Pitch#+`, `Pitch#-`
   - use FunctionalInterval methods
+
+PitchSet
+
+A PitchSet is unlike a PitchClassSet in that the pitches have spellings with octaves rather than Spellings only or octave-less 0-11 designations.
+
+PitchClassSet
+.size?
+.monad?
+.dyad?
+.triad? (must be stacked thirds to be a 'triad')
+.trichord? (all 3-pitch sets)
+
+Should every group of pitches have one or more strategies for describing it? Such as Dyad?
+
+Set (superclass?)
+PitchSet
+  EmptySet
+  Monad
+  Dyad
+  Trichord (or Triad)
+    - triad?
+  Tetrachord (or Tetrad)
+    - seventh_chord?
+  Pentachord (or Pentad)
+  Hexachord (or Hexad)
+  Heptachords (or Heptad or, sometimes, mixing Latin and Greek roots, "Septachord")
+  Octachords (Octad)
+  Nonachords (Nonad)
+  Decachords (Decad)
+  Undecachords
+  Dodecachord
+
+PitchClassSet
+  .normal_form? (most compact)
+  .prime_form (most compact normal form of the original or any inversion)
