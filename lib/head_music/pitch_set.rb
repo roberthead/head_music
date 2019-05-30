@@ -42,8 +42,8 @@ class HeadMusic::PitchSet
     end
   end
 
-  def intervals_above_bass_pitch
-    @intervals_above_bass_pitch ||= pitches_above_bass_pitch.map do |pitch|
+  def functional_intervals_above_bass_pitch
+    @functional_intervals_above_bass_pitch ||= pitches_above_bass_pitch.map do |pitch|
       HeadMusic::FunctionalInterval.new(bass_pitch, pitch)
     end
   end
@@ -172,7 +172,7 @@ class HeadMusic::PitchSet
   end
 
   def simple_interval_numbers_above_bass_pitch
-    @simple_interval_numbers_above_bass_pitch ||= intervals_above_bass_pitch.map(&:simple_number).sort
+    @simple_interval_numbers_above_bass_pitch ||= functional_intervals_above_bass_pitch.map(&:simple_number).sort
   end
 
   private
