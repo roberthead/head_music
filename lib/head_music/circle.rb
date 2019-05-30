@@ -20,8 +20,8 @@ class HeadMusic::Circle
   attr_reader :interval, :pitch_classes
 
   def initialize(interval)
-    @interval = HeadMusic::ChromaticInterval.get(interval.to_i)
-    @pitch_classes = pitch_classes_by_interval(interval)
+    @interval = interval.to_i
+    @pitch_classes = pitch_classes_by_interval
   end
 
   def index(pitch_class)
@@ -32,7 +32,7 @@ class HeadMusic::Circle
 
   private
 
-  def pitch_classes_by_interval(interval)
+  def pitch_classes_by_interval
     [HeadMusic::PitchClass.get(0)].tap do |list|
       loop do
         next_pitch_class = list.last + interval
