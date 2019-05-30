@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# A harmonic interval is the functional interval between two notes sounding together.
+# A harmonic interval is the diatonic interval between two notes sounding together.
 class HeadMusic::HarmonicInterval
   attr_reader :voice1, :voice2, :position
 
@@ -10,8 +10,8 @@ class HeadMusic::HarmonicInterval
     @position = position.is_a?(String) ? HeadMusic::Position.new(voice1.composition, position) : position
   end
 
-  def functional_interval
-    @functional_interval ||= HeadMusic::FunctionalInterval.new(lower_pitch, upper_pitch)
+  def diatonic_interval
+    @diatonic_interval ||= HeadMusic::DiatonicInterval.new(lower_pitch, upper_pitch)
   end
 
   def voices
@@ -53,14 +53,14 @@ class HeadMusic::HarmonicInterval
   end
 
   def to_s
-    "#{functional_interval} at #{position}"
+    "#{diatonic_interval} at #{position}"
   end
 
   def method_missing(method_name, *args, &block)
-    respond_to_missing?(method_name) ? functional_interval.send(method_name, *args, &block) : super
+    respond_to_missing?(method_name) ? diatonic_interval.send(method_name, *args, &block) : super
   end
 
   def respond_to_missing?(method_name, *_args)
-    functional_interval.respond_to?(method_name)
+    diatonic_interval.respond_to?(method_name)
   end
 end

@@ -14,7 +14,7 @@ class HeadMusic::PitchSet
 
   attr_reader :pitches
 
-  delegate :functional_intervals, to: :reduction, prefix: true
+  delegate :diatonic_intervals, to: :reduction, prefix: true
   delegate :empty?, :empty_set?, to: :pitch_class_set
   delegate :monad?, :dyad?, :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_class_set
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_class_set
@@ -36,15 +36,15 @@ class HeadMusic::PitchSet
     @reduction ||= HeadMusic::PitchSet.new(reduction_pitches)
   end
 
-  def functional_intervals
-    @functional_intervals ||= pitches.each_cons(2).map do |pitch_pair|
-      HeadMusic::FunctionalInterval.new(*pitch_pair)
+  def diatonic_intervals
+    @diatonic_intervals ||= pitches.each_cons(2).map do |pitch_pair|
+      HeadMusic::DiatonicInterval.new(*pitch_pair)
     end
   end
 
-  def functional_intervals_above_bass_pitch
-    @functional_intervals_above_bass_pitch ||= pitches_above_bass_pitch.map do |pitch|
-      HeadMusic::FunctionalInterval.new(bass_pitch, pitch)
+  def diatonic_intervals_above_bass_pitch
+    @diatonic_intervals_above_bass_pitch ||= pitches_above_bass_pitch.map do |pitch|
+      HeadMusic::DiatonicInterval.new(bass_pitch, pitch)
     end
   end
 
@@ -55,18 +55,18 @@ class HeadMusic::PitchSet
   def integer_notation
     @integer_notation ||= begin
       return [] if pitches.empty?
-      functional_intervals_above_bass_pitch.map { |interval| interval.semitones % 12 }.flatten.sort.unshift(0)
+      diatonic_intervals_above_bass_pitch.map { |interval| interval.semitones % 12 }.flatten.sort.unshift(0)
     end
   end
 
   def invert
-    inverted_pitch = pitches[0] + HeadMusic::FunctionalInterval.get('perfect octave')
+    inverted_pitch = pitches[0] + HeadMusic::DiatonicInterval.get('perfect octave')
     new_pitches = pitches.drop(1) + [inverted_pitch]
     HeadMusic::PitchSet.new(new_pitches)
   end
 
   def uninvert
-    inverted_pitch = pitches[-1] - HeadMusic::FunctionalInterval.get('perfect octave')
+    inverted_pitch = pitches[-1] - HeadMusic::DiatonicInterval.get('perfect octave')
     new_pitches = [inverted_pitch] + pitches[0..-2]
     HeadMusic::PitchSet.new(new_pitches)
   end
@@ -108,31 +108,31 @@ class HeadMusic::PitchSet
   end
 
   def major_triad?
-    [%w[M3 m3], %w[m3 P4], %w[P4 M3]].include? reduction_functional_intervals.map(&:shorthand)
+    [%w[M3 m3], %w[m3 P4], %w[P4 M3]].include? reduction_diatonic_intervals.map(&:shorthand)
   end
 
   def minor_triad?
-    [%w[m3 M3], %w[M3 P4], %w[P4 m3]].include? reduction_functional_intervals.map(&:shorthand)
+    [%w[m3 M3], %w[M3 P4], %w[P4 m3]].include? reduction_diatonic_intervals.map(&:shorthand)
   end
 
   def diminished_triad?
-    [%w[m3 m3], %w[m3 A4], %w[A4 m3]].include? reduction_functional_intervals.map(&:shorthand)
+    [%w[m3 m3], %w[m3 A4], %w[A4 m3]].include? reduction_diatonic_intervals.map(&:shorthand)
   end
 
   def augmented_triad?
-    [%w[M3 M3], %w[M3 d4], %w[d4 M3]].include? reduction_functional_intervals.map(&:shorthand)
+    [%w[M3 M3], %w[M3 d4], %w[d4 M3]].include? reduction_diatonic_intervals.map(&:shorthand)
   end
 
   def root_position_triad?
-    trichord? && reduction_functional_intervals.all?(&:third?)
+    trichord? && reduction_diatonic_intervals.all?(&:third?)
   end
 
   def first_inversion_triad?
-    trichord? && reduction.uninvert.functional_intervals.all?(&:third?)
+    trichord? && reduction.uninvert.diatonic_intervals.all?(&:third?)
   end
 
   def second_inversion_triad?
-    trichord? && reduction.invert.functional_intervals.all?(&:third?)
+    trichord? && reduction.invert.diatonic_intervals.all?(&:third?)
   end
 
   def seventh_chord?
@@ -140,19 +140,19 @@ class HeadMusic::PitchSet
   end
 
   def root_position_seventh_chord?
-    tetrachord? && reduction_functional_intervals.all?(&:third?)
+    tetrachord? && reduction_diatonic_intervals.all?(&:third?)
   end
 
   def first_inversion_seventh_chord?
-    tetrachord? && reduction.uninvert.functional_intervals.all?(&:third?)
+    tetrachord? && reduction.uninvert.diatonic_intervals.all?(&:third?)
   end
 
   def second_inversion_seventh_chord?
-    tetrachord? && reduction.uninvert.uninvert.functional_intervals.all?(&:third?)
+    tetrachord? && reduction.uninvert.uninvert.diatonic_intervals.all?(&:third?)
   end
 
   def third_inversion_seventh_chord?
-    tetrachord? && reduction.invert.functional_intervals.all?(&:third?)
+    tetrachord? && reduction.invert.diatonic_intervals.all?(&:third?)
   end
 
   def ninth_chord?
@@ -168,7 +168,7 @@ class HeadMusic::PitchSet
   end
 
   def tertial?
-    return false unless functional_intervals.any?
+    return false unless diatonic_intervals.any?
 
     inversion = reduction
     pitches.length.times do
@@ -183,7 +183,7 @@ class HeadMusic::PitchSet
   end
 
   def scale_degrees_above_bass_pitch
-    @scale_degrees_above_bass_pitch ||= functional_intervals_above_bass_pitch.map(&:simple_number).sort - [8]
+    @scale_degrees_above_bass_pitch ||= diatonic_intervals_above_bass_pitch.map(&:simple_number).sort - [8]
   end
 
   private

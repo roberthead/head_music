@@ -1,8 +1,5 @@
 # TODO
 
-Rename ChromaticInterval to ChromaticInterval
-Rename FunctionalInterval to DiatonicInterval
-
 open consonance (P5 P8)
 soft consonance (m3 M3 m6 M6)
 mild dissonance (M2 m7)
@@ -63,22 +60,22 @@ Don't need anything beyond seventh chords to analyze pre-Romantic music.
 ### Done
 
     As a developer
-    When instantiating a FunctionalInterval
+    When instantiating a DiatonicInterval
     When passing an abbreviation, such as 'P5' or 'm2'
     I want to receive that instance.
 
     As a developer
     Given a pitch
-    I want to be able to add a functional interval to get another pitch.
+    I want to be able to add a diatonic interval to get another pitch.
 
-FunctionalInterval
+DiatonicInterval
   - def above(pitch) -> pitch
-FunctionalInterval
+DiatonicInterval
   - def below(pitch) -> pitch
 
 Pitch addition and subtraction
   - define `Pitch#+`, `Pitch#-`
-  - use FunctionalInterval methods
+  - use DiatonicInterval methods
 
 PitchSet
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# A functional interval is the distance between two spelled pitches.
-class HeadMusic::FunctionalInterval
+# A diatonic interval is the distance between two spelled pitches.
+class HeadMusic::DiatonicInterval
   include Comparable
 
   NUMBER_NAMES = %w[
@@ -303,7 +303,7 @@ class HeadMusic::FunctionalInterval
     while inverted_low_pitch < higher_pitch
       inverted_low_pitch = HeadMusic::Pitch.fetch_or_create(lower_pitch.spelling, inverted_low_pitch.octave + 1)
     end
-    HeadMusic::FunctionalInterval.new(higher_pitch, inverted_low_pitch)
+    HeadMusic::DiatonicInterval.new(higher_pitch, inverted_low_pitch)
   end
   alias invert inversion
 
@@ -345,7 +345,7 @@ class HeadMusic::FunctionalInterval
   alias diatonic_generic_interval simple_steps
 
   def <=>(other)
-    other = self.class.get(other) unless other.is_a?(HeadMusic::FunctionalInterval)
+    other = self.class.get(other) unless other.is_a?(HeadMusic::DiatonicInterval)
     semitones <=> other.semitones
   end
 

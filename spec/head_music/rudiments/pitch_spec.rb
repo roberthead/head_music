@@ -185,11 +185,11 @@ describe HeadMusic::Pitch do
       end
     end
 
-    context 'when adding a functional interval' do
+    context 'when adding a diatonic interval' do
       it 'returns the new pitch' do
-        expect(pitch + HeadMusic::FunctionalInterval.get(:major_sixth)).to eq 'F#5'
-        expect(pitch + HeadMusic::FunctionalInterval.get(:minor_sixth)).to eq 'F5'
-        expect(pitch + HeadMusic::FunctionalInterval.get(:augmented_fifth)).to eq 'E#5'
+        expect(pitch + HeadMusic::DiatonicInterval.get(:major_sixth)).to eq 'F#5'
+        expect(pitch + HeadMusic::DiatonicInterval.get(:minor_sixth)).to eq 'F5'
+        expect(pitch + HeadMusic::DiatonicInterval.get(:augmented_fifth)).to eq 'E#5'
       end
     end
   end
@@ -215,11 +215,11 @@ describe HeadMusic::Pitch do
       end
     end
 
-    context 'when subtracting a functional interval' do
+    context 'when subtracting a diatonic interval' do
       it 'returns the new pitch' do
-        expect(pitch - HeadMusic::FunctionalInterval.get(:major_sixth)).to eq 'C5'
-        expect(pitch - HeadMusic::FunctionalInterval.get(:minor_sixth)).to eq 'C#5'
-        expect(pitch - HeadMusic::FunctionalInterval.get(:augmented_fifth)).to eq 'Db5'
+        expect(pitch - HeadMusic::DiatonicInterval.get(:major_sixth)).to eq 'C5'
+        expect(pitch - HeadMusic::DiatonicInterval.get(:minor_sixth)).to eq 'C#5'
+        expect(pitch - HeadMusic::DiatonicInterval.get(:augmented_fifth)).to eq 'Db5'
       end
     end
   end

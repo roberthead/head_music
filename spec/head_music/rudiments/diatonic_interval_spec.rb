@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::FunctionalInterval do
+describe HeadMusic::DiatonicInterval do
   let(:c_flat_4) { HeadMusic::Pitch.get('Cb') }
   let(:c_4) { HeadMusic::Pitch.get('C') }
   let(:c_sharp_4) { HeadMusic::Pitch.get('C#') }

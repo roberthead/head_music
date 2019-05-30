@@ -29,21 +29,21 @@ class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Annotati
   end
 
   def highest_pitch_consonant_with_tonic?
-    functional_interval_to_highest_pitch.consonance?(:melodic)
+    diatonic_interval_to_highest_pitch.consonance?(:melodic)
   end
 
   def lowest_pitch_consonant_with_tonic?
-    functional_interval_to_lowest_pitch.consonance?(:melodic)
+    diatonic_interval_to_lowest_pitch.consonance?(:melodic)
   end
 
-  def functional_interval_to_highest_pitch
-    @functional_interval_to_highest_pitch ||=
-      HeadMusic::FunctionalInterval.new(tonic_pitch, highest_pitch)
+  def diatonic_interval_to_highest_pitch
+    @diatonic_interval_to_highest_pitch ||=
+      HeadMusic::DiatonicInterval.new(tonic_pitch, highest_pitch)
   end
 
-  def functional_interval_to_lowest_pitch
-    @functional_interval_to_lowest_pitch ||=
-      HeadMusic::FunctionalInterval.new(tonic_pitch, lowest_pitch)
+  def diatonic_interval_to_lowest_pitch
+    @diatonic_interval_to_lowest_pitch ||=
+      HeadMusic::DiatonicInterval.new(tonic_pitch, lowest_pitch)
   end
 
   def highest_pitch_appears_once?

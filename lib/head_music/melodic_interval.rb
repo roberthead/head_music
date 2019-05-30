@@ -9,8 +9,8 @@ class HeadMusic::MelodicInterval
     @second_note = note2
   end
 
-  def functional_interval
-    @functional_interval ||= HeadMusic::FunctionalInterval.new(first_pitch, second_pitch)
+  def diatonic_interval
+    @diatonic_interval ||= HeadMusic::DiatonicInterval.new(first_pitch, second_pitch)
   end
 
   def position_start
@@ -38,7 +38,7 @@ class HeadMusic::MelodicInterval
   end
 
   def to_s
-    [direction, functional_interval].join(' ')
+    [direction, diatonic_interval].join(' ')
   end
 
   def ascending?
@@ -90,10 +90,10 @@ class HeadMusic::MelodicInterval
   end
 
   def method_missing(method_name, *args, &block)
-    respond_to_missing?(method_name) ? functional_interval.send(method_name, *args, &block) : super
+    respond_to_missing?(method_name) ? diatonic_interval.send(method_name, *args, &block) : super
   end
 
   def respond_to_missing?(method_name, *_args)
-    functional_interval.respond_to?(method_name)
+    diatonic_interval.respond_to?(method_name)
   end
 end

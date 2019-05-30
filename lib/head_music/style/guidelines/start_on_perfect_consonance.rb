@@ -16,6 +16,6 @@ class HeadMusic::Style::Guidelines::StartOnPerfectConsonance < HeadMusic::Style:
   private
 
   def starts_on_perfect_consonance?
-    functional_interval_from_tonic(first_note).perfect_consonance?(:two_part_harmony)
+    diatonic_interval_from_tonic(first_note).perfect_consonance?(:two_part_harmony)
   end
 end

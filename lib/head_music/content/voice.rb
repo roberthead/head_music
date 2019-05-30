@@ -54,7 +54,7 @@ class HeadMusic::Voice
   end
 
   def range
-    HeadMusic::FunctionalInterval.new(lowest_pitch, highest_pitch)
+    HeadMusic::DiatonicInterval.new(lowest_pitch, highest_pitch)
   end
 
   def melodic_intervals

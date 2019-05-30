@@ -38,12 +38,12 @@ describe HeadMusic::PitchSet do
     its(:reduction) { is_expected.to eq described_class.new(%w[D4 G4 B4]) }
   end
 
-  describe '#functional_intervals_above_bass_pitch' do
+  describe '#diatonic_intervals_above_bass_pitch' do
     context 'given a 9th chord' do
       subject(:set) { described_class.new(%w[C E G Bb D5]) }
 
-      specify { expect(set.functional_intervals.map(&:shorthand)).to eq %w[M3 m3 m3 M3] }
-      specify { expect(set.functional_intervals_above_bass_pitch.map(&:shorthand)).to eq %w[M3 P5 m7 M9] }
+      specify { expect(set.diatonic_intervals.map(&:shorthand)).to eq %w[M3 m3 m3 M3] }
+      specify { expect(set.diatonic_intervals_above_bass_pitch.map(&:shorthand)).to eq %w[M3 P5 m7 M9] }
     end
   end
 

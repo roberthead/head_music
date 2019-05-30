@@ -14,6 +14,6 @@ class HeadMusic::Style::Guidelines::EndOnPerfectConsonance < HeadMusic::Style::A
   private
 
   def ends_on_perfect_consonance?
-    functional_interval_from_tonic(last_note).perfect_consonance?(:two_part_harmony)
+    diatonic_interval_from_tonic(last_note).perfect_consonance?(:two_part_harmony)
   end
 end

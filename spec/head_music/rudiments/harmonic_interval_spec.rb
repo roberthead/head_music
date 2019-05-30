@@ -25,7 +25,7 @@ describe HeadMusic::HarmonicInterval do
   its(:upper_pitch) { is_expected.to eq 'D4' }
   its(:lower_pitch) { is_expected.to eq 'F3' }
 
-  its(:functional_interval) { is_expected.to eq 'major sixth' }
+  its(:diatonic_interval) { is_expected.to eq 'major sixth' }
 
   its(:to_s) { is_expected.to eq 'major sixth at 2:1:000' }
 end

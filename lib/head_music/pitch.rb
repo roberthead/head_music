@@ -107,7 +107,7 @@ class HeadMusic::Pitch
   end
 
   def +(other)
-    if other.is_a?(HeadMusic::FunctionalInterval)
+    if other.is_a?(HeadMusic::DiatonicInterval)
       # return a pitch
       other.above(self)
     else
@@ -117,7 +117,7 @@ class HeadMusic::Pitch
   end
 
   def -(other)
-    if other.is_a?(HeadMusic::FunctionalInterval)
+    if other.is_a?(HeadMusic::DiatonicInterval)
       # return a pitch
       other.below(self)
     elsif other.is_a?(HeadMusic::Pitch)

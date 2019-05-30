@@ -86,10 +86,10 @@ class HeadMusic::Style::Annotation
     @lower_voices ||= unsorted_lower_voices.sort_by(&:lowest_pitch).reverse
   end
 
-  def functional_interval_from_tonic(note)
+  def diatonic_interval_from_tonic(note)
     tonic_to_use = tonic_pitch
     tonic_to_use -= HeadMusic::ChromaticInterval.get(:perfect_octave) while tonic_to_use > note.pitch
-    HeadMusic::FunctionalInterval.new(tonic_to_use, note.pitch)
+    HeadMusic::DiatonicInterval.new(tonic_to_use, note.pitch)
   end
 
   def bass_voice?
