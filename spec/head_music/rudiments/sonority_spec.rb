@@ -3,6 +3,36 @@
 require 'spec_helper'
 
 describe HeadMusic::Analysis::Sonority do
+  describe 'equality' do
+    subject(:sonority) { described_class.for(pitch_set) }
+
+    context 'given a major triad' do
+      let(:pitch_set) { HeadMusic::PitchSet.new(%w[G4 B4 D5]) }
+
+      it { is_expected.not_to be_nil }
+
+      context 'compared to another sonority with a pitch set with the same pitches' do
+        let(:other_pitch_set) { HeadMusic::PitchSet.new(%w[G4 B4 D5]) }
+        let(:other_sonority) { described_class.for(other_pitch_set) }
+
+        it { is_expected.to eq other_sonority }
+      end
+
+      context 'compared to a pitch set with the same pitches' do
+        let(:other_pitch_set) { HeadMusic::PitchSet.new(%w[G4 B4 D5]) }
+
+        it { is_expected.to eq other_pitch_set }
+      end
+
+      context 'compared to another sonority with a different dominant seventh chord pitch set' do
+        let(:other_pitch_set) { HeadMusic::PitchSet.new(%w[C E G]) }
+        let(:other_sonority) { described_class.for(other_pitch_set) }
+
+        it { is_expected.to eq other_sonority }
+      end
+    end
+  end
+
   describe '.for' do
     subject(:sonority) { described_class.for(pitch_set) }
 

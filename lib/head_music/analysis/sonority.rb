@@ -49,19 +49,19 @@ class HeadMusic::Analysis::Sonority
   end
 
   def inversion
-    return nil unless diatonic_intervals_above_bass_pitch.any?
-    inversions.index(diatonic_intervals_above_bass_pitch)
+    inversions.index do |inversion|
+      inversion.diatonic_intervals_above_bass_pitch == diatonic_intervals_above_bass_pitch
+    end
   end
 
   def inversions
-    return [] unless diatonic_intervals_above_bass_pitch.any?
-
     inversion = reduction
-    reduction.pitches.map do
-      inversion.diatonic_intervals_above_bass_pitch.tap do
-        inversion = inversion.uninvert
-      end
+    inversions = []
+    inversion.pitches.length.times do |_i|
+      inversions << inversion
+      inversion = inversion.uninvert
     end
+    inversions
   end
 
   def root_position
@@ -70,7 +70,7 @@ class HeadMusic::Analysis::Sonority
 
   def consonant?
     pitch_set.reduction_diatonic_intervals.all?(&:consonant?) &&
-      root_position.all?(&:consonant?)
+      root_position.diatonic_intervals_above_bass_pitch.all?(&:consonant?)
   end
 
   def triad?
@@ -89,6 +89,11 @@ class HeadMusic::Analysis::Sonority
     false
   end
   alias quintal? quartal?
+
+  def ==(other)
+    other = self.class.for(other) unless other.is_a?(self.class)
+    self.class.name == other.class.name
+  end
 
   # @abstract Subclass is expected to implement #
   # @!method diatonic_intervals_above_bass_pitch
