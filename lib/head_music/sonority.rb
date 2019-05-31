@@ -2,6 +2,7 @@
 
 require 'head_music/sonority/major_triad'
 require 'head_music/sonority/minor_triad'
+require 'head_music/sonority/diminished_triad'
 
 # A sonority describes a combination of pitch class intervalic relationships.
 # For example, a minor triad, or a major-minor seventh chord.
@@ -13,8 +14,7 @@ class HeadMusic::Sonority
 
   SONORITIES = [
     # Dyad,
-    MajorTriad, MinorTriad,
-    # MinorTriad, DiminishedTriad, AugmentedTriad,
+    MajorTriad, MinorTriad, DiminishedTriad, # AugmentedTriad,
     # SuspendedChord,
     # MajorMinorSeventhChord, MajorMajorSeventhChord, MinorMinorSeventhChord, MinorMajorSeventhChord,
     # HalfDiminishedSeventhChord, FullyDiminishedSeventhChord,

@@ -83,5 +83,41 @@ describe HeadMusic::Sonority do
 
       its(:inversion) { is_expected.to eq 2 }
     end
+
+    context 'when given a diminished triad in root position' do
+      let(:pitch_set) { HeadMusic::PitchSet.new(%w[C Eb Gb]) }
+
+      it { is_expected.to be_a(HeadMusic::Sonority::DiminishedTriad) }
+      it { is_expected.to be_trichord }
+      it { is_expected.to be_triad }
+      it { is_expected.not_to be_consonant_triad }
+      it { is_expected.to be_tertian }
+
+      its(:inversion) { is_expected.to eq 0 }
+    end
+
+    context 'when given a diminished triad in first inversion' do
+      let(:pitch_set) { HeadMusic::PitchSet.new(%w[Eb Gb C5]) }
+
+      it { is_expected.to be_a(HeadMusic::Sonority::DiminishedTriad) }
+      it { is_expected.to be_triad }
+      it { is_expected.to be_trichord }
+      it { is_expected.not_to be_consonant_triad }
+      it { is_expected.to be_tertian }
+
+      its(:inversion) { is_expected.to eq 1 }
+    end
+
+    context 'when given a diminished triad in second inversion' do
+      let(:pitch_set) { HeadMusic::PitchSet.new(%w[Gb3 C Eb]) }
+
+      it { is_expected.to be_a(HeadMusic::Sonority::DiminishedTriad) }
+      it { is_expected.to be_triad }
+      it { is_expected.to be_trichord }
+      it { is_expected.not_to be_consonant_triad }
+      it { is_expected.to be_tertian }
+
+      its(:inversion) { is_expected.to eq 2 }
+    end
   end
 end
