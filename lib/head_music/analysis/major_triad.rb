@@ -2,7 +2,7 @@
 
 # A MajorTriad is a sonority containing P1, M3, P5.
 class HeadMusic::Analysis::MajorTriad < HeadMusic::Analysis::Triad
-  def diatonic_intervals_above_bass_pitch
-    %w[M3 P5].map { |shorthand| HeadMusic::DiatonicInterval.get(shorthand) }
+  def self.diatonic_interval_shorthand
+    %w[M3 P5]
   end
 end

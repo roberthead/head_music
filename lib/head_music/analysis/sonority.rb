@@ -90,6 +90,10 @@ class HeadMusic::Analysis::Sonority
   end
   alias quintal? quartal?
 
+  def diatonic_intervals_above_bass_pitch
+    self.class.diatonic_interval_shorthand.map { |shorthand| HeadMusic::DiatonicInterval.get(shorthand) }
+  end
+
   def ==(other)
     other = self.class.for(other) unless other.is_a?(self.class)
     self.class.name == other.class.name
