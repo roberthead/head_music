@@ -13,6 +13,7 @@ class HeadMusic::Analysis::Sonority
 
   SONORITIES = %w[
     MajorTriad MinorTriad DiminishedTriad AugmentedTriad
+    MajorMinorSeventhChord
   ].freeze
 
   attr_reader :pitch_set
@@ -74,11 +75,17 @@ class HeadMusic::Analysis::Sonority
   end
 
   def triad?
-    is_a?(HeadMusic::Analysis::Triad)
+    trichord? && tertian?
+  end
+
+  def seventh_chord?
+    tetrachord? && tertian?
   end
 
   def tertian?
-    triad?
+    inversions.detect do |inversion|
+      inversion.diatonic_intervals.all?(&:third?)
+    end
   end
 
   def secundal?

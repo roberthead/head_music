@@ -179,5 +179,15 @@ describe HeadMusic::Analysis::Sonority do
 
       its(:inversion) { is_expected.to eq 0 }
     end
+
+    context 'when given a dominant seventh chord' do
+      let(:pitch_set) { HeadMusic::PitchSet.new(%w[G3 B3 D F]) }
+
+      it { is_expected.to be_a(HeadMusic::Analysis::MajorMinorSeventhChord) }
+      it { is_expected.to be_seventh_chord }
+      it { is_expected.to be_tetrachord }
+      it { is_expected.not_to be_consonant }
+      it { is_expected.to be_tertian }
+    end
   end
 end

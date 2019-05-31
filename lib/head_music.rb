@@ -21,11 +21,11 @@ require 'head_music/named_rudiment'
 
 # rudiments
 require 'head_music/analysis/sonority'
-require 'head_music/analysis/triad'
 require 'head_music/analysis/major_triad'
 require 'head_music/analysis/minor_triad'
 require 'head_music/analysis/diminished_triad'
 require 'head_music/analysis/augmented_triad'
+require 'head_music/analysis/major_minor_seventh_chord'
 require 'head_music/chromatic_interval'
 require 'head_music/circle'
 require 'head_music/clef'
