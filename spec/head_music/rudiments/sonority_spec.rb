@@ -181,13 +181,87 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context 'when given a dominant seventh chord' do
-      let(:pitch_set) { HeadMusic::PitchSet.new(%w[G3 B3 D F]) }
+      context 'when in root position' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[G3 B3 D F]) }
 
-      it { is_expected.to be_a(HeadMusic::Analysis::MajorMinorSeventhChord) }
-      it { is_expected.to be_seventh_chord }
-      it { is_expected.to be_tetrachord }
-      it { is_expected.not_to be_consonant }
-      it { is_expected.to be_tertian }
+        it { is_expected.to be_a(HeadMusic::Analysis::MajorMinorSeventhChord) }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+      end
+
+      context 'when in first inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[B3 D F G]) }
+
+        it { is_expected.to be_a(HeadMusic::Analysis::MajorMinorSeventhChord) }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+      end
+
+      context 'when in second inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[D F G B]) }
+
+        it { is_expected.to be_a(HeadMusic::Analysis::MajorMinorSeventhChord) }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+      end
+
+      context 'when in third inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[F G B D5]) }
+
+        it { is_expected.to be_a(HeadMusic::Analysis::MajorMinorSeventhChord) }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+      end
+    end
+
+    context 'when given a major-major seventh chord' do
+      context 'when in root position' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[G3 B3 D F#]) }
+
+        it { is_expected.to be_a(HeadMusic::Analysis::MajorMajorSeventhChord) }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+      end
+
+      context 'when in first inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[B3 D F# G]) }
+
+        it { is_expected.to be_a(HeadMusic::Analysis::MajorMajorSeventhChord) }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+      end
+
+      context 'when in second inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[D F# G B]) }
+
+        it { is_expected.to be_a(HeadMusic::Analysis::MajorMajorSeventhChord) }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+      end
+
+      context 'when in third inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[F# G B D5]) }
+
+        it { is_expected.to be_a(HeadMusic::Analysis::MajorMajorSeventhChord) }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+      end
     end
   end
 end

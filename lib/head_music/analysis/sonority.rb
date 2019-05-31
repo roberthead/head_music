@@ -13,7 +13,7 @@ class HeadMusic::Analysis::Sonority
 
   SONORITIES = %w[
     MajorTriad MinorTriad DiminishedTriad AugmentedTriad
-    MajorMinorSeventhChord
+    MajorMinorSeventhChord MajorMajorSeventhChord
   ].freeze
 
   attr_reader :pitch_set
