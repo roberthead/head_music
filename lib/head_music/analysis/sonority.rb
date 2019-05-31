@@ -12,7 +12,7 @@ class HeadMusic::Analysis::Sonority
   ].freeze
 
   SONORITIES = %w[
-    MajorTriad MinorTriad DiminishedTriad
+    MajorTriad MinorTriad DiminishedTriad AugmentedTriad
   ].freeze
 
   attr_reader :pitch_set
@@ -69,7 +69,8 @@ class HeadMusic::Analysis::Sonority
   end
 
   def consonant?
-    root_position.all?(&:consonant?)
+    pitch_set.reduction_diatonic_intervals.all?(&:consonant?) &&
+      root_position.all?(&:consonant?)
   end
 
   def triad?

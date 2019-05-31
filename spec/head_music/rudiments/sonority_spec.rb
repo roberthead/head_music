@@ -102,7 +102,7 @@ describe HeadMusic::Analysis::Sonority do
       its(:inversion) { is_expected.to eq 1 }
     end
 
-    context 'when given a diminished triad in second inversion' do
+    context 'when given an diminished triad in second inversion' do
       let(:pitch_set) { HeadMusic::PitchSet.new(%w[Gb3 C Eb]) }
 
       it { is_expected.to be_a(HeadMusic::Analysis::DiminishedTriad) }
@@ -112,6 +112,42 @@ describe HeadMusic::Analysis::Sonority do
       it { is_expected.to be_tertian }
 
       its(:inversion) { is_expected.to eq 2 }
+    end
+
+    context 'when given an augmented triad in root position' do
+      let(:pitch_set) { HeadMusic::PitchSet.new(%w[C E G#]) }
+
+      it { is_expected.to be_a(HeadMusic::Analysis::AugmentedTriad) }
+      it { is_expected.to be_trichord }
+      it { is_expected.to be_triad }
+      it { is_expected.not_to be_consonant }
+      it { is_expected.to be_tertian }
+
+      its(:inversion) { is_expected.to eq 0 }
+    end
+
+    context 'when given an augmented triad in first inversion' do
+      let(:pitch_set) { HeadMusic::PitchSet.new(%w[E G# C5]) }
+
+      it { is_expected.to be_a(HeadMusic::Analysis::AugmentedTriad) }
+      it { is_expected.to be_triad }
+      it { is_expected.to be_trichord }
+      it { is_expected.not_to be_consonant }
+      it { is_expected.to be_tertian }
+
+      its(:inversion) { is_expected.to eq 0 }
+    end
+
+    context 'when given an augmented triad in second inversion' do
+      let(:pitch_set) { HeadMusic::PitchSet.new(%w[G#3 C E]) }
+
+      it { is_expected.to be_a(HeadMusic::Analysis::AugmentedTriad) }
+      it { is_expected.to be_triad }
+      it { is_expected.to be_trichord }
+      it { is_expected.not_to be_consonant }
+      it { is_expected.to be_tertian }
+
+      its(:inversion) { is_expected.to eq 0 }
     end
   end
 end
