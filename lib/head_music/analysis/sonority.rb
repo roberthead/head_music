@@ -1,23 +1,18 @@
 # frozen_string_literal: true
 
-require 'head_music/sonority/major_triad'
-require 'head_music/sonority/minor_triad'
-require 'head_music/sonority/diminished_triad'
+# The Analysis module is used to identify pitch sets.
+module HeadMusic::Analysis; end
 
-# A sonority describes a combination of pitch class intervalic relationships.
+# A Sonority describes a set of pitch class intervalic relationships.
 # For example, a minor triad, or a major-minor seventh chord.
 # The Sonority class is a factory for returning one of its subclasses.
-class HeadMusic::Sonority
+class HeadMusic::Analysis::Sonority
   SIZES = %w[
     silence monad dyad trichord tetrachord pentachord hexachord heptachord octachord nonachord undecachord dodecachord
   ].freeze
 
-  SONORITIES = [
-    # Dyad,
-    MajorTriad, MinorTriad, DiminishedTriad, # AugmentedTriad,
-    # SuspendedChord,
-    # MajorMinorSeventhChord, MajorMajorSeventhChord, MinorMinorSeventhChord, MinorMajorSeventhChord,
-    # HalfDiminishedSeventhChord, FullyDiminishedSeventhChord,
+  SONORITIES = %w[
+    MajorTriad MinorTriad DiminishedTriad
   ].freeze
 
   attr_reader :pitch_set
@@ -26,12 +21,12 @@ class HeadMusic::Sonority
   delegate :empty?, :empty_set?, to: :pitch_set
   delegate :monochord?, :monad, :dichord?, :dyad?, :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_set
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_set
-  delegate :pitch_class_set_size, to: :pitch_set
+  delegate :pitch_class_set, :pitch_class_set_size, to: :pitch_set
 
   # Returns a matching subclass
   def self.for(pitch_set)
-    SONORITIES.each do |sonority_class|
-      sonority = sonority_class.matching(pitch_set)
+    SONORITIES.each do |sonority_class_name|
+      sonority = Object.const_get("HeadMusic::Analysis::#{sonority_class_name}").matching(pitch_set)
       next unless sonority
       return sonority
     end
@@ -43,6 +38,8 @@ class HeadMusic::Sonority
     sonority if sonority.match?
   end
 
+  private_class_method :new
+
   def initialize(pitch_set)
     @pitch_set = pitch_set
   end
@@ -53,25 +50,34 @@ class HeadMusic::Sonority
 
   def inversion
     return nil unless diatonic_intervals_above_bass_pitch.any?
+    inversions.index(diatonic_intervals_above_bass_pitch)
+  end
+
+  def inversions
+    return [] unless diatonic_intervals_above_bass_pitch.any?
 
     inversion = reduction
-    reduction.pitches.length.times do |inversion_count|
-      return inversion_count if inversion.diatonic_intervals_above_bass_pitch == diatonic_intervals_above_bass_pitch
-      inversion = inversion.uninvert
+    reduction.pitches.map do
+      inversion.diatonic_intervals_above_bass_pitch.tap do
+        inversion = inversion.uninvert
+      end
     end
-    nil
+  end
+
+  def root_position
+    inversions[inversion]
+  end
+
+  def consonant?
+    root_position.all?(&:consonant?)
   end
 
   def triad?
-    false
-  end
-
-  def consonant_triad?
-    false
+    is_a?(HeadMusic::Analysis::Triad)
   end
 
   def tertian?
-    false
+    triad?
   end
 
   def secundal?
