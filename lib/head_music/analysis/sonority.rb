@@ -13,7 +13,7 @@ class HeadMusic::Analysis::Sonority
 
   SONORITIES = %w[
     MajorTriad MinorTriad DiminishedTriad AugmentedTriad
-    MajorMinorSeventhChord MajorMajorSeventhChord
+    MajorMinorSeventhChord MajorMajorSeventhChord MinorMinorSeventhChord MinorMajorSeventhChord
   ].freeze
 
   attr_reader :pitch_set
@@ -50,40 +50,43 @@ class HeadMusic::Analysis::Sonority
   end
 
   def inversion
-    inversions.index do |inversion|
+    @inversion ||= inversions.index do |inversion|
       inversion.diatonic_intervals_above_bass_pitch == diatonic_intervals_above_bass_pitch
     end
   end
 
   def inversions
-    inversion = reduction
-    inversions = []
-    inversion.pitches.length.times do |_i|
-      inversions << inversion
-      inversion = inversion.uninvert
+    @inversions ||= begin
+      inversion = reduction
+      inversions = []
+      inversion.pitches.length.times do |_i|
+        inversions << inversion
+        inversion = inversion.uninvert
+      end
+      inversions
     end
-    inversions
   end
 
   def root_position
-    inversions[inversion]
+    @root_position ||= inversions[inversion]
   end
 
   def consonant?
-    pitch_set.reduction_diatonic_intervals.all?(&:consonant?) &&
+    @consonant ||=
+      pitch_set.reduction_diatonic_intervals.all?(&:consonant?) &&
       root_position.diatonic_intervals_above_bass_pitch.all?(&:consonant?)
   end
 
   def triad?
-    trichord? && tertian?
+    @triad ||= trichord? && tertian?
   end
 
   def seventh_chord?
-    tetrachord? && tertian?
+    @seventh_chord ||= tetrachord? && tertian?
   end
 
   def tertian?
-    inversions.detect do |inversion|
+    @tertian ||= inversions.detect do |inversion|
       inversion.diatonic_intervals.all?(&:third?)
     end
   end
