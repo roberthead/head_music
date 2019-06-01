@@ -1,20 +1,19 @@
 # frozen_string_literal: true
 
-# The Analysis module is used to identify pitch sets.
-module HeadMusic::Analysis; end
-
 # A Sonority describes a set of pitch class intervalic relationships.
 # For example, a minor triad, or a major-minor seventh chord.
 # The Sonority class is a factory for returning one of its subclasses.
-class HeadMusic::Analysis::Sonority
-  SIZES = %w[
-    silence monad dyad trichord tetrachord pentachord hexachord heptachord octachord nonachord undecachord dodecachord
-  ].freeze
-
-  SONORITIES = %w[
-    MajorTriad MinorTriad DiminishedTriad AugmentedTriad
-    MajorMinorSeventhChord MajorMajorSeventhChord MinorMinorSeventhChord MinorMajorSeventhChord
-  ].freeze
+class HeadMusic::Sonority
+  SONORITIES = {
+    major_triad: %w[M3 P5],
+    minor_triad: %w[m3 P5],
+    diminished_triad: %w[m3 d5],
+    augmented_triad: %w[M3 A5],
+    major_minor_seventh_chord: %w[M3 P5 m7],
+    major_major_seventh_chord: %w[M3 P5 M7],
+    minor_minor_seventh_chord: %w[m3 P5 m7],
+    minor_major_seventh_chord: %w[m3 P5 M7],
+  }.freeze
 
   attr_reader :pitch_set
 
@@ -24,34 +23,23 @@ class HeadMusic::Analysis::Sonority
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_set
   delegate :pitch_class_set, :pitch_class_set_size, to: :pitch_set
 
-  # Returns a matching subclass
-  def self.for(pitch_set)
-    SONORITIES.each do |sonority_class_name|
-      sonority = Object.const_get("HeadMusic::Analysis::#{sonority_class_name}").matching(pitch_set)
-      next unless sonority
-      return sonority
-    end
-    nil
-  end
-
-  def self.matching(pitch_set)
-    sonority = new(pitch_set)
-    sonority if sonority.match?
-  end
-
-  private_class_method :new
-
   def initialize(pitch_set)
     @pitch_set = pitch_set
+    identifier
   end
 
-  def match?
-    !inversion.nil?
+  def identifier
+    return @identifier if defined?(@identifier)
+    @identifier = SONORITIES.keys.detect do |key|
+      inversions.map do |inversion|
+        inversion.diatonic_intervals_above_bass_pitch.map(&:shorthand)
+      end.include?(SONORITIES[key])
+    end
   end
 
   def inversion
     @inversion ||= inversions.index do |inversion|
-      inversion.diatonic_intervals_above_bass_pitch == diatonic_intervals_above_bass_pitch
+      SONORITIES[identifier] == inversion.diatonic_intervals_above_bass_pitch.map(&:shorthand)
     end
   end
 
@@ -101,15 +89,15 @@ class HeadMusic::Analysis::Sonority
   alias quintal? quartal?
 
   def diatonic_intervals_above_bass_pitch
-    self.class.diatonic_interval_shorthand.map { |shorthand| HeadMusic::DiatonicInterval.get(shorthand) }
+    return nil unless identifier
+
+    @diatonic_intervals_above_bass_pitch ||=
+      SONORITIES[identifier].map { |shorthand| HeadMusic::DiatonicInterval.get(shorthand) }
   end
 
   def ==(other)
-    other = self.class.for(other) unless other.is_a?(self.class)
-    self.class.name == other.class.name
+    other = HeadMusic::PitchSet.new(other) if other.is_a?(Array)
+    other = self.class.new(other) if other.is_a?(HeadMusic::PitchSet)
+    identifier == other.identifier
   end
-
-  # @abstract Subclass is expected to implement #
-  # @!method diatonic_intervals_above_bass_pitch
-  #    return an array of diatonic intervals
 end
