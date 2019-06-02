@@ -13,6 +13,15 @@ class HeadMusic::Sonority
     major_major_seventh_chord: %w[M3 P5 M7],
     minor_minor_seventh_chord: %w[m3 P5 m7],
     minor_major_seventh_chord: %w[m3 P5 M7],
+    dominant_ninth_chord: %w[M2 M3 P5 m7],
+    dominant_minor_ninth_chord: %w[m2 M3 P5 m7],
+    minor_ninth_chord: %w[M2 m3 P5 m7],
+    major_ninth_chord: %w[M2 M3 P5 M7],
+    six_nine_chord: %w[M2 M3 P5 M6],
+    minor_six_nine_chord: %w[M2 m3 P5 M6],
+    suspended_four_chord: %w[P4 P5],
+    suspended_two_chord: %w[M2 P5],
+    quartal_chord: %w[P4 m7],
   }.freeze
 
   attr_reader :pitch_set
@@ -22,6 +31,7 @@ class HeadMusic::Sonority
   delegate :monochord?, :monad, :dichord?, :dyad?, :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_set
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_set
   delegate :pitch_class_set, :pitch_class_set_size, to: :pitch_set
+  delegate :scale_degrees_above_bass_pitch, to: :pitch_set
 
   def initialize(pitch_set)
     @pitch_set = pitch_set
@@ -75,16 +85,23 @@ class HeadMusic::Sonority
 
   def tertian?
     @tertian ||= inversions.detect do |inversion|
-      inversion.diatonic_intervals.all?(&:third?)
+      inversion.diatonic_intervals.count(&:third?).to_f / inversion.diatonic_intervals.length > 0.5 ||
+        (scale_degrees_above_bass_pitch && [3, 5, 7]).length == 3
     end
   end
 
   def secundal?
-    false
+    @secundal ||= inversions.detect do |inversion|
+      inversion.diatonic_intervals.count(&:second?).to_f / inversion.diatonic_intervals.length > 0.5
+    end
   end
 
   def quartal?
-    false
+    @quartal ||= inversions.detect do |inversion|
+      inversion.diatonic_intervals.count do |interval|
+        interval.fourth? || interval.fifth?
+      end.to_f / inversion.diatonic_intervals.length > 0.5
+    end
   end
   alias quintal? quartal?
 

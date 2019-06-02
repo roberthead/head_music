@@ -1,5 +1,20 @@
 # TODO
 
+Disambiguate PitchSet and Sonority
+
+Sonority should be a name for a specific set of intervals
+Sonority.get(identifier)
+Sonority.for(pitch_set)
+Sonority.pitch_set_for(root_pitch:, inversion:)
+
+    class PitchSet
+      def sonority
+        @sonority ||= Sonority.for(self)
+      end
+    end
+
+
+
 open consonance (P5 P8)
 soft consonance (m3 M3 m6 M6)
 mild dissonance (M2 m7)
@@ -11,22 +26,7 @@ T (neutral or restless)
 Sets
 DurationSet?
 
-Sonority
-- #valid?
-- symbol
-- long symbol
-- root
-- pitch_classes
 
-SonorityName
-> Sonority
-name (for example, "major minor seventh" or "dominant seventh")
-abbreviation
-
-
-
-PitchSetAnalysis
-- Strategy pattern
 Make new analysis classes:
 Dyad
   .interval

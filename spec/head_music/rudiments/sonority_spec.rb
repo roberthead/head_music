@@ -49,6 +49,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_trichord }
       it { is_expected.to be_triad }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 0 }
     end
@@ -60,6 +62,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_triad }
       it { is_expected.to be_trichord }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 1 }
     end
@@ -71,6 +75,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_triad }
       it { is_expected.to be_trichord }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 2 }
     end
@@ -82,6 +88,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_trichord }
       it { is_expected.to be_triad }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 0 }
     end
@@ -93,6 +101,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_triad }
       it { is_expected.to be_trichord }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 1 }
     end
@@ -104,6 +114,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_triad }
       it { is_expected.to be_trichord }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 2 }
     end
@@ -116,6 +128,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_triad }
       it { is_expected.not_to be_consonant }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 0 }
     end
@@ -128,6 +142,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_trichord }
       it { is_expected.not_to be_consonant }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 1 }
     end
@@ -140,6 +156,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_trichord }
       it { is_expected.not_to be_consonant }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 2 }
     end
@@ -152,6 +170,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_triad }
       it { is_expected.not_to be_consonant }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 0 }
     end
@@ -164,6 +184,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_trichord }
       it { is_expected.not_to be_consonant }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 1 }
     end
@@ -176,6 +198,8 @@ describe HeadMusic::Sonority do
       it { is_expected.to be_trichord }
       it { is_expected.not_to be_consonant }
       it { is_expected.to be_tertian }
+      it { is_expected.not_to be_secundal }
+      it { is_expected.not_to be_quartal }
 
       its(:inversion) { is_expected.to eq 2 }
     end
@@ -189,6 +213,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in first inversion' do
@@ -199,6 +225,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in second inversion' do
@@ -209,6 +237,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in third inversion' do
@@ -219,6 +249,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
     end
 
@@ -231,6 +263,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in first inversion' do
@@ -241,6 +275,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in second inversion' do
@@ -251,6 +287,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in third inversion' do
@@ -261,6 +299,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
     end
 
@@ -273,6 +313,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in first inversion' do
@@ -283,6 +325,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in second inversion' do
@@ -293,6 +337,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in third inversion' do
@@ -303,6 +349,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
     end
 
@@ -315,6 +363,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in first inversion' do
@@ -325,6 +375,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in second inversion' do
@@ -335,6 +387,8 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
       end
 
       context 'when in third inversion' do
@@ -345,6 +399,19 @@ describe HeadMusic::Sonority do
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
         it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+    end
+
+    context 'when given a ninth chord' do
+      context 'when given a dominant ninth chord' do
+        context 'when in root position' do
+          let(:pitch_set) { HeadMusic::PitchSet.new(%w[C E G Bb D5]) }
+
+          its(:identifier) { is_expected.to eq :dominant_ninth_chord }
+          it { is_expected.to be_tertian }
+        end
       end
     end
   end
