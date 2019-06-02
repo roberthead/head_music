@@ -66,7 +66,7 @@ describe HeadMusic::PitchSet do
       it { is_expected.not_to be_decachord }
       it { is_expected.not_to be_undecachord }
       it { is_expected.not_to be_dodecachord }
-      it { is_expected.not_to be_tertial }
+      it { is_expected.not_to be_tertian }
 
       its(:integer_notation) { is_expected.to eq [] }
       its(:scale_degrees) { is_expected.to eq [] }
@@ -90,7 +90,7 @@ describe HeadMusic::PitchSet do
       it { is_expected.not_to be_decachord }
       it { is_expected.not_to be_undecachord }
       it { is_expected.not_to be_dodecachord }
-      it { is_expected.not_to be_tertial }
+      it { is_expected.not_to be_tertian }
 
       its(:integer_notation) { is_expected.to eq [0] }
       its(:scale_degrees) { is_expected.to eq [1] }
@@ -118,7 +118,7 @@ describe HeadMusic::PitchSet do
       context 'when the pitches are a major third apart' do
         subject(:set) { HeadMusic::PitchSet.new(%w[D4 F#4]) }
 
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
 
         its(:integer_notation) { is_expected.to eq [0, 4] }
         its(:scale_degrees) { is_expected.to eq [1, 3] }
@@ -127,7 +127,7 @@ describe HeadMusic::PitchSet do
       context 'when the pitches are a compound sixth apart' do
         subject(:set) { HeadMusic::PitchSet.new(%w[F#4 D6]) }
 
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
 
         its(:integer_notation) { is_expected.to eq [0, 8] }
         its(:scale_degrees) { is_expected.to eq [1, 6] }
@@ -144,7 +144,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
 
           its(:integer_notation) { is_expected.to eq [0, 3, 7] }
           its(:scale_degrees) { is_expected.to eq [1, 3, 5] }
@@ -158,7 +158,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
 
           its(:integer_notation) { is_expected.to eq [0, 4, 9] }
           its(:scale_degrees) { is_expected.to eq [1, 3, 6] }
@@ -172,7 +172,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
 
           its(:integer_notation) { is_expected.to eq [0, 5, 8] }
           its(:scale_degrees) { is_expected.to eq [1, 4, 6] }
@@ -186,7 +186,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
 
           its(:integer_notation) { is_expected.to eq [0, 3, 7] }
           its(:scale_degrees) { is_expected.to eq [1, 3, 5] }
@@ -200,7 +200,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_root_position_triad }
           it { is_expected.not_to be_major_triad }
           it { is_expected.to be_minor_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
 
           its(:integer_notation) { is_expected.to eq [0, 5, 8] }
           its(:scale_degrees) { is_expected.to eq [1, 4, 6] }
@@ -219,7 +219,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
           it { is_expected.not_to be_diminished_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
 
           its(:integer_notation) { is_expected.to eq [0, 4, 7] }
           its(:scale_degrees) { is_expected.to eq [1, 3, 5] }
@@ -235,7 +235,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
 
           its(:integer_notation) { is_expected.to eq [0, 3, 8] }
           its(:scale_degrees) { is_expected.to eq [1, 3, 6] }
@@ -251,7 +251,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
 
           its(:integer_notation) { is_expected.to eq [0, 5, 9] }
           its(:scale_degrees) { is_expected.to eq [1, 4, 6] }
@@ -267,7 +267,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.not_to be_second_inversion_triad }
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
         end
 
         context 'spread wide' do
@@ -281,7 +281,7 @@ describe HeadMusic::PitchSet do
           it { is_expected.to be_major_triad }
           it { is_expected.not_to be_minor_triad }
           it { is_expected.not_to be_diminished_triad }
-          it { is_expected.to be_tertial }
+          it { is_expected.to be_tertian }
         end
       end
 
@@ -296,7 +296,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_major_triad }
         it { is_expected.not_to be_minor_triad }
         it { is_expected.to be_diminished_triad }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
 
         its(:integer_notation) { is_expected.to eq [0, 3, 6] }
         its(:scale_degrees) { is_expected.to eq [1, 3, 5] }
@@ -314,7 +314,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_minor_triad }
         it { is_expected.to be_diminished_triad }
         it { is_expected.not_to be_augmented_triad }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
       end
 
       context 'when given an augmented triad' do
@@ -329,7 +329,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_minor_triad }
         it { is_expected.not_to be_diminished_triad }
         it { is_expected.to be_augmented_triad }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
 
         its(:integer_notation) { is_expected.to eq [0, 4, 8] }
         its(:scale_degrees) { is_expected.to eq [1, 3, 5] }
@@ -347,7 +347,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_minor_triad }
         it { is_expected.not_to be_diminished_triad }
         it { is_expected.to be_augmented_triad }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
       end
 
       context 'when given a non-triad' do
@@ -360,7 +360,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_second_inversion_triad }
         it { is_expected.not_to be_major_triad }
         it { is_expected.not_to be_minor_triad }
-        it { is_expected.not_to be_tertial }
+        it { is_expected.not_to be_tertian }
 
         its(:integer_notation) { is_expected.to eq [0, 2, 5] }
         its(:scale_degrees) { is_expected.to eq [1, 2, 4] }
@@ -377,7 +377,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_first_inversion_seventh_chord }
         it { is_expected.not_to be_second_inversion_seventh_chord }
         it { is_expected.not_to be_third_inversion_seventh_chord }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
       end
 
       context 'given a major-minor seventh chord in first inversion' do
@@ -389,7 +389,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.to be_first_inversion_seventh_chord }
         it { is_expected.not_to be_second_inversion_seventh_chord }
         it { is_expected.not_to be_third_inversion_seventh_chord }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
       end
 
       context 'given a major-minor seventh chord in second inversion' do
@@ -401,7 +401,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_first_inversion_seventh_chord }
         it { is_expected.to be_second_inversion_seventh_chord }
         it { is_expected.not_to be_third_inversion_seventh_chord }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
       end
 
       context 'given a major-minor seventh chord in third inversion' do
@@ -413,7 +413,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_first_inversion_seventh_chord }
         it { is_expected.not_to be_second_inversion_seventh_chord }
         it { is_expected.to be_third_inversion_seventh_chord }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
         it { is_expected.not_to be_ninth_chord }
         it { is_expected.not_to be_eleventh_chord }
         it { is_expected.not_to be_thirteenth_chord }
@@ -430,7 +430,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_triad }
         it { is_expected.not_to be_seventh_chord }
         it { is_expected.to be_ninth_chord }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
         it { is_expected.not_to be_eleventh_chord }
         it { is_expected.not_to be_thirteenth_chord }
       end
@@ -441,7 +441,7 @@ describe HeadMusic::PitchSet do
         it { is_expected.not_to be_triad }
         it { is_expected.not_to be_seventh_chord }
         it { is_expected.to be_ninth_chord }
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
         it { is_expected.not_to be_eleventh_chord }
         it { is_expected.not_to be_thirteenth_chord }
 
@@ -454,7 +454,7 @@ describe HeadMusic::PitchSet do
       context 'given an eleventh chord cluster' do
         subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G]) }
 
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
         it { is_expected.not_to be_triad }
         it { is_expected.not_to be_seventh_chord }
         it { is_expected.not_to be_ninth_chord }
@@ -467,7 +467,7 @@ describe HeadMusic::PitchSet do
       context 'given an eleventh chord cluster' do
         subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G A]) }
 
-        it { is_expected.to be_tertial }
+        it { is_expected.to be_tertian }
         it { is_expected.not_to be_triad }
         it { is_expected.not_to be_seventh_chord }
         it { is_expected.not_to be_ninth_chord }

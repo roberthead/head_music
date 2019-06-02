@@ -3,13 +3,13 @@
 # A PitchSet is a collection of one or more pitches.
 # See also: PitchClassSet
 class HeadMusic::PitchSet
-  TERTIAL_SONORITIES = {
+  TERTIAN_SONORITIES = {
     implied_triad: [3],
     triad: [3, 5],
     seventh_chord: [3, 5, 7],
     ninth_chord: [2, 3, 5, 7],
     eleventh_chord: [2, 3, 4, 5, 7],
-    thirteenth_chord: [2, 3, 4, 5, 6, 7],
+    thirteenth_chord: [2, 3, 4, 5, 6, 7], # a.k.a. diatonic scale
   }.freeze
 
   attr_reader :pitches
@@ -97,7 +97,7 @@ class HeadMusic::PitchSet
   end
 
   def triad?
-    trichord? && tertial?
+    trichord? && tertian?
   end
 
   def consonant_triad?
@@ -133,7 +133,7 @@ class HeadMusic::PitchSet
   end
 
   def seventh_chord?
-    tetrachord? && tertial?
+    tetrachord? && tertian?
   end
 
   def root_position_seventh_chord?
@@ -153,23 +153,23 @@ class HeadMusic::PitchSet
   end
 
   def ninth_chord?
-    pentachord? && tertial?
+    pentachord? && tertian?
   end
 
   def eleventh_chord?
-    hexachord? && tertial?
+    hexachord? && tertian?
   end
 
   def thirteenth_chord?
-    heptachord? && tertial?
+    heptachord? && tertian?
   end
 
-  def tertial?
+  def tertian?
     return false unless diatonic_intervals.any?
 
     inversion = reduction
     pitches.length.times do
-      return true if TERTIAL_SONORITIES.value?(inversion.scale_degrees_above_bass_pitch)
+      return true if TERTIAN_SONORITIES.value?(inversion.scale_degrees_above_bass_pitch)
       inversion = inversion.invert
     end
     false
