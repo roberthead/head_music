@@ -34,7 +34,7 @@ class HeadMusic::Octave
   delegate :to_i, :to_s, to: :number
 
   def initialize(number)
-    @number ||= number
+    @number = number
   end
 
   def <=>(other)

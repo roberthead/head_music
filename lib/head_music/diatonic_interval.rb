@@ -92,7 +92,7 @@ class HeadMusic::DiatonicInterval
     attr_reader :count
 
     def initialize(name, quality_name)
-      @count ||= Semitones.degree_quality_semitones.dig(name, quality_name)
+      @count = Semitones.degree_quality_semitones.dig(name, quality_name)
     end
 
     def self.degree_quality_semitones
