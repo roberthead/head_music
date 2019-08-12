@@ -42,6 +42,7 @@ class HeadMusic::Sonority
 
   def identifier
     return @identifier if defined?(@identifier)
+
     @identifier = SONORITIES.keys.detect do |key|
       inversions.map do |inversion|
         inversion.diatonic_intervals_above_bass_pitch.map(&:shorthand)

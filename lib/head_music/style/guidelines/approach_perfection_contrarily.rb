@@ -25,6 +25,6 @@ class HeadMusic::Style::Guidelines::ApproachPerfectionContrarily < HeadMusic::St
     end
   end
 
-  # Side effect is that you can't enter a perfect consonance by skip,
+  # Side effect is that you can't enter a perfect consonance by skip in similar or parallel motion,
   # which is a rule.
 end

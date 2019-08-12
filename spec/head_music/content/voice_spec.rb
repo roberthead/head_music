@@ -4,6 +4,7 @@ require 'spec_helper'
 
 describe HeadMusic::Voice do
   let(:composition) { HeadMusic::Composition.new }
+
   subject(:voice) { described_class.new(composition: composition) }
 
   its(:composition) { is_expected.to eq composition }
@@ -132,7 +133,7 @@ describe HeadMusic::Voice do
       let(:rhythmic_value) { :quarter }
 
       specify do
-        expect(notes_during.map(&:pitch).map(&:to_s)).to match ['A4']
+        expect(notes_during.map(&:to_s)).to match ['whole A4 at 5:1:000']
       end
     end
 
@@ -141,7 +142,7 @@ describe HeadMusic::Voice do
       let(:rhythmic_value) { :quarter }
 
       specify do
-        expect(notes_during.map(&:pitch).map(&:to_s)).to match ['A4']
+        expect(notes_during.map(&:to_s)).to match ['whole A4 at 5:1:000']
       end
     end
 
@@ -150,7 +151,7 @@ describe HeadMusic::Voice do
       let(:rhythmic_value) { :'thirty-second' }
 
       specify do
-        expect(notes_during.map(&:pitch).map(&:to_s)).to match ['A4']
+        expect(voice.notes_during(placement).map(&:to_s)).to match ['whole A4 at 5:1:000']
       end
     end
 
@@ -167,7 +168,7 @@ describe HeadMusic::Voice do
       let(:rhythmic_value) { :breve }
 
       specify do
-        expect(notes_during.map(&:pitch).map(&:to_s)).to eq %w[F4 A4 G4]
+        expect(notes_during.map(&:to_s)).to eq ['whole F4 at 4:1:000', 'whole A4 at 5:1:000', 'whole G4 at 6:1:000']
       end
     end
   end

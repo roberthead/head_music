@@ -20,6 +20,12 @@ describe HeadMusic::Placement do
     let(:pitch) { nil }
 
     it { is_expected.to be_rest }
+
+    context 'when the rhythmic value is a thirty-second note' do
+      let(:rhythmic_value) { HeadMusic::RhythmicValue.new(:'thirty-second') }
+
+      its(:rhythmic_value) { is_expected.to eq 'thirty-second' }
+    end
   end
 
   describe '#next_position' do
@@ -29,6 +35,13 @@ describe HeadMusic::Placement do
       let(:rhythmic_value) { HeadMusic::RhythmicValue.new(:breve) }
 
       specify { expect(placement.next_position).to eq '4:2:240' }
+    end
+
+    context 'when the value occurs at a fractional position' do
+      let(:position) { '5:1:001' }
+      let(:rhythmic_value) { HeadMusic::RhythmicValue.new(:'thirty-second') }
+
+      specify { expect(placement.next_position).to eq '5:1:121' }
     end
   end
 

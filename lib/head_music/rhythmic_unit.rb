@@ -80,10 +80,26 @@ class HeadMusic::RhythmicUnit
   end
 
   def numerator_exponent
-    MULTIPLES.index(name) || BRITISH_MULTIPLE_NAMES.index(name) || 0
+    multiples_keys.index(name.gsub(/\W+/, '_')) || british_multiples_keys.index(name.gsub(/\W+/, '_')) || 0
+  end
+
+  def multiples_keys
+    MULTIPLES.map { |multiple| multiple.gsub(/\W+/, '_') }
+  end
+
+  def british_multiples_keys
+    BRITISH_MULTIPLE_NAMES.map { |multiple| multiple.gsub(/\W+/, '_') }
   end
 
   def denominator_exponent
-    FRACTIONS.index(name) || BRITISH_DIVISION_NAMES.index(name) || 0
+    fractions_keys.index(name.gsub(/\W+/, '_')) || british_fractions_keys.index(name.gsub(/\W+/, '_')) || 0
+  end
+
+  def fractions_keys
+    FRACTIONS.map { |fraction| fraction.gsub(/\W+/, '_') }
+  end
+
+  def british_fractions_keys
+    BRITISH_DIVISION_NAMES.map { |fraction| fraction.gsub(/\W+/, '_') }
   end
 end
