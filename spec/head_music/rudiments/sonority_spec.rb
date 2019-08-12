@@ -404,6 +404,106 @@ describe HeadMusic::Sonority do
       end
     end
 
+    context 'when given a half-diminished seventh chord' do
+      context 'when in root position' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[G3 Bb3 Db F]) }
+
+        its(:identifier) { is_expected.to eq :half_diminished_seventh_chord }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+
+      context 'when in first inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[Bb3 Db F G]) }
+
+        its(:identifier) { is_expected.to eq :half_diminished_seventh_chord }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+
+      context 'when in second inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[Db F G Bb3]) }
+
+        its(:identifier) { is_expected.to eq :half_diminished_seventh_chord }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+
+      context 'when in third inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[F G Bb3 Db5]) }
+
+        its(:identifier) { is_expected.to eq :half_diminished_seventh_chord }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+    end
+
+    context 'when given a fully-diminished seventh chord' do
+      context 'when in root position' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[G3 Bb3 Db Fb]) }
+
+        its(:identifier) { is_expected.to eq :diminished_seventh_chord }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+
+      context 'when in first inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[Bb3 Db Fb G]) }
+
+        its(:identifier) { is_expected.to eq :diminished_seventh_chord }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+
+      context 'when in second inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[Db Fb G Bb3]) }
+
+        its(:identifier) { is_expected.to eq :diminished_seventh_chord }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+
+      context 'when in third inversion' do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[Fb G Bb3 Db5]) }
+
+        its(:identifier) { is_expected.to eq :diminished_seventh_chord }
+        it { is_expected.to be_seventh_chord }
+        it { is_expected.to be_tetrachord }
+        it { is_expected.not_to be_consonant }
+        it { is_expected.to be_tertian }
+        it { is_expected.not_to be_secundal }
+        it { is_expected.not_to be_quartal }
+      end
+    end
+
     context 'when given a ninth chord' do
       context 'when given a dominant ninth chord' do
         context 'when in root position' do

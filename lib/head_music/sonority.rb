@@ -13,6 +13,8 @@ class HeadMusic::Sonority
     major_major_seventh_chord: %w[M3 P5 M7],
     minor_minor_seventh_chord: %w[m3 P5 m7],
     minor_major_seventh_chord: %w[m3 P5 M7],
+    half_diminished_seventh_chord: %w[m3 d5 m7],
+    diminished_seventh_chord: %w[m3 d5 d7],
     dominant_ninth_chord: %w[M2 M3 P5 m7],
     dominant_minor_ninth_chord: %w[m2 M3 P5 m7],
     minor_ninth_chord: %w[M2 m3 P5 m7],
