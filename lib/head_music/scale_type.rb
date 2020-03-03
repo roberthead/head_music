@@ -64,6 +64,7 @@ class HeadMusic::ScaleType
   end
 
   def self._exotic_scales
+    # 'octatonic' is also called the 'whole-half diminished scale'
     {
       octatonic: { ascending: [W, H, W, H, W, H, W, H] },
       whole_tone: { ascending: [W, W, W, W, W, W] },
