@@ -148,6 +148,9 @@ describe HeadMusic::DiatonicInterval do
     describe 'inversion' do
       its(:inversion) { is_expected.to eq 'perfect fourth' }
     end
+
+    its(:interval_class) { is_expected.to eq 5 }
+    its(:interval_class_name) { is_expected.to eq 'ic 5' }
   end
 
   context 'given two pitches comprising an augmented octave' do

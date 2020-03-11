@@ -340,6 +340,14 @@ class HeadMusic::DiatonicInterval
     HeadMusic::Pitch.from_number_and_letter(pitch - semitones, pitch.letter_name.steps_down(number - 1))
   end
 
+  def interval_class
+    [simple_semitones, 12 - simple_semitones].min
+  end
+
+  def interval_class_name
+    "ic #{interval_class}"
+  end
+
   # diatonic set theory
   alias specific_interval simple_semitones
   alias diatonic_generic_interval simple_steps
