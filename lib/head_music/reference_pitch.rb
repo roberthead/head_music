@@ -67,7 +67,7 @@ class HeadMusic::ReferencePitch
       pitch.letter_name,
       format(
         '%<with_digits>g',
-        with_digits: format('%.2f', frequency)
+        with_digits: format('%.2<frequency>f', frequency: frequency)
       ),
     ].join('=')
   end
