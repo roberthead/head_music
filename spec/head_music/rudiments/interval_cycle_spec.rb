@@ -19,11 +19,11 @@ describe HeadMusic::IntervalCycle do
     describe '#pitch_classes' do
       it 'lists all the pitch classes starting at C' do
         expect(diminished_seventh_sonority.pitch_classes).to eq([
-                                             HeadMusic::PitchClass.get(0),
-                                             HeadMusic::PitchClass.get(3),
-                                             HeadMusic::PitchClass.get(6),
-                                             HeadMusic::PitchClass.get(9),
-                                           ])
+                                                                  HeadMusic::PitchClass.get(0),
+                                                                  HeadMusic::PitchClass.get(3),
+                                                                  HeadMusic::PitchClass.get(6),
+                                                                  HeadMusic::PitchClass.get(9),
+                                                                ])
       end
     end
 
