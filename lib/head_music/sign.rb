@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
+require 'head_music/musical_symbol'
+
 # A Sign is a symbol that modifies pitch, such as a sharp, flat, or natural.
 class HeadMusic::Sign
   include Comparable
 
-  attr_reader :identifier, :ascii, :unicode, :html_entity, :cents
+  attr_reader :identifier, :cents, :symbol
 
   def self.all
     @all ||= [
@@ -64,14 +66,19 @@ class HeadMusic::Sign
     cents <=> other.cents
   end
 
+  delegate :ascii, :html_entity, :unicode, to: :symbol
+
   private
 
   def initialize(attributes)
     @identifier = attributes[:identifier]
-    @ascii = attributes[:ascii]
-    @unicode = attributes[:unicode]
-    @html_entity = attributes[:html_entity]
     @cents = attributes[:cents]
+
+    @symbol = HeadMusic::Symbol.new(
+      unicode: attributes[:unicode],
+      ascii: attributes[:ascii],
+      html_entity: attributes[:html_entity]
+    )
   end
 
   private_class_method :new
