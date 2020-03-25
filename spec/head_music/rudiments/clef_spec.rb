@@ -9,7 +9,9 @@ describe HeadMusic::Clef do
     let(:name) { :treble }
 
     it { is_expected.to be_modern }
+
     its(:clef_type) { is_expected.to eq 'G-clef' }
+    its(:unicode) { is_expected.to eq '𝄞' }
 
     specify { expect(clef.pitch_for_space(-1)).to eq 'B3' }
     specify { expect(clef.pitch_for_line(0)).to eq 'C4' }
@@ -33,7 +35,9 @@ describe HeadMusic::Clef do
     let(:name) { :alto }
 
     it { is_expected.to be_modern }
+
     its(:clef_type) { is_expected.to eq 'C-clef' }
+    its(:unicode) { is_expected.to eq '𝄡' }
 
     specify { expect(clef.pitch_for_space(-1)).to eq 'C3' }
     specify { expect(clef.pitch_for_line(0)).to eq 'D3' }
@@ -57,7 +61,9 @@ describe HeadMusic::Clef do
     let(:name) { :bass }
 
     it { is_expected.to be_modern }
+
     its(:clef_type) { is_expected.to eq 'F-clef' }
+    its(:unicode) { is_expected.to eq '𝄢' }
 
     specify { expect(clef.pitch_for_space(-1)).to eq 'D2' }
     specify { expect(clef.pitch_for_line(0)).to eq 'E2' }
@@ -84,12 +90,16 @@ describe HeadMusic::Clef do
 
     it { is_expected.not_to be_modern }
 
+    its(:unicode) { is_expected.to eq '𝄡' }
+
     specify { expect(clef.pitch_for_line(2)).to eq 'C4' }
   end
 
   context 'the tenor clef' do
     context "when constructed with the name 'tenor'" do
       let(:name) { 'tenor' }
+
+      its(:unicode) { is_expected.to eq '𝄠' }
 
       it 'returns to the choral tenor clef' do
         expect(clef.clef_type).to eq 'G-clef'
@@ -98,6 +108,8 @@ describe HeadMusic::Clef do
 
     context "when constructed with the name 'tenor C-clef'" do
       let(:name) { 'tenor C-clef' }
+
+      its(:unicode) { is_expected.to eq '𝄡' }
 
       it 'returns to the choral tenor clef' do
         expect(clef.clef_type).to eq 'C-clef'

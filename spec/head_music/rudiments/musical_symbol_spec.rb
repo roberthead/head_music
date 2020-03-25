@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Symbol do
+describe HeadMusic::MusicalSymbol do
   context 'given a generic named class' do
     describe '#construction' do
       subject(:symbol) do
-        HeadMusic::Symbol.new(
+        described_class.new(
           ascii: '#',
           unicode: '♯',
           html_entity: '&#9839;'

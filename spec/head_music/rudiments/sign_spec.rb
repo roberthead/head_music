@@ -59,6 +59,7 @@ describe HeadMusic::Sign do
 
   describe '.symbol?' do
     specify { expect(described_class.symbol?('#')).to be_truthy }
+    specify { expect(described_class.symbol?('♯')).to be_truthy }
     specify { expect(described_class.symbol?('j')).to be_falsey }
   end
 end

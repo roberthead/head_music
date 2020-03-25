@@ -6,7 +6,7 @@ require 'head_music/musical_symbol'
 class HeadMusic::Sign
   include Comparable
 
-  attr_reader :identifier, :cents, :symbol
+  attr_reader :identifier, :cents, :musical_symbol
 
   def self.all
     @all ||= [
@@ -66,7 +66,7 @@ class HeadMusic::Sign
     cents <=> other.cents
   end
 
-  delegate :ascii, :html_entity, :unicode, to: :symbol
+  delegate :ascii, :html_entity, :unicode, to: :musical_symbol
 
   private
 
@@ -74,7 +74,7 @@ class HeadMusic::Sign
     @identifier = attributes[:identifier]
     @cents = attributes[:cents]
 
-    @symbol = HeadMusic::Symbol.new(
+    @musical_symbol = HeadMusic::MusicalSymbol.new(
       unicode: attributes[:unicode],
       ascii: attributes[:ascii],
       html_entity: attributes[:html_entity]
