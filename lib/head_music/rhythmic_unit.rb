@@ -2,7 +2,7 @@
 
 # A rhythmic unit is a rudiment of duration consisting of doublings and divisions of a whole note.
 class HeadMusic::RhythmicUnit
-  include HeadMusic::NamedRudiment
+  include HeadMusic::Named
 
   MULTIPLES = ['whole', 'double whole', 'longa', 'maxima'].freeze
   FRACTIONS = [

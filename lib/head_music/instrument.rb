@@ -2,7 +2,7 @@
 
 # An instrument can be assigned to a staff.
 class HeadMusic::Instrument
-  include HeadMusic::NamedRudiment
+  include HeadMusic::Named
 
   INSTRUMENTS = {
     violin: {

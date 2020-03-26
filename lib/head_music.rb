@@ -17,7 +17,7 @@ require 'humanize'
 require 'head_music/utilities/hash_key'
 
 # modules
-require 'head_music/named_rudiment'
+require 'head_music/named'
 
 # rudiments
 require 'head_music/chromatic_interval'

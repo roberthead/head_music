@@ -2,7 +2,7 @@
 
 # A clef assigns pitches to the lines and spaces of a staff.
 class HeadMusic::Clef
-  include HeadMusic::NamedRudiment
+  include HeadMusic::Named
 
   CLEFS = [
     {
