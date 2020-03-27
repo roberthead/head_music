@@ -24,28 +24,29 @@ class HeadMusic::ReferencePitch
     { name: 'Chorton', pitch: 'A4', frequency: 466.0 },
   ].freeze
 
-  ALIASES = {
-    kammerton: :baroque,
-    chamber: :baroque,
-    haydn: :classical,
-    mozart: :classical,
-    philosophic: :scientific,
-    sauveur: :scientific,
-    schiller: :scientific,
-    continental: :french,
-    international: :french,
-    low: :new_philharmonic,
-    concert: :a440,
-    stuttgart: :a440,
-    scheibler: :a440,
-    iso_16: :a440,
-    high: :old_philharmonic,
-    choir: :chorton,
-  }.freeze
-
-  NAMED_REFERENCE_PITCH_NAMES = NAMED_REFERENCE_PITCHES.map { |pitch_data| pitch_data[:name] }
+  ALIAS_DATA = [
+    { key: :baroque, name: 'Kammerton' },
+    { key: :classical, name: 'Haydn' },
+    { key: :classical, name: 'Mozart' },
+    { key: :scientific, name: 'philosophical' },
+    { key: :scientific, name: 'Sauveur' },
+    { key: :scientific, name: 'Schiller' },
+    { key: :french, name: 'continental' },
+    { key: :french, name: 'international' },
+    { key: :new_philharmonic, name: 'low' },
+    { key: :old_philharmonic, name: 'high' },
+    { key: :a440, name: 'concert' },
+    { key: :a440, name: 'Stuttgart' },
+    { key: :a440, name: 'Scheibler' },
+    { key: :a440, name: 'ISO 16' },
+    { key: :chorton, name: 'choir' },
+  ].freeze
 
   attr_reader :pitch, :frequency
+
+  def self.aliases
+    @aliases ||= ALIAS_DATA.map { |attributes| HeadMusic::Named::Alias.new(attributes) }
+  end
 
   def self.get(name)
     return name if name.is_a?(self)
@@ -56,7 +57,7 @@ class HeadMusic::ReferencePitch
     @name = name.to_s
     reference_pitch_data = NAMED_REFERENCE_PITCHES.detect do |candidate|
       candidate_name_key = HeadMusic::Utilities::HashKey.for(candidate[:name])
-      [candidate_name_key, candidate_name_key.to_s.delete('_').to_sym].include?(normalized_name)
+      [candidate_name_key, candidate_name_key.to_s.delete('_').to_sym].include?(normalized_key)
     end || {}
     @pitch = HeadMusic::Pitch.get(reference_pitch_data.fetch(:pitch, DEFAULT_PITCH_NAME))
     @frequency = reference_pitch_data.fetch(:frequency, DEFAULT_FREQUENCY)
@@ -78,10 +79,12 @@ class HeadMusic::ReferencePitch
 
   private
 
-  def normalized_name
-    @normalized_name ||= begin
+  def normalized_key
+    @normalized_key ||= begin
       key = HeadMusic::Utilities::HashKey.for(name.to_s.gsub(/\W?(pitch|tuning|tone)/, ''))
-      ALIASES[key] || key
+      HeadMusic::ReferencePitch.aliases.detect do |alias_data|
+        HeadMusic::Utilities::HashKey.for(alias_data.name) == key
+      end&.key || key
     end
   end
 end

@@ -18,6 +18,3 @@ class HeadMusic::Tuning
 end
 
 # TODO: other tunings
-# Create website that hosts videos on theory and history, handy charts, etc.
-# one of those charts can be a frequency table in various tunings
-# maybe show pythagorean commas and such. or cents sharp or flat relative to either equal temperment or just intonation

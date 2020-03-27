@@ -25,5 +25,21 @@ module HeadMusic::Named
       key = HeadMusic::Utilities::HashKey.for(name)
       @instances_by_name[key] ||= new(name)
     end
+
+    def aliases
+      {}
+    end
+  end
+
+  # An Alias encapsulates an alternative name for a rudiment.
+  class Alias
+    attr_reader :key, :name, :abbreviation, :locale
+
+    def initialize(key:, name:, abbreviation: nil, locale: nil)
+      @key = key
+      @name = name
+      @abbreviation = abbreviation
+      @locale = locale
+    end
   end
 end
