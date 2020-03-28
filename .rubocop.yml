@@ -1,6 +1,9 @@
 Layout/DotPosition:
   EnforcedStyle: trailing
 
+Layout/LineLength:
+  Max: 120
+
 Metrics/BlockLength:
   Exclude:
     - 'Gemfile'
@@ -9,9 +12,6 @@ Metrics/BlockLength:
 
 Metrics/ClassLength:
   Max: 155
-
-Metrics/LineLength:
-  Max: 120
 
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
