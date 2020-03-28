@@ -21,9 +21,15 @@ class HeadMusic::Pitch
   delegate :enharmonic_equivalent?, :enharmonic?, to: :enharmonic_equivalence
   delegate :octave_equivalent?, to: :octave_equivalence
 
+  # Fetches a pitch identified by the information passed in.
+  #
+  # Accepts:
+  #   - a Pitch instance
+  #   - a PitchClass instance
+  #   - a name string, such as 'Ab4'
+  #   - a number corresponding to the midi note number
   def self.get(value)
-    (value if value.is_a?(HeadMusic::Pitch)) ||
-      from_pitch_class(value) ||
+    from_pitch_class(value) ||
       from_name(value) ||
       from_number(value)
   end
@@ -51,9 +57,7 @@ class HeadMusic::Pitch
   def self.from_number(number)
     return nil unless number == number.to_i
 
-    spelling = HeadMusic::Spelling.from_number(number)
-    octave = (number.to_i / 12) - 1
-    fetch_or_create(spelling, octave)
+    fetch_or_create(HeadMusic::Spelling.from_number(number), (number.to_i / 12) - 1)
   end
 
   def self.from_number_and_letter(number, letter_name)

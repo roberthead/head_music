@@ -6,8 +6,8 @@ class HeadMusic::KeySignature
   attr_reader :scale_type
   attr_reader :scale
 
-  SHARPS = %w[F♯ C♯ G♯ D♯ A♯ E♯ B♯].freeze
-  FLATS = %w[B♭ E♭ A♭ D♭ G♭ C♭ F♭].freeze
+  ORDERED_LETTER_NAMES_OF_SHARPS = %w[F C G D A E B].freeze
+  ORDERED_LETTER_NAMES_OF_FLATS = ORDERED_LETTER_NAMES_OF_SHARPS.reverse.freeze
 
   def self.default
     @default ||= new('C', :major)
@@ -39,19 +39,35 @@ class HeadMusic::KeySignature
   end
 
   def sharps
-    spellings.select(&:sharp?).sort_by { |sharp| SHARPS.index(sharp.to_s) }
+    spellings.select(&:sharp?).sort_by do |spelling|
+      ORDERED_LETTER_NAMES_OF_SHARPS.index(spelling.letter_name.to_s)
+    end
+  end
+
+  def double_sharps
+    spellings.select(&:double_sharp?).sort_by do |spelling|
+      ORDERED_LETTER_NAMES_OF_SHARPS.index(spelling.letter_name.to_s)
+    end
   end
 
   def flats
-    spellings.select(&:flat?).sort_by { |flat| FLATS.index(flat.to_s) }
+    spellings.select(&:flat?).sort_by do |spelling|
+      ORDERED_LETTER_NAMES_OF_FLATS.index(spelling.letter_name.to_s)
+    end
+  end
+
+  def double_flats
+    spellings.select(&:double_flat?).sort_by do |spelling|
+      ORDERED_LETTER_NAMES_OF_FLATS.index(spelling.letter_name.to_s)
+    end
   end
 
   def num_sharps
-    sharps.length
+    sharps.length + double_sharps.length * 2
   end
 
   def num_flats
-    flats.length
+    flats.length + double_flats.length * 2
   end
 
   def signs

@@ -8,14 +8,20 @@ class HeadMusic::Sign
 
   attr_reader :identifier, :cents, :musical_symbol
 
+  delegate :ascii, :unicode, :html_entity, to: :musical_symbol
+
+  SIGN_DATA = [
+    { identifier: :sharp, ascii: '#', unicode: '♯', html_entity: '&#9839;', cents: 100 },
+    { identifier: :flat, ascii: 'b', unicode: '♭', html_entity: '&#9837;', cents: -100 },
+    { identifier: :natural, ascii: '', unicode: '♮', html_entity: '&#9838;', cents: 0 },
+    { identifier: :double_sharp, ascii: 'x', unicode: '𝄪', html_entity: '&#119082;', cents: 200 },
+    { identifier: :double_flat, ascii: 'bb', unicode: '𝄫', html_entity: '&#119083;', cents: -200 },
+  ].freeze
+
+  SIGN_IDENTIFIERS = SIGN_DATA.map { |attributes| attributes[:identifier] }.freeze
+
   def self.all
-    @all ||= [
-      new(identifier: :sharp, ascii: '#', unicode: '♯', html_entity: '&#9839;', cents: 100),
-      new(identifier: :flat, ascii: 'b', unicode: '♭', html_entity: '&#9837;', cents: -100),
-      new(identifier: :natural, ascii: '', unicode: '♮', html_entity: '&#9838;', cents: 0),
-      new(identifier: :double_sharp, ascii: '##', unicode: '𝄪', html_entity: '&#119082;', cents: 200),
-      new(identifier: :double_flat, ascii: 'bb', unicode: '𝄫', html_entity: '&#119083;', cents: -200),
-    ]
+    SIGN_DATA.map { |attributes| new(attributes) }
   end
 
   def self.symbols
@@ -57,6 +63,10 @@ class HeadMusic::Sign
     cents / 100.0
   end
 
+  SIGN_IDENTIFIERS.each do |key|
+    define_method(:"#{key}?") { identifier == key }
+  end
+
   def to_s
     unicode
   end
@@ -66,14 +76,11 @@ class HeadMusic::Sign
     cents <=> other.cents
   end
 
-  delegate :ascii, :html_entity, :unicode, to: :musical_symbol
-
   private
 
   def initialize(attributes)
     @identifier = attributes[:identifier]
     @cents = attributes[:cents]
-
     @musical_symbol = HeadMusic::MusicalSymbol.new(
       unicode: attributes[:unicode],
       ascii: attributes[:ascii],

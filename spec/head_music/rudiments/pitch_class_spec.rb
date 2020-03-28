@@ -74,7 +74,7 @@ describe HeadMusic::PitchClass do
 
     specify { expect(described_class.get('Cb')).to be_enharmonic(described_class.get('B')) }
     specify { expect(described_class.get('E#')).to be_enharmonic(described_class.get('F')) }
-    specify { expect(described_class.get('F##')).to be_enharmonic(described_class.get('G')) }
+    specify { expect(described_class.get('Fx')).to be_enharmonic(described_class.get('G')) }
   end
 
   describe '#white_key?' do

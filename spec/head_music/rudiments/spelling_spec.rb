@@ -19,6 +19,7 @@ describe HeadMusic::Spelling do
       its(:sign) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
       it { is_expected.to eq 'C' }
+      it { is_expected.to be_natural }
     end
 
     context "for 'F♯'" do
@@ -28,6 +29,8 @@ describe HeadMusic::Spelling do
       its(:sign) { is_expected.to eq '♯' }
       its(:pitch_class) { is_expected.to eq 6 }
       it { is_expected.to eq 'F♯' }
+      it { is_expected.to be_sharp }
+      it { is_expected.not_to be_flat }
     end
 
     context "for 'Bb'" do
@@ -35,6 +38,8 @@ describe HeadMusic::Spelling do
 
       its(:pitch_class) { is_expected.to eq 10 }
       it { is_expected.to eq 'Bb' }
+      it { is_expected.not_to be_sharp }
+      it { is_expected.to be_flat }
     end
 
     context "for 'Cb'" do
@@ -60,6 +65,19 @@ describe HeadMusic::Spelling do
       its(:sign) { is_expected.to eq 'b' }
       its(:pitch_class) { is_expected.to eq 10 }
       it { is_expected.to eq 'Bb' }
+    end
+
+    context "for 'Fx'" do
+      subject(:spelling) { described_class.get('Fx') }
+
+      its(:letter_name) { is_expected.to eq 'F' }
+      its(:sign) { is_expected.to eq 'x' }
+      its(:pitch_class) { is_expected.to eq 7 }
+
+      it { is_expected.not_to be_sharp }
+      it { is_expected.not_to be_flat }
+      it { is_expected.not_to be_natural }
+      it { is_expected.to be_double_sharp }
     end
 
     context 'given a pitch class' do

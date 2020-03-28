@@ -47,4 +47,18 @@ describe HeadMusic::Circle do
       end
     end
   end
+
+  describe '#key_signatures_up' do
+    specify do
+      expect(circle.key_signatures_up.map(&:num_sharps)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+      expect(circle.key_signatures_up.map(&:num_flats).uniq).to eq [0]
+    end
+  end
+
+  describe '#key_signatures_down' do
+    specify do
+      expect(circle.key_signatures_down.map(&:num_sharps).uniq).to eq [0]
+      expect(circle.key_signatures_down.map(&:num_flats)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    end
+  end
 end

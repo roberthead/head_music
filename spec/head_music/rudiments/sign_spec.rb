@@ -33,7 +33,7 @@ describe HeadMusic::Sign do
 
   describe '#semitones' do
     specify { expect(described_class.get('#').semitones).to eq(1) }
-    specify { expect(described_class.get('##').semitones).to eq(2) }
+    specify { expect(described_class.get('x').semitones).to eq(2) }
     specify { expect(described_class.get('b').semitones).to eq(-1) }
     specify { expect(described_class.get('bb').semitones).to eq(-2) }
   end

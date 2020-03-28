@@ -24,6 +24,14 @@ class HeadMusic::Circle < HeadMusic::IntervalCycle
 
   alias spellings_up spellings
 
+  def key_signatures_up
+    spellings_up.map { |spelling| HeadMusic::KeySignature.new(spelling) }
+  end
+
+  def key_signatures_down
+    spellings_down.map { |spelling| HeadMusic::KeySignature.new(spelling) }
+  end
+
   def spellings_down
     pitches_down.map(&:spelling)
   end

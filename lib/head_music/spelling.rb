@@ -14,6 +14,7 @@ class HeadMusic::Spelling
   delegate :to_i, to: :pitch_class_number
   delegate :series_ascending, :series_descending, to: :letter_name, prefix: true
   delegate :enharmonic?, to: :enharmonic_equivalence
+  delegate :sharp?, :flat?, :double_sharp?, :double_flat?, to: :sign, allow_nil: true
 
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::Spelling)
@@ -73,14 +74,6 @@ class HeadMusic::Spelling
     name
   end
 
-  def sharp?
-    sign && sign == '#'
-  end
-
-  def flat?
-    sign && sign == 'b'
-  end
-
   def ==(other)
     other = HeadMusic::Spelling.get(other)
     to_s == other.to_s
@@ -88,6 +81,10 @@ class HeadMusic::Spelling
 
   def scale(scale_type_name = nil)
     HeadMusic::Scale.get(self, scale_type_name)
+  end
+
+  def natural?
+    !sign || sign.natural?
   end
 
   private_class_method :new
