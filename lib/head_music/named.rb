@@ -13,6 +13,11 @@ module HeadMusic::Named
     HeadMusic::Utilities::HashKey.for(name)
   end
 
+  # Returns an array of strings that are synonymous with the name.
+  def aliases
+    []
+  end
+
   def self.included(base)
     base.extend(ClassMethods)
   end
@@ -24,10 +29,6 @@ module HeadMusic::Named
       @instances_by_name ||= {}
       key = HeadMusic::Utilities::HashKey.for(name)
       @instances_by_name[key] ||= new(name)
-    end
-
-    def aliases
-      {}
     end
   end
 

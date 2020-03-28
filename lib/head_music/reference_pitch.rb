@@ -7,60 +7,37 @@ class HeadMusic::ReferencePitch
 
   DEFAULT_PITCH_NAME = 'A4'
   DEFAULT_FREQUENCY = 440.0
+  DEFAULT_REFERENCE_PITCH_NAME = 'A440'
 
   NAMED_REFERENCE_PITCHES = [
-    { name: 'Baroque', pitch: 'A4', frequency: 415.0 },
-    { name: 'Classical', pitch: 'A4', frequency: 430.0 },
-    { name: 'Scientific', pitch: 'C4', frequency: 256.0 },
-    { name: 'Verdi', pitch: 'A4', frequency: 432.0 }, # Pythagorean tuning
-    { name: 'French', pitch: 'A4', frequency: 435.0 },
-    { name: 'New Philharmonic', pitch: 'A4', frequency: 439.0 },
-    { name: 'A440', pitch: 'A4', frequency: 440.0 },
-    { name: 'Sydney Symphony Orchestra', pitch: 'A4', frequency: 441.0 },
-    { name: 'New York Philharmonic', pitch: 'A4', frequency: 442.0 },
-    { name: 'Berlin Philharmonic', pitch: 'A4', frequency: 443.0 },
-    { name: 'Boston Symphony Orchestra', pitch: 'A4', frequency: 444.0 },
-    { name: 'Old Philharmonic', pitch: 'A4', frequency: 452.4 },
-    { name: 'Chorton', pitch: 'A4', frequency: 466.0 },
+    { name: 'Baroque', frequency: 415.0, aliases: %w[Kammerton] },
+    { name: 'Classical', frequency: 430.0, aliases: %w[Haydn Mozart] },
+    { name: 'Scientific', pitch: 'C4', frequency: 256.0, aliases: %w[philosophical Sauveur Schiller] },
+    { name: 'Verdi', frequency: 432.0 }, # Pythagorean tuning
+    { name: 'French', frequency: 435.0, aliases: %w[continental international] },
+    { name: 'New Philharmonic', frequency: 439.0, aliases: %w[low] },
+    { name: 'A440', frequency: 440.0, aliases: ['concert', 'Stuttgart', 'Scheibler', 'ISO 16'] },
+    { name: 'Sydney Symphony Orchestra', frequency: 441.0 },
+    { name: 'New York Philharmonic', frequency: 442.0 },
+    { name: 'Berlin Philharmonic', frequency: 443.0 },
+    { name: 'Boston Symphony Orchestra', frequency: 444.0 },
+    { name: 'Old Philharmonic', frequency: 452.4, aliases: %w[high] },
+    { name: 'Chorton', frequency: 466.0, aliases: ['choir'] },
   ].freeze
 
-  ALIAS_DATA = [
-    { key: :baroque, name: 'Kammerton' },
-    { key: :classical, name: 'Haydn' },
-    { key: :classical, name: 'Mozart' },
-    { key: :scientific, name: 'philosophical' },
-    { key: :scientific, name: 'Sauveur' },
-    { key: :scientific, name: 'Schiller' },
-    { key: :french, name: 'continental' },
-    { key: :french, name: 'international' },
-    { key: :new_philharmonic, name: 'low' },
-    { key: :old_philharmonic, name: 'high' },
-    { key: :a440, name: 'concert' },
-    { key: :a440, name: 'Stuttgart' },
-    { key: :a440, name: 'Scheibler' },
-    { key: :a440, name: 'ISO 16' },
-    { key: :chorton, name: 'choir' },
-  ].freeze
-
-  attr_reader :pitch, :frequency
-
-  def self.aliases
-    @aliases ||= ALIAS_DATA.map { |attributes| HeadMusic::Named::Alias.new(attributes) }
-  end
+  attr_reader :pitch, :frequency, :aliases
 
   def self.get(name)
     return name if name.is_a?(self)
     get_by_name(name)
   end
 
-  def initialize(name = 'A440')
+  def initialize(name = DEFAULT_REFERENCE_PITCH_NAME)
     @name = name.to_s
-    reference_pitch_data = NAMED_REFERENCE_PITCHES.detect do |candidate|
-      candidate_name_key = HeadMusic::Utilities::HashKey.for(candidate[:name])
-      [candidate_name_key, candidate_name_key.to_s.delete('_').to_sym].include?(normalized_key)
-    end || {}
-    @pitch = HeadMusic::Pitch.get(reference_pitch_data.fetch(:pitch, DEFAULT_PITCH_NAME))
-    @frequency = reference_pitch_data.fetch(:frequency, DEFAULT_FREQUENCY)
+    record = named_reference_pitch_record_for_name(name)
+    @pitch = HeadMusic::Pitch.get(record.fetch(:pitch, DEFAULT_PITCH_NAME))
+    @frequency = record.fetch(:frequency, DEFAULT_FREQUENCY)
+    @aliases = record.fetch(:aliases, [])
   end
 
   def description
@@ -79,12 +56,18 @@ class HeadMusic::ReferencePitch
 
   private
 
-  def normalized_key
-    @normalized_key ||= begin
-      key = HeadMusic::Utilities::HashKey.for(name.to_s.gsub(/\W?(pitch|tuning|tone)/, ''))
-      HeadMusic::ReferencePitch.aliases.detect do |alias_data|
-        HeadMusic::Utilities::HashKey.for(alias_data.name) == key
-      end&.key || key
-    end
+  def named_reference_pitch_record_for_name(name)
+    key = HeadMusic::Utilities::HashKey.for(name)
+    NAMED_REFERENCE_PITCHES.detect do |record|
+      name_keys_from_record(record).include?(key)
+    end || named_reference_pitch_record_for_name(DEFAULT_REFERENCE_PITCH_NAME)
+  end
+
+  def name_keys_from_record(record)
+    names_from_record(record).map { |name| HeadMusic::Utilities::HashKey.for(name) }
+  end
+
+  def names_from_record(record)
+    [record[:name]] + record.fetch(:aliases, [])
   end
 end
