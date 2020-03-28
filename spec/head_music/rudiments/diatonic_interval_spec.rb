@@ -33,33 +33,43 @@ describe HeadMusic::DiatonicInterval do
   end
 
   describe '.get' do
-    describe 'default position' do
-      specify { expect(maj3.lower_pitch).to eq 'C4' }
-      specify { expect(maj3.higher_pitch).to eq 'E4' }
+    describe 'when passed a known descriptive string' do
+      it 'recognizes the interval' do
+        expect(described_class.get('minor third')).to eq min3
+      end
 
-      specify { expect(aug4.lower_pitch).to eq 'C4' }
-      specify { expect(aug4.higher_pitch).to eq 'F#4' }
+      it 'assumes middle C' do
+        expect(maj3.lower_pitch).to eq 'C4'
+        expect(maj3.higher_pitch).to eq 'E4'
 
-      specify { expect(dim5.lower_pitch).to eq 'C4' }
-      specify { expect(dim5.higher_pitch).to eq 'Gb4' }
-      specify { expect(dim5.quality_name).to eq 'diminished' }
+        expect(aug4.lower_pitch).to eq 'C4'
+        expect(aug4.higher_pitch).to eq 'F#4'
 
-      specify { expect(dim8.lower_pitch).to eq 'C4' }
-      specify { expect(dim8.higher_pitch).to eq 'Cb5' }
-      specify { expect(dim8.simple_number).to eq 8 }
-      specify { expect(dim8.quality_name).to eq 'diminished' }
+        expect(dim5.lower_pitch).to eq 'C4'
+        expect(dim5.higher_pitch).to eq 'Gb4'
+        expect(dim5.quality_name).to eq 'diminished'
 
-      specify { expect(p15.higher_pitch).to eq 'C6' }
-      specify { expect(p15.number).to eq 15 }
-      specify { expect(p15.simple_number).to eq 8 }
-      specify { expect(p15.quality_name).to eq 'perfect' }
+        expect(dim8.lower_pitch).to eq 'C4'
+        expect(dim8.higher_pitch).to eq 'Cb5'
+        expect(dim8.simple_number).to eq 8
+        expect(dim8.quality_name).to eq 'diminished'
 
-      specify { expect(described_class.get('P5').name).to eq 'perfect fifth' }
-      specify { expect(described_class.get('M3').name).to eq 'major third' }
-      specify { expect(described_class.get('m3').name).to eq 'minor third' }
-      specify { expect(described_class.get('A4').name).to eq 'augmented fourth' }
-      specify { expect(described_class.get('d5').name).to eq 'diminished fifth' }
-      specify { expect(described_class.get('M10').name).to eq 'major tenth' }
+        expect(p15.higher_pitch).to eq 'C6'
+        expect(p15.number).to eq 15
+        expect(p15.simple_number).to eq 8
+        expect(p15.quality_name).to eq 'perfect'
+      end
+    end
+
+    describe 'when passed a known abbreviation' do
+      it 'recognizes the interval' do
+        expect(described_class.get('P5')).to eq p5
+        expect(described_class.get('M3')).to eq maj3
+        expect(described_class.get('m3')).to eq min3
+        expect(described_class.get('A4')).to eq aug4
+        expect(described_class.get('d5')).to eq dim5
+        expect(described_class.get('M10').name).to eq 'major tenth'
+      end
     end
   end
 

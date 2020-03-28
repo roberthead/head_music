@@ -13,7 +13,7 @@ describe HeadMusic::ChromaticInterval do
     end
   end
 
-  context 'given a simple interval' do
+  context 'given a simple interval as an integer' do
     subject(:interval) { described_class.get(2) }
 
     it { is_expected.to be == 2 }
@@ -22,6 +22,14 @@ describe HeadMusic::ChromaticInterval do
     it { is_expected.not_to be_compound }
 
     its(:specific_interval) { is_expected.to eq 2 }
+
+    context 'when the integer is 0' do
+      subject(:interval) { described_class.get(0) }
+
+      it { is_expected.to be_simple }
+      it { is_expected.to be == 0 }
+      it { is_expected.not_to be_compound }
+    end
   end
 
   context 'given some intervals' do
@@ -50,5 +58,9 @@ describe HeadMusic::ChromaticInterval do
     specify { expect(perfect_11th).to be_compound }
 
     specify { expect(perfect_11th.simple).to eq(perfect_fourth) }
+
+    describe '#diatonic_name' do
+      specify { expect(major_third.diatonic_name).to eq 'major third' }
+    end
   end
 end

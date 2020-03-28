@@ -22,7 +22,10 @@ class HeadMusic::Pitch
   delegate :octave_equivalent?, to: :octave_equivalence
 
   def self.get(value)
-    from_pitch_class(value) || from_name(value) || from_number(value)
+    (value if value.is_a?(HeadMusic::Pitch)) ||
+      from_pitch_class(value) ||
+      from_name(value) ||
+      from_number(value)
   end
 
   def self.middle_c

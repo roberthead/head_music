@@ -280,6 +280,8 @@ class HeadMusic::DiatonicInterval
     to: :naming
   )
 
+  alias to_i semitones
+
   # Accepts a name and returns the interval with middle c on the bottom
   def self.get(identifier)
     name = Parser.new(identifier)

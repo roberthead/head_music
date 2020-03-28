@@ -7,8 +7,8 @@ class HeadMusic::PitchClass
   attr_reader :number
   attr_reader :spelling
 
-  SHARP_SPELLINGS = %w[C C# D D# E F F# G G# A A# B].freeze
-  FLAT_SPELLINGS = %w[C Db D Eb E F Gb G Ab A Bb B].freeze
+  SHARP_SPELLINGS = %w[C C♯ D D♯ E F F♯ G G♯ A A♯ B].freeze
+  FLAT_SPELLINGS = %w[C D♭ D E♭ E F G♭ G A♭ A B♭ B].freeze
   INTEGER_NOTATION = %w[0 1 2 3 4 5 6 7 8 9 t e].freeze
 
   def self.get(identifier)

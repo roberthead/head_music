@@ -5,39 +5,42 @@ require 'head_music/interval_cycle'
 # A Circle of Fifths or Fourths shows relationships between pitch classes
 class HeadMusic::Circle < HeadMusic::IntervalCycle
   def self.of_fifths
-    get(7)
+    get(:perfect_fifth)
   end
 
   def self.of_fourths
-    get(5)
+    get(:perfect_fourth)
   end
 
-  def self.get(interval = 7)
+  def self.get(interval = :perfect_fifth)
     @circles ||= {}
-    @circles[interval.to_i] ||= new(interval)
-  end
-
-  attr_reader :interval, :pitch_classes
-
-  # Accepts an interval (as an integer number of semitones)
-  def initialize(interval)
-    @interval = interval.to_i
-    @pitch_classes = pitch_classes_by_interval
+    diatonic_interval = HeadMusic::DiatonicInterval.get(interval)
+    @circles[interval] ||= new(interval: diatonic_interval, starting_pitch: 'C4')
   end
 
   def index(pitch_class)
-    @pitch_classes.index(HeadMusic::Spelling.get(pitch_class).pitch_class)
+    pitch_classes.index(HeadMusic::Spelling.get(pitch_class).pitch_class)
+  end
+
+  alias spellings_up spellings
+
+  def spellings_down
+    pitches_down.map(&:spelling)
+  end
+
+  def pitches_down
+    @pitches_down ||= begin
+      [starting_pitch].tap do |list|
+        loop do
+          next_pitch = list.last - interval
+          next_pitch += octave while starting_pitch - next_pitch > 12
+          break if next_pitch.pitch_class == list.first.pitch_class
+
+          list << next_pitch
+        end
+      end
+    end
   end
 
   private_class_method :new
-
-  private
-
-  def interval_cycle
-    @interval_cycle ||= HeadMusic::IntervalCycle.get(interval)
-  end
-
-  def pitch_classes_by_interval
-    interval_cycle.send(:pitch_classes_by_interval)
-  end
 end

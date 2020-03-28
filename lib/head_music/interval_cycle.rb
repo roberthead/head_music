@@ -2,35 +2,56 @@
 
 # An Interval Cycle is a collection of pitch classes created from a sequence of the same interval class.
 class HeadMusic::IntervalCycle
+  attr_reader :interval, :starting_pitch
+
   def self.get(interval = 7)
-    @circles ||= {}
+    @interval_cycles ||= {}
     interval = interval.to_s.gsub(/^C/i, '').to_i
-    @circles[interval.to_i] ||= new(interval)
+    interval = HeadMusic::ChromaticInterval.get(interval)
+    @interval_cycles[interval.to_i] ||= new(interval: interval, starting_pitch: 'C4')
   end
 
-  attr_reader :interval, :pitch_classes
-
-  def initialize(interval)
-    @interval = interval.to_i
-    @pitch_classes = pitch_classes_by_interval
+  def initialize(interval:, starting_pitch: 'C4')
+    @interval = interval if interval.is_a?(HeadMusic::DiatonicInterval)
+    @interval ||= interval if interval.is_a?(HeadMusic::ChromaticInterval)
+    @interval ||= HeadMusic::ChromaticInterval.get(interval) if interval.to_s.match?(/\d/)
+    @interval ||= HeadMusic::DiatonicInterval.get(interval)
+    @starting_pitch = HeadMusic::Pitch.get(starting_pitch)
   end
 
-  def index(pitch_class)
-    @pitch_classes.index(HeadMusic::Spelling.get(pitch_class).pitch_class)
+  def pitches
+    @pitches ||= pitches_up
   end
 
-  private_class_method :new
+  def pitch_classes
+    @pitch_classes ||= pitches.map(&:pitch_class)
+  end
 
-  private
+  def pitch_class_set
+    @pitch_class_set ||= HeadMusic::PitchClassSet.new(pitches)
+  end
 
-  def pitch_classes_by_interval
-    [HeadMusic::PitchClass.get(0)].tap do |list|
-      loop do
-        next_pitch_class = list.last + interval
-        break if next_pitch_class == list.first
+  def spellings
+    @spellings ||= pitches.map(&:spelling)
+  end
 
-        list << next_pitch_class
+  protected
+
+  def pitches_up
+    @pitches_up ||= begin
+      [starting_pitch].tap do |list|
+        loop do
+          next_pitch = list.last + interval
+          next_pitch -= octave while next_pitch - starting_pitch > 12
+          break if next_pitch.pitch_class == list.first.pitch_class
+
+          list << next_pitch
+        end
       end
     end
+  end
+
+  def octave
+    @octave ||= HeadMusic::DiatonicInterval.get(:perfect_octave)
   end
 end

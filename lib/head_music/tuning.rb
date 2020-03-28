@@ -12,7 +12,7 @@ class HeadMusic::Tuning
   end
 
   def frequency_for(pitch)
-    pitch = HeadMusic::Pitch.get(pitch) unless pitch.is_a?(HeadMusic::Pitch)
+    pitch = HeadMusic::Pitch.get(pitch)
     reference_pitch_frequency * (2**(1.0 / 12))**(pitch - reference_pitch.pitch).semitones
   end
 end

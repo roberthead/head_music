@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# An interval is the distance between two pitches.
+# A chromatic interval is the distance between two pitches measured in half-steps.
 class HeadMusic::ChromaticInterval
   include Comparable
 
@@ -38,6 +38,10 @@ class HeadMusic::ChromaticInterval
 
   def to_i
     semitones
+  end
+
+  def diatonic_name
+    NAMES[simple.semitones].gsub(/_/, ' ')
   end
 
   # diatonic set theory
