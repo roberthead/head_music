@@ -4,72 +4,77 @@
 class HeadMusic::Clef
   include HeadMusic::Named
 
-  CLEFS = [
+  CLEF_RECORDS = [
     {
       pitch: 'G4', line: 2,
       names: %w[treble G-clef],
       modern: true,
-      unicode: '𝄞', html_entity: '&#119070;',
+      symbols: [{ unicode: '𝄞', html_entity: '&#119070;' }],
     },
     {
       pitch: 'G4', line: 1,
       names: ['French', 'French violin'],
-      unicode: '𝄞', html_entity: '&#119070;',
+      symbols: [{ unicode: '𝄞', html_entity: '&#119070;' }],
     },
     {
       pitch: 'G3', line: 2,
       names: ['choral tenor', 'tenor', 'tenor G-clef'],
       modern: true,
-      unicode: '𝄠', html_entity: '&#119072;',
+      symbols: [{ unicode: '𝄠', html_entity: '&#119072;' }],
+    },
+    {
+      pitch: 'G3', line: 2,
+      names: ['double treble'],
+      symbols: [{ unicode: '𝄞𝄞', html_entity: '&#119070;&#119070;' }],
     },
     {
       pitch: 'F3', line: 3,
       names: ['baritone'],
-      unicode: '𝄢', html_entity: '&#119074;',
+      symbols: [{ unicode: '𝄢', html_entity: '&#119074;' }],
     },
     {
       pitch: 'F3', line: 4,
       names: %w[bass F-clef],
       modern: true,
-      unicode: '𝄢', html_entity: '&#119074;',
+      symbols: [{ unicode: '𝄢', html_entity: '&#119074;' }],
     },
     {
       pitch: 'F3', line: 5,
       names: ['sub-bass'],
-      unicode: '𝄢', html_entity: '&#119074;',
+      symbols: [{ unicode: '𝄢', html_entity: '&#119074;' }],
     },
     {
       pitch: 'C4', line: 1,
       names: ['soprano'],
-      unicode: '𝄡', html_entity: '&#119073;',
+      symbols: [{ unicode: '𝄡', html_entity: '&#119073;' }],
     },
     {
       pitch: 'C4', line: 2,
       names: ['mezzo-soprano'],
-      unicode: '𝄡', html_entity: '&#119073;',
+      symbols: [{ unicode: '𝄡', html_entity: '&#119073;' }],
     },
     {
       pitch: 'C4', line: 3,
       names: %w[alto viola counter-tenor countertenor C-clef],
       modern: true,
-      unicode: '𝄡', html_entity: '&#119073;',
+      symbols: [{ unicode: '𝄡', html_entity: '&#119073;' }],
     },
     {
       pitch: 'C4', line: 4,
       names: ['tenor', 'tenor C-clef'],
       modern: true,
-      unicode: '𝄡', html_entity: '&#119073;',
+      symbols: [{ unicode: '𝄡', html_entity: '&#119073;' }],
     },
     {
       pitch: 'C4', line: 5,
       names: ['baritone', 'baritone C-clef'],
-      unicode: '𝄡', html_entity: '&#119073;',
+      symbols: [{ unicode: '𝄡', html_entity: '&#119073;' }],
     },
     {
       pitch: nil, line: 3,
       names: %w[neutral percussion],
       modern: true,
-      unicode: '𝄥', html_entity: '&#119077;',
+      symbols: [{ unicode: '𝄥', html_entity: '&#119077;' }, { unicode: '𝄦', html_entity: '&#119078;' }],
     },
   ].freeze
 
@@ -77,17 +82,18 @@ class HeadMusic::Clef
     get_by_name(name)
   end
 
-  attr_reader :pitch, :line, :musical_symbol
+  attr_reader :pitch, :line, :musical_symbols
 
   delegate :ascii, :html_entity, :unicode, to: :musical_symbol
 
   def initialize(name)
     self.name = name.to_s
-    clef_data = CLEFS.detect { |clef| clef[:names].map(&:downcase).include?(name.downcase) }
-    @pitch = HeadMusic::Pitch.get(clef_data[:pitch])
-    @line = clef_data[:line]
-    @modern = clef_data[:modern]
-    @musical_symbol = HeadMusic::MusicalSymbol.new(clef_data.slice(:ascii, :html_entity, :unicode))
+    clef_record = clef_record_for_name(name)
+    initialize_data_from_record(clef_record)
+  end
+
+  def musical_symbol
+    musical_symbols.first
   end
 
   def clef_type
@@ -116,5 +122,28 @@ class HeadMusic::Clef
 
   def ==(other)
     to_s == other.to_s
+  end
+
+  private
+
+  def clef_record_for_name(name)
+    CLEF_RECORDS.detect do |clef|
+      clef[:names].map do |clef_name|
+        HeadMusic::Utilities::HashKey.for(clef_name)
+      end.include?(HeadMusic::Utilities::HashKey.for(name))
+    end
+  end
+
+  def initialize_data_from_record(clef_record)
+    @pitch = HeadMusic::Pitch.get(clef_record[:pitch])
+    @line = clef_record[:line]
+    @modern = clef_record[:modern]
+    initialize_musical_symbols(clef_record[:symbols])
+  end
+
+  def initialize_musical_symbols(list)
+    @musical_symbols = (list || []).map do |symbol_data|
+      HeadMusic::MusicalSymbol.new(symbol_data.slice(:ascii, :html_entity, :unicode))
+    end
   end
 end
