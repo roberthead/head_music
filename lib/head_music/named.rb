@@ -53,9 +53,9 @@ module HeadMusic::Named
   module ClassMethods
     def get_by_name(name)
       name = name.to_s
-      @instances_by_name ||= {}
+      @instances ||= {}
       key = HeadMusic::Utilities::HashKey.for(name)
-      @instances_by_name[key] ||= new(name)
+      @instances[key] ||= new(name)
     end
   end
 
