@@ -7,18 +7,23 @@ class GenericNamedRudiment
 end
 
 describe HeadMusic::Named do
-  context 'when passing a string to the constructor' do
-    subject(:rudiment) { GenericNamedRudiment.new('Nuclear Transmogrifier') }
+  subject(:rudiment) { GenericNamedRudiment.new }
 
-    its(:name) { is_expected.to eq 'Nuclear Transmogrifier' }
-    its(:hash_key) { is_expected.to eq :nuclear_transmogrifier }
+  context 'when assigned a name' do
+    before do
+      rudiment.name = 'David'
+    end
 
-    context 'when the named rudiment exists' do
-      subject(:rudiment) { GenericNamedRudiment.get_by_name('Nuclear Transmogrifier') }
+    its(:name) { is_expected.to eq 'David' }
 
-      it 'is fetchable by name' do
-        expect(GenericNamedRudiment.get_by_name('Nuclear Transmogrifier')).to eq rudiment
-      end
+    it 'returns that name for any locale' do
+      expect(rudiment.name(locale_code: :fr_CH)).to eq 'David'
+      expect(rudiment.name(locale_code: :en_NZ)).to eq 'David'
+      expect(rudiment.name(locale_code: nil)).to eq 'David'
+    end
+
+    it 'stores the name as a localized name in the default locale' do
+      expect(rudiment.localized_name.locale_code).to eq 'en_US'
     end
   end
 end

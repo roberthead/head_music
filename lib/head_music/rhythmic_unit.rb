@@ -27,7 +27,7 @@ class HeadMusic::RhythmicUnit
   end
 
   def initialize(canonical_name)
-    @name = canonical_name
+    self.name = canonical_name
     @numerator = 2**numerator_exponent
     @denominator = 2**denominator_exponent
   end

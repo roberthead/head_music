@@ -22,7 +22,7 @@ class HeadMusic::Instrument
   end
 
   def initialize(name)
-    @name = name.to_s
+    self.name = name.to_s
   end
 
   def data

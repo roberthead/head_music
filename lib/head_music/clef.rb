@@ -82,7 +82,7 @@ class HeadMusic::Clef
   delegate :ascii, :html_entity, :unicode, to: :musical_symbol
 
   def initialize(name)
-    @name = name.to_s
+    self.name = name.to_s
     clef_data = CLEFS.detect { |clef| clef[:names].map(&:downcase).include?(name.downcase) }
     @pitch = HeadMusic::Pitch.get(clef_data[:pitch])
     @line = clef_data[:line]
