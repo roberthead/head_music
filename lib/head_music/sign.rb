@@ -6,22 +6,37 @@ require 'head_music/musical_symbol'
 class HeadMusic::Sign
   include Comparable
 
-  attr_reader :identifier, :cents, :musical_symbol
+  attr_reader :identifier, :cents, :musical_symbols
 
   delegate :ascii, :unicode, :html_entity, to: :musical_symbol
 
-  SIGN_DATA = [
-    { identifier: :sharp, ascii: '#', unicode: '♯', html_entity: '&#9839;', cents: 100 },
-    { identifier: :flat, ascii: 'b', unicode: '♭', html_entity: '&#9837;', cents: -100 },
-    { identifier: :natural, ascii: '', unicode: '♮', html_entity: '&#9838;', cents: 0 },
-    { identifier: :double_sharp, ascii: 'x', unicode: '𝄪', html_entity: '&#119082;', cents: 200 },
-    { identifier: :double_flat, ascii: 'bb', unicode: '𝄫', html_entity: '&#119083;', cents: -200 },
+  SIGN_RECORDS = [
+    {
+      identifier: :sharp, cents: 100,
+      symbols: [{ ascii: '#', unicode: '♯', html_entity: '&#9839;' }],
+    },
+    {
+      identifier: :flat, cents: -100,
+      symbols: [{ ascii: 'b', unicode: '♭', html_entity: '&#9837;' }],
+    },
+    {
+      identifier: :natural, cents: 0,
+      symbols: [{ ascii: '', unicode: '♮', html_entity: '&#9838;' }],
+    },
+    {
+      identifier: :double_sharp, cents: 200,
+      symbols: [{ ascii: 'x', unicode: '𝄪', html_entity: '&#119082;' }],
+    },
+    {
+      identifier: :double_flat, cents: -200,
+      symbols: [{ ascii: 'bb', unicode: '𝄫', html_entity: '&#119083;' }],
+    },
   ].freeze
 
-  SIGN_IDENTIFIERS = SIGN_DATA.map { |attributes| attributes[:identifier] }.freeze
+  SIGN_IDENTIFIERS = SIGN_RECORDS.map { |attributes| attributes[:identifier] }.freeze
 
   def self.all
-    SIGN_DATA.map { |attributes| new(attributes) }
+    SIGN_RECORDS.map { |attributes| new(attributes) }
   end
 
   def self.symbols
@@ -76,16 +91,26 @@ class HeadMusic::Sign
     cents <=> other.cents
   end
 
+  def musical_symbol
+    musical_symbols.first
+  end
+
   private
 
   def initialize(attributes)
     @identifier = attributes[:identifier]
     @cents = attributes[:cents]
-    @musical_symbol = HeadMusic::MusicalSymbol.new(
-      unicode: attributes[:unicode],
-      ascii: attributes[:ascii],
-      html_entity: attributes[:html_entity]
-    )
+    initialize_musical_symbols(attributes[:symbols])
+  end
+
+  def initialize_musical_symbols(list)
+    @musical_symbols = (list || []).map do |record|
+      HeadMusic::MusicalSymbol.new(
+        unicode: record[:unicode],
+        ascii: record[:ascii],
+        html_entity: record[:html_entity]
+      )
+    end
   end
 
   private_class_method :new
