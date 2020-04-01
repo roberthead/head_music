@@ -6,16 +6,16 @@ class HeadMusic::GrandStaff
     piano: {
       instrument: :piano,
       staves: [
-        { clef: :treble, instrument: :piano },
-        { clef: :bass, instrument: :piano },
+        { clef: :treble_clef, instrument: :piano },
+        { clef: :bass_clef, instrument: :piano },
       ],
     },
     organ: {
       instrument: :organ,
       staves: [
-        { clef: :treble, instrument: :organ },
-        { clef: :bass, instrument: :organ },
-        { clef: :bass, instrument: :pedals },
+        { clef: :treble_clef, instrument: :organ },
+        { clef: :bass_clef, instrument: :organ },
+        { clef: :bass_clef, instrument: :pedals },
       ],
     },
   }.freeze

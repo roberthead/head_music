@@ -17,13 +17,13 @@ describe HeadMusic::Instrument do
     subject(:piano) { described_class.get(:piano) }
 
     its(:name) { is_expected.to eq 'piano' }
-    its(:default_system) { is_expected.to eq %i[treble bass] }
+    its(:default_system) { is_expected.to eq %i[treble_clef bass_clef] }
   end
 
   context 'when violin' do
     subject(:violin) { described_class.get(:violin) }
 
     its(:name) { is_expected.to eq 'violin' }
-    its(:default_clef) { is_expected.to eq :treble }
+    its(:default_clef) { is_expected.to eq :treble_clef }
   end
 end

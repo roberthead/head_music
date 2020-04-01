@@ -8,12 +8,12 @@ class HeadMusic::Instrument
     violin: {
       name: 'violin',
       family: :string,
-      default_clef: :treble,
+      default_clef: :treble_clef,
     },
     piano: {
       name: 'piano',
       family: :string,
-      default_system: %i[treble bass],
+      default_system: %i[treble_clef bass_clef],
     },
   }.freeze
 

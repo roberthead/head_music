@@ -6,7 +6,7 @@ describe HeadMusic::Clef do
   subject(:clef) { described_class.get(name) }
 
   context 'treble clef' do
-    let(:name) { :treble }
+    let(:name) { :treble_clef }
 
     it { is_expected.to be_modern }
 
@@ -29,10 +29,13 @@ describe HeadMusic::Clef do
 
     specify { expect(clef.pitch_for_space(5)).to eq 'G5' }
     specify { expect(clef.pitch_for_line(7)).to eq 'C6' }
+
+    specify { expect(clef).to eq :treble_clef }
+    specify { expect(clef).not_to eq :bass_clef }
   end
 
   context 'alto clef' do
-    let(:name) { :alto }
+    let(:name) { :alto_clef }
 
     it { is_expected.to be_modern }
 
@@ -55,10 +58,13 @@ describe HeadMusic::Clef do
 
     specify { expect(clef.pitch_for_space(5)).to eq 'A4' }
     specify { expect(clef.pitch_for_line(7)).to eq 'D5' }
+
+    specify { expect(clef).not_to eq :treble_clef }
+    specify { expect(clef).to eq :alto_clef }
   end
 
   context 'bass clef' do
-    let(:name) { :bass }
+    let(:name) { :bass_clef }
 
     it { is_expected.to be_modern }
 
@@ -86,7 +92,7 @@ describe HeadMusic::Clef do
   end
 
   context 'mezzo-soprano clef' do
-    let(:name) { 'mezzo-soprano' }
+    let(:name) { 'mezzo-soprano clef' }
 
     it { is_expected.not_to be_modern }
 
@@ -96,12 +102,12 @@ describe HeadMusic::Clef do
   end
 
   context 'the tenor clef' do
-    context "when constructed with the name 'tenor'" do
-      let(:name) { 'tenor' }
+    context "when constructed with the name 'tenor clef'" do
+      let(:name) { 'tenor clef' }
 
       its(:unicode) { is_expected.to eq '𝄠' }
 
-      it 'returns to the choral tenor clef' do
+      it 'returns the choral tenor clef' do
         expect(clef.clef_type).to eq 'G-clef'
       end
     end
@@ -111,18 +117,8 @@ describe HeadMusic::Clef do
 
       its(:unicode) { is_expected.to eq '𝄡' }
 
-      it 'returns to the choral tenor clef' do
+      it 'returns the traditional tenor clef' do
         expect(clef.clef_type).to eq 'C-clef'
-      end
-    end
-  end
-
-  describe '.get' do
-    context 'when given an instance' do
-      let(:instance) { described_class.get(:french) }
-
-      it 'returns that instance' do
-        expect(described_class.get(instance)).to be instance
       end
     end
   end

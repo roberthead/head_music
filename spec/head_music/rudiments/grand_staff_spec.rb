@@ -19,8 +19,8 @@ describe HeadMusic::GrandStaff do
 
       specify { expect(grand_staff.staves.length).to eq 2 }
 
-      specify { expect(grand_staff.staves[0].clef).to eq :treble }
-      specify { expect(grand_staff.staves[1].clef).to eq :bass }
+      specify { expect(grand_staff.staves[0].clef).to eq :treble_clef }
+      specify { expect(grand_staff.staves[1].clef).to eq :bass_clef }
 
       specify { expect(grand_staff.staves[0].instrument).to eq :piano }
       specify { expect(grand_staff.staves[1].instrument).to eq :piano }
@@ -36,9 +36,9 @@ describe HeadMusic::GrandStaff do
 
       specify { expect(grand_staff.staves.length).to eq 3 }
 
-      specify { expect(grand_staff.staves[0].clef).to eq :treble }
-      specify { expect(grand_staff.staves[1].clef).to eq :bass }
-      specify { expect(grand_staff.staves[2].clef).to eq :bass }
+      specify { expect(grand_staff.staves[0].clef).to eq :treble_clef }
+      specify { expect(grand_staff.staves[1].clef).to eq :bass_clef }
+      specify { expect(grand_staff.staves[2].clef).to eq :bass_clef }
 
       specify { expect(grand_staff.staves[0].instrument).to eq :organ }
       specify { expect(grand_staff.staves[1].instrument).to eq :organ }
