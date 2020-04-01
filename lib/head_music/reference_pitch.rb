@@ -10,19 +10,91 @@ class HeadMusic::ReferencePitch
   DEFAULT_REFERENCE_PITCH_NAME = 'A440'
 
   NAMED_REFERENCE_PITCHES = [
-    { name: 'Baroque', frequency: 415.0, aliases: %w[Kammerton] },
-    { name: 'Classical', frequency: 430.0, aliases: %w[Haydn Mozart] },
-    { name: 'Scientific', pitch: 'C4', frequency: 256.0, aliases: %w[philosophical Sauveur Schiller] },
-    { name: 'Verdi', frequency: 432.0 }, # Pythagorean tuning
-    { name: 'French', frequency: 435.0, aliases: %w[continental international] },
-    { name: 'New Philharmonic', frequency: 439.0, aliases: %w[low] },
-    { name: 'A440', frequency: 440.0, aliases: ['concert', 'Stuttgart', 'Scheibler', 'ISO 16'] },
-    { name: 'Sydney Symphony Orchestra', frequency: 441.0 },
-    { name: 'New York Philharmonic', frequency: 442.0 },
-    { name: 'Berlin Philharmonic', frequency: 443.0 },
-    { name: 'Boston Symphony Orchestra', frequency: 444.0 },
-    { name: 'Old Philharmonic', frequency: 452.4, aliases: %w[high] },
-    { name: 'Chorton', frequency: 466.0, aliases: ['choir'] },
+    {
+      frequency: 415.0,
+      localized_names: [
+        { name: 'Baroque' },
+        { name: 'chamber tone' },
+        { name: 'Kammerton', locale_code: 'de' },
+      ],
+    },
+    {
+      frequency: 430.0,
+      localized_names: [
+        { name: 'Classical' },
+        { name: 'Haydn' },
+        { name: 'Mozart' },
+      ],
+    },
+    {
+      pitch: 'C4',
+      frequency: 256.0,
+      localized_names: [
+        { name: 'Scientific' },
+        { name: 'philosophical' },
+        { name: 'Sauveur' },
+        { name: 'Schiller' },
+      ],
+    },
+    {
+      frequency: 432.0,
+      tuning: 'Pythagorean',
+      localized_names: [
+        { name: 'Verdi' },
+      ],
+    },
+    {
+      frequency: 435.0,
+      localized_names: [
+        { name: 'French' },
+        { name: 'continental' },
+        { name: 'international' },
+      ],
+    },
+    {
+      frequency: 439.0,
+      localized_names: [
+        { name: 'New Philharmonic' },
+        { name: 'low' },
+      ],
+    },
+    {
+      frequency: 440.0,
+      localized_names: [
+        { name: 'A440' },
+        { name: 'concert' },
+        { name: 'Stuttgart' },
+        { name: 'Scheibler' },
+        { name: 'ISO 16' },
+      ],
+    },
+    {
+      frequency: 441.0,
+      localized_names: [{ name: 'Sydney Symphony Orchestra' }],
+    },
+    {
+      frequency: 442.0,
+      localized_names: [{ name: 'New York Philharmonic' }],
+    },
+    {
+      frequency: 443.0,
+      localized_names: [{ name: 'Berlin Philharmonic' }],
+    },
+    {
+      frequency: 444.0,
+      localized_names: [{ name: 'Boston Symphony Orchestra' }],
+    },
+    {
+      frequency: 452.4,
+      localized_names: [{ name: 'Old Philharmonic' }, { name: 'high' }],
+    },
+    {
+      frequency: 466.0,
+      localized_names: [
+        { name: 'Chorton', locale_code: 'de' },
+        { name: 'choir' },
+      ],
+    },
   ].freeze
 
   attr_reader :pitch, :frequency, :aliases
@@ -33,11 +105,13 @@ class HeadMusic::ReferencePitch
   end
 
   def initialize(name = DEFAULT_REFERENCE_PITCH_NAME)
-    @name = name.to_s
     record = named_reference_pitch_record_for_name(name)
     @pitch = HeadMusic::Pitch.get(record.fetch(:pitch, DEFAULT_PITCH_NAME))
     @frequency = record.fetch(:frequency, DEFAULT_FREQUENCY)
     @aliases = record.fetch(:aliases, [])
+    @localized_names = record[:localized_names].map do |localized_name_data|
+      HeadMusic::Named::LocalizedName.new(localized_name_data)
+    end
   end
 
   def description
@@ -68,6 +142,6 @@ class HeadMusic::ReferencePitch
   end
 
   def names_from_record(record)
-    [record[:name]] + record.fetch(:aliases, [])
+    record[:localized_names].map { |data| data[:name] }
   end
 end
