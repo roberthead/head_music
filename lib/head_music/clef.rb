@@ -213,11 +213,6 @@ class HeadMusic::Clef
 
   delegate :ascii, :html_entity, :unicode, to: :musical_symbol
 
-  def initialize(name)
-    clef_record = clef_record_for_name(name)
-    initialize_data_from_record(clef_record)
-  end
-
   def musical_symbol
     musical_symbols.first
   end
@@ -250,7 +245,14 @@ class HeadMusic::Clef
     HeadMusic::Utilities::HashKey.for(self) == HeadMusic::Utilities::HashKey.for(other)
   end
 
+  private_class_method :new
+
   private
+
+  def initialize(name)
+    clef_record = clef_record_for_name(name)
+    initialize_data_from_record(clef_record)
+  end
 
   def clef_record_for_name(name)
     key = HeadMusic::Utilities::HashKey.for(name)
@@ -261,12 +263,12 @@ class HeadMusic::Clef
     end
   end
 
-  def initialize_data_from_record(clef_record)
-    @pitch = HeadMusic::Pitch.get(clef_record[:pitch])
-    @line = clef_record[:line]
-    @modern = clef_record[:modern]
-    initialize_localized_names(clef_record[:localized_names])
-    initialize_musical_symbols(clef_record[:symbols])
+  def initialize_data_from_record(record)
+    @pitch = HeadMusic::Pitch.get(record[:pitch])
+    @line = record[:line]
+    @modern = record[:modern]
+    initialize_localized_names(record[:localized_names])
+    initialize_musical_symbols(record[:symbols])
   end
 
   def initialize_localized_names(list)

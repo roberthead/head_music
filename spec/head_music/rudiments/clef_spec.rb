@@ -112,6 +112,15 @@ describe HeadMusic::Clef do
       end
     end
 
+    context "when constructed with the name 'tenor clef'" do
+      let(:name) { 'tenor clef' }
+
+      it { is_expected.to eq 'choral tenor clef' }
+
+      its(:unicode) { is_expected.to eq '𝄠' }
+      its(:clef_type) { is_expected.to eq 'G-clef' }
+    end
+
     context "when constructed with the name 'tenor C-clef'" do
       let(:name) { 'tenor C-clef' }
 
@@ -120,6 +129,20 @@ describe HeadMusic::Clef do
       it 'returns the traditional tenor clef' do
         expect(clef.clef_type).to eq 'C-clef'
       end
+    end
+  end
+
+  context 'the neutral clef' do
+    let(:name) { 'neutral clef' }
+
+    it { is_expected.to eq described_class.get('percussion clef') }
+    it { is_expected.to eq described_class.get('Schlagzeugschlüssel') }
+    it { is_expected.not_to eq described_class.get("clef d'ut") }
+  end
+
+  describe 'constructor' do
+    specify do
+      expect { described_class.new(:treble_clef) }.to raise_error(NoMethodError)
     end
   end
 end
