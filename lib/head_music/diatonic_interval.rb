@@ -4,6 +4,7 @@
 class HeadMusic::DiatonicInterval
   include Comparable
 
+  # TODO: include Named module
   NUMBER_NAMES = %w[
     unison second third fourth fifth sixth seventh octave
     ninth tenth eleventh twelfth thirteenth fourteenth fifteenth
