@@ -28,7 +28,7 @@ class HeadMusic::ScaleType
     vii: [:locrian],
   }.freeze
 
-  CHROMATIC = [H, H, H, H, H, H, H, H, H, H, H, H].freeze
+  CHROMATIC = ([H] * 12)
 
   MINOR_PENTATONIC = [3, 2, 2, 3, 2].freeze
 
