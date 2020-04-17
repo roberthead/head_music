@@ -8,9 +8,11 @@ describe HeadMusic::Solmization do
     context 'without an argument' do
       subject(:solmization) { described_class.get }
 
-      it 'assumes modern solfege' do
+      it 'assumes modern solfège' do
         expect(solmization.name).to eq 'solfège'
       end
+
+      its(:syllables) { are_expected.to eq %w[do re mi fa sol la ti] }
     end
   end
 end

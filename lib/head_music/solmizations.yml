@@ -1,5 +1,13 @@
 ---
-- :localized_names:
+- :syllables:
+  - do
+  - re
+  - mi
+  - fa
+  - sol
+  - la
+  - ti
+  :localized_names:
   - :name: solfège
   - :name: solfège
     :locale_code: en
