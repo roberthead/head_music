@@ -12,6 +12,11 @@ require 'head_music/version'
 require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/string/access'
 require 'humanize'
+require 'i18n'
+
+I18n.load_path << Dir[File.expand_path('config/locales') + '/*.yml']
+I18n.config.available_locales = %i[en de fr it en_US en_UK]
+I18n.default_locale = :en
 
 # utilities
 require 'head_music/utilities/hash_key'

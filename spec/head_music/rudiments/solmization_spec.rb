@@ -14,5 +14,11 @@ describe HeadMusic::Solmization do
 
       its(:syllables) { are_expected.to eq %w[do re mi fa sol la ti] }
     end
+
+    context "when the identifier is 'Solfege' without the diacritical mark" do
+      subject(:solmization) { described_class.get('Solfege') }
+
+      its(:syllables) { are_expected.to eq %w[do re mi fa sol la ti] }
+    end
   end
 end
