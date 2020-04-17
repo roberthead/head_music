@@ -6,7 +6,7 @@ require 'yaml'
 class HeadMusic::Clef
   include HeadMusic::Named
 
-  CLEF_RECORDS = YAML.load_file(File.expand_path('clefs.yml', __dir__)).freeze
+  RECORDS = YAML.load_file(File.expand_path('clefs.yml', __dir__)).freeze
 
   def self.get(name)
     get_by_name(name)
@@ -53,14 +53,14 @@ class HeadMusic::Clef
   private
 
   def initialize(name)
-    clef_record = clef_record_for_name(name)
-    initialize_data_from_record(clef_record)
+    record = record_for_name(name)
+    initialize_data_from_record(record)
   end
 
-  def clef_record_for_name(name)
+  def record_for_name(name)
     key = HeadMusic::Utilities::HashKey.for(name)
-    CLEF_RECORDS.detect do |clef_record|
-      name_strings = clef_record[:localized_names].map { |localized_name| localized_name[:name] }
+    RECORDS.detect do |record|
+      name_strings = record[:localized_names].map { |localized_name| localized_name[:name] }
       name_keys = name_strings.map { |name_string| HeadMusic::Utilities::HashKey.for(name_string) }
       name_keys.include?(key)
     end
