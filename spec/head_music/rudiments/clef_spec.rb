@@ -137,7 +137,7 @@ describe HeadMusic::Clef do
 
     it { is_expected.to eq described_class.get('percussion clef') }
     it { is_expected.to eq described_class.get('Schlagzeugschlüssel') }
-    it { is_expected.not_to eq described_class.get("clef d'ut") }
+    it { is_expected.not_to eq described_class.get("clé d'ut") }
   end
 
   describe 'constructor' do

@@ -1,0 +1,41 @@
+fr:
+  rudiments:
+    clef: clé
+  clefs:
+    alto_clef: clé alto
+    baritone_c_clef: clé de baryton
+    baritone_clef: clé de baryton
+    baritone_f_clef: clé de fa 3e
+    bass_clef: clé de basse
+    c_clef: clé d'ut
+    choral_tenor_clef: choral tenor clef
+    contrabass_clef: clé de contrebasse
+    countertenor_clef: clé de contre-ténor
+    double_treble_clef: double clé de sol
+    drum_clef: clé de tambour
+    f_clef: clé de fa
+    fifth_line_c_clef: clé d'ut 5e
+    fifth_line_f_clef: clé de fa 5e
+    first_line_c_clef: clé d'ut 1re
+    first_line_g_clef: clé de sol 1re
+    fourth_line_c_clef: clé d'ut 4e
+    fourth_line_f_clef: clé de fa 4e
+    french_clef: clé de sol 1re
+    french_violin_clef: clé de sol 1re
+    g_clef: clé de sol
+    indefinite_pitch_clef: clé à pas indéfini
+    mezzo_soprano_clef: clé de mezzo-soprano
+    neutral_clef: clé neutre
+    percussion_clef: clé de percussion
+    second_line_c_clef: clé d'ut 2e
+    second_line_g_clef: clé de sol 2e
+    soprano_clef: clé de soprano
+    sub_bass_clef: clé de fa 5e
+    tenor_c_clef: clé d'ut 4e
+    tenor_clef: clé de ténor
+    tenor_g_clef: clé de sol 2e
+    third_line_c_clef: clé d'ut 3e
+    third_line_f_clef: clé de fa 3e
+    treble_clef: clé de sol
+    viola_clef: clé d'ut
+    violin_clef: clé de sol

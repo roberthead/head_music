@@ -1,0 +1,42 @@
+it:
+  rudiments:
+    clef: chiave
+    consonance: consonanza
+  clefs:
+    alto_clef: chiave di contralto
+    baritone_c_clef: chiave di baritono
+    baritone_clef: chiave di baritono
+    baritone_f_clef: chiave di baritono
+    bass_clef: chiave di basso
+    c_clef: chiave di do
+    choral_tenor_clef: chiave di sol in ottava
+    contrabass_clef: chiave di contrabbasso
+    countertenor_clef: chiave di controtenore
+    double_treble_clef: chiave di sol in ottava
+    drum_clef: chiave di percussione
+    f_clef: chiave di fa
+    fifth_line_c_clef: chiave di do sulla 5ª linea
+    fifth_line_f_clef: chiave di fa sulla 5ª linea
+    first_line_c_clef: chiave di do sulla 1ª linea
+    first_line_g_clef: chiave di sol sulla 1ª linea
+    fourth_line_c_clef: chiave di do sulla 4ª linea
+    fourth_line_f_clef: chiave di fa sulla 4ª linea
+    french_clef: chiave di violino francese
+    french_violin_clef: chiave di violino francese
+    g_clef: chiave di sol
+    indefinite_pitch_clef: chiave neutra
+    mezzo_soprano_clef: chiave di mezzosoprano
+    neutral_clef: chiave neutra
+    percussion_clef: chiave di percussione
+    second_line_c_clef: chiave di do sulla 2ª linea
+    second_line_g_clef: chiave di sol sulla 2ª linea
+    soprano_clef: chiave di soprano
+    sub_bass_clef: chiave di subbasso
+    tenor_c_clef: chiave di tenore
+    tenor_clef: chiave di tenore
+    tenor_g_clef: chiave di sol in ottava
+    third_line_c_clef: chiave di do sulla 3ª linea
+    third_line_f_clef: chiave di fa sulla 3ª linea
+    treble_clef: chiave di violino
+    viola_clef: chiave di viola
+    violin_clef: chiave di violino

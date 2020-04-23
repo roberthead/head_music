@@ -1,0 +1,42 @@
+de:
+  rudiments:
+    clef: Notenschlüssel
+    consonance: Konsonanz
+  clefs:
+    alto_clef: Altschlüssel
+    baritone_c_clef: Baritonschlüssel
+    baritone_clef: Baritonschlüssel
+    baritone_f_clef: Baritonschlüssel
+    bass_clef: Bassschlüssel
+    c_clef: C-Schlüssel
+    choral_tenor_clef: oktavierten Violinschlüssel
+    contrabass_clef: contrabass clef
+    countertenor_clef: countertenor clef
+    double_treble_clef: double treble clef
+    drum_clef: Schlagzeugschlüssel
+    f_clef: F-Schlüssel
+    fifth_line_c_clef: fifth-line C-clef
+    fifth_line_f_clef: fifth-line F-clef
+    first_line_c_clef: Sopranschlüssel
+    first_line_g_clef: first-line G-clef
+    fourth_line_c_clef: fourth-line C-clef
+    fourth_line_f_clef: fourth-line F-clef
+    french_clef: French clef
+    french_violin_clef: French violin clef
+    g_clef: G-Schlüssel
+    indefinite_pitch_clef: indefinite pitch clef
+    mezzo_soprano_clef: Mezzosopranschlüssel
+    neutral_clef: Schlagzeugschlüssel
+    percussion_clef: Schlagzeugschlüssel
+    second_line_c_clef: second-line C-clef
+    second_line_g_clef: second-line G-clef
+    soprano_clef: Sopranschlüssel
+    sub_bass_clef: Subbassschlüssel
+    tenor_c_clef: Tenorschlüssel
+    tenor_clef: Tenorschlüssel
+    tenor_g_clef: tenor G-clef
+    third_line_c_clef: third-line C-clef
+    third_line_f_clef: third-line F-clef
+    treble_clef: Violinschlüssel
+    viola_clef: Bratschenschlüssel
+    violin_clef: Violinschlüssel

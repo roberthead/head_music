@@ -13,10 +13,14 @@ require 'active_support/core_ext/module/delegation'
 require 'active_support/core_ext/string/access'
 require 'humanize'
 require 'i18n'
+require 'i18n/backend/fallbacks'
 
-I18n.load_path << Dir[File.expand_path('config/locales') + '/*.yml']
-I18n.config.available_locales = %i[en de fr it en_US en_UK]
+I18n::Backend::Simple.include I18n::Backend::Fallbacks
+I18n.load_path << Dir[File.join(File.dirname(__dir__), 'lib', 'config', 'locales', '*.yml')]
+I18n.config.available_locales = %i[en de fr it es en_US en_GB]
 I18n.default_locale = :en
+I18n.fallbacks[:en_US] = %i[en_US en en_GB]
+I18n.fallbacks[:en_GB] = %i[en_GB en en_US]
 
 # utilities
 require 'head_music/utilities/hash_key'

@@ -12,6 +12,7 @@ class HeadMusic::Clef
     get_by_name(name)
   end
 
+  attr_reader :key, :alias_keys
   attr_reader :pitch, :line, :musical_symbols
 
   delegate :ascii, :html_entity, :unicode, to: :musical_symbol
@@ -48,6 +49,10 @@ class HeadMusic::Clef
     HeadMusic::Utilities::HashKey.for(self) == HeadMusic::Utilities::HashKey.for(other)
   end
 
+  def name(locale_code: Locale::DEFAULT_CODE)
+    I18n.translate(key, scope: :clefs, locale: locale_code)
+  end
+
   private_class_method :new
 
   private
@@ -60,24 +65,30 @@ class HeadMusic::Clef
   def record_for_name(name)
     key = HeadMusic::Utilities::HashKey.for(name)
     RECORDS.detect do |record|
-      name_strings = record[:localized_names].map { |localized_name| localized_name[:name] }
-      name_keys = name_strings.map { |name_string| HeadMusic::Utilities::HashKey.for(name_string) }
-      name_keys.include?(key)
+      name_keys = ([record[:key]] + [record[:alias_keys]]).flatten.compact.uniq.map(&:to_sym)
+      name_keys.include?(key) || name_and_alias_translations_for_keys(name_keys).include?(name)
     end
+  end
+
+  def name_and_alias_translations_for_keys(name_keys)
+    name_keys.map do |name_key|
+      I18n.config.available_locales.map do |locale_code|
+        I18n.translate(name_key, scope: :clefs, locale: locale_code)
+      end.flatten.uniq.compact
+    end.flatten.uniq.compact
   end
 
   def initialize_data_from_record(record)
+    initialize_keys_from_record(record)
     @pitch = HeadMusic::Pitch.get(record[:pitch])
     @line = record[:line]
     @modern = record[:modern]
-    initialize_localized_names(record[:localized_names])
     initialize_musical_symbols(record[:symbols])
   end
 
-  def initialize_localized_names(list)
-    @localized_names = (list || []).map do |name_attributes|
-      HeadMusic::Named::LocalizedName.new(name_attributes.slice(:name, :locale_code, :abbreviation))
-    end
+  def initialize_keys_from_record(record)
+    @key = record[:key]
+    @alias_keys = [record[:alias_keys]].flatten.compact
   end
 
   def initialize_musical_symbols(list)

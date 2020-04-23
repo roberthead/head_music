@@ -1,0 +1,73 @@
+en:
+  rudiments:
+    chromatic_interval: chromatic interval
+    circle: circle
+    clef: clef
+    consonance: consonance
+    diatonic_interval: diatonic interval
+    grand_staff: grand staff
+    harmonic_interval: harmonic interval
+    instrument: instrument
+    interval_cycle: interval cycle
+    key_signature: key signature
+    letter_name: letter name
+    melodic_interval: melodic interval
+    meter: meter
+    motion: motion
+    musical_symbol: musical symbol
+    octave: octave
+    pitch: pitch
+    pitch_class: pitch class
+    pitch_class_set: pitch class set
+    pitch_set: pitch set
+    quality: quality
+    reference_pitch: reference pitch
+    rhythm: rhythm
+    rhythmic_unit: rhythmic unit
+    scale: scale
+    scale_degree: scale degree
+    scale_type: scale type
+    sign: sign
+    solmization: solmization
+    sonority: sonority
+    spelling: spelling
+    staff: staff
+    tuning: tuning
+  clefs:
+    alto_clef: alto clef
+    baritone_c_clef: baritone C-clef
+    baritone_clef: baritone clef
+    baritone_f_clef: baritone F-clef
+    bass_clef: bass clef
+    c_clef: C-clef
+    choral_tenor_clef: choral tenor clef
+    contrabass_clef: contrabass clef
+    countertenor_clef: countertenor clef
+    double_treble_clef: double treble clef
+    drum_clef: drum clef
+    f_clef: F-clef
+    fifth_line_c_clef: fifth-line C-clef
+    fifth_line_f_clef: fifth-line F-clef
+    first_line_c_clef: first-line C-clef
+    first_line_g_clef: first-line G-clef
+    fourth_line_c_clef: fourth-line C-clef
+    fourth_line_f_clef: fourth-line F-clef
+    french_clef: French clef
+    french_violin_clef: French violin clef
+    g_clef: G-clef
+    indefinite_pitch_clef: indefinite pitch clef
+    mezzo_soprano_clef: mezzo-soprano clef
+    neutral_clef: neutral clef
+    percussion_clef: percussion clef
+    second_line_c_clef: second-line C-clef
+    second_line_g_clef: second-line G-clef
+    soprano_clef: soprano clef
+    sub_bass_clef: sub-bass clef
+    tenor_c_clef: tenor C-clef
+    tenor_clef: tenor clef
+    tenor_g_clef: tenor G-clef
+    third_line_c_clef: third-line C-clef
+    third_line_f_clef: third-line F-clef
+    treble_clef: treble clef
+    viola_clef: viola clef
+    violin_clef: treble clef
