@@ -16,7 +16,7 @@ require 'i18n'
 require 'i18n/backend/fallbacks'
 
 I18n::Backend::Simple.include I18n::Backend::Fallbacks
-I18n.load_path << Dir[File.join(File.dirname(__dir__), 'lib', 'config', 'locales', '*.yml')]
+I18n.load_path << Dir[File.join(File.dirname(__dir__), 'lib', 'head_music', 'locales', '*.yml')]
 I18n.config.available_locales = %i[en de fr it es en_US en_GB]
 I18n.default_locale = :en
 I18n.fallbacks[:de] = %i[de en_GB en]
