@@ -71,3 +71,30 @@ en:
     treble_clef: treble clef
     viola_clef: viola clef
     violin_clef: treble clef
+  reference_pitches:
+    a440: A440
+    baroque: Baroque pitch
+    berlin_philharmonic: Berlin Philharmonic
+    boston_symphony_orchestra: Boston Symphony Orchestra
+    chamber_tone: chamber tone
+    choir: choir tone
+    classical: classical pitch
+    concert: concert pitch
+    continental: continental pitch
+    french: French pitch
+    haydn: Haydn pitch
+    high: high pitch
+    international: international pitch
+    iso_16: ISO 16
+    low: low pitch
+    mozart: Mozart pitch
+    new_philharmonic: new philharmonic pitch
+    new_york_philharmonic: New York Philharmonic
+    old_philharmonic: old philharmonic pitch
+    philosophical: philosophical pitch
+    sauveur: Sauveur pitch
+    scheibler: Scheibler pitch
+    scientific: scientific pitch
+    stuttgart: Stuttgart pitch
+    sydney_symphony_orchestra: Sydney Symphony Orchestra
+    verdi: Verdi tuning

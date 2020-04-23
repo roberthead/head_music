@@ -40,3 +40,6 @@ de:
     treble_clef: Violinschlüssel
     viola_clef: Bratschenschlüssel
     violin_clef: Violinschlüssel
+  reference_pitches:
+    chamber_tone: Kammerton
+    choir_tone: Chorton

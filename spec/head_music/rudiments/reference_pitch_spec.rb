@@ -50,14 +50,6 @@ describe HeadMusic::ReferencePitch do
       its(:description) { is_expected.to eq 'C=256' }
     end
 
-    context "when passing 'Schiller'" do
-      subject(:tuning) { described_class.get('Schiller') }
-
-      its(:pitch) { is_expected.to eq 'C4' }
-      its(:frequency) { is_expected.to eq 256.0 }
-      its(:description) { is_expected.to eq 'C=256' }
-    end
-
     context "when passing 'French'" do
       subject(:tuning) { described_class.get('French') }
 
