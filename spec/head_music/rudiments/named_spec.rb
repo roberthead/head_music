@@ -26,4 +26,9 @@ describe HeadMusic::Named do
       expect(rudiment.localized_name.locale_code).to eq 'en_US'
     end
   end
+
+  describe 'name keys' do
+    it { is_expected.to respond_to(:name_key) }
+    it { is_expected.to respond_to(:alias_name_keys) }
+  end
 end

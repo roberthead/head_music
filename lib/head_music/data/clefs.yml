@@ -2,8 +2,8 @@
 - :pitch: G4
   :line: 2
   :modern: true
-  :key: treble_clef
-  :alias_keys:
+  :name_key: treble_clef
+  :alias_name_keys:
   - g_clef
   - second_line_g_clef
   - violin_clef
@@ -12,8 +12,8 @@
     :html_entity: "&#119070;"
 - :pitch: G4
   :line: 1
-  :key: french_violin_clef
-  :alias_keys:
+  :name_key: french_violin_clef
+  :alias_name_keys:
   - french_clef
   - first_line_g_clef
   :symbols:
@@ -22,8 +22,8 @@
 - :pitch: G3
   :line: 2
   :modern: true
-  :key: choral_tenor_clef
-  :alias_keys:
+  :name_key: choral_tenor_clef
+  :alias_name_keys:
   - tenor_clef
   - tenor_g_clef
   :symbols:
@@ -31,14 +31,14 @@
     :html_entity: "&#119072;"
 - :pitch: G3
   :line: 2
-  :key: double_treble_clef
+  :name_key: double_treble_clef
   :symbols:
   - :unicode: "\U0001D11E\U0001D11E"
     :html_entity: "&#119070;&#119070;"
 - :pitch: F3
   :line: 3
-  :key: baritone_clef
-  :alias_keys:
+  :name_key: baritone_clef
+  :alias_name_keys:
   - baritone_f_clef
   - third_line_f_clef
   :symbols:
@@ -47,8 +47,8 @@
 - :pitch: F3
   :line: 4
   :modern: true
-  :key: bass_clef
-  :alias_keys:
+  :name_key: bass_clef
+  :alias_name_keys:
   - f_clef
   - fourth_line_f_clef
   :symbols:
@@ -56,8 +56,8 @@
     :html_entity: "&#119074;"
 - :pitch: F3
   :line: 5
-  :key: sub_bass_clef
-  :alias_keys:
+  :name_key: sub_bass_clef
+  :alias_name_keys:
   - contrabass_clef
   - fifth_line_f_clef
   :symbols:
@@ -65,16 +65,16 @@
     :html_entity: "&#119074;"
 - :pitch: C4
   :line: 1
-  :key: soprano_clef
-  :alias_keys:
+  :name_key: soprano_clef
+  :alias_name_keys:
   - first_line_c_clef
   :symbols:
   - :unicode: "\U0001D121"
     :html_entity: "&#119073;"
 - :pitch: C4
   :line: 2
-  :key: mezzo_soprano_clef
-  :alias_keys:
+  :name_key: mezzo_soprano_clef
+  :alias_name_keys:
   - second_line_c_clef
   :symbols:
   - :unicode: "\U0001D121"
@@ -82,8 +82,8 @@
 - :pitch: C4
   :line: 3
   :modern: true
-  :key: alto_clef
-  :alias_keys:
+  :name_key: alto_clef
+  :alias_name_keys:
   - c_clef
   - third_line_c_clef
   - viola_clef
@@ -94,8 +94,8 @@
 - :pitch: C4
   :line: 4
   :modern: true
-  :key: tenor_clef
-  :alias_keys:
+  :name_key: tenor_clef
+  :alias_name_keys:
   - tenor_c_clef
   - fourth_line_c_clef
   :symbols:
@@ -103,8 +103,8 @@
     :html_entity: "&#119073;"
 - :pitch: C4
   :line: 5
-  :key: baritone_c_clef
-  :alias_keys:
+  :name_key: baritone_c_clef
+  :alias_name_keys:
   - baritone_clef
   - fifth_line_c_clef
   :symbols:
@@ -113,8 +113,8 @@
 - :pitch:
   :line: 3
   :modern: true
-  :key: neutral_clef
-  :alias_keys:
+  :name_key: neutral_clef
+  :alias_name_keys:
   - percussion_clef
   - indefinite_pitch_clef
   - rhythm_clef

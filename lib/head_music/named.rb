@@ -63,6 +63,8 @@ module HeadMusic::Named
     base.extend(ClassMethods)
   end
 
+  attr_reader :name_key, :alias_name_keys
+
   def name=(name)
     ensure_localized_name(name: name)
   end

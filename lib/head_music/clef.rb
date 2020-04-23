@@ -12,7 +12,6 @@ class HeadMusic::Clef
     get_by_name(name)
   end
 
-  attr_reader :key, :alias_keys
   attr_reader :pitch, :line, :musical_symbols
 
   delegate :ascii, :html_entity, :unicode, to: :musical_symbol
@@ -50,7 +49,7 @@ class HeadMusic::Clef
   end
 
   def name(locale_code: Locale::DEFAULT_CODE)
-    I18n.translate(key, scope: :clefs, locale: locale_code)
+    I18n.translate(name_key, scope: :clefs, locale: locale_code)
   end
 
   private_class_method :new
@@ -63,14 +62,19 @@ class HeadMusic::Clef
   end
 
   def record_for_name(name)
+    name = name.to_s.strip
     key = HeadMusic::Utilities::HashKey.for(name)
     RECORDS.detect do |record|
-      name_keys = ([record[:key]] + [record[:alias_keys]]).flatten.compact.uniq.map(&:to_sym)
-      name_keys.include?(key) || name_and_alias_translations_for_keys(name_keys).include?(name)
+      name_keys = name_keys_from_record(record)
+      name_keys.include?(key) || name_key_translations(name_keys).include?(name)
     end
   end
 
-  def name_and_alias_translations_for_keys(name_keys)
+  def name_keys_from_record(record)
+    ([record[:name_key]] + [record[:alias_name_keys]]).flatten.compact.uniq.map(&:to_sym)
+  end
+
+  def name_key_translations(name_keys)
     name_keys.map do |name_key|
       I18n.config.available_locales.map do |locale_code|
         I18n.translate(name_key, scope: :clefs, locale: locale_code)
@@ -87,8 +91,8 @@ class HeadMusic::Clef
   end
 
   def initialize_keys_from_record(record)
-    @key = record[:key]
-    @alias_keys = [record[:alias_keys]].flatten.compact
+    @name_key = record[:name_key]
+    @alias_name_keys = [record[:alias_name_keys]].flatten.compact
   end
 
   def initialize_musical_symbols(list)
