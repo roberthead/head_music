@@ -6,7 +6,7 @@ require 'yaml'
 class HeadMusic::Clef
   include HeadMusic::Named
 
-  RECORDS = YAML.load_file(File.expand_path('clefs.yml', __dir__)).freeze
+  RECORDS = YAML.load_file(File.expand_path('data/clefs.yml', __dir__)).freeze
 
   def self.get(name)
     get_by_name(name)
