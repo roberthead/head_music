@@ -111,22 +111,22 @@ class HeadMusic::ReferencePitch
     end || named_reference_pitch_record_for_name(DEFAULT_REFERENCE_PITCH_NAME)
   end
 
-  def normalized_name_string(name)
-    name.gsub(' pitch', '').gsub(' tone', '').gsub(' tuning', '')
-  end
-
   def name_keys_from_record(record)
     names_from_record(record).map { |name| HeadMusic::Utilities::HashKey.for(name) }
-  end
-
-  def initialize_keys_from_record(record)
-    @key = record[:key]
-    @alias_keys = [record[:alias_keys]].flatten.compact
   end
 
   def names_from_record(record)
     name_keys = ([record[:key]] + [record[:alias_keys]]).flatten.compact.uniq
     normalized_translations_for_keys(name_keys)
+  end
+
+  def normalized_name_string(name)
+    name.gsub(' pitch', '').gsub(' tone', '').gsub(' tuning', '')
+  end
+
+  def initialize_keys_from_record(record)
+    @key = record[:key]
+    @alias_keys = [record[:alias_keys]].flatten.compact
   end
 
   def normalized_translations_for_keys(name_keys)
