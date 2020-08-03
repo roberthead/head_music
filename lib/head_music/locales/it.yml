@@ -40,3 +40,19 @@ it:
     treble_clef: chiave di violino
     viola_clef: chiave di viola
     violin_clef: chiave di violino
+  instruments:
+    accordian: fisarmonica
+    alto_flute: flauto contralto
+    alto_voice: contralto
+    bagpipe: cornamusa
+    baritone_voice: baritono
+    bass_voice: basso
+    guitar: chitarra
+    piccolo: ottavino
+    piano: piano
+    viola: viola
+    violin: violino
+  instrument_voices:
+    alto: contralto
+    baritone: baritono
+    bass: basso

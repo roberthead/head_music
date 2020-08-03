@@ -12,7 +12,6 @@ class HeadMusic::Solmization
   attr_reader :syllables
 
   def self.get(identifier = nil)
-    puts "Solmization.get(#{identifier})"
     get_by_name(identifier)
   end
 

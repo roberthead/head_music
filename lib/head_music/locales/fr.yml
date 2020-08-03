@@ -39,3 +39,19 @@ fr:
     treble_clef: clé de sol
     viola_clef: clé d'ut
     violin_clef: clé de sol
+  instruments:
+    accordian: accordéon
+    alto_flute: flûte alto
+    alto_voice: alto
+    bagpipe: cornemuse
+    baritone_voice: baryton
+    bass_clarinet: clarinette basse
+    bass_voice: basse
+    piano: piano
+    viola: alto
+    violin: violon
+  instrument_voices:
+    alto: alto
+    baritone: baryton
+    bass: basse
+    guitar: guitare

@@ -4,50 +4,16 @@
 class HeadMusic::Instrument
   include HeadMusic::Named
 
-  INSTRUMENTS = [
-    {
-      localized_names: [
-        { name: 'violin', abbreviation: 'Vn' },
-        { name: 'fiddle' },
-        { name: 'violín', locale_code: 'es' },
-        { name: 'violon', locale_code: 'fr' },
-        { name: 'Violine', locale_code: 'de' },
-        { name: 'Geige', locale_code: 'de' },
-        { name: 'violino', locale_code: 'it' },
-      ],
-      family: :string,
-      default_clef: :treble_clef,
-    },
-    {
-      localized_names: [
-        { name: 'viola', abbreviation: 'Vla' },
-        { name: 'viola', locale_code: 'es' },
-        { name: 'alto', locale_code: 'fr' },
-        { name: 'Bratsche', locale_code: 'de', abbreviation: 'Br' },
-        { name: 'Viola', locale_code: 'it' },
-      ],
-      family: :string,
-      default_clef: :treble_clef,
-    },
-    {
-      localized_names: [
-        { name: 'piano' },
-        { name: 'piano', locale_code: 'es' },
-        { name: 'piano', locale_code: 'fr' },
-        { name: 'piano', locale_code: 'it' },
-        { name: 'Piano', locale_code: 'de' },
-        { name: 'Klavier', locale_code: 'de' },
-      ],
-      family: :string,
-      default_system: %i[treble_clef bass_clef],
-    },
-  ].freeze
+  INSTRUMENTS = YAML.load_file(File.expand_path('data/instruments.yml', __dir__)).freeze
 
   def self.get(name)
-    get_by_name(name)
+    return get_by_name(name) if get_by_name(name)
+    return get_by_name(key_for_name(name)) if key_for_name(name)
+
+    new(name)
   end
 
-  attr_reader :family, :default_clef, :default_system
+  attr_reader :name_key, :family, :default_clefs
 
   def ==(other)
     to_s == other.to_s
@@ -68,19 +34,27 @@ class HeadMusic::Instrument
 
   def record_for_name(name)
     key = HeadMusic::Utilities::HashKey.for(name)
-    INSTRUMENTS.detect do |instrument_record|
-      name_strings = instrument_record[:localized_names].map { |localized_name| localized_name[:name] }
-      name_keys = name_strings.map { |name_string| HeadMusic::Utilities::HashKey.for(name_string) }
-      name_keys.include?(key)
+    record_for_key(key) || record_for_key(key_for_name(name))
+  end
+
+  def key_for_name(name)
+    INSTRUMENTS.each do |instrument|
+      I18n.config.available_locales.each do |locale|
+        translation = I18n.t("instruments.#{instrument['name_key']}", locale: locale)
+        return instrument['name_key'] if translation.downcase == name.downcase
+      end
     end
+    nil
+  end
+
+  def record_for_key(key)
+    INSTRUMENTS.detect { |instrument| instrument['name_key'] == key }
   end
 
   def initialize_data_from_record(record)
-    @family = record[:family]
-    @default_clef = record[:default_clef]
-    @default_system = record[:default_system]
-    @localized_names = record[:localized_names].map do |name_attributes|
-      HeadMusic::Named::LocalizedName.new(name_attributes.slice(:name, :locale_code, :abbreviation))
-    end
+    @family = record['family']
+    @default_clefs = record['default_clefs']
+    @name_key = record['name_key'].to_sym
+    self.name = I18n.translate(name_key, scope: 'instruments', locale: 'en')
   end
 end

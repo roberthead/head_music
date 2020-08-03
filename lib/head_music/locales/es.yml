@@ -40,3 +40,14 @@ es:
     treble_clef: clave de sol
     viola_clef: clave de do
     violin_clef: clave de sol
+  instruments:
+    accordian: acordeóon
+    alto_flute: flauta alto
+    alto_voice: contralto
+    bagpipe: gaita
+    baritone_voice: baritono
+    bass_voice: bajo
+    guitar: guitarra
+    piano: piano
+    viola: viola
+    violin: violín

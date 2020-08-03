@@ -98,3 +98,101 @@ en:
     stuttgart: Stuttgart pitch
     sydney_symphony_orchestra: Sydney Symphony Orchestra
     verdi: Verdi tuning
+  instruments:
+    accordian: accordian
+    alto_flute: alto flute
+    alto_voice: alto
+    arpeggione: arpeggione
+    bagpipe: bagpipe
+    baritone_voice: baritone
+    bass_clarinet: bass clarinet
+    bass_drum: bass drum
+    bass_guitar: bass guitar
+    bass_oboe: bass oboe
+    bass_trombone: bass trombone
+    bass_tuba: bass tuba
+    bass_voice: bass
+    bassoon: bassoon
+    castanets: castanets
+    chimes: chimes
+    clarinet: clarinet
+    clash_cymbals: clash cymbals
+    cornet: cornet
+    contrabassoon: contrabassoon
+    contra_bass_clarinet: contra bass clarinet
+    cor_anglais: cor anglais
+    cowbell: cowbell
+    cymbal: cymbal
+    crotales: crotales
+    double_bass: double bass
+    english_horn: English horn
+    euphonium: euphonium
+    flugel_horn: flugel horn
+    flute: flute
+    french_horn: French horn
+    glockenspiel: glockenspiel
+    guitar: guitar
+    harp: harp
+    harpsichord: harpsichord
+    mandolin: mandolin
+    maracas: maracas
+    marimba: marimba
+    metal_block: metal block
+    oboe: oboe
+    piano: piano
+    piccolo: piccolo
+    piccolo_trumpet: piccolo trumpet
+    side_drum: side drum
+    suspended_cymbal: suspended cymbal
+    synthesizer: synthesizer
+    tam_tam: tam-tam
+    tambourine: tambourine
+    temple_blocks: temple blocks
+    tenor_drum: tenor drum
+    tenor_trombone: tenor trombone
+    timpani: timpani
+    triangle: triangle
+    trumpet: trumpet
+    tuba: tuba
+    tubular_bells: tubular bells
+    vibraphone: vibraphone
+    viola: viola
+    violin: violin
+    violincello: cello
+    woodblock: woodblock
+    xylophone: xylophone
+  instrument_abbreviations:
+    accordian:
+    - acc
+    alto_flute:
+    - afl
+    alto_voice:
+    - alt
+    bagpipe:
+    - bag
+    baritone_voice:
+    - bar
+    bass_voice:
+    - bass
+    bass_clarinet:
+    - bcl
+  instrument_classifications:
+    aerophone: aerophone
+    bowed: bowed
+    brass: brass
+    double_reed: double-reed
+    keyboard: keyboard
+    percussion: percussion
+    single_reed: single-reed
+    string: string
+    wind: wind
+    woodwind: woodwind
+  instrument_voices:
+    piccolo: piccolo
+    soprano: soprano
+    alto: alto
+    tenor: tenor
+    baritone: baritone
+    bass: bass
+    contrabass: contrabass
+    octobass: octobass

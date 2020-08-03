@@ -43,3 +43,21 @@ de:
   reference_pitches:
     chamber_tone: Kammerton
     choir_tone: Chorton
+  instruments:
+    accordian: Akkordeon
+    alto_flute: Altflöte
+    alto_voice: Alt
+    arpeggione: Arpeggione
+    bagpipe: Dudelsack
+    baritone_voice: Bariton
+    bass_voice: Bass
+    bass_clarinet: clarinette basse
+    fiddle: Geige
+    guitar: Gitarre
+    piano: Piano
+    viola: Bratsche
+    violin: Violine
+  instrument_voices:
+    alto: Alt
+    baritone: Bariton
+    bass: Bass

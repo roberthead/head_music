@@ -41,7 +41,12 @@ class HeadMusic::GrandStaff
 
   def staves
     @staves ||=
-      data[:staves].map { |staff| HeadMusic::Staff.new(staff[:clef], instrument: staff[:instrument] || instrument) }
+      data[:staves].map do |staff|
+        HeadMusic::Staff.new(
+          staff[:clef],
+          instrument: staff[:instrument] || instrument
+        )
+      end
   end
 
   def brace_staves_index_first
