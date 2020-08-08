@@ -6,16 +6,16 @@ class HeadMusic::GrandStaff
     piano: {
       instrument: :piano,
       staves: [
-        { clef: :treble_clef, instrument: :piano },
-        { clef: :bass_clef, instrument: :piano },
+        { clef: :treble_clef, for: :right_hand },
+        { clef: :bass_clef, for: :left_hand },
       ],
     },
     organ: {
       instrument: :organ,
       staves: [
-        { clef: :treble_clef, instrument: :organ },
-        { clef: :bass_clef, instrument: :organ },
-        { clef: :bass_clef, instrument: :pedals },
+        { clef: :treble_clef, for: :right_hand },
+        { clef: :bass_clef, for: :left_hand },
+        { clef: :bass_clef, for: :pedals },
       ],
     },
   }.freeze
@@ -42,10 +42,7 @@ class HeadMusic::GrandStaff
   def staves
     @staves ||=
       data[:staves].map do |staff|
-        HeadMusic::Staff.new(
-          staff[:clef],
-          instrument: staff[:instrument] || instrument
-        )
+        HeadMusic::Staff.new(staff[:clef], instrument: instrument)
       end
   end
 

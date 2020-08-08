@@ -42,7 +42,6 @@ describe HeadMusic::GrandStaff do
 
       specify { expect(grand_staff.staves[0].instrument).to eq :organ }
       specify { expect(grand_staff.staves[1].instrument).to eq :organ }
-      specify { expect(grand_staff.staves[2].instrument).to eq :pedals }
 
       specify { expect(grand_staff.brace_staves_index_first).to eq 0 }
       specify { expect(grand_staff.brace_staves_index_last).to eq 1 }

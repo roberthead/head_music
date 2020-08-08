@@ -114,6 +114,7 @@ en:
     bass_voice: bass
     bassoon: bassoon
     castanets: castanets
+    cello: cello
     chimes: chimes
     clarinet: clarinet
     clash_cymbals: clash cymbals
@@ -158,7 +159,6 @@ en:
     vibraphone: vibraphone
     viola: viola
     violin: violin
-    violincello: cello
     woodblock: woodblock
     xylophone: xylophone
   instrument_abbreviations:

@@ -14,10 +14,10 @@ class HeadMusic::Instrument
   end
 
   def self.all
-    INSTRUMENTS.map { |data| get(data['name_key']) }.sort_by(&:name)
+    INSTRUMENTS.map { |key, _data| get(key) }.sort_by(&:name)
   end
 
-  attr_reader :name_key, :family, :default_clefs
+  attr_reader :name_key, :family, :default_clefs, :classifications, :voice
 
   def ==(other)
     to_s == other.to_s
@@ -32,33 +32,41 @@ class HeadMusic::Instrument
     if record
       initialize_data_from_record(record)
     else
-      self.name = name
+      self.name = name.to_s
     end
   end
 
   def record_for_name(name)
-    key = HeadMusic::Utilities::HashKey.for(name)
-    record_for_key(key) || record_for_key(key_for_name(name))
+    record_for_key(HeadMusic::Utilities::HashKey.for(name)) ||
+      record_for_key(key_for_name(name))
   end
 
   def key_for_name(name)
-    INSTRUMENTS.each do |instrument|
+    INSTRUMENTS.each do |key, _data|
       I18n.config.available_locales.each do |locale|
-        translation = I18n.t("instruments.#{instrument['name_key']}", locale: locale)
-        return instrument['name_key'] if translation.downcase == name.downcase
+        translation = I18n.t("instruments.#{key}", locale: locale)
+        return key if translation.downcase == name.downcase
       end
     end
     nil
   end
 
   def record_for_key(key)
-    INSTRUMENTS.detect { |instrument| instrument['name_key'] == key }
+    INSTRUMENTS.each do |name_key, data|
+      return data.merge!('name_key' => name_key) if name_key.to_s == key.to_s
+    end
   end
 
   def initialize_data_from_record(record)
-    @family = record['family']
-    @default_clefs = record['default_clefs']
     @name_key = record['name_key'].to_sym
-    self.name = I18n.translate(name_key, scope: 'instruments', locale: 'en')
+    @family = record['family']
+    @default_clefs = record['default_clefs'] || []
+    @classifications = record['classifications'] || []
+    @voice = record['voice'].to_s
+    self.name = I18n.translate(name_key, scope: 'instruments', locale: 'en', default: inferred_name)
+  end
+
+  def inferred_name
+    name_key.to_s.gsub(/_/, ' ')
   end
 end

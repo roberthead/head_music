@@ -24,6 +24,16 @@ describe HeadMusic::Instrument do
 
     its(:name) { is_expected.to eq 'piano' }
     its(:default_clefs) { are_expected.to eq %w[treble_clef bass_clef] }
+    its(:classifications) { are_expected.to include 'string' }
+    its(:classifications) { are_expected.to include 'keyboard' }
+  end
+
+  context 'when organ' do
+    subject(:organ) { described_class.get(:organ) }
+
+    its(:name) { is_expected.to eq 'organ' }
+    its(:default_clefs) { are_expected.to eq %w[treble_clef bass_clef bass_clef] }
+    its(:classifications) { are_expected.to include 'keyboard' }
   end
 
   context 'when violin' do
@@ -31,5 +41,7 @@ describe HeadMusic::Instrument do
 
     its(:name) { is_expected.to eq 'violin' }
     its(:default_clefs) { are_expected.to eq ['treble_clef'] }
+    its(:classifications) { are_expected.to include 'string' }
+    its(:voice) { are_expected.to include 'soprano' }
   end
 end

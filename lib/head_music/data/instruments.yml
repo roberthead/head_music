@@ -1,36 +1,83 @@
 ---
-- name_key: alto_flute
-- name_key: guitar
+guitar:
   family: string
   classifications:
-  - string
-  - chordophone
+    - string
+    - chordophone
   default_clefs:
-  - treble_clef
-- name_key: piano
+    - treble_clef
+  voice: tenor
+piano:
   family: string
   classifications:
-  - string
-  - chordophone
-  - keyboard
+    - string
+    - chordophone
+    - keyboard
   default_clefs:
-  - treble_clef
-  - bass_clef
-- name_key: violin
+    - treble_clef
+    - bass_clef
+violin:
+  family: string
   alias_name_keys:
-  - fiddle
+    - fiddle
+  classifications:
+    - string
+    - chordophone
+    - bowed
+  default_clefs:
+    - treble_clef
+  voice: soprano
+viola:
   family: string
   classifications:
-  - string
-  - chordophone
-  - bowed
+    - string
+    - chordophone
+    - bowed
   default_clefs:
-  - treble_clef
-- name_key: viola
+    - alto_clef
+  voice: alto
+cello:
   family: string
   classifications:
-  - string
-  - chordophone
-  - bowed
+    - string
+    - chordophone
+    - bowed
   default_clefs:
-  - alto_clef
+    - bass_clef
+  voice: tenor
+double_bass:
+  family: string
+  classifications:
+    - string
+    - chordophone
+    - bowed
+  default_clefs:
+    - bass_clef
+  voice: bass
+harp:
+  family: string
+  classifications:
+    - string
+    - chordophone
+    - plucked
+  default_clefs:
+    - treble_clef
+    - bass_clef
+flute:
+  family: woodwind
+  classifications:
+    - woodwind
+    - wind
+    - aerophone
+    - edge-blown aerophone
+  default_clefs:
+    - treble_clef
+  voice: soprano
+organ:
+  classifications:
+    - aerophone
+    - keyboard
+  default_clefs:
+    - treble_clef
+    - bass_clef
+    - bass_clef
