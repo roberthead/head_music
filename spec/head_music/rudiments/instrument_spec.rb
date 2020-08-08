@@ -13,6 +13,12 @@ describe HeadMusic::Instrument do
     end
   end
 
+  describe '.all' do
+    subject { described_class.all }
+
+    its(:length) { is_expected.to be > 1 }
+  end
+
   context 'when piano' do
     subject(:piano) { described_class.get(:piano) }
 

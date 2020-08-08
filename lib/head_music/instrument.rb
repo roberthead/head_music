@@ -13,6 +13,10 @@ class HeadMusic::Instrument
     new(name)
   end
 
+  def self.all
+    INSTRUMENTS.map { |data| get(data['name_key']) }.sort_by(&:name)
+  end
+
   attr_reader :name_key, :family, :default_clefs
 
   def ==(other)
