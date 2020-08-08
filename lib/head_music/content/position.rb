@@ -5,6 +5,7 @@ class HeadMusic::Position
   include Comparable
 
   attr_reader :composition, :bar_number, :count, :tick
+
   delegate :to_s, to: :code
 
   def initialize(composition, code_or_bar, count = nil, tick = nil)

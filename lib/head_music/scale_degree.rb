@@ -8,6 +8,7 @@ class HeadMusic::ScaleDegree
   NAME_FOR_DIATONIC_DEGREE = [nil, 'tonic', 'supertonic', 'mediant', 'subdominant', 'dominant', 'submediant'].freeze
 
   attr_reader :key_signature, :spelling
+
   delegate :scale, to: :key_signature
   delegate :scale_type, to: :scale
 

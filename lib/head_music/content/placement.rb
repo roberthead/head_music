@@ -5,6 +5,7 @@ class HeadMusic::Placement
   include Comparable
 
   attr_reader :voice, :position, :rhythmic_value, :pitch
+
   delegate :composition, to: :voice
   delegate :spelling, to: :pitch, allow_nil: true
 

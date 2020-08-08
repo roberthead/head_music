@@ -4,7 +4,7 @@
 # Composite of a LetterName and an optional Sign.
 # Does not include the octave. See Pitch for that.
 class HeadMusic::Spelling
-  MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(\-?\d+)?\s*$/i.freeze
+  MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(-?\d+)?\s*$/i.freeze
 
   attr_reader :pitch_class
   attr_reader :letter_name

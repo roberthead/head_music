@@ -31,6 +31,7 @@ class HeadMusic::Octave
   end
 
   attr_reader :number
+
   delegate :to_i, :to_s, to: :number
 
   def initialize(number)

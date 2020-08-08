@@ -6,6 +6,7 @@ class HeadMusic::Voice
   include Comparable
 
   attr_reader :composition, :placements, :role
+
   delegate :key_signature, to: :composition
 
   def initialize(composition: nil, role: nil)

@@ -44,6 +44,7 @@ class HeadMusic::Quality
   end
 
   attr_reader :name
+
   delegate :to_s, to: :name
 
   def initialize(name)

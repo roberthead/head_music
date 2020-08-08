@@ -1,3 +1,7 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 2.5
+
 Layout/DotPosition:
   EnforcedStyle: trailing
 
@@ -33,9 +37,6 @@ Style/TrailingCommaInArrayLiteral:
 
 Style/TrailingCommaInHashLiteral:
   EnforcedStyleForMultiline: consistent_comma
-
-AllCops:
-  TargetRubyVersion: 2.4
 
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
