@@ -23,6 +23,12 @@ class HeadMusic::Instrument
     to_s == other.to_s
   end
 
+  def translation(locale = :en)
+    return name unless name_key
+
+    I18n.translate(name_key, scope: [:instruments], locale: locale)
+  end
+
   private_class_method :new
 
   private
@@ -55,6 +61,7 @@ class HeadMusic::Instrument
     INSTRUMENTS.each do |name_key, data|
       return data.merge!('name_key' => name_key) if name_key.to_s == key.to_s
     end
+    nil
   end
 
   def initialize_data_from_record(record)
