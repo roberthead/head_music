@@ -1,7 +1,4 @@
 de:
-  rudiments:
-    clef: Notenschlüssel
-    consonance: Konsonanz
   clefs:
     alto_clef: Altschlüssel
     baritone_c_clef: Baritonschlüssel
@@ -40,24 +37,85 @@ de:
     treble_clef: Violinschlüssel
     viola_clef: Bratschenschlüssel
     violin_clef: Violinschlüssel
-  reference_pitches:
-    chamber_tone: Kammerton
-    choir_tone: Chorton
+  instrument_classifications:
+    brass: Blechblas
+    brass_instrument: Blechblasinstrument
+    drum: Trommel
+    keyboard_instrument: Tasteninstrumente
+    percussion: Perkussions
+    percussion_instrument: Schlaginstrumente
+    plucked_instrument: Zupfinstrumente
+    strings: Streicher
+    stringed_instrument: Saiteninstrument
+    wind_instrument: Blasinstrument
+    woodwind_instrument: Holzblasinstrument
+  instrument_voices:
+    alto: Alt
+    baritone: Bariton
+    bass: Bass
   instruments:
     accordian: Akkordeon
     alto_flute: Altflöte
     alto_voice: Alt
     arpeggione: Arpeggione
     bagpipe: Dudelsack
+    baritone_horn: Baritonhorn
     baritone_voice: Bariton
     bass_voice: Bass
-    bass_clarinet: clarinette basse
+    bass_clarinet: Bassklarinette
+    bass_drum: Grosse Trommel
+    bass_trombone: Bass Posaune
+    bassoon: Fagott
+    castanets: Kastagnetten
+    celesta: Celesta
+    cello: Cello
+    cimbalom: Zymbal
+    clarinet: Klarinette
+    clavichord: Klavichord
+    cornet: Kornett
+    cymbal: Becken
+    double_bass: Kontrabass
+    english_horn: Englischhorn
+    euphonium: Euphonium
     fiddle: Geige
+    flugel_horn: Flügelhorn
+    flute: Flöte
+    french_horn: Horn
+    glockenspiel: Glockenspiel
     guitar: Gitarre
+    hammered_dulcimer: Hackbrett
+    harp: Harfe
+    harpsichord: Cembalo
+    lute: Laute
+    mandolin: Mandoline
+    marimba: Marimbaphon
+    natural_horn: Waldhorn
+    oboe: Oboe
+    oboe_d_amore: Liebesoboe
+    organ: Orgel
     piano: Piano
+    piccolo: Pikkoloflöte
+    recorder: Blockflöte
+    saxophone: Saxophon
+    snare_drum: Leinentrommel
+    tambourine: Tamburin
+    tenor_drum: Tenortrommel
+    timpani: Pauken
+    trombone: Posaune
+    trumpet: Trompete
+    tuba: Tuba
+    tubular_bells: Rohrenglocke
     viola: Bratsche
+    viola_d_amore: Viola d'amore
+    viola_da_gamba: Viola da gamba
     violin: Violine
-  instrument_voices:
-    alto: Alt
-    baritone: Bariton
-    bass: Bass
+    violoncello: Violoncello
+    voice: Stimme
+    xylophone: Xylophon
+    zither: Zither
+  reference_pitches:
+    chamber_tone: Kammerton
+    choir_tone: Chorton
+  rudiments:
+    clef: Notenschlüssel
+    consonance: Konsonanz

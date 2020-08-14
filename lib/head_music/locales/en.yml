@@ -1,38 +1,4 @@
 en:
-  rudiments:
-    chromatic_interval: chromatic interval
-    circle: circle
-    clef: clef
-    consonance: consonance
-    diatonic_interval: diatonic interval
-    grand_staff: grand staff
-    harmonic_interval: harmonic interval
-    instrument: instrument
-    interval_cycle: interval cycle
-    key_signature: key signature
-    letter_name: letter name
-    melodic_interval: melodic interval
-    meter: meter
-    motion: motion
-    musical_symbol: musical symbol
-    octave: octave
-    pitch: pitch
-    pitch_class: pitch class
-    pitch_class_set: pitch class set
-    pitch_set: pitch set
-    quality: quality
-    reference_pitch: reference pitch
-    rhythm: rhythm
-    rhythmic_unit: rhythmic unit
-    scale: scale
-    scale_degree: scale degree
-    scale_type: scale type
-    sign: sign
-    solmization: solmization
-    sonority: sonority
-    spelling: spelling
-    staff: staff
-    tuning: tuning
   clefs:
     alto_clef: alto clef
     baritone_c_clef: baritone C-clef
@@ -71,6 +37,132 @@ en:
     treble_clef: treble clef
     viola_clef: viola clef
     violin_clef: treble clef
+  instrument_abbreviations:
+    accordian:
+    - acc
+    alto_flute:
+    - afl
+    alto_voice:
+    - alt
+    bagpipe:
+    - bag
+    baritone_voice:
+    - bar
+    bass_voice:
+    - bass
+    bass_clarinet:
+    - bcl
+  instrument_classifications:
+    aerophone: aerophone
+    bowed: bowed
+    brass: brass
+    brass_instrument: brass instrument
+    double_reed: double-reed
+    drum: drum
+    keyboard: keyboard
+    keyboard_instrument: keyboard instrument
+    percussion: percussion
+    percussion_instrument: percussion instrument
+    plucked_instrument: plucked instrument
+    reed: reed
+    single_reed: single-reed
+    strings: strings
+    stringed_instrument: stringed instrument
+    wind: wind
+    wind_instrument: wind instrument
+    woodwind: woodwind
+  instrument_voices:
+    piccolo: piccolo
+    soprano: soprano
+    alto: alto
+    tenor: tenor
+    baritone: baritone
+    bass: bass
+    contrabass: contrabass
+    octobass: octobass
+  instruments:
+    accordian: accordian
+    alto_flute: alto flute
+    alto_voice: alto
+    arpeggione: arpeggione
+    bagpipe: bagpipe
+    baritone_horn: baritone horn
+    baritone_voice: baritone
+    bass_clarinet: bass clarinet
+    bass_drum: bass drum
+    bass_guitar: bass guitar
+    bass_oboe: bass oboe
+    bass_drum: bass drum
+    bass_trombone: bass trombone
+    bass_tuba: bass tuba
+    bass_voice: bass
+    bassoon: bassoon
+    castanets: castanets
+    celesta: celesta
+    cello: cello
+    chimes: chimes
+    cimbalom: cimbalom
+    cowbell: cowbell
+    clarinet: clarinet
+    clavichord: clavichord
+    clash_cymbals: clash cymbals
+    cornet: cornet
+    contrabassoon: contrabassoon
+    contra_bass_clarinet: contra bass clarinet
+    cor_anglais: cor anglais
+    cowbell: cowbell
+    cymbal: cymbal
+    crotales: crotales
+    double_bass: double bass
+    english_horn: English horn
+    euphonium: euphonium
+    flugel_horn: flugel horn
+    flute: flute
+    french_horn: French horn
+    glockenspiel: glockenspiel
+    guitar: guitar
+    hammered_dulcimer: hammered dulcimer
+    harp: harp
+    harpsichord: harpsichord
+    lute: lute
+    mandolin: mandolin
+    maracas: maracas
+    marimba: marimba
+    metal_block: metal block
+    natural_horn: natural horn
+    oboe: oboe
+    oboe_d_amore: oboe d'amore
+    organ: organ
+    piano: piano
+    piccolo: piccolo
+    piccolo_trumpet: piccolo trumpet
+    recorder: recorder
+    saxophone: saxophone
+    side_drum: side drum
+    snare_drum: snare drum
+    suspended_cymbal: suspended cymbal
+    synthesizer: synthesizer
+    tam_tam: tam-tam
+    tambourine: tambourine
+    temple_blocks: temple blocks
+    tenor_drum: tenor drum
+    tenor_trombone: tenor trombone
+    timpani: timpani
+    triangle: triangle
+    trombone: trombone
+    trumpet: trumpet
+    tuba: tuba
+    tubular_bells: tubular bells
+    vibraphone: vibraphone
+    viola: viola
+    viola_d_amore: viola d'amore
+    viola_da_gamba: viola da gamba
+    violin: violin
+    violoncello: violoncello
+    voice: voice
+    woodblock: woodblock
+    xylophone: xylophone
+    zither: zither
   reference_pitches:
     a440: A440
     baroque: Baroque pitch
@@ -98,101 +190,38 @@ en:
     stuttgart: Stuttgart pitch
     sydney_symphony_orchestra: Sydney Symphony Orchestra
     verdi: Verdi tuning
-  instruments:
-    accordian: accordian
-    alto_flute: alto flute
-    alto_voice: alto
-    arpeggione: arpeggione
-    bagpipe: bagpipe
-    baritone_voice: baritone
-    bass_clarinet: bass clarinet
-    bass_drum: bass drum
-    bass_guitar: bass guitar
-    bass_oboe: bass oboe
-    bass_trombone: bass trombone
-    bass_tuba: bass tuba
-    bass_voice: bass
-    bassoon: bassoon
-    castanets: castanets
-    cello: cello
-    chimes: chimes
-    clarinet: clarinet
-    clash_cymbals: clash cymbals
-    cornet: cornet
-    contrabassoon: contrabassoon
-    contra_bass_clarinet: contra bass clarinet
-    cor_anglais: cor anglais
-    cowbell: cowbell
-    cymbal: cymbal
-    crotales: crotales
-    double_bass: double bass
-    english_horn: English horn
-    euphonium: euphonium
-    flugel_horn: flugel horn
-    flute: flute
-    french_horn: French horn
-    glockenspiel: glockenspiel
-    guitar: guitar
-    harp: harp
-    harpsichord: harpsichord
-    mandolin: mandolin
-    maracas: maracas
-    marimba: marimba
-    metal_block: metal block
-    oboe: oboe
-    piano: piano
-    piccolo: piccolo
-    piccolo_trumpet: piccolo trumpet
-    side_drum: side drum
-    suspended_cymbal: suspended cymbal
-    synthesizer: synthesizer
-    tam_tam: tam-tam
-    tambourine: tambourine
-    temple_blocks: temple blocks
-    tenor_drum: tenor drum
-    tenor_trombone: tenor trombone
-    timpani: timpani
-    triangle: triangle
-    trumpet: trumpet
+  rudiments:
+    chromatic_interval: chromatic interval
+    circle: circle
+    clef: clef
+    consonance: consonance
+    diatonic_interval: diatonic interval
+    grand_staff: grand staff
+    harmonic_interval: harmonic interval
+    instrument: instrument
+    interval_cycle: interval cycle
+    key_signature: key signature
+    letter_name: letter name
+    melodic_interval: melodic interval
+    meter: meter
+    motion: motion
+    musical_symbol: musical symbol
+    octave: octave
+    pitch: pitch
+    pitch_class: pitch class
+    pitch_class_set: pitch class set
+    pitch_set: pitch set
+    quality: quality
+    reference_pitch: reference pitch
+    rhythm: rhythm
+    rhythmic_unit: rhythmic unit
+    scale: scale
+    scale_degree: scale degree
+    scale_type: scale type
+    sign: sign
+    solmization: solmization
+    sonority: sonority
+    spelling: spelling
+    staff: staff
     tuba: tuba
-    tubular_bells: tubular bells
-    vibraphone: vibraphone
-    viola: viola
-    violin: violin
-    woodblock: woodblock
-    xylophone: xylophone
-  instrument_abbreviations:
-    accordian:
-    - acc
-    alto_flute:
-    - afl
-    alto_voice:
-    - alt
-    bagpipe:
-    - bag
-    baritone_voice:
-    - bar
-    bass_voice:
-    - bass
-    bass_clarinet:
-    - bcl
-  instrument_classifications:
-    aerophone: aerophone
-    bowed: bowed
-    brass: brass
-    double_reed: double-reed
-    keyboard: keyboard
-    percussion: percussion
-    single_reed: single-reed
-    string: string
-    wind: wind
-    woodwind: woodwind
-  instrument_voices:
-    piccolo: piccolo
-    soprano: soprano
-    alto: alto
-    tenor: tenor
-    baritone: baritone
-    bass: bass
-    contrabass: contrabass
-    octobass: octobass
+    tuning: tuning

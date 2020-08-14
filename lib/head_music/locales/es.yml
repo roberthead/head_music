@@ -1,7 +1,4 @@
 es:
-  rudiments:
-    clef: clave
-    consonance: consonancia
   clefs:
     alto_clef: clave contralto
     baritone_c_clef: clave de barítono
@@ -40,14 +37,76 @@ es:
     treble_clef: clave de sol
     viola_clef: clave de do
     violin_clef: clave de sol
+  instrument_classifications:
+    brass: metal
+    brass_instrument: instrumento de metal
+    drum: tambor
+    keyboard_instrument: instrumento de tecla
+    percussion: percusión
+    percussion_instrument: instrumentos de percusión
+    plucked_instrument: instrumentos punteados
+    strings: cuerdas
+    stringed_instrument: instrumentos de cuerdas
+    wind: viento
+    wind_instruments: instrumentos de viento
+    woodwind_instruments: instrumentos de madera
   instruments:
-    accordian: acordeóon
+    accordian: acordeón
     alto_flute: flauta alto
     alto_voice: contralto
     bagpipe: gaita
+    baritone_horn: bombardino barítono
     baritone_voice: baritono
+    bass_clarinet: clarinete bajo
+    bass_drum: bombo
+    bass_trombone: trombón bajo
     bass_voice: bajo
+    bassoon: fagot
+    castanets: castañuelas
+    celesta: celesta
+    cello: cello
+    clarinet: clarinete
+    clavichord: clavicordio
+    cornet: corneta
+    cymbal: cimbalo
+    double_bass: contrabajo
+    english_horn: Cuerno inglés
+    euphonium: euphonium
+    flugel_horn: fliscorno
+    flute: flauta
+    french_horn: corno
+    glockenspiel: campanólogo
     guitar: guitarra
+    hammered_dulcimer: dulcémele
+    harp: arpa
+    harpsichord: clavecémbalo
+    lute: laúd
+    mandolin: mandolina
+    marimba: marimba
+    natural_horn: trompa natural
+    oboe: oboe
+    oboe_d_amore: oboe de amor
+    organ: órgano
     piano: piano
+    piccolo: flautín
+    recorder: flauta recta
+    saxophone: saxofón
+    snare_drum: tambor afinable
+    tambourine: pandereta
+    tenor_drum: redoblante
+    timpani: timbal
+    trombone: trombón
+    trumpet: trompeta
+    tuba: tuba
+    tubular_bells: campanas tubulares
     viola: viola
+    viola_d_amore: viola d'amore
+    viola_da_gamba: viola de gamba
     violin: violín
+    violoncello: violoncelo
+    voice: voz
+    xylophone: xilofón
+    zither: cítara
+  rudiments:
+    clef: clave
+    consonance: consonancia

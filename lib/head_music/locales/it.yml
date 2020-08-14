@@ -1,7 +1,4 @@
 it:
-  rudiments:
-    clef: chiave
-    consonance: consonanza
   clefs:
     alto_clef: chiave di contralto
     baritone_c_clef: chiave di baritono
@@ -40,19 +37,80 @@ it:
     treble_clef: chiave di violino
     viola_clef: chiave di viola
     violin_clef: chiave di violino
+  instrument_classifications:
+    brass: ottone
+    brass_instrument: ottone
+    drum: tamburo
+    keyboard_instrument: strumenti a tastiera
+    percussion: percussione
+    percussion_instrument: strumenti a percussione
+    plucked_instrument: strumenti a pizzico
+    strings: archi
+    stringed_instrument: strumenti a corda
+    wind: fiato
+    wind_instruments: strumenti a fiato
+    woodwind_instruments: legno
+  instrument_voices:
+    alto: contralto
+    baritone: baritono
+    bass: basso
   instruments:
     accordian: fisarmonica
     alto_flute: flauto contralto
     alto_voice: contralto
     bagpipe: cornamusa
+    baritone_horn: flicorno baritono
     baritone_voice: baritono
+    bass_clarinet: clarinetto basso
+    bass_drum: grancassa
+    bass_trombone: trombono basso
     bass_voice: basso
+    bassoon: fagotto
+    castanets: castagnette
+    celesta: celesta
+    cello: violoncello
+    clarinet: clarinetto
+    clavichord: clavicordo
+    cornet: cornetta
+    cymbal: piatto
+    double_bass: contrabasso
+    english_horn: corno inglese
+    euphonium: eufonio
+    flugel_horn: flicorno
+    flute: flauto
+    french_horn: corno
+    glockenspiel: glockenspiel
     guitar: chitarra
+    hammered_dulcimer: salterio
+    harp: arpa
+    harpsichord: clavicembalo
+    lute: liuto
+    mandolin: mandolino
+    marimba: marimba
+    natural_horn: corno naturale
+    oboe: oboe
+    oboe_d_amore: oboe d'amore
     piccolo: ottavino
+    organ: organo
     piano: piano
+    recorder: flauto dolce
+    saxophone: sassofono
+    snare_drum: tamburo rullante
+    tambourine: tamburello
+    tenor_drum: cassa rullante
+    timpani: timpano
+    trombone: trombone
+    trumpet: tromba
+    tuba: tuba
+    tubular_bells: campane tubolari
     viola: viola
+    viola_d_amore: viola d'amore
+    viola_da_gamba: viola da gamba
     violin: violino
-  instrument_voices:
-    alto: contralto
-    baritone: baritono
-    bass: basso
+    violoncello: violoncello
+    voice: voce
+    xylophone: xilofono
+    zither: cetra da tavolo
+  rudiments:
+    clef: chiave
+    consonance: consonanza
