@@ -1,83 +1,145 @@
 ---
-guitar:
-  family: string
+bassoon:
   classifications:
-    - string
-    - chordophone
-  default_clefs:
-    - treble_clef
-  voice: tenor
-piano:
-  family: string
-  classifications:
-    - string
-    - chordophone
-    - keyboard
-  default_clefs:
-    - treble_clef
+    - aerophone
+    - reed
+    - double_reed
+    - wind
+    - woodwind
+  family: woodwind
+  standard_staves:
     - bass_clef
-violin:
-  family: string
-  alias_name_keys:
-    - fiddle
-  classifications:
-    - string
-    - chordophone
-    - bowed
-  default_clefs:
-    - treble_clef
-  voice: soprano
-viola:
-  family: string
-  classifications:
-    - string
-    - chordophone
-    - bowed
-  default_clefs:
-    - alto_clef
-  voice: alto
 cello:
-  family: string
+  alias_name_keys:
+    - violoncello
   classifications:
-    - string
-    - chordophone
     - bowed
-  default_clefs:
+    - chordophone
+    - string
+  family: string
+  standard_staves:
     - bass_clef
-  voice: tenor
+clarinet:
+  classifications:
+    - aerophone
+    - reed
+    - single_reed
+    - wind
+    - woodwind
+  family: woodwind
+  standard_staves:
+    - treble_clef
 double_bass:
-  family: string
   classifications:
     - string
     - chordophone
     - bowed
-  default_clefs:
+  family: string
+  standard_staves:
     - bass_clef
-  voice: bass
+flute:
+  classifications:
+    - aerophone
+    - edge-blown aerophone
+    - wind
+    - woodwind
+  family: woodwind
+  standard_staves:
+    - treble_clef
+french_horn:
+  alias_name_keys:
+    - horn
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  family: brass
+  standard_staves:
+    - treble_clef
+guitar:
+  classifications:
+    - chordophone
+    - plucked
+    - string
+  family: string
+  standard_staves:
+    - treble_clef
 harp:
   family: string
   classifications:
-    - string
     - chordophone
     - plucked
-  default_clefs:
+    - string
+  standard_staves:
     - treble_clef
     - bass_clef
-flute:
-  family: woodwind
+oboe:
   classifications:
-    - woodwind
-    - wind
     - aerophone
-    - edge-blown aerophone
-  default_clefs:
+    - reed
+    - double_reed
+    - wind
+    - woodwind
+  family: woodwind
+  standard_staves:
     - treble_clef
-  voice: soprano
 organ:
   classifications:
     - aerophone
     - keyboard
-  default_clefs:
+  standard_staves:
     - treble_clef
     - bass_clef
     - bass_clef
+piano:
+  classifications:
+    - chordophone
+    - keyboard
+    - percussion
+    - string
+  family: percussion
+  standard_staves:
+    - treble_clef
+    - bass_clef
+trombone:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  family: brass
+  standard_staves:
+    - bass_clef
+trumpet:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  family: brass
+  standard_staves:
+    - treble_clef
+tuba:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  family: brass
+  standard_staves:
+    - bass_clef
+viola:
+  family: string
+  classifications:
+    - bowed
+    - chordophone
+    - string
+  standard_staves:
+    - alto_clef
+violin:
+  alias_name_keys:
+    - fiddle
+  classifications:
+    - bowed
+    - chordophone
+    - string
+  family: string
+  standard_staves:
+    - treble_clef

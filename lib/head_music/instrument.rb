@@ -17,7 +17,7 @@ class HeadMusic::Instrument
     INSTRUMENTS.map { |key, _data| get(key) }.sort_by(&:name)
   end
 
-  attr_reader :name_key, :family, :default_clefs, :classifications, :voice
+  attr_reader :name_key, :family, :standard_staves, :classifications
 
   def ==(other)
     to_s == other.to_s
@@ -67,9 +67,8 @@ class HeadMusic::Instrument
   def initialize_data_from_record(record)
     @name_key = record['name_key'].to_sym
     @family = record['family']
-    @default_clefs = record['default_clefs'] || []
+    @standard_staves = record['standard_staves'] || []
     @classifications = record['classifications'] || []
-    @voice = record['voice'].to_s
     self.name = I18n.translate(name_key, scope: 'instruments', locale: 'en', default: inferred_name)
   end
 
