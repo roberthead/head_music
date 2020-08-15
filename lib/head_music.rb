@@ -17,7 +17,7 @@ require 'i18n/backend/fallbacks'
 
 I18n::Backend::Simple.include I18n::Backend::Fallbacks
 I18n.load_path << Dir[File.join(File.dirname(__dir__), 'lib', 'head_music', 'locales', '*.yml')]
-I18n.config.available_locales = %i[en de fr it es en_US en_GB]
+I18n.config.available_locales = %i[en fr de it ru es en_US en_GB]
 I18n.default_locale = :en
 I18n.fallbacks[:de] = %i[de en_GB en]
 I18n.fallbacks[:en_US] = %i[en_US en en_GB]
@@ -25,6 +25,7 @@ I18n.fallbacks[:en_GB] = %i[en_GB en en_US]
 I18n.fallbacks[:es] = %i[es en]
 I18n.fallbacks[:fr] = %i[fr en_GB en]
 I18n.fallbacks[:it] = %i[it en_GB en]
+I18n.fallbacks[:ru] = %i[ru en_GB en]
 
 # utilities
 require 'head_music/utilities/hash_key'

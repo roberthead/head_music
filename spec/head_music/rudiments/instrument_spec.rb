@@ -46,6 +46,7 @@ describe HeadMusic::Instrument do
     its(:classifications) { are_expected.to include 'string' }
 
     specify { expect(violin.translation(:it)).to eq 'violino' }
+    specify { expect(violin.translation(:ru)).to eq 'skripka' }
   end
 
   describe '#translation' do
