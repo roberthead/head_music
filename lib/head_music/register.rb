@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
-# The Octave identifier is a number used in scientific pitch notation.
-class HeadMusic::Octave
+# The register is a numeric octave identifier used in scientific pitch notation.
+#
+# A pitch is a spelling plus a register. For example, C4 is middle C and C5 is the C one octave higher.
+# The number changes between the letter names B and C regardless of sharps and flats,
+# so as an extreme example, Cb5 is actually a semitone below B#4.
+class HeadMusic::Register
   include Comparable
 
   DEFAULT = 4
@@ -14,20 +18,20 @@ class HeadMusic::Octave
     return nil unless identifier.to_s == identifier.to_i.to_s
     return nil unless (-2..12).cover?(identifier.to_i)
 
-    @octaves ||= {}
-    @octaves[identifier.to_i] ||= new(identifier.to_i)
+    @registers ||= {}
+    @registers[identifier.to_i] ||= new(identifier.to_i)
   end
 
   def self.from_name(string)
     return unless string.to_s.match?(HeadMusic::Spelling::MATCHER)
 
-    _letter, _sign, octave_string = string.to_s.match(HeadMusic::Spelling::MATCHER).captures
-    @octaves ||= {}
-    @octaves[octave_string.to_i] ||= new(octave_string.to_i) if octave_string
+    _letter, _sign, register_string = string.to_s.match(HeadMusic::Spelling::MATCHER).captures
+    @registers ||= {}
+    @registers[register_string.to_i] ||= new(register_string.to_i) if register_string
   end
 
   def self.default
-    @octaves[DEFAULT] ||= new(DEFAULT)
+    @registers[DEFAULT] ||= new(DEFAULT)
   end
 
   attr_reader :number

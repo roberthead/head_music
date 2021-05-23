@@ -65,7 +65,7 @@ describe HeadMusic::Pitch do
       its(:letter_name) { is_expected.to eq 'C' }
       its(:sign) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
-      its(:octave) { is_expected.to eq 4 }
+      its(:register) { is_expected.to eq 4 }
       its(:midi_note_number) { is_expected.to eq 60 }
       it { is_expected.to eq 'C4' }
     end
@@ -73,14 +73,14 @@ describe HeadMusic::Pitch do
     context "for 'Cb4'" do
       subject(:pitch) { described_class.get('Cb4') }
 
-      its(:octave) { is_expected.to eq 4 }
+      its(:register) { is_expected.to eq 4 }
       its(:midi_note_number) { is_expected.to eq 59 }
     end
 
     context "for 'B#4'" do
       subject(:pitch) { described_class.get('B#4') }
 
-      its(:octave) { is_expected.to eq 4 }
+      its(:register) { is_expected.to eq 4 }
       its(:midi_note_number) { is_expected.to eq 72 }
       its(:frequency) { is_expected.to be_within(0.1).of(523.2) }
     end
@@ -91,7 +91,7 @@ describe HeadMusic::Pitch do
       its(:letter_name) { is_expected.to eq 'F' }
       its(:sign) { is_expected.to eq '#' }
       its(:pitch_class) { is_expected.to eq 6 }
-      its(:octave) { is_expected.to eq(-1) }
+      its(:register) { is_expected.to eq(-1) }
       its(:midi_note_number) { is_expected.to eq 6 }
       its(:frequency) { is_expected.to be_within(0.1).of(11.5) }
       it { is_expected.to eq 'F#-1' }
@@ -103,7 +103,7 @@ describe HeadMusic::Pitch do
       its(:letter_name) { is_expected.to eq 'B' }
       its(:sign) { is_expected.to eq 'b' }
       its(:pitch_class) { is_expected.to eq 10 }
-      its(:octave) { is_expected.to eq 5 }
+      its(:register) { is_expected.to eq 5 }
       its(:midi_note_number) { is_expected.to eq 82 }
       its(:frequency) { is_expected.to be_within(0.1).of(932.3) }
       it { is_expected.to eq 'Bb5' }
@@ -115,7 +115,7 @@ describe HeadMusic::Pitch do
       its(:letter_name) { is_expected.to eq 'E' }
       its(:sign) { is_expected.to eq 'b' }
       its(:pitch_class) { is_expected.to eq 3 }
-      its(:octave) { is_expected.to eq 7 }
+      its(:register) { is_expected.to eq 7 }
       its(:midi_note_number) { is_expected.to eq 99 }
       its(:frequency) { is_expected.to be_within(0.1).of(2489.0) }
       it { is_expected.to eq 'Eb7' }

@@ -15,7 +15,7 @@ class HeadMusic::Pitch::OctaveEquivalence
 
   def octave_equivalent?(other)
     other = HeadMusic::Pitch.get(other)
-    pitch.spelling == other.spelling && pitch.octave != other.octave
+    pitch.spelling == other.spelling && pitch.register != other.register
   end
 
   alias equivalent? octave_equivalent?

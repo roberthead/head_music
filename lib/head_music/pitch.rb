@@ -4,8 +4,7 @@
 class HeadMusic::Pitch
   include Comparable
 
-  attr_reader :spelling
-  attr_reader :octave
+  attr_reader :spelling, :register
 
   delegate :letter_name, to: :spelling
   delegate :series_ascending, :series_descending, to: :letter_name, prefix: true
@@ -51,7 +50,7 @@ class HeadMusic::Pitch
   def self.from_name(name)
     return nil unless name == name.to_s
 
-    fetch_or_create(HeadMusic::Spelling.get(name), HeadMusic::Octave.get(name).to_i)
+    fetch_or_create(HeadMusic::Spelling.get(name), HeadMusic::Register.get(name).to_i)
   end
 
   def self.from_number(number)
@@ -66,7 +65,7 @@ class HeadMusic::Pitch
     sign_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::PitchClass.get(number))
     sign = HeadMusic::Sign.by(:semitones, sign_interval) if sign_interval != 0
     spelling = HeadMusic::Spelling.fetch_or_create(letter_name, sign)
-    fetch_or_create(spelling, natural_letter_pitch.octave)
+    fetch_or_create(spelling, natural_letter_pitch.register)
   end
 
   def self.natural_letter_pitch(number, letter_name)
@@ -76,26 +75,26 @@ class HeadMusic::Pitch
     get(natural_letter_pitch)
   end
 
-  def self.fetch_or_create(spelling, octave = nil)
-    octave ||= HeadMusic::Octave::DEFAULT
-    return unless spelling && (-1..9).cover?(octave)
+  def self.fetch_or_create(spelling, register = nil)
+    register ||= HeadMusic::Register::DEFAULT
+    return unless spelling && (-1..9).cover?(register)
 
     @pitches ||= {}
-    hash_key = [spelling, octave].join
-    @pitches[hash_key] ||= new(spelling, octave)
+    hash_key = [spelling, register].join
+    @pitches[hash_key] ||= new(spelling, register)
   end
 
-  def initialize(spelling, octave)
+  def initialize(spelling, register)
     @spelling = HeadMusic::Spelling.get(spelling.to_s)
-    @octave = octave.to_i
+    @register = register.to_i
   end
 
   def name
-    [spelling, octave].join
+    [spelling, register].join
   end
 
   def midi_note_number
-    (octave + 1) * 12 + letter_name.pitch_class.to_i + sign_semitones.to_i
+    (register + 1) * 12 + letter_name.pitch_class.to_i + sign_semitones.to_i
   end
 
   alias midi midi_note_number
@@ -150,7 +149,7 @@ class HeadMusic::Pitch
   end
 
   def natural_steps(num_steps)
-    HeadMusic::Pitch.get([target_letter_name(num_steps), octave + octaves_delta(num_steps)].join)
+    HeadMusic::Pitch.get([target_letter_name(num_steps), register + octaves_delta(num_steps)].join)
   end
 
   def frequency
@@ -167,7 +166,7 @@ class HeadMusic::Pitch
   private
 
   def octave_changes_to(other)
-    other.octave - octave - octave_adjustment_to(other)
+    other.register - register - octave_adjustment_to(other)
   end
 
   def octave_adjustment_to(other)

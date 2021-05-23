@@ -304,7 +304,7 @@ class HeadMusic::DiatonicInterval
   def inversion
     inverted_low_pitch = lower_pitch
     while inverted_low_pitch < higher_pitch
-      inverted_low_pitch = HeadMusic::Pitch.fetch_or_create(lower_pitch.spelling, inverted_low_pitch.octave + 1)
+      inverted_low_pitch = HeadMusic::Pitch.fetch_or_create(lower_pitch.spelling, inverted_low_pitch.register + 1)
     end
     HeadMusic::DiatonicInterval.new(higher_pitch, inverted_low_pitch)
   end

@@ -187,7 +187,7 @@ class HeadMusic::PitchSet
 
   def reduction_pitches
     pitches.map do |pitch|
-      pitch = HeadMusic::Pitch.fetch_or_create(pitch.spelling, pitch.octave - 1) while pitch > bass_pitch + 12
+      pitch = HeadMusic::Pitch.fetch_or_create(pitch.spelling, pitch.register - 1) while pitch > bass_pitch + 12
       pitch
     end.sort
   end

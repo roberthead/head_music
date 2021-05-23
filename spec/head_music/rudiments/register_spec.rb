@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-describe HeadMusic::Octave do
+describe HeadMusic::Register do
   describe '.get' do
     it 'returns an instance when given an octave number' do
       expect(described_class.get(4)).to eq 4
