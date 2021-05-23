@@ -53,4 +53,27 @@ describe HeadMusic::Register do
     specify { expect(described_class.get(5) - 3).to be == described_class.get(2) }
     specify { expect(described_class.get(4) - 5).to be == described_class.get(-1) }
   end
+
+  describe 'helmholtz notation' do
+    specify do
+      expect(described_class.get(0).helmholtz_case).to be :upper
+      expect(described_class.get(0).helmholtz_marks).to eq ',,'
+      expect(described_class.get(1).helmholtz_case).to be :upper
+      expect(described_class.get(1).helmholtz_marks).to eq ','
+      expect(described_class.get(2).helmholtz_case).to be :upper
+      expect(described_class.get(2).helmholtz_marks).to eq ''
+      expect(described_class.get(3).helmholtz_case).to be :lower
+      expect(described_class.get(3).helmholtz_marks).to eq ''
+      expect(described_class.get(4).helmholtz_case).to be :lower
+      expect(described_class.get(4).helmholtz_marks).to eq "'"
+      expect(described_class.get(5).helmholtz_case).to be :lower
+      expect(described_class.get(5).helmholtz_marks).to eq "''"
+      expect(described_class.get(6).helmholtz_case).to be :lower
+      expect(described_class.get(6).helmholtz_marks).to eq "'''"
+      expect(described_class.get(7).helmholtz_case).to be :lower
+      expect(described_class.get(7).helmholtz_marks).to eq "''''"
+      expect(described_class.get(8).helmholtz_case).to be :lower
+      expect(described_class.get(8).helmholtz_marks).to eq "'''''"
+    end
+  end
 end

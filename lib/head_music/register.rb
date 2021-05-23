@@ -54,5 +54,18 @@ class HeadMusic::Register
     self.class.get(to_i - other.to_i)
   end
 
+  def helmholtz_case
+    return :upper if number < 3
+
+    :lower
+  end
+
+  def helmholtz_marks
+    return ',' * (2 - number) if number < 2
+    return "'" * (number - 3) if number > 3
+
+    ''
+  end
+
   private_class_method :new
 end

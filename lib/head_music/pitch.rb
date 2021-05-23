@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# A pitch is a named frequency represented by a spelling and an octive.
+# A pitch is a named frequency represented by a spelling and a register.
 class HeadMusic::Pitch
   include Comparable
 
@@ -108,6 +108,10 @@ class HeadMusic::Pitch
     midi_note_number
   end
 
+  def helmholtz_notation
+    helmholtz_letter_name + helmholtz_marks
+  end
+
   def natural
     HeadMusic::Pitch.get(to_s.gsub(HeadMusic::Sign.matcher, ''))
   end
@@ -210,5 +214,15 @@ class HeadMusic::Pitch
   def target_letter_name(num_steps)
     @target_letter_name ||= {}
     @target_letter_name[num_steps] ||= letter_name.steps_up(num_steps)
+  end
+
+  def helmholtz_letter_name
+    return spelling.to_s.downcase if HeadMusic::Register.get(register).helmholtz_case == :lower
+
+    spelling.to_s
+  end
+
+  def helmholtz_marks
+    HeadMusic::Register.get(register).helmholtz_marks
   end
 end

@@ -42,6 +42,24 @@ describe HeadMusic::Pitch do
     specify { expect(described_class.natural_letter_pitch(42, 'G')).to eq('G2') }
   end
 
+  describe '#helmholtz_notation' do
+    it 'returns the Helmholtz string' do
+      expect(described_class.get(11).helmholtz_notation).to eq('B,,,')
+      expect(described_class.get(12).helmholtz_notation).to eq('C,,')
+      expect(described_class.get(24).helmholtz_notation).to eq('C,')
+      expect(described_class.get(36).helmholtz_notation).to eq('C')
+      expect(described_class.get('Bb2').helmholtz_notation).to eq('B♭')
+      expect(described_class.get(48).helmholtz_notation).to eq('c')
+      expect(described_class.get(59).helmholtz_notation).to eq('b')
+      expect(described_class.get(60).helmholtz_notation).to eq("c'")
+      expect(described_class.get(68).helmholtz_notation).to eq("g♯'")
+      expect(described_class.get(71).helmholtz_notation).to eq("b'")
+      expect(described_class.get(72).helmholtz_notation).to eq("c''")
+      expect(described_class.get(83).helmholtz_notation).to eq("b''")
+      expect(described_class.get(84).helmholtz_notation).to eq("c'''")
+    end
+  end
+
   describe 'comparison' do
     subject(:pitch) { described_class.get('G#3') }
 
@@ -118,6 +136,7 @@ describe HeadMusic::Pitch do
       its(:register) { is_expected.to eq 7 }
       its(:midi_note_number) { is_expected.to eq 99 }
       its(:frequency) { is_expected.to be_within(0.1).of(2489.0) }
+      its(:helmholtz_notation) { is_expected.to eq "e♭''''" }
       it { is_expected.to eq 'Eb7' }
     end
 
