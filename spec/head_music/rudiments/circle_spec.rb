@@ -19,46 +19,28 @@ describe HeadMusic::Circle do
   end
 
   describe '#spellings_up' do
-    xcontext 'with enharmonic equivalence' do
-      subject(:circle) { described_class.get }
-
-      it 'uses sharp spellings' do
-        expect(circle.spellings_up.map(&:to_s)).to eq(%w[C G D A E B F♯ C♯ A♭ E♭ B♭ F])
-      end
-    end
-
-    context 'without enharmonic equivalence' do
-      it 'uses sharp spellings' do
-        expect(circle.spellings_up.map(&:to_s)).to eq(%w[C G D A E B F♯ C♯ G♯ D♯ A♯ E♯])
-      end
+    it 'uses sharp spellings' do
+      expect(circle.spellings_up.map(&:to_s)).to eq(%w[C G D A E B F♯ C♯ A♭ E♭ B♭ F])
     end
   end
 
   describe '#spellings_down' do
-    xcontext 'with enharmonic equivalence' do
-      it 'uses flat spellings' do
-        expect(circle.spellings_down.map(&:to_s)).to eq(%w[C F B♭ E♭ A♭ D♭ G♭ B E A D G])
-      end
-    end
-
-    context 'without enharmonic equivalence' do
-      it 'uses flat spellings' do
-        expect(circle.spellings_down.map(&:to_s)).to eq(%w[C F B♭ E♭ A♭ D♭ G♭ C♭ F♭ B𝄫 E𝄫 A𝄫])
-      end
+    it 'uses flat spellings' do
+      expect(circle.spellings_down.map(&:to_s)).to eq(%w[C F B♭ E♭ A♭ D♭ G♭ C♭ E A D G])
     end
   end
 
   describe '#key_signatures_up' do
     specify do
-      expect(circle.key_signatures_up.map(&:num_sharps)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-      expect(circle.key_signatures_up.map(&:num_flats).uniq).to eq [0]
+      expect(circle.key_signatures_up.map(&:num_sharps)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0]
+      expect(circle.key_signatures_up.map(&:num_flats)).to eq [0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 2, 1]
     end
   end
 
   describe '#key_signatures_down' do
     specify do
-      expect(circle.key_signatures_down.map(&:num_sharps).uniq).to eq [0]
-      expect(circle.key_signatures_down.map(&:num_flats)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+      expect(circle.key_signatures_down.map(&:num_sharps)).to eq [0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 2, 1]
+      expect(circle.key_signatures_down.map(&:num_flats)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0]
     end
   end
 end

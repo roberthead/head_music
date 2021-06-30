@@ -15,13 +15,26 @@ describe HeadMusic::KeySignature do
     end
 
     context 'when given only a tonic' do
-      let(:tonic) { 'E♭' }
       let(:scale_type) { nil }
 
-      it 'assumes a major key' do
-        expect(key_signature).to eq 'E♭ major'
-        expect(key_signature.num_flats).to eq 3
-        expect(key_signature.signs).to eq ['B♭', 'E♭', 'A♭']
+      context 'when Eb' do
+        let(:tonic) { 'E♭' }
+
+        it 'assumes a major key' do
+          expect(key_signature).to eq 'E♭ major'
+          expect(key_signature.num_flats).to eq 3
+          expect(key_signature.signs).to eq ['B♭', 'E♭', 'A♭']
+        end
+      end
+
+      context 'when Cb' do
+        let(:tonic) { 'C♭' }
+
+        it 'assumes a major key' do
+          expect(key_signature).to eq 'C♭ major'
+          expect(key_signature.num_flats).to eq 7
+          expect(key_signature.signs).to eq ['B♭', 'E♭', 'A♭', 'D♭', 'G♭', 'C♭', 'F♭']
+        end
       end
     end
 

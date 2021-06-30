@@ -122,4 +122,18 @@ describe HeadMusic::PitchClass do
     specify { expect(described_class.get('B#').to_integer_notation).to eq '0' }
     specify { expect(described_class.get('Cb5').to_integer_notation).to eq 'e' }
   end
+
+  describe '#smart_spelling' do
+    specify do
+      expect(described_class.get(6).smart_spelling).to eq 'F#'
+    end
+
+    specify do
+      expect(described_class.get(6).smart_spelling(max_sharps_in_major_key_signature: 5)).to eq 'Gb'
+    end
+
+    specify do
+      expect(described_class.get(11).smart_spelling(max_sharps_in_major_key_signature: 4)).to eq 'Cb'
+    end
+  end
 end

@@ -9,6 +9,7 @@ class HeadMusic::PitchClass
 
   SHARP_SPELLINGS = %w[C C♯ D D♯ E F F♯ G G♯ A A♯ B].freeze
   FLAT_SPELLINGS = %w[C D♭ D E♭ E F G♭ G A♭ A B♭ B].freeze
+  FLATTER_SPELLINGS = %w[C D♭ D E♭ F♭ F G♭ G A♭ A B♭ C♭].freeze
   INTEGER_NOTATION = %w[0 1 2 3 4 5 6 7 8 9 t e].freeze
 
   def self.get(identifier)
@@ -43,6 +44,20 @@ class HeadMusic::PitchClass
 
   def flat_spelling
     FLAT_SPELLINGS[number]
+  end
+
+  def flatter_spelling
+    FLATTER_SPELLINGS[number]
+  end
+
+  def smart_spelling(max_sharps_in_major_key_signature: 6)
+    sharp_key = HeadMusic::KeySignature.get(sharp_spelling)
+    return HeadMusic::Spelling.get(sharp_spelling) if sharp_key.num_sharps <= max_sharps_in_major_key_signature
+
+    flat_key = HeadMusic::KeySignature.get(flat_spelling)
+    return HeadMusic::Spelling.get(flat_spelling) if flat_key.num_sharps <= max_sharps_in_major_key_signature
+
+    HeadMusic::Spelling.get(flatter_spelling)
   end
 
   # Pass in the number of semitones

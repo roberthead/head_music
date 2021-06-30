@@ -22,8 +22,6 @@ class HeadMusic::Circle < HeadMusic::IntervalCycle
     pitch_classes.index(HeadMusic::Spelling.get(pitch_class).pitch_class)
   end
 
-  alias spellings_up spellings
-
   def key_signatures_up
     spellings_up.map { |spelling| HeadMusic::KeySignature.new(spelling) }
   end
@@ -32,8 +30,16 @@ class HeadMusic::Circle < HeadMusic::IntervalCycle
     spellings_down.map { |spelling| HeadMusic::KeySignature.new(spelling) }
   end
 
+  def spellings_up
+    pitches_up.map(&:pitch_class).map do |pitch_class|
+      pitch_class.smart_spelling(max_sharps_in_major_key_signature: 7)
+    end
+  end
+
   def spellings_down
-    pitches_down.map(&:spelling)
+    pitches_down.map(&:pitch_class).map do |pitch_class|
+      pitch_class.smart_spelling(max_sharps_in_major_key_signature: 4)
+    end
   end
 
   def pitches_down
