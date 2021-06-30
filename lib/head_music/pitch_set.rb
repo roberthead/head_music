@@ -54,9 +54,12 @@ class HeadMusic::PitchSet
   end
 
   def integer_notation
+    # questions:
+    # - should this be absolute? 0 = C?
+    # - should there be both absolute and relative versions?
     @integer_notation ||= begin
       return [] if pitches.empty?
-      diatonic_intervals_above_bass_pitch.map { |interval| interval.semitones % 12 }.flatten.sort.unshift(0)
+      diatonic_intervals_above_bass_pitch.map { |interval| interval.semitones % 12 }.flatten.sort.unshift(0).uniq
     end
   end
 

@@ -73,7 +73,7 @@ describe HeadMusic::PitchSet do
     end
 
     context 'when the set has one pitch' do
-      subject(:set) { HeadMusic::PitchSet.new(%w[A4]) }
+      subject(:set) { HeadMusic::PitchSet.new(%w[A4 A4]) }
 
       it { is_expected.not_to be_empty }
       it { is_expected.not_to be_empty_set }
@@ -131,6 +131,15 @@ describe HeadMusic::PitchSet do
 
         its(:integer_notation) { is_expected.to eq [0, 8] }
         its(:scale_degrees) { is_expected.to eq [1, 6] }
+      end
+
+      context 'when the pitches are an octave apart' do
+        subject(:set) { HeadMusic::PitchSet.new(%w[D3 D4]) }
+
+        it { is_expected.to be_monad }
+
+        its(:integer_notation) { is_expected.to eq [0] }
+        its(:scale_degrees) { is_expected.to eq [1] }
       end
     end
 
@@ -464,7 +473,7 @@ describe HeadMusic::PitchSet do
     end
 
     context 'when the set has seven pitch classes with seven different letter names' do
-      context 'given an eleventh chord cluster' do
+      context 'given an thirteenth chord cluster' do
         subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G A]) }
 
         it { is_expected.to be_tertian }
