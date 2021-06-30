@@ -4,8 +4,7 @@
 class HeadMusic::PitchClass
   include Comparable
 
-  attr_reader :number
-  attr_reader :spelling
+  attr_reader :number, :spelling
 
   SHARP_SPELLINGS = %w[C C♯ D D♯ E F F♯ G G♯ A A♯ B].freeze
   FLAT_SPELLINGS = %w[C D♭ D E♭ E F G♭ G A♭ A B♭ B].freeze

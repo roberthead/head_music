@@ -2,9 +2,7 @@
 
 # Represents a key signature.
 class HeadMusic::KeySignature
-  attr_reader :tonic_spelling
-  attr_reader :scale_type
-  attr_reader :scale
+  attr_reader :tonic_spelling, :scale_type, :scale
 
   ORDERED_LETTER_NAMES_OF_SHARPS = %w[F C G D A E B].freeze
   ORDERED_LETTER_NAMES_OF_FLATS = ORDERED_LETTER_NAMES_OF_SHARPS.reverse.freeze

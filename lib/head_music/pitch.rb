@@ -127,10 +127,11 @@ class HeadMusic::Pitch
   end
 
   def -(other)
-    if other.is_a?(HeadMusic::DiatonicInterval)
+    case other
+    when HeadMusic::DiatonicInterval
       # return a pitch
       other.below(self)
-    elsif other.is_a?(HeadMusic::Pitch)
+    when HeadMusic::Pitch
       # return an interval
       HeadMusic::ChromaticInterval.get(to_i - other.to_i)
     else

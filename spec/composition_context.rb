@@ -79,10 +79,10 @@ class CompositionContext
   private
 
   def cantus_firmus_string
-    cantus_firmus_pitches.join(' ') + ' (CF)' if cantus_firmus_pitches&.any?
+    "#{cantus_firmus_pitches.join(' ')} (CF)" if cantus_firmus_pitches&.any?
   end
 
   def counterpoint_string
-    counterpoint_pitches.join(' ') + ' (CPT)' if counterpoint_pitches&.any?
+    "#{counterpoint_pitches.join(' ')} (CPT)" if counterpoint_pitches&.any?
   end
 end

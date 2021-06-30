@@ -6,9 +6,7 @@
 class HeadMusic::Spelling
   MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(-?\d+)?\s*$/i.freeze
 
-  attr_reader :pitch_class
-  attr_reader :letter_name
-  attr_reader :sign
+  attr_reader :pitch_class, :letter_name, :sign
 
   delegate :number, to: :pitch_class, prefix: true
   delegate :to_i, to: :pitch_class_number

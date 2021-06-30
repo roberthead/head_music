@@ -36,9 +36,10 @@ class HeadMusic::Quality
   end
 
   def self.from(starting_quality, delta)
-    if starting_quality == :perfect
+    case starting_quality
+    when :perfect
       PERFECT_INTERVAL_MODIFICATION[delta].to_s.gsub(/_+/, ' ')
-    elsif starting_quality == :major
+    when :major
       MAJOR_INTERVAL_MODIFICATION[delta].to_s.gsub(/_+/, ' ')
     end
   end
