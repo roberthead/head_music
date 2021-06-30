@@ -39,7 +39,7 @@ class HeadMusic::Meter
   end
 
   def compound?
-    top_number > 3 && top_number / 3 == top_number / 3.0
+    top_number > 3 && (top_number % 3).zero?
   end
 
   def duple?
@@ -119,11 +119,18 @@ class HeadMusic::Meter
   end
 
   def strong_beat_in_duple?(count, tick = 0)
-    beat?(tick) && (count == counts_per_bar / 2.0 + 1)
+    return false unless beat?(tick)
+    return false unless counts_per_bar.even?
+
+    (count - 1) == counts_per_bar / 2
   end
 
   def strong_beat_in_triple?(count, tick = 0)
-    beat?(tick) && (counts_per_bar % 3).zero? && counts_per_bar > 6 && count % 3 == 1
+    return false unless beat?(tick)
+    return false unless (counts_per_bar % 3).zero?
+    return false if counts_per_bar < 6
+
+    count % 3 == 1
   end
 
   def beat?(tick)
