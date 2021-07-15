@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-ruby '2.6.5'
+ruby '2.6.7'
 
 # Specify your gem's dependencies in head_music.gemspec
 gemspec
