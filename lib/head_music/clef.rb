@@ -97,7 +97,7 @@ class HeadMusic::Clef
 
   def initialize_musical_symbols(list)
     @musical_symbols = (list || []).map do |symbol_data|
-      HeadMusic::MusicalSymbol.new(symbol_data.slice(:ascii, :html_entity, :unicode))
+      HeadMusic::MusicalSymbol.new(**symbol_data.slice(:ascii, :html_entity, :unicode))
     end
   end
 end

@@ -46,7 +46,7 @@ class HeadMusic::Solmization
 
   def initialize_localized_names(list)
     @localized_names = (list || []).map do |name_attributes|
-      HeadMusic::Named::LocalizedName.new(name_attributes.slice(:name, :locale_code, :abbreviation))
+      HeadMusic::Named::LocalizedName.new(**name_attributes.slice(:name, :locale_code, :abbreviation))
     end
   end
 end
