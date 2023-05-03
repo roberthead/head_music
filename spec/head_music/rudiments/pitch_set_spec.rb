@@ -49,7 +49,7 @@ describe HeadMusic::PitchSet do
 
   describe "analysis" do
     context "when the set has zero pitches" do
-      subject(:set) { HeadMusic::PitchSet.new([]) }
+      subject(:set) { described_class.new([]) }
 
       it { is_expected.to be_empty }
       it { is_expected.to be_empty_set }
@@ -73,7 +73,7 @@ describe HeadMusic::PitchSet do
     end
 
     context "when the set has one pitch" do
-      subject(:set) { HeadMusic::PitchSet.new(%w[A4 A4]) }
+      subject(:set) { described_class.new(%w[A4 A4]) }
 
       it { is_expected.not_to be_empty }
       it { is_expected.not_to be_empty_set }
@@ -97,7 +97,7 @@ describe HeadMusic::PitchSet do
     end
 
     context "when the set has two pitches" do
-      subject(:set) { HeadMusic::PitchSet.new(%w[A3 D4]) }
+      subject(:set) { described_class.new(%w[A3 D4]) }
 
       it { is_expected.not_to be_empty }
       it { is_expected.not_to be_empty_set }
@@ -116,7 +116,7 @@ describe HeadMusic::PitchSet do
       it { is_expected.not_to be_dodecachord }
 
       context "when the pitches are a major third apart" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[D4 F#4]) }
+        subject(:set) { described_class.new(%w[D4 F#4]) }
 
         it { is_expected.to be_tertian }
 
@@ -125,7 +125,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "when the pitches are a compound sixth apart" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[F#4 D6]) }
+        subject(:set) { described_class.new(%w[F#4 D6]) }
 
         it { is_expected.to be_tertian }
 
@@ -134,7 +134,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "when the pitches are an octave apart" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[D3 D4]) }
+        subject(:set) { described_class.new(%w[D3 D4]) }
 
         it { is_expected.to be_monad }
 
@@ -146,7 +146,7 @@ describe HeadMusic::PitchSet do
     context "when the set has three pitches" do
       context "given a minor triad" do
         context "in root position" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[D F A]) }
+          subject(:set) { described_class.new(%w[D F A]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -160,7 +160,7 @@ describe HeadMusic::PitchSet do
         end
 
         context "in first inversion" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[F A D5]) }
+          subject(:set) { described_class.new(%w[F A D5]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -174,7 +174,7 @@ describe HeadMusic::PitchSet do
         end
 
         context "in second inversion" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[A3 D F]) }
+          subject(:set) { described_class.new(%w[A3 D F]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -188,7 +188,7 @@ describe HeadMusic::PitchSet do
         end
 
         context "spread" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[B3 F#4 D5]) }
+          subject(:set) { described_class.new(%w[B3 F#4 D5]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -202,7 +202,7 @@ describe HeadMusic::PitchSet do
         end
 
         context "spread wide" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[D3 Bb4 G6]) }
+          subject(:set) { described_class.new(%w[D3 Bb4 G6]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -218,7 +218,7 @@ describe HeadMusic::PitchSet do
 
       context "given a major triad" do
         context "in root position" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[G B D5]) }
+          subject(:set) { described_class.new(%w[G B D5]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -235,7 +235,7 @@ describe HeadMusic::PitchSet do
         end
 
         context "in first inversion" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[B D5 G5]) }
+          subject(:set) { described_class.new(%w[B D5 G5]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -251,7 +251,7 @@ describe HeadMusic::PitchSet do
         end
 
         context "in second inversion" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[D G B]) }
+          subject(:set) { described_class.new(%w[D G B]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -267,7 +267,7 @@ describe HeadMusic::PitchSet do
         end
 
         context "spread" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[B3 F#4 D#5]) }
+          subject(:set) { described_class.new(%w[B3 F#4 D#5]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -280,7 +280,7 @@ describe HeadMusic::PitchSet do
         end
 
         context "spread wide" do
-          subject(:set) { HeadMusic::PitchSet.new(%w[D3 B4 G6]) }
+          subject(:set) { described_class.new(%w[D3 B4 G6]) }
 
           it { is_expected.to be_triad }
           it { is_expected.to be_consonant_triad }
@@ -295,7 +295,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "when given a diminished triad" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[C4 Eb4 Gb4]) }
+        subject(:set) { described_class.new(%w[C4 Eb4 Gb4]) }
 
         it { is_expected.to be_triad }
         it { is_expected.not_to be_consonant_triad }
@@ -312,7 +312,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "when given an inverted diminished triad" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[Eb4 Gb4 C5]) }
+        subject(:set) { described_class.new(%w[Eb4 Gb4 C5]) }
 
         it { is_expected.to be_triad }
         it { is_expected.not_to be_consonant_triad }
@@ -327,7 +327,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "when given an augmented triad" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[C4 E4 G#4]) }
+        subject(:set) { described_class.new(%w[C4 E4 G#4]) }
 
         it { is_expected.to be_triad }
         it { is_expected.not_to be_consonant_triad }
@@ -345,7 +345,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "when given an augmented triad in second inversion" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[G#3 C4 E4]) }
+        subject(:set) { described_class.new(%w[G#3 C4 E4]) }
 
         it { is_expected.to be_triad }
         it { is_expected.not_to be_consonant_triad }
@@ -361,7 +361,7 @@ describe HeadMusic::PitchSet do
 
       context "when given a non-triad" do
         # implied d7m-m7 (sans 5th) in third inversion
-        subject(:set) { HeadMusic::PitchSet.new(%w[C4 D4 F4]) }
+        subject(:set) { described_class.new(%w[C4 D4 F4]) }
 
         it { is_expected.not_to be_consonant_triad }
         it { is_expected.not_to be_root_position_triad }
@@ -378,7 +378,7 @@ describe HeadMusic::PitchSet do
 
     context "when the set has four pitches" do
       context "given a major-minor seventh chord in root position" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[C E G Bb]) }
+        subject(:set) { described_class.new(%w[C E G Bb]) }
 
         it { is_expected.not_to be_triad }
         it { is_expected.to be_seventh_chord }
@@ -390,7 +390,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "given a major-minor seventh chord in first inversion" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[E G Bb C5]) }
+        subject(:set) { described_class.new(%w[E G Bb C5]) }
 
         it { is_expected.not_to be_triad }
         it { is_expected.to be_seventh_chord }
@@ -402,7 +402,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "given a major-minor seventh chord in second inversion" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[G Bb C5 E5]) }
+        subject(:set) { described_class.new(%w[G Bb C5 E5]) }
 
         it { is_expected.not_to be_triad }
         it { is_expected.to be_seventh_chord }
@@ -414,7 +414,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "given a major-minor seventh chord in third inversion" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[Bb C5 E5 G5]) }
+        subject(:set) { described_class.new(%w[Bb C5 E5 G5]) }
 
         it { is_expected.not_to be_triad }
         it { is_expected.to be_seventh_chord }
@@ -434,7 +434,7 @@ describe HeadMusic::PitchSet do
 
     context "when the set has five pitches" do
       context "given a ninth chord in root position" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[C E G Bb D5]) }
+        subject(:set) { described_class.new(%w[C E G Bb D5]) }
 
         it { is_expected.not_to be_triad }
         it { is_expected.not_to be_seventh_chord }
@@ -445,7 +445,7 @@ describe HeadMusic::PitchSet do
       end
 
       context "given a spread ninth chord with the 7th in the bass" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[Bb2 D4 G4 C5 E5]) }
+        subject(:set) { described_class.new(%w[Bb2 D4 G4 C5 E5]) }
 
         it { is_expected.not_to be_triad }
         it { is_expected.not_to be_seventh_chord }
@@ -461,7 +461,7 @@ describe HeadMusic::PitchSet do
 
     context "when the set has six pitch classes with six different letter names" do
       context "given an eleventh chord cluster" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G]) }
+        subject(:set) { described_class.new(%w[G3 Bb3 C D E F G]) }
 
         it { is_expected.to be_tertian }
         it { is_expected.not_to be_triad }
@@ -474,7 +474,7 @@ describe HeadMusic::PitchSet do
 
     context "when the set has seven pitch classes with seven different letter names" do
       context "given an thirteenth chord cluster" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G A]) }
+        subject(:set) { described_class.new(%w[G3 Bb3 C D E F G A]) }
 
         it { is_expected.to be_tertian }
         it { is_expected.not_to be_triad }
@@ -487,7 +487,7 @@ describe HeadMusic::PitchSet do
 
     context "when the set has eight pitch classes with seven different letter names" do
       context "given an eleventh chord cluster" do
-        subject(:set) { HeadMusic::PitchSet.new(%w[G3 Bb3 C D E F G# A]) }
+        subject(:set) { described_class.new(%w[G3 Bb3 C D E F G# A]) }
 
         it { is_expected.not_to be_triad }
         it { is_expected.not_to be_seventh_chord }

@@ -3,7 +3,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Analysis do
-  subject(:analysis) { HeadMusic::Style::Analysis.new(guide, voice) }
+  subject(:analysis) { described_class.new(guide, voice) }
 
   let(:voice) { HeadMusic::Voice.new }
   let(:guide) { HeadMusic::Style::Guides::FuxCantusFirmus }

@@ -23,7 +23,7 @@ describe HeadMusic::PitchClassSet do
   end
 
   context "when the set has one pitch class" do
-    subject(:set) { HeadMusic::PitchClassSet.new(["A"]) }
+    subject(:set) { described_class.new(["A"]) }
 
     it { is_expected.not_to be_empty }
     it { is_expected.not_to be_empty_set }
@@ -42,7 +42,7 @@ describe HeadMusic::PitchClassSet do
   end
 
   context "when the set has two pitches" do
-    subject(:set) { HeadMusic::PitchClassSet.new(%w[A3 D4]) }
+    subject(:set) { described_class.new(%w[A3 D4]) }
 
     it { is_expected.not_to be_empty }
     it { is_expected.not_to be_empty_set }
@@ -61,7 +61,7 @@ describe HeadMusic::PitchClassSet do
   end
 
   context "when the set has three pitches" do
-    subject(:set) { HeadMusic::PitchClassSet.new(%w[F#3 D4 A4]) }
+    subject(:set) { described_class.new(%w[F#3 D4 A4]) }
 
     it { is_expected.not_to be_empty }
     it { is_expected.not_to be_empty_set }
@@ -80,7 +80,7 @@ describe HeadMusic::PitchClassSet do
   end
 
   context "when the set has nine pitches and seven pitch classes" do
-    subject(:set) { HeadMusic::PitchClassSet.new(%w[C D E F G A B C5 D5]) }
+    subject(:set) { described_class.new(%w[C D E F G A B C5 D5]) }
 
     it { is_expected.not_to be_empty }
     it { is_expected.not_to be_empty_set }
@@ -99,7 +99,7 @@ describe HeadMusic::PitchClassSet do
   end
 
   context "when the set has nine unique pitches classes" do
-    subject(:set) { HeadMusic::PitchClassSet.new(%w[C D E F G A B C#5 F#5]) }
+    subject(:set) { described_class.new(%w[C D E F G A B C#5 F#5]) }
 
     it { is_expected.not_to be_empty }
     it { is_expected.not_to be_empty_set }

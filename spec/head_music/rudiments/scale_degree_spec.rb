@@ -13,7 +13,7 @@ describe HeadMusic::ScaleDegree do
         let(:spelling) { HeadMusic::Spelling.get("D") }
 
         its(:degree) { is_expected.to eq 2 }
-        its(:sign) { is_expected.to eq nil }
+        its(:sign) { is_expected.to be_nil }
         its(:name_for_degree) { is_expected.to eq "supertonic" }
 
         it { is_expected.to eq "2" }

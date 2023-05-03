@@ -66,7 +66,7 @@ describe HeadMusic::Style::Guidelines::RecoverLargeLeaps do
       end
 
       it { is_expected.to be_adherent }
-      its(:first_mark_code) { is_expected.to eq nil }
+      its(:first_mark_code) { is_expected.to be_nil }
     end
   end
 end
