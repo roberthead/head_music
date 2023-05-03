@@ -27,6 +27,3 @@ RSpec/ContextWording:
 
 RSpec/NestedGroups:
   Max: 4
-
-RSpec/FilePath:
-  Enabled: false
