@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::Motion do
+  subject { described_class.new(first_harmonic_interval, second_harmonic_interval) }
+
   let(:composition) { HeadMusic::Composition.new }
   let(:upper_voice) do
     composition.add_voice(role: :melody).tap do |voice|
@@ -19,15 +21,13 @@ describe HeadMusic::Motion do
     end
   end
 
-  let(:first_harmonic_interval) { HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, '1:1') }
-  let(:second_harmonic_interval) { HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, '2:1') }
+  let(:first_harmonic_interval) { HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, "1:1") }
+  let(:second_harmonic_interval) { HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, "2:1") }
 
-  subject { described_class.new(first_harmonic_interval, second_harmonic_interval) }
-
-  context 'when the lower voice repeats the note' do
+  context "when the lower voice repeats the note" do
     let(:lower_voice_pitches) { %w[C4 C4] }
 
-    context 'when the upper voice repeats the note' do
+    context "when the upper voice repeats the note" do
       let(:upper_voice_pitches) { %w[E4 E4] }
 
       it { is_expected.to be_repetition }
@@ -38,7 +38,7 @@ describe HeadMusic::Motion do
       it { is_expected.not_to be_contrary }
     end
 
-    context 'when the upper voice rises' do
+    context "when the upper voice rises" do
       let(:upper_voice_pitches) { %w[E4 A4] }
 
       it { is_expected.not_to be_repetition }
@@ -49,7 +49,7 @@ describe HeadMusic::Motion do
       it { is_expected.not_to be_contrary }
     end
 
-    context 'when the upper voice falls' do
+    context "when the upper voice falls" do
       let(:upper_voice_pitches) { %w[A4 G4] }
 
       it { is_expected.not_to be_repetition }
@@ -61,10 +61,10 @@ describe HeadMusic::Motion do
     end
   end
 
-  context 'when the lower voice rises' do
+  context "when the lower voice rises" do
     let(:lower_voice_pitches) { %w[C4 D4] }
 
-    context 'when the upper voice repeats the note' do
+    context "when the upper voice repeats the note" do
       let(:upper_voice_pitches) { %w[A4 A4] }
 
       it { is_expected.not_to be_repetition }
@@ -75,8 +75,8 @@ describe HeadMusic::Motion do
       it { is_expected.not_to be_contrary }
     end
 
-    context 'when the upper voice rises' do
-      context 'by the same number of steps' do
+    context "when the upper voice rises" do
+      context "by the same number of steps" do
         let(:upper_voice_pitches) { %w[E4 F4] }
 
         it { is_expected.not_to be_repetition }
@@ -87,7 +87,7 @@ describe HeadMusic::Motion do
         it { is_expected.not_to be_contrary }
       end
 
-      context 'by a different number of steps' do
+      context "by a different number of steps" do
         let(:upper_voice_pitches) { %w[E4 A4] }
 
         it { is_expected.not_to be_repetition }
@@ -99,7 +99,7 @@ describe HeadMusic::Motion do
       end
     end
 
-    context 'when the upper voice falls' do
+    context "when the upper voice falls" do
       let(:upper_voice_pitches) { %w[A4 F4] }
 
       it { is_expected.not_to be_repetition }
@@ -111,10 +111,10 @@ describe HeadMusic::Motion do
     end
   end
 
-  context 'when the lower voice falls' do
+  context "when the lower voice falls" do
     let(:lower_voice_pitches) { %w[C4 B3] }
 
-    context 'when the upper voice repeats the note' do
+    context "when the upper voice repeats the note" do
       let(:upper_voice_pitches) { %w[G4 G4] }
 
       it { is_expected.not_to be_repetition }
@@ -125,7 +125,7 @@ describe HeadMusic::Motion do
       it { is_expected.not_to be_contrary }
     end
 
-    context 'when the upper voice rises' do
+    context "when the upper voice rises" do
       let(:upper_voice_pitches) { %w[E4 G4] }
 
       it { is_expected.not_to be_repetition }
@@ -136,8 +136,8 @@ describe HeadMusic::Motion do
       it { is_expected.to be_contrary }
     end
 
-    context 'when the upper voice falls' do
-      context 'by the same number of steps' do
+    context "when the upper voice falls" do
+      context "by the same number of steps" do
         let(:upper_voice_pitches) { %w[A4 G4] }
 
         it { is_expected.not_to be_repetition }
@@ -148,7 +148,7 @@ describe HeadMusic::Motion do
         it { is_expected.not_to be_contrary }
       end
 
-      context 'by a different number of steps' do
+      context "by a different number of steps" do
         let(:upper_voice_pitches) { %w[G4 D4] }
 
         it { is_expected.not_to be_repetition }

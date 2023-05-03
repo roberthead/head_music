@@ -5,10 +5,10 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::StepToFinalNote < HeadMusic::Style::Annotation
-  MESSAGE = 'Step to the final note.'
+  MESSAGE = "Step to the final note."
 
   def marks
-    HeadMusic::Style::Mark.for_all(notes[-2..-1]) unless step_to_final_note?
+    HeadMusic::Style::Mark.for_all(notes[-2..]) unless step_to_final_note?
   end
 
   private

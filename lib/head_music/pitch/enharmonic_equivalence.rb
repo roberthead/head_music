@@ -21,8 +21,8 @@ class HeadMusic::Pitch::EnharmonicEquivalence
     pitch.midi_note_number == other.midi_note_number && pitch.spelling != other.spelling
   end
 
-  alias enharmonic? enharmonic_equivalent?
-  alias equivalent? enharmonic_equivalent?
+  alias_method :enharmonic?, :enharmonic_equivalent?
+  alias_method :equivalent?, :enharmonic_equivalent?
 
   private_class_method :new
 end

@@ -7,7 +7,7 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::SingableRange < HeadMusic::Style::Annotation
   MAXIMUM_RANGE = 10
 
-  MESSAGE = 'Limit melodic range to a 10th.'
+  MESSAGE = "Limit melodic range to a 10th."
 
   def marks
     HeadMusic::Style::Mark.for_each(extremes, fitness: HeadMusic::PENALTY_FACTOR**overage) if overage.positive?

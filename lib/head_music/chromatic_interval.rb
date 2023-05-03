@@ -16,7 +16,7 @@ class HeadMusic::ChromaticInterval
 
   def self.get(identifier)
     @intervals ||= {}
-    candidate = identifier.to_s.downcase.gsub(/\W+/, '_')
+    candidate = identifier.to_s.downcase.gsub(/\W+/, "_")
     semitones = NAMES.index(candidate) || identifier.to_i
     @intervals[semitones] ||= new(semitones.to_i)
   end
@@ -42,11 +42,11 @@ class HeadMusic::ChromaticInterval
   end
 
   def diatonic_name
-    NAMES[simple.semitones].gsub(/_/, ' ')
+    NAMES[simple.semitones].tr("_", " ")
   end
 
   # diatonic set theory
-  alias specific_interval semitones
+  alias_method :specific_interval, :semitones
 
   def +(other)
     HeadMusic::ChromaticInterval.get(to_i + other.to_i)

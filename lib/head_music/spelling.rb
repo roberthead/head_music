@@ -4,7 +4,7 @@
 # Composite of a LetterName and an optional Sign.
 # Does not include the octave. See Pitch for that.
 class HeadMusic::Spelling
-  MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(-?\d+)?\s*$/i.freeze
+  MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(-?\d+)?\s*$/i
 
   attr_reader :pitch_class, :letter_name, :sign
 
@@ -112,8 +112,8 @@ class HeadMusic::Spelling
       spelling != other && spelling.pitch_class_number == other.pitch_class_number
     end
 
-    alias enharmonic? enharmonic_equivalent?
-    alias equivalent? enharmonic_equivalent?
+    alias_method :enharmonic?, :enharmonic_equivalent?
+    alias_method :equivalent?, :enharmonic_equivalent?
 
     private_class_method :new
   end

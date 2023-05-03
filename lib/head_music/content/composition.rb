@@ -63,7 +63,7 @@ class HeadMusic::Composition
   private
 
   def ensure_attributes(name, key_signature, meter)
-    @name = name || 'Composition'
+    @name = name || "Composition"
     @key_signature = HeadMusic::KeySignature.get(key_signature) if key_signature
     @key_signature ||= HeadMusic::KeySignature.default
     @meter = meter ? HeadMusic::Meter.get(meter) : HeadMusic::Meter.default

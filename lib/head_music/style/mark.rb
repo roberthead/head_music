@@ -33,7 +33,7 @@ class HeadMusic::Style::Mark
   end
 
   def code
-    [start_position, end_position].join(' to ')
+    [start_position, end_position].join(" to ")
   end
 
   def to_s

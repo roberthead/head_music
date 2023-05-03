@@ -1,42 +1,16 @@
+require:
+  - standard
+  - rubocop-rspec
+
+inherit_gem:
+  standard: config/base.yml
+
 AllCops:
   NewCops: enable
-  TargetRubyVersion: 2.5
-
-Layout/DotPosition:
-  EnforcedStyle: trailing
-
-Layout/LineLength:
-  Max: 120
-
-Metrics/BlockLength:
   Exclude:
-    - 'Gemfile'
-    - 'Rakefile'
-    - 'spec/**/*.rb'
+    - public/**/*
+    - vendor/**/*
+  TargetRubyVersion: 3.1.4
 
-Metrics/ClassLength:
-  Max: 155
-
-Style/ClassAndModuleChildren:
-  EnforcedStyle: compact
-
-Style/HashEachMethods:
-  Enabled: false
-
-Style/HashTransformKeys:
-  Enabled: false
-
-Style/HashTransformValues:
-  Enabled: false
-
-Style/SymbolArray:
+RSpec:
   Enabled: true
-
-Style/TrailingCommaInArrayLiteral:
-  EnforcedStyleForMultiline: consistent_comma
-
-Style/TrailingCommaInHashLiteral:
-  EnforcedStyleForMultiline: consistent_comma
-
-Layout/EmptyLineAfterGuardClause:
-  Enabled: false

@@ -2,7 +2,7 @@
 
 # A scale contains ordered pitches starting at a tonal center.
 class HeadMusic::Scale
-  SCALE_REGEX = /^[A-G][#b]?\s+\w+$/.freeze
+  SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
 
   def self.get(root_pitch, scale_type = nil)
     root_pitch, scale_type = root_pitch.split(/\s+/) if root_pitch.is_a?(String) && scale_type =~ SCALE_REGEX
@@ -10,7 +10,7 @@ class HeadMusic::Scale
     scale_type = HeadMusic::ScaleType.get(scale_type || :major)
     @scales ||= {}
     hash_key = HeadMusic::Utilities::HashKey.for(
-      [root_pitch, scale_type].join(' ').gsub(/#|♯/, 'sharp').gsub(/(\w)[b♭]/, '\\1flat')
+      [root_pitch, scale_type].join(" ").gsub(/#|♯/, "sharp").gsub(/(\w)[b♭]/, '\\1flat')
     )
     @scales[hash_key] ||= new(root_pitch, scale_type)
   end
@@ -70,7 +70,7 @@ class HeadMusic::Scale
   end
 
   def direction_sign(direction)
-    direction == :descending ? -1 : 1
+    (direction == :descending) ? -1 : 1
   end
 
   def direction_intervals(direction)
@@ -103,7 +103,7 @@ class HeadMusic::Scale
   def diatonic_letter_for_step(direction, step)
     return unless scale_type.diatonic?
 
-    direction == :ascending ? letter_name_series_ascending[step % 7] : letter_name_series_descending[step % 7]
+    (direction == :ascending) ? letter_name_series_ascending[step % 7] : letter_name_series_descending[step % 7]
   end
 
   def child_scale_letter_for_step(semitones_from_root)

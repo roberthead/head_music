@@ -18,7 +18,7 @@ class HeadMusic::Pitch::OctaveEquivalence
     pitch.spelling == other.spelling && pitch.register != other.register
   end
 
-  alias equivalent? octave_equivalent?
+  alias_method :equivalent?, :octave_equivalent?
 
   private_class_method :new
 end

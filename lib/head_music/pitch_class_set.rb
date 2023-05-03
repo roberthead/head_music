@@ -6,18 +6,18 @@ class HeadMusic::PitchClassSet
   attr_reader :pitch_classes
 
   delegate :empty?, to: :pitch_classes
-  alias empty_set? empty?
+  alias_method :empty_set?, :empty?
 
   def initialize(identifiers)
     @pitch_classes = identifiers.map { |identifier| HeadMusic::PitchClass.get(identifier) }.uniq.sort
   end
 
   def inspect
-    pitch_classes.map(&:to_s).join(' ')
+    pitch_classes.map(&:to_s).join(" ")
   end
 
   def to_s
-    pitch_classes.map(&:to_s).join(' ')
+    pitch_classes.map(&:to_s).join(" ")
   end
 
   def ==(other)
@@ -35,12 +35,12 @@ class HeadMusic::PitchClassSet
   def monochord?
     pitch_classes.length == 1
   end
-  alias monad? monochord?
+  alias_method :monad?, :monochord?
 
   def dichord?
     pitch_classes.length == 2
   end
-  alias dyad? dichord?
+  alias_method :dyad?, :dichord?
 
   def trichord?
     pitch_classes.length == 3

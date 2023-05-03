@@ -22,7 +22,7 @@ class HeadMusic::Style::Guides::ModernCantusFirmus
     HeadMusic::Style::Guidelines::SingleLargeLeaps,
     HeadMusic::Style::Guidelines::StartOnTonic,
     HeadMusic::Style::Guidelines::StepToFinalNote,
-    HeadMusic::Style::Guidelines::UpToFourteenNotes,
+    HeadMusic::Style::Guidelines::UpToFourteenNotes
   ].freeze
 
   def self.analyze(voice)

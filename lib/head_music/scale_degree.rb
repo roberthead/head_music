@@ -5,7 +5,7 @@
 class HeadMusic::ScaleDegree
   include Comparable
 
-  NAME_FOR_DIATONIC_DEGREE = [nil, 'tonic', 'supertonic', 'mediant', 'subdominant', 'dominant', 'submediant'].freeze
+  NAME_FOR_DIATONIC_DEGREE = [nil, "tonic", "supertonic", "mediant", "subdominant", "dominant", "submediant"].freeze
 
   attr_reader :key_signature, :spelling
 
@@ -44,7 +44,7 @@ class HeadMusic::ScaleDegree
     return unless scale_type.diatonic?
 
     NAME_FOR_DIATONIC_DEGREE[degree] ||
-      (scale_type.intervals.last == 1 || sign == '#' ? 'leading tone' : 'subtonic')
+      ((scale_type.intervals.last == 1 || sign == "#") ? "leading tone" : "subtonic")
   end
 
   private

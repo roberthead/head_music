@@ -22,7 +22,7 @@ class HeadMusic::PitchClass
   end
 
   class << self
-    alias [] get
+    alias_method :[], :get
   end
 
   def initialize(pitch_class_or_midi_number)
@@ -72,7 +72,7 @@ class HeadMusic::PitchClass
   def ==(other)
     to_i == other.to_i
   end
-  alias enharmonic? ==
+  alias_method :enharmonic?, :==
 
   def <=>(other)
     to_i <=> other.to_i

@@ -6,12 +6,12 @@ class HeadMusic::IntervalCycle
 
   def self.get(interval = 7)
     @interval_cycles ||= {}
-    interval = interval.to_s.gsub(/^C/i, '').to_i
+    interval = interval.to_s.gsub(/^C/i, "").to_i
     interval = HeadMusic::ChromaticInterval.get(interval)
-    @interval_cycles[interval.to_i] ||= new(interval: interval, starting_pitch: 'C4')
+    @interval_cycles[interval.to_i] ||= new(interval: interval, starting_pitch: "C4")
   end
 
-  def initialize(interval:, starting_pitch: 'C4')
+  def initialize(interval:, starting_pitch: "C4")
     @interval = interval if interval.is_a?(HeadMusic::DiatonicInterval)
     @interval ||= interval if interval.is_a?(HeadMusic::ChromaticInterval)
     @interval ||= HeadMusic::ChromaticInterval.get(interval) if interval.to_s.match?(/\d/)
@@ -38,15 +38,13 @@ class HeadMusic::IntervalCycle
   protected
 
   def pitches_up
-    @pitches_up ||= begin
-      [starting_pitch].tap do |list|
-        loop do
-          next_pitch = list.last + interval
-          next_pitch -= octave while next_pitch - starting_pitch > 12
-          break if next_pitch.pitch_class == list.first.pitch_class
+    @pitches_up ||= [starting_pitch].tap do |list|
+      loop do
+        next_pitch = list.last + interval
+        next_pitch -= octave while next_pitch - starting_pitch > 12
+        break if next_pitch.pitch_class == list.first.pitch_class
 
-          list << next_pitch
-        end
+        list << next_pitch
       end
     end
   end

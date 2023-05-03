@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::PitchClassSet do
-  context 'when the set has zero pitch classes' do
+  context "when the set has zero pitch classes" do
     subject(:set) { described_class.new([]) }
 
     it { is_expected.to be_empty }
@@ -22,8 +22,8 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_dodecachord }
   end
 
-  context 'when the set has one pitch class' do
-    subject(:set) { HeadMusic::PitchClassSet.new(['A']) }
+  context "when the set has one pitch class" do
+    subject(:set) { HeadMusic::PitchClassSet.new(["A"]) }
 
     it { is_expected.not_to be_empty }
     it { is_expected.not_to be_empty_set }
@@ -41,7 +41,7 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_dodecachord }
   end
 
-  context 'when the set has two pitches' do
+  context "when the set has two pitches" do
     subject(:set) { HeadMusic::PitchClassSet.new(%w[A3 D4]) }
 
     it { is_expected.not_to be_empty }
@@ -60,7 +60,7 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_dodecachord }
   end
 
-  context 'when the set has three pitches' do
+  context "when the set has three pitches" do
     subject(:set) { HeadMusic::PitchClassSet.new(%w[F#3 D4 A4]) }
 
     it { is_expected.not_to be_empty }
@@ -79,7 +79,7 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_dodecachord }
   end
 
-  context 'when the set has nine pitches and seven pitch classes' do
+  context "when the set has nine pitches and seven pitch classes" do
     subject(:set) { HeadMusic::PitchClassSet.new(%w[C D E F G A B C5 D5]) }
 
     it { is_expected.not_to be_empty }
@@ -98,7 +98,7 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_dodecachord }
   end
 
-  context 'when the set has nine unique pitches classes' do
+  context "when the set has nine unique pitches classes" do
     subject(:set) { HeadMusic::PitchClassSet.new(%w[C D E F G A B C#5 F#5]) }
 
     it { is_expected.not_to be_empty }

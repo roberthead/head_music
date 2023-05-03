@@ -1,31 +1,31 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::ScaleType do
-  describe '.get' do
-    context 'when given an instance' do
+  describe ".get" do
+    context "when given an instance" do
       let(:instance) { described_class.get(:major) }
 
-      it 'returns that instance' do
+      it "returns that instance" do
         expect(described_class.get(instance)).to be instance
       end
     end
 
-    context 'when given a string' do
-      subject(:instance) { described_class.get('Minor') }
+    context "when given a string" do
+      subject(:instance) { described_class.get("Minor") }
 
       it { is_expected.to eq described_class.minor }
     end
   end
 
-  describe '.new' do
-    it 'is public' do
+  describe ".new" do
+    it "is public" do
       expect { described_class.new(:monotonic, ascending: [12]) }.not_to raise_error
     end
   end
 
-  describe '.melodic_minor' do
+  describe ".melodic_minor" do
     subject(:melodic_minor) { described_class.melodic_minor }
 
     its(:ascending_intervals) { are_expected.to eq [2, 1, 2, 2, 2, 2, 1] }
@@ -39,7 +39,7 @@ describe HeadMusic::ScaleType do
 
       its(:descending_intervals) { are_expected.to eq subject.ascending_intervals.reverse }
 
-      it 'consists entirely of whole and half steps' do
+      it "consists entirely of whole and half steps" do
         expect(subject.ascending_intervals.uniq.sort).to eq [1, 2]
       end
 
@@ -53,7 +53,7 @@ describe HeadMusic::ScaleType do
     end
   end
 
-  describe '.major' do
+  describe ".major" do
     subject(:major) { described_class.major }
 
     its(:ascending_intervals) { are_expected.to eq [2, 2, 1, 2, 2, 2, 1] }
@@ -66,7 +66,7 @@ describe HeadMusic::ScaleType do
     it { is_expected.not_to be_chromatic }
   end
 
-  describe '.dorian' do
+  describe ".dorian" do
     subject(:dorian) { described_class.dorian }
 
     its(:ascending_intervals) { are_expected.to eq [2, 1, 2, 2, 2, 1, 2] }
@@ -78,7 +78,7 @@ describe HeadMusic::ScaleType do
     it { is_expected.not_to be_chromatic }
   end
 
-  describe '.whole_tone' do
+  describe ".whole_tone" do
     subject(:whole_tone) { described_class.whole_tone }
 
     its(:ascending_intervals) { are_expected.to eq [2, 2, 2, 2, 2, 2] }
@@ -90,7 +90,7 @@ describe HeadMusic::ScaleType do
     it { is_expected.not_to be_chromatic }
   end
 
-  describe '.minor_pentatonic' do
+  describe ".minor_pentatonic" do
     subject(:minor_pentatonic) { described_class.minor_pentatonic }
 
     its(:ascending_intervals) { are_expected.to eq [3, 2, 2, 3, 2] }
@@ -103,7 +103,7 @@ describe HeadMusic::ScaleType do
     it { is_expected.not_to be_chromatic }
   end
 
-  describe '.major_pentatonic' do
+  describe ".major_pentatonic" do
     subject(:major_pentatonic) { described_class.major_pentatonic }
 
     its(:ascending_intervals) { are_expected.to eq [2, 2, 3, 2, 3] }
@@ -116,7 +116,7 @@ describe HeadMusic::ScaleType do
     it { is_expected.not_to be_chromatic }
   end
 
-  describe '.chromatic' do
+  describe ".chromatic" do
     subject(:chromatic) { described_class.chromatic }
 
     its(:ascending_intervals) { are_expected.to eq [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] }
@@ -129,7 +129,7 @@ describe HeadMusic::ScaleType do
     it { is_expected.to be_chromatic }
   end
 
-  describe 'equality' do
+  describe "equality" do
     specify { expect(described_class.natural_minor).to eq described_class.aeolian }
     specify { expect(described_class.natural_minor).not_to eq described_class.harmonic_minor }
     specify { expect(described_class.natural_minor).not_to eq described_class.melodic_minor }

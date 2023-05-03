@@ -1,26 +1,27 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::SingableIntervals do
-  let(:composition) { HeadMusic::Composition.new(name: 'CF in C Major', key_signature: 'C Major') }
-  let(:voice) { HeadMusic::Voice.new(composition: composition) }
   subject { described_class.new(voice) }
 
-  context 'with no notes' do
+  let(:composition) { HeadMusic::Composition.new(name: "CF in C Major", key_signature: "C Major") }
+  let(:voice) { HeadMusic::Voice.new(composition: composition) }
+
+  context "with no notes" do
     it { is_expected.to be_adherent }
   end
 
-  context 'with one note' do
+  context "with one note" do
     before do
-      voice.place('1:1', :whole, 'C')
+      voice.place("1:1", :whole, "C")
     end
 
     it { is_expected.to be_adherent }
     its(:marks) { are_expected.to be_empty }
   end
 
-  context 'with only permitted intervals' do
+  context "with only permitted intervals" do
     before do
       %w[C E D G G F E D A G B C5].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
@@ -31,7 +32,7 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     its(:marks) { are_expected.to be_empty }
   end
 
-  context 'with an octave leap' do
+  context "with an octave leap" do
     before do
       %w[C D E C C5 B A F G E F D C].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
@@ -42,7 +43,7 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     its(:marks) { are_expected.to be_empty }
   end
 
-  context 'with an ascending minor sixth' do
+  context "with an ascending minor sixth" do
     before do
       %w[C D E C5 B A G E F D C].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
@@ -53,7 +54,7 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     its(:marks) { are_expected.to be_empty }
   end
 
-  context 'with a descending minor sixth' do
+  context "with a descending minor sixth" do
     before do
       %w[C E G A B C5 E D C].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
@@ -61,10 +62,10 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     end
 
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
-    its(:first_mark_code) { is_expected.to eq '6:1:000 to 8:1:000' }
+    its(:first_mark_code) { is_expected.to eq "6:1:000 to 8:1:000" }
   end
 
-  context 'with a major sixth' do
+  context "with a major sixth" do
     before do
       %w[C D E D B A G E F D C].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
@@ -72,10 +73,10 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     end
 
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
-    its(:first_mark_code) { is_expected.to eq '4:1:000 to 6:1:000' }
+    its(:first_mark_code) { is_expected.to eq "4:1:000 to 6:1:000" }
   end
 
-  context 'with a tritone' do
+  context "with a tritone" do
     before do
       %w[C D E F B A B C5].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
@@ -83,6 +84,6 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     end
 
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
-    its(:first_mark_code) { is_expected.to eq '4:1:000 to 6:1:000' }
+    its(:first_mark_code) { is_expected.to eq "4:1:000 to 6:1:000" }
   end
 end

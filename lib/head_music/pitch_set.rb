@@ -9,7 +9,7 @@ class HeadMusic::PitchSet
     seventh_chord: [3, 5, 7],
     ninth_chord: [2, 3, 5, 7],
     eleventh_chord: [2, 3, 4, 5, 7],
-    thirteenth_chord: [2, 3, 4, 5, 6, 7], # a.k.a. diatonic scale
+    thirteenth_chord: [2, 3, 4, 5, 6, 7] # a.k.a. diatonic scale
   }.freeze
 
   attr_reader :pitches
@@ -64,13 +64,13 @@ class HeadMusic::PitchSet
   end
 
   def invert
-    inverted_pitch = pitches[0] + HeadMusic::DiatonicInterval.get('perfect octave')
+    inverted_pitch = pitches[0] + HeadMusic::DiatonicInterval.get("perfect octave")
     new_pitches = pitches.drop(1) + [inverted_pitch]
     HeadMusic::PitchSet.new(new_pitches)
   end
 
   def uninvert
-    inverted_pitch = pitches[-1] - HeadMusic::DiatonicInterval.get('perfect octave')
+    inverted_pitch = pitches[-1] - HeadMusic::DiatonicInterval.get("perfect octave")
     new_pitches = [inverted_pitch] + pitches[0..-2]
     HeadMusic::PitchSet.new(new_pitches)
   end
@@ -80,11 +80,11 @@ class HeadMusic::PitchSet
   end
 
   def inspect
-    pitches.map(&:to_s).join(' ')
+    pitches.map(&:to_s).join(" ")
   end
 
   def to_s
-    pitches.map(&:to_s).join(' ')
+    pitches.map(&:to_s).join(" ")
   end
 
   def ==(other)

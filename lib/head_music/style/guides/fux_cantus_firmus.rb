@@ -21,7 +21,7 @@ class HeadMusic::Style::Guides::FuxCantusFirmus
     HeadMusic::Style::Guidelines::SingableRange,
     HeadMusic::Style::Guidelines::StartOnTonic,
     HeadMusic::Style::Guidelines::StepDownToFinalNote,
-    HeadMusic::Style::Guidelines::UpToFourteenNotes,
+    HeadMusic::Style::Guidelines::UpToFourteenNotes
   ].freeze
 
   def self.analyze(voice)

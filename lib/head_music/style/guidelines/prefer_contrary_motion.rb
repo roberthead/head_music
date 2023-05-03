@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::PreferContraryMotion < HeadMusic::Style::Annotation
-  MESSAGE = 'Prefer contrary motion. Move voices in different melodic directions.'
+  MESSAGE = "Prefer contrary motion. Move voices in different melodic directions."
 
   def marks
     return nil if notes.length < 2

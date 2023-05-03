@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::ChromaticInterval do
-  describe '.get' do
-    context 'when given an instance' do
+  describe ".get" do
+    context "when given an instance" do
       let(:instance) { described_class.get(7) }
 
-      it 'returns that instance' do
+      it "returns that instance" do
         expect(described_class.get(instance)).to be instance
       end
     end
   end
 
-  context 'given a simple interval as an integer' do
+  context "given a simple interval as an integer" do
     subject(:interval) { described_class.get(2) }
 
     it { is_expected.to be == 2 }
@@ -23,7 +23,7 @@ describe HeadMusic::ChromaticInterval do
 
     its(:specific_interval) { is_expected.to eq 2 }
 
-    context 'when the integer is 0' do
+    context "when the integer is 0" do
       subject(:interval) { described_class.get(0) }
 
       it { is_expected.to be_simple }
@@ -32,7 +32,7 @@ describe HeadMusic::ChromaticInterval do
     end
   end
 
-  context 'given some intervals' do
+  context "given some intervals" do
     let(:perfect_unison) { described_class.get(:perfect_unison) }
     let(:major_third) { described_class.get(:major_third) }
     let(:minor_third) { described_class.get(:minor_third) }
@@ -59,8 +59,8 @@ describe HeadMusic::ChromaticInterval do
 
     specify { expect(perfect_11th.simple).to eq(perfect_fourth) }
 
-    describe '#diatonic_name' do
-      specify { expect(major_third.diatonic_name).to eq 'major third' }
+    describe "#diatonic_name" do
+      specify { expect(major_third.diatonic_name).to eq "major third" }
     end
   end
 end

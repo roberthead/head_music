@@ -13,7 +13,7 @@ class HeadMusic::Style::Guides::FirstSpeciesHarmony
     HeadMusic::Style::Guidelines::NoUnisonsInMiddle,
     HeadMusic::Style::Guidelines::OneToOne,
     HeadMusic::Style::Guidelines::PreferContraryMotion,
-    HeadMusic::Style::Guidelines::PreferImperfect,
+    HeadMusic::Style::Guidelines::PreferImperfect
   ].freeze
 
   def self.analyze(voice)

@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Annotation
-  MESSAGE = 'Peak on a consonant high or low note one time or twice with a step between.'
+  MESSAGE = "Peak on a consonant high or low note one time or twice with a step between."
 
   def marks
     HeadMusic::Style::Mark.for_each(highest_notes) unless adherent_climax?

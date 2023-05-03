@@ -12,7 +12,7 @@ class HeadMusic::Note
     @pitch = HeadMusic::Pitch.get(pitch)
     @rhythmic_value = HeadMusic::RhythmicValue.get(rhythmic_value)
     @voice = voice || HeadMusic::Voice.new
-    @position = position || HeadMusic::Position.new(@voice.composition, '1:1')
+    @position = position || HeadMusic::Position.new(@voice.composition, "1:1")
   end
 
   def placement

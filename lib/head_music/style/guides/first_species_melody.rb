@@ -19,7 +19,7 @@ class HeadMusic::Style::Guides::FirstSpeciesMelody
     HeadMusic::Style::Guidelines::SingableRange,
     HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
     HeadMusic::Style::Guidelines::StepOutOfUnison,
-    HeadMusic::Style::Guidelines::StepUpToFinalNote,
+    HeadMusic::Style::Guidelines::StepUpToFinalNote
   ].freeze
 
   def self.analyze(voice)

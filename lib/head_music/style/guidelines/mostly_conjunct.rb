@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::MostlyConjunct < HeadMusic::Style::Annotation
-  MESSAGE = 'Use mostly conjunct motion.'
+  MESSAGE = "Use mostly conjunct motion."
 
   MINIMUM_CONJUNCT_PORTION = HeadMusic::GOLDEN_RATIO_INVERSE**2
   # ~38%
@@ -18,9 +18,9 @@ class HeadMusic::Style::Guidelines::MostlyConjunct < HeadMusic::Style::Annotatio
   private
 
   def marks_for_skips_and_leaps
-    melodic_intervals.
-      reject(&:step?).
-      map { |interval| HeadMusic::Style::Mark.for_all(interval.notes, fitness: HeadMusic::SMALL_PENALTY_FACTOR) }
+    melodic_intervals
+      .reject(&:step?)
+      .map { |interval| HeadMusic::Style::Mark.for_all(interval.notes, fitness: HeadMusic::SMALL_PENALTY_FACTOR) }
   end
 
   def conjunct_ratio

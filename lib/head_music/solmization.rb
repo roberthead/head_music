@@ -5,9 +5,9 @@
 class HeadMusic::Solmization
   include HeadMusic::Named
 
-  DEFAULT_SOLMIZATION = 'solfège'
+  DEFAULT_SOLMIZATION = "solfège"
 
-  RECORDS = YAML.load_file(File.expand_path('solmizations.yml', __dir__)).freeze
+  RECORDS = YAML.load_file(File.expand_path("solmizations.yml", __dir__)).freeze
 
   attr_reader :syllables
 

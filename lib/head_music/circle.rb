@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'head_music/interval_cycle'
+require "head_music/interval_cycle"
 
 # A Circle of Fifths or Fourths shows relationships between pitch classes
 class HeadMusic::Circle < HeadMusic::IntervalCycle
@@ -15,7 +15,7 @@ class HeadMusic::Circle < HeadMusic::IntervalCycle
   def self.get(interval = :perfect_fifth)
     @circles ||= {}
     diatonic_interval = HeadMusic::DiatonicInterval.get(interval)
-    @circles[interval] ||= new(interval: diatonic_interval, starting_pitch: 'C4')
+    @circles[interval] ||= new(interval: diatonic_interval, starting_pitch: "C4")
   end
 
   def index(pitch_class)
@@ -43,15 +43,13 @@ class HeadMusic::Circle < HeadMusic::IntervalCycle
   end
 
   def pitches_down
-    @pitches_down ||= begin
-      [starting_pitch].tap do |list|
-        loop do
-          next_pitch = list.last - interval
-          next_pitch += octave while starting_pitch - next_pitch > 12
-          break if next_pitch.pitch_class == list.first.pitch_class
+    @pitches_down ||= [starting_pitch].tap do |list|
+      loop do
+        next_pitch = list.last - interval
+        next_pitch += octave while starting_pitch - next_pitch > 12
+        break if next_pitch.pitch_class == list.first.pitch_class
 
-          list << next_pitch
-        end
+        list << next_pitch
       end
     end
   end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'head_music/musical_symbol'
+require "head_music/musical_symbol"
 
 # A Sign is a symbol that modifies pitch, such as a sharp, flat, or natural.
 # In French, sharps and flats in the key signature are called "altérations".
@@ -14,24 +14,24 @@ class HeadMusic::Sign
   SIGN_RECORDS = [
     {
       identifier: :sharp, cents: 100,
-      symbols: [{ ascii: '#', unicode: '♯', html_entity: '&#9839;' }],
+      symbols: [{ascii: "#", unicode: "♯", html_entity: "&#9839;"}]
     },
     {
       identifier: :flat, cents: -100,
-      symbols: [{ ascii: 'b', unicode: '♭', html_entity: '&#9837;' }],
+      symbols: [{ascii: "b", unicode: "♭", html_entity: "&#9837;"}]
     },
     {
       identifier: :natural, cents: 0,
-      symbols: [{ ascii: '', unicode: '♮', html_entity: '&#9838;' }],
+      symbols: [{ascii: "", unicode: "♮", html_entity: "&#9838;"}]
     },
     {
       identifier: :double_sharp, cents: 200,
-      symbols: [{ ascii: 'x', unicode: '𝄪', html_entity: '&#119082;' }],
+      symbols: [{ascii: "x", unicode: "𝄪", html_entity: "&#119082;"}]
     },
     {
       identifier: :double_flat, cents: -200,
-      symbols: [{ ascii: 'bb', unicode: '𝄫', html_entity: '&#119083;' }],
-    },
+      symbols: [{ascii: "bb", unicode: "𝄫", html_entity: "&#119083;"}]
+    }
   ].freeze
 
   SIGN_IDENTIFIERS = SIGN_RECORDS.map { |attributes| attributes[:identifier] }.freeze
@@ -45,7 +45,7 @@ class HeadMusic::Sign
   end
 
   def self.matcher
-    @matcher ||= Regexp.new symbols.join('|')
+    @matcher ||= Regexp.new symbols.join("|")
   end
 
   def self.symbol?(candidate)
@@ -67,12 +67,12 @@ class HeadMusic::Sign
   end
 
   def name
-    identifier.to_s.tr('_', ' ')
+    identifier.to_s.tr("_", " ")
   end
 
   def representions
-    [identifier, identifier.to_s, name, ascii, unicode, html_entity].
-      reject { |representation| representation.to_s.strip == '' }
+    [identifier, identifier.to_s, name, ascii, unicode, html_entity]
+      .reject { |representation| representation.to_s.strip == "" }
   end
 
   def semitones

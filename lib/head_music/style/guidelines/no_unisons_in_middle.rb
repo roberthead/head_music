@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::NoUnisonsInMiddle < HeadMusic::Style::Annotation
-  MESSAGE = 'Unisons may only be used in the first and last note.'
+  MESSAGE = "Unisons may only be used in the first and last note."
 
   def marks
     unison_pairs.map do |notes|

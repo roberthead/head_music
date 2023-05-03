@@ -2,7 +2,7 @@
 
 # An Annotation encapsulates an issue with or comment on a voice
 class HeadMusic::Style::Annotation
-  MESSAGE = 'Write music.'
+  MESSAGE = "Write music."
 
   attr_reader :voice
 
@@ -104,16 +104,16 @@ class HeadMusic::Style::Annotation
 
   def downbeat_harmonic_intervals
     @downbeat_harmonic_intervals ||=
-      cantus_firmus.notes.
-      map { |note| HeadMusic::HarmonicInterval.new(note.voice, voice, note.position) }.
-      reject { |interval| interval.notes.length < 2 }
+      cantus_firmus.notes
+        .map { |note| HeadMusic::HarmonicInterval.new(note.voice, voice, note.position) }
+        .reject { |interval| interval.notes.length < 2 }
   end
 
   def harmonic_intervals
     @harmonic_intervals ||=
-      positions.
-      map { |position| HeadMusic::HarmonicInterval.new(cantus_firmus, voice, position) }.
-      reject { |harmonic_interval| harmonic_interval.notes.length < 2 }
+      positions
+        .map { |position| HeadMusic::HarmonicInterval.new(cantus_firmus, voice, position) }
+        .reject { |harmonic_interval| harmonic_interval.notes.length < 2 }
   end
 
   def positions

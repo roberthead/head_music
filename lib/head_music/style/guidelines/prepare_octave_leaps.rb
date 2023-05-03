@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::PrepareOctaveLeaps < HeadMusic::Style::Annotation
-  MESSAGE = 'Enter and exit an octave leap from within.'
+  MESSAGE = "Enter and exit an octave leap from within."
 
   def marks
     (external_entries + external_exits + octave_ending).map do |trouble_spot|

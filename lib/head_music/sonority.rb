@@ -23,7 +23,7 @@ class HeadMusic::Sonority
     minor_six_nine_chord: %w[M2 m3 P5 M6],
     suspended_four_chord: %w[P4 P5],
     suspended_two_chord: %w[M2 P5],
-    quartal_chord: %w[P4 m7],
+    quartal_chord: %w[P4 m7]
   }.freeze
 
   attr_reader :pitch_set
@@ -106,7 +106,7 @@ class HeadMusic::Sonority
       end.to_f / inversion.diatonic_intervals.length > 0.5
     end
   end
-  alias quintal? quartal?
+  alias_method :quintal?, :quartal?
 
   def diatonic_intervals_above_bass_pitch
     return nil unless identifier

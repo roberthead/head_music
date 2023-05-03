@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::GrandStaff do
-  describe '.get' do
-    context 'given an instance' do
-      let(:instance) { described_class.get('#') }
+  describe ".get" do
+    context "given an instance" do
+      let(:instance) { described_class.get("#") }
 
-      it 'returns that instance' do
+      it "returns that instance" do
         expect(described_class.get(instance)).to be instance
       end
     end
 
-    context 'given :piano' do
+    context "given :piano" do
       subject(:grand_staff) { described_class.get(:piano) }
 
       its(:instrument) { is_expected.to eq :piano }
@@ -29,7 +29,7 @@ describe HeadMusic::GrandStaff do
       specify { expect(grand_staff.brace_staves_index_last).to eq 1 }
     end
 
-    context 'given :organ' do
+    context "given :organ" do
       subject(:grand_staff) { described_class.get(:organ) }
 
       its(:instrument) { is_expected.to eq :organ }

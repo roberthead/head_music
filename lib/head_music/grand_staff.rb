@@ -6,18 +6,18 @@ class HeadMusic::GrandStaff
     piano: {
       instrument: :piano,
       staves: [
-        { clef: :treble_clef, for: :right_hand },
-        { clef: :bass_clef, for: :left_hand },
-      ],
+        {clef: :treble_clef, for: :right_hand},
+        {clef: :bass_clef, for: :left_hand}
+      ]
     },
     organ: {
       instrument: :organ,
       staves: [
-        { clef: :treble_clef, for: :right_hand },
-        { clef: :bass_clef, for: :left_hand },
-        { clef: :bass_clef, for: :pedals },
-      ],
-    },
+        {clef: :treble_clef, for: :right_hand},
+        {clef: :bass_clef, for: :left_hand},
+        {clef: :bass_clef, for: :pedals}
+      ]
+    }
   }.freeze
 
   def self.get(name)

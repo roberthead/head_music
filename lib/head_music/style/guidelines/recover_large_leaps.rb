@@ -8,7 +8,7 @@ module HeadMusic::Style::Guidelines; end
 # unless another leap (in either direction) creates a consonant triad.
 # - Brian
 class HeadMusic::Style::Guidelines::RecoverLargeLeaps < HeadMusic::Style::Annotation
-  MESSAGE = 'Recover large leaps by step in the opposite direction.'
+  MESSAGE = "Recover large leaps by step in the opposite direction."
 
   def marks
     melodic_intervals.each_cons(3).map do |intervals|

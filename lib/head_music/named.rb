@@ -16,10 +16,10 @@ module HeadMusic::Named
 
     def self.get(code)
       @locales ||= {}
-      parts = code.to_s.split(/[_\-]/)
+      parts = code.to_s.split(/[_-]/)
       language = parts[0].downcase
       region = parts[1]&.upcase
-      key = [language, region].compact.join('_').to_sym
+      key = [language, region].compact.join("_").to_sym
       @locales[key] ||= new(language: language, region: region)
     end
 
@@ -29,7 +29,7 @@ module HeadMusic::Named
     end
 
     def code
-      @code ||= [@language, @region].compact.join('_')
+      @code ||= [@language, @region].compact.join("_")
     end
 
     private_class_method :new

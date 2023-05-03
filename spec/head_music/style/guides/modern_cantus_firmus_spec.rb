@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::Style::Guides::ModernCantusFirmus do
   subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
@@ -23,8 +23,8 @@ describe HeadMusic::Style::Guides::ModernCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepToFinalNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::UpToFourteenNotes }
 
-  describe 'adherence' do
-    context 'with Fux examples' do
+  describe "adherence" do
+    context "with Fux examples" do
       fux_cantus_firmus_examples.each do |example|
         context example.description do
           let(:voice) { example.composition.cantus_firmus_voice }
@@ -42,7 +42,7 @@ describe HeadMusic::Style::Guides::ModernCantusFirmus do
       end
     end
 
-    context 'with Clendinning examples' do
+    context "with Clendinning examples" do
       clendinning_cantus_firmus_examples.each do |example|
         context example.description do
           let(:voice) { example.composition.cantus_firmus_voice }
@@ -60,7 +60,7 @@ describe HeadMusic::Style::Guides::ModernCantusFirmus do
       end
     end
 
-    context 'with Davis and Lybbert examples' do
+    context "with Davis and Lybbert examples" do
       davis_and_lybbert_cantus_firmus_examples.each do |example|
         context example.description do
           let(:voice) { example.composition.cantus_firmus_voice }
@@ -78,7 +78,7 @@ describe HeadMusic::Style::Guides::ModernCantusFirmus do
       end
     end
 
-    context 'with Schoenberg examples' do
+    context "with Schoenberg examples" do
       schoenberg_cantus_firmus_examples.each do |example|
         context example.description do
           let(:voice) { example.composition.cantus_firmus_voice }

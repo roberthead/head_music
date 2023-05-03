@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::Style::Guides::FirstSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
@@ -18,10 +18,10 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
 
-  context 'adherence' do
+  context "adherence" do
     subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
-    context 'with Fux examples' do
+    context "with Fux examples" do
       fux_first_species_examples.each do |example|
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }
@@ -39,7 +39,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
       end
     end
 
-    context 'with Clendinning examples' do
+    context "with Clendinning examples" do
       clendinning_first_species_examples.each do |example|
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }
@@ -57,7 +57,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
       end
     end
 
-    context 'with Davis and Lybbert examples' do
+    context "with Davis and Lybbert examples" do
       davis_and_lybbert_first_species_examples.each do |example|
         context example.description do
           let(:voice) { example.composition.counterpoint_voice }

@@ -34,11 +34,11 @@ class HeadMusic::Pitch
   end
 
   def self.middle_c
-    get('C4')
+    get("C4")
   end
 
   def self.concert_a
-    get('A4')
+    get("A4")
   end
 
   def self.from_pitch_class(pitch_class)
@@ -97,8 +97,8 @@ class HeadMusic::Pitch
     (register + 1) * 12 + letter_name.pitch_class.to_i + sign_semitones.to_i
   end
 
-  alias midi midi_note_number
-  alias number midi_note_number
+  alias_method :midi, :midi_note_number
+  alias_method :number, :midi_note_number
 
   def to_s
     name
@@ -113,7 +113,7 @@ class HeadMusic::Pitch
   end
 
   def natural
-    HeadMusic::Pitch.get(to_s.gsub(HeadMusic::Sign.matcher, ''))
+    HeadMusic::Pitch.get(to_s.gsub(HeadMusic::Sign.matcher, ""))
   end
 
   def +(other)
@@ -195,7 +195,7 @@ class HeadMusic::Pitch
   end
 
   def octaves_delta(num_steps)
-    octaves_delta = (num_steps.abs / 7) * (num_steps >= 0 ? 1 : -1)
+    octaves_delta = (num_steps.abs / 7) * ((num_steps >= 0) ? 1 : -1)
     if wrapped_down?(num_steps)
       octaves_delta -= 1
     elsif wrapped_up?(num_steps)

@@ -23,21 +23,21 @@ class CompositionContext
   end
 
   def self.add_voices(composition, params)
-    cantus_firmus = composition.add_voice(role: 'cantus firmus')
+    cantus_firmus = composition.add_voice(role: "cantus firmus")
     add_pitches_to_voice(cantus_firmus, params[:cantus_firmus_pitches], params[:cantus_firmus_durations])
-    counterpoint = composition.add_voice(role: 'counterpoint')
+    counterpoint = composition.add_voice(role: "counterpoint")
     add_pitches_to_voice(counterpoint, params[:counterpoint_pitches], params[:counterpoint_durations])
   end
 
   def self.name_from_params(params)
-    params[:name] || [params[:source], params[:key]].compact.join(' ') || 'Composition'
+    params[:name] || [params[:source], params[:key]].compact.join(" ") || "Composition"
   end
 
   def self.add_pitches_to_voice(voice, pitches_string, durations = nil)
     pitches = pitches_from_string(pitches_string)
     durations = [durations].flatten.compact
     pitches.each.with_index(1) do |pitch, bar|
-      voice.place("#{bar}:1", durations[bar - 1] || durations.first || 'whole', pitch)
+      voice.place("#{bar}:1", durations[bar - 1] || durations.first || "whole", pitch)
     end
   end
 
@@ -56,16 +56,14 @@ class CompositionContext
   end
 
   def description
-    @description ||= begin
-      [source, key, pitches_description].compact.reject do |element|
-        element.to_s.strip.empty?
-      end.join(' ')
-    end
+    @description ||= [source, key, pitches_description].compact.reject do |element|
+      element.to_s.strip.empty?
+    end.join(" ")
   end
 
   def pitches_description
     @pitches_description ||=
-      [counterpoint_string, cantus_firmus_string].map(&:to_s).reject(&:empty?).join(' against ')
+      [counterpoint_string, cantus_firmus_string].map(&:to_s).reject(&:empty?).join(" against ")
   end
 
   def method_missing(method_name, *args, &block)
@@ -79,10 +77,10 @@ class CompositionContext
   private
 
   def cantus_firmus_string
-    "#{cantus_firmus_pitches.join(' ')} (CF)" if cantus_firmus_pitches&.any?
+    "#{cantus_firmus_pitches.join(" ")} (CF)" if cantus_firmus_pitches&.any?
   end
 
   def counterpoint_string
-    "#{counterpoint_pitches.join(' ')} (CPT)" if counterpoint_pitches&.any?
+    "#{counterpoint_pitches.join(" ")} (CPT)" if counterpoint_pitches&.any?
   end
 end

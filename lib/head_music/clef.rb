@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'yaml'
+require "yaml"
 
 # A clef assigns pitches to the lines and spaces of a staff.
 class HeadMusic::Clef
   include HeadMusic::Named
 
-  RECORDS = YAML.load_file(File.expand_path('data/clefs.yml', __dir__)).freeze
+  RECORDS = YAML.load_file(File.expand_path("data/clefs.yml", __dir__)).freeze
 
   def self.get(name)
     get_by_name(name)

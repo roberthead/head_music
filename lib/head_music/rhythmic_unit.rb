@@ -4,10 +4,10 @@
 class HeadMusic::RhythmicUnit
   include HeadMusic::Named
 
-  MULTIPLES = ['whole', 'double whole', 'longa', 'maxima'].freeze
+  MULTIPLES = ["whole", "double whole", "longa", "maxima"].freeze
   FRACTIONS = [
-    'whole', 'half', 'quarter', 'eighth', 'sixteenth', 'thirty-second',
-    'sixty-fourth', 'hundred twenty-eighth', 'two hundred fifty-sixth',
+    "whole", "half", "quarter", "eighth", "sixteenth", "thirty-second",
+    "sixty-fourth", "hundred twenty-eighth", "two hundred fifty-sixth"
   ].freeze
 
   BRITISH_MULTIPLE_NAMES = %w[semibreve breve longa maxima].freeze
@@ -80,26 +80,26 @@ class HeadMusic::RhythmicUnit
   end
 
   def numerator_exponent
-    multiples_keys.index(name.gsub(/\W+/, '_')) || british_multiples_keys.index(name.gsub(/\W+/, '_')) || 0
+    multiples_keys.index(name.gsub(/\W+/, "_")) || british_multiples_keys.index(name.gsub(/\W+/, "_")) || 0
   end
 
   def multiples_keys
-    MULTIPLES.map { |multiple| multiple.gsub(/\W+/, '_') }
+    MULTIPLES.map { |multiple| multiple.gsub(/\W+/, "_") }
   end
 
   def british_multiples_keys
-    BRITISH_MULTIPLE_NAMES.map { |multiple| multiple.gsub(/\W+/, '_') }
+    BRITISH_MULTIPLE_NAMES.map { |multiple| multiple.gsub(/\W+/, "_") }
   end
 
   def denominator_exponent
-    fractions_keys.index(name.gsub(/\W+/, '_')) || british_fractions_keys.index(name.gsub(/\W+/, '_')) || 0
+    fractions_keys.index(name.gsub(/\W+/, "_")) || british_fractions_keys.index(name.gsub(/\W+/, "_")) || 0
   end
 
   def fractions_keys
-    FRACTIONS.map { |fraction| fraction.gsub(/\W+/, '_') }
+    FRACTIONS.map { |fraction| fraction.gsub(/\W+/, "_") }
   end
 
   def british_fractions_keys
-    BRITISH_DIVISION_NAMES.map { |fraction| fraction.gsub(/\W+/, '_') }
+    BRITISH_DIVISION_NAMES.map { |fraction| fraction.gsub(/\W+/, "_") }
   end
 end

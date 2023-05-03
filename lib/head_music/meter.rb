@@ -5,8 +5,8 @@ class HeadMusic::Meter
   attr_reader :top_number, :bottom_number
 
   NAMED = {
-    common_time: '4/4',
-    cut_time: '2/2',
+    common_time: "4/4",
+    cut_time: "2/2"
   }.freeze
 
   def self.get(identifier)
@@ -14,11 +14,11 @@ class HeadMusic::Meter
     hash_key = HeadMusic::Utilities::HashKey.for(identifier)
     time_signature_string = NAMED[hash_key] || identifier
     @meters ||= {}
-    @meters[hash_key] ||= new(*time_signature_string.split('/').map(&:to_i))
+    @meters[hash_key] ||= new(*time_signature_string.split("/").map(&:to_i))
   end
 
   def self.default
-    get('4/4')
+    get("4/4")
   end
 
   def self.common_time
@@ -89,7 +89,7 @@ class HeadMusic::Meter
   end
 
   def to_s
-    [top_number, bottom_number].join('/')
+    [top_number, bottom_number].join("/")
   end
 
   def ==(other)
@@ -97,10 +97,8 @@ class HeadMusic::Meter
   end
 
   def strong_counts
-    @strong_counts ||= begin
-      (1..counts_per_bar).select do |count|
-        downbeat?(count) || strong_beat_in_duple?(count) || strong_beat_in_triple?(count)
-      end
+    @strong_counts ||= (1..counts_per_bar).select do |count|
+      downbeat?(count) || strong_beat_in_duple?(count) || strong_beat_in_triple?(count)
     end
   end
 

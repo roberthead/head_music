@@ -38,7 +38,7 @@ class HeadMusic::MelodicInterval
   end
 
   def to_s
-    [direction, diatonic_interval].join(' ')
+    [direction, diatonic_interval].join(" ")
   end
 
   def ascending?

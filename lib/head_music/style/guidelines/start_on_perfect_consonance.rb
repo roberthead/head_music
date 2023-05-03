@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # marks the voice if the first note is not the first or fifth scale degree of the key.
 class HeadMusic::Style::Guidelines::StartOnPerfectConsonance < HeadMusic::Style::Annotation
-  MESSAGE = 'Start on the tonic or a perfect consonance above the tonic (unless bass voice).'
+  MESSAGE = "Start on the tonic or a perfect consonance above the tonic (unless bass voice)."
 
   def marks
     return unless first_note && ((bass_voice? && !starts_on_tonic?) || !starts_on_perfect_consonance?)

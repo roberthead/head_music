@@ -14,7 +14,7 @@ class HeadMusic::RhythmicValue
     when HeadMusic::RhythmicUnit
       new(identifier)
     when Symbol, String
-      identifier = identifier.to_s.downcase.strip.gsub(/\W+/, '_')
+      identifier = identifier.to_s.downcase.strip.gsub(/\W+/, "_")
       from_words(identifier)
     end
   end
@@ -24,7 +24,7 @@ class HeadMusic::RhythmicValue
   end
 
   def self.unit_from_words(identifier)
-    identifier.gsub(/^\w*dotted_/, '')
+    identifier.gsub(/^\w*dotted_/, "")
   end
 
   def self.dots_from_words(identifier)
@@ -74,21 +74,21 @@ class HeadMusic::RhythmicValue
   def name_modifier_prefix
     case dots
     when 1
-      'dotted'
+      "dotted"
     when 2
-      'double-dotted'
+      "double-dotted"
     when 3
-      'triple-dotted'
+      "triple-dotted"
     end
   end
 
   def single_value_name
-    [name_modifier_prefix, unit_name].compact.join(' ')
+    [name_modifier_prefix, unit_name].compact.join(" ")
   end
 
   def name
     if tied_value
-      [single_value_name, tied_value.name].compact.join(' tied to ')
+      [single_value_name, tied_value.name].compact.join(" tied to ")
     else
       single_value_name
     end
@@ -99,6 +99,6 @@ class HeadMusic::RhythmicValue
   end
 
   def to_s
-    name.tr('_', '-')
+    name.tr("_", "-")
   end
 end

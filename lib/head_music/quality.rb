@@ -3,13 +3,13 @@
 # A quality is a categorization of an interval.
 class HeadMusic::Quality
   SHORTHAND = {
-    perfect: 'P',
-    major: 'M',
-    minor: 'm',
-    diminished: 'd',
-    augmented: 'A',
-    doubly_diminished: 'dd',
-    doubly_augmented: 'AA',
+    perfect: "P",
+    major: "M",
+    minor: "m",
+    diminished: "d",
+    augmented: "A",
+    doubly_diminished: "dd",
+    doubly_augmented: "AA"
   }.freeze
   NAMES = SHORTHAND.keys
 
@@ -18,7 +18,7 @@ class HeadMusic::Quality
     -1 => :diminished,
     0 => :perfect,
     1 => :augmented,
-    2 => :doubly_augmented,
+    2 => :doubly_augmented
   }.freeze
 
   MAJOR_INTERVAL_MODIFICATION = {
@@ -26,7 +26,7 @@ class HeadMusic::Quality
     -1 => :minor,
     0 => :major,
     1 => :augmented,
-    2 => :doubly_augmented,
+    2 => :doubly_augmented
   }.freeze
 
   def self.get(identifier)
@@ -38,9 +38,9 @@ class HeadMusic::Quality
   def self.from(starting_quality, delta)
     case starting_quality
     when :perfect
-      PERFECT_INTERVAL_MODIFICATION[delta].to_s.gsub(/_+/, ' ')
+      PERFECT_INTERVAL_MODIFICATION[delta].to_s.gsub(/_+/, " ")
     when :major
-      MAJOR_INTERVAL_MODIFICATION[delta].to_s.gsub(/_+/, ' ')
+      MAJOR_INTERVAL_MODIFICATION[delta].to_s.gsub(/_+/, " ")
     end
   end
 
@@ -61,7 +61,7 @@ class HeadMusic::Quality
   end
 
   def article
-    %w[a e i o u h].include?(name.to_s.first) ? 'an' : 'a'
+    %w[a e i o u h].include?(name.to_s.first) ? "an" : "a"
   end
 
   NAMES.each do |method_name|

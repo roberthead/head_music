@@ -25,7 +25,7 @@ class HeadMusic::ScaleType
     iv: [:lydian],
     v: [:mixolydian],
     vi: %i[aeolian minor natural_minor],
-    vii: [:locrian],
+    vii: [:locrian]
   }.freeze
 
   CHROMATIC = ([H] * 12)
@@ -35,7 +35,7 @@ class HeadMusic::ScaleType
   def self._modes
     {}.tap do |modes|
       MODE_NAMES.each do |roman_numeral, aliases|
-        intervals = { ascending: const_get(roman_numeral.upcase) }
+        intervals = {ascending: const_get(roman_numeral.upcase)}
         modes[roman_numeral] = intervals
         aliases.each { |name| modes[name] = intervals }
       end
@@ -44,30 +44,30 @@ class HeadMusic::ScaleType
 
   def self._minor_scales
     {
-      harmonic_minor: { ascending: HARMONIC_MINOR },
-      melodic_minor: { ascending: MELODIC_MINOR_ASCENDING, descending: VI.reverse },
+      harmonic_minor: {ascending: HARMONIC_MINOR},
+      melodic_minor: {ascending: MELODIC_MINOR_ASCENDING, descending: VI.reverse}
     }
   end
 
   def self._chromatic_scales
-    { chromatic: { ascending: CHROMATIC } }
+    {chromatic: {ascending: CHROMATIC}}
   end
 
   def self._pentatonic_scales
     {
-      minor_pentatonic: { ascending: MINOR_PENTATONIC, parent_name: :minor },
-      major_pentatonic: { ascending: MINOR_PENTATONIC.rotate, parent_name: :major },
-      egyptian_pentatonic: { ascending: MINOR_PENTATONIC.rotate(2), parent_name: :minor },
-      blues_minor_pentatonic: { ascending: MINOR_PENTATONIC.rotate(3), parent_name: :minor },
-      blues_major_pentatonic: { ascending: MINOR_PENTATONIC.rotate(4), parent_name: :major },
+      minor_pentatonic: {ascending: MINOR_PENTATONIC, parent_name: :minor},
+      major_pentatonic: {ascending: MINOR_PENTATONIC.rotate, parent_name: :major},
+      egyptian_pentatonic: {ascending: MINOR_PENTATONIC.rotate(2), parent_name: :minor},
+      blues_minor_pentatonic: {ascending: MINOR_PENTATONIC.rotate(3), parent_name: :minor},
+      blues_major_pentatonic: {ascending: MINOR_PENTATONIC.rotate(4), parent_name: :major}
     }
   end
 
   def self._exotic_scales
     # 'octatonic' is also called the 'whole-half diminished scale'
     {
-      octatonic: { ascending: [W, H, W, H, W, H, W, H] },
-      whole_tone: { ascending: [W, W, W, W, W, W] },
+      octatonic: {ascending: [W, H, W, H, W, H, W, H]},
+      whole_tone: {ascending: [W, W, W, W, W, W]}
     }
   end
 
@@ -99,7 +99,7 @@ class HeadMusic::ScaleType
   end
 
   attr_reader :name, :ascending_intervals, :descending_intervals, :parent_name
-  alias intervals ascending_intervals
+  alias_method :intervals, :ascending_intervals
 
   delegate :to_s, to: :name
 

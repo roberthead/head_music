@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::PreferImperfect < HeadMusic::Style::Annotation
-  MESSAGE = 'Prefer imperfect harmonic intervals.'
+  MESSAGE = "Prefer imperfect harmonic intervals."
 
   def marks
     HeadMusic::Style::Mark.for_all(perfect_intervals.map(&:notes).flatten) if ratio_of_perfect_intervals >= 0.5

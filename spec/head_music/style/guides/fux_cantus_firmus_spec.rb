@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::Style::Guides::FuxCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }
@@ -20,10 +20,10 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepDownToFinalNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::UpToFourteenNotes }
 
-  describe 'adherence' do
+  describe "adherence" do
     subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
-    context 'with Fux examples' do
+    context "with Fux examples" do
       fux_cantus_firmus_examples.each do |example|
         context example.description do
           let(:voice) { example.composition.cantus_firmus_voice }
@@ -41,7 +41,7 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
       end
     end
 
-    context 'with Fux examples with errors introduced' do
+    context "with Fux examples with errors introduced" do
       fux_cantus_firmus_examples_with_errors.each do |example|
         context example.description do
           let(:voice) { example.composition.cantus_firmus_voice }

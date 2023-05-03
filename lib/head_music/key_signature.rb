@@ -9,7 +9,7 @@ class HeadMusic::KeySignature
   ORDERED_LETTER_NAMES_OF_FLATS = ORDERED_LETTER_NAMES_OF_SHARPS.reverse.freeze
 
   def self.default
-    @default ||= new('C', :major)
+    @default ||= new("C", :major)
   end
 
   def self.get(identifier)
@@ -17,7 +17,7 @@ class HeadMusic::KeySignature
 
     @key_signatures ||= {}
     tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
-    hash_key = HeadMusic::Utilities::HashKey.for(identifier.gsub(/#|♯/, ' sharp').gsub(/(\w)[b♭]/, '\\1 flat'))
+    hash_key = HeadMusic::Utilities::HashKey.for(identifier.gsub(/#|♯/, " sharp").gsub(/(\w)[b♭]/, '\\1 flat'))
     @key_signatures[hash_key] ||= new(tonic_spelling, scale_type_name)
   end
 
@@ -73,11 +73,11 @@ class HeadMusic::KeySignature
     flats.any? ? flats : sharps
   end
 
-  alias sharps_and_flats signs
-  alias accidentals signs
+  alias_method :sharps_and_flats, :signs
+  alias_method :accidentals, :signs
 
   def name
-    [tonic_spelling, scale_type].join(' ')
+    [tonic_spelling, scale_type].join(" ")
   end
 
   def ==(other)
@@ -86,11 +86,11 @@ class HeadMusic::KeySignature
 
   def to_s
     if sharps.any?
-      sharps.length == 1 ? '1 sharp' : "#{sharps.length} sharps"
+      (sharps.length == 1) ? "1 sharp" : "#{sharps.length} sharps"
     elsif flats.any?
-      flats.length == 1 ? '1 flat' : "#{flats.length} flats"
+      (flats.length == 1) ? "1 flat" : "#{flats.length} flats"
     else
-      'no sharps or flats'
+      "no sharps or flats"
     end
   end
 
@@ -124,8 +124,8 @@ class HeadMusic::KeySignature
       (key_signature.signs | other.signs).map(&:to_s).uniq.length == 12
     end
 
-    alias enharmonic? enharmonic_equivalent?
-    alias equivalent? enharmonic_equivalent?
+    alias_method :enharmonic?, :enharmonic_equivalent?
+    alias_method :equivalent?, :enharmonic_equivalent?
 
     private_class_method :new
   end

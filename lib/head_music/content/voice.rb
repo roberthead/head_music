@@ -84,7 +84,7 @@ class HeadMusic::Voice
   end
 
   def note_preceding(position)
-    notes.select { |note| note.position < position }.last
+    notes.reverse.find { |note| note.position < position }
   end
 
   def note_following(position)

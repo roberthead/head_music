@@ -10,34 +10,34 @@ class HeadMusic::DiatonicInterval
     ninth tenth eleventh twelfth thirteenth fourteenth fifteenth
     sixteenth seventeenth
   ].freeze
-  NAME_SUFFIXES = Hash.new('th').merge(1 => 'st', 2 => 'nd', 3 => 'rd').freeze
+  NAME_SUFFIXES = Hash.new("th").merge(1 => "st", 2 => "nd", 3 => "rd").freeze
 
   QUALITY_SEMITONES = {
-    unison: { perfect: 0 },
-    second: { major: 2 },
-    third: { major: 4 },
-    fourth: { perfect: 5 },
-    fifth: { perfect: 7 },
-    sixth: { major: 9 },
-    seventh: { major: 11 },
-    octave: { perfect: 12 },
-    ninth: { major: 14 },
-    tenth: { major: 16 },
-    eleventh: { perfect: 17 },
-    twelfth: { perfect: 19 },
-    thirteenth: { major: 21 },
-    fourteenth: { major: 23 },
-    fifteenth: { perfect: 24 },
-    sixteenth: { major: 26 },
-    seventeenth: { major: 28 },
+    unison: {perfect: 0},
+    second: {major: 2},
+    third: {major: 4},
+    fourth: {perfect: 5},
+    fifth: {perfect: 7},
+    sixth: {major: 9},
+    seventh: {major: 11},
+    octave: {perfect: 12},
+    ninth: {major: 14},
+    tenth: {major: 16},
+    eleventh: {perfect: 17},
+    twelfth: {perfect: 19},
+    thirteenth: {major: 21},
+    fourteenth: {major: 23},
+    fifteenth: {perfect: 24},
+    sixteenth: {major: 26},
+    seventeenth: {major: 28}
   }.freeze
 
   QUALITY_ABBREVIATIONS = {
-    P: 'perfect',
-    M: 'major',
-    m: 'minor',
-    d: 'diminished',
-    A: 'augmented',
+    P: "perfect",
+    M: "major",
+    m: "minor",
+    d: "diminished",
+    A: "augmented"
   }.freeze
 
   attr_reader :lower_pitch, :higher_pitch
@@ -58,7 +58,7 @@ class HeadMusic::DiatonicInterval
     end
 
     def quality_name
-      words[0..-2].join(' ').to_sym
+      words[0..-2].join(" ").to_sym
     end
 
     def degree_name
@@ -75,8 +75,8 @@ class HeadMusic::DiatonicInterval
 
     def expand(identifier)
       if /[A-Z]\d{1,2}/i.match?(identifier)
-        number = NUMBER_NAMES[identifier.gsub(/[A-Z]/i, '').to_i - 1]
-        return [quality_for(identifier[0]), number].join('_').to_sym
+        number = NUMBER_NAMES[identifier.gsub(/[A-Z]/i, "").to_i - 1]
+        return [quality_for(identifier[0]), number].join("_").to_sym
       end
       identifier
     end
@@ -97,13 +97,11 @@ class HeadMusic::DiatonicInterval
     end
 
     def self.degree_quality_semitones
-      @degree_quality_semitones ||= begin
-        {}.tap do |degree_quality_semitones|
-          QUALITY_SEMITONES.each do |degree_name, qualities|
-            default_quality = qualities.keys.first
-            default_semitones = qualities[default_quality]
-            degree_quality_semitones[degree_name] = _semitones_for_degree(default_quality, default_semitones)
-          end
+      @degree_quality_semitones ||= {}.tap do |degree_quality_semitones|
+        QUALITY_SEMITONES.each do |degree_name, qualities|
+          default_quality = qualities.keys.first
+          default_semitones = qualities[default_quality]
+          degree_quality_semitones[degree_name] = _semitones_for_degree(default_quality, default_semitones)
         end
       end
     end
@@ -219,7 +217,7 @@ class HeadMusic::DiatonicInterval
     end
 
     def simple_name
-      [quality_name, simple_number_name].join(' ')
+      [quality_name, simple_number_name].join(" ")
     end
 
     def quality_name
@@ -239,8 +237,8 @@ class HeadMusic::DiatonicInterval
 
     def name
       if named_number?
-        [quality_name, number_name].join(' ')
-      elsif simple_name == 'perfect octave'
+        [quality_name, number_name].join(" ")
+      elsif simple_name == "perfect octave"
         "#{octaves.humanize} octaves"
       else
         "#{octaves.humanize} octaves and #{quality.article} #{simple_name}"
@@ -248,7 +246,7 @@ class HeadMusic::DiatonicInterval
     end
 
     def shorthand
-      step_shorthand = number == 1 ? 'U' : number
+      step_shorthand = (number == 1) ? "U" : number
       [quality.shorthand, step_shorthand].join
     end
 
@@ -281,7 +279,7 @@ class HeadMusic::DiatonicInterval
     to: :naming
   )
 
-  alias to_i semitones
+  alias_method :to_i, :semitones
 
   # Accepts a name and returns the interval with middle c on the bottom
   def self.get(identifier)
@@ -308,7 +306,7 @@ class HeadMusic::DiatonicInterval
     end
     HeadMusic::DiatonicInterval.new(higher_pitch, inverted_low_pitch)
   end
-  alias invert inversion
+  alias_method :invert, :inversion
 
   def consonance(style = :standard_practice)
     consonance_for_perfect(style) ||
@@ -319,7 +317,7 @@ class HeadMusic::DiatonicInterval
   def consonance?(style = :standard_practice)
     consonance(style).perfect? || consonance(style).imperfect?
   end
-  alias consonant? consonance?
+  alias_method :consonant?, :consonance?
 
   def perfect_consonance?(style = :standard_practice)
     consonance(style).perfect?
@@ -352,8 +350,8 @@ class HeadMusic::DiatonicInterval
   end
 
   # diatonic set theory
-  alias specific_interval simple_semitones
-  alias diatonic_generic_interval simple_steps
+  alias_method :specific_interval, :simple_semitones
+  alias_method :diatonic_generic_interval, :simple_steps
 
   def <=>(other)
     other = self.class.get(other) unless other.is_a?(HeadMusic::DiatonicInterval)
@@ -391,7 +389,7 @@ class HeadMusic::DiatonicInterval
   end
 
   def consonance_for_major_and_minor
-    HeadMusic::Consonance.get(third_or_compound? || sixth_or_compound? ? :imperfect : :dissonant) if major? || minor?
+    HeadMusic::Consonance.get((third_or_compound? || sixth_or_compound?) ? :imperfect : :dissonant) if major? || minor?
   end
 
   def dissonant_fourth?(style = :standard_practice)

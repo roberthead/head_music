@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::EndOnTonic < HeadMusic::Style::Annotation
-  MESSAGE = 'End on the first scale degree.'
+  MESSAGE = "End on the first scale degree."
 
   def marks
     HeadMusic::Style::Mark.for(notes.last) if notes.any? && !ends_on_tonic?

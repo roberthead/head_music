@@ -5,13 +5,13 @@ class HeadMusic::LetterName
   NAMES = %w[C D E F G A B].freeze
 
   NATURAL_PITCH_CLASS_NUMBERS = {
-    'C' => 0,
-    'D' => 2,
-    'E' => 4,
-    'F' => 5,
-    'G' => 7,
-    'A' => 9,
-    'B' => 11,
+    "C" => 0,
+    "D" => 2,
+    "E" => 4,
+    "F" => 5,
+    "G" => 7,
+    "A" => 9,
+    "B" => 11
   }.freeze
 
   def self.all

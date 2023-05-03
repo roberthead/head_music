@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::SingleLargeLeaps < HeadMusic::Style::Guidelines::RecoverLargeLeaps
-  MESSAGE = 'Recover leaps by step, repetition, opposite direction, or spelling triad.'
+  MESSAGE = "Recover leaps by step, repetition, opposite direction, or spelling triad."
 
   private
 

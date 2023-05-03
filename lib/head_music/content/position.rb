@@ -22,12 +22,12 @@ class HeadMusic::Position
   end
 
   def code
-    tick_string = tick.to_s.rjust(3, '0')
-    [bar_number, count, tick_string].join(':')
+    tick_string = tick.to_s.rjust(3, "0")
+    [bar_number, count, tick_string].join(":")
   end
 
   def state
-    [composition.name, code].join(' ')
+    [composition.name, code].join(" ")
   end
 
   def values

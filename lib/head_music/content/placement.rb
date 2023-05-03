@@ -34,7 +34,7 @@ class HeadMusic::Placement
   end
 
   def to_s
-    "#{rhythmic_value} #{pitch || 'rest'} at #{position}"
+    "#{rhythmic_value} #{pitch || "rest"} at #{position}"
   end
 
   private
@@ -60,9 +60,9 @@ class HeadMusic::Placement
 
   def ensure_position(position)
     @position = if position.is_a?(HeadMusic::Position)
-                  position
-                else
-                  HeadMusic::Position.new(composition, position)
-                end
+      position
+    else
+      HeadMusic::Position.new(composition, position)
+    end
   end
 end

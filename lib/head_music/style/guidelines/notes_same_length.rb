@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotation
-  MESSAGE = 'Use consistent rhythmic unit.'
+  MESSAGE = "Use consistent rhythmic unit."
 
   def marks
     HeadMusic::Style::Mark.for_each(all_wrong_length_notes)
@@ -31,7 +31,7 @@ class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotati
     last_note.nil? ||
       [
         first_most_common_rhythmic_value.total_value,
-        first_most_common_rhythmic_value.total_value * 2,
+        first_most_common_rhythmic_value.total_value * 2
       ].include?(last_note.rhythmic_value.total_value)
   end
 
@@ -47,7 +47,7 @@ class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotati
     @first_most_common_rhythmic_value ||= begin
       candidates = most_common_rhythmic_values
       first_match = notes.detect { |note| candidates.include?(note.rhythmic_value) }
-      first_match ? first_match.rhythmic_value : nil
+      first_match&.rhythmic_value
     end
   end
 
@@ -60,7 +60,7 @@ class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotati
   end
 
   def occurrences_by_rhythmic_value
-    rhythmic_values.each_with_object(Hash.new(0)) { |value, hash| hash[value] += 1; }
+    rhythmic_values.each_with_object(Hash.new(0)) { |value, hash| hash[value] += 1 }
   end
 
   def rhythmic_values

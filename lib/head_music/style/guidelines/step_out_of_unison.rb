@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Annotation
-  MESSAGE = 'Exit a unison by step.'
+  MESSAGE = "Exit a unison by step."
 
   def marks
     leaps_following_unisons.map do |skip|
