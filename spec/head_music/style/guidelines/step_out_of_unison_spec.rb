@@ -7,16 +7,17 @@ describe HeadMusic::Style::Guidelines::StepOutOfUnison do
 
   let(:composition) { HeadMusic::Composition.new(key_signature: "D dorian") }
   let(:cantus_firmus_pitches) { %w[D4 C4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
-  let!(:cantus_firmus) do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
-      cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
+  let(:counterpoint) do
+    composition.add_voice(role: :counterpoint).tap do |voice|
+      counterpoint_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end
     end
   end
-  let(:counterpoint) do
-    composition.add_voice(role: :counterpoint).tap do |voice|
-      counterpoint_pitches.each.with_index(1) do |pitch, bar|
+
+  before do
+    composition.add_voice(role: :cantus_firmus).tap do |voice|
+      cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end
     end

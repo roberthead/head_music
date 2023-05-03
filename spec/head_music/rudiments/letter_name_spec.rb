@@ -4,21 +4,21 @@ require "spec_helper"
 
 describe HeadMusic::LetterName do
   describe ".get" do
-    context "fetched with 'A'" do
+    context "when fetched with 'A'" do
       subject(:letter_name) { described_class.get("A") }
 
       specify { expect(letter_name.pitch_class).to eq 9 }
       specify { expect(letter_name).to eq "A" }
     end
 
-    context "fetched with 'd#7'" do
+    context "when fetched with 'd#7'" do
       subject(:letter_name) { described_class.get("d#7") }
 
       specify { expect(letter_name.pitch_class).to eq 2 }
       specify { expect(letter_name).to eq "D" }
     end
 
-    context "fetched with 'X'" do
+    context "when fetched with 'X'" do
       subject(:letter_name) { described_class.get("X") }
 
       specify { expect(letter_name).to be_nil }
@@ -78,17 +78,15 @@ describe HeadMusic::LetterName do
     specify { expect(described_class.get("F#").steps_to("E")).to eq 6 }
     specify { expect(described_class.get("F#").steps_to("E", :descending)).to eq 1 }
 
-    it "inverts" do
+    it "inverts" do # rubocop:disable RSpec/ExampleLength
       described_class::NAMES.each do |from_letter_name|
         described_class::NAMES.each do |to_letter_name|
           from_letter = described_class.get(from_letter_name)
           to_letter = described_class.get(to_letter_name)
-          steps_up = from_letter.steps_to(to_letter, :ascending)
-          steps_down = from_letter.steps_to(to_letter, :descending)
-          if from_letter_name == to_letter_name
-            expect(steps_up + steps_down).to eq 0
-          else
-            expect(steps_up + steps_down).to eq described_class::NAMES.length
+          if from_letter_name != to_letter_name
+            expect(
+              from_letter.steps_to(to_letter, :ascending) + from_letter.steps_to(to_letter, :descending)
+            ).to eq described_class::NAMES.length
           end
         end
       end

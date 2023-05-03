@@ -4,10 +4,10 @@ require "spec_helper"
 
 describe HeadMusic::Quality do
   describe ".get" do
-    specify { expect(described_class.get(:major)).to be }
-    specify { expect(described_class.get(:minor)).to be }
-    specify { expect(described_class.get(:diminished)).to be }
-    specify { expect(described_class.get(:augmented)).to be }
+    specify { expect(described_class.get(:major)).not_to be_nil }
+    specify { expect(described_class.get(:minor)).not_to be_nil }
+    specify { expect(described_class.get(:diminished)).not_to be_nil }
+    specify { expect(described_class.get(:augmented)).not_to be_nil }
     specify { expect(described_class.get(:salad)).to be_nil }
 
     context "when given an instance" do

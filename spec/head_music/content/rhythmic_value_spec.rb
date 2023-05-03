@@ -11,22 +11,20 @@ describe HeadMusic::RhythmicValue do
     context "when passed as a string" do
       subject(:value) { described_class.get(argument) }
 
-      context "with no dots" do
-        context "when a sixteenth" do
-          let(:argument) { "sixteenth" }
+      context "when a sixteenth" do
+        let(:argument) { "sixteenth" }
 
-          specify { expect(value).to eq :sixteenth }
+        specify { expect(value).to eq :sixteenth }
 
-          specify { expect(value.ticks).to eq 240 }
-        end
+        specify { expect(value.ticks).to eq 240 }
+      end
 
-        context "when a thirty-second" do
-          let(:argument) { "thirty-second" }
+      context "when a thirty-second" do
+        let(:argument) { "thirty-second" }
 
-          specify { expect(value).to eq :"thirty-second" }
+        specify { expect(value).to eq :"thirty-second" }
 
-          specify { expect(value.ticks).to eq 120 }
-        end
+        specify { expect(value.ticks).to eq 120 }
       end
 
       context "with a dot" do

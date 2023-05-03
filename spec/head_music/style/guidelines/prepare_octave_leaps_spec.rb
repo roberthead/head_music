@@ -22,7 +22,7 @@ describe HeadMusic::Style::Guidelines::PrepareOctaveLeaps do
     it { is_expected.to be_adherent }
   end
 
-  context "starting with an octave leap" do
+  context "when starting with an octave leap" do
     before do
       %w[C C5 B A G A F E D C].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
@@ -32,7 +32,7 @@ describe HeadMusic::Style::Guidelines::PrepareOctaveLeaps do
     it { is_expected.to be_adherent }
   end
 
-  context "ending with an octave leap" do
+  context "when ending with an octave leap" do
     before do
       %w[C E F G C5 C].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)

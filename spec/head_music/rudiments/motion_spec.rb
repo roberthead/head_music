@@ -3,7 +3,12 @@
 require "spec_helper"
 
 describe HeadMusic::Motion do
-  subject { described_class.new(first_harmonic_interval, second_harmonic_interval) }
+  subject do
+    described_class.new(
+      HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, "1:1"),
+      HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, "2:1")
+    )
+  end
 
   let(:composition) { HeadMusic::Composition.new }
   let(:upper_voice) do
@@ -20,9 +25,6 @@ describe HeadMusic::Motion do
       end
     end
   end
-
-  let(:first_harmonic_interval) { HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, "1:1") }
-  let(:second_harmonic_interval) { HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, "2:1") }
 
   context "when the lower voice repeats the note" do
     let(:lower_voice_pitches) { %w[C4 C4] }

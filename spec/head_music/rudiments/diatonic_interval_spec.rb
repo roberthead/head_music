@@ -2,7 +2,8 @@
 
 require "spec_helper"
 
-describe HeadMusic::DiatonicInterval do
+I18n.describe HeadMusic::DiatonicInterval do
+  # rubocop:disable RSpec/MultipleMemoizedHelpers
   let(:c_flat_4) { HeadMusic::Pitch.get("Cb") }
   let(:c_4) { HeadMusic::Pitch.get("C") }
   let(:c_sharp_4) { HeadMusic::Pitch.get("C#") }
@@ -38,38 +39,36 @@ describe HeadMusic::DiatonicInterval do
         expect(described_class.get("minor third")).to eq min3
       end
 
-      it "assumes middle C" do
-        expect(maj3.lower_pitch).to eq "C4"
-        expect(maj3.higher_pitch).to eq "E4"
+      describe "assuming middle C" do
+        specify { expect(maj3.lower_pitch).to eq "C4" }
+        specify { expect(maj3.higher_pitch).to eq "E4" }
 
-        expect(aug4.lower_pitch).to eq "C4"
-        expect(aug4.higher_pitch).to eq "F#4"
+        specify { expect(aug4.lower_pitch).to eq "C4" }
+        specify { expect(aug4.higher_pitch).to eq "F#4" }
 
-        expect(dim5.lower_pitch).to eq "C4"
-        expect(dim5.higher_pitch).to eq "Gb4"
-        expect(dim5.quality_name).to eq "diminished"
+        specify { expect(dim5.lower_pitch).to eq "C4" }
+        specify { expect(dim5.higher_pitch).to eq "Gb4" }
+        specify { expect(dim5.quality_name).to eq "diminished" }
 
-        expect(dim8.lower_pitch).to eq "C4"
-        expect(dim8.higher_pitch).to eq "Cb5"
-        expect(dim8.simple_number).to eq 8
-        expect(dim8.quality_name).to eq "diminished"
+        specify { expect(dim8.lower_pitch).to eq "C4" }
+        specify { expect(dim8.higher_pitch).to eq "Cb5" }
+        specify { expect(dim8.simple_number).to eq 8 }
+        specify { expect(dim8.quality_name).to eq "diminished" }
 
-        expect(p15.higher_pitch).to eq "C6"
-        expect(p15.number).to eq 15
-        expect(p15.simple_number).to eq 8
-        expect(p15.quality_name).to eq "perfect"
+        specify { expect(p15.higher_pitch).to eq "C6" }
+        specify { expect(p15.number).to eq 15 }
+        specify { expect(p15.simple_number).to eq 8 }
+        specify { expect(p15.quality_name).to eq "perfect" }
       end
     end
 
     describe "when passed a known abbreviation" do
-      it "recognizes the interval" do
-        expect(described_class.get("P5")).to eq p5
-        expect(described_class.get("M3")).to eq maj3
-        expect(described_class.get("m3")).to eq min3
-        expect(described_class.get("A4")).to eq aug4
-        expect(described_class.get("d5")).to eq dim5
-        expect(described_class.get("M10").name).to eq "major tenth"
-      end
+      specify { expect(described_class.get("P5")).to eq p5 }
+      specify { expect(described_class.get("M3")).to eq maj3 }
+      specify { expect(described_class.get("m3")).to eq min3 }
+      specify { expect(described_class.get("A4")).to eq aug4 }
+      specify { expect(described_class.get("d5")).to eq dim5 }
+      specify { expect(described_class.get("M10").name).to eq "major tenth" }
     end
   end
 
@@ -135,7 +134,7 @@ describe HeadMusic::DiatonicInterval do
   end
 
   context "given two pitches comprising a simple interval" do
-    subject { described_class.new("A4", "E5") }
+    subject(:simple_interval) { described_class.new("A4", "E5") }
 
     its(:name) { is_expected.to eq "perfect fifth" }
     its(:number) { is_expected.to eq 5 }
@@ -151,8 +150,8 @@ describe HeadMusic::DiatonicInterval do
     it { is_expected.to be_large_leap }
 
     describe "simplification" do
-      its(:simple_number) { is_expected.to eq subject.number }
-      its(:simple_name) { is_expected.to eq subject.name }
+      its(:simple_number) { is_expected.to eq simple_interval.number }
+      its(:simple_name) { is_expected.to eq simple_interval.name }
     end
 
     describe "inversion" do
@@ -164,7 +163,7 @@ describe HeadMusic::DiatonicInterval do
   end
 
   context "given two pitches comprising an augmented octave" do
-    subject { described_class.new("A4", "A#5") }
+    subject(:augmented_octave) { described_class.new("A4", "A#5") }
 
     its(:simple_number_name) { is_expected.to eq "octave" }
     its(:quality_name) { is_expected.to eq "augmented" }
@@ -184,12 +183,12 @@ describe HeadMusic::DiatonicInterval do
     it { is_expected.to be_large_leap }
 
     describe "simplification" do
-      its(:simple_number) { is_expected.to eq subject.number }
-      its(:simple_name) { is_expected.to eq subject.name }
+      its(:simple_number) { is_expected.to eq augmented_octave.number }
+      its(:simple_name) { is_expected.to eq augmented_octave.name }
     end
 
     describe "inversion" do
-      specify { expect(subject.inversion.name).to eq "diminished octave" }
+      specify { expect(augmented_octave.inversion.name).to eq "diminished octave" }
     end
   end
 
@@ -282,4 +281,5 @@ describe HeadMusic::DiatonicInterval do
     specify { expect(described_class.get(:minor_tenth).diatonic_generic_interval).to eq 2 }
     specify { expect(described_class.get(:minor_tenth).specific_interval).to eq 3 }
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

@@ -31,16 +31,12 @@ describe HeadMusic::Circle do
   end
 
   describe "#key_signatures_up" do
-    specify do
-      expect(circle.key_signatures_up.map(&:num_sharps)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0]
-      expect(circle.key_signatures_up.map(&:num_flats)).to eq [0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 2, 1]
-    end
+    specify { expect(circle.key_signatures_up.map(&:num_sharps)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0] }
+    specify { expect(circle.key_signatures_up.map(&:num_flats)).to eq [0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 2, 1] }
   end
 
   describe "#key_signatures_down" do
-    specify do
-      expect(circle.key_signatures_down.map(&:num_sharps)).to eq [0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 2, 1]
-      expect(circle.key_signatures_down.map(&:num_flats)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0]
-    end
+    specify { expect(circle.key_signatures_down.map(&:num_sharps)).to eq [0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 2, 1] }
+    specify { expect(circle.key_signatures_down.map(&:num_flats)).to eq [0, 1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0] }
   end
 end

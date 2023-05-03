@@ -20,28 +20,24 @@ describe HeadMusic::KeySignature do
       context "when Eb" do
         let(:tonic) { "E♭" }
 
-        it "assumes a major key" do
-          expect(key_signature).to eq "E♭ major"
-          expect(key_signature.num_flats).to eq 3
-          expect(key_signature.signs).to eq ["B♭", "E♭", "A♭"]
-        end
+        specify { expect(key_signature).to eq "E♭ major" }
+        specify { expect(key_signature.num_flats).to eq 3 }
+        specify { expect(key_signature.signs).to eq ["B♭", "E♭", "A♭"] }
       end
 
       context "when Cb" do
         let(:tonic) { "C♭" }
 
-        it "assumes a major key" do
-          expect(key_signature).to eq "C♭ major"
-          expect(key_signature.num_flats).to eq 7
-          expect(key_signature.signs).to eq ["B♭", "E♭", "A♭", "D♭", "G♭", "C♭", "F♭"]
-        end
+        specify { expect(key_signature).to eq "C♭ major" }
+        specify { expect(key_signature.num_flats).to eq 7 }
+        specify { expect(key_signature.signs).to eq ["B♭", "E♭", "A♭", "D♭", "G♭", "C♭", "F♭"] }
       end
     end
 
     context "when given the major scale_type" do
       let(:scale_type) { :major }
 
-      context "in the key of C major" do
+      context "when in the key of C major" do
         let(:tonic) { HeadMusic::Spelling.get("C") }
 
         specify { expect(key_signature.num_sharps).to eq 0 }
@@ -49,34 +45,34 @@ describe HeadMusic::KeySignature do
         specify { expect(key_signature.signs).to eq [] }
       end
 
-      context "in the key of E♭ major" do
+      context "when in the key of E♭ major" do
         let(:tonic) { HeadMusic::Spelling.get("E♭") }
 
         specify { expect(key_signature.num_flats).to eq 3 }
         specify { expect(key_signature.signs).to eq ["B♭", "E♭", "A♭"] }
       end
 
-      context "in the key of F♯ major" do
+      context "when in the key of F♯ major" do
         let(:tonic) { HeadMusic::Spelling.get("F♯") }
 
         specify { expect(key_signature.num_sharps).to eq 6 }
         specify { expect(key_signature.signs).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯] }
       end
 
-      context "in the key of C♯ major" do
+      context "when in the key of C♯ major" do
         let(:tonic) { HeadMusic::Spelling.get("C♯") }
 
         specify { expect(key_signature.num_sharps).to eq 7 }
         specify { expect(key_signature.signs).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯ B♯] }
       end
 
-      context "in the key of G♭ major" do
+      context "when in the key of G♭ major" do
         let(:tonic) { HeadMusic::Spelling.get("G♭") }
 
         specify { expect(key_signature.signs).to eq %w[B♭ E♭ A♭ D♭ G♭ C♭] }
       end
 
-      context "in the key of G♯ major" do
+      context "when in the key of G♯ major" do
         let(:tonic) { HeadMusic::Spelling.get("G♯") }
 
         specify { expect(key_signature.num_sharps).to eq 8 }
@@ -86,14 +82,14 @@ describe HeadMusic::KeySignature do
     context "when given the minor scale_type" do
       let(:scale_type) { :minor }
 
-      context "in the key of C minor" do
+      context "when in the key of C minor" do
         let(:tonic) { HeadMusic::Spelling.get("C") }
 
         specify { expect(key_signature.num_flats).to eq 3 }
         specify { expect(key_signature.signs).to eq ["B♭", "E♭", "A♭"] }
       end
 
-      context "in the key of B minor" do
+      context "when in the key of B minor" do
         let(:tonic) { HeadMusic::Spelling.get("B") }
 
         specify { expect(key_signature.num_sharps).to eq 2 }
@@ -126,33 +122,33 @@ describe HeadMusic::KeySignature do
         expect(key_signature).to eq described_class.get("E♭ major")
       end
 
-      it "is not equal to other major keys" do
-        expect(key_signature).not_to eq described_class.get("E major")
-        expect(key_signature).not_to eq described_class.get("B♭ major")
+      context "given other major keys" do
+        specify { expect(key_signature).not_to eq described_class.get("E major") }
+        specify { expect(key_signature).not_to eq described_class.get("B♭ major") }
       end
 
       it "is equal to the relative minor" do
         expect(key_signature).to eq described_class.get("C minor")
       end
 
-      it "is equal to the relative modes" do
-        expect(key_signature).to eq described_class.get("Eb ionian")
-        expect(key_signature).to eq described_class.get("F dorian")
-        expect(key_signature).to eq described_class.get("G phrygian")
-        expect(key_signature).to eq described_class.get("Ab lydian")
-        expect(key_signature).to eq described_class.get("Bb mixolydian")
-        expect(key_signature).to eq described_class.get("C aeolian")
-        expect(key_signature).to eq described_class.get("D locrian")
+      context "when a relative mode" do
+        specify { expect(key_signature).to eq described_class.get("Eb ionian") }
+        specify { expect(key_signature).to eq described_class.get("F dorian") }
+        specify { expect(key_signature).to eq described_class.get("G phrygian") }
+        specify { expect(key_signature).to eq described_class.get("Ab lydian") }
+        specify { expect(key_signature).to eq described_class.get("Bb mixolydian") }
+        specify { expect(key_signature).to eq described_class.get("C aeolian") }
+        specify { expect(key_signature).to eq described_class.get("D locrian") }
       end
 
-      it "is not equal to modes with the wrong final" do
-        expect(key_signature).not_to eq described_class.get("C ionian")
-        expect(key_signature).not_to eq described_class.get("Eb dorian")
-        expect(key_signature).not_to eq described_class.get("Eb phrygian")
-        expect(key_signature).not_to eq described_class.get("Eb lydian")
-        expect(key_signature).not_to eq described_class.get("Eb mixolydian")
-        expect(key_signature).not_to eq described_class.get("Eb aeolian")
-        expect(key_signature).not_to eq described_class.get("Eb locrian")
+      context "with modes with the wrong final" do
+        specify { expect(key_signature).not_to eq described_class.get("C ionian") }
+        specify { expect(key_signature).not_to eq described_class.get("Eb dorian") }
+        specify { expect(key_signature).not_to eq described_class.get("Eb phrygian") }
+        specify { expect(key_signature).not_to eq described_class.get("Eb lydian") }
+        specify { expect(key_signature).not_to eq described_class.get("Eb mixolydian") }
+        specify { expect(key_signature).not_to eq described_class.get("Eb aeolian") }
+        specify { expect(key_signature).not_to eq described_class.get("Eb locrian") }
       end
     end
 

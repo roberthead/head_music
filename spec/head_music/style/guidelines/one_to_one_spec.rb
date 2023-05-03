@@ -13,7 +13,7 @@ describe HeadMusic::Style::Guidelines::OneToOne do
   end
 
   context "with another voice" do
-    let!(:cantus_firmus) do
+    before do
       counterpoint.composition.add_voice(role: "cantus firmus").tap do |cantus|
         %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           cantus.place("#{bar}:1", :whole, pitch)

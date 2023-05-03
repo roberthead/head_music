@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Clef do
   subject(:clef) { described_class.get(name) }
 
-  context "treble clef" do
+  context "when treble clef" do
     let(:name) { :treble_clef }
 
     it { is_expected.to be_modern }
@@ -34,7 +34,7 @@ describe HeadMusic::Clef do
     specify { expect(clef).not_to eq :bass_clef }
   end
 
-  context "alto clef" do
+  context "when alto clef" do
     let(:name) { :alto_clef }
 
     it { is_expected.to be_modern }
@@ -63,7 +63,7 @@ describe HeadMusic::Clef do
     specify { expect(clef).to eq :alto_clef }
   end
 
-  context "bass clef" do
+  context "when bass clef" do
     let(:name) { :bass_clef }
 
     it { is_expected.to be_modern }
@@ -91,7 +91,7 @@ describe HeadMusic::Clef do
     specify { expect(clef.pitch_for_line(7)).to eq "E4" }
   end
 
-  context "mezzo-soprano clef" do
+  context "when mezzo-soprano clef" do
     let(:name) { "mezzo-soprano clef" }
 
     it { is_expected.not_to be_modern }
@@ -101,24 +101,14 @@ describe HeadMusic::Clef do
     specify { expect(clef.pitch_for_line(2)).to eq "C4" }
   end
 
-  context "the tenor clef" do
+  context "when the tenor clef" do
     context "when constructed with the name 'tenor clef'" do
       let(:name) { "tenor clef" }
-
-      its(:unicode) { is_expected.to eq "𝄠" }
-
-      it "returns the choral tenor clef" do
-        expect(clef.clef_type).to eq "G-clef"
-      end
-    end
-
-    context "when constructed with the name 'tenor clef'" do
-      let(:name) { "tenor clef" }
-
-      it { is_expected.to eq "choral tenor clef" }
 
       its(:unicode) { is_expected.to eq "𝄠" }
       its(:clef_type) { is_expected.to eq "G-clef" }
+
+      it { is_expected.to eq "choral tenor clef" }
     end
 
     context "when constructed with the name 'tenor C-clef'" do
@@ -132,7 +122,7 @@ describe HeadMusic::Clef do
     end
   end
 
-  context "the neutral clef" do
+  context "when when the neutral clef" do
     let(:name) { "neutral clef" }
 
     it { is_expected.to eq described_class.get("percussion clef") }

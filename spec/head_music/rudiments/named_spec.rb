@@ -16,10 +16,10 @@ describe HeadMusic::Named do
 
     its(:name) { is_expected.to eq "David" }
 
-    it "returns that name for any locale" do
-      expect(rudiment.name(locale_code: :fr_CH)).to eq "David"
-      expect(rudiment.name(locale_code: :en_NZ)).to eq "David"
-      expect(rudiment.name(locale_code: nil)).to eq "David"
+    context "when given any locale" do
+      specify { expect(rudiment.name(locale_code: :fr_CH)).to eq "David" }
+      specify { expect(rudiment.name(locale_code: :en_NZ)).to eq "David" }
+      specify { expect(rudiment.name(locale_code: nil)).to eq "David" }
     end
 
     it "stores the name as a localized name in the default locale" do

@@ -43,21 +43,19 @@ describe HeadMusic::Pitch do
   end
 
   describe "#helmholtz_notation" do
-    it "returns the Helmholtz string" do
-      expect(described_class.get(11).helmholtz_notation).to eq("B,,,")
-      expect(described_class.get(12).helmholtz_notation).to eq("C,,")
-      expect(described_class.get(24).helmholtz_notation).to eq("C,")
-      expect(described_class.get(36).helmholtz_notation).to eq("C")
-      expect(described_class.get("Bb2").helmholtz_notation).to eq("B♭")
-      expect(described_class.get(48).helmholtz_notation).to eq("c")
-      expect(described_class.get(59).helmholtz_notation).to eq("b")
-      expect(described_class.get(60).helmholtz_notation).to eq("c'")
-      expect(described_class.get(68).helmholtz_notation).to eq("g♯'")
-      expect(described_class.get(71).helmholtz_notation).to eq("b'")
-      expect(described_class.get(72).helmholtz_notation).to eq("c''")
-      expect(described_class.get(83).helmholtz_notation).to eq("b''")
-      expect(described_class.get(84).helmholtz_notation).to eq("c'''")
-    end
+    specify { expect(described_class.get(11).helmholtz_notation).to eq("B,,,") }
+    specify { expect(described_class.get(12).helmholtz_notation).to eq("C,,") }
+    specify { expect(described_class.get(24).helmholtz_notation).to eq("C,") }
+    specify { expect(described_class.get(36).helmholtz_notation).to eq("C") }
+    specify { expect(described_class.get("Bb2").helmholtz_notation).to eq("B♭") }
+    specify { expect(described_class.get(48).helmholtz_notation).to eq("c") }
+    specify { expect(described_class.get(59).helmholtz_notation).to eq("b") }
+    specify { expect(described_class.get(60).helmholtz_notation).to eq("c'") }
+    specify { expect(described_class.get(68).helmholtz_notation).to eq("g♯'") }
+    specify { expect(described_class.get(71).helmholtz_notation).to eq("b'") }
+    specify { expect(described_class.get(72).helmholtz_notation).to eq("c''") }
+    specify { expect(described_class.get(83).helmholtz_notation).to eq("b''") }
+    specify { expect(described_class.get(84).helmholtz_notation).to eq("c'''") }
   end
 
   describe "comparison" do
@@ -160,7 +158,7 @@ describe HeadMusic::Pitch do
       its(:spellings) { are_expected.to eq %w[D E F♯ G A B C♯ D] }
     end
 
-    context "passed a scale type" do
+    context "when passed a scale type" do
       subject(:scale) { described_class.get("E").scale(:minor) }
 
       its(:spellings) { are_expected.to eq %w[E F♯ G A B C D E] }
@@ -205,11 +203,9 @@ describe HeadMusic::Pitch do
     end
 
     context "when adding a diatonic interval" do
-      it "returns the new pitch" do
-        expect(pitch + HeadMusic::DiatonicInterval.get(:major_sixth)).to eq "F#5"
-        expect(pitch + HeadMusic::DiatonicInterval.get(:minor_sixth)).to eq "F5"
-        expect(pitch + HeadMusic::DiatonicInterval.get(:augmented_fifth)).to eq "E#5"
-      end
+      specify { expect(pitch + HeadMusic::DiatonicInterval.get(:major_sixth)).to eq "F#5" }
+      specify { expect(pitch + HeadMusic::DiatonicInterval.get(:minor_sixth)).to eq "F5" }
+      specify { expect(pitch + HeadMusic::DiatonicInterval.get(:augmented_fifth)).to eq "E#5" }
     end
   end
 
@@ -235,11 +231,9 @@ describe HeadMusic::Pitch do
     end
 
     context "when subtracting a diatonic interval" do
-      it "returns the new pitch" do
-        expect(pitch - HeadMusic::DiatonicInterval.get(:major_sixth)).to eq "C5"
-        expect(pitch - HeadMusic::DiatonicInterval.get(:minor_sixth)).to eq "C#5"
-        expect(pitch - HeadMusic::DiatonicInterval.get(:augmented_fifth)).to eq "Db5"
-      end
+      specify { expect(pitch - HeadMusic::DiatonicInterval.get(:major_sixth)).to eq "C5" }
+      specify { expect(pitch - HeadMusic::DiatonicInterval.get(:minor_sixth)).to eq "C#5" }
+      specify { expect(pitch - HeadMusic::DiatonicInterval.get(:augmented_fifth)).to eq "Db5" }
     end
   end
 

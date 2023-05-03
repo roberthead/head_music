@@ -3,7 +3,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::SingableRange do
-  subject { described_class.new(voice) }
+  subject(:guideline) { described_class.new(voice) }
 
   let(:voice) { HeadMusic::Voice.new }
 
@@ -36,7 +36,7 @@ describe HeadMusic::Style::Guidelines::SingableRange do
     it "marks all instances of the highest and lowest note" do
       bars = [1, 8, 16, 17]
       codes = bars.map { |bar| "#{bar}:1:000 to #{bar + 1}:1:000" }
-      expect(subject.marks.map(&:code)).to eq codes
+      expect(guideline.marks.map(&:code)).to eq codes
     end
   end
 end

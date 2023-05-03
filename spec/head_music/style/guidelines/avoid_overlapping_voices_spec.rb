@@ -3,7 +3,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
-  subject { described_class.new(counterpoint) }
+  subject(:guideline) { described_class.new(counterpoint) }
 
   let(:composition) { HeadMusic::Composition.new(key_signature: "D dorian") }
   let(:cantus_firmus) { composition.add_voice(role: :cantus_firmus) }
@@ -40,7 +40,7 @@ describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
       let(:counterpoint_pitches) { %w[] }
 
       specify do
-        expect { subject.fitness }.not_to raise_error
+        expect { guideline.fitness }.not_to raise_error
       end
     end
   end

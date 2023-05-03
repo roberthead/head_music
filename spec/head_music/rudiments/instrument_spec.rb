@@ -51,10 +51,10 @@ describe HeadMusic::Instrument do
 
   describe "#translation" do
     context "when the instrument is unknown" do
-      subject { described_class.get("floober") }
+      subject(:instrument) { described_class.get("floober") }
 
       it "returns the name" do
-        expect(subject.translation(:fr)).to eq "floober"
+        expect(instrument.translation(:fr)).to eq "floober"
       end
     end
   end

@@ -109,7 +109,7 @@ describe HeadMusic::Spelling do
       its(:spellings) { are_expected.to eq %w[D E F♯ G A B C♯ D] }
     end
 
-    context "passed a scale type" do
+    context "when passed a scale type" do
       subject(:scale) { described_class.get("E").scale(:minor) }
 
       its(:spellings) { are_expected.to eq %w[E F♯ G A B C D E] }

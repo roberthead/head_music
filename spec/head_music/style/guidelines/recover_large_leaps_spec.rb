@@ -13,7 +13,7 @@ describe HeadMusic::Style::Guidelines::RecoverLargeLeaps do
   end
 
   context "with leaps" do
-    context "recovered by step in the opposite direction" do
+    context "when recovered by step in the opposite direction" do
       before do
         %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1", :whole, pitch)
@@ -23,7 +23,7 @@ describe HeadMusic::Style::Guidelines::RecoverLargeLeaps do
       it { is_expected.to be_adherent }
     end
 
-    context "recovered by skip in the opposite direction" do
+    context "when recovered by skip in the opposite direction" do
       before do
         %w[D4 F4 E4 D4 G4 E4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1", :whole, pitch)
@@ -34,7 +34,7 @@ describe HeadMusic::Style::Guidelines::RecoverLargeLeaps do
       its(:first_mark_code) { is_expected.to eq "4:1:000 to 7:1:000" }
     end
 
-    context "not recovered, not spelling a triad" do
+    context "when not recovered, not spelling a triad" do
       before do
         %w[D4 F4 E4 D4 G4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1", :whole, pitch)
@@ -45,7 +45,7 @@ describe HeadMusic::Style::Guidelines::RecoverLargeLeaps do
       its(:first_mark_code) { is_expected.to eq "4:1:000 to 7:1:000" }
     end
 
-    context "not recovered, but spelling a triad" do
+    context "when not recovered, but spelling a triad" do
       before do
         %w[D4 F4 E4 D4 G4 B4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1", :whole, pitch)

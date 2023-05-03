@@ -13,6 +13,9 @@ describe HeadMusic::Style::Guidelines::UpToFourteenNotes do
       %w[D E F G A B G B G A G F E D].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end
+    end
+
+    specify do
       expect(voice.notes.length).to eq 14
     end
 
@@ -25,6 +28,9 @@ describe HeadMusic::Style::Guidelines::UpToFourteenNotes do
       %w[D E F G A B G A G F E D C E D].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end
+    end
+
+    specify do
       expect(voice.notes.length).to eq 15
     end
 

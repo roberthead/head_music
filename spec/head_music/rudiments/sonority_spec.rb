@@ -11,20 +11,20 @@ describe HeadMusic::Sonority do
 
       it { is_expected.not_to be_nil }
 
-      context "compared to another sonority with a pitch set with the same pitches" do
+      context "when compared to another sonority with a pitch set with the same pitches" do
         let(:other_pitch_set) { HeadMusic::PitchSet.new(%w[G4 B4 D5]) }
         let(:other_sonority) { described_class.new(other_pitch_set) }
 
         it { is_expected.to eq other_sonority }
       end
 
-      context "compared to a pitch set with the same pitches" do
+      context "when compared to a pitch set with the same pitches" do
         let(:other_pitch_set) { HeadMusic::PitchSet.new(%w[G4 B4 D5]) }
 
         it { is_expected.to eq other_pitch_set }
       end
 
-      context "compared to another sonority with a different dominant seventh chord pitch set" do
+      context "when compared to another sonority with a different dominant seventh chord pitch set" do
         let(:other_pitch_set) { HeadMusic::PitchSet.new(%w[C E G]) }
         let(:other_sonority) { described_class.new(other_pitch_set) }
 
@@ -504,14 +504,12 @@ describe HeadMusic::Sonority do
       end
     end
 
-    context "when given a ninth chord" do
-      context "when given a dominant ninth chord" do
-        context "when in root position" do
-          let(:pitch_set) { HeadMusic::PitchSet.new(%w[C E G Bb D5]) }
+    context "when given a dominant ninth chord" do
+      context "when in root position" do
+        let(:pitch_set) { HeadMusic::PitchSet.new(%w[C E G Bb D5]) }
 
-          its(:identifier) { is_expected.to eq :dominant_ninth_chord }
-          it { is_expected.to be_tertian }
-        end
+        its(:identifier) { is_expected.to eq :dominant_ninth_chord }
+        it { is_expected.to be_tertian }
       end
     end
   end

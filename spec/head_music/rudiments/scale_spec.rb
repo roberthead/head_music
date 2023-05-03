@@ -50,21 +50,21 @@ describe HeadMusic::Scale do
   describe "#pitches" do
     specify { expect(described_class.get("B♭", :dorian).pitch_names).to eq %w[B♭4 C5 D♭5 E♭5 F5 G5 A♭5 B♭5] }
 
-    context "descending" do
+    context "when descending" do
       specify do
         expect(described_class.get("C5", :melodic_minor).pitch_names(direction: :descending))
           .to eq %w[C5 B♭4 A♭4 G4 F4 E♭4 D4 C4]
       end
     end
 
-    context "ascending and descending" do
+    context "when ascending and descending" do
       specify do
         expect(described_class.get("C4", :melodic_minor).pitch_names(direction: :both))
           .to eq %w[C4 D4 E♭4 F4 G4 A4 B4 C5 B♭4 A♭4 G4 F4 E♭4 D4 C4]
       end
     end
 
-    context "two octaves up and down" do
+    context "when two octaves up and down" do
       specify do
         expect(
           described_class.get("C4", :melodic_minor).pitch_names(direction: :both, octaves: 2)

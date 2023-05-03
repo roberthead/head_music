@@ -14,6 +14,5 @@ describe HeadMusic::Spelling::EnharmonicEquivalence do
     it { is_expected.not_to be_enharmonic_equivalent("D♯") }
     it { is_expected.not_to be_enharmonic_equivalent("D") }
     it { is_expected.not_to be_enharmonic_equivalent("E") }
-    it { is_expected.not_to be_enharmonic_equivalent("E") }
   end
 end

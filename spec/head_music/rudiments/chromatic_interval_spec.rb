@@ -32,7 +32,7 @@ describe HeadMusic::ChromaticInterval do
     end
   end
 
-  context "given some intervals" do
+  context "given some intervals" do # rubocop:disable RSpec/MultipleMemoizedHelpers
     let(:perfect_unison) { described_class.get(:perfect_unison) }
     let(:major_third) { described_class.get(:major_third) }
     let(:minor_third) { described_class.get(:minor_third) }
@@ -59,8 +59,6 @@ describe HeadMusic::ChromaticInterval do
 
     specify { expect(perfect_11th.simple).to eq(perfect_fourth) }
 
-    describe "#diatonic_name" do
-      specify { expect(major_third.diatonic_name).to eq "major third" }
-    end
+    specify { expect(major_third.diatonic_name).to eq "major third" }
   end
 end

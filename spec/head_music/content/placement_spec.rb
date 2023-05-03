@@ -3,6 +3,7 @@
 require "spec_helper"
 
 describe HeadMusic::Placement do
+  # rubocop:disable RSpec/MultipleMemoizedHelpers
   subject(:placement) { described_class.new(voice, position, rhythmic_value, pitch) }
 
   let(:composition) { HeadMusic::Composition.new.tap(&:add_voice) }
@@ -54,11 +55,9 @@ describe HeadMusic::Placement do
       let(:position) { "2:1:000" }
       let(:rhythmic_value) { :quarter }
 
-      specify do
-        expect(placement.send(:starts_during?, other_placement)).to be_falsey
-        expect(placement.send(:ends_during?, other_placement)).to be_falsey
-        expect(placement.send(:wraps?, other_placement)).to be_falsey
-      end
+      specify { expect(placement.send(:starts_during?, other_placement)).to be_falsey }
+      specify { expect(placement.send(:ends_during?, other_placement)).to be_falsey }
+      specify { expect(placement.send(:wraps?, other_placement)).to be_falsey }
 
       it { is_expected.not_to be_during(other_placement) }
     end
@@ -67,11 +66,9 @@ describe HeadMusic::Placement do
       let(:position) { "2:2:000" }
       let(:rhythmic_value) { :eighth }
 
-      specify do
-        expect(placement.send(:starts_during?, other_placement)).to be_truthy
-        expect(placement.send(:ends_during?, other_placement)).to be_truthy
-        expect(placement.send(:wraps?, other_placement)).to be_falsey
-      end
+      specify { expect(placement.send(:starts_during?, other_placement)).to be_truthy }
+      specify { expect(placement.send(:ends_during?, other_placement)).to be_truthy }
+      specify { expect(placement.send(:wraps?, other_placement)).to be_falsey }
 
       it { is_expected.to be_during(other_placement) }
     end
@@ -80,11 +77,9 @@ describe HeadMusic::Placement do
       let(:position) { "2:2:480" }
       let(:rhythmic_value) { :quarter }
 
-      specify do
-        expect(placement.send(:starts_during?, other_placement)).to be_truthy
-        expect(placement.send(:ends_during?, other_placement)).to be_falsey
-        expect(placement.send(:wraps?, other_placement)).to be_falsey
-      end
+      specify { expect(placement.send(:starts_during?, other_placement)).to be_truthy }
+      specify { expect(placement.send(:ends_during?, other_placement)).to be_falsey }
+      specify { expect(placement.send(:wraps?, other_placement)).to be_falsey }
 
       it { is_expected.to be_during(other_placement) }
     end
@@ -93,11 +88,9 @@ describe HeadMusic::Placement do
       let(:position) { "2:2:240" }
       let(:rhythmic_value) { :sixteenth }
 
-      specify do
-        expect(placement.send(:starts_during?, other_placement)).to be_truthy
-        expect(placement.send(:ends_during?, other_placement)).to be_truthy
-        expect(placement.send(:wraps?, other_placement)).to be_falsey
-      end
+      specify { expect(placement.send(:starts_during?, other_placement)).to be_truthy }
+      specify { expect(placement.send(:ends_during?, other_placement)).to be_truthy }
+      specify { expect(placement.send(:wraps?, other_placement)).to be_falsey }
 
       it { is_expected.to be_during(other_placement) }
     end
@@ -106,11 +99,9 @@ describe HeadMusic::Placement do
       let(:position) { "2:1:000" }
       let(:rhythmic_value) { :whole }
 
-      specify do
-        expect(placement.send(:starts_during?, other_placement)).to be_falsey
-        expect(placement.send(:ends_during?, other_placement)).to be_falsey
-        expect(placement.send(:wraps?, other_placement)).to be_truthy
-      end
+      specify { expect(placement.send(:starts_during?, other_placement)).to be_falsey }
+      specify { expect(placement.send(:ends_during?, other_placement)).to be_falsey }
+      specify { expect(placement.send(:wraps?, other_placement)).to be_truthy }
 
       it { is_expected.to be_during(other_placement) }
     end
@@ -119,11 +110,9 @@ describe HeadMusic::Placement do
       let(:position) { "2:1:480" }
       let(:rhythmic_value) { :quarter }
 
-      specify do
-        expect(placement.send(:starts_during?, other_placement)).to be_falsey
-        expect(placement.send(:ends_during?, other_placement)).to be_truthy
-        expect(placement.send(:wraps?, other_placement)).to be_falsey
-      end
+      specify { expect(placement.send(:starts_during?, other_placement)).to be_falsey }
+      specify { expect(placement.send(:ends_during?, other_placement)).to be_truthy }
+      specify { expect(placement.send(:wraps?, other_placement)).to be_falsey }
 
       it { is_expected.to be_during(other_placement) }
     end
@@ -132,13 +121,12 @@ describe HeadMusic::Placement do
       let(:position) { "2:3" }
       let(:rhythmic_value) { :quarter }
 
-      specify do
-        expect(placement.send(:starts_during?, other_placement)).to be_falsey
-        expect(placement.send(:ends_during?, other_placement)).to be_falsey
-        expect(placement.send(:wraps?, other_placement)).to be_falsey
-      end
+      specify { expect(placement.send(:starts_during?, other_placement)).to be_falsey }
+      specify { expect(placement.send(:ends_during?, other_placement)).to be_falsey }
+      specify { expect(placement.send(:wraps?, other_placement)).to be_falsey }
 
       it { is_expected.not_to be_during(other_placement) }
     end
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

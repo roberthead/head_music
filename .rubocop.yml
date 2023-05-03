@@ -21,3 +21,12 @@ RSpec/ContextWording:
     - with
     - without
     - given
+    - and
+    - for
+    - by
+
+RSpec/NestedGroups:
+  Max: 4
+
+RSpec/FilePath:
+  Enabled: false

@@ -4,20 +4,20 @@ require "spec_helper"
 
 describe HeadMusic::Register do
   describe ".get" do
-    it "returns an instance when given an octave number" do
-      expect(described_class.get(4)).to eq 4
-      expect(described_class.get(-1)).to eq(-1)
-      expect(described_class.get(10)).to eq 10
-      expect(described_class.get("5")).to eq 5
+    context "when given an octave number" do
+      specify { expect(described_class.get(4)).to eq 4 }
+      specify { expect(described_class.get(-1)).to eq(-1) }
+      specify { expect(described_class.get(10)).to eq 10 }
+      specify { expect(described_class.get("5")).to eq 5 }
     end
 
-    it "falls back to 4" do
-      expect(described_class.get("foo")).to eq 4
-      expect(described_class.get("C")).to eq 4
-      expect(described_class.get("D")).to eq 4
-      expect(described_class.get("")).to eq 4
-      expect(described_class.get(1.5)).to eq 4
-      expect(described_class.get(15)).to eq 4
+    context "when given a bad param" do
+      specify { expect(described_class.get("foo")).to eq 4 }
+      specify { expect(described_class.get("C")).to eq 4 }
+      specify { expect(described_class.get("D")).to eq 4 }
+      specify { expect(described_class.get("")).to eq 4 }
+      specify { expect(described_class.get(1.5)).to eq 4 }
+      specify { expect(described_class.get(15)).to eq 4 }
     end
 
     context "when given an instance" do
@@ -42,7 +42,7 @@ describe HeadMusic::Register do
   describe "comparison" do
     specify { expect(described_class.get(2)).to be < described_class.get(3) }
     specify { expect(described_class.get(5)).to be > described_class.get(-1) }
-    specify { expect(described_class.get(7)).to be == described_class.get(7) }
+    specify { expect(described_class.get(7)).to be == described_class.get("7") }
   end
 
   describe "addition" do
@@ -55,25 +55,23 @@ describe HeadMusic::Register do
   end
 
   describe "helmholtz notation" do
-    specify do
-      expect(described_class.get(0).helmholtz_case).to be :upper
-      expect(described_class.get(0).helmholtz_marks).to eq ",,"
-      expect(described_class.get(1).helmholtz_case).to be :upper
-      expect(described_class.get(1).helmholtz_marks).to eq ","
-      expect(described_class.get(2).helmholtz_case).to be :upper
-      expect(described_class.get(2).helmholtz_marks).to eq ""
-      expect(described_class.get(3).helmholtz_case).to be :lower
-      expect(described_class.get(3).helmholtz_marks).to eq ""
-      expect(described_class.get(4).helmholtz_case).to be :lower
-      expect(described_class.get(4).helmholtz_marks).to eq "'"
-      expect(described_class.get(5).helmholtz_case).to be :lower
-      expect(described_class.get(5).helmholtz_marks).to eq "''"
-      expect(described_class.get(6).helmholtz_case).to be :lower
-      expect(described_class.get(6).helmholtz_marks).to eq "'''"
-      expect(described_class.get(7).helmholtz_case).to be :lower
-      expect(described_class.get(7).helmholtz_marks).to eq "''''"
-      expect(described_class.get(8).helmholtz_case).to be :lower
-      expect(described_class.get(8).helmholtz_marks).to eq "'''''"
-    end
+    specify { expect(described_class.get(0).helmholtz_case).to be :upper }
+    specify { expect(described_class.get(0).helmholtz_marks).to eq ",," }
+    specify { expect(described_class.get(1).helmholtz_case).to be :upper }
+    specify { expect(described_class.get(1).helmholtz_marks).to eq "," }
+    specify { expect(described_class.get(2).helmholtz_case).to be :upper }
+    specify { expect(described_class.get(2).helmholtz_marks).to eq "" }
+    specify { expect(described_class.get(3).helmholtz_case).to be :lower }
+    specify { expect(described_class.get(3).helmholtz_marks).to eq "" }
+    specify { expect(described_class.get(4).helmholtz_case).to be :lower }
+    specify { expect(described_class.get(4).helmholtz_marks).to eq "'" }
+    specify { expect(described_class.get(5).helmholtz_case).to be :lower }
+    specify { expect(described_class.get(5).helmholtz_marks).to eq "''" }
+    specify { expect(described_class.get(6).helmholtz_case).to be :lower }
+    specify { expect(described_class.get(6).helmholtz_marks).to eq "'''" }
+    specify { expect(described_class.get(7).helmholtz_case).to be :lower }
+    specify { expect(described_class.get(7).helmholtz_marks).to eq "''''" }
+    specify { expect(described_class.get(8).helmholtz_case).to be :lower }
+    specify { expect(described_class.get(8).helmholtz_marks).to eq "'''''" }
   end
 end

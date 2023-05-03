@@ -6,21 +6,22 @@ describe HeadMusic::Style::Guidelines::EndOnPerfectConsonance do
   subject { described_class.new(voice) }
 
   let(:composition) { HeadMusic::Composition.new(key_signature: "C major") }
-  let!(:cantus_firmus) do
-    composition.add_voice(role: "cantus firmus").tap do |voice|
-      voice.place("1:1", :whole, "C4")
-      voice.place("2:1", :whole, "D4")
-      voice.place("3:1", :whole, "E4")
-      voice.place("4:1", :whole, "D4")
-      voice.place("5:1", :whole, "C4")
-    end
-  end
   let(:counterpoint_pitches) { nil }
   let(:voice) do
     composition.add_voice(role: "counterpoint").tap do |voice|
       [counterpoint_pitches].flatten.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end
+    end
+  end
+
+  before do
+    composition.add_voice(role: "cantus firmus").tap do |voice|
+      voice.place("1:1", :whole, "C4")
+      voice.place("2:1", :whole, "D4")
+      voice.place("3:1", :whole, "E4")
+      voice.place("4:1", :whole, "D4")
+      voice.place("5:1", :whole, "C4")
     end
   end
 

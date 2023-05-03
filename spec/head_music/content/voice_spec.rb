@@ -10,8 +10,11 @@ describe HeadMusic::Voice do
   its(:composition) { is_expected.to eq composition }
 
   describe "#place" do
+    let(:position) do
+      HeadMusic::Position.new(composition, "5:1:0")
+    end
+
     it "adds a placement" do
-      position = HeadMusic::Position.new(composition, "5:1:0")
       expect do
         voice.place(position, :quarter)
       end.to change {
@@ -20,23 +23,23 @@ describe HeadMusic::Voice do
     end
 
     describe "sorting" do
-      let!(:placement1) { voice.place(HeadMusic::Position.new(composition, "5:1:0"), :quarter) }
-      let!(:placement2) { voice.place(HeadMusic::Position.new(composition, "4:3:0"), :quarter) }
+      let!(:fifth_method_position) { voice.place(HeadMusic::Position.new(composition, "5:1:0"), :quarter) }
+      let!(:fourth_method_position) { voice.place(HeadMusic::Position.new(composition, "4:3:0"), :quarter) }
 
       it "sorts by position" do
-        expect(voice.placements).to eq [placement2, placement1]
+        expect(voice.placements).to eq [fourth_method_position, fifth_method_position]
       end
     end
   end
 
   describe "#notes and #rests" do
-    let!(:note1) { voice.place(HeadMusic::Position.new(composition, "1:1:0"), :quarter, "D") }
-    let!(:rest1) { voice.place(HeadMusic::Position.new(composition, "1:2:0"), :quarter) }
-    let!(:note2) { voice.place(HeadMusic::Position.new(composition, "1:3:0"), :quarter, "G") }
-    let!(:rest2) { voice.place(HeadMusic::Position.new(composition, "1:4:0"), :quarter) }
+    let!(:first_beat_d) { voice.place(HeadMusic::Position.new(composition, "1:1:0"), :quarter, "D") }
+    let!(:second_beat_rest) { voice.place(HeadMusic::Position.new(composition, "1:2:0"), :quarter) }
+    let!(:third_beat_g) { voice.place(HeadMusic::Position.new(composition, "1:3:0"), :quarter, "G") }
+    let!(:fourth_beat_rest) { voice.place(HeadMusic::Position.new(composition, "1:4:0"), :quarter) }
 
-    its(:notes) { are_expected.to eq [note1, note2] }
-    its(:rests) { are_expected.to eq [rest1, rest2] }
+    its(:notes) { are_expected.to eq [first_beat_d, third_beat_g] }
+    its(:rests) { are_expected.to eq [second_beat_rest, fourth_beat_rest] }
   end
 
   describe "#notes_not_in_key" do
@@ -48,7 +51,6 @@ describe HeadMusic::Voice do
       end
 
       it "returns the notes not in the key" do
-        expect(voice.notes_not_in_key.length).to eq 2
         expect(voice.notes_not_in_key.map(&:pitch)).to eq %w[F#4 Bb3]
       end
     end
