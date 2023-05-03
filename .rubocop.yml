@@ -14,3 +14,10 @@ AllCops:
 
 RSpec:
   Enabled: true
+
+RSpec/ContextWording:
+  Prefixes:
+    - when
+    - with
+    - without
+    - given
