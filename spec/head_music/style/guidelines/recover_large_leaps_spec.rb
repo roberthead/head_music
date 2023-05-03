@@ -5,8 +5,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::RecoverLargeLeaps do
   subject { described_class.new(voice) }
 
-  let(:composition) { HeadMusic::Composition.new(key_signature: "D dorian") }
-  let(:voice) { HeadMusic::Voice.new(composition: composition) }
+  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+  let(:voice) { HeadMusic::Content::Voice.new(composition: composition) }
 
   context "with no notes" do
     it { is_expected.to be_adherent }
@@ -56,7 +56,7 @@ describe HeadMusic::Style::Guidelines::RecoverLargeLeaps do
     end
 
     context "when the leap is recovered by skip spelling a triad" do
-      let(:composition) { HeadMusic::Composition.new(key_signature: "F lydian") }
+      let(:composition) { HeadMusic::Content::Composition.new(key_signature: "F lydian") }
 
       before do
         # FUX example

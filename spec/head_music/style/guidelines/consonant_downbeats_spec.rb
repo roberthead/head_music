@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
   subject { described_class.new(counterpoint) }
 
-  let(:composition) { HeadMusic::Composition.new(key_signature: "D dorian") }
+  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) do
     composition.add_voice(role: :counterpoint).tap do |voice|
       counterpoint_pitches.each.with_index(1) do |pitch, bar|
@@ -48,7 +48,7 @@ describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
   end
 
   context "when the intervals are compound" do
-    let(:composition) { HeadMusic::Composition.new(key_signature: "G mixolydian") }
+    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "G mixolydian") }
 
     let(:cantus_firmus_pitches) { %w[G3 A3 B3 A3 C B3 A3 G3] }
     let(:counterpoint_pitches) { %w[D5 C5 G A G G F# G] }

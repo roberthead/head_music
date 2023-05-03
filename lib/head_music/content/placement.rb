@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+# A module for musical content
+module HeadMusic::Content; end
+
 # A placement is a note or rest at a position within a voice in a composition
-class HeadMusic::Placement
+class HeadMusic::Content::Placement
   include Comparable
 
   attr_reader :voice, :position, :rhythmic_value, :pitch
@@ -54,15 +57,15 @@ class HeadMusic::Placement
   def ensure_attributes(voice, position, rhythmic_value, pitch)
     @voice = voice
     ensure_position(position)
-    @rhythmic_value = HeadMusic::RhythmicValue.get(rhythmic_value)
+    @rhythmic_value = HeadMusic::Content::RhythmicValue.get(rhythmic_value)
     @pitch = HeadMusic::Pitch.get(pitch)
   end
 
   def ensure_position(position)
-    @position = if position.is_a?(HeadMusic::Position)
+    @position = if position.is_a?(HeadMusic::Content::Position)
       position
     else
-      HeadMusic::Position.new(composition, position)
+      HeadMusic::Content::Position.new(composition, position)
     end
   end
 end

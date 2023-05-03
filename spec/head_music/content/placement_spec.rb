@@ -2,19 +2,19 @@
 
 require "spec_helper"
 
-describe HeadMusic::Placement do
+describe HeadMusic::Content::Placement do
   # rubocop:disable RSpec/MultipleMemoizedHelpers
   subject(:placement) { described_class.new(voice, position, rhythmic_value, pitch) }
 
-  let(:composition) { HeadMusic::Composition.new.tap(&:add_voice) }
+  let(:composition) { HeadMusic::Content::Composition.new.tap(&:add_voice) }
   let(:voice) { composition.voices.first }
   let(:position) { "2:2:240" }
   let(:pitch) { HeadMusic::Pitch.get("F#4") }
-  let(:rhythmic_value) { HeadMusic::RhythmicValue.new(:eighth) }
+  let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:eighth) }
 
   its(:composition) { is_expected.to eq composition }
   its(:voice) { is_expected.to eq voice }
-  its(:position) { is_expected.to eq HeadMusic::Position.new(composition, "2:2:240") }
+  its(:position) { is_expected.to eq HeadMusic::Content::Position.new(composition, "2:2:240") }
   its(:pitch) { is_expected.to eq "F#4" }
 
   context "when pitch is omitted" do
@@ -23,7 +23,7 @@ describe HeadMusic::Placement do
     it { is_expected.to be_rest }
 
     context "when the rhythmic value is a thirty-second note" do
-      let(:rhythmic_value) { HeadMusic::RhythmicValue.new(:"thirty-second") }
+      let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:"thirty-second") }
 
       its(:rhythmic_value) { is_expected.to eq "thirty-second" }
     end
@@ -33,14 +33,14 @@ describe HeadMusic::Placement do
     specify { expect(placement.next_position).to eq "2:2:720" }
 
     context "when the rhythmic value is longer than a measure" do
-      let(:rhythmic_value) { HeadMusic::RhythmicValue.new(:breve) }
+      let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:breve) }
 
       specify { expect(placement.next_position).to eq "4:2:240" }
     end
 
     context "when the value occurs at a fractional position" do
       let(:position) { "5:1:001" }
-      let(:rhythmic_value) { HeadMusic::RhythmicValue.new(:"thirty-second") }
+      let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:"thirty-second") }
 
       specify { expect(placement.next_position).to eq "5:1:121" }
     end

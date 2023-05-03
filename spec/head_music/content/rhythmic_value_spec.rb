@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe HeadMusic::RhythmicValue do
+describe HeadMusic::Content::RhythmicValue do
   subject(:value) { described_class.new(unit, dots: dots) }
 
   let(:dots) { nil }

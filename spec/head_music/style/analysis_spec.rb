@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Analysis do
   subject(:analysis) { described_class.new(guide, voice) }
 
-  let(:voice) { HeadMusic::Voice.new }
+  let(:voice) { HeadMusic::Content::Voice.new }
   let(:guide) { HeadMusic::Style::Guides::FuxCantusFirmus }
 
   its(:guide) { is_expected.to eq HeadMusic::Style::Guides::FuxCantusFirmus }

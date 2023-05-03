@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+# A module for musical content
+module HeadMusic::Content; end
+
 # A rhythmic value is a duration composed of a rhythmic unit, any number of dots, and a tied value.
-class HeadMusic::RhythmicValue
+class HeadMusic::Content::RhythmicValue
   attr_reader :unit, :dots, :tied_value
 
   delegate :name, to: :unit, prefix: true
@@ -9,7 +12,7 @@ class HeadMusic::RhythmicValue
 
   def self.get(identifier)
     case identifier
-    when HeadMusic::RhythmicValue
+    when HeadMusic::Content::RhythmicValue
       identifier
     when HeadMusic::RhythmicUnit
       new(identifier)

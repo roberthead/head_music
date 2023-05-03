@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+# A module for musical content
+module HeadMusic::Content; end
+
 # A Voice is a stream of music with some indepedence that is conceptually one part or for one performer.
 # The melodic lines in counterpoint are each a voice.
-class HeadMusic::Voice
+class HeadMusic::Content::Voice
   include Comparable
 
   attr_reader :composition, :placements, :role
@@ -10,13 +13,13 @@ class HeadMusic::Voice
   delegate :key_signature, to: :composition
 
   def initialize(composition: nil, role: nil)
-    @composition = composition || HeadMusic::Composition.new
+    @composition = composition || HeadMusic::Content::Composition.new
     @role = role
     @placements = []
   end
 
   def place(position, rhythmic_value, pitch = nil)
-    HeadMusic::Placement.new(self, position, rhythmic_value, pitch).tap do |placement|
+    HeadMusic::Content::Placement.new(self, position, rhythmic_value, pitch).tap do |placement|
       insert_into_placements(placement)
     end
   end

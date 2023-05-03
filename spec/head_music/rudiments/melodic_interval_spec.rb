@@ -5,9 +5,9 @@ require "spec_helper"
 describe HeadMusic::MelodicInterval do
   subject(:melodic_interval) { described_class.new(note_d4, note_g4) }
 
-  let(:voice) { HeadMusic::Voice.new }
-  let(:note_d4) { HeadMusic::Note.new("D4", :quarter, voice, "2:1") }
-  let(:note_g4) { HeadMusic::Note.new("G4", :quarter, voice, "2:3") }
+  let(:voice) { HeadMusic::Content::Voice.new }
+  let(:note_d4) { HeadMusic::Content::Note.new("D4", :quarter, voice, "2:1") }
+  let(:note_g4) { HeadMusic::Content::Note.new("G4", :quarter, voice, "2:3") }
 
   its(:first_note) { is_expected.to eq note_d4 }
   its(:second_note) { is_expected.to eq note_g4 }

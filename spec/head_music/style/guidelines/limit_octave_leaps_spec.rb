@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::LimitOctaveLeaps do
   subject { described_class.new(voice) }
 
-  let(:composition) { HeadMusic::Composition.new(key_signature: "C major") }
+  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
   let(:voice) { composition.add_voice(role: :counterpoint) }
 
   context "with no notes" do

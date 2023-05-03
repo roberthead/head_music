@@ -3,7 +3,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Annotation do
-  let(:voice) { HeadMusic::Voice.new }
+  let(:voice) { HeadMusic::Content::Voice.new }
 
   context "when the voice is compliant" do
     subject(:annotation) { HeadMusic::Style::Guidelines::UpToFourteenNotes.new(voice) }

@@ -5,21 +5,21 @@ require "spec_helper"
 describe HeadMusic::Style::Mark do
   subject(:mark) {
     described_class.new(
-      HeadMusic::Position.new(composition, "3:2:480"),
-      HeadMusic::Position.new(composition, "4:1"),
+      HeadMusic::Content::Position.new(composition, "3:2:480"),
+      HeadMusic::Content::Position.new(composition, "4:1"),
       fitness: 0.9
     )
   }
 
-  let(:composition) { HeadMusic::Composition.new }
+  let(:composition) { HeadMusic::Content::Composition.new }
 
   its(:code) { is_expected.to eq "3:2:480 to 4:1:000" }
   its(:fitness) { is_expected.to eq 0.9 }
 
   describe ".for_all" do
-    let(:voice) { HeadMusic::Voice.new }
-    let(:note) { HeadMusic::Placement.new(voice, "5:3", :quarter, "D5") }
-    let(:rest) { HeadMusic::Placement.new(voice, "5:4", :quarter) }
+    let(:voice) { HeadMusic::Content::Voice.new }
+    let(:note) { HeadMusic::Content::Placement.new(voice, "5:3", :quarter, "D5") }
+    let(:rest) { HeadMusic::Content::Placement.new(voice, "5:4", :quarter) }
 
     context "given a single note" do
       subject(:mark) { described_class.for_all(note) }

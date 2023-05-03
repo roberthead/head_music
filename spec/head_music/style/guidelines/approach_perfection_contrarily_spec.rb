@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::ApproachPerfectionContrarily do
   subject { described_class.new(counterpoint) }
 
-  let(:composition) { HeadMusic::Composition.new(key_signature: "C major") }
+  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
   let(:cantus_firmus_pitches) { [] }
   let(:counterpoint) do
     composition.add_voice(role: :counterpoint).tap do |voice|

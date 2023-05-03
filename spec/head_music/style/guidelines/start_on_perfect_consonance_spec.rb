@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::StartOnPerfectConsonance do
   subject { described_class.new(voice) }
 
-  let(:composition) { HeadMusic::Composition.new(key_signature: "C major") }
+  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
   let(:voice) { composition.add_voice(role: "counterpoint") }
 
   before do
@@ -83,7 +83,7 @@ describe HeadMusic::Style::Guidelines::StartOnPerfectConsonance do
   end
 
   context "when the intervals are compound" do
-    let(:composition) { HeadMusic::Composition.new(key_signature: "G mixolydian") }
+    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "G mixolydian") }
     let(:voice) do
       composition.add_voice(role: "counterpoint").tap do |voice|
         counterpoint_pitches.each.with_index(1) do |pitch, bar|

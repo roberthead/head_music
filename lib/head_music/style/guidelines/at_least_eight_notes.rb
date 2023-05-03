@@ -17,8 +17,8 @@ class HeadMusic::Style::Guidelines::AtLeastEightNotes < HeadMusic::Style::Annota
 
   def no_placements_mark
     HeadMusic::Style::Mark.new(
-      HeadMusic::Position.new(composition, "1:1"),
-      HeadMusic::Position.new(composition, "2:1"),
+      HeadMusic::Content::Position.new(composition, "1:1"),
+      HeadMusic::Content::Position.new(composition, "2:1"),
       fitness: 0
     )
   end

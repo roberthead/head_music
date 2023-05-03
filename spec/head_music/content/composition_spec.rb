@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe HeadMusic::Composition do
+describe HeadMusic::Content::Composition do
   subject(:composition) { described_class.new(name: "Fruit Salad") }
 
   it "assigns a name" do

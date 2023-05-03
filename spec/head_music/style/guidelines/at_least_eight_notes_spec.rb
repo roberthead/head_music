@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::AtLeastEightNotes do
   subject { described_class.new(voice) }
 
-  let(:voice) { HeadMusic::Voice.new }
+  let(:voice) { HeadMusic::Content::Voice.new }
 
   context "with no notes" do
     its(:fitness) { is_expected.to be < 0.1 }

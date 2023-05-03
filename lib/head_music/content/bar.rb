@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+# A module for musical content
+module HeadMusic::Content; end
+
 # Representation of a bar in a composition
 # Encapsulates meter and key signature changes
-class HeadMusic::Bar
+class HeadMusic::Content::Bar
   attr_reader :composition
   attr_accessor :key_signature, :meter
 

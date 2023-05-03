@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+# A module for musical content
+module HeadMusic::Content; end
+
 # A composition is musical content.
-class HeadMusic::Composition
+class HeadMusic::Content::Composition
   attr_reader :name, :key_signature, :meter, :voices
 
   def initialize(name: nil, key_signature: nil, meter: nil)
@@ -10,7 +13,7 @@ class HeadMusic::Composition
   end
 
   def add_voice(role: nil)
-    @voices << HeadMusic::Voice.new(composition: self, role: role)
+    @voices << HeadMusic::Content::Voice.new(composition: self, role: role)
     @voices.last
   end
 
@@ -27,7 +30,7 @@ class HeadMusic::Composition
   def bars(last = latest_bar_number)
     @bars ||= []
     (earliest_bar_number..last).each do |bar_number|
-      @bars[bar_number] ||= HeadMusic::Bar.new(self)
+      @bars[bar_number] ||= HeadMusic::Content::Bar.new(self)
     end
     @bars[earliest_bar_number..last]
   end

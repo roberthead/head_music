@@ -82,9 +82,9 @@ class HeadMusic::Meter
   def beat_unit
     @beat_unit ||=
       if compound?
-        HeadMusic::RhythmicValue.new(HeadMusic::RhythmicUnit.for_denominator_value(bottom_number / 2), dots: 1)
+        HeadMusic::Content::RhythmicValue.new(HeadMusic::RhythmicUnit.for_denominator_value(bottom_number / 2), dots: 1)
       else
-        HeadMusic::RhythmicValue.new(count_unit)
+        HeadMusic::Content::RhythmicValue.new(count_unit)
       end
   end
 

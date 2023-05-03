@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::NoRests do
   subject { described_class.new(voice) }
 
-  let(:voice) { HeadMusic::Voice.new }
+  let(:voice) { HeadMusic::Content::Voice.new }
 
   context "when there are no rests" do
     before do

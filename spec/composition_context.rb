@@ -13,7 +13,7 @@ class CompositionContext
   end
 
   def self.from_params(params)
-    composition = HeadMusic::Composition.new(
+    composition = HeadMusic::Content::Composition.new(
       name: name_from_params(params),
       key_signature: HeadMusic::KeySignature.get(params[:key])
     )

@@ -5,8 +5,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::UpToFourteenNotes do
   subject { described_class.new(voice) }
 
-  let(:composition) { HeadMusic::Composition.new(key_signature: "D dorian") }
-  let(:voice) { HeadMusic::Voice.new(composition: composition, role: "Cantus Firmus") }
+  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+  let(:voice) { HeadMusic::Content::Voice.new(composition: composition, role: "Cantus Firmus") }
 
   context "when exactly 14 notes" do
     before do

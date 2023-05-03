@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::OneToOne do
   subject { described_class.new(counterpoint) }
 
-  let(:composition) { HeadMusic::Composition.new(key_signature: "D dorian") }
+  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: "counterpoint") }
 
   context "without another voice" do

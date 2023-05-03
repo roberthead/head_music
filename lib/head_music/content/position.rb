@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+# A module for musical content
+module HeadMusic::Content; end
+
 # A position is a moment in time within the rhythmic framework of a composition.
-class HeadMusic::Position
+class HeadMusic::Content::Position
   include Comparable
 
   attr_reader :composition, :bar_number, :count, :tick
@@ -56,7 +59,7 @@ class HeadMusic::Position
   end
 
   def +(other)
-    other = HeadMusic::RhythmicValue.new(other) if [HeadMusic::RhythmicUnit, Symbol, String].include?(other.class)
+    other = HeadMusic::Content::RhythmicValue.new(other) if [HeadMusic::RhythmicUnit, Symbol, String].include?(other.class)
     self.class.new(composition, bar_number, count, tick + other.ticks)
   end
 

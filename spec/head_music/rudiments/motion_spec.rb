@@ -10,7 +10,7 @@ describe HeadMusic::Motion do
     )
   end
 
-  let(:composition) { HeadMusic::Composition.new }
+  let(:composition) { HeadMusic::Content::Composition.new }
   let(:upper_voice) do
     composition.add_voice(role: :melody).tap do |voice|
       upper_voice_pitches.each.with_index(1) do |pitch, bar|

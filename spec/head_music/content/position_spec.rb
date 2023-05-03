@@ -2,11 +2,11 @@
 
 require "spec_helper"
 
-describe HeadMusic::Position do
+describe HeadMusic::Content::Position do
   # rubocop:disable RSpec/MultipleMemoizedHelpers
   subject(:position) { described_class.new(composition, bar_number, count, tick) }
 
-  let(:composition) { HeadMusic::Composition.new }
+  let(:composition) { HeadMusic::Content::Composition.new }
   let(:bar_number) { 3 }
   let(:count) { 2 }
   let(:tick) { 480 }
@@ -111,7 +111,7 @@ describe HeadMusic::Position do
     end
 
     context "when in 6/8" do
-      let(:composition) { HeadMusic::Composition.new(meter: "6/8") }
+      let(:composition) { HeadMusic::Content::Composition.new(meter: "6/8") }
 
       context "given too many ticks" do
         let(:bar_number) { 3 }
@@ -151,16 +151,16 @@ describe HeadMusic::Position do
     context "when adding a rhythmic value within a bar" do
       let(:expected_position) { described_class.new(composition, "3.4.480") }
 
-      specify { expect(position + HeadMusic::RhythmicValue.new(:half)).to eq expected_position }
+      specify { expect(position + HeadMusic::Content::RhythmicValue.new(:half)).to eq expected_position }
     end
 
     context "when adding a rhythmic value across a bar" do
       let(:expected_position) { described_class.new(composition, "4.1.480") }
 
-      specify { expect(HeadMusic::RhythmicValue.new(:half, dots: 1).relative_value).to eq 0.75 }
-      specify { expect(HeadMusic::RhythmicValue.new(:half, dots: 1).ticks).to eq 960 * 3 }
+      specify { expect(HeadMusic::Content::RhythmicValue.new(:half, dots: 1).relative_value).to eq 0.75 }
+      specify { expect(HeadMusic::Content::RhythmicValue.new(:half, dots: 1).ticks).to eq 960 * 3 }
 
-      specify { expect(position + HeadMusic::RhythmicValue.new(:half, dots: 1)).to eq expected_position }
+      specify { expect(position + HeadMusic::Content::RhythmicValue.new(:half, dots: 1)).to eq expected_position }
     end
   end
 
@@ -201,7 +201,7 @@ describe HeadMusic::Position do
 
   describe "#within_placement?" do
     let!(:placement) do
-      HeadMusic::Placement.new(composition.add_voice, "3:2:000", :quarter)
+      HeadMusic::Content::Placement.new(composition.add_voice, "3:2:000", :quarter)
     end
 
     context "when the position is before the start of the placement" do

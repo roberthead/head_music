@@ -5,7 +5,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::EndOnPerfectConsonance do
   subject { described_class.new(voice) }
 
-  let(:composition) { HeadMusic::Composition.new(key_signature: "C major") }
+  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
   let(:counterpoint_pitches) { nil }
   let(:voice) do
     composition.add_voice(role: "counterpoint").tap do |voice|
