@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module HeadMusic
-  VERSION = "0.29.0"
+  VERSION = "1.0.0"
 end
