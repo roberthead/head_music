@@ -92,7 +92,6 @@ en:
     bass_drum: bass drum
     bass_guitar: bass guitar
     bass_oboe: bass oboe
-    bass_drum: bass drum
     bass_trombone: bass trombone
     bass_tuba: bass tuba
     bass_voice: bass
@@ -102,21 +101,20 @@ en:
     cello: cello
     chimes: chimes
     cimbalom: cimbalom
-    cowbell: cowbell
     clarinet: clarinet
-    clavichord: clavichord
     clash_cymbals: clash cymbals
-    cornet: cornet
-    contrabassoon: contrabassoon
+    clavichord: clavichord
     contra_bass_clarinet: contra bass clarinet
+    contrabassoon: contrabassoon
     cor_anglais: cor anglais
+    cornet: cornet
     cowbell: cowbell
-    cymbal: cymbal
     crotales: crotales
+    cymbal: cymbal
     double_bass: double bass
     english_horn: English horn
     euphonium: euphonium
-    flugel_horn: flugel horn
+    flugelhorn: flugelhorn
     flute: flute
     french_horn: French horn
     glockenspiel: glockenspiel

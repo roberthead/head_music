@@ -61,10 +61,10 @@ de:
     bagpipe: Dudelsack
     baritone_horn: Baritonhorn
     baritone_voice: Bariton
-    bass_voice: Bass
     bass_clarinet: Bassklarinette
     bass_drum: Grosse Trommel
     bass_trombone: Bass Posaune
+    bass_voice: Bass
     bassoon: Fagott
     castanets: Kastagnetten
     celesta: Celesta
@@ -78,7 +78,7 @@ de:
     english_horn: Englischhorn
     euphonium: Euphonium
     fiddle: Geige
-    flugel_horn: Flügelhorn
+    flugelhorn: Flügelhorn
     flute: Flöte
     french_horn: Horn
     glockenspiel: Glockenspiel

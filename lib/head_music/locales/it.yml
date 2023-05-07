@@ -76,7 +76,7 @@ it:
     double_bass: contrabasso
     english_horn: corno inglese
     euphonium: eufonio
-    flugel_horn: flicorno
+    flugelhorn: flicorno
     flute: flauto
     french_horn: corno
     glockenspiel: glockenspiel
@@ -91,9 +91,9 @@ it:
     natural_horn: corno naturale
     oboe: oboe
     oboe_d_amore: oboe d'amore
-    piccolo: ottavino
     organ: organo
     piano: piano
+    piccolo: ottavino
     recorder: flauto dolce
     saxophone: sassofono
     snare_drum: tamburo rullante
