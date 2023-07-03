@@ -1,6 +1,19 @@
 # frozen_string_literal: true
 
-# An instrument can be assigned to a staff.
+# A musical instrument.
+# An instrument object can be assigned to a staff object.
+# Attributes:
+#   name: the name of the instrument
+#   aliases: an array of alternative names for the instrument
+#   instrument_family: the family of the instrument (e.g. "saxophone")
+#   orchestra_section: the orchestral family of the instrument (e.g. "strings")
+#   classifications: an array of classifications
+#   transposing: true if the instrument is a transposing instrument
+#   clef: the default clef for the instrument
+#   alternative_clefs: an array of alternative clefs for the instrument
+#   standard_system: the default staff system for the instrument
+#     - [treble] for instruments that use the treble clef (optional, inferable from clef)
+#     - [treble, bass] for instruments that use the grand staff
 class HeadMusic::Instrument
   include HeadMusic::Named
 

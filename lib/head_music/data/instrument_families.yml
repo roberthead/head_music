@@ -1,0 +1,240 @@
+---
+flute:
+  classifications:
+    - aerophone
+    - edge-blown aerophone
+    - wind
+    - woodwind
+  orchestra_section: woodwind
+oboe:
+  classifications:
+    - aerophone
+    - reed
+    - double_reed
+    - wind
+    - woodwind
+  orchestra_section: woodwind
+clarinet:
+  classifications:
+    - aerophone
+    - reed
+    - single_reed
+    - wind
+    - woodwind
+  orchestra_section: woodwind
+bassoon:
+  classifications:
+    - aerophone
+    - reed
+    - double_reed
+    - wind
+    - woodwind
+  orchestra_section: woodwind
+horn:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  orchestra_section: brass
+trumpet:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  orchestra_section: brass
+baritone_horn:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  orchestra_section: brass
+trombone:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  orchestra_section: brass
+tuba:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  orchestra_section: brass
+kettledrum:
+  classifications:
+    - percussion
+    - membranophone
+  orchestra_section: percussion
+guitar:
+  classifications:
+    - chordophone
+    - plucked
+    - string
+  orchestra_section: string
+lute:
+  classifications:
+    - chordophone
+    - plucked
+    - string
+  orchestra_section: string
+mandolin:
+  classifications:
+    - chordophone
+    - plucked
+    - string
+  orchestra_section: string
+harp:
+  classifications:
+    - chordophone
+    - plucked
+    - string
+  orchestra_section: string
+organ:
+  classifications:
+    - aerophone
+    - keyboard
+  orchestra_section: keyboard
+piano:
+  classifications:
+    - chordophone
+    - keyboard
+    - percussion
+    - string
+  orchestra_section: keyboard
+clavichord:
+  classifications:
+    - chordophone
+    - keyboard
+    - percussion
+    - string
+  orchestra_section: keyboard
+harpsichord:
+  classifications:
+    - chordophone
+    - keyboard
+    - percussion
+    - string
+  orchestra_section: keyboard
+violin:
+  classifications:
+    - bowed
+    - chordophone
+    - string
+  orchestra_section: string
+viola:
+  classifications:
+    - bowed
+    - chordophone
+    - string
+  orchestra_section: string
+violoncello:
+  classifications:
+    - bowed
+    - chordophone
+    - string
+  orchestra_section: string
+double_bass:
+  classifications:
+    - bowed
+    - chordophone
+    - string
+  orchestra_section: string
+voice:
+  classifications:
+    - voice
+  orchestra_section: voice
+bagpipe:
+  classifications:
+    - aerophone
+    - wind
+    - woodwind
+  orchestra_section: woodwind
+accordian:
+  classifications:
+    - reed
+    - free-reed
+    - aerophone
+    - keyboard
+    - wind
+  orchestra_section: keyboard
+cymbal:
+  classifications:
+    - percussion
+    - idiophone
+  orchestra_section: percussion
+cornet:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  orchestra_section: brass
+glockenspiel:
+  classifications:
+    - percussion
+    - idiophone
+    - keyboard
+    - struck
+    - metal
+    - mallet
+  orchestra_section: percussion
+marimba:
+  classifications:
+    - idiophone
+    - keyboard
+    - percussion
+    - struck
+    - wood
+    - mallet
+  orchestra_section: percussion
+recorder:
+  classifications:
+    - aerophone
+    - wind
+    - woodwind
+  orchestra_section: woodwind
+saxophone:
+  classifications:
+    - aerophone
+    - reed
+    - single_reed
+    - wind
+    - woodwind
+snare_drum:
+  classifications:
+    - percussion
+    - membranophone
+  orchestra_section: percussion
+synthesizer:
+  classifications:
+    - electronic
+    - keyboard
+  orchestra_section: keyboard
+gong:
+  classifications:
+    - percussion
+    - idiophone
+  orchestra_section: percussion
+woodblock:
+  classifications:
+    - percussion
+    - struck
+    - idiophone
+  orchestra_section: percussion
+xylophone:
+  classifications:
+    - percussion
+    - struck
+    - idiophone
+    - keyboard
+    - mallet
+    - wood
+  orchestra_section: percussion
+vibraphone:
+  classifications:
+    - percussion
+    - struck
+    - idiophone
+    - keyboard
+    - mallet
+    - metal
+  orchestra_section: percussion

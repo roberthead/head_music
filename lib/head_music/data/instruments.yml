@@ -1,145 +1,421 @@
 ---
 bassoon:
-  classifications:
-    - aerophone
-    - reed
-    - double_reed
-    - wind
-    - woodwind
-  family: woodwind
-  standard_staves:
+  instrument_family: bassoon
+  standard_system:
+    - bass_clef
+contrabassoon:
+  instrument_family: bassoon
+  standard_system:
     - bass_clef
 cello:
   alias_name_keys:
     - violoncello
-  classifications:
-    - bowed
-    - chordophone
-    - string
-  family: string
-  standard_staves:
+  standard_system:
     - bass_clef
 clarinet:
-  classifications:
-    - aerophone
-    - reed
-    - single_reed
-    - wind
-    - woodwind
-  family: woodwind
-  standard_staves:
+  instrument_family: clarinet
+  standard_system:
     - treble_clef
+bass_clarinet:
+  instrument_family: clarinet
+  standard_system:
+    - bass_clef
+contrabass_clarinet:
+  instrument_family: clarinet
+  standard_system:
+    - bass_clef
 double_bass:
-  classifications:
-    - string
-    - chordophone
-    - bowed
-  family: string
-  standard_staves:
+  alias_name_keys:
+    - contrabass
+    - string_bass
+  standard_system:
     - bass_clef
 flute:
-  classifications:
-    - aerophone
-    - edge-blown aerophone
-    - wind
-    - woodwind
-  family: woodwind
-  standard_staves:
+  instrument_family: flute
+  standard_system:
     - treble_clef
 french_horn:
   alias_name_keys:
     - horn
-  classifications:
-    - aerophone
-    - brass
-    - wind
-  family: brass
-  standard_staves:
+  instrument_family: horn
+  standard_system:
     - treble_clef
 guitar:
-  classifications:
-    - chordophone
-    - plucked
-    - string
-  family: string
-  standard_staves:
+  instrument_family: guitar
+  standard_system:
     - treble_clef
+bass_guitar:
+  instrument_family: guitar
+  standard_system:
+    - bass_clef
 harp:
-  family: string
-  classifications:
-    - chordophone
-    - plucked
-    - string
-  standard_staves:
+  instrument_family: harp
+  standard_system:
     - treble_clef
     - bass_clef
 oboe:
-  classifications:
-    - aerophone
-    - reed
-    - double_reed
-    - wind
-    - woodwind
-  family: woodwind
-  standard_staves:
+  instrument_family: oboe
+  standard_system:
+    - treble_clef
+oboe_d_amore:
+  alias_name_keys:
+    - hautbois_d_amour
+  instrument_family: oboe
+  standard_system:
+    - treble_clef
+bass_oboe:
+  alias_name_keys:
+    - baritone_oboe
+  instrument_family: oboe
+  standard_system:
     - treble_clef
 organ:
-  classifications:
-    - aerophone
-    - keyboard
-  standard_staves:
+  alias_name_keys:
+    - pipe_organ
+  instrument_family: organ
+  standard_system:
     - treble_clef
     - bass_clef
     - bass_clef
 piano:
-  classifications:
-    - chordophone
-    - keyboard
-    - percussion
-    - string
-  family: percussion
-  standard_staves:
+  alias_name_keys:
+    - pianoforte
+    - fortepiano
+  instrument_family: piano
+  standard_system:
     - treble_clef
     - bass_clef
 trombone:
-  classifications:
-    - aerophone
-    - brass
-    - wind
-  family: brass
-  standard_staves:
+  alias_name_keys:
+    - tenor_trombone
+  instrument_family: trombone
+  standard_system:
+    - bass_clef
+bass_trombone:
+  instrument_family: trombone
+  standard_system:
     - bass_clef
 trumpet:
-  classifications:
-    - aerophone
-    - brass
-    - wind
-  family: brass
-  standard_staves:
+  instrument_family: trumpet
+  standard_system:
     - treble_clef
 tuba:
-  classifications:
-    - aerophone
-    - brass
-    - wind
-  family: brass
-  standard_staves:
+  instrument_family: tuba
+  standard_system:
+    - bass_clef
+bass_tuba:
+  instrument_family: tuba
+  standard_system:
     - bass_clef
 viola:
-  family: string
-  classifications:
-    - bowed
-    - chordophone
-    - string
-  standard_staves:
+  standard_system:
     - alto_clef
 violin:
   alias_name_keys:
     - fiddle
+  instrument_family: violin
+  standard_system:
+    - treble_clef
+accordian:
+  standard_system:
+    - treble_clef
+    - bass_clef
+arpeggione:
   classifications:
     - bowed
     - chordophone
     - string
-  family: string
-  standard_staves:
+  standard_system:
+    - treble_clef
+  orchestra_section: string
+bagpipe:
+  instrument_family: bagpipe
+  standard_system:
+    - treble_clef
+baritone_horn:
+  instrument_family: baritone_horn
+  standard_system:
+    - treble_clef
+    - bass_clef
+bass_drum:
+  classifications:
+    - percussion
+    - membranophone
+  orchestra_section: percussion
+  standard_system:
+    - percussion_clef
+castanets:
+  classifications:
+    - percussion
+    - idiophone
+  orchestra_section: percussion
+  standard_system:
+    - percussion_clef
+celesta:
+  classifications:
+    - keyboard
+    - percussion
+    - idiophone
+  orchestra_section: keyboard
+  standard_system:
+    - treble_clef
+    - bass_clef
+chimes:
+  alias_name_keys:
+    - tubular_bells
+    - orchestral_chimes
+  classifications:
+    - percussion
+    - idiophone
+  orchestra_section: percussion
+  standard_system:
+    - treble_clef
+cimbalom:
+  classifications:
+    - chordophone
+    - string
+  orchestra_section: percussion
+  standard_system:
+    - treble_clef
+    - bass_clef
+cowbell:
+  classifications:
+    - percussion
+    - idiophone
+  orchestra_section: percussion
+  standard_system:
+    - percussion_clef
+clavichord:
+  standard_system:
+    - treble_clef
+    - bass_clef
+clash_cymbals:
+  instrument_family: cymbal
+  standard_system:
+    - percussion_clef
+cornet:
+  instrument_family: cornet
+  standard_system:
+    - treble_clef
+cor_anglais:
+  alias_name_keys:
+    - english_horn
+  instrument_family: oboe
+  standard_system:
+    - treble_clef
+cymbal:
+  instrument_family: cymbal
+  standard_system:
+    - percussion_clef
+hammered_dulcimer:
+  classifications:
+    - percussion
+    - chordophone
+    - string
+  orchestra_section: percussion
+  standard_system:
+    - treble_clef
+crotales:
+  classifications:
+    - percussion
+    - idiophone
+  orchestra_section: percussion
+  standard_system:
+    - percussion_clef
+euphonium:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  orchestra_section: brass
+  standard_system:
+    - bass_clef
+flugelhorn:
+  classifications:
+    - aerophone
+    - brass
+    - wind
+  instrument_family: flugelhorn
+  orchestra_section: brass
+  standard_system:
+    - treble_clef
+glockenspiel:
+  alias_name_keys:
+    - concert_bells
+    - bells
+    - carillon
+  instrument_family: glockenspiel
+harpsichord:
+  standard_system:
+    - treble_clef
+    - bass_clef
+lute:
+  instrument_family: lute
+  standard_system:
+    - treble_clef
+    - bass_clef
+mandolin:
+  instrument_family: mandolin
+  standard_system:
+    - treble_clef
+maracas:
+  classifications:
+    - percussion
+    - shaken
+    - idiophone
+  orchestra_section: percussion
+  standard_system:
+    - percussion_clef
+marimba:
+  instrument_family: marimba
+  standard_system:
+    - treble_clef
+    - bass_clef
+natural_horn:
+  instrument_family: horn
+  standard_system:
+    - treble_clef
+alto_flute: alto flute
+  instrument_family: flute
+soprano_voice:
+  alias_name_keys:
+    - soprano
+  range_category:
+    - soprano
+  instrument_family: voice
+  standard_system:
+    - treble_clef
+mezzo_soprano_voice:
+  alias_name_keys:
+    - mezzo_soprano
+  range_category:
+    - mezzo_soprano
+  instrument_family: voice
+  standard_system:
+    - treble_clef
+alto_voice:
+  alias_name_keys:
+    - contralto
+    - alto
+  range_category:
+    - alto
+  instrument_family: voice
+  standard_system:
+    - treble_clef
+tenor_voice:
+  range_category:
+    - tenor
+  instrument_family: voice
+  standard_system:
+    - vocal_tenor_clef
+baritone_voice:
+  range_category:
+    - baritone
+  instrument_family: voice
+  standard_system:
+    - bass_clef
+bass_voice:
+  range_category:
+    - bass
+  instrument_family: voice
+  standard_system:
+    - bass_clef
+countertenor_voice:
+  range_category:
+    - alto
+  instrument_family: voice
+  standard_system:
+    - treble_clef
+timpani:
+  alias_name_keys:
+    - kettledrum
+    - timpanum
+  instrument_family: kettledrum
+  standard_system:
+    - percussion_clef
+piccolo_flute:
+  alias_name_keys:
+    - piccolo
+  instrument_family: flute
+  standard_system:
+    - treble_clef
+piccolo_trumpet:
+  instrument_family: trumpet
+  standard_system:
+    - treble_clef
+recorder:
+  instrument_family: recorder
+  standard_system:
+    - treble_clef
+saxophone:
+  instrument_family: saxophone
+  standard_system:
+    - treble_clef
+snare_drum:
+  alias_name_keys:
+    - side_drum
+    - tabor
+    - military_drum
+    - field_drum
+  instrument_family: snare_drum
+  standard_system:
+    - percussion_clef
+suspended_cymbal:
+  instrument_family: cymbal
+  standard_system:
+    - percussion_clef
+synthesizer:
+  instrument_family: synthesizer
+  standard_system:
+    - treble_clef
+    - bass_clef
+tam_tam:
+  alias_name_keys:
+    - tamtam
+    - gong
+  instrument_family: gong
+  standard_system:
+    - percussion_clef
+tambourine:
+  classifications:
+    - percussion
+    - shaken
+    - idiophone
+    - membranophone
+  orchestra_section: percussion
+  standard_system:
+    - percussion_clef
+temple_blocks:
+  instrument_family: woodblock
+  standard_system:
+    - percussion_clef
+tenor_drum:
+  classifications:
+    - percussion
+    - struck
+    - membranophone
+  orchestra_section: percussion
+  standard_system:
+    - percussion_clef
+triangle:
+  classifications:
+    - percussion
+    - struck
+    - idiophone
+  orchestra_section: percussion
+  standard_system:
+    - percussion_clef
+woodblock:
+  instrument_family: woodblock
+  standard_system:
+    - percussion_clef
+xylophone:
+  instrument_family: xylophone
+  standard_system:
+    - treble_clef
+vibraphone:
+  alias_name_keys:
+    - vibes
+  instrument_family: vibraphone
+  standard_system:
     - treble_clef
