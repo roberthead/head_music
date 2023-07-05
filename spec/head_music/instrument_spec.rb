@@ -22,10 +22,16 @@ describe HeadMusic::Instrument do
   context "when piano" do
     subject(:piano) { described_class.get(:piano) }
 
+    before do
+      HeadMusic::InstrumentFamily.all
+      described_class.all
+    end
+
     its(:name) { is_expected.to eq "piano" }
-    its(:standard_staves) { are_expected.to eq %w[treble_clef bass_clef] }
-    its(:classifications) { are_expected.to include "string" }
-    its(:classifications) { are_expected.to include "keyboard" }
+    its(:standard_staff_keys) { are_expected.to eq %w[treble bass] }
+    its(:orchestra_section_key) { are_expected.to eq "keyboard" }
+    its(:classification_keys) { are_expected.to include "string" }
+    its(:classification_keys) { are_expected.to include "keyboard" }
 
     specify { expect(piano.translation(:de)).to eq "Piano" }
   end
@@ -34,16 +40,16 @@ describe HeadMusic::Instrument do
     subject(:organ) { described_class.get(:organ) }
 
     its(:name) { is_expected.to eq "organ" }
-    its(:standard_staves) { are_expected.to eq %w[treble_clef bass_clef bass_clef] }
-    its(:classifications) { are_expected.to include "keyboard" }
+    its(:standard_staff_keys) { are_expected.to eq %w[treble bass bass] }
+    its(:classification_keys) { are_expected.to include "keyboard" }
   end
 
   context "when violin" do
     subject(:violin) { described_class.get(:violin) }
 
     its(:name) { is_expected.to eq "violin" }
-    its(:standard_staves) { are_expected.to eq ["treble_clef"] }
-    its(:classifications) { are_expected.to include "string" }
+    its(:standard_staff_keys) { are_expected.to eq ["treble"] }
+    its(:classification_keys) { are_expected.to include "string" }
 
     specify { expect(violin.translation(:it)).to eq "violino" }
     specify { expect(violin.translation(:ru)).to eq "skripka" }

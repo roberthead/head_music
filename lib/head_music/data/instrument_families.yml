@@ -1,240 +1,240 @@
 ---
 flute:
-  classifications:
+  classification_keys:
     - aerophone
     - edge-blown aerophone
     - wind
     - woodwind
-  orchestra_section: woodwind
+  orchestra_section_key: woodwind
 oboe:
-  classifications:
+  classification_keys:
     - aerophone
     - reed
     - double_reed
     - wind
     - woodwind
-  orchestra_section: woodwind
+  orchestra_section_key: woodwind
 clarinet:
-  classifications:
+  classification_keys:
     - aerophone
     - reed
     - single_reed
     - wind
     - woodwind
-  orchestra_section: woodwind
+  orchestra_section_key: woodwind
 bassoon:
-  classifications:
+  classification_keys:
     - aerophone
     - reed
     - double_reed
     - wind
     - woodwind
-  orchestra_section: woodwind
+  orchestra_section_key: woodwind
 horn:
-  classifications:
+  classification_keys:
     - aerophone
     - brass
     - wind
-  orchestra_section: brass
+  orchestra_section_key: brass
 trumpet:
-  classifications:
+  classification_keys:
     - aerophone
     - brass
     - wind
-  orchestra_section: brass
+  orchestra_section_key: brass
 baritone_horn:
-  classifications:
+  classification_keys:
     - aerophone
     - brass
     - wind
-  orchestra_section: brass
+  orchestra_section_key: brass
 trombone:
-  classifications:
+  classification_keys:
     - aerophone
     - brass
     - wind
-  orchestra_section: brass
+  orchestra_section_key: brass
 tuba:
-  classifications:
+  classification_keys:
     - aerophone
     - brass
     - wind
-  orchestra_section: brass
+  orchestra_section_key: brass
 kettledrum:
-  classifications:
+  classification_keys:
     - percussion
     - membranophone
-  orchestra_section: percussion
+  orchestra_section_key: percussion
 guitar:
-  classifications:
+  classification_keys:
     - chordophone
     - plucked
     - string
-  orchestra_section: string
+  orchestra_section_key: string
 lute:
-  classifications:
+  classification_keys:
     - chordophone
     - plucked
     - string
-  orchestra_section: string
+  orchestra_section_key: string
 mandolin:
-  classifications:
+  classification_keys:
     - chordophone
     - plucked
     - string
-  orchestra_section: string
+  orchestra_section_key: string
 harp:
-  classifications:
+  classification_keys:
     - chordophone
     - plucked
     - string
-  orchestra_section: string
+  orchestra_section_key: string
 organ:
-  classifications:
+  classification_keys:
     - aerophone
     - keyboard
-  orchestra_section: keyboard
+  orchestra_section_key: keyboard
 piano:
-  classifications:
+  classification_keys:
     - chordophone
     - keyboard
     - percussion
     - string
-  orchestra_section: keyboard
+  orchestra_section_key: keyboard
 clavichord:
-  classifications:
+  classification_keys:
     - chordophone
     - keyboard
     - percussion
     - string
-  orchestra_section: keyboard
+  orchestra_section_key: keyboard
 harpsichord:
-  classifications:
+  classification_keys:
     - chordophone
     - keyboard
     - percussion
     - string
-  orchestra_section: keyboard
+  orchestra_section_key: keyboard
 violin:
-  classifications:
+  classification_keys:
     - bowed
     - chordophone
     - string
-  orchestra_section: string
+  orchestra_section_key: string
 viola:
-  classifications:
+  classification_keys:
     - bowed
     - chordophone
     - string
-  orchestra_section: string
+  orchestra_section_key: string
 violoncello:
-  classifications:
+  classification_keys:
     - bowed
     - chordophone
     - string
-  orchestra_section: string
+  orchestra_section_key: string
 double_bass:
-  classifications:
+  classification_keys:
     - bowed
     - chordophone
     - string
-  orchestra_section: string
+  orchestra_section_key: string
 voice:
-  classifications:
+  classification_keys:
     - voice
-  orchestra_section: voice
+  orchestra_section_key: voice
 bagpipe:
-  classifications:
+  classification_keys:
     - aerophone
     - wind
     - woodwind
-  orchestra_section: woodwind
+  orchestra_section_key: woodwind
 accordian:
-  classifications:
+  classification_keys:
     - reed
     - free-reed
     - aerophone
     - keyboard
     - wind
-  orchestra_section: keyboard
+  orchestra_section_key: keyboard
 cymbal:
-  classifications:
+  classification_keys:
     - percussion
     - idiophone
-  orchestra_section: percussion
+  orchestra_section_key: percussion
 cornet:
-  classifications:
+  classification_keys:
     - aerophone
     - brass
     - wind
-  orchestra_section: brass
+  orchestra_section_key: brass
 glockenspiel:
-  classifications:
+  classification_keys:
     - percussion
     - idiophone
     - keyboard
     - struck
     - metal
     - mallet
-  orchestra_section: percussion
+  orchestra_section_key: percussion
 marimba:
-  classifications:
+  classification_keys:
     - idiophone
     - keyboard
     - percussion
     - struck
     - wood
     - mallet
-  orchestra_section: percussion
+  orchestra_section_key: percussion
 recorder:
-  classifications:
+  classification_keys:
     - aerophone
     - wind
     - woodwind
-  orchestra_section: woodwind
+  orchestra_section_key: woodwind
 saxophone:
-  classifications:
+  classification_keys:
     - aerophone
     - reed
     - single_reed
     - wind
     - woodwind
 snare_drum:
-  classifications:
+  classification_keys:
     - percussion
     - membranophone
-  orchestra_section: percussion
+  orchestra_section_key: percussion
 synthesizer:
-  classifications:
+  classification_keys:
     - electronic
     - keyboard
-  orchestra_section: keyboard
+  orchestra_section_key: keyboard
 gong:
-  classifications:
+  classification_keys:
     - percussion
     - idiophone
-  orchestra_section: percussion
+  orchestra_section_key: percussion
 woodblock:
-  classifications:
+  classification_keys:
     - percussion
     - struck
     - idiophone
-  orchestra_section: percussion
+  orchestra_section_key: percussion
 xylophone:
-  classifications:
+  classification_keys:
     - percussion
     - struck
     - idiophone
     - keyboard
     - mallet
     - wood
-  orchestra_section: percussion
+  orchestra_section_key: percussion
 vibraphone:
-  classifications:
+  classification_keys:
     - percussion
     - struck
     - idiophone
     - keyboard
     - mallet
     - metal
-  orchestra_section: percussion
+  orchestra_section_key: percussion
