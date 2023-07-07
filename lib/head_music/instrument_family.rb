@@ -8,7 +8,8 @@ class HeadMusic::InstrumentFamily
   INSTRUMENT_FAMILIES =
     YAML.load_file(File.expand_path("data/instrument_families.yml", __dir__)).freeze
 
-  attr_reader :name_key, :classification_keys, :orchestra_section_key, :standard_staff_keys
+  attr_reader :name_key, :classification_keys, :orchestra_section_key, :default_staffs
+  attr_accessor :name
 
   def self.get(name)
     result = get_by_name(name) || get_by_name(key_for_name(name))
@@ -59,7 +60,6 @@ class HeadMusic::InstrumentFamily
     @name_key = record["name_key"].to_sym
     @orchestra_section_key = record["orchestra_section_key"]
     @classification_keys = record["classification_keys"] || []
-    @standard_staff_keys = record["standard_staff_keys"] || []
     self.name = I18n.translate(name_key, scope: "instruments", locale: "en", default: inferred_name)
   end
 

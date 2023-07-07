@@ -108,7 +108,7 @@ describe HeadMusic::Clef do
       its(:unicode) { is_expected.to eq "𝄠" }
       its(:clef_type) { is_expected.to eq "G-clef" }
 
-      it { is_expected.to eq "choral tenor clef" }
+      it { is_expected.to eq "vocal tenor clef" }
     end
 
     context "when constructed with the name 'tenor C-clef'" do

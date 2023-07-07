@@ -6,7 +6,7 @@ it:
     baritone_f_clef: chiave di baritono
     bass_clef: chiave di basso
     c_clef: chiave di do
-    choral_tenor_clef: chiave di sol in ottava
+    vocal_tenor_clef: chiave di sol in ottava
     contrabass_clef: chiave di contrabbasso
     countertenor_clef: chiave di controtenore
     double_treble_clef: chiave di sol in ottava

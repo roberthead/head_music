@@ -13,6 +13,6 @@ class HeadMusic::Staff
   end
 
   def clef
-    default_clef || instrument&.standard_staff_keys&.first
+    default_clef || instrument&.default_staffs&.first
   end
 end

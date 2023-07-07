@@ -39,5 +39,7 @@ describe HeadMusic::InstrumentFamily do
     subject { described_class.all }
 
     its(:length) { is_expected.to be > 1 }
+
+    its(:first) { is_expected.to be_a described_class }
   end
 end

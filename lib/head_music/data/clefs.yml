@@ -22,10 +22,12 @@
 - :pitch: G3
   :line: 2
   :modern: true
-  :name_key: choral_tenor_clef
+  :name_key: vocal_tenor_clef
   :alias_name_keys:
   - tenor_clef
   - tenor_g_clef
+  - g_clef_ottava_bassa
+  - octave_treble_clef
   :symbols:
   - :unicode: "\U0001D120"
     :html_entity: "&#119072;"
