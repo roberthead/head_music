@@ -1,4 +1,18 @@
 en:
+  chromatic_intervals:
+    perfect_unison: perfect unison
+    minor_second: minor second
+    major_second: major second
+    minor_third: minor third
+    major_third: major third
+    perfect_fourth: perfect fourth
+    tritone: tritone
+    perfect_fifth: perfect fifth
+    minor_sixth: minor sixth
+    major_sixth: major sixth
+    minor_seventh: minor seventh
+    major_seventh: major seventh
+    perfect_octave: perfect octave
   clefs:
     alto_clef: alto clef
     baritone_c_clef: baritone C-clef

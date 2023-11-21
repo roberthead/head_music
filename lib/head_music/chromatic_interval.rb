@@ -3,10 +3,10 @@
 # A chromatic interval is the distance between two pitches measured in half-steps.
 class HeadMusic::ChromaticInterval
   include Comparable
+  include HeadMusic::Named
 
   private_class_method :new
 
-  # TODO: include the Named module
   NAMES = %w[
     perfect_unison minor_second major_second minor_third major_third perfect_fourth tritone perfect_fifth
     minor_sixth major_sixth minor_seventh major_seventh perfect_octave
@@ -21,8 +21,21 @@ class HeadMusic::ChromaticInterval
     @intervals[semitones] ||= new(semitones.to_i)
   end
 
-  def initialize(semitones)
-    @semitones = semitones
+  def initialize(identifier)
+    if identifier.to_s.strip =~ /^\D/i
+      candidate = identifier.to_s.downcase.gsub(/\W+/, "_")
+      semitones = NAMES.index(candidate) || identifier.to_i
+    end
+    @semitones = semitones || identifier.to_i
+    set_name
+  end
+
+  def set_name
+    candidate = semitones
+    while name.nil? && candidate > 0
+      self.name = NAMES[candidate]
+      candidate -= 12
+    end
   end
 
   def simple

@@ -4,11 +4,41 @@ require "spec_helper"
 
 describe HeadMusic::ChromaticInterval do
   describe ".get" do
+    context "when given a name" do
+      it "returns the matching instance" do
+        expect(described_class.get("Minor third")).to eq 3
+      end
+    end
+
+    context "when given an integer" do
+      it "returns the matching instance" do
+        expect(described_class.get(7)).to eq described_class.get(:perfect_fifth)
+      end
+    end
+
     context "when given an instance" do
       let(:instance) { described_class.get(7) }
 
       it "returns that instance" do
         expect(described_class.get(instance)).to be instance
+      end
+    end
+  end
+
+  describe ".get_by_name" do
+    context "when given a name" do
+      subject(:interval) { described_class.get_by_name("perfect_fourth") }
+
+      it "returns the matching instance" do
+        expect(interval).to eq described_class.get(5)
+      end
+
+      its(:name) { is_expected.to eq "perfect_fourth" }
+    end
+
+    context "when given nonsense" do
+      it "returns the default interval (perfect unison)" do
+        expect(described_class.get_by_name("nonsense")).to eq described_class.get(0)
       end
     end
   end
