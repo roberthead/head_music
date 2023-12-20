@@ -53,7 +53,7 @@ en:
       viola_clef: viola clef
       violin_clef: treble clef
     instrument_abbreviations:
-      accordian:
+      accordion:
       - acc
       alto_flute:
       - afl
@@ -110,7 +110,7 @@ en:
       contrabass: contrabass
       octobass: octobass
     instruments:
-      accordian: accordian
+      accordion: accordion
       alto_clarinet: alto clarinet
       alto_flute: alto flute
       alto_voice: alto
