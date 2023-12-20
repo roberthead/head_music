@@ -6,8 +6,8 @@ class HeadMusic::Staff
 
   attr_reader :default_clef, :line_count, :instrument
 
-  def initialize(default_clef, instrument: nil, line_count: nil)
-    @default_clef = HeadMusic::Clef.get(default_clef)
+  def initialize(default_clef_key, instrument: nil, line_count: nil)
+    @default_clef = HeadMusic::Clef.get(default_clef_key)
     @line_count = line_count || DEFAULT_LINE_COUNT
     @instrument = HeadMusic::Instrument.get(instrument) if instrument
   end
