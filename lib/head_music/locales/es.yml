@@ -108,6 +108,13 @@ es:
     voice: voz
     xylophone: xilofón
     zither: cítara
+  locales:
+    de: Alemán
+    en: Inglés
+    es: Español
+    fr: Francés
+    it: Italiano
+    ru: Ruso
   rudiments:
     clef: clave
     consonance: consonancia

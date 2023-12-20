@@ -120,5 +120,12 @@ fr:
     voice: voix
     xylophone: xylophone
     zither: cithare
+  locales:
+    de: allemand
+    en: anglais
+    es: espagnol
+    fr: français
+    it: italien
+    ru: russe
   rudiments:
     clef: clé

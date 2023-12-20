@@ -176,6 +176,13 @@ en:
     woodblock: woodblock
     xylophone: xylophone
     zither: zither
+  locales:
+    de: German
+    en: English
+    es: Spanish
+    fr: French
+    it: Italian
+    ru: Russian
   reference_pitches:
     a440: A440
     baroque: Baroque pitch

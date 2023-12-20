@@ -68,3 +68,10 @@ ru:
     voice: golos
     xylophone: ksilofon
     zither: tsitra
+  locales:
+    de: Немецкий
+    en: Английский
+    es: Испанский
+    fr: Французский
+    it: Итальянский
+    ru: Русский

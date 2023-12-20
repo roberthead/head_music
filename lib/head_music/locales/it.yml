@@ -112,6 +112,13 @@ it:
     voice: voce
     xylophone: xilofono
     zither: cetra da tavolo
+  locales:
+    de: Tedesco
+    en: Inglese
+    es: Spagnolo
+    fr: Francese
+    it: Italiano
+    ru: Russo
   rudiments:
     clef: chiave
     consonance: consonanza

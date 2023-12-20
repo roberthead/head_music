@@ -114,6 +114,13 @@ de:
     voice: Stimme
     xylophone: Xylophon
     zither: Zither
+  locales:
+    de: Deutsch
+    en: Englisch
+    es: Spanisch
+    fr: Französisch
+    it: Italienisch
+    ru: Russisch
   reference_pitches:
     chamber_tone: Kammerton
     choir_tone: Chorton
