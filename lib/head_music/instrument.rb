@@ -50,7 +50,7 @@ class HeadMusic::Instrument
   def translation(locale = :en)
     return name unless name_key
 
-    I18n.translate(name_key, scope: [:instruments], locale: locale)
+    I18n.translate(name_key, scope: [:instruments], locale: locale, default: name)
   end
 
   def family
