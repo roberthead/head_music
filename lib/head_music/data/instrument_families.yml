@@ -57,7 +57,7 @@ double_bass:
 flute:
   classification_keys:
     - aerophone
-    - edge-blown aerophone
+    - edge_blown_aerophone
     - wind
     - woodwind
   orchestra_section_key: woodwind
