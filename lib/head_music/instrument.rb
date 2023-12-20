@@ -14,7 +14,7 @@
 #     - [treble, bass] for instruments that use the grand staff
 #   notation:
 #     a hash of default and alternative notation systems,
-#     each with a staffs key with an array of hashes
+#     each with a staff's key with an array of hashes
 #     including clef and transposition (where applicable)
 # Associations:
 #   family: the family of the instrument (e.g. "saxophone")
@@ -40,7 +40,7 @@ class HeadMusic::Instrument
     :family_key, :orchestra_section_key,
     :notation, :classification_keys,
     :fundamental_pitch_spelling, :transposition,
-    :default_staffs, :default_clefs
+    :default_staves, :default_clefs
   )
 
   def ==(other)
@@ -70,11 +70,11 @@ class HeadMusic::Instrument
   end
 
   def single_staff?
-    default_staffs.length == 1
+    default_staves.length == 1
   end
 
-  def multiple_staffs?
-    default_staffs.length > 1
+  def multiple_staves?
+    default_staves.length > 1
   end
 
   def pitched?
@@ -147,9 +147,9 @@ class HeadMusic::Instrument
     @orchestra_section_key ||= record["orchestra_section_key"]
     @classification_keys = [@classification_keys, record["classification_keys"]].flatten.compact.uniq
     @fundamental_pitch_spelling = record["fundamental_pitch_spelling"]
-    @default_staffs = (record.dig("notation", "default", "staffs") || [])
-    @default_clefs = @default_staffs.map { |staff| staff["clef"] }
-    @transposition = @default_staffs&.first&.[]("transposition") || 0
+    @default_staves = (record.dig("notation", "default", "staves") || [])
+    @default_clefs = @default_staves.map { |staff| staff["clef"] }
+    @transposition = @default_staves&.first&.[]("transposition") || 0
   end
 
   def inferred_name

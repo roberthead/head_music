@@ -3,7 +3,7 @@ accordian:
   family_key: accordion
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
         - clef: bass
 alto_clarinet:
@@ -12,7 +12,7 @@ alto_clarinet:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -9
 alto_flute:
@@ -21,7 +21,7 @@ alto_flute:
   family_key: flute
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -5
 alto_voice:
@@ -31,7 +31,7 @@ alto_voice:
   family_key: voice
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
   range_category:
     - alto
@@ -42,7 +42,7 @@ arpeggione:
     - string
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -12
   orchestra_section: string
@@ -53,7 +53,7 @@ great_highland_bagpipe:
   family_key: bagpipe
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 1
 banjo:
@@ -64,7 +64,7 @@ banjo:
   orchestra_section: string
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -12
 baritone_horn:
@@ -73,18 +73,18 @@ baritone_horn:
   family_key: saxhorn
   notation:
     alternates:
-      - staffs:
+      - staves:
           - clef: treble
             transposition: -14
     default:
-      staffs:
+      staves:
         - clef: bass
           transposition: 0
 baritone_voice:
   family_key: voice
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
   range_category:
     - baritone
@@ -94,11 +94,11 @@ bass_clarinet:
   family_key: clarinet
   notation:
     alternates:
-      - staffs:
+      - staves:
           - clef: bass
             transposition: -2
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -14
 bass_drum:
@@ -107,14 +107,14 @@ bass_drum:
     - membranophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
   orchestra_section: percussion
 bass_guitar:
   family_key: guitar
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
           transposition: -12
 bass_oboe:
@@ -123,7 +123,7 @@ bass_oboe:
   family_key: oboe
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 bass_trombone:
   fundamental_pitch_spelling:
@@ -131,7 +131,7 @@ bass_trombone:
   family_key: trombone
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
 bass_trumpet_in_b_flat:
   alias_name_keys:
@@ -141,7 +141,7 @@ bass_trumpet_in_b_flat:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -14
 bass_trumpet_in_c:
@@ -152,7 +152,7 @@ bass_trumpet_in_c:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -12
 bass_trumpet_in_e_flat:
@@ -161,7 +161,7 @@ bass_trumpet_in_e_flat:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -9
 bass_tuba_in_e_flat:
@@ -172,7 +172,7 @@ bass_tuba_in_e_flat:
   family_key: tuba
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
 bass_tuba_in_f:
   alias_name_keys:
@@ -182,13 +182,13 @@ bass_tuba_in_f:
   family_key: tuba
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
 bass_voice:
   family_key: voice
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
   range_category:
     - bass
@@ -198,7 +198,7 @@ basset_horn:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -7
 bassoon:
@@ -207,7 +207,7 @@ bassoon:
   family_key: bassoon
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
 bugle:
   fundamental_pitch_spelling:
@@ -215,7 +215,7 @@ bugle:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -5
 bugle_in_b_flat:
@@ -224,7 +224,7 @@ bugle_in_b_flat:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -2
 castanets:
@@ -233,7 +233,7 @@ castanets:
     - idiophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
   orchestra_section: percussion
 celesta:
@@ -243,7 +243,7 @@ celesta:
     - idiophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           name_key: right_hand
         - clef: bass
@@ -255,7 +255,7 @@ cello:
   family_key: violin
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
 chimes:
   alias_name_keys:
@@ -266,7 +266,7 @@ chimes:
     - idiophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
   orchestra_section: percussion
 cimbalom:
@@ -277,7 +277,7 @@ cimbalom:
     - plucked
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
         - clef: bass
   orchestra_section: string
@@ -289,7 +289,7 @@ clarinet:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -2
 clarinet_in_a:
@@ -300,7 +300,7 @@ clarinet_in_a:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -3
 clarinet_in_c:
@@ -311,7 +311,7 @@ clarinet_in_c:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 0
 clarinet_in_d:
@@ -322,7 +322,7 @@ clarinet_in_d:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 2
 clarinet_in_e_flat:
@@ -333,19 +333,19 @@ clarinet_in_e_flat:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 3
 clash_cymbals:
   family_key: cymbal
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
 clavichord:
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           name_key: right_hand
         - clef: bass
@@ -356,14 +356,14 @@ contrabass_clarinet:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -26
 contrabassoon:
   family_key: bassoon
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
           transposition: -12
 cor_anglais:
@@ -372,7 +372,7 @@ cor_anglais:
   family_key: oboe
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -7
 cornet:
@@ -381,14 +381,14 @@ cornet:
   family_key: cornet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -2
 countertenor_voice:
   family_key: voice
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
   range_category:
     - alto
@@ -398,7 +398,7 @@ cowbell:
     - idiophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
   orchestra_section: percussion
 crotales:
@@ -407,14 +407,14 @@ crotales:
     - idiophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
   orchestra_section: percussion
 cymbal:
   family_key: cymbal
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
 double_bass:
   alias_name_keys:
@@ -422,7 +422,7 @@ double_bass:
     - string_bass
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
           transposition: -12
 euphonium:
@@ -434,11 +434,11 @@ euphonium:
     - wind
   notation:
     alternates:
-      - staffs:
+      - staves:
           - clef: treble
             transposition: -14
     default:
-      staffs:
+      staves:
         - clef: bass
           transposition: 0
   orchestra_section: brass
@@ -448,14 +448,14 @@ flugelhorn:
   family_key: saxhorn
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -2
 flute:
   family_key: flute
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 french_horn:
   alias_name_keys:
@@ -465,11 +465,11 @@ french_horn:
   family_key: horn
   notation:
     alternates:
-      - staffs:
+      - staves:
           - clef: bass
             transposition: 5
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -7
 glockenspiel:
@@ -482,7 +482,7 @@ guitar:
   family_key: guitar
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -12
 hammered_dulcimer:
@@ -492,20 +492,20 @@ hammered_dulcimer:
     - string
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
   orchestra_section: percussion
 harp:
   family_key: harp
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
         - clef: bass
 harpsichord:
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           name_key: right_hand
         - clef: bass
@@ -514,17 +514,17 @@ lute:
   family_key: lute
   notation:
     alternates:
-      - staffs:
+      - staves:
           - clef: treble
     default:
-      staffs:
+      staves:
         - clef: treble
         - clef: bass
 mandolin:
   family_key: mandolin
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 maracas:
   classification_keys:
@@ -533,14 +533,14 @@ maracas:
     - idiophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
   orchestra_section: percussion
 marimba:
   family_key: marimba
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
         - clef: bass
 mezzo_soprano_voice:
@@ -549,7 +549,7 @@ mezzo_soprano_voice:
   family_key: voice
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
   range_category:
     - mezzo_soprano
@@ -557,13 +557,13 @@ natural_horn:
   family_key: horn
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 oboe:
   family_key: oboe
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 oboe_d_amore:
   alias_name_keys:
@@ -571,7 +571,7 @@ oboe_d_amore:
   family_key: oboe
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -3
 organ:
@@ -580,13 +580,13 @@ organ:
   family_key: organ
   notation:
     alternates:
-      - staffs:
+      - staves:
           - clef: treble
             name_key: right_hand
           - clef: treble
             name_key: left_hand
     default:
-      staffs:
+      staves:
         - clef: treble
           name_key: right_hand
         - clef: bass
@@ -600,7 +600,7 @@ piano:
   family_key: piano
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           name_key: right_hand
         - clef: bass
@@ -611,7 +611,7 @@ piccolo_clarinet:
   family_key: clarinet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 8
 piccolo_flute:
@@ -620,7 +620,7 @@ piccolo_flute:
   family_key: flute
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 12
 piccolo_trumpet:
@@ -630,20 +630,20 @@ piccolo_trumpet:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 10
 recorder:
   family_key: recorder
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 saxophone:
   family_key: saxophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 snare_drum:
   alias_name_keys:
@@ -654,7 +654,7 @@ snare_drum:
   family_key: snare_drum
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
 soprano_voice:
   alias_name_keys:
@@ -662,7 +662,7 @@ soprano_voice:
   family_key: voice
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
   range_category:
     - soprano
@@ -672,20 +672,20 @@ sousaphone:
   family_key: tuba
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
   transposition: 0
 suspended_cymbal:
   family_key: cymbal
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
 synthesizer:
   family_key: synthesizer
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           name_key: right_hand
         - clef: bass
@@ -697,7 +697,7 @@ tam_tam:
   family_key: gong
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
 tambourine:
   classification_keys:
@@ -707,14 +707,14 @@ tambourine:
     - membranophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
   orchestra_section: percussion
 temple_blocks:
   family_key: woodblock
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
 tenor_drum:
   classification_keys:
@@ -723,22 +723,22 @@ tenor_drum:
     - membranophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
   orchestra_section: percussion
 tenor_voice:
   family_key: voice
   notation:
     alternates:
-      - staffs:
+      - staves:
           - clef: bass
-      - staffs:
+      - staves:
           - clef: treble
             transposition: -12
-      - staffs:
+      - staves:
           - clef: tenor
     default:
-      staffs:
+      staves:
         - clef: vocal_tenor
           transposition: -12
   range_category:
@@ -750,7 +750,7 @@ timpani:
   family_key: kettledrum
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
 triangle:
   classification_keys:
@@ -759,7 +759,7 @@ triangle:
     - idiophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
   orchestra_section: percussion
 trombone:
@@ -770,7 +770,7 @@ trombone:
   family_key: trombone
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
 trumpet:
   fundamental_pitch_spelling:
@@ -778,7 +778,7 @@ trumpet:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: -2
 trumpet_in_c:
@@ -787,7 +787,7 @@ trumpet_in_c:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 0
 trumpet_in_d:
@@ -796,7 +796,7 @@ trumpet_in_d:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 2
 trumpet_in_e_flat:
@@ -805,7 +805,7 @@ trumpet_in_e_flat:
   family_key: trumpet
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
           transposition: 3
 tuba:
@@ -816,7 +816,7 @@ tuba:
   family_key: tuba
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
 tuba_in_c:
   alias_name_keys:
@@ -826,7 +826,7 @@ tuba_in_c:
   family_key: tuba
   notation:
     default:
-      staffs:
+      staves:
         - clef: bass
 vibraphone:
   alias_name_keys:
@@ -834,13 +834,13 @@ vibraphone:
   family_key: vibraphone
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 viola:
   family_key: violin
   notation:
     default:
-      staffs:
+      staves:
         - clef: alto
 violin:
   alias_name_keys:
@@ -848,17 +848,17 @@ violin:
   family_key: violin
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble
 woodblock:
   family_key: woodblock
   notation:
     default:
-      staffs:
+      staves:
         - clef: percussion
 xylophone:
   family_key: xylophone
   notation:
     default:
-      staffs:
+      staves:
         - clef: treble

@@ -8,7 +8,7 @@ class HeadMusic::InstrumentFamily
   INSTRUMENT_FAMILIES =
     YAML.load_file(File.expand_path("data/instrument_families.yml", __dir__)).freeze
 
-  attr_reader :name_key, :classification_keys, :orchestra_section_key, :default_staffs
+  attr_reader :name_key, :classification_keys, :orchestra_section_key
   attr_accessor :name
 
   def self.get(name)

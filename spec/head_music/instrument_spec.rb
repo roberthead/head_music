@@ -59,7 +59,7 @@ describe HeadMusic::Instrument do
     its(:classification_keys) { are_expected.to include "keyboard" }
     it { is_expected.not_to be_transposing }
     it { is_expected.not_to be_single_staff }
-    it { is_expected.to be_multiple_staffs }
+    it { is_expected.to be_multiple_staves }
     it { is_expected.to be_pitched }
   end
 
@@ -94,11 +94,11 @@ describe HeadMusic::Instrument do
     it { is_expected.not_to be_transposing }
   end
 
-  context "marimba" do
+  context "with marimba" do
     subject(:marimba) { described_class.get(:marimba) }
 
     its(:name) { is_expected.to eq "marimba" }
-    its(:default_clefs) { are_expected.to eq ["treble", "bass"] }
+    its(:default_clefs) { are_expected.to eq %w[treble bass] }
     its(:classification_keys) { are_expected.to include "percussion" }
     it { is_expected.to be_pitched }
     it { is_expected.not_to be_transposing }
