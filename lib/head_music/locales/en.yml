@@ -71,19 +71,33 @@ en:
     bowed: bowed
     brass: brass
     brass_instrument: brass instrument
+    chordophone: chordophone
     double_reed: double-reed
     drum: drum
+    edge_blown_aerophone: edge-blown aerophone
+    electronic: electronic
+    idiophone: idiophone
     keyboard: keyboard
     keyboard_instrument: keyboard instrument
+    mallet: mallet
+    membranophone: membranophone
+    metal: metal
+    mezzo_soprano_voice: mezzo-soprano
     percussion: percussion
     percussion_instrument: percussion instrument
+    plucked: plucked
     plucked_instrument: plucked instrument
     reed: reed
+    shaken: shaken
     single_reed: single-reed
+    string: string
     strings: strings
     stringed_instrument: stringed instrument
+    struck: struck
+    voice: voice
     wind: wind
     wind_instrument: wind instrument
+    wood: wood
     woodwind: woodwind
   instrument_voices:
     piccolo: piccolo
@@ -96,10 +110,12 @@ en:
     octobass: octobass
   instruments:
     accordian: accordian
+    alto_clarinet: alto clarinet
     alto_flute: alto flute
     alto_voice: alto
     arpeggione: arpeggione
     bagpipe: bagpipe
+    banjo: banjo
     baritone_horn: baritone horn
     baritone_voice: baritone
     bass_clarinet: bass clarinet
@@ -107,22 +123,36 @@ en:
     bass_guitar: bass guitar
     bass_oboe: bass oboe
     bass_trombone: bass trombone
+    bass_trumpet: bass trumpet
+    bass_trumpet_in_b_flat: bass trumpet in B♭
+    bass_trumpet_in_c: bass trumpet in C
+    bass_trumpet_in_e_flat: bass trumpet in E♭
     bass_tuba: bass tuba
+    bass_tuba_in_e_flat: bass tuba in E♭
+    bass_tuba_in_f: bass tuba in F
     bass_voice: bass
+    basset_horn: basset horn
     bassoon: bassoon
+    bugle: bugle
+    bugle_in_b_flat: bugle in B♭
     castanets: castanets
     celesta: celesta
     cello: cello
     chimes: chimes
     cimbalom: cimbalom
     clarinet: clarinet
+    clarinet_in_a: clarinet in A
+    clarinet_in_c: clarinet in C
+    clarinet_in_d: clarinet in D
+    clarinet_in_e_flat: clarinet in E♭
     clash_cymbals: clash cymbals
     clavichord: clavichord
-    contra_bass_clarinet: contra bass clarinet
+    contrabass_clarinet: contrabass clarinet
     contrabassoon: contrabassoon
     cor_anglais: cor anglais
     cornet: cornet
     cowbell: cowbell
+    countertenor_voice: countertenor
     crotales: crotales
     cymbal: cymbal
     double_bass: double bass
@@ -132,6 +162,7 @@ en:
     flute: flute
     french_horn: French horn
     glockenspiel: glockenspiel
+    great_highland_bagpipe: great highland bagpipe
     guitar: guitar
     hammered_dulcimer: hammered dulcimer
     harp: harp
@@ -148,11 +179,15 @@ en:
     organ: organ
     piano: piano
     piccolo: piccolo
+    piccolo_clarinet: piccolo clarinet
+    piccolo_flute: piccolo flute
     piccolo_trumpet: piccolo trumpet
     recorder: recorder
     saxophone: saxophone
     side_drum: side drum
     snare_drum: snare drum
+    soprano_voice: soprano
+    sousaphone: sousaphone
     suspended_cymbal: suspended cymbal
     synthesizer: synthesizer
     tam_tam: tam-tam
@@ -160,11 +195,16 @@ en:
     temple_blocks: temple blocks
     tenor_drum: tenor drum
     tenor_trombone: tenor trombone
+    tenor_voice: tenor
     timpani: timpani
     triangle: triangle
     trombone: trombone
     trumpet: trumpet
+    trumpet_in_c: trumpet in C
+    trumpet_in_d: trumpet in D
+    trumpet_in_e_flat: trumpet in E♭
     tuba: tuba
+    tuba_in_c: tuba in C
     tubular_bells: tubular bells
     vibraphone: vibraphone
     viola: viola
