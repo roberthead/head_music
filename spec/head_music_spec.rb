@@ -18,13 +18,13 @@ describe HeadMusic do
   describe "I18n" do
     context "when requesting a translation in English" do
       it "returns the translation" do
-        expect(I18n.translate(:grand_staff, scope: :rudiments, locale: :en)).to eq "grand staff"
+        expect(I18n.translate(:grand_staff, scope: %i[head_music rudiments], locale: :en)).to eq "grand staff"
       end
     end
 
     context "when requesting a translation in British English" do
       it "returns the regionalized translation" do
-        expect(I18n.translate(:grand_staff, scope: :rudiments, locale: :en_GB)).to eq "great staff"
+        expect(I18n.translate(:grand_staff, scope: %i[head_music rudiments], locale: :en_GB)).to eq "great staff"
       end
     end
   end

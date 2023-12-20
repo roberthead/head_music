@@ -49,7 +49,7 @@ class HeadMusic::Clef
   end
 
   def name(locale_code: Locale::DEFAULT_CODE)
-    I18n.translate(name_key, scope: :clefs, locale: locale_code)
+    I18n.translate(name_key, scope: "head_music.clefs", locale: locale_code)
   end
 
   private_class_method :new
@@ -77,7 +77,7 @@ class HeadMusic::Clef
   def name_key_translations(name_keys)
     name_keys.map do |name_key|
       I18n.config.available_locales.map do |locale_code|
-        I18n.translate(name_key, scope: :clefs, locale: locale_code)
+        I18n.translate(name_key, scope: "head_music.clefs", locale: locale_code)
       end.flatten.uniq.compact
     end.flatten.uniq.compact
   end

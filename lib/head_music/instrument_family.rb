@@ -42,7 +42,7 @@ class HeadMusic::InstrumentFamily
   def key_for_name(name)
     INSTRUMENT_FAMILIES.each do |key, _data|
       I18n.config.available_locales.each do |locale|
-        translation = I18n.t("instruments.#{key}", locale: locale)
+        translation = I18n.t("head_music.instruments.#{key}", locale: locale)
         return key if translation.downcase == name.downcase
       end
     end
@@ -60,7 +60,7 @@ class HeadMusic::InstrumentFamily
     @name_key = record["name_key"].to_sym
     @orchestra_section_key = record["orchestra_section_key"]
     @classification_keys = record["classification_keys"] || []
-    self.name = I18n.translate(name_key, scope: "instruments", locale: "en", default: inferred_name)
+    self.name = I18n.translate(name_key, scope: "head_music.instruments", locale: "en", default: inferred_name)
   end
 
   def inferred_name

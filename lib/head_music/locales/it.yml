@@ -1,124 +1,125 @@
 it:
-  clefs:
-    alto_clef: chiave di contralto
-    baritone_c_clef: chiave di baritono
-    baritone_clef: chiave di baritono
-    baritone_f_clef: chiave di baritono
-    bass_clef: chiave di basso
-    c_clef: chiave di do
-    vocal_tenor_clef: chiave di sol in ottava
-    contrabass_clef: chiave di contrabbasso
-    countertenor_clef: chiave di controtenore
-    double_treble_clef: chiave di sol in ottava
-    drum_clef: chiave di percussione
-    f_clef: chiave di fa
-    fifth_line_c_clef: chiave di do sulla 5ª linea
-    fifth_line_f_clef: chiave di fa sulla 5ª linea
-    first_line_c_clef: chiave di do sulla 1ª linea
-    first_line_g_clef: chiave di sol sulla 1ª linea
-    fourth_line_c_clef: chiave di do sulla 4ª linea
-    fourth_line_f_clef: chiave di fa sulla 4ª linea
-    french_clef: chiave di violino francese
-    french_violin_clef: chiave di violino francese
-    g_clef: chiave di sol
-    indefinite_pitch_clef: chiave neutra
-    mezzo_soprano_clef: chiave di mezzosoprano
-    neutral_clef: chiave neutra
-    percussion_clef: chiave di percussione
-    second_line_c_clef: chiave di do sulla 2ª linea
-    second_line_g_clef: chiave di sol sulla 2ª linea
-    soprano_clef: chiave di soprano
-    sub_bass_clef: chiave di subbasso
-    tenor_c_clef: chiave di tenore
-    tenor_clef: chiave di tenore
-    tenor_g_clef: chiave di sol in ottava
-    third_line_c_clef: chiave di do sulla 3ª linea
-    third_line_f_clef: chiave di fa sulla 3ª linea
-    treble_clef: chiave di violino
-    viola_clef: chiave di viola
-    violin_clef: chiave di violino
-  instrument_classifications:
-    brass: ottone
-    brass_instrument: ottone
-    drum: tamburo
-    keyboard_instrument: strumenti a tastiera
-    percussion: percussione
-    percussion_instrument: strumenti a percussione
-    plucked_instrument: strumenti a pizzico
-    strings: archi
-    stringed_instrument: strumenti a corda
-    wind: fiato
-    wind_instruments: strumenti a fiato
-    woodwind_instruments: legno
-  instrument_voices:
-    alto: contralto
-    baritone: baritono
-    bass: basso
-  instruments:
-    accordian: fisarmonica
-    alto_flute: flauto contralto
-    alto_voice: contralto
-    bagpipe: cornamusa
-    baritone_horn: flicorno baritono
-    baritone_voice: baritono
-    bass_clarinet: clarinetto basso
-    bass_drum: grancassa
-    bass_trombone: trombono basso
-    bass_voice: basso
-    bassoon: fagotto
-    castanets: castagnette
-    celesta: celesta
-    cello: violoncello
-    clarinet: clarinetto
-    clavichord: clavicordo
-    cornet: cornetta
-    cymbal: piatto
-    double_bass: contrabasso
-    english_horn: corno inglese
-    euphonium: eufonio
-    flugelhorn: flicorno
-    flute: flauto
-    french_horn: corno
-    glockenspiel: glockenspiel
-    guitar: chitarra
-    hammered_dulcimer: salterio
-    harp: arpa
-    harpsichord: clavicembalo
-    horn: corno
-    lute: liuto
-    mandolin: mandolino
-    marimba: marimba
-    natural_horn: corno naturale
-    oboe: oboe
-    oboe_d_amore: oboe d'amore
-    organ: organo
-    piano: piano
-    piccolo: ottavino
-    recorder: flauto dolce
-    saxophone: sassofono
-    snare_drum: tamburo rullante
-    tambourine: tamburello
-    tenor_drum: cassa rullante
-    timpani: timpano
-    trombone: trombone
-    trumpet: tromba
-    tuba: tuba
-    tubular_bells: campane tubolari
-    viola: viola
-    viola_d_amore: viola d'amore
-    viola_da_gamba: viola da gamba
-    violin: violino
-    violoncello: violoncello
-    voice: voce
-    xylophone: xilofono
-    zither: cetra da tavolo
-  locales:
-    de: Tedesco
-    en: Inglese
-    es: Spagnolo
-    fr: Francese
-    it: Italiano
-    ru: Russo
-  rudiments:
-    clef: chiave
-    consonance: consonanza
+  head_music:
+    clefs:
+      alto_clef: chiave di contralto
+      baritone_c_clef: chiave di baritono
+      baritone_clef: chiave di baritono
+      baritone_f_clef: chiave di baritono
+      bass_clef: chiave di basso
+      c_clef: chiave di do
+      vocal_tenor_clef: chiave di sol in ottava
+      contrabass_clef: chiave di contrabbasso
+      countertenor_clef: chiave di controtenore
+      double_treble_clef: chiave di sol in ottava
+      drum_clef: chiave di percussione
+      f_clef: chiave di fa
+      fifth_line_c_clef: chiave di do sulla 5ª linea
+      fifth_line_f_clef: chiave di fa sulla 5ª linea
+      first_line_c_clef: chiave di do sulla 1ª linea
+      first_line_g_clef: chiave di sol sulla 1ª linea
+      fourth_line_c_clef: chiave di do sulla 4ª linea
+      fourth_line_f_clef: chiave di fa sulla 4ª linea
+      french_clef: chiave di violino francese
+      french_violin_clef: chiave di violino francese
+      g_clef: chiave di sol
+      indefinite_pitch_clef: chiave neutra
+      mezzo_soprano_clef: chiave di mezzosoprano
+      neutral_clef: chiave neutra
+      percussion_clef: chiave di percussione
+      second_line_c_clef: chiave di do sulla 2ª linea
+      second_line_g_clef: chiave di sol sulla 2ª linea
+      soprano_clef: chiave di soprano
+      sub_bass_clef: chiave di subbasso
+      tenor_c_clef: chiave di tenore
+      tenor_clef: chiave di tenore
+      tenor_g_clef: chiave di sol in ottava
+      third_line_c_clef: chiave di do sulla 3ª linea
+      third_line_f_clef: chiave di fa sulla 3ª linea
+      treble_clef: chiave di violino
+      viola_clef: chiave di viola
+      violin_clef: chiave di violino
+    instrument_classifications:
+      brass: ottone
+      brass_instrument: ottone
+      drum: tamburo
+      keyboard_instrument: strumenti a tastiera
+      percussion: percussione
+      percussion_instrument: strumenti a percussione
+      plucked_instrument: strumenti a pizzico
+      strings: archi
+      stringed_instrument: strumenti a corda
+      wind: fiato
+      wind_instruments: strumenti a fiato
+      woodwind_instruments: legno
+    instrument_voices:
+      alto: contralto
+      baritone: baritono
+      bass: basso
+    instruments:
+      accordian: fisarmonica
+      alto_flute: flauto contralto
+      alto_voice: contralto
+      bagpipe: cornamusa
+      baritone_horn: flicorno baritono
+      baritone_voice: baritono
+      bass_clarinet: clarinetto basso
+      bass_drum: grancassa
+      bass_trombone: trombono basso
+      bass_voice: basso
+      bassoon: fagotto
+      castanets: castagnette
+      celesta: celesta
+      cello: violoncello
+      clarinet: clarinetto
+      clavichord: clavicordo
+      cornet: cornetta
+      cymbal: piatto
+      double_bass: contrabasso
+      english_horn: corno inglese
+      euphonium: eufonio
+      flugelhorn: flicorno
+      flute: flauto
+      french_horn: corno
+      glockenspiel: glockenspiel
+      guitar: chitarra
+      hammered_dulcimer: salterio
+      harp: arpa
+      harpsichord: clavicembalo
+      horn: corno
+      lute: liuto
+      mandolin: mandolino
+      marimba: marimba
+      natural_horn: corno naturale
+      oboe: oboe
+      oboe_d_amore: oboe d'amore
+      organ: organo
+      piano: piano
+      piccolo: ottavino
+      recorder: flauto dolce
+      saxophone: sassofono
+      snare_drum: tamburo rullante
+      tambourine: tamburello
+      tenor_drum: cassa rullante
+      timpani: timpano
+      trombone: trombone
+      trumpet: tromba
+      tuba: tuba
+      tubular_bells: campane tubolari
+      viola: viola
+      viola_d_amore: viola d'amore
+      viola_da_gamba: viola da gamba
+      violin: violino
+      violoncello: violoncello
+      voice: voce
+      xylophone: xilofono
+      zither: cetra da tavolo
+    locales:
+      de: Tedesco
+      en: Inglese
+      es: Spagnolo
+      fr: Francese
+      it: Italiano
+      ru: Russo
+    rudiments:
+      clef: chiave
+      consonance: consonanza

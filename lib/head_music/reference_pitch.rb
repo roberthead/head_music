@@ -138,7 +138,7 @@ class HeadMusic::ReferencePitch
   def name_and_alias_translations_for_keys(name_keys)
     name_keys.map do |name_key|
       I18n.config.available_locales.map do |locale_code|
-        I18n.translate(name_key, scope: :reference_pitches, locale: locale_code)
+        I18n.translate(name_key, scope: %i[head_music reference_pitches], locale: locale_code)
       end.flatten.uniq.compact
     end.flatten.uniq.compact
   end

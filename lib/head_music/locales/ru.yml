@@ -1,77 +1,78 @@
 ru:
-  instrument_classifications:
-    brass: mednye dukhovye
-    brass_instrument: mednye dukhovye instrument
-    drum: baraban
-    keyboard_instrument: klavishnyi instrument
-    percussion: udarnye
-    percussion_instrument: udarnye instrument
-    plucked_instrument: shchipkovye instrumenty
-    reeds: trosti
-    strings: struny
-    stringed_instrument: strunnye instrument
-    wind: dukhovye
-    wind_instrument: dukhovye instrument
-    woodwind_instrument: dereviannye dukhovye instrumenty
-  instruments:
-    accordian: akkordeon
-    baritone_horn: bariton rog
-    baritone_voice: bariton
-    bass_clarinet: bass-klarnet
-    bass_drum: bol'shoi baraban
-    bass_trombone: bas trombon
-    bassoon: fagot
-    castanets: kastan'ety
-    celesta: chelesta
-    cello: violonchel'
-    clarinet: klarnet
-    clavichord: klavikord
-    cornet: kornet
-    cowbell: caubel
-    cymbal: tarelk
-    double_bass: kontrabas
-    english_horn: angliiskii rozhok
-    euphonium: evfonium
-    flugelhorn: fliugel'gorn
-    flute: fleita
-    french_horn: Gorn
-    glockenspiel: kolokol'chiki
-    guitar: gitara
-    hammered_dulcimer: tsimbaly
-    harp: arfa
-    harpsichord: klavesin
-    horn: gorn
-    lute: liutnia
-    mandolin: mandolina
-    marimba: marimba
-    natural_horn: valtorna
-    oboe: goboi
-    oboe_d_amore: goboi d'amur
-    organ: organ
-    piano: fortep'iano
-    piccolo: pikkolo
-    recorder: blokfleita
-    saxophone: saksofon
-    snare_drum: frantsuzskii baraban
-    tambourine: buben
-    tenor_drum: tsilindricheskii baraban
-    timpani: litavra
-    trombone: trombon
-    trumpet: truba
-    tuba: tuba
-    tubular_bells: trubchatye kolokola
-    viola: viola
-    viola_d_amore: viola d'amur
-    viola_da_gamba: viola da gamba
-    violin: skripka
-    violoncello: violonchel'
-    voice: golos
-    xylophone: ksilofon
-    zither: tsitra
-  locales:
-    de: Немецкий
-    en: Английский
-    es: Испанский
-    fr: Французский
-    it: Итальянский
-    ru: Русский
+  head_music:
+    instrument_classifications:
+      brass: mednye dukhovye
+      brass_instrument: mednye dukhovye instrument
+      drum: baraban
+      keyboard_instrument: klavishnyi instrument
+      percussion: udarnye
+      percussion_instrument: udarnye instrument
+      plucked_instrument: shchipkovye instrumenty
+      reeds: trosti
+      strings: struny
+      stringed_instrument: strunnye instrument
+      wind: dukhovye
+      wind_instrument: dukhovye instrument
+      woodwind_instrument: dereviannye dukhovye instrumenty
+    instruments:
+      accordian: akkordeon
+      baritone_horn: bariton rog
+      baritone_voice: bariton
+      bass_clarinet: bass-klarnet
+      bass_drum: bol'shoi baraban
+      bass_trombone: bas trombon
+      bassoon: fagot
+      castanets: kastan'ety
+      celesta: chelesta
+      cello: violonchel'
+      clarinet: klarnet
+      clavichord: klavikord
+      cornet: kornet
+      cowbell: caubel
+      cymbal: tarelk
+      double_bass: kontrabas
+      english_horn: angliiskii rozhok
+      euphonium: evfonium
+      flugelhorn: fliugel'gorn
+      flute: fleita
+      french_horn: Gorn
+      glockenspiel: kolokol'chiki
+      guitar: gitara
+      hammered_dulcimer: tsimbaly
+      harp: arfa
+      harpsichord: klavesin
+      horn: gorn
+      lute: liutnia
+      mandolin: mandolina
+      marimba: marimba
+      natural_horn: valtorna
+      oboe: goboi
+      oboe_d_amore: goboi d'amur
+      organ: organ
+      piano: fortep'iano
+      piccolo: pikkolo
+      recorder: blokfleita
+      saxophone: saksofon
+      snare_drum: frantsuzskii baraban
+      tambourine: buben
+      tenor_drum: tsilindricheskii baraban
+      timpani: litavra
+      trombone: trombon
+      trumpet: truba
+      tuba: tuba
+      tubular_bells: trubchatye kolokola
+      viola: viola
+      viola_d_amore: viola d'amur
+      viola_da_gamba: viola da gamba
+      violin: skripka
+      violoncello: violonchel'
+      voice: golos
+      xylophone: ksilofon
+      zither: tsitra
+    locales:
+      de: Немецкий
+      en: Английский
+      es: Испанский
+      fr: Французский
+      it: Итальянский
+      ru: Русский

@@ -1,287 +1,288 @@
 en:
-  chromatic_intervals:
-    perfect_unison: perfect unison
-    minor_second: minor second
-    major_second: major second
-    minor_third: minor third
-    major_third: major third
-    perfect_fourth: perfect fourth
-    tritone: tritone
-    perfect_fifth: perfect fifth
-    minor_sixth: minor sixth
-    major_sixth: major sixth
-    minor_seventh: minor seventh
-    major_seventh: major seventh
-    perfect_octave: perfect octave
-  clefs:
-    alto_clef: alto clef
-    baritone_c_clef: baritone C-clef
-    baritone_clef: baritone clef
-    baritone_f_clef: baritone F-clef
-    bass_clef: bass clef
-    c_clef: C-clef
-    vocal_tenor_clef: vocal tenor clef
-    contrabass_clef: contrabass clef
-    countertenor_clef: countertenor clef
-    double_treble_clef: double treble clef
-    drum_clef: drum clef
-    f_clef: F-clef
-    fifth_line_c_clef: fifth-line C-clef
-    fifth_line_f_clef: fifth-line F-clef
-    first_line_c_clef: first-line C-clef
-    first_line_g_clef: first-line G-clef
-    fourth_line_c_clef: fourth-line C-clef
-    fourth_line_f_clef: fourth-line F-clef
-    french_clef: French clef
-    french_violin_clef: French violin clef
-    g_clef: G-clef
-    indefinite_pitch_clef: indefinite pitch clef
-    mezzo_soprano_clef: mezzo-soprano clef
-    neutral_clef: neutral clef
-    percussion_clef: percussion clef
-    second_line_c_clef: second-line C-clef
-    second_line_g_clef: second-line G-clef
-    soprano_clef: soprano clef
-    sub_bass_clef: sub-bass clef
-    tenor_c_clef: tenor C-clef
-    tenor_clef: tenor clef
-    tenor_g_clef: tenor G-clef
-    third_line_c_clef: third-line C-clef
-    third_line_f_clef: third-line F-clef
-    treble_clef: treble clef
-    viola_clef: viola clef
-    violin_clef: treble clef
-  instrument_abbreviations:
-    accordian:
-    - acc
-    alto_flute:
-    - afl
-    alto_voice:
-    - alt
-    bagpipe:
-    - bag
-    baritone_voice:
-    - bar
-    bass_voice:
-    - bass
-    bass_clarinet:
-    - bcl
-  instrument_classifications:
-    aerophone: aerophone
-    bowed: bowed
-    brass: brass
-    brass_instrument: brass instrument
-    chordophone: chordophone
-    double_reed: double-reed
-    drum: drum
-    edge_blown_aerophone: edge-blown aerophone
-    electronic: electronic
-    idiophone: idiophone
-    keyboard: keyboard
-    keyboard_instrument: keyboard instrument
-    mallet: mallet
-    membranophone: membranophone
-    metal: metal
-    mezzo_soprano_voice: mezzo-soprano
-    percussion: percussion
-    percussion_instrument: percussion instrument
-    plucked: plucked
-    plucked_instrument: plucked instrument
-    reed: reed
-    shaken: shaken
-    single_reed: single-reed
-    string: string
-    strings: strings
-    stringed_instrument: stringed instrument
-    struck: struck
-    voice: voice
-    wind: wind
-    wind_instrument: wind instrument
-    wood: wood
-    woodwind: woodwind
-  instrument_voices:
-    piccolo: piccolo
-    soprano: soprano
-    alto: alto
-    tenor: tenor
-    baritone: baritone
-    bass: bass
-    contrabass: contrabass
-    octobass: octobass
-  instruments:
-    accordian: accordian
-    alto_clarinet: alto clarinet
-    alto_flute: alto flute
-    alto_voice: alto
-    arpeggione: arpeggione
-    bagpipe: bagpipe
-    banjo: banjo
-    baritone_horn: baritone horn
-    baritone_voice: baritone
-    bass_clarinet: bass clarinet
-    bass_drum: bass drum
-    bass_guitar: bass guitar
-    bass_oboe: bass oboe
-    bass_trombone: bass trombone
-    bass_trumpet: bass trumpet
-    bass_trumpet_in_b_flat: bass trumpet in B♭
-    bass_trumpet_in_c: bass trumpet in C
-    bass_trumpet_in_e_flat: bass trumpet in E♭
-    bass_tuba: bass tuba
-    bass_tuba_in_e_flat: bass tuba in E♭
-    bass_tuba_in_f: bass tuba in F
-    bass_voice: bass
-    basset_horn: basset horn
-    bassoon: bassoon
-    bugle: bugle
-    bugle_in_b_flat: bugle in B♭
-    castanets: castanets
-    celesta: celesta
-    cello: cello
-    chimes: chimes
-    cimbalom: cimbalom
-    clarinet: clarinet
-    clarinet_in_a: clarinet in A
-    clarinet_in_c: clarinet in C
-    clarinet_in_d: clarinet in D
-    clarinet_in_e_flat: clarinet in E♭
-    clash_cymbals: clash cymbals
-    clavichord: clavichord
-    contrabass_clarinet: contrabass clarinet
-    contrabassoon: contrabassoon
-    cor_anglais: cor anglais
-    cornet: cornet
-    cowbell: cowbell
-    countertenor_voice: countertenor
-    crotales: crotales
-    cymbal: cymbal
-    double_bass: double bass
-    english_horn: English horn
-    euphonium: euphonium
-    flugelhorn: flugelhorn
-    flute: flute
-    french_horn: French horn
-    glockenspiel: glockenspiel
-    great_highland_bagpipe: great highland bagpipe
-    guitar: guitar
-    hammered_dulcimer: hammered dulcimer
-    harp: harp
-    harpsichord: harpsichord
-    horn: horn
-    lute: lute
-    mandolin: mandolin
-    maracas: maracas
-    marimba: marimba
-    metal_block: metal block
-    natural_horn: natural horn
-    oboe: oboe
-    oboe_d_amore: oboe d'amore
-    organ: organ
-    piano: piano
-    piccolo: piccolo
-    piccolo_clarinet: piccolo clarinet
-    piccolo_flute: piccolo flute
-    piccolo_trumpet: piccolo trumpet
-    recorder: recorder
-    saxophone: saxophone
-    side_drum: side drum
-    snare_drum: snare drum
-    soprano_voice: soprano
-    sousaphone: sousaphone
-    suspended_cymbal: suspended cymbal
-    synthesizer: synthesizer
-    tam_tam: tam-tam
-    tambourine: tambourine
-    temple_blocks: temple blocks
-    tenor_drum: tenor drum
-    tenor_trombone: tenor trombone
-    tenor_voice: tenor
-    timpani: timpani
-    triangle: triangle
-    trombone: trombone
-    trumpet: trumpet
-    trumpet_in_c: trumpet in C
-    trumpet_in_d: trumpet in D
-    trumpet_in_e_flat: trumpet in E♭
-    tuba: tuba
-    tuba_in_c: tuba in C
-    tubular_bells: tubular bells
-    vibraphone: vibraphone
-    viola: viola
-    viola_d_amore: viola d'amore
-    viola_da_gamba: viola da gamba
-    violin: violin
-    violoncello: violoncello
-    voice: voice
-    woodblock: woodblock
-    xylophone: xylophone
-    zither: zither
-  locales:
-    de: German
-    en: English
-    es: Spanish
-    fr: French
-    it: Italian
-    ru: Russian
-  reference_pitches:
-    a440: A440
-    baroque: Baroque pitch
-    berlin_philharmonic: Berlin Philharmonic
-    boston_symphony_orchestra: Boston Symphony Orchestra
-    chamber_tone: chamber tone
-    choir: choir tone
-    classical: classical pitch
-    concert: concert pitch
-    continental: continental pitch
-    french: French pitch
-    haydn: Haydn pitch
-    high: high pitch
-    international: international pitch
-    iso_16: ISO 16
-    low: low pitch
-    mozart: Mozart pitch
-    new_philharmonic: new philharmonic pitch
-    new_york_philharmonic: New York Philharmonic
-    old_philharmonic: old philharmonic pitch
-    philosophical: philosophical pitch
-    sauveur: Sauveur pitch
-    scheibler: Scheibler pitch
-    scientific: scientific pitch
-    stuttgart: Stuttgart pitch
-    sydney_symphony_orchestra: Sydney Symphony Orchestra
-    verdi: Verdi tuning
-  rudiments:
-    chromatic_interval: chromatic interval
-    circle: circle
-    clef: clef
-    consonance: consonance
-    diatonic_interval: diatonic interval
-    grand_staff: grand staff
-    harmonic_interval: harmonic interval
-    instrument: instrument
-    interval_cycle: interval cycle
-    key_signature: key signature
-    letter_name: letter name
-    melodic_interval: melodic interval
-    meter: meter
-    motion: motion
-    musical_symbol: musical symbol
-    octave: octave
-    pitch: pitch
-    pitch_class: pitch class
-    pitch_class_set: pitch class set
-    pitch_set: pitch set
-    quality: quality
-    reference_pitch: reference pitch
-    rhythm: rhythm
-    rhythmic_unit: rhythmic unit
-    scale: scale
-    scale_degree: scale degree
-    scale_type: scale type
-    sign: sign
-    solmization: solmization
-    sonority: sonority
-    spelling: spelling
-    staff: staff
-    tuba: tuba
-    tuning: tuning
+  head_music:
+    chromatic_intervals:
+      perfect_unison: perfect unison
+      minor_second: minor second
+      major_second: major second
+      minor_third: minor third
+      major_third: major third
+      perfect_fourth: perfect fourth
+      tritone: tritone
+      perfect_fifth: perfect fifth
+      minor_sixth: minor sixth
+      major_sixth: major sixth
+      minor_seventh: minor seventh
+      major_seventh: major seventh
+      perfect_octave: perfect octave
+    clefs:
+      alto_clef: alto clef
+      baritone_c_clef: baritone C-clef
+      baritone_clef: baritone clef
+      baritone_f_clef: baritone F-clef
+      bass_clef: bass clef
+      c_clef: C-clef
+      vocal_tenor_clef: vocal tenor clef
+      contrabass_clef: contrabass clef
+      countertenor_clef: countertenor clef
+      double_treble_clef: double treble clef
+      drum_clef: drum clef
+      f_clef: F-clef
+      fifth_line_c_clef: fifth-line C-clef
+      fifth_line_f_clef: fifth-line F-clef
+      first_line_c_clef: first-line C-clef
+      first_line_g_clef: first-line G-clef
+      fourth_line_c_clef: fourth-line C-clef
+      fourth_line_f_clef: fourth-line F-clef
+      french_clef: French clef
+      french_violin_clef: French violin clef
+      g_clef: G-clef
+      indefinite_pitch_clef: indefinite pitch clef
+      mezzo_soprano_clef: mezzo-soprano clef
+      neutral_clef: neutral clef
+      percussion_clef: percussion clef
+      second_line_c_clef: second-line C-clef
+      second_line_g_clef: second-line G-clef
+      soprano_clef: soprano clef
+      sub_bass_clef: sub-bass clef
+      tenor_c_clef: tenor C-clef
+      tenor_clef: tenor clef
+      tenor_g_clef: tenor G-clef
+      third_line_c_clef: third-line C-clef
+      third_line_f_clef: third-line F-clef
+      treble_clef: treble clef
+      viola_clef: viola clef
+      violin_clef: treble clef
+    instrument_abbreviations:
+      accordian:
+      - acc
+      alto_flute:
+      - afl
+      alto_voice:
+      - alt
+      bagpipe:
+      - bag
+      baritone_voice:
+      - bar
+      bass_voice:
+      - bass
+      bass_clarinet:
+      - bcl
+    instrument_classifications:
+      aerophone: aerophone
+      bowed: bowed
+      brass: brass
+      brass_instrument: brass instrument
+      chordophone: chordophone
+      double_reed: double-reed
+      drum: drum
+      edge_blown_aerophone: edge-blown aerophone
+      electronic: electronic
+      idiophone: idiophone
+      keyboard: keyboard
+      keyboard_instrument: keyboard instrument
+      mallet: mallet
+      membranophone: membranophone
+      metal: metal
+      mezzo_soprano_voice: mezzo-soprano
+      percussion: percussion
+      percussion_instrument: percussion instrument
+      plucked: plucked
+      plucked_instrument: plucked instrument
+      reed: reed
+      shaken: shaken
+      single_reed: single-reed
+      string: string
+      strings: strings
+      stringed_instrument: stringed instrument
+      struck: struck
+      voice: voice
+      wind: wind
+      wind_instrument: wind instrument
+      wood: wood
+      woodwind: woodwind
+    instrument_voices:
+      piccolo: piccolo
+      soprano: soprano
+      alto: alto
+      tenor: tenor
+      baritone: baritone
+      bass: bass
+      contrabass: contrabass
+      octobass: octobass
+    instruments:
+      accordian: accordian
+      alto_clarinet: alto clarinet
+      alto_flute: alto flute
+      alto_voice: alto
+      arpeggione: arpeggione
+      bagpipe: bagpipe
+      banjo: banjo
+      baritone_horn: baritone horn
+      baritone_voice: baritone
+      bass_clarinet: bass clarinet
+      bass_drum: bass drum
+      bass_guitar: bass guitar
+      bass_oboe: bass oboe
+      bass_trombone: bass trombone
+      bass_trumpet: bass trumpet
+      bass_trumpet_in_b_flat: bass trumpet in B♭
+      bass_trumpet_in_c: bass trumpet in C
+      bass_trumpet_in_e_flat: bass trumpet in E♭
+      bass_tuba: bass tuba
+      bass_tuba_in_e_flat: bass tuba in E♭
+      bass_tuba_in_f: bass tuba in F
+      bass_voice: bass
+      basset_horn: basset horn
+      bassoon: bassoon
+      bugle: bugle
+      bugle_in_b_flat: bugle in B♭
+      castanets: castanets
+      celesta: celesta
+      cello: cello
+      chimes: chimes
+      cimbalom: cimbalom
+      clarinet: clarinet
+      clarinet_in_a: clarinet in A
+      clarinet_in_c: clarinet in C
+      clarinet_in_d: clarinet in D
+      clarinet_in_e_flat: clarinet in E♭
+      clash_cymbals: clash cymbals
+      clavichord: clavichord
+      contrabass_clarinet: contrabass clarinet
+      contrabassoon: contrabassoon
+      cor_anglais: cor anglais
+      cornet: cornet
+      cowbell: cowbell
+      countertenor_voice: countertenor
+      crotales: crotales
+      cymbal: cymbal
+      double_bass: double bass
+      english_horn: English horn
+      euphonium: euphonium
+      flugelhorn: flugelhorn
+      flute: flute
+      french_horn: French horn
+      glockenspiel: glockenspiel
+      great_highland_bagpipe: great highland bagpipe
+      guitar: guitar
+      hammered_dulcimer: hammered dulcimer
+      harp: harp
+      harpsichord: harpsichord
+      horn: horn
+      lute: lute
+      mandolin: mandolin
+      maracas: maracas
+      marimba: marimba
+      metal_block: metal block
+      natural_horn: natural horn
+      oboe: oboe
+      oboe_d_amore: oboe d'amore
+      organ: organ
+      piano: piano
+      piccolo: piccolo
+      piccolo_clarinet: piccolo clarinet
+      piccolo_flute: piccolo flute
+      piccolo_trumpet: piccolo trumpet
+      recorder: recorder
+      saxophone: saxophone
+      side_drum: side drum
+      snare_drum: snare drum
+      soprano_voice: soprano
+      sousaphone: sousaphone
+      suspended_cymbal: suspended cymbal
+      synthesizer: synthesizer
+      tam_tam: tam-tam
+      tambourine: tambourine
+      temple_blocks: temple blocks
+      tenor_drum: tenor drum
+      tenor_trombone: tenor trombone
+      tenor_voice: tenor
+      timpani: timpani
+      triangle: triangle
+      trombone: trombone
+      trumpet: trumpet
+      trumpet_in_c: trumpet in C
+      trumpet_in_d: trumpet in D
+      trumpet_in_e_flat: trumpet in E♭
+      tuba: tuba
+      tuba_in_c: tuba in C
+      tubular_bells: tubular bells
+      vibraphone: vibraphone
+      viola: viola
+      viola_d_amore: viola d'amore
+      viola_da_gamba: viola da gamba
+      violin: violin
+      violoncello: violoncello
+      voice: voice
+      woodblock: woodblock
+      xylophone: xylophone
+      zither: zither
+    locales:
+      de: German
+      en: English
+      es: Spanish
+      fr: French
+      it: Italian
+      ru: Russian
+    reference_pitches:
+      a440: A440
+      baroque: Baroque pitch
+      berlin_philharmonic: Berlin Philharmonic
+      boston_symphony_orchestra: Boston Symphony Orchestra
+      chamber_tone: chamber tone
+      choir: choir tone
+      classical: classical pitch
+      concert: concert pitch
+      continental: continental pitch
+      french: French pitch
+      haydn: Haydn pitch
+      high: high pitch
+      international: international pitch
+      iso_16: ISO 16
+      low: low pitch
+      mozart: Mozart pitch
+      new_philharmonic: new philharmonic pitch
+      new_york_philharmonic: New York Philharmonic
+      old_philharmonic: old philharmonic pitch
+      philosophical: philosophical pitch
+      sauveur: Sauveur pitch
+      scheibler: Scheibler pitch
+      scientific: scientific pitch
+      stuttgart: Stuttgart pitch
+      sydney_symphony_orchestra: Sydney Symphony Orchestra
+      verdi: Verdi tuning
+    rudiments:
+      chromatic_interval: chromatic interval
+      circle: circle
+      clef: clef
+      consonance: consonance
+      diatonic_interval: diatonic interval
+      grand_staff: grand staff
+      harmonic_interval: harmonic interval
+      instrument: instrument
+      interval_cycle: interval cycle
+      key_signature: key signature
+      letter_name: letter name
+      melodic_interval: melodic interval
+      meter: meter
+      motion: motion
+      musical_symbol: musical symbol
+      octave: octave
+      pitch: pitch
+      pitch_class: pitch class
+      pitch_class_set: pitch class set
+      pitch_set: pitch set
+      quality: quality
+      reference_pitch: reference pitch
+      rhythm: rhythm
+      rhythmic_unit: rhythmic unit
+      scale: scale
+      scale_degree: scale degree
+      scale_type: scale type
+      sign: sign
+      solmization: solmization
+      sonority: sonority
+      spelling: spelling
+      staff: staff
+      tuba: tuba
+      tuning: tuning
