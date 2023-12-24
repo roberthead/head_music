@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A PitchClassSet represents a pitch-class set or pitch collection.
 # See also: PitchSet, PitchClass
 class HeadMusic::PitchClassSet

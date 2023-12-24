@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A Sonority describes a set of pitch class intervalic relationships.
 # For example, a minor triad, or a major-minor seventh chord.
 # The Sonority class is a factory for returning one of its subclasses.

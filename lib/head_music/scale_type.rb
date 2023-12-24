@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A ScaleType represents a particular scale pattern, such as major, lydian, or minor pentatonic.
 class HeadMusic::ScaleType
   H = 1 # whole step

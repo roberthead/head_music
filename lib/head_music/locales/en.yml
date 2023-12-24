@@ -103,6 +103,7 @@ en:
     instrument_voices:
       piccolo: piccolo
       soprano: soprano
+      mezzo_soprano: mezzo-soprano
       alto: alto
       tenor: tenor
       baritone: baritone

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A reference pitch has a pitch and a frequency
 # With no arguments, it assumes that A4 = 440.0 Hz
 class HeadMusic::ReferencePitch

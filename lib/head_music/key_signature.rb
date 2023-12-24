@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Represents a key signature.
 # In French, sharps and flats in the key signature are called "altérations".
 class HeadMusic::KeySignature

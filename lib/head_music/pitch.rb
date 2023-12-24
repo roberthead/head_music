@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A pitch is a named frequency represented by a spelling and a register.
 class HeadMusic::Pitch
   include Comparable

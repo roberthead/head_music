@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module HeadMusic
   GOLDEN_RATIO = (1 + 5**0.5) / 2.0
   GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO
@@ -42,6 +40,9 @@ require "head_music/diatonic_interval"
 require "head_music/harmonic_interval"
 require "head_music/instrument_family"
 require "head_music/instrument"
+require "head_music/instrument/pitch_configuration"
+require "head_music/instrument/staff_configuration"
+require "head_music/instrument/staff"
 require "head_music/interval_cycle"
 require "head_music/key_signature"
 require "head_music/letter_name"

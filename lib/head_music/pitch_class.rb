@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A pitch class is a set of pitches separated by octaves.
 class HeadMusic::PitchClass
   include Comparable

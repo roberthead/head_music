@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A namespace for utilities classes and modules
 module HeadMusic::Utilities; end
 

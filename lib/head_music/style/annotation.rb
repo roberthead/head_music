@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # An Annotation encapsulates an issue with or comment on a voice
 class HeadMusic::Style::Annotation
   MESSAGE = "Write music."

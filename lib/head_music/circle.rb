@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "head_music/interval_cycle"
 
 # A Circle of Fifths or Fourths shows relationships between pitch classes

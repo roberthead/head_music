@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class CompositionContext
   attr_reader :composition, :source, :expected_messages
 

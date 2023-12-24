@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # An enharmonic equivalent pitch is the same frequency spelled differently, such as D# and Eb.
 class HeadMusic::Pitch::EnharmonicEquivalence
   def self.get(pitch)

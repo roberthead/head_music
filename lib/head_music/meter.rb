@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Meter is the rhythmic size of a measure, such as 4/4 or 6/8
 class HeadMusic::Meter
   attr_reader :top_number, :bottom_number

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A PitchSet is a collection of one or more pitches.
 # See also: PitchClassSet
 class HeadMusic::PitchSet

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # The register is a numeric octave identifier used in scientific pitch notation.
 #
 # A pitch is a spelling plus a register. For example, C4 is middle C and C5 is the C one octave higher.

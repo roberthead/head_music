@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A scale contains ordered pitches starting at a tonal center.
 class HeadMusic::Scale
   SCALE_REGEX = /^[A-G][#b]?\s+\w+$/

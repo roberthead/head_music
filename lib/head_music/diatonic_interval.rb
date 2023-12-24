@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A diatonic interval is the distance between two spelled pitches.
 class HeadMusic::DiatonicInterval
   include Comparable

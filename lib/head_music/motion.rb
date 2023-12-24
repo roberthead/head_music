@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Motion defines the relative pitch direction of the upper and lower voices of subsequence intervals.
 class HeadMusic::Motion
   attr_reader :first_harmonic_interval, :second_harmonic_interval

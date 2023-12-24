@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "spec_helper"
 
 # A Solmization is a system of attributing a distinct syllable to each note in a musical scale.

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A rhythmic unit is a rudiment of duration consisting of doublings and divisions of a whole note.
 class HeadMusic::RhythmicUnit
   include HeadMusic::Named

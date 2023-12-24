@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A chromatic interval is the distance between two pitches measured in half-steps.
 class HeadMusic::ChromaticInterval
   include Comparable

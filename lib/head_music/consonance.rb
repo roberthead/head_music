@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Consonance describes a category or degree of harmonic pleasantness: perfect, imperfect, or dissonant
 class HeadMusic::Consonance
   LEVELS = %w[perfect imperfect dissonant].freeze

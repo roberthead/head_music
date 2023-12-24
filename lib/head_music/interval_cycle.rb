@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # An Interval Cycle is a collection of pitch classes created from a sequence of the same interval class.
 class HeadMusic::IntervalCycle
   attr_reader :interval, :starting_pitch

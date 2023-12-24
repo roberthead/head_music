@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # NameRudiment is a module to be included in classes whose instances may be identified by name.
 module HeadMusic::Named
   delegate :to_s, to: :name

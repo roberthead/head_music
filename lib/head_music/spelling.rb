@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Represents the spelling of a pitch, such as C# or Db.
 # Composite of a LetterName and an optional Sign.
 # Does not include the octave. See Pitch for that.

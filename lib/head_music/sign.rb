@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "head_music/musical_symbol"
 
 # A Sign is a symbol that modifies pitch, such as a sharp, flat, or natural.

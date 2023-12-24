@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A harmonic interval is the diatonic interval between two notes sounding together.
 class HeadMusic::HarmonicInterval
   attr_reader :voice1, :voice2, :position

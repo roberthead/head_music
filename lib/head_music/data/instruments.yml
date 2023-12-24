@@ -1,262 +1,274 @@
 ---
 accordion:
   family_key: accordion
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-        - clef: bass
+      staff_configurations:
+        default:
+          - clef: treble_clef
+          - clef: bass_clef
 alto_clarinet:
-  fundamental_pitch_spelling:
-    default: Eb
   family_key: clarinet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -9
+      fundamental_pitch_spelling: Eb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -9
+  range_categories:
+    - alto
 alto_flute:
-  fundamental_pitch_spelling:
-    default: G
   family_key: flute
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -5
+      fundamental_pitch_spelling: G
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -5
+  range_categories:
+    - alto
 alto_voice:
   alias_name_keys:
     - contralto
     - alto
   family_key: voice
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-  range_category:
+      staff_configurations:
+        default:
+          - clef: treble_clef
+  range_categories:
     - alto
 arpeggione:
   classification_keys:
     - bowed
     - chordophone
     - string
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -12
-  orchestra_section: string
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -12
+  orchestra_section_key: string
 great_highland_bagpipe:
   alias_name_keys:
     - bagpipe
     - bagpipes
   family_key: bagpipe
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: 1
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 1
 banjo:
   classification_keys:
     - plucked
     - chordophone
     - string
-  orchestra_section: string
-  notation:
+  orchestra_section_key: string
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -12
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -12
 baritone_horn:
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: saxhorn
-  notation:
-    alternates:
-      - staves:
-          - clef: treble
-            transposition: -14
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-          transposition: 0
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: bass_clef
+            sounding_transposition: 0
+        treble:
+          - clef: treble_clef
+            sounding_transposition: -14
+  range_categories:
+    - baritone
 baritone_voice:
   family_key: voice
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-  range_category:
+      staff_configurations:
+        default:
+          - clef: bass_clef
+  range_categories:
     - baritone
 bass_clarinet:
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: clarinet
-  notation:
-    alternates:
-      - staves:
-          - clef: bass
-            transposition: -2
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -14
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -14
+        german_notation:
+          - clef: bass_clef
+            sounding_transposition: -2
+        italian_notation:
+          - clef: bass_clef
+            sounding_transposition: -9
+  range_categories:
+    - bass
 bass_drum:
   classification_keys:
     - percussion
     - membranophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
+  orchestra_section_key: percussion
 bass_guitar:
   family_key: guitar
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-          transposition: -12
+      staff_configurations:
+        default:
+          - clef: bass_clef
+            sounding_transposition: -12
 bass_oboe:
   alias_name_keys:
     - baritone_oboe
   family_key: oboe
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -12
+  range_categories:
+    - baritone
+    - bass
 bass_trombone:
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: trombone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-bass_trumpet_in_b_flat:
-  alias_name_keys:
-    - bass_trumpet
-  fundamental_pitch_spelling:
-    default: Bb
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: bass_clef
+            sounding_transposition: 0
+bass_trumpet:
   family_key: trumpet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -14
-bass_trumpet_in_c:
-  alias_name_keys:
-    - bass_trumpet
-  fundamental_pitch_spelling:
-    default: C
-  family_key: trumpet
-  notation:
-    default:
-      staves:
-        - clef: treble
-          transposition: -12
-bass_trumpet_in_e_flat:
-  fundamental_pitch_spelling:
-    default: Eb
-  family_key: trumpet
-  notation:
-    default:
-      staves:
-        - clef: treble
-          transposition: -9
-bass_tuba_in_e_flat:
-  alias_name_keys:
-    - bass_tuba
-  fundamental_pitch_spelling:
-    default: Eb
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -14
+    in_c:
+      fundamental_pitch_spelling: C
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -12
+    in_e_flat:
+      fundamental_pitch_spelling: Eb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -9
+bass_tuba:
   family_key: tuba
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-bass_tuba_in_f:
-  alias_name_keys:
-    - bass_tuba
-  fundamental_pitch_spelling:
-    default: F
-  family_key: tuba
-  notation:
-    default:
-      staves:
-        - clef: bass
+      fundamental_pitch_spelling: F
+      staff_configurations:
+        default:
+          - clef: bass_clef
+    in_e_flat:
+      fundamental_pitch_spelling: Eb
+      staff_configurations:
+        default:
+          - clef: bass_clef
+        british_band:
+          - clef: treble_clef
+            sounding_transposition: -21
+  range_categories:
+    - bass
 bass_voice:
   family_key: voice
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-  range_category:
+      staff_configurations:
+        default:
+          - clef: bass_clef
+  range_categories:
     - bass
 basset_horn:
-  fundamental_pitch_spelling:
-    default: F
   family_key: clarinet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -7
+      fundamental_pitch_spelling: F
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -7
 bassoon:
-  fundamental_pitch_spelling:
-    default: F
   family_key: bassoon
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
+      fundamental_pitch_spelling: F
+      staff_configurations:
+        default:
+          - clef: bass_clef
 bugle:
-  fundamental_pitch_spelling:
-    default: G
   family_key: trumpet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -5
-bugle_in_b_flat:
-  fundamental_pitch_spelling:
-    default: Bb
-  family_key: trumpet
-  notation:
-    default:
-      staves:
-        - clef: treble
-          transposition: -2
+      fundamental_pitch_spelling: G
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -5
+    in_b_flat:
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -2
 castanets:
   classification_keys:
     - percussion
     - idiophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
+  orchestra_section_key: percussion
 celesta:
   classification_keys:
     - keyboard
     - percussion
     - idiophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          name_key: right_hand
-        - clef: bass
-          name_key: left_hand
-  orchestra_section: keyboard
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            name_key: right_hand
+          - clef: bass_clef
+            name_key: left_hand
+  orchestra_section_key: keyboard
 cello:
   alias_name_keys:
     - violoncello
   family_key: violin
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
+      staff_configurations:
+        default:
+          - clef: bass_clef
 chimes:
   alias_name_keys:
     - tubular_bells
@@ -264,167 +276,162 @@ chimes:
   classification_keys:
     - percussion
     - idiophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: treble_clef
+  orchestra_section_key: percussion
 cimbalom:
   classification_keys:
     - chordophone
     - string
     - struck
     - plucked
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-        - clef: bass
-  orchestra_section: string
+      staff_configurations:
+        default:
+          - clef: treble_clef
+          - clef: bass_clef
+  orchestra_section_key: string
 clarinet:
   alias_name_keys:
     - soprano_clarinet
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: clarinet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -2
-clarinet_in_a:
-  alias_name_keys:
-    - soprano_clarinet
-  fundamental_pitch_spelling:
-    default: A
-  family_key: clarinet
-  notation:
-    default:
-      staves:
-        - clef: treble
-          transposition: -3
-clarinet_in_c:
-  alias_name_keys:
-    - soprano_clarinet
-  fundamental_pitch_spelling:
-    default: C
-  family_key: clarinet
-  notation:
-    default:
-      staves:
-        - clef: treble
-          transposition: 0
-clarinet_in_d:
-  alias_name_keys:
-    - sopranino_clarinet
-  fundamental_pitch_spelling:
-    default: D
-  family_key: clarinet
-  notation:
-    default:
-      staves:
-        - clef: treble
-          transposition: 2
-clarinet_in_e_flat:
-  alias_name_keys:
-    - sopranino_clarinet
-  fundamental_pitch_spelling:
-    default: Eb
-  family_key: clarinet
-  notation:
-    default:
-      staves:
-        - clef: treble
-          transposition: 3
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -2
+    in_a:
+      fundamental_pitch_spelling: A
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -3
+    in_c:
+      fundamental_pitch_spelling: C
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 0
+    in_d:
+      fundamental_pitch_spelling: D
+      alias_name_keys:
+        - sopranino_clarinet
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 2
+    in_e_flat:
+      alias_name_keys:
+        - sopranino_clarinet
+      fundamental_pitch_spelling: Eb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 3
 clash_cymbals:
   family_key: cymbal
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
 clavichord:
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          name_key: right_hand
-        - clef: bass
-          name_key: left_hand
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            name_key: right_hand
+          - clef: bass_clef
+            name_key: left_hand
 contrabass_clarinet:
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: clarinet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -26
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -26
 contrabassoon:
   family_key: bassoon
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-          transposition: -12
+      staff_configurations:
+        default:
+          - clef: bass_clef
+            sounding_transposition: -12
 cor_anglais:
   alias_name_keys:
     - english_horn
   family_key: oboe
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -7
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -7
 cornet:
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: cornet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -2
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -2
 countertenor_voice:
   family_key: voice
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-  range_category:
+      staff_configurations:
+        default:
+          - clef: treble_clef
+  range_categories:
     - alto
 cowbell:
   classification_keys:
     - percussion
     - idiophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
+  orchestra_section_key: percussion
 crotales:
   classification_keys:
     - percussion
     - idiophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
+  orchestra_section_key: percussion
 cymbal:
   family_key: cymbal
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
 double_bass:
   alias_name_keys:
     - contrabass
     - string_bass
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-          transposition: -12
+      staff_configurations:
+        default:
+          - clef: bass_clef
+            sounding_transposition: -12
 euphonium:
   alias_name_keys:
     - tenor_tuba
@@ -432,219 +439,248 @@ euphonium:
     - aerophone
     - brass
     - wind
-  notation:
-    alternates:
-      - staves:
-          - clef: treble
-            transposition: -14
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-          transposition: 0
-  orchestra_section: brass
+      staff_configurations:
+        default:
+          - clef: bass_clef
+            sounding_transposition: 0
+    british_band:
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -14
+  orchestra_section_key: brass
 flugelhorn:
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: saxhorn
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -2
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -2
 flute:
   family_key: flute
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
 french_horn:
   alias_name_keys:
     - horn
-  fundamental_pitch_spelling:
-    default: F
   family_key: horn
-  notation:
-    alternates:
-      - staves:
-          - clef: bass
-            transposition: 5
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -7
+      fundamental_pitch_spelling: F
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -7
+        bass_clef:
+          - clef: bass_clef
+            sounding_transposition: 5
 glockenspiel:
   alias_name_keys:
     - concert_bells
     - bells
     - carillon
   family_key: glockenspiel
+  pitch_configurations:
+    default:
+      staff_configurations:
+        default:
+          - clef: treble_clef
 guitar:
   family_key: guitar
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -12
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -12
 hammered_dulcimer:
   classification_keys:
     - percussion
     - chordophone
     - string
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: treble_clef
+  orchestra_section_key: percussion
 harp:
   family_key: harp
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-        - clef: bass
+      staff_configurations:
+        default:
+          - clef: treble_clef
+          - clef: bass_clef
 harpsichord:
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          name_key: right_hand
-        - clef: bass
-          name_key: left_hand
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            name_key: right_hand
+          - clef: bass_clef
+            name_key: left_hand
 lute:
   family_key: lute
-  notation:
-    alternates:
-      - staves:
-          - clef: treble
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-        - clef: bass
+      staff_configurations:
+        default:
+          - clef: treble_clef
+          - clef: bass_clef
+        single_staff:
+          - clef: treble_clef
 mandolin:
   family_key: mandolin
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
 maracas:
   classification_keys:
     - percussion
     - shaken
     - idiophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
+  orchestra_section_key: percussion
 marimba:
   family_key: marimba
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-        - clef: bass
+      staff_configurations:
+        default:
+          - clef: treble_clef
+          - clef: bass_clef
 mezzo_soprano_voice:
   alias_name_keys:
     - mezzo_soprano
   family_key: voice
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-  range_category:
+      staff_configurations:
+        default:
+          - clef: treble_clef
+  range_categories:
     - mezzo_soprano
 natural_horn:
   family_key: horn
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
 oboe:
   family_key: oboe
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
 oboe_d_amore:
   alias_name_keys:
     - hautbois_d_amour
   family_key: oboe
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -3
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -3
 organ:
   alias_name_keys:
     - pipe_organ
   family_key: organ
-  notation:
-    alternates:
-      - staves:
-          - clef: treble
-            name_key: right_hand
-          - clef: treble
-            name_key: left_hand
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          name_key: right_hand
-        - clef: bass
-          name_key: left_hand
-        - clef: bass
-          name_key: pedalboard
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            name_key: right_hand
+          - clef: bass_clef
+            name_key: left_hand
+          - clef: bass_clef
+            name_key: pedalboard
+        no_pedal:
+          - clef: treble_clef
+            name_key: right_hand
+          - clef: treble_clef
+            name_key: left_hand
 piano:
   alias_name_keys:
     - pianoforte
     - fortepiano
   family_key: piano
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          name_key: right_hand
-        - clef: bass
-          name_key: left_hand
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            name_key: right_hand
+          - clef: bass_clef
+            name_key: left_hand
 piccolo_clarinet:
-  fundamental_pitch_spelling:
-    default: Ab
   family_key: clarinet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: 8
+      fundamental_pitch_spelling: Ab
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 8
 piccolo_flute:
   alias_name_keys:
     - piccolo
   family_key: flute
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: 12
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 12
 piccolo_trumpet:
-  fundamental_pitch_spelling:
-    alternate: A
-    default: Bb
   family_key: trumpet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: 10
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 10
+    alternate_leadpipe:
+      fundamental_pitch_spelling: A
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 9
+  range_categories:
+    - piccolo
 recorder:
   family_key: recorder
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
 saxophone:
   family_key: saxophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
 snare_drum:
   alias_name_keys:
     - side_drum
@@ -652,213 +688,225 @@ snare_drum:
     - military_drum
     - field_drum
   family_key: snare_drum
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
 soprano_voice:
   alias_name_keys:
     - soprano
   family_key: voice
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-  range_category:
+      staff_configurations:
+        default:
+          - clef: treble_clef
+  range_categories:
     - soprano
 sousaphone:
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: tuba
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: bass_clef
   transposition: 0
 suspended_cymbal:
   family_key: cymbal
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
 synthesizer:
   family_key: synthesizer
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          name_key: right_hand
-        - clef: bass
-          name_key: left_hand
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            name_key: right_hand
+          - clef: bass_clef
+            name_key: left_hand
 tam_tam:
   alias_name_keys:
     - tamtam
     - gong
   family_key: gong
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
 tambourine:
   classification_keys:
     - percussion
     - shaken
     - idiophone
     - membranophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
+  orchestra_section_key: percussion
 temple_blocks:
   family_key: woodblock
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
 tenor_drum:
   classification_keys:
     - percussion
     - struck
     - membranophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
+  orchestra_section_key: percussion
 tenor_voice:
   family_key: voice
-  notation:
-    alternates:
-      - staves:
-          - clef: bass
-      - staves:
-          - clef: treble
-            transposition: -12
-      - staves:
-          - clef: tenor
+  pitch_configurations:
     default:
-      staves:
-        - clef: vocal_tenor
-          transposition: -12
-  range_category:
+      staff_configurations:
+        default:
+          - clef: vocal_tenor_clef
+        bass:
+          - clef: bass_clef
+        tenor:
+          - clef: tenor_clef
+        treble:
+          - clef: treble_clef
+            sounding_transposition: -12
+  range_categories:
     - tenor
 timpani:
   alias_name_keys:
     - kettledrum
     - timpanum
   family_key: kettledrum
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
 triangle:
   classification_keys:
     - percussion
     - struck
     - idiophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
-  orchestra_section: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
+  orchestra_section_key: percussion
 trombone:
   alias_name_keys:
     - tenor_trombone
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: trombone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: bass_clef
 trumpet:
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: trumpet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: -2
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: -2
 trumpet_in_c:
-  fundamental_pitch_spelling:
-    default: C
   family_key: trumpet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: 0
+      fundamental_pitch_spelling: C
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 0
 trumpet_in_d:
-  fundamental_pitch_spelling:
-    default: D
   family_key: trumpet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: 2
+      fundamental_pitch_spelling: D
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 2
 trumpet_in_e_flat:
-  fundamental_pitch_spelling:
-    default: Eb
   family_key: trumpet
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
-          transposition: 3
+      fundamental_pitch_spelling: Eb
+      staff_configurations:
+        default:
+          - clef: treble_clef
+            sounding_transposition: 3
 tuba:
   alias_name_keys:
     - contrabass_tuba
-  fundamental_pitch_spelling:
-    default: Bb
   family_key: tuba
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: bass
-tuba_in_c:
-  alias_name_keys:
-    - contrabass_tuba
-  fundamental_pitch_spelling:
-    default: C
-  family_key: tuba
-  notation:
-    default:
-      staves:
-        - clef: bass
+      fundamental_pitch_spelling: Bb
+      staff_configurations:
+        default:
+          - clef: bass_clef
+        british_band:
+          - clef: treble_clef
+            sounding_transposition: -26
+    in_c:
+      fundamental_pitch_spelling: C
+      staff_configurations:
+        default:
+          - clef: bass_clef
 vibraphone:
   alias_name_keys:
     - vibes
   family_key: vibraphone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
 viola:
   family_key: violin
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: alto
+      staff_configurations:
+        default:
+          - clef: alto_clef
 violin:
   alias_name_keys:
     - fiddle
   family_key: violin
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef
 woodblock:
   family_key: woodblock
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: percussion
+      staff_configurations:
+        default:
+          - clef: neutral_clef
 xylophone:
   family_key: xylophone
-  notation:
+  pitch_configurations:
     default:
-      staves:
-        - clef: treble
+      staff_configurations:
+        default:
+          - clef: treble_clef

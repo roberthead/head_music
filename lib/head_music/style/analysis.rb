@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A module for style analysis and guidelines.
 module HeadMusic::Style; end
 

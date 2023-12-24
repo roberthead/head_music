@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A melodic interval is the distance between one note and the next.
 class HeadMusic::MelodicInterval
   attr_reader :first_note, :second_note

@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A module for musical content
 module HeadMusic::Content; end
 

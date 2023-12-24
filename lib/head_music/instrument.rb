@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A musical instrument.
 # An instrument object can be assigned to a staff object.
 # Attributes:
@@ -8,14 +6,11 @@
 #   orchestra_section_key: the section of the orchestra (e.g. "strings")
 #   family_key: the key for the family of the instrument (e.g. "saxophone")
 #   classification_keys: an array of classification_keys
-#   transposition: the number of semitones between the written and the sounding pitch (optional, default: 0)
 #   default_clefs: the default clef or system of clefs for the instrument
 #     - [treble] for instruments that use the treble clef
 #     - [treble, bass] for instruments that use the grand staff
-#   notation:
-#     a hash of default and alternative notation systems,
-#     each with a staff's key with an array of hashes
-#     including clef and transposition (where applicable)
+#   pitch_configurations:
+#     a hash of default and alternative fundamental pitches.
 # Associations:
 #   family: the family of the instrument (e.g. "saxophone")
 #   orchestra_section: the section of the orchestra (e.g. "strings")
@@ -25,8 +20,7 @@ class HeadMusic::Instrument
   INSTRUMENTS = YAML.load_file(File.expand_path("data/instruments.yml", __dir__)).freeze
 
   def self.get(name)
-    result = get_by_name(name) || get_by_name(key_for_name(name)) || get_by_alias(name)
-    result || new(name)
+    get_by_name(name)
   end
 
   def self.all
@@ -38,9 +32,7 @@ class HeadMusic::Instrument
   attr_reader(
     :name_key, :alias_name_keys,
     :family_key, :orchestra_section_key,
-    :notation, :classification_keys,
-    :fundamental_pitch_spelling, :transposition,
-    :default_staves, :default_clefs
+    :pitch_configurations, :classification_keys
   )
 
   def ==(other)
@@ -61,12 +53,12 @@ class HeadMusic::Instrument
 
   # Returns true if the instrument sounds at a different pitch than written.
   def transposing?
-    transposition != 0
+    default_sounding_transposition != 0
   end
 
   # Returns true if the instrument sounds at a different register than written.
   def transposing_at_the_octave?
-    transposing? && transposition % 12 == 0
+    transposing? && default_sounding_transposition % 12 == 0
   end
 
   def single_staff?
@@ -78,9 +70,29 @@ class HeadMusic::Instrument
   end
 
   def pitched?
-    return false if default_clefs.compact.uniq == ["percussion"]
+    return false if default_clefs.compact.uniq == [HeadMusic::Clef.get("neutral_clef")]
 
     default_clefs.any?
+  end
+
+  def default_pitch_configuration
+    pitch_configurations.find(&:default?) || pitch_configurations.first
+  end
+
+  def default_staff_configuration
+    default_pitch_configuration&.default_staff_configuration
+  end
+
+  def default_staves
+    default_staff_configuration&.staves || []
+  end
+
+  def default_clefs
+    default_staves&.map(&:clef) || []
+  end
+
+  def default_sounding_transposition
+    default_staves&.first&.sounding_transposition || 0
   end
 
   private_class_method :new
@@ -146,10 +158,10 @@ class HeadMusic::Instrument
   def initialize_attributes(record)
     @orchestra_section_key ||= record["orchestra_section_key"]
     @classification_keys = [@classification_keys, record["classification_keys"]].flatten.compact.uniq
-    @fundamental_pitch_spelling = record["fundamental_pitch_spelling"]
-    @default_staves = (record.dig("notation", "default", "staves") || [])
-    @default_clefs = @default_staves.map { |staff| staff["clef"] }
-    @transposition = @default_staves&.first&.[]("transposition") || 0
+    @pitch_configurations =
+      (record["pitch_configurations"] || {}).map do |key, attributes|
+        HeadMusic::Instrument::PitchConfiguration.new(key, attributes)
+      end
   end
 
   def inferred_name

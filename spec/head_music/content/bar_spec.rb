@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "spec_helper"
 
 # TODO: Make this computed? Or representative of hardened computations?

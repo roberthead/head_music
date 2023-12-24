@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # Music has seven lette names that are used to identify pitches and pitch classes.
 class HeadMusic::LetterName
   NAMES = %w[C D E F G A B].freeze

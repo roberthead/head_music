@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "yaml"
 
 # A clef assigns pitches to the lines and spaces of a staff.

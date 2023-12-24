@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require "spec_helper"
 
 describe HeadMusic::Clef do
@@ -128,6 +126,12 @@ describe HeadMusic::Clef do
     it { is_expected.to eq described_class.get("percussion clef") }
     it { is_expected.to eq described_class.get("Schlagzeugschlüssel") }
     it { is_expected.not_to eq described_class.get("clé d'ut") }
+  end
+
+  context "when 'percussion'" do
+    let(:name) { "percussion clef" }
+
+    it { is_expected.to eq described_class.get("neutral clef") }
   end
 
   describe "constructor" do

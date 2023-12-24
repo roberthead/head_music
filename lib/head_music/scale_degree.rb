@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # A scale degree is a number indicating the ordinality of the spelling in the key signature.
 # TODO: Rewrite to accept a tonal_center and a scale type.
 class HeadMusic::ScaleDegree
