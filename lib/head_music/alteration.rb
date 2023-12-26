@@ -1,15 +1,15 @@
 require "head_music/musical_symbol"
 
-# A Sign is a symbol that modifies pitch, such as a sharp, flat, or natural.
+# A Alteration is a symbol that modifies pitch, such as a sharp, flat, or natural.
 # In French, sharps and flats in the key signature are called "altérations".
-class HeadMusic::Sign
+class HeadMusic::Alteration
   include Comparable
 
   attr_reader :identifier, :cents, :musical_symbols
 
   delegate :ascii, :unicode, :html_entity, to: :musical_symbol
 
-  SIGN_RECORDS = [
+  ALTERATION_RECORDS = [
     {
       identifier: :sharp, cents: 100,
       symbols: [{ascii: "#", unicode: "♯", html_entity: "&#9839;"}]
@@ -32,14 +32,14 @@ class HeadMusic::Sign
     }
   ].freeze
 
-  SIGN_IDENTIFIERS = SIGN_RECORDS.map { |attributes| attributes[:identifier] }.freeze
+  ALTERATION_IDENTIFIERS = ALTERATION_RECORDS.map { |attributes| attributes[:identifier] }.freeze
 
   def self.all
-    SIGN_RECORDS.map { |attributes| new(attributes) }
+    ALTERATION_RECORDS.map { |attributes| new(attributes) }
   end
 
   def self.symbols
-    @symbols ||= all.map { |sign| [sign.ascii, sign.unicode] }.flatten.reject { |s| s.nil? || s.empty? }
+    @symbols ||= all.map { |alteration| [alteration.ascii, alteration.unicode] }.flatten.reject { |s| s.nil? || s.empty? }
   end
 
   def self.matcher
@@ -51,16 +51,16 @@ class HeadMusic::Sign
   end
 
   def self.get(identifier)
-    return identifier if identifier.is_a?(HeadMusic::Sign)
+    return identifier if identifier.is_a?(HeadMusic::Alteration)
 
-    all.detect do |sign|
-      sign.representions.include?(identifier)
+    all.detect do |alteration|
+      alteration.representions.include?(identifier)
     end
   end
 
   def self.by(key, value)
-    all.detect do |sign|
-      sign.send(key) == value if %i[cents semitones].include?(key.to_sym)
+    all.detect do |alteration|
+      alteration.send(key) == value if %i[cents semitones].include?(key.to_sym)
     end
   end
 
@@ -77,7 +77,7 @@ class HeadMusic::Sign
     cents / 100.0
   end
 
-  SIGN_IDENTIFIERS.each do |key|
+  ALTERATION_IDENTIFIERS.each do |key|
     define_method(:"#{key}?") { identifier == key }
   end
 
@@ -86,7 +86,7 @@ class HeadMusic::Sign
   end
 
   def <=>(other)
-    other = HeadMusic::Sign.get(other)
+    other = HeadMusic::Alteration.get(other)
     cents <=> other.cents
   end
 

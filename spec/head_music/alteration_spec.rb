@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Sign do
+describe HeadMusic::Alteration do
   describe ".get" do
     specify { expect(described_class.get("#").identifier).to eq :sharp }
     specify { expect(described_class.get("sharp").identifier).to eq :sharp }

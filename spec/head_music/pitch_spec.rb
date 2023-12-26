@@ -77,7 +77,7 @@ describe HeadMusic::Pitch do
       subject(:pitch) { described_class.get("C4") }
 
       its(:letter_name) { is_expected.to eq "C" }
-      its(:sign) { is_expected.to be_nil }
+      its(:alteration) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
       its(:register) { is_expected.to eq 4 }
       its(:midi_note_number) { is_expected.to eq 60 }
@@ -103,7 +103,7 @@ describe HeadMusic::Pitch do
       subject(:pitch) { described_class.get("F#-1") }
 
       its(:letter_name) { is_expected.to eq "F" }
-      its(:sign) { is_expected.to eq "#" }
+      its(:alteration) { is_expected.to eq "#" }
       its(:pitch_class) { is_expected.to eq 6 }
       its(:register) { is_expected.to eq(-1) }
       its(:midi_note_number) { is_expected.to eq 6 }
@@ -115,7 +115,7 @@ describe HeadMusic::Pitch do
       subject(:pitch) { described_class.get("Bb5") }
 
       its(:letter_name) { is_expected.to eq "B" }
-      its(:sign) { is_expected.to eq "b" }
+      its(:alteration) { is_expected.to eq "b" }
       its(:pitch_class) { is_expected.to eq 10 }
       its(:register) { is_expected.to eq 5 }
       its(:midi_note_number) { is_expected.to eq 82 }
@@ -127,7 +127,7 @@ describe HeadMusic::Pitch do
       subject(:pitch) { described_class.get("Eb7") }
 
       its(:letter_name) { is_expected.to eq "E" }
-      its(:sign) { is_expected.to eq "b" }
+      its(:alteration) { is_expected.to eq "b" }
       its(:pitch_class) { is_expected.to eq 3 }
       its(:register) { is_expected.to eq 7 }
       its(:midi_note_number) { is_expected.to eq 99 }

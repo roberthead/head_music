@@ -253,6 +253,7 @@ en:
       sydney_symphony_orchestra: Sydney Symphony Orchestra
       verdi: Verdi tuning
     rudiments:
+      alteration: alteration
       chromatic_interval: chromatic interval
       circle: circle
       clef: clef
@@ -280,7 +281,6 @@ en:
       scale: scale
       scale_degree: scale degree
       scale_type: scale type
-      sign: sign
       solmization: solmization
       sonority: sonority
       spelling: spelling

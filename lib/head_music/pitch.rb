@@ -6,11 +6,11 @@ class HeadMusic::Pitch
 
   delegate :letter_name, to: :spelling
   delegate :series_ascending, :series_descending, to: :letter_name, prefix: true
-  delegate :sign, :sharp?, :flat?, to: :spelling
+  delegate :alteration, :sharp?, :flat?, to: :spelling
   delegate :pitch_class, to: :spelling
   delegate :number, to: :pitch_class, prefix: true
   delegate :pitch_class_number, to: :natural, prefix: true
-  delegate :semitones, to: :sign, prefix: true, allow_nil: true
+  delegate :semitones, to: :alteration, prefix: true, allow_nil: true
   delegate :steps_to, to: :letter_name, prefix: true
 
   delegate :smallest_interval_to, to: :pitch_class
@@ -60,9 +60,9 @@ class HeadMusic::Pitch
   def self.from_number_and_letter(number, letter_name)
     letter_name = HeadMusic::LetterName.get(letter_name)
     natural_letter_pitch = natural_letter_pitch(number, letter_name)
-    sign_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::PitchClass.get(number))
-    sign = HeadMusic::Sign.by(:semitones, sign_interval) if sign_interval != 0
-    spelling = HeadMusic::Spelling.fetch_or_create(letter_name, sign)
+    alteration_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::PitchClass.get(number))
+    alteration = HeadMusic::Alteration.by(:semitones, alteration_interval) if alteration_interval != 0
+    spelling = HeadMusic::Spelling.fetch_or_create(letter_name, alteration)
     fetch_or_create(spelling, natural_letter_pitch.register)
   end
 
@@ -92,7 +92,7 @@ class HeadMusic::Pitch
   end
 
   def midi_note_number
-    (register + 1) * 12 + letter_name.pitch_class.to_i + sign_semitones.to_i
+    (register + 1) * 12 + letter_name.pitch_class.to_i + alteration_semitones.to_i
   end
 
   alias_method :midi, :midi_note_number
@@ -111,7 +111,7 @@ class HeadMusic::Pitch
   end
 
   def natural
-    HeadMusic::Pitch.get(to_s.gsub(HeadMusic::Sign.matcher, ""))
+    HeadMusic::Pitch.get(to_s.gsub(HeadMusic::Alteration.matcher, ""))
   end
 
   def +(other)

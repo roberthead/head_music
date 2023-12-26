@@ -1,16 +1,16 @@
 # Represents the spelling of a pitch, such as C# or Db.
-# Composite of a LetterName and an optional Sign.
+# Composite of a LetterName and an optional Alteration.
 # Does not include the octave. See Pitch for that.
 class HeadMusic::Spelling
-  MATCHER = /^\s*([A-G])(#{HeadMusic::Sign.matcher}?)(-?\d+)?\s*$/i
+  MATCHER = /^\s*([A-G])(#{HeadMusic::Alteration.matcher}?)(-?\d+)?\s*$/i
 
-  attr_reader :pitch_class, :letter_name, :sign
+  attr_reader :pitch_class, :letter_name, :alteration
 
   delegate :number, to: :pitch_class, prefix: true
   delegate :to_i, to: :pitch_class_number
   delegate :series_ascending, :series_descending, to: :letter_name, prefix: true
   delegate :enharmonic?, to: :enharmonic_equivalence
-  delegate :sharp?, :flat?, :double_sharp?, :double_flat?, to: :sign, allow_nil: true
+  delegate :sharp?, :flat?, :double_sharp?, :double_flat?, to: :alteration, allow_nil: true
 
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::Spelling)
@@ -29,8 +29,8 @@ class HeadMusic::Spelling
     letter_name = HeadMusic::LetterName.get(letter_name)
     return nil unless letter_name
 
-    sign = HeadMusic::Sign.get(sign_string)
-    fetch_or_create(letter_name, sign)
+    alteration = HeadMusic::Alteration.get(sign_string)
+    fetch_or_create(letter_name, alteration)
   end
 
   def self.from_number(number)
@@ -44,26 +44,26 @@ class HeadMusic::Spelling
   def self.from_number_and_letter(number, letter_name)
     letter_name = HeadMusic::LetterName.get(letter_name)
     natural_letter_pitch_class = letter_name.pitch_class
-    sign_interval = natural_letter_pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(number))
-    sign = HeadMusic::Sign.by(:semitones, sign_interval) if sign_interval != 0
-    fetch_or_create(letter_name, sign)
+    alteration_interval = natural_letter_pitch_class.smallest_interval_to(HeadMusic::PitchClass.get(number))
+    alteration = HeadMusic::Alteration.by(:semitones, alteration_interval) if alteration_interval != 0
+    fetch_or_create(letter_name, alteration)
   end
 
-  def self.fetch_or_create(letter_name, sign)
+  def self.fetch_or_create(letter_name, alteration)
     @spellings ||= {}
-    hash_key = [letter_name, sign].join
-    @spellings[hash_key] ||= new(letter_name, sign)
+    hash_key = [letter_name, alteration].join
+    @spellings[hash_key] ||= new(letter_name, alteration)
   end
 
-  def initialize(letter_name, sign = nil)
+  def initialize(letter_name, alteration = nil)
     @letter_name = HeadMusic::LetterName.get(letter_name.to_s)
-    @sign = HeadMusic::Sign.get(sign)
-    sign_semitones = @sign ? @sign.semitones : 0
-    @pitch_class = HeadMusic::PitchClass.get(letter_name.pitch_class + sign_semitones)
+    @alteration = HeadMusic::Alteration.get(alteration)
+    alteration_semitones = @alteration ? @alteration.semitones : 0
+    @pitch_class = HeadMusic::PitchClass.get(letter_name.pitch_class + alteration_semitones)
   end
 
   def name
-    [letter_name, sign].join
+    [letter_name, alteration].join
   end
 
   def to_s
@@ -80,7 +80,7 @@ class HeadMusic::Spelling
   end
 
   def natural?
-    !sign || sign.natural?
+    !alteration || alteration.natural?
   end
 
   private_class_method :new

@@ -14,7 +14,7 @@ describe HeadMusic::Spelling do
       subject(:spelling) { described_class.get("C") }
 
       its(:letter_name) { is_expected.to eq "C" }
-      its(:sign) { is_expected.to be_nil }
+      its(:alteration) { is_expected.to be_nil }
       its(:pitch_class) { is_expected.to eq 0 }
       it { is_expected.to eq "C" }
       it { is_expected.to be_natural }
@@ -24,7 +24,7 @@ describe HeadMusic::Spelling do
       subject(:spelling) { described_class.get("F♯") }
 
       its(:letter_name) { is_expected.to eq "F" }
-      its(:sign) { is_expected.to eq "♯" }
+      its(:alteration) { is_expected.to eq "♯" }
       its(:pitch_class) { is_expected.to eq 6 }
       it { is_expected.to eq "F♯" }
       it { is_expected.to be_sharp }
@@ -51,7 +51,7 @@ describe HeadMusic::Spelling do
       subject(:spelling) { described_class.get("B♯") }
 
       its(:letter_name) { is_expected.to eq "B" }
-      its(:sign) { is_expected.to eq "♯" }
+      its(:alteration) { is_expected.to eq "♯" }
       its(:pitch_class) { is_expected.to eq 0 }
       it { is_expected.to eq "B♯" }
     end
@@ -60,7 +60,7 @@ describe HeadMusic::Spelling do
       subject(:spelling) { described_class.get("bb") }
 
       its(:letter_name) { is_expected.to eq "B" }
-      its(:sign) { is_expected.to eq "b" }
+      its(:alteration) { is_expected.to eq "b" }
       its(:pitch_class) { is_expected.to eq 10 }
       it { is_expected.to eq "Bb" }
     end
@@ -69,7 +69,7 @@ describe HeadMusic::Spelling do
       subject(:spelling) { described_class.get("Fx") }
 
       its(:letter_name) { is_expected.to eq "F" }
-      its(:sign) { is_expected.to eq "x" }
+      its(:alteration) { is_expected.to eq "x" }
       its(:pitch_class) { is_expected.to eq 7 }
 
       it { is_expected.not_to be_sharp }
