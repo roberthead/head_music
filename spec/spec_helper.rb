@@ -1,14 +1,17 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
-require "rspec/its"
 require "simplecov"
-require "head_music"
-require "composition_context"
 
 if ENV["CIRCLE_ARTIFACTS"]
   dir = File.join(ENV["CIRCLE_ARTIFACTS"], "coverage")
   SimpleCov.coverage_dir(dir)
 end
-SimpleCov.start
+SimpleCov.start do
+  add_filter "/spec/"
+end
+
+require "rspec/its"
+require "head_music"
+require "composition_context"
 
 RSpec.configure do |config|
   config.example_status_persistence_file_path = "spec/examples.txt"
