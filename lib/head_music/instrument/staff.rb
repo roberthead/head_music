@@ -21,7 +21,7 @@ class HeadMusic::Instrument::Staff
   end
 
   def name_key
-    attributes["name_key"]
+    attributes["name_key"] || ""
   end
 
   def name
