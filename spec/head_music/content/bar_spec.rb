@@ -19,5 +19,6 @@ describe HeadMusic::Content::Bar do
     subject(:bar) { described_class.new(composition, meter: "5/4") }
 
     its(:meter) { is_expected.to eq "5/4" }
+    its(:to_s) { is_expected.to eq "Bar 5/4" }
   end
 end
