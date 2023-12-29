@@ -79,12 +79,12 @@ class HeadMusic::Instrument
     pitch_configurations.find(&:default?) || pitch_configurations.first
   end
 
-  def default_staff_configuration
-    default_pitch_configuration&.default_staff_configuration
+  def default_staff_scheme
+    default_pitch_configuration&.default_staff_scheme
   end
 
   def default_staves
-    default_staff_configuration&.staves || []
+    default_staff_scheme&.staves || []
   end
 
   def default_clefs

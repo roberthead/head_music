@@ -39,14 +39,14 @@ describe HeadMusic::Instrument do
         expect(instrument.default_clefs).to be_an Array
         instrument.pitch_configurations.each do |pitch_configuration|
           expect(pitch_configuration).to be_a HeadMusic::Instrument::PitchConfiguration
-          expect(pitch_configuration.staff_configurations).to be_an Array
-          expect(pitch_configuration.staff_configurations).not_to be_empty
-          pitch_configuration.staff_configurations.each do |staff_configuration|
-            expect(staff_configuration).to be_a HeadMusic::Instrument::StaffConfiguration
-            expect(staff_configuration.staves.first.clef).to be_a HeadMusic::Clef
-            expect(staff_configuration.staves.first.sounding_transposition).to be_an Integer
+          expect(pitch_configuration.staff_schemes).to be_an Array
+          expect(pitch_configuration.staff_schemes).not_to be_empty
+          pitch_configuration.staff_schemes.each do |staff_scheme|
+            expect(staff_scheme).to be_a HeadMusic::Instrument::StaffScheme
+            expect(staff_scheme.staves.first.clef).to be_a HeadMusic::Clef
+            expect(staff_scheme.staves.first.sounding_transposition).to be_an Integer
           end
-          expect(pitch_configuration.staff_configurations.detect(&:default?)).to be_truthy
+          expect(pitch_configuration.staff_schemes.detect(&:default?)).to be_truthy
         end
       end
     end

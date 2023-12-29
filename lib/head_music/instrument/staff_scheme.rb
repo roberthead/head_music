@@ -1,4 +1,4 @@
-class HeadMusic::Instrument::StaffConfiguration
+class HeadMusic::Instrument::StaffScheme
   attr_reader :pitch_configuration, :key, :list
 
   def initialize(pitch_configuration:, key:, list:)

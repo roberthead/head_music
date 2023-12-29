@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe HeadMusic::Instrument::StaffConfiguration do
-  subject(:staff_configuration) do
-    pitch_configuration.default_staff_configuration
+describe HeadMusic::Instrument::StaffScheme do
+  subject(:staff_scheme) do
+    pitch_configuration.default_staff_scheme
   end
 
   let(:pitch_configuration) do
@@ -12,7 +12,7 @@ describe HeadMusic::Instrument::StaffConfiguration do
   let(:clarinet_data) do
     {
       "fundamental_pitch_spelling" => "Bb",
-      "staff_configurations" => {
+      "staff_schemes" => {
         "default" => [{"clef" => "treble", "sounding_transposition" => -2}]
       }
     }

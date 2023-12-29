@@ -2,11 +2,11 @@ require "spec_helper"
 
 describe HeadMusic::Instrument::Staff do
   subject(:staff) do
-    staff_configuration.staves.first
+    staff_scheme.staves.first
   end
 
-  let(:staff_configuration) do
-    pitch_configuration.default_staff_configuration
+  let(:staff_scheme) do
+    pitch_configuration.default_staff_scheme
   end
 
   let(:pitch_configuration) do
@@ -16,13 +16,13 @@ describe HeadMusic::Instrument::Staff do
   let(:clarinet_data) do
     {
       "fundamental_pitch_spelling" => "Bb",
-      "staff_configurations" => {
+      "staff_schemes" => {
         "default" => [{"clef" => "treble", "sounding_transposition" => -2}]
       }
     }
   end
 
-  its(:staff_configuration) { is_expected.to eq staff_configuration }
+  its(:staff_scheme) { is_expected.to eq staff_scheme }
 
   its(:clef) { is_expected.to eq "treble_clef" }
 

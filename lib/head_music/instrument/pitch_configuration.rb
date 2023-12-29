@@ -13,10 +13,10 @@ class HeadMusic::Instrument::PitchConfiguration
       HeadMusic::Spelling.get(attributes["fundamental_pitch_spelling"])
   end
 
-  def staff_configurations
-    @staff_configurations ||=
-      (attributes["staff_configurations"] || {}).map do |key, list|
-        HeadMusic::Instrument::StaffConfiguration.new(
+  def staff_schemes
+    @staff_schemes ||=
+      (attributes["staff_schemes"] || {}).map do |key, list|
+        HeadMusic::Instrument::StaffScheme.new(
           key: key,
           pitch_configuration: self,
           list: list
@@ -28,8 +28,8 @@ class HeadMusic::Instrument::PitchConfiguration
     key.to_s == "default"
   end
 
-  def default_staff_configuration
-    @default_staff_configuration ||=
-      staff_configurations.find(&:default?) || staff_configurations.first
+  def default_staff_scheme
+    @default_staff_scheme ||=
+      staff_schemes.find(&:default?) || staff_schemes.first
   end
 end

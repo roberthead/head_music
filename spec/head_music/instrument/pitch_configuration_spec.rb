@@ -8,7 +8,7 @@ describe HeadMusic::Instrument::PitchConfiguration do
   let(:clarinet_data) do
     {
       "fundamental_pitch_spelling" => "Bb",
-      "staff_configurations" => {
+      "staff_schemes" => {
         "default" => [{"clef" => "treble", "sounding_transposition" => -2}]
       }
     }
@@ -24,15 +24,15 @@ describe HeadMusic::Instrument::PitchConfiguration do
     is_expected.to eq "Bb"
   end
 
-  its(:staff_configurations) do
+  its(:staff_schemes) do
     are_expected.to be_an Array
   end
 
-  its(:staff_configurations) do
+  its(:staff_schemes) do
     are_expected.not_to be_empty
   end
 
-  its(:default_staff_configuration) do
-    is_expected.to be_a HeadMusic::Instrument::StaffConfiguration
+  its(:default_staff_scheme) do
+    is_expected.to be_a HeadMusic::Instrument::StaffScheme
   end
 end

@@ -3,7 +3,7 @@ accordion:
   family_key: accordion
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
           - clef: bass_clef
@@ -12,7 +12,7 @@ alto_clarinet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Eb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -9
@@ -23,7 +23,7 @@ alto_flute:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: G
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -5
@@ -36,7 +36,7 @@ alto_voice:
   family_key: voice
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
   range_categories:
@@ -48,7 +48,7 @@ arpeggione:
     - string
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -12
@@ -60,7 +60,7 @@ great_highland_bagpipe:
   family_key: bagpipe
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 1
@@ -72,7 +72,7 @@ banjo:
   orchestra_section_key: string
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -12
@@ -81,7 +81,7 @@ baritone_horn:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
             sounding_transposition: 0
@@ -94,7 +94,7 @@ baritone_voice:
   family_key: voice
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
   range_categories:
@@ -104,7 +104,7 @@ bass_clarinet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -14
@@ -122,7 +122,7 @@ bass_drum:
     - membranophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
   orchestra_section_key: percussion
@@ -130,7 +130,7 @@ bass_guitar:
   family_key: guitar
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
             sounding_transposition: -12
@@ -140,7 +140,7 @@ bass_oboe:
   family_key: oboe
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -12
@@ -152,7 +152,7 @@ bass_trombone:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
             sounding_transposition: 0
@@ -161,19 +161,19 @@ bass_trumpet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -14
     in_c:
       fundamental_pitch_spelling: C
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -12
     in_e_flat:
       fundamental_pitch_spelling: Eb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -9
@@ -182,12 +182,12 @@ bass_tuba:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: F
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
     in_e_flat:
       fundamental_pitch_spelling: Eb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
         british_band:
@@ -199,7 +199,7 @@ bass_voice:
   family_key: voice
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
   range_categories:
@@ -209,7 +209,7 @@ basset_horn:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: F
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -7
@@ -218,7 +218,7 @@ bassoon:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: F
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
 bugle:
@@ -226,13 +226,13 @@ bugle:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: G
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -5
     in_b_flat:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -2
@@ -242,7 +242,7 @@ castanets:
     - idiophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
   orchestra_section_key: percussion
@@ -253,7 +253,7 @@ celesta:
     - idiophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             name_key: right_hand
@@ -266,7 +266,7 @@ cello:
   family_key: violin
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
 chimes:
@@ -278,7 +278,7 @@ chimes:
     - idiophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
   orchestra_section_key: percussion
@@ -290,7 +290,7 @@ cimbalom:
     - plucked
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
           - clef: bass_clef
@@ -302,19 +302,19 @@ clarinet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -2
     in_a:
       fundamental_pitch_spelling: A
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -3
     in_c:
       fundamental_pitch_spelling: C
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 0
@@ -322,7 +322,7 @@ clarinet:
       fundamental_pitch_spelling: D
       alias_name_keys:
         - sopranino_clarinet
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 2
@@ -330,7 +330,7 @@ clarinet:
       alias_name_keys:
         - sopranino_clarinet
       fundamental_pitch_spelling: Eb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 3
@@ -338,13 +338,13 @@ clash_cymbals:
   family_key: cymbal
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
 clavichord:
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             name_key: right_hand
@@ -355,7 +355,7 @@ contrabass_clarinet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -26
@@ -363,7 +363,7 @@ contrabassoon:
   family_key: bassoon
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
             sounding_transposition: -12
@@ -373,7 +373,7 @@ cor_anglais:
   family_key: oboe
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -7
@@ -382,7 +382,7 @@ cornet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -2
@@ -390,7 +390,7 @@ countertenor_voice:
   family_key: voice
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
   range_categories:
@@ -401,7 +401,7 @@ cowbell:
     - idiophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
   orchestra_section_key: percussion
@@ -411,7 +411,7 @@ crotales:
     - idiophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
   orchestra_section_key: percussion
@@ -419,7 +419,7 @@ cymbal:
   family_key: cymbal
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
 double_bass:
@@ -428,7 +428,7 @@ double_bass:
     - string_bass
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
             sounding_transposition: -12
@@ -441,12 +441,12 @@ euphonium:
     - wind
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
             sounding_transposition: 0
     british_band:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -14
@@ -456,7 +456,7 @@ flugelhorn:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -2
@@ -464,7 +464,7 @@ flute:
   family_key: flute
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 french_horn:
@@ -474,7 +474,7 @@ french_horn:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: F
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -7
@@ -489,14 +489,14 @@ glockenspiel:
   family_key: glockenspiel
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 guitar:
   family_key: guitar
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -12
@@ -507,7 +507,7 @@ hammered_dulcimer:
     - string
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
   orchestra_section_key: percussion
@@ -515,14 +515,14 @@ harp:
   family_key: harp
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
           - clef: bass_clef
 harpsichord:
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             name_key: right_hand
@@ -532,7 +532,7 @@ lute:
   family_key: lute
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
           - clef: bass_clef
@@ -542,7 +542,7 @@ mandolin:
   family_key: mandolin
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 maracas:
@@ -552,7 +552,7 @@ maracas:
     - idiophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
   orchestra_section_key: percussion
@@ -560,7 +560,7 @@ marimba:
   family_key: marimba
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
           - clef: bass_clef
@@ -570,7 +570,7 @@ mezzo_soprano_voice:
   family_key: voice
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
   range_categories:
@@ -579,14 +579,14 @@ natural_horn:
   family_key: horn
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 oboe:
   family_key: oboe
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 oboe_d_amore:
@@ -595,7 +595,7 @@ oboe_d_amore:
   family_key: oboe
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -3
@@ -605,7 +605,7 @@ organ:
   family_key: organ
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             name_key: right_hand
@@ -625,7 +625,7 @@ piano:
   family_key: piano
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             name_key: right_hand
@@ -636,7 +636,7 @@ piccolo_clarinet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Ab
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 8
@@ -646,7 +646,7 @@ piccolo_flute:
   family_key: flute
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 12
@@ -655,13 +655,13 @@ piccolo_trumpet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 10
     alternate_leadpipe:
       fundamental_pitch_spelling: A
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 9
@@ -671,14 +671,14 @@ recorder:
   family_key: recorder
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 saxophone:
   family_key: saxophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 snare_drum:
@@ -690,7 +690,7 @@ snare_drum:
   family_key: snare_drum
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
 soprano_voice:
@@ -699,7 +699,7 @@ soprano_voice:
   family_key: voice
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
   range_categories:
@@ -709,7 +709,7 @@ sousaphone:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
   transposition: 0
@@ -717,14 +717,14 @@ suspended_cymbal:
   family_key: cymbal
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
 synthesizer:
   family_key: synthesizer
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             name_key: right_hand
@@ -737,7 +737,7 @@ tam_tam:
   family_key: gong
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
 tambourine:
@@ -748,7 +748,7 @@ tambourine:
     - membranophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
   orchestra_section_key: percussion
@@ -756,7 +756,7 @@ temple_blocks:
   family_key: woodblock
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
 tenor_drum:
@@ -766,7 +766,7 @@ tenor_drum:
     - membranophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
   orchestra_section_key: percussion
@@ -774,7 +774,7 @@ tenor_voice:
   family_key: voice
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: vocal_tenor_clef
         bass:
@@ -793,7 +793,7 @@ timpani:
   family_key: kettledrum
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
 triangle:
@@ -803,7 +803,7 @@ triangle:
     - idiophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
   orchestra_section_key: percussion
@@ -814,7 +814,7 @@ trombone:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
 trumpet:
@@ -822,7 +822,7 @@ trumpet:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: -2
@@ -831,7 +831,7 @@ trumpet_in_c:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: C
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 0
@@ -840,7 +840,7 @@ trumpet_in_d:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: D
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 2
@@ -849,7 +849,7 @@ trumpet_in_e_flat:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Eb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
             sounding_transposition: 3
@@ -860,7 +860,7 @@ tuba:
   pitch_configurations:
     default:
       fundamental_pitch_spelling: Bb
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
         british_band:
@@ -868,7 +868,7 @@ tuba:
             sounding_transposition: -26
     in_c:
       fundamental_pitch_spelling: C
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: bass_clef
 vibraphone:
@@ -877,14 +877,14 @@ vibraphone:
   family_key: vibraphone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 viola:
   family_key: violin
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: alto_clef
 violin:
@@ -893,20 +893,20 @@ violin:
   family_key: violin
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef
 woodblock:
   family_key: woodblock
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: neutral_clef
 xylophone:
   family_key: xylophone
   pitch_configurations:
     default:
-      staff_configurations:
+      staff_schemes:
         default:
           - clef: treble_clef

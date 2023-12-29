@@ -1,10 +1,10 @@
 class HeadMusic::Instrument::Staff
   DEFAULT_CLEF = "treble_clef"
 
-  attr_reader :staff_configuration, :attributes
+  attr_reader :staff_scheme, :attributes
 
-  def initialize(staff_configuration, attributes)
-    @staff_configuration = staff_configuration
+  def initialize(staff_scheme, attributes)
+    @staff_scheme = staff_scheme
     @attributes = attributes || {}
   end
 
