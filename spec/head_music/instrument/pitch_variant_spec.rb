@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe HeadMusic::Instrument::PitchConfiguration do
-  subject(:pitch_configuration) do
+describe HeadMusic::Instrument::PitchVariant do
+  subject(:pitch_variant) do
     described_class.new(:default, clarinet_data)
   end
 

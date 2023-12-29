@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe HeadMusic::Instrument::StaffScheme do
   subject(:staff_scheme) do
-    pitch_configuration.default_staff_scheme
+    pitch_variant.default_staff_scheme
   end
 
-  let(:pitch_configuration) do
-    HeadMusic::Instrument::PitchConfiguration.new(:default, clarinet_data)
+  let(:pitch_variant) do
+    HeadMusic::Instrument::PitchVariant.new(:default, clarinet_data)
   end
 
   let(:clarinet_data) do
@@ -18,7 +18,7 @@ describe HeadMusic::Instrument::StaffScheme do
     }
   end
 
-  its(:pitch_configuration) { is_expected.to eq pitch_configuration }
+  its(:pitch_variant) { is_expected.to eq pitch_variant }
 
   it { is_expected.to be_default }
 

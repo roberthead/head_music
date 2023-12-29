@@ -1,4 +1,4 @@
-class HeadMusic::Instrument::PitchConfiguration
+class HeadMusic::Instrument::PitchVariant
   attr_reader :key, :attributes
 
   def initialize(key, attributes = {})
@@ -18,7 +18,7 @@ class HeadMusic::Instrument::PitchConfiguration
       (attributes["staff_schemes"] || {}).map do |key, list|
         HeadMusic::Instrument::StaffScheme.new(
           key: key,
-          pitch_configuration: self,
+          pitch_variant: self,
           list: list
         )
       end

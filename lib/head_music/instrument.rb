@@ -9,7 +9,7 @@
 #   default_clefs: the default clef or system of clefs for the instrument
 #     - [treble] for instruments that use the treble clef
 #     - [treble, bass] for instruments that use the grand staff
-#   pitch_configurations:
+#   pitch_variants:
 #     a hash of default and alternative fundamental pitches.
 # Associations:
 #   family: the family of the instrument (e.g. "saxophone")
@@ -32,7 +32,7 @@ class HeadMusic::Instrument
   attr_reader(
     :name_key, :alias_name_keys,
     :family_key, :orchestra_section_key,
-    :pitch_configurations, :classification_keys
+    :pitch_variants, :classification_keys
   )
 
   def ==(other)
@@ -75,12 +75,12 @@ class HeadMusic::Instrument
     default_clefs.any?
   end
 
-  def default_pitch_configuration
-    pitch_configurations.find(&:default?) || pitch_configurations.first
+  def default_pitch_variant
+    pitch_variants.find(&:default?) || pitch_variants.first
   end
 
   def default_staff_scheme
-    default_pitch_configuration&.default_staff_scheme
+    default_pitch_variant&.default_staff_scheme
   end
 
   def default_staves
@@ -158,9 +158,9 @@ class HeadMusic::Instrument
   def initialize_attributes(record)
     @orchestra_section_key ||= record["orchestra_section_key"]
     @classification_keys = [@classification_keys, record["classification_keys"]].flatten.compact.uniq
-    @pitch_configurations =
-      (record["pitch_configurations"] || {}).map do |key, attributes|
-        HeadMusic::Instrument::PitchConfiguration.new(key, attributes)
+    @pitch_variants =
+      (record["pitch_variants"] || {}).map do |key, attributes|
+        HeadMusic::Instrument::PitchVariant.new(key, attributes)
       end
   end
 

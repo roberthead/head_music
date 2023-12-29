@@ -35,18 +35,18 @@ describe HeadMusic::Instrument do
       instruments.each do |instrument|
         expect(instrument).to be_a described_class
         expect(instrument.name).to be_a String
-        expect(instrument.pitch_configurations).to be_an Array
+        expect(instrument.pitch_variants).to be_an Array
         expect(instrument.default_clefs).to be_an Array
-        instrument.pitch_configurations.each do |pitch_configuration|
-          expect(pitch_configuration).to be_a HeadMusic::Instrument::PitchConfiguration
-          expect(pitch_configuration.staff_schemes).to be_an Array
-          expect(pitch_configuration.staff_schemes).not_to be_empty
-          pitch_configuration.staff_schemes.each do |staff_scheme|
+        instrument.pitch_variants.each do |pitch_variant|
+          expect(pitch_variant).to be_a HeadMusic::Instrument::PitchVariant
+          expect(pitch_variant.staff_schemes).to be_an Array
+          expect(pitch_variant.staff_schemes).not_to be_empty
+          pitch_variant.staff_schemes.each do |staff_scheme|
             expect(staff_scheme).to be_a HeadMusic::Instrument::StaffScheme
             expect(staff_scheme.staves.first.clef).to be_a HeadMusic::Clef
             expect(staff_scheme.staves.first.sounding_transposition).to be_an Integer
           end
-          expect(pitch_configuration.staff_schemes.detect(&:default?)).to be_truthy
+          expect(pitch_variant.staff_schemes.detect(&:default?)).to be_truthy
         end
       end
     end
