@@ -21,7 +21,7 @@ class HeadMusic::KeySignature
 
   delegate :pitch_class, to: :tonic_spelling, prefix: :tonic
   delegate :to_s, to: :name
-  delegate :pitches, to: :scale
+  delegate :pitches, :pitch_classes, to: :scale
 
   def initialize(tonic_spelling, scale_type = nil)
     @tonic_spelling = HeadMusic::Spelling.get(tonic_spelling)
@@ -67,19 +67,23 @@ class HeadMusic::KeySignature
     flats.length + double_flats.length * 2
   end
 
-  def signs
-    flats.any? ? flats : sharps
+  def num_alterations
+    num_sharps + num_flats
   end
 
-  alias_method :sharps_and_flats, :signs
-  alias_method :accidentals, :signs
+  def alterations
+    flats.any? ? (double_flats + flats) : (double_sharps + sharps)
+  end
+
+  alias_method :sharps_and_flats, :alterations
+  alias_method :accidentals, :alterations
 
   def name
     [tonic_spelling, scale_type].join(" ")
   end
 
   def ==(other)
-    signs == self.class.get(other).signs
+    alterations == self.class.get(other).alterations
   end
 
   def to_s
@@ -93,38 +97,12 @@ class HeadMusic::KeySignature
   end
 
   def enharmonic_equivalent?(other)
-    other = KeySignature.get(other)
-    enharmonic_equivalence.equivalent?(other)
+    enharmonic_equivalence.enharmonic_equivalent?(other)
   end
 
   private
 
   def enharmonic_equivalence
-    @enharmonic_equivalence ||= EnharmonicEquivalence.get(self)
-  end
-
-  # Key signatures are enharmonic when all pitch classes in one are respellings of the pitch classes in the other.
-  class EnharmonicEquivalence
-    def self.get(key_signature)
-      key_signature = HeadMusic::KeySignature.get(key_signature)
-      @enharmonic_equivalences ||= {}
-      @enharmonic_equivalences[key_signature.to_s] ||= new(key_signature)
-    end
-
-    attr_reader :key_signature
-
-    def initialize(key_signature)
-      @key_signature = HeadMusic::KeySignature.get(key_signature)
-    end
-
-    def enharmonic_equivalent?(other)
-      other = HeadMusic::KeySignature.get(other)
-      (key_signature.signs | other.signs).map(&:to_s).uniq.length == 12
-    end
-
-    alias_method :enharmonic?, :enharmonic_equivalent?
-    alias_method :equivalent?, :enharmonic_equivalent?
-
-    private_class_method :new
+    @enharmonic_equivalence ||= HeadMusic::KeySignature::EnharmonicEquivalence.get(self)
   end
 end

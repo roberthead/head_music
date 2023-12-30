@@ -28,6 +28,10 @@ class HeadMusic::Scale
     @pitches[direction][octaves] ||= determine_scale_pitches(direction, octaves)
   end
 
+  def pitch_classes
+    pitches.map(&:pitch_class).uniq
+  end
+
   def spellings(direction: :ascending, octaves: 1)
     pitches(direction: direction, octaves: octaves).map(&:spelling).map(&:to_s)
   end

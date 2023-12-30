@@ -20,7 +20,7 @@ describe HeadMusic::KeySignature do
 
         specify { expect(key_signature).to eq "E♭ major" }
         specify { expect(key_signature.num_flats).to eq 3 }
-        specify { expect(key_signature.signs).to eq ["B♭", "E♭", "A♭"] }
+        specify { expect(key_signature.alterations).to eq ["B♭", "E♭", "A♭"] }
       end
 
       context "when Cb" do
@@ -28,7 +28,7 @@ describe HeadMusic::KeySignature do
 
         specify { expect(key_signature).to eq "C♭ major" }
         specify { expect(key_signature.num_flats).to eq 7 }
-        specify { expect(key_signature.signs).to eq ["B♭", "E♭", "A♭", "D♭", "G♭", "C♭", "F♭"] }
+        specify { expect(key_signature.alterations).to eq ["B♭", "E♭", "A♭", "D♭", "G♭", "C♭", "F♭"] }
       end
     end
 
@@ -40,40 +40,52 @@ describe HeadMusic::KeySignature do
 
         specify { expect(key_signature.num_sharps).to eq 0 }
         specify { expect(key_signature.num_flats).to eq 0 }
-        specify { expect(key_signature.signs).to eq [] }
+        specify { expect(key_signature.alterations).to eq [] }
       end
 
       context "when in the key of E♭ major" do
         let(:tonic) { HeadMusic::Spelling.get("E♭") }
 
         specify { expect(key_signature.num_flats).to eq 3 }
-        specify { expect(key_signature.signs).to eq ["B♭", "E♭", "A♭"] }
+        specify { expect(key_signature.alterations).to eq ["B♭", "E♭", "A♭"] }
       end
 
       context "when in the key of F♯ major" do
         let(:tonic) { HeadMusic::Spelling.get("F♯") }
 
         specify { expect(key_signature.num_sharps).to eq 6 }
-        specify { expect(key_signature.signs).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯] }
+        specify { expect(key_signature.alterations).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯] }
       end
 
       context "when in the key of C♯ major" do
         let(:tonic) { HeadMusic::Spelling.get("C♯") }
 
         specify { expect(key_signature.num_sharps).to eq 7 }
-        specify { expect(key_signature.signs).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯ B♯] }
+        specify { expect(key_signature.alterations).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯ B♯] }
       end
 
       context "when in the key of G♭ major" do
         let(:tonic) { HeadMusic::Spelling.get("G♭") }
 
-        specify { expect(key_signature.signs).to eq %w[B♭ E♭ A♭ D♭ G♭ C♭] }
+        specify { expect(key_signature.alterations).to eq %w[B♭ E♭ A♭ D♭ G♭ C♭] }
+        specify { expect(key_signature.num_alterations).to eq 6 }
       end
 
       context "when in the key of G♯ major" do
         let(:tonic) { HeadMusic::Spelling.get("G♯") }
 
         specify { expect(key_signature.num_sharps).to eq 8 }
+        specify { expect(key_signature.num_alterations).to eq 8 }
+        specify { expect(key_signature.alterations).to eq(%w[F𝄪 C♯ G♯ D♯ A♯ E♯ B♯]) }
+      end
+
+      context "when in the key of F♭ major" do
+        let(:tonic) { HeadMusic::Spelling.get("F♭") }
+
+        specify { expect(key_signature.num_flats).to eq 8 }
+        specify { expect(key_signature.alterations).to eq(%w[B𝄫 E♭ A♭ D♭ G♭ C♭ F♭]) }
+
+        its(:name) { is_expected.to eq "F♭ major" }
       end
     end
 
@@ -84,7 +96,9 @@ describe HeadMusic::KeySignature do
         let(:tonic) { HeadMusic::Spelling.get("C") }
 
         specify { expect(key_signature.num_flats).to eq 3 }
-        specify { expect(key_signature.signs).to eq ["B♭", "E♭", "A♭"] }
+        specify { expect(key_signature.alterations).to eq ["B♭", "E♭", "A♭"] }
+
+        its(:name) { is_expected.to eq "C minor" }
       end
 
       context "when in the key of B minor" do
@@ -92,7 +106,12 @@ describe HeadMusic::KeySignature do
 
         specify { expect(key_signature.num_sharps).to eq 2 }
 
-        specify { expect(key_signature.signs).to eq ["F♯", "C♯"] }
+        specify { expect(key_signature.alterations).to eq ["F♯", "C♯"] }
+
+        its(:name) { is_expected.to eq "B minor" }
+
+        it { is_expected.not_to be_enharmonic_equivalent(described_class.get("D major")) }
+        it { is_expected.to be_enharmonic_equivalent(described_class.get("Cb minor")) }
       end
     end
 
@@ -103,7 +122,7 @@ describe HeadMusic::KeySignature do
       specify { expect(key_signature.num_flats).to eq 2 }
 
       specify { expect(key_signature.flats).to eq ["B♭", "E♭"] }
-      specify { expect(key_signature.signs).to eq ["B♭", "E♭"] }
+      specify { expect(key_signature.alterations).to eq ["B♭", "E♭"] }
       specify { expect(key_signature.sharps_and_flats).to eq ["B♭", "E♭"] }
       specify { expect(key_signature.accidentals).to eq ["B♭", "E♭"] }
     end
@@ -157,7 +176,7 @@ describe HeadMusic::KeySignature do
       let(:scale_type) { :major_pentatonic }
 
       specify { expect(key_signature.num_sharps).to eq 2 }
-      specify { expect(key_signature.signs).to eq %w[F♯ C♯] }
+      specify { expect(key_signature.alterations).to eq %w[F♯ C♯] }
     end
   end
 

@@ -10,13 +10,10 @@ class HeadMusic::PitchClassSet
     @pitch_classes = identifiers.map { |identifier| HeadMusic::PitchClass.get(identifier) }.uniq.sort
   end
 
-  def inspect
-    pitch_classes.map(&:to_s).join(" ")
-  end
-
   def to_s
-    pitch_classes.map(&:to_s).join(" ")
+    pitch_classes.map(&:to_i).inspect
   end
+  alias_method :inspect, :to_s
 
   def ==(other)
     pitch_classes == other.pitch_classes

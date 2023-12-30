@@ -37,6 +37,11 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_decachord }
     it { is_expected.not_to be_undecachord }
     it { is_expected.not_to be_dodecachord }
+
+    it { is_expected.to be_a(HeadMusic::PitchClassSet) }
+
+    its(:inspect) { is_expected.to eq "[9]" }
+    its(:to_s) { is_expected.to eq "[9]" }
   end
 
   context "when the set has two pitches" do
@@ -75,6 +80,9 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_decachord }
     it { is_expected.not_to be_undecachord }
     it { is_expected.not_to be_dodecachord }
+
+    its(:inspect) { is_expected.to eq "[2, 6, 9]" }
+    its(:to_s) { is_expected.to eq "[2, 6, 9]" }
   end
 
   context "when the set has nine pitches and seven pitch classes" do
