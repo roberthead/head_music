@@ -48,7 +48,9 @@ class HeadMusic::Motion
   end
 
   def to_s
-    "#{contrapuntal_motion} motion from #{first_harmonic_interval} to #{second_harmonic_interval}"
+    return "repetition of a #{second_harmonic_interval}" unless contrapuntal_motion != :repetition
+
+    "#{contrapuntal_motion} motion from a #{first_harmonic_interval} to a #{second_harmonic_interval}"
   end
 
   private

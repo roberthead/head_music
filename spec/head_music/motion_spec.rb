@@ -36,6 +36,8 @@ describe HeadMusic::Motion do
       it { is_expected.not_to be_parallel }
       it { is_expected.not_to be_direct }
       it { is_expected.not_to be_contrary }
+
+      its(:to_s) { is_expected.to eq "repetition of a major third at 2:1:000" }
     end
 
     context "when the upper voice rises" do
@@ -47,6 +49,8 @@ describe HeadMusic::Motion do
       it { is_expected.not_to be_parallel }
       it { is_expected.not_to be_direct }
       it { is_expected.not_to be_contrary }
+
+      its(:to_s) { is_expected.to eq "oblique motion from a major third at 1:1:000 to a major sixth at 2:1:000" }
     end
 
     context "when the upper voice falls" do
