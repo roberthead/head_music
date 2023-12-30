@@ -70,13 +70,24 @@ describe HeadMusic::Content::Voice do
     its(:lowest_pitch) { is_expected.to eq "G3" }
     its(:highest_notes) { are_expected.to eq [voice.notes[4]] }
     its(:lowest_notes) { is_expected.to eq [voice.notes.first, voice.notes.last] }
+    its(:leaps) { are_expected.to eq [voice.melodic_intervals[0], voice.melodic_intervals[5]] }
+    its(:large_leaps) { are_expected.to eq [voice.melodic_intervals[0], voice.melodic_intervals[5]] }
+    its(:to_s) { is_expected.to eq "G3 C4 D4 E♭4 F4 E♭4 G3" }
   end
 
   context "when a role is provided" do
     subject(:voice) { described_class.new(composition: composition, role: "Cantus Firmus") }
 
-    its(:role) { is_expected.to eq "Cantus Firmus" }
+    before do
+      %w[G3 C4 D4 Eb4 F4 Eb G3].each.with_index(1) do |pitch, bar|
+        voice.place("#{bar}:1", :whole, pitch)
+      end
+    end
+
     it { is_expected.to be_cantus_firmus }
+
+    its(:role) { is_expected.to eq "Cantus Firmus" }
+    its(:to_s) { is_expected.to eq "Cantus Firmus: G3 C4 D4 E♭4 F4 E♭4 G3" }
   end
 
   describe "note_at" do

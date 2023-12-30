@@ -105,7 +105,9 @@ class HeadMusic::Content::Voice
   end
 
   def to_s
-    "#{role}: #{pitches.first(10).map(&:to_s)}"
+    return pitches_string if role.to_s.strip == ""
+
+    [role, pitches_string].join(": ")
   end
 
   private
@@ -113,5 +115,9 @@ class HeadMusic::Content::Voice
   def insert_into_placements(placement)
     @placements << placement
     @placements = @placements.sort
+  end
+
+  def pitches_string
+    pitches.first(10).map(&:to_s).join(" ")
   end
 end
