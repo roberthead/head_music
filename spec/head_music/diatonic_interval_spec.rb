@@ -141,6 +141,7 @@ I18n.describe HeadMusic::DiatonicInterval do
     its(:shorthand) { is_expected.to eq "P5" }
     it { is_expected.to be_simple }
     it { is_expected.not_to be_compound }
+    # it { is_expected.to be_named_number }
 
     it { is_expected.not_to be_step }
     it { is_expected.not_to be_skip }

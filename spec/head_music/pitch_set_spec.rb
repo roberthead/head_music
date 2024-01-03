@@ -67,6 +67,7 @@ describe HeadMusic::PitchSet do
 
     its(:integer_notation) { is_expected.to eq [] }
     its(:scale_degrees) { is_expected.to eq [] }
+    its(:to_s) { is_expected.to eq "" }
   end
 
   context "when the set has one pitch" do
@@ -91,6 +92,7 @@ describe HeadMusic::PitchSet do
 
     its(:integer_notation) { is_expected.to eq [0] }
     its(:scale_degrees) { is_expected.to eq [1] }
+    its(:to_s) { is_expected.to eq "A4" }
   end
 
   context "when the set has two pitches" do

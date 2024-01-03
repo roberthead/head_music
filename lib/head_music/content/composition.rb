@@ -58,7 +58,7 @@ class HeadMusic::Content::Composition
   end
 
   def to_s
-    "#{name} — #{voices.count} voice(s)"
+    "#{name} — #{voices.count} #{voices.count == 1 ? 'voice' : 'voices'}"
   end
 
   private

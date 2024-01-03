@@ -154,10 +154,6 @@ class HeadMusic::DiatonicInterval
     @naming ||= Naming.new(number: number, semitones: semitones)
   end
 
-  def named_number?
-    number < NUMBER_NAMES.length
-  end
-
   def consonance_for_perfect(style = :standard_practice)
     HeadMusic::Consonance.get(dissonant_fourth?(style) ? :dissonant : :perfect) if perfect?
   end

@@ -18,5 +18,11 @@ describe HeadMusic::Solmization do
 
       its(:syllables) { are_expected.to eq %w[do re mi fa sol la ti] }
     end
+
+    context "when the identifier is not recognized" do
+      subject(:solmization) { described_class.get("Guido of Arezzo") }
+
+      its(:syllables) { are_expected.to be_nil }
+    end
   end
 end

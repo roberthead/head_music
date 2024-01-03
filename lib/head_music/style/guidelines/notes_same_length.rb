@@ -37,10 +37,6 @@ class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotati
     notes[0..-2]
   end
 
-  def distinct_values
-    all_but_last_note.map(&:rhythmic_value).uniq.length
-  end
-
   def first_most_common_rhythmic_value
     @first_most_common_rhythmic_value ||= begin
       candidates = most_common_rhythmic_values

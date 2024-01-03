@@ -1,4 +1,4 @@
-# A scale degree is a number indicating the ordinality of the spelling in the key signature.
+# A scale degree is a number indicating the ordinality of the spelling in the key.
 # TODO: Rewrite to accept a tonal_center and a scale type.
 class HeadMusic::ScaleDegree
   include Comparable
@@ -20,10 +20,14 @@ class HeadMusic::ScaleDegree
   end
 
   def alteration
-    alteration_semitones = spelling.alteration&.semitones || 0
+    spelling_alteration_semitones = spelling.alteration&.semitones || 0
     usual_sign_semitones = scale_degree_usual_spelling.alteration&.semitones || 0
-    delta = alteration_semitones - usual_sign_semitones
+    delta = spelling_alteration_semitones - usual_sign_semitones
     HeadMusic::Alteration.by(:semitones, delta) if delta != 0
+  end
+
+  def alteration_semitones
+    alteration&.semitones || 0
   end
 
   def to_s
@@ -32,8 +36,9 @@ class HeadMusic::ScaleDegree
 
   def <=>(other)
     if other.is_a?(HeadMusic::ScaleDegree)
-      [degree, alteration.semitones] <=> [other.degree, other.alteration.semitones]
+      [degree, alteration_semitones] <=> [other.degree, other.alteration_semitones]
     else
+      # TODO: Improve this
       to_s <=> other.to_s
     end
   end

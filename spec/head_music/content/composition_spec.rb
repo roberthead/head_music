@@ -14,6 +14,7 @@ describe HeadMusic::Content::Composition do
   end
 
   its(:latest_bar_number) { is_expected.to eq 1 }
+  its(:to_s) { is_expected.to eq "Fruit Salad — 0 voices" }
 
   context "with some placements" do
     let(:voice) { composition.add_voice(role: "melody") }
@@ -29,6 +30,7 @@ describe HeadMusic::Content::Composition do
     end
 
     its(:latest_bar_number) { is_expected.to eq 2 }
+    its(:to_s) { is_expected.to eq "Fruit Salad — 1 voice" }
   end
 
   context "when the meter changes" do

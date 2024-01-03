@@ -15,6 +15,12 @@ describe HeadMusic::IntervalCycle do
         end
       end
 
+      describe "#spellings" do
+        it "returns a list of spellings until the first repeated pitch class" do
+          expect(diminished_seventh_sonority.spellings.map(&:to_s)).to eq(%w[C E♭ G♭ B𝄫])
+        end
+      end
+
       describe "#pitch_class_set" do
         it "returns a list of pitches until the first repeated pitch class" do
           expect(diminished_seventh_sonority.pitch_class_set).to eq HeadMusic::PitchClassSet.new(%w[C Eb Gb Bbb])

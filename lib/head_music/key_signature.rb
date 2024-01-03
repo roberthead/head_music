@@ -1,5 +1,4 @@
 # Represents a key signature.
-# In French, sharps and flats in the key signature are called "altérations".
 class HeadMusic::KeySignature
   attr_reader :tonic_spelling, :scale_type, :scale
 

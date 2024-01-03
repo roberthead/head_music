@@ -22,11 +22,23 @@ describe HeadMusic::Consonance do
   end
 
   describe ".get" do
-    context "when given an instance" do
+    context "when given a bad name" do
       let(:instance) { described_class.get("#") }
+
+      it "returns nil" do
+        expect(instance).to be nil
+      end
+    end
+
+    context "when given an instance" do
+      let(:instance) { described_class.get("imperfect") }
 
       it "returns that instance" do
         expect(described_class.get(instance)).to be instance
+      end
+
+      specify do
+        expect(described_class.get(instance)).to be == described_class.get(:imperfect)
       end
     end
   end

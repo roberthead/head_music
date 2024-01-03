@@ -12,6 +12,7 @@ describe HeadMusic::Style::Mark do
   let(:composition) { HeadMusic::Content::Composition.new }
 
   its(:code) { is_expected.to eq "3:2:480 to 4:1:000" }
+  its(:to_s) { is_expected.to eq "3:2:480 to 4:1:000" }
   its(:fitness) { is_expected.to eq 0.9 }
 
   describe ".for_all" do

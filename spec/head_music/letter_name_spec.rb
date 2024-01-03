@@ -31,6 +31,14 @@ describe HeadMusic::LetterName do
     end
   end
 
+  describe '.all' do
+    subject(:letter_names) { described_class.all }
+
+    it { is_expected.to be_an Array }
+    it { is_expected.to all be_a described_class }
+    its(:length) { is_expected.to eq 7 }
+  end
+
   describe ".from_pitch_class" do
     specify { expect(described_class.from_pitch_class(0)).to eq "C" }
     specify { expect(described_class.from_pitch_class(1)).to eq "C" }

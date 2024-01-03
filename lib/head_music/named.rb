@@ -103,8 +103,4 @@ module HeadMusic::Named
   def localized_name_in_default_locale
     localized_names.detect { |name| name.locale_code == Locale::DEFAULT_CODE }
   end
-
-  def hash_key
-    HeadMusic::Utilities::HashKey.for(name)
-  end
 end

@@ -9,7 +9,7 @@ class HeadMusic::Consonance
 
   attr_reader :name
 
-  delegate :to_s, to: :name
+  delegate :to_s, :to_sym, to: :name
 
   def initialize(name)
     @name = name.to_s.to_sym

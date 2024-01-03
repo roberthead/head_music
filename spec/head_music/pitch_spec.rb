@@ -33,6 +33,12 @@ describe HeadMusic::Pitch do
     end
   end
 
+  describe ".concert_a" do
+    specify do
+      expect(described_class.concert_a).to eq "A4"
+    end
+  end
+
   describe ".natural_letter_pitch" do
     specify { expect(described_class.natural_letter_pitch(70, "B")).to eq("B4") }
     specify { expect(described_class.natural_letter_pitch(58, "A")).to eq("A3") }

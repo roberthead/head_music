@@ -42,6 +42,10 @@ describe HeadMusic::PitchClassSet do
 
     its(:inspect) { is_expected.to eq "[9]" }
     its(:to_s) { is_expected.to eq "[9]" }
+
+    specify do
+      expect(set).to be_equivalent(described_class.new(["Bbb"]))
+    end
   end
 
   context "when the set has two pitches" do

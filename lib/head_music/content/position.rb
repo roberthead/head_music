@@ -27,10 +27,6 @@ class HeadMusic::Content::Position
     [bar_number, count, tick_string].join(":")
   end
 
-  def state
-    [composition.name, code].join(" ")
-  end
-
   def values
     [bar_number, count, tick]
   end
