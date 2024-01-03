@@ -46,7 +46,7 @@ class HeadMusic::Content::Composition
   end
 
   def latest_bar_number
-    [voices.map(&:earliest_bar_number), 1].flatten.max
+    [voices.map(&:latest_bar_number), 1].flatten.max
   end
 
   def cantus_firmus_voice
@@ -71,6 +71,7 @@ class HeadMusic::Content::Composition
   end
 
   def last_meter_change(bar_number)
+    bar_number = [bar_number, earliest_bar_number].max
     bars(bar_number)[earliest_bar_number..bar_number].reverse.detect(&:meter)
   end
 

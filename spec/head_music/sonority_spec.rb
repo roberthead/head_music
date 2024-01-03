@@ -457,6 +457,8 @@ describe HeadMusic::Sonority do
         let(:pitch_set) { HeadMusic::PitchSet.new(%w[G3 Bb3 Db Fb]) }
 
         its(:identifier) { is_expected.to eq :diminished_seventh_chord }
+        its(:diatonic_intervals_above_bass_pitch) { are_expected.to eq %w[m3 d5 d7] }
+
         it { is_expected.to be_seventh_chord }
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
@@ -469,6 +471,8 @@ describe HeadMusic::Sonority do
         let(:pitch_set) { HeadMusic::PitchSet.new(%w[Bb3 Db Fb G]) }
 
         its(:identifier) { is_expected.to eq :diminished_seventh_chord }
+        its(:diatonic_intervals_above_bass_pitch) { are_expected.to eq %w[m3 d5 d7] }
+
         it { is_expected.to be_seventh_chord }
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
@@ -481,6 +485,8 @@ describe HeadMusic::Sonority do
         let(:pitch_set) { HeadMusic::PitchSet.new(%w[Db Fb G Bb3]) }
 
         its(:identifier) { is_expected.to eq :diminished_seventh_chord }
+        its(:diatonic_intervals_above_bass_pitch) { are_expected.to eq %w[m3 d5 d7] }
+
         it { is_expected.to be_seventh_chord }
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }
@@ -493,6 +499,8 @@ describe HeadMusic::Sonority do
         let(:pitch_set) { HeadMusic::PitchSet.new(%w[Fb G Bb3 Db5]) }
 
         its(:identifier) { is_expected.to eq :diminished_seventh_chord }
+        its(:diatonic_intervals_above_bass_pitch) { are_expected.to eq %w[m3 d5 d7] }
+
         it { is_expected.to be_seventh_chord }
         it { is_expected.to be_tetrachord }
         it { is_expected.not_to be_consonant }

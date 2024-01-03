@@ -38,7 +38,7 @@ describe HeadMusic::PitchClassSet do
     it { is_expected.not_to be_undecachord }
     it { is_expected.not_to be_dodecachord }
 
-    it { is_expected.to be_a(HeadMusic::PitchClassSet) }
+    it { is_expected.to be_a(described_class) }
 
     its(:inspect) { is_expected.to eq "[9]" }
     its(:to_s) { is_expected.to eq "[9]" }

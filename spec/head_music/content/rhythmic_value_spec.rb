@@ -1,50 +1,68 @@
 require "spec_helper"
 
 describe HeadMusic::Content::RhythmicValue do
-  subject(:value) { described_class.new(unit, dots: dots) }
-
-  let(:dots) { nil }
-
-  describe ".get" do
+  describe "constructors" do
     context "when passed as a string" do
       subject(:value) { described_class.get(argument) }
 
       context "when a sixteenth" do
         let(:argument) { "sixteenth" }
 
-        specify { expect(value).to eq :sixteenth }
+        it { is_expected.to eq :sixteenth }
 
-        specify { expect(value.ticks).to eq 240 }
+        its(:ticks) { are_expected.to eq 240 }
+        its(:per_whole) { is_expected.to eq 16 }
       end
 
       context "when a thirty-second" do
         let(:argument) { "thirty-second" }
 
-        specify { expect(value).to eq :"thirty-second" }
+        it { is_expected.to eq :"thirty-second" }
 
-        specify { expect(value.ticks).to eq 120 }
+        its(:ticks) { are_expected.to eq 120 }
+        its(:per_whole) { is_expected.to eq 32 }
+        its(:name_modifier_prefix) { is_expected.to be_nil }
       end
 
       context "with a dot" do
         let(:argument) { "dotted eighth" }
 
-        specify { expect(value.ticks).to eq 720 }
+        its(:ticks) { are_expected.to eq 720 }
+        its(:per_whole) { is_expected.to eq(16 / 3.0) }
+        its(:name_modifier_prefix) { is_expected.to eq "dotted" }
       end
 
       context "with two dots" do
         let(:argument) { "double-dotted eighth" }
 
-        specify { expect(value.ticks).to eq 840 }
+        its(:ticks) { are_expected.to eq 840 }
+        its(:name_modifier_prefix) { is_expected.to eq "double-dotted" }
       end
 
       context "with three dots" do
         let(:argument) { "triple-dotted eighth" }
 
-        specify { expect(value.ticks).to eq 900 }
+        its(:ticks) { are_expected.to eq 900 }
+        its(:name_modifier_prefix) { is_expected.to eq "triple-dotted" }
       end
     end
 
     context "when passed a unit and dots" do
+      subject(:value) { described_class.new(unit, dots: dots) }
+
+      let(:dots) { nil }
+
+      context "with no dots" do
+        subject(:value) { described_class.get(unit) }
+
+        let(:unit) { HeadMusic::RhythmicUnit.get(:quarter) }
+
+        its(:name) { is_expected.to eq "quarter" }
+        its(:ticks) { are_expected.to eq 960 }
+        its(:relative_value) { is_expected.to eq 1.0 / 4 }
+        its(:total_value) { is_expected.to eq 1.0 / 4 }
+      end
+
       context "for a dotted half" do
         let(:unit) { HeadMusic::RhythmicUnit.get(:half) }
         let(:dots) { 1 }

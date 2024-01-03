@@ -3,9 +3,7 @@ require "spec_helper"
 describe HeadMusic::Content::Composition do
   subject(:composition) { described_class.new(name: "Fruit Salad") }
 
-  it "assigns a name" do
-    expect(composition.name).to eq "Fruit Salad"
-  end
+  its(:name) { is_expected.to eq "Fruit Salad" }
 
   it "defaults to the key of C major" do
     expect(composition.key_signature).to eq "C major"
@@ -13,6 +11,24 @@ describe HeadMusic::Content::Composition do
 
   it "defaults to 4/4" do
     expect(composition.meter).to eq "4/4"
+  end
+
+  its(:latest_bar_number) { is_expected.to eq 1 }
+
+  context "with some placements" do
+    let(:voice) { composition.add_voice(role: "melody") }
+
+    before do
+      voice.place("0:4", "quarter", "C4")
+      voice.place("1:1", :eighth, "C4")
+      voice.place("1:1:480", :eighth, "E4")
+      voice.place("1:4", :eighth, "A3")
+      voice.place("1:4:480", :eighth, "G3")
+      voice.place("2:1", :eighth, "A3")
+      voice.place("2:1:480", :eighth, "C4")
+    end
+
+    its(:latest_bar_number) { is_expected.to eq 2 }
   end
 
   context "when the meter changes" do

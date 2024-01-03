@@ -147,6 +147,9 @@ I18n.describe HeadMusic::DiatonicInterval do
     it { is_expected.to be_leap }
     it { is_expected.to be_large_leap }
 
+    its(:octaves) { is_expected.to eq 0 }
+    its(:simple_semitones) { is_expected.to eq 7 }
+
     describe "simplification" do
       its(:simple_number) { is_expected.to eq simple_interval.number }
       its(:simple_name) { is_expected.to eq simple_interval.name }

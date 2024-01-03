@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe HeadMusic::Instrument::StaffScheme do
   subject(:staff_scheme) do
