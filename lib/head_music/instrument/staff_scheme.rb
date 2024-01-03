@@ -1,8 +1,8 @@
 class HeadMusic::Instrument::StaffScheme
-  attr_reader :pitch_variant, :key, :list
+  attr_reader :variant, :key, :list
 
-  def initialize(pitch_variant:, key:, list:)
-    @pitch_variant = pitch_variant
+  def initialize(variant:, key:, list:)
+    @variant = variant
     @key = key || "default"
     @list = list
   end

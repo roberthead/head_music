@@ -6,17 +6,17 @@ describe HeadMusic::Instrument::Staff do
   end
 
   let(:staff_scheme) do
-    pitch_variant.default_staff_scheme
+    variant.default_staff_scheme
   end
 
   context "with clarinet data" do
-    let(:pitch_variant) do
-      HeadMusic::Instrument::PitchVariant.new(:default, clarinet_data)
+    let(:variant) do
+      HeadMusic::Instrument::Variant.new(:default, clarinet_data)
     end
 
     let(:clarinet_data) do
       {
-        "fundamental_pitch_spelling" => "Bb",
+        "pitch_designation" => "Bb",
         "staff_schemes" => {
           "default" => [{"clef" => "treble", "sounding_transposition" => -2}]
         }
@@ -32,13 +32,13 @@ describe HeadMusic::Instrument::Staff do
   end
 
   context "with organ data" do
-    let(:pitch_variant) do
-      HeadMusic::Instrument::PitchVariant.new(:default, organ_data)
+    let(:variant) do
+      HeadMusic::Instrument::Variant.new(:default, organ_data)
     end
 
     let(:organ_data) do
       {
-        "fundamental_pitch_spelling" => "Bb",
+        "pitch_designation" => "Bb",
         "staff_schemes" => {
           "default" => [
             {"clef" => "treble_clef", "name_key" => "right_hand"},

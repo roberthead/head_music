@@ -2,23 +2,23 @@ require 'spec_helper'
 
 describe HeadMusic::Instrument::StaffScheme do
   subject(:staff_scheme) do
-    pitch_variant.default_staff_scheme
+    variant.default_staff_scheme
   end
 
-  let(:pitch_variant) do
-    HeadMusic::Instrument::PitchVariant.new(:default, clarinet_data)
+  let(:variant) do
+    HeadMusic::Instrument::Variant.new(:default, clarinet_data)
   end
 
   let(:clarinet_data) do
     {
-      "fundamental_pitch_spelling" => "Bb",
+      "pitch_designation" => "Bb",
       "staff_schemes" => {
         "default" => [{"clef" => "treble", "sounding_transposition" => -2}]
       }
     }
   end
 
-  its(:pitch_variant) { is_expected.to eq pitch_variant }
+  its(:variant) { is_expected.to eq variant }
 
   it { is_expected.to be_default }
 

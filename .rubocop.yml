@@ -25,5 +25,8 @@ RSpec/ContextWording:
     - for
     - by
 
+RSpec/MultipleExpectations:
+  Enabled: false
+
 RSpec/NestedGroups:
   Max: 5

@@ -1,4 +1,4 @@
-class HeadMusic::Instrument::PitchVariant
+class HeadMusic::Instrument::Variant
   attr_reader :key, :attributes
 
   def initialize(key, attributes = {})
@@ -6,11 +6,11 @@ class HeadMusic::Instrument::PitchVariant
     @attributes = attributes
   end
 
-  def fundamental_pitch_spelling
-    return unless attributes["fundamental_pitch_spelling"].to_s != ""
+  def pitch_designation
+    return unless attributes["pitch_designation"].to_s != ""
 
-    @fundamental_pitch_spelling ||=
-      HeadMusic::Spelling.get(attributes["fundamental_pitch_spelling"])
+    @pitch_designation ||=
+      HeadMusic::Spelling.get(attributes["pitch_designation"])
   end
 
   def staff_schemes
@@ -18,7 +18,7 @@ class HeadMusic::Instrument::PitchVariant
       (attributes["staff_schemes"] || {}).map do |key, list|
         HeadMusic::Instrument::StaffScheme.new(
           key: key,
-          pitch_variant: self,
+          variant: self,
           list: list
         )
       end
