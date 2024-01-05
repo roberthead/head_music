@@ -165,6 +165,7 @@ saxophone:
     - single_reed
     - wind
     - woodwind
+  orchestra_section_key: woodwind
 snare_drum:
   classification_keys:
     - percussion

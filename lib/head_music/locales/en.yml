@@ -92,8 +92,8 @@ en:
       shaken: shaken
       single_reed: single-reed
       string: string
-      strings: strings
       stringed_instrument: stringed instrument
+      strings: strings
       struck: struck
       voice: voice
       wind: wind
@@ -103,6 +103,7 @@ en:
     instrument_with_pitch_designation: "%{instrument} in %{pitch_designation}"
     instrument_voices:
       piccolo: piccolo
+      sopranino: sopranino
       soprano: soprano
       mezzo_soprano: mezzo-soprano
       alto: alto
@@ -110,27 +111,37 @@ en:
       baritone: baritone
       bass: bass
       contrabass: contrabass
-      octobass: octobass
+      subcontrabass: subcontrabass
     instruments:
       accordion: accordion
       alto_clarinet: alto clarinet
       alto_flute: alto flute
+      alto_recorder: alto recorder
+      alto_saxophone: alto saxophone
       alto_voice: alto
       arpeggione: arpeggione
       bagpipe: bagpipe
+      bagpipes: bagpipes
       banjo: banjo
       baritone_horn: baritone horn
+      baritone_oboe: baritone oboe
+      baritone_saxophone: baritone saxophone
       baritone_voice: baritone
+      bass: bass
       bass_clarinet: bass clarinet
       bass_drum: bass drum
       bass_guitar: bass guitar
       bass_oboe: bass oboe
+      bass_recorder: bass recorder
+      bass_saxophone: bass saxophone
       bass_trombone: bass trombone
       bass_trumpet: bass trumpet
       bass_tuba: bass tuba
       bass_voice: bass
       basset_horn: basset horn
+      basset_recorder: basset recorder
       bassoon: bassoon
+      bells: bells
       bugle: bugle
       castanets: castanets
       celesta: celesta
@@ -138,63 +149,125 @@ en:
       chimes: chimes
       cimbalom: cimbalom
       clarinet: clarinet
+      clarion: clarion
       clash_cymbals: clash cymbals
       clavichord: clavichord
+      concert_bells: concert bells
+      concert_cymbals: concert cymbals
+      contra_great_bass_recorder: contra-great bass recorder
+      contrabass: contrabass
       contrabass_clarinet: contrabass clarinet
+      contrabass_recorder: contrabass recorder
+      contrabass_saxophone: contrabass saxophone
+      contrabass_tuba: contrabass tuba
       contrabassoon: contrabassoon
+      contralto: contralto
+      contralto_voice: contralto
       cor_anglais: cor anglais
       cornet: cornet
-      cowbell: cowbell
       countertenor_voice: countertenor
+      cowbell: cowbell
+      crash_cymbal: crash cymbal
+      crash_cymbals: crash cymbals
       crotales: crotales
       cymbal: cymbal
+      descant: descant
       double_bass: double bass
+      double_contrabass_recorder: double-contrabass recorder
       english_horn: English horn
       euphonium: euphonium
+      fiddle: fiddle
+      field_drum: field drum
       flugelhorn: flugelhorn
       flute: flute
+      fortepiano: fortepiano
       french_horn: French horn
+      garklein_recorder: garklein recorder
       glockenspiel: glockenspiel
+      gong: gong
+      great_bass_recorder: great bass recorder
       great_highland_bagpipe: great highland bagpipe
       guitar: guitar
       hammered_dulcimer: hammered dulcimer
       harp: harp
       harpsichord: harpsichord
+      hautbois_d_amour: hautbois d'amour
+      hi-hat: hi-hat
       horn: horn
+      kettledrum: kettledrum
+      kick_drum: kick drum
       lute: lute
       mandolin: mandolin
       maracas: maracas
       marimba: marimba
       metal_block: metal block
+      mezzo: mezzo
+      mezzo_soprano: mezzo-soprano
+      mezzo_soprano_voice: mezzo-soprano
+      military_drum: military drum
       natural_horn: natural horn
       oboe: oboe
       oboe_d_amore: oboe d'amore
+      octocontrabass_recorder: octocontrabass recorder
+      orchestral_chimes: orchestral chimes
+      orchestral_cymbals: orchestral cymbals
       organ: organ
       piano: piano
+      pianoforte: pianoforte
       piccolo: piccolo
       piccolo_clarinet: piccolo clarinet
       piccolo_flute: piccolo flute
+      piccolo_recorder: piccolo recorder
+      piccolo_saxophone: piccolo saxophone
       piccolo_trumpet: piccolo trumpet
+      pipe_organ: pipe organ
+      quart_bass_recorder: quart bass recorder
       recorder: recorder
+      ride_cymbal: ride cymbal
       saxophone: saxophone
       side_drum: side drum
       snare_drum: snare drum
+      sopranino_clarinet: sopranino clarinet
+      sopranino_recorder: sopranino recorder
+      sopranino_saxophone: sopranino saxophone
+      sopranissimo_recorder: sopranissimo recorder
+      sopranissimo_saxophone: sopranissimo saxophone
+      soprano: soprano
+      soprano_clarinet: soprano clarinet
+      soprano_recorder: soprano recorder
+      soprano_saxophone: soprano saxophone
       soprano_voice: soprano
+      soprillo: soprillo
       sousaphone: sousaphone
+      string_bass: string bass
+      sub_bass_recorder: sub-bass recorder
+      sub_contrabass_recorder: sub-contrabass recorder
+      sub_great_bass_recorder: sub-great bass recorder
+      subcontrabass_saxophone: subcontrabass saxophone
       suspended_cymbal: suspended cymbal
       synthesizer: synthesizer
+      tabor: tabor
       tam_tam: tam-tam
       tambourine: tambourine
       temple_blocks: temple blocks
+      tenor: tenor
       tenor_drum: tenor drum
+      tenor_recorder: tenor recorder
+      tenor_saxophone: tenor saxophone
       tenor_trombone: tenor trombone
+      tenor_tuba: tenor tuba
       tenor_voice: tenor
       timpani: timpani
+      timpanum: timpanum
+      tom_drum: tom drum
+      tom_tom: tom-tom
+      treble_recorder: treble recorder
       triangle: triangle
       trombone: trombone
       trumpet: trumpet
       tuba: tuba
       tubular_bells: tubular bells
+      vibes: vibes
       vibraphone: vibraphone
       viola: viola
       viola_d_amore: viola d'amore
