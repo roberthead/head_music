@@ -31,7 +31,7 @@ describe HeadMusic::LetterName do
     end
   end
 
-  describe '.all' do
+  describe ".all" do
     subject(:letter_names) { described_class.all }
 
     it { is_expected.to be_an Array }

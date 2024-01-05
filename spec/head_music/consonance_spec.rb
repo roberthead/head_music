@@ -26,7 +26,7 @@ describe HeadMusic::Consonance do
       let(:instance) { described_class.get("#") }
 
       it "returns nil" do
-        expect(instance).to be nil
+        expect(instance).to be_nil
       end
     end
 
