@@ -20,7 +20,7 @@ class HeadMusic::ChromaticInterval
   end
 
   def initialize(identifier)
-    if identifier.to_s.strip =~ /^\D/i
+    if /^\D/i.match?(identifier.to_s.strip)
       candidate = identifier.to_s.downcase.gsub(/\W+/, "_")
       semitones = NAMES.index(candidate) || identifier.to_i
     end
