@@ -56,63 +56,165 @@ de:
       bass: Bass
     instruments:
       accordion: Akkordeon
+      alto_clarinet: Altklarinette
       alto_flute: Altflöte
+      alto_recorder: Altblockflöte
+      alto_saxophone: Altsaxophon
       alto_voice: Alt
       arpeggione: Arpeggione
       bagpipe: Dudelsack
+      banjo: Banjo
       baritone_horn: Baritonhorn
+      baritone_oboe: Baritonoboe
+      baritone_saxophone: Baritonsaxophon
       baritone_voice: Bariton
+      bass: Bass
       bass_clarinet: Bassklarinette
-      bass_drum: Grosse Trommel
-      bass_trombone: Bass Posaune
+      bass_drum: Große Trommel
+      bass_guitar: Bassgitarre
+      bass_oboe: Bassoboe
+      bass_recorder: Bassblockflöte
+      bass_saxophone: Basssaxophon
+      bass_trombone: Bassposaune
+      bass_trumpet: Basstrompete
+      bass_tuba: Basstuba
       bass_voice: Bass
+      basset_horn: Bassetthorn
+      basset_recorder: Bassetblockflöte
       bassoon: Fagott
+      bells: Glocken
+      bugle: Signalhorn
       castanets: Kastagnetten
       celesta: Celesta
       cello: Cello
-      cimbalom: Zymbal
+      chimes: Röhrenglocken
+      cimbalom: Cimbalom
       clarinet: Klarinette
+      clarion: Clarion
+      clash_cymbals: Becken
       clavichord: Klavichord
+      concert_bells: Konzertglocken
+      concert_cymbals: Konzertbecken
+      contra_great_bass_recorder: Großbassblockflöte
+      contrabass: Kontrabass
+      contrabass_clarinet: Kontrabassklarinette
+      contrabass_recorder: Kontrabassblockflöte
+      contrabass_saxophone: Kontrabasssaxophon
+      contrabass_tuba: Kontrabasstuba
+      contrabassoon: Kontrafagott
+      contralto: Alt
+      contralto_voice: Altstimme
+      cor_anglais: Englischhorn
       cornet: Kornett
+      countertenor_voice: Countertenor
+      cowbell: Kuhglocke
+      crash_cymbal: Crash-Becken
+      crash_cymbals: Crash-Becken
+      crotales: Crotales
       cymbal: Becken
+      descant: Diskant
       double_bass: Kontrabass
+      double_contrabass_recorder: Doppelkontrabassblockflöte
       english_horn: Englischhorn
       euphonium: Euphonium
       fiddle: Geige
+      field_drum: Feldtrommel
       flugelhorn: Flügelhorn
       flute: Flöte
+      fortepiano: Fortepiano
       french_horn: Horn
+      garklein_recorder: Garkleinblockflöte
       glockenspiel: Glockenspiel
+      gong: Gong
+      great_bass_recorder: Großbassblockflöte
       guitar: Gitarre
       hammered_dulcimer: Hackbrett
       harp: Harfe
       harpsichord: Cembalo
+      hautbois_d_amour: Liebeshoboe
+      hi-hat: Hi-Hat
       horn: Horn
+      kettledrum: Pauke
+      kick_drum: Große Trommel
       lute: Laute
       mandolin: Mandoline
       marimba: Marimbaphon
+      maracas: Maracas
+      metal_block: Metallblock
+      mezzo: Mezzo
+      mezzo_soprano: Mezzosopran
+      mezzo_soprano_voice: Mezzosopran
+      military_drum: Militärtrommel
       natural_horn: Waldhorn
       oboe: Oboe
       oboe_d_amore: Liebesoboe
+      octocontrabass_recorder: Oktokontrabassblockflöte
+      orchestral_chimes: Röhrenglocken
+      orchestral_cymbals: Orchesterbecken
       organ: Orgel
       piano: Piano
+      pianoforte: Hammerklavier
       piccolo: Pikkoloflöte
+      piccolo_clarinet: Piccoloklarinette
+      piccolo_flute: Pikkoloflöte
+      piccolo_recorder: Piccoloblockflöte
+      piccolo_saxophone: Piccolosaxophon
+      piccolo_trumpet: Piccolotrompete
+      pipe_organ: Orgel
       recorder: Blockflöte
+      ride_cymbal: Ride-Becken
       saxophone: Saxophon
+      side_drum: Kleine Trommel
       snare_drum: Leinentrommel
+      sopranino_clarinet: Sopraninoklarinette
+      sopranino_recorder: Sopraninoblockflöte
+      sopranino_saxophone: Sopraninosaxophon
+      sopranissimo_recorder: Sopranissimoblockflöte
+      sopranissimo_saxophone: Sopranissimosaxophon
+      soprano: Sopran
+      soprano_clarinet: Sopranklarinette
+      soprano_recorder: Sopranblockflöte
+      soprano_saxophone: Sopransaxophon
+      soprano_voice: Sopran
+      soprillo: Sopranissimo
+      sousaphone: Sousaphon
+      string_bass: Kontrabass
+      sub_bass_recorder: Subbassblockflöte
+      sub_contrabass_recorder: Subkontrabassblockflöte
+      sub_great_bass_recorder: Subgroßbassblockflöte
+      subcontrabass_saxophone: Subkontrabasssaxophon
+      suspended_cymbal: Hängebecken
+      synthesizer: Synthesizer
+      tabor: Tamburin
       tambourine: Tamburin
+      tam_tam: Tamtam
+      temple_blocks: Tempelblock
+      tenor: Tenor
       tenor_drum: Tenortrommel
+      tenor_recorder: Tenorblockflöte
+      tenor_saxophone: Tenorsaxophon
+      tenor_trombone: Tenorposaune
+      tenor_tuba: Tenortuba
+      tenor_voice: Tenor
       timpani: Pauken
+      timpanum: Pauke
+      tom_drum: Tom-Tom
+      tom_tom: Tom-Tom
+      treble_recorder: Diskantblockflöte
+      triangle: Triangel
       trombone: Posaune
       trumpet: Trompete
       tuba: Tuba
       tubular_bells: Rohrenglocke
+      vibes: Vibraphon
+      vibraphone: Vibraphon
       viola: Bratsche
       viola_d_amore: Viola d'amore
       viola_da_gamba: Viola da gamba
       violin: Violine
       violoncello: Violoncello
       voice: Stimme
+      woodblock: Holzblock
       xylophone: Xylophon
       zither: Zither
     locales:
