@@ -26,7 +26,7 @@ class HeadMusic::Instrument
   def self.all
     HeadMusic::InstrumentFamily.all
     @all ||=
-      INSTRUMENTS.map { |key, _data| get(key) }.sort_by(&:name)
+      INSTRUMENTS.map { |key, _data| get(key) }.sort_by { |instrument| instrument.name.downcase }
   end
 
   attr_reader(
