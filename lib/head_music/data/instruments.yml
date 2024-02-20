@@ -56,7 +56,6 @@ arpeggione:
 great_highland_bagpipe:
   alias_name_keys:
     - bagpipe
-    - bagpipes
   family_key: bagpipe
   variants:
     default:
