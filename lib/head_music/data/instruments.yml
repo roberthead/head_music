@@ -362,7 +362,6 @@ clash_cymbals:
   alias_name_keys:
     - concert_cymbals
     - orchestral_cymbals
-    - crash_cymbals
   family_key: cymbal
   variants:
     default:
