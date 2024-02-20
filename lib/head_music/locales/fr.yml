@@ -63,61 +63,164 @@ fr:
       tenor: ténor
     instruments:
       accordion: accordéon
+      alto_clarinet: clarinette alto
       alto_flute: flûte alto
+      alto_recorder: flûte à bec alto
+      alto_saxophone: saxophone alto
       alto_voice: alto
+      arpeggione: arpeggione
       bagpipe: cornemuse
+      banjo: banjo
       baritone_horn: corne de baryton
+      baritone_oboe: hautbois baryton
+      baritone_saxophone: saxophone baryton
       baritone_voice: baryton
       bass_clarinet: clarinette basse
       bass_drum: grosse caisse
-      bass_trombone: basse-trombone
+      bass_guitar: guitare basse
+      bass_oboe: hautbois basse
+      bass_recorder: flûte à bec basse
+      bass_saxophone: saxophone basse
+      bass_trombone: trombone basse
+      bass_trumpet: trompette basse
+      bass_tuba: tuba basse
       bass_voice: basse
+      basset_horn: cor de basset
+      basset_recorder: flûte à bec de basset
       bassoon: basson
+      bells: cloches
+      bugle: clairon
       castanets: castagnettes
       celesta: célesta
       cello: violoncelle
+      chimes: carillons
       cimbalom: cymbalum
       clarinet: clarinette
+      clarion: clairon
+      clash_cymbals: cymbales d'orchestre
       clavichord: clavicorde
+      concert_bells: cloches de concert
+      concert_cymbals: cymbales d'orchestre
+      contra_great_bass_recorder: flûte à bec contrebasse
+      contrabass: contrebasse
+      contrabass_clarinet: clarinette contrebasse
+      contrabass_recorder: flûte à bec contrabasse
+      contrabass_saxophone: saxophone contrebasse
+      contrabass_tuba: tuba contrebasse
+      contrabassoon: contrebasson
+      contralto: contralto
+      contralto_voice: contralto
+      cor_anglais: cor anglais
       cornet: cornet
+      countertenor_voice: contre-ténor
       cowbell: cloches à vache
+      crash_cymbal: cymbale crash
+      crotales: crotales
       cymbal: cymbale
+      descant: dessus
       double_bass: contrebasse
+      double_contrabass_recorder: flûte à bec double-contrebasse
       english_horn: cor anglais
       euphonium: euphonium
+      fiddle: violon
+      field_drum: tambour de champ
+      flugelhorn: bugle
       flute: flûte
+      fortepiano: fortepiano
       french_horn: cor
+      garklein_recorder: flûte à bec garklein
       glockenspiel: glockenspiel
+      gong: gong
+      great_bass_recorder: flûte à bec grande basse
+      great_highland_bagpipe: cornemuse écossaise
       guitar: guitare
       hammered_dulcimer: tympanon
       harp: harpe
       harpsichord: clavecin
+      hautbois_d_amour: hautbois d'amour
+      hi-hat: charleston
       horn: cor
+      kettledrum: timbale
+      kick_drum: grosse caisse (pedale)
       lute: luth
       mandolin: mandoline
+      maracas: maracas
       marimba: marimba
-      natural_horn: cor simple
+      metal_block: bloc métallique
+      mezzo: mezzo
+      mezzo_soprano: mezzo-soprano
+      mezzo_soprano_voice: voix de mezzo-soprano
+      military_drum: tambour militaire
+      natural_horn: cor naturel
       oboe: hautbois
       oboe_d_amore: hautbois d'amore
+      octocontrabass_recorder: flûte à bec octo-contrebasse
+      orchestral_chimes: chimes orchestrales
+      orchestral_cymbals: cymbales d'orchestre
       organ: orgue
       piano: piano
+      pianoforte: pianoforte
       piccolo: piccolo
+      piccolo_clarinet: clarinette piccolo
+      piccolo_flute: flûte piccolo
+      piccolo_recorder: flûte à bec piccolo
+      piccolo_saxophone: saxophone piccolo
+      piccolo_trumpet: trompette piccolo
+      pipe_organ: orgue à tuyaux
       recorder: flûte à bec
+      ride_cymbal: cymbale ride
       saxophone: saxophone
+      side_drum: tambour latéral
       snare_drum: caisse claire
+      sopranino_clarinet: clarinette sopranino
+      sopranino_recorder: flûte à bec sopranino
+      sopranino_saxophone: saxophone sopranino
+      sopranissimo_recorder: flûte à bec sopranissimo
+      sopranissimo_saxophone: saxophone sopranissimo
+      soprano: soprano
+      soprano_clarinet: clarinette soprano
+      soprano_recorder: flûte à bec soprano
+      soprano_saxophone: saxophone soprano
+      soprano_voice: voix de soprano
+      soprillo: soprillo
+      sousaphone: soubassophone
+      string_bass: contrebasse à cordes
+      sub_bass_recorder: flûte à bec sub-basse
+      sub_contrabass_recorder: flûte à bec sub-contrebasse
+      sub_great_bass_recorder: flûte à bec sub-grande basse
+      subcontrabass_saxophone: saxophone subcontrabasse
+      suspended_cymbal: cymbale suspendue
+      synthesizer: synthétiseur
+      tabor: tambour
+      tam_tam: tam-tam
       tambourine: tambourin
-      tenor_drum: caisse roulante
+      temple_blocks: blocs de temple
+      tenor: ténor
+      tenor_drum: tambour ténor
+      tenor_recorder: flûte à bec ténor
+      tenor_saxophone: saxophone ténor
+      tenor_trombone: trombone ténor
+      tenor_tuba: tuba ténor
+      tenor_voice: voix de ténor
       timpani: timbales
+      timpanum: timbale
+      tom_drum: tom
+      tom_tom: tom-tom
+      treble_recorder: flûte à bec soprano
+      triangle: triangle
       trombone: trombone
       trumpet: trompette
       tuba: tuba
       tubular_bells: cloches tubulaires
+      vibes: vibraphone
+      vibraphone: vibraphone
       viola: alto
       viola_d_amore: viole d'amour
       viola_da_gamba: viole de gambe
       violin: violon
       violoncello: violoncelle
       voice: voix
+      woodblock: bloc de bois
       xylophone: xylophone
       zither: cithare
     locales:
