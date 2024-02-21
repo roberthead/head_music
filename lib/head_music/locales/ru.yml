@@ -3,70 +3,165 @@ ru:
     instrument_classifications:
       brass: медные духовые
       brass_instrument: медный духовой инструмент
+      double_reed: двойная деревянная духовая
       drum: барабан
       keyboard_instrument: клавишный инструмент
       percussion: ударные
       percussion_instrument: ударный инструмент
       plucked_instrument: щипковые инструменты
-      reeds: трости
+      reed: деревянные духовые
       strings: струны
       stringed_instrument: струнный инструмент
       wind: духовые
       wind_instrument: духовой инструмент
+      woodwind: деревянные духовые
       woodwind_instrument: деревянные духовые инструменты
     instruments:
       accordion: аккордеон
+      alto_clarinet: альт-кларнет
+      alto_recorder: альтовая флейта
+      alto_saxophone: альт-саксофон
+      arpeggione: арпеджионе
+      banjo: банджо
       baritone_horn: баритон рог
+      baritone_oboe: баритоновый гобой
       baritone_voice: баритон
       bass_clarinet: бас-кларнет
       bass_drum: большой барабан
       bass_trombone: бас-тромбон
       bassoon: фагот
+      bells: колокола
+      bugle: сигнальный рожок
       castanets: кастаньеты
       celesta: челеста
       cello: виолончель
+      chimes: ветряные колокольчики
+      cimbalom: цимбалы
       clarinet: кларнет
+      clarion: кларион
+      clash_cymbals: боевые тарелки
       clavichord: клавикорд
+      concert_bells: концертные колокола
+      concert_cymbals: концертные тарелки
+      contra_great_bass_recorder: контрабасовая флейта
+      contrabass: контрабас
+      contrabass_clarinet: контрабас-кларнет
+      contrabass_recorder: контрабасовая флейта
+      contrabass_saxophone: контрабас-саксофон
+      contrabass_tuba: контрабас-туба
+      contrabassoon: контрафагот
+      contralto: контральто
+      contralto_voice: голос контральто
+      cor_anglais: английский горн
       cornet: корнет
+      countertenor_voice: голос контртенор
       cowbell: ковбелл
+      crash_cymbal: крэш-тарелка
+      crotales: кроталы
       cymbal: тарелки
+      descant: дискант
       double_bass: контрабас
+      double_contrabass_recorder: двойная контрабасовая флейта
       english_horn: английский рожок
       euphonium: эуфониум
+      fiddle: скрипка
+      field_drum: полевой барабан
       flugelhorn: флюгельгорн
       flute: флейта
+      fortepiano: фортепиано
       french_horn: валторна
+      garklein_recorder: гаркляйн флейта
       glockenspiel: глокеншпиль
+      gong: гонг
+      great_bass_recorder: большая басовая флейта
+      great_highland_bagpipe: великая шотландская волынка
       guitar: гитара
       hammered_dulcimer: цимбалы
       harp: арфа
       harpsichord: клавесин
+      hautbois_d_amour: гобой д'амур
+      hi-hat: хай-хет
       horn: валторна
+      kettledrum: тимпан
+      kick_drum: бас-барабан
       lute: лютня
       mandolin: мандолина
       marimba: маримба
+      metal_block: металлический блок
+      mezzo: меццо
+      mezzo_soprano: меццо-сопрано
+      mezzo_soprano_voice: голос меццо-сопрано
+      military_drum: военный барабан
       natural_horn: натуральный рог
       oboe: гобой
       oboe_d_amore: гобой д'амур
+      octocontrabass_recorder: окто-контрабасовая флейта
+      orchestral_chimes: оркестровые колокольчики
+      orchestral_cymbals: оркестровые тарелки
       organ: орган
       piano: фортепиано
+      pianoforte: пианофорте
       piccolo: пикколо
+      piccolo_clarinet: пикколо-кларнет
+      piccolo_flute: пикколо-флейта
+      piccolo_recorder: пикколо-флейта
+      piccolo_saxophone: пикколо-саксофон
+      piccolo_trumpet: пикколо-труба
+      pipe_organ: трубный орган
+      quart_bass_recorder: кварт-басовая флейта
       recorder: блокфлейта
+      ride_cymbal: райд-тарелка
       saxophone: саксофон
+      side_drum: боковой барабан
       snare_drum: малый барабан
+      sopranino_clarinet: сопранино-кларнет
+      sopranino_recorder: сопранино флейта
+      sopranino_saxophone: сопранино-саксофон
+      sopranissimo_recorder: сопраниссимо флейта
+      sopranissimo_saxophone: сопраниссимо-саксофон
+      soprano_clarinet: сопрано-кларнет
+      soprano_recorder: сопрано флейта
+      soprano_saxophone: сопрано-саксофон
+      soprano_voice: сопрано
+      soprillo: соприлло
+      sousaphone: сузафон
+      string_bass: струнный бас
+      sub_bass_recorder: суб-басовая флейта
+      sub_contrabass_recorder: суб-контрабасовая флейта
+      sub_great_bass_recorder: суб-великая басовая флейта
+      subcontrabass_saxophone: субконтрабас-саксофон
+      suspended_cymbal: подвесная тарелка
+      synthesizer: синтезатор
+      tabor: табор
+      tam_tam: там-там
       tambourine: бубен
+      temple_blocks: храмовые блоки
+      tenor: тенор
       tenor_drum: теноровый барабан
+      tenor_recorder: теноровая флейта
+      tenor_saxophone: тенор-саксофон
+      tenor_trombone: теноровый тромбон
+      tenor_tuba: теноровая туба
+      tenor_voice: тенор
       timpani: тимпаны
+      timpanum: тимпан
+      tom_drum: том
+      tom_tom: том-том
+      treble_recorder: дискантовая флейта
+      triangle: треугольник
       trombone: тромбон
       trumpet: труба
       tuba: туба
       tubular_bells: трубчатые колокола
+      vibes: вибрафон
+      vibraphone: вибрафон
       viola: альт
       viola_d_amore: виола д'амур
       viola_da_gamba: виола да гамба
       violin: скрипка
       violoncello: виолончель
       voice: голос
+      woodblock: деревянный блок
       xylophone: ксилофон
       zither: цитра
     locales:
