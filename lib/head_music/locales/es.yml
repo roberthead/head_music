@@ -218,12 +218,12 @@ es:
       xylophone: xilofón
       zither: cítara
     locales:
-      de: Alemán
-      en: Inglés
-      es: Español
-      fr: Francés
-      it: Italiano
-      ru: Ruso
+      de: alemán
+      en: inglés
+      es: español
+      fr: francés
+      it: italiano
+      ru: ruso
     rudiments:
       clef: clave
       consonance: consonancia

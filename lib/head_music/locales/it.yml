@@ -217,12 +217,12 @@ it:
       xylophone: xilofono
       zither: cetra da tavolo
     locales:
-      de: Tedesco
-      en: Inglese
-      es: Spagnolo
-      fr: Francese
-      it: Italiano
-      ru: Russo
+      de: tedesco
+      en: inglese
+      es: spagnolo
+      fr: francese
+      it: italiano
+      ru: russo
     rudiments:
       clef: chiave
       consonance: consonanza
