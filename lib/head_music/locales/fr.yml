@@ -7,7 +7,7 @@ fr:
       baritone_f_clef: clé de fa 3e
       bass_clef: clé de basse
       c_clef: clé d'ut
-      vocal_tenor_clef: vocal tenor clef
+      vocal_tenor_clef: clé de ténor vocale
       contrabass_clef: clé de contrebasse
       countertenor_clef: clé de contre-ténor
       double_treble_clef: double clé de sol
@@ -50,6 +50,7 @@ fr:
       reed: anche
       strings: cordes
       stringed_instrument: instrument à cordes
+      wind: instrument à vent
       wind_instrument: instrument à vent
       woodwind: bois
       woodwind_instrument: instrument à vent en bois
@@ -141,7 +142,7 @@ fr:
       hi-hat: charleston
       horn: cor
       kettledrum: timbale
-      kick_drum: grosse caisse (pedale)
+      kick_drum: grosse caisse
       lute: luth
       mandolin: mandoline
       maracas: maracas
@@ -232,3 +233,4 @@ fr:
       ru: russe
     rudiments:
       clef: clé
+      consonance: consonance

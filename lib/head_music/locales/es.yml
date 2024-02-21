@@ -44,13 +44,13 @@ es:
       drum: tambor
       keyboard_instrument: instrumento de tecla
       percussion: percusión
-      percussion_instrument: instrumentos de percusión
-      plucked_instrument: instrumentos punteados
+      percussion_instrument: instrumento de percusión
+      plucked_instrument: instrumento punteados
       strings: cuerdas
-      stringed_instrument: instrumentos de cuerdas
+      stringed_instrument: instrumento de cuerdas
       wind: viento
-      wind_instruments: instrumentos de viento
-      woodwind_instruments: instrumentos de madera
+      wind_instrument: instrumento de viento
+      woodwind_instrument: instrumento de madera
     instruments:
       accordion: acordeón
       alto_flute: flauta alto

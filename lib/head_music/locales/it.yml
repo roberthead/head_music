@@ -41,16 +41,19 @@ it:
     instrument_classifications:
       brass: ottone
       brass_instrument: ottone
+      double_reed: ancia doppia
       drum: tamburo
-      keyboard_instrument: strumenti a tastiera
+      keyboard_instrument: strumento a tastiera
       percussion: percussione
-      percussion_instrument: strumenti a percussione
-      plucked_instrument: strumenti a pizzico
+      percussion_instrument: strumento a percussione
+      plucked_instrument: strumento a pizzico
+      reed: ancia
       strings: archi
-      stringed_instrument: strumenti a corda
+      stringed_instrument: strumento a corda
       wind: fiato
-      wind_instruments: strumenti a fiato
-      woodwind_instruments: legno
+      wind_instrument: strumento a fiato
+      woodwind: legno
+      woodwind_instrument: legno
     instrument_voices:
       alto: contralto
       baritone: baritono
@@ -92,7 +95,7 @@ it:
       cimbalom: cimbalom
       clarinet: clarinetto
       clarion: clarione
-      clash_cymbals: piatti a percussione
+      clash_cymbals: piatti clash
       clavichord: clavicordo
       concert_bells: campane da concerto
       concert_cymbals: piatti concertanti
