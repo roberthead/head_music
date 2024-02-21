@@ -1,74 +1,74 @@
 ru:
   head_music:
     instrument_classifications:
-      brass: mednye dukhovye
-      brass_instrument: mednye dukhovye instrument
-      drum: baraban
-      keyboard_instrument: klavishnyi instrument
-      percussion: udarnye
-      percussion_instrument: udarnye instrument
-      plucked_instrument: shchipkovye instrumenty
-      reeds: trosti
-      strings: struny
-      stringed_instrument: strunnye instrument
-      wind: dukhovye
-      wind_instrument: dukhovye instrument
-      woodwind_instrument: dereviannye dukhovye instrumenty
+      brass: медные духовые
+      brass_instrument: медный духовой инструмент
+      drum: барабан
+      keyboard_instrument: клавишный инструмент
+      percussion: ударные
+      percussion_instrument: ударный инструмент
+      plucked_instrument: щипковые инструменты
+      reeds: трости
+      strings: струны
+      stringed_instrument: струнный инструмент
+      wind: духовые
+      wind_instrument: духовой инструмент
+      woodwind_instrument: деревянные духовые инструменты
     instruments:
-      accordion: akkordeon
-      baritone_horn: bariton rog
-      baritone_voice: bariton
-      bass_clarinet: bass-klarnet
-      bass_drum: bol'shoi baraban
-      bass_trombone: bas trombon
-      bassoon: fagot
-      castanets: kastan'ety
-      celesta: chelesta
-      cello: violonchel'
-      clarinet: klarnet
-      clavichord: klavikord
-      cornet: kornet
-      cowbell: caubel
-      cymbal: tarelk
-      double_bass: kontrabas
-      english_horn: angliiskii rozhok
-      euphonium: evfonium
-      flugelhorn: fliugel'gorn
-      flute: fleita
-      french_horn: Gorn
-      glockenspiel: kolokol'chiki
-      guitar: gitara
-      hammered_dulcimer: tsimbaly
-      harp: arfa
-      harpsichord: klavesin
-      horn: gorn
-      lute: liutnia
-      mandolin: mandolina
-      marimba: marimba
-      natural_horn: valtorna
-      oboe: goboi
-      oboe_d_amore: goboi d'amur
-      organ: organ
-      piano: fortep'iano
-      piccolo: pikkolo
-      recorder: blokfleita
-      saxophone: saksofon
-      snare_drum: frantsuzskii baraban
-      tambourine: buben
-      tenor_drum: tsilindricheskii baraban
-      timpani: litavra
-      trombone: trombon
-      trumpet: truba
-      tuba: tuba
-      tubular_bells: trubchatye kolokola
-      viola: viola
-      viola_d_amore: viola d'amur
-      viola_da_gamba: viola da gamba
-      violin: skripka
-      violoncello: violonchel'
-      voice: golos
-      xylophone: ksilofon
-      zither: tsitra
+      accordion: аккордеон
+      baritone_horn: баритон рог
+      baritone_voice: баритон
+      bass_clarinet: бас-кларнет
+      bass_drum: большой барабан
+      bass_trombone: бас-тромбон
+      bassoon: фагот
+      castanets: кастаньеты
+      celesta: челеста
+      cello: виолончель
+      clarinet: кларнет
+      clavichord: клавикорд
+      cornet: корнет
+      cowbell: ковбелл
+      cymbal: тарелки
+      double_bass: контрабас
+      english_horn: английский рожок
+      euphonium: эуфониум
+      flugelhorn: флюгельгорн
+      flute: флейта
+      french_horn: валторна
+      glockenspiel: глокеншпиль
+      guitar: гитара
+      hammered_dulcimer: цимбалы
+      harp: арфа
+      harpsichord: клавесин
+      horn: валторна
+      lute: лютня
+      mandolin: мандолина
+      marimba: маримба
+      natural_horn: натуральный рог
+      oboe: гобой
+      oboe_d_amore: гобой д'амур
+      organ: орган
+      piano: фортепиано
+      piccolo: пикколо
+      recorder: блокфлейта
+      saxophone: саксофон
+      snare_drum: малый барабан
+      tambourine: бубен
+      tenor_drum: теноровый барабан
+      timpani: тимпаны
+      trombone: тромбон
+      trumpet: труба
+      tuba: туба
+      tubular_bells: трубчатые колокола
+      viola: альт
+      viola_d_amore: виола д'амур
+      viola_da_gamba: виола да гамба
+      violin: скрипка
+      violoncello: виолончель
+      voice: голос
+      xylophone: ксилофон
+      zither: цитра
     locales:
       de: Немецкий
       en: Английский
