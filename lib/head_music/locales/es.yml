@@ -7,7 +7,6 @@ es:
       baritone_f_clef: clave de fa en tercera
       bass_clef: clave de bajo
       c_clef: clave de do
-      vocal_tenor_clef: vocal tenor clef
       contrabass_clef: clave de contrabajo
       countertenor_clef: clave de contratenor
       double_treble_clef: double clave de sol
@@ -25,7 +24,7 @@ es:
       indefinite_pitch_clef: clave neutral
       mezzo_soprano_clef: clave de mezzosoprano
       neutral_clef: clave neutral
-      percussion_clef: clave para percusión
+      percussion_clef: clave de percusión
       second_line_c_clef: clave de do en segunda
       second_line_g_clef: clave de sol en segunda
       soprano_clef: clave de soprano
@@ -38,26 +37,29 @@ es:
       treble_clef: clave de sol
       viola_clef: clave de do
       violin_clef: clave de sol
+      vocal_tenor_clef: clave de tenor vocal
     instrument_classifications:
       brass: metal
       brass_instrument: instrumento de metal
+      double_reed: doble lengüeta
       drum: tambor
       keyboard_instrument: instrumento de tecla
       percussion: percusión
       percussion_instrument: instrumento de percusión
-      plucked_instrument: instrumento punteados
-      strings: cuerdas
+      plucked_instrument: instrumento punteado
+      reed: lengüeta
       stringed_instrument: instrumento de cuerdas
+      strings: cuerdas
       wind: viento
       wind_instrument: instrumento de viento
-      woodwind_instrument: instrumento de madera
+      woodwind_instrument: instrumento de viento-madera
     instruments:
       accordion: acordeón
       alto_flute: flauta alto
       alto_voice: contralto
       bagpipe: gaita
       baritone_horn: bombardino barítono
-      baritone_voice: baritono
+      baritone_voice: barítono
       bass_clarinet: clarinete bajo
       bass_drum: bombo
       bass_trombone: trombón bajo
@@ -65,22 +67,22 @@ es:
       bassoon: fagot
       castanets: castañuelas
       celesta: celesta
-      cello: cello
+      cello: violonchelo
       clarinet: clarinete
       clavichord: clavicordio
       cornet: corneta
-      cymbal: cimbalo
+      cymbal: cimbalos
       double_bass: contrabajo
-      english_horn: Cuerno inglés
+      english_horn: corno inglés
       euphonium: euphonium
       flugelhorn: fliscorno
       flute: flauta
       french_horn: corno
-      glockenspiel: campanólogo
+      glockenspiel: metallofono
       guitar: guitarra
-      hammered_dulcimer: dulcémele
+      hammered_dulcimer: salterio
       harp: arpa
-      harpsichord: clavecémbalo
+      harpsichord: clavecín
       horn: corno
       lute: laúd
       mandolin: mandolina
@@ -91,11 +93,11 @@ es:
       organ: órgano
       piano: piano
       piccolo: flautín
-      recorder: flauta recta
+      recorder: flauta de pico
       saxophone: saxofón
-      snare_drum: tambor afinable
+      snare_drum: tambor de caja
       tambourine: pandereta
-      tenor_drum: redoblante
+      tenor_drum: tambor tenor
       timpani: timbal
       trombone: trombón
       trumpet: trompeta
@@ -105,7 +107,7 @@ es:
       viola_d_amore: viola d'amore
       viola_da_gamba: viola de gamba
       violin: violín
-      violoncello: violoncelo
+      violoncello: violonchelo
       voice: voz
       xylophone: xilofón
       zither: cítara
