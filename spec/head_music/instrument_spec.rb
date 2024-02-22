@@ -90,7 +90,7 @@ describe HeadMusic::Instrument do
     it { is_expected.to be_pitched }
 
     specify { expect(violin.translation(:it)).to eq "violino" }
-    specify { expect(violin.translation(:ru)).to eq "skripka" }
+    specify { expect(violin.translation(:ru)).to eq "скрипка" }
   end
 
   context "when basset horn" do
