@@ -1,5 +1,19 @@
 de:
   head_music:
+    chromatic_intervals:
+      perfect_unison: reine Prime
+      minor_second: kleine Sekunde
+      major_second: große Sekunde
+      minor_third: kleine Terz
+      major_third: große Terz
+      perfect_fourth: reine Quarte
+      tritone: Tritonus
+      perfect_fifth: reine Quinte
+      minor_sixth: kleine Sexte
+      major_sixth: große Sexte
+      minor_seventh: kleine Septime
+      major_seventh: große Septime
+      perfect_octave: reine Oktave
     clefs:
       alto_clef: Altschlüssel
       baritone_c_clef: Baritonschlüssel

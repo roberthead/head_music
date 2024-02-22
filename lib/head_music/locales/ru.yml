@@ -1,5 +1,19 @@
 ru:
   head_music:
+    chromatic_intervals:
+      perfect_unison: чистая унисон
+      minor_second: малая секунда
+      major_second: большая секунда
+      minor_third: малая терция
+      major_third: большая терция
+      perfect_fourth: чистая кварта
+      tritone: триоль
+      perfect_fifth: чистая квинта
+      minor_sixth: малая секста
+      major_sixth: большая секста
+      minor_seventh: малая септима
+      major_seventh: большая септима
+      perfect_octave: чистая октава
     instrument_classifications:
       brass: медные духовые
       brass_instrument: медный духовой инструмент

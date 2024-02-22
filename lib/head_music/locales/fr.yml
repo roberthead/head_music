@@ -1,5 +1,19 @@
 fr:
   head_music:
+    chromatic_intervals:
+      perfect_unison: unisson parfait
+      minor_second: seconde mineure
+      major_second: seconde majeure
+      minor_third: tierce mineure
+      major_third: tierce majeure
+      perfect_fourth: quarte juste
+      tritone: triton
+      perfect_fifth: quinte juste
+      minor_sixth: sixte mineure
+      major_sixth: sixte majeure
+      minor_seventh: septième mineure
+      major_seventh: septième majeure
+      perfect_octave: octave juste
     clefs:
       alto_clef: clé alto
       baritone_c_clef: clé de baryton
