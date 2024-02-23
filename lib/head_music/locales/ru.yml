@@ -203,3 +203,38 @@ ru:
       fr: Французский
       it: Итальянский
       ru: Русский
+    rudiments:
+      alteration: альтерация
+      chromatic_interval: хроматический интервал
+      circle: круг
+      clef: ключ
+      consonance: консонанс
+      diatonic_interval: диатонический интервал
+      grand_staff: большой нотный стан
+      harmonic_interval: гармонический интервал
+      instrument: инструмент
+      interval_cycle: цикл интервалов
+      key_signature: тональность
+      letter_name: названия нот
+      melodic_interval: мелодический интервал
+      meter: метр
+      motion: движение
+      musical_symbol: музыкальный символ
+      octave: октава
+      pitch: высота звука
+      pitch_class: класс высоты звука
+      pitch_class_set: набор классов высоты звука
+      pitch_set: набор высот звука
+      quality: качество
+      reference_pitch: эталонная высота звука
+      rhythm: ритм
+      rhythmic_unit: ритмическая единица
+      scale: гамма
+      scale_degree: ступень гаммы
+      scale_type: тип гаммы
+      solmization: сольмизация
+      sonority: звучность
+      spelling: обозначение
+      staff: нотный стан
+      tuba: туба
+      tuning: настройка

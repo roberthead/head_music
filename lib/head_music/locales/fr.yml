@@ -264,5 +264,37 @@ fr:
       it: italien
       ru: russe
     rudiments:
+      alteration: altération
+      chromatic_interval: intervalle chromatique
+      circle: cercle
       clef: clé
       consonance: consonance
+      diatonic_interval: intervalle diatonique
+      grand_staff: grande portée
+      harmonic_interval: intervalle harmonique
+      instrument: instrument
+      interval_cycle: cycle d'intervalles
+      key_signature: armure
+      letter_name: nom de note
+      melodic_interval: intervalle mélodique
+      meter: mesure
+      motion: mouvement
+      musical_symbol: symbole musical
+      octave: octave
+      pitch: hauteur de son
+      pitch_class: classe de hauteur de son
+      pitch_class_set: ensemble de classes de hauteurs
+      pitch_set: ensemble de hauteurs de son
+      quality: qualité
+      reference_pitch: hauteur de référence
+      rhythm: rythme
+      rhythmic_unit: unité rythmique
+      scale: gamme
+      scale_degree: degré de la gamme
+      scale_type: type de gamme
+      solmization: solmisation
+      sonority: sonorité
+      spelling: notation
+      staff: portée
+      tuba: tuba
+      tuning: accord

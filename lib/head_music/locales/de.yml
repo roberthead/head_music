@@ -263,5 +263,37 @@ de:
       chamber_tone: Kammerton
       choir_tone: Chorton
     rudiments:
+      alteration: Alteration
+      chromatic_interval: chromatisches Intervall
+      circle: Kreis
       clef: Notenschlüssel
       consonance: Konsonanz
+      diatonic_interval: diatonisches Intervall
+      grand_staff: Großer Notenstab
+      harmonic_interval: harmonisches Intervall
+      instrument: Instrument
+      interval_cycle: Intervallkreis
+      key_signature: Tonart
+      letter_name: Buchstabenname
+      melodic_interval: melodisches Intervall
+      meter: Takt
+      motion: Bewegung
+      musical_symbol: musikalisches Symbol
+      octave: Oktave
+      pitch: Tonhöhe
+      pitch_class: Tonhöhenklasse
+      pitch_class_set: Tonhöhenklassensatz
+      pitch_set: Tonhöhensatz
+      quality: Qualität
+      reference_pitch: Referenztonhöhe
+      rhythm: Rhythmus
+      rhythmic_unit: rhythmische Einheit
+      scale: Tonleiter
+      scale_degree: Tonleiterstufe
+      scale_type: Tonleiterart
+      solmization: Solmisation
+      sonority: Klangfarbe
+      spelling: Schreibweise
+      staff: Notenlinien
+      tuba: Tuba
+      tuning: Stimmung
