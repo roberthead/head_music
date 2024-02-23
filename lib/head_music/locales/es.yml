@@ -90,7 +90,7 @@ es:
       accordion: acordeón
       alto_clarinet: clarinete alto
       alto_flute: flauta alto
-      alto_recorder: flauta de pico alto
+      alto_recorder: flauta dulce alto
       alto_saxophone: saxofón alto
       alto_voice: contralto
       arpeggione: arpeggione
@@ -105,14 +105,14 @@ es:
       bass_drum: bombo
       bass_guitar: bajo eléctrico
       bass_oboe: oboe bajo
-      bass_recorder: flauta de pico bajo
+      bass_recorder: flauta dulce bajo
       bass_saxophone: saxofón bajo
       bass_trombone: trombón bajo
       bass_trumpet: trompeta baja
       bass_tuba: tuba baja
       bass_voice: bajo
       basset_horn: clarinete bajo
-      basset_recorder: flauta de pico bajo
+      basset_recorder: flauta dulce bajo
       bassoon: fagot
       bells: campanas
       bugle: cornetín
@@ -127,10 +127,10 @@ es:
       clavichord: clavicordio
       concert_bells: carillón orquestal
       concert_cymbals: platillos de orquesta
-      contra_great_bass_recorder: contrabajaùete
+      contra_great_bass_recorder: flauta dulce contrabajo
       contrabass: contrabajo
       contrabass_clarinet: clarinete contrabajo
-      contrabass_recorder: flauta de pico contrabajo
+      contrabass_recorder: flauta dulce contrabajo
       contrabass_saxophone: saxofón contrabajo
       contrabass_tuba: tuba contrabajo
       contrabassoon: contrafagot
@@ -143,9 +143,9 @@ es:
       crash_cymbal: platillo de choque
       crotales: crótalos
       cymbal: cimbalos
-      descant: flauta de pico soprano
+      descant: flauta dulce soprano
       double_bass: contrabajo
-      double_contrabass_recorder: flauta de pico subcontrabajo
+      double_contrabass_recorder: flauta dulce subcontrabajo
       english_horn: corno inglés
       euphonium: euphonium
       fiddle: violín
@@ -154,10 +154,10 @@ es:
       flute: flauta
       fortepiano: fortepiano
       french_horn: corno
-      garklein_recorder: flauta de pico garklein
+      garklein_recorder: flauta dulce garklein
       glockenspiel: metallofono
       gong: gong
-      great_bass_recorder: flauta de pico gran bajo
+      great_bass_recorder: flauta dulce gran bajo
       great_highland_bagpipe: gaita escocesa
       guitar: guitarra
       hammered_dulcimer: salterio
@@ -180,7 +180,7 @@ es:
       natural_horn: trompa natural
       oboe: oboe
       oboe_d_amore: oboe de amor
-      octocontrabass_recorder: flauta de pico subcontrabajo
+      octocontrabass_recorder: flauta dulce subcontrabajo
       orchestral_chimes: campanas orquestales
       orchestral_cymbals: platillos orquestales
       organ: órgano
@@ -189,32 +189,32 @@ es:
       piccolo: flautín
       piccolo_clarinet: clarinete piccolo
       piccolo_flute: flauta piccolo
-      piccolo_recorder: flauta de pico piccolo
+      piccolo_recorder: flauta dulce piccolo
       piccolo_saxophone: saxofón piccolo
       piccolo_trumpet: trompeta piccolo
       pipe_organ: órgano de tubos
-      quart_bass_recorder: flauta de pico bajo cuarteto
-      recorder: flauta de pico
+      quart_bass_recorder: flauta dulce bajo cuarteto
+      recorder: flauta dulce
       ride_cymbal: platillo de conducción
       saxophone: saxofón
-      side_drum: tambor laterale
+      side_drum: tambor lateral
       snare_drum: tambor de caja
       sopranino_clarinet: clarinete sopranino
-      sopranino_recorder: flauta de pico sopranino
+      sopranino_recorder: flauta dulce sopranino
       sopranino_saxophone: saxofón sopranino
-      sopranissimo_recorder: flauta de pico sopranissimo
+      sopranissimo_recorder: flauta dulce sopranissimo
       sopranissimo_saxophone: saxofón sopranissimo
       soprano: soprano
       soprano_clarinet: clarinete soprano
-      soprano_recorder: flauta de pico soprano
+      soprano_recorder: flauta dulce soprano
       soprano_saxophone: saxofón soprano
       soprano_voice: voz de soprano
       soprillo: soprillo
       sousaphone: sousafón
       string_bass: contrabajo de cuerdas
-      sub_bass_recorder: flauta de pico subbajo
-      sub_contrabass_recorder: flauta de pico subcontrabajo
-      sub_great_bass_recorder: flauta de pico subgran bajo
+      sub_bass_recorder: flauta dulce subbajo
+      sub_contrabass_recorder: flauta dulce subcontrabajo
+      sub_great_bass_recorder: flauta dulce subgran bajo
       subcontrabass_saxophone: saxofón subcontrabajo
       suspended_cymbal: platillo suspendido
       synthesizer: sintetizador
@@ -224,7 +224,7 @@ es:
       temple_blocks: bloques de templo
       tenor: tenor
       tenor_drum: tambor tenor
-      tenor_recorder: flauta de pico tenor
+      tenor_recorder: flauta dulce tenor
       tenor_saxophone: saxofón tenor
       tenor_trombone: trombón tenor
       tenor_tuba: tuba tenor
@@ -233,7 +233,7 @@ es:
       timpanum: tímpano
       tom_drum: tom
       tom_tom: tom-tom
-      treble_recorder: flauta de pico contralto
+      treble_recorder: flauta dulce contralto
       triangle: triángulo
       trombone: trombón
       trumpet: trompeta
