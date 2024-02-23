@@ -53,21 +53,39 @@ it:
       viola_clef: chiave di viola
       violin_clef: chiave di violino
     instrument_classifications:
-      brass: ottone
-      brass_instrument: ottone
-      double_reed: ancia doppia
+      aerophone: aerofono
+      bowed: ad arco
+      brass: ottoni
+      brass_instrument: strumento d'ottone
+      chordophone: cordofono
+      double_reed: ad ancia doppia
       drum: tamburo
+      edge_blown_aerophone: aerofono a imboccatura laterale
+      electronic: elettronico
+      idiophone: idiofono
+      keyboard: tastiera
       keyboard_instrument: strumento a tastiera
+      mallet: a bacchette
+      membranophone: membranofono
+      metal: metallo
+      mezzo_soprano_voice: voce di mezzo-soprano
       percussion: percussione
       percussion_instrument: strumento a percussione
+      plucked: pizzicato
       plucked_instrument: strumento a pizzico
-      reed: ancia
-      strings: archi
-      stringed_instrument: strumento a corda
+      reed: ad ancia
+      shaken: scosso
+      single_reed: ad ancia singola
+      string: corda
+      stringed_instrument: strumento a corde
+      strings: corde
+      struck: percosso
+      voice: voce
       wind: fiato
       wind_instrument: strumento a fiato
-      woodwind: legno
-      woodwind_instrument: legno
+      wood: legno
+      woodwind: a fiato legno
+      woodwind_instrument: strumento a fiato legno
     instrument_voices:
       alto: contralto
       baritone: baritono

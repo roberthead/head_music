@@ -53,19 +53,37 @@ fr:
       viola_clef: clé d'ut
       violin_clef: clé de sol
     instrument_classifications:
+      aerophone: aérophone
+      bowed: à archet
       brass: cuivres
-      brass_instrument: instruments à vent de cuivre
-      double_reed: anche double
+      brass_instrument: instrument à cuivre
+      chordophone: chordophone
+      double_reed: à anche double
       drum: tambour
+      edge_blown_aerophone: aérophone à embouchure latérale
+      electronic: électronique
+      idiophone: idiophone
+      keyboard: clavier
       keyboard_instrument: instrument à clavier
+      mallet: maillet
+      membranophone: membranophone
+      metal: métal
+      mezzo_soprano_voice: voix de mezzo-soprano
       percussion: percussion
       percussion_instrument: instrument à percussion
+      plucked: pincé
       plucked_instrument: instrument à cordes pincées
       reed: anche
-      strings: cordes
+      shaken: secoué
+      single_reed: à anche simple
+      string: corde
       stringed_instrument: instrument à cordes
-      wind: instrument à vent
+      strings: cordes
+      struck: frappé
+      voice: voix
+      wind: vent
       wind_instrument: instrument à vent
+      wood: bois
       woodwind: bois
       woodwind_instrument: instrument à vent en bois
     instrument_voices:

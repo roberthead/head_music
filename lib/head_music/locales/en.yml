@@ -100,6 +100,7 @@ en:
       wind_instrument: wind instrument
       wood: wood
       woodwind: woodwind
+      woodwind_instrument: woodwind instrument
     instrument_with_pitch_designation: "%{instrument} in %{pitch_designation}"
     instrument_voices:
       piccolo: piccolo

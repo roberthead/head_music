@@ -53,16 +53,38 @@ de:
       viola_clef: Bratschenschlüssel
       violin_clef: Violinschlüssel
     instrument_classifications:
+      aerophone: Aerophon
+      bowed: Streichinstrument
       brass: Blechblas
       brass_instrument: Blechblasinstrument
+      chordophone: Chordophon
+      double_reed: Doppelrohrblatt
       drum: Trommel
-      keyboard_instrument: Tasteninstrumente
-      percussion: Perkussions
-      percussion_instrument: Schlaginstrumente
-      plucked_instrument: Zupfinstrumente
-      strings: Streicher
+      edge_blown_aerophone: Kantenangeblasenes Aerophon
+      electronic: Elektronisch
+      idiophone: Idiophon
+      keyboard: Tastatur
+      keyboard_instrument: Tasteninstrument
+      mallet: Schlagstab
+      membranophone: Membranophon
+      metal: Metall
+      mezzo_soprano_voice: Mezzosopran
+      percussion: Schlagzeug
+      percussion_instrument: Schlaginstrument
+      plucked: Zupfinstrument
+      plucked_instrument: Zupfinstrument
+      reed: Rohrblatt
+      shaken: Gerüttelt
+      single_reed: Einfachrohrblatt
+      string: Saite
       stringed_instrument: Saiteninstrument
+      strings: Saiten
+      struck: Geschlagen
+      voice: Stimme
+      wind: Blas
       wind_instrument: Blasinstrument
+      wood: Holz
+      woodwind: Holzblas
       woodwind_instrument: Holzblasinstrument
     instrument_voices:
       alto: Alt

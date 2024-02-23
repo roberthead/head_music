@@ -53,19 +53,38 @@ es:
       violin_clef: clave de sol
       vocal_tenor_clef: clave de tenor vocal
     instrument_classifications:
+      aerophone: aerófono
+      bowed: de arco
       brass: metal
       brass_instrument: instrumento de metal
+      chordophone: cordófono
       double_reed: doble lengüeta
       drum: tambor
-      keyboard_instrument: instrumento de tecla
+      edge_blown_aerophone: aerófono de bisel
+      electronic: electrónico
+      idiophone: idiófono
+      keyboard: teclado
+      keyboard_instrument: instrumento de teclado
+      mallet: mazo
+      membranophone: membranófono
+      metal: metal
+      mezzo_soprano_voice: voz de mezzosoprano
       percussion: percusión
       percussion_instrument: instrumento de percusión
-      plucked_instrument: instrumento punteado
+      plucked: punteado
+      plucked_instrument: instrumento pulsado
       reed: lengüeta
-      stringed_instrument: instrumento de cuerdas
+      shaken: sacudido
+      single_reed: lengüeta simple
+      string: cuerda
+      stringed_instrument: instrumento de cuerda
       strings: cuerdas
+      struck: percutido
+      voice: voz
       wind: viento
       wind_instrument: instrumento de viento
+      wood: madera
+      woodwind: viento-madera
       woodwind_instrument: instrumento de viento-madera
     instruments:
       accordion: acordeón

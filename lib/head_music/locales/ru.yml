@@ -15,21 +15,39 @@ ru:
       major_seventh: большая септима
       perfect_octave: чистая октава
     instrument_classifications:
+      aerophone: аэрофон
+      bowed: смычковые
       brass: медные духовые
       brass_instrument: медный духовой инструмент
-      double_reed: двойная деревянная духовая
+      chordophone: хордофон
+      double_reed: двойная трость
       drum: барабан
+      edge_blown_aerophone: флейта с боковым продувом
+      electronic: электронный
+      idiophone: идиофон
+      keyboard: клавишные
       keyboard_instrument: клавишный инструмент
+      mallet: маллетный инструмент
+      membranophone: мембранофон
+      metal: металлический
+      mezzo_soprano_voice: меццо-сопрано
       percussion: ударные
       percussion_instrument: ударный инструмент
-      plucked_instrument: щипковые инструменты
-      reed: деревянные духовые
-      strings: струны
+      plucked: щипковые
+      plucked_instrument: щипковый инструмент
+      reed: тростниковый
+      shaken: трясучие инструменты
+      single_reed: одинарная трость
+      string: струнные
       stringed_instrument: струнный инструмент
+      strings: струны
+      struck: ударный
+      voice: голос
       wind: духовые
       wind_instrument: духовой инструмент
+      wood: дерево
       woodwind: деревянные духовые
-      woodwind_instrument: деревянные духовые инструменты
+      woodwind_instrument: деревянный духовой инструмент
     instruments:
       accordion: аккордеон
       alto_clarinet: альт-кларнет
