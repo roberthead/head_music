@@ -47,7 +47,12 @@ cymbal:
   classification_keys:
     - percussion
     - idiophone
+    - unpitched
   orchestra_section_key: percussion
+didgeridoo:
+  classification_keys:
+    - aerophone
+    - wind
 double_bass:
   classification_keys:
     - bowed
@@ -69,11 +74,13 @@ glockenspiel:
     - struck
     - metal
     - mallet
+    - pitched
   orchestra_section_key: percussion
 gong:
   classification_keys:
     - percussion
     - idiophone
+    - unpitched
   orchestra_section_key: percussion
 guitar:
   classification_keys:
@@ -104,6 +111,7 @@ kettledrum:
   classification_keys:
     - percussion
     - membranophone
+    - pitched
   orchestra_section_key: percussion
 lute:
   classification_keys:
@@ -125,6 +133,7 @@ marimba:
     - struck
     - wood
     - mallet
+    - pitched
   orchestra_section_key: percussion
 oboe:
   classification_keys:
@@ -166,16 +175,40 @@ saxophone:
     - wind
     - woodwind
   orchestra_section_key: woodwind
+sitar:
+  classification_keys:
+    - chordophone
+    - plucked
+    - string
+  orchestra_section_key: string
 snare_drum:
   classification_keys:
     - percussion
     - membranophone
+    - unpitched
+  orchestra_section_key: percussion
+steelpan:
+  classification_keys:
+    - percussion
+    - idiophone
+    - struck
+    - metal
+    - pitched
   orchestra_section_key: percussion
 synthesizer:
   classification_keys:
     - electronic
     - keyboard
   orchestra_section_key: keyboard
+tabla:
+  classification_keys:
+    - percussion
+    - membranophone
+    - pitched
+  orchestra_section_key: percussion
+theremin:
+  classification_keys:
+    - electronic
 trombone:
   classification_keys:
     - aerophone
@@ -194,6 +227,12 @@ tuba:
     - brass
     - wind
   orchestra_section_key: brass
+ukulele:
+  classification_keys:
+    - chordophone
+    - plucked
+    - string
+  orchestra_section_key: string
 vibraphone:
   classification_keys:
     - percussion
@@ -202,6 +241,7 @@ vibraphone:
     - keyboard
     - mallet
     - metal
+    - pitched
   orchestra_section_key: percussion
 violin:
   classification_keys:
@@ -218,6 +258,7 @@ woodblock:
     - percussion
     - struck
     - idiophone
+    - unpitched
   orchestra_section_key: percussion
 xylophone:
   classification_keys:
@@ -227,4 +268,5 @@ xylophone:
     - keyboard
     - mallet
     - wood
+    - pitched
   orchestra_section_key: percussion

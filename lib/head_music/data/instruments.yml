@@ -458,6 +458,13 @@ cymbal:
       staff_schemes:
         default:
           - clef: neutral_clef
+didgeridoo:
+  family_key: didgeridoo
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
 double_bass:
   alias_name_keys:
     - contrabass
@@ -963,6 +970,13 @@ subcontrabass_saxophone:
             sounding_transposition: -38
   range_categories:
     - subcontrabass
+sitar:
+  family_key: sitar
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
 snare_drum:
   alias_name_keys:
     - side_drum
@@ -997,6 +1011,15 @@ sousaphone:
             sounding_transposition: 0
   range_categories:
     - bass
+steelpan:
+  alias_name_keys:
+    - steel_drum
+  family_key: steelpan
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
 suspended_cymbal:
   family_key: cymbal
   variants:
@@ -1005,6 +1028,8 @@ suspended_cymbal:
         default:
           - clef: neutral_clef
 synthesizer:
+  alias_name_keys:
+    - electronic_keyboard
   family_key: synthesizer
   variants:
     default:
@@ -1014,6 +1039,13 @@ synthesizer:
             name_key: right_hand
           - clef: bass_clef
             name_key: left_hand
+tabla:
+  family_key: tabla
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
 tam_tam:
   alias_name_keys:
     - gong
@@ -1069,6 +1101,13 @@ tenor_voice:
             sounding_transposition: -12
   range_categories:
     - tenor
+theremin:
+  family_key: theremin
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
 timpani:
   alias_name_keys:
     - kettledrum
@@ -1148,6 +1187,74 @@ tuba:
       staff_schemes:
         default:
           - clef: bass_clef
+ukulele:
+  alias_name_keys:
+    - soprano_ukulele
+  family_key: ukulele
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
+  range_categories:
+    - soprano
+    - alto
+pocket_ukulele:
+  alias_name_keys:
+    - sopranino_ukulele
+    - piccolo_ukulele
+  family_key: ukulele
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
+  range_categories:
+    - sopranino
+    - soprano
+concert_ukulele:
+  alias_name_keys:
+    - alto_ukulele
+  family_key: ukulele
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
+  range_categories:
+    - soprano
+    - alto
+tenor_ukulele:
+  family_key: ukulele
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
+  range_categories:
+    - tenor
+baritone_ukulele:
+  family_key: ukulele
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
+  range_categories:
+    - alto
+    - tenor
+    - baritone
+bass_ukulele:
+  family_key: ukulele
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: bass_clef
+  range_categories:
+    - bass
+    - baritone
+    - tenor
 vibraphone:
   alias_name_keys:
     - vibes
