@@ -88,6 +88,13 @@ guitar:
     - plucked
     - string
   orchestra_section_key: string
+harmonica:
+  classification_keys:
+    - reed
+    - free-reed
+    - aerophone
+    - wind
+  orchestra_section_key: woodwind
 harp:
   classification_keys:
     - chordophone

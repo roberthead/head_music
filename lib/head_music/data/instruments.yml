@@ -568,6 +568,15 @@ hammered_dulcimer:
         default:
           - clef: treble_clef
   orchestra_section_key: percussion
+harmonica:
+  alias_name_keys:
+    - mouth_organ
+  family_key: harmonica
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
 harp:
   family_key: harp
   variants:
