@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Rudiment::IntervalCycle do
+describe HeadMusic::Analysis::IntervalCycle do
   describe "construction" do
     context "when given a diatonic interval" do
       subject(:diminished_seventh_sonority) { described_class.new(interval: :minor_third) }
@@ -23,7 +23,7 @@ describe HeadMusic::Rudiment::IntervalCycle do
 
       describe "#pitch_class_set" do
         it "returns a list of pitches until the first repeated pitch class" do
-          expect(diminished_seventh_sonority.pitch_class_set).to eq HeadMusic::Rudiment::PitchClassSet.new(%w[C Eb Gb Bbb])
+          expect(diminished_seventh_sonority.pitch_class_set).to eq HeadMusic::Analysis::PitchClassSet.new(%w[C Eb Gb Bbb])
         end
       end
     end
@@ -41,7 +41,7 @@ describe HeadMusic::Rudiment::IntervalCycle do
 
       describe "#pitch_class_set" do
         it "returns a list of pitches until the first repeated pitch class" do
-          expect(diminished_seventh_sonority.pitch_class_set).to eq HeadMusic::Rudiment::PitchClassSet.new(%w[C Eb Gb Bbb])
+          expect(diminished_seventh_sonority.pitch_class_set).to eq HeadMusic::Analysis::PitchClassSet.new(%w[C Eb Gb Bbb])
         end
       end
     end

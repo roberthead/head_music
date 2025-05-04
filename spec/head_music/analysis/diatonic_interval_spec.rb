@@ -128,7 +128,7 @@ I18n.describe HeadMusic::Analysis::DiatonicInterval do
     specify { expect(maj3).to be > min3 }
     specify { expect(min3).to be < maj3 }
     specify { expect(p5).to be > maj3 }
-    specify { expect(aug4).to be == dim5 }
+    specify { expect(aug4).to eq dim5 }
   end
 
   context "given two pitches comprising a simple interval" do

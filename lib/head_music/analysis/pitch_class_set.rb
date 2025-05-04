@@ -1,9 +1,9 @@
-# A module for music rudiments
-module HeadMusic::Rudiment; end
+# A module for musical analysis
+module HeadMusic::Analysis; end
 
 # A PitchClassSet represents a pitch-class set or pitch collection.
 # See also: PitchSet, PitchClass
-class HeadMusic::Rudiment::PitchClassSet
+class HeadMusic::Analysis::PitchClassSet
   attr_reader :pitch_classes
 
   delegate :empty?, to: :pitch_classes

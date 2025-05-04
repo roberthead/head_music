@@ -1,12 +1,12 @@
 require "spec_helper"
 
-describe HeadMusic::Rudiment::Circle do
+describe HeadMusic::Analysis::Circle do
   describe ".of_fifths" do
     subject(:circle) { described_class.of_fifths }
 
     describe "#pitch_classes" do
       it "lists all the pitch classes starting at C" do
-        expect(circle.pitch_class_set).to eq HeadMusic::Rudiment::PitchClassSet.new([0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5])
+        expect(circle.pitch_class_set).to eq HeadMusic::Analysis::PitchClassSet.new([0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5])
       end
     end
 
@@ -45,7 +45,7 @@ describe HeadMusic::Rudiment::Circle do
 
     describe "#pitch_classes" do
       it "lists all the pitch classes starting at C" do
-        expect(circle.pitch_class_set).to eq HeadMusic::Rudiment::PitchClassSet.new([0, 5, 10, 3, 8, 1, 6, 11, 4, 9, 2, 7])
+        expect(circle.pitch_class_set).to eq HeadMusic::Analysis::PitchClassSet.new([0, 5, 10, 3, 8, 1, 6, 11, 4, 9, 2, 7])
       end
     end
 

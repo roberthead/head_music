@@ -1,9 +1,9 @@
-# A module for music rudiments
-module HeadMusic::Rudiment; end
+# A module for musical analysis
+module HeadMusic::Analysis; end
 
 # A PitchSet is a collection of one or more pitches.
 # See also: PitchClassSet
-class HeadMusic::Rudiment::PitchSet
+class HeadMusic::Analysis::PitchSet
   TERTIAN_SONORITIES = {
     implied_triad: [3],
     triad: [3, 5],
@@ -31,11 +31,11 @@ class HeadMusic::Rudiment::PitchSet
   end
 
   def pitch_class_set
-    @pitch_class_set ||= HeadMusic::Rudiment::PitchClassSet.new(pitch_classes)
+    @pitch_class_set ||= HeadMusic::Analysis::PitchClassSet.new(pitch_classes)
   end
 
   def reduction
-    @reduction ||= HeadMusic::Rudiment::PitchSet.new(reduction_pitches)
+    @reduction ||= HeadMusic::Analysis::PitchSet.new(reduction_pitches)
   end
 
   def diatonic_intervals
@@ -67,13 +67,13 @@ class HeadMusic::Rudiment::PitchSet
   def invert
     inverted_pitch = pitches[0] + HeadMusic::Analysis::DiatonicInterval.get("perfect octave")
     new_pitches = pitches.drop(1) + [inverted_pitch]
-    HeadMusic::Rudiment::PitchSet.new(new_pitches)
+    HeadMusic::Analysis::PitchSet.new(new_pitches)
   end
 
   def uninvert
     inverted_pitch = pitches[-1] - HeadMusic::Analysis::DiatonicInterval.get("perfect octave")
     new_pitches = [inverted_pitch] + pitches[0..-2]
-    HeadMusic::Rudiment::PitchSet.new(new_pitches)
+    HeadMusic::Analysis::PitchSet.new(new_pitches)
   end
 
   def bass_pitch

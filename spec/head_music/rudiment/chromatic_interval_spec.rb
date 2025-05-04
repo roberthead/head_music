@@ -44,7 +44,7 @@ describe HeadMusic::Rudiment::ChromaticInterval do
   context "given a simple interval as an integer" do
     subject(:interval) { described_class.get(2) }
 
-    it { is_expected.to be == 2 }
+    it { is_expected.to eq 2 }
     it { is_expected.to be_simple }
     it { is_expected.to eq interval.simple }
     it { is_expected.not_to be_compound }
@@ -55,7 +55,7 @@ describe HeadMusic::Rudiment::ChromaticInterval do
       subject(:interval) { described_class.get(0) }
 
       it { is_expected.to be_simple }
-      it { is_expected.to be == 0 }
+      it { is_expected.to eq 0 }
       it { is_expected.not_to be_compound }
     end
   end

@@ -1,10 +1,10 @@
-require "head_music/rudiment/interval_cycle"
+require "head_music/analysis/interval_cycle"
 
-# A module for music rudiments
-module HeadMusic::Rudiment; end
+# A module for musical analysis
+module HeadMusic::Analysis; end
 
 # A Circle of Fifths or Fourths shows relationships between pitch classes
-class HeadMusic::Rudiment::Circle < HeadMusic::Rudiment::IntervalCycle
+class HeadMusic::Analysis::Circle < HeadMusic::Analysis::IntervalCycle
   def self.of_fifths
     get(:perfect_fifth)
   end

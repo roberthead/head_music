@@ -38,7 +38,7 @@ describe HeadMusic::Rudiment::Consonance do
       end
 
       specify do
-        expect(described_class.get(instance)).to be == described_class.get(:imperfect)
+        expect(described_class.get(instance)).to eq described_class.get(:imperfect)
       end
     end
   end

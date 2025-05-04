@@ -40,16 +40,16 @@ describe HeadMusic::Rudiment::Register do
   describe "comparison" do
     specify { expect(described_class.get(2)).to be < described_class.get(3) }
     specify { expect(described_class.get(5)).to be > described_class.get(-1) }
-    specify { expect(described_class.get(7)).to be == described_class.get("7") }
+    specify { expect(described_class.get(7)).to eq described_class.get("7") }
   end
 
   describe "addition" do
-    specify { expect(described_class.get(4) + 1).to be == described_class.get(5) }
+    specify { expect(described_class.get(4) + 1).to eq described_class.get(5) }
   end
 
   describe "subtraction" do
-    specify { expect(described_class.get(5) - 3).to be == described_class.get(2) }
-    specify { expect(described_class.get(4) - 5).to be == described_class.get(-1) }
+    specify { expect(described_class.get(5) - 3).to eq described_class.get(2) }
+    specify { expect(described_class.get(4) - 5).to eq described_class.get(-1) }
   end
 
   describe "helmholtz notation" do

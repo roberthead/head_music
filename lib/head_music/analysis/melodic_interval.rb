@@ -59,7 +59,7 @@ class HeadMusic::Analysis::MelodicInterval
   end
 
   def spans?(pitch)
-    pitch >= low_pitch && pitch <= high_pitch
+    pitch.between?(low_pitch, high_pitch)
   end
 
   def high_pitch
@@ -87,7 +87,7 @@ class HeadMusic::Analysis::MelodicInterval
     combined_pitches = (pitches + other_interval.pitches).uniq
     return false if combined_pitches.length < 3
 
-    HeadMusic::Rudiment::PitchSet.new(combined_pitches).consonant_triad?
+    HeadMusic::Analysis::PitchSet.new(combined_pitches).consonant_triad?
   end
 
   def method_missing(method_name, *args, &block)

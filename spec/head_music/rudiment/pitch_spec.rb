@@ -65,8 +65,8 @@ describe HeadMusic::Rudiment::Pitch do
   describe "comparison" do
     subject(:pitch) { described_class.get("G#3") }
 
-    it { is_expected.to be == "G#3" }
-    it { is_expected.not_to be == "Ab3" }
+    it { is_expected.to eq "G#3" }
+    it { is_expected.not_to eq "Ab3" }
 
     it { is_expected.to be < described_class.get("D4") }
     it { is_expected.to be > described_class.get("D3") }

@@ -192,7 +192,7 @@ describe HeadMusic::Content::Position do
         let(:a_position) { described_class.new(composition, bar_number, count, tick) }
         let(:the_same_tick) { described_class.new(composition, bar_number, count, tick) }
 
-        specify { expect(a_position).to be == the_same_tick }
+        specify { expect(a_position).to eq the_same_tick }
       end
     end
   end

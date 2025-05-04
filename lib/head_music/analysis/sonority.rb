@@ -1,10 +1,10 @@
-# A module for music rudiments
-module HeadMusic::Rudiment; end
+# A module for musical analysis
+module HeadMusic::Analysis; end
 
 # A Sonority describes a set of pitch class intervalic relationships.
 # For example, a minor triad, or a major-minor seventh chord.
 # The Sonority class is a factory for returning one of its subclasses.
-class HeadMusic::Rudiment::Sonority
+class HeadMusic::Analysis::Sonority
   SONORITIES = {
     major_triad: %w[M3 P5],
     minor_triad: %w[m3 P5],
@@ -117,8 +117,8 @@ class HeadMusic::Rudiment::Sonority
   end
 
   def ==(other)
-    other = HeadMusic::Rudiment::PitchSet.new(other) if other.is_a?(Array)
-    other = self.class.new(other) if other.is_a?(HeadMusic::Rudiment::PitchSet)
+    other = HeadMusic::Analysis::PitchSet.new(other) if other.is_a?(Array)
+    other = self.class.new(other) if other.is_a?(HeadMusic::Analysis::PitchSet)
     identifier == other.identifier
   end
 end

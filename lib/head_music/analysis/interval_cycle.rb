@@ -1,8 +1,8 @@
-# A module for music rudiments
-module HeadMusic::Rudiment; end
+# A module for musical analysis
+module HeadMusic::Analysis; end
 
 # An Interval Cycle is a collection of pitch classes created from a sequence of the same interval class.
-class HeadMusic::Rudiment::IntervalCycle
+class HeadMusic::Analysis::IntervalCycle
   attr_reader :interval, :starting_pitch
 
   def self.get(interval = 7)
@@ -29,7 +29,7 @@ class HeadMusic::Rudiment::IntervalCycle
   end
 
   def pitch_class_set
-    @pitch_class_set ||= HeadMusic::Rudiment::PitchClassSet.new(pitches)
+    @pitch_class_set ||= HeadMusic::Analysis::PitchClassSet.new(pitches)
   end
 
   def spellings
