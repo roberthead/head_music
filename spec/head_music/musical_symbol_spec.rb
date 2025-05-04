@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::MusicalSymbol do
+describe HeadMusic::Rudiment::MusicalSymbol do
   context "given a generic named class" do
     describe "#construction" do
       subject(:symbol) do

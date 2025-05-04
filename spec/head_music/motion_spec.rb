@@ -1,10 +1,10 @@
 require "spec_helper"
 
-describe HeadMusic::Motion do
+describe HeadMusic::Analysis::Motion do
   subject do
     described_class.new(
-      HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, "1:1"),
-      HeadMusic::HarmonicInterval.new(lower_voice, upper_voice, "2:1")
+      HeadMusic::Analysis::HarmonicInterval.new(lower_voice, upper_voice, "1:1"),
+      HeadMusic::Analysis::HarmonicInterval.new(lower_voice, upper_voice, "2:1")
     )
   end
 

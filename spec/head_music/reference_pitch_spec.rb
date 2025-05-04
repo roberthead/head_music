@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::ReferencePitch do
+describe HeadMusic::Rudiment::ReferencePitch do
   it { is_expected.to respond_to(:pitch) }
   it { is_expected.to respond_to(:frequency) }
 

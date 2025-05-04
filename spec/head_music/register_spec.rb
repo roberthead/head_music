@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Register do
+describe HeadMusic::Rudiment::Register do
   describe ".get" do
     context "when given an octave number" do
       specify { expect(described_class.get(4)).to eq 4 }

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Pitch do
+describe HeadMusic::Rudiment::Pitch do
   describe ".get" do
     context "when given an instance" do
       let(:instance) { described_class.get(65) }
@@ -18,7 +18,7 @@ describe HeadMusic::Pitch do
 
     context "when given a spelling instance" do
       it "defaults to octave 4" do
-        expect(described_class.get(HeadMusic::Spelling.get("G#"))).to eq "G#4"
+        expect(described_class.get(HeadMusic::Rudiment::Spelling.get("G#"))).to eq "G#4"
       end
     end
 
@@ -28,8 +28,8 @@ describe HeadMusic::Pitch do
     end
 
     context "when given a pitch class" do
-      specify { expect(described_class.get(HeadMusic::PitchClass.get("C"))).to eq "C4" }
-      specify { expect(described_class.get(HeadMusic::PitchClass.get("D"))).to eq "D4" }
+      specify { expect(described_class.get(HeadMusic::Rudiment::PitchClass.get("C"))).to eq "C4" }
+      specify { expect(described_class.get(HeadMusic::Rudiment::PitchClass.get("D"))).to eq "D4" }
     end
   end
 
@@ -192,7 +192,7 @@ describe HeadMusic::Pitch do
 
     context "when adding an interval" do
       it "returns the new pitch" do
-        expect(pitch + HeadMusic::ChromaticInterval.get(9)).to eq "F#5"
+        expect(pitch + HeadMusic::Rudiment::ChromaticInterval.get(9)).to eq "F#5"
       end
     end
 
@@ -207,9 +207,9 @@ describe HeadMusic::Pitch do
     end
 
     context "when adding a diatonic interval" do
-      specify { expect(pitch + HeadMusic::DiatonicInterval.get(:major_sixth)).to eq "F#5" }
-      specify { expect(pitch + HeadMusic::DiatonicInterval.get(:minor_sixth)).to eq "F5" }
-      specify { expect(pitch + HeadMusic::DiatonicInterval.get(:augmented_fifth)).to eq "E#5" }
+      specify { expect(pitch + HeadMusic::Analysis::DiatonicInterval.get(:major_sixth)).to eq "F#5" }
+      specify { expect(pitch + HeadMusic::Analysis::DiatonicInterval.get(:minor_sixth)).to eq "F5" }
+      specify { expect(pitch + HeadMusic::Analysis::DiatonicInterval.get(:augmented_fifth)).to eq "E#5" }
     end
   end
 
@@ -218,7 +218,7 @@ describe HeadMusic::Pitch do
 
     context "when subtracting an interval" do
       it "returns the new pitch" do
-        expect(pitch - HeadMusic::ChromaticInterval.get(10)).to eq "B4"
+        expect(pitch - HeadMusic::Rudiment::ChromaticInterval.get(10)).to eq "B4"
       end
     end
 
@@ -235,9 +235,9 @@ describe HeadMusic::Pitch do
     end
 
     context "when subtracting a diatonic interval" do
-      specify { expect(pitch - HeadMusic::DiatonicInterval.get(:major_sixth)).to eq "C5" }
-      specify { expect(pitch - HeadMusic::DiatonicInterval.get(:minor_sixth)).to eq "C#5" }
-      specify { expect(pitch - HeadMusic::DiatonicInterval.get(:augmented_fifth)).to eq "Db5" }
+      specify { expect(pitch - HeadMusic::Analysis::DiatonicInterval.get(:major_sixth)).to eq "C5" }
+      specify { expect(pitch - HeadMusic::Analysis::DiatonicInterval.get(:minor_sixth)).to eq "C#5" }
+      specify { expect(pitch - HeadMusic::Analysis::DiatonicInterval.get(:augmented_fifth)).to eq "Db5" }
     end
   end
 

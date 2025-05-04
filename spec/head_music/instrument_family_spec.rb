@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::InstrumentFamily do
+describe HeadMusic::Instruments::InstrumentFamily do
   describe ".get" do
     context "when given an instance" do
       let(:instance) { described_class.get("oboe") }

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Meter do
+describe HeadMusic::Rudiment::Meter do
   describe ".get" do
     context "when given an instance" do
       let(:instance) { described_class.get("5/4") }

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Instrument::Variant do
+describe HeadMusic::Instruments::Variant do
   subject(:variant) do
     described_class.new(:default, clarinet_data)
   end
@@ -17,7 +17,7 @@ describe HeadMusic::Instrument::Variant do
   it { is_expected.to be_default }
 
   its(:pitch_designation) do
-    is_expected.to be_a HeadMusic::Spelling
+    is_expected.to be_a HeadMusic::Rudiment::Spelling
   end
 
   its(:pitch_designation) do
@@ -33,6 +33,6 @@ describe HeadMusic::Instrument::Variant do
   end
 
   its(:default_staff_scheme) do
-    is_expected.to be_a HeadMusic::Instrument::StaffScheme
+    is_expected.to be_a HeadMusic::Instruments::StaffScheme
   end
 end

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::PitchClassSet do
+describe HeadMusic::Rudiment::PitchClassSet do
   context "when the set has zero pitch classes" do
     subject(:set) { described_class.new([]) }
 

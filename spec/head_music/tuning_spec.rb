@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe HeadMusic::Tuning do
+RSpec.describe HeadMusic::Rudiment::Tuning do
   it { is_expected.to respond_to(:reference_pitch) }
   it { is_expected.to respond_to(:reference_pitch_pitch) }
   it { is_expected.to respond_to(:reference_pitch_frequency) }
@@ -47,7 +47,7 @@ RSpec.describe HeadMusic::Tuning do
   end
 
   context "when passed the baroque name reference pitch" do
-    subject(:tuning) { described_class.new(reference_pitch: HeadMusic::ReferencePitch.get("baroque")) }
+    subject(:tuning) { described_class.new(reference_pitch: HeadMusic::Rudiment::ReferencePitch.get("baroque")) }
 
     its(:reference_pitch_pitch) { is_expected.to eq "A4" }
     its(:reference_pitch_frequency) { is_expected.to eq 415.0 }

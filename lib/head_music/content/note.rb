@@ -10,7 +10,7 @@ class HeadMusic::Content::Note
   attr_accessor :pitch, :rhythmic_value, :voice, :position
 
   def initialize(pitch, rhythmic_value, voice = nil, position = nil)
-    @pitch = HeadMusic::Pitch.get(pitch)
+    @pitch = HeadMusic::Rudiment::Pitch.get(pitch)
     @rhythmic_value = HeadMusic::Content::RhythmicValue.get(rhythmic_value)
     @voice = voice || HeadMusic::Content::Voice.new
     @position = position || HeadMusic::Content::Position.new(@voice.composition, "1:1")

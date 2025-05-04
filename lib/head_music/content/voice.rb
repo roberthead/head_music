@@ -56,12 +56,12 @@ class HeadMusic::Content::Voice
   end
 
   def range
-    HeadMusic::DiatonicInterval.new(lowest_pitch, highest_pitch)
+    HeadMusic::Analysis::DiatonicInterval.new(lowest_pitch, highest_pitch)
   end
 
   def melodic_intervals
     @melodic_intervals ||=
-      notes.each_cons(2).map { |note_pair| HeadMusic::MelodicInterval.new(*note_pair) }
+      notes.each_cons(2).map { |note_pair| HeadMusic::Analysis::MelodicInterval.new(*note_pair) }
   end
 
   def leaps

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::PitchClass do
+describe HeadMusic::Rudiment::PitchClass do
   describe ".get" do
     subject(:pitch_class) { described_class.get(identifier) }
 
@@ -44,12 +44,12 @@ describe HeadMusic::PitchClass do
 
   describe "addition" do
     specify { expect(described_class.get(11) + 3).to eq described_class.get(2) }
-    specify { expect(described_class.get(5) + HeadMusic::ChromaticInterval.get(2)).to eq described_class.get(7) }
+    specify { expect(described_class.get(5) + HeadMusic::Rudiment::ChromaticInterval.get(2)).to eq described_class.get(7) }
   end
 
   describe "subtraction" do
     specify { expect(described_class.get(60) - 3).to eq described_class.get(9) }
-    specify { expect(described_class.get(4) - HeadMusic::ChromaticInterval.get(3)).to eq described_class.get(1) }
+    specify { expect(described_class.get(4) - HeadMusic::Rudiment::ChromaticInterval.get(3)).to eq described_class.get(1) }
   end
 
   describe "#intervals_to" do

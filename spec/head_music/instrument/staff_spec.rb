@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Instrument::Staff do
+describe HeadMusic::Instruments::Staff do
   subject(:staff) do
     staff_scheme.staves.first
   end
@@ -11,7 +11,7 @@ describe HeadMusic::Instrument::Staff do
 
   context "with clarinet data" do
     let(:variant) do
-      HeadMusic::Instrument::Variant.new(:default, clarinet_data)
+      HeadMusic::Instruments::Variant.new(:default, clarinet_data)
     end
 
     let(:clarinet_data) do
@@ -33,7 +33,7 @@ describe HeadMusic::Instrument::Staff do
 
   context "with organ data" do
     let(:variant) do
-      HeadMusic::Instrument::Variant.new(:default, organ_data)
+      HeadMusic::Instruments::Variant.new(:default, organ_data)
     end
 
     let(:organ_data) do

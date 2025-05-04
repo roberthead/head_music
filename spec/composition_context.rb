@@ -13,7 +13,7 @@ class CompositionContext
   def self.from_params(params)
     composition = HeadMusic::Content::Composition.new(
       name: name_from_params(params),
-      key_signature: HeadMusic::KeySignature.get(params[:key])
+      key_signature: HeadMusic::Rudiment::KeySignature.get(params[:key])
     )
     add_voices(composition, params)
     expected_messages = params[:expected_messages] || [params[:expected_message]].compact
@@ -40,7 +40,7 @@ class CompositionContext
   end
 
   def self.pitches_from_string(pitches_string)
-    [pitches_string].flatten.map { |pitch| HeadMusic::Pitch.from_name(pitch) }
+    [pitches_string].flatten.map { |pitch| HeadMusic::Rudiment::Pitch.from_name(pitch) }
   end
 
   def initialize(composition:, source: nil, expected_messages: [])

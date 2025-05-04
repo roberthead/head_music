@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::ScaleType do
+describe HeadMusic::Rudiment::ScaleType do
   describe ".get" do
     context "when given an instance" do
       let(:instance) { described_class.get(:major) }

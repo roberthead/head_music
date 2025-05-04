@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Spelling do
+describe HeadMusic::Rudiment::Spelling do
   describe ".get" do
     context "when given an instance" do
       let(:instance) { described_class.get("A♯5") }
@@ -79,7 +79,7 @@ describe HeadMusic::Spelling do
     end
 
     context "given a pitch class" do
-      subject(:spelling) { described_class.get(HeadMusic::PitchClass.get(3)) }
+      subject(:spelling) { described_class.get(HeadMusic::Rudiment::PitchClass.get(3)) }
 
       its(:pitch_class) { is_expected.to eq 3 }
       it { is_expected.to eq "D♯" }

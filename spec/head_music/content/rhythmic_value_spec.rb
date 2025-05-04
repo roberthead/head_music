@@ -55,7 +55,7 @@ describe HeadMusic::Content::RhythmicValue do
       context "with no dots" do
         subject(:value) { described_class.get(unit) }
 
-        let(:unit) { HeadMusic::RhythmicUnit.get(:quarter) }
+        let(:unit) { HeadMusic::Rudiment::RhythmicUnit.get(:quarter) }
 
         its(:name) { is_expected.to eq "quarter" }
         its(:ticks) { are_expected.to eq 960 }
@@ -64,7 +64,7 @@ describe HeadMusic::Content::RhythmicValue do
       end
 
       context "for a dotted half" do
-        let(:unit) { HeadMusic::RhythmicUnit.get(:half) }
+        let(:unit) { HeadMusic::Rudiment::RhythmicUnit.get(:half) }
         let(:dots) { 1 }
 
         its(:name) { is_expected.to eq "dotted half" }
@@ -74,7 +74,7 @@ describe HeadMusic::Content::RhythmicValue do
       end
 
       context "for a dotted quarter" do
-        let(:unit) { HeadMusic::RhythmicUnit.get(:quarter) }
+        let(:unit) { HeadMusic::Rudiment::RhythmicUnit.get(:quarter) }
         let(:dots) { 1 }
 
         its(:name) { is_expected.to eq "dotted quarter" }
@@ -84,7 +84,7 @@ describe HeadMusic::Content::RhythmicValue do
       end
 
       context "for a sixteenth" do
-        let(:unit) { HeadMusic::RhythmicUnit.get(:sixteenth) }
+        let(:unit) { HeadMusic::Rudiment::RhythmicUnit.get(:sixteenth) }
 
         its(:name) { is_expected.to eq "sixteenth" }
         its(:ticks) { are_expected.to eq 240 }
@@ -93,7 +93,7 @@ describe HeadMusic::Content::RhythmicValue do
       end
 
       context "for a triple-dotted half" do
-        let(:unit) { HeadMusic::RhythmicUnit.get(:half) }
+        let(:unit) { HeadMusic::Rudiment::RhythmicUnit.get(:half) }
         let(:dots) { 3 }
 
         its(:name) { is_expected.to eq "triple-dotted half" }

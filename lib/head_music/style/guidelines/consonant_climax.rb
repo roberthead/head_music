@@ -36,12 +36,12 @@ class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Annotati
 
   def diatonic_interval_to_highest_pitch
     @diatonic_interval_to_highest_pitch ||=
-      HeadMusic::DiatonicInterval.new(tonic_pitch, highest_pitch)
+      HeadMusic::Analysis::DiatonicInterval.new(tonic_pitch, highest_pitch)
   end
 
   def diatonic_interval_to_lowest_pitch
     @diatonic_interval_to_lowest_pitch ||=
-      HeadMusic::DiatonicInterval.new(tonic_pitch, lowest_pitch)
+      HeadMusic::Analysis::DiatonicInterval.new(tonic_pitch, lowest_pitch)
   end
 
   def highest_pitch_appears_once?
@@ -73,11 +73,11 @@ class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Annotati
   end
 
   def step_between_highest_notes?
-    HeadMusic::MelodicInterval.new(highest_notes.first, notes_between_highest_notes.first).step?
+    HeadMusic::Analysis::MelodicInterval.new(highest_notes.first, notes_between_highest_notes.first).step?
   end
 
   def step_between_lowest_notes?
-    HeadMusic::MelodicInterval.new(lowest_notes.first, notes_between_lowest_notes.first).step?
+    HeadMusic::Analysis::MelodicInterval.new(lowest_notes.first, notes_between_lowest_notes.first).step?
   end
 
   def single_note_between_highest_notes?

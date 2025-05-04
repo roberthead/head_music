@@ -1,9 +1,9 @@
 require "spec_helper"
 
-describe HeadMusic::Pitch::OctaveEquivalence do
+describe HeadMusic::Rudiment::Pitch::OctaveEquivalence do
   subject(:octave_equivalence) { described_class.get(pitch) }
 
-  let(:pitch) { HeadMusic::Pitch.get("E♭4") }
+  let(:pitch) { HeadMusic::Rudiment::Pitch.get("E♭4") }
 
   describe "#equivalent?" do
     it { is_expected.to be_octave_equivalent("E♭3") }

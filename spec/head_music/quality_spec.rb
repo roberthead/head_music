@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Quality do
+describe HeadMusic::Rudiment::Quality do
   describe ".get" do
     specify { expect(described_class.get(:major)).not_to be_nil }
     specify { expect(described_class.get(:minor)).not_to be_nil }

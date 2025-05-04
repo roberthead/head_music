@@ -1,13 +1,13 @@
 require "spec_helper"
 
-I18n.describe HeadMusic::DiatonicInterval do
+I18n.describe HeadMusic::Analysis::DiatonicInterval do
   # rubocop:disable RSpec/MultipleMemoizedHelpers
-  let(:c_flat_4) { HeadMusic::Pitch.get("Cb") }
-  let(:c_4) { HeadMusic::Pitch.get("C") }
-  let(:c_sharp_4) { HeadMusic::Pitch.get("C#") }
-  let(:e_4) { HeadMusic::Pitch.get("E") }
-  let(:e_flat_4) { HeadMusic::Pitch.get("Eb") }
-  let(:c_5) { HeadMusic::Pitch.get("C5") }
+  let(:c_flat_4) { HeadMusic::Rudiment::Pitch.get("Cb") }
+  let(:c_4) { HeadMusic::Rudiment::Pitch.get("C") }
+  let(:c_sharp_4) { HeadMusic::Rudiment::Pitch.get("C#") }
+  let(:e_4) { HeadMusic::Rudiment::Pitch.get("E") }
+  let(:e_flat_4) { HeadMusic::Rudiment::Pitch.get("Eb") }
+  let(:c_5) { HeadMusic::Rudiment::Pitch.get("C5") }
 
   let(:maj3) { described_class.get(:major_third) }
   let(:min3) { described_class.get(:minor_third) }

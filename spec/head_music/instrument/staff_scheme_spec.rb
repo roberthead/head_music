@@ -1,12 +1,12 @@
 require "spec_helper"
 
-describe HeadMusic::Instrument::StaffScheme do
+describe HeadMusic::Instruments::StaffScheme do
   subject(:staff_scheme) do
     variant.default_staff_scheme
   end
 
   let(:variant) do
-    HeadMusic::Instrument::Variant.new(:default, clarinet_data)
+    HeadMusic::Instruments::Variant.new(:default, clarinet_data)
   end
 
   let(:clarinet_data) do
@@ -26,5 +26,5 @@ describe HeadMusic::Instrument::StaffScheme do
 
   its(:staves) { are_expected.not_to be_empty }
 
-  its(:staves) { are_expected.to all be_a HeadMusic::Instrument::Staff }
+  its(:staves) { are_expected.to all be_a HeadMusic::Instruments::Staff }
 end

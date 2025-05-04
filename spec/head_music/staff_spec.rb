@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Staff do
+describe HeadMusic::Content::Staff do
   subject { described_class.new(:treble_clef) }
 
   its(:clef) { is_expected.to eq :treble_clef }

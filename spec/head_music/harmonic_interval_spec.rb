@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::HarmonicInterval do # rubocop:disable RSpec/MultipleMemoizedHelpers
+describe HeadMusic::Analysis::HarmonicInterval do # rubocop:disable RSpec/MultipleMemoizedHelpers
   subject(:harmonic_interval) { described_class.new(high_voice, low_voice, position) }
 
   let(:composition) { HeadMusic::Content::Composition.new }

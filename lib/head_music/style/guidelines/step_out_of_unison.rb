@@ -22,7 +22,7 @@ class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Annotati
       perfect_unisons.map do |unison|
         note1 = voice.note_at(unison.position)
         note2 = voice.note_following(unison.position)
-        HeadMusic::MelodicInterval.new(note1, note2) if note1 && note2
+        HeadMusic::Analysis::MelodicInterval.new(note1, note2) if note1 && note2
       end.compact
   end
 

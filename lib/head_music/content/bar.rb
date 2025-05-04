@@ -9,8 +9,8 @@ class HeadMusic::Content::Bar
 
   def initialize(composition, key_signature: nil, meter: nil)
     @composition = composition
-    @key_signature = HeadMusic::KeySignature.get(key_signature) if key_signature
-    @meter = HeadMusic::Meter.get(meter) if meter
+    @key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature) if key_signature
+    @meter = HeadMusic::Rudiment::Meter.get(meter) if meter
   end
 
   def to_s

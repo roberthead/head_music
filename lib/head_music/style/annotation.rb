@@ -82,8 +82,8 @@ class HeadMusic::Style::Annotation
 
   def diatonic_interval_from_tonic(note)
     tonic_to_use = tonic_pitch
-    tonic_to_use -= HeadMusic::ChromaticInterval.get(:perfect_octave) while tonic_to_use > note.pitch
-    HeadMusic::DiatonicInterval.new(tonic_to_use, note.pitch)
+    tonic_to_use -= HeadMusic::Rudiment::ChromaticInterval.get(:perfect_octave) while tonic_to_use > note.pitch
+    HeadMusic::Analysis::DiatonicInterval.new(tonic_to_use, note.pitch)
   end
 
   def bass_voice?
@@ -96,21 +96,21 @@ class HeadMusic::Style::Annotation
 
   def motions
     downbeat_harmonic_intervals.each_cons(2).map do |harmonic_interval_pair|
-      HeadMusic::Motion.new(*harmonic_interval_pair)
+      HeadMusic::Analysis::Motion.new(*harmonic_interval_pair)
     end
   end
 
   def downbeat_harmonic_intervals
     @downbeat_harmonic_intervals ||=
       cantus_firmus.notes
-        .map { |note| HeadMusic::HarmonicInterval.new(note.voice, voice, note.position) }
+        .map { |note| HeadMusic::Analysis::HarmonicInterval.new(note.voice, voice, note.position) }
         .reject { |interval| interval.notes.length < 2 }
   end
 
   def harmonic_intervals
     @harmonic_intervals ||=
       positions
-        .map { |position| HeadMusic::HarmonicInterval.new(cantus_firmus, voice, position) }
+        .map { |position| HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, position) }
         .reject { |harmonic_interval| harmonic_interval.notes.length < 2 }
   end
 
@@ -128,6 +128,6 @@ class HeadMusic::Style::Annotation
   end
 
   def tonic_pitch
-    @tonic_pitch ||= HeadMusic::Pitch.get(tonic_spelling)
+    @tonic_pitch ||= HeadMusic::Rudiment::Pitch.get(tonic_spelling)
   end
 end

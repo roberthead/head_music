@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Instrument do
+describe HeadMusic::Instruments::Instrument do
   describe ".get" do
     subject(:result) { described_class.get(argument) }
 
@@ -38,12 +38,12 @@ describe HeadMusic::Instrument do
         expect(instrument.variants).to be_an Array
         expect(instrument.default_clefs).to be_an Array
         instrument.variants.each do |variant|
-          expect(variant).to be_a HeadMusic::Instrument::Variant
+          expect(variant).to be_a HeadMusic::Instruments::Variant
           expect(variant.staff_schemes).to be_an Array
           expect(variant.staff_schemes).not_to be_empty
           variant.staff_schemes.each do |staff_scheme|
-            expect(staff_scheme).to be_a HeadMusic::Instrument::StaffScheme
-            expect(staff_scheme.staves.first.clef).to be_a HeadMusic::Clef
+            expect(staff_scheme).to be_a HeadMusic::Instruments::StaffScheme
+            expect(staff_scheme.staves.first.clef).to be_a HeadMusic::Rudiment::Clef
             expect(staff_scheme.staves.first.sounding_transposition).to be_an Integer
           end
           expect(variant.staff_schemes.detect(&:default?)).to be_truthy
@@ -56,7 +56,7 @@ describe HeadMusic::Instrument do
     subject(:piano) { described_class.get(:piano) }
 
     before do
-      HeadMusic::InstrumentFamily.all
+      HeadMusic::Instruments::InstrumentFamily.all
       described_class.all
     end
 
@@ -106,7 +106,7 @@ describe HeadMusic::Instrument do
     subject(:bass_drum) { described_class.get(:bass_drum) }
 
     its(:name) { is_expected.to eq "bass drum" }
-    its(:default_clefs) { are_expected.to eq [HeadMusic::Clef.get("neutral_clef")] }
+    its(:default_clefs) { are_expected.to eq [HeadMusic::Rudiment::Clef.get("neutral_clef")] }
     its(:classification_keys) { are_expected.to include "percussion" }
     it { is_expected.not_to be_pitched }
     it { is_expected.not_to be_transposing }

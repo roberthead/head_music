@@ -15,7 +15,7 @@ class HeadMusic::Style::Guidelines::Diatonic < HeadMusic::Style::Annotation
     notes_not_in_key.reject do |note|
       penultimate_note &&
         note == penultimate_note &&
-        HeadMusic::ScaleDegree.new(key_signature, note.pitch.spelling).alteration == "#"
+        HeadMusic::Rudiment::ScaleDegree.new(key_signature, note.pitch.spelling).alteration == "#"
     end
   end
 

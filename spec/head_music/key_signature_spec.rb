@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::KeySignature do
+describe HeadMusic::Rudiment::KeySignature do
   describe ".new" do
     subject(:key_signature) { described_class.new(tonic, scale_type) }
 
@@ -36,7 +36,7 @@ describe HeadMusic::KeySignature do
       let(:scale_type) { :major }
 
       context "when in the key of C major" do
-        let(:tonic) { HeadMusic::Spelling.get("C") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("C") }
 
         specify { expect(key_signature.num_sharps).to eq 0 }
         specify { expect(key_signature.num_flats).to eq 0 }
@@ -44,35 +44,35 @@ describe HeadMusic::KeySignature do
       end
 
       context "when in the key of E♭ major" do
-        let(:tonic) { HeadMusic::Spelling.get("E♭") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("E♭") }
 
         specify { expect(key_signature.num_flats).to eq 3 }
         specify { expect(key_signature.alterations).to eq ["B♭", "E♭", "A♭"] }
       end
 
       context "when in the key of F♯ major" do
-        let(:tonic) { HeadMusic::Spelling.get("F♯") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("F♯") }
 
         specify { expect(key_signature.num_sharps).to eq 6 }
         specify { expect(key_signature.alterations).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯] }
       end
 
       context "when in the key of C♯ major" do
-        let(:tonic) { HeadMusic::Spelling.get("C♯") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("C♯") }
 
         specify { expect(key_signature.num_sharps).to eq 7 }
         specify { expect(key_signature.alterations).to eq %w[F♯ C♯ G♯ D♯ A♯ E♯ B♯] }
       end
 
       context "when in the key of G♭ major" do
-        let(:tonic) { HeadMusic::Spelling.get("G♭") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("G♭") }
 
         specify { expect(key_signature.alterations).to eq %w[B♭ E♭ A♭ D♭ G♭ C♭] }
         specify { expect(key_signature.num_alterations).to eq 6 }
       end
 
       context "when in the key of G♯ major" do
-        let(:tonic) { HeadMusic::Spelling.get("G♯") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("G♯") }
 
         specify { expect(key_signature.num_sharps).to eq 8 }
         specify { expect(key_signature.num_alterations).to eq 8 }
@@ -80,7 +80,7 @@ describe HeadMusic::KeySignature do
       end
 
       context "when in the key of F♭ major" do
-        let(:tonic) { HeadMusic::Spelling.get("F♭") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("F♭") }
 
         specify { expect(key_signature.num_flats).to eq 8 }
         specify { expect(key_signature.alterations).to eq(%w[B𝄫 E♭ A♭ D♭ G♭ C♭ F♭]) }
@@ -93,7 +93,7 @@ describe HeadMusic::KeySignature do
       let(:scale_type) { :minor }
 
       context "when in the key of C minor" do
-        let(:tonic) { HeadMusic::Spelling.get("C") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("C") }
 
         specify { expect(key_signature.num_flats).to eq 3 }
         specify { expect(key_signature.alterations).to eq ["B♭", "E♭", "A♭"] }
@@ -102,7 +102,7 @@ describe HeadMusic::KeySignature do
       end
 
       context "when in the key of B minor" do
-        let(:tonic) { HeadMusic::Spelling.get("B") }
+        let(:tonic) { HeadMusic::Rudiment::Spelling.get("B") }
 
         specify { expect(key_signature.num_sharps).to eq 2 }
 

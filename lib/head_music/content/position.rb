@@ -53,7 +53,7 @@ class HeadMusic::Content::Position
   end
 
   def +(other)
-    other = HeadMusic::Content::RhythmicValue.new(other) if [HeadMusic::RhythmicUnit, Symbol, String].include?(other.class)
+    other = HeadMusic::Content::RhythmicValue.new(other) if [HeadMusic::Rudiment::RhythmicUnit, Symbol, String].include?(other.class)
     self.class.new(composition, bar_number, count, tick + other.ticks)
   end
 

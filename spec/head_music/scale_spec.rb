@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Scale do
+describe HeadMusic::Rudiment::Scale do
   describe "default scale" do
     specify { expect(described_class.get("G").spellings).to eq %w[G A B C D E F♯ G] }
   end

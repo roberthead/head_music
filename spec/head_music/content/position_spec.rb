@@ -58,7 +58,7 @@ describe HeadMusic::Content::Position do
 
     context "for an eighth division" do
       let(:count) { 1 }
-      let(:tick) { HeadMusic::RhythmicUnit.get(:eighth).ticks }
+      let(:tick) { HeadMusic::Rudiment::RhythmicUnit.get(:eighth).ticks }
 
       its(:strength) { is_expected.to eq 40 }
       it { is_expected.not_to be_strong }
@@ -67,7 +67,7 @@ describe HeadMusic::Content::Position do
 
     context "for a sixteenth division" do
       let(:count) { 1 }
-      let(:tick) { HeadMusic::RhythmicUnit.get("thirty-second").ticks }
+      let(:tick) { HeadMusic::Rudiment::RhythmicUnit.get("thirty-second").ticks }
 
       its(:strength) { is_expected.to eq 20 }
       it { is_expected.not_to be_strong }
@@ -137,13 +137,13 @@ describe HeadMusic::Content::Position do
     context "when adding a rhythmic unit within a bar" do
       let(:expected_position) { described_class.new(composition, bar_number, count + 1, tick) }
 
-      specify { expect(position + HeadMusic::RhythmicUnit.get(:quarter)).to eq expected_position }
+      specify { expect(position + HeadMusic::Rudiment::RhythmicUnit.get(:quarter)).to eq expected_position }
     end
 
     context "when adding a rhythmic unit across a bar" do
       let(:expected_position) { described_class.new(composition, bar_number + 1, count, tick) }
 
-      specify { expect(position + HeadMusic::RhythmicUnit.get(:whole)).to eq expected_position }
+      specify { expect(position + HeadMusic::Rudiment::RhythmicUnit.get(:whole)).to eq expected_position }
     end
 
     context "when adding a rhythmic value within a bar" do

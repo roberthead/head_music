@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::RhythmicUnit do
+describe HeadMusic::Rudiment::RhythmicUnit do
   subject(:rhythmic_unit) { described_class.get(name) }
 
   context "for :whole" do

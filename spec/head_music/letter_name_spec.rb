@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::LetterName do
+describe HeadMusic::Rudiment::LetterName do
   describe ".get" do
     context "when fetched with 'A'" do
       subject(:letter_name) { described_class.get("A") }

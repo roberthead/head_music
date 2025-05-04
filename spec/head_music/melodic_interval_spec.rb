@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::MelodicInterval do
+describe HeadMusic::Analysis::MelodicInterval do
   subject(:melodic_interval) { described_class.new(note_d4, note_g4) }
 
   let(:voice) { HeadMusic::Content::Voice.new }

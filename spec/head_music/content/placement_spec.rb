@@ -7,7 +7,7 @@ describe HeadMusic::Content::Placement do
   let(:composition) { HeadMusic::Content::Composition.new.tap(&:add_voice) }
   let(:voice) { composition.voices.first }
   let(:position) { "2:2:240" }
-  let(:pitch) { HeadMusic::Pitch.get("F#4") }
+  let(:pitch) { HeadMusic::Rudiment::Pitch.get("F#4") }
   let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:eighth) }
 
   its(:composition) { is_expected.to eq composition }

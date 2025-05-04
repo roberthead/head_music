@@ -12,7 +12,7 @@ class HeadMusic::Content::RhythmicValue
     case identifier
     when HeadMusic::Content::RhythmicValue
       identifier
-    when HeadMusic::RhythmicUnit
+    when HeadMusic::Rudiment::RhythmicUnit
       new(identifier)
     when Symbol, String
       identifier = identifier.to_s.downcase.strip.gsub(/\W+/, "_")
@@ -43,7 +43,7 @@ class HeadMusic::Content::RhythmicValue
   end
 
   def initialize(unit, dots: nil, tied_value: nil)
-    @unit = HeadMusic::RhythmicUnit.get(unit)
+    @unit = HeadMusic::Rudiment::RhythmicUnit.get(unit)
     @dots = [0, 1, 2, 3].include?(dots) ? dots : 0
     @tied_value = tied_value
   end
@@ -65,7 +65,7 @@ class HeadMusic::Content::RhythmicValue
   end
 
   def ticks
-    HeadMusic::Rhythm::PPQN * 4 * total_value
+    HeadMusic::Rudiment::Rhythm::PPQN * 4 * total_value
   end
 
   def per_whole

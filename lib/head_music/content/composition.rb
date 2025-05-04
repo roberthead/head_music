@@ -65,9 +65,9 @@ class HeadMusic::Content::Composition
 
   def ensure_attributes(name, key_signature, meter)
     @name = name || "Composition"
-    @key_signature = HeadMusic::KeySignature.get(key_signature) if key_signature
-    @key_signature ||= HeadMusic::KeySignature.default
-    @meter = meter ? HeadMusic::Meter.get(meter) : HeadMusic::Meter.default
+    @key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature) if key_signature
+    @key_signature ||= HeadMusic::Rudiment::KeySignature.default
+    @meter = meter ? HeadMusic::Rudiment::Meter.get(meter) : HeadMusic::Rudiment::Meter.default
   end
 
   def last_meter_change(bar_number)
