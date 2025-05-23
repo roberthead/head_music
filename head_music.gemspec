@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["Rob Head"]
   spec.email = ["robert.head@gmail.com"]
 
-  spec.summary = "The rudiments of western music theory."
+  spec.summary = "The rudiments of western music theory and analysis."
   spec.description = "Work with the elements of western music theory, such as pitches, scales, intervals, and chords."
   spec.homepage = "https://github.com/roberthead/head_music"
   spec.license = "MIT"
