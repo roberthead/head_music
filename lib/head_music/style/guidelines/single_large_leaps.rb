@@ -7,12 +7,12 @@ class HeadMusic::Style::Guidelines::SingleLargeLeaps < HeadMusic::Style::Guideli
 
   private
 
-  def unrecovered_leap?(first_interval, second_interval, third_interval)
-    return false unless first_interval.large_leap?
-    return false if spelling_consonant_triad?(first_interval, second_interval, third_interval)
-    return false if second_interval.step?
-    return false if second_interval.repetition?
+  def unrecovered_leap?(first_note_pair, second_note_pair, third_note_pair)
+    return false unless first_note_pair.large_leap?
+    return false if spelling_consonant_triad?(first_note_pair, second_note_pair, third_note_pair)
+    return false if second_note_pair.step?
+    return false if second_note_pair.repetition?
 
-    !direction_changed?(first_interval, second_interval) && second_interval.leap?
+    !direction_changed?(first_note_pair, second_note_pair) && second_note_pair.leap?
   end
 end

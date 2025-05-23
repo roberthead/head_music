@@ -66,10 +66,14 @@ class HeadMusic::Analysis::DiatonicInterval
     new(HeadMusic::Rudiment::Pitch.middle_c, higher_pitch)
   end
 
-  def initialize(pitch1, pitch2)
-    pitch1 = HeadMusic::Rudiment::Pitch.get(pitch1)
-    pitch2 = HeadMusic::Rudiment::Pitch.get(pitch2)
-    @lower_pitch, @higher_pitch = [pitch1, pitch2].sort
+  def initialize(first_pitch, second_pitch)
+    first_pitch = HeadMusic::Rudiment::Pitch.get(first_pitch)
+    second_pitch = HeadMusic::Rudiment::Pitch.get(second_pitch)
+    @lower_pitch, @higher_pitch = [first_pitch, second_pitch].sort
+  end
+
+  def spans?(pitch)
+    pitch >= lower_pitch && pitch <= higher_pitch
   end
 
   def quality

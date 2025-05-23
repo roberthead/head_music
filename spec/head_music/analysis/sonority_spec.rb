@@ -22,7 +22,7 @@ describe HeadMusic::Analysis::Sonority do
         it { is_expected.to eq other_pitch_set }
       end
 
-      context "when compared to another sonority with a different dominant seventh chord pitch set" do
+      context "when compared to another sonority with a different major triad pitch set" do
         let(:other_pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C E G]) }
         let(:other_sonority) { described_class.new(other_pitch_set) }
 

@@ -1,41 +1,20 @@
 # A module for musical analysis
 module HeadMusic::Analysis; end
 
-# A melodic interval is the distance between one note and the next.
+# A melodic interval is the distance between two sequential pitches.
 class HeadMusic::Analysis::MelodicInterval
-  attr_reader :first_note, :second_note
+  attr_reader :first_pitch, :second_pitch
 
-  def initialize(note1, note2)
-    @first_note = note1
-    @second_note = note2
+  def initialize(first, second)
+    @first_pitch, @second_pitch = extract_pitches(first, second)
   end
 
   def diatonic_interval
     @diatonic_interval ||= HeadMusic::Analysis::DiatonicInterval.new(first_pitch, second_pitch)
   end
 
-  def position_start
-    first_note.position
-  end
-
-  def position_end
-    second_note.next_position
-  end
-
-  def notes
-    [first_note, second_note]
-  end
-
   def pitches
     [first_pitch, second_pitch]
-  end
-
-  def first_pitch
-    @first_pitch ||= first_note.pitch
-  end
-
-  def second_pitch
-    @second_pitch ||= second_note.pitch
   end
 
   def to_s
@@ -56,10 +35,6 @@ class HeadMusic::Analysis::MelodicInterval
 
   def repetition?
     !moving?
-  end
-
-  def spans?(pitch)
-    pitch.between?(low_pitch, high_pitch)
   end
 
   def high_pitch
@@ -90,11 +65,21 @@ class HeadMusic::Analysis::MelodicInterval
     HeadMusic::Analysis::PitchSet.new(combined_pitches).consonant_triad?
   end
 
+  # delegate to diatonic_interval
+
   def method_missing(method_name, *args, &block)
-    respond_to_missing?(method_name) ? diatonic_interval.send(method_name, *args, &block) : super
+    diatonic_interval.respond_to?(method_name) ? diatonic_interval.send(method_name, *args, &block) : super
   end
 
-  def respond_to_missing?(method_name, *_args)
-    diatonic_interval.respond_to?(method_name)
+  def respond_to_missing?(method_name, include_private = false)
+    diatonic_interval.respond_to?(method_name, include_private) || super
+  end
+
+  private
+
+  def extract_pitches(first, second)
+    first_pitch = first.respond_to?(:pitch) ? first.pitch : first
+    second_pitch = second.respond_to?(:pitch) ? second.pitch : second
+    [first_pitch, second_pitch]
   end
 end

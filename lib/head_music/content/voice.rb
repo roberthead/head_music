@@ -23,7 +23,7 @@ class HeadMusic::Content::Voice
   end
 
   def notes
-    @placements.select(&:note?)
+    @placements.select(&:note?).sort_by(&:position)
   end
 
   def notes_not_in_key
@@ -59,17 +59,23 @@ class HeadMusic::Content::Voice
     HeadMusic::Analysis::DiatonicInterval.new(lowest_pitch, highest_pitch)
   end
 
+  def melodic_note_pairs
+    @melodic_note_pairs ||= notes.each_cons(2).map do |note1, note2|
+      HeadMusic::Content::Voice::MelodicNotePair.new(note1, note2)
+    end
+  end
+
   def melodic_intervals
     @melodic_intervals ||=
-      notes.each_cons(2).map { |note_pair| HeadMusic::Analysis::MelodicInterval.new(*note_pair) }
+      melodic_note_pairs.map { |note_pair| HeadMusic::Analysis::MelodicInterval.new(*note_pair.notes) }
   end
 
   def leaps
-    melodic_intervals.select(&:leap?)
+    melodic_note_pairs.select(&:leap?)
   end
 
   def large_leaps
-    melodic_intervals.select(&:large_leap?)
+    melodic_note_pairs.select(&:large_leap?)
   end
 
   def cantus_firmus?
@@ -119,5 +125,44 @@ class HeadMusic::Content::Voice
 
   def pitches_string
     pitches.first(10).map(&:to_s).join(" ")
+  end
+
+  class MelodicNotePair
+    attr_reader :first_note, :second_note
+
+    delegate(
+      :octave?, :unison?,
+      :perfect?,
+      :step?, :leap?, :large_leap?,
+      :ascending?, :descending?, :repetition?,
+      :spans?,
+      to: :melodic_interval
+    )
+
+    def initialize(first_note, second_note)
+      @first_note = first_note
+      @second_note = second_note
+    end
+
+    def notes
+      @notes ||= [first_note, second_note]
+    end
+
+    def pitches
+      @pitches ||= notes.map(&:pitch)
+    end
+
+    def melodic_interval
+      @melodic_interval ||= HeadMusic::Analysis::MelodicInterval.new(*notes)
+    end
+
+    def spells_consonant_triad_with?(other_note_pair)
+      return false if step? || other_note_pair.step?
+
+      combined_pitches = (pitches + other_note_pair.pitches).uniq
+      return false if combined_pitches.length < 3
+
+      HeadMusic::Analysis::PitchSet.new(combined_pitches).consonant_triad?
+    end
   end
 end

@@ -16,6 +16,6 @@ class HeadMusic::Style::Guidelines::LimitOctaveLeaps < HeadMusic::Style::Annotat
   private
 
   def octave_leaps
-    melodic_intervals.select(&:octave?)
+    melodic_note_pairs.select(&:octave?)
   end
 end
