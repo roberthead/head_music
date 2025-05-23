@@ -6,23 +6,23 @@ class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Annotati
   MESSAGE = "Exit a unison by step."
 
   def marks
-    leaps_following_unisons.map do |skip|
-      HeadMusic::Style::Mark.for_all(skip.notes)
+    leaps_following_unisons.map do |note_pair|
+      HeadMusic::Style::Mark.for_all(note_pair.notes)
     end.flatten
   end
 
   private
 
   def leaps_following_unisons
-    melodic_intervals_following_unisons.select(&:leap?)
+    melodic_note_pairs_following_unisons.select(&:leap?)
   end
 
-  def melodic_intervals_following_unisons
-    @melodic_intervals_following_unisons ||=
+  def melodic_note_pairs_following_unisons
+    @melodic_note_pairs_following_unisons ||=
       perfect_unisons.map do |unison|
         note1 = voice.note_at(unison.position)
         note2 = voice.note_following(unison.position)
-        HeadMusic::Analysis::MelodicInterval.new(note1, note2) if note1 && note2
+        HeadMusic::Content::Voice::MelodicNotePair.new(note1, note2) if note1 && note2
       end.compact
   end
 

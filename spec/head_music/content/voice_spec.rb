@@ -70,8 +70,8 @@ describe HeadMusic::Content::Voice do
     its(:lowest_pitch) { is_expected.to eq "G3" }
     its(:highest_notes) { are_expected.to eq [voice.notes[4]] }
     its(:lowest_notes) { is_expected.to eq [voice.notes.first, voice.notes.last] }
-    its(:leaps) { are_expected.to eq [voice.melodic_intervals[0], voice.melodic_intervals[5]] }
-    its(:large_leaps) { are_expected.to eq [voice.melodic_intervals[0], voice.melodic_intervals[5]] }
+    its(:leaps) { are_expected.to eq [voice.melodic_note_pairs[0], voice.melodic_note_pairs[5]] }
+    its(:large_leaps) { are_expected.to eq [voice.melodic_note_pairs[0], voice.melodic_note_pairs[5]] }
     its(:to_s) { is_expected.to eq "G3 C4 D4 E♭4 F4 E♭4 G3" }
   end
 

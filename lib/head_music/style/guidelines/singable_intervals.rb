@@ -9,14 +9,15 @@ class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Annota
   MESSAGE = "Use only PU, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
 
   def marks
-    melodic_intervals.reject { |interval| permitted?(interval) }.map do |unpermitted_interval|
-      HeadMusic::Style::Mark.for_all([unpermitted_interval.first_note, unpermitted_interval.second_note])
+    melodic_note_pairs.reject { |note_pair| permitted?(note_pair) }.map do |pair_with_unpermitted_interval|
+      HeadMusic::Style::Mark.for_all(pair_with_unpermitted_interval.notes)
     end
   end
 
   private
 
-  def permitted?(melodic_interval)
+  def permitted?(note_pair)
+    melodic_interval = note_pair.melodic_interval
     whitelist_for_interval(melodic_interval).include?(melodic_interval.shorthand)
   end
 

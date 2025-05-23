@@ -10,6 +10,7 @@ class HeadMusic::Style::Annotation
     :lowest_pitch,
     :highest_notes,
     :lowest_notes,
+    :melodic_note_pairs,
     :melodic_intervals,
     :notes,
     :notes_not_in_key,
