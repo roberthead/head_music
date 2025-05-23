@@ -1,8 +1,7 @@
 # A module for music rudiments
 module HeadMusic::Rudiment; end
 
-# A scale degree is a number indicating the ordinality of the spelling in the key signature.
-# TODO: Rewrite to accept a tonal_center and a scale type.
+# A solmization is the rendering of scale degrees as syllables.
 class HeadMusic::Rudiment::Solmization
   include HeadMusic::Named
 
