@@ -34,20 +34,27 @@ class HeadMusic::Rudiment::Solmization
   def record_for_name(name)
     key = HeadMusic::Utilities::HashKey.for(name)
     RECORDS.detect do |record|
-      name_strings = record[:localized_names].map { |localized_name| localized_name[:name] }
+      name_strings = [record[:name]] + (record[:aliases] || []) + translation_aliases
       name_keys = name_strings.map { |name_string| HeadMusic::Utilities::HashKey.for(name_string) }
       name_keys.include?(key)
     end
   end
 
   def initialize_data_from_record(record)
+    self.name = record[:name]
     @syllables = record[:syllables]
-    initialize_localized_names(record[:localized_names])
   end
 
-  def initialize_localized_names(list)
-    @localized_names = (list || []).map do |name_attributes|
-      HeadMusic::Named::LocalizedName.new(**name_attributes.slice(:name, :locale_code, :abbreviation))
+  def translation_aliases
+    @translation_aliases ||= load_translation_aliases
+  end
+
+  def load_translation_aliases
+    aliases = []
+    I18n.config.available_locales.each do |locale|
+      translation = I18n.translate("head_music.rudiments.solfege", locale: locale, default: nil)
+      aliases << translation if translation && translation != 'solfege'
     end
+    aliases.compact.uniq
   end
 end

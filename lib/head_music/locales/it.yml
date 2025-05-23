@@ -284,6 +284,7 @@ it:
       scale: scala
       scale_degree: grado della scala
       scale_type: tipo di scala
+      solfege: solfeggio
       solmization: solmizzazione
       sonority: sonorità
       spelling: notazione

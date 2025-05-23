@@ -292,6 +292,7 @@ fr:
       scale: gamme
       scale_degree: degré de la gamme
       scale_type: type de gamme
+      solfege: solfège
       solmization: solmisation
       sonority: sonorité
       spelling: notation

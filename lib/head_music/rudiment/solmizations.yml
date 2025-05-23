@@ -1,5 +1,6 @@
 ---
-- :syllables:
+- :name: solfège
+  :syllables:
   - do
   - re
   - mi
@@ -7,14 +8,7 @@
   - sol
   - la
   - ti
-  :localized_names:
-  - :name: solfège
-  - :name: solfège
-    :locale_code: en
-  - :name: solfège
-    :locale_code: fr
-  - :name: solfeggio
-    :locale_code: it
-  - :name: sol-fa
-  - :name: solfa
-  - :name: solfeo
+  :aliases:
+  - solfege
+  - sol-fa
+  - solfa
