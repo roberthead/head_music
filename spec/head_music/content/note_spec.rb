@@ -8,4 +8,7 @@ describe HeadMusic::Content::Note do
   its(:voice) { is_expected.to be_a(HeadMusic::Content::Voice) }
   its(:position) { is_expected.to be_a(HeadMusic::Content::Position) }
   its(:to_s) { is_expected.to eq "F♯5 at 1:1:000" }
+
+  it { is_expected.to be_note }
+  it { is_expected.not_to be_rest }
 end

@@ -5,8 +5,6 @@ module HeadMusic::Analysis; end
 class HeadMusic::Analysis::MelodicInterval
   attr_reader :first_pitch, :second_pitch
 
-  delegate :to_s, :spans?, to: :diatonic_interval
-
   def initialize(first, second)
     @first_pitch, @second_pitch = extract_pitches(first, second)
   end
