@@ -52,7 +52,7 @@ class HeadMusic::Rudiment::Solmization
     aliases = []
     I18n.config.available_locales.each do |locale|
       translation = I18n.translate("head_music.rudiments.solfege", locale: locale, default: nil)
-      aliases << translation if translation && translation != 'solfege'
+      aliases << translation if translation && translation != "solfege"
     end
     aliases.compact.uniq
   end

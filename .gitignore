@@ -1,6 +1,5 @@
 /.bundle/
 /.yardoc
-/Gemfile.lock
 /_yardoc/
 /coverage/
 /doc/
@@ -9,5 +8,21 @@
 /tmp/
 /spec/examples.txt
 *.gem
+.DS_Store
 
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# RubyMine
+.idea/
+
+# Local environment
+.env.local
+.env.*.local
+
+# Claude settings
 **/.claude/settings.local.json

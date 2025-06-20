@@ -73,7 +73,7 @@ class HeadMusic::Analysis::DiatonicInterval
   end
 
   def spans?(pitch)
-    pitch >= lower_pitch && pitch <= higher_pitch
+    pitch.between?(lower_pitch, higher_pitch)
   end
 
   def quality

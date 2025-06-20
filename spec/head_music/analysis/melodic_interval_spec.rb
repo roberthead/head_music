@@ -22,7 +22,7 @@ describe HeadMusic::Analysis::MelodicInterval do
   it { is_expected.to be_ascending }
   it { is_expected.not_to be_descending }
 
-  describe '#spells_consonant_triad_with?' do
+  describe "#spells_consonant_triad_with?" do
     let(:pitch_b4) { HeadMusic::Rudiment::Pitch.get("B4") }
     let(:pitch_b_flat_4) { HeadMusic::Rudiment::Pitch.get("Bb4") }
     let(:pitch_c4) { HeadMusic::Rudiment::Pitch.get("C4") }
