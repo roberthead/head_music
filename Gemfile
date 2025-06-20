@@ -8,9 +8,14 @@ gemspec
 gem "standard", require: false
 
 group :test do
-  gem "codeclimate-test-reporter", "~> 1.0.0"
   gem "rubocop", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-rake", require: false
-  gem "simplecov"
+  gem "simplecov", require: false
+end
+
+group :development do
+  gem "bundler-audit", require: false
+  gem "yard", require: false
+  gem "kramdown", require: false
 end

@@ -40,29 +40,29 @@ describe HeadMusic::Content::Voice::MelodicNotePair do
     let(:note_f4) { HeadMusic::Content::Note.new("F4", :quarter, voice, "4:1") }
 
     context "when the pairs form a consonant triad" do
-      let(:pair1) { described_class.new(note_c4, note_e4) }
-      let(:pair2) { described_class.new(note_e4, note_g4) }
+      let(:first_pair) { described_class.new(note_c4, note_e4) }
+      let(:second_pair) { described_class.new(note_e4, note_g4) }
 
       it "returns true" do
-        expect(pair1.spells_consonant_triad_with?(pair2)).to be true
+        expect(first_pair.spells_consonant_triad_with?(second_pair)).to be true
       end
     end
 
     context "when the pairs do not form a consonant triad" do
-      let(:pair1) { described_class.new(note_d4, note_f4) }
-      let(:pair2) { described_class.new(note_f4, note_g4) }
+      let(:first_pair) { described_class.new(note_d4, note_f4) }
+      let(:second_pair) { described_class.new(note_f4, note_g4) }
 
       it "returns false" do
-        expect(pair1.spells_consonant_triad_with?(pair2)).to be false
+        expect(first_pair.spells_consonant_triad_with?(second_pair)).to be false
       end
     end
 
     context "when one of the pairs is a step" do
-      let(:pair1) { described_class.new(note_c4, note_d4) }
-      let(:pair2) { described_class.new(note_d4, note_g4) }
+      let(:first_pair) { described_class.new(note_c4, note_d4) }
+      let(:second_pair) { described_class.new(note_d4, note_g4) }
 
       it "returns false" do
-        expect(pair1.spells_consonant_triad_with?(pair2)).to be false
+        expect(first_pair.spells_consonant_triad_with?(second_pair)).to be false
       end
     end
   end
@@ -71,7 +71,8 @@ describe HeadMusic::Content::Voice::MelodicNotePair do
     let(:pitch_eb4) { HeadMusic::Rudiment::Pitch.get("Eb4") }
 
     it "delegates to melodic_interval" do
-      expect(melodic_note_pair.melodic_interval).to receive(:spans?).with(pitch_eb4)
+      melodic_interval = melodic_note_pair.melodic_interval
+      expect(melodic_interval).to receive(:spans?).with(pitch_eb4)
       melodic_note_pair.spans?(pitch_eb4)
     end
   end

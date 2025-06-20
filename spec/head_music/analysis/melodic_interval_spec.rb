@@ -23,19 +23,19 @@ describe HeadMusic::Analysis::MelodicInterval do
   it { is_expected.not_to be_descending }
 
   describe "#spells_consonant_triad_with?" do
-    let(:pitch_b4) { HeadMusic::Rudiment::Pitch.get("B4") }
-    let(:pitch_b_flat_4) { HeadMusic::Rudiment::Pitch.get("Bb4") }
-    let(:pitch_c4) { HeadMusic::Rudiment::Pitch.get("C4") }
-    let(:pitch_g6) { HeadMusic::Rudiment::Pitch.get("G6") }
-    let(:pitch_b2) { HeadMusic::Rudiment::Pitch.get("B2") }
+    let(:pitch_b4) { HeadMusic::Rudiment::Pitch.get("B4") } # rubocop:disable RSpec/IndexedLet
+    let(:pitch_b_flat_4) { HeadMusic::Rudiment::Pitch.get("Bb4") } # rubocop:disable RSpec/IndexedLet
+    let(:pitch_c4) { HeadMusic::Rudiment::Pitch.get("C4") } # rubocop:disable RSpec/IndexedLet
+    let(:pitch_g6) { HeadMusic::Rudiment::Pitch.get("G6") } # rubocop:disable RSpec/IndexedLet
+    let(:pitch_b2) { HeadMusic::Rudiment::Pitch.get("B2") } # rubocop:disable RSpec/IndexedLet
 
     specify do
       described_class.new(pitch_g4, pitch_b4)
-      expect(melodic_interval.spells_consonant_triad_with?(described_class.new(pitch_g4, pitch_b4))).to be_truthy
-      expect(melodic_interval.spells_consonant_triad_with?(described_class.new(pitch_g4, pitch_b_flat_4))).to be_truthy
-      expect(melodic_interval.spells_consonant_triad_with?(described_class.new(pitch_g6, pitch_b2))).to be_truthy
+      expect(melodic_interval).to be_spells_consonant_triad_with(described_class.new(pitch_g4, pitch_b4))
+      expect(melodic_interval).to be_spells_consonant_triad_with(described_class.new(pitch_g4, pitch_b_flat_4))
+      expect(melodic_interval).to be_spells_consonant_triad_with(described_class.new(pitch_g6, pitch_b2))
 
-      expect(melodic_interval.spells_consonant_triad_with?(described_class.new(pitch_g4, pitch_c4))).not_to be_truthy
+      expect(melodic_interval).not_to be_spells_consonant_triad_with(described_class.new(pitch_g4, pitch_c4))
     end
   end
 end
