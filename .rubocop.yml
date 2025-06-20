@@ -13,7 +13,7 @@ AllCops:
   Exclude:
     - public/**/*
     - vendor/**/*
-  TargetRubyVersion: 3.1.4
+  TargetRubyVersion: 3.3.0
 
 RSpec:
   Enabled: true
