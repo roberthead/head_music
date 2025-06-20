@@ -1,0 +1,32 @@
+name: Security
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run security checks daily at 9 AM UTC
+    - cron: '0 9 * * *'
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3.0'
+        bundler-cache: true
+
+    - name: Install bundler-audit
+      run: gem install bundler-audit
+
+    - name: Run bundler-audit
+      run: bundle-audit check --update
+
+    - name: Run RuboCop Security
+      run: bundle exec rubocop --only Security
