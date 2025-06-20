@@ -7,13 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.2.0] - 2025-06-20
+
 ### Added
+- Added comprehensive GitHub Actions CI/CD workflows (test matrix, security scanning, automated releases)
+- Added security tooling with bundler-audit for vulnerability scanning
+- Added YARD documentation generation with kramdown support
+- Added SimpleCov coverage tracking with 90% threshold and branch coverage
+- Added Dependabot configuration for automated dependency updates
+- Added inclusive CONTRIBUTING.md with comprehensive contribution guidelines
+- Added complete CHANGELOG.md tracking version history
+- Added GitHub issue templates (bug reports, feature requests) and PR template
 - Added gemspec metadata fields for better gem documentation and security
 - Added rubygems_mfa_required for enhanced security
 
 ### Changed
 - Standardized Ruby version requirement to 3.3.0 across all configuration files
-- Updated CircleCI Docker image from deprecated circleci/ruby to cimg/ruby
+- Updated and organized development dependencies (removed deprecated codeclimate-test-reporter)
+- Enhanced .gitignore with modern patterns and restored Gemfile.lock tracking
+- Improved RuboCop configuration (increased MultipleMemoizedHelpers max to 12)
+- Enhanced Rakefile with quality, documentation, and coverage tasks
+
+### Removed
+- Removed outdated Travis CI and CircleCI configurations (replaced with GitHub Actions)
 
 ## [8.1.1] - 2024-12-20
 
@@ -157,7 +173,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For changes in versions prior to 0.28.0, please refer to the git history.
 
-[Unreleased]: https://github.com/roberthead/head_music/compare/v8.1.1...HEAD
+[Unreleased]: https://github.com/roberthead/head_music/compare/v8.2.0...HEAD
+[8.2.0]: https://github.com/roberthead/head_music/compare/v8.1.1...v8.2.0
 [8.1.1]: https://github.com/roberthead/head_music/compare/v8.1.0...v8.1.1
 [8.1.0]: https://github.com/roberthead/head_music/compare/v8.0.2...v8.1.0
 [8.0.2]: https://github.com/roberthead/head_music/compare/v8.0.0...v8.0.2
