@@ -1,0 +1,59 @@
+version: 2
+updates:
+  # Enable version updates for Bundler (Ruby dependencies)
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "roberthead"
+    assignees:
+      - "roberthead"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    labels:
+      - "dependencies"
+    # Group minor and patch updates together to reduce noise
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Allow both direct and indirect dependencies
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    # Ignore major version updates for stable dependencies
+    ignore:
+      - dependency-name: "activesupport"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "i18n"
+        update-types: ["version-update:semver-major"]
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "roberthead"
+    assignees:
+      - "roberthead"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "ci"
+      - "dependencies"
