@@ -3,6 +3,11 @@
 --output-dir doc
 --protected
 --private
+--embed-mixins
+--hide-void-return
+--no-progress
+--title "HeadMusic API Documentation"
+--quiet
 lib/**/*.rb
 -
 README.md

@@ -5,8 +5,26 @@ if ENV["CIRCLE_ARTIFACTS"]
   dir = File.join(ENV["CIRCLE_ARTIFACTS"], "coverage")
   SimpleCov.coverage_dir(dir)
 end
+
 SimpleCov.start do
   add_filter "/spec/"
+  add_filter "/vendor/"
+
+  # Set minimum coverage threshold
+  minimum_coverage 90
+
+  # Enable different coverage metrics
+  enable_coverage :branch
+
+  # Add groups for better organization
+  add_group "Analysis", "lib/head_music/analysis"
+  add_group "Content", "lib/head_music/content"
+  add_group "Instruments", "lib/head_music/instruments"
+  add_group "Rudiments", "lib/head_music/rudiment"
+  add_group "Style", "lib/head_music/style"
+
+  # Refuse coverage drops below threshold
+  refuse_coverage_drop
 end
 
 require "rspec/its"
