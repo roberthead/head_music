@@ -3,7 +3,7 @@ PATH
   specs:
     head_music (8.2.1)
       activesupport (~> 7.0)
-      humanize (~> 2.0)
+      humanize (>= 2, < 4)
       i18n (~> 1.8)
 
 GEM
@@ -33,7 +33,7 @@ GEM
     diff-lcs (1.6.1)
     docile (1.4.1)
     drb (2.2.1)
-    humanize (2.5.1)
+    humanize (3.1.0)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     json (2.11.3)
