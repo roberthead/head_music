@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [8.2.1] - 2025-06-21
+
+### Added
+- Added missing modern instruments to all locales (ukulele family, electronic instruments, world instruments)
+- Added pitched/unpitched instrument classifications to all non-English locales
+- Added new instrument families: bass_drum, tambourine, and celesta
+
+### Changed
+- Improved instrument family classifications (added fretted/unfretted, valve categorizations)
+- Removed incorrect percussion classification from harpsichord and clavichord
+
+### Fixed
+- Fixed Russian translation errors (tritone and perfect_unison)
+
 ## [8.2.0] - 2025-06-20
 
 ### Added
