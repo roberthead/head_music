@@ -116,6 +116,8 @@ bass_clarinet:
   range_categories:
     - bass
 bass_drum:
+  alias_name_keys:
+    - kick_drum
   classification_keys:
     - percussion
     - membranophone
@@ -486,6 +488,7 @@ euphonium:
     - aerophone
     - brass
     - wind
+  family_key: tuba
   variants:
     default:
       staff_schemes:

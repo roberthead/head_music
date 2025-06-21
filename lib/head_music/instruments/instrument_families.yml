@@ -14,6 +14,12 @@ bagpipe:
     - wind
     - woodwind
   orchestra_section_key: woodwind
+bass_drum:
+  classification_keys:
+    - percussion
+    - membranophone
+    - unpitched
+  orchestra_section_key: percussion
 bassoon:
   classification_keys:
     - aerophone
@@ -34,13 +40,22 @@ clavichord:
   classification_keys:
     - chordophone
     - keyboard
-    - percussion
     - string
   orchestra_section_key: keyboard
+celesta:
+  classification_keys:
+    - idiophone
+    - keyboard
+    - percussion
+    - struck
+    - metal
+    - pitched
+  orchestra_section_key: percussion
 cornet:
   classification_keys:
     - aerophone
     - brass
+    - valve
     - wind
   orchestra_section_key: brass
 cymbal:
@@ -57,6 +72,7 @@ double_bass:
   classification_keys:
     - bowed
     - chordophone
+    - unfretted
     - string
   orchestra_section_key: string
 flute:
@@ -86,6 +102,7 @@ guitar:
   classification_keys:
     - chordophone
     - plucked
+    - fretted
     - string
   orchestra_section_key: string
 harmonica:
@@ -105,13 +122,13 @@ harpsichord:
   classification_keys:
     - chordophone
     - keyboard
-    - percussion
     - string
   orchestra_section_key: keyboard
 horn:
   classification_keys:
     - aerophone
     - brass
+    - valve
     - wind
   orchestra_section_key: brass
 kettledrum:
@@ -124,12 +141,14 @@ lute:
   classification_keys:
     - chordophone
     - plucked
+    - fretted
     - string
   orchestra_section_key: string
 mandolin:
   classification_keys:
     - chordophone
     - plucked
+    - fretted
     - string
   orchestra_section_key: string
 marimba:
@@ -141,6 +160,7 @@ marimba:
     - wood
     - mallet
     - pitched
+    - resonator
   orchestra_section_key: percussion
 oboe:
   classification_keys:
@@ -172,6 +192,7 @@ saxhorn:
   classification_keys:
     - aerophone
     - brass
+    - valve
     - wind
   orchestra_section_key: brass
 saxophone:
@@ -186,6 +207,7 @@ sitar:
   classification_keys:
     - chordophone
     - plucked
+    - fretted
     - string
   orchestra_section_key: string
 snare_drum:
@@ -213,6 +235,13 @@ tabla:
     - membranophone
     - pitched
   orchestra_section_key: percussion
+tambourine:
+  classification_keys:
+    - percussion
+    - membranophone
+    - idiophone
+    - unpitched
+  orchestra_section_key: percussion
 theremin:
   classification_keys:
     - electronic
@@ -226,18 +255,21 @@ trumpet:
   classification_keys:
     - aerophone
     - brass
+    - valve
     - wind
   orchestra_section_key: brass
 tuba:
   classification_keys:
     - aerophone
     - brass
+    - valve
     - wind
   orchestra_section_key: brass
 ukulele:
   classification_keys:
     - chordophone
     - plucked
+    - fretted
     - string
   orchestra_section_key: string
 vibraphone:
@@ -249,11 +281,13 @@ vibraphone:
     - mallet
     - metal
     - pitched
+    - resonator
   orchestra_section_key: percussion
 violin:
   classification_keys:
     - bowed
     - chordophone
+    - unfretted
     - string
   orchestra_section_key: string
 voice:
