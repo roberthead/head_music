@@ -33,7 +33,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 3.3.0"
 
   spec.add_runtime_dependency "activesupport", "~> 7.0"
-  spec.add_runtime_dependency "humanize", "~> 2.0"
+  spec.add_runtime_dependency "humanize", ">= 2", "< 4"
   spec.add_runtime_dependency "i18n", "~> 1.8"
 
   spec.add_development_dependency "rake", "~> 13.0"
