@@ -110,7 +110,7 @@ class HeadMusic::Analysis::Sonority
   alias_method :quintal?, :quartal?
 
   def diatonic_intervals_above_bass_pitch
-    return nil unless identifier
+    return [] unless identifier
 
     @diatonic_intervals_above_bass_pitch ||=
       SONORITIES[identifier].map { |shorthand| HeadMusic::Analysis::DiatonicInterval.get(shorthand) }

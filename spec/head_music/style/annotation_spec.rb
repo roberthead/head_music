@@ -3,16 +3,21 @@ require "spec_helper"
 describe HeadMusic::Style::Annotation do
   let(:voice) { HeadMusic::Content::Voice.new }
 
-  context "when the voice is compliant" do
-    subject(:annotation) { HeadMusic::Style::Guidelines::UpToFourteenNotes.new(voice) }
+  context "when the voice is empty" do
+    describe "with up-to-fourteen-notes" do
+      subject(:annotation) { HeadMusic::Style::Guidelines::UpToFourteenNotes.new(voice) }
 
-    it { is_expected.to be_adherent }
-  end
+      its(:first_note) { is_expected.to be_nil }
+      its(:last_note) { is_expected.to be_nil }
+      it { is_expected.not_to have_notes }
+      it { is_expected.to be_adherent }
+    end
 
-  context "when the voice is not compliant" do
-    subject(:annotation) { HeadMusic::Style::Guidelines::AtLeastEightNotes.new(voice) }
+    context "with at-least-eight-notes" do
+      subject(:annotation) { HeadMusic::Style::Guidelines::AtLeastEightNotes.new(voice) }
 
-    it { is_expected.not_to be_adherent }
+      it { is_expected.not_to be_adherent }
+    end
   end
 
   context "when there are multiple marks" do

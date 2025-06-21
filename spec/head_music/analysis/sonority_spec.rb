@@ -22,12 +22,26 @@ describe HeadMusic::Analysis::Sonority do
         it { is_expected.to eq other_pitch_set }
       end
 
+      context "when compared to an array of pitches" do
+        let(:other_pitches) { %w[G4 B4 D5] }
+
+        it { is_expected.to eq other_pitches }
+      end
+
       context "when compared to another sonority with a different major triad pitch set" do
         let(:other_pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C E G]) }
         let(:other_sonority) { described_class.new(other_pitch_set) }
 
         it { is_expected.to eq other_sonority }
       end
+    end
+
+    context "given an empty pitch set" do
+      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new([]) }
+
+      it { is_expected.not_to be_nil }
+
+      its(:diatonic_intervals_above_bass_pitch) { is_expected.to be_empty }
     end
   end
 

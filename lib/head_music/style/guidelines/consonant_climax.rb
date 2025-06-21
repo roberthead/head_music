@@ -16,12 +16,12 @@ class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Annotati
   end
 
   def adherent_high_pitch?
-    notes? && highest_pitch_consonant_with_tonic? &&
+    has_notes? && highest_pitch_consonant_with_tonic? &&
       (highest_pitch_appears_once? || highest_pitch_appears_twice_with_step_between?)
   end
 
   def adherent_low_pitch?
-    notes? &&
+    has_notes? &&
       lowest_pitch_consonant_with_tonic? &&
       (lowest_pitch_appears_once? || lowest_pitch_appears_twice_with_step_between?)
   end

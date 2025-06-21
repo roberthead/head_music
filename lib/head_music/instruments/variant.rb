@@ -10,7 +10,7 @@ class HeadMusic::Instruments::Variant
   end
 
   def pitch_designation
-    return unless attributes["pitch_designation"].to_s != ""
+    return if attributes["pitch_designation"].to_s == ""
 
     @pitch_designation ||=
       HeadMusic::Rudiment::Spelling.get(attributes["pitch_designation"])

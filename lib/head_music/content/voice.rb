@@ -110,6 +110,14 @@ class HeadMusic::Content::Voice
     placements.last.position.bar_number
   end
 
+  def last_placement
+    placements.last
+  end
+
+  def next_position
+    last_placement ? last_placement.next_position : HeadMusic::Content::Position.new(composition, 1, 1, 0)
+  end
+
   def to_s
     return pitches_string if role.to_s.strip == ""
 

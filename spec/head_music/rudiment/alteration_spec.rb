@@ -48,6 +48,7 @@ describe HeadMusic::Rudiment::Alteration do
     specify { expect(described_class.by(:semitones, -1)).to eq :flat }
     specify { expect(described_class.by(:cents, 0)).to eq :natural }
     specify { expect(described_class.by(:semitones, 0)).to eq "♮" }
+    specify { expect(described_class.by(:foobars, 12)).to be_nil }
   end
 
   describe ".matcher" do

@@ -35,8 +35,8 @@ class HeadMusic::Style::Annotation
     fitness == 1
   end
 
-  def notes?
-    first_note
+  def has_notes?
+    !!first_note
   end
 
   def start_position
@@ -54,11 +54,11 @@ class HeadMusic::Style::Annotation
   protected
 
   def first_note
-    notes&.first
+    notes.first()
   end
 
   def last_note
-    notes&.last
+    notes.last()
   end
 
   def voices

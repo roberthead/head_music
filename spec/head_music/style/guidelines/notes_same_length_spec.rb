@@ -7,6 +7,9 @@ describe HeadMusic::Style::Guidelines::NotesSameLength do
 
   context "with no notes" do
     it { is_expected.to be_adherent }
+
+    its(:first_most_common_rhythmic_value) { is_expected.to be_nil }
+    its(:most_common_rhythmic_values) { is_expected.to be_empty }
   end
 
   context "with one note" do

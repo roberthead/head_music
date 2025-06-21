@@ -23,6 +23,13 @@ describe HeadMusic::Instruments::Instrument do
       its(:name) { is_expected.to eq "oboe d'amore" }
       its(:default_sounding_transposition) { is_expected.to eq(-3) }
     end
+
+    context "when given a string that does not match a key" do
+      let(:argument) { described_class.get("floober") }
+
+      it { is_expected.to be_a described_class }
+      its(:name) { is_expected.to eq "floober" }
+    end
   end
 
   describe ".all" do
