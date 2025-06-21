@@ -62,6 +62,7 @@ it:
       drum: tamburo
       edge_blown_aerophone: aerofono a imboccatura laterale
       electronic: elettronico
+      electronic_keyboard: tastiera elettronica
       idiophone: idiofono
       keyboard: tastiera
       keyboard_instrument: strumento a tastiera
@@ -71,6 +72,7 @@ it:
       mezzo_soprano_voice: voce di mezzo-soprano
       percussion: percussione
       percussion_instrument: strumento a percussione
+      pitched: intonato
       plucked: pizzicato
       plucked_instrument: strumento a pizzico
       reed: ad ancia
@@ -80,6 +82,7 @@ it:
       stringed_instrument: strumento a corde
       strings: corde
       struck: percosso
+      unpitched: non intonato
       voice: voce
       wind: fiato
       wind_instrument: strumento a fiato
@@ -146,6 +149,7 @@ it:
       crotales: crotales
       cymbal: piatto
       descant: soprano
+      didgeridoo: didgeridoo
       double_bass: contrabbasso
       double_contrabass_recorder: doppio flauto dolce contrabbasso
       english_horn: corno inglese
@@ -158,11 +162,13 @@ it:
       french_horn: corno francese
       garklein_recorder: garklein
       glockenspiel: glockenspiel
+      gong: gong
       great_bass_recorder: flauto dolce gran basso
       great_highland_bagpipe: cornamusa scozzese
       guitar: chitarra
       hammered_dulcimer: salterio martellato
       harp: arpa
+      harmonica: armonica
       harpsichord: clavicembalo
       hautbois_d_amour: oboe d'amore
       hi-hat: hi-hat
@@ -178,6 +184,7 @@ it:
       mezzo: mezzosoprano
       mezzo_soprano_voice: mezzosoprano
       military_drum: tamburo militare
+      mouth_organ: armonica a bocca
       natural_horn: corno naturale
       oboe: oboe
       oboe_d_amore: oboe d'amore
@@ -209,6 +216,8 @@ it:
       soprano_voice: soprano
       soprillo: soprillo
       sousaphone: sousafono
+      steel_drum: steelpan
+      steelpan: steelpan
       string_bass: contrabbasso a corde
       sub_bass_recorder: flauto dolce sub-basso
       sub_contrabass_recorder: flauto dolce controcontrabbasso
@@ -216,6 +225,7 @@ it:
       subcontrabass_saxophone: sassofono subcontrabbasso
       suspended_cymbal: piatto sospeso
       synthesizer: sintetizzatore
+      tabla: tabla
       tabor: tamburo
       tam_tam: tam-tam
       tambourine: tamburello
@@ -227,6 +237,7 @@ it:
       tenor_trombone: trombone tenore
       tenor_tuba: tuba tenore
       tenor_voice: tenore
+      theremin: theremin
       timpani: timpani
       timpanum: timpano
       tom_drum: tamburo tom
@@ -237,6 +248,15 @@ it:
       trumpet: tromba
       tuba: tuba
       tubular_bells: campane tubolari
+      ukulele: ukulele
+      alto_ukulele: ukulele contralto
+      baritone_ukulele: ukulele baritono
+      bass_ukulele: ukulele basso
+      concert_ukulele: ukulele concerto
+      piccolo_ukulele: ukulele piccolo
+      pocket_ukulele: ukulele tascabile
+      soprano_ukulele: ukulele soprano
+      tenor_ukulele: ukulele tenore
       vibes: vibrafono
       vibraphone: vibrafono
       viola: viola

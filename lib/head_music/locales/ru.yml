@@ -1,13 +1,13 @@
 ru:
   head_music:
     chromatic_intervals:
-      perfect_unison: чистая унисон
+      perfect_unison: чистый унисон
       minor_second: малая секунда
       major_second: большая секунда
       minor_third: малая терция
       major_third: большая терция
       perfect_fourth: чистая кварта
-      tritone: триоль
+      tritone: тритон
       perfect_fifth: чистая квинта
       minor_sixth: малая секста
       major_sixth: большая секста
@@ -24,6 +24,7 @@ ru:
       drum: барабан
       edge_blown_aerophone: флейта с боковым продувом
       electronic: электронный
+      electronic_keyboard: электронная клавиатура
       idiophone: идиофон
       keyboard: клавишные
       keyboard_instrument: клавишный инструмент
@@ -33,6 +34,7 @@ ru:
       mezzo_soprano_voice: меццо-сопрано
       percussion: ударные
       percussion_instrument: ударный инструмент
+      pitched: звуковысотный
       plucked: щипковые
       plucked_instrument: щипковый инструмент
       reed: тростниковый
@@ -42,6 +44,7 @@ ru:
       stringed_instrument: струнный инструмент
       strings: струны
       struck: ударный
+      unpitched: безвысотный
       voice: голос
       wind: духовые
       wind_instrument: духовой инструмент
@@ -92,6 +95,7 @@ ru:
       crotales: кроталы
       cymbal: тарелки
       descant: дискант
+      didgeridoo: диджериду
       double_bass: контрабас
       double_contrabass_recorder: двойная контрабасовая флейта
       english_horn: английский рожок
@@ -110,6 +114,7 @@ ru:
       guitar: гитара
       hammered_dulcimer: цимбалы
       harp: арфа
+      harmonica: губная гармоника
       harpsichord: клавесин
       hautbois_d_amour: гобой д'амур
       hi-hat: хай-хет
@@ -124,6 +129,7 @@ ru:
       mezzo_soprano: меццо-сопрано
       mezzo_soprano_voice: голос меццо-сопрано
       military_drum: военный барабан
+      mouth_organ: губная гармоника
       natural_horn: натуральный рог
       oboe: гобой
       oboe_d_amore: гобой д'амур
@@ -157,6 +163,8 @@ ru:
       soprano_voice: сопрано
       soprillo: соприлло
       sousaphone: сузафон
+      steel_drum: стилпан
+      steelpan: стилпан
       string_bass: струнный бас
       sub_bass_recorder: суб-басовая флейта
       sub_contrabass_recorder: суб-контрабасовая флейта
@@ -164,6 +172,7 @@ ru:
       subcontrabass_saxophone: субконтрабас-саксофон
       suspended_cymbal: подвесная тарелка
       synthesizer: синтезатор
+      tabla: табла
       tabor: табор
       tam_tam: там-там
       tambourine: бубен
@@ -175,6 +184,7 @@ ru:
       tenor_trombone: теноровый тромбон
       tenor_tuba: теноровая туба
       tenor_voice: тенор
+      theremin: терменвокс
       timpani: тимпаны
       timpanum: тимпан
       tom_drum: том
@@ -185,6 +195,15 @@ ru:
       trumpet: труба
       tuba: туба
       tubular_bells: трубчатые колокола
+      ukulele: укулеле
+      alto_ukulele: альтовая укулеле
+      baritone_ukulele: баритон-укулеле
+      bass_ukulele: бас-укулеле
+      concert_ukulele: концертная укулеле
+      piccolo_ukulele: пикколо-укулеле
+      pocket_ukulele: карманная укулеле
+      soprano_ukulele: укулеле-сопрано
+      tenor_ukulele: теноровая укулеле
       vibes: вибрафон
       vibraphone: вибрафон
       viola: альт

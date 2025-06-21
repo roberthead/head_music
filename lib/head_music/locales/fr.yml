@@ -62,6 +62,7 @@ fr:
       drum: tambour
       edge_blown_aerophone: aérophone à embouchure latérale
       electronic: électronique
+      electronic_keyboard: clavier électronique
       idiophone: idiophone
       keyboard: clavier
       keyboard_instrument: instrument à clavier
@@ -71,6 +72,7 @@ fr:
       mezzo_soprano_voice: voix de mezzo-soprano
       percussion: percussion
       percussion_instrument: instrument à percussion
+      pitched: accordé
       plucked: pincé
       plucked_instrument: instrument à cordes pincées
       reed: anche
@@ -80,6 +82,7 @@ fr:
       stringed_instrument: instrument à cordes
       strings: cordes
       struck: frappé
+      unpitched: non accordé
       voice: voix
       wind: vent
       wind_instrument: instrument à vent
@@ -151,6 +154,7 @@ fr:
       crotales: crotales
       cymbal: cymbale
       descant: dessus
+      didgeridoo: didgeridoo
       double_bass: contrebasse
       double_contrabass_recorder: flûte à bec double-contrebasse
       english_horn: cor anglais
@@ -169,6 +173,7 @@ fr:
       guitar: guitare
       hammered_dulcimer: tympanon
       harp: harpe
+      harmonica: harmonica
       harpsichord: clavecin
       hautbois_d_amour: hautbois d'amour
       hi-hat: charleston
@@ -184,6 +189,7 @@ fr:
       mezzo_soprano: mezzo-soprano
       mezzo_soprano_voice: voix de mezzo-soprano
       military_drum: tambour militaire
+      mouth_organ: harmonica
       natural_horn: cor naturel
       oboe: hautbois
       oboe_d_amore: hautbois d'amore
@@ -217,6 +223,8 @@ fr:
       soprano_voice: voix de soprano
       soprillo: soprillo
       sousaphone: soubassophone
+      steel_drum: steelpan
+      steelpan: steelpan
       string_bass: contrebasse à cordes
       sub_bass_recorder: flûte à bec sub-basse
       sub_contrabass_recorder: flûte à bec sub-contrebasse
@@ -224,6 +232,7 @@ fr:
       subcontrabass_saxophone: saxophone subcontrabasse
       suspended_cymbal: cymbale suspendue
       synthesizer: synthétiseur
+      tabla: tabla
       tabor: tambour
       tam_tam: tam-tam
       tambourine: tambourin
@@ -235,6 +244,7 @@ fr:
       tenor_trombone: trombone ténor
       tenor_tuba: tuba ténor
       tenor_voice: voix de ténor
+      theremin: thérémine
       timpani: timbales
       timpanum: timbale
       tom_drum: tom
@@ -245,6 +255,15 @@ fr:
       trumpet: trompette
       tuba: tuba
       tubular_bells: cloches tubulaires
+      ukulele: ukulélé
+      alto_ukulele: ukulélé alto
+      baritone_ukulele: ukulélé baryton
+      bass_ukulele: ukulélé basse
+      concert_ukulele: ukulélé concert
+      piccolo_ukulele: ukulélé piccolo
+      pocket_ukulele: ukulélé de poche
+      soprano_ukulele: ukulélé soprano
+      tenor_ukulele: ukulélé ténor
       vibes: vibraphone
       vibraphone: vibraphone
       viola: alto

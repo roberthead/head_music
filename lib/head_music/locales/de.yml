@@ -62,6 +62,7 @@ de:
       drum: Trommel
       edge_blown_aerophone: Kantenangeblasenes Aerophon
       electronic: Elektronisch
+      electronic_keyboard: elektronisches Keyboard
       idiophone: Idiophon
       keyboard: Tastatur
       keyboard_instrument: Tasteninstrument
@@ -71,6 +72,7 @@ de:
       mezzo_soprano_voice: Mezzosopran
       percussion: Schlagzeug
       percussion_instrument: Schlaginstrument
+      pitched: gestimmt
       plucked: Zupfinstrument
       plucked_instrument: Zupfinstrument
       reed: Rohrblatt
@@ -80,6 +82,7 @@ de:
       stringed_instrument: Saiteninstrument
       strings: Saiten
       struck: Geschlagen
+      unpitched: ungestimmt
       voice: Stimme
       wind: Blas
       wind_instrument: Blasinstrument
@@ -148,6 +151,7 @@ de:
       crotales: Crotales
       cymbal: Becken
       descant: Diskant
+      didgeridoo: Didgeridoo
       double_bass: Kontrabass
       double_contrabass_recorder: Doppelkontrabassblockflöte
       english_horn: Englischhorn
@@ -165,6 +169,7 @@ de:
       guitar: Gitarre
       hammered_dulcimer: Hackbrett
       harp: Harfe
+      harmonica: Mundharmonika
       harpsichord: Cembalo
       hautbois_d_amour: Liebeshoboe
       hi-hat: Hi-Hat
@@ -180,6 +185,7 @@ de:
       mezzo_soprano: Mezzosopran
       mezzo_soprano_voice: Mezzosopran
       military_drum: Militärtrommel
+      mouth_organ: Mundharmonika
       natural_horn: Waldhorn
       oboe: Oboe
       oboe_d_amore: Liebesoboe
@@ -200,6 +206,7 @@ de:
       ride_cymbal: Ride-Becken
       saxophone: Saxophon
       side_drum: Kleine Trommel
+      sitar: Sitar
       snare_drum: Leinentrommel
       sopranino_clarinet: Sopraninoklarinette
       sopranino_recorder: Sopraninoblockflöte
@@ -213,6 +220,8 @@ de:
       soprano_voice: Sopran
       soprillo: Sopranissimo
       sousaphone: Sousaphon
+      steel_drum: Steelpan
+      steelpan: Steelpan
       string_bass: Kontrabass
       sub_bass_recorder: Subbassblockflöte
       sub_contrabass_recorder: Subkontrabassblockflöte
@@ -220,6 +229,7 @@ de:
       subcontrabass_saxophone: Subkontrabasssaxophon
       suspended_cymbal: Hängebecken
       synthesizer: Synthesizer
+      tabla: Tabla
       tabor: Tamburin
       tambourine: Tamburin
       tam_tam: Tamtam
@@ -231,6 +241,7 @@ de:
       tenor_trombone: Tenorposaune
       tenor_tuba: Tenortuba
       tenor_voice: Tenor
+      theremin: Theremin
       timpani: Pauken
       timpanum: Pauke
       tom_drum: Tom-Tom
@@ -240,6 +251,15 @@ de:
       trombone: Posaune
       trumpet: Trompete
       tuba: Tuba
+      ukulele: Ukulele
+      alto_ukulele: Alt-Ukulele
+      baritone_ukulele: Bariton-Ukulele
+      bass_ukulele: Bass-Ukulele
+      concert_ukulele: Konzert-Ukulele
+      piccolo_ukulele: Piccolo-Ukulele
+      pocket_ukulele: Pocket-Ukulele
+      soprano_ukulele: Sopran-Ukulele
+      tenor_ukulele: Tenor-Ukulele
       tubular_bells: Rohrenglocke
       vibes: Vibraphon
       vibraphone: Vibraphon
