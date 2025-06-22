@@ -28,6 +28,15 @@ bassoon:
     - wind
     - woodwind
   orchestra_section_key: woodwind
+celesta:
+  classification_keys:
+    - idiophone
+    - keyboard
+    - percussion
+    - struck
+    - metal
+    - pitched
+  orchestra_section_key: percussion
 clarinet:
   classification_keys:
     - aerophone
@@ -42,15 +51,6 @@ clavichord:
     - keyboard
     - string
   orchestra_section_key: keyboard
-celesta:
-  classification_keys:
-    - idiophone
-    - keyboard
-    - percussion
-    - struck
-    - metal
-    - pitched
-  orchestra_section_key: percussion
 cornet:
   classification_keys:
     - aerophone

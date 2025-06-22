@@ -31,17 +31,19 @@ describe HeadMusic::Content::Voice do
   end
 
   describe "#next_position" do
-    context 'when there are notes' do
-      let!(:first_beat_c) { voice.place(HeadMusic::Content::Position.new(composition, "1:1:0"), :quarter, "C") }
-      let!(:second_beat_d) { voice.place(HeadMusic::Content::Position.new(composition, "1:2:0"), :quarter, "D") }
-      let!(:third_beat_e) { voice.place(HeadMusic::Content::Position.new(composition, "1:3:0"), :quarter, "E") }
+    context "when there are notes" do
+      before do
+        voice.place(HeadMusic::Content::Position.new(composition, "1:1:0"), :quarter, "C")
+        voice.place(HeadMusic::Content::Position.new(composition, "1:2:0"), :quarter, "D")
+        voice.place(HeadMusic::Content::Position.new(composition, "1:3:0"), :quarter, "E")
+      end
 
       it "returns the position after the last note" do
         expect(voice.next_position).to eq HeadMusic::Content::Position.new(composition, "1:4:0")
       end
     end
 
-    context 'when there are no notes' do
+    context "when there are no notes" do
       it "returns the first position" do
         expect(voice.next_position).to eq HeadMusic::Content::Position.new(composition, "1:1:0")
       end

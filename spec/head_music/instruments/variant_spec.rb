@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Instruments::Variant do
-  context 'for clarinet' do
+  context "for clarinet" do
     subject(:variant) do
       described_class.new(:default, clarinet_data)
     end
@@ -38,7 +38,7 @@ describe HeadMusic::Instruments::Variant do
     end
   end
 
-  context 'for alto voice' do
+  context "for alto voice" do
     subject(:variant) do
       described_class.new(:default, alto_voice_data)
     end
@@ -46,7 +46,7 @@ describe HeadMusic::Instruments::Variant do
     let(:alto_voice_data) do
       {
         "staff_schemes" => {
-          "default" => [{"clef" => "treble_clef"}],
+          "default" => [{"clef" => "treble_clef"}]
         }
       }
     end

@@ -72,8 +72,9 @@ describe HeadMusic::Content::Voice::MelodicNotePair do
 
     it "delegates to melodic_interval" do
       melodic_interval = melodic_note_pair.melodic_interval
-      expect(melodic_interval).to receive(:spans?).with(pitch_eb4)
+      allow(melodic_interval).to receive(:spans?)
       melodic_note_pair.spans?(pitch_eb4)
+      expect(melodic_interval).to have_received(:spans?).with(pitch_eb4)
     end
   end
 end

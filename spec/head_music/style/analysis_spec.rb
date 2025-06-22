@@ -1,5 +1,11 @@
 require "spec_helper"
 
+class HeadMusic::Style::Guides::PermissiveGuide
+  def self.analyze(voice)
+    []
+  end
+end
+
 describe HeadMusic::Style::Analysis do
   subject(:analysis) { described_class.new(guide, voice) }
 
@@ -46,12 +52,6 @@ describe HeadMusic::Style::Analysis do
   end
 
   context "with a permissive guide" do
-    class HeadMusic::Style::Guides::PermissiveGuide
-      def self.analyze(voice)
-        []
-      end
-    end
-
     let(:guide) { HeadMusic::Style::Guides::PermissiveGuide }
 
     its(:guide) { is_expected.to eq HeadMusic::Style::Guides::PermissiveGuide }

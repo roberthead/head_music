@@ -12,7 +12,7 @@ begin
   end
 
   desc "Generate documentation and show stats"
-  task :doc_stats => :doc do
+  task doc_stats: :doc do
     sh "yard stats --list-undoc"
   end
 rescue LoadError
@@ -29,7 +29,7 @@ end
 task default: :spec
 
 desc "Run all quality checks (tests, linting, security audit)"
-task :quality => [:spec, :standard, "bundle:audit:check"]
+task quality: [:spec, :standard, "bundle:audit:check"]
 
 desc "Open an irb session preloaded with this library"
 task :console do

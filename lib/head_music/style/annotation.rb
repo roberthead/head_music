@@ -54,11 +54,11 @@ class HeadMusic::Style::Annotation
   protected
 
   def first_note
-    notes.first()
+    notes.first
   end
 
   def last_note
-    notes.last()
+    notes.last
   end
 
   def voices
