@@ -4,8 +4,8 @@ module HeadMusic::Analysis; end
 # A diatonic interval is the distance between two spelled pitches.
 class HeadMusic::Analysis::DiatonicInterval
   include Comparable
+  include HeadMusic::Named
 
-  # TODO: include Named module
   NUMBER_NAMES = %w[
     unison second third fourth fifth sixth seventh octave
     ninth tenth eleventh twelfth thirteenth fourteenth fifteenth
@@ -43,7 +43,6 @@ class HeadMusic::Analysis::DiatonicInterval
 
   attr_reader :lower_pitch, :higher_pitch
 
-  delegate :to_s, to: :name
   delegate :perfect?, :major?, :minor?, :diminished?, :augmented?, :doubly_diminished?, :doubly_augmented?, to: :quality
 
   delegate :step?, :skip?, :leap?, :large_leap?, to: :category
@@ -52,18 +51,40 @@ class HeadMusic::Analysis::DiatonicInterval
     to: :size
   )
   delegate(
-    :simple_name, :quality_name, :simple_number_name, :number_name, :name, :shorthand,
+    :simple_name, :quality_name, :simple_number_name, :number_name, :shorthand,
     to: :naming
   )
 
   alias_method :to_i, :semitones
 
+  # Override Named module methods to use computed name from naming
+  def name(locale_code: nil)
+    if locale_code
+      # Try to get translation from locale files
+      name_key = naming.name.downcase.gsub(' ', '_').to_sym
+      translation = I18n.translate(name_key, scope: "head_music.diatonic_intervals", locale: locale_code, default: nil)
+      translation || naming.name
+    else
+      naming.name
+    end
+  end
+
+  def to_s
+    name
+  end
+
   # Accepts a name and returns the interval with middle c on the bottom
   def self.get(identifier)
-    name = Parser.new(identifier)
-    semitones = Semitones.new(name.degree_name.to_sym, name.quality_name).count
-    higher_pitch = HeadMusic::Rudiment::Pitch.from_number_and_letter(HeadMusic::Rudiment::Pitch.middle_c + semitones, name.higher_letter)
-    new(HeadMusic::Rudiment::Pitch.middle_c, higher_pitch)
+    if identifier.is_a?(String) || identifier.is_a?(Symbol)
+      name = Parser.new(identifier)
+      semitones = Semitones.new(name.degree_name.to_sym, name.quality_name).count
+      higher_pitch = HeadMusic::Rudiment::Pitch.from_number_and_letter(HeadMusic::Rudiment::Pitch.middle_c + semitones, name.higher_letter)
+      interval = new(HeadMusic::Rudiment::Pitch.middle_c, higher_pitch)
+      interval.ensure_localized_name(name: identifier.to_s)
+      interval
+    else
+      identifier
+    end
   end
 
   def initialize(first_pitch, second_pitch)

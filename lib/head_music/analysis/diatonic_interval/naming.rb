@@ -1,4 +1,4 @@
-# Accepts a number and number of semitones and privides the naming methods.
+# Accepts a number and number of semitones and provides the naming methods.
 class HeadMusic::Analysis::DiatonicInterval::Naming
   QUALITY_SEMITONES = HeadMusic::Analysis::DiatonicInterval::QUALITY_SEMITONES
   NUMBER_NAMES = HeadMusic::Analysis::DiatonicInterval::NUMBER_NAMES

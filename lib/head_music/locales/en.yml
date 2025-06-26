@@ -14,6 +14,98 @@ en:
       minor_seventh: minor seventh
       major_seventh: major seventh
       perfect_octave: perfect octave
+    diatonic_intervals:
+      perfect_unison: perfect unison
+      minor_second: minor second
+      major_second: major second
+      diminished_second: diminished second
+      augmented_second: augmented second
+      doubly_diminished_second: doubly diminished second
+      doubly_augmented_second: doubly augmented second
+      minor_third: minor third
+      major_third: major third
+      diminished_third: diminished third
+      augmented_third: augmented third
+      doubly_diminished_third: doubly diminished third
+      doubly_augmented_third: doubly augmented third
+      perfect_fourth: perfect fourth
+      diminished_fourth: diminished fourth
+      augmented_fourth: augmented fourth
+      doubly_diminished_fourth: doubly diminished fourth
+      doubly_augmented_fourth: doubly augmented fourth
+      perfect_fifth: perfect fifth
+      diminished_fifth: diminished fifth
+      augmented_fifth: augmented fifth
+      doubly_diminished_fifth: doubly diminished fifth
+      doubly_augmented_fifth: doubly augmented fifth
+      minor_sixth: minor sixth
+      major_sixth: major sixth
+      diminished_sixth: diminished sixth
+      augmented_sixth: augmented sixth
+      doubly_diminished_sixth: doubly diminished sixth
+      doubly_augmented_sixth: doubly augmented sixth
+      minor_seventh: minor seventh
+      major_seventh: major seventh
+      diminished_seventh: diminished seventh
+      augmented_seventh: augmented seventh
+      doubly_diminished_seventh: doubly diminished seventh
+      doubly_augmented_seventh: doubly augmented seventh
+      perfect_octave: perfect octave
+      diminished_octave: diminished octave
+      augmented_octave: augmented octave
+      doubly_diminished_octave: doubly diminished octave
+      doubly_augmented_octave: doubly augmented octave
+      minor_ninth: minor ninth
+      major_ninth: major ninth
+      diminished_ninth: diminished ninth
+      augmented_ninth: augmented ninth
+      doubly_diminished_ninth: doubly diminished ninth
+      doubly_augmented_ninth: doubly augmented ninth
+      minor_tenth: minor tenth
+      major_tenth: major tenth
+      diminished_tenth: diminished tenth
+      augmented_tenth: augmented tenth
+      doubly_diminished_tenth: doubly diminished tenth
+      doubly_augmented_tenth: doubly augmented tenth
+      perfect_eleventh: perfect eleventh
+      diminished_eleventh: diminished eleventh
+      augmented_eleventh: augmented eleventh
+      doubly_diminished_eleventh: doubly diminished eleventh
+      doubly_augmented_eleventh: doubly augmented eleventh
+      perfect_twelfth: perfect twelfth
+      diminished_twelfth: diminished twelfth
+      augmented_twelfth: augmented twelfth
+      doubly_diminished_twelfth: doubly diminished twelfth
+      doubly_augmented_twelfth: doubly augmented twelfth
+      minor_thirteenth: minor thirteenth
+      major_thirteenth: major thirteenth
+      diminished_thirteenth: diminished thirteenth
+      augmented_thirteenth: augmented thirteenth
+      doubly_diminished_thirteenth: doubly diminished thirteenth
+      doubly_augmented_thirteenth: doubly augmented thirteenth
+      minor_fourteenth: minor fourteenth
+      major_fourteenth: major fourteenth
+      diminished_fourteenth: diminished fourteenth
+      augmented_fourteenth: augmented fourteenth
+      doubly_diminished_fourteenth: doubly diminished fourteenth
+      doubly_augmented_fourteenth: doubly augmented fourteenth
+      perfect_fifteenth: perfect fifteenth
+      diminished_fifteenth: diminished fifteenth
+      augmented_fifteenth: augmented fifteenth
+      doubly_diminished_fifteenth: doubly diminished fifteenth
+      doubly_augmented_fifteenth: doubly augmented fifteenth
+      minor_sixteenth: minor sixteenth
+      major_sixteenth: major sixteenth
+      diminished_sixteenth: diminished sixteenth
+      augmented_sixteenth: augmented sixteenth
+      doubly_diminished_sixteenth: doubly diminished sixteenth
+      doubly_augmented_sixteenth: doubly augmented sixteenth
+      minor_seventeenth: minor seventeenth
+      major_seventeenth: major seventeenth
+      diminished_seventeenth: diminished seventeenth
+      augmented_seventeenth: augmented seventeenth
+      doubly_diminished_seventeenth: doubly diminished seventeenth
+      doubly_augmented_seventeenth: doubly augmented seventeenth
     clefs:
       alto_clef: alto clef
       baritone_c_clef: baritone C-clef
