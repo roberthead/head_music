@@ -153,10 +153,7 @@ bass_clarinet:
 bass_drum:
   alias_name_keys:
     - kick_drum
-  classification_keys:
-    - percussion
-    - membranophone
-  orchestra_section_key: percussion
+  family_key: bass_drum
   range_categories:
     - bass
   variants:
@@ -339,11 +336,7 @@ castanets:
         default:
           - clef: neutral_clef
 celesta:
-  classification_keys:
-    - keyboard
-    - percussion
-    - idiophone
-  orchestra_section_key: keyboard
+  family_key: celesta
   variants:
     default:
       staff_schemes:
@@ -593,12 +586,7 @@ double_bass:
 euphonium:
   alias_name_keys:
     - tenor_tuba
-  classification_keys:
-    - aerophone
-    - brass
-    - wind
   family_key: tuba
-  orchestra_section_key: brass
   range_categories:
     - baritone
   variants:
@@ -1094,12 +1082,7 @@ tam_tam:
         default:
           - clef: neutral_clef
 tambourine:
-  classification_keys:
-    - percussion
-    - shaken
-    - idiophone
-    - membranophone
-  orchestra_section_key: percussion
+  family_key: tambourine
   variants:
     default:
       staff_schemes:
@@ -1181,7 +1164,6 @@ timpani:
     - kettledrum
     - timpanum
   family_key: kettledrum
-  orchestra_section_key: percussion
   range_categories:
     - bass
   variants:

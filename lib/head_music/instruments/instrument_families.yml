@@ -36,7 +36,7 @@ celesta:
     - struck
     - metal
     - pitched
-  orchestra_section_key: percussion
+  orchestra_section_key: keyboard
 clarinet:
   classification_keys:
     - aerophone
@@ -239,6 +239,7 @@ tambourine:
   classification_keys:
     - percussion
     - membranophone
+    - shaken
     - idiophone
     - unpitched
   orchestra_section_key: percussion
