@@ -38,11 +38,16 @@ class HeadMusic::Rudiment::ScaleDegree
   end
 
   def <=>(other)
-    if other.is_a?(HeadMusic::Rudiment::ScaleDegree)
+    case other
+    when HeadMusic::Rudiment::ScaleDegree
       [degree, alteration_semitones] <=> [other.degree, other.alteration_semitones]
-    else
-      # TODO: Improve this
+    when Numeric
+      degree <=> other
+    when String
       to_s <=> other.to_s
+    else
+      # If we can't meaningfully compare, return nil (Ruby standard)
+      nil
     end
   end
 
