@@ -61,7 +61,7 @@ class HeadMusic::Analysis::DiatonicInterval
   def name(locale_code: nil)
     if locale_code
       # Try to get translation from locale files
-      name_key = naming.name.downcase.gsub(' ', '_').to_sym
+      name_key = naming.name.downcase.gsub(" ", "_").to_sym
       translation = I18n.translate(name_key, scope: "head_music.diatonic_intervals", locale: locale_code, default: nil)
       translation || naming.name
     else
