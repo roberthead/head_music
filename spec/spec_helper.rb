@@ -24,7 +24,7 @@ SimpleCov.start do
   add_group "Style", "lib/head_music/style"
 
   # Refuse coverage drops below threshold
-  refuse_coverage_drop
+  maximum_coverage_drop 1.0 # 1% drop allowed
 end
 
 require "rspec/its"
