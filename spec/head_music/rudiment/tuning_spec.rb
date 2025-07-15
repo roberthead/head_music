@@ -79,4 +79,97 @@ RSpec.describe HeadMusic::Rudiment::Tuning do
       end
     end
   end
+
+  describe ".get" do
+    context "with just intonation" do
+      it "returns a JustIntonation instance" do
+        tuning = described_class.get(:just_intonation)
+        expect(tuning).to be_a(HeadMusic::Rudiment::Tuning::JustIntonation)
+      end
+
+      it "accepts alias 'just'" do
+        tuning = described_class.get("just")
+        expect(tuning).to be_a(HeadMusic::Rudiment::Tuning::JustIntonation)
+      end
+
+      it "accepts alias 'ji'" do
+        tuning = described_class.get(:ji)
+        expect(tuning).to be_a(HeadMusic::Rudiment::Tuning::JustIntonation)
+      end
+    end
+
+    context "with pythagorean tuning" do
+      it "returns a Pythagorean instance" do
+        tuning = described_class.get(:pythagorean)
+        expect(tuning).to be_a(HeadMusic::Rudiment::Tuning::Pythagorean)
+      end
+
+      it "accepts alias 'pythag'" do
+        tuning = described_class.get("pythag")
+        expect(tuning).to be_a(HeadMusic::Rudiment::Tuning::Pythagorean)
+      end
+    end
+
+    context "with meantone temperament" do
+      it "returns a Meantone instance" do
+        tuning = described_class.get(:meantone)
+        expect(tuning).to be_a(HeadMusic::Rudiment::Tuning::Meantone)
+      end
+
+      it "accepts alias 'quarter_comma_meantone'" do
+        tuning = described_class.get("quarter_comma_meantone")
+        expect(tuning).to be_a(HeadMusic::Rudiment::Tuning::Meantone)
+      end
+
+      it "accepts alias '1/4_comma'" do
+        tuning = described_class.get("1/4_comma")
+        expect(tuning).to be_a(HeadMusic::Rudiment::Tuning::Meantone)
+      end
+    end
+
+    context "with equal temperament" do
+      it "returns a base Tuning instance by default" do
+        tuning = described_class.get
+        expect(tuning).to be_a(described_class)
+        expect(tuning).not_to be_a(HeadMusic::Rudiment::Tuning::JustIntonation)
+      end
+
+      it "returns a base Tuning instance for 'equal_temperament'" do
+        tuning = described_class.get(:equal_temperament)
+        expect(tuning).to be_a(described_class)
+        expect(tuning).not_to be_a(HeadMusic::Rudiment::Tuning::JustIntonation)
+      end
+
+      it "accepts alias 'equal'" do
+        tuning = described_class.get("equal")
+        expect(tuning).to be_a(described_class)
+      end
+
+      it "accepts alias 'et'" do
+        tuning = described_class.get(:et)
+        expect(tuning).to be_a(described_class)
+      end
+
+      it "accepts alias '12tet'" do
+        tuning = described_class.get("12tet")
+        expect(tuning).to be_a(described_class)
+      end
+    end
+
+    context "with unknown tuning type" do
+      it "defaults to equal temperament" do
+        tuning = described_class.get(:unknown_type)
+        expect(tuning).to be_a(described_class)
+        expect(tuning).not_to be_a(HeadMusic::Rudiment::Tuning::JustIntonation)
+      end
+    end
+
+    context "with options" do
+      it "passes options to the tuning constructor" do
+        tuning = described_class.get(:just_intonation, reference_pitch: "baroque", tonal_center: "D4")
+        expect(tuning.reference_pitch_frequency).to eq(415.0)
+        expect(tuning.tonal_center.to_s).to eq("D4")
+      end
+    end
+  end
 end

@@ -8,8 +8,24 @@ class HeadMusic::Rudiment::Tuning
 
   delegate :pitch, :frequency, to: :reference_pitch, prefix: true
 
-  def initialize(reference_pitch: :a440)
+  def self.get(tuning_type = :equal_temperament, **options)
+    case tuning_type.to_s.downcase
+    when "just_intonation", "just", "ji"
+      HeadMusic::Rudiment::Tuning::JustIntonation.new(**options)
+    when "pythagorean", "pythag"
+      HeadMusic::Rudiment::Tuning::Pythagorean.new(**options)
+    when "meantone", "quarter_comma_meantone", "1/4_comma"
+      HeadMusic::Rudiment::Tuning::Meantone.new(**options)
+    when "equal_temperament", "equal", "et", "12tet"
+      new(**options)
+    else
+      new(**options)
+    end
+  end
+
+  def initialize(reference_pitch: :a440, tonal_center: nil)
     @reference_pitch = HeadMusic::Rudiment::ReferencePitch.get(reference_pitch)
+    @tonal_center = tonal_center
   end
 
   def frequency_for(pitch)
@@ -17,5 +33,3 @@ class HeadMusic::Rudiment::Tuning
     reference_pitch_frequency * (2**(1.0 / 12))**(pitch - reference_pitch.pitch).semitones
   end
 end
-
-# TODO: other tunings

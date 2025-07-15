@@ -56,6 +56,9 @@ require "head_music/rudiment/scale_type"
 require "head_music/rudiment/solmization"
 require "head_music/rudiment/spelling"
 require "head_music/rudiment/tuning"
+require "head_music/rudiment/tuning/just_intonation"
+require "head_music/rudiment/tuning/pythagorean"
+require "head_music/rudiment/tuning/meantone"
 
 # instruments
 require "head_music/instruments/instrument_family"
