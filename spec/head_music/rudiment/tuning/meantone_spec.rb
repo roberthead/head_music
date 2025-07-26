@@ -8,7 +8,7 @@ RSpec.describe HeadMusic::Rudiment::Tuning::Meantone do
       subject(:tuning) { described_class.new }
 
       describe "C major scale" do
-        it "returns correct frequencies for C major scale in Quarter-comma meantone" do
+        it "returns correct frequencies for C major scale in Quarter-comma meantone" do # rubocop:disable RSpec/ExampleLength
           # C4 frequency in equal temperament from A440
           c4_freq = 440.0 * (2**(-9.0 / 12))  # ≈ 261.63
 
@@ -29,7 +29,7 @@ RSpec.describe HeadMusic::Rudiment::Tuning::Meantone do
       subject(:tuning) { described_class.new(tonal_center: "A4") }
 
       describe "A major scale" do
-        it "returns correct frequencies for A major scale in Quarter-comma meantone" do
+        it "returns correct frequencies for A major scale in Quarter-comma meantone" do # rubocop:disable RSpec/ExampleLength
           # A4 = 440 Hz (reference pitch)
           expect(tuning.frequency_for("A4")).to be_within(0.01).of(440.0)
           expect(tuning.frequency_for("B4")).to be_within(0.01).of(440.0 * (5.0**(1.0 / 4)))         # major second

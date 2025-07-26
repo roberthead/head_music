@@ -9,6 +9,22 @@ class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotati
     HeadMusic::Style::Mark.for_each(all_wrong_length_notes)
   end
 
+  def first_most_common_rhythmic_value
+    @first_most_common_rhythmic_value ||= begin
+      candidates = most_common_rhythmic_values
+      first_match = notes.detect { |note| candidates.include?(note.rhythmic_value) }
+      first_match&.rhythmic_value
+    end
+  end
+
+  def most_common_rhythmic_values
+    return [] if notes.empty?
+
+    occurrences = occurrences_by_rhythmic_value
+    highest_count = occurrences.values.max
+    occurrences.select { |_rhythmic_value, count| count == highest_count }.keys
+  end
+
   private
 
   def all_wrong_length_notes
@@ -35,22 +51,6 @@ class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotati
 
   def all_but_last_note
     notes[0..-2]
-  end
-
-  def first_most_common_rhythmic_value
-    @first_most_common_rhythmic_value ||= begin
-      candidates = most_common_rhythmic_values
-      first_match = notes.detect { |note| candidates.include?(note.rhythmic_value) }
-      first_match&.rhythmic_value
-    end
-  end
-
-  def most_common_rhythmic_values
-    return [] if notes.empty?
-
-    occurrences = occurrences_by_rhythmic_value
-    highest_count = occurrences.values.max
-    occurrences.select { |_rhythmic_value, count| count == highest_count }.keys
   end
 
   def occurrences_by_rhythmic_value

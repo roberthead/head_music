@@ -51,8 +51,6 @@ class HeadMusic::Style::Annotation
     self.class::MESSAGE
   end
 
-  protected
-
   def first_note
     notes.first
   end
@@ -60,6 +58,8 @@ class HeadMusic::Style::Annotation
   def last_note
     notes.last
   end
+
+  protected
 
   def voices
     @voices ||= voice.composition.voices
