@@ -45,3 +45,23 @@ When I call the sonority method
 Then I should receive the corresponding Sonority object
 
 And it should correctly identify the harmonic content
+
+## Scenario: Work with triads
+
+Given I need to analyze triadic harmony
+
+When I work with Triad objects
+
+Then I should be able to identify major, minor, diminished, and augmented triads
+
+And access their specific properties and methods
+
+## Scenario: Work with seventh chords
+
+Given I need to analyze seventh chord harmony
+
+When I work with SeventhChord objects
+
+Then I should be able to identify all common seventh chord types
+
+And note that nothing beyond seventh chords is needed to analyze pre-Romantic music

@@ -1,19 +1,10 @@
 # TODO
 
-## User Stories
+## Completed User Stories
 
-Sets
-DurationSet?
+The following user stories have been completed and are documented in the codebase:
 
-Triad
-SeventhChord
-Don't need anything beyond seventh chords to analyze pre-Romantic music.
-
-
-## User stories
-
-
-### Done
+### DiatonicInterval
 
     As a developer
     When instantiating a DiatonicInterval
@@ -26,47 +17,11 @@ Don't need anything beyond seventh chords to analyze pre-Romantic music.
 
 DiatonicInterval
   - def above(pitch) -> pitch
-DiatonicInterval
   - def below(pitch) -> pitch
 
 Pitch addition and subtraction
   - define `Pitch#+`, `Pitch#-`
   - use DiatonicInterval methods
-
-PitchSet
-
-A PitchSet is unlike a PitchClassSet in that the pitches have spellings with octaves rather than Spellings only or octave-less 0-11 designations.
-
-PitchClassSet
-.size?
-.monad?
-.dyad?
-.triad? (must be stacked thirds to be a 'triad')
-.trichord? (all 3-pitch sets)
-
-Should every group of pitches have one or more strategies for describing it? Such as Dyad?
-
-Set (superclass?)
-PitchSet
-  EmptySet
-  Monad
-  Dyad
-  Trichord (or Triad)
-    - triad?
-  Tetrachord (or Tetrad)
-    - seventh_chord?
-  Pentachord (or Pentad)
-  Hexachord (or Hexad)
-  Heptachords (or Heptad or, sometimes, mixing Latin and Greek roots, "Septachord")
-  Octachords (Octad)
-  Nonachords (Nonad)
-  Decachords (Decad)
-  Undecachords
-  Dodecachord
-
-PitchClassSet
-  .normal_form? (most compact)
-  .prime_form (most compact normal form of the original or any inversion)
 
 
 ## Text Conversation with Brian Head (May 7, 2023)

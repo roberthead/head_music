@@ -6,6 +6,16 @@ I want to classify pitch sets by their size and properties
 
 So that I can analyze and categorize harmonic structures
 
+Note: A PitchSet is unlike a PitchClassSet in that the pitches have spellings with octaves rather than Spellings only or octave-less 0-11 designations.
+
+## Scenario: Get size of pitch set
+
+Given I have a pitch set with N pitches
+
+When I call the size method
+
+Then it should return the number of pitches in the set
+
 ## Scenario: Identify empty set
 
 Given I have no pitches
