@@ -111,26 +111,39 @@ class HeadMusic::Analysis::DiatonicInterval
   alias_method :invert, :inversion
 
   def consonance(style = :standard_practice)
-    consonance_for_perfect(style) ||
-      consonance_for_major_and_minor ||
-      HeadMusic::Rudiment::Consonance.get(:dissonant)
+    consonance_analysis(style).consonance
   end
 
   def consonance?(style = :standard_practice)
-    consonance(style).perfect? || consonance(style).imperfect?
+    consonance(style).consonant?
   end
-  alias_method :consonant?, :consonance?
+
+  def consonant?(style = :standard_practice)
+    consonance_analysis(style).consonant?
+  end
 
   def perfect_consonance?(style = :standard_practice)
-    consonance(style).perfect?
+    consonance_analysis(style).perfect_consonance?
   end
 
   def imperfect_consonance?(style = :standard_practice)
-    consonance(style).imperfect?
+    consonance_analysis(style).imperfect_consonance?
   end
 
   def dissonance?(style = :standard_practice)
-    consonance(style).dissonant?
+    consonance_analysis(style).dissonant?
+  end
+
+  def dissonant?(style = :standard_practice)
+    consonance_analysis(style).dissonant?
+  end
+
+  def consonance_analysis(style = :standard_practice)
+    HeadMusic::Analysis::IntervalConsonance.new(self, style)
+  end
+
+  def consonance_classification(style: :standard_practice)
+    consonance_analysis(style).classification
   end
 
   def above(pitch)
@@ -180,17 +193,5 @@ class HeadMusic::Analysis::DiatonicInterval
 
   def naming
     @naming ||= Naming.new(number: number, semitones: semitones)
-  end
-
-  def consonance_for_perfect(style = :standard_practice)
-    HeadMusic::Rudiment::Consonance.get(dissonant_fourth?(style) ? :dissonant : :perfect) if perfect?
-  end
-
-  def consonance_for_major_and_minor
-    HeadMusic::Rudiment::Consonance.get((third_or_compound? || sixth_or_compound?) ? :imperfect : :dissonant) if major? || minor?
-  end
-
-  def dissonant_fourth?(style = :standard_practice)
-    fourth_or_compound? && style == :two_part_harmony
   end
 end

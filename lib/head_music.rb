@@ -3,6 +3,9 @@ module HeadMusic
   GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO
   PENALTY_FACTOR = GOLDEN_RATIO_INVERSE
   SMALL_PENALTY_FACTOR = GOLDEN_RATIO_INVERSE**0.5
+
+  # Custom exception for abstract methods
+  class AbstractMethodError < NoMethodError; end
 end
 
 require "head_music/version"
@@ -86,6 +89,7 @@ require "head_music/analysis/diatonic_interval/parser"
 require "head_music/analysis/diatonic_interval/semitones"
 require "head_music/analysis/diatonic_interval/size"
 require "head_music/analysis/harmonic_interval"
+require "head_music/analysis/interval_consonance"
 require "head_music/analysis/interval_cycle"
 require "head_music/analysis/melodic_interval"
 require "head_music/analysis/motion"
@@ -94,6 +98,10 @@ require "head_music/analysis/pitch_set"
 require "head_music/analysis/sonority"
 
 # style analysis
+require "head_music/style/tradition"
+require "head_music/style/modern_tradition"
+require "head_music/style/renaissance_tradition"
+require "head_music/style/medieval_tradition"
 require "head_music/style/analysis"
 require "head_music/style/annotation"
 require "head_music/style/mark"

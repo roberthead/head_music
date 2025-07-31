@@ -240,22 +240,22 @@ I18n.describe HeadMusic::Analysis::DiatonicInterval do
   end
 
   describe "consonance" do
-    specify { expect(described_class.get(:minor_second).consonance).to be_dissonant }
-    specify { expect(described_class.get(:major_second).consonance).to be_dissonant }
-    specify { expect(described_class.get(:minor_third).consonance).to be_imperfect }
-    specify { expect(described_class.get(:major_third).consonance).to be_imperfect }
-    specify { expect(described_class.get(:perfect_fourth).consonance).to be_perfect }
-    specify { expect(described_class.get(:perfect_fourth).consonance(:two_part_harmony)).to be_dissonant }
-    specify { expect(described_class.get(:perfect_eleventh).consonance(:two_part_harmony)).to be_dissonant }
-    specify { expect(described_class.get(:augmented_fourth).consonance).to be_dissonant }
-    specify { expect(described_class.get(:diminished_fifth).consonance).to be_dissonant }
-    specify { expect(described_class.get(:perfect_fifth).consonance).to be_perfect }
-    specify { expect(described_class.get(:minor_sixth).consonance).to be_imperfect }
-    specify { expect(described_class.get(:major_sixth).consonance).to be_imperfect }
-    specify { expect(described_class.get(:minor_seventh).consonance).to be_dissonant }
-    specify { expect(described_class.get(:major_seventh).consonance).to be_dissonant }
-    specify { expect(described_class.get(:diminished_octave).consonance).to be_dissonant }
-    specify { expect(described_class.get(:perfect_octave).consonance).to be_perfect }
+    specify { expect(described_class.get(:minor_second).consonance).to be_harsh_dissonance }
+    specify { expect(described_class.get(:major_second).consonance).to be_mild_dissonance }
+    specify { expect(described_class.get(:minor_third).consonance).to be_imperfect_consonance }
+    specify { expect(described_class.get(:major_third).consonance).to be_imperfect_consonance }
+    specify { expect(described_class.get(:perfect_fourth).consonance).to be_perfect_consonance }
+    specify { expect(described_class.get(:perfect_fourth).consonance(:two_part_harmony)).to be_dissonance }
+    specify { expect(described_class.get(:perfect_eleventh).consonance(:two_part_harmony)).to be_dissonance }
+    specify { expect(described_class.get(:augmented_fourth).consonance).to be_dissonance }
+    specify { expect(described_class.get(:diminished_fifth).consonance).to be_dissonance }
+    specify { expect(described_class.get(:perfect_fifth).consonance).to be_perfect_consonance }
+    specify { expect(described_class.get(:minor_sixth).consonance).to be_imperfect_consonance }
+    specify { expect(described_class.get(:major_sixth).consonance).to be_imperfect_consonance }
+    specify { expect(described_class.get(:minor_seventh).consonance).to be_mild_dissonance }
+    specify { expect(described_class.get(:major_seventh).consonance).to be_harsh_dissonance }
+    specify { expect(described_class.get(:diminished_octave).consonance).to be_dissonance }
+    specify { expect(described_class.get(:perfect_octave).consonance).to be_perfect_consonance }
   end
 
   describe "above" do
