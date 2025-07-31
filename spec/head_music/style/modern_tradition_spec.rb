@@ -4,7 +4,7 @@ describe HeadMusic::Style::ModernTradition do
   let(:tradition) { described_class.new }
 
   describe "#consonance_classification" do
-    context "perfect consonances" do
+    context "with perfect consonances" do
       it "classifies unison as perfect consonance" do
         interval = HeadMusic::Analysis::DiatonicInterval.get("P1")
         expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE)
@@ -26,7 +26,7 @@ describe HeadMusic::Style::ModernTradition do
       end
     end
 
-    context "imperfect consonances" do
+    context "with imperfect consonances" do
       it "classifies major third as imperfect consonance" do
         interval = HeadMusic::Analysis::DiatonicInterval.get("M3")
         expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::IMPERFECT_CONSONANCE)
@@ -48,7 +48,7 @@ describe HeadMusic::Style::ModernTradition do
       end
     end
 
-    context "mild dissonances" do
+    context "with mild dissonances" do
       it "classifies major second as mild dissonance" do
         interval = HeadMusic::Analysis::DiatonicInterval.get("M2")
         expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::MILD_DISSONANCE)
@@ -60,7 +60,7 @@ describe HeadMusic::Style::ModernTradition do
       end
     end
 
-    context "harsh dissonances" do
+    context "with harsh dissonances" do
       it "classifies minor second as harsh dissonance" do
         interval = HeadMusic::Analysis::DiatonicInterval.get("m2")
         expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::HARSH_DISSONANCE)
@@ -72,7 +72,7 @@ describe HeadMusic::Style::ModernTradition do
       end
     end
 
-    context "dissonances" do
+    context "with dissonances" do
       it "classifies tritone (augmented fourth) as dissonance" do
         interval = HeadMusic::Analysis::DiatonicInterval.get("A4")
         expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::DISSONANCE)
@@ -104,7 +104,7 @@ describe HeadMusic::Style::ModernTradition do
       end
     end
 
-    context "compound intervals" do
+    context "with compound intervals" do
       it "classifies compound intervals based on their simple form" do
         interval = HeadMusic::Analysis::DiatonicInterval.get("M10") # compound major third
         expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::IMPERFECT_CONSONANCE)

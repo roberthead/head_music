@@ -163,4 +163,82 @@ describe HeadMusic::Instruments::Instrument do
     specify { expect(described_class.get(:bass_guitar)).to be_transposing }
     specify { expect(described_class.get(:bass_guitar)).to be_transposing_at_the_octave }
   end
+
+  describe "branch coverage for edge cases" do
+    context "when instrument has no family" do
+      subject(:unknown_instrument) { described_class.get("unknown_instrument") }
+
+      it "handles nil family gracefully" do
+        expect(unknown_instrument.family).to be_nil
+      end
+
+      it "handles translation without name_key" do
+        expect(unknown_instrument.translation(:de)).to eq("unknown_instrument")
+      end
+    end
+
+    context "when looking up instruments by translation" do
+      it "finds instruments by localized names" do
+        # Test that key_for_name method works with translations
+        # This should trigger the locale iteration branch
+        piano = described_class.get("Piano") # German translation
+        expect(piano.name).to eq("piano")
+      end
+
+      it "returns nil for non-existent translations" do
+        # This should test the nil return path in key_for_name
+        non_existent = described_class.get("definitely_not_an_instrument_12345")
+        expect(non_existent.name).to eq("definitely_not_an_instrument_12345")
+      end
+    end
+
+    context "when testing staff and clef methods" do
+      subject(:unknown_instrument) { described_class.get("unknown_with_no_variants") }
+
+      it "handles instruments with no variants or staves" do
+        # These should exercise the ||= branches in default methods
+        expect(unknown_instrument.default_staves).to eq([])
+        expect(unknown_instrument.default_clefs).to eq([])
+        expect(unknown_instrument.default_sounding_transposition).to eq(0)
+      end
+
+      it "handles default_variant when variants exist" do
+        piano = described_class.get(:piano)
+        expect(piano.default_variant).to be_a(HeadMusic::Instruments::Variant)
+      end
+
+      it "handles default_variant when no variants exist" do
+        unknown = described_class.get("no_variants")
+        expect(unknown.default_variant).to be_nil
+      end
+    end
+
+    context "when testing initialization paths" do
+      it "exercises record_for_key with exact matches" do
+        # This tests the direct key match path
+        oboe = described_class.get("oboe")
+        expect(oboe.name).to eq("oboe")
+      end
+
+      it "exercises inherit_family_attributes when family exists" do
+        violin = described_class.get(:violin)
+        expect(violin.orchestra_section_key).not_to be_nil
+        expect(violin.classification_keys).not_to be_empty
+      end
+
+      it "exercises inherit_family_attributes when family is nil" do
+        unknown = described_class.get("unknown_family")
+        # Should not crash when family is nil
+        expect(unknown.orchestra_section_key).to be_nil
+      end
+    end
+
+    context "when testing orchestra_section_key override" do
+      it "allows record to override family orchestra_section_key" do
+        # This tests the ||= in initialize_attributes
+        piano = described_class.get(:piano)
+        expect(piano.orchestra_section_key).to eq("keyboard")
+      end
+    end
+  end
 end

@@ -79,10 +79,12 @@ class HeadMusic::Instruments::Instrument
   end
 
   def default_variant
-    variants.find(&:default?) || variants.first
+    variants&.find(&:default?) || variants&.first
   end
 
-  delegate :default_staff_scheme, to: :default_variant
+  def default_staff_scheme
+    default_variant&.default_staff_scheme
+  end
 
   def default_staves
     default_staff_scheme&.staves || []
