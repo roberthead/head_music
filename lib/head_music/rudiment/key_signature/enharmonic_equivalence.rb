@@ -1,4 +1,4 @@
-# Key signatures are enharmonic when all pitch classes in one are respellings of the pitch classes in the other.
+# Key signatures are enharmonic when they represent the same set of altered pitch classes but with different spellings.
 class HeadMusic::Rudiment::KeySignature::EnharmonicEquivalence
   attr_reader :key_signature
 

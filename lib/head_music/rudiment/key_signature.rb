@@ -1,9 +1,10 @@
 # A module for music rudiments
 module HeadMusic::Rudiment; end
 
-# Represents a key signature.
+# Represents a key signature (traditionally associated with a key)
+# This class maintains backward compatibility while delegating to Key/Mode internally
 class HeadMusic::Rudiment::KeySignature
-  attr_reader :tonic_spelling, :scale_type, :scale
+  attr_reader :tonal_context
 
   ORDERED_LETTER_NAMES_OF_SHARPS = %w[F C G D A E B].freeze
   ORDERED_LETTER_NAMES_OF_FLATS = ORDERED_LETTER_NAMES_OF_SHARPS.reverse.freeze
@@ -16,14 +17,35 @@ class HeadMusic::Rudiment::KeySignature
     return identifier if identifier.is_a?(HeadMusic::Rudiment::KeySignature)
 
     @key_signatures ||= {}
-    tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
-    hash_key = HeadMusic::Utilities::HashKey.for(identifier.gsub(/#|♯/, " sharp").gsub(/(\w)[b♭]/, '\\1 flat'))
-    @key_signatures[hash_key] ||= new(tonic_spelling, scale_type_name)
+
+    if identifier.is_a?(String)
+      tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
+      hash_key = HeadMusic::Utilities::HashKey.for(identifier.gsub(/#|♯/, " sharp").gsub(/(\w)[b♭]/, '\\1 flat'))
+      @key_signatures[hash_key] ||= new(tonic_spelling, scale_type_name)
+    elsif identifier.is_a?(HeadMusic::Rudiment::Key) || identifier.is_a?(HeadMusic::Rudiment::Mode)
+      # Support creating from Key/Mode objects
+      from_tonal_context(identifier)
+    else
+      identifier
+    end
   end
 
+  def self.from_tonal_context(tonal_context)
+    new_from_context(tonal_context)
+  end
+
+  def self.from_scale(scale)
+    # Find a key or mode that uses this scale
+    tonic = scale.root_pitch.spelling
+    scale_type = scale.scale_type
+    new(tonic, scale_type)
+  end
+
+  attr_reader :tonic_spelling, :scale_type, :scale
+
   delegate :pitch_class, to: :tonic_spelling, prefix: :tonic
-  delegate :to_s, to: :name
   delegate :pitches, :pitch_classes, to: :scale
+  delegate :to_s, to: :name
 
   def initialize(tonic_spelling, scale_type = nil)
     @tonic_spelling = HeadMusic::Rudiment::Spelling.get(tonic_spelling)
@@ -31,6 +53,26 @@ class HeadMusic::Rudiment::KeySignature
     @scale_type ||= HeadMusic::Rudiment::ScaleType.default
     @scale_type = @scale_type.parent || @scale_type
     @scale = HeadMusic::Rudiment::Scale.get(@tonic_spelling, @scale_type)
+
+    # Create appropriate tonal context
+    scale_type_str = scale_type.to_s.downcase if scale_type
+
+    @tonal_context = if %w[major minor].include?(scale_type_str)
+      HeadMusic::Rudiment::Key.get("#{tonic_spelling} #{scale_type}")
+    elsif scale_type
+      HeadMusic::Rudiment::Mode.get("#{tonic_spelling} #{scale_type}")
+    else
+      HeadMusic::Rudiment::Key.get("#{tonic_spelling} major")
+    end
+  rescue ArgumentError
+    # Fall back to creating a major key if mode is not recognized
+    @tonal_context = HeadMusic::Rudiment::Key.get("#{tonic_spelling} major")
+  end
+
+  def self.new_from_context(context)
+    instance = allocate
+    instance.instance_variable_set(:@tonal_context, context)
+    instance
   end
 
   def spellings

@@ -36,12 +36,10 @@ describe HeadMusic::Style::Guidelines::EndOnTonic do
     context "when last_note_spelling is nil but notes exist" do
       subject(:guideline) { described_class.new(voice) }
 
-      let(:mock_note) { double("Note", spelling: nil, position: "1:1:000", next_position: "2:1:000") }
-
       before do
-        # Create a note without a spelling to test the nil branch in ends_on_tonic?
-        voice.place("1:1", :whole, "C")
-        allow(voice).to receive(:notes).and_return([mock_note])
+        # Create a note with nil pitch to test the nil branch in ends_on_tonic?
+        note_with_nil_pitch = HeadMusic::Content::Note.new(nil, :whole, voice, "1:1:000")
+        allow(voice).to receive(:notes).and_return([note_with_nil_pitch])
       end
 
       it "handles nil last_note_spelling gracefully" do
