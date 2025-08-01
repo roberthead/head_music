@@ -6,6 +6,8 @@ I want to analyze two-note combinations (dyads)
 
 So that I can understand harmonic implications in two-part music
 
+Constructor should accept to pitches (or pitch classes) and an optional key
+
 ## Scenario: Identify interval in dyad
 
 Given I have two pitches forming a dyad
@@ -13,16 +15,6 @@ Given I have two pitches forming a dyad
 When I access the interval property
 
 Then I should receive the correct interval between the pitches
-
-## Scenario: Find implied triads from thirds
-
-Given I have a dyad that forms a third
-
-When I request the implied triad
-
-Then I should receive the most likely triad containing those pitches
-
-And it should consider the musical context
 
 ## Scenario: List possible triads from fifth
 
