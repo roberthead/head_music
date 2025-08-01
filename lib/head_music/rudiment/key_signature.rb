@@ -22,11 +22,8 @@ class HeadMusic::Rudiment::KeySignature
       tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
       hash_key = HeadMusic::Utilities::HashKey.for(identifier.gsub(/#|♯/, " sharp").gsub(/(\w)[b♭]/, '\\1 flat'))
       @key_signatures[hash_key] ||= new(tonic_spelling, scale_type_name)
-    elsif identifier.is_a?(HeadMusic::Rudiment::Key) || identifier.is_a?(HeadMusic::Rudiment::Mode)
-      # Support creating from Key/Mode objects
-      from_tonal_context(identifier)
-    else
-      identifier
+    elsif identifier.is_a?(HeadMusic::Rudiment::DiatonicContext)
+      identifier.key_signature
     end
   end
 
