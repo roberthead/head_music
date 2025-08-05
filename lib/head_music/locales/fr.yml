@@ -1,5 +1,11 @@
 fr:
   head_music:
+    alterations:
+      sharp: dièse
+      flat: bémol
+      natural: bécarre
+      double_sharp: double dièse
+      double_flat: double bémol
     chromatic_intervals:
       perfect_unison: unisson parfait
       minor_second: seconde mineure

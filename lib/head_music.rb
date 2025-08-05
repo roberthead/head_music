@@ -33,6 +33,7 @@ require "head_music/utilities/hash_key"
 
 # modules
 require "head_music/named"
+require "head_music/parsable"
 
 # rudiments
 require "head_music/rudiment/alteration"

@@ -1,5 +1,11 @@
 en:
   head_music:
+    alterations:
+      sharp: sharp
+      flat: flat
+      natural: natural
+      double_sharp: double sharp
+      double_flat: double flat
     chromatic_intervals:
       perfect_unison: perfect unison
       minor_second: minor second

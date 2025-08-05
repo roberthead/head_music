@@ -1,5 +1,11 @@
 es:
   head_music:
+    alterations:
+      sharp: sostenido
+      flat: bemol
+      natural: becuadro
+      double_sharp: doble sostenido
+      double_flat: doble bemol
     chromatic_intervals:
       perfect_unison: unísono perfecto
       minor_second: segunda menor

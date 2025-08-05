@@ -132,3 +132,48 @@ The gem supports multiple languages through the HeadMusic::Named mixin:
 2. Run tests for the specific module: `bundle exec rspec spec/head_music/[module_name]`
 3. Update documentation with YARD comments
 4. Ensure translations are updated if names change
+
+## Music theory and concepts
+
+The rudiments of music theory are built up piece-by-piece.
+
+letter name
+   — C, D, E, F, G, A, B, …
+   - equivalent to:
+      - do, re, mi, fa, sol, la, ti, …
+
+alteration
+   - sharp, flat, double sharp, double flat
+   - optional
+   - none is same as 'natural'
+   - found in key signatures
+   - found in bars as accidentals
+
+spelling
+   - letter name + alteration
+   - example: "E♭"
+
+register
+   - an integer typically between 0 and 8
+   - represents the octaves of an 88-key piano
+   - scientific pitch notation
+      - middle C is C4
+      - increments between B and C
+         - a half step below C4 is B3.
+
+pitch
+   - spelling + register
+   - example: "E♭3"
+
+duration
+   - rythmic value
+   - expressed in fractions (or multiples) of a standard whole note
+      - whole, half, quarter, eighth, sixteenth, …
+   - can be extended with augmentation dots
+      - one dot extends the rhythmic value 50%
+      - two dots extend the rhythmic value 75%
+      - two dots extend the rhythmic value 87.5%
+
+note
+   - pitch + duration
+   - example: "E♭3 quarter note"

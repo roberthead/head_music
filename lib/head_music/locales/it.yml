@@ -1,5 +1,11 @@
 it:
   head_music:
+    alterations:
+      sharp: diesis
+      flat: bemolle
+      natural: bequadro
+      double_sharp: doppio diesis
+      double_flat: doppio bemolle
     chromatic_intervals:
       perfect_unison: unisono perfetto
       minor_second: seconda minore

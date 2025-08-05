@@ -1,6 +1,12 @@
 require "spec_helper"
 
 describe HeadMusic::Rudiment::Alteration do
+  describe "::SYMBOLS" do
+    specify { expect(described_class::SYMBOLS).to include("♯", "♭", "𝄪", "𝄫", "♮") }
+    specify { expect(described_class::SYMBOLS).to include("#", "b", "x", "bb") }
+    specify { expect(described_class::SYMBOLS).not_to include("foo") }
+  end
+
   describe ".get" do
     specify { expect(described_class.get("#").identifier).to eq :sharp }
     specify { expect(described_class.get("sharp").identifier).to eq :sharp }
@@ -51,14 +57,66 @@ describe HeadMusic::Rudiment::Alteration do
     specify { expect(described_class.by(:foobars, 12)).to be_nil }
   end
 
-  describe ".matcher" do
-    specify { expect(described_class.matcher).to match "#" }
-    specify { expect(described_class.matcher).not_to match "h" }
-  end
-
   describe ".symbol?" do
     specify { expect(described_class).to be_symbol("#") }
     specify { expect(described_class).to be_symbol("♯") }
     specify { expect(described_class).not_to be_symbol("j") }
+  end
+
+  describe "Named module integration" do
+    describe "#name" do
+      specify { expect(described_class.get(:sharp).name).to eq "sharp" }
+      specify { expect(described_class.get(:flat).name).to eq "flat" }
+      specify { expect(described_class.get(:double_sharp).name).to eq "double sharp" }
+      specify { expect(described_class.get(:double_flat).name).to eq "double flat" }
+      specify { expect(described_class.get(:natural).name).to eq "natural" }
+    end
+
+    describe ".get_by_name" do
+      specify { expect(described_class.get_by_name("sharp")).to eq described_class.get(:sharp) }
+      specify { expect(described_class.get_by_name("flat")).to eq described_class.get(:flat) }
+      specify { expect(described_class.get_by_name("natural")).to eq described_class.get(:natural) }
+    end
+  end
+
+  describe "Parsable module integration" do
+    describe ".parse" do
+      specify { expect(described_class.parse("#")).to eq described_class.get(:sharp) }
+      specify { expect(described_class.parse("♯")).to eq described_class.get(:sharp) }
+      specify { expect(described_class.parse("b")).to eq described_class.get(:flat) }
+      specify { expect(described_class.parse("♭")).to eq described_class.get(:flat) }
+      specify { expect(described_class.parse("x")).to eq described_class.get(:double_sharp) }
+      specify { expect(described_class.parse("𝄪")).to eq described_class.get(:double_sharp) }
+      specify { expect(described_class.parse("bb")).to eq described_class.get(:double_flat) }
+      specify { expect(described_class.parse("𝄫")).to eq described_class.get(:double_flat) }
+      specify { expect(described_class.parse("")).to be_nil }
+
+      context "when given an Alteration instance" do
+        let(:alteration) { described_class.get(:sharp) }
+
+        specify { expect(described_class.parse(alteration)).to be alteration }
+      end
+    end
+
+    describe ".from_string" do
+      specify { expect(described_class.from_string("#")).to eq described_class.get(:sharp) }
+      specify { expect(described_class.from_string("sharp")).to eq described_class.get(:sharp) }
+      specify { expect(described_class.from_string("invalid")).to be_nil }
+    end
+
+    describe "::MATCHER" do
+      specify { expect(described_class::MATCHER).to match "#" }
+      specify { expect(described_class::MATCHER).to match "♯" }
+      specify { expect(described_class::MATCHER).to match "b" }
+      specify { expect(described_class::MATCHER).to match "♭" }
+      specify { expect(described_class::MATCHER).to match "x" }
+      specify { expect(described_class::MATCHER).to match "𝄪" }
+      specify { expect(described_class::MATCHER).to match "bb" }
+      specify { expect(described_class::MATCHER).to match "𝄫" }
+      specify { expect(described_class::MATCHER).not_to match "h" }
+      specify { expect(described_class::MATCHER).not_to match "" }
+
+      specify { expect(described_class::MATCHER).to eq(/(?-mix:♯|\#|♭|b|♮|𝄪|x|𝄫|bb)/) }
+    end
   end
 end

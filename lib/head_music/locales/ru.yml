@@ -1,5 +1,11 @@
 ru:
   head_music:
+    alterations:
+      sharp: диез
+      flat: бемоль
+      natural: бекар
+      double_sharp: дубль-диез
+      double_flat: дубль-бемоль
     chromatic_intervals:
       perfect_unison: чистый унисон
       minor_second: малая секунда

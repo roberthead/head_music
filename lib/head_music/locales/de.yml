@@ -1,5 +1,11 @@
 de:
   head_music:
+    alterations:
+      sharp: Kreuz
+      flat: Be
+      natural: Auflösungszeichen
+      double_sharp: Doppelkreuz
+      double_flat: Doppel-Be
     chromatic_intervals:
       perfect_unison: reine Prime
       minor_second: kleine Sekunde

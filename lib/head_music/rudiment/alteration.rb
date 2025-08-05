@@ -7,6 +7,8 @@ module HeadMusic::Rudiment; end
 # In French, sharps and flats in the key signature are called "altérations".
 class HeadMusic::Rudiment::Alteration
   include Comparable
+  include HeadMusic::Named
+  include HeadMusic::Parsable
 
   attr_reader :identifier, :cents, :musical_symbols
 
@@ -36,6 +38,8 @@ class HeadMusic::Rudiment::Alteration
   ].freeze
 
   ALTERATION_IDENTIFIERS = ALTERATION_RECORDS.map { |attributes| attributes[:identifier] }.freeze
+  SYMBOLS = ALTERATION_RECORDS.map { |attributes| attributes[:symbols].map { |symbol| [symbol[:unicode], symbol[:ascii]] } }.flatten.freeze
+  MATCHER = /#{Regexp.union(SYMBOLS.reject { |s| s.nil? || s.empty? })}/
 
   def self.all
     ALTERATION_RECORDS.map { |attributes| new(attributes) }
@@ -45,18 +49,14 @@ class HeadMusic::Rudiment::Alteration
     @symbols ||= all.map { |alteration| [alteration.ascii, alteration.unicode] }.flatten.reject { |s| s.nil? || s.empty? }
   end
 
-  def self.matcher
-    @matcher ||= Regexp.new symbols.join("|")
-  end
-
   def self.symbol?(candidate)
-    candidate =~ /^(#{matcher})$/
+    SYMBOLS.include?(candidate)
   end
 
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::Rudiment::Alteration)
 
-    all.detect do |alteration|
+    parse(identifier) || all.detect do |alteration|
       alteration.representions.include?(identifier)
     end
   end
@@ -67,8 +67,24 @@ class HeadMusic::Rudiment::Alteration
     end
   end
 
-  def name
-    identifier.to_s.tr("_", " ")
+  def self.from_string(string)
+    string = string.to_s.strip
+    all.detect do |alteration|
+      alteration.representions.include?(string)
+    end
+  end
+
+  def self.get_by_name(name)
+    all.detect { |alteration| alteration.name == name.to_s }
+  end
+
+  # Override from Parsable - Alteration doesn't parse pitched items
+  def self.parse_pitched_item(input)
+    nil
+  end
+
+  def name(locale_code: I18n.locale)
+    super || identifier.to_s.tr("_", " ")
   end
 
   def representions
@@ -103,6 +119,13 @@ class HeadMusic::Rudiment::Alteration
     @identifier = attributes[:identifier]
     @cents = attributes[:cents]
     initialize_musical_symbols(attributes[:symbols])
+    initialize_localized_names
+  end
+
+  def initialize_localized_names
+    # Initialize default English names
+    ensure_localized_name(name: identifier.to_s.tr("_", " "), locale_code: :en)
+    # Additional localized names will be loaded from locale files
   end
 
   def initialize_musical_symbols(list)
