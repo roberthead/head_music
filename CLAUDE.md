@@ -140,7 +140,7 @@ The rudiments of music theory are built up piece-by-piece.
 letter name
    — C, D, E, F, G, A, B, …
    - equivalent to:
-      - do, re, mi, fa, sol, la, ti, …
+      - do, re, mi, fa, sol, la, si/ti, …
 
 alteration
    - sharp, flat, double sharp, double flat
@@ -165,15 +165,30 @@ pitch
    - spelling + register
    - example: "E♭3"
 
-duration
-   - rythmic value
+rhythmic unit
+   - duration
    - expressed in fractions (or multiples) of a standard whole note
       - whole, half, quarter, eighth, sixteenth, …
-   - can be extended with augmentation dots
+      - breve, …
+
+rhythmic value (duration)
+   - a rhythmic unit plus optional augmentation dots
+   - augmentation dots extend the duration of the rhythmic unit
       - one dot extends the rhythmic value 50%
       - two dots extend the rhythmic value 75%
       - two dots extend the rhythmic value 87.5%
 
+rest
+   - a rhythmic value that passes in silence
+
+unpitched note
+   - an unpitched percussion note, such as a drum hit
+   - a sounded rhythmic value without a specific pitch
+
 note
-   - pitch + duration
-   - example: "E♭3 quarter note"
+   - pitch + rhythmic value
+   - example: "E♭3 dotted quarter"
+
+tied duration
+   - combines multiple rhythmic values into one longer note
+   - ties allow rhythmic values to be combined across barlines or strong beats
