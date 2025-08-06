@@ -3,6 +3,8 @@ module HeadMusic::Content; end
 
 # A rhythmic value is a duration composed of a rhythmic unit, any number of dots, and a tied value.
 class HeadMusic::Content::RhythmicValue
+  include Comparable
+
   attr_reader :unit, :dots, :tied_value
 
   delegate :name, to: :unit, prefix: true
@@ -101,5 +103,9 @@ class HeadMusic::Content::RhythmicValue
 
   def to_s
     name.tr("_", "-")
+  end
+
+  def <=>(other)
+    total_value <=> other.total_value
   end
 end

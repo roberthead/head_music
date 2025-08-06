@@ -11,7 +11,7 @@ module HeadMusic::Parsable
     def parse(input)
       return input if input.is_a?(self)
 
-      parse_pitched_item(input) || parse_string(input) || parse_other(input)
+      from_pitched_item(input) || parse_string(input) || parse_other(input)
     end
 
     def from_pitched_item(input)

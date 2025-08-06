@@ -41,6 +41,12 @@ bundle exec rake doc
 bundle exec rake doc_stats
 ```
 
+### Git Etiquette
+
+When composing git commit messages, follow best-practices. However, do not mention yourself (claude) or list yourself as a co-author.
+
+This project uses a rebase flow.
+
 ### Linting and Formatting
 
 The project uses Standard Ruby for style enforcement. Always run linting before committing:

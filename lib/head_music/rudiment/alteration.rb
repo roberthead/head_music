@@ -78,8 +78,7 @@ class HeadMusic::Rudiment::Alteration
     all.detect { |alteration| alteration.name == name.to_s }
   end
 
-  # Override from Parsable - Alteration doesn't parse pitched items
-  def self.parse_pitched_item(input)
+  def self.from_pitched_item(input)
     nil
   end
 
