@@ -2,6 +2,10 @@
 module HeadMusic::Content; end
 
 # A composition is musical content.
+# The constructor accepts:
+#   A name.
+#   The initial key_signature.
+#   The initial meter.
 class HeadMusic::Content::Composition
   attr_reader :name, :key_signature, :meter, :voices
 
