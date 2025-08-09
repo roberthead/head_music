@@ -39,7 +39,8 @@ class HeadMusic::Rudiment::Alteration
 
   ALTERATION_IDENTIFIERS = ALTERATION_RECORDS.map { |attributes| attributes[:identifier] }.freeze
   SYMBOLS = ALTERATION_RECORDS.map { |attributes| attributes[:symbols].map { |symbol| [symbol[:unicode], symbol[:ascii]] } }.flatten.freeze
-  MATCHER = /#{Regexp.union(SYMBOLS.reject { |s| s.nil? || s.empty? })}/
+  PATTERN = /#{Regexp.union(SYMBOLS.reject { |s| s.nil? || s.empty? })}/
+  MATCHER = /^\s*#{PATTERN}\s*$/
 
   def self.all
     ALTERATION_RECORDS.map { |attributes| new(attributes) }

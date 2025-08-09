@@ -104,6 +104,21 @@ describe HeadMusic::Rudiment::Alteration do
       specify { expect(described_class.from_string("invalid")).to be_nil }
     end
 
+    describe "::PATTERN" do
+      specify { expect(described_class::PATTERN).to match "C#3" }
+      specify { expect(described_class::PATTERN).to match "G♯" }
+      specify { expect(described_class::PATTERN).to match "Bb" }
+      specify { expect(described_class::PATTERN).to match "E♭5" }
+      specify { expect(described_class::PATTERN).to match "Bx" }
+      specify { expect(described_class::PATTERN).to match "B𝄪" }
+      specify { expect(described_class::PATTERN).to match "Fbb" }
+      specify { expect(described_class::PATTERN).to match "F𝄫" }
+      specify { expect(described_class::PATTERN).not_to match "h" }
+      specify { expect(described_class::PATTERN).not_to match "" }
+
+      specify { expect(described_class::PATTERN).to eq(/(?-mix:♯|\#|♭|b|♮|𝄪|x|𝄫|bb)/) }
+    end
+
     describe "::MATCHER" do
       specify { expect(described_class::MATCHER).to match "#" }
       specify { expect(described_class::MATCHER).to match "♯" }
@@ -113,10 +128,14 @@ describe HeadMusic::Rudiment::Alteration do
       specify { expect(described_class::MATCHER).to match "𝄪" }
       specify { expect(described_class::MATCHER).to match "bb" }
       specify { expect(described_class::MATCHER).to match "𝄫" }
+
       specify { expect(described_class::MATCHER).not_to match "h" }
       specify { expect(described_class::MATCHER).not_to match "" }
 
-      specify { expect(described_class::MATCHER).to eq(/(?-mix:♯|\#|♭|b|♮|𝄪|x|𝄫|bb)/) }
+      specify { expect(described_class::MATCHER).not_to match "C#3" }
+      specify { expect(described_class::MATCHER).not_to match "E♭" }
+
+      specify { expect(described_class::MATCHER).to eq(/^\s*(?-mix:♯|\#|♭|b|♮|𝄪|x|𝄫|bb)\s*$/) }
     end
   end
 end
