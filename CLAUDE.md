@@ -47,7 +47,7 @@ Do not make a commit unless I ask you to.
 
 When composing git commit messages, follow best-practices. However, do not mention yourself (claude) or list yourself as a co-author.
 
-This project uses a rebase flow.
+This project uses a rebase flow and `main` as the mainline branch.
 
 ### Linting and Formatting
 
