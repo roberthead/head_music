@@ -1,4 +1,18 @@
+---
 en_GB:
   head_music:
+    rhythmic_units:
+      two_hundred_fifty_sixth: demisemihemidemisemiquaver
+      hundred_twenty_eighth: semihemidemisemiquaver
+      sixty_fourth: hemidemisemiquaver
+      thirty_second: demisemiquaver
+      sixteenth: semiquaver
+      eighth: quaver
+      quarter: crotchet
+      half: minim
+      whole: semibreve
+      double_whole: breve
+      longa: longa
+      maxima: maxima
     rudiments:
       grand_staff: great staff

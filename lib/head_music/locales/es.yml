@@ -1,25 +1,26 @@
+---
 es:
   head_music:
     alterations:
-      sharp: sostenido
+      double_flat: doble bemol
+      double_sharp: doble sostenido
       flat: bemol
       natural: becuadro
-      double_sharp: doble sostenido
-      double_flat: doble bemol
+      sharp: sostenido
     chromatic_intervals:
-      perfect_unison: unísono perfecto
-      minor_second: segunda menor
       major_second: segunda mayor
-      minor_third: tercera menor
-      major_third: tercera mayor
-      perfect_fourth: cuarta justa
-      tritone: tritono
-      perfect_fifth: quinta justa
-      minor_sixth: sexta menor
-      major_sixth: sexta mayor
-      minor_seventh: séptima menor
       major_seventh: séptima mayor
+      major_sixth: sexta mayor
+      major_third: tercera mayor
+      minor_second: segunda menor
+      minor_seventh: séptima menor
+      minor_sixth: sexta menor
+      minor_third: tercera menor
+      perfect_fifth: quinta justa
+      perfect_fourth: cuarta justa
       perfect_octave: octava justa
+      perfect_unison: unísono perfecto
+      tritone: tritono
     clefs:
       alto_clef: clave contralto
       baritone_c_clef: clave de barítono
@@ -101,6 +102,7 @@ es:
       alto_flute: flauta alto
       alto_recorder: flauta dulce alto
       alto_saxophone: saxofón alto
+      alto_ukulele: ukelele alto
       alto_voice: contralto
       arpeggione: arpeggione
       bagpipe: gaita
@@ -108,6 +110,7 @@ es:
       baritone_horn: bombardino barítono
       baritone_oboe: oboe barítono
       baritone_saxophone: saxofón barítono
+      baritone_ukulele: ukelele barítono
       baritone_voice: barítono
       bass: bajo
       bass_clarinet: clarinete bajo
@@ -119,6 +122,7 @@ es:
       bass_trombone: trombón bajo
       bass_trumpet: trompeta baja
       bass_tuba: tuba baja
+      bass_ukulele: ukelele bajo
       bass_voice: bajo
       basset_horn: clarinete bajo
       basset_recorder: flauta dulce bajo
@@ -136,6 +140,7 @@ es:
       clavichord: clavicordio
       concert_bells: carillón orquestal
       concert_cymbals: platillos de orquesta
+      concert_ukulele: ukelele concierto
       contra_great_bass_recorder: flauta dulce contrabajo
       contrabass: contrabajo
       contrabass_clarinet: clarinete contrabajo
@@ -171,8 +176,8 @@ es:
       great_highland_bagpipe: gaita escocesa
       guitar: guitarra
       hammered_dulcimer: salterio
-      harp: arpa
       harmonica: armónica
+      harp: arpa
       harpsichord: clavecín
       hautbois_d_amour: oboe de amor
       hi-hat: charles
@@ -204,7 +209,9 @@ es:
       piccolo_recorder: flauta dulce piccolo
       piccolo_saxophone: saxofón piccolo
       piccolo_trumpet: trompeta piccolo
+      piccolo_ukulele: ukelele piccolo
       pipe_organ: órgano de tubos
+      pocket_ukulele: ukelele de bolsillo
       quart_bass_recorder: flauta dulce bajo cuarteto
       recorder: flauta dulce
       ride_cymbal: platillo de conducción
@@ -220,6 +227,7 @@ es:
       soprano_clarinet: clarinete soprano
       soprano_recorder: flauta dulce soprano
       soprano_saxophone: saxofón soprano
+      soprano_ukulele: ukelele soprano
       soprano_voice: voz de soprano
       soprillo: soprillo
       sousaphone: sousafón
@@ -243,6 +251,7 @@ es:
       tenor_saxophone: saxofón tenor
       tenor_trombone: trombón tenor
       tenor_tuba: tuba tenor
+      tenor_ukulele: ukelele tenor
       tenor_voice: voz de tenor
       theremin: theremín
       timpani: tímpanos
@@ -256,14 +265,6 @@ es:
       tuba: tuba
       tubular_bells: campanas tubulares
       ukulele: ukelele
-      alto_ukulele: ukelele alto
-      baritone_ukulele: ukelele barítono
-      bass_ukulele: ukelele bajo
-      concert_ukulele: ukelele concierto
-      piccolo_ukulele: ukelele piccolo
-      pocket_ukulele: ukelele de bolsillo
-      soprano_ukulele: ukelele soprano
-      tenor_ukulele: ukelele tenor
       vibes: vibráfono
       vibraphone: vibráfono
       viola: viola
@@ -282,6 +283,19 @@ es:
       fr: francés
       it: italiano
       ru: ruso
+    rhythmic_units:
+      two_hundred_fifty_sixth: semigarrapatea
+      hundred_twenty_eighth: garrapatea
+      sixty_fourth: semifusa
+      thirty_second: fusa
+      sixteenth: semicorchea
+      eighth: corchea
+      quarter: negra
+      half: blanca
+      whole: redonda
+      double_whole: breve
+      longa: longa
+      maxima: máxima
     rudiments:
       alteration: alteración
       chromatic_interval: intervalo cromático
@@ -293,6 +307,7 @@ es:
       harmonic_interval: intervalo armónico
       instrument: instrumento
       interval_cycle: ciclo de intervalos
+      key: tonalidad
       key_signature: armadura de clave
       letter_name: nombre de la nota
       melodic_interval: intervalo melódico

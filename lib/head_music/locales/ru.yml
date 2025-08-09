@@ -1,25 +1,26 @@
+---
 ru:
   head_music:
     alterations:
-      sharp: диез
+      double_flat: дубль-бемоль
+      double_sharp: дубль-диез
       flat: бемоль
       natural: бекар
-      double_sharp: дубль-диез
-      double_flat: дубль-бемоль
+      sharp: диез
     chromatic_intervals:
-      perfect_unison: чистый унисон
-      minor_second: малая секунда
       major_second: большая секунда
-      minor_third: малая терция
-      major_third: большая терция
-      perfect_fourth: чистая кварта
-      tritone: тритон
-      perfect_fifth: чистая квинта
-      minor_sixth: малая секста
-      major_sixth: большая секста
-      minor_seventh: малая септима
       major_seventh: большая септима
+      major_sixth: большая секста
+      major_third: большая терция
+      minor_second: малая секунда
+      minor_seventh: малая септима
+      minor_sixth: малая секста
+      minor_third: малая терция
+      perfect_fifth: чистая квинта
+      perfect_fourth: чистая кварта
       perfect_octave: чистая октава
+      perfect_unison: чистый унисон
+      tritone: тритон
     instrument_classifications:
       aerophone: аэрофон
       bowed: смычковые
@@ -62,14 +63,17 @@ ru:
       alto_clarinet: альт-кларнет
       alto_recorder: альтовая флейта
       alto_saxophone: альт-саксофон
+      alto_ukulele: альтовая укулеле
       arpeggione: арпеджионе
       banjo: банджо
       baritone_horn: баритон рог
       baritone_oboe: баритоновый гобой
+      baritone_ukulele: баритон-укулеле
       baritone_voice: баритон
       bass_clarinet: бас-кларнет
       bass_drum: большой барабан
       bass_trombone: бас-тромбон
+      bass_ukulele: бас-укулеле
       bassoon: фагот
       bells: колокола
       bugle: сигнальный рожок
@@ -84,6 +88,7 @@ ru:
       clavichord: клавикорд
       concert_bells: концертные колокола
       concert_cymbals: концертные тарелки
+      concert_ukulele: концертная укулеле
       contra_great_bass_recorder: контрабасовая флейта
       contrabass: контрабас
       contrabass_clarinet: контрабас-кларнет
@@ -119,8 +124,8 @@ ru:
       great_highland_bagpipe: великая шотландская волынка
       guitar: гитара
       hammered_dulcimer: цимбалы
-      harp: арфа
       harmonica: губная гармоника
+      harp: арфа
       harpsichord: клавесин
       hautbois_d_amour: гобой д'амур
       hi-hat: хай-хет
@@ -151,7 +156,9 @@ ru:
       piccolo_recorder: пикколо-флейта
       piccolo_saxophone: пикколо-саксофон
       piccolo_trumpet: пикколо-труба
+      piccolo_ukulele: пикколо-укулеле
       pipe_organ: трубный орган
+      pocket_ukulele: карманная укулеле
       quart_bass_recorder: кварт-басовая флейта
       recorder: блокфлейта
       ride_cymbal: райд-тарелка
@@ -166,6 +173,7 @@ ru:
       soprano_clarinet: сопрано-кларнет
       soprano_recorder: сопрано флейта
       soprano_saxophone: сопрано-саксофон
+      soprano_ukulele: укулеле-сопрано
       soprano_voice: сопрано
       soprillo: соприлло
       sousaphone: сузафон
@@ -189,6 +197,7 @@ ru:
       tenor_saxophone: тенор-саксофон
       tenor_trombone: теноровый тромбон
       tenor_tuba: теноровая туба
+      tenor_ukulele: теноровая укулеле
       tenor_voice: тенор
       theremin: терменвокс
       timpani: тимпаны
@@ -202,14 +211,6 @@ ru:
       tuba: туба
       tubular_bells: трубчатые колокола
       ukulele: укулеле
-      alto_ukulele: альтовая укулеле
-      baritone_ukulele: баритон-укулеле
-      bass_ukulele: бас-укулеле
-      concert_ukulele: концертная укулеле
-      piccolo_ukulele: пикколо-укулеле
-      pocket_ukulele: карманная укулеле
-      soprano_ukulele: укулеле-сопрано
-      tenor_ukulele: теноровая укулеле
       vibes: вибрафон
       vibraphone: вибрафон
       viola: альт
@@ -228,6 +229,19 @@ ru:
       fr: Французский
       it: Итальянский
       ru: Русский
+    rhythmic_units:
+      two_hundred_fifty_sixth: двести пятьдесят шестая
+      hundred_twenty_eighth: сто двадцать восьмая
+      sixty_fourth: шестьдесят четвертая
+      thirty_second: тридцать вторая
+      sixteenth: шестнадцатая
+      eighth: восьмая
+      quarter: четвертная
+      half: половинная
+      whole: целая
+      double_whole: двойная целая
+      longa: лонга
+      maxima: максима
     rudiments:
       alteration: альтерация
       chromatic_interval: хроматический интервал
@@ -239,7 +253,8 @@ ru:
       harmonic_interval: гармонический интервал
       instrument: инструмент
       interval_cycle: цикл интервалов
-      key_signature: тональность
+      key: тональность
+      key_signature: знаки при ключе
       letter_name: названия нот
       melodic_interval: мелодический интервал
       meter: метр

@@ -1,25 +1,26 @@
+---
 it:
   head_music:
     alterations:
-      sharp: diesis
+      double_flat: doppio bemolle
+      double_sharp: doppio diesis
       flat: bemolle
       natural: bequadro
-      double_sharp: doppio diesis
-      double_flat: doppio bemolle
+      sharp: diesis
     chromatic_intervals:
-      perfect_unison: unisono perfetto
-      minor_second: seconda minore
       major_second: seconda maggiore
-      minor_third: terza minore
-      major_third: terza maggiore
-      perfect_fourth: quarta giusta
-      tritone: tritono
-      perfect_fifth: quinta giusta
-      minor_sixth: sesta minore
-      major_sixth: sesta maggiore
-      minor_seventh: settima minore
       major_seventh: settima maggiore
+      major_sixth: sesta maggiore
+      major_third: terza maggiore
+      minor_second: seconda minore
+      minor_seventh: settima minore
+      minor_sixth: sesta minore
+      minor_third: terza minore
+      perfect_fifth: quinta giusta
+      perfect_fourth: quarta giusta
       perfect_octave: ottava perfetta
+      perfect_unison: unisono perfetto
+      tritone: tritono
     clefs:
       alto_clef: chiave di contralto
       baritone_c_clef: chiave di baritono
@@ -27,7 +28,6 @@ it:
       baritone_f_clef: chiave di baritono
       bass_clef: chiave di basso
       c_clef: chiave di do
-      vocal_tenor_clef: chiave di sol in ottava
       contrabass_clef: chiave di contrabbasso
       countertenor_clef: chiave di controtenore
       double_treble_clef: chiave di sol in ottava
@@ -58,6 +58,7 @@ it:
       treble_clef: chiave di violino
       viola_clef: chiave di viola
       violin_clef: chiave di violino
+      vocal_tenor_clef: chiave di sol in ottava
     instrument_classifications:
       aerophone: aerofono
       bowed: ad arco
@@ -105,6 +106,7 @@ it:
       alto_flute: flauto contralto
       alto_recorder: flauto dolce contralto
       alto_saxophone: sassofono contralto
+      alto_ukulele: ukulele contralto
       alto_voice: contralto
       arpeggione: arpeggione
       bagpipe: cornamusa
@@ -112,6 +114,7 @@ it:
       baritone_horn: flicorno baritono
       baritone_oboe: oboe baritono
       baritone_saxophone: sassofono baritono
+      baritone_ukulele: ukulele baritono
       baritone_voice: baritono
       bass: contrabbasso
       bass_clarinet: clarinetto basso
@@ -123,6 +126,7 @@ it:
       bass_trombone: trombono basso
       bass_trumpet: tromba bassa
       bass_tuba: tuba bassa
+      bass_ukulele: ukulele basso
       bass_voice: basso
       basset_horn: corno di bassetto
       basset_recorder: bassetto flauto dolce
@@ -140,6 +144,7 @@ it:
       clavichord: clavicordo
       concert_bells: campane da concerto
       concert_cymbals: piatti concertanti
+      concert_ukulele: ukulele concerto
       contra-great_bass_recorder: doppio grande flauto basso
       contrabass: contrabbasso
       contrabass_clarinet: clarinetto contrabbasso
@@ -173,8 +178,8 @@ it:
       great_highland_bagpipe: cornamusa scozzese
       guitar: chitarra
       hammered_dulcimer: salterio martellato
-      harp: arpa
       harmonica: armonica
+      harp: arpa
       harpsichord: clavicembalo
       hautbois_d_amour: oboe d'amore
       hi-hat: hi-hat
@@ -206,7 +211,9 @@ it:
       piccolo_recorder: flauto dolce piccolo
       piccolo_saxophone: sassofono piccolo
       piccolo_trumpet: tromba piccola
+      piccolo_ukulele: ukulele piccolo
       pipe_organ: organo a canne
+      pocket_ukulele: ukulele tascabile
       quart_bass_recorder: flauto basso a quart
       recorder: flauto dolce
       ride_cymbal: piatto ride
@@ -219,6 +226,7 @@ it:
       sopranissimo_recorder: flauto dolce sopranissimo
       sopranissimo_saxophone: sassofono sopranissimo
       soprano_saxophone: sassofono soprano
+      soprano_ukulele: ukulele soprano
       soprano_voice: soprano
       soprillo: soprillo
       sousaphone: sousafono
@@ -242,6 +250,7 @@ it:
       tenor_saxophone: sassofono tenore
       tenor_trombone: trombone tenore
       tenor_tuba: tuba tenore
+      tenor_ukulele: ukulele tenore
       tenor_voice: tenore
       theremin: theremin
       timpani: timpani
@@ -255,14 +264,6 @@ it:
       tuba: tuba
       tubular_bells: campane tubolari
       ukulele: ukulele
-      alto_ukulele: ukulele contralto
-      baritone_ukulele: ukulele baritono
-      bass_ukulele: ukulele basso
-      concert_ukulele: ukulele concerto
-      piccolo_ukulele: ukulele piccolo
-      pocket_ukulele: ukulele tascabile
-      soprano_ukulele: ukulele soprano
-      tenor_ukulele: ukulele tenore
       vibes: vibrafono
       vibraphone: vibrafono
       viola: viola
@@ -281,6 +282,19 @@ it:
       fr: francese
       it: italiano
       ru: russo
+    rhythmic_units:
+      two_hundred_fifty_sixth: semifusa
+      hundred_twenty_eighth: fusa
+      sixty_fourth: semibiscroma
+      thirty_second: biscroma
+      sixteenth: semicroma
+      eighth: croma
+      quarter: semiminima
+      half: minima
+      whole: semibreve
+      double_whole: breve
+      longa: longa
+      maxima: massima
     rudiments:
       alteration: alterazione
       chromatic_interval: intervallo cromatico
@@ -292,6 +306,7 @@ it:
       harmonic_interval: intervallo armonico
       instrument: strumento
       interval_cycle: ciclo di intervalli
+      key: tonalità
       key_signature: armatura di chiave
       letter_name: nome della nota
       melodic_interval: intervallo melodico

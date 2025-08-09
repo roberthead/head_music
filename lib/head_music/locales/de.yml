@@ -1,25 +1,26 @@
+---
 de:
   head_music:
     alterations:
-      sharp: Kreuz
+      double_flat: Doppel-Be
+      double_sharp: Doppelkreuz
       flat: Be
       natural: Auflösungszeichen
-      double_sharp: Doppelkreuz
-      double_flat: Doppel-Be
+      sharp: Kreuz
     chromatic_intervals:
-      perfect_unison: reine Prime
-      minor_second: kleine Sekunde
       major_second: große Sekunde
-      minor_third: kleine Terz
-      major_third: große Terz
-      perfect_fourth: reine Quarte
-      tritone: Tritonus
-      perfect_fifth: reine Quinte
-      minor_sixth: kleine Sexte
-      major_sixth: große Sexte
-      minor_seventh: kleine Septime
       major_seventh: große Septime
+      major_sixth: große Sexte
+      major_third: große Terz
+      minor_second: kleine Sekunde
+      minor_seventh: kleine Septime
+      minor_sixth: kleine Sexte
+      minor_third: kleine Terz
+      perfect_fifth: reine Quinte
+      perfect_fourth: reine Quarte
       perfect_octave: reine Oktave
+      perfect_unison: reine Prime
+      tritone: Tritonus
     clefs:
       alto_clef: Altschlüssel
       baritone_c_clef: Baritonschlüssel
@@ -27,7 +28,6 @@ de:
       baritone_f_clef: Baritonschlüssel
       bass_clef: Bassschlüssel
       c_clef: C-Schlüssel
-      vocal_tenor_clef: oktavierten Violinschlüssel
       contrabass_clef: contrabass clef
       countertenor_clef: countertenor clef
       double_treble_clef: double treble clef
@@ -58,6 +58,7 @@ de:
       treble_clef: Violinschlüssel
       viola_clef: Bratschenschlüssel
       violin_clef: Violinschlüssel
+      vocal_tenor_clef: oktavierten Violinschlüssel
     instrument_classifications:
       aerophone: Aerophon
       bowed: Streichinstrument
@@ -105,6 +106,7 @@ de:
       alto_flute: Altflöte
       alto_recorder: Altblockflöte
       alto_saxophone: Altsaxophon
+      alto_ukulele: Alt-Ukulele
       alto_voice: Alt
       arpeggione: Arpeggione
       bagpipe: Dudelsack
@@ -112,6 +114,7 @@ de:
       baritone_horn: Baritonhorn
       baritone_oboe: Baritonoboe
       baritone_saxophone: Baritonsaxophon
+      baritone_ukulele: Bariton-Ukulele
       baritone_voice: Bariton
       bass: Bass
       bass_clarinet: Bassklarinette
@@ -123,6 +126,7 @@ de:
       bass_trombone: Bassposaune
       bass_trumpet: Basstrompete
       bass_tuba: Basstuba
+      bass_ukulele: Bass-Ukulele
       bass_voice: Bass
       basset_horn: Bassetthorn
       basset_recorder: Bassetblockflöte
@@ -140,6 +144,7 @@ de:
       clavichord: Klavichord
       concert_bells: Konzertglocken
       concert_cymbals: Konzertbecken
+      concert_ukulele: Konzert-Ukulele
       contra_great_bass_recorder: Großbassblockflöte
       contrabass: Kontrabass
       contrabass_clarinet: Kontrabassklarinette
@@ -174,8 +179,8 @@ de:
       great_bass_recorder: Großbassblockflöte
       guitar: Gitarre
       hammered_dulcimer: Hackbrett
-      harp: Harfe
       harmonica: Mundharmonika
+      harp: Harfe
       harpsichord: Cembalo
       hautbois_d_amour: Liebeshoboe
       hi-hat: Hi-Hat
@@ -184,8 +189,8 @@ de:
       kick_drum: Große Trommel
       lute: Laute
       mandolin: Mandoline
-      marimba: Marimbaphon
       maracas: Maracas
+      marimba: Marimbaphon
       metal_block: Metallblock
       mezzo: Mezzo
       mezzo_soprano: Mezzosopran
@@ -207,7 +212,9 @@ de:
       piccolo_recorder: Piccoloblockflöte
       piccolo_saxophone: Piccolosaxophon
       piccolo_trumpet: Piccolotrompete
+      piccolo_ukulele: Piccolo-Ukulele
       pipe_organ: Orgel
+      pocket_ukulele: Pocket-Ukulele
       recorder: Blockflöte
       ride_cymbal: Ride-Becken
       saxophone: Saxophon
@@ -223,6 +230,7 @@ de:
       soprano_clarinet: Sopranklarinette
       soprano_recorder: Sopranblockflöte
       soprano_saxophone: Sopransaxophon
+      soprano_ukulele: Sopran-Ukulele
       soprano_voice: Sopran
       soprillo: Sopranissimo
       sousaphone: Sousaphon
@@ -237,8 +245,8 @@ de:
       synthesizer: Synthesizer
       tabla: Tabla
       tabor: Tamburin
-      tambourine: Tamburin
       tam_tam: Tamtam
+      tambourine: Tamburin
       temple_blocks: Tempelblock
       tenor: Tenor
       tenor_drum: Tenortrommel
@@ -246,6 +254,7 @@ de:
       tenor_saxophone: Tenorsaxophon
       tenor_trombone: Tenorposaune
       tenor_tuba: Tenortuba
+      tenor_ukulele: Tenor-Ukulele
       tenor_voice: Tenor
       theremin: Theremin
       timpani: Pauken
@@ -257,16 +266,8 @@ de:
       trombone: Posaune
       trumpet: Trompete
       tuba: Tuba
-      ukulele: Ukulele
-      alto_ukulele: Alt-Ukulele
-      baritone_ukulele: Bariton-Ukulele
-      bass_ukulele: Bass-Ukulele
-      concert_ukulele: Konzert-Ukulele
-      piccolo_ukulele: Piccolo-Ukulele
-      pocket_ukulele: Pocket-Ukulele
-      soprano_ukulele: Sopran-Ukulele
-      tenor_ukulele: Tenor-Ukulele
       tubular_bells: Rohrenglocke
+      ukulele: Ukulele
       vibes: Vibraphon
       vibraphone: Vibraphon
       viola: Bratsche
@@ -288,6 +289,19 @@ de:
     reference_pitches:
       chamber_tone: Kammerton
       choir_tone: Chorton
+    rhythmic_units:
+      two_hundred_fifty_sixth: Zweihundertsechsundfünfzigstel
+      hundred_twenty_eighth: Hundertachtundzwanzigstel
+      sixty_fourth: Vierundsechzigstel
+      thirty_second: Zweiunddreißigstel
+      sixteenth: Sechzehntel
+      eighth: Achtel
+      quarter: Viertel
+      half: Halbe
+      whole: Ganze
+      double_whole: Brevis
+      longa: Longa
+      maxima: Maxima
     rudiments:
       alteration: Alteration
       chromatic_interval: chromatisches Intervall
@@ -299,7 +313,8 @@ de:
       harmonic_interval: harmonisches Intervall
       instrument: Instrument
       interval_cycle: Intervallkreis
-      key_signature: Tonart
+      key: Tonart
+      key_signature: Vorzeichen
       letter_name: Buchstabenname
       melodic_interval: melodisches Intervall
       meter: Takt
