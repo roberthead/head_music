@@ -49,13 +49,17 @@ When composing git commit messages, follow best-practices. However, do not menti
 
 This project uses a rebase flow and `main` as the mainline branch.
 
-### Linting and Formatting
+### Code Style, Linting, and Formatting
 
-The project uses Standard Ruby for style enforcement. Always run linting before committing:
+The project uses Standard Ruby for style enforcement. Always run linting after editing or before committing.
 
 ```bash
-bundle exec rubocop
+bundle exec rubocop -a
 ```
+
+Always strip trailing whitespace from all lines being added or edited. Always include a blank line at the end of each file.
+
+Do not use an assignment inside a condition.
 
 ### Testing
 
@@ -68,25 +72,25 @@ Tests are written in RSpec and located in the `/spec` directory, mirroring the `
 The codebase follows a domain-driven design with clear module boundaries:
 
 1. **HeadMusic::Rudiment** - Core music theory elements
-   - Pitch, Note, Scale, Key, Interval, Chord
-   - Factory methods: `.get()` for most rudiments
+  - Pitch, Note, Scale, Key, Interval, Chord
+  - Factory methods: `.get()` for most rudiments
 
 2. **HeadMusic::Analysis** - Musical analysis tools
-   - Intervals, Chords, Motion analysis
-   - Harmonic and melodic analysis
+  - Intervals, Chords, Motion analysis
+  - Harmonic and melodic analysis
 
 3. **HeadMusic::Content** - Musical composition representation
-   - Composition, Voice, Note, Rest
-   - Rhythmic values and time signatures
+  - Composition, Voice, Note, Rest
+  - Rhythmic values and time signatures
 
 4. **HeadMusic::Instruments** - Instrument definitions
-   - Instrument families and properties
-   - Pitch ranges and transposition
+  - Instrument families and properties
+  - Pitch ranges and transposition
 
 5. **HeadMusic::Style** - Composition rules and guidelines
-   - Counterpoint rules
-   - Voice leading guidelines
-   - Style analysis
+  - Counterpoint rules
+  - Voice leading guidelines
+  - Style analysis
 
 ### Key Design Patterns
 
@@ -123,6 +127,7 @@ The gem supports multiple languages through the HeadMusic::Named mixin:
 - Follow Standard Ruby style guide
 - Use YARD documentation format for public methods
 - Prefer delegation over inheritance
+- Always run `bundle exec rubocop -a` after editing ruby code
 
 ## Common Development Tasks
 
@@ -143,60 +148,4 @@ The gem supports multiple languages through the HeadMusic::Named mixin:
 
 ## Music theory and concepts
 
-The rudiments of music theory are built up piece-by-piece.
-
-letter name
-   — C, D, E, F, G, A, B, …
-   - equivalent to:
-      - do, re, mi, fa, sol, la, si/ti, …
-
-alteration
-   - sharp, flat, double sharp, double flat
-   - optional
-   - none is same as 'natural'
-   - found in key signatures
-   - found in bars as accidentals
-
-spelling
-   - letter name + alteration
-   - example: "E♭"
-
-register
-   - an integer typically between 0 and 8
-   - represents the octaves of an 88-key piano
-   - scientific pitch notation
-      - middle C is C4
-      - increments between B and C
-         - a half step below C4 is B3.
-
-pitch
-   - spelling + register
-   - example: "E♭3"
-
-rhythmic unit
-   - duration
-   - expressed in fractions (or multiples) of a standard whole note
-      - whole, half, quarter, eighth, sixteenth, …
-      - breve, …
-
-rhythmic value (duration)
-   - a rhythmic unit plus optional augmentation dots
-   - augmentation dots extend the duration of the rhythmic unit
-      - one dot extends the rhythmic value 50%
-      - two dots extend the rhythmic value 75%
-      - two dots extend the rhythmic value 87.5%
-
-rest
-   - a rhythmic value that passes in silence
-
-unpitched note
-   - an unpitched percussion note, such as a drum hit
-   - a sounded rhythmic value without a specific pitch
-
-note
-   - pitch + rhythmic value
-   - example: "E♭3 dotted quarter"
-
-tied duration
-   - combines multiple rhythmic values into one longer note
-   - ties allow rhythmic values to be combined across barlines or strong beats
+Please refer to MUSIC_THEORY.md for music theory domain knowledge.
