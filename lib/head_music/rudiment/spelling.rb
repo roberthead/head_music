@@ -5,7 +5,7 @@ module HeadMusic::Rudiment; end
 # Composite of a LetterName and an optional Alteration.
 # Does not include the octave. See Pitch for that.
 class HeadMusic::Rudiment::Spelling
-  MATCHER = /^\s*([A-G])(#{HeadMusic::Rudiment::Alteration::MATCHER}?)(-?\d+)?\s*$/i
+  MATCHER = /^\s*([A-G])(#{HeadMusic::Rudiment::Alteration::PATTERN}?)(-?\d+)?\s*$/i
 
   attr_reader :pitch_class, :letter_name, :alteration
 

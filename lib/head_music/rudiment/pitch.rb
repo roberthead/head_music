@@ -176,11 +176,16 @@ class HeadMusic::Rudiment::Pitch
   end
 
   def octave_adjustment_to(other)
-    (pitch_class_above?(other) ? 1 : 0)
+    # Only apply octave adjustment when pitches are in the same register
+    # and we have a letter name "wrap around" (e.g., B to C in same octave)
+    return 0 unless register == other.register
+
+    # Use letter name positions instead of pitch classes for octave wrap detection
+    ((letter_name.position > other.letter_name.position) ? 1 : 0)
   end
 
   def pitch_class_above?(other)
-    natural_pitch_class_number > other.natural_pitch_class_number
+    pitch_class_number > other.pitch_class_number
   end
 
   def enharmonic_equivalence

@@ -21,7 +21,7 @@ class HeadMusic::Rudiment::Note
 
   # Regex pattern for parsing note strings like "C#4 quarter" or "Eb3 dotted half"
   # Extract the core pattern from Spelling::MATCHER without anchors
-  PITCH_PATTERN = /([A-G])(#{HeadMusic::Rudiment::Alteration::MATCHER.source}?)(-?\d+)?/i
+  PITCH_PATTERN = /([A-G])(#{HeadMusic::Rudiment::Alteration::PATTERN}?)(-?\d+)?/i
   MATCHER = /^\s*(#{PITCH_PATTERN.source})\s+(.+)$/i
 
   def self.get(pitch, rhythmic_value = nil)
