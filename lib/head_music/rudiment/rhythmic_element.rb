@@ -5,6 +5,14 @@ module HeadMusic::Rudiment; end
 # This includes notes (pitched), rests (silence), and unpitched notes (percussion).
 class HeadMusic::Rudiment::RhythmicElement < HeadMusic::Rudiment::Base
   include Comparable
+  include HeadMusic::Parsable
+
+  LetterName = HeadMusic::Rudiment::LetterName
+  Alteration = HeadMusic::Rudiment::Alteration
+  Register = HeadMusic::Rudiment::Register
+  RhythmicValue = HeadMusic::Rudiment::RhythmicValue
+
+  MATCHER = /(#{LetterName::PATTERN})(#{Alteration::PATTERN}?)(#{Register::PATTERN})(#{RhythmicValue::PATTERN})/
 
   attr_reader :rhythmic_value
 

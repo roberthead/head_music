@@ -18,7 +18,7 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
 
   # Regex pattern for parsing note strings like "C#4 quarter" or "Eb3 dotted half"
   # Extract the core pattern from Spelling::MATCHER without anchors
-  PITCH_PATTERN = /([A-G])(#{HeadMusic::Rudiment::Alteration::MATCHER.source}?)(-?\d+)?/i
+  PITCH_PATTERN = /([A-G])(#{HeadMusic::Rudiment::Alteration::PATTERN.source}?)(-?\d+)?/i
   MATCHER = /^\s*(#{PITCH_PATTERN.source})\s+(.+)$/i
 
   def self.get(pitch, rhythmic_value = nil)
@@ -31,12 +31,12 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
 
       # If parsing fails, treat it as just a pitch with default quarter note
       pitch_obj = HeadMusic::Rudiment::Pitch.get(pitch)
-      return fetch_or_create(pitch_obj, HeadMusic::Content::RhythmicValue.get(:quarter)) if pitch_obj
+      return fetch_or_create(pitch_obj, HeadMusic::Rudiment::RhythmicValue.get(:quarter)) if pitch_obj
 
       nil
     else
       pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-      rhythmic_value = HeadMusic::Content::RhythmicValue.get(rhythmic_value || :quarter)
+      rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value || :quarter)
       fetch_or_create(pitch, rhythmic_value)
     end
   end
@@ -57,7 +57,7 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
     rhythm_string = captures[-1]  # Last capture is the rhythm
 
     pitch = HeadMusic::Rudiment::Pitch.get(pitch_string)
-    rhythmic_value = HeadMusic::Content::RhythmicValue.get(rhythm_string.strip)
+    rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythm_string.strip)
 
     return nil unless pitch && rhythmic_value
     fetch_or_create(pitch, rhythmic_value)
@@ -65,7 +65,7 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
 
   def self.from_pitch(pitch)
     return nil unless pitch.is_a?(HeadMusic::Rudiment::Pitch)
-    fetch_or_create(pitch, HeadMusic::Content::RhythmicValue.get(:quarter))
+    fetch_or_create(pitch, HeadMusic::Rudiment::RhythmicValue.get(:quarter))
   end
 
   def self.from_pitched_item(input)

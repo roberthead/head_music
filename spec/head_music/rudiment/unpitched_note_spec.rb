@@ -7,7 +7,7 @@ describe HeadMusic::Rudiment::UnpitchedNote do
 
       it "creates an unpitched note with the specified rhythmic value" do
         expect(note).to be_a(described_class)
-        expect(note.rhythmic_value).to eq(HeadMusic::Content::RhythmicValue.get(:quarter))
+        expect(note.rhythmic_value).to eq(HeadMusic::Rudiment::RhythmicValue.get(:quarter))
         expect(note.instrument_name).to be_nil
       end
     end
@@ -25,7 +25,7 @@ describe HeadMusic::Rudiment::UnpitchedNote do
     context "with a RhythmicValue object" do
       subject(:note) { described_class.get(rhythmic_value, instrument: "bass drum") }
 
-      let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.get(:sixteenth) }
+      let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.get(:sixteenth) }
 
       it "creates an unpitched note with the specified values" do
         expect(note).to be_a(described_class)
@@ -105,7 +105,7 @@ describe HeadMusic::Rudiment::UnpitchedNote do
 
     it "creates a new unpitched note with the same instrument" do
       expect(new_note).to be_a(described_class)
-      expect(new_note.rhythmic_value).to eq(HeadMusic::Content::RhythmicValue.get(:half))
+      expect(new_note.rhythmic_value).to eq(HeadMusic::Rudiment::RhythmicValue.get(:half))
       expect(new_note.instrument_name).to eq("snare drum")
       expect(new_note).not_to eq(quarter_snare)
     end
@@ -117,7 +117,7 @@ describe HeadMusic::Rudiment::UnpitchedNote do
 
     it "creates a new unpitched note with the same rhythmic value" do
       expect(new_note).to be_a(described_class)
-      expect(new_note.rhythmic_value).to eq(HeadMusic::Content::RhythmicValue.get(:quarter))
+      expect(new_note.rhythmic_value).to eq(HeadMusic::Rudiment::RhythmicValue.get(:quarter))
       expect(new_note.instrument_name).to eq("bass drum")
       expect(new_note).not_to eq(quarter_snare)
     end

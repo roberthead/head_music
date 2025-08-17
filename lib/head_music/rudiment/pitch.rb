@@ -114,7 +114,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def natural
-    HeadMusic::Rudiment::Pitch.get(to_s.gsub(HeadMusic::Rudiment::Alteration::MATCHER, ""))
+    HeadMusic::Rudiment::Pitch.get(to_s.gsub(HeadMusic::Rudiment::Alteration::PATTERN, ""))
   end
 
   def +(other)

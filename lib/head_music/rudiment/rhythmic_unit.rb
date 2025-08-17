@@ -6,16 +6,18 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
   include HeadMusic::Named
   include Comparable
 
-  # Note values longer than a whole note
   AMERICAN_MULTIPLES_NAMES = [
     "whole", "double whole", "longa", "maxima"
   ].freeze
 
-  # Note values from whole note down to very short subdivisions
   AMERICAN_DIVISIONS_NAMES = [
     "whole", "half", "quarter", "eighth", "sixteenth", "thirty-second",
     "sixty-fourth", "hundred twenty-eighth", "two hundred fifty-sixth"
   ].freeze
+
+  AMERICAN_DURATIONS = (AMERICAN_MULTIPLES_NAMES + AMERICAN_DIVISIONS_NAMES).freeze
+
+  PATTERN = /#{Regexp.union(AMERICAN_DURATIONS)}/
 
   # British terminology for note values longer than a whole note
   BRITISH_MULTIPLES_NAMES = %w[semibreve breve longa maxima].freeze

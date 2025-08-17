@@ -7,14 +7,14 @@ describe HeadMusic::Rudiment::Rest do
 
       it "creates a rest with the specified rhythmic value" do
         expect(rest).to be_a(described_class)
-        expect(rest.rhythmic_value).to eq(HeadMusic::Content::RhythmicValue.get(:quarter))
+        expect(rest.rhythmic_value).to eq(HeadMusic::Rudiment::RhythmicValue.get(:quarter))
       end
     end
 
     context "with a RhythmicValue object" do
       subject(:rest) { described_class.get(rhythmic_value) }
 
-      let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.get(:half) }
+      let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.get(:half) }
 
       it "creates a rest with the specified rhythmic value" do
         expect(rest).to be_a(described_class)
@@ -83,7 +83,7 @@ describe HeadMusic::Rudiment::Rest do
 
     it "creates a new rest with the specified rhythmic value" do
       expect(new_rest).to be_a(described_class)
-      expect(new_rest.rhythmic_value).to eq(HeadMusic::Content::RhythmicValue.get(:half))
+      expect(new_rest.rhythmic_value).to eq(HeadMusic::Rudiment::RhythmicValue.get(:half))
       expect(new_rest).not_to eq(quarter_rest)
     end
   end

@@ -14,7 +14,7 @@ class HeadMusic::Rudiment::UnpitchedNote < HeadMusic::Rudiment::RhythmicElement
   def self.get(rhythmic_value, instrument: nil)
     return rhythmic_value if rhythmic_value.is_a?(HeadMusic::Rudiment::UnpitchedNote)
 
-    rhythmic_value = HeadMusic::Content::RhythmicValue.get(rhythmic_value)
+    rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
     return nil unless rhythmic_value
 
     fetch_or_create(rhythmic_value, instrument)

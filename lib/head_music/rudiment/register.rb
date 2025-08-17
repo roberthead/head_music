@@ -9,6 +9,9 @@ module HeadMusic::Rudiment; end
 class HeadMusic::Rudiment::Register < HeadMusic::Rudiment::Base
   include Comparable
 
+  AUDIBLE_REGISTERS = (0..10).map.freeze
+  PATTERN = Regexp.union(AUDIBLE_REGISTERS.map(&:to_s))
+
   DEFAULT = 4
 
   def self.get(identifier)

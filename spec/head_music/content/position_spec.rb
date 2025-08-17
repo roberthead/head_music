@@ -149,16 +149,16 @@ describe HeadMusic::Content::Position do
     context "when adding a rhythmic value within a bar" do
       let(:expected_position) { described_class.new(composition, "3.4.480") }
 
-      specify { expect(position + HeadMusic::Content::RhythmicValue.new(:half)).to eq expected_position }
+      specify { expect(position + HeadMusic::Rudiment::RhythmicValue.new(:half)).to eq expected_position }
     end
 
     context "when adding a rhythmic value across a bar" do
       let(:expected_position) { described_class.new(composition, "4.1.480") }
 
-      specify { expect(HeadMusic::Content::RhythmicValue.new(:half, dots: 1).relative_value).to eq 0.75 }
-      specify { expect(HeadMusic::Content::RhythmicValue.new(:half, dots: 1).ticks).to eq 960 * 3 }
+      specify { expect(HeadMusic::Rudiment::RhythmicValue.new(:half, dots: 1).relative_value).to eq 0.75 }
+      specify { expect(HeadMusic::Rudiment::RhythmicValue.new(:half, dots: 1).ticks).to eq 960 * 3 }
 
-      specify { expect(position + HeadMusic::Content::RhythmicValue.new(:half, dots: 1)).to eq expected_position }
+      specify { expect(position + HeadMusic::Rudiment::RhythmicValue.new(:half, dots: 1)).to eq expected_position }
     end
   end
 

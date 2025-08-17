@@ -27,8 +27,8 @@ describe HeadMusic::Rudiment::RhythmicElement do
       end
     end
 
-    let(:quarter_value) { HeadMusic::Content::RhythmicValue.get(:quarter) }
-    let(:half_value) { HeadMusic::Content::RhythmicValue.get(:half) }
+    let(:quarter_value) { HeadMusic::Rudiment::RhythmicValue.get(:quarter) }
+    let(:half_value) { HeadMusic::Rudiment::RhythmicValue.get(:half) }
 
     let(:element) { test_class.get(quarter_value) }
 
@@ -83,10 +83,10 @@ describe HeadMusic::Rudiment::RhythmicElement do
     end
 
     describe "comparison and sorting" do
-      let(:whole_element) { test_class.get(HeadMusic::Content::RhythmicValue.get(:whole)) }
+      let(:whole_element) { test_class.get(HeadMusic::Rudiment::RhythmicValue.get(:whole)) }
       let(:half_element) { test_class.get(half_value) }
       let(:quarter_element) { test_class.get(quarter_value) }
-      let(:eighth_element) { test_class.get(HeadMusic::Content::RhythmicValue.get(:eighth)) }
+      let(:eighth_element) { test_class.get(HeadMusic::Rudiment::RhythmicValue.get(:eighth)) }
 
       describe "#<=>" do
         it "compares by rhythmic value" do

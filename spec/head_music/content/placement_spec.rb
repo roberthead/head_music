@@ -8,7 +8,7 @@ describe HeadMusic::Content::Placement do
   let(:voice) { composition.voices.first }
   let(:position) { "2:2:240" }
   let(:pitch) { HeadMusic::Rudiment::Pitch.get("F#4") }
-  let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:eighth) }
+  let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.new(:eighth) }
 
   its(:composition) { is_expected.to eq composition }
   its(:voice) { is_expected.to eq voice }
@@ -21,7 +21,7 @@ describe HeadMusic::Content::Placement do
     it { is_expected.to be_rest }
 
     context "when the rhythmic value is a thirty-second note" do
-      let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:"thirty-second") }
+      let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.new(:"thirty-second") }
 
       its(:rhythmic_value) { is_expected.to eq "thirty-second" }
     end
@@ -31,14 +31,14 @@ describe HeadMusic::Content::Placement do
     specify { expect(placement.next_position).to eq "2:2:720" }
 
     context "when the rhythmic value is longer than a measure" do
-      let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:breve) }
+      let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.new(:breve) }
 
       specify { expect(placement.next_position).to eq "4:2:240" }
     end
 
     context "when the value occurs at a fractional position" do
       let(:position) { "5:1:001" }
-      let(:rhythmic_value) { HeadMusic::Content::RhythmicValue.new(:"thirty-second") }
+      let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.new(:"thirty-second") }
 
       specify { expect(placement.next_position).to eq "5:1:121" }
     end

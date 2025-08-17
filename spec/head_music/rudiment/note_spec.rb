@@ -10,7 +10,7 @@ describe HeadMusic::Rudiment::Note do
       end
 
       it "creates a note with the given rhythmic value" do
-        expect(note.rhythmic_value).to eq HeadMusic::Content::RhythmicValue.get("quarter")
+        expect(note.rhythmic_value).to eq HeadMusic::Rudiment::RhythmicValue.get("quarter")
       end
     end
 

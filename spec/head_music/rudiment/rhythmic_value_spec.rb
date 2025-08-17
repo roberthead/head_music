@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Content::RhythmicValue do
+describe HeadMusic::Rudiment::RhythmicValue do
   describe "constructors" do
     context "when passed as a string" do
       subject(:value) { described_class.get(argument) }

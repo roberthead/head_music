@@ -116,7 +116,8 @@ describe HeadMusic::Rudiment::Alteration do
       specify { expect(described_class::MATCHER).not_to match "h" }
       specify { expect(described_class::MATCHER).not_to match "" }
 
-      specify { expect(described_class::MATCHER).to eq(/(?-mix:♯|\#|♭|b|♮|𝄪|x|𝄫|bb)/) }
+      specify { expect(described_class::PATTERN).to eq(/(?-mix:♯|\#|♭|b|♮|𝄪|x|𝄫|bb)/) }
+      specify { expect(described_class::MATCHER).to eq(/^(?-mix:♯|\#|♭|b|♮|𝄪|x|𝄫|bb)$/) }
     end
   end
 end
