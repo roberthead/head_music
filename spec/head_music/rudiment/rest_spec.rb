@@ -89,8 +89,8 @@ describe HeadMusic::Rudiment::Rest do
   end
 
   describe "inheritance" do
-    it "inherits from MusicalElement" do
-      expect(described_class.ancestors).to include(HeadMusic::Rudiment::MusicalElement)
+    it "inherits from RhythmicElement" do
+      expect(described_class.ancestors).to include(HeadMusic::Rudiment::RhythmicElement)
     end
   end
 

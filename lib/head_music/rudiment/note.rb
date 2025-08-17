@@ -6,7 +6,7 @@ module HeadMusic::Rudiment; end
 # independent of its placement in a composition.
 #
 # For notes placed within a composition context, see HeadMusic::Content::Note
-class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::MusicalElement
+class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   include HeadMusic::Named
   include HeadMusic::Parsable
 
@@ -95,7 +95,7 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::MusicalElement
   end
 
   def <=>(other)
-    return nil unless other.is_a?(HeadMusic::Rudiment::MusicalElement)
+    return nil unless other.is_a?(HeadMusic::Rudiment::RhythmicElement)
     return super unless other.is_a?(self.class)
 
     [rhythmic_value, pitch] <=> [other.rhythmic_value, other.pitch]

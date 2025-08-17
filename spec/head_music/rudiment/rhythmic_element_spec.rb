@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Rudiment::MusicalElement do
+describe HeadMusic::Rudiment::RhythmicElement do
   describe "abstract class" do
     it "cannot be instantiated directly" do
       expect { described_class.new }.to raise_error(NoMethodError)
@@ -95,8 +95,8 @@ describe HeadMusic::Rudiment::MusicalElement do
           expect(quarter_element <=> test_class.get(quarter_value)).to eq(0)
         end
 
-        it "returns nil when comparing with non-MusicalElement" do
-          expect(quarter_element <=> "not a musical element").to be_nil
+        it "returns nil when comparing with non-RhythmicElement" do
+          expect(quarter_element <=> "not a rhythmic element").to be_nil
         end
       end
 
@@ -111,7 +111,7 @@ describe HeadMusic::Rudiment::MusicalElement do
           end
         end
 
-        describe "with mixed types of musical elements" do
+        describe "with mixed types of rhythmic elements" do
           let(:quarter_note) { HeadMusic::Rudiment::Note.get("C4", :quarter) }
           let(:half_rest) { HeadMusic::Rudiment::Rest.get(:half) }
           let(:unpitched_eighth) { HeadMusic::Rudiment::UnpitchedNote.get(:eighth, instrument: "snare") }

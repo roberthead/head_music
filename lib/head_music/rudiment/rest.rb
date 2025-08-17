@@ -2,8 +2,8 @@
 module HeadMusic::Rudiment; end
 
 # A Rest represents a period of silence with a specific rhythmic value.
-# It inherits from MusicalElement and has a duration but no pitch.
-class HeadMusic::Rudiment::Rest < HeadMusic::Rudiment::MusicalElement
+# It inherits from RhythmicElement and has a duration but no pitch.
+class HeadMusic::Rudiment::Rest < HeadMusic::Rudiment::RhythmicElement
   include HeadMusic::Named
 
   # Make new public for this concrete class

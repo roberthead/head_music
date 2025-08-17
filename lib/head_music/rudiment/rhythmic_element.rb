@@ -1,9 +1,9 @@
 # A module for music rudiments
 module HeadMusic::Rudiment; end
 
-# Abstract base class for musical elements that have a rhythmic value.
+# Abstract base class for rhythmic elements that have a rhythmic value.
 # This includes notes (pitched), rests (silence), and unpitched notes (percussion).
-class HeadMusic::Rudiment::MusicalElement
+class HeadMusic::Rudiment::RhythmicElement
   include Comparable
 
   attr_reader :rhythmic_value
@@ -33,7 +33,7 @@ class HeadMusic::Rudiment::MusicalElement
   end
 
   def <=>(other)
-    return nil unless other.is_a?(HeadMusic::Rudiment::MusicalElement)
+    return nil unless other.is_a?(HeadMusic::Rudiment::RhythmicElement)
     rhythmic_value <=> other.rhythmic_value
   end
 
