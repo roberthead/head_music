@@ -1,30 +1,5 @@
-# TODO
-
-## Completed User Stories
-
-The following user stories have been completed and are documented in the codebase:
-
-### DiatonicInterval
-
-    As a developer
-    When instantiating a DiatonicInterval
-    When passing an abbreviation, such as 'P5' or 'm2'
-    I want to receive that instance.
-
-    As a developer
-    Given a pitch
-    I want to be able to add a diatonic interval to get another pitch.
-
-DiatonicInterval
-  - def above(pitch) -> pitch
-  - def below(pitch) -> pitch
-
-Pitch addition and subtraction
-  - define `Pitch#+`, `Pitch#-`
-  - use DiatonicInterval methods
-
-
-## Text Conversation with Brian Head (May 7, 2023)
+## Instrument Families
+Text Conversation with Brian Head (May 7, 2023)
 
 Brian Head, brother and faculty at USC Thornton School of Music
 https://music.usc.edu/brian-head/
