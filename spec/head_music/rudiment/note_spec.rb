@@ -83,14 +83,18 @@ describe HeadMusic::Rudiment::Note do
     let(:c4_quarter) { described_class.get("C4", "quarter") }
     let(:c4_half) { described_class.get("C4", "half") }
     let(:d4_quarter) { described_class.get("D4", "quarter") }
+    let(:d4_half) { described_class.get("D4", "half") }
 
-    it "compares by pitch first" do
-      expect(c4_quarter).to be < d4_quarter
+    it "compares by rhythmic value first" do
+      # Quarter notes come before half notes regardless of pitch
+      expect(c4_quarter).to be < c4_half
+      expect(d4_quarter).to be < d4_half
+      expect(d4_quarter).to be < c4_half  # D4 quarter < C4 half
     end
 
-    it "compares by rhythmic value when pitches are equal" do
-      # When pitches are equal, comparison is based on duration of rhythmic value
-      expect(c4_half).to be > c4_quarter
+    it "uses pitch as tie-breaker when rhythmic values are equal" do
+      # When rhythmic values are equal, pitch determines order
+      expect(c4_quarter).to be < d4_quarter
     end
   end
 
@@ -171,6 +175,14 @@ describe HeadMusic::Rudiment::Note do
 
     it "provides a name" do
       expect(note.name).to eq "D5 whole"
+    end
+  end
+
+  describe "#sounded?" do
+    let(:note) { described_class.get("C4", "quarter") }
+
+    it "returns true for notes" do
+      expect(note.sounded?).to be true
     end
   end
 end

@@ -6,18 +6,15 @@ module HeadMusic::Rudiment; end
 # independent of its placement in a composition.
 #
 # For notes placed within a composition context, see HeadMusic::Content::Note
-class HeadMusic::Rudiment::Note
+class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::MusicalElement
   include HeadMusic::Named
   include HeadMusic::Parsable
-  include Comparable
 
-  attr_reader :pitch, :rhythmic_value
+  attr_reader :pitch
 
   delegate :spelling, :register, :letter_name, :alteration, to: :pitch
   delegate :sharp?, :flat?, to: :pitch
   delegate :pitch_class, :midi_note_number, :frequency, to: :pitch
-  delegate :unit, :dots, :tied_value, to: :rhythmic_value
-  delegate :duration, :beats, to: :rhythmic_value
 
   # Regex pattern for parsing note strings like "C#4 quarter" or "Eb3 dotted half"
   # Extract the core pattern from Spelling::MATCHER without anchors
@@ -76,9 +73,12 @@ class HeadMusic::Rudiment::Note
   end
 
   def initialize(pitch, rhythmic_value)
+    super(rhythmic_value)
     @pitch = pitch
-    @rhythmic_value = rhythmic_value
   end
+
+  # Make new public for this concrete class
+  public_class_method :new
 
   def name
     "#{pitch} #{rhythmic_value}"
@@ -89,19 +89,16 @@ class HeadMusic::Rudiment::Note
   end
 
   def ==(other)
-    return false unless other.is_a?(HeadMusic::Rudiment::Note)
-    pitch == other.pitch && rhythmic_value == other.rhythmic_value
+    return false unless other.is_a?(self.class)
+
+    super && pitch == other.pitch
   end
 
   def <=>(other)
-    return nil unless other.is_a?(HeadMusic::Rudiment::Note)
+    return nil unless other.is_a?(HeadMusic::Rudiment::MusicalElement)
+    return super unless other.is_a?(self.class)
 
-    # First compare by pitch
-    pitch_comparison = pitch <=> other.pitch
-    return pitch_comparison unless pitch_comparison == 0
-
-    # If pitches are equal, compare by rhythmic value
-    rhythmic_value <=> other.rhythmic_value
+    [rhythmic_value, pitch] <=> [other.rhythmic_value, other.pitch]
   end
 
   # Transpose the note up by an interval or semitones
@@ -116,7 +113,7 @@ class HeadMusic::Rudiment::Note
     self.class.get(new_pitch, rhythmic_value)
   end
 
-  # Change the rhythmic value while keeping the same pitch
+  # Override to maintain pitch when changing rhythmic value
   def with_rhythmic_value(new_rhythmic_value)
     self.class.get(pitch, new_rhythmic_value)
   end
@@ -130,5 +127,9 @@ class HeadMusic::Rudiment::Note
     spelling.natural?
   end
 
-  private_class_method :new
+  def sounded?
+    true
+  end
+
+  private_class_method :fetch_or_create
 end
