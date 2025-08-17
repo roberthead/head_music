@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # Abstract base class representing a tonal context (system of pitches with a tonal center)
-class HeadMusic::Rudiment::TonalContext
+class HeadMusic::Rudiment::TonalContext < HeadMusic::Rudiment::Base
   attr_reader :tonic_spelling
 
   def initialize(tonic_spelling)

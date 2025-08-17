@@ -36,6 +36,7 @@ require "head_music/named"
 require "head_music/parsable"
 
 # rudiments
+require "head_music/rudiment/base"
 require "head_music/rudiment/alteration"
 require "head_music/rudiment/chromatic_interval"
 require "head_music/rudiment/clef"

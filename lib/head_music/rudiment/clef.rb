@@ -4,7 +4,7 @@ require "yaml"
 module HeadMusic::Rudiment; end
 
 # A clef assigns pitches to the lines and spaces of a staff.
-class HeadMusic::Rudiment::Clef
+class HeadMusic::Rudiment::Clef < HeadMusic::Rudiment::Base
   include HeadMusic::Named
 
   RECORDS = YAML.load_file(File.expand_path("clefs.yml", __dir__)).freeze

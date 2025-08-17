@@ -3,7 +3,7 @@ module HeadMusic::Rudiment; end
 
 # A tuning has a reference pitch and frequency and provides frequencies for all pitches
 # The base class assumes equal temperament tuning. By default, A4 = 440.0 Hz
-class HeadMusic::Rudiment::Tuning
+class HeadMusic::Rudiment::Tuning < HeadMusic::Rudiment::Base
   attr_accessor :reference_pitch
 
   delegate :pitch, :frequency, to: :reference_pitch, prefix: true

@@ -3,7 +3,7 @@ module HeadMusic::Rudiment; end
 
 # A reference pitch has a pitch and a frequency
 # With no arguments, it assumes that A4 = 440.0 Hz
-class HeadMusic::Rudiment::ReferencePitch
+class HeadMusic::Rudiment::ReferencePitch < HeadMusic::Rudiment::Base
   include HeadMusic::Named
 
   DEFAULT_PITCH_NAME = "A4"

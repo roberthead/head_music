@@ -3,7 +3,7 @@ module HeadMusic::Rudiment; end
 
 # A scale degree is a number indicating the ordinality of the spelling in the key.
 # TODO: Rewrite to accept a tonal_center and a scale type.
-class HeadMusic::Rudiment::ScaleDegree
+class HeadMusic::Rudiment::ScaleDegree < HeadMusic::Rudiment::Base
   include Comparable
 
   NAME_FOR_DIATONIC_DEGREE = [nil, "tonic", "supertonic", "mediant", "subdominant", "dominant", "submediant"].freeze

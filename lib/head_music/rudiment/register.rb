@@ -6,7 +6,7 @@ module HeadMusic::Rudiment; end
 # A pitch is a spelling plus a register. For example, C4 is middle C and C5 is the C one octave higher.
 # The number changes between the letter names B and C regardless of sharps and flats,
 # so as an extreme example, Cb5 is actually a semitone below B#4.
-class HeadMusic::Rudiment::Register
+class HeadMusic::Rudiment::Register < HeadMusic::Rudiment::Base
   include Comparable
 
   DEFAULT = 4

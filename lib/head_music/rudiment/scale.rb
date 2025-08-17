@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # A scale contains ordered pitches starting at a tonal center.
-class HeadMusic::Rudiment::Scale
+class HeadMusic::Rudiment::Scale < HeadMusic::Rudiment::Base
   SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
 
   def self.get(root_pitch, scale_type = nil)

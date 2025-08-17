@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # A ScaleType represents a particular scale pattern, such as major, lydian, or minor pentatonic.
-class HeadMusic::Rudiment::ScaleType
+class HeadMusic::Rudiment::ScaleType < HeadMusic::Rudiment::Base
   H = 1 # half step
   W = 2 # whole step
 

@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # A pitch is a named frequency represented by a spelling and a register.
-class HeadMusic::Rudiment::Pitch
+class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   include Comparable
 
   attr_reader :spelling, :register

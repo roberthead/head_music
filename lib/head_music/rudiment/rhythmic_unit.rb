@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # A rhythmic unit is a rudiment of duration consisting of doublings and divisions of a whole note.
-class HeadMusic::Rudiment::RhythmicUnit
+class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
   include HeadMusic::Named
   include Comparable
 

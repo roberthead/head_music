@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # Consonance describes a category or degree of harmonic pleasantness
-class HeadMusic::Rudiment::Consonance
+class HeadMusic::Rudiment::Consonance < HeadMusic::Rudiment::Base
   # Detailed categories aligned with music theory
   LEVELS = %w[
     perfect_consonance

@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # Meter is the rhythmic size of a measure, such as 4/4 or 6/8
-class HeadMusic::Rudiment::Meter
+class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   attr_reader :top_number, :bottom_number
 
   NAMED = {

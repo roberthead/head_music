@@ -5,7 +5,7 @@ module HeadMusic::Rudiment; end
 
 # An Alteration is a symbol that modifies pitch, such as a sharp, flat, or natural.
 # In French, sharps and flats in the key signature are called "altérations".
-class HeadMusic::Rudiment::Alteration
+class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
   include Comparable
   include HeadMusic::Named
   include HeadMusic::Parsable

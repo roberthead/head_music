@@ -3,7 +3,7 @@ module HeadMusic::Rudiment; end
 
 # Represents a key signature (traditionally associated with a key)
 # This class maintains backward compatibility while delegating to Key/Mode internally
-class HeadMusic::Rudiment::KeySignature
+class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
   attr_reader :tonal_context
 
   ORDERED_LETTER_NAMES_OF_SHARPS = %w[F C G D A E B].freeze

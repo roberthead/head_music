@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # A solmization is the rendering of scale degrees as syllables.
-class HeadMusic::Rudiment::Solmization
+class HeadMusic::Rudiment::Solmization < HeadMusic::Rudiment::Base
   include HeadMusic::Named
 
   DEFAULT_SOLMIZATION = "solfège"

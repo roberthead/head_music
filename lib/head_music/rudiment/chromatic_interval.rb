@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # A chromatic interval is the distance between two pitches measured in half-steps.
-class HeadMusic::Rudiment::ChromaticInterval
+class HeadMusic::Rudiment::ChromaticInterval < HeadMusic::Rudiment::Base
   include Comparable
   include HeadMusic::Named
 

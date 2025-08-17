@@ -3,7 +3,7 @@ module HeadMusic::Rudiment; end
 
 # Abstract base class for rhythmic elements that have a rhythmic value.
 # This includes notes (pitched), rests (silence), and unpitched notes (percussion).
-class HeadMusic::Rudiment::RhythmicElement
+class HeadMusic::Rudiment::RhythmicElement < HeadMusic::Rudiment::Base
   include Comparable
 
   attr_reader :rhythmic_value

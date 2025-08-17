@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # A quality is a categorization of an interval.
-class HeadMusic::Rudiment::Quality
+class HeadMusic::Rudiment::Quality < HeadMusic::Rudiment::Base
   SHORTHAND = {
     perfect: "P",
     major: "M",

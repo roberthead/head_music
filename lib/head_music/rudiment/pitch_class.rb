@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # A pitch class is a set of pitches separated by octaves.
-class HeadMusic::Rudiment::PitchClass
+class HeadMusic::Rudiment::PitchClass < HeadMusic::Rudiment::Base
   include Comparable
 
   attr_reader :number, :spelling

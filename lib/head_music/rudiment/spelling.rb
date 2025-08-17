@@ -4,7 +4,7 @@ module HeadMusic::Rudiment; end
 # Represents the spelling of a pitch, such as C# or Db.
 # Composite of a LetterName and an optional Alteration.
 # Does not include the octave. See Pitch for that.
-class HeadMusic::Rudiment::Spelling
+class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
   MATCHER = /^\s*([A-G])(#{HeadMusic::Rudiment::Alteration::MATCHER}?)(-?\d+)?\s*$/i
 
   attr_reader :pitch_class, :letter_name, :alteration

@@ -2,7 +2,7 @@
 module HeadMusic::Rudiment; end
 
 # Music has seven lette names that are used to identify pitches and pitch classes.
-class HeadMusic::Rudiment::LetterName
+class HeadMusic::Rudiment::LetterName < HeadMusic::Rudiment::Base
   NAMES = %w[C D E F G A B].freeze
 
   NATURAL_PITCH_CLASS_NUMBERS = {
