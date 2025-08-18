@@ -7,7 +7,7 @@ class HeadMusic::Rudiment::RhythmicValue
 
   RhythmicUnit = HeadMusic::Rudiment::RhythmicUnit
 
-  PATTERN = /((double|triple)\W?)?(dotted)\s*(#{RhythmicUnit::PATTERN})/
+  PATTERN = /((double|triple)\W?)?(dotted)?.?(#{RhythmicUnit::PATTERN})/
 
   attr_reader :unit, :dots, :tied_value
 

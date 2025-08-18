@@ -1,4 +1,3 @@
-# A module for music rudiments
 module HeadMusic::Rudiment; end
 
 # A pitch is a named frequency represented by a spelling and a register.
@@ -166,8 +165,6 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
     other = HeadMusic::Rudiment::Pitch.get(other)
     letter_name_steps_to(other) + 7 * octave_changes_to(other)
   end
-
-  private_class_method :new
 
   private
 

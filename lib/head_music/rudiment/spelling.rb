@@ -8,8 +8,7 @@ class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
   LetterName = HeadMusic::Rudiment::LetterName
   Alteration = HeadMusic::Rudiment::Alteration
 
-  PATTERN = /[A-Ga-g]/
-  MATCHER = /^\s*(#{LetterName::PATTERN})(#{Alteration::PATTERN}?)(-?\d+)?\s*$/i
+  MATCHER = /^\s*(#{LetterName::PATTERN})(#{Alteration::PATTERN})?(-?\d+)?\s*$/i
 
   attr_reader :pitch_class, :letter_name, :alteration
 
@@ -89,8 +88,6 @@ class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
   def natural?
     !alteration || alteration.natural?
   end
-
-  private_class_method :new
 
   private
 

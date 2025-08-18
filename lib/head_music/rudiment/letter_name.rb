@@ -98,6 +98,4 @@ class HeadMusic::Rudiment::LetterName < HeadMusic::Rudiment::Base
       series
     end
   end
-
-  private_class_method :new
 end
