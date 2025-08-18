@@ -1,4 +1,6 @@
-class HeadMusic::Rudiment::RhythmicElement::Parser
+module HeadMusic::Parse; end
+
+class HeadMusic::Parse::RhythmicElement
   attr_reader :identifier, :rhythmic_value
 
   delegate :letter_name, :alteration, :register, :spelling, :pitch, to: :pitch_parser
@@ -21,10 +23,10 @@ class HeadMusic::Rudiment::RhythmicElement::Parser
   private
 
   def pitch_parser
-    @pitch_parser ||= HeadMusic::Rudiment::Pitch::Parser.new(identifier)
+    @pitch_parser ||= HeadMusic::Parse::Pitch.new(identifier)
   end
 
   def rhythmic_value_parser
-    @rhythmic_value_parser ||= HeadMusic::Rudiment::RhythmicValue::Parser.new(identifier)
+    @rhythmic_value_parser ||= HeadMusic::Parse::RhythmicValue.new(identifier)
   end
 end

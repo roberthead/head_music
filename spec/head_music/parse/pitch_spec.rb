@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Rudiment::Pitch::Parser do
+describe HeadMusic::Parse::Pitch do
   subject(:parser) { described_class.new(input_string) }
 
   context "with a pitch string" do

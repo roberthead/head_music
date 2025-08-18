@@ -48,9 +48,6 @@ require "head_music/rudiment/rhythmic_element"
 require "head_music/rudiment/note"
 require "head_music/rudiment/unpitched_note"
 require "head_music/rudiment/rest"
-require "head_music/rudiment/pitch/parser"
-require "head_music/rudiment/rhythmic_value/parser"
-require "head_music/rudiment/rhythmic_element/parser"
 
 require "head_music/rudiment/chromatic_interval"
 require "head_music/rudiment/clef"
@@ -77,6 +74,11 @@ require "head_music/rudiment/tuning"
 require "head_music/rudiment/tuning/just_intonation"
 require "head_music/rudiment/tuning/meantone"
 require "head_music/rudiment/tuning/pythagorean"
+
+# parse
+require "head_music/parse/pitch"
+require "head_music/parse/rhythmic_value"
+require "head_music/parse/rhythmic_element"
 
 # instruments
 require "head_music/instruments/instrument_family"

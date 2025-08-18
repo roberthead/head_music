@@ -1,5 +1,7 @@
-class HeadMusic::Rudiment::Pitch::Parser
-  attr_reader :identifier, :letter_name, :alteration, :register, :rhythmic_value
+module HeadMusic::Parse; end
+
+class HeadMusic::Parse::Pitch
+  attr_reader :identifier, :letter_name, :alteration, :register
 
   LetterName = HeadMusic::Rudiment::LetterName
   Alteration = HeadMusic::Rudiment::Alteration
