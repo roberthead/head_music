@@ -1,0 +1,123 @@
+---
+orchestral:
+  name: "Orchestral"
+  sections:
+    - section_key: woodwind
+      instruments:
+        - piccolo
+        - flute
+        - alto_flute
+        - oboe
+        - english_horn
+        - clarinet
+        - alto_clarinet
+        - bass_clarinet
+        - bassoon
+        - contrabassoon
+    - section_key: brass
+      instruments:
+        - french_horn
+        - trumpet
+        - cornet
+        - trombone
+        - bass_trombone
+        - tuba
+    - section_key: percussion
+      instruments:
+        - timpani
+        - snare_drum
+        - bass_drum
+        - cymbal
+        - gong
+        - xylophone
+        - glockenspiel
+        - marimba
+        - vibraphone
+        - percussion
+    - section_key: keyboard
+      instruments:
+        - harp
+        - piano
+        - celesta
+        - harpsichord
+        - organ
+    - section_key: voice
+      instruments:
+        - soprano_voice
+        - alto_voice
+        - tenor_voice
+        - bass_voice
+    - section_key: string
+      instruments:
+        - violin
+        - viola
+        - cello
+        - double_bass
+
+band:
+  name: "Concert Band"
+  sections:
+    - section_key: woodwind
+      instruments:
+        - piccolo
+        - flute
+        - oboe
+        - english_horn
+        - bassoon
+        - contrabassoon
+        - clarinet
+        - alto_clarinet
+        - bass_clarinet
+        - soprano_saxophone
+        - alto_saxophone
+        - tenor_saxophone
+        - baritone_saxophone
+    - section_key: brass
+      instruments:
+        - cornet
+        - trumpet
+        - french_horn
+        - trombone
+        - bass_trombone
+        - euphonium
+        - baritone_horn
+        - tuba
+    - section_key: percussion
+      instruments:
+        - timpani
+        - snare_drum
+        - bass_drum
+        - cymbal
+        - percussion
+
+brass_quintet:
+  name: "Brass Quintet"
+  sections:
+    - section_key: brass
+      instruments:
+        - trumpet  # First trumpet
+        - trumpet  # Second trumpet
+        - french_horn
+        - trombone
+        - tuba
+
+woodwind_quintet:
+  name: "Woodwind Quintet"
+  sections:
+    - section_key: mixed
+      instruments:
+        - flute
+        - oboe
+        - clarinet
+        - french_horn  # Horn is traditional in woodwind quintets
+        - bassoon
+
+string_quartet:
+  name: "String Quartet"
+  sections:
+    - section_key: string
+      instruments:
+        - violin  # First violin
+        - violin  # Second violin
+        - viola
+        - cello

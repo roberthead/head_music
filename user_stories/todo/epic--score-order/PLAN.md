@@ -1,4 +1,4 @@
-# Score-Order Epic: Product Manager notes
+# Score-Order Epic: Implementation Plan
 
 ## Executive Summary
 
@@ -81,7 +81,7 @@ Start with orchestral ordering only:
 
 ```ruby
 instruments = ["violin", "trumpet", "flute", "timpani", "cello"]
-ordered = HeadMusic::Instruments::ScoreOrder.orchestral(instruments)
+ordered = HeadMusic::Instruments::ScoreOrder.in_orchestral_order(instruments)
 # => ["flute", "trumpet", "timpani", "violin", "cello"]
 ```
 
@@ -140,13 +140,105 @@ Standard orchestral score order from top to bottom:
 - Maintains 90%+ test coverage
 - Performance: < 100ms for typical ensemble sizes
 
+## Implementation Strategy
+
+### Class Design: Single Class with Data-Driven Instances
+
+We'll use a **single class with instances** approach, following HeadMusic's established patterns:
+
+```ruby
+class HeadMusic::Instruments::ScoreOrder
+  include HeadMusic::Named
+
+  def self.get(ensemble_type)
+    # Returns an instance configured for that ensemble type
+    # Follows existing HeadMusic factory pattern
+  end
+
+  def self.in_orchestral_order(instruments)
+    get(:orchestral).order(instruments)
+  end
+
+  def self.in_band_order(instruments)
+    get(:band).order(instruments)
+  end
+
+  def order(instruments)
+    # Apply ordering rules from YAML data
+    # Handle both instrument objects and strings
+    # Gracefully handle unknown instruments
+  end
+end
+```
+
+### Why This Approach
+
+1. **Consistency with HeadMusic patterns**:
+   - Matches `Instrument` and `InstrumentFamily` design
+   - Uses `.get()` factory method pattern
+   - Data-driven via YAML configuration
+
+2. **Maintainability**:
+   - Single class to test and maintain
+   - Shared logic for common operations
+   - Easy to add new ensemble types without code changes
+
+3. **Flexibility**:
+   - Rules defined in YAML, not hardcoded
+   - Simple to add custom orderings
+   - Could support user-defined orderings in future
+
+### YAML Structure
+
+```yaml
+# lib/head_music/instruments/score_orders.yml
+orchestral:
+  name: "Orchestral"
+  sections:
+    - section_key: woodwind
+      instruments: [piccolo, flute, oboe, english_horn, clarinet, bass_clarinet, bassoon, contrabassoon]
+    - section_key: brass
+      instruments: [horn, trumpet, trombone, tuba]
+    - section_key: percussion
+      instruments: [timpani, percussion]
+    - section_key: keyboard
+      instruments: [harp, piano, celesta, organ]
+    - section_key: voice
+      instruments: [soprano_voice, alto_voice, tenor_voice, bass_voice]
+    - section_key: string
+      instruments: [violin, viola, cello, double_bass]
+
+band:
+  name: "Concert Band"
+  sections:
+    - section_key: woodwind
+      instruments: [flute, oboe, bassoon, clarinet, saxophone]
+    - section_key: brass
+      instruments: [cornet, trumpet, horn, trombone, euphonium, tuba]
+    - section_key: percussion
+      instruments: [timpani, percussion]
+
+brass_quintet:
+  name: "Brass Quintet"
+  sections:
+    - section_key: brass
+      instruments: [trumpet, trumpet, horn, trombone, tuba]
+
+woodwind_quintet:
+  name: "Woodwind Quintet"
+  sections:
+    - section_key: woodwind
+      instruments: [flute, oboe, clarinet, horn, bassoon]
+```
+
 ## Implementation Steps
 
-1. Create `HeadMusic::Instruments::ScoreOrder` class
-2. Define YAML structure for ordering rules
-3. Implement orchestral ordering logic
-4. Add comprehensive test coverage
-5. Add band ordering support
-6. Add chamber ensemble templates
-7. Document API and usage examples
-8. Consider future integration points with notation systems
+1. Create `HeadMusic::Instruments::ScoreOrder` class with factory pattern
+2. Create `score_orders.yml` with orchestral ordering rules
+3. Implement `#order` method with instrument resolution logic
+4. Add RSpec tests for orchestral ordering
+5. Add band ordering to YAML and test
+6. Add chamber ensemble templates and tests
+7. Add support for custom instrument positions
+8. Document API with YARD comments
+9. Consider future integration points with notation systems
