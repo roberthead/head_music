@@ -20,15 +20,15 @@ class HeadMusic::Time::Value
   end
 
   def to_microseconds
-    nanoseconds / 1_000
+    nanoseconds / 1_000.0
   end
 
   def to_milliseconds
-    nanoseconds / 1_000_000
+    nanoseconds / 1_000_000.0
   end
 
   def to_seconds
-    nanoseconds / 1_000_000_000
+    nanoseconds / 1_000_000_000.0
   end
 
   def +(other)
@@ -81,6 +81,7 @@ class HeadMusic::Time::Position
     "#{bar}:#{beat}:#{tick}:#{subtick}"
   end
 
+  # Accept a meter and roll excessive values over to the next level
   def normalize!(meter)
     return self unless meter
 
@@ -142,10 +143,10 @@ class HeadMusic::Time::MeterEvent
 end
 
 class HeadMusic::Rudiment::Tempo
-  attr_accessor :beat_unit, :beats_per_minute
+  attr_accessor :beat_value, :beats_per_minute
 
-  def initialize(beat_unit, beats_per_minute)
-    @beat_unit = beat_unit
+  def initialize(beat_value, beats_per_minute)
+    @beat_value = beat_value
     @beats_per_minute = beats_per_minute
   end
 end
@@ -154,8 +155,8 @@ class HeadMusic::Time::TempoEvent
   attr_accessor :position, :tempo
 
   # accepts a rhythmic value and a bpm
-  def initialize(position, beat_unit, beats_per_minute)
+  def initialize(position, beat_value, beats_per_minute)
     @position = position
-    @tempo = HeadMusic::Rudiment::Tempo.new(beat_unit, beats_per_minute)
+    @tempo = HeadMusic::Rudiment::Tempo.new(beat_value, beats_per_minute)
   end
 end

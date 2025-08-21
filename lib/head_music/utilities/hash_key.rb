@@ -22,20 +22,20 @@ class HeadMusic::Utilities::HashKey
 
   def normalized_string
     @normalized_string ||=
-      desymbolized_string.downcase.gsub(/\W+/, "_")
+      transliterated_string.downcase.gsub(/\W+/, "_")
+  end
+
+  def transliterated_string
+    I18n.transliterate(desymbolized_string)
   end
 
   def desymbolized_string
-    transliterated_string
+    original.to_s
       .gsub("𝄫", "_double_flat")
       .gsub("♭", "_flat")
       .gsub("♮", "_natural")
       .gsub("♯", "_sharp")
       .gsub("#", "_sharp")
       .gsub("𝄪", "_double_sharp")
-  end
-
-  def transliterated_string
-    I18n.transliterate(original.to_s)
   end
 end

@@ -127,7 +127,7 @@ describe HeadMusic::Rudiment::Meter do
       its(:counts_per_quarter_note) { are_expected.to eq 2 }
     end
 
-    context "when given a 6/8 meter" do
+    context "when given cut time" do
       subject(:meter) { described_class.get(:cut_time) }
 
       its(:counts_per_quarter_note) { are_expected.to eq 0.5 }
