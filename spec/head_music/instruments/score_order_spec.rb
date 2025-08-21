@@ -47,22 +47,18 @@ describe HeadMusic::Instruments::ScoreOrder do
   end
 
   describe ".in_band_order" do
-    let(:ordered_instruments) { described_class.in_band_order(instruments) }
-
     subject(:ordered_instrument_names) {
       ordered_instruments.map(&:name)
     }
+
+    let(:ordered_instruments) { described_class.in_band_order(instruments) }
 
     context "with concert band instruments" do
       let(:instruments) { %w[alto_saxophone trumpet flute tuba clarinet] }
 
       it "puts the woodwinds before the brass" do
         expect(ordered_instrument_names).to eq([
-          "flute",
-          "clarinet",
-          "alto saxophone",
-          "trumpet",
-          "tuba"
+          "flute", "clarinet", "alto saxophone", "trumpet", "tuba"
         ])
       end
     end
@@ -71,13 +67,8 @@ describe HeadMusic::Instruments::ScoreOrder do
       let(:instruments) { %w[tuba euphonium trombone trumpet cornet french_horn] }
 
       it do
-        is_expected.to eq([
-          "cornet",
-          "trumpet",
-          "French horn",
-          "trombone",
-          "euphonium",
-          "tuba"
+        expect(ordered_instrument_names).to eq([
+          "cornet", "trumpet", "French horn", "trombone", "euphonium", "tuba"
         ])
       end
     end
@@ -87,17 +78,17 @@ describe HeadMusic::Instruments::ScoreOrder do
 
       it "places percussion at the bottom" do
         expect(ordered_instrument_names).to eq([
-          "flute",
-          "trumpet",
-          "tuba",
-          "timpani",
-          "snare drum"
+          "flute", "trumpet", "tuba", "timpani", "snare drum"
         ])
       end
     end
   end
 
   describe "#order" do
+    subject(:ordered_instrument_names) {
+      orchestral_order.order(instruments).map(&:name)
+    }
+
     let(:orchestral_order) { described_class.get(:orchestral) }
 
     context "with a full orchestra" do
@@ -111,46 +102,13 @@ describe HeadMusic::Instruments::ScoreOrder do
         ]
       end
 
-      it "orders sections correctly" do
-        ordered = orchestral_order.order(instruments)
-        instrument_names = ordered.map(&:name)
-
-        # Check section ordering
-        woodwind_start = instrument_names.index("flute")
-        brass_start = instrument_names.index("French horn")
-        percussion_start = instrument_names.index("timpani")
-        keyboard_start = instrument_names.index("harp")
-        string_start = instrument_names.index("violin")
-
-        expect(woodwind_start).to be < brass_start
-        expect(brass_start).to be < percussion_start
-        expect(percussion_start).to be < keyboard_start
-        expect(keyboard_start).to be < string_start
-      end
-
-      it "orders instruments within sections correctly" do
-        ordered = orchestral_order.order(instruments)
-        instrument_names = ordered.map(&:name)
-
-        # Check woodwind order
-        flute_index = instrument_names.index("flute")
-        oboe_index = instrument_names.index("oboe")
-        clarinet_index = instrument_names.index("clarinet")
-        bassoon_index = instrument_names.index("bassoon")
-
-        expect(flute_index).to be < oboe_index
-        expect(oboe_index).to be < clarinet_index
-        expect(clarinet_index).to be < bassoon_index
-
-        # Check string order
-        violin_index = instrument_names.index("violin")
-        viola_index = instrument_names.index("viola")
-        cello_index = instrument_names.index("cello")
-        bass_index = instrument_names.index("double bass")
-
-        expect(violin_index).to be < viola_index
-        expect(viola_index).to be < cello_index
-        expect(cello_index).to be < bass_index
+      it "orders sections correctly" do # rubocop:disable RSpec/ExampleLength
+        expect(ordered_instrument_names).to eq([
+          "flute", "oboe", "clarinet", "bassoon",
+          "French horn", "trumpet", "trombone", "tuba",
+          "timpani", "harp", "piano",
+          "violin", "viola", "cello", "double bass"
+        ])
       end
     end
 
@@ -195,10 +153,10 @@ describe HeadMusic::Instruments::ScoreOrder do
   end
 
   describe "#instrument_order" do
-    let(:orchestral_order) { described_class.get(:orchestral) }
+    let(:score_order) { described_class.get(:orchestral) }
 
     it "returns all instruments in order as symbols" do
-      order = orchestral_order.instrument_order
+      order = score_order.instrument_order
 
       expect(order).to be_an(Array)
       expect(order.first).to be_a(Symbol)
@@ -207,43 +165,34 @@ describe HeadMusic::Instruments::ScoreOrder do
   end
 
   describe "chamber ensembles" do
+    subject(:ordered_instrument_names) {
+      score_order.order(instruments).map(&:name)
+    }
+
     describe "brass quintet" do
-      let(:brass_quintet) { described_class.get(:brass_quintet) }
+      let(:score_order) { described_class.get(:brass_quintet) }
+      let(:instruments) { %w[tuba trumpet french_horn trombone trumpet] }
 
       it "orders brass quintet correctly" do
-        instruments = %w[tuba french_horn trombone trumpet trumpet]
-        ordered = brass_quintet.order(instruments)
-        instrument_names = ordered.map(&:name)
-
-        # Trumpets should come first, then horn, trombone, tuba
-        expect(instrument_names.take(2)).to eq(["trumpet", "trumpet"])
-        expect(instrument_names[2]).to eq("French horn")
-        expect(instrument_names[3]).to eq("trombone")
-        expect(instrument_names[4]).to eq("tuba")
+        expect(ordered_instrument_names).to eq(["trumpet", "trumpet", "French horn", "trombone", "tuba"])
       end
     end
 
     describe "woodwind quintet" do
-      let(:woodwind_quintet) { described_class.get(:woodwind_quintet) }
+      let(:score_order) { described_class.get(:woodwind_quintet) }
+      let(:instruments) { %w[bassoon clarinet oboe flute french_horn] }
 
-      it "orders woodwind quintet correctly" do
-        instruments = %w[bassoon clarinet oboe flute french_horn]
-        ordered = woodwind_quintet.order(instruments)
-        instrument_names = ordered.map(&:name)
-
-        expect(instrument_names).to eq(["flute", "oboe", "clarinet", "French horn", "bassoon"])
+      it "orders correctly" do
+        expect(ordered_instrument_names).to eq(["flute", "oboe", "clarinet", "French horn", "bassoon"])
       end
     end
 
     describe "string quartet" do
-      let(:string_quartet) { described_class.get(:string_quartet) }
+      let(:score_order) { described_class.get(:string_quartet) }
+      let(:instruments) { %w[cello violin viola violin] }
 
-      it "orders string quartet correctly" do
-        instruments = %w[cello viola violin violin]
-        ordered = string_quartet.order(instruments)
-        instrument_names = ordered.map(&:name)
-
-        expect(instrument_names).to eq(["violin", "violin", "viola", "cello"])
+      it "orders correctly" do
+        expect(ordered_instrument_names).to eq(["violin", "violin", "viola", "cello"])
       end
     end
   end

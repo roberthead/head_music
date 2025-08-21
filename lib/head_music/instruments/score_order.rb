@@ -24,7 +24,7 @@ class HeadMusic::Instruments::ScoreOrder
     get(:band)&.order(instruments) || []
   end
 
-  # Orders a list of instruments according to this ensemble type's conventions
+  # Accepts a list of instruments and orders them according to this ensemble type's conventions
   def order(instruments)
     valid_inputs = instruments.compact.reject { |i| i.respond_to?(:empty?) && i.empty? }
     instrument_objects = valid_inputs.map { |i| normalize_to_instrument(i) }.compact
