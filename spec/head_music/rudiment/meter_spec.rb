@@ -113,4 +113,24 @@ describe HeadMusic::Rudiment::Meter do
     specify { expect(described_class.common_time).to eq described_class.get("4/4") }
     specify { expect(described_class.cut_time).to eq described_class.get("2/2") }
   end
+
+  describe "#counts_per_quarter_note" do
+    context "when given a 4/4 meter" do
+      subject(:meter) { described_class.get("4/4") }
+
+      its(:counts_per_quarter_note) { are_expected.to eq 1 }
+    end
+
+    context "when given a 6/8 meter" do
+      subject(:meter) { described_class.get("6/8") }
+
+      its(:counts_per_quarter_note) { are_expected.to eq 2 }
+    end
+
+    context "when given a 6/8 meter" do
+      subject(:meter) { described_class.get(:cut_time) }
+
+      its(:counts_per_quarter_note) { are_expected.to eq 0.5 }
+    end
+  end
 end

@@ -251,4 +251,10 @@ describe HeadMusic::Rudiment::RhythmicUnit do
       expect { described_class.send(:new, "") }.to raise_error(ArgumentError, "Name cannot be nil or empty")
     end
   end
+
+  describe "#ticks" do
+    specify { expect(described_class.get("half").ticks).to eq 1920 }
+    specify { expect(described_class.get("quarter").ticks).to eq 960 }
+    specify { expect(described_class.get("eighth").ticks).to eq 480 }
+  end
 end

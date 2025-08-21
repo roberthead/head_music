@@ -15,7 +15,7 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
     hash_key = HeadMusic::Utilities::HashKey.for(identifier)
     time_signature_string = NAMED[hash_key] || identifier
     @meters ||= {}
-    @meters[hash_key] ||= new(*time_signature_string.split("/").map(&:to_i))
+    @meters[hash_key] ||= new(*time_signature_string.split("/"))
   end
 
   def self.default
@@ -31,8 +31,8 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   end
 
   def initialize(top_number, bottom_number)
-    @top_number = top_number
-    @bottom_number = bottom_number
+    @top_number = top_number.to_i
+    @bottom_number = bottom_number.to_i
   end
 
   def simple?
@@ -63,6 +63,10 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
     top_number
   end
 
+  def counts_per_quarter_note
+    0.25 / count_unit.relative_value
+  end
+
   def beat_strength(count, tick: 0)
     return 100 if downbeat?(count, tick)
     return 80 if strong_beat?(count, tick)
@@ -77,8 +81,8 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   end
 
   # The rhythmic unit for the count (bottom number).
-  # This unit is also used as the display unit for beats
-  # in a music software context
+  # This unit is also used as "beats" in a sequencer context
+  #   For example, "1:3:000"
   def count_unit
     HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number)
   end
@@ -139,6 +143,6 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   end
 
   def beat?(tick)
-    tick.zero?
+    tick.to_i.zero?
   end
 end

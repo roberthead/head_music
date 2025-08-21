@@ -85,7 +85,7 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
   end
 
   def ticks
-    HeadMusic::Rudiment::Rhythm::PPQN * 4 * relative_value
+    (HeadMusic::Rudiment::Rhythm::PPQN * 4 * relative_value).to_i
   end
 
   def notehead

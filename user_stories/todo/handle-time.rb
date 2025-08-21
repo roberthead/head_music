@@ -4,10 +4,6 @@ module HeadMusic::Time
   # ticks per quarter note value
   PPQN = PULSES_PER_QUARTER_NOTE = 960
   SUBTICKS_PER_TICK = 240
-
-  def display_beats_per_quarter_note(meter)
-    meter.bottom_number.to_i
-  end
 end
 
 class HeadMusic::Time::Value
@@ -47,7 +43,7 @@ end
 # Representation of a musical position.
 # Consists of:
 # - bar
-# - beat (beats per bar depends on meter)
+# - beat (or count)
 # - tick (960 ticks / quarter note value)
 # - subtick (240 subticks / tick)
 #
@@ -84,6 +80,29 @@ class HeadMusic::Time::Position
   def to_s
     "#{bar}:#{beat}:#{tick}:#{subtick}"
   end
+
+  def normalize!(meter)
+    return self unless meter
+
+    # Carry subticks into ticks
+    if subtick >= HeadMusic::Time::SUBTICKS_PER_TICK || subtick.negative?
+      tick_delta, @subtick = subtick.divmod(HeadMusic::Time::SUBTICKS_PER_TICK)
+      @tick += tick_delta
+    end
+
+    # Carry ticks into beats
+    if tick >= meter.ticks_per_count || tick.negative?
+      beat_delta, @tick = tick.divmod(meter.ticks_per_count)
+      @beat += beat_delta
+    end
+
+    # Carry beats into bars
+    if beat >= meter.counts_per_bar || beat.negative?
+      bar_delta, @beat = beat.divmod(meter.counts_per_bar)
+      @bar += bar_delta
+    end
+    HeadMusic::Time::Position.new(@bar, @beat, @tick, @subtick)
+  end
 end
 
 # Represents a SMPTE timecode position
@@ -111,16 +130,6 @@ class HeadMusic::Time::Conductor
     attributes = attributes.symbolize_keys
     @starting_position = attributes.get(:starting_position, HeadMusic::Time::Position.new)
     @starting_smpte_timecode = attributes.get(:starting_smpte_timecode, HeadMusic::Time::SmpteTimecode.new)
-  end
-end
-
-# Meter or time signature
-class HeadMusic::Rudiment::Meter
-  attr_reader :top_number, :bottom_number
-
-  def initialize(top_number, bottom_number)
-    @top_number = top_number
-    @bottom_number = bottom_number
   end
 end
 

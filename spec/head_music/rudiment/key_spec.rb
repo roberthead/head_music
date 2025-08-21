@@ -14,6 +14,7 @@ describe HeadMusic::Rudiment::Key do
       its(:to_s) { is_expected.to eq "C major" }
       it { is_expected.to be_major }
       it { is_expected.not_to be_minor }
+      its(:relative) { is_expected.to eq described_class.get("A minor") }
     end
 
     context "when given 'A minor'" do
@@ -25,6 +26,19 @@ describe HeadMusic::Rudiment::Key do
       its(:name) { is_expected.to eq "A minor" }
       it { is_expected.not_to be_major }
       it { is_expected.to be_minor }
+      its(:relative) { is_expected.to eq described_class.get("C major") }
+    end
+
+    context "when given 'Eb major'" do
+      let(:identifier) { "Eb major" }
+
+      it { is_expected.to be_a(described_class) }
+      its(:tonic_spelling) { is_expected.to eq "Eb" }
+      its(:quality) { is_expected.to eq :major }
+      its(:name) { is_expected.to eq "E♭ major" }
+      it { is_expected.to be_major }
+      it { is_expected.not_to be_minor }
+      its(:relative) { is_expected.to eq described_class.get("C minor") }
     end
 
     context "when given just a tonic" do

@@ -19,10 +19,8 @@ class HeadMusic::Rudiment::Key < HeadMusic::Rudiment::DiatonicContext
   end
 
   def self.parse_identifier(identifier)
-    identifier = identifier.to_s.strip
-    parts = identifier.split(/\s+/)
-    tonic_spelling = parts[0]
-    quality_name = parts[1] || "major"
+    tonic_spelling, quality_name = identifier.to_s.strip.split(/\s+/)
+    quality_name ||= "major"
     [tonic_spelling, quality_name]
   end
 
