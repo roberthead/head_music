@@ -22,7 +22,7 @@ describe HeadMusic::Rudiment::Meter do
 
       its(:beats_per_bar) { are_expected.to eq 3 }
       its(:counts_per_bar) { are_expected.to eq 3 }
-      its(:beat_unit) { is_expected.to eq :quarter }
+      its(:beat_value) { is_expected.to eq :quarter }
       its(:strong_counts) { are_expected.to eq [1] }
       its(:ticks_per_count) { are_expected.to eq 960 }
     end
@@ -39,7 +39,7 @@ describe HeadMusic::Rudiment::Meter do
 
       its(:beats_per_bar) { are_expected.to eq 2 }
       its(:counts_per_bar) { are_expected.to eq 6 }
-      its(:beat_unit) { is_expected.to eq "dotted quarter" }
+      its(:beat_value) { is_expected.to eq "dotted quarter" }
       its(:strong_counts) { are_expected.to eq [1, 4] }
       its(:ticks_per_count) { are_expected.to eq 480 }
     end
@@ -56,7 +56,7 @@ describe HeadMusic::Rudiment::Meter do
 
       its(:beats_per_bar) { are_expected.to eq 3 }
       its(:counts_per_bar) { are_expected.to eq 9 }
-      its(:beat_unit) { is_expected.to eq "dotted quarter" }
+      its(:beat_value) { is_expected.to eq "dotted quarter" }
       its(:strong_counts) { are_expected.to eq [1, 4, 7] }
       its(:ticks_per_count) { are_expected.to eq 480 }
     end
@@ -73,7 +73,7 @@ describe HeadMusic::Rudiment::Meter do
 
       its(:beats_per_bar) { are_expected.to eq 4 }
       its(:counts_per_bar) { are_expected.to eq 4 }
-      its(:beat_unit) { is_expected.to eq "quarter" }
+      its(:beat_value) { is_expected.to eq "quarter" }
       its(:strong_counts) { are_expected.to eq [1, 3] }
       its(:ticks_per_count) { are_expected.to eq 960 }
     end
@@ -90,7 +90,7 @@ describe HeadMusic::Rudiment::Meter do
 
       its(:beats_per_bar) { are_expected.to eq 2 }
       its(:counts_per_bar) { are_expected.to eq 2 }
-      its(:beat_unit) { is_expected.to eq :half }
+      its(:beat_value) { is_expected.to eq :half }
       its(:strong_counts) { are_expected.to eq [1, 2] }
       its(:ticks_per_count) { are_expected.to eq 1920 }
     end

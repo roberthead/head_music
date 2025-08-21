@@ -76,18 +76,24 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
     @ticks_per_count ||= count_unit.ticks
   end
 
+  # The rhythmic unit for the count (bottom number).
+  # This unit is also used as the display unit for beats
+  # in a music software context
   def count_unit
     HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number)
   end
 
-  def beat_unit
-    @beat_unit ||=
+  def beat_value
+    @beat_value ||=
       if compound?
         HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / 2), dots: 1)
       else
         HeadMusic::Rudiment::RhythmicValue.new(count_unit)
       end
   end
+
+  # for consistency with conversational usage
+  alias_method :beat_unit, :beat_value
 
   def to_s
     [top_number, bottom_number].join("/")
