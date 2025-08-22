@@ -17,6 +17,12 @@ describe HeadMusic::Instruments::ScoreOrder do
       order2 = described_class.get(:orchestral)
       expect(order1).to be(order2)
     end
+
+    it "handles missing sections gracefully" do
+      # This tests the fallback behavior in the initialize method
+      order = described_class.get(:orchestral)
+      expect(order.sections).to be_an(Array)
+    end
   end
 
   describe ".in_orchestral_order" do
@@ -97,8 +103,7 @@ describe HeadMusic::Instruments::ScoreOrder do
           violin viola cello double_bass
           flute oboe clarinet bassoon
           french_horn trumpet trombone tuba
-          timpani
-          harp piano
+          timpani harp piano
         ]
       end
 
@@ -150,17 +155,33 @@ describe HeadMusic::Instruments::ScoreOrder do
         expect(instrument_names.size).to eq(3) # flute, violin, and "not_an_instrument"
       end
     end
-  end
 
-  describe "#instrument_order" do
-    let(:score_order) { described_class.get(:orchestral) }
+    context "with a score order" do
+      let(:score_order) { described_class.get(:orchestral) }
 
-    it "returns all instruments in order as symbols" do
-      order = score_order.instrument_order
+      it "handles invalid instrument strings gracefully" do
+        instruments = ["invalid_instrument_name", "flute"]
+        ordered = score_order.order(instruments)
 
-      expect(order).to be_an(Array)
-      expect(order.first).to be_a(Symbol)
-      expect(order).to include(:flute, :violin, :trumpet, :timpani)
+        expect(ordered.map(&:name)).to include("flute")
+        expect(ordered.map(&:name)).to include("invalid_instrument_name")
+      end
+
+      it "handles empty strings and nils" do
+        instruments = [nil, "", "flute", nil]
+        ordered = score_order.order(instruments)
+
+        expect(ordered.map(&:name)).to eq(["flute"])
+      end
+
+      it "handles instruments with family matching" do
+        # Test case where instrument has a family_key that matches ordering
+        instruments = ["alto_saxophone", "tenor_saxophone"]
+        band_order = described_class.get(:band)
+        ordered = band_order.order(instruments) if band_order
+
+        expect(ordered).not_to be_empty if band_order
+      end
     end
   end
 

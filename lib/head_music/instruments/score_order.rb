@@ -50,12 +50,6 @@ class HeadMusic::Instruments::ScoreOrder
     sorted_known + unknown_instruments.sort_by(&:to_s)
   end
 
-  # Returns the list of all instrument keys in order for this ensemble type
-  # @return [Array<Symbol>] Ordered list of instrument keys
-  def instrument_order
-    @instrument_order ||= sections.flat_map { |section| section["instruments"] || [] }.map(&:to_sym)
-  end
-
   private_class_method :new
 
   private
