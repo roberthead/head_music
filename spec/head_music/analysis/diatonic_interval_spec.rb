@@ -68,6 +68,13 @@ I18n.describe HeadMusic::Analysis::DiatonicInterval do
       specify { expect(described_class.get("d5")).to eq dim5 }
       specify { expect(described_class.get("M10").name).to eq "major tenth" }
     end
+
+    describe "when passed a DiatonicInterval" do
+      it "returns that object" do
+        interval = described_class.get(:major_third)
+        expect(described_class.get(interval)).to be(interval)
+      end
+    end
   end
 
   describe "predicate methods" do
@@ -124,11 +131,16 @@ I18n.describe HeadMusic::Analysis::DiatonicInterval do
     end
   end
 
-  describe "size comparison" do
+  describe "comparison" do
     specify { expect(maj3).to be > min3 }
     specify { expect(min3).to be < maj3 }
     specify { expect(p5).to be > maj3 }
     specify { expect(aug4).to eq dim5 }
+
+    it "handles comparison with string representation" do
+      major_third = described_class.get(:major_third)
+      expect(major_third <=> "minor third").to be > 0
+    end
   end
 
   context "given two pitches comprising a simple interval" do
@@ -283,5 +295,46 @@ I18n.describe HeadMusic::Analysis::DiatonicInterval do
     specify { expect(described_class.get(:minor_tenth).diatonic_generic_interval).to eq 2 }
     specify { expect(described_class.get(:minor_tenth).specific_interval).to eq 3 }
   end
+
+  describe "i18n" do
+    describe "#name" do
+      it "returns translated name when locale_code is provided" do
+        interval = described_class.get(:major_third)
+        expect(interval.name(locale_code: :fr)).to eq("tierce majeure")
+      end
+
+      it "falls back to default name when translation is not available" do
+        interval = described_class.get(:major_third)
+        # Test with a valid locale that does not have translations for this key
+        expect(interval.name(locale_code: :en_GB)).to eq("major third")
+      end
+
+      it "returns default name when no locale_code is provided" do
+        interval = described_class.get(:major_third)
+        expect(interval.name).to eq(interval.name(locale_code: :en))
+      end
+    end
+  end
+
+  describe "#spans?" do
+    it "returns true when pitch is between lower and higher pitch" do
+      interval = described_class.new("C4", "G4")
+      middle_pitch = HeadMusic::Rudiment::Pitch.get("E4")
+      expect(interval.spans?(middle_pitch)).to be true
+    end
+
+    it "returns false when pitch is outside the interval" do
+      interval = described_class.new("C4", "G4")
+      outside_pitch = HeadMusic::Rudiment::Pitch.get("A4")
+      expect(interval.spans?(outside_pitch)).to be false
+    end
+
+    it "returns false when pitch on the boundary of the interval" do
+      interval = described_class.new("C4", "G4")
+      boundary_pitch = HeadMusic::Rudiment::Pitch.get("G4")
+      expect(interval.spans?(boundary_pitch)).to be true
+    end
+  end
+
   # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

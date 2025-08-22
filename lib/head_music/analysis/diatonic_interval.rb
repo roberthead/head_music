@@ -57,16 +57,17 @@ class HeadMusic::Analysis::DiatonicInterval
 
   alias_method :to_i, :semitones
 
-  # Override Named module methods to use computed name from naming
+  # Override Named module method to try I18n and fall back to computed name
   def name(locale_code: nil)
     if locale_code
-      # Try to get translation from locale files
-      name_key = naming.name.downcase.gsub(" ", "_").to_sym
-      translation = I18n.translate(name_key, scope: "head_music.diatonic_intervals", locale: locale_code, default: nil)
-      translation || naming.name
-    else
-      naming.name
+      name_key = HeadMusic::Utilities::HashKey.for(naming.name)
+      if I18n.backend.translations[locale_code]
+        locale_data = I18n.backend.translations[locale_code][:head_music] || {}
+        return locale_data[:diatonic_intervals][name_key] if locale_data.dig(:diatonic_intervals, name_key)
+        return locale_data[:chromatic_intervals][name_key] if locale_data.dig(:chromatic_intervals, name_key)
+      end
     end
+    naming.name
   end
 
   def to_s
