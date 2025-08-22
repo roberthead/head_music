@@ -8,7 +8,6 @@ module HeadMusic::Rudiment; end
 # For notes placed within a composition context, see HeadMusic::Content::Note
 class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   include HeadMusic::Named
-  include HeadMusic::Parsable
 
   attr_reader :pitch
 
@@ -25,8 +24,7 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
     return pitch if pitch.is_a?(HeadMusic::Rudiment::Note)
 
     if rhythmic_value.nil? && pitch.is_a?(String)
-      # Try to parse as a complete note string first
-      parsed = parse(pitch)
+      parsed = HeadMusic::Parse::RhythmicElement.new(pitch).note
       return parsed if parsed
 
       # If parsing fails, treat it as just a pitch with default quarter note

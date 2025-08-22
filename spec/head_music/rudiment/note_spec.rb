@@ -158,15 +158,15 @@ describe HeadMusic::Rudiment::Note do
     end
   end
 
-  describe "Parsable integration" do
+  describe "parsing" do
     it "parses note strings" do
-      note = described_class.parse("Ab3 sixteenth")
+      note = described_class.get("Ab3 sixteenth")
       expect(note.pitch.to_s).to eq "A♭3"
       expect(note.rhythmic_value.to_s).to eq "sixteenth"
     end
 
     it "returns nil for invalid strings" do
-      expect(described_class.parse("invalid")).to be_nil
+      expect(described_class.get("invalid")).to be_nil
     end
   end
 

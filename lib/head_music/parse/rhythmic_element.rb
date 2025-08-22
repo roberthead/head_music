@@ -10,6 +10,14 @@ class HeadMusic::Parse::RhythmicElement
     @identifier = identifier.to_s.strip
   end
 
+  def note
+    parsed_element if parsed_element.is_a?(HeadMusic::Rudiment::Note)
+  end
+
+  def rest
+    parsed_element if parsed_element.is_a?(HeadMusic::Rudiment::Rest)
+  end
+
   def parsed_element
     if rhythmic_value
       if pitch
