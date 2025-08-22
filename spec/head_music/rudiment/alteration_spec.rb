@@ -79,25 +79,7 @@ describe HeadMusic::Rudiment::Alteration do
     end
   end
 
-  describe "Parsable module integration" do
-    describe ".parse" do
-      specify { expect(described_class.parse("#")).to eq described_class.get(:sharp) }
-      specify { expect(described_class.parse("♯")).to eq described_class.get(:sharp) }
-      specify { expect(described_class.parse("b")).to eq described_class.get(:flat) }
-      specify { expect(described_class.parse("♭")).to eq described_class.get(:flat) }
-      specify { expect(described_class.parse("x")).to eq described_class.get(:double_sharp) }
-      specify { expect(described_class.parse("𝄪")).to eq described_class.get(:double_sharp) }
-      specify { expect(described_class.parse("bb")).to eq described_class.get(:double_flat) }
-      specify { expect(described_class.parse("𝄫")).to eq described_class.get(:double_flat) }
-      specify { expect(described_class.parse("")).to be_nil }
-
-      context "when given an Alteration instance" do
-        let(:alteration) { described_class.get(:sharp) }
-
-        specify { expect(described_class.parse(alteration)).to be alteration }
-      end
-    end
-
+  describe "parsing" do
     describe ".from_string" do
       specify { expect(described_class.from_string("#")).to eq described_class.get(:sharp) }
       specify { expect(described_class.from_string("sharp")).to eq described_class.get(:sharp) }

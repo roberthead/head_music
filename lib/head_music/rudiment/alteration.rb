@@ -8,7 +8,6 @@ module HeadMusic::Rudiment; end
 class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
   include Comparable
   include HeadMusic::Named
-  include HeadMusic::Parsable
 
   attr_reader :identifier, :cents, :musical_symbols
 
@@ -57,7 +56,7 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::Rudiment::Alteration)
 
-    parse(identifier) || all.detect do |alteration|
+    all.detect do |alteration|
       alteration.representions.include?(identifier)
     end
   end
