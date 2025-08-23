@@ -113,7 +113,8 @@ class HeadMusic::Instruments::Instrument
 
   def record_for_name(name)
     record_for_key(HeadMusic::Utilities::HashKey.for(name)) ||
-      record_for_key(key_for_name(name))
+      record_for_key(key_for_name(name)) ||
+      record_for_alias(name)
   end
 
   def key_for_name(name)
@@ -129,6 +130,16 @@ class HeadMusic::Instruments::Instrument
   def record_for_key(key)
     INSTRUMENTS.each do |name_key, data|
       return data.merge!("name_key" => name_key) if name_key.to_s == key.to_s
+    end
+    nil
+  end
+
+  def record_for_alias(name)
+    normalized_name = HeadMusic::Utilities::HashKey.for(name).to_s
+    INSTRUMENTS.each do |name_key, data|
+      data["alias_name_keys"]&.each do |alias_key|
+        return data.merge!("name_key" => name_key) if HeadMusic::Utilities::HashKey.for(alias_key).to_s == normalized_name
+      end
     end
     nil
   end

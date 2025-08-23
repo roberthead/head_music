@@ -41,16 +41,18 @@ class HeadMusic::Instruments::ScoreOrder
     unknown_instruments = []
 
     instrument_objects.each do |instrument|
-      position = find_position(instrument, ordering_index)
-      if position
-        known_instruments << [instrument, position]
+      position_info = find_position_with_transposition(instrument, ordering_index)
+      if position_info
+        known_instruments << [instrument, position_info]
       else
         unknown_instruments << instrument
       end
     end
 
-    # Sort known instruments by position and combine with unknown
-    sorted_known = known_instruments.sort_by { |_, position| position }.map(&:first)
+    # Sort known instruments by position (primary) and transposition (secondary)
+    sorted_known = known_instruments.sort_by { |_, pos_info|
+      [pos_info[:position], -pos_info[:transposition]]
+    }.map(&:first)
     sorted_known + unknown_instruments.sort_by(&:to_s)
   end
 
@@ -67,6 +69,8 @@ class HeadMusic::Instruments::ScoreOrder
   end
 
   def normalize_to_instrument(input)
+    # Return if already an instrument object (or mock object that responds to required methods)
+    return input if input.respond_to?(:name_key) && input.respond_to?(:family_key)
     return input if input.is_a?(HeadMusic::Instruments::Instrument)
 
     HeadMusic::Instruments::Instrument.get(input)
@@ -114,5 +118,16 @@ class HeadMusic::Instruments::ScoreOrder
     return ordering_index[normalized] if ordering_index.key?(normalized)
 
     nil
+  end
+
+  # Finds the position and transposition information for an instrument
+  def find_position_with_transposition(instrument, ordering_index)
+    position = find_position(instrument, ordering_index)
+    return nil unless position
+
+    # Get the sounding transposition for secondary sorting
+    transposition = instrument.default_sounding_transposition || 0
+
+    {position: position, transposition: transposition}
   end
 end
