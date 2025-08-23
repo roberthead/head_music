@@ -67,13 +67,6 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
     end
   end
 
-  def self.from_string(string)
-    string = string.to_s.strip
-    all.detect do |alteration|
-      alteration.representions.include?(string)
-    end
-  end
-
   def self.get_by_name(name)
     all.detect { |alteration| alteration.name == name.to_s }
   end

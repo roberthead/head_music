@@ -11,7 +11,7 @@ module HeadMusic::Style
     end
 
     def consonance_classification(interval)
-      raise HeadMusic::AbstractMethodError, "#{self.class} must implement consonance_classification"
+      raise NotImplementedError, "#{self.class} must implement consonance_classification"
     end
 
     def name

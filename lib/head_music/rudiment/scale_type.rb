@@ -3,6 +3,10 @@ module HeadMusic::Rudiment; end
 
 # A ScaleType represents a particular scale pattern, such as major, lydian, or minor pentatonic.
 class HeadMusic::Rudiment::ScaleType < HeadMusic::Rudiment::Base
+  # TODO: load scale types from yaml configuration file
+  # Include a system of aliasing, e.g. :natural_minor, :aeolian
+  # Include ascending and descending intervals for scales that differ
+
   H = 1 # half step
   W = 2 # whole step
 
@@ -32,6 +36,8 @@ class HeadMusic::Rudiment::ScaleType < HeadMusic::Rudiment::Base
   CHROMATIC = ([H] * 12)
 
   MINOR_PENTATONIC = [3, 2, 2, 3, 2].freeze
+
+  DEFAULT = :major
 
   def self._modes
     {}.tap do |modes|

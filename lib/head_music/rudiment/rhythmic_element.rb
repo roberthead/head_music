@@ -24,12 +24,7 @@ class HeadMusic::Rudiment::RhythmicElement < HeadMusic::Rudiment::Base
 
   # Create a new instance with a different rhythmic value
   def with_rhythmic_value(new_rhythmic_value)
-    # Use the factory method if available, otherwise use new
-    if self.class.respond_to?(:get)
-      self.class.get(new_rhythmic_value)
-    else
-      self.class.send(:new, new_rhythmic_value)
-    end
+    self.class.get(new_rhythmic_value)
   end
 
   def ==(other)
@@ -48,11 +43,11 @@ class HeadMusic::Rudiment::RhythmicElement < HeadMusic::Rudiment::Base
 
   # Abstract method - must be implemented by subclasses
   def name
-    raise HeadMusic::AbstractMethodError, "Subclasses must implement the name method"
+    raise NotImplementedError, "Subclasses must implement the name method"
   end
 
   # Abstract method - must be implemented by subclasses
   def sounded?
-    raise HeadMusic::AbstractMethodError, "Subclasses must implement the sounded? method"
+    raise NotImplementedError, "Subclasses must implement the sounded? method"
   end
 end

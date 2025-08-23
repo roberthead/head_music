@@ -79,27 +79,19 @@ describe HeadMusic::Rudiment::Alteration do
     end
   end
 
-  describe "parsing" do
-    describe ".from_string" do
-      specify { expect(described_class.from_string("#")).to eq described_class.get(:sharp) }
-      specify { expect(described_class.from_string("sharp")).to eq described_class.get(:sharp) }
-      specify { expect(described_class.from_string("invalid")).to be_nil }
-    end
+  describe "::MATCHER" do
+    specify { expect(described_class::MATCHER).to match "#" }
+    specify { expect(described_class::MATCHER).to match "♯" }
+    specify { expect(described_class::MATCHER).to match "b" }
+    specify { expect(described_class::MATCHER).to match "♭" }
+    specify { expect(described_class::MATCHER).to match "x" }
+    specify { expect(described_class::MATCHER).to match "𝄪" }
+    specify { expect(described_class::MATCHER).to match "bb" }
+    specify { expect(described_class::MATCHER).to match "𝄫" }
+    specify { expect(described_class::MATCHER).not_to match "h" }
+    specify { expect(described_class::MATCHER).not_to match "" }
 
-    describe "::MATCHER" do
-      specify { expect(described_class::MATCHER).to match "#" }
-      specify { expect(described_class::MATCHER).to match "♯" }
-      specify { expect(described_class::MATCHER).to match "b" }
-      specify { expect(described_class::MATCHER).to match "♭" }
-      specify { expect(described_class::MATCHER).to match "x" }
-      specify { expect(described_class::MATCHER).to match "𝄪" }
-      specify { expect(described_class::MATCHER).to match "bb" }
-      specify { expect(described_class::MATCHER).to match "𝄫" }
-      specify { expect(described_class::MATCHER).not_to match "h" }
-      specify { expect(described_class::MATCHER).not_to match "" }
-
-      specify { expect(described_class::PATTERN).to eq(/♯|\#|♭|b|♮|𝄪|x|𝄫|bb/) }
-      specify { expect(described_class::MATCHER).to eq(/♯|\#|♭|b|♮|𝄪|x|𝄫|bb/) }
-    end
+    specify { expect(described_class::PATTERN).to eq(/♯|\#|♭|b|♮|𝄪|x|𝄫|bb/) }
+    specify { expect(described_class::MATCHER).to eq(/♯|\#|♭|b|♮|𝄪|x|𝄫|bb/) }
   end
 end

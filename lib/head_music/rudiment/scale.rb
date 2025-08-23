@@ -6,9 +6,8 @@ class HeadMusic::Rudiment::Scale < HeadMusic::Rudiment::Base
   SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
 
   def self.get(root_pitch, scale_type = nil)
-    root_pitch, scale_type = root_pitch.split(/\s+/) if root_pitch.is_a?(String) && scale_type =~ SCALE_REGEX
     root_pitch = HeadMusic::Rudiment::Pitch.get(root_pitch)
-    scale_type = HeadMusic::Rudiment::ScaleType.get(scale_type || :major)
+    scale_type = HeadMusic::Rudiment::ScaleType.get(scale_type || HeadMusic::Rudiment::ScaleType::DEFAULT)
     @scales ||= {}
     hash_key = HeadMusic::Utilities::HashKey.for(
       [root_pitch, scale_type].join(" ").gsub(/#|♯/, "sharp").gsub(/(\w)[b♭]/, '\\1flat')
@@ -36,7 +35,7 @@ class HeadMusic::Rudiment::Scale < HeadMusic::Rudiment::Base
   end
 
   def spellings(direction: :ascending, octaves: 1)
-    pitches(direction: direction, octaves: octaves).map(&:spelling).map(&:to_s)
+    pitches(direction: direction, octaves: octaves).map(&:spelling)
   end
 
   def pitch_names(direction: :ascending, octaves: 1)
@@ -83,7 +82,7 @@ class HeadMusic::Rudiment::Scale < HeadMusic::Rudiment::Base
   end
 
   def parent_scale_pitches
-    HeadMusic::Rudiment::Scale.get(root_pitch, scale_type.parent_name).pitches if scale_type.parent
+    HeadMusic::Rudiment::Scale.get(root_pitch, scale_type.parent_name).pitches
   end
 
   def parent_scale_pitch_for(semitones_from_root)

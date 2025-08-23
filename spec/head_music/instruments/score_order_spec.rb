@@ -1,15 +1,20 @@
 require "spec_helper"
 
 describe HeadMusic::Instruments::ScoreOrder do
-  describe ".get" do
-    it "returns a ScoreOrder instance for a valid ensemble type" do
-      order = described_class.get(:orchestral)
-      expect(order).to be_a(described_class)
-      expect(order.ensemble_type_key).to eq(:orchestral)
+  describe "construction" do
+    context "with a valid ensemble type" do
+      subject(:score_order) { described_class.get(:orchestral) }
+
+      specify do
+        expect(score_order).to be_a(described_class)
+        expect(score_order.ensemble_type_key).to eq(:orchestral)
+      end
     end
 
-    it "returns nil for an invalid ensemble type" do
-      expect(described_class.get(:invalid_type)).to be_nil
+    context "with an invalid ensemble type" do
+      subject(:score_order) { described_class.get(:invalid_type) }
+
+      it { is_expected.to be_nil }
     end
 
     it "caches instances" do
@@ -140,6 +145,26 @@ describe HeadMusic::Instruments::ScoreOrder do
 
         expect(instrument_names.count("violin")).to eq(2)
         expect(instrument_names).to eq(["violin", "violin", "viola"])
+      end
+    end
+
+    context "with a fake instrument name" do
+      let(:instruments) { ["flute", "not_an_instrument", "violin"] }
+
+      it "places the fake instrument at the end" do
+        ordered = orchestral_order.order(instruments)
+        instrument_names = ordered.map(&:name)
+
+        expect(instrument_names.last).to eq("not_an_instrument")
+      end
+    end
+
+    context "with instrument variants" do
+      let(:instruments) { ["alto_saxophone", "tenor_saxophone", "alto_flute", "alto_recorder", "piccolo"] }
+
+      it "orders variants correctly" do
+        ordered = orchestral_order.order(instruments)
+        expect(ordered.map(&:name)).to eq(["piccolo", "alto flute", "alto recorder", "alto saxophone", "tenor saxophone"])
       end
     end
 

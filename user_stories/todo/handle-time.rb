@@ -142,15 +142,6 @@ class HeadMusic::Time::MeterEvent
   end
 end
 
-class HeadMusic::Rudiment::Tempo
-  attr_accessor :beat_value, :beats_per_minute
-
-  def initialize(beat_value, beats_per_minute)
-    @beat_value = beat_value
-    @beats_per_minute = beats_per_minute
-  end
-end
-
 class HeadMusic::Time::TempoEvent
   attr_accessor :position, :tempo
 

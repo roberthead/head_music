@@ -63,8 +63,8 @@ describe HeadMusic::Style::Tradition do
     let(:tradition) { described_class.new }
     let(:interval) { instance_double(HeadMusic::Analysis::DiatonicInterval) }
 
-    it "raises AbstractMethodError" do
-      expect { tradition.consonance_classification(interval) }.to raise_error(HeadMusic::AbstractMethodError)
+    it "raises NotImplementedError" do
+      expect { tradition.consonance_classification(interval) }.to raise_error(NotImplementedError)
     end
   end
 

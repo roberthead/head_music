@@ -32,7 +32,7 @@ describe HeadMusic::Rudiment::Rest do
       end
     end
 
-    context "when given an existing Rest" do
+    context "with an existing Rest" do
       subject(:rest) { described_class.get(original_rest) }
 
       let(:original_rest) { described_class.get(:whole) }
@@ -40,6 +40,14 @@ describe HeadMusic::Rudiment::Rest do
       it "returns the same rest" do
         expect(rest).to be(original_rest)
       end
+    end
+
+    context "with a Pitch object" do
+      subject(:rest) { described_class.get(pitch) }
+
+      let(:pitch) { HeadMusic::Rudiment::Pitch.get("C4") }
+
+      it { is_expected.to be_nil }
     end
   end
 

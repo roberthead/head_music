@@ -143,6 +143,51 @@ describe HeadMusic::Rudiment::Mode do
         expect(dorian_mode.parallel.name).to eq "D minor"
       end
     end
+
+    context "for phrygian mode" do
+      subject(:phrygian_mode) { described_class.get("E phrygian") }
+
+      it "returns the parallel minor key" do
+        expect(phrygian_mode.parallel).to be_a(HeadMusic::Rudiment::Key)
+        expect(phrygian_mode.parallel.name).to eq "E minor"
+      end
+    end
+
+    context "for lydian mode" do
+      subject(:lydian_mode) { described_class.get("F lydian") }
+
+      it "returns the parallel major key" do
+        expect(lydian_mode.parallel).to be_a(HeadMusic::Rudiment::Key)
+        expect(lydian_mode.parallel.name).to eq "F major"
+      end
+    end
+
+    context "for mixolydian mode" do
+      subject(:mixolydian_mode) { described_class.get("G mixolydian") }
+
+      it "returns the parallel major key" do
+        expect(mixolydian_mode.parallel).to be_a(HeadMusic::Rudiment::Key)
+        expect(mixolydian_mode.parallel.name).to eq "G major"
+      end
+    end
+
+    context "for aeolian mode" do
+      subject(:aeolian_mode) { described_class.get("A aeolian") }
+
+      it "returns the parallel minor key" do
+        expect(aeolian_mode.parallel).to be_a(HeadMusic::Rudiment::Key)
+        expect(aeolian_mode.parallel.name).to eq "A minor"
+      end
+    end
+
+    context "for locrian mode" do
+      subject(:locrian_mode) { described_class.get("B locrian") }
+
+      it "returns the parallel minor key" do
+        expect(locrian_mode.parallel).to be_a(HeadMusic::Rudiment::Key)
+        expect(locrian_mode.parallel.name).to eq "B minor"
+      end
+    end
   end
 
   describe "#==" do

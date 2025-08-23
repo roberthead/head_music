@@ -26,8 +26,8 @@ class HeadMusic::Rudiment::Tempo
       NANOSECONDS_PER_MINUTE / beats_per_minute
   end
 
-  def nanoseconds_per_tick
-    @nanoseconds_per_tick ||=
-      NANOSECONDS_PER_MINUTE / (beats_per_minute * ticks_per_beat)
+  def tick_duration_in_nanoseconds
+    @tick_duration_in_nanoseconds ||=
+      beat_duration_in_nanoseconds / ticks_per_beat
   end
 end

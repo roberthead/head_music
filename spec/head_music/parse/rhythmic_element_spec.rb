@@ -23,6 +23,8 @@ describe HeadMusic::Parse::RhythmicElement do
     its(:register) { is_expected.to be_nil }
     its(:rhythmic_value) { is_expected.to eq("quarter") }
     its(:parsed_element) { is_expected.to be_a(HeadMusic::Rudiment::Rest) }
+    its(:note) { is_expected.to be_nil }
+    its(:rest) { is_expected.to be_a(HeadMusic::Rudiment::Rest) }
   end
 
   context "with a meaningless string" do

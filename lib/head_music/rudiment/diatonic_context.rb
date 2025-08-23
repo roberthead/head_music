@@ -4,7 +4,7 @@ module HeadMusic::Rudiment; end
 # Abstract class representing a diatonic tonal context (7-note scale system)
 class HeadMusic::Rudiment::DiatonicContext < HeadMusic::Rudiment::TonalContext
   def scale_type
-    raise AbstractMethodError, "Subclasses must implement #scale_type"
+    raise NotImplementedError, "Subclasses must implement #scale_type"
   end
 
   def scale
@@ -16,10 +16,10 @@ class HeadMusic::Rudiment::DiatonicContext < HeadMusic::Rudiment::TonalContext
   end
 
   def relative
-    raise AbstractMethodError, "Subclasses must implement #relative"
+    raise NotImplementedError, "Subclasses must implement #relative"
   end
 
   def parallel
-    raise AbstractMethodError, "Subclasses must implement #parallel"
+    raise NotImplementedError, "Subclasses must implement #parallel"
   end
 end

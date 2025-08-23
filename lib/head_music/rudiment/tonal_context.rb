@@ -14,11 +14,11 @@ class HeadMusic::Rudiment::TonalContext < HeadMusic::Rudiment::Base
   end
 
   def scale
-    raise AbstractMethodError, "Subclasses must implement #scale"
+    raise NotImplementedError, "Subclasses must implement #scale"
   end
 
-  def pitches(octave = 4)
-    scale.pitches(octave)
+  def pitches(octave = nil)
+    scale.pitches(direction: :ascending, octaves: 1)
   end
 
   def pitch_classes
@@ -30,6 +30,6 @@ class HeadMusic::Rudiment::TonalContext < HeadMusic::Rudiment::Base
   end
 
   def key_signature
-    raise AbstractMethodError, "Subclasses must implement #key_signature"
+    raise NotImplementedError, "Subclasses must implement #key_signature"
   end
 end

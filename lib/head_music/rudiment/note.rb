@@ -12,7 +12,7 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   attr_reader :pitch
 
   delegate :spelling, :register, :letter_name, :alteration, to: :pitch
-  delegate :sharp?, :flat?, to: :pitch
+  delegate :sharp?, :flat?, :natural?, to: :pitch
   delegate :pitch_class, :midi_note_number, :frequency, to: :pitch
 
   # Regex pattern for parsing note strings like "C#4 quarter" or "Eb3 dotted half"
@@ -45,31 +45,6 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
     @notes[hash_key] ||= new(pitch, rhythmic_value)
   end
 
-  def self.from_string(string)
-    match = string.match(MATCHER)
-    return nil unless match
-
-    # The captures include the full pitch pattern and its subgroups
-    captures = match.captures
-    pitch_string = captures[0]  # Full pitch match
-    rhythm_string = captures[-1]  # Last capture is the rhythm
-
-    pitch = HeadMusic::Rudiment::Pitch.get(pitch_string)
-    rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythm_string.strip)
-
-    return nil unless pitch && rhythmic_value
-    fetch_or_create(pitch, rhythmic_value)
-  end
-
-  def self.from_pitch(pitch)
-    return nil unless pitch.is_a?(HeadMusic::Rudiment::Pitch)
-    fetch_or_create(pitch, HeadMusic::Rudiment::RhythmicValue.get(:quarter))
-  end
-
-  def self.from_pitched_item(input)
-    from_pitch(input)
-  end
-
   def initialize(pitch, rhythmic_value)
     super(rhythmic_value)
     @pitch = pitch
@@ -87,8 +62,7 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   end
 
   def ==(other)
-    return false unless other.is_a?(self.class)
-
+    other = HeadMusic::Rudiment::Note.get(other)
     super && pitch == other.pitch
   end
 
@@ -119,10 +93,6 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   # Change the pitch while keeping the same rhythmic value
   def with_pitch(new_pitch)
     self.class.get(new_pitch, rhythmic_value)
-  end
-
-  def natural?
-    spelling.natural?
   end
 
   def sounded?

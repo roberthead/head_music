@@ -5,23 +5,27 @@ class HeadMusic::Instruments::ScoreOrder
 
   SCORE_ORDERS = YAML.load_file(File.expand_path("score_orders.yml", __dir__)).freeze
 
+  DEFAULT_ENSEMBLE_TYPE_KEY = :orchestral
+
   attr_reader :ensemble_type_key, :sections
 
   # Factory method to get a ScoreOrder instance for a specific ensemble type
   def self.get(ensemble_type)
     @instances ||= {}
     key = HeadMusic::Utilities::HashKey.for(ensemble_type)
-    @instances[key] ||= new(key) if SCORE_ORDERS.key?(key.to_s)
+    return unless SCORE_ORDERS.key?(key.to_s)
+
+    @instances[key] ||= new(key)
   end
 
   # Convenience method to order instruments in orchestral order
   def self.in_orchestral_order(instruments)
-    get(:orchestral)&.order(instruments) || []
+    get(:orchestral).order(instruments)
   end
 
   # Convenience method to order instruments in concert band order
   def self.in_band_order(instruments)
-    get(:band)&.order(instruments) || []
+    get(:band).order(instruments)
   end
 
   # Accepts a list of instruments and orders them according to this ensemble type's conventions
@@ -54,25 +58,18 @@ class HeadMusic::Instruments::ScoreOrder
 
   private
 
-  def initialize(ensemble_type_key)
+  def initialize(ensemble_type_key = DEFAULT_ENSEMBLE_TYPE_KEY)
     @ensemble_type_key = ensemble_type_key.to_sym
     data = SCORE_ORDERS[ensemble_type_key.to_s]
 
-    if data
-      @sections = data["sections"] || []
-      self.name = data["name"] || ensemble_type_key.to_s.tr("_", " ").capitalize
-    else
-      @sections = []
-      self.name = ensemble_type_key.to_s.tr("_", " ").capitalize
-    end
+    @sections = data["sections"] || []
+    self.name = data["name"] || ensemble_type_key.to_s.tr("_", " ").capitalize
   end
 
   def normalize_to_instrument(input)
     return input if input.is_a?(HeadMusic::Instruments::Instrument)
 
     HeadMusic::Instruments::Instrument.get(input)
-  rescue
-    nil
   end
 
   # Builds an index mapping instrument names to their position in the order

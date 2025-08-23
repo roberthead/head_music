@@ -27,4 +27,4 @@ class Rest < RhythmicEvent
 acceptance criteria
 - the above class hierarchy and implementation requirements
 - full test coverage
-- use AbstractMethodError instead of NotImplementedError in RhythmicEvent if and where appropriate.
+- use NotImplementedError instead of NotImplementedError in RhythmicEvent if and where appropriate.

@@ -96,6 +96,10 @@ describe HeadMusic::Rudiment::Note do
       # When rhythmic values are equal, pitch determines order
       expect(c4_quarter).to be < d4_quarter
     end
+
+    it "does not compare non-rhythmic elements" do
+      expect { c4_quarter < "not a note" }.to raise_error(ArgumentError)
+    end
   end
 
   describe "transposition" do

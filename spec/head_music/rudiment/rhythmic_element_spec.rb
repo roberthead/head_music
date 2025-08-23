@@ -16,14 +16,6 @@ describe HeadMusic::Rudiment::RhythmicElement do
         end
 
         public_class_method :new
-
-        def name
-          "test element #{rhythmic_value}"
-        end
-
-        def sounded?
-          true
-        end
       end
     end
 
@@ -123,6 +115,28 @@ describe HeadMusic::Rudiment::RhythmicElement do
             # Should sort by rhythmic value: eighth, quarter, half
             expect(sorted).to eq([unpitched_eighth, quarter_note, half_rest])
           end
+        end
+      end
+    end
+
+    describe "abstract methods" do
+      let(:element) { test_class.get(:quarter) }
+
+      describe "#to_s" do
+        it "raises NotImplementedError" do
+          expect { element.to_s }.to raise_error(NotImplementedError)
+        end
+      end
+
+      describe "#name" do
+        it "raises NotImplementedError" do
+          expect { element.name }.to raise_error(NotImplementedError)
+        end
+      end
+
+      describe "#sounded?" do
+        it "raises NotImplementedError" do
+          expect { element.sounded? }.to raise_error(NotImplementedError)
         end
       end
     end

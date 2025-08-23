@@ -12,6 +12,7 @@ describe HeadMusic::Rudiment::Tempo do
       its(:beats_per_minute) { is_expected.to eq 120 }
       its(:beat_duration_in_seconds) { is_expected.to eq 0.5 }
       its(:beat_duration_in_nanoseconds) { is_expected.to eq 500_000_000 }
+      its(:tick_duration_in_nanoseconds) { is_expected.to be_within(0.01).of(520_833.33) }
       its(:ticks_per_beat) { is_expected.to eq 960 }
     end
 
@@ -23,6 +24,7 @@ describe HeadMusic::Rudiment::Tempo do
       its(:beats_per_minute) { is_expected.to eq 140 }
       its(:beat_duration_in_seconds) { is_expected.to be_within(0.00001).of(0.42857) }
       its(:beat_duration_in_nanoseconds) { is_expected.to be_within(1).of(428571428) }
+      its(:tick_duration_in_nanoseconds) { is_expected.to be_within(0.01).of(892_857.14) }
       its(:ticks_per_beat) { is_expected.to eq 480 }
     end
 
@@ -34,6 +36,7 @@ describe HeadMusic::Rudiment::Tempo do
       its(:beats_per_minute) { is_expected.to eq 92 }
       its(:beat_duration_in_seconds) { is_expected.to eq(0.6521739130434783) }
       its(:beat_duration_in_nanoseconds) { is_expected.to be_within(1).of(652173913) }
+      its(:tick_duration_in_nanoseconds) { is_expected.to be_within(0.01).of(452_898.55) }
       its(:ticks_per_beat) { is_expected.to eq 1440 }
     end
   end

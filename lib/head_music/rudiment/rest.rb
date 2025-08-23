@@ -28,11 +28,6 @@ class HeadMusic::Rudiment::Rest < HeadMusic::Rudiment::RhythmicElement
     "#{rhythmic_value} rest"
   end
 
-  # Override with_rhythmic_value to use the Rest factory method
-  def with_rhythmic_value(new_rhythmic_value)
-    self.class.get(new_rhythmic_value)
-  end
-
   def sounded?
     false
   end

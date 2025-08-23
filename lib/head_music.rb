@@ -3,9 +3,6 @@ module HeadMusic
   GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO
   PENALTY_FACTOR = GOLDEN_RATIO_INVERSE
   SMALL_PENALTY_FACTOR = GOLDEN_RATIO_INVERSE**0.5
-
-  # Custom exception for abstract methods
-  class AbstractMethodError < NoMethodError; end
 end
 
 require "head_music/version"
