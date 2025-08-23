@@ -160,11 +160,109 @@ describe HeadMusic::Instruments::ScoreOrder do
     end
 
     context "with instrument variants" do
-      let(:instruments) { ["alto_saxophone", "tenor_saxophone", "alto_flute", "alto_recorder", "piccolo"] }
+      let(:instruments) { %w[flute alto_saxophone tenor_saxophone alto_flute trumpet_in_c alto_recorder piccolo trumpet_in_eb] }
 
       it "orders variants correctly" do
         ordered = orchestral_order.order(instruments)
-        expect(ordered.map(&:name)).to eq(["piccolo", "alto flute", "alto recorder", "alto saxophone", "tenor saxophone"])
+        expect(ordered.map(&:name)).to eq(["piccolo", "alto flute", "alto recorder", "alto saxophone", "tenor saxophone", "Trumpet in C", "Trumpet in Eb"])
+      end
+    end
+
+    context "with trumpet transpositions" do
+      # Create mock instrument instances for different transpositions
+      let(:trumpet_bb) do
+        instance_double(HeadMusic::Instruments::Instrument,
+          name: "trumpet",
+          name_key: "trumpet",
+          family_key: "trumpet",
+          default_sounding_transposition: -2,
+          to_s: "trumpet")
+      end
+
+      let(:trumpet_c) do
+        instance_double(HeadMusic::Instruments::Instrument,
+          name: "trumpet",
+          name_key: "trumpet",
+          family_key: "trumpet",
+          default_sounding_transposition: 0,
+          to_s: "trumpet")
+      end
+
+      let(:trumpet_d) do
+        instance_double(HeadMusic::Instruments::Instrument,
+          name: "trumpet",
+          name_key: "trumpet",
+          family_key: "trumpet",
+          default_sounding_transposition: 2,
+          to_s: "trumpet")
+      end
+
+      let(:trumpet_eb) do
+        instance_double(HeadMusic::Instruments::Instrument,
+          name: "trumpet",
+          name_key: "trumpet",
+          family_key: "trumpet",
+          default_sounding_transposition: 3,
+          to_s: "trumpet")
+      end
+
+      let(:instruments) { [trumpet_bb, trumpet_c, trumpet_d, trumpet_eb] }
+
+      it "orders trumpets by transposition (high to low)" do
+        ordered = orchestral_order.order(instruments)
+        transpositions = ordered.map(&:default_sounding_transposition)
+
+        # Eb (+3), D (+2), C (0), Bb (-2)
+        expect(transpositions).to eq([3, 2, 0, -2])
+      end
+    end
+
+    context "with clarinet transpositions" do
+      # Create mock instrument instances for different transpositions
+      let(:clarinet_bb) do
+        instance_double(HeadMusic::Instruments::Instrument,
+          name: "clarinet",
+          name_key: "clarinet",
+          family_key: "clarinet",
+          default_sounding_transposition: -2,
+          to_s: "clarinet")
+      end
+
+      let(:clarinet_a) do
+        instance_double(HeadMusic::Instruments::Instrument,
+          name: "clarinet",
+          name_key: "clarinet",
+          family_key: "clarinet",
+          default_sounding_transposition: -3,
+          to_s: "clarinet")
+      end
+
+      let(:clarinet_c) do
+        instance_double(HeadMusic::Instruments::Instrument,
+          name: "clarinet",
+          name_key: "clarinet",
+          family_key: "clarinet",
+          default_sounding_transposition: 0,
+          to_s: "clarinet")
+      end
+
+      let(:clarinet_eb) do
+        instance_double(HeadMusic::Instruments::Instrument,
+          name: "clarinet",
+          name_key: "clarinet",
+          family_key: "clarinet",
+          default_sounding_transposition: 3,
+          to_s: "clarinet")
+      end
+
+      let(:instruments) { [clarinet_bb, clarinet_a, clarinet_c, clarinet_eb] }
+
+      it "orders clarinets by transposition (high to low)" do
+        ordered = orchestral_order.order(instruments)
+        transpositions = ordered.map(&:default_sounding_transposition)
+
+        # Eb (+3), C (0), Bb (-2), A (-3)
+        expect(transpositions).to eq([3, 0, -2, -3])
       end
     end
 
