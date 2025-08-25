@@ -3,8 +3,19 @@ module HeadMusic::Instruments; end
 
 # An *InstrumentFamily* is a species of instrument
 # that may exist in a variety of keys or other variations.
-# For example, _saxophone_ is an instrument family, while
-# _alto saxophone_ and _baritone saxophone_ are specific instruments.
+# For example:
+# - _saxophone_ is an instrument family, while
+#   _alto saxophone_ and _baritone saxophone_ are specific instruments.
+# - _oboe_ is an instrument family, while
+#   _oboe d'amore_ and _English horn_ are specific instruments.
+#
+# Instrument families are categorized by:
+# - orchestra section (e.g. woodwind, brass, percussion, strings)
+# - classification (e.g. bowed string, plucked string, double reed, single reed, brass, keyboard, electronic, percussion)
+#
+# Instrument families are defined in `lib/head_music/instruments/instrument_families.yml`.
+#
+# @see HeadMusic::Instruments::Instrument
 class HeadMusic::Instruments::InstrumentFamily
   include HeadMusic::Named
 
