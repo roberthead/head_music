@@ -35,4 +35,10 @@ class HeadMusic::Instruments::Variant
     @default_staff_scheme ||=
       staff_schemes.find(&:default?) || staff_schemes.first
   end
+
+  def ==(other)
+    return false unless other.is_a?(self.class)
+
+    key == other.key && attributes == other.attributes
+  end
 end
