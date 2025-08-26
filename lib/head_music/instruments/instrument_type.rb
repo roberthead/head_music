@@ -82,6 +82,10 @@ class HeadMusic::Instruments::InstrumentType
     variants&.find(&:default?) || variants&.first
   end
 
+  def default_instrument
+    @default_instrument ||= HeadMusic::Instruments::Instrument.new(self, default_variant)
+  end
+
   def default_staff_scheme
     default_variant&.default_staff_scheme
   end

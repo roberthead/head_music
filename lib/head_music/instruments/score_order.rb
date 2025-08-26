@@ -69,11 +69,17 @@ class HeadMusic::Instruments::ScoreOrder
   end
 
   def normalize_to_instrument(input)
-    # Return if already an instrument object (or mock object that responds to required methods)
-    return input if input.respond_to?(:name_key) && input.respond_to?(:family_key)
-    return input if input.is_a?(HeadMusic::Instruments::InstrumentType)
+    # Return if already an Instrument instance
+    return input if input.is_a?(HeadMusic::Instruments::Instrument)
 
-    HeadMusic::Instruments::InstrumentType.get(input)
+    # Return InstrumentType instances as-is for backward compatibility (duck typing)
+    return input.default_instrument if input.is_a?(HeadMusic::Instruments::InstrumentType)
+
+    # Return other objects that respond to required methods (mock objects, etc.)
+    return input if input.respond_to?(:name_key) && input.respond_to?(:family_key)
+
+    # Create an Instrument instance for string inputs
+    HeadMusic::Instruments::Instrument.get(input) || HeadMusic::Instruments::InstrumentType.get(input)
   end
 
   # Builds an index mapping instrument names to their position in the order
