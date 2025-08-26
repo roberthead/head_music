@@ -79,7 +79,7 @@ require "head_music/parse/rhythmic_element"
 
 # instruments
 require "head_music/instruments/instrument_family"
-require "head_music/instruments/instrument"
+require "head_music/instruments/instrument_type"
 require "head_music/instruments/score_order"
 require "head_music/instruments/staff_scheme"
 require "head_music/instruments/staff"

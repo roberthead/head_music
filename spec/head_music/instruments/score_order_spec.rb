@@ -41,7 +41,7 @@ describe HeadMusic::Instruments::ScoreOrder do
     end
 
     it "handles instrument objects" do
-      instrument_objects = instruments.map { |name| HeadMusic::Instruments::Instrument.get(name) }
+      instrument_objects = instruments.map { |name| HeadMusic::Instruments::InstrumentType.get(name) }
       ordered = described_class.in_orchestral_order(instrument_objects)
 
       expect(ordered.first.name).to eq("flute")
@@ -167,7 +167,7 @@ describe HeadMusic::Instruments::ScoreOrder do
       it "orders variants correctly" do
         ordered = orchestral_order.order(instruments)
         expect(ordered.map(&:name)).to eq(
-          ["piccolo", "flute", "alto flute", "alto recorder", "alto saxophone", "tenor saxophone"]
+          ["piccolo flute", "flute", "alto flute", "alto recorder", "alto saxophone", "tenor saxophone"]
         )
       end
     end
@@ -175,7 +175,7 @@ describe HeadMusic::Instruments::ScoreOrder do
     context "with trumpet transpositions" do
       # Create mock instrument instances for different transpositions
       let(:trumpet_bb) do
-        instance_double(HeadMusic::Instruments::Instrument,
+        instance_double(HeadMusic::Instruments::InstrumentType,
           name: "trumpet",
           name_key: "trumpet",
           family_key: "trumpet",
@@ -184,7 +184,7 @@ describe HeadMusic::Instruments::ScoreOrder do
       end
 
       let(:trumpet_c) do
-        instance_double(HeadMusic::Instruments::Instrument,
+        instance_double(HeadMusic::Instruments::InstrumentType,
           name: "trumpet",
           name_key: "trumpet",
           family_key: "trumpet",
@@ -193,7 +193,7 @@ describe HeadMusic::Instruments::ScoreOrder do
       end
 
       let(:trumpet_d) do
-        instance_double(HeadMusic::Instruments::Instrument,
+        instance_double(HeadMusic::Instruments::InstrumentType,
           name: "trumpet",
           name_key: "trumpet",
           family_key: "trumpet",
@@ -202,7 +202,7 @@ describe HeadMusic::Instruments::ScoreOrder do
       end
 
       let(:trumpet_eb) do
-        instance_double(HeadMusic::Instruments::Instrument,
+        instance_double(HeadMusic::Instruments::InstrumentType,
           name: "trumpet",
           name_key: "trumpet",
           family_key: "trumpet",
@@ -224,7 +224,7 @@ describe HeadMusic::Instruments::ScoreOrder do
     context "with clarinet transpositions" do
       # Create mock instrument instances for different transpositions
       let(:clarinet_bb) do
-        instance_double(HeadMusic::Instruments::Instrument,
+        instance_double(HeadMusic::Instruments::InstrumentType,
           name: "clarinet",
           name_key: "clarinet",
           family_key: "clarinet",
@@ -233,7 +233,7 @@ describe HeadMusic::Instruments::ScoreOrder do
       end
 
       let(:clarinet_a) do
-        instance_double(HeadMusic::Instruments::Instrument,
+        instance_double(HeadMusic::Instruments::InstrumentType,
           name: "clarinet",
           name_key: "clarinet",
           family_key: "clarinet",
@@ -242,7 +242,7 @@ describe HeadMusic::Instruments::ScoreOrder do
       end
 
       let(:clarinet_c) do
-        instance_double(HeadMusic::Instruments::Instrument,
+        instance_double(HeadMusic::Instruments::InstrumentType,
           name: "clarinet",
           name_key: "clarinet",
           family_key: "clarinet",
@@ -251,7 +251,7 @@ describe HeadMusic::Instruments::ScoreOrder do
       end
 
       let(:clarinet_eb) do
-        instance_double(HeadMusic::Instruments::Instrument,
+        instance_double(HeadMusic::Instruments::InstrumentType,
           name: "clarinet",
           name_key: "clarinet",
           family_key: "clarinet",

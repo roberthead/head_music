@@ -8,7 +8,7 @@ class HeadMusic::Content::Staff
   attr_reader :default_clef, :line_count, :instrument
 
   def initialize(default_clef_key, instrument: nil, line_count: nil)
-    @instrument = HeadMusic::Instruments::Instrument.get(instrument) if instrument
+    @instrument = HeadMusic::Instruments::InstrumentType.get(instrument) if instrument
     begin
       @default_clef = HeadMusic::Rudiment::Clef.get(default_clef_key)
     rescue KeyError, NoMethodError
