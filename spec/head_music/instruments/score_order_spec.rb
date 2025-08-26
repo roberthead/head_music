@@ -184,6 +184,23 @@ describe HeadMusic::Instruments::ScoreOrder do
       end
     end
 
+    context "with a mix of instrument variants and aliases" do
+      subject(:ordered_instrument_names) do
+        orchestral_order.order(instruments).map(&:name)
+      end
+
+      let(:instruments) do
+        %w[pianoforte flute trombone trumpet_in_c viola trumpet violin tenor_saxophone cello alto_recorder piccolo violin]
+      end
+
+      it do
+        expect(ordered_instrument_names).to eq([
+          "piccolo flute", "flute", "alto recorder", "tenor saxophone", "trumpet in C", "trumpet", "trombone",
+          "piano", "violin", "violin", "viola", "cello"
+        ])
+      end
+    end
+
     context "with clarinet transpositions" do
       let(:clarinet_bb) { HeadMusic::Instruments::Instrument.get("clarinet") }
       let(:clarinet_a) { HeadMusic::Instruments::Instrument.get("clarinet_in_a") }

@@ -4,14 +4,21 @@ orchestral:
   sections:
     - section_key: woodwind
       instruments:
-        - piccolo
+        - piccolo_flute
         - flute
         - alto_flute
+        - alto_recorder
+        - soprano_recorder
+        - tenor_recorder
         - oboe
         - english_horn
         - clarinet
         - alto_clarinet
         - bass_clarinet
+        - soprano_saxophone
+        - alto_saxophone
+        - tenor_saxophone
+        - baritone_saxophone
         - bassoon
         - contrabassoon
     - section_key: brass
