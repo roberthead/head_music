@@ -45,6 +45,19 @@ describe HeadMusic::Rudiment::RhythmicValue do
         its(:ticks) { are_expected.to eq 900 }
         its(:name_modifier_prefix) { is_expected.to eq "triple-dotted" }
       end
+
+      context "with abbreviation 'q'" do
+        let(:argument) { "q" }
+
+        it { is_expected.to eq described_class.new("quarter") }
+      end
+
+      context "with abbreviation 'q.'" do
+        let(:argument) { "q." }
+
+        it { is_expected.to be_a(described_class) }
+        it { is_expected.to eq described_class.new("quarter", dots: 1) }
+      end
     end
 
     context "when passed a unit and dots" do

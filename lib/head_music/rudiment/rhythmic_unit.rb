@@ -6,6 +6,8 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
   include HeadMusic::Named
   include Comparable
 
+  RHYTHMIC_UNITS_DATA = YAML.load_file(File.expand_path("rhythmic_units.yml", __dir__)).freeze
+
   AMERICAN_MULTIPLES_NAMES = [
     "whole", "double whole", "longa", "maxima"
   ].freeze
@@ -17,7 +19,7 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
 
   AMERICAN_DURATIONS = (AMERICAN_MULTIPLES_NAMES + AMERICAN_DIVISIONS_NAMES).freeze
 
-  PATTERN = /#{Regexp.union(AMERICAN_DURATIONS)}/
+  PATTERN = /#{Regexp.union(AMERICAN_DURATIONS)}/i
 
   # British terminology for note values longer than a whole note
   BRITISH_MULTIPLES_NAMES = %w[semibreve breve longa maxima].freeze
@@ -50,7 +52,11 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
   attr_reader :numerator, :denominator
 
   def self.get(name)
-    get_by_name(name)
+    # Use the parser to handle tempo shorthand and other formats
+    parsed_name = HeadMusic::Rudiment::RhythmicUnit::Parser.parse(name)
+    return nil unless parsed_name
+
+    get_by_name(parsed_name)
   end
 
   def self.all

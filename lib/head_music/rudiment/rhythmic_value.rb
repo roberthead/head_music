@@ -19,8 +19,18 @@ class HeadMusic::Rudiment::RhythmicValue
     when HeadMusic::Rudiment::RhythmicUnit
       new(identifier)
     when Symbol, String
-      identifier = identifier.to_s.downcase.strip.gsub(/\W+/, "_")
-      from_words(identifier)
+      original_identifier = identifier.to_s.strip
+      # First try parsing shorthand like "q." directly
+      parsed = HeadMusic::Parse::RhythmicValue.new(original_identifier).rhythmic_value
+      return parsed if parsed
+
+      # Then try the word-based approach
+      identifier = original_identifier.downcase.gsub(/\W+/, "_")
+      begin
+        from_words(identifier)
+      rescue
+        nil
+      end
     end
   end
 

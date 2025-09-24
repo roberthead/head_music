@@ -6,7 +6,61 @@ module HeadMusic::Time
   SUBTICKS_PER_TICK = 240
 end
 
-class HeadMusic::Time::Value
+# Representation of a conductor track for musical material
+# Each moment in a track corresponds to the following positions:
+# - ellapsed clock time
+#   - starts at 0.0 seconds
+#   - the source-of-truth clock time
+#   - nanosecond resolution
+# - a musical position
+#   - bars:beats:ticks:subticks
+# - a SMPTE timecode
+#   - hours:minutes:seconds:frames
+class HeadMusic::Time::Conductor
+  attr_accessor :starting_position, :starting_smpte_timecode, :framerate
+
+  def initialize(attributes = {})
+    attributes = attributes.symbolize_keys
+    @starting_position = attributes.get(:starting_position, HeadMusic::Time::Position.new)
+    @starting_smpte_timecode = attributes.get(:starting_smpte_timecode, HeadMusic::Time::SmpteTimecode.new)
+  end
+end
+
+class HeadMusic::Time::MeterEvent
+  attr_accessor :position, :meter
+
+  def initialize(position, meter)
+    @position = position
+  end
+end
+
+class HeadMusic::Time::TempoEvent
+  attr_accessor :position, :tempo
+
+  # accepts a rhythmic value and a bpm
+  def initialize(position, beat_value, beats_per_minute)
+    @position = position
+    @tempo = HeadMusic::Rudiment::Tempo.new(beat_value, beats_per_minute)
+  end
+end
+
+# Abstract superclass
+class HeadMusic::Time::Position
+  include Comparable
+
+  def initialize(value, meter: nil, tempo: nil)
+    @value = value
+    @meter = meter || HeadMusic::Rudiment::Meter.default
+    @tempo = tempo || HeadMusic::Rudiment::Tempo.default
+  end
+
+  def <=>(other)
+    to_i <=> other.to_i
+  end
+end
+
+# A value object representing ellapsed nanoseconds of clock time
+class HeadMusic::Time::ClockPosition
   include Comparable
 
   attr_reader :nanoseconds
@@ -49,7 +103,7 @@ end
 #
 # Note: In the absence of a specific meter,
 # no math can be performed on the position.
-class HeadMusic::Time::Position
+class HeadMusic::Time::MusicalPosition
   attr_reader :bar, :beat, :tick, :subtick
 
   DEFAULT_FIRST_BAR = 1
@@ -106,6 +160,12 @@ class HeadMusic::Time::Position
   end
 end
 
+class HeadMusic::Time::SamplesPosition
+end
+
+class HeadMusic::Time::TimecodePosition # (SMPTE/MTC)
+end
+
 # Represents a SMPTE timecode position
 # HH:MM:SS:FF (hours:minutes:seconds:frames)
 class HeadMusic::Time::SmpteTimecode
@@ -113,41 +173,5 @@ class HeadMusic::Time::SmpteTimecode
 
   def initialize(hour = 1, minute = 0, second = 0, frame = 0)
     @hour, @minute, @second, @frame = hour.to_i, minute.to_i, second.to_i, frame.to_i
-  end
-end
-
-# Representation of a conductor track for musical material
-# Each moment in a track corresponds to:
-# - ellapsed clock time
-#   - starts at 0.0 seconds
-#   - the source-of-truth clock time
-#   - nanosecond resolution
-# - a position (in musical terms)
-# - and a SMPTE timecode
-class HeadMusic::Time::Conductor
-  attr_accessor :starting_position, :starting_smpte_timecode, :framerate
-
-  def initialize(attributes = {})
-    attributes = attributes.symbolize_keys
-    @starting_position = attributes.get(:starting_position, HeadMusic::Time::Position.new)
-    @starting_smpte_timecode = attributes.get(:starting_smpte_timecode, HeadMusic::Time::SmpteTimecode.new)
-  end
-end
-
-class HeadMusic::Time::MeterEvent
-  attr_accessor :position, :meter
-
-  def initialize(position, meter)
-    @position = position
-  end
-end
-
-class HeadMusic::Time::TempoEvent
-  attr_accessor :position, :tempo
-
-  # accepts a rhythmic value and a bpm
-  def initialize(position, beat_value, beats_per_minute)
-    @position = position
-    @tempo = HeadMusic::Rudiment::Tempo.new(beat_value, beats_per_minute)
   end
 end

@@ -1,6 +1,24 @@
 require "spec_helper"
 
 describe HeadMusic::Rudiment::Tempo do
+  describe ".get" do
+    subject(:tempo) { described_class.get(identifier) }
+
+    context "with q = 120" do
+      let(:identifier) { "q = 120" }
+
+      its(:beat_value) { is_expected.to eq "quarter" }
+      its(:beats_per_minute) { is_expected.to eq 120 }
+    end
+
+    context "with q at 120bpm" do
+      let(:identifier) { "q at 120bpm" }
+
+      its(:beat_value) { is_expected.to eq "quarter" }
+      its(:beats_per_minute) { is_expected.to eq 120 }
+    end
+  end
+
   describe "#initialize" do
     subject(:tempo) { described_class.new(beat_value, beats_per_minute) }
 
