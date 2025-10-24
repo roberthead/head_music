@@ -76,22 +76,10 @@ class HeadMusic::Rudiment::Tempo
   end
 
   def self.standardized_unit(unit)
-    # Try to parse using the RhythmicUnit parser first
-    parsed_unit = HeadMusic::Rudiment::RhythmicUnit::Parser.parse(unit)
-    return parsed_unit if parsed_unit
+    return "quarter" if unit.nil?
 
-    # Fallback to the old logic
-    case unit.to_s.downcase.strip
-    when "q", "1/4", "crotchet"
-      "quarter"
-    when "h", "1/2", "minim"
-      "half"
-    when "e", "1/8", "quaver"
-      "eighth"
-    when "s", "1/16", "semiquaver"
-      "sixteenth"
-    else
-      "quarter"
-    end
+    # Use RhythmicValue parser to handle all formats (shorthand, fractions, British names, dots, etc.)
+    rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(unit)
+    rhythmic_value&.unit ? rhythmic_value.to_s : "quarter"
   end
 end

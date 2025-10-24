@@ -32,6 +32,11 @@ class HeadMusic::Rudiment::RhythmicUnit::Parser
     end
   end
 
+  def american_name
+    # Always return the American name if a unit was found
+    @unit_data&.fetch("american_name", nil)
+  end
+
   def normalized_identifier
     @normalized_identifier ||= identifier.downcase.strip.gsub(/[^a-z0-9]/, "_").gsub(/_+/, "_").gsub(/^_|_$/, "")
   end
@@ -58,7 +63,17 @@ class HeadMusic::Rudiment::RhythmicUnit::Parser
 
   def from_duration
     RHYTHMIC_UNITS_DATA.find do |unit|
-      unit["duration"].to_s == identifier.strip
+      # Match decimal duration (e.g., "0.25")
+      return unit if unit["duration"].to_s == identifier.strip
+
+      # Match fraction notation (e.g., "1/4" = 0.25)
+      if identifier.match?(%r{^\d+/\d+$})
+        numerator, denominator = identifier.split("/").map(&:to_f)
+        calculated_duration = numerator / denominator
+        return unit if (calculated_duration - unit["duration"]).abs < 0.0001
+      end
+
+      false
     end
   end
 

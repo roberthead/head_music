@@ -25,7 +25,19 @@ class HeadMusic::Parse::RhythmicValue
       return
     end
 
-    # Then check the word pattern
+    # Then try to parse with dots extracted
+    # Count and strip dots (e.g., "1/4." -> "1/4" with 1 dot)
+    dots = identifier.scan(".").count
+    base_identifier = identifier.gsub(".", "").strip
+
+    # Try RhythmicUnit::Parser for things like fractions (1/4), British names (crotchet), etc.
+    parser = HeadMusic::Rudiment::RhythmicUnit::Parser.new(base_identifier)
+    if parser.american_name
+      @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.new(parser.american_name, dots: dots)
+      return
+    end
+
+    # Finally check the word pattern for things like "dotted quarter"
     match = identifier.match(PATTERN)
     if match
       matched_string = match[0].to_s.strip

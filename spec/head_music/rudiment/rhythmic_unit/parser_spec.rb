@@ -134,6 +134,54 @@ describe HeadMusic::Rudiment::RhythmicUnit::Parser do
       end
     end
 
+    context "with fraction notation" do
+      it "parses '1/4' as quarter" do
+        expect(described_class.parse("1/4")).to eq "quarter"
+      end
+
+      it "parses '1/2' as half" do
+        expect(described_class.parse("1/2")).to eq "half"
+      end
+
+      it "parses '1/8' as eighth" do
+        expect(described_class.parse("1/8")).to eq "eighth"
+      end
+
+      it "parses '1/16' as sixteenth" do
+        expect(described_class.parse("1/16")).to eq "sixteenth"
+      end
+
+      it "parses '1/32' as thirty-second" do
+        expect(described_class.parse("1/32")).to eq "thirty-second"
+      end
+
+      it "parses '1/1' as whole" do
+        expect(described_class.parse("1/1")).to eq "whole"
+      end
+
+      it "parses '2/1' as double whole" do
+        expect(described_class.parse("2/1")).to eq "double whole"
+      end
+    end
+
+    context "with decimal duration notation" do
+      it "parses '0.25' as quarter" do
+        expect(described_class.parse("0.25")).to eq "quarter"
+      end
+
+      it "parses '0.5' as half" do
+        expect(described_class.parse("0.5")).to eq "half"
+      end
+
+      it "parses '0.125' as eighth" do
+        expect(described_class.parse("0.125")).to eq "eighth"
+      end
+
+      it "parses '1.0' as whole" do
+        expect(described_class.parse("1.0")).to eq "whole"
+      end
+    end
+
     context "with invalid input" do
       it "returns nil for nil input" do
         expect(described_class.parse(nil)).to be_nil
@@ -172,6 +220,38 @@ describe HeadMusic::Rudiment::RhythmicUnit::Parser do
         expect(HeadMusic::Rudiment::RhythmicUnit.get("w")).to eq HeadMusic::Rudiment::RhythmicUnit.get("whole")
         expect(HeadMusic::Rudiment::RhythmicUnit.get("e")).to eq HeadMusic::Rudiment::RhythmicUnit.get("eighth")
       end
+    end
+  end
+
+  describe "#american_name" do
+    it "returns American name for British input" do
+      parser = described_class.new("crotchet")
+      expect(parser.american_name).to eq "quarter"
+    end
+
+    it "returns American name for American input" do
+      parser = described_class.new("quarter")
+      expect(parser.american_name).to eq "quarter"
+    end
+
+    it "returns American name for shorthand input" do
+      parser = described_class.new("q")
+      expect(parser.american_name).to eq "quarter"
+    end
+
+    it "returns American name for fraction input" do
+      parser = described_class.new("1/4")
+      expect(parser.american_name).to eq "quarter"
+    end
+
+    it "returns American name for decimal input" do
+      parser = described_class.new("0.25")
+      expect(parser.american_name).to eq "quarter"
+    end
+
+    it "returns nil for invalid input" do
+      parser = described_class.new("invalid")
+      expect(parser.american_name).to be_nil
     end
   end
 end
