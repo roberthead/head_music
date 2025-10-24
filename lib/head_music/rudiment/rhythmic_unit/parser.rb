@@ -38,7 +38,7 @@ class HeadMusic::Rudiment::RhythmicUnit::Parser
   end
 
   def normalized_identifier
-    @normalized_identifier ||= identifier.downcase.strip.gsub(/[^a-z0-9]/, "_").gsub(/_+/, "_").gsub(/^_|_$/, "")
+    @normalized_identifier ||= identifier.downcase.strip.gsub(/[^a-z0-9]/, "_").squeeze("_").gsub(/^_|_$/, "")
   end
 
   def from_american_name
@@ -81,6 +81,6 @@ class HeadMusic::Rudiment::RhythmicUnit::Parser
 
   def normalize_name(name)
     return nil if name.nil?
-    name.to_s.downcase.strip.gsub(/[^a-z0-9]/, "_").gsub(/_+/, "_").gsub(/^_|_$/, "")
+    name.to_s.downcase.strip.gsub(/[^a-z0-9]/, "_").squeeze("_").gsub(/^_|_$/, "")
   end
 end

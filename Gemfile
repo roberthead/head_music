@@ -16,6 +16,7 @@ end
 
 group :development do
   gem "bundler-audit", require: false
+  gem "rubycritic", require: false
   gem "yard", require: false
   gem "kramdown", require: false
 end

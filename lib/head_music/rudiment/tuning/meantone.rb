@@ -45,43 +45,4 @@ class HeadMusic::Rudiment::Tuning::Meantone < HeadMusic::Rudiment::Tuning
     # Calculate the frequency
     tonal_center_frequency * ratio
   end
-
-  private
-
-  def calculate_tonal_center_frequency
-    # Use equal temperament to get the tonal center frequency from the reference pitch
-    interval_to_tonal_center = (tonal_center - reference_pitch.pitch).semitones
-    reference_pitch_frequency * (2**(interval_to_tonal_center / 12.0))
-  end
-
-  def ratio_for_interval(semitones)
-    # Handle octaves
-    octaves = semitones / 12
-    interval_within_octave = semitones % 12
-
-    # Make sure we handle negative intervals
-    if interval_within_octave < 0
-      interval_within_octave += 12
-      octaves -= 1
-    end
-
-    # Get the base ratio
-    base_ratio = case interval_within_octave
-    when 0 then INTERVAL_RATIOS[:unison]
-    when 1 then INTERVAL_RATIOS[:minor_second]
-    when 2 then INTERVAL_RATIOS[:major_second]
-    when 3 then INTERVAL_RATIOS[:minor_third]
-    when 4 then INTERVAL_RATIOS[:major_third]
-    when 5 then INTERVAL_RATIOS[:perfect_fourth]
-    when 6 then INTERVAL_RATIOS[:tritone]
-    when 7 then INTERVAL_RATIOS[:perfect_fifth]
-    when 8 then INTERVAL_RATIOS[:minor_sixth]
-    when 9 then INTERVAL_RATIOS[:major_sixth]
-    when 10 then INTERVAL_RATIOS[:minor_seventh]
-    when 11 then INTERVAL_RATIOS[:major_seventh]
-    end
-
-    # Apply octave adjustments
-    base_ratio * (2**octaves)
-  end
 end

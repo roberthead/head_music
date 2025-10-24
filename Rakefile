@@ -26,10 +26,15 @@ rescue LoadError
   # bundler-audit not available
 end
 
+desc "Run RubyCritic code quality analysis"
+task :rubycritic do
+  sh "rubycritic lib"
+end
+
 task default: :spec
 
-desc "Run all quality checks (tests, linting, security audit)"
-task quality: [:spec, :standard, "bundle:audit:check"]
+desc "Run all quality checks (tests, linting, security audit, code quality)"
+task quality: [:spec, :standard, "bundle:audit:check", :rubycritic]
 
 desc "Open an irb session preloaded with this library"
 task :console do

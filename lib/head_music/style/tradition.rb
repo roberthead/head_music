@@ -15,7 +15,7 @@ module HeadMusic::Style
     end
 
     def name
-      self.class.name.split("::").last.sub(/Tradition$/, "").downcase.gsub(" ", "_").to_sym
+      self.class.name.split("::").last.sub(/Tradition$/, "").downcase.tr(" ", "_").to_sym
     end
   end
 end

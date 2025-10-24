@@ -112,7 +112,7 @@ class HeadMusic::Instruments::Instrument
   def format_pitch_name(pitch_designation)
     # Format the pitch designation for display
     # e.g. "Bb" -> "B♭", "C" -> "C", "Eb" -> "E♭"
-    pitch_designation.to_s.gsub("b", "♭").gsub("#", "♯")
+    pitch_designation.to_s.tr("b", "♭").tr("#", "♯")
   end
 
   def self.parse_instrument_name(name)

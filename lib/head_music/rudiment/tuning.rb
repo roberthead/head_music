@@ -32,4 +32,30 @@ class HeadMusic::Rudiment::Tuning < HeadMusic::Rudiment::Base
     pitch = HeadMusic::Rudiment::Pitch.get(pitch)
     reference_pitch_frequency * (2**(1.0 / 12))**(pitch - reference_pitch.pitch).semitones
   end
+
+  private
+
+  def calculate_tonal_center_frequency
+    # Use equal temperament to get the tonal center frequency from the reference pitch
+    interval_to_tonal_center = (tonal_center - reference_pitch.pitch).semitones
+    reference_pitch_frequency * (2**(interval_to_tonal_center / 12.0))
+  end
+
+  def ratio_for_interval(semitones)
+    # Handle octaves
+    octaves = semitones / 12
+    interval_within_octave = semitones % 12
+
+    # Make sure we handle negative intervals
+    if interval_within_octave < 0
+      interval_within_octave += 12
+      octaves -= 1
+    end
+
+    # Get the base ratio from the subclass's INTERVAL_RATIOS constant
+    base_ratio = self.class::INTERVAL_RATIOS[self.class::INTERVAL_RATIOS.keys[interval_within_octave]]
+
+    # Apply octave adjustments
+    base_ratio * (2**octaves)
+  end
 end

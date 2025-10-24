@@ -45,7 +45,7 @@ class HeadMusic::Rudiment::RhythmicValue::Parser
     # But skip this if identifier looks like a decimal number
     unless identifier.match?(/^\d+\.\d+$/)
       dots = identifier.scan(".").count
-      base_identifier = identifier.gsub(".", "").strip
+      base_identifier = identifier.delete(".").strip
 
       # Try RhythmicUnit::Parser on the base identifier
       parser = RhythmicUnit::Parser.new(base_identifier)
