@@ -24,8 +24,17 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
     return pitch if pitch.is_a?(HeadMusic::Rudiment::Note)
 
     if rhythmic_value.nil? && pitch.is_a?(String)
-      parsed = HeadMusic::Parse::RhythmicElement.new(pitch).note
-      return parsed if parsed
+      # Try to parse as "pitch rhythmic_value" format (e.g., "F#4 dotted-quarter")
+      match = pitch.match(MATCHER)
+      if match
+        pitch_str = match[1] # The full pitch part
+        rhythmic_value_str = match[5] # The rhythmic value part
+
+        pitch_obj = HeadMusic::Rudiment::Pitch.get(pitch_str)
+        rhythmic_value_obj = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value_str)
+
+        return fetch_or_create(pitch_obj, rhythmic_value_obj) if pitch_obj && rhythmic_value_obj
+      end
 
       # If parsing fails, treat it as just a pitch with default quarter note
       pitch_obj = HeadMusic::Rudiment::Pitch.get(pitch)
