@@ -152,6 +152,44 @@ describe HeadMusic::Rudiment::RhythmicValue::Parser do
       end
     end
 
+    context "with dotted fraction notation" do
+      it "parses '1/4.' as dotted quarter" do
+        rv = described_class.parse("1/4.")
+        expect(rv).to be_a(HeadMusic::Rudiment::RhythmicValue)
+        expect(rv.to_s).to eq "dotted quarter"
+      end
+
+      it "parses '1/2.' as dotted half" do
+        rv = described_class.parse("1/2.")
+        expect(rv.to_s).to eq "dotted half"
+      end
+
+      it "parses '1/8.' as dotted eighth" do
+        rv = described_class.parse("1/8.")
+        expect(rv.to_s).to eq "dotted eighth"
+      end
+
+      it "parses '1/8..' as double-dotted eighth" do
+        rv = described_class.parse("1/8..")
+        expect(rv.to_s).to eq "double-dotted eighth"
+      end
+
+      it "parses '1/16.' as dotted sixteenth" do
+        rv = described_class.parse("1/16.")
+        expect(rv.to_s).to eq "dotted sixteenth"
+      end
+
+      it "parses '1/16...' as triple-dotted sixteenth" do
+        rv = described_class.parse("1/16...")
+        expect(rv.to_s).to eq "triple-dotted sixteenth"
+      end
+
+      it "parses '1/1.' as dotted whole" do
+        rv = described_class.parse("1/1.")
+        expect(rv.to_s).to eq "dotted whole"
+      end
+    end
+
     context "with whitespace" do
       it "handles leading whitespace" do
         rv = described_class.parse("  q")
@@ -180,6 +218,79 @@ describe HeadMusic::Rudiment::RhythmicValue::Parser do
 
       it "returns nil for invalid name" do
         expect(described_class.parse("invalid")).to be_nil
+      end
+    end
+
+    context "with edge cases" do
+      it "handles decimal notation without stripping dots" do
+        # Verify that "0.25" is NOT treated as "025" with a dot
+        rv = described_class.parse("0.25")
+        expect(rv).to be_a(HeadMusic::Rudiment::RhythmicValue)
+        expect(rv.to_s).to eq "quarter"
+        expect(rv.dots).to eq 0 # Should have NO dots
+      end
+
+      it "handles decimal notation '2.0' without stripping dots" do
+        rv = described_class.parse("2.0")
+        expect(rv).to be_a(HeadMusic::Rudiment::RhythmicValue)
+        expect(rv.to_s).to eq "double whole"
+        expect(rv.dots).to eq 0
+      end
+
+      it "handles word patterns with non-existent units" do
+        # Test pattern that matches word format but unit doesn't exist
+        result = described_class.parse("dotted foo")
+        expect(result).to be_nil
+      end
+
+      it "handles double/triple with invalid units" do
+        result = described_class.parse("double dotted bar")
+        expect(result).to be_nil
+      end
+
+      it "handles shorthand pattern with whitespace variations" do
+        # Test that "q . " gets parsed via fallback to dotted fraction logic
+        # The spaces prevent shorthand match, but dots are stripped and "q" is recognized
+        rv = described_class.parse("q . ")
+        expect(rv).to be_a(HeadMusic::Rudiment::RhythmicValue)
+        expect(rv.to_s).to eq "dotted quarter" # Fallback to dot-stripping logic works
+      end
+
+      it "verifies parsing priority: shorthand before word-based" do
+        # "q" should be parsed as shorthand (quarter), not word-based
+        rv = described_class.parse("q")
+        expect(rv.to_s).to eq "quarter"
+
+        # If we had a word that also matches shorthand, shorthand wins
+        # "h" is shorthand for half
+        rv2 = described_class.parse("h")
+        expect(rv2.to_s).to eq "half"
+      end
+
+      it "verifies direct unit parsing before dotted fraction fallback" do
+        # "quarter" should be parsed directly, not through fallback
+        rv = described_class.parse("quarter")
+        expect(rv.to_s).to eq "quarter"
+        expect(rv.dots).to eq 0
+      end
+
+      it "handles British names without dots correctly" do
+        # Verify British names parse without triggering dot logic
+        rv = described_class.parse("crotchet")
+        expect(rv.to_s).to eq "quarter"
+        expect(rv.dots).to eq 0
+      end
+
+      it "handles patterns with dots that aren't valid units" do
+        # Something with dots but no valid base unit
+        result = described_class.parse("xyz.")
+        expect(result).to be_nil
+      end
+
+      it "handles empty string after stripping dots" do
+        # Edge case: only dots, no actual identifier
+        result = described_class.parse("...")
+        expect(result).to be_nil
       end
     end
   end

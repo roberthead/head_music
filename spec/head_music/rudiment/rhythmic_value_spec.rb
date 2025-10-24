@@ -141,4 +141,108 @@ describe HeadMusic::Rudiment::RhythmicValue do
       end
     end
   end
+
+  describe ".dots_from_words" do
+    context "with no 'dotted' in identifier" do
+      it "returns 0 for 'quarter'" do
+        expect(described_class.dots_from_words("quarter")).to eq 0
+      end
+
+      it "returns 0 for 'half'" do
+        expect(described_class.dots_from_words("half")).to eq 0
+      end
+
+      it "returns 0 for empty string" do
+        expect(described_class.dots_from_words("")).to eq 0
+      end
+
+      it "returns 0 for 'eighth note'" do
+        expect(described_class.dots_from_words("eighth note")).to eq 0
+      end
+    end
+
+    context "with single 'dotted'" do
+      it "returns 1 for 'dotted quarter'" do
+        expect(described_class.dots_from_words("dotted quarter")).to eq 1
+      end
+
+      it "returns 1 for 'dotted_quarter'" do
+        expect(described_class.dots_from_words("dotted_quarter")).to eq 1
+      end
+
+      it "returns 1 for 'dotted half'" do
+        expect(described_class.dots_from_words("dotted half")).to eq 1
+      end
+
+      it "returns 1 for just 'dotted'" do
+        expect(described_class.dots_from_words("dotted")).to eq 1
+      end
+    end
+
+    context "with 'double dotted'" do
+      it "returns 2 for 'double dotted quarter'" do
+        expect(described_class.dots_from_words("double dotted quarter")).to eq 2
+      end
+
+      it "returns 2 for 'double_dotted_quarter'" do
+        expect(described_class.dots_from_words("double_dotted_quarter")).to eq 2
+      end
+
+      it "returns 2 for 'double-dotted half'" do
+        expect(described_class.dots_from_words("double-dotted half")).to eq 2
+      end
+
+      it "returns 2 for 'doubly dotted eighth'" do
+        expect(described_class.dots_from_words("doubly dotted eighth")).to eq 2
+      end
+
+      it "returns 2 for just 'double dotted'" do
+        expect(described_class.dots_from_words("double dotted")).to eq 2
+      end
+    end
+
+    context "with 'triple dotted'" do
+      it "returns 3 for 'triple dotted quarter'" do
+        expect(described_class.dots_from_words("triple dotted quarter")).to eq 3
+      end
+
+      it "returns 3 for 'triple_dotted_quarter'" do
+        expect(described_class.dots_from_words("triple_dotted_quarter")).to eq 3
+      end
+
+      it "returns 3 for 'triple-dotted half'" do
+        expect(described_class.dots_from_words("triple-dotted half")).to eq 3
+      end
+
+      it "returns 3 for 'triply dotted eighth'" do
+        expect(described_class.dots_from_words("triply dotted eighth")).to eq 3
+      end
+
+      it "returns 3 for just 'triple dotted'" do
+        expect(described_class.dots_from_words("triple dotted")).to eq 3
+      end
+    end
+
+    context "with edge cases" do
+      it "handles 'dotted' appearing multiple times (takes first modifier)" do
+        # The split on "dotted" will take the first part as modifier
+        expect(described_class.dots_from_words("triple dotted dotted")).to eq 3
+      end
+
+      it "handles case variations (case-sensitive match)" do
+        # Regex /dotted/ is case-sensitive, so uppercase doesn't match
+        expect(described_class.dots_from_words("DOTTED quarter")).to eq 0
+        # Lowercase works
+        expect(described_class.dots_from_words("dotted quarter")).to eq 1
+      end
+
+      it "handles 'triple' variations with different endings" do
+        expect(described_class.dots_from_words("tripled dotted quarter")).to eq 3
+      end
+
+      it "handles 'double' variations with different endings" do
+        expect(described_class.dots_from_words("doubled dotted quarter")).to eq 2
+      end
+    end
+  end
 end
