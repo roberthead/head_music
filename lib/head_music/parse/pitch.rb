@@ -15,6 +15,10 @@ class HeadMusic::Parse::Pitch
   PATTERN = /(#{LetterName::PATTERN})?(#{Alteration::PATTERN.source})?(#{Register::PATTERN})?/
 
   def initialize(identifier)
+    warn "[DEPRECATION] `HeadMusic::Parse::Pitch` is deprecated. " \
+         "Use `HeadMusic::Rudiment::Pitch::Parser` for strict pitch parsing, " \
+         "or `HeadMusic::Rudiment::Pitch.get` for general pitch retrieval.",
+      uplevel: 1
     @identifier = identifier.to_s.strip
     parse
   end
