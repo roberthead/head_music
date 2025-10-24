@@ -55,4 +55,38 @@ describe HeadMusic::Instruments::Variant do
       is_expected.to be_nil
     end
   end
+
+  describe "#==" do
+    let(:default_b_flat_variant) do
+      described_class.new(:default, {"pitch_designation" => "Bb"})
+    end
+
+    let(:other_default_b_flat_variant) do
+      described_class.new(:default, {"pitch_designation" => "Bb"})
+    end
+
+    let(:alto_b_flat_variant) do
+      described_class.new(:alto, {"pitch_designation" => "Bb"})
+    end
+
+    let(:default_c_variant) do
+      described_class.new(:default, {"pitch_designation" => "C"})
+    end
+
+    it "returns true for variants with same key and attributes" do
+      expect(default_b_flat_variant).to eq(other_default_b_flat_variant)
+    end
+
+    it "returns false for variants with different keys" do
+      expect(default_b_flat_variant).not_to eq(alto_b_flat_variant)
+    end
+
+    it "returns false for variants with different attributes" do
+      expect(default_b_flat_variant).not_to eq(default_c_variant)
+    end
+
+    it "returns false when compared to non-Variant object" do
+      expect(default_b_flat_variant).not_to eq("not a variant")
+    end
+  end
 end

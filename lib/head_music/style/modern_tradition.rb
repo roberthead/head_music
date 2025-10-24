@@ -9,15 +9,15 @@ class HeadMusic::Style::ModernTradition < HeadMusic::Style::Tradition
     end
 
     case interval_mod
-    when 0, 12  # Unison, Octave
+    when 0  # Unison, Octave
       HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE
-    when 7      # Perfect Fifth
+    when 7  # Perfect Fifth
       HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE
-    when 3, 4   # Minor Third, Major Third
+    when 3, 4  # Minor Third, Major Third
       HeadMusic::Rudiment::Consonance::IMPERFECT_CONSONANCE
-    when 8, 9   # Minor Sixth, Major Sixth
+    when 8, 9  # Minor Sixth, Major Sixth
       HeadMusic::Rudiment::Consonance::IMPERFECT_CONSONANCE
-    when 5      # Perfect Fourth
+    when 5  # Perfect Fourth
       # In standard practice, perfect fourth is considered consonant
       # but contextual would be more accurate
       HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE
@@ -25,9 +25,7 @@ class HeadMusic::Style::ModernTradition < HeadMusic::Style::Tradition
       HeadMusic::Rudiment::Consonance::MILD_DISSONANCE
     when 1, 11  # Minor Second, Major Seventh
       HeadMusic::Rudiment::Consonance::HARSH_DISSONANCE
-    when 6      # Tritone (Aug 4th/Dim 5th)
-      HeadMusic::Rudiment::Consonance::DISSONANCE
-    else
+    when 6  # Tritone (Aug 4th/Dim 5th)
       HeadMusic::Rudiment::Consonance::DISSONANCE
     end
   end
