@@ -62,8 +62,10 @@ describe HeadMusic::Rudiment::Pitch::Parser do
         expect(described_class.parse("invalid")).to be_nil
       end
 
-      it "returns nil for just a letter" do
-        expect(described_class.parse("C")).to be_nil
+      it "parses just a letter with default register 4" do
+        pitch = described_class.parse("C")
+        expect(pitch).to be_a(HeadMusic::Rudiment::Pitch)
+        expect(pitch.to_s).to eq "C4"
       end
 
       it "returns nil for just a register" do
@@ -76,10 +78,10 @@ describe HeadMusic::Rudiment::Pitch::Parser do
     end
 
     context "with additional text" do
-      it "extracts pitch from string with other content" do
-        pitch = described_class.parse("F#4 dotted-quarter")
-        expect(pitch).to be_a(HeadMusic::Rudiment::Pitch)
-        expect(pitch.to_s).to eq "F♯4"
+      it "returns nil for strings with extra content (strict parsing)" do
+        # The strict parser requires exact pitch strings
+        # Use Parse::Pitch for lenient parsing of strings with additional content
+        expect(described_class.parse("F#4 dotted-quarter")).to be_nil
       end
     end
   end

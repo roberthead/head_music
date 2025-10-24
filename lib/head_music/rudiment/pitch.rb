@@ -28,6 +28,8 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   #   - a name string, such as 'Ab4'
   #   - a number corresponding to the midi note number
   def self.get(value)
+    return value if value.is_a?(HeadMusic::Rudiment::Pitch)
+
     from_pitch_class(value) ||
       from_name(value) ||
       from_number(value)
@@ -50,7 +52,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   def self.from_name(name)
     return nil unless name == name.to_s
 
-    fetch_or_create(HeadMusic::Rudiment::Spelling.get(name), HeadMusic::Rudiment::Register.get(name).to_i)
+    Parser.parse(name)
   end
 
   def self.from_number(number)

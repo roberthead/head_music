@@ -7,7 +7,9 @@ class HeadMusic::Rudiment::Pitch::Parser
   Register = HeadMusic::Rudiment::Register
   Pitch = HeadMusic::Rudiment::Pitch
 
-  PATTERN = /(#{LetterName::PATTERN})?(#{Alteration::PATTERN.source})?(#{Register::PATTERN})?/
+  # Pattern that handles negative registers (e.g., -1) and positive registers
+  # Anchored to match complete pitch strings only
+  PATTERN = /\A(#{LetterName::PATTERN})?(#{Alteration::PATTERN.source})?(-?\d+)?\z/
 
   # Parse a pitch identifier and return a Pitch object
   # Returns nil if the identifier cannot be parsed into a valid pitch
@@ -22,9 +24,12 @@ class HeadMusic::Rudiment::Pitch::Parser
   end
 
   def pitch
-    return unless spelling && register
+    return unless spelling
+    # Default to register 4 if not provided (matching old behavior)
+    # Convert Register object to integer for fetch_or_create
+    reg = register ? register.to_i : Register::DEFAULT
 
-    @pitch ||= Pitch.new(spelling, register)
+    @pitch ||= Pitch.fetch_or_create(spelling, reg)
   end
 
   def spelling

@@ -1,5 +1,7 @@
 module HeadMusic::Parse; end
 
+# Backward compatibility wrapper that maintains lenient parsing behavior
+# Unlike the strict Pitch::Parser, this can extract pitches from strings with additional content
 class HeadMusic::Parse::Pitch
   attr_reader :identifier, :letter_name, :alteration, :register
 
@@ -9,6 +11,7 @@ class HeadMusic::Parse::Pitch
   Register = HeadMusic::Rudiment::Register
   Pitch = HeadMusic::Rudiment::Pitch
 
+  # Non-anchored pattern to extract pitch from beginning of string
   PATTERN = /(#{LetterName::PATTERN})?(#{Alteration::PATTERN.source})?(#{Register::PATTERN})?/
 
   def initialize(identifier)
@@ -19,7 +22,7 @@ class HeadMusic::Parse::Pitch
   def pitch
     return unless spelling && register
 
-    @pitch ||= Pitch.new(spelling, register)
+    @pitch ||= Pitch.fetch_or_create(spelling, register.to_i)
   end
 
   def spelling
