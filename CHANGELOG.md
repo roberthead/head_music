@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [9.0.0] - 2025-10-24
+
+### Added
+- Added `HeadMusic::Rudiment::Pitch::Parser` for strict pitch parsing
+- Added `HeadMusic::Rudiment::RhythmicValue::Parser` for rhythmic value parsing
+- Both parsers provide standardized `.parse()` class method API
+
+### Changed
+- `Pitch.from_name` now uses `Pitch::Parser` internally
+- `RhythmicValue.get` now uses `RhythmicValue::Parser` internally
+- `Note.get` now parses "pitch rhythmic_value" strings inline without Parse module
+
+### Removed
+- **BREAKING**: Removed `HeadMusic::Parse::Pitch` class
+- **BREAKING**: Removed `HeadMusic::Parse::RhythmicValue` class
+- **BREAKING**: Removed `HeadMusic::Parse::RhythmicElement` class
+- **BREAKING**: Removed entire `HeadMusic::Parse` module
+
+### Migration Guide
+
+If you were using the removed Parse classes, migrate as follows:
+
+```ruby
+# Before (v8.x)
+parser = HeadMusic::Parse::Pitch.new("C#4")
+pitch = parser.pitch
+
+# After (v9.x)
+pitch = HeadMusic::Rudiment::Pitch.get("C#4")
+# or for strict parsing:
+pitch = HeadMusic::Rudiment::Pitch::Parser.parse("C#4")
+```
+
+```ruby
+# Before (v8.x)
+parser = HeadMusic::Parse::RhythmicValue.new("dotted quarter")
+value = parser.rhythmic_value
+
+# After (v9.x)
+value = HeadMusic::Rudiment::RhythmicValue.get("dotted quarter")
+# or for strict parsing:
+value = HeadMusic::Rudiment::RhythmicValue::Parser.parse("dotted quarter")
+```
+
+```ruby
+# Before (v8.x)
+parser = HeadMusic::Parse::RhythmicElement.new("F#4 dotted-quarter")
+note = parser.note
+
+# After (v9.x)
+note = HeadMusic::Rudiment::Note.get("F#4 dotted-quarter")
+```
+
 ## [8.2.1] - 2025-06-21
 
 ### Added
