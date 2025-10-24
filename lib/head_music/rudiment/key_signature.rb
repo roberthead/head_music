@@ -4,8 +4,6 @@ module HeadMusic::Rudiment; end
 # Represents a key signature (traditionally associated with a key)
 # This class maintains backward compatibility while delegating to Key/Mode internally
 class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
-  attr_reader :tonal_context
-
   ORDERED_LETTER_NAMES_OF_SHARPS = %w[F C G D A E B].freeze
   ORDERED_LETTER_NAMES_OF_FLATS = ORDERED_LETTER_NAMES_OF_SHARPS.reverse.freeze
 
@@ -27,10 +25,6 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
     end
   end
 
-  def self.from_tonal_context(tonal_context)
-    new_from_context(tonal_context)
-  end
-
   def self.from_scale(scale)
     # Find a key or mode that uses this scale
     tonic = scale.root_pitch.spelling
@@ -50,26 +44,6 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
     @scale_type ||= HeadMusic::Rudiment::ScaleType.default
     @scale_type = @scale_type.parent || @scale_type
     @scale = HeadMusic::Rudiment::Scale.get(@tonic_spelling, @scale_type)
-
-    # Create appropriate tonal context
-    scale_type_str = scale_type.to_s.downcase if scale_type
-
-    @tonal_context = if %w[major minor].include?(scale_type_str)
-      HeadMusic::Rudiment::Key.get("#{tonic_spelling} #{scale_type}")
-    elsif scale_type
-      HeadMusic::Rudiment::Mode.get("#{tonic_spelling} #{scale_type}")
-    else
-      HeadMusic::Rudiment::Key.get("#{tonic_spelling} major")
-    end
-  rescue ArgumentError
-    # Fall back to creating a major key if mode is not recognized
-    @tonal_context = HeadMusic::Rudiment::Key.get("#{tonic_spelling} major")
-  end
-
-  def self.new_from_context(context)
-    instance = allocate
-    instance.instance_variable_set(:@tonal_context, context)
-    instance
   end
 
   def spellings
