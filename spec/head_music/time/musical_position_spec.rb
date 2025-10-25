@@ -192,27 +192,27 @@ describe HeadMusic::Time::MusicalPosition do
 
   describe "Comparable" do
     let(:meter) { HeadMusic::Rudiment::Meter.get("4/4") }
-    let(:position1) { described_class.new(1, 1, 0, 0) }
-    let(:position2) { described_class.new(1, 2, 0, 0) }
-    let(:position3) { described_class.new(1, 1, 0, 0) }
-    let(:position4) { described_class.new(2, 1, 0, 0) }
+    let(:first_bar_first_beat) { described_class.new(1, 1, 0, 0) }
+    let(:first_bar_second_beat) { described_class.new(1, 2, 0, 0) }
+    let(:also_first_bar_first_beat) { described_class.new(1, 1, 0, 0) }
+    let(:second_bar_first_beat) { described_class.new(2, 1, 0, 0) }
 
     before do
-      position1.normalize!(meter)
-      position2.normalize!(meter)
-      position3.normalize!(meter)
-      position4.normalize!(meter)
+      first_bar_first_beat.normalize!(meter)
+      first_bar_second_beat.normalize!(meter)
+      also_first_bar_first_beat.normalize!(meter)
+      second_bar_first_beat.normalize!(meter)
     end
 
     it "compares positions correctly" do
-      expect(position1).to eq position3
-      expect(position1).to be < position2
-      expect(position2).to be > position1
-      expect(position2).to be < position4
+      expect(first_bar_first_beat).to eq also_first_bar_first_beat
+      expect(first_bar_first_beat).to be < first_bar_second_beat
+      expect(first_bar_second_beat).to be > first_bar_first_beat
+      expect(first_bar_second_beat).to be < second_bar_first_beat
     end
 
     it "supports between?" do
-      expect(position2).to be_between(position1, position4)
+      expect(first_bar_second_beat).to be_between(first_bar_first_beat, second_bar_first_beat)
     end
 
     context "with tick differences" do

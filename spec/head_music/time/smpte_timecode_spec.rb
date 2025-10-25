@@ -198,27 +198,27 @@ describe HeadMusic::Time::SmpteTimecode do
   end
 
   describe "Comparable" do
-    let(:timecode1) { described_class.new(1, 0, 0, 0, framerate: 30) }
-    let(:timecode2) { described_class.new(1, 0, 30, 0, framerate: 30) }
-    let(:timecode3) { described_class.new(1, 0, 0, 0, framerate: 30) }
-    let(:timecode4) { described_class.new(2, 0, 0, 0, framerate: 30) }
+    let(:one_hour) { described_class.new(1, 0, 0, 0, framerate: 30) }
+    let(:one_hour_thirty_seconds) { described_class.new(1, 0, 30, 0, framerate: 30) }
+    let(:also_one_hour) { described_class.new(1, 0, 0, 0, framerate: 30) }
+    let(:two_hours) { described_class.new(2, 0, 0, 0, framerate: 30) }
 
     before do
-      timecode1.normalize!
-      timecode2.normalize!
-      timecode3.normalize!
-      timecode4.normalize!
+      one_hour.normalize!
+      one_hour_thirty_seconds.normalize!
+      also_one_hour.normalize!
+      two_hours.normalize!
     end
 
     it "compares timecodes correctly" do
-      expect(timecode1).to eq timecode3
-      expect(timecode1).to be < timecode2
-      expect(timecode2).to be > timecode1
-      expect(timecode2).to be < timecode4
+      expect(one_hour).to eq also_one_hour
+      expect(one_hour).to be < one_hour_thirty_seconds
+      expect(one_hour_thirty_seconds).to be > one_hour
+      expect(one_hour_thirty_seconds).to be < two_hours
     end
 
     it "supports between?" do
-      expect(timecode2).to be_between(timecode1, timecode4)
+      expect(one_hour_thirty_seconds).to be_between(one_hour, two_hours)
     end
 
     context "with frame differences" do

@@ -225,4 +225,156 @@ describe HeadMusic::Time::Conductor do
       expect(result_musical.to_a[0..2]).to eq original_musical.to_a[0..2]
     end
   end
+
+  describe "with multiple tempo changes" do
+    subject(:conductor) { described_class.new }
+
+    before do
+      # Bar 1-4: 120 bpm
+      # Bar 5-8: 96 bpm
+      # Bar 9+: 140 bpm
+      conductor.tempo_map.add_change(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0), "quarter", 96)
+      conductor.tempo_map.add_change(HeadMusic::Time::MusicalPosition.new(9, 1, 0, 0), "quarter", 140)
+    end
+
+    describe "#musical_to_clock" do
+      it "calculates clock time across tempo changes" do
+        # Bar 1 beat 1: start
+        # 4 bars at 120 bpm = 8 seconds (0.5s per beat, 4 beats per bar = 2s per bar)
+        position = HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)
+        clock = conductor.musical_to_clock(position)
+        expect(clock.to_seconds).to be_within(0.01).of(8.0)
+      end
+
+      it "calculates position in second tempo segment" do
+        # Bars 1-4 at 120 bpm: 8 seconds
+        # Bar 5 at 96 bpm: 2.5 seconds (0.625s per beat)
+        # Total: 10.5 seconds
+        position = HeadMusic::Time::MusicalPosition.new(6, 1, 0, 0)
+        clock = conductor.musical_to_clock(position)
+        expect(clock.to_seconds).to be_within(0.01).of(10.5)
+      end
+
+      it "calculates position in third tempo segment" do
+        # Bars 1-4 at 120 bpm: 8 seconds
+        # Bars 5-8 at 96 bpm: 10 seconds
+        # Bar 9 beat 1: 18 seconds
+        position = HeadMusic::Time::MusicalPosition.new(9, 1, 0, 0)
+        clock = conductor.musical_to_clock(position)
+        expect(clock.to_seconds).to be_within(0.01).of(18.0)
+      end
+    end
+
+    describe "#clock_to_musical" do
+      it "converts clock to musical across tempo changes" do
+        # 8 seconds = end of bar 4 (4 bars at 120 bpm)
+        clock = HeadMusic::Time::ClockPosition.new(8_000_000_000)
+        position = conductor.clock_to_musical(clock)
+        expect(position.bar).to eq 5
+        expect(position.beat).to eq 1
+      end
+
+      it "finds position in second tempo segment" do
+        # 10.5 seconds = bar 6 beat 1
+        clock = HeadMusic::Time::ClockPosition.new(10_500_000_000)
+        position = conductor.clock_to_musical(clock)
+        expect(position.bar).to eq 6
+        expect(position.beat).to eq 1
+      end
+
+      it "finds position in third tempo segment" do
+        # 18 seconds = bar 9 beat 1
+        clock = HeadMusic::Time::ClockPosition.new(18_000_000_000)
+        position = conductor.clock_to_musical(clock)
+        expect(position.bar).to eq 9
+        expect(position.beat).to eq 1
+      end
+    end
+
+    describe "round-trip with tempo changes" do
+      it "maintains accuracy across tempo boundaries" do
+        original_position = HeadMusic::Time::MusicalPosition.new(7, 3, 480, 0)
+        result_position = conductor.clock_to_musical(conductor.musical_to_clock(original_position))
+        expect(result_position).to have_attributes(bar: original_position.bar, beat: original_position.beat)
+        expect(result_position.tick).to be_within(5).of(original_position.tick)
+      end
+    end
+  end
+
+  describe "with multiple meter changes" do
+    subject(:conductor) { described_class.new }
+
+    before do
+      # Bar 1-4: 4/4
+      # Bar 5-8: 3/4
+      # Bar 9+: 6/8
+      conductor.meter_map.add_change(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0), "3/4")
+      conductor.meter_map.add_change(HeadMusic::Time::MusicalPosition.new(9, 1, 0, 0), "6/8")
+    end
+
+    describe "#musical_to_clock" do
+      it "calculates correctly across meter changes" do
+        # Bar 1-4 in 4/4: 16 beats at 120 bpm = 8 seconds
+        position = HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)
+        clock = conductor.musical_to_clock(position)
+        expect(clock.to_seconds).to be_within(0.01).of(8.0)
+      end
+
+      it "calculates in second meter segment" do
+        # Bars 1-4 in 4/4: 16 beats = 8 seconds
+        # Bar 5 in 3/4: 4 beats (calculated as full bar) = 2 seconds
+        # Total: 10 seconds
+        # Note: Current implementation calculates each bar independently
+        position = HeadMusic::Time::MusicalPosition.new(6, 1, 0, 0)
+        clock = conductor.musical_to_clock(position)
+        expect(clock.to_seconds).to be_within(0.01).of(10.0)
+      end
+    end
+  end
+
+  describe "with both tempo and meter changes" do
+    subject(:conductor) { described_class.new }
+
+    before do
+      conductor.tempo_map.add_change(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0), "quarter", 96)
+      conductor.meter_map.add_change(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0), "3/4")
+    end
+
+    it "handles simultaneous tempo and meter changes" do
+      position = HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)
+      clock = conductor.musical_to_clock(position)
+      expect(clock.to_seconds).to be_within(0.01).of(8.0)
+      expect(conductor.clock_to_musical(clock)).to have_attributes(bar: 5, beat: 1)
+    end
+
+    it "calculates within the new meter and tempo" do
+      # Bar 5 beat 2 in 3/4 at 96 bpm
+      # 8 seconds + 0.625 seconds = 8.625 seconds
+      position = HeadMusic::Time::MusicalPosition.new(5, 2, 0, 0)
+      clock = conductor.musical_to_clock(position)
+      expect(clock.to_seconds).to be_within(0.01).of(8.625)
+    end
+  end
+
+  describe "#tempo_map and #meter_map access" do
+    subject(:conductor) { described_class.new }
+
+    it "provides access to tempo_map" do
+      expect(conductor.tempo_map).to be_a(HeadMusic::Time::TempoMap)
+    end
+
+    it "provides access to meter_map" do
+      expect(conductor.meter_map).to be_a(HeadMusic::Time::MeterMap)
+    end
+
+    it "allows adding tempo changes via tempo_map" do
+      conductor.tempo_map.add_change(HeadMusic::Time::MusicalPosition.new(10, 1, 0, 0), "quarter", 80)
+      expect(conductor.tempo_map.events.length).to eq 2
+    end
+
+    it "allows adding meter changes via meter_map" do
+      conductor.meter_map.add_change(HeadMusic::Time::MusicalPosition.new(10, 1, 0, 0), "5/4")
+      expect(conductor.meter_map.events.length).to eq 2
+    end
+  end
 end

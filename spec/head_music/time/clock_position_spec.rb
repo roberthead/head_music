@@ -43,10 +43,10 @@ describe HeadMusic::Time::ClockPosition do
   end
 
   describe "#+" do
-    subject(:result) { position1 + position2 }
+    subject(:result) { one_second + half_second }
 
-    let(:position1) { described_class.new(1_000_000_000) }
-    let(:position2) { described_class.new(500_000_000) }
+    let(:one_second) { described_class.new(1_000_000_000) }
+    let(:half_second) { described_class.new(500_000_000) }
 
     it "returns a ClockPosition" do
       expect(result).to be_a(described_class)
@@ -58,33 +58,33 @@ describe HeadMusic::Time::ClockPosition do
   end
 
   describe "#<=>" do
-    let(:position1) { described_class.new(1_000_000_000) }
-    let(:position2) { described_class.new(2_000_000_000) }
-    let(:position3) { described_class.new(1_000_000_000) }
+    let(:one_second) { described_class.new(1_000_000_000) }
+    let(:two_seconds) { described_class.new(2_000_000_000) }
+    let(:also_one_second) { described_class.new(1_000_000_000) }
 
     it "compares positions correctly" do
-      expect(position1 <=> position2).to eq(-1)
-      expect(position2 <=> position1).to eq(1)
-      expect(position1 <=> position3).to eq(0)
+      expect(one_second <=> two_seconds).to eq(-1)
+      expect(two_seconds <=> one_second).to eq(1)
+      expect(one_second <=> also_one_second).to eq(0)
     end
 
     it "supports comparison operators" do
-      expect(position1).to be < position2
-      expect(position2).to be > position1
-      expect(position1).to be <= position3
-      expect(position1).to be >= position3
-      expect(position1).to eq position3
+      expect(one_second).to be < two_seconds
+      expect(two_seconds).to be > one_second
+      expect(one_second).to be <= also_one_second
+      expect(one_second).to be >= also_one_second
+      expect(one_second).to eq also_one_second
     end
   end
 
   describe "Comparable" do
-    let(:position1) { described_class.new(1_000_000_000) }
-    let(:position2) { described_class.new(2_000_000_000) }
-    let(:position3) { described_class.new(1_500_000_000) }
+    let(:one_second) { described_class.new(1_000_000_000) }
+    let(:two_seconds) { described_class.new(2_000_000_000) }
+    let(:one_and_half_seconds) { described_class.new(1_500_000_000) }
 
     it "supports between?" do
-      expect(position3).to be_between(position1, position2)
-      expect(position1).not_to be_between(position2, position3)
+      expect(one_and_half_seconds).to be_between(one_second, two_seconds)
+      expect(one_second).not_to be_between(two_seconds, one_and_half_seconds)
     end
   end
 end
