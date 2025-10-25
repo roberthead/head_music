@@ -75,6 +75,9 @@ require "head_music/rudiment/tuning/just_intonation"
 require "head_music/rudiment/tuning/meantone"
 require "head_music/rudiment/tuning/pythagorean"
 
+# time
+require "head_music/time"
+
 # instruments
 require "head_music/instruments/instrument_family"
 require "head_music/instruments/instrument_type"
