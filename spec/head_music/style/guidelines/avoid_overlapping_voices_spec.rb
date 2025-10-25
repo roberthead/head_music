@@ -75,4 +75,139 @@ describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
       end
     end
   end
+
+  context "with multiple voices to test both higher and lower voice branches" do
+    subject(:guideline) { described_class.new(alto) }
+
+    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
+    let(:soprano) { composition.add_voice(role: :soprano) }
+    let(:alto) { composition.add_voice(role: :alto) }
+    let(:bass) { composition.add_voice(role: :bass) }
+
+    context "when lower voice overlaps by going above alto" do
+      before do
+        soprano.place("1:1", :whole, "G5")
+        soprano.place("2:1", :whole, "A5")
+        soprano.place("3:1", :whole, "G5")
+
+        alto.place("1:1", :whole, "E5")
+        alto.place("2:1", :whole, "F5")
+        alto.place("3:1", :whole, "E5")
+
+        bass.place("1:1", :whole, "C4")
+        bass.place("2:1", :whole, "F5") # Jumps above preceding alto note (E5)
+        bass.place("3:1", :whole, "C4")
+      end
+
+      it "detects the overlap from the lower voice" do
+        expect(guideline).not_to be_adherent
+        expect(guideline.marks).not_to be_empty
+      end
+    end
+
+    context "when higher voice overlaps by going below alto" do
+      before do
+        soprano.place("1:1", :whole, "G5")
+        soprano.place("2:1", :whole, "D5") # Drops below preceding alto note (F5)
+        soprano.place("3:1", :whole, "G5")
+
+        alto.place("1:1", :whole, "E5")
+        alto.place("2:1", :whole, "F5")
+        alto.place("3:1", :whole, "E5")
+
+        bass.place("1:1", :whole, "C4")
+        bass.place("2:1", :whole, "D4")
+        bass.place("3:1", :whole, "C4")
+      end
+
+      it "detects the overlap from the higher voice" do
+        expect(guideline).not_to be_adherent
+        expect(guideline.marks).not_to be_empty
+      end
+    end
+
+    context "when following note causes overlap (not preceding)" do
+      before do
+        soprano.place("1:1", :whole, "G5")
+        soprano.place("2:1", :whole, "F5")
+        soprano.place("3:1", :whole, "G5")
+
+        alto.place("1:1", :whole, "E5")
+        alto.place("2:1", :whole, "F5")
+        alto.place("3:1", :whole, "E5")
+
+        bass.place("1:1", :whole, "C4")
+        # Skip position 2:1 so there's no preceding note at that position
+        bass.place("3:1", :whole, "G5") # Following note goes above alto note at position 2
+      end
+
+      it "detects overlap based on following note" do
+        expect(guideline).not_to be_adherent
+      end
+    end
+
+    context "when no voices overlap" do
+      before do
+        soprano.place("1:1", :whole, "G5")
+        soprano.place("2:1", :whole, "A5")
+        soprano.place("3:1", :whole, "G5")
+
+        alto.place("1:1", :whole, "E5")
+        alto.place("2:1", :whole, "F5")
+        alto.place("3:1", :whole, "E5")
+
+        bass.place("1:1", :whole, "C4")
+        bass.place("2:1", :whole, "D4")
+        bass.place("3:1", :whole, "C4")
+      end
+
+      it "is adherent" do
+        expect(guideline).to be_adherent
+        expect(guideline.marks).to be_empty
+      end
+
+      it "returns false for both preceding and following checks (else branch)" do
+        # This explicitly tests the "both false" branch in lines 39-40
+        # For alto note at 2:1 (F5):
+        #   - bass preceding (C4) > F5? false
+        #   - bass following (C4) > F5? false
+        # Result: note is NOT selected (no overlap)
+        expect(guideline.marks).to be_empty
+      end
+    end
+
+    context "when preceding_note is nil" do
+      before do
+        # Only place notes to test nil handling
+        soprano.place("2:1", :whole, "G5")
+        alto.place("2:1", :whole, "E5")
+        bass.place("1:1", :whole, "C4")
+      end
+
+      it "handles nil preceding_note gracefully" do
+        expect { guideline.fitness }.not_to raise_error
+      end
+    end
+
+    context "when following_note is nil" do
+      before do
+        soprano.place("1:1", :whole, "G5")
+        alto.place("1:1", :whole, "E5")
+        alto.place("2:1", :whole, "F5")
+        bass.place("1:1", :whole, "C4")
+        # No bass note after alto's 2:1, so following_note will be nil
+      end
+
+      it "handles nil following_note gracefully" do
+        expect { guideline.fitness }.not_to raise_error
+        expect(guideline).to be_adherent
+      end
+    end
+
+    # Note: The &.pitch safe navigation operator on lines 39-40 is defensive programming
+    # that protects against edge cases (nil pitch, UnpitchedNote, etc.) that cannot
+    # realistically occur through the public API, as voice.notes filters to only
+    # placements with valid pitch objects. These branches represent important defensive
+    # code but are difficult to test without breaking other assumptions in the codebase.
+  end
 end
