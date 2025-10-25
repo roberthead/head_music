@@ -21,8 +21,8 @@ class HeadMusic::Time::Conductor
 
   def initialize(attributes = {})
     attributes = attributes.symbolize_keys
-    @starting_position = attributes.get(:starting_position, HeadMusic::Time::Position.new)
-    @starting_smpte_timecode = attributes.get(:starting_smpte_timecode, HeadMusic::Time::SmpteTimecode.new)
+    @starting_position = attributes.fetch(:starting_position, HeadMusic::Time::MusicalPosition.new)
+    @starting_smpte_timecode = attributes.fetch(:starting_smpte_timecode, HeadMusic::Time::SmpteTimecode.new)
   end
 end
 
@@ -31,6 +31,7 @@ class HeadMusic::Time::MeterEvent
 
   def initialize(position, meter)
     @position = position
+    @meter = meter
   end
 end
 
@@ -41,21 +42,6 @@ class HeadMusic::Time::TempoEvent
   def initialize(position, beat_value, beats_per_minute)
     @position = position
     @tempo = HeadMusic::Rudiment::Tempo.new(beat_value, beats_per_minute)
-  end
-end
-
-# Abstract superclass
-class HeadMusic::Time::Position
-  include Comparable
-
-  def initialize(value, meter: nil, tempo: nil)
-    @value = value
-    @meter = meter || HeadMusic::Rudiment::Meter.default
-    @tempo = tempo || HeadMusic::Rudiment::Tempo.default
-  end
-
-  def <=>(other)
-    to_i <=> other.to_i
   end
 end
 
@@ -86,7 +72,7 @@ class HeadMusic::Time::ClockPosition
   end
 
   def +(other)
-    HeadMusic::Time::Value.new(nanoseconds + other.to_i)
+    HeadMusic::Time::ClockPosition.new(nanoseconds + other.to_i)
   end
 
   def <=>(other)
@@ -156,7 +142,7 @@ class HeadMusic::Time::MusicalPosition
       bar_delta, @beat = beat.divmod(meter.counts_per_bar)
       @bar += bar_delta
     end
-    HeadMusic::Time::Position.new(@bar, @beat, @tick, @subtick)
+    self
   end
 end
 
