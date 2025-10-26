@@ -78,7 +78,6 @@ class HeadMusic::Analysis::Dyad
 
     root_spellings.each do |root_spelling|
       root_pitch = HeadMusic::Rudiment::Pitch.get("#{root_spelling}4")
-      next unless root_pitch # Skip if pitch creation failed
 
       # Try all common trichord types from this root
       trichord_intervals = [
@@ -92,20 +91,13 @@ class HeadMusic::Analysis::Dyad
 
       trichord_intervals.each do |intervals|
         trichord_pitches = [root_pitch]
-        valid = true
 
         # Each interval is FROM THE ROOT, not consecutive
         intervals.each do |interval_name|
           interval = HeadMusic::Analysis::DiatonicInterval.get(interval_name)
           next_pitch = interval.above(root_pitch)
-          if next_pitch.nil?
-            valid = false
-            break
-          end
           trichord_pitches << next_pitch
         end
-
-        next unless valid
 
         pitch_set = HeadMusic::Analysis::PitchSet.new(trichord_pitches)
         trichord_pitch_classes = pitch_set.pitch_classes
@@ -130,7 +122,6 @@ class HeadMusic::Analysis::Dyad
 
     root_spellings.each do |root_spelling|
       root_pitch = HeadMusic::Rudiment::Pitch.get("#{root_spelling}4")
-      next unless root_pitch # Skip if pitch creation failed
 
       # Try all common seventh chord types from this root
       seventh_chord_intervals = [
@@ -148,20 +139,13 @@ class HeadMusic::Analysis::Dyad
 
       seventh_chord_intervals.each do |intervals|
         chord_pitches = [root_pitch]
-        valid = true
 
         # Each interval is FROM THE ROOT, not consecutive
         intervals.each do |interval_name|
           interval = HeadMusic::Analysis::DiatonicInterval.get(interval_name)
           next_pitch = interval.above(root_pitch)
-          if next_pitch.nil?
-            valid = false
-            break
-          end
           chord_pitches << next_pitch
         end
-
-        next unless valid
 
         pitch_set = HeadMusic::Analysis::PitchSet.new(chord_pitches)
         chord_pitch_classes = pitch_set.pitch_classes
@@ -227,8 +211,8 @@ class HeadMusic::Analysis::Dyad
     letter_names = HeadMusic::Rudiment::LetterName.all
 
     letter_names.each do |letter_name|
-      [-2, -1, 0, 1, 2].each do |alteration_cents|
-        spelling = HeadMusic::Rudiment::Spelling.get("#{letter_name}#{alteration_sign(alteration_cents)}")
+      [-2, -1, 0, 1, 2].each do |alteration_semitones|
+        spelling = HeadMusic::Rudiment::Spelling.get("#{letter_name}#{alteration_sign(alteration_semitones)}")
         next unless spelling
 
         if spelling.pitch_class == pitch_class
@@ -241,8 +225,8 @@ class HeadMusic::Analysis::Dyad
     equivalents
   end
 
-  def alteration_sign(cents)
-    case cents
+  def alteration_sign(semitones)
+    case semitones
     when -2 then "bb"
     when -1 then "b"
     when 0 then ""

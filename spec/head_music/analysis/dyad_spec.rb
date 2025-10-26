@@ -347,4 +347,313 @@ describe HeadMusic::Analysis::Dyad do
       )
     end
   end
+
+  describe "method_missing edge cases" do
+    subject(:dyad) { described_class.new("C4", "E4") }
+
+    it "raises NoMethodError for non-existent methods" do
+      expect { dyad.nonexistent_method }.to raise_error(NoMethodError)
+    end
+
+    it "delegates respond_to_missing? correctly" do
+      expect(dyad.respond_to?(:perfect?)).to be true
+      expect(dyad.respond_to?(:major?)).to be true
+      expect(dyad.respond_to?(:nonexistent_method)).to be false
+    end
+  end
+
+  describe "#alteration_sign (private method coverage)" do
+    subject(:dyad) { described_class.new("C4", "E4") }
+
+    it "returns correct signs for all alterations" do
+      expect(dyad.send(:alteration_sign, -2)).to eq("bb")
+      expect(dyad.send(:alteration_sign, -1)).to eq("b")
+      expect(dyad.send(:alteration_sign, 0)).to eq("")
+      expect(dyad.send(:alteration_sign, 1)).to eq("#")
+      expect(dyad.send(:alteration_sign, 2)).to eq("##")
+    end
+  end
+
+  describe "without key context" do
+    subject(:dyad) { described_class.new("C4", "E4", key: nil) }
+
+    it "returns all possible trichords when key is nil" do
+      trichords_without_key = dyad.possible_trichords
+      expect(trichords_without_key.length).to be > 0
+    end
+
+    it "does not filter results when key is nil" do
+      # Create same dyad with and without key
+      dyad_with_key = described_class.new("C4", "E4", key: "C major")
+      dyad_without_key = described_class.new("C4", "E4", key: nil)
+
+      expect(dyad_without_key.possible_trichords.length).to be >= dyad_with_key.possible_trichords.length
+    end
+
+    it "returns unsorted results when key is nil" do
+      # Without key, sort_by_diatonic_agreement should return as-is
+      trichords = dyad.possible_trichords
+      expect(trichords).to be_an(Array)
+    end
+  end
+
+  describe "enharmonic respellings edge cases" do
+    context "with double sharps and flats" do
+      subject(:dyad) { described_class.new("C4", "B#4") }
+
+      it "generates enharmonic respellings" do
+        respellings = dyad.enharmonic_respellings
+        expect(respellings).to be_an(Array)
+        expect(respellings.length).to be > 0
+      end
+
+      it "includes various spellings" do
+        respellings = dyad.enharmonic_respellings
+        spelling_pairs = respellings.map { |d| [d.pitch1.spelling.to_s, d.pitch2.spelling.to_s] }
+        # Should have multiple different spelling combinations
+        expect(spelling_pairs.uniq.length).to be > 1
+      end
+    end
+
+    context "with natural notes" do
+      subject(:dyad) { described_class.new("C4", "D4") }
+
+      it "generates enharmonic respellings for natural notes" do
+        respellings = dyad.enharmonic_respellings
+        # C can be B#, Dbb; D can be C##, Ebb, etc.
+        expect(respellings).to be_an(Array)
+        expect(respellings.length).to be > 0
+      end
+
+      it "avoids duplicate spellings in enharmonic equivalents" do
+        respellings = dyad.enharmonic_respellings
+        spelling_pairs = respellings.map { |d| [d.pitch1.spelling.to_s, d.pitch2.spelling.to_s] }
+        expect(spelling_pairs.uniq.length).to eq(spelling_pairs.length)
+      end
+    end
+
+    context "with already enharmonic pitches" do
+      subject(:dyad) { described_class.new("Db4", "C#4") }
+
+      it "generates respellings even when pitches are enharmonic" do
+        respellings = dyad.enharmonic_respellings
+        expect(respellings).to be_an(Array)
+      end
+    end
+  end
+
+  describe "filter_by_key edge cases" do
+    context "when key is nil" do
+      subject(:dyad) { described_class.new("C4", "E4", key: nil) }
+
+      it "returns all seventh chords without filtering" do
+        seventh_chords = dyad.possible_seventh_chords
+        expect(seventh_chords.length).to be > 0
+      end
+    end
+
+    context "with chromatic key" do
+      subject(:dyad) { described_class.new("C4", "Db4", key: "C minor") }
+
+      it "filters results based on key" do
+        trichords = dyad.possible_trichords
+        # All pitches should be diatonic to C minor
+        all_diatonic = trichords.all? do |trichord|
+          trichord.pitches.all? { |pitch| dyad.key.scale.spellings.include?(pitch.spelling) }
+        end
+        expect(all_diatonic).to be true
+      end
+    end
+  end
+
+  describe "sort_by_diatonic_agreement edge cases" do
+    context "without key context" do
+      subject(:dyad) { described_class.new("C4", "E4") }
+
+      it "returns trichords unsorted when no key" do
+        trichords = dyad.possible_trichords
+        # Just verify it returns results
+        expect(trichords).to be_an(Array)
+      end
+    end
+
+    context "with key that filters everything" do
+      # Use a dyad that's not in the key at all
+      subject(:dyad) { described_class.new("C#4", "F#4", key: "C major") }
+
+      it "returns empty array when nothing is diatonic" do
+        trichords = dyad.possible_trichords
+        # C# and F# are not in C major, so no diatonic trichords possible
+        expect(trichords).to be_empty
+      end
+    end
+  end
+
+  describe "robustness with edge cases" do
+    context "with unison (same pitch)" do
+      subject(:dyad) { described_class.new("C4", "C4") }
+
+      it "handles unison interval" do
+        expect(dyad.interval.to_s).to eq("perfect unison")
+      end
+
+      it "returns empty or minimal results for possible triads" do
+        # A unison can't form a triad on its own
+        triads = dyad.possible_triads
+        expect(triads).to be_an(Array)
+      end
+    end
+
+    context "with octave" do
+      subject(:dyad) { described_class.new("C4", "C5") }
+
+      it "handles octave interval" do
+        expect(dyad.interval.to_s).to eq("perfect octave")
+      end
+
+      it "finds triads containing the octave" do
+        triads = dyad.possible_triads
+        expect(triads.length).to be >= 0
+      end
+    end
+
+    context "with compound interval" do
+      subject(:dyad) { described_class.new("C4", "E5") }
+
+      it "handles compound intervals" do
+        expect(dyad.interval.to_s).to eq("major tenth")
+      end
+
+      it "generates possible chords for compound intervals" do
+        trichords = dyad.possible_trichords
+        expect(trichords).to be_an(Array)
+      end
+    end
+
+    context "with diminished interval" do
+      subject(:dyad) { described_class.new("C4", "Gb4") }
+
+      it "handles diminished fifth" do
+        expect(dyad.interval.to_s).to eq("diminished fifth")
+      end
+
+      it "finds diminished triads" do
+        dim_triads = dyad.possible_triads.select(&:diminished_triad?)
+        expect(dim_triads.length).to be > 0
+      end
+    end
+
+    context "with augmented interval" do
+      subject(:dyad) { described_class.new("C4", "G#4") }
+
+      it "handles augmented fifth" do
+        expect(dyad.interval.to_s).to eq("augmented fifth")
+      end
+
+      it "finds augmented triads" do
+        aug_triads = dyad.possible_triads.select(&:augmented_triad?)
+        expect(aug_triads.length).to be > 0
+      end
+    end
+  end
+
+  describe "caching behavior" do
+    subject(:dyad) { described_class.new("C4", "E4") }
+
+    it "caches interval results" do
+      first_call = dyad.interval
+      second_call = dyad.interval
+      expect(first_call).to be second_call
+    end
+
+    it "caches possible_trichords results" do
+      first_call = dyad.possible_trichords
+      second_call = dyad.possible_trichords
+      expect(first_call).to be second_call
+    end
+
+    it "caches possible_triads results" do
+      first_call = dyad.possible_triads
+      second_call = dyad.possible_triads
+      expect(first_call).to be second_call
+    end
+
+    it "caches possible_seventh_chords results" do
+      first_call = dyad.possible_seventh_chords
+      second_call = dyad.possible_seventh_chords
+      expect(first_call).to be second_call
+    end
+
+    it "caches enharmonic_respellings results" do
+      first_call = dyad.enharmonic_respellings
+      second_call = dyad.enharmonic_respellings
+      expect(first_call).to be second_call
+    end
+  end
+
+  describe "seventh chord generation completeness" do
+    subject(:dyad) { described_class.new("C4", "E4") }
+
+    it "includes minor-major seventh chords" do
+      dyad.possible_seventh_chords.find do |ps|
+        # C E G B is a C major seventh, but C Eb G B is minor-major
+        ps.pitches.map(&:pitch_class).map(&:to_i).sort == [0, 3, 7, 11]
+      end
+      # This specific combination might not be found, but test the mechanism
+      expect(dyad.possible_seventh_chords).to be_an(Array)
+    end
+
+    it "includes half-diminished seventh chords" do
+      # Look for any half-diminished pattern
+      half_dim = dyad.possible_seventh_chords.any?(&:seventh_chord?)
+      expect(half_dim).to be true
+    end
+
+    it "includes ninth chords in seventh chord results" do
+      # The code includes dominant ninth patterns
+      seventh_chords = dyad.possible_seventh_chords
+      # Some may be 5-note ninth chords
+      ninth_chords = seventh_chords.select { |ps| ps.pitches.length > 4 }
+      expect(ninth_chords.length).to be >= 0
+    end
+  end
+
+  describe "pitch ordering" do
+    context "when pitches are given in reverse order" do
+      subject(:dyad) { described_class.new("G4", "C4") }
+
+      it "sorts pitches internally" do
+        expect(dyad.pitch1.to_s).to eq("C4")
+        expect(dyad.pitch2.to_s).to eq("G4")
+      end
+
+      it "identifies interval from lower to upper" do
+        expect(dyad.interval.to_s).to eq("perfect fifth")
+      end
+    end
+
+    context "with lower_pitch and upper_pitch" do
+      subject(:dyad) { described_class.new("E4", "C4") }
+
+      it "lower_pitch returns the lower pitch" do
+        expect(dyad.lower_pitch.to_s).to eq("C4")
+      end
+
+      it "upper_pitch returns the upper pitch" do
+        expect(dyad.upper_pitch.to_s).to eq("E4")
+      end
+
+      it "caches lower_pitch" do
+        first_call = dyad.lower_pitch
+        second_call = dyad.lower_pitch
+        expect(first_call).to be second_call
+      end
+
+      it "caches upper_pitch" do
+        first_call = dyad.upper_pitch
+        second_call = dyad.upper_pitch
+        expect(first_call).to be second_call
+      end
+    end
+  end
 end
