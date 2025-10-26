@@ -65,11 +65,7 @@ alto_voice:
         default:
           - clef: treble_clef
 arpeggione:
-  classification_keys:
-    - bowed
-    - chordophone
-    - string
-  orchestra_section_key: string
+  family_key: arpeggione
   variants:
     default:
       staff_schemes:
@@ -77,11 +73,7 @@ arpeggione:
           - clef: treble_clef
             sounding_transposition: -12
 banjo:
-  classification_keys:
-    - plucked
-    - chordophone
-    - string
-  orchestra_section_key: string
+  family_key: banjo
   variants:
     default:
       staff_schemes:
@@ -326,10 +318,7 @@ bugle:
           - clef: treble_clef
             sounding_transposition: 0
 castanets:
-  classification_keys:
-    - percussion
-    - idiophone
-  orchestra_section_key: percussion
+  family_key: castanets
   variants:
     default:
       staff_schemes:
@@ -360,22 +349,14 @@ chimes:
   alias_name_keys:
     - tubular_bells
     - orchestral_chimes
-  classification_keys:
-    - percussion
-    - idiophone
-  orchestra_section_key: percussion
+  family_key: chimes
   variants:
     default:
       staff_schemes:
         default:
           - clef: treble_clef
 cimbalom:
-  classification_keys:
-    - chordophone
-    - string
-    - struck
-    - plucked
-  orchestra_section_key: string
+  family_key: hammered_dulcimer
   variants:
     default:
       staff_schemes:
@@ -536,20 +517,14 @@ countertenor_voice:
         default:
           - clef: treble_clef
 cowbell:
-  classification_keys:
-    - percussion
-    - idiophone
-  orchestra_section_key: percussion
+  family_key: cowbell
   variants:
     default:
       staff_schemes:
         default:
           - clef: neutral_clef
 crotales:
-  classification_keys:
-    - percussion
-    - idiophone
-  orchestra_section_key: percussion
+  family_key: crotales
   variants:
     default:
       staff_schemes:
@@ -695,11 +670,7 @@ guitar:
           - clef: treble_clef
             sounding_transposition: -12
 hammered_dulcimer:
-  classification_keys:
-    - percussion
-    - chordophone
-    - string
-  orchestra_section_key: percussion
+  family_key: hammered_dulcimer
   variants:
     default:
       staff_schemes:
@@ -750,11 +721,7 @@ mandolin:
         default:
           - clef: treble_clef
 maracas:
-  classification_keys:
-    - percussion
-    - shaken
-    - idiophone
-  orchestra_section_key: percussion
+  family_key: maracas
   variants:
     default:
       staff_schemes:
@@ -1096,11 +1063,7 @@ temple_blocks:
         default:
           - clef: neutral_clef
 tenor_drum:
-  classification_keys:
-    - percussion
-    - struck
-    - membranophone
-  orchestra_section_key: percussion
+  family_key: tenor_drum
   variants:
     default:
       staff_schemes:
@@ -1172,11 +1135,7 @@ timpani:
         default:
           - clef: neutral_clef
 triangle:
-  classification_keys:
-    - percussion
-    - struck
-    - idiophone
-  orchestra_section_key: percussion
+  family_key: triangle
   variants:
     default:
       staff_schemes:

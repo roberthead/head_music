@@ -7,6 +7,12 @@ accordion:
     - keyboard
     - wind
   orchestra_section_key: keyboard
+arpeggione:
+  classification_keys:
+    - bowed
+    - chordophone
+    - string
+  orchestra_section_key: string
 bagpipe:
   classification_keys:
     - aerophone
@@ -14,6 +20,12 @@ bagpipe:
     - wind
     - woodwind
   orchestra_section_key: woodwind
+banjo:
+  classification_keys:
+    - plucked
+    - chordophone
+    - string
+  orchestra_section_key: string
 bass_drum:
   classification_keys:
     - percussion
@@ -28,6 +40,11 @@ bassoon:
     - wind
     - woodwind
   orchestra_section_key: woodwind
+castanets:
+  classification_keys:
+    - percussion
+    - idiophone
+  orchestra_section_key: percussion
 celesta:
   classification_keys:
     - idiophone
@@ -51,6 +68,11 @@ clavichord:
     - keyboard
     - string
   orchestra_section_key: keyboard
+chimes:
+  classification_keys:
+    - percussion
+    - idiophone
+  orchestra_section_key: percussion
 cornet:
   classification_keys:
     - aerophone
@@ -58,6 +80,16 @@ cornet:
     - valve
     - wind
   orchestra_section_key: brass
+cowbell:
+  classification_keys:
+    - percussion
+    - idiophone
+  orchestra_section_key: percussion
+crotales:
+  classification_keys:
+    - percussion
+    - idiophone
+  orchestra_section_key: percussion
 cymbal:
   classification_keys:
     - percussion
@@ -105,6 +137,13 @@ guitar:
     - fretted
     - string
   orchestra_section_key: string
+hammered_dulcimer:
+  classification_keys:
+    - percussion
+    - chordophone
+    - string
+    - struck
+  orchestra_section_key: percussion
 harmonica:
   classification_keys:
     - reed
@@ -151,6 +190,12 @@ mandolin:
     - fretted
     - string
   orchestra_section_key: string
+maracas:
+  classification_keys:
+    - percussion
+    - shaken
+    - idiophone
+  orchestra_section_key: percussion
 marimba:
   classification_keys:
     - idiophone
@@ -243,9 +288,21 @@ tambourine:
     - idiophone
     - unpitched
   orchestra_section_key: percussion
+tenor_drum:
+  classification_keys:
+    - percussion
+    - struck
+    - membranophone
+  orchestra_section_key: percussion
 theremin:
   classification_keys:
     - electronic
+triangle:
+  classification_keys:
+    - percussion
+    - struck
+    - idiophone
+  orchestra_section_key: percussion
 trombone:
   classification_keys:
     - aerophone
