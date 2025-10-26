@@ -1,10 +1,10 @@
 require "spec_helper"
 
-describe "HeadMusic::Instruments::InstrumentType" do
+describe "HeadMusic::Instruments::Instrument" do
   describe "get" do
     context "when using an alias name" do
-      let(:piccolo_by_alias) { HeadMusic::Instruments::InstrumentType.get("piccolo") }
-      let(:piccolo_by_name) { HeadMusic::Instruments::InstrumentType.get("piccolo_flute") }
+      let(:piccolo_by_alias) { HeadMusic::Instruments::Instrument.get("piccolo") }
+      let(:piccolo_by_name) { HeadMusic::Instruments::Instrument.get("piccolo_flute") }
 
       it "returns the instrument when using 'piccolo' (alias for piccolo_flute)" do
         expect(piccolo_by_alias.name).to eq("piccolo flute")
@@ -17,13 +17,13 @@ describe "HeadMusic::Instruments::InstrumentType" do
       end
 
       it "returns piano for 'pianoforte' alias" do
-        instrument = HeadMusic::Instruments::InstrumentType.get("pianoforte")
+        instrument = HeadMusic::Instruments::Instrument.get("pianoforte")
         expect(instrument.name).to eq("piano")
         expect(instrument.name_key).to eq(:piano)
       end
 
       it "returns cor anglais for 'English horn' alias" do
-        instrument = HeadMusic::Instruments::InstrumentType.get("English horn")
+        instrument = HeadMusic::Instruments::Instrument.get("English horn")
         expect(instrument).not_to be_nil
         expect(instrument.name_key).to eq(:cor_anglais)
       end

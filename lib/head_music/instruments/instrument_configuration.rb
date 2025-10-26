@@ -9,7 +9,7 @@ module HeadMusic::Instruments; end
 #   trumpet_in_c = HeadMusic::Instruments::InstrumentConfiguration.get("trumpet", "in_c")
 #   clarinet = HeadMusic::Instruments::InstrumentConfiguration.get("clarinet")  # uses default Bb variant
 #
-# Attributes accessible via delegation to instrument_type and variant:
+# Attributes accessible via delegation to instrument and variant:
 #   name: display name including variant (e.g. "Trumpet in C")
 #   transposition: sounding transposition in semitones
 #   clefs: array of clefs for this instrument
@@ -17,34 +17,34 @@ module HeadMusic::Instruments; end
 class HeadMusic::Instruments::InstrumentConfiguration
   include HeadMusic::Named
 
-  attr_reader :instrument_type, :variant
+  attr_reader :instrument, :variant
 
   # Factory method to get an InstrumentConfiguration instance
-  # @param type_or_name [String, Symbol] instrument type name or full name with variant
+  # @param instrument_name [String, Symbol] instrument name or full name with variant
   # @param variant_key [String, Symbol, nil] optional variant key if not included in name
   # @return [InstrumentConfiguration] instrument configuration with specified or default variant
-  def self.get(type_or_name, variant_key = nil)
-    return type_or_name if type_or_name.is_a?(self)
+  def self.get(instrument_name, variant_key = nil)
+    return instrument_name if instrument_name.is_a?(self)
 
-    type_name, parsed_variant_key = parse_instrument_name(type_or_name)
+    name, parsed_variant_key = parse_instrument_name(instrument_name)
     variant_key ||= parsed_variant_key
 
-    instrument_type = HeadMusic::Instruments::InstrumentType.get(type_name)
-    return nil unless instrument_type&.name_key
+    instrument = HeadMusic::Instruments::Instrument.get(name)
+    return nil unless instrument&.name_key
 
-    variant = find_variant(instrument_type, variant_key)
-    new(instrument_type, variant)
+    variant = find_variant(instrument, variant_key)
+    new(instrument, variant)
   end
 
-  def initialize(instrument_type, variant)
-    @instrument_type = instrument_type
+  def initialize(instrument, variant)
+    @instrument = instrument
     @variant = variant
     initialize_name
   end
 
-  # Delegations to instrument_type
+  # Delegations to instrument
   delegate :name_key, :family_key, :family, :orchestra_section_key, :classification_keys,
-    :alias_name_keys, :variants, :translation, to: :instrument_type
+    :alias_name_keys, :variants, :translation, to: :instrument
 
   # Delegations to variant
   delegate :pitch_designation, :staff_schemes, :default_staff_scheme, to: :variant
@@ -88,7 +88,7 @@ class HeadMusic::Instruments::InstrumentConfiguration
   def ==(other)
     return false unless other.is_a?(self.class)
 
-    instrument_type == other.instrument_type && variant == other.variant
+    instrument == other.instrument && variant == other.variant
   end
 
   def to_s
@@ -99,13 +99,13 @@ class HeadMusic::Instruments::InstrumentConfiguration
 
   def initialize_name
     if variant.default? || !pitch_designation
-      self.name = instrument_type.name
+      self.name = instrument.name
     elsif pitch_designation
       pitch_name = format_pitch_name(pitch_designation)
-      self.name = "#{instrument_type.name} in #{pitch_name}"
+      self.name = "#{instrument.name} in #{pitch_name}"
     else
       variant_name = variant.key.to_s.tr("_", " ")
-      self.name = "#{instrument_type.name} (#{variant_name})"
+      self.name = "#{instrument.name} (#{variant_name})"
     end
   end
 
@@ -120,14 +120,14 @@ class HeadMusic::Instruments::InstrumentConfiguration
 
     # Check for variant patterns like "trumpet_in_e_flat"
     if name_str =~ /(.+)_in_([a-g])_(flat|sharp)$/i
-      type_name = Regexp.last_match(1)
+      instrument_name = Regexp.last_match(1)
       note = Regexp.last_match(2).downcase
       accidental = Regexp.last_match(3)
       variant_key = :"in_#{note}_#{accidental}"
-      [type_name, variant_key]
+      [instrument_name, variant_key]
     # Check for variant patterns like "trumpet_in_c" or "clarinet_in_a" or "trumpet_in_eb"
     elsif name_str =~ /(.+)_in_([a-g][b#]?)$/i
-      type_name = Regexp.last_match(1)
+      instrument_name = Regexp.last_match(1)
       variant_note = Regexp.last_match(2).downcase
       # Convert "eb" to "e_flat", "bb" to "b_flat", etc.
       if variant_note.end_with?("b") && variant_note.length == 2
@@ -139,22 +139,22 @@ class HeadMusic::Instruments::InstrumentConfiguration
       else
         variant_key = :"in_#{variant_note}"
       end
-      [type_name, variant_key]
+      [instrument_name, variant_key]
     else
       [name_str, nil]
     end
   end
 
-  def self.find_variant(instrument_type, variant_key)
-    return instrument_type.default_variant unless variant_key
+  def self.find_variant(instrument, variant_key)
+    return instrument.default_variant unless variant_key
 
     # Convert to symbol for comparison
     variant_sym = variant_key.to_sym
 
     # Find the variant by key
-    variants = instrument_type.variants || []
+    variants = instrument.variants || []
     variant = variants.find { |v| v.key == variant_sym }
-    variant || instrument_type.default_variant
+    variant || instrument.default_variant
   end
 
   private_class_method :parse_instrument_name, :find_variant

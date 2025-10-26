@@ -72,14 +72,14 @@ class HeadMusic::Instruments::ScoreOrder
     # Return if already an InstrumentConfiguration instance
     return input if input.is_a?(HeadMusic::Instruments::InstrumentConfiguration)
 
-    # Return InstrumentType instances as-is for backward compatibility (duck typing)
-    return input.default_instrument if input.is_a?(HeadMusic::Instruments::InstrumentType)
+    # Return Instrument instances as-is for backward compatibility (duck typing)
+    return input.default_instrument if input.is_a?(HeadMusic::Instruments::Instrument)
 
     # Return other objects that respond to required methods (mock objects, etc.)
     return input if input.respond_to?(:name_key) && input.respond_to?(:family_key)
 
     # Create an InstrumentConfiguration instance for string inputs
-    HeadMusic::Instruments::InstrumentConfiguration.get(input) || HeadMusic::Instruments::InstrumentType.get(input)
+    HeadMusic::Instruments::InstrumentConfiguration.get(input) || HeadMusic::Instruments::Instrument.get(input)
   end
 
   # Builds an index mapping instrument names to their position in the order
