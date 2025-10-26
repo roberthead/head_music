@@ -669,6 +669,13 @@ guitar:
         default:
           - clef: treble_clef
             sounding_transposition: -12
+hackbrett:
+  family_key: hammered_dulcimer
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
 hammered_dulcimer:
   family_key: hammered_dulcimer
   variants:
@@ -917,6 +924,16 @@ sopranino_saxophone:
         default:
           - clef: treble_clef
             sounding_transposition: 3
+santur:
+  alias_name_keys:
+    - santoor
+  family_key: hammered_dulcimer
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
+          - clef: bass_clef
 soprano_saxophone:
   family_key: saxophone
   range_categories:
@@ -1247,3 +1264,11 @@ xylophone:
       staff_schemes:
         default:
           - clef: treble_clef
+yangqin:
+  family_key: hammered_dulcimer
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: treble_clef
+          - clef: bass_clef
