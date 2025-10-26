@@ -6,6 +6,8 @@ I want to analyze two-note combinations (dyads)
 
 So that I can understand harmonic implications in two-part music
 
+Every dyad can be interpreted as implying one or more chords (triad or seventh)
+
 Constructor should accept to pitches (or pitch classes) and an optional key
 
 ## Scenario: Identify interval in dyad
@@ -28,13 +30,11 @@ And each should contain the given pitches
 
 ## Scenario: List possible triads from third
 
-Given I have a dyad forming a minor third
+Given I have a dyad forming a major or minor third or sixth
 
 When I request possible triads
 
-Then I should receive minor and diminished triad options
-
-And for a major third I should receive major and augmented options
+Then I should receive major, minor, diminished, and/or augmented triads containing those pitch classes
 
 ## Scenario: Find possible seventh chords
 
@@ -43,8 +43,6 @@ Given I have a dyad
 When I request possible seventh chords
 
 Then I should receive all seventh chords containing those pitches
-
-And they should include appropriate inversions
 
 ## Scenario: Handle enharmonic possibilities
 
