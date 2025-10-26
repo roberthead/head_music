@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Instruments::Instrument do
+describe HeadMusic::Instruments::InstrumentConfiguration do
   describe ".get" do
     subject(:result) { described_class.get(*arguments) }
 

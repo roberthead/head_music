@@ -85,7 +85,7 @@ class HeadMusic::Instruments::InstrumentType
   end
 
   def default_instrument
-    @default_instrument ||= HeadMusic::Instruments::Instrument.new(self, default_variant)
+    @default_instrument ||= HeadMusic::Instruments::InstrumentConfiguration.new(self, default_variant)
   end
 
   def default_staff_scheme

@@ -84,7 +84,7 @@ require "head_music/instruments/instrument_type"
 require "head_music/instruments/variant"
 require "head_music/instruments/staff_scheme"
 require "head_music/instruments/staff"
-require "head_music/instruments/instrument"
+require "head_music/instruments/instrument_configuration"
 require "head_music/instruments/score_order"
 
 # content

@@ -41,7 +41,7 @@ describe HeadMusic::Instruments::ScoreOrder do
     end
 
     it "handles instrument objects" do
-      instrument_objects = instruments.map { |name| HeadMusic::Instruments::Instrument.get(name) }
+      instrument_objects = instruments.map { |name| HeadMusic::Instruments::InstrumentConfiguration.get(name) }
       ordered = described_class.in_orchestral_order(instrument_objects)
 
       expect(ordered.first.name).to eq("flute")
@@ -202,10 +202,10 @@ describe HeadMusic::Instruments::ScoreOrder do
     end
 
     context "with clarinet transpositions" do
-      let(:clarinet_bb) { HeadMusic::Instruments::Instrument.get("clarinet") }
-      let(:clarinet_a) { HeadMusic::Instruments::Instrument.get("clarinet_in_a") }
-      let(:clarinet_c) { HeadMusic::Instruments::Instrument.get("clarinet_in_c") }
-      let(:clarinet_eb) { HeadMusic::Instruments::Instrument.get("clarinet_in_e_flat") }
+      let(:clarinet_bb) { HeadMusic::Instruments::InstrumentConfiguration.get("clarinet") }
+      let(:clarinet_a) { HeadMusic::Instruments::InstrumentConfiguration.get("clarinet_in_a") }
+      let(:clarinet_c) { HeadMusic::Instruments::InstrumentConfiguration.get("clarinet_in_c") }
+      let(:clarinet_eb) { HeadMusic::Instruments::InstrumentConfiguration.get("clarinet_in_e_flat") }
 
       let(:instruments) { [clarinet_bb, clarinet_a, clarinet_c, clarinet_eb] }
 
@@ -417,7 +417,7 @@ describe HeadMusic::Instruments::ScoreOrder do
           to_s: "Mock Trumpet"
         )
 
-        trumpet_bb = HeadMusic::Instruments::Instrument.get("trumpet_in_b_flat")
+        trumpet_bb = HeadMusic::Instruments::InstrumentConfiguration.get("trumpet_in_b_flat")
         ordered = orchestral_order.order([mock_instrument, trumpet_bb])
 
         # Both should be positioned, mock comes after trumpet_bb due to transposition
@@ -429,7 +429,7 @@ describe HeadMusic::Instruments::ScoreOrder do
   describe "fallback to InstrumentType.get" do
     let(:orchestral_order) { described_class.get(:orchestral) }
 
-    context "when Instrument.get returns nil but InstrumentType.get succeeds" do
+    context "when InstrumentConfiguration.get returns nil but InstrumentType.get succeeds" do
       it "uses InstrumentType as fallback" do
         # This is hard to test directly since most names work with both,
         # but we can verify the behavior exists

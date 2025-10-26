@@ -1,28 +1,28 @@
 # Namespace for instrument definitions, categorization, and configuration
 module HeadMusic::Instruments; end
 
-# A specific musical instrument instance with a selected variant.
-# Represents an actual playable instrument with its transposition and configuration.
+# A specific musical instrument configuration with a selected variant.
+# Represents an instrument with all configuration choices made (pitch, clef, staff scheme, etc).
 #
 # Examples:
-#   trumpet_in_c = HeadMusic::Instruments::Instrument.get("trumpet_in_c")
-#   trumpet_in_c = HeadMusic::Instruments::Instrument.get("trumpet", "in_c")
-#   clarinet = HeadMusic::Instruments::Instrument.get("clarinet")  # uses default Bb variant
+#   trumpet_in_c = HeadMusic::Instruments::InstrumentConfiguration.get("trumpet_in_c")
+#   trumpet_in_c = HeadMusic::Instruments::InstrumentConfiguration.get("trumpet", "in_c")
+#   clarinet = HeadMusic::Instruments::InstrumentConfiguration.get("clarinet")  # uses default Bb variant
 #
 # Attributes accessible via delegation to instrument_type and variant:
 #   name: display name including variant (e.g. "Trumpet in C")
 #   transposition: sounding transposition in semitones
 #   clefs: array of clefs for this instrument
 #   pitch_designation: the pitch designation for transposing instruments
-class HeadMusic::Instruments::Instrument
+class HeadMusic::Instruments::InstrumentConfiguration
   include HeadMusic::Named
 
   attr_reader :instrument_type, :variant
 
-  # Factory method to get an Instrument instance
+  # Factory method to get an InstrumentConfiguration instance
   # @param type_or_name [String, Symbol] instrument type name or full name with variant
   # @param variant_key [String, Symbol, nil] optional variant key if not included in name
-  # @return [Instrument] instrument instance with specified or default variant
+  # @return [InstrumentConfiguration] instrument configuration with specified or default variant
   def self.get(type_or_name, variant_key = nil)
     return type_or_name if type_or_name.is_a?(self)
 
