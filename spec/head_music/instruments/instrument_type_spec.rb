@@ -233,9 +233,8 @@ describe HeadMusic::Instruments::InstrumentType do
       end
     end
 
-    context "when testing orchestra_section_key override" do
-      it "allows record to override family orchestra_section_key" do
-        # This tests the ||= in initialize_attributes
+    context "when testing orchestra_section_key inheritance" do
+      it "inherits orchestra_section_key from family" do
         piano = described_class.get(:piano)
         expect(piano.orchestra_section_key).to eq("keyboard")
       end

@@ -34,9 +34,11 @@ class HeadMusic::Instruments::InstrumentType
 
   attr_reader(
     :name_key, :alias_name_keys,
-    :family_key, :orchestra_section_key,
-    :variants, :classification_keys
+    :family_key,
+    :variants
   )
+
+  delegate :orchestra_section_key, :classification_keys, to: :family, allow_nil: true
 
   def ==(other)
     to_s == other.to_s
@@ -150,7 +152,6 @@ class HeadMusic::Instruments::InstrumentType
 
   def initialize_data_from_record(record)
     initialize_family(record)
-    inherit_family_attributes(record)
     initialize_names(record)
     initialize_attributes(record)
   end
@@ -160,13 +161,6 @@ class HeadMusic::Instruments::InstrumentType
     @family = HeadMusic::Instruments::InstrumentFamily.get(family_key)
   end
 
-  def inherit_family_attributes(record)
-    return unless family
-
-    @orchestra_section_key = family.orchestra_section_key
-    @classification_keys = family.classification_keys || []
-  end
-
   def initialize_names(record)
     @name_key = record["name_key"].to_sym
     self.name = I18n.translate(name_key, scope: "head_music.instruments", locale: "en", default: inferred_name)
@@ -174,8 +168,6 @@ class HeadMusic::Instruments::InstrumentType
   end
 
   def initialize_attributes(record)
-    @orchestra_section_key ||= record["orchestra_section_key"]
-    @classification_keys = [@classification_keys, record["classification_keys"]].flatten.compact.uniq
     @variants =
       (record["variants"] || {}).map do |key, attributes|
         HeadMusic::Instruments::Variant.new(key, attributes)
