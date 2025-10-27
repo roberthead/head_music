@@ -498,4 +498,105 @@ describe HeadMusic::Analysis::PitchCollection do
       its(:scale_degrees) { is_expected.to eq [1, 2, 3, 4, 5, 6, 7] }
     end
   end
+
+  describe "#sonority" do
+    context "with a major triad" do
+      subject(:pitch_collection) { described_class.new(%w[C4 E4 G4]) }
+
+      it "returns a Sonority object" do
+        expect(pitch_collection.sonority).to be_a(HeadMusic::Analysis::Sonority)
+      end
+
+      it "identifies the sonority correctly" do
+        expect(pitch_collection.sonority.identifier).to eq(:major_triad)
+      end
+
+      it "memoizes the result" do
+        first_call = pitch_collection.sonority
+        second_call = pitch_collection.sonority
+        expect(first_call.object_id).to eq(second_call.object_id)
+      end
+    end
+
+    context "with a minor triad" do
+      subject(:pitch_collection) { described_class.new(["C4", "E♭4", "G4"]) }
+
+      it "identifies as minor triad" do
+        expect(pitch_collection.sonority.identifier).to eq(:minor_triad)
+      end
+    end
+
+    context "with a minor seventh chord" do
+      subject(:pitch_collection) { described_class.new(%w[D4 F4 A4 C5]) }
+
+      it "identifies as minor seventh" do
+        expect(pitch_collection.sonority.identifier).to eq(:minor_minor_seventh_chord)
+      end
+    end
+
+    context "with a dominant seventh chord" do
+      subject(:pitch_collection) { described_class.new(%w[G4 B4 D5 F5]) }
+
+      it "identifies as major-minor seventh" do
+        expect(pitch_collection.sonority.identifier).to eq(:major_minor_seventh_chord)
+      end
+    end
+
+    context "with an inverted triad" do
+      subject(:pitch_collection) { described_class.new(["E4", "G4", "C5"]) }
+
+      it "still identifies the sonority" do
+        expect(pitch_collection.sonority.identifier).to eq(:major_triad)
+      end
+    end
+
+    context "with a suspended fourth chord" do
+      subject(:pitch_collection) { described_class.new(%w[C4 F4 G4]) }
+
+      it "identifies as suspended chord" do
+        identifier = pitch_collection.sonority.identifier
+        expect(identifier).to satisfy { |id| [:suspended_four_chord, :suspended_two_chord].include?(id) }
+      end
+    end
+
+    context "with an augmented triad" do
+      subject(:pitch_collection) { described_class.new(["C4", "E4", "G♯4"]) }
+
+      it "identifies as augmented triad" do
+        expect(pitch_collection.sonority.identifier).to eq(:augmented_triad)
+      end
+    end
+
+    context "with a diminished seventh chord" do
+      subject(:pitch_collection) { described_class.new(["B3", "D4", "F4", "A♭4"]) }
+
+      it "identifies as diminished seventh" do
+        expect(pitch_collection.sonority.identifier).to eq(:diminished_seventh_chord)
+      end
+    end
+
+    context "with an empty pitch collection" do
+      subject(:pitch_collection) { described_class.new([]) }
+
+      it "returns a Sonority object" do
+        expect(pitch_collection.sonority).to be_a(HeadMusic::Analysis::Sonority)
+      end
+
+      it "has no identifier" do
+        expect(pitch_collection.sonority.identifier).to be_nil
+      end
+    end
+
+    context "with a non-standard sonority" do
+      subject(:pitch_collection) { described_class.new(%w[C4 D4 E4]) }
+
+      it "returns a Sonority object" do
+        expect(pitch_collection.sonority).to be_a(HeadMusic::Analysis::Sonority)
+      end
+
+      it "may not have a recognized identifier" do
+        expect(pitch_collection.sonority.identifier).to be_nil
+      end
+    end
+  end
 end

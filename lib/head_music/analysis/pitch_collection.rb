@@ -189,6 +189,10 @@ class HeadMusic::Analysis::PitchCollection
     @scale_degrees_above_bass_pitch ||= diatonic_intervals_above_bass_pitch.map(&:simple_number).sort - [8]
   end
 
+  def sonority
+    @sonority ||= HeadMusic::Analysis::Sonority.new(self)
+  end
+
   private
 
   def reduction_pitches
