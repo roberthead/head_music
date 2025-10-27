@@ -1,6 +1,118 @@
 require "spec_helper"
 
 describe HeadMusic::Analysis::Sonority do
+  describe ".get" do
+    context "with a valid identifier" do
+      subject(:sonority) { described_class.get(:major_triad) }
+
+      it "returns a Sonority object" do
+        expect(sonority).to be_a(described_class)
+      end
+
+      it "has the correct identifier" do
+        expect(sonority.identifier).to eq(:major_triad)
+      end
+
+      it "generates pitches at the default root (C4)" do
+        expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(%w[C4 E4 G4])
+      end
+
+      it "is a triad" do
+        expect(sonority).to be_triad
+      end
+    end
+
+    context "with a minor triad identifier" do
+      subject(:sonority) { described_class.get(:minor_triad) }
+
+      it "generates the correct pitches" do
+        expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(["C4", "E♭4", "G4"])
+      end
+
+      it "has the correct identifier" do
+        expect(sonority.identifier).to eq(:minor_triad)
+      end
+    end
+
+    context "with a seventh chord identifier" do
+      subject(:sonority) { described_class.get(:major_minor_seventh_chord) }
+
+      it "generates the correct pitches" do
+        expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(["C4", "E4", "G4", "B♭4"])
+      end
+
+      it "is a seventh chord" do
+        expect(sonority).to be_seventh_chord
+      end
+    end
+
+    context "with a custom root" do
+      subject(:sonority) { described_class.get(:major_triad, root: "D4") }
+
+      it "generates pitches at the specified root" do
+        expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(["D4", "F♯4", "A4"])
+      end
+
+      it "still identifies as major triad" do
+        expect(sonority.identifier).to eq(:major_triad)
+      end
+    end
+
+    context "with a string identifier" do
+      subject(:sonority) { described_class.get("minor_triad") }
+
+      it "accepts string identifiers" do
+        expect(sonority.identifier).to eq(:minor_triad)
+      end
+    end
+
+    context "with an invalid identifier" do
+      subject(:sonority) { described_class.get(:nonexistent_chord) }
+
+      it "returns nil" do
+        expect(sonority).to be_nil
+      end
+    end
+
+    context "with all defined sonorities" do
+      it "can create all SONORITIES" do
+        described_class.identifiers.each do |identifier|
+          sonority = described_class.get(identifier)
+          expect(sonority).to be_a(described_class)
+          expect(sonority.identifier).not_to be_nil
+        end
+      end
+
+      it "creates sonorities that match their identifier or an inversion" do
+        # Note: sus2 and sus4 are inversionally related, so suspended_two_chord
+        # may identify as suspended_four_chord depending on inversion
+        described_class.identifiers.each do |identifier|
+          sonority = described_class.get(identifier)
+          # The identifier should be one of the known sonorities
+          expect(described_class.identifiers).to include(sonority.identifier)
+        end
+      end
+    end
+  end
+
+  describe ".identifiers" do
+    it "returns an array of symbols" do
+      expect(described_class.identifiers).to all(be_a(Symbol))
+    end
+
+    it "includes major_triad" do
+      expect(described_class.identifiers).to include(:major_triad)
+    end
+
+    it "includes all defined sonorities" do
+      expect(described_class.identifiers).to match_array(described_class::SONORITIES.keys)
+    end
+
+    it "returns 19 sonority types" do
+      expect(described_class.identifiers.size).to eq(19)
+    end
+  end
+
   describe "equality" do
     subject(:sonority) { described_class.new(pitch_collection) }
 

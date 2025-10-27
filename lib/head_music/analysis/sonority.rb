@@ -27,6 +27,37 @@ class HeadMusic::Analysis::Sonority
     quartal_chord: %w[P4 m7]
   }.freeze
 
+  DEFAULT_ROOT = "C4"
+
+  # Factory method to get a sonority by identifier
+  # Returns a Sonority with pitches starting at the default root (C4)
+  #
+  # @param identifier [Symbol, String] the sonority identifier (e.g., :major_triad)
+  # @param root [String] the root pitch (default: "C4")
+  # @return [Sonority, nil] the sonority object, or nil if identifier not found
+  def self.get(identifier, root: DEFAULT_ROOT)
+    identifier = identifier.to_sym
+    return nil unless SONORITIES.key?(identifier)
+
+    root_pitch = HeadMusic::Rudiment::Pitch.get(root)
+    interval_shorthands = SONORITIES[identifier]
+
+    # Build pitches: root + intervals above root
+    pitches = [root_pitch] + interval_shorthands.map do |shorthand|
+      interval = HeadMusic::Analysis::DiatonicInterval.get(shorthand)
+      interval.above(root_pitch)
+    end
+
+    pitch_collection = HeadMusic::Analysis::PitchCollection.new(pitches)
+    new(pitch_collection)
+  end
+
+  # Returns all available sonority identifiers
+  # @return [Array<Symbol>] array of sonority identifiers
+  def self.identifiers
+    SONORITIES.keys
+  end
+
   attr_reader :pitch_collection
 
   delegate :reduction, to: :pitch_collection
