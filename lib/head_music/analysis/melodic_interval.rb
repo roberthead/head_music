@@ -62,7 +62,7 @@ class HeadMusic::Analysis::MelodicInterval
     combined_pitches = (pitches + other_interval.pitches).uniq
     return false if combined_pitches.length < 3
 
-    HeadMusic::Analysis::PitchSet.new(combined_pitches).consonant_triad?
+    HeadMusic::Analysis::PitchCollection.new(combined_pitches).consonant_triad?
   end
 
   def method_missing(method_name, *args, &block)

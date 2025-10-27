@@ -1,9 +1,11 @@
 # A module for musical analysis
 module HeadMusic::Analysis; end
 
-# A PitchSet is a collection of one or more pitches.
+# A PitchCollection is a collection of one or more pitches with specific registers.
+# In music theory, "pitch collection" refers to an ordered or unordered group of actual pitches,
+# as distinct from a "pitch-class set" which abstracts away register and octave equivalence.
 # See also: PitchClassSet
-class HeadMusic::Analysis::PitchSet
+class HeadMusic::Analysis::PitchCollection
   TERTIAN_SONORITIES = {
     implied_triad: [3],
     triad: [3, 5],
@@ -35,7 +37,7 @@ class HeadMusic::Analysis::PitchSet
   end
 
   def reduction
-    @reduction ||= HeadMusic::Analysis::PitchSet.new(reduction_pitches)
+    @reduction ||= HeadMusic::Analysis::PitchCollection.new(reduction_pitches)
   end
 
   def diatonic_intervals
@@ -67,13 +69,13 @@ class HeadMusic::Analysis::PitchSet
   def invert
     inverted_pitch = pitches[0] + HeadMusic::Analysis::DiatonicInterval.get("perfect octave")
     new_pitches = pitches.drop(1) + [inverted_pitch]
-    HeadMusic::Analysis::PitchSet.new(new_pitches)
+    HeadMusic::Analysis::PitchCollection.new(new_pitches)
   end
 
   def uninvert
     inverted_pitch = pitches[-1] - HeadMusic::Analysis::DiatonicInterval.get("perfect octave")
     new_pitches = [inverted_pitch] + pitches[0..-2]
-    HeadMusic::Analysis::PitchSet.new(new_pitches)
+    HeadMusic::Analysis::PitchCollection.new(new_pitches)
   end
 
   def bass_pitch

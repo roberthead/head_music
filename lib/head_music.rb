@@ -111,7 +111,7 @@ require "head_music/analysis/interval_cycle"
 require "head_music/analysis/melodic_interval"
 require "head_music/analysis/motion"
 require "head_music/analysis/pitch_class_set"
-require "head_music/analysis/pitch_set"
+require "head_music/analysis/pitch_collection"
 require "head_music/analysis/sonority"
 
 # style analysis

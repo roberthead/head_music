@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Analysis::PitchSet do
+describe HeadMusic::Analysis::PitchCollection do
   context "given a spread D major triad" do
     subject(:set) { described_class.new(%w[F#3 D4 A4]) }
 

@@ -87,8 +87,8 @@ describe HeadMusic::Analysis::Dyad do
     context "with a perfect fifth (C-G)" do
       subject(:dyad) { described_class.new("C4", "G4") }
 
-      it "returns an array of pitch sets" do
-        expect(dyad.possible_triads).to all(be_a(HeadMusic::Analysis::PitchSet))
+      it "returns an array of pitch collections" do
+        expect(dyad.possible_triads).to all(be_a(HeadMusic::Analysis::PitchCollection))
       end
 
       it "includes a major triad (C E G)" do
@@ -230,7 +230,7 @@ describe HeadMusic::Analysis::Dyad do
         it "returns triads sorted with diatonic triads first" do
           triads = dyad.possible_triads
           # All should be diatonic when key is provided (filtered)
-          expect(triads.first).to be_a(HeadMusic::Analysis::PitchSet)
+          expect(triads.first).to be_a(HeadMusic::Analysis::PitchCollection)
         end
       end
     end
@@ -241,7 +241,7 @@ describe HeadMusic::Analysis::Dyad do
       subject(:dyad) { described_class.new("C4", "G4") }
 
       it "returns an array of pitch sets" do
-        expect(dyad.possible_seventh_chords).to all(be_a(HeadMusic::Analysis::PitchSet))
+        expect(dyad.possible_seventh_chords).to all(be_a(HeadMusic::Analysis::PitchCollection))
       end
 
       it "includes major-minor seventh (C E G Bb)" do

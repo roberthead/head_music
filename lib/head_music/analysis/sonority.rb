@@ -27,17 +27,17 @@ class HeadMusic::Analysis::Sonority
     quartal_chord: %w[P4 m7]
   }.freeze
 
-  attr_reader :pitch_set
+  attr_reader :pitch_collection
 
-  delegate :reduction, to: :pitch_set
-  delegate :empty?, :empty_set?, to: :pitch_set
-  delegate :monochord?, :monad, :dichord?, :dyad?, :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_set
-  delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_set
-  delegate :pitch_class_set, :pitch_class_set_size, to: :pitch_set
-  delegate :scale_degrees_above_bass_pitch, to: :pitch_set
+  delegate :reduction, to: :pitch_collection
+  delegate :empty?, :empty_set?, to: :pitch_collection
+  delegate :monochord?, :monad, :dichord?, :dyad?, :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_collection
+  delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_collection
+  delegate :pitch_class_set, :pitch_class_set_size, to: :pitch_collection
+  delegate :scale_degrees_above_bass_pitch, to: :pitch_collection
 
-  def initialize(pitch_set)
-    @pitch_set = pitch_set
+  def initialize(pitch_collection)
+    @pitch_collection = pitch_collection
     identifier
   end
 
@@ -75,7 +75,7 @@ class HeadMusic::Analysis::Sonority
 
   def consonant?
     @consonant ||=
-      pitch_set.reduction_diatonic_intervals.all?(&:consonant?) &&
+      pitch_collection.reduction_diatonic_intervals.all?(&:consonant?) &&
       root_position.diatonic_intervals_above_bass_pitch.all?(&:consonant?)
   end
 
@@ -117,8 +117,8 @@ class HeadMusic::Analysis::Sonority
   end
 
   def ==(other)
-    other = HeadMusic::Analysis::PitchSet.new(other) if other.is_a?(Array)
-    other = self.class.new(other) if other.is_a?(HeadMusic::Analysis::PitchSet)
+    other = HeadMusic::Analysis::PitchCollection.new(other) if other.is_a?(Array)
+    other = self.class.new(other) if other.is_a?(HeadMusic::Analysis::PitchCollection)
     identifier == other.identifier
   end
 end

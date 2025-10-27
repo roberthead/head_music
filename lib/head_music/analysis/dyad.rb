@@ -99,12 +99,12 @@ class HeadMusic::Analysis::Dyad
           trichord_pitches << next_pitch
         end
 
-        pitch_set = HeadMusic::Analysis::PitchSet.new(trichord_pitches)
-        trichord_pitch_classes = pitch_set.pitch_classes
+        pitch_collection = HeadMusic::Analysis::PitchCollection.new(trichord_pitches)
+        trichord_pitch_classes = pitch_collection.pitch_classes
 
         # Check if this trichord contains both pitches from our dyad
         if pitch_classes.all? { |pc| trichord_pitch_classes.include?(pc) }
-          trichords << pitch_set
+          trichords << pitch_collection
         end
       end
     end
@@ -147,12 +147,12 @@ class HeadMusic::Analysis::Dyad
           chord_pitches << next_pitch
         end
 
-        pitch_set = HeadMusic::Analysis::PitchSet.new(chord_pitches)
-        chord_pitch_classes = pitch_set.pitch_classes
+        pitch_collection = HeadMusic::Analysis::PitchCollection.new(chord_pitches)
+        chord_pitch_classes = pitch_collection.pitch_classes
 
         # Check if this chord contains both pitches from our dyad
         if pitch_classes.all? { |pc| chord_pitch_classes.include?(pc) }
-          seventh_chords << pitch_set
+          seventh_chords << pitch_collection
         end
       end
     end
@@ -160,24 +160,24 @@ class HeadMusic::Analysis::Dyad
     seventh_chords.uniq { |c| c.pitch_classes.sort.map(&:to_i) }
   end
 
-  def filter_by_key(pitch_sets)
-    return pitch_sets unless key
+  def filter_by_key(pitch_collections)
+    return pitch_collections unless key
 
     diatonic_spellings = key.scale.spellings
 
-    pitch_sets.select do |pitch_set|
-      pitch_set.pitches.all? { |pitch| diatonic_spellings.include?(pitch.spelling) }
+    pitch_collections.select do |pitch_collection|
+      pitch_collection.pitches.all? { |pitch| diatonic_spellings.include?(pitch.spelling) }
     end
   end
 
-  def sort_by_diatonic_agreement(pitch_sets)
-    return pitch_sets unless key
+  def sort_by_diatonic_agreement(pitch_collections)
+    return pitch_collections unless key
 
     diatonic_spellings = key.scale.spellings
 
-    pitch_sets.sort_by do |pitch_set|
+    pitch_collections.sort_by do |pitch_collection|
       # Count how many pitches match diatonic spellings (lower is better for sort)
-      diatonic_count = pitch_set.pitches.count { |pitch| diatonic_spellings.include?(pitch.spelling) }
+      diatonic_count = pitch_collection.pitches.count { |pitch| diatonic_spellings.include?(pitch.spelling) }
       -diatonic_count # Negative so higher counts come first
     end
   end

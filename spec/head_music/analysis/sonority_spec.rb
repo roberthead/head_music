@@ -2,24 +2,24 @@ require "spec_helper"
 
 describe HeadMusic::Analysis::Sonority do
   describe "equality" do
-    subject(:sonority) { described_class.new(pitch_set) }
+    subject(:sonority) { described_class.new(pitch_collection) }
 
     context "given a major triad" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G4 B4 D5]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G4 B4 D5]) }
 
       it { is_expected.not_to be_nil }
 
-      context "when compared to another sonority with a pitch set with the same pitches" do
-        let(:other_pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G4 B4 D5]) }
-        let(:other_sonority) { described_class.new(other_pitch_set) }
+      context "when compared to another sonority with a pitch collection with the same pitches" do
+        let(:other_pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G4 B4 D5]) }
+        let(:other_sonority) { described_class.new(other_pitch_collection) }
 
         it { is_expected.to eq other_sonority }
       end
 
-      context "when compared to a pitch set with the same pitches" do
-        let(:other_pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G4 B4 D5]) }
+      context "when compared to a pitch collection with the same pitches" do
+        let(:other_pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G4 B4 D5]) }
 
-        it { is_expected.to eq other_pitch_set }
+        it { is_expected.to eq other_pitch_collection }
       end
 
       context "when compared to an array of pitches" do
@@ -28,16 +28,16 @@ describe HeadMusic::Analysis::Sonority do
         it { is_expected.to eq other_pitches }
       end
 
-      context "when compared to another sonority with a different major triad pitch set" do
-        let(:other_pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C E G]) }
-        let(:other_sonority) { described_class.new(other_pitch_set) }
+      context "when compared to another sonority with a different major triad pitch collection" do
+        let(:other_pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[C E G]) }
+        let(:other_sonority) { described_class.new(other_pitch_collection) }
 
         it { is_expected.to eq other_sonority }
       end
     end
 
-    context "given an empty pitch set" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new([]) }
+    context "given an empty pitch collection" do
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new([]) }
 
       it { is_expected.not_to be_nil }
 
@@ -46,16 +46,16 @@ describe HeadMusic::Analysis::Sonority do
   end
 
   describe ".for" do
-    subject(:sonority) { described_class.new(pitch_set) }
+    subject(:sonority) { described_class.new(pitch_collection) }
 
     context "when given a simple dyad" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C G]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[C G]) }
 
       its(:identifier) { is_expected.to be_nil }
     end
 
     context "when given a major triad in root position" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C E G]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[C E G]) }
 
       its(:identifier) { is_expected.to eq :major_triad }
       it { is_expected.to be_trichord }
@@ -68,7 +68,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given a major triad in first inversion" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[E G C5]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[E G C5]) }
 
       its(:identifier) { is_expected.to eq :major_triad }
       it { is_expected.to be_triad }
@@ -81,7 +81,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given a major triad in second inversion" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G3 C E]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G3 C E]) }
 
       its(:identifier) { is_expected.to eq :major_triad }
       it { is_expected.to be_triad }
@@ -94,7 +94,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given a minor triad in root position" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C Eb G]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[C Eb G]) }
 
       its(:identifier) { is_expected.to eq :minor_triad }
       it { is_expected.to be_trichord }
@@ -107,7 +107,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given a minor triad in first inversion" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Eb G C5]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Eb G C5]) }
 
       its(:identifier) { is_expected.to eq :minor_triad }
       it { is_expected.to be_triad }
@@ -120,7 +120,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given a minor triad in second inversion" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G3 C Eb]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G3 C Eb]) }
 
       its(:identifier) { is_expected.to eq :minor_triad }
       it { is_expected.to be_triad }
@@ -133,7 +133,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given a diminished triad in root position" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C Eb Gb]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[C Eb Gb]) }
 
       its(:identifier) { is_expected.to eq :diminished_triad }
       it { is_expected.to be_trichord }
@@ -147,7 +147,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given a diminished triad in first inversion" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Eb Gb C5]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Eb Gb C5]) }
 
       its(:identifier) { is_expected.to eq :diminished_triad }
       it { is_expected.to be_triad }
@@ -161,7 +161,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given an diminished triad in second inversion" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Gb3 C Eb]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Gb3 C Eb]) }
 
       its(:identifier) { is_expected.to eq :diminished_triad }
       it { is_expected.to be_triad }
@@ -175,7 +175,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given an augmented triad in root position" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C E G#]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[C E G#]) }
 
       its(:identifier) { is_expected.to eq :augmented_triad }
       it { is_expected.to be_trichord }
@@ -189,7 +189,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given an augmented triad in first inversion" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[E G# C5]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[E G# C5]) }
 
       its(:identifier) { is_expected.to eq :augmented_triad }
       it { is_expected.to be_triad }
@@ -203,7 +203,7 @@ describe HeadMusic::Analysis::Sonority do
     end
 
     context "when given an augmented triad in second inversion" do
-      let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G#3 C E]) }
+      let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G#3 C E]) }
 
       its(:identifier) { is_expected.to eq :augmented_triad }
       it { is_expected.to be_triad }
@@ -218,7 +218,7 @@ describe HeadMusic::Analysis::Sonority do
 
     context "when given a dominant seventh chord" do
       context "when in root position" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G3 B3 D F]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G3 B3 D F]) }
 
         its(:identifier) { is_expected.to eq :major_minor_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -230,7 +230,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in first inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[B3 D F G]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[B3 D F G]) }
 
         its(:identifier) { is_expected.to eq :major_minor_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -242,7 +242,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in second inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[D F G B]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[D F G B]) }
 
         its(:identifier) { is_expected.to eq :major_minor_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -254,7 +254,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in third inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[F G B D5]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[F G B D5]) }
 
         its(:identifier) { is_expected.to eq :major_minor_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -268,7 +268,7 @@ describe HeadMusic::Analysis::Sonority do
 
     context "when given a major-major seventh chord" do
       context "when in root position" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G3 B3 D F#]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G3 B3 D F#]) }
 
         its(:identifier) { is_expected.to eq :major_major_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -280,7 +280,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in first inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[B3 D F# G]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[B3 D F# G]) }
 
         its(:identifier) { is_expected.to eq :major_major_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -292,7 +292,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in second inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[D F# G B]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[D F# G B]) }
 
         its(:identifier) { is_expected.to eq :major_major_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -304,7 +304,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in third inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[F# G B D5]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[F# G B D5]) }
 
         its(:identifier) { is_expected.to eq :major_major_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -318,7 +318,7 @@ describe HeadMusic::Analysis::Sonority do
 
     context "when given a minor seventh chord" do
       context "when in root position" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G3 Bb3 D F]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G3 Bb3 D F]) }
 
         its(:identifier) { is_expected.to eq :minor_minor_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -330,7 +330,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in first inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Bb3 D F G]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Bb3 D F G]) }
 
         its(:identifier) { is_expected.to eq :minor_minor_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -342,7 +342,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in second inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[D F G Bb]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[D F G Bb]) }
 
         its(:identifier) { is_expected.to eq :minor_minor_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -354,7 +354,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in third inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[F G Bb D5]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[F G Bb D5]) }
 
         its(:identifier) { is_expected.to eq :minor_minor_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -368,7 +368,7 @@ describe HeadMusic::Analysis::Sonority do
 
     context "when given a minor-major seventh chord" do
       context "when in root position" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G3 Bb3 D F#]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G3 Bb3 D F#]) }
 
         its(:identifier) { is_expected.to eq :minor_major_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -380,7 +380,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in first inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Bb3 D F# G]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Bb3 D F# G]) }
 
         its(:identifier) { is_expected.to eq :minor_major_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -392,7 +392,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in second inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[D F# G Bb]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[D F# G Bb]) }
 
         its(:identifier) { is_expected.to eq :minor_major_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -404,7 +404,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in third inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[F# G Bb D5]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[F# G Bb D5]) }
 
         its(:identifier) { is_expected.to eq :minor_major_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -418,7 +418,7 @@ describe HeadMusic::Analysis::Sonority do
 
     context "when given a half-diminished seventh chord" do
       context "when in root position" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G3 Bb3 Db F]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G3 Bb3 Db F]) }
 
         its(:identifier) { is_expected.to eq :half_diminished_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -430,7 +430,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in first inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Bb3 Db F G]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Bb3 Db F G]) }
 
         its(:identifier) { is_expected.to eq :half_diminished_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -442,7 +442,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in second inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Db F G Bb3]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Db F G Bb3]) }
 
         its(:identifier) { is_expected.to eq :half_diminished_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -454,7 +454,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in third inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[F G Bb3 Db5]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[F G Bb3 Db5]) }
 
         its(:identifier) { is_expected.to eq :half_diminished_seventh_chord }
         it { is_expected.to be_seventh_chord }
@@ -468,7 +468,7 @@ describe HeadMusic::Analysis::Sonority do
 
     context "when given a fully-diminished seventh chord" do
       context "when in root position" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[G3 Bb3 Db Fb]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[G3 Bb3 Db Fb]) }
 
         its(:identifier) { is_expected.to eq :diminished_seventh_chord }
         its(:diatonic_intervals_above_bass_pitch) { are_expected.to eq %w[m3 d5 d7] }
@@ -482,7 +482,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in first inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Bb3 Db Fb G]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Bb3 Db Fb G]) }
 
         its(:identifier) { is_expected.to eq :diminished_seventh_chord }
         its(:diatonic_intervals_above_bass_pitch) { are_expected.to eq %w[m3 d5 d7] }
@@ -496,7 +496,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in second inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Db Fb G Bb3]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Db Fb G Bb3]) }
 
         its(:identifier) { is_expected.to eq :diminished_seventh_chord }
         its(:diatonic_intervals_above_bass_pitch) { are_expected.to eq %w[m3 d5 d7] }
@@ -510,7 +510,7 @@ describe HeadMusic::Analysis::Sonority do
       end
 
       context "when in third inversion" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[Fb G Bb3 Db5]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[Fb G Bb3 Db5]) }
 
         its(:identifier) { is_expected.to eq :diminished_seventh_chord }
         its(:diatonic_intervals_above_bass_pitch) { are_expected.to eq %w[m3 d5 d7] }
@@ -526,7 +526,7 @@ describe HeadMusic::Analysis::Sonority do
 
     context "when given a dominant ninth chord" do
       context "when in root position" do
-        let(:pitch_set) { HeadMusic::Analysis::PitchSet.new(%w[C E G Bb D5]) }
+        let(:pitch_collection) { HeadMusic::Analysis::PitchCollection.new(%w[C E G Bb D5]) }
 
         its(:identifier) { is_expected.to eq :dominant_ninth_chord }
         it { is_expected.to be_tertian }

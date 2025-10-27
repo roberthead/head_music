@@ -2,7 +2,7 @@
 module HeadMusic::Analysis; end
 
 # A PitchClassSet represents a pitch-class set or pitch collection.
-# See also: PitchSet, PitchClass
+# See also: PitchCollection, PitchClass
 class HeadMusic::Analysis::PitchClassSet
   attr_reader :pitch_classes
 

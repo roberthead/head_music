@@ -170,7 +170,7 @@ class HeadMusic::Content::Voice
       combined_pitches = (pitches + other_note_pair.pitches).uniq
       return false if combined_pitches.length < 3
 
-      HeadMusic::Analysis::PitchSet.new(combined_pitches).consonant_triad?
+      HeadMusic::Analysis::PitchCollection.new(combined_pitches).consonant_triad?
     end
   end
 end
