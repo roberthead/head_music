@@ -38,9 +38,9 @@ describe HeadMusic::Analysis::DiatonicInterval do
         expect(interval.consonance_classification).to eq(HeadMusic::Rudiment::Consonance::IMPERFECT_CONSONANCE)
       end
 
-      it "classifies perfect fourth as perfect consonance" do
+      it "classifies perfect fourth as contextual" do
         interval = described_class.new("C4", "F4")
-        expect(interval.consonance_classification).to eq(HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE)
+        expect(interval.consonance_classification).to eq(HeadMusic::Rudiment::Consonance::CONTEXTUAL)
       end
 
       it "classifies major second as mild dissonance" do
@@ -126,9 +126,9 @@ describe HeadMusic::Analysis::DiatonicInterval do
         expect(interval.consonant?).to be false
       end
 
-      it "returns true for perfect fourth in default style" do
+      it "returns false for perfect fourth in default style (contextual)" do
         interval = described_class.new("C4", "F4")
-        expect(interval.consonant?).to be true
+        expect(interval.consonant?).to be false
       end
     end
 

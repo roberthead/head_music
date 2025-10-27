@@ -134,15 +134,8 @@ describe HeadMusic::Analysis::IntervalConsonance do
       it { expect(analysis).not_to be_harsh_dissonance }
     end
 
-    context "with contextual interval" do
-      # We need to create a test case that returns contextual
-      # For now, let's mock this since contextual isn't currently used in the tradition classes
+    context "with contextual interval (perfect fourth in modern tradition)" do
       let(:analysis) { described_class.new(perfect_fourth, :modern) }
-
-      before do
-        allow(analysis.style_tradition).to receive(:consonance_classification)
-          .and_return(HeadMusic::Rudiment::Consonance::CONTEXTUAL)
-      end
 
       it { expect(analysis).to be_contextual }
       it { expect(analysis).not_to be_consonant }
@@ -157,10 +150,11 @@ describe HeadMusic::Analysis::IntervalConsonance do
 
   describe "tradition-specific behavior" do
     context "with perfect fourth" do
-      it "is consonant in modern tradition" do
+      it "is contextual in modern tradition" do
         analysis = described_class.new(perfect_fourth, :modern)
-        expect(analysis).to be_consonant
-        expect(analysis).to be_perfect_consonance
+        expect(analysis).to be_contextual
+        expect(analysis).not_to be_consonant
+        expect(analysis).not_to be_dissonant
       end
 
       it "is dissonant in renaissance tradition" do

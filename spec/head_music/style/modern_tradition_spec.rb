@@ -20,9 +20,16 @@ describe HeadMusic::Style::ModernTradition do
         expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE)
       end
 
-      it "classifies perfect fourth as perfect consonance" do
+      it "classifies perfect fourth as contextual" do
         interval = HeadMusic::Analysis::DiatonicInterval.get("P4")
-        expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE)
+        expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::CONTEXTUAL)
+      end
+    end
+
+    context "with contextual intervals" do
+      it "classifies perfect fourth as contextual" do
+        interval = HeadMusic::Analysis::DiatonicInterval.get("P4")
+        expect(tradition.consonance_classification(interval)).to eq(HeadMusic::Rudiment::Consonance::CONTEXTUAL)
       end
     end
 

@@ -110,13 +110,13 @@ describe HeadMusic::Style::RenaissanceTradition do
   end
 
   describe "key differences from modern tradition" do
-    it "treats perfect fourth as dissonant while modern treats it as consonant" do
+    it "treats perfect fourth as dissonant while modern treats it as contextual" do
       interval = HeadMusic::Analysis::DiatonicInterval.get("P4")
       renaissance_classification = tradition.consonance_classification(interval)
       modern_classification = HeadMusic::Style::ModernTradition.new.consonance_classification(interval)
 
       expect(renaissance_classification).to eq(HeadMusic::Rudiment::Consonance::DISSONANCE)
-      expect(modern_classification).to eq(HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE)
+      expect(modern_classification).to eq(HeadMusic::Rudiment::Consonance::CONTEXTUAL)
     end
   end
 end

@@ -18,9 +18,8 @@ class HeadMusic::Style::ModernTradition < HeadMusic::Style::Tradition
     when 8, 9  # Minor Sixth, Major Sixth
       HeadMusic::Rudiment::Consonance::IMPERFECT_CONSONANCE
     when 5  # Perfect Fourth
-      # In standard practice, perfect fourth is considered consonant
-      # but contextual would be more accurate
-      HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE
+      # Perfect fourth is contextual: consonant in upper voices, dissonant against bass
+      HeadMusic::Rudiment::Consonance::CONTEXTUAL
     when 2, 10  # Major Second, Minor Seventh
       HeadMusic::Rudiment::Consonance::MILD_DISSONANCE
     when 1, 11  # Minor Second, Major Seventh

@@ -112,12 +112,12 @@ describe HeadMusic::Style::MedievalTradition do
   describe "comparison with other traditions" do
     let(:perfect_fourth) { HeadMusic::Analysis::DiatonicInterval.get("P4") }
 
-    it "treats perfect fourth as consonant like modern tradition" do
+    it "treats perfect fourth as consonant, while modern treats it as contextual" do
       medieval_classification = tradition.consonance_classification(perfect_fourth)
       modern_classification = HeadMusic::Style::ModernTradition.new.consonance_classification(perfect_fourth)
 
       expect(medieval_classification).to eq(HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE)
-      expect(modern_classification).to eq(HeadMusic::Rudiment::Consonance::PERFECT_CONSONANCE)
+      expect(modern_classification).to eq(HeadMusic::Rudiment::Consonance::CONTEXTUAL)
     end
 
     it "treats perfect fourth differently from Renaissance tradition" do

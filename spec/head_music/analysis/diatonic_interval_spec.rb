@@ -256,7 +256,7 @@ I18n.describe HeadMusic::Analysis::DiatonicInterval do
     specify { expect(described_class.get(:major_second).consonance).to be_mild_dissonance }
     specify { expect(described_class.get(:minor_third).consonance).to be_imperfect_consonance }
     specify { expect(described_class.get(:major_third).consonance).to be_imperfect_consonance }
-    specify { expect(described_class.get(:perfect_fourth).consonance).to be_perfect_consonance }
+    specify { expect(described_class.get(:perfect_fourth).consonance).to be_contextual }
     specify { expect(described_class.get(:perfect_fourth).consonance(:two_part_harmony)).to be_dissonance }
     specify { expect(described_class.get(:perfect_eleventh).consonance(:two_part_harmony)).to be_dissonance }
     specify { expect(described_class.get(:augmented_fourth).consonance).to be_dissonance }
