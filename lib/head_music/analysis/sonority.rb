@@ -34,8 +34,9 @@ class HeadMusic::Analysis::Sonority
   #
   # @param identifier [Symbol, String] the sonority identifier (e.g., :major_triad)
   # @param root [String] the root pitch (default: "C4")
+  # @param inversion [Integer] the inversion number (default: 0 for root position)
   # @return [Sonority, nil] the sonority object, or nil if identifier not found
-  def self.get(identifier, root: DEFAULT_ROOT)
+  def self.get(identifier, root: DEFAULT_ROOT, inversion: 0)
     identifier = identifier.to_sym
     return nil unless SONORITIES.key?(identifier)
 
@@ -49,6 +50,12 @@ class HeadMusic::Analysis::Sonority
     end
 
     pitch_collection = HeadMusic::Analysis::PitchCollection.new(pitches)
+
+    # Apply inversions if requested
+    inversion.times do
+      pitch_collection = pitch_collection.invert
+    end
+
     new(pitch_collection)
   end
 

@@ -58,6 +58,104 @@ describe HeadMusic::Analysis::Sonority do
       end
     end
 
+    context "with inversions" do
+      context "with major triad in root position (inversion: 0)" do
+        subject(:sonority) { described_class.get(:major_triad, root: "C4", inversion: 0) }
+
+        it "generates root position pitches" do
+          expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(%w[C4 E4 G4])
+        end
+
+        it "identifies as major triad" do
+          expect(sonority.identifier).to eq(:major_triad)
+        end
+      end
+
+      context "with major triad in first inversion (inversion: 1)" do
+        subject(:sonority) { described_class.get(:major_triad, root: "C4", inversion: 1) }
+
+        it "generates first inversion pitches" do
+          expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(%w[E4 G4 C5])
+        end
+
+        it "still identifies as major triad" do
+          expect(sonority.identifier).to eq(:major_triad)
+        end
+      end
+
+      context "with major triad in second inversion (inversion: 2)" do
+        subject(:sonority) { described_class.get(:major_triad, root: "C4", inversion: 2) }
+
+        it "generates second inversion pitches" do
+          expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(%w[G4 C5 E5])
+        end
+
+        it "still identifies as major triad" do
+          expect(sonority.identifier).to eq(:major_triad)
+        end
+      end
+
+      context "with minor seventh chord in root position" do
+        subject(:sonority) { described_class.get(:minor_minor_seventh_chord, root: "D4", inversion: 0) }
+
+        it "generates root position pitches" do
+          expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(%w[D4 F4 A4 C5])
+        end
+
+        it "identifies as minor seventh" do
+          expect(sonority.identifier).to eq(:minor_minor_seventh_chord)
+        end
+      end
+
+      context "with minor seventh chord in first inversion" do
+        subject(:sonority) { described_class.get(:minor_minor_seventh_chord, root: "D4", inversion: 1) }
+
+        it "generates first inversion pitches" do
+          expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(%w[F4 A4 C5 D5])
+        end
+
+        it "still identifies as minor seventh" do
+          expect(sonority.identifier).to eq(:minor_minor_seventh_chord)
+        end
+      end
+
+      context "with minor seventh chord in second inversion" do
+        subject(:sonority) { described_class.get(:minor_minor_seventh_chord, root: "D4", inversion: 2) }
+
+        it "generates second inversion pitches" do
+          expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(%w[A4 C5 D5 F5])
+        end
+
+        it "still identifies as minor seventh" do
+          expect(sonority.identifier).to eq(:minor_minor_seventh_chord)
+        end
+      end
+
+      context "with minor seventh chord in third inversion" do
+        subject(:sonority) { described_class.get(:minor_minor_seventh_chord, root: "D4", inversion: 3) }
+
+        it "generates third inversion pitches" do
+          expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(%w[C5 D5 F5 A5])
+        end
+
+        it "still identifies as minor seventh" do
+          expect(sonority.identifier).to eq(:minor_minor_seventh_chord)
+        end
+      end
+
+      context "with custom root and inversion" do
+        subject(:sonority) { described_class.get(:major_triad, root: "E♭4", inversion: 1) }
+
+        it "generates pitches with both custom root and inversion" do
+          expect(sonority.pitch_collection.pitches.map(&:to_s)).to eq(["G4", "B♭4", "E♭5"])
+        end
+
+        it "identifies as major triad" do
+          expect(sonority.identifier).to eq(:major_triad)
+        end
+      end
+    end
+
     context "with a string identifier" do
       subject(:sonority) { described_class.get("minor_triad") }
 
