@@ -42,7 +42,7 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
   MATCHER = PATTERN
 
   def self.all
-    ALTERATION_RECORDS.map { |attributes| new(attributes) }
+    @all ||= ALTERATION_RECORDS.map { |attributes| new(attributes) }
   end
 
   def self.symbols
