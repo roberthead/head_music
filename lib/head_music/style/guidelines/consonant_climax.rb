@@ -27,11 +27,11 @@ class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Annotati
   end
 
   def highest_pitch_consonant_with_tonic?
-    diatonic_interval_to_highest_pitch.consonance?(:melodic)
+    !diatonic_interval_to_highest_pitch.dissonant?(:melodic)
   end
 
   def lowest_pitch_consonant_with_tonic?
-    diatonic_interval_to_lowest_pitch.consonance?(:melodic)
+    !diatonic_interval_to_lowest_pitch.dissonant?(:melodic)
   end
 
   def diatonic_interval_to_highest_pitch

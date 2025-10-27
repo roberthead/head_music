@@ -5,7 +5,7 @@ Sequence = neutral term for the editing canvas (2D space).
 Timeline = strictly the axis.
 
 
-Material?
+
 
 ScorePart
 @name
@@ -64,3 +64,15 @@ Player
 
 Fragment < MusicContent
 
+
+
+Material?
+
+
+Material
+
+Fragment < Material
+
+Score < Material
+- name
+-

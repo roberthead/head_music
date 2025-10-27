@@ -20,9 +20,12 @@ class HeadMusic::Rudiment::Consonance < HeadMusic::Rudiment::Base
   ].freeze
 
   def self.get(name)
+    return name if name.is_a?(self)
+    return nil if name.nil?
+
     @consonances ||= {}
     name_sym = name.to_sym
-    @consonances[name_sym] ||= new(name) if LEVELS.include?(name.to_s)
+    @consonances[name_sym] ||= new(name) if LEVELS.include?(name_sym)
   end
 
   attr_reader :name
@@ -54,6 +57,6 @@ class HeadMusic::Rudiment::Consonance < HeadMusic::Rudiment::Base
 
   # Predicate methods for each level
   LEVELS.each do |method_name|
-    define_method(:"#{method_name}?") { to_s == method_name }
+    define_method(:"#{method_name}?") { to_s == method_name.to_s }
   end
 end
