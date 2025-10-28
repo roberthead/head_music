@@ -59,6 +59,8 @@ ScorePartPlayer
 
 Player
 > person
+  - identity? // is a person really a person or a particular name
+  - distinction between a unique person and a name
 
 
 
