@@ -120,7 +120,7 @@ class HeadMusic::Instruments::ScoreOrder
     end
 
     # Try normalized name (lowercase, underscored)
-    normalized = instrument.name.downcase.tr(" ", "_").tr("-", "_")
+    normalized = HeadMusic::Utilities::Case.to_snake_case(instrument.name)
     return ordering_index[normalized] if ordering_index.key?(normalized)
 
     nil

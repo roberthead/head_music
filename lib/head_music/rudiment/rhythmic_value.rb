@@ -25,7 +25,7 @@ class HeadMusic::Rudiment::RhythmicValue
       return parsed if parsed
 
       # Then try the word-based approach as fallback
-      identifier = original_identifier.downcase.gsub(/\W+/, "_")
+      identifier = HeadMusic::Utilities::Case.to_snake_case(original_identifier)
       begin
         from_words(identifier)
       rescue

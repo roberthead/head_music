@@ -22,7 +22,7 @@ class HeadMusic::Utilities::HashKey
 
   def normalized_string
     @normalized_string ||=
-      transliterated_string.downcase.gsub(/\W+/, "_")
+      HeadMusic::Utilities::Case.to_snake_case(transliterated_string)
   end
 
   def transliterated_string

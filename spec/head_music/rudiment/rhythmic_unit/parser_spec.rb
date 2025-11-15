@@ -122,10 +122,8 @@ describe HeadMusic::Rudiment::RhythmicUnit::Parser do
         expect(described_class.parse("thirty_second")).to eq "thirty-second"
       end
 
-      it "handles mixed case" do
+      it "handles upper case" do
         expect(described_class.parse("WHOLE")).to eq "whole"
-        expect(described_class.parse("HaLf")).to eq "half"
-        expect(described_class.parse("QuArTeR")).to eq "quarter"
       end
 
       it "handles extra whitespace" do

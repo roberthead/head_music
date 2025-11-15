@@ -40,7 +40,7 @@ class HeadMusic::Instruments::PlayingTechnique
   def self.get(identifier)
     return identifier if identifier.is_a?(self)
 
-    name = identifier.to_s.downcase.tr(" ", "_").tr("-", "_")
+    name = HeadMusic::Utilities::Case.to_snake_case(identifier)
     new(name)
   end
 

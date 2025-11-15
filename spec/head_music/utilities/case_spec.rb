@@ -41,6 +41,58 @@ describe HeadMusic::Utilities::Case do
     it "handles empty strings" do
       expect(described_class.to_snake_case("")).to eq("")
     end
+
+    it "converts spaces to underscores" do
+      expect(described_class.to_snake_case("hello world")).to eq("hello_world")
+    end
+
+    it "handles multiple spaces as single separator" do
+      expect(described_class.to_snake_case("hello  world  test")).to eq("hello_world_test")
+    end
+
+    it "handles mixed spaces and other formats" do
+      expect(described_class.to_snake_case("French Horn")).to eq("french_horn")
+    end
+
+    it "handles spaces with PascalCase" do
+      expect(described_class.to_snake_case("C Major Scale")).to eq("c_major_scale")
+    end
+
+    it "squeezes consecutive underscores" do
+      expect(described_class.to_snake_case("hello__world")).to eq("hello_world")
+    end
+
+    it "handles punctuation marks" do
+      expect(described_class.to_snake_case("hello!world")).to eq("hello_world")
+    end
+
+    it "handles periods" do
+      expect(described_class.to_snake_case("test.example")).to eq("test_example")
+    end
+
+    it "handles ampersands" do
+      expect(described_class.to_snake_case("foo&bar")).to eq("foo_bar")
+    end
+
+    it "handles parentheses" do
+      expect(described_class.to_snake_case("test(example)")).to eq("test_example")
+    end
+
+    it "handles multiple non-word characters" do
+      expect(described_class.to_snake_case("hello!@#world")).to eq("hello_world")
+    end
+
+    it "strips leading underscores" do
+      expect(described_class.to_snake_case("_hello_world")).to eq("hello_world")
+    end
+
+    it "strips trailing underscores" do
+      expect(described_class.to_snake_case("hello_world_")).to eq("hello_world")
+    end
+
+    it "strips leading and trailing underscores from punctuation" do
+      expect(described_class.to_snake_case("!hello@world#")).to eq("hello_world")
+    end
   end
 
   describe ".to_kebab_case" do
