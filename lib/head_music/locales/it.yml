@@ -157,6 +157,8 @@ it:
       descant: soprano
       didgeridoo: didgeridoo
       double_bass: contrabbasso
+      drum_kit: batteria
+      floor_tom: tom a terra
       double_contrabass_recorder: doppio flauto dolce contrabbasso
       english_horn: corno inglese
       euphonium: eufonio
@@ -178,6 +180,7 @@ it:
       harpsichord: clavicembalo
       hautbois_d_amour: oboe d'amore
       hi-hat: hi-hat
+      high_tom: tom acuto
       horn: corno
       kettledrum: timpano
       kick_drum: grancassa
@@ -189,6 +192,7 @@ it:
       metal_block: blocco metallico
       mezzo: mezzosoprano
       mezzo_soprano_voice: mezzosoprano
+      mid_tom: tom grave
       military_drum: tamburo militare
       mouth_organ: armonica a bocca
       natural_horn: corno naturale
@@ -274,6 +278,25 @@ it:
       woodblock: legnetto
       xylophone: xilofono
       zither: cetra da tavolo
+    instrument_families:
+      drum_kit: batteria
+      hi_hat: hi-hat
+      tom_tom: tom-tom
+    playing_techniques:
+      bell: campana
+      bow: arco
+      brush: spazzola
+      choked: soffocato
+      closed: chiuso
+      cross_stick: bacchetta incrociata
+      damped: smorzato
+      hand: mano
+      let_ring: lasciar vibrare
+      mallet: bacchetta
+      open: aperto
+      pedal: pedale
+      rim_shot: colpo di rimshot
+      stick: bacchetta
     locales:
       de: tedesco
       en: inglese

@@ -276,6 +276,7 @@ en:
       cymbal: cymbal
       descant: descant
       didgeridoo: didgeridoo
+      drum_kit: drum kit
       double_bass: double bass
       double_contrabass_recorder: double-contrabass recorder
       electronic_keyboard: electronic keyboard
@@ -283,6 +284,7 @@ en:
       euphonium: euphonium
       fiddle: fiddle
       field_drum: field drum
+      floor_tom: floor tom
       flugelhorn: flugelhorn
       flute: flute
       fortepiano: fortepiano
@@ -299,6 +301,7 @@ en:
       harpsichord: harpsichord
       hautbois_d_amour: hautbois d'amour
       hi-hat: hi-hat
+      high_tom: high tom
       horn: horn
       kettledrum: kettledrum
       kick_drum: kick drum
@@ -310,6 +313,7 @@ en:
       mezzo: mezzo
       mezzo_soprano: mezzo-soprano
       mezzo_soprano_voice: mezzo-soprano
+      mid_tom: mid tom
       military_drum: military drum
       mouth_organ: mouth_organ
       natural_horn: natural horn
@@ -397,6 +401,25 @@ en:
       woodblock: woodblock
       xylophone: xylophone
       zither: zither
+    instrument_families:
+      drum_kit: drum kit
+      hi_hat: hi-hat
+      tom_tom: tom-tom
+    playing_techniques:
+      stick: stick
+      pedal: pedal
+      mallet: mallet
+      hand: hand
+      brush: brush
+      rim_shot: rim shot
+      cross_stick: cross stick
+      open: open
+      closed: closed
+      damped: damped
+      let_ring: let ring
+      choked: choked
+      bow: bow
+      bell: bell
     locales:
       de: German
       en: English

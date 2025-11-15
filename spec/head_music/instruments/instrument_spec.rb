@@ -164,6 +164,90 @@ describe HeadMusic::Instruments::Instrument do
     specify { expect(described_class.get(:bass_guitar)).to be_transposing_at_the_octave }
   end
 
+  context "when drum_kit" do
+    subject(:drum_kit) { described_class.get(:drum_kit) }
+
+    its(:name) { is_expected.to eq "drum kit" }
+    its(:default_clefs) { are_expected.to eq [HeadMusic::Rudiment::Clef.get("neutral_clef")] }
+    its(:classification_keys) { are_expected.to include "percussion" }
+    it { is_expected.not_to be_pitched }
+    it { is_expected.not_to be_transposing }
+
+    describe "staff mappings" do
+      it "has mappings on its default staff" do
+        staff = drum_kit.default_staves.first
+        expect(staff.mappings).to be_an(Array)
+        expect(staff.mappings).not_to be_empty
+        expect(staff.mappings).to all(be_a(HeadMusic::Instruments::StaffMapping))
+      end
+
+      it "maps standard drum kit positions" do
+        staff = drum_kit.default_staves.first
+        expect(staff.instrument_for_position(4).name).to eq("snare drum")
+        expect(staff.instrument_for_position(0).name).to eq("bass drum")
+        expect(staff.instrument_for_position(9).name).to eq("hi hat")
+      end
+
+      describe "hi_hat mappings" do
+        let(:staff) { drum_kit.default_staves.first }
+
+        it "maps to two different techniques" do
+          mappings = staff.mappings.select { |m| m.instrument_key == "hi_hat" }
+          expect(mappings.length).to eq(2)
+        end
+
+        it "maps pedal technique at position -1" do
+          mapping = staff.mapping_for_position(-1)
+          expect(mapping.instrument_key).to eq("hi_hat")
+          expect(mapping.playing_technique_key).to eq("pedal")
+        end
+
+        it "maps stick technique at position 9" do
+          mapping = staff.mapping_for_position(9)
+          expect(mapping.instrument_key).to eq("hi_hat")
+          expect(mapping.playing_technique_key).to eq("stick")
+        end
+      end
+
+      it "has components derived from mapping" do
+        staff = drum_kit.default_staves.first
+        components = staff.components
+        expect(components.length).to eq(8)
+        expect(components.map(&:name)).to include("snare drum", "bass drum", "hi hat")
+      end
+    end
+  end
+
+  context "when hi_hat" do
+    subject(:hi_hat) { described_class.get(:hi_hat) }
+
+    its(:name) { is_expected.to eq "hi hat" }
+    its(:default_clefs) { are_expected.to eq [HeadMusic::Rudiment::Clef.get("neutral_clef")] }
+    its(:classification_keys) { are_expected.to include "percussion" }
+    it { is_expected.not_to be_pitched }
+    it { is_expected.not_to be_transposing }
+  end
+
+  context "when crash_cymbal" do
+    subject(:crash_cymbal) { described_class.get(:crash_cymbal) }
+
+    its(:name) { is_expected.to eq "crash cymbal" }
+    its(:default_clefs) { are_expected.to eq [HeadMusic::Rudiment::Clef.get("neutral_clef")] }
+    its(:classification_keys) { are_expected.to include "percussion" }
+    it { is_expected.not_to be_pitched }
+    it { is_expected.not_to be_transposing }
+  end
+
+  context "when high_tom" do
+    subject(:high_tom) { described_class.get(:high_tom) }
+
+    its(:name) { is_expected.to eq "high tom" }
+    its(:default_clefs) { are_expected.to eq [HeadMusic::Rudiment::Clef.get("neutral_clef")] }
+    its(:classification_keys) { are_expected.to include "percussion" }
+    it { is_expected.not_to be_pitched }
+    it { is_expected.not_to be_transposing }
+  end
+
   describe "branch coverage for edge cases" do
     context "when instrument has no family" do
       subject(:unknown_instrument) { described_class.get("unknown_instrument") }

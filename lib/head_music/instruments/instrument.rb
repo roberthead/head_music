@@ -27,7 +27,7 @@ class HeadMusic::Instruments::Instrument
   end
 
   def self.all
-    HeadMusic::Instruments::InstrumentFamily.all
+    HeadMusic::Instruments::InstrumentFamily.all # Ensure families are loaded first
     @all ||=
       INSTRUMENTS.map { |key, _data| get(key) }.sort_by { |instrument| instrument.name.downcase }
   end

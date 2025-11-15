@@ -103,6 +103,8 @@ ru:
       descant: дискант
       didgeridoo: диджериду
       double_bass: контрабас
+      drum_kit: барабанная установка
+      floor_tom: том для пола
       double_contrabass_recorder: двойная контрабасовая флейта
       english_horn: английский рожок
       euphonium: эуфониум
@@ -124,6 +126,7 @@ ru:
       harpsichord: клавесин
       hautbois_d_amour: гобой д'амур
       hi-hat: хай-хет
+      high_tom: том высокий
       horn: валторна
       kettledrum: тимпан
       kick_drum: бас-барабан
@@ -134,6 +137,7 @@ ru:
       mezzo: меццо
       mezzo_soprano: меццо-сопрано
       mezzo_soprano_voice: голос меццо-сопрано
+      mid_tom: том средний
       military_drum: военный барабан
       mouth_organ: губная гармоника
       natural_horn: натуральный рог
@@ -221,6 +225,25 @@ ru:
       woodblock: деревянный блок
       xylophone: ксилофон
       zither: цитра
+    instrument_families:
+      drum_kit: барабанная установка
+      hi_hat: хай-хет
+      tom_tom: том-том
+    playing_techniques:
+      bell: колокол
+      bow: смычок
+      brush: щётка
+      choked: задушенный
+      closed: закрытый
+      cross_stick: крест-стик
+      damped: приглушённый
+      hand: рука
+      let_ring: дать звучать
+      mallet: молоточек
+      open: открытый
+      pedal: педаль
+      rim_shot: удар по ободу
+      stick: палочка
     locales:
       de: Немецкий
       en: Английский

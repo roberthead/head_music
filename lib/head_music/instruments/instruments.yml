@@ -530,6 +530,13 @@ crotales:
       staff_schemes:
         default:
           - clef: neutral_clef
+crash_cymbal:
+  family_key: cymbal
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
 cymbal:
   family_key: cymbal
   variants:
@@ -544,6 +551,36 @@ didgeridoo:
       staff_schemes:
         default:
           - clef: neutral_clef
+drum_kit:
+  alias_name_keys:
+    - drum_set
+  family_key: drum_kit
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
+            mappings:
+              - staff_position: -1
+                instrument: hi_hat
+                playing_technique: pedal
+              - staff_position: 0
+                instrument: bass_drum
+              - staff_position: 2
+                instrument: floor_tom
+              - staff_position: 4
+                instrument: snare_drum
+              - staff_position: 6
+                instrument: mid_tom
+              - staff_position: 7
+                instrument: high_tom
+              - staff_position: 8
+                instrument: ride_cymbal
+              - staff_position: 9
+                instrument: hi_hat
+                playing_technique: stick
+              - staff_position: 10
+                instrument: crash_cymbal
 double_bass:
   alias_name_keys:
     - contrabass
@@ -596,6 +633,16 @@ flute:
       staff_schemes:
         default:
           - clef: treble_clef
+floor_tom:
+  alias_name_keys:
+    - large_tom
+    - low_tom
+  family_key: tom_tom
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
 french_horn:
   alias_name_keys:
     - horn
@@ -710,6 +757,23 @@ harpsichord:
             name_key: right_hand
           - clef: bass_clef
             name_key: left_hand
+hi_hat:
+  family_key: hi_hat
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
+high_tom:
+  alias_name_keys:
+    - small_tom
+    - rack_tom_1
+  family_key: tom_tom
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
 lute:
   family_key: lute
   variants:
@@ -753,6 +817,16 @@ mezzo_soprano_voice:
       staff_schemes:
         default:
           - clef: treble_clef
+mid_tom:
+  alias_name_keys:
+    - middle_tom
+    - rack_tom_2
+  family_key: tom_tom
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
 natural_horn:
   family_key: horn
   range_categories:
@@ -883,6 +957,13 @@ recorder:
         default:
           - clef: treble_clef
             sounding_transposition: 12
+ride_cymbal:
+  family_key: cymbal
+  variants:
+    default:
+      staff_schemes:
+        default:
+          - clef: neutral_clef
 sitar:
   family_key: sitar
   variants:

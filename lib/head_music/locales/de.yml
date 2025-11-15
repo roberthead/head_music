@@ -159,6 +159,8 @@ de:
       descant: Diskant
       didgeridoo: Didgeridoo
       double_bass: Kontrabass
+      drum_kit: Schlagzeug
+      floor_tom: Floor-Tom
       double_contrabass_recorder: Doppelkontrabassblockflöte
       english_horn: Englischhorn
       euphonium: Euphonium
@@ -179,6 +181,7 @@ de:
       harpsichord: Cembalo
       hautbois_d_amour: Liebeshoboe
       hi-hat: Hi-Hat
+      high_tom: High-Tom
       horn: Horn
       kettledrum: Pauke
       kick_drum: Große Trommel
@@ -190,6 +193,7 @@ de:
       mezzo: Mezzo
       mezzo_soprano: Mezzosopran
       mezzo_soprano_voice: Mezzosopran
+      mid_tom: Mid-Tom
       military_drum: Militärtrommel
       mouth_organ: Mundharmonika
       natural_horn: Waldhorn
@@ -278,6 +282,25 @@ de:
       woodblock: Holzblock
       xylophone: Xylophon
       zither: Zither
+    instrument_families:
+      drum_kit: Schlagzeug
+      hi_hat: Hi-Hat
+      tom_tom: Tom-Tom
+    playing_techniques:
+      bell: Glocke
+      bow: Bogen
+      brush: Bürste
+      choked: Erstickt
+      closed: Geschlossen
+      cross_stick: Querstöckchen
+      damped: Gedämpft
+      hand: Hand
+      let_ring: Ausklingen lassen
+      mallet: Schläger
+      open: Offen
+      pedal: Pedal
+      rim_shot: Rimshot
+      stick: Stick
     locales:
       de: Deutsch
       en: Englisch

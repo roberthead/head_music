@@ -26,6 +26,7 @@ I18n.fallbacks[:it] = %i[it en_GB en]
 I18n.fallbacks[:ru] = %i[ru en_GB en]
 
 # utilities
+require "head_music/utilities/case"
 require "head_music/utilities/hash_key"
 
 # modules
@@ -82,6 +83,9 @@ require "head_music/time"
 require "head_music/instruments/instrument_family"
 require "head_music/instruments/instrument"
 require "head_music/instruments/variant"
+require "head_music/instruments/staff_position"
+require "head_music/instruments/playing_technique"
+require "head_music/instruments/staff_mapping"
 require "head_music/instruments/staff_scheme"
 require "head_music/instruments/staff"
 require "head_music/instruments/instrument_configuration"

@@ -107,6 +107,13 @@ double_bass:
     - unfretted
     - string
   orchestra_section_key: string
+drum_kit:
+  classification_keys:
+    - percussion
+    - membranophone
+    - idiophone
+    - unpitched
+  orchestra_section_key: percussion
 flute:
   classification_keys:
     - aerophone
@@ -163,6 +170,12 @@ harpsichord:
     - keyboard
     - string
   orchestra_section_key: keyboard
+hi_hat:
+  classification_keys:
+    - percussion
+    - idiophone
+    - unpitched
+  orchestra_section_key: percussion
 horn:
   classification_keys:
     - aerophone
@@ -297,6 +310,13 @@ tenor_drum:
 theremin:
   classification_keys:
     - electronic
+tom_tom:
+  classification_keys:
+    - percussion
+    - membranophone
+    - struck
+    - unpitched
+  orchestra_section_key: percussion
 triangle:
   classification_keys:
     - percussion

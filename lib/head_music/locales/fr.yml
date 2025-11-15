@@ -162,6 +162,8 @@ fr:
       descant: dessus
       didgeridoo: didgeridoo
       double_bass: contrebasse
+      drum_kit: batterie
+      floor_tom: tom de sol
       double_contrabass_recorder: flûte à bec double-contrebasse
       english_horn: cor anglais
       euphonium: euphonium
@@ -183,6 +185,7 @@ fr:
       harpsichord: clavecin
       hautbois_d_amour: hautbois d'amour
       hi-hat: charleston
+      high_tom: tom aigu
       horn: cor
       kettledrum: timbale
       kick_drum: grosse caisse
@@ -194,6 +197,7 @@ fr:
       mezzo: mezzo
       mezzo_soprano: mezzo-soprano
       mezzo_soprano_voice: voix de mezzo-soprano
+      mid_tom: tom grave
       military_drum: tambour militaire
       mouth_organ: harmonica
       natural_horn: cor naturel
@@ -281,6 +285,25 @@ fr:
       woodblock: bloc de bois
       xylophone: xylophone
       zither: cithare
+    instrument_families:
+      drum_kit: batterie
+      hi_hat: charleston
+      tom_tom: tom-tom
+    playing_techniques:
+      bell: cloche
+      bow: archet
+      brush: brosse
+      choked: étouffé
+      closed: fermé
+      cross_stick: baguette croisée
+      damped: amorti
+      hand: main
+      let_ring: laisser résonner
+      mallet: maillet
+      open: ouvert
+      pedal: pédale
+      rim_shot: coup de bord
+      stick: baguette
     locales:
       de: allemand
       en: anglais
