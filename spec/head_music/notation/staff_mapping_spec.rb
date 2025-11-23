@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Instruments::StaffMapping do
+describe HeadMusic::Notation::StaffMapping do
   describe "#initialize" do
     context "when given a staff_position and instrument" do
       subject(:mapping) do

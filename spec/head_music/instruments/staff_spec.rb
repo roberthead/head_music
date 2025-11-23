@@ -90,7 +90,7 @@ describe HeadMusic::Instruments::Staff do
     describe "#mappings" do
       it "returns an array of StaffMapping objects" do
         expect(staff.mappings).to be_an(Array)
-        expect(staff.mappings).to all(be_a(HeadMusic::Instruments::StaffMapping))
+        expect(staff.mappings).to all(be_a(HeadMusic::Notation::StaffMapping))
         expect(staff.mappings.length).to eq(9)
       end
     end
@@ -98,7 +98,7 @@ describe HeadMusic::Instruments::Staff do
     describe "#mapping_for_position" do
       it "returns the mapping at a given position index" do
         mapping = staff.mapping_for_position(4)
-        expect(mapping).to be_a(HeadMusic::Instruments::StaffMapping)
+        expect(mapping).to be_a(HeadMusic::Notation::StaffMapping)
         expect(mapping.instrument_key).to eq("snare_drum")
       end
 

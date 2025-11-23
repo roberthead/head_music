@@ -178,7 +178,7 @@ describe HeadMusic::Instruments::Instrument do
         staff = drum_kit.default_staves.first
         expect(staff.mappings).to be_an(Array)
         expect(staff.mappings).not_to be_empty
-        expect(staff.mappings).to all(be_a(HeadMusic::Instruments::StaffMapping))
+        expect(staff.mappings).to all(be_a(HeadMusic::Notation::StaffMapping))
       end
 
       it "maps standard drum kit positions" do

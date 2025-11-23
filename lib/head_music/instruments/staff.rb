@@ -33,9 +33,9 @@ class HeadMusic::Instruments::Staff
 
   # Get all staff mappings for composite instruments
   #
-  # @return [Array<StaffMapping>] array of staff mappings
+  # @return [Array<Notation::StaffMapping>] array of staff mappings
   # @example
-  #   drum_kit_staff.mappings  #=> [#<StaffMapping...>, #<StaffMapping...>]
+  #   drum_kit_staff.mappings  #=> [#<Notation::StaffMapping...>, #<Notation::StaffMapping...>]
   def mappings
     @mappings ||= parse_mappings
   end
@@ -43,9 +43,9 @@ class HeadMusic::Instruments::Staff
   # Find the staff mapping at a specific position
   #
   # @param position_index [Integer] the staff position index
-  # @return [StaffMapping, nil] the mapping at that position or nil
+  # @return [Notation::StaffMapping, nil] the mapping at that position or nil
   # @example
-  #   staff.mapping_for_position(4)  #=> #<StaffMapping instrument: snare_drum...>
+  #   staff.mapping_for_position(4)  #=> #<Notation::StaffMapping instrument: snare_drum...>
   def mapping_for_position(position_index)
     mappings.find { |mapping| mapping.position_index == position_index }
   end
@@ -90,6 +90,6 @@ class HeadMusic::Instruments::Staff
     mappings_data = attributes["mappings"] || []
     return [] unless mappings_data.is_a?(Array)
 
-    mappings_data.map { |mapping_attrs| HeadMusic::Instruments::StaffMapping.new(mapping_attrs) }
+    mappings_data.map { |mapping_attrs| HeadMusic::Notation::StaffMapping.new(mapping_attrs) }
   end
 end

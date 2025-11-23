@@ -1,5 +1,5 @@
-# Namespace for instrument definitions, categorization, and configuration
-module HeadMusic::Instruments; end
+# A module for visual music notation
+module HeadMusic::Notation; end
 
 # Represents the mapping of an instrument (and optional playing technique) to a staff position
 #
@@ -18,7 +18,7 @@ module HeadMusic::Instruments; end
 #     "playing_technique" => "pedal"
 #   })
 #   mapping.playing_technique.name  #=> "pedal"
-class HeadMusic::Instruments::StaffMapping
+class HeadMusic::Notation::StaffMapping
   attr_reader :staff_position, :instrument_key, :playing_technique_key
 
   # Initialize a new StaffMapping
