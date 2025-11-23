@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Instruments::StaffPosition do
+describe HeadMusic::Notation::StaffPosition do
   describe ".name_to_index" do
     context "with exact case matching" do
       it "returns the index for 'bottom line'" do

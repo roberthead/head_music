@@ -1,8 +1,7 @@
-# Namespace for instrument definitions, categorization, and configuration
-module HeadMusic::Instruments; end
+# A module for visual music notation
+module HeadMusic::Notation; end
 
-class HeadMusic::Instruments::StaffPosition
-  # TODO: consider moving to a HeadMusic::Notation module
+class HeadMusic::Notation::StaffPosition
   attr_reader :index  # Integer, even = line, odd = space; bottom line = 0
 
   NAMES = {

@@ -28,7 +28,7 @@ class HeadMusic::Instruments::StaffMapping
   # @option attributes [String] "instrument" the instrument key
   # @option attributes [String] "playing_technique" optional playing technique key
   def initialize(attributes)
-    @staff_position = HeadMusic::Instruments::StaffPosition.new(attributes["staff_position"].to_i)
+    @staff_position = HeadMusic::Notation::StaffPosition.new(attributes["staff_position"].to_i)
     @instrument_key = attributes["instrument"]
     @playing_technique_key = attributes["playing_technique"]
   end
