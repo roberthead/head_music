@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# TODO: Make this computed? Or representative of hardened computations?
 describe HeadMusic::Content::Bar do
   subject(:bar) { described_class.new(composition) }
 

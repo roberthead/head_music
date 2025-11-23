@@ -72,11 +72,7 @@ class HeadMusic::Analysis::Dyad
     trichords = []
     pitch_classes = [lower_pitch.pitch_class, upper_pitch.pitch_class]
 
-    # Use all possible spelled root pitches in a middle register
-    # Only use single sharps/flats to avoid nil pitch creation issues
-    root_spellings = %w[C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B]
-
-    root_spellings.each do |root_spelling|
+    HeadMusic::Rudiment::Spelling::CHROMATIC_SPELLINGS.each do |root_spelling|
       root_pitch = HeadMusic::Rudiment::Pitch.get("#{root_spelling}4")
 
       # Try all common trichord types from this root
@@ -116,11 +112,7 @@ class HeadMusic::Analysis::Dyad
     seventh_chords = []
     pitch_classes = [lower_pitch.pitch_class, upper_pitch.pitch_class]
 
-    # Use all possible spelled root pitches in a middle register
-    # Only use single sharps/flats to avoid nil pitch creation issues
-    root_spellings = %w[C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B]
-
-    root_spellings.each do |root_spelling|
+    HeadMusic::Rudiment::Spelling::CHROMATIC_SPELLINGS.each do |root_spelling|
       root_pitch = HeadMusic::Rudiment::Pitch.get("#{root_spelling}4")
 
       # Try all common seventh chord types from this root

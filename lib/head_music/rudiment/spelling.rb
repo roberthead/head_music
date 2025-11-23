@@ -10,6 +10,9 @@ class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
 
   MATCHER = /^\s*(#{LetterName::PATTERN})(#{Alteration::PATTERN})?(-?\d+)?\s*$/i
 
+  # All chromatic spellings using single sharps and flats (ASCII notation)
+  CHROMATIC_SPELLINGS = %w[C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B].freeze
+
   attr_reader :pitch_class, :letter_name, :alteration
 
   delegate :number, to: :pitch_class, prefix: true
