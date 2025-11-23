@@ -121,11 +121,19 @@ The gem supports multiple languages through the HeadMusic::Named mixin:
 - Shared examples in `spec/support/`
 - `composition_context.rb` provides test utilities
 
+### Documentation Philosophy
+
+This project deliberately deprioritizes formal documentation in favor of clear, comprehensive tests.
+
+- **Tests serve as documentation**: RSpec specs demonstrate how to use the code
+- **Comments explain "why", not "what"**: Only add comments when the implementation is surprising or non-obvious
+- **No YARD documentation required**: The code should be self-explanatory through clear naming and test examples
+- Documentation tools like `rake doc` and `rake doc_stats` exist but low coverage is intentional
+
 ### Code Style
 
 - Ruby 3.3.0+ features are allowed
 - Follow Standard Ruby style guide
-- Use YARD documentation format for public methods
 - Prefer delegation over inheritance
 - Always run `bundle exec rubocop -a` after editing ruby code
 
@@ -143,8 +151,7 @@ The gem supports multiple languages through the HeadMusic::Named mixin:
 
 1. Check for dependent classes that might be affected
 2. Run tests for the specific module: `bundle exec rspec spec/head_music/[module_name]`
-3. Update documentation with YARD comments
-4. Ensure translations are updated if names change
+3. Ensure translations are updated if names change
 
 ## Music theory and concepts
 
