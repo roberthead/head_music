@@ -2,4 +2,4 @@
 module HeadMusic::Notation; end
 
 # Load notation classes
-# (Initially empty - classes will be added in subsequent stories)
+require "head_music/notation/musical_symbol"

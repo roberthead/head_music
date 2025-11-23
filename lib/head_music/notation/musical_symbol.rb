@@ -1,8 +1,8 @@
-# A module for music rudiments
-module HeadMusic::Rudiment; end
+# A module for visual music notation
+module HeadMusic::Notation; end
 
 # A symbol is a mark or sign that signifies a particular rudiment of music
-class HeadMusic::Rudiment::MusicalSymbol < HeadMusic::Rudiment::Base
+class HeadMusic::Notation::MusicalSymbol
   attr_reader :ascii, :unicode, :html_entity
 
   def initialize(ascii: nil, unicode: nil, html_entity: nil)

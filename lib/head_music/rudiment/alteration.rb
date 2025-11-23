@@ -1,5 +1,3 @@
-require "head_music/rudiment/musical_symbol"
-
 # A module for music rudiments
 module HeadMusic::Rudiment; end
 
@@ -122,7 +120,7 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
 
   def initialize_musical_symbols(list)
     @musical_symbols = (list || []).map do |record|
-      HeadMusic::Rudiment::MusicalSymbol.new(
+      HeadMusic::Notation::MusicalSymbol.new(
         unicode: record[:unicode],
         ascii: record[:ascii],
         html_entity: record[:html_entity]
