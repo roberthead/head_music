@@ -43,7 +43,7 @@ bundle exec rake doc_stats
 
 ### Git Etiquette
 
-Do not make a commit unless I ask you to.
+**IMPORTANT: Do not make a commit unless I explicitly ask you to.** Wait for explicit instruction before running `git commit`.
 
 When composing git commit messages, follow best-practices. However, do not mention yourself (claude) or list yourself as a co-author.
 
