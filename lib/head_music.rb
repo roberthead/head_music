@@ -100,6 +100,9 @@ require "head_music/content/position"
 require "head_music/content/staff"
 require "head_music/content/voice"
 
+# notation
+require "head_music/notation"
+
 # analysis
 require "head_music/analysis/circle"
 require "head_music/analysis/diatonic_interval"

@@ -72,22 +72,35 @@ Tests are written in RSpec and located in the `/spec` directory, mirroring the `
 The codebase follows a domain-driven design with clear module boundaries:
 
 1. **HeadMusic::Rudiment** - Core music theory elements
-  - Pitch, Note, Scale, Key, Interval, Chord
+  - Abstract concepts: pitch, interval, scale, chord, key
+  - Duration concepts (without visual representation)
   - Factory methods: `.get()` for most rudiments
 
-2. **HeadMusic::Analysis** - Musical analysis tools
-  - Intervals, Chords, Motion analysis
-  - Harmonic and melodic analysis
+2. **HeadMusic::Notation** - Visual music notation and representation
+  - Staff positions, lines, spaces, ledger lines
+  - Musical symbols (ASCII, Unicode, HTML entities)
+  - Clef placement and rendering
+  - Notehead shapes, stems, flags, beams
+  - Accidental placement rules
+  - Future: ties, slurs, articulations, dynamics
 
-3. **HeadMusic::Content** - Musical composition representation
-  - Composition, Voice, Note, Rest
-  - Rhythmic values and time signatures
-
-4. **HeadMusic::Instruments** - Instrument definitions
-  - Instrument families and properties
+3. **HeadMusic::Instruments** - Instrument definitions
+  - Instrument families and classification
   - Pitch ranges and transposition
+  - Playing techniques
+  - Score ordering
 
-5. **HeadMusic::Style** - Composition rules and guidelines
+4. **HeadMusic::Content** - Musical composition representation
+  - Compositions, voices, bars, positions
+  - Notes in context (pitch + duration + placement)
+  - Temporal organization
+
+5. **HeadMusic::Analysis** - Musical analysis tools
+  - Intervals, chords, motion analysis
+  - Harmonic and melodic analysis
+  - Pitch class sets and collections
+
+6. **HeadMusic::Style** - Composition rules and guidelines
   - Counterpoint rules
   - Voice leading guidelines
   - Style analysis
