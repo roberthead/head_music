@@ -19,7 +19,7 @@ class HeadMusic::Instruments::StaffPosition
     8 => ["top line", "line 5"],
     9 => ["space above staff"],
     10 => ["ledger line above staff"]
-  }
+  }.freeze
 
   # Accepts a name (string or symbol) and returns the corresponding StaffPosition index (integer), or nil if not found
   def self.name_to_index(name)

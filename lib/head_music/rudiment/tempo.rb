@@ -35,7 +35,7 @@ class HeadMusic::Rudiment::Tempo
     allegrissimo: ["quarter", 172],     # 172–176 bpm
     presto: ["quarter", 180],           # 168–200 bpm
     prestissimo: ["quarter", 200]      # 200 bpm and over
-  }
+  }.freeze
 
   def self.get(identifier)
     @tempos ||= {}
