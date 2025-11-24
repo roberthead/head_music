@@ -1,15 +1,6 @@
 # Namespace for instrument definitions, categorization, and configuration
 module HeadMusic::Instruments; end
 
-# A PlayingTechnique represents a specific method of producing sound on an instrument
-#
-# @example Retrieving a playing technique
-#   stick = HeadMusic::Instruments::PlayingTechnique.get(:stick)
-#   pedal = HeadMusic::Instruments::PlayingTechnique.get("pedal")
-#
-# @example Accessing technique properties
-#   stick.name          #=> "stick"
-#   stick.to_s          #=> "stick"
 class HeadMusic::Instruments::PlayingTechnique
   include HeadMusic::Named
 
