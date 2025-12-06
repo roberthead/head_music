@@ -406,20 +406,49 @@ en:
       hi_hat: hi-hat
       tom_tom: tom-tom
     playing_techniques:
-      stick: stick
-      pedal: pedal
-      mallet: mallet
-      hand: hand
-      brush: brush
-      rim_shot: rim shot
-      cross_stick: cross stick
-      open: open
-      closed: closed
-      damped: damped
-      let_ring: let ring
-      choked: choked
-      bow: bow
+      aperto: aperto
       bell: bell
+      bisbigliando: bisbigliando
+      bow: bow
+      brush: brush
+      center: center
+      choked: choked
+      closed: closed
+      con_sordino: con sordino
+      cross_stick: cross stick
+      damped: damped
+      dead_stroke: dead stroke
+      edge: edge
+      hand: hand
+      harmonic: harmonic
+      laissez_vibrer: laissez vibrer
+      left_hand: left hand
+      legato: legato
+      let_ring: let ring
+      mallet: mallet
+      marcato: marcato
+      modo_ordinario: modo ordinario
+      motor_off: motor off
+      motor_on: motor on
+      muffled: muffled
+      multiphonic: multiphonic
+      naturale: naturale
+      non_laissez_vibrer: non laissez vibrer
+      non_vibrato: non vibrato
+      open: open
+      open_percussion: open
+      ordinario: ordinario
+      pedal: pedal
+      poco_vibrato: poco vibrato
+      pres_de_la_table: près de la table
+      right_hand: right hand
+      rim_shot: rim shot
+      senza_sordino: senza sordino
+      senza_vibrato: senza vibrato
+      snares_off: snares off
+      snares_on: snares on
+      stick: stick
+      vibrato: vibrato
     locales:
       de: German
       en: English

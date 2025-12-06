@@ -1,0 +1,378 @@
+playing_techniques:
+  aperto:
+    scopes:
+      - common
+    origin: italian
+    meaning: open
+
+  bisbigliando:
+    scopes:
+      - common
+    origin: italian
+    meaning: whispering
+    notations:
+      - bisbigliando
+      - bisbigl.
+      - bisbig.
+      - bis.
+
+  con_sordino:
+    scopes:
+      - common
+    origin: italian
+    meaning: with mute
+    notations:
+      - con sordino
+      - con sord.
+      - mute
+      - muted
+      - with mute
+
+  laissez_vibrer:
+    scopes:
+      - common
+    origin: french
+    meaning: let ring
+    notations:
+      - laissez vibrer
+      - l.v.
+
+  legato:
+    scopes:
+      - common
+    origin: italian
+    meaning: tied
+    notations:
+      - legato
+      - leg.
+
+  marcato:
+    scopes:
+      - common
+    origin: italian
+    meaning: marked
+    notations:
+      - marcato
+      - marc.
+
+  modo_ordinario:
+    scopes:
+      - common
+    origin: italian
+    meaning: ordinary manner
+    notations:
+      - modo ordinario
+      - modo ord.
+
+  multiphonic:
+    scopes:
+      - common
+    origin: english
+    meaning: multiple simultaneous pitches
+
+  naturale:
+    scopes:
+      - common
+    origin: italian
+    meaning: natural
+    notations:
+      - naturale
+      - nat.
+
+  non_laissez_vibrer:
+    scopes:
+      - common
+    origin: french
+    meaning: do not let ring
+    notations:
+      - non l.v.
+
+  non_vibrato:
+    scopes:
+      - common
+    origin: italian
+    meaning: without vibrato
+    notations:
+      - non vibrato
+      - non vib.
+
+  open:
+    scopes:
+      - common
+    origin: english
+    meaning: open string or unstopped
+    notations:
+      - open
+      - "○"
+
+  ordinario:
+    scopes:
+      - common
+    origin: italian
+    meaning: ordinary
+    notations:
+      - ordinario
+      - ord.
+
+  poco_vibrato:
+    scopes:
+      - common
+    origin: italian
+    meaning: little vibrato
+    notations:
+      - poco vibrato
+      - poco vib.
+
+  senza_sordino:
+    scopes:
+      - common
+    origin: italian
+    meaning: without mute
+    notations:
+      - senza sordino
+      - senza sord.
+      - mute off
+      - without mute
+
+  senza_vibrato:
+    scopes:
+      - common
+    origin: italian
+    meaning: without vibrato
+    notations:
+      - senza vibrato
+      - senza vib.
+
+  harmonic:
+    scopes:
+      - strings
+      - winds
+      - guitar
+    origin: english
+    meaning: harmonic tone
+    notations:
+      - harmonic
+      - harm.
+      - "○"
+
+  vibrato:
+    scopes:
+      - common
+    origin: italian
+    meaning: vibrating
+    notations:
+      - vibrato
+      - vib.
+
+  # Percussion techniques
+
+  stick:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: play with stick
+
+  pedal:
+    scopes:
+      - pitched_percussion
+      - keyboard
+    origin: english
+    meaning: use pedal
+    notations:
+      - pedal
+      - ped.
+
+  mallet:
+    scopes:
+      - unpitched_percussion
+      - pitched_percussion
+    origin: english
+    meaning: play with mallet
+    notations:
+      - mallet
+      - mallets
+
+  hand:
+    scopes:
+      - unpitched_percussion
+      - pitched_percussion
+    origin: english
+    meaning: play with hand
+    notations:
+      - hand
+      - hands
+
+  brush:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: play with brushes
+    notations:
+      - brush
+      - brushes
+
+  rim_shot:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: strike rim and head simultaneously
+    notations:
+      - rim shot
+      - rimshot
+
+  cross_stick:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: stick laid across head, striking rim
+    notations:
+      - cross stick
+      - cross-stick
+      - side stick
+      - x-stick
+
+  open_percussion:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: open hi-hat or undamped
+    notations:
+      - open
+      - "o"
+      - "○"
+
+  closed:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: closed hi-hat or damped
+    notations:
+      - closed
+      - "+"
+
+  damped:
+    scopes:
+      - unpitched_percussion
+      - pitched_percussion
+    origin: english
+    meaning: mute or stop vibration
+    notations:
+      - damped
+      - damp
+
+  let_ring:
+    scopes:
+      - unpitched_percussion
+      - pitched_percussion
+    origin: english
+    meaning: allow to resonate
+    notations:
+      - let ring
+      - l.r.
+
+  choked:
+    scopes:
+      - unpitched_percussion
+      - pitched_percussion
+    origin: english
+    meaning: stop sound abruptly
+    notations:
+      - choked
+      - choke
+
+  bow:
+    scopes:
+      - strings
+      - pitched_percussion
+    origin: english
+    meaning: play with bow
+    notations:
+      - bow
+      - bowed
+      - arco
+
+  bell:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: strike bell of cymbal
+
+  left_hand:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: play with left hand
+    notations:
+      - left
+      - L
+
+  right_hand:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: play with right hand
+    notations:
+      - right
+      - R
+
+  center:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: strike at center of head or cymbal
+
+  edge:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: strike at edge of head or cymbal
+
+  muffled:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: dampened tone
+
+  snares_on:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: engage snare wires
+
+  snares_off:
+    scopes:
+      - unpitched_percussion
+    origin: english
+    meaning: disengage snare wires
+
+  motor_on:
+    scopes:
+      - pitched_percussion
+    origin: english
+    meaning: engage vibraphone motor
+
+  motor_off:
+    scopes:
+      - pitched_percussion
+    origin: english
+    meaning: disengage vibraphone motor
+
+  dead_stroke:
+    scopes:
+      - pitched_percussion
+    origin: english
+    meaning: mallet left on surface after striking
+    notations:
+      - dead stroke
+      - dead
+
+  # Harp techniques
+
+  pres_de_la_table:
+    scopes:
+      - harp
+    origin: french
+    meaning: near the soundboard
+    notations:
+      - près de la table
+      - p.d.l.t.
