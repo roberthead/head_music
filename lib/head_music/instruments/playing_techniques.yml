@@ -214,6 +214,28 @@ playing_techniques:
       - flautando
       - flaut.
 
+  artificial_harmonic:
+    scopes:
+      - guitar
+      - strings
+    origin: english
+    meaning: harmonic produced by touching string while plucking
+    notations:
+      - artificial harmonic
+      - A.H.
+      - AH
+
+  natural_harmonic:
+    scopes:
+      - guitar
+      - strings
+    origin: english
+    meaning: harmonic at natural node point
+    notations:
+      - natural harmonic
+      - N.H.
+      - NH
+
   harmonic:
     scopes:
       - strings
@@ -225,6 +247,35 @@ playing_techniques:
       - harmonic
       - harm.
       - "○"
+
+  barre:
+    scopes:
+      - guitar
+    origin: french
+    meaning: finger laid flat across strings
+    notations:
+      - barré
+      - barre
+      - C
+
+  half_barre:
+    scopes:
+      - guitar
+    origin: french
+    meaning: partial barre across some strings
+    notations:
+      - half barré
+      - half barre
+      - ½C
+
+  palm_mute:
+    scopes:
+      - guitar
+    origin: english
+    meaning: muting strings with palm
+    notations:
+      - palm mute
+      - P.M.
 
   jete:
     scopes:

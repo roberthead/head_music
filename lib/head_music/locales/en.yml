@@ -410,7 +410,9 @@ en:
       air: air
       alla_chitarra: alla chitarra
       arco: arco
+      artificial_harmonic: artificial harmonic
       au_talon: au talon
+      barre: barré
       bell: bell
       bisbigliando: bisbigliando
       bow: bow
@@ -434,6 +436,7 @@ en:
       flautando: flautando
       flutter_tongue: flutter tongue
       frullato: frullato
+      half_barre: half barré
       hand: hand
       harmonic: harmonic
       jete: jeté
@@ -454,6 +457,7 @@ en:
       motor_on: motor on
       muffled: muffled
       multiphonic: multiphonic
+      natural_harmonic: natural harmonic
       naturale: naturale
       non_laissez_vibrer: non laissez vibrer
       non_vibrato: non vibrato
@@ -463,6 +467,7 @@ en:
       half_pedal: half pedal
       mano_destra: mano destra
       mano_sinistra: mano sinistra
+      palm_mute: palm mute
       pedal: pedal
       pizzicato: pizzicato
       plunger_mute: plunger mute
