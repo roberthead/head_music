@@ -210,7 +210,7 @@ describe HeadMusic::Rudiment::RhythmicUnit do
       end
 
       it "raises NoMethodError for floating point numbers due to bitwise operation" do
-        expect { described_class.for_denominator_value(4.0) }.to raise_error(NoMethodError, /undefined method `&' for an instance of Float/)
+        expect { described_class.for_denominator_value(4.0) }.to raise_error(NoMethodError, /undefined method [`']&' for an instance of Float/)
       end
     end
 

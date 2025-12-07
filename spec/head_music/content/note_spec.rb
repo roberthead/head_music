@@ -16,7 +16,7 @@ describe HeadMusic::Content::Note do
     it "responds only to placement methods" do
       expect {
         note.foo
-      }.to raise_error(NoMethodError, /undefined method `foo'/)
+      }.to raise_error(NoMethodError, /undefined method [`']foo'/)
     end
   end
 end
