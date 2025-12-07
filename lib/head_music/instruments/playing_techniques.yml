@@ -144,6 +144,76 @@ playing_techniques:
       - senza vibrato
       - senza vib.
 
+  alla_chitarra:
+    scopes:
+      - strings
+    origin: italian
+    meaning: in the style of guitar
+    notations:
+      - alla chitarra
+
+  arco:
+    scopes:
+      - strings
+    origin: italian
+    meaning: with the bow
+    notations:
+      - arco
+
+  au_talon:
+    scopes:
+      - strings
+    origin: french
+    meaning: at the frog of the bow
+    notations:
+      - au talon
+      - a.t.
+
+  col_legno:
+    scopes:
+      - strings
+    origin: italian
+    meaning: with the wood of the bow
+    notations:
+      - col legno
+      - c.l.
+
+  col_legno_battuto:
+    scopes:
+      - strings
+    origin: italian
+    meaning: striking with the wood of the bow
+    notations:
+      - col legno battuto
+      - c.l.b.
+
+  col_legno_tratto:
+    scopes:
+      - strings
+    origin: italian
+    meaning: drawing with the wood of the bow
+    notations:
+      - col legno tratto
+      - c.l.t.
+
+  detache:
+    scopes:
+      - strings
+    origin: french
+    meaning: detached bow strokes
+    notations:
+      - détaché
+      - detache
+
+  flautando:
+    scopes:
+      - strings
+    origin: italian
+    meaning: flute-like tone near fingerboard
+    notations:
+      - flautando
+      - flaut.
+
   harmonic:
     scopes:
       - strings
@@ -155,6 +225,90 @@ playing_techniques:
       - harmonic
       - harm.
       - "○"
+
+  jete:
+    scopes:
+      - strings
+    origin: french
+    meaning: thrown bouncing bow stroke
+    notations:
+      - jeté
+      - jete
+
+  martele:
+    scopes:
+      - strings
+    origin: french
+    meaning: hammered bow stroke
+    notations:
+      - martelé
+      - martele
+      - mart.
+
+  martellato:
+    scopes:
+      - strings
+    origin: italian
+    meaning: hammered
+    notations:
+      - martellato
+
+  pizzicato:
+    scopes:
+      - strings
+    origin: italian
+    meaning: plucked
+    notations:
+      - pizzicato
+      - pizz.
+
+  punta_d_arco:
+    scopes:
+      - strings
+    origin: italian
+    meaning: at the tip of the bow
+    notations:
+      - punta d'arco
+      - p.d.a.
+      - a.s.t.
+
+  saltando:
+    scopes:
+      - strings
+    origin: italian
+    meaning: bouncing bow stroke
+    notations:
+      - saltando
+      - salt.
+
+  spiccato:
+    scopes:
+      - strings
+    origin: italian
+    meaning: controlled bouncing bow stroke
+    notations:
+      - spiccato
+      - spicc.
+
+  sul_ponticello:
+    scopes:
+      - strings
+    origin: italian
+    meaning: near the bridge
+    notations:
+      - sul ponticello
+      - sul pont.
+      - s.p.
+      - p.s.t.
+
+  sul_tasto:
+    scopes:
+      - strings
+    origin: italian
+    meaning: over the fingerboard
+    notations:
+      - sul tasto
+      - s.t.
 
   vibrato:
     scopes:
@@ -454,6 +608,18 @@ playing_techniques:
     notations:
       - dead stroke
       - dead
+
+  # Choral/Vocal techniques
+
+  con_bocca_chiusa:
+    scopes:
+      - vocal
+    origin: italian
+    meaning: with closed mouth, humming
+    notations:
+      - con bocca chiusa
+      - bocca chiusa
+      - humming
 
   # Brass techniques
 

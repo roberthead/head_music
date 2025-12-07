@@ -93,7 +93,7 @@ describe HeadMusic::Instruments::PlayingTechnique do
     it "returns techniques for the strings scope" do
       techniques = described_class.for_scope(:strings)
       expect(techniques).not_to be_empty
-      expect(techniques.map(&:name_key)).to include("harmonic")
+      expect(techniques.map(&:name_key)).to include("harmonic", "pizzicato", "arco", "col_legno", "sul_ponticello")
     end
 
     it "returns techniques for the unpitched_percussion scope" do

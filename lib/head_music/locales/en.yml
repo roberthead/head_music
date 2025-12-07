@@ -408,6 +408,9 @@ en:
     playing_techniques:
       aeolian: aeolian
       air: air
+      alla_chitarra: alla chitarra
+      arco: arco
+      au_talon: au talon
       bell: bell
       bisbigliando: bisbigliando
       bow: bow
@@ -416,17 +419,24 @@ en:
       center: center
       choked: choked
       closed: closed
+      col_legno: col legno
+      col_legno_battuto: col legno battuto
+      col_legno_tratto: col legno tratto
+      con_bocca_chiusa: con bocca chiusa
       con_sordino: con sordino
       cross_stick: cross stick
       cuivre: cuivré
       cup_mute: cup mute
       damped: damped
       dead_stroke: dead stroke
+      detache: détaché
       edge: edge
+      flautando: flautando
       flutter_tongue: flutter tongue
       frullato: frullato
       hand: hand
       harmonic: harmonic
+      jete: jeté
       harmon_mute: harmon mute
       harmon_mute_stem_in: harmon mute stem in
       harmon_mute_stem_out: harmon mute stem out
@@ -437,6 +447,8 @@ en:
       let_ring: let ring
       mallet: mallet
       marcato: marcato
+      martele: martelé
+      martellato: martellato
       modo_ordinario: modo ordinario
       motor_off: motor off
       motor_on: motor on
@@ -452,12 +464,15 @@ en:
       mano_destra: mano destra
       mano_sinistra: mano sinistra
       pedal: pedal
+      pizzicato: pizzicato
       plunger_mute: plunger mute
       poco_vibrato: poco vibrato
+      punta_d_arco: punta d'arco
       quarter_pedal: quarter pedal
       pres_de_la_table: près de la table
       right_hand: right hand
       rim_shot: rim shot
+      saltando: saltando
       senza_sordino: senza sordino
       senza_vibrato: senza vibrato
       slap_tongue: slap tongue
@@ -466,9 +481,12 @@ en:
       sopra: sopra
       sostenuto_pedal: sostenuto pedal
       sotto: sotto
+      spiccato: spiccato
       stick: stick
       stopped: stopped
       straight_mute: straight mute
+      sul_ponticello: sul ponticello
+      sul_tasto: sul tasto
       three_quarter_pedal: three quarter pedal
       tre_corde: tre corde
       una_corda: una corda
