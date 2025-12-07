@@ -101,6 +101,24 @@ bundle exec rake doc
 - `rake doc_stats` - Show documentation coverage statistics
 - `rake coverage` - Open coverage report in browser
 
+### Releasing a New Version
+
+1. Update the version number in `lib/head_music/version.rb`
+2. Commit the version change: `git commit -am "Bump version to X.Y.Z"`
+3. Push to main: `git push origin main`
+4. Release the gem:
+
+```bash
+bundle exec rake release
+```
+
+This will:
+- Build the gem
+- Create and push a git tag (e.g., `vX.Y.Z`)
+- Push the gem to RubyGems
+
+The git tag push also triggers a GitHub Actions workflow that creates a GitHub Release with auto-generated release notes.
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
