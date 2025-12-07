@@ -1,10 +1,4 @@
 playing_techniques:
-  aperto:
-    scopes:
-      - common
-    origin: italian
-    meaning: open
-
   bisbigliando:
     scopes:
       - common
@@ -99,11 +93,18 @@ playing_techniques:
   open:
     scopes:
       - common
+      - strings
+      - brass
+      - winds
+      - guitar
+      - keyboard
     origin: english
-    meaning: open string or unstopped
+    meaning: open string, unstopped, or unmuted
     notations:
       - open
+      - aperto
       - "○"
+      - "o"
 
   ordinario:
     scopes:
@@ -365,6 +366,80 @@ playing_techniques:
     notations:
       - dead stroke
       - dead
+
+  # Brass techniques
+
+  bucket_mute:
+    scopes:
+      - brass
+    origin: english
+    meaning: mute with soft, mellow tone
+
+  cuivre:
+    scopes:
+      - brass
+    origin: french
+    meaning: brassy, forced tone
+    notations:
+      - cuivré
+      - cuivre
+
+  cup_mute:
+    scopes:
+      - brass
+    origin: english
+    meaning: mute with covered bell
+
+  harmon_mute:
+    scopes:
+      - brass
+    origin: english
+    meaning: wah-wah mute
+    notations:
+      - harmon mute
+      - harmon
+
+  harmon_mute_stem_in:
+    scopes:
+      - brass
+    origin: english
+    meaning: harmon mute with stem inserted
+    notations:
+      - harmon mute stem in
+      - stem in
+
+  harmon_mute_stem_out:
+    scopes:
+      - brass
+    origin: english
+    meaning: harmon mute with stem removed
+    notations:
+      - harmon mute stem out
+      - stem out
+
+  plunger_mute:
+    scopes:
+      - brass
+    origin: english
+    meaning: plunger used as mute
+    notations:
+      - plunger mute
+      - plunger
+
+  stopped:
+    scopes:
+      - brass
+    origin: english
+    meaning: hand stopping the bell
+    notations:
+      - stopped
+      - "+"
+
+  straight_mute:
+    scopes:
+      - brass
+    origin: english
+    meaning: standard conical mute
 
   # Wind techniques
 

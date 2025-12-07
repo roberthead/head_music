@@ -114,6 +114,12 @@ describe HeadMusic::Instruments::PlayingTechnique do
       expect(techniques.map(&:name_key)).to include("flutter_tongue", "key_clicks", "slap_tongue")
     end
 
+    it "returns techniques for the brass scope" do
+      techniques = described_class.for_scope(:brass)
+      expect(techniques).not_to be_empty
+      expect(techniques.map(&:name_key)).to include("harmon_mute", "cup_mute", "stopped", "cuivre")
+    end
+
     it "accepts string scope names" do
       techniques = described_class.for_scope("common")
       expect(techniques).not_to be_empty

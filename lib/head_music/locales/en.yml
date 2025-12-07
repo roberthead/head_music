@@ -408,16 +408,18 @@ en:
     playing_techniques:
       aeolian: aeolian
       air: air
-      aperto: aperto
       bell: bell
       bisbigliando: bisbigliando
       bow: bow
       brush: brush
+      bucket_mute: bucket mute
       center: center
       choked: choked
       closed: closed
       con_sordino: con sordino
       cross_stick: cross stick
+      cuivre: cuivré
+      cup_mute: cup mute
       damped: damped
       dead_stroke: dead stroke
       edge: edge
@@ -425,6 +427,9 @@ en:
       frullato: frullato
       hand: hand
       harmonic: harmonic
+      harmon_mute: harmon mute
+      harmon_mute_stem_in: harmon mute stem in
+      harmon_mute_stem_out: harmon mute stem out
       key_clicks: key clicks
       laissez_vibrer: laissez vibrer
       left_hand: left hand
@@ -444,6 +449,7 @@ en:
       open_percussion: open
       ordinario: ordinario
       pedal: pedal
+      plunger_mute: plunger mute
       poco_vibrato: poco vibrato
       pres_de_la_table: près de la table
       right_hand: right hand
@@ -454,6 +460,8 @@ en:
       snares_off: snares off
       snares_on: snares on
       stick: stick
+      stopped: stopped
+      straight_mute: straight mute
       vibrato: vibrato
       whistle_tone: whistle tone
     locales:
