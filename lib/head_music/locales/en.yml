@@ -406,6 +406,8 @@ en:
       hi_hat: hi-hat
       tom_tom: tom-tom
     playing_techniques:
+      aeolian: aeolian
+      air: air
       aperto: aperto
       bell: bell
       bisbigliando: bisbigliando
@@ -419,8 +421,11 @@ en:
       damped: damped
       dead_stroke: dead stroke
       edge: edge
+      flutter_tongue: flutter tongue
+      frullato: frullato
       hand: hand
       harmonic: harmonic
+      key_clicks: key clicks
       laissez_vibrer: laissez vibrer
       left_hand: left hand
       legato: legato
@@ -445,10 +450,12 @@ en:
       rim_shot: rim shot
       senza_sordino: senza sordino
       senza_vibrato: senza vibrato
+      slap_tongue: slap tongue
       snares_off: snares off
       snares_on: snares on
       stick: stick
       vibrato: vibrato
+      whistle_tone: whistle tone
     locales:
       de: German
       en: English

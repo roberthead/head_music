@@ -366,6 +366,74 @@ playing_techniques:
       - dead stroke
       - dead
 
+  # Wind techniques
+
+  aeolian:
+    scopes:
+      - winds
+    origin: english
+    meaning: breathy tone without pitch
+    notations:
+      - aeolian
+      - aeolian sound
+
+  air:
+    scopes:
+      - winds
+    origin: english
+    meaning: air sound without tone
+    notations:
+      - air
+
+  flutter_tongue:
+    scopes:
+      - winds
+    origin: english
+    meaning: rapid tongue tremolo
+    notations:
+      - flutter tongue
+      - flutter
+      - flt.
+      - flz.
+      - f.t.
+
+  frullato:
+    scopes:
+      - winds
+    origin: italian
+    meaning: flutter tongue
+    notations:
+      - frullato
+      - frull.
+
+  key_clicks:
+    scopes:
+      - winds
+    origin: english
+    meaning: percussive sound from keys
+    notations:
+      - key clicks
+      - key click
+
+  slap_tongue:
+    scopes:
+      - winds
+    origin: english
+    meaning: percussive tonguing technique
+    notations:
+      - slap-tongue
+      - slap tongue
+      - slap
+
+  whistle_tone:
+    scopes:
+      - winds
+    origin: english
+    meaning: high harmonic whistle sound
+    notations:
+      - whistle tone
+      - whistle tones
+
   # Harp techniques
 
   pres_de_la_table:
