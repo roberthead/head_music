@@ -448,9 +448,13 @@ en:
       open: open
       open_percussion: open
       ordinario: ordinario
+      half_pedal: half pedal
+      mano_destra: mano destra
+      mano_sinistra: mano sinistra
       pedal: pedal
       plunger_mute: plunger mute
       poco_vibrato: poco vibrato
+      quarter_pedal: quarter pedal
       pres_de_la_table: près de la table
       right_hand: right hand
       rim_shot: rim shot
@@ -459,9 +463,15 @@ en:
       slap_tongue: slap tongue
       snares_off: snares off
       snares_on: snares on
+      sopra: sopra
+      sostenuto_pedal: sostenuto pedal
+      sotto: sotto
       stick: stick
       stopped: stopped
       straight_mute: straight mute
+      three_quarter_pedal: three quarter pedal
+      tre_corde: tre corde
+      una_corda: una corda
       vibrato: vibrato
       whistle_tone: whistle tone
     locales:

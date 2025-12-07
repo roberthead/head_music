@@ -178,10 +178,98 @@ playing_techniques:
       - pitched_percussion
       - keyboard
     origin: english
-    meaning: use pedal
+    meaning: use sustain pedal
     notations:
       - pedal
       - ped.
+      - Ped.
+
+  sostenuto_pedal:
+    scopes:
+      - keyboard
+    origin: italian
+    meaning: use sostenuto pedal
+    notations:
+      - sostenuto
+      - sost.
+      - Sost.
+
+  una_corda:
+    scopes:
+      - keyboard
+    origin: italian
+    meaning: use soft pedal
+    notations:
+      - una corda
+      - u.c.
+
+  tre_corde:
+    scopes:
+      - keyboard
+    origin: italian
+    meaning: release soft pedal
+    notations:
+      - tre corde
+      - t.c.
+
+  half_pedal:
+    scopes:
+      - keyboard
+    origin: english
+    meaning: depress pedal halfway
+    notations:
+      - half pedal
+      - "½"
+
+  quarter_pedal:
+    scopes:
+      - keyboard
+    origin: english
+    meaning: depress pedal one quarter
+    notations:
+      - quarter pedal
+      - "¼"
+
+  three_quarter_pedal:
+    scopes:
+      - keyboard
+    origin: english
+    meaning: depress pedal three quarters
+    notations:
+      - three quarter pedal
+      - "¾"
+
+  mano_destra:
+    scopes:
+      - keyboard
+    origin: italian
+    meaning: right hand
+    notations:
+      - mano destra
+      - m.d.
+      - R.H.
+
+  mano_sinistra:
+    scopes:
+      - keyboard
+    origin: italian
+    meaning: left hand
+    notations:
+      - mano sinistra
+      - m.s.
+      - L.H.
+
+  sopra:
+    scopes:
+      - keyboard
+    origin: italian
+    meaning: above, hand crosses over
+
+  sotto:
+    scopes:
+      - keyboard
+    origin: italian
+    meaning: below, hand crosses under
 
   mallet:
     scopes:

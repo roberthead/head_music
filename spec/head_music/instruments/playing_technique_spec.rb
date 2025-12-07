@@ -120,6 +120,12 @@ describe HeadMusic::Instruments::PlayingTechnique do
       expect(techniques.map(&:name_key)).to include("harmon_mute", "cup_mute", "stopped", "cuivre")
     end
 
+    it "returns techniques for the keyboard scope" do
+      techniques = described_class.for_scope(:keyboard)
+      expect(techniques).not_to be_empty
+      expect(techniques.map(&:name_key)).to include("una_corda", "sostenuto_pedal", "mano_destra", "sopra")
+    end
+
     it "accepts string scope names" do
       techniques = described_class.for_scope("common")
       expect(techniques).not_to be_empty
