@@ -46,12 +46,6 @@ class HeadMusic::Rudiment::Tuning < HeadMusic::Rudiment::Base
     octaves = semitones / 12
     interval_within_octave = semitones % 12
 
-    # Make sure we handle negative intervals
-    if interval_within_octave < 0
-      interval_within_octave += 12
-      octaves -= 1
-    end
-
     # Get the base ratio from the subclass's INTERVAL_RATIOS constant
     base_ratio = self.class::INTERVAL_RATIOS[self.class::INTERVAL_RATIOS.keys[interval_within_octave]]
 
