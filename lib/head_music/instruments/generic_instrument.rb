@@ -1,7 +1,6 @@
-# Namespace for instrument definitions, categorization, and configuration
 module HeadMusic::Instruments; end
 
-# A generic musical instrument representing a catalog entry.
+# A generic musical instrument representing a species like trumpet or clarinet.
 # A generic instrument defines the base characteristics and available variants (e.g., trumpet, clarinet).
 # Attributes:
 #   name_key: the name of the instrument
@@ -85,7 +84,7 @@ class HeadMusic::Instruments::GenericInstrument
   end
 
   def default_instrument
-    @default_instrument ||= HeadMusic::Instruments::InstrumentConfiguration.new(self, default_variant)
+    @default_instrument ||= HeadMusic::Instruments::Instrument.new(self, default_variant)
   end
 
   def default_staff_scheme

@@ -1,4 +1,3 @@
-# Namespace for instrument definitions, categorization, and configuration
 module HeadMusic::Instruments; end
 
 class HeadMusic::Instruments::Staff

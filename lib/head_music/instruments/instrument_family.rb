@@ -1,4 +1,3 @@
-# Namespace for instrument definitions, categorization, and configuration
 module HeadMusic::Instruments; end
 
 # An *InstrumentFamily* is a species of instrument

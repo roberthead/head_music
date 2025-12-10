@@ -135,10 +135,10 @@ WHEN I look up a euphonium
 I WANT a single instrument definition
 SO THAT the british_band vs orchestral distinction is handled by NotationStyle
 
-**STORY 5: InstrumentConfiguration uses NotationStyle**
+**STORY 5: Instrument uses NotationStyle**
 
 AS a developer
-WHEN I create an InstrumentConfiguration for a score
+WHEN I create an Instrument for a score
 I WANT to specify the notation style
 SO THAT the configuration knows how to notate the instrument
 
@@ -161,7 +161,7 @@ SO THAT the configuration knows how to notate the instrument
 - [ ] `notation_style.notation_for(instrument)` returns clef and transposition info
 - [ ] Euphonium no longer has multiple variants
 - [ ] Staff schemes removed from pitched variants
-- [ ] `InstrumentConfiguration` accepts optional notation_style parameter
+- [ ] `Instrument` accepts optional notation_style parameter
 - [ ] All existing tests pass (with appropriate updates)
 - [ ] New tests cover notation style functionality
 - [ ] Maintains 90%+ test coverage

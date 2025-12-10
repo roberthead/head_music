@@ -1,50 +1,49 @@
-# Namespace for instrument definitions, categorization, and configuration
 module HeadMusic::Instruments; end
 
-# A specific musical instrument configuration with a selected variant.
+# A specific musical instrument with a selected variant.
 # Represents an instrument with all configuration choices made (pitch, clef, staff scheme, etc).
 #
 # Examples:
-#   trumpet_in_c = HeadMusic::Instruments::InstrumentConfiguration.get("trumpet_in_c")
-#   trumpet_in_c = HeadMusic::Instruments::InstrumentConfiguration.get("trumpet", "in_c")
-#   clarinet = HeadMusic::Instruments::InstrumentConfiguration.get("clarinet")  # uses default Bb variant
+#   trumpet_in_c = HeadMusic::Instruments::Instrument.get("trumpet_in_c")
+#   trumpet_in_c = HeadMusic::Instruments::Instrument.get("trumpet", "in_c")
+#   clarinet = HeadMusic::Instruments::Instrument.get("clarinet")  # uses default Bb variant
 #
-# Attributes accessible via delegation to instrument and variant:
+# Attributes accessible via delegation to generic_instrument and variant:
 #   name: display name including variant (e.g. "Trumpet in C")
 #   transposition: sounding transposition in semitones
 #   clefs: array of clefs for this instrument
 #   pitch_designation: the pitch designation for transposing instruments
-class HeadMusic::Instruments::InstrumentConfiguration
+class HeadMusic::Instruments::Instrument
   include HeadMusic::Named
 
-  attr_reader :instrument, :variant
+  attr_reader :generic_instrument, :variant
 
-  # Factory method to get an InstrumentConfiguration instance
+  # Factory method to get an Instrument instance
   # @param instrument_name [String, Symbol] instrument name or full name with variant
   # @param variant_key [String, Symbol, nil] optional variant key if not included in name
-  # @return [InstrumentConfiguration] instrument configuration with specified or default variant
+  # @return [Instrument] instrument with specified or default variant
   def self.get(instrument_name, variant_key = nil)
     return instrument_name if instrument_name.is_a?(self)
 
     name, parsed_variant_key = parse_instrument_name(instrument_name)
     variant_key ||= parsed_variant_key
 
-    instrument = HeadMusic::Instruments::GenericInstrument.get(name)
-    return nil unless instrument&.name_key
+    generic_instrument = HeadMusic::Instruments::GenericInstrument.get(name)
+    return nil unless generic_instrument&.name_key
 
-    variant = find_variant(instrument, variant_key)
-    new(instrument, variant)
+    variant = find_variant(generic_instrument, variant_key)
+    new(generic_instrument, variant)
   end
 
-  def initialize(instrument, variant)
-    @instrument = instrument
+  def initialize(generic_instrument, variant)
+    @generic_instrument = generic_instrument
     @variant = variant
     initialize_name
   end
 
-  # Delegations to instrument
+  # Delegations to generic_instrument
   delegate :name_key, :family_key, :family, :orchestra_section_key, :classification_keys,
-    :alias_name_keys, :variants, :translation, to: :instrument
+    :alias_name_keys, :variants, :translation, to: :generic_instrument
 
   # Delegations to variant
   delegate :pitch_designation, :staff_schemes, :default_staff_scheme, to: :variant
@@ -88,7 +87,7 @@ class HeadMusic::Instruments::InstrumentConfiguration
   def ==(other)
     return false unless other.is_a?(self.class)
 
-    instrument == other.instrument && variant == other.variant
+    generic_instrument == other.generic_instrument && variant == other.variant
   end
 
   def to_s
@@ -99,13 +98,13 @@ class HeadMusic::Instruments::InstrumentConfiguration
 
   def initialize_name
     if variant.default? || !pitch_designation
-      self.name = instrument.name
+      self.name = generic_instrument.name
     elsif pitch_designation
       pitch_name = format_pitch_name(pitch_designation)
-      self.name = "#{instrument.name} in #{pitch_name}"
+      self.name = "#{generic_instrument.name} in #{pitch_name}"
     else
       variant_name = variant.key.to_s.tr("_", " ")
-      self.name = "#{instrument.name} (#{variant_name})"
+      self.name = "#{generic_instrument.name} (#{variant_name})"
     end
   end
 

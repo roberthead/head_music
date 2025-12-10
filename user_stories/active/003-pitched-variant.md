@@ -132,16 +132,16 @@ SO THAT defaults are declared, not implicit in key names
    - Add `default_pitched_variant` field
    - Remove `default` as magic key name
    - Remove `in_` prefix from variant keys
-5. Update `Instrument` class to use new names
-6. Update `InstrumentConfiguration` to use new names
+5. Update `GenericInstrument` class to use new names
+6. Update `Instrument` to use new names
 7. Update all specs
 
 ## Migration Checklist
 
 - [ ] Create `pitched_variant.rb` with new class
-- [ ] Update `Instrument` to load `pitched_variants` from YAML
+- [ ] Update `GenericInstrument` to load `pitched_variants` from YAML
 - [ ] Update `Instrument#default_variant` to use `default_pitched_variant`
-- [ ] Update `InstrumentConfiguration` references
+- [ ] Update `Instrument` references
 - [ ] Update `instruments.yml` structure for all instruments
 - [ ] Remove old `Variant` class
 - [ ] Update all specs to use new names
