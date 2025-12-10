@@ -29,7 +29,7 @@ class HeadMusic::Instruments::InstrumentConfiguration
     name, parsed_variant_key = parse_instrument_name(instrument_name)
     variant_key ||= parsed_variant_key
 
-    instrument = HeadMusic::Instruments::Instrument.get(name)
+    instrument = HeadMusic::Instruments::GenericInstrument.get(name)
     return nil unless instrument&.name_key
 
     variant = find_variant(instrument, variant_key)

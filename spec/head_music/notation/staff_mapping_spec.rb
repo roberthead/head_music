@@ -33,10 +33,10 @@ describe HeadMusic::Notation::StaffMapping do
   end
 
   describe "#instrument" do
-    it "returns the Instrument object for a valid instrument_key" do
+    it "returns the GenericInstrument object for a valid instrument_key" do
       mapping = described_class.new({"staff_position" => 4, "instrument" => "snare_drum"})
       instrument = mapping.instrument
-      expect(instrument).to be_a(HeadMusic::Instruments::Instrument)
+      expect(instrument).to be_a(HeadMusic::Instruments::GenericInstrument)
       expect(instrument.name).to eq("snare drum")
     end
 

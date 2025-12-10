@@ -296,9 +296,9 @@ describe HeadMusic::Instruments::ScoreOrder do
   describe "normalize_to_instrument edge cases" do
     let(:orchestral_order) { described_class.get(:orchestral) }
 
-    context "with Instrument objects" do
-      it "converts Instrument to its default instrument configuration" do
-        instrument = HeadMusic::Instruments::Instrument.get("violin")
+    context "with GenericInstrument objects" do
+      it "converts GenericInstrument to its default instrument configuration" do
+        instrument = HeadMusic::Instruments::GenericInstrument.get("violin")
         ordered = orchestral_order.order([instrument, "flute"])
 
         expect(ordered.map(&:name)).to eq(["flute", "violin"])
@@ -426,11 +426,11 @@ describe HeadMusic::Instruments::ScoreOrder do
     end
   end
 
-  describe "fallback to Instrument.get" do
+  describe "fallback to GenericInstrument.get" do
     let(:orchestral_order) { described_class.get(:orchestral) }
 
-    context "when InstrumentConfiguration.get returns nil but Instrument.get succeeds" do
-      it "uses Instrument as fallback" do
+    context "when InstrumentConfiguration.get returns nil but GenericInstrument.get succeeds" do
+      it "uses GenericInstrument as fallback" do
         # This is hard to test directly since most names work with both,
         # but we can verify the behavior exists
         result = orchestral_order.order(["violin"])

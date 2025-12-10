@@ -53,9 +53,9 @@ class HeadMusic::Instruments::Staff
   # Get the instrument at a specific staff position
   #
   # @param position_index [Integer] the staff position index
-  # @return [Instrument, nil] the instrument at that position or nil
+  # @return [GenericInstrument, nil] the instrument at that position or nil
   # @example
-  #   staff.instrument_for_position(4)  #=> #<Instrument name: "snare drum">
+  #   staff.instrument_for_position(4)  #=> #<GenericInstrument name: "snare drum">
   def instrument_for_position(position_index)
     mapping = mapping_for_position(position_index)
     mapping&.instrument
@@ -77,9 +77,9 @@ class HeadMusic::Instruments::Staff
 
   # Get all unique instruments used in this staff's mappings
   #
-  # @return [Array<Instrument>] array of unique instruments
+  # @return [Array<GenericInstrument>] array of unique instruments
   # @example
-  #   drum_kit_staff.components  #=> [#<Instrument: bass_drum>, #<Instrument: snare_drum>, ...]
+  #   drum_kit_staff.components  #=> [#<GenericInstrument: bass_drum>, #<GenericInstrument: snare_drum>, ...]
   def components
     mappings.map(&:instrument).compact.uniq
   end

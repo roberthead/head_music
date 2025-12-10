@@ -1,8 +1,8 @@
 # Namespace for instrument definitions, categorization, and configuration
 module HeadMusic::Instruments; end
 
-# A musical instrument representing a catalog entry.
-# An instrument defines the base characteristics and available variants (e.g., trumpet, clarinet).
+# A generic musical instrument representing a catalog entry.
+# A generic instrument defines the base characteristics and available variants (e.g., trumpet, clarinet).
 # Attributes:
 #   name_key: the name of the instrument
 #   alias_name_keys: an array of alternative names for the instrument
@@ -17,7 +17,7 @@ module HeadMusic::Instruments; end
 # Associations:
 #   family: the family of the instrument (e.g. "saxophone")
 #   orchestra_section: the section of the orchestra (e.g. "strings")
-class HeadMusic::Instruments::Instrument
+class HeadMusic::Instruments::GenericInstrument
   include HeadMusic::Named
 
   INSTRUMENTS = YAML.load_file(File.expand_path("instruments.yml", __dir__)).freeze

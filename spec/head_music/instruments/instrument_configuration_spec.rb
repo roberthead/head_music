@@ -16,7 +16,7 @@ describe HeadMusic::Instruments::InstrumentConfiguration do
 
       it { is_expected.to be_a described_class }
       its(:name) { is_expected.to eq "clarinet" }
-      its(:instrument) { is_expected.to be_a HeadMusic::Instruments::Instrument }
+      its(:instrument) { is_expected.to be_a HeadMusic::Instruments::GenericInstrument }
       its(:variant) { is_expected.to be_a HeadMusic::Instruments::Variant }
       its(:pitch_designation) { is_expected.to eq HeadMusic::Rudiment::Spelling.get("Bb") }
       its(:sounding_transposition) { is_expected.to eq(-2) }
@@ -79,7 +79,7 @@ describe HeadMusic::Instruments::InstrumentConfiguration do
 
       it { is_expected.to be_a described_class }
       its(:name) { is_expected.to eq "piccolo flute" }
-      its(:instrument) { is_expected.to be_a HeadMusic::Instruments::Instrument }
+      its(:instrument) { is_expected.to be_a HeadMusic::Instruments::GenericInstrument }
       its(:variant) { is_expected.to be_a HeadMusic::Instruments::Variant }
     end
   end

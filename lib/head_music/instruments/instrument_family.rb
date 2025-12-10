@@ -15,7 +15,7 @@ module HeadMusic::Instruments; end
 #
 # Instrument families are defined in `lib/head_music/instruments/instrument_families.yml`.
 #
-# @see HeadMusic::Instruments::Instrument
+# @see HeadMusic::Instruments::GenericInstrument
 class HeadMusic::Instruments::InstrumentFamily
   include HeadMusic::Named
 
