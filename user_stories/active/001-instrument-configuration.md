@@ -6,6 +6,10 @@ I WANT to model physical configurations of instruments (such as swapping a leadp
 
 SO THAT I can distinguish between different instruments versus configurations of a single instrument
 
+## Prerequisites
+
+This story depends on **000-overlay-architecture.md**. The Configuration class implements the **configuration layer** in the overlay stack, which has highest priority for attribute resolution.
+
 ## Background
 
 The current Variant model conflates two distinct concepts:
@@ -116,13 +120,14 @@ SO THAT range calculations account for the configuration
 
 ## Implementation Notes
 
-1. Create `HeadMusic::Instruments::Configuration` class
-2. Configurations are defined at the GenericInstrument level
-3. A configuration may optionally:
-   - Reference a pitched variant it switches to
-   - Specify range extensions (up or down)
-   - Provide a description
+1. Create `HeadMusic::Instruments::Configuration` class that responds to `[]` for layer resolution
+2. Configurations are defined at the GenericInstrument level (prototype)
+3. A configuration may optionally provide overrides for:
+   - `pitch` - Changes pitch designation (e.g., A leadpipe)
+   - `transposition` - Changes sounding transposition
+   - `range_low` / `range_high` - Extends range (additive)
 4. Configurations represent physical setup, not transient states (see story 004 for tunings, capos, mutes)
+5. Applied via `instrument.with_configuration(config)` fluent builder
 
 ## Acceptance Criteria
 

@@ -6,6 +6,15 @@ I WANT the Variant class renamed to PitchedVariant
 
 SO THAT the class name accurately reflects what it represents: a pitch-based variant of an instrument
 
+## Prerequisites
+
+This story depends on:
+- **000-overlay-architecture.md** - Establishes the layer resolution system
+- **001-instrument-configuration.md** - Extracts configurations from variants
+- **002-notation-style.md** - Extracts staff schemes from variants
+
+Once configurations and notation styles are extracted, PitchedVariant becomes purely about pitch selection, which populates the **instance layer** attributes.
+
 ## Background
 
 Through analysis of the instrument data, we discovered that once notation concerns (staff schemes) and physical adjustments (modifications) are extracted, all remaining variants differ on exactly one dimension: **pitch designation**.
@@ -162,7 +171,28 @@ SO THAT defaults are declared, not implicit in key names
 ## Dependencies
 
 This story should be implemented after:
-- 001-instrument-modification.md (extracts modifications)
-- 002-notation-style.md (extracts staff schemes)
+- **000-overlay-architecture.md** (establishes layer resolution)
+- **001-instrument-configuration.md** (extracts configurations)
+- **002-notation-style.md** (extracts staff schemes)
 
 Once those concerns are extracted, PitchedVariant becomes purely about pitch, making this rename meaningful.
+
+## Relationship to Overlay Architecture
+
+In the overlay pattern, selecting a pitched variant populates the **instance layer** with pitch-specific attributes:
+
+```ruby
+# GenericInstrument defines available pitched variants
+clarinet = GenericInstrument.get("clarinet")
+clarinet.pitched_variants  # => [:b_flat, :a, :c, :d, :e_flat]
+clarinet.default_pitched_variant  # => :b_flat
+
+# Selecting a variant populates instance layer attributes
+clarinet_in_a = Instrument.new(
+  prototype: clarinet,
+  attributes: { pitch: "A", transposition: -3 }  # from pitched_variant :a
+)
+
+clarinet_in_a.pitch  # => "A" (from instance layer)
+clarinet_in_a.family # => "clarinet" (falls through to prototype)
+```

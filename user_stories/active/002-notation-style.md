@@ -6,6 +6,10 @@ I WANT staff schemes and notation conventions to live in a NotationStyle model
 
 SO THAT notation concerns are separated from instrument definition and can vary independently
 
+## Prerequisites
+
+This story depends on **000-overlay-architecture.md**. The NotationStyle class implements the **notation style layer** in the overlay stack, which sits between configuration and instance layers.
+
 ## Background
 
 The current architecture embeds staff schemes (clefs, transposition conventions, number of staves) within instrument variants. This conflates two independent concerns:
@@ -144,14 +148,18 @@ SO THAT the configuration knows how to notate the instrument
 
 ## Implementation Notes
 
-1. Create `HeadMusic::Notation::NotationStyle` class
+1. Create `HeadMusic::Notation::NotationStyle` class that responds to `[]` for layer resolution
 2. Create `notation_styles.yml` with common traditions (orchestral, british_brass_band, concert_pitch)
-3. NotationStyle provides defaults that instruments can inherit
-4. Sounding transposition is calculated from:
+3. NotationStyle provides instrument-specific overrides for notation attributes:
+   - `clef` - Which clef to use
+   - `transposition` - Sounding transposition for this notation context
+   - `staves` - Staff configuration (for grand staff instruments)
+4. Applied via `instrument.with_notation_style(style)` fluent builder
+5. Sounding transposition is calculated from:
    - The instrument's pitch designation (e.g., Bb = -2 semitones from C)
    - The notation style's transposition convention (written vs concert)
    - The clef's octave displacement if any
-5. Migration path: keep backward compatibility while new system is built
+6. Migration path: keep backward compatibility while new system is built
 
 ## Acceptance Criteria
 

@@ -6,6 +6,10 @@ I WANT to model transient states of instruments (such as tunings, capos, and mut
 
 SO THAT I can represent how an instrument is set up for a particular passage or piece
 
+## Prerequisites
+
+This story depends on **000-overlay-architecture.md**. Instrument states extend the **configuration layer** concept for transient, performance-time modifications that can change during a piece.
+
 ## Background
 
 Beyond physical configurations (story 001), instruments can have transient states that affect their sound or pitch. These differ from configurations in that they:
@@ -171,9 +175,33 @@ SO THAT the playing technique and instrument state work together
 
 1. Create `HeadMusic::Instruments::InstrumentState` base class or module
 2. Create specific classes: `Tuning`, `Capo`, `Mute`
-3. Define standard and alternate tunings in YAML
-4. Consider how states interact with `Instrument` and `Content::Note`
-5. Clarify relationship with `PlayingTechnique` — possibly `Mute` is referenced by the "con sordino" technique
+3. Each state class responds to `[]` for overlay layer resolution
+4. Define standard and alternate tunings in YAML
+5. States are applied via `instrument.with_state(state)` fluent builder
+6. Consider how states interact with `Instrument` and `Content::Note`
+7. Clarify relationship with `PlayingTechnique` — possibly `Mute` is referenced by the "con sordino" technique
+
+## Relationship to Overlay Architecture
+
+Instrument states operate at the **configuration layer** level but represent more transient modifications than physical configurations:
+
+```ruby
+# Physical configuration (semi-permanent)
+piccolo = Instrument.get("piccolo_trumpet")
+  .with_configuration(:a_leadpipe)  # player swapped the leadpipe
+
+# Instrument state (can change during performance)
+guitar = Instrument.get("guitar")
+  .with_state(Tuning.get(:drop_d))  # retuned for this piece
+  .with_state(Capo.new(fret: 2))    # capo for this song
+
+horn = Instrument.get("french_horn")
+  .with_state(Mute.get(:stopping))  # mute inserted for this passage
+```
+
+The distinction between Configuration and InstrumentState:
+- **Configuration**: Physical setup that typically doesn't change during performance
+- **InstrumentState**: Setup that can change during performance, often indicated in the score
 
 ## Acceptance Criteria
 
