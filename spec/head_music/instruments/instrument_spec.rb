@@ -441,17 +441,58 @@ describe HeadMusic::Instruments::Instrument do
 
   describe "#instrument_configurations" do
     context "for an instrument without configurations" do
-      subject(:instrument) { described_class.get("trumpet") }
+      subject(:instrument) { described_class.get("violin") }
 
       its(:instrument_configurations) { is_expected.to eq([]) }
     end
 
-    context "for a child instrument" do
+    context "for an instrument with its own configurations" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      it "returns its configurations" do
+        configs = instrument.instrument_configurations
+        expect(configs).to be_an(Array)
+        expect(configs.length).to eq(1)
+        expect(configs.first.name_key).to eq(:mute)
+      end
+    end
+
+    context "for an instrument with parent chain configurations" do
       subject(:instrument) { described_class.get("trumpet_in_c") }
 
       it "collects configurations from parent chain" do
-        # Currently returns empty, but tests the parent chain collection
-        expect(instrument.instrument_configurations).to be_an(Array)
+        configs = instrument.instrument_configurations
+        expect(configs).to be_an(Array)
+        expect(configs.map(&:name_key)).to include(:mute)
+      end
+    end
+
+    context "for an instrument with both own and inherited configurations" do
+      subject(:instrument) { described_class.get("piccolo_trumpet") }
+
+      before do
+        # Verify piccolo_trumpet exists and has its own config
+        expect(instrument).not_to be_nil
+      end
+
+      it "includes own configurations" do
+        configs = instrument.instrument_configurations
+        expect(configs.map(&:name_key)).to include(:leadpipe)
+      end
+    end
+
+    context "for bass_trombone with f_attachment" do
+      subject(:instrument) { described_class.get("bass_trombone") }
+
+      it "has the f_attachment configuration" do
+        configs = instrument.instrument_configurations
+        expect(configs.map(&:name_key)).to include(:f_attachment)
+      end
+
+      it "has correct options on the configuration" do
+        config = instrument.instrument_configurations.find { |c| c.name_key == :f_attachment }
+        expect(config.options.map(&:name_key)).to contain_exactly(:disengaged, :engaged)
+        expect(config.default_option.name_key).to eq(:disengaged)
       end
     end
   end

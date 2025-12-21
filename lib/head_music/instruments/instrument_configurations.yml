@@ -1,0 +1,62 @@
+# Instrument configurations define optional equipment or settings
+# that modify an instrument's characteristics.
+#
+# Structure:
+#   instrument_key:
+#     configuration_name:
+#       options:
+#         option_name:
+#           default: true/false
+#           transposition_semitones: integer (optional)
+#           lowest_pitch_semitones: integer (optional)
+
+piccolo_trumpet:
+  leadpipe:
+    options:
+      b_flat:
+        default: true
+      a:
+        transposition_semitones: -1
+
+trumpet:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+      cup:
+      harmon:
+      bucket:
+      plunger:
+
+bass_trombone:
+  f_attachment:
+    options:
+      disengaged:
+        default: true
+      engaged:
+        lowest_pitch_semitones: -6
+
+double_bass:
+  c_extension:
+    options:
+      without:
+        default: true
+      with:
+        lowest_pitch_semitones: -4
+
+natural_horn:
+  crook:
+    options:
+      f:
+        default: true
+      e_flat:
+        transposition_semitones: -1
+      e:
+        transposition_semitones: -2
+      d:
+        transposition_semitones: -3
+      c:
+        transposition_semitones: -5
+      b_flat_basso:
+        transposition_semitones: -7

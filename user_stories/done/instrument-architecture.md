@@ -213,14 +213,14 @@ SO THAT the model is simplified
 
 - [x] `Instrument` class has `belongs_to :parent` relationship
 - [x] Attributes resolve through parent chain
-- [ ] `Instrument#instrument_configurations` collects from ancestor chain
-- [ ] `InstrumentConfiguration` class exists with `name_key`
-- [ ] `InstrumentConfigurationOption` class exists with effect attributes
+- [x] `Instrument#instrument_configurations` collects from ancestor chain
+- [x] `InstrumentConfiguration` class exists with `name_key`
+- [x] `InstrumentConfigurationOption` class exists with effect attributes
 - [x] `Variant` class removed
 - [x] YAML structure uses parent-based inheritance
 - [x] `Instrument.get()` API preserved for backward compatibility
 - [x] All existing tests pass
-- [ ] New tests cover inheritance and configuration
+- [x] New tests cover inheritance and configuration
 - [x] Maintains 90%+ test coverage
 
 ## Deferred

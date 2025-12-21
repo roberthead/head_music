@@ -195,7 +195,7 @@ class HeadMusic::Instruments::Instrument
 
   # Collect all instrument_configurations from self and ancestors
   def instrument_configurations
-    own_configs = @instrument_configurations || []
+    own_configs = HeadMusic::Instruments::InstrumentConfiguration.for_instrument(name_key)
     parent_configs = parent&.instrument_configurations || []
     own_configs + parent_configs
   end
@@ -256,7 +256,6 @@ class HeadMusic::Instruments::Instrument
     @alias_name_keys = record["alias_name_keys"] || []
     @range_categories = record["range_categories"] || []
     @staff_schemes_data = record["staff_schemes"] || {}
-    @instrument_configurations = [] # Will be populated when we add configuration support
 
     initialize_name
   end
