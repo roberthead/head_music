@@ -110,7 +110,7 @@ describe HeadMusic::Instruments::Staff do
     describe "#instrument_for_position" do
       it "returns the instrument at a given position index" do
         instrument = staff.instrument_for_position(4)
-        expect(instrument).to be_a(HeadMusic::Instruments::GenericInstrument)
+        expect(instrument).to be_a(HeadMusic::Instruments::Instrument)
         expect(instrument.name).to eq("snare drum")
       end
 
@@ -142,7 +142,7 @@ describe HeadMusic::Instruments::Staff do
         components = staff.components
         expect(components).to be_an(Array)
         expect(components.length).to eq(8)
-        expect(components).to all(be_a(HeadMusic::Instruments::GenericInstrument))
+        expect(components).to all(be_a(HeadMusic::Instruments::Instrument))
       end
 
       it "returns unique instruments even if mapped to multiple positions" do

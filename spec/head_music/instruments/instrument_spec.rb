@@ -16,8 +16,8 @@ describe HeadMusic::Instruments::Instrument do
 
       it { is_expected.to be_a described_class }
       its(:name) { is_expected.to eq "clarinet" }
-      its(:generic_instrument) { is_expected.to be_a HeadMusic::Instruments::GenericInstrument }
-      its(:variant) { is_expected.to be_a HeadMusic::Instruments::Variant }
+      its(:generic_instrument) { is_expected.to be_a described_class }
+      its(:variant) { is_expected.to be_a described_class }
       its(:pitch_designation) { is_expected.to eq HeadMusic::Rudiment::Spelling.get("Bb") }
       its(:sounding_transposition) { is_expected.to eq(-2) }
     end
@@ -79,8 +79,8 @@ describe HeadMusic::Instruments::Instrument do
 
       it { is_expected.to be_a described_class }
       its(:name) { is_expected.to eq "piccolo flute" }
-      its(:generic_instrument) { is_expected.to be_a HeadMusic::Instruments::GenericInstrument }
-      its(:variant) { is_expected.to be_a HeadMusic::Instruments::Variant }
+      its(:generic_instrument) { is_expected.to be_a described_class }
+      its(:variant) { is_expected.to be_a described_class }
     end
   end
 
@@ -206,7 +206,7 @@ describe HeadMusic::Instruments::Instrument do
   end
 
   describe "variant name parsing" do
-    it "parses 'trumpet_in_eb' correctly" do
+    it "parses 'trumpet_in_eb' correctly (normalizes to trumpet_in_e_flat)" do
       instrument = described_class.get("trumpet_in_eb")
       expect(instrument.name).to eq("trumpet in E♭")
     end
@@ -216,9 +216,11 @@ describe HeadMusic::Instruments::Instrument do
       expect(instrument.name).to eq("trumpet in E♭")
     end
 
-    it "parses 'clarinet_in_bb' correctly" do
+    it "returns nil for 'clarinet_in_bb' since clarinet_in_b_flat is not a separate instrument" do
+      # In the new architecture, clarinet defaults to Bb, so there's no separate clarinet_in_b_flat
+      # Users should use 'clarinet' directly for the Bb version
       instrument = described_class.get("clarinet_in_bb")
-      expect(instrument.name).to eq("clarinet")  # Default variant is Bb
+      expect(instrument).to be_nil
     end
   end
 end

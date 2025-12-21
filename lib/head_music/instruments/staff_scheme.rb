@@ -3,10 +3,13 @@ require_relative "staff"
 module HeadMusic::Instruments; end
 
 class HeadMusic::Instruments::StaffScheme
-  attr_reader :variant, :key, :list
+  attr_reader :instrument, :key, :list
 
-  def initialize(variant:, key:, list:)
-    @variant = variant
+  # For backward compatibility, also alias as variant
+  alias_method :variant, :instrument
+
+  def initialize(key:, list:, instrument: nil, variant: nil)
+    @instrument = instrument || variant
     @key = key || "default"
     @list = list
   end

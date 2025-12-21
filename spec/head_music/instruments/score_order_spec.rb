@@ -48,12 +48,14 @@ describe HeadMusic::Instruments::ScoreOrder do
       expect(ordered.last.name).to eq("cello")
     end
 
-    it "places unknown instruments at the end" do
+    it "filters out unknown instruments" do
       instruments_with_unknown = instruments + ["kazoo"]
       ordered = described_class.in_orchestral_order(instruments_with_unknown)
       instrument_names = ordered.map(&:name)
 
-      expect(instrument_names.last).to eq("kazoo")
+      # Unknown instruments are now filtered out (return nil from Instrument.get)
+      expect(instrument_names).not_to include("kazoo")
+      expect(instrument_names.last).to eq("cello")
     end
   end
 
@@ -151,11 +153,13 @@ describe HeadMusic::Instruments::ScoreOrder do
     context "with a fake instrument name" do
       let(:instruments) { ["flute", "not_an_instrument", "violin"] }
 
-      it "places the fake instrument at the end" do
+      it "filters out the fake instrument" do
         ordered = orchestral_order.order(instruments)
         instrument_names = ordered.map(&:name)
 
-        expect(instrument_names.last).to eq("not_an_instrument")
+        # Invalid instruments are filtered out (return nil from Instrument.get)
+        expect(instrument_names).not_to include("not_an_instrument")
+        expect(instrument_names).to eq(["flute", "violin"])
       end
     end
 
@@ -173,7 +177,8 @@ describe HeadMusic::Instruments::ScoreOrder do
     end
 
     context "with trumpet transpositions" do
-      let(:instruments) { ["trumpet_in_b_flat", "trumpet_in_d", "trumpet_in_e_flat", "trumpet_in_c"] }
+      # Note: trumpet (base) is Bb, so we use "trumpet" instead of "trumpet_in_b_flat"
+      let(:instruments) { ["trumpet", "trumpet_in_d", "trumpet_in_e_flat", "trumpet_in_c"] }
 
       it "orders trumpets by transposition (high to low)" do
         ordered = orchestral_order.order(instruments)
@@ -221,25 +226,27 @@ describe HeadMusic::Instruments::ScoreOrder do
     context "with mixed valid and invalid instrument names" do
       let(:instruments) { ["flute", "not_an_instrument", "violin", nil, ""] }
 
-      it "handles invalid entries gracefully" do
+      it "handles invalid entries gracefully by filtering them out" do
         ordered = orchestral_order.order(instruments)
         instrument_names = ordered.map(&:name)
 
         expect(instrument_names).to include("flute")
         expect(instrument_names).to include("violin")
-        expect(instrument_names.size).to eq(3) # flute, violin, and "not_an_instrument"
+        # Invalid instruments are now filtered out
+        expect(instrument_names.size).to eq(2) # flute and violin only
       end
     end
 
     context "with a score order" do
       let(:score_order) { described_class.get(:orchestral) }
 
-      it "handles invalid instrument strings gracefully" do
+      it "handles invalid instrument strings gracefully by filtering them out" do
         instruments = ["invalid_instrument_name", "flute"]
         ordered = score_order.order(instruments)
 
         expect(ordered.map(&:name)).to include("flute")
-        expect(ordered.map(&:name)).to include("invalid_instrument_name")
+        # Invalid instruments are now filtered out
+        expect(ordered.map(&:name)).not_to include("invalid_instrument_name")
       end
 
       it "handles empty strings and nils" do
@@ -417,7 +424,8 @@ describe HeadMusic::Instruments::ScoreOrder do
           to_s: "Mock Trumpet"
         )
 
-        trumpet_bb = HeadMusic::Instruments::Instrument.get("trumpet_in_b_flat")
+        # Use "trumpet" (base Bb trumpet) instead of "trumpet_in_b_flat"
+        trumpet_bb = HeadMusic::Instruments::Instrument.get("trumpet")
         ordered = orchestral_order.order([mock_instrument, trumpet_bb])
 
         # Both should be positioned, mock comes after trumpet_bb due to transposition

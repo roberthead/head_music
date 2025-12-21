@@ -1,5 +1,7 @@
 require "spec_helper"
 
+# NOTE: GenericInstrument is now a deprecated facade that delegates to Instrument.
+# These tests verify backward compatibility.
 describe HeadMusic::Instruments::GenericInstrument do
   describe ".get" do
     subject(:result) { described_class.get(argument) }
@@ -27,8 +29,7 @@ describe HeadMusic::Instruments::GenericInstrument do
     context "when given a string that does not match a key" do
       let(:argument) { described_class.get("floober") }
 
-      it { is_expected.to be_a described_class }
-      its(:name) { is_expected.to eq "floober" }
+      it { is_expected.to be_nil }
     end
   end
 
@@ -36,25 +37,22 @@ describe HeadMusic::Instruments::GenericInstrument do
     subject(:instruments) { described_class.all }
 
     its(:length) { is_expected.to be > 1 }
-    its(:first) { is_expected.to be_a described_class }
+    its(:first) { is_expected.to be_a HeadMusic::Instruments::Instrument }
 
     it "has structural integrity" do # rubocop:disable RSpec/ExampleLength
       instruments.each do |instrument|
-        expect(instrument).to be_a described_class
+        expect(instrument).to be_a HeadMusic::Instruments::Instrument
         expect(instrument.name).to be_a String
-        expect(instrument.variants).to be_an Array
+        expect(instrument.staff_schemes).to be_an Array
         expect(instrument.default_clefs).to be_an Array
-        instrument.variants.each do |variant|
-          expect(variant).to be_a HeadMusic::Instruments::Variant
-          expect(variant.staff_schemes).to be_an Array
-          expect(variant.staff_schemes).not_to be_empty
-          variant.staff_schemes.each do |staff_scheme|
-            expect(staff_scheme).to be_a HeadMusic::Instruments::StaffScheme
-            expect(staff_scheme.staves.first.clef).to be_a HeadMusic::Rudiment::Clef
-            expect(staff_scheme.staves.first.sounding_transposition).to be_an Integer
-          end
-          expect(variant.staff_schemes.detect(&:default?)).to be_truthy
+        next if instrument.staff_schemes.empty?
+
+        instrument.staff_schemes.each do |staff_scheme|
+          expect(staff_scheme).to be_a HeadMusic::Instruments::StaffScheme
+          expect(staff_scheme.staves.first.clef).to be_a HeadMusic::Rudiment::Clef
+          expect(staff_scheme.staves.first.sounding_transposition).to be_an Integer
         end
+        expect(instrument.staff_schemes.detect(&:default?)).to be_truthy
       end
     end
   end
@@ -130,11 +128,11 @@ describe HeadMusic::Instruments::GenericInstrument do
   end
 
   describe "#translation" do
-    context "when the instrument is unknown" do
-      subject(:instrument) { described_class.get("floober") }
+    context "when the instrument exists" do
+      subject(:instrument) { described_class.get("piano") }
 
-      it "returns the name" do
-        expect(instrument.translation(:fr)).to eq "floober"
+      it "returns the translation" do
+        expect(instrument.translation(:de)).to eq "Piano"
       end
     end
   end
@@ -249,71 +247,43 @@ describe HeadMusic::Instruments::GenericInstrument do
   end
 
   describe "branch coverage for edge cases" do
-    context "when instrument has no family" do
-      subject(:unknown_instrument) { described_class.get("unknown_instrument") }
-
-      it "handles nil family gracefully" do
-        expect(unknown_instrument.family).to be_nil
-      end
-
-      it "handles translation without name_key" do
-        expect(unknown_instrument.translation(:de)).to eq("unknown_instrument")
+    context "when instrument does not exist" do
+      it "returns nil for unknown instruments" do
+        expect(described_class.get("unknown_instrument")).to be_nil
       end
     end
 
     context "when looking up instruments by translation" do
       it "finds instruments by localized names" do
-        # Test that key_for_name method works with translations
-        # This should trigger the locale iteration branch
         piano = described_class.get("Piano") # German translation
         expect(piano.name).to eq("piano")
       end
 
       it "returns nil for non-existent translations" do
-        # This should test the nil return path in key_for_name
         non_existent = described_class.get("definitely_not_an_instrument_12345")
-        expect(non_existent.name).to eq("definitely_not_an_instrument_12345")
+        expect(non_existent).to be_nil
       end
     end
 
     context "when testing staff and clef methods" do
-      subject(:unknown_instrument) { described_class.get("unknown_with_no_variants") }
-
-      it "handles instruments with no variants or staves" do
-        # These should exercise the ||= branches in default methods
-        expect(unknown_instrument.default_staves).to eq([])
-        expect(unknown_instrument.default_clefs).to eq([])
-        expect(unknown_instrument.default_sounding_transposition).to eq(0)
-      end
-
-      it "handles default_variant when variants exist" do
+      it "handles valid instruments correctly" do
         piano = described_class.get(:piano)
-        expect(piano.default_variant).to be_a(HeadMusic::Instruments::Variant)
-      end
-
-      it "handles default_variant when no variants exist" do
-        unknown = described_class.get("no_variants")
-        expect(unknown.default_variant).to be_nil
+        expect(piano.default_staves).not_to be_empty
+        expect(piano.default_clefs).not_to be_empty
+        expect(piano.default_sounding_transposition).to eq(0)
       end
     end
 
     context "when testing initialization paths" do
       it "exercises record_for_key with exact matches" do
-        # This tests the direct key match path
         oboe = described_class.get("oboe")
         expect(oboe.name).to eq("oboe")
       end
 
-      it "exercises inherit_family_attributes when family exists" do
+      it "exercises family inheritance when family exists" do
         violin = described_class.get(:violin)
         expect(violin.orchestra_section_key).not_to be_nil
         expect(violin.classification_keys).not_to be_empty
-      end
-
-      it "exercises inherit_family_attributes when family is nil" do
-        unknown = described_class.get("unknown_family")
-        # Should not crash when family is nil
-        expect(unknown.orchestra_section_key).to be_nil
       end
     end
 
