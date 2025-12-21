@@ -303,9 +303,9 @@ describe HeadMusic::Instruments::ScoreOrder do
   describe "normalize_to_instrument edge cases" do
     let(:orchestral_order) { described_class.get(:orchestral) }
 
-    context "with GenericInstrument objects" do
-      it "converts GenericInstrument to its default instrument configuration" do
-        instrument = HeadMusic::Instruments::GenericInstrument.get("violin")
+    context "with Instrument objects" do
+      it "handles Instrument objects directly" do
+        instrument = HeadMusic::Instruments::Instrument.get("violin")
         ordered = orchestral_order.order([instrument, "flute"])
 
         expect(ordered.map(&:name)).to eq(["flute", "violin"])
@@ -430,19 +430,6 @@ describe HeadMusic::Instruments::ScoreOrder do
 
         # Both should be positioned, mock comes after trumpet_bb due to transposition
         expect(ordered.length).to eq(2)
-      end
-    end
-  end
-
-  describe "fallback to GenericInstrument.get" do
-    let(:orchestral_order) { described_class.get(:orchestral) }
-
-    context "when Instrument.get returns nil but GenericInstrument.get succeeds" do
-      it "uses GenericInstrument as fallback" do
-        # This is hard to test directly since most names work with both,
-        # but we can verify the behavior exists
-        result = orchestral_order.order(["violin"])
-        expect(result).not_to be_empty
       end
     end
   end

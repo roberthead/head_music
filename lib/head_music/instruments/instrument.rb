@@ -193,21 +193,6 @@ class HeadMusic::Instruments::Instrument
     nil
   end
 
-  # Backward compatibility: return self as the "generic instrument"
-  def generic_instrument
-    parent || self
-  end
-
-  # Backward compatibility: return self as the "variant"
-  def variant
-    self
-  end
-
-  # Backward compatibility: default_instrument returns self
-  def default_instrument
-    self
-  end
-
   # Collect all instrument_configurations from self and ancestors
   def instrument_configurations
     own_configs = @instrument_configurations || []

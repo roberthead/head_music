@@ -80,7 +80,6 @@ require "head_music/time"
 
 # instruments
 require "head_music/instruments/instrument_family"
-require "head_music/instruments/generic_instrument"
 require "head_music/instruments/variant"
 require "head_music/instruments/playing_technique"
 require "head_music/instruments/staff_scheme"

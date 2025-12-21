@@ -33,11 +33,11 @@ class HeadMusic::Notation::StaffMapping
     @playing_technique_key = attributes["playing_technique"]
   end
 
-  # Get the GenericInstrument object
+  # Get the Instrument object
   #
-  # @return [GenericInstrument, nil] the generic instrument or nil if not found
+  # @return [Instrument, nil] the instrument or nil if not found
   def instrument
-    HeadMusic::Instruments::GenericInstrument.get(instrument_key) if instrument_key
+    HeadMusic::Instruments::Instrument.get(instrument_key) if instrument_key
   end
 
   # Get the PlayingTechnique object

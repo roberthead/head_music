@@ -16,8 +16,6 @@ describe HeadMusic::Instruments::Instrument do
 
       it { is_expected.to be_a described_class }
       its(:name) { is_expected.to eq "clarinet" }
-      its(:generic_instrument) { is_expected.to be_a described_class }
-      its(:variant) { is_expected.to be_a described_class }
       its(:pitch_designation) { is_expected.to eq HeadMusic::Rudiment::Spelling.get("Bb") }
       its(:sounding_transposition) { is_expected.to eq(-2) }
     end
@@ -79,8 +77,7 @@ describe HeadMusic::Instruments::Instrument do
 
       it { is_expected.to be_a described_class }
       its(:name) { is_expected.to eq "piccolo flute" }
-      its(:generic_instrument) { is_expected.to be_a described_class }
-      its(:variant) { is_expected.to be_a described_class }
+      its(:name_key) { is_expected.to eq :piccolo_flute }
     end
   end
 
