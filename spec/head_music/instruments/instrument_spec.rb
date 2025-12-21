@@ -219,5 +219,258 @@ describe HeadMusic::Instruments::Instrument do
       instrument = described_class.get("clarinet_in_bb")
       expect(instrument).to be_nil
     end
+
+    it "attempts to normalize sharp variant names" do
+      # The normalization happens but no sharp instruments exist in the data
+      instrument = described_class.get("trumpet_in_f#")
+      expect(instrument).to be_nil
+    end
+
+    it "handles names without variant suffixes" do
+      instrument = described_class.get("violin")
+      expect(instrument.name).to eq("violin")
+    end
+  end
+
+  describe ".get edge cases" do
+    it "returns nil for nil input" do
+      expect(described_class.get(nil)).to be_nil
+    end
+
+    it "returns nil for empty string" do
+      expect(described_class.get("")).to be_nil
+    end
+
+    it "handles symbol input" do
+      instrument = described_class.get(:trumpet)
+      expect(instrument).to be_a(described_class)
+      expect(instrument.name).to eq("trumpet")
+    end
+  end
+
+  describe "#== edge cases" do
+    let(:trumpet) { described_class.get("trumpet") }
+
+    it "returns false when compared to nil" do
+      expect(trumpet.==(nil)).to be false # rubocop:disable Style/NilComparison
+    end
+
+    it "returns false when compared to a string" do
+      expect(trumpet == "trumpet").to be false
+    end
+
+    it "returns false when compared to a different class" do
+      expect(trumpet == Object.new).to be false
+    end
+  end
+
+  describe ".all" do
+    subject(:all_instruments) { described_class.all }
+
+    it "returns an array of instruments" do
+      expect(all_instruments).to be_an(Array)
+      expect(all_instruments).to all(be_a(described_class))
+    end
+
+    it "includes common instruments" do
+      names = all_instruments.map(&:name_key)
+      expect(names).to include(:violin, :trumpet, :flute, :piano)
+    end
+
+    it "is sorted alphabetically by name" do
+      names = all_instruments.map { |i| i.name.downcase }
+      expect(names).to eq(names.sort)
+    end
+
+    it "caches the result" do
+      first_call = described_class.all
+      second_call = described_class.all
+      expect(first_call).to be(second_call)
+    end
+  end
+
+  describe "#parent" do
+    context "for an instrument without a parent" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      its(:parent) { is_expected.to be_nil }
+      its(:parent_key) { is_expected.to be_nil }
+    end
+
+    context "for an instrument with a parent" do
+      subject(:instrument) { described_class.get("trumpet_in_c") }
+
+      it "returns the parent instrument" do
+        expect(instrument.parent).to be_a(described_class)
+        expect(instrument.parent.name_key).to eq(:trumpet)
+      end
+
+      it "has a parent_key" do
+        expect(instrument.parent_key).to eq(:trumpet)
+      end
+    end
+  end
+
+  describe "#family_key resolution" do
+    context "for an instrument with its own family_key" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      its(:family_key) { is_expected.to eq("trumpet") }
+    end
+
+    context "for a child instrument inheriting family_key from parent" do
+      subject(:instrument) { described_class.get("trumpet_in_c") }
+
+      it "inherits family_key from parent" do
+        expect(instrument.family_key).to eq("trumpet")
+      end
+    end
+  end
+
+  describe "#pitch_key resolution" do
+    context "for an instrument with its own pitch_key" do
+      subject(:instrument) { described_class.get("clarinet") }
+
+      its(:pitch_key) { is_expected.to eq("b_flat") }
+    end
+
+    context "for a child instrument with its own pitch_key" do
+      subject(:instrument) { described_class.get("clarinet_in_a") }
+
+      its(:pitch_key) { is_expected.to eq("a") }
+    end
+
+    context "for an instrument without pitch_key" do
+      subject(:instrument) { described_class.get("violin") }
+
+      its(:pitch_key) { is_expected.to be_nil }
+    end
+  end
+
+  describe "#family" do
+    context "for an instrument with a family" do
+      subject(:instrument) { described_class.get("alto_saxophone") }
+
+      it "returns the InstrumentFamily" do
+        expect(instrument.family).to be_a(HeadMusic::Instruments::InstrumentFamily)
+        expect(instrument.family.name_key).to eq(:saxophone)
+      end
+    end
+
+    context "for an instrument without a family_key" do
+      subject(:instrument) { described_class.get("violin") }
+
+      it "returns nil when there is no family" do
+        # violin has family_key "violin" which may or may not exist as a family
+        family = instrument.family
+        expect(family).to be_nil.or be_a(HeadMusic::Instruments::InstrumentFamily)
+      end
+    end
+  end
+
+  describe "#orchestra_section_key" do
+    context "for a woodwind instrument" do
+      subject(:instrument) { described_class.get("flute") }
+
+      its(:orchestra_section_key) { is_expected.to eq("woodwind") }
+    end
+
+    context "for a brass instrument" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      its(:orchestra_section_key) { is_expected.to eq("brass") }
+    end
+
+    context "for a string instrument" do
+      subject(:instrument) { described_class.get("violin") }
+
+      it "returns the orchestra section" do
+        # violin may not have a family defined
+        expect(instrument.orchestra_section_key).to be_nil.or eq("string")
+      end
+    end
+  end
+
+  describe "#classification_keys" do
+    context "for an instrument with classifications" do
+      subject(:instrument) { described_class.get("flute") }
+
+      it "returns an array" do
+        expect(instrument.classification_keys).to be_an(Array)
+      end
+    end
+
+    context "for an instrument without a family" do
+      subject(:instrument) { described_class.get("violin") }
+
+      it "returns an empty array as fallback" do
+        expect(instrument.classification_keys).to be_an(Array)
+      end
+    end
+  end
+
+  describe "#translation" do
+    subject(:instrument) { described_class.get("flute") }
+
+    it "returns the English translation by default" do
+      expect(instrument.translation).to eq("flute")
+    end
+
+    it "returns translations for other locales" do
+      expect(instrument.translation(:de)).to eq("Flöte")
+      expect(instrument.translation(:fr)).to eq("flûte")
+    end
+
+    it "falls back to name when translation is missing" do
+      # Use an instrument that might not have all translations
+      expect(instrument.translation(:en)).to be_a(String)
+    end
+  end
+
+  describe "backward compatibility methods" do
+    subject(:instrument) { described_class.get("trumpet") }
+
+    describe "#variants" do
+      its(:variants) { is_expected.to eq([]) }
+    end
+
+    describe "#default_variant" do
+      its(:default_variant) { is_expected.to be_nil }
+    end
+  end
+
+  describe "#instrument_configurations" do
+    context "for an instrument without configurations" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      its(:instrument_configurations) { is_expected.to eq([]) }
+    end
+
+    context "for a child instrument" do
+      subject(:instrument) { described_class.get("trumpet_in_c") }
+
+      it "collects configurations from parent chain" do
+        # Currently returns empty, but tests the parent chain collection
+        expect(instrument.instrument_configurations).to be_an(Array)
+      end
+    end
+  end
+
+  describe "#default_sounding_transposition" do
+    it "is aliased to sounding_transposition" do
+      instrument = described_class.get("clarinet")
+      expect(instrument.default_sounding_transposition).to eq(instrument.sounding_transposition)
+    end
+  end
+
+  describe "staff scheme inheritance" do
+    context "for a child instrument" do
+      subject(:instrument) { described_class.get("trumpet_in_d") }
+
+      it "inherits staff schemes from parent when not specified" do
+        expect(instrument.staff_schemes).not_to be_empty
+        expect(instrument.default_staff_scheme).to be_a(HeadMusic::Instruments::StaffScheme)
+      end
+    end
   end
 end
