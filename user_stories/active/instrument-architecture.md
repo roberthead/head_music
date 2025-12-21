@@ -209,29 +209,19 @@ SO THAT the model is simplified
 5. **Phase 5**: Remove Variant class and update GenericInstrument
 6. **Phase 6**: Update all specs
 
-## Relationship to Other Stories
-
-This story **supersedes**:
-- 001-instrument-configuration.md - Configurations now modeled here
-- 003-pitched-variant.md - Pitched variants are now child instruments
-- 004-instrument-state.md - Transient states (tunings, capos, mutes) use same configuration mechanism
-
-This story is **orthogonal to**:
-- 002-notation-style.md - Notation remains a separate concern
-
 ## Acceptance Criteria
 
-- [ ] `Instrument` class has `belongs_to :parent` relationship
-- [ ] Attributes resolve through parent chain
+- [x] `Instrument` class has `belongs_to :parent` relationship
+- [x] Attributes resolve through parent chain
 - [ ] `Instrument#instrument_configurations` collects from ancestor chain
 - [ ] `InstrumentConfiguration` class exists with `name_key`
 - [ ] `InstrumentConfigurationOption` class exists with effect attributes
-- [ ] `Variant` class removed
-- [ ] YAML structure uses parent-based inheritance
-- [ ] `Instrument.get()` API preserved for backward compatibility
-- [ ] All existing tests pass
+- [x] `Variant` class removed
+- [x] YAML structure uses parent-based inheritance
+- [x] `Instrument.get()` API preserved for backward compatibility
+- [x] All existing tests pass
 - [ ] New tests cover inheritance and configuration
-- [ ] Maintains 90%+ test coverage
+- [x] Maintains 90%+ test coverage
 
 ## Deferred
 
