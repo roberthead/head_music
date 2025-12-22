@@ -60,3 +60,130 @@ natural_horn:
         transposition_semitones: -5
       b_flat_basso:
         transposition_semitones: -7
+
+guitar:
+  capo:
+    options:
+      none:
+        default: true
+      fret_1:
+        transposition_semitones: 1
+      fret_2:
+        transposition_semitones: 2
+      fret_3:
+        transposition_semitones: 3
+      fret_4:
+        transposition_semitones: 4
+      fret_5:
+        transposition_semitones: 5
+      fret_6:
+        transposition_semitones: 6
+      fret_7:
+        transposition_semitones: 7
+      fret_8:
+        transposition_semitones: 8
+      fret_9:
+        transposition_semitones: 9
+
+banjo:
+  capo:
+    options:
+      none:
+        default: true
+      fret_1:
+        transposition_semitones: 1
+      fret_2:
+        transposition_semitones: 2
+      fret_3:
+        transposition_semitones: 3
+      fret_4:
+        transposition_semitones: 4
+      fret_5:
+        transposition_semitones: 5
+      fret_6:
+        transposition_semitones: 6
+      fret_7:
+        transposition_semitones: 7
+      fret_8:
+        transposition_semitones: 8
+      fret_9:
+        transposition_semitones: 9
+
+ukulele:
+  capo:
+    options:
+      none:
+        default: true
+      fret_1:
+        transposition_semitones: 1
+      fret_2:
+        transposition_semitones: 2
+      fret_3:
+        transposition_semitones: 3
+      fret_4:
+        transposition_semitones: 4
+      fret_5:
+        transposition_semitones: 5
+      fret_6:
+        transposition_semitones: 6
+      fret_7:
+        transposition_semitones: 7
+      fret_8:
+        transposition_semitones: 8
+      fret_9:
+        transposition_semitones: 9
+      fret_10:
+        transposition_semitones: 10
+      fret_11:
+        transposition_semitones: 11
+      fret_12:
+        transposition_semitones: 12
+
+mandolin:
+  capo:
+    options:
+      none:
+        default: true
+      fret_1:
+        transposition_semitones: 1
+      fret_2:
+        transposition_semitones: 2
+      fret_3:
+        transposition_semitones: 3
+      fret_4:
+        transposition_semitones: 4
+      fret_5:
+        transposition_semitones: 5
+      fret_6:
+        transposition_semitones: 6
+      fret_7:
+        transposition_semitones: 7
+      fret_8:
+        transposition_semitones: 8
+      fret_9:
+        transposition_semitones: 9
+
+
+lute:
+  tied_fret:
+    options:
+      none:
+        default: true
+      fret_1:
+        transposition_semitones: 1
+      fret_2:
+        transposition_semitones: 2
+      fret_3:
+        transposition_semitones: 3
+      fret_4:
+        transposition_semitones: 4
+      fret_5:
+        transposition_semitones: 5
+      fret_6:
+        transposition_semitones: 6
+      fret_7:
+        transposition_semitones: 7
+      fret_8:
+        transposition_semitones: 8
+      fret_9:
+        transposition_semitones: 9
