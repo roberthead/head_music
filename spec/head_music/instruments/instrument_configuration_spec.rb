@@ -24,7 +24,7 @@ describe HeadMusic::Instruments::InstrumentConfiguration do
     end
 
     context "when instrument has no configurations" do
-      subject(:configs) { described_class.for_instrument(:violin) }
+      subject(:configs) { described_class.for_instrument(:harmonica) }
 
       it { is_expected.to eq [] }
     end
@@ -133,5 +133,92 @@ describe HeadMusic::Instruments::InstrumentConfiguration do
     subject { described_class.new(name_key: "leadpipe", instrument_key: "trumpet", options_data: {}) }
 
     its(:to_s) { is_expected.to eq "leadpipe" }
+  end
+
+  describe "trumpet mute configuration" do
+    subject(:configs) { described_class.for_instrument(:trumpet) }
+
+    it "has a mute configuration" do
+      expect(configs.map(&:name_key)).to eq [:mute]
+    end
+
+    describe "mute options" do
+      subject(:mute_config) { configs.first }
+
+      it "has the expected mute options" do
+        option_keys = mute_config.options.map(&:name_key)
+        expect(option_keys).to contain_exactly(:open, :straight, :cup, :harmon, :bucket, :plunger)
+      end
+
+      it "defaults to open" do
+        expect(mute_config.default_option.name_key).to eq :open
+      end
+    end
+  end
+
+  describe "bass_trombone configurations" do
+    subject(:configs) { described_class.for_instrument(:bass_trombone) }
+
+    it "has f_attachment and mute configurations" do
+      expect(configs.map(&:name_key)).to contain_exactly(:f_attachment, :mute)
+    end
+
+    describe "f_attachment configuration" do
+      subject(:f_attachment) { configs.find { |c| c.name_key == :f_attachment } }
+
+      it "has disengaged and engaged options" do
+        option_keys = f_attachment.options.map(&:name_key)
+        expect(option_keys).to contain_exactly(:disengaged, :engaged)
+      end
+
+      it "defaults to disengaged" do
+        expect(f_attachment.default_option.name_key).to eq :disengaged
+      end
+
+      it "lowers the range by 6 semitones when engaged" do
+        engaged = f_attachment.option(:engaged)
+        expect(engaged.lowest_pitch_semitones).to eq(-6)
+      end
+    end
+
+    describe "mute configuration" do
+      subject(:mute_config) { configs.find { |c| c.name_key == :mute } }
+
+      it "has the expected mute options" do
+        option_keys = mute_config.options.map(&:name_key)
+        expect(option_keys).to contain_exactly(:open, :straight, :bucket)
+      end
+    end
+  end
+
+  describe "guitar capo configuration" do
+    subject(:configs) { described_class.for_instrument(:guitar) }
+
+    it "has a capo configuration" do
+      expect(configs.map(&:name_key)).to eq [:capo]
+    end
+
+    describe "capo options" do
+      subject(:capo_config) { configs.first }
+
+      it "has fret options from none through fret_9" do
+        option_keys = capo_config.options.map(&:name_key)
+        expect(option_keys).to include(:none, :fret_1, :fret_5, :fret_9)
+      end
+
+      it "defaults to none" do
+        expect(capo_config.default_option.name_key).to eq :none
+      end
+
+      it "transposes up by the fret number" do
+        expect(capo_config.option(:fret_1).transposition_semitones).to eq 1
+        expect(capo_config.option(:fret_5).transposition_semitones).to eq 5
+        expect(capo_config.option(:fret_9).transposition_semitones).to eq 9
+      end
+
+      it "has no transposition for none" do
+        expect(capo_config.option(:none).transposition_semitones).to be_nil
+      end
+    end
   end
 end
