@@ -110,6 +110,27 @@ sousaphone:
         default: true
       straight:
 
+violin:
+  mute:
+    options:
+      open:
+        default: true
+      orchestral:
+
+viola:
+  mute:
+    options:
+      open:
+        default: true
+      orchestral:
+
+cello:
+  mute:
+    options:
+      open:
+        default: true
+      orchestral:
+
 double_bass:
   c_extension:
     options:
@@ -117,6 +138,11 @@ double_bass:
         default: true
       with:
         lowest_pitch_semitones: -4
+  mute:
+    options:
+      open:
+        default: true
+      orchestral:
 
 natural_horn:
   crook:
