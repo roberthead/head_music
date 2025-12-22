@@ -29,6 +29,17 @@ trumpet:
       bucket:
       plunger:
 
+trombone:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+      cup:
+      harmon:
+      bucket:
+      plunger:
+
 bass_trombone:
   f_attachment:
     options:
@@ -36,6 +47,68 @@ bass_trombone:
         default: true
       engaged:
         lowest_pitch_semitones: -6
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+      bucket:
+
+cornet:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+      cup:
+      harmon:
+      bucket:
+      plunger:
+
+flugelhorn:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+      cup:
+      bucket:
+
+french_horn:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+      stopping:
+
+euphonium:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+
+baritone_horn:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+
+tuba:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
+
+sousaphone:
+  mute:
+    options:
+      open:
+        default: true
+      straight:
 
 double_bass:
   c_extension:
