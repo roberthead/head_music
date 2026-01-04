@@ -200,6 +200,17 @@ class HeadMusic::Instruments::Instrument
     own_configs + parent_configs
   end
 
+  def stringing
+    @stringing ||= HeadMusic::Instruments::Stringing.for_instrument(self) || parent&.stringing
+  end
+
+  def alternate_tunings
+    own_tunings = HeadMusic::Instruments::AlternateTuning.for_instrument(name_key)
+    return own_tunings if own_tunings.any?
+
+    parent&.alternate_tunings || []
+  end
+
   private_class_method :new
 
   private

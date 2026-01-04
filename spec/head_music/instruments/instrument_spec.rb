@@ -564,6 +564,92 @@ describe HeadMusic::Instruments::Instrument do
     end
   end
 
+  describe "#stringing" do
+    context "for a stringed instrument with stringing data" do
+      subject(:instrument) { described_class.get("guitar") }
+
+      it "returns a Stringing" do
+        expect(instrument.stringing).to be_a(HeadMusic::Instruments::Stringing)
+      end
+
+      it "has the correct standard pitches" do
+        pitch_names = instrument.stringing.standard_pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[E2 A2 D3 G3 B3 E4]
+      end
+    end
+
+    context "for a stringed instrument without stringing data" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      its(:stringing) { is_expected.to be_nil }
+    end
+
+    context "for a child instrument inheriting stringing from parent" do
+      # Assuming there's no specific stringing for a variant, it should inherit
+      subject(:instrument) { described_class.get("violin") }
+
+      it "returns the stringing" do
+        expect(instrument.stringing).to be_a(HeadMusic::Instruments::Stringing)
+        expect(instrument.stringing.course_count).to eq(4)
+      end
+    end
+  end
+
+  describe "#alternate_tunings" do
+    context "for an instrument with alternate tunings" do
+      subject(:instrument) { described_class.get("guitar") }
+
+      it "returns an array of AlternateTuning" do
+        expect(instrument.alternate_tunings).to be_an(Array)
+        expect(instrument.alternate_tunings).to all be_a(HeadMusic::Instruments::AlternateTuning)
+      end
+
+      it "includes common tunings" do
+        names = instrument.alternate_tunings.map(&:name_key)
+        expect(names).to include(:drop_d, :open_g, :dadgad)
+      end
+    end
+
+    context "for an instrument without alternate tunings" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      its(:alternate_tunings) { is_expected.to eq([]) }
+    end
+
+    context "for a child instrument inheriting tunings from parent" do
+      let(:guitar) { described_class.get("guitar") }
+      let(:trumpet_in_c) { described_class.get("trumpet_in_c") }
+
+      it "inherits tunings when child has none but parent does" do
+        # Stub trumpet (parent of trumpet_in_c) to return guitar's tunings
+        # This simulates a stringed instrument hierarchy
+        allow(trumpet_in_c.parent).to receive(:alternate_tunings).and_return(guitar.alternate_tunings)
+
+        tunings = trumpet_in_c.alternate_tunings
+        expect(tunings).not_to be_empty
+        expect(tunings.map(&:name_key)).to include(:drop_d)
+      end
+    end
+
+    context "for a child instrument with no tunings and parent with no tunings" do
+      subject(:instrument) { described_class.get("trumpet_in_c") }
+
+      it "returns empty array" do
+        expect(instrument.parent).not_to be_nil
+        expect(instrument.alternate_tunings).to eq([])
+      end
+    end
+
+    context "for an instrument with no tunings and no parent" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      it "returns empty array" do
+        expect(instrument.parent).to be_nil
+        expect(instrument.alternate_tunings).to eq([])
+      end
+    end
+  end
+
   describe "#default_sounding_transposition" do
     it "is aliased to sounding_transposition" do
       instrument = described_class.get("clarinet")
