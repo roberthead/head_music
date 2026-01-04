@@ -7,7 +7,7 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
   include Comparable
   include HeadMusic::Named
 
-  attr_reader :identifier, :cents, :semitones, :musical_symbols
+  attr_reader :identifier, :semitones, :musical_symbols
 
   delegate :ascii, :unicode, :html_entity, to: :musical_symbol
 
@@ -41,7 +41,7 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
 
   def self.by(key, value)
     all.detect do |alteration|
-      alteration.send(key) == value if %i[cents semitones].include?(key.to_sym)
+      alteration.send(key) == value if %i[semitones].include?(key.to_sym)
     end
   end
 
@@ -68,7 +68,7 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
 
   def <=>(other)
     other = HeadMusic::Rudiment::Alteration.get(other)
-    cents <=> other.cents
+    semitones <=> other.semitones
   end
 
   def musical_symbol
@@ -79,7 +79,6 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
 
   def initialize(key, attributes)
     @identifier = key
-    @cents = attributes[:cents]
     @semitones = attributes[:semitones]
     initialize_musical_symbols(attributes[:symbols])
     initialize_localized_names
