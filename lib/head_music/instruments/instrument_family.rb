@@ -30,8 +30,8 @@ class HeadMusic::Instruments::InstrumentFamily
   end
 
   def self.all
-    @all ||=
-      INSTRUMENT_FAMILIES.map { |key, _data| get(key) }.sort_by(&:name)
+    INSTRUMENT_FAMILIES.map { |key, _data| get(key) }
+    @all ||= @instances.values.compact.sort_by(&:name)
   end
 
   private_class_method :new
