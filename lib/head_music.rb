@@ -87,6 +87,9 @@ require "head_music/instruments/staff"
 require "head_music/instruments/instrument_configuration_option"
 require "head_music/instruments/instrument_configuration"
 require "head_music/instruments/instrument"
+require "head_music/instruments/stringing_course"
+require "head_music/instruments/stringing"
+require "head_music/instruments/alternate_tuning"
 require "head_music/instruments/score_order"
 
 # content

@@ -1,0 +1,168 @@
+# Stringing configurations for stringed instruments.
+#
+# Each instrument has courses (strings played together).
+# course_semitones defines additional strings in a course relative to the pitch.
+#
+# Examples:
+#   - [] = single string
+#   - [12] = doubled an octave higher
+#   - [0] = doubled in unison
+
+guitar:
+  courses:
+    - pitch: E2
+    - pitch: A2
+    - pitch: D3
+    - pitch: G3
+    - pitch: B3
+    - pitch: E4
+
+twelve_string_guitar:
+  courses:
+    - pitch: E2
+      course_semitones: [12]
+    - pitch: A2
+      course_semitones: [12]
+    - pitch: D3
+      course_semitones: [12]
+    - pitch: G3
+      course_semitones: [12]
+    - pitch: B3
+      course_semitones: [0]
+    - pitch: E4
+      course_semitones: [0]
+
+bass_guitar:
+  courses:
+    - pitch: E1
+    - pitch: A1
+    - pitch: D2
+    - pitch: G2
+
+five_string_bass:
+  courses:
+    - pitch: B0
+    - pitch: E1
+    - pitch: A1
+    - pitch: D2
+    - pitch: G2
+
+six_string_bass:
+  courses:
+    - pitch: B0
+    - pitch: E1
+    - pitch: A1
+    - pitch: D2
+    - pitch: G2
+    - pitch: C3
+
+ukulele:
+  courses:
+    - pitch: G4
+    - pitch: C4
+    - pitch: E4
+    - pitch: A4
+
+baritone_ukulele:
+  courses:
+    - pitch: D3
+    - pitch: G3
+    - pitch: B3
+    - pitch: E4
+
+mandolin:
+  courses:
+    - pitch: G3
+      course_semitones: [0]
+    - pitch: D4
+      course_semitones: [0]
+    - pitch: A4
+      course_semitones: [0]
+    - pitch: E5
+      course_semitones: [0]
+
+banjo:
+  courses:
+    - pitch: G4
+    - pitch: D3
+    - pitch: G3
+    - pitch: B3
+    - pitch: D4
+
+violin:
+  courses:
+    - pitch: G3
+    - pitch: D4
+    - pitch: A4
+    - pitch: E5
+
+viola:
+  courses:
+    - pitch: C3
+    - pitch: G3
+    - pitch: D4
+    - pitch: A4
+
+cello:
+  courses:
+    - pitch: C2
+    - pitch: G2
+    - pitch: D3
+    - pitch: A3
+
+double_bass:
+  courses:
+    - pitch: E1
+    - pitch: A1
+    - pitch: D2
+    - pitch: G2
+
+harp:
+  courses:
+    - pitch: C1
+    - pitch: D1
+    - pitch: E1
+    - pitch: F1
+    - pitch: G1
+    - pitch: A1
+    - pitch: B1
+    - pitch: C2
+    - pitch: D2
+    - pitch: E2
+    - pitch: F2
+    - pitch: G2
+    - pitch: A2
+    - pitch: B2
+    - pitch: C3
+    - pitch: D3
+    - pitch: E3
+    - pitch: F3
+    - pitch: G3
+    - pitch: A3
+    - pitch: B3
+    - pitch: C4
+    - pitch: D4
+    - pitch: E4
+    - pitch: F4
+    - pitch: G4
+    - pitch: A4
+    - pitch: B4
+    - pitch: C5
+    - pitch: D5
+    - pitch: E5
+    - pitch: F5
+    - pitch: G5
+    - pitch: A5
+    - pitch: B5
+    - pitch: C6
+    - pitch: D6
+    - pitch: E6
+    - pitch: F6
+    - pitch: G6
+    - pitch: A6
+    - pitch: B6
+    - pitch: C7
+    - pitch: D7
+    - pitch: E7
+    - pitch: F7
+    - pitch: G7

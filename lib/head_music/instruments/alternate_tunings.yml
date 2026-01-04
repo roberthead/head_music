@@ -1,0 +1,78 @@
+# Alternate tunings for stringed instruments.
+#
+# Each tuning is defined as semitone adjustments from standard tuning.
+# - First element = lowest course
+# - Missing elements = 0 (no change)
+# - Extra elements = ignored
+
+guitar:
+  drop_d:
+    semitones: [-2, 0, 0, 0, 0, 0]
+  double_drop_d:
+    semitones: [-2, 0, 0, 0, 0, -2]
+  dadgad:
+    semitones: [-2, 0, 0, 0, -2, -2]
+  open_d:
+    semitones: [-2, 0, 0, -1, -2, -2]
+  open_g:
+    semitones: [-2, -2, 0, 0, 0, -2]
+  open_e:
+    semitones: [0, 2, 2, 1, 0, 0]
+  open_a:
+    semitones: [0, 0, 2, 2, 2, 0]
+  open_c:
+    semitones: [-4, -2, 0, 0, 1, 0]
+  half_step_down:
+    semitones: [-1, -1, -1, -1, -1, -1]
+  whole_step_down:
+    semitones: [-2, -2, -2, -2, -2, -2]
+  drop_c:
+    semitones: [-4, -2, -2, -2, -2, -2]
+  nashville:
+    semitones: [12, 12, 12, 12, 0, 0]
+
+bass_guitar:
+  drop_d:
+    semitones: [-2, 0, 0, 0]
+  half_step_down:
+    semitones: [-1, -1, -1, -1]
+  whole_step_down:
+    semitones: [-2, -2, -2, -2]
+  drop_c:
+    semitones: [-4, -2, -2, -2]
+
+five_string_bass:
+  standard:
+    semitones: [0, 0, 0, 0, 0]
+  drop_a:
+    semitones: [-2, 0, 0, 0, 0]
+
+banjo:
+  open_g:
+    semitones: [0, 0, 0, 0, 0]
+  double_c:
+    semitones: [-2, -2, 0, -2, 0]
+  sawmill:
+    semitones: [-2, -2, 0, 0, -2]
+  open_d:
+    semitones: [-5, -2, -2, -1, -2]
+
+ukulele:
+  low_g:
+    semitones: [-12, 0, 0, 0]
+  baritone:
+    semitones: [-5, -5, -5, -5]
+  slack_key:
+    semitones: [0, 0, -1, 0]
+
+violin:
+  solo_tuning:
+    semitones: [1, 1, 1, 1]
+  cross_tuning:
+    semitones: [0, 0, -2, 0]
+
+cello:
+  solo_tuning:
+    semitones: [1, 1, 1, 1]
+  drop_c:
+    semitones: [-2, 0, 0, 0]
