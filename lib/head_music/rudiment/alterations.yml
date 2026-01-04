@@ -1,0 +1,36 @@
+alterations:
+  double_flat:
+    cents: -200
+    semitones: -2
+    symbols:
+      - ascii: "bb"
+        unicode: "𝄫"
+        html_entity: "&#119083;"
+  flat:
+    cents: -100
+    semitones: -1
+    symbols:
+      - ascii: "b"
+        unicode: "♭"
+        html_entity: "&#9837;"
+  natural:
+    cents: 0
+    semitones: 0
+    symbols:
+      - ascii: ""
+        unicode: "♮"
+        html_entity: "&#9838;"
+  sharp:
+    cents: 100
+    semitones: 1
+    symbols:
+      - ascii: "#"
+        unicode: "♯"
+        html_entity: "&#9839;"
+  double_sharp:
+    cents: 200
+    semitones: 2
+    symbols:
+      - ascii: "x"
+        unicode: "𝄪"
+        html_entity: "&#119082;"

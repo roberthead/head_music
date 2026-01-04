@@ -63,6 +63,16 @@ describe HeadMusic::Rudiment::Alteration do
     specify { expect(described_class).not_to be_symbol("j") }
   end
 
+  describe "generated predicate methods" do
+    let(:sharp) { described_class.get(:sharp) }
+    let(:flat) { described_class.get(:flat) }
+
+    specify { expect(sharp).to be_sharp }
+    specify { expect(sharp).not_to be_flat }
+    specify { expect(flat).to be_flat }
+    specify { expect(flat).not_to be_sharp }
+  end
+
   describe "Named module integration" do
     describe "#name" do
       specify { expect(described_class.get(:sharp).name).to eq "sharp" }
@@ -91,7 +101,7 @@ describe HeadMusic::Rudiment::Alteration do
     specify { expect(described_class::MATCHER).not_to match "h" }
     specify { expect(described_class::MATCHER).not_to match "" }
 
-    specify { expect(described_class::PATTERN).to eq(/♯|\#|♭|b|♮|𝄪|x|𝄫|bb/) }
-    specify { expect(described_class::MATCHER).to eq(/♯|\#|♭|b|♮|𝄪|x|𝄫|bb/) }
+    specify { expect(described_class::PATTERN).to eq(/𝄫|bb|♭|b|♮|♯|\#|𝄪|x/) }
+    specify { expect(described_class::MATCHER).to eq(/𝄫|bb|♭|b|♮|♯|\#|𝄪|x/) }
   end
 end

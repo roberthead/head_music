@@ -7,40 +7,20 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
   include Comparable
   include HeadMusic::Named
 
-  attr_reader :identifier, :cents, :musical_symbols
+  attr_reader :identifier, :cents, :semitones, :musical_symbols
 
   delegate :ascii, :unicode, :html_entity, to: :musical_symbol
 
-  ALTERATION_RECORDS = [
-    {
-      identifier: :sharp, cents: 100,
-      symbols: [{ascii: "#", unicode: "♯", html_entity: "&#9839;"}]
-    },
-    {
-      identifier: :flat, cents: -100,
-      symbols: [{ascii: "b", unicode: "♭", html_entity: "&#9837;"}]
-    },
-    {
-      identifier: :natural, cents: 0,
-      symbols: [{ascii: "", unicode: "♮", html_entity: "&#9838;"}]
-    },
-    {
-      identifier: :double_sharp, cents: 200,
-      symbols: [{ascii: "x", unicode: "𝄪", html_entity: "&#119082;"}]
-    },
-    {
-      identifier: :double_flat, cents: -200,
-      symbols: [{ascii: "bb", unicode: "𝄫", html_entity: "&#119083;"}]
-    }
-  ].freeze
+  ALTERATION_RECORDS =
+    YAML.load_file(File.expand_path("alterations.yml", __dir__), symbolize_names: true)[:alterations].freeze
 
-  ALTERATION_IDENTIFIERS = ALTERATION_RECORDS.map { |attributes| attributes[:identifier] }.freeze
-  SYMBOLS = ALTERATION_RECORDS.map { |attributes| attributes[:symbols].map { |symbol| [symbol[:unicode], symbol[:ascii]] } }.flatten.freeze
-  PATTERN = Regexp.union(SYMBOLS.reject { |s| s.nil? || s.empty? })
+  ALTERATION_IDENTIFIERS = ALTERATION_RECORDS.keys.freeze
+  SYMBOLS = ALTERATION_RECORDS.map { |key, attributes| attributes[:symbols].map { |symbol| [symbol[:unicode], symbol[:ascii]] } }.flatten.reject { |s| s.nil? || s.empty? }.freeze
+  PATTERN = Regexp.union(SYMBOLS)
   MATCHER = PATTERN
 
   def self.all
-    @all ||= ALTERATION_RECORDS.map { |attributes| new(attributes) }
+    @all ||= ALTERATION_RECORDS.map { |key, attributes| new(key, attributes) }
   end
 
   def self.symbols
@@ -55,7 +35,7 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
     return identifier if identifier.is_a?(HeadMusic::Rudiment::Alteration)
 
     all.detect do |alteration|
-      alteration.representions.include?(identifier)
+      alteration.representations.include?(identifier)
     end
   end
 
@@ -69,24 +49,16 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
     all.detect { |alteration| alteration.name == name.to_s }
   end
 
-  def self.from_pitched_item(input)
-    nil
-  end
-
   def name(locale_code: I18n.locale)
     super || identifier.to_s.tr("_", " ")
   end
 
-  def representions
+  def representations
     [identifier, identifier.to_s, name, ascii, unicode, html_entity]
       .reject { |representation| representation.to_s.strip == "" }
   end
 
-  def semitones
-    cents / 100.0
-  end
-
-  ALTERATION_IDENTIFIERS.each do |key|
+  ALTERATION_RECORDS.keys.each do |key|
     define_method(:"#{key}?") { identifier == key }
   end
 
@@ -105,9 +77,10 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
 
   private
 
-  def initialize(attributes)
-    @identifier = attributes[:identifier]
+  def initialize(key, attributes)
+    @identifier = key
     @cents = attributes[:cents]
+    @semitones = attributes[:semitones]
     initialize_musical_symbols(attributes[:symbols])
     initialize_localized_names
   end
