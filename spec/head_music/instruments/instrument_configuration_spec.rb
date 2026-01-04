@@ -127,6 +127,10 @@ describe HeadMusic::Instruments::InstrumentConfiguration do
       expect(leadpipe_piccolo).not_to eq mute_piccolo
       expect(leadpipe_piccolo).not_to eq leadpipe_trumpet
     end
+
+    it "returns false when compared with non-InstrumentConfiguration" do
+      expect(leadpipe_piccolo).not_to eq "some string"
+    end
   end
 
   describe "#to_s" do
