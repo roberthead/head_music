@@ -409,6 +409,48 @@ describe HeadMusic::Instruments::ScoreOrder do
     end
   end
 
+  describe "unknown instruments" do
+    let(:orchestral_order) { described_class.get(:orchestral) }
+
+    context "with a valid instrument object not in any score order" do
+      let(:didgeridoo) do
+        instance_double(
+          HeadMusic::Instruments::Instrument,
+          name_key: "didgeridoo",
+          family_key: "aerophone",
+          name: "Didgeridoo",
+          default_sounding_transposition: 0,
+          to_s: "Didgeridoo"
+        )
+      end
+
+      let(:theremin) do
+        instance_double(
+          HeadMusic::Instruments::Instrument,
+          name_key: "theremin",
+          family_key: "electronic",
+          name: "Theremin",
+          default_sounding_transposition: 0,
+          to_s: "Theremin"
+        )
+      end
+
+      subject(:ordered_instrument_names) {
+        orchestral_order.order([theremin, "violin", didgeridoo, "flute"]).map(&:name)
+      }
+
+      it "places unknown instruments at the end, sorted alphabetically" do
+        # Known instruments come first in score order
+        expect(ordered_instrument_names[0]).to eq("flute")
+        expect(ordered_instrument_names[1]).to eq("violin")
+
+        # Unknown instruments come last, sorted alphabetically
+        expect(ordered_instrument_names[2]).to eq("Didgeridoo")
+        expect(ordered_instrument_names[3]).to eq("Theremin")
+      end
+    end
+  end
+
   describe "transposition edge cases" do
     let(:orchestral_order) { described_class.get(:orchestral) }
 
