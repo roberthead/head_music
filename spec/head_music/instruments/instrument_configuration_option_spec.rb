@@ -60,12 +60,19 @@ describe HeadMusic::Instruments::InstrumentConfigurationOption do
 
   describe "#==" do
     let(:a_option) { described_class.new(name_key: "a") }
-    let(:a_option_with_transposition) { described_class.new(name_key: "a", transposition_semitones: -1) }
     let(:b_flat_option) { described_class.new(name_key: "b_flat") }
 
-    it "compares by name_key" do
-      expect(a_option).to eq a_option_with_transposition
+    it "returns true for options with the same name_key" do
+      expect(a_option).to eq described_class.new(name_key: "a")
+    end
+
+    it "returns false for options with different name_keys" do
       expect(a_option).not_to eq b_flat_option
+    end
+
+    it "returns true when comparing to a non-InstrumentConfigurationOption that resolves to the same name_key" do
+      expect(a_option).to eq "a"
+      expect(a_option).to eq :a
     end
   end
 

@@ -29,9 +29,7 @@ class HeadMusic::Instruments::InstrumentConfigurationOption
   end
 
   def ==(other)
-    return false unless other.is_a?(self.class)
-
-    name_key == other.name_key
+    self.to_s == other.to_s
   end
 
   def to_s

@@ -441,7 +441,7 @@ describe HeadMusic::Instruments::Instrument do
 
   describe "#instrument_configurations" do
     context "for an instrument without configurations" do
-      subject(:instrument) { described_class.get("violin") }
+      subject(:instrument) { described_class.get("clarinet") }
 
       its(:instrument_configurations) { is_expected.to eq([]) }
     end
