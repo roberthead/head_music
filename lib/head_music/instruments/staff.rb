@@ -87,7 +87,6 @@ class HeadMusic::Instruments::Staff
 
   def parse_mappings
     mappings_data = attributes["mappings"] || []
-    return [] unless mappings_data.is_a?(Array)
 
     mappings_data.map { |mapping_attrs| HeadMusic::Notation::StaffMapping.new(mapping_attrs) }
   end
