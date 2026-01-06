@@ -29,7 +29,7 @@ class HeadMusic::Instruments::InstrumentConfigurationOption
   end
 
   def ==(other)
-    self.to_s == other.to_s
+    to_s == other.to_s
   end
 
   def to_s

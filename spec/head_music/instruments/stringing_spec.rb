@@ -27,8 +27,9 @@ describe HeadMusic::Instruments::Stringing do
     end
 
     context "with an Instrument object" do
-      let(:guitar) { HeadMusic::Instruments::Instrument.get(:guitar) }
       subject(:stringing) { described_class.for_instrument(guitar) }
+
+      let(:guitar) { HeadMusic::Instruments::Instrument.get(:guitar) }
 
       it "returns a Stringing" do
         expect(stringing).to be_a described_class
@@ -43,41 +44,46 @@ describe HeadMusic::Instruments::Stringing do
       # baritone_ukulele has its own stringing, so we need a different approach
       # Let's test with an instrument that has a parent
       let(:parent_instrument) { HeadMusic::Instruments::Instrument.get(:violin) }
-
-      it "falls back to parent stringing when child has none" do
+      let(:child_instrument) do
         # Create a mock child instrument without its own stringing
-        child = instance_double(
+        instance_double(
           HeadMusic::Instruments::Instrument,
           name_key: :fake_violin_variant,
           parent: parent_instrument
         )
-        allow(child).to receive(:is_a?).with(HeadMusic::Instruments::Instrument).and_return(true)
+      end
 
-        stringing = described_class.for_instrument(child)
+      it "falls back to parent stringing when child has none" do
+        allow(child_instrument).to receive(:is_a?).with(HeadMusic::Instruments::Instrument).and_return(true)
+
+        stringing = described_class.for_instrument(child_instrument)
         expect(stringing).to be_a described_class
         expect(stringing.course_count).to eq 4
       end
     end
 
     context "with an Instrument object that has no stringing and no parent" do
-      let(:trumpet) { HeadMusic::Instruments::Instrument.get(:trumpet) }
       subject(:stringing) { described_class.for_instrument(trumpet) }
+
+      let(:trumpet) { HeadMusic::Instruments::Instrument.get(:trumpet) }
 
       it { is_expected.to be_nil }
     end
 
     context "with an Instrument object that has no stringing and parent has no stringing" do
-      it "returns nil" do
-        # Create a mock instrument with a parent that also has no stringing
-        parent = instance_double(
-          HeadMusic::Instruments::Instrument,
-          name_key: :fake_parent
-        )
-        child = instance_double(
+      # Create a mock instrument with a parent that also has no stringing
+      let(:parent) do
+        instance_double(HeadMusic::Instruments::Instrument, name_key: :fake_parent)
+      end
+      let(:child) do
+        instance_double(
           HeadMusic::Instruments::Instrument,
           name_key: :fake_child,
           parent: parent
         )
+      end
+
+      it "returns nil" do
         allow(child).to receive(:is_a?).with(HeadMusic::Instruments::Instrument).and_return(true)
 
         stringing = described_class.for_instrument(child)
@@ -234,24 +240,24 @@ describe HeadMusic::Instruments::Stringing do
   end
 
   describe "#==" do
-    let(:guitar1) { described_class.for_instrument(:guitar) }
-    let(:guitar2) { described_class.for_instrument(:guitar) }
+    let(:guitar_instance) { described_class.for_instrument(:guitar) }
+    let(:another_guitar) { described_class.for_instrument(:guitar) }
     let(:violin) { described_class.for_instrument(:violin) }
 
     it "returns true for equal stringings" do
-      expect(guitar1).to eq guitar2
+      expect(guitar_instance).to eq another_guitar
     end
 
     it "returns false for different instruments" do
-      expect(guitar1).not_to eq violin
+      expect(guitar_instance).not_to eq violin
     end
 
     it "returns false when compared with non-Stringing" do
-      expect(guitar1).not_to eq "guitar"
+      expect(guitar_instance).not_to eq "guitar"
     end
 
     it "returns false when compared with nil" do
-      expect(guitar1).not_to eq nil
+      expect(guitar_instance).not_to be_nil
     end
   end
 

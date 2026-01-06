@@ -413,6 +413,10 @@ describe HeadMusic::Instruments::ScoreOrder do
     let(:orchestral_order) { described_class.get(:orchestral) }
 
     context "with a valid instrument object not in any score order" do
+      subject(:ordered_instrument_names) {
+        orchestral_order.order([theremin, "violin", didgeridoo, "flute"]).map(&:name)
+      }
+
       let(:didgeridoo) do
         instance_double(
           HeadMusic::Instruments::Instrument,
@@ -434,10 +438,6 @@ describe HeadMusic::Instruments::ScoreOrder do
           to_s: "Theremin"
         )
       end
-
-      subject(:ordered_instrument_names) {
-        orchestral_order.order([theremin, "violin", didgeridoo, "flute"]).map(&:name)
-      }
 
       it "places unknown instruments at the end, sorted alphabetically" do
         # Known instruments come first in score order

@@ -107,19 +107,19 @@ describe HeadMusic::Instruments::AlternateTuning do
   end
 
   describe "#==" do
-    let(:drop_d1) { described_class.get(:guitar, :drop_d) }
-    let(:drop_d2) { described_class.get(:guitar, :drop_d) }
+    let(:drop_d) { described_class.get(:guitar, :drop_d) }
+    let(:another_drop_d) { described_class.get(:guitar, :drop_d) }
     let(:open_g) { described_class.get(:guitar, :open_g) }
     let(:bass_drop_d) { described_class.get(:bass_guitar, :drop_d) }
 
     it "compares by instrument_key and name_key" do
-      expect(drop_d1).to eq drop_d2
-      expect(drop_d1).not_to eq open_g
-      expect(drop_d1).not_to eq bass_drop_d
+      expect(drop_d).to eq another_drop_d
+      expect(drop_d).not_to eq open_g
+      expect(drop_d).not_to eq bass_drop_d
     end
 
     it "returns false when compared with non-AlternateTuning" do
-      expect(drop_d1).not_to eq "drop_d"
+      expect(drop_d).not_to eq "drop_d"
     end
   end
 

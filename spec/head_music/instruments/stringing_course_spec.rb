@@ -66,19 +66,19 @@ describe HeadMusic::Instruments::StringingCourse do
   end
 
   describe "#==" do
-    let(:course1) { described_class.new(standard_pitch: "E2") }
-    let(:course1_copy) { described_class.new(standard_pitch: "E2") }
-    let(:course2) { described_class.new(standard_pitch: "A2") }
-    let(:course3) { described_class.new(standard_pitch: "E2", course_semitones: [12]) }
+    let(:low_e_string) { described_class.new(standard_pitch: "E2") }
+    let(:low_e_string_copy) { described_class.new(standard_pitch: "E2") }
+    let(:low_a_string) { described_class.new(standard_pitch: "A2") }
+    let(:low_e_course_doubled_at_octave) { described_class.new(standard_pitch: "E2", course_semitones: [12]) }
 
     it "compares by pitch and course_semitones" do
-      expect(course1).to eq course1_copy
-      expect(course1).not_to eq course2
-      expect(course1).not_to eq course3
+      expect(low_e_string).to eq low_e_string_copy
+      expect(low_e_string).not_to eq low_a_string
+      expect(low_e_string).not_to eq low_e_course_doubled_at_octave
     end
 
     it "returns false when compared with non-StringingCourse" do
-      expect(course1).not_to eq "E2"
+      expect(low_e_string).not_to eq "E2"
     end
   end
 
