@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.0.0] - 2026-01-05
+
+### Changed
+- **BREAKING**: Widened ActiveSupport dependency from `~> 7.0` to `>= 7.0, < 10` to support Rails 8.x
+- Improved I18n initialization to be non-destructive:
+  - No longer overwrites `I18n.default_locale` (allows Rails apps to control their default)
+  - Adds HeadMusic locales to `available_locales` instead of replacing them
+  - Only sets fallbacks if not already configured by the application
+- Updated CI workflow to test against both ActiveSupport 7.x and 8.x
+
+### Fixed
+- Fixed compatibility issue with Rails 8.1.x applications
+
+## [10.0.0] - 2025-12-01
+
+### Changed
+- Internal release for testing
+
 ## [9.0.0] - 2025-10-24
 
 ### Added

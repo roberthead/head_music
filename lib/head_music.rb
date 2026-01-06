@@ -13,17 +13,33 @@ require "humanize"
 require "i18n"
 require "i18n/backend/fallbacks"
 
-I18n::Backend::Simple.include I18n::Backend::Fallbacks
+# Configure I18n for HeadMusic locales
+# Include fallbacks backend if not already included
+I18n::Backend::Simple.include(I18n::Backend::Fallbacks) unless I18n::Backend::Simple.included_modules.include?(I18n::Backend::Fallbacks)
+
+# Add HeadMusic locale files to the load path (additive, doesn't overwrite)
 I18n.load_path += Dir[File.join(File.dirname(__dir__), "lib", "head_music", "locales", "*.yml")]
-I18n.config.available_locales = %i[en fr de it ru es en_US en_GB]
-I18n.default_locale = :en
-I18n.fallbacks[:de] = %i[de en_GB en]
-I18n.fallbacks[:en_US] = %i[en_US en en_GB]
-I18n.fallbacks[:en_GB] = %i[en_GB en en_US]
-I18n.fallbacks[:es] = %i[es en]
-I18n.fallbacks[:fr] = %i[fr en_GB en]
-I18n.fallbacks[:it] = %i[it en_GB en]
-I18n.fallbacks[:ru] = %i[ru en_GB en]
+
+# Add HeadMusic locales to available locales (additive, doesn't overwrite existing)
+HEAD_MUSIC_LOCALES = %i[en fr de it ru es en_US en_GB].freeze
+existing_locales = I18n.config.available_locales || []
+I18n.config.available_locales = (existing_locales + HEAD_MUSIC_LOCALES).uniq
+
+# Configure fallbacks for HeadMusic locales (only if not already configured)
+# These provide sensible defaults for music terminology translations
+HEAD_MUSIC_FALLBACKS = {
+  de: %i[de en_GB en],
+  en_US: %i[en_US en en_GB],
+  en_GB: %i[en_GB en en_US],
+  es: %i[es en],
+  fr: %i[fr en_GB en],
+  it: %i[it en_GB en],
+  ru: %i[ru en_GB en]
+}.freeze
+
+HEAD_MUSIC_FALLBACKS.each do |locale, fallbacks|
+  I18n.fallbacks[locale] = fallbacks if I18n.fallbacks[locale].empty? || I18n.fallbacks[locale] == [locale]
+end
 
 # utilities
 require "head_music/utilities/case"

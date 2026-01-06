@@ -12,7 +12,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: ['3.3.0', '3.3', '3.4']
+        ruby-version: ['3.3', '3.4']
+        activesupport-version: ['7.2', '8.0']
 
     steps:
     - uses: actions/checkout@v4
@@ -21,13 +22,18 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby-version }}
-        bundler-cache: true # runs 'bundle install' and caches installed gems
+        bundler-cache: false
+
+    - name: Install dependencies with ActiveSupport ${{ matrix.activesupport-version }}
+      run: |
+        bundle config set --local path vendor/bundle
+        ACTIVESUPPORT_VERSION="${{ matrix.activesupport-version }}" bundle install
 
     - name: Run tests
       run: bundle exec rspec
 
     - name: Upload coverage to Codecov
-      if: matrix.ruby-version == '3.3.0'
+      if: matrix.ruby-version == '3.3' && matrix.activesupport-version == '8.0'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}

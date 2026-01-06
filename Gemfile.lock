@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    head_music (10.0.0)
-      activesupport (~> 7.0)
+    head_music (11.0.0)
+      activesupport (>= 7.0, < 10)
       humanize (~> 2.0)
       i18n (~> 1.8)
 

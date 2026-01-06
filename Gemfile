@@ -5,6 +5,11 @@ ruby ">= 3.3.0"
 # Specify your gem's dependencies in head_music.gemspec
 gemspec
 
+# Allow CI to test against specific ActiveSupport versions
+if ENV["ACTIVESUPPORT_VERSION"]
+  gem "activesupport", "~> #{ENV["ACTIVESUPPORT_VERSION"]}.0"
+end
+
 gem "standard", require: false
 
 group :test do
