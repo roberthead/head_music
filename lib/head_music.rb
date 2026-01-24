@@ -110,6 +110,7 @@ require "head_music/instruments/score_order"
 
 # content
 require "head_music/content/bar"
+require "head_music/content/cantus_firmus_examples"
 require "head_music/content/composition"
 require "head_music/content/note"
 require "head_music/content/placement"
