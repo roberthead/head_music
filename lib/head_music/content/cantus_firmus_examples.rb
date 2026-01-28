@@ -14,10 +14,10 @@ module HeadMusic
       ].freeze
 
       CLENDINNING = [
-        {source: "Clendinning", name: "CF in F major", tonality: "F major", pitches: %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3]},
-        {source: "Clendinning", name: "CF in D minor", tonality: "D minor", pitches: %w[D3 A3 G3 F3 E3 D3 F3 E3 D3]},
-        {source: "Clendinning", name: "CF in C major (treble)", tonality: "C major", pitches: %w[C D F E F G A G E D C]},
-        {source: "Clendinning", name: "CF in C major (bass)", tonality: "C major", pitches: %w[C3 E3 F3 G3 E3 A3 G3 E3 F3 E3 D3 C3]}
+        {source: "Clendinning", name: "F major", tonality: "F major", pitches: %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3]},
+        {source: "Clendinning", name: "D minor", tonality: "D minor", pitches: %w[D3 A3 G3 F3 E3 D3 F3 E3 D3]},
+        {source: "Clendinning", name: "C major (treble)", tonality: "C major", pitches: %w[C D F E F G A G E D C]},
+        {source: "Clendinning", name: "C major (bass)", tonality: "C major", pitches: %w[C3 E3 F3 G3 E3 A3 G3 E3 F3 E3 D3 C3]}
       ].freeze
 
       DAVIS_AND_LYBBERT = [

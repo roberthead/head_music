@@ -70,19 +70,19 @@ end
 
 CLENDINNING_CANTUS_FIRMUS_EXAMPLES = [
   {
-    source: "Clendinning", name: "Clendinning CF in F major", key: "F major",
+    source: "Clendinning", name: "Clendinning F major", key: "F major",
     pitches: %w[F3 G3 A3 F3 D3 E3 F3 C4 A3 F3 G3 F3]
   },
   {
-    source: "Clendinning", name: "Clendinning CF in D minor", key: "D minor",
+    source: "Clendinning", name: "Clendinning D minor", key: "D minor",
     pitches: %w[D3 A3 G3 F3 E3 D3 F3 E3 D3]
   },
   {
-    source: "Clendinning", name: "Clendinning CF in C major (treble)", key: "C major",
+    source: "Clendinning", name: "Clendinning C major (treble)", key: "C major",
     pitches: %w[C D F E F G A G E D C]
   },
   {
-    source: "Clendinning", name: "Clendinning CF in C major (bass)", key: "C major",
+    source: "Clendinning", name: "Clendinning C major (bass)", key: "C major",
     pitches: %w[C3 E3 F3 G3 E3 A3 G3 E3 F3 E3 D3 C3]
   }
 ].freeze
@@ -149,83 +149,83 @@ end
 
 FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS = [
   {
-    name: "Fux CF in D with a repeated note",
+    name: "Fux D with a repeated note",
     key: "D dorian", pitches: %w[D F E D G F F A G F E D],
     expected_message: "Always move to a different note."
   },
   {
-    name: "Fux CF in C with too few notes",
+    name: "Fux C with too few notes",
     key: "C ionian", pitches: %w[C E F G E D C],
     expected_message: "Write at least eight notes."
   },
   {
-    name: "Fux CF in C with dissonant climax",
+    name: "Fux C with dissonant climax",
     key: "C ionian", pitches: %w[C E F E B A G F E D C],
     expected_message: "Peak on a consonant high or low note one time or twice with a step between."
   },
   {
-    name: "Fux CF in D with chromatic notes added",
+    name: "Fux D with chromatic notes added",
     key: "D dorian", pitches: %w[D F# E D G F# A G F# E D],
     expected_message: "Use only notes in the key signature."
   },
   {
-    name: "Fux CF in D ending on third scale degree",
+    name: "Fux D ending on third scale degree",
     key: "D dorian", pitches: %w[D F E D G F A G F],
     expected_message: "End on the first scale degree."
   },
   {
-    name: "Fux CF in C with direction change removed",
+    name: "Fux C with direction change removed",
     key: "C ionian", pitches: %w[C E F G F E D C],
     expected_message: "Change melodic direction frequently."
   },
   {
-    name: "Fux CF in D with two octave leaps added",
+    name: "Fux D with two octave leaps added",
     key: "D dorian", pitches: %w[D F F5 E5 D5 D A G F A G F E D],
     expected_message: "Use a maximum of one octave leap."
   },
   {
-    name: "Fux CF in G with less conjunct motion",
+    name: "Fux G with less conjunct motion",
     key: "G mixolydian", pitches: %w[G3 C B3 G3 C E D G E C D A3 G3],
     expected_message: "Use mostly conjunct motion."
   },
   {
-    name: "Fux CF in D with reset added",
+    name: "Fux D with reset added",
     key: "D dorian", pitches: ["D", "F", "E", "D", "G", "F", "A", nil, "G", "F", "E", "D"],
     expected_message: "Place a note in each measure."
   },
   {
-    name: "Fux CF in D with one measure of half notes",
+    name: "Fux D with one measure of half notes",
     key: "D dorian", pitches: %w[D F E D G F A G F E D],
     durations: %i[whole whole whole half half whole],
     expected_message: "Use consistent rhythmic unit."
   },
   {
-    name: "Fux CF in D with unrecovered large leap",
+    name: "Fux D with unrecovered large leap",
     key: "D dorian", pitches: %w[D F E D G A G F E D],
     expected_message: "Recover large leaps by step in the opposite direction."
   },
   {
-    name: "Fux CF in A with non-singable interval",
+    name: "Fux A with non-singable interval",
     key: "A aeolian", pitches: %w[A3 C B3 F E D C B3 A3],
     expected_message: "Use only PU, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
   },
   {
-    name: "Fux CF in G with non-singable range",
+    name: "Fux G with non-singable range",
     key: "G mixolydian", pitches: %w[G3 C B3 G3 G4 F D5 C5 G E C D B3 A3 G3],
     expected_message: "Limit melodic range to a 10th."
   },
   {
-    name: "Fux CF in A starting on 5th scale degree",
+    name: "Fux A starting on 5th scale degree",
     key: "A aeolian", pitches: %w[E C B3 D C E F E D C B3 A3],
     expected_message: "Start on the first scale degree."
   },
   {
-    name: "Fux CF in D skipping down to final note",
+    name: "Fux D skipping down to final note",
     key: "D dorian", pitches: %w[D F E D G F A G F D],
     expected_message: "Step down to the final note."
   },
   {
-    name: "Fux CF in G with too many notes",
+    name: "Fux G with too many notes",
     key: "G mixolydian", pitches: %w[G3 C B3 G3 C E D G E C D C B3 A3 G3],
     expected_message: "Write up to fourteen notes."
   }

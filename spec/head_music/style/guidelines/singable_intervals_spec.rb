@@ -3,7 +3,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::SingableIntervals do
   subject { described_class.new(voice) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(name: "CF in C Major", key_signature: "C Major") }
+  let(:composition) { HeadMusic::Content::Composition.new(name: "C Major", key_signature: "C Major") }
   let(:voice) { HeadMusic::Content::Voice.new(composition: composition) }
 
   context "with no notes" do
