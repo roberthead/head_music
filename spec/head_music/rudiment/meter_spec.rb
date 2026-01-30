@@ -133,4 +133,10 @@ describe HeadMusic::Rudiment::Meter do
       its(:counts_per_quarter_note) { are_expected.to eq 0.5 }
     end
   end
+
+  describe "1/1 meter" do
+    subject(:meter) { described_class.get("1/1") }
+
+    its(:counts_per_quarter_note) { are_expected.to eq 0.25 }
+  end
 end

@@ -1,0 +1,115 @@
+cantus_firmus_examples:
+  - source: "Fux"
+    tonal_center: D
+    mode: dorian
+    pitches: ["D", "F", "E", "D", "G", "F", "A", "G", "F", "E", "D"]
+
+  - source: "Fux"
+    tonal_center: E
+    mode: phrygian
+    pitches: ["E", "C", "D", "C", "A3", "A", "G", "E", "F", "E"]
+
+  - source: "Fux"
+    tonal_center: F
+    mode: lydian
+    pitches: ["F", "G", "A", "F", "D", "E", "F", "C5", "A", "F", "G", "F"]
+
+  - source: "Fux"
+    tonal_center: G
+    mode: mixolydian
+    pitches: ["G3", "C", "B3", "G3", "C", "E", "D", "G", "E", "C", "D", "B3", "A3", "G3"]
+
+  - source: "Fux"
+    tonal_center: A
+    mode: aeolian
+    pitches: ["A3", "C", "B3", "D", "C", "E", "F", "E", "D", "C", "B3", "A3"]
+
+  - source: "Fux"
+    tonal_center: C
+    mode: ionian
+    pitches: ["C", "E", "F", "G", "E", "A", "G", "E", "F", "E", "D", "C"]
+
+  - source: "Fux"
+    tonal_center: C
+    mode: ionian
+    pitches: ["C", "E", "F", "E", "G", "F", "E", "D", "C"]
+
+  - source: "Clendinning & Marvin"
+    tonal_center: F
+    mode: ionian
+    pitches: ["F3", "G3", "A3", "F3", "D3", "E3", "F3", "C4", "A3", "F3", "G3", "F3"]
+
+  - source: "Clendinning & Marvin"
+    tonal_center: D
+    mode: aeolian
+    pitches: ["D3", "A3", "G3", "F3", "E3", "D3", "F3", "E3", "D3"]
+
+  - source: "Clendinning & Marvin"
+    tonal_center: C
+    mode: ionian
+    pitches: ["C", "D", "F", "E", "F", "G", "A", "G", "E", "D", "C"]
+
+  - source: "Clendinning & Marvin"
+    tonal_center: C
+    mode: ionian
+    pitches: ["C3", "E3", "F3", "G3", "E3", "A3", "G3", "E3", "F3", "E3", "D3", "C3"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: C
+    mode: ionian
+    pitches: ["C3", "E3", "D3", "G3", "A3", "G3", "E3", "F3", "D3", "C3"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: C
+    mode: ionian
+    pitches: ["C3", "D3", "E3", "G3", "A3", "F3", "E3", "D3", "C3"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: G
+    mode: ionian
+    pitches: ["G3", "F#3", "G3", "E3", "D3", "B2", "C3", "D3", "B2", "A2", "G2"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: G
+    mode: ionian
+    pitches: ["G2", "B2", "C3", "D3", "E3", "D3", "B2", "C3", "A2", "G2"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: F
+    mode: ionian
+    pitches: ["F3", "D3", "C3", "F3", "G3", "A3", "E3", "D3", "G3", "F3"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: A
+    mode: aeolian
+    pitches: ["A2", "E3", "C3", "D3", "B2", "G2", "A2", "C3", "B2", "A2"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: A
+    mode: aeolian
+    pitches: ["A2", "B2", "C3", "D3", "E3", "F3", "E3", "C3", "B2", "A2"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: E
+    mode: aeolian
+    pitches: ["E3", "A3", "B3", "G3", "C4", "A3", "B3", "G3", "F#3", "E3"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: E
+    mode: aeolian
+    pitches: ["E3", "D3", "C3", "B2", "G2", "A2", "B2", "E3", "G3", "F#3", "E3"]
+
+  - source: "Davis & Lybbert"
+    tonal_center: D
+    mode: aeolian
+    pitches: ["D3", "F3", "E3", "G3", "F3", "D3", "A3", "G3", "F3", "E3", "D3"]
+
+  - source: "Schoenberg"
+    tonal_center: Eb
+    mode: ionian
+    pitches: ["Eb", "D", "G3", "Ab3", "C", "Ab3", "F3", "Eb3"]
+
+  - source: "Schoenberg"
+    tonal_center: A
+    mode: ionian
+    pitches: ["A3", "C#4", "B3", "F#3", "A3", "F#3", "G#3", "A3"]
