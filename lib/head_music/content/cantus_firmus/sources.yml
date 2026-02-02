@@ -1,12 +1,14 @@
 cantus_firmus_sources:
   fux:
     publication_name: Gradus ad Parnassum
+    abbreviation: Fux
     author_names:
     - Johann Joseph Fux
     notes: >
       A foundational text on counterpoint by Johann Joseph Fux, first published in 1725.
   clendinning_and_marvin:
     publication_name: The Musician's Guide to Theory and Analysis
+    abbreviation: C&M
     publication_edition: 3rd
     author_names:
     - Jane Piper Clendinning
@@ -15,6 +17,7 @@ cantus_firmus_sources:
       A contemporary guide to music theory and analysis, widely used in music education.
   davis_and_lybbert:
     publication_name: The Essentials of Counterpoint
+    abbreviation: D&L
     author_names:
     - Ferdinand Davis
     - Donald Lybbert
@@ -22,6 +25,7 @@ cantus_firmus_sources:
       A comprehensive text on counterpoint techniques and practices.
   schoenberg:
     publication_name: Preliminary Exercises in Counterpoint
+    abbreviation: Schoenberg
     author_names:
     - Arnold Schoenberg
     notes: >

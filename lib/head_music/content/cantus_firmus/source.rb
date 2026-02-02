@@ -6,7 +6,7 @@ module HeadMusic
       class Source
         SOURCES_DATA = YAML.load_file(File.expand_path("sources.yml", __dir__)).freeze
 
-        attr_reader :key, :publication_name, :publication_edition, :author_names, :notes
+        attr_reader :key, :publication_name, :abbreviation, :publication_edition, :author_names, :notes
 
         class << self
           def all
@@ -42,6 +42,7 @@ module HeadMusic
         def initialize(key:, data:)
           @key = key.to_sym
           @publication_name = data["publication_name"]
+          @abbreviation = data["abbreviation"]
           @publication_edition = data["publication_edition"]
           @author_names = data["author_names"] || []
           @notes = data["notes"]&.strip
