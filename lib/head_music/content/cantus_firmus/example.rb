@@ -6,13 +6,17 @@ module HeadMusic
       class Example
         EXAMPLES_DATA = YAML.load_file(File.expand_path("examples.yml", __dir__)).freeze
 
-        attr_reader :source, :tonal_center, :mode, :pitches
+        attr_reader :slug, :source, :tonal_center, :mode, :pitches
 
         class << self
           def all
             @all ||= EXAMPLES_DATA["cantus_firmus_examples"].map do |data|
               new(data: data)
             end
+          end
+
+          def find_by_slug(slug)
+            all.find { |example| example.slug == slug.to_s }
           end
 
           def by_source(source_identifier)
@@ -37,6 +41,7 @@ module HeadMusic
         end
 
         def initialize(data:)
+          @slug = data["slug"]
           @source = Source.get(data["source"])
           @tonal_center = data["tonal_center"]
           @mode = data["mode"]&.to_sym

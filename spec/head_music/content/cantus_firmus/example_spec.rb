@@ -9,6 +9,12 @@ describe HeadMusic::Content::CantusFirmus::Example do
       expect(examples).to all(be_a(described_class))
     end
 
+    it "has unique slugs for all examples" do
+      slugs = examples.map(&:slug)
+      expect(slugs).to all(be_a(String))
+      expect(slugs.uniq.length).to eq(slugs.length)
+    end
+
     it "includes examples from multiple sources" do
       sources = examples.map(&:source).uniq
       expect(sources.length).to be > 1
@@ -16,6 +22,19 @@ describe HeadMusic::Content::CantusFirmus::Example do
 
     it "returns 23 examples" do
       expect(examples.length).to eq(23)
+    end
+  end
+
+  describe ".find_by_slug" do
+    it "returns the matching example" do
+      example = described_class.find_by_slug("fux-d-dorian")
+      expect(example.tonal_center).to eq("D")
+      expect(example.mode).to eq(:dorian)
+      expect(example.source.key).to eq(:fux)
+    end
+
+    it "returns nil for an unknown slug" do
+      expect(described_class.find_by_slug("nonexistent")).to be_nil
     end
   end
 
@@ -115,6 +134,12 @@ describe HeadMusic::Content::CantusFirmus::Example do
 
   describe "instance attributes" do
     subject(:example) { described_class.all.first }
+
+    describe "#slug" do
+      it "returns the slug string" do
+        expect(example.slug).to eq("fux-d-dorian")
+      end
+    end
 
     describe "#source" do
       it "returns a Source object" do
