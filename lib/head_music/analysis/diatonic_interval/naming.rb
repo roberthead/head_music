@@ -45,8 +45,7 @@ class HeadMusic::Analysis::DiatonicInterval::Naming
   end
 
   def shorthand
-    step_shorthand = (number == 1) ? "U" : number
-    [quality.shorthand, step_shorthand].join
+    [quality.shorthand, number].join
   end
 
   private
