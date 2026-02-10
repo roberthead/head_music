@@ -166,6 +166,13 @@ This project deliberately deprioritizes formal documentation in favor of clear, 
 2. Run tests for the specific module: `bundle exec rspec spec/head_music/[module_name]`
 3. Ensure translations are updated if names change
 
+## Reference Documents
+
+Domain reference materials live in `references/`.
+Consult these when implementing or modifying style guidelines:
+
+- `references/second-species-counterpoint.md` — Pedagogical survey of second-species counterpoint rules from Fux through contemporary sources, with cross-source comparison and mapping to head_music's style guideline architecture.
+
 ## Music theory and concepts
 
 Please refer to MUSIC_THEORY.md for music theory domain knowledge.
