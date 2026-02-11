@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.6.0] - 2026-02-10
+
+### Added
+- Second-species counterpoint style guides: `SecondSpeciesMelody` and `SecondSpeciesHarmony`
+- New guidelines for second-species counterpoint:
+  - `TwoToOne` — enforces two half notes per cantus firmus whole note (with optional half-rest opening)
+  - `WeakBeatDissonanceTreatment` — dissonant weak beats must be passing tones
+  - `NoParallelPerfectOnDownbeats` — forbids parallel perfect consonances on consecutive downbeats
+  - `NoParallelPerfectAcrossBarline` — forbids parallel perfect consonances from weak beat to following downbeat
+  - `NoStrongBeatUnisons` — forbids unisons on interior downbeats
+- Pedagogical reference document for second-species counterpoint (`references/second-species-counterpoint.md`)
+
 ## [11.0.0] - 2026-01-05
 
 ### Changed
