@@ -32,10 +32,10 @@ module HeadMusic
           # e.g., "Fux" -> "fux", "Clendinning & Marvin" -> "clendinning_and_marvin"
           def normalize_key(identifier)
             identifier.to_s
-                      .downcase
-                      .gsub(/\s*&\s*/, "_and_")
-                      .gsub(/\s+/, "_")
-                      .to_sym
+              .downcase
+              .gsub(/\s*&\s*/, "_and_")
+              .gsub(/\s+/, "_")
+              .to_sym
           end
         end
 
