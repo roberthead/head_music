@@ -55,6 +55,22 @@ describe HeadMusic::Style::Guidelines::TwoToOne do
     it { is_expected.to be_adherent }
   end
 
+  context "with only a half rest in the first bar and no note" do
+    before do
+      # First bar: half rest only, no note
+      counterpoint.place("1:1", :half)
+      # Remaining bars: two half notes each
+      (2..10).each do |bar|
+        counterpoint.place("#{bar}:1", :half, "A4")
+        counterpoint.place("#{bar}:3", :half, "B4")
+      end
+      # Final bar: whole note
+      counterpoint.place("11:1", :whole, "D5")
+    end
+
+    its(:fitness) { is_expected.to be < 1 }
+  end
+
   context "with whole notes instead of half notes" do
     before do
       %w[A4 A4 C5 B4 D5 C5 E5 D5 A4 C#5 D5].each.with_index(1) do |pitch, bar|
