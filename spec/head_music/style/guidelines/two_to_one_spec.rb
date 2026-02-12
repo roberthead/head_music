@@ -55,6 +55,25 @@ describe HeadMusic::Style::Guidelines::TwoToOne do
     it { is_expected.to be_adherent }
   end
 
+  context "with a single half note after beat 1 in the first bar (no explicit rest)" do
+    before do
+      # First bar: only a half note on beat 3, no rest placed
+      counterpoint.place("1:3", :half, "A4")
+      # Middle bars: two half notes each
+      middle_notes = %w[A4 C5 C5 B4 A4 B4 D5 C5 C5 A4 E5 D5 D5 B4 A4 C5 C#5]
+      middle_notes.each_with_index do |pitch, index|
+        bar = index / 2 + 2
+        beat = (index % 2) * 2 + 1
+        counterpoint.place("#{bar}:#{beat}", :half, pitch)
+      end
+      counterpoint.place("10:3", :half, "C#5")
+      # Final bar: whole note
+      counterpoint.place("11:1", :whole, "D5")
+    end
+
+    it { is_expected.to be_adherent }
+  end
+
   context "with only a half rest in the first bar and no note" do
     before do
       # First bar: half rest only, no note

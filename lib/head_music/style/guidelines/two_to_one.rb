@@ -30,6 +30,7 @@ class HeadMusic::Style::Guidelines::TwoToOne < HeadMusic::Style::Annotation
     bar_rests = rests_in_bar(bar_number)
     return if two_half_notes?(bar_notes)
     return if rest_then_half_note?(bar_notes, bar_rests)
+    return if single_half_note_after_downbeat?(bar_notes)
 
     mark_bar(bar_number)
   end
@@ -61,6 +62,12 @@ class HeadMusic::Style::Guidelines::TwoToOne < HeadMusic::Style::Annotation
       bar_notes.first.rhythmic_value == HALF &&
       bar_rests.length == 1 &&
       bar_rests.first.rhythmic_value == HALF
+  end
+
+  def single_half_note_after_downbeat?(bar_notes)
+    bar_notes.length == 1 &&
+      bar_notes.first.rhythmic_value == HALF &&
+      bar_notes.first.position.count > 1
   end
 
   def notes_in_bar(bar_number)
