@@ -35,6 +35,6 @@ describe HeadMusic::Style::Guides::SecondSpeciesHarmony do
       voice.place("11:1", :whole, "D5")
     end
 
-    its(:fitness) { is_expected.to be > 0.8 }
+    its(:fitness) { is_expected.to be > 0.7 }
   end
 end

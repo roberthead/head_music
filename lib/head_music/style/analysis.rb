@@ -22,7 +22,7 @@ class HeadMusic::Style::Analysis
   def fitness
     return 1.0 if annotations.empty?
 
-    @fitness ||= fitness_scores.inject(:+).to_f / fitness_scores.length
+    @fitness ||= fitness_scores.reduce(:*)**(1.0 / fitness_scores.length)
   end
 
   def adherent?

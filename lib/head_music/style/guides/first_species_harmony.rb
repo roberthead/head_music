@@ -8,6 +8,7 @@ class HeadMusic::Style::Guides::FirstSpeciesHarmony
     HeadMusic::Style::Guidelines::AvoidCrossingVoices,
     HeadMusic::Style::Guidelines::AvoidOverlappingVoices,
     HeadMusic::Style::Guidelines::ConsonantDownbeats,
+    HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats,
     HeadMusic::Style::Guidelines::NoUnisonsInMiddle,
     HeadMusic::Style::Guidelines::OneToOne,
     HeadMusic::Style::Guidelines::PreferContraryMotion,
