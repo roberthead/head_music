@@ -8,12 +8,16 @@ class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Sty
   def marks
     return [] unless cantus_firmus&.notes&.any?
 
-    dissonant_weak_beat_notes.reject { |note| passing_tone?(note) }.map do |note|
+    dissonant_weak_beat_notes.reject { |note| recognized_figure?(note) }.map do |note|
       HeadMusic::Style::Mark.for(note)
     end
   end
 
   private
+
+  def recognized_figure?(note)
+    passing_tone?(note)
+  end
 
   def dissonant_weak_beat_notes
     weak_beat_notes.select { |note| dissonant_with_cantus?(note) }
@@ -41,10 +45,14 @@ class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Sty
     foll = following_note(note)
     return false unless prev && foll
 
-    approach = HeadMusic::Analysis::MelodicInterval.new(prev, note)
-    departure = HeadMusic::Analysis::MelodicInterval.new(note, foll)
+    approach = melodic_interval_between(prev, note)
+    departure = melodic_interval_between(note, foll)
 
     approach.step? && departure.step? && approach.direction == departure.direction
+  end
+
+  def melodic_interval_between(note1, note2)
+    HeadMusic::Analysis::MelodicInterval.new(note1, note2)
   end
 
   def preceding_note(note)

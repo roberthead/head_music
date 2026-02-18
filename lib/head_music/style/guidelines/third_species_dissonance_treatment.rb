@@ -4,35 +4,13 @@ module HeadMusic::Style::Guidelines; end
 # A counterpoint guideline for third-species dissonance treatment.
 # Every dissonant note on beats 2, 3, or 4 must be treated as a passing tone,
 # neighbor tone, nota cambiata, or double neighbor figure.
-class HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment < HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment
   MESSAGE = "Treat dissonances as passing tones, neighbor tones, cambiata, or double neighbor figures."
-
-  def marks
-    return [] unless cantus_firmus&.notes&.any?
-
-    unresolved_dissonant_notes.map { |note| HeadMusic::Style::Mark.for(note) }
-  end
 
   private
 
-  def unresolved_dissonant_notes
-    dissonant_weak_beat_notes.reject { |note| recognized_figure?(note) }
-  end
-
   def recognized_figure?(note)
-    passing_tone?(note) || neighbor_tone?(note) || cambiata_dissonance?(note) || double_neighbor_member?(note)
-  end
-
-  # Passing tone: approached by step and left by step in the same direction.
-  def passing_tone?(note)
-    prev = preceding_note(note)
-    foll = following_note(note)
-    return false unless prev && foll
-
-    approach = melodic_interval_between(prev, note)
-    departure = melodic_interval_between(note, foll)
-
-    approach.step? && departure.step? && approach.direction == departure.direction
+    super || neighbor_tone?(note) || cambiata_dissonance?(note) || double_neighbor_member?(note)
   end
 
   # Neighbor tone: approached by step, left by step in the opposite direction.
@@ -87,16 +65,17 @@ class HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment < HeadMusic:
     index = notes.index(note)
     return false unless index
 
-    double_neighbor_as_note_2?(index) || double_neighbor_as_note_3?(index)
+    double_neighbor_figure?(index, offset: 1) || double_neighbor_figure?(index, offset: 2)
   end
 
-  def double_neighbor_as_note_2?(index)
-    return false if index < 1 || index + 2 > notes.length - 1
+  # Check for a double-neighbor four-note figure where the given index
+  # is note number (offset + 1) in the figure. offset=1 means note 2,
+  # offset=2 means note 3.
+  def double_neighbor_figure?(index, offset:)
+    start = index - offset
+    return false if start < 0 || start + 3 > notes.length - 1
 
-    n1 = notes[index - 1]
-    n2 = notes[index]
-    n3 = notes[index + 1]
-    n4 = notes[index + 2]
+    n1, n2, n3, n4 = notes[start, 4]
 
     approach = melodic_interval_between(n1, n2)
     middle = melodic_interval_between(n2, n3)
@@ -105,61 +84,9 @@ class HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment < HeadMusic:
     approach.step? && middle.number == 3 && departure.step? &&
       n1.pitch == n4.pitch &&
       consonant_with_cantus?(n1) && consonant_with_cantus?(n4)
-  end
-
-  def double_neighbor_as_note_3?(index)
-    return false if index < 2 || index + 1 > notes.length - 1
-
-    n1 = notes[index - 2]
-    n2 = notes[index - 1]
-    n3 = notes[index]
-    n4 = notes[index + 1]
-
-    approach = melodic_interval_between(n1, n2)
-    middle = melodic_interval_between(n2, n3)
-    departure = melodic_interval_between(n3, n4)
-
-    approach.step? && middle.number == 3 && departure.step? &&
-      n1.pitch == n4.pitch &&
-      consonant_with_cantus?(n1) && consonant_with_cantus?(n4)
-  end
-
-  def dissonant_weak_beat_notes
-    weak_beat_notes.select { |note| dissonant_with_cantus?(note) }
-  end
-
-  def weak_beat_notes
-    notes.reject { |note| downbeat_position?(note.position) }
-  end
-
-  def downbeat_position?(position)
-    cantus_firmus_positions.include?(position.to_s)
-  end
-
-  def cantus_firmus_positions
-    @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |n| n.position.to_s })
-  end
-
-  def dissonant_with_cantus?(note)
-    interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, note.position)
-    interval.notes.length == 2 && interval.dissonance?(:two_part_harmony)
   end
 
   def consonant_with_cantus?(note)
     !dissonant_with_cantus?(note)
-  end
-
-  def melodic_interval_between(note1, note2)
-    HeadMusic::Analysis::MelodicInterval.new(note1, note2)
-  end
-
-  def preceding_note(note)
-    index = notes.index(note)
-    notes[index - 1] if index && index > 0
-  end
-
-  def following_note(note)
-    index = notes.index(note)
-    notes[index + 1] if index && index < notes.length - 1
   end
 end
