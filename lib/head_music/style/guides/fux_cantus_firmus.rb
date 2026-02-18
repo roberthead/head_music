@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guides; end
 
 # Rules for the cantus firmus according to Fux.
-class HeadMusic::Style::Guides::FuxCantusFirmus
+class HeadMusic::Style::Guides::FuxCantusFirmus < HeadMusic::Style::Guides::SpeciesMelody
   RULESET = [
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::AtLeastEightNotes,
@@ -21,8 +21,4 @@ class HeadMusic::Style::Guides::FuxCantusFirmus
     HeadMusic::Style::Guidelines::StepDownToFinalNote,
     HeadMusic::Style::Guidelines::UpToFourteenNotes
   ].freeze
-
-  def self.analyze(voice)
-    RULESET.map { |rule| rule.new(voice) }
-  end
 end

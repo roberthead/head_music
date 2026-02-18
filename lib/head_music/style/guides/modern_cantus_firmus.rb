@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guides; end
 
 # Modern rules for the cantus firmus
-class HeadMusic::Style::Guides::ModernCantusFirmus
+class HeadMusic::Style::Guides::ModernCantusFirmus < HeadMusic::Style::Guides::SpeciesMelody
   RULESET = [
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::AtLeastEightNotes,
@@ -22,8 +22,4 @@ class HeadMusic::Style::Guides::ModernCantusFirmus
     HeadMusic::Style::Guidelines::StepToFinalNote,
     HeadMusic::Style::Guidelines::UpToFourteenNotes
   ].freeze
-
-  def self.analyze(voice)
-    RULESET.map { |rule| rule.new(voice) }
-  end
 end

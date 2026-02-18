@@ -1,8 +1,5 @@
-# Module for guides
-module HeadMusic::Style::Guides; end
-
 # Rules for first species harmony
-class HeadMusic::Style::Guides::FirstSpeciesHarmony
+class HeadMusic::Style::Guides::FirstSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   RULESET = [
     HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
     HeadMusic::Style::Guidelines::AvoidCrossingVoices,
@@ -14,10 +11,6 @@ class HeadMusic::Style::Guides::FirstSpeciesHarmony
     HeadMusic::Style::Guidelines::PreferContraryMotion,
     HeadMusic::Style::Guidelines::PreferImperfect
   ].freeze
-
-  def self.analyze(voice)
-    RULESET.map { |rule| rule.new(voice) }
-  end
 end
 
 # TODO: Guideline against leaping into P8 even by contrary motion.

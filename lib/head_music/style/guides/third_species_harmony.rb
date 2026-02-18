@@ -1,8 +1,5 @@
-# Module for guides
-module HeadMusic::Style::Guides; end
-
 # Rules for third species harmony
-class HeadMusic::Style::Guides::ThirdSpeciesHarmony
+class HeadMusic::Style::Guides::ThirdSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   RULESET = [
     HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
     HeadMusic::Style::Guidelines::AvoidCrossingVoices,
@@ -15,8 +12,4 @@ class HeadMusic::Style::Guides::ThirdSpeciesHarmony
     HeadMusic::Style::Guidelines::PreferImperfect,
     HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment
   ].freeze
-
-  def self.analyze(voice)
-    RULESET.map { |rule| rule.new(voice) }
-  end
 end
