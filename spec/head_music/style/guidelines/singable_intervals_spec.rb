@@ -59,8 +59,8 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
       end
     end
 
-    its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
-    its(:first_mark_code) { is_expected.to eq "6:1:000 to 8:1:000" }
+    it { is_expected.to be_adherent }
+    its(:marks) { are_expected.to be_empty }
   end
 
   context "with a major sixth" do

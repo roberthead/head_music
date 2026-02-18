@@ -207,7 +207,7 @@ FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS = [
   {
     name: "Fux A with non-singable interval",
     key: "A aeolian", pitches: %w[A3 C B3 F E D C B3 A3],
-    expected_message: "Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
+    expected_message: "Use only P1, m2, M2, m3, M3, P4, P5, m6, P8 in the melodic line."
   },
   {
     name: "Fux G with non-singable range",
@@ -266,7 +266,7 @@ FUX_FIRST_SPECIES_EXAMPLES = [
     key: "E phrygian",
     cantus_firmus_pitches: %w[E C D C A3 A4 G E F E],
     counterpoint_pitches: %w[E3 A3 D3 E3 F3 F3 B3 C4 D4 E4],
-    expected_message: "Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
+    expected_message: "Use only P1, m2, M2, m3, M3, P4, P5, m6, P8 in the melodic line."
   },
   {
     source: "fux chapter one figure 12 (corrected)",
@@ -291,7 +291,7 @@ FUX_FIRST_SPECIES_EXAMPLES = [
     key: "G mixolydian",
     counterpoint_pitches: %w[G4 E4 D4 G4 G4 G4 A4 B4 G4 E5 D5 G4 F#4 G4],
     cantus_firmus_pitches: %w[G3 C4 B3 G3 C4 E4 D4 G4 E4 C4 D4 B3 A3 G3],
-    expected_message: "Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
+    expected_message: "Use only P1, m2, M2, m3, M3, P4, P5, m6, P8 in the melodic line."
   },
   {
     source: "fux chapter one figure 15 (corrected)",
