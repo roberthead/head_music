@@ -1,3 +1,4 @@
+# A module for musical instruments and their properties
 module HeadMusic::Instruments; end
 
 # A musical instrument with parent-based inheritance.
@@ -36,15 +37,12 @@ class HeadMusic::Instruments::Instrument
     def get(name, variant_key = nil)
       return name if name.is_a?(self)
 
-      # Handle two-argument form for backward compatibility
+      name_str = name.to_s
       if variant_key
-        combined_name = "#{name}_#{variant_key}"
-        result = find_valid_instrument(combined_name) || find_valid_instrument(name.to_s)
+        find_valid_instrument("#{name_str}_#{variant_key}") || find_valid_instrument(name_str)
       else
-        result = find_valid_instrument(name.to_s) || find_valid_instrument(normalize_variant_name(name))
+        find_valid_instrument(name_str) || find_valid_instrument(normalize_variant_name(name_str))
       end
-
-      result
     end
 
     def find_valid_instrument(name)
@@ -63,24 +61,14 @@ class HeadMusic::Instruments::Instrument
     # Convert shorthand variant names to full form
     # e.g., "trumpet_in_eb" -> "trumpet_in_e_flat"
     # e.g., "clarinet_in_bb" -> "clarinet_in_b_flat"
-    def normalize_variant_name(name)
-      name_str = name.to_s
+    VARIANT_PATTERN = /^(.+)_in_([a-g])([b#])$/i
 
-      # Match patterns like "_in_eb" or "_in_bb" at the end (flat)
-      flat_pattern = /^(.+)_in_([a-g])b$/i
-      sharp_pattern = %r{^(.+)_in_([a-g])\#$}i
+    def normalize_variant_name(name_str)
+      match = VARIANT_PATTERN.match(name_str.to_s)
+      return name_str.to_s unless match
 
-      if name_str =~ flat_pattern
-        instrument = Regexp.last_match(1)
-        note = Regexp.last_match(2).downcase
-        "#{instrument}_in_#{note}_flat"
-      elsif name_str =~ sharp_pattern
-        instrument = Regexp.last_match(1)
-        note = Regexp.last_match(2).downcase
-        "#{instrument}_in_#{note}_sharp"
-      else
-        name_str
-      end
+      suffix = (match[3] == "b") ? "flat" : "sharp"
+      "#{match[1]}_in_#{match[2].downcase}_#{suffix}"
     end
   end
 
@@ -306,13 +294,14 @@ class HeadMusic::Instruments::Instrument
   def pitch_key_to_designation
     return nil unless pitch_key
 
-    key = pitch_key.to_s
-    if key.end_with?("_flat")
-      "#{key[0].upcase}b"
-    elsif key.end_with?("_sharp")
-      "#{key[0].upcase}#"
+    pitch_key_str = pitch_key.to_s
+    first_letter = pitch_key_str[0].upcase
+    if pitch_key_str.end_with?("_flat")
+      "#{first_letter}b"
+    elsif pitch_key_str.end_with?("_sharp")
+      "#{first_letter}#"
     else
-      key.upcase
+      pitch_key_str.upcase
     end
   end
 

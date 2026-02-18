@@ -2,26 +2,10 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::TwoToOne < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::TwoToOne < HeadMusic::Style::Guidelines::NoteCountPerBar
   MESSAGE = "Use two half notes against each whole note in the cantus firmus."
 
   HALF = HeadMusic::Rudiment::RhythmicValue.get(:half)
-  WHOLE = HeadMusic::Rudiment::RhythmicValue.get(:whole)
-
-  def marks
-    return [] unless cantus_firmus&.notes&.any?
-
-    cantus_firmus.notes.each_with_index.filter_map do |cf_note, index|
-      bar_number = cf_note.position.bar_number
-      if index == cantus_firmus.notes.length - 1
-        check_final_bar(bar_number)
-      elsif index == 0
-        check_first_bar(bar_number)
-      else
-        check_middle_bar(bar_number)
-      end
-    end
-  end
 
   private
 
@@ -42,19 +26,8 @@ class HeadMusic::Style::Guidelines::TwoToOne < HeadMusic::Style::Annotation
     mark_bar(bar_number)
   end
 
-  def check_final_bar(bar_number)
-    bar_notes = notes_in_bar(bar_number)
-    return if one_whole_note?(bar_notes)
-
-    mark_bar(bar_number)
-  end
-
   def two_half_notes?(bar_notes)
-    bar_notes.length == 2 && bar_notes.all? { |n| n.rhythmic_value == HALF }
-  end
-
-  def one_whole_note?(bar_notes)
-    bar_notes.length == 1 && bar_notes.first.rhythmic_value == WHOLE
+    bar_notes.length == 2 && bar_notes.all? { |note| note.rhythmic_value == HALF }
   end
 
   def rest_then_half_note?(bar_notes, bar_rests)
@@ -65,26 +38,9 @@ class HeadMusic::Style::Guidelines::TwoToOne < HeadMusic::Style::Annotation
   end
 
   def single_half_note_after_downbeat?(bar_notes)
+    first_note = bar_notes.first
     bar_notes.length == 1 &&
-      bar_notes.first.rhythmic_value == HALF &&
-      bar_notes.first.position.count > 1
-  end
-
-  def notes_in_bar(bar_number)
-    notes.select { |n| n.position.bar_number == bar_number }
-  end
-
-  def rests_in_bar(bar_number)
-    rests.select { |r| r.position.bar_number == bar_number }
-  end
-
-  def mark_bar(bar_number)
-    bar_placements = notes_in_bar(bar_number)
-    if bar_placements.any?
-      HeadMusic::Style::Mark.for_all(bar_placements)
-    else
-      cf_note = cantus_firmus.notes.detect { |n| n.position.bar_number == bar_number }
-      HeadMusic::Style::Mark.for(cf_note) if cf_note
-    end
+      first_note.rhythmic_value == HALF &&
+      first_note.position.count > 1
   end
 end

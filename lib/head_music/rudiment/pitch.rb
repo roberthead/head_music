@@ -56,9 +56,10 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def self.from_number(number)
-    return nil unless number == number.to_i
+    number_int = number.to_i
+    return nil unless number == number_int
 
-    fetch_or_create(HeadMusic::Rudiment::Spelling.from_number(number), (number.to_i / 12) - 1)
+    fetch_or_create(HeadMusic::Rudiment::Spelling.from_number(number), (number_int / 12) - 1)
   end
 
   def self.from_number_and_letter(number, letter_name)
@@ -71,9 +72,10 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def self.natural_letter_pitch(number, letter_name)
+    number_int = number.to_i
     natural_letter_pitch = get(HeadMusic::Rudiment::LetterName.get(letter_name).pitch_class)
-    natural_letter_pitch += 12 while (number.to_i - natural_letter_pitch.to_i) >= 6
-    natural_letter_pitch -= 12 while (number.to_i - natural_letter_pitch.to_i) <= -6
+    natural_letter_pitch += 12 while (number_int - natural_letter_pitch.to_i) >= 6
+    natural_letter_pitch -= 12 while (number_int - natural_letter_pitch.to_i) <= -6
     get(natural_letter_pitch)
   end
 
@@ -218,9 +220,10 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def helmholtz_letter_name
-    return spelling.to_s.downcase if HeadMusic::Rudiment::Register.get(register).helmholtz_case == :lower
+    spelling_str = spelling.to_s
+    return spelling_str.downcase if HeadMusic::Rudiment::Register.get(register).helmholtz_case == :lower
 
-    spelling.to_s
+    spelling_str
   end
 
   def helmholtz_marks

@@ -68,94 +68,58 @@ class HeadMusic::Analysis::Dyad
 
   private
 
+  TRICHORD_INTERVALS = [
+    %w[M3 P5],   # major triad
+    %w[m3 P5],   # minor triad
+    %w[m3 d5],   # diminished triad
+    %w[M3 A5],   # augmented triad
+    %w[P4 P5],   # sus4 (not a triad)
+    %w[M2 P5]    # sus2 (not a triad)
+  ].freeze
+
+  SEVENTH_CHORD_INTERVALS = [
+    %w[M3 P5 M7],   # major seventh
+    %w[M3 P5 m7],   # dominant seventh (major-minor)
+    %w[m3 P5 m7],   # minor seventh
+    %w[m3 P5 M7],   # minor-major seventh
+    %w[m3 d5 m7],   # half-diminished seventh
+    %w[m3 d5 d7],   # diminished seventh
+    %w[M2 M3 P5 m7], # dominant ninth
+    %w[m2 M3 P5 m7], # dominant minor ninth
+    %w[M2 m3 P5 m7], # minor ninth
+    %w[M2 M3 P5 M7]  # major ninth
+  ].freeze
+
   def generate_possible_trichords
-    trichords = []
-    pitch_classes = [lower_pitch.pitch_class, upper_pitch.pitch_class]
-
-    HeadMusic::Rudiment::Spelling::CHROMATIC_SPELLINGS.each do |root_spelling|
-      root_pitch = HeadMusic::Rudiment::Pitch.get("#{root_spelling}4")
-
-      # Try all common trichord types from this root
-      trichord_intervals = [
-        %w[M3 P5],   # major triad
-        %w[m3 P5],   # minor triad
-        %w[m3 d5],   # diminished triad
-        %w[M3 A5],   # augmented triad
-        %w[P4 P5],   # sus4 (not a triad)
-        %w[M2 P5]    # sus2 (not a triad)
-      ]
-
-      trichord_intervals.each do |intervals|
-        trichord_pitches = [root_pitch]
-
-        # Each interval is FROM THE ROOT, not consecutive
-        intervals.each do |interval_name|
-          interval = HeadMusic::Analysis::DiatonicInterval.get(interval_name)
-          next_pitch = interval.above(root_pitch)
-          trichord_pitches << next_pitch
-        end
-
-        pitch_collection = HeadMusic::Analysis::PitchCollection.new(trichord_pitches)
-        trichord_pitch_classes = pitch_collection.pitch_classes
-
-        # Check if this trichord contains both pitches from our dyad
-        if pitch_classes.all? { |pc| trichord_pitch_classes.include?(pc) }
-          trichords << pitch_collection
-        end
-      end
-    end
-
-    trichords.uniq { |t| t.pitch_classes.sort.map(&:to_i) }
+    generate_possible_chords(TRICHORD_INTERVALS)
   end
 
   def generate_possible_seventh_chords
-    seventh_chords = []
-    pitch_classes = [lower_pitch.pitch_class, upper_pitch.pitch_class]
+    generate_possible_chords(SEVENTH_CHORD_INTERVALS)
+  end
+
+  def generate_possible_chords(interval_sets)
+    dyad_pitch_classes = [lower_pitch.pitch_class, upper_pitch.pitch_class]
+    chords = []
 
     HeadMusic::Rudiment::Spelling::CHROMATIC_SPELLINGS.each do |root_spelling|
       root_pitch = HeadMusic::Rudiment::Pitch.get("#{root_spelling}4")
 
-      # Try all common seventh chord types from this root
-      seventh_chord_intervals = [
-        %w[M3 P5 M7],   # major seventh
-        %w[M3 P5 m7],   # dominant seventh (major-minor)
-        %w[m3 P5 m7],   # minor seventh
-        %w[m3 P5 M7],   # minor-major seventh
-        %w[m3 d5 m7],   # half-diminished seventh
-        %w[m3 d5 d7],   # diminished seventh
-        %w[M2 M3 P5 m7], # dominant ninth
-        %w[m2 M3 P5 m7], # dominant minor ninth
-        %w[M2 m3 P5 m7], # minor ninth
-        %w[M2 M3 P5 M7]  # major ninth
-      ]
-
-      seventh_chord_intervals.each do |intervals|
-        chord_pitches = [root_pitch]
-
-        # Each interval is FROM THE ROOT, not consecutive
-        intervals.each do |interval_name|
-          interval = HeadMusic::Analysis::DiatonicInterval.get(interval_name)
-          next_pitch = interval.above(root_pitch)
-          chord_pitches << next_pitch
-        end
-
+      interval_sets.each do |intervals|
+        chord_pitches = [root_pitch] + intervals.map { |name| HeadMusic::Analysis::DiatonicInterval.get(name).above(root_pitch) }
         pitch_collection = HeadMusic::Analysis::PitchCollection.new(chord_pitches)
-        chord_pitch_classes = pitch_collection.pitch_classes
 
-        # Check if this chord contains both pitches from our dyad
-        if pitch_classes.all? { |pc| chord_pitch_classes.include?(pc) }
-          seventh_chords << pitch_collection
+        if dyad_pitch_classes.all? { |pc| pitch_collection.pitch_classes.include?(pc) }
+          chords << pitch_collection
         end
       end
     end
 
-    seventh_chords.uniq { |c| c.pitch_classes.sort.map(&:to_i) }
+    chords.uniq { |chord| chord.pitch_classes.sort.map(&:to_i) }
   end
 
   def filter_by_key(pitch_collections)
     return pitch_collections unless key
-
-    diatonic_spellings = key.scale.spellings
 
     pitch_collections.select do |pitch_collection|
       pitch_collection.pitches.all? { |pitch| diatonic_spellings.include?(pitch.spelling) }
@@ -165,65 +129,50 @@ class HeadMusic::Analysis::Dyad
   def sort_by_diatonic_agreement(pitch_collections)
     return pitch_collections unless key
 
-    diatonic_spellings = key.scale.spellings
-
     pitch_collections.sort_by do |pitch_collection|
-      # Count how many pitches match diatonic spellings (lower is better for sort)
-      diatonic_count = pitch_collection.pitches.count { |pitch| diatonic_spellings.include?(pitch.spelling) }
-      -diatonic_count # Negative so higher counts come first
+      -pitch_collection.pitches.count { |pitch| diatonic_spellings.include?(pitch.spelling) }
     end
+  end
+
+  def diatonic_spellings
+    @diatonic_spellings ||= key.scale.spellings
   end
 
   def generate_enharmonic_respellings
     respellings = []
 
     # Get enharmonic equivalents for each pitch
-    pitch1_equivalents = get_enharmonic_equivalents(pitch1)
-    pitch2_equivalents = get_enharmonic_equivalents(pitch2)
+    pitch1_equivalents = enharmonic_equivalents_for(pitch1)
+    pitch2_equivalents = enharmonic_equivalents_for(pitch2)
 
     # Generate all combinations
-    pitch1_equivalents.each do |p1|
-      pitch2_equivalents.each do |p2|
-        # Skip the original combination
-        next if p1.spelling == pitch1.spelling && p2.spelling == pitch2.spelling
+    pitch1_equivalents.each do |lower|
+      pitch2_equivalents.each do |upper|
+        next if lower.spelling == pitch1.spelling && upper.spelling == pitch2.spelling
 
-        # Create new dyad with same key context
-        respellings << self.class.new(p1, p2, key: key)
+        respellings << self.class.new(lower, upper, key: key)
       end
     end
 
     respellings
   end
 
-  def get_enharmonic_equivalents(pitch)
+  ALTERATION_SIGNS = {-2 => "bb", -1 => "b", 0 => "", 1 => "#", 2 => "##"}.freeze
+
+  def enharmonic_equivalents_for(pitch)
+    target_pitch_class = pitch.pitch_class
     equivalents = [pitch]
 
-    # Get common enharmonic spellings
-    pitch_class = pitch.pitch_class
-    letter_names = HeadMusic::Rudiment::LetterName.all
+    HeadMusic::Rudiment::LetterName.all.each do |letter_name|
+      ALTERATION_SIGNS.each_value do |sign|
+        spelling = HeadMusic::Rudiment::Spelling.get("#{letter_name}#{sign}")
+        next unless spelling && spelling.pitch_class == target_pitch_class
+        next if equivalents.any? { |equiv| equiv.spelling == spelling }
 
-    letter_names.each do |letter_name|
-      [-2, -1, 0, 1, 2].each do |alteration_semitones|
-        spelling = HeadMusic::Rudiment::Spelling.get("#{letter_name}#{alteration_sign(alteration_semitones)}")
-        next unless spelling
-
-        if spelling.pitch_class == pitch_class
-          equivalent_pitch = HeadMusic::Rudiment::Pitch.fetch_or_create(spelling, pitch.register)
-          equivalents << equivalent_pitch unless equivalents.any? { |p| p.spelling == spelling }
-        end
+        equivalents << HeadMusic::Rudiment::Pitch.fetch_or_create(spelling, pitch.register)
       end
     end
 
     equivalents
-  end
-
-  def alteration_sign(semitones)
-    case semitones
-    when -2 then "bb"
-    when -1 then "b"
-    when 0 then ""
-    when 1 then "#"
-    when 2 then "##"
-    end
   end
 end

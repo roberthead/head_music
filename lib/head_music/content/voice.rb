@@ -60,8 +60,8 @@ class HeadMusic::Content::Voice
   end
 
   def melodic_note_pairs
-    @melodic_note_pairs ||= notes.each_cons(2).map do |note1, note2|
-      HeadMusic::Content::Voice::MelodicNotePair.new(note1, note2)
+    @melodic_note_pairs ||= notes.each_cons(2).map do |first_note, second_note|
+      HeadMusic::Content::Voice::MelodicNotePair.new(first_note, second_note)
     end
   end
 
@@ -135,6 +135,7 @@ class HeadMusic::Content::Voice
     pitches.first(10).map(&:to_s).join(" ")
   end
 
+  # A pair of consecutive notes in a melodic line, used to analyze intervals and leaps.
   class MelodicNotePair
     attr_reader :first_note, :second_note
 

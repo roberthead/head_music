@@ -27,26 +27,7 @@ class HeadMusic::Rudiment::Tuning::Pythagorean < HeadMusic::Rudiment::Tuning
     diminished_second: Rational(256, 243)     # Same as minor second in Pythagorean
   }.freeze
 
-  attr_reader :tonal_center
-
   def initialize(reference_pitch: :a440, tonal_center: nil)
-    super
-    @tonal_center = HeadMusic::Rudiment::Pitch.get(tonal_center || "C4")
-  end
-
-  def frequency_for(pitch)
-    pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-
-    # Calculate the frequency of the tonal center using equal temperament from reference pitch
-    tonal_center_frequency = calculate_tonal_center_frequency
-
-    # Calculate the interval from the tonal center to the requested pitch
-    interval_from_tonal_center = (pitch - tonal_center).semitones
-
-    # Get the Pythagorean ratio for this interval
-    ratio = ratio_for_interval(interval_from_tonal_center)
-
-    # Calculate the frequency
-    tonal_center_frequency * ratio
+    super(reference_pitch: reference_pitch, tonal_center: tonal_center || "C4")
   end
 end

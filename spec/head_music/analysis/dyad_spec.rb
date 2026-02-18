@@ -362,15 +362,13 @@ describe HeadMusic::Analysis::Dyad do
     end
   end
 
-  describe "#alteration_sign (private method coverage)" do
-    subject(:dyad) { described_class.new("C4", "E4") }
-
-    it "returns correct signs for all alterations" do
-      expect(dyad.send(:alteration_sign, -2)).to eq("bb")
-      expect(dyad.send(:alteration_sign, -1)).to eq("b")
-      expect(dyad.send(:alteration_sign, 0)).to eq("")
-      expect(dyad.send(:alteration_sign, 1)).to eq("#")
-      expect(dyad.send(:alteration_sign, 2)).to eq("##")
+  describe "ALTERATION_SIGNS" do
+    it "maps semitone offsets to alteration signs" do
+      expect(described_class::ALTERATION_SIGNS[-2]).to eq("bb")
+      expect(described_class::ALTERATION_SIGNS[-1]).to eq("b")
+      expect(described_class::ALTERATION_SIGNS[0]).to eq("")
+      expect(described_class::ALTERATION_SIGNS[1]).to eq("#")
+      expect(described_class::ALTERATION_SIGNS[2]).to eq("##")
     end
   end
 

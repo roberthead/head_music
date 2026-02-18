@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guides; end
 
 # Rules for third species melodies
-class HeadMusic::Style::Guides::ThirdSpeciesMelody
+class HeadMusic::Style::Guides::ThirdSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   RULESET = [
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::ConsonantClimax,
@@ -19,8 +19,4 @@ class HeadMusic::Style::Guides::ThirdSpeciesMelody
     HeadMusic::Style::Guidelines::StepOutOfUnison,
     HeadMusic::Style::Guidelines::StepUpToFinalNote
   ].freeze
-
-  def self.analyze(voice)
-    RULESET.map { |rule| rule.new(voice) }
-  end
 end

@@ -110,20 +110,27 @@ class HeadMusic::Analysis::PitchCollection
     major_triad? || minor_triad?
   end
 
+  TRIAD_PATTERNS = {
+    major: [%w[M3 m3], %w[m3 P4], %w[P4 M3]],
+    minor: [%w[m3 M3], %w[M3 P4], %w[P4 m3]],
+    diminished: [%w[m3 m3], %w[m3 A4], %w[A4 m3]],
+    augmented: [%w[M3 M3], %w[M3 d4], %w[d4 M3]]
+  }.freeze
+
   def major_triad?
-    [%w[M3 m3], %w[m3 P4], %w[P4 M3]].include? reduction_diatonic_intervals.map(&:shorthand)
+    triad_type?(:major)
   end
 
   def minor_triad?
-    [%w[m3 M3], %w[M3 P4], %w[P4 m3]].include? reduction_diatonic_intervals.map(&:shorthand)
+    triad_type?(:minor)
   end
 
   def diminished_triad?
-    [%w[m3 m3], %w[m3 A4], %w[A4 m3]].include? reduction_diatonic_intervals.map(&:shorthand)
+    triad_type?(:diminished)
   end
 
   def augmented_triad?
-    [%w[M3 M3], %w[M3 d4], %w[d4 M3]].include? reduction_diatonic_intervals.map(&:shorthand)
+    triad_type?(:augmented)
   end
 
   def root_position_triad?
@@ -194,6 +201,10 @@ class HeadMusic::Analysis::PitchCollection
   end
 
   private
+
+  def triad_type?(type)
+    TRIAD_PATTERNS[type].include?(reduction_diatonic_intervals.map(&:shorthand))
+  end
 
   def reduction_pitches
     pitches.map do |pitch|

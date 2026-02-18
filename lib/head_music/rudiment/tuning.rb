@@ -23,17 +23,28 @@ class HeadMusic::Rudiment::Tuning < HeadMusic::Rudiment::Base
     end
   end
 
+  attr_reader :tonal_center
+
   def initialize(reference_pitch: :a440, tonal_center: nil)
     @reference_pitch = HeadMusic::Rudiment::ReferencePitch.get(reference_pitch)
-    @tonal_center = tonal_center
+    @tonal_center = tonal_center ? HeadMusic::Rudiment::Pitch.get(tonal_center) : nil
   end
 
   def frequency_for(pitch)
     pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-    reference_pitch_frequency * (2**(1.0 / 12))**(pitch - reference_pitch.pitch).semitones
+    return equal_temperament_frequency(pitch) unless tonal_center
+
+    tonal_center_frequency = calculate_tonal_center_frequency
+    interval_from_tonal_center = (pitch - tonal_center).semitones
+    ratio = ratio_for_interval(interval_from_tonal_center)
+    tonal_center_frequency * ratio
   end
 
   private
+
+  def equal_temperament_frequency(pitch)
+    reference_pitch_frequency * (2**(1.0 / 12))**(pitch - reference_pitch.pitch).semitones
+  end
 
   def calculate_tonal_center_frequency
     # Use equal temperament to get the tonal center frequency from the reference pitch

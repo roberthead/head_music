@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guides; end
 
 # Rules for first species melodies
-class HeadMusic::Style::Guides::FirstSpeciesMelody
+class HeadMusic::Style::Guides::FirstSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   RULESET = [
     HeadMusic::Style::Guidelines::ConsonantClimax,
     HeadMusic::Style::Guidelines::Diatonic,
@@ -19,8 +19,4 @@ class HeadMusic::Style::Guides::FirstSpeciesMelody
     HeadMusic::Style::Guidelines::StepOutOfUnison,
     HeadMusic::Style::Guidelines::StepUpToFinalNote
   ].freeze
-
-  def self.analyze(voice)
-    RULESET.map { |rule| rule.new(voice) }
-  end
 end
