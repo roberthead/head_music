@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Style::Guides::TripleMeterMelody do
+describe HeadMusic::Style::Guides::ThirdSpeciesTripleMeterMelody do
   subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }

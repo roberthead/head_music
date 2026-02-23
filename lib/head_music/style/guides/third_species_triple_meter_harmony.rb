@@ -1,5 +1,5 @@
 # Rules for triple meter harmony
-class HeadMusic::Style::Guides::TripleMeterHarmony < HeadMusic::Style::Guides::SpeciesHarmony
+class HeadMusic::Style::Guides::ThirdSpeciesTripleMeterHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   RULESET = [
     HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
     HeadMusic::Style::Guidelines::AvoidCrossingVoices,

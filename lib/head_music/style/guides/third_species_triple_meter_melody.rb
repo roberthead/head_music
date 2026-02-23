@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guides; end
 
 # Rules for triple meter melodies
-class HeadMusic::Style::Guides::TripleMeterMelody < HeadMusic::Style::Guides::SpeciesMelody
+class HeadMusic::Style::Guides::ThirdSpeciesTripleMeterMelody < HeadMusic::Style::Guides::SpeciesMelody
   RULESET = [
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::ConsonantClimax,
