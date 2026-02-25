@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Style::Guidelines::FirstBarRestOrQuarterNotes do
+describe HeadMusic::Style::Guidelines::FirstBarQuarterNotes do
   subject { described_class.new(counterpoint) }
 
   context "in duple meter (4/4)" do

@@ -17,7 +17,7 @@ describe HeadMusic::Style::Guides::ThirdSpeciesTripleMeterMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarRestOrQuarterNotes }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarQuarterNotes }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ThreePerBar }
 
   context "with a well-formed triple-meter counterpoint" do

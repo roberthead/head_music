@@ -9,7 +9,7 @@ class HeadMusic::Style::Guides::SecondSpeciesMelody < HeadMusic::Style::Guides::
     HeadMusic::Style::Guidelines::Diatonic,
     HeadMusic::Style::Guidelines::EndOnTonic,
     HeadMusic::Style::Guidelines::NoteFillsFinalBar,
-    HeadMusic::Style::Guidelines::FirstBarRestOrHalfNotes,
+    HeadMusic::Style::Guidelines::FirstBarHalfNotes,
     HeadMusic::Style::Guidelines::FrequentDirectionChanges,
     HeadMusic::Style::Guidelines::LimitOctaveLeaps,
     HeadMusic::Style::Guidelines::MostlyConjunct,
