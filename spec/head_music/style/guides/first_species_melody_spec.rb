@@ -9,7 +9,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FinalBarWholeNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarWholeNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::OnePerBar }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }

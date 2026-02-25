@@ -8,7 +8,7 @@ class HeadMusic::Style::Guides::ThirdSpeciesMelody < HeadMusic::Style::Guides::S
     HeadMusic::Style::Guidelines::ConsonantClimax,
     HeadMusic::Style::Guidelines::Diatonic,
     HeadMusic::Style::Guidelines::EndOnTonic,
-    HeadMusic::Style::Guidelines::FinalBarWholeNote,
+    HeadMusic::Style::Guidelines::NoteFillsFinalBar,
     HeadMusic::Style::Guidelines::FirstBarRestOrQuarterNotes,
     HeadMusic::Style::Guidelines::FourPerBar,
     HeadMusic::Style::Guidelines::FrequentDirectionChanges,

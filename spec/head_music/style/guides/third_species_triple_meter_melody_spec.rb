@@ -16,7 +16,7 @@ describe HeadMusic::Style::Guides::ThirdSpeciesTripleMeterMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FinalBarDottedHalfNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarRestOrQuarterNotes }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ThreePerBar }
 

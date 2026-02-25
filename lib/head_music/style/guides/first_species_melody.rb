@@ -7,7 +7,7 @@ class HeadMusic::Style::Guides::FirstSpeciesMelody < HeadMusic::Style::Guides::S
     HeadMusic::Style::Guidelines::ConsonantClimax,
     HeadMusic::Style::Guidelines::Diatonic,
     HeadMusic::Style::Guidelines::EndOnTonic,
-    HeadMusic::Style::Guidelines::FinalBarWholeNote,
+    HeadMusic::Style::Guidelines::NoteFillsFinalBar,
     HeadMusic::Style::Guidelines::FirstBarWholeNote,
     HeadMusic::Style::Guidelines::FrequentDirectionChanges,
     HeadMusic::Style::Guidelines::LimitOctaveLeaps,
