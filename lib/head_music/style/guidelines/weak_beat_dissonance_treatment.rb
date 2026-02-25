@@ -32,7 +32,7 @@ class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Sty
   end
 
   def cantus_firmus_positions
-    @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |n| n.position.to_s })
+    @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |note| note.position.to_s })
   end
 
   def dissonant_with_cantus?(note)
@@ -41,18 +41,26 @@ class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Sty
   end
 
   def passing_tone?(note)
-    prev = preceding_note(note)
-    foll = following_note(note)
-    return false unless prev && foll
-
-    approach = melodic_interval_between(prev, note)
-    departure = melodic_interval_between(note, foll)
-
-    approach.step? && departure.step? && approach.direction == departure.direction
+    stepwise_figure?(note, same_direction: true)
   end
 
-  def melodic_interval_between(note1, note2)
-    HeadMusic::Analysis::MelodicInterval.new(note1, note2)
+  def stepwise_figure?(note, same_direction:)
+    surrounding = surrounding_notes(note)
+    return false unless surrounding
+
+    approach = melodic_interval_between(surrounding.first, note)
+    departure = melodic_interval_between(note, surrounding.last)
+    approach.step? && departure.step? && (approach.direction == departure.direction) == same_direction
+  end
+
+  def surrounding_notes(note)
+    prev = preceding_note(note)
+    foll = following_note(note)
+    [prev, foll] if prev && foll
+  end
+
+  def melodic_interval_between(first_note, second_note)
+    HeadMusic::Analysis::MelodicInterval.new(first_note, second_note)
   end
 
   def preceding_note(note)

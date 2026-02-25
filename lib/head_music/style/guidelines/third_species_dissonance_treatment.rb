@@ -15,14 +15,7 @@ class HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment < HeadMusic:
 
   # Neighbor tone: approached by step, left by step in the opposite direction.
   def neighbor_tone?(note)
-    prev = preceding_note(note)
-    foll = following_note(note)
-    return false unless prev && foll
-
-    approach = melodic_interval_between(prev, note)
-    departure = melodic_interval_between(note, foll)
-
-    approach.step? && departure.step? && approach.direction != departure.direction
+    stepwise_figure?(note, same_direction: false)
   end
 
   # Nota cambiata: a five-note figure where note 2 is dissonant,

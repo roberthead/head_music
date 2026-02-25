@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 # The syncopated texture is occasionally broken: the counterpoint moves on the
 # downbeat instead of sustaining. When this happens, a dissonant off-beat note
 # is permitted only if it is a passing tone. Breaks should be infrequent.
-class HeadMusic::Style::Guidelines::SecondSpeciesBreak < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::SecondSpeciesBreak < HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment
   MESSAGE = "Use only passing tones when breaking the syncopated texture. Breaks should be infrequent."
 
   MAX_BREAK_RATIO = 0.25
@@ -38,10 +38,8 @@ class HeadMusic::Style::Guidelines::SecondSpeciesBreak < HeadMusic::Style::Annot
   end
 
   def break_bar?(bar)
-    bar_notes = notes_in_bar(bar)
-    has_downbeat = bar_notes.any? { |note| downbeat_position?(note.position) }
-    has_off_beat = bar_notes.any? { |note| !downbeat_position?(note.position) }
-    has_downbeat && has_off_beat
+    downbeats, off_beats = notes_in_bar(bar).partition { |note| downbeat_position?(note.position) }
+    downbeats.any? && off_beats.any?
   end
 
   def break_bar_off_beat_notes
@@ -62,43 +60,5 @@ class HeadMusic::Style::Guidelines::SecondSpeciesBreak < HeadMusic::Style::Annot
 
   def last_bar
     cantus_firmus.notes.last.position.bar_number
-  end
-
-  def downbeat_position?(position)
-    cantus_firmus_positions.include?(position.to_s)
-  end
-
-  def cantus_firmus_positions
-    @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |n| n.position.to_s })
-  end
-
-  def dissonant_with_cantus?(note)
-    interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, note.position)
-    interval.notes.length == 2 && interval.dissonance?(:two_part_harmony)
-  end
-
-  def passing_tone?(note)
-    prev = preceding_note(note)
-    foll = following_note(note)
-    return false unless prev && foll
-
-    approach = melodic_interval_between(prev, note)
-    departure = melodic_interval_between(note, foll)
-
-    approach.step? && departure.step? && approach.direction == departure.direction
-  end
-
-  def melodic_interval_between(note1, note2)
-    HeadMusic::Analysis::MelodicInterval.new(note1, note2)
-  end
-
-  def preceding_note(note)
-    index = notes.index(note)
-    notes[index - 1] if index && index > 0
-  end
-
-  def following_note(note)
-    index = notes.index(note)
-    notes[index + 1] if index && index < notes.length - 1
   end
 end
