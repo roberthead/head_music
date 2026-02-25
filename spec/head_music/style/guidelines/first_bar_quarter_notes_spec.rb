@@ -142,5 +142,19 @@ describe HeadMusic::Style::Guidelines::FirstBarQuarterNotes do
 
       it { is_expected.to be_adherent }
     end
+
+    context "with only one quarter note on beat 3 of the first bar (two implicit rests)" do
+      before do
+        counterpoint.place("1:3", :quarter, "A4")
+        (2..10).each do |bar|
+          counterpoint.place("#{bar}:1", :quarter, "A4")
+          counterpoint.place("#{bar}:2", :quarter, "B4")
+          counterpoint.place("#{bar}:3", :quarter, "A4")
+        end
+        counterpoint.place("11:1", :dotted_half, "D5")
+      end
+
+      its(:fitness) { is_expected.to be < 1 }
+    end
   end
 end

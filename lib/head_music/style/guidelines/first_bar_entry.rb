@@ -24,11 +24,24 @@ class HeadMusic::Style::Guidelines::FirstBarEntry < HeadMusic::Style::Annotation
   def valid_first_bar?(bar_notes, bar_rests)
     bar_notes.any? &&
       all_correct_beat_unit?(bar_notes) &&
+      valid_note_count?(bar_notes) &&
       valid_rests?(bar_rests)
   end
 
   def all_correct_beat_unit?(bar_notes)
     bar_notes.all? { |note| note.rhythmic_value == expected_rhythmic_value }
+  end
+
+  def valid_note_count?(bar_notes)
+    expected = expected_notes_in_first_bar
+    bar_notes.length == expected ||
+      (bar_notes.length == expected - 1 && bar_notes.first.position.count > 1)
+  end
+
+  def expected_notes_in_first_bar
+    meter = composition.meter_at(1)
+    bar_duration = meter.count_unit.relative_value * meter.counts_per_bar
+    (bar_duration / expected_rhythmic_value.total_value).round
   end
 
   def valid_rests?(bar_rests)
