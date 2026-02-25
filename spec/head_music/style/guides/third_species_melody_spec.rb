@@ -7,7 +7,9 @@ describe HeadMusic::Style::Guides::ThirdSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::Diatonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::EndOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FourToOne }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FinalBarWholeNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarRestOrQuarterNotes }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FourPerBar }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }

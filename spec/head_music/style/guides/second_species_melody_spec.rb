@@ -16,7 +16,9 @@ describe HeadMusic::Style::Guides::SecondSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::TwoToOne }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FinalBarWholeNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarRestOrHalfNotes }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::TwoPerBar }
 
   context "with a well-formed second-species counterpoint" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }

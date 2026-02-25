@@ -16,7 +16,9 @@ describe HeadMusic::Style::Guides::ThirdSpeciesTripleMeterMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ThreeToOne }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FinalBarDottedHalfNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarRestOrQuarterNotes }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ThreePerBar }
 
   context "with a well-formed triple-meter counterpoint" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "3/4") }

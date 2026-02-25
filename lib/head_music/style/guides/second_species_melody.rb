@@ -8,6 +8,8 @@ class HeadMusic::Style::Guides::SecondSpeciesMelody < HeadMusic::Style::Guides::
     HeadMusic::Style::Guidelines::ConsonantClimax,
     HeadMusic::Style::Guidelines::Diatonic,
     HeadMusic::Style::Guidelines::EndOnTonic,
+    HeadMusic::Style::Guidelines::FinalBarWholeNote,
+    HeadMusic::Style::Guidelines::FirstBarRestOrHalfNotes,
     HeadMusic::Style::Guidelines::FrequentDirectionChanges,
     HeadMusic::Style::Guidelines::LimitOctaveLeaps,
     HeadMusic::Style::Guidelines::MostlyConjunct,
@@ -17,6 +19,6 @@ class HeadMusic::Style::Guides::SecondSpeciesMelody < HeadMusic::Style::Guides::
     HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
     HeadMusic::Style::Guidelines::StepOutOfUnison,
     HeadMusic::Style::Guidelines::StepUpToFinalNote,
-    HeadMusic::Style::Guidelines::TwoToOne
+    HeadMusic::Style::Guidelines::TwoPerBar
   ].freeze
 end
