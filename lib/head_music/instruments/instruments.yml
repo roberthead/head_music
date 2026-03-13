@@ -218,9 +218,8 @@ bass_tuba_in_e_flat:
 bass_ukulele:
   family_key: ukulele
   range_categories:
+  - contrabass
   - bass
-  - baritone
-  - tenor
   staff_schemes:
     default:
     - clef: bass_clef

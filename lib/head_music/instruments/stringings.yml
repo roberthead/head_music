@@ -70,6 +70,20 @@ baritone_ukulele:
     - pitch: B3
     - pitch: E4
 
+bass_ukulele:
+  courses:
+    - pitch: E1
+    - pitch: A1
+    - pitch: D2
+    - pitch: G2
+
+pocket_ukulele:
+  courses:
+    - pitch: D5
+    - pitch: G4
+    - pitch: B4
+    - pitch: E5
+
 mandolin:
   courses:
     - pitch: G3

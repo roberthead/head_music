@@ -129,6 +129,34 @@ describe HeadMusic::Instruments::AlternateTuning do
     its(:to_s) { is_expected.to eq "Drop D (guitar)" }
   end
 
+  describe "ukulele tunings" do
+    let(:stringing) { HeadMusic::Instruments::Stringing.for_instrument(:ukulele) }
+
+    context "with D-tuning (Hawaiian)" do
+      let(:tuning) { described_class.get(:ukulele, :d_tuning) }
+
+      it "produces A4-D4-F#4-B4" do
+        pitches = tuning.apply_to(stringing)
+        pitch_names = pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[A4 D4 F♯4 B4]
+      end
+    end
+  end
+
+  describe "baritone ukulele tunings" do
+    let(:stringing) { HeadMusic::Instruments::Stringing.for_instrument(:baritone_ukulele) }
+
+    context "with high-D re-entrant tuning" do
+      let(:tuning) { described_class.get(:baritone_ukulele, :high_d) }
+
+      it "produces D4-G3-B3-E4" do
+        pitches = tuning.apply_to(stringing)
+        pitch_names = pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[D4 G3 B3 E4]
+      end
+    end
+  end
+
   describe "applying tunings" do
     let(:stringing) { HeadMusic::Instruments::Stringing.for_instrument(:guitar) }
 

@@ -143,6 +143,32 @@ describe HeadMusic::Instruments::Stringing do
       end
     end
 
+    context "with a pocket ukulele" do
+      subject(:stringing) { described_class.for_instrument(:pocket_ukulele) }
+
+      it "has 4 courses" do
+        expect(stringing.course_count).to eq 4
+      end
+
+      it "has the correct standard pitches" do
+        pitch_names = stringing.standard_pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[D5 G4 B4 E5]
+      end
+    end
+
+    context "with a bass ukulele" do
+      subject(:stringing) { described_class.for_instrument(:bass_ukulele) }
+
+      it "has 4 courses" do
+        expect(stringing.course_count).to eq 4
+      end
+
+      it "has the correct standard pitches" do
+        pitch_names = stringing.standard_pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[E1 A1 D2 G2]
+      end
+    end
+
     context "with a mandolin" do
       subject(:stringing) { described_class.for_instrument(:mandolin) }
 

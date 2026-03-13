@@ -564,6 +564,21 @@ describe HeadMusic::Instruments::Instrument do
     end
   end
 
+  describe "ukulele family" do
+    context "for a bass ukulele" do
+      subject(:instrument) { described_class.get("bass_ukulele") }
+
+      it "has contrabass and bass range categories" do
+        expect(instrument.range_categories).to eq %w[contrabass bass]
+      end
+
+      it "has the correct stringing" do
+        pitch_names = instrument.stringing.standard_pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[E1 A1 D2 G2]
+      end
+    end
+  end
+
   describe "#stringing" do
     context "for a stringed instrument with stringing data" do
       subject(:instrument) { described_class.get("guitar") }

@@ -60,10 +60,16 @@ banjo:
 ukulele:
   low_g:
     semitones: [-12, 0, 0, 0]
+  d_tuning:
+    semitones: [2, 2, 2, 2]
   baritone:
     semitones: [-5, -5, -5, -5]
   slack_key:
     semitones: [0, 0, -1, 0]
+
+baritone_ukulele:
+  high_d:
+    semitones: [12, 0, 0, 0]
 
 violin:
   solo_tuning:
