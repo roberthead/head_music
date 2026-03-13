@@ -129,6 +129,74 @@ describe HeadMusic::Instruments::AlternateTuning do
     its(:to_s) { is_expected.to eq "Drop D (guitar)" }
   end
 
+  describe "double bass tunings" do
+    let(:stringing) { HeadMusic::Instruments::Stringing.for_instrument(:double_bass) }
+
+    context "with solo tuning" do
+      let(:tuning) { described_class.get(:double_bass, :solo_tuning) }
+
+      it "produces F1-A#1-D#2-G#2" do
+        pitches = tuning.apply_to(stringing)
+        pitch_names = pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[F1 A♯1 D♯2 G♯2]
+      end
+    end
+
+    context "with drop D" do
+      let(:tuning) { described_class.get(:double_bass, :drop_d) }
+
+      it "produces D1-A1-D2-G2" do
+        pitches = tuning.apply_to(stringing)
+        pitch_names = pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[D1 A1 D2 G2]
+      end
+    end
+
+    context "with orchestral C extension" do
+      let(:tuning) { described_class.get(:double_bass, :orchestral_c_extension) }
+
+      it "produces C1-A1-D2-G2" do
+        pitches = tuning.apply_to(stringing)
+        pitch_names = pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[C1 A1 D2 G2]
+      end
+    end
+  end
+
+  describe "mandolin tunings" do
+    let(:stringing) { HeadMusic::Instruments::Stringing.for_instrument(:mandolin) }
+
+    context "with open D tuning" do
+      let(:tuning) { described_class.get(:mandolin, :open_d) }
+
+      it "produces F#3-D4-A4-D5" do
+        pitches = tuning.apply_to(stringing)
+        pitch_names = pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[F♯3 D4 A4 D5]
+      end
+    end
+
+    context "with GDGD (sawmill) tuning" do
+      let(:tuning) { described_class.get(:mandolin, :gdgd) }
+
+      it "produces G3-D4-G4-D5" do
+        pitches = tuning.apply_to(stringing)
+        pitch_names = pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[G3 D4 G4 D5]
+      end
+    end
+
+    context "with cross tuning (AEAE)" do
+      let(:tuning) { described_class.get(:mandolin, :cross_tuning) }
+
+      it "produces A3-E4-A4-E5" do
+        pitches = tuning.apply_to(stringing)
+        pitch_names = pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[A3 E4 A4 E5]
+      end
+    end
+  end
+
   describe "ukulele tunings" do
     let(:stringing) { HeadMusic::Instruments::Stringing.for_instrument(:ukulele) }
 

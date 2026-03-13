@@ -71,6 +71,22 @@ baritone_ukulele:
   high_d:
     semitones: [12, 0, 0, 0]
 
+double_bass:
+  solo_tuning:
+    semitones: [1, 1, 1, 1]
+  drop_d:
+    semitones: [-2, 0, 0, 0]
+  orchestral_c_extension:
+    semitones: [-4, 0, 0, 0]
+
+mandolin:
+  gdgd:
+    semitones: [0, 0, -2, -2]
+  open_d:
+    semitones: [-1, 0, 0, -2]
+  cross_tuning:
+    semitones: [2, 2, 0, 0]
+
 violin:
   solo_tuning:
     semitones: [1, 1, 1, 1]

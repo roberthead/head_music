@@ -84,6 +84,15 @@ pocket_ukulele:
     - pitch: B4
     - pitch: E5
 
+arpeggione:
+  courses:
+    - pitch: E2
+    - pitch: A2
+    - pitch: D3
+    - pitch: G3
+    - pitch: B3
+    - pitch: E4
+
 mandolin:
   courses:
     - pitch: G3

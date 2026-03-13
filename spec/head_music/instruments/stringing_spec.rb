@@ -169,6 +169,19 @@ describe HeadMusic::Instruments::Stringing do
       end
     end
 
+    context "with an arpeggione" do
+      subject(:stringing) { described_class.for_instrument(:arpeggione) }
+
+      it "has 6 courses" do
+        expect(stringing.course_count).to eq 6
+      end
+
+      it "has the correct standard pitches" do
+        pitch_names = stringing.standard_pitches.map(&:to_s)
+        expect(pitch_names).to eq %w[E2 A2 D3 G3 B3 E4]
+      end
+    end
+
     context "with a mandolin" do
       subject(:stringing) { described_class.for_instrument(:mandolin) }
 
