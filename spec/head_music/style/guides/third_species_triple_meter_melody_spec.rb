@@ -19,6 +19,7 @@ describe HeadMusic::Style::Guides::ThirdSpeciesTripleMeterMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarQuarterNotes }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ThreePerBar }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
 
   context "with a well-formed triple-meter counterpoint" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "3/4") }

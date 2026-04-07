@@ -18,6 +18,7 @@ class HeadMusic::Style::Guides::FourthSpeciesMelody < HeadMusic::Style::Guides::
     HeadMusic::Style::Guidelines::SingableRange,
     HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
     HeadMusic::Style::Guidelines::StepOutOfUnison,
-    HeadMusic::Style::Guidelines::StepUpToFinalNote
+    HeadMusic::Style::Guidelines::StepUpToFinalNote,
+    HeadMusic::Style::Guidelines::NoRestsAfterNote
   ].freeze
 end

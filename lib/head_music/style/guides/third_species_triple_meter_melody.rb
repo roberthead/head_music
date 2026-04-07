@@ -19,6 +19,7 @@ class HeadMusic::Style::Guides::ThirdSpeciesTripleMeterMelody < HeadMusic::Style
     HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
     HeadMusic::Style::Guidelines::StepOutOfUnison,
     HeadMusic::Style::Guidelines::StepUpToFinalNote,
-    HeadMusic::Style::Guidelines::ThreePerBar
+    HeadMusic::Style::Guidelines::ThreePerBar,
+    HeadMusic::Style::Guidelines::NoRestsAfterNote
   ].freeze
 end

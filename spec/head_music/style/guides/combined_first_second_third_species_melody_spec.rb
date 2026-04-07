@@ -1,15 +1,12 @@
 require "spec_helper"
 
-describe HeadMusic::Style::Guides::ThirdSpeciesMelody do
+describe HeadMusic::Style::Guides::CombinedFirstSecondThirdSpeciesMelody do
   subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::Diatonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::EndOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarQuarterNotes }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FourPerBar }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
@@ -17,12 +14,12 @@ describe HeadMusic::Style::Guides::ThirdSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AllowedRhythmicValuesForCombined123 }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
 
-  context "with a well-formed third-species counterpoint" do
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+  context "with a well-formed combined 1+2+3 species counterpoint" do
+    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "4/4") }
     let(:voice) { composition.add_voice(role: :counterpoint) }
 
     before do
@@ -32,28 +29,28 @@ describe HeadMusic::Style::Guides::ThirdSpeciesMelody do
         end
       end
 
-      # Counterpoint above the CF with four quarter notes per bar
-      # Uses passing tones (PT) and neighbor tones (NT) for dissonances
-      quarter_notes = %w[
-        A4 B4 A4 B4
-        A4 G4 A4 C5
-        G4 A4 B4 C5
-        F4 E4 F4 A4
-        B4 A4 B4 C5
-        D5 C5 A4 B4
-        C5 D5 E5 D5
-        E5 D5 C5 B4
-        A4 G4 A4 C5
-        G4 A4 B4 C#5
-      ]
-      quarter_notes.each_with_index do |pitch, index|
-        bar = index / 4 + 1
-        beat = (index % 4) + 1
-        voice.place("#{bar}:#{beat}", :quarter, pitch)
-      end
+      # Mixed whole, half, and quarter notes — mostly conjunct, consonant with CF
+      voice.place("1:1", :whole, "A4")
+      voice.place("2:1", :half, "A4")
+      voice.place("2:3", :half, "B4")
+      voice.place("3:1", :whole, "C5")
+      voice.place("4:1", :half, "A4")
+      voice.place("4:3", :half, "B4")
+      voice.place("5:1", :quarter, "B4")
+      voice.place("5:2", :quarter, "C5")
+      voice.place("5:3", :quarter, "B4")
+      voice.place("5:4", :quarter, "C5")
+      voice.place("6:1", :whole, "D5")
+      voice.place("7:1", :half, "C5")
+      voice.place("7:3", :half, "E5")
+      voice.place("8:1", :whole, "B4")
+      voice.place("9:1", :half, "A4")
+      voice.place("9:3", :half, "C5")
+      voice.place("10:1", :half, "B4")
+      voice.place("10:3", :half, "C#5")
       voice.place("11:1", :whole, "D5")
     end
 
-    its(:fitness) { is_expected.to be > 0.8 }
+    its(:fitness) { is_expected.to be > 0.5 }
   end
 end

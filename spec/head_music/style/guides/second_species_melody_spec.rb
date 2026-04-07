@@ -18,6 +18,7 @@ describe HeadMusic::Style::Guides::SecondSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarHalfNotes }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::TwoPerBar }
 
   context "with a well-formed second-species counterpoint" do

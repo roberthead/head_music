@@ -18,6 +18,7 @@ describe HeadMusic::Style::Guides::FourthSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
 
   context "with a well-formed fourth-species counterpoint" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }

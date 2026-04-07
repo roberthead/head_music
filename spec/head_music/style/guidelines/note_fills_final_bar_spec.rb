@@ -4,6 +4,7 @@ describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
   subject { described_class.new(counterpoint) }
 
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
   before do
     composition.add_voice(role: :cantus_firmus).tap do |voice|
@@ -12,8 +13,6 @@ describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
       end
     end
   end
-
-  let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
   context "in 4/4 meter" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }

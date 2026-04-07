@@ -40,8 +40,9 @@ describe HeadMusic::Content::CantusFirmus::Example do
 
   describe ".by_source" do
     context "with a Source object" do
-      let(:source) { HeadMusic::Content::CantusFirmus::Source.get(:fux) }
       subject(:examples) { described_class.by_source(source) }
+
+      let(:source) { HeadMusic::Content::CantusFirmus::Source.get(:fux) }
 
       it "returns examples from that source" do
         expect(examples).to all(have_attributes(source: source))
