@@ -26,8 +26,8 @@ bundle exec rspec spec/head_music/rudiments/pitch_spec.rb
 # Run linting
 bundle exec rubocop
 
-# Run all quality checks (tests, linting, security)
-bundle exec rake quality
+# Run all validation checks (tests, linting, security)
+bundle exec rake validate
 
 # Open interactive console with gem loaded
 bin/console
