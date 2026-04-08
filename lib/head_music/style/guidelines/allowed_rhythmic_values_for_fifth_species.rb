@@ -24,39 +24,41 @@ class HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies < HeadM
   private
 
   def disallowed_unit_marks
-    notes
-      .reject { |note| PERMITTED_UNIT_NAMES.include?(note.rhythmic_value.unit_name) }
-      .map { |note| HeadMusic::Style::Mark.for(note) }
+    mark_each(notes.reject { |note| PERMITTED_UNIT_NAMES.include?(note.rhythmic_value.unit_name) })
   end
 
   def dotted_rhythm_marks
-    notes
-      .select { |note| note.rhythmic_value.dots > 0 }
-      .map { |note| HeadMusic::Style::Mark.for(note) }
+    mark_each(notes.select { |note| note.rhythmic_value.dots > 0 })
   end
 
   def whole_note_not_in_final_bar_marks
-    notes
-      .select { |note| note.rhythmic_value.unit_name == "whole" }
-      .reject { |note| note.position.bar_number == final_bar_number }
-      .map { |note| HeadMusic::Style::Mark.for(note) }
+    mark_each(
+      notes
+        .select { |note| note.rhythmic_value.unit_name == "whole" }
+        .reject { |note| note.position.bar_number == final_bar_number }
+    )
   end
 
   def unpaired_eighth_note_marks
-    eighth_notes.reject { |note| paired_eighth?(note) }
-      .map { |note| HeadMusic::Style::Mark.for(note) }
+    mark_each(eighth_notes.reject { |note| paired_eighth?(note) })
   end
 
   def non_stepwise_eighth_note_marks
-    eighth_notes.select { |note| paired_eighth?(note) }
-      .reject { |note| stepwise_eighth?(note) }
-      .map { |note| HeadMusic::Style::Mark.for(note) }
+    mark_each(
+      eighth_notes
+        .select { |note| paired_eighth?(note) }
+        .reject { |note| stepwise_eighth?(note) }
+    )
   end
 
   def excess_eighth_note_pair_marks
     bars_with_excess_eighth_pairs.flat_map do |bar_number|
-      eighth_notes_in_bar(bar_number)[2..].map { |note| HeadMusic::Style::Mark.for(note) }
+      mark_each(eighth_notes_in_bar(bar_number)[2..])
     end
+  end
+
+  def mark_each(violating_notes)
+    violating_notes.map { |note| HeadMusic::Style::Mark.for(note) }
   end
 
   def eighth_notes
