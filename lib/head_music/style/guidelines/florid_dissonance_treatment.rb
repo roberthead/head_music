@@ -3,10 +3,11 @@ module HeadMusic::Style::Guidelines; end
 
 # Unified dissonance handling for mixed-species (florid) contexts.
 # - Strong beat dissonances must be properly prepared suspensions from a tie.
-# - Weak beat dissonances must be passing tones or neighbor tones.
+# - Weak beat dissonances must be passing tones, neighbor tones, nota cambiata, or double neighbor figures.
 # - Tied notes dissonant at the new CF note must resolve by step to a consonance.
 class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style::Annotation
-  MESSAGE = "Treat dissonances appropriately: passing tones on weak beats, proper suspension treatment for tied notes."
+  MESSAGE = "Treat dissonances appropriately: passing tones, cambiata, or double neighbor " \
+    "on weak beats; proper suspension treatment for tied notes."
 
   def marks
     return [] unless cantus_firmus&.notes&.any?
@@ -24,7 +25,8 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
     if on_strong_beat?(note)
       properly_treated_suspension?(note)
     else
-      passing_tone?(note) || neighbor_tone?(note)
+      passing_tone?(note) || neighbor_tone?(note) ||
+        cambiata_dissonance?(note) || double_neighbor_member?(note)
     end
   end
 
@@ -42,11 +44,11 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
     next_cp = following_note(note)
     return false unless next_cp
 
-    melodic = HeadMusic::Analysis::MelodicInterval.new(note, next_cp)
+    melodic = melodic_interval_between(note, next_cp)
     return false unless melodic.step?
 
     # Resolution must be consonant
-    !dissonant_with_cantus?(next_cp)
+    consonant_with_cantus?(next_cp)
   end
 
   def on_strong_beat?(note)
@@ -66,6 +68,10 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
     interval.notes.length == 2 && interval.dissonance?(:two_part_harmony)
   end
 
+  def consonant_with_cantus?(note)
+    !dissonant_with_cantus?(note)
+  end
+
   def passing_tone?(note)
     stepwise_figure?(note, same_direction: true)
   end
@@ -79,9 +85,71 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
     next_note = following_note(note)
     return false unless prev_note && next_note
 
-    approach = HeadMusic::Analysis::MelodicInterval.new(prev_note, note)
-    departure = HeadMusic::Analysis::MelodicInterval.new(note, next_note)
+    approach = melodic_interval_between(prev_note, note)
+    departure = melodic_interval_between(note, next_note)
     approach.step? && departure.step? && (approach.direction == departure.direction) == same_direction
+  end
+
+  # Nota cambiata: a five-note figure where note 2 is dissonant,
+  # approached by step from note 1, leaps a third in the same direction to note 3,
+  # then notes 3-4-5 proceed stepwise in the opposite direction.
+  # Notes 1, 3, and 5 must be consonant with the CF.
+  def cambiata_dissonance?(note)
+    index = notes.index(note)
+    return false unless index
+
+    cambiata_as_note_2?(index)
+  end
+
+  def cambiata_as_note_2?(index)
+    return false if index < 1 || index + 3 > notes.length - 1
+
+    n1 = notes[index - 1]
+    n2 = notes[index]
+    n3 = notes[index + 1]
+    n4 = notes[index + 2]
+    n5 = notes[index + 3]
+
+    approach = melodic_interval_between(n1, n2)
+    leap = melodic_interval_between(n2, n3)
+    step_back_1 = melodic_interval_between(n3, n4)
+    step_back_2 = melodic_interval_between(n4, n5)
+
+    approach.step? &&
+      leap.number == 3 && approach.direction == leap.direction &&
+      step_back_1.step? && step_back_2.step? &&
+      step_back_1.direction != leap.direction &&
+      step_back_2.direction != leap.direction &&
+      consonant_with_cantus?(n1) && consonant_with_cantus?(n3) && consonant_with_cantus?(n5)
+  end
+
+  # Double neighbor: a four-note figure within one bar.
+  # Beats 1 and 4 are the same pitch (consonant), beats 2 and 3 are
+  # upper and lower neighbors connected by a leap of a third.
+  def double_neighbor_member?(note)
+    index = notes.index(note)
+    return false unless index
+
+    double_neighbor_figure?(index, offset: 1) || double_neighbor_figure?(index, offset: 2)
+  end
+
+  def double_neighbor_figure?(index, offset:)
+    start = index - offset
+    return false if start < 0 || start + 3 > notes.length - 1
+
+    n1, n2, n3, n4 = notes[start, 4]
+
+    approach = melodic_interval_between(n1, n2)
+    middle = melodic_interval_between(n2, n3)
+    departure = melodic_interval_between(n3, n4)
+
+    approach.step? && middle.number == 3 && departure.step? &&
+      n1.pitch == n4.pitch &&
+      consonant_with_cantus?(n1) && consonant_with_cantus?(n4)
+  end
+
+  def melodic_interval_between(note1, note2)
+    HeadMusic::Analysis::MelodicInterval.new(note1, note2)
   end
 
   def preceding_note(note)

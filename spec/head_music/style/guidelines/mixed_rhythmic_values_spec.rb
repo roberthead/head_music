@@ -37,11 +37,12 @@ describe HeadMusic::Style::Guidelines::MixedRhythmicValues do
     its(:fitness) { is_expected.to be < 1 }
   end
 
-  context "with a mix of whole and half notes" do
+  context "with a mix of whole, half, and quarter notes" do
     before do
       counterpoint.place("1:1", :whole, "A4")
       counterpoint.place("2:1", :half, "C5")
-      counterpoint.place("2:3", :half, "A4")
+      counterpoint.place("2:3", :quarter, "B4")
+      counterpoint.place("2:4", :quarter, "A4")
       counterpoint.place("3:1", :whole, "B4")
       counterpoint.place("4:1", :whole, "A4")
     end

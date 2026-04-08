@@ -10,10 +10,12 @@ describe HeadMusic::Style::Guides::FifthSpeciesMelody do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
+  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MixedRhythmicValues }

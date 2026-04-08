@@ -5,9 +5,9 @@ module HeadMusic::Style::Guidelines; end
 # A suspension has three parts:
 # 1. Preparation: The note is consonant with the current cantus firmus note.
 # 2. Suspension: The cantus firmus moves; the counterpoint sustains, becoming dissonant.
-# 3. Resolution: The counterpoint resolves by step (usually down) to a consonance.
+# 3. Resolution: The counterpoint resolves by step down to a consonance.
 class HeadMusic::Style::Guidelines::SuspensionTreatment < HeadMusic::Style::Annotation
-  MESSAGE = "Treat suspensions with proper preparation and stepwise resolution."
+  MESSAGE = "Treat suspensions with proper preparation and downward stepwise resolution."
 
   def marks
     return [] unless cantus_firmus&.notes&.any?
@@ -52,7 +52,7 @@ class HeadMusic::Style::Guidelines::SuspensionTreatment < HeadMusic::Style::Anno
     return false unless next_cp
 
     melodic = HeadMusic::Analysis::MelodicInterval.new(cp_note, next_cp)
-    return false unless melodic.step?
+    return false unless melodic.step? && melodic.descending?
 
     resolution_interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, next_cp.position)
     resolution_interval.notes.length == 2 && resolution_interval.consonance?(:two_part_harmony)

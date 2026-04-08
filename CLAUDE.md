@@ -93,17 +93,33 @@ The codebase follows a domain-driven design with clear module boundaries:
 4. **HeadMusic::Content** - Musical composition representation
   - Compositions, voices, bars, positions
   - Notes in context (pitch + duration + placement)
-  - Temporal organization
+  - Uses HeadMusic::Time for temporal positioning
 
-5. **HeadMusic::Analysis** - Musical analysis tools
-  - Intervals, chords, motion analysis
-  - Harmonic and melodic analysis
+5. **HeadMusic::Time** - Temporal infrastructure
+  - Clock positions (elapsed nanoseconds as source of truth)
+  - Musical positions (bars:beats:ticks:subticks notation)
+  - SMPTE timecode (hours:minutes:seconds:frames for video/audio sync)
+  - Conductor: converts between clock time and musical position
+  - Tempo and meter maps for tracking changes over time
+
+6. **HeadMusic::Analysis** - Musical analysis tools
+  - Diatonic intervals (quality + size)
+  - Harmonic and melodic interval analysis
+  - Consonance classification
+  - Motion analysis (parallel, similar, contrary, oblique)
   - Pitch class sets and collections
+  - Sonority and dyad analysis
+  - Circle (of fifths) and interval cycles
 
-6. **HeadMusic::Style** - Composition rules and guidelines
-  - Counterpoint rules
+7. **HeadMusic::Style** - Composition rules and guidelines
+  - Counterpoint rules (species counterpoint guides)
   - Voice leading guidelines
-  - Style analysis
+  - Style analysis and annotations
+  - Historical traditions (medieval, renaissance, modern)
+
+8. **HeadMusic::Utilities** - Shared helpers
+  - Case conversion
+  - Hash key utilities
 
 ### Key Design Patterns
 
@@ -171,7 +187,7 @@ This project deliberately deprioritizes formal documentation in favor of clear, 
 Domain reference materials live in `references/`.
 Consult these when implementing or modifying style guidelines:
 
-- `references/second-species-counterpoint.md` — Pedagogical survey of second-species counterpoint rules from Fux through contemporary sources, with cross-source comparison and mapping to head_music's style guideline architecture.
+Consult the files in `references/` when implementing or modifying style guidelines. These contain pedagogical surveys with cross-source comparisons mapped to head_music's style guideline architecture.
 
 ## Music theory and concepts
 

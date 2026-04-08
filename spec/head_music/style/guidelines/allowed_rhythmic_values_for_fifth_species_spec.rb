@@ -18,16 +18,17 @@ describe HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies do
     it { is_expected.to be_adherent }
   end
 
-  context "with a mix of all rhythmic values" do
+  context "with a mix of valid rhythmic values" do
     before do
-      counterpoint.place("1:1", :whole, "A4")
+      counterpoint.place("1:3", :half, "A4")
       counterpoint.place("2:1", :half, "A4")
       counterpoint.place("2:3", :half, "C5")
       counterpoint.place("3:1", :quarter, "B4")
-      counterpoint.place("3:2", :quarter, "C5")
-      counterpoint.place("3:3", :quarter, "B4")
-      counterpoint.place("3:4", :quarter, "A4")
-      counterpoint.place("4:1", :eighth, "A4")
+      counterpoint.place("3:2", :eighth, "C5")
+      counterpoint.place("3:2:480", :eighth, "B4")
+      counterpoint.place("3:3", :quarter, "A4")
+      counterpoint.place("3:4", :quarter, "G4")
+      counterpoint.place("4:1", :whole, "A4")
     end
 
     it { is_expected.to be_adherent }

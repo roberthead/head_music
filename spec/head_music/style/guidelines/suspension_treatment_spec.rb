@@ -52,12 +52,12 @@ describe HeadMusic::Style::Guidelines::SuspensionTreatment do
 
   context "with a proper 4-3 suspension" do
     before do
-      # Bar 9 CP = A4 (M3 with CF F4, consonant = preparation).
-      # A4 sustains into bar 10 (CF=E4): P4 = dissonant suspension.
-      # Bar 10 CP = B4 (P5 with CF E4, consonant = resolution by step up from A4).
-      # B4 sustains into bar 11 (CF=D4): M6 = consonant (no further suspension).
-      %w[A4 C5 B4 D5 D5 C5 E5 D5 A4 B4].each_with_index do |pitch, index|
-        counterpoint.place("#{index + 1}:3", :whole, pitch)
+      # Bar 9:3 CP=A4 vs CF=F4: M3 (consonant = preparation).
+      # A4 sustains into bar 10 (CF=E4): P4 (dissonant = suspension).
+      # Bar 10:3 CP=G4 (m3 with CF E4, consonant = resolution by step down from A4).
+      # D5 at bar 11:1 prevents G4 from sustaining into bar 11.
+      %w[A4 C5 B4 D5 D5 C5 E5 D5 A4 G4].each_with_index do |pitch, index|
+        counterpoint.place("#{index + 1}:3", :half, pitch)
       end
       counterpoint.place("11:1", :whole, "D5")
     end

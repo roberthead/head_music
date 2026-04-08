@@ -59,6 +59,25 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
     it { is_expected.to be_adherent }
   end
 
+  context "with a proper 7-6 suspension in a florid texture" do
+    let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4] }
+
+    before do
+      # Bar 1: half A4 (P5 with D4, consonant)
+      counterpoint.place("1:3", :half, "A4")
+      # Bar 2: half A4, then whole D5 starting at 2:3
+      # D5 at 2:3 is M6 with CF F4 (consonant = preparation)
+      counterpoint.place("2:1", :half, "A4")
+      counterpoint.place("2:3", :whole, "D5")
+      # D5 sustains into bar 3:1 where CF=E4: m7 (dissonant = suspension)
+      # Bar 3: C5 at 3:3 resolves by step down (m6 with CF E4, consonant)
+      counterpoint.place("3:3", :half, "C5")
+      counterpoint.place("4:1", :whole, "A4")
+    end
+
+    it { is_expected.to be_adherent }
+  end
+
   context "with a dissonant note on a strong beat without suspension" do
     let(:cantus_firmus_pitches) { %w[D4 F4 E4] }
 
@@ -66,6 +85,24 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
       # E4 is m2 with CF F4 at bar 2 = dissonant on strong beat, not a suspension
       counterpoint.place("1:1", :whole, "A4")
       counterpoint.place("2:1", :whole, "E4")
+      counterpoint.place("3:1", :whole, "B4")
+    end
+
+    its(:fitness) { is_expected.to be < 1 }
+  end
+
+  context "with a dissonant weak-beat note that is neither PT, NT, cambiata, nor double neighbor" do
+    let(:cantus_firmus_pitches) { %w[D4 F4 E4] }
+
+    before do
+      # Bar 1: A4 (P5, consonant), then leap to E5 (dissonant m2 with CF... wait, no)
+      # D4 CF: A4 = P5 consonant. quarter A4, quarter E4 (m2 with D4, dissonant),
+      # then leap to A4 -- dissonant E4 leaps out (not a passing tone or neighbor)
+      counterpoint.place("1:1", :quarter, "A4")
+      counterpoint.place("1:2", :quarter, "E4")
+      counterpoint.place("1:3", :quarter, "A4")
+      counterpoint.place("1:4", :quarter, "B4")
+      counterpoint.place("2:1", :whole, "A4")
       counterpoint.place("3:1", :whole, "B4")
     end
 
