@@ -1,9 +1,7 @@
 # Module for guides
 module HeadMusic::Style::Guides; end
 
-# Base class for species harmony guides providing shared analysis behavior
-class HeadMusic::Style::Guides::SpeciesHarmony
-  def self.analyze(voice)
-    self::RULESET.map { |rule| rule.new(voice) }
-  end
+# Base class for species harmony guides. Inherits analysis behavior from Base;
+# exists as a semantic marker distinguishing harmony guides from melody guides.
+class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
 end

@@ -215,6 +215,7 @@ require "head_music/style/guidelines/florid_dissonance_treatment"
 require "head_music/style/guidelines/mixed_rhythmic_values"
 
 # style guides
+require "head_music/style/guides/base"
 require "head_music/style/guides/species_melody"
 require "head_music/style/guides/fux_cantus_firmus"
 require "head_music/style/guides/modern_cantus_firmus"
