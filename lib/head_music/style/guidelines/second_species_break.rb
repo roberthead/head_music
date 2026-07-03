@@ -25,9 +25,13 @@ class HeadMusic::Style::Guidelines::SecondSpeciesBreak < HeadMusic::Style::Guide
       .map { |note| HeadMusic::Style::Mark.for(note) }
   end
 
+  def max_break_ratio
+    options.fetch(:max_break_ratio) { self.class::MAX_BREAK_RATIO }
+  end
+
   def frequency_marks
     return [] if total_bars <= 0
-    return [] if break_bars.length <= total_bars * MAX_BREAK_RATIO
+    return [] if break_bars.length <= total_bars * max_break_ratio
 
     break_bar_notes = break_bars.flat_map { |bar| notes_in_bar(bar) }
     [HeadMusic::Style::Mark.for_all(break_bar_notes, fitness: HeadMusic::SMALL_PENALTY_FACTOR)]
