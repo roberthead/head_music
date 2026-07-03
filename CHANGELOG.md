@@ -7,6 +7,116 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [12.6.0] - 2026-07-03
+
+### Added
+
+- `DiatonicMelody` guide: a free diatonic melody not bound to cantus firmus start/end constraints (note-count range configurable, defaulting to 5–24)
+- Configurable guidelines — a guideline can now carry configuration into a `RULESET` via `Annotation.with(...)` (wrapped in `Annotation::Configured`):
+  - `MinimumNotes` / `MaximumNotes` — configurable note-count floor and ceiling (`AtLeastEightNotes` / `UpToFourteenNotes` retained as named defaults)
+  - `NoteCountPerBar` — configurable `count` and `rhythmic_value` (unifies `OnePerBar`, `TwoPerBar`, `ThreePerBar`, `FourPerBar`)
+  - `DirectionChanges` — configurable `maximum_notes_per_direction` (unifies `ModerateDirectionChanges` and `FrequentDirectionChanges`)
+  - Configurable thresholds on `SingableRange`, `MostlyConjunct`, `LimitOctaveLeaps`, and `SecondSpeciesBreak`
+
+### Changed
+
+- Extracted `HeadMusic::Style::Guides::Base` for shared guide analysis behavior; `SpeciesMelody` and `SpeciesHarmony` now inherit from it
+- Hoisted the guidelines common to every guide into `MELODIC_CORE` / `HARMONIC_CORE` constants on the species base classes
+- `SingableRange`'s message now reflects the configured range
+- Renamed the `quality` rake task to `validate`
+
+## [12.5.0] - 2026-04-08
+
+### Changed
+
+- Improved fifth-species counterpoint guidelines
+- Code quality improvements
+
+### Removed
+
+- Combined 2+3+4 species guides and their guidelines
+
+## [12.4.0] - 2026-04-06
+
+### Added
+
+- Fifth-species (florid) counterpoint guides
+- Standard and alternate instrument tunings
+
+### Fixed
+
+- Ukulele family stringings, tunings, and range data
+
+## [12.3.0] - 2026-02-25
+
+### Added
+
+- Fourth-species counterpoint guides
+
+### Changed
+
+- Code quality pass
+
+## [12.2.0] - 2026-02-24
+
+### Changed
+
+- Improved guidelines for first-bar entry
+
+## [12.1.0] - 2026-02-24
+
+### Changed
+
+- Refactored species guidelines into separate first-bar, middle-bar, and final-bar rules
+- Unified `FinalBarWholeNote` and `FinalBarDottedHalfNote` into `NoteFillsFinalBar`
+
+## [12.0.1] - 2026-02-23
+
+### Changed
+
+- Renamed triple-meter guides
+
+## [12.0.0] - 2026-02-21
+
+### Added
+
+- Third-species 3:1 guidelines
+- Allow a descending minor sixth as a singable interval
+
+### Changed
+
+- Extracted shared base classes for guides and step-to-final-note guidelines
+- Refactored third-species dissonance handling and other files to reduce code smells
+
+## [11.8.0] - 2026-02-16
+
+### Added
+
+- `ThirdSpeciesMelody` and `ThirdSpeciesHarmony` guides
+- `ThirdSpeciesDissonanceTreatment` guideline
+- `FourToOne` guideline
+- Third-species counterpoint reference document
+
+## [11.7.0] - 2026-02-13
+
+### Added
+
+- Parallel-perfect check for first species
+
+### Changed
+
+- `Analysis#fitness` now uses the geometric mean
+
+## [11.6.1] - 2026-02-12
+
+### Added
+
+- Additional test coverage for the two-to-one guideline
+
+### Fixed
+
+- Accept an implied rest in the first bar of second-species counterpoint
+
 ## [11.6.0] - 2026-02-10
 
 ### Added
