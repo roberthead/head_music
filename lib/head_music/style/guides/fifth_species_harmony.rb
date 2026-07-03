@@ -4,17 +4,11 @@ module HeadMusic::Style::Guides; end
 # Rules for fifth species (florid) harmony
 class HeadMusic::Style::Guides::FifthSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   RULESET = [
-    HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
-    HeadMusic::Style::Guidelines::AvoidCrossingVoices,
-    HeadMusic::Style::Guidelines::AvoidOverlappingVoices,
-    HeadMusic::Style::Guidelines::ConsonantDownbeats,
+    *HARMONIC_CORE,
+    HeadMusic::Style::Guidelines::FloridDissonanceTreatment,
     HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline,
-    HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats,
     HeadMusic::Style::Guidelines::NoParallelPerfectWithSyncopation,
     HeadMusic::Style::Guidelines::NoStrongBeatUnisons,
-    HeadMusic::Style::Guidelines::PreferContraryMotion,
-    HeadMusic::Style::Guidelines::PreferImperfect,
-    HeadMusic::Style::Guidelines::FloridDissonanceTreatment,
     HeadMusic::Style::Guidelines::SuspensionTreatment
   ].freeze
 end

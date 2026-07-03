@@ -1,15 +1,9 @@
 # Rules for first species harmony
 class HeadMusic::Style::Guides::FirstSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   RULESET = [
-    HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
-    HeadMusic::Style::Guidelines::AvoidCrossingVoices,
-    HeadMusic::Style::Guidelines::AvoidOverlappingVoices,
-    HeadMusic::Style::Guidelines::ConsonantDownbeats,
-    HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats,
+    *HARMONIC_CORE,
     HeadMusic::Style::Guidelines::NoUnisonsInMiddle,
-    HeadMusic::Style::Guidelines::OneToOne,
-    HeadMusic::Style::Guidelines::PreferContraryMotion,
-    HeadMusic::Style::Guidelines::PreferImperfect
+    HeadMusic::Style::Guidelines::OneToOne
   ].freeze
 end
 
