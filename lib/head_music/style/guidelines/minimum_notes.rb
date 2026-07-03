@@ -2,8 +2,12 @@
 module HeadMusic::Style::Guidelines; end
 
 # Flags a melody with fewer than the required number of notes.
-# Configurable via the `minimum:` option; subclasses may set a MINIMUM_NOTES default.
+# Configure the threshold with the factory, e.g. MinimumNotes.with(8).
 class HeadMusic::Style::Guidelines::MinimumNotes < HeadMusic::Style::Annotation
+  def self.with(minimum)
+    super(minimum: minimum)
+  end
+
   def marks
     placements.empty? ? no_placements_mark : deficiency_mark
   end
@@ -15,7 +19,7 @@ class HeadMusic::Style::Guidelines::MinimumNotes < HeadMusic::Style::Annotation
   private
 
   def minimum
-    options.fetch(:minimum) { self.class::MINIMUM_NOTES }
+    options.fetch(:minimum)
   end
 
   def no_placements_mark

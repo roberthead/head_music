@@ -4,8 +4,8 @@ describe HeadMusic::Style::Annotation do
   let(:voice) { HeadMusic::Content::Voice.new }
 
   context "when the voice is empty" do
-    describe "with up-to-fourteen-notes" do
-      subject(:annotation) { HeadMusic::Style::Guidelines::UpToFourteenNotes.new(voice) }
+    describe "with a maximum-notes guideline" do
+      subject(:annotation) { HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14) }
 
       its(:first_note) { is_expected.to be_nil }
       its(:last_note) { is_expected.to be_nil }
@@ -13,8 +13,8 @@ describe HeadMusic::Style::Annotation do
       it { is_expected.to be_adherent }
     end
 
-    context "with at-least-eight-notes" do
-      subject(:annotation) { HeadMusic::Style::Guidelines::AtLeastEightNotes.new(voice) }
+    context "with a minimum-notes guideline" do
+      subject(:annotation) { HeadMusic::Style::Guidelines::MinimumNotes.new(voice, minimum: 8) }
 
       it { is_expected.not_to be_adherent }
     end

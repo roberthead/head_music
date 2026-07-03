@@ -15,6 +15,7 @@ describe HeadMusic::Style::Guidelines::MaximumNotes do
     its(:fitness) { is_expected.to be < 1 }
     its(:fitness) { is_expected.to be > 0 }
     its(:marks_count) { is_expected.to eq 1 }
+    its(:first_mark_code) { is_expected.to eq "6:1:000 to 7:1:000" }
     its(:message) { is_expected.to eq "Write up to five notes." }
   end
 
@@ -26,9 +27,16 @@ describe HeadMusic::Style::Guidelines::MaximumNotes do
     it { is_expected.to be_adherent }
   end
 
-  context "when instantiated without an option (subclass default)" do
-    subject { HeadMusic::Style::Guidelines::UpToFourteenNotes.new(voice) }
+  describe ".with" do
+    subject(:configured) { described_class.with(14) }
 
-    its(:message) { is_expected.to eq "Write up to fourteen notes." }
+    it { is_expected.to be_a HeadMusic::Style::Annotation::Configured }
+    its(:guideline_class) { is_expected.to eq described_class }
+    its(:options) { is_expected.to eq(maximum: 14) }
+
+    it "builds an annotation that reports the configured maximum" do
+      voice = HeadMusic::Content::Voice.new
+      expect(configured.new(voice).message).to eq "Write up to fourteen notes."
+    end
   end
 end

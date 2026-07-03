@@ -5,7 +5,7 @@ class HeadMusic::Style::Guides::DiatonicMelody < HeadMusic::Style::Guides::Speci
     HeadMusic::Style::Guidelines::ModerateDirectionChanges,
     HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
     HeadMusic::Style::Guidelines::SingleLargeLeaps,
-    HeadMusic::Style::Guidelines::MinimumNotes.with(minimum: 5),
-    HeadMusic::Style::Guidelines::MaximumNotes.with(maximum: 24)
+    HeadMusic::Style::Guidelines::MinimumNotes.with(5),
+    HeadMusic::Style::Guidelines::MaximumNotes.with(24)
   ].freeze
 end

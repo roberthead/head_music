@@ -31,8 +31,16 @@ require "rspec/its"
 require "head_music"
 require "composition_context"
 
+# Matcher for a guideline wrapped by Annotation.with(...) inside a RULESET.
+module ConfiguredGuidelineHelper
+  def configured(guideline_class, **options)
+    an_object_having_attributes(guideline_class: guideline_class, options: options)
+  end
+end
+
 RSpec.configure do |config|
   config.example_status_persistence_file_path = "spec/examples.txt"
+  config.include ConfiguredGuidelineHelper
 end
 
 class HeadMusic::Style::Annotation

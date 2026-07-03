@@ -2,8 +2,12 @@
 module HeadMusic::Style::Guidelines; end
 
 # Flags a melody with more than the allowed number of notes.
-# Configurable via the `maximum:` option; subclasses may set a MAXIMUM_NOTES default.
+# Configure the threshold with the factory, e.g. MaximumNotes.with(14).
 class HeadMusic::Style::Guidelines::MaximumNotes < HeadMusic::Style::Annotation
+  def self.with(maximum)
+    super(maximum: maximum)
+  end
+
   def marks
     HeadMusic::Style::Mark.for_each(notes[maximum..]) if overage.positive?
   end
@@ -15,7 +19,7 @@ class HeadMusic::Style::Guidelines::MaximumNotes < HeadMusic::Style::Annotation
   private
 
   def maximum
-    options.fetch(:maximum) { self.class::MAXIMUM_NOTES }
+    options.fetch(:maximum)
   end
 
   def overage

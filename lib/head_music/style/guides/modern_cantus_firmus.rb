@@ -6,15 +6,15 @@ class HeadMusic::Style::Guides::ModernCantusFirmus < HeadMusic::Style::Guides::S
   RULESET = [
     *MELODIC_CORE,
     HeadMusic::Style::Guidelines::AlwaysMove,
-    HeadMusic::Style::Guidelines::AtLeastEightNotes,
     HeadMusic::Style::Guidelines::EndOnTonic,
+    HeadMusic::Style::Guidelines::MaximumNotes.with(14),
+    HeadMusic::Style::Guidelines::MinimumNotes.with(8),
     HeadMusic::Style::Guidelines::ModerateDirectionChanges,
     HeadMusic::Style::Guidelines::NoRests,
     HeadMusic::Style::Guidelines::NotesSameLength,
     HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
     HeadMusic::Style::Guidelines::SingleLargeLeaps,
     HeadMusic::Style::Guidelines::StartOnTonic,
-    HeadMusic::Style::Guidelines::StepToFinalNote,
-    HeadMusic::Style::Guidelines::UpToFourteenNotes
+    HeadMusic::Style::Guidelines::StepToFinalNote
   ].freeze
 end

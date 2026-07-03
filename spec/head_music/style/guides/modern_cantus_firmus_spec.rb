@@ -4,7 +4,7 @@ describe HeadMusic::Style::Guides::ModernCantusFirmus do
   subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AtLeastEightNotes }
+  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8) }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::Diatonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::EndOnTonic }
@@ -19,7 +19,7 @@ describe HeadMusic::Style::Guides::ModernCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingleLargeLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnTonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepToFinalNote }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::UpToFourteenNotes }
+  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::MaximumNotes, maximum: 14) }
 
   context "with Fux examples" do
     fux_cantus_firmus_examples.each do |example|
