@@ -6,16 +6,27 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::SingableRange < HeadMusic::Style::Annotation
   MAXIMUM_RANGE = 10
 
-  MESSAGE = "Limit melodic range to a 10th."
+  # Ordinals whose spoken form begins with a vowel sound take "an" instead of
+  # "a" (an eighth, an eleventh, an eighteenth). Others in the singable range
+  # take "a".
+  VOWEL_SOUND_ORDINALS = [8, 11, 18].freeze
 
   def marks
     HeadMusic::Style::Mark.for_each(extremes, fitness: HeadMusic::PENALTY_FACTOR**overage) if overage.positive?
+  end
+
+  def message
+    "Limit melodic range to #{indefinite_article} #{maximum_range.ordinalize}."
   end
 
   private
 
   def maximum_range
     options.fetch(:maximum_range) { self.class::MAXIMUM_RANGE }
+  end
+
+  def indefinite_article
+    VOWEL_SOUND_ORDINALS.include?(maximum_range) ? "an" : "a"
   end
 
   def overage
