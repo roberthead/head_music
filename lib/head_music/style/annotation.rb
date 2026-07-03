@@ -23,8 +23,36 @@ class HeadMusic::Style::Annotation
   delegate :key_signature, to: :composition
   delegate :tonic_spelling, to: :key_signature
 
-  def initialize(voice)
+  def initialize(voice, **options)
     @voice = voice
+    @options = options
+  end
+
+  # Wraps a guideline class with preset options so it can live in a RULESET
+  # and still be instantiated with just a voice, e.g. MinimumNotes.with(minimum: 5).
+  def self.with(**options)
+    Configured.new(self, options)
+  end
+
+  # A RULESET entry pairing a guideline class with configuration. Quacks like a
+  # class to the analyze loop by responding to #new(voice).
+  class Configured
+    attr_reader :guideline_class, :options
+
+    def initialize(guideline_class, options)
+      @guideline_class = guideline_class
+      @options = options
+    end
+
+    def new(voice)
+      guideline_class.new(voice, **options)
+    end
+
+    def name
+      guideline_class.name
+    end
+    alias_method :to_s, :name
+    alias_method :inspect, :name
   end
 
   def fitness
@@ -60,6 +88,8 @@ class HeadMusic::Style::Annotation
   end
 
   protected
+
+  attr_reader :options
 
   def voices
     @voices ||= voice.composition.voices

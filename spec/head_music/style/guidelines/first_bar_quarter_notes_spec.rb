@@ -3,7 +3,7 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::FirstBarQuarterNotes do
   subject { described_class.new(counterpoint) }
 
-  context "in duple meter (4/4)" do
+  context "with duple meter (4/4)" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
     let(:counterpoint) { composition.add_voice(role: :counterpoint) }
 
@@ -84,7 +84,7 @@ describe HeadMusic::Style::Guidelines::FirstBarQuarterNotes do
     end
   end
 
-  context "in triple meter (3/4)" do
+  context "with triple meter (3/4)" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "3/4") }
     let(:counterpoint) { composition.add_voice(role: :counterpoint) }
 

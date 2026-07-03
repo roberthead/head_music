@@ -14,7 +14,7 @@ describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
     end
   end
 
-  context "in 4/4 meter" do
+  context "with 4/4 meter" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
     let(:cf_rhythmic_value) { :whole }
 
@@ -56,7 +56,7 @@ describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
     end
   end
 
-  context "in 3/4 meter" do
+  context "with 3/4 meter" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "3/4") }
     let(:cf_rhythmic_value) { :dotted_half }
 
