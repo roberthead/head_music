@@ -4,7 +4,10 @@ class HeadMusic::Style::Guides::DiatonicMelody < HeadMusic::Style::Guides::Speci
     *MELODIC_CORE,
     HeadMusic::Style::Guidelines::ModerateDirectionChanges,
     HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
-    HeadMusic::Style::Guidelines::SingleLargeLeaps,
+    HeadMusic::Style::Guidelines::LargeLeaps.with(
+      minimum: :perfect_fourth,
+      recovery: %i[consonant_triad any_step repetition opposite_leap_within]
+    ),
     HeadMusic::Style::Guidelines::MinimumNotes.with(5),
     HeadMusic::Style::Guidelines::MaximumNotes.with(24)
   ].freeze

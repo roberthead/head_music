@@ -13,7 +13,10 @@ class HeadMusic::Style::Guides::SalzerSchachterCantusFirmus < HeadMusic::Style::
     HeadMusic::Style::Guidelines::NoRests,
     HeadMusic::Style::Guidelines::NotesSameLength,
     HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
-    HeadMusic::Style::Guidelines::SingleLargeLeaps,
+    HeadMusic::Style::Guidelines::LargeLeaps.with(
+      minimum: :perfect_fourth,
+      recovery: %i[consonant_triad any_step repetition opposite_leap_within]
+    ),
     HeadMusic::Style::Guidelines::StartOnTonic,
     HeadMusic::Style::Guidelines::StepToFinalNote
   ].freeze

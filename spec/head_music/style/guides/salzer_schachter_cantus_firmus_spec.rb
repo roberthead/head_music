@@ -16,7 +16,7 @@ describe HeadMusic::Style::Guides::SalzerSchachterCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingleLargeLeaps }
+  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::LargeLeaps, minimum: :perfect_fourth, recovery: %i[consonant_triad any_step repetition opposite_leap_within]) }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnTonic }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepToFinalNote }
   specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::MaximumNotes, maximum: 14) }

@@ -12,7 +12,12 @@ class HeadMusic::Style::Guides::FuxCantusFirmus < HeadMusic::Style::Guides::Spec
     HeadMusic::Style::Guidelines::FrequentDirectionChanges,
     HeadMusic::Style::Guidelines::NoRests,
     HeadMusic::Style::Guidelines::NotesSameLength,
-    HeadMusic::Style::Guidelines::RecoverLargeLeaps,
+    HeadMusic::Style::Guidelines::LargeLeaps.with(
+      message: "Recover large leaps by step in the opposite direction.",
+      minimum: :perfect_fourth,
+      descending: {minimum: :perfect_fourth, forbidden: :minor_sixth},
+      recovery: %i[consonant_triad opposite_step]
+    ),
     HeadMusic::Style::Guidelines::StartOnTonic,
     HeadMusic::Style::Guidelines::StepDownToFinalNote
   ].freeze

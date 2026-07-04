@@ -3,6 +3,15 @@ require "spec_helper"
 describe HeadMusic::Style::Guides::FuxCantusFirmus do
   subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
+  let(:large_leaps_options) do
+    {
+      message: "Recover large leaps by step in the opposite direction.",
+      minimum: :perfect_fourth,
+      descending: {minimum: :perfect_fourth, forbidden: :minor_sixth},
+      recovery: %i[consonant_triad opposite_step]
+    }
+  end
+
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }
   specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8) }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
@@ -13,7 +22,9 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRests }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NotesSameLength }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::RecoverLargeLeaps }
+
+  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::LargeLeaps, **large_leaps_options) }
+
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnTonic }

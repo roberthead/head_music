@@ -14,7 +14,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
         HeadMusic::Style::Guidelines::SingableIntervals,
         HeadMusic::Style::Guidelines::SingableRange,
-        HeadMusic::Style::Guidelines::SingleLargeLeaps
+        configured(HeadMusic::Style::Guidelines::LargeLeaps, minimum: :perfect_fourth, recovery: %i[consonant_triad any_step repetition opposite_leap_within])
       ]
     end
 
