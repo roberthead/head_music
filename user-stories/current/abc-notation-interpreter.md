@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-04T12:21:27-07:00
   planned_at:   2026-07-04T12:37:50-07:00
   finished_at:
-  updated_at:   2026-07-04T14:54:20-07:00
+  updated_at:   2026-07-04T14:58:50-07:00
 -->
 
 # Story: ABC Notation Interpreter
@@ -55,6 +55,7 @@ composition.name   # => "Speed the Plough"
 - [ ] Note pitch letters, octave markers (`,` and `'`), and accidentals (`^`, `_`, `=`) are interpreted correctly
 - [ ] Bar lines and note-length multipliers/divisors (e.g. `A2`, `A/2`) are handled
 - [ ] `Bar` gains repeat attributes (`starts_repeat`, `ends_repeat_after_num_plays`); the repeat bar lines `|:`, `:|`, and `::` set them on the corresponding bars (structure recorded, no playback expansion)
+- [ ] Volta brackets (`[1`, `[2`, the shorthands `|1` and `:|2`, and pass lists like `[1,3`) set `plays_on_passes` on the bars they cover
 - [ ] Multi-voice tunes (`V:` fields) produce multiple voices; a single-voice tune produces one voice
 - [ ] Malformed input raises a clear, specific error rather than failing silently or returning a partial composition
 - [ ] Specs cover a representative real tune end-to-end plus focused cases for pitch, octave, accidental, duration, meter, and key parsing
@@ -114,9 +115,24 @@ Resolved from the original open questions:
    the flags are the source of truth and repeat *spans* are derived by interpretation
    when needed (e.g. future playback expansion) rather than stored as paired objects.
    The parser sets the flags through the existing lazy `Composition#bars` collection,
-   the same route `change_key_signature`/`change_meter` use. Volta brackets
-   (first/second endings) are deferred; when needed they become an additive `ending`
-   attribute on `Bar` holding the pass numbers.
+   the same route `change_key_signature`/`change_meter` use. Volta brackets are in
+   scope — see Decision 5.
+5. **Voltas are a pass-list attribute on `Bar`.** A volta bracket means "these bars
+   play only on the listed passes through the repeated section," so the bar-anchored
+   representation is a single attribute:
+
+   - `plays_on_passes` — `nil` by default (the bar plays on every pass) or a
+     non-empty array of unique positive integers; the setter validates and raises
+     `ArgumentError` otherwise
+   - `plays_on_pass?(n)` — query method: true when `plays_on_passes` is nil or
+     includes `n`
+
+   Bracket extent is derived, consistent with how repeat spans are derived from the
+   Decision 4 flags: a volta span is a maximal run of consecutive bars sharing the
+   same `plays_on_passes` value. When voltas are present, the effective number of
+   passes through the section is the maximum listed pass number (ABC's `:|` never
+   carries a play count of its own; counts above 2 come from `P:` part sequences,
+   which remain out of scope).
 
 ## References
 
@@ -137,7 +153,7 @@ Add `HeadMusic::Notation::ABC.parse(string) → HeadMusic::Content::Composition`
    - New value object `HeadMusic::Content::Comment`: `attr_reader :composition, :text, :position`; `initialize(composition, text, position = nil)` following the `Placement` precedent (anchor object first, positional args). Position handling mirrors `Placement#ensure_position`: a `HeadMusic::Content::Position` is taken as-is but must belong to the same composition (raise `ArgumentError` otherwise — stricter than `Placement`, which trusts the caller); a string/symbol is coerced via `Position.new(composition, position)`; nil means unpositioned. `to_s` returns the text.
    - `Composition`: add kwargs to `initialize(name: nil, key_signature: nil, meter: nil, composer: nil, origin: nil, comments: nil)`. `composer`/`origin` are plain string passthrough with `attr_reader`s. `comments` accepts a string or array of strings, coerced to unpositioned `Comment` objects built with `self`; `attr_reader :comments` defaults to `[]`. Add `add_comment(text, position = nil)` mirroring `add_voice`, constructing `Comment.new(self, text, position)`. Additive and backward compatible; `ensure_attributes` is private so its signature can grow freely. Verified: no existing callers of `composition.comments`/`composer`/`origin` in lib or spec.
    - Wire `require "head_music/content/comment"` into the content loading sequence in `lib/head_music.rb`.
-   - `Bar`: add `starts_repeat` (boolean, `attr_writer` plus `starts_repeat?` predicate defaulting to false) and `ends_repeat_after_num_plays` (integer, minimum 2 — setter raises `ArgumentError` below that; nil means no repeat; `ends_repeat?` predicate). Include them in `to_s`. See Decision 4.
+   - `Bar`: add `starts_repeat` (boolean, `attr_writer` plus `starts_repeat?` predicate defaulting to false), `ends_repeat_after_num_plays` (integer, minimum 2 — setter raises `ArgumentError` below that; nil means no repeat; `ends_repeat?` predicate), and `plays_on_passes` (nil or a non-empty array of unique positive integers — setter validates and raises `ArgumentError` otherwise; `plays_on_pass?(n)` query returning true when nil or included). Include them in `to_s`. See Decisions 4 and 5.
    - Files: `lib/head_music/content/comment.rb`, `lib/head_music/content/composition.rb`, `lib/head_music/content/bar.rb`, `spec/head_music/content/comment_spec.rb`, `spec/head_music/content/composition_spec.rb`, `spec/head_music/content/bar_spec.rb`
 
 2. **Module skeleton, wiring, and error hierarchy**
@@ -159,7 +175,7 @@ Add `HeadMusic::Notation::ABC.parse(string) → HeadMusic::Content::Composition`
 
 5. **Body lexer**
 
-   - `BodyLexer`: `StringScanner` over the body producing token structs (`:note`, `:rest`, `:bar_line`, `:broken_rhythm`, `:voice_change`) with letter/case, accidental marks, octave marks, length string, and line/column. Strip `%` comments, join `\` continuations, skip beaming whitespace, treat a blank line as end of tune. Anchored character-class regexes only (no nested quantifiers — no ReDoS exposure); an unmatched character raises `ParseError` with line/column. Check `abc_string.valid_encoding?` up front (UTF-8 assumed; document it) so encoding problems surface as `ParseError`, not a deep regex `ArgumentError`.
+   - `BodyLexer`: `StringScanner` over the body producing token structs (`:note`, `:rest`, `:bar_line`, `:broken_rhythm`, `:voice_change`, `:volta`) with letter/case, accidental marks, octave marks, length string, and line/column. A `:volta` token carries its pass numbers parsed from `[1`, `[2`, comma lists (`[1,3`), and ranges (`[1-3`); the shorthands `|1` and `:|2` lex as a `:bar_line` followed by a `:volta`. Strip `%` comments, join `\` continuations, skip beaming whitespace, treat a blank line as end of tune. Anchored character-class regexes only (no nested quantifiers — no ReDoS exposure); an unmatched character raises `ParseError` with line/column. Check `abc_string.valid_encoding?` up front (UTF-8 assumed; document it) so encoding problems surface as `ParseError`, not a deep regex `ArgumentError`.
    - Files: `lib/head_music/notation/abc/body_lexer.rb`, `spec/head_music/notation/abc/body_lexer_spec.rb`
 
 6. **Pitch building (octaves, accidentals, key signature)**
@@ -170,7 +186,7 @@ Add `HeadMusic::Notation::ABC.parse(string) → HeadMusic::Content::Composition`
 
 7. **Parser orchestration**
 
-   - `Parser`: parse and validate the entire header and tokenize the entire body **before** constructing the `Composition` — the no-partial-composition guarantee falls out structurally (the composition is a local; any raise abandons it), and full pre-validation ensures no factory caches are touched by bad input. Then build: header attrs → `Composition.new`, `V:` ids → `add_voice(role: id)` (inline `V:` lines switch the current voice; no `V:` → one voice), notes/rests placed at each voice's own `next_position` cursor. `z` + length → rest placement (nil pitch). Bar-line variants (`|`, `|:`, `:|`, `::`, `||`, `|]`, `[|`) all reset accidental state; additionally `|:` sets `starts_repeat` on the bar being entered, `:|` sets `ends_repeat_after_num_plays = 2` on the bar just completed, and `::` does both (see Decision 4). The parser tracks the current bar number from each voice's position cursor and reaches the bars via `composition.bars`. No repeat expansion, no bar-length validation in v1. Broken rhythm `>`/`<` (dot one neighbor, halve the other) is included — trivially cheap and present in nearly every hornpipe. Everything else lexable-but-unsupported (chords `[CEG]`, quoted chord symbols, grace notes `{}`, ties `-`, slurs, tuplets `(3`, decorations, `Z`, `x`, `w:`, inline `[K:]`/`[M:]` changes, first/second endings) raises `UnsupportedFeatureError` naming the token and line — never silently skipped.
+   - `Parser`: parse and validate the entire header and tokenize the entire body **before** constructing the `Composition` — the no-partial-composition guarantee falls out structurally (the composition is a local; any raise abandons it), and full pre-validation ensures no factory caches are touched by bad input. Then build: header attrs → `Composition.new`, `V:` ids → `add_voice(role: id)` (inline `V:` lines switch the current voice; no `V:` → one voice), notes/rests placed at each voice's own `next_position` cursor. `z` + length → rest placement (nil pitch). Bar-line variants (`|`, `|:`, `:|`, `::`, `||`, `|]`, `[|`) all reset accidental state; additionally `|:` sets `starts_repeat` on the bar being entered, `:|` sets `ends_repeat_after_num_plays = 2` on the bar just completed, and `::` does both (see Decision 4). The parser tracks the current bar number from each voice's position cursor and reaches the bars via `composition.bars`. Volta tokens set an active pass list; each bar completed while the list is active gets `plays_on_passes`; the list clears at `:|` (after tagging that bar), at the next `:volta` token (which replaces it), and at section-ending bar lines (`||`, `|]`, `[|`) — matching the standard's rule that an ending lasts until the next repeat sign, variant marker, or double bar. No repeat expansion, no bar-length validation in v1. Broken rhythm `>`/`<` (dot one neighbor, halve the other) is included — trivially cheap and present in nearly every hornpipe. Everything else lexable-but-unsupported (chords `[CEG]`, quoted chord symbols, grace notes `{}`, ties `-`, slurs, tuplets `(3`, decorations, `Z`, `x`, `w:`, inline `[K:]`/`[M:]` changes) raises `UnsupportedFeatureError` naming the token and line — never silently skipped.
    - Files: `lib/head_music/notation/abc/parser.rb`, `spec/head_music/notation/abc/parser_spec.rb`
 
 8. **End-to-end spec, coverage, and polish**
@@ -194,12 +210,12 @@ House style: one behavior per `it`, heredocs (`<<~ABC`) rather than fixture file
 - `key_mapper_spec.rb` — normalization table: `G`, `Bb`, `Gm`, `Gmin`, `Ador`, `Dmix`, `F#m`, case-insensitivity, abbreviation prefixes, invalid mode raises.
 - `duration_resolver_spec.rb` — fraction table incl. dotted/double-dotted, `A5` → tied half+eighth asserting `total_value` (not `==` — `RhythmicValue#==` compares `to_s`), non-binary raises.
 - `pitch_builder_spec.rb` — octave matrix (`C c C, c' c,,`), `^ ^^ _ __ =`, key-signature application (F in G → F#4, `=F` → F4), bar persistence and reset at `|`.
-- `body_lexer_spec.rb` / `parser_spec.rb` — length strings, comments, continuation, rests, multi-voice with independent cursors, repeat bar lines setting `starts_repeat`/`ends_repeat_after_num_plays` on the right bars (including `::`), every unsupported feature raising with line/column. Error-path specs assert class and message (`raise_error(..., /line 3/)`) — these branches are also what holds the 90% coverage floor.
+- `body_lexer_spec.rb` / `parser_spec.rb` — length strings, comments, continuation, rests, multi-voice with independent cursors, repeat bar lines setting `starts_repeat`/`ends_repeat_after_num_plays` on the right bars (including `::`), voltas tagging bar ranges with `plays_on_passes` (`[1 ... :| [2 ...`, the `:|2` shorthand, `[1,3` lists, clearing at double bars), every unsupported feature raising with line/column. Error-path specs assert class and message (`raise_error(..., /line 3/)`) — these branches are also what holds the 90% coverage floor.
 
 ### Risks & Open Questions
 
 - **`Meter.get("C")` behavior**: possibly an `ArgumentError`, possibly a silently memoized garbage meter — verify which during implementation; either way the pre-mapping in step 3 is mandatory.
-- **Repeats recorded but not expanded**: `|:`/`:|`/`::` set the `Bar` repeat attributes (Decision 4) so the structure is preserved, but placements are not duplicated — total placed length differs from performed length. Plan assumes acceptable for v1, documented in specs; expansion can later be derived from the bar flags (as can inline `[K:]`/`[M:]` changes — `Composition#change_key_signature`/`#change_meter` already exist). Volta brackets (`[1`, `[2`, `|1`, `:|2`) raise `UnsupportedFeatureError` in v1; a future `Bar#ending` attribute makes them additive.
+- **Repeats recorded but not expanded**: `|:`/`:|`/`::` set the `Bar` repeat attributes (Decision 4) so the structure is preserved, but placements are not duplicated — total placed length differs from performed length. Plan assumes acceptable for v1, documented in specs; expansion can later be derived from the bar flags (as can inline `[K:]`/`[M:]` changes — `Composition#change_key_signature`/`#change_meter` already exist). Volta brackets are likewise recorded via `plays_on_passes` (Decision 5) without expansion, so a full performance-order traversal is a v2 concern that reads only `Bar` attributes.
 - **Body/inline `N:` fields**: out of scope for v1 (they raise `UnsupportedFeatureError` like other inline fields), but the `Comment` model's optional position means supporting them later is additive — no API change.
 - **Pickup bars**: placement starts at `1:1:0`, so a pickup shifts notated downbeats relative to `Position` bar numbers, skewing beat-strength analysis. V1 accepts and documents; padding bar 1 with a leading rest is a possible v2 behavior.
 - **Multi-voice scope**: `V:` support stays (it is an acceptance criterion), constrained to header-declared voices plus inline `V:` switching — no per-voice clefs or transposition.
