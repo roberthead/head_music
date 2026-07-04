@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Story Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 2.25rem;
+      color: #16213e;
+    }
+
+    .board {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .column {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: flex 0.25s ease;
+    }
+
+    .column.collapsed {
+      flex: 0 0 48px;
+    }
+
+    .column.collapsed .column-body { display: none; }
+
+    .column-header {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: flex-start;
+      padding: 16px 6px;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 600;
+      font-size: 1.275rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      writing-mode: vertical-lr;
+      text-orientation: mixed;
+      flex-shrink: 0;
+      gap: 10px;
+      min-width: 36px;
+    }
+
+    .column-header .badge {
+      writing-mode: vertical-lr;
+      background: rgba(0,0,0,0.08);
+      border-radius: 10px;
+      padding: 8px 2px;
+      font-size: 1.125rem;
+      font-weight: 500;
+    }
+
+    .column-header .chevron {
+      writing-mode: horizontal-tb;
+      transition: transform 0.2s;
+      font-size: 1.05rem;
+      opacity: 0.5;
+    }
+
+    .column.collapsed .chevron { transform: rotate(180deg); }
+
+    .column-active .column-header { background: #e8f4fd; color: #0b5394; }
+    .column-backlog .column-header { background: #fff3e0; color: #e65100; }
+    .column-done .column-header { background: #e8f5e9; color: #2e7d32; }
+
+    .column-body {
+      padding: 8px;
+      flex: 1;
+      min-width: 0;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: #fafbfc;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin: 0 4px 6px;
+      font-size: 1.275rem;
+      line-height: 1.4;
+      transition: box-shadow 0.15s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .card .title { font-weight: 600; }
+    .card .path {
+      font-size: 1.08rem;
+      color: #888;
+      margin-top: 2px;
+      word-break: break-all;
+    }
+
+    .card .story-text {
+      font-size: 1.17rem;
+      color: #555;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e8e8e8;
+      flex-shrink: 0;
+    }
+
+    .modal-header .modal-path {
+      font-size: 1.17rem;
+      color: #888;
+      margin: 0;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 2.25rem;
+      cursor: pointer;
+      color: #888;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    .modal-close:hover { color: #333; }
+
+    .modal-body {
+      padding: 24px 32px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-body .markdown-body {
+      font-size: 1.35rem;
+    }
+
+    /* Task list checkboxes: remove bullet and style the checkbox */
+    .modal-body .markdown-body li:has(> input[type="checkbox"]) {
+      list-style: none;
+      margin-left: -1.5em;
+    }
+
+    .modal-body .markdown-body input[type="checkbox"] {
+      margin-right: 0.5em;
+      width: 1.1em;
+      height: 1.1em;
+      vertical-align: middle;
+      accent-color: #2563eb;
+      pointer-events: none;
+    }
+
+    .modal-body .markdown-body input[type="checkbox"]:checked {
+      appearance: auto;
+      -webkit-appearance: checkbox;
+    }
+
+    @media (max-width: 768px) {
+      .board { flex-direction: column; }
+      .column { flex-direction: row; }
+      .column.collapsed { flex: 0 0 48px; }
+      .column-header {
+        writing-mode: horizontal-tb;
+        text-orientation: initial;
+        flex-direction: row;
+        padding: 12px 16px;
+        min-width: auto;
+        gap: 8px;
+      }
+      .column-header .chevron { transform: rotate(90deg); }
+      .column.collapsed .chevron { transform: rotate(0deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Story Tracker</h1>
+  <div class="board" id="board"></div>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <p class="modal-path" id="modal-path"></p>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="markdown-body" id="modal-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const COLUMNS = [
+      { key: 'backlog', label: 'Backlog', cssClass: 'column-backlog' },
+      { key: 'active', label: 'Active', cssClass: 'column-active' },
+      { key: 'done', label: 'Done', cssClass: 'column-done' },
+    ];
+
+    // Story data extracted from the file system.
+    // Each entry: { title, path, story? }. `story` is an optional curated
+    // one-liner preserved across regenerations (see /stories board).
+    const stories = {
+    backlog: [
+      { title: "Extract Staff Schemes to NotationStyle", path: "backlog/notation-style.md" },
+      { title: "Organizing Content", path: "backlog/organizing-content.md" },
+      { title: "Sixteenth-Century (Renaissance) Style Guides", path: "backlog/sixteenth-century-style.md" },
+      { title: "Split Counterpoint Species Guides by Pedagogical Author", path: "backlog/split-counterpoint-species-by-author.md" }
+    ],
+    active: [
+      { title: "Make Large-Leap Recovery Configurable", path: "current/configurable-large-leap-recovery.md" }
+    ],
+    done: [
+      { title: "Band Score Order", path: "done/epic--score-order/band-score-order.md" },
+      { title: "Chamber Ensemble Score Order", path: "done/epic--score-order/chamber-ensemble-score-order.md" },
+      { title: "Consonance and Dissonance Classification", path: "done/consonance-dissonance-classification.md" },
+      { title: "Dyad Analysis", path: "done/dyad-analysis.md" },
+      { title: "Expand Playing Techniques", path: "done/expand-playing-techniques.md" },
+      { title: "Handling Time and Tempo", path: "done/handle-time.md" },
+      { title: "Instrument Inheritance Architecture", path: "done/instrument-architecture.md" },
+      { title: "Instrument Variant", path: "done/instrument-variant.md" },
+      { title: "Instruments can have strings with pitches", path: "done/string-pitches.md" },
+      { title: "Move MusicalSymbol to Notation Module", path: "done/move-musical-symbol-to-notation.md" },
+      { title: "Move StaffMapping to Notation Module", path: "done/move-staff-mapping-to-notation.md" },
+      { title: "Move StaffPosition to Notation Module", path: "done/move-staff-position-to-notation.md" },
+      { title: "Notation Module Foundation", path: "done/notation-module-foundation.md" },
+      { title: "Orchestral Score Order", path: "done/epic--score-order/orchestral-score-order.md" },
+      { title: "Percussion Set Staff", path: "done/percussion_set.md" },
+      { title: "Pitch Class Set Analysis", path: "done/pitch-class-set-analysis.md" },
+      { title: "Sonority Identification", path: "done/sonority-identification.md" },
+      { title: "Superclass for Note", path: "done/superclass-for-note.md" }
+    ]
+  };
+
+    function render() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+
+      COLUMNS.forEach(col => {
+        const items = stories[col.key] || [];
+        const collapsed = localStorage.getItem(`col-${col.key}`) === '1';
+
+        const colEl = document.createElement('div');
+        colEl.className = `column ${col.cssClass}${collapsed ? ' collapsed' : ''}`;
+
+        const header = document.createElement('div');
+        header.className = 'column-header';
+        header.innerHTML = `
+          <span class="chevron">&#9654;</span>
+          <span class="badge">${items.length}</span>
+          <span>${col.label}</span>
+        `;
+        header.addEventListener('click', () => {
+          const isCollapsed = colEl.classList.toggle('collapsed');
+          localStorage.setItem(`col-${col.key}`, isCollapsed ? '1' : '0');
+        });
+        colEl.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = 'column-body';
+
+        items.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          let html = `<div class="title">${item.title}</div>`;
+          if (item.story) {
+            html += `<div class="story-text">${item.story}</div>`;
+          }
+          html += `<div class="path">${item.path}</div>`;
+          card.innerHTML = html;
+          card.addEventListener('click', () => openModal(item.path));
+          body.appendChild(card);
+        });
+
+        colEl.appendChild(body);
+        board.appendChild(colEl);
+      });
+    }
+
+    render();
+
+    const overlay = document.getElementById('modal-overlay');
+    const modalPath = document.getElementById('modal-path');
+    const modalContent = document.getElementById('modal-content');
+    const modalClose = document.getElementById('modal-close');
+
+    async function openModal(path) {
+      modalPath.textContent = path;
+      modalContent.innerHTML = '<p style="color:#888">Loading...</p>';
+      overlay.classList.add('open');
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const md = await res.text();
+        marked.setOptions({ gfm: true, breaks: false });
+        modalContent.innerHTML = marked.parse(md);
+        // Ensure task list checkboxes reflect checked state from markdown.
+        // Some marked.js versions don't reliably set the checked attribute.
+        // Match checkbox items in source order to rendered checkboxes.
+        const checkboxPattern = /- \[([ xX])\]/g;
+        const checkboxStates = [];
+        let match;
+        while ((match = checkboxPattern.exec(md)) !== null) {
+          checkboxStates.push(match[1].toLowerCase() === 'x');
+        }
+        const renderedCheckboxes = modalContent.querySelectorAll('input[type="checkbox"]');
+        renderedCheckboxes.forEach((cb, i) => {
+          if (i < checkboxStates.length && checkboxStates[i]) {
+            cb.checked = true;
+            cb.setAttribute('checked', '');
+          }
+        });
+      } catch (err) {
+        // fetch fails on file:// protocol — fall back to opening in a new tab
+        closeModal();
+        window.open(path, '_blank');
+      }
+    }
+
+    function closeModal() {
+      overlay.classList.remove('open');
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>
