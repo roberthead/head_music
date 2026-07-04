@@ -44,7 +44,8 @@ class HeadMusic::Notation::ABC::Header
     match = FIELD_PATTERN.match(stripped_line)
     unless match
       raise HeadMusic::Notation::ABC::ParseError.new(
-        "Expected a header field", line_number: line_number, snippet: stripped_line
+        "Expected a header field; the tune body may not begin before the K: (key) field",
+        line_number: line_number, snippet: stripped_line
       )
     end
     letter = match[1]

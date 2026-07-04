@@ -118,6 +118,16 @@ describe HeadMusic::Notation::ABC::BodyLexer do
       expect(tokens.map { |token| [token.type, token.style || token.passes] })
         .to eq([[:bar_line, ":|"], [:volta, [2]]])
     end
+
+    it "raises for duplicate passes" do
+      expect { tokens_for("|1,1") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /unique.*line 1/)
+    end
+
+    it "raises for a range overlapping a listed pass" do
+      expect { tokens_for("[1-3,2") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /unique/)
+    end
   end
 
   describe "broken rhythm" do
@@ -132,6 +142,14 @@ describe HeadMusic::Notation::ABC::BodyLexer do
 
     it "stores the < direction" do
       expect(tokens_for("c<d")[1].direction).to eq(:<)
+    end
+
+    it "lexes a doubled mark as unsupported" do
+      expect(tokens_for("A>>B")[1].to_h).to include(type: :unsupported, lexeme: ">>")
+    end
+
+    it "lexes a doubled < mark as unsupported" do
+      expect(tokens_for("c<<d")[1].to_h).to include(type: :unsupported, lexeme: "<<")
     end
   end
 

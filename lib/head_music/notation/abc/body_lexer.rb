@@ -181,7 +181,14 @@ class HeadMusic::Notation::ABC::BodyLexer
   end
 
   def volta_token(digits, line_number, column)
-    Token.new(type: :volta, line: line_number, column: column, passes: volta_passes(digits))
+    passes = volta_passes(digits)
+    unless passes.uniq.length == passes.length
+      raise HeadMusic::Notation::ABC::ParseError.new(
+        "Volta passes must be unique",
+        line_number: line_number, snippet: digits
+      )
+    end
+    Token.new(type: :volta, line: line_number, column: column, passes: passes)
   end
 
   def volta_passes(digits)
@@ -210,6 +217,15 @@ class HeadMusic::Notation::ABC::BodyLexer
   end
 
   def scan_broken_rhythm(scanner, line_number, column, tokens)
+    # Doubled marks (">>", "<<") are valid ABC (double-dotted broken
+    # rhythm) but out of scope, so they surface as unsupported rather
+    # than as a malformed-input error.
+    doubled = scanner.scan(/[<>]{2,}/)
+    if doubled
+      tokens << unsupported_token(doubled, line_number, column)
+      return true
+    end
+
     lexeme = scanner.scan(/[<>]/)
     return false unless lexeme
 

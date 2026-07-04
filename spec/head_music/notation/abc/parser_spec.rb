@@ -361,6 +361,7 @@ describe HeadMusic::Notation::ABC::Parser do
       "a slur" => ["(AB)|", "("],
       "a tuplet" => ["(3ABC|", "(3"],
       "a decoration" => ["!trill!A|", "!trill!"],
+      "a double broken rhythm" => ["A>>B|", ">>"],
       "a multi-bar rest" => ["Z4|", "Z4"],
       "an invisible rest" => ["x2|", "x2"],
       "an inline field" => ["[K:G]A|", "[K:G]"],

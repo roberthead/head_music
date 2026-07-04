@@ -230,5 +230,10 @@ describe HeadMusic::Notation::ABC::Header do
       expect { described_class.new("X:1\nnot a field\nK:C\n") }
         .to raise_error(HeadMusic::Notation::ABC::ParseError, /line 2/)
     end
+
+    it "points at the missing K: field when the body starts early" do
+      expect { described_class.new("X:1\nT:No Key\nCDE|\n") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /K:.*line 3/)
+    end
   end
 end

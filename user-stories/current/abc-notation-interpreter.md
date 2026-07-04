@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-04T12:21:27-07:00
   planned_at:   2026-07-04T12:37:50-07:00
   finished_at:
-  updated_at:   2026-07-04T15:32:41-07:00
+  updated_at:   2026-07-04T16:24:02-07:00
 -->
 
 # Story: ABC Notation Interpreter
@@ -220,3 +220,35 @@ House style: one behavior per `it`, heredocs (`<<~ABC`) rather than fixture file
 - **Pickup bars**: placement starts at `1:1:0`, so a pickup shifts notated downbeats relative to `Position` bar numbers, skewing beat-strength analysis. V1 accepts and documents; padding bar 1 with a leading rest is a possible v2 behavior.
 - **Multi-voice scope**: `V:` support stays (it is an acceptance criterion), constrained to header-declared voices plus inline `V:` switching — no per-voice clefs or transposition.
 - **Encoding**: UTF-8 assumed and stated in specs; Latin-1 legacy ABC files are out of scope.
+
+## Review
+
+Reviewed 2026-07-04 at commit `4becc1d` (branch `story/abc-notation-interpreter`, clean tree) by a product-manager agent (criteria verification with live probes) and a code-reviewer agent (correctness/silent-failure sweep). Full suite: 4839 examples, 0 failures; line coverage 99.61%, branch 88.15%.
+
+### Acceptance criteria
+
+- ✅ **Entry point** — `ABC.parse` → `Composition` (`abc.rb`, end-to-end specs)
+- ✅ **`T:` → name** — with default-name fallback when absent
+- ✅ **`composer`/`origin` from `C:`/`O:`** — attr_readers set at initialization
+- ✅ **`comments` / `Comment` / `add_comment` / `N:`** — matches Decision 2 exactly, incl. foreign-Position `ArgumentError`
+- ✅ **`K:` → key_signature** — full mode table normalized via KeyMapper; `K:none`/`HP` raise
+- ✅ **`M:` incl. `C` and `C|`** — pre-mapped before `Meter.get` (cache-pollution guard verified)
+- ✅ **`L:` honored** — explicit and ABC 2.1 default rule (incl. the 3/4 boundary)
+- ✅ **Body notes → placements** — sequential cursors, bar rollover in 4/4 and 6/8
+- ✅ **Pitch letters, octaves, accidentals** — octave matrix, all five marks, key application, bar-persistent state (live-probed: `C, C c ^F ^^F __B` → C3 C4 C5 F♯4 F𝄪4 B𝄫4)
+- ✅ **Bar lines and multipliers/divisors** — all styles longest-first; `A2 A/2 A/ A//` verified
+- ✅ **Bar repeat attributes; `|:` `:|` `::`** — Decision 4 as specified, incl. `:||:`/`:|:` normalization
+- ✅ **Voltas → `plays_on_passes`** — brackets, shorthands, lists, ranges; tag-before-clear verified
+- ✅ **Multi-voice `V:`** — per-voice cursors/accidental/volta state; unknown body `V:` creates voice; no `V:` → one voice
+- ✅ **Malformed input raises** — ParseError with line numbers across header/lexer/duration/pitch paths; no partial composition (but see finding 1)
+- ✅ **Real-tune + focused specs** — Speed the Plough (52 placements) + 6/8 jig + per-topic spec files
+- ✅ **90%+ coverage** — 99.61% line via `bundle exec rake`
+
+### Code review findings
+
+1. **Should-fix (FIXED) — malformed volta pass lists leaked a bare `ArgumentError`.** A duplicate or overlapping volta such as `|1,1` or `|1-3,2` flowed unvalidated from `BodyLexer#volta_passes` into `Bar#plays_on_passes=`, whose uniqueness check raised plain `ArgumentError` with no line/snippet — outside the documented `ABC::ParseError` contract. Fixed post-review: `volta_token` validates uniqueness and raises `ParseError` "Volta passes must be unique" with the token's line and snippet.
+2. **Nit (FIXED) — `A>>B` double broken rhythm was misclassified.** Valid ABC (double-dotted broken rhythm) raised `ParseError` with a factually wrong message. Fixed post-review: the lexer scans doubled marks (`[<>]{2,}`) as `:unsupported`, so they raise `UnsupportedFeatureError` naming the mark and line via the standard pre-construction check.
+3. **Nit (FIXED) — misleading error when body text precedes `K:`.** Fixed post-review: the message is now "Expected a header field; the tune body may not begin before the K: (key) field" with the offending line.
+4. **Observation (documented scope, no action)** — repeat/volta flags anchor to rhythmic bar numbers from `next_position`, so pickup/short bars shift which bar gets flagged; contingent on notated bars summing to the meter, per the v1 "no bar-length validation" decision. Also noted: `Comment`'s symbol-position coercion path is unspecced (string path covered), and `PitchBuilder` errors carry no line number (message names the pitch).
+
+**Verdict**: all 16 criteria met. Findings 1–3 were fixed immediately after the review (suite re-run: 4845 examples, 0 failures, 99.61% line coverage); nothing blocks `finish`.
