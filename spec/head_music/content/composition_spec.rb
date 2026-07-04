@@ -16,6 +16,66 @@ describe HeadMusic::Content::Composition do
   its(:latest_bar_number) { is_expected.to eq 1 }
   its(:to_s) { is_expected.to eq "Fruit Salad — 0 voices" }
 
+  its(:composer) { is_expected.to be_nil }
+  its(:origin) { is_expected.to be_nil }
+  its(:comments) { is_expected.to eq [] }
+
+  context "when constructed with composer and origin" do
+    subject(:composition) { described_class.new(name: "The Banshee", composer: "Traditional", origin: "Ireland") }
+
+    its(:composer) { is_expected.to eq "Traditional" }
+    its(:origin) { is_expected.to eq "Ireland" }
+  end
+
+  context "when constructed with a single comment string" do
+    subject(:composition) { described_class.new(name: "The Banshee", comments: "collected in Clare") }
+
+    it "coerces the string to one comment" do
+      expect(composition.comments.map(&:to_s)).to eq ["collected in Clare"]
+    end
+
+    it "anchors the comment to the composition" do
+      expect(composition.comments.first.composition).to eq composition
+    end
+
+    it "leaves the comment unpositioned" do
+      expect(composition.comments.first.position).to be_nil
+    end
+  end
+
+  context "when constructed with an array of comment strings" do
+    subject(:composition) { described_class.new(name: "The Banshee", comments: ["collected in Clare", "also known as McMahon's"]) }
+
+    it "coerces each string to a comment" do
+      expect(composition.comments.map(&:to_s)).to eq ["collected in Clare", "also known as McMahon's"]
+    end
+
+    it "builds unpositioned comments" do
+      expect(composition.comments.map(&:position)).to all(be_nil)
+    end
+  end
+
+  describe "#add_comment" do
+    context "without a position" do
+      it "returns an unpositioned comment" do
+        comment = composition.add_comment("play twice")
+        expect(comment.position).to be_nil
+      end
+
+      it "appends the comment to the collection" do
+        comment = composition.add_comment("play twice")
+        expect(composition.comments).to include(comment)
+      end
+    end
+
+    context "with a position" do
+      it "anchors the comment at that position" do
+        comment = composition.add_comment("the turn", "2:1")
+        expect(comment.position.to_s).to eq "2:1:000"
+      end
+    end
+  end
+
   context "with some placements" do
     let(:voice) { composition.add_voice(role: "melody") }
 

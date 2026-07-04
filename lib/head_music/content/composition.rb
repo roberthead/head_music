@@ -3,16 +3,24 @@ module HeadMusic::Content; end
 
 # A composition is musical content.
 class HeadMusic::Content::Composition
-  attr_reader :name, :key_signature, :meter, :voices
+  attr_reader :name, :key_signature, :meter, :voices, :composer, :origin, :comments
 
-  def initialize(name: nil, key_signature: nil, meter: nil)
+  def initialize(name: nil, key_signature: nil, meter: nil, composer: nil, origin: nil, comments: nil)
     ensure_attributes(name, key_signature, meter)
+    @composer = composer
+    @origin = origin
     @voices = []
+    @comments = Array(comments).map { |text| HeadMusic::Content::Comment.new(self, text) }
   end
 
   def add_voice(role: nil)
     @voices << HeadMusic::Content::Voice.new(composition: self, role: role)
     @voices.last
+  end
+
+  def add_comment(text, position = nil)
+    @comments << HeadMusic::Content::Comment.new(self, text, position)
+    @comments.last
   end
 
   def meter_at(bar_number)
