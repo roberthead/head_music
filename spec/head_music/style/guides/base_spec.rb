@@ -14,15 +14,25 @@ describe HeadMusic::Style::Guides::Base do
     expect(harmonic_guides.length).to eq 7
   end
 
+  # a core guideline may appear bare or wrapped with preset options via .with(...)
+  def enforced_by?(ruleset, guideline_class)
+    ruleset.any? do |rule|
+      rule == guideline_class ||
+        (rule.is_a?(HeadMusic::Style::Annotation::Configured) && rule.guideline_class == guideline_class)
+    end
+  end
+
   melodic_guides.each do |guide|
     it "#{guide.name.split("::").last} enforces the melodic core" do
-      expect(guide::RULESET).to include(*guides::SpeciesMelody::MELODIC_CORE)
+      unenforced = guides::SpeciesMelody::MELODIC_CORE.reject { |core| enforced_by?(guide::RULESET, core) }
+      expect(unenforced).to be_empty
     end
   end
 
   harmonic_guides.each do |guide|
     it "#{guide.name.split("::").last} enforces the harmonic core" do
-      expect(guide::RULESET).to include(*guides::SpeciesHarmony::HARMONIC_CORE)
+      unenforced = guides::SpeciesHarmony::HARMONIC_CORE.reject { |core| enforced_by?(guide::RULESET, core) }
+      expect(unenforced).to be_empty
     end
   end
 end

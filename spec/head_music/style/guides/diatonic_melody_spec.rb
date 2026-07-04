@@ -12,9 +12,9 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         HeadMusic::Style::Guidelines::ModerateDirectionChanges,
         HeadMusic::Style::Guidelines::MostlyConjunct,
         HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
-        HeadMusic::Style::Guidelines::SingableIntervals,
         HeadMusic::Style::Guidelines::SingableRange,
-        configured(HeadMusic::Style::Guidelines::LargeLeaps, minimum: :perfect_fourth, recovery: %i[consonant_triad any_step repetition opposite_leap_within])
+        configured(HeadMusic::Style::Guidelines::LargeLeaps, minimum: :perfect_fourth, recovery: %i[consonant_triad any_step repetition opposite_leap_within]),
+        configured(HeadMusic::Style::Guidelines::SingableIntervals, ascending: described_class::SINGABLE_INTERVALS, descending: described_class::SINGABLE_INTERVALS)
       ]
     end
 
@@ -34,6 +34,14 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
 
     it "omits the cantus-firmus-specific guidelines" do
       expect(ruleset).not_to include(*omitted_guidelines)
+    end
+
+    it "permits major sixths in the singable intervals" do
+      expect(described_class::SINGABLE_INTERVALS).to include("M6")
+    end
+
+    it "replaces the core SingableIntervals with the configured version" do
+      expect(ruleset).not_to include(HeadMusic::Style::Guidelines::SingableIntervals)
     end
 
     describe "loosened note-count range of 5 to 32" do
@@ -173,6 +181,45 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         it "scores lower at forty-two notes" do
           expect(analysis.fitness).to be < 0.8
         end
+      end
+    end
+
+    context "with one verse of Over the Rainbow" do
+      let(:meter) { "4/4" }
+      let(:melody_name) { "Over the Rainbow" }
+
+      # the eight-bar A section in C major
+      let(:notes) do
+        [
+          ["C4", :half], ["C5", :half],                             # Some-where
+          ["B4", :quarter], ["G4", :eighth], ["A4", :eighth],
+          ["B4", :quarter], ["C5", :quarter],                       # o-ver the rain-bow
+          ["C4", :half], ["A4", :half],                             # way up
+          ["G4", :whole],                                           # high
+          ["A3", :half], ["F4", :half],                             # There's a
+          ["E4", :quarter], ["C4", :eighth], ["D4", :eighth],
+          ["E4", :quarter], ["F4", :quarter],                       # land that I heard of
+          ["D4", :quarter], ["B3", :eighth], ["C4", :eighth],
+          ["D4", :quarter], ["E4", :quarter],                       # once in a lul-la
+          ["C4", :whole]                                            # by
+        ]
+      end
+
+      let(:octave_leaps_message) { "Use a maximum of one octave leap." }
+      let(:singable_intervals_message) { "Use only P1, m2, M2, m3, M3, P4, P5, m6, M6, P8 in the melodic line." }
+
+      it { is_expected.not_to be_adherent }
+
+      it "objects to the second octave leap and the minor seventh drop, but not the major sixth" do
+        expect(analysis.messages).to contain_exactly(octave_leaps_message, singable_intervals_message)
+      end
+
+      it "accepts the climax because the opening octave reads as a descending melody with a single low point" do
+        expect(analysis.messages).not_to include(climax_message)
+      end
+
+      it "scores in the acceptable range despite the wide leaps" do
+        expect(analysis.fitness).to be_between(0.8, 0.9).exclusive
       end
     end
   end

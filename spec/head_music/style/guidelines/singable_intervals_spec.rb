@@ -84,4 +84,43 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
     its(:first_mark_code) { is_expected.to eq "4:1:000 to 6:1:000" }
   end
+
+  describe "message" do
+    it "lists the permitted intervals" do
+      expect(described_class.new(voice).message).to eq "Use only P1, m2, M2, m3, M3, P4, P5, m6, P8 in the melodic line."
+    end
+  end
+
+  context "when configured to permit major sixths" do
+    subject(:guideline) { described_class.new(voice, ascending: permitted_intervals, descending: permitted_intervals) }
+
+    let(:permitted_intervals) { %w[P1 m2 M2 m3 M3 P4 P5 m6 M6 P8] }
+
+    context "with a major sixth" do
+      before do
+        %w[C D E D B A G E F D C].each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1", :whole, pitch)
+        end
+      end
+
+      it { is_expected.to be_adherent }
+      its(:marks) { are_expected.to be_empty }
+    end
+
+    context "with a minor seventh" do
+      before do
+        %w[C E G F G3 A3 B3 C].each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1", :whole, pitch)
+        end
+      end
+
+      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+    end
+
+    describe "message" do
+      it "lists the configured intervals" do
+        expect(guideline.message).to eq "Use only P1, m2, M2, m3, M3, P4, P5, m6, M6, P8 in the melodic line."
+      end
+    end
+  end
 end
