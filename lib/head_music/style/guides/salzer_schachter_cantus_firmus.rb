@@ -1,8 +1,8 @@
 # Module for guides
 module HeadMusic::Style::Guides; end
 
-# Modern rules for the cantus firmus
-class HeadMusic::Style::Guides::ModernCantusFirmus < HeadMusic::Style::Guides::SpeciesMelody
+# Cantus firmus rules after Salzer & Schachter, Counterpoint in Composition (1969).
+class HeadMusic::Style::Guides::SalzerSchachterCantusFirmus < HeadMusic::Style::Guides::SpeciesMelody
   RULESET = [
     *MELODIC_CORE,
     HeadMusic::Style::Guidelines::AlwaysMove,
