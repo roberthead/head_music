@@ -1,3 +1,12 @@
+<!--
+metadata:
+  created_at:   2026-07-03T17:02:53-07:00
+  activated_at: 2026-07-03T17:06:40-07:00
+  planned_at:
+  finished_at:
+  updated_at:   2026-07-03T17:19:57-07:00
+-->
+
 # Make Large-Leap Recovery Configurable
 
 AS a counterpoint researcher
@@ -30,18 +39,24 @@ The minimum qualifying interval genuinely varies by style:
 
 ## Design direction
 
-Collapse the two classes into one configurable guideline (following the pattern used for `MinimumNotes`/`MaximumNotes` and the direction-change family), parameterized by at least:
+Collapse the two classes into one configurable guideline (following the pattern used for `MinimumNotes`/`MaximumNotes` and the direction-change family) and **replace `RecoverLargeLeaps` and `SingleLargeLeaps` outright**: delete both classes and their specs, and switch `FuxCantusFirmus`, `SalzerSchachterCantusFirmus`, and `DiatonicMelody` to the new guideline. No thin aliases are kept.
 
-- **`minimum`** — the smallest interval that qualifies as a "large leap" needing recovery (e.g. a perfect fifth). The guideline determines this itself; it must **not** depend on the shared `Category#large_leap?`.
+Configuration parameters:
+
+- **`minimum`** — the smallest interval that qualifies as a "large leap" needing recovery. Accepts anything `DiatonicInterval.get()` accepts: a symbol (`:perfect_fifth`) or a `DiatonicInterval` object. The guideline resolves the threshold itself; it must **not** depend on the shared `Category#large_leap?`.
+- **Independent ascending / descending thresholds** — the qualifying interval is configurable per direction, so a style can treat the two directions asymmetrically (Fux forbids the descending sixth outright while permitting the ascending minor sixth). A single `minimum:` applies to both directions unless a direction-specific value overrides it.
 - **`recovery`** — which resolutions count as acceptable: opposite-direction step (always), repetition, consonant-triad spelling, any change of direction, opposite-direction leap not exceeding the original.
+- **Consecutive-leap limit** — a "no more than N leaps in a row" constraint lives in this guideline (not a separate one).
 
 A sketch (exact API to be settled in implementation):
 
 ```ruby
 # strict, fifth-or-larger
-LargeLeapRecovery.with(minimum: :perfect_fifth, recovery: [:opposite_step, :triad])
+LargeLeaps.with(minimum: :perfect_fifth, recovery: [:opposite_step, :triad])
 # looser modern rule, reproducing today's SingleLargeLeaps behavior
-LargeLeapRecovery.with(minimum: :perfect_fifth, recovery: [:opposite_step, :repetition, :triad, :direction_change])
+LargeLeaps.with(minimum: :perfect_fifth, recovery: [:opposite_step, :repetition, :triad, :direction_change])
+# asymmetric, capped consecutive leaps (Fux-like): permit ascending m6, forbid descending 6th
+LargeLeaps.with(ascending: :minor_seventh, descending: :major_sixth, maximum_consecutive_leaps: 2, recovery: [:opposite_step, :triad])
 ```
 
 Do **not** change `Analysis::DiatonicInterval::Category#large_leap?`; other code (`Voice#large_leaps`, analysis) relies on it. Localize the threshold to the guideline.
@@ -70,6 +85,30 @@ And when it is analyzed with a strict recovery set that requires an opposite-dir
 
 Then it is flagged
 
+## Scenario: Ascending and descending thresholds are independent
+
+Given a guideline configured to permit the ascending minor sixth but forbid the descending sixth
+
+When a melody containing an ascending minor sixth is analyzed
+
+Then the ascending minor sixth is not flagged
+
+And when a melody containing a descending sixth is analyzed
+
+Then the descending sixth is flagged
+
+## Scenario: Consecutive leaps are limited
+
+Given a melodic line with three leaps in a row
+
+When it is analyzed with a maximum of two consecutive leaps
+
+Then the run of leaps is flagged
+
+And when a line with only two leaps in a row is analyzed under the same limit
+
+Then it is not flagged
+
 ## Scenario: Existing guides preserve current behavior
 
 Given the Fux, Salzer & Schachter, and diatonic-melody guides
@@ -90,12 +129,14 @@ Then its definition is unchanged
 
 And `Voice#large_leaps` and other analysis consumers behave as before
 
-## Open questions
+## Decisions
 
-- Interval configuration form: a symbol (`:perfect_fifth`), a diatonic-number threshold, or an interval object?
-- Should ascending vs. descending large leaps be configurable independently (Fux forbids the descending sixth entirely; permits the ascending minor sixth)?
-- Should a "no more than two leaps in a row" limit live here or in a separate guideline?
-- Do we keep `RecoverLargeLeaps` / `SingleLargeLeaps` as thin configured aliases for readability, or replace their usages outright?
+Resolving the open questions:
+
+- **Interval configuration form** — accept anything `DiatonicInterval.get()` accepts: a symbol (`:perfect_fifth`) or a `DiatonicInterval` object.
+- **Ascending vs. descending** — configurable independently, so a style can treat the two directions asymmetrically (Fux forbids the descending sixth while permitting the ascending minor sixth).
+- **"No more than two leaps in a row"** — lives in this guideline, as a configurable consecutive-leap limit.
+- **`RecoverLargeLeaps` / `SingleLargeLeaps`** — replaced outright. Both classes and their specs are removed and every consumer switches to the new configurable guideline; no thin aliases are kept.
 
 ## Sources
 
