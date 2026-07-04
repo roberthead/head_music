@@ -51,6 +51,28 @@ describe HeadMusic::Style::Guidelines::LargeLeaps do
 
         it { is_expected.to be_adherent }
       end
+
+      context "when the minimum is a DiatonicInterval object for a perfect fourth" do
+        let(:options) do
+          {
+            minimum: HeadMusic::Analysis::DiatonicInterval.get(:perfect_fourth),
+            recovery: %i[consonant_triad opposite_step]
+          }
+        end
+
+        its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+      end
+
+      context "when the minimum is a DiatonicInterval object for a perfect fifth" do
+        let(:options) do
+          {
+            minimum: HeadMusic::Analysis::DiatonicInterval.get(:perfect_fifth),
+            recovery: %i[consonant_triad opposite_step]
+          }
+        end
+
+        it { is_expected.to be_adherent }
+      end
     end
 
     context "with an unrecovered ascending augmented fourth (six semitones)" do

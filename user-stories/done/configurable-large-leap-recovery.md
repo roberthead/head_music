@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-03T17:02:53-07:00
   activated_at: 2026-07-03T17:06:40-07:00
   planned_at:   2026-07-03T17:36:12-07:00
-  finished_at:
-  updated_at:   2026-07-03T18:16:47-07:00
+  finished_at:  2026-07-03T19:18:02-07:00
+  updated_at:   2026-07-03T19:18:02-07:00
 -->
 
 # Make Large-Leap Recovery Configurable
@@ -265,6 +265,53 @@ Residual risks / edge cases:
 - **End-of-line `each_cons(3)` blind spot:** a large leap into the final/penultimate note is never evaluated (preserved intentionally). Documented, not fixed.
 - **Augmented-fourth vs perfect-fifth at a threshold:** number-based comparison classifies an augmented fourth as number 4; locked by a dedicated test.
 - **Bounding on the S&S guide asserts a stricter rule than Salzer & Schachter may themselves hold** — accepted under the correctness-first decision; any newly-flagged corpus lines are eyeballed to confirm they read as genuine faults.
+
+## Review
+
+Reviewed 2026-07-03 at commit `76880a2` (PR #21). Test evidence: `bundle exec rspec spec/head_music/style` → 842 examples, 0 failures (all four corpora exercised); full `bundle exec rake` → 4,474 examples, 0 failures, 99.61% line coverage; rubocop clean.
+
+### Acceptance criteria
+
+| Scenario | Verdict | Evidence |
+| --- | --- | --- |
+| Minimum qualifying interval is configurable | ✅ met | `large_leaps.rb` `qualifies?` compares by diatonic number via `DiatonicInterval.get`; spec: fourth flagged at `:perfect_fourth`, adherent at `:perfect_fifth`, plus an augmented-fourth case locking number-not-semitones |
+| Recovery modes are configurable | ✅ met | Symbol set dispatched to six `recovered_by_*?` predicates; spec: repetition adherent with `:repetition`, flagged with `%i[opposite_step]`; bounded vs. unbounded opposite-leap covered directly |
+| Ascending/descending thresholds independent | ✅ met | Per-direction `{minimum:, forbidden:}` with bare-interval shorthand and top-level fallback; spec: ascending m6 adherent, descending m6 flagged even when recovered (forbidden is un-redeemable), descending P5 adherent |
+| Consecutive leaps are limited | ✅ met | `chunk`-based scan counting only qualifying leaps; spec: three leaps flagged at cap 2, two adherent, step-broken run adherent |
+| Existing guides preserve current behavior | ✅ met | All three guides reconfigured; Fux message string preserved byte-for-byte; every scenario from both deleted specs ported and green; corpora unchanged. One sanctioned deviation: loose guides use bounded `:opposite_leap_within` (Decisions item 4) — flags nothing new in any corpus |
+| Shared large-leap predicate untouched | ✅ met | Zero diff under `lib/head_music/analysis` and `lib/head_music/content`; guarded by a `Category#large_leap?` spec example |
+
+Decisions commitments: old classes deleted outright with no aliases and no remaining references ✅; interval options accept symbols or `DiatonicInterval` objects ✅ (works by construction — see finding below); consecutive-leap limit lives in this guideline ✅.
+
+### Code review findings
+
+No blocking issues. Non-blocking observations, ordered by usefulness:
+
+1. **`DiatonicInterval`-object config form has no direct spec example.** `interval_number` passes instances through `DiatonicInterval.get` correctly, but only symbols are exercised. A one-line example would lock the acceptance surface.
+2. **Recovery-mode dispatch is stringly-typed.** A typo'd recovery symbol in a future config fails at analysis time with a `NoMethodError` rather than a clear "unknown recovery mode" error, and the class comment doesn't enumerate the valid symbols. Consider validating or documenting the allowed values.
+3. **`maximum_consecutive_leaps` has no production consumer yet** — exercised only in specs, which is legitimate for a configurable option but worth knowing.
+4. **Known deliberate asymmetry:** `recovery_marks` never evaluates a leap in the last two melodic intervals (preserved `each_cons(3)` behavior) while `consecutive_leap_marks` scans all pairs — both intentional, noted for future maintainers.
+
+Reviewer verification highlights: frozen `DEFAULTS` never mutated; `marks` memoization correct against the base class's triple call; the `forbidden_numbers` cache correctly distinguishes cached-nil from unset via `key?`; every shipped recovery symbol maps to a defined predicate; strict and loose configs reproduce the deleted classes' logic exactly.
+
+## Learnings
+
+**What went well**
+
+- The implementation plan was precise enough (exact option names, defaults, the recovery-predicate list, the chunk-vs-manual-counter decision) that two parallel agents with disjoint file sets landed the whole change in one pass — the full suite was green on the first run.
+- Regression discipline paid off: before/after documentation-format snapshots of the style suite proved zero behavioral drift beyond the intended Fux descending-sixth rule, and porting every scenario from the deleted specs as drop-in equivalence tests made "replace outright" safe.
+- Treating annotation message strings as byte-identical regression contracts (asserted by the spec_helper error fixture) prevented a subtle class of breakage.
+
+**What was surprising**
+
+- The plan referenced `pair.diatonic_interval.number`, but `MelodicNotePair` exposes no such method — caught by reading the actual API before dispatching implementation agents; the implementation uses `pair.melodic_interval.number`.
+- The correctness-first risk (bounding opposite-leap recovery via `:opposite_leap_within` on the loose guides) materialized as zero new corpus flags — the feared fixture updates never happened.
+
+**What to do differently**
+
+- Capture the "before" test snapshot before dispatching write agents (this time it required falling back to a pristine worktree at HEAD).
+- Spec every configuration surface at write time — the `DiatonicInterval`-object form for `minimum:` needed a follow-up pass after review.
+- Future hardening idea: validate recovery-mode symbols instead of relying on stringly-typed `send` dispatch, so a typo'd mode fails with a clear error.
 
 ## Sources
 
