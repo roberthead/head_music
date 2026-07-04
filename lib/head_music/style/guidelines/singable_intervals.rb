@@ -8,14 +8,15 @@ module HeadMusic::Style::Guidelines; end
 # - descending: permitted interval shorthands for descending motion
 # - message: the annotation message (defaults to listing the permitted intervals)
 class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Annotation
+  # Traditional pedagogy permits the minor sixth ascending only.
   DEFAULTS = {
     ascending: %w[P1 m2 M2 m3 M3 P4 P5 m6 P8].freeze,
-    descending: %w[P1 m2 M2 m3 M3 P4 P5 m6 P8].freeze,
+    descending: %w[P1 m2 M2 m3 M3 P4 P5 P8].freeze,
     message: nil
   }.freeze
 
   def message
-    config[:message] || "Use only #{permitted_shorthands.join(", ")} in the melodic line."
+    config[:message] || "Use only #{permitted_descriptions.join(", ")} in the melodic line."
   end
 
   def marks
@@ -30,8 +31,15 @@ class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Annota
     @config ||= DEFAULTS.merge(options)
   end
 
-  def permitted_shorthands
-    config[:ascending] | config[:descending]
+  def permitted_descriptions
+    (config[:ascending] | config[:descending]).map do |shorthand|
+      if config[:ascending].include?(shorthand) && config[:descending].include?(shorthand)
+        shorthand
+      else
+        direction = config[:ascending].include?(shorthand) ? "ascending" : "descending"
+        "#{shorthand} (#{direction})"
+      end
+    end
   end
 
   def permitted?(note_pair)

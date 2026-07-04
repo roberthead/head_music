@@ -59,8 +59,9 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
       end
     end
 
-    it { is_expected.to be_adherent }
-    its(:marks) { are_expected.to be_empty }
+    it { is_expected.not_to be_adherent }
+    its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+    its(:first_mark_code) { is_expected.to eq "6:1:000 to 8:1:000" }
   end
 
   context "with a major sixth" do
@@ -86,8 +87,8 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
   end
 
   describe "message" do
-    it "lists the permitted intervals" do
-      expect(described_class.new(voice).message).to eq "Use only P1, m2, M2, m3, M3, P4, P5, m6, P8 in the melodic line."
+    it "lists the permitted intervals, noting the ascending-only minor sixth" do
+      expect(described_class.new(voice).message).to eq "Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
     end
   end
 
@@ -99,6 +100,17 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     context "with a major sixth" do
       before do
         %w[C D E D B A G E F D C].each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1", :whole, pitch)
+        end
+      end
+
+      it { is_expected.to be_adherent }
+      its(:marks) { are_expected.to be_empty }
+    end
+
+    context "with a descending minor sixth" do
+      before do
+        %w[C E G A B C5 E D C].each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1", :whole, pitch)
         end
       end
