@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-07-04T12:05:19-07:00
-  activated_at:
+  activated_at: 2026-07-04T12:21:27-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-07-04T12:05:19-07:00
+  updated_at:   2026-07-04T12:27:19-07:00
 -->
 
 # Story: ABC Notation Interpreter
@@ -46,6 +46,7 @@ composition.name   # => "Speed the Plough"
 
 - [ ] A documented entry point accepts an ABC string and returns a `HeadMusic::Content::Composition` (e.g. `HeadMusic::Notation::ABC.parse(string)`)
 - [ ] The tune title (`T:`) maps to the composition `name`
+- [ ] `Composition` gains `composer`, `origin`, and `notes` attributes (set at initialization, exposed via `attr_reader`), and the ABC fields `C:`, `O:`, and `N:` map to them
 - [ ] The key field (`K:`) maps to the composition `key_signature`
 - [ ] The meter field (`M:`, including `C` for common time and `C|` for cut time) maps to the composition `meter`
 - [ ] The default note length field (`L:`) is honored when computing note durations
@@ -64,11 +65,18 @@ composition.name   # => "Speed the Plough"
 - Reuse existing rudiments where possible: `KeySignature`, `Meter`, `Pitch`, `RhythmicValue` / duration concepts, rather than re-deriving them in the parser.
 - Scope the first pass to a practical subset of the ABC spec (single tune per string, common header fields, notes/rests/bar lines, basic decorations). Explicitly out of scope for v1: lyrics (`w:`), chord symbols, ornament glyphs, tuplets beyond the common case, and tune books containing many `X:` records.
 
-## Open Questions
+## Decisions
 
-1. Should the entry point accept a whole ABC tune *book* (multiple `X:` records) and return a collection, or is one tune per call sufficient for v1?
-2. How should information fields with no `Composition` equivalent (composer `C:`, origin `O:`, notes) be preserved — dropped, stashed in metadata, or modeled later?
-3. Where should ABC's default-note-length and meter interaction live — in the parser, or as a reusable duration helper in `Rudiment`?
+Resolved from the original open questions:
+
+1. **One tune per call.** The entry point accepts a single ABC tune for v1. Tune books
+   (multiple `X:` records in one string) are out of scope.
+2. **Extend `Composition` with `composer`, `origin`, and `notes`.** These are set at
+   initialization time and exposed via `attr_reader`, giving the ABC fields `C:`
+   (composer), `O:` (origin), and `N:` (notes) a first-class home rather than being
+   dropped or stashed in a metadata hash.
+3. **Default-note-length and meter interaction lives in the parser.** No new duration
+   helper in `Rudiment`.
 
 ## Implementation Plan
 
