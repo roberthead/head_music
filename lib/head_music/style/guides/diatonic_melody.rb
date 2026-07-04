@@ -9,6 +9,6 @@ class HeadMusic::Style::Guides::DiatonicMelody < HeadMusic::Style::Guides::Speci
       recovery: %i[consonant_triad any_step repetition opposite_leap_within]
     ),
     HeadMusic::Style::Guidelines::MinimumNotes.with(5),
-    HeadMusic::Style::Guidelines::MaximumNotes.with(24)
+    HeadMusic::Style::Guidelines::MaximumNotes.with(32)
   ].freeze
 end

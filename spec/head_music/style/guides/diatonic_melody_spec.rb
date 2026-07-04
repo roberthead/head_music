@@ -36,7 +36,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
       expect(ruleset).not_to include(*omitted_guidelines)
     end
 
-    describe "loosened note-count range of 5 to 24" do
+    describe "loosened note-count range of 5 to 32" do
       def configured_for(guideline_class)
         ruleset.find do |rule|
           rule.is_a?(HeadMusic::Style::Annotation::Configured) && rule.guideline_class == guideline_class
@@ -47,8 +47,132 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         expect(configured_for(HeadMusic::Style::Guidelines::MinimumNotes).options).to eq(minimum: 5)
       end
 
-      it "sets a maximum of 24 notes" do
-        expect(configured_for(HeadMusic::Style::Guidelines::MaximumNotes).options).to eq(maximum: 24)
+      it "sets a maximum of 32 notes" do
+        expect(configured_for(HeadMusic::Style::Guidelines::MaximumNotes).options).to eq(maximum: 32)
+      end
+    end
+  end
+
+  describe "analysis of familiar melodies" do
+    subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
+
+    let(:composition) do
+      HeadMusic::Content::Composition.new(
+        name: melody_name,
+        key_signature: HeadMusic::Rudiment::KeySignature.get("C major"),
+        meter: meter
+      )
+    end
+
+    # notes is a list of [pitch, rhythmic_value] pairs placed consecutively
+    let(:voice) do
+      composition.add_voice(role: "melody").tap do |melody_voice|
+        notes.each do |pitch, rhythmic_value|
+          melody_voice.place(melody_voice.next_position, rhythmic_value, pitch)
+        end
+      end
+    end
+
+    let(:climax_message) { "Peak on a consonant high or low note one time or twice with a step between." }
+    let(:maximum_notes_message) { "Write up to thirty-two notes." }
+
+    context "with Three Blind Mice" do
+      let(:meter) { "6/8" }
+
+      let(:three_blind_mice_phrase) do
+        [["E4", :quarter], ["D4", :eighth], ["C4", :dotted_quarter]]
+      end
+
+      let(:see_how_they_run_phrase) do
+        [["G4", :quarter], ["F4", :eighth], ["F4", :quarter], ["E4", :eighth]]
+      end
+
+      let(:they_all_ran_phrase) do
+        [
+          ["G4", :eighth], ["C5", :eighth], ["C5", :eighth],
+          ["B4", :eighth], ["A4", :eighth], ["B4", :eighth],
+          ["C5", :quarter], ["G4", :eighth], ["G4", :dotted_quarter]
+        ]
+      end
+
+      context "with the opening phrases" do
+        let(:melody_name) { "Three Blind Mice (opening phrases)" }
+        let(:notes) { three_blind_mice_phrase * 2 + see_how_they_run_phrase * 2 }
+
+        it { is_expected.not_to be_adherent }
+
+        it "objects only to the climax note recurring in each 'see how they run' phrase" do
+          expect(analysis.messages).to eq([climax_message])
+        end
+
+        it "scores well despite the repeated climax" do
+          expect(analysis.fitness).to be_between(0.9, 1.0).exclusive
+        end
+      end
+
+      context "with the full round" do
+        let(:melody_name) { "Three Blind Mice" }
+        let(:notes) do
+          three_blind_mice_phrase * 2 +
+            see_how_they_run_phrase * 2 +
+            they_all_ran_phrase * 2 +
+            three_blind_mice_phrase
+        end
+
+        it { is_expected.not_to be_adherent }
+
+        it "objects to the repeated climax and the length" do
+          expect(analysis.messages).to contain_exactly(climax_message, maximum_notes_message)
+        end
+
+        it "scores lower at thirty-five notes" do
+          expect(analysis.fitness).to be < 0.8
+        end
+      end
+    end
+
+    context "with Twinkle, Twinkle, Little Star" do
+      let(:meter) { "4/4" }
+      let(:first_couplet) do
+        twinkle_phrase(%w[C4 C4 G4 G4 A4 A4 G4]) + twinkle_phrase(%w[F4 F4 E4 E4 D4 D4 C4])
+      end
+      let(:up_above_the_world_couplet) do
+        twinkle_phrase(%w[G4 G4 F4 F4 E4 E4 D4]) * 2
+      end
+
+      # six quarter notes ending with a half note, as in "Twin-kle twin-kle lit-tle star"
+      def twinkle_phrase(pitches)
+        pitches[0..-2].map { |pitch| [pitch, :quarter] } + [[pitches.last, :half]]
+      end
+
+      context "with the first couplet" do
+        let(:melody_name) { "Twinkle, Twinkle, Little Star (first couplet)" }
+        let(:notes) { first_couplet }
+
+        it { is_expected.not_to be_adherent }
+
+        it "objects only to the immediately repeated climax on 'little'" do
+          expect(analysis.messages).to eq([climax_message])
+        end
+
+        it "scores well despite the repeated climax" do
+          expect(analysis.fitness).to be_between(0.9, 1.0).exclusive
+        end
+      end
+
+      context "with the whole song" do
+        let(:melody_name) { "Twinkle, Twinkle, Little Star" }
+        let(:notes) { first_couplet + up_above_the_world_couplet + first_couplet }
+
+        it { is_expected.not_to be_adherent }
+
+        it "objects to the repeated climax and the length" do
+          expect(analysis.messages).to contain_exactly(climax_message, maximum_notes_message)
+        end
+
+        it "scores lower at forty-two notes" do
+          expect(analysis.fitness).to be < 0.8
+        end
       end
     end
   end
