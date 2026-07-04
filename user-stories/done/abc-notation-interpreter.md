@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-04T12:05:19-07:00
   activated_at: 2026-07-04T12:21:27-07:00
   planned_at:   2026-07-04T12:37:50-07:00
-  finished_at:
-  updated_at:   2026-07-04T16:24:02-07:00
+  finished_at:  2026-07-04T16:27:51-07:00
+  updated_at:   2026-07-04T16:27:51-07:00
 -->
 
 # Story: ABC Notation Interpreter
@@ -252,3 +252,49 @@ Reviewed 2026-07-04 at commit `4becc1d` (branch `story/abc-notation-interpreter`
 4. **Observation (documented scope, no action)** — repeat/volta flags anchor to rhythmic bar numbers from `next_position`, so pickup/short bars shift which bar gets flagged; contingent on notated bars summing to the meter, per the v1 "no bar-length validation" decision. Also noted: `Comment`'s symbol-position coercion path is unspecced (string path covered), and `PitchBuilder` errors carry no line number (message names the pitch).
 
 **Verdict**: all 16 criteria met. Findings 1–3 were fixed immediately after the review (suite re-run: 4845 examples, 0 failures, 99.61% line coverage); nothing blocks `finish`.
+
+## Learnings
+
+### What went well
+
+- **Design conversations before planning paid off.** The open questions were resolved
+  into precise, numbered Decisions (Comment API, bar-anchored repeats, volta pass
+  lists) before implementation started, and the implementing agents hit them exactly —
+  zero design rework during the build.
+- **Verified facts in the plan eliminated surprises.** The plan recorded probe-tested
+  behaviors (`Pitch.from_name("F##4")` → nil, `Meter.get("C")` cache pollution,
+  `tied_value` chains advancing positions correctly), and the end-to-end step reported
+  no parser surprises — every assertion passed on first run.
+- **Disjoint file ownership enabled parallel agents.** Steps were partitioned so no
+  two concurrent agents touched a shared file; the glob-require in `abc.rb` removed
+  the one contention point (a shared require list). Four helper classes built
+  concurrently without a single conflict.
+- **Structural guarantees beat promised ones.** "No partial composition" was achieved
+  by construction order (validate everything, build last, memoize only on success)
+  rather than by defensive cleanup — so it cannot regress silently.
+- **Review probes caught what specs missed.** Adversarial runtime probing during
+  review found the one genuine hole (malformed volta lists leaking `ArgumentError`
+  past the `ParseError` contract) that 250+ unit specs hadn't exercised.
+
+### What was surprising
+
+- **An implementing agent corrected the orchestrator's arithmetic.** The spec table in
+  one prompt said 6 × 1/16 → dotted eighth; the agent computed 3/8, flagged the error,
+  and specced the correct dotted quarter. Detailed prompts with checkable math let
+  agents catch upstream mistakes.
+- **Scope grew twice (repeats, then voltas) and the model absorbed it additively.**
+  Anchoring structure to `Bar` attributes and deriving spans instead of storing them
+  meant each addition was one attribute, no migrations of prior design.
+- **Value-object validation isn't boundary validation.** `Bar#plays_on_passes=`
+  validating its input was correct but insufficient — the parse boundary must
+  translate violations into its own error contract, or callers see the wrong
+  exception family.
+
+### Do differently next time
+
+- Include malformed-input probes in the review charter from the start; "raises a
+  clear, specific error" criteria deserve adversarial inputs, not just happy-path
+  raise assertions.
+- When a public boundary promises an error contract, add a spec pattern that walks
+  every malformed-input shape and asserts the error *class*, not just that something
+  raises.
