@@ -3,8 +3,8 @@ metadata:
   created_at:
   activated_at: 2026-07-05T10:26:49-07:00
   planned_at:   2026-07-05T11:04:02-07:00
-  finished_at:
-  updated_at:   2026-07-05T13:05:41-07:00
+  finished_at:  2026-07-05T13:30:34-07:00
+  updated_at:   2026-07-05T13:30:34-07:00
 -->
 
 # Extract Staff Schemes to NotationStyle
@@ -382,3 +382,24 @@ Reviewed 2026-07-05 at commit `ec6fe37` (product-manager acceptance check + code
 - Compat-shim lifespan: migrate `content/staff.rb` and `score_order.rb` to ask a style directly, then remove the `Instrument` notation shims.
 - Rule-based `concert_pitch` resolution (derive the zeroing rather than hardcoding compound-transposer entries).
 - Alternative-selection behavior at the Content layer (the deferred "verbs").
+
+## Learnings
+
+**What went well**
+
+- **Grounding the plan in real data before writing it.** Verifying the actual `instruments.yml` up front caught that the story's "Current State" was aspirational (no `variants:` key; `staff_schemes` carried directly on each instrument) and that `instrument.rb` already had a "move to NotationStyle later" comment. The plan matched reality from the start.
+- **The golden-fixture equivalence guard.** Capturing every instrument's resolved notation from `main` *before* touching code, then asserting equality after, made a 133-entry data migration safe and provable — zero drift.
+- **Generate-don't-transcribe + textual YAML strip.** Emitting `notation_styles.yml` and the stripped `instruments.yml` from the current code (not by hand) eliminated transcription risk; the textual strip preserved key order and every non-scheme attribute byte-for-byte.
+- **Clarifying-question loop during planning.** Settling the architecture (tradition = the style axis; range/clef alternatives as recorded data; `no_pedal`/`single_staff` as emergent from Content; concert-pitch = interval-transposers only) *before* implementing avoided rework.
+
+**What was surprising**
+
+- **The compat surface was smaller than expected.** `Staff` never dereferences its `staff_scheme` arg, so `Staff.new(nil, …)` needed no change; and keeping `default_staff_scheme` as a `StaffScheme` shim meant **zero** churn to existing `instrument_spec` assertions — better than the plan anticipated.
+- **The non-`default` scheme keys weren't uniform "traditions."** They split three ways (tradition / register-clef / layout), which reshaped the whole model — the single most consequential planning discovery.
+- **A pre-existing clef alias collision** (`Clef.get("tenor_clef")` → `vocal_tenor_clef`) surfaced via a test; correctly left out of scope since the data was preserved verbatim.
+
+**What to do differently next time**
+
+- **Pick the `InstrumentNotation` YAML shape earlier.** The plan left `staves`-list vs. flat-hash ambiguous; deciding the uniform `{staves: […], alternatives: […]}` shape up front would have saved a beat.
+- **Write the new public method's test as part of its commit.** `Instrument#notation(style:)` shipped without a direct test and had to be added in the review pass.
+- **Value objects: add `eql?`/`hash` alongside `==` by default** rather than waiting for review to flag it.
