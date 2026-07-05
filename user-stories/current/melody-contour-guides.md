@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-07-05T13:55:34-07:00
-  activated_at:
+  activated_at: 2026-07-05T16:12:05-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-07-05T15:23:41-07:00
+  updated_at:   2026-07-05T16:12:05-07:00
 -->
 
 # Story: Melody Contour Guides
