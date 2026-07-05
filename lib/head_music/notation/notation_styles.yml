@@ -1,0 +1,692 @@
+---
+default:
+  name: Default
+  instrument_notations:
+    accordion:
+      staves:
+      - clef: treble_clef
+      - clef: bass_clef
+    alto_clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -9
+    alto_flute:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -5
+    alto_recorder:
+      staves:
+      - clef: treble_clef
+    alto_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -9
+    alto_voice:
+      staves:
+      - clef: treble_clef
+    arpeggione:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -12
+    banjo:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -12
+    baritone_horn:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: 0
+    baritone_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -21
+    baritone_ukulele:
+      staves:
+      - clef: treble_clef
+    baritone_voice:
+      staves:
+      - clef: bass_clef
+    bass_clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -14
+    bass_drum:
+      staves:
+      - clef: neutral_clef
+    bass_guitar:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: -12
+    bass_oboe:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -12
+    bass_recorder:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: 12
+    bass_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -26
+    bass_trombone:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: 0
+    bass_trumpet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -14
+    bass_trumpet_in_c:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -12
+    bass_trumpet_in_e_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -9
+    bass_tuba:
+      staves:
+      - clef: bass_clef
+    bass_tuba_in_e_flat:
+      staves:
+      - clef: bass_clef
+    bass_ukulele:
+      staves:
+      - clef: bass_clef
+    bass_voice:
+      staves:
+      - clef: bass_clef
+    basset_horn:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -7
+    bassoon:
+      staves:
+      - clef: bass_clef
+    bugle:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -5
+    bugle_in_b_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -2
+    bugle_in_c:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    castanets:
+      staves:
+      - clef: neutral_clef
+    celesta:
+      staves:
+      - clef: treble_clef
+        name_key: right_hand
+      - clef: bass_clef
+        name_key: left_hand
+    cello:
+      staves:
+      - clef: bass_clef
+    chimes:
+      staves:
+      - clef: treble_clef
+    cimbalom:
+      staves:
+      - clef: treble_clef
+      - clef: bass_clef
+    clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -2
+    clarinet_in_a:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -3
+    clarinet_in_c:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    clarinet_in_d:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 2
+    clarinet_in_e_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 3
+    clash_cymbals:
+      staves:
+      - clef: neutral_clef
+    clavichord:
+      staves:
+      - clef: treble_clef
+        name_key: right_hand
+      - clef: bass_clef
+        name_key: left_hand
+    concert_ukulele:
+      staves:
+      - clef: treble_clef
+    contrabass_clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -26
+    contrabass_recorder:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: 0
+    contrabass_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -33
+    contrabassoon:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: -12
+    cor_anglais:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -7
+    cornet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -2
+    countertenor_voice:
+      staves:
+      - clef: treble_clef
+    cowbell:
+      staves:
+      - clef: neutral_clef
+    crash_cymbal:
+      staves:
+      - clef: neutral_clef
+    crotales:
+      staves:
+      - clef: neutral_clef
+    cymbal:
+      staves:
+      - clef: neutral_clef
+    didgeridoo:
+      staves:
+      - clef: neutral_clef
+    double_bass:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: -12
+    drum_kit:
+      staves:
+      - clef: neutral_clef
+        mappings:
+        - staff_position: -1
+          instrument: hi_hat
+          playing_technique: pedal
+        - staff_position: 0
+          instrument: bass_drum
+        - staff_position: 2
+          instrument: floor_tom
+        - staff_position: 4
+          instrument: snare_drum
+        - staff_position: 6
+          instrument: mid_tom
+        - staff_position: 7
+          instrument: high_tom
+        - staff_position: 8
+          instrument: ride_cymbal
+        - staff_position: 9
+          instrument: hi_hat
+          playing_technique: stick
+        - staff_position: 10
+          instrument: crash_cymbal
+    euphonium:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: 0
+    floor_tom:
+      staves:
+      - clef: neutral_clef
+    flugelhorn:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -2
+    flute:
+      staves:
+      - clef: treble_clef
+    french_horn:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -7
+      alternatives:
+      - clef: bass_clef
+        sounding_transposition: 5
+        category: range
+        name_key: bass_clef
+    garklein_recorder:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 24
+    glockenspiel:
+      staves:
+      - clef: treble_clef
+    great_bass_recorder:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: 12
+    great_highland_bagpipe:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 1
+    guitar:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -12
+    hackbrett:
+      staves:
+      - clef: treble_clef
+    hammered_dulcimer:
+      staves:
+      - clef: treble_clef
+    harmonica:
+      staves:
+      - clef: treble_clef
+    harp:
+      staves:
+      - clef: treble_clef
+      - clef: bass_clef
+    harpsichord:
+      staves:
+      - clef: treble_clef
+        name_key: right_hand
+      - clef: bass_clef
+        name_key: left_hand
+    hi_hat:
+      staves:
+      - clef: neutral_clef
+    high_tom:
+      staves:
+      - clef: neutral_clef
+    lute:
+      staves:
+      - clef: treble_clef
+      - clef: bass_clef
+    mandolin:
+      staves:
+      - clef: treble_clef
+    maracas:
+      staves:
+      - clef: neutral_clef
+    marimba:
+      staves:
+      - clef: treble_clef
+      - clef: bass_clef
+    mezzo_soprano_voice:
+      staves:
+      - clef: treble_clef
+    mid_tom:
+      staves:
+      - clef: neutral_clef
+    natural_horn:
+      staves:
+      - clef: treble_clef
+    oboe:
+      staves:
+      - clef: treble_clef
+    oboe_d_amore:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -3
+    organ:
+      staves:
+      - clef: treble_clef
+        name_key: right_hand
+      - clef: bass_clef
+        name_key: left_hand
+      - clef: bass_clef
+        name_key: pedalboard
+    piano:
+      staves:
+      - clef: treble_clef
+        name_key: right_hand
+      - clef: bass_clef
+        name_key: left_hand
+    piccolo_clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 8
+    piccolo_flute:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 12
+    piccolo_trumpet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 10
+    pocket_ukulele:
+      staves:
+      - clef: treble_clef
+    recorder:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 12
+    ride_cymbal:
+      staves:
+      - clef: neutral_clef
+    santur:
+      staves:
+      - clef: treble_clef
+      - clef: bass_clef
+    sitar:
+      staves:
+      - clef: treble_clef
+    snare_drum:
+      staves:
+      - clef: neutral_clef
+    sopranino_recorder:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 12
+    sopranino_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 3
+    soprano_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -2
+    soprano_voice:
+      staves:
+      - clef: treble_clef
+    soprillo:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 10
+    sousaphone:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: 0
+    steelpan:
+      staves:
+      - clef: treble_clef
+    sub_contrabass_recorder:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: -12
+    sub_great_bass_recorder:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: 0
+    subcontrabass_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -38
+    suspended_cymbal:
+      staves:
+      - clef: neutral_clef
+    synthesizer:
+      staves:
+      - clef: treble_clef
+        name_key: right_hand
+      - clef: bass_clef
+        name_key: left_hand
+    tabla:
+      staves:
+      - clef: neutral_clef
+    tam_tam:
+      staves:
+      - clef: neutral_clef
+    tambourine:
+      staves:
+      - clef: neutral_clef
+    temple_blocks:
+      staves:
+      - clef: neutral_clef
+    tenor_drum:
+      staves:
+      - clef: neutral_clef
+    tenor_recorder:
+      staves:
+      - clef: treble_clef
+    tenor_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -14
+    tenor_ukulele:
+      staves:
+      - clef: treble_clef
+    tenor_voice:
+      staves:
+      - clef: vocal_tenor_clef
+      alternatives:
+      - clef: bass_clef
+        category: range
+        name_key: bass
+      - clef: tenor_clef
+        category: range
+        name_key: tenor
+      - clef: treble_clef
+        sounding_transposition: -12
+        category: range
+        name_key: treble
+    theremin:
+      staves:
+      - clef: treble_clef
+    timpani:
+      staves:
+      - clef: neutral_clef
+    triangle:
+      staves:
+      - clef: neutral_clef
+    trombone:
+      staves:
+      - clef: bass_clef
+    trumpet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -2
+    trumpet_in_c:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    trumpet_in_d:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 2
+    trumpet_in_e_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 3
+    tuba:
+      staves:
+      - clef: bass_clef
+    tuba_in_c:
+      staves:
+      - clef: bass_clef
+    ukulele:
+      staves:
+      - clef: treble_clef
+    vibraphone:
+      staves:
+      - clef: treble_clef
+    viola:
+      staves:
+      - clef: alto_clef
+    violin:
+      staves:
+      - clef: treble_clef
+    woodblock:
+      staves:
+      - clef: neutral_clef
+    xylophone:
+      staves:
+      - clef: treble_clef
+    yangqin:
+      staves:
+      - clef: treble_clef
+      - clef: bass_clef
+british_brass_band:
+  name: British Brass Band
+  instrument_notations:
+    euphonium:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -14
+    tuba:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -26
+    bass_tuba_in_e_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -21
+    baritone_horn:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -14
+german:
+  name: German Notation
+  instrument_notations:
+    bass_clarinet:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: -2
+italian:
+  name: Italian Notation
+  instrument_notations:
+    bass_clarinet:
+      staves:
+      - clef: bass_clef
+        sounding_transposition: -9
+concert_pitch:
+  name: Concert Pitch Score
+  instrument_notations:
+    alto_clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    alto_flute:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    alto_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    baritone_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    bass_clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    bass_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    bass_trumpet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    bass_trumpet_in_e_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    basset_horn:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    bugle:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    bugle_in_b_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    clarinet_in_a:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    clarinet_in_d:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    clarinet_in_e_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    contrabass_clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    contrabass_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    cor_anglais:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    cornet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    flugelhorn:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    french_horn:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    great_highland_bagpipe:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    oboe_d_amore:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    piccolo_clarinet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    piccolo_trumpet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    sopranino_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    soprano_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    soprillo:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    subcontrabass_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    tenor_saxophone:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    trumpet:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    trumpet_in_d:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0
+    trumpet_in_e_flat:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: 0

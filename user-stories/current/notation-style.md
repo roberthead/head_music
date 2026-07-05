@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-05T10:26:49-07:00
   planned_at:   2026-07-05T11:04:02-07:00
   finished_at:
-  updated_at:   2026-07-05T11:51:49-07:00
+  updated_at:   2026-07-05T12:33:24-07:00
 -->
 
 # Extract Staff Schemes to NotationStyle
@@ -203,20 +203,20 @@ SO THAT the configuration knows how to notate the instrument
 
 ## Acceptance Criteria
 
-- [ ] `HeadMusic::Notation::NotationStyle` class exists with a `.get` factory and a `.default` convenience
-- [ ] `notation_styles.yml` defines a `default` style plus tradition styles (`british_brass_band`, `concert_pitch`, `german`, `italian`)
-- [ ] The `default` style contains an entry for every instrument
-- [ ] Named styles are sparse overlays — they list only overriding instruments
-- [ ] `notation_style.notation_for(instrument)` returns an `InstrumentNotation` (clef, sounding transposition, staves), falling back to `default` for instruments the style doesn't override
-- [ ] `concert_pitch` overrides interval-transposers only (→ 0); octave-transposers fall back to `default` and keep their octave
-- [ ] Register/clef alternatives (e.g. french horn bass clef, tenor-voice clefs) are recorded as categorized `alternatives:` data with no selection behavior
-- [ ] Grand-staff / multi-staff structure (e.g. piano) is defined in the `default` style
-- [ ] Instrument definitions no longer carry `staff_schemes`
-- [ ] Euphonium is a single instrument; its brass-band notation lives in `british_brass_band`
-- [ ] An instrument can be notated through a chosen notation style, defaulting to `default`
-- [ ] All existing tests pass (with appropriate updates)
-- [ ] New tests cover style lookup, overlay resolution, default fallback, and grand-staff structure
-- [ ] Maintains 90%+ test coverage
+- [x] `HeadMusic::Notation::NotationStyle` class exists with a `.get` factory and a `.default` convenience
+- [x] `notation_styles.yml` defines a `default` style plus tradition styles (`british_brass_band`, `concert_pitch`, `german`, `italian`)
+- [x] The `default` style contains an entry for every instrument
+- [x] Named styles are sparse overlays — they list only overriding instruments
+- [x] `notation_style.notation_for(instrument)` returns an `InstrumentNotation` (clef, sounding transposition, staves), falling back to `default` for instruments the style doesn't override
+- [x] `concert_pitch` overrides interval-transposers only (→ 0); octave-transposers fall back to `default` and keep their octave
+- [x] Register/clef alternatives (e.g. french horn bass clef, tenor-voice clefs) are recorded as categorized `alternatives:` data with no selection behavior
+- [x] Grand-staff / multi-staff structure (e.g. piano) is defined in the `default` style
+- [x] Instrument definitions no longer carry `staff_schemes`
+- [x] Euphonium is a single instrument; its brass-band notation lives in `british_brass_band`
+- [x] An instrument can be notated through a chosen notation style, defaulting to `default`
+- [x] All existing tests pass (with appropriate updates)
+- [x] New tests cover style lookup, overlay resolution, default fallback, and grand-staff structure
+- [x] Maintains 90%+ test coverage (99.6% line coverage)
 
 ## Resolved Decisions
 

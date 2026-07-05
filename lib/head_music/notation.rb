@@ -8,4 +8,6 @@ class HeadMusic::Notation::ParseError < StandardError; end
 require "head_music/notation/musical_symbol"
 require "head_music/notation/staff_position"
 require "head_music/notation/staff_mapping"
+require "head_music/notation/instrument_notation"
+require "head_music/notation/notation_style"
 require "head_music/notation/abc"

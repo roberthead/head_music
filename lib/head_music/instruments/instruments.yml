@@ -1,28 +1,16 @@
 ---
 accordion:
   family_key: accordion
-  staff_schemes:
-    default:
-    - clef: treble_clef
-    - clef: bass_clef
 alto_clarinet:
   family_key: clarinet
   range_categories:
   - alto
   pitch_key: e_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -9
 alto_flute:
   family_key: flute
   range_categories:
   - alto
   pitch_key: g
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -5
 alto_recorder:
   family_key: recorder
   alias_name_keys:
@@ -30,18 +18,11 @@ alto_recorder:
   range_categories:
   - alto
   pitch_key: f
-  staff_schemes:
-    default:
-    - clef: treble_clef
 alto_saxophone:
   family_key: saxophone
   range_categories:
   - alto
   pitch_key: e_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -9
 alto_voice:
   family_key: voice
   alias_name_keys:
@@ -49,90 +30,45 @@ alto_voice:
   - alto
   range_categories:
   - alto
-  staff_schemes:
-    default:
-    - clef: treble_clef
 arpeggione:
   family_key: arpeggione
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -12
 banjo:
   family_key: banjo
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -12
 baritone_horn:
   family_key: saxhorn
   range_categories:
   - baritone
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: 0
-    treble:
-    - clef: treble_clef
-      sounding_transposition: -14
 baritone_saxophone:
   family_key: saxophone
   range_categories:
   - baritone
   pitch_key: e_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -21
 baritone_ukulele:
   family_key: ukulele
   range_categories:
   - alto
   - tenor
   - baritone
-  staff_schemes:
-    default:
-    - clef: treble_clef
 baritone_voice:
   family_key: voice
   range_categories:
   - baritone
-  staff_schemes:
-    default:
-    - clef: bass_clef
 bass_clarinet:
   family_key: clarinet
   range_categories:
   - bass
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -14
-    german_notation:
-    - clef: bass_clef
-      sounding_transposition: -2
-    italian_notation:
-    - clef: bass_clef
-      sounding_transposition: -9
 bass_drum:
   family_key: bass_drum
   alias_name_keys:
   - kick_drum
   range_categories:
   - bass
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 bass_guitar:
   family_key: guitar
   range_categories:
   - bass
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: -12
 bass_oboe:
   family_key: oboe
   alias_name_keys:
@@ -140,10 +76,6 @@ bass_oboe:
   range_categories:
   - baritone
   - bass
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -12
 bass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -152,159 +84,82 @@ bass_recorder:
   - baritone
   - bass
   pitch_key: f
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: 12
 bass_saxophone:
   family_key: saxophone
   range_categories:
   - bass
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -26
 bass_trombone:
   family_key: trombone
   range_categories:
   - bass
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: 0
 bass_trumpet:
   family_key: trumpet
   range_categories:
   - baritone
   - bass
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -14
 bass_trumpet_in_c:
   parent_key: bass_trumpet
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -12
 bass_trumpet_in_e_flat:
   parent_key: bass_trumpet
   pitch_key: e_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -9
 bass_tuba:
   family_key: tuba
   range_categories:
   - bass
   pitch_key: f
-  staff_schemes:
-    default:
-    - clef: bass_clef
 bass_tuba_in_e_flat:
   parent_key: bass_tuba
   pitch_key: e_flat
-  staff_schemes:
-    british_band:
-    - clef: treble_clef
-      sounding_transposition: -21
-    default:
-    - clef: bass_clef
 bass_ukulele:
   family_key: ukulele
   range_categories:
   - contrabass
   - bass
-  staff_schemes:
-    default:
-    - clef: bass_clef
 bass_voice:
   family_key: voice
   range_categories:
   - bass
-  staff_schemes:
-    default:
-    - clef: bass_clef
 basset_horn:
   family_key: clarinet
   pitch_key: f
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -7
 bassoon:
   family_key: bassoon
   range_categories:
   - bass
   pitch_key: f
-  staff_schemes:
-    default:
-    - clef: bass_clef
 bugle:
   family_key: trumpet
   range_categories:
   - soprano
   - alto
   pitch_key: g
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -5
 bugle_in_b_flat:
   parent_key: bugle
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -2
 bugle_in_c:
   parent_key: bugle
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 0
 castanets:
   family_key: castanets
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 celesta:
   family_key: celesta
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      name_key: right_hand
-    - clef: bass_clef
-      name_key: left_hand
 cello:
   family_key: violin
   alias_name_keys:
   - violoncello
   range_categories:
   - tenor
-  staff_schemes:
-    default:
-    - clef: bass_clef
 chimes:
   family_key: chimes
   alias_name_keys:
   - tubular_bells
   - orchestral_chimes
-  staff_schemes:
-    default:
-    - clef: treble_clef
 cimbalom:
   family_key: hammered_dulcimer
-  staff_schemes:
-    default:
-    - clef: treble_clef
-    - clef: bass_clef
 clarinet:
   family_key: clarinet
   alias_name_keys:
@@ -313,58 +168,29 @@ clarinet:
   - soprano
   - sopranino
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -2
 clarinet_in_a:
   parent_key: clarinet
   pitch_key: a
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -3
 clarinet_in_c:
   parent_key: clarinet
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 0
 clarinet_in_d:
   parent_key: clarinet
   pitch_key: d
   alias_name_keys:
   - sopranino_clarinet
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 2
 clarinet_in_e_flat:
   parent_key: clarinet
   pitch_key: e_flat
   alias_name_keys:
   - sopranino_clarinet
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 3
 clash_cymbals:
   family_key: cymbal
   alias_name_keys:
   - concert_cymbals
   - orchestral_cymbals
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 clavichord:
   family_key: clavichord
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      name_key: right_hand
-    - clef: bass_clef
-      name_key: left_hand
 concert_ukulele:
   family_key: ukulele
   alias_name_keys:
@@ -372,18 +198,11 @@ concert_ukulele:
   range_categories:
   - soprano
   - alto
-  staff_schemes:
-    default:
-    - clef: treble_clef
 contrabass_clarinet:
   family_key: clarinet
   range_categories:
   - contrabass
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -26
 contrabass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -393,78 +212,40 @@ contrabass_recorder:
   - bass
   - contrabass
   pitch_key: f
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: 0
 contrabass_saxophone:
   family_key: saxophone
   range_categories:
   - contrabass
   pitch_key: e_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -33
 contrabassoon:
   family_key: bassoon
   range_categories:
   - contrabass
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: -12
 cor_anglais:
   family_key: oboe
   alias_name_keys:
   - english_horn
   range_categories:
   - alto
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -7
 cornet:
   family_key: cornet
   range_categories:
   - soprano
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -2
 countertenor_voice:
   family_key: voice
   range_categories:
   - countertenor
-  staff_schemes:
-    default:
-    - clef: treble_clef
 cowbell:
   family_key: cowbell
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 crash_cymbal:
   family_key: cymbal
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 crotales:
   family_key: crotales
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 cymbal:
   family_key: cymbal
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 didgeridoo:
   family_key: didgeridoo
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 double_bass:
   family_key: double_bass
   alias_name_keys:
@@ -473,76 +254,31 @@ double_bass:
   range_categories:
   - bass
   - contrabass
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: -12
 drum_kit:
   family_key: drum_kit
   alias_name_keys:
   - drum_set
-  staff_schemes:
-    default:
-    - clef: neutral_clef
-      mappings:
-      - staff_position: -1
-        instrument: hi_hat
-        playing_technique: pedal
-      - staff_position: 0
-        instrument: bass_drum
-      - staff_position: 2
-        instrument: floor_tom
-      - staff_position: 4
-        instrument: snare_drum
-      - staff_position: 6
-        instrument: mid_tom
-      - staff_position: 7
-        instrument: high_tom
-      - staff_position: 8
-        instrument: ride_cymbal
-      - staff_position: 9
-        instrument: hi_hat
-        playing_technique: stick
-      - staff_position: 10
-        instrument: crash_cymbal
 euphonium:
   family_key: tuba
   alias_name_keys:
   - tenor_tuba
   range_categories:
   - baritone
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: 0
-    british_band_default:
-    - clef: treble_clef
-      sounding_transposition: -14
 floor_tom:
   family_key: tom_tom
   alias_name_keys:
   - large_tom
   - low_tom
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 flugelhorn:
   family_key: saxhorn
   range_categories:
   - soprano
   - alto
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -2
 flute:
   family_key: flute
   range_categories:
   - soprano
-  staff_schemes:
-    default:
-    - clef: treble_clef
 french_horn:
   family_key: horn
   alias_name_keys:
@@ -551,13 +287,6 @@ french_horn:
   - alto
   - tenor
   pitch_key: f
-  staff_schemes:
-    bass_clef:
-    - clef: bass_clef
-      sounding_transposition: 5
-    default:
-    - clef: treble_clef
-      sounding_transposition: -7
 garklein_recorder:
   family_key: recorder
   alias_name_keys:
@@ -566,19 +295,12 @@ garklein_recorder:
   range_categories:
   - piccolo
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 24
 glockenspiel:
   family_key: glockenspiel
   alias_name_keys:
   - concert_bells
   - bells
   - carillon
-  staff_schemes:
-    default:
-    - clef: treble_clef
 great_bass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -586,190 +308,90 @@ great_bass_recorder:
   range_categories:
   - bass
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: 12
 great_highland_bagpipe:
   family_key: bagpipe
   alias_name_keys:
   - bagpipe
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 1
 guitar:
   family_key: guitar
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -12
 hackbrett:
   family_key: hammered_dulcimer
-  staff_schemes:
-    default:
-    - clef: treble_clef
 hammered_dulcimer:
   family_key: hammered_dulcimer
-  staff_schemes:
-    default:
-    - clef: treble_clef
 harmonica:
   family_key: harmonica
   alias_name_keys:
   - mouth_organ
-  staff_schemes:
-    default:
-    - clef: treble_clef
 harp:
   family_key: harp
-  staff_schemes:
-    default:
-    - clef: treble_clef
-    - clef: bass_clef
 harpsichord:
   family_key: harpsichord
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      name_key: right_hand
-    - clef: bass_clef
-      name_key: left_hand
 hi_hat:
   family_key: hi_hat
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 high_tom:
   family_key: tom_tom
   alias_name_keys:
   - small_tom
   - rack_tom_1
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 lute:
   family_key: lute
-  staff_schemes:
-    default:
-    - clef: treble_clef
-    - clef: bass_clef
-    single_staff:
-    - clef: treble_clef
 mandolin:
   family_key: mandolin
-  staff_schemes:
-    default:
-    - clef: treble_clef
 maracas:
   family_key: maracas
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 marimba:
   family_key: marimba
-  staff_schemes:
-    default:
-    - clef: treble_clef
-    - clef: bass_clef
 mezzo_soprano_voice:
   family_key: voice
   alias_name_keys:
   - mezzo_soprano
   range_categories:
   - mezzo_soprano
-  staff_schemes:
-    default:
-    - clef: treble_clef
 mid_tom:
   family_key: tom_tom
   alias_name_keys:
   - middle_tom
   - rack_tom_2
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 natural_horn:
   family_key: horn
   range_categories:
   - alto
   - tenor
-  staff_schemes:
-    default:
-    - clef: treble_clef
 oboe:
   family_key: oboe
   range_categories:
   - soprano
-  staff_schemes:
-    default:
-    - clef: treble_clef
 oboe_d_amore:
   family_key: oboe
   alias_name_keys:
   - hautbois_d_amour
   range_categories:
   - alto
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -3
 organ:
   family_key: organ
   alias_name_keys:
   - pipe_organ
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      name_key: right_hand
-    - clef: bass_clef
-      name_key: left_hand
-    - clef: bass_clef
-      name_key: pedalboard
-    no_pedal:
-    - clef: treble_clef
-      name_key: right_hand
-    - clef: treble_clef
-      name_key: left_hand
 piano:
   family_key: piano
   alias_name_keys:
   - pianoforte
   - fortepiano
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      name_key: right_hand
-    - clef: bass_clef
-      name_key: left_hand
 piccolo_clarinet:
   family_key: clarinet
   range_categories:
   - piccolo
   pitch_key: a_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 8
 piccolo_flute:
   family_key: flute
   alias_name_keys:
   - piccolo
   range_categories:
   - piccolo
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 12
 piccolo_trumpet:
   family_key: trumpet
   range_categories:
   - piccolo
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 10
 pocket_ukulele:
   family_key: ukulele
   alias_name_keys:
@@ -778,9 +400,6 @@ pocket_ukulele:
   range_categories:
   - sopranino
   - soprano
-  staff_schemes:
-    default:
-    - clef: treble_clef
 recorder:
   family_key: recorder
   alias_name_keys:
@@ -789,28 +408,14 @@ recorder:
   range_categories:
   - soprano
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 12
 ride_cymbal:
   family_key: cymbal
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 santur:
   family_key: hammered_dulcimer
   alias_name_keys:
   - santoor
-  staff_schemes:
-    default:
-    - clef: treble_clef
-    - clef: bass_clef
 sitar:
   family_key: sitar
-  staff_schemes:
-    default:
-    - clef: treble_clef
 snare_drum:
   family_key: snare_drum
   alias_name_keys:
@@ -818,45 +423,27 @@ snare_drum:
   - tabor
   - military_drum
   - field_drum
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 sopranino_recorder:
   family_key: recorder
   range_categories:
   - sopranino
   pitch_key: f
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 12
 sopranino_saxophone:
   family_key: saxophone
   range_categories:
   - sopranino
   pitch_key: e_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 3
 soprano_saxophone:
   family_key: saxophone
   range_categories:
   - soprano
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -2
 soprano_voice:
   family_key: voice
   alias_name_keys:
   - soprano
   range_categories:
   - soprano
-  staff_schemes:
-    default:
-    - clef: treble_clef
 soprillo:
   family_key: saxophone
   alias_name_keys:
@@ -865,26 +452,15 @@ soprillo:
   range_categories:
   - piccolo
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 10
 sousaphone:
   family_key: tuba
   range_categories:
   - bass
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: 0
 steelpan:
   family_key: steelpan
   alias_name_keys:
   - steel_drum
-  staff_schemes:
-    default:
-    - clef: treble_clef
 sub_contrabass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -894,10 +470,6 @@ sub_contrabass_recorder:
   - contrabass
   - subcontrabass
   pitch_key: f
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: -12
 sub_great_bass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -906,104 +478,49 @@ sub_great_bass_recorder:
   range_categories:
   - contrabass
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: bass_clef
-      sounding_transposition: 0
 subcontrabass_saxophone:
   family_key: saxophone
   range_categories:
   - subcontrabass
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -38
 suspended_cymbal:
   family_key: cymbal
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 synthesizer:
   family_key: synthesizer
   alias_name_keys:
   - electronic_keyboard
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      name_key: right_hand
-    - clef: bass_clef
-      name_key: left_hand
 tabla:
   family_key: tabla
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 tam_tam:
   family_key: gong
   alias_name_keys:
   - gong
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 tambourine:
   family_key: tambourine
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 temple_blocks:
   family_key: woodblock
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 tenor_drum:
   family_key: tenor_drum
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 tenor_recorder:
   family_key: recorder
   range_categories:
   - tenor
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: treble_clef
 tenor_saxophone:
   family_key: saxophone
   range_categories:
   - tenor
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -14
 tenor_ukulele:
   family_key: ukulele
   range_categories:
   - tenor
-  staff_schemes:
-    default:
-    - clef: treble_clef
 tenor_voice:
   family_key: voice
   range_categories:
   - tenor
-  staff_schemes:
-    bass:
-    - clef: bass_clef
-    default:
-    - clef: vocal_tenor_clef
-    tenor:
-    - clef: tenor_clef
-    treble:
-    - clef: treble_clef
-      sounding_transposition: -12
 theremin:
   family_key: theremin
-  staff_schemes:
-    default:
-    - clef: treble_clef
 timpani:
   family_key: kettledrum
   alias_name_keys:
@@ -1011,67 +528,33 @@ timpani:
   - timpanum
   range_categories:
   - bass
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 triangle:
   family_key: triangle
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 trombone:
   family_key: trombone
   alias_name_keys:
   - tenor_trombone
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: bass_clef
 trumpet:
   family_key: trumpet
   pitch_key: b_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: -2
 trumpet_in_c:
   parent_key: trumpet
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 0
 trumpet_in_d:
   parent_key: trumpet
   pitch_key: d
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 2
 trumpet_in_e_flat:
   parent_key: trumpet
   pitch_key: e_flat
-  staff_schemes:
-    default:
-    - clef: treble_clef
-      sounding_transposition: 3
 tuba:
   family_key: tuba
   alias_name_keys:
   - contrabass_tuba
   pitch_key: b_flat
-  staff_schemes:
-    british_band:
-    - clef: treble_clef
-      sounding_transposition: -26
-    default:
-    - clef: bass_clef
 tuba_in_c:
   parent_key: tuba
   pitch_key: c
-  staff_schemes:
-    default:
-    - clef: bass_clef
 ukulele:
   family_key: ukulele
   alias_name_keys:
@@ -1079,41 +562,19 @@ ukulele:
   range_categories:
   - soprano
   - alto
-  staff_schemes:
-    default:
-    - clef: treble_clef
 vibraphone:
   family_key: vibraphone
   alias_name_keys:
   - vibes
-  staff_schemes:
-    default:
-    - clef: treble_clef
 viola:
   family_key: violin
-  staff_schemes:
-    default:
-    - clef: alto_clef
 violin:
   family_key: violin
   alias_name_keys:
   - fiddle
-  staff_schemes:
-    default:
-    - clef: treble_clef
 woodblock:
   family_key: woodblock
-  staff_schemes:
-    default:
-    - clef: neutral_clef
 xylophone:
   family_key: xylophone
-  staff_schemes:
-    default:
-    - clef: treble_clef
 yangqin:
   family_key: hammered_dulcimer
-  staff_schemes:
-    default:
-    - clef: treble_clef
-    - clef: bass_clef

@@ -1,0 +1,1612 @@
+{
+  "accordion": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "alto_clarinet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -9,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "alto_flute": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -5,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "alto_recorder": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "alto_saxophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -9,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "alto_voice": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "arpeggione": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "banjo": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "baritone_horn": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "baritone_saxophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -21,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "baritone_ukulele": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "baritone_voice": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "bass_clarinet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -14,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "bass_drum": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "bass_guitar": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "bass_oboe": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "bass_recorder": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "bass_saxophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -26,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "bass_trombone": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "bass_trumpet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -14,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "bass_trumpet_in_c": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "bass_trumpet_in_e_flat": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -9,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "bass_tuba": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "bass_tuba_in_e_flat": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "bass_ukulele": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "bass_voice": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "basset_horn": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -7,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "bassoon": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "bugle": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -5,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "bugle_in_b_flat": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -2,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "bugle_in_c": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "castanets": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "celesta": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "cello": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "chimes": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "cimbalom": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "clarinet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -2,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "clarinet_in_a": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -3,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "clarinet_in_c": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "clarinet_in_d": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 2,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "clarinet_in_e_flat": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 3,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "clash_cymbals": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "clavichord": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "concert_ukulele": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "contrabass_clarinet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -26,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "contrabass_recorder": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "contrabass_saxophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -33,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "contrabassoon": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "cor_anglais": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -7,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "cornet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -2,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "countertenor_voice": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "cowbell": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "crash_cymbal": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "crotales": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "cymbal": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "didgeridoo": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "double_bass": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "drum_kit": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "euphonium": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "floor_tom": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "flugelhorn": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -2,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "flute": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "french_horn": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -7,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "garklein_recorder": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 24,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "glockenspiel": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "great_bass_recorder": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "great_highland_bagpipe": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 1,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "guitar": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "hackbrett": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "hammered_dulcimer": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "harmonica": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "harp": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "harpsichord": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "hi_hat": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "high_tom": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "lute": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "mandolin": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "maracas": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "marimba": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "mezzo_soprano_voice": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "mid_tom": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "natural_horn": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "oboe": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "oboe_d_amore": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -3,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "organ": {
+    "clefs": [
+      "treble clef",
+      "bass clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 3,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "piano": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "piccolo_clarinet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 8,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "piccolo_flute": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "piccolo_trumpet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 10,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "pocket_ukulele": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "recorder": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "ride_cymbal": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "santur": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "sitar": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "snare_drum": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "sopranino_recorder": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "sopranino_saxophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 3,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "soprano_saxophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -2,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "soprano_voice": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "soprillo": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 10,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "sousaphone": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "steelpan": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "sub_contrabass_recorder": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "sub_great_bass_recorder": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "subcontrabass_saxophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -38,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "suspended_cymbal": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "synthesizer": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "tabla": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "tam_tam": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "tambourine": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "temple_blocks": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "tenor_drum": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "tenor_recorder": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "tenor_saxophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -14,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "tenor_ukulele": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "tenor_voice": {
+    "clefs": [
+      "vocal tenor clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "theremin": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "timpani": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "triangle": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "trombone": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "trumpet": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -2,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "trumpet_in_c": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "trumpet_in_d": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 2,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "trumpet_in_e_flat": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 3,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": false
+  },
+  "tuba": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "tuba_in_c": {
+    "clefs": [
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "ukulele": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "vibraphone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "viola": {
+    "clefs": [
+      "alto clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "violin": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "woodblock": {
+    "clefs": [
+      "neutral clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": false,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "xylophone": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  },
+  "yangqin": {
+    "clefs": [
+      "treble clef",
+      "bass clef"
+    ],
+    "sounding_transposition": 0,
+    "staves_count": 2,
+    "single_staff": false,
+    "multiple_staves": true,
+    "pitched": true,
+    "transposing": false,
+    "transposing_at_the_octave": false
+  }
+}

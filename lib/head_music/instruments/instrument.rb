@@ -21,13 +21,12 @@ module HeadMusic::Instruments; end
 #   pitch_key: the pitch designation (e.g., "b_flat", "a", "c")
 #   alias_name_keys: alternative names for the instrument
 #   range_categories: size/range classifications
-#   staff_schemes: notation schemes (to be moved to NotationStyle later)
 class HeadMusic::Instruments::Instrument
   include HeadMusic::Named
 
   INSTRUMENTS = YAML.load_file(File.expand_path("instruments.yml", __dir__)).freeze
 
-  attr_reader :name_key, :parent_key, :alias_name_keys, :range_categories, :staff_schemes_data
+  attr_reader :name_key, :parent_key, :alias_name_keys, :range_categories
 
   class << self
     # Factory method to get an Instrument instance
@@ -110,18 +109,29 @@ class HeadMusic::Instruments::Instrument
     @pitch_designation ||= HeadMusic::Rudiment::Spelling.get(pitch_key_to_designation)
   end
 
-  # Staff schemes (notation concern - kept for backward compatibility)
+  # Notation for this instrument in the given style (defaults to :default).
+  def notation(style: :default)
+    HeadMusic::Notation::NotationStyle.get(style).notation_for(self)
+  end
+
+  # Staff schemes are a notation concern; they now live in NotationStyle.
+  # These methods remain for backward compatibility and delegate to the
+  # default style. Referenced only inside method bodies, because the Notation
+  # module loads after Instruments (see head_music.rb load order).
   def staff_schemes
-    @staff_schemes ||= build_staff_schemes
+    [default_staff_scheme]
   end
 
   def default_staff_scheme
-    @default_staff_scheme ||=
-      staff_schemes.find(&:default?) || staff_schemes.first
+    @default_staff_scheme ||= HeadMusic::Instruments::StaffScheme.new(
+      key: "default",
+      instrument: self,
+      list: default_notation_staves_data
+    )
   end
 
   def default_staves
-    default_staff_scheme&.staves || []
+    default_staff_scheme.staves
   end
 
   def default_clefs
@@ -254,7 +264,6 @@ class HeadMusic::Instruments::Instrument
     @pitch_key = record["pitch_key"]
     @alias_name_keys = record["alias_name_keys"] || []
     @range_categories = record["range_categories"] || []
-    @staff_schemes_data = record["staff_schemes"] || {}
 
     initialize_name
   end
@@ -305,15 +314,10 @@ class HeadMusic::Instruments::Instrument
     end
   end
 
-  def build_staff_schemes
-    return parent&.staff_schemes || [] if staff_schemes_data.empty?
-
-    staff_schemes_data.map do |key, list|
-      HeadMusic::Instruments::StaffScheme.new(
-        key: key,
-        instrument: self,
-        list: list
-      )
-    end
+  # The raw staff-attribute list for this instrument's default notation,
+  # resolved from the default NotationStyle.
+  def default_notation_staves_data
+    notation = HeadMusic::Notation::NotationStyle.default.notation_for(self)
+    (notation&.staves || []).map(&:attributes)
   end
 end
