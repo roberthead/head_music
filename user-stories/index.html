@@ -253,40 +253,120 @@
     // Each entry: { title, path, story? }. `story` is an optional curated
     // one-liner preserved across regenerations (see /stories board).
     const stories = {
-    backlog: [
-      { title: "LilyPond Interpreter", path: "backlog/lilypond-interpreter.md" },
-      { title: "", path: "backlog/organizing-content.md" },
-      { title: "Sixteenth-Century (Renaissance) Style Guides", path: "backlog/sixteenth-century-style.md" },
-      { title: "Split Counterpoint Species Guides by Pedagogical Author", path: "backlog/split-counterpoint-species-by-author.md" }
-    ],
-    active: [
-
-    ],
-    done: [
-      { title: "Extract Staff Schemes to NotationStyle", path: "done/notation-style.md" },
-      { title: "ABC Notation Interpreter", path: "done/abc-notation-interpreter.md" },
-      { title: "Make Large-Leap Recovery Configurable", path: "done/configurable-large-leap-recovery.md" },
-      { title: "", path: "done/superclass-for-note.md" },
-      { title: "", path: "done/expand-playing-techniques.md" },
-      { title: "", path: "done/instrument-variant.md" },
-      { title: "Band Score Order", path: "done/epic--score-order/band-score-order.md" },
-      { title: "Chamber Ensemble Score Order", path: "done/epic--score-order/chamber-ensemble-score-order.md" },
-      { title: "Consonance and Dissonance Classification", path: "done/consonance-dissonance-classification.md" },
-      { title: "Dyad Analysis", path: "done/dyad-analysis.md" },
-      { title: "Handling Time and Tempo", path: "done/handle-time.md" },
-      { title: "Instrument Inheritance Architecture", path: "done/instrument-architecture.md" },
-      { title: "Instruments can have strings with pitches", path: "done/string-pitches.md" },
-      { title: "Move MusicalSymbol to Notation Module", path: "done/move-musical-symbol-to-notation.md" },
-      { title: "Move StaffMapping to Notation Module", path: "done/move-staff-mapping-to-notation.md" },
-      { title: "Move StaffPosition to Notation Module", path: "done/move-staff-position-to-notation.md" },
-      { title: "Notation Module Foundation", path: "done/notation-module-foundation.md" },
-      { title: "Orchestral Score Order", path: "done/epic--score-order/orchestral-score-order.md" },
-      { title: "Percussion Set Staff", path: "done/percussion_set.md" },
-      { title: "Pitch Class Set Analysis", path: "done/pitch-class-set-analysis.md" },
-      { title: "Score-Order Epic: Implementation Plan", path: "done/epic--score-order/PLAN.md" },
-      { title: "Sonority Identification", path: "done/sonority-identification.md" }
-    ]
-  };
+  "backlog": [
+    {
+      "title": "Melody Contour Guides",
+      "path": "backlog/melody-contour-guides.md"
+    },
+    {
+      "title": "LilyPond Interpreter",
+      "path": "backlog/lilypond-interpreter.md"
+    },
+    {
+      "title": "Organizing Content",
+      "path": "backlog/organizing-content.md"
+    },
+    {
+      "title": "Sixteenth-Century (Renaissance) Style Guides",
+      "path": "backlog/sixteenth-century-style.md"
+    },
+    {
+      "title": "Split Counterpoint Species Guides by Pedagogical Author",
+      "path": "backlog/split-counterpoint-species-by-author.md"
+    }
+  ],
+  "active": [],
+  "done": [
+    {
+      "title": "Extract Staff Schemes to NotationStyle",
+      "path": "done/notation-style.md"
+    },
+    {
+      "title": "ABC Notation Interpreter",
+      "path": "done/abc-notation-interpreter.md"
+    },
+    {
+      "title": "Make Large-Leap Recovery Configurable",
+      "path": "done/configurable-large-leap-recovery.md"
+    },
+    {
+      "title": "Band Score Order",
+      "path": "done/epic--score-order/band-score-order.md"
+    },
+    {
+      "title": "Chamber Ensemble Score Order",
+      "path": "done/epic--score-order/chamber-ensemble-score-order.md"
+    },
+    {
+      "title": "Consonance and Dissonance Classification",
+      "path": "done/consonance-dissonance-classification.md"
+    },
+    {
+      "title": "Dyad Analysis",
+      "path": "done/dyad-analysis.md"
+    },
+    {
+      "title": "Handling Time and Tempo",
+      "path": "done/handle-time.md"
+    },
+    {
+      "title": "Instrument Inheritance Architecture",
+      "path": "done/instrument-architecture.md"
+    },
+    {
+      "title": "Instrument Variant Refactoring",
+      "path": "done/instrument-variant.md"
+    },
+    {
+      "title": "Instruments can have strings with pitches",
+      "path": "done/string-pitches.md"
+    },
+    {
+      "title": "Load Playing Techniques from YAML Data File",
+      "path": "done/expand-playing-techniques.md"
+    },
+    {
+      "title": "Move MusicalSymbol to Notation Module",
+      "path": "done/move-musical-symbol-to-notation.md"
+    },
+    {
+      "title": "Move StaffMapping to Notation Module",
+      "path": "done/move-staff-mapping-to-notation.md"
+    },
+    {
+      "title": "Move StaffPosition to Notation Module",
+      "path": "done/move-staff-position-to-notation.md"
+    },
+    {
+      "title": "Notation Module Foundation",
+      "path": "done/notation-module-foundation.md"
+    },
+    {
+      "title": "Orchestral Score Order",
+      "path": "done/epic--score-order/orchestral-score-order.md"
+    },
+    {
+      "title": "Percussion Set Staff",
+      "path": "done/percussion_set.md"
+    },
+    {
+      "title": "Pitch Class Set Analysis",
+      "path": "done/pitch-class-set-analysis.md"
+    },
+    {
+      "title": "Score-Order Epic: Implementation Plan",
+      "path": "done/epic--score-order/PLAN.md"
+    },
+    {
+      "title": "Sonority Identification",
+      "path": "done/sonority-identification.md"
+    },
+    {
+      "title": "Superclass for Note",
+      "path": "done/superclass-for-note.md"
+    }
+  ]
+};
 
     function render() {
       const board = document.getElementById('board');
