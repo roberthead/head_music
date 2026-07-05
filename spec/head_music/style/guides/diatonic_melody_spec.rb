@@ -64,48 +64,28 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
   describe "analysis of familiar melodies" do
     subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
 
-    let(:composition) do
-      HeadMusic::Content::Composition.new(
-        name: melody_name,
-        key_signature: HeadMusic::Rudiment::KeySignature.get("C major"),
-        meter: meter
-      )
-    end
-
-    # notes is a list of [pitch, rhythmic_value] pairs placed consecutively
-    let(:voice) do
-      composition.add_voice(role: "melody").tap do |melody_voice|
-        notes.each do |pitch, rhythmic_value|
-          melody_voice.place(melody_voice.next_position, rhythmic_value, pitch)
-        end
-      end
-    end
+    let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
+    let(:voice) { composition.voices.first }
 
     let(:climax_message) { "Peak on a consonant high or low note one time or twice with a step between." }
     let(:maximum_notes_message) { "Write up to thirty-two notes." }
 
     context "with Three Blind Mice" do
-      let(:meter) { "6/8" }
-
-      let(:three_blind_mice_phrase) do
-        [["E4", :quarter], ["D4", :eighth], ["C4", :dotted_quarter]]
-      end
-
-      let(:see_how_they_run_phrase) do
-        [["G4", :quarter], ["F4", :eighth], ["F4", :quarter], ["E4", :eighth]]
-      end
-
-      let(:they_all_ran_phrase) do
-        [
-          ["G4", :eighth], ["C5", :eighth], ["C5", :eighth],
-          ["B4", :eighth], ["A4", :eighth], ["B4", :eighth],
-          ["C5", :quarter], ["G4", :eighth], ["G4", :dotted_quarter]
-        ]
-      end
+      let(:three_blind_mice_phrase) { "E2D C3|" }
+      let(:see_how_they_run_phrase) { "G2F F2E|" }
+      let(:they_all_ran_phrase) { "GccBAB|c2G G3|" }
 
       context "with the opening phrases" do
-        let(:melody_name) { "Three Blind Mice (opening phrases)" }
-        let(:notes) { three_blind_mice_phrase * 2 + see_how_they_run_phrase * 2 }
+        let(:abc) do
+          <<~ABC
+            X:1
+            T:Three Blind Mice (opening phrases)
+            M:6/8
+            L:1/8
+            K:C
+            #{three_blind_mice_phrase * 2}#{see_how_they_run_phrase * 2}
+          ABC
+        end
 
         it { is_expected.not_to be_adherent }
 
@@ -119,12 +99,16 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
       end
 
       context "with the full round" do
-        let(:melody_name) { "Three Blind Mice" }
-        let(:notes) do
-          three_blind_mice_phrase * 2 +
-            see_how_they_run_phrase * 2 +
-            they_all_ran_phrase * 2 +
-            three_blind_mice_phrase
+        let(:abc) do
+          <<~ABC
+            X:1
+            T:Three Blind Mice
+            M:6/8
+            L:1/8
+            K:C
+            #{three_blind_mice_phrase * 2}#{see_how_they_run_phrase * 2}
+            #{they_all_ran_phrase * 2}#{three_blind_mice_phrase}
+          ABC
         end
 
         it { is_expected.not_to be_adherent }
@@ -140,22 +124,21 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
     end
 
     context "with Twinkle, Twinkle, Little Star" do
-      let(:meter) { "4/4" }
-      let(:first_couplet) do
-        twinkle_phrase(%w[C4 C4 G4 G4 A4 A4 G4]) + twinkle_phrase(%w[F4 F4 E4 E4 D4 D4 C4])
-      end
-      let(:up_above_the_world_couplet) do
-        twinkle_phrase(%w[G4 G4 F4 F4 E4 E4 D4]) * 2
-      end
-
-      # six quarter notes ending with a half note, as in "Twin-kle twin-kle lit-tle star"
-      def twinkle_phrase(pitches)
-        pitches[0..-2].map { |pitch| [pitch, :quarter] } + [[pitches.last, :half]]
-      end
+      # "Twin-kle twin-kle lit-tle star": quarters with a half at each phrase end
+      let(:first_couplet) { "CCGG|AAG2|FFEE|DDC2|" }
+      let(:up_above_the_world_couplet) { "GGFF|EED2|" * 2 }
 
       context "with the first couplet" do
-        let(:melody_name) { "Twinkle, Twinkle, Little Star (first couplet)" }
-        let(:notes) { first_couplet }
+        let(:abc) do
+          <<~ABC
+            X:1
+            T:Twinkle, Twinkle, Little Star (first couplet)
+            M:4/4
+            L:1/4
+            K:C
+            #{first_couplet}
+          ABC
+        end
 
         it { is_expected.not_to be_adherent }
 
@@ -169,8 +152,16 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
       end
 
       context "with the whole song" do
-        let(:melody_name) { "Twinkle, Twinkle, Little Star" }
-        let(:notes) { first_couplet + up_above_the_world_couplet + first_couplet }
+        let(:abc) do
+          <<~ABC
+            X:1
+            T:Twinkle, Twinkle, Little Star
+            M:4/4
+            L:1/4
+            K:C
+            #{first_couplet}#{up_above_the_world_couplet}#{first_couplet}
+          ABC
+        end
 
         it { is_expected.not_to be_adherent }
 
@@ -185,24 +176,23 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
     end
 
     context "with one verse of Over the Rainbow" do
-      let(:meter) { "4/4" }
-      let(:melody_name) { "Over the Rainbow" }
-
       # the eight-bar A section in C major
-      let(:notes) do
-        [
-          ["C4", :half], ["C5", :half],                             # Some-where
-          ["B4", :quarter], ["G4", :eighth], ["A4", :eighth],
-          ["B4", :quarter], ["C5", :quarter],                       # o-ver the rain-bow
-          ["C4", :half], ["A4", :half],                             # way up
-          ["G4", :whole],                                           # high
-          ["A3", :half], ["F4", :half],                             # There's a
-          ["E4", :quarter], ["C4", :eighth], ["D4", :eighth],
-          ["E4", :quarter], ["F4", :quarter],                       # land that I heard of
-          ["D4", :quarter], ["B3", :eighth], ["C4", :eighth],
-          ["D4", :quarter], ["E4", :quarter],                       # once in a lul-la
-          ["C4", :whole]                                            # by
-        ]
+      let(:abc) do
+        <<~ABC
+          X:1
+          T:Over the Rainbow
+          M:4/4
+          L:1/8
+          K:C
+          C4c4|      % Some-where
+          B2GAB2c2|  % o-ver the rain-bow
+          C4A4|      % way up
+          G8|        % high
+          A,4F4|     % There's a
+          E2CDE2F2|  % land that I heard of
+          D2B,CD2E2| % once in a lul-la
+          C8|        % by
+        ABC
       end
 
       let(:octave_leaps_message) { "Use a maximum of one octave leap." }
