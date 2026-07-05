@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-05T10:26:49-07:00
   planned_at:   2026-07-05T11:04:02-07:00
   finished_at:
-  updated_at:   2026-07-05T12:33:24-07:00
+  updated_at:   2026-07-05T13:05:41-07:00
 -->
 
 # Extract Staff Schemes to NotationStyle
@@ -342,3 +342,43 @@ Other counts: 13 grand-/multi-staff instruments (piano/accordion 2 staves, `orga
 5. **Sub-story 5** — `Instrument#notation(style:)` + spec. Green.
 
 Key files: `lib/head_music/notation/notation_style.rb` (new), `lib/head_music/notation/instrument_notation.rb` (new), `lib/head_music/notation/notation_styles.yml` (new), `lib/head_music/notation.rb`, `lib/head_music/instruments/instrument.rb`, `lib/head_music/instruments/instruments.yml`, `lib/head_music/instruments/staff.rb`, `spec/head_music/notation/notation_style_spec.rb` (new), `spec/head_music/notation/notation_style_equivalence_spec.rb` (new), `spec/fixtures/notation/legacy_default_notation.json` (new).
+
+## Review
+
+Reviewed 2026-07-05 at commit `ec6fe37` (product-manager acceptance check + code review). Full suite green; 99.6% line coverage.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | `NotationStyle` with `.get` + `.default` | ✅ | `notation_style.rb:22-32`; `.get` memoizes, accepts string/symbol/instance, raises `KeyError` on unknown key |
+| 2 | `notation_styles.yml` defines default + 4 tradition styles | ✅ | `.all` returns exactly `default, british_brass_band, german, italian, concert_pitch` |
+| 3 | `default` has an entry for every instrument | ✅ | 133/133; integrity spec `default_keys match_array instrument_keys` |
+| 4 | Named styles are sparse overlays | ✅ | overlay sizes 4 / 1 / 1 / 33 ≪ 133; integrity spec guards orphan keys |
+| 5 | `notation_for` → `InstrumentNotation` with default fallback | ✅ | brass-band euphonium → treble/−14, trombone falls through to default |
+| 6 | `concert_pitch` zeroes interval-transposers only | ✅ | horn/clarinet → 0; piccolo/guitar keep their octave via fallback |
+| 7 | Alternatives recorded as categorized data, no selection | ✅ | french horn (`range` bass clef), tenor voice; `alternatives` builds Staff, no selection logic |
+| 8 | Grand/multi-staff structure in `default` | ✅ | piano 2 staves, organ 3, per-staff `name_key` preserved |
+| 9 | Instruments no longer carry `staff_schemes` | ✅ | `grep -c staff_scheme instruments.yml` → 0 (539 lines removed) |
+| 10 | Euphonium single instrument; brass-band in `british_brass_band` | ✅ | default bass/0, brass-band treble/−14 |
+| 11 | Notate through a chosen style, default `default` | ✅ | `Instrument#notation(style:)`; verified default vs concert_pitch |
+| 12 | All existing tests pass | ✅ | 5030 → 5034 examples, 0 failures |
+| 13 | New tests cover lookup/overlay/fallback/grand-staff | ✅ | 3 new notation specs + equivalence + integrity |
+| 14 | Maintains 90%+ coverage | ✅ | 99.6% line coverage |
+
+**No blocking issues — all 14 criteria met.**
+
+### Code review findings
+
+- **[Important] `Instrument#notation(style:)` had no direct test** — the new public API was only exercised indirectly. **Addressed** post-review: added `#notation` specs (default + named style) to `instrument_spec.rb`, plus a spec pinning that `staff_schemes` now returns only the default scheme, and an integrity assertion that every notation entry has ≥1 staff. Suite now 5034 examples, 0 failures.
+- **[Verified sound]** Load-order safety (no load-time reference from `instrument.rb` to `NotationStyle`); `KeyError`-on-unknown-style does not poison the memo cache; overlay/`default_data` fallback correct; `Staff.new(nil, …)` and the `default_staff_scheme` compat shim sound; YAML shape matches parsers.
+- **[Nice-to-have] — dispositioned:**
+  - `InstrumentNotation` `eql?`/`hash` — **fixed** (`instrument_notation.rb`): `eql?` aliases `==`, `hash` keyed on `[instrument.name_key, staves_attributes]`; covered by `spec/head_music/notation/instrument_notation_spec.rb`.
+  - `|| 0` in `sounding_transposition` — **kept intentionally**: `Staff` never returns nil, so the coalesce is the empty-staves guard (a staff-less notation returns `0`, not `nil`). Removing it would regress that path.
+  - Single `category: range` on all alternatives — **left as-is**: assigning a finer taxonomy (e.g. `clef` vs `range`) depends on the deferred alternative-selection semantics ("nouns now, verbs later"); introducing categories now would invent an unratified enum.
+
+### Follow-ups (non-blocking, for later stories)
+
+- Compat-shim lifespan: migrate `content/staff.rb` and `score_order.rb` to ask a style directly, then remove the `Instrument` notation shims.
+- Rule-based `concert_pitch` resolution (derive the zeroing rather than hardcoding compound-transposer entries).
+- Alternative-selection behavior at the Content layer (the deferred "verbs").

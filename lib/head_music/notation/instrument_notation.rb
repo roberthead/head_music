@@ -37,6 +37,11 @@ class HeadMusic::Notation::InstrumentNotation
 
     instrument == other.instrument && staves_attributes == other.staves_attributes
   end
+  alias_method :eql?, :==
+
+  def hash
+    [instrument.name_key, staves_attributes].hash
+  end
 
   protected
 

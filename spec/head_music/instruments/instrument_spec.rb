@@ -785,5 +785,29 @@ describe HeadMusic::Instruments::Instrument do
         expect(instrument.default_staff_scheme).to be_a(HeadMusic::Instruments::StaffScheme)
       end
     end
+
+    context "for an instrument that formerly had multiple named schemes" do
+      subject(:instrument) { described_class.get("euphonium") }
+
+      it "returns only the default scheme (named schemes now live in NotationStyle)" do
+        expect(instrument.staff_schemes.map(&:key)).to eq(["default"])
+      end
+    end
+  end
+
+  describe "#notation" do
+    subject(:instrument) { described_class.get("euphonium") }
+
+    it "defaults to the default notation style" do
+      expect(instrument.notation).to be_a(HeadMusic::Notation::InstrumentNotation)
+      expect(instrument.notation.clefs.map(&:to_s)).to eq(["bass clef"])
+      expect(instrument.notation.sounding_transposition).to eq(0)
+    end
+
+    it "resolves a named notation style" do
+      notation = instrument.notation(style: :british_brass_band)
+      expect(notation.clefs.map(&:to_s)).to eq(["treble clef"])
+      expect(notation.sounding_transposition).to eq(-14)
+    end
   end
 end

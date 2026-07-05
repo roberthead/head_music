@@ -15,6 +15,12 @@ describe "HeadMusic::Notation::NotationStyle" do
     end
   end.compact.uniq
 
+  staffless_entries = styles.flat_map do |style_key, style|
+    style["instrument_notations"].filter_map do |instrument_key, entry|
+      "#{style_key}/#{instrument_key}" if entry["staves"].to_a.empty?
+    end
+  end
+
   it "gives the default style an entry for every instrument" do
     expect(default_keys).to match_array(instrument_keys)
   end
@@ -37,5 +43,9 @@ describe "HeadMusic::Notation::NotationStyle" do
     referenced_clefs.each do |clef_key|
       expect(HeadMusic::Rudiment::Clef.get(clef_key)).to be_a(HeadMusic::Rudiment::Clef)
     end
+  end
+
+  it "gives every notation entry at least one staff" do
+    expect(staffless_entries).to be_empty
   end
 end
