@@ -19,8 +19,11 @@ module HeadMusic::Notation::ABC
     REPEAT_STARTING_STYLES = ["|:", "::"].freeze
     SECTION_ENDING_STYLES = ["||", "|]", "[|"].freeze
 
-    def initialize(abc_string)
+    # start_line offsets reported line numbers, so a tune parsed out of a
+    # larger book raises errors with book-relative line numbers.
+    def initialize(abc_string, start_line: 1)
       @abc_string = abc_string
+      @start_line = start_line
     end
 
     def composition
@@ -59,7 +62,8 @@ module HeadMusic::Notation::ABC
 
     def build_composition
       ensure_input_present
-      @header = Header.new(@abc_string)
+      @header = Header.new(@abc_string, start_line: @start_line)
+      reject_content_after_tune
       tokens = BodyLexer.new(header.body, start_line: header.body_start_line).tokens
       reject_unsupported_tokens(tokens)
       @duration_resolver = DurationResolver.new(header.unit_note_length)
@@ -70,6 +74,27 @@ module HeadMusic::Notation::ABC
       return unless @abc_string.to_s.strip.empty?
 
       raise ParseError, "ABC input is blank"
+    end
+
+    # The lexer treats a blank line as the end of the tune, so anything
+    # after it would be silently dropped — most likely another tune.
+    def reject_content_after_tune
+      lines = header.body.lines
+      blank_index = lines.find_index { |line| line.strip.empty? }
+      return unless blank_index
+
+      extra_lines = lines[(blank_index + 1)..]
+      extra_index = extra_lines.find_index do |line|
+        stripped = line.strip
+        !stripped.empty? && !stripped.start_with?("%")
+      end
+      return unless extra_index
+
+      raise ParseError.new(
+        "Content after the tune body; parse a book of tunes with ABC.parse_book",
+        line_number: header.body_start_line + blank_index + 1 + extra_index,
+        snippet: extra_lines[extra_index].strip[0, BodyLexer::SNIPPET_LENGTH]
+      )
     end
 
     def reject_unsupported_tokens(tokens)

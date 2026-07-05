@@ -36,6 +36,26 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "content after the tune body" do
+    it "raises and suggests parse_book when a second tune follows" do
+      expect { parse("X:1\nK:C\nCDEF|\n\nX:2\nK:C\nGABc|\n") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /parse_book.*line 5/)
+    end
+
+    it "raises for stray text after the tune" do
+      expect { parse("X:1\nK:C\nCDEF|\n\nstray text\n") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /after the tune body/)
+    end
+
+    it "allows trailing blank lines" do
+      expect(parse("X:1\nK:C\nCDEF|\n\n\n").voices.first.placements.length).to eq 4
+    end
+
+    it "allows trailing comment lines after the tune" do
+      expect(parse("X:1\nK:C\nCDEF|\n\n% the end\n").voices.first.placements.length).to eq 4
+    end
+  end
+
   describe "a single-voice tune" do
     subject(:composition) { parse_body("CDEF|GABc|") }
 

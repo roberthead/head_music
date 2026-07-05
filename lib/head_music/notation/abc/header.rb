@@ -11,9 +11,12 @@ class HeadMusic::Notation::ABC::Header
     :annotations, :voice_ids, :meter, :key_signature,
     :body, :body_start_line
 
-  def initialize(abc_string)
+  # start_line offsets reported line numbers, so a tune parsed out of a
+  # larger book raises errors with book-relative line numbers.
+  def initialize(abc_string, start_line: 1)
     @annotations = []
     @voice_ids = []
+    @start_line = start_line
     parse(abc_string)
   end
 
@@ -26,7 +29,7 @@ class HeadMusic::Notation::ABC::Header
   def parse(abc_string)
     lines = abc_string.to_s.lines
     lines.each_with_index do |raw_line, index|
-      line_number = index + 1
+      line_number = index + @start_line
       stripped = raw_line.strip
       next if stripped.empty? || stripped.start_with?("%")
 
@@ -72,7 +75,7 @@ class HeadMusic::Notation::ABC::Header
 
   def capture_body(lines, key_line_index)
     @body = lines[(key_line_index + 1)..].join
-    @body_start_line = key_line_index + 2
+    @body_start_line = key_line_index + 1 + @start_line
   end
 
   def resolve_meter(value, line_number)

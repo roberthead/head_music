@@ -190,4 +190,32 @@ describe HeadMusic::Notation::ABC do
       end
     end
   end
+
+  describe ".parse_book" do
+    let(:book) do
+      <<~ABC
+        X:1
+        T:Speed the Plough
+        M:4/4
+        L:1/8
+        K:G
+        |:GABc dedB|dedB dedB|
+
+        X:2
+        T:Test Jig
+        M:6/8
+        L:1/8
+        K:D
+        DED FEF|d2f ecA|
+      ABC
+    end
+
+    it "returns a composition per tune" do
+      expect(described_class.parse_book(book).map(&:name)).to eq ["Speed the Plough", "Test Jig"]
+    end
+
+    it "parses a single tune into a one-element array" do
+      expect(described_class.parse_book("X:1\nK:C\nCDEF|\n").length).to eq 1
+    end
+  end
 end

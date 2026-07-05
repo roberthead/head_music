@@ -236,4 +236,16 @@ describe HeadMusic::Notation::ABC::Header do
         .to raise_error(HeadMusic::Notation::ABC::ParseError, /K:.*line 3/)
     end
   end
+
+  describe "start_line offset" do
+    it "offsets header error line numbers" do
+      expect { described_class.new("X:1\nQ:120\nK:C\n", start_line: 10) }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /line 11/)
+    end
+
+    it "offsets the body start line" do
+      header = described_class.new("X:1\nK:C\nCDEF|\n", start_line: 10)
+      expect(header.body_start_line).to eq 12
+    end
+  end
 end
