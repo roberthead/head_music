@@ -19,19 +19,34 @@ class HeadMusic::Style::Analysis
     @annotations ||= @guide.analyze(voice)
   end
 
+  # The grade: sufficiency gates multiply against a weighted average of the
+  # rubric rules, so an insufficient exercise scales the whole grade down
+  # while ordinary rules trade off against each other by weight.
   def fitness
     return 1.0 if annotations.empty?
 
-    @fitness ||= fitness_scores.reduce(:*)**(1.0 / fitness_scores.length)
+    @fitness ||= gate_factor * rubric_fitness
   end
 
   def adherent?
-    fitness == 1
+    annotations.all?(&:adherent?)
   end
 
   private
 
-  def fitness_scores
-    @fitness_scores ||= annotations.map(&:fitness)
+  def gate_factor
+    gates.map(&:fitness).reduce(1, :*)
+  end
+
+  def rubric_fitness
+    rubric = annotations.reject(&:gate?)
+    total_weight = rubric.sum(&:weight)
+    return 1.0 if rubric.empty? || total_weight.zero?
+
+    rubric.sum { |annotation| annotation.weight * annotation.fitness } / total_weight
+  end
+
+  def gates
+    annotations.select(&:gate?)
   end
 end

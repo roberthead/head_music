@@ -154,6 +154,7 @@ require "head_music/style/mark"
 # style guidelines
 require "head_music/style/guidelines/always_move"
 require "head_music/style/guidelines/approach_perfection_contrarily"
+require "head_music/style/guidelines/minimum_melodic_intervals"
 require "head_music/style/guidelines/minimum_notes"
 require "head_music/style/guidelines/avoid_crossing_voices"
 require "head_music/style/guidelines/avoid_overlapping_voices"

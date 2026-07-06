@@ -32,6 +32,11 @@ describe HeadMusic::Style::Analysis do
       end
 
       its(:fitness) { is_expected.to eq 1.0 }
+
+      it "is adherent when every annotation is adherent" do
+        expect(analysis.annotations).to all(be_adherent)
+        expect(analysis).to be_adherent
+      end
     end
 
     context "when not adhering to the guide" do
@@ -47,7 +52,11 @@ describe HeadMusic::Style::Analysis do
       end
 
       its(:fitness) { is_expected.to be < 1.0 }
-      its(:adherent?) { is_expected.to be false }
+
+      it "is not adherent when any annotation is not adherent" do
+        expect(analysis.annotations.any? { |annotation| !annotation.adherent? }).to be true
+        expect(analysis).not_to be_adherent
+      end
     end
   end
 

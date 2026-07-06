@@ -20,6 +20,47 @@ describe HeadMusic::Style::Annotation do
     end
   end
 
+  describe "#weight" do
+    it "defaults to 1.0" do
+      annotation = HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14)
+      expect(annotation.weight).to eq 1.0
+    end
+
+    it "uses a subclass's default_weight override" do
+      annotation = HeadMusic::Style::Guidelines::Contoured.new(voice, contour: :arch)
+      expect(annotation.weight).to eq HeadMusic::GOLDEN_RATIO_INVERSE
+    end
+
+    it "can be overridden with a weight option" do
+      annotation = HeadMusic::Style::Guidelines::MaximumNotes.with(14).with(weight: 2.0).new(voice)
+      expect(annotation.weight).to eq 2.0
+    end
+  end
+
+  describe "#gate?" do
+    it "defaults to false" do
+      annotation = HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14)
+      expect(annotation.gate?).to be false
+    end
+
+    it "can be overridden with a gate option" do
+      annotation = HeadMusic::Style::Guidelines::MaximumNotes.with(14).with(gate: true).new(voice)
+      expect(annotation.gate?).to be true
+    end
+
+    it "uses a subclass's default_gate? override" do
+      annotation = HeadMusic::Style::Guidelines::MinimumNotes.new(voice, minimum: 8)
+      expect(annotation.gate?).to be true
+    end
+  end
+
+  describe "Configured#with" do
+    it "merges additional options without dropping prior options" do
+      configured = HeadMusic::Style::Guidelines::MinimumNotes.with(8).with(weight: 0.5)
+      expect(configured.options).to eq(minimum: 8, weight: 0.5)
+    end
+  end
+
   context "when there are multiple marks" do
     subject(:annotation) { HeadMusic::Style::Guidelines::Diatonic.new(voice) }
 

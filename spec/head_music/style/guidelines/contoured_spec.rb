@@ -30,6 +30,17 @@ describe HeadMusic::Style::Guidelines::Contoured do
     it "raises for an unknown contour" do
       expect { described_class.with(:zigzag) }.to raise_error(ArgumentError, /zigzag/)
     end
+
+    it "accepts a weight option" do
+      annotation = described_class.with(:arch, weight: 0.5).new(HeadMusic::Content::Voice.new)
+      expect(annotation.weight).to eq 0.5
+    end
+  end
+
+  describe ".default_weight" do
+    it "is the inverse golden ratio" do
+      expect(described_class.default_weight).to eq HeadMusic::GOLDEN_RATIO_INVERSE
+    end
   end
 
   describe "#message" do
@@ -67,7 +78,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       let(:melody) { "CDEG|EDC2|" }
 
       it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
       its(:marks_count) { is_expected.to eq 1 }
       its(:message) { is_expected.to eq "Write a melody with the ascending contour." }
     end
@@ -86,7 +97,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       let(:melody) { "CDED|EFG2|" }
 
       it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
       its(:marks_count) { is_expected.to eq 1 }
     end
   end
@@ -114,7 +125,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       let(:melody) { "CDEF|G4|" }
 
       it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
       its(:marks_count) { is_expected.to eq 1 }
     end
   end
@@ -142,7 +153,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       let(:melody) { "GFED|C4|" }
 
       it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
       its(:marks_count) { is_expected.to eq 1 }
     end
   end
@@ -172,7 +183,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       let(:melody) { "CDEG|EDC2|" }
 
       it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
       its(:marks_count) { is_expected.to eq 1 }
     end
 
@@ -208,7 +219,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       let(:melody) { "CDEF|G4|" }
 
       it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
+      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
       its(:marks_count) { is_expected.to eq 1 }
     end
 

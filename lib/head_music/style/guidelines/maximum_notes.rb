@@ -16,6 +16,14 @@ class HeadMusic::Style::Guidelines::MaximumNotes < HeadMusic::Style::Annotation
     "Write up to #{maximum.humanize} notes."
   end
 
+  protected
+
+  # Score by the rate of overage notes rather than the raw count,
+  # so fitness is invariant to melody length.
+  def fitness_denominator
+    notes.length
+  end
+
   private
 
   def maximum

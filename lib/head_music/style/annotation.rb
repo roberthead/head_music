@@ -2,6 +2,8 @@
 class HeadMusic::Style::Annotation
   MESSAGE = "Write music."
 
+  DEFAULT_WEIGHT = 1.0
+
   attr_reader :voice
 
   delegate(
@@ -34,6 +36,14 @@ class HeadMusic::Style::Annotation
     Configured.new(self, options)
   end
 
+  def self.default_weight
+    DEFAULT_WEIGHT
+  end
+
+  def self.default_gate?
+    false
+  end
+
   # A RULESET entry pairing a guideline class with configuration. Quacks like a
   # class to the analyze loop by responding to #new(voice).
   class Configured
@@ -48,6 +58,19 @@ class HeadMusic::Style::Annotation
       guideline_class.new(voice, **options)
     end
 
+    # Layers additional options onto an already-configured entry, e.g.
+    # MinimumNotes.with(5).with(gate: true), without dropping prior options.
+    def with(**more)
+      Configured.new(guideline_class, options.merge(more))
+    end
+
+    # Mirrors the class-level predicate so build-time RULESET filters can
+    # classify any entry (bare class or configured) uniformly. A per-entry
+    # gate: option takes precedence over the guideline class's default.
+    def default_gate?
+      options.fetch(:gate, guideline_class.default_gate?)
+    end
+
     def name
       guideline_class.name
     end
@@ -56,11 +79,22 @@ class HeadMusic::Style::Annotation
   end
 
   def fitness
-    [marks].flatten.compact.map(&:fitness).reduce(1, :*)
+    mark_fitnesses = [marks].flatten.compact.map(&:fitness)
+    return 1.0 if mark_fitnesses.empty?
+
+    mark_fitnesses.reduce(1, :*)**(1.0 / [fitness_denominator, 1].max)
   end
 
   def adherent?
     fitness == 1
+  end
+
+  def weight
+    options.fetch(:weight, self.class.default_weight)
+  end
+
+  def gate?
+    options.fetch(:gate, self.class.default_gate?)
   end
 
   def has_notes?
@@ -90,6 +124,13 @@ class HeadMusic::Style::Annotation
   protected
 
   attr_reader :options
+
+  # Normalization rate for the product of mark fitnesses. Subclasses override
+  # (e.g. with an opportunity count) to score by violation rate rather than
+  # raw violation count. The default of 1 preserves the raw product.
+  def fitness_denominator
+    1
+  end
 
   def voices
     @voices ||= voice.composition.voices

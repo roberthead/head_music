@@ -9,6 +9,14 @@ class HeadMusic::Style::Guidelines::Diatonic < HeadMusic::Style::Annotation
     HeadMusic::Style::Mark.for_each(notes_not_in_key_excluding_penultimate_leading_tone)
   end
 
+  protected
+
+  # Score by the rate of out-of-key notes rather than the raw count,
+  # so fitness is invariant to melody length.
+  def fitness_denominator
+    notes.length
+  end
+
   private
 
   def notes_not_in_key_excluding_penultimate_leading_tone

@@ -34,7 +34,7 @@ describe HeadMusic::Style::Guidelines::StepUpToFinalNote do
       voice.place("3:1", :whole, "C4")
     end
 
-    its(:fitness) { is_expected.to be 1 }
+    its(:fitness) { is_expected.to eq 1 }
   end
 
   context "when the last melodic interval is a larger descending interval" do

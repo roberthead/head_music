@@ -75,17 +75,19 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
       let(:see_how_they_run_phrase) { "G2F F2E|" }
       let(:they_all_ran_phrase) { "GccBAB|c2G G3|" }
 
+      let(:opening_phrases_abc) do
+        <<~ABC
+          X:1
+          T:Three Blind Mice (opening phrases)
+          M:6/8
+          L:1/8
+          K:C
+          #{three_blind_mice_phrase * 2}#{see_how_they_run_phrase * 2}
+        ABC
+      end
+
       context "with the opening phrases" do
-        let(:abc) do
-          <<~ABC
-            X:1
-            T:Three Blind Mice (opening phrases)
-            M:6/8
-            L:1/8
-            K:C
-            #{three_blind_mice_phrase * 2}#{see_how_they_run_phrase * 2}
-          ABC
-        end
+        let(:abc) { opening_phrases_abc }
 
         it { is_expected.not_to be_adherent }
 
@@ -117,8 +119,11 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
           expect(analysis.messages).to contain_exactly(climax_message, maximum_notes_message)
         end
 
-        it "scores lower at thirty-five notes" do
-          expect(analysis.fitness).to be < 0.8
+        it "scores lower at thirty-five notes than the opening phrases alone" do
+          opening_voice = HeadMusic::Notation::ABC.parse(opening_phrases_abc).voices.first
+          opening_analysis = HeadMusic::Style::Analysis.new(described_class, opening_voice)
+          expect(analysis.fitness).to be < opening_analysis.fitness
+          expect(analysis.fitness).to be_between(0.85, 0.92)
         end
       end
     end
@@ -128,17 +133,19 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
       let(:first_couplet) { "CCGG|AAG2|FFEE|DDC2|" }
       let(:up_above_the_world_couplet) { "GGFF|EED2|" * 2 }
 
+      let(:first_couplet_abc) do
+        <<~ABC
+          X:1
+          T:Twinkle, Twinkle, Little Star (first couplet)
+          M:4/4
+          L:1/4
+          K:C
+          #{first_couplet}
+        ABC
+      end
+
       context "with the first couplet" do
-        let(:abc) do
-          <<~ABC
-            X:1
-            T:Twinkle, Twinkle, Little Star (first couplet)
-            M:4/4
-            L:1/4
-            K:C
-            #{first_couplet}
-          ABC
-        end
+        let(:abc) { first_couplet_abc }
 
         it { is_expected.not_to be_adherent }
 
@@ -169,8 +176,11 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
           expect(analysis.messages).to contain_exactly(climax_message, maximum_notes_message)
         end
 
-        it "scores lower at forty-two notes" do
-          expect(analysis.fitness).to be < 0.8
+        it "scores lower at forty-two notes than the first couplet alone" do
+          couplet_voice = HeadMusic::Notation::ABC.parse(first_couplet_abc).voices.first
+          couplet_analysis = HeadMusic::Style::Analysis.new(described_class, couplet_voice)
+          expect(analysis.fitness).to be < couplet_analysis.fitness
+          expect(analysis.fitness).to be_between(0.85, 0.92)
         end
       end
     end
@@ -209,7 +219,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
       end
 
       it "scores in the acceptable range despite the wide leaps" do
-        expect(analysis.fitness).to be_between(0.8, 0.9).exclusive
+        expect(analysis.fitness).to be_between(0.85, 0.95).exclusive
       end
     end
   end

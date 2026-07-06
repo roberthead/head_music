@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::MaximumNotes do
-  subject { described_class.new(voice, maximum: maximum) }
+  subject(:guideline) { described_class.new(voice, maximum: maximum) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:voice) { HeadMusic::Content::Voice.new(composition: composition, role: "Cantus Firmus") }
@@ -17,6 +17,28 @@ describe HeadMusic::Style::Guidelines::MaximumNotes do
     its(:marks_count) { is_expected.to eq 1 }
     its(:first_mark_code) { is_expected.to eq "6:1:000 to 7:1:000" }
     its(:message) { is_expected.to eq "Write up to five notes." }
+
+    it "scores the overage rate of one note beyond the maximum among six" do
+      expect(guideline.fitness).to be_within(1e-9).of(HeadMusic::PENALTY_FACTOR**(1.0 / 6))
+    end
+  end
+
+  describe "rate invariance" do
+    context "with two overage notes among twelve" do
+      let(:maximum) { 10 }
+
+      before do
+        %w[D4 E4 F4 G4 A4 B4 C5 D5 E5 F5 G5 A5].each.with_index(1) do |pitch, bar|
+          voice.place("#{bar}:1", :whole, pitch)
+        end
+      end
+
+      its(:marks_count) { is_expected.to eq 2 }
+
+      it "scores the same rate as one overage note among six" do
+        expect(guideline.fitness).to be_within(1e-9).of(HeadMusic::PENALTY_FACTOR**(1.0 / 6))
+      end
+    end
   end
 
   context "with exactly the configured maximum" do

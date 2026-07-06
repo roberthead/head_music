@@ -8,19 +8,25 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Annotation
 
   TREND_REVERSAL_SEMITONES = 3 # a trend reversal must exceed a whole step
 
-  def self.with(contour_key)
+  DEFAULT_WEIGHT = HeadMusic::GOLDEN_RATIO_INVERSE
+
+  def self.with(contour_key, **options)
     contour = contour_key.to_s.downcase.to_sym
     unless CONTOURS.include?(contour)
       raise ArgumentError, "Contour must be one of: #{CONTOURS.join(", ")} (got #{contour_key.inspect})"
     end
 
-    super(contour: contour)
+    super(contour: contour, **options)
+  end
+
+  def self.default_weight
+    DEFAULT_WEIGHT
   end
 
   def marks
     return if notes.empty? || matches_contour?
 
-    HeadMusic::Style::Mark.for_all(notes)
+    HeadMusic::Style::Mark.for_all(notes, fitness: HeadMusic::GOLDEN_RATIO_INVERSE**2)
   end
 
   def message
