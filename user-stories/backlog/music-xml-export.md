@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-07-06T15:41:38-07:00
+  updated_at:   2026-07-06T16:21:12-07:00
 -->
 
 # Story: MusicXML Export
@@ -53,7 +53,12 @@ xml            # => String of well-formed <score-partwise> MusicXML
 
 ## Notes
 
-**Entry-point shape — a design question for planning.** The user's framing is `Composition#to_musicxml`. To mirror the Notation module's inward pattern (`HeadMusic::Notation::ABC.parse`), the actual rendering likely belongs in a `HeadMusic::Notation::MusicXML` renderer, with `Composition#to_musicxml` as a thin convenience that delegates to it (e.g. `HeadMusic::Notation::MusicXML.render(self)` / `MusicXML::Renderer.new(self).to_s`). Confirm this split during planning so the export code lives in the Notation module rather than bloating `Composition`.
+**Entry-point shape — decided** (during planning of the [ABC Notation Export](../current/abc-notation-export.md) story; adopt the same pattern here):
+
+- `HeadMusic::Notation::MusicXML.render(composition, **options)` → a `Writer` orchestrator (plus small helper classes, mirroring the ABC module's facade-plus-helpers layout).
+- `Composition#to_musicxml(**options)` is a one-line delegate with opaque `**options` pass-through, so `Composition` stays format-ignorant; the option vocabulary lives with `MusicXML.render`.
+- Render failures raise a `MusicXML::RenderError` subclassing the shared `HeadMusic::Notation::RenderError` base (introduced by the ABC export story) — not any `ParseError` subclass.
+- Mirror the parser-side fail-before-building contract: validate the whole composition up front and raise before emitting, so callers never receive a truncated document.
 
 **Scope.** Start with the subset the object model already expresses cleanly: pitch (step/octave/alter), duration/type, rests, key & time signatures, per-bar key/meter changes, one part per voice, work title and composer. Explicitly out of scope for a first cut (candidates for follow-up stories): beaming, ties/slurs, tuplets, dynamics, articulations, lyrics, multiple staves per part, and MusicXML *import* (the inward direction).
 

@@ -2,9 +2,9 @@
 metadata:
   created_at:   2026-07-06T15:46:51-07:00
   activated_at: 2026-07-06T15:59:05-07:00
-  planned_at:
+  planned_at:   2026-07-06T16:11:07-07:00
   finished_at:
-  updated_at:   2026-07-06T15:59:05-07:00
+  updated_at:   2026-07-06T16:11:07-07:00
 -->
 
 # Story: ABC Notation Export
@@ -66,4 +66,89 @@ composition.to_abc      # => String of ABC notation reproducing an equivalent tu
 
 ## Implementation Plan
 
-[to be filled in by /stories plan]
+### Overview
+
+Add a writer side to `HeadMusic::Notation::ABC` that mirrors the parser's facade-plus-small-helpers shape: `ABC.render(composition)` backed by a `Writer` orchestrator plus `PitchWriter` and `DurationWriter` collaborators, with `Composition#to_abc` as a one-line delegate. Parse/render agreement is achieved by construction — the writer reuses the parser's own maps and, for accidentals, consults a live `PitchBuilder` instance as an oracle — and is locked in by round-trip specs over the existing interpreter fixtures.
+
+### Resolved Design Decisions
+
+1. **Entry point**: `HeadMusic::Notation::ABC.render(composition, **options)` → `Writer.new(composition, **options).to_s`; `Composition#to_abc(**options)` delegates (constant resolves at call time, so no load-order issue — `lib/head_music.rb` requires content before notation, but only method bodies reference the Notation constant). This is the precedent the backlog MusicXML story should copy (`Notation::MusicXML.render` + `#to_musicxml`); update that story file to record it.
+2. **Error class**: new `HeadMusic::Notation::RenderError < StandardError` beside `ParseError` in `lib/head_music/notation.rb`, with `ABC::RenderError < Notation::RenderError` in `lib/head_music/notation/abc.rb`. Do **not** reuse `UnsupportedFeatureError` — it subclasses `ParseError`, so callers rescuing `Notation::ParseError` around parse code would swallow export failures.
+3. **`L:` policy**: fixed `L:1/8`, always emitted explicitly. Every binary rhythmic value is expressible as an `n` or `n/d` multiplier of 1/8, and an explicit field avoids depending on the meter-conditional default in `header.rb`. Deriving `L:` from note content is deferred as an optimization.
+4. **Accidental policy**: bar-persistent minimal marking, honoring the model's spelling (never respell). `PitchWriter` owns a `PitchBuilder` instance as an oracle: for each note it computes letter + octave marks, asks the builder what an *unmarked* note would parse to given current bar state and key signature, emits a mark only on mismatch (via `PitchBuilder::ACCIDENTAL_FRAGMENTS.invert`, which cleanly yields `"#"→"^"`, `""→"="`, `"x"→"^^"`, `"bb"→"__"`), then feeds the emitted token back through the builder to update bar state; `start_new_bar` at each barline, exactly as `Parser#handle_bar_line` does. This makes re-parse-identity true by construction, including the killer case `^F … =F` in one bar.
+5. **Tied-value chains**: collapse to a single multiplier token rather than raise. `DurationResolver` itself *produces* `tied_value` chains from single tokens like `A5` (5/8 of a whole note), so summing the chain's Rational total and emitting one multiplier round-trips to an identical chain. Guard: raise `ABC::RenderError` when the total isn't a power-of-two fraction within `DurationResolver::MAX_FRACTION`. (Emitting `-` ties was rejected: the lexer treats `-` as unsupported, which would break the round trip in the other direction.)
+6. **Duration math**: compute fractions as Rationals forward from `unit` + `dots` + tied chain (small `RhythmicUnit#fraction` helper returning `Rational(numerator, denominator)`), never from the Float `relative_value`/`total_value`. Multiplier formatting: `""` for 1, `"n"` for integers, `"n/d"` otherwise — all forms `DurationResolver::MULTIPLIER_PATTERN` accepts.
+7. **Line wrapping**: 4 bars per line, tokens space-separated within a bar, `|` between bars, `|]` terminating the tune (already in `Parser::SECTION_ENDING_STYLES`). Deterministic and matches the fixture style in `spec/head_music/notation/abc_spec.rb`.
+8. **`X:`**: emit `X:1` by default; accept an optional `reference_number:` keyword. No model change — `Composition` has no reference-number attribute and the parser discards `X:` anyway, so nothing round-trips through it. Exclude `X:` from equivalence assertions.
+9. **Fail before emitting**: mirror the parser's fail-before-building contract — `Writer` validates the whole composition up front (multi-voice, mid-piece changes, gaps, unrepresentable durations) and raises `RenderError` naming the feature, so callers never receive a truncated ABC string.
+
+### Steps
+
+1. **Error classes**
+   - Add `HeadMusic::Notation::RenderError` to `lib/head_music/notation.rb`; add `ABC::RenderError` to `lib/head_music/notation/abc.rb`.
+   - Extend the error-hierarchy examples in `spec/head_music/notation/abc_spec.rb`.
+   - Files: `lib/head_music/notation.rb`, `lib/head_music/notation/abc.rb`
+
+2. **`DurationWriter`**
+   - `#multiplier_string(rhythmic_value)` using Rational math per decisions 5–6; raises `RenderError` for non-power-of-two or oversized fractions. (Filename `duration_writer.rb` sorts after `duration_resolver.rb`, preserving the helpers' load-order convention; keep cross-references runtime-only regardless.)
+   - Files: `lib/head_music/notation/abc/duration_writer.rb`, `spec/head_music/notation/abc/duration_writer_spec.rb`
+
+3. **`PitchWriter`**
+   - Constructor takes a key signature; exposes `#token(pitch)` and `#start_new_bar`. Octave marks invert `PitchBuilder#octave_for`: register ≥ 5 → lowercase + `"'" * (register − 5)`; register ≤ 4 → uppercase + `"," * (4 − register)`. Accidentals via the PitchBuilder-oracle approach (decision 4); memoize `ACCIDENTAL_FRAGMENTS.invert` in a method, not at class-body load time.
+   - Files: `lib/head_music/notation/abc/pitch_writer.rb`, `spec/head_music/notation/abc/pitch_writer_spec.rb`
+
+4. **`K:` inversion in `KeyMapper`**
+   - Add `KeyMapper.abc_value(key_signature)` with an explicit `ABC_SUFFIXES_BY_MODE` map (`"major" => ""`, `"minor" => "m"`, `"dorian" => "dor"`, …) — `MODE_NAMES_BY_PREFIX` is many-to-one and cannot be mechanically inverted. Tonic from `letter_name` + `alteration&.ascii` — **not** `tonic_spelling.to_s`, which returns Unicode (`"F♯"`) that the `K:` pattern rejects. Raise `RenderError` for double-altered tonics and unmapped scale types.
+   - Files: `lib/head_music/notation/abc/key_mapper.rb`, `spec/head_music/notation/abc/key_mapper_spec.rb`
+
+5. **`Writer` + `ABC.render`**
+   - Up-front validation (decision 9), then header (`X:`, `T:` from `name` — never nil, defaults to `"Composition"`; `C:` when `composer` present; `O:` when `origin` present — `Header` already parses both, and omitting them would lose metadata on round trip; `M:` via `Meter#to_s` (`"4/4"`); `L:1/8`; `K:` last, as the parser requires). Body: walk `voices.first.placements` (already sorted), group by `position.bar_number`, notes → `PitchWriter#token` + multiplier, rests → `"z"` + multiplier, `start_new_bar` per bar, wrap per decision 7. String building is a token array + `join`.
+   - Files: `lib/head_music/notation/abc/writer.rb`, `lib/head_music/notation/abc.rb`, `spec/head_music/notation/abc/writer_spec.rb`
+
+6. **`Composition#to_abc`**
+   - One-line delegate with opaque `**options` pass-through so `Composition` stays format-ignorant; option vocabulary lives with `ABC.render`.
+   - Files: `lib/head_music/content/composition.rb`, `spec/head_music/content/composition_spec.rb`
+
+7. **Round-trip specs, shared fixtures, lint**
+   - Extract the ABC example tunes currently inlined in parser specs into shared fixtures under `spec/support/` so parser and writer exercise the identical corpus; add the equivalence helper (below); run `bundle exec rubocop -a`.
+   - Files: `spec/support/` (fixtures + helper), `spec/head_music/notation/abc/writer_spec.rb`
+
+### Reuse & Parse/Render Agreement
+
+- **Shared directly**: `PitchBuilder::ACCIDENTAL_FRAGMENTS` (injective — invert it), the `PitchBuilder` instance itself as the accidental-state oracle, `DurationResolver::MULTIPLIER_PATTERN`/`MAX_FRACTION` as the writer's output contract.
+- **New writer-side, spec-guarded**: `ABC_SUFFIXES_BY_MODE` in `KeyMapper` (the prefix map is non-invertible); octave-mark emission (trivial inverse of `octave_for`).
+- **Deliberately not inverted**: `DurationResolver`'s greedy decomposition — the writer works forward from unit + dots, which is simpler and exact.
+- **Agreement mechanism**: oracle reuse makes accidentals correct by construction; everything else is held together by two spec properties — semantic round trip and string fixpoint (`render(parse(render(c))) == render(c)`), the latter catching normalization drift cheaply.
+
+### Edge Cases
+
+- **Note outside the key** (F♮ in G major): oracle mismatch → emit `=`. **Same-bar cancellation** (`^F … F♮`): bar state holds sharp → emit `=` on the second note; the state comparison handles returning to key defaults automatically.
+- **Double sharps/flats**: `"x"→"^^"`, `"bb"→"__"` via the inverted map; explicit spec case.
+- **Tied chains**: collapsed to one multiplier token (decision 5); `RenderError` when uncollapsible.
+- **Gaps between placements**: strict — require each placement at `previous.next_position` (and the first at count 1, tick 0); otherwise `RenderError` with "insert explicit rests." (Strict-raise chosen for v1 as simpler and explicit — relax later to auto-fill with `z` if callers hit it. Logged as an open question.)
+- **Pickup / first bar ≠ 1 / notes crossing barlines**: notes stay in their starting bar; barlines may land differently than a hand-written anacrusis source, but placement-level equivalence (pitches, durations, positions) survives the round trip — note this in specs.
+- **Multi-voice**: `voices.length > 1` → `RenderError` ("multi-voice ABC output is not supported"). Zero voices/empty voice → header plus empty body, which re-parses to an empty default voice — asserted by the first, simplest spec.
+- **Mid-piece key/meter changes**: any bar carrying a `meter` or `key_signature` → `RenderError`; inline `[K:]`/`[M:]` wouldn't re-parse anyway.
+- **Nil name/meter/key_signature**: impossible — `Composition#ensure_attributes` defaults all three.
+- **Repeats/voltas**: parser captures `Bar#starts_repeat` etc.; writer degrades them to plain `|` per story scope — flagged as an open question.
+
+### Testing Strategy
+
+- **Unit, per step**: `duration_writer_spec.rb` (multipliers `""`, `"2"`, `"3"`, `"1/2"`, `"3/2"`, `"5"` from a tied chain, error cases); `pitch_writer_spec.rb` (octave marks across registers 2–7, key-implied omission, `=` cancellation, bar-state reset, `^^`/`__`); `key_mapper_spec.rb` additions (`C`→`"C"`, A minor→`"Am"`, D dorian→`"Ddor"`, F# minor→`"F#m"`, error paths).
+- **Integration** (`writer_spec.rb`): the four acceptance tunes — diatonic single voice, accidentals, varied durations + rests — plus the error paths (multi-voice, meter change, gap). Build input compositions via `ABC.parse`.
+- **Round trip**: `expect_abc_round_trip(composition)` helper in `spec/support/` — since there is no `Composition#==`, compare `key_signature.name`, `meter.to_s` (Meter memoizes; use `==`/`to_s`, never object identity), `name`, `composer`, and zipped per-placement `[pitch spelling + register, Rational duration total, position.to_s]`. Assert over interpreter fixtures including an accidental-heavy one, plus the string-fixpoint property.
+
+### Beyond the Acceptance Criteria (gaps planning surfaced)
+
+- Multi-voice, mid-piece changes, gaps, and uncollapsible durations all needed defined behavior — resolved as up-front `RenderError` (decisions 5, 9).
+- "Equivalent" in the round-trip criterion needed a definition — resolved as spelling-level (not merely enharmonic) pitch equality plus Rational duration, position, key name, meter, and title; `X:` excluded.
+- The parse/render asymmetry is real and accepted: the parser reads multi-voice tunes and repeats that the writer will refuse or degrade — `parse(str).to_abc` can raise for valid parser input. Documented via error messages and specs rather than widened scope.
+- Bar-persistent accidentals and dotted durations each get explicit spec cases; the criteria's "round trip" alone would not have forced them.
+- The MusicXML backlog story should be updated to adopt this entry-point shape and the shared `Notation::RenderError` base.
+
+### Risks & Open Questions
+
+- **Strict gaps vs. `z`-filling**: v1 raises on non-contiguous placements; if real callers (e.g. counterpoint exercises with late voice entries) hit this, auto-filling whole-bar gaps with rests is the natural relaxation.
+- **Repeats/voltas degrade to `|`**: acceptable under the story's barline-only scope, but lossy for parsed fixtures containing `|:` `:|` — confirm lossless repeats aren't required before fixtures with repeats are used in fixpoint specs.
+- **`T:Composition` for defaulted names**: the plan emits it (simplest; round-trips fine). If the placeholder title is unwanted in output, omitting `T:` when the name equals the default is a one-line change — user call.
+- **Float `relative_value` remains a latent trap** model-wide; this plan routes around it with Rational math, but a follow-up making `RhythmicValue` fraction-native would harden both sides.
