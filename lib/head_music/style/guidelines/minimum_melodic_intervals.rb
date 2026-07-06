@@ -5,8 +5,8 @@ module HeadMusic::Style::Guidelines; end
 # Repeated-note pairs don't count as motion, so an all-repeated-note line gates to 0.
 # Configure the threshold with the factory, e.g. MinimumMelodicIntervals.with(2).
 class HeadMusic::Style::Guidelines::MinimumMelodicIntervals < HeadMusic::Style::Annotation
-  def self.with(minimum)
-    super(minimum: minimum)
+  def self.with(minimum, **options)
+    super(minimum: minimum, **options)
   end
 
   def self.default_gate?

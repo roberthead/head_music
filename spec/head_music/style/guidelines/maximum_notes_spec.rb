@@ -60,5 +60,15 @@ describe HeadMusic::Style::Guidelines::MaximumNotes do
       voice = HeadMusic::Content::Voice.new
       expect(configured.new(voice).message).to eq "Write up to fourteen notes."
     end
+
+    context "with an inline weight override" do
+      subject(:configured) { described_class.with(14, weight: 2.0) }
+
+      it "builds an annotation with the overridden weight and configured maximum" do
+        annotation = configured.new(HeadMusic::Content::Voice.new)
+        expect(annotation.weight).to eq 2.0
+        expect(annotation.message).to eq "Write up to fourteen notes."
+      end
+    end
   end
 end

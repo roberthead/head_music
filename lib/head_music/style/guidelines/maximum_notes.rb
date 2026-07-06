@@ -4,8 +4,8 @@ module HeadMusic::Style::Guidelines; end
 # Flags a melody with more than the allowed number of notes.
 # Configure the threshold with the factory, e.g. MaximumNotes.with(14).
 class HeadMusic::Style::Guidelines::MaximumNotes < HeadMusic::Style::Annotation
-  def self.with(maximum)
-    super(maximum: maximum)
+  def self.with(maximum, **options)
+    super(maximum: maximum, **options)
   end
 
   def marks

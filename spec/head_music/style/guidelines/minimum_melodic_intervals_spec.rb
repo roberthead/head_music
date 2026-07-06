@@ -64,5 +64,15 @@ describe HeadMusic::Style::Guidelines::MinimumMelodicIntervals do
       voice = HeadMusic::Content::Voice.new
       expect(configured.new(voice).message).to eq "Write at least three melodic intervals."
     end
+
+    context "with an inline gate override" do
+      subject(:configured) { described_class.with(3, gate: false) }
+
+      it "builds an annotation that is not a gate and reports the configured minimum" do
+        annotation = configured.new(HeadMusic::Content::Voice.new)
+        expect(annotation.gate?).to be false
+        expect(annotation.message).to eq "Write at least three melodic intervals."
+      end
+    end
   end
 end

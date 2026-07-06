@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-06T09:14:45-07:00
   planned_at:   2026-07-06T09:35:50-07:00
   finished_at:
-  updated_at:   2026-07-06T10:23:49-07:00
+  updated_at:   2026-07-06T12:17:45-07:00
 -->
 
 # Story: Rework Style Analysis Scoring as a Weighted Rubric
@@ -311,3 +311,33 @@ Convert `HeadMusic::Style::Analysis#fitness` to `∏(gate fitnesses) × weight-n
 - **Gate-ness at ruleset-build time.** Step 9 needs to know which RULESET entries are gates *before* instances exist, to compute rubric peer weight. Keep the gate default on the guideline class (`self.default_gate?`) so a class/`Configured` entry can be classified without a voice. A per-entry `.with(gate: true)` override that flips a normally-rubric rule to a gate in one guide would not be visible to that build-time filter — if that case ever arises, compute peer weights from the `Configured` options, not just the class.
 - **Edge cases to add explicitly:** empty melody (→ 0), single-note melody, a line with all-repeated notes (0 melodic motion — the `MinimumMelodicIntervals` case), and a guide where multiple rubric rules fail simultaneously (confirm graceful degradation, not collapse).
 - **Process note:** the product-manager specialist stalled during planning and returned no output; scope/edge-case items were reasoned directly and folded in. Treat the scope boundary and deferred items (grade-breakdown object, non-contour defining rules, remaining `for_each` rate overrides) as recommendations to confirm, not vetted PM decisions.
+
+## Review
+
+Reviewed 2026-07-06 at commit `041590e` (diff vs merge-base `15399a4` with `main`; working tree clean, all changes committed and pushed). Reviewers: product-manager (acceptance criteria) and code-reviewer (quality/conventions) agents. Full style suite at review time: 1038 examples, 0 failures; full suite 5206 examples, 0 failures.
+
+### Acceptance criteria
+
+- ✅ **Gate × weighted-mean aggregator** — `analysis.rb:25-51`: `fitness = gate_factor * rubric_fitness`; gates multiply in front, rubric is the weight-normalized arithmetic mean of non-gate annotations. Empty-annotations, empty-rubric, and zero-total-weight edges guarded.
+- ✅ **`weight` / `gate?` with configurable defaults** — `annotation.rb`: `DEFAULT_WEIGHT`/`default_weight`, `default_gate?`, instance readers via the options bag; `Configured#with` merges without dropping prior options. Spec'd both directions (defaults and overrides).
+- ✅ **Gates excluded from rubric weights** — `diatonic_melody.rb` `contour_ruleset` partitions by `default_gate?`; arch spec asserts exactly 10 rubric peers at φ⁻²/10 and no mutation of the shared `RULESET`.
+- ✅ **Contoured at φ⁻¹, fails to φ⁻²** — `contoured.rb`: `DEFAULT_WEIGHT = GOLDEN_RATIO_INVERSE`, failure marks carry `fitness: GOLDEN_RATIO_INVERSE**2`; six contoured_spec failure cases updated to `eq φ⁻²`.
+- ✅ **Wrong contour grades 61.8%, under 70%** — measured `0.6180339887498949` (φ⁻¹ to float epsilon); spec asserts `be_within(1e-6)` and `be < 0.70`, plus Contoured as dominant lost-credit contributor.
+- ✅ **Rate normalization** — `fitness_denominator` hook (default 1, clamped ≥ 1); `Diatonic` and `MaximumNotes` override with `notes.length`. Rule-level invariance spec'd (1-of-5 ≡ 2-of-10) and guide-level (8 vs 16 notes, equal grade within 1e-6). Other `for_each` rules deferred per the story's resolved scope.
+- ✅ **Wrong contour not a zero** — rule level φ⁻² and overall ≈0.618, both asserted.
+- ✅ **Non-attempt is a zero; near-miss is a haircut** — empty voice → `fitness eq 0.0`; all-repeated line → motion gate 0; 4-of-5 notes → overall = 0.8 × rubric mean (within 1e-9), not a cliff.
+- ✅ **Gates wired** — `MinimumNotes.default_gate?` true (scoring unchanged); new `MinimumMelodicIntervals` (counts moving, non-unison intervals) gated into arch/valley/wave (min 2) and ascending/descending (min 1); static deliberately omits it (all-repeated line is legitimate static) with an explaining comment.
+- ✅ **`adherent?` = all rules adherent** — `analysis.rb:31-33`; spec'd both directions; perfect submission still `fitness eq 1.0` and adherent.
+- ✅ **Spec migration** — all six contour guide specs updated; perfect = 1.0; gate-passing broken line grades 0.4918 within the asserted (0.3, 0.55) soft floor; non-attempt 0. Breaking-change bookkeeping done: version 15.0.0, CHANGELOG entry with downstream-recalibration warning.
+
+### Code review findings
+
+No blockers, no should-fix items. The math was verified exact (golden identity holds to float epsilon; peer weight computed dynamically so the identity survives peer-count changes), `@fitness ||=` memoization of `0.0` is safe (floats are truthy), `weight:`/`gate:` cannot collide with any existing domain option key, and load order for the new guideline is correct. Nits (optional follow-ups):
+
+1. **[Fixed post-review]** Inline `gate:`/`weight:` keywords were unsupported on the positional `.with` factories — the scenario prose writes `MinimumNotes.with(5, gate: true)`, but `MinimumNotes`/`MaximumNotes`/`MinimumMelodicIntervals` had positional-only `.with(n)`; overrides only worked via chaining. Fixed by adding a `**options` passthrough to all three factories (matching `Contoured.with`), with inline-override specs on each. Suite re-run green (5209 examples, 0 failures).
+2. **`Configured#default_gate?` naming** — returns the *effective* gate flag (honors per-entry `gate:` override), not strictly the class default; the comment explains the intent, so readability-only.
+3. Empty `## [Unreleased]` section sits above `[15.0.0]` in CHANGELOG.md — keepachangelog-conventional, harmless.
+
+### Verdict
+
+Nothing blocks `finish`. Deferred items (grade-breakdown object, non-contour defining rules, remaining `for_each` rate overrides, broader gate audit) remain open by design.

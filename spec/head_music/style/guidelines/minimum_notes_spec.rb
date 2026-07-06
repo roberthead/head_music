@@ -50,6 +50,20 @@ describe HeadMusic::Style::Guidelines::MinimumNotes do
       expect(configured.new(voice).message).to eq "Write at least eight notes."
     end
 
+    context "with an inline gate override" do
+      subject(:configured) { described_class.with(5, gate: false) }
+
+      before do
+        %w[D E F G].each.with_index(1) { |pitch, bar| voice.place("#{bar}:1", :whole, pitch) }
+      end
+
+      it "builds an annotation that is not a gate but still enforces the minimum" do
+        annotation = configured.new(voice)
+        expect(annotation.gate?).to be false
+        expect(annotation.fitness).to be_between(0, 1).exclusive
+      end
+    end
+
     context "when chained with a gate override" do
       subject(:configured) { described_class.with(5).with(gate: false) }
 
