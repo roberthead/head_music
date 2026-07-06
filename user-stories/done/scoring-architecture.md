@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-06T09:06:45-07:00
   activated_at: 2026-07-06T09:14:45-07:00
   planned_at:   2026-07-06T09:35:50-07:00
-  finished_at:
-  updated_at:   2026-07-06T12:17:45-07:00
+  finished_at:  2026-07-06T12:20:54-07:00
+  updated_at:   2026-07-06T12:20:54-07:00
 -->
 
 # Story: Rework Style Analysis Scoring as a Weighted Rubric
@@ -341,3 +341,12 @@ No blockers, no should-fix items. The math was verified exact (golden identity h
 ### Verdict
 
 Nothing blocks `finish`. Deferred items (grade-breakdown object, non-contour defining rules, remaining `for_each` rate overrides, broader gate audit) remain open by design.
+
+## Learnings
+
+- **Settling design decisions in the story paid off.** Every open question (aggregator choice, Design B, gate tier, soft floor, denominator scope) was resolved before implementation, so four implementation agents executed the plan with essentially zero deviation or rework. The one plan estimate that was wrong (interim characterization value 0.9485) was wrong for an interesting reason — Contoured's `default_weight` took effect the moment it was defined, before any guide wiring — and the plan's "verify empirically, trust the measurement" instruction absorbed it without drama.
+- **Empirical anchors beat hand-computed expectations.** The characterization-test-first step, the pre-verified regression number (empty line → 0.9653 under a plain weighted mean), and the instruction to source spec constants from actual runs kept every numeric assertion honest. The golden identity landed exact: wrong-contour fitness measured φ⁻¹ to 1e-15.
+- **The migration blast radius was ~20× smaller than feared.** ~81 spec files referenced fitness; only 4 examples actually broke, because most existing assertions were range-based (`be_between`, `be <`). Range assertions on emergent scores are the resilient choice; exact `eq` belongs only on identity-level values (rule penalties, perfect = 1.0).
+- **Changing an aggregator deletes implicit behavior — hunt for it.** The geometric mean's product gave every zero-fitness rule silent veto power; the arithmetic mean deleted that. Identifying the regression *before* coding (empty line would grade 0.9653) is what produced the gate tier, the story's most important architectural addition.
+- **Documented syntax must be executable.** The review caught that the story prose wrote `MinimumNotes.with(5, gate: true)` while the factories were positional-only. With a downstream consumer (`bardtheory`) likely to copy examples verbatim, aligning signatures with prose was worth the immediate follow-up fix.
+- **Process**: parallel agents on disjoint file sets (rate overrides ∥ gate guideline) worked cleanly; the framework-first land order kept the suite nearly green throughout. The product-manager stall during planning was successfully compensated by folding scope reasoning into the plan directly.
