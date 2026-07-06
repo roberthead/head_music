@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-05T13:55:34-07:00
   activated_at: 2026-07-05T16:12:05-07:00
   planned_at:   2026-07-05T16:28:11-07:00
-  finished_at:
-  updated_at:   2026-07-05T17:26:32-07:00
+  finished_at:  2026-07-05T17:37:37-07:00
+  updated_at:   2026-07-05T17:37:37-07:00
 -->
 
 # Story: Melody Contour Guides
@@ -245,3 +245,23 @@ Minor (spec boundary gaps — a mutation would survive the suite). **All five cl
 Nits: the CONTOURS validation block is duplicated between `self.with` and the private reader (could extract a `self.contour_for(key)` normalizer); the local `contour` inside `def contour` shadows the method name (rename to `key`/`normalized` for clarity). Both behaviorally correct as written.
 
 Accepted-by-design behaviors (recorded in Risks, not defects): whole-step-only undulation can never satisfy `wave?`; predicates are not mutually exclusive across guides; an all-repeated-pitch melody passes ascending, descending, and static.
+
+## Learnings
+
+**What went well**
+
+- Pinning the six predicate definitions through one-at-a-time clarifying questions before planning paid off: the planner operationalized them without churn, and every planned spec melody produced its expected result on the first run — zero algorithm rework during implementation.
+- Challenging the architecture up front (configurable guide vs. subclass-per-contour) was settled cheaply by reading the existing patterns rather than debating in the abstract; the decision and its revisit condition (a second orthogonal configuration axis) are recorded in Notes.
+- Understanding Mark/fitness semantics early (fitness is the product of mark fitnesses) turned an API-usage question into a real design decision: one spanning mark per violation instead of per-note penalty compounding.
+- The review found zero functional defects but five mutation-survivable spec gaps; hand mutation-testing (flip the operator, confirm a failure appears) was a cheap, high-confidence way to verify the hardening actually pins the boundaries.
+
+**What was surprising**
+
+- `spec/head_music/style/guides/base_spec.rb` hard-codes a census of melodic guides (10 → 16) — the plan didn't anticipate it, and any future story adding guides will trip the same assertion.
+- The sketch's `String#underscore` only worked because ActiveSupport inflections load transitively; the gem's explicit core_ext requires don't include it.
+- The arch/ConsonantClimax boundary was the subtlest call: the no-double-flagging criterion was only satisfiable by reading "single climax" as a climax pitch level, leaving multiplicity to the existing guideline.
+
+**What to do differently**
+
+- Close "minor" review findings in the same story when they're cheap (eight examples here) rather than deferring — the review→harden→re-verify loop took minutes.
+- Don't reference untracked scratch files in story notes; the `arch_contour_melody.rb` stub was deleted mid-story and left a stale pointer. Reference files once they're committed.
