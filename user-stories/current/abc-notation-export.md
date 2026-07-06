@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-07-06T15:46:51-07:00
-  activated_at:
+  activated_at: 2026-07-06T15:59:05-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-07-06T15:46:51-07:00
+  updated_at:   2026-07-06T15:59:05-07:00
 -->
 
 # Story: ABC Notation Export
