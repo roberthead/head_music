@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-05T16:12:05-07:00
   planned_at:   2026-07-05T16:28:11-07:00
   finished_at:
-  updated_at:   2026-07-05T16:58:47-07:00
+  updated_at:   2026-07-05T17:26:32-07:00
 -->
 
 # Story: Melody Contour Guides
@@ -214,3 +214,34 @@ end
 - **Semitone-based comparisons**: `range <= :major_third` compares by semitones, so a diminished fourth (4 semitones) counts as static-sized; enharmonic edge cases (B#3 vs C4 extremes) are theoretically ambiguous under spelling-based `Pitch#==` but unrealistic for diatonic melodies. No mitigation needed.
 - **Degenerate pass-through**: an all-repeated-pitch melody passes `ascending?`, `descending?`, and `static?`; nothing in DiatonicMelody's RULESET flags it (no `AlwaysMove`). Accepted as out of scope for contour.
 - **Deferred by scope**: contour of subphrases; configurable static-range threshold and wave leg count (constants only); i18n of guideline messages; a contour-*detection* API ("which contour is this melody?"); wiring contour guides into species RULESETs; message article grammar ("an arch contour").
+
+## Review
+
+Reviewed 2026-07-05 at commit `cd3b20b` (branch `story/melody-contour-guides`, clean tree) by a product-manager agent (acceptance criteria) and a code-reviewer agent (quality) in parallel.
+
+### Acceptance Criteria
+
+- ✅ **Configurable `Contoured` guideline via `Contoured.with(:arch)` etc.** — `contoured.rb:6-18` (CONTOURS + factory); pinned at `contoured_spec.rb:19-28`, including string-key coercion (`"Arch"`).
+- ✅ **`.with` raises for unknown keys** — guard at `contoured.rb:13-15` enumerating valid keys; pinned at `contoured_spec.rb:30-32`. Exceeds the criterion: the `.new` bypass path is also guarded in the private reader (`contoured.rb:33-43`, pinned at `contoured_spec.rb:42-49`).
+- ✅ **Matching melody: no marks, fitness 1.0** — `contoured.rb:20-24`; adherent contexts for every contour plus empty-voice adherence for all six (`contoured_spec.rb:200-212`).
+- ✅ **Non-matching melody: single spanning mark, one penalty, exact message** — `Mark.for_all(notes)` at `contoured.rb:23`; specs pin one mark, `fitness == HeadMusic::PENALTY_FACTOR`, and the exact message template (`contoured_spec.rb:66-73, 35-40`).
+- ✅ **Trend-based predicates per the six definitions** — ascending/descending endpoint comparisons (`contoured.rb:49-55`, tied-floor case pinned), arch/valley interior-extreme with length guard (`contoured.rb:60-66`), wave ≥ 3 trend legs with the 3-semitone reversal threshold (`contoured.rb:9, 68-70, 92-133`), static M3 range + `directional_endpoints?` with the all-same-pitch guard (`contoured.rb:72-83`). Arch judged via the recorded "climax pitch level" interpretation.
+- ✅ **Six guides subclass `DiatonicMelody` appending configured `Contoured`** — explicit splat pattern in all six files; guide specs assert RULESET superset + configured guideline + Analysis integration pair; requires at `lib/head_music.rb:162, 223-228`; melodic-guide census updated to 16 (`base_spec.rb:9-10`).
+- ✅ **Arch complements `ConsonantClimax` (no double-flagging)** — `CDGE|GEDC|` spec runs both: Contoured(:arch) adherent, ConsonantClimax not adherent (`contoured_spec.rb:103-111`).
+- ✅ **Specs per contour (ABC convention), coverage ≥ 90%, rubocop clean** — all specs use `ABC.parse` heredocs; guideline + guide specs re-run at this commit (455 examples, 0 failures); full suite 5120 examples, 0 failures, 99.57% line coverage, rubocop clean (401 files).
+
+### Code Review Findings
+
+No critical or important issues. Correctness verified by hand-tracing: the `trend_directions` nil→trend transition invariant holds (the unconfirmed `[low, high]` band can never widen to ≥ 3 semitones without triggering, so a confirmed leg's `extreme` is its true extreme); `>= 3` correctly encodes "must exceed a whole step"; `range <= major_third` is correctly inclusive; the base_spec census bump is the right fix (the count is an intentional registry guard, also pinning harmonic guides at 7).
+
+Minor (spec boundary gaps — a mutation would survive the suite). **All five closed 2026-07-05** with eight new examples in `contoured_spec.rb`; the two comparison mutations were verified caught by temporarily applying them (each now produces a failure):
+
+1. **Wave threshold at exactly a minor third untested** — adherent wave legs are major thirds, below-threshold case uses whole steps; `>= 3` mutated to `> 3` (contoured.rb:101,105,116,124) would pass. Add an adherent wave with exactly-m3 legs (e.g. D–F–D–F–D).
+2. **Static inclusive-M3 boundary untested as adherent** (also flagged by PM) — the only exactly-M3 melody fails via endpoints, so `<=` mutated to `<` (contoured.rb:73) would pass. Add an adherent melody with exactly-M3 range and neutral endpoints.
+3. **Two-note melodies untested for arch/valley/wave** — the `notes.length >= 3` guard's n == 2 boundary is unexercised (single-note cases exist).
+4. **`directional_endpoints?` descending branch unexercised** (PM) — only the ascending-implying endpoint case has a spec; add e.g. `EDED|C4|`.
+5. **Valley lacks the repeated-nadir mirror** of the arch no-double-flagging spec (PM) — implementation is a strict mirror, so low risk.
+
+Nits: the CONTOURS validation block is duplicated between `self.with` and the private reader (could extract a `self.contour_for(key)` normalizer); the local `contour` inside `def contour` shadows the method name (rename to `key`/`normalized` for clarity). Both behaviorally correct as written.
+
+Accepted-by-design behaviors (recorded in Risks, not defects): whole-step-only undulation can never satisfy `wave?`; predicates are not mutually exclusive across guides; an all-repeated-pitch melody passes ascending, descending, and static.

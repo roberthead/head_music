@@ -128,6 +128,16 @@ describe HeadMusic::Style::Guidelines::Contoured do
       it { is_expected.to be_adherent }
     end
 
+    context "with a repeated interior nadir" do
+      let(:melody) { "cAEG|EGAc|" }
+
+      it { is_expected.to be_adherent }
+
+      it "leaves nadir multiplicity to ConsonantClimax" do
+        expect(HeadMusic::Style::Guidelines::ConsonantClimax.new(voice)).not_to be_adherent
+      end
+    end
+
     context "with the nadir at the last note" do
       let(:melody) { "GFED|C4|" }
 
@@ -148,6 +158,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
 
     context "with a rest in the middle of three trend legs" do
       let(:melody) { "CDED|zCDE|" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "with trend legs of exactly a minor third" do
+      let(:melody) { "DFDF|D4|" }
 
       it { is_expected.to be_adherent }
     end
@@ -182,6 +198,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
       it { is_expected.to be_adherent }
     end
 
+    context "with a range of exactly a major third and neutral endpoints" do
+      let(:melody) { "DCDE|D4|" }
+
+      it { is_expected.to be_adherent }
+    end
+
     context "with a range wider than a major third" do
       let(:melody) { "CDEF|G4|" }
 
@@ -192,6 +214,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
 
     context "with a narrow range but endpoints implying an ascending contour" do
       let(:melody) { "CDCD|E4|" }
+
+      it { is_expected.not_to be_adherent }
+    end
+
+    context "with a narrow range but endpoints implying a descending contour" do
+      let(:melody) { "EDED|C4|" }
 
       it { is_expected.not_to be_adherent }
     end
@@ -221,6 +249,18 @@ describe HeadMusic::Style::Guidelines::Contoured do
         it { is_expected.to be_adherent }
       end
     end
+
+    %i[arch valley wave].each do |contour_key|
+      context "with the #{contour_key} contour" do
+        let(:contour) { contour_key }
+
+        it { is_expected.not_to be_adherent }
+      end
+    end
+  end
+
+  context "with two notes" do
+    let(:melody) { "C2D2|" }
 
     %i[arch valley wave].each do |contour_key|
       context "with the #{contour_key} contour" do
