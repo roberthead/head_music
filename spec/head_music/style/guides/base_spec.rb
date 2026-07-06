@@ -6,8 +6,8 @@ describe HeadMusic::Style::Guides::Base do
   melodic_guides = all_guides.select { |klass| klass < guides::SpeciesMelody && klass.const_defined?(:RULESET, false) }
   harmonic_guides = all_guides.select { |klass| klass < guides::SpeciesHarmony && klass.const_defined?(:RULESET, false) }
 
-  it "recognizes ten melodic guides" do
-    expect(melodic_guides.length).to eq 10
+  it "recognizes sixteen melodic guides" do
+    expect(melodic_guides.length).to eq 16
   end
 
   it "recognizes seven harmonic guides" do
