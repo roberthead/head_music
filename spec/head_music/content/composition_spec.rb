@@ -115,6 +115,22 @@ describe HeadMusic::Content::Composition do
     end
   end
 
+  describe "#to_abc" do
+    it "renders an ABC tune string" do
+      expect(composition.to_abc).to start_with "X:1\nT:Fruit Salad\n"
+    end
+
+    it "passes options through to the renderer" do
+      expect(composition.to_abc(reference_number: 12)).to start_with "X:12\n"
+    end
+
+    it "propagates render errors" do
+      composition.add_voice
+      composition.add_voice
+      expect { composition.to_abc }.to raise_error(HeadMusic::Notation::ABC::RenderError)
+    end
+  end
+
   context "when the key signature changes" do
     before do
       composition.change_key_signature(9, "G major")

@@ -51,15 +51,7 @@ describe HeadMusic::Notation::ABC do
 
   describe ".parse" do
     context "with Speed the Plough" do
-      subject(:composition) { described_class.parse(<<~ABC) }
-        X:1
-        T:Speed the Plough
-        M:4/4
-        L:1/8
-        K:G
-        |:GABc dedB|dedB dedB|c2ec B2dB|c2A2 A2BA|
-        GABc dedB|dedB dedB|c2ec B2dB|A2F2 G4:|
-      ABC
+      subject(:composition) { described_class.parse(ABCFixtures::SPEED_THE_PLOUGH) }
 
       let(:voice) { composition.voices.first }
       let(:placements) { voice.placements }

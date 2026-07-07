@@ -95,4 +95,52 @@ describe HeadMusic::Notation::ABC::KeyMapper do
       expect(key_signature.name).to eq "A dorian"
     end
   end
+
+  describe ".abc_value" do
+    {
+      "C major" => "C",
+      "G major" => "G",
+      "F# minor" => "F#m",
+      "Bb major" => "Bb",
+      "A minor" => "Am",
+      "D dorian" => "Ddor",
+      "G mixolydian" => "Gmix",
+      "E phrygian" => "Ephr",
+      "C ionian" => "C",
+      "A aeolian" => "Am"
+    }.each do |key_signature_name, expected_abc_value|
+      it "maps #{key_signature_name.inspect} to #{expected_abc_value.inspect}" do
+        key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature_name)
+        expect(described_class.abc_value(key_signature)).to eq expected_abc_value
+      end
+
+      it "round-trips #{expected_abc_value.inspect} back to an equal key signature" do
+        original = HeadMusic::Rudiment::KeySignature.get(key_signature_name)
+        abc_value = described_class.abc_value(original)
+        expect(described_class.new(abc_value).key_signature).to eq original
+      end
+    end
+
+    it "normalizes a key signature name string through KeySignature.get" do
+      expect(described_class.abc_value("D dorian")).to eq "Ddor"
+    end
+
+    it "raises a RenderError for a double-sharp tonic" do
+      key_signature = HeadMusic::Rudiment::KeySignature.get("Fx major")
+      expect { described_class.abc_value(key_signature) }
+        .to raise_error(HeadMusic::Notation::ABC::RenderError, /tonic/i)
+    end
+
+    it "raises a RenderError for a double-flat tonic" do
+      key_signature = HeadMusic::Rudiment::KeySignature.get("Bbb major")
+      expect { described_class.abc_value(key_signature) }
+        .to raise_error(HeadMusic::Notation::ABC::RenderError, /tonic/i)
+    end
+
+    it "raises a RenderError for a scale type without an ABC suffix" do
+      key_signature = HeadMusic::Rudiment::KeySignature.get("C harmonic_minor")
+      expect { described_class.abc_value(key_signature) }
+        .to raise_error(HeadMusic::Notation::ABC::RenderError, /scale type/i)
+    end
+  end
 end

@@ -69,6 +69,10 @@ class HeadMusic::Content::Composition
     "#{name} — #{voices.count} #{(voices.count == 1) ? "voice" : "voices"}"
   end
 
+  def to_abc(**options)
+    HeadMusic::Notation::ABC.render(self, **options)
+  end
+
   private
 
   def ensure_attributes(name, key_signature, meter)

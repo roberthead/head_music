@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-06T15:59:05-07:00
   planned_at:   2026-07-06T16:11:07-07:00
   finished_at:
-  updated_at:   2026-07-06T16:11:07-07:00
+  updated_at:   2026-07-06T17:32:41-07:00
 -->
 
 # Story: ABC Notation Export
@@ -152,3 +152,31 @@ Add a writer side to `HeadMusic::Notation::ABC` that mirrors the parser's facade
 - **Repeats/voltas degrade to `|`**: acceptable under the story's barline-only scope, but lossy for parsed fixtures containing `|:` `:|` — confirm lossless repeats aren't required before fixtures with repeats are used in fixpoint specs.
 - **`T:Composition` for defaulted names**: the plan emits it (simplest; round-trips fine). If the placeholder title is unwanted in output, omitting `T:` when the name equals the default is a one-line change — user call.
 - **Float `relative_value` remains a latent trap** model-wide; this plan routes around it with Rational math, but a follow-up making `RhythmicValue` fraction-native would harden both sides.
+
+## Review
+
+Reviewed 2026-07-06 at commit `e66e49e` (all implementation changes uncommitted in the working tree at review time). Reviewers: product-manager (acceptance criteria) and code-reviewer (quality), in parallel. Full suite: 5,293 examples, 0 failures; 99.55% line coverage; rubocop clean.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| 1 | `Composition#to_abc` returns valid ABC String | ✅ met | `composition.rb:72-74` delegate → `ABC.render`; composition_spec asserts string, `reference_number:` pass-through, RenderError propagation; validity proven by re-parse specs |
+| 2 | Header emits X:/T:/C:/M:/L:/K: | ✅ met | `writer.rb:82-93` (C: only when composer present, `.compact`); asserted in writer_spec golden outputs; K: via `KeyMapper.abc_value` with 10 mapped keys + round-trips in key_mapper_spec |
+| 3 | Letters, octave marks, accidentals relative to key | ✅ met | `pitch_writer.rb` oracle design; pitch_writer_spec covers C2–C7, `^`/`_`/`=`, `^^`/`__`, key-implied omission, same-bar persistence, `start_new_bar` reset; Chromatic Air integration spec asserts minimal marks + re-parse spelling equality |
+| 4 | Durations relative to L:, rests as `z` | ✅ met | `duration_writer.rb` exact Rational math incl. tied-chain collapse; Rest Study spec asserts `z2`/`z3`/`z6`. Note: fractional multipliers emit `A1/2`, not the `A/2` shorthand — valid ABC, round-trips cleanly |
+| 5 | Barlines separate bars; reasonable wrapping | ✅ met | `writer.rb:95-103` — 4 bars/line, `\|]` terminator; Speed the Plough golden output |
+| 6 | Round trip asserted by specs | ✅ met | `spec/support/abc_round_trip.rb` helper (key, meter, name, composer, per-placement pitch/position/duration); plus string-fixpoint assertion — stronger than required |
+| 7 | Required spec coverage | ✅ met | Diatonic (Speed the Plough), accidentals (Chromatic Air), durations+rests (Rest Study), round trip over shared interpreter fixtures (`spec/support/abc_fixtures.rb`, also used by abc_spec) |
+
+Designed limitations (multi-voice, mid-piece key/meter changes, positional gaps → fail-before-emit `RenderError`; repeats degrade to `|`) are implemented exactly as scoped, each with a spec.
+
+### Code review findings (all advisory; no blockers)
+
+1. **Layering note** — `Composition#to_abc` gives Content a runtime-only reference into Notation::ABC. Thin, tested, no load-time cycle; accepted as the planned convenience delegate.
+2. **`PitchWriter#verify_round_trip` is load-bearing** (`pitch_writer.rb:65-69`) — its oracle feedback side effect maintains bar-persistent state; the comment documents this, but a future "cleanup" removing the call would silently break accidentals. Optional rename (e.g. `commit_and_verify`).
+3. **`KeyMapper` API asymmetry** — instance-based parse path vs. class-method render path. Stylistic only.
+4. **Minor spec gaps** — no integration spec exercises a fractional multiplier inside a full tune body (unit-level only); `PitchWriter`'s RenderError path untested (hard to reach with real pitches). Low risk.
+5. **Verified-correct probes** — octave-mark inversion exact across C0–C9; oracle state cannot leak after RenderError; barline-spanning notes round-trip to identical positions; contiguity guard sound (Position counts/ticks always integers).
+
+**Verdict: ready to finish.** Nothing blocks; findings 2 and 4 are optional polish.

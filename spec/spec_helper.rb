@@ -31,6 +31,8 @@ require "rspec/its"
 require "head_music"
 require "composition_context"
 
+Dir[File.join(__dir__, "support", "**", "*.rb")].sort.each { |file| require file }
+
 # Matcher for a guideline wrapped by Annotation.with(...) inside a RULESET.
 module ConfiguredGuidelineHelper
   def configured(guideline_class, **options)

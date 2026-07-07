@@ -20,6 +20,51 @@ class HeadMusic::Notation::ABC::KeyMapper
     "loc" => "locrian"
   }.freeze
 
+  # MODE_NAMES_BY_PREFIX is many-to-one, so rendering uses this explicit
+  # inverse map. Every suffix here parses back to an equal key signature
+  # (ionian/aeolian differ from major/minor only in name, not alterations).
+  ABC_SUFFIXES_BY_MODE = {
+    "major" => "",
+    "ionian" => "",
+    "minor" => "m",
+    "aeolian" => "m",
+    "dorian" => "dor",
+    "phrygian" => "phr",
+    "lydian" => "lyd",
+    "mixolydian" => "mix",
+    "locrian" => "loc"
+  }.freeze
+
+  # Returns the ABC K: field value for a key signature.
+  def self.abc_value(key_signature)
+    key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature)
+    "#{tonic_string(key_signature)}#{mode_suffix(key_signature)}"
+  end
+
+  def self.tonic_string(key_signature)
+    spelling = key_signature.tonic_spelling
+    alteration = spelling.alteration
+    if alteration && (alteration.double_sharp? || alteration.double_flat?)
+      raise_render_error("Cannot render double-altered tonic #{spelling} in an ABC K: field")
+    end
+
+    # ABC convention uses ASCII "#"/"b" rather than the unicode signs
+    # that Spelling#to_s produces.
+    "#{spelling.letter_name}#{alteration&.ascii}"
+  end
+  private_class_method :tonic_string
+
+  def self.mode_suffix(key_signature)
+    ABC_SUFFIXES_BY_MODE[key_signature.scale_type.name.to_s] ||
+      raise_render_error("Cannot render scale type #{key_signature.scale_type} in an ABC K: field")
+  end
+  private_class_method :mode_suffix
+
+  def self.raise_render_error(message)
+    raise HeadMusic::Notation::ABC::RenderError, message
+  end
+  private_class_method :raise_render_error
+
   attr_reader :value, :line_number
 
   def initialize(value, line_number: nil)
