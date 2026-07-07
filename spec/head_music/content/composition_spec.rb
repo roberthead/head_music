@@ -131,6 +131,22 @@ describe HeadMusic::Content::Composition do
     end
   end
 
+  describe "#to_musicxml" do
+    it "renders a MusicXML document string" do
+      composition.add_voice
+      expect(composition.to_musicxml).to include "<work-title>Fruit Salad</work-title>"
+    end
+
+    it "propagates render errors" do
+      expect { composition.to_musicxml }.to raise_error(HeadMusic::Notation::MusicXML::RenderError)
+    end
+
+    it "rejects options until the renderer defines some" do
+      composition.add_voice
+      expect { composition.to_musicxml(transpose: 1) }.to raise_error(ArgumentError)
+    end
+  end
+
   context "when the key signature changes" do
     before do
       composition.change_key_signature(9, "G major")

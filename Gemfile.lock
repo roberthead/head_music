@@ -220,6 +220,7 @@ DEPENDENCIES
   head_music!
   kramdown
   rake (~> 13.0)
+  rexml (~> 3.4)
   rspec (~> 3.0)
   rspec-its (~> 2.0)
   rubocop

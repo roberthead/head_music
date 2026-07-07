@@ -203,4 +203,54 @@ describe HeadMusic::Content::Voice do
       end
     end
   end
+
+  describe "#first_gap" do
+    subject(:first_gap) { voice.first_gap }
+
+    context "when the voice has no placements" do
+      it { is_expected.to be_nil }
+    end
+
+    context "when the placements are contiguous" do
+      subject(:first_gap) { parsed_voice.first_gap }
+
+      let(:parsed_composition) do
+        HeadMusic::Notation::ABC.parse(<<~ABC)
+          X:1
+          T:Contiguous
+          M:4/4
+          L:1/4
+          K:C
+          C D E F | G A B c |
+        ABC
+      end
+      let(:parsed_voice) { parsed_composition.voices.first }
+
+      it { is_expected.to be_nil }
+    end
+
+    context "when there is a gap between two placements" do
+      before do
+        voice.place("1:1", :quarter, "C4")
+        voice.place("2:1", :quarter, "D4")
+      end
+
+      it "returns the expected position and the placement found after the gap" do
+        expected_position = HeadMusic::Content::Position.new(composition, "1:2:0")
+        found_placement = voice.placements.last
+        expect(first_gap).to eq [expected_position, found_placement]
+      end
+    end
+
+    context "when the first placement does not start its bar" do
+      before do
+        voice.place("2:2:480", :quarter, "D4")
+      end
+
+      it "returns the start of the bar and the first placement" do
+        expected_position = HeadMusic::Content::Position.new(composition, "2:1:0")
+        expect(first_gap).to eq [expected_position, voice.placements.first]
+      end
+    end
+  end
 end

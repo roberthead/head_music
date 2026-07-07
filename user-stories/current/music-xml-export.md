@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-07T07:51:41-07:00
   planned_at:   2026-07-07T08:05:52-07:00
   finished_at:
-  updated_at:   2026-07-07T08:05:52-07:00
+  updated_at:   2026-07-07T09:29:34-07:00
 -->
 
 # Story: MusicXML Export
@@ -171,3 +171,31 @@ Render `HeadMusic::Content::Composition` to a `<score-partwise>` MusicXML 4.0 st
 - Theoretical keys (`fifths` > 7) may render oddly in some readers though schema-valid — accepted, spec-documented.
 - Meter-change-vs-position consistency: positions placed before a later `change_meter` reflect the model's own semantics; the writer renders stored positions as-is (pre-existing model caveat, not a writer bug).
 - If preserving `origin` is wanted, `<identification><miscellaneous>` is a one-line add.
+
+## Review
+
+Reviewed 2026-07-07 at commit `42e9742` (all implementation changes uncommitted in the working tree at review time). Reviewers: product-manager (acceptance criteria) and code-reviewer (quality), in parallel, plus direct DTD validation with `xmllint` against the MusicXML 4.0 DTD fetched from the W3C source. Full suite: 5,520 examples, 0 failures; 99.71% line / 97.2% branch coverage; rubocop clean (427 files).
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| 1 | Well-formed, schema-valid `<score-partwise>` with correct DOCTYPE/version | ✅ met | Golden fixture pins declaration/DOCTYPE/`version="4.0"` byte-for-byte (writer_spec.rb:82-175); every rendered spec document passes a REXML parse; three generated sample documents (Chromatic Air, a multi-voice exercise with rests + tied chain, a two-part change study) validate against the actual MusicXML 4.0 DTD via `xmllint --dtdvalid` |
+| 2 | `<work-title>` from `name`, `<creator type="composer">` when present | ✅ met | writer.rb:170-187, escaped via the single choke point; golden fixture + hostile-metadata escaping spec |
+| 3 | Voice → `<part>` + `<score-part>`; bar → `<measure>` | ✅ met | Stable `P1..Pn` ids, `<part-name>` from role or "Voice N"; multi-voice spec asserts equal measure counts with whole-measure-rest padding for the shorter voice |
+| 4 | `<pitch>` step/octave/alter; `<duration>`, `<type>`, correct `<divisions>` | ✅ met | Stateless PitchWriter (nil alter omitted); DurationWriter's exact Rational math with frozen type map; Divisions LCM (empty→1, eighths→2, 3/8→2, mid-piece changes included); Chromatic Air `<alter>` sequence asserted |
+| 5 | Rests as `<rest>` with right duration | ✅ met | `<rest/>` notes with durations/types asserted; `<rest measure="yes"/>` for empty measures sized by effective meter |
+| 6 | First-measure attributes (fifths, beats/beat-type, clef); mid-piece changes on the right bar | ✅ met | divisions/key/time/clef in schema order, clef range-derived per voice (G2/F4 asserted across two voices); change specs assert `<attributes>` with only the changed elements on measure 3 and none elsewhere; verified directly that changes repeat in every part (P1 and P2 both carry key+time on measure 3) and the document is DTD-valid |
+| 7 | Accepted by a MusicXML reader / schema validator | ✅ met (validator) / ⚠️ optional (reader) | The schema-validator half is satisfied: three sample documents are structurally DTD-valid against MusicXML 4.0 (`xmllint --dtdvalid`, entity warnings only). MuseScore is not installed on this machine; an import into a real scorewriter remains an optional manual check |
+| 8 | Specs cover the five named scenarios | ✅ met | Single-voice diatonic (Speed the Plough + golden fixture), accidentals (Chromatic Air), rests, multi-voice unequal lengths, mid-piece key/meter change — all in writer_spec.rb, plus tied chains, five error paths, escaping, `Voice#first_gap`, and `#to_musicxml` delegation |
+
+### Code review findings (no blockers)
+
+1. **Should-fix: `**options` passthrough raises a confusing `ArgumentError`.** `MusicXML.render(composition, **options)` splats into `Writer.new`, whose initializer takes no keywords, so any option raises `ArgumentError: wrong number of arguments (given 2, expected 1)` rather than `unknown keyword: ...`. The plan intended typo'd options to raise `ArgumentError` "for free," but the wrong-arity message is misleading and no spec covers the path. Cheapest fix: leave the facade as-is (splatting empty options works) and add a spec documenting the behavior, or drop `**options` until a first real option exists.
+2. **Should-fix: pickup (`implicit="yes"`) measures are advertised but nearly unreachable and untested.** A genuine partial anacrusis raises the first-placement-must-start-its-bar `RenderError`; the branch is only reachable when bar 0 is fully filled (e.g. with explicit leading rests). Either add a spec for the rest-filled pickup form or trim the comment to match the "fully-filled bars only" reality.
+3. **Nit: rest tied-chains untested** — writer comments claim consecutive independent rests, guards exist, but no spec constructs a rest with a `tied_value`.
+4. **Nit: multi-bar exact-fill note rejection untested** — a breve spanning exactly two 4/4 bars is correctly rejected by `ensure_notes_within_barlines`, but the spec only covers an overflowing note.
+
+Verified-correct probes by the reviewer: no malformed document can escape (`validate!` force-evaluates everything that can raise before assembly); schema element order in `<attributes>`, `<note>`, and `<pitch>`; tie stop-before-start convention; escaping completeness; exact Rational duration math with `whole_measure_duration`'s `.numerator` shortcut guaranteed safe by the Divisions denominator set; `next_position` correct for tied chains; identity-keyed memoization safe despite `Placement#==` comparing position only; `normalize_bar_markers` idempotent across double renders (though rendering does normalize raw string bar markers in place — documented deviation, accepted).
+
+**Verdict: ready to finish.** Nothing blocks; findings 1–2 are small polish items and 3–4 are optional spec additions. The only remaining manual step, importing a generated file into a scorewriter, is optional now that DTD validation has passed.

@@ -118,6 +118,22 @@ class HeadMusic::Content::Voice
     last_placement ? last_placement.next_position : HeadMusic::Content::Position.new(composition, 1, 1, 0)
   end
 
+  # Returns nil if placements are contiguous, or [expected_position, found_placement]
+  # for the first gap: either the first placement not starting its bar, or the
+  # first pair of consecutive placements where the second doesn't begin where
+  # the first one ends.
+  def first_gap
+    first = placements.first
+    return unless first
+
+    return [bar_start_position(first), first] unless first.position.count == 1 && first.position.tick.zero?
+
+    placements.each_cons(2) do |previous, current|
+      return [previous.next_position, current] unless current.position == previous.next_position
+    end
+    nil
+  end
+
   def to_s
     return pitches_string if role.to_s.strip == ""
 
@@ -125,6 +141,10 @@ class HeadMusic::Content::Voice
   end
 
   private
+
+  def bar_start_position(placement)
+    HeadMusic::Content::Position.new(composition, placement.position.bar_number, 1, 0)
+  end
 
   def insert_into_placements(placement)
     @placements << placement

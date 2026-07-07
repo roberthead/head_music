@@ -73,6 +73,10 @@ class HeadMusic::Content::Composition
     HeadMusic::Notation::ABC.render(self, **options)
   end
 
+  def to_musicxml
+    HeadMusic::Notation::MusicXML.render(self)
+  end
+
   private
 
   def ensure_attributes(name, key_signature, meter)
