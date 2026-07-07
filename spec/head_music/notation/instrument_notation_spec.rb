@@ -26,5 +26,26 @@ describe HeadMusic::Notation::InstrumentNotation do
       other = described_class.new(instrument: HeadMusic::Instruments::Instrument.get("violin"), data: data)
       expect(notation).not_to eq(other)
     end
+
+    it "is not equal to an object of another class" do
+      expect(notation == "not a notation").to be(false)
+      expect(notation).not_to eql(42)
+    end
+  end
+
+  describe "#sounding_transposition" do
+    it "reads the first staff's transposition when staves are present" do
+      transposing = described_class.new(
+        instrument: instrument,
+        data: {"staves" => [{"clef" => "treble_clef", "sounding_transposition" => -14}]}
+      )
+      expect(transposing.sounding_transposition).to eq(-14)
+    end
+
+    it "is 0 when there are no staves" do
+      empty = described_class.new(instrument: instrument, data: {})
+      expect(empty.staves).to be_empty
+      expect(empty.sounding_transposition).to eq(0)
+    end
   end
 end

@@ -292,6 +292,27 @@ describe HeadMusic::Rudiment::RhythmicValue::Parser do
         result = described_class.parse("...")
         expect(result).to be_nil
       end
+
+      it "returns nil for a decimal that is not a recognized value" do
+        # "0.333" is not a valid unit and matches the decimal guard,
+        # so the dot-stripping fallback is skipped and no word pattern matches.
+        expect(described_class.parse("0.333")).to be_nil
+      end
+
+      it "parses an undotted unit embedded in surrounding words" do
+        # "a quarter" is not a direct unit name, so it falls through to the
+        # word pattern, which finds "quarter" with no dots.
+        rv = described_class.parse("a quarter")
+        expect(rv).to be_a(HeadMusic::Rudiment::RhythmicValue)
+        expect(rv.to_s).to eq "quarter"
+        expect(rv.dots).to eq 0
+      end
+
+      it "returns nil when the word pattern matches but the unit is unrecognized" do
+        # The pattern matches "xquarter" as a whole, but "xquarter" is not a
+        # real rhythmic unit, so no rhythmic value is produced.
+        expect(described_class.parse("xquarter")).to be_nil
+      end
     end
   end
 

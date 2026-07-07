@@ -26,4 +26,28 @@ describe HeadMusic do
       end
     end
   end
+
+  describe "idempotent I18n configuration" do
+    # Re-loading the entry point exercises the configuration guards in their
+    # already-configured state: the fallbacks backend is not re-included and
+    # existing fallback chains are left untouched.
+    def reload_entry_point
+      original_verbose = $VERBOSE
+      $VERBOSE = nil
+      load File.expand_path("../lib/head_music.rb", __dir__)
+    ensure
+      $VERBOSE = original_verbose
+    end
+
+    it "leaves the fallbacks backend included when loaded again" do
+      reload_entry_point
+      expect(I18n::Backend::Simple.included_modules).to include(I18n::Backend::Fallbacks)
+    end
+
+    it "leaves existing fallback chains untouched when loaded again" do
+      before_fallbacks = I18n.fallbacks[:de].dup
+      reload_entry_point
+      expect(I18n.fallbacks[:de]).to eq(before_fallbacks)
+    end
+  end
 end

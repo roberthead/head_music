@@ -17,6 +17,14 @@ describe HeadMusic::Style::Guidelines::StepDownToFinalNote do
     it { is_expected.to be_adherent }
   end
 
+  context "when there is no last melodic interval" do
+    subject(:guideline) { described_class.new(voice) }
+
+    it "reports no expected direction" do
+      expect(guideline.send(:expected_direction?)).to be_nil
+    end
+  end
+
   context "when the last melodic interval is a descending step" do
     before do
       voice.place("1:1", :whole, "C")

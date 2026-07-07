@@ -72,6 +72,15 @@ describe HeadMusic::Instruments::AlternateTuning do
 
       it { is_expected.to eq [] }
     end
+
+    context "with an Instrument instance" do
+      subject(:tunings) { described_class.for_instrument(HeadMusic::Instruments::Instrument.get("guitar")) }
+
+      it "normalizes the instrument to its name_key and returns tunings" do
+        expect(tunings).not_to be_empty
+        expect(tunings.map(&:name_key)).to include(:drop_d)
+      end
+    end
   end
 
   describe "#instrument" do

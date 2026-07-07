@@ -62,6 +62,12 @@ describe HeadMusic::Rudiment::Consonance do
       end
     end
 
+    context "when given nil" do
+      it "returns nil" do
+        expect(described_class.get(nil)).to be_nil
+      end
+    end
+
     context "when given an instance" do
       let(:instance) { described_class.get("imperfect_consonance") }
 

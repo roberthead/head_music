@@ -52,6 +52,23 @@ describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
       end
     end
 
+    context "when the other voice has no note preceding a counterpoint note" do
+      # Skip the shared before block that places both pitch sequences.
+      let(:cantus_firmus_pitches) { %w[] }
+      let(:counterpoint_pitches) { %w[] }
+
+      before do
+        counterpoint.place("1:1", :whole, "C5")
+        counterpoint.place("2:1", :whole, "D5")
+        # The lower voice's only note is at 2:1, so note_preceding(2:1) is nil.
+        cantus_firmus.place("2:1", :whole, "C4")
+      end
+
+      it "treats the missing preceding note as no overlap" do
+        expect(guideline).to be_adherent
+      end
+    end
+
     context "when counterpoint is lower voice" do
       let(:cantus_firmus_pitches) { %w[G F E] }
       let(:counterpoint_pitches) { %w[C G D] } # G goes above preceding F in cantus firmus

@@ -6,7 +6,13 @@ describe HeadMusic::Style::Guidelines::EndOnTonic do
   let(:voice) { HeadMusic::Content::Voice.new }
 
   context "with no notes" do
+    subject(:guideline) { described_class.new(voice) }
+
     it { is_expected.to be_adherent }
+
+    it "returns nil for the last note spelling" do
+      expect(guideline.send(:last_note_spelling)).to be_nil
+    end
   end
 
   context "when the last note is the tonic" do

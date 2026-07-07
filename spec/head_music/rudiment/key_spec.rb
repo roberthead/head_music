@@ -58,6 +58,14 @@ describe HeadMusic::Rudiment::Key do
     end
   end
 
+  describe ".new" do
+    context "when given an invalid quality" do
+      it "raises an ArgumentError" do
+        expect { described_class.new("C", :diminished) }.to raise_error(ArgumentError, /major or :minor/)
+      end
+    end
+  end
+
   describe "#scale" do
     subject(:key) { described_class.get("C major") }
 

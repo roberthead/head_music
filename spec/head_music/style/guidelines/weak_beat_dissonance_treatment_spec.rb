@@ -96,4 +96,29 @@ describe HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment do
 
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
   end
+
+  context "with a lone dissonant weak-beat note (no surrounding notes)" do
+    let(:cantus_firmus_pitches) { %w[D4 F4] }
+
+    before do
+      # A single dissonant note (E4 = M2 with CF D4) on beat 3 with no
+      # preceding or following counterpoint note, so it is not a passing tone.
+      counterpoint.place("1:3", :half, "E4")
+    end
+
+    its(:fitness) { is_expected.to be < 1 }
+  end
+
+  context "without a cantus firmus" do
+    let(:bare_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+    let(:counterpoint) { bare_composition.add_voice(role: :counterpoint) }
+
+    before { counterpoint.place("1:1", :whole, "A4") }
+
+    it { is_expected.to be_adherent }
+
+    it "produces no marks" do
+      expect(described_class.new(counterpoint).marks).to eq([])
+    end
+  end
 end

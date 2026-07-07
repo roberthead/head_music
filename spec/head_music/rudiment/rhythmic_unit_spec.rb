@@ -252,6 +252,15 @@ describe HeadMusic::Rudiment::RhythmicUnit do
     end
   end
 
+  describe "#<=>" do
+    context "when compared with a non-RhythmicUnit" do
+      it "returns nil" do
+        expect(described_class.get(:quarter) <=> "quarter").to be_nil
+        expect(described_class.get(:quarter) <=> 4).to be_nil
+      end
+    end
+  end
+
   describe "#ticks" do
     specify { expect(described_class.get("half").ticks).to eq 1920 }
     specify { expect(described_class.get("quarter").ticks).to eq 960 }

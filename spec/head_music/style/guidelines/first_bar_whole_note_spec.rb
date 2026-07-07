@@ -15,6 +15,10 @@ describe HeadMusic::Style::Guidelines::FirstBarWholeNote do
     end
   end
 
+  context "with no notes" do
+    it { is_expected.to be_adherent }
+  end
+
   context "with a whole note in the first bar" do
     before do
       %w[A4 A4 C5 B4 D5 C5 E5 D5 A4 C#5 D5].each.with_index(1) do |pitch, bar|

@@ -15,8 +15,12 @@ require "i18n"
 require "i18n/backend/fallbacks"
 
 # Configure I18n for HeadMusic locales
-# Include fallbacks backend if not already included
+# Include fallbacks backend if not already included.
+# :nocov: — one-time, load-order-dependent bootstrap guard; module inclusion is
+# irreversible, so the fresh-install arm cannot be re-exercised in-process. The
+# already-included arm is asserted by the idempotency spec.
 I18n::Backend::Simple.include(I18n::Backend::Fallbacks) unless I18n::Backend::Simple.included_modules.include?(I18n::Backend::Fallbacks)
+# :nocov:
 
 # Add HeadMusic locale files to the load path (additive, doesn't overwrite)
 I18n.load_path += Dir[File.join(File.dirname(__dir__), "lib", "head_music", "locales", "*.yml")]
@@ -39,7 +43,11 @@ HEAD_MUSIC_FALLBACKS = {
 }.freeze
 
 HEAD_MUSIC_FALLBACKS.each do |locale, fallbacks|
+  # :nocov: — load-order-dependent bootstrap guard; whether the fresh-configure
+  # arm runs depends on global I18n state at first require. The already-configured
+  # arm is asserted by the idempotency spec.
   I18n.fallbacks[locale] = fallbacks if I18n.fallbacks[locale].empty? || I18n.fallbacks[locale] == [locale]
+  # :nocov:
 end
 
 # utilities

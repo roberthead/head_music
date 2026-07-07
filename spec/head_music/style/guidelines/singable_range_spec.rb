@@ -9,6 +9,12 @@ describe HeadMusic::Style::Guidelines::SingableRange do
     it { is_expected.to be_adherent }
   end
 
+  context "when the maximum range is a vowel-sound ordinal" do
+    subject(:guideline) { described_class.new(voice, maximum_range: 8) }
+
+    its(:message) { is_expected.to eq "Limit melodic range to an 8th." }
+  end
+
   context "when the range is small" do
     before do
       %w[D4 E4 F4 A4 G4 F4 G4 E4 D4].each.with_index(1) do |pitch, bar|

@@ -19,6 +19,38 @@ describe HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline do
     it { is_expected.to be_adherent }
   end
 
+  context "with a weak-beat note in the final bar (no following downbeat)" do
+    before do
+      # A weak-beat note in the last cantus firmus bar has no cantus firmus
+      # note after it, so there is no next downbeat to compare against.
+      counterpoint.place("1:1", :half, "A4")
+      counterpoint.place("4:3", :half, "A4")
+    end
+
+    it { is_expected.to be_adherent }
+  end
+
+  context "with a weak-beat note beyond the cantus firmus range" do
+    before do
+      # The counterpoint note is in a bar where the cantus firmus is silent,
+      # so the harmonic interval has only one note and is skipped.
+      counterpoint.place("5:3", :half, "A4")
+    end
+
+    it { is_expected.to be_adherent }
+  end
+
+  context "with a weak-beat note whose following downbeat has no counterpoint note" do
+    before do
+      # A half note on the weak beat of bar 1 releases before the bar 2
+      # downbeat, so only the cantus firmus sounds there and the next-downbeat
+      # interval has a single note.
+      counterpoint.place("1:3", :half, "A4")
+    end
+
+    it { is_expected.to be_adherent }
+  end
+
   context "with no parallel perfect consonances across barlines" do
     before do
       # All imperfect consonances on weak beats and following downbeats

@@ -39,6 +39,22 @@ describe HeadMusic::Rudiment::ScaleDegree do
     end
   end
 
+  describe "#name_for_degree" do
+    context "when the seventh degree is a whole step below the tonic" do
+      let(:key_signature) { HeadMusic::Rudiment::KeySignature.get("C minor") }
+      let(:spelling) { HeadMusic::Rudiment::Spelling.get("Bb") }
+
+      its(:name_for_degree) { is_expected.to eq "subtonic" }
+    end
+
+    context "when the scale type is not diatonic" do
+      let(:key_signature) { HeadMusic::Rudiment::KeySignature.new("C", :chromatic) }
+      let(:spelling) { HeadMusic::Rudiment::Spelling.get("C") }
+
+      its(:name_for_degree) { is_expected.to be_nil }
+    end
+  end
+
   describe "comparison" do
     let(:key_signature) { HeadMusic::Rudiment::KeySignature.get("C minor") }
     let(:degree_two) { described_class.new(key_signature, "D") }      # diatonic 2nd degree

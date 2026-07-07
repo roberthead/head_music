@@ -1,13 +1,25 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::OneToOne do
-  subject { described_class.new(counterpoint) }
+  subject(:annotation) { described_class.new(counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: "counterpoint") }
 
   context "without another voice" do
     it { is_expected.to be_adherent }
+  end
+
+  context "with another voice that has no notes" do
+    before do
+      composition.add_voice(role: "cantus firmus")
+    end
+
+    it { is_expected.to be_adherent }
+
+    it "returns nil marks" do
+      expect(annotation.marks).to be_nil
+    end
   end
 
   context "with another voice" do

@@ -810,4 +810,137 @@ describe HeadMusic::Instruments::Instrument do
       expect(notation.sounding_transposition).to eq(-14)
     end
   end
+
+  describe "inheritance and defensive branch behavior" do
+    describe ".get with an unrecognized name" do
+      it "returns nil" do
+        expect(described_class.get("not_a_real_instrument_xyz")).to be_nil
+      end
+    end
+
+    describe ".find_valid_instrument when get_by_name yields nothing" do
+      subject(:instrument) { described_class.get("violin") }
+
+      it "returns nil rather than a nameless instrument" do
+        allow(described_class).to receive(:get_by_name).and_return(nil)
+        expect(described_class.send(:find_valid_instrument, "anything")).to be_nil
+      end
+    end
+
+    describe "#family_key inherited from the parent" do
+      let(:instrument) { described_class.get("bass_trumpet_in_c") }
+
+      it "has no family_key of its own but resolves through the parent" do
+        expect(instrument.instance_variable_get(:@family_key)).to be_nil
+        expect(instrument.family_key).to eq("trumpet")
+      end
+
+      it "returns nil when it has neither its own family_key nor a parent" do
+        allow(instrument).to receive(:parent).and_return(nil)
+        expect(instrument.family_key).to be_nil
+      end
+    end
+
+    describe "#pitch_key inherited from the parent" do
+      let(:instrument) { described_class.get("violin") }
+
+      it "consults the parent when it has no pitch_key of its own" do
+        parent_with_pitch = described_class.get("clarinet")
+        allow(instrument).to receive(:parent).and_return(parent_with_pitch)
+        expect(instrument.instance_variable_get(:@pitch_key)).to be_nil
+        expect(instrument.pitch_key).to eq("b_flat")
+      end
+    end
+
+    describe "#family when the instrument has no family_key" do
+      let(:instrument) { described_class.get("violin") }
+
+      it "returns nil" do
+        allow(instrument).to receive(:family_key).and_return(nil)
+        expect(instrument.family).to be_nil
+      end
+    end
+
+    describe "family-derived accessors when the family is missing" do
+      let(:instrument) { described_class.get("violin") }
+
+      before { allow(instrument).to receive(:family).and_return(nil) }
+
+      it "returns nil for orchestra_section_key" do
+        expect(instrument.orchestra_section_key).to be_nil
+      end
+
+      it "returns an empty array for classification_keys" do
+        expect(instrument.classification_keys).to eq([])
+      end
+    end
+
+    describe "staff-derived accessors when default_staves is nil" do
+      let(:instrument) { described_class.get("violin") }
+
+      before { allow(instrument).to receive(:default_staves).and_return(nil) }
+
+      it "returns an empty array for default_clefs" do
+        expect(instrument.default_clefs).to eq([])
+      end
+
+      it "returns zero for sounding_transposition" do
+        expect(instrument.sounding_transposition).to eq(0)
+      end
+    end
+
+    describe "#translation for a nameless instrument" do
+      let(:instrument) { described_class.get("violin") }
+
+      it "falls back to the plain name" do
+        allow(instrument).to receive(:name_key).and_return(nil)
+        expect(instrument.translation).to eq(instrument.name)
+      end
+    end
+
+    describe "#stringing inherited from the parent" do
+      subject(:instrument) { described_class.get("trumpet_in_c") }
+
+      it "returns the parent's stringing when the instrument has none of its own" do
+        guitar_stringing = described_class.get("guitar").stringing
+        allow(instrument.parent).to receive(:stringing).and_return(guitar_stringing)
+        expect(instrument.stringing).to eq(guitar_stringing)
+      end
+    end
+
+    describe "#parent_translation without a parent" do
+      subject(:instrument) { described_class.get("trumpet") }
+
+      it "returns nil" do
+        expect(instrument.send(:parent_translation)).to be_nil
+      end
+    end
+
+    describe "#pitch_key_to_designation without a pitch_key" do
+      subject(:instrument) { described_class.get("violin") }
+
+      it "returns nil" do
+        expect(instrument.send(:pitch_key_to_designation)).to be_nil
+      end
+    end
+
+    describe "#pitch_key_to_designation for a sharp pitch_key" do
+      let(:instrument) { described_class.get("violin") }
+
+      it "renders the designation with a sharp sign" do
+        allow(instrument).to receive(:pitch_key).and_return("f_sharp")
+        expect(instrument.send(:pitch_key_to_designation)).to eq("F#")
+      end
+    end
+
+    describe "#default_notation_staves_data when there is no notation" do
+      subject(:instrument) { described_class.get("violin") }
+
+      it "returns an empty array" do
+        empty_style = instance_double(HeadMusic::Notation::NotationStyle, notation_for: nil)
+        allow(HeadMusic::Notation::NotationStyle).to receive(:default).and_return(empty_style)
+        expect(instrument.send(:default_notation_staves_data)).to eq([])
+      end
+    end
+  end
 end

@@ -1,6 +1,22 @@
 require "spec_helper"
 
 describe HeadMusic::Rudiment::KeySignature do
+  describe ".get" do
+    context "when given a DiatonicContext" do
+      let(:key) { HeadMusic::Rudiment::Key.get("D major") }
+
+      it "returns the key signature of that context" do
+        expect(described_class.get(key)).to eq key.key_signature
+      end
+    end
+
+    context "when given neither a string nor a diatonic context" do
+      it "returns nil" do
+        expect(described_class.get(:not_a_key)).to be_nil
+      end
+    end
+  end
+
   describe ".new" do
     subject(:key_signature) { described_class.new(tonic, scale_type) }
 

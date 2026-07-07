@@ -339,4 +339,18 @@ describe HeadMusic::Analysis::PitchClassSet do
       end
     end
   end
+
+  describe "#generate_rotations (private)" do
+    it "returns the single pitch class wrapped in an array for a monad" do
+      set = described_class.new(["C"])
+      expect(set.send(:generate_rotations)).to eq([set.pitch_classes])
+    end
+  end
+
+  describe "#transpose_to_zero (private)" do
+    it "returns an empty array unchanged" do
+      set = described_class.new([])
+      expect(set.send(:transpose_to_zero, [])).to eq([])
+    end
+  end
 end

@@ -19,6 +19,19 @@ describe HeadMusic::Style::Guidelines::SecondSpeciesBreak do
     it { is_expected.to be_adherent }
   end
 
+  context "without a cantus firmus voice" do
+    # The counterpoint belongs to its own composition with no other voice, so
+    # there is no cantus firmus and marks short-circuits to an empty array.
+    let(:solo_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+    let(:counterpoint) { solo_composition.add_voice(role: :counterpoint) }
+
+    it { is_expected.to be_adherent }
+
+    it "returns no marks" do
+      expect(annotation.marks).to eq []
+    end
+  end
+
   context "with no breaks (pure syncopation)" do
     before do
       # Normal fourth species: whole notes starting on beat 3 (off-beat),

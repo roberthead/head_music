@@ -52,6 +52,14 @@ describe HeadMusic::Instruments::InstrumentFamily do
       end
     end
 
+    context "when given a localized (non-English) name" do
+      let(:instance) { described_class.get("Flöte") }
+
+      it "resolves the family key by matching a translation" do
+        expect(instance.name_key).to eq :flute
+      end
+    end
+
     context "when given a non-existent family name" do
       let(:instance) { described_class.get("imaginary_instrument") }
 

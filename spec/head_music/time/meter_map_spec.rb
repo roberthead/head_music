@@ -111,6 +111,20 @@ describe HeadMusic::Time::MeterMap do
     end
   end
 
+  describe "#meter_at when the position precedes the first event" do
+    subject(:meter_map) do
+      described_class.new(
+        starting_meter: HeadMusic::Rudiment::Meter.get("3/4"),
+        starting_position: HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)
+      )
+    end
+
+    it "falls back to the first event's meter" do
+      position = HeadMusic::Time::MusicalPosition.new(1, 1, 0, 0)
+      expect(meter_map.meter_at(position).to_s).to eq "3/4"
+    end
+  end
+
   describe "#each_segment" do
     subject(:meter_map) { described_class.new }
 

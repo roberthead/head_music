@@ -141,6 +141,20 @@ describe HeadMusic::Instruments::PlayingTechnique do
       techniques = described_class.for_scope(:unknown_scope)
       expect(techniques).to eq([])
     end
+
+    it "skips techniques that have no scopes" do
+      scopeless = described_class.get("technique_without_scopes_zzz")
+      expect(scopeless.scopes).to be_nil
+      allow(described_class).to receive(:all).and_return([scopeless])
+      expect(described_class.for_scope(:common)).to eq([])
+    end
+  end
+
+  describe ".technique_keys" do
+    it "returns an empty array when the data has no playing_techniques entry" do
+      stub_const("#{described_class}::RECORDS", {})
+      expect(described_class.send(:technique_keys)).to eq([])
+    end
   end
 
   describe "#name" do

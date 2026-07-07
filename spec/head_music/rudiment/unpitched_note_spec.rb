@@ -34,6 +34,12 @@ describe HeadMusic::Rudiment::UnpitchedNote do
       end
     end
 
+    context "when given a value with no resolvable rhythmic value" do
+      it "returns nil" do
+        expect(described_class.get(nil)).to be_nil
+      end
+    end
+
     context "when given an existing UnpitchedNote" do
       subject(:note) { described_class.get(original_note) }
 

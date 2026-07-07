@@ -40,6 +40,14 @@ describe HeadMusic::Rudiment::Mode do
     end
   end
 
+  describe ".new" do
+    context "when given an invalid mode name" do
+      it "raises an ArgumentError" do
+        expect { described_class.new("C", :bogus) }.to raise_error(ArgumentError, /Mode must be one of/)
+      end
+    end
+  end
+
   describe "#scale" do
     subject(:mode) { described_class.get("D dorian") }
 
@@ -123,6 +131,16 @@ describe HeadMusic::Rudiment::Mode do
         expect(locrian_mode.relative_major.name).to eq "C major"
       end
     end
+
+    context "when the mode name is unrecognized" do
+      let(:mode) { described_class.get("C ionian") }
+
+      before { allow(mode).to receive(:mode_name).and_return(:unknown) }
+
+      it "does not resolve to a relative major key" do
+        expect { mode.relative_major }.to raise_error(NoMethodError)
+      end
+    end
   end
 
   describe "#parallel" do
@@ -186,6 +204,16 @@ describe HeadMusic::Rudiment::Mode do
       it "returns the parallel minor key" do
         expect(locrian_mode.parallel).to be_a(HeadMusic::Rudiment::Key)
         expect(locrian_mode.parallel.name).to eq "B minor"
+      end
+    end
+
+    context "when the mode name is unrecognized" do
+      let(:mode) { described_class.get("C ionian") }
+
+      before { allow(mode).to receive(:mode_name).and_return(:unknown) }
+
+      it "returns nil" do
+        expect(mode.parallel).to be_nil
       end
     end
   end

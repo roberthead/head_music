@@ -35,6 +35,17 @@ describe HeadMusic::Style::Guidelines::PreferContraryMotion do
     it { is_expected.to be_adherent }
   end
 
+  context "when the notes coincide with no cantus firmus downbeat" do
+    let(:counterpoint_pitches) { [] }
+
+    before do
+      counterpoint.place("12:1:0", :whole, "F4")
+      counterpoint.place("13:1:0", :whole, "G4")
+    end
+
+    it { is_expected.to be_adherent }
+  end
+
   context "with all parallel motion" do
     let(:counterpoint_pitches) { %w[F4 A4 G4 F4 B4 A4 C5 B4 A4 G4 F4] }
 

@@ -8,6 +8,8 @@ describe HeadMusic::Style::Guidelines::LimitOctaveLeaps do
 
   context "with no notes" do
     it { is_expected.to be_adherent }
+
+    its(:message) { is_expected.to eq "Use a maximum of one octave leap." }
   end
 
   context "with no octave leaps" do
@@ -38,5 +40,11 @@ describe HeadMusic::Style::Guidelines::LimitOctaveLeaps do
     end
 
     its(:fitness) { is_expected.to be <= HeadMusic::PENALTY_FACTOR }
+  end
+
+  context "when configured to allow more than one octave leap" do
+    subject { described_class.new(voice, maximum_leaps: 2) }
+
+    its(:message) { is_expected.to eq "Use a maximum of two octave leaps." }
   end
 end

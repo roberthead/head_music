@@ -95,4 +95,44 @@ describe HeadMusic::Style::Guidelines::SuspensionTreatment do
 
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
   end
+
+  context "with a prepared suspension that never resolves (final note)" do
+    let(:cantus_firmus_pitches) { %w[D4 F4] }
+
+    before do
+      # Bar 1 CP = B4 (M6 with CF D4, consonant = preparation).
+      # B4 sustains into bar 2 (CF=F4): tritone = dissonant suspension.
+      # There is no following counterpoint note, so the suspension never resolves.
+      counterpoint.place("1:3", :whole, "B4")
+    end
+
+    its(:fitness) { is_expected.to be < 1 }
+  end
+
+  context "when a suspension falls on the first bar with no previous cantus firmus note" do
+    let(:cantus_firmus_pitches) { %w[D4 F4 E4] }
+    let(:guideline) { described_class.new(counterpoint) }
+
+    before { counterpoint.place("1:3", :whole, "A4") }
+
+    it "cannot be prepared" do
+      cantus_firmus_voice = composition.voices.detect(&:cantus_firmus?)
+      first_cf_note = cantus_firmus_voice.notes.first
+      cp_note = counterpoint.notes.first
+      expect(guideline.send(:prepared?, cp_note, first_cf_note)).to be false
+    end
+  end
+
+  context "without a cantus firmus" do
+    let(:bare_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+    let(:counterpoint) { bare_composition.add_voice(role: :counterpoint) }
+
+    before { counterpoint.place("1:1", :whole, "A4") }
+
+    it { is_expected.to be_adherent }
+
+    it "produces no marks" do
+      expect(described_class.new(counterpoint).marks).to eq([])
+    end
+  end
 end

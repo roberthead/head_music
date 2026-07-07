@@ -80,6 +80,12 @@ describe HeadMusic::Notation::NotationStyle do
         expect(style.notation_for("nonexistent_instrument")).to be_nil
       end
 
+      it "returns nil for a known instrument that has no notation entry anywhere" do
+        instrument = HeadMusic::Instruments::Instrument.get("violin")
+        allow(instrument).to receive(:name_key).and_return(:instrument_without_notation)
+        expect(style.notation_for(instrument)).to be_nil
+      end
+
       it "accepts an Instrument object as well as a key" do
         instrument = HeadMusic::Instruments::Instrument.get("euphonium")
         expect(style.notation_for(instrument)).to eq(style.notation_for("euphonium"))

@@ -134,4 +134,17 @@ describe HeadMusic::Style::Guidelines::TripleMeterDissonanceTreatment do
 
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
   end
+
+  context "with a lone dissonant note on a weak beat (no surrounding notes)" do
+    let(:cantus_firmus_pitches) { %w[C4 D4] }
+
+    before do
+      # A single dissonant note (D4 = M2 with CF C4) on beat 2 with no
+      # preceding or following counterpoint note, so it is neither a passing
+      # tone nor a neighbor tone.
+      counterpoint.place("1:2", :quarter, "D4")
+    end
+
+    its(:fitness) { is_expected.to be < 1 }
+  end
 end

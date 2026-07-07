@@ -111,6 +111,20 @@ describe HeadMusic::Time::TempoMap do
     end
   end
 
+  describe "#tempo_at when the position precedes the first event" do
+    subject(:tempo_map) do
+      described_class.new(
+        starting_tempo: HeadMusic::Rudiment::Tempo.new("quarter", 96),
+        starting_position: HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)
+      )
+    end
+
+    it "falls back to the first event's tempo" do
+      position = HeadMusic::Time::MusicalPosition.new(1, 1, 0, 0)
+      expect(tempo_map.tempo_at(position).beats_per_minute).to eq 96.0
+    end
+  end
+
   describe "#each_segment" do
     subject(:tempo_map) { described_class.new }
 

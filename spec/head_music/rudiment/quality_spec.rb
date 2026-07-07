@@ -17,6 +17,19 @@ describe HeadMusic::Rudiment::Quality do
     end
   end
 
+  describe ".from" do
+    specify { expect(described_class.from(:perfect, 0)).to eq "perfect" }
+    specify { expect(described_class.from(:perfect, -1)).to eq "diminished" }
+    specify { expect(described_class.from(:major, 0)).to eq "major" }
+    specify { expect(described_class.from(:major, -1)).to eq "minor" }
+
+    context "when the starting quality is neither perfect nor major" do
+      it "returns nil" do
+        expect(described_class.from(:minor, 0)).to be_nil
+      end
+    end
+  end
+
   describe "equality" do
     specify { expect(described_class.get(:major)).to eq :major }
   end

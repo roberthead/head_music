@@ -198,4 +198,17 @@ describe HeadMusic::Content::CantusFirmus::Example do
       expect(example.length).to eq(11)
     end
   end
+
+  describe "an example whose data omits the mode" do
+    subject(:example) do
+      described_class.send(
+        :new,
+        data: {"slug" => "no-mode", "source" => "fux", "tonal_center" => "C", "pitches" => %w[C D E]}
+      )
+    end
+
+    it "leaves the mode nil" do
+      expect(example.mode).to be_nil
+    end
+  end
 end

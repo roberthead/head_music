@@ -5,6 +5,7 @@ describe HeadMusic::Analysis::MelodicInterval do
 
   let(:voice) { HeadMusic::Content::Voice.new }
   let(:pitch_d4) { HeadMusic::Rudiment::Pitch.get("D4") }
+  let(:pitch_e4) { HeadMusic::Rudiment::Pitch.get("E4") }
   let(:pitch_g4) { HeadMusic::Rudiment::Pitch.get("G4") }
   let(:note_d4) { HeadMusic::Content::Note.new("D4", :quarter, voice, "2:1") }
   let(:note_g4) { HeadMusic::Content::Note.new("G4", :quarter, voice, "2:3") }
@@ -36,6 +37,25 @@ describe HeadMusic::Analysis::MelodicInterval do
       expect(melodic_interval).to be_spells_consonant_triad_with(described_class.new(pitch_g6, pitch_b2))
 
       expect(melodic_interval).not_to be_spells_consonant_triad_with(described_class.new(pitch_g4, pitch_c4))
+    end
+
+    it "is false when either interval is a step" do
+      step = described_class.new(pitch_d4, pitch_e4)
+      leap = described_class.new(pitch_g4, pitch_b4)
+      expect(step).not_to be_spells_consonant_triad_with(leap)
+      expect(leap).not_to be_spells_consonant_triad_with(step)
+    end
+
+    it "is false when the combined pitches number fewer than three" do
+      first = described_class.new(pitch_d4, pitch_g4)
+      second = described_class.new(pitch_g4, pitch_d4)
+      expect(first).not_to be_spells_consonant_triad_with(second)
+    end
+  end
+
+  describe "delegation to the diatonic interval" do
+    it "raises NoMethodError for a method the diatonic interval does not answer" do
+      expect { melodic_interval.definitely_not_a_method }.to raise_error(NoMethodError)
     end
   end
 end

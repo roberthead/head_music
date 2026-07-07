@@ -18,6 +18,34 @@ describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
     let(:cf_rhythmic_value) { :whole }
 
+    context "with no notes in the counterpoint" do
+      it { is_expected.to be_adherent }
+    end
+
+    context "when the detected final bar contains no notes" do
+      # A defensive fallback: if the final-bar lookup yields nothing, the
+      # guideline still marks the last note rather than raising.
+      subject(:guideline) { guideline_class.new(counterpoint) }
+
+      let(:guideline_class) do
+        Class.new(described_class) do
+          private
+
+          def notes_in_final_bar
+            []
+          end
+        end
+      end
+
+      before do
+        counterpoint.place("1:1", :whole, "D5")
+      end
+
+      it "falls back to marking the last note" do
+        expect(guideline.marks).to be_a(HeadMusic::Style::Mark)
+      end
+    end
+
     context "with a whole note in the final bar" do
       before do
         (1..10).each do |bar|

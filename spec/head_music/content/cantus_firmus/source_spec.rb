@@ -135,4 +135,14 @@ describe HeadMusic::Content::CantusFirmus::Source do
       expect(source.to_s).to eq("Gradus ad Parnassum")
     end
   end
+
+  describe "a source whose data omits notes" do
+    subject(:source) do
+      described_class.send(:new, key: :test_source, data: {"publication_name" => "Untitled"})
+    end
+
+    it "leaves notes nil" do
+      expect(source.notes).to be_nil
+    end
+  end
 end

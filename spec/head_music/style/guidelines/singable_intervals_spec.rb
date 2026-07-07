@@ -90,6 +90,14 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
     it "lists the permitted intervals, noting the ascending-only minor sixth" do
       expect(described_class.new(voice).message).to eq "Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
     end
+
+    context "when an interval is permitted descending only" do
+      subject(:guideline) { described_class.new(voice, ascending: %w[P1 M2], descending: %w[P1 M2 m7]) }
+
+      it "annotates it as descending" do
+        expect(guideline.message).to include "m7 (descending)"
+      end
+    end
   end
 
   context "when configured to permit major sixths" do

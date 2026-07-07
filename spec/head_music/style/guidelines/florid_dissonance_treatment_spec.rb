@@ -108,4 +108,66 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
 
     its(:fitness) { is_expected.to be < 1 }
   end
+
+  context "with a lone dissonant weak-beat note (no surrounding notes)" do
+    let(:cantus_firmus_pitches) { %w[D4 F4] }
+
+    before do
+      # A single dissonant note (E4 = M2 with CF D4) placed on beat 3.
+      # It has neither a preceding nor a following counterpoint note, so it
+      # cannot be a passing tone, neighbor, cambiata, or double-neighbor figure.
+      counterpoint.place("1:3", :half, "E4")
+    end
+
+    its(:fitness) { is_expected.to be < 1 }
+  end
+
+  context "when resolving a strong-beat suspension by step" do
+    let(:guideline) { described_class.new(counterpoint) }
+
+    before do
+      counterpoint.place("1:1", :quarter, "A4")
+      counterpoint.place("1:2", :quarter, "B4")
+      counterpoint.place("1:3", :quarter, "E5")
+      counterpoint.place("1:4", :quarter, "A4")
+    end
+
+    it "resolves by step when the next note steps to a consonance" do
+      # A4 -> B4 is a step, and B4 (M6 with CF D4) is consonant.
+      expect(guideline.send(:resolved_by_step?, counterpoint.notes[0])).to be true
+    end
+
+    it "does not resolve by step when the next note is reached by leap" do
+      # B4 -> E5 is a perfect fourth, not a step.
+      expect(guideline.send(:resolved_by_step?, counterpoint.notes[1])).to be false
+    end
+
+    it "does not resolve by step when there is no following note" do
+      expect(guideline.send(:resolved_by_step?, counterpoint.notes.last)).to be false
+    end
+  end
+
+  context "when a strong-beat note has no cantus firmus note at its position" do
+    let(:guideline) { described_class.new(counterpoint) }
+
+    before { counterpoint.place("12:1", :whole, "A4") }
+
+    it "is not treated as a proper suspension" do
+      note = counterpoint.notes.last
+      expect(guideline.send(:properly_treated_suspension?, note)).to be false
+    end
+  end
+
+  context "without a cantus firmus" do
+    let(:bare_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "4/4") }
+    let(:counterpoint) { bare_composition.add_voice(role: :counterpoint) }
+
+    before { counterpoint.place("1:1", :whole, "A4") }
+
+    it { is_expected.to be_adherent }
+
+    it "produces no marks" do
+      expect(described_class.new(counterpoint).marks).to eq([])
+    end
+  end
 end
