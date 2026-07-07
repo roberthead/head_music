@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [15.1.0] - 2026-07-07
+
+### Added
+
+- `HeadMusic::Content::Composition.to_musicxml` for MusicXML export
+- `HeadMusic::Content::Composition.to_abc` for ABC Notation export. ABC can round-trip to and from Composition.
+
 ## [15.0.0] - 2026-07-06
 
 ### Added
