@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-07-06T15:41:38-07:00
-  activated_at:
+  activated_at: 2026-07-07T07:51:41-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-07-06T16:21:12-07:00
+  updated_at:   2026-07-07T07:51:41-07:00
 -->
 
 # Story: MusicXML Export
