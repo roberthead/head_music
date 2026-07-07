@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-06T15:46:51-07:00
   activated_at: 2026-07-06T15:59:05-07:00
   planned_at:   2026-07-06T16:11:07-07:00
-  finished_at:
-  updated_at:   2026-07-06T17:32:41-07:00
+  finished_at:  2026-07-06T18:16:51-07:00
+  updated_at:   2026-07-06T18:16:51-07:00
 -->
 
 # Story: ABC Notation Export
@@ -179,4 +179,25 @@ Designed limitations (multi-voice, mid-piece key/meter changes, positional gaps 
 4. **Minor spec gaps** — no integration spec exercises a fractional multiplier inside a full tune body (unit-level only); `PitchWriter`'s RenderError path untested (hard to reach with real pitches). Low risk.
 5. **Verified-correct probes** — octave-mark inversion exact across C0–C9; oracle state cannot leak after RenderError; barline-spanning notes round-trip to identical positions; contiguity guard sound (Position counts/ticks always integers).
 
-**Verdict: ready to finish.** Nothing blocks; findings 2 and 4 are optional polish.
+**Verdict: ready to finish.** Nothing blocks; findings 2 and 4 are optional polish. (Both were subsequently applied: `verify_round_trip` renamed to `commit_and_verify`, and a fractional-multiplier integration spec added.)
+
+## Learnings
+
+**What went well**
+
+- **The oracle pattern paid off.** Reusing the parser's own `PitchBuilder` as a live oracle made minimal bar-persistent accidental marking correct *by construction* — the hardest correctness problem in the story (same-bar `^F … =F` cancellation) never produced a bug.
+- **Fixed API contracts enabled clean parallelism.** The three helper classes were built by parallel agents whose prompts pinned the exact constructor/method signatures up front; all three landed with zero integration rework.
+- **Property specs over example specs.** The semantic round trip plus the string fixpoint (`render(parse(render(c))) == render(c)`) guard against parse/render drift far more cheaply than enumerating cases.
+- **Planning resolved every design question before code.** L:1/8 fixed, tied-chain collapse, fail-before-emit, RenderError hierarchy — implementation had no open decisions left.
+
+**What was surprising**
+
+- `DurationResolver` produces `tied_value` chains from *single* ABC tokens (`A5`), so ties had to be collapsed, not rejected — a planning-stage probe caught what intuition would have gotten wrong.
+- Two latent traps in the rudiments layer: `RhythmicValue`'s value methods return **Floats** (writer needed forward Rational math), and `tonic_spelling.to_s` returns **Unicode** (`F♯`) that the K: parser rejects (needed `alteration.ascii`).
+- The parse-side mode-prefix map is many-to-one and mechanically non-invertible; render needed its own explicit suffix map, plus ionian/aeolian aliases (safe because `KeySignature#==` compares alterations, not names).
+- The interrupted implementation agent had actually finished nearly everything — "resume" meant *verify and review*, not redo. Worth checking the working tree before assuming lost work.
+
+**Do differently next time**
+
+- Consider a follow-up making `RhythmicValue` fraction-native (Rational) — it would harden both parse and render sides.
+- The entry-point pattern (`Notation::<Format>.render` + thin `to_<format>` delegate + shared `RenderError`) is now precedent — the MusicXML story already records it.
