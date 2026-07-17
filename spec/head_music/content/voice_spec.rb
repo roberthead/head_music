@@ -41,6 +41,14 @@ describe HeadMusic::Content::Voice do
       end
     end
 
+    context "when given an array of pitches" do
+      it "creates exactly one placement" do
+        expect do
+          voice.place("2:1", :half, %w[C4 E4 G4])
+        end.to change { voice.placements.length }.by 1
+      end
+    end
+
     context "when notes are placed out of positional order around a chord" do
       before do
         voice.place("2:1", :quarter, "C4")
@@ -118,6 +126,19 @@ describe HeadMusic::Content::Voice do
     its(:leaps) { are_expected.to eq [voice.melodic_note_pairs[0], voice.melodic_note_pairs[5]] }
     its(:large_leaps) { are_expected.to eq [voice.melodic_note_pairs[0], voice.melodic_note_pairs[5]] }
     its(:to_s) { is_expected.to eq "G3 C4 D4 E♭4 F4 E♭4 G3" }
+  end
+
+  describe "#melodic_note_pairs" do
+    context "when a note precedes a chord" do
+      before do
+        voice.place("1:1", :quarter, "C4")
+        voice.place("1:2", :quarter, %w[F3 A3 C4 F4])
+      end
+
+      it "uses the chord's top pitch" do
+        expect(voice.melodic_note_pairs.first.pitches.map(&:to_s)).to eq %w[C4 F4]
+      end
+    end
   end
 
   context "when a role is provided" do
@@ -254,6 +275,16 @@ describe HeadMusic::Content::Voice do
       it { is_expected.to be_nil }
     end
 
+    context "when a chord fills its beat in an otherwise contiguous voice" do
+      before do
+        voice.place("1:1", :quarter, "C4")
+        voice.place("1:2", :quarter, %w[E4 G4 C5])
+        voice.place("1:3", :half, "C5")
+      end
+
+      it { is_expected.to be_nil }
+    end
+
     context "when there is a gap between two placements" do
       before do
         voice.place("1:1", :quarter, "C4")
@@ -285,8 +316,8 @@ describe HeadMusic::Content::Voice do
         {
           "role" => nil,
           "placements" => [
-            {"position" => "1:1:000", "rhythmic_value" => "quarter", "pitch" => "C4"},
-            {"position" => "1:2:000", "rhythmic_value" => "quarter", "pitch" => nil}
+            {"position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => ["C4"]},
+            {"position" => "1:2:000", "rhythmic_value" => "quarter", "pitches" => []}
           ]
         }
       end

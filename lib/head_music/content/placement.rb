@@ -1,21 +1,32 @@
 # A module for musical content
 module HeadMusic::Content; end
 
-# A placement is a note or rest at a position within a voice in a composition
+# A placement is a note, chord, or rest at a position within a voice in a composition
 class HeadMusic::Content::Placement
   include Comparable
 
-  attr_reader :voice, :position, :rhythmic_value, :pitch
+  attr_reader :voice, :position, :rhythmic_value, :pitches
 
   delegate :composition, to: :voice
   delegate :spelling, to: :pitch, allow_nil: true
 
-  def initialize(voice, position, rhythmic_value, pitch = nil)
-    ensure_attributes(voice, position, rhythmic_value, pitch)
+  def initialize(voice, position, rhythmic_value, pitch_or_pitches = nil)
+    ensure_attributes(voice, position, rhythmic_value, pitch_or_pitches)
+  end
+
+  # The top pitch of a chord (or the only pitch of a note), which melodic
+  # analysis treats as the melody note. Enharmonic ties resolve to the
+  # first-listed pitch because Enumerable#max keeps the earliest maximum.
+  def pitch
+    pitches.max
   end
 
   def note?
-    pitch
+    pitches.any?
+  end
+
+  def chord?
+    pitches.length > 1
   end
 
   def rest?
@@ -35,14 +46,14 @@ class HeadMusic::Content::Placement
   end
 
   def to_s
-    "#{rhythmic_value} #{pitch || "rest"} at #{position}"
+    "#{rhythmic_value} #{pitches.any? ? pitches.join(" ") : "rest"} at #{position}"
   end
 
   def to_h
     {
       "position" => position.to_s,
       "rhythmic_value" => rhythmic_value.to_s,
-      "pitch" => pitch&.to_s
+      "pitches" => pitches.map(&:to_s)
     }
   end
 
@@ -60,11 +71,13 @@ class HeadMusic::Content::Placement
     position <= other_placement.position && next_position >= other_placement.next_position
   end
 
-  def ensure_attributes(voice, position, rhythmic_value, pitch)
+  def ensure_attributes(voice, position, rhythmic_value, pitch_or_pitches)
     @voice = voice
     ensure_position(position)
     @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
-    @pitch = HeadMusic::Rudiment::Pitch.get(pitch)
+    # compact preserves the lenient legacy behavior in which an unparseable
+    # pitch produces a rest rather than raising.
+    @pitches = Array(pitch_or_pitches).map { |pitch| HeadMusic::Rudiment::Pitch.get(pitch) }.compact.freeze
   end
 
   def ensure_position(position)

@@ -120,6 +120,8 @@ module HeadMusic::Notation::ABC
     end
 
     def token(placement, pitch_writer, duration_writer)
+      raise RenderError, "chords are not yet supported by the ABC writer" if placement.chord?
+
       multiplier = duration_writer.multiplier_string(placement.rhythmic_value)
       return "z#{multiplier}" if placement.rest?
 

@@ -212,8 +212,8 @@ describe HeadMusic::Content::Composition do
         {
           "role" => "melody",
           "placements" => [
-            {"position" => "1:1:000", "rhythmic_value" => "quarter", "pitch" => "D4"},
-            {"position" => "1:2:000", "rhythmic_value" => "quarter", "pitch" => nil}
+            {"position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => ["D4"]},
+            {"position" => "1:2:000", "rhythmic_value" => "quarter", "pitches" => []}
           ]
         }
       ]
@@ -236,8 +236,8 @@ describe HeadMusic::Content::Composition do
       composition.add_comment("with feeling", "1:1")
     end
 
-    it "carries schema version 1" do
-      expect(hash["schema_version"]).to eq 1
+    it "carries schema version 2" do
+      expect(hash["schema_version"]).to eq 2
     end
 
     it "includes all top-level keys" do
@@ -332,8 +332,8 @@ describe HeadMusic::Content::Composition do
     end
 
     it "raises on an unsupported schema_version" do
-      expect { described_class.from_h("schema_version" => 2) }
-        .to raise_error(ArgumentError, /unsupported schema_version: 2/)
+      expect { described_class.from_h("schema_version" => 3) }
+        .to raise_error(ArgumentError, /unsupported schema_version: 3/)
     end
 
     it "raises with path context on an unknown pitch" do

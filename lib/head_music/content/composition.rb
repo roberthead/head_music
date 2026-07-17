@@ -3,7 +3,8 @@ module HeadMusic::Content; end
 
 # A composition is musical content.
 class HeadMusic::Content::Composition
-  SCHEMA_VERSION = 1
+  SCHEMA_VERSION = 2
+  SUPPORTED_SCHEMA_VERSIONS = [1, 2].freeze
 
   attr_reader :name, :key_signature, :meter, :voices, :composer, :origin, :comments
 
@@ -143,7 +144,7 @@ class HeadMusic::Content::Composition
     end
   end
 
-  # Rebuilds a composition from a schema v1 hash by replaying the public
+  # Rebuilds a composition from a schema v1 or v2 hash by replaying the public
   # builder API in dependency order: meter and key changes first (position
   # strings roll counts and ticks over via the meter map), then placements,
   # then repeat flags (a pickup-bar flag needs its bar allocated), then
@@ -172,9 +173,9 @@ class HeadMusic::Content::Composition
 
     def validate_schema_version
       version = hash["schema_version"]
-      return if version.is_a?(Integer) && version == SCHEMA_VERSION
+      return if version.is_a?(Integer) && SUPPORTED_SCHEMA_VERSIONS.include?(version)
 
-      raise ArgumentError, "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})"
+      raise ArgumentError, "unsupported schema_version: #{version.inspect} (supported: #{SUPPORTED_SCHEMA_VERSIONS.join(", ")})"
     end
 
     def build_base_composition
@@ -209,8 +210,8 @@ class HeadMusic::Content::Composition
           path = "voices[#{voice_index}].placements[#{placement_index}]"
           position = parsed_position(placement_hash["position"], path)
           rhythmic_value = parsed_rhythmic_value(placement_hash["rhythmic_value"], path)
-          pitch = parsed_pitch(placement_hash["pitch"], path)
-          voice.place(position, rhythmic_value, pitch)
+          pitch_or_pitches = parsed_placement_pitches(placement_hash, path)
+          voice.place(position, rhythmic_value, pitch_or_pitches)
         end
       end
     end
@@ -314,6 +315,26 @@ class HeadMusic::Content::Composition
       raise ArgumentError, "#{path}: unknown pitch #{value.inspect}" unless pitch
 
       pitch
+    end
+
+    # Schema v2 stores "pitches" as an array (empty for a rest); v1 stored a
+    # single "pitch" (nil for a rest). key? distinguishes an explicit empty
+    # array from an absent key, and "pitches" wins when both are present.
+    # A nil element is never a rest, so it is rejected like any garbage value.
+    def parsed_placement_pitches(placement_hash, path)
+      return parsed_pitch(placement_hash["pitch"], path) unless placement_hash.key?("pitches")
+
+      values = placement_hash["pitches"]
+      unless values.is_a?(Array)
+        raise ArgumentError, "#{path}: pitches must be an Array, got #{values.inspect}"
+      end
+
+      values.each_with_index.map do |value, index|
+        element_path = "#{path}.pitches[#{index}]"
+        raise ArgumentError, "#{element_path}: unknown pitch nil" if value.nil?
+
+        parsed_pitch(value, element_path)
+      end
     end
   end
 end

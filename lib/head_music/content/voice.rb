@@ -16,8 +16,8 @@ class HeadMusic::Content::Voice
     @placements = []
   end
 
-  def place(position, rhythmic_value, pitch = nil)
-    HeadMusic::Content::Placement.new(self, position, rhythmic_value, pitch).tap do |placement|
+  def place(position, rhythmic_value, pitch_or_pitches = nil)
+    HeadMusic::Content::Placement.new(self, position, rhythmic_value, pitch_or_pitches).tap do |placement|
       insert_into_placements(placement)
     end
   end

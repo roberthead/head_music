@@ -462,6 +462,22 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with a chord placement" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new
+        voice = composition.add_voice
+        voice.place("1:1", :half, %w[C4 E4 G4])
+        composition
+      end
+
+      it "raises a render error explaining that chords are not yet supported" do
+        expect { described_class.new(composition).to_s }.to raise_error(
+          HeadMusic::Notation::MusicXML::RenderError,
+          /chords are not yet supported by the MusicXML writer/
+        )
+      end
+    end
+
     context "with a control character in the composition name" do
       it "raises a render error" do
         composition = HeadMusic::Content::Composition.new(name: "Bad#{7.chr}Name")

@@ -132,15 +132,15 @@ describe HeadMusic::Content::Placement do
       expect(placement.to_h).to eq(
         "position" => "2:2:240",
         "rhythmic_value" => "eighth",
-        "pitch" => "F♯4"
+        "pitches" => ["F♯4"]
       )
     end
 
     context "when the placement is a rest" do
       let(:pitch) { nil }
 
-      it "serializes the pitch as nil" do
-        expect(placement.to_h["pitch"]).to be_nil
+      it "serializes an empty pitches array" do
+        expect(placement.to_h["pitches"]).to eq []
       end
     end
 
@@ -149,6 +149,93 @@ describe HeadMusic::Content::Placement do
 
       it "preserves the exact position string" do
         expect(placement.to_h["position"]).to eq "1:1:480"
+      end
+    end
+  end
+
+  describe "chords" do
+    context "when given a single bare pitch" do
+      it { is_expected.not_to be_chord }
+      it { is_expected.to be_note }
+
+      it "wraps the pitch in a frozen single-element pitches array" do
+        expect(placement.pitches.map(&:to_s)).to eq ["F♯4"]
+        expect(placement.pitches).to be_frozen
+      end
+    end
+
+    context "when given an array of pitches" do
+      let(:pitch) { %w[G4 C4 E4] }
+
+      it { is_expected.to be_chord }
+      it { is_expected.to be_note }
+      it { is_expected.not_to be_rest }
+
+      it "preserves the order of the given pitches" do
+        expect(placement.pitches.map(&:to_s)).to eq %w[G4 C4 E4]
+      end
+
+      it "freezes the pitches array" do
+        expect(placement.pitches).to be_frozen
+      end
+
+      it "derives the pitch from the highest chord tone" do
+        expect(placement.pitch.to_s).to eq "G4"
+      end
+
+      it "serializes the pitches in order" do
+        expect(placement.to_h).to eq(
+          "position" => "2:2:240",
+          "rhythmic_value" => "eighth",
+          "pitches" => %w[G4 C4 E4]
+        )
+      end
+
+      it "joins the pitches with spaces in to_s" do
+        expect(placement.to_s).to eq "eighth G4 C4 E4 at 2:2:240"
+      end
+    end
+
+    context "when chord tones tie enharmonically" do
+      let(:pitch) { %w[B♭4 A♯4] }
+
+      it "derives the first-listed pitch of the tie" do
+        expect(placement.pitch.to_s).to eq "B♭4"
+      end
+    end
+
+    context "when given a single-element array" do
+      let(:pitch) { ["F#4"] }
+      let(:bare_placement) { described_class.new(voice, position, rhythmic_value, "F#4") }
+
+      it { is_expected.not_to be_chord }
+      it { is_expected.to be_note }
+
+      it "behaves identically to a bare pitch" do
+        expect(placement.to_h).to eq bare_placement.to_h
+        expect(placement.to_s).to eq bare_placement.to_s
+      end
+    end
+
+    context "when given an empty array" do
+      let(:pitch) { [] }
+
+      it { is_expected.to be_rest }
+      it { is_expected.not_to be_note }
+      it { is_expected.not_to be_chord }
+
+      it "serializes an empty pitches array" do
+        expect(placement.to_h["pitches"]).to eq []
+      end
+    end
+
+    context "when given duplicate pitches" do
+      let(:pitch) { %w[C4 C4] }
+
+      it { is_expected.to be_chord }
+
+      it "preserves the duplicates" do
+        expect(placement.pitches.map(&:to_s)).to eq %w[C4 C4]
       end
     end
   end

@@ -311,6 +311,8 @@ module HeadMusic::Notation::MusicXML
     end
 
     def note_lines(placement)
+      raise RenderError, "chords are not yet supported by the MusicXML writer" if placement.chord?
+
       components_by_placement[placement].flat_map do |component|
         component_lines(placement, component)
       end

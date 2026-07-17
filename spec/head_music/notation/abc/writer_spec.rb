@@ -218,6 +218,20 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
+    context "with a chord placement" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new.tap do |composition|
+          composition.add_voice.place("1:1", :half, %w[C4 E4 G4])
+        end
+      end
+
+      it "raises a RenderError explaining that chords are not yet supported" do
+        expect { described_class.new(composition).to_s }.to raise_error(
+          HeadMusic::Notation::ABC::RenderError, /chords are not yet supported by the ABC writer/
+        )
+      end
+    end
+
     context "with a first placement that does not start its bar" do
       let(:composition) do
         HeadMusic::Content::Composition.new.tap do |composition|
