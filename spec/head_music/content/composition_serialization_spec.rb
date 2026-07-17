@@ -464,6 +464,36 @@ describe HeadMusic::Content::Composition do
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /bars\[0\]: unknown meter "not a meter"/)
     end
+
+    it "raises ArgumentError on an unknown top-level key signature" do
+      hash = base_hash.merge("key_signature" => "Q major")
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /key_signature: unknown key signature "Q major"/)
+    end
+
+    it "raises ArgumentError with path context on an unknown bar key signature" do
+      hash = base_hash.merge("bars" => [{"number" => 3, "key_signature" => "Q major"}])
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /bars\[0\]: unknown key signature "Q major"/)
+    end
+
+    it "raises ArgumentError with path context on an unparseable placement position" do
+      hash = hash_with_placement("position" => "not-a-position", "rhythmic_value" => "quarter", "pitch" => "C4")
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown position "not-a-position"/)
+    end
+
+    it "raises ArgumentError with path context on a negative placement position" do
+      hash = hash_with_placement("position" => "-1:1:000", "rhythmic_value" => "quarter", "pitch" => "C4")
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown position "-1:1:000"/)
+    end
+
+    it "raises ArgumentError with path context on an unparseable comment position" do
+      hash = base_hash.merge("comments" => [{"text" => "hello", "position" => "somewhere"}])
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /comments\[0\]: unknown position "somewhere"/)
+    end
   end
 
   describe "edge cases" do

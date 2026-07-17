@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-16T18:59:42-07:00
   planned_at:   2026-07-16T19:25:49-07:00
   finished_at:
-  updated_at:   2026-07-16T21:01:19-07:00
+  updated_at:   2026-07-16T21:38:30-07:00
 -->
 
 # Story: Composition Serialization (to_h / from_h)
@@ -275,3 +275,38 @@ Unit-level `#to_h` examples extend the existing mirrored specs: `composition_spe
 1. **Unicode vs ASCII key/pitch strings**: **Unicode verbatim.** Serialize `KeySignature#name` (`"F♯ minor"`) and `Pitch#to_s` (`"B♭3"`) exactly as emitted; pin with a spec.
 2. **Repeats formally in scope**: **In scope.** Bar-level repeat structure (`starts_repeat`, `ends_repeat_after_num_plays`, `plays_on_passes`) serializes in the sparse `"bars"` array; the SPEED_THE_PLOUGH `to_abc` criterion stands as written.
 3. **`schema_version` strictness**: **Strict Integer.** `from_h` raises `ArgumentError` on `"1"`, `2`, or missing.
+
+## Review
+
+**Date:** 2026-07-16 · **Commit reviewed:** 5b0fd0a · Full suite: 5640 examples, 0 failures, 99.73% line coverage.
+
+### Acceptance criteria
+
+- ✅ **`#to_h` returns a plain JSON-serializable Hash** — `lib/head_music/content/composition.rb:91-103`; recursive-walk assertion in `composition_serialization_spec.rb:20-34`.
+- ✅ **`.from_h` rebuilds via the public construction API** — `HashDeserializer` (`composition.rb:152-301`) replays `new` → `change_key_signature`/`change_meter` → `add_voice` + `Voice#place` → public `Bar` repeat setters → `add_comment`; no private state touched.
+- ⚠️ **Round-trip identity incl. `to_musicxml`/`to_abc` equality** — *scoped-met*: `from_h(c.to_h).to_h == c.to_h` holds universally; renderer-output equality is asserted wherever the renderers can render. ABC comparison skipped for multi-voice, mid-piece changes, and chords; MusicXML for same-voice chords and empty compositions — pre-existing renderer limitations, not serialization loss. Compensating specs pin that the restored composition raises the identical `RenderError`. The literal "for any Composition" is unsatisfiable without separate renderer fixes.
+- ✅ **JSON-safety round trip** — `from_h(JSON.parse(c.to_h.to_json)).to_h == c.to_h` plus `to_json`/`from_json` delegates (`composition_serialization_spec.rb:73-82`).
+- ✅ **Full model fidelity** — attributes, voices with roles + ordered placements, tick-precise positions, tied rhythmic values, nil-pitch rests, chords as co-positioned placements, mid-piece key/meter changes and repeat/volta state in sparse `"bars"`, comments in both builder and constructor forms.
+- ✅ **Pitch spellings round-trip faithfully** — enharmonics not normalized (`B♭4` vs `A♯4`); double sharp `F𝄪5` and `"F♯ minor"` verbatim unicode.
+- ✅ **`schema_version` carried** — `SCHEMA_VERSION = 1`; strict-Integer validation raising `ArgumentError` on missing/`2`/`"1"`.
+- ✅ **Spec coverage of all listed scenarios** — all ten present in `composition_serialization_spec.rb` (single-voice diatonic L85, accidentals L102 via `CHROMATIC_AIR`, rests L168, chords L190, multi-voice roles L216, tick positions L238, key change L259, meter change with phase-ordering pin L279, comments L314, `SPEED_THE_PLOUGH` round trip with repeats L349), plus tied durations, malformed input, and edge cases beyond the list.
+
+**Deliverable note:** version bumped to 15.2.0 with CHANGELOG documenting schema v1 as a compatibility surface, but publishing to RubyGems is a manual step outside this branch.
+
+### Code review findings
+
+**Critical:** none.
+
+**Important:**
+
+1. ✅ **FIXED** — `composition.rb` — **invalid key signature slips through validation.** `KeySignature.get("Q major")` returns a hollow object (`tonic_spelling=nil`) rather than nil, passing the truthiness guard. Fixed: `parsed_key_signature` now requires `tonic_spelling`; corrupted-input specs added (top-level and per-bar).
+2. ✅ **FIXED** — `composition.rb` — **position strings never validated.** `Position.new` silently coerces garbage to `"0:1:000"`. Fixed: new `parsed_position` helper validates the `bar[:count[:tick]]` shape (non-negative parts) for placements and comments; specs added for garbage, negative-bar, and comment positions.
+
+**Minor:**
+
+3. `composition.rb` — repeat flags accept any truthy value (string `"yes"` acts as `true`); harmless for real JSON (booleans survive), inconsistent with otherwise-strict validation. Accepted as-is.
+4. ✅ **FIXED** — corrupted-input spec block lacked invalid-key-signature and invalid-position cases; five specs added alongside findings 1–2.
+
+**Verified non-issues:** `to_json(*_args)` nests correctly in `{a: composition}.to_json`; stable chord insertion correct; `from_tied_words` recursion terminates; `to_h` leaks no mutable state; pickup-bar reindexing consistent.
+
+**Verdict:** solid, well-tested feature. Findings 1–2 (and the spec gap, finding 4) fixed post-review; full suite 5645 examples, 0 failures, 99.73% line coverage. Nothing blocks `finish` except the manual RubyGems release.

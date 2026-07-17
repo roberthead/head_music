@@ -207,9 +207,10 @@ class HeadMusic::Content::Composition
         voice = composition.add_voice(role: voice_hash["role"])
         Array(voice_hash["placements"]).each_with_index do |placement_hash, placement_index|
           path = "voices[#{voice_index}].placements[#{placement_index}]"
+          position = parsed_position(placement_hash["position"], path)
           rhythmic_value = parsed_rhythmic_value(placement_hash["rhythmic_value"], path)
           pitch = parsed_pitch(placement_hash["pitch"], path)
-          voice.place(placement_hash["position"], rhythmic_value, pitch)
+          voice.place(position, rhythmic_value, pitch)
         end
       end
     end
@@ -226,8 +227,9 @@ class HeadMusic::Content::Composition
     end
 
     def add_comments(composition)
-      Array(hash["comments"]).each do |comment_hash|
-        composition.add_comment(comment_hash["text"], comment_hash["position"])
+      Array(hash["comments"]).each_with_index do |comment_hash, index|
+        position = parsed_position(comment_hash["position"], "comments[#{index}]") if comment_hash["position"]
+        composition.add_comment(comment_hash["text"], position)
       end
     end
 
@@ -243,6 +245,20 @@ class HeadMusic::Content::Composition
       number
     end
 
+    # Position silently coerces garbage strings to "0:1:000", which would
+    # mislocate content with no error, so the shape is validated up front.
+    # Accepts "bar", "bar:count", or "bar:count:tick" with non-negative parts.
+    def parsed_position(value, path)
+      return nil if value.nil?
+
+      unless value.is_a?(String) && value.match?(/\A\d+(:\d+){0,2}\z/)
+        raise ArgumentError, "#{path}: unknown position #{value.inspect}"
+      end
+      value
+    end
+
+    # KeySignature.get returns a hollow object (nil tonic_spelling) for
+    # garbage rather than nil, so presence of the tonic is the real check.
     def parsed_key_signature(value, path)
       return nil if value.nil?
 
@@ -251,8 +267,9 @@ class HeadMusic::Content::Composition
       rescue
         nil
       end
-      raise ArgumentError, "#{path}: unknown key signature #{value.inspect}" unless key_signature
-
+      unless key_signature&.tonic_spelling
+        raise ArgumentError, "#{path}: unknown key signature #{value.inspect}"
+      end
       key_signature
     end
 
