@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-17T13:20:33-07:00
   activated_at: 2026-07-17T13:23:57-07:00
   planned_at:   2026-07-17T13:32:17-07:00
-  finished_at:
-  updated_at:   2026-07-17T14:46:29-07:00
+  finished_at:  2026-07-17T14:50:15-07:00
+  updated_at:   2026-07-17T14:50:15-07:00
 -->
 
 # Story: Chord Placement Model
@@ -172,5 +172,14 @@ None blocking; items 1–3 below are consequences of deliberate design decisions
 4. **(Resolved in polish) unparseable pitches in an array now raise** — array input is explicit chord input, so an unparseable or nil element raises `ArgumentError` ("unknown pitch \"bogus\"") instead of silently thinning the chord; the bare single-pitch leniency (unparseable → rest) is preserved and now spec-pinned.
 5. **(Minor) two undocumented couplings** — `uniq` dedupes by identity and works because `Pitch.fetch_or_create` interns instances; the "max keeps the earliest maximum" enharmonic tie-break relies on MRI's unspecified `Array#max` tie behavior. Both hold today; the placement comment slightly overstates the guarantee.
 6. **(Historical only) commit `6bcb2f6`'s message** says v1 hashes still load, which the follow-up commit reversed; CHANGELOG and code are correct.
+
+## Learnings
+
+- **Design discussion before the story paid for itself.** Comparing pitches-array vs co-positioned placements up front surfaced latent defects in the old idiom (`first_gap` false-gapping every chord, melodic pairs computed between simultaneous tones) that became the decisive arguments, and the eventual model made two downstream stories (ABC input, MusicXML rendering) simpler before they started.
+- **The planner caught a genuine criteria conflict.** "`to_h` emits `pitches`" and "existing suite passes unmodified" were mutually exclusive given the exact-`eq` wire-shape specs and the documented schema contract. Surfacing that as a decision (rather than hedging in code) led to the clean v2 bump — and the follow-up question about real-world data ("no v1 data exists in the wild") deleted the dual-version support the same day it was written. Ask about the actual data footprint before building compatibility layers.
+- **Structural invariants flushed out latent test bugs.** Making same-position placement merge idempotently exposed a style-guideline spec with accidentally duplicated `place` calls whose mark count had silently doubled. Enforcing "one event per position" fixed test data no one knew was wrong.
+- **Don't pin contested edge cases early.** The "duplicates preserved" spec written in the first pass was reversed hours later by the idempotency decision. When a design question is still live (merge semantics, dedupe), leave the edge case unpinned until it settles.
+- **Parallel agents with disjoint file ownership worked.** The core-model agent and the writer-guards agent ran concurrently; the guards agent coded against `chord?` before it existed and reported honestly that its specs were pending the concurrent change — everything integrated green on the first full-suite run.
+- **Mid-story scope growth was cheap because the model change was isolated.** The merge-or-raise increment, v1 retirement, and 16.0.0 bump all landed as a small follow-up commit since `Placement` normalization was already the single choke point for pitch handling.
 
 **Verdict: all nine acceptance criteria met; nothing blocks finishing the story.** The optional polish was applied post-review: `pitch == nil` for rests is spec-pinned (nil and empty-array contexts), array construction raises on unparseable or nil elements (finding 4), and the enharmonic tie-break comment no longer overstates the `Enumerable#max` guarantee (finding 5). Suite after polish: 5,689 examples, 0 failures; rubocop clean.
