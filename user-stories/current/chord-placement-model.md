@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-17T13:23:57-07:00
   planned_at:   2026-07-17T13:32:17-07:00
   finished_at:
-  updated_at:   2026-07-17T14:29:35-07:00
+  updated_at:   2026-07-17T14:46:29-07:00
 -->
 
 # Story: Chord Placement Model
@@ -143,3 +143,34 @@ Decided with the user after the initial implementation landed:
 - **Writer guards raise on chords** (step 4) — recommended over silent top-note export; if silent export is preferred for the interim, drop step 4 and add `abc: true, musicxml: true` round-trip checks instead.
 - **`notes_not_in_key` blind spot**: with derived top pitch, an out-of-key inner chord tone is invisible to `Voice#notes_not_in_key` (`voice.rb:29-31`), and `lowest_pitch` of a chordal voice reports the lowest top-line pitch, not the chord bass. The story scopes Voice changes out; the two-line `notes_not_in_key` fix is worth a follow-up (or a one-line scope extension here if desired).
 - **`note?` return type** changes from truthy `Pitch` to boolean — all in-repo call sites verified boolean-context; a theoretical external caller chaining off the return value would break.
+
+## Review
+
+Reviewed 2026-07-17 at commit `2a33c9f` (branch `story/chord-placement-model`, clean tree) by a product-manager agent (acceptance criteria) and a code-reviewer agent (code quality), consolidated below. Full suite: 5,684 examples, 0 failures (99.74% line / 97.3% branch coverage); rubocop: 428 files, no offenses.
+
+### Acceptance criteria
+
+- ✅ **`#pitches` always an array; `#pitch` derived as highest, nil for rests** — `placement.rb` normalizes via `Array(...).map { Pitch.get }.compact.uniq.freeze`; `pitch` is `pitches.max`. Order, freezing, highest-pitch derivation, and the enharmonic tie are all spec-pinned. (Gap: no spec directly asserts `pitch` is nil for a rest — implied by `pitches.max` on `[]` but unpinned.)
+- ✅ **`Voice#place` accepts single pitch or array; single-pitch call sites unchanged** — arity unchanged; array form spec'd to create exactly one placement; `Note` needed no change; untouched suite green.
+- ✅ **`#chord?` for 2+; `#note?`/`#rest?` semantics unchanged** — truth table spec'd for 0/1/2+ pitches, including single-element ≡ bare pitch and duplicate collapse.
+- ✅ **`to_h` emits `"pitches"` under schema_version 2; v1 rejected clearly; chord round-trips** — `SCHEMA_VERSION = 2`; v1 raises `unsupported schema_version: 1 (supported: 2)`; rests emit `"pitches" => []`; lossless chord round-trip spec'd; boundary validation covers non-array, per-element paths, `[nil]`, and the retired `"pitch"` key.
+- ✅ **Occupied-position merge (idempotent) or `ArgumentError`** — merge, idempotent re-place, note-onto-rest, rest-onto-note, verbatim error message, and identity of the returned placement all spec'd.
+- ✅ **Existing specs modified only in sanctioned categories** — wire-shape/schema assertions, co-positioned fixtures rewritten to assert merging, and one style-guideline fixture with accidentally duplicated `place` calls (marks 4 → 2).
+- ✅ **Gem 16.0.0 with changelog** — `version.rb` and a complete `[16.0.0]` entry marking the breaking changes.
+- ✅ **New specs for construction, derivation, predicates, round-trips** — plus writer `RenderError` guard specs for ABC and MusicXML.
+- ✅ **Rubocop passes** — verified.
+
+Scope follow-through also delivered: both dependent backlog stories rewritten against the pitches-array model; writer chord guards in place; kanban board updated.
+
+### Code review findings
+
+None blocking; items 1–3 below are consequences of deliberate design decisions, recorded here with their rationale.
+
+1. **(Accepted design) `merge` mutates a placement earlier callers may hold** — `voice.place("1:1", :quarter, "C4")` returns a placement that a later `place("1:1", :quarter, "E4")` mutates into a chord under the holder's feet. This is the deliberate merge semantics (the returns-existing-placement spec pins it); worth remembering when the chord-rendering stories land.
+2. **(Known limitation, deferred) Voice pitch aggregates see only chord top notes** — `lowest_pitch`, `range`, and `notes_not_in_key` go through the derived `#pitch`, so inner chord tones are invisible (a voice holding only `[C4 E4 G4]` reports `lowest_pitch == G4`). Melodic top-line behavior is by design; the harmonic queries deserve a follow-up story to flatten chord tones.
+3. **(Accepted design) rest-onto-note is a silent no-op** — the empty pitch union absorbs the rest; a caller cannot clear a note by placing a rest. Decided behavior; a future `Voice#remove`/`#replace` API would be the right home for clearing.
+4. **(Resolved in polish) unparseable pitches in an array now raise** — array input is explicit chord input, so an unparseable or nil element raises `ArgumentError` ("unknown pitch \"bogus\"") instead of silently thinning the chord; the bare single-pitch leniency (unparseable → rest) is preserved and now spec-pinned.
+5. **(Minor) two undocumented couplings** — `uniq` dedupes by identity and works because `Pitch.fetch_or_create` interns instances; the "max keeps the earliest maximum" enharmonic tie-break relies on MRI's unspecified `Array#max` tie behavior. Both hold today; the placement comment slightly overstates the guarantee.
+6. **(Historical only) commit `6bcb2f6`'s message** says v1 hashes still load, which the follow-up commit reversed; CHANGELOG and code are correct.
+
+**Verdict: all nine acceptance criteria met; nothing blocks finishing the story.** The optional polish was applied post-review: `pitch == nil` for rests is spec-pinned (nil and empty-array contexts), array construction raises on unparseable or nil elements (finding 4), and the enharmonic tie-break comment no longer overstates the `Enumerable#max` guarantee (finding 5). Suite after polish: 5,689 examples, 0 failures; rubocop clean.

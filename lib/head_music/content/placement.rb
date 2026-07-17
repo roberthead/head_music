@@ -16,7 +16,8 @@ class HeadMusic::Content::Placement
 
   # The top pitch of a chord (or the only pitch of a note), which melodic
   # analysis treats as the melody note. Enharmonic ties resolve to the
-  # first-listed pitch because Enumerable#max keeps the earliest maximum.
+  # first-listed pitch (MRI's max keeps the earliest of equals; a spec
+  # pins the behavior).
   def pitch
     pitches.max
   end
@@ -88,9 +89,23 @@ class HeadMusic::Content::Placement
     @voice = voice
     ensure_position(position)
     @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
-    # compact preserves the lenient legacy behavior in which an unparseable
-    # pitch produces a rest rather than raising; uniq keeps chords duplicate-free.
-    @pitches = Array(pitch_or_pitches).map { |pitch| HeadMusic::Rudiment::Pitch.get(pitch) }.compact.uniq.freeze
+    @pitches = ensure_pitches(pitch_or_pitches)
+  end
+
+  # A bare unparseable pitch quietly becomes a rest (long-standing leniency),
+  # but an array is explicit chord input, so an unparseable element raises
+  # rather than silently thinning the chord. uniq keeps chords duplicate-free.
+  def ensure_pitches(pitch_or_pitches)
+    return [HeadMusic::Rudiment::Pitch.get(pitch_or_pitches)].compact.freeze unless pitch_or_pitches.is_a?(Array)
+
+    pitch_or_pitches.map { |value| fetch_pitch(value) }.uniq.freeze
+  end
+
+  def fetch_pitch(value)
+    pitch = HeadMusic::Rudiment::Pitch.get(value)
+    raise ArgumentError, "unknown pitch #{value.inspect}" unless pitch
+
+    pitch
   end
 
   def ensure_position(position)

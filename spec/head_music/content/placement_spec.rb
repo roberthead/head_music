@@ -20,6 +20,8 @@ describe HeadMusic::Content::Placement do
 
     it { is_expected.to be_rest }
 
+    its(:pitch) { is_expected.to be_nil }
+
     context "when the rhythmic value is a thirty-second note" do
       let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.new(:"thirty-second") }
 
@@ -224,8 +226,32 @@ describe HeadMusic::Content::Placement do
       it { is_expected.not_to be_note }
       it { is_expected.not_to be_chord }
 
+      its(:pitch) { is_expected.to be_nil }
+
       it "serializes an empty pitches array" do
         expect(placement.to_h["pitches"]).to eq []
+      end
+    end
+
+    context "when given a bare unparseable pitch" do
+      let(:pitch) { "bogus" }
+
+      it { is_expected.to be_rest }
+    end
+
+    context "when an array element is unparseable" do
+      let(:pitch) { %w[C4 bogus G4] }
+
+      it "raises ArgumentError naming the pitch" do
+        expect { placement }.to raise_error(ArgumentError, 'unknown pitch "bogus"')
+      end
+    end
+
+    context "when an array element is nil" do
+      let(:pitch) { [nil] }
+
+      it "raises ArgumentError" do
+        expect { placement }.to raise_error(ArgumentError, "unknown pitch nil")
       end
     end
 
