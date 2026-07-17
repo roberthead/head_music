@@ -33,6 +33,19 @@ class HeadMusic::Content::Placement
     !note?
   end
 
+  # Voice#place merges a same-position placement into the existing one, so a
+  # position holds at most one placement. The pitch union keeps the chord free
+  # of duplicates, making repeated placement of a pitch idempotent.
+  def merge(other)
+    unless rhythmic_value == other.rhythmic_value
+      raise ArgumentError,
+        "cannot place a #{other.rhythmic_value} at #{position}: position occupied by a #{rhythmic_value}"
+    end
+
+    @pitches = (pitches + other.pitches).uniq.freeze
+    self
+  end
+
   def next_position
     @next_position ||= position + rhythmic_value
   end
@@ -76,8 +89,8 @@ class HeadMusic::Content::Placement
     ensure_position(position)
     @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
     # compact preserves the lenient legacy behavior in which an unparseable
-    # pitch produces a rest rather than raising.
-    @pitches = Array(pitch_or_pitches).map { |pitch| HeadMusic::Rudiment::Pitch.get(pitch) }.compact.freeze
+    # pitch produces a rest rather than raising; uniq keeps chords duplicate-free.
+    @pitches = Array(pitch_or_pitches).map { |pitch| HeadMusic::Rudiment::Pitch.get(pitch) }.compact.uniq.freeze
   end
 
   def ensure_position(position)

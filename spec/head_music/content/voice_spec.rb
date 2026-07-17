@@ -36,8 +36,61 @@ describe HeadMusic::Content::Voice do
         voice.place("1:1", :quarter, "G4")
       end
 
-      it "preserves the insertion order of the chord tones" do
-        expect(voice.placements.map { |placement| placement.pitch.to_s }).to eq %w[C4 E4 G4]
+      it "merges them into one chord placement, preserving placement order" do
+        expect(voice.placements.length).to eq 1
+        expect(voice.placements.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
+      end
+    end
+
+    context "when a pitch is placed again at the same position" do
+      before do
+        voice.place("1:1", :quarter, %w[C4 E4])
+        voice.place("1:1", :quarter, "C4")
+      end
+
+      it "is idempotent" do
+        expect(voice.placements.first.pitches.map(&:to_s)).to eq %w[C4 E4]
+      end
+    end
+
+    context "when a note is placed on a same-duration rest" do
+      before do
+        voice.place("1:1", :quarter)
+        voice.place("1:1", :quarter, "C4")
+      end
+
+      it "turns the rest into a note" do
+        expect(voice.placements.length).to eq 1
+        expect(voice.placements.first).to be_note
+      end
+    end
+
+    context "when a rest is placed on a same-duration note" do
+      before do
+        voice.place("1:1", :quarter, "C4")
+        voice.place("1:1", :quarter)
+      end
+
+      it "leaves the note unchanged" do
+        expect(voice.placements.length).to eq 1
+        expect(voice.placements.first.pitches.map(&:to_s)).to eq %w[C4]
+      end
+    end
+
+    context "when the durations differ at one position" do
+      before { voice.place("1:1", :half, "C4") }
+
+      it "raises ArgumentError naming both durations and the position" do
+        expect { voice.place("1:1", :quarter, "E4") }
+          .to raise_error(ArgumentError, "cannot place a quarter at 1:1:000: position occupied by a half")
+      end
+    end
+
+    context "when merging into an existing placement" do
+      it "returns the existing placement" do
+        first = voice.place("1:1", :quarter, "C4")
+        second = voice.place("1:1", :quarter, "E4")
+        expect(second).to be first
       end
     end
 
@@ -57,8 +110,8 @@ describe HeadMusic::Content::Voice do
         voice.place("1:1", :quarter, "B3")
       end
 
-      it "sorts by position while preserving insertion order within a position" do
-        expect(voice.placements.map { |placement| placement.pitch.to_s }).to eq %w[B3 C4 E4 G4]
+      it "sorts by position and merges the co-positioned pitches" do
+        expect(voice.placements.map { |placement| placement.pitches.map(&:to_s) }).to eq [["B3"], %w[C4 E4 G4]]
       end
     end
   end

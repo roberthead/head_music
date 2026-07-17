@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-17T13:23:57-07:00
   planned_at:   2026-07-17T13:32:17-07:00
   finished_at:
-  updated_at:   2026-07-17T13:55:01-07:00
+  updated_at:   2026-07-17T14:29:35-07:00
 -->
 
 # Story: Chord Placement Model
@@ -29,8 +29,9 @@ Every notation format also treats a chord as a single event with multiple pitche
 - `Placement#pitch` becomes a derived method returning the *highest* pitch in `pitches` (nil when empty), so melodic analysis of chordal music follows the top line.
 - `Placement#note?` remains true when any pitch is present; `#rest?` when none. Add a `#chord?` predicate (two or more pitches).
 - `Voice#place` accepts a single pitch (as today) or an array of pitches.
-- Serialization: `Placement#to_h` always emits a `"pitches"` array (empty for rests); `SCHEMA_VERSION` bumps to 2; `Composition.from_h` accepts both v2 (`"pitches"`) and legacy v1 (`"pitch"`) hashes so existing serialized data still loads.
-- Backward compatibility for behavior is a hard requirement: all single-pitch code paths behave identically. Existing specs pass unmodified except serialization wire-shape assertions, which are updated to the `"pitches"` key.
+- One placement per position, enforced structurally: `Voice#place` merges a same-position placement into the existing one when the rhythmic value matches (the pitch union is duplicate-free, so re-placing a pitch is idempotent) and raises `ArgumentError` when it does not — simultaneous pitches with different durations belong in different voices.
+- Serialization: `Placement#to_h` always emits a `"pitches"` array (empty for rests); `SCHEMA_VERSION` bumps to 2 and v1 hashes are no longer accepted (no v1 data exists in the wild). Ships as gem 16.0.0.
+- Backward compatibility for behavior is a hard requirement: all single-pitch code paths behave identically. Existing specs pass unmodified except serialization wire-shape assertions and specs that relied on co-positioned duplicate placements.
 - Out of scope: per-tone attributes within a chord (ties, fingerings, noteheads), ABC/MusicXML chord syntax (separate stories), and any change to `Voice`'s melodic analysis beyond what `#pitch` delegation already provides.
 
 ## Example
@@ -52,8 +53,10 @@ placement.to_h
 - `Placement` exposes `#pitches` (always an array) and derives `#pitch` as the highest pitch, nil for rests
 - `Voice#place` accepts a single pitch or an array of pitches; existing single-pitch call sites are unchanged
 - `#chord?` is true for two or more pitches; `#note?` / `#rest?` semantics are unchanged for single notes and rests
-- `#to_h` always emits `"pitches"` under `schema_version` 2; `.from_h` accepts both v2 `"pitches"` and legacy v1 `"pitch"` hashes, and a chord round-trips through `to_h` / `from_h`
-- Existing specs pass unmodified except serialization wire-shape assertions updated to the `"pitches"` key (runtime behavior for single-pitch code is a no-op)
+- `#to_h` always emits `"pitches"` under `schema_version` 2; `.from_h` rejects v1 hashes with a clear error, and a chord round-trips through `to_h` / `from_h`
+- Placing at an occupied position merges when durations match (idempotently — no duplicate pitches) and raises `ArgumentError` naming both durations and the position when they differ
+- Existing specs pass unmodified except serialization wire-shape assertions and specs that relied on co-positioned duplicate placements (runtime behavior for single-pitch code is otherwise a no-op)
+- Gem version is 16.0.0 with a changelog entry describing the breaking changes
 - New specs cover chord construction, `#pitch` derivation, predicates, and serialization round-trips
 - Rubocop passes
 
@@ -125,9 +128,18 @@ The serialization contract (`user-stories/done/composition-serialization.md`) al
 
 Wire-shape assertions updated once to the `"pitches"` schema (v2) and then pinned exactly as before, a legacy-v1 loading spec preserving the old fixtures' shape, new chord behavior specs in house style (tests-as-documentation), boundary-validation error-path specs mirroring the existing `parsed_*` cases, and the coverage/lint gates. Details per file in step 5.
 
+### Implementation increment: same-position merge and v2-only schema
+
+Decided with the user after the initial implementation landed:
+
+- `Voice#place` at an occupied position merges into the existing placement when the rhythmic value matches and raises `ArgumentError` ("cannot place a quarter at 1:1:000: position occupied by a half") when it does not. `Placement#merge` performs the pitch union; the union (and the constructor) are duplicate-free, so re-placing a pitch is idempotent. A rest merges cleanly in both directions (a note onto a same-duration rest becomes the note; a rest onto a note is a no-op). The invariant enforced is one *event* per position — overlapping durations at different positions remain representable, as before.
+- Since no v1 data exists in the wild, `from_h` accepts only schema version 2; `SUPPORTED_SCHEMA_VERSIONS` and the legacy `"pitch"`-key fallback were removed, and a v1 hash fails loudly on the version check.
+- Gem version bumped to 16.0.0 with a changelog entry covering the breaking changes (schema v2 only, derived `#pitch`, boolean `#note?`, merge-or-raise placement, writer chord guards).
+- Spec fallout: the co-positioned-placement fixtures now assert merging; a style-guideline fixture with accidentally duplicated `place` calls was cleaned up (its mark count halved accordingly).
+
 ### Risks & Open Questions
 
-- **Schema v2 rollout**: bardtheory (or any consumer) must upgrade the gem before *reading* v2 hashes; its persisted v1 data loads fine, but hashes written by the new gem version raise in old gem versions. Release notes should call this out; ships as a minor version bump with `from_h` accepting both schema versions.
+- **Schema v2 rollout**: consumers must upgrade the gem to read or write v2 hashes; v1 hashes are rejected outright. The 16.0.0 major bump and changelog signal the break.
 - **Writer guards raise on chords** (step 4) — recommended over silent top-note export; if silent export is preferred for the interim, drop step 4 and add `abc: true, musicxml: true` round-trip checks instead.
 - **`notes_not_in_key` blind spot**: with derived top pitch, an out-of-key inner chord tone is invisible to `Voice#notes_not_in_key` (`voice.rb:29-31`), and `lowest_pitch` of a chordal voice reports the lowest top-line pitch, not the chord bass. The story scopes Voice changes out; the two-line `notes_not_in_key` fix is worth a follow-up (or a one-line scope extension here if desired).
 - **`note?` return type** changes from truthy `Pitch` to boolean — all in-repo call sites verified boolean-context; a theoretical external caller chaining off the return value would break.

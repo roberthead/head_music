@@ -299,7 +299,7 @@ describe HeadMusic::Content::Composition do
 
     def single_placement_hash(placement_hash)
       {
-        "schema_version" => 1,
+        "schema_version" => 2,
         "voices" => [{"role" => nil, "placements" => [placement_hash]}]
       }
     end
@@ -309,7 +309,7 @@ describe HeadMusic::Content::Composition do
     end
 
     it "accepts a symbol-keyed hash" do
-      hash = {schema_version: 1, name: "Symbolic", voices: [], bars: [], comments: []}
+      hash = {schema_version: 2, name: "Symbolic", voices: [], bars: [], comments: []}
       expect(described_class.from_h(hash).name).to eq "Symbolic"
     end
 
@@ -337,36 +337,36 @@ describe HeadMusic::Content::Composition do
     end
 
     it "raises with path context on an unknown pitch" do
-      hash = single_placement_hash("position" => "1:1:000", "rhythmic_value" => "quarter", "pitch" => "H#4")
+      hash = single_placement_hash("position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => ["H#4"])
       expect { described_class.from_h(hash) }
-        .to raise_error(ArgumentError, 'voices[0].placements[0]: unknown pitch "H#4"')
+        .to raise_error(ArgumentError, 'voices[0].placements[0].pitches[0]: unknown pitch "H#4"')
     end
 
     it "raises with path context on an unknown rhythmic value" do
-      hash = single_placement_hash("position" => "1:1:000", "rhythmic_value" => "flurble", "pitch" => "C4")
+      hash = single_placement_hash("position" => "1:1:000", "rhythmic_value" => "flurble", "pitches" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown rhythmic value "flurble"/)
     end
 
     it "raises with path context on a negative bar number" do
-      hash = {"schema_version" => 1, "bars" => [{"number" => -1, "meter" => "6/8"}]}
+      hash = {"schema_version" => 2, "bars" => [{"number" => -1, "meter" => "6/8"}]}
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /bars\[0\]: bar number must be an Integer of at least 0/)
     end
 
     it "raises with path context on a non-integer bar number" do
-      hash = {"schema_version" => 1, "bars" => [{"number" => "2", "meter" => "6/8"}]}
+      hash = {"schema_version" => 2, "bars" => [{"number" => "2", "meter" => "6/8"}]}
       expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /bars\[0\]: bar number/)
     end
 
     it "raises with path context on an unparseable meter" do
-      hash = {"schema_version" => 1, "bars" => [{"number" => 2, "meter" => "garbage"}]}
+      hash = {"schema_version" => 2, "bars" => [{"number" => 2, "meter" => "garbage"}]}
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /bars\[0\]: unknown meter "garbage"/)
     end
 
     it "raises with path context on an unparseable key signature" do
-      hash = {"schema_version" => 1, "bars" => [{"number" => 2, "key_signature" => "garbage nonsense"}]}
+      hash = {"schema_version" => 2, "bars" => [{"number" => 2, "key_signature" => "garbage nonsense"}]}
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /bars\[0\]: unknown key signature "garbage nonsense"/)
     end

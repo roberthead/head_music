@@ -17,9 +17,12 @@ class HeadMusic::Content::Voice
   end
 
   def place(position, rhythmic_value, pitch_or_pitches = nil)
-    HeadMusic::Content::Placement.new(self, position, rhythmic_value, pitch_or_pitches).tap do |placement|
-      insert_into_placements(placement)
-    end
+    placement = HeadMusic::Content::Placement.new(self, position, rhythmic_value, pitch_or_pitches)
+    existing = placement_at(placement.position)
+    return existing.merge(placement) if existing
+
+    insert_into_placements(placement)
+    placement
   end
 
   def notes
@@ -153,8 +156,12 @@ class HeadMusic::Content::Voice
     HeadMusic::Content::Position.new(composition, placement.position.bar_number, 1, 0)
   end
 
-  # Stable insertion: co-positioned placements (chords) keep their insertion order,
-  # which serialization round-trips depend on.
+  def placement_at(position)
+    @placements.find { |placement| placement.position == position }
+  end
+
+  # Positions are unique within a voice (place merges same-position
+  # placements), so insertion order is simply position order.
   def insert_into_placements(placement)
     index = @placements.index { |existing| existing > placement } || @placements.length
     @placements.insert(index, placement)

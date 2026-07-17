@@ -4,7 +4,6 @@ module HeadMusic::Content; end
 # A composition is musical content.
 class HeadMusic::Content::Composition
   SCHEMA_VERSION = 2
-  SUPPORTED_SCHEMA_VERSIONS = [1, 2].freeze
 
   attr_reader :name, :key_signature, :meter, :voices, :composer, :origin, :comments
 
@@ -144,7 +143,7 @@ class HeadMusic::Content::Composition
     end
   end
 
-  # Rebuilds a composition from a schema v1 or v2 hash by replaying the public
+  # Rebuilds a composition from a schema v2 hash by replaying the public
   # builder API in dependency order: meter and key changes first (position
   # strings roll counts and ticks over via the meter map), then placements,
   # then repeat flags (a pickup-bar flag needs its bar allocated), then
@@ -173,9 +172,9 @@ class HeadMusic::Content::Composition
 
     def validate_schema_version
       version = hash["schema_version"]
-      return if version.is_a?(Integer) && SUPPORTED_SCHEMA_VERSIONS.include?(version)
+      return if version.is_a?(Integer) && version == SCHEMA_VERSION
 
-      raise ArgumentError, "unsupported schema_version: #{version.inspect} (supported: #{SUPPORTED_SCHEMA_VERSIONS.join(", ")})"
+      raise ArgumentError, "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})"
     end
 
     def build_base_composition
@@ -306,34 +305,25 @@ class HeadMusic::Content::Composition
       rhythmic_value.tied_value.nil? || valid_rhythmic_value?(rhythmic_value.tied_value)
     end
 
-    # A nil pitch is a rest; a non-nil string that fails to parse would
-    # otherwise silently deserialize as a rest.
+    # A value that fails to parse would otherwise silently deserialize as
+    # a rest.
     def parsed_pitch(value, path)
-      return nil if value.nil?
-
       pitch = HeadMusic::Rudiment::Pitch.get(value)
       raise ArgumentError, "#{path}: unknown pitch #{value.inspect}" unless pitch
 
       pitch
     end
 
-    # Schema v2 stores "pitches" as an array (empty for a rest); v1 stored a
-    # single "pitch" (nil for a rest). key? distinguishes an explicit empty
-    # array from an absent key, and "pitches" wins when both are present.
-    # A nil element is never a rest, so it is rejected like any garbage value.
+    # "pitches" is an array of pitch strings, empty for a rest. A nil element
+    # is never a rest, so it fails like any other unknown pitch.
     def parsed_placement_pitches(placement_hash, path)
-      return parsed_pitch(placement_hash["pitch"], path) unless placement_hash.key?("pitches")
-
       values = placement_hash["pitches"]
       unless values.is_a?(Array)
         raise ArgumentError, "#{path}: pitches must be an Array, got #{values.inspect}"
       end
 
       values.each_with_index.map do |value, index|
-        element_path = "#{path}.pitches[#{index}]"
-        raise ArgumentError, "#{element_path}: unknown pitch nil" if value.nil?
-
-        parsed_pitch(value, element_path)
+        parsed_pitch(value, "#{path}.pitches[#{index}]")
       end
     end
   end

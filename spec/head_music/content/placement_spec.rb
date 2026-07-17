@@ -232,10 +232,10 @@ describe HeadMusic::Content::Placement do
     context "when given duplicate pitches" do
       let(:pitch) { %w[C4 C4] }
 
-      it { is_expected.to be_chord }
+      it { is_expected.not_to be_chord }
 
-      it "preserves the duplicates" do
-        expect(placement.pitches.map(&:to_s)).to eq %w[C4 C4]
+      it "keeps one of each pitch" do
+        expect(placement.pitches.map(&:to_s)).to eq %w[C4]
       end
     end
   end
