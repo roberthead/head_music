@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-16T12:00:00-07:00
   activated_at: 2026-07-16T18:59:42-07:00
   planned_at:   2026-07-16T19:25:49-07:00
-  finished_at:
-  updated_at:   2026-07-16T21:38:30-07:00
+  finished_at:  2026-07-16T21:46:48-07:00
+  updated_at:   2026-07-16T21:46:48-07:00
 -->
 
 # Story: Composition Serialization (to_h / from_h)
@@ -310,3 +310,26 @@ Unit-level `#to_h` examples extend the existing mirrored specs: `composition_spe
 **Verified non-issues:** `to_json(*_args)` nests correctly in `{a: composition}.to_json`; stable chord insertion correct; `from_tied_words` recursion terminates; `to_h` leaks no mutable state; pickup-bar reindexing consistent.
 
 **Verdict:** solid, well-tested feature. Findings 1–2 (and the spec gap, finding 4) fixed post-review; full suite 5645 examples, 0 failures, 99.73% line coverage. Nothing blocks `finish` except the manual RubyGems release.
+
+## Learnings
+
+**What went well**
+
+- **Planning that verifies code claims pays off.** The planner ran live probes instead of trusting the story's assumptions and surfaced three real pre-existing bugs (tied `RhythmicValue.get` silently dropping ties, uncoerced `Bar` writers, unstable chord ordering) before implementation. Sequencing those as prerequisite steps meant the round-trip specs were trustworthy from the start — a naive plan would have shipped lossy serialization with passing tests.
+- **Independent spec-writer as verifier.** A separate agent wrote the round-trip suite against the finished implementation, instructed to fix any bugs its specs exposed. It found zero — meaningful evidence rather than self-confirmation.
+- **File-conflict-based wave planning** allowed safe parallelism (tied-value fix ∥ content-model fixes) with no conflicts between agents.
+- **Resolving open questions before implementation** (unicode verbatim, repeats in scope, strict Integer schema_version) meant zero mid-implementation scope churn.
+
+**What was surprising**
+
+- **Hollow objects are the gem's dominant boundary failure mode.** `RhythmicValue.get("garbage")`, `KeySignature.get("Q major")`, and `Meter.get("0/4")` all return broken-but-truthy objects instead of nil/raising, while `Pitch.get` returns nil and `Position` silently coerces garbage to `"0:1:000"`. Every factory needed a bespoke validity check; code review caught the two that slipped (key signature, position).
+- **Repeats were forced into scope by an acceptance criterion**, not by the fidelity list — the `SPEED_THE_PLOUGH` `to_abc` equality was unimplementable without serializing repeat structure. Criteria examples can carry hidden scope.
+- **The renderers are lossier than expected**: ABC raises on multi-voice, mid-piece changes, and chords; MusicXML raises on same-voice chords. The "for any Composition" renderer-equality criterion was unsatisfiable as written and had to be scoped to renderable material.
+
+**What to do differently next time**
+
+- When planning a `from_h`-style boundary, enumerate every factory's garbage behavior up front (a quick probe table) instead of discovering hollow-object cases one review at a time.
+- Write renderer-equality acceptance criteria as "where the renderer supports the material" — or spike renderer limits before pinning criteria to fixtures.
+- Follow-up stories worth filing: MusicXML same-voice chord rendering; the bar-1 change visibility off-by-one in `last_meter_change`/`last_key_signature_change`; ASCII key/pitch aliases for jsonb querying if bardtheory wants them.
+
+**Reminder:** the RubyGems release of 15.2.0 is the actual deliverable for bardtheory — this branch only stages it.
