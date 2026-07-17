@@ -38,6 +38,14 @@ class HeadMusic::Content::Placement
     "#{rhythmic_value} #{pitch || "rest"} at #{position}"
   end
 
+  def to_h
+    {
+      "position" => position.to_s,
+      "rhythmic_value" => rhythmic_value.to_s,
+      "pitch" => pitch&.to_s
+    }
+  end
+
   private
 
   def starts_during?(other_placement)

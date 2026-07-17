@@ -15,6 +15,10 @@ class HeadMusic::Content::Comment
     text
   end
 
+  def to_h
+    {"text" => text, "position" => position&.to_s}
+  end
+
   private
 
   def ensure_position(position)

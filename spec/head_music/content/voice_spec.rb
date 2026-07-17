@@ -28,6 +28,31 @@ describe HeadMusic::Content::Voice do
         expect(voice.placements).to eq [fourth_method_position, fifth_method_position]
       end
     end
+
+    context "when multiple notes are placed at the same position" do
+      before do
+        voice.place("1:1", :quarter, "C4")
+        voice.place("1:1", :quarter, "E4")
+        voice.place("1:1", :quarter, "G4")
+      end
+
+      it "preserves the insertion order of the chord tones" do
+        expect(voice.placements.map { |placement| placement.pitch.to_s }).to eq %w[C4 E4 G4]
+      end
+    end
+
+    context "when notes are placed out of positional order around a chord" do
+      before do
+        voice.place("2:1", :quarter, "C4")
+        voice.place("2:1", :quarter, "E4")
+        voice.place("2:1", :quarter, "G4")
+        voice.place("1:1", :quarter, "B3")
+      end
+
+      it "sorts by position while preserving insertion order within a position" do
+        expect(voice.placements.map { |placement| placement.pitch.to_s }).to eq %w[B3 C4 E4 G4]
+      end
+    end
   end
 
   describe "#next_position" do
@@ -250,6 +275,51 @@ describe HeadMusic::Content::Voice do
       it "returns the start of the bar and the first placement" do
         expected_position = HeadMusic::Content::Position.new(composition, "2:1:0")
         expect(first_gap).to eq [expected_position, voice.placements.first]
+      end
+    end
+  end
+
+  describe "#to_h" do
+    context "with placements" do
+      let(:expected_hash) do
+        {
+          "role" => nil,
+          "placements" => [
+            {"position" => "1:1:000", "rhythmic_value" => "quarter", "pitch" => "C4"},
+            {"position" => "1:2:000", "rhythmic_value" => "quarter", "pitch" => nil}
+          ]
+        }
+      end
+
+      before do
+        voice.place("1:1", :quarter, "C4")
+        voice.place("1:2", :quarter)
+      end
+
+      it "serializes the placements in order" do
+        expect(voice.to_h).to eq expected_hash
+      end
+    end
+
+    context "when the role is a string" do
+      subject(:voice) { described_class.new(composition: composition, role: "melody") }
+
+      it "serializes the role" do
+        expect(voice.to_h["role"]).to eq "melody"
+      end
+    end
+
+    context "when the role is a symbol" do
+      subject(:voice) { described_class.new(composition: composition, role: :melody) }
+
+      it "serializes the role as a string" do
+        expect(voice.to_h["role"]).to eq "melody"
+      end
+    end
+
+    context "when the role is nil" do
+      it "serializes the role as nil" do
+        expect(voice.to_h["role"]).to be_nil
       end
     end
   end

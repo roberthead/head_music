@@ -21,6 +21,54 @@ describe HeadMusic::Content::Bar do
     its(:to_s) { is_expected.to eq "Bar 5/4" }
   end
 
+  describe "#key_signature=" do
+    it "coerces a string to a key signature" do
+      bar.key_signature = "F# minor"
+      expect(bar.key_signature).to be_a(HeadMusic::Rudiment::KeySignature)
+    end
+
+    it "coerces to the named key signature" do
+      bar.key_signature = "F# minor"
+      expect(bar.key_signature).to eq "F# minor"
+    end
+
+    it "accepts nil to clear the key signature" do
+      bar.key_signature = "F# minor"
+      bar.key_signature = nil
+      expect(bar.key_signature).to be_nil
+    end
+
+    it "passes a key signature object through unchanged" do
+      key_signature = HeadMusic::Rudiment::KeySignature.get("Bb major")
+      bar.key_signature = key_signature
+      expect(bar.key_signature).to be(key_signature)
+    end
+  end
+
+  describe "#meter=" do
+    it "coerces a string to a meter" do
+      bar.meter = "6/8"
+      expect(bar.meter).to be_a(HeadMusic::Rudiment::Meter)
+    end
+
+    it "coerces to the named meter" do
+      bar.meter = "6/8"
+      expect(bar.meter).to eq "6/8"
+    end
+
+    it "accepts nil to clear the meter" do
+      bar.meter = "6/8"
+      bar.meter = nil
+      expect(bar.meter).to be_nil
+    end
+
+    it "passes a meter object through unchanged" do
+      meter = HeadMusic::Rudiment::Meter.get("3/4")
+      bar.meter = meter
+      expect(bar.meter).to be(meter)
+    end
+  end
+
   describe "repeat structure" do
     it "does not start a repeat by default" do
       expect(bar).not_to be_starts_repeat
@@ -109,6 +157,44 @@ describe HeadMusic::Content::Bar do
       it "includes the repeat state" do
         expect(bar.to_s).to eq "Bar |: :|x2"
       end
+    end
+  end
+
+  describe "#to_h" do
+    it "returns an empty hash for a default bar" do
+      expect(bar.to_h).to eq({})
+    end
+
+    it "serializes the key signature by its parseable name" do
+      bar.key_signature = "F# minor"
+      expect(bar.to_h).to eq("key_signature" => "F♯ minor")
+    end
+
+    it "serializes the meter" do
+      bar.meter = "6/8"
+      expect(bar.to_h).to eq("meter" => "6/8")
+    end
+
+    context "with repeat structure" do
+      before do
+        bar.starts_repeat = true
+        bar.ends_repeat_after_num_plays = 2
+        bar.plays_on_passes = [1, 2]
+      end
+
+      it "serializes the repeat structure" do
+        expect(bar.to_h).to eq(
+          "starts_repeat" => true,
+          "ends_repeat_after_num_plays" => 2,
+          "plays_on_passes" => [1, 2]
+        )
+      end
+    end
+
+    it "includes only the keys that are set" do
+      bar.meter = "3/4"
+      bar.starts_repeat = true
+      expect(bar.to_h.keys).to contain_exactly("meter", "starts_repeat")
     end
   end
 end

@@ -115,6 +115,38 @@ describe HeadMusic::Content::Composition do
     end
   end
 
+  context "when the key signature changes at bar zero" do
+    it "does not raise" do
+      expect { composition.change_key_signature(0, "G major") }.not_to raise_error
+    end
+
+    it "records the key signature change" do
+      composition.change_key_signature(0, "G major")
+      expect(composition.key_signature_at(0)).to eq "G major"
+    end
+
+    it "applies the key signature to later bars" do
+      composition.change_key_signature(0, "G major")
+      expect(composition.key_signature_at(5)).to eq "G major"
+    end
+  end
+
+  context "when the meter changes at bar zero" do
+    it "does not raise" do
+      expect { composition.change_meter(0, "6/8") }.not_to raise_error
+    end
+
+    it "records the meter change" do
+      composition.change_meter(0, "6/8")
+      expect(composition.meter_at(0)).to eq "6/8"
+    end
+
+    it "applies the meter to later bars" do
+      composition.change_meter(0, "6/8")
+      expect(composition.meter_at(5)).to eq "6/8"
+    end
+  end
+
   describe "#to_abc" do
     it "renders an ABC tune string" do
       expect(composition.to_abc).to start_with "X:1\nT:Fruit Salad\n"
@@ -166,6 +198,185 @@ describe HeadMusic::Content::Composition do
 
     it "continues on with the new key signature after the change" do
       expect(composition.key_signature_at(15)).to eq "G major"
+    end
+  end
+
+  describe "#to_h" do
+    subject(:hash) { composition.to_h }
+
+    let(:composition) do
+      described_class.new(name: "Salad Days", key_signature: "D major", meter: "3/4", composer: "Trad.", origin: "Ireland")
+    end
+    let(:expected_voices) do
+      [
+        {
+          "role" => "melody",
+          "placements" => [
+            {"position" => "1:1:000", "rhythmic_value" => "quarter", "pitch" => "D4"},
+            {"position" => "1:2:000", "rhythmic_value" => "quarter", "pitch" => nil}
+          ]
+        }
+      ]
+    end
+    let(:expected_attributes) do
+      {
+        "name" => "Salad Days",
+        "key_signature" => "D major",
+        "meter" => "3/4",
+        "composer" => "Trad.",
+        "origin" => "Ireland"
+      }
+    end
+
+    before do
+      voice = composition.add_voice(role: "melody")
+      voice.place("1:1", :quarter, "D4")
+      voice.place("1:2", :quarter)
+      composition.change_meter(2, "6/8")
+      composition.add_comment("with feeling", "1:1")
+    end
+
+    it "carries schema version 1" do
+      expect(hash["schema_version"]).to eq 1
+    end
+
+    it "includes all top-level keys" do
+      expect(hash.keys).to contain_exactly(
+        "schema_version", "name", "key_signature", "meter", "composer", "origin", "voices", "bars", "comments"
+      )
+    end
+
+    it "serializes the attributes as parseable strings" do
+      expect(hash).to include expected_attributes
+    end
+
+    it "serializes the voices with their placements" do
+      expect(hash["voices"]).to eq expected_voices
+    end
+
+    it "serializes changed bars sparsely with their numbers" do
+      expect(hash["bars"]).to eq [{"number" => 2, "meter" => "6/8"}]
+    end
+
+    it "serializes the comments" do
+      expect(hash["comments"]).to eq [{"text" => "with feeling", "position" => "1:1:000"}]
+    end
+
+    it "contains only JSON-safe values" do
+      expect(JSON.parse(hash.to_json)).to eq hash
+    end
+
+    context "without composer, origin, changes, or comments" do
+      subject(:hash) { described_class.new(name: "Plain").to_h }
+
+      let(:expected_defaults) do
+        {"composer" => nil, "origin" => nil, "voices" => [], "bars" => [], "comments" => []}
+      end
+
+      it "emits nils and empty collections rather than omitting keys" do
+        expect(hash).to include expected_defaults
+      end
+    end
+  end
+
+  describe ".from_h" do
+    let(:original) do
+      composition = described_class.new(name: "Round Trip", key_signature: "G major", meter: "4/4")
+      voice = composition.add_voice(role: :melody)
+      voice.place("1:1", :quarter, "G4")
+      voice.place("1:2", :quarter, "B4")
+      voice.place("1:2", :quarter, "D5")
+      voice.place("1:3", :eighth)
+      voice.place("1:3:480", "eighth tied to quarter", "F♯4")
+      composition.change_meter(2, "6/8")
+      composition.change_key_signature(2, "D major")
+      composition.bars(1).last.starts_repeat = true
+      composition.bars(2).last.ends_repeat_after_num_plays = 2
+      composition.add_comment("first strain", "1:1")
+      composition.add_comment("unpositioned")
+      composition
+    end
+
+    def single_placement_hash(placement_hash)
+      {
+        "schema_version" => 1,
+        "voices" => [{"role" => nil, "placements" => [placement_hash]}]
+      }
+    end
+
+    it "rebuilds an equivalent composition" do
+      expect(described_class.from_h(original.to_h).to_h).to eq original.to_h
+    end
+
+    it "accepts a symbol-keyed hash" do
+      hash = {schema_version: 1, name: "Symbolic", voices: [], bars: [], comments: []}
+      expect(described_class.from_h(hash).name).to eq "Symbolic"
+    end
+
+    it "ignores unknown top-level keys" do
+      hash = original.to_h.merge("mood" => "wistful")
+      expect(described_class.from_h(hash).to_h).to eq original.to_h
+    end
+
+    it "raises on non-Hash input" do
+      expect { described_class.from_h("nope") }.to raise_error(ArgumentError, /expected a Hash/)
+    end
+
+    it "raises on a missing schema_version" do
+      expect { described_class.from_h({}) }.to raise_error(ArgumentError, /unsupported schema_version: nil/)
+    end
+
+    it "raises on a string schema_version" do
+      expect { described_class.from_h("schema_version" => "1") }
+        .to raise_error(ArgumentError, /unsupported schema_version: "1"/)
+    end
+
+    it "raises on an unsupported schema_version" do
+      expect { described_class.from_h("schema_version" => 2) }
+        .to raise_error(ArgumentError, /unsupported schema_version: 2/)
+    end
+
+    it "raises with path context on an unknown pitch" do
+      hash = single_placement_hash("position" => "1:1:000", "rhythmic_value" => "quarter", "pitch" => "H#4")
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, 'voices[0].placements[0]: unknown pitch "H#4"')
+    end
+
+    it "raises with path context on an unknown rhythmic value" do
+      hash = single_placement_hash("position" => "1:1:000", "rhythmic_value" => "flurble", "pitch" => "C4")
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown rhythmic value "flurble"/)
+    end
+
+    it "raises with path context on a negative bar number" do
+      hash = {"schema_version" => 1, "bars" => [{"number" => -1, "meter" => "6/8"}]}
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /bars\[0\]: bar number must be an Integer of at least 0/)
+    end
+
+    it "raises with path context on a non-integer bar number" do
+      hash = {"schema_version" => 1, "bars" => [{"number" => "2", "meter" => "6/8"}]}
+      expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /bars\[0\]: bar number/)
+    end
+
+    it "raises with path context on an unparseable meter" do
+      hash = {"schema_version" => 1, "bars" => [{"number" => 2, "meter" => "garbage"}]}
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /bars\[0\]: unknown meter "garbage"/)
+    end
+
+    it "raises with path context on an unparseable key signature" do
+      hash = {"schema_version" => 1, "bars" => [{"number" => 2, "key_signature" => "garbage nonsense"}]}
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /bars\[0\]: unknown key signature "garbage nonsense"/)
+    end
+  end
+
+  describe "#to_json and .from_json" do
+    it "round-trips through a JSON string" do
+      composition.add_voice(role: "melody").place("1:1", :quarter, "C4")
+      restored = described_class.from_json(composition.to_json)
+      expect(restored.to_h).to eq composition.to_h
     end
   end
 end

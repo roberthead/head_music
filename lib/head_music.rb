@@ -7,10 +7,12 @@ end
 
 require "head_music/version"
 
+require "active_support/core_ext/hash/keys"
 require "active_support/core_ext/module/delegation"
 require "active_support/core_ext/string/access"
 require "active_support/core_ext/integer/inflections"
 require "humanize"
+require "json"
 require "i18n"
 require "i18n/backend/fallbacks"
 

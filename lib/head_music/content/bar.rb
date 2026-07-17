@@ -5,17 +5,24 @@ module HeadMusic::Content; end
 # Encapsulates meter and key signature changes
 # and repeat structure (repeat barlines and volta brackets) as content semantics
 class HeadMusic::Content::Bar
-  attr_reader :composition, :ends_repeat_after_num_plays, :plays_on_passes
-  attr_accessor :key_signature, :meter
+  attr_reader :composition, :ends_repeat_after_num_plays, :plays_on_passes, :key_signature, :meter
   attr_writer :starts_repeat
 
   def initialize(composition, key_signature: nil, meter: nil)
     @composition = composition
-    @key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature) if key_signature
-    @meter = HeadMusic::Rudiment::Meter.get(meter) if meter
+    self.key_signature = key_signature
+    self.meter = meter
     @starts_repeat = false
     @ends_repeat_after_num_plays = nil
     @plays_on_passes = nil
+  end
+
+  def key_signature=(value)
+    @key_signature = value ? HeadMusic::Rudiment::KeySignature.get(value) : nil
+  end
+
+  def meter=(value)
+    @meter = value ? HeadMusic::Rudiment::Meter.get(value) : nil
   end
 
   def starts_repeat?
@@ -46,6 +53,19 @@ class HeadMusic::Content::Bar
 
   def to_s
     ["Bar", key_signature, meter, repeat_summary].compact.join(" ")
+  end
+
+  # Sparse serialization: only non-default state, so a default bar is {}.
+  # KeySignature serializes via #name ("F♯ minor") because #to_s ("3 sharps")
+  # cannot be parsed back by KeySignature.get.
+  def to_h
+    hash = {}
+    hash["key_signature"] = key_signature.name if key_signature
+    hash["meter"] = meter.to_s if meter
+    hash["starts_repeat"] = true if starts_repeat?
+    hash["ends_repeat_after_num_plays"] = ends_repeat_after_num_plays if ends_repeat?
+    hash["plays_on_passes"] = plays_on_passes.dup if plays_on_passes
+    hash
   end
 
   private

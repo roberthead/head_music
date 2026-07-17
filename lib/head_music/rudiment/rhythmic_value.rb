@@ -20,7 +20,11 @@ class HeadMusic::Rudiment::RhythmicValue
       new(identifier)
     when Symbol, String
       original_identifier = identifier.to_s.strip
-      # First try the new parser which handles all formats
+      # Handle tied values first, so "half tied to eighth" round-trips through #to_s
+      tied = from_tied_words(original_identifier)
+      return tied if tied
+
+      # Then try the new parser which handles all formats
       parsed = Parser.parse(original_identifier)
       return parsed if parsed
 
@@ -32,6 +36,19 @@ class HeadMusic::Rudiment::RhythmicValue
         nil
       end
     end
+  end
+
+  # Splits on the first " tied to " and recurses on the remainder,
+  # so chained ties ("half tied to eighth tied to sixteenth") nest naturally.
+  def self.from_tied_words(identifier)
+    head, tail = identifier.split(/\s+tied\s+to\s+/, 2)
+    return nil unless tail
+
+    head_value = get(head)
+    tied_value = get(tail)
+    return nil unless head_value && tied_value
+
+    new(head_value.unit, dots: head_value.dots, tied_value: tied_value)
   end
 
   def self.from_words(identifier)

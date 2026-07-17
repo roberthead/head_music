@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-16T18:59:42-07:00
   planned_at:   2026-07-16T19:25:49-07:00
   finished_at:
-  updated_at:   2026-07-16T19:25:49-07:00
+  updated_at:   2026-07-16T21:01:19-07:00
 -->
 
 # Story: Composition Serialization (to_h / from_h)

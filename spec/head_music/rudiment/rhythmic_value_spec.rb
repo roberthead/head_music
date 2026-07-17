@@ -142,6 +142,71 @@ describe HeadMusic::Rudiment::RhythmicValue do
     end
   end
 
+  describe "string round-trips through .get" do
+    context "with a single tie" do
+      let(:value) { described_class.new(:half, tied_value: described_class.new(:eighth)) }
+
+      it "round-trips through to_s" do
+        expect(described_class.get(value.to_s)).to eq value
+      end
+
+      it "preserves the total value" do
+        expect(described_class.get("half tied to eighth").total_value).to eq value.total_value
+      end
+    end
+
+    context "with a chained tie" do
+      let(:value) do
+        described_class.new(
+          :half,
+          tied_value: described_class.new(:eighth, tied_value: described_class.new(:sixteenth))
+        )
+      end
+
+      it "round-trips through to_s" do
+        expect(described_class.get(value.to_s)).to eq value
+      end
+
+      it "preserves the total value" do
+        expect(described_class.get("half tied to eighth tied to sixteenth").total_value).to eq value.total_value
+      end
+    end
+
+    context "with a dotted head unit tied to another value" do
+      let(:value) { described_class.new(:quarter, dots: 1, tied_value: described_class.new(:sixteenth)) }
+
+      it "round-trips through to_s" do
+        expect(described_class.get(value.to_s)).to eq value
+      end
+
+      it "preserves the total value" do
+        expect(described_class.get("dotted quarter tied to sixteenth").total_value).to eq value.total_value
+      end
+    end
+
+    context "with a dotted tied value" do
+      let(:value) { described_class.new(:half, tied_value: described_class.new(:quarter, dots: 2)) }
+
+      it "round-trips through to_s" do
+        expect(described_class.get(value.to_s)).to eq value
+      end
+    end
+
+    context "with plain and dotted values" do
+      it "still parses a plain value" do
+        expect(described_class.get("quarter")).to eq described_class.new(:quarter)
+      end
+
+      it "still parses a dotted value" do
+        expect(described_class.get("dotted quarter")).to eq described_class.new(:quarter, dots: 1)
+      end
+
+      it "still parses a double dotted value" do
+        expect(described_class.get("double dotted half")).to eq described_class.new(:half, dots: 2)
+      end
+    end
+  end
+
   describe ".dots_from_words" do
     context "with no 'dotted' in identifier" do
       it "returns 0 for 'quarter'" do

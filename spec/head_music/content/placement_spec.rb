@@ -126,5 +126,31 @@ describe HeadMusic::Content::Placement do
       it { is_expected.not_to be_during(other_placement) }
     end
   end
+
+  describe "#to_h" do
+    it "serializes a pitched note with string keys and values" do
+      expect(placement.to_h).to eq(
+        "position" => "2:2:240",
+        "rhythmic_value" => "eighth",
+        "pitch" => "F♯4"
+      )
+    end
+
+    context "when the placement is a rest" do
+      let(:pitch) { nil }
+
+      it "serializes the pitch as nil" do
+        expect(placement.to_h["pitch"]).to be_nil
+      end
+    end
+
+    context "when the position has a tick offset" do
+      let(:position) { "1:1:480" }
+
+      it "preserves the exact position string" do
+        expect(placement.to_h["position"]).to eq "1:1:480"
+      end
+    end
+  end
   # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

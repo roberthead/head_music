@@ -140,15 +140,24 @@ class HeadMusic::Content::Voice
     [role, pitches_string].join(": ")
   end
 
+  def to_h
+    {
+      "role" => role&.to_s,
+      "placements" => placements.map(&:to_h)
+    }
+  end
+
   private
 
   def bar_start_position(placement)
     HeadMusic::Content::Position.new(composition, placement.position.bar_number, 1, 0)
   end
 
+  # Stable insertion: co-positioned placements (chords) keep their insertion order,
+  # which serialization round-trips depend on.
   def insert_into_placements(placement)
-    @placements << placement
-    @placements = @placements.sort
+    index = @placements.index { |existing| existing > placement } || @placements.length
+    @placements.insert(index, placement)
   end
 
   def pitches_string

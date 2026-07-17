@@ -46,4 +46,22 @@ describe HeadMusic::Content::Comment do
       expect { described_class.new(composition, "the turn", position) }.to raise_error(ArgumentError)
     end
   end
+
+  describe "#to_h" do
+    context "with a position" do
+      subject(:comment) { described_class.new(composition, "the turn", "2:1") }
+
+      it "serializes the text and position string" do
+        expect(comment.to_h).to eq("text" => "the turn", "position" => "2:1:000")
+      end
+    end
+
+    context "without a position" do
+      subject(:comment) { described_class.new(composition, "Traditional") }
+
+      it "serializes the position as nil" do
+        expect(comment.to_h).to eq("text" => "Traditional", "position" => nil)
+      end
+    end
+  end
 end
