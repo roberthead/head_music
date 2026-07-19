@@ -2,9 +2,9 @@
 metadata:
   created_at:   2026-07-19T11:46:34-07:00
   activated_at: 2026-07-19T11:52:42-07:00
-  planned_at:
+  planned_at:   2026-07-19T11:57:00-07:00
   finished_at:
-  updated_at:   2026-07-19T11:52:42-07:00
+  updated_at:   2026-07-19T11:57:00-07:00
 -->
 
 # Story: ABC Tie Input
@@ -85,4 +85,61 @@ Related: [ABC Notation interpreter](../done/abc-notation-interpreter.md), [ABC C
 
 ## Implementation Plan
 
-[to be filled in by /stories plan]
+### Scope decision
+
+This story ships **intra-note (within-bar) author-controlled ties** and reuses the existing tie-rendering pipeline end to end. The MusicXML writer already turns a `RhythmicValue` with a `tied_value` chain into multiple `<note>` elements carrying `<tie>`/`<tied>` (`MusicXML::DurationWriter#components`, `Writer#tie_lines`/`#notation_lines`). So the only gap is the ABC **input** boundary: letting the parser build a placement whose `RhythmicValue` is the author's chosen head-plus-tail instead of the resolver's greedy split.
+
+**Cross-barline ties are deferred.** A single placement cannot span a bar — the MusicXML writer's `ensure_notes_within_barlines` rejects that outright, and representing a tie *between two placements* would require a new concept in the Voice/Placement model plus writer changes. This story instead detects an author tie that would cross a barline (a `-` immediately before a bar line) and raises a clear, specific `ParseError` at parse time. Tracked as a follow-up in Scope Boundaries.
+
+### Step 1 — Lexer: emit a `:tie` token (`abc/body_lexer.rb`)
+
+- Add `scan_tie` to the `scan_token` chain, placed **before** `scan_unsupported`: match a single `-` and push `Token.new(type: :tie, line:, column:)`.
+- Remove `-` from `scan_unsupported`'s character class (`/[()\-~.]/` → `/[()~.]/`) so slurs `()`, staccato `.`, and roll `~` stay unsupported while `-` no longer does.
+- `-` inside volta ranges (`VOLTA_DIGITS_PATTERN`, `[…]`/trailing-volta paths) is unaffected — those are scanned in their own branches before the note stream reaches `scan_tie`.
+
+### Step 2 — Parser: combine tied notes into one placement (`abc/parser.rb`)
+
+- Extend `VoiceState` with a `tie_open` flag (+ a `tie_line` for error reporting).
+- Extend `PendingNote` with a `tied_prefix:` field (default `nil`) — a pre-built `RhythmicValue` holding everything tied *before* this note's own `(length, scale)`.
+- `handle_tie(token)`: require a `pending_note` and not `awaiting_scale`; otherwise raise `ParseError` ("A tie must follow a note" / broken-rhythm conflict). Set `state.tie_open = true`, record the line. Do **not** flush the pending note.
+- In `handle_note`/`handle_chord`: when `state.tie_open` is set, don't defer normally. Instead:
+  - Validate the new pitches equal the pending pitches (set equality). Mismatch → `ParseError` "A tie must connect two notes of the same pitch" with line/snippet (this is the ABC slur case).
+  - Build the head chain: `head = append_tied(pending.tied_prefix, resolve(pending))` where `resolve` = `duration_resolver.rhythmic_value(pending.length, scale: pending.scale)` and `append_tied(prefix, tail)` returns `tail` when `prefix` is nil, else a copy of `prefix` whose deepest `tied_value` is `tail` (recursive rebuild via `RhythmicValue.new(unit, dots:, tied_value:)`, since `RhythmicValue` has no setters).
+  - Set the new `pending_note` to the incoming note with `tied_prefix: head`; clear `tie_open`. Keeping it pending preserves broken-rhythm deferral and lets `E2-E2-E2` chains accumulate.
+- `flush_pending_note`/`place`: when `pending.tied_prefix` is present, place `append_tied(pending.tied_prefix, resolve(pending))` as the single placement's value; otherwise unchanged.
+- Guard the non-note terminators so an open tie fails fast and specifically:
+  - `handle_bar_line` while `tie_open` → `ParseError` "Ties across barlines are not yet supported" (the deferred case).
+  - `handle_rest` / `handle_volta` / `handle_voice_change` while `tie_open` → `ParseError` "A tie must connect two notes of the same pitch" (a tie to a non-note).
+  - `finish` while `tie_open` → `ParseError` "Tie has no following note" (dangling tie at end of tune).
+- `handle` gains a `when :tie then handle_tie(token)` branch.
+
+### Step 3 — Verify the render path is already correct
+
+No writer changes expected. Confirm by test that a parsed `E3-E2` produces a placement whose `rhythmic_value.to_s == "dotted quarter tied to quarter"` and that `to_musicxml` emits `<tie type="start"/>` + `<tied type="start"/>` on the first note and the `stop` pair on the second. If a gap surfaces, fix it in `MusicXML::Writer`, but the existing greedy-resolver output already exercises this path.
+
+### Step 4 — Specs
+
+- **Lexer** (`spec/.../abc/body_lexer_spec.rb`): `-` lexes as a `:tie` token; `()`, `.`, `~` still lex as `:unsupported`.
+- **Parser** (`spec/.../abc/parser_spec.rb` or the interpreter spec): author split `E3-E2` → one note, `RhythmicValue` "dotted quarter tied to quarter" (assert it differs from the greedy `E5` → "half tied to eighth"); a chain `C2-C2-C2`; mismatched pitch `E3-D2` raises the same-pitch `ParseError`; cross-barline `E3-|E3` raises "not yet supported"; dangling `E3-` at end raises; tie with no preceding note (`-E3`) raises.
+- **Round-trip / MusicXML** (`spec/.../music_xml_spec.rb` or the ABC interpreter → MusicXML spec): parsing the Three-Blind-Mice-style measure and rendering asserts the `<tied>` start/stop elements.
+- Follow existing spec structure/naming in `spec/head_music/notation/abc/`.
+
+### Step 5 — Docs & housekeeping
+
+- Update the `scan_unsupported` comment (currently lists "ties" among deliberately-unhandled constructs) to reflect that ties are now handled on input.
+- If a README/CHANGELOG enumerates supported ABC features, add ties (input, within-bar).
+- Run `bundle exec rspec` and `bundle exec standardrb`/`rubocop` (whichever the repo uses) to green before finishing.
+
+### Files touched
+
+- `lib/head_music/notation/abc/body_lexer.rb` — `scan_tie`, unsupported char-class edit, comment.
+- `lib/head_music/notation/abc/parser.rb` — `:tie` handling, `PendingNote`/`VoiceState` extension, `append_tied`, terminator guards.
+- `spec/head_music/notation/abc/*` and the MusicXML spec — new coverage.
+- Possibly `CHANGELOG`/README if they enumerate ABC feature support.
+
+### Scope Boundaries (Not in v1)
+
+- **Cross-barline ties** (`E3-|E3`) — needs a tie-between-placements concept in the Voice/Placement model and MusicXML writer; raises a clear "not yet supported" error for now.
+- **Ties on/between chords** (`[CEG]-[CEG]`) — the pitch-set-equality guard would admit identical chords, but this path is not a v1 target and gets at most light coverage; document as follow-up.
+- **Slurs** (`( … )`) — distinct construct, remains unsupported.
+- **ABC export of authored ties** — the exporter still collapses tied chains to a single multiplier (`E3-E2` → `E5`); preserving an authored split on export is out of scope. Export round-trip specs assert the current collapsing behavior.
