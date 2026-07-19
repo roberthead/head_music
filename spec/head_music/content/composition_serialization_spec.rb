@@ -203,17 +203,18 @@ describe HeadMusic::Content::Composition do
       expect(placements.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
     end
 
-    # The notation writers do not render chord placements, so the comparison
-    # is hash-only. The hash remains the source of truth regardless.
+    # ABC chord export is still pending, so that comparison stays off; the
+    # MusicXML writer now renders chords, so it round-trips.
     it "preserves chord-note order through the round trip" do
-      restored = expect_lossless_round_trip(composition, abc: false, musicxml: false)
+      restored = expect_lossless_round_trip(composition, abc: false)
       expect(restored.voices.first.placements.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
     end
 
-    it "reproduces the MusicXML renderer error on the restored composition" do
+    it "renders the chord as stacked notes on the restored composition" do
       restored = described_class.from_h(composition.to_h)
-      expect { composition.to_musicxml }.to raise_error(HeadMusic::Notation::MusicXML::RenderError)
-      expect { restored.to_musicxml }.to raise_error(HeadMusic::Notation::MusicXML::RenderError)
+      document = parse_musicxml(restored.to_musicxml)
+      expect(xpath_texts(document, "//measure[1]/note/pitch/step")).to eq %w[C E G]
+      expect(xpath_count(document, "//measure[1]/note/chord")).to eq 2
     end
   end
 

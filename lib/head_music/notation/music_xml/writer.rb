@@ -312,11 +312,19 @@ module HeadMusic::Notation::MusicXML
 
     def note_lines(placement)
       ensure_pitched_sounds(placement)
-      raise RenderError, "chords are not yet supported by the MusicXML writer" if placement.chord?
 
       components_by_placement[placement].flat_map do |component|
-        component_lines(placement, component)
+        note_slots(placement).each_with_index.flat_map do |pitch, index|
+          note_element_lines(placement, component, pitch: pitch, chord: index.positive?)
+        end
       end
+    end
+
+    # A rest emits one empty slot; a sounded placement emits its pitches low to
+    # high, so the lowest note leads and the rest carry <chord/>. ensure_pitched_sounds
+    # has already rejected any unpitched sound, so pitches covers every sound here.
+    def note_slots(placement)
+      placement.rest? ? [nil] : placement.pitches.sort
     end
 
     def ensure_pitched_sounds(placement)
@@ -327,10 +335,14 @@ module HeadMusic::Notation::MusicXML
         "percussion rendering is not yet supported"
     end
 
-    def component_lines(placement, component)
+    # A chord note carries <chord/> as its first child, before <pitch>, marking
+    # it as sounding with the preceding note; the lead note (and every single
+    # note and rest) omits it, so this path stays byte-identical for those.
+    def note_element_lines(placement, component, pitch: nil, chord: false)
       [
         "#{INDENT * 3}<note>",
-        *(placement.pitched? ? pitch_lines(placement.pitch) : ["#{INDENT * 4}<rest/>"]),
+        *(chord ? ["#{INDENT * 4}<chord/>"] : []),
+        *(pitch ? pitch_lines(pitch) : ["#{INDENT * 4}<rest/>"]),
         "#{INDENT * 4}<duration>#{component.duration}</duration>",
         *tie_lines(placement, component),
         "#{INDENT * 4}<type>#{component.type}</type>",

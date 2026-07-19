@@ -469,12 +469,77 @@ describe HeadMusic::Notation::MusicXML::Writer do
         voice.place("1:1", :half, %w[C4 E4 G4])
         composition
       end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
 
-      it "raises a render error explaining that chords are not yet supported" do
-        expect { described_class.new(composition).to_s }.to raise_error(
-          HeadMusic::Notation::MusicXML::RenderError,
-          /chords are not yet supported by the MusicXML writer/
-        )
+      it "emits one note per pitched sound" do
+        expect(xpath_count(document, "//measure[1]/note")).to eq 3
+      end
+
+      it "marks every note but the lowest with a chord element" do
+        expect(xpath_count(document, "//measure[1]/note/chord")).to eq 2
+      end
+
+      it "leaves the lowest note free of a chord element" do
+        expect(xpath_count(document, "//measure[1]/note[1]/chord")).to eq 0
+      end
+
+      it "renders the notes low to high" do
+        expect(xpath_texts(document, "//measure[1]/note/pitch/step")).to eq %w[C E G]
+      end
+
+      it "shares the placement's duration across every note" do
+        expect(xpath_texts(document, "//measure[1]/note/duration")).to eq %w[2 2 2]
+      end
+    end
+
+    context "with a chord, checking exact note markup" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new
+        voice = composition.add_voice
+        voice.place("1:1", :half, %w[C4 E4])
+        composition
+      end
+
+      # <chord/> must be the note's first child, before <pitch>; count-based
+      # XPath assertions cannot see child order, so this pins it by string.
+      let(:expected_notes) do
+        <<~NOTES.chomp
+          <note>
+                  <pitch>
+                    <step>C</step>
+                    <octave>4</octave>
+                  </pitch>
+                  <duration>2</duration>
+                  <type>half</type>
+                </note>
+                <note>
+                  <chord/>
+                  <pitch>
+                    <step>E</step>
+                    <octave>4</octave>
+                  </pitch>
+                  <duration>2</duration>
+                  <type>half</type>
+                </note>
+        NOTES
+      end
+
+      it "places the chord element before the pitch on the upper note" do
+        expect(described_class.new(composition).to_s).to include(expected_notes)
+      end
+    end
+
+    context "with a chord whose sounds are placed high to low" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new
+        voice = composition.add_voice
+        voice.place("1:1", :half, %w[G4 C4 E4])
+        composition
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "still emits the notes low to high" do
+        expect(xpath_texts(document, "//measure[1]/note/pitch/step")).to eq %w[C E G]
       end
     end
 
@@ -485,12 +550,57 @@ describe HeadMusic::Notation::MusicXML::Writer do
         voice.place("1:1", :half, %w[C4 E4])
         composition
       end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
 
-      it "still raises the chord render error rather than emitting a rest" do
-        expect { described_class.new(composition).to_s }.to raise_error(
-          HeadMusic::Notation::MusicXML::RenderError,
-          /chords are not yet supported by the MusicXML writer/
+      it "emits two notes, the upper one carrying a chord element" do
+        expect(xpath_count(document, "//measure[1]/note")).to eq 2
+        expect(xpath_count(document, "//measure[1]/note/chord")).to eq 1
+      end
+    end
+
+    context "with a measure mixing a chord and a single note" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new(meter: "4/4")
+        voice = composition.add_voice
+        voice.place("1:1", :half, %w[C4 E4 G4])
+        voice.place("1:3", :half, "D5")
+        composition
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "emits the chord's stacked notes followed by the single note" do
+        expect(xpath_texts(document, "//measure[1]/note/pitch/step")).to eq %w[C E G D]
+      end
+
+      it "marks only the chord's upper notes with a chord element" do
+        expect(xpath_count(document, "//measure[1]/note/chord")).to eq 2
+      end
+
+      it "gives every note a half-note duration" do
+        expect(xpath_texts(document, "//measure[1]/note/duration")).to eq %w[2 2 2 2]
+      end
+    end
+
+    context "with a tied chord" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new(meter: "4/4")
+        voice = composition.add_voice
+        value = HeadMusic::Rudiment::RhythmicValue.new(
+          :half, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
         )
+        voice.place("1:1", value, %w[C4 E4 G4])
+        composition
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "renders a full chord stack for each tied link" do
+        expect(xpath_count(document, "//measure[1]/note")).to eq 6
+        expect(xpath_count(document, "//measure[1]/note/chord")).to eq 4
+      end
+
+      it "ties every note of the sustained chord" do
+        expect(xpath_count(document, "//measure[1]/note/tie[@type='start']")).to eq 3
+        expect(xpath_count(document, "//measure[1]/note/tie[@type='stop']")).to eq 3
       end
     end
 
