@@ -374,7 +374,6 @@ describe HeadMusic::Notation::ABC::Parser do
 
   describe "unsupported features" do
     {
-      "a chord" => ["[CEG] A|", "[CEG]"],
       "a quoted chord symbol" => ['"Am" C|', '"Am"'],
       "a grace note" => ["{g}A|", "{g}"],
       "a tie" => ["A-A|", "-"],
@@ -404,8 +403,103 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "raises before any interpretation when an unsupported token appears late in the body" do
-      expect { parse_body("CDEF|GABc|[CEG]|") }
-        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\[CEG\]/)
+      expect { parse_body("CDEF|GABc|{g}A|") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\{g\}/)
+    end
+  end
+
+  describe "chords" do
+    subject(:composition) { parse(<<~ABC) }
+      X:1
+      T:Chorale Fragment
+      M:4/4
+      L:1/4
+      K:C
+      [CEG]2 [DFA]2 | [EGC']4 |]
+    ABC
+
+    let(:voice) { composition.voices.first }
+
+    it "places each chord as one placement holding the bracketed pitches" do
+      expect(voice.placements.map { |placement| [placement.position.to_s, placement.pitches.map(&:to_s)] })
+        .to eq [["1:1:000", %w[C4 E4 G4]], ["1:3:000", %w[D4 F4 A4]], ["2:1:000", %w[E4 G4 C5]]]
+    end
+
+    it "marks the placements as chords" do
+      expect(voice.placements).to all(be_chord)
+    end
+
+    it "applies the length after the bracket to the whole chord" do
+      expect(voice.placements.map { |placement| placement.rhythmic_value.name })
+        .to eq ["half", "half", "whole"]
+    end
+
+    it "parses a single-note bracket as an ordinary note placement" do
+      placement = parse_body("[C] D|").voices.first.placements.first
+      expect([placement.note?, placement.chord?, placement.pitches.map(&:to_s)])
+        .to eq [true, false, ["C4"]]
+    end
+
+    it "reads uniform per-note lengths as the chord's length" do
+      placement = parse_body("[C2E2G2]|").voices.first.placements.first
+      expect(placement.rhythmic_value.name).to eq "half"
+    end
+
+    it "multiplies uniform inner lengths with the outer length (ABC 2.1 sec. 4.17)" do
+      inner_outer = parse_body("[C2E2G2]3|").voices.first.placements.first
+      outer_only = parse_body("[CEG]6|").voices.first.placements.first
+      expect(inner_outer.rhythmic_value).to eq outer_only.rhythmic_value
+    end
+
+    it "treats differently-spelled equal inner lengths as uniform" do
+      placement = parse_body("[C4/2E2G2]|").voices.first.placements.first
+      expect(placement.rhythmic_value.name).to eq "half"
+    end
+
+    it "raises when bracketed notes have unequal lengths" do
+      expect { parse_body("[C2EG]|") }.to raise_error(
+        HeadMusic::Notation::ABC::ParseError,
+        'Chord notes must share one length; write it after the bracket ("[CEG]2") ' \
+        'or repeat it on every note ("[C2E2G2]") (line 5)'
+      )
+    end
+
+    it "raises when two bracketed notes resolve to the same pitch" do
+      expect { parse_body("[CEC]|") }.to raise_error(
+        HeadMusic::Notation::ABC::ParseError, "Chord pitches must be unique (line 5)"
+      )
+    end
+
+    it "allows the same letter an octave apart" do
+      placement = parse_body("[Cc]|").voices.first.placements.first
+      expect([placement.chord?, placement.pitches.map(&:to_s)]).to eq [true, %w[C4 C5]]
+    end
+
+    it "applies broken rhythm across two chords" do
+      placements = parse_body("[CEG]>[DFA]|").voices.first.placements
+      expect(placements.map { |placement| placement.rhythmic_value.name })
+        .to eq ["dotted quarter", "eighth"]
+    end
+
+    it "keeps both sides of a broken rhythm as chords" do
+      placements = parse_body("[CEG]>[DFA]|").voices.first.placements
+      expect(placements).to all(be_chord)
+    end
+
+    it "still rejects an inline field next to a chord as unsupported, not a chord" do
+      expect { parse_body("[CEG] [K:G] A|") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\[K:G\]/)
+    end
+
+    it "persists an accidental inside a chord for the rest of the bar" do
+      placements = parse_body("[^FA] F|").voices.first.placements
+      expect(placements.map { |placement| placement.pitches.map(&:to_s) })
+        .to eq [%w[F♯4 A4], %w[F♯4]]
+    end
+
+    it "resets a chord accidental at the bar line" do
+      placements = parse_body("[^FA] F|F|").voices.first.placements
+      expect(placements.last.pitches.map(&:to_s)).to eq %w[F4]
     end
   end
 end

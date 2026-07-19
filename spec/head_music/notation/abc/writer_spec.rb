@@ -218,31 +218,62 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a chord placement" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice.place("1:1", :half, %w[C4 E4 G4])
-        end
-      end
-
-      it "raises a RenderError explaining that chords are not yet supported" do
-        expect { described_class.new(composition).to_s }.to raise_error(
-          HeadMusic::Notation::ABC::RenderError, /chords are not yet supported by the ABC writer/
-        )
-      end
-    end
-
     context "with a two-pitch chord placement" do
+      subject(:rendered) { described_class.new(composition).to_s }
+
       let(:composition) do
         HeadMusic::Content::Composition.new.tap do |composition|
           composition.add_voice.place("1:1", :half, %w[C4 E4])
         end
       end
 
-      it "still raises the chord RenderError rather than emitting a token" do
-        expect { described_class.new(composition).to_s }.to raise_error(
-          HeadMusic::Notation::ABC::RenderError, /chords are not yet supported by the ABC writer/
-        )
+      it "emits a bracket group with the duration suffix outside the bracket" do
+        expect(rendered.lines.last).to eq "[CE]4|]\n"
+      end
+    end
+
+    context "with a three-pitch chord placement" do
+      subject(:rendered) { described_class.new(composition).to_s }
+
+      let(:composition) do
+        HeadMusic::Content::Composition.new.tap do |composition|
+          composition.add_voice.place("1:1", :half, %w[C4 E4 G4])
+        end
+      end
+
+      it "emits all three pitch tokens inside one bracket group" do
+        expect(rendered.lines.last).to eq "[CEG]4|]\n"
+      end
+    end
+
+    context "with chord pitches placed in scrambled order" do
+      subject(:rendered) { described_class.new(composition).to_s }
+
+      let(:composition) do
+        HeadMusic::Content::Composition.new.tap do |composition|
+          composition.add_voice.place("1:1", :half, %w[G4 C4 E4])
+        end
+      end
+
+      it "emits the pitches sorted low to high" do
+        expect(rendered.lines.last).to eq "[CEG]4|]\n"
+      end
+    end
+
+    context "with a chord containing an accidental" do
+      subject(:rendered) { described_class.new(composition).to_s }
+
+      let(:composition) do
+        HeadMusic::Content::Composition.new.tap do |composition|
+          voice = composition.add_voice
+          voice.place("1:1", :half, %w[C4 E4 G#4])
+          voice.place("1:3", :quarter, "G#4")
+          voice.place("1:4", :quarter, "G4")
+        end
+      end
+
+      it "writes the accidental inside the bracket and carries the bar state forward" do
+        expect(rendered.lines.last).to eq "[CE^G]4 G2 =G2|]\n"
       end
     end
 
@@ -298,6 +329,79 @@ describe HeadMusic::Notation::ABC::Writer do
 
     it "round-trips the accidental-heavy fixture" do
       expect_abc_round_trip(HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR))
+    end
+
+    context "with the chorale chord example" do
+      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+        X:1
+        T:Chorale Fragment
+        M:4/4
+        L:1/4
+        K:C
+        [CEG]2 [DFA]2 | [EGC']4 |]
+      ABC
+
+      it "round-trips" do
+        expect_abc_round_trip(composition)
+      end
+    end
+
+    context "with chords containing accidentals" do
+      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+        X:1
+        T:Accidental Chords
+        M:4/4
+        L:1/4
+        K:C
+        [^FA]2 F2 | [_BDF]2 B2 |]
+      ABC
+
+      it "round-trips" do
+        expect_abc_round_trip(composition)
+      end
+    end
+
+    context "with uniform per-note lengths" do
+      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+        X:1
+        T:Uniform Inner Lengths
+        M:4/4
+        L:1/4
+        K:C
+        [C2E2G2] [D2F2A2] | [E2G2c2]2 |]
+      ABC
+
+      it "round-trips" do
+        expect_abc_round_trip(composition)
+      end
+
+      it "normalizes inner lengths to the canonical outer-length form" do
+        expect(HeadMusic::Notation::ABC.render(composition)).to include("[CEG]4 [DFA]4|[EGc]8")
+      end
+    end
+
+    context "with a single-pitch bracket" do
+      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+        X:1
+        T:Singleton
+        M:4/4
+        L:1/4
+        K:C
+        [C]4 |]
+      ABC
+
+      let(:rendered) { HeadMusic::Notation::ABC.render(composition) }
+      let(:reparsed_placement) { HeadMusic::Notation::ABC.parse(rendered).voices.first.placements.first }
+
+      it "normalizes to an unbracketed note" do
+        expect(rendered.lines.last).to eq "C8|]\n"
+      end
+
+      it "re-parses as an equivalent single-note placement" do
+        expect(reparsed_placement.note?).to be true
+        expect(reparsed_placement.chord?).to be false
+        expect(reparsed_placement.pitch.to_s).to eq "C4"
+      end
     end
 
     it "reaches a string fixpoint after one render" do

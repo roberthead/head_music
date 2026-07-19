@@ -121,12 +121,20 @@ module HeadMusic::Notation::ABC
 
     def token(placement, pitch_writer, duration_writer)
       ensure_pitched_sounds(placement)
-      raise RenderError, "chords are not yet supported by the ABC writer" if placement.chord?
 
       multiplier = duration_writer.multiplier_string(placement.rhythmic_value)
       return "z#{multiplier}" if placement.rest?
+      return chord_token(placement, pitch_writer, multiplier) if placement.chord?
 
       "#{pitch_writer.token(placement.pitch)}#{multiplier}"
+    end
+
+    def chord_token(placement, pitch_writer, multiplier)
+      # Pitches are emitted low-to-high, and the oracle sees them in that
+      # same order, so the writer's bar-accidental state cannot diverge from
+      # what a re-parse of the emitted brackets accumulates.
+      pitch_tokens = placement.pitches.sort.map { |pitch| pitch_writer.token(pitch) }
+      "[#{pitch_tokens.join}]#{multiplier}"
     end
 
     def ensure_pitched_sounds(placement)

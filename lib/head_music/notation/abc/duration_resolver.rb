@@ -28,6 +28,13 @@ module HeadMusic::Notation::ABC
       build_rhythmic_value(fraction, multiplier_string)
     end
 
+    # The bare fraction a length string denotes (e.g. "2" -> 2, "/2" -> 1/2,
+    # "" -> 1), without the unit note length applied. Used to compare a
+    # chord's per-note lengths for uniformity.
+    def length_fraction(multiplier_string)
+      multiplier(multiplier_string)
+    end
+
     private
 
     def multiplier(multiplier_string)

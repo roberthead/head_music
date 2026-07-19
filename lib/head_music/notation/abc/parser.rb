@@ -34,10 +34,10 @@ module HeadMusic::Notation::ABC
 
     attr_reader :header, :duration_resolver
 
-    # A note whose placement is deferred until we know whether a
-    # broken-rhythm mark follows it. The pitch is computed eagerly so
-    # bar-line accidental resets cannot corrupt it.
-    PendingNote = Data.define(:pitch, :length, :scale)
+    # A note or chord whose placement is deferred until we know whether
+    # a broken-rhythm mark follows it. The pitches are computed eagerly
+    # so bar-line accidental resets cannot corrupt them.
+    PendingNote = Data.define(:pitches, :length, :scale)
 
     # Per-voice interpretation state. Accidentals, the deferred note,
     # and volta tracking are all independent between voices.
@@ -146,6 +146,7 @@ module HeadMusic::Notation::ABC
     def handle(token)
       case token.type
       when :note then handle_note(token)
+      when :chord then handle_chord(token)
       when :rest then handle_rest(token)
       when :broken_rhythm then handle_broken_rhythm(token)
       when :bar_line then handle_bar_line(token)
@@ -157,10 +158,57 @@ module HeadMusic::Notation::ABC
     def handle_note(token)
       state = current_state
       pitch = state.pitch_builder.pitch(token.letter, token.octave_marks, token.accidental)
-      scale = state.awaiting_scale || Rational(1)
+      defer_placement(state, [pitch], token.length)
+    end
+
+    # Chord pitches resolve in bracket order, so an explicit accidental
+    # inside a chord persists for the rest of the bar like any other.
+    def handle_chord(token)
+      state = current_state
+      pitches = token.notes.map do |note|
+        state.pitch_builder.pitch(note.letter, note.octave_marks, note.accidental)
+      end
+      ensure_unique_chord_pitches(pitches, token)
+      inner_length = uniform_chord_length(token)
+      defer_placement(state, pitches, token.length, inner_length)
+    end
+
+    def ensure_unique_chord_pitches(pitches, token)
+      return if pitches.uniq.length == pitches.length
+
+      raise ParseError.new(
+        "Chord pitches must be unique",
+        line_number: token.line, snippet: chord_snippet(token)
+      )
+    end
+
+    # ABC 2.1 sec. 4.17 allows per-note lengths only when they agree; the
+    # shared inner length then multiplies with any outer length. Unequal
+    # lengths (whose ABC meaning is "the duration of the first note") would
+    # need silent reinterpretation to fit one rhythmic value, so we reject.
+    def uniform_chord_length(token)
+      fractions = token.notes.map { |note| duration_resolver.length_fraction(note.length) }
+      return fractions.first if fractions.uniq.length == 1
+
+      raise ParseError.new(
+        'Chord notes must share one length; write it after the bracket ("[CEG]2") ' \
+        'or repeat it on every note ("[C2E2G2]")',
+        line_number: token.line, snippet: chord_snippet(token)
+      )
+    end
+
+    def chord_snippet(token)
+      inner = token.notes.map do |note|
+        "#{note.accidental}#{note.letter}#{note.octave_marks}#{note.length}"
+      end.join
+      "[#{inner}]"
+    end
+
+    def defer_placement(state, pitches, length, inner_scale = Rational(1))
+      scale = (state.awaiting_scale || Rational(1)) * inner_scale
       state.awaiting_scale = nil
       flush_pending_note(state)
-      state.pending_note = PendingNote.new(pitch: pitch, length: token.length, scale: scale)
+      state.pending_note = PendingNote.new(pitches: pitches, length: length, scale: scale)
     end
 
     def handle_rest(token)
@@ -236,12 +284,12 @@ module HeadMusic::Notation::ABC
       return unless pending
 
       state.pending_note = nil
-      place(state, pending.length, pending.pitch, scale: pending.scale)
+      place(state, pending.length, pending.pitches, scale: pending.scale)
     end
 
-    def place(state, length, pitch, scale: Rational(1))
+    def place(state, length, pitches, scale: Rational(1))
       rhythmic_value = duration_resolver.rhythmic_value(length, scale: scale)
-      state.voice.place(state.voice.next_position, rhythmic_value, pitch)
+      state.voice.place(state.voice.next_position, rhythmic_value, pitches)
     end
 
     def apply_repeat_flags(state, style)

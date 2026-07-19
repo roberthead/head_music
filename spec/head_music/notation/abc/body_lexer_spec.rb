@@ -207,12 +207,96 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
   end
 
-  describe "unsupported features" do
-    it "lexes a chord as one unsupported token" do
+  describe "chords" do
+    it "lexes a bracket group as one chord token" do
       token = tokens_for("[CEG]").first
-      expect(token.to_h).to include(type: :unsupported, lexeme: "[CEG]")
+      expect(token.type).to eq(:chord)
     end
 
+    it "captures each inner note in bracket order" do
+      token = tokens_for("[CEG]").first
+      expect(token.notes.map(&:letter)).to eq %w[C E G]
+    end
+
+    it "captures inner accidentals" do
+      token = tokens_for("[^FAc']").first
+      expect(token.notes.map(&:accidental)).to eq ["^", nil, nil]
+    end
+
+    it "captures inner octave marks" do
+      token = tokens_for("[^FAc']").first
+      expect(token.notes.map(&:octave_marks)).to eq ["", "", "'"]
+    end
+
+    it "lexes a chord beginning with an accidental" do
+      token = tokens_for("[^CEG]").first
+      expect(token.notes.first.to_h).to include(accidental: "^", letter: "C")
+    end
+
+    it "captures the length after the closing bracket" do
+      expect(tokens_for("[CEG]2").first.length).to eq("2")
+    end
+
+    it "captures a slash length after the closing bracket" do
+      expect(tokens_for("[CEG]/").first.length).to eq("/")
+    end
+
+    it "leaves the length empty when absent" do
+      expect(tokens_for("[CEG]").first.length).to eq("")
+    end
+
+    it "lexes a single-note bracket as a chord token with one note" do
+      token = tokens_for("[C]").first
+      expect([token.type, token.notes.map(&:letter)]).to eq [:chord, ["C"]]
+    end
+
+    describe "leading-bracket disambiguation" do
+      it "lexes [| as a bar line" do
+        expect(tokens_for("[| A").first.type).to eq(:bar_line)
+      end
+
+      it "lexes [1 as a volta" do
+        expect(tokens_for("[1").first.type).to eq(:volta)
+      end
+
+      it "lexes [K:G] as an unsupported inline field" do
+        expect(tokens_for("[K:G]").first.type).to eq(:unsupported)
+      end
+
+      it "lexes [CEG] as a chord" do
+        expect(tokens_for("[CEG]").first.type).to eq(:chord)
+      end
+    end
+
+    it "captures per-note lengths on each chord note" do
+      notes = tokens_for("[C2E2G2]").first.notes
+      expect(notes.map(&:length)).to eq(%w[2 2 2])
+    end
+
+    it "captures uneven per-note lengths for the parser to reject" do
+      notes = tokens_for("[C2EG]").first.notes
+      expect(notes.map(&:length)).to eq(["2", "", ""])
+    end
+
+    it "raises for an unterminated chord" do
+      expect { tokens_for("[CEG") }.to raise_error(
+        HeadMusic::Notation::ABC::ParseError,
+        'Unterminated chord; expected "]" (line 1)'
+      )
+    end
+
+    it "raises for an empty bracket pair" do
+      expect { tokens_for("[]") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /"\[".*column 1.*line 1/)
+    end
+
+    it "lexes a bracket group containing a tie as unsupported" do
+      token = tokens_for("[C-E]").first
+      expect(token.to_h).to include(type: :unsupported, lexeme: "[C-E]")
+    end
+  end
+
+  describe "unsupported features" do
     it "lexes a quoted chord symbol as unsupported" do
       expect(tokens_for("\"G7\"").first.lexeme).to eq("\"G7\"")
     end

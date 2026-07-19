@@ -12,16 +12,22 @@ class HeadMusic::Notation::ABC::BodyLexer
   Token = Data.define(
     :type, :line, :column,
     :letter, :accidental, :octave_marks, :length,
-    :style, :passes, :direction, :voice_id, :lexeme
+    :style, :passes, :direction, :voice_id, :lexeme, :notes
   ) do
     def initialize(
       type:, line:, column:,
       letter: nil, accidental: nil, octave_marks: nil, length: nil,
-      style: nil, passes: nil, direction: nil, voice_id: nil, lexeme: nil
+      style: nil, passes: nil, direction: nil, voice_id: nil, lexeme: nil,
+      notes: nil
     )
       super
     end
   end
+
+  # One note inside a bracket chord. Each note may carry its own length;
+  # the parser enforces that they are uniform and multiplies the shared
+  # inner length with any outer length on the token (ABC 2.1 sec. 4.17).
+  ChordNote = Data.define(:accidental, :letter, :octave_marks, :length)
 
   # Alternatives are ordered longest-first so the scanner never takes a
   # short match when a longer bar line is present (e.g. "|]" before "|").
@@ -31,6 +37,8 @@ class HeadMusic::Notation::ABC::BodyLexer
   NORMALIZED_BAR_STYLES = {":||:" => "::", ":|:" => "::"}.freeze
 
   NOTE_PATTERN = %r{(\^\^|\^|__|_|=)?([A-Ga-g])([',]*)([\d/]*)}
+  CHORD_START_PATTERN = /\[(\^\^|\^|__|_|=)?[A-Ga-g]/
+  CHORD_NOTE_PATTERN = %r{(\^\^|\^|__|_|=)?([A-Ga-g])([',]*)([\d/]*)}
   REST_PATTERN = %r{z([\d/]*)}
   VOLTA_DIGITS_PATTERN = /\d[\d,-]*/
 
@@ -171,13 +179,47 @@ class HeadMusic::Notation::ABC::BodyLexer
       return true
     end
 
-    if scanner.check(/\[[A-Ga-g]/)
-      chord = scanner.scan(/\[[^\]]*\]/) || scanner.scan(/\[[^\]]*/)
-      tokens << unsupported_token(chord, line_number, column)
-      return true
-    end
+    return scan_chord(scanner, line_number, column, tokens) if scanner.check(CHORD_START_PATTERN)
 
     raise_unexpected_character(scanner, line_number, column)
+  end
+
+  def scan_chord(scanner, line_number, column, tokens)
+    start_pos = scanner.pos
+    scanner.skip(/\[/)
+    notes = []
+    until scanner.skip(/\]/)
+      unless scanner.scan(CHORD_NOTE_PATTERN)
+        return chord_fallback(scanner, start_pos, line_number, column, tokens)
+      end
+      notes << ChordNote.new(
+        accidental: scanner[1], letter: scanner[2],
+        octave_marks: scanner[3], length: scanner[4]
+      )
+    end
+    length = scanner.scan(%r{[\d/]*})
+    tokens << Token.new(type: :chord, line: line_number, column: column, notes: notes, length: length)
+    true
+  end
+
+  # Non-note content inside the brackets (ties, rests, spaces,
+  # decorations) makes the whole group one unsupported token, matching
+  # how those constructs surface outside a chord.
+  def chord_fallback(scanner, start_pos, line_number, column, tokens)
+    if scanner.eos?
+      raise HeadMusic::Notation::ABC::ParseError.new(
+        'Unterminated chord; expected "]"',
+        line_number: line_number, snippet: chord_snippet(scanner, start_pos)
+      )
+    end
+    scanner.pos = start_pos
+    lexeme = scanner.scan(/\[[^\]]*\]/) || scanner.scan(/\[[^\]]*/)
+    tokens << unsupported_token(lexeme, line_number, column)
+    true
+  end
+
+  def chord_snippet(scanner, start_pos)
+    scanner.string[start_pos, SNIPPET_LENGTH]
   end
 
   def volta_token(digits, line_number, column)
