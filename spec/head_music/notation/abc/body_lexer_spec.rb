@@ -296,6 +296,27 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
   end
 
+  describe "ties" do
+    it "lexes a hyphen between notes as a tie token" do
+      tokens = tokens_for("A-B")
+      expect(tokens.map(&:type)).to eq([:note, :tie, :note])
+    end
+
+    it "lexes each hyphen of a tie chain" do
+      tokens = tokens_for("A-A-A")
+      expect(tokens.map(&:type)).to eq([:note, :tie, :note, :tie, :note])
+    end
+
+    it "records the tie's line and column" do
+      expect(tokens_for("A-B")[1].to_h).to include(type: :tie, line: 1, column: 2)
+    end
+
+    it "ties a chord to the following note" do
+      tokens = tokens_for("[CEG]-c")
+      expect(tokens.map(&:type)).to eq([:chord, :tie, :note])
+    end
+  end
+
   describe "unsupported features" do
     it "lexes a quoted chord symbol as unsupported" do
       expect(tokens_for("\"G7\"").first.lexeme).to eq("\"G7\"")
@@ -303,12 +324,6 @@ describe HeadMusic::Notation::ABC::BodyLexer do
 
     it "lexes grace notes as unsupported" do
       expect(tokens_for("{ab}c").first.to_h).to include(type: :unsupported, lexeme: "{ab}")
-    end
-
-    it "lexes a tie as unsupported" do
-      tokens = tokens_for("A-B")
-      expect(tokens.map { |token| [token.type, token.lexeme] })
-        .to eq([[:note, nil], [:unsupported, "-"], [:note, nil]])
     end
 
     it "lexes slur marks as unsupported" do

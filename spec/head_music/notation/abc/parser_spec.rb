@@ -253,6 +253,71 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "ties" do
+    def parse_compound(body)
+      parse(<<~ABC)
+        X:1
+        M:6/8
+        L:1/8
+        K:C
+        #{body}
+      ABC
+    end
+
+    it "fuses a tied pair into a single placement" do
+      voice = parse_compound("E3-E2 G |]").voices.first
+      expect(voice.placements.length).to eq 2
+    end
+
+    it "honors the authored split instead of the greedy decomposition" do
+      value = parse_compound("E3-E2 G |]").voices.first.placements.first.rhythmic_value
+      expect(value.name).to eq "dotted quarter tied to quarter"
+    end
+
+    it "differs from the greedy split of the same total duration" do
+      greedy = parse_compound("E5 G |]").voices.first.placements.first.rhythmic_value
+      authored = parse_compound("E3-E2 G |]").voices.first.placements.first.rhythmic_value
+      expect(greedy.name).to eq "half tied to eighth"
+      expect(authored.total_value).to eq greedy.total_value
+      expect(authored.name).not_to eq greedy.name
+    end
+
+    it "chains three tied notes into one nested value" do
+      value = parse_compound("C2-C2-C2 |]").voices.first.placements.first.rhythmic_value
+      expect(value.name).to eq "quarter tied to quarter tied to quarter"
+    end
+
+    it "ties a note across the whole bar in simple meter" do
+      value = parse_body("C3-C |").voices.first.placements.first.rhythmic_value
+      expect(value.name).to eq "dotted half tied to quarter"
+    end
+
+    it "raises when the tied notes are different pitches" do
+      expect { parse_compound("E3-D2 |]") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /same pitch/)
+    end
+
+    it "raises for a tie across a barline" do
+      expect { parse_compound("E3-|E3 |]") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /across barlines/)
+    end
+
+    it "raises for a dangling tie at the end of the tune" do
+      expect { parse_compound("E3-") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
+
+    it "raises for a tie with no preceding note" do
+      expect { parse_compound("-E3 |]") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /must follow a note/)
+    end
+
+    it "raises for a tie to a rest" do
+      expect { parse_compound("E3-z |]") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
+  end
+
   describe "accidental persistence" do
     subject(:composition) { parse_body("^FF|F2|") }
 
@@ -376,7 +441,6 @@ describe HeadMusic::Notation::ABC::Parser do
     {
       "a quoted chord symbol" => ['"Am" C|', '"Am"'],
       "a grace note" => ["{g}A|", "{g}"],
-      "a tie" => ["A-A|", "-"],
       "a slur" => ["(AB)|", "("],
       "a tuplet" => ["(3ABC|", "(3"],
       "a decoration" => ["!trill!A|", "!trill!"],

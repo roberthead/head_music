@@ -128,6 +128,7 @@ class HeadMusic::Notation::ABC::BodyLexer
     return if scan_bracket(scanner, line_number, column, tokens)
     return if scan_note(scanner, line_number, column, tokens)
     return if scan_rest(scanner, line_number, column, tokens)
+    return if scan_tie(scanner, line_number, column, tokens)
     return if scan_broken_rhythm(scanner, line_number, column, tokens)
     return if scan_unsupported(scanner, line_number, column, tokens)
 
@@ -277,13 +278,24 @@ class HeadMusic::Notation::ABC::BodyLexer
     true
   end
 
+  # A tie (a hyphen following a note or chord) joins it to the next
+  # note of the same pitch; the parser fuses the two into one sounding
+  # value. Ties inside a bracket chord still surface as unsupported via
+  # the chord fallback.
+  def scan_tie(scanner, line_number, column, tokens)
+    return false unless scanner.scan("-")
+
+    tokens << Token.new(type: :tie, line: line_number, column: column)
+    true
+  end
+
   # Recognizable ABC we deliberately don't handle: grace notes,
-  # decorations, tuplets, slurs, ties, and special rests.
+  # decorations, tuplets, slurs, and special rests.
   def scan_unsupported(scanner, line_number, column, tokens)
     lexeme =
       scanner.scan(/\{[^}]*\}/) || scanner.scan(/\{[^}]*/) ||
       scanner.scan(/![^!]*!/) || scanner.scan(/![^!]*/) ||
-      scanner.scan(/\(\d/) || scanner.scan(/[()\-~.]/) ||
+      scanner.scan(/\(\d/) || scanner.scan(/[()~.]/) ||
       scanner.scan(/Z\d*/) || scanner.scan(%r{x[\d/]*})
     return false unless lexeme
 

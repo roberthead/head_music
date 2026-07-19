@@ -343,6 +343,25 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with a tie authored in ABC input" do
+      let(:composition) do
+        HeadMusic::Notation::ABC.parse("X:1\nT:Tie\nM:6/8\nL:1/8\nK:C\nE3-E2 G |]\n")
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "renders the authored split as a dotted quarter, a quarter, and the following eighth" do
+        expect(xpath_texts(document, "//note/type")).to eq %w[quarter quarter eighth]
+        expect(xpath_count(document, "//note[1]/dot")).to eq 1
+      end
+
+      it "ties the first two notes together and leaves the third free" do
+        starts = (1..3).map { |nth| xpath_count(document, "//note[#{nth}]/notations/tied[@type='start']") }
+        stops = (1..3).map { |nth| xpath_count(document, "//note[#{nth}]/notations/tied[@type='stop']") }
+        expect(starts).to eq [1, 0, 0]
+        expect(stops).to eq [0, 1, 0]
+      end
+    end
+
     context "with a pickup bar written out in full with leading rests" do
       let(:composition) do
         composition = HeadMusic::Content::Composition.new(name: "Pickup Study")
