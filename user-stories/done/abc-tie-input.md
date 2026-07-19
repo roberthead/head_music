@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-19T11:46:34-07:00
   activated_at: 2026-07-19T11:52:42-07:00
   planned_at:   2026-07-19T11:57:00-07:00
-  finished_at:
-  updated_at:   2026-07-19T15:54:58-07:00
+  finished_at:  2026-07-19T15:56:20-07:00
+  updated_at:   2026-07-19T15:56:20-07:00
 -->
 
 # Story: ABC Tie Input
@@ -174,3 +174,22 @@ _Reviewed 2026-07-19 at commit `8323de5` (implementation in `93023bb`, committed
 ### Blocks `finish`?
 
 Nothing outstanding. **Finding #1** (the `A->A` silent-miscompute) has been fixed: `handle_broken_rhythm` now calls `reject_open_tie` and `A->A`/`A-<A` raise a clear `ParseError`, with a covering spec. The two follow-up items called out under criteria 4 and 7 have also been addressed — the export round-trip spec was added and the deferred cross-barline AC was annotated. The remaining nice-to-haves (pitch-comparison comment, bar-line message wording, chord-to-chord / voice-change / volta coverage) are non-blocking.
+
+## Learnings
+
+**What went well**
+
+- The plan's central bet held: because the greedy resolver already emits tied chains, the entire tie *rendering* path (`RhythmicValue.tied_value` → MusicXML `<tie>`/`<tied>`) already existed. No writer changes were needed, so the work collapsed to the input boundary (lexer + parser) and stayed small.
+- The "keep the left note pending, close the tie when its right note arrives" state machine composed cleanly with the existing broken-rhythm deferral and gave tie chains (`E2-E2-E2`) for free.
+
+**What was surprising**
+
+- The `reject_open_tie` guard had to be called by *every* non-note terminator, and `handle_broken_rhythm` was the one that got missed — the review caught a genuine silent miscompute (`A->A` applied both the tie and the broken-rhythm scaling with no error).
+- Cross-barline ties — the primary real-world reason ties exist in ABC — had to be deferred, because a single `Placement` cannot span a bar (`ensure_notes_within_barlines`). The feature the story most wanted is the one v1 does not ship.
+- The input/export asymmetry (input preserves an authored split; export collapses it to one multiplier) is intentional but was easy to overlook until a spec pinned it.
+
+**What to do differently next time**
+
+- When introducing a cross-cutting guard that "every terminator must call," write one spec per guard branch — the missing terminator failed silently precisely because it had no test.
+- Annotate a deferred acceptance criterion in the AC text at *plan* time, not review time, so the backlog never overstates what shipped.
+- Cut a `story/<name>` branch. Work went straight onto `main` (acceptable for this rebase-flow repo, but the review/finish tooling assumes a story branch and had to diff commit ranges instead).
