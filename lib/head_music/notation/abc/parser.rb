@@ -276,6 +276,7 @@ module HeadMusic::Notation::ABC
 
     def handle_broken_rhythm(token)
       state = current_state
+      reject_open_tie(state, token.line, "A tie must be followed by a note")
       if state.awaiting_scale || state.pending_note.nil?
         raise ParseError.new(
           "Broken rhythm must appear between two notes",

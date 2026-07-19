@@ -81,6 +81,38 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
+    # The parser preserves an author's tied split on input (E3-E2 stays a
+    # dotted quarter tied to a quarter), but the exporter is canonical: it
+    # collapses any tied chain back to a single multiplier. The authored
+    # split is intentionally not round-tripped through ABC export.
+    context "with an authored tie collapsing to a single multiplier" do
+      subject(:rendered) { described_class.new(composition).to_s }
+
+      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+        X:1
+        T:Tie Study
+        M:6/8
+        L:1/8
+        K:C
+        E3-E2 G|]
+      ABC
+
+      let(:expected) do
+        <<~ABC
+          X:1
+          T:Tie Study
+          M:6/8
+          L:1/8
+          K:C
+          E5 G|]
+        ABC
+      end
+
+      it "collapses the tied chain to one token, discarding the authored split" do
+        expect(rendered).to eq expected
+      end
+    end
+
     context "with fractional durations shorter than the unit note length" do
       subject(:rendered) { described_class.new(composition).to_s }
 

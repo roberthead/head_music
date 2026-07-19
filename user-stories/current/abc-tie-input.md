@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-19T11:52:42-07:00
   planned_at:   2026-07-19T11:57:00-07:00
   finished_at:
-  updated_at:   2026-07-19T12:03:53-07:00
+  updated_at:   2026-07-19T15:54:58-07:00
 -->
 
 # Story: ABC Tie Input
@@ -59,7 +59,7 @@ composition = HeadMusic::Notation::ABC.parse(abc)
 - The lexer recognizes `-` immediately following a note (or chord) as a **tie token** rather than an unsupported feature; `-` in any other position still surfaces the existing clear error.
 - A tie between two **same-pitch** notes parses into a single sounding note whose `RhythmicValue` is the authored head tied to the authored tail: `E3-E2` → *dotted quarter tied to quarter* (3 + 2), overriding the greedy resolver rather than re-decomposing to 4 + 1.
 - Tie **chains** parse: `E2-E2-E2` yields a single note with a nested tied value spanning the whole duration.
-- A tie **across a barline** joins the last note of a measure to the first note of the next measure of the same pitch, producing one sustained note that spans the bar line.
+- A tie **across a barline** joins the last note of a measure to the first note of the next measure of the same pitch, producing one sustained note that spans the bar line. **(Deferred to a follow-up — see the Implementation Plan's scope decision. v1 detects an author tie that would cross a barline and raises a clear `ParseError`, "Ties across barlines are not yet supported," rather than joining the notes.)**
 - A tie between **different pitches** is not a tie in ABC (that notation is a slur). It raises a `ParseError` with line number and snippet — or is classified as an unsupported slur — but never silently produces a wrong pitch. (Pick one behavior and document it.)
 - The resulting model renders correctly through `to_musicxml`: tied notes emit MusicXML `<tie>` / `<tied>` so playback and engraving treat them as one sustained pitch, not two re-articulated notes.
 - Decide and document the **ABC export** behavior for authored ties: whether `DurationWriter` preserves the authored split on round-trip or continues collapsing tied chains to a single multiplier (today it collapses, so `E3-E2` would re-export as `E5`). Round-trip specs assert whichever behavior is chosen.
@@ -143,3 +143,34 @@ No writer changes expected. Confirm by test that a parsed `E3-E2` produces a pla
 - **Ties on/between chords** (`[CEG]-[CEG]`) — the pitch-set-equality guard would admit identical chords, but this path is not a v1 target and gets at most light coverage; document as follow-up.
 - **Slurs** (`( … )`) — distinct construct, remains unsupported.
 - **ABC export of authored ties** — the exporter still collapses tied chains to a single multiplier (`E3-E2` → `E5`); preserving an authored split on export is out of scope. Export round-trip specs assert the current collapsing behavior.
+
+## Review
+
+_Reviewed 2026-07-19 at commit `8323de5` (implementation in `93023bb`, committed to `main` — no `story/abc-tie-input` branch was cut). All 236 examples in the ABC lexer/parser and MusicXML writer specs pass; the full suite still needs to be run to confirm nothing else regressed._
+
+### Acceptance criteria
+
+- ✅ **Lexer tie token; `-` elsewhere still errors.** `scan_tie` is inserted before `scan_unsupported` and emits a `:tie` token (`body_lexer.rb:285-290`); `-` was removed from the unsupported char class (`body_lexer.rb:298`). A leading tie is rejected in the parser ("A tie must follow a note", `parser.rb:226-235`). Note: a stray `-` with nothing else to match now yields the generic "Unexpected character" error rather than the old `UnsupportedFeatureError "-"` — arguably clearer, but a behavior change.
+- ✅ **Authored split preserved, overrides greedy resolver.** `tie_onto_pending` + `append_tied` build the nested `RhythmicValue` from the authored lengths (`parser.rb:240-363`). `parser_spec.rb:295-306` asserts `E3-E2` → `"dotted quarter tied to quarter"` and contrasts it against the greedy `"half tied to eighth"`.
+- ✅ **Tie chains nest into one value.** `append_tied` recurses; `C2-C2-C2` → `"quarter tied to quarter tied to quarter"` (`parser_spec.rb:308-311`).
+- ❌ **Cross-barline spanning tie — consciously deferred.** Not implemented; `handle_bar_line` raises "Ties across barlines are not yet supported" (`parser.rb:294`). The deferral is clean, documented in code/CHANGELOG/commit, and tested (`parser_spec.rb:323-326`). The original criterion is not met by design — this was scoped out in the plan. _Follow-up: the story's AC text has now been annotated to record the deferral._
+- ✅ **Different-pitch tie raises, never silent.** `ensure_tie_pitches_match` raises "A tie must connect two notes of the same pitch" (`parser.rb:251-258`); `E3-D2` tested (`parser_spec.rb:318-321`). Behavior (raise, not slur) is documented in the CHANGELOG.
+- ✅ **MusicXML `<tie>`/`<tied>` render.** No writer change needed — reuses the existing tied-`RhythmicValue` path. `writer_spec.rb:363-380` asserts note types `quarter quarter eighth`, a dot on note 1, and `tied` start/stop counts `[1,0,0]`/`[0,1,0]`.
+- ✅ **ABC export round-trip decided/documented/asserted.** Behavior is decided (collapse to one multiplier: `E3-E2` → `E5`) and documented in the story's Scope Boundaries. _Follow-up: a round-trip spec was added (`writer_spec.rb`, "with an authored tie collapsing to a single multiplier") asserting that parsing `E3-E2 G` and re-exporting yields `E5 G` — pinning the intentional asymmetry between input (preserves the authored split) and export (collapses it)._
+- ✅ **Five required spec cases present** (intra-measure split, cross-barline [asserts the deferral error], chain, mismatched pitch, MusicXML `<tied>`), plus bonus error-path coverage (dangling tie, no-preceding-note, tie-to-rest, whole-bar simple-meter tie).
+
+### Code review findings
+
+1. **(Should-fix, confirmed bug) `handle_broken_rhythm` does not reject an open tie — silent wrong output.** `parser.rb:277-289`. Every other terminator calls `reject_open_tie`, but this one was overlooked; its guard checks only `awaiting_scale`/`pending_note.nil?`. Verified: `A->A` parses **without error** into a bogus "dotted eighth tied to sixteenth" (both the tie and the broken-rhythm ×3/2·×1/2 scaling applied at once) instead of raising like `A-z` or `A-|` do. Fix: add `reject_open_tie(state, token.line, "A tie must be followed by a note")` at the top of `handle_broken_rhythm`, with a spec for `A->A` / `A-<A`.
+2. **(Nice-to-have) Pitch match mixes two comparison semantics.** `parser.rb:252` — `pending.pitches.sort == pitches.sort`. `sort` orders by `Pitch#<=>` (MIDI number; enharmonics tie), then array `==` compares by `Pitch#==` (spelling). They disagree on enharmonics, so `^C-_D` is rejected as "same pitch" mismatch — defensible, but worth a one-line "why" comment.
+3. **(Nice-to-have) Bar-line tie message can mislead.** `parser.rb:294` — `E3-|]` (dangling tie at a section end) reports "Ties across barlines are not yet supported" though nothing crosses a barline. Minor; the terminator can't distinguish the two cases and the message is right for the tested `E3-|E3`.
+
+### Test coverage gaps
+
+- **Tie + broken rhythm** (`A->A`) — the untested path behind finding #1.
+- **Successful chord-to-chord tie** — the lexer tokenizes `[CEG]-c`, but no parser spec fuses a chord tie into one placement.
+- **Open tie across a voice change** (`parser.rb:318`) and **across a volta** (`parser.rb:308`) — both `reject_open_tie` branches are unexercised.
+
+### Blocks `finish`?
+
+Nothing outstanding. **Finding #1** (the `A->A` silent-miscompute) has been fixed: `handle_broken_rhythm` now calls `reject_open_tie` and `A->A`/`A-<A` raise a clear `ParseError`, with a covering spec. The two follow-up items called out under criteria 4 and 7 have also been addressed — the export round-trip spec was added and the deferred cross-barline AC was annotated. The remaining nice-to-haves (pitch-comparison comment, bar-line message wording, chord-to-chord / voice-change / volta coverage) are non-blocking.

@@ -316,6 +316,11 @@ describe HeadMusic::Notation::ABC::Parser do
       expect { parse_compound("E3-z |]") }
         .to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
     end
+
+    it "raises for a tie followed by a broken-rhythm mark" do
+      expect { parse_compound("A->A |]") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
   end
 
   describe "accidental persistence" do
