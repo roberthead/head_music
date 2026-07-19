@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-07-17T13:48:24-07:00
+  updated_at:   2026-07-18T16:03:28-07:00
 -->
 
 # Story: MusicXML Chord Rendering
@@ -19,15 +19,16 @@ SO THAT block chords display on one staff in MusicXML-consuming renderers (OSMD,
 
 ## Background
 
-The content model represents a chord as a single `Placement` holding a `pitches` array (see the Chord Placement Model story): one position, one rhythmic value, many pitches. Because a chord is one placement, `Voice#first_gap` contiguity works by construction — no special grouping is needed. The MusicXML writer, however, currently guards against chords: it raises when it encounters a placement where `chord?` is true, because it only knows how to emit the single derived `placement.pitch` and would otherwise silently render the top note alone. It never emits the `<chord/>` element, which is how MusicXML marks a note as sounding simultaneously with the previous note.
+The content model represents a chord as a single `Placement` holding two or more pitched sounds (see the Chord Placement Model and Sound Model stories): one position, one rhythmic value, many sounds. `Placement#sounds` (a frozen array) is the source of truth — each sound is a `Rudiment::Pitch` or a `Rudiment::UnpitchedSound` — with `Placement#pitches` as the derived pitched subset and `chord?` true when there are two or more pitched sounds. Because a chord is one placement, `Voice#first_gap` contiguity works by construction — no special grouping is needed. The MusicXML writer, however, currently guards against chords: it raises when it encounters a placement where `chord?` is true, because it only knows how to emit the single derived `placement.pitch` (the highest pitch) and would otherwise silently render the top note alone. It never emits the `<chord/>` element, which is how MusicXML marks a note as sounding simultaneously with the previous note. (The writer's separate `RenderError` guard for placements containing unpitched sounds is out of scope here — it remains until a dedicated percussion-rendering story.)
 
 This story is a prerequisite for BardTheory's staff-notation-view story, which renders compositions via `to_musicxml` → OSMD and requires block chords on the treble staff. The complementary input half is [ABC Chord Input](abc-chord-input.md) — that story gets chords *into* the model; this one gets them *out* to notation.
 
 ## Scope
 
-- Replace the writer's chord guard with real rendering: a chord placement emits one `<note>` per pitch, first note plain, each subsequent note carrying `<chord/>`, per the MusicXML 4.0 convention. All notes share the placement's rhythmic value.
-- Emit chord notes in a deterministic order (low to high) regardless of the `pitches` array order.
-- Chords spanning voices are *not* merged — each voice remains its own part; only the pitches of a single placement form a chord.
+- Replace the writer's chord guard with real rendering: a chord placement emits one `<note>` element per *pitched* sound, first note plain, each subsequent note carrying `<chord/>`, per the MusicXML 4.0 convention. All notes share the placement's rhythmic value.
+- Emit chord notes in a deterministic order (low to high) regardless of the insertion order of the placement's `sounds`.
+- Leave the writer's `RenderError` guard for unpitched sounds in place — any placement containing an unpitched sound still raises until a percussion-rendering story lands.
+- Chords spanning voices are *not* merged — each voice remains its own part; only the pitched sounds of a single placement form a chord.
 
 ## Example
 
@@ -43,9 +44,10 @@ xml = composition.to_musicxml
 
 ## Acceptance Criteria
 
-- A chord placement emits as a MusicXML chord (`<chord/>` on all but the first note), replacing the writer's raise-on-chord guard
+- A chord placement emits one `<note>` per pitched sound as a MusicXML chord (`<chord/>` on all but the first note), replacing the writer's raise-on-chord guard
 - A composition mixing chords and single notes renders with correct measure durations
 - Chord notes emit low to high
+- The writer's `RenderError` guard for unpitched sounds is unchanged
 - Existing single-line compositions render byte-identically to before (no regression)
 - Output validates against the MusicXML 4.0 schema (matching the writer's existing spec approach)
 - Rubocop and all specs pass
