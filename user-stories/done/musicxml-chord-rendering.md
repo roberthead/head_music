@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-17T12:54:19-07:00
   activated_at: 2026-07-18T20:22:35-07:00
   planned_at:   2026-07-18T20:30:54-07:00
-  finished_at:
-  updated_at:   2026-07-18T20:41:11-07:00
+  finished_at:  2026-07-18T20:44:44-07:00
+  updated_at:   2026-07-18T20:44:44-07:00
 -->
 
 # Story: MusicXML Chord Rendering
@@ -181,3 +181,11 @@ Nits (non-blocking, no action taken):
 - `note_slots` naming is slightly abstract; the comment carries the meaning.
 
 **Nothing blocks `finish`.**
+
+## Learnings
+
+- **Planning earned its keep on two judgment calls.** It surfaced the tied-chord decision as an explicit sign-off point rather than a silent implementation choice, and it reconciled the "validates against the MusicXML 4.0 schema" AC against the repo's *actual* verification approach (REXML well-formedness + XPath + a byte-for-byte golden document). That stopped us from adding an unneeded XSD/Nokogiri dependency to satisfy a criterion the existing tooling already covers.
+- **The one surprise was a stale spec outside the writer's own file.** `composition_serialization_spec.rb` still pinned the old raise-on-chord behavior. The single-file spec run was green; only the full `bundle exec rake` suite caught it. Takeaway: when removing a guard or changing an error contract, grep the whole codebase for tests asserting the old behavior before assuming the change is done — don't trust a scoped run.
+- **Tied chords cost zero extra code.** The components-outer / pitches-inner loop nesting composed cleanly with the model's existing expansion of a tied rhythmic value into per-link components; each link just emits a fresh full chord stack. Shipping the natural handling (rather than a guard-and-defer) was the low-risk call.
+- **Child order is invisible to count-based XPath.** Asserting `<chord/>` precedes `<pitch>` needed a golden-string test; the structural XPath count/text assertions could confirm *how many* chord elements existed but never *where* they sat in the note. Reach for a string/golden assertion whenever element ordering is the property under test.
+- **Byte-identical regression was the real risk, and it was cheap to neutralize.** The empty-when-false splat for the `<chord/>` line plus `pitches.sort.first == placement.pitch` for length-1 placements kept single-note output identical, and the pre-existing golden document guarded it — no new machinery required.
