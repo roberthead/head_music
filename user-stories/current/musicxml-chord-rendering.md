@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-18T20:22:35-07:00
   planned_at:   2026-07-18T20:30:54-07:00
   finished_at:
-  updated_at:   2026-07-18T20:37:44-07:00
+  updated_at:   2026-07-18T20:41:11-07:00
 -->
 
 # Story: MusicXML Chord Rendering
@@ -154,3 +154,30 @@ In `spec/head_music/notation/music_xml/writer_spec.rb`, using the existing helpe
 - **Byte-identical regression** is the primary technical risk; mitigated by the empty-splat for `chord: false` and by `pitches.sort.first == placement.pitch` for length-1 placements. The existing exact-structure and golden-document specs catch any drift.
 - **Duplicate/enharmonic pitches**: `Placement` already dedups exact duplicates via `sounds.uniq`, so an exact unison cannot reach the writer — no writer-side dedup needed. Two distinct spellings at the same height (C#4 + Db4) are a legitimate diminished-second cluster and correctly emit as two notes; order between them is undefined but harmless.
 - **Multi-voice-per-staff** is the concrete future trigger where omitting `<voice>`/`<staff>` stops being acceptable. Out of scope for v1; track for the multi-voice story.
+
+## Review
+
+_Reviewed 2026-07-18 at commit `0f1f090` (product-manager + code-reviewer agents). Full suite: 5842 examples, 0 failures, 99.76% line coverage; rubocop 0 offenses._
+
+### Acceptance criteria
+
+- ✅ **Chord emits one `<note>` per pitched sound, `<chord/>` on all but the first, guard removed** — `writer.rb` `note_lines`/`note_element_lines`; specs assert 3 notes, 2 `<chord/>`, none on `note[1]`. No raise-on-chord path remains.
+- ✅ **Mixing chords and single notes → correct measure durations** — "measure mixing a chord and a single note" spec: steps `C E G D`, 2 `<chord/>`, durations `2 2 2 2`. Only the lead C4 and D5 advance the cursor → full 4/4 bar.
+- ✅ **Chord notes emit low to high** — `note_slots` returns `placement.pitches.sort`; the "placed high to low" spec (`%w[G4 C4 E4]` → `%w[C E G]`) proves the sort, not coincidental input order.
+- ✅ **Unpitched-sound guard unchanged** — `ensure_pitched_sounds` runs first and raises on the first non-pitched sound; the mixed pitched+unpitched spec confirms it still fires with the same message.
+- ✅ **Single-line output byte-identical** — single note → one slot, `chord: false`, `<chord/>` line omitted; the golden-document test pins the full single-line document byte-for-byte.
+- ✅ **Validates against MusicXML 4.0 schema (repo's approach)** — every chord spec parses via REXML + XPath; the golden-string "exact note markup" spec pins `<chord/>`-before-`<pitch>` child order (which count-based XPath cannot see). Caveat, story-acknowledged: no XSD/DTD validator exists in the repo; "schema-valid" is structural, not tool-verified.
+- ✅ **Rubocop and all specs pass** — verified; tied-chord case also covered (6 notes / 4 `<chord/>`, 3 tie-starts / 3 tie-stops).
+
+### Code review findings
+
+**Verdict: clean — no blocking or should-fix issues.** Correctness verified on `<chord/>` placement/order, low→high sort, byte-identical single-note/rest paths, tied-chord loop nesting (index resets per tie-link), and guard interaction (no silent empty-slot path). Both new comments explain "why" and earn their place.
+
+Nits (non-blocking, no action taken):
+
+- `note_slots` re-sorts pitches once per tie-link (N times for an N-link tied chord). Negligible; hoisting would churn the diff.
+- Enharmonic/duplicate pitches at the same height (C4 + B♯3) render as two chord notes — arguably correct MusicXML, untested. Add a spec only if the domain cares.
+- Minor coverage: "correct measure durations" is proven indirectly (duration list + `<chord/>` count) rather than by an explicit sum-to-bar-length assertion. Low risk.
+- `note_slots` naming is slightly abstract; the comment carries the meaning.
+
+**Nothing blocks `finish`.**
