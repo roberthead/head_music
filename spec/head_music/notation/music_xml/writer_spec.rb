@@ -7,7 +7,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
 
   def pitched_note_count(composition)
     composition.voices.sum do |voice|
-      voice.placements.select(&:note?).sum { |placement| chain_length(placement.rhythmic_value) }
+      voice.placements.select(&:sounded?).sum { |placement| chain_length(placement.rhythmic_value) }
     end
   end
 
@@ -474,6 +474,54 @@ describe HeadMusic::Notation::MusicXML::Writer do
         expect { described_class.new(composition).to_s }.to raise_error(
           HeadMusic::Notation::MusicXML::RenderError,
           /chords are not yet supported by the MusicXML writer/
+        )
+      end
+    end
+
+    context "with a two-pitch chord placement" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new
+        voice = composition.add_voice
+        voice.place("1:1", :half, %w[C4 E4])
+        composition
+      end
+
+      it "still raises the chord render error rather than emitting a rest" do
+        expect { described_class.new(composition).to_s }.to raise_error(
+          HeadMusic::Notation::MusicXML::RenderError,
+          /chords are not yet supported by the MusicXML writer/
+        )
+      end
+    end
+
+    context "with a single unpitched sound placement" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new
+        voice = composition.add_voice
+        voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
+        composition
+      end
+
+      it "raises a render error naming the sound and position" do
+        expect { described_class.new(composition).to_s }.to raise_error(
+          HeadMusic::Notation::MusicXML::RenderError,
+          /cannot render unpitched sound "snare drum" at 1:1.*percussion rendering is not yet supported/
+        )
+      end
+    end
+
+    context "with a mixed pitched and unpitched placement" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new
+        voice = composition.add_voice
+        voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
+        composition
+      end
+
+      it "raises a render error naming the unpitched sound" do
+        expect { described_class.new(composition).to_s }.to raise_error(
+          HeadMusic::Notation::MusicXML::RenderError,
+          /cannot render unpitched sound "snare drum" at 1:1/
         )
       end
     end

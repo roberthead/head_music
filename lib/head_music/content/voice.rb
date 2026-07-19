@@ -16,8 +16,8 @@ class HeadMusic::Content::Voice
     @placements = []
   end
 
-  def place(position, rhythmic_value, pitch_or_pitches = nil)
-    placement = HeadMusic::Content::Placement.new(self, position, rhythmic_value, pitch_or_pitches)
+  def place(position, rhythmic_value, sound_or_sounds = nil)
+    placement = HeadMusic::Content::Placement.new(self, position, rhythmic_value, sound_or_sounds)
     existing = placement_at(placement.position)
     return existing.merge(placement) if existing
 
@@ -26,7 +26,7 @@ class HeadMusic::Content::Voice
   end
 
   def notes
-    @placements.select(&:note?).sort_by(&:position)
+    @placements.select(&:pitched?).sort_by(&:position)
   end
 
   def notes_not_in_key

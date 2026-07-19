@@ -56,6 +56,8 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def self.from_number(number)
+    return nil unless number.respond_to?(:to_i)
+
     number_int = number.to_i
     return nil unless number == number_int
 
@@ -106,6 +108,10 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
 
   def to_s
     name
+  end
+
+  def pitched?
+    true
   end
 
   def to_i

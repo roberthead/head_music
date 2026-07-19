@@ -1,6 +1,6 @@
 require "spec_helper"
 
-# Round-trip suite for the schema v2 serialization: Composition#to_h /
+# Round-trip suite for the schema v3 serialization: Composition#to_h /
 # Composition.from_h (plus the to_json/from_json delegates). Each scenario
 # asserts persistence fidelity — from_h(to_h) reproduces the same hash — and,
 # where the notation renderers support the material, identical to_abc and
@@ -103,7 +103,7 @@ describe HeadMusic::Content::Composition do
     context "with the chromatic ABC fixture" do
       let(:composition) { HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR) }
       let(:hash) { composition.to_h }
-      let(:pitches) { hash["voices"].first["placements"].flat_map { |placement| placement["pitches"] } }
+      let(:pitches) { hash["voices"].first["placements"].flat_map { |placement| placement["sounds"] } }
 
       it "serializes the minor key, composer, and origin" do
         expect(hash).to include(
@@ -129,7 +129,7 @@ describe HeadMusic::Content::Composition do
         end
       end
 
-      let(:pitches) { composition.to_h["voices"].first["placements"].flat_map { |placement| placement["pitches"] } }
+      let(:pitches) { composition.to_h["voices"].first["placements"].flat_map { |placement| placement["sounds"] } }
 
       it "does not normalize enharmonic spellings" do
         expect(pitches).to eq %w[B♭4 A♯4]
@@ -155,7 +155,7 @@ describe HeadMusic::Content::Composition do
       it "serializes the double sharp and the sharp key verbatim" do
         hash = composition.to_h
         expect(hash["key_signature"]).to eq "F♯ minor"
-        expect(hash["voices"].first["placements"].first["pitches"]).to eq ["F𝄪5"]
+        expect(hash["voices"].first["placements"].first["sounds"]).to eq ["F𝄪5"]
       end
 
       it "round-trips the exact spelling" do
@@ -175,9 +175,9 @@ describe HeadMusic::Content::Composition do
       end
     end
 
-    it "serializes a placement without a pitch as an empty-pitches rest" do
+    it "serializes a placement without a sound as an empty-sounds rest" do
       expect(composition.to_h["voices"].first["placements"][1]).to eq(
-        "position" => "1:2:000", "rhythmic_value" => "quarter", "pitches" => []
+        "position" => "1:2:000", "rhythmic_value" => "quarter", "sounds" => []
       )
     end
 
@@ -226,8 +226,8 @@ describe HeadMusic::Content::Composition do
       end
     end
 
-    it "serializes the chord as an ordered pitches array in one placement" do
-      expect(composition.to_h["voices"].first["placements"].first["pitches"]).to eq %w[C4 E4 G4]
+    it "serializes the chord as an ordered sounds array in one placement" do
+      expect(composition.to_h["voices"].first["placements"].first["sounds"]).to eq %w[C4 E4 G4]
     end
 
     # The notation writers do not render chord placements, so the comparison
@@ -237,6 +237,77 @@ describe HeadMusic::Content::Composition do
       voice = restored.voices.first
       expect(voice.placements.length).to eq 2
       expect(voice.placements.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
+    end
+  end
+
+  describe "unpitched sounds" do
+    context "with named, generic, and mixed placements" do
+      let(:composition) do
+        described_class.new(name: "Percussive").tap do |percussive|
+          voice = percussive.add_voice(role: "percussion")
+          voice.place("1:1:000", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare_drum"))
+          voice.place("1:2:000", :quarter, HeadMusic::Rudiment::UnpitchedSound.get)
+          voice.place("1:3:000", :half, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("bass_drum")])
+        end
+      end
+
+      let(:serialized_sounds) do
+        composition.to_h["voices"].first["placements"].map { |placement| placement["sounds"] }
+      end
+
+      it "serializes unpitched sounds as one-key hashes, the generic sound with a null name" do
+        expect(serialized_sounds).to eq [
+          [{"unpitched" => "snare_drum"}], [{"unpitched" => nil}], ["C4", {"unpitched" => "bass_drum"}]
+        ]
+      end
+
+      # The notation writers do not render unpitched sounds, so the
+      # comparison is hash-only.
+      it "round-trips order and content losslessly" do
+        restored = expect_lossless_round_trip(composition, abc: false, musicxml: false)
+        placements = restored.voices.first.placements
+        expect(placements.map { |placement| placement.sounds.map(&:to_s) }).to eq [
+          ["snare drum"], ["unpitched"], ["C4", "bass drum"]
+        ]
+      end
+    end
+
+    context "with a sound built from an instrument alias" do
+      let(:composition) do
+        described_class.new(name: "Tabor Tune").tap do |drummed|
+          drummed.add_voice(role: "percussion")
+            .place("1:1:000", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("tabor"))
+        end
+      end
+
+      it "canonicalizes the alias to the instrument name key" do
+        expect(composition.to_h["voices"].first["placements"].first["sounds"]).to eq(
+          [{"unpitched" => "snare_drum"}]
+        )
+      end
+    end
+
+    context "with a hit on a pitched instrument" do
+      let(:hash) do
+        {
+          "schema_version" => 3,
+          "name" => "Knock on Wood",
+          "voices" => [{
+            "role" => "percussion",
+            "placements" => [
+              {"position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"unpitched" => "violin"}]}
+            ]
+          }]
+        }
+      end
+
+      it "round-trips the pitched instrument as a valid hit surface" do
+        restored = described_class.from_h(hash)
+        sound = restored.voices.first.placements.first.sounds.first
+        expect(sound).to be_a(HeadMusic::Rudiment::UnpitchedSound)
+        expect(sound.name_key).to eq :violin
+        expect(restored.to_h["voices"].first["placements"].first["sounds"]).to eq [{"unpitched" => "violin"}]
+      end
     end
   end
 
@@ -435,18 +506,26 @@ describe HeadMusic::Content::Composition do
   end
 
   describe "schema_version" do
-    it "is present and equal to 2 in every serialized hash" do
-      expect(rich_composition.to_h["schema_version"]).to eq 2
-      expect(described_class.new.to_h["schema_version"]).to eq 2
+    it "is present and equal to 3 in every serialized hash" do
+      expect(rich_composition.to_h["schema_version"]).to eq 3
+      expect(described_class.new.to_h["schema_version"]).to eq 3
     end
 
-    it "accepts version 2" do
-      expect(described_class.from_h({"schema_version" => 2, "name" => "Current"}).name).to eq "Current"
+    it "accepts version 3" do
+      expect(described_class.from_h({"schema_version" => 3, "name" => "Current"}).name).to eq "Current"
     end
 
-    it "raises ArgumentError on the retired version 1" do
+    it "raises ArgumentError on the retired version 2 with a migration hint" do
+      expect { described_class.from_h({"schema_version" => 2, "name" => "Legacy"}) }
+        .to raise_error(
+          ArgumentError,
+          /unsupported schema_version: 2 \(supported: 3\); migrate v2 "pitches" arrays to v3 "sounds" arrays \(pitch strings unchanged; unpitched sounds are \{"unpitched" => name_key\} objects\)/
+        )
+    end
+
+    it "raises ArgumentError on the retired version 1 without the v2 migration hint" do
       expect { described_class.from_h({"schema_version" => 1, "name" => "Legacy"}) }
-        .to raise_error(ArgumentError, /unsupported schema_version: 1 \(supported: 2\)/)
+        .to raise_error(ArgumentError, /unsupported schema_version: 1 \(supported: 3\)\z/)
     end
 
     it "raises ArgumentError when schema_version is missing" do
@@ -455,18 +534,18 @@ describe HeadMusic::Content::Composition do
     end
 
     it "raises ArgumentError on an unsupported future version" do
-      expect { described_class.from_h({"schema_version" => 3}) }
-        .to raise_error(ArgumentError, /unsupported schema_version: 3/)
+      expect { described_class.from_h({"schema_version" => 4}) }
+        .to raise_error(ArgumentError, /unsupported schema_version: 4/)
     end
 
-    it "raises ArgumentError on a String version, even \"1\"" do
-      expect { described_class.from_h({"schema_version" => "1"}) }
-        .to raise_error(ArgumentError, /unsupported schema_version: "1"/)
+    it "raises ArgumentError on a String version, even \"2\"" do
+      expect { described_class.from_h({"schema_version" => "2"}) }
+        .to raise_error(ArgumentError, /unsupported schema_version: "2"/)
     end
   end
 
   describe "malformed input" do
-    let(:base_hash) { {"schema_version" => 2, "name" => "Corrupted"} }
+    let(:base_hash) { {"schema_version" => 3, "name" => "Corrupted"} }
 
     def hash_with_placement(placement_hash)
       base_hash.merge("voices" => [{"role" => nil, "placements" => [placement_hash]}])
@@ -477,32 +556,70 @@ describe HeadMusic::Content::Composition do
         .to raise_error(ArgumentError, /expected a Hash, got String/)
     end
 
-    it "raises ArgumentError when a placement uses the retired v1 pitch key" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "pitch" => "C4")
+    it "raises ArgumentError when a placement uses the retired v2 pitches key" do
+      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => ["C4"])
       expect { described_class.from_h(hash) }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: pitches must be an Array, got nil/)
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: sounds must be an Array, got nil/)
     end
 
-    it "raises ArgumentError when pitches is not an Array" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => "C4")
+    it "raises ArgumentError when sounds is not an Array" do
+      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => "C4")
       expect { described_class.from_h(hash) }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: pitches must be an Array, got "C4"/)
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: sounds must be an Array, got "C4"/)
     end
 
     it "raises ArgumentError with element path context on an unknown pitch in a chord" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => ["C4", "H#4"])
+      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4", "H#4"])
       expect { described_class.from_h(hash) }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.pitches\[1\]: unknown pitch "H#4"/)
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[1\]: unknown pitch "H#4"/)
     end
 
-    it "raises ArgumentError on a nil element in pitches" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => [nil])
+    it "raises ArgumentError on a nil element in sounds" do
+      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [nil])
       expect { described_class.from_h(hash) }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.pitches\[0\]: unknown pitch nil/)
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown sound nil/)
+    end
+
+    it "raises ArgumentError on a non-string non-hash element in sounds" do
+      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [42])
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown sound 42/)
+    end
+
+    it "raises ArgumentError with element path context on an unknown instrument name" do
+      hash = hash_with_placement(
+        "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"unpitched" => "kazoodle"}]
+      )
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown instrument "kazoodle"/)
+    end
+
+    it "raises ArgumentError on an empty-string instrument name" do
+      hash = hash_with_placement(
+        "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"unpitched" => ""}]
+      )
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown instrument ""/)
+    end
+
+    it "raises ArgumentError on an unpitched hash with extra keys" do
+      hash = hash_with_placement(
+        "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"unpitched" => "snare_drum", "y" => 1}]
+      )
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown sound .*"y"/)
+    end
+
+    it "raises ArgumentError on a hash element with the wrong key" do
+      hash = hash_with_placement(
+        "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"instrument" => "snare_drum"}]
+      )
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown sound .*"instrument"/)
     end
 
     it "raises ArgumentError with path context on an unknown rhythmic value" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "sesquialtera", "pitches" => ["C4"])
+      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "sesquialtera", "sounds" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown rhythmic value "sesquialtera"/)
     end
@@ -532,13 +649,13 @@ describe HeadMusic::Content::Composition do
     end
 
     it "raises ArgumentError with path context on an unparseable placement position" do
-      hash = hash_with_placement("position" => "not-a-position", "rhythmic_value" => "quarter", "pitches" => ["C4"])
+      hash = hash_with_placement("position" => "not-a-position", "rhythmic_value" => "quarter", "sounds" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown position "not-a-position"/)
     end
 
     it "raises ArgumentError with path context on a negative placement position" do
-      hash = hash_with_placement("position" => "-1:1:000", "rhythmic_value" => "quarter", "pitches" => ["C4"])
+      hash = hash_with_placement("position" => "-1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown position "-1:1:000"/)
     end
@@ -610,8 +727,8 @@ describe HeadMusic::Content::Composition do
     end
 
     it "treats a nil name and the default name as equivalent" do
-      unnamed = described_class.from_h({"schema_version" => 2, "name" => nil})
-      named = described_class.from_h({"schema_version" => 2, "name" => "Composition"})
+      unnamed = described_class.from_h({"schema_version" => 3, "name" => nil})
+      named = described_class.from_h({"schema_version" => 3, "name" => "Composition"})
       expect(unnamed.to_h).to eq named.to_h
       expect(unnamed.to_h["name"]).to eq "Composition"
     end

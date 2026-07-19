@@ -5,45 +5,66 @@ module HeadMusic::Content; end
 class HeadMusic::Content::Placement
   include Comparable
 
-  attr_reader :voice, :position, :rhythmic_value, :pitches
+  attr_reader :voice, :position, :rhythmic_value, :sounds
 
   delegate :composition, to: :voice
   delegate :spelling, to: :pitch, allow_nil: true
 
-  def initialize(voice, position, rhythmic_value, pitch_or_pitches = nil)
-    ensure_attributes(voice, position, rhythmic_value, pitch_or_pitches)
+  def initialize(voice, position, rhythmic_value, sound_or_sounds = nil)
+    ensure_attributes(voice, position, rhythmic_value, sound_or_sounds)
+  end
+
+  def pitches
+    sounds.select(&:pitched?)
   end
 
   # The top pitch of a chord (or the only pitch of a note), which melodic
-  # analysis treats as the melody note. Enharmonic ties resolve to the
-  # first-listed pitch (MRI's max keeps the earliest of equals; a spec
-  # pins the behavior).
+  # analysis treats as the melody note. Returns nil for rests and
+  # unpitched-only placements; pitched? is the guard. Enharmonic ties
+  # resolve to the first-listed pitch (MRI's max keeps the earliest of
+  # equals; a spec pins the behavior).
   def pitch
     pitches.max
   end
 
+  def rest?
+    sounds.empty?
+  end
+
+  def sounded?
+    sounds.any?
+  end
+
   def note?
-    pitches.any?
+    sounds.length == 1
+  end
+
+  def pitched_note?
+    note? && pitched?
+  end
+
+  def unpitched_note?
+    note? && !pitched?
   end
 
   def chord?
     pitches.length > 1
   end
 
-  def rest?
-    !note?
+  def pitched?
+    sounds.any?(&:pitched?)
   end
 
   # Voice#place merges a same-position placement into the existing one, so a
-  # position holds at most one placement. The pitch union keeps the chord free
-  # of duplicates, making repeated placement of a pitch idempotent.
+  # position holds at most one placement. The sound union keeps the chord free
+  # of duplicates, making repeated placement of a sound idempotent.
   def merge(other)
     unless rhythmic_value == other.rhythmic_value
       raise ArgumentError,
         "cannot place a #{other.rhythmic_value} at #{position}: position occupied by a #{rhythmic_value}"
     end
 
-    @pitches = (pitches + other.pitches).uniq.freeze
+    @sounds = (sounds + other.sounds).uniq.freeze
     self
   end
 
@@ -60,18 +81,28 @@ class HeadMusic::Content::Placement
   end
 
   def to_s
-    "#{rhythmic_value} #{pitches.any? ? pitches.join(" ") : "rest"} at #{position}"
+    "#{rhythmic_value} #{sounds.any? ? sounds.map { |sound| sound_label(sound) }.join(" ") : "rest"} at #{position}"
   end
 
   def to_h
     {
       "position" => position.to_s,
       "rhythmic_value" => rhythmic_value.to_s,
-      "pitches" => pitches.map(&:to_s)
+      "sounds" => sounds.map { |sound| sound_datum(sound) }
     }
   end
 
   private
+
+  # Unpitched names may be multi-word, so they are bracketed to keep the
+  # space-delimited sound list unambiguous.
+  def sound_label(sound)
+    sound.pitched? ? sound.to_s : "[#{sound}]"
+  end
+
+  def sound_datum(sound)
+    sound.pitched? ? sound.to_s : {"unpitched" => sound.name_key&.to_s}
+  end
 
   def starts_during?(other_placement)
     position >= other_placement.position && position < other_placement.next_position
@@ -85,27 +116,51 @@ class HeadMusic::Content::Placement
     position <= other_placement.position && next_position >= other_placement.next_position
   end
 
-  def ensure_attributes(voice, position, rhythmic_value, pitch_or_pitches)
+  def ensure_attributes(voice, position, rhythmic_value, sound_or_sounds)
     @voice = voice
     ensure_position(position)
     @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
-    @pitches = ensure_pitches(pitch_or_pitches)
+    @sounds = ensure_sounds(sound_or_sounds)
   end
 
-  # A bare unparseable pitch quietly becomes a rest (long-standing leniency),
-  # but an array is explicit chord input, so an unparseable element raises
-  # rather than silently thinning the chord. uniq keeps chords duplicate-free.
-  def ensure_pitches(pitch_or_pitches)
-    return [HeadMusic::Rudiment::Pitch.get(pitch_or_pitches)].compact.freeze unless pitch_or_pitches.is_a?(Array)
+  def ensure_sounds(sound_or_sounds)
+    return [].freeze if sound_or_sounds.nil?
 
-    pitch_or_pitches.map { |value| fetch_pitch(value) }.uniq.freeze
+    values = sound_or_sounds.is_a?(Array) ? sound_or_sounds : [sound_or_sounds]
+    values.map { |value| resolve_sound(value) }.uniq.freeze
   end
 
-  def fetch_pitch(value)
+  def resolve_sound(value)
+    return value if value.is_a?(HeadMusic::Rudiment::UnpitchedSound)
+    return HeadMusic::Rudiment::UnpitchedSound.get(value) if value.is_a?(HeadMusic::Instruments::Instrument)
+
     pitch = HeadMusic::Rudiment::Pitch.get(value)
-    raise ArgumentError, "unknown pitch #{value.inspect}" unless pitch
+    return pitch if pitch
 
-    pitch
+    unpitched_sound(value) || raise(ArgumentError, unknown_sound_message(value))
+  end
+
+  # A bare name resolves to a percussive hit only on an unpitched instrument;
+  # naming a pitched instrument is ambiguous, so it raises instead.
+  # UnpitchedSound.get(nil) is the generic sound, so nil is excluded here to
+  # preserve nil-as-rest at the argument level and nil-raises inside arrays.
+  def unpitched_sound(value)
+    return nil if value.nil?
+
+    sound = HeadMusic::Rudiment::UnpitchedSound.get(value)
+    return nil unless sound&.instrument
+    return nil if sound.instrument.pitched?
+
+    sound
+  end
+
+  def unknown_sound_message(value)
+    if HeadMusic::Instruments::Instrument.get(value)&.pitched?
+      "#{value.inspect} is a pitched instrument; place a pitch such as \"D4\", " \
+        "or pass HeadMusic::Rudiment::UnpitchedSound.get(#{value.inspect}) for a percussive hit"
+    else
+      "unknown sound: #{value.inspect}"
+    end
   end
 
   def ensure_position(position)

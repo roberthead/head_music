@@ -120,12 +120,21 @@ module HeadMusic::Notation::ABC
     end
 
     def token(placement, pitch_writer, duration_writer)
+      ensure_pitched_sounds(placement)
       raise RenderError, "chords are not yet supported by the ABC writer" if placement.chord?
 
       multiplier = duration_writer.multiplier_string(placement.rhythmic_value)
       return "z#{multiplier}" if placement.rest?
 
       "#{pitch_writer.token(placement.pitch)}#{multiplier}"
+    end
+
+    def ensure_pitched_sounds(placement)
+      unpitched = placement.sounds.find { |sound| !sound.pitched? }
+      return unless unpitched
+
+      raise RenderError, "cannot render unpitched sound \"#{unpitched}\" at #{placement.position}: " \
+        "percussion rendering is not yet supported"
     end
   end
 end

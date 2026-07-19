@@ -146,6 +146,66 @@ describe HeadMusic::Content::Voice do
     its(:rests) { are_expected.to eq [second_beat_rest, fourth_beat_rest] }
   end
 
+  describe "#notes with unpitched sounds" do
+    let!(:pitched_note) { voice.place("1:1", :quarter, "C4") }
+    let!(:mixed_placement) { voice.place("1:4", :quarter, ["E4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")]) }
+
+    before do
+      voice.place("1:2", :quarter, HeadMusic::Rudiment::UnpitchedSound.get)
+      voice.place("1:3", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
+    end
+
+    it "excludes unpitched-only placements but includes mixed placements" do
+      expect(voice.notes).to eq [pitched_note, mixed_placement]
+    end
+  end
+
+  describe "#place with sounds" do
+    it "accepts a bare unpitched instrument name" do
+      placement = voice.place("1:1", :quarter, "snare drum")
+      expect(placement.sounds.map(&:name_key)).to eq [:snare_drum]
+    end
+
+    it "accepts the generic unpitched sound" do
+      placement = voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get)
+      expect(placement).to be_unpitched_note
+    end
+
+    it "accepts an instrument-backed unpitched sound" do
+      placement = voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("bass drum"))
+      expect(placement.sounds.map(&:name_key)).to eq [:bass_drum]
+    end
+
+    it "accepts an unpitched instrument instance" do
+      placement = voice.place("1:1", :quarter, HeadMusic::Instruments::Instrument.get("snare drum"))
+      expect(placement).to be_unpitched_note
+    end
+
+    it "accepts a pitched instrument instance as an unpitched hit" do
+      placement = voice.place("1:1", :quarter, HeadMusic::Instruments::Instrument.get("violin"))
+      expect(placement.sounds.map(&:name_key)).to eq [:violin]
+      expect(placement).not_to be_pitched
+    end
+
+    it "accepts a mixed array of pitches and unpitched sounds" do
+      placement = voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
+      expect(placement.pitches.map(&:to_s)).to eq ["C4"]
+      expect(placement.sounds.length).to eq 2
+    end
+
+    it "raises for a bare pitched instrument name" do
+      expect { voice.place("1:1", :quarter, "violin") }.to raise_error(ArgumentError, /pitched instrument/)
+    end
+
+    it "merges a pitched placement into an unpitched one at the same position" do
+      voice.place("1:1", :quarter, "snare drum")
+      placement = voice.place("1:1", :quarter, "C4")
+      expect(voice.placements.length).to eq 1
+      expect(placement).to be_pitched
+      expect(placement.sounds.length).to eq 2
+    end
+  end
+
   describe "#notes_not_in_key" do
     context "with some accidentals" do
       before do
@@ -369,8 +429,8 @@ describe HeadMusic::Content::Voice do
         {
           "role" => nil,
           "placements" => [
-            {"position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => ["C4"]},
-            {"position" => "1:2:000", "rhythmic_value" => "quarter", "pitches" => []}
+            {"position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4"]},
+            {"position" => "1:2:000", "rhythmic_value" => "quarter", "sounds" => []}
           ]
         }
       end

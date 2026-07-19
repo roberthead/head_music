@@ -311,6 +311,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def note_lines(placement)
+      ensure_pitched_sounds(placement)
       raise RenderError, "chords are not yet supported by the MusicXML writer" if placement.chord?
 
       components_by_placement[placement].flat_map do |component|
@@ -318,10 +319,18 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
+    def ensure_pitched_sounds(placement)
+      unpitched = placement.sounds.find { |sound| !sound.pitched? }
+      return unless unpitched
+
+      raise RenderError, "cannot render unpitched sound \"#{unpitched}\" at #{placement.position}: " \
+        "percussion rendering is not yet supported"
+    end
+
     def component_lines(placement, component)
       [
         "#{INDENT * 3}<note>",
-        *(placement.note? ? pitch_lines(placement.pitch) : ["#{INDENT * 4}<rest/>"]),
+        *(placement.pitched? ? pitch_lines(placement.pitch) : ["#{INDENT * 4}<rest/>"]),
         "#{INDENT * 4}<duration>#{component.duration}</duration>",
         *tie_lines(placement, component),
         "#{INDENT * 4}<type>#{component.type}</type>",

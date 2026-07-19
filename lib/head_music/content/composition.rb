@@ -3,7 +3,7 @@ module HeadMusic::Content; end
 
 # A composition is musical content.
 class HeadMusic::Content::Composition
-  SCHEMA_VERSION = 2
+  SCHEMA_VERSION = 3
 
   attr_reader :name, :key_signature, :meter, :voices, :composer, :origin, :comments
 
@@ -143,7 +143,7 @@ class HeadMusic::Content::Composition
     end
   end
 
-  # Rebuilds a composition from a schema v2 hash by replaying the public
+  # Rebuilds a composition from a schema v3 hash by replaying the public
   # builder API in dependency order: meter and key changes first (position
   # strings roll counts and ticks over via the meter map), then placements,
   # then repeat flags (a pickup-bar flag needs its bar allocated), then
@@ -174,7 +174,12 @@ class HeadMusic::Content::Composition
       version = hash["schema_version"]
       return if version.is_a?(Integer) && version == SCHEMA_VERSION
 
-      raise ArgumentError, "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})"
+      message = "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})"
+      if version == 2
+        message += "; migrate v2 \"pitches\" arrays to v3 \"sounds\" arrays " \
+          "(pitch strings unchanged; unpitched sounds are {\"unpitched\" => name_key} objects)"
+      end
+      raise ArgumentError, message
     end
 
     def build_base_composition
@@ -209,8 +214,8 @@ class HeadMusic::Content::Composition
           path = "voices[#{voice_index}].placements[#{placement_index}]"
           position = parsed_position(placement_hash["position"], path)
           rhythmic_value = parsed_rhythmic_value(placement_hash["rhythmic_value"], path)
-          pitch_or_pitches = parsed_placement_pitches(placement_hash, path)
-          voice.place(position, rhythmic_value, pitch_or_pitches)
+          sounds = parsed_placement_sounds(placement_hash, path)
+          voice.place(position, rhythmic_value, sounds)
         end
       end
     end
@@ -314,17 +319,42 @@ class HeadMusic::Content::Composition
       pitch
     end
 
-    # "pitches" is an array of pitch strings, empty for a rest. A nil element
-    # is never a rest, so it fails like any other unknown pitch.
-    def parsed_placement_pitches(placement_hash, path)
-      values = placement_hash["pitches"]
+    # "sounds" is an array of sound data, empty for a rest. A pitched sound
+    # is a pitch string; an unpitched sound is a one-key
+    # {"unpitched" => name_key} hash. A nil element is never a rest, so it
+    # fails like any other unknown sound.
+    def parsed_placement_sounds(placement_hash, path)
+      values = placement_hash["sounds"]
       unless values.is_a?(Array)
-        raise ArgumentError, "#{path}: pitches must be an Array, got #{values.inspect}"
+        raise ArgumentError, "#{path}: sounds must be an Array, got #{values.inspect}"
       end
 
       values.each_with_index.map do |value, index|
-        parsed_pitch(value, "#{path}.pitches[#{index}]")
+        parsed_sound(value, "#{path}.sounds[#{index}]")
       end
+    end
+
+    def parsed_sound(value, path)
+      return parsed_pitch(value, path) if value.is_a?(String)
+      return parsed_unpitched_sound(value, path) if value.is_a?(Hash)
+
+      raise ArgumentError, "#{path}: unknown sound #{value.inspect}"
+    end
+
+    # A nil name_key is the generic unpitched sound. A pitched instrument is
+    # a valid hit surface (a knock on a violin body is unpitched), so any
+    # catalog name or alias resolves.
+    def parsed_unpitched_sound(value, path)
+      unless value.keys == ["unpitched"]
+        raise ArgumentError, "#{path}: unknown sound #{value.inspect}"
+      end
+
+      name = value["unpitched"]
+      valid_name = name.nil? || (name.is_a?(String) && !name.empty?)
+      sound = HeadMusic::Rudiment::UnpitchedSound.get(name) if valid_name
+      raise ArgumentError, "#{path}: unknown instrument #{name.inspect}" unless sound
+
+      sound
     end
   end
 end

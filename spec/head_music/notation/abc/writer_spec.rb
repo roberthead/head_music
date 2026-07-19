@@ -232,6 +232,50 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
+    context "with a two-pitch chord placement" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new.tap do |composition|
+          composition.add_voice.place("1:1", :half, %w[C4 E4])
+        end
+      end
+
+      it "still raises the chord RenderError rather than emitting a token" do
+        expect { described_class.new(composition).to_s }.to raise_error(
+          HeadMusic::Notation::ABC::RenderError, /chords are not yet supported by the ABC writer/
+        )
+      end
+    end
+
+    context "with a single unpitched sound placement" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new.tap do |composition|
+          composition.add_voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
+        end
+      end
+
+      it "raises a RenderError naming the sound and position" do
+        expect { described_class.new(composition).to_s }.to raise_error(
+          HeadMusic::Notation::ABC::RenderError,
+          /cannot render unpitched sound "snare drum" at 1:1.*percussion rendering is not yet supported/
+        )
+      end
+    end
+
+    context "with a mixed pitched and unpitched placement" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new.tap do |composition|
+          composition.add_voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
+        end
+      end
+
+      it "raises a RenderError naming the unpitched sound" do
+        expect { described_class.new(composition).to_s }.to raise_error(
+          HeadMusic::Notation::ABC::RenderError,
+          /cannot render unpitched sound "snare drum" at 1:1/
+        )
+      end
+    end
+
     context "with a first placement that does not start its bar" do
       let(:composition) do
         HeadMusic::Content::Composition.new.tap do |composition|

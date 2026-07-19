@@ -74,6 +74,7 @@ require "head_music/rudiment/pitch/parser"
 require "head_music/rudiment/rhythmic_element"
 require "head_music/rudiment/note"
 require "head_music/rudiment/unpitched_note"
+require "head_music/rudiment/unpitched_sound"
 require "head_music/rudiment/rest"
 
 require "head_music/rudiment/chromatic_interval"

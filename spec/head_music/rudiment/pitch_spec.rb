@@ -1,6 +1,16 @@
 require "spec_helper"
 
 describe HeadMusic::Rudiment::Pitch do
+  it_behaves_like "a sound" do
+    subject { described_class.get("C4") }
+  end
+
+  describe "#pitched?" do
+    it "is true" do
+      expect(described_class.get("C4").pitched?).to be true
+    end
+  end
+
   describe ".get" do
     context "when given an instance" do
       let(:instance) { described_class.get(65) }
