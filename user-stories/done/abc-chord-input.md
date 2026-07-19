@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-17T12:54:19-07:00
   activated_at: 2026-07-18T17:27:15-07:00
   planned_at:   2026-07-18T17:36:25-07:00
-  finished_at:
-  updated_at:   2026-07-18T19:39:39-07:00
+  finished_at:  2026-07-18T19:46:20-07:00
+  updated_at:   2026-07-18T19:46:20-07:00
 -->
 
 # Story: ABC Chord Input
@@ -179,3 +179,12 @@ The uniform-inner-length amendment (above) was implemented after the review, dir
 - Writer unchanged: emission stays canonical, so `[C2E2G2]` normalizes to the outer-length form on round-trip.
 
 Verified: `[C2E2G2]` ≡ `[CEG]2`; `[C2E2G2]3` ≡ `[CEG]6` (the standard's example); `[C4/2E2G2]` uniform; broken rhythm composes correctly; `[C2EG]` and `[C2E2G4]` raise. Full suite 5831 examples, 0 failures, 99.76% line coverage; rubocop clean. New specs: lexer captures per-note lengths (uniform and uneven); parser reads uniform lengths, multiplies inner × outer, treats `4/2`≡`2` as uniform, and rejects unequal; writer round-trips and normalizes a uniform-inner-length fixture.
+
+## Learnings
+
+- **Sequencing the model story first paid for itself.** Because the Sound Model landed as v17.0.0 first, this story needed zero content-model changes — it was pure notation plumbing (lexer → parser → writer). Splitting "represent chords" from "read/write chords in ABC" kept each story's diff focused and its review tractable.
+- **One small generalization carried the whole parser.** Renaming `PendingNote`'s `:pitch` to `:pitches` let chords ride every existing seam — duration resolution, broken rhythm, same-position merge — with no new branches. Broken-rhythm-next-to-a-chord worked for free. When a new case is "the existing case but plural," generalize the carrier rather than fork the handler.
+- **Consult the actual standard for conformance work.** The plan's initial "reject all inner lengths" was stricter than ABC 2.1 §4.17, which explicitly blesses uniform inner lengths (`[C2E2G2]3 ≡ [CEG]6`). Reading the primary source mid-review — not trusting the plan's assumption — changed the scope correctly. The amendment cites the spec so the boundary is defensible later.
+- **Reject silent reinterpretation, keep the door open.** Unequal inner lengths are legal ABC (duration = first note) but can't fit one rhythmic value without discarding the others' stated lengths, so we raise with a message naming both valid spellings. This matches the fail-fast character the duplicate-pitch and quiet-rest decisions established across both stories.
+- **The accidental oracle stays correct by construction, not by testing.** Sorted emission order == oracle-commit order == re-parse order because one loop feeds both — the same "one loop serves both" discipline the Sound Model used for its predicate/serialization consistency. Design the invariant in; don't chase it with cases.
+- **Match the tool to the task size.** The four-agent fan-out fit the multi-file Sound Model; the two-agent split fit this story; the uniform-length amendment — small, one clear seam, full context already in hand — was faster to implement directly. Spawning an agent has overhead that only pays off past a certain scope.
