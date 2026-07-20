@@ -164,7 +164,8 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def natural_steps(num_steps)
-    HeadMusic::Rudiment::Pitch.get([target_letter_name(num_steps), register + octaves_delta(num_steps)].join)
+    step = NaturalStep.new(letter_name, num_steps)
+    HeadMusic::Rudiment::Pitch.get([step.target_letter_name, register + step.octaves_delta].join)
   end
 
   def frequency
@@ -200,29 +201,6 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
 
   def tuning
     @tuning ||= HeadMusic::Rudiment::Tuning.new
-  end
-
-  def octaves_delta(num_steps)
-    octaves_delta = (num_steps.abs / 7) * ((num_steps >= 0) ? 1 : -1)
-    if wrapped_down?(num_steps)
-      octaves_delta -= 1
-    elsif wrapped_up?(num_steps)
-      octaves_delta += 1
-    end
-    octaves_delta
-  end
-
-  def wrapped_down?(num_steps)
-    num_steps.negative? && target_letter_name(num_steps).position > letter_name.position
-  end
-
-  def wrapped_up?(num_steps)
-    num_steps.positive? && target_letter_name(num_steps).position < letter_name.position
-  end
-
-  def target_letter_name(num_steps)
-    @target_letter_name ||= {}
-    @target_letter_name[num_steps] ||= letter_name.steps_up(num_steps)
   end
 
   def helmholtz_letter_name
