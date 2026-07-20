@@ -875,20 +875,6 @@ describe HeadMusic::Instruments::Instrument do
       end
     end
 
-    describe "staff-derived accessors when default_staves is nil" do
-      let(:instrument) { described_class.get("violin") }
-
-      before { allow(instrument).to receive(:default_staves).and_return(nil) }
-
-      it "returns an empty array for default_clefs" do
-        expect(instrument.default_clefs).to eq([])
-      end
-
-      it "returns zero for sounding_transposition" do
-        expect(instrument.sounding_transposition).to eq(0)
-      end
-    end
-
     describe "#translation for a nameless instrument" do
       let(:instrument) { described_class.get("violin") }
 
@@ -922,16 +908,6 @@ describe HeadMusic::Instruments::Instrument do
       it "renders the designation with a sharp sign" do
         allow(instrument).to receive(:pitch_key).and_return("f_sharp")
         expect(instrument.send(:pitch_key_to_designation)).to eq("F#")
-      end
-    end
-
-    describe "#default_notation_staves_data when there is no notation" do
-      subject(:instrument) { described_class.get("violin") }
-
-      it "returns an empty array" do
-        empty_style = instance_double(HeadMusic::Notation::NotationStyle, notation_for: nil)
-        allow(HeadMusic::Notation::NotationStyle).to receive(:default).and_return(empty_style)
-        expect(instrument.send(:default_notation_staves_data)).to eq([])
       end
     end
   end

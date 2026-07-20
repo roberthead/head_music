@@ -114,56 +114,21 @@ class HeadMusic::Instruments::Instrument
     HeadMusic::Notation::NotationStyle.get(style).notation_for(self)
   end
 
-  # Staff schemes are a notation concern; they now live in NotationStyle.
-  # These methods remain for backward compatibility and delegate to the
-  # default style. Referenced only inside method bodies, because the Notation
-  # module loads after Instruments (see head_music.rb load order).
-  def staff_schemes
-    [default_staff_scheme]
-  end
-
-  def default_staff_scheme
-    @default_staff_scheme ||= HeadMusic::Instruments::StaffScheme.new(
-      key: "default",
-      instrument: self,
-      list: default_notation_staves_data
-    )
-  end
-
-  def default_staves
-    default_staff_scheme.staves
-  end
-
-  def default_clefs
-    default_staves&.map(&:clef) || []
-  end
-
-  def sounding_transposition
-    default_staves&.first&.sounding_transposition || 0
-  end
+  # Staff schemes are a notation concern; StaffProfile projects the default
+  # NotationStyle onto the staff-derived properties below. These delegators
+  # remain because callers ask an instrument directly whether it transposes,
+  # how many staves it uses, and so on.
+  delegate(
+    :staff_schemes, :default_staff_scheme, :default_staves, :default_clefs,
+    :sounding_transposition, :transposing?, :transposing_at_the_octave?,
+    :single_staff?, :multiple_staves?, :pitched?,
+    to: :staff_profile
+  )
 
   alias_method :default_sounding_transposition, :sounding_transposition
 
-  def transposing?
-    sounding_transposition != 0
-  end
-
-  def transposing_at_the_octave?
-    transposing? && sounding_transposition % 12 == 0
-  end
-
-  def single_staff?
-    default_staves.length == 1
-  end
-
-  def multiple_staves?
-    default_staves.length > 1
-  end
-
-  def pitched?
-    return false if default_clefs.compact.uniq == [HeadMusic::Rudiment::Clef.get("neutral_clef")]
-
-    default_clefs.any?
+  def staff_profile
+    @staff_profile ||= HeadMusic::Instruments::StaffProfile.new(self)
   end
 
   def translation(locale = :en)
@@ -254,12 +219,5 @@ class HeadMusic::Instruments::Instrument
     else
       pitch_key_str.upcase
     end
-  end
-
-  # The raw staff-attribute list for this instrument's default notation,
-  # resolved from the default NotationStyle.
-  def default_notation_staves_data
-    notation = HeadMusic::Notation::NotationStyle.default.notation_for(self)
-    (notation&.staves || []).map(&:attributes)
   end
 end
