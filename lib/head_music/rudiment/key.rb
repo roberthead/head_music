@@ -2,37 +2,22 @@
 module HeadMusic::Rudiment; end
 
 # Represents a musical key (major or minor)
-class HeadMusic::Rudiment::Key < HeadMusic::Rudiment::DiatonicContext
-  include HeadMusic::Named
-
+class HeadMusic::Rudiment::Key < HeadMusic::Rudiment::QualifiedDiatonicContext
   QUALITIES = %i[major minor].freeze
 
-  attr_reader :quality
-
-  def self.get(identifier)
-    return identifier if identifier.is_a?(HeadMusic::Rudiment::Key)
-
-    @keys ||= {}
-    tonic_spelling, quality_name = parse_identifier(identifier)
-    hash_key = HeadMusic::Utilities::HashKey.for(identifier)
-    @keys[hash_key] ||= new(tonic_spelling, quality_name)
+  def self.default_qualifier
+    :major
   end
 
-  def self.parse_identifier(identifier)
-    tonic_spelling, quality_name = identifier.to_s.strip.split(/\s+/)
-    quality_name ||= "major"
-    [tonic_spelling, quality_name]
+  def self.valid_qualifiers
+    QUALITIES
   end
 
-  def initialize(tonic_spelling, quality = :major)
-    super(tonic_spelling)
-    @quality = quality.to_s.downcase.to_sym
-    raise ArgumentError, "Quality must be :major or :minor" unless QUALITIES.include?(@quality)
+  def self.invalid_qualifier_message
+    "Quality must be :major or :minor"
   end
 
-  def scale_type
-    @scale_type ||= HeadMusic::Rudiment::ScaleType.get(quality)
-  end
+  alias_method :quality, :qualifier
 
   def major?
     quality == :major
@@ -60,18 +45,5 @@ class HeadMusic::Rudiment::Key < HeadMusic::Rudiment::DiatonicContext
     else
       self.class.get("#{tonic_spelling} major")
     end
-  end
-
-  def name
-    "#{tonic_spelling} #{quality}"
-  end
-
-  def to_s
-    name
-  end
-
-  def ==(other)
-    other = self.class.get(other)
-    tonic_spelling == other.tonic_spelling && quality == other.quality
   end
 end

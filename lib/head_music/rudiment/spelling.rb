@@ -99,27 +99,16 @@ class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
   end
 
   # Enharmonic equivalence occurs when two spellings refer to the same pitch class, such as D# and Eb.
-  class EnharmonicEquivalence
-    def self.get(spelling)
-      spelling = HeadMusic::Rudiment::Spelling.get(spelling)
-      @enharmonic_equivalences ||= {}
-      @enharmonic_equivalences[spelling.to_s] ||= new(spelling)
+  class EnharmonicEquivalence < HeadMusic::Rudiment::EnharmonicEquivalence
+    def self.subject_class
+      HeadMusic::Rudiment::Spelling
     end
 
-    attr_reader :spelling
-
-    def initialize(spelling)
-      @spelling = HeadMusic::Rudiment::Spelling.get(spelling)
-    end
+    alias_method :spelling, :subject
 
     def enharmonic_equivalent?(other)
       other = HeadMusic::Rudiment::Spelling.get(other)
       spelling != other && spelling.pitch_class_number == other.pitch_class_number
     end
-
-    alias_method :enharmonic?, :enharmonic_equivalent?
-    alias_method :equivalent?, :enharmonic_equivalent?
-
-    private_class_method :new
   end
 end

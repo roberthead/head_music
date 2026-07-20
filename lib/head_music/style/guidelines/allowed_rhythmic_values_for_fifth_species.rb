@@ -94,14 +94,4 @@ class HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies < HeadM
   def final_bar_number
     last_note&.position&.bar_number
   end
-
-  def preceding_note(note)
-    index = notes.index(note)
-    notes[index - 1] if index && index > 0
-  end
-
-  def following_note(note)
-    index = notes.index(note)
-    notes[index + 1] if index && index < notes.length - 1
-  end
 end

@@ -37,16 +37,6 @@ module HeadMusic::Style::Guidelines::DissonanceFigureDetection
     approach.step? && departure.step? && (approach.direction == departure.direction) == same_direction
   end
 
-  def preceding_note(note)
-    index = notes.index(note)
-    notes[index - 1] if index && index > 0
-  end
-
-  def following_note(note)
-    index = notes.index(note)
-    notes[index + 1] if index && index < notes.length - 1
-  end
-
   # Nota cambiata: a five-note figure where note 2 is dissonant,
   # approached by step from note 1, leaps a third in the same direction to note 3,
   # then notes 3-4-5 proceed stepwise in the opposite direction.

@@ -3,6 +3,8 @@ module HeadMusic::Rudiment; end
 
 # Just Intonation tuning system based on whole number frequency ratios
 class HeadMusic::Rudiment::Tuning::JustIntonation < HeadMusic::Rudiment::Tuning
+  include HeadMusic::Rudiment::Tuning::TonalCentered
+
   # Frequency ratios for intervals in just intonation (relative to tonic)
   # Based on the major scale with pure intervals
   INTERVAL_RATIOS = {
@@ -20,8 +22,4 @@ class HeadMusic::Rudiment::Tuning::JustIntonation < HeadMusic::Rudiment::Tuning
     major_seventh: Rational(15, 8),
     octave: Rational(2, 1)
   }.freeze
-
-  def initialize(reference_pitch: :a440, tonal_center: nil)
-    super(reference_pitch: reference_pitch, tonal_center: tonal_center || "C4")
-  end
 end

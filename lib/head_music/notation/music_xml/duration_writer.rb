@@ -30,15 +30,10 @@ module HeadMusic::Notation::MusicXML
     end
 
     # A rhythmic value's own duration in quarter notes, ignoring any tied
-    # chain. RhythmicValue's own methods (relative_value, total_value,
-    # ticks) return Floats, so the fraction is rebuilt here from the
-    # unit's integer numerator and denominator to keep the divisions
-    # arithmetic exact.
+    # chain. Four quarter notes span a whole note, so the value's fraction
+    # of its own unit is scaled by four.
     def self.single_quarter_fraction(rhythmic_value)
-      unit = rhythmic_value.unit
-      dots = rhythmic_value.dots
-      # A value with d dots spans (2^(d+1) - 1) / 2^d of its own unit.
-      Rational(unit.numerator, unit.denominator) * Rational((2**(dots + 1)) - 1, 2**dots) * 4
+      HeadMusic::Notation::DottedDuration.dotted_unit_fraction(rhythmic_value) * 4
     end
 
     def components(rhythmic_value)

@@ -22,17 +22,10 @@ module HeadMusic::Notation::ABC
     # from integer parts so the multiplier arithmetic stays exact. A tied
     # chain collapses to one multiplier, round-tripping tokens like "A5".
     def total_fraction(rhythmic_value)
-      fraction = single_fraction(rhythmic_value)
+      fraction = HeadMusic::Notation::DottedDuration.dotted_unit_fraction(rhythmic_value)
       tied_value = rhythmic_value.tied_value
       fraction += total_fraction(tied_value) if tied_value
       fraction
-    end
-
-    def single_fraction(rhythmic_value)
-      unit = rhythmic_value.unit
-      dots = rhythmic_value.dots
-      # A value with d dots spans (2^(d+1) - 1) / 2^d of its unit.
-      Rational(unit.numerator, unit.denominator) * Rational((2**(dots + 1)) - 1, 2**dots)
     end
 
     def validate_fraction!(fraction, rhythmic_value)

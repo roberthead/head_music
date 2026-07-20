@@ -2,39 +2,22 @@
 module HeadMusic::Rudiment; end
 
 # Represents a musical mode (church modes)
-class HeadMusic::Rudiment::Mode < HeadMusic::Rudiment::DiatonicContext
-  include HeadMusic::Named
-
+class HeadMusic::Rudiment::Mode < HeadMusic::Rudiment::QualifiedDiatonicContext
   MODES = %i[ionian dorian phrygian lydian mixolydian aeolian locrian].freeze
 
-  attr_reader :mode_name
-
-  def self.get(identifier)
-    return identifier if identifier.is_a?(HeadMusic::Rudiment::Mode)
-
-    @modes ||= {}
-    tonic_spelling, mode_name = parse_identifier(identifier)
-    hash_key = HeadMusic::Utilities::HashKey.for(identifier)
-    @modes[hash_key] ||= new(tonic_spelling, mode_name)
+  def self.default_qualifier
+    :ionian
   end
 
-  def self.parse_identifier(identifier)
-    identifier = identifier.to_s.strip
-    parts = identifier.split(/\s+/)
-    tonic_spelling = parts[0]
-    mode_name = parts[1] || "ionian"
-    [tonic_spelling, mode_name]
+  def self.valid_qualifiers
+    MODES
   end
 
-  def initialize(tonic_spelling, mode_name = :ionian)
-    super(tonic_spelling)
-    @mode_name = mode_name.to_s.downcase.to_sym
-    raise ArgumentError, "Mode must be one of: #{MODES.join(", ")}" unless MODES.include?(@mode_name)
+  def self.invalid_qualifier_message
+    "Mode must be one of: #{MODES.join(", ")}"
   end
 
-  def scale_type
-    @scale_type ||= HeadMusic::Rudiment::ScaleType.get(mode_name)
-  end
+  alias_method :mode_name, :qualifier
 
   def relative_major
     case mode_name
@@ -75,18 +58,5 @@ class HeadMusic::Rudiment::Mode < HeadMusic::Rudiment::DiatonicContext
     when :locrian
       HeadMusic::Rudiment::Key.get("#{tonic_spelling} minor")
     end
-  end
-
-  def name
-    "#{tonic_spelling} #{mode_name}"
-  end
-
-  def to_s
-    name
-  end
-
-  def ==(other)
-    other = self.class.get(other)
-    tonic_spelling == other.tonic_spelling && mode_name == other.mode_name
   end
 end

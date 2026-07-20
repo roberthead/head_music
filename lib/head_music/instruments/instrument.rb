@@ -23,6 +23,7 @@ module HeadMusic::Instruments; end
 #   range_categories: size/range classifications
 class HeadMusic::Instruments::Instrument
   include HeadMusic::Named
+  include HeadMusic::Instruments::CatalogLookup
 
   INSTRUMENTS = YAML.load_file(File.expand_path("instruments.yml", __dir__)).freeze
 
@@ -230,14 +231,8 @@ class HeadMusic::Instruments::Instrument
       record_for_alias(name)
   end
 
-  def key_for_name(name)
-    INSTRUMENTS.each do |key, _data|
-      I18n.config.available_locales.each do |locale|
-        translation = I18n.t("head_music.instruments.#{key}", locale: locale)
-        return key if translation.downcase == name.downcase
-      end
-    end
-    nil
+  def catalog
+    INSTRUMENTS
   end
 
   def record_for_key(key)

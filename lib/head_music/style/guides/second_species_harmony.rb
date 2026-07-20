@@ -2,8 +2,7 @@
 class HeadMusic::Style::Guides::SecondSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   RULESET = [
     *HARMONIC_CORE,
-    HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline,
-    HeadMusic::Style::Guidelines::NoStrongBeatUnisons,
+    *DIMINUTION_HARMONIC_CORE,
     HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment
   ].freeze
 end

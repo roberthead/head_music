@@ -15,6 +15,8 @@ module HeadMusic::Notation::ABC
     UNIT_NOTE_LENGTH = Rational(1, 8)
     BARS_PER_LINE = 4
 
+    include HeadMusic::Notation::PlacementValidation
+
     attr_reader :composition, :reference_number
 
     def initialize(composition, reference_number: 1)
@@ -151,12 +153,8 @@ module HeadMusic::Notation::ABC
       "[#{pitch_tokens.join}]#{multiplier}"
     end
 
-    def ensure_pitched_sounds(placement)
-      unpitched = placement.sounds.find { |sound| !sound.pitched? }
-      return unless unpitched
-
-      raise RenderError, "cannot render unpitched sound \"#{unpitched}\" at #{placement.position}: " \
-        "percussion rendering is not yet supported"
+    def render_error_class
+      RenderError
     end
   end
 end

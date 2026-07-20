@@ -30,6 +30,8 @@ module HeadMusic::Notation::MusicXML
       "256th" => 6
     }.freeze
 
+    include HeadMusic::Notation::PlacementValidation
+
     attr_reader :composition
 
     def initialize(composition)
@@ -396,12 +398,8 @@ module HeadMusic::Notation::MusicXML
       placement.rest? ? [nil] : placement.pitches.sort
     end
 
-    def ensure_pitched_sounds(placement)
-      unpitched = placement.sounds.find { |sound| !sound.pitched? }
-      return unless unpitched
-
-      raise RenderError, "cannot render unpitched sound \"#{unpitched}\" at #{placement.position}: " \
-        "percussion rendering is not yet supported"
+    def render_error_class
+      RenderError
     end
 
     # A chord note carries <chord/> as its first child, before <pitch>, marking

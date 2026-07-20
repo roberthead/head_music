@@ -17,6 +17,7 @@ module HeadMusic::Instruments; end
 # @see HeadMusic::Instruments::Instrument
 class HeadMusic::Instruments::InstrumentFamily
   include HeadMusic::Named
+  include HeadMusic::Instruments::CatalogLookup
 
   INSTRUMENT_FAMILIES =
     YAML.load_file(File.expand_path("instrument_families.yml", __dir__)).freeze
@@ -52,14 +53,8 @@ class HeadMusic::Instruments::InstrumentFamily
       record_for_key(key_for_name(name))
   end
 
-  def key_for_name(name)
-    INSTRUMENT_FAMILIES.each do |key, _data|
-      I18n.config.available_locales.each do |locale|
-        translation = I18n.t("head_music.instruments.#{key}", locale: locale)
-        return key if translation.downcase == name.downcase
-      end
-    end
-    nil
+  def catalog
+    INSTRUMENT_FAMILIES
   end
 
   def record_for_key(key)

@@ -31,7 +31,7 @@ class HeadMusic::Style::Annotation
   end
 
   # Wraps a guideline class with preset options so it can live in a RULESET
-  # and still be instantiated with just a voice, e.g. MinimumNotes.with(minimum: 5).
+  # and still be instantiated with just a voice, e.g. MinimumNotes.with(5).
   def self.with(**options)
     Configured.new(self, options)
   end
@@ -201,5 +201,15 @@ class HeadMusic::Style::Annotation
 
   def tonic_pitch
     @tonic_pitch ||= HeadMusic::Rudiment::Pitch.get(tonic_spelling)
+  end
+
+  def preceding_note(note)
+    index = notes.index(note)
+    notes[index - 1] if index && index > 0
+  end
+
+  def following_note(note)
+    index = notes.index(note)
+    notes[index + 1] if index && index < notes.length - 1
   end
 end

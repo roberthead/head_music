@@ -183,6 +183,7 @@ class HeadMusic::Content::Voice
       :step?, :leap?, :large_leap?,
       :ascending?, :descending?, :repetition?,
       :spans?,
+      :spells_consonant_triad_with?,
       to: :melodic_interval
     )
 
@@ -201,15 +202,6 @@ class HeadMusic::Content::Voice
 
     def melodic_interval
       @melodic_interval ||= HeadMusic::Analysis::MelodicInterval.new(*notes)
-    end
-
-    def spells_consonant_triad_with?(other_note_pair)
-      return false if step? || other_note_pair.step?
-
-      combined_pitches = (pitches + other_note_pair.pitches).uniq
-      return false if combined_pitches.length < 3
-
-      HeadMusic::Analysis::PitchCollection.new(combined_pitches).consonant_triad?
     end
   end
 end

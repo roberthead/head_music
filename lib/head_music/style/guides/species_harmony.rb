@@ -15,4 +15,12 @@ class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::PreferContraryMotion,
     HeadMusic::Style::Guidelines::PreferImperfect
   ].freeze
+
+  # Guidelines shared by the diminution species (second, third, and triple
+  # meter), which set several counterpoint notes against each whole note of the
+  # cantus firmus. Subclasses splat this in alongside HARMONIC_CORE.
+  DIMINUTION_HARMONIC_CORE = [
+    HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline,
+    HeadMusic::Style::Guidelines::NoStrongBeatUnisons
+  ].freeze
 end
