@@ -19,6 +19,9 @@ module HeadMusic::Notation::ABC
     REPEAT_STARTING_STYLES = ["|:", "::"].freeze
     SECTION_ENDING_STYLES = ["||", "|]", "[|"].freeze
 
+    # The identity length scale, used wherever no stretching applies.
+    ONE = Rational(1)
+
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
     def initialize(abc_string, start_line: 1)
@@ -45,27 +48,7 @@ module HeadMusic::Notation::ABC
       end
     end
 
-    # Per-voice interpretation state. Accidentals, the deferred note,
-    # and volta tracking are all independent between voices.
-    class VoiceState
-      attr_reader :voice, :pitch_builder
-      attr_accessor :pending_note, :awaiting_scale, :broken_line,
-        :active_passes, :volta_start_bar, :tie_open, :tie_line,
-        :beam_break_pending, :beam_last_was_note
-
-      def initialize(voice, pitch_builder)
-        @voice = voice
-        @pitch_builder = pitch_builder
-      end
-
-      def completed_bar_number
-        voice.last_placement&.position&.bar_number
-      end
-
-      def entered_bar_number
-        voice.next_position.bar_number
-      end
-    end
+    # Per-voice interpretation state lives in VoiceState (its own file).
 
     def build_composition
       ensure_input_present
@@ -108,9 +91,10 @@ module HeadMusic::Notation::ABC
       token = tokens.find { |candidate| candidate.type == :unsupported }
       return unless token
 
+      lexeme = token.lexeme
       raise UnsupportedFeatureError.new(
-        "Unsupported ABC feature #{token.lexeme.inspect}",
-        line_number: token.line, snippet: token.lexeme
+        "Unsupported ABC feature #{lexeme.inspect}",
+        line_number: token.line, snippet: lexeme
       )
     end
 
@@ -213,26 +197,21 @@ module HeadMusic::Notation::ABC
       "[#{inner}]"
     end
 
-    def defer_placement(state, pitches, length, inner_scale = Rational(1))
-      scale = (state.awaiting_scale || Rational(1)) * inner_scale
+    def defer_placement(state, pitches, length, inner_scale = ONE)
+      scale = (state.awaiting_scale || ONE) * inner_scale
       state.awaiting_scale = nil
-      return tie_onto_pending(state, pitches, length, scale) if state.tie_open
+      return tie_onto_pending(state, pitches, length, scale) if state.tie_open?
 
       flush_pending_note(state)
-      flag = if state.beam_break_pending
-        true
-      else
-        (state.beam_last_was_note ? false : nil)
-      end
-      state.beam_break_pending = false
-      state.beam_last_was_note = true
-      state.pending_note = PendingNote.new(pitches: pitches, length: length, scale: scale, beam_break: flag)
+      state.pending_note = PendingNote.new(
+        pitches: pitches, length: length, scale: scale, beam_break: state.next_beam_break
+      )
     end
 
     # The lexer only emits :beam_break after a music token, so a voice
     # state already exists; the flag is consumed by the next deferred note.
     def handle_beam_break(_token)
-      current_state.beam_break_pending = true
+      current_state.mark_beam_break
     end
 
     # A tie (`-`) after a note or chord fuses it to the next note of the
@@ -240,13 +219,11 @@ module HeadMusic::Notation::ABC
     # its right note arrives.
     def handle_tie(token)
       state = current_state
+      line = token.line
       if state.awaiting_scale || state.pending_note.nil?
-        raise ParseError.new(
-          "A tie must follow a note", line_number: token.line, snippet: "-"
-        )
+        raise ParseError.new("A tie must follow a note", line_number: line, snippet: "-")
       end
-      state.tie_open = true
-      state.tie_line = token.line
+      state.open_tie(line)
     end
 
     # Closes an open tie: the pending note becomes the new note's tied
@@ -256,8 +233,7 @@ module HeadMusic::Notation::ABC
       pending = state.pending_note
       ensure_tie_pitches_match(state, pending, pitches)
       prefix = pending_rhythmic_value(pending)
-      state.tie_open = false
-      state.tie_line = nil
+      state.close_tie
       state.pending_note = PendingNote.new(
         pitches: pitches, length: length, scale: scale, tied_prefix: prefix,
         beam_break: pending.beam_break
@@ -278,63 +254,61 @@ module HeadMusic::Notation::ABC
       state = current_state
       reject_open_tie(state, token.line, "A tie must be followed by a note")
       flush_pending_note(state)
-      reset_beam_adjacency(state)
+      state.reset_beam_adjacency
       place(state, token.length, nil)
-    end
-
-    # After a rest, bar line, volta, or voice change, a following note
-    # must not be marked as beamed to whatever preceded the boundary.
-    def reset_beam_adjacency(state)
-      state.beam_last_was_note = false
-      state.beam_break_pending = false
     end
 
     # A tie left open by a non-note terminator can never close, so each
     # terminator rejects it. A bar line gets its own message: an author
     # tie across a barline is a real, but not-yet-supported, request.
     def reject_open_tie(state, line, message)
-      return unless state&.tie_open
+      return unless state&.tie_open?
 
       raise ParseError.new(message, line_number: line || state.tie_line, snippet: "-")
     end
 
     def handle_broken_rhythm(token)
       state = current_state
-      reject_open_tie(state, token.line, "A tie must be followed by a note")
-      if state.awaiting_scale || state.pending_note.nil?
+      line = token.line
+      direction = token.direction
+      reject_open_tie(state, line, "A tie must be followed by a note")
+      pending = state.pending_note
+      if state.awaiting_scale || pending.nil?
         raise ParseError.new(
           "Broken rhythm must appear between two notes",
-          line_number: token.line, snippet: token.direction.to_s
+          line_number: line, snippet: direction.to_s
         )
       end
-      left_scale, right_scale = BROKEN_RHYTHM_SCALES.fetch(token.direction)
-      state.pending_note = state.pending_note.with(scale: state.pending_note.scale * left_scale)
+      left_scale, right_scale = BROKEN_RHYTHM_SCALES.fetch(direction)
+      state.pending_note = pending.with(scale: pending.scale * left_scale)
       state.awaiting_scale = right_scale
-      state.broken_line = token.line
+      state.broken_line = line
     end
 
     def handle_bar_line(token)
       ensure_not_awaiting_note(token)
       state = current_state
+      style = token.style
       reject_open_tie(state, token.line, "Ties across barlines are not yet supported")
       flush_pending_note(state)
-      reset_beam_adjacency(state)
+      state.reset_beam_adjacency
       tag_completed_bar(state)
-      apply_repeat_flags(state, token.style)
-      clear_passes_if_over(state, token.style)
+      apply_repeat_flags(state, style)
+      clear_passes_if_over(state, style)
       state.pitch_builder.start_new_bar
     end
 
     def handle_volta(token)
       ensure_not_awaiting_note(token)
-      if token.passes.empty?
-        raise ParseError.new("Volta has no passes", line_number: token.line)
-      end
+      passes = token.passes
+      line = token.line
+      raise ParseError.new("Volta has no passes", line_number: line) if passes.empty?
+
       state = current_state
-      reject_open_tie(state, token.line, "A tie must be followed by a note")
+      reject_open_tie(state, line, "A tie must be followed by a note")
       flush_pending_note(state)
-      reset_beam_adjacency(state)
-      state.active_passes = token.passes
+      state.reset_beam_adjacency
+      state.active_passes = passes
       state.volta_start_bar = state.entered_bar_number
     end
 
@@ -344,7 +318,7 @@ module HeadMusic::Notation::ABC
         ensure_not_awaiting_note(token, state: @current_state)
         reject_open_tie(@current_state, token.line, "A tie must be followed by a note")
         flush_pending_note(@current_state)
-        reset_beam_adjacency(@current_state)
+        @current_state.reset_beam_adjacency
       end
       @current_state = voice_state(token.voice_id)
     end
@@ -372,7 +346,8 @@ module HeadMusic::Notation::ABC
       return unless pending
 
       state.pending_note = nil
-      placement = state.voice.place(state.voice.next_position, pending_rhythmic_value(pending), pending.pitches)
+      voice = state.voice
+      placement = voice.place(voice.next_position, pending_rhythmic_value(pending), pending.pitches)
       placement.beam_break_before = pending.beam_break
     end
 
@@ -380,20 +355,23 @@ module HeadMusic::Notation::ABC
     # it so the whole tie chain renders as one sounding note.
     def pending_rhythmic_value(pending)
       own = duration_resolver.rhythmic_value(pending.length, scale: pending.scale)
-      pending.tied_prefix ? append_tied(pending.tied_prefix, own) : own
+      prefix = pending.tied_prefix
+      prefix ? append_tied(prefix, own) : own
     end
 
     # Attaches `tail` at the deep end of `head`'s tied chain, rebuilding
     # each link (RhythmicValue exposes no setter) so a chain like
     # "half tied to eighth" gains a further "tied to quarter".
     def append_tied(head, tail)
-      inner = head.tied_value ? append_tied(head.tied_value, tail) : tail
+      tied = head.tied_value
+      inner = tied ? append_tied(tied, tail) : tail
       HeadMusic::Rudiment::RhythmicValue.new(head.unit, dots: head.dots, tied_value: inner)
     end
 
-    def place(state, length, pitches, scale: Rational(1))
+    def place(state, length, pitches, scale: ONE)
       rhythmic_value = duration_resolver.rhythmic_value(length, scale: scale)
-      state.voice.place(state.voice.next_position, rhythmic_value, pitches)
+      voice = state.voice
+      voice.place(voice.next_position, rhythmic_value, pitches)
     end
 
     def apply_repeat_flags(state, style)
@@ -409,12 +387,13 @@ module HeadMusic::Notation::ABC
     # A volta covers every bar from its opening bracket through the bar
     # line that ends it, so each completed bar in that span gets tagged.
     def tag_completed_bar(state)
-      return unless state.active_passes
+      passes = state.active_passes
+      return unless passes
 
       completed = state.completed_bar_number
       return unless completed && completed >= state.volta_start_bar
 
-      bar(completed).plays_on_passes = state.active_passes
+      bar(completed).plays_on_passes = passes
     end
 
     def clear_passes_if_over(state, style)
