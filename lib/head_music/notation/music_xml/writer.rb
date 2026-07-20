@@ -19,6 +19,17 @@ module HeadMusic::Notation::MusicXML
     # carriage return, even as character references.
     FORBIDDEN_TEXT_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/
 
+    # The number of beams a notehead of each MusicXML <type> carries alone.
+    # Every other type (quarter and longer) and every rest carries none.
+    BEAM_LEVELS_BY_TYPE = {
+      "eighth" => 1,
+      "16th" => 2,
+      "32nd" => 3,
+      "64th" => 4,
+      "128th" => 5,
+      "256th" => 6
+    }.freeze
+
     attr_reader :composition
 
     def initialize(composition)
@@ -118,6 +129,61 @@ module HeadMusic::Notation::MusicXML
       @components_by_placement ||= composition.voices.flat_map(&:placements).to_h do |placement|
         [placement, duration_writer.components(placement.rhythmic_value)]
       end
+    end
+
+    # A Hash keyed by [placement, component_index] holding the Array<Beam>
+    # that BeamGrouper computed for that notehead. Built one bar at a time so
+    # a notehead's onset is its exact integer offset from the bar start.
+    def beam_annotations
+      @beam_annotations ||= {}.tap do |annotations|
+        composition.voices.each do |voice|
+          bar_numbers.each { |bar_number| annotate_bar(voice, bar_number, annotations) }
+        end
+      end
+    end
+
+    def annotate_bar(voice, bar_number, annotations)
+      placements = placements_by_bar(voice)[bar_number]
+      return unless placements
+
+      keys = []
+      events = build_bar_events(placements, keys)
+      beams = BeamGrouper.annotate(events, group_unit_divisions(bar_number))
+      keys.each_with_index { |key, index| annotations[key] = beams[index] }
+    end
+
+    def build_bar_events(placements, keys)
+      onset = 0
+      placements.flat_map do |placement|
+        components_by_placement[placement].each_with_index.map do |component, component_index|
+          event = BeamGrouper::Event.new(
+            levels: beam_levels(placement, component),
+            onset: onset,
+            beam_break_before: component_index.zero? ? placement.beam_break_before : nil
+          )
+          keys << [placement, component_index]
+          onset += component.duration
+          event
+        end
+      end
+    end
+
+    def beam_levels(placement, component)
+      return 0 if placement.rest?
+
+      BEAM_LEVELS_BY_TYPE.fetch(component.type, 0)
+    end
+
+    # The beam-group span in integer divisions for a bar's effective meter.
+    # DurationWriter.single_quarter_fraction returns an exact Rational, so the
+    # product with the integer divisions is integral for every supported meter.
+    def group_unit_divisions(bar_number)
+      fraction = DurationWriter.single_quarter_fraction(effective_meter(bar_number).beam_group_unit) * divisions
+      unless fraction.denominator == 1
+        raise RenderError,
+          "cannot express the beam group unit as an integer duration at #{divisions} divisions per quarter note"
+      end
+      fraction.to_i
     end
 
     def bar_numbers
@@ -313,9 +379,12 @@ module HeadMusic::Notation::MusicXML
     def note_lines(placement)
       ensure_pitched_sounds(placement)
 
-      components_by_placement[placement].flat_map do |component|
+      components_by_placement[placement].each_with_index.flat_map do |component, component_index|
+        beams = beam_annotations[[placement, component_index]] || []
         note_slots(placement).each_with_index.flat_map do |pitch, index|
-          note_element_lines(placement, component, pitch: pitch, chord: index.positive?)
+          note_element_lines(
+            placement, component, pitch: pitch, chord: index.positive?, beams: index.zero? ? beams : []
+          )
         end
       end
     end
@@ -338,7 +407,7 @@ module HeadMusic::Notation::MusicXML
     # A chord note carries <chord/> as its first child, before <pitch>, marking
     # it as sounding with the preceding note; the lead note (and every single
     # note and rest) omits it, so this path stays byte-identical for those.
-    def note_element_lines(placement, component, pitch: nil, chord: false)
+    def note_element_lines(placement, component, pitch: nil, chord: false, beams: [])
       [
         "#{INDENT * 3}<note>",
         *(chord ? ["#{INDENT * 4}<chord/>"] : []),
@@ -347,9 +416,14 @@ module HeadMusic::Notation::MusicXML
         *tie_lines(placement, component),
         "#{INDENT * 4}<type>#{component.type}</type>",
         *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
+        *beam_lines(beams),
         *notation_lines(placement, component),
         "#{INDENT * 3}</note>"
       ]
+    end
+
+    def beam_lines(beams)
+      beams.map { |beam| %(#{INDENT * 4}<beam number="#{beam.number}">#{beam.type}</beam>) }
     end
 
     def pitch_lines(pitch)

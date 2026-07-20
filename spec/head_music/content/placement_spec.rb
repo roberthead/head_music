@@ -177,6 +177,22 @@ describe HeadMusic::Content::Placement do
         expect(placement.to_h["position"]).to eq "1:1:480"
       end
     end
+
+    context "with beam_break_before flags" do
+      it "omits the key when the flag is nil" do
+        expect(placement.to_h).not_to have_key("beam_break_before")
+      end
+
+      it "includes the key when the flag is true" do
+        placement.beam_break_before = true
+        expect(placement.to_h["beam_break_before"]).to be true
+      end
+
+      it "includes the key when the flag is false" do
+        placement.beam_break_before = false
+        expect(placement.to_h["beam_break_before"]).to be false
+      end
+    end
   end
 
   describe "chords" do
@@ -374,6 +390,27 @@ describe HeadMusic::Content::Placement do
       it "deduplicates to one sound" do
         expect(placement.merge(other).sounds.length).to eq 1
       end
+    end
+
+    context "with an authored beam flag" do
+      let(:other) { described_class.new(voice, position, rhythmic_value, "A4") }
+
+      it "keeps the receiver's beam_break_before (chord members share one beam edge)" do
+        placement.beam_break_before = true
+        other.beam_break_before = false
+        expect(placement.merge(other).beam_break_before).to be true
+      end
+    end
+  end
+
+  describe "#beam_break_before" do
+    it "defaults to nil (meter-derived beaming)" do
+      expect(placement.beam_break_before).to be_nil
+    end
+
+    it "is writable after construction" do
+      placement.beam_break_before = true
+      expect(placement.beam_break_before).to be true
     end
   end
 

@@ -686,6 +686,275 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    # Default (meter-derived) beaming applies when placements carry no authored
+    # beam flag, so these build the composition programmatically — ABC input is
+    # authoritative (every adjacency implies a join) and cannot express "no
+    # opinion" for interior notes.
+    context "with eight default-beamed eighth notes in 4/4" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new(meter: "4/4").tap do |composition|
+          voice = composition.add_voice
+          8.times { voice.place(voice.next_position, :eighth, "C4") }
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "beams four two-note groups, one per beat" do
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin end begin end begin end begin end]
+      end
+
+      it "breaks every group at the beat, never continuing across one" do
+        expect(xpath_count(document, "//measure[@number='1']/note/beam[.='continue']")).to eq 0
+      end
+    end
+
+    context "with six default-beamed eighth notes in 6/8" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new(meter: "6/8").tap do |composition|
+          voice = composition.add_voice
+          6.times { voice.place(voice.next_position, :eighth, "C4") }
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "beams two three-note groups on the dotted-quarter boundary" do
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin continue end begin continue end]
+      end
+    end
+
+    # Authored ABC spacing is honored verbatim: adjacent notes beam together
+    # even across a beat, and a space breaks the beam (the confirmed override).
+    context "with authored ABC beam grouping in 4/4" do
+      it "beams eight adjacent eighths as one group, spanning all beats" do
+        composition = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEFGABc |]\n")
+        document = parse_musicxml(described_class.new(composition).to_s)
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin continue continue continue continue continue continue end]
+      end
+
+      it "breaks beams at authored spaces into one group per spaced pair" do
+        composition = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCD EF GA Bc |]\n")
+        document = parse_musicxml(described_class.new(composition).to_s)
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin end begin end begin end begin end]
+      end
+    end
+
+    context "with a quarter note breaking two eighth runs in 4/4" do
+      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:4/4\nL:1/8\nK:C\nCD E2 FG A2 |]\n") }
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "emits no beam on the quarter notes" do
+        expect(xpath_count(document, "//measure[@number='1']/note[type='quarter']/beam")).to eq 0
+      end
+
+      it "beams the eighths on each side as separate groups" do
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin end begin end]
+      end
+    end
+
+    context "with a rest breaking two eighth runs in 4/4" do
+      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:4/4\nL:1/8\nK:C\nCD z2 EF z2 |]\n") }
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "emits no beam on the rests" do
+        expect(xpath_count(document, "//measure[@number='1']/note[rest]/beam")).to eq 0
+      end
+
+      it "beams the eighths on each side as separate groups" do
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin end begin end]
+      end
+    end
+
+    context "with a chord of default-beamed eighths" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new(meter: "2/4").tap do |composition|
+          voice = composition.add_voice
+          [%w[C4 E4], %w[D4 F4], %w[E4 G4], %w[F4 A4]].each do |pitches|
+            voice.place(voice.next_position, :eighth, pitches)
+          end
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "beams only the lead note of each chord, never a chord member" do
+        expect(xpath_count(document, "//measure[@number='1']/note[chord]/beam")).to eq 0
+        expect(xpath_texts(document, "//measure[@number='1']/note[not(chord)]/beam[@number='1']"))
+          .to eq %w[begin end begin end]
+      end
+    end
+
+    context "with a lone eighth followed by a longer note" do
+      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:2/4\nL:1/8\nK:C\nC F3 |]\n") }
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "emits no beam on the lone eighth" do
+        expect(xpath_count(document, "//measure[@number='1']/note/beam")).to eq 0
+      end
+    end
+
+    context "with beamed notes carrying dots" do
+      let(:xml) { described_class.new(HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:2/4\nL:1/16\nK:C\nC3D E3F |]\n")).to_s }
+      let(:first_note) { xml[/<note>.*?<\/note>/m] }
+      let(:beam_index) { first_note.index(%(<beam number="1">begin</beam>)) }
+
+      it "orders <beam> after <dot> and <type> and before </note>" do
+        preceding = %w[<type>eighth</type> <dot/>].map { |element| first_note.index(element) }
+        expect(preceding.all? { |index| index < beam_index }).to be true
+        expect(beam_index).to be < first_note.index("</note>")
+      end
+    end
+
+    # A placement whose rhythmic_value is a tied chain expands into one <note>
+    # per link, and beams must attach per-component while the tie renders
+    # alongside. The authored beam_break_before flag applies to link 0 only.
+    context "with a tied chain of two eighths inside one beat group" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new(meter: "2/4").tap do |composition|
+          voice = composition.add_voice
+          value = HeadMusic::Rudiment::RhythmicValue.new(
+            :eighth, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
+          )
+          voice.place(voice.next_position, value, "A4")
+          voice.place(voice.next_position, :quarter, "B4")
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "beams the two tied links together, spanning both components" do
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin end]
+      end
+
+      it "renders the tie and its notation alongside the beams" do
+        starts = [1, 2].map { |nth| xpath_count(document, "//note[#{nth}]/tie[@type='start']") }
+        stops = [1, 2].map { |nth| xpath_count(document, "//note[#{nth}]/tie[@type='stop']") }
+        expect(starts).to eq [1, 0]
+        expect(stops).to eq [0, 1]
+        expect(xpath_count(document, "//note/notations/tied")).to eq 2
+      end
+
+      it "carries a beam and a tied notation on the same note" do
+        expect(xpath_count(document, "//note[1][beam][notations/tied]")).to eq 1
+        expect(xpath_count(document, "//note[2][beam][notations/tied]")).to eq 1
+      end
+    end
+
+    # A pickup written out with leading rests still numbers onsets from the bar
+    # start, so beam grouping must follow each note's true onset, not its offset
+    # in the placement list. A dotted-quarter rest makes the grouping
+    # non-periodic: onset-0 grouping would beam a different pair.
+    context "with a pickup bar whose beamed notes fall after a dotted-quarter rest" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new(meter: "4/4").tap do |composition|
+          voice = composition.add_voice
+          voice.place("0:1", HeadMusic::Rudiment::RhythmicValue.new(:quarter, dots: 1))
+          5.times { voice.place(voice.next_position, :eighth, "G4") }
+          voice.place("1:1", :whole, "C4")
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "marks the pickup measure implicit" do
+        expect(xpath_count(document, "//measure[@number='0'][@implicit='yes']")).to eq 1
+      end
+
+      it "groups the pickup eighths by their true onset, leaving the first lone" do
+        expect(xpath_texts(document, "//measure[@number='0']/note/beam[@number='1']"))
+          .to eq %w[begin end begin end]
+        expect(xpath_count(document, "//measure[@number='0']/note[2]/beam")).to eq 0
+      end
+
+      it "lets no beam cross into the following bar" do
+        expect(xpath_count(document, "//measure[@number='1']/note/beam")).to eq 0
+      end
+    end
+
+    # 3/8 is a simple meter whose whole bar is one beam group (the beam group
+    # unit is the dotted quarter), so three eighths beam as a single group.
+    context "with three default-beamed eighths in 3/8" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new(meter: "3/8").tap do |composition|
+          voice = composition.add_voice
+          3.times { voice.place(voice.next_position, :eighth, "C4") }
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "beams all three eighths as one whole-bar group" do
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin continue end]
+      end
+
+      it "never breaks the group inside the bar" do
+        expect(xpath_count(document, "//measure[@number='1']/note/beam[@number='1'][.='begin']")).to eq 1
+        expect(xpath_count(document, "//measure[@number='1']/note/beam[@number='1'][.='end']")).to eq 1
+      end
+    end
+
+    context "with eight default-beamed eighths, checking group adjacency in 4/4" do
+      let(:composition) do
+        HeadMusic::Content::Composition.new(meter: "4/4").tap do |composition|
+          voice = composition.add_voice
+          8.times { voice.place(voice.next_position, :eighth, "C4") }
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:beams) { xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']") }
+
+      it "abuts a group's end directly against the next group's begin, never continuing" do
+        expect(beams).to eq %w[begin end begin end begin end begin end]
+        beams.each_cons(2) { |pair| expect(pair).not_to eq %w[continue continue] }
+        beams.each_slice(2) { |pair| expect(pair).to eq %w[begin end] }
+      end
+    end
+
+    context "with authored back-to-back four-note groups in 4/4" do
+      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCCCC CCCC |]\n") }
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "honors the authored mid-bar space, beaming two four-note groups" do
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin continue continue end begin continue continue end]
+      end
+    end
+
+    # An authored space can subdivide within a single dotted-quarter pulse: the
+    # lone note between two beamed runs gets no beam at all.
+    context "with an authored split below the pulse in 6/8" do
+      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nM:6/8\nL:1/8\nK:C\nab c def |]\n") }
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "beams the pair, leaves the lone note bare, and beams the triple" do
+        expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
+          .to eq %w[begin end begin continue end]
+      end
+
+      it "emits no beam on the lone middle note" do
+        expect(xpath_count(document, "//measure[@number='1']/note[3]/beam")).to eq 0
+      end
+    end
+
+    # A dotted-eighth + sixteenth pair must survive the full writer path with
+    # both beam levels intact: the sixteenth ends level 1 and hooks level 2.
+    context "with a dotted-eighth and sixteenth pair in 2/4" do
+      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nM:2/4\nL:1/16\nK:C\nC3D |]\n") }
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      it "carries the level-1 end and the level-2 backward hook on the sixteenth" do
+        expect(xpath_text(document, "//measure[@number='1']/note[2]/beam[@number='1']")).to eq "end"
+        expect(xpath_text(document, "//measure[@number='1']/note[2]/beam[@number='2']")).to eq "backward hook"
+      end
+
+      it "begins the level-1 beam on the dotted eighth" do
+        expect(xpath_text(document, "//measure[@number='1']/note[1]/beam[@number='1']")).to eq "begin"
+      end
+    end
+
     context "when rendering the shared ABC fixtures" do
       {
         "SPEED_THE_PLOUGH" => ABCFixtures::SPEED_THE_PLOUGH,

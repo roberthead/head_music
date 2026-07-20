@@ -215,7 +215,8 @@ class HeadMusic::Content::Composition
           position = parsed_position(placement_hash["position"], path)
           rhythmic_value = parsed_rhythmic_value(placement_hash["rhythmic_value"], path)
           sounds = parsed_placement_sounds(placement_hash, path)
-          voice.place(position, rhythmic_value, sounds)
+          placement = voice.place(position, rhythmic_value, sounds)
+          placement.beam_break_before = placement_hash["beam_break_before"] if placement_hash.key?("beam_break_before")
         end
       end
     end

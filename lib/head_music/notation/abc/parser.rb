@@ -39,8 +39,8 @@ module HeadMusic::Notation::ABC
     # so bar-line accidental resets cannot corrupt them. `tied_prefix`,
     # when present, is the already-built rhythmic value of everything
     # tied ahead of this note; its own value is appended at flush time.
-    PendingNote = Data.define(:pitches, :length, :scale, :tied_prefix) do
-      def initialize(pitches:, length:, scale:, tied_prefix: nil)
+    PendingNote = Data.define(:pitches, :length, :scale, :tied_prefix, :beam_break) do
+      def initialize(pitches:, length:, scale:, tied_prefix: nil, beam_break: nil)
         super
       end
     end
@@ -50,7 +50,8 @@ module HeadMusic::Notation::ABC
     class VoiceState
       attr_reader :voice, :pitch_builder
       attr_accessor :pending_note, :awaiting_scale, :broken_line,
-        :active_passes, :volta_start_bar, :tie_open, :tie_line
+        :active_passes, :volta_start_bar, :tie_open, :tie_line,
+        :beam_break_pending, :beam_last_was_note
 
       def initialize(voice, pitch_builder)
         @voice = voice
@@ -159,6 +160,7 @@ module HeadMusic::Notation::ABC
       when :bar_line then handle_bar_line(token)
       when :volta then handle_volta(token)
       when :voice_change then handle_voice_change(token)
+      when :beam_break then handle_beam_break(token)
       end
     end
 
@@ -217,7 +219,20 @@ module HeadMusic::Notation::ABC
       return tie_onto_pending(state, pitches, length, scale) if state.tie_open
 
       flush_pending_note(state)
-      state.pending_note = PendingNote.new(pitches: pitches, length: length, scale: scale)
+      flag = if state.beam_break_pending
+        true
+      else
+        (state.beam_last_was_note ? false : nil)
+      end
+      state.beam_break_pending = false
+      state.beam_last_was_note = true
+      state.pending_note = PendingNote.new(pitches: pitches, length: length, scale: scale, beam_break: flag)
+    end
+
+    # The lexer only emits :beam_break after a music token, so a voice
+    # state already exists; the flag is consumed by the next deferred note.
+    def handle_beam_break(_token)
+      current_state.beam_break_pending = true
     end
 
     # A tie (`-`) after a note or chord fuses it to the next note of the
@@ -244,7 +259,8 @@ module HeadMusic::Notation::ABC
       state.tie_open = false
       state.tie_line = nil
       state.pending_note = PendingNote.new(
-        pitches: pitches, length: length, scale: scale, tied_prefix: prefix
+        pitches: pitches, length: length, scale: scale, tied_prefix: prefix,
+        beam_break: pending.beam_break
       )
     end
 
@@ -262,7 +278,15 @@ module HeadMusic::Notation::ABC
       state = current_state
       reject_open_tie(state, token.line, "A tie must be followed by a note")
       flush_pending_note(state)
+      reset_beam_adjacency(state)
       place(state, token.length, nil)
+    end
+
+    # After a rest, bar line, volta, or voice change, a following note
+    # must not be marked as beamed to whatever preceded the boundary.
+    def reset_beam_adjacency(state)
+      state.beam_last_was_note = false
+      state.beam_break_pending = false
     end
 
     # A tie left open by a non-note terminator can never close, so each
@@ -294,6 +318,7 @@ module HeadMusic::Notation::ABC
       state = current_state
       reject_open_tie(state, token.line, "Ties across barlines are not yet supported")
       flush_pending_note(state)
+      reset_beam_adjacency(state)
       tag_completed_bar(state)
       apply_repeat_flags(state, token.style)
       clear_passes_if_over(state, token.style)
@@ -308,6 +333,7 @@ module HeadMusic::Notation::ABC
       state = current_state
       reject_open_tie(state, token.line, "A tie must be followed by a note")
       flush_pending_note(state)
+      reset_beam_adjacency(state)
       state.active_passes = token.passes
       state.volta_start_bar = state.entered_bar_number
     end
@@ -318,6 +344,7 @@ module HeadMusic::Notation::ABC
         ensure_not_awaiting_note(token, state: @current_state)
         reject_open_tie(@current_state, token.line, "A tie must be followed by a note")
         flush_pending_note(@current_state)
+        reset_beam_adjacency(@current_state)
       end
       @current_state = voice_state(token.voice_id)
     end
@@ -345,7 +372,8 @@ module HeadMusic::Notation::ABC
       return unless pending
 
       state.pending_note = nil
-      state.voice.place(state.voice.next_position, pending_rhythmic_value(pending), pending.pitches)
+      placement = state.voice.place(state.voice.next_position, pending_rhythmic_value(pending), pending.pitches)
+      placement.beam_break_before = pending.beam_break
     end
 
     # A pending note's own value, with any tied prefix appended ahead of

@@ -7,6 +7,13 @@ class HeadMusic::Content::Placement
 
   attr_reader :voice, :position, :rhythmic_value, :sounds
 
+  # Authored beam grouping relative to the previous placement, set after
+  # construction (the Bar-style side-metadata pattern). Tri-state: nil = use
+  # the meter-derived default, true = force a beam break before this placement,
+  # false = force a beam join to the previous placement. Consumed by the
+  # MusicXML writer, which prefers it over the default grouping.
+  attr_accessor :beam_break_before
+
   delegate :composition, to: :voice
   delegate :spelling, to: :pitch, allow_nil: true
 
@@ -85,11 +92,13 @@ class HeadMusic::Content::Placement
   end
 
   def to_h
-    {
+    hash = {
       "position" => position.to_s,
       "rhythmic_value" => rhythmic_value.to_s,
       "sounds" => sounds.map { |sound| sound_datum(sound) }
     }
+    hash["beam_break_before"] = beam_break_before unless beam_break_before.nil?
+    hash
   end
 
   private

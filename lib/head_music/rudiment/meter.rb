@@ -99,6 +99,20 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   # for consistency with conversational usage
   alias_method :beat_unit, :beat_value
 
+  # The span of one default beam group for this meter, as a RhythmicValue.
+  # This is a distinct concern from #beat_value: it is the boundary unit used
+  # to decide where beams break.
+  def beam_group_unit
+    @beam_group_unit ||=
+      if compound?
+        beat_value
+      elsif bottom_number >= 8
+        whole_bar_beam_group_unit
+      else
+        HeadMusic::Rudiment::RhythmicValue.new(count_unit)
+      end
+  end
+
   def to_s
     [top_number, bottom_number].join("/")
   end
@@ -118,6 +132,17 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   end
 
   private
+
+  # For simple meters with an eighth-or-shorter denominator (e.g. 2/8, 3/8),
+  # the whole bar is a single beam group. A triple grouping (3/8) is a dotted
+  # value of the half-denominator unit; a duple grouping (2/8) spans the bar.
+  def whole_bar_beam_group_unit
+    if (top_number % 3).zero?
+      HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / 2), dots: 1)
+    else
+      HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / top_number))
+    end
+  end
 
   def downbeat?(count, tick = 0)
     beat?(tick) && count == 1

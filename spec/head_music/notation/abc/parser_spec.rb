@@ -571,4 +571,52 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(placements.last.pitches.map(&:to_s)).to eq %w[F4]
     end
   end
+
+  describe "beam breaks" do
+    def placements(body, meter: "C")
+      parse(<<~ABC).voices.first.placements.sort_by(&:position)
+        X:1
+        L:1/8
+        M:#{meter}
+        K:C
+        #{body}
+      ABC
+    end
+
+    def flags(body, meter: "C")
+      placements(body, meter: meter).map(&:beam_break_before)
+    end
+
+    it "beams a run of adjacent notes as one group" do
+      expect(flags("CCCC")).to eq [nil, false, false, false]
+    end
+
+    it "breaks the beam where the author leaves a space" do
+      expect(flags("CC CC")).to eq [nil, false, true, false]
+    end
+
+    it "honors authored grouping verbatim across a beat" do
+      expect(flags("CCC DDD", meter: "6/8")).to eq [nil, false, false, true, false, false]
+    end
+
+    it "restarts adjacency after a rest" do
+      # The rest resets adjacency, so the following note is not joined
+      # (`false`) to the pre-rest note. The authored space before that note
+      # (`z C`) still emits its own beam break, so it forces a break (`true`)
+      # rather than falling through to the meter default (`nil`).
+      expect(flags("CC z CC")).to eq [nil, false, nil, true, false]
+    end
+
+    it "fuses a tied pair into one placement whose beam flag is nil" do
+      expect(placements("C-C DD").length).to eq 3
+    end
+
+    it "carries the head's flag through a tie and breaks before a spaced note" do
+      expect(flags("C-C DD")).to eq [nil, true, false]
+    end
+
+    it "keeps a broken-rhythm pair beamed and does not reset adjacency" do
+      expect(flags("C>D EF")).to eq [nil, false, true, false]
+    end
+  end
 end

@@ -109,6 +109,51 @@ describe HeadMusic::Rudiment::Meter do
     end
   end
 
+  describe "#beam_group_unit" do
+    {
+      "4/4" => "quarter",
+      "3/4" => "quarter",
+      "2/4" => "quarter",
+      "2/2" => "half",
+      "3/8" => "dotted quarter",
+      "2/8" => "quarter",
+      "6/8" => "dotted quarter",
+      "9/8" => "dotted quarter",
+      "12/8" => "dotted quarter"
+    }.each do |signature, expected|
+      context "given #{signature}" do
+        subject(:meter) { described_class.get(signature) }
+
+        it "spans #{expected}" do
+          expect(meter.beam_group_unit.to_s).to eq expected
+        end
+      end
+    end
+
+    context "given 3/8 (regression: whole bar is one beam group)" do
+      subject(:meter) { described_class.get("3/8") }
+
+      it "is a dotted quarter (3 eighths)" do
+        expect(meter.beam_group_unit.to_s).to eq "dotted quarter"
+        expect(meter.beam_group_unit.total_value).to eq(3 * described_class.get("1/8").beat_value.total_value)
+      end
+
+      it "is distinct from beat_value (which is an eighth)" do
+        expect(meter.beat_value.to_s).to eq "eighth"
+        expect(meter.beam_group_unit).not_to eq meter.beat_value
+      end
+    end
+
+    context "given 6/8 (regression: compound beat)" do
+      subject(:meter) { described_class.get("6/8") }
+
+      it "is a dotted quarter" do
+        expect(meter.beam_group_unit.to_s).to eq "dotted quarter"
+        expect(meter.beam_group_unit).to eq meter.beat_value
+      end
+    end
+  end
+
   describe "named meter class methods" do
     specify { expect(described_class.common_time).to eq described_class.get("4/4") }
     specify { expect(described_class.cut_time).to eq described_class.get("2/2") }

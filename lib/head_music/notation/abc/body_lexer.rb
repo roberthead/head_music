@@ -107,17 +107,33 @@ class HeadMusic::Notation::ABC::BodyLexer
     Token.new(type: :voice_change, line: line_number, column: 1, voice_id: voice_id)
   end
 
+  # Music tokens whose whitespace successor breaks a beam group; other
+  # tokens (bar lines, ties, etc.) already interrupt beaming on their own.
+  BEAMABLE_TOKEN_TYPES = [:note, :rest, :chord].freeze
+
   # Returns true when the line ends with a continuation backslash.
   def scan_line(line_text, line_number, tokens)
     scanner = StringScanner.new(line_text)
     until scanner.eos?
-      next if scanner.skip(/[ \t]+/)
+      spaced = scanner.skip(/[ \t]+/)
       break if scanner.skip(/%/)
       return true if scanner.skip(/\\[ \t]*\z/)
+      break if scanner.eos?
 
+      tokens << beam_break_token(scanner, line_number) if spaced && beamable_predecessor?(tokens.last)
       scan_token(scanner, line_number, tokens)
     end
     false
+  end
+
+  # A beam break only matters after a music token; whitespace elsewhere
+  # (leading, after a bar line) carries no beaming signal.
+  def beamable_predecessor?(token)
+    !token.nil? && BEAMABLE_TOKEN_TYPES.include?(token.type)
+  end
+
+  def beam_break_token(scanner, line_number)
+    Token.new(type: :beam_break, line: line_number, column: scanner.pos + 1)
   end
 
   def scan_token(scanner, line_number, tokens)

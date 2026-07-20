@@ -5,14 +5,20 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     described_class.new(body, start_line: start_line).tokens
   end
 
+  # Inter-note spacing now surfaces as an additive :beam_break token;
+  # tests that only care about the music tokens filter it out.
+  def music_tokens_for(body, start_line: 1)
+    tokens_for(body, start_line: start_line).reject { |token| token.type == :beam_break }
+  end
+
   describe "notes" do
     it "lexes a simple line into one token per note" do
-      tokens = tokens_for("GABc dedB")
+      tokens = music_tokens_for("GABc dedB")
       expect(tokens.map(&:type)).to eq([:note] * 8)
     end
 
     it "preserves the case of note letters" do
-      tokens = tokens_for("GABc dedB")
+      tokens = music_tokens_for("GABc dedB")
       expect(tokens.map(&:letter)).to eq(%w[G A B c d e d B])
     end
 
@@ -32,7 +38,7 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
 
     it "captures double accidentals" do
-      tokens = tokens_for("^^F __G")
+      tokens = music_tokens_for("^^F __G")
       expect(tokens.map(&:accidental)).to eq(["^^", "__"])
     end
 
@@ -56,7 +62,7 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
 
     it "captures rest lengths" do
-      tokens = tokens_for("z2 z/ z/2")
+      tokens = music_tokens_for("z2 z/ z/2")
       expect(tokens.map(&:length)).to eq(["2", "/", "/2"])
     end
   end
@@ -195,9 +201,60 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
   end
 
+  describe "beam breaks" do
+    it "does not emit a beam break between adjacent notes" do
+      tokens = tokens_for("CC")
+      expect(tokens.map(&:type)).to eq([:note, :note])
+    end
+
+    it "emits a beam break between two spaced notes" do
+      tokens = tokens_for("C C")
+      expect(tokens.map(&:type)).to eq([:note, :beam_break, :note])
+    end
+
+    it "emits exactly one beam break between two beamed groups" do
+      tokens = tokens_for("CCC DDD")
+      types = tokens.map(&:type)
+      expect(types).to eq([:note, :note, :note, :beam_break, :note, :note, :note])
+      expect(types.count(:beam_break)).to eq(1)
+    end
+
+    it "positions the beam break between the third and fourth notes" do
+      tokens = tokens_for("CCC DDD")
+      break_index = tokens.index { |token| token.type == :beam_break }
+      expect(tokens[break_index - 1].to_h).to include(type: :note, letter: "C")
+      expect(tokens[break_index + 1].to_h).to include(type: :note, letter: "D")
+    end
+
+    it "records the beam break's line and column" do
+      token = tokens_for("C C")[1]
+      expect(token.to_h).to include(type: :beam_break, line: 1, column: 3)
+    end
+
+    it "emits no beam break for trailing whitespace" do
+      tokens = tokens_for("CC ")
+      expect(tokens.map(&:type)).to eq([:note, :note])
+    end
+
+    it "emits no beam break for whitespace before a comment" do
+      tokens = tokens_for("CC %tail")
+      expect(tokens.map(&:type)).to eq([:note, :note])
+    end
+
+    it "emits no beam break for whitespace before a line continuation" do
+      tokens = tokens_for("CC \\\nDD")
+      expect(tokens.map(&:type)).to eq([:note, :note, :note, :note])
+    end
+
+    it "emits no beam break for whitespace after a bar line" do
+      tokens = tokens_for("C| C")
+      expect(tokens.map(&:type)).to eq([:note, :bar_line, :note])
+    end
+  end
+
   describe "line and column numbers" do
     it "reports 1-based columns" do
-      tokens = tokens_for("GA Bc")
+      tokens = music_tokens_for("GA Bc")
       expect(tokens.map(&:column)).to eq([1, 2, 4, 5])
     end
 

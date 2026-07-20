@@ -115,7 +115,21 @@ module HeadMusic::Notation::ABC
       bar_groups.each_with_index.map do |bar_placements, index|
         # Accidental state must mirror what a re-parse accumulates bar by bar.
         pitch_writer.start_new_bar if index.positive?
-        bar_placements.map { |placement| token(placement, pitch_writer, duration_writer) }.join(" ")
+        tokens = bar_placements.map { |placement| token(placement, pitch_writer, duration_writer) }
+        join_bar_tokens(bar_placements, tokens)
+      end
+    end
+
+    # Suppresses the inter-token space only where the following placement was
+    # authored as beamed to its predecessor (beam_break_before == false).
+    # A true or nil flag keeps the space, so programmatic (nil-flag)
+    # compositions render with today's every-token spacing. Every bar token
+    # (note, rest, or [..] chord) re-lexes unambiguously with no separator, so
+    # dropping the space is safe.
+    def join_bar_tokens(placements, tokens)
+      tokens.each_with_index.reduce(+"") do |line, (token, index)|
+        separator = (index.zero? || placements[index].beam_break_before == false) ? "" : " "
+        line << separator << token
       end
     end
 

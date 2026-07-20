@@ -241,6 +241,39 @@ describe HeadMusic::Content::Composition do
     end
   end
 
+  describe "authored beam grouping" do
+    let(:composition) do
+      described_class.new(name: "Beamed").tap do |beamed|
+        voice = beamed.add_voice(role: "melody")
+        first = voice.place("1:1:000", :eighth, "C4")
+        joined = voice.place("1:1:240", :eighth, "D4")
+        broken = voice.place("1:2:000", :eighth, "E4")
+        first.beam_break_before = nil
+        joined.beam_break_before = false
+        broken.beam_break_before = true
+      end
+    end
+
+    it "omits the key for a nil flag and serializes true/false flags" do
+      placements = composition.to_h["voices"].first["placements"]
+      expect(placements[0]).not_to have_key("beam_break_before")
+      expect(placements[1]["beam_break_before"]).to be false
+      expect(placements[2]["beam_break_before"]).to be true
+    end
+
+    it "restores the true/false flags through a from_h(to_h) cycle" do
+      restored = described_class.from_h(composition.to_h)
+      flags = restored.voices.first.placements.map(&:beam_break_before)
+      expect(flags).to eq [nil, false, true]
+    end
+
+    it "survives a JSON round trip (false is distinct from an absent nil)" do
+      restored = described_class.from_h(JSON.parse(composition.to_json))
+      flags = restored.voices.first.placements.map(&:beam_break_before)
+      expect(flags).to eq [nil, false, true]
+    end
+  end
+
   describe "unpitched sounds" do
     context "with named, generic, and mixed placements" do
       let(:composition) do

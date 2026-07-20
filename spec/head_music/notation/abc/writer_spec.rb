@@ -14,8 +14,8 @@ describe HeadMusic::Notation::ABC::Writer do
           M:4/4
           L:1/8
           K:G
-          G A B c d e d B|d e d B d e d B|c2 e c B2 d B|c2 A2 A2 B A|
-          G A B c d e d B|d e d B d e d B|c2 e c B2 d B|A2 F2 G4|]
+          GABc dedB|dedB dedB|c2ec B2dB|c2A2 A2BA|
+          GABc dedB|dedB dedB|c2ec B2dB|A2F2 G4|]
         ABC
       end
 
@@ -38,7 +38,7 @@ describe HeadMusic::Notation::ABC::Writer do
           M:4/4
           L:1/8
           K:Am
-          A ^G A =G A B c2|_B A ^F =F E2 A2|^c ^d e =d =c2 B2|A2 E2 A4|]
+          A^GA=G ABc2|_BA^F=F E2A2|^c^de=d =c2B2|A2E2 A4|]
         ABC
       end
 
@@ -72,7 +72,7 @@ describe HeadMusic::Notation::ABC::Writer do
           M:3/4
           L:1/8
           K:D
-          A2 z2 F A|z3 A B2|d6|z6|]
+          A2 z2 FA|z3 AB2|d6|z6|]
         ABC
       end
 
@@ -132,7 +132,7 @@ describe HeadMusic::Notation::ABC::Writer do
           M:4/4
           L:1/8
           K:C
-          C1/2 D1/2 E1/2 F1/2 G3 A2 z|]
+          C1/2D1/2E1/2F1/2 G3 A2 z|]
         ABC
       end
 
@@ -350,6 +350,57 @@ describe HeadMusic::Notation::ABC::Writer do
         expect { described_class.new(composition).to_s }.to raise_error(
           HeadMusic::Notation::ABC::RenderError, /insert explicit rests/
         )
+      end
+    end
+  end
+
+  describe "authored beaming" do
+    def body_line(rendered)
+      rendered.lines.map(&:chomp).find { |line| line.end_with?("|]") }
+    end
+
+    it "suppresses spaces inside an authored beam group but keeps the authored space" do
+      composition = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEF GABc|]\n")
+      rendered = HeadMusic::Notation::ABC.render(composition)
+      expect(body_line(rendered)).to eq "CDEF GABc|]"
+    end
+
+    it "keeps one space per authored beam break" do
+      composition = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCD EF GA Bc|]\n")
+      rendered = HeadMusic::Notation::ABC.render(composition)
+      expect(body_line(rendered)).to eq "CD EF GA Bc|]"
+    end
+
+    context "with a programmatic (nil-flag) composition" do
+      let(:programmatic) do
+        HeadMusic::Content::Composition.new.tap do |comp|
+          voice = comp.add_voice
+          %w[1:1 1:1:480 1:2 1:2:480].zip(%w[C4 D4 E4 F4]).each do |position, pitch|
+            voice.place(position, :eighth, pitch)
+          end
+        end
+      end
+
+      it "keeps every-note spacing" do
+        expect(body_line(HeadMusic::Notation::ABC.render(programmatic))).to eq "C D E F|]"
+      end
+    end
+
+    describe "idempotence" do
+      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEF GABc|]\n") }
+      let(:rendered) { HeadMusic::Notation::ABC.render(composition) }
+      let(:reparsed) { HeadMusic::Notation::ABC.parse(rendered) }
+
+      def flags(comp)
+        comp.voices.first.placements.map(&:beam_break_before)
+      end
+
+      it "preserves the beam_break_before sequence on re-parse" do
+        expect(flags(reparsed)).to eq flags(composition)
+      end
+
+      it "reaches a string fixpoint" do
+        expect(HeadMusic::Notation::ABC.render(reparsed)).to eq rendered
       end
     end
   end
