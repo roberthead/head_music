@@ -138,6 +138,7 @@ require "head_music/content/composition/hash_deserializer"
 require "head_music/content/note"
 require "head_music/content/placement"
 require "head_music/content/position"
+require "head_music/content/sound_resolver"
 require "head_music/content/staff"
 require "head_music/content/voice"
 
