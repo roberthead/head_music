@@ -143,6 +143,8 @@ require "head_music/content/position"
 require "head_music/content/sound_resolver"
 require "head_music/content/staff"
 require "head_music/content/voice"
+require "head_music/content/voice/melodic_note_pair"
+require "head_music/content/voice/melodic_line"
 
 # notation
 require "head_music/notation/placement_validation"
