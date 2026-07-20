@@ -23,7 +23,6 @@ module HeadMusic::Instruments; end
 #   range_categories: size/range classifications
 class HeadMusic::Instruments::Instrument
   include HeadMusic::Named
-  include HeadMusic::Instruments::CatalogLookup
 
   INSTRUMENTS = YAML.load_file(File.expand_path("instruments.yml", __dir__)).freeze
 
@@ -215,7 +214,7 @@ class HeadMusic::Instruments::Instrument
   private
 
   def initialize(name)
-    record = record_for_name(name)
+    record = HeadMusic::Instruments::InstrumentCatalog.new(INSTRUMENTS).record_for(name)
     if record
       initialize_data_from_record(record)
     else
@@ -223,33 +222,6 @@ class HeadMusic::Instruments::Instrument
       @name_key = nil
       self.name = name.to_s
     end
-  end
-
-  def record_for_name(name)
-    record_for_key(HeadMusic::Utilities::HashKey.for(name)) ||
-      record_for_key(key_for_name(name)) ||
-      record_for_alias(name)
-  end
-
-  def catalog
-    INSTRUMENTS
-  end
-
-  def record_for_key(key)
-    INSTRUMENTS.each do |name_key, data|
-      return data.merge("name_key" => name_key) if name_key.to_s == key.to_s
-    end
-    nil
-  end
-
-  def record_for_alias(name)
-    normalized_name = HeadMusic::Utilities::HashKey.for(name).to_s
-    INSTRUMENTS.each do |name_key, data|
-      data["alias_name_keys"]&.each do |alias_key|
-        return data.merge("name_key" => name_key) if HeadMusic::Utilities::HashKey.for(alias_key).to_s == normalized_name
-      end
-    end
-    nil
   end
 
   def initialize_data_from_record(record)
