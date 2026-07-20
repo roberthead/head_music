@@ -6,15 +6,6 @@ module HeadMusic::Analysis; end
 # as distinct from a "pitch-class set" which abstracts away register and octave equivalence.
 # See also: PitchClassSet
 class HeadMusic::Analysis::PitchCollection
-  TERTIAN_SONORITIES = {
-    implied_triad: [3],
-    triad: [3, 5],
-    seventh_chord: [3, 5, 7],
-    ninth_chord: [2, 3, 5, 7],
-    eleventh_chord: [2, 3, 4, 5, 7],
-    thirteenth_chord: [2, 3, 4, 5, 6, 7] # a.k.a. diatonic scale
-  }.freeze
-
   attr_reader :pitches
 
   delegate :diatonic_intervals, to: :reduction, prefix: true
@@ -23,6 +14,17 @@ class HeadMusic::Analysis::PitchCollection
   delegate :trichord?, :tetrachord?, :pentachord?, :hexachord?, to: :pitch_class_set
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_class_set
   delegate :size, to: :pitch_class_set, prefix: true
+
+  # Tertian chord classification (triad/seventh/extended, quality, inversion).
+  delegate(
+    :triad?, :consonant_triad?,
+    :major_triad?, :minor_triad?, :diminished_triad?, :augmented_triad?,
+    :root_position_triad?, :first_inversion_triad?, :second_inversion_triad?,
+    :seventh_chord?, :root_position_seventh_chord?, :first_inversion_seventh_chord?,
+    :second_inversion_seventh_chord?, :third_inversion_seventh_chord?,
+    :ninth_chord?, :eleventh_chord?, :thirteenth_chord?, :tertian?,
+    to: :chord_analysis
+  )
 
   def initialize(pitches)
     @pitches = pitches.map { |pitch| HeadMusic::Rudiment::Pitch.get(pitch) }.sort.uniq
@@ -99,92 +101,6 @@ class HeadMusic::Analysis::PitchCollection
     pitches.length
   end
 
-  def triad?
-    trichord? && tertian?
-  end
-
-  def consonant_triad?
-    major_triad? || minor_triad?
-  end
-
-  TRIAD_PATTERNS = {
-    major: [%w[M3 m3], %w[m3 P4], %w[P4 M3]],
-    minor: [%w[m3 M3], %w[M3 P4], %w[P4 m3]],
-    diminished: [%w[m3 m3], %w[m3 A4], %w[A4 m3]],
-    augmented: [%w[M3 M3], %w[M3 d4], %w[d4 M3]]
-  }.freeze
-
-  def major_triad?
-    triad_type?(:major)
-  end
-
-  def minor_triad?
-    triad_type?(:minor)
-  end
-
-  def diminished_triad?
-    triad_type?(:diminished)
-  end
-
-  def augmented_triad?
-    triad_type?(:augmented)
-  end
-
-  def root_position_triad?
-    trichord? && stacked_in_thirds?(reduction)
-  end
-
-  def first_inversion_triad?
-    trichord? && stacked_in_thirds?(reduction.uninvert)
-  end
-
-  def second_inversion_triad?
-    trichord? && stacked_in_thirds?(reduction.invert)
-  end
-
-  def seventh_chord?
-    tetrachord? && tertian?
-  end
-
-  def root_position_seventh_chord?
-    tetrachord? && stacked_in_thirds?(reduction)
-  end
-
-  def first_inversion_seventh_chord?
-    tetrachord? && stacked_in_thirds?(reduction.uninvert)
-  end
-
-  def second_inversion_seventh_chord?
-    tetrachord? && stacked_in_thirds?(reduction.uninvert.uninvert)
-  end
-
-  def third_inversion_seventh_chord?
-    tetrachord? && stacked_in_thirds?(reduction.invert)
-  end
-
-  def ninth_chord?
-    pentachord? && tertian?
-  end
-
-  def eleventh_chord?
-    hexachord? && tertian?
-  end
-
-  def thirteenth_chord?
-    heptachord? && tertian?
-  end
-
-  def tertian?
-    return false unless diatonic_intervals.any?
-
-    inversion = reduction
-    pitches.length.times do
-      return true if TERTIAN_SONORITIES.value?(inversion.scale_degrees_above_bass_pitch)
-      inversion = inversion.invert
-    end
-    false
-  end
-
   def scale_degrees
     @scale_degrees ||= pitches.empty? ? [] : scale_degrees_above_bass_pitch.unshift(1)
   end
@@ -197,6 +113,10 @@ class HeadMusic::Analysis::PitchCollection
     @sonority ||= HeadMusic::Analysis::Sonority.new(self)
   end
 
+  def chord_analysis
+    @chord_analysis ||= HeadMusic::Analysis::ChordAnalysis.new(self)
+  end
+
   private
 
   def octave
@@ -207,14 +127,6 @@ class HeadMusic::Analysis::PitchCollection
     return [] if pitches.empty?
 
     diatonic_intervals_above_bass_pitch.map { |interval| interval.semitones % 12 }.sort.unshift(0).uniq
-  end
-
-  def stacked_in_thirds?(collection)
-    collection.diatonic_intervals.all?(&:third?)
-  end
-
-  def triad_type?(type)
-    TRIAD_PATTERNS[type].include?(reduction_diatonic_intervals.map(&:shorthand))
   end
 
   def reduction_pitches
