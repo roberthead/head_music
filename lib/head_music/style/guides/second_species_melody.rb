@@ -5,16 +5,8 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::SecondSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   RULESET = [
     *MELODIC_CORE,
-    HeadMusic::Style::Guidelines::AlwaysMove,
-    HeadMusic::Style::Guidelines::EndOnTonic,
+    *MOVING_MELODIC_CORE,
     HeadMusic::Style::Guidelines::FirstBarHalfNotes,
-    HeadMusic::Style::Guidelines::FrequentDirectionChanges,
-    HeadMusic::Style::Guidelines::NoRestsAfterNote,
-    HeadMusic::Style::Guidelines::NoteFillsFinalBar,
-    HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
-    HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
-    HeadMusic::Style::Guidelines::StepOutOfUnison,
-    HeadMusic::Style::Guidelines::StepUpToFinalNote,
     HeadMusic::Style::Guidelines::TwoPerBar
   ].freeze
 end

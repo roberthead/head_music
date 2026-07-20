@@ -14,4 +14,19 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::SingableIntervals,
     HeadMusic::Style::Guidelines::SingableRange
   ].freeze
+
+  # Guidelines shared by every moving species (second through fifth), whose
+  # melodies progress within the bar rather than holding a whole note as in
+  # first species. Subclasses splat this in alongside MELODIC_CORE.
+  MOVING_MELODIC_CORE = [
+    HeadMusic::Style::Guidelines::AlwaysMove,
+    HeadMusic::Style::Guidelines::EndOnTonic,
+    HeadMusic::Style::Guidelines::FrequentDirectionChanges,
+    HeadMusic::Style::Guidelines::NoRestsAfterNote,
+    HeadMusic::Style::Guidelines::NoteFillsFinalBar,
+    HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
+    HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
+    HeadMusic::Style::Guidelines::StepOutOfUnison,
+    HeadMusic::Style::Guidelines::StepUpToFinalNote
+  ].freeze
 end

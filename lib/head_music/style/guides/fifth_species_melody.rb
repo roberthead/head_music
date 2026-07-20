@@ -5,16 +5,8 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::FifthSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   RULESET = [
     *MELODIC_CORE,
+    *MOVING_MELODIC_CORE,
     HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies,
-    HeadMusic::Style::Guidelines::AlwaysMove,
-    HeadMusic::Style::Guidelines::EndOnTonic,
-    HeadMusic::Style::Guidelines::FrequentDirectionChanges,
-    HeadMusic::Style::Guidelines::MixedRhythmicValues,
-    HeadMusic::Style::Guidelines::NoRestsAfterNote,
-    HeadMusic::Style::Guidelines::NoteFillsFinalBar,
-    HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
-    HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
-    HeadMusic::Style::Guidelines::StepOutOfUnison,
-    HeadMusic::Style::Guidelines::StepUpToFinalNote
+    HeadMusic::Style::Guidelines::MixedRhythmicValues
   ].freeze
 end
