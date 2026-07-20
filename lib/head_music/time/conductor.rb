@@ -46,9 +46,6 @@ module HeadMusic
       # @return [MeterMap] the meter map for this conductor
       attr_reader :meter_map
 
-      # Nanoseconds in one second (used for clock/SMPTE conversions)
-      NANOSECONDS_PER_SECOND = 1_000_000_000.0
-
       # @return [HeadMusic::Rudiment::Tempo] the initial tempo (delegates to tempo_map)
       def starting_tempo
         tempo_map.events.first.tempo
@@ -156,9 +153,7 @@ module HeadMusic
       # @param clock_position [ClockPosition] the clock time to convert
       # @return [SmpteTimecode] the corresponding SMPTE timecode
       def clock_to_smpte(clock_position)
-        elapsed_seconds = clock_position.nanoseconds / NANOSECONDS_PER_SECOND
-        total_frames = (elapsed_seconds * framerate).round + starting_smpte_timecode.to_total_frames
-        frames_to_timecode(total_frames)
+        smpte_converter.clock_to_smpte(clock_position)
       end
 
       # Convert SMPTE timecode to clock position
@@ -168,16 +163,7 @@ module HeadMusic
       # @param smpte_timecode [SmpteTimecode] the SMPTE timecode to convert
       # @return [ClockPosition] the corresponding clock time
       def smpte_to_clock(smpte_timecode)
-        # Calculate total frames
-        total_frames = smpte_timecode.to_total_frames
-        starting_frames = starting_smpte_timecode.to_total_frames
-        elapsed_frames = total_frames - starting_frames
-
-        # Convert frames to seconds, then to nanoseconds
-        elapsed_seconds = elapsed_frames / framerate.to_f
-        elapsed_nanoseconds = (elapsed_seconds * NANOSECONDS_PER_SECOND).round
-
-        ClockPosition.new(elapsed_nanoseconds)
+        smpte_converter.smpte_to_clock(smpte_timecode)
       end
 
       private
@@ -230,18 +216,11 @@ module HeadMusic
         MusicalPosition.new(bars + 1, beats + 1, ticks, subticks).normalize!(meter)
       end
 
-      # Decompose total frames into a normalized HH:MM:SS:FF timecode
-      #
-      # @return [SmpteTimecode] the normalized timecode
-      def frames_to_timecode(total_frames)
-        frames_per_minute = framerate * 60
-        frames_per_hour = frames_per_minute * 60
-
-        hours, remaining = total_frames.divmod(frames_per_hour)
-        minutes, remaining = remaining.divmod(frames_per_minute)
-        seconds, frames = remaining.divmod(framerate)
-
-        SmpteTimecode.new(hours, minutes, seconds, frames, framerate: framerate).normalize!
+      # A fresh SMPTE converter reflecting the current framerate and starting
+      # timecode. Both are mutable accessors, so it is rebuilt per call rather
+      # than memoized, ensuring a reassigned framerate takes effect.
+      def smpte_converter
+        SmpteConverter.new(framerate: framerate, starting_smpte_timecode: starting_smpte_timecode)
       end
     end
   end
