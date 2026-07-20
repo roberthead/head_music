@@ -14,9 +14,13 @@ module HeadMusic::Instruments; end
 #   - Missing elements are treated as 0 (no change)
 #   - Extra elements are ignored
 class HeadMusic::Instruments::AlternateTuning
+  include HeadMusic::ValueEquality
+
   TUNINGS = YAML.load_file(File.expand_path("alternate_tunings.yml", __dir__)).freeze
 
   attr_reader :instrument_key, :name_key, :semitones
+
+  value_equality :instrument_key, :name_key
 
   class << self
     # Get an alternate tuning by instrument and name
@@ -88,12 +92,6 @@ class HeadMusic::Instruments::AlternateTuning
   # @return [Array<HeadMusic::Rudiment::Pitch>]
   def apply_to(stringing)
     stringing.pitches_with_tuning(self)
-  end
-
-  def ==(other)
-    return false unless other.is_a?(self.class)
-
-    instrument_key == other.instrument_key && name_key == other.name_key
   end
 
   def to_s

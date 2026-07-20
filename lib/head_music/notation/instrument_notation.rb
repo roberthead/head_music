@@ -7,7 +7,12 @@ module HeadMusic::Notation; end
 # catalog entry with its own factory. Alternatives are recorded data only —
 # no selection behavior is implemented here (deferred to the Content layer).
 class HeadMusic::Notation::InstrumentNotation
+  include HeadMusic::ValueEquality
+
   attr_reader :instrument, :staves, :alternatives
+
+  value_equality :instrument, :staves_attributes
+  alias_method :eql?, :==
 
   def initialize(instrument:, data:)
     @instrument = instrument
@@ -31,13 +36,6 @@ class HeadMusic::Notation::InstrumentNotation
   def multiple_staves?
     staves.length > 1
   end
-
-  def ==(other)
-    return false unless other.is_a?(self.class)
-
-    instrument == other.instrument && staves_attributes == other.staves_attributes
-  end
-  alias_method :eql?, :==
 
   def hash
     [instrument.name_key, staves_attributes].hash

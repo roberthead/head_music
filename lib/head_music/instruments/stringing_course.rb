@@ -11,7 +11,11 @@ module HeadMusic::Instruments; end
 #   - 12-string guitar: 6 courses, each with 2 strings (octave or unison)
 #   - Mandolin: 4 courses, each with 2 strings in unison
 class HeadMusic::Instruments::StringingCourse
+  include HeadMusic::ValueEquality
+
   attr_reader :standard_pitch, :course_semitones
+
+  value_equality :standard_pitch, :course_semitones
 
   # @param standard_pitch [HeadMusic::Rudiment::Pitch, String] The pitch of the primary string
   # @param course_semitones [Array<Integer>] Semitone offsets for additional strings in the course
@@ -36,12 +40,6 @@ class HeadMusic::Instruments::StringingCourse
   # @return [Boolean]
   def doubled?
     course_semitones.any?
-  end
-
-  def ==(other)
-    return false unless other.is_a?(self.class)
-
-    standard_pitch == other.standard_pitch && course_semitones == other.course_semitones
   end
 
   def to_s

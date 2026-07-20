@@ -7,9 +7,13 @@ module HeadMusic::Instruments; end
 #   - Trumpet "mute" configuration with options: open (default), straight, cup, harmon
 #   - Bass trombone "f_attachment" with options: disengaged (default), engaged
 class HeadMusic::Instruments::InstrumentConfiguration
+  include HeadMusic::ValueEquality
+
   CONFIGURATIONS = YAML.load_file(File.expand_path("instrument_configurations.yml", __dir__)).freeze
 
   attr_reader :name_key, :instrument_key, :options
+
+  value_equality :name_key, :instrument_key
 
   class << self
     def for_instrument(instrument_key)
@@ -38,12 +42,6 @@ class HeadMusic::Instruments::InstrumentConfiguration
 
   def option(option_key)
     options.find { |opt| opt.name_key == option_key.to_sym }
-  end
-
-  def ==(other)
-    return false unless other.is_a?(self.class)
-
-    name_key == other.name_key && instrument_key == other.instrument_key
   end
 
   def to_s

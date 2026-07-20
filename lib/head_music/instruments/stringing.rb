@@ -10,9 +10,13 @@ module HeadMusic::Instruments; end
 #   stringing = HeadMusic::Instruments::Stringing.for_instrument(guitar)
 #   stringing.courses.map(&:standard_pitch)  # => [E2, A2, D3, G3, B3, E4]
 class HeadMusic::Instruments::Stringing
+  include HeadMusic::ValueEquality
+
   STRINGINGS = YAML.load_file(File.expand_path("stringings.yml", __dir__)).freeze
 
   attr_reader :instrument_key, :courses
+
+  value_equality :instrument_key, :courses
 
   class << self
     # Find the stringing for an instrument
@@ -90,12 +94,6 @@ class HeadMusic::Instruments::Stringing
       semitone_adjustment = tuning.semitones[index] || 0
       HeadMusic::Rudiment::Pitch.from_number(course.standard_pitch.to_i + semitone_adjustment)
     end
-  end
-
-  def ==(other)
-    return false unless other.is_a?(self.class)
-
-    instrument_key == other.instrument_key && courses == other.courses
   end
 
   def to_s

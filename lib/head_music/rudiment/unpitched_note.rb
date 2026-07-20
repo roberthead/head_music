@@ -6,8 +6,11 @@ module HeadMusic::Rudiment; end
 # Intended future composition: UnpitchedNote ≈ UnpitchedSound + rhythmic value.
 class HeadMusic::Rudiment::UnpitchedNote < HeadMusic::Rudiment::RhythmicElement
   include HeadMusic::Named
+  include HeadMusic::ValueEquality
 
   attr_reader :instrument_name
+
+  value_equality :rhythmic_value, :instrument_name
 
   # Make new public for this concrete class
   public_class_method :new
@@ -48,11 +51,6 @@ class HeadMusic::Rudiment::UnpitchedNote < HeadMusic::Rudiment::RhythmicElement
   # Create a new unpitched note with a different instrument
   def with_instrument(new_instrument_name)
     self.class.get(rhythmic_value, instrument: new_instrument_name)
-  end
-
-  def ==(other)
-    return false unless other.is_a?(self.class)
-    rhythmic_value == other.rhythmic_value && instrument_name == other.instrument_name
   end
 
   def sounded?

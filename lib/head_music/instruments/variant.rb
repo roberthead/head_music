@@ -1,7 +1,11 @@
 module HeadMusic::Instruments; end
 
 class HeadMusic::Instruments::Variant
+  include HeadMusic::ValueEquality
+
   attr_reader :key, :attributes
+
+  value_equality :key, :attributes
 
   def initialize(key, attributes = {})
     @key = key.to_s.to_sym
@@ -33,11 +37,5 @@ class HeadMusic::Instruments::Variant
   def default_staff_scheme
     @default_staff_scheme ||=
       staff_schemes.find(&:default?) || staff_schemes.first
-  end
-
-  def ==(other)
-    return false unless other.is_a?(self.class)
-
-    key == other.key && attributes == other.attributes
   end
 end
