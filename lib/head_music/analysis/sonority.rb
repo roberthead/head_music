@@ -73,6 +73,7 @@ class HeadMusic::Analysis::Sonority
   delegate :heptachord?, :octachord?, :nonachord?, :decachord?, :undecachord?, :dodecachord?, to: :pitch_collection
   delegate :pitch_class_set, :pitch_class_set_size, to: :pitch_collection
   delegate :scale_degrees_above_bass_pitch, to: :pitch_collection
+  delegate :triad?, :seventh_chord?, :tertian?, to: :pitch_collection
 
   def initialize(pitch_collection)
     @pitch_collection = pitch_collection
@@ -115,21 +116,6 @@ class HeadMusic::Analysis::Sonority
     @consonant ||=
       pitch_collection.reduction_diatonic_intervals.all?(&:consonant?) &&
       root_position.diatonic_intervals_above_bass_pitch.all?(&:consonant?)
-  end
-
-  def triad?
-    @triad ||= trichord? && tertian?
-  end
-
-  def seventh_chord?
-    @seventh_chord ||= tetrachord? && tertian?
-  end
-
-  def tertian?
-    @tertian ||= inversions.detect do |inversion|
-      interval_ratio(inversion, &:third?) > 0.5 ||
-        (scale_degrees_above_bass_pitch && [3, 5, 7]).length == 3
-    end
   end
 
   def secundal?
