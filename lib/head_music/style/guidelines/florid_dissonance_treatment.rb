@@ -56,44 +56,7 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
     cantus_firmus_positions.include?(note.position.to_s)
   end
 
-  def cantus_firmus_positions
-    @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |note| note.position.to_s })
-  end
-
   def current_cf_note_at(position)
     cantus_firmus.note_at(position)
-  end
-
-  def dissonant_with_cantus?(note)
-    interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, note.position)
-    interval.notes.length == 2 && interval.dissonance?(:two_part_harmony)
-  end
-
-  def passing_tone?(note)
-    stepwise_figure?(note, same_direction: true)
-  end
-
-  def neighbor_tone?(note)
-    stepwise_figure?(note, same_direction: false)
-  end
-
-  def stepwise_figure?(note, same_direction:)
-    prev_note = preceding_note(note)
-    next_note = following_note(note)
-    return false unless prev_note && next_note
-
-    approach = melodic_interval_between(prev_note, note)
-    departure = melodic_interval_between(note, next_note)
-    approach.step? && departure.step? && (approach.direction == departure.direction) == same_direction
-  end
-
-  def preceding_note(note)
-    index = notes.index(note)
-    notes[index - 1] if index && index > 0
-  end
-
-  def following_note(note)
-    index = notes.index(note)
-    notes[index + 1] if index && index < notes.length - 1
   end
 end

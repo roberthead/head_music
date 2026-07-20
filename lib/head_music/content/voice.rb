@@ -129,10 +129,12 @@ class HeadMusic::Content::Voice
     first = placements.first
     return unless first
 
-    return [bar_start_position(first), first] unless first.position.count == 1 && first.position.tick.zero?
+    first_position = first.position
+    return [bar_start_position(first), first] unless first_position.count == 1 && first_position.tick.zero?
 
     placements.each_cons(2) do |previous, current|
-      return [previous.next_position, current] unless current.position == previous.next_position
+      expected_position = previous.next_position
+      return [expected_position, current] unless current.position == expected_position
     end
     nil
   end

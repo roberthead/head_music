@@ -137,16 +137,16 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def -(other)
-    case other
-    when HeadMusic::Analysis::DiatonicInterval
-      # return a pitch
-      other.below(self)
-    when HeadMusic::Rudiment::Pitch
-      # return an interval
-      HeadMusic::Rudiment::ChromaticInterval.get(to_i - other.to_i)
+    # a diatonic interval below this pitch resolves to another pitch
+    return other.below(self) if other.is_a?(HeadMusic::Analysis::DiatonicInterval)
+
+    difference = to_i - other.to_i
+    if other.is_a?(HeadMusic::Rudiment::Pitch)
+      # the distance between two pitches is an interval
+      HeadMusic::Rudiment::ChromaticInterval.get(difference)
     else
-      # assume value represents an interval in semitones and return another pitch
-      HeadMusic::Rudiment::Pitch.get(to_i - other.to_i)
+      # otherwise treat the value as a number of semitones and return another pitch
+      HeadMusic::Rudiment::Pitch.get(difference)
     end
   end
 

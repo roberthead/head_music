@@ -59,15 +59,17 @@ class HeadMusic::Analysis::DiatonicInterval
 
   # Override Named module method to try I18n and fall back to computed name
   def name(locale_code: nil)
-    if locale_code
-      name_key = HeadMusic::Utilities::HashKey.for(naming.name)
-      if I18n.backend.translations[locale_code]
-        locale_data = I18n.backend.translations[locale_code][:head_music] || {}
-        return locale_data[:diatonic_intervals][name_key] if locale_data.dig(:diatonic_intervals, name_key)
-        return locale_data[:chromatic_intervals][name_key] if locale_data.dig(:chromatic_intervals, name_key)
-      end
-    end
-    naming.name
+    computed_name = naming.name
+    return computed_name unless locale_code
+
+    translations = I18n.backend.translations[locale_code]
+    return computed_name unless translations
+
+    name_key = HeadMusic::Utilities::HashKey.for(computed_name)
+    locale_data = translations[:head_music] || {}
+    locale_data.dig(:diatonic_intervals, name_key) ||
+      locale_data.dig(:chromatic_intervals, name_key) ||
+      computed_name
   end
 
   def to_s
@@ -79,8 +81,9 @@ class HeadMusic::Analysis::DiatonicInterval
     if identifier.is_a?(String) || identifier.is_a?(Symbol)
       name = Parser.new(identifier)
       semitones = Semitones.new(name.degree_name.to_sym, name.quality_name).count
-      higher_pitch = HeadMusic::Rudiment::Pitch.from_number_and_letter(HeadMusic::Rudiment::Pitch.middle_c + semitones, name.higher_letter)
-      interval = new(HeadMusic::Rudiment::Pitch.middle_c, higher_pitch)
+      middle_c = HeadMusic::Rudiment::Pitch.middle_c
+      higher_pitch = HeadMusic::Rudiment::Pitch.from_number_and_letter(middle_c + semitones, name.higher_letter)
+      interval = new(middle_c, higher_pitch)
       interval.ensure_localized_name(name: identifier.to_s)
       interval
     else

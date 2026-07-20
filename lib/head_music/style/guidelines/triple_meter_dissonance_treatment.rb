@@ -11,16 +11,4 @@ class HeadMusic::Style::Guidelines::TripleMeterDissonanceTreatment < HeadMusic::
   def recognized_figure?(note)
     super || neighbor_tone?(note)
   end
-
-  # Neighbor tone: approached by step, left by step in the opposite direction.
-  def neighbor_tone?(note)
-    prev = preceding_note(note)
-    foll = following_note(note)
-    return false unless prev && foll
-
-    approach = melodic_interval_between(prev, note)
-    departure = melodic_interval_between(note, foll)
-
-    approach.step? && departure.step? && approach.direction != departure.direction
-  end
 end
