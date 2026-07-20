@@ -34,15 +34,15 @@ module HeadMusic::Notation::MusicXML
 
     # Phase A: segment event indices into groups of consecutive indices.
     def groups
-      groups = []
+      result = []
       events.each_index do |i|
         if i.zero? || break_before?(i)
-          groups << [i]
+          result << [i]
         else
-          groups.last << i
+          result.last << i
         end
       end
-      groups
+      result
     end
 
     def break_before?(index)

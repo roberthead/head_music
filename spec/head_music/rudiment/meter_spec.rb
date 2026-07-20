@@ -152,6 +152,20 @@ describe HeadMusic::Rudiment::Meter do
         expect(meter.beam_group_unit).to eq meter.beat_value
       end
     end
+
+    # Asymmetric meters are out of scope; the group unit must degrade to the
+    # count unit rather than raising on a nil (non-power-of-two) unit.
+    context "given an asymmetric meter (out of scope, must not raise)" do
+      it "falls back to the count unit for 5/16" do
+        meter = described_class.get("5/16")
+        expect { meter.beam_group_unit }.not_to raise_error
+        expect(meter.beam_group_unit).to eq described_class.get("5/16").count_unit
+      end
+
+      it "returns a valid rhythmic value for 7/8" do
+        expect { described_class.get("7/8").beam_group_unit }.not_to raise_error
+      end
+    end
   end
 
   describe "named meter class methods" do

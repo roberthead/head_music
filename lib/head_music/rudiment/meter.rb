@@ -136,11 +136,15 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   # For simple meters with an eighth-or-shorter denominator (e.g. 2/8, 3/8),
   # the whole bar is a single beam group. A triple grouping (3/8) is a dotted
   # value of the half-denominator unit; a duple grouping (2/8) spans the bar.
+  # Asymmetric meters (5/8, 7/16, ...) are out of scope: their bar has no
+  # single power-of-two unit, so the group unit falls back to the count unit
+  # (each count its own group) rather than raising on a nil unit.
   def whole_bar_beam_group_unit
     if (top_number % 3).zero?
       HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / 2), dots: 1)
     else
-      HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / top_number))
+      unit = HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / top_number)
+      HeadMusic::Rudiment::RhythmicValue.new(unit || count_unit)
     end
   end
 
