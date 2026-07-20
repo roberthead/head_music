@@ -51,51 +51,13 @@ module HeadMusic::Notation::ABC
     # Per-voice interpretation state lives in VoiceState (its own file).
 
     def build_composition
-      ensure_input_present
+      Preflight.ensure_input_present(@abc_string)
       @header = Header.new(@abc_string, start_line: @start_line)
-      reject_content_after_tune
+      Preflight.reject_content_after_tune(header)
       tokens = BodyLexer.new(header.body, start_line: header.body_start_line).tokens
-      reject_unsupported_tokens(tokens)
+      Preflight.reject_unsupported_tokens(tokens)
       @duration_resolver = DurationResolver.new(header.unit_note_length)
       interpret(tokens)
-    end
-
-    def ensure_input_present
-      return unless @abc_string.to_s.strip.empty?
-
-      raise ParseError, "ABC input is blank"
-    end
-
-    # The lexer treats a blank line as the end of the tune, so anything
-    # after it would be silently dropped — most likely another tune.
-    def reject_content_after_tune
-      lines = header.body.lines
-      blank_index = lines.find_index { |line| line.strip.empty? }
-      return unless blank_index
-
-      extra_lines = lines[(blank_index + 1)..]
-      extra_index = extra_lines.find_index do |line|
-        stripped = line.strip
-        !stripped.empty? && !stripped.start_with?("%")
-      end
-      return unless extra_index
-
-      raise ParseError.new(
-        "Content after the tune body; parse a book of tunes with ABC.parse_book",
-        line_number: header.body_start_line + blank_index + 1 + extra_index,
-        snippet: extra_lines[extra_index].strip[0, BodyLexer::SNIPPET_LENGTH]
-      )
-    end
-
-    def reject_unsupported_tokens(tokens)
-      token = tokens.find { |candidate| candidate.type == :unsupported }
-      return unless token
-
-      lexeme = token.lexeme
-      raise UnsupportedFeatureError.new(
-        "Unsupported ABC feature #{lexeme.inspect}",
-        line_number: token.line, snippet: lexeme
-      )
     end
 
     def interpret(tokens)
