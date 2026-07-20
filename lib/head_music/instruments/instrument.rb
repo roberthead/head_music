@@ -170,7 +170,7 @@ class HeadMusic::Instruments::Instrument
   def translation(locale = :en)
     return name unless name_key
 
-    I18n.translate(name_key, scope: %i[head_music instruments], locale: locale, default: name)
+    instrument_translation(name_key, locale: locale, default: name)
   end
 
   def ==(other)
@@ -264,26 +264,27 @@ class HeadMusic::Instruments::Instrument
   end
 
   def initialize_name
-    # Try to get a translation first
-    base_name = I18n.translate(name_key, scope: "head_music.instruments", locale: "en", default: nil)
+    # Prefer an explicit translation, then a name built from parent + pitch
+    # (for child instruments), then a plain inference from the key.
+    self.name = instrument_translation(name_key) || child_instrument_name || inferred_name
+  end
 
-    if base_name
-      # Use the translation as-is
-      self.name = base_name
-    elsif parent_key && pitch_key
-      # Build name from parent + pitch for child instruments
-      pitch_name = format_pitch_name(pitch_key_to_designation)
-      self.name = "#{parent_translation} in #{pitch_name}"
-    else
-      # Fall back to inferred name
-      self.name = inferred_name
-    end
+  # Name built from parent + pitch for child instruments, e.g. "Clarinet in B♭"
+  def child_instrument_name
+    return nil unless parent_key && pitch_key
+
+    "#{parent_translation} in #{format_pitch_name(pitch_key_to_designation)}"
   end
 
   def parent_translation
     return nil unless parent_key
 
-    I18n.translate(parent_key, scope: "head_music.instruments", locale: "en", default: parent_key.to_s.tr("_", " "))
+    instrument_translation(parent_key, default: parent_key.to_s.tr("_", " "))
+  end
+
+  # Localized name for an instrument key under the head_music.instruments scope
+  def instrument_translation(key, locale: "en", default: nil)
+    I18n.translate(key, scope: %i[head_music instruments], locale: locale, default: default)
   end
 
   def inferred_name

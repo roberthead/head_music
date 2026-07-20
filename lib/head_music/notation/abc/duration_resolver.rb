@@ -48,6 +48,10 @@ module HeadMusic::Notation::ABC
       return Rational(numerator) unless slashes
       return Rational(numerator, 2**slashes.length) unless denominator
 
+      explicit_ratio(numerator, slashes, denominator, source)
+    end
+
+    def explicit_ratio(numerator, slashes, denominator, source)
       # An explicit denominator pairs with exactly one slash ("3/2", not "3//2").
       raise_error("malformed note length multiplier", source) if slashes.length > 1
       raise_error("note length denominator cannot be zero", source) if denominator.to_i.zero?
@@ -85,9 +89,15 @@ module HeadMusic::Notation::ABC
     def greedy_head(fraction)
       numerator = fraction.numerator
       bits = numerator.bit_length
+      run = leading_set_bits(numerator, bits)
+      Rational(((1 << run) - 1) << (bits - run), fraction.denominator)
+    end
+
+    # Length of the leading run of set bits, capped at four (triple-dotted).
+    def leading_set_bits(numerator, bits)
       run = 0
       run += 1 while run < 4 && run < bits && numerator[bits - 1 - run] == 1
-      Rational(((1 << run) - 1) << (bits - run), fraction.denominator)
+      run
     end
 
     def unit_for(unit_fraction, source)

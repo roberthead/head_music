@@ -32,14 +32,20 @@ class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Annota
   end
 
   def permitted_descriptions
-    (config[:ascending] | config[:descending]).map do |shorthand|
-      if config[:ascending].include?(shorthand) && config[:descending].include?(shorthand)
-        shorthand
-      else
-        direction = config[:ascending].include?(shorthand) ? "ascending" : "descending"
-        "#{shorthand} (#{direction})"
-      end
+    (ascending_shorthands | descending_shorthands).map do |shorthand|
+      describe_shorthand(shorthand)
     end
+  end
+
+  def describe_shorthand(shorthand)
+    return shorthand if both_directions?(shorthand)
+
+    direction = ascending_shorthands.include?(shorthand) ? "ascending" : "descending"
+    "#{shorthand} (#{direction})"
+  end
+
+  def both_directions?(shorthand)
+    ascending_shorthands.include?(shorthand) && descending_shorthands.include?(shorthand)
   end
 
   def permitted?(note_pair)
@@ -48,6 +54,14 @@ class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Annota
   end
 
   def whitelist_for_interval(melodic_interval)
-    melodic_interval.ascending? ? config[:ascending] : config[:descending]
+    melodic_interval.ascending? ? ascending_shorthands : descending_shorthands
+  end
+
+  def ascending_shorthands
+    config[:ascending]
+  end
+
+  def descending_shorthands
+    config[:descending]
   end
 end

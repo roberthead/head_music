@@ -44,6 +44,14 @@ class HeadMusic::Notation::ABC::Header
 
   # Returns true when the field is K:, which terminates the header.
   def assign_field(stripped_line, line_number)
+    letter, value = parse_field(stripped_line, line_number)
+    return assign_key(value, line_number) if letter == "K"
+
+    store_field(letter, value, line_number, stripped_line)
+    false
+  end
+
+  def parse_field(stripped_line, line_number)
     match = FIELD_PATTERN.match(stripped_line)
     unless match
       raise HeadMusic::Notation::ABC::ParseError.new(
@@ -51,8 +59,15 @@ class HeadMusic::Notation::ABC::Header
         line_number: line_number, snippet: stripped_line
       )
     end
-    letter = match[1]
-    value = match[2].strip
+    [match[1], match[2].strip]
+  end
+
+  def assign_key(value, line_number)
+    @key_signature = HeadMusic::Notation::ABC::KeyMapper.new(value, line_number: line_number).key_signature
+    true
+  end
+
+  def store_field(letter, value, line_number, stripped_line)
     case letter
     when "X" then @reference_number = value
     when "T" then @title = value
@@ -62,15 +77,11 @@ class HeadMusic::Notation::ABC::Header
     when "M" then @meter = resolve_meter(value, line_number)
     when "L" then @unit_note_length = resolve_unit_note_length(value, line_number)
     when "V" then @voice_ids << value.split.first
-    when "K"
-      @key_signature = HeadMusic::Notation::ABC::KeyMapper.new(value, line_number: line_number).key_signature
-      return true
     else
       raise HeadMusic::Notation::ABC::UnsupportedFeatureError.new(
         "Unsupported header field #{letter.inspect}", line_number: line_number, snippet: stripped_line
       )
     end
-    false
   end
 
   def capture_body(lines, key_line_index)
@@ -84,21 +95,21 @@ class HeadMusic::Notation::ABC::Header
     return HeadMusic::Rudiment::Meter.common_time if value == "C"
     return HeadMusic::Rudiment::Meter.cut_time if value == "C|"
 
-    unless FRACTION_PATTERN.match?(value)
-      raise HeadMusic::Notation::ABC::ParseError.new(
-        "Invalid meter #{value.inspect}", line_number: line_number, snippet: value
-      )
-    end
+    ensure_fraction!(value, "meter", line_number)
     HeadMusic::Rudiment::Meter.get(value)
   end
 
   def resolve_unit_note_length(value, line_number)
-    unless FRACTION_PATTERN.match?(value)
-      raise HeadMusic::Notation::ABC::ParseError.new(
-        "Invalid unit note length #{value.inspect}", line_number: line_number, snippet: value
-      )
-    end
+    ensure_fraction!(value, "unit note length", line_number)
     Rational(value)
+  end
+
+  def ensure_fraction!(value, description, line_number)
+    return if FRACTION_PATTERN.match?(value)
+
+    raise HeadMusic::Notation::ABC::ParseError.new(
+      "Invalid #{description} #{value.inspect}", line_number: line_number, snippet: value
+    )
   end
 
   def apply_defaults

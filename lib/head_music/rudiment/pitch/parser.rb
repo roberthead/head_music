@@ -42,11 +42,22 @@ class HeadMusic::Rudiment::Pitch::Parser
 
   def parse_components
     match = identifier.match(PATTERN)
+    return unless match
 
-    if match
-      @letter_name = LetterName.get(match[1].upcase) unless match[1].to_s.empty?
-      @alteration = Alteration.get(match[2] || "") unless match[2].to_s.empty?
-      @register = Register.get(match[3]&.to_i) unless match[3].to_s.empty?
-    end
+    @letter_name = parse_letter_name(match[1])
+    @alteration = parse_alteration(match[2])
+    @register = parse_register(match[3])
+  end
+
+  def parse_letter_name(token)
+    LetterName.get(token.upcase) unless token.to_s.empty?
+  end
+
+  def parse_alteration(token)
+    Alteration.get(token || "") unless token.to_s.empty?
+  end
+
+  def parse_register(token)
+    Register.get(token.to_i) unless token.to_s.empty?
   end
 end

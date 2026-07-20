@@ -79,7 +79,7 @@ class HeadMusic::Style::Annotation
   end
 
   def fitness
-    mark_fitnesses = [marks].flatten.compact.map(&:fitness)
+    mark_fitnesses = flattened_marks.map(&:fitness)
     return 1.0 if mark_fitnesses.empty?
 
     mark_fitnesses.reduce(1, :*)**(1.0 / [fitness_denominator, 1].max)
@@ -102,11 +102,11 @@ class HeadMusic::Style::Annotation
   end
 
   def start_position
-    [marks].flatten.compact.map(&:start_position).min
+    flattened_marks.map(&:start_position).min
   end
 
   def end_position
-    [marks].flatten.compact.map(&:end_position).max
+    flattened_marks.map(&:end_position).max
   end
 
   def message
@@ -124,6 +124,12 @@ class HeadMusic::Style::Annotation
   protected
 
   attr_reader :options
+
+  # Marks may be a single mark, an array, or nil depending on the guideline;
+  # normalizing here keeps fitness and position scans uniform.
+  def flattened_marks
+    [marks].flatten.compact
+  end
 
   # Normalization rate for the product of mark fitnesses. Subclasses override
   # (e.g. with an opportunity count) to score by violation rate rather than
@@ -174,16 +180,22 @@ class HeadMusic::Style::Annotation
 
   def downbeat_harmonic_intervals
     @downbeat_harmonic_intervals ||=
-      cantus_firmus.notes
-        .map { |note| HeadMusic::Analysis::HarmonicInterval.new(note.voice, voice, note.position) }
-        .reject { |interval| interval.notes.length < 2 }
+      sounding_together(
+        cantus_firmus.notes.map { |note| HeadMusic::Analysis::HarmonicInterval.new(note.voice, voice, note.position) }
+      )
   end
 
   def harmonic_intervals
     @harmonic_intervals ||=
-      positions
-        .map { |position| HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, position) }
-        .reject { |harmonic_interval| harmonic_interval.notes.length < 2 }
+      sounding_together(
+        positions.map { |position| HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, position) }
+      )
+  end
+
+  # Keeps only intervals where both voices actually sound, dropping any where
+  # one voice is silent (fewer than two notes).
+  def sounding_together(intervals)
+    intervals.reject { |interval| interval.notes.length < 2 }
   end
 
   def positions

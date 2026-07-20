@@ -38,9 +38,19 @@ class HeadMusic::Notation::ABC::BodyLexer
 
   NOTE_PATTERN = %r{(\^\^|\^|__|_|=)?([A-Ga-g])([',]*)([\d/]*)}
   CHORD_START_PATTERN = /\[(\^\^|\^|__|_|=)?[A-Ga-g]/
+  # An inline field ("[K:...]"), tried closed before its unterminated fallback.
+  INLINE_FIELD_PATTERNS = [/\[[A-Za-z]:[^\]]*\]/, /\[[A-Za-z]:[^\]]*/].freeze
   CHORD_NOTE_PATTERN = %r{(\^\^|\^|__|_|=)?([A-Ga-g])([',]*)([\d/]*)}
   REST_PATTERN = %r{z([\d/]*)}
   VOLTA_DIGITS_PATTERN = /\d[\d,-]*/
+
+  # Recognizable ABC we deliberately don't handle: grace notes ({..}),
+  # decorations (!..!), tuplets, slurs, and special rests (Z, x). Ordered
+  # so a closed form is tried before its unterminated fallback.
+  UNSUPPORTED_PATTERNS = [
+    /\{[^}]*\}/, /\{[^}]*/, /![^!]*!/, /![^!]*/,
+    /\(\d/, /[()~.]/, /Z\d*/, %r{x[\d/]*}
+  ].freeze
 
   SNIPPET_LENGTH = 20
 
@@ -70,13 +80,15 @@ class HeadMusic::Notation::ABC::BodyLexer
     @body.lines.map(&:chomp).each_with_index do |line_text, index|
       break if line_text.strip.empty?
 
-      line_number = @start_line + index
-      if !continued && line_start_token(line_text, line_number, tokens)
-        next
-      end
-      continued = scan_line(line_text, line_number, tokens)
+      continued = lex_line(line_text, @start_line + index, tokens, continued)
     end
     tokens
+  end
+
+  def lex_line(line_text, line_number, tokens, continued)
+    return false if !continued && line_start_token(line_text, line_number, tokens)
+
+    scan_line(line_text, line_number, tokens)
   end
 
   # Handles lines that are fields rather than music: V: switches voices;
@@ -190,7 +202,7 @@ class HeadMusic::Notation::ABC::BodyLexer
       return true
     end
 
-    inline_field = scanner.scan(/\[[A-Za-z]:[^\]]*\]/) || scanner.scan(/\[[A-Za-z]:[^\]]*/)
+    inline_field = scan_first(scanner, INLINE_FIELD_PATTERNS)
     if inline_field
       tokens << unsupported_token(inline_field, line_number, column)
       return true
@@ -204,19 +216,27 @@ class HeadMusic::Notation::ABC::BodyLexer
   def scan_chord(scanner, line_number, column, tokens)
     start_pos = scanner.pos
     scanner.skip(/\[/)
+    notes = collect_chord_notes(scanner)
+    return chord_fallback(scanner, start_pos, line_number, column, tokens) unless notes
+
+    length = scanner.scan(%r{[\d/]*})
+    tokens << Token.new(type: :chord, line: line_number, column: column, notes: notes, length: length)
+    true
+  end
+
+  # Collects the notes between the brackets, or nil when a non-note is hit
+  # (leaving the scanner where it stopped so the fallback can react).
+  def collect_chord_notes(scanner)
     notes = []
     until scanner.skip(/\]/)
-      unless scanner.scan(CHORD_NOTE_PATTERN)
-        return chord_fallback(scanner, start_pos, line_number, column, tokens)
-      end
+      return nil unless scanner.scan(CHORD_NOTE_PATTERN)
+
       notes << ChordNote.new(
         accidental: scanner[1], letter: scanner[2],
         octave_marks: scanner[3], length: scanner[4]
       )
     end
-    length = scanner.scan(%r{[\d/]*})
-    tokens << Token.new(type: :chord, line: line_number, column: column, notes: notes, length: length)
-    true
+    notes
   end
 
   # Non-note content inside the brackets (ties, rests, spaces,
@@ -251,10 +271,12 @@ class HeadMusic::Notation::ABC::BodyLexer
   end
 
   def volta_passes(digits)
-    digits.split(",").flat_map do |part|
-      first, last = part.split("-", 2)
-      last ? (first.to_i..last.to_i).to_a : [first.to_i]
-    end.select(&:positive?)
+    digits.split(",").flat_map { |part| expand_volta_range(part) }.select(&:positive?)
+  end
+
+  def expand_volta_range(part)
+    first, last = part.split("-", 2)
+    last ? (first.to_i..last.to_i).to_a : [first.to_i]
   end
 
   def scan_note(scanner, line_number, column, tokens)
@@ -305,18 +327,21 @@ class HeadMusic::Notation::ABC::BodyLexer
     true
   end
 
-  # Recognizable ABC we deliberately don't handle: grace notes,
-  # decorations, tuplets, slurs, and special rests.
   def scan_unsupported(scanner, line_number, column, tokens)
-    lexeme =
-      scanner.scan(/\{[^}]*\}/) || scanner.scan(/\{[^}]*/) ||
-      scanner.scan(/![^!]*!/) || scanner.scan(/![^!]*/) ||
-      scanner.scan(/\(\d/) || scanner.scan(/[()~.]/) ||
-      scanner.scan(/Z\d*/) || scanner.scan(%r{x[\d/]*})
+    lexeme = scan_first(scanner, UNSUPPORTED_PATTERNS)
     return false unless lexeme
 
     tokens << unsupported_token(lexeme, line_number, column)
     true
+  end
+
+  # Returns the first pattern's match, trying each in order.
+  def scan_first(scanner, patterns)
+    patterns.each do |pattern|
+      lexeme = scanner.scan(pattern)
+      return lexeme if lexeme
+    end
+    nil
   end
 
   def unsupported_token(lexeme, line_number, column)

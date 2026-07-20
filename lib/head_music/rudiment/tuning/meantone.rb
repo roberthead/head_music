@@ -4,6 +4,8 @@ module HeadMusic::Rudiment; end
 # Quarter-comma meantone temperament
 # Optimizes major thirds to be pure (5:4) at the expense of perfect fifths
 class HeadMusic::Rudiment::Tuning::Meantone < HeadMusic::Rudiment::Tuning
+  include HeadMusic::Rudiment::Tuning::TonalCentered
+
   # Frequency ratios for intervals in quarter-comma meantone temperament
   # The defining characteristic is that major thirds are pure (5:4)
   # and the syntonic comma is distributed equally among the four fifths
@@ -22,8 +24,4 @@ class HeadMusic::Rudiment::Tuning::Meantone < HeadMusic::Rudiment::Tuning
     major_seventh: Rational(25, 16),                    # ~1.5625
     octave: Rational(2, 1)                              # Octave (2.0)
   }.freeze
-
-  def initialize(reference_pitch: :a440, tonal_center: nil)
-    super(reference_pitch: reference_pitch, tonal_center: tonal_center || "C4")
-  end
 end

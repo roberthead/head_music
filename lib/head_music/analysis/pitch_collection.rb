@@ -60,20 +60,17 @@ class HeadMusic::Analysis::PitchCollection
     # questions:
     # - should this be absolute? 0 = C?
     # - should there be both absolute and relative versions?
-    @integer_notation ||= begin
-      return [] if pitches.empty?
-      diatonic_intervals_above_bass_pitch.map { |interval| interval.semitones % 12 }.flatten.sort.unshift(0).uniq
-    end
+    @integer_notation ||= integer_notation_values
   end
 
   def invert
-    inverted_pitch = pitches[0] + HeadMusic::Analysis::DiatonicInterval.get("perfect octave")
+    inverted_pitch = pitches.first + octave
     new_pitches = pitches.drop(1) + [inverted_pitch]
     HeadMusic::Analysis::PitchCollection.new(new_pitches)
   end
 
   def uninvert
-    inverted_pitch = pitches[-1] - HeadMusic::Analysis::DiatonicInterval.get("perfect octave")
+    inverted_pitch = pitches.last - octave
     new_pitches = [inverted_pitch] + pitches[0..-2]
     HeadMusic::Analysis::PitchCollection.new(new_pitches)
   end
@@ -134,15 +131,15 @@ class HeadMusic::Analysis::PitchCollection
   end
 
   def root_position_triad?
-    trichord? && reduction_diatonic_intervals.all?(&:third?)
+    trichord? && stacked_in_thirds?(reduction)
   end
 
   def first_inversion_triad?
-    trichord? && reduction.uninvert.diatonic_intervals.all?(&:third?)
+    trichord? && stacked_in_thirds?(reduction.uninvert)
   end
 
   def second_inversion_triad?
-    trichord? && reduction.invert.diatonic_intervals.all?(&:third?)
+    trichord? && stacked_in_thirds?(reduction.invert)
   end
 
   def seventh_chord?
@@ -150,19 +147,19 @@ class HeadMusic::Analysis::PitchCollection
   end
 
   def root_position_seventh_chord?
-    tetrachord? && reduction_diatonic_intervals.all?(&:third?)
+    tetrachord? && stacked_in_thirds?(reduction)
   end
 
   def first_inversion_seventh_chord?
-    tetrachord? && reduction.uninvert.diatonic_intervals.all?(&:third?)
+    tetrachord? && stacked_in_thirds?(reduction.uninvert)
   end
 
   def second_inversion_seventh_chord?
-    tetrachord? && reduction.uninvert.uninvert.diatonic_intervals.all?(&:third?)
+    tetrachord? && stacked_in_thirds?(reduction.uninvert.uninvert)
   end
 
   def third_inversion_seventh_chord?
-    tetrachord? && reduction.invert.diatonic_intervals.all?(&:third?)
+    tetrachord? && stacked_in_thirds?(reduction.invert)
   end
 
   def ninth_chord?
@@ -202,14 +199,31 @@ class HeadMusic::Analysis::PitchCollection
 
   private
 
+  def octave
+    @octave ||= HeadMusic::Analysis::DiatonicInterval.get("perfect octave")
+  end
+
+  def integer_notation_values
+    return [] if pitches.empty?
+
+    diatonic_intervals_above_bass_pitch.map { |interval| interval.semitones % 12 }.sort.unshift(0).uniq
+  end
+
+  def stacked_in_thirds?(collection)
+    collection.diatonic_intervals.all?(&:third?)
+  end
+
   def triad_type?(type)
     TRIAD_PATTERNS[type].include?(reduction_diatonic_intervals.map(&:shorthand))
   end
 
   def reduction_pitches
-    pitches.map do |pitch|
-      pitch = HeadMusic::Rudiment::Pitch.fetch_or_create(pitch.spelling, pitch.register - 1) while pitch > bass_pitch + 12
-      pitch
-    end.sort
+    pitches.map { |pitch| folded_into_reduction(pitch) }.sort
+  end
+
+  def folded_into_reduction(pitch)
+    ceiling = bass_pitch + 12
+    pitch = HeadMusic::Rudiment::Pitch.fetch_or_create(pitch.spelling, pitch.register - 1) while pitch > ceiling
+    pitch
   end
 end

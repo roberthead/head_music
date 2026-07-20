@@ -88,12 +88,7 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   end
 
   def beat_value
-    @beat_value ||=
-      if compound?
-        HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / 2), dots: 1)
-      else
-        HeadMusic::Rudiment::RhythmicValue.new(count_unit)
-      end
+    @beat_value ||= compound? ? dotted_denominator_value(bottom_number / 2) : count_unit_value
   end
 
   # for consistency with conversational usage
@@ -109,7 +104,7 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
       elsif bottom_number >= 8
         whole_bar_beam_group_unit
       else
-        HeadMusic::Rudiment::RhythmicValue.new(count_unit)
+        count_unit_value
       end
   end
 
@@ -140,12 +135,21 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   # single power-of-two unit, so the group unit falls back to the count unit
   # (each count its own group) rather than raising on a nil unit.
   def whole_bar_beam_group_unit
-    if (top_number % 3).zero?
-      HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / 2), dots: 1)
-    else
-      unit = HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / top_number)
-      HeadMusic::Rudiment::RhythmicValue.new(unit || count_unit)
-    end
+    return dotted_denominator_value(bottom_number / 2) if (top_number % 3).zero?
+
+    unit = HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom_number / top_number)
+    HeadMusic::Rudiment::RhythmicValue.new(unit || count_unit)
+  end
+
+  def count_unit_value
+    HeadMusic::Rudiment::RhythmicValue.new(count_unit)
+  end
+
+  # A dotted value of the rhythmic unit for the given denominator (e.g. the
+  # dotted-quarter beat of a 6/8 meter for denominator 4).
+  def dotted_denominator_value(denominator)
+    unit = HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(denominator)
+    HeadMusic::Rudiment::RhythmicValue.new(unit, dots: 1)
   end
 
   def downbeat?(count, tick = 0)

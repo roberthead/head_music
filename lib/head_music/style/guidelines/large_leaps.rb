@@ -44,11 +44,19 @@ class HeadMusic::Style::Guidelines::LargeLeaps < HeadMusic::Style::Annotation
   def consecutive_leap_marks
     return [] if maximum_consecutive_leaps.nil?
 
+    excessive_leap_runs.map do |run|
+      HeadMusic::Style::Mark.for_all(run.flat_map(&:notes).uniq)
+    end
+  end
+
+  def excessive_leap_runs
+    qualifying_leap_runs.select { |run| run.length > maximum_consecutive_leaps }
+  end
+
+  def qualifying_leap_runs
     melodic_note_pairs.chunk { |pair| qualifies?(pair) }
       .select { |qualifying, _run| qualifying }
       .map { |_qualifying, run| run }
-      .select { |run| run.length > maximum_consecutive_leaps }
-      .map { |run| HeadMusic::Style::Mark.for_all(run.flat_map(&:notes).uniq) }
   end
 
   def maximum_consecutive_leaps

@@ -29,4 +29,10 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::StepOutOfUnison,
     HeadMusic::Style::Guidelines::StepUpToFinalNote
   ].freeze
+
+  # Builds a moving-species RULESET: the shared melodic and moving cores plus
+  # the species-specific guidelines passed in.
+  def self.moving_species_ruleset(*additional)
+    [*MELODIC_CORE, *MOVING_MELODIC_CORE, *additional].freeze
+  end
 end

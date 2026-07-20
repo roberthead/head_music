@@ -59,18 +59,22 @@ module HeadMusic::Style::Guidelines::DissonanceFigureDetection
     return false if index < 1 || index + 3 > notes.length - 1
 
     n1, n2, n3, n4, n5 = notes[index - 1, 5]
+    cambiata_shape?(n1, n2, n3, n4, n5) && all_consonant_with_cantus?(n1, n3, n5)
+  end
 
+  def cambiata_shape?(n1, n2, n3, n4, n5)
     approach = melodic_interval_between(n1, n2)
     leap = melodic_interval_between(n2, n3)
-    step_back_1 = melodic_interval_between(n3, n4)
-    step_back_2 = melodic_interval_between(n4, n5)
+    return false unless approach.step? && leap.number == 3 && approach.direction == leap.direction
 
-    approach.step? &&
-      leap.number == 3 && approach.direction == leap.direction &&
-      step_back_1.step? && step_back_2.step? &&
+    steps_back_from?(leap, melodic_interval_between(n3, n4), melodic_interval_between(n4, n5))
+  end
+
+  # Notes 3-4-5 must both step in the direction opposite the leap.
+  def steps_back_from?(leap, step_back_1, step_back_2)
+    step_back_1.step? && step_back_2.step? &&
       step_back_1.direction != leap.direction &&
-      step_back_2.direction != leap.direction &&
-      consonant_with_cantus?(n1) && consonant_with_cantus?(n3) && consonant_with_cantus?(n5)
+      step_back_2.direction != leap.direction
   end
 
   # Double neighbor: a four-note figure within one bar.
@@ -81,14 +85,19 @@ module HeadMusic::Style::Guidelines::DissonanceFigureDetection
     return false if start < 0 || start + 3 > notes.length - 1
 
     n1, n2, n3, n4 = notes[start, 4]
-
-    approach = melodic_interval_between(n1, n2)
-    middle = melodic_interval_between(n2, n3)
-    departure = melodic_interval_between(n3, n4)
-
-    approach.step? && middle.number == 3 && departure.step? &&
+    double_neighbor_shape?(n1, n2, n3, n4) &&
       n1.pitch == n4.pitch &&
-      consonant_with_cantus?(n1) && consonant_with_cantus?(n4)
+      all_consonant_with_cantus?(n1, n4)
+  end
+
+  def double_neighbor_shape?(n1, n2, n3, n4)
+    melodic_interval_between(n1, n2).step? &&
+      melodic_interval_between(n2, n3).number == 3 &&
+      melodic_interval_between(n3, n4).step?
+  end
+
+  def all_consonant_with_cantus?(*checked_notes)
+    checked_notes.all? { |note| consonant_with_cantus?(note) }
   end
 
   def consonant_with_cantus?(note)

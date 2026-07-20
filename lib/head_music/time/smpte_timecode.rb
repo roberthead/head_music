@@ -111,23 +111,11 @@ module HeadMusic
       def normalize!
         @total_frames = nil # Invalidate cached value
 
-        # Carry frames into seconds
-        if frame >= framerate || frame.negative?
-          second_delta, @frame = frame.divmod(framerate)
-          @second += second_delta
-        end
-
-        # Carry seconds into minutes
-        if second >= SECONDS_PER_MINUTE || second.negative?
-          minute_delta, @second = second.divmod(SECONDS_PER_MINUTE)
-          @minute += minute_delta
-        end
-
-        # Carry minutes into hours
-        if minute >= MINUTES_PER_HOUR || minute.negative?
-          hour_delta, @minute = minute.divmod(MINUTES_PER_HOUR)
-          @hour += hour_delta
-        end
+        # Carry overflow (and borrow underflow) up through each level.
+        # divmod handles both in-range and out-of-range values uniformly.
+        @second += carry(:frame, framerate)
+        @minute += carry(:second, SECONDS_PER_MINUTE)
+        @hour += carry(:minute, MINUTES_PER_HOUR)
 
         self
       end
@@ -146,19 +134,33 @@ module HeadMusic
       def to_total_frames
         return @total_frames if @total_frames
 
-        total = 0
-        total += hour * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * framerate
-        total += minute * SECONDS_PER_MINUTE * framerate
-        total += second * framerate
-        total += frame
+        frames_per_minute = SECONDS_PER_MINUTE * framerate
+        frames_per_hour = MINUTES_PER_HOUR * frames_per_minute
 
-        @total_frames = total
+        @total_frames =
+          hour * frames_per_hour +
+          minute * frames_per_minute +
+          second * framerate +
+          frame
       end
 
       protected
 
       # Allow other SmpteTimecode instances to access this method for comparison
       alias_method :to_i, :to_total_frames
+
+      private
+
+      # Divide the named component by its radix, store the remainder back,
+      # and return the amount to carry into the next-higher component.
+      #
+      # @return [Integer] the carry (may be negative when borrowing)
+      def carry(component, radix)
+        ivar = :"@#{component}"
+        delta, remainder = instance_variable_get(ivar).divmod(radix)
+        instance_variable_set(ivar, remainder)
+        delta
+      end
     end
   end
 end

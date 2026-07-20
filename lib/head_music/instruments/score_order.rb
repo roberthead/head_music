@@ -30,30 +30,9 @@ class HeadMusic::Instruments::ScoreOrder
 
   # Accepts a list of instruments and orders them according to this ensemble type's conventions
   def order(instruments)
-    valid_inputs = instruments.compact.reject { |i| i.respond_to?(:empty?) && i.empty? }
-    instrument_objects = valid_inputs.map { |i| normalize_to_instrument(i) }.compact
-
-    # Build ordering index
     ordering_index = build_ordering_index
-
-    # Separate known and unknown instruments
-    known_instruments = []
-    unknown_instruments = []
-
-    instrument_objects.each do |instrument|
-      position_info = find_position_with_transposition(instrument, ordering_index)
-      if position_info
-        known_instruments << [instrument, position_info]
-      else
-        unknown_instruments << instrument
-      end
-    end
-
-    # Sort known instruments by position (primary) and transposition (secondary)
-    sorted_known = known_instruments.sort_by { |_, pos_info|
-      [pos_info[:position], -pos_info[:transposition]]
-    }.map(&:first)
-    sorted_known + unknown_instruments.sort_by(&:to_s)
+    known, unknown = partition_by_known_position(normalize_inputs(instruments), ordering_index)
+    sort_known(known) + unknown.sort_by(&:to_s)
   end
 
   private_class_method :new
@@ -66,6 +45,32 @@ class HeadMusic::Instruments::ScoreOrder
 
     @sections = data["sections"] || []
     self.name = data["name"] || ensemble_type_key.to_s.tr("_", " ").capitalize
+  end
+
+  # Discards blank inputs and converts the rest to Instrument objects
+  def normalize_inputs(instruments)
+    valid_inputs = instruments.compact.reject { |i| i.respond_to?(:empty?) && i.empty? }
+    valid_inputs.map { |i| normalize_to_instrument(i) }.compact
+  end
+
+  # Splits instruments into those with a known score position and those without
+  def partition_by_known_position(instrument_objects, ordering_index)
+    known = []
+    unknown = []
+    instrument_objects.each do |instrument|
+      position_info = find_position_with_transposition(instrument, ordering_index)
+      if position_info
+        known << [instrument, position_info]
+      else
+        unknown << instrument
+      end
+    end
+    [known, unknown]
+  end
+
+  # Sorts known instruments by position (primary) and transposition (secondary)
+  def sort_known(known)
+    known.sort_by { |_, pos_info| [pos_info[:position], -pos_info[:transposition]] }.map(&:first)
   end
 
   def normalize_to_instrument(input)
@@ -96,31 +101,36 @@ class HeadMusic::Instruments::ScoreOrder
     index
   end
 
-  # Finds the position of an instrument in the ordering
+  # Finds the position of an instrument in the ordering.
+  # Positions are non-negative integers, so a nil lookup safely means "absent".
   def find_position(instrument, ordering_index)
-    # Try exact match with name_key
-    return ordering_index[instrument.name_key.to_s] if instrument.name_key && ordering_index.key?(instrument.name_key.to_s)
+    position_by_name_key(instrument, ordering_index) ||
+      position_by_family(instrument, ordering_index) ||
+      position_by_normalized_name(instrument, ordering_index)
+  end
 
-    # Try matching by family + range category (e.g., alto_saxophone -> saxophone family)
-    if instrument.family_key
-      family_base = instrument.family_key.to_s
-      instrument_key = instrument.name_key.to_s
+  # Exact match on the instrument's name_key
+  def position_by_name_key(instrument, ordering_index)
+    return nil unless instrument.name_key
 
-      # Check if this is a variant of a family (e.g., alto_saxophone)
-      if instrument_key.include?(family_base)
-        # Look for the specific variant first
-        return ordering_index[instrument_key] if ordering_index.key?(instrument_key)
+    ordering_index[instrument.name_key.to_s]
+  end
 
-        # Fall back to generic family instrument if listed
-        return ordering_index[family_base] if ordering_index.key?(family_base)
-      end
-    end
+  # Match a family variant (e.g., alto_saxophone -> saxophone family)
+  def position_by_family(instrument, ordering_index)
+    return nil unless instrument.family_key
 
-    # Try normalized name (lowercase, underscored)
-    normalized = HeadMusic::Utilities::Case.to_snake_case(instrument.name)
-    return ordering_index[normalized] if ordering_index.key?(normalized)
+    family_base = instrument.family_key.to_s
+    instrument_key = instrument.name_key.to_s
+    return nil unless instrument_key.include?(family_base)
 
-    nil
+    # Prefer the specific variant, then fall back to the generic family instrument
+    ordering_index[instrument_key] || ordering_index[family_base]
+  end
+
+  # Match the normalized (lowercase, underscored) display name
+  def position_by_normalized_name(instrument, ordering_index)
+    ordering_index[HeadMusic::Utilities::Case.to_snake_case(instrument.name)]
   end
 
   # Finds the position and transposition information for an instrument

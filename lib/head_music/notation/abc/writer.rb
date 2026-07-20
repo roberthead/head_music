@@ -85,13 +85,25 @@ module HeadMusic::Notation::ABC
       [
         "X:#{reference_number}",
         "T:#{composition.name}",
-        composition.composer && "C:#{composition.composer}",
-        composition.origin && "O:#{composition.origin}",
+        optional_field("C", composition.composer),
+        optional_field("O", composition.origin),
         "M:#{composition.meter}",
-        "L:#{UNIT_NOTE_LENGTH.numerator}/#{UNIT_NOTE_LENGTH.denominator}",
-        # The parser requires K: to terminate the header.
-        "K:#{KeyMapper.abc_value(composition.key_signature)}"
+        unit_note_length_field,
+        key_field
       ].compact
+    end
+
+    def optional_field(letter, value)
+      "#{letter}:#{value}" if value
+    end
+
+    def unit_note_length_field
+      "L:#{UNIT_NOTE_LENGTH.numerator}/#{UNIT_NOTE_LENGTH.denominator}"
+    end
+
+    def key_field
+      # The parser requires K: to terminate the header.
+      "K:#{KeyMapper.abc_value(composition.key_signature)}"
     end
 
     def body_lines
@@ -111,15 +123,22 @@ module HeadMusic::Notation::ABC
     def build_bar_strings
       pitch_writer = PitchWriter.new(composition.key_signature)
       duration_writer = DurationWriter.new(UNIT_NOTE_LENGTH)
-      bar_groups = placements.chunk_while do |previous, current|
-        previous.position.bar_number == current.position.bar_number
-      end
-      bar_groups.each_with_index.map do |bar_placements, index|
+      placements_by_bar.each_with_index.map do |bar_placements, index|
         # Accidental state must mirror what a re-parse accumulates bar by bar.
         pitch_writer.start_new_bar if index.positive?
-        tokens = bar_placements.map { |placement| token(placement, pitch_writer, duration_writer) }
-        join_bar_tokens(bar_placements, tokens)
+        render_bar(bar_placements, pitch_writer, duration_writer)
       end
+    end
+
+    def placements_by_bar
+      placements.chunk_while do |previous, current|
+        previous.position.bar_number == current.position.bar_number
+      end
+    end
+
+    def render_bar(bar_placements, pitch_writer, duration_writer)
+      tokens = bar_placements.map { |placement| token(placement, pitch_writer, duration_writer) }
+      join_bar_tokens(bar_placements, tokens)
     end
 
     # Suppresses the inter-token space only where the following placement was

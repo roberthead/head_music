@@ -51,27 +51,19 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
   end
 
   def sharps
-    spellings.select(&:sharp?).sort_by do |spelling|
-      ORDERED_LETTER_NAMES_OF_SHARPS.index(spelling.letter_name.to_s)
-    end
+    altered_spellings(:sharp?, ORDERED_LETTER_NAMES_OF_SHARPS)
   end
 
   def double_sharps
-    spellings.select(&:double_sharp?).sort_by do |spelling|
-      ORDERED_LETTER_NAMES_OF_SHARPS.index(spelling.letter_name.to_s)
-    end
+    altered_spellings(:double_sharp?, ORDERED_LETTER_NAMES_OF_SHARPS)
   end
 
   def flats
-    spellings.select(&:flat?).sort_by do |spelling|
-      ORDERED_LETTER_NAMES_OF_FLATS.index(spelling.letter_name.to_s)
-    end
+    altered_spellings(:flat?, ORDERED_LETTER_NAMES_OF_FLATS)
   end
 
   def double_flats
-    spellings.select(&:double_flat?).sort_by do |spelling|
-      ORDERED_LETTER_NAMES_OF_FLATS.index(spelling.letter_name.to_s)
-    end
+    altered_spellings(:double_flat?, ORDERED_LETTER_NAMES_OF_FLATS)
   end
 
   def num_sharps
@@ -102,13 +94,10 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
   end
 
   def to_s
-    if sharps.any?
-      (sharps.length == 1) ? "1 sharp" : "#{sharps.length} sharps"
-    elsif flats.any?
-      (flats.length == 1) ? "1 flat" : "#{flats.length} flats"
-    else
-      "no sharps or flats"
-    end
+    return pluralize(sharps.length, "sharp") if sharps.any?
+    return pluralize(flats.length, "flat") if flats.any?
+
+    "no sharps or flats"
   end
 
   def enharmonic_equivalent?(other)
@@ -116,6 +105,16 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
   end
 
   private
+
+  def altered_spellings(predicate, letter_name_order)
+    spellings.select(&predicate).sort_by do |spelling|
+      letter_name_order.index(spelling.letter_name.to_s)
+    end
+  end
+
+  def pluralize(count, noun)
+    (count == 1) ? "1 #{noun}" : "#{count} #{noun}s"
+  end
 
   def enharmonic_equivalence
     @enharmonic_equivalence ||= HeadMusic::Rudiment::KeySignature::EnharmonicEquivalence.get(self)

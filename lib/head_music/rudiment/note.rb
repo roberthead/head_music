@@ -22,30 +22,27 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
 
   def self.get(pitch, rhythmic_value = nil)
     return pitch if pitch.is_a?(HeadMusic::Rudiment::Note)
+    return get_from_string(pitch) if rhythmic_value.nil? && pitch.is_a?(String)
 
-    if rhythmic_value.nil? && pitch.is_a?(String)
-      # Try to parse as "pitch rhythmic_value" format (e.g., "F#4 dotted-quarter")
-      match = pitch.match(MATCHER)
-      if match
-        pitch_str = match[1] # The full pitch part
-        rhythmic_value_str = match[5] # The rhythmic value part
+    pitch = HeadMusic::Rudiment::Pitch.get(pitch)
+    rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value || :quarter)
+    fetch_or_create(pitch, rhythmic_value)
+  end
 
-        pitch_obj = HeadMusic::Rudiment::Pitch.get(pitch_str)
-        rhythmic_value_obj = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value_str)
-
-        return fetch_or_create(pitch_obj, rhythmic_value_obj) if pitch_obj && rhythmic_value_obj
-      end
-
-      # If parsing fails, treat it as just a pitch with default quarter note
-      pitch_obj = HeadMusic::Rudiment::Pitch.get(pitch)
-      return fetch_or_create(pitch_obj, HeadMusic::Rudiment::RhythmicValue.get(:quarter)) if pitch_obj
-
-      nil
-    else
-      pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-      rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value || :quarter)
-      fetch_or_create(pitch, rhythmic_value)
+  # Parse a lone string as "pitch rhythmic_value" (e.g., "F#4 dotted-quarter"),
+  # falling back to just a pitch with a default quarter note.
+  def self.get_from_string(string)
+    match = string.match(MATCHER)
+    if match
+      pitch_obj = HeadMusic::Rudiment::Pitch.get(match[1])
+      rhythmic_value_obj = HeadMusic::Rudiment::RhythmicValue.get(match[5])
+      return fetch_or_create(pitch_obj, rhythmic_value_obj) if pitch_obj && rhythmic_value_obj
     end
+
+    pitch_obj = HeadMusic::Rudiment::Pitch.get(string)
+    return fetch_or_create(pitch_obj, HeadMusic::Rudiment::RhythmicValue.get(:quarter)) if pitch_obj
+
+    nil
   end
 
   def self.fetch_or_create(pitch, rhythmic_value)
@@ -108,5 +105,5 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
     true
   end
 
-  private_class_method :fetch_or_create
+  private_class_method :fetch_or_create, :get_from_string
 end

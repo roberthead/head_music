@@ -3,10 +3,8 @@ module HeadMusic::Style::Guides; end
 
 # Rules for second species melodies
 class HeadMusic::Style::Guides::SecondSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
-  RULESET = [
-    *MELODIC_CORE,
-    *MOVING_MELODIC_CORE,
+  RULESET = moving_species_ruleset(
     HeadMusic::Style::Guidelines::FirstBarHalfNotes,
     HeadMusic::Style::Guidelines::TwoPerBar
-  ].freeze
+  )
 end

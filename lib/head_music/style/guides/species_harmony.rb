@@ -23,4 +23,10 @@ class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline,
     HeadMusic::Style::Guidelines::NoStrongBeatUnisons
   ].freeze
+
+  # Builds a diminution-species RULESET: the shared harmonic and diminution
+  # cores plus the species-specific guidelines passed in.
+  def self.diminution_ruleset(*additional)
+    [*HARMONIC_CORE, *DIMINUTION_HARMONIC_CORE, *additional].freeze
+  end
 end

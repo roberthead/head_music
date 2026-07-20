@@ -30,17 +30,20 @@ class HeadMusic::Style::Guidelines::PrepareOctaveLeaps < HeadMusic::Style::Annot
   end
 
   def external_entries
-    melodic_note_pairs.each_cons(2).map do |pair|
-      first, second = *pair
-      pair.map(&:notes).flatten.uniq if second.octave? && !second.spans?(first.pitches.first)
-    end.compact
+    external_leaps { |first, second| second.octave? && !second.spans?(first.pitches.first) }
   end
 
   def external_exits
-    melodic_note_pairs.each_cons(2).map do |pair|
+    external_leaps { |first, second| first.octave? && !first.spans?(second.pitches.last) }
+  end
+
+  # Adjacent melodic-interval pairs whose octave leap is approached or left from
+  # outside the span, as decided by the given predicate.
+  def external_leaps
+    melodic_note_pairs.each_cons(2).filter_map do |pair|
       first, second = *pair
-      pair.map(&:notes).flatten.uniq if first.octave? && !first.spans?(second.pitches.last)
-    end.compact
+      pair.map(&:notes).flatten.uniq if yield(first, second)
+    end
   end
 
   def octave_ending

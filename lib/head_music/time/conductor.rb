@@ -46,6 +46,9 @@ module HeadMusic
       # @return [MeterMap] the meter map for this conductor
       attr_reader :meter_map
 
+      # Nanoseconds in one second (used for clock/SMPTE conversions)
+      NANOSECONDS_PER_SECOND = 1_000_000_000.0
+
       # @return [HeadMusic::Rudiment::Tempo] the initial tempo (delegates to tempo_map)
       def starting_tempo
         tempo_map.events.first.tempo
@@ -105,47 +108,18 @@ module HeadMusic
         current_position = starting_musical_position
 
         # We need an end position far enough to contain our target clock time
-        # Start with a reasonable guess and extend if needed
-        estimated_end_bar = starting_musical_position.bar + 1000
-        estimated_end = MusicalPosition.new(estimated_end_bar, 1, 0, 0)
+        estimated_end = MusicalPosition.new(starting_musical_position.bar + 1000, 1, 0, 0)
 
         tempo_map.each_segment(starting_musical_position, estimated_end) do |start_pos, end_pos, tempo|
           meter = meter_map.meter_at(start_pos)
+          segment_nanoseconds = nanoseconds_in_segment(start_pos, end_pos, tempo, meter)
 
-          # Calculate clock duration of this segment
-          start_subticks = musical_position_to_subticks(start_pos, meter)
-          end_subticks = musical_position_to_subticks(end_pos, meter)
-          segment_subticks = end_subticks - start_subticks
-          segment_ticks = segment_subticks / HeadMusic::Time::SUBTICKS_PER_TICK.to_f
-          segment_nanoseconds = (segment_ticks * tempo.tick_duration_in_nanoseconds).round
-
-          # Check if our target falls within this segment
+          # If our target falls within this segment, calculate the exact position
           if accumulated_nanoseconds + segment_nanoseconds >= target_nanoseconds
-            # Target is in this segment - calculate exact position
             remaining_nanoseconds = target_nanoseconds - accumulated_nanoseconds
-            remaining_ticks = remaining_nanoseconds / tempo.tick_duration_in_nanoseconds.to_f
-            remaining_subticks = (remaining_ticks * HeadMusic::Time::SUBTICKS_PER_TICK).round
-
-            # Add to start position of this segment
-            total_subticks = start_subticks + remaining_subticks
-
-            # Convert to bar:beat:tick:subtick
-            ticks_per_count = meter.ticks_per_count
-            counts_per_bar = meter.counts_per_bar
-            subticks_per_count = ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
-            subticks_per_bar = counts_per_bar * subticks_per_count
-
-            bars = (total_subticks / subticks_per_bar).floor
-            remaining = total_subticks % subticks_per_bar
-
-            beats = (remaining / subticks_per_count).floor
-            remaining %= subticks_per_count
-
-            ticks = (remaining / HeadMusic::Time::SUBTICKS_PER_TICK).floor
-            subticks = remaining % HeadMusic::Time::SUBTICKS_PER_TICK
-
-            position = MusicalPosition.new(bars + 1, beats + 1, ticks, subticks)
-            return position.normalize!(meter)
+            total_subticks = musical_position_to_subticks(start_pos, meter) +
+              nanoseconds_to_subticks(remaining_nanoseconds, tempo)
+            return subticks_to_musical_position(total_subticks, meter)
           end
 
           accumulated_nanoseconds += segment_nanoseconds
@@ -168,22 +142,8 @@ module HeadMusic
 
         # Iterate through each tempo segment from start to target position
         tempo_map.each_segment(starting_musical_position, musical_position) do |start_pos, end_pos, tempo|
-          # Get the meter for this segment to calculate subticks correctly
           meter = meter_map.meter_at(start_pos)
-
-          # Calculate subticks in this segment
-          start_subticks = musical_position_to_subticks(start_pos, meter)
-          end_subticks = musical_position_to_subticks(end_pos, meter)
-          segment_subticks = end_subticks - start_subticks
-
-          # Convert subticks to ticks
-          segment_ticks = segment_subticks / HeadMusic::Time::SUBTICKS_PER_TICK.to_f
-
-          # Convert ticks to nanoseconds using this segment's tempo
-          nanoseconds_per_tick = tempo.tick_duration_in_nanoseconds
-          segment_nanoseconds = (segment_ticks * nanoseconds_per_tick).round
-
-          total_nanoseconds += segment_nanoseconds
+          total_nanoseconds += nanoseconds_in_segment(start_pos, end_pos, tempo, meter)
         end
 
         ClockPosition.new(total_nanoseconds)
@@ -196,27 +156,9 @@ module HeadMusic
       # @param clock_position [ClockPosition] the clock time to convert
       # @return [SmpteTimecode] the corresponding SMPTE timecode
       def clock_to_smpte(clock_position)
-        # Calculate total frames from nanoseconds
-        nanoseconds_per_second = 1_000_000_000.0
-        elapsed_seconds = clock_position.nanoseconds / nanoseconds_per_second
-        total_frames = (elapsed_seconds * framerate).round
-
-        # Add starting timecode frames
-        starting_frames = starting_smpte_timecode.to_total_frames
-        total_frames += starting_frames
-
-        # Convert frames to HH:MM:SS:FF
-        hours = total_frames / (framerate * 60 * 60)
-        remaining = total_frames % (framerate * 60 * 60)
-
-        minutes = remaining / (framerate * 60)
-        remaining %= (framerate * 60)
-
-        seconds = remaining / framerate
-        frames = remaining % framerate
-
-        timecode = SmpteTimecode.new(hours, minutes, seconds, frames, framerate: framerate)
-        timecode.normalize!
+        elapsed_seconds = clock_position.nanoseconds / NANOSECONDS_PER_SECOND
+        total_frames = (elapsed_seconds * framerate).round + starting_smpte_timecode.to_total_frames
+        frames_to_timecode(total_frames)
       end
 
       # Convert SMPTE timecode to clock position
@@ -232,9 +174,8 @@ module HeadMusic
         elapsed_frames = total_frames - starting_frames
 
         # Convert frames to seconds, then to nanoseconds
-        nanoseconds_per_second = 1_000_000_000.0
         elapsed_seconds = elapsed_frames / framerate.to_f
-        elapsed_nanoseconds = (elapsed_seconds * nanoseconds_per_second).round
+        elapsed_nanoseconds = (elapsed_seconds * NANOSECONDS_PER_SECOND).round
 
         ClockPosition.new(elapsed_nanoseconds)
       end
@@ -248,16 +189,59 @@ module HeadMusic
       # @return [Integer] total subticks from the beginning
       def musical_position_to_subticks(position, meter = nil)
         meter ||= meter_map.meter_at(position)
-        ticks_per_count = meter.ticks_per_count
-        counts_per_bar = meter.counts_per_bar
+        subticks_per_count = meter.ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
+        subticks_per_bar = meter.counts_per_bar * subticks_per_count
 
-        total = 0
-        total += (position.bar - 1) * counts_per_bar * ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
-        total += (position.beat - 1) * ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
-        total += position.tick * HeadMusic::Time::SUBTICKS_PER_TICK
-        total += position.subtick
+        (position.bar - 1) * subticks_per_bar +
+          (position.beat - 1) * subticks_per_count +
+          position.tick * HeadMusic::Time::SUBTICKS_PER_TICK +
+          position.subtick
+      end
 
-        total
+      # Clock duration of a tempo segment, in nanoseconds
+      #
+      # @return [Integer] nanoseconds elapsed between start_pos and end_pos at the given tempo
+      def nanoseconds_in_segment(start_pos, end_pos, tempo, meter)
+        segment_subticks = musical_position_to_subticks(end_pos, meter) -
+          musical_position_to_subticks(start_pos, meter)
+        segment_ticks = segment_subticks / HeadMusic::Time::SUBTICKS_PER_TICK.to_f
+        (segment_ticks * tempo.tick_duration_in_nanoseconds).round
+      end
+
+      # Convert an elapsed nanosecond duration into subticks at the given tempo
+      #
+      # @return [Integer] subticks elapsed
+      def nanoseconds_to_subticks(nanoseconds, tempo)
+        ticks = nanoseconds / tempo.tick_duration_in_nanoseconds.to_f
+        (ticks * HeadMusic::Time::SUBTICKS_PER_TICK).round
+      end
+
+      # Decompose total subticks into a normalized bar:beat:tick:subtick position
+      #
+      # @return [MusicalPosition] the normalized position
+      def subticks_to_musical_position(total_subticks, meter)
+        subticks_per_count = meter.ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
+        subticks_per_bar = meter.counts_per_bar * subticks_per_count
+
+        bars, remaining = total_subticks.divmod(subticks_per_bar)
+        beats, remaining = remaining.divmod(subticks_per_count)
+        ticks, subticks = remaining.divmod(HeadMusic::Time::SUBTICKS_PER_TICK)
+
+        MusicalPosition.new(bars + 1, beats + 1, ticks, subticks).normalize!(meter)
+      end
+
+      # Decompose total frames into a normalized HH:MM:SS:FF timecode
+      #
+      # @return [SmpteTimecode] the normalized timecode
+      def frames_to_timecode(total_frames)
+        frames_per_minute = framerate * 60
+        frames_per_hour = frames_per_minute * 60
+
+        hours, remaining = total_frames.divmod(frames_per_hour)
+        minutes, remaining = remaining.divmod(frames_per_minute)
+        seconds, frames = remaining.divmod(framerate)
+
+        SmpteTimecode.new(hours, minutes, seconds, frames, framerate: framerate).normalize!
       end
     end
   end

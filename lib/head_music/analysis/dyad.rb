@@ -99,23 +99,36 @@ class HeadMusic::Analysis::Dyad
   end
 
   def generate_possible_chords(interval_sets)
-    dyad_pitch_classes = [lower_pitch.pitch_class, upper_pitch.pitch_class]
-    chords = []
+    candidate_chords(interval_sets)
+      .select { |chord| includes_dyad?(chord) }
+      .uniq { |chord| chord.pitch_classes.sort.map(&:to_i) }
+  end
 
-    HeadMusic::Rudiment::Spelling::CHROMATIC_SPELLINGS.each do |root_spelling|
-      root_pitch = HeadMusic::Rudiment::Pitch.get("#{root_spelling}4")
-
-      interval_sets.each do |intervals|
-        chord_pitches = [root_pitch] + intervals.map { |name| HeadMusic::Analysis::DiatonicInterval.get(name).above(root_pitch) }
-        pitch_collection = HeadMusic::Analysis::PitchCollection.new(chord_pitches)
-
-        if dyad_pitch_classes.all? { |pc| pitch_collection.pitch_classes.include?(pc) }
-          chords << pitch_collection
-        end
-      end
+  def candidate_chords(interval_sets)
+    candidate_roots.flat_map do |root_pitch|
+      interval_sets.map { |intervals| build_chord(root_pitch, intervals) }
     end
+  end
 
-    chords.uniq { |chord| chord.pitch_classes.sort.map(&:to_i) }
+  def candidate_roots
+    HeadMusic::Rudiment::Spelling::CHROMATIC_SPELLINGS.map do |root_spelling|
+      HeadMusic::Rudiment::Pitch.get("#{root_spelling}4")
+    end
+  end
+
+  def build_chord(root_pitch, intervals)
+    chord_pitches = [root_pitch] + intervals.map do |name|
+      HeadMusic::Analysis::DiatonicInterval.get(name).above(root_pitch)
+    end
+    HeadMusic::Analysis::PitchCollection.new(chord_pitches)
+  end
+
+  def includes_dyad?(pitch_collection)
+    dyad_pitch_classes.all? { |pitch_class| pitch_collection.pitch_classes.include?(pitch_class) }
+  end
+
+  def dyad_pitch_classes
+    @dyad_pitch_classes ||= [lower_pitch.pitch_class, upper_pitch.pitch_class]
   end
 
   def filter_by_key(pitch_collections)
@@ -139,40 +152,34 @@ class HeadMusic::Analysis::Dyad
   end
 
   def generate_enharmonic_respellings
-    respellings = []
+    lower_equivalents = enharmonic_equivalents_for(pitch1)
+    upper_equivalents = enharmonic_equivalents_for(pitch2)
 
-    # Get enharmonic equivalents for each pitch
-    pitch1_equivalents = enharmonic_equivalents_for(pitch1)
-    pitch2_equivalents = enharmonic_equivalents_for(pitch2)
+    lower_equivalents.product(upper_equivalents)
+      .reject { |lower, upper| original_spelling?(lower, upper) }
+      .map { |lower, upper| self.class.new(lower, upper, key: key) }
+  end
 
-    # Generate all combinations
-    pitch1_equivalents.each do |lower|
-      pitch2_equivalents.each do |upper|
-        next if lower.spelling == pitch1.spelling && upper.spelling == pitch2.spelling
-
-        respellings << self.class.new(lower, upper, key: key)
-      end
-    end
-
-    respellings
+  def original_spelling?(lower, upper)
+    lower.spelling == pitch1.spelling && upper.spelling == pitch2.spelling
   end
 
   ALTERATION_SIGNS = {-2 => "bb", -1 => "b", 0 => "", 1 => "#", 2 => "##"}.freeze
 
   def enharmonic_equivalents_for(pitch)
-    target_pitch_class = pitch.pitch_class
-    equivalents = [pitch]
-
-    HeadMusic::Rudiment::LetterName.all.each do |letter_name|
-      ALTERATION_SIGNS.each_value do |sign|
-        spelling = HeadMusic::Rudiment::Spelling.get("#{letter_name}#{sign}")
-        next unless spelling && spelling.pitch_class == target_pitch_class
-        next if equivalents.any? { |equiv| equiv.spelling == spelling }
-
-        equivalents << HeadMusic::Rudiment::Pitch.fetch_or_create(spelling, pitch.register)
-      end
+    equivalent_pitches = enharmonic_spellings_for(pitch.pitch_class).map do |spelling|
+      HeadMusic::Rudiment::Pitch.fetch_or_create(spelling, pitch.register)
     end
+    [pitch, *equivalent_pitches].uniq(&:spelling)
+  end
 
-    equivalents
+  def enharmonic_spellings_for(target_pitch_class)
+    all_spellings.select { |spelling| spelling.pitch_class == target_pitch_class }
+  end
+
+  def all_spellings
+    HeadMusic::Rudiment::LetterName.all.flat_map do |letter_name|
+      ALTERATION_SIGNS.each_value.map { |sign| HeadMusic::Rudiment::Spelling.get("#{letter_name}#{sign}") }
+    end.compact
   end
 end

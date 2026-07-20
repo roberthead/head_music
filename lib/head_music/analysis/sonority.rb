@@ -127,22 +127,18 @@ class HeadMusic::Analysis::Sonority
 
   def tertian?
     @tertian ||= inversions.detect do |inversion|
-      inversion.diatonic_intervals.count(&:third?).to_f / inversion.diatonic_intervals.length > 0.5 ||
+      interval_ratio(inversion, &:third?) > 0.5 ||
         (scale_degrees_above_bass_pitch && [3, 5, 7]).length == 3
     end
   end
 
   def secundal?
-    @secundal ||= inversions.detect do |inversion|
-      inversion.diatonic_intervals.count(&:second?).to_f / inversion.diatonic_intervals.length > 0.5
-    end
+    @secundal ||= inversions.detect { |inversion| interval_ratio(inversion, &:second?) > 0.5 }
   end
 
   def quartal?
     @quartal ||= inversions.detect do |inversion|
-      inversion.diatonic_intervals.count do |interval|
-        interval.fourth? || interval.fifth?
-      end.to_f / inversion.diatonic_intervals.length > 0.5
+      interval_ratio(inversion) { |interval| interval.fourth? || interval.fifth? } > 0.5
     end
   end
   alias_method :quintal?, :quartal?
@@ -158,5 +154,13 @@ class HeadMusic::Analysis::Sonority
     other = HeadMusic::Analysis::PitchCollection.new(other) if other.is_a?(Array)
     other = self.class.new(other) if other.is_a?(HeadMusic::Analysis::PitchCollection)
     identifier == other.identifier
+  end
+
+  private
+
+  # Fraction of an inversion's diatonic intervals that satisfy the given predicate.
+  def interval_ratio(inversion, &predicate)
+    intervals = inversion.diatonic_intervals
+    intervals.count(&predicate).to_f / intervals.length
   end
 end

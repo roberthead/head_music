@@ -62,22 +62,26 @@ class HeadMusic::Rudiment::RhythmicUnit::Parser
   end
 
   def from_duration
-    RHYTHMIC_UNITS_DATA.find do |unit|
-      # Match decimal duration (e.g., "0.25")
-      return unit if unit["duration"].to_s == identifier.strip
-
-      # Match fraction notation (e.g., "1/4" = 0.25)
-      if identifier.match?(%r{^\d+/\d+$})
-        numerator, denominator = identifier.split("/").map(&:to_f)
-        calculated_duration = numerator / denominator
-        return unit if (calculated_duration - unit["duration"]).abs < 0.0001
-      end
-
-      false
-    end
+    RHYTHMIC_UNITS_DATA.find { |unit| duration_matches?(unit) }
   end
 
   private
+
+  def duration_matches?(unit)
+    # Match decimal duration (e.g., "0.25")
+    return true if unit["duration"].to_s == identifier.strip
+
+    # Match fraction notation (e.g., "1/4" = 0.25)
+    duration = fraction_duration
+    duration && (duration - unit["duration"]).abs < 0.0001
+  end
+
+  def fraction_duration
+    return nil unless identifier.match?(%r{^\d+/\d+$})
+
+    numerator, denominator = identifier.split("/").map(&:to_f)
+    numerator / denominator
+  end
 
   def normalize_name(name)
     return nil if name.nil?

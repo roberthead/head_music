@@ -25,14 +25,16 @@ class HeadMusic::Style::Guidelines::SuspensionTreatment < HeadMusic::Style::Anno
 
   def dissonant_suspensions
     cantus_firmus.notes[1..].filter_map do |cf_note|
-      cp_note = voice.note_at(cf_note.position)
-      next unless cp_note && cp_note.position < cf_note.position
-
-      interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, cf_note.position)
-      next unless interval.notes.length == 2 && interval.dissonance?(:two_part_harmony)
-
-      [cp_note, cf_note]
+      cp_note = suspended_cp_note(cf_note)
+      [cp_note, cf_note] if cp_note && dissonant_at?(cf_note.position)
     end
+  end
+
+  # The counterpoint note sounding under the cantus firmus note, but only when it
+  # began earlier (a note held over, i.e. a suspension).
+  def suspended_cp_note(cf_note)
+    cp_note = voice.note_at(cf_note.position)
+    cp_note if cp_note && cp_note.position < cf_note.position
   end
 
   def properly_treated?(cp_note, cf_note)
@@ -43,19 +45,35 @@ class HeadMusic::Style::Guidelines::SuspensionTreatment < HeadMusic::Style::Anno
     prev_cf = previous_cf_note(cf_note)
     return false unless prev_cf
 
-    interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, cp_note.position)
-    interval.notes.length == 2 && interval.consonance?(:two_part_harmony)
+    consonant_at?(cp_note.position)
   end
 
-  def resolved?(cp_note, cf_note)
+  def resolved?(cp_note, _cf_note)
     next_cp = voice.note_following(cp_note.position)
     return false unless next_cp
 
     melodic = HeadMusic::Analysis::MelodicInterval.new(cp_note, next_cp)
     return false unless melodic.step? && melodic.descending?
 
-    resolution_interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, next_cp.position)
-    resolution_interval.notes.length == 2 && resolution_interval.consonance?(:two_part_harmony)
+    consonant_at?(next_cp.position)
+  end
+
+  def dissonant_at?(position)
+    interval = harmonic_interval_at(position)
+    two_part?(interval) && interval.dissonance?(:two_part_harmony)
+  end
+
+  def consonant_at?(position)
+    interval = harmonic_interval_at(position)
+    two_part?(interval) && interval.consonance?(:two_part_harmony)
+  end
+
+  def harmonic_interval_at(position)
+    HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, position)
+  end
+
+  def two_part?(interval)
+    interval.notes.length == 2
   end
 
   def previous_cf_note(cf_note)

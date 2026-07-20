@@ -41,13 +41,19 @@ class HeadMusic::Analysis::IntervalCycle
   def pitches_up
     @pitches_up ||= [starting_pitch].tap do |list|
       loop do
-        next_pitch = list.last + interval
-        next_pitch -= octave while next_pitch - starting_pitch > 12
-        break if next_pitch.pitch_class == list.first.pitch_class
+        next_pitch = folded_up(list.last)
+        break if next_pitch.pitch_class == starting_pitch.pitch_class
 
         list << next_pitch
       end
     end
+  end
+
+  # The next pitch a cycle-interval above, folded down by octaves to stay within an octave of the start.
+  def folded_up(pitch)
+    next_pitch = pitch + interval
+    next_pitch -= octave while next_pitch - starting_pitch > 12
+    next_pitch
   end
 
   def octave

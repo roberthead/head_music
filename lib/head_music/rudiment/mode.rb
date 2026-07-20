@@ -19,25 +19,21 @@ class HeadMusic::Rudiment::Mode < HeadMusic::Rudiment::QualifiedDiatonicContext
 
   alias_method :mode_name, :qualifier
 
-  def relative_major
-    case mode_name
-    when :ionian
-      return HeadMusic::Rudiment::Key.get("#{tonic_spelling} major")
-    when :dorian
-      relative_pitch = tonic_pitch + -2
-    when :phrygian
-      relative_pitch = tonic_pitch + -4
-    when :lydian
-      relative_pitch = tonic_pitch + -5
-    when :mixolydian
-      relative_pitch = tonic_pitch + -7
-    when :aeolian
-      relative_pitch = tonic_pitch + -9
-    when :locrian
-      relative_pitch = tonic_pitch + -11
-    end
+  # Semitones from a mode's tonic down to its relative major tonic.
+  # Ionian is omitted because its own tonic spelling is the relative major.
+  RELATIVE_MAJOR_SEMITONES_BELOW_TONIC = {
+    dorian: -2, phrygian: -4, lydian: -5,
+    mixolydian: -7, aeolian: -9, locrian: -11
+  }.freeze
 
-    HeadMusic::Rudiment::Key.get("#{relative_pitch.spelling} major")
+  # The major or minor quality of each mode's parallel key.
+  PARALLEL_QUALITIES = {
+    ionian: :major, dorian: :minor, phrygian: :minor, lydian: :major,
+    mixolydian: :major, aeolian: :minor, locrian: :minor
+  }.freeze
+
+  def relative_major
+    HeadMusic::Rudiment::Key.get("#{relative_major_tonic_spelling} major")
   end
 
   def relative
@@ -45,18 +41,20 @@ class HeadMusic::Rudiment::Mode < HeadMusic::Rudiment::QualifiedDiatonicContext
   end
 
   def parallel
-    # Return the parallel major or minor key
-    case mode_name
-    when :ionian
-      HeadMusic::Rudiment::Key.get("#{tonic_spelling} major")
-    when :aeolian
-      HeadMusic::Rudiment::Key.get("#{tonic_spelling} minor")
-    when :dorian, :phrygian
-      HeadMusic::Rudiment::Key.get("#{tonic_spelling} minor")
-    when :lydian, :mixolydian
-      HeadMusic::Rudiment::Key.get("#{tonic_spelling} major")
-    when :locrian
-      HeadMusic::Rudiment::Key.get("#{tonic_spelling} minor")
-    end
+    quality = PARALLEL_QUALITIES[mode_name]
+    return unless quality
+
+    HeadMusic::Rudiment::Key.get("#{tonic_spelling} #{quality}")
+  end
+
+  private
+
+  def relative_major_tonic_spelling
+    return tonic_spelling if mode_name == :ionian
+
+    offset = RELATIVE_MAJOR_SEMITONES_BELOW_TONIC[mode_name]
+    relative_pitch = tonic_pitch + offset if offset
+    # An unrecognized mode leaves relative_pitch nil, raising NoMethodError (preserved behavior).
+    relative_pitch.spelling
   end
 end

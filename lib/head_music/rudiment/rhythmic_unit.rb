@@ -70,12 +70,10 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
   end
 
   def self.all_normalized_names
-    @all_normalized_names ||= (
-      AMERICAN_MULTIPLES_NAMES.map { |n| normalize_name(n) } +
-      AMERICAN_DIVISIONS_NAMES.map { |n| normalize_name(n) } +
-      BRITISH_MULTIPLES_NAMES.map { |n| normalize_name(n) } +
-      BRITISH_DIVISIONS_NAMES.map { |n| normalize_name(n) }
-    ).uniq
+    @all_normalized_names ||= [
+      AMERICAN_MULTIPLES_NAMES, AMERICAN_DIVISIONS_NAMES,
+      BRITISH_MULTIPLES_NAMES, BRITISH_DIVISIONS_NAMES
+    ].flat_map { |names| names.map { |name| normalize_name(name) } }.uniq
   end
 
   def initialize(canonical_name)
@@ -124,17 +122,9 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
   end
 
   def british_name
-    if has_american_multiple_name?
-      index = AMERICAN_MULTIPLES_NAMES.index(name)
-      return BRITISH_MULTIPLES_NAMES[index] unless index.nil?
-    elsif has_american_division_name?
-      index = AMERICAN_DIVISIONS_NAMES.index(name)
-      return BRITISH_DIVISIONS_NAMES[index] unless index.nil?
-    elsif BRITISH_MULTIPLES_NAMES.include?(name) || BRITISH_DIVISIONS_NAMES.include?(name)
-      return name
-    end
-
-    nil # Return nil if no British equivalent found
+    british_equivalent(AMERICAN_MULTIPLES_NAMES, BRITISH_MULTIPLES_NAMES) ||
+      british_equivalent(AMERICAN_DIVISIONS_NAMES, BRITISH_DIVISIONS_NAMES) ||
+      own_british_name
   end
 
   private_class_method :new
@@ -145,37 +135,31 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
 
   private
 
-  def has_american_multiple_name?
-    AMERICAN_MULTIPLES_NAMES.include?(name)
+  # Translate this unit's American name to its British equivalent, matched by
+  # position in the parallel American/British name arrays.
+  def british_equivalent(american_names, british_names)
+    index = american_names.index(name)
+    index && british_names[index]
   end
 
-  def has_american_division_name?
-    AMERICAN_DIVISIONS_NAMES.include?(name)
+  def own_british_name
+    name if BRITISH_MULTIPLES_NAMES.include?(name) || BRITISH_DIVISIONS_NAMES.include?(name)
   end
 
   def numerator_exponent
-    normalized_name = self.class.normalize_name(name)
-    multiples_keys.index(normalized_name) || british_multiples_keys.index(normalized_name) || 0
-  end
-
-  def multiples_keys
-    AMERICAN_MULTIPLES_NAMES.map { |multiple| self.class.normalize_name(multiple) }
-  end
-
-  def british_multiples_keys
-    BRITISH_MULTIPLES_NAMES.map { |multiple| self.class.normalize_name(multiple) }
+    exponent_from(AMERICAN_MULTIPLES_NAMES, BRITISH_MULTIPLES_NAMES)
   end
 
   def denominator_exponent
-    normalized_name = self.class.normalize_name(name)
-    fractions_keys.index(normalized_name) || british_fractions_keys.index(normalized_name) || 0
+    exponent_from(AMERICAN_DIVISIONS_NAMES, BRITISH_DIVISIONS_NAMES)
   end
 
-  def fractions_keys
-    AMERICAN_DIVISIONS_NAMES.map { |fraction| self.class.normalize_name(fraction) }
+  def exponent_from(american_names, british_names)
+    key = self.class.normalize_name(name)
+    normalized_keys(american_names).index(key) || normalized_keys(british_names).index(key) || 0
   end
 
-  def british_fractions_keys
-    BRITISH_DIVISIONS_NAMES.map { |fraction| self.class.normalize_name(fraction) }
+  def normalized_keys(names)
+    names.map { |name| self.class.normalize_name(name) }
   end
 end

@@ -24,54 +24,61 @@ class HeadMusic::Rudiment::RhythmicValue::Parser
   private
 
   def parse_components
-    # First check for shorthand patterns like "q." to avoid infinite recursion
+    @rhythmic_value =
+      from_shorthand ||
+      from_direct_unit ||
+      from_dotted_unit ||
+      from_word_pattern
+  end
+
+  # Check for shorthand patterns like "q." first to avoid infinite recursion
+  def from_shorthand
     match = identifier.match(SHORTHAND_PATTERN)
-    if match && match[1]
-      unit_name = RhythmicUnit::Parser.parse(match[1].to_s.strip)
-      dots = match[2] ? match[2].strip.length : 0
-      @rhythmic_value = RhythmicValue.new(unit_name, dots: dots) if unit_name
-      return
-    end
+    return nil unless match && match[1]
 
-    # Try RhythmicUnit::Parser directly first (handles fractions, decimals, British names, etc.)
+    unit_name = RhythmicUnit::Parser.parse(match[1].to_s.strip)
+    return nil unless unit_name
+
+    dots = match[2] ? match[2].strip.length : 0
+    RhythmicValue.new(unit_name, dots: dots)
+  end
+
+  # Try RhythmicUnit::Parser directly (handles fractions, decimals, British names, etc.)
+  def from_direct_unit
     parser = RhythmicUnit::Parser.new(identifier)
-    if parser.american_name
-      @rhythmic_value = RhythmicValue.new(parser.american_name, dots: 0)
-      return
-    end
+    return nil unless parser.american_name
 
-    # Then try to parse with dots extracted for formats like "1/4."
-    # Count and strip dots (e.g., "1/4." -> "1/4" with 1 dot)
-    # But skip this if identifier looks like a decimal number
-    unless identifier.match?(/^\d+\.\d+$/)
-      dots = identifier.scan(".").count
-      base_identifier = identifier.delete(".").strip
+    RhythmicValue.new(parser.american_name, dots: 0)
+  end
 
-      # Try RhythmicUnit::Parser on the base identifier
-      parser = RhythmicUnit::Parser.new(base_identifier)
-      if parser.american_name
-        @rhythmic_value = RhythmicValue.new(parser.american_name, dots: dots)
-        return
-      end
-    end
+  # Parse with dots extracted for formats like "1/4." (-> "1/4" with 1 dot),
+  # skipping identifiers that look like a decimal number.
+  def from_dotted_unit
+    return nil if identifier.match?(/^\d+\.\d+$/)
 
-    # Finally check the word pattern for things like "dotted quarter"
+    dots = identifier.scan(".").count
+    parser = RhythmicUnit::Parser.new(identifier.delete(".").strip)
+    return nil unless parser.american_name
+
+    RhythmicValue.new(parser.american_name, dots: dots)
+  end
+
+  # Check the word pattern for things like "dotted quarter"
+  def from_word_pattern
     match = identifier.match(PATTERN)
-    if match
-      matched_string = match[0].to_s.strip
-      # Extract unit and dots from the matched string
-      unit_part = matched_string.gsub(/^\W*(double|triple)?\W*(dotted)?\W*/, "")
-      unit = RhythmicUnit.get(unit_part)
-      if unit
-        dots = if matched_string.include?("triple")
-          3
-        elsif matched_string.include?("double")
-          2
-        else
-          matched_string.include?("dotted") ? 1 : 0
-        end
-        @rhythmic_value = RhythmicValue.new(unit, dots: dots)
-      end
-    end
+    return nil unless match
+
+    matched_string = match[0].to_s.strip
+    unit = RhythmicUnit.get(matched_string.gsub(/^\W*(double|triple)?\W*(dotted)?\W*/, ""))
+    return nil unless unit
+
+    RhythmicValue.new(unit, dots: dots_from_word(matched_string))
+  end
+
+  def dots_from_word(matched_string)
+    return 3 if matched_string.include?("triple")
+    return 2 if matched_string.include?("double")
+
+    matched_string.include?("dotted") ? 1 : 0
   end
 end

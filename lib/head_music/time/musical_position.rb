@@ -126,23 +126,11 @@ module HeadMusic
         @meter = meter
         @total_subticks = nil # Invalidate cached value
 
-        # Carry subticks into ticks
-        if subtick >= HeadMusic::Time::SUBTICKS_PER_TICK || subtick.negative?
-          tick_delta, @subtick = subtick.divmod(HeadMusic::Time::SUBTICKS_PER_TICK)
-          @tick += tick_delta
-        end
-
-        # Carry ticks into beats
-        if tick >= meter.ticks_per_count || tick.negative?
-          beat_delta, @tick = tick.divmod(meter.ticks_per_count)
-          @beat += beat_delta
-        end
-
-        # Carry beats into bars
-        if beat >= meter.counts_per_bar || beat.negative?
-          bar_delta, @beat = beat.divmod(meter.counts_per_bar)
-          @bar += bar_delta
-        end
+        # Carry overflow (and borrow underflow) up through each level.
+        # divmod handles both in-range and out-of-range values uniformly.
+        @tick += carry(:subtick, HeadMusic::Time::SUBTICKS_PER_TICK)
+        @beat += carry(:tick, meter.ticks_per_count)
+        @bar += carry(:beat, meter.counts_per_bar)
 
         self
       end
@@ -165,24 +153,36 @@ module HeadMusic
       def to_total_subticks
         return @total_subticks if @total_subticks
 
-        # Calculate based on the structure
         # Note: This is a simplified calculation that assumes consistent meter
         ticks_per_count = @meter&.ticks_per_count || HeadMusic::Time::PPQN
         counts_per_bar = @meter&.counts_per_bar || 4
+        subticks_per_count = ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
+        subticks_per_bar = counts_per_bar * subticks_per_count
 
-        total = 0
-        total += (bar - 1) * counts_per_bar * ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
-        total += (beat - 1) * ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
-        total += tick * HeadMusic::Time::SUBTICKS_PER_TICK
-        total += subtick
-
-        @total_subticks = total
+        @total_subticks =
+          (bar - 1) * subticks_per_bar +
+          (beat - 1) * subticks_per_count +
+          tick * HeadMusic::Time::SUBTICKS_PER_TICK +
+          subtick
       end
 
       protected
 
       # Allow other MusicalPosition instances to access this method for comparison
       alias_method :to_i, :to_total_subticks
+
+      private
+
+      # Divide the named component by its radix, store the remainder back,
+      # and return the amount to carry into the next-higher component.
+      #
+      # @return [Integer] the carry (may be negative when borrowing)
+      def carry(component, radix)
+        ivar = :"@#{component}"
+        delta, remainder = instance_variable_get(ivar).divmod(radix)
+        instance_variable_set(ivar, remainder)
+        delta
+      end
     end
   end
 end
