@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-19T16:21:53-07:00
   activated_at: 2026-07-19T18:37:53-07:00
   planned_at:   2026-07-19T18:09:39-07:00
-  finished_at:
-  updated_at:   2026-07-19T19:54:22-07:00
+  finished_at:  2026-07-19T20:10:12-07:00
+  updated_at:   2026-07-19T20:10:12-07:00
 -->
 
 # Story: ABC Notation Beaming
@@ -213,3 +213,23 @@ Unit-test `BeamGrouper` exhaustively in isolation (data in / data out — the bu
 3. **Flag name/polarity** — **RESOLVED: `beam_break_before`**, tri-state (`nil` = meter default, `true` = force break, `false` = force join), a `Bar`-style writable `attr_accessor` on `Placement`.
 4. **Export symmetry** — **RESOLVED: asymmetric, like ties.** ABC export only suppresses/emits spaces where an authored flag is present; nil-flag (programmatic) compositions keep today's every-placement spacing. Pin with a round-trip spec.
 5. **Authored beam across a barline** — **RESOLVED: silent break at the barline.** The barline terminates any beam (MusicXML forbids cross-barline beams; `ensure_notes_within_barlines` enforces it). This intentionally differs from the tie feature's explicit `ParseError` across a barline.
+
+## Learnings
+
+### What went well
+
+- The core design from planning — **default beaming = no model state (computed at render), authored override = one tri-state `Placement` flag** — held through implementation without rework. Deliberately **not** modeling beaming inside `RhythmicValue` (unlike ties) was correct, since beaming spans notes rather than living within one.
+- Making `BeamGrouper` a **pure data-in/data-out helper** put the hardest logic (segmentation, multi-level beams, forward/backward hooks) behind an exhaustive unit spec, isolated from the writer. Most correctness lived there, and testing it in isolation paid off.
+- Implementing one step at a time with a review + spec run between each caught the major design tension the moment it appeared, not at the end.
+
+### What was surprising
+
+- The **"honor verbatim" decision has a non-obvious consequence**: ABC adjacency is always authoritative (implies a join), so pure meter-**default** beaming is only observable on programmatically-built compositions. This surfaced mid-implementation as 5 failing writer tests and forced splitting the tests into a default (programmatic) bucket and an authored (ABC-spacing) bucket. Lesson: when an input format is fully authoritative, you cannot exercise the *default* path through that format.
+- A **"confirmed" assumption was wrong at an edge**: "simple → group by beat" would make 3/8 emit no beams at all. Planning caught it and introduced `Meter#beam_group_unit` distinct from `beat_value`. Validate confirmed rules against odd cases (3/8) during planning, not after.
+- **Lexer/parser signals compose**: a rest is a "beamable predecessor," so `z CC` emits a beam-break and the post-rest note gets `true` rather than `nil`. Harmless (a rest forces a break anyway), but a reminder these signals interact.
+
+### What to do differently
+
+- **Front-load "how is this represented in the model?"** — that question (asked explicitly during the story) is the crux, and answering it early shaped the whole plan. Make it step one.
+- The **asymmetric-meter crash (5/16)** slipped past because "don't crash out of scope" was an instruction with no test; code review caught it. When a method becomes public, add a defensive test for out-of-scope inputs.
+- **Visual verification in a real notation reader (MuseScore/Finale) is still outstanding** — the suite asserts XML structure, not rendered appearance. Worth a one-time eyeball of the 6/8 case and hook direction.
