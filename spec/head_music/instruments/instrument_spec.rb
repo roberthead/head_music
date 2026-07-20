@@ -908,14 +908,6 @@ describe HeadMusic::Instruments::Instrument do
       end
     end
 
-    describe "#parent_translation without a parent" do
-      subject(:instrument) { described_class.get("trumpet") }
-
-      it "returns nil" do
-        expect(instrument.send(:parent_translation)).to be_nil
-      end
-    end
-
     describe "#pitch_key_to_designation without a pitch_key" do
       subject(:instrument) { described_class.get("violin") }
 

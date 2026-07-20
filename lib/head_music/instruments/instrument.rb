@@ -170,7 +170,7 @@ class HeadMusic::Instruments::Instrument
   def translation(locale = :en)
     return name unless name_key
 
-    instrument_translation(name_key, locale: locale, default: name)
+    HeadMusic::Instruments::InstrumentName.translate(name_key, locale: locale, default: name)
   end
 
   def ==(other)
@@ -264,35 +264,9 @@ class HeadMusic::Instruments::Instrument
   end
 
   def initialize_name
-    # Prefer an explicit translation, then a name built from parent + pitch
-    # (for child instruments), then a plain inference from the key.
-    self.name = instrument_translation(name_key) || child_instrument_name || inferred_name
-  end
-
-  # Name built from parent + pitch for child instruments, e.g. "Clarinet in B♭"
-  def child_instrument_name
-    return nil unless parent_key && pitch_key
-
-    "#{parent_translation} in #{format_pitch_name(pitch_key_to_designation)}"
-  end
-
-  def parent_translation
-    return nil unless parent_key
-
-    instrument_translation(parent_key, default: parent_key.to_s.tr("_", " "))
-  end
-
-  # Localized name for an instrument key under the head_music.instruments scope
-  def instrument_translation(key, locale: "en", default: nil)
-    I18n.translate(key, scope: %i[head_music instruments], locale: locale, default: default)
-  end
-
-  def inferred_name
-    name_key.to_s.tr("_", " ")
-  end
-
-  def format_pitch_name(pitch_designation)
-    pitch_designation.to_s.tr("b", "♭").tr("#", "♯")
+    self.name = HeadMusic::Instruments::InstrumentName.new(
+      name_key: name_key, parent_key: parent_key, pitch_designation: pitch_key_to_designation
+    ).to_s
   end
 
   # Convert pitch_key (e.g., "b_flat") to designation format (e.g., "Bb")
