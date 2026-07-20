@@ -19,9 +19,6 @@ module HeadMusic::Notation::ABC
     REPEAT_STARTING_STYLES = ["|:", "::"].freeze
     SECTION_ENDING_STYLES = ["||", "|]", "[|"].freeze
 
-    # The identity length scale, used wherever no stretching applies.
-    ONE = Rational(1)
-
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
     def initialize(abc_string, start_line: 1)
@@ -37,18 +34,7 @@ module HeadMusic::Notation::ABC
 
     attr_reader :header, :duration_resolver
 
-    # A note or chord whose placement is deferred until we know whether
-    # a broken-rhythm mark follows it. The pitches are computed eagerly
-    # so bar-line accidental resets cannot corrupt them. `tied_prefix`,
-    # when present, is the already-built rhythmic value of everything
-    # tied ahead of this note; its own value is appended at flush time.
-    PendingNote = Data.define(:pitches, :length, :scale, :tied_prefix, :beam_break) do
-      def initialize(pitches:, length:, scale:, tied_prefix: nil, beam_break: nil)
-        super
-      end
-    end
-
-    # Per-voice interpretation state lives in VoiceState (its own file).
+    # Per-voice interpretation state and note-assembly live in VoiceState.
 
     def build_composition
       Preflight.ensure_input_present(@abc_string)
@@ -87,7 +73,8 @@ module HeadMusic::Notation::ABC
     def voice_state(role)
       @voice_states[role] ||= VoiceState.new(
         @building.add_voice(role: role),
-        PitchBuilder.new(header.key_signature)
+        PitchBuilder.new(header.key_signature),
+        duration_resolver
       )
     end
 
@@ -113,7 +100,7 @@ module HeadMusic::Notation::ABC
     def handle_note(token)
       state = current_state
       pitch = state.pitch_builder.pitch(token.letter, token.octave_marks, token.accidental)
-      defer_placement(state, [pitch], token.length)
+      state.defer_placement([pitch], token.length)
     end
 
     # Chord pitches resolve in bracket order, so an explicit accidental
@@ -125,7 +112,7 @@ module HeadMusic::Notation::ABC
       end
       ensure_unique_chord_pitches(pitches, token)
       inner_length = uniform_chord_length(token)
-      defer_placement(state, pitches, token.length, inner_length)
+      state.defer_placement(pitches, token.length, inner_length)
     end
 
     def ensure_unique_chord_pitches(pitches, token)
@@ -159,17 +146,6 @@ module HeadMusic::Notation::ABC
       "[#{inner}]"
     end
 
-    def defer_placement(state, pitches, length, inner_scale = ONE)
-      scale = (state.awaiting_scale || ONE) * inner_scale
-      state.awaiting_scale = nil
-      return tie_onto_pending(state, pitches, length, scale) if state.tie_open?
-
-      flush_pending_note(state)
-      state.pending_note = PendingNote.new(
-        pitches: pitches, length: length, scale: scale, beam_break: state.next_beam_break
-      )
-    end
-
     # The lexer only emits :beam_break after a music token, so a voice
     # state already exists; the flag is consumed by the next deferred note.
     def handle_beam_break(_token)
@@ -188,36 +164,13 @@ module HeadMusic::Notation::ABC
       state.open_tie(line)
     end
 
-    # Closes an open tie: the pending note becomes the new note's tied
-    # prefix, so the pair (and any longer chain) resolves to a single
-    # placement whose rhythmic value carries the author's chosen split.
-    def tie_onto_pending(state, pitches, length, scale)
-      pending = state.pending_note
-      ensure_tie_pitches_match(state, pending, pitches)
-      prefix = pending_rhythmic_value(pending)
-      state.close_tie
-      state.pending_note = PendingNote.new(
-        pitches: pitches, length: length, scale: scale, tied_prefix: prefix,
-        beam_break: pending.beam_break
-      )
-    end
-
-    def ensure_tie_pitches_match(state, pending, pitches)
-      return if pending.pitches.sort == pitches.sort
-
-      raise ParseError.new(
-        "A tie must connect two notes of the same pitch",
-        line_number: state.tie_line, snippet: "-"
-      )
-    end
-
     def handle_rest(token)
       ensure_not_awaiting_note(token)
       state = current_state
       reject_open_tie(state, token.line, "A tie must be followed by a note")
-      flush_pending_note(state)
+      state.flush_pending_note
       state.reset_beam_adjacency
-      place(state, token.length, nil)
+      state.place(token.length, nil)
     end
 
     # A tie left open by a non-note terminator can never close, so each
@@ -252,7 +205,7 @@ module HeadMusic::Notation::ABC
       state = current_state
       style = token.style
       reject_open_tie(state, token.line, "Ties across barlines are not yet supported")
-      flush_pending_note(state)
+      state.flush_pending_note
       state.reset_beam_adjacency
       tag_completed_bar(state)
       apply_repeat_flags(state, style)
@@ -268,7 +221,7 @@ module HeadMusic::Notation::ABC
 
       state = current_state
       reject_open_tie(state, line, "A tie must be followed by a note")
-      flush_pending_note(state)
+      state.flush_pending_note
       state.reset_beam_adjacency
       state.active_passes = passes
       state.volta_start_bar = state.entered_bar_number
@@ -279,7 +232,7 @@ module HeadMusic::Notation::ABC
       if @current_state
         ensure_not_awaiting_note(token, state: @current_state)
         reject_open_tie(@current_state, token.line, "A tie must be followed by a note")
-        flush_pending_note(@current_state)
+        @current_state.flush_pending_note
         @current_state.reset_beam_adjacency
       end
       @current_state = voice_state(token.voice_id)
@@ -289,7 +242,7 @@ module HeadMusic::Notation::ABC
       @voice_states.each_value do |state|
         ensure_not_awaiting_note(nil, state: state)
         reject_open_tie(state, nil, "A tie must be followed by a note")
-        flush_pending_note(state)
+        state.flush_pending_note
         tag_completed_bar(state)
       end
     end
@@ -301,39 +254,6 @@ module HeadMusic::Notation::ABC
         "Broken rhythm must be followed by a note",
         line_number: token&.line || state.broken_line
       )
-    end
-
-    def flush_pending_note(state)
-      pending = state.pending_note
-      return unless pending
-
-      state.pending_note = nil
-      voice = state.voice
-      placement = voice.place(voice.next_position, pending_rhythmic_value(pending), pending.pitches)
-      placement.beam_break_before = pending.beam_break
-    end
-
-    # A pending note's own value, with any tied prefix appended ahead of
-    # it so the whole tie chain renders as one sounding note.
-    def pending_rhythmic_value(pending)
-      own = duration_resolver.rhythmic_value(pending.length, scale: pending.scale)
-      prefix = pending.tied_prefix
-      prefix ? append_tied(prefix, own) : own
-    end
-
-    # Attaches `tail` at the deep end of `head`'s tied chain, rebuilding
-    # each link (RhythmicValue exposes no setter) so a chain like
-    # "half tied to eighth" gains a further "tied to quarter".
-    def append_tied(head, tail)
-      tied = head.tied_value
-      inner = tied ? append_tied(tied, tail) : tail
-      HeadMusic::Rudiment::RhythmicValue.new(head.unit, dots: head.dots, tied_value: inner)
-    end
-
-    def place(state, length, pitches, scale: ONE)
-      rhythmic_value = duration_resolver.rhythmic_value(length, scale: scale)
-      voice = state.voice
-      voice.place(voice.next_position, rhythmic_value, pitches)
     end
 
     def apply_repeat_flags(state, style)

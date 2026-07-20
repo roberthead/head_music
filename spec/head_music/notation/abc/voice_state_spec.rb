@@ -45,4 +45,36 @@ describe HeadMusic::Notation::ABC::VoiceState do
       expect(state.tie_line).to be_nil
     end
   end
+
+  describe "note assembly" do
+    subject(:state) { described_class.new(voice, nil, duration_resolver) }
+
+    let(:voice) { HeadMusic::Content::Composition.new.add_voice(role: nil) }
+    let(:duration_resolver) { HeadMusic::Notation::ABC::DurationResolver.new("1/4") }
+    let(:pitch) { HeadMusic::Rudiment::Pitch.get("C4") }
+
+    it "places directly, bypassing the buffer" do
+      state.place("1", [pitch])
+      expect(voice.notes.map { |note| note.pitch.to_s }).to eq ["C4"]
+    end
+
+    it "buffers a deferred note until it is flushed" do
+      state.defer_placement([pitch], "1")
+      expect(voice.notes).to be_empty
+      state.flush_pending_note
+      expect(voice.notes.map { |note| note.pitch.to_s }).to eq ["C4"]
+    end
+
+    it "carries the beam break onto the flushed placement" do
+      state.defer_placement([pitch], "1")
+      state.mark_beam_break
+      state.defer_placement([pitch], "1")
+      state.flush_pending_note
+      expect(voice.placements.last.beam_break_before).to be true
+    end
+
+    it "flushing with nothing pending is a no-op" do
+      expect { state.flush_pending_note }.not_to change(voice, :placements)
+    end
+  end
 end
