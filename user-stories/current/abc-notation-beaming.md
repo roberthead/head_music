@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-19T18:37:53-07:00
   planned_at:   2026-07-19T18:09:39-07:00
   finished_at:
-  updated_at:   2026-07-19T19:42:26-07:00
+  updated_at:   2026-07-19T19:54:22-07:00
 -->
 
 # Story: ABC Notation Beaming
@@ -65,6 +65,49 @@ At render: an explicit placement flag is honored (override); `nil` falls back to
 ### Reference
 
 Follow the tie feature as the architectural template: `user-stories/done/abc-tie-input.md`. Note the key difference — ties collapsed to the input boundary because the render path already existed; beaming has **no existing data path at all** (new model state + MusicXML emission + ABC space-suppression), so it is a larger change.
+
+## Review
+
+_Reviewed 2026-07-19 at commit `cd35e95` (feature), by product-manager (acceptance criteria) and code-reviewer (code quality). Two follow-up fixes were applied after the review and are described below._
+
+### Acceptance criteria
+
+All 12 criteria **✅ met**, each backed by code and a passing test (full suite green, 5938 examples).
+
+**Default meter beaming (MusicXML)**
+
+- ✅ Simple meter groups sub-quarter notes by beat — `meter.rb` `beam_group_unit` + `writer_spec` "eight default-beamed eighths in 4/4".
+- ✅ Compound meter groups by the dotted-quarter pulse (the renderer-fails case) — `writer_spec` "six default-beamed eighths in 6/8" → two 3-groups.
+- ✅ begin/continue/end; lone note emits no beam — `beam_grouper_spec` size-1 group → `[]`.
+- ✅ `number` = beam level; mixed values nest — `writer_spec` dotted-eighth + sixteenth (level-1 end + level-2 backward hook).
+- ✅ Quarter-or-longer notes and rests terminate a group — `writer_spec` quarter/rest break cases.
+- ✅ Resolves at the Component level; beams across a tied chain — `writer_spec` "tied chain of two eighths inside one beat group".
+- ✅ Never crosses a barline or beat/pulse boundary — per-bar annotation + modulo check; pickup-bar test.
+
+**Authored ABC capture (override)**
+
+- ✅ Lexer preserves inter-note spacing as `:beam_break` — `body_lexer_spec`.
+- ✅ Adjacent → one group, space → break — `parser_spec` flag-sequence tests.
+- ✅ Authored grouping overrides the default — `writer_spec` "authored ABC beam grouping in 4/4".
+- ✅ No signal → meter default; explicit honored — `beam_grouper_spec` tri-state tests.
+
+**ABC export round-trip**
+
+- ✅ Space suppressed within a group, kept at boundaries; survives parse→write→parse — `abc/writer_spec` idempotence + `composition_serialization_spec` JSON round-trip.
+
+### Code review findings
+
+- **Medium — asymmetric simple meters crashed `beam_group_unit`** (`meter.rb`): 5/16, 7/16, etc. produced a non-power-of-two unit → `nil` → `DelegationError` instead of a graceful result, violating the "out of scope but must not crash" constraint. **Fixed:** the duple whole-bar branch now falls back to the count unit when `for_denominator_value` returns `nil`; added `meter_spec` rows for 5/16 and 7/8.
+- **Nit — local `groups` shadowed the method `#groups`** (`beam_grouper.rb`). **Fixed:** renamed the accumulator to `result`.
+- Positives noted: `BeamGrouper` is genuinely pure; integer-only onset arithmetic (no Float drift); the component-vs-placement granularity risk is handled correctly (flag only on component 0, onset accumulates per component); `false`-join correctly cannot bridge a rest/quarter; high-quality XML-output assertions.
+
+### Manual verification (not blockers)
+
+- The MusicXML `<beam>` output has **not** been opened in a real notation reader (MuseScore/Finale/Sibelius). The tests assert correct XML structure; a one-time visual eyeball — especially the 6/8 case and hook direction — is worth doing.
+
+### Verdict
+
+Shippable. Both review findings have been fixed; nothing blocks `finish`. Recommend committing the two fixes before finishing.
 
 ## Implementation Plan
 
