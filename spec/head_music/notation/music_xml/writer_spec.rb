@@ -274,6 +274,40 @@ describe HeadMusic::Notation::MusicXML::Writer do
         end
       end
 
+      context "with a hyphenated word straddling a melisma gap" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Gapped")
+          voice = composition.add_voice
+          voice.place("1:1", :quarter, "C4").sing("Ky", hyphen_after: true)
+          voice.place("1:2", :quarter, "D4") # held: no syllable
+          voice.place("1:3", :quarter, "E4").sing("ri", hyphen_after: true)
+          voice.place("1:4", :quarter, "F4").sing("e")
+          composition
+        end
+
+        it "derives syllabic from the previous sung note, skipping the gap" do
+          expect(xpath_texts(document, "//measure[@number='1']/note/lyric/syllabic")).to eq %w[begin middle end]
+        end
+      end
+
+      context "with verses whose hyphenation differs" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Independent")
+          voice = composition.add_voice
+          voice.place("1:1", :quarter, "C4").sing("A", hyphen_after: true).sing("go", verse: 2)
+          voice.place("1:2", :quarter, "D4").sing("men").sing("now", verse: 2)
+          composition
+        end
+
+        it "derives each verse's syllabic independently" do
+          cells = [[1, 1], [1, 2], [2, 1], [2, 2]]
+          syllabics = cells.map do |note, verse|
+            xpath_text(document, "//measure[@number='1']/note[#{note}]/lyric[@number='#{verse}']/syllabic")
+          end
+          expect(syllabics).to eq %w[begin single end single]
+        end
+      end
+
       context "with multiple verses on one note" do
         let(:composition) do
           composition = HeadMusic::Content::Composition.new(name: "Verses")

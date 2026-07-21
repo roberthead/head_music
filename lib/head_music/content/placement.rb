@@ -34,9 +34,12 @@ class HeadMusic::Content::Placement
   end
 
   # Assigns the syllable for a verse (default verse 1). Returns self so calls
-  # chain across verses.
+  # chain across verses. Keys by the Syllable's coerced verse (not the raw
+  # argument) so syllable(2) finds what sing(verse: "2") stored and mixed-type
+  # keys never make syllables.keys.sort raise.
   def sing(text, verse: 1, hyphen_after: false)
-    syllables[verse] = HeadMusic::Content::Syllable.new(text, verse: verse, hyphen_after: hyphen_after)
+    syllable = HeadMusic::Content::Syllable.new(text, verse: verse, hyphen_after: hyphen_after)
+    syllables[syllable.verse] = syllable
     self
   end
 

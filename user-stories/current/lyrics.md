@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-21T10:36:39-07:00
   planned_at:   2026-07-21T10:39:08-07:00
   finished_at:
-  updated_at:   2026-07-21T10:44:54-07:00
+  updated_at:   2026-07-21T15:47:55-07:00
 -->
 
 # Story: Lyrics
@@ -110,3 +110,34 @@ Run `bundle exec rubocop -a`, then `bundle exec rake` (tests + coverage). Confir
 Walk each criterion against the code and tests; note any that need manual confirmation.
 
 Out of scope (deferred, per Notes): ABC `w:` parsing and the MusicXML `<extend/>` melisma line.
+
+## Review
+
+Reviewed 2026-07-21 against commit `8a91b69` (plus a follow-up fix applied during review, see below). Full suite: 6097 examples, 0 failures; coverage 99.69% line / 97.74% branch. Reviewed by a product-manager agent (acceptance criteria) and a code-reviewer agent (quality), on a clean story branch.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+|---|---|---|---|
+| 1 | ≤1 syllable per verse, keyed by verse; rests/un-texted carry none | ✅ met | `placement.rb` `syllables` verse-keyed hash structurally enforces it; default empty (`placement_spec.rb` "carries no syllables by default") |
+| 2 | Multiple verses | ✅ met | `sing(..., verse:)`; `placement_spec.rb` multi-verse + `writer_spec.rb` one `<lyric>` per verse |
+| 3 | Stores only text/verse/hyphen_after; `syllabic` not stored | ✅ met | `syllable.rb` exposes exactly those three; no `syllabic` field anywhere |
+| 4 | Melisma by absence, no flag | ✅ met | no melisma field; `writer_spec.rb` two-note melisma emits one `<lyric>` |
+| 5 | Round-trips through `to_h` + deserializer | ✅ met | `to_h` verse-ordered; `SchemaValues#placement_syllables` validates; `composition_serialization_spec.rb` end-to-end round trip |
+| 6 | `<lyric number>` last child, lead/attack only, derived `syllabic` | ✅ met | `lyric_lines` last in `note_element_lines`, guards `chord \|\| rest? \|\| tie_stop`; derivation table covered by chord/tie/begin-middle-end specs |
+| 7 | Text XML-escaped | ✅ met | `escape(...)` in `lyric_lines`; `writer_spec.rb` `"R&D <x>"` parses back intact |
+| 8 | Coverage ≥90% + MusicXML spec ladder | ✅ met | 99.69% line; ladder (single/hyphenated/melisma/multi-verse) all present |
+
+All eight met. Nothing blocks `finish`.
+
+### Code review findings
+
+1. **(Important — found and fixed during review) `sing` keyed `syllables` by the raw `verse` argument while `Syllable` coerces it via `Integer()`.** `sing("la", verse: "2")` stored under key `"2"` while `syllable(2)` looked up the integer and returned `nil`; mixing key types made `syllables.keys.sort` raise in both `to_h` and the writer. No internal caller triggered it (all pass integers), but it was a latent bug in the public API. **Fixed:** `sing` now keys by `syllable.verse` (the coerced value). Added regression tests in `placement_spec.rb` (string verse found by its integer; mixed-type verses sort without raising).
+
+2. **(Minor — addressed) `previous_syllable` relied on an unstated invariant.** `Array#index` compares with `==`, which on `Placement` is position-only; it locates the right placement only because a voice holds one placement per position. Added a "why" comment documenting the dependency.
+
+3. **(Minor — addressed) behavioral-assertion gaps.** Added `writer_spec.rb` tests for a hyphenated word straddling a melisma gap (begin/middle/end skipping an un-sung note) and for per-verse independent `syllabic` derivation.
+
+4. **(Noted, not actioned) `hyphen_after` isn't validated on import** — any truthy JSON value becomes `true` via `Syllable`'s `!!`. Theoretical only (real JSON always sends a boolean); left as-is.
+
+5. **(Noted, not actioned) layer asymmetry** — `Placement#sing` accepts any positive/`Integer()`-coercible verse, while import rejects `verse <= 0`. The public contract expects `verse >= 1`; no criterion requires validation at `sing`. Left as a known minor asymmetry.

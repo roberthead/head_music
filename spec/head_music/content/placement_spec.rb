@@ -237,6 +237,17 @@ describe HeadMusic::Content::Placement do
       expect(placement.syllables.length).to eq 1
     end
 
+    it "keys by the coerced verse so a string verse is found by its integer" do
+      placement.sing("la", verse: "2")
+      expect(placement.syllable(2).text).to eq "la"
+      expect(placement.syllables.keys).to eq [2]
+    end
+
+    it "sorts mixed integer- and string-supplied verses without raising" do
+      placement.sing("one").sing("two", verse: "2")
+      expect(placement.to_h["syllables"].map { |syllable| syllable["text"] }).to eq %w[one two]
+    end
+
     context "when two placements at the same position are merged" do
       it "keeps the existing placement's syllables" do
         placement.sing("keep")
