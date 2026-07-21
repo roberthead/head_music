@@ -1,3 +1,3 @@
 module HeadMusic
-  VERSION = "17.4.0"
+  VERSION = "17.5.0"
 end
