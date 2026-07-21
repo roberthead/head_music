@@ -5,7 +5,7 @@ module HeadMusic::Notation::MusicXML
   # the Event list and turns the returned Beams into XML.
   class BeamGrouper
     # A single <beam number="N">type</beam> annotation.
-    Beam = Struct.new(:number, :type, keyword_init: true)
+    Beam = Struct.new(:number, :type)
 
     # One notehead's beaming inputs.
     # - levels: beams this notehead carries alone (eighth=1, sixteenth=2, ...);
@@ -13,7 +13,7 @@ module HeadMusic::Notation::MusicXML
     # - onset: integer offset from the start of the bar, in MusicXML divisions.
     # - beam_break_before: tri-state override vs. the previous event
     #   (nil = meter default, true = force break, false = force join).
-    Event = Struct.new(:levels, :onset, :beam_break_before, keyword_init: true)
+    Event = Struct.new(:levels, :onset, :beam_break_before)
 
     def self.annotate(events, group_unit_divisions)
       new(events, group_unit_divisions).annotate

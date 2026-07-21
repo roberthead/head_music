@@ -31,6 +31,12 @@ RSpec/ContextWording:
 RSpec/MultipleExpectations:
   Enabled: false
 
+# Several data-driven specs build examples from collections resolved at
+# definition time (e.g. `legacy.each`, `melodic_guides.each`), which requires
+# those values to live as locals in the example-group scope.
+RSpec/LeakyLocalVariable:
+  Enabled: false
+
 RSpec/NestedGroups:
   Max: 5
 

@@ -4,7 +4,7 @@ module HeadMusic::Notation::MusicXML
   # <type>, dot count, and tie flags MusicXML needs for each link of a
   # tied chain. A value with no tied chain yields a single component.
   class DurationWriter
-    Component = Struct.new(:duration, :type, :dots, :tie_start, :tie_stop, keyword_init: true)
+    Component = Struct.new(:duration, :type, :dots, :tie_start, :tie_stop)
 
     # MusicXML's <type> element uses these fixed names rather than the
     # gem's American duration names.

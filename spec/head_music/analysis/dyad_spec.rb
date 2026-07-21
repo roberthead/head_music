@@ -92,7 +92,6 @@ describe HeadMusic::Analysis::Dyad do
       end
 
       it "includes a major triad (C E G)" do
-        puts(dyad.possible_triads.map { |ps| ps.pitches.map(&:to_s).join("-") }.inspect)
         major_triad = dyad.possible_triads.find { |ps| ps.major_triad? }
         expect(major_triad).not_to be_nil
         expect(major_triad.pitches.map(&:pitch_class).map(&:to_i).sort).to eq([0, 4, 7])

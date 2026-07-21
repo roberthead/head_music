@@ -82,11 +82,11 @@ class HeadMusic::Analysis::PitchCollection
   end
 
   def inspect
-    pitches.map(&:to_s).join(" ")
+    pitches.join(" ")
   end
 
   def to_s
-    pitches.map(&:to_s).join(" ")
+    pitches.join(" ")
   end
 
   def ==(other)

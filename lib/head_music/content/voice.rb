@@ -157,6 +157,6 @@ class HeadMusic::Content::Voice
   end
 
   def pitches_string
-    pitches.first(10).map(&:to_s).join(" ")
+    pitches.first(10).join(" ")
   end
 end

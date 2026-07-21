@@ -54,7 +54,7 @@ class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotati
   end
 
   def occurrences_by_rhythmic_value
-    rhythmic_values.each_with_object(Hash.new(0)) { |value, hash| hash[value] += 1 }
+    rhythmic_values.tally
   end
 
   def rhythmic_values
