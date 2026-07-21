@@ -229,8 +229,51 @@ module HeadMusic::Notation::MusicXML
         *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
         *beam_lines(beams),
         *notation_lines(placement, component),
+        *lyric_lines(placement, component, chord: chord),
         "#{INDENT * 3}</note>"
       ]
+    end
+
+    # <lyric> is the last child of <note>. Sung text rides only the lead note
+    # of a chord and only the attack of a tied chain (a tie_stop component is a
+    # continuation, sung once at the start). Held notes of a melisma carry no
+    # syllable and so emit nothing, matching MusicXML's continuation-by-absence.
+    def lyric_lines(placement, component, chord:)
+      return [] if chord || placement.rest? || component.tie_stop
+
+      placement.syllables.keys.sort.flat_map do |verse|
+        syllable = placement.syllables[verse]
+        [
+          %(#{INDENT * 4}<lyric number="#{verse}">),
+          "#{INDENT * 5}<syllabic>#{syllabic(placement, syllable)}</syllabic>",
+          "#{INDENT * 5}<text>#{escape(syllable.text)}</text>",
+          "#{INDENT * 4}</lyric>"
+        ]
+      end
+    end
+
+    # Derives MusicXML's single/begin/middle/end from our stored hyphen_after
+    # booleans: this syllable's, and the previous sung note's for the same verse.
+    def syllabic(placement, syllable)
+      from_previous = previous_syllable(placement, syllable.verse)&.hyphen_after?
+      if from_previous
+        syllable.hyphen_after? ? "middle" : "end"
+      else
+        syllable.hyphen_after? ? "begin" : "single"
+      end
+    end
+
+    # The syllable on the nearest earlier placement in the same voice carrying
+    # text for this verse. Placements are position-sorted, and melisma gaps are
+    # skipped because only sung placements are collected.
+    def previous_syllable(placement, verse)
+      @sung_placements ||= {}
+      sung = @sung_placements[[placement.voice, verse]] ||=
+        placement.voice.placements.select { |candidate| candidate.syllable(verse) }
+      index = sung.index(placement)
+      return nil if index.nil? || index.zero?
+
+      sung[index - 1].syllable(verse)
     end
 
     def beam_lines(beams)

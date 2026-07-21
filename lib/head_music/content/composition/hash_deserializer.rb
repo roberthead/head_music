@@ -78,6 +78,9 @@ class HeadMusic::Content::Composition
           sounds = values.placement_sounds(placement_hash, path)
           placement = voice.place(position, rhythmic_value, sounds)
           placement.beam_break_before = placement_hash["beam_break_before"] if placement_hash.key?("beam_break_before")
+          values.placement_syllables(placement_hash, path).each do |syllable|
+            placement.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
+          end
         end
       end
     end

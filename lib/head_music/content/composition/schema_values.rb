@@ -71,6 +71,25 @@ class HeadMusic::Content::Composition
       end
     end
 
+    # "syllables" is an optional array of sung-text data, one entry per verse.
+    # Each entry is a {"text" => ..., "verse" => ..., "hyphen_after" => ...}
+    # hash; verse defaults to 1. Text must be a non-empty string, verse a
+    # positive integer, and no two entries may share a verse (a placement holds
+    # at most one syllable per verse).
+    def placement_syllables(placement_hash, path)
+      values = placement_hash["syllables"]
+      return [] if values.nil?
+
+      unless values.is_a?(Array)
+        raise ArgumentError, "#{path}: syllables must be an Array, got #{values.inspect}"
+      end
+
+      seen_verses = []
+      values.each_with_index.map do |value, index|
+        syllable(value, seen_verses, "#{path}.syllables[#{index}]")
+      end
+    end
+
     def bar_number(bar_hash, index)
       number = bar_hash["number"]
       unless number.is_a?(Integer) && number >= 0
@@ -99,6 +118,27 @@ class HeadMusic::Content::Composition
       raise ArgumentError, "#{path}: unknown pitch #{value.inspect}" unless pitch
 
       pitch
+    end
+
+    def syllable(value, seen_verses, path)
+      unless value.is_a?(Hash)
+        raise ArgumentError, "#{path}: syllable must be a Hash, got #{value.inspect}"
+      end
+
+      text = value["text"]
+      unless text.is_a?(String) && !text.empty?
+        raise ArgumentError, "#{path}: syllable text must be a non-empty String, got #{text.inspect}"
+      end
+
+      verse = value.fetch("verse", 1)
+      unless verse.is_a?(Integer) && verse.positive?
+        raise ArgumentError, "#{path}: verse must be a positive Integer, got #{verse.inspect}"
+      end
+
+      raise ArgumentError, "#{path}: duplicate verse #{verse}" if seen_verses.include?(verse)
+      seen_verses << verse
+
+      HeadMusic::Content::Syllable.from_h(value)
     end
 
     def sound(value, path)

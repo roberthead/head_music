@@ -2,9 +2,9 @@
 metadata:
   created_at:   2026-07-21T10:29:08-07:00
   activated_at: 2026-07-21T10:36:39-07:00
-  planned_at:
+  planned_at:   2026-07-21T10:39:08-07:00
   finished_at:
-  updated_at:   2026-07-21T10:36:39-07:00
+  updated_at:   2026-07-21T10:44:54-07:00
 -->
 
 # Story: Lyrics
@@ -64,4 +64,49 @@ Prefer precomputing a per-verse ordered list of sung placements once (O(n)) over
 
 ## Implementation Plan
 
-[to be filled in by /stories plan]
+Derived from the design in Notes (verified against current code 2026-07-21). Six steps, built in dependency order with tests at each step so coverage never dips below 90%.
+
+### Step 1 — `Syllable` value object
+
+New file `lib/head_music/content/syllable.rb`. Immutable (`freeze` in initialize). Attributes `text`, `verse`, `hyphen_after`. Methods: `hyphen_after?`, `to_h` (omit `verse` when 1 and `hyphen_after` when false), `self.from_h`, `==` (by `to_h`). Require it from `lib/head_music.rb` alongside the other `content/` requires. Spec: `spec/head_music/content/syllable_spec.rb`.
+
+### Step 2 — `Placement` sung-text API
+
+Edit `lib/head_music/content/placement.rb` (mirror the `beam_break_before` side-metadata pattern):
+
+- `syllables` — lazily-initialized hash keyed by verse number (`@syllables ||= {}`).
+- `sing(text, verse: 1, hyphen_after: false)` — assigns a `Syllable`, returns `self`.
+- `syllable(verse = 1)` — reader; `sung?` — `syllables.any?`.
+- `to_h` — after the `beam_break_before` line, add `hash["syllables"] = syllables.keys.sort.map { |v| syllables[v].to_h }` unless empty.
+- `merge` — keep the receiver's `@syllables`, ignore the incoming placement's (chords sing one syllable per verse); add a one-line comment.
+
+Spec additions in `spec/head_music/content/placement_spec.rb`: assignment, multi-verse, `to_h` shape + ordering, rests carry none, merge keeps existing syllables.
+
+### Step 3 — Hash round-trip
+
+Edit `lib/head_music/content/composition/schema_values.rb`: add `placement_syllables(placement_hash, path)` — returns `[]` when key absent; else require an Array; validate each entry (Hash, non-empty `text` String, `verse` a positive Integer defaulting to 1, no duplicate verse) and build via `Syllable.from_h`, raising `ArgumentError` with path context like the sibling validators.
+
+Edit `lib/head_music/content/composition/hash_deserializer.rb`: beside the `beam_break_before` restore in `build_voices`, add — when `placement_hash.key?("syllables")` — a loop calling `placement.sing(...)` for each validated syllable.
+
+Specs: `schema_values_spec.rb` (valid + each rejection path) and a composition round-trip (`to_h` → `HashDeserializer#composition` preserves syllables).
+
+### Step 4 — MusicXML `<lyric>` output
+
+Edit `lib/head_music/notation/music_xml/writer.rb`:
+
+- In `note_element_lines`, insert `*lyric_lines(placement, component, chord: chord)` after `notation_lines`, before `</note>`.
+- `lyric_lines` — return `[]` when `chord`, `placement.rest?`, or `component.tie_stop`. Else, for each verse in `placement.syllables.keys.sort`, emit `<lyric number="N">` / `<syllabic>` / `<text>` (escaped) / `</lyric>`.
+- `syllabic(placement, syllable)` — derive from `previous_syllable(placement, syllable.verse)&.hyphen_after?` and `syllable.hyphen_after?` per the truth table in Notes.
+- `previous_syllable(placement, verse)` — memoized per `[voice, verse]`: `placement.voice.placements.select { |p| p.syllable(verse) }` (already position-sorted), return the entry before `placement` (nil if first/absent). Melisma gaps are skipped naturally since only sung placements are collected.
+
+Spec ladder in `spec/head_music/notation/music_xml/writer_spec.rb` (or a focused lyric spec): single-verse single word (`single`), hyphenated word (`begin`/`middle`/`end`), melisma (held note emits no `<lyric>`), multi-verse (two `<lyric number>` on one note), chord lead-note-only, tie attack-only, XML escaping.
+
+### Step 5 — Validation & coverage
+
+Run `bundle exec rubocop -a`, then `bundle exec rake` (tests + coverage). Confirm ≥90% and that every new file/branch is exercised.
+
+### Step 6 — Verify acceptance criteria
+
+Walk each criterion against the code and tests; note any that need manual confirmation.
+
+Out of scope (deferred, per Notes): ABC `w:` parsing and the MusicXML `<extend/>` melisma line.

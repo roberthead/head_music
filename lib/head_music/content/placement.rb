@@ -25,6 +25,29 @@ class HeadMusic::Content::Placement
     sounds.select(&:pitched?)
   end
 
+  # Authored sung text: at most one Syllable per verse, keyed by verse number.
+  # Empty for un-texted placements and rests. Set after construction, like
+  # beam_break_before. The MusicXML writer derives <syllabic> from these plus
+  # neighboring placements; melisma is the absence of a syllable here.
+  def syllables
+    @syllables ||= {}
+  end
+
+  # Assigns the syllable for a verse (default verse 1). Returns self so calls
+  # chain across verses.
+  def sing(text, verse: 1, hyphen_after: false)
+    syllables[verse] = HeadMusic::Content::Syllable.new(text, verse: verse, hyphen_after: hyphen_after)
+    self
+  end
+
+  def syllable(verse = 1)
+    syllables[verse]
+  end
+
+  def sung?
+    syllables.any?
+  end
+
   # The top pitch of a chord (or the only pitch of a note), which melodic
   # analysis treats as the melody note. Returns nil for rests and
   # unpitched-only placements; pitched? is the guard. Enharmonic ties
@@ -64,7 +87,9 @@ class HeadMusic::Content::Placement
 
   # Voice#place merges a same-position placement into the existing one, so a
   # position holds at most one placement. The sound union keeps the chord free
-  # of duplicates, making repeated placement of a sound idempotent.
+  # of duplicates, making repeated placement of a sound idempotent. Syllables
+  # are left untouched: a chord sings one syllable per verse, and the receiver
+  # (the placement already at this position) keeps its own.
   def merge(other)
     unless rhythmic_value == other.rhythmic_value
       raise ArgumentError,
@@ -98,6 +123,7 @@ class HeadMusic::Content::Placement
       "sounds" => sounds.map { |sound| sound_datum(sound) }
     }
     hash["beam_break_before"] = beam_break_before unless beam_break_before.nil?
+    hash["syllables"] = syllables.keys.sort.map { |verse| syllables[verse].to_h } unless syllables.empty?
     hash
   end
 

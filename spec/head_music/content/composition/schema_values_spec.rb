@@ -86,6 +86,44 @@ describe HeadMusic::Content::Composition::SchemaValues do
     end
   end
 
+  describe "#placement_syllables" do
+    it "returns an empty array when the key is absent" do
+      expect(values.placement_syllables({}, "path")).to eq []
+    end
+
+    it "builds syllables from valid data" do
+      entries = [{"text" => "glo", "hyphen_after" => true}, {"text" => "peace", "verse" => 2}]
+      built = values.placement_syllables({"syllables" => entries}, "path")
+      expect(built.map(&:to_h)).to eq entries
+    end
+
+    it "raises when syllables is not an Array" do
+      expect { values.placement_syllables({"syllables" => "la"}, "voices[0].placements[0]") }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: syllables must be an Array, got "la"/)
+    end
+
+    it "raises with element path context when an entry is not a Hash" do
+      expect { values.placement_syllables({"syllables" => ["la"]}, "voices[0].placements[0]") }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.syllables\[0\]: syllable must be a Hash/)
+    end
+
+    it "raises on empty text" do
+      expect { values.placement_syllables({"syllables" => [{"text" => ""}]}, "voices[0].placements[0]") }
+        .to raise_error(ArgumentError, /syllables\[0\]: syllable text must be a non-empty String/)
+    end
+
+    it "raises on a non-positive verse" do
+      expect { values.placement_syllables({"syllables" => [{"text" => "la", "verse" => 0}]}, "voices[0].placements[0]") }
+        .to raise_error(ArgumentError, /syllables\[0\]: verse must be a positive Integer, got 0/)
+    end
+
+    it "raises on a duplicate verse" do
+      expect {
+        values.placement_syllables({"syllables" => [{"text" => "la"}, {"text" => "dee"}]}, "voices[0].placements[0]")
+      }.to raise_error(ArgumentError, /syllables\[1\]: duplicate verse 1/)
+    end
+  end
+
   describe "#bar_number" do
     it "returns a valid non-negative bar number" do
       expect(values.bar_number({"number" => 3}, 0)).to eq 3

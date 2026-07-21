@@ -193,6 +193,59 @@ describe HeadMusic::Content::Placement do
         expect(placement.to_h["beam_break_before"]).to be false
       end
     end
+
+    context "with syllables" do
+      it "omits the key when there are none" do
+        expect(placement.to_h).not_to have_key("syllables")
+      end
+
+      it "serializes syllables in verse order" do
+        placement.sing("peace", verse: 2)
+        placement.sing("glo", verse: 1, hyphen_after: true)
+        expect(placement.to_h["syllables"]).to eq(
+          [{"text" => "glo", "hyphen_after" => true}, {"text" => "peace", "verse" => 2}]
+        )
+      end
+    end
+  end
+
+  describe "sung text" do
+    it "carries no syllables by default" do
+      expect(placement).not_to be_sung
+      expect(placement.syllables).to eq({})
+    end
+
+    it "assigns a syllable for the default verse" do
+      placement.sing("la")
+      expect(placement).to be_sung
+      expect(placement.syllable).to eq HeadMusic::Content::Syllable.new("la")
+    end
+
+    it "returns self from #sing so calls chain" do
+      expect(placement.sing("la")).to be placement
+    end
+
+    it "holds at most one syllable per verse across multiple verses" do
+      placement.sing("glo", hyphen_after: true).sing("peace", verse: 2)
+      expect(placement.syllable(1).text).to eq "glo"
+      expect(placement.syllable(2).text).to eq "peace"
+    end
+
+    it "replaces the syllable when the same verse is sung again" do
+      placement.sing("la").sing("dee")
+      expect(placement.syllable.text).to eq "dee"
+      expect(placement.syllables.length).to eq 1
+    end
+
+    context "when two placements at the same position are merged" do
+      it "keeps the existing placement's syllables" do
+        placement.sing("keep")
+        other = described_class.new(voice, position, rhythmic_value, HeadMusic::Rudiment::Pitch.get("A4"))
+        other.sing("drop")
+        placement.merge(other)
+        expect(placement.syllable.text).to eq "keep"
+      end
+    end
   end
 
   describe "chords" do

@@ -218,6 +218,25 @@ describe HeadMusic::Content::Composition do
     end
   end
 
+  describe "a voice with multi-verse, hyphenated lyrics" do
+    let(:composition) do
+      described_class.new(name: "Sung").tap do |sung|
+        voice = sung.add_voice(role: "soprano")
+        voice.place("1:1:000", :quarter, "C4").sing("A", hyphen_after: true).sing("peace", verse: 2)
+        voice.place("1:2:000", :quarter, "D4").sing("men").sing("ful", verse: 2)
+        voice.place("1:3:000", :half, "E4") # melisma tail: no syllable
+      end
+    end
+
+    it "round-trips the syllables" do
+      restored = expect_lossless_round_trip(composition, abc: false)
+      first = restored.voices.first.placements.first
+      expect(first.syllable(1)).to eq HeadMusic::Content::Syllable.new("A", hyphen_after: true)
+      expect(first.syllable(2)).to eq HeadMusic::Content::Syllable.new("peace", verse: 2)
+      expect(restored.voices.first.placements.last).not_to be_sung
+    end
+  end
+
   describe "a chord placement (multiple pitches in one placement)" do
     let(:composition) do
       described_class.new(name: "Chord Placement").tap do |chordal|

@@ -222,6 +222,112 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with lyrics" do
+      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+
+      context "with a single-verse single word" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Sung")
+          composition.add_voice.place("1:1", :whole, "C4").sing("la")
+          composition
+        end
+
+        it "renders the syllable text" do
+          expect(xpath_text(document, "//measure[@number='1']/note/lyric/text")).to eq "la"
+        end
+
+        it "marks a whole word as single" do
+          expect(xpath_text(document, "//measure[@number='1']/note/lyric/syllabic")).to eq "single"
+        end
+
+        it "numbers the verse" do
+          expect(xpath_count(document, "//measure[@number='1']/note/lyric[@number='1']")).to eq 1
+        end
+      end
+
+      context "with a hyphenated word across three notes" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Kyrie")
+          voice = composition.add_voice
+          voice.place("1:1", :quarter, "C4").sing("Ky", hyphen_after: true)
+          voice.place("1:2", :quarter, "D4").sing("ri", hyphen_after: true)
+          voice.place("1:3", :half, "E4").sing("e")
+          composition
+        end
+
+        it "derives begin, middle, and end from the hyphen booleans" do
+          expect(xpath_texts(document, "//measure[@number='1']/note/lyric/syllabic")).to eq %w[begin middle end]
+        end
+      end
+
+      context "with a melisma (a syllable held over several notes)" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Amen")
+          voice = composition.add_voice
+          voice.place("1:1", :half, "C4").sing("A")
+          voice.place("1:3", :half, "D4") # held: no syllable
+          composition
+        end
+
+        it "emits a lyric only on the attacked syllable" do
+          expect(xpath_count(document, "//measure[@number='1']/note/lyric")).to eq 1
+        end
+      end
+
+      context "with multiple verses on one note" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Verses")
+          composition.add_voice.place("1:1", :whole, "C4").sing("glo").sing("peace", verse: 2)
+          composition
+        end
+
+        it "renders one lyric per verse, numbered" do
+          numbers = %w[1 2].map { |n| xpath_count(document, "//measure[@number='1']/note/lyric[@number='#{n}']") }
+          expect(numbers).to eq [1, 1]
+        end
+
+        it "renders each verse's text in order" do
+          expect(xpath_texts(document, "//measure[@number='1']/note/lyric/text")).to eq %w[glo peace]
+        end
+      end
+
+      context "with a chord" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Chorale")
+          composition.add_voice.place("1:1", :whole, %w[C4 E4 G4]).sing("chord")
+          composition
+        end
+
+        it "renders the lyric only on the lead note of the chord" do
+          expect(xpath_count(document, "//measure[@number='1']/note/lyric")).to eq 1
+        end
+      end
+
+      context "with a tied note" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Tied")
+          composition.add_voice.place("1:1", "half tied to eighth", "C4").sing("held")
+          composition
+        end
+
+        it "renders the lyric only on the attack of the tied chain" do
+          expect(xpath_count(document, "//measure[@number='1']/note/lyric")).to eq 1
+        end
+      end
+
+      context "with markup characters in the text" do
+        let(:composition) do
+          composition = HeadMusic::Content::Composition.new(name: "Escaped")
+          composition.add_voice.place("1:1", :whole, "C4").sing("R&D <x>")
+          composition
+        end
+
+        it "escapes the text so the document stays well-formed" do
+          expect(xpath_text(document, "//measure[@number='1']/note/lyric/text")).to eq "R&D <x>"
+        end
+      end
+    end
+
     context "with two voices of unequal lengths" do
       let(:composition) do
         composition = HeadMusic::Content::Composition.new(name: "Duet")
