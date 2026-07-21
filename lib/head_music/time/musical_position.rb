@@ -39,6 +39,7 @@ module HeadMusic
     #   pos1 < pos2 # => true
     class MusicalPosition
       include Comparable
+      include RadixCarry
 
       # @return [Integer] the bar (measure) number (1-indexed)
       attr_reader :bar
@@ -170,19 +171,6 @@ module HeadMusic
 
       # Allow other MusicalPosition instances to access this method for comparison
       alias_method :to_i, :to_total_subticks
-
-      private
-
-      # Divide the named component by its radix, store the remainder back,
-      # and return the amount to carry into the next-higher component.
-      #
-      # @return [Integer] the carry (may be negative when borrowing)
-      def carry(component, radix)
-        ivar = :"@#{component}"
-        delta, remainder = instance_variable_get(ivar).divmod(radix)
-        instance_variable_set(ivar, remainder)
-        delta
-      end
     end
   end
 end

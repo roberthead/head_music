@@ -22,6 +22,7 @@ module HeadMusic
   end
 end
 
+require_relative "time/radix_carry"
 require_relative "time/clock_position"
 require_relative "time/musical_position"
 require_relative "time/smpte_timecode"
