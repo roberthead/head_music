@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-21T10:29:08-07:00
   activated_at: 2026-07-21T10:36:39-07:00
   planned_at:   2026-07-21T10:39:08-07:00
-  finished_at:
-  updated_at:   2026-07-21T15:47:55-07:00
+  finished_at:  2026-07-21T16:42:58-07:00
+  updated_at:   2026-07-21T16:42:58-07:00
 -->
 
 # Story: Lyrics
@@ -141,3 +141,22 @@ All eight met. Nothing blocks `finish`.
 4. **(Noted, not actioned) `hyphen_after` isn't validated on import** — any truthy JSON value becomes `true` via `Syllable`'s `!!`. Theoretical only (real JSON always sends a boolean); left as-is.
 
 5. **(Noted, not actioned) layer asymmetry** — `Placement#sing` accepts any positive/`Integer()`-coercible verse, while import rejects `verse <= 0`. The public contract expects `verse >= 1`; no criterion requires validation at `sing`. Left as a known minor asymmetry.
+
+## Learnings
+
+**What went well**
+
+- Front-loading the design debate paid off. Settling "store the linguistic fact, derive the notation" before any code — grounded in the Content/Notation boundary this codebase already maintains — made the implementation plan nearly write itself and kept the model minimal.
+- Mirroring the existing `beam_break_before` side-metadata pattern gave a proven path through placement metadata → `to_h` → validated deserialization, so each layer was low-risk and consistent with existing code.
+- Deriving `syllabic` on write made melisma free: "no syllable on the held note" is the whole implementation, no stored flag needed.
+
+**What was surprising**
+
+- Adversarial review earned its keep. The verse-key coercion bug (`sing(verse: "2")` stored under `"2"`, `syllable(2)` returned `nil`, mixed keys crashed `keys.sort`) was invisible to every happy-path test because all internal callers pass integers. Only skeptical review surfaced it.
+- The tooling had its own bug — the board generator's `\s*` swallowed newlines and zeroed every sort timestamp. The scaffolding around the work needed the same scrutiny as the work.
+- A public API (`sing`) accepted input the import layer rejected — a layer asymmetry that normal use never hits.
+
+**What to do differently**
+
+- When adding per-note metadata, write the round-trip and a coercion/edge test up front — coercion mismatches don't show up in happy-path specs.
+- Decide deliberately whether validation belongs at the write boundary (`sing`) as well as the import boundary, so the layers agree rather than drift.
