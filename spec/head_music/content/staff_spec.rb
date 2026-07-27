@@ -29,8 +29,15 @@ describe HeadMusic::Content::Staff do
         expect(foo_clef.instrument.name_key).to eq :viola
       end
 
-      it "prints a warning" do
-        expect { foo_clef }.to output(/Warning: Clef 'foo' not found/).to_stdout
+      it "recovers from the unrecognized key instead of raising" do
+        expect { foo_clef }.not_to raise_error
+      end
+
+      # The distinguishing behavior of this branch: an unrecognized key resolves to
+      # the instrument's own clef, not to the generic default the no-instrument case
+      # falls back to.
+      it "prefers the instrument's clef over the generic fallback" do
+        expect(foo_clef.clef).not_to eq described_class.new("foo").clef
       end
     end
   end
@@ -42,8 +49,22 @@ describe HeadMusic::Content::Staff do
     its(:line_count) { is_expected.to be 5 }
     its(:instrument) { is_expected.to be_nil }
 
-    it "prints a warning" do
-      expect { foo_clef }.to output(/Warning: Clef 'foo' not found/).to_stdout
+    it "recovers from the unrecognized key instead of raising" do
+      expect { foo_clef }.not_to raise_error
     end
+
+    it "builds a usable staff from the fallback" do
+      expect(foo_clef.clef).to eq described_class.new(:treble_clef).clef
+    end
+  end
+
+  context "when the clef key is nil" do
+    subject(:nil_clef) { described_class.new(nil) }
+
+    it "recovers instead of raising" do
+      expect { nil_clef }.not_to raise_error
+    end
+
+    its(:clef) { is_expected.to eq :treble_clef }
   end
 end
