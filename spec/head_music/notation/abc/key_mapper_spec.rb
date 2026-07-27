@@ -152,11 +152,48 @@ describe HeadMusic::Notation::ABC::KeyMapper do
       C major G major F major Bb major Eb major Ab major Db major Gb major
       D major A major E major B major F# major C# major
       A minor E minor D minor G minor C minor F# minor Bb minor
+      C♮ major F♮ minor B♭ major F♯ major
     ].each_slice(2) do |tonic, scale_type|
       it "renders #{tonic} #{scale_type} without unicode accidentals" do
         key_signature = HeadMusic::Rudiment::KeySignature.get("#{tonic} #{scale_type}")
         expect(described_class.abc_value(key_signature)).not_to match(/[♭♯♮𝄫𝄪]/)
       end
+    end
+
+    # An ABC K: field has no way to express a natural tonic, and the accidental
+    # utility deliberately preserves "♮" rather than dropping it, so this boundary
+    # has to drop it explicitly.
+    it "drops a natural sign from the tonic rather than emitting it" do
+      key_signature = HeadMusic::Rudiment::KeySignature.get("C♮ major")
+      expect(described_class.abc_value(key_signature)).to eq "C"
+    end
+
+    it "renders a natural-spelled tonic the same as its plain spelling" do
+      natural = described_class.abc_value(HeadMusic::Rudiment::KeySignature.get("C♮ major"))
+      expect(natural).to eq described_class.abc_value(HeadMusic::Rudiment::KeySignature.get("C major"))
+    end
+  end
+
+  # KEY_PATTERN interpolates the whole Alteration::PATTERN so that "bb" and "##" bind
+  # correctly, which also makes them matchable as a tonic. The reader has to refuse
+  # what the writer refuses, or "K:Cx" parses to C𝄪 major and reports "no sharps or
+  # flats" — a plausible-looking wrong answer rather than an error.
+  describe "double-altered tonics" do
+    %w[Cx C## Ebb Bbb F𝄪 B𝄫].each do |abc_value|
+      it "refuses to parse #{abc_value} as a key" do
+        expect { described_class.new(abc_value).key_signature }
+          .to raise_error(HeadMusic::Notation::ABC::ParseError, /double-altered tonic/i)
+      end
+    end
+
+    it "refuses on the render side as well" do
+      key_signature = HeadMusic::Rudiment::KeySignature.get("Fx major")
+      expect { described_class.abc_value(key_signature) }
+        .to raise_error(HeadMusic::Notation::ABC::RenderError, /double-altered tonic/i)
+    end
+
+    it "still accepts a singly-altered tonic" do
+      expect(described_class.new("Bb").key_signature.name).to eq "B♭ major"
     end
   end
 end

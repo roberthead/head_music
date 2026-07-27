@@ -107,6 +107,20 @@ describe HeadMusic::Rudiment::Alteration do
     specify { expect("Bbb"[described_class::PATTERN]).to eq "bb" }
   end
 
+  # "##" is accepted as input everywhere "bb" already was. It is never emitted —
+  # #ascii reads the first symbol record, which is "x".
+  describe "double sharp spelled with two sharp signs" do
+    specify { expect(described_class.get("##").identifier).to eq :double_sharp }
+    specify { expect(described_class.get("##")).to eq described_class.get("x") }
+    specify { expect(described_class.symbol?("##")).to be true }
+    specify { expect(described_class::SYMBOLS).to include "##" }
+    specify { expect(HeadMusic::Rudiment::Spelling.get("C##").to_s).to eq "C𝄪" }
+
+    it "is symmetrical with the double flat, which was always accepted" do
+      expect(described_class.get("##").semitones).to eq(-described_class.get("bb").semitones)
+    end
+  end
+
   # ABC's accidental table is keyed on these exact strings, and Alteration#ascii is
   # what feeds it. Changing which symbol #ascii returns silently changes ABC output.
   describe "#ascii" do

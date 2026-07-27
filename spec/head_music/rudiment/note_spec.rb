@@ -189,4 +189,19 @@ describe HeadMusic::Rudiment::Note do
       expect(note.sounded?).to be true
     end
   end
+
+  # PITCH_PATTERN interpolates Alteration::PATTERN and wraps it in (?:...) before
+  # making it optional. Binding the "?" to the pattern's final alternative instead
+  # truncated a double sharp to a single sharp and dropped the register entirely.
+  describe "parsing doubly-altered pitches" do
+    specify { expect("C##4".match(described_class::PITCH_PATTERN).captures).to eq ["C", "##", "4"] }
+    specify { expect("C4".match(described_class::PITCH_PATTERN).captures).to eq ["C", "", "4"] }
+    specify { expect(described_class.get("C##4 quarter").to_s).to eq "C𝄪4 quarter" }
+    specify { expect(described_class.get("Cx4 quarter").to_s).to eq "C𝄪4 quarter" }
+    specify { expect(described_class.get("Bbb3 half").to_s).to eq "B𝄫3 half" }
+
+    it "keeps the register of a doubly-altered pitch" do
+      expect(described_class.get("C##4 quarter").pitch.register).to eq 4
+    end
+  end
 end

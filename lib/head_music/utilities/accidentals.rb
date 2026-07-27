@@ -9,6 +9,17 @@ module HeadMusic::Utilities; end
 # "Bebop", "1.0b2", and "0x1B2F" are untouched while "Bb", "Ab7", "Bbm", and
 # "Bbmaj7#11" convert.
 #
+# Deliberately narrower than the gem's parsers in two ways, both of which follow from
+# being safe over prose:
+#
+# 1. Case-sensitive. Spelling and Pitch accept a lowercase letter name; this does not,
+#    because a case-insensitive rule reads the "B" of "B7" as a flat sign and every
+#    lowercase word in a sentence becomes a candidate. So to_unicode("eb") is "eb"
+#    while Spelling.get("eb") is "E♭".
+# 2. A bare accidental token is read as an accidental, not as a pitch name. to_unicode
+#    ("bb") is "𝄫" — the double-flat sign — while Spelling.get("bb") is "B♭". Callers
+#    holding a pitch name that may be lowercase should parse it with Spelling first.
+#
 # The maps are derived from Alteration lazily rather than at load time. Eager
 # derivation is not an option anywhere in the load sequence: Alteration.all
 # instantiates Notation::MusicalSymbol, which is not required until much later in
@@ -23,6 +34,12 @@ class HeadMusic::Utilities::Accidentals
   # a real word by one letter — "sus" vs "Absurd", "dim" vs "Abdomen" and "Abdicate" —
   # so any addition here needs re-measuring rather than eyeballing.
   CHORD_QUALITIES = %w[m dim aug sus].freeze
+
+  # The scale degrees a chord extension can alter. Requiring the altered degree to be
+  # one of these is what separates "C7b9" from "Figure C2b3": both are an accidental
+  # flanked by digits inside a token that opens with a letter name, and only the
+  # degree tells them apart.
+  EXTENSION_DEGREES = %w[13 11 9 6 5 4].freeze
 
   # A candidate chord symbol. One quantifier over a character class, so there is no
   # nesting and no ReDoS surface. This is what scopes the altered-extension rule
@@ -71,8 +88,9 @@ class HeadMusic::Utilities::Accidentals
   # "b" can but is rescued by CHORD_QUALITIES, and "x" takes the bare guard because an
   # allowlist there would buy "Cxm7" and cost "Axminster" and "Exmoor". The second is
   # an altered extension ("7#11", "7b9"), which has no letter to anchor to and is
-  # instead flanked by digits — safe only because CHORD_TOKEN already established that
-  # we are inside a chord symbol.
+  # instead flanked by digits. Being inside a CHORD_TOKEN is not sufficient on its own
+  # — "Figure C2b3" would qualify — so the altered degree must also be a real chord
+  # extension.
   def self.ascii_matcher
     @ascii_matcher ||=
       /(?<=[A-G])(?:#{sharp_branch}|#{flat_branch}|#{double_sharp_branch})|#{extension_branch}/
@@ -81,6 +99,7 @@ class HeadMusic::Utilities::Accidentals
   def self.unicode_matcher
     @unicode_matcher ||= Regexp.union(ascii_for.keys)
   end
+  private_class_method :ascii_matcher, :unicode_matcher
 
   def self.sharp_branch
     longest_first(spellings_matching(/#/))
@@ -95,7 +114,7 @@ class HeadMusic::Utilities::Accidentals
   end
 
   def self.extension_branch
-    "(?<=\\d)(?:#{longest_first(spellings_matching(/[#b]/))})(?=\\d)"
+    "(?<=\\d)(?:#{longest_first(spellings_matching(/[#b]/))})(?=(?:#{longest_first(EXTENSION_DEGREES)})(?![0-9]))"
   end
 
   def self.spellings_matching(pattern)

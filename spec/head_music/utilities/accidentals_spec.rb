@@ -63,7 +63,11 @@ describe HeadMusic::Utilities::Accidentals do
         "Ebmaj9#11" => "E♭maj9♯11",
         "Ab13b9" => "A♭13♭9",
         "F#7b13" => "F♯7♭13",
-        "Cmaj7#11" => "Cmaj7♯11"
+        "Cmaj7#11" => "Cmaj7♯11",
+        "C7b6" => "C7♭6",
+        "F7#4" => "F7♯4",
+        "Bbm7b5" => "B♭m7♭5",
+        "C13#11" => "C13♯11"
       }.each do |ascii, unicode|
         specify { expect(described_class.to_unicode(ascii)).to eq unicode }
       end
@@ -116,7 +120,10 @@ describe HeadMusic::Utilities::Accidentals do
       # applied globally. A bare digit-flanked rule converts every one of them.
       [
         "1.0b2", "0x1b2f", "0x1B2F", "1b2c3d", "version 3b7", "revision 2b1",
-        "Figure 2b", "Chapter 7b", "Deadbeef", "DEADBEEF", "page 3b."
+        "Figure 2b", "Chapter 7b", "Deadbeef", "DEADBEEF", "page 3b.",
+        # These open with a letter name, so the chord token alone does not rule them
+        # out. What does is that 2, 3, and 0 are not degrees a chord can alter.
+        "A1b2", "Figure C2b3", "Exhibit A1b2", "E3b0c442", "G1b1", "B2b3"
       ].each do |text|
         specify { expect(described_class.to_unicode(text)).to eq text }
       end
@@ -137,6 +144,29 @@ describe HeadMusic::Utilities::Accidentals do
 
     it "accepts a symbol" do
       expect(described_class.to_unicode(:Bb)).to eq "B♭"
+    end
+
+    # Both of these are narrower than Spelling.get, and deliberately so: a
+    # case-insensitive rule reads the "B" of "B7" as a flat sign, and every lowercase
+    # word in a sentence becomes a conversion candidate.
+    context "when narrower than the pitch parsers" do
+      it "ignores a lowercase pitch name that Spelling would accept" do
+        expect(described_class.to_unicode("eb")).to eq "eb"
+        expect(HeadMusic::Rudiment::Spelling.get("eb").to_s).to eq "E♭"
+      end
+
+      it "reads a bare token as an accidental rather than as a pitch name" do
+        expect(described_class.to_unicode("bb")).to eq "𝄫"
+        expect(HeadMusic::Rudiment::Spelling.get("bb").to_s).to eq "B♭"
+      end
+    end
+
+    # Not valid notation in either direction, but the two families are asymmetric:
+    # the flat branch's word-boundary guard rejects the whole run, while the sharp
+    # branch has no guard and converts a prefix. Residue detection is a caller's job.
+    context "with a run of accidentals too long to be valid" do
+      specify { expect(described_class.to_unicode("Bbbb")).to eq "Bbbb" }
+      specify { expect(described_class.to_unicode("C###")).to eq "C𝄪#" }
     end
   end
 
@@ -195,35 +225,39 @@ describe HeadMusic::Utilities::Accidentals do
     end
   end
 
-  # The chord-quality allowlist was chosen by measuring candidates against a real
-  # word list rather than by intuition, and each entry clears a genuine English word
-  # by a single letter. This pins the result of that measurement so that adding an
-  # entry to CHORD_QUALITIES cannot quietly start converting prose.
-  describe "false positives across a full english word list" do
-    let(:word_list) { "/usr/share/dict/words" }
-
-    let(:capitalized_words) do
-      File.readlines(word_list, chomp: true)
-        .reject(&:empty?)
-        .map { |word| word.sub(/\A[a-z]/) { |letter| letter.upcase } }
-        .select { |word| word.start_with?(/[A-G]/) }
+  # The chord-quality allowlist was chosen by measuring candidates against a real word
+  # list rather than by intuition, and each entry clears a genuine English word by a
+  # single letter — "sus" vs "Absurd", "dim" vs "Abdomen" and "Abdicate". This pins the
+  # result of that measurement so that adding an entry to CHORD_QUALITIES cannot
+  # quietly start converting prose.
+  #
+  # The fixture is every capitalized word in a full English word list whose second
+  # character could begin an accidental, which is exactly the set the guards protect.
+  # It is vendored rather than read from /usr/share/dict/words so that the check is
+  # deterministic and actually runs on CI, which has no such file.
+  describe "false positives across english prose" do
+    let(:at_risk_words) do
+      path = File.expand_path("../../support/fixtures/prose_words_at_risk.txt", __dir__)
+      File.readlines(path, chomp: true).reject(&:empty?)
     end
 
-    it "converts only the handful of words that are genuinely ambiguous" do
-      skip "no system word list available" unless File.exist?(word_list)
-
-      converted = capitalized_words.reject { |word| described_class.to_unicode(word) == word }
+    it "leaves all but the genuinely ambiguous words alone" do
+      converted = at_risk_words.reject { |word| described_class.to_unicode(word) == word }
       expect(converted).to contain_exactly("Ab", "Abb", "Abmho", "Ax", "Ebb", "Ebbman", "Ex")
+    end
+
+    it "covers a meaningful sample rather than a token one" do
+      expect(at_risk_words.size).to be > 2000
     end
   end
 
+  # The maps are derived from Alteration rather than hard-coded, so these guard the
+  # derivation rather than restating it. In particular #ascii reads the first symbol
+  # record, so reordering the double_sharp records in alterations.yml would make
+  # to_ascii emit "##" — which Pitch.get accepts but ABC's accidental table does not.
   describe "derived maps" do
     it "keys the ASCII map on the primary spelling of each alteration" do
       expect(described_class.ascii_for["𝄪"]).to eq "x"
-    end
-
-    it "omits the natural sign, which has no ASCII spelling to convert" do
-      expect(described_class.unicode_for.values).not_to include "♮"
     end
 
     it "includes both ASCII spellings of a double sharp" do

@@ -51,10 +51,15 @@ class HeadMusic::Notation::ABC::KeyMapper
       raise_render_error("Cannot render double-altered tonic #{spelling} in an ABC K: field")
     end
 
-    # ABC convention uses ASCII "#"/"b" rather than the unicode signs
-    # that Spelling#to_s produces. The double-altered guard above runs first, since
-    # this would otherwise happily emit "Cx".
-    HeadMusic::Utilities::Accidentals.to_ascii(spelling.to_s)
+    # ABC convention uses ASCII "#"/"b" rather than the unicode signs that
+    # Spelling#to_s produces. The double-altered guard above runs first, since this
+    # would otherwise happily emit "Cx".
+    #
+    # A natural sign is dropped rather than converted. Accidentals.to_ascii preserves
+    # "♮" on purpose — mapping it away would turn the spelling "C♮" into the different
+    # spelling "C" — but an ABC K: field has no way to express a natural tonic, and
+    # "C♮ major" names the same key signature as "C major".
+    HeadMusic::Utilities::Accidentals.to_ascii(spelling.to_s).delete("♮")
   end
   private_class_method :tonic_string
 
@@ -91,7 +96,18 @@ class HeadMusic::Notation::ABC::KeyMapper
       raise_parse_error("Unrecognized key")
   end
 
+  # An ABC K: field cannot express a double-altered tonic, and .abc_value raises
+  # rather than rendering one. Reject it on the way in too: KEY_PATTERN interpolates
+  # the whole Alteration::PATTERN so that "bb" and "##" bind correctly, which also
+  # makes them matchable here. Without this guard "K:Cx" would parse to C𝄪 major and
+  # report "no sharps or flats" — a plausible-looking wrong answer where the narrower
+  # pattern used to give a clear parse error.
   def tonic
+    alteration = HeadMusic::Rudiment::Alteration.get(match[2])
+    if alteration && (alteration.double_sharp? || alteration.double_flat?)
+      raise_parse_error("Cannot express double-altered tonic #{match[1]}#{match[2]} in an ABC K: field")
+    end
+
     match[1] + match[2]
   end
 

@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-26T19:28:59-07:00
   planned_at:   2026-07-26T20:05:31-07:00
   finished_at:
-  updated_at:   2026-07-26T21:18:54-07:00
+  updated_at:   2026-07-26T21:55:37-07:00
 -->
 
 # Story: Accidental String Normalization
@@ -104,6 +104,55 @@ Note the ordering constraint this creates: `##` must be matched **before** the s
 **Naturals are a live question.** `natural`'s `ascii` is the empty string, so `Alteration.get("")` returns `nil` and `Spelling.get("C").to_s` is `"C"` — naturals never render as `♮`. Whether the utility should ever *emit* `♮` needs deciding; the safe default is no.
 
 **The downstream consumer is a real constraint, not hypothetical.** `bardtheory` has a story waiting on this one (`accidental-converter-on-head-music`), and its `AccidentalConverter` is the closest thing to a reference implementation for the prose case — six anchored rules, measured against a 65-document corpus. Worth reading before designing the prose matcher rather than starting cold.
+
+## Review
+
+Reviewed 2026-07-26 against commit `75e54ee` by a product-manager agent (acceptance criteria) and a code-reviewer agent (quality and correctness), running in parallel. Every finding below was independently reproduced before being acted on. Fixes are uncommitted at the time of writing; the suite is at **6316 examples, 0 failures**, RuboCop clean, no vulnerabilities, 99.70% line coverage, RubyCritic 87.94.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict |
+| --- | --- | --- |
+| 1 | ASCII → canonical Unicode (`Bb`, `F#`, `Bbb`, `Cx`) | ✅ met |
+| 2 | `##` converts to `𝄪` | ✅ met |
+| 3 | Reverse direction public, emits `x` not `##` | ✅ met |
+| 4 | Both directions idempotent | ✅ met — swept 30,000 words plus the full corpus, zero non-idempotent inputs |
+| 5 | All-or-nothing per accidental | ✅ met for valid notation; `C###` → `C𝄪#` is now pinned as known residue |
+| 6 | Bare token, pitch name, prose | ✅ met, all three tested |
+| 7 | English words untouched | ✅ met — independently re-measured over 235,976 words |
+| 8 | `##` recognized everywhere `bb` is | ✅ met; the two assertions the story names verbatim had **no spec** and now do |
+| 9 | Any two call sites agree | ✅ met for uppercase input; the lowercase divergence is real and now documented |
+| 10 | Every hand-rolled conversion replaced | ⚠️ **partially met** — see below |
+| 11 | Characterization spec per migrated call site | ✅ met after fixes; three sites had no spec at review time |
+
+### Findings fixed during review
+
+**1. ABC regression — unicode leaking into a `K:` field (blocking).** `KeyMapper.abc_value(KeySignature.get("C♮ major"))` returned `"C♮"`. The migration replaced a concatenation that dropped naturals for free (`Alteration#ascii` is `""` for a natural) with `to_ascii`, which preserves `♮` by design. The double-altered guard above it catches doubles but not naturals. Fixed by dropping the natural explicitly at the ABC boundary. **This is exactly what the ABC guard specs existed to catch and didn't** — all 21 keys in the guard list had a plain or accidental tonic, never a natural one.
+
+**2. ABC reader accepted what the writer refuses (blocking).** Widening `KEY_PATTERN` to the full `Alteration::PATTERN` was necessary for the `(?:...)` fix, but it also admitted `bb`, `##`, and `x` as tonics. `K:Cx` parsed to `C𝄪 major` reporting "no sharps or flats" — musically wrong — where the narrower pattern used to raise a clean `ParseError`. A plausible-looking wrong answer is worse than an error. Fixed by mirroring the double-altered guard on the parse side.
+
+**3. The extension rule fired on non-chord identifiers.** `Figure C2b3` → `Figure C2♭3`, `A1b2` → `A1♭2`. The chord-token scope blocks digit-initial strings (`1.0b2`, `0x1B2F`) but not letter-initial ones, and every hostile case in the spec started with a digit or lowercase letter, so the whole shape was unpinned. Fixed by requiring the altered degree to be a real chord extension (`EXTENSION_DEGREES = %w[13 11 9 6 5 4]`). Measured: eliminates all seven false positives with zero must-convert regressions and an unchanged dictionary baseline.
+
+**4. The dictionary spec was green-by-skip on CI.** It read the host's `/usr/share/dict/words` and asserted exact equality against a macOS `web2`-specific result (`Abmho` is a web2-ism). CI runs `ubuntu-latest`, which has no such file — so the guard the comment promised never ran where it mattered, and would have failed spuriously on a Linux box with `wamerican`. Replaced with a vendored 2,391-word fixture (`spec/support/fixtures/prose_words_at_risk.txt`) containing every capitalized word whose second character could begin an accidental — the exact set the guards protect.
+
+**5. Three migrated call sites had no characterization spec** despite being plan steps: `Note::PITCH_PATTERN`, `HashKey`, and the whole-document ABC guard. All three now pinned.
+
+**6. `representations` memoization froze a locale-dependent value.** `#name` resolves through `I18n.locale`. Inert today (only `:en` names are registered), but latent: once the German names in `locales/de.yml` are wired up, `Alteration.get("Kreuz")` would depend on which locale was active at first call. Now memoized per locale, with the duplicate entries the widening introduced deduped.
+
+**7. Two undocumented narrowings.** The utility is deliberately case-sensitive and reads a bare token as an accidental, so `to_unicode("eb")` is `"eb"` while `Spelling.get("eb")` is `E♭`, and `to_unicode("bb")` is `𝄫` while `Spelling.get("bb")` is `B♭`. Both follow from being safe over prose. Now stated in the class comment, the CHANGELOG, and specs.
+
+**8. Minor.** `ascii_matcher`/`unicode_matcher` made private (no external consumer); the equal-length sort-stability caveat noted where it could mislead; a redundant map assertion dropped.
+
+### Accepted, not fixed
+
+- **`hash_key.rb` remains a second hard-coded glyph inventory** (criterion 10). It maps glyph → word suffix (`♭` → `_flat`), a third direction the utility doesn't model, so `to_unicode`/`to_ascii` genuinely cannot replace it — but the criterion as written says "none is left behind as a second implementation," and by the letter one is. Deriving it from `Alteration` is a reasonable follow-up.
+- **`pitch_writer.rb` not migrated.** Correct: it's a lookup key into `ACCIDENTAL_FRAGMENTS.invert`, not a conversion, and the `""` → `"="` entry means natural must stay in the map. The `#ascii` invariant it depends on is now pinned.
+- **`C###` → `C𝄪#` half-converts** while `Bbbb` is left whole. Neither is valid notation; the asymmetry is recorded as a spec rather than hidden.
+- **`dyad_spec` pins a private method and two magic counts.** Deliberate — the surrounding assertions are `be_an(Array)`, which is what let the 28 → 35 change pass silently in the first place.
+
+### Verified sound
+
+No reachable `KeyError` in either gsub block (every alternative derives from the same map; `CHORD_QUALITIES` and `EXTENSION_DEGREES` appear only in zero-width lookaheads). Both regex-interpolation fixes are correct with unchanged capture counts, and `pitch/parser.rb` and `spelling.rb` were correctly left alone — they already wrap the interpolation in a group. `nil`, `""`, frozen strings, newlines, and already-converted input all behave. No ReDoS: 50,000 words in 33ms.
 
 ## Implementation Plan
 

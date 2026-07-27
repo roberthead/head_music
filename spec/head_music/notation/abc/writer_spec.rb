@@ -494,5 +494,19 @@ describe HeadMusic::Notation::ABC::Writer do
         expect(HeadMusic::Notation::ABC.render(HeadMusic::Notation::ABC.parse(rendered))).to eq rendered
       end
     end
+
+    # ABC is an ASCII format and its consumers reject the unicode accidental signs
+    # that Spelling#to_s produces. The existing fixtures all sit in keys with no
+    # accidental in the tonic, so none of them exercises the K: rendering path that
+    # could leak one.
+    context "with a key signature whose tonic carries an accidental" do
+      %w[Bb Eb Ab Db F# C# Bbm F#m].each do |abc_key|
+        it "renders a #{abc_key} tune without unicode accidentals anywhere" do
+          source = "X:1\nT:Test\nM:4/4\nL:1/8\nK:#{abc_key}\nCDEF GABc|\n"
+          rendered = HeadMusic::Notation::ABC.render(HeadMusic::Notation::ABC.parse(source))
+          expect(rendered).not_to match(/[♭♯♮𝄫𝄪]/)
+        end
+      end
+    end
   end
 end

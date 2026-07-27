@@ -15,9 +15,10 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
     YAML.load_file(File.expand_path("alterations.yml", __dir__), symbolize_names: true)[:alterations].freeze
 
   ALTERATION_IDENTIFIERS = ALTERATION_RECORDS.keys.freeze
-  # Sorted longest-first because Regexp.union alternates in array order rather than
-  # by longest match. Without it, "bb" would match the single-flat branch and leave a
-  # stray "b" behind, half-converting a double.
+  # Sorted longest-first because Regexp.union alternates in array order rather than by
+  # longest match. Without it, "bb" would match the single-flat branch and leave a
+  # stray "b" behind, half-converting a double. Ordering among equal-length symbols is
+  # unspecified and does not matter: equal-length strings cannot prefix one another.
   SYMBOLS = ALTERATION_RECORDS
     .map { |key, attributes| attributes[:symbols].map { |symbol| [symbol[:unicode], symbol[:ascii]] } }
     .flatten.reject { |s| s.nil? || s.empty? }.uniq
@@ -61,11 +62,14 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
   end
 
   # Spans every symbol record, not just the primary one, so that an alternate ASCII
-  # spelling like "##" resolves through .get. Memoized because .get runs on every
-  # parse and walks this list for each alteration.
-  def representations
-    @representations ||=
-      ([identifier, identifier.to_s, name] + musical_symbols.flat_map { |symbol| [symbol.ascii, symbol.unicode, symbol.html_entity] })
+  # spelling like "##" resolves through .get. Memoized per locale because .get runs on
+  # every parse and walks this list for each alteration, and #name is locale-dependent.
+  def representations(locale_code: I18n.locale)
+    @representations ||= {}
+    @representations[locale_code] ||=
+      ([identifier, identifier.to_s, name(locale_code: locale_code)] +
+        musical_symbols.flat_map { |symbol| [symbol.ascii, symbol.unicode, symbol.html_entity] })
+        .uniq
         .reject { |representation| representation.to_s.strip == "" }
   end
 
