@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [18.0.0] - 2026-07-26
+## [18.0.0] - 2026-07-27
 
 ### Added
 
@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking.** `Rudiment::Scale::SCALE_REGEX` is removed. It was unreferenced, and its singles-only `[#b]?` was an instance of the asymmetry this release closes.
 - **Breaking.** `KeySignature` and `Scale` memoization keys change for identifiers containing accidentals. `Fx`, `C##`, and `F𝄪` now unify onto one cache entry, as they name the same key signature.
 - `Rudiment::Note::PITCH_PATTERN` no longer truncates a double sharp. `"C##4"` previously parsed as `["C", "#", nil]`, silently losing the register, because the optional quantifier bound to the pattern's final alternative rather than to the whole alternation.
+- `Alteration#representations` now spans every symbol record rather than only the primary one, so a double sharp reports `"##"` alongside `"x"` and `𝄪`. It also accepts a `locale_code:` keyword and memoizes per locale, since the list includes the localized `#name`.
+- An ABC `K:` field naming a double-altered tonic still raises `ParseError`, but with a message that says so — `Cannot express double-altered tonic Cx in an ABC K: field` rather than the incidental `Unrecognized mode` it produced when the narrower key pattern failed to match the accidental.
+
+### Removed
+
+- `Content::Staff` no longer prints to standard output when it cannot resolve a clef key. It previously wrote `Warning: Clef '...' not found.` and `Using instrument clef.` to stdout. The fallback behavior is unchanged — an unrecognized key still resolves to the instrument's clef when an instrument is present, and to the treble clef otherwise — it is simply no longer announced.
 
 ## [17.5.0] - 2026-07-21
 
