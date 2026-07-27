@@ -150,6 +150,26 @@ The gem supports multiple languages through the HeadMusic::Named mixin:
 - Shared examples in `spec/support/`
 - `composition_context.rb` provides test utilities
 
+**Never assert on console output.** Do not use `output(...).to_stdout` or `.to_stderr`. A library should not print to the console, so a spec that asserts it printed something is pinning behavior the gem should not have — and it makes the printing hard to remove later, because deleting the `puts` breaks a test that looks unrelated to the change.
+
+Test the behavior the message was describing instead. When a fallback or recovery path is worth pinning, assert what it produces and that it does not raise:
+
+```ruby
+# Not this
+it "prints a warning" do
+  expect { staff }.to output(/Warning: Clef 'foo' not found/).to_stdout
+end
+
+# This
+it "recovers from the unrecognized key instead of raising" do
+  expect { staff }.not_to raise_error
+end
+
+it "prefers the instrument's clef over the generic fallback" do
+  expect(staff.clef).not_to eq described_class.new("foo").clef
+end
+```
+
 ### Documentation Philosophy
 
 This project deliberately deprioritizes formal documentation in favor of clear, comprehensive tests.
