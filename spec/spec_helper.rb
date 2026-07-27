@@ -7,8 +7,8 @@ if ENV["CIRCLE_ARTIFACTS"]
 end
 
 SimpleCov.start do
-  add_filter "/spec/"
-  add_filter "/vendor/"
+  skip "/spec/"
+  skip "/vendor/"
 
   # Set minimum coverage threshold
   minimum_coverage 90
@@ -17,11 +17,11 @@ SimpleCov.start do
   enable_coverage :branch
 
   # Add groups for better organization
-  add_group "Analysis", "lib/head_music/analysis"
-  add_group "Content", "lib/head_music/content"
-  add_group "Instruments", "lib/head_music/instruments"
-  add_group "Rudiments", "lib/head_music/rudiment"
-  add_group "Style", "lib/head_music/style"
+  group "Analysis", "lib/head_music/analysis"
+  group "Content", "lib/head_music/content"
+  group "Instruments", "lib/head_music/instruments"
+  group "Rudiments", "lib/head_music/rudiment"
+  group "Style", "lib/head_music/style"
 
   # Refuse coverage drops below threshold
   maximum_coverage_drop 1.0 # 1% drop allowed
