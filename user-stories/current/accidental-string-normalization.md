@@ -2,9 +2,9 @@
 metadata:
   created_at:   2026-07-26T18:56:39-07:00
   activated_at: 2026-07-26T19:28:59-07:00
-  planned_at:
+  planned_at:   2026-07-26T20:05:31-07:00
   finished_at:
-  updated_at:   2026-07-26T19:28:59-07:00
+  updated_at:   2026-07-26T20:37:15-07:00
 -->
 
 # Story: Accidental String Normalization
@@ -107,4 +107,347 @@ Note the ordering constraint this creates: `##` must be matched **before** the s
 
 ## Implementation Plan
 
-[to be filled in by /stories plan]
+### Overview
+
+Add `HeadMusic::Utilities::Accidentals` — a class-method-only utility mirroring `Utilities::Case` — that derives its ASCII↔Unicode maps **lazily** from `Alteration.all`, keeping `alterations.yml` the single source of truth. Add `##` as a second `symbols:` record under `double_sharp`, sort `SYMBOLS` longest-first, and widen `representations` to span all symbol records. Then delete each hand-rolled chain — or, where the input is already Unicode, delete it in favor of nothing at all.
+
+The forward direction converts **whole chord symbols**, not just pitch names: `Bbmaj7#11` → `B♭maj7♯11`. It does this by scoping conversion to a candidate chord token, which is what makes the altered-extension rule safe to include at all.
+
+The planner reports verifying the change set against patched scratch copies: the full suite passes all 6097 examples with exactly two failures, the hard-coded regex literals at `alteration_spec.rb:101-102`, which should be behavioral regardless. Re-verify during implementation rather than trusting this.
+
+### Decisions on the open questions
+
+**1. Home: `HeadMusic::Utilities::Accidentals`, required at `lib/head_music.rb:57`.**
+
+Load order is a non-issue *because every `Alteration` reference sits inside a memoized class method* — nothing touches it at class-definition time. This matters more than it looks: a file at line 58 referencing `Alteration::PATTERN` eagerly raises `uninitialized constant HeadMusic::Rudiment` (the *module* doesn't exist yet), and `Alteration.all` is poisoned at **every** load point because `initialize_musical_symbols` instantiates `Notation::MusicalSymbol`, unavailable until line 156. Lazy memoization dissolves both. This also rules out a `Notation` home — `Rudiment` would then depend on a module loaded 90 lines later — and rules out `Alteration` itself, a value object with `private_class_method :new`.
+
+**2. The `(?![a-z])` guard is per-alternative, and flats additionally take a chord-quality allowlist.** *(refines the story's settled note; decided 2026-07-26)*
+
+Applied uniformly the guard is a false-negative machine — `F#m`, `A#m`, `C#maj7`, `F#dim` all silently unchanged, and `key_mapper.rb`'s own doc comment cites `F#m` as its motivating input. `#` cannot occur in an English word, so the guard is pure cost there. That fixes the sharp side but leaves an asymmetry: `F#m` converts while `Bbm` and `Ebmaj7` do not, because the flat side must keep its guard or `Above` breaks.
+
+**That asymmetry is not acceptable — all three must convert.** Closed by giving the flat branch an escape hatch: match when followed by a non-lowercase character **or** by a lowercase chord quality. So the three branches are:
+
+| branch | rule | why |
+| --- | --- | --- |
+| `##`, `#` | no guard | cannot occur in an English word |
+| `bb`, `b` | `(?![a-z])` **or** `(?=m\|dim\|aug\|sus)` | needs the guard for `Above`; needs the allowlist for `Bbm` |
+| `x` | `(?![a-z])` only | allowlist here costs `Axman`, `Axminster`, `Exmoor` and buys only `Cxm7`, which is not real notation |
+
+`m` subsumes `maj`, `min`, `mix`, and `m7`, so the list is four entries, not a chord vocabulary. Uppercase suffixes (`BbM7`) already pass the plain guard for free.
+
+Measured against `/usr/share/dict/words` (235,976 words, each capitalized, since the `(?<=[A-G])` lookbehind only fires on uppercase):
+
+| design | must-convert failures | dictionary false positives |
+| --- | --- | --- |
+| guard only, uniform | 10 | 5 (pre-existing: `Ab`, `Abb`, `Ax`, `Ebb`, `Ex`) |
+| + allowlist on flats **and** `x`, incl. mode words | 0 | 23 (+18: `Axman`, `Axminster`, `Exmoor`, `Ebionism`…) |
+| + allowlist on flats only, incl. mode words | 0 | 12 (+7) |
+| **+ chord qualities on flats only** ← chosen | **0** | **7 (+2: `Abmho`, `Ebbman`)** |
+
+Mode words (`dor`, `phr`, `lyd`, `ion`…) are deliberately excluded: they cost five `Ebion*` false positives and buy nothing, because space-free mode syntax (`Ebdor`) is ABC input, which reaches `KEY_PATTERN` in step 8 rather than this utility. Prose writes "E♭ Dorian" with a space.
+
+Residual cost: `Abmho` and `Ebbman`, both capitalized, both absent from any plausible music-theory corpus.
+
+**2a. Altered extensions are in scope too** *(decided 2026-07-26)*
+
+`Bbmaj7#11`, `C7b9`, `G7#5b9`, `Db7b9#11` must convert fully, not just their pitch-name accidental. These have no letter name to anchor to — the accidental is flanked by digits — so they need a second rule, and applied globally that rule is unsafe (`1.0b2`, `0x1b2f`, `revision 2b1` all convert).
+
+The fix is to scope conversion to a **candidate chord token** — an uppercase letter name that doesn't continue a longer word or number — and run both rules only inside it. Beta versions, hex literals, and `Figure 2b` never open such a token, so the digit-flanked rule can't reach them.
+
+| rule | must-convert failures | false positives (29-case adversarial list) |
+| --- | --- | --- |
+| letter-anchored only (previous plan) | 9 | 0 |
+| + naive digit-flanked, applied globally | 0 | 5 (`1.0b2`, `0x1b2f`, `1b2c3d`, `version 3b7`, `revision 2b1`) |
+| **+ digit-flanked, scoped to a chord token** ← chosen | **0** | **0** |
+
+The token-scoped version leaves the dictionary baseline byte-identical (same 7 words), stays idempotent, preserves all-or-nothing (`C##` → `C𝄪`, no stray `#`), and is ReDoS-free: 2.6ms on `"A" + "b" * 40_000`, 2.7ms on 250KB of prose. Note this also *strengthens* prose safety — the token boundary is a second line of defense behind the per-family guards, not a replacement for them.
+
+Scale degrees (`b7`) and Roman numerals (`♭VI`) still stay downstream, and fall out for free: neither opens with an uppercase letter name, so neither enters a token.
+
+**3. No `♮` in either direction.**
+
+`to_unicode` *cannot* emit it: natural's `ascii` is `""`, filtered out of the map, so no token could trigger it. `to_ascii` leaves a literal `♮` untouched, because mapping `♮` → `""` is **lossy** — `Spelling.get("C♮").to_s == "C♮"` and `Pitch.get("C♮4").to_s == "C♮4"`, so `to_unicode(to_ascii("C♮"))` would yield `"C"` and destroy information the gem models. ABC distinguishes them too (`=C` vs `C`). Consequence to document: `to_ascii` is "ASCII for *altering* accidentals," not "pure ASCII."
+
+**4. `##` via YAML second record + longest-first sort + widened `representations`.**
+
+All three are required; each alone is insufficient. Sorting rather than reordering the YAML is deliberate — reordering would silently change `Alteration.all` and `ALTERATION_IDENTIFIERS` ordering, whereas the sort touches only the regex.
+
+**5. Forward anchored, reverse unanchored.**
+
+Unicode glyphs are unambiguous, so the reverse direction must have no letter-anchor, or `♭VI` and `♭7` — exactly what bardtheory feeds it — stop converting and the downstream consolidation fails.
+
+### Recommended public API
+
+```ruby
+# lib/head_music/utilities/accidentals.rb
+module HeadMusic::Utilities; end
+
+# Converts accidentals in a string between ASCII spellings and canonical Unicode
+# glyphs. Safe to run over prose: conversion happens only inside a token that opens
+# with an uppercase letter name, so "Above", "Bebop", and "1.0b2" are untouched
+# while "Bb", "Ab7", and "Bbmaj7#11" convert.
+#
+# Maps are derived from Alteration lazily rather than at load time, so this file can
+# be required with the other utilities, before rudiments. Eager derivation is not an
+# option anywhere in the load sequence: Alteration.all instantiates
+# Notation::MusicalSymbol, which is not required until much later.
+class HeadMusic::Utilities::Accidentals
+  # A candidate chord symbol: an uppercase letter name that doesn't continue a longer
+  # word or number, plus the chord-ish characters that may follow. One quantifier over
+  # a character class -- no nesting, so no ReDoS surface. This is what scopes the
+  # extension rule below: "1.0b2" and "0x1B2F" never open a token, so they can't reach it.
+  CHORD_TOKEN = /(?<![A-Za-z0-9])[A-G][A-Za-z0-9#]*/
+
+  # "Bb" => "B♭", "C##" => "C𝄪", "Bbmaj7#11" => "B♭maj7♯11". Idempotent.
+  def self.to_unicode(text)
+    string = text.to_s
+    return unicode_for.fetch(string) if unicode_for.key?(string)
+
+    string.gsub(CHORD_TOKEN) do |token|
+      token.gsub(ascii_matcher) { |match| unicode_for.fetch(match) }
+    end
+  end
+
+  # "B♭" => "Bb", "C𝄪" => "Cx". Emits the spellings the gem's parsers accept.
+  # Deliberately NOT letter-anchored: unicode glyphs are unambiguous, and "♭VI"
+  # must convert. A natural sign is left as "♮" -- mapping it to "" would turn the
+  # valid spelling "C♮" into the different spelling "C". Idempotent.
+  def self.to_ascii(text)
+    text.to_s.gsub(unicode_matcher) { |match| ascii_for.fetch(match) }
+  end
+
+  def self.unicode_for
+    @unicode_for ||=
+      altering_alterations.flat_map(&:musical_symbols)
+        .reject { |symbol| symbol.ascii.to_s.empty? }
+        .to_h { |symbol| [symbol.ascii, symbol.unicode] }
+  end
+
+  # One entry per alteration, using its primary #ascii, so "##" is never emitted.
+  def self.ascii_for
+    @ascii_for ||= altering_alterations.to_h { |alteration| [alteration.unicode, alteration.ascii] }
+  end
+
+  # Chord qualities that may follow a flat without a word boundary, so that "Bbm"
+  # and "Ebmaj7" convert while "Above" does not. "m" subsumes "maj", "min", and
+  # "m7"; uppercase forms like "BbM7" already clear the (?![a-z]) guard unaided.
+  # Mode words are excluded on purpose -- space-free mode syntax ("Ebdor") is ABC
+  # input, which KEY_PATTERN handles, and "ion" alone costs five false positives.
+  CHORD_QUALITIES = %w[m dim aug sus].freeze
+
+  # Applied only inside a CHORD_TOKEN. Longest-first so a double never half-converts.
+  # No /i flag -- case-insensitivity would read "B7" as "♭7".
+  #
+  # Two anchor contexts. The first is the pitch name's own accidental, anchored to the
+  # letter name, with a per-family guard: "#" cannot occur in an English word at all,
+  # "b" can but is rescued by the chord-quality allowlist, and "x" takes the bare guard
+  # because an allowlist there buys "Cxm7" and costs "Axminster"/"Exmoor". The second is
+  # an altered extension ("7#11", "7b9"), which has no letter to anchor to and is instead
+  # flanked by digits -- safe only because CHORD_TOKEN already established we are inside
+  # a chord symbol.
+  def self.ascii_matcher
+    @ascii_matcher ||=
+      /(?<=[A-G])(?:#{sharp_branch}|#{flat_branch}|#{double_sharp_branch})|#{extension_branch}/
+  end
+
+  def self.extension_branch
+    "(?<=\\d)(?:#{longest_first(unicode_for.keys.grep(/[#b]/))})(?=\\d)"
+  end
+
+  def self.unicode_matcher
+    @unicode_matcher ||= Regexp.union(ascii_for.keys)
+  end
+
+  def self.sharp_branch
+    longest_first(spellings_matching(/#/))
+  end
+
+  def self.flat_branch
+    "(?:#{longest_first(spellings_matching(/b/))})(?:(?![a-z])|(?=#{longest_first(CHORD_QUALITIES)}))"
+  end
+
+  def self.double_sharp_branch
+    "(?:#{longest_first(spellings_matching(/x/))})(?![a-z])"
+  end
+
+  def self.spellings_matching(pattern)
+    unicode_for.keys.grep(pattern)
+  end
+
+  def self.longest_first(spellings)
+    Regexp.union(spellings.sort_by { |spelling| -spelling.length }).source
+  end
+  private_class_method :sharp_branch, :flat_branch, :double_sharp_branch,
+    :extension_branch, :spellings_matching, :longest_first
+
+  def self.altering_alterations
+    HeadMusic::Rudiment::Alteration.all.reject(&:natural?)
+  end
+  private_class_method :altering_alterations
+end
+```
+
+The bare-token fast path (`unicode_for.fetch`) handles `"b"` → `"♭"` and `"##"` → `"𝄪"` without widening the regex, because a context-free `b` in prose is exactly the false positive the lookbehind exists to prevent. `to_ascii(to_unicode("C##")) == "Cx"` — the normalizing round trip the story asks for.
+
+**Why two levels of `gsub` rather than one flat pattern.** The altered-extension rule (`7#11`, `7b9`) can't anchor to a letter name — the accidental is flanked by digits. Applied globally that rule is unsafe: it converts `1.0b2` (a beta version), `0x1b2f` (hex), and `revision 2b1`. Scoping it inside `CHORD_TOKEN` removes the entire class of false positive, because none of those strings opens a token with an uppercase letter name. Measured: the naive digit-flanked rule produces 5 false positives on a 29-case adversarial list; the token-scoped version produces 0, and leaves the 236k-word dictionary baseline byte-identical at the same 7 words.
+
+### Steps
+
+**1. Characterization specs — land first, green on unmodified code**
+
+- **ABC no-Unicode guard** (highest value; ABC consumers reject Unicode). Add across the existing round-trip examples in `abc/writer_spec.rb`, `key_mapper_spec.rb`, `pitch_writer_spec.rb`: `expect(described_class.abc_value(key_signature)).not_to match(/[♭♯♮𝄫𝄪]/)` and the equivalent for `writer.token(pitch)` and the whole document. No such guard exists today.
+- **`key_signature_spec.rb`** — the hash key is private, so pin the observable: memoization identity (`.get("Bb major")` equals itself), `.get("Bb major") == .get("B♭ major")`, `.get("Bbb major").name == "B𝄫 major"`, `.get("Fx major").name == "F𝄪 major"`.
+- **`scale_spec.rb`** — same shape, plus `.get("Bb4","major").pitch_names.first == "B♭4"`.
+- **`dyad_spec.rb`** — pin **exact counts**: `all_spellings.size == 28`, `Dyad.new("C4","E4").enharmonic_respellings.size == 5`. Existing assertions are `be > 0` / `be_an(Array)`, so the coming growth passes silently.
+- **`alteration_spec.rb`** — pin `Alteration.get(:double_sharp).ascii == "x"`, the invariant `PitchWriter` silently depends on.
+- **`instrument_name_spec.rb`** — extend the existing `"in B♭"` (line 12) and `"in F♯"` (line 17).
+
+**2. Add the utility**
+
+`lib/head_music/utilities/accidentals.rb` + `require` at `lib/head_music.rb:57` + `spec/head_music/utilities/accidentals_spec.rb`. No consumers yet; independently mergeable. Include a spec that the utility works on a cold `require "head_music"` with no prior `Alteration` use.
+
+**3. Widen `##`**
+
+`alterations.yml`: second `symbols:` record under `double_sharp` (`ascii: "##"`, keeping the `x` record **first**). `alteration.rb:18`: append `.uniq.sort_by { |s| -s.length }` (the `.uniq` is load-bearing — the YAML record otherwise duplicates `𝄪`). `alteration.rb:56-59`: memoize and widen `representations` to span all `musical_symbols`, or the new row is inert and `Spelling.get("C##")` returns a bare `C` — worse than today's honest `nil`. The memoization is reported as a 10x win (200k calls: `get(nil)` 3.55s → 0.38s, `get("#")` 2.68s → 0.16s), and `get` runs on every parse. `alteration.rb:26-28`: align `self.symbols` with `SYMBOLS` or delete it — it currently disagrees with `symbol?` and `PATTERN` and has zero callers. Replace `alteration_spec.rb:101-102`'s literal-regex assertions with behavioral ones (`expect("C##"[PATTERN]).to eq "##"`).
+
+**4. Fix `rudiment/note.rb:20`**
+
+`PITCH_PATTERN = /([A-G])(#{Alteration::PATTERN.source}?)(-?\d+)?/i` binds the `?` to the final `x` branch only; it works today by accident (the group can match empty only via `x?`). Change to `((?:#{...})?)`. Keep exactly 3 capture groups (`note.rb:38` reads `match[5]`); `Regexp.union` adds none (it emits `(?-mix:…)`), so `register.rb:30-34` stays safe.
+
+Verified: `"C##4".match(PITCH_PATTERN).captures` is currently `["C", "#", nil]` — it truncates at the first `#` and loses the register entirely. The longest-first sort in step 3 fixes this case on its own, but the `?` binding is wrong regardless and should be corrected while here.
+
+**4a. Full list of `Alteration::PATTERN` consumers** (grep-verified; step 3 widens the pattern under all of them)
+
+- `rudiment/spelling.rb:11` — `MATCHER`, embeds it with `/i`. The primary target.
+- `rudiment/note.rb:20` — `PITCH_PATTERN`, the `?`-binding bug above.
+- `rudiment/pitch/parser.rb:12` — `(#{Alteration::PATTERN.source})?`. The `?` is correctly *outside* the group here, so this one is already right; no change needed, but it's the counter-example that makes the `note.rb` form recognizable as a mistake.
+- `rudiment/pitch.rb:126` — `Pitch#natural`, `to_s.gsub(PATTERN, "")`. Widening is a strict improvement: it currently strips `C##4` to `C4` only because `#` matches twice; with `##` in the union it strips as one token. Verified `Pitch.get("C#4").natural.to_s == "C4"` today.
+- `rudiment/register.rb:30-34` — consumes `Spelling::MATCHER`'s captures positionally; group count must not change.
+
+**5. `instrument_name.rb:46-48`**
+
+`format_pitch_name` becomes `Accidentals.to_unicode(pitch_designation)`; delete the `tr` chain. Spec-only impact: no catalog instrument uses a double (`pitch_key` values are `a a_flat b_flat c d e_flat f g`).
+
+**6. `key_signature.rb:21`**
+
+`HashKey.for(Accidentals.to_unicode(identifier))`; delete both `gsub`s. Differential over 33 inputs — 27 identical, 6 changed, all improvements:
+
+| identifier | old | new |
+| --- | --- | --- |
+| `"Bbb major"` | `:b_flatb_major` | `:b_double_flat_major` |
+| `"Fx major"` / `"Cx minor"` | `:fx_major` / `:cx_minor` | `:f_double_sharp_major` / `:c_double_sharp_minor` |
+| `"C## major"` | `:c_sharp_sharp_major` | `:c_double_sharp_major` |
+| **`"C bebop"`** | **`:c_be_flatop`** | `:c_bebop` |
+| `"bb major"` | `:b_flat_major` *(collides)* | `:bb_major` |
+
+`"C bebop"` is a genuine mangling by `(\w)[b♭]` that this fixes. The first four *unify* `Fx`/`C##`/`F𝄪` onto one cache entry — correct, they are the same key signature.
+
+**7. `scale.rb:12-14`**
+
+Collapse to `HashKey.for([root_pitch, scale_type].join(" "))`. **No utility call needed:** `Pitch#to_s` already emits Unicode and `HashKey` already desymbolizes it, so the whole chain is dead (`\w` doesn't even match the astral `𝄫`/`𝄪`). Measured: `:bflat4_major` → `:b_flat4_major`, `:fsharp4_minor` → `:f_sharp4_minor`, no collisions. Also **delete `SCALE_REGEX` (line 6)** — unreferenced in `lib/` and `spec/`, and its `[#b]?` is the same singles-only trap this story closes.
+
+**8. `key_mapper.rb:7`**
+
+`KEY_PATTERN = /\A([A-G])((?:#{Alteration::PATTERN.source})?)\s*([A-Za-z]*)/`. **The inner `(?:...)?` is load-bearing:** writing `(...)?` makes `match[2]` `nil` and raises `TypeError: no implicit conversion of nil into String` at line 91 for every *unaltered* key — it breaks `C`, `Ador`, `Cmaj`, `Dm`. No mode word begins with `b`, `#`, or `x`, so the widened group cannot eat one (`Bloc`/`Blocrian` checked).
+
+**9. `key_mapper.rb:53`**
+
+`Accidentals.to_ascii(spelling.to_s)`. Keep the double-altered `raise` at lines 47-49 **above** it; ABC `K:` genuinely cannot express doubles, and `to_ascii` would happily emit `Cx`.
+
+**10. `hash_key.rb:32-40`**
+
+Reorder doubles before singles and add `"##" => "_double_sharp"` *before* `"#" => "_sharp"` (today the line-38 `#` rule means any appended `##` rule can never fire). Do **not** add ASCII `b` → `_flat`; it would mangle `blues_major_pentatonic`, `bass_clarinet`, and every other key containing `b`. Tidying, not behavior — after step 6, `##` no longer reaches `HashKey` from `KeySignature`.
+
+**11. Leave `pitch_writer.rb:52-57` alone**
+
+Recorded here so it isn't mistaken for an oversight. `pitch.alteration&.ascii.to_s` is not a conversion chain; it is a lookup key into `ACCIDENTAL_FRAGMENTS.invert` (`{"#"=>"^","x"=>"^^","b"=>"_","bb"=>"__",""=>"="}`), and `#ascii` still returns `"x"` after the YAML change. Substituting `to_ascii` produces identical strings with more indirection.
+
+**12. Record the `Dyad` expansion**
+
+`dyad.rb:80` sets `ALTERATION_SIGNS[2] = "##"`, builds `"C##"` spellings that `Spelling.get` returns `nil` for, and `.compact`s them away, so double sharps are **absent from the gem's enharmonic universe today**. After step 3: `all_spellings` 28 → 35, `enharmonic_respellings` for C4/E4 5 → 8. Spec comments at `dyad_spec.rb:322` and `:420` name `C##` as an expected-but-missing equivalent, suggesting this is the latent intent. Update the step-1 counts; don't suppress it.
+
+**13. Ship as a major version**
+
+`bundle exec rubocop -a`, `bundle exec rake validate`, bump `lib/head_music/version.rb` from `17.5.0` to **`18.0.0`** (decided 2026-07-26 — this is a breaking release, not a feature release).
+
+The `### Added` entry covers the utility and `##` support, but the CHANGELOG needs a **`### Changed` / `### Breaking`** section that names each behavior change a consumer could be pinned to:
+
+- `Spelling.get("C##")` returns a `Spelling` instead of `nil`. Anything using that `nil` as a validation signal now silently accepts double sharps. Same for `Pitch.get`, `Note.get`, and ABC `K:` fields.
+- `Alteration::PATTERN` and `SYMBOLS` gain `##` and reorder longest-first. Anything embedding them in its own regex changes behavior.
+- `KeySignature` hash keys change for six inputs (step 6 table), including the `Fx`/`C##`/`F𝄪` unification onto one cache entry.
+- `Scale` hash keys change (`:bflat4_major` → `:b_flat4_major`).
+- `Dyad#all_spellings` grows 28 → 35 and `#enharmonic_respellings` grows correspondingly, as double sharps enter the enharmonic universe for the first time.
+- `Scale::SCALE_REGEX` is removed (unreferenced, but public by Ruby's rules).
+- `Alteration.symbols` is aligned or removed.
+
+### Testing Strategy
+
+**Prose corpus** — all verified against the three-branch matcher:
+
+| Converts | | Left alone | |
+| --- | --- | --- | --- |
+| `F#m` → `F♯m` | `Bbm` → `B♭m` | `Above`, `Absence`, `Abbey` | `B7` (the `/i` trap) |
+| `A#m` → `A♯m` | `Ebmaj7` → `E♭maj7` | `Bebop`, `ebb`, `back` | `DB`, `Text`, `Exit` |
+| `C#maj7` → `C♯maj7` | `Abmin` → `A♭min` | `subbass`, `cabbage` | `## Heading` (Markdown) |
+| `F#dim` → `F♯dim` | `Bbsus4`, `Ebdim7`, `Abaug` | `Bach`, `Debussy` | `C4 quarter`, `Gb` |
+| `Ab7` → `A♭7` | `BbM7` → `B♭M7` | `Absurd`, `Abdomen`, `Abdicate` | `Ebbing`, `Abbot`, `Adagio` |
+| `Bb`/`Bbb`/`Cx`/`C##` | bare `b`/`#`/`bb`/`##`/`x` | `Abstract`, `Aberrant`, `Ebony` | `Fabric`, `Dabble`, `Abundant` |
+| `Bbmaj7#11` → `B♭maj7♯11` | `C7b9` → `C7♭9` | `1.0b2`, `0x1b2f`, `0x1B2F` | `version 3b7`, `revision 2b1` |
+| `G7#5b9` → `G7♯5♭9` | `Db7b9#11` → `D♭7♭9♯11` | `Figure 2b`, `Chapter 7b` | `1b2c3d`, `Deadbeef`, `DEADBEEF` |
+
+The `Absurd`/`Abdomen`/`Abdicate` column is not decoration — those are the near-misses the four-entry allowlist survives by one letter each (`sur` vs `sus`, `dom` vs `dim`, `dic` vs `dim`). Any future addition to `CHORD_QUALITIES` must be re-measured against the dictionary, not eyeballed.
+
+**Dictionary sweep as a spec.** Guard the allowlist with a test that runs the matcher over `/usr/share/dict/words` (capitalized) and asserts the false-positive set is exactly `%w[Ab Abb Ax Ebb Ex Abmho Ebbman]` — five pre-existing, two added. This turns "we measured it once" into a regression test. Skip gracefully when the file is absent, since it is not present on all CI images.
+
+Known limitations to pin honestly: **`Ebb and flow` → `E𝄫 and flow`**, **`Ex` → `E𝄪`**, and the two dictionary words above. `x` cannot leave the ASCII set without breaking round-trip idempotence; all are bounded by the uppercase lookbehind.
+
+**Altered extensions are in scope** and must convert whole: `Bbmaj7#11` → `B♭maj7♯11`, not `B♭maj7#11`. Half-converting a chord symbol is the same failure mode as half-converting a double — it looks converted. Pin `G7#5b9` and `Db7b9#11` specifically, since they exercise the extension rule twice in one token.
+
+**Hostile-input corpus for the token scope** — these must all survive untouched, and they are the reason the extension rule is token-scoped rather than global: `1.0b2`, `0x1b2f`, `0x1B2F`, `1b2c3d`, `version 3b7`, `revision 2b1`, `Figure 2b`, `Chapter 7b`, `Deadbeef`, `DEADBEEF`.
+
+**Real-world symbols, all verified against the design:**
+
+| input | output |
+| --- | --- |
+| `Bb/D` | `B♭/D` (slash chords split into two tokens; both sides convert) |
+| `F#m7b5/Eb` | `F♯m7♭5/E♭` |
+| `Bbmaj7#11/D` | `B♭maj7♯11/D` |
+| `Ebmaj9#11` | `E♭maj9♯11` |
+| `Ab13b9` | `A♭13♭9` |
+| `Gb7sus4` | `G♭7sus4` |
+| `C7alt` | `C7alt` (unchanged — nothing to convert) |
+
+The single best regression case, because it exercises prose safety and both conversion rules in one line:
+
+```ruby
+Accidentals.to_unicode("Above the Bbm7 we play Ebmaj7.")
+# => "Above the B♭m7 we play E♭maj7."
+```
+
+`Above` survives, `Bbm7` converts on the chord-quality allowlist, `Ebmaj7` likewise — and the word that breaks the naive implementation sits directly next to the chord that breaks the guard-only one.
+
+Also required: idempotency both directions; all-or-nothing (`expect(to_unicode("C##")).not_to include("#")`); `to_ascii` round-trip over all 28 spellings reparsing to the identical `Spelling`; `Accidentals.ascii_for["𝄪"] == "x"` (guards the `musical_symbols.first` dependency); `Note.get("C4 quarter")`/`("C##4 quarter")`/`("Cx4 quarter")`; `Pitch.get("C##4").natural.to_s == "C4"`; `Spelling.get("CX")` still `nil`; a cold-require spec. Run the full suite after each step against the 6097-example baseline; coverage ≥90%.
+
+**Checked, not a risk:** ReDoS — flat alternation of literals, no nesting, no quantifier over a group; `"A" + "b"*40_000` in 1.5ms, 245KB prose in 9ms. Astral handling is clean (Ruby strings are codepoint-based), with one trap: `𝄫`/`𝄪` are non-word chars, so `/𝄫\b/` **matches** `"C𝄫x"` — independent confirmation that `\b` was the wrong guard.
+
+### Risks / watch out for
+
+- **`KEY_PATTERN`'s inner `(?:...)?`** — get this wrong and every *unaltered* ABC key raises `TypeError`. The failure is in the common path, not the new one.
+- **The uniform `(?![a-z])` guard** — stated as settled in the story; applied uniformly it silently refuses `F#m`, and guard-only (without the allowlist) silently refuses `Bbm` and `Ebmaj7`. Both failure modes are silent no-ops, which is exactly the "looks converted" trap the story warns about, one level up.
+- **`CHORD_QUALITIES` is measured, not intuited.** `sus` clears `Absurd` by one letter and `dim` clears `Abdomen`/`Abdicate` by one. Adding an entry without re-running the dictionary sweep is how this regresses.
+- **`CHORD_TOKEN` is load-bearing for safety, not just tidiness.** The extension rule is only safe *because* it runs inside the token. Anyone who later "simplifies" `to_unicode` into a single flat `gsub` reintroduces `1.0b2` → `1.0♭2` and hex corruption. The two-level `gsub` needs a comment saying so — it is written in the API sketch above; keep it.
+- **`Regexp.union` is not longest-match.** It alternates in array order, so every branch builder sorts longest-first. `CHORD_TOKEN`'s trailing `[A-Za-z0-9#]*` deliberately excludes `b`-as-a-terminator concerns by including `b` in the alphanumeric class — verify the token still ends where you expect on `Bb/D` slash chords (it splits into two tokens, which is correct).
+- **`representations` must widen with the YAML** — otherwise `Spelling.get("C##")` returns a bare `C`, silently.
+- **`ascii_for` depends on `musical_symbols.first`.** Reorder the `double_sharp` YAML records and `to_ascii` starts emitting `C##`, which `Pitch.get` accepts but ABC's `ACCIDENTAL_FRAGMENTS` does not — a failure with no visible link to a YAML edit.
+- **The `Dyad` growth is invisible to the suite.** Loose assertions mean it passes silently; it is the largest behavioral change in the story and the story never mentions it.
+- **`##` becomes valid input everywhere** — `Pitch::Parser`, `Note`, `KeySignature`, ABC `K:` fields. Downstream code treating `Spelling.get("C##") == nil` as a validation signal now gets a spelling. This is the breaking-change surface, and the reason step 13 ships `18.0.0` rather than a minor bump.
+- **Pre-existing, out of scope, do not accidentally "fix":** `KeySignature.get("D flat major")` and `("Db major")` share hash key `:d_flat_major` under both old and new schemes; the former raises `NoMethodError` if called *first* and returns D♭ major if called second. The characterization specs will lock this order-dependence in — flag it as known.
+- **Downstream needs a release, not a path gem.** bardtheory's story is blocked on a published `18.0.0`, and must budget for the major-version upgrade rather than a drop-in bump. The unanchored reverse direction is what makes its consolidation possible; its `pivot_chord_service.rb:127` omits `𝄪` and is fixed for free. Roman-numeral (`♭VI`) and scale-degree (`♭7`) rules **must stay downstream** — head_music models neither. The audit found **17** independent implementations across the two repos, not the four or five the story estimates, plus a third direction (accidental → spoken words, 4 sites) that `Alteration#name` already serves with i18n — worth a follow-up story.
+
+### Open questions
+
+1. ~~**The `F#m` / `Bbm` asymmetry, and altered extensions.**~~ **RESOLVED 2026-07-26 — fully closed, nothing outstanding.** `F#m`, `Bbm`, and `Ebmaj7` convert via the four-entry `CHORD_QUALITIES` allowlist (decision 2); `Bbmaj7#11`, `C7b9`, and friends convert via the token-scoped extension rule (decision 2a). Both measured. Scale degrees and Roman numerals remain downstream, which the token scope enforces structurally rather than by convention.
+2. **Should `KEY_PATTERN` accept doubles at all,** given `abc_value` raises on rendering them? Widening buys symmetric parse/render errors but lets a field other ABC tools reject through the front door. Planned: widen, for the single-source-of-truth goal.
+3. **Residue detection in the gem?** `to_unicode("Bbbb")` returns the input unchanged — correct all-or-nothing, but *silently*, and silence is indistinguishable from "nothing to convert." Planned: keep the utility pure `String -> String`, leave detection downstream; a separate predicate is far cheaper than changing the return type.
+4. **`Dyad`'s 28 → 35 expansion** — intended, or does `all_spellings` want a "practical spellings" filter? The spec comments suggest someone already wondered and settled for a loose assertion.
+5. **`to_ascii` output is not pure ASCII** (retains `♮`). Acceptable, or add a separate affordance for `C♮` → `C`? `Pitch#natural` already does the pitch-object version.
