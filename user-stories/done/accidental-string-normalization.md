@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-26T18:56:39-07:00
   activated_at: 2026-07-26T19:28:59-07:00
   planned_at:   2026-07-26T20:05:31-07:00
-  finished_at:
-  updated_at:   2026-07-26T21:55:37-07:00
+  finished_at:  2026-07-27T07:27:30-07:00
+  updated_at:   2026-07-27T07:27:30-07:00
 -->
 
 # Story: Accidental String Normalization
@@ -104,6 +104,54 @@ Note the ordering constraint this creates: `##` must be matched **before** the s
 **Naturals are a live question.** `natural`'s `ascii` is the empty string, so `Alteration.get("")` returns `nil` and `Spelling.get("C").to_s` is `"C"` — naturals never render as `♮`. Whether the utility should ever *emit* `♮` needs deciding; the safe default is no.
 
 **The downstream consumer is a real constraint, not hypothetical.** `bardtheory` has a story waiting on this one (`accidental-converter-on-head-music`), and its `AccidentalConverter` is the closest thing to a reference implementation for the prose case — six anchored rules, measured against a 65-document corpus. Worth reading before designing the prose matcher rather than starting cold.
+
+## Learnings
+
+### Measurement beat intuition every time it came up
+
+Three design questions were settled by running candidates against a real corpus rather than reasoning about them, and in each case the measured answer differed from the plausible one:
+
+- Extending the chord-quality allowlist to `x` looks symmetric with extending it to `b`. It costs `Axminster`, `Exmoor`, `Axman`, `Axion` and buys only `Cxm7`, which is not real notation.
+- Including mode words (`dor`, `ion`, `lyd`) in the allowlist looks obviously right for a music gem. It costs five `Ebion*` words and buys nothing, because space-free mode syntax is ABC input that reaches `KEY_PATTERN`, not this utility.
+- `sus` clears `Absurd` by one letter; `dim` clears `Abdomen` and `Abdicate` by one. Nothing about that is visible by inspection.
+
+The measurements are now pinned as specs, so the next person doesn't have to re-derive them — and can't silently break them.
+
+### Characterization specs inherit the blind spots of whoever writes the migration
+
+The most useful finding of the whole story. A 21-key ABC no-Unicode guard was written *specifically* to catch unicode leaking into a `K:` field. The leak that actually happened was on a natural-spelled tonic, and every key in the sample had a plain or accidental tonic. Right idea, wrong sample, zero protection.
+
+The same shape recurred in the hostile-input corpus for the extension rule: every case started with a digit or lowercase (`1.0b2`, `0x1b2f`, `1b2c3d`), so the letter-initial shape (`Figure C2b3`, `A1b2`) was entirely unpinned. **Collecting examples is not the same as varying the shape systematically.** When building negative test cases, enumerate the structural variants first, then find an instance of each — not the other way round.
+
+This is a direct argument for adversarial review by someone who didn't write the code. Both blind spots were found by review, and neither could have been found by the specs as written.
+
+### Widening a parser is not symmetric with widening a writer
+
+Making `KEY_PATTERN` accept `##` also made it accept `Cx` as an ABC tonic, which produced a confident wrong answer — `C𝄪 major`, "no sharps or flats" — where the narrow pattern had raised a clean `ParseError`. The writer already refused to render such a tonic, so reader and writer silently disagreed.
+
+**Replacing an error with a plausible lie is a regression even when no test fails.** Any time a pattern is widened, ask separately what the *other* direction now has to reject.
+
+### Check where a test actually runs before trusting it
+
+The word-list sweep read the host's `/usr/share/dict/words` and asserted a macOS-specific result. CI runs `ubuntu-latest`, which has no such file, so the spec skipped — the guard it promised never ran where it mattered, and would have failed spuriously on a Linux box with a different word list. Vendoring a fixture made it deterministic and real. A skip is not a pass.
+
+### Check whether an "out of scope" is yours or inherited
+
+Altered extensions (`Bbmaj7#11`) were deferred because the plan grouped them with Roman numerals and scale degrees. Challenged, the grouping didn't survive: `#11` is part of a chord symbol, a Roman numeral isn't. The work took about ten minutes and closed a real gap — half-converting a chord symbol is the same failure mode as half-converting a double.
+
+The lesson is not "be more ambitious." It's that a scope boundary copied from an upstream document should be re-derived before it's defended.
+
+### Parallel review with different mandates found disjoint defects
+
+The product-manager and code-reviewer agents ran concurrently over the same commit and their findings barely overlapped. The PM found the natural-sign leak and the missing acceptance-criteria pins; the reviewer found the parse-side asymmetry, the CI fragility, and the locale-dependent memoization. Neither would have surfaced the other's set. Two mandates, not two passes.
+
+### Verify the plan's own claims
+
+The plan asserted `KeySignature.get("C bebop")` hashed to `:c_be_flatop`. True of the `gsub` in isolation, unreachable through the public API — `bebop` is not a scale type this gem defines. One claim in maybe forty, but it had a spec written against it before it was checked. Plans are evidence, not fact.
+
+### Accepted debt
+
+Criterion 10 ("none is left behind as a second implementation") is **partially met, accepted deliberately**. `lib/head_music/utilities/hash_key.rb` still hard-codes all five glyphs, mapping glyph → word suffix (`♭` → `_flat`). That is a third direction the utility doesn't model, so it is duplication of the glyph *inventory* rather than a competing conversion. The list is small, stable, and now spec-covered. Deriving it from `Alteration` remains a clean follow-up if the inventory ever grows again.
 
 ## Review
 
