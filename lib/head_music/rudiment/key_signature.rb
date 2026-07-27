@@ -18,7 +18,7 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
 
     if identifier.is_a?(String)
       tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
-      hash_key = HeadMusic::Utilities::HashKey.for(HeadMusic::Utilities::Accidentals.to_unicode(identifier))
+      hash_key = HeadMusic::Utilities::HashKey.for(identifier)
       @key_signatures[hash_key] ||= new(tonic_spelling, scale_type_name)
     elsif identifier.is_a?(HeadMusic::Rudiment::DiatonicContext)
       identifier.key_signature
