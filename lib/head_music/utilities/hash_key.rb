@@ -29,13 +29,18 @@ class HeadMusic::Utilities::HashKey
     I18n.transliterate(desymbolized_string)
   end
 
+  # Doubles come before singles: the single-sharp rule would otherwise consume the
+  # first character of an ASCII "##" and leave a stray "#" behind. ASCII "b" is
+  # deliberately absent — mapping it would mangle every key containing the letter,
+  # such as :blues_major_pentatonic and :bass_clarinet.
   def desymbolized_string
     original.to_s
       .gsub("𝄫", "_double_flat")
+      .gsub("𝄪", "_double_sharp")
+      .gsub("##", "_double_sharp")
       .gsub("♭", "_flat")
       .gsub("♮", "_natural")
       .gsub("♯", "_sharp")
       .gsub("#", "_sharp")
-      .gsub("𝄪", "_double_sharp")
   end
 end

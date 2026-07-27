@@ -653,4 +653,27 @@ describe HeadMusic::Analysis::Dyad do
       end
     end
   end
+
+  # The enharmonic machinery builds candidate spellings from every letter name
+  # crossed with every alteration sign, then discards the ones Spelling.get cannot
+  # parse. ALTERATION_SIGNS has always included "##", but the parser rejected it, so
+  # double sharps were silently absent from the enharmonic universe. They are now
+  # included: 28 candidate spellings became 35, and a major third gained three
+  # respellings. The other assertions in this file are deliberately loose
+  # (be_an(Array)), so these exact counts are what would catch a silent change.
+  describe "enharmonic candidate set size" do
+    subject(:dyad) { described_class.new("C4", "E4") }
+
+    it "builds a fixed number of candidate spellings" do
+      expect(dyad.send(:all_spellings).size).to eq 35
+    end
+
+    it "finds a fixed number of respellings for a major third" do
+      expect(dyad.enharmonic_respellings.size).to eq 8
+    end
+
+    it "includes a double sharp spelling among the candidates" do
+      expect(dyad.send(:all_spellings).map(&:to_s)).to include "C𝄪"
+    end
+  end
 end

@@ -124,4 +124,22 @@ describe HeadMusic::Notation::ABC::PitchWriter do
       expect(reparse(tokens, key_signature)).to eq pitches
     end
   end
+
+  # ABC is an ASCII format. #token derives its accidental from Alteration#ascii,
+  # so anything that changes which symbol #ascii returns changes ABC output.
+  describe "ASCII output guarantee" do
+    %w[C4 C#4 Db4 Bb3 F#5 Cx4 Bbb3 E4 G#2 Ab6].each do |name|
+      it "writes #{name} without unicode accidentals" do
+        expect(writer.token(pitch(name))).not_to match(/[♭♯♮𝄫𝄪]/)
+      end
+    end
+
+    it "writes a double sharp using the doubled ASCII caret" do
+      expect(writer.token(pitch("Cx4"))).to eq "^^C"
+    end
+
+    it "writes a double flat using the doubled ASCII underscore" do
+      expect(writer.token(pitch("Bbb3"))).to eq "__B,"
+    end
+  end
 end

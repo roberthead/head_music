@@ -53,6 +53,7 @@ HEAD_MUSIC_FALLBACKS.each do |locale, fallbacks|
 end
 
 # utilities
+require "head_music/utilities/accidentals"
 require "head_music/utilities/case"
 require "head_music/utilities/hash_key"
 

@@ -17,6 +17,16 @@ describe HeadMusic::Instruments::InstrumentName do
       expect(name.to_s).to eq "made up parent in F♯"
     end
 
+    it "renders a double flat pitch designation as a single double-flat sign" do
+      name = described_class.new(name_key: :made_up_horn, parent_key: :made_up_parent, pitch_designation: "Bbb")
+      expect(name.to_s).to eq "made up parent in B𝄫"
+    end
+
+    it "renders a double sharp pitch designation as a single double-sharp sign" do
+      name = described_class.new(name_key: :made_up_horn, parent_key: :made_up_parent, pitch_designation: "Fx")
+      expect(name.to_s).to eq "made up parent in F𝄪"
+    end
+
     it "infers a plain name from the key when nothing else applies" do
       name = described_class.new(name_key: :slide_whistle_thing, parent_key: nil, pitch_designation: nil)
       expect(name.to_s).to eq "slide whistle thing"

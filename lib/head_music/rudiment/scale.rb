@@ -3,15 +3,13 @@ module HeadMusic::Rudiment; end
 
 # A scale contains ordered pitches starting at a tonal center.
 class HeadMusic::Rudiment::Scale < HeadMusic::Rudiment::Base
-  SCALE_REGEX = /^[A-G][#b]?\s+\w+$/
-
   def self.get(root_pitch, scale_type = nil)
     root_pitch = HeadMusic::Rudiment::Pitch.get(root_pitch)
     scale_type = HeadMusic::Rudiment::ScaleType.get(scale_type || HeadMusic::Rudiment::ScaleType::DEFAULT)
     @scales ||= {}
-    hash_key = HeadMusic::Utilities::HashKey.for(
-      [root_pitch, scale_type].join(" ").gsub(/#|♯/, "sharp").gsub(/(\w)[b♭]/, '\\1flat')
-    )
+    # Pitch#to_s already emits unicode accidentals and HashKey already desymbolizes
+    # them, so no accidental normalization is needed here.
+    hash_key = HeadMusic::Utilities::HashKey.for([root_pitch, scale_type].join(" "))
     @scales[hash_key] ||= new(root_pitch, scale_type)
   end
 

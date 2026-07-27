@@ -143,4 +143,20 @@ describe HeadMusic::Notation::ABC::KeyMapper do
         .to raise_error(HeadMusic::Notation::ABC::RenderError, /scale type/i)
     end
   end
+
+  # ABC is an ASCII format and its consumers reject the unicode accidental signs
+  # that Spelling#to_s produces. Nothing else in the suite asserts this, so any
+  # refactor of the tonic-rendering path could start emitting them unnoticed.
+  describe "ASCII output guarantee" do
+    %w[
+      C major G major F major Bb major Eb major Ab major Db major Gb major
+      D major A major E major B major F# major C# major
+      A minor E minor D minor G minor C minor F# minor Bb minor
+    ].each_slice(2) do |tonic, scale_type|
+      it "renders #{tonic} #{scale_type} without unicode accidentals" do
+        key_signature = HeadMusic::Rudiment::KeySignature.get("#{tonic} #{scale_type}")
+        expect(described_class.abc_value(key_signature)).not_to match(/[♭♯♮𝄫𝄪]/)
+      end
+    end
+  end
 end

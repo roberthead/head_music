@@ -84,4 +84,30 @@ describe HeadMusic::Rudiment::Scale do
       end
     end
   end
+
+  # .get memoizes on a hash key built from the root pitch and scale type. These
+  # pin the observable consequences of that key, which the accidental-normalization
+  # work rewrites.
+  describe "identifier normalization" do
+    it "memoizes repeated lookups of the same root and scale type" do
+      first_lookup = described_class.get("Bb4", "major")
+      expect(described_class.get("Bb4", "major")).to be first_lookup
+    end
+
+    it "starts a flat scale on the unicode-spelled root" do
+      expect(described_class.get("Bb4", "major").pitch_names.first).to eq "B♭4"
+    end
+
+    it "starts a sharp scale on the unicode-spelled root" do
+      expect(described_class.get("F#4", "minor").pitch_names.first).to eq "F♯4"
+    end
+
+    it "treats an ASCII root and a unicode root as the same scale" do
+      expect(described_class.get("Bb4", "major")).to eq described_class.get("B♭4", "major")
+    end
+
+    it "keeps scales on different roots distinct" do
+      expect(described_class.get("Bb4", "major")).not_to eq described_class.get("B4", "major")
+    end
+  end
 end

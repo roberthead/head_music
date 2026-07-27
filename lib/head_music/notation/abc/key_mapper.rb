@@ -4,7 +4,10 @@
 # KeySignature.get, which splits tonic and scale type on whitespace,
 # so the mode word is normalized into a "tonic mode" string first.
 class HeadMusic::Notation::ABC::KeyMapper
-  KEY_PATTERN = /\A([A-G])([#♯b♭]?)\s*([A-Za-z]*)/
+  # The alteration group wraps the pattern in (?:...) before making it optional.
+  # Writing (...)? instead leaves match[2] nil for every unaltered key ("C", "Ador"),
+  # which raises downstream where the capture is interpolated into a string.
+  KEY_PATTERN = /\A([A-G])((?:#{HeadMusic::Rudiment::Alteration::PATTERN.source})?)\s*([A-Za-z]*)/
 
   # Mode words are matched case-insensitively on their first three letters,
   # so abbreviations ("dor") and full names ("Dorian") both resolve.
@@ -49,8 +52,9 @@ class HeadMusic::Notation::ABC::KeyMapper
     end
 
     # ABC convention uses ASCII "#"/"b" rather than the unicode signs
-    # that Spelling#to_s produces.
-    "#{spelling.letter_name}#{alteration&.ascii}"
+    # that Spelling#to_s produces. The double-altered guard above runs first, since
+    # this would otherwise happily emit "Cx".
+    HeadMusic::Utilities::Accidentals.to_ascii(spelling.to_s)
   end
   private_class_method :tonic_string
 

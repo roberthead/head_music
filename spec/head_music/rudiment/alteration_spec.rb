@@ -98,7 +98,22 @@ describe HeadMusic::Rudiment::Alteration do
     specify { expect(described_class::MATCHER).not_to match "h" }
     specify { expect(described_class::MATCHER).not_to match "" }
 
-    specify { expect(described_class::PATTERN).to eq(/𝄫|bb|♭|b|♮|♯|\#|𝄪|x/) }
-    specify { expect(described_class::MATCHER).to eq(/𝄫|bb|♭|b|♮|♯|\#|𝄪|x/) }
+    specify { expect(described_class::PATTERN).to match "𝄪" }
+    specify { expect(described_class::PATTERN).to match "x" }
+
+    # The pattern alternates in array order rather than by longest match, so every
+    # two-character spelling must precede its one-character prefix. Matching the
+    # prefix first would leave a stray character behind and half-convert a double.
+    specify { expect("Bbb"[described_class::PATTERN]).to eq "bb" }
+  end
+
+  # ABC's accidental table is keyed on these exact strings, and Alteration#ascii is
+  # what feeds it. Changing which symbol #ascii returns silently changes ABC output.
+  describe "#ascii" do
+    specify { expect(described_class.get(:double_sharp).ascii).to eq "x" }
+    specify { expect(described_class.get(:sharp).ascii).to eq "#" }
+    specify { expect(described_class.get(:natural).ascii).to eq "" }
+    specify { expect(described_class.get(:flat).ascii).to eq "b" }
+    specify { expect(described_class.get(:double_flat).ascii).to eq "bb" }
   end
 end

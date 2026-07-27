@@ -205,4 +205,37 @@ describe HeadMusic::Rudiment::KeySignature do
     specify { expect(described_class.get("D minor").to_s).to eq "1 flat" }
     specify { expect(described_class.get("C major").to_s).to eq "no sharps or flats" }
   end
+
+  # .get memoizes on a hash key derived from the identifier. The key itself is
+  # private, so these pin the observable consequences: which identifiers collapse
+  # onto one cached instance, and which stay distinct.
+  describe "identifier normalization" do
+    it "memoizes repeated lookups of the same identifier" do
+      first_lookup = described_class.get("Bb major")
+      expect(described_class.get("Bb major")).to be first_lookup
+    end
+
+    it "treats an ASCII flat and a unicode flat as the same key signature" do
+      expect(described_class.get("Bb major")).to eq described_class.get("B♭ major")
+    end
+
+    it "resolves a double flat spelled with two ASCII flats" do
+      expect(described_class.get("Bbb major").name).to eq "B𝄫 major"
+    end
+
+    it "resolves a double sharp spelled with x" do
+      expect(described_class.get("Fx major").name).to eq "F𝄪 major"
+    end
+
+    it "keeps distinct tonics distinct" do
+      expect(described_class.get("Bb major")).not_to eq described_class.get("B major")
+    end
+
+    # The scale type word must survive identifier normalization intact. These names
+    # begin with a flat-shaped letter, so a normalization rule anchored too loosely
+    # would corrupt them into "blues" -> "b_flatues".
+    it "does not mangle a scale type word beginning with a flat-shaped letter" do
+      expect(described_class.get("C blues_minor_pentatonic").name).to eq "C minor"
+    end
+  end
 end

@@ -27,6 +27,12 @@ alterations:
   double_sharp:
     semitones: 2
     symbols:
+      # "x" stays first: #ascii reads the first record, and ABC's accidental table
+      # is keyed on "x". "##" is accepted as input for symmetry with "bb", but is
+      # never emitted.
       - ascii: "x"
+        unicode: "𝄪"
+        html_entity: "&#119082;"
+      - ascii: "##"
         unicode: "𝄪"
         html_entity: "&#119082;"

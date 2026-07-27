@@ -16,8 +16,12 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   delegate :pitch_class, :midi_note_number, :frequency, to: :pitch
 
   # Regex pattern for parsing note strings like "C#4 quarter" or "Eb3 dotted half"
-  # Extract the core pattern from Spelling::MATCHER without anchors
-  PITCH_PATTERN = /([A-G])(#{HeadMusic::Rudiment::Alteration::PATTERN.source}?)(-?\d+)?/i
+  # Extract the core pattern from Spelling::MATCHER without anchors.
+  #
+  # The alteration group wraps the whole pattern in (?:...) before making it
+  # optional. Interpolating "#{...}?" instead binds the "?" to the pattern's final
+  # alternative alone, which truncates "C##4" to a bare "C#" and loses the register.
+  PITCH_PATTERN = /([A-G])((?:#{HeadMusic::Rudiment::Alteration::PATTERN.source})?)(-?\d+)?/i
   MATCHER = /^\s*(#{PITCH_PATTERN.source})\s+(.+)$/i
 
   def self.get(pitch, rhythmic_value = nil)

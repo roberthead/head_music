@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-07-26T19:28:59-07:00
   planned_at:   2026-07-26T20:05:31-07:00
   finished_at:
-  updated_at:   2026-07-26T20:37:15-07:00
+  updated_at:   2026-07-26T21:18:54-07:00
 -->
 
 # Story: Accidental String Normalization
@@ -340,7 +340,9 @@ Verified: `"C##4".match(PITCH_PATTERN).captures` is currently `["C", "#", nil]` 
 | **`"C bebop"`** | **`:c_be_flatop`** | `:c_bebop` |
 | `"bb major"` | `:b_flat_major` *(collides)* | `:bb_major` |
 
-`"C bebop"` is a genuine mangling by `(\w)[b♭]` that this fixes. The first four *unify* `Fx`/`C##`/`F𝄪` onto one cache entry — correct, they are the same key signature.
+The first four *unify* `Fx`/`C##`/`F𝄪` onto one cache entry — correct, they are the same key signature.
+
+**Correction found during implementation:** the `"C bebop"` → `:c_be_flatop` mangling is real in the gsub but **unreachable through the public API** — `bebop` is not a scale type this gem defines, so `KeySignature.get("C bebop")` raises in `ScaleType` before the hash key matters. The `blues_*` scale types that *do* exist are unaffected, because `(\w)[b♭]` requires a word character before the `b` and theirs is preceded by a space. The spec written for this pins the reachable case (`C blues_minor_pentatonic`) instead.
 
 **7. `scale.rb:12-14`**
 

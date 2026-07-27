@@ -15,7 +15,14 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
     YAML.load_file(File.expand_path("alterations.yml", __dir__), symbolize_names: true)[:alterations].freeze
 
   ALTERATION_IDENTIFIERS = ALTERATION_RECORDS.keys.freeze
-  SYMBOLS = ALTERATION_RECORDS.map { |key, attributes| attributes[:symbols].map { |symbol| [symbol[:unicode], symbol[:ascii]] } }.flatten.reject { |s| s.nil? || s.empty? }.freeze
+  # Sorted longest-first because Regexp.union alternates in array order rather than
+  # by longest match. Without it, "bb" would match the single-flat branch and leave a
+  # stray "b" behind, half-converting a double.
+  SYMBOLS = ALTERATION_RECORDS
+    .map { |key, attributes| attributes[:symbols].map { |symbol| [symbol[:unicode], symbol[:ascii]] } }
+    .flatten.reject { |s| s.nil? || s.empty? }.uniq
+    .sort_by { |symbol| -symbol.length }
+    .freeze
   PATTERN = Regexp.union(SYMBOLS)
   MATCHER = PATTERN
 
@@ -24,7 +31,7 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
   end
 
   def self.symbols
-    @symbols ||= all.map { |alteration| [alteration.ascii, alteration.unicode] }.flatten.reject { |s| s.nil? || s.empty? }
+    SYMBOLS
   end
 
   def self.symbol?(candidate)
@@ -53,9 +60,13 @@ class HeadMusic::Rudiment::Alteration < HeadMusic::Rudiment::Base
     super || identifier.to_s.tr("_", " ")
   end
 
+  # Spans every symbol record, not just the primary one, so that an alternate ASCII
+  # spelling like "##" resolves through .get. Memoized because .get runs on every
+  # parse and walks this list for each alteration.
   def representations
-    [identifier, identifier.to_s, name, ascii, unicode, html_entity]
-      .reject { |representation| representation.to_s.strip == "" }
+    @representations ||=
+      ([identifier, identifier.to_s, name] + musical_symbols.flat_map { |symbol| [symbol.ascii, symbol.unicode, symbol.html_entity] })
+        .reject { |representation| representation.to_s.strip == "" }
   end
 
   ALTERATION_RECORDS.keys.each do |key|

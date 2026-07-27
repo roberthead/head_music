@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [18.0.0] - 2026-07-26
+
+### Added
+
+- `HeadMusic::Utilities::Accidentals` converts accidentals in a string between ASCII spellings and canonical unicode glyphs, replacing the hand-rolled `gsub` and `tr` chains that were scattered across the gem and disagreed with each other. `.to_unicode` converts whole chord symbols rather than bare pitch names — `Bbmaj7#11` becomes `B♭maj7♯11` — and `.to_ascii` converts back, emitting the spellings the gem's own parsers accept (`x` for a double sharp, never `##`). Both directions are idempotent, and conversion is all-or-nothing per accidental so a double never half-converts.
+- The forward direction is safe to run over prose. Conversion happens only inside a candidate chord token, an uppercase letter name that does not continue a longer word or number, so `Above`, `Bebop`, `1.0b2`, and `0x1B2F` are untouched while `Bb`, `Ab7`, `Bbm`, and `Ebmaj7` convert. A chord-quality allowlist rescues `Bbm` and `Ebmaj7` from the word-boundary guard that protects `Above`; the allowlist was measured against a full system word list and is pinned by a spec that sweeps it.
+- `##` is now accepted everywhere `bb` already was, ending the asymmetry between the two doubles. `Alteration.get("##")` resolves to `double_sharp` and `Spelling.get("C##")` returns `C𝄪`.
+
+### Changed
+
+- **Breaking.** `Spelling.get("C##")` returns a `Spelling` instead of `nil`, and the same widening applies to `Pitch`, `Note`, `KeySignature`, and ABC `K:` fields. Code that treated that `nil` as a validation signal now silently accepts double sharps.
+- **Breaking.** `Alteration::PATTERN`, `Alteration::MATCHER`, and `Alteration::SYMBOLS` gain `##` and are now sorted longest-first so that a two-character spelling always matches before its one-character prefix. Code embedding these in its own regular expressions will see different matches.
+- **Breaking.** `Alteration.symbols` now returns `SYMBOLS` rather than a separately derived list that disagreed with it.
+- **Breaking.** `Analysis::Dyad` gains double sharps in its enharmonic universe, which were previously built as candidates and then silently discarded by the parser. Candidate spellings grow from 28 to 35, and a major third gains three respellings.
+- **Breaking.** `Rudiment::Scale::SCALE_REGEX` is removed. It was unreferenced, and its singles-only `[#b]?` was an instance of the asymmetry this release closes.
+- **Breaking.** `KeySignature` and `Scale` memoization keys change for identifiers containing accidentals. `Fx`, `C##`, and `F𝄪` now unify onto one cache entry, as they name the same key signature.
+- `Rudiment::Note::PITCH_PATTERN` no longer truncates a double sharp. `"C##4"` previously parsed as `["C", "#", nil]`, silently losing the register, because the optional quantifier bound to the pattern's final alternative rather than to the whole alternation.
+
 ## [17.5.0] - 2026-07-21
 
 ### Added

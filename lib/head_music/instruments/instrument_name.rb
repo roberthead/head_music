@@ -44,6 +44,6 @@ class HeadMusic::Instruments::InstrumentName
   end
 
   def format_pitch_name(pitch_designation)
-    pitch_designation.to_s.tr("b", "♭").tr("#", "♯")
+    HeadMusic::Utilities::Accidentals.to_unicode(pitch_designation)
   end
 end
