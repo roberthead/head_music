@@ -104,9 +104,66 @@ describe HeadMusic::Style::Guide do
     it "gives every guide something to analyze with" do
       expect(described_class.all).to all(respond_to(:analyze))
     end
+
+    # The registry resolves every ruleset at require time so that nothing is
+    # written to after load and concurrent lookups cannot race on the memo.
+    # Without this example, deleting that line leaves the suite green.
+    it "resolves every configured ruleset at load rather than on first use" do
+      configured = described_class.all.reject { |guide| guide.is_a?(Class) }
+
+      expect(configured).to all(satisfy { |guide| guide.instance_variable_defined?(:@ruleset) })
+    end
+
+    it "names every guide" do
+      expect(described_class.all.map(&:display_name)).to all(be_a(String).and(match(/\S/)))
+    end
+
+    # Six of the entries share one class, so a display_name falling back to the
+    # class would render all six as "Contour Melody" in a consumer's picker.
+    it "names each guide distinctly" do
+      names = described_class.all.map(&:display_name)
+
+      expect(names.uniq.length).to eq names.length
+    end
   end
 
   describe ".keys" do
+    # Seventeen of these are derived from class names, so a rename would change
+    # a value consumers have persisted -- silently, and with every other example
+    # here still green. Spelled out literally so that rename has to come here
+    # and be acknowledged. Doubles as the catalog of what the gem offers.
+    let(:published_keys) do
+      %w[
+        arch_contour_melody
+        ascending_contour_melody
+        combined_first_second_third_species_harmony
+        combined_first_second_third_species_melody
+        descending_contour_melody
+        diatonic_melody
+        fifth_species_harmony
+        fifth_species_melody
+        first_species_harmony
+        first_species_melody
+        fourth_species_harmony
+        fourth_species_melody
+        fux_cantus_firmus
+        salzer_schachter_cantus_firmus
+        second_species_harmony
+        second_species_melody
+        static_contour_melody
+        third_species_harmony
+        third_species_melody
+        third_species_triple_meter_harmony
+        third_species_triple_meter_melody
+        valley_contour_melody
+        wave_contour_melody
+      ]
+    end
+
+    it "publishes exactly these keys" do
+      expect(described_class.keys).to match_array published_keys
+    end
+
     it "returns twenty-three unique keys" do
       expect(described_class.keys.uniq.length).to eq 23
     end

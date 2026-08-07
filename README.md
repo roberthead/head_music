@@ -68,12 +68,17 @@ analysis.messages   # => ["Prefer contrary motion. Move voices in different melo
 ```
 
 Guides whose ruleset varies by configuration are built with `.with`. The six contour melodies are
-registered under their own keys, so either spelling works:
+registered under their own keys, and each key is exactly one such configuration:
 
 ```ruby
 HeadMusic::Style::Guide.get('arch_contour_melody')
+# the same guide, spelled out
 HeadMusic::Style::Guides::ContourMelody.with(contour: :arch, minimum_melodic_intervals: 2)
 ```
+
+Configure it differently and you get a different guide — one the registry does not hold, whose `key`
+is `nil` and whose `display_name` falls back to the class. Prefer the key when you mean a registered
+guide, and `.with` when you deliberately want a configuration of your own.
 
 ## Documentation
 
