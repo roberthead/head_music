@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The ABC parser and lexer and the MusicXML writer each shed a responsibility to a collaborator, leaving no file in the gem above a RubyCritic C. Behavior is unchanged — no public method signature moved — but four constants did:
+  - `Notation::ABC::BodyLexer::Token` is now `Notation::ABC::Token`. The token type is consumed by `Parser` and `Preflight`, not just the lexer.
+  - `Notation::ABC::BodyLexer::ChordNote` is now `Notation::ABC::ChordScanner::ChordNote`, alongside the bracket-chord scanning that produces it.
+  - `Notation::ABC::Parser::REPEAT_ENDING_STYLES`, `REPEAT_STARTING_STYLES`, and `SECTION_ENDING_STYLES` are now on `Notation::ABC::RepeatTagger`, which applies the repeat and volta marks they describe.
+  - `Notation::MusicXML::Writer::XML_ESCAPES` is now `Notation::MusicXML::XmlText::ESCAPES`, shared with the note and lyric writers. `Writer::INDENT` still resolves, through the same module.
+
 ## [18.0.0] - 2026-07-27
 
 ### Added

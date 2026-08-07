@@ -1,30 +1,26 @@
+require_relative "xml_text"
+
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Renders a HeadMusic::Content::Composition as a score-partwise MusicXML 4.0
   # document string.
   #
+  # Assembles the document down to the measure; NoteWriter serializes what goes
+  # inside each measure.
+  #
   # Whole-composition problems (no voices, positional gaps, barline-crossing
   # notes, unmappable keys or durations, forbidden control characters) raise
   # before any assembly, so #to_s only ever returns a complete document.
   class Writer
-    INDENT = "  "
-    XML_ESCAPES = {
-      "&" => "&amp;",
-      "<" => "&lt;",
-      ">" => "&gt;",
-      '"' => "&quot;",
-      "'" => "&apos;"
-    }.freeze
-    include HeadMusic::Notation::PlacementValidation
+    include XmlText
 
     attr_reader :composition
 
     # The rendering facts the serialization methods below read; RenderPlan
     # computes them from the composition.
     delegate(
-      :divisions, :components_by_placement, :beam_annotations, :bar_numbers,
-      :measure_key_changes, :measure_time_changes, :first_measure_key,
-      :first_measure_meter, :effective_meter, :placements_by_bar,
+      :divisions, :bar_numbers, :measure_key_changes, :measure_time_changes,
+      :first_measure_key, :first_measure_meter, :placements_by_bar,
       :whole_measure_duration,
       to: :plan
     )
@@ -45,6 +41,10 @@ module HeadMusic::Notation::MusicXML
     # unmappable key or duration raises before any output is produced.
     def plan
       @plan ||= RenderPlan.new(composition)
+    end
+
+    def note_writer
+      @note_writer ||= NoteWriter.new(plan)
     end
 
     def document_lines
@@ -179,7 +179,7 @@ module HeadMusic::Notation::MusicXML
       placements = placements_by_bar(voice)[bar_number]
       return whole_measure_rest_lines(bar_number) unless placements
 
-      placements.flat_map { |placement| note_lines(placement) }
+      placements.flat_map { |placement| note_writer.lines(placement) }
     end
 
     def whole_measure_rest_lines(bar_number)
@@ -189,135 +189,6 @@ module HeadMusic::Notation::MusicXML
         "#{INDENT * 4}<duration>#{whole_measure_duration(bar_number)}</duration>",
         "#{INDENT * 3}</note>"
       ]
-    end
-
-    def note_lines(placement)
-      ensure_pitched_sounds(placement)
-
-      components_by_placement[placement].each_with_index.flat_map do |component, component_index|
-        beams = beam_annotations[[placement, component_index]] || []
-        note_slots(placement).each_with_index.flat_map do |pitch, index|
-          note_element_lines(
-            placement, component, pitch: pitch, chord: index.positive?, beams: index.zero? ? beams : []
-          )
-        end
-      end
-    end
-
-    # A rest emits one empty slot; a sounded placement emits its pitches low to
-    # high, so the lowest note leads and the rest carry <chord/>. ensure_pitched_sounds
-    # has already rejected any unpitched sound, so pitches covers every sound here.
-    def note_slots(placement)
-      placement.rest? ? [nil] : placement.pitches.sort
-    end
-
-    def render_error_class
-      RenderError
-    end
-
-    # A chord note carries <chord/> as its first child, before <pitch>, marking
-    # it as sounding with the preceding note; the lead note (and every single
-    # note and rest) omits it, so this path stays byte-identical for those.
-    def note_element_lines(placement, component, pitch: nil, chord: false, beams: [])
-      [
-        "#{INDENT * 3}<note>",
-        *(chord ? ["#{INDENT * 4}<chord/>"] : []),
-        *(pitch ? pitch_lines(pitch) : ["#{INDENT * 4}<rest/>"]),
-        "#{INDENT * 4}<duration>#{component.duration}</duration>",
-        *tie_lines(placement, component),
-        "#{INDENT * 4}<type>#{component.type}</type>",
-        *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
-        *beam_lines(beams),
-        *notation_lines(placement, component),
-        *lyric_lines(placement, component, chord: chord),
-        "#{INDENT * 3}</note>"
-      ]
-    end
-
-    # <lyric> is the last child of <note>. Sung text rides only the lead note
-    # of a chord and only the attack of a tied chain (a tie_stop component is a
-    # continuation, sung once at the start). Held notes of a melisma carry no
-    # syllable and so emit nothing, matching MusicXML's continuation-by-absence.
-    def lyric_lines(placement, component, chord:)
-      return [] if chord || placement.rest? || component.tie_stop
-
-      placement.syllables.keys.sort.flat_map do |verse|
-        syllable = placement.syllables[verse]
-        [
-          %(#{INDENT * 4}<lyric number="#{verse}">),
-          "#{INDENT * 5}<syllabic>#{syllabic(placement, syllable)}</syllabic>",
-          "#{INDENT * 5}<text>#{escape(syllable.text)}</text>",
-          "#{INDENT * 4}</lyric>"
-        ]
-      end
-    end
-
-    # Derives MusicXML's single/begin/middle/end from our stored hyphen_after
-    # booleans: this syllable's, and the previous sung note's for the same verse.
-    def syllabic(placement, syllable)
-      from_previous = previous_syllable(placement, syllable.verse)&.hyphen_after?
-      if from_previous
-        syllable.hyphen_after? ? "middle" : "end"
-      else
-        syllable.hyphen_after? ? "begin" : "single"
-      end
-    end
-
-    # The syllable on the nearest earlier placement in the same voice carrying
-    # text for this verse. Placements are position-sorted, and melisma gaps are
-    # skipped because only sung placements are collected. Array#index compares
-    # with ==, which on Placement is position-only, but a voice holds at most
-    # one placement per position (Voice#insert_into_placements), so that still
-    # locates this exact placement.
-    def previous_syllable(placement, verse)
-      @sung_placements ||= {}
-      sung = @sung_placements[[placement.voice, verse]] ||=
-        placement.voice.placements.select { |candidate| candidate.syllable(verse) }
-      index = sung.index(placement)
-      return nil if index.nil? || index.zero?
-
-      sung[index - 1].syllable(verse)
-    end
-
-    def beam_lines(beams)
-      beams.map { |beam| %(#{INDENT * 4}<beam number="#{beam.number}">#{beam.type}</beam>) }
-    end
-
-    def pitch_lines(pitch)
-      attributes = PitchWriter.attributes(pitch)
-      [
-        "#{INDENT * 4}<pitch>",
-        "#{INDENT * 5}<step>#{attributes[:step]}</step>",
-        attributes[:alter] && "#{INDENT * 5}<alter>#{attributes[:alter]}</alter>",
-        "#{INDENT * 5}<octave>#{attributes[:octave]}</octave>",
-        "#{INDENT * 4}</pitch>"
-      ].compact
-    end
-
-    # Rests take no tie elements; the links of a rest's tied chain render as
-    # consecutive independent rests.
-    def tie_lines(placement, component)
-      return [] if placement.rest?
-
-      [
-        component.tie_stop ? %(#{INDENT * 4}<tie type="stop"/>) : nil,
-        component.tie_start ? %(#{INDENT * 4}<tie type="start"/>) : nil
-      ].compact
-    end
-
-    def notation_lines(placement, component)
-      return [] if placement.rest? || (!component.tie_start && !component.tie_stop)
-
-      [
-        "#{INDENT * 4}<notations>",
-        component.tie_stop ? %(#{INDENT * 5}<tied type="stop"/>) : nil,
-        component.tie_start ? %(#{INDENT * 5}<tied type="start"/>) : nil,
-        "#{INDENT * 4}</notations>"
-      ].compact
-    end
-
-    def escape(text)
-      text.to_s.gsub(/[&<>"']/) { |character| XML_ESCAPES[character] }
     end
   end
 end

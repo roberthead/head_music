@@ -14,11 +14,6 @@ module HeadMusic::Notation::ABC
       :< => [Rational(1, 2), Rational(3, 2)]
     }.freeze
 
-    # Bar styles that end a repeated section, terminating any volta.
-    REPEAT_ENDING_STYLES = [":|", "::"].freeze
-    REPEAT_STARTING_STYLES = ["|:", "::"].freeze
-    SECTION_ENDING_STYLES = ["||", "|]", "[|"].freeze
-
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
     def initialize(abc_string, start_line: 1)
@@ -62,25 +57,12 @@ module HeadMusic::Notation::ABC
     end
 
     def setup_voices(tokens)
-      @voice_states = {}
-      header.voice_ids.each { |voice_id| voice_state(voice_id) }
-      if @voice_states.empty? && tokens.none? { |token| token.type == :voice_change }
-        voice_state(nil)
-      end
-      @current_state = @voice_states.values.first
+      @voices = VoiceRegistry.new(@building, header.key_signature, duration_resolver)
+      @voices.declare(header.voice_ids, default: tokens.none? { |token| token.type == :voice_change })
     end
 
-    def voice_state(role)
-      @voice_states[role] ||= VoiceState.new(
-        @building.add_voice(role: role),
-        PitchBuilder.new(header.key_signature),
-        duration_resolver
-      )
-    end
-
-    # Body music before any V: line falls into a default unnamed voice.
     def current_state
-      @current_state ||= voice_state(nil)
+      @voices.current
     end
 
     def handle(token)
@@ -103,47 +85,10 @@ module HeadMusic::Notation::ABC
       state.defer_placement([pitch], token.length)
     end
 
-    # Chord pitches resolve in bracket order, so an explicit accidental
-    # inside a chord persists for the rest of the bar like any other.
     def handle_chord(token)
       state = current_state
-      pitches = token.notes.map do |note|
-        state.pitch_builder.pitch(note.letter, note.octave_marks, note.accidental)
-      end
-      ensure_unique_chord_pitches(pitches, token)
-      inner_length = uniform_chord_length(token)
+      pitches, inner_length = chord_reader.read(token, state.pitch_builder)
       state.defer_placement(pitches, token.length, inner_length)
-    end
-
-    def ensure_unique_chord_pitches(pitches, token)
-      return if pitches.uniq.length == pitches.length
-
-      raise ParseError.new(
-        "Chord pitches must be unique",
-        line_number: token.line, snippet: chord_snippet(token)
-      )
-    end
-
-    # ABC 2.1 sec. 4.17 allows per-note lengths only when they agree; the
-    # shared inner length then multiplies with any outer length. Unequal
-    # lengths (whose ABC meaning is "the duration of the first note") would
-    # need silent reinterpretation to fit one rhythmic value, so we reject.
-    def uniform_chord_length(token)
-      fractions = token.notes.map { |note| duration_resolver.length_fraction(note.length) }
-      return fractions.first if fractions.uniq.length == 1
-
-      raise ParseError.new(
-        'Chord notes must share one length; write it after the bracket ("[CEG]2") ' \
-        'or repeat it on every note ("[C2E2G2]")',
-        line_number: token.line, snippet: chord_snippet(token)
-      )
-    end
-
-    def chord_snippet(token)
-      inner = token.notes.map do |note|
-        "#{note.accidental}#{note.letter}#{note.octave_marks}#{note.length}"
-      end.join
-      "[#{inner}]"
     end
 
     # The lexer only emits :beam_break after a music token, so a voice
@@ -207,9 +152,7 @@ module HeadMusic::Notation::ABC
       reject_open_tie(state, token.line, "Ties across barlines are not yet supported")
       state.flush_pending_note
       state.reset_beam_adjacency
-      tag_completed_bar(state)
-      apply_repeat_flags(state, style)
-      clear_passes_if_over(state, style)
+      repeat_tagger.bar_line(state, style)
       state.pitch_builder.start_new_bar
     end
 
@@ -223,27 +166,27 @@ module HeadMusic::Notation::ABC
       reject_open_tie(state, line, "A tie must be followed by a note")
       state.flush_pending_note
       state.reset_beam_adjacency
-      state.active_passes = passes
-      state.volta_start_bar = state.entered_bar_number
+      repeat_tagger.open_volta(state, passes)
     end
 
     def handle_voice_change(token)
       # Guarded so a leading V: line doesn't force a default voice into existence.
-      if @current_state
-        ensure_not_awaiting_note(token, state: @current_state)
-        reject_open_tie(@current_state, token.line, "A tie must be followed by a note")
-        @current_state.flush_pending_note
-        @current_state.reset_beam_adjacency
+      if @voices.any?
+        state = current_state
+        ensure_not_awaiting_note(token, state: state)
+        reject_open_tie(state, token.line, "A tie must be followed by a note")
+        state.flush_pending_note
+        state.reset_beam_adjacency
       end
-      @current_state = voice_state(token.voice_id)
+      @voices.switch_to(token.voice_id)
     end
 
     def finish
-      @voice_states.each_value do |state|
+      @voices.each do |state|
         ensure_not_awaiting_note(nil, state: state)
         reject_open_tie(state, nil, "A tie must be followed by a note")
         state.flush_pending_note
-        tag_completed_bar(state)
+        repeat_tagger.tag_completed_bar(state)
       end
     end
 
@@ -256,37 +199,12 @@ module HeadMusic::Notation::ABC
       )
     end
 
-    def apply_repeat_flags(state, style)
-      if REPEAT_ENDING_STYLES.include?(style)
-        completed = state.completed_bar_number
-        bar(completed).ends_repeat_after_num_plays = 2 if completed
-      end
-      return unless REPEAT_STARTING_STYLES.include?(style)
-
-      bar(state.entered_bar_number).starts_repeat = true
+    def chord_reader
+      @chord_reader ||= ChordReader.new(duration_resolver)
     end
 
-    # A volta covers every bar from its opening bracket through the bar
-    # line that ends it, so each completed bar in that span gets tagged.
-    def tag_completed_bar(state)
-      passes = state.active_passes
-      return unless passes
-
-      completed = state.completed_bar_number
-      return unless completed && completed >= state.volta_start_bar
-
-      bar(completed).plays_on_passes = passes
-    end
-
-    def clear_passes_if_over(state, style)
-      return unless REPEAT_ENDING_STYLES.include?(style) || SECTION_ENDING_STYLES.include?(style)
-
-      state.active_passes = nil
-      state.volta_start_bar = nil
-    end
-
-    def bar(bar_number)
-      @building.bars(bar_number).last
+    def repeat_tagger
+      @repeat_tagger ||= RepeatTagger.new(@building)
     end
   end
 end
