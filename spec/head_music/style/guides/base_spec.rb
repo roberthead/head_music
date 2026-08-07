@@ -2,9 +2,12 @@ require "spec_helper"
 
 describe HeadMusic::Style::Guides::Base do
   guides = HeadMusic::Style::Guides
-  all_guides = guides.constants.map { |const| guides.const_get(const) }.select { |klass| klass.is_a?(Class) }
-  melodic_guides = all_guides.select { |klass| klass < guides::SpeciesMelody && klass.const_defined?(:RULESET, false) }
-  harmonic_guides = all_guides.select { |klass| klass < guides::SpeciesHarmony && klass.const_defined?(:RULESET, false) }
+
+  # The registry is the enumeration now: entries are guide classes and the six
+  # preconfigured contour guides, so the counts cover both kinds uniformly.
+  entries = HeadMusic::Style::Guide.all
+  melodic_guides = entries.select { |entry| entry.category == :melody }
+  harmonic_guides = entries.select { |entry| entry.category == :harmony }
 
   it "recognizes sixteen melodic guides" do
     expect(melodic_guides.length).to eq 16
@@ -12,6 +15,20 @@ describe HeadMusic::Style::Guides::Base do
 
   it "recognizes seven harmonic guides" do
     expect(harmonic_guides.length).to eq 7
+  end
+
+  # Guards the explicit registry list against drift when a guide class is added.
+  # The const_defined?(:RULESET, false) filter excludes abstract bases and the
+  # PermissiveGuide that analysis_spec.rb injects into the namespace at load.
+  it "registers every guide class that defines its own ruleset" do
+    classes = guides.constants.map { |const| guides.const_get(const) }
+      .select { |klass| klass.is_a?(Class) && klass.const_defined?(:RULESET, false) }
+    registered = entries.map { |entry| entry.is_a?(Class) ? entry : entry.guide_class }.uniq
+    expect(classes - registered).to be_empty
+  end
+
+  it "round-trips every registered key" do
+    expect(entries.map { |entry| HeadMusic::Style::Guide.get(entry.key) }).to eq entries
   end
 
   # a core guideline may appear bare or wrapped with preset options via .with(...)
@@ -23,16 +40,50 @@ describe HeadMusic::Style::Guides::Base do
   end
 
   melodic_guides.each do |guide|
-    it "#{guide.name.split("::").last} enforces the melodic core" do
-      unenforced = guides::SpeciesMelody::MELODIC_CORE.reject { |core| enforced_by?(guide::RULESET, core) }
+    it "#{guide.key} enforces the melodic core" do
+      unenforced = guides::SpeciesMelody::MELODIC_CORE.reject { |core| enforced_by?(guide.ruleset, core) }
       expect(unenforced).to be_empty
     end
   end
 
   harmonic_guides.each do |guide|
-    it "#{guide.name.split("::").last} enforces the harmonic core" do
-      unenforced = guides::SpeciesHarmony::HARMONIC_CORE.reject { |core| enforced_by?(guide::RULESET, core) }
+    it "#{guide.key} enforces the harmonic core" do
+      unenforced = guides::SpeciesHarmony::HARMONIC_CORE.reject { |core| enforced_by?(guide.ruleset, core) }
       expect(unenforced).to be_empty
+    end
+  end
+
+  describe "class-level identity" do
+    it "derives a key from the demodulized class name" do
+      expect(guides::SalzerSchachterCantusFirmus.key).to eq "salzer_schachter_cantus_firmus"
+    end
+
+    it "derives a display name from the key" do
+      expect(guides::FirstSpeciesHarmony.display_name).to eq "First Species Harmony"
+    end
+
+    it "leaves the category undeclared on the base class" do
+      expect(described_class.category).to be_nil
+    end
+
+    it "declares melody on the melodic marker" do
+      expect(guides::SpeciesMelody.category).to eq :melody
+    end
+
+    it "declares harmony on the harmonic marker" do
+      expect(guides::SpeciesHarmony.category).to eq :harmony
+    end
+  end
+
+  describe ".ruleset" do
+    it "reads the guide's own frozen ruleset constant" do
+      expect(guides::FuxCantusFirmus.ruleset).to be guides::FuxCantusFirmus::RULESET
+    end
+  end
+
+  describe ".with" do
+    it "pairs a guide class with configuration" do
+      expect(guides::FuxCantusFirmus.with).to be_a(guides::Configured)
     end
   end
 end

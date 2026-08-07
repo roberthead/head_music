@@ -52,6 +52,29 @@ chord = HeadMusic::Analysis::PitchSet.new(pitches)
 puts chord.major_triad?  # => true
 ```
 
+## Style Analysis
+
+Look up a style guide by key and analyze a voice against it. `Style::Guide.get` returns `nil` for an
+unknown key, so a stored key can be validated before use.
+
+```ruby
+guide = HeadMusic::Style::Guide.get('first_species_harmony')
+guide.category      # => :harmony
+guide.display_name  # => "First Species Harmony"
+
+analysis = HeadMusic::Style::Analysis.new(guide, voice)
+analysis.fitness    # => 0.0 to 1.0
+analysis.messages   # => ["Prefer contrary motion. Move voices in different melodic directions."]
+```
+
+Guides whose ruleset varies by configuration are built with `.with`. The six contour melodies are
+registered under their own keys, so either spelling works:
+
+```ruby
+HeadMusic::Style::Guide.get('arch_contour_melody')
+HeadMusic::Style::Guides::ContourMelody.with(contour: :arch, minimum_melodic_intervals: 2)
+```
+
 ## Documentation
 
 - **API Documentation**: [rubydoc.info/gems/head_music](https://rubydoc.info/gems/head_music)

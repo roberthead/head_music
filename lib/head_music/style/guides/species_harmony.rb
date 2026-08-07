@@ -29,4 +29,9 @@ class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
   def self.diminution_ruleset(*additional)
     [*HARMONIC_CORE, *DIMINUTION_HARMONIC_CORE, *additional].freeze
   end
+
+  # Marks every guide descending from here as a harmony guide.
+  def self.category
+    :harmony
+  end
 end

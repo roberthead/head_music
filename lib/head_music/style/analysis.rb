@@ -5,7 +5,14 @@ module HeadMusic::Style; end
 class HeadMusic::Style::Analysis
   attr_reader :guide, :voice
 
+  # Any object answering analyze(voice) is a guide here -- a guide class, a
+  # Guides::Configured, or a test double. Checking at construction keeps a
+  # missed Guide.get lookup from surfacing as NoMethodError on nil far away.
   def initialize(guide, voice)
+    unless guide.respond_to?(:analyze)
+      raise ArgumentError, "guide must respond to #analyze (got #{guide.inspect})"
+    end
+
     @guide = guide
     @voice = voice
   end

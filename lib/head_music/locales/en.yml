@@ -566,3 +566,8 @@ en:
       staff: staff
       tuba: tuba
       tuning: tuning
+    style:
+      guides:
+        # Only keys whose humanized default is wrong need an entry here;
+        # HeadMusic::Style::Guide.display_name_for derives the rest.
+        salzer_schachter_cantus_firmus: "Salzer–Schachter Cantus Firmus"

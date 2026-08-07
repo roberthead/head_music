@@ -35,4 +35,9 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
   def self.moving_species_ruleset(*additional)
     [*MELODIC_CORE, *MOVING_MELODIC_CORE, *additional].freeze
   end
+
+  # Marks every guide descending from here as a melody guide.
+  def self.category
+    :melody
+  end
 end

@@ -7,7 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `HeadMusic::Style::Guide` — a lookup facade over every style guide in the gem. `Guide.get("first_species_harmony")` resolves a key to a guide; an unknown key returns `nil` rather than raising, so a consumer can ask about a guide the gem does not have. `Guide.get!` raises `KeyError` instead, and `Guide.known?`, `.all`, `.keys`, and `.key_for` round out the surface. Keys are stable strings suitable for storing in a database.
+- Guides now carry identity: `.key` (snake_case of the class name), `.category` (`:melody` or `:harmony`, derived from the `SpeciesMelody`/`SpeciesHarmony` ancestry), and `.display_name` (localizable, with a computed English default). Consumers no longer need to hand-maintain a map of guide constants to categories.
+- `HeadMusic::Style::Guides::Configured` — the guide-layer twin of `Annotation::Configured`. It pairs a guide class with options and answers `analyze(voice)`, so it drops into `Style::Analysis` wherever a guide class was expected. `Guides::Base.with(**options)` returns one, and `#with` layers further options without dropping earlier ones.
+- `HeadMusic::Style::Guides::ContourMelody` — one configurable guide replacing the six contour subclasses: `ContourMelody.with(contour: :arch, minimum_melodic_intervals: 2)`. An invalid contour raises `ArgumentError` at configuration time, not at analysis.
+
 ### Changed
+
+- **Breaking.** The six contour guide classes are removed: `ArchContourMelody`, `AscendingContourMelody`, `DescendingContourMelody`, `StaticContourMelody`, `ValleyContourMelody`, and `WaveContourMelody`. Their rulesets are unchanged and still reachable — by key, through the registry. Migrate constant references to `Guide.get`:
+
+  | Removed constant | Replacement |
+  | --- | --- |
+  | `Guides::ArchContourMelody` | `Style::Guide.get("arch_contour_melody")` |
+  | `Guides::AscendingContourMelody` | `Style::Guide.get("ascending_contour_melody")` |
+  | `Guides::DescendingContourMelody` | `Style::Guide.get("descending_contour_melody")` |
+  | `Guides::StaticContourMelody` | `Style::Guide.get("static_contour_melody")` |
+  | `Guides::ValleyContourMelody` | `Style::Guide.get("valley_contour_melody")` |
+  | `Guides::WaveContourMelody` | `Style::Guide.get("wave_contour_melody")` |
+
+- **Breaking.** `Guides::DiatonicMelody.contour_ruleset` and `Guides::DiatonicMelody::CONTOUR_PEER_WEIGHT_BUDGET` are removed. The budget constant now lives on the guide that uses it, as `Guides::ContourMelody::PEER_WEIGHT_BUDGET`.
+- **Breaking.** A configured guide has no `::RULESET` constant — read `#ruleset` instead. `Guides::Base.ruleset` is now a method rather than a bare constant read, so a guide whose ruleset depends on configuration raises `ArgumentError` when used unconfigured instead of silently inheriting an ancestor's ruleset.
+- **Breaking.** `guide.name` on a configured guide returns the underlying class name, which is shared across all six contour configurations. Persist `guide.key`, not `guide.name`; use `guide.display_name` for presentation.
+- `Style::Analysis.new` now raises `ArgumentError` when given something that cannot answer `analyze`. Previously a `nil` guide — the result of an unrecognized key — surfaced much later as a `NoMethodError` on `nil`.
+- The six contour rulesets are byte-for-byte what they were: the same ten rubric peers sharing φ⁻² evenly, `Contoured` at φ⁻¹, and the same per-contour motion gate (omitted for `static`). Fitness values are unchanged.
 
 - The ABC parser and lexer and the MusicXML writer each shed a responsibility to a collaborator, leaving no file in the gem above a RubyCritic C. Behavior is unchanged — no public method signature moved — but four constants did:
   - `Notation::ABC::BodyLexer::Token` is now `Notation::ABC::Token`. The token type is consumed by `Parser` and `Preflight`, not just the lexer.

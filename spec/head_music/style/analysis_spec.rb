@@ -71,6 +71,31 @@ describe HeadMusic::Style::Analysis do
     end
   end
 
+  describe "guide validation" do
+    # A key that misses in the registry yields nil, and without this guard that
+    # nil travels to #annotations before failing far from the bad key.
+    it "rejects nil with an error naming the missing behavior" do
+      expect { described_class.new(nil, voice) }.to raise_error(ArgumentError, /analyze/)
+    end
+
+    it "rejects an object that cannot analyze" do
+      expect { described_class.new(Object.new, voice) }.to raise_error(ArgumentError, /analyze/)
+    end
+
+    it "accepts a guide class" do
+      expect { described_class.new(HeadMusic::Style::Guides::FuxCantusFirmus, voice) }.not_to raise_error
+    end
+
+    it "accepts a configured guide" do
+      guide = HeadMusic::Style::Guide.get("arch_contour_melody")
+      expect { described_class.new(guide, voice) }.not_to raise_error
+    end
+
+    it "accepts any object that answers analyze" do
+      expect { described_class.new(HeadMusic::Style::Guides::PermissiveGuide, voice) }.not_to raise_error
+    end
+  end
+
   context "with a permissive guide" do
     let(:guide) { HeadMusic::Style::Guides::PermissiveGuide }
 

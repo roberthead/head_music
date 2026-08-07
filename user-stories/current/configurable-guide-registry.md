@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-07T11:23:23-07:00
   planned_at:   2026-08-07T13:19:35-07:00
   finished_at:
-  updated_at:   2026-08-07T13:51:21-07:00
+  updated_at:   2026-08-07T14:16:09-07:00
 -->
 
 # Story: Configurable Guide Registry

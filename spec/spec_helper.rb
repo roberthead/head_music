@@ -40,9 +40,19 @@ module ConfiguredGuidelineHelper
   end
 end
 
+# Matcher for a guide wrapped by Guides::Base.with(...), e.g. a contour entry
+# in the Style::Guide registry. The reader name differs from the guideline
+# matcher (guide_class, not guideline_class) so neither can match the other.
+module ConfiguredGuideHelper
+  def configured_guide(guide_class, **options)
+    an_object_having_attributes(guide_class: guide_class, options: options)
+  end
+end
+
 RSpec.configure do |config|
   config.example_status_persistence_file_path = "spec/examples.txt"
   config.include ConfiguredGuidelineHelper
+  config.include ConfiguredGuideHelper
 end
 
 class HeadMusic::Style::Annotation
