@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-07T11:17:52-07:00
   activated_at: 2026-08-07T11:23:23-07:00
   planned_at:   2026-08-07T13:19:35-07:00
-  finished_at:
-  updated_at:   2026-08-07T15:54:54-07:00
+  finished_at:  2026-08-07T16:24:11-07:00
+  updated_at:   2026-08-07T16:24:11-07:00
 -->
 
 # Story: Configurable Guide Registry
@@ -617,3 +617,31 @@ Findings 1, 2, and 3 were fixed after review. Suite after: **6450 examples, 0 fa
 | 3 — `known?` answered "does this quack?" | fixed | Now `REGISTRY.key?(key.to_s) \|\| !key_for(key).nil?` (`guide.rb:72-78`), so `known?` and `key_for` can no longer disagree about the same object. Four examples pin it: a registered key, a registered guide object, an ad-hoc configuration, and the bare `ContourMelody` class. |
 
 Findings 4–11 are recorded above and left open deliberately: none is a correctness defect, and the highest-value one (5 — pinning the 17 class-derived key strings literally) is worth doing as its own change rather than folded into a review fix.
+
+## Learnings
+
+### What worked
+
+**The prior story's deferral condition did its job.** `melody-contour-guides` recorded an explicit revisit trigger — *"revisit guide-level `.with` only if a second orthogonal configuration axis appears."* The axis appeared, and the trigger turned what could have been a re-litigation into a mechanical decision. This story pays it forward: revisit `moving_species_ruleset` / `diminution_ruleset` when a species guide must vary by a *scalar*, not merely by a different guideline list.
+
+**Planning corrected the story's own premise rather than building around it.** The story asserted the peer-weight computation would have to move to resolution time and be memoized per option set. Verification showed neither the partition nor the peer weight depends on `contour` or `minimum_melodic_intervals`, so both stayed frozen at class-definition time and the options-keyed cache — with every hazard it carried — evaporated. The same pass caught the story overclaiming its payoff (three BardTheory hashes retired, not four). Both corrections were written back into the story text rather than delivered against silently.
+
+**Equivalence was proven out-of-band, then pinned in substance.** Rather than committing a golden file: 77 ruleset rows as `[guideline_class, sorted_options]`, and 126 rows of `(fitness, adherent?, messages)` across 6 guides × 20 melodies, diffed against the merge-base — and **re-run after the inheritance change**, since moving a superclass could plausibly have moved the rulesets. The specs then pin sizes, peer counts, and weights rather than bytes.
+
+**New examples were mutation-tested, not assumed.** The advisory-fix commit verified each added example fails when the thing it claims to pin is removed — delete the load-time warm-up, rename a key, collapse `display_name`. Cheap, and it is the whole difference between a claim and a pinned claim.
+
+### What was surprising
+
+**Ruby's constant lookup walked around the method-level guard.** `Base.ruleset` closed the method path, but `ContourMelody::RULESET` still resolved up the ancestor chain to `DiatonicMelody::RULESET`, returning a plausible, silently wrong 11-entry ruleset via the exact idiom every other guide spec in this repo uses. The fix was to sever the inheritance: the parent contributed *nothing but the leak*. Generalizable — when a guard exists to stop an inherited value escaping, first check whether the inheritance is buying anything.
+
+**Green acceptance criteria and a green suite did not mean done.** All ten criteria were met at `7e2ce56` — and three real traps survived: the constant hole, an unconfigured `ContourMelody` sailing through the `Analysis` guard, and `known?` disagreeing with `key_for`. Acceptance criteria pin the surface you intended; review is what finds the surfaces the change newly *exposed*.
+
+**Locating a fail-fast is part of the criterion.** "Raises at configuration time" would have been satisfied on paper by `expect { with(:bogus).analyze(voice) }` — a passing spec while the criterion did not hold. The plan required the raise blocks contain no `analyze`; review checked it independently (after a successful `.with`, `@ruleset` is still unset, so the raise cannot be coming from ruleset construction).
+
+**The coverage math ran backwards from intuition.** Deleting six one-line guide files removes six *covered* lines, so collapsing classes is a coverage risk, not a cushion — which is why the small new methods with no in-gem caller needed a watch-list.
+
+### Left open, deliberately
+
+- Advisory findings 4 (registry entries shallow-frozen), 7 (`Base.with` validates nothing), 9 (spec nits), and 11 (the 23-key CHANGELOG table) remain. Splitting the highest-value advisory fix — pinning the 17 class-derived keys literally — into its own commit rather than folding it into the review fixes was the right call.
+- `Style::Guide` vs `Style::Guides` differ by one character. Accepted as a legibility hazard, not a mechanical one.
+- **This is a coordinated breaking change.** 18.0.0 → 19.0.0, and BardTheory's `CONTOUR_GUIDES` plus its stored `target_contour` — which reaches into the TypeScript frontend — must migrate in the same upgrade. That is follow-up work in the consumer, not a loose end in the gem.
