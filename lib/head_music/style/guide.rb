@@ -69,8 +69,12 @@ class HeadMusic::Style::Guide
     get(key) || raise(KeyError, "unknown style guide: #{key.inspect}")
   end
 
+  # Asks whether the registry knows this, not whether it quacks like a guide.
+  # Delegating to .get would answer true for any analyze-responder, including an
+  # ad-hoc configuration whose key_for is nil -- so known? and key_for would
+  # disagree about the same object.
   def self.known?(key)
-    !get(key).nil?
+    REGISTRY.key?(key.to_s) || !key_for(key).nil?
   end
 
   def self.all

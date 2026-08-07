@@ -66,6 +66,26 @@ describe HeadMusic::Style::Guide do
     it "is false for an unregistered key" do
       expect(described_class).not_to be_known("does_not_exist")
     end
+
+    it "is true for a registered guide object, matching key_for" do
+      entry = described_class.get("wave_contour_melody")
+
+      expect(described_class).to be_known(entry)
+      expect(described_class.key_for(entry)).to eq "wave_contour_melody"
+    end
+
+    # known? must not simply ask whether the argument answers analyze, or it
+    # would disagree with key_for about the very same object.
+    it "is false for an ad-hoc configuration the registry does not hold" do
+      ad_hoc = HeadMusic::Style::Guides::ContourMelody.with(contour: :wave, minimum_melodic_intervals: 3)
+
+      expect(described_class).not_to be_known(ad_hoc)
+      expect(described_class.key_for(ad_hoc)).to be_nil
+    end
+
+    it "is false for the unconfigured contour guide class" do
+      expect(described_class).not_to be_known(HeadMusic::Style::Guides::ContourMelody)
+    end
   end
 
   describe ".all" do

@@ -143,6 +143,34 @@ describe HeadMusic::Style::Guides::ContourMelody do
     it "refuses to analyze without a configuration" do
       expect { described_class.analyze(voice) }.to raise_error(ArgumentError)
     end
+
+    it "names both ways to configure it, since the bare class reaches Analysis" do
+      expect { described_class.analyze(voice) }.to raise_error(
+        ArgumentError, /\.with\(contour:.*Guide\.get\("arch_contour_melody"\)/m
+      )
+    end
+
+    # The class is a valid argument to Analysis.new -- it answers analyze -- so
+    # the guard cannot catch this one. Failing at annotations is the backstop.
+    it "fails through Analysis rather than grading against the wrong ruleset" do
+      analysis = HeadMusic::Style::Analysis.new(described_class, voice)
+
+      expect { analysis.annotations }.to raise_error(ArgumentError, /requires configuration/)
+    end
+  end
+
+  # Ruby resolves ::RULESET up the ancestor chain. Were this guide to inherit
+  # from DiatonicMelody, the constant would silently return that guide's plain
+  # ruleset -- and reading described_class::RULESET is the idiom every other
+  # guide spec in this suite uses.
+  describe "::RULESET" do
+    it "is absent, so it cannot be read by mistake" do
+      expect { described_class::RULESET }.to raise_error(NameError)
+    end
+
+    it "does not leak the diatonic ruleset through inheritance" do
+      expect(described_class.ancestors).not_to include(HeadMusic::Style::Guides::DiatonicMelody)
+    end
   end
 
   describe "analysis" do

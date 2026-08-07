@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-07T11:23:23-07:00
   planned_at:   2026-08-07T13:19:35-07:00
   finished_at:
-  updated_at:   2026-08-07T14:16:09-07:00
+  updated_at:   2026-08-07T15:54:54-07:00
 -->
 
 # Story: Configurable Guide Registry
@@ -541,3 +541,79 @@ Give `Guides::Base` a `.ruleset` indirection, a `.with` factory, and class-level
 ### Open questions
 
 - **Locale coverage at release**: English with computed fallback (recommended, and what the plan does), or all seven locales up front?
+
+## Review
+
+Reviewed 2026-08-07 at commit `7e2ce56`. Nothing uncommitted. Test evidence, run independently of the implementing agents: full suite `bundle exec rake` → **6443 examples, 0 failures**, line coverage **99.70%**, branch **97.75%**; style subtree 1100 → **1206 examples**; `bundle exec rubocop` → 486 files, **no offenses**.
+
+Ruleset equivalence against the merge-base `b1cef76` was verified out-of-band by two independent methods: dumping all 77 ruleset entries as `[guideline_class, sorted_options]` rows and diffing (identical), and comparing 126 rows of `(fitness to 15 decimals, adherent?, sorted messages)` across 6 guides × 20 melodies plus an empty voice (identical).
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | Every guide exposes `key`, `category`, display name | ✅ met | `guides/base.rb:23-35`; markers at `species_melody.rb:40-42`, `species_harmony.rb:34-36`; pinned by `guide_spec.rb:80-82` (categories are exactly `%i[melody harmony]`) and `base_spec.rb:30-32` |
+| 2 | `Guide.get` resolves string or symbol; unknown → `nil` | ✅ met | `guide.rb:62-66` — plain hash lookup, no `const_get`, no `HashKey.for`; `guide_spec.rb:7-33` covers string, symbol, miss, `nil`, `""` |
+| 3 | `Configured` accepted by `Analysis` with no accommodating change | ✅ met | `configured.rb:15-17`; the `analysis.rb` diff is *only* the guard — call site at `:26` untouched, no `is_a?` branch anywhere |
+| 4 | `Analysis` rejects a non-guide with a clear error | ✅ met | `analysis.rb:11-18`; `analysis_spec.rb:77-96` — `nil` and `Object.new` raise; class, `Configured`, and `PermissiveGuide` still construct |
+| 5 | `Base.with` returns `Configured`; layering merges | ✅ met | `base.rb:19-21`, `configured.rb:25-27`, `configured_spec.rb:65-75`. See finding 3 — merge semantics match `Annotation::Configured` but strictness does not |
+| 6 | One `ContourMelody` replaces the six subclasses | ✅ met | `contour_melody.rb`; six lib files deleted; `grep` for the six constants, `contour_ruleset`, and `CONTOUR_PEER_WEIGHT_BUDGET` across `lib/`, `spec/`, `README.md` → zero hits |
+| 7 | Six contour keys resolve, rulesets identical to the old classes | ✅ met | Verified against `b1cef76` by the two out-of-band diffs above. **The specs pin equivalence in substance, not by snapshot** — carried-over literal values (sizes 13/13/13/12/13/13, `peers.length == 10`, peer weight `phi^-2/10`, static's absent motion gate) rather than a committed byte-comparison |
+| 8 | Invalid contour raises at configuration time | ✅ met | `contour_melody.rb:22-27` normalizes *before* `super`. Trap checked: all four raise examples (`contour_melody_spec.rb:119-134`) assert on `.with` alone with **no `analyze`**. Eagerness independently proven — after a successful `.with`, `@ruleset` is not yet set, so the raise cannot be coming from ruleset construction |
+| 9 | Species / cantus firmus / combined guides stay classes with current keys | ✅ met | All 22 non-contour guide files unchanged but for `category` on the two markers; `guide.rb:10-28`; drift guard at `base_spec.rb:23-28`. See finding 5 for a durability gap |
+| 10 | Specs pass unchanged in behavior; coverage ≥ 90%; rubocop clean | ✅ met | Figures above. Only pre-existing specs modified are `base_spec.rb` (restructured, counts still 16/7) and `analysis_spec.rb` (additive) |
+
+All five `## Scenario:` blocks verified ✅. All six `## Decisions` honored. No `## Non-goals` crept in — no API accepts a guideline list, no guides moved to consumers, no ruleset versioning added.
+
+### Code review findings
+
+Findings 1–3 were **fixed at commit `7e2ce56`+1** (see "Fixes applied" below). Findings 4–11 remain advisory and are not blocking.
+
+**Blocking — fixed**
+
+1. **The `::RULESET` constant hole is still open** — `contour_melody.rb:3`. `Base.ruleset` closes the *method* path but not the *constant* path. Because `ContourMelody < DiatonicMelody`, Ruby's constant lookup still resolves `ContourMelody::RULESET` to `DiatonicMelody::RULESET` — the same frozen 11-entry array object, with no `Contoured` rule, no motion gate, and unweighted peers. Confirmed at runtime: `ContourMelody::RULESET.equal?(DiatonicMelody::RULESET) # => true`. This is exactly the silent wrong-ruleset failure the indirection was introduced to prevent, and it is reachable: `described_class::RULESET` is the established reading idiom in this repo (`fifth_species_harmony_spec.rb:6` and others), the six deleted contour specs all used it, and `CHANGELOG.md:33` currently claims "a configured guide has no `::RULESET` constant" — true of the `Configured` instance, false of the guide class, and the false case is the one that silently returns data.
+   **Fix, verified:** change the superclass to `SpeciesMelody`. `ContourMelody` already references `DiatonicMelody::RULESET` fully-qualified when building `GATES`/`WEIGHTED_PEERS`, and takes `category` from `SpeciesMelody`, so the `DiatonicMelody` parent buys nothing but the hole. A probe class with an identical body under `SpeciesMelody` produces a byte-identical 13-entry ruleset, keeps `category == :melody`, and makes `RULESET` raise `NameError`. Add a regression next to `contour_melody_spec.rb:143`: `expect { described_class::RULESET }.to raise_error(NameError)`. Correct `CHANGELOG.md:33` once the claim is actually true.
+
+**Important — both fixed**
+
+2. **An unconfigured `ContourMelody` passes the `Analysis` guard** — `guide.rb:63`, `analysis.rb:12`. `Guide.get` passes through anything answering `analyze`, and `ContourMelody` inherits `Base.analyze`, so `Analysis.new(Guides::ContourMelody, voice)` is accepted and fails later at `annotations` with `ArgumentError: missing keyword: :contour` — naming neither the guide nor the fix. Now that the six subclasses are gone, naming the shared class instead of a key is the likeliest consumer mistake, and it is the one the guard waves through. Suggest overriding `self.analyze` on `ContourMelody` to raise with a message naming `.with(...)` and `Guide.get("arch_contour_melody")`.
+
+3. **`Guide.known?` answers "does this quack?" rather than "is this registered?"** — `guide.rb:72-74`. `known?(Guides::ContourMelody)` and `known?` of an ad-hoc configuration both return `true` while `key_for` returns `nil`. The string path — the consumer's actual path — is correct, so this is a latent trap, not a live bug. Fix: `REGISTRY.key?(key.to_s) || !key_for(key).nil?`.
+
+**Advisory**
+
+4. **Registry entries are not frozen.** `guide.rb:45-52` — `REGISTRY.freeze` and `ALL.freeze` are shallow; the six `Configured` instances are `frozen? => false`. No reachable mutation path exists (no writers, `#with` returns a new object, `options` and rulesets are frozen), but since `ALL.each(&:ruleset)` already warms the memo, the entries could be frozen immediately after, making the comment's immutability claim enforced rather than conventional.
+
+5. **The 17 class-derived key strings are not pinned literally.** Keys cross the storage boundary but are derived from class names, and only 3 of 17 appear as literals in any spec. A class rename would silently invalidate a consumer's stored keys with a green suite. One example asserting `Guide.keys` against an explicit 23-string array closes it and doubles as documentation. *Highest-value addition of the advisory set.*
+
+6. **The load-time pre-warm has no test.** Deleting `ALL.each(&:ruleset)` at `guide.rb:52` leaves the suite green, so the thread-safety claim in its comment is unpinned.
+
+7. **`Base.with` validates nothing**, unlike `ContourMelody.with`. `FuxCantusFirmus.with(bogus: 1)` constructs and fails only at `#ruleset` with `wrong number of arguments`. Inconsistent with the fail-fast the story establishes.
+
+8. **`display_name` is asserted for 7 of 23 entries**, and registry-wide uniqueness — the property that stops six identical dropdown entries — is only asserted indirectly per-contour.
+
+9. **Spec nits.** `base_spec.rb:30-32`'s round-trip is near-tautological for `Configured` entries (`REGISTRY[REGISTRY.key(v)] == v`); `guide_spec.rb:151-155` is named "distinctly from its siblings" but never compares siblings; `base_spec.rb:84-88`'s `.with` example only checks the returned class.
+
+10. **README overstates equivalence** at `README.md:71-76`: "either spelling works" holds only because the options match exactly. Dropping `minimum_melodic_intervals: 2` yields a different guide with no motion gate, `key == nil`, and `display_name == "Contour Melody"`.
+
+11. **Plan step 13's promised 23-key CHANGELOG table is missing** — only the 6-row removal→key migration table shipped. Story-text commitment, not an acceptance criterion.
+
+### Verified and explicitly fine
+
+- **Thread safety.** All six `Configured` registry entries have `@ruleset` set at require time, so no entry memoizes lazily after load. `REGISTRY`, `ALL`, `options`, `GATES`, `WEIGHTED_PEERS`, and every returned ruleset are frozen.
+- **`Base.ruleset` on every method path** — `.analyze`, direct `.ruleset`, `Configured#ruleset`/`#analyze`/`#with`, and `Configured.new` bypassing `.with` all raise for an unconfigured `ContourMelody`. Only the constant path (finding 1) is silent.
+- **`Configured#key` reverse lookup.** `Hash#key` compares by `==`, and guide *classes* never match a `Configured`, so no false positives. `==`/`eql?`/`hash` are mutually consistent. `nil` from `key` propagates only into `display_name`, which handles it at `configured.rb:41`.
+- **Spec consolidation lost nothing.** All six deleted spec files were diffed assertion by assertion against `contour_melody_spec.rb`. No assertion weakened; three arch-only assertions are now parameterized across all six contours — a net strengthening.
+- **i18n.** `en.yml` nests `style:` correctly under `head_music:`, single occurrence, no duplicate-key shadowing. Under `I18n.locale = :de` the override still resolves via fallback, so the other six locale files lacking the scope is not a defect.
+
+### Fixes applied
+
+Findings 1, 2, and 3 were fixed after review. Suite after: **6450 examples, 0 failures** (was 6443 — seven new regression examples), line coverage **99.70%**, rubocop clean across 486 files. Ruleset equivalence re-verified against `b1cef76` *after* the inheritance change — 77 rows, identical — since changing a superclass could plausibly have moved the rulesets.
+
+| Finding | Outcome | Change |
+| --- | --- | --- |
+| 1 — `::RULESET` constant hole | fixed | `ContourMelody` now descends from `SpeciesMelody`, not `DiatonicMelody` (`contour_melody.rb:10`), with a comment explaining that the parent existed only to leak the constant. `ContourMelody::RULESET` now raises `NameError`; `category` is still `:melody`; the ruleset is reached fully-qualified as before. Pinned by a `describe "::RULESET"` block asserting both the `NameError` and that `DiatonicMelody` is absent from the ancestors. `CHANGELOG.md` corrected — its claim that a configured guide has no `::RULESET` was true of the instance but false of the class, and is now true of both. |
+| 2 — unconfigured class reaches `Analysis` | fixed | `ContourMelody.analyze` overridden to raise `ArgumentError` naming both `.with(contour:, minimum_melodic_intervals:)` and `Guide.get("arch_contour_melody")`. The `Analysis` guard cannot catch this case — the class legitimately answers `analyze` — so this is the backstop, pinned by three examples including one that drives it through `Analysis#annotations`. |
+| 3 — `known?` answered "does this quack?" | fixed | Now `REGISTRY.key?(key.to_s) \|\| !key_for(key).nil?` (`guide.rb:72-78`), so `known?` and `key_for` can no longer disagree about the same object. Four examples pin it: a registered key, a registered guide object, an ad-hoc configuration, and the bare `ContourMelody` class. |
+
+Findings 4–11 are recorded above and left open deliberately: none is a correctness defect, and the highest-value one (5 — pinning the 17 class-derived key strings literally) is worth doing as its own change rather than folded into a review fix.
