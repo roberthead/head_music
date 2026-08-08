@@ -16,7 +16,17 @@ class HeadMusic::Style::Guides::Base
   end
 
   # Pairs this guide with configuration: ContourMelody.with(contour: :arch).
+  #
+  # A guide gains configuration by declaring keywords on .ruleset, so a ruleset
+  # taking none accepts none. Saying that here, at configuration time, is the
+  # same choice ContourMelody makes in normalizing its contour in .with: the
+  # alternative is Ruby's bare "wrong number of arguments (given 1, expected 0)"
+  # at the first analyze, mid-grading, naming neither the guide nor the option.
   def self.with(**options)
+    if options.any? && method(:ruleset).parameters.empty?
+      raise ArgumentError, "#{name} takes no configuration, so it cannot be given: #{options.keys.join(", ")}"
+    end
+
     HeadMusic::Style::Guides::Configured.new(self, options)
   end
 

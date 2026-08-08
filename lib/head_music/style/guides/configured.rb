@@ -10,6 +10,7 @@ class HeadMusic::Style::Guides::Configured
   def initialize(guide_class, options)
     @guide_class = guide_class
     @options = options.dup.freeze
+    ruleset # Resolve now, so a bad configuration raises here rather than mid-grading.
   end
 
   def analyze(voice)

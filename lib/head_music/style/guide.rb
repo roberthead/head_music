@@ -46,9 +46,10 @@ class HeadMusic::Style::Guide
 
   ALL = REGISTRY.values.freeze
 
-  # Resolve every ruleset during require, so nothing in the registry is written
-  # to after load and concurrent lookups never race on the Configured memo.
-  # Doubles as a load-time check that every entry resolves.
+  # A load-time check that every entry resolves. The configured entries already
+  # resolved as they were built -- Configured does that in its constructor, so
+  # nothing in the registry is written to after load and concurrent lookups
+  # never race on the memo -- which leaves this reading the classes' constants.
   ALL.each(&:ruleset)
 
   # A miss returns nil rather than falling back, unlike Tradition.get: a

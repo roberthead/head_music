@@ -105,9 +105,10 @@ describe HeadMusic::Style::Guide do
       expect(described_class.all).to all(respond_to(:analyze))
     end
 
-    # The registry resolves every ruleset at require time so that nothing is
-    # written to after load and concurrent lookups cannot race on the memo.
-    # Without this example, deleting that line leaves the suite green.
+    # Every ruleset resolves at require time so that nothing is written to after
+    # load and concurrent lookups cannot race on the memo. Configured resolves
+    # in its constructor, so this holds for a configuration built anywhere, not
+    # only for the registry's own warm-up pass.
     it "resolves every configured ruleset at load rather than on first use" do
       configured = described_class.all.reject { |guide| guide.is_a?(Class) }
 

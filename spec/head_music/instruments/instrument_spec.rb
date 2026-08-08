@@ -38,17 +38,8 @@ describe HeadMusic::Instruments::Instrument do
       its(:sounding_transposition) { is_expected.to eq(3) }
     end
 
-    context "when given instrument and variant as separate arguments" do
-      let(:arguments) { ["trumpet", "in_c"] }
-
-      it { is_expected.to be_a described_class }
-      its(:name) { is_expected.to eq "trumpet in C" }
-      its(:pitch_designation) { is_expected.to eq HeadMusic::Rudiment::Spelling.get("C") }
-      its(:sounding_transposition) { is_expected.to eq(0) }
-    end
-
     context "when given clarinet with A variant" do
-      let(:arguments) { ["clarinet", "in_a"] }
+      let(:arguments) { ["clarinet_in_a"] }
 
       it { is_expected.to be_a described_class }
       its(:name) { is_expected.to eq "clarinet in A" }
@@ -82,7 +73,7 @@ describe HeadMusic::Instruments::Instrument do
   end
 
   describe "#==" do
-    let(:trumpet_in_c) { described_class.get("trumpet", "in_c") }
+    let(:trumpet_in_c) { described_class.get("trumpet_in_c") }
     let(:trumpet_in_c_2) { described_class.get("trumpet_in_c") }
     let(:trumpet_in_bb) { described_class.get("trumpet") }
     let(:clarinet) { described_class.get("clarinet") }
@@ -109,7 +100,7 @@ describe HeadMusic::Instruments::Instrument do
   end
 
   describe "delegations to variant" do
-    subject(:instrument) { described_class.get("trumpet", "in_d") }
+    subject(:instrument) { described_class.get("trumpet_in_d") }
 
     its(:pitch_designation) { is_expected.to be_a HeadMusic::Rudiment::Spelling }
     its(:staff_schemes) { is_expected.to be_an Array }
@@ -126,7 +117,7 @@ describe HeadMusic::Instruments::Instrument do
     end
 
     context "for a non-transposing instrument" do
-      subject(:instrument) { described_class.get("trumpet", "in_c") }
+      subject(:instrument) { described_class.get("trumpet_in_c") }
 
       its(:transposing?) { is_expected.to be false }
     end
@@ -261,12 +252,9 @@ describe HeadMusic::Instruments::Instrument do
       end
     end
 
-    context "when using two-argument form with invalid variant" do
-      it "falls back to the base instrument" do
-        # When combined name doesn't exist, should fall back to base
-        instrument = described_class.get("trumpet", "in_q")
-        expect(instrument).to be_a(described_class)
-        expect(instrument.name_key).to eq(:trumpet)
+    context "when given a name with an unrecognized variant suffix" do
+      it "returns nil rather than falling back to the base instrument" do
+        expect(described_class.get("trumpet_in_q")).to be_nil
       end
     end
   end

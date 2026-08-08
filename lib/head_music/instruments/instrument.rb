@@ -31,17 +31,12 @@ class HeadMusic::Instruments::Instrument
   class << self
     # Factory method to get an Instrument instance
     # @param name [String, Symbol] instrument name (e.g., "clarinet", "clarinet_in_a")
-    # @param variant_key [String, Symbol, nil] DEPRECATED: variant key (for backward compatibility)
     # @return [Instrument, nil] instrument instance or nil if not found
-    def get(name, variant_key = nil)
+    def get(name)
       return name if name.is_a?(self)
 
       name_str = name.to_s
-      if variant_key
-        find_valid_instrument("#{name_str}_#{variant_key}") || find_valid_instrument(name_str)
-      else
-        find_valid_instrument(name_str) || find_valid_instrument(normalize_variant_name(name_str))
-      end
+      find_valid_instrument(name_str) || find_valid_instrument(normalize_variant_name(name_str))
     end
 
     def find_valid_instrument(name)

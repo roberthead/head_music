@@ -85,5 +85,16 @@ describe HeadMusic::Style::Guides::Base do
     it "pairs a guide class with configuration" do
       expect(guides::FuxCantusFirmus.with).to be_a(guides::Configured)
     end
+
+    # The raise blocks contain no analyze: a spec that configured and then
+    # analyzed would pass on a guide that deferred the failure to grading time,
+    # which is the thing being ruled out.
+    it "rejects an option on a guide that takes no configuration" do
+      expect { guides::FuxCantusFirmus.with(bogus: 1) }.to raise_error(ArgumentError, /bogus/)
+    end
+
+    it "names the guide that took no configuration" do
+      expect { guides::FuxCantusFirmus.with(bogus: 1) }.to raise_error(/FuxCantusFirmus takes no configuration/)
+    end
   end
 end
