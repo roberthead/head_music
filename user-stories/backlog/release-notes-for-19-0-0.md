@@ -83,7 +83,7 @@ existing headings follow local dates — 18.0.0's rubygems push was
 2026-07-27T17:24Z and its heading reads `2026-07-27`, which is the Pacific date.
 Same convention here, and Pacific is a day earlier than UTC for an evening push.
 
-This surfaced while planning [Rename Annotation to Guideline](../current/rename-annotation-to-guideline.md),
+This surfaced while planning [Rename Annotation to Guideline](../done/rename-annotation-to-guideline.md),
 which decided to leave `CHANGELOG.md:20` alone because it describes
 `Guides::Configured` as "the guide-layer twin of `Annotation::Configured`" and is
 shipped history. That decision stands whichever order these two land in: this

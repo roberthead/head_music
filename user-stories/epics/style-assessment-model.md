@@ -354,7 +354,7 @@ end
 
 Sequenced so that each step is verifiable on its own.
 
-1. **[Rename `Annotation` to `Guideline`](../current/rename-annotation-to-guideline.md).**
+1. ✅ **[Rename `Annotation` to `Guideline`](../done/rename-annotation-to-guideline.md).**
    Sixty-three guideline classes and their specs, plus
    `Annotation::Configured` → `Guideline::Configured` and dropping the
    `annotation_messages` alias. No behavior change, suite green. Mechanical, and

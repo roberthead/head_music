@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-16T00:00:00-07:00
   activated_at: 2026-08-16T15:20:29-07:00
   planned_at:   2026-08-16T15:42:44-07:00
-  finished_at:
-  updated_at:   2026-08-16T16:46:32-07:00
+  finished_at:  2026-08-16T16:57:00-07:00
+  updated_at:   2026-08-16T16:57:00-07:00
 -->
 
 # Rename Annotation to Guideline
@@ -179,6 +179,63 @@ Then it raises `NoMethodError`, and `messages` returns what it always did
 This is a mechanical story with one judgment call in it — whether to keep a
 deprecation alias — answered above. If the diff turns out to contain anything
 that is not a rename, that thing belongs in story 2.
+
+## Learnings
+
+### What earned its keep
+
+**The planning pass paid for itself in one finding.** This story asserted "63
+guideline classes." There are 62 classes plus one module —
+`DissonanceFigureDetection` is a mixin with no superclass to rename. Anyone
+writing the obvious census spec against the story's own number would have gotten
+a red suite for a correct diff. The planner caught it by *running* the count
+rather than trusting the prose. The pass had been called possibly more ceremony
+than a mechanical rename needs; it wasn't.
+
+**The oracle was worth more than the suite.** 6,452 passing examples prove the
+existing assertions still hold; they do not prove an *unasserted* fitness did not
+move. 2,622 before/after rows across 23 guides did — captured before any edit,
+diffed after the rename and again after the vocabulary pass, identical both
+times. One throwaway script, kept out of the repo because `head_music.gemspec`
+globs `git ls-files`. Any story claiming "no behavior change" over a wide diff
+should build one; it took minutes.
+
+**Scope beat judgment for protecting published API.** `ABC::Header#annotations`
+is a shipped public reader using the same word, and MusicXML has
+`beam_annotations`. Rather than asking three agents to judge each lowercase
+`annotation`, confining the pass to `lib/head_music/style` and
+`spec/head_music/style` made the mistake structurally impossible rather than
+merely unlikely.
+
+### What went wrong
+
+**Hand-written prose was the least-verified thing in the diff.** Three comments
+were rewritten because mechanical substitution had made them circular — and one
+rewrite introduced a factual error: "fails as the first guideline is built,"
+when zero are built, because the missing keyword raises at the `ruleset` call
+before `.map` runs. No test reads a comment. The agents' output was under
+scrutiny the whole time while these edits went unchecked until review.
+
+**Agents were reliable on mechanics, unreliable on meaning.** Three subagents on
+disjoint file sets produced zero collisions, and every delicate call about which
+lowercase uses to keep was correct. But their comment substitutions were
+grammatically fine and semantically circular — "producing one guideline per
+rule," when a rule *is* a guideline. Delegate the mechanical; review the prose.
+
+### Traps worth remembering
+
+- **BSD `sed` silently no-ops on `\b`.** A first pass reported success and
+  changed nothing, caught only by re-grepping afterward. Verify by outcome, not
+  exit code. `perl -pi -e` honors word boundaries.
+- **Requiring `spec_helper` outside RSpec poisons the coverage baseline.**
+  SimpleCov rewrites `coverage/.last_run.json` to 100.0, so the next
+  `bundle exec rake` trips `maximum_coverage_drop` for no real reason. Delete
+  the file first.
+- **The three-commit split preserved rename detection.** Within the rename
+  commit git reports 96/96/98% similarity; across the full range it degrades to
+  delete-plus-add, because the vocabulary pass drops the spec file below
+  threshold. Per-commit is what a reviewer reads, which is why step 4 was kept
+  separate.
 
 ## Review
 
