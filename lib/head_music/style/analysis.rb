@@ -20,7 +20,6 @@ class HeadMusic::Style::Analysis
   def messages
     annotations.reject(&:adherent?).map(&:message)
   end
-  alias_method :annotation_messages, :messages
 
   def annotations
     @annotations ||= @guide.analyze(voice)

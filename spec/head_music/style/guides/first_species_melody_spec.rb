@@ -28,7 +28,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
           it { is_expected.not_to be_adherent }
 
           example.expected_messages.each do |expected_message|
-            its(:annotation_messages) { are_expected.to include(expected_message) }
+            its(:messages) { are_expected.to include(expected_message) }
           end
         else
           it { is_expected.to be_adherent }
@@ -46,7 +46,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
           it { is_expected.not_to be_adherent }
 
           example.expected_messages.each do |expected_message|
-            its(:annotation_messages) { are_expected.to include(expected_message) }
+            its(:messages) { are_expected.to include(expected_message) }
           end
         else
           it { is_expected.to be_adherent }
@@ -64,7 +64,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
           it { is_expected.not_to be_adherent }
 
           example.expected_messages.each do |expected_message|
-            its(:annotation_messages) { are_expected.to include(expected_message) }
+            its(:messages) { are_expected.to include(expected_message) }
           end
         else
           it { is_expected.to be_adherent }
