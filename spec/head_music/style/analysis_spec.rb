@@ -33,7 +33,7 @@ describe HeadMusic::Style::Analysis do
 
       its(:fitness) { is_expected.to eq 1.0 }
 
-      it "is adherent when every annotation is adherent" do
+      it "is adherent when every guideline is adherent" do
         expect(analysis.annotations).to all(be_adherent)
         expect(analysis).to be_adherent
       end
@@ -53,16 +53,16 @@ describe HeadMusic::Style::Analysis do
 
       its(:fitness) { is_expected.to be < 1.0 }
 
-      it "is not adherent when any annotation is not adherent" do
-        expect(analysis.annotations.any? { |annotation| !annotation.adherent? }).to be true
+      it "is not adherent when any guideline is not adherent" do
+        expect(analysis.annotations.any? { |guideline| !guideline.adherent? }).to be true
         expect(analysis).not_to be_adherent
       end
     end
   end
 
-  context "when every annotation is a gate" do
-    let(:guide) { double("Guide", analyze: [gate_annotation]) } # rubocop:disable RSpec/VerifiedDoubles
-    let(:gate_annotation) do
+  context "when every guideline is a gate" do
+    let(:guide) { double("Guide", analyze: [gate_guideline]) } # rubocop:disable RSpec/VerifiedDoubles
+    let(:gate_guideline) do
       instance_double(HeadMusic::Style::Guideline, gate?: true, fitness: 0.4, adherent?: false, weight: 1, message: "gated")
     end
 

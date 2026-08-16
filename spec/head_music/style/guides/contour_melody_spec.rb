@@ -89,8 +89,8 @@ describe HeadMusic::Style::Guides::ContourMelody do
     end
 
     it "honors a per-context weight override" do
-      annotation = guidelines::Contoured.with(:arch, weight: 0.25).new(voice)
-      expect(annotation.weight).to eq 0.25
+      guideline = guidelines::Contoured.with(:arch, weight: 0.25).new(voice)
+      expect(guideline.weight).to eq 0.25
     end
 
     it "weights the same guideline differently as a rubric peer than standalone" do
@@ -234,7 +234,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
         it "loses more credit to the contour than to any other rule" do
           rubric = analysis.annotations.reject(&:gate?)
-          worst = rubric.max_by { |annotation| annotation.weight * (1 - annotation.fitness) }
+          worst = rubric.max_by { |guideline| guideline.weight * (1 - guideline.fitness) }
           expect(worst).to be_a(HeadMusic::Style::Guidelines::Contoured)
           expect(worst.weight * (1 - worst.fitness)).to be > 0
         end
@@ -283,12 +283,12 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
         let(:rubric_mean) do
           rubric = analysis.annotations.reject(&:gate?)
-          rubric.sum { |annotation| annotation.weight * annotation.fitness } / rubric.sum(&:weight)
+          rubric.sum { |guideline| guideline.weight * guideline.fitness } / rubric.sum(&:weight)
         end
 
         it "passes the motion gate" do
-          motion_gate = analysis.annotations.detect do |annotation|
-            annotation.is_a?(HeadMusic::Style::Guidelines::MinimumMelodicIntervals)
+          motion_gate = analysis.annotations.detect do |guideline|
+            guideline.is_a?(HeadMusic::Style::Guidelines::MinimumMelodicIntervals)
           end
           expect(motion_gate.fitness).to eq 1.0
         end
@@ -314,9 +314,9 @@ describe HeadMusic::Style::Guides::ContourMelody do
           HeadMusic::Style::Analysis.new(guide, voice)
         end
 
-        def diatonic_annotation(analysis)
-          analysis.annotations.detect do |annotation|
-            annotation.is_a?(HeadMusic::Style::Guidelines::Diatonic)
+        def diatonic_guideline(analysis)
+          analysis.annotations.detect do |guideline|
+            guideline.is_a?(HeadMusic::Style::Guidelines::Diatonic)
           end
         end
 
@@ -326,8 +326,8 @@ describe HeadMusic::Style::Guides::ContourMelody do
         end
 
         it "scores the diatonic rule identically at one violation in eight notes" do
-          expect(diatonic_annotation(long_analysis).fitness)
-            .to be_within(1e-12).of(diatonic_annotation(short_analysis).fitness)
+          expect(diatonic_guideline(long_analysis).fitness)
+            .to be_within(1e-12).of(diatonic_guideline(short_analysis).fitness)
         end
 
         it "grades the two melodies the same overall" do

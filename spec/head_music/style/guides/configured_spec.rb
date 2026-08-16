@@ -29,11 +29,11 @@ describe HeadMusic::Style::Guides::Configured do
   end
 
   describe "#analyze" do
-    it "returns one annotation per rule" do
+    it "returns one guideline per rule" do
       expect(guide.analyze(voice).length).to eq guide.ruleset.length
     end
 
-    it "returns annotations" do
+    it "returns guidelines" do
       expect(guide.analyze(voice)).to all(be_a(HeadMusic::Style::Guideline))
     end
   end

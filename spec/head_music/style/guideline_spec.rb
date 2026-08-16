@@ -5,7 +5,7 @@ describe HeadMusic::Style::Guideline do
 
   context "when the voice is empty" do
     describe "with a maximum-notes guideline" do
-      subject(:annotation) { HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14) }
+      subject(:guideline) { HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14) }
 
       its(:first_note) { is_expected.to be_nil }
       its(:last_note) { is_expected.to be_nil }
@@ -14,7 +14,7 @@ describe HeadMusic::Style::Guideline do
     end
 
     context "with a minimum-notes guideline" do
-      subject(:annotation) { HeadMusic::Style::Guidelines::MinimumNotes.new(voice, minimum: 8) }
+      subject(:guideline) { HeadMusic::Style::Guidelines::MinimumNotes.new(voice, minimum: 8) }
 
       it { is_expected.not_to be_adherent }
     end
@@ -22,35 +22,35 @@ describe HeadMusic::Style::Guideline do
 
   describe "#weight" do
     it "defaults to 1.0" do
-      annotation = HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14)
-      expect(annotation.weight).to eq 1.0
+      guideline = HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14)
+      expect(guideline.weight).to eq 1.0
     end
 
     it "uses a subclass's default_weight override" do
-      annotation = HeadMusic::Style::Guidelines::Contoured.new(voice, contour: :arch)
-      expect(annotation.weight).to eq HeadMusic::GOLDEN_RATIO_INVERSE
+      guideline = HeadMusic::Style::Guidelines::Contoured.new(voice, contour: :arch)
+      expect(guideline.weight).to eq HeadMusic::GOLDEN_RATIO_INVERSE
     end
 
     it "can be overridden with a weight option" do
-      annotation = HeadMusic::Style::Guidelines::MaximumNotes.with(14).with(weight: 2.0).new(voice)
-      expect(annotation.weight).to eq 2.0
+      guideline = HeadMusic::Style::Guidelines::MaximumNotes.with(14).with(weight: 2.0).new(voice)
+      expect(guideline.weight).to eq 2.0
     end
   end
 
   describe "#gate?" do
     it "defaults to false" do
-      annotation = HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14)
-      expect(annotation.gate?).to be false
+      guideline = HeadMusic::Style::Guidelines::MaximumNotes.new(voice, maximum: 14)
+      expect(guideline.gate?).to be false
     end
 
     it "can be overridden with a gate option" do
-      annotation = HeadMusic::Style::Guidelines::MaximumNotes.with(14).with(gate: true).new(voice)
-      expect(annotation.gate?).to be true
+      guideline = HeadMusic::Style::Guidelines::MaximumNotes.with(14).with(gate: true).new(voice)
+      expect(guideline.gate?).to be true
     end
 
     it "uses a subclass's default_gate? override" do
-      annotation = HeadMusic::Style::Guidelines::MinimumNotes.new(voice, minimum: 8)
-      expect(annotation.gate?).to be true
+      guideline = HeadMusic::Style::Guidelines::MinimumNotes.new(voice, minimum: 8)
+      expect(guideline.gate?).to be true
     end
   end
 
@@ -62,7 +62,7 @@ describe HeadMusic::Style::Guideline do
   end
 
   context "when there are multiple marks" do
-    subject(:annotation) { HeadMusic::Style::Guidelines::Diatonic.new(voice) }
+    subject(:guideline) { HeadMusic::Style::Guidelines::Diatonic.new(voice) }
 
     before do
       voice.place("1:1:0", :whole, "C4")
@@ -72,10 +72,10 @@ describe HeadMusic::Style::Guideline do
       voice.place("5:1:0", :whole, "E4")
     end
 
-    specify { expect(annotation.marks.length).to eq 2 }
-    specify { expect(annotation.marks[0].start_position).to eq "2:1:0" }
-    specify { expect(annotation.marks[1].start_position).to eq "4:1:0" }
-    specify { expect(annotation.start_position).to eq "2:1:0" }
-    specify { expect(annotation.end_position).to eq "5:1:0" }
+    specify { expect(guideline.marks.length).to eq 2 }
+    specify { expect(guideline.marks[0].start_position).to eq "2:1:0" }
+    specify { expect(guideline.marks[1].start_position).to eq "4:1:0" }
+    specify { expect(guideline.start_position).to eq "2:1:0" }
+    specify { expect(guideline.end_position).to eq "5:1:0" }
   end
 end

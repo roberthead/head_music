@@ -49,7 +49,7 @@ class HeadMusic::Style::Analysis
     total_weight = rubric.sum(&:weight)
     return 1.0 if rubric.empty? || total_weight.zero?
 
-    rubric.sum { |annotation| annotation.weight * annotation.fitness } / total_weight
+    rubric.sum { |guideline| guideline.weight * guideline.fitness } / total_weight
   end
 
   def gates

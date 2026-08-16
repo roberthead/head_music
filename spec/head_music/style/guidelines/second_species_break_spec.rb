@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::SecondSpeciesBreak do
-  subject(:annotation) { described_class.new(counterpoint) }
+  subject(:guideline) { described_class.new(counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
@@ -28,7 +28,7 @@ describe HeadMusic::Style::Guidelines::SecondSpeciesBreak do
     it { is_expected.to be_adherent }
 
     it "returns no marks" do
-      expect(annotation.marks).to eq []
+      expect(guideline.marks).to eq []
     end
   end
 
@@ -133,7 +133,7 @@ describe HeadMusic::Style::Guidelines::SecondSpeciesBreak do
     its(:fitness) { is_expected.to be < 1 }
 
     it "marks the dissonant off-beat note" do
-      expect(annotation.marks.length).to eq 1
+      expect(guideline.marks.length).to eq 1
     end
   end
 
@@ -179,11 +179,11 @@ describe HeadMusic::Style::Guidelines::SecondSpeciesBreak do
     end
 
     it "applies a small penalty for too many breaks" do
-      expect(annotation.fitness).to be < 1
+      expect(guideline.fitness).to be < 1
     end
 
     it "includes the small penalty factor" do
-      expect(annotation.fitness).to eq HeadMusic::SMALL_PENALTY_FACTOR
+      expect(guideline.fitness).to eq HeadMusic::SMALL_PENALTY_FACTOR
     end
   end
 end

@@ -203,12 +203,12 @@ suspension_harmonic_interval = HarmonicInterval.new(
 resolution_note = counterpoint_voice.note_following(downbeat_position)
 ```
 
-### Guidelines: Annotation and Mark
+### Guidelines: Guideline and Mark
 
-Guidelines inherit from `HeadMusic::Style::Annotation` and override the `marks` method, returning an array of `HeadMusic::Style::Mark` objects.
+Guidelines inherit from `HeadMusic::Style::Guideline` and override the `marks` method, returning an array of `HeadMusic::Style::Mark` objects.
 
 ```ruby
-class MyGuideline < HeadMusic::Style::Annotation
+class MyGuideline < HeadMusic::Style::Guideline
   MESSAGE = "Description of the rule."
 
   def marks

@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::NoteCountPerBar do
-  subject(:annotation) { described_class.new(counterpoint, count: count, rhythmic_value: rhythmic_value) }
+  subject(:guideline) { described_class.new(counterpoint, count: count, rhythmic_value: rhythmic_value) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
@@ -26,7 +26,7 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
     it { is_expected.to be_adherent }
 
     it "returns no marks" do
-      expect(annotation.marks).to eq []
+      expect(guideline.marks).to eq []
     end
   end
 
@@ -36,7 +36,7 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
     it { is_expected.to be_adherent }
 
     it "returns no marks" do
-      expect(annotation.marks).to eq []
+      expect(guideline.marks).to eq []
     end
   end
 
@@ -65,7 +65,7 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
     it { is_expected.not_to be_adherent }
 
     it "marks the offending bar" do
-      expect(annotation.marks).not_to be_empty
+      expect(guideline.marks).not_to be_empty
     end
   end
 
@@ -81,7 +81,7 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
     it { is_expected.not_to be_adherent }
 
     it "marks the empty middle bar" do
-      expect(annotation.marks).not_to be_empty
+      expect(guideline.marks).not_to be_empty
     end
   end
 
@@ -91,7 +91,7 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
       let(:rhythmic_value) { :whole }
 
       it "uses the singular noun" do
-        expect(annotation.message).to eq "Use one whole note in each middle bar."
+        expect(guideline.message).to eq "Use one whole note in each middle bar."
       end
     end
 
@@ -100,7 +100,7 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
       let(:rhythmic_value) { :half }
 
       it "uses the plural noun" do
-        expect(annotation.message).to eq "Use two half notes in each middle bar."
+        expect(guideline.message).to eq "Use two half notes in each middle bar."
       end
     end
   end

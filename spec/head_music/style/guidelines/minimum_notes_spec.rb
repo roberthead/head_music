@@ -45,7 +45,7 @@ describe HeadMusic::Style::Guidelines::MinimumNotes do
     its(:guideline_class) { is_expected.to eq described_class }
     its(:options) { is_expected.to eq(minimum: 8) }
 
-    it "builds an annotation that reports the configured minimum" do
+    it "builds a guideline that reports the configured minimum" do
       voice = HeadMusic::Content::Voice.new
       expect(configured.new(voice).message).to eq "Write at least eight notes."
     end
@@ -57,10 +57,10 @@ describe HeadMusic::Style::Guidelines::MinimumNotes do
         %w[D E F G].each.with_index(1) { |pitch, bar| voice.place("#{bar}:1", :whole, pitch) }
       end
 
-      it "builds an annotation that is not a gate but still enforces the minimum" do
-        annotation = configured.new(voice)
-        expect(annotation.gate?).to be false
-        expect(annotation.fitness).to be_between(0, 1).exclusive
+      it "builds a guideline that is not a gate but still enforces the minimum" do
+        guideline = configured.new(voice)
+        expect(guideline.gate?).to be false
+        expect(guideline.fitness).to be_between(0, 1).exclusive
       end
     end
 
@@ -71,14 +71,14 @@ describe HeadMusic::Style::Guidelines::MinimumNotes do
         %w[D E F G].each.with_index(1) { |pitch, bar| voice.place("#{bar}:1", :whole, pitch) }
       end
 
-      it "builds an annotation that is not a gate" do
+      it "builds a guideline that is not a gate" do
         expect(configured.new(voice).gate?).to be false
       end
 
       it "still enforces the configured minimum" do
-        annotation = configured.new(voice)
-        expect(annotation.fitness).to be_between(0, 1).exclusive
-        expect(annotation.message).to eq "Write at least five notes."
+        guideline = configured.new(voice)
+        expect(guideline.fitness).to be_between(0, 1).exclusive
+        expect(guideline.message).to eq "Write at least five notes."
       end
     end
   end

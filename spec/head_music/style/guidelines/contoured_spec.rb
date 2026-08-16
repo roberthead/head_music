@@ -32,8 +32,8 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     it "accepts a weight option" do
-      annotation = described_class.with(:arch, weight: 0.5).new(HeadMusic::Content::Voice.new)
-      expect(annotation.weight).to eq 0.5
+      guideline = described_class.with(:arch, weight: 0.5).new(HeadMusic::Content::Voice.new)
+      expect(guideline.weight).to eq 0.5
     end
   end
 
@@ -54,8 +54,8 @@ describe HeadMusic::Style::Guidelines::Contoured do
     let(:melody) { "CDEF|G4|" }
 
     it "raises when evaluated" do
-      annotation = described_class.new(voice, contour: :bogus)
-      expect { annotation.fitness }.to raise_error(ArgumentError, /bogus/)
+      guideline = described_class.new(voice, contour: :bogus)
+      expect { guideline.fitness }.to raise_error(ArgumentError, /bogus/)
     end
   end
 

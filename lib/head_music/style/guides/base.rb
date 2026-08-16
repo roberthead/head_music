@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guides; end
 
 # Base class for style guides. A guide analyzes a voice against its ruleset,
-# producing one annotation per rule.
+# producing one guideline instance per rule.
 class HeadMusic::Style::Guides::Base
   def self.analyze(voice)
     ruleset.map { |rule| rule.new(voice) }

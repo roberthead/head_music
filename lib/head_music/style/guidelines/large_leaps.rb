@@ -8,7 +8,7 @@ module HeadMusic::Style::Guidelines; end
 # - ascending/descending: per-direction override; an interval shorthand or {minimum:, forbidden:}
 # - recovery: symbols naming the acceptable recovery gestures
 # - maximum_consecutive_leaps: cap on a run of consecutive qualifying leaps
-# - message: the annotation message
+# - message: the guideline message
 class HeadMusic::Style::Guidelines::LargeLeaps < HeadMusic::Style::Guideline
   DEFAULTS = {
     minimum: :perfect_fourth,

@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::OneToOne do
-  subject(:annotation) { described_class.new(counterpoint) }
+  subject(:guideline) { described_class.new(counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: "counterpoint") }
@@ -18,7 +18,7 @@ describe HeadMusic::Style::Guidelines::OneToOne do
     it { is_expected.to be_adherent }
 
     it "returns nil marks" do
-      expect(annotation.marks).to be_nil
+      expect(guideline.marks).to be_nil
     end
   end
 
