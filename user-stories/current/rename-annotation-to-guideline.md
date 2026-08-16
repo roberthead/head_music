@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-08-16T00:00:00-07:00
-  activated_at:
+  activated_at: 2026-08-16T15:20:29-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-16T00:00:00-07:00
+  updated_at:   2026-08-16T15:20:29-07:00
 -->
 
 # Rename Annotation to Guideline
@@ -16,7 +16,7 @@ I WANT the base class of the sixty-three guideline classes to be called `Guideli
 SO THAT `Guidelines::ConsonantClimax < Style::Guideline` says what it is, and the word "annotation" stops meaning two things at once
 
 Story 1 of the [Style Assessment Model](../epics/style-assessment-model.md).
-Blocks [First-Class Guide Items](first-class-rules.md), which assumes this
+Blocks [First-Class Guide Items](../backlog/first-class-rules.md), which assumes this
 rename has landed.
 
 ## Background

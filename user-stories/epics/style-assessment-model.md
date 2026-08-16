@@ -354,12 +354,12 @@ end
 
 Sequenced so that each step is verifiable on its own.
 
-1. **[Rename `Annotation` to `Guideline`](../backlog/rename-annotation-to-guideline.md).**
+1. **[Rename `Annotation` to `Guideline`](../current/rename-annotation-to-guideline.md).**
    Sixty-three guideline classes and their specs, plus
    `Annotation::Configured` → `Guideline::Configured` and dropping the
    `annotation_messages` alias. No behavior change, suite green. Mechanical, and
    it makes story 2's diff readable.
-2. **[First-class guide items](../current/first-class-rules.md).** `GuideItem`, the three declared lists,
+2. **[First-class guide items](../backlog/first-class-rules.md).** `GuideItem`, the three declared lists,
    `Guideline.assess`, `GuideItemAssessment`, `GuideAssessment`, and tier-derived
    weights. Guide fitness bit-identical — a cheap and total test. Breaking to a
    public seam; lands as 20.0. Retires `guideline-tiers.md` from the backlog.
