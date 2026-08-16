@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-16T15:20:29-07:00
   planned_at:   2026-08-16T15:42:44-07:00
   finished_at:
-  updated_at:   2026-08-16T16:23:34-07:00
+  updated_at:   2026-08-16T16:46:32-07:00
 -->
 
 # Rename Annotation to Guideline
@@ -179,6 +179,71 @@ Then it raises `NoMethodError`, and `messages` returns what it always did
 This is a mechanical story with one judgment call in it — whether to keep a
 deprecation alias — answered above. If the diff turns out to contain anything
 that is not a rename, that thing belongs in story 2.
+
+## Review
+
+Reviewed 2026-08-16 at `b925adb`, against
+`git diff $(git merge-base main HEAD)...HEAD -- lib spec references CLAUDE.md`
+— 75 files, 228 insertions, 228 deletions. Two findings, both fixed; see the
+commit after `b925adb`.
+
+### Acceptance criteria
+
+Every criterion verified in a clean Ruby process rather than inferred from
+commit messages.
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | `Guideline` exists, `Annotation` does not resolve | ✅ | `const_defined?(:Guideline, false)` true; `(:Annotation, false)` false |
+| 2 | 62 classes descend from it (44 direct, 18 indirect); 63 constants | ✅ | Census: 63 constants, 62 classes, 44 direct, 18 through the seven named intermediates |
+| 3 | `Guide::ALL` 23 entries, 304 ruleset entries | ✅ | Unchanged |
+| 4 | `Guideline::Configured` members unchanged | ✅ | `guideline_class`, `options`, `with`, `default_gate?`, `name`; `initialize(guideline_class, options)` |
+| 5 | Load-time `ALL.each(&:ruleset)` warm-up resolves | ✅ | `guide.rb:53`, still in the class body |
+| 6 | `annotation_messages` gone; 12 sites on `messages` | ✅ | `rg` empty; all twelve match the plan's list |
+| 7 | Suite passes, no expected value changed | ✅ | 6452 examples, 0 failures |
+| 8 | `bundle exec rubocop` clean | ✅ | 486 files, no offenses |
+| 9 | Nothing in `lib`/`spec` calls the base class an annotation | ✅ | Lowercase survivors checked individually — all are the `Analysis#annotations` reader |
+| 10 | `references/` no longer teaches `< Style::Annotation` | ✅ | Heading and sample both updated |
+| 11 | ABC/MusicXML `annotations` untouched | ✅ | Diff over `notation`, `content`, `music_xml` is empty |
+
+Beyond the criteria, behavior was pinned by the oracle described in step 1 of
+the plan: 2,622 rows across 23 guides — fitness, adherence, messages, and
+per-guideline weight, gate, and mark count — byte-identical to the pre-work
+baseline, run after the rename and again after the vocabulary pass.
+
+### Findings
+
+Both were comment accuracy, both in hand-written prose rather than substituted
+identifiers, and both are fixed.
+
+**1. `CLAUDE.md:117` named the wrong class.** The bullet had read
+"Style analysis and annotations", naming the module's two core classes —
+`Style::Analysis` and `Style::Annotation`. It was changed to "and marks", but
+`Mark` is a narrower, lower-level concept: a fragment with a fitness, collected
+*inside* a guideline. The correct rename target was `Guideline`. Now reads
+"Style analysis and guidelines".
+
+**2. `guides/contour_melody.rb` described a failure point that does not
+occur.** A rewrite during the vocabulary pass produced "would otherwise fail as
+the first guideline is built", which implies partial progress — one guideline
+instantiated, then failure. Reproducing the counterfactual shows
+`ArgumentError: missing keyword: :contour` fires at the `ruleset` call itself,
+before `.map` runs, with **zero** guidelines built. Reworded to say so.
+
+Nothing critical. Nothing blocking. No behavior, assertion, or expected value
+changed anywhere in the diff; both reviewers confirmed the substitution is pure
+outside the three deliberately hand-authored comments.
+
+### Notes on the review itself
+
+`Guideline`/`Guidelines` coexist one character apart. Every reference in the
+diff is fully qualified or `described_class`, so no unqualified `Guideline` can
+resolve ambiguously — the same arrangement `Style::Guide` and `Style::Guides`
+already use.
+
+The `Analysis#annotations` reader survives deliberately, so roughly twenty
+lowercase `annotations` references remain in the style layer by design. Each was
+checked individually; all are that reader, its call sites, or comments about it.
 
 ## Implementation Plan
 

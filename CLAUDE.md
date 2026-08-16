@@ -114,7 +114,7 @@ The codebase follows a domain-driven design with clear module boundaries:
 7. **HeadMusic::Style** - Composition rules and guidelines
   - Counterpoint rules (species counterpoint guides)
   - Voice leading guidelines
-  - Style analysis and marks
+  - Style analysis and guidelines
   - Historical traditions (medieval, renaissance, modern)
 
 8. **HeadMusic::Utilities** - Shared helpers

@@ -34,10 +34,11 @@ class HeadMusic::Style::Guides::ContourMelody < HeadMusic::Style::Guides::Specie
   end
 
   # Guide.get passes through anything answering analyze, so naming this class
-  # instead of a registry key reaches Analysis and would otherwise fail as the
-  # first guideline is built, with a bare "missing keyword: :contour". Now that the six
-  # contour subclasses are gone, that is the likeliest way to hold this wrong,
-  # so the error names both ways to hold it right.
+  # instead of a registry key reaches Analysis and would otherwise fail with a
+  # bare "missing keyword: :contour" as the ruleset is requested, before any
+  # guideline is built. Now that the six contour subclasses are gone, that is
+  # the likeliest way to hold this wrong, so the error names both ways to hold
+  # it right.
   def self.analyze(voice)
     raise ArgumentError,
       "#{name} requires configuration. " \
