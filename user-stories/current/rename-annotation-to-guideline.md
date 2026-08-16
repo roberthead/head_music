@@ -4,14 +4,14 @@ metadata:
   activated_at: 2026-08-16T15:20:29-07:00
   planned_at:   2026-08-16T15:42:44-07:00
   finished_at:
-  updated_at:   2026-08-16T15:42:44-07:00
+  updated_at:   2026-08-16T16:23:34-07:00
 -->
 
 # Rename Annotation to Guideline
 
 AS a developer reading the style layer
 
-I WANT the base class of the sixty-three guideline classes to be called `Guideline`
+I WANT the base class of the sixty-two guideline classes to be called `Guideline`
 
 SO THAT `Guidelines::ConsonantClimax < Style::Guideline` says what it is, and the word "annotation" stops meaning two things at once
 
