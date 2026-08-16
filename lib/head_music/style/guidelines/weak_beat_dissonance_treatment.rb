@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Style::Guideline
   include HeadMusic::Style::Guidelines::DissonanceFigureDetection
 
   MESSAGE = "Use only passing tones for dissonances on the weak beat."

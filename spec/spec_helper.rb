@@ -33,7 +33,7 @@ require "composition_context"
 
 Dir[File.join(__dir__, "support", "**", "*.rb")].sort.each { |file| require file }
 
-# Matcher for a guideline wrapped by Annotation.with(...) inside a RULESET.
+# Matcher for a guideline wrapped by Guideline.with(...) inside a RULESET.
 module ConfiguredGuidelineHelper
   def configured(guideline_class, **options)
     an_object_having_attributes(guideline_class: guideline_class, options: options)
@@ -55,7 +55,7 @@ RSpec.configure do |config|
   config.include ConfiguredGuideHelper
 end
 
-class HeadMusic::Style::Annotation
+class HeadMusic::Style::Guideline
   def marks_count
     marks_array.length
   end

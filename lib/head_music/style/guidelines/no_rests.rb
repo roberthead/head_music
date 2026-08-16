@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::NoRests < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NoRests < HeadMusic::Style::Guideline
   MESSAGE = "Place a note in each measure."
 
   def marks

@@ -3,7 +3,7 @@ module HeadMusic::Style::Guidelines; end
 
 # Flags a melody without the configured contour
 # Configure the contour with the factory, e.g. Contoured.with(:arch).
-class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   CONTOURS = %i[ascending descending arch valley wave static].freeze
 
   TREND_REVERSAL_SEMITONES = 3 # a trend reversal must exceed a whole step

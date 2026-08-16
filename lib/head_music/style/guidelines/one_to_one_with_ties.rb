@@ -6,7 +6,7 @@ module HeadMusic::Style::Guidelines; end
 # are sounding at that position. A note may sustain across the barline
 # (syncopation) rather than starting at the CF note position.
 # Two notes sounding against one CF note is permitted as a "second species break."
-class HeadMusic::Style::Guidelines::OneToOneWithTies < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::OneToOneWithTies < HeadMusic::Style::Guideline
   MESSAGE = "Place one note per cantus firmus note. Notes may sustain across the barline."
 
   def marks

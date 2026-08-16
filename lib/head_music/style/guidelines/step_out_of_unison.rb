@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Guideline
   MESSAGE = "Exit a unison by step."
 
   def marks

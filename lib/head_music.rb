@@ -182,8 +182,8 @@ require "head_music/style/modern_tradition"
 require "head_music/style/renaissance_tradition"
 require "head_music/style/medieval_tradition"
 require "head_music/style/analysis"
-require "head_music/style/annotation"
-require "head_music/style/annotation/configured"
+require "head_music/style/guideline"
+require "head_music/style/guideline/configured"
 require "head_music/style/mark"
 
 # style guidelines

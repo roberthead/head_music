@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::StartOnTonic < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::StartOnTonic < HeadMusic::Style::Guideline
   MESSAGE = "Start on the first scale degree."
 
   def marks

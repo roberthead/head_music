@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Guideline
   MESSAGE = "Use consistent rhythmic unit."
 
   def marks

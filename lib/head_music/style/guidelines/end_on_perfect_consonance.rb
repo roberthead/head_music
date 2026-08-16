@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # marks the voice if the first note is not the first or fifth scale degree of the key.
-class HeadMusic::Style::Guidelines::EndOnPerfectConsonance < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::EndOnPerfectConsonance < HeadMusic::Style::Guideline
   MESSAGE = "End on the first or the fifth scale degree."
 
   def marks

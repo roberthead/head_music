@@ -3,7 +3,7 @@ module HeadMusic::Style::Guidelines; end
 
 # Base class for guidelines that flag a voice for falling short of a minimum
 # count. Subclasses supply the actual count being measured against the minimum.
-class HeadMusic::Style::Guidelines::MinimumThreshold < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::MinimumThreshold < HeadMusic::Style::Guideline
   def self.with(minimum, **options)
     super(minimum: minimum, **options)
   end

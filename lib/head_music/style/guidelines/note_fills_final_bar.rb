@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # Checks that the final bar contains a single note that fills the entire measure.
-class HeadMusic::Style::Guidelines::NoteFillsFinalBar < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NoteFillsFinalBar < HeadMusic::Style::Guideline
   MESSAGE = "End with a single note that fills the final bar."
 
   def marks

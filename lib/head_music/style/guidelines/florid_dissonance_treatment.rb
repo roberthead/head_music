@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 # - Strong beat dissonances must be properly prepared suspensions from a tie.
 # - Weak beat dissonances must be passing tones, neighbor tones, nota cambiata, or double neighbor figures.
 # - Tied notes dissonant at the new CF note must resolve by step to a consonance.
-class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style::Guideline
   include HeadMusic::Style::Guidelines::DissonanceFigureDetection
 
   MESSAGE = "Treat dissonances appropriately: passing tones, cambiata, or double neighbor " \

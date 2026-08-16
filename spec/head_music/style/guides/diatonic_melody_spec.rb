@@ -47,7 +47,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
     describe "loosened note-count range of 5 to 32" do
       def configured_for(guideline_class)
         ruleset.find do |rule|
-          rule.is_a?(HeadMusic::Style::Annotation::Configured) && rule.guideline_class == guideline_class
+          rule.is_a?(HeadMusic::Style::Guideline::Configured) && rule.guideline_class == guideline_class
         end
       end
 

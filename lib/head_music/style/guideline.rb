@@ -1,5 +1,6 @@
-# An Annotation encapsulates an issue with or comment on a voice
-class HeadMusic::Style::Annotation
+# A Guideline is one rule of craft. Subclasses find faults in a voice and
+# report them as marks; the instance is both the rule and what it found.
+class HeadMusic::Style::Guideline
   MESSAGE = "Write music."
 
   DEFAULT_WEIGHT = 1.0

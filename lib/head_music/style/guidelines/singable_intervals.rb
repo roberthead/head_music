@@ -7,7 +7,7 @@ module HeadMusic::Style::Guidelines; end
 # - ascending: permitted interval shorthands for ascending motion
 # - descending: permitted interval shorthands for descending motion
 # - message: the annotation message (defaults to listing the permitted intervals)
-class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Guideline
   # Traditional pedagogy permits the minor sixth ascending only.
   DEFAULTS = {
     ascending: %w[P1 m2 M2 m3 M3 P4 P5 m6 P8].freeze,

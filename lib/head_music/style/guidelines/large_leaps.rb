@@ -9,7 +9,7 @@ module HeadMusic::Style::Guidelines; end
 # - recovery: symbols naming the acceptable recovery gestures
 # - maximum_consecutive_leaps: cap on a run of consecutive qualifying leaps
 # - message: the annotation message
-class HeadMusic::Style::Guidelines::LargeLeaps < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::LargeLeaps < HeadMusic::Style::Guideline
   DEFAULTS = {
     minimum: :perfect_fourth,
     ascending: nil,

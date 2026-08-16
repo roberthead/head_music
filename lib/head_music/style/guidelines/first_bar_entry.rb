@@ -4,7 +4,7 @@ module HeadMusic::Style::Guidelines; end
 # Base class for first-bar guidelines.
 # Rules: (a) at least one note, (b) each note is the correct beat unit,
 # (c) at most one rest, and only on the first beat.
-class HeadMusic::Style::Guidelines::FirstBarEntry < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::FirstBarEntry < HeadMusic::Style::Guideline
   def marks
     return unless notes.any?
 

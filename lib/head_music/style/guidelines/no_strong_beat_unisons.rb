@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::NoStrongBeatUnisons < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NoStrongBeatUnisons < HeadMusic::Style::Guideline
   MESSAGE = "Avoid unisons on strong beats except at the beginning and end."
 
   def marks

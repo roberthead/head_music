@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::PreferImperfect < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::PreferImperfect < HeadMusic::Style::Guideline
   MESSAGE = "Prefer imperfect harmonic intervals."
 
   def marks

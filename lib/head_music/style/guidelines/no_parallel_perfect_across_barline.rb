@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::Style::Guideline
   MESSAGE = "Avoid parallel perfect consonances from weak beat to the following downbeat."
 
   def marks

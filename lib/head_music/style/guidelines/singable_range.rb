@@ -3,7 +3,7 @@ module HeadMusic::Style::Guidelines; end
 
 # A voice shouldn't expend the range of a 10th.
 # Configurable via the `maximum_range:` option (a diatonic interval number).
-class HeadMusic::Style::Guidelines::SingableRange < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::SingableRange < HeadMusic::Style::Guideline
   MAXIMUM_RANGE = 10
 
   # Ordinals whose spoken form begins with a vowel sound take "an" instead of

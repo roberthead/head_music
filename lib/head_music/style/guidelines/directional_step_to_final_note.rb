@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # Base class for guidelines requiring a step in a specific direction to the final note.
-class HeadMusic::Style::Guidelines::DirectionalStepToFinalNote < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::DirectionalStepToFinalNote < HeadMusic::Style::Guideline
   def marks
     return if last_melodic_interval.nil?
 

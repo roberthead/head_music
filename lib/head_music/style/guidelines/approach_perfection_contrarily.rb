@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::ApproachPerfectionContrarily < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::ApproachPerfectionContrarily < HeadMusic::Style::Guideline
   MESSAGE = "Approach perfect consonances by contrary motion."
 
   def marks

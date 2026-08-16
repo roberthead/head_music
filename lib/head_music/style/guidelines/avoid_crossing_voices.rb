@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::AvoidCrossingVoices < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::AvoidCrossingVoices < HeadMusic::Style::Guideline
   MESSAGE = "Avoid crossing voices. Maintain the high-low relationship between voices."
 
   def marks

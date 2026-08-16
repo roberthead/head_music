@@ -4,7 +4,7 @@ module HeadMusic::Style::Guidelines; end
 # Checks that each middle bar (not first or last) contains an exact number of
 # notes of a given rhythmic value. Configurable via the `count:` and
 # `rhythmic_value:` options; subclasses may set COUNT and RHYTHMIC_VALUE defaults.
-class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guideline
   def marks
     return [] unless cantus_firmus&.notes&.any?
 

@@ -63,7 +63,7 @@ describe HeadMusic::Style::Analysis do
   context "when every annotation is a gate" do
     let(:guide) { double("Guide", analyze: [gate_annotation]) } # rubocop:disable RSpec/VerifiedDoubles
     let(:gate_annotation) do
-      instance_double(HeadMusic::Style::Annotation, gate?: true, fitness: 0.4, adherent?: false, weight: 1, message: "gated")
+      instance_double(HeadMusic::Style::Guideline, gate?: true, fitness: 0.4, adherent?: false, weight: 1, message: "gated")
     end
 
     it "grades by the gate factor alone (rubric fitness defaults to 1.0)" do

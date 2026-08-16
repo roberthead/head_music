@@ -34,7 +34,7 @@ describe HeadMusic::Style::Guides::Configured do
     end
 
     it "returns annotations" do
-      expect(guide.analyze(voice)).to all(be_a(HeadMusic::Style::Annotation))
+      expect(guide.analyze(voice)).to all(be_a(HeadMusic::Style::Guideline))
     end
   end
 
@@ -53,7 +53,7 @@ describe HeadMusic::Style::Guides::Configured do
   describe "in HeadMusic::Style::Analysis" do
     subject(:analysis) { HeadMusic::Style::Analysis.new(guide, voice) }
 
-    its(:annotations) { are_expected.to all(be_a(HeadMusic::Style::Annotation)) }
+    its(:annotations) { are_expected.to all(be_a(HeadMusic::Style::Guideline)) }
     its(:fitness) { is_expected.to eq 1.0 }
     its(:adherent?) { is_expected.to be true }
 

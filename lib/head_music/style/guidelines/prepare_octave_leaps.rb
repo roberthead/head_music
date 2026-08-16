@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::PrepareOctaveLeaps < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::PrepareOctaveLeaps < HeadMusic::Style::Guideline
   MESSAGE = "Enter and exit an octave leap from within."
 
   def marks

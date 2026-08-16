@@ -4,7 +4,7 @@ module HeadMusic::Style::Guidelines; end
 # Validates that counterpoint notes use only permitted rhythmic values for fifth species.
 # Whole notes (final bar only), half notes, quarter notes, and paired stepwise eighth notes
 # on weak beats are allowed. No dotted rhythms.
-class HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies < HeadMusic::Style::Guideline
   MESSAGE = "Use only permitted rhythmic values: whole (final bar only), half, quarter, " \
     "or paired stepwise eighth notes on weak beats."
 

@@ -1,4 +1,4 @@
-class HeadMusic::Style::Annotation
+class HeadMusic::Style::Guideline
   # A RULESET entry pairing a guideline class with configuration. Quacks like a
   # class to the analyze loop by responding to #new(voice).
   class Configured

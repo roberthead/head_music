@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::Diatonic < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::Diatonic < HeadMusic::Style::Guideline
   MESSAGE = "Use only notes in the key signature."
 
   def marks

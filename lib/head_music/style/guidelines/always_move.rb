@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::AlwaysMove < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::AlwaysMove < HeadMusic::Style::Guideline
   MESSAGE = "Always move to a different note."
 
   def marks

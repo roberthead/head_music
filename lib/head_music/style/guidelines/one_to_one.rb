@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::OneToOne < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::OneToOne < HeadMusic::Style::Guideline
   MESSAGE = "Place a note for each note in the other voice."
 
   def marks

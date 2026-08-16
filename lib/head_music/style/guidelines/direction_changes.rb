@@ -4,7 +4,7 @@ module HeadMusic::Style::Guidelines; end
 # A melodic line should change direction often enough. Configurable via the
 # `maximum_notes_per_direction:` option; subclasses may set a
 # MAXIMUM_NOTES_PER_DIRECTION default and their own MESSAGE.
-class HeadMusic::Style::Guidelines::DirectionChanges < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::DirectionChanges < HeadMusic::Style::Guideline
   MESSAGE = "Change melodic direction regularly."
 
   def marks

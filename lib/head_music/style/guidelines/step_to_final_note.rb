@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::StepToFinalNote < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::StepToFinalNote < HeadMusic::Style::Guideline
   MESSAGE = "Step to the final note."
 
   def marks

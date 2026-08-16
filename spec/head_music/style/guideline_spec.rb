@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Style::Annotation do
+describe HeadMusic::Style::Guideline do
   let(:voice) { HeadMusic::Content::Voice.new }
 
   context "when the voice is empty" do

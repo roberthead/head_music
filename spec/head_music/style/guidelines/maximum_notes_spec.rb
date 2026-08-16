@@ -52,7 +52,7 @@ describe HeadMusic::Style::Guidelines::MaximumNotes do
   describe ".with" do
     subject(:configured) { described_class.with(14) }
 
-    it { is_expected.to be_a HeadMusic::Style::Annotation::Configured }
+    it { is_expected.to be_a HeadMusic::Style::Guideline::Configured }
     its(:guideline_class) { is_expected.to eq described_class }
     its(:options) { is_expected.to eq(maximum: 14) }
 

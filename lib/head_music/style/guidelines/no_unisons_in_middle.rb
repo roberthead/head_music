@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::NoUnisonsInMiddle < HeadMusic::Style::Annotation
+class HeadMusic::Style::Guidelines::NoUnisonsInMiddle < HeadMusic::Style::Guideline
   MESSAGE = "Unisons may only be used in the first and last note."
 
   def marks
