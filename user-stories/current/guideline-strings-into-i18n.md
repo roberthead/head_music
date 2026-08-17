@@ -135,6 +135,12 @@ correct English rule and a wrong rule in most other languages. I18n's `count:`
 pluralization is locale-correct, so `NoteCountPerBar` and `LimitOctaveLeaps` get
 `one:`/`other:` keys and become translatable rather than merely translated.
 
+It also fixes English that is wrong today. `MinimumMelodicIntervals` renders
+"Write at least one melodic interval**s**" for a minimum of one, because it
+interpolates a humanized number into a hard-coded plural. Guidelines that
+already read correctly should keep their wording; guidelines that do not should
+be fixed here rather than faithfully reproduced and left for later.
+
 ### Guides get names and instructions
 
 `Guide.display_name_for`'s flat key → string map becomes nested under `name:`,
@@ -162,8 +168,13 @@ judgment call at implementation time, not a requirement here.
 - `GuideItemAssessment#message` renders `violation_key` with
   `violation_values` merged over the item's interpolations, and is `nil` when
   adherent.
-- Every message produced today is produced identically under `I18n.locale = :en`,
-  including the humanized numerals and the pluralized nouns.
+- English improves where the move makes it easy, and every change is
+  deliberate. Identical output is **not** the bar: this story is infrastructure,
+  and taking the gains it puts within reach is part of the point. In particular
+  `MinimumMelodicIntervals` renders "Write at least one melodic interval**s**"
+  today, and I18n pluralization fixes it rather than faithfully reproducing it.
+- Every English string that *does* change is listed, with the old and new text,
+  so the change is a decision rather than a side effect.
 - `I18n.locale = :de` produces English for every style string, via fallback, and
   raises nothing.
 - A template naming a key absent from `config` is caught at load, not at render.
