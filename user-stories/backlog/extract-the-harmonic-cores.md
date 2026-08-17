@@ -15,7 +15,7 @@ I WANT the guide to weigh what it teaches above the general two-part craft it in
 
 SO THAT a first-species line submitted against a third-species guide is told it is not third species, rather than given a diffusely good grade for keeping its voices uncrossed
 
-Follows [Re-tier the Guides](re-tier-the-guides.md), which folded the equivalent
+Follows [Re-tier the Guides](../done/re-tier-the-guides.md), which folded the equivalent
 melodic demotion into its own scope and left the harmonic question open.
 
 ## Background

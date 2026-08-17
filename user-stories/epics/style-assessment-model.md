@@ -368,7 +368,7 @@ Sequenced so that each step is verifiable on its own.
    literal English sentence living in a guide file become templates plus English
    locale entries, alongside `name_key` and `instruction_key`. Depends on 2,
    because every template is populated from a `GuideItem`'s config.
-4. **[Re-tier the guides](../current/re-tier-the-guides.md).** An editorial pass
+4. ✅ **[Re-tier the guides](../done/re-tier-the-guides.md).** An editorial pass
    deciding, per entry, precondition or expectation — and gates short-circuit, so
    an unassessable voice is reported as such rather than scaled. Deliberately
    *not* bit-identical; gets a before/after fitness table instead. Fixes an empty

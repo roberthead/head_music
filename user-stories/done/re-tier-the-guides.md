@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-16T00:00:00-07:00
   activated_at: 2026-08-16T20:45:18-07:00
   planned_at:   2026-08-16T21:22:40-07:00
-  finished_at:
-  updated_at:   2026-08-17T10:36:30-07:00
+  finished_at:  2026-08-17T11:10:22-07:00
+  updated_at:   2026-08-17T11:10:22-07:00
 -->
 
 # Re-tier the Guides
@@ -206,6 +206,59 @@ story is separate.
 - The before/after fitness table is committed with the story, covering every
   guide against a fixed corpus of degenerate and valid voices.
 - CHANGELOG documents the grading change for each affected guide.
+
+## Learnings
+
+### What the process caught
+
+**Planning found a contradiction inside the story itself.** Scope said split the
+Fux threshold; the acceptance criterion said a four-note voice must stay
+unassessable. Both cannot hold. The brief to the planner carried the split
+forward as "resolved," so the error was propagated rather than caught — the
+planner found it by measuring, not by reading.
+
+**Review caught a real defect in the evidence.** The grade table attributed 205
+rows to the demotion that had nothing to do with it. The classification rule was
+a guess — "fitness moved and the voice is still assessable" — which cannot
+distinguish a demotion from a changed threshold. The reviewer also noted the
+rule was not committed, so the table could not be regenerated. Attribution is
+now by guide, read off the declarations, and the join is a script.
+
+**Membership preservation was worth checking explicitly.** Rewriting seven guides
+to declare through a partitioning helper could have silently dropped a
+guideline, and nothing would have caught it: the suite does not grade a voice
+against a non-matching guide, and a missing rule still produces a plausible
+number. A merge-base comparison proved zero lost.
+
+### What went wrong
+
+**A discrepancy got explained instead of investigated.** Asked why the story's
+0.897 did not match a measured 0.969, the answer given was that the plan
+measured before the demotion landed. It did not — the figure is identical at the
+pre-demotion commit, and `FuxCantusFirmus` never demotes at all. A plausible
+story beat checking, and it was committed. One measurement refuted it.
+
+**A number was over-pinned in an acceptance criterion.** Freezing a fitness works
+against an epic whose purpose is making the scoring adjustable. The criterion
+now asserts the shape — assessable, and the complaint is about length — and the
+numbers live in the table, where they are measurements rather than promises.
+
+**Two stated counts were wrong**: "nine examples break" was seven, and the first
+report of the mislabelled rows said 47 when it was 205.
+
+### Worth carrying forward
+
+- **A green suite meant nothing here.** The demotion moved hundreds of grades and
+  broke no tests, because nothing grades a voice against a non-matching guide.
+  Asking *why* it stayed green is what justified the property specs.
+- **Property specs outlive captured artifacts.** Story 2's oracle proved its
+  claim and expired with the session. The six assessability properties check the
+  whole registry and survive; each was confirmed to fail for the right reason by
+  reverting one change at a time.
+- **The base-class declaration trap nearly ate this story.** `gate_items` on
+  `SpeciesMelody` would leave every subclass with no gates and raise nothing,
+  because `normalize` only objects when all three tiers are empty. The suite
+  would have stayed green with every guide still grading an empty voice 1.000.
 
 ## Review
 
