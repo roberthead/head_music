@@ -87,13 +87,25 @@ module HeadMusic::Style::Template
   # Deliberately narrow. InvalidPluralizationData means the locale cannot answer,
   # which is the case Ruby is here to cover. Rescuing MissingTemplate as well
   # would also swallow an unfilled interpolation -- the one failure verify!
-  # exists to catch -- and hand a student a bare noun phrase where the sentence
-  # should be, on a green suite.
-  def pluralize(key, count:, singular:, **values)
+  # exists to catch -- on a green suite.
+  def pluralize(key, count:, **values)
     render(key, count: count, **values)
-  rescue I18n::InvalidPluralizationData
-    fell_back_to_ruby << key
-    "#{number_word(count)} #{(count == 1) ? singular : singular.pluralize}"
+  rescue I18n::InvalidPluralizationData => error
+    form = ruby_plural_form(error.entry, count)
+    raise MissingTemplate, "#{key} has no plural form to fall back to" if form.nil?
+
+    fell_back_to_ruby << key unless fell_back_to_ruby.include?(key)
+    render("#{key}.#{form}", count: count, **values)
+  end
+
+  # Which form to read when the locale cannot choose one: English's own rule
+  # first, then whatever the entry does carry. Reading the singular for a plural
+  # count gives "Write at least four note." -- the wrong plural this exists to
+  # tolerate, and a whole sentence rather than the bare noun phrase that
+  # answering in Ruby alone would leave.
+  def ruby_plural_form(entry, count)
+    preferred = (count == 1) ? :one : :other
+    ([preferred, :other, :one] & entry.keys).first || entry.keys.first
   end
 
   # Reported by the load-time check, so a missing plural is a known gap rather

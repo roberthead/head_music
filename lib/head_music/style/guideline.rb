@@ -89,16 +89,12 @@ class HeadMusic::Style::Guideline
     HeadMusic::Style::Template.in_locale_of(key) do
       values = template_values(config).merge(extra_values)
       if values.key?(:count)
-        HeadMusic::Style::Template.pluralize(key, singular: violation_singular, **values)
+        HeadMusic::Style::Template.pluralize(key, **values)
       else
         HeadMusic::Style::Template.render(key, **values)
       end
     end
   end
-
-  # The noun a pluralized violation counts. Only the guidelines whose messages
-  # count something define it.
-  def self.violation_singular = nil
 
   # The values a template may interpolate. Deliberately NOT the config itself:
   # seven guide items declare no config at all and read their message values

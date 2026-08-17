@@ -11,8 +11,6 @@ class HeadMusic::Style::Guidelines::MinimumMelodicIntervals < HeadMusic::Style::
     deficiency_mark
   end
 
-  def self.violation_singular = "melodic interval"
-
   # The count comes from the configuration or the class default -- never from
   # config alone, which is empty for the unconfigured case.
   def self.template_values(config)

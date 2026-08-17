@@ -11,8 +11,6 @@ class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guidelin
     middle_bars.filter_map { |bar_number| check_middle_bar(bar_number) }
   end
 
-  def self.violation_singular = "note"
-
   # One template for all four subclasses: they differ by count and unit, not by
   # sentence. Named explicitly so the subclasses do not each need an entry.
   def self.template_key = "note_count_per_bar"

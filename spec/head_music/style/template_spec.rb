@@ -9,9 +9,11 @@ describe HeadMusic::Style::Template do
             filled: "Write at least %{minimum} notes.",
             unfilled: "Use %{number} %{unit} notes.",
             counted: {one: "%{number} note", other: "%{number} notes"},
+            # The en_GB landmine: a form present, the one needed missing.
+            partial: {one: "Write at least %{number} note."},
             # Plural forms English cannot select from -- what a correct Russian
             # entry looks like to a backend without I18n::Backend::Pluralization.
-            uncountable: {few: "%{number} notes", many: "%{number} notes"},
+            uncountable: {few: "Write at least %{number} notes.", many: "Write at least %{number} notes."},
             miscounted: {one: "%{bogus} note", other: "%{bogus} notes"}
           }
         }
@@ -47,25 +49,29 @@ describe HeadMusic::Style::Template do
 
   describe ".pluralize" do
     it "uses the locale's plural forms when it has them" do
-      expect(described_class.pluralize("spec_probe.counted", count: 1, singular: "note", number: "one"))
-        .to eq "one note"
+      expect(described_class.pluralize("spec_probe.counted", count: 1, number: "one")).to eq "one note"
     end
 
     # A language the gem has no plural data for should read a little wrong
-    # rather than raise at a student. This also covers a partial plural hash
-    # mid-chain, which stops the fallback rather than continuing past it.
+    # rather than raise at a student. A partial plural hash mid-chain stops the
+    # fallback rather than continuing past it, so it lands here too.
     context "when the locale cannot answer" do
-      it "pluralizes in Ruby" do
-        expect(described_class.pluralize("spec_probe.uncountable", count: 1, singular: "melodic interval"))
-          .to eq "one melodic interval"
-        expect(described_class.pluralize("spec_probe.uncountable", count: 4, singular: "melodic interval"))
-          .to eq "four melodic intervals"
+      # The wrong plural is the bargain. Dropping the sentence is not: a bare
+      # "four notes" says nothing about what to write.
+      it "keeps the sentence, reading the form the locale does carry" do
+        expect(described_class.pluralize("spec_probe.partial", count: 4, number: "four"))
+          .to eq "Write at least four note."
+      end
+
+      it "reads any form when the locale offers none English can select" do
+        expect(described_class.pluralize("spec_probe.uncountable", count: 4, number: "four"))
+          .to eq "Write at least four notes."
       end
 
       it "records the gap so it is known rather than invisible" do
-        described_class.pluralize("spec_probe.uncountable", count: 1, singular: "note")
+        described_class.pluralize("spec_probe.partial", count: 4, number: "four")
 
-        expect(described_class.fell_back_to_ruby).to include "spec_probe.uncountable"
+        expect(described_class.fell_back_to_ruby).to include "spec_probe.partial"
       end
     end
 
@@ -75,12 +81,12 @@ describe HeadMusic::Style::Template do
     # should be.
     context "when the template itself is broken" do
       it "refuses a plural template it could not fill" do
-        expect { described_class.pluralize("spec_probe.miscounted", count: 4, singular: "note", number: "four") }
+        expect { described_class.pluralize("spec_probe.miscounted", count: 4, number: "four") }
           .to raise_error(described_class::MissingTemplate, /interpolation/)
       end
 
       it "refuses a plural key that does not exist" do
-        expect { described_class.pluralize("spec_probe.absent", count: 4, singular: "note") }
+        expect { described_class.pluralize("spec_probe.absent", count: 4) }
           .to raise_error(described_class::MissingTemplate)
       end
     end

@@ -12,8 +12,6 @@ class HeadMusic::Style::Guidelines::MaximumNotes < HeadMusic::Style::Guideline
     HeadMusic::Style::Mark.for_each(notes[maximum..]) if overage.positive?
   end
 
-  def self.violation_singular = "note"
-
   # The count comes from the configuration or the class default -- never from
   # config alone, which is empty for the unconfigured case.
   def self.template_values(config)

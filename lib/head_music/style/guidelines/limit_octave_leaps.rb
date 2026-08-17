@@ -14,8 +14,6 @@ class HeadMusic::Style::Guidelines::LimitOctaveLeaps < HeadMusic::Style::Guideli
     end
   end
 
-  def self.violation_singular = "octave leap"
-
   # The count comes from the configuration or the class default -- never from
   # config alone, which is empty for the unconfigured case.
   def self.template_values(config)
