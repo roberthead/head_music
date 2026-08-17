@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-16T20:45:18-07:00
   planned_at:   2026-08-16T21:22:40-07:00
   finished_at:
-  updated_at:   2026-08-17T10:13:07-07:00
+  updated_at:   2026-08-17T10:36:30-07:00
 -->
 
 # Re-tier the Guides
@@ -206,6 +206,84 @@ story is separate.
 - The before/after fitness table is committed with the story, covering every
   guide against a fixed corpus of degenerate and valid voices.
 - CHANGELOG documents the grading change for each affected guide.
+
+## Review
+
+Reviewed 2026-08-17 at `524f56d`, against
+`git diff $(git merge-base main HEAD)...HEAD -- lib spec bin README.md CHANGELOG.md`
+— 36 files. Both findings are fixed in `524f56d`; the verdicts describe the
+reviewed state.
+
+### Acceptance criteria
+
+Every criterion verified by running it. The reviewer built a merge-base worktree
+rather than trusting the committed captures.
+
+| Criterion | Verdict | Evidence |
+| --- | --- | --- |
+| Every guide declares a gate | ✅ | all 23 |
+| Nothing raises for 0/1/no-companion voices | ✅ | reverting one gate reproduces the original `NoMethodError` |
+| Empty voice grades 0.0 | ✅ | all 23 |
+| Monotonic among unassessable voices | ✅ | all 23 over the 0–8 ladder |
+| No unassessable voice scores 1.0 | ✅ | all 23 |
+| Fux splits its threshold | ✅ | reverting the split breaks the new examples |
+| Species guides weigh teaching above inheritance | ✅ | first-species line vs `ThirdSpeciesMelody`: 0.883 → 0.561 |
+| Every moved grade attributed | ✅ *(after the fix below)* | 3,266 rows reproduce exactly |
+| Table committed | ✅ | capture script runs unmodified at the merge-base |
+| CHANGELOG documents the change | ✅ | categorical, covering all 17 affected guides |
+
+### The highest-risk check: membership
+
+**No defect.** Dumped every guide's guidelines at the merge-base and at the tip.
+Across all ten guides that changed declaration form, the only difference is the
+addition of `MinimumNotes(3)` — **zero guidelines lost, none unexpectedly
+gained** — and `primary(after) + secondary(after) == primary(before)` holds for
+each of the seven species guides. The partition works by membership rather than
+declaration form, confirmed against `FirstSpeciesMelody`, which hand-names seven
+of `MOVING_MELODIC_CORE`'s nine members instead of splatting the constant and
+still has all seven demoted.
+
+### The property specs are load-bearing
+
+Verified by reverting changes in a scratch worktree, one at a time: removing a
+melody guide's gate fails three of the six; removing a harmony guide's fails all
+six and reproduces the original crash; reverting the short-circuit fails five,
+leaving only the gate-presence check green, correctly. None is decorative.
+
+### Findings, both fixed
+
+**1. The table attributed 205 rows to the wrong mechanism.** The classification
+rule was a guess — "the fitness moved and the voice is still assessable" — which
+cannot distinguish a demotion from a changed threshold. `FuxCantusFirmus`,
+`SalzerSchachterCantusFirmus`, `DiatonicMelody` and the six contour guides never
+demote: their `secondary_items` is empty before and after, and their rows moved
+because the note minimum split. Attribution is now by guide, read off the
+declarations, and the join is a committed script (`bin/guide_grade_table.rb`) so
+the table regenerates rather than being trusted. The reviewer had flagged that
+the classification was not reproducible; now it is.
+
+**2. Three property specs did not name the failing guide.** They looped over all
+23 reporting only the mismatched value. Since these are the story's durable
+evidence, a failure that does not say which guide broke undercuts the point.
+
+### Corrections to the story's own numbers
+
+- **The 0.897 figure does not reproduce.** The voice measures 0.96875 at the tip
+  *and* at the commit before the demotion, and `FuxCantusFirmus` is never
+  demoted. An earlier note here blamed the demotion; that was wrong, and is
+  corrected above. Most likely a stale hand-estimate, like the plan's 0.462 for
+  the same voice.
+- **"Nine existing examples break" was seven.** All seven are consequences of the
+  tier split — the reviewer recomputed `ContourMelody` item counts independently
+  and got 14/14/14/13/14/14, matching the specs — not adjustments to greenwash a
+  red suite.
+
+### Out of scope: confirmed absent
+
+No coverage gate; `MinimumMelodicIntervals` appears only where it already did.
+The harmony cores are untouched and flat, with
+[Extract the Harmonic Cores](../backlog/extract-the-harmonic-cores.md) as the
+recorded follow-up.
 
 ## Results
 
