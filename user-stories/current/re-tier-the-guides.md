@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-16T20:45:18-07:00
   planned_at:   2026-08-16T21:22:40-07:00
   finished_at:
-  updated_at:   2026-08-16T21:22:40-07:00
+  updated_at:   2026-08-17T10:13:07-07:00
 -->
 
 # Re-tier the Guides
