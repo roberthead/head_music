@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::PreferContraryMotion < HeadMusic::Style::Guideline
-  MESSAGE = "Prefer contrary motion. Move voices in different melodic directions."
-
   def marks
     return nil if notes.length < 2
     return nil if direct_motion_ratio <= 0.5

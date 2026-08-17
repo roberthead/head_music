@@ -567,6 +567,145 @@ en:
       tuba: tuba
       tuning: tuning
     style:
+      guidelines:
+        allowed_rhythmic_values_for_combined123:
+          violations:
+            default: "Use only whole notes, half notes, and quarter notes."
+        allowed_rhythmic_values_for_fifth_species:
+          violations:
+            default: "Use only permitted rhythmic values: whole (final bar only), half, quarter, or paired stepwise eighth notes on weak beats."
+        always_move:
+          violations:
+            default: "Always move to a different note."
+        approach_perfection_contrarily:
+          violations:
+            default: "Approach perfect consonances by contrary motion."
+        avoid_crossing_voices:
+          violations:
+            default: "Avoid crossing voices. Maintain the high-low relationship between voices."
+        avoid_overlapping_voices:
+          violations:
+            default: "Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes."
+        consonant_climax:
+          violations:
+            default: "Peak on a consonant high or low note one time or twice with a step between."
+        consonant_downbeats:
+          violations:
+            default: "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."
+        diatonic:
+          violations:
+            default: "Use only notes in the key signature."
+        direction_changes:
+          violations:
+            default: "Change melodic direction regularly."
+        end_on_perfect_consonance:
+          violations:
+            default: "End on the first or the fifth scale degree."
+        end_on_tonic:
+          violations:
+            default: "End on the first scale degree."
+        first_bar_half_notes:
+          violations:
+            default: "Begin the first bar with half notes, or enter after a half rest."
+        first_bar_quarter_notes:
+          violations:
+            default: "Begin the first bar with quarter notes, or enter after a quarter rest."
+        first_bar_whole_note:
+          violations:
+            default: "Begin with a whole note in the first bar."
+        florid_dissonance_treatment:
+          violations:
+            default: "Treat dissonances appropriately: passing tones, cambiata, or double neighbor on weak beats; proper suspension treatment for tied notes."
+        frequent_direction_changes:
+          violations:
+            default: "Change melodic direction frequently."
+        mixed_rhythmic_values:
+          violations:
+            default: "Use at least three different rhythmic values for a truly florid line."
+        moderate_direction_changes:
+          violations:
+            default: "Change melodic direction occasionally."
+        mostly_conjunct:
+          violations:
+            default: "Use mostly conjunct motion."
+        no_parallel_perfect_across_barline:
+          violations:
+            default: "Avoid parallel perfect consonances from weak beat to the following downbeat."
+        no_parallel_perfect_on_downbeats:
+          violations:
+            default: "Avoid parallel perfect consonances on consecutive downbeats."
+        no_parallel_perfect_with_syncopation:
+          violations:
+            default: "Avoid parallel perfect consonances between syncopated notes."
+        no_rests:
+          violations:
+            default: "Place a note in each measure."
+        no_rests_after_note:
+          violations:
+            default: "Do not rest after the first note has sounded."
+        no_strong_beat_unisons:
+          violations:
+            default: "Avoid unisons on strong beats except at the beginning and end."
+        no_unisons_in_middle:
+          violations:
+            default: "Unisons may only be used in the first and last note."
+        note_fills_final_bar:
+          violations:
+            default: "End with a single note that fills the final bar."
+        notes_same_length:
+          violations:
+            default: "Use consistent rhythmic unit."
+        one_to_one:
+          violations:
+            default: "Place a note for each note in the other voice."
+        one_to_one_with_ties:
+          violations:
+            default: "Place one note per cantus firmus note. Notes may sustain across the barline."
+        prefer_contrary_motion:
+          violations:
+            default: "Prefer contrary motion. Move voices in different melodic directions."
+        prefer_imperfect:
+          violations:
+            default: "Prefer imperfect harmonic intervals."
+        prepare_octave_leaps:
+          violations:
+            default: "Enter and exit an octave leap from within."
+        second_species_break:
+          violations:
+            default: "Use only passing tones when breaking the syncopated texture. Breaks should be infrequent."
+        set_against_another_voice:
+          violations:
+            default: "Set this voice against another voice."
+        start_on_perfect_consonance:
+          violations:
+            default: "Start on the tonic or a perfect consonance above the tonic (unless bass voice)."
+        start_on_tonic:
+          violations:
+            default: "Start on the first scale degree."
+        step_down_to_final_note:
+          violations:
+            default: "Step down to the final note."
+        step_out_of_unison:
+          violations:
+            default: "Exit a unison by step."
+        step_to_final_note:
+          violations:
+            default: "Step to the final note."
+        step_up_to_final_note:
+          violations:
+            default: "Step up to final note."
+        suspension_treatment:
+          violations:
+            default: "Treat suspensions with proper preparation and downward stepwise resolution."
+        third_species_dissonance_treatment:
+          violations:
+            default: "Treat dissonances as passing tones, neighbor tones, cambiata, or double neighbor figures."
+        triple_meter_dissonance_treatment:
+          violations:
+            default: "Treat dissonances as passing tones or neighbor tones."
+        weak_beat_dissonance_treatment:
+          violations:
+            default: "Use only passing tones for dissonances on the weak beat."
       guides:
         # Only keys whose humanized default is wrong need an entry here;
         # HeadMusic::Style::Guide.display_name_for derives the rest.

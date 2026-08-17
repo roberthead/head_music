@@ -5,8 +5,6 @@
 # private to .assess. What a consumer holds is the GuideItemAssessment that
 # comes back.
 class HeadMusic::Style::Guideline
-  MESSAGE = "Write music."
-
   attr_reader :voice
 
   delegate(
@@ -37,6 +35,28 @@ class HeadMusic::Style::Guideline
   # e.g. MinimumNotes.with(5).
   def self.with(**options)
     HeadMusic::Style::GuideItem.new(self, options)
+  end
+
+  # Guidelines are addressed in the locale files by the snake_case of their
+  # class name, so a new guideline needs no declaration -- the same convention
+  # Style::Guide.display_name_for already uses for guides.
+  def self.template_key
+    @template_key ||= HeadMusic::Utilities::Case.to_snake_case(name.split("::").last)
+  end
+
+  def self.name_key = "guidelines.#{template_key}.name"
+
+  def self.instruction_key = "guidelines.#{template_key}.instruction"
+
+  def self.violation_key = "guidelines.#{template_key}.violations.default"
+
+  # The values a template may interpolate. Deliberately NOT the config itself:
+  # seven guide items declare no config at all and read their message values
+  # from class constants, and I18n returns a template untouched when given no
+  # values, so those would ship "%{number}" to a student without raising.
+  # Subclasses whose messages say something override this.
+  def self.template_values(config)
+    config.except(:violation_key)
   end
 
   # The analysis seam. The instance built here is the analysis context -- it
@@ -79,7 +99,7 @@ class HeadMusic::Style::Guideline
   end
 
   def message
-    self.class::MESSAGE
+    HeadMusic::Style::Template.render(self.class.violation_key, **self.class.template_values(options))
   end
 
   def first_note

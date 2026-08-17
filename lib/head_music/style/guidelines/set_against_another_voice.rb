@@ -13,8 +13,6 @@ module HeadMusic::Style::Guidelines; end
 # so this passes for any companion that sounds -- HasCantusFirmus would claim
 # more than it verifies.
 class HeadMusic::Style::Guidelines::SetAgainstAnotherVoice < HeadMusic::Style::Guideline
-  MESSAGE = "Set this voice against another voice."
-
   def marks
     return if companion_sounds?
     return no_placements_mark if placements.empty?

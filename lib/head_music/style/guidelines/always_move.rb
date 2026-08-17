@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::AlwaysMove < HeadMusic::Style::Guideline
-  MESSAGE = "Always move to a different note."
-
   def marks
     melodic_note_pairs
       .select { |pair| pair.perfect? && pair.unison? }

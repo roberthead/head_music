@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::Style::Guideline
-  MESSAGE = "Avoid parallel perfect consonances from weak beat to the following downbeat."
-
   def marks
     parallel_perfect_across_barline_pairs.map do |pair|
       HeadMusic::Style::Mark.for_all(pair.flat_map(&:notes))

@@ -4,8 +4,6 @@ module HeadMusic::Style::Guidelines; end
 # A counterpoint guideline. Configurable via the `minimum_conjunct_portion:`
 # option (the minimum fraction of melodic motion that must be stepwise).
 class HeadMusic::Style::Guidelines::MostlyConjunct < HeadMusic::Style::Guideline
-  MESSAGE = "Use mostly conjunct motion."
-
   MINIMUM_CONJUNCT_PORTION = HeadMusic::GOLDEN_RATIO_INVERSE**2
   # ~38%
   # Fux is 5/13 for lydian cantus firmus

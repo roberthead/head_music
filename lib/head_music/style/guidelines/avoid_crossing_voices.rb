@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::AvoidCrossingVoices < HeadMusic::Style::Guideline
-  MESSAGE = "Avoid crossing voices. Maintain the high-low relationship between voices."
-
   def marks
     crossings.map do |crossing|
       HeadMusic::Style::Mark.for_all(crossing.notes)

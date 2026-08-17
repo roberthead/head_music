@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::Diatonic < HeadMusic::Style::Guideline
-  MESSAGE = "Use only notes in the key signature."
-
   def marks
     HeadMusic::Style::Mark.for_each(notes_not_in_key_excluding_penultimate_leading_tone)
   end

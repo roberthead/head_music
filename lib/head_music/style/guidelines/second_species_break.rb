@@ -6,8 +6,6 @@ module HeadMusic::Style::Guidelines; end
 # downbeat instead of sustaining. When this happens, a dissonant off-beat note
 # is permitted only if it is a passing tone. Breaks should be infrequent.
 class HeadMusic::Style::Guidelines::SecondSpeciesBreak < HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment
-  MESSAGE = "Use only passing tones when breaking the syncopated texture. Breaks should be infrequent."
-
   MAX_BREAK_RATIO = 0.25
 
   def marks

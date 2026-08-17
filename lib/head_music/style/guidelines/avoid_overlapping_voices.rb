@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::AvoidOverlappingVoices < HeadMusic::Style::Guideline
-  MESSAGE = "Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes."
-
   def marks
     overlappings
   end

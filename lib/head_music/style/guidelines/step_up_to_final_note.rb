@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::StepUpToFinalNote < HeadMusic::Style::Guidelines::DirectionalStepToFinalNote
-  MESSAGE = "Step up to final note."
-
   private
 
   def expected_direction?

@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::NotesSameLength < HeadMusic::Style::Guideline
-  MESSAGE = "Use consistent rhythmic unit."
-
   def marks
     HeadMusic::Style::Mark.for_each(all_wrong_length_notes)
   end

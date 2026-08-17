@@ -7,8 +7,6 @@ module HeadMusic::Style::Guidelines; end
 # 2. Suspension: The cantus firmus moves; the counterpoint sustains, becoming dissonant.
 # 3. Resolution: The counterpoint resolves by step down to a consonance.
 class HeadMusic::Style::Guidelines::SuspensionTreatment < HeadMusic::Style::Guideline
-  MESSAGE = "Treat suspensions with proper preparation and downward stepwise resolution."
-
   def marks
     return [] unless cantus_firmus&.notes&.any?
 

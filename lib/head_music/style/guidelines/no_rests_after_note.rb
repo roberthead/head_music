@@ -4,8 +4,6 @@ module HeadMusic::Style::Guidelines; end
 # Once the first note has sounded, no rests are permitted for the remainder
 # of the voice. Rests before the first note (a leading rest) are allowed.
 class HeadMusic::Style::Guidelines::NoRestsAfterNote < HeadMusic::Style::Guideline
-  MESSAGE = "Do not rest after the first note has sounded."
-
   def marks
     return [] if rests.empty? || notes.empty?
 

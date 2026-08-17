@@ -7,8 +7,6 @@ module HeadMusic::Style::Guidelines; end
 # (syncopation) rather than starting at the CF note position.
 # Two notes sounding against one CF note is permitted as a "second species break."
 class HeadMusic::Style::Guidelines::OneToOneWithTies < HeadMusic::Style::Guideline
-  MESSAGE = "Place one note per cantus firmus note. Notes may sustain across the barline."
-
   def marks
     return unless cantus_firmus&.notes
     return if cantus_firmus.notes.empty?

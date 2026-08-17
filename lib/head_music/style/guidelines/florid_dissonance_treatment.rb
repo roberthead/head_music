@@ -8,9 +8,6 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style::Guideline
   include HeadMusic::Style::Guidelines::DissonanceFigureDetection
 
-  MESSAGE = "Treat dissonances appropriately: passing tones, cambiata, or double neighbor " \
-    "on weak beats; proper suspension treatment for tied notes."
-
   def marks
     return [] unless cantus_firmus&.notes&.any?
 

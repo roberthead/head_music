@@ -5,8 +5,6 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Style::Guideline
   include HeadMusic::Style::Guidelines::DissonanceFigureDetection
 
-  MESSAGE = "Use only passing tones for dissonances on the weak beat."
-
   def marks
     return [] unless cantus_firmus&.notes&.any?
 

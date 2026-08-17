@@ -5,8 +5,6 @@ module HeadMusic::Style::Guidelines; end
 # Dissonant downbeats are permitted only when the counterpoint note is a
 # properly tied-over suspension (i.e., it began before the current CF note).
 class HeadMusic::Style::Guidelines::ConsonantDownbeats < HeadMusic::Style::Guideline
-  MESSAGE = "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."
-
   def marks
     dissonant_pairs.map do |dissonant_pair|
       HeadMusic::Style::Mark.for_all(dissonant_pair)

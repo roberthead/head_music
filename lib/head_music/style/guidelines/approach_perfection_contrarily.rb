@@ -3,8 +3,6 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::ApproachPerfectionContrarily < HeadMusic::Style::Guideline
-  MESSAGE = "Approach perfect consonances by contrary motion."
-
   def marks
     motions_to_perfect_consonance_approached_directly.map do |bad_motion|
       HeadMusic::Style::Mark.for_all(bad_motion.notes)

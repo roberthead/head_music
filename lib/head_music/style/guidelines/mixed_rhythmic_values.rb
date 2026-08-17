@@ -4,8 +4,6 @@ module HeadMusic::Style::Guidelines; end
 # Checks that the voice uses at least 3 different rhythmic value durations.
 # Florid counterpoint requires a genuine mixture of species textures.
 class HeadMusic::Style::Guidelines::MixedRhythmicValues < HeadMusic::Style::Guideline
-  MESSAGE = "Use at least three different rhythmic values for a truly florid line."
-
   def marks
     return [] if notes.length < 2
     return [] if distinct_durations_count >= 3
