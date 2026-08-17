@@ -21,7 +21,7 @@ class HeadMusic::Style::GuideItem
 
   def initialize(guideline, config = {})
     @guideline = guideline
-    @config = config
+    @config = deep_freeze(config)
     freeze
   end
 
@@ -46,4 +46,25 @@ class HeadMusic::Style::GuideItem
   end
   alias_method :to_s, :name
   alias_method :inspect, :name
+
+  private
+
+  # Deep, because freezing the item alone would be a promise it does not keep.
+  # Items are built once at load and shared between guides -- the same
+  # LargeLeaps item is in DiatonicMelody and all six contour guides -- so a
+  # mutable array inside config lets one caller corrupt every guide that reuses
+  # a core, and changes the hash of an object that reports itself frozen, which
+  # is what duplicate rejection and value equality rest on.
+  #
+  # Containers and strings only. A config value can be a rudiment -- LargeLeaps
+  # takes a DiatonicInterval as its minimum -- and those memoize lazily, so
+  # freezing one breaks it the first time it is asked a question.
+  def deep_freeze(value)
+    case value
+    when Hash then value.each_value { |nested| deep_freeze(nested) }.freeze
+    when Array then value.each { |nested| deep_freeze(nested) }.freeze
+    when String then value.freeze
+    else value
+    end
+  end
 end

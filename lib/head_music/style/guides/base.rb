@@ -84,8 +84,12 @@ class HeadMusic::Style::Guides::Base
     # same checks.
     def normalize(tiers)
       resolved = TIERS.to_h { |tier| [tier, wrap_list(tiers[tier])] }.freeze
+      # ArgumentError rather than NotImplementedError: this is a guide
+      # declared wrong, not an abstract method left unimplemented, and it
+      # should be catchable by an ordinary rescue like the other two guards
+      # in this file. NotImplementedError is a ScriptError and is not.
       if resolved.values.all?(&:empty?)
-        raise NotImplementedError, "#{name} declares no guide items"
+        raise ArgumentError, "#{name} declares no guide items"
       end
 
       reject_duplicates(resolved)

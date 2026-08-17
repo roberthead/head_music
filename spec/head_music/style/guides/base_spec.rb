@@ -20,8 +20,8 @@ describe HeadMusic::Style::Guides::Base do
   # Guards the explicit registry list against drift when a guide class is added.
   # A concrete guide is a Base subclass whose items_by_tier takes no keyword
   # arguments (excluding ContourMelody, which requires configuration) and
-  # whose lists resolve without raising the NotImplementedError an abstract
-  # base (SpeciesMelody, SpeciesHarmony) raises for declaring no tiers at all.
+  # whose lists resolve without raising the ArgumentError an abstract base
+  # (SpeciesMelody, SpeciesHarmony) raises for declaring no tiers at all.
   # PermissiveGuide, which guide_assessment_spec.rb injects into the namespace
   # at load, is excluded too: it does not descend from Base.
   def concrete_guide_class?(klass)
@@ -30,7 +30,7 @@ describe HeadMusic::Style::Guides::Base do
 
     klass.guide_items
     true
-  rescue NotImplementedError
+  rescue ArgumentError
     false
   end
 

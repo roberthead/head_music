@@ -4,7 +4,7 @@ module HeadMusic::Style; end
 # Lookup facade for the guides in HeadMusic::Style::Guides. A class with a
 # .get factory, matching Tradition and the gem's other .get definers -- no
 # module in the gem defines .get. Never instantiated; .get returns a guide
-# class or a Guides::Configured, either of which answers analyze(voice), key,
+# class or a Guides::Configured, either of which answers assess(voice), key,
 # category, and display_name.
 class HeadMusic::Style::Guide
   GUIDE_CLASSES = [
@@ -60,9 +60,11 @@ class HeadMusic::Style::Guide
   # entry per distinct argument, and these keys arrive from a consumer's
   # database; const_get would traverse namespaces and raise NameError on an
   # invalid name, violating nil-on-miss.
-  # assess_items, not assess, and for the same reason GuideAssessment checks it:
-  # guidelines and guide items answer assess too, with different arguments, so
-  # assess would pass a guideline through as though it were a guide.
+  #
+  # The pass-through checks assess_items rather than assess, for the same
+  # reason GuideAssessment does: guidelines and guide items answer assess too,
+  # with different arguments, so assess would pass a guideline through as
+  # though it were a guide.
   def self.get(key)
     return key if key.respond_to?(:assess_items)
 
@@ -74,9 +76,9 @@ class HeadMusic::Style::Guide
   end
 
   # Asks whether the registry knows this, not whether it quacks like a guide.
-  # Delegating to .get would answer true for any analyze-responder, including an
-  # ad-hoc configuration whose key_for is nil -- so known? and key_for would
-  # disagree about the same object.
+  # Delegating to .get would answer true for any assess_items-responder,
+  # including an ad-hoc configuration whose key_for is nil -- so known? and
+  # key_for would disagree about the same object.
   def self.known?(key)
     REGISTRY.key?(key.to_s) || !key_for(key).nil?
   end
