@@ -19,12 +19,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
   describe ".with" do
     subject(:configured) { described_class.with(:arch) }
 
-    it { is_expected.to be_a HeadMusic::Style::Guideline::Configured }
-    its(:guideline_class) { is_expected.to eq described_class }
-    its(:options) { is_expected.to eq(contour: :arch) }
+    it { is_expected.to be_a HeadMusic::Style::GuideItem }
+    its(:guideline) { is_expected.to eq described_class }
+    its(:config) { is_expected.to eq(contour: :arch) }
 
     it "accepts a string key" do
-      expect(described_class.with("Arch").options).to eq(contour: :arch)
+      expect(described_class.with("Arch").config).to eq(contour: :arch)
     end
 
     it "raises for an unknown contour" do

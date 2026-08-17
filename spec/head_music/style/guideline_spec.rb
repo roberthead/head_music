@@ -57,7 +57,7 @@ describe HeadMusic::Style::Guideline do
   describe "Configured#with" do
     it "merges additional options without dropping prior options" do
       configured = HeadMusic::Style::Guidelines::MinimumNotes.with(8).with(weight: 0.5)
-      expect(configured.options).to eq(minimum: 8, weight: 0.5)
+      expect(configured.config).to eq(minimum: 8, weight: 0.5)
     end
   end
 

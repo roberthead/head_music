@@ -35,7 +35,7 @@ describe HeadMusic::Style::Guides::Base do
   def enforced_by?(ruleset, guideline_class)
     ruleset.any? do |rule|
       rule == guideline_class ||
-        (rule.is_a?(HeadMusic::Style::Guideline::Configured) && rule.guideline_class == guideline_class)
+        (rule.is_a?(HeadMusic::Style::GuideItem) && rule.guideline == guideline_class)
     end
   end
 

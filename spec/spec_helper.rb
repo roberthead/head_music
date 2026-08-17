@@ -33,10 +33,11 @@ require "composition_context"
 
 Dir[File.join(__dir__, "support", "**", "*.rb")].sort.each { |file| require file }
 
-# Matcher for a guideline wrapped by Guideline.with(...) inside a RULESET.
+# Matcher for a GuideItem -- a guideline paired with a guide's configuration,
+# e.g. MinimumNotes.with(5).
 module ConfiguredGuidelineHelper
-  def configured(guideline_class, **options)
-    an_object_having_attributes(guideline_class: guideline_class, options: options)
+  def configured(guideline, **config)
+    an_object_having_attributes(guideline: guideline, config: config)
   end
 end
 

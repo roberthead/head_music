@@ -47,16 +47,16 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
     describe "loosened note-count range of 5 to 32" do
       def configured_for(guideline_class)
         ruleset.find do |rule|
-          rule.is_a?(HeadMusic::Style::Guideline::Configured) && rule.guideline_class == guideline_class
+          rule.is_a?(HeadMusic::Style::GuideItem) && rule.guideline == guideline_class
         end
       end
 
       it "sets a minimum of 5 notes" do
-        expect(configured_for(HeadMusic::Style::Guidelines::MinimumNotes).options).to eq(minimum: 5)
+        expect(configured_for(HeadMusic::Style::Guidelines::MinimumNotes).config).to eq(minimum: 5)
       end
 
       it "sets a maximum of 32 notes" do
-        expect(configured_for(HeadMusic::Style::Guidelines::MaximumNotes).options).to eq(maximum: 32)
+        expect(configured_for(HeadMusic::Style::Guidelines::MaximumNotes).config).to eq(maximum: 32)
       end
     end
   end

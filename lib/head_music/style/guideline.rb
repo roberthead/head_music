@@ -31,10 +31,10 @@ class HeadMusic::Style::Guideline
     @options = options
   end
 
-  # Wraps a guideline class with preset options so it can live in a RULESET
-  # and still be instantiated with just a voice, e.g. MinimumNotes.with(5).
+  # Pairs this guideline with the configuration a guide gives it,
+  # e.g. MinimumNotes.with(5).
   def self.with(**options)
-    Configured.new(self, options)
+    HeadMusic::Style::GuideItem.new(self, options)
   end
 
   def self.default_weight

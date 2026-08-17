@@ -19,7 +19,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
     it "does not mutate the shared diatonic melody ruleset" do
       expect(HeadMusic::Style::Guides::DiatonicMelody::RULESET).to all(
-        satisfy { |entry| !entry.respond_to?(:options) || !entry.options.key?(:weight) }
+        satisfy { |entry| !entry.respond_to?(:config) || !entry.config.key?(:weight) }
       )
     end
 
@@ -33,9 +33,9 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
         it "carries every diatonic melody guideline" do
           diatonic_classes = HeadMusic::Style::Guides::DiatonicMelody::RULESET.map do |entry|
-            entry.respond_to?(:guideline_class) ? entry.guideline_class : entry
+            entry.respond_to?(:guideline) ? entry.guideline : entry
           end
-          expect(ruleset.map(&:guideline_class)).to include(*diatonic_classes)
+          expect(ruleset.map(&:guideline)).to include(*diatonic_classes)
         end
 
         it "passes the note-count gate through unchanged" do
@@ -50,16 +50,16 @@ describe HeadMusic::Style::Guides::ContourMelody do
           end
         else
           it "omits the motion gate so a repeated-note line can score" do
-            expect(ruleset.map(&:guideline_class)).not_to include(guidelines::MinimumMelodicIntervals)
+            expect(ruleset.map(&:guideline)).not_to include(guidelines::MinimumMelodicIntervals)
           end
         end
 
         it "weights each rubric peer evenly within the phi^-2 budget" do
           peers = ruleset.reject(&:default_gate?).reject do |entry|
-            entry.guideline_class == guidelines::Contoured
+            entry.guideline == guidelines::Contoured
           end
           expect(peers.length).to eq 10
-          expect(peers).to all(have_attributes(options: hash_including(weight: peer_weight)))
+          expect(peers).to all(have_attributes(config: hash_including(weight: peer_weight)))
         end
 
         it "adds the #{row[:contour]} contour guideline" do
@@ -75,7 +75,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
     end
 
     def rule_shape(rule)
-      rule.respond_to?(:guideline_class) ? [rule.guideline_class, rule.options] : [rule, {}]
+      rule.respond_to?(:guideline) ? [rule.guideline, rule.config] : [rule, {}]
     end
   end
 
@@ -84,7 +84,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
     let(:ruleset) { HeadMusic::Style::Guide.get("arch_contour_melody").ruleset }
 
     it "weights the contour guideline at its default in the guide ruleset" do
-      entry = ruleset.detect { |rule| rule.guideline_class == guidelines::Contoured }
+      entry = ruleset.detect { |rule| rule.guideline == guidelines::Contoured }
       expect(entry.new(voice).weight).to eq HeadMusic::GOLDEN_RATIO_INVERSE
     end
 
@@ -94,7 +94,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
     end
 
     it "weights the same guideline differently as a rubric peer than standalone" do
-      peer = ruleset.detect { |rule| rule.guideline_class == guidelines::Diatonic }
+      peer = ruleset.detect { |rule| rule.guideline == guidelines::Diatonic }
       expect(peer.new(voice).weight).to eq(HeadMusic::GOLDEN_RATIO_INVERSE**2 / 10)
       expect(guidelines::Diatonic.new(voice).weight).to eq 1.0
     end
