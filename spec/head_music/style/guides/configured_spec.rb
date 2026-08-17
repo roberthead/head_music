@@ -45,7 +45,7 @@ describe HeadMusic::Style::Guides::Configured do
     end
 
     it "builds the configured guide's rules, not the ancestor's" do
-      expect(guide.guide_items.length).to eq 13
+      expect(guide.guide_items.length).to eq 14
     end
   end
 

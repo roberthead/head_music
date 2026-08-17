@@ -55,14 +55,21 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
     end
 
     describe "loosened note-count range of 5 to 32" do
+      # Scoped to the primaries: MinimumNotes appears twice now, once as the
+      # gate asking whether this is a melody at all and once as the prescription
+      # for how long a free diatonic melody should run.
       def configured_for(guideline_class)
-        guide_items.find do |item|
-          item.is_a?(HeadMusic::Style::GuideItem) && item.guideline == guideline_class
-        end
+        described_class.primary_items.find { |item| item.guideline == guideline_class }
       end
 
       it "sets a minimum of 5 notes" do
         expect(configured_for(HeadMusic::Style::Guidelines::MinimumNotes).config).to eq(minimum: 5)
+      end
+
+      it "asks the assessability question separately, at three notes" do
+        expect(described_class.gate_items).to include(
+          configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 3)
+        )
       end
 
       it "sets a maximum of 32 notes" do

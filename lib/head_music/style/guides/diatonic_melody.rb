@@ -3,7 +3,9 @@ class HeadMusic::Style::Guides::DiatonicMelody < HeadMusic::Style::Guides::Speci
   # Modern interpretation: major sixths are singable; sevenths are not.
   SINGABLE_INTERVALS = %w[P1 m2 M2 m3 M3 P4 P5 m6 M6 P8].freeze
 
-  gate_items HeadMusic::Style::Guidelines::MinimumNotes.with(5)
+  # Same split as the cantus firmus guides: three notes is whether this is a
+  # melody, five is how long a free diatonic melody ought to run.
+  gate_items(*MELODIC_GATES)
 
   # except: matches the guideline rather than the entry, so the shared core can
   # be taken whole and the one guideline this guide configures differently
@@ -23,6 +25,7 @@ class HeadMusic::Style::Guides::DiatonicMelody < HeadMusic::Style::Guides::Speci
       minimum: :perfect_fourth,
       recovery: %i[consonant_triad any_step repetition opposite_leap_within]
     ),
+    HeadMusic::Style::Guidelines::MinimumNotes.with(5),
     HeadMusic::Style::Guidelines::MaximumNotes.with(32)
   )
 end

@@ -5,13 +5,17 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
   # The six registry entries that replace the former contour subclasses. Every
   # structural assertion the six specs made is parameterized over this table.
+  #
+  # The sizes gained one when DiatonicMelody's note minimum split into a
+  # three-note gate and a five-note prescription: the prescription is a primary
+  # there, and this guide's secondaries are DiatonicMelody's primaries.
   contour_rows = [
-    {key: "arch_contour_melody", contour: :arch, minimum_melodic_intervals: 2, size: 13},
-    {key: "ascending_contour_melody", contour: :ascending, minimum_melodic_intervals: 1, size: 13},
-    {key: "descending_contour_melody", contour: :descending, minimum_melodic_intervals: 1, size: 13},
-    {key: "static_contour_melody", contour: :static, minimum_melodic_intervals: nil, size: 12},
-    {key: "valley_contour_melody", contour: :valley, minimum_melodic_intervals: 2, size: 13},
-    {key: "wave_contour_melody", contour: :wave, minimum_melodic_intervals: 2, size: 13}
+    {key: "arch_contour_melody", contour: :arch, minimum_melodic_intervals: 2, size: 14},
+    {key: "ascending_contour_melody", contour: :ascending, minimum_melodic_intervals: 1, size: 14},
+    {key: "descending_contour_melody", contour: :descending, minimum_melodic_intervals: 1, size: 14},
+    {key: "static_contour_melody", contour: :static, minimum_melodic_intervals: nil, size: 13},
+    {key: "valley_contour_melody", contour: :valley, minimum_melodic_intervals: 2, size: 14},
+    {key: "wave_contour_melody", contour: :wave, minimum_melodic_intervals: 2, size: 14}
   ]
 
   describe ".guide_items" do

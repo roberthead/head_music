@@ -15,13 +15,32 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AlwaysMove }
   specify { expect(described_class.guide_items).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8) }
 
-  # Gating is the guide's editorial choice, not a property of the guideline:
-  # the same threshold is a gate here and could be an ordinary expectation
-  # elsewhere. This is where that choice is now recorded.
-  it "declares its note minimum as a gate, so a short line scales the whole grade" do
-    expect(described_class.gate_items).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8)
+  # The same guideline asks two different questions here, which is why tier is
+  # the guide's editorial choice rather than a property of the guideline. Three
+  # notes is whether this is a melody at all; eight to fourteen is Fux's
+  # prescription for a cantus firmus, which judges a melody that exists.
+  it "asks whether this is a melody separately from whether it is a cantus firmus" do
+    expect(described_class.gate_items).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 3)
+    expect(described_class.primary_items).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8)
+  end
+
+  it "keeps the upper bound a rubric item, as the lower prescription now is" do
     expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MaximumNotes
     expect(described_class.gate_items.map(&:guideline)).not_to include HeadMusic::Style::Guidelines::MaximumNotes
+  end
+
+  # The point of the split: a short line is told it is short without also being
+  # marked down on a climax and leaps it was never assessed for.
+  describe "a four-note line" do
+    subject(:assessment) { described_class.assess(short) }
+
+    let(:short_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+    let(:short) { short_composition.add_voice(role: :counterpoint) }
+
+    before { %w[D4 F4 E4 D4].each_with_index { |pitch, bar| short.place("#{bar + 1}:1", :whole, pitch) } }
+
+    it { is_expected.to be_assessable }
+    its(:messages) { is_expected.to include(/at least eight notes/i) }
   end
 
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ConsonantClimax }
