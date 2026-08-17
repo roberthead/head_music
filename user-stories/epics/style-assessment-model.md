@@ -107,7 +107,7 @@ but the same guideline with the *same* config in two lists is double-counting.
 
 ### `Style::Guideline` — one rule of craft
 
-The base class of the sixty-six classes in `Style::Guidelines`. Renames
+The base class of the sixty-two classes in `Style::Guidelines`. Renames
 `Style::Annotation`, so `Guidelines::ConsonantClimax < Style::Guideline` reads
 the way it should.
 
