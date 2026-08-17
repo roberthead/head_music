@@ -43,6 +43,25 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::StepUpToFinalNote
   ].freeze
 
+  # Everything a species guide inherits rather than teaches. A species guide is
+  # about its rhythm; general melodic craft is background it takes for granted.
+  INHERITED_MELODIC_CRAFT = (MELODIC_CORE + MOVING_MELODIC_CORE).freeze
+
+  # A species guide's declaration, split by what it inherits and what it adds.
+  #
+  # Partitioning here rather than at each call site matters because the guides
+  # do not declare the cores the same way -- some splat a constant, some name
+  # its members individually, and one hand-rolls a near-copy. Membership decides
+  # the tier, so a guide that names an inherited guideline by hand still gets it
+  # demoted, and the two lists cannot drift apart.
+  def self.species_items(*entries)
+    inherited, taught = entries.flatten.compact.partition do |entry|
+      INHERITED_MELODIC_CRAFT.include?(entry)
+    end
+    secondary_items(*inherited) if inherited.any?
+    primary_items(*taught) if taught.any?
+  end
+
   # Builds a moving-species primary list: the shared melodic and moving cores plus
   # the species-specific guidelines passed in.
   def self.moving_species_items(*additional)

@@ -5,7 +5,7 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::FirstSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   gate_items(*MELODIC_GATES)
 
-  primary_items(
+  species_items(
     *MELODIC_CORE,
     HeadMusic::Style::Guidelines::EndOnTonic,
     HeadMusic::Style::Guidelines::FirstBarWholeNote,
