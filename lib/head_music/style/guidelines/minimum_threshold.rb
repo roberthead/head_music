@@ -18,14 +18,6 @@ class HeadMusic::Style::Guidelines::MinimumThreshold < HeadMusic::Style::Guideli
     raise NotImplementedError
   end
 
-  def no_placements_mark
-    HeadMusic::Style::Mark.new(
-      HeadMusic::Content::Position.new(composition, "1:1"),
-      HeadMusic::Content::Position.new(composition, "2:1"),
-      fitness: 0
-    )
-  end
-
   def deficiency_mark
     return unless actual_count < minimum
 

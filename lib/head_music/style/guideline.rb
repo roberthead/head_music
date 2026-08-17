@@ -105,6 +105,18 @@ class HeadMusic::Style::Guideline
     [marks].flatten.compact
   end
 
+  # An empty voice has nowhere to put a mark, so a guideline that must fail it
+  # marks the opening bar instead. Without this, Mark.for_all([]) returns no
+  # marks at all and no marks means a fitness of 1.0 -- which is the mechanism
+  # behind an empty voice grading perfectly.
+  def no_placements_mark
+    HeadMusic::Style::Mark.new(
+      HeadMusic::Content::Position.new(composition, "1:1"),
+      HeadMusic::Content::Position.new(composition, "2:1"),
+      fitness: 0
+    )
+  end
+
   # Normalization rate for the product of mark fitnesses. Subclasses override
   # (e.g. with an opportunity count) to score by violation rate rather than
   # raw violation count. The default of 1 preserves the raw product.
