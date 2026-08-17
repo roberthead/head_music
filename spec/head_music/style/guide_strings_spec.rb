@@ -46,6 +46,47 @@ describe HeadMusic::Style::Guide do
     expect(items.size).to eq 67
   end
 
+  def strings_in(locale)
+    I18n.with_locale(locale) do
+      guides.map(&:instruction) +
+        items.flat_map { |item| [item.name, item.instruction, item.violation_preview] }
+    end
+  end
+
+  # No locale but en and en_GB carries a style entry, so a German reader's
+  # strings must be exactly the ones they fall back through. They were not: the
+  # sentence fell back to English while the number humanized into German, so a
+  # reader got "Write at least Acht notes." -- neither language, and the
+  # capitalization reads as a typo.
+  it "renders a fallback string wholly in the language it fell back to" do
+    expect(strings_in(:de)).to eq strings_in(:en_GB)
+  end
+
+  # The path a student actually reads is the assessment, not the preview.
+  # Rendering it through Template directly gave it neither the item's
+  # interpolations nor the plural fallback the preview had.
+  describe "the assessment's message" do
+    let(:item) { HeadMusic::Style::Guidelines::MinimumNotes.with(8) }
+
+    # Built directly: the wording is the subject here, not the finding, and a
+    # voice would only be scenery.
+    let(:assessment) do
+      HeadMusic::Style::GuideItemAssessment.new(
+        voice: nil, guide_item: item, tier: :primary, marks: [], fitness: 0.5,
+        violation_key: item.guideline.violation_key(item.config)
+      )
+    end
+
+    it "renders through the same seam as the item's preview" do
+      expect(assessment.message).to eq item.violation_preview
+      expect(assessment.message).to eq "Write at least eight notes."
+    end
+
+    it "follows the same language as every other string" do
+      expect(I18n.with_locale(:de) { assessment.message }).to eq I18n.with_locale(:en_GB) { assessment.message }
+    end
+  end
+
   # de, fr, it and ru all resolve through en_GB before reaching en. I18n stops
   # at a plural hash that is present but incomplete rather than continuing past
   # it, so a British entry with only `other:` would raise for those four

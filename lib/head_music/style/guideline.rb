@@ -62,7 +62,7 @@ class HeadMusic::Style::Guideline
   def self.render_name(config)
     return template_key.tr("_", " ").capitalize unless HeadMusic::Style::Template.exists?(name_key)
 
-    render_template(name_key, template_values(config))
+    render_template(name_key, config)
   end
 
   # Guidelines are already phrased imperatively -- "Peak on...", "Use only...",
@@ -71,17 +71,29 @@ class HeadMusic::Style::Guideline
   def self.render_instruction(config)
     return render_violation(config) unless HeadMusic::Style::Template.exists?(instruction_key)
 
-    render_template(instruction_key, template_values(config))
+    render_template(instruction_key, config)
   end
 
   def self.render_violation(config)
-    render_template(violation_key(config), template_values(config))
+    render_template(violation_key(config), config)
   end
 
-  def self.render_template(key, values)
-    return HeadMusic::Style::Template.render(key, **values) unless values.key?(:count)
-
-    HeadMusic::Style::Template.pluralize(key, singular: violation_singular, **values)
+  # Takes the configuration rather than the finished values, because the values
+  # are built inside the locale the template resolved in. A number humanized
+  # into the reader's language has no business in a sentence that fell back to
+  # English, and template_values is where the humanizing happens.
+  #
+  # extra_values are what one particular violation has to add; the item's own
+  # interpolations are the base.
+  def self.render_template(key, config, extra_values = {})
+    HeadMusic::Style::Template.in_locale_of(key) do
+      values = template_values(config).merge(extra_values)
+      if values.key?(:count)
+        HeadMusic::Style::Template.pluralize(key, singular: violation_singular, **values)
+      else
+        HeadMusic::Style::Template.render(key, **values)
+      end
+    end
   end
 
   # The noun a pluralized violation counts. Only the guidelines whose messages
@@ -144,12 +156,17 @@ class HeadMusic::Style::Guideline
     self.class.violation_key(options)
   end
 
+  # What this particular violation adds to the item's own interpolations. Empty
+  # unless the analysis found something the configuration does not already say.
+  # Not the item's interpolations themselves: those are rebuilt when the message
+  # renders, so an assessment made under one locale still reads correctly under
+  # another.
   def violation_values
-    self.class.template_values(options)
+    {}
   end
 
   def message
-    self.class.render_template(violation_key, violation_values)
+    self.class.render_template(violation_key, options, violation_values)
   end
 
   def first_note

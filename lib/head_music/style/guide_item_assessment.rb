@@ -35,10 +35,15 @@ class HeadMusic::Style::GuideItemAssessment
   # Nil when there is nothing to complain about. A guideline that found no
   # fault has no violation to report, and saying one anyway is how a consumer
   # ends up showing a student a rule they did not break.
+  #
+  # Rendered through the guideline rather than through Template directly, so
+  # this path and GuideItem#violation_preview are one seam: rendering here on
+  # its own left the student-facing sentence without the plural fallback the
+  # preview had.
   def message
     return if adherent? || violation_key.nil?
 
-    HeadMusic::Style::Template.render(violation_key, **violation_values)
+    guideline.render_template(violation_key, config, violation_values)
   end
 
   def gate?

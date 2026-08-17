@@ -8,7 +8,11 @@ describe HeadMusic::Style::Template do
           spec_probe: {
             filled: "Write at least %{minimum} notes.",
             unfilled: "Use %{number} %{unit} notes.",
-            counted: {one: "%{number} note", other: "%{number} notes"}
+            counted: {one: "%{number} note", other: "%{number} notes"},
+            # Plural forms English cannot select from -- what a correct Russian
+            # entry looks like to a backend without I18n::Backend::Pluralization.
+            uncountable: {few: "%{number} notes", many: "%{number} notes"},
+            miscounted: {one: "%{bogus} note", other: "%{bogus} notes"}
           }
         }
       }
@@ -52,17 +56,45 @@ describe HeadMusic::Style::Template do
     # mid-chain, which stops the fallback rather than continuing past it.
     context "when the locale cannot answer" do
       it "pluralizes in Ruby" do
-        expect(described_class.pluralize("spec_probe.absent", count: 1, singular: "melodic interval"))
+        expect(described_class.pluralize("spec_probe.uncountable", count: 1, singular: "melodic interval"))
           .to eq "one melodic interval"
-        expect(described_class.pluralize("spec_probe.absent", count: 4, singular: "melodic interval"))
+        expect(described_class.pluralize("spec_probe.uncountable", count: 4, singular: "melodic interval"))
           .to eq "four melodic intervals"
       end
 
       it "records the gap so it is known rather than invisible" do
-        described_class.pluralize("spec_probe.absent", count: 1, singular: "note")
+        described_class.pluralize("spec_probe.uncountable", count: 1, singular: "note")
 
-        expect(described_class.fell_back_to_ruby).to include "spec_probe.absent"
+        expect(described_class.fell_back_to_ruby).to include "spec_probe.uncountable"
       end
+    end
+
+    # The fallback is for a locale that cannot pluralize, not for a template
+    # that is wrong. Catching both would hide from verify! the one failure it
+    # loads early to find, and hand a student "four notes" where a sentence
+    # should be.
+    context "when the template itself is broken" do
+      it "refuses a plural template it could not fill" do
+        expect { described_class.pluralize("spec_probe.miscounted", count: 4, singular: "note", number: "four") }
+          .to raise_error(described_class::MissingTemplate, /interpolation/)
+      end
+
+      it "refuses a plural key that does not exist" do
+        expect { described_class.pluralize("spec_probe.absent", count: 4, singular: "note") }
+          .to raise_error(described_class::MissingTemplate)
+      end
+    end
+  end
+
+  describe ".resolved_locale" do
+    # I18n.exists? consults the fallback chain and so answers true for every
+    # locale; this has to say which one actually carries the entry.
+    it "names the locale a template will really render in" do
+      expect(described_class.resolved_locale("spec_probe.filled", locale: :de)).to eq :en
+    end
+
+    it "stays in the reader's own locale when it carries the entry" do
+      expect(described_class.resolved_locale("guidelines.no_rests.violations.default", locale: :en_GB)).to eq :en_GB
     end
   end
 

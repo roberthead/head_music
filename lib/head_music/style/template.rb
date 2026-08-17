@@ -55,6 +55,23 @@ module HeadMusic::Style::Template
     I18n.fallbacks[locale].detect { |candidate| humanize_knows?(candidate) } || :en
   end
 
+  # The locale a template will actually render in: the first in the reader's
+  # fallback chain that carries the entry itself. I18n.exists? consults the
+  # chain by default and so answers true for every locale, which is no answer
+  # at all -- hence fallback: false.
+  def resolved_locale(key, locale: I18n.locale)
+    chain = I18n.fallbacks[locale]
+    chain.detect { |candidate| I18n.exists?("#{SCOPE}.#{key}", candidate, fallback: false) } || locale
+  end
+
+  # Builds a template's values and renders it in one locale, so the sentence and
+  # the words interpolated into it are in the same language. Without this a
+  # German reader gets "Write at least Acht notes.": the sentence falls back to
+  # English while the number humanizes into German.
+  def in_locale_of(key, &block)
+    I18n.with_locale(resolved_locale(key), &block)
+  end
+
   def humanize_knows?(locale)
     1.humanize(locale: locale)
     true
@@ -66,9 +83,15 @@ module HeadMusic::Style::Template
   # does not. A language the gem has no plural data for should read a little
   # wrong, not raise in a student's face -- and a partial plural hash stops the
   # fallback chain rather than continuing past it, so this catches that too.
+  #
+  # Deliberately narrow. InvalidPluralizationData means the locale cannot answer,
+  # which is the case Ruby is here to cover. Rescuing MissingTemplate as well
+  # would also swallow an unfilled interpolation -- the one failure verify!
+  # exists to catch -- and hand a student a bare noun phrase where the sentence
+  # should be, on a green suite.
   def pluralize(key, count:, singular:, **values)
     render(key, count: count, **values)
-  rescue MissingTemplate, I18n::InvalidPluralizationData
+  rescue I18n::InvalidPluralizationData
     fell_back_to_ruby << key
     "#{number_word(count)} #{(count == 1) ? singular : singular.pluralize}"
   end
