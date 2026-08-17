@@ -146,9 +146,14 @@ degenerate range without this leaves the guides still unable to say what they
 teach.
 
 `MELODIC_CORE` and `MOVING_MELODIC_CORE` become `secondary_items` in the species
-melody guides; `HARMONIC_CORE` and `DIMINUTION_HARMONIC_CORE` likewise in the
-harmony guides. What stays primary is what the guide is *for* — the rhythmic and
+melody guides. What stays primary is what the guide is *for* — the rhythmic and
 species-specific rules it adds.
+
+**The harmony guides are not demoted here.** Their cores are a separate story:
+[Extract the Harmonic Cores](../backlog/extract-the-harmonic-cores.md). Harmony
+guides therefore keep flat rubrics for now, and this story's before/after table
+will show melody grades moving while harmony grades move only in the degenerate
+range.
 
 Note that `MOVING_MELODIC_CORE` is a second inherited core the original
 out-of-scope note never named, and that
@@ -502,11 +507,13 @@ a measurement of it.
 
 ### Open questions
 
-0. **Does the demotion extend to the harmony guides?** The decision named
-   `MELODIC_CORE`. Symmetry says `HARMONIC_CORE` and `DIMINUTION_HARMONIC_CORE`
-   should follow — a harmony guide teaches its species, not general two-part
-   craft — and the Scope section above assumes so. Worth confirming before
-   implementation, because it roughly doubles the number of moved grades.
+0. ~~Does the demotion extend to the harmony guides?~~ **Decided: no, not
+   here.** It gets its own story —
+   [Extract the Harmonic Cores](../backlog/extract-the-harmonic-cores.md) —
+   because the counter-argument is real (parallel fifths are arguably not
+   *background* in a counterpoint exercise, whatever the species) and because
+   three harmony guides reach into a core they also splat, which wants fixing
+   before anything is demoted.
 
 1. ~~`FuxCantusFirmus`: keep the 8-note gate, or split it?~~ **Decided: split.**
 2. ~~`DiatonicMelody`: keep the 5-note gate?~~ **Decided: split, same as Fux.**
