@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-12T16:05:34-07:00
   activated_at: 2026-08-16T17:14:51-07:00
   planned_at:   2026-08-16T17:41:08-07:00
-  finished_at:
-  updated_at:   2026-08-16T19:56:13-07:00
+  finished_at:  2026-08-16T20:27:14-07:00
+  updated_at:   2026-08-16T20:27:14-07:00
 -->
 
 # First-Class Guide Items
@@ -447,6 +447,68 @@ meaning at once can only be checked by reading it.
 ## Open questions
 
 None outstanding.
+
+## Learnings
+
+### What the process caught
+
+**The plan's most valuable output was finding that this story's own formula was
+wrong.** The tier arithmetic as specified — scale each rubric weight by φ⁻¹/n,
+divide the sum back out — drifts about one ULP on 388 of 2,622 rows, because
+nearly every guide is all-primary and multiplying then dividing by the same
+constant is exact in real arithmetic and lossy in binary. It would have failed
+this story's own bit-identical test, and under any tolerance it would have
+shipped unnoticed. Caught by measuring rather than reasoning, before a line was
+written.
+
+**"Five of seven steps done" was about 40% of the work.** The plan deliberately
+front-loads the steps that keep the oracle empty, so the entire behavioral delta
+lands in one small red window at step 6. Step count is a poor progress signal on
+a plan shaped that way — a `finish` attempt partway through had to be refused.
+
+**An agent refused to write a spec around a bug.** `Guide.get` still duck-checked
+`respond_to?(:analyze)` after `analyze` was removed, so it silently returned nil
+for a guide class. The agent fixing that spec file could have made its two
+failures pass by asserting the broken behaviour; it said doing so "would encode
+the bug as intended behavior" and reported it instead. The same hole existed in
+`GuideAssessment`'s duck-check.
+
+**The reviewer distrusted the baseline's provenance and re-derived it.** It
+noticed `before.json`'s mtime predated its capture script, and that the script
+named a class that does not exist at the merge-base — so the artifact might have
+come from an intermediate commit. It built a worktree at the merge-base, ran the
+original script there, and got the same hash. An artifact's timestamps and its
+generator's contents are evidence about whether it means what it claims.
+
+### What went wrong
+
+**The hand-written edits were the least-reviewed thing in the diff.** Four
+defects, none caught by their author: `except:` accumulating across calls rather
+than applying per call, which would have silently dropped a guideline from a
+rubric; `GuideItem` freezing itself but not its configuration; `assess` returning
+an Array where the story specified a `GuideAssessment`; and a deep-freeze broad
+enough to break lazily-memoizing rudiments. The same pattern appeared in story 1,
+so it is a habit rather than an accident: delegated work gets scrutinised and
+directly-authored work does not.
+
+**Fifteen deleted examples each had a good reason and collectively left two
+gaps.** Four agents removed coverage in parallel. Every deletion was individually
+correct — the properties genuinely no longer existed — but nobody owned the
+aggregate, and the tier arithmetic and the gate declaration ended up untested.
+Auditing what *survived* found it. Delegated deletion needs a whole-diff audit,
+not just per-deletion justification.
+
+### Worth carrying forward
+
+- **Deep-freezing is not uniformly safe here.** Rudiments memoize lazily, so
+  freezing a `DiatonicInterval` breaks it at the first question. Freeze
+  containers and strings; leave domain objects alone.
+- **The oracle is scaffolding, not a regression test.** It proved the central
+  claim and cannot be re-run from the repo. Either commit it as a rake task or
+  accept that the bit-identical guarantee expires with the session that made it.
+- **Bit-identical is the right bar for a refactor and the wrong one for a fix.**
+  It locks in current behaviour including current bugs, which is exactly why
+  story 4 abandons it for a before/after table.
 
 ## Review
 

@@ -16,7 +16,7 @@ I WANT the base class of the sixty-two guideline classes to be called `Guideline
 SO THAT `Guidelines::ConsonantClimax < Style::Guideline` says what it is, and the word "annotation" stops meaning two things at once
 
 Story 1 of the [Style Assessment Model](../epics/style-assessment-model.md).
-Blocks [First-Class Guide Items](../current/first-class-guide-items.md), which assumes this
+Blocks [First-Class Guide Items](../done/first-class-guide-items.md), which assumes this
 rename has landed.
 
 ## Background

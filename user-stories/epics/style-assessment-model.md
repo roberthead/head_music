@@ -359,7 +359,7 @@ Sequenced so that each step is verifiable on its own.
    `Annotation::Configured` → `Guideline::Configured` and dropping the
    `annotation_messages` alias. No behavior change, suite green. Mechanical, and
    it makes story 2's diff readable.
-2. **[First-class guide items](../current/first-class-guide-items.md).** `GuideItem`, the three declared lists,
+2. ✅ **[First-class guide items](../done/first-class-guide-items.md).** `GuideItem`, the three declared lists,
    `Guideline.assess`, `GuideItemAssessment`, `GuideAssessment`, and tier-derived
    weights. Guide fitness bit-identical — a cheap and total test. Breaking to a
    public seam; lands as 20.0. Retires `guideline-tiers.md` from the backlog.
