@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking.** A guide declares its guidelines in three tiers rather than one flat `RULESET`, and the tier decides how much each one counts. `gate_items` are preconditions whose fitness multiplies the grade; `primary_items` are what the guide teaches and share φ⁻¹ of the rubric; `secondary_items` are background it inherits and share φ⁻². `Guides::Base.ruleset` and every `::RULESET` constant are removed — read `guide_items`, or one tier at a time.
+
+  Tier is the list an entry is declared in rather than a property of the entry, because the shared cores are shared objects: `SpeciesMelody::MELODIC_CORE` is splatted into six guides, and `ContourMelody` treats as background exactly what `DiatonicMelody` teaches. Guides whose tiers depend on configuration override `items_by_tier` with a keyword signature, as `ContourMelody` does.
+
+- **Breaking.** `Style::Annotation::Configured` becomes `Style::GuideItem`: a guideline paired with the configuration one guide gives it, with `guideline` and `config` readers and value equality. It no longer answers `#new(voice)`, `#with`, or `#default_gate?`.
+
+- **Breaking.** `Style::Analysis` becomes `Style::GuideAssessment`, and `#annotations` becomes `#guide_item_assessments`, which returns frozen `Style::GuideItemAssessment` values rather than live guideline instances. Each carries `tier`, `fitness`, `marks`, `message`, and the `guide_item` it came from.
+
+- **Breaking.** `guide.analyze(voice)` is replaced by `guide.assess(voice)`, which returns a `GuideAssessment`, and `guide.assess_items(voice)`, which returns the assessments it grades. `Style::Guide.get` and `GuideAssessment.new` both duck-check `assess_items`: guidelines and guide items answer `assess` too, with different arguments.
+
+- **Breaking.** Per-entry `weight` and `gate` are removed, along with `Guideline#weight`, `#gate?`, `.default_weight`, `.default_gate?`, `Contoured::DEFAULT_WEIGHT`, `MinimumThreshold.default_gate?`, and `ContourMelody::PEER_WEIGHT_BUDGET`. Tier replaces both. Whether a rule gates is the guide's editorial choice, not a property of the guideline — the same threshold can be a low gate in one guide and a stylistic minimum in another.
+
+- **Breaking.** `Guideline.new` is private. A guideline instance is the analysis context, not a result; `Guideline.assess` is the seam, and what comes back is a `GuideItemAssessment`.
+
+- Grading is unchanged for every registered guide. All 2,622 rows of the fixture corpus — fitness, adherence, messages, and per-item fitness and mark counts across all 23 registry entries — are byte-identical to 19.0.0.
+
+## [19.0.0] - 2026-08-07
+
 ### Added
 
 - `HeadMusic::Style::Guide` — a lookup facade over every style guide in the gem. `Guide.get("first_species_harmony")` resolves a key to a guide; an unknown key returns `nil` rather than raising, so a consumer can ask about a guide the gem does not have. `Guide.get!` raises `KeyError` instead, and `Guide.known?`, `.all`, `.keys`, and `.key_for` round out the surface. Keys are stable strings suitable for storing in a database. The registry holds twenty-three:
@@ -573,7 +593,8 @@ note = HeadMusic::Rudiment::Note.get("F#4 dotted-quarter")
 
 For changes in versions prior to 0.28.0, please refer to the git history.
 
-[Unreleased]: https://github.com/roberthead/head_music/compare/v8.2.0...HEAD
+[Unreleased]: https://github.com/roberthead/head_music/compare/v19.0.0...HEAD
+[19.0.0]: https://github.com/roberthead/head_music/compare/v18.0.0...v19.0.0
 [8.2.0]: https://github.com/roberthead/head_music/compare/v8.1.1...v8.2.0
 [8.1.1]: https://github.com/roberthead/head_music/compare/v8.1.0...v8.1.1
 [8.1.0]: https://github.com/roberthead/head_music/compare/v8.0.2...v8.1.0

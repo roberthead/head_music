@@ -547,12 +547,12 @@ The existing `head_music` style system groups guidelines into melody guides and 
 | **WeakBeatDissonanceTreatment** | Replaced by **ThirdSpeciesDissonanceTreatment** (expanded to handle NT, cambiata, double neighbor, optionally escape tone) |
 | **NoParallelPerfectAcrossBarline** | May need to be extended to check beats 3 and 4 to next beat 1, not just the last weak beat |
 
-### 7.3 Proposed RULESET
+### 7.3 Proposed guide items
 
-#### ThirdSpeciesMelody RULESET
+#### ThirdSpeciesMelody guide items
 
 ```ruby
-RULESET = [
+primary_items(
   HeadMusic::Style::Guidelines::AlwaysMove,
   HeadMusic::Style::Guidelines::ConsonantClimax,
   HeadMusic::Style::Guidelines::Diatonic,
@@ -567,13 +567,13 @@ RULESET = [
   HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
   HeadMusic::Style::Guidelines::StepOutOfUnison,
   HeadMusic::Style::Guidelines::StepUpToFinalNote,
-].freeze
+)
 ```
 
-#### ThirdSpeciesHarmony RULESET
+#### ThirdSpeciesHarmony guide items
 
 ```ruby
-RULESET = [
+primary_items(
   HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
   HeadMusic::Style::Guidelines::AvoidCrossingVoices,
   HeadMusic::Style::Guidelines::AvoidOverlappingVoices,
@@ -584,7 +584,7 @@ RULESET = [
   HeadMusic::Style::Guidelines::PreferContraryMotion,
   HeadMusic::Style::Guidelines::PreferImperfect,
   HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment,  # NEW
-].freeze
+)
 ```
 
 ### 7.4 New Guideline Specifications

@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-08-16T15:45:22-07:00
+  updated_at:   2026-08-16T19:13:17-07:00
 -->
 
 # Release Notes for 19.0.0
@@ -30,10 +30,13 @@ So the changelog claims the guide registry, the collapsed contour guides, the
 `Instrument.get` signature change, and the ABC/MusicXML constant moves are all
 unreleased, when every one of them is installable today.
 
-## Everything under `[Unreleased]` is 19.0.0
+## Everything under `[Unreleased]` was 19.0.0, and has been split
 
-Worth stating, because the obvious worry is that the block mixes shipped and
-unshipped work and needs splitting. It does not. Checked against the push time:
+Worth recording, because the obvious worry was that the block mixed shipped and
+unshipped work. It did not — checked against the push time below — which is what
+made the split a rename rather than a judgment call about which bullet belonged
+where. The First-Class Guide Items story performed it before adding its own
+entries.
 
 | Commit | Committed | vs. rubygems push |
 | --- | --- | --- |
@@ -51,11 +54,17 @@ rename, not a split — no judgment call about which bullet belongs where.
 
 ## Scope
 
-1. Rename `## [Unreleased]` (line 8) to `## [19.0.0] - 2026-08-07`.
-2. Add a fresh, empty `## [Unreleased]` section above it.
-3. Fix the `[Unreleased]` link reference at line 576, which currently reads
-   `compare/v8.2.0...HEAD` — eleven major versions stale. It should compare from
-   `v19.0.0`.
+**Items 1–3 were done by the First-Class Guide Items story**, which had to split
+the heading before it could file its own entry: adding 20.0 content under a
+heading that describes a shipped release would have misfiled it, and would have
+invalidated this ticket's own premise that everything under `[Unreleased]` is
+19.0.0. What remains is the backfill in the next section.
+
+1. ~~Rename `## [Unreleased]` to `## [19.0.0] - 2026-08-07`.~~ Done.
+2. ~~Add a fresh `## [Unreleased]` section above it.~~ Done — it now holds the
+   20.0 entries.
+3. ~~Fix the `[Unreleased]` link reference, which read `compare/v8.2.0...HEAD`.~~
+   Done; a `[19.0.0]` reference was added alongside it.
 
 ### Also broken, and worth deciding on
 
@@ -69,11 +78,12 @@ diff than this ticket's title implies, so it is called out rather than assumed.
 
 ## Acceptance Criteria
 
-- `CHANGELOG.md` has a `## [19.0.0] - 2026-08-07` heading holding what is
-  currently under `## [Unreleased]`, with no bullet added, removed, or reworded.
-- An empty `## [Unreleased]` section sits above it, ready for the next change.
-- The `[Unreleased]` link reference compares from `v19.0.0`, not `v8.2.0`.
-- A `[19.0.0]` link reference exists, comparing `v18.0.0...v19.0.0`.
+- ~~`CHANGELOG.md` has a `## [19.0.0] - 2026-08-07` heading.~~ Done.
+- ~~An `## [Unreleased]` section sits above it.~~ Done; it holds the 20.0 entries.
+- ~~The `[Unreleased]` link reference compares from `v19.0.0`.~~ Done.
+- ~~A `[19.0.0]` link reference exists.~~ Done.
+- Link references exist for `[9.0.0]` through `[18.0.0]`, so every heading from
+  9.0.0 onward renders as a compare link rather than plain text.
 - No released entry from 18.0.0 or earlier is edited.
 
 ## Notes

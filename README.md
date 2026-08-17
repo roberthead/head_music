@@ -62,12 +62,37 @@ guide = HeadMusic::Style::Guide.get('first_species_harmony')
 guide.category      # => :harmony
 guide.display_name  # => "First Species Harmony"
 
-analysis = HeadMusic::Style::GuideAssessment.new(guide, voice)
-analysis.fitness    # => 0.0 to 1.0
-analysis.messages   # => ["Prefer contrary motion. Move voices in different melodic directions."]
+assessment = guide.assess(voice)
+assessment.fitness   # => 0.0 to 1.0
+assessment.messages  # => ["Prefer contrary motion. Move voices in different melodic directions."]
 ```
 
-Guides whose ruleset varies by configuration are built with `.with`. The six contour melodies are
+A guide declares its guidelines in three tiers, and the tier decides how much each one counts:
+
+```ruby
+guide.gate_items       # preconditions -- can this voice be assessed at all?
+guide.primary_items    # what the guide is about
+guide.secondary_items  # background craft it inherits rather than teaches
+guide.guide_items      # all three, in that order
+```
+
+Gates multiply against the grade, so failing one scales everything down. Primaries share φ⁻¹ of the
+rubric and secondaries share φ⁻², which is why a guide that teaches one thing weighs that thing as
+heavily as everything it inherits put together.
+
+Each entry is a `Style::GuideItem` — a guideline plus the configuration this guide gives it — and
+assessing one yields a frozen `Style::GuideItemAssessment`:
+
+```ruby
+item = guide.primary_items.first
+item.guideline               # => HeadMusic::Style::Guidelines::ConsonantClimax
+item.config                  # => {}
+
+assessment.guide_item_assessments.first.tier     # => :gate
+assessment.guide_item_assessments.first.fitness  # => 0.0 to 1.0
+```
+
+Guides whose tiers vary by configuration are built with `.with`. The six contour melodies are
 registered under their own keys, and each key is exactly one such configuration:
 
 ```ruby

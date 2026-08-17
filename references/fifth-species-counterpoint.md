@@ -429,7 +429,7 @@ The fifth-species guides are already implemented in `head_music`:
 **FifthSpeciesMelody** (`lib/head_music/style/guides/fifth_species_melody.rb`):
 
 ```ruby
-RULESET = [
+primary_items(
   HeadMusic::Style::Guidelines::AlwaysMove,
   HeadMusic::Style::Guidelines::ConsonantClimax,
   HeadMusic::Style::Guidelines::Diatonic,
@@ -445,13 +445,13 @@ RULESET = [
   HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies,
   HeadMusic::Style::Guidelines::MixedRhythmicValues,
   HeadMusic::Style::Guidelines::NoRestsAfterNote
-].freeze
+)
 ```
 
 **FifthSpeciesHarmony** (`lib/head_music/style/guides/fifth_species_harmony.rb`):
 
 ```ruby
-RULESET = [
+primary_items(
   HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
   HeadMusic::Style::Guidelines::AvoidCrossingVoices,
   HeadMusic::Style::Guidelines::AvoidOverlappingVoices,
@@ -462,7 +462,7 @@ RULESET = [
   HeadMusic::Style::Guidelines::PreferImperfect,
   HeadMusic::Style::Guidelines::FloridDissonanceTreatment,
   HeadMusic::Style::Guidelines::SuspensionTreatment
-].freeze
+)
 ```
 
 ### 6.2 Existing Guideline Analysis
