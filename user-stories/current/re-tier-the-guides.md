@@ -186,8 +186,14 @@ story is separate.
 - `FuxCantusFirmus` asks its two questions separately: `MinimumNotes.with(3)` as
   a gate — is this a melody at all — and `MinimumNotes.with(8)` as a primary,
   which is Fux's prescription that a cantus firmus run eight to fourteen notes.
-  A four-note voice is therefore *assessable* and grades about 0.897, and a
-  flawless short line is no longer penalised on its climax and leaps.
+  A four-note voice is therefore *assessable*, is told it is short, and is not
+  marked down on a climax and leaps it was never measured against.
+
+  Deliberately no target number. Making the scoring adjustable is half of what
+  this epic is for, so a criterion that freezes one fitness works against it.
+  What must hold is the shape: assessable, and the complaint is about length.
+  The numbers live in the grade table, where they are a measurement rather than
+  a promise.
 - The species guides grade what they teach above what they inherit. A valid
   *first*-species line scores markedly lower against `ThirdSpeciesMelody` than
   it does today, because the inherited melodic core is background there rather
@@ -360,8 +366,8 @@ with what they cost, and the story's criteria above are reconciled to match.
 
 **`FuxCantusFirmus` splits: `gate 3` + `primary 8`.** The two-questions design is
 the story's actual thesis, and honouring it is worth the churn. Consequences,
-measured: a four-note voice becomes assessable at 0.897 rather than unassessable
-at 0.500; nine existing examples break; fourteen of twenty-one corpus exercises
+measured: a four-note voice becomes assessable rather than unassessable at
+0.500 (0.897 as measured then, 0.969 once the demotion also landed); nine existing examples break; fourteen of twenty-one corpus exercises
 shift, the largest being "Fux C with too few notes" (7 notes) moving 0.858 →
 0.974. `SalzerSchachterCantusFirmus` follows suit. `DiatonicMelody`'s 5-note gate
 splits the same way, which propagates through `contour_melody.rb:52,54` to all
@@ -381,7 +387,9 @@ went green.
 **Scope** (line 129) says `gate MinimumNotes(3)` + `primary MinimumNotes(8)`.
 The **acceptance criterion** (line 162) says a four-note voice must be
 *unassessable* rather than 0.500. Both cannot hold: with a 3-note gate, four
-notes passes and is assessable — measured **0.897, assessable**.
+notes passes and is assessable — measured **0.897, assessable**, at the time
+this was written and before the demotion landed. The current figure is 0.969;
+see the grade table.
 
 Keeping `MinimumNotes.with(8)` as the gate gives exactly **0.500, unassessable**,
 the stated target, and short-circuiting alone already satisfies the scenario "a
