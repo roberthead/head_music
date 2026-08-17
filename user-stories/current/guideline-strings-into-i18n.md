@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-17T12:07:58-07:00
   planned_at:   2026-08-17T12:34:26-07:00
   finished_at:
-  updated_at:   2026-08-17T12:34:26-07:00
+  updated_at:   2026-08-17T12:44:31-07:00
 -->
 
 # Guideline Strings into I18n
@@ -465,20 +465,73 @@ nine designed templates a reviewer must read one at a time. **Do not split step
 4**: splitting by guideline leaves intermediates where the interpolation
 contract is half-defined, each passing `git bisect` while shipping `%{}`.
 
+### Decisions taken
+
+**`en_GB` stays mid-chain.** It is closer to international English than `en_US`
+is, so German, French, Italian and Russian readers falling through it is the
+right default rather than a hazard. The four British spellings are a CHANGELOG
+line, not a problem to design around.
+
+**Pluralization falls back to Ruby when the locale data cannot answer.** Rather
+than letting a missing or partial plural hash raise, `Template` rescues
+`I18n::InvalidPluralizationData` and a missing translation and pluralizes in
+Ruby — `String#pluralize` is available. This defuses both landmines at once: the
+partial-`en_GB`-hash trap, and the day someone writes correct Russian `few:`/
+`many:` without `I18n::Backend::Pluralization` included. A wrong plural in a
+language the gem has no rule for is a better outcome than an exception in a
+student's face.
+
+The fallback must be visible, not silent: log nothing, but have the load-time
+`verify!` report which keys fell through to Ruby, so missing plural data is a
+known gap rather than an invisible one.
+
+**The 23 guide instructions are drafted here** rather than shipped as nil. A
+first draft that a musician can correct beats an empty method, and the
+alternative is dead code sitting under a coverage-drop guard. Succinct — one
+imperative sentence each, saying what to write, not how it is graded:
+
+| Guide | Instruction |
+| --- | --- |
+| `fux_cantus_firmus` | Write a cantus firmus: a singable line of eight to fourteen whole notes that begins and ends on the tonic. |
+| `salzer_schachter_cantus_firmus` | Write a cantus firmus with a single clear climax and stepwise motion away from every leap. |
+| `diatonic_melody` | Write a singable diatonic melody that stays in one key. |
+| `first_species_melody` | Write one whole note against each note of the cantus firmus. |
+| `first_species_harmony` | Set your line against the cantus firmus in consonances, moving mostly in contrary motion. |
+| `second_species_melody` | Write two half notes in each bar against the cantus firmus. |
+| `second_species_harmony` | Place a consonance on each downbeat, and pass through dissonance only by step on the weak beat. |
+| `third_species_melody` | Write four quarter notes in each bar against the cantus firmus. |
+| `third_species_harmony` | Keep the downbeats consonant, and treat the quarter-note dissonances as passing or neighbour tones. |
+| `third_species_triple_meter_melody` | Write three quarter notes in each bar against the cantus firmus. |
+| `third_species_triple_meter_harmony` | Keep the downbeats consonant in triple meter, and resolve every dissonance by step. |
+| `fourth_species_melody` | Tie each note across the barline, suspending it into the next bar. |
+| `fourth_species_harmony` | Prepare each suspension as a consonance and resolve it downward by step. |
+| `combined_first_second_third_species_melody` | Combine whole, half and quarter notes in one line, changing rhythm between phrases. |
+| `combined_first_second_third_species_harmony` | Set a mixed-rhythm line against the cantus firmus, keeping each downbeat consonant. |
+| `fifth_species_melody` | Write florid counterpoint: mix note values and ties as the line requires. |
+| `fifth_species_harmony` | Write florid counterpoint against the cantus firmus, treating every dissonance as its figure demands. |
+| `arch_contour_melody` | Write a melody that rises to a single peak and falls back. |
+| `ascending_contour_melody` | Write a melody that begins at its lowest note and ends at its highest. |
+| `descending_contour_melody` | Write a melody that begins at its highest note and ends at its lowest. |
+| `static_contour_melody` | Write a melody that stays within a narrow range and returns to where it began. |
+| `valley_contour_melody` | Write a melody that falls to a single low point and rises back. |
+| `wave_contour_melody` | Write a melody that changes direction three or more times. |
+
+These are a draft by a non-musician and should be read as such. The rhythmic
+ones restate what each species *is*, which is the part a student needs before
+the rubric means anything; the contour ones restate the shape. Anything wrong
+here is cheap to fix once it is in a locale file.
+
 ### Open questions
 
-1. **Four `en_GB` entries change what German, French, Italian and Russian
-   readers see**, since all four fall back through it. Harmless, but it should
-   either be a CHANGELOG line or `en_GB` stays empty for style. Needs a call.
-2. **23 guide instructions are the only wholly new prose and have no oracle.**
-   Write them here, or ship `Guide#instruction` returning nil? Recommend writing
-   them; the alternative is dead code under a coverage-drop guard.
+1. ~~The `en_GB` mid-chain question.~~ **Decided: it stays.**
+2. ~~Write the guide instructions or ship nil?~~ **Decided: drafted above.**
 3. **`DirectionChanges` and `EndOnPerfectConsonance` carry `MESSAGE` constants
    and appear in no registry entry** — their locale entries can never be
-   exercised by the property spec. Two guidelines are dead code.
-4. **`I18n::Backend::Pluralization` is not included**, only `Fallbacks`.
-   English-only `one:`/`other:` ships safely today, but the day someone writes
-   correct Russian they get `InvalidPluralizationData`. A backlog item.
+   exercised by the property spec. Two guidelines are dead code. Worth a line in
+   the story; deleting them is a separate decision.
+4. ~~`I18n::Backend::Pluralization` is not included.~~ **Decided: the Ruby
+   fallback covers it**, so the missing backend is no longer a latent failure.
+   Including it properly is still a reasonable follow-up.
 
 ### Landmines
 
