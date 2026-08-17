@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-17T12:07:58-07:00
   planned_at:   2026-08-17T12:34:26-07:00
   finished_at:
-  updated_at:   2026-08-17T12:44:31-07:00
+  updated_at:   2026-08-17T16:41:12-07:00
 -->
 
 # Guideline Strings into I18n
@@ -554,3 +554,237 @@ The best-practices review had not returned when the plan was assembled, so the
 design-critique axis — whether rendering duplicated across two frozen value
 objects wants extraction, and whether `GuideItem` reaching into a guideline's
 class constants is a Demeter problem — is covered only indirectly.
+
+## Review
+
+Reviewed 2026-08-17 at `dc82b79`, against the merge-base `e3f0b3f`. Working tree
+clean; everything committed. `bundle exec rake`: 6578 examples, 0 failures, line
+coverage 99.60%, branch 96.97%. `bundle exec rubocop`: 500 files, no offenses.
+
+Two reviewers worked independently and converged on the same three defects, each
+reproduced by execution rather than inference.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict |
+| --- | --- | --- |
+| 1 | No customer-facing English in `lib/head_music/style/` | ⚠️ mostly — see below |
+| 2 | Every guideline answers `name_key`, `instruction_key`, `violation_key` | ✅ all 63 subclasses |
+| 3 | `GuideItem#name`/`#instruction` render from config; integers humanize | ✅ |
+| 4 | `GuideItemAssessment#message` renders, `nil` when adherent | ✅ 0 adherent items with a message, 0 violating items without |
+| 5 | English improves where the move makes it easy | ✅ |
+| 6 | Every changed English string is listed, old and new | ✅ measured, exactly the four planned |
+| 7 | `I18n.locale = :de` produces English, raises nothing | ❌ at review → ✅ fixed |
+| 8 | A template naming an absent key is caught at load | ⚠️ at review → ✅ fixed |
+| 9 | Rubocop clean, coverage above 90% | ✅ |
+
+**Criterion 6 is the best-evidenced thing in the branch.** `bin/guide_item_strings.rb`
+ran unmodified in a worktree at the merge-base and at HEAD — 67 rows each side —
+and the diff is exactly the planned four sentences and nothing else.
+`bin/guide_grade_corpus.rb` returned 3266 identical rows at both revisions,
+confirming the CHANGELOG's claim that the string move did not touch grading.
+
+**Criterion 1's remainder.** Every string the plan flagged as uncounted was
+fixed: `singable_intervals.rb`'s `"m6 (ascending)"`, `note_count_per_bar.rb`'s
+`:whole`/`:quarter`, `contoured.rb`'s `:arch`/`:wave`, `large_leaps.rb`'s
+`DEFAULTS[:message]`, and `SingableRange`'s indefinite article. Zero `MESSAGE`
+constants survive. Two things remain, both introduced by the move rather than
+missed by it: five `violation_singular` methods returning bare English nouns
+(`"note"`, `"octave leap"`, `"melodic interval"`), and `guideline.rb:63`, which
+generates a name in Ruby from the class key when no `name:` entry exists — which
+is most guidelines. `"Allowed rhythmic values for combined123"` is a class name
+on a student's screen, and it reads identically under every locale.
+
+### Findings, most severe first
+
+**1. Load-time verification is inert for exactly the templates most likely to be
+wrong.** `template.rb:69-74` rescues `MissingTemplate`, but `render` raises
+`MissingTemplate` for *every* failure it detects — including the surviving `%{}`
+that is the whole point of the check (`template.rb:32`). So a bogus interpolation
+in a pluralized template falls through to the Ruby plural path and the sentence
+silently disappears. Reproduced in-process:
+
+```
+non-pluralized bogus key: RAISED MissingTemplate      # verify! works
+pluralized bogus key    : LOADED CLEAN                # verify! blind
+what the student reads  : "three notes"               # sentence gone
+```
+
+`verify!` protects 50 guidelines and is blind for the 6 pluralized ones. The
+rescue should name `I18n::InvalidPluralizationData` and missing-translation
+specifically; an unfilled interpolation must keep propagating.
+
+**2. Non-English locales get mixed-language output.** `Template.number_word`
+(`template.rb:50`) humanizes into `I18n.locale` while the sentence falls back to
+`en`, so the two halves resolve in different languages:
+
+```
+de: "Minimum of Drei notes"   | "Write at least Drei notes."
+fr: "Minimum of trois notes"  | "Write at least trois notes."
+ru: "Minimum of три notes"    | "Write at least три notes."
+fr: "Use un whole note in each middle bar."
+```
+
+This is criterion 7 outright. Nothing raises — 8384 renders across 8 locales,
+0 failures — but "Write at least Acht notes." is worse than either pure option,
+and the German capitalization reads as a typo. `guide_strings_spec.rb`'s property
+check is structurally blind to it: it asserts String, non-empty, no `%{}`, never
+*in the expected language*. The fix is one line — resolve the humanize locale
+against the locale the template resolved in, not the requested one.
+
+**3. `GuideItemAssessment#message` bypasses the plural fallback.** Every other
+render routes through `Guideline.render_template` (`guideline.rb:81-85`), which
+sends `:count` to `Template.pluralize`. The assessment — the one path a student
+actually reads — calls `Template.render` directly (`guide_item_assessment.rb:41`),
+so it has no fallback and `InvalidPluralizationData` is not in `render`'s rescue
+list. Reproduced with the partial `en_GB` plural hash the plan names as its
+landmine:
+
+```
+GuideItem#violation_preview  => "eight notes"                  # fallback worked
+GuideItemAssessment#message  => RAISED InvalidPluralizationData
+```
+
+The protected path is the preview; the unprotected one is the student's. Latent
+today because no locale ships plural data, and `guide_strings_spec.rb:65` guards
+against introducing one — but the runtime net the plan designed does not cover
+the primary path. This is also the concrete answer to the plan's open design
+question about rendering duplicated across two value objects: the duplication has
+already diverged into different behavior. Delegating to `render_template` closes
+it in one line.
+
+**4. The Ruby plural fallback drops the sentence.** `template.rb:73` returns
+`"#{number_word(count)} #{singular}"` — a bare noun phrase, not the sentence. The
+plan promised "a wrong plural is better than an exception"; what it delivers is a
+missing sentence, which is arguably worse than either.
+
+**5. `warn_about_ruby_plurals` is a no-op.** `template.rb:102-106` computes
+`fell_back_to_ruby.uniq` and returns it to `verify!`, which discards the value
+(`guide.rb:113`). The plan's "the fallback must be visible, not silent" is not
+implemented. The project's no-stdout rule means `warn` is not the answer either,
+so this may want to be an accessor the suite asserts on — but then the method
+should not be named for warning. Related: `fell_back_to_ruby` is unbounded
+module-level state, never cleared; one `verify!` pass over a locale missing
+plural data appended 64 entries.
+
+**6. The removed `message:` option fails silently.** Both `LargeLeaps` and
+`SingableIntervals` documented `message:` as public config. It is now
+unrecognized but not rejected — it lands in `config`, flows through as an unused
+interpolation, and a downstream consumer's custom sentence vanishes with no
+error. The CHANGELOG describes `violation_key:` as an addition but never says
+`message:` was removed.
+
+**7. `GuideItemAssessment#name` still returns the Ruby class path.**
+`guide_item_assessment.rb:56-59` returns `guideline.name` →
+`"HeadMusic::Style::Guidelines::MinimumNotes"`, aliased to `to_s`, while
+`assessment.guide_item.name` returns `"Minimum of three notes"`. Untouched by the
+diff, so pre-existing — but the story's purpose is that a consumer can display a
+rubric, and the object a consumer holds is the assessment. Separately,
+`GuideItem#name` and `#to_s` now disagree on the same value object.
+
+**8. Dead code left by the move.** Confirmed against the coverage report:
+`singable_intervals.rb:51-66` (`permitted_descriptions`, `describe_shorthand`,
+`both_directions?` — no caller in `lib`, `spec`, or `bin`; superseded by the
+class-level `describe`); `guideline.rb:74` (the `instruction_key` branch, which
+no guideline reaches because none has an `instruction:` entry); and
+`guideline.rb:151-153` (`Guideline#message`, kept alive only by
+`bin/guide_item_strings.rb`). Step 4 said it would delete the English inside
+`describe_shorthand`; the English went and the method stayed.
+
+**9. Unresolved open question.** Plan open question 3 — `DirectionChanges` and
+`EndOnPerfectConsonance` are in no registry entry — is still unresolved and
+unnoted. Both now carry working locale entries that `verify!` can never exercise.
+It wants one durable sentence, in the story or the backlog.
+
+**10. Smaller notes.** `verify!` costs ~9.8 ms against a ~114 ms require, not the
+0.8 ms the plan measured — fine, but the figure should not carry into the finish
+notes. `String#pluralize` is available only transitively via
+`integer/inflections`; one explicit require removes the risk. Three spec-hygiene
+items: top-level constants leaking from `guide_strings_spec.rb`,
+`I18n.backend.send(:translations)` reaching a private method, and the
+now-permanently-true `respond_to?` discriminators left over from the
+before/after measurement.
+
+### What held up well
+
+`en_GB` was handled thoroughly: four British violation entries, the mid-chain
+hazard documented in the file itself, a spec pinning the complete-plural-forms
+requirement *and* testing the guard, and British note names deferred to the
+backlog as a separate decision. Scope creep is essentially nil — every file
+outside `lib/` traces to a plan step. And the pinned table of 67 strings is not
+tautological: it asserts composed output, so a wrong interpolation name, plural
+selector, or dropped `humanize` all fail it.
+
+### Blocking `finish`
+
+Findings 1, 2, and 3. Each is small — a rescue list, a locale resolution, a
+delegation — and each defeats something the story asked for by name.
+
+## Fixes applied
+
+Findings 1–3 are fixed, in working-tree changes to three files plus two specs.
+All 67 pinned strings are byte-identical before and after — checked by running
+`bin/guide_item_strings.rb` at `dc82b79` in a worktree and against the fix, and
+diffing. Suite 6585 examples, 0 failures, 99.60% line coverage; rubocop clean.
+
+**1. The rescue narrowed to what Ruby is actually covering.**
+`Template.pluralize` now rescues `I18n::InvalidPluralizationData` alone, not
+`MissingTemplate` as well. A locale that cannot pluralize still falls back; a
+template that is simply wrong now propagates to `verify!`. The same probe that
+loaded clean before:
+
+```
+before: LOADED CLEAN — student reads "three notes", sentence gone
+after:  RAISED MissingTemplate: guidelines.minimum_notes.violations.default:
+        missing interpolation argument :bogus
+```
+
+**2. A template and its values render in one locale.** `Template.resolved_locale`
+names the first locale in the reader's fallback chain that carries the entry
+itself — `I18n.exists?` consults the chain and so answers true for every locale,
+which is why this needs `fallback: false`. `Template.in_locale_of` wraps the
+render, and `Guideline.render_template` now takes the **config** rather than
+finished values, so `template_values` — where the humanizing happens — runs
+inside that locale:
+
+```
+de: "Minimum of three notes" | "Write at least three notes."
+ru: "Minimum of three notes" | "Write at least three notes."
+fr: "Use one whole note in each middle bar."
+```
+
+**3. One rendering seam.** `GuideItemAssessment#message` now calls
+`guideline.render_template(violation_key, config, violation_values)` instead of
+reaching for `Template.render` itself, so the student-facing path gets the plural
+routing and fallback the preview already had. With the partial `en_GB` plural
+hash the plan names as its landmine, read under `:de`:
+
+```
+before:  preview "eight notes" | assessment RAISED InvalidPluralizationData
+after:   preview "eight notes" | assessment "eight notes"
+```
+
+This also closes the gap the review noted under criterion 4: `violation_values`
+is now what one violation *adds*, and the item's own interpolations are rebuilt
+from config when the message renders — so an assessment made under one locale
+still reads correctly under another. That is what the criterion said all along
+("`violation_values` merged over the item's interpolations"); it previously *was*
+the item's interpolations, frozen at assess time.
+
+Three regression tests were added and two rewritten. The rewritten pair had used
+an absent key as its stand-in for "the locale cannot answer" — which is now
+correctly an error — so they use a plural hash with forms English cannot select
+from, the shape a correct Russian entry has without
+`I18n::Backend::Pluralization`. The new ones pin: a broken plural template
+raises rather than falling back; `resolved_locale` picks the right locale; every
+registry string under `:de` is identical to the same string under `:en_GB`; and
+the assessment renders through the same seam as the preview.
+
+### Still open
+
+Findings 4–10 are untouched and none of them block. Worth noting that finding 4
+is now more visible: the Ruby plural fallback still returns a bare noun phrase
+("eight notes") rather than the sentence, which is what both paths agree on
+above. It is a smaller problem than it was — the fallback is now reached only
+when a locale genuinely cannot pluralize, not whenever a template is broken —
+but it is still the wrong output for that case.
