@@ -97,9 +97,15 @@ class HeadMusic::Style::Guide
 
   def self.display_name_for(key)
     I18n.translate(
-      key,
+      "#{key}.name",
       scope: "head_music.style.guides",
       default: key.to_s.tr("_", " ").split.map(&:capitalize).join(" ")
     )
+  end
+
+  # What this guide asks a student to write, as distinct from how it grades
+  # what they wrote.
+  def self.instruction_for(key)
+    HeadMusic::Style::Template.render("guides.#{key}.instruction")
   end
 end

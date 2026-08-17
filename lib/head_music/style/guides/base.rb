@@ -76,6 +76,10 @@ class HeadMusic::Style::Guides::Base
       HeadMusic::Style::Guide.display_name_for(key)
     end
 
+    def instruction
+      HeadMusic::Style::Guide.instruction_for(key)
+    end
+
     protected
 
     # Coerces bare guideline classes and freezes. Shared by the macro path and

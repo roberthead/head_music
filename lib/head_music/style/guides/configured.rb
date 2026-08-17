@@ -49,6 +49,12 @@ class HeadMusic::Style::Guides::Configured
     key ? HeadMusic::Style::Guide.display_name_for(key) : guide_class.display_name
   end
 
+  # A configuration outside the registry has no key, so it has no instruction
+  # of its own -- it borrows the one belonging to the guide it configures.
+  def instruction
+    key ? HeadMusic::Style::Guide.instruction_for(key) : guide_class.instruction
+  end
+
   def ==(other)
     other.is_a?(self.class) && guide_class == other.guide_class && options == other.options
   end
