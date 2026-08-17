@@ -37,9 +37,21 @@ class HeadMusic::Style::GuideAssessment
     @guide_item_assessments ||= @guide.assess_items(voice)
   end
 
-  # The grade: gates multiply against a weighted average of the rubric, so a
-  # voice that fails a precondition scales the whole grade down while the
-  # things the guide teaches trade off against each other by tier.
+  # Whether this guide can say anything about this voice. A voice that fails a
+  # precondition has not earned a bad grade on the rest -- there was nothing
+  # there to grade -- so the rubric is not computed and fitness is the gates
+  # alone.
+  def assessable?
+    gates.all?(&:adherent?)
+  end
+
+  # The grade: gates multiply against a weighted average of the rubric.
+  #
+  # No special case for an unassessable voice is needed. When a gate fails the
+  # rubric is empty, rubric_fitness returns 1.0 at its own guard, and this
+  # collapses to the product of the gates; when every gate passes each of their
+  # fitnesses is exactly 1, so the product is bit-exactly 1.0 and the grade is
+  # the rubric alone.
   def fitness
     return 1.0 if guide_item_assessments.empty?
 

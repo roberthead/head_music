@@ -40,12 +40,11 @@ class HeadMusic::Style::Guides::Base
       HeadMusic::Style::GuideAssessment.new(self, voice)
     end
 
-    # Each item assessed against the tier it was declared in. The grade is
-    # GuideAssessment's job; this is the material it grades.
+    # Each item assessed against the tier it was declared in, stopping at a
+    # failed gate. The grade is GuideAssessment's job; this is the material it
+    # grades.
     def assess_items(voice)
-      TIERS.flat_map do |tier|
-        items_by_tier[tier].map { |item| item.assess(voice, tier) }
-      end
+      HeadMusic::Style::Guides::Assessment.assess_items(voice, items_by_tier)
     end
 
     # Pairs this guide with configuration: ContourMelody.with(contour: :arch).
