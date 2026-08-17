@@ -136,6 +136,25 @@ under story 2, which rejects only a duplicate `(guideline, config)` pair.
 `MinimumNotes`'s fitness is `actual_count / minimum`, a proportion that reads
 correctly as either a scaling factor or a rubric score.
 
+### The inherited cores become background
+
+Folded in rather than deferred, because the coupling is real: a valid *first*-
+species line scores 0.883 against `ThirdSpeciesMelody` today — diffusely "pretty
+good" for something that is not third species — and 0.561 with the cores
+demoted. The diffuse grade is *caused* by the flat rubric, so fixing the
+degenerate range without this leaves the guides still unable to say what they
+teach.
+
+`MELODIC_CORE` and `MOVING_MELODIC_CORE` become `secondary_items` in the species
+melody guides; `HARMONIC_CORE` and `DIMINUTION_HARMONIC_CORE` likewise in the
+harmony guides. What stays primary is what the guide is *for* — the rhythmic and
+species-specific rules it adds.
+
+Note that `MOVING_MELODIC_CORE` is a second inherited core the original
+out-of-scope note never named, and that
+`CombinedFirstSecondThirdSpeciesMelody` hand-rolls a near-copy of it rather than
+splatting it, so the demotion has to reach that guide by hand.
+
 ### Every entry gets a tier decision
 
 For each of the ~304 entries: precondition, lesson, or background. The
@@ -159,9 +178,20 @@ story is separate.
   claimed across the gate boundary: once a voice is assessable, fitness is a
   quality judgment and a longer melody may legitimately be worse.
 - No unassessable voice scores 1.0.
-- `FuxCantusFirmus` grades a four-note voice as unassessable rather than 0.500.
-- A guide whose gates pass grades exactly as it did before this story, so the
-  change is confined to the degenerate range.
+- `FuxCantusFirmus` asks its two questions separately: `MinimumNotes.with(3)` as
+  a gate — is this a melody at all — and `MinimumNotes.with(8)` as a primary,
+  which is Fux's prescription that a cantus firmus run eight to fourteen notes.
+  A four-note voice is therefore *assessable* and grades about 0.897, and a
+  flawless short line is no longer penalised on its climax and leaps.
+- The species guides grade what they teach above what they inherit. A valid
+  *first*-species line scores markedly lower against `ThirdSpeciesMelody` than
+  it does today, because the inherited melodic core is background there rather
+  than half the rubric.
+- Every grade that moves is accounted for in the before/after table, with the
+  tier change that caused it. This story does **not** claim the existing suite
+  is unchanged — it deliberately changes grades outside the degenerate range,
+  and the specs that assert the old numbers are updated with their new values
+  recorded.
 - The before/after fitness table is committed with the story, covering every
   guide against a fixed corpus of degenerate and valid voices.
 - CHANGELOG documents the grading change for each affected guide.
@@ -251,12 +281,12 @@ this distinction once; this story is spending them.
 
 ## Out of scope
 
-- **Promoting the species guides' inherited core to `secondary_items`.** Every
-  species guide teaches something specific about rhythm and inherits
-  `MELODIC_CORE` wholesale, so what it inherits is background by definition.
-  Demoting it would make the species guides read correctly as instructions and
-  would change their grades again. A separate editorial pass, deliberately not
-  bundled with fixing the degenerate range.
+- **A coverage gate.** `MinimumNotes.with(3)` still lets a three-bar counterpoint
+  against an eleven-bar cantus firmus through. Whether that is unassessable or
+  an incomplete submission graded on what is there is a separate question.
+- **`MinimumMelodicIntervals` as a gate on the moving-species guides.** An
+  all-repeated eight-note line already grades 0.638–0.700 there, not 1.0, so
+  nothing in this story needs it.
 
 ## Implementation Plan
 
@@ -274,7 +304,30 @@ short-circuits: when gates pass, every gate fitness is exactly `1`, so
 gate product. Verified by diffing the ladder with and against a rewritten
 `fitness` — identical.
 
-### ⚠️ Blocking decision: the story contradicts itself on `FuxCantusFirmus`
+### ✅ Decided: split the Fux threshold, and fold in the demotion
+
+Both decisions go against the recommendation below, deliberately. Recorded here
+with what they cost, and the story's criteria above are reconciled to match.
+
+**`FuxCantusFirmus` splits: `gate 3` + `primary 8`.** The two-questions design is
+the story's actual thesis, and honouring it is worth the churn. Consequences,
+measured: a four-note voice becomes assessable at 0.897 rather than unassessable
+at 0.500; nine existing examples break; fourteen of twenty-one corpus exercises
+shift, the largest being "Fux C with too few notes" (7 notes) moving 0.858 →
+0.974. `SalzerSchachterCantusFirmus` follows suit. `DiatonicMelody`'s 5-note gate
+splits the same way, which propagates through `contour_melody.rb:52,54` to all
+six contour entries.
+
+**The inherited cores are demoted in this story, not a later one.** See Scope.
+
+**The "existing suite unchanged" property is therefore given up.** That was the
+strongest evidence available for a story that changes grades, and it is now
+unavailable — the before/after table and the property specs carry the whole
+weight. Expect a large number of updated expected values, each of which needs
+its new number justified by a tier change rather than accepted because the suite
+went green.
+
+### The recommendation this overrode
 
 **Scope** (line 129) says `gate MinimumNotes(3)` + `primary MinimumNotes(8)`.
 The **acceptance criterion** (line 162) says a four-note voice must be
@@ -292,25 +345,25 @@ Measured cost of the split against the real fixture corpus: 14 of 21 exercises
 shift and 9 existing examples break, the largest being "Fux C with too few
 notes" (7 notes) moving 0.858 → 0.974. All seven valid Fux exemplars stay 1.000.
 
-**Recommendation: keep the 8-note gate, drop the split.** The middle option is
-`gate 5 / primary 8` — one example breaks, four notes unassessable at 0.800.
-The same reasoning applies to `DiatonicMelody`: keep its 5-note gate, because
-moving it propagates through `contour_melody.rb:52,54` to all six contour
-entries and costs 8 structural examples.
+The recommendation was to keep the 8-note gate and drop the split, on the
+grounds that short-circuiting alone already delivers "a short attempt is short,
+not bad" — the climax and leaps are not computed rather than computed and
+halved — and that the asymmetry with `MaximumNotes(14)` then reads as justified
+rather than defective. Overridden in favour of the two-questions design.
 
 ### Recommended tiering
 
 | Guides | Gate |
 | --- | --- |
-| `FuxCantusFirmus`, `SalzerSchachterCantusFirmus` | `MinimumNotes.with(8)` — unchanged |
-| `DiatonicMelody` | `MinimumNotes.with(5)` — unchanged |
-| 6 contour configurations | unchanged (inherited + motion gate) |
+| `FuxCantusFirmus`, `SalzerSchachterCantusFirmus` | `MinimumNotes.with(3)` gate; `.with(8)` stays primary |
+| `DiatonicMelody` | `MinimumNotes.with(3)` gate; `.with(5)` becomes primary |
+| 6 contour configurations | inherit DiatonicMelody's gate, plus the motion gate |
 | 7 species **melody** guides | `MinimumNotes.with(3)` — **new** |
 | 7 species **harmony** guides | `SetAgainstAnotherVoice`, `MinimumNotes.with(3)` — **new** |
 
-Nothing is demoted; no rubric changes. Under this design the **entire existing
-suite passes unchanged (6462/0)** — a stronger claim than a tolerance table,
-because it says the editorial pass touched only the degenerate range.
+Plus the demotion: the inherited cores become `secondary_items` across the
+species guides. Grades move well outside the degenerate range, so the existing
+suite does **not** stay green — see the reconciled acceptance criteria.
 
 ### Steps
 
@@ -449,15 +502,19 @@ a measurement of it.
 
 ### Open questions
 
-1. **`FuxCantusFirmus`: keep the 8-note gate, or split it?** Blocking; see above.
-2. **`DiatonicMelody`: keep the 5-note gate?** Recommending yes, on blast radius.
-3. **The `MELODIC_CORE` → `secondary_items` demotion this story defers is more
-   coupled than the story admits.** A valid *first*-species line scores 0.883
-   against `ThirdSpeciesMelody` today — diffusely "pretty good" for something
-   that is not third species — and 0.561 with the cores demoted. The diffuse
-   grade is *caused* by the flat rubric. Deferral still recommended, but the
-   coupling is real, and `MOVING_MELODIC_CORE` is a second inherited core the
-   out-of-scope note never names.
+0. **Does the demotion extend to the harmony guides?** The decision named
+   `MELODIC_CORE`. Symmetry says `HARMONIC_CORE` and `DIMINUTION_HARMONIC_CORE`
+   should follow — a harmony guide teaches its species, not general two-part
+   craft — and the Scope section above assumes so. Worth confirming before
+   implementation, because it roughly doubles the number of moved grades.
+
+1. ~~`FuxCantusFirmus`: keep the 8-note gate, or split it?~~ **Decided: split.**
+2. ~~`DiatonicMelody`: keep the 5-note gate?~~ **Decided: split, same as Fux.**
+3. ~~Deferred demotion.~~ **Decided: folded in.** The measurement behind it: a
+   valid *first*-species line scores 0.883 against `ThirdSpeciesMelody` today,
+   and 0.561 with the cores demoted. `MOVING_MELODIC_CORE` is a second inherited
+   core the original out-of-scope note never named, and the harmony guides have
+   two of their own.
 4. **Rhythmic species as gates — resolved "no."** The references classify
    rhythmic structure as a hard rule, not a definition; `MELODIC_CORE` is fully
    assessable on a whole-note submission; and `NoteCountPerBar` returns `[]`
