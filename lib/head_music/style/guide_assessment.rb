@@ -26,6 +26,10 @@ class HeadMusic::Style::GuideAssessment
     @annotations ||= @guide.analyze(voice)
   end
 
+  def guide_item_assessments
+    @guide_item_assessments ||= @guide.assess(voice)
+  end
+
   # The grade: sufficiency gates multiply against a weighted average of the
   # rubric rules, so an insufficient exercise scales the whole grade down
   # while ordinary rules trade off against each other by weight.

@@ -25,6 +25,10 @@ class HeadMusic::Style::GuideItem
     freeze
   end
 
+  def assess(voice, tier)
+    guideline.assess(voice, self, tier)
+  end
+
   def new(voice)
     guideline.new(voice, **config)
   end

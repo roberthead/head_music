@@ -45,6 +45,22 @@ class HeadMusic::Style::Guideline
     false
   end
 
+  # The analysis seam. The instance built here is the analysis context -- it
+  # memoizes intermediate work across the private predicates a guideline is
+  # written from -- and it does not escape: what comes back is a frozen record
+  # of what was found.
+  def self.assess(voice, guide_item, tier)
+    analyzer = new(voice, **guide_item.config)
+    HeadMusic::Style::GuideItemAssessment.new(
+      voice: voice,
+      guide_item: guide_item,
+      tier: tier,
+      marks: analyzer.marks,
+      fitness: analyzer.fitness,
+      message: analyzer.message
+    )
+  end
+
   def fitness
     mark_fitnesses = flattened_marks.map(&:fitness)
     return 1.0 if mark_fitnesses.empty?

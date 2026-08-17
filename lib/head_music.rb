@@ -184,6 +184,7 @@ require "head_music/style/medieval_tradition"
 require "head_music/style/guide_assessment"
 require "head_music/style/guideline"
 require "head_music/style/guide_item"
+require "head_music/style/guide_item_assessment"
 require "head_music/style/mark"
 
 # style guidelines

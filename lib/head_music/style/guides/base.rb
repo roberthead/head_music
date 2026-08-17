@@ -39,6 +39,13 @@ class HeadMusic::Style::Guides::Base
       guide_items.map { |item| item.new(voice) }
     end
 
+    # Each item assessed against the tier it was declared in.
+    def assess(voice)
+      TIERS.flat_map do |tier|
+        items_by_tier[tier].map { |item| item.assess(voice, tier) }
+      end
+    end
+
     # Pairs this guide with configuration: ContourMelody.with(contour: :arch).
     #
     # A guide gains configuration by declaring keywords on .items_by_tier, so a

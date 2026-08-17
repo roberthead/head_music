@@ -17,6 +17,12 @@ class HeadMusic::Style::Guides::Configured
     guide_items.map { |item| item.new(voice) }
   end
 
+  def assess(voice)
+    HeadMusic::Style::Guides::Base::TIERS.flat_map do |tier|
+      items_by_tier[tier].map { |item| item.assess(voice, tier) }
+    end
+  end
+
   def guide_items
     @guide_items ||= HeadMusic::Style::Guides::Base::TIERS.flat_map { |tier| items_by_tier[tier] }.freeze
   end
