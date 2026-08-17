@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment do
-  subject { described_class.new(counterpoint) }
+  subject { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }

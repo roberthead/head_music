@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::MinimumMelodicIntervals do
-  subject { described_class.new(voice, minimum: minimum) }
+  subject { assess(described_class, voice, minimum: minimum) }
 
   let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
   let(:voice) { composition.voices.first }
@@ -47,10 +47,10 @@ describe HeadMusic::Style::Guidelines::MinimumMelodicIntervals do
     its(:first_mark_code) { is_expected.to eq "1:1:000 to 2:1:000" }
   end
 
-  describe "#gate?" do
-    let(:melody) { "C D E F|" }
-
-    it("is a gate by default") { is_expected.to be_gate }
+  describe ".default_gate?" do
+    it "is a gate by default, since a threshold measures completion rather than trading off" do
+      expect(described_class.default_gate?).to be true
+    end
   end
 
   describe ".with" do

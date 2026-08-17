@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
-  subject { described_class.new(counterpoint) }
+  subject { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) do
@@ -56,12 +56,12 @@ describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
 
   context "when a dissonant interval has no counterpoint note at its position" do
     let(:counterpoint_pitches) { %w[D5 A4 C5 B4 D5 A4 E5 C5 A4 C5 D5] }
-    let(:guideline) { described_class.new(counterpoint) }
+    let(:analyzer) { described_class.send(:new, counterpoint) }
 
     it "is not treated as a tied suspension" do
       cantus_firmus_voice = composition.voices.detect(&:cantus_firmus?)
       interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus_voice, counterpoint, "20:1:0")
-      expect(guideline.send(:tied_suspension?, interval)).to be false
+      expect(analyzer.send(:tied_suspension?, interval)).to be false
     end
   end
 end

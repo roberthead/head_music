@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::NoteCountPerBar do
-  subject(:guideline) { described_class.new(counterpoint, count: count, rhythmic_value: rhythmic_value) }
+  subject(:guideline) { assess(described_class, counterpoint, count: count, rhythmic_value: rhythmic_value) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }

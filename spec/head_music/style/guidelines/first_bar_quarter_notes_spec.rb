@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::FirstBarQuarterNotes do
-  subject { described_class.new(counterpoint) }
+  subject { assess(described_class, counterpoint) }
 
   context "with duple meter (4/4)" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }

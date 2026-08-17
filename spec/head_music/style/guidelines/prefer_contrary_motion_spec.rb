@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::PreferContraryMotion do
-  subject { described_class.new(counterpoint) }
+  subject { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
 

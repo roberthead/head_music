@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::Diatonic do
-  subject(:guideline) { described_class.new(voice) }
+  subject(:guideline) { assess(described_class, voice) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:voice) { composition.add_voice }

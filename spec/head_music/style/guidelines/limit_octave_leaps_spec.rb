@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::LimitOctaveLeaps do
-  subject { described_class.new(voice) }
+  subject { assess(described_class, voice) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
   let(:voice) { composition.add_voice(role: :counterpoint) }
@@ -43,7 +43,7 @@ describe HeadMusic::Style::Guidelines::LimitOctaveLeaps do
   end
 
   context "when configured to allow more than one octave leap" do
-    subject { described_class.new(voice, maximum_leaps: 2) }
+    subject { assess(described_class, voice, maximum_leaps: 2) }
 
     its(:message) { is_expected.to eq "Use a maximum of two octave leaps." }
   end

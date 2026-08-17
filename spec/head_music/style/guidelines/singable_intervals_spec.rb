@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::SingableIntervals do
-  subject { described_class.new(voice) }
+  subject { assess(described_class, voice) }
 
   let(:composition) { HeadMusic::Content::Composition.new(name: "C Major", key_signature: "C Major") }
   let(:voice) { HeadMusic::Content::Voice.new(composition: composition) }
@@ -88,11 +88,11 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
 
   describe "message" do
     it "lists the permitted intervals, noting the ascending-only minor sixth" do
-      expect(described_class.new(voice).message).to eq "Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
+      expect(assess(described_class, voice).message).to eq "Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line."
     end
 
     context "when an interval is permitted descending only" do
-      subject(:guideline) { described_class.new(voice, ascending: %w[P1 M2], descending: %w[P1 M2 m7]) }
+      subject(:guideline) { assess(described_class, voice, ascending: %w[P1 M2], descending: %w[P1 M2 m7]) }
 
       it "annotates it as descending" do
         expect(guideline.message).to include "m7 (descending)"
@@ -101,7 +101,7 @@ describe HeadMusic::Style::Guidelines::SingableIntervals do
   end
 
   context "when configured to permit major sixths" do
-    subject(:guideline) { described_class.new(voice, ascending: permitted_intervals, descending: permitted_intervals) }
+    subject(:guideline) { assess(described_class, voice, ascending: permitted_intervals, descending: permitted_intervals) }
 
     let(:permitted_intervals) { %w[P1 m2 M2 m3 M3 P4 P5 m6 M6 P8] }
 

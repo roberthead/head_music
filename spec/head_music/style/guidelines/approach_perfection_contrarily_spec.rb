@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::ApproachPerfectionContrarily do
-  subject { described_class.new(counterpoint) }
+  subject { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
   let(:cantus_firmus_pitches) { [] }

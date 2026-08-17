@@ -1,17 +1,18 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::EndOnTonic do
-  subject { described_class.new(voice) }
+  subject { assess(described_class, voice) }
 
   let(:voice) { HeadMusic::Content::Voice.new }
 
   context "with no notes" do
-    subject(:guideline) { described_class.new(voice) }
+    subject(:guideline) { assess(described_class, voice) }
 
     it { is_expected.to be_adherent }
 
     it "returns nil for the last note spelling" do
-      expect(guideline.send(:last_note_spelling)).to be_nil
+      analyzer = described_class.send(:new, voice)
+      expect(analyzer.send(:last_note_spelling)).to be_nil
     end
   end
 
@@ -40,7 +41,7 @@ describe HeadMusic::Style::Guidelines::EndOnTonic do
 
   context "with edge cases for branch coverage" do
     context "when last_note_spelling is nil but notes exist" do
-      subject(:guideline) { described_class.new(voice) }
+      subject(:guideline) { assess(described_class, voice) }
 
       before do
         # Create a note with nil pitch to test the nil branch in ends_on_tonic?
@@ -54,7 +55,7 @@ describe HeadMusic::Style::Guidelines::EndOnTonic do
     end
 
     context "when tonic_spelling is nil" do
-      subject(:guideline) { described_class.new(voice) }
+      subject(:guideline) { assess(described_class, voice) }
 
       let(:mock_key_signature) { instance_double(HeadMusic::Rudiment::KeySignature, tonic_spelling: nil) }
 

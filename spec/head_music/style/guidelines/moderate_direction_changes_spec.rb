@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::ModerateDirectionChanges do
-  subject { described_class.new(voice) }
+  subject { assess(described_class, voice) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:voice) { HeadMusic::Content::Voice.new(composition: composition) }

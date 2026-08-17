@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::MinimumNotes do
-  subject { described_class.new(voice, minimum: minimum) }
+  subject { assess(described_class, voice, minimum: minimum) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:voice) { HeadMusic::Content::Voice.new(composition: composition, role: "Cantus Firmus") }
@@ -34,8 +34,10 @@ describe HeadMusic::Style::Guidelines::MinimumNotes do
     its(:first_mark_code) { is_expected.to eq "1:1:000 to 2:1:000" }
   end
 
-  describe "#gate?" do
-    it("is a gate by default") { is_expected.to be_gate }
+  describe ".default_gate?" do
+    it "is a gate by default, since a threshold measures completion rather than trading off" do
+      expect(described_class.default_gate?).to be true
+    end
   end
 
   describe ".with" do

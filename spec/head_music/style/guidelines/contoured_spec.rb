@@ -54,8 +54,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
     let(:melody) { "CDEF|G4|" }
 
     it "raises when evaluated" do
-      guideline = described_class.new(voice, contour: :bogus)
-      expect { guideline.fitness }.to raise_error(ArgumentError, /bogus/)
+      expect { assess(described_class, voice, contour: :bogus) }.to raise_error(ArgumentError, /bogus/)
     end
   end
 

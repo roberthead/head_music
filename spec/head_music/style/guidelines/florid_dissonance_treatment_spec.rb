@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
-  subject { described_class.new(counterpoint) }
+  subject { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "4/4") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
@@ -123,7 +123,7 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
   end
 
   context "when resolving a strong-beat suspension by step" do
-    let(:guideline) { described_class.new(counterpoint) }
+    let(:analyzer) { described_class.send(:new, counterpoint) }
 
     before do
       counterpoint.place("1:1", :quarter, "A4")
@@ -134,27 +134,27 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
 
     it "resolves by step when the next note steps to a consonance" do
       # A4 -> B4 is a step, and B4 (M6 with CF D4) is consonant.
-      expect(guideline.send(:resolved_by_step?, counterpoint.notes[0])).to be true
+      expect(analyzer.send(:resolved_by_step?, counterpoint.notes[0])).to be true
     end
 
     it "does not resolve by step when the next note is reached by leap" do
       # B4 -> E5 is a perfect fourth, not a step.
-      expect(guideline.send(:resolved_by_step?, counterpoint.notes[1])).to be false
+      expect(analyzer.send(:resolved_by_step?, counterpoint.notes[1])).to be false
     end
 
     it "does not resolve by step when there is no following note" do
-      expect(guideline.send(:resolved_by_step?, counterpoint.notes.last)).to be false
+      expect(analyzer.send(:resolved_by_step?, counterpoint.notes.last)).to be false
     end
   end
 
   context "when a strong-beat note has no cantus firmus note at its position" do
-    let(:guideline) { described_class.new(counterpoint) }
+    let(:analyzer) { described_class.send(:new, counterpoint) }
 
     before { counterpoint.place("12:1", :whole, "A4") }
 
     it "is not treated as a proper suspension" do
       note = counterpoint.notes.last
-      expect(guideline.send(:properly_treated_suspension?, note)).to be false
+      expect(analyzer.send(:properly_treated_suspension?, note)).to be false
     end
   end
 
@@ -167,7 +167,7 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
     it { is_expected.to be_adherent }
 
     it "produces no marks" do
-      expect(described_class.new(counterpoint).marks).to eq([])
+      expect(assess(described_class, counterpoint).marks).to eq([])
     end
   end
 end

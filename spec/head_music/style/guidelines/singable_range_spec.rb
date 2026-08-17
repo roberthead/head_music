@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::SingableRange do
-  subject(:guideline) { described_class.new(voice) }
+  subject(:guideline) { assess(described_class, voice) }
 
   let(:voice) { HeadMusic::Content::Voice.new }
 
@@ -10,7 +10,7 @@ describe HeadMusic::Style::Guidelines::SingableRange do
   end
 
   context "when the maximum range is a vowel-sound ordinal" do
-    subject(:guideline) { described_class.new(voice, maximum_range: 8) }
+    subject(:guideline) { assess(described_class, voice, maximum_range: 8) }
 
     its(:message) { is_expected.to eq "Limit melodic range to an 8th." }
   end

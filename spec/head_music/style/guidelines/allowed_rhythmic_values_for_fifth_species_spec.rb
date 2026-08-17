@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies do
-  subject(:guideline) { described_class.new(counterpoint) }
+  subject(:guideline) { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "4/4") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
@@ -15,12 +15,14 @@ describe HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies do
   end
 
   context "with no notes" do
+    let(:analyzer) { described_class.send(:new, counterpoint) }
+
     it { is_expected.to be_adherent }
 
     it "has no final bar number" do
       # With an empty voice, last_note is nil, so both safe-navigation arms of
       # final_bar_number short-circuit to nil.
-      expect(guideline.send(:final_bar_number)).to be_nil
+      expect(analyzer.send(:final_bar_number)).to be_nil
     end
   end
 

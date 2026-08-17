@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::LargeLeaps do
-  subject(:guideline) { described_class.new(voice, **options) }
+  subject(:guideline) { assess(described_class, voice, **options) }
 
   let(:options) { {} }
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }

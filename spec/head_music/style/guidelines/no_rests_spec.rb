@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::NoRests do
-  subject { described_class.new(voice) }
+  subject { assess(described_class, voice) }
 
   let(:voice) { HeadMusic::Content::Voice.new }
 

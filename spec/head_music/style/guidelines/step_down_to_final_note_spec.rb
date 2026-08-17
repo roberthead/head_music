@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::StepDownToFinalNote do
-  subject { described_class.new(voice) }
+  subject { assess(described_class, voice) }
 
   let(:voice) { HeadMusic::Content::Voice.new }
 
@@ -18,10 +18,9 @@ describe HeadMusic::Style::Guidelines::StepDownToFinalNote do
   end
 
   context "when there is no last melodic interval" do
-    subject(:guideline) { described_class.new(voice) }
-
     it "reports no expected direction" do
-      expect(guideline.send(:expected_direction?)).to be_nil
+      analyzer = described_class.send(:new, voice)
+      expect(analyzer.send(:expected_direction?)).to be_nil
     end
   end
 

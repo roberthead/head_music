@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::SecondSpeciesBreak do
-  subject(:guideline) { described_class.new(counterpoint) }
+  subject(:guideline) { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }

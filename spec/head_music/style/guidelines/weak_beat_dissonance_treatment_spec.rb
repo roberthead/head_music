@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment do
-  subject { described_class.new(counterpoint) }
+  subject { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
@@ -118,7 +118,7 @@ describe HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment do
     it { is_expected.to be_adherent }
 
     it "produces no marks" do
-      expect(described_class.new(counterpoint).marks).to eq([])
+      expect(assess(described_class, counterpoint).marks).to eq([])
     end
   end
 end

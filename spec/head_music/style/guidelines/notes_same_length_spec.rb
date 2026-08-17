@@ -1,15 +1,22 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::NotesSameLength do
-  subject { described_class.new(voice) }
+  subject { assess(described_class, voice) }
 
   let(:voice) { HeadMusic::Content::Voice.new }
 
   context "with no notes" do
     it { is_expected.to be_adherent }
 
-    its(:first_most_common_rhythmic_value) { is_expected.to be_nil }
-    its(:most_common_rhythmic_values) { is_expected.to be_empty }
+    it "has no first most common rhythmic value" do
+      analyzer = described_class.send(:new, voice)
+      expect(analyzer.first_most_common_rhythmic_value).to be_nil
+    end
+
+    it "has no most common rhythmic values" do
+      analyzer = described_class.send(:new, voice)
+      expect(analyzer.most_common_rhythmic_values).to be_empty
+    end
   end
 
   context "with one note" do

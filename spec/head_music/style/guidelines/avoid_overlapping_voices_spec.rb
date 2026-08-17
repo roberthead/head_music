@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
-  subject(:guideline) { described_class.new(counterpoint) }
+  subject(:guideline) { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:cantus_firmus) { composition.add_voice(role: :cantus_firmus) }
@@ -94,7 +94,7 @@ describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
   end
 
   context "with multiple voices to test both higher and lower voice branches" do
-    subject(:guideline) { described_class.new(alto) }
+    subject(:guideline) { assess(described_class, alto) }
 
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
     let(:soprano) { composition.add_voice(role: :soprano) }

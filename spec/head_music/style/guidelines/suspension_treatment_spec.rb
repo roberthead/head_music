@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::SuspensionTreatment do
-  subject { described_class.new(counterpoint) }
+  subject { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
@@ -111,7 +111,7 @@ describe HeadMusic::Style::Guidelines::SuspensionTreatment do
 
   context "when a suspension falls on the first bar with no previous cantus firmus note" do
     let(:cantus_firmus_pitches) { %w[D4 F4 E4] }
-    let(:guideline) { described_class.new(counterpoint) }
+    let(:analyzer) { described_class.send(:new, counterpoint) }
 
     before { counterpoint.place("1:3", :whole, "A4") }
 
@@ -119,7 +119,7 @@ describe HeadMusic::Style::Guidelines::SuspensionTreatment do
       cantus_firmus_voice = composition.voices.detect(&:cantus_firmus?)
       first_cf_note = cantus_firmus_voice.notes.first
       cp_note = counterpoint.notes.first
-      expect(guideline.send(:prepared?, cp_note, first_cf_note)).to be false
+      expect(analyzer.send(:prepared?, cp_note, first_cf_note)).to be false
     end
   end
 
@@ -132,7 +132,7 @@ describe HeadMusic::Style::Guidelines::SuspensionTreatment do
     it { is_expected.to be_adherent }
 
     it "produces no marks" do
-      expect(described_class.new(counterpoint).marks).to eq([])
+      expect(assess(described_class, counterpoint).marks).to eq([])
     end
   end
 end
