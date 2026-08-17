@@ -6,17 +6,20 @@ module HeadMusic::Style::Guidelines; end
 # Options:
 # - ascending: permitted interval shorthands for ascending motion
 # - descending: permitted interval shorthands for descending motion
-# - message: the guideline message (defaults to listing the permitted intervals)
+# - violation_key: names an alternative violation template
 class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Guideline
   # Traditional pedagogy permits the minor sixth ascending only.
   DEFAULTS = {
     ascending: %w[P1 m2 M2 m3 M3 P4 P5 m6 P8].freeze,
-    descending: %w[P1 m2 M2 m3 M3 P4 P5 P8].freeze,
-    message: nil
+    descending: %w[P1 m2 M2 m3 M3 P4 P5 P8].freeze
   }.freeze
 
+  # The only guideline whose violation is assembled from what it computed
+  # rather than from what it was configured with, so it renders per instance.
   def message
-    config[:message] || "Use only #{permitted_descriptions.join(", ")} in the melodic line."
+    return HeadMusic::Style::Template.render(config[:violation_key]) if config[:violation_key]
+
+    HeadMusic::Style::Template.render(self.class.violation_key, intervals: permitted_descriptions.join(", "))
   end
 
   def marks
@@ -40,8 +43,8 @@ class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Guidel
   def describe_shorthand(shorthand)
     return shorthand if both_directions?(shorthand)
 
-    direction = ascending_shorthands.include?(shorthand) ? "ascending" : "descending"
-    "#{shorthand} (#{direction})"
+    direction = ascending_shorthands.include?(shorthand) ? :ascending : :descending
+    HeadMusic::Style::Template.render("interval_directions.#{direction}", interval: shorthand)
   end
 
   def both_directions?(shorthand)

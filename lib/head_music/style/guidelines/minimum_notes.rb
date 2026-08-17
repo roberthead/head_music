@@ -8,8 +8,13 @@ class HeadMusic::Style::Guidelines::MinimumNotes < HeadMusic::Style::Guidelines:
     placements.empty? ? no_placements_mark : deficiency_mark
   end
 
-  def message
-    "Write at least #{minimum.humanize} notes."
+  def self.violation_singular = "note"
+
+  # The count comes from the configuration or the class default -- never from
+  # config alone, which is empty for the unconfigured case.
+  def self.template_values(config)
+    count = config.fetch(:minimum) { MINIMUM }
+    {count: count, number: HeadMusic::Style::Template.number_word(count)}
   end
 
   private

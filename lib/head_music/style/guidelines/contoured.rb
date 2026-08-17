@@ -30,8 +30,8 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     HeadMusic::Style::Mark.for_all(notes, fitness: HeadMusic::GOLDEN_RATIO_INVERSE**2)
   end
 
-  def message
-    "Write a melody with the #{contour} contour."
+  def self.template_values(config)
+    {contour: HeadMusic::Style::Template.render("contours.#{normalized_contour(config.fetch(:contour))}")}
   end
 
   private

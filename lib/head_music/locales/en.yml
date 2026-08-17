@@ -567,7 +567,62 @@ en:
       tuba: tuba
       tuning: tuning
     style:
+      interval_directions:
+        ascending: "%{interval} (ascending)"
+        descending: "%{interval} (descending)"
+      contours:
+        arch: "arch"
+        ascending: "ascending"
+        descending: "descending"
+        static: "static"
+        valley: "valley"
+        wave: "wave"
+      ranges:
+        "8": "an octave"
+        "10": "a tenth"
+      rhythmic_units:
+        half: "half"
+        quarter: "quarter"
+        whole: "whole"
       guidelines:
+        large_leaps:
+          violations:
+            default: "Recover leaps by step, repetition, opposite direction, or spelling triad."
+            fux_cantus_firmus: "Recover large leaps by step in the opposite direction."
+        singable_intervals:
+          violations:
+            default: "Use only %{intervals} in the melodic line."
+        contoured:
+          violations:
+            default: "Write a melody with the %{contour} contour."
+        note_count_per_bar:
+          violations:
+            default:
+              one: "Use %{number} %{rhythmic_unit} note in each middle bar."
+              other: "Use %{number} %{rhythmic_unit} notes in each middle bar."
+        singable_range:
+          violations:
+            default: "Limit melodic range to %{range}."
+        limit_octave_leaps:
+          violations:
+            default:
+              one: "Use a maximum of %{number} octave leap."
+              other: "Use a maximum of %{number} octave leaps."
+        maximum_notes:
+          violations:
+            default:
+              one: "Write up to %{number} note."
+              other: "Write up to %{number} notes."
+        minimum_melodic_intervals:
+          violations:
+            default:
+              one: "Write at least %{number} melodic interval."
+              other: "Write at least %{number} melodic intervals."
+        minimum_notes:
+          violations:
+            default:
+              one: "Write at least %{number} note."
+              other: "Write at least %{number} notes."
         allowed_rhythmic_values_for_combined123:
           violations:
             default: "Use only whole notes, half notes, and quarter notes."

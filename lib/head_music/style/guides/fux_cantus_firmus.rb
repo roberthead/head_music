@@ -20,7 +20,7 @@ class HeadMusic::Style::Guides::FuxCantusFirmus < HeadMusic::Style::Guides::Spec
     HeadMusic::Style::Guidelines::NoRests,
     HeadMusic::Style::Guidelines::NotesSameLength,
     HeadMusic::Style::Guidelines::LargeLeaps.with(
-      message: "Recover large leaps by step in the opposite direction.",
+      violation_key: "guidelines.large_leaps.violations.fux_cantus_firmus",
       minimum: :perfect_fourth,
       descending: {minimum: :perfect_fourth, forbidden: :minor_sixth},
       recovery: %i[consonant_triad opposite_step]

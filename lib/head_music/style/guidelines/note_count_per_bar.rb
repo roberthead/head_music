@@ -11,8 +11,20 @@ class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guidelin
     middle_bars.filter_map { |bar_number| check_middle_bar(bar_number) }
   end
 
-  def message
-    "Use #{count.humanize} #{rhythmic_unit} #{(count == 1) ? "note" : "notes"} in each middle bar."
+  def self.violation_singular = "note"
+
+  # One template for all four subclasses: they differ by count and unit, not by
+  # sentence. Named explicitly so the subclasses do not each need an entry.
+  def self.template_key = "note_count_per_bar"
+
+  def self.template_values(config)
+    count = config.fetch(:count) { self::COUNT }
+    unit = config.fetch(:rhythmic_value) { self::RHYTHMIC_VALUE }
+    {
+      count: count,
+      number: HeadMusic::Style::Template.number_word(count),
+      rhythmic_unit: HeadMusic::Style::Template.render("rhythmic_units.#{unit}")
+    }
   end
 
   private

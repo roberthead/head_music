@@ -8,19 +8,24 @@ module HeadMusic::Style::Guidelines; end
 # - ascending/descending: per-direction override; an interval shorthand or {minimum:, forbidden:}
 # - recovery: symbols naming the acceptable recovery gestures
 # - maximum_consecutive_leaps: cap on a run of consecutive qualifying leaps
-# - message: the guideline message
+# - violation_key: names an alternative violation template
 class HeadMusic::Style::Guidelines::LargeLeaps < HeadMusic::Style::Guideline
   DEFAULTS = {
     minimum: :perfect_fourth,
     ascending: nil,
     descending: nil,
     recovery: %i[consonant_triad any_step repetition opposite_leap_within],
-    maximum_consecutive_leaps: nil,
-    message: "Recover leaps by step, repetition, opposite direction, or spelling triad."
+    maximum_consecutive_leaps: nil
   }.freeze
 
-  def message
-    config.fetch(:message)
+  # A guide may name a different template; the default says what recovery is
+  # acceptable in general.
+  def self.violation_key(config = {})
+    config[:violation_key] || super()
+  end
+
+  def self.render_violation(config)
+    HeadMusic::Style::Template.render(violation_key(config))
   end
 
   def marks

@@ -14,8 +14,13 @@ class HeadMusic::Style::Guidelines::LimitOctaveLeaps < HeadMusic::Style::Guideli
     end
   end
 
-  def message
-    "Use a maximum of #{maximum_leaps.humanize} octave #{(maximum_leaps == 1) ? "leap" : "leaps"}."
+  def self.violation_singular = "octave leap"
+
+  # The count comes from the configuration or the class default -- never from
+  # config alone, which is empty for the unconfigured case.
+  def self.template_values(config)
+    count = config.fetch(:maximum_leaps) { MAXIMUM_LEAPS }
+    {count: count, number: HeadMusic::Style::Template.number_word(count)}
   end
 
   private

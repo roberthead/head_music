@@ -240,7 +240,7 @@ FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS = [
   {
     name: "Fux G with non-singable range",
     key: "G mixolydian", pitches: %w[G3 C B3 G3 G4 F D5 C5 G E C D B3 A3 G3],
-    expected_message: "Limit melodic range to a 10th."
+    expected_message: "Limit melodic range to a tenth."
   },
   {
     name: "Fux A starting on 5th scale degree",

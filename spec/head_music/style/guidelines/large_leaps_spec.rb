@@ -18,10 +18,10 @@ describe HeadMusic::Style::Guidelines::LargeLeaps do
       expect(guideline.message).to eq "Recover leaps by step, repetition, opposite direction, or spelling triad."
     end
 
-    context "with a message option" do
-      let(:options) { {message: "Custom leap guidance."} }
+    context "when a guide names its own violation template" do
+      let(:options) { {violation_key: "guidelines.large_leaps.violations.fux_cantus_firmus"} }
 
-      its(:message) { is_expected.to eq "Custom leap guidance." }
+      its(:message) { is_expected.to eq "Recover large leaps by step in the opposite direction." }
     end
   end
 

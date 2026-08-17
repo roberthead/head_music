@@ -9,10 +9,12 @@ describe HeadMusic::Style::Guidelines::SingableRange do
     it { is_expected.to be_adherent }
   end
 
-  context "when the maximum range is a vowel-sound ordinal" do
+  # The article belongs to the noun, so each locale writes the whole phrase
+  # rather than the gem computing "a" or "an".
+  context "when the range is an octave" do
     subject(:guideline) { assess(described_class, voice, maximum_range: 8) }
 
-    its(:message) { is_expected.to eq "Limit melodic range to an 8th." }
+    its(:message) { is_expected.to eq "Limit melodic range to an octave." }
   end
 
   context "when the range is small" do

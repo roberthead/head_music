@@ -5,7 +5,7 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
 
   let(:large_leaps_options) do
     {
-      message: "Recover large leaps by step in the opposite direction.",
+      violation_key: "guidelines.large_leaps.violations.fux_cantus_firmus",
       minimum: :perfect_fourth,
       descending: {minimum: :perfect_fourth, forbidden: :minor_sixth},
       recovery: %i[consonant_triad opposite_step]

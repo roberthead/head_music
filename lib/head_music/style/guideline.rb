@@ -50,6 +50,20 @@ class HeadMusic::Style::Guideline
 
   def self.violation_key = "guidelines.#{template_key}.violations.default"
 
+  # Renders this guideline's violation for a given configuration. Pluralized
+  # guidelines are routed through Template.pluralize so that a locale without
+  # plural data falls back to Ruby rather than raising at a student.
+  def self.render_violation(config)
+    values = template_values(config)
+    return HeadMusic::Style::Template.render(violation_key, **values) unless values.key?(:count)
+
+    HeadMusic::Style::Template.pluralize(violation_key, singular: violation_singular, **values)
+  end
+
+  # The noun a pluralized violation counts. Only the guidelines whose messages
+  # count something define it.
+  def self.violation_singular = nil
+
   # The values a template may interpolate. Deliberately NOT the config itself:
   # seven guide items declare no config at all and read their message values
   # from class constants, and I18n returns a template untouched when given no
@@ -99,7 +113,7 @@ class HeadMusic::Style::Guideline
   end
 
   def message
-    HeadMusic::Style::Template.render(self.class.violation_key, **self.class.template_values(options))
+    self.class.render_violation(options)
   end
 
   def first_note
