@@ -807,7 +807,7 @@ en:
         third_species_melody:
           instruction: "Write four quarter notes in each bar against the cantus firmus."
         third_species_harmony:
-          instruction: "Keep the downbeats consonant, and treat the quarter-note dissonances as passing or neighbour tones."
+          instruction: "Keep the downbeats consonant, and treat the quarter-note dissonances as passing or neighbor tones."
         third_species_triple_meter_melody:
           instruction: "Write three quarter notes in each bar against the cantus firmus."
         third_species_triple_meter_harmony:

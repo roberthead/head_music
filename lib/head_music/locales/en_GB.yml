@@ -2,3 +2,25 @@ en_GB:
   head_music:
     rudiments:
       grand_staff: great staff
+    # Only the strings whose spelling differs. Everything else falls through to
+    # en. Note that de, fr, it and ru route through here on their way to en, so
+    # a pluralized entry added below must carry the locale's complete set of
+    # plural forms -- a partial hash stops the fallback rather than continuing
+    # past it, and would break those four languages rather than this one.
+    style:
+      guidelines:
+        florid_dissonance_treatment:
+          violations:
+            default: "Treat dissonances appropriately: passing tones, cambiata, or double neighbour on weak beats; proper suspension treatment for tied notes."
+        no_rests:
+          violations:
+            default: "Place a note in each bar."
+        third_species_dissonance_treatment:
+          violations:
+            default: "Treat dissonances as passing tones, neighbour tones, cambiata, or double neighbour figures."
+        triple_meter_dissonance_treatment:
+          violations:
+            default: "Treat dissonances as passing tones or neighbour tones."
+      guides:
+        third_species_triple_meter_harmony:
+          instruction: "Keep the downbeats consonant in triple metre, and resolve every dissonance by step."

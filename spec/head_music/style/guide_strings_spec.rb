@@ -7,6 +7,9 @@ require "spec_helper"
 # A guideline added without an entry, a template whose values the guideline
 # stopped passing, or a locale that stops resolving fails here rather than in
 # front of a student.
+PLURAL_KEYS = %i[zero one two few many other].freeze
+ENGLISH_PLURAL_KEYS = %i[one other].freeze
+
 describe HeadMusic::Style::Guide do
   let(:guides) { HeadMusic::Style::Guide::ALL }
   let(:items) { guides.flat_map(&:guide_items).uniq }
@@ -41,6 +44,36 @@ describe HeadMusic::Style::Guide do
   it "covers every registry entry" do
     expect(guides.size).to eq 23
     expect(items.size).to eq 67
+  end
+
+  # de, fr, it and ru all resolve through en_GB before reaching en. I18n stops
+  # at a plural hash that is present but incomplete rather than continuing past
+  # it, so a British entry with only `other:` would raise for those four
+  # languages and not for British readers -- who would never see it.
+  def partial_plurals_in(tree, path = [])
+    return [] unless tree.is_a?(Hash)
+
+    keys = tree.keys.map(&:to_sym)
+    here = if (keys & PLURAL_KEYS).any? && (keys & ENGLISH_PLURAL_KEYS).size < ENGLISH_PLURAL_KEYS.size
+      [path.join(".")]
+    else
+      []
+    end
+    here + tree.flat_map { |key, value| partial_plurals_in(value, path + [key]) }
+  end
+
+  it "gives every pluralized en_GB entry a complete set of forms" do
+    british = I18n.backend.send(:translations).fetch(:en_GB).dig(:head_music, :style) || {}
+
+    expect(partial_plurals_in(british)).to be_empty
+  end
+
+  # There are no pluralized British entries yet, so the guard above would pass
+  # on an empty tree. This is what it is guarding against.
+  it "would catch a British entry that carried only one form" do
+    incomplete = {guidelines: {note_count_per_bar: {name: {other: "%{number} crotchets per bar"}}}}
+
+    expect(partial_plurals_in(incomplete)).to eq ["guidelines.note_count_per_bar.name"]
   end
 
   # The Ruby fallback exists so a language with no plural data reads a little
