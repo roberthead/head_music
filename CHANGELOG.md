@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   All three are templates. `GuideItem` renders them for its own configuration — `#name`, `#instruction`, `#violation_preview` — so the same guideline reads "at least three notes" in a gate and "at least eight" in a rubric. A guideline configured per guide supplies its interpolations from `self.template_values(config)`; a guide that wants a variant of the sentence names it with `violation_key:`, as `FuxCantusFirmus` does for `LargeLeaps`.
 
+  The `message:` option that `SingableIntervals` and `LargeLeaps` accepted is removed with them: it passed an English sentence through the config hash, which is the thing this change exists to stop. A guide item declared with `message:` raises `ArgumentError` naming `violation_key:` rather than ignoring the key, since an unrecognized option would otherwise ride along in `config` and be dropped at render — a custom sentence vanishing with no error.
+
   `GuideItemAssessment#message` is now `nil` for an adherent item rather than the message it would have printed. Read `GuideItem#violation_preview` for the sentence in the abstract.
 
 - **Breaking.** Guides gain `#instruction` — what a guide asks a student to write, as distinct from how it grades what they wrote — and their names move under `head_music.style.guides.<key>.name` from the flat `<key>`. The twenty-three instructions are a first draft.

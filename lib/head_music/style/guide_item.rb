@@ -19,7 +19,14 @@ class HeadMusic::Style::GuideItem
     entry.is_a?(self) ? entry : new(entry)
   end
 
+  # Options the move into locale files removed, mapped to what replaces them.
+  # An unrecognized key is not an error to config -- it rides along, is offered
+  # as an interpolation no template names, and is dropped -- so a consumer who
+  # kept passing message: would watch their sentence vanish without a word.
+  REMOVED_OPTIONS = {message: :violation_key}.freeze
+
   def initialize(guideline, config = {})
+    reject_removed_options!(config)
     @guideline = guideline
     @config = deep_freeze(config)
     freeze
@@ -69,6 +76,17 @@ class HeadMusic::Style::GuideItem
   alias_method :to_s, :inspect
 
   private
+
+  # At declaration time, so a guide naming a removed option fails on require
+  # rather than rendering the wrong sentence for the life of the process.
+  def reject_removed_options!(config)
+    removed = config.keys & REMOVED_OPTIONS.keys
+    return if removed.empty?
+
+    raise ArgumentError, removed.map { |option|
+      "#{option}: is no longer a guideline option -- name a locale entry with #{REMOVED_OPTIONS[option]}:"
+    }.join(" ")
+  end
 
   # Deep, because freezing the item alone would be a promise it does not keep.
   # Items are built once at load and shared between guides -- the same

@@ -92,6 +92,22 @@ describe HeadMusic::Style::GuideItem do
     end
   end
 
+  describe "removed options" do
+    # An unrecognized key rides along in config and is dropped at render, so
+    # ignoring message: would let a consumer's custom sentence disappear
+    # without a word. It says what replaces it instead.
+    it "refuses the message: option that violation_key: replaced" do
+      expect { guidelines::LargeLeaps.with(message: "Recover the leap by step.") }
+        .to raise_error(ArgumentError, /violation_key/)
+    end
+
+    it "still takes the option that replaced it" do
+      item = guidelines::LargeLeaps.with(violation_key: "guidelines.large_leaps.violations.fux_cantus_firmus")
+
+      expect(item.violation_preview).to eq "Recover large leaps by step in the opposite direction."
+    end
+  end
+
   describe "#inspect" do
     # Printing the class name could not tell two configurations apart.
     it "distinguishes two configurations of one guideline" do
