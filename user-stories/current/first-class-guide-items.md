@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-16T17:14:51-07:00
   planned_at:   2026-08-16T17:41:08-07:00
   finished_at:
-  updated_at:   2026-08-16T19:13:17-07:00
+  updated_at:   2026-08-16T19:56:13-07:00
 -->
 
 # First-Class Guide Items
@@ -447,6 +447,99 @@ meaning at once can only be checked by reading it.
 ## Open questions
 
 None outstanding.
+
+## Review
+
+Reviewed 2026-08-16 at `314b34e`, against
+`git diff $(git merge-base main HEAD)...HEAD -- lib spec README.md references CHANGELOG.md`
+— 116 files, +1272/-986 across seven commits. All findings are fixed in
+`314b34e`; the verdicts below describe the reviewed state.
+
+### Scenarios
+
+Every scenario verified by running it, not by reading the diff.
+
+| Scenario | Verdict | Evidence |
+| --- | --- | --- |
+| Bare guideline class becomes a guide item | ✅ | `GuideItem.wrap(ConsonantClimax)` → item, empty config |
+| Configured guideline keeps its configuration | ✅ | Includes all three positional-argument overrides |
+| Config carries no grading keys | ✅ | 0 of 304 declared items carry `:weight` or `:gate`; the readers do not exist |
+| Tier comes from the list, not the item | ✅ | `DiatonicMelody.primary_items` and `ContourMelody`'s secondaries are **`object_id`-identical**; neither guide mutates the other |
+| A guideline may appear in two lists with different config | ✅ | Constructed on a throwaway guide: gate 1.0, primary 0.5, overall 0.5 — as specified. No shipped guide does this yet |
+| Same guideline and config in two lists is rejected | ✅ | Raised as designed |
+| `except:` matches by guideline class | ✅ | One `SingableIntervals`, the configured one; the shared core keeps its bare class |
+| A guide produces a guide assessment | ✅ | |
+| An assessment reads from both halves | ✅ | Frozen; tier from the declaration, fitness from the analysis |
+| Every guide grades exactly as it did before | ✅ | See below |
+
+**No out-of-scope leakage.** Grepped for `violation_key`, `violation_values`,
+`name_key`, `instruction_key`, and multi-voice work: zero hits. Re-tiering did
+not leak either — gates across `Guide::ALL` are exactly the `MinimumThreshold`
+subclasses, and secondaries appear only in the six contour configurations.
+
+### The bit-identical claim, and its one weakness
+
+The reviewer did not take the baseline on trust. It noticed that
+`before.json`'s mtime predated the capture script's, and that the script
+referenced `Style::GuideAssessment` — a class that does not exist at the
+merge-base — so the artifact could have come from an intermediate commit. It
+created a git worktree at the merge-base itself, ran the original script there,
+and got the same md5 (`f0229df2088d67cba0971ebd7ca6682c`). The baseline is
+genuinely pre-refactor, and the current tree matches it byte for byte: 2,622
+rows, 23 guides, 34,656 item rows.
+
+**That evidence is not reproducible from the repo.** The oracle lives in a
+session scratchpad and is not committed, so a reader of the commit history
+cannot re-verify it. The suite covers the tier arithmetic in the abstract and
+pins concrete numbers per guide, but nothing in it asserts that all 23 guides
+grade identically to 19.0.0 across the corpus. Worth a committed rake task if
+that guarantee is meant to survive.
+
+### Findings, all fixed
+
+**1. `GuideItem` froze itself but not its configuration.** Demonstrated, not
+theoretical: the `LargeLeaps` item is shared by identity across `DiatonicMelody`
+and all six contour guides, and its `recovery` array was mutable. Appending to
+it corrupted every one of them at once and changed the `hash` of an object
+reporting itself frozen — the property duplicate rejection and value equality
+depend on. Now deep-frozen through containers and strings, but deliberately not
+through rudiments: a config value can be a `DiatonicInterval`, and those memoize
+lazily, so freezing one breaks it at the first question. That distinction was
+found by the suite when the first, broader version failed.
+
+**2. Duplicate rejection had no automated coverage.** The design's own guard
+against declaring the same guideline and configuration in two tiers was
+verified only by hand. `GuideItem` had no unit spec at all — `.wrap`, equality,
+hashing, and immutability were exercised only incidentally. Added.
+
+**3. Three comments described mechanisms that no longer exist** — `analyze`,
+and `GuideItem#new(voice)` — in `guides/configured.rb` and twice in `guide.rb`.
+The drift a green suite cannot catch.
+
+**4. Declaring no tiers raised `NotImplementedError`**, a `ScriptError` that an
+ordinary `rescue` does not catch, unlike the two `ArgumentError` guards beside
+it. Now `ArgumentError`.
+
+### Confirmed sound, with work behind the answers
+
+- **The equal-weight normalization.** φ⁻¹/a == φ⁻²/b is unreachable for integer
+  counts because φ is irrational; brute-forced to 200 with no floating-point
+  coincidence. And a collision would be harmless anyway — equal weights *are* an
+  unweighted mean.
+- **Singleton declaration state.** Class-instance variables do not leak to
+  subclasses; a subclass declaring nothing raises rather than inheriting.
+- **The `assess` / `assess_items` split.** Only guides define `assess_items`, so
+  the duck-check cannot admit a guideline. The two return genuinely different
+  things.
+- **`private_class_method :new`.** Nothing in `lib/` calls it outside
+  `Guideline.assess`; the 13 spec sites using `send` are deliberate.
+
+### Known, accepted
+
+Two `ContourMelody` examples were deleted without a like-for-like successor:
+one asserted the contour is the worst-scoring item on a given voice, the other
+a specific gate haircut. Their mechanism is now covered generically, but that
+concrete instance is pinned only by the oracle — which is not in the suite.
 
 ## Implementation Plan
 
