@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-17T12:07:58-07:00
   planned_at:   2026-08-17T12:34:26-07:00
   finished_at:
-  updated_at:   2026-08-17T16:41:12-07:00
+  updated_at:   2026-08-17T16:53:42-07:00
 -->
 
 # Guideline Strings into I18n
@@ -780,11 +780,35 @@ raises rather than falling back; `resolved_locale` picks the right locale; every
 registry string under `:de` is identical to the same string under `:en_GB`; and
 the assessment renders through the same seam as the preview.
 
+### Findings 4, 5 and 6, fixed after
+
+Committed separately, each with the 67 pinned strings re-measured and identical.
+
+**4 — the fallback keeps the sentence.** It read a bare noun phrase where the
+sentence belonged. It now reads a form the entry does carry, English's own rule
+first: a partial `en_GB` hash read by a German reader gives "Write at least
+eight note." — wrong in exactly the way the fallback exists to tolerate, and
+still a sentence. This retired `violation_singular`, whose only job was building
+that noun phrase, and with it five English nouns sitting untranslatable in Ruby
+— which is progress on criterion 1 as well.
+
+**5 — the gaps are reported.** `verify!` returns the keys whose plural forms the
+locale could not supply and `Guide::PLURAL_GAPS` keeps them, so a thin locale is
+answerable at runtime rather than recorded into an array nobody read. A return
+value rather than a console line, since a library has no business printing.
+`verify!` clears the record first, so a full sweep reports the whole answer; the
+collection is also unique now, which bounds growth that was previously unbounded.
+
+**6 — the removed option is refused.** A guide item declared with `message:`
+raises at declaration time naming `violation_key:`, rather than letting an
+unrecognized key ride along in config and drop at render. `GuideItem.new` is the
+choke point every `.with` funnels through. The removal is in the CHANGELOG now.
+
 ### Still open
 
-Findings 4–10 are untouched and none of them block. Worth noting that finding 4
-is now more visible: the Ruby plural fallback still returns a bare noun phrase
-("eight notes") rather than the sentence, which is what both paths agree on
-above. It is a smaller problem than it was — the fallback is now reached only
-when a locale genuinely cannot pluralize, not whenever a template is broken —
-but it is still the wrong output for that case.
+Findings 7 through 10, none blocking: `GuideItemAssessment#name` returning the
+Ruby class path, the dead code the move left behind, the two registry-orphaned
+guidelines, and the smaller notes. So is the larger half of criterion 1 —
+`guideline.rb:63` generates 46 of the 56 registry guidelines' names in Ruby from
+the class key, so `"Allowed rhythmic values for combined123"` reaches a student,
+identically in every locale.
