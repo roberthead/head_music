@@ -209,8 +209,6 @@ Guidelines inherit from `HeadMusic::Style::Guideline` and override the `marks` m
 
 ```ruby
 class MyGuideline < HeadMusic::Style::Guideline
-  MESSAGE = "Description of the rule."
-
   def marks
     # Collect placements that violate the rule.
     # Return Mark objects for each violation.
@@ -220,6 +218,25 @@ class MyGuideline < HeadMusic::Style::Guideline
   end
 end
 ```
+
+The strings a student reads are not in the class. A guideline is addressed in
+the locale files by the snake_case of its class name, so `MyGuideline` needs no
+declaration -- only entries under `head_music.style.guidelines.my_guideline`:
+
+```yaml
+my_guideline:
+  name: "Short label"
+  instruction: "What to do."
+  violations:
+    default: "What to do differently."
+```
+
+All three are templates. A guideline that is configured per guide -- a
+threshold, a permitted set -- overrides `self.template_values(config)` to supply
+the interpolations, and `self.violation_key(config)` where a guide names a
+variant of the sentence. Every entry is rendered at load by
+`Style::Template.verify!`, so a missing one or an unfilled `%{}` fails on
+`require` rather than in front of a student.
 
 `Mark.for(placement)` creates a mark spanning `placement.position` to `placement.next_position`. `Mark.for_all(placements)` creates a single mark spanning a group. `Mark.for_each(placements)` creates one mark per placement.
 

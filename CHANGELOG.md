@@ -36,9 +36,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   | `FuxCantusFirmus`, `SalzerSchachterCantusFirmus` and `DiatonicMelody` split their note minimum | A three-note gate asks whether this is a melody; the eight- or five-note prescription stays a rubric item, matching `MaximumNotes`, which always was one. A four-note cantus firmus moves from 0.500 unassessable to 0.969 assessable. |
   | The species guides demote the shared melodic cores to `secondary_items` | A guide weighs its own rhythmic rules above the craft it inherits. A valid first-species line scored 0.883 against `ThirdSpeciesMelody` and now scores 0.561. |
 
+  Grading was byte-identical to 19.0.0 through the guide-item refactor above; these are the deliberate corrections that followed it. The string changes below do not affect it.
+
+- **Breaking.** Guideline strings move out of the classes and into the locale files. Every `MESSAGE` constant is removed. A guideline is addressed by the snake_case of its class name, so a new one needs no declaration — only entries under `head_music.style.guidelines.<key>`:
+
+  | Key | Reads |
+  | --- | --- |
+  | `name` | a short label, e.g. "Minimum of eight notes" |
+  | `instruction` | what to do |
+  | `violations.default` | what to do differently |
+
+  All three are templates. `GuideItem` renders them for its own configuration — `#name`, `#instruction`, `#violation_preview` — so the same guideline reads "at least three notes" in a gate and "at least eight" in a rubric. A guideline configured per guide supplies its interpolations from `self.template_values(config)`; a guide that wants a variant of the sentence names it with `violation_key:`, as `FuxCantusFirmus` does for `LargeLeaps`.
+
+  `GuideItemAssessment#message` is now `nil` for an adherent item rather than the message it would have printed. Read `GuideItem#violation_preview` for the sentence in the abstract.
+
+- **Breaking.** Guides gain `#instruction` — what a guide asks a student to write, as distinct from how it grades what they wrote — and their names move under `head_music.style.guides.<key>.name` from the flat `<key>`. The twenty-three instructions are a first draft.
+
+### Added
+
 - `HeadMusic::Style::Guidelines::SetAgainstAnotherVoice` — the definitional precondition of a harmony guide: counterpoint is a relationship between voices, and a voice alone has no harmony to assess.
 
-- Grading was byte-identical to 19.0.0 through the guide-item refactor above; the changes in this section are the deliberate corrections that followed it.
+- `HeadMusic::Style::Template` — renders every customer-facing string in the style module, and refuses the four ways I18n fails quietly: a template rendered with no values keeps its `%{}` without raising, a value named for a reserved key hijacks the lookup, a missing key resolves to "Translation missing: …", and a word passed as `count` silently selects a plural. Every render passes `raise: true` and is checked for a surviving interpolation.
+
+  `Template.verify!` runs at load over the whole registry — twenty-three guide instructions and sixty-seven guide items × three templates — so a missing entry stops `require` rather than reaching a student. It runs in English deliberately: a host application's locale must not decide whether the gem loads.
+
+  Where a locale has no plural data, `Template.pluralize` falls back to Ruby rather than raising, and records the key it fell back for.
+
+- British spellings for the five style strings that have them — `neighbour`, `metre`, and a bar rather than a measure. `en_GB` sits mid-chain, so German, French, Italian and Russian pick these up on the way to `en`. Note that any pluralized `en_GB` entry must carry the complete set of forms: I18n stops at a plural hash that is present but incomplete rather than continuing past it, so a partial one would raise for those four languages and never for a British reader.
 
 ## [19.0.0] - 2026-08-07
 
