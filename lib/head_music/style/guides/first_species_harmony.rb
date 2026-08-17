@@ -1,10 +1,10 @@
 # Rules for first species harmony
 class HeadMusic::Style::Guides::FirstSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
-  RULESET = [
+  primary_items(
     *HARMONIC_CORE,
     HeadMusic::Style::Guidelines::NoUnisonsInMiddle,
     HeadMusic::Style::Guidelines::OneToOne
-  ].freeze
+  )
 end
 
 # TODO: Guideline against leaping into P8 even by contrary motion.

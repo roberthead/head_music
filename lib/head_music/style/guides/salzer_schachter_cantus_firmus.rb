@@ -3,11 +3,12 @@ module HeadMusic::Style::Guides; end
 
 # Cantus firmus rules after Salzer & Schachter, Counterpoint in Composition (1969).
 class HeadMusic::Style::Guides::SalzerSchachterCantusFirmus < HeadMusic::Style::Guides::SpeciesMelody
-  RULESET = [
+  gate_items HeadMusic::Style::Guidelines::MinimumNotes.with(8)
+
+  primary_items(
     *MELODIC_CORE,
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::EndOnTonic,
-    HeadMusic::Style::Guidelines::MinimumNotes.with(8),
     HeadMusic::Style::Guidelines::MaximumNotes.with(14),
     HeadMusic::Style::Guidelines::ModerateDirectionChanges,
     HeadMusic::Style::Guidelines::NoRests,
@@ -19,5 +20,5 @@ class HeadMusic::Style::Guides::SalzerSchachterCantusFirmus < HeadMusic::Style::
     ),
     HeadMusic::Style::Guidelines::StartOnTonic,
     HeadMusic::Style::Guidelines::StepToFinalNote
-  ].freeze
+  )
 end

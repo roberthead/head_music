@@ -5,7 +5,7 @@ module HeadMusic::Style::Guides; end
 # exists as a semantic marker distinguishing melody guides from harmony guides.
 class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
   # Guidelines shared by every melodic guide. Subclasses splat this into their
-  # RULESET: RULESET = [*MELODIC_CORE, ...species-specific rules].
+  # primary list: primary_items(*MELODIC_CORE, ...species-specific rules).
   MELODIC_CORE = [
     HeadMusic::Style::Guidelines::ConsonantClimax,
     HeadMusic::Style::Guidelines::Diatonic,
@@ -30,9 +30,9 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::StepUpToFinalNote
   ].freeze
 
-  # Builds a moving-species RULESET: the shared melodic and moving cores plus
+  # Builds a moving-species primary list: the shared melodic and moving cores plus
   # the species-specific guidelines passed in.
-  def self.moving_species_ruleset(*additional)
+  def self.moving_species_items(*additional)
     [*MELODIC_CORE, *MOVING_MELODIC_CORE, *additional].freeze
   end
 

@@ -50,7 +50,7 @@ class HeadMusic::Style::Guide
   # resolved as they were built -- Configured does that in its constructor, so
   # nothing in the registry is written to after load and concurrent lookups
   # never race on the memo -- which leaves this reading the classes' constants.
-  ALL.each(&:ruleset)
+  ALL.each(&:guide_items)
 
   # A miss returns nil rather than falling back, unlike Tradition.get: a
   # substituted tradition changes a consonance default, but a substituted

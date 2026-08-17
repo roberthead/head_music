@@ -3,23 +3,23 @@ require "spec_helper"
 describe HeadMusic::Style::Guides::SalzerSchachterCantusFirmus do
   subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }
-  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8) }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::Diatonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::EndOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ModerateDirectionChanges }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRests }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NotesSameLength }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
-  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::LargeLeaps, minimum: :perfect_fourth, recovery: %i[consonant_triad any_step repetition opposite_leap_within]) }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepToFinalNote }
-  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::MaximumNotes, maximum: 14) }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AlwaysMove }
+  specify { expect(described_class.guide_items).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8) }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ConsonantClimax }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::Diatonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::EndOnTonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ModerateDirectionChanges }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MostlyConjunct }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRests }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NotesSameLength }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableIntervals }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableRange }
+  specify { expect(described_class.guide_items).to include configured(HeadMusic::Style::Guidelines::LargeLeaps, minimum: :perfect_fourth, recovery: %i[consonant_triad any_step repetition opposite_leap_within]) }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StartOnTonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepToFinalNote }
+  specify { expect(described_class.guide_items).to include configured(HeadMusic::Style::Guidelines::MaximumNotes, maximum: 14) }
 
   context "with Fux examples" do
     fux_cantus_firmus_examples.each do |example|

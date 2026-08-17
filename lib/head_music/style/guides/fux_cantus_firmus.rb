@@ -3,11 +3,12 @@ module HeadMusic::Style::Guides; end
 
 # Rules for the cantus firmus according to Fux.
 class HeadMusic::Style::Guides::FuxCantusFirmus < HeadMusic::Style::Guides::SpeciesMelody
-  RULESET = [
+  gate_items HeadMusic::Style::Guidelines::MinimumNotes.with(8)
+
+  primary_items(
     *MELODIC_CORE,
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::EndOnTonic,
-    HeadMusic::Style::Guidelines::MinimumNotes.with(8),
     HeadMusic::Style::Guidelines::MaximumNotes.with(14),
     HeadMusic::Style::Guidelines::FrequentDirectionChanges,
     HeadMusic::Style::Guidelines::NoRests,
@@ -20,5 +21,5 @@ class HeadMusic::Style::Guides::FuxCantusFirmus < HeadMusic::Style::Guides::Spec
     ),
     HeadMusic::Style::Guidelines::StartOnTonic,
     HeadMusic::Style::Guidelines::StepDownToFinalNote
-  ].freeze
+  )
 end

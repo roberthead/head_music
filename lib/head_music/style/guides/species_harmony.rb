@@ -5,7 +5,7 @@ module HeadMusic::Style::Guides; end
 # exists as a semantic marker distinguishing harmony guides from melody guides.
 class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
   # Guidelines shared by every harmonic guide. Subclasses splat this into their
-  # RULESET: RULESET = [*HARMONIC_CORE, ...species-specific rules].
+  # primary list: primary_items(*HARMONIC_CORE, ...species-specific rules).
   HARMONIC_CORE = [
     HeadMusic::Style::Guidelines::ApproachPerfectionContrarily,
     HeadMusic::Style::Guidelines::AvoidCrossingVoices,
@@ -24,9 +24,9 @@ class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::NoStrongBeatUnisons
   ].freeze
 
-  # Builds a diminution-species RULESET: the shared harmonic and diminution
+  # Builds a diminution-species primary list: the shared harmonic and diminution
   # cores plus the species-specific guidelines passed in.
-  def self.diminution_ruleset(*additional)
+  def self.diminution_items(*additional)
     [*HARMONIC_CORE, *DIMINUTION_HARMONIC_CORE, *additional].freeze
   end
 

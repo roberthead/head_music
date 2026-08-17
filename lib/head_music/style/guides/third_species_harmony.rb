@@ -1,6 +1,6 @@
 # Rules for third species harmony
 class HeadMusic::Style::Guides::ThirdSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
-  RULESET = diminution_ruleset(
+  primary_items(*diminution_items(
     HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment
-  )
+  ))
 end

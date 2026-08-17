@@ -18,11 +18,24 @@ describe HeadMusic::Style::Guides::Base do
   end
 
   # Guards the explicit registry list against drift when a guide class is added.
-  # The const_defined?(:RULESET, false) filter excludes abstract bases and the
-  # PermissiveGuide that analysis_spec.rb injects into the namespace at load.
-  it "registers every guide class that defines its own ruleset" do
-    classes = guides.constants.map { |const| guides.const_get(const) }
-      .select { |klass| klass.is_a?(Class) && klass.const_defined?(:RULESET, false) }
+  # A concrete guide is a Base subclass whose items_by_tier takes no keyword
+  # arguments (excluding ContourMelody, which requires configuration) and
+  # whose lists resolve without raising the NotImplementedError an abstract
+  # base (SpeciesMelody, SpeciesHarmony) raises for declaring no tiers at all.
+  # PermissiveGuide, which guide_assessment_spec.rb injects into the namespace
+  # at load, is excluded too: it does not descend from Base.
+  def concrete_guide_class?(klass)
+    return false unless klass.is_a?(Class) && klass < HeadMusic::Style::Guides::Base
+    return false unless klass.method(:items_by_tier).parameters.empty?
+
+    klass.guide_items
+    true
+  rescue NotImplementedError
+    false
+  end
+
+  it "registers every guide class that declares its own tiers" do
+    classes = guides.constants.map { |const| guides.const_get(const) }.select { |klass| concrete_guide_class?(klass) }
     registered = entries.map { |entry| entry.is_a?(Class) ? entry : entry.guide_class }.uniq
     expect(classes - registered).to be_empty
   end
@@ -32,8 +45,8 @@ describe HeadMusic::Style::Guides::Base do
   end
 
   # a core guideline may appear bare or wrapped with preset options via .with(...)
-  def enforced_by?(ruleset, guideline_class)
-    ruleset.any? do |rule|
+  def enforced_by?(guide_items, guideline_class)
+    guide_items.any? do |rule|
       rule == guideline_class ||
         (rule.is_a?(HeadMusic::Style::GuideItem) && rule.guideline == guideline_class)
     end
@@ -41,14 +54,14 @@ describe HeadMusic::Style::Guides::Base do
 
   melodic_guides.each do |guide|
     it "#{guide.key} enforces the melodic core" do
-      unenforced = guides::SpeciesMelody::MELODIC_CORE.reject { |core| enforced_by?(guide.ruleset, core) }
+      unenforced = guides::SpeciesMelody::MELODIC_CORE.reject { |core| enforced_by?(guide.guide_items, core) }
       expect(unenforced).to be_empty
     end
   end
 
   harmonic_guides.each do |guide|
     it "#{guide.key} enforces the harmonic core" do
-      unenforced = guides::SpeciesHarmony::HARMONIC_CORE.reject { |core| enforced_by?(guide.ruleset, core) }
+      unenforced = guides::SpeciesHarmony::HARMONIC_CORE.reject { |core| enforced_by?(guide.guide_items, core) }
       expect(unenforced).to be_empty
     end
   end
@@ -75,9 +88,18 @@ describe HeadMusic::Style::Guides::Base do
     end
   end
 
-  describe ".ruleset" do
-    it "reads the guide's own frozen ruleset constant" do
-      expect(guides::FuxCantusFirmus.ruleset).to be guides::FuxCantusFirmus::RULESET
+  describe "tier readers" do
+    # .ruleset used to read the guide's own frozen ruleset constant, pinning
+    # that it was the constant rather than a copy. The tier readers are
+    # memoized instead of constants, so the equivalent property is that
+    # repeated calls return the same frozen array, not a freshly built one.
+    it "memoize the same frozen list across calls, not a fresh one" do
+      guide = guides::FuxCantusFirmus
+      gate, primary, secondary = guide.gate_items, guide.primary_items, guide.secondary_items
+
+      expect(guide.gate_items).to be gate
+      expect(guide.primary_items).to be primary
+      expect(guide.secondary_items).to be secondary
     end
   end
 

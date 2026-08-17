@@ -12,24 +12,24 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
     }
   end
 
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }
-  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8) }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::Diatonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::EndOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRests }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NotesSameLength }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AlwaysMove }
+  specify { expect(described_class.guide_items).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8) }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ConsonantClimax }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::Diatonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::EndOnTonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MostlyConjunct }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRests }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NotesSameLength }
 
-  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::LargeLeaps, **large_leaps_options) }
+  specify { expect(described_class.guide_items).to include configured(HeadMusic::Style::Guidelines::LargeLeaps, **large_leaps_options) }
 
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepDownToFinalNote }
-  specify { expect(described_class::RULESET).to include configured(HeadMusic::Style::Guidelines::MaximumNotes, maximum: 14) }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableIntervals }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableRange }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StartOnTonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepDownToFinalNote }
+  specify { expect(described_class.guide_items).to include configured(HeadMusic::Style::Guidelines::MaximumNotes, maximum: 14) }
 
   context "with Fux examples" do
     fux_cantus_firmus_examples.each do |example|

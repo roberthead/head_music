@@ -1,10 +1,11 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guides::DiatonicMelody do
-  let(:ruleset) { described_class::RULESET }
+  let(:guide_items) { described_class.guide_items }
+  let(:guideline_classes) { guidelines_of(described_class) }
 
-  describe "RULESET" do
-    let(:included_guidelines) do
+  describe "guide items" do
+    let(:included_guideline_classes) do
       [
         HeadMusic::Style::Guidelines::ConsonantClimax,
         HeadMusic::Style::Guidelines::Diatonic,
@@ -12,7 +13,12 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         HeadMusic::Style::Guidelines::ModerateDirectionChanges,
         HeadMusic::Style::Guidelines::MostlyConjunct,
         HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
-        HeadMusic::Style::Guidelines::SingableRange,
+        HeadMusic::Style::Guidelines::SingableRange
+      ]
+    end
+
+    let(:included_configured_items) do
+      [
         configured(HeadMusic::Style::Guidelines::LargeLeaps, minimum: :perfect_fourth, recovery: %i[consonant_triad any_step repetition opposite_leap_within]),
         configured(HeadMusic::Style::Guidelines::SingableIntervals, ascending: described_class::SINGABLE_INTERVALS, descending: described_class::SINGABLE_INTERVALS)
       ]
@@ -29,25 +35,29 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
     end
 
     it "includes the free diatonic melody guidelines" do
-      expect(ruleset).to include(*included_guidelines)
+      expect(guideline_classes).to include(*included_guideline_classes)
+      expect(guide_items).to include(*included_configured_items)
     end
 
     it "omits the cantus-firmus-specific guidelines" do
-      expect(ruleset).not_to include(*omitted_guidelines)
+      expect(guideline_classes).not_to include(*omitted_guidelines)
     end
 
     it "permits major sixths in the singable intervals" do
       expect(described_class::SINGABLE_INTERVALS).to include("M6")
     end
 
-    it "replaces the core SingableIntervals with the configured version" do
-      expect(ruleset).not_to include(HeadMusic::Style::Guidelines::SingableIntervals)
+    it "replaces the unconfigured core SingableIntervals with the configured version" do
+      expect(guide_items).not_to include(configured(HeadMusic::Style::Guidelines::SingableIntervals))
+      expect(guide_items).to include(
+        configured(HeadMusic::Style::Guidelines::SingableIntervals, ascending: described_class::SINGABLE_INTERVALS, descending: described_class::SINGABLE_INTERVALS)
+      )
     end
 
     describe "loosened note-count range of 5 to 32" do
       def configured_for(guideline_class)
-        ruleset.find do |rule|
-          rule.is_a?(HeadMusic::Style::GuideItem) && rule.guideline == guideline_class
+        guide_items.find do |item|
+          item.is_a?(HeadMusic::Style::GuideItem) && item.guideline == guideline_class
         end
       end
 

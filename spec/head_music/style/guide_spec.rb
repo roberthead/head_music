@@ -105,14 +105,15 @@ describe HeadMusic::Style::Guide do
       expect(described_class.all).to all(respond_to(:analyze))
     end
 
-    # Every ruleset resolves at require time so that nothing is written to after
-    # load and concurrent lookups cannot race on the memo. Configured resolves
-    # in its constructor, so this holds for a configuration built anywhere, not
-    # only for the registry's own warm-up pass.
-    it "resolves every configured ruleset at load rather than on first use" do
+    # Every configured guide resolves its items at require time so that nothing
+    # is written to after load and concurrent lookups cannot race on the memo.
+    # Configured resolves guide_items in its constructor, so this holds for a
+    # configuration built anywhere, not only for the registry's own warm-up
+    # pass (Guide::ALL.each(&:guide_items)).
+    it "resolves every configured guide's items at load rather than on first use" do
       configured = described_class.all.reject { |guide| guide.is_a?(Class) }
 
-      expect(configured).to all(satisfy { |guide| guide.instance_variable_defined?(:@ruleset) })
+      expect(configured).to all(satisfy { |guide| guide.instance_variable_defined?(:@guide_items) })
     end
 
     it "names every guide" do

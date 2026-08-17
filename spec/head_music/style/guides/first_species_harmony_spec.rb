@@ -92,14 +92,14 @@ end
 describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
   subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ApproachPerfectionContrarily }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidCrossingVoices }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidOverlappingVoices }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantDownbeats }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PreferImperfect }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoUnisonsInMiddle }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::OneToOne }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ApproachPerfectionContrarily }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AvoidCrossingVoices }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AvoidOverlappingVoices }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ConsonantDownbeats }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferImperfect }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoUnisonsInMiddle }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::OneToOne }
 
   context "with Fux examples" do
     fux_first_species_harmony_examples.each do |example|

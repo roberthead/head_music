@@ -10,15 +10,19 @@ class HeadMusic::Style::Guides::Configured
   def initialize(guide_class, options)
     @guide_class = guide_class
     @options = options.dup.freeze
-    ruleset # Resolve now, so a bad configuration raises here rather than mid-grading.
+    guide_items # Resolve now, so a bad configuration raises here rather than mid-grading.
   end
 
   def analyze(voice)
-    ruleset.map { |rule| rule.new(voice) }
+    guide_items.map { |item| item.new(voice) }
   end
 
-  def ruleset
-    @ruleset ||= guide_class.ruleset(**options)
+  def guide_items
+    @guide_items ||= HeadMusic::Style::Guides::Base::TIERS.flat_map { |tier| items_by_tier[tier] }.freeze
+  end
+
+  def items_by_tier
+    @items_by_tier ||= guide_class.items_by_tier(**options)
   end
 
   # Re-dispatches through the guide class so layering revalidates:

@@ -30,7 +30,7 @@ describe HeadMusic::Style::Guides::Configured do
 
   describe "#analyze" do
     it "returns one guideline per rule" do
-      expect(guide.analyze(voice).length).to eq guide.ruleset.length
+      expect(guide.analyze(voice).length).to eq guide.guide_items.length
     end
 
     it "returns guidelines" do
@@ -38,14 +38,14 @@ describe HeadMusic::Style::Guides::Configured do
     end
   end
 
-  describe "#ruleset" do
+  describe "#guide_items" do
     it "memoizes rather than rebuilding per analysis" do
-      first_resolution = guide.ruleset
-      expect(guide.ruleset).to be first_resolution
+      first_resolution = guide.guide_items
+      expect(guide.guide_items).to be first_resolution
     end
 
     it "builds the configured guide's rules, not the ancestor's" do
-      expect(guide.ruleset.length).to eq 13
+      expect(guide.guide_items.length).to eq 13
     end
   end
 
@@ -148,8 +148,8 @@ describe HeadMusic::Style::Guides::Configured do
   describe "wrapping a guide class with no configuration axis" do
     subject(:guide) { HeadMusic::Style::Guides::FuxCantusFirmus.with }
 
-    it "resolves to the guide class's own ruleset" do
-      expect(guide.ruleset).to eq HeadMusic::Style::Guides::FuxCantusFirmus::RULESET
+    it "resolves to the guide class's own guide items" do
+      expect(guide.guide_items).to eq HeadMusic::Style::Guides::FuxCantusFirmus.guide_items
     end
 
     it "keeps the guide class's category" do

@@ -3,7 +3,7 @@ module HeadMusic::Style::Guides; end
 
 # Rules for combined first, second, and third species melodies
 class HeadMusic::Style::Guides::CombinedFirstSecondThirdSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
-  RULESET = [
+  primary_items(
     *MELODIC_CORE,
     HeadMusic::Style::Guidelines::AllowedRhythmicValuesForCombined123,
     HeadMusic::Style::Guidelines::AlwaysMove,
@@ -13,5 +13,5 @@ class HeadMusic::Style::Guides::CombinedFirstSecondThirdSpeciesMelody < HeadMusi
     HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
     HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
     HeadMusic::Style::Guidelines::StepUpToFinalNote
-  ].freeze
+  )
 end

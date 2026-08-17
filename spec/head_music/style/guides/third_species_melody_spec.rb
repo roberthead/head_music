@@ -3,23 +3,23 @@ require "spec_helper"
 describe HeadMusic::Style::Guides::ThirdSpeciesMelody do
   subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AlwaysMove }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::Diatonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::EndOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarQuarterNotes }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FourPerBar }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AlwaysMove }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ConsonantClimax }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::Diatonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::EndOnTonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FirstBarQuarterNotes }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FourPerBar }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MostlyConjunct }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableIntervals }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableRange }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
 
   context "with a well-formed third-species counterpoint" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }

@@ -14,48 +14,47 @@ describe HeadMusic::Style::Guides::ContourMelody do
     {key: "wave_contour_melody", contour: :wave, minimum_melodic_intervals: 2, size: 13}
   ]
 
-  describe ".ruleset" do
+  describe ".guide_items" do
     let(:peer_weight) { HeadMusic::GOLDEN_RATIO_INVERSE**2 / 10 }
 
-    it "does not mutate the shared diatonic melody ruleset" do
-      expect(HeadMusic::Style::Guides::DiatonicMelody::RULESET).to all(
-        satisfy { |entry| !entry.respond_to?(:config) || !entry.config.key?(:weight) }
+    it "does not mutate the shared diatonic melody primary items" do
+      expect(HeadMusic::Style::Guides::DiatonicMelody.primary_items).to all(
+        satisfy { |item| !item.config.key?(:weight) }
       )
     end
 
     contour_rows.each do |row|
       context "for the #{row[:contour]} contour" do
-        let(:ruleset) { HeadMusic::Style::Guide.get(row[:key]).ruleset }
+        let(:guide_items) { HeadMusic::Style::Guide.get(row[:key]).guide_items }
 
         it "assembles #{row[:size]} rules" do
-          expect(ruleset.length).to eq row[:size]
+          expect(guide_items.length).to eq row[:size]
         end
 
         it "carries every diatonic melody guideline" do
-          diatonic_classes = HeadMusic::Style::Guides::DiatonicMelody::RULESET.map do |entry|
-            entry.respond_to?(:guideline) ? entry.guideline : entry
-          end
-          expect(ruleset.map(&:guideline)).to include(*diatonic_classes)
+          expect(guide_items.map(&:guideline)).to include(
+            *guidelines_of(HeadMusic::Style::Guides::DiatonicMelody)
+          )
         end
 
         it "passes the note-count gate through unchanged" do
-          expect(ruleset).to include(configured(guidelines::MinimumNotes, minimum: 5))
+          expect(guide_items).to include(configured(guidelines::MinimumNotes, minimum: 5))
         end
 
         if row[:minimum_melodic_intervals]
           it "gates on at least #{row[:minimum_melodic_intervals]} moving melodic interval(s)" do
-            expect(ruleset).to include(
+            expect(guide_items).to include(
               configured(guidelines::MinimumMelodicIntervals, minimum: row[:minimum_melodic_intervals])
             )
           end
         else
           it "omits the motion gate so a repeated-note line can score" do
-            expect(ruleset.map(&:guideline)).not_to include(guidelines::MinimumMelodicIntervals)
+            expect(guide_items.map(&:guideline)).not_to include(guidelines::MinimumMelodicIntervals)
           end
         end
 
         it "weights each rubric peer evenly within the phi^-2 budget" do
-          peers = ruleset.reject(&:default_gate?).reject do |entry|
+          peers = guide_items.reject(&:default_gate?).reject do |entry|
             entry.guideline == guidelines::Contoured
           end
           expect(peers.length).to eq 10
@@ -63,28 +62,24 @@ describe HeadMusic::Style::Guides::ContourMelody do
         end
 
         it "adds the #{row[:contour]} contour guideline" do
-          expect(ruleset).to include(configured(guidelines::Contoured, contour: row[:contour]))
+          expect(guide_items).to include(configured(guidelines::Contoured, contour: row[:contour]))
         end
       end
     end
 
-    it "builds the same ruleset from a direct configuration as from the registry" do
-      direct = described_class.ruleset(contour: :arch, minimum_melodic_intervals: 2)
-      registered = HeadMusic::Style::Guide.get("arch_contour_melody").ruleset
-      expect(direct.map { |rule| rule_shape(rule) }).to eq registered.map { |rule| rule_shape(rule) }
-    end
-
-    def rule_shape(rule)
-      rule.respond_to?(:guideline) ? [rule.guideline, rule.config] : [rule, {}]
+    it "builds the same guide items from a direct configuration as from the registry" do
+      direct = described_class.with(contour: :arch, minimum_melodic_intervals: 2).guide_items
+      registered = HeadMusic::Style::Guide.get("arch_contour_melody").guide_items
+      expect(direct).to eq registered
     end
   end
 
   describe "contextual weights" do
     let(:voice) { HeadMusic::Content::Voice.new }
-    let(:ruleset) { HeadMusic::Style::Guide.get("arch_contour_melody").ruleset }
+    let(:guide_items) { HeadMusic::Style::Guide.get("arch_contour_melody").guide_items }
 
-    it "weights the contour guideline at its default in the guide ruleset" do
-      entry = ruleset.detect { |rule| rule.guideline == guidelines::Contoured }
+    it "weights the contour guideline at its default among the guide's items" do
+      entry = guide_items.detect { |item| item.guideline == guidelines::Contoured }
       expect(entry.new(voice).weight).to eq HeadMusic::GOLDEN_RATIO_INVERSE
     end
 
@@ -94,7 +89,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
     end
 
     it "weights the same guideline differently as a rubric peer than standalone" do
-      peer = ruleset.detect { |rule| rule.guideline == guidelines::Diatonic }
+      peer = guide_items.detect { |item| item.guideline == guidelines::Diatonic }
       expect(peer.new(voice).weight).to eq(HeadMusic::GOLDEN_RATIO_INVERSE**2 / 10)
       expect(guidelines::Diatonic.new(voice).weight).to eq 1.0
     end
@@ -137,9 +132,10 @@ describe HeadMusic::Style::Guides::ContourMelody do
   describe ".analyze" do
     let(:voice) { HeadMusic::Content::Voice.new }
 
-    # Without the .ruleset indirection this would silently grade against the
-    # inherited DiatonicMelody::RULESET -- no contour rule, no motion gate,
-    # unweighted peers, and a plausible fitness.
+    # Without the .with indirection this would silently grade against whatever
+    # items_by_tier produced with no configuration -- but items_by_tier requires
+    # a contour keyword, so there is no unconfigured ruleset left to fall back
+    # to silently.
     it "refuses to analyze without a configuration" do
       expect { described_class.analyze(voice) }.to raise_error(ArgumentError)
     end
@@ -159,16 +155,18 @@ describe HeadMusic::Style::Guides::ContourMelody do
     end
   end
 
-  # Ruby resolves ::RULESET up the ancestor chain. Were this guide to inherit
-  # from DiatonicMelody, the constant would silently return that guide's plain
-  # ruleset -- and reading described_class::RULESET is the idiom every other
-  # guide spec in this suite uses.
-  describe "::RULESET" do
-    it "is absent, so it cannot be read by mistake" do
-      expect { described_class::RULESET }.to raise_error(NameError)
+  # ContourMelody does not declare tiers in its class body; it overrides
+  # .items_by_tier with required keywords because its lists depend on
+  # configuration. .guide_items calls .items_by_tier with no arguments, so an
+  # unconfigured read raises ArgumentError here rather than silently resolving
+  # some ancestor's items -- the same defense a bare ::RULESET constant lookup
+  # used to provide via NameError, before tiers replaced the constant.
+  describe "when unconfigured" do
+    it "raises rather than silently reaching an inherited ancestor's items" do
+      expect { described_class.guide_items }.to raise_error(ArgumentError, /missing keyword: :contour/)
     end
 
-    it "does not leak the diatonic ruleset through inheritance" do
+    it "does not leak the diatonic guide items through inheritance" do
       expect(described_class.ancestors).not_to include(HeadMusic::Style::Guides::DiatonicMelody)
     end
   end

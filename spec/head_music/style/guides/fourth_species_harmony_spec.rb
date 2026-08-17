@@ -3,17 +3,17 @@ require "spec_helper"
 describe HeadMusic::Style::Guides::FourthSpeciesHarmony do
   subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ApproachPerfectionContrarily }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidCrossingVoices }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidOverlappingVoices }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantDownbeats }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoParallelPerfectWithSyncopation }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoStrongBeatUnisons }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PreferImperfect }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SecondSpeciesBreak }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SuspensionTreatment }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ApproachPerfectionContrarily }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AvoidCrossingVoices }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AvoidOverlappingVoices }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ConsonantDownbeats }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoParallelPerfectWithSyncopation }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoStrongBeatUnisons }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferImperfect }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SecondSpeciesBreak }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SuspensionTreatment }
 
   context "with a well-formed fourth-species counterpoint" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }

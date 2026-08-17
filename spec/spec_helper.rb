@@ -39,6 +39,13 @@ module ConfiguredGuidelineHelper
   def configured(guideline, **config)
     an_object_having_attributes(guideline: guideline, config: config)
   end
+
+  # The guidelines a guide enforces, whatever tier each sits in and whatever
+  # configuration it carries. Most guide specs care only that a guideline is
+  # present at all.
+  def guidelines_of(guide)
+    guide.guide_items.map(&:guideline)
+  end
 end
 
 # Matcher for a guide wrapped by Guides::Base.with(...), e.g. a contour entry

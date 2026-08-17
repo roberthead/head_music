@@ -3,21 +3,21 @@ require "spec_helper"
 describe HeadMusic::Style::Guides::FirstSpeciesMelody do
   subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ConsonantClimax }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::Diatonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::EndOnTonic }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::MostlyConjunct }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::FirstBarWholeNote }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::OnePerBar }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableIntervals }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::SingableRange }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
-  specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ConsonantClimax }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::Diatonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::EndOnTonic }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FrequentDirectionChanges }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::LimitOctaveLeaps }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MostlyConjunct }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoteFillsFinalBar }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FirstBarWholeNote }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::OnePerBar }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PrepareOctaveLeaps }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableIntervals }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableRange }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
 
   context "with Fux examples" do
     fux_first_species_examples.each do |example|
