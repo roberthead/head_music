@@ -3,6 +3,8 @@ module HeadMusic::Style::Guides; end
 
 # Rules for first species melodies
 class HeadMusic::Style::Guides::FirstSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
+  gate_items(*MELODIC_GATES)
+
   primary_items(
     *MELODIC_CORE,
     HeadMusic::Style::Guidelines::EndOnTonic,
