@@ -62,7 +62,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
   end
 
   describe "analysis of familiar melodies" do
-    subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
+    subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
     let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
     let(:voice) { composition.voices.first }
@@ -121,7 +121,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
 
         it "scores lower at thirty-five notes than the opening phrases alone" do
           opening_voice = HeadMusic::Notation::ABC.parse(opening_phrases_abc).voices.first
-          opening_analysis = HeadMusic::Style::Analysis.new(described_class, opening_voice)
+          opening_analysis = HeadMusic::Style::GuideAssessment.new(described_class, opening_voice)
           expect(analysis.fitness).to be < opening_analysis.fitness
           expect(analysis.fitness).to be_between(0.85, 0.92)
         end
@@ -178,7 +178,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
 
         it "scores lower at forty-two notes than the first couplet alone" do
           couplet_voice = HeadMusic::Notation::ABC.parse(first_couplet_abc).voices.first
-          couplet_analysis = HeadMusic::Style::Analysis.new(described_class, couplet_voice)
+          couplet_analysis = HeadMusic::Style::GuideAssessment.new(described_class, couplet_voice)
           expect(analysis.fitness).to be < couplet_analysis.fitness
           expect(analysis.fitness).to be_between(0.85, 0.92)
         end

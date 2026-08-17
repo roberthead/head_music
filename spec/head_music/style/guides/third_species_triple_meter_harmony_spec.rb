@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guides::ThirdSpeciesTripleMeterHarmony do
-  subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
+  subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ApproachPerfectionContrarily }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidCrossingVoices }

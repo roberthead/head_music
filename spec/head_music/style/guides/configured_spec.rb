@@ -50,8 +50,8 @@ describe HeadMusic::Style::Guides::Configured do
   end
 
   # Scenario: a configured guide drops into Analysis unchanged.
-  describe "in HeadMusic::Style::Analysis" do
-    subject(:analysis) { HeadMusic::Style::Analysis.new(guide, voice) }
+  describe "in HeadMusic::Style::GuideAssessment" do
+    subject(:analysis) { HeadMusic::Style::GuideAssessment.new(guide, voice) }
 
     its(:annotations) { are_expected.to all(be_a(HeadMusic::Style::Guideline)) }
     its(:fitness) { is_expected.to eq 1.0 }

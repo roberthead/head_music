@@ -1,8 +1,9 @@
 # A module for style analysis and guidelines.
 module HeadMusic::Style; end
 
-# An analysis of music according to a style guide.
-class HeadMusic::Style::Analysis
+# One guide applied to one voice: the grade, and the per-item findings it was
+# computed from.
+class HeadMusic::Style::GuideAssessment
   attr_reader :guide, :voice
 
   # Any object answering analyze(voice) is a guide here -- a guide class, a

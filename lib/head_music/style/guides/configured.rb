@@ -2,7 +2,7 @@
 module HeadMusic::Style::Guides; end
 
 # A guide class paired with configuration. Quacks like a guide class to
-# Style::Analysis by responding to #analyze(voice), exactly as
+# Style::GuideAssessment by responding to #analyze(voice), exactly as
 # GuideItem quacks like a guideline class via #new(voice).
 class HeadMusic::Style::Guides::Configured
   attr_reader :guide_class, :options

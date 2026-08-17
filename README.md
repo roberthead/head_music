@@ -62,7 +62,7 @@ guide = HeadMusic::Style::Guide.get('first_species_harmony')
 guide.category      # => :harmony
 guide.display_name  # => "First Species Harmony"
 
-analysis = HeadMusic::Style::Analysis.new(guide, voice)
+analysis = HeadMusic::Style::GuideAssessment.new(guide, voice)
 analysis.fitness    # => 0.0 to 1.0
 analysis.messages   # => ["Prefer contrary motion. Move voices in different melodic directions."]
 ```

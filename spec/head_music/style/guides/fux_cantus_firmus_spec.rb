@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guides::FuxCantusFirmus do
-  subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
+  subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
   let(:large_leaps_options) do
     {

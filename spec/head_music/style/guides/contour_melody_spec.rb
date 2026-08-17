@@ -153,7 +153,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
     # The class is a valid argument to Analysis.new -- it answers analyze -- so
     # the guard cannot catch this one. Failing at annotations is the backstop.
     it "fails through Analysis rather than grading against the wrong ruleset" do
-      analysis = HeadMusic::Style::Analysis.new(described_class, voice)
+      analysis = HeadMusic::Style::GuideAssessment.new(described_class, voice)
 
       expect { analysis.annotations }.to raise_error(ArgumentError, /requires configuration/)
     end
@@ -174,7 +174,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
   end
 
   describe "analysis" do
-    subject(:analysis) { HeadMusic::Style::Analysis.new(guide, voice) }
+    subject(:analysis) { HeadMusic::Style::GuideAssessment.new(guide, voice) }
 
     let(:guide) { HeadMusic::Style::Guide.get(guide_key) }
     let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
@@ -311,7 +311,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
             #{melody}
           ABC
           voice = HeadMusic::Notation::ABC.parse(abc).voices.first
-          HeadMusic::Style::Analysis.new(guide, voice)
+          HeadMusic::Style::GuideAssessment.new(guide, voice)
         end
 
         def diatonic_guideline(analysis)

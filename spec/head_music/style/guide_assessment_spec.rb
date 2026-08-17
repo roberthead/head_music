@@ -6,7 +6,7 @@ class HeadMusic::Style::Guides::PermissiveGuide
   end
 end
 
-describe HeadMusic::Style::Analysis do
+describe HeadMusic::Style::GuideAssessment do
   subject(:analysis) { described_class.new(guide, voice) }
 
   let(:voice) { HeadMusic::Content::Voice.new }

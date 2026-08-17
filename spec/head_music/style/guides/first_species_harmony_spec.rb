@@ -90,7 +90,7 @@ def fux_first_species_harmony_examples
 end
 
 describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
-  subject(:analysis) { HeadMusic::Style::Analysis.new(described_class, voice) }
+  subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::ApproachPerfectionContrarily }
   specify { expect(described_class::RULESET).to include HeadMusic::Style::Guidelines::AvoidCrossingVoices }
