@@ -110,6 +110,14 @@ describe HeadMusic::Style::Guide do
     # durable evidence: the script proves what the grades were on one day, these
     # prove the shape holds for a guide added later.
     describe "assessability" do
+      # Named so a failure says which guide and which length broke, rather than
+      # only which value mismatched across twenty-three guides.
+      def each_guide_and_length(counts)
+        described_class.all.each do |guide|
+          counts.each { |count| yield guide, count, described_class.key_for(guide) }
+        end
+      end
+
       def solo(pitch_count)
         composition = HeadMusic::Content::Composition.new(key_signature: "D dorian")
         voice = composition.add_voice(role: :counterpoint)
@@ -138,18 +146,16 @@ describe HeadMusic::Style::Guide do
       # The harmony guides used to raise here: they reach for a companion voice
       # that a solo voice does not have.
       it "grades rather than raises for a voice with no companion" do
-        described_class.all.each do |guide|
-          [0, 1, 8].each do |count|
-            expect { guide.assess(solo(count)).fitness }.not_to raise_error
-          end
+        each_guide_and_length([0, 1, 8]) do |guide, count, key|
+          expect { guide.assess(solo(count)).fitness }.not_to raise_error, "#{key} raised at #{count} notes"
         end
       end
 
       it "never calls an unassessable voice perfect" do
-        described_class.all.each do |guide|
-          (0..8).map { |count| guide.assess(solo(count)) }.reject(&:assessable?).each do |assessment|
-            expect(assessment.fitness).to be < 1.0
-          end
+        each_guide_and_length(0..8) do |guide, count, key|
+          assessment = guide.assess(solo(count))
+
+          expect(assessment.fitness).to be < 1.0, "#{key} called an unassessable #{count}-note voice perfect" unless assessment.assessable?
         end
       end
 
@@ -169,7 +175,8 @@ describe HeadMusic::Style::Guide do
         described_class.all.each do |guide|
           assessment = guide.assess(solo(0))
 
-          expect(assessment.guide_item_assessments.map(&:tier).uniq).to eq [:gate]
+          expect(assessment.guide_item_assessments.map(&:tier).uniq).to eq([:gate]),
+            "#{described_class.key_for(guide)} graded rubric items for an unassessable voice"
         end
       end
     end

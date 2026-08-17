@@ -4,10 +4,10 @@
 #
 #   bundle exec ruby bin/guide_grade_corpus.rb out.json
 #
-# Written to run UNMODIFIED on both sides of a grading change, including at a
-# merge-base where `assessable?` does not exist and the harmony guides raise on
-# a solo voice. It therefore asks only what both trees can answer, and records a
-# raised error as a value rather than letting it stop the run.
+# Written to run UNMODIFIED on both sides of a grading change. At the merge-base
+# `assessable?` does not exist and the harmony guides raise on a solo voice, so
+# the one is asked for conditionally and the other is recorded as a value rather
+# than being allowed to stop the run. Everything else is common to both trees.
 #
 # Loading the fixture exercises means loading spec_helper, which starts
 # SimpleCov and rewrites coverage/.last_run.json. That file is restored on the
@@ -83,7 +83,7 @@ end
 # Everything here must be answerable on both sides of the change.
 def grade(guide, voice)
   assessment = HeadMusic::Style::GuideAssessment.new(guide, voice)
-  items = assessment.respond_to?(:guide_item_assessments) ? assessment.guide_item_assessments : assessment.annotations
+  items = assessment.guide_item_assessments
   {
     fitness: assessment.fitness.round(12),
     adherent: assessment.adherent?,

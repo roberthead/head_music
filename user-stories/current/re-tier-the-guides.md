@@ -367,7 +367,7 @@ with what they cost, and the story's criteria above are reconciled to match.
 **`FuxCantusFirmus` splits: `gate 3` + `primary 8`.** The two-questions design is
 the story's actual thesis, and honouring it is worth the churn. Consequences,
 measured: a four-note voice becomes assessable rather than unassessable at
-0.500 (0.897 as measured then, 0.969 once the demotion also landed); nine existing examples break; fourteen of twenty-one corpus exercises
+0.500 (recorded here as 0.897; the figure does not reproduce — see below); seven spec expectations change; fourteen of twenty-one corpus exercises
 shift, the largest being "Fux C with too few notes" (7 notes) moving 0.858 →
 0.974. `SalzerSchachterCantusFirmus` follows suit. `DiatonicMelody`'s 5-note gate
 splits the same way, which propagates through `contour_melody.rb:52,54` to all
@@ -387,9 +387,16 @@ went green.
 **Scope** (line 129) says `gate MinimumNotes(3)` + `primary MinimumNotes(8)`.
 The **acceptance criterion** (line 162) says a four-note voice must be
 *unassessable* rather than 0.500. Both cannot hold: with a 3-note gate, four
-notes passes and is assessable — measured **0.897, assessable**, at the time
-this was written and before the demotion landed. The current figure is 0.969;
-see the grade table.
+notes passes and is assessable — recorded here as **0.897**.
+
+That figure does not reproduce. The voice measures 0.96875 at the tip, and also
+at the commit *before* the demotion landed, and `FuxCantusFirmus` is never
+demoted at all — it declares through `primary_items` directly, so its
+`secondary_items` is empty before and after. An earlier note in this story
+attributed the difference to the demotion; that explanation was wrong. 0.897 is
+most likely a stale hand-estimate, like the 0.462 the plan reported for the same
+voice and which also did not reproduce. The number the table carries is
+measured.
 
 Keeping `MinimumNotes.with(8)` as the gate gives exactly **0.500, unassessable**,
 the stated target, and short-circuiting alone already satisfies the scenario "a
