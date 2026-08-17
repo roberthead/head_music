@@ -36,6 +36,13 @@ module HeadMusic::Style::Template
     raise MissingTemplate, "#{key}: #{e.message}"
   end
 
+  # Whether a locale has anything at all under this key. Needed because the
+  # Ruby plural fallback would otherwise answer for a key that does not exist,
+  # hiding the absence from a caller that wants to fall back differently.
+  def exists?(key)
+    I18n.exists?("#{SCOPE}.#{key}")
+  end
+
   # The spoken form of a number, in the reader's language where the humanize gem
   # knows it. It raises for a locale it does not ship, and the gem ships two it
   # does not know, so resolve down the fallback chain rather than asking for

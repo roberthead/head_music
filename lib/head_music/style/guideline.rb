@@ -55,6 +55,25 @@ class HeadMusic::Style::Guideline
   # Renders this guideline's violation for a given configuration. Pluralized
   # guidelines are routed through Template.pluralize so that a locale without
   # plural data falls back to Ruby rather than raising at a student.
+  # A guideline's name is no more fixed than its violation: MinimumNotes is
+  # "Minimum of eight notes" in one guide and "of three" in another. Where a
+  # locale has nothing to say, the class name read as a sentence is a better
+  # answer than nothing.
+  def self.render_name(config)
+    return template_key.tr("_", " ").capitalize unless HeadMusic::Style::Template.exists?(name_key)
+
+    render_template(name_key, template_values(config))
+  end
+
+  # Guidelines are already phrased imperatively -- "Peak on...", "Use only...",
+  # "Avoid..." -- so a guideline with nothing more specific to say instructs
+  # with the sentence it would complain with.
+  def self.render_instruction(config)
+    return render_violation(config) unless HeadMusic::Style::Template.exists?(instruction_key)
+
+    render_template(instruction_key, template_values(config))
+  end
+
   def self.render_violation(config)
     render_template(violation_key(config), template_values(config))
   end

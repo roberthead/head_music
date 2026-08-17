@@ -130,7 +130,7 @@ class HeadMusic::Style::Guides::Base
 
       raise ArgumentError,
         "#{name} declares the same guideline and configuration in more than one tier: " \
-        "#{duplicated.map(&:name).join(", ")}"
+        "#{duplicated.map(&:inspect).join(", ")}"
     end
   end
 end

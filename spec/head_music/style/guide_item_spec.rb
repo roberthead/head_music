@@ -72,9 +72,31 @@ describe HeadMusic::Style::GuideItem do
     end
   end
 
-  describe "#name" do
-    it "reports the guideline it wraps" do
-      expect(guidelines::MinimumNotes.with(8).name).to eq guidelines::MinimumNotes.name
+  describe "#name and #instruction" do
+    # A guideline's name is no more fixed than its violation: the same
+    # guideline is called different things by the guides that configure it
+    # differently.
+    it "says what this guide configured, not what the guideline is in general" do
+      expect(guidelines::MinimumNotes.with(8).name).to eq "Minimum of eight notes"
+      expect(guidelines::MinimumNotes.with(3).name).to eq "Minimum of three notes"
+    end
+
+    it "reads the class name as a sentence when the locale has nothing better" do
+      expect(guidelines::ConsonantClimax.with.name).to eq "Consonant climax"
+    end
+
+    # Guidelines are already phrased imperatively, so one with nothing more
+    # specific to say instructs with the sentence it would complain with.
+    it "instructs with the violation when there is no separate instruction" do
+      expect(guidelines::MinimumNotes.with(8).instruction).to eq "Write at least eight notes."
+    end
+  end
+
+  describe "#inspect" do
+    # Printing the class name could not tell two configurations apart.
+    it "distinguishes two configurations of one guideline" do
+      expect(guidelines::MinimumNotes.with(8).inspect).to include "minimum"
+      expect(guidelines::MinimumNotes.with(8).inspect).not_to eq guidelines::MinimumNotes.with(3).inspect
     end
   end
 end

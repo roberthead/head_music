@@ -48,11 +48,25 @@ class HeadMusic::Style::GuideItem
     [guideline, config].hash
   end
 
+  # What this item is called, and what it asks for -- both rendered, because
+  # both say what this guide configured rather than what the guideline is in
+  # the abstract.
   def name
-    guideline.name
+    guideline.render_name(config)
   end
-  alias_method :to_s, :name
-  alias_method :inspect, :name
+
+  def instruction
+    guideline.render_instruction(config)
+  end
+
+  # Identifies the item rather than describing it, and distinguishes two
+  # configurations of one guideline, which printing the class name could not.
+  def inspect
+    return guideline.name if config.empty?
+
+    "#{guideline.name}#{config.inspect}"
+  end
+  alias_method :to_s, :inspect
 
   private
 

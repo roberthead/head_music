@@ -593,32 +593,49 @@ en:
           violations:
             default: "Use only %{intervals} in the melodic line."
         contoured:
+          name: "%{contour} contour"
           violations:
             default: "Write a melody with the %{contour} contour."
         note_count_per_bar:
+          name:
+            one: "%{number} %{rhythmic_unit} note per bar"
+            other: "%{number} %{rhythmic_unit} notes per bar"
           violations:
             default:
               one: "Use %{number} %{rhythmic_unit} note in each middle bar."
               other: "Use %{number} %{rhythmic_unit} notes in each middle bar."
         singable_range:
+          name: "Range of %{range}"
           violations:
             default: "Limit melodic range to %{range}."
         limit_octave_leaps:
+          name:
+            one: "At most %{number} octave leap"
+            other: "At most %{number} octave leaps"
           violations:
             default:
               one: "Use a maximum of %{number} octave leap."
               other: "Use a maximum of %{number} octave leaps."
         maximum_notes:
+          name:
+            one: "Maximum of %{number} note"
+            other: "Maximum of %{number} notes"
           violations:
             default:
               one: "Write up to %{number} note."
               other: "Write up to %{number} notes."
         minimum_melodic_intervals:
+          name:
+            one: "Minimum of %{number} melodic interval"
+            other: "Minimum of %{number} melodic intervals"
           violations:
             default:
               one: "Write at least %{number} melodic interval."
               other: "Write at least %{number} melodic intervals."
         minimum_notes:
+          name:
+            one: "Minimum of %{number} note"
+            other: "Minimum of %{number} notes"
           violations:
             default:
               one: "Write at least %{number} note."
