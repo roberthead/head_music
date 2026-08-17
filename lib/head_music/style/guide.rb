@@ -111,5 +111,8 @@ class HeadMusic::Style::Guide
   # And that every string they can produce actually renders. A template that
   # cannot be filled is invisible until someone reads it, so it is asked for
   # here rather than discovered by a student.
-  HeadMusic::Style::Template.verify!(ALL)
+  #
+  # What comes back is the keys whose plural forms the locale data could not
+  # supply, kept rather than dropped so the gap is answerable at runtime.
+  PLURAL_GAPS = HeadMusic::Style::Template.verify!(ALL).freeze
 end

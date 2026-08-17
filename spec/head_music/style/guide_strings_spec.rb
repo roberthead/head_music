@@ -120,6 +120,12 @@ describe HeadMusic::Style::Guide do
   # The Ruby fallback exists so a language with no plural data reads a little
   # wrong instead of raising. Reaching it for a guideline means an entry is
   # missing, which the fallback would otherwise hide forever.
+  # What the load-time check found, kept rather than discarded, so thin locale
+  # data is answerable at runtime instead of being noticed by a reader.
+  it "loads with no plural gap to work around" do
+    expect(described_class::PLURAL_GAPS).to be_empty
+  end
+
   it "needs the Ruby plural fallback for no guideline in any language" do
     already_recorded = HeadMusic::Style::Template.fell_back_to_ruby.dup
 

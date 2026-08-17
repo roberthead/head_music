@@ -118,7 +118,15 @@ module HeadMusic::Style::Template
   # whose template is missing or whose interpolation is unfilled fails on
   # require rather than in front of a student. Runs in English deliberately: a
   # host application's locale must not decide whether the gem loads.
+  #
+  # Returns the keys that needed the Ruby plural fallback, which is the report
+  # on where the locale data is thin. It is a return value and a reader rather
+  # than a warning on the console: a library has no business printing, and a
+  # missing plural is a gap to know about rather than a reason not to load.
   def verify!(entries)
+    # A full sweep of the registry, so what it finds is the whole answer rather
+    # than an addition to whatever a caller happened to render earlier.
+    fell_back_to_ruby.clear
     I18n.with_locale(:en) do
       entries.each do |guide|
         guide.instruction
@@ -129,15 +137,7 @@ module HeadMusic::Style::Template
         end
       end
     end
-    warn_about_ruby_plurals
-  end
-
-  # The Ruby plural fallback is deliberate, but a silent one would hide a
-  # missing translation forever.
-  def warn_about_ruby_plurals
-    return if fell_back_to_ruby.empty?
-
-    fell_back_to_ruby.uniq
+    fell_back_to_ruby.dup
   end
 
   def guard_value_keys!(values)

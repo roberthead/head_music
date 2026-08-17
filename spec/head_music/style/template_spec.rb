@@ -135,6 +135,21 @@ describe HeadMusic::Style::Template do
       expect { described_class.verify!([guide]) }.to raise_error(described_class::MissingTemplate)
     end
 
+    # The Ruby plural fallback is deliberate, but a silent one would hide thin
+    # locale data forever. A library has no business printing, so the report is
+    # what comes back.
+    it "reports the keys that needed the Ruby plural fallback" do
+      allow(item).to receive(:violation_preview) do
+        described_class.pluralize("spec_probe.partial", count: 4, number: "four")
+      end
+
+      expect(described_class.verify!([guide])).to eq ["spec_probe.partial"]
+    end
+
+    it "reports nothing when every string rendered from the locale" do
+      expect(described_class.verify!([guide])).to be_empty
+    end
+
     # The host application's locale must not decide whether the gem loads.
     it "verifies in English whatever locale is current" do
       allow(guide).to receive(:instruction) { I18n.locale }
