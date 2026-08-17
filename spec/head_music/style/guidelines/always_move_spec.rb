@@ -5,7 +5,7 @@ describe HeadMusic::Style::Guidelines::AlwaysMove do
 
   let(:voice) { HeadMusic::Content::Voice.new }
 
-  its(:message) { is_expected.to eq "Always move to a different note." }
+  it { expect(violation_text(described_class)).to eq "Always move to a different note." }
 
   context "with no notes" do
     it { is_expected.to be_adherent }
@@ -37,7 +37,7 @@ describe HeadMusic::Style::Guidelines::AlwaysMove do
     end
 
     its(:fitness) { is_expected.to eq HeadMusic::PENALTY_FACTOR }
-    its(:message) { is_expected.not_to be_empty }
+    it { expect(violation_text(described_class)).not_to be_empty }
     its(:marks_count) { is_expected.to eq 1 }
     its(:first_mark_code) { is_expected.to eq "3:1:000 to 5:1:000" }
   end

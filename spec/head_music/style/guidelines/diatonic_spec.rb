@@ -6,7 +6,7 @@ describe HeadMusic::Style::Guidelines::Diatonic do
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
   let(:voice) { composition.add_voice }
 
-  its(:message) { is_expected.not_to be_empty }
+  it { expect(violation_text(described_class)).not_to be_empty }
 
   context "when there are no notes" do
     it { is_expected.to be_adherent }

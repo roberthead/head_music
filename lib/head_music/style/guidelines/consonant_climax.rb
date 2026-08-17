@@ -3,6 +3,15 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Guideline
+  # Two ways to fail, and a student is owed the one that happened: a climax
+  # dissonant with the tonic is a different mistake from a climax that keeps
+  # coming back. The guideline already decided which, so it says so.
+  def violation_key
+    return self.class.violation_key if consonant_climax_pitch?
+
+    "guidelines.consonant_climax.violations.dissonant"
+  end
+
   def marks
     HeadMusic::Style::Mark.for_each(highest_notes) unless adherent_climax?
   end
@@ -11,6 +20,14 @@ class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Guidelin
 
   def adherent_climax?
     descending_melody? ? adherent_low_pitch? : adherent_high_pitch?
+  end
+
+  # Consonance is asked of whichever extreme the melody peaks on, so the two
+  # failures can be told apart.
+  def consonant_climax_pitch?
+    return false unless has_notes?
+
+    descending_melody? ? lowest_pitch_consonant_with_tonic? : highest_pitch_consonant_with_tonic?
   end
 
   def adherent_high_pitch?

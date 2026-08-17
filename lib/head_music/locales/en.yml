@@ -643,7 +643,8 @@ en:
             default: "Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes."
         consonant_climax:
           violations:
-            default: "Peak on a consonant high or low note one time or twice with a step between."
+            default: "Peak once, or twice with a step between."
+            dissonant: "Peak on a note that is consonant with the tonic."
         consonant_downbeats:
           violations:
             default: "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."

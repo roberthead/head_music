@@ -48,16 +48,21 @@ class HeadMusic::Style::Guideline
 
   def self.instruction_key = "guidelines.#{template_key}.instruction"
 
-  def self.violation_key = "guidelines.#{template_key}.violations.default"
+  # Takes the configuration, because a guide may name a different template for
+  # the same guideline.
+  def self.violation_key(_config = {}) = "guidelines.#{template_key}.violations.default"
 
   # Renders this guideline's violation for a given configuration. Pluralized
   # guidelines are routed through Template.pluralize so that a locale without
   # plural data falls back to Ruby rather than raising at a student.
   def self.render_violation(config)
-    values = template_values(config)
-    return HeadMusic::Style::Template.render(violation_key, **values) unless values.key?(:count)
+    render_template(violation_key(config), template_values(config))
+  end
 
-    HeadMusic::Style::Template.pluralize(violation_key, singular: violation_singular, **values)
+  def self.render_template(key, values)
+    return HeadMusic::Style::Template.render(key, **values) unless values.key?(:count)
+
+    HeadMusic::Style::Template.pluralize(key, singular: violation_singular, **values)
   end
 
   # The noun a pluralized violation counts. Only the guidelines whose messages
@@ -85,7 +90,8 @@ class HeadMusic::Style::Guideline
       tier: tier,
       marks: analyzer.marks,
       fitness: analyzer.fitness,
-      message: analyzer.message
+      violation_key: analyzer.violation_key,
+      violation_values: analyzer.violation_values
     )
   end
 
@@ -112,8 +118,19 @@ class HeadMusic::Style::Guideline
     flattened_marks.map(&:end_position).max
   end
 
+  # Which violation fired, and what it needs to say it. Decided during
+  # analysis, so a guideline with more than one way to fail names the one it
+  # found -- see ConsonantClimax.
+  def violation_key
+    self.class.violation_key(options)
+  end
+
+  def violation_values
+    self.class.template_values(options)
+  end
+
   def message
-    self.class.render_violation(options)
+    self.class.render_template(violation_key, violation_values)
   end
 
   def first_note

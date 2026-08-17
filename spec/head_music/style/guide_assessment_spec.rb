@@ -82,7 +82,7 @@ describe HeadMusic::Style::GuideAssessment do
         tier: :gate,
         marks: [],
         fitness: 0.4,
-        message: "gated"
+        violation_key: "guidelines.minimum_notes.violations.default"
       )
     end
 

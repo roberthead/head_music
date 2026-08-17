@@ -7,7 +7,7 @@ describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
   let(:cantus_firmus) { composition.add_voice(role: :cantus_firmus) }
   let(:counterpoint) { composition.add_voice(role: :counterpoint) }
 
-  its(:message) { is_expected.not_to be_empty }
+  it { expect(violation_text(described_class)).not_to be_empty }
 
   context "when the counterpoint is the high voice" do
     before do

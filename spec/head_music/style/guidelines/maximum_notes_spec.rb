@@ -57,8 +57,7 @@ describe HeadMusic::Style::Guidelines::MaximumNotes do
     its(:config) { is_expected.to eq(maximum: 14) }
 
     it "builds a guide item that reports the configured maximum" do
-      voice = HeadMusic::Content::Voice.new
-      expect(configured.assess(voice, :primary).message).to eq "Write up to fourteen notes."
+      expect(configured.violation_preview).to eq "Write up to fourteen notes."
     end
   end
 end

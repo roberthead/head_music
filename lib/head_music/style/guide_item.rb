@@ -25,6 +25,13 @@ class HeadMusic::Style::GuideItem
     freeze
   end
 
+  # The violation this item would report, without needing a voice that breaks
+  # it. An assessment says nothing when adherent, so previewing is the only way
+  # to read the sentence a guide item carries.
+  def violation_preview
+    guideline.render_violation(config)
+  end
+
   def assess(voice, tier)
     guideline.assess(voice, self, tier)
   end

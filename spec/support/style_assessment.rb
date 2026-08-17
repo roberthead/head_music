@@ -4,6 +4,13 @@ module StyleAssessmentHelper
   # it. Constructs the item directly rather than through .with, so the three
   # guidelines that take a positional first argument configure the same way
   # here as every other.
+  # The sentence a guideline carries, without needing a voice that breaks it.
+  # An assessment reports nothing when adherent, so this is what to ask when
+  # the subject of the example is the wording rather than the finding.
+  def violation_text(guideline, **config)
+    HeadMusic::Style::GuideItem.new(guideline, config).violation_preview
+  end
+
   def assess(guideline, voice, tier: :primary, **config)
     HeadMusic::Style::GuideItem.new(guideline, config).assess(voice, tier)
   end

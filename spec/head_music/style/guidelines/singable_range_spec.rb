@@ -14,7 +14,7 @@ describe HeadMusic::Style::Guidelines::SingableRange do
   context "when the range is an octave" do
     subject(:guideline) { assess(described_class, voice, maximum_range: 8) }
 
-    its(:message) { is_expected.to eq "Limit melodic range to an octave." }
+    it { expect(violation_text(described_class, maximum_range: 8)).to eq "Limit melodic range to an octave." }
   end
 
   context "when the range is small" do

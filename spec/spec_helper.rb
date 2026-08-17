@@ -189,7 +189,7 @@ FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS = [
   {
     name: "Fux C with dissonant climax",
     key: "C ionian", pitches: %w[C E F E B A G F E D C],
-    expected_message: "Peak on a consonant high or low note one time or twice with a step between."
+    expected_message: "Peak on a note that is consonant with the tonic."
   },
   {
     name: "Fux D with chromatic notes added",

@@ -14,12 +14,26 @@ class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Guidel
     descending: %w[P1 m2 M2 m3 M3 P4 P5 P8].freeze
   }.freeze
 
-  # The only guideline whose violation is assembled from what it computed
-  # rather than from what it was configured with, so it renders per instance.
-  def message
-    return HeadMusic::Style::Template.render(config[:violation_key]) if config[:violation_key]
+  def self.violation_key(config = {})
+    config[:violation_key] || super()
+  end
 
-    HeadMusic::Style::Template.render(self.class.violation_key, intervals: permitted_descriptions.join(", "))
+  # The permitted list is the message, and it is derivable from configuration
+  # alone, so an item can preview it without a voice.
+  def self.template_values(config)
+    return {} if config[:violation_key]
+
+    settings = DEFAULTS.merge(config)
+    shorthands = settings[:ascending] | settings[:descending]
+    {intervals: shorthands.map { |shorthand| describe(shorthand, settings) }.join(", ")}
+  end
+
+  def self.describe(shorthand, settings)
+    both = settings[:ascending].include?(shorthand) && settings[:descending].include?(shorthand)
+    return shorthand if both
+
+    direction = settings[:ascending].include?(shorthand) ? :ascending : :descending
+    HeadMusic::Style::Template.render("interval_directions.#{direction}", interval: shorthand)
   end
 
   def marks

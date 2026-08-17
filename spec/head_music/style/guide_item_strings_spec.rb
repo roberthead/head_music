@@ -17,7 +17,7 @@ GUIDE_ITEM_STRINGS = [
   ["ApproachPerfectionContrarily", {}, "Approach perfect consonances by contrary motion."],
   ["AvoidCrossingVoices", {}, "Avoid crossing voices. Maintain the high-low relationship between voices."],
   ["AvoidOverlappingVoices", {}, "Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes."],
-  ["ConsonantClimax", {}, "Peak on a consonant high or low note one time or twice with a step between."],
+  ["ConsonantClimax", {}, "Peak once, or twice with a step between."],
   ["ConsonantDownbeats", {}, "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."],
   ["Contoured", {contour: :arch}, "Write a melody with the arch contour."],
   ["Contoured", {contour: :ascending}, "Write a melody with the ascending contour."],

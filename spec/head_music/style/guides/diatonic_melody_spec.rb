@@ -84,7 +84,9 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
     let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
     let(:voice) { composition.voices.first }
 
-    let(:climax_message) { "Peak on a consonant high or low note one time or twice with a step between." }
+    # ConsonantClimax reports two different violations; these voices repeat
+    # their peak rather than peaking on a dissonance.
+    let(:repeated_climax_message) { "Peak once, or twice with a step between." }
     let(:maximum_notes_message) { "Write up to thirty-two notes." }
 
     context "with Three Blind Mice" do
@@ -109,7 +111,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         it { is_expected.not_to be_adherent }
 
         it "objects only to the climax note recurring in each 'see how they run' phrase" do
-          expect(analysis.messages).to eq([climax_message])
+          expect(analysis.messages).to eq([repeated_climax_message])
         end
 
         it "scores well despite the repeated climax" do
@@ -133,7 +135,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         it { is_expected.not_to be_adherent }
 
         it "objects to the repeated climax and the length" do
-          expect(analysis.messages).to contain_exactly(climax_message, maximum_notes_message)
+          expect(analysis.messages).to contain_exactly(repeated_climax_message, maximum_notes_message)
         end
 
         it "scores lower at thirty-five notes than the opening phrases alone" do
@@ -167,7 +169,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         it { is_expected.not_to be_adherent }
 
         it "objects only to the immediately repeated climax on 'little'" do
-          expect(analysis.messages).to eq([climax_message])
+          expect(analysis.messages).to eq([repeated_climax_message])
         end
 
         it "scores well despite the repeated climax" do
@@ -190,7 +192,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
         it { is_expected.not_to be_adherent }
 
         it "objects to the repeated climax and the length" do
-          expect(analysis.messages).to contain_exactly(climax_message, maximum_notes_message)
+          expect(analysis.messages).to contain_exactly(repeated_climax_message, maximum_notes_message)
         end
 
         it "scores lower at forty-two notes than the first couplet alone" do
@@ -232,7 +234,7 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
       end
 
       it "accepts the climax because the opening octave reads as a descending melody with a single low point" do
-        expect(analysis.messages).not_to include(climax_message)
+        expect(analysis.messages).not_to include(repeated_climax_message)
       end
 
       it "scores in the acceptable range despite the wide leaps" do
