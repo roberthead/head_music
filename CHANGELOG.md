@@ -23,7 +23,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking.** `Guideline.new` is private. A guideline instance is the analysis context, not a result; `Guideline.assess` is the seam, and what comes back is a `GuideItemAssessment`.
 
-- Grading is unchanged for every registered guide. All 2,622 rows of the fixture corpus — fitness, adherence, messages, and per-item fitness and mark counts across all 23 registry entries — are byte-identical to 19.0.0.
+- **Breaking.** Every guide now declares a precondition, and failing one stops the assessment rather than scaling it. A voice that cannot be assessed reports `GuideAssessment#assessable? == false`, grades the product of its gates, and yields only gate assessments — the rubric is not computed. Previously a failed precondition multiplied a fully-computed rubric, so a four-note cantus firmus had its climax and leaps halved for being short.
+
+  `assess_items` therefore returns a variable-length list. A consumer upserting rows keyed by guide item must not read a missing row as a rule that was deleted.
+
+- **Breaking.** Grades change outside the degenerate range, deliberately. Three sources, with every affected row recorded in the story's grade table:
+
+  | Change | Effect |
+  | --- | --- |
+  | The seven species harmony guides gain `SetAgainstAnotherVoice` and a three-note minimum | They raised `NoMethodError` for a voice with no companion, at every length. They grade it now. |
+  | The seven species melody guides gain a three-note minimum | Each graded an empty voice 1.000 — no fault found, because there was nothing to find fault in. |
+  | `FuxCantusFirmus`, `SalzerSchachterCantusFirmus` and `DiatonicMelody` split their note minimum | A three-note gate asks whether this is a melody; the eight- or five-note prescription stays a rubric item, matching `MaximumNotes`, which always was one. A four-note cantus firmus moves from 0.500 unassessable to 0.969 assessable. |
+  | The species guides demote the shared melodic cores to `secondary_items` | A guide weighs its own rhythmic rules above the craft it inherits. A valid first-species line scored 0.883 against `ThirdSpeciesMelody` and now scores 0.561. |
+
+- `HeadMusic::Style::Guidelines::SetAgainstAnotherVoice` — the definitional precondition of a harmony guide: counterpoint is a relationship between voices, and a voice alone has no harmony to assess.
+
+- Grading was byte-identical to 19.0.0 through the guide-item refactor above; the changes in this section are the deliberate corrections that followed it.
 
 ## [19.0.0] - 2026-08-07
 

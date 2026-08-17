@@ -76,9 +76,17 @@ guide.secondary_items  # background craft it inherits rather than teaches
 guide.guide_items      # all three, in that order
 ```
 
-Gates multiply against the grade, so failing one scales everything down. Primaries share φ⁻¹ of the
-rubric and secondaries share φ⁻², which is why a guide that teaches one thing weighs that thing as
-heavily as everything it inherits put together.
+A gate asks whether the voice can be assessed at all. Failing one **stops** the assessment — the
+rubric is not computed, and the grade is the gates alone:
+
+```ruby
+assessment.assessable?   # => false for a voice too short to judge, or with no companion voice
+assessment.fitness       # => the gates' product; the rubric was never reached
+```
+
+Among the rules that are assessed, primaries share φ⁻¹ of the rubric and secondaries share φ⁻², which
+is why a species guide weighs its own rhythmic rules as heavily as all the melodic craft it inherits
+put together.
 
 Each entry is a `Style::GuideItem` — a guideline plus the configuration this guide gives it — and
 assessing one yields a frozen `Style::GuideItemAssessment`:
