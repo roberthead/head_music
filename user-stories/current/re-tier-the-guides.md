@@ -201,6 +201,50 @@ story is separate.
   guide against a fixed corpus of degenerate and valid voices.
 - CHANGELOG documents the grading change for each affected guide.
 
+## Results
+
+A solo voice of nought to four notes, against every registered guide. An
+asterisk marks a voice the guide reports it cannot assess. The full
+3,266-row table, including the fixture exercises, is in
+[re-tier-the-guides.grades.md](re-tier-the-guides.grades.md).
+
+| guide | 0 notes | 1 note | 2 notes | 3 notes | 4 notes |
+| --- | --- | --- | --- | --- | --- |
+| `fux_cantus_firmus` | 0.000* | 0.125 → 0.333* | 0.230 → 0.667* | 0.365 → 0.937 | 0.454 → 0.882 |
+| `salzer_schachter_cantus_firmus` | 0.000* | 0.125 → 0.333* | 0.235 → 0.667* | 0.366 → 0.941 | 0.464 → 0.903 |
+| `diatonic_melody` | 0.000* | 0.200 → 0.333* | 0.391 → 0.667* | 0.600 → 0.964 | 0.769 → 0.947 |
+| `first_species_melody` | 1.000 → 0.000* | 1.000 → 0.333* | 0.935 → 0.667* | 0.949 → 0.978 | 0.924 → 0.966 |
+| `first_species_harmony` | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* |
+| `second_species_melody` | 1.000 → 0.000* | 0.978 → 0.333* | 0.920 → 0.667* | 0.933 → 0.863 | 0.910 → 0.853 |
+| `second_species_harmony` | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* |
+| `third_species_melody` | 1.000 → 0.000* | 0.978 → 0.333* | 0.920 → 0.667* | 0.933 → 0.863 | 0.910 → 0.853 |
+| `third_species_harmony` | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* |
+| `third_species_triple_meter_melody` | 1.000 → 0.000* | 0.978 → 0.333* | 0.920 → 0.667* | 0.933 → 0.863 | 0.910 → 0.853 |
+| `third_species_triple_meter_harmony` | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* |
+| `fourth_species_melody` | 1.000 → 0.000* | 1.000 → 0.333* | 0.939 → 0.667* | 0.952 → 0.981 | 0.928 → 0.971 |
+| `fourth_species_harmony` | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* |
+| `combined_first_second_third_species_melody` | 1.000 → 0.000* | 1.000 → 0.333* | 0.930 → 0.667* | 0.945 → 0.978 | 0.918 → 0.966 |
+| `combined_first_second_third_species_harmony` | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* |
+| `fifth_species_melody` | 1.000 → 0.000* | 1.000 → 0.333* | 0.898 → 0.667* | 0.896 → 0.672 | 0.865 → 0.617 |
+| `fifth_species_harmony` | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* | raised → 0.000* |
+| `arch_contour_melody` | 0.000* | 0.000* | 0.122 → 0.333* | 0.600 → 0.986 | 0.483 → 0.598 |
+| `ascending_contour_melody` | 0.000* | 0.000* | 0.397 → 0.667* | 0.371 → 0.604 | 0.788 → 0.980 |
+| `descending_contour_melody` | 0.000* | 0.000* | 0.244 → 0.667* | 0.371 → 0.604 | 0.483 → 0.598 |
+| `static_contour_melody` | 0.000* | 0.200 → 0.333* | 0.244 → 0.667* | 0.600 → 0.986 | 0.483 → 0.598 |
+| `valley_contour_melody` | 0.000* | 0.000* | 0.122 → 0.333* | 0.371 → 0.604 | 0.483 → 0.598 |
+| `wave_contour_melody` | 0.000* | 0.000* | 0.122 → 0.333* | 0.371 → 0.604 | 0.483 → 0.598 |
+
+Three kinds of movement, and each row of the full table names which one applies:
+
+- **crash fixed** (126 rows) — the harmony guides raised for a voice with no
+  companion, at every length. They grade it now.
+- **gated** (959 rows) — a precondition stops the assessment rather than scaling
+  it, so a voice that fails one is not also marked down on rules it was never
+  measured against.
+- **demoted** (859 rows) — the species guides weigh what they teach above what
+  they inherit. A valid first-species line scored 0.883 against
+  `ThirdSpeciesMelody` and now scores 0.561.
+
 ## Scenarios
 
 ### Scenario: An empty voice is unassessable rather than perfect

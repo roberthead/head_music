@@ -105,6 +105,75 @@ describe HeadMusic::Style::Guide do
       expect(described_class.all).to all(respond_to(:assess_items))
     end
 
+    # Properties every guide must hold, checked across the whole registry rather
+    # than guide by guide. These replace the throwaway corpus script as the
+    # durable evidence: the script proves what the grades were on one day, these
+    # prove the shape holds for a guide added later.
+    describe "assessability" do
+      def solo(pitch_count)
+        composition = HeadMusic::Content::Composition.new(key_signature: "D dorian")
+        voice = composition.add_voice(role: :counterpoint)
+        %w[D4 F4 E4 G4 F4 A4 G4 F4].first(pitch_count).each_with_index do |pitch, bar|
+          voice.place("#{bar + 1}:1", :whole, pitch)
+        end
+        voice
+      end
+
+      # Without a precondition a guide finds no fault in an empty voice and
+      # calls that a perfect grade -- "no fault found" and "nothing to find
+      # fault in" are different claims.
+      it "declares at least one precondition for every guide" do
+        expect(described_class.all).to all(satisfy { |guide| guide.items_by_tier[:gate].any? })
+      end
+
+      it "grades an empty voice zero and says it cannot be assessed" do
+        described_class.all.each do |guide|
+          assessment = guide.assess(solo(0))
+
+          expect(assessment.fitness).to eq(0.0), "#{described_class.key_for(guide)} graded an empty voice #{assessment.fitness}"
+          expect(assessment).not_to be_assessable
+        end
+      end
+
+      # The harmony guides used to raise here: they reach for a companion voice
+      # that a solo voice does not have.
+      it "grades rather than raises for a voice with no companion" do
+        described_class.all.each do |guide|
+          [0, 1, 8].each do |count|
+            expect { guide.assess(solo(count)).fitness }.not_to raise_error
+          end
+        end
+      end
+
+      it "never calls an unassessable voice perfect" do
+        described_class.all.each do |guide|
+          (0..8).map { |count| guide.assess(solo(count)) }.reject(&:assessable?).each do |assessment|
+            expect(assessment.fitness).to be < 1.0
+          end
+        end
+      end
+
+      # Below the gate, a longer attempt is nearer to being assessable, and the
+      # grade says so. Not claimed above the gate, where a longer melody may
+      # legitimately be worse.
+      it "never scores a shorter unassessable attempt above a longer one" do
+        described_class.all.each do |guide|
+          unassessable = (0..8).map { |count| guide.assess(solo(count)) }.reject(&:assessable?)
+          fitnesses = unassessable.map(&:fitness)
+
+          expect(fitnesses).to eq(fitnesses.sort), "#{described_class.key_for(guide)} was not monotonic: #{fitnesses.inspect}"
+        end
+      end
+
+      it "stops at a failed gate rather than grading the rubric anyway" do
+        described_class.all.each do |guide|
+          assessment = guide.assess(solo(0))
+
+          expect(assessment.guide_item_assessments.map(&:tier).uniq).to eq [:gate]
+        end
+      end
+    end
+
     # Every configured guide resolves its items at require time so that nothing
     # is written to after load and concurrent lookups cannot race on the memo.
     # Configured resolves guide_items in its constructor, so this holds for a
