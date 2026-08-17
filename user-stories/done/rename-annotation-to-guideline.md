@@ -16,7 +16,7 @@ I WANT the base class of the sixty-two guideline classes to be called `Guideline
 SO THAT `Guidelines::ConsonantClimax < Style::Guideline` says what it is, and the word "annotation" stops meaning two things at once
 
 Story 1 of the [Style Assessment Model](../epics/style-assessment-model.md).
-Blocks [First-Class Guide Items](../backlog/first-class-rules.md), which assumes this
+Blocks [First-Class Guide Items](../current/first-class-guide-items.md), which assumes this
 rename has landed.
 
 ## Background
@@ -561,7 +561,7 @@ Confirm with `git diff -M --summary HEAD~3..HEAD` (three renames detected).
   unreleased work. Not this story's problem; worth its own ticket.
 - **Backlog stories citing `Annotation.with(...)`** (`sixteenth-century-style.md:19`,
   `split-counterpoint-species-by-author.md:25`) are left stale. They get rewritten
-  on activation, and the epic plus `first-class-rules.md` use mapping language that
+  on activation, and the epic plus `first-class-guide-items.md` use mapping language that
   stays correct.
 - **`spec/examples.txt`** is gitignored; the spec-file rename orphans its entries,
   so `--only-failures` behaves oddly locally until a full re-run. Cosmetic.

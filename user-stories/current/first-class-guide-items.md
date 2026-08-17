@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-08-12T16:05:34-07:00
-  activated_at:
+  activated_at: 2026-08-16T17:14:51-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-16T15:24:07-07:00
+  updated_at:   2026-08-16T17:14:51-07:00
 -->
 
 # First-Class Guide Items
