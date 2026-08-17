@@ -51,7 +51,6 @@ class HeadMusic::Style::Guide
   # nothing in the registry is written to after load and concurrent lookups
   # never race on the memo -- which leaves this reading the classes' constants.
   ALL.each(&:guide_items)
-
   # A miss returns nil rather than falling back, unlike Tradition.get: a
   # substituted tradition changes a consonance default, but a substituted
   # guide would silently grade a voice against the wrong ruleset.
@@ -108,4 +107,9 @@ class HeadMusic::Style::Guide
   def self.instruction_for(key)
     HeadMusic::Style::Template.render("guides.#{key}.instruction")
   end
+
+  # And that every string they can produce actually renders. A template that
+  # cannot be filled is invisible until someone reads it, so it is asked for
+  # here rather than discovered by a student.
+  HeadMusic::Style::Template.verify!(ALL)
 end

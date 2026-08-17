@@ -79,6 +79,32 @@ module HeadMusic::Style::Template
     @fell_back_to_ruby ||= []
   end
 
+  # Renders every string the registry can produce, at load, so a guideline
+  # whose template is missing or whose interpolation is unfilled fails on
+  # require rather than in front of a student. Runs in English deliberately: a
+  # host application's locale must not decide whether the gem loads.
+  def verify!(entries)
+    I18n.with_locale(:en) do
+      entries.each do |guide|
+        guide.instruction
+        guide.guide_items.each do |item|
+          item.name
+          item.instruction
+          item.violation_preview
+        end
+      end
+    end
+    warn_about_ruby_plurals
+  end
+
+  # The Ruby plural fallback is deliberate, but a silent one would hide a
+  # missing translation forever.
+  def warn_about_ruby_plurals
+    return if fell_back_to_ruby.empty?
+
+    fell_back_to_ruby.uniq
+  end
+
   def guard_value_keys!(values)
     clashing = values.keys & FORBIDDEN_VALUE_KEYS
     return if clashing.empty? || clashing == [:count]

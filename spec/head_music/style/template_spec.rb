@@ -78,4 +78,32 @@ describe HeadMusic::Style::Template do
       expect(described_class.number_word(8, locale: :it)).to eq "eight"
     end
   end
+
+  describe ".verify!" do
+    let(:item) { instance_double(HeadMusic::Style::GuideItem, name: "n", instruction: "i", violation_preview: "v") }
+    # A guide is a class rather than an instance of one.
+    let(:guide) { class_double(HeadMusic::Style::Guides::Base, instruction: "write something", guide_items: [item]) }
+
+    it "asks for every string a guide can produce" do
+      expect { described_class.verify!([guide]) }.not_to raise_error
+
+      expect(item).to have_received(:violation_preview)
+    end
+
+    # Otherwise this is a decorative call at the bottom of guide.rb.
+    it "raises for a guide item whose template is missing" do
+      allow(item).to receive(:violation_preview).and_raise(described_class::MissingTemplate)
+
+      expect { described_class.verify!([guide]) }.to raise_error(described_class::MissingTemplate)
+    end
+
+    # The host application's locale must not decide whether the gem loads.
+    it "verifies in English whatever locale is current" do
+      allow(guide).to receive(:instruction) { I18n.locale }
+
+      I18n.with_locale(:ru) { described_class.verify!([guide]) }
+
+      expect(guide).to have_received(:instruction).at_least(:once)
+    end
+  end
 end
