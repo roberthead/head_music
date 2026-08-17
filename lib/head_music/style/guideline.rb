@@ -1,9 +1,11 @@
 # A Guideline is one rule of craft. Subclasses find faults in a voice and
-# report them as marks; the instance is both the rule and what it found.
+# report them as marks.
+#
+# The class is the rule; instances are the analysis context that finds it,
+# private to .assess. What a consumer holds is the GuideItemAssessment that
+# comes back.
 class HeadMusic::Style::Guideline
   MESSAGE = "Write music."
-
-  DEFAULT_WEIGHT = 1.0
 
   attr_reader :voice
 
@@ -37,14 +39,6 @@ class HeadMusic::Style::Guideline
     HeadMusic::Style::GuideItem.new(self, options)
   end
 
-  def self.default_weight
-    DEFAULT_WEIGHT
-  end
-
-  def self.default_gate?
-    false
-  end
-
   # The analysis seam. The instance built here is the analysis context -- it
   # memoizes intermediate work across the private predicates a guideline is
   # written from -- and it does not escape: what comes back is a frozen record
@@ -72,14 +66,6 @@ class HeadMusic::Style::Guideline
     fitness == 1
   end
 
-  def weight
-    options.fetch(:weight, self.class.default_weight)
-  end
-
-  def gate?
-    options.fetch(:gate, self.class.default_gate?)
-  end
-
   def has_notes?
     !!first_note
   end
@@ -103,6 +89,11 @@ class HeadMusic::Style::Guideline
   def last_note
     notes.last
   end
+
+  # Signpost rather than enforcement -- send and allocate still reach it,
+  # and a spec testing a guideline's internal reasoning legitimately does.
+  # The guarantee that matters is that .assess is the only caller in lib.
+  private_class_method :new
 
   protected
 

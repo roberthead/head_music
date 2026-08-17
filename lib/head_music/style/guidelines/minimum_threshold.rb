@@ -8,10 +8,6 @@ class HeadMusic::Style::Guidelines::MinimumThreshold < HeadMusic::Style::Guideli
     super(minimum: minimum, **options)
   end
 
-  def self.default_gate?
-    true
-  end
-
   private
 
   def minimum

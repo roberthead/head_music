@@ -29,23 +29,6 @@ class HeadMusic::Style::GuideItem
     guideline.assess(voice, self, tier)
   end
 
-  def new(voice)
-    guideline.new(voice, **config)
-  end
-
-  # Layers additional configuration onto an already-configured item, e.g.
-  # MinimumNotes.with(5).with(gate: true), without dropping prior options.
-  def with(**more)
-    self.class.new(guideline, config.merge(more))
-  end
-
-  # Mirrors the class-level predicate so build-time filters can classify any
-  # entry uniformly. A per-entry gate: option takes precedence over the
-  # guideline class's default.
-  def default_gate?
-    config.fetch(:gate, guideline.default_gate?)
-  end
-
   # By value, so an item can be found in a list by what it is rather than by
   # which object it is -- the identity matching that made `CORE - [Guideline]`
   # silently remove nothing.

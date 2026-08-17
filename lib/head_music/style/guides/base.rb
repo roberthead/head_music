@@ -35,12 +35,14 @@ class HeadMusic::Style::Guides::Base
       @items_by_tier ||= normalize(declarations)
     end
 
-    def analyze(voice)
-      guide_items.map { |item| item.new(voice) }
+    # The public seam: a graded assessment of one voice.
+    def assess(voice)
+      HeadMusic::Style::GuideAssessment.new(self, voice)
     end
 
-    # Each item assessed against the tier it was declared in.
-    def assess(voice)
+    # Each item assessed against the tier it was declared in. The grade is
+    # GuideAssessment's job; this is the material it grades.
+    def assess_items(voice)
       TIERS.flat_map do |tier|
         items_by_tier[tier].map { |item| item.assess(voice, tier) }
       end

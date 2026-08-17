@@ -28,13 +28,13 @@ describe HeadMusic::Style::Guides::Configured do
     expect(guide.options).to be_frozen
   end
 
-  describe "#analyze" do
-    it "returns one guideline per rule" do
-      expect(guide.analyze(voice).length).to eq guide.guide_items.length
+  describe "#assess_items" do
+    it "returns one assessment per rule" do
+      expect(guide.assess_items(voice).length).to eq guide.guide_items.length
     end
 
-    it "returns guidelines" do
-      expect(guide.analyze(voice)).to all(be_a(HeadMusic::Style::Guideline))
+    it "returns guide item assessments" do
+      expect(guide.assess_items(voice)).to all(be_a(HeadMusic::Style::GuideItemAssessment))
     end
   end
 
@@ -49,11 +49,11 @@ describe HeadMusic::Style::Guides::Configured do
     end
   end
 
-  # Scenario: a configured guide drops into Analysis unchanged.
+  # Scenario: a configured guide drops into GuideAssessment unchanged.
   describe "in HeadMusic::Style::GuideAssessment" do
     subject(:analysis) { HeadMusic::Style::GuideAssessment.new(guide, voice) }
 
-    its(:annotations) { are_expected.to all(be_a(HeadMusic::Style::Guideline)) }
+    its(:guide_item_assessments) { are_expected.to all(be_a(HeadMusic::Style::GuideItemAssessment)) }
     its(:fitness) { is_expected.to eq 1.0 }
     its(:adherent?) { is_expected.to be true }
 

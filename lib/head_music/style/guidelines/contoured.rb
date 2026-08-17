@@ -11,8 +11,6 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   # Running state for the zigzag walk in #trend_directions.
   TrendWalk = Struct.new(:directions, :direction, :high, :low, :extreme)
 
-  DEFAULT_WEIGHT = HeadMusic::GOLDEN_RATIO_INVERSE
-
   def self.with(contour_key, **options)
     super(contour: normalized_contour(contour_key), **options)
   end
@@ -24,10 +22,6 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     end
 
     contour
-  end
-
-  def self.default_weight
-    DEFAULT_WEIGHT
   end
 
   def marks

@@ -9,11 +9,6 @@ module HeadMusic::Style::Guides; end
 # accident -- the same reason it did not subclass when the ruleset was a
 # constant.
 class HeadMusic::Style::Guides::ContourMelody < HeadMusic::Style::Guides::SpeciesMelody
-  # The non-gate peers of a contour guide share phi^-2 of rubric weight, so that
-  # with Contoured at its default weight of phi^-1 (and phi^-1 + phi^-2 = 1), a
-  # wrong contour on an otherwise perfect line grades exactly phi^-1.
-  PEER_WEIGHT_BUDGET = HeadMusic::GOLDEN_RATIO_INVERSE**2
-
   # Normalizes eagerly so an invalid contour raises HERE, at configuration
   # time, rather than at analysis. Required keyword, so an omitted or
   # misspelled option name raises too.
@@ -24,15 +19,19 @@ class HeadMusic::Style::Guides::ContourMelody < HeadMusic::Style::Guides::Specie
     )
   end
 
-  # Guide.get passes through anything answering analyze, so naming this class
-  # instead of a registry key reaches GuideAssessment and would otherwise fail
-  # with a bare "missing keyword: :contour" as the lists are read, before any
-  # guideline is built. Now that the six contour subclasses are gone, that is
-  # the likeliest way to hold this wrong, so the error names both ways to hold
-  # it right.
-  def self.analyze(voice)
-    raise ArgumentError,
-      "#{name} requires configuration. " \
+  # Guide.get passes through anything that can assess a voice, so naming this
+  # class instead of a registry key reaches GuideAssessment and would otherwise
+  # fail with a bare "missing keyword: :contour" as the lists are read, before
+  # any guideline is built. Now that the six contour subclasses are gone, that
+  # is the likeliest way to hold this wrong, so the error names both ways to
+  # hold it right. Both seams raise, so the message arrives whether a consumer
+  # asks for the grade or for the findings.
+  def self.assess(voice) = raise(ArgumentError, unconfigured_message)
+
+  def self.assess_items(voice) = raise(ArgumentError, unconfigured_message)
+
+  def self.unconfigured_message
+    "#{name} requires configuration. " \
       "Use #{name}.with(contour: :arch, minimum_melodic_intervals: 2) " \
       'or HeadMusic::Style::Guide.get("arch_contour_melody").'
   end
@@ -45,8 +44,6 @@ class HeadMusic::Style::Guides::ContourMelody < HeadMusic::Style::Guides::Specie
   # background here, and the contour is the lesson -- the partition and
   # re-weighting this guide used to compute by hand.
   def self.items_by_tier(contour:, minimum_melodic_intervals: nil)
-    peers = HeadMusic::Style::Guides::DiatonicMelody.primary_items
-    peer_weight = PEER_WEIGHT_BUDGET / peers.length
     motion_gate =
       minimum_melodic_intervals &&
       HeadMusic::Style::Guidelines::MinimumMelodicIntervals.with(minimum_melodic_intervals)
@@ -54,7 +51,7 @@ class HeadMusic::Style::Guides::ContourMelody < HeadMusic::Style::Guides::Specie
     normalize(
       gate: [*HeadMusic::Style::Guides::DiatonicMelody.gate_items, motion_gate],
       primary: [HeadMusic::Style::Guidelines::Contoured.with(contour)],
-      secondary: peers.map { |item| item.with(weight: peer_weight) }
+      secondary: HeadMusic::Style::Guides::DiatonicMelody.primary_items
     )
   end
 end

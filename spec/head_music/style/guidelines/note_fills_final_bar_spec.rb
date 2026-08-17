@@ -25,7 +25,7 @@ describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
     context "when the detected final bar contains no notes" do
       # A defensive fallback: if the final-bar lookup yields nothing, the
       # guideline still marks the last note rather than raising.
-      subject(:guideline) { guideline_class.new(counterpoint) }
+      subject(:guideline) { guideline_class.send(:new, counterpoint) }
 
       let(:guideline_class) do
         Class.new(described_class) do

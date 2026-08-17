@@ -34,12 +34,6 @@ describe HeadMusic::Style::Guidelines::MinimumNotes do
     its(:first_mark_code) { is_expected.to eq "1:1:000 to 2:1:000" }
   end
 
-  describe ".default_gate?" do
-    it "is a gate by default, since a threshold measures completion rather than trading off" do
-      expect(described_class.default_gate?).to be true
-    end
-  end
-
   describe ".with" do
     subject(:configured) { described_class.with(8) }
 
@@ -47,41 +41,9 @@ describe HeadMusic::Style::Guidelines::MinimumNotes do
     its(:guideline) { is_expected.to eq described_class }
     its(:config) { is_expected.to eq(minimum: 8) }
 
-    it "builds a guideline that reports the configured minimum" do
+    it "builds a guide item that reports the configured minimum" do
       voice = HeadMusic::Content::Voice.new
-      expect(configured.new(voice).message).to eq "Write at least eight notes."
-    end
-
-    context "with an inline gate override" do
-      subject(:configured) { described_class.with(5, gate: false) }
-
-      before do
-        %w[D E F G].each.with_index(1) { |pitch, bar| voice.place("#{bar}:1", :whole, pitch) }
-      end
-
-      it "builds a guideline that is not a gate but still enforces the minimum" do
-        guideline = configured.new(voice)
-        expect(guideline.gate?).to be false
-        expect(guideline.fitness).to be_between(0, 1).exclusive
-      end
-    end
-
-    context "when chained with a gate override" do
-      subject(:configured) { described_class.with(5).with(gate: false) }
-
-      before do
-        %w[D E F G].each.with_index(1) { |pitch, bar| voice.place("#{bar}:1", :whole, pitch) }
-      end
-
-      it "builds a guideline that is not a gate" do
-        expect(configured.new(voice).gate?).to be false
-      end
-
-      it "still enforces the configured minimum" do
-        guideline = configured.new(voice)
-        expect(guideline.fitness).to be_between(0, 1).exclusive
-        expect(guideline.message).to eq "Write at least five notes."
-      end
+      expect(configured.assess(voice, :primary).message).to eq "Write at least eight notes."
     end
   end
 end

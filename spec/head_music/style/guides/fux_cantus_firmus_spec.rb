@@ -14,6 +14,16 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
 
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AlwaysMove }
   specify { expect(described_class.guide_items).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8) }
+
+  # Gating is the guide's editorial choice, not a property of the guideline:
+  # the same threshold is a gate here and could be an ordinary expectation
+  # elsewhere. This is where that choice is now recorded.
+  it "declares its note minimum as a gate, so a short line scales the whole grade" do
+    expect(described_class.gate_items).to include configured(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 8)
+    expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MaximumNotes
+    expect(described_class.gate_items.map(&:guideline)).not_to include HeadMusic::Style::Guidelines::MaximumNotes
+  end
+
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::ConsonantClimax }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::Diatonic }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::EndOnTonic }

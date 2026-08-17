@@ -15,12 +15,10 @@ describe HeadMusic::Style::Guides::ContourMelody do
   ]
 
   describe ".guide_items" do
-    let(:peer_weight) { HeadMusic::GOLDEN_RATIO_INVERSE**2 / 10 }
-
     it "does not mutate the shared diatonic melody primary items" do
-      expect(HeadMusic::Style::Guides::DiatonicMelody.primary_items).to all(
-        satisfy { |item| !item.config.key?(:weight) }
-      )
+      diatonic_primary_items = HeadMusic::Style::Guides::DiatonicMelody.primary_items
+      contour_rows.each { |row| HeadMusic::Style::Guide.get(row[:key]).items_by_tier }
+      expect(HeadMusic::Style::Guides::DiatonicMelody.primary_items).to eq diatonic_primary_items
     end
 
     contour_rows.each do |row|
@@ -53,12 +51,10 @@ describe HeadMusic::Style::Guides::ContourMelody do
           end
         end
 
-        it "weights each rubric peer evenly within the phi^-2 budget" do
-          peers = guide_items.reject(&:default_gate?).reject do |entry|
-            entry.guideline == guidelines::Contoured
-          end
-          expect(peers.length).to eq 10
-          expect(peers).to all(have_attributes(config: hash_including(weight: peer_weight)))
+        it "demotes every diatonic melody primary item to the secondary tier" do
+          expect(HeadMusic::Style::Guide.get(row[:key]).items_by_tier[:secondary]).to eq(
+            HeadMusic::Style::Guides::DiatonicMelody.primary_items
+          )
         end
 
         it "adds the #{row[:contour]} contour guideline" do
@@ -71,27 +67,6 @@ describe HeadMusic::Style::Guides::ContourMelody do
       direct = described_class.with(contour: :arch, minimum_melodic_intervals: 2).guide_items
       registered = HeadMusic::Style::Guide.get("arch_contour_melody").guide_items
       expect(direct).to eq registered
-    end
-  end
-
-  describe "contextual weights" do
-    let(:voice) { HeadMusic::Content::Voice.new }
-    let(:guide_items) { HeadMusic::Style::Guide.get("arch_contour_melody").guide_items }
-
-    it "weights the contour guideline at its default among the guide's items" do
-      entry = guide_items.detect { |item| item.guideline == guidelines::Contoured }
-      expect(entry.new(voice).weight).to eq HeadMusic::GOLDEN_RATIO_INVERSE
-    end
-
-    it "honors a per-context weight override" do
-      guideline = guidelines::Contoured.with(:arch, weight: 0.25).new(voice)
-      expect(guideline.weight).to eq 0.25
-    end
-
-    it "weights the same guideline differently as a rubric peer than standalone" do
-      peer = guide_items.detect { |item| item.guideline == guidelines::Diatonic }
-      expect(peer.new(voice).weight).to eq(HeadMusic::GOLDEN_RATIO_INVERSE**2 / 10)
-      expect(guidelines::Diatonic.new(voice).weight).to eq 1.0
     end
   end
 
@@ -108,8 +83,8 @@ describe HeadMusic::Style::Guides::ContourMelody do
       )
     end
 
-    # No analyze call in these: lazy validation would defer the error to grading
-    # time, and a spec written around .analyze would pass while the criterion
+    # No assess call in these: lazy validation would defer the error to grading
+    # time, and a spec written around .assess would pass while the criterion
     # silently did not hold.
     it "rejects a contour outside the closed set" do
       expect { described_class.with(contour: :spiral) }.to raise_error(ArgumentError)
@@ -129,29 +104,30 @@ describe HeadMusic::Style::Guides::ContourMelody do
     end
   end
 
-  describe ".analyze" do
+  describe ".assess" do
     let(:voice) { HeadMusic::Content::Voice.new }
 
     # Without the .with indirection this would silently grade against whatever
     # items_by_tier produced with no configuration -- but items_by_tier requires
     # a contour keyword, so there is no unconfigured ruleset left to fall back
     # to silently.
-    it "refuses to analyze without a configuration" do
-      expect { described_class.analyze(voice) }.to raise_error(ArgumentError)
+    it "refuses to assess without a configuration" do
+      expect { described_class.assess(voice) }.to raise_error(ArgumentError)
     end
 
-    it "names both ways to configure it, since the bare class reaches Analysis" do
-      expect { described_class.analyze(voice) }.to raise_error(
+    it "names both ways to configure it, since the bare class reaches GuideAssessment" do
+      expect { described_class.assess(voice) }.to raise_error(
         ArgumentError, /\.with\(contour:.*Guide\.get\("arch_contour_melody"\)/m
       )
     end
 
-    # The class is a valid argument to Analysis.new -- it answers analyze -- so
-    # the guard cannot catch this one. Failing at annotations is the backstop.
-    it "fails through Analysis rather than grading against the wrong ruleset" do
+    # The class is a valid argument to GuideAssessment.new -- it answers
+    # assess_items -- so the guard cannot catch this one. Failing at
+    # guide_item_assessments is the backstop.
+    it "fails through GuideAssessment rather than grading against the wrong ruleset" do
       analysis = HeadMusic::Style::GuideAssessment.new(described_class, voice)
 
-      expect { analysis.annotations }.to raise_error(ArgumentError, /requires configuration/)
+      expect { analysis.guide_item_assessments }.to raise_error(ArgumentError, /requires configuration/)
     end
   end
 
@@ -229,13 +205,6 @@ describe HeadMusic::Style::Guides::ContourMelody do
         it "grades below a C" do
           expect(analysis.fitness).to be < 0.70
         end
-
-        it "loses more credit to the contour than to any other rule" do
-          rubric = analysis.annotations.reject(&:gate?)
-          worst = rubric.max_by { |guideline| guideline.weight * (1 - guideline.fitness) }
-          expect(worst).to be_a(HeadMusic::Style::Guidelines::Contoured)
-          expect(worst.weight * (1 - worst.fitness)).to be > 0
-        end
       end
 
       context "with a gate-passing melody that is broken across the rubric" do
@@ -246,7 +215,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "C4|_B4|C4|_B4|C4|_B4|c4|_b4|" }
 
         it "passes both gates at full credit" do
-          gates = analysis.annotations.select(&:gate?)
+          gates = analysis.guide_item_assessments.select(&:gate?)
           expect(gates.map(&:fitness)).to all(eq(1.0))
         end
 
@@ -279,20 +248,11 @@ describe HeadMusic::Style::Guides::ContourMelody do
       context "with a four-note line" do
         let(:melody) { "CD^FE|" }
 
-        let(:rubric_mean) do
-          rubric = analysis.annotations.reject(&:gate?)
-          rubric.sum { |guideline| guideline.weight * guideline.fitness } / rubric.sum(&:weight)
-        end
-
         it "passes the motion gate" do
-          motion_gate = analysis.annotations.detect do |guideline|
-            guideline.is_a?(HeadMusic::Style::Guidelines::MinimumMelodicIntervals)
+          motion_gate = analysis.guide_item_assessments.detect do |assessment|
+            assessment.guideline == HeadMusic::Style::Guidelines::MinimumMelodicIntervals
           end
           expect(motion_gate.fitness).to eq 1.0
-        end
-
-        it "applies the note-count gate as a proportional haircut on the rubric mean" do
-          expect(analysis.fitness).to be_within(1e-9).of(0.8 * rubric_mean)
         end
       end
 
@@ -313,8 +273,8 @@ describe HeadMusic::Style::Guides::ContourMelody do
         end
 
         def diatonic_guideline(analysis)
-          analysis.annotations.detect do |guideline|
-            guideline.is_a?(HeadMusic::Style::Guidelines::Diatonic)
+          analysis.guide_item_assessments.detect do |assessment|
+            assessment.guideline == HeadMusic::Style::Guidelines::Diatonic
           end
         end
 
@@ -416,7 +376,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
         end
 
         it "passes every gate" do
-          gates = analysis.annotations.select(&:gate?)
+          gates = analysis.guide_item_assessments.select(&:gate?)
           expect(gates.map(&:fitness)).to all(eq(1.0))
         end
       end

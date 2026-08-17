@@ -60,8 +60,11 @@ class HeadMusic::Style::Guide
   # entry per distinct argument, and these keys arrive from a consumer's
   # database; const_get would traverse namespaces and raise NameError on an
   # invalid name, violating nil-on-miss.
+  # assess_items, not assess, and for the same reason GuideAssessment checks it:
+  # guidelines and guide items answer assess too, with different arguments, so
+  # assess would pass a guideline through as though it were a guide.
   def self.get(key)
-    return key if key.respond_to?(:analyze)
+    return key if key.respond_to?(:assess_items)
 
     REGISTRY[key.to_s]
   end

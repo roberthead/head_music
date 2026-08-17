@@ -101,8 +101,8 @@ describe HeadMusic::Style::Guide do
       expect(described_class.all.map(&:category).uniq).to match_array %i[melody harmony]
     end
 
-    it "gives every guide something to analyze with" do
-      expect(described_class.all).to all(respond_to(:analyze))
+    it "gives every guide something to assess with" do
+      expect(described_class.all).to all(respond_to(:assess_items))
     end
 
     # Every configured guide resolves its items at require time so that nothing

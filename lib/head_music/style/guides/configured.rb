@@ -13,11 +13,11 @@ class HeadMusic::Style::Guides::Configured
     guide_items # Resolve now, so a bad configuration raises here rather than mid-grading.
   end
 
-  def analyze(voice)
-    guide_items.map { |item| item.new(voice) }
+  def assess(voice)
+    HeadMusic::Style::GuideAssessment.new(self, voice)
   end
 
-  def assess(voice)
+  def assess_items(voice)
     HeadMusic::Style::Guides::Base::TIERS.flat_map do |tier|
       items_by_tier[tier].map { |item| item.assess(voice, tier) }
     end

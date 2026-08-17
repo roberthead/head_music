@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::Contoured do
-  subject { described_class.with(contour).new(voice) }
+  subject { assess(described_class, voice, contour: contour) }
 
   let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
   let(:voice) { composition.voices.first }
@@ -29,17 +29,6 @@ describe HeadMusic::Style::Guidelines::Contoured do
 
     it "raises for an unknown contour" do
       expect { described_class.with(:zigzag) }.to raise_error(ArgumentError, /zigzag/)
-    end
-
-    it "accepts a weight option" do
-      guideline = described_class.with(:arch, weight: 0.5).new(HeadMusic::Content::Voice.new)
-      expect(guideline.weight).to eq 0.5
-    end
-  end
-
-  describe ".default_weight" do
-    it "is the inverse golden ratio" do
-      expect(described_class.default_weight).to eq HeadMusic::GOLDEN_RATIO_INVERSE
     end
   end
 
@@ -116,7 +105,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       it { is_expected.to be_adherent }
 
       it "leaves climax multiplicity to ConsonantClimax" do
-        expect(HeadMusic::Style::Guidelines::ConsonantClimax.new(voice)).not_to be_adherent
+        expect(assess(HeadMusic::Style::Guidelines::ConsonantClimax, voice)).not_to be_adherent
       end
     end
 
@@ -144,7 +133,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       it { is_expected.to be_adherent }
 
       it "leaves nadir multiplicity to ConsonantClimax" do
-        expect(HeadMusic::Style::Guidelines::ConsonantClimax.new(voice)).not_to be_adherent
+        expect(assess(HeadMusic::Style::Guidelines::ConsonantClimax, voice)).not_to be_adherent
       end
     end
 
@@ -236,8 +225,6 @@ describe HeadMusic::Style::Guidelines::Contoured do
   end
 
   context "when there are no notes" do
-    subject { described_class.with(contour).new(voice) }
-
     let(:voice) { HeadMusic::Content::Voice.new }
 
     described_class::CONTOURS.each do |contour_key|

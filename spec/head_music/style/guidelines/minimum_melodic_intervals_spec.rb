@@ -47,12 +47,6 @@ describe HeadMusic::Style::Guidelines::MinimumMelodicIntervals do
     its(:first_mark_code) { is_expected.to eq "1:1:000 to 2:1:000" }
   end
 
-  describe ".default_gate?" do
-    it "is a gate by default, since a threshold measures completion rather than trading off" do
-      expect(described_class.default_gate?).to be true
-    end
-  end
-
   describe ".with" do
     subject(:configured) { described_class.with(3) }
 
@@ -60,19 +54,9 @@ describe HeadMusic::Style::Guidelines::MinimumMelodicIntervals do
     its(:guideline) { is_expected.to eq described_class }
     its(:config) { is_expected.to eq(minimum: 3) }
 
-    it "builds a guideline that reports the configured minimum" do
+    it "builds a guide item that reports the configured minimum" do
       voice = HeadMusic::Content::Voice.new
-      expect(configured.new(voice).message).to eq "Write at least three melodic intervals."
-    end
-
-    context "with an inline gate override" do
-      subject(:configured) { described_class.with(3, gate: false) }
-
-      it "builds a guideline that is not a gate and reports the configured minimum" do
-        guideline = configured.new(HeadMusic::Content::Voice.new)
-        expect(guideline.gate?).to be false
-        expect(guideline.message).to eq "Write at least three melodic intervals."
-      end
+      expect(configured.assess(voice, :primary).message).to eq "Write at least three melodic intervals."
     end
   end
 end

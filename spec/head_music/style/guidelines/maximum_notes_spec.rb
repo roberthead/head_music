@@ -56,19 +56,9 @@ describe HeadMusic::Style::Guidelines::MaximumNotes do
     its(:guideline) { is_expected.to eq described_class }
     its(:config) { is_expected.to eq(maximum: 14) }
 
-    it "builds a guideline that reports the configured maximum" do
+    it "builds a guide item that reports the configured maximum" do
       voice = HeadMusic::Content::Voice.new
-      expect(configured.new(voice).message).to eq "Write up to fourteen notes."
-    end
-
-    context "with an inline weight override" do
-      subject(:configured) { described_class.with(14, weight: 2.0) }
-
-      it "builds a guideline with the overridden weight and configured maximum" do
-        guideline = configured.new(HeadMusic::Content::Voice.new)
-        expect(guideline.weight).to eq 2.0
-        expect(guideline.message).to eq "Write up to fourteen notes."
-      end
+      expect(configured.assess(voice, :primary).message).to eq "Write up to fourteen notes."
     end
   end
 end
