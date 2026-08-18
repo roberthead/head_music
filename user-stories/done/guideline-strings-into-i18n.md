@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-16T00:00:00-07:00
   activated_at: 2026-08-17T12:07:58-07:00
   planned_at:   2026-08-17T12:34:26-07:00
-  finished_at:
-  updated_at:   2026-08-17T16:53:42-07:00
+  finished_at:  2026-08-18T14:28:07-07:00
+  updated_at:   2026-08-18T14:28:07-07:00
 -->
 
 # Guideline Strings into I18n
@@ -812,3 +812,120 @@ guidelines, and the smaller notes. So is the larger half of criterion 1 —
 `guideline.rb:63` generates 46 of the 56 registry guidelines' names in Ruby from
 the class key, so `"Allowed rhythmic values for combined123"` reaches a student,
 identically in every locale.
+
+## Learnings
+
+Written 2026-08-18, after four follow-up sessions on `main`. The story shipped
+the mechanism; the content it implied took another five commits.
+
+### Execution beats inference, three times in one story
+
+Every time a plausible-looking check disagreed with something actually run, the
+run was right:
+
+- A word-frequency scan reported "zero `en_GB` divergences" and had missed
+  `neighbor` in three files.
+- Two review agents contradicted each other about whether load-time verification
+  worked. An in-process probe settled it: `verify!` caught a bogus
+  non-pluralized template and was blind to a bogus pluralized one.
+- Line coverage read 100% on all four changed files while a mutation survived —
+  making `render_violations` render only the first key passed all 6595 examples.
+
+The lesson is narrow and repeatable: a claim of the form "is everything covered"
+is not answerable by reading. Build the probe. It took about ten minutes each
+time and changed the answer each time.
+
+### A guard you have not attacked is a guard you do not have
+
+`Template.verify!` exists so an unfillable template fails on `require` rather
+than in front of a student. It was blind three times over, each found by a
+different kind of attack:
+
+1. Blind to pluralized templates (found in review, by probe).
+2. Blind to the violation branch `ConsonantClimax` picks during analysis — it
+   rendered 95 of the 112 strings `en.yml` declared (found by instrumenting
+   `Template.render` and diffing against the file).
+3. Its *own* new guard was blind to the renderer: it compared declared keys to
+   what a guideline reports it can pick, and never checked those keys were
+   rendered (found by mutation).
+
+Each fix was a few lines. The pattern is that verification code attracts the
+same optimism as the code it verifies, and nothing but an attack finds it.
+
+### Convention-with-fallback is good design and an excellent hiding place
+
+`instruction_key` and `name_key` derive from the class name, and both fall back
+when the locale has nothing. That is why a new guideline needs no declaration —
+and why nobody noticed that **zero** of 55 guidelines had an `instruction`, and
+46 of 56 rendered their name out of the class key. Everything rendered, so
+everything looked done. `"Allowed rhythmic values for combined123"` reached a
+student, identically in every language.
+
+When a fallback exists, "it renders" stops being evidence. The question to ask
+at plan time is not *does it work* but *how many are using the fallback* — one
+`count` over the registry, which nobody ran until three sessions later.
+
+### "No caller" and "no data" are different findings
+
+I proposed deleting `render_instruction`'s branch as dead code: no guideline had
+an `instruction:` entry, so the branch had never been taken. Rob's correction —
+instruction and violation have different functions — was right, and the fix was
+to write the 55 missing entries, not remove the mechanism. A documented seam
+with no data is a content gap wearing a dead-code costume. Worth checking the
+CHANGELOG before calling a branch dead; this one was advertised in a table.
+
+The genuinely dead code, by contrast, was provable: `Guideline#message` had no
+caller anywhere, and inserting a `raise` in it left all 6592 examples green.
+
+### A spec that pins a fallback goes hollow when the fallback stops being used
+
+Twice, and only one failed loudly:
+
+- The instruction-fallback example used `MinimumNotes`, which gained an
+  instruction whose text was identical to its violation. It **kept passing**
+  while testing the opposite branch.
+- The name-fallback example used `ConsonantClimax`, which gained a name. That
+  one failed outright.
+
+The silent case is the dangerous one, and the coverage number caught it —
+branch coverage dipped 97.22% → 97.15% while the example was hollow. Fallback
+specs should use a probe object of their own, never a real one that happens to
+lack the entry today.
+
+### The locale data was already telling us where the gap was
+
+The seven guidelines that had `name` entries were exactly the seven whose label
+interpolates configuration — the only ones no class-key transform could produce.
+Guides had all 23 instructions because nothing could generate them. The rule was
+consistent: an entry existed wherever Ruby could not derive the string. Reading
+that pattern is what showed the remaining work was writing copy, not building a
+mechanism — a distinction worth making before estimating.
+
+### Scope: the story moved the strings that existed
+
+Criterion 1 said no customer-facing English remains in `lib/head_music/style/`.
+The move satisfied it for violations and left names and instructions generated
+in Ruby, which technically is not a string in `lib` — and is exactly as
+untranslatable. The criterion was satisfiable without being met.
+
+Next time a story is phrased as "move X into Y", ask explicitly whether it
+includes writing the X that does not exist yet. Here that was 48 names and 55
+instructions: real work, real product decisions (names are noun phrases; the
+imperative belongs to the instruction), and about a session on its own.
+
+### Smaller notes
+
+- Eight violation strings were themselves rough — a missing article, and
+  "appropriately" / "proper" naming no standard a student could apply. Reading
+  every string in one table is what surfaced them; they had been shipping for
+  a while, invisible one at a time.
+- `I18n.exists?` consults the fallback chain, so it answers true for every
+  locale. `fallback: false` is documented but easy to miss, and without it
+  per-locale resolution is impossible.
+- The upcasing of a rendered name belongs in code, not data: `"%{contour}
+  contour"` has to stay lowercase for the sentence that embeds it mid-clause.
+  One value, two readings.
+- Committing before poking at the working tree is not optional. A mutation
+  harness that cleaned up with `git checkout -- .` destroyed an uncommitted
+  48-entry change; it was rebuildable from a generator script, which was luck
+  rather than design.
