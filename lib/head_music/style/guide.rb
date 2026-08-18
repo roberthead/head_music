@@ -1,11 +1,9 @@
 # A module for style analysis and guidelines.
 module HeadMusic::Style; end
 
-# Lookup facade for the guides in HeadMusic::Style::Guides. A class with a
-# .get factory, matching Tradition and the gem's other .get definers -- no
-# module in the gem defines .get. Never instantiated; .get returns a guide
-# class or a Guides::Configured, either of which answers assess(voice), key,
-# category, and display_name.
+# Lookup facade for the guides in HeadMusic::Style::Guides. Never instantiated;
+# .get returns a guide class or a Guides::Configured, either of which answers
+# assess(voice), key, category, and display_name.
 class HeadMusic::Style::Guide
   GUIDE_CLASSES = [
     HeadMusic::Style::Guides::FuxCantusFirmus,
@@ -27,9 +25,8 @@ class HeadMusic::Style::Guide
     HeadMusic::Style::Guides::FifthSpeciesHarmony
   ].freeze
 
-  # The six preserved contour keys, literal and greppable. This table is the
-  # reason the registry is an explicit list: no `inherited` hook or constant
-  # scan can produce a registry entry that is an instance rather than a class.
+  # Why the registry is an explicit list: no inherited hook or constant scan
+  # can produce an entry that is an instance rather than a class.
   CONTOUR_CONFIGURATIONS = {
     "arch_contour_melody" => {contour: :arch, minimum_melodic_intervals: 2},
     "ascending_contour_melody" => {contour: :ascending, minimum_melodic_intervals: 1},
@@ -46,24 +43,15 @@ class HeadMusic::Style::Guide
 
   ALL = REGISTRY.values.freeze
 
-  # A load-time check that every entry resolves. The configured entries already
-  # resolved as they were built -- Configured does that in its constructor, so
-  # nothing in the registry is written to after load and concurrent lookups
-  # never race on the memo -- which leaves this reading the classes' constants.
+  # Resolves every entry at load, so nothing in the registry is written to
+  # afterwards and concurrent lookups never race on the memo.
   ALL.each(&:guide_items)
   # A miss returns nil rather than falling back, unlike Tradition.get: a
-  # substituted tradition changes a consonance default, but a substituted
-  # guide would silently grade a voice against the wrong ruleset.
+  # substituted guide would grade a voice against the wrong ruleset.
   #
-  # Deliberately a plain hash lookup. Utilities::HashKey.for would memoize an
-  # entry per distinct argument, and these keys arrive from a consumer's
-  # database; const_get would traverse namespaces and raise NameError on an
-  # invalid name, violating nil-on-miss.
-  #
-  # The pass-through checks assess_items rather than assess, for the same
-  # reason GuideAssessment does: guidelines and guide items answer assess too,
-  # with different arguments, so assess would pass a guideline through as
-  # though it were a guide.
+  # A plain hash lookup: HashKey.for would memoize per distinct argument and
+  # these keys arrive from a consumer's database. The pass-through checks
+  # assess_items because guidelines answer assess too, with other arguments.
   def self.get(key)
     return key if key.respond_to?(:assess_items)
 
@@ -74,10 +62,8 @@ class HeadMusic::Style::Guide
     get(key) || raise(KeyError, "unknown style guide: #{key.inspect}")
   end
 
-  # Asks whether the registry knows this, not whether it quacks like a guide.
-  # Delegating to .get would answer true for any assess_items-responder,
-  # including an ad-hoc configuration whose key_for is nil -- so known? and
-  # key_for would disagree about the same object.
+  # Not delegated to .get, which would answer true for any assess_items
+  # responder -- leaving known? and key_for disagreeing about the same object.
   def self.known?(key)
     REGISTRY.key?(key.to_s) || !key_for(key).nil?
   end
@@ -102,17 +88,11 @@ class HeadMusic::Style::Guide
     )
   end
 
-  # What this guide asks a student to write, as distinct from how it grades
-  # what they wrote.
   def self.instruction_for(key)
     HeadMusic::Style::Template.render("guides.#{key}.instruction")
   end
 
-  # And that every string they can produce actually renders. A template that
-  # cannot be filled is invisible until someone reads it, so it is asked for
-  # here rather than discovered by a student.
-  #
-  # What comes back is the keys whose plural forms the locale data could not
-  # supply, kept rather than dropped so the gap is answerable at runtime.
+  # An unfillable template is invisible until someone reads it, so every string
+  # is asked for here. Holds the keys whose plural forms the locale data lacks.
   PLURAL_GAPS = HeadMusic::Style::Template.verify!(ALL).freeze
 end

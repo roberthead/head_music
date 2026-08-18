@@ -18,8 +18,7 @@ class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Guidel
     config[:violation_key] || super()
   end
 
-  # The permitted list is the message, and it is derivable from configuration
-  # alone, so an item can preview it without a voice.
+  # Derivable from configuration alone, so an item can preview it without a voice.
   def self.template_values(config)
     return {} if config[:violation_key]
 

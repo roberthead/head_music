@@ -53,9 +53,8 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     first_note.pitch == highest_pitch && last_note.pitch == lowest_pitch
   end
 
-  # The climax is by definition the maximum, so "net rise before, net fall after"
-  # is equivalent to both endpoints sitting below the climax pitch.
-  # Climax uniqueness and consonance remain ConsonantClimax's job.
+  # The climax is the maximum by definition, so "rise then fall" reduces to both
+  # endpoints sitting below it. Uniqueness and consonance are ConsonantClimax's.
   def arch?
     endpoints_interior_to?(highest_pitch)
   end
@@ -64,8 +63,8 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     endpoints_interior_to?(lowest_pitch)
   end
 
-  # Because the given pitch is a running extreme (the highest or lowest), no
-  # endpoint can pass it, so "interior" simply means neither endpoint touches it.
+  # The pitch is a running extreme, so no endpoint can pass it and "interior"
+  # means neither endpoint touches it.
   def endpoints_interior_to?(extreme_pitch)
     notes.length >= 3 && first_note.pitch != extreme_pitch && last_note.pitch != extreme_pitch
   end
@@ -78,9 +77,8 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     range <= HeadMusic::Analysis::DiatonicInterval.get(:major_third) && !directional_endpoints?
   end
 
-  # The highest_pitch > lowest_pitch guard is load-bearing: without it, an
-  # all-same-pitch melody (first == lowest and last == highest simultaneously)
-  # would absurdly fail static.
+  # The range guard is load-bearing: an all-same-pitch melody is simultaneously
+  # ascending and descending, and would otherwise fail static.
   def directional_endpoints?
     highest_pitch > lowest_pitch && (ascending? || descending?)
   end
@@ -89,9 +87,8 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     @pitch_numbers ||= notes.map { |note| note.pitch.midi_note_number }
   end
 
-  # Zigzag walk: a trend reversal is confirmed only when the melody retraces at
-  # least TREND_REVERSAL_SEMITONES from the running extreme of the current trend,
-  # so stepwise neighbor-note undulation never registers as a trend change.
+  # A reversal counts only once the melody retraces TREND_REVERSAL_SEMITONES
+  # from the running extreme, so neighbor-note undulation is not a trend change.
   def trend_directions
     @trend_directions ||= begin
       first = pitch_numbers.first
@@ -109,8 +106,6 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     end
   end
 
-  # No trend confirmed yet: widen the running range until the melody breaks out
-  # of it by at least the reversal threshold, which sets the first direction.
   def seek_trend(walk, number)
     if number - walk.low >= TREND_REVERSAL_SEMITONES
       start_trend(walk, :ascending, number)
@@ -122,8 +117,6 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     end
   end
 
-  # Within a trend: extend the extreme while the melody keeps going, or confirm a
-  # reversal once it retraces from that extreme by at least the threshold.
   def continue_trend(walk, number)
     sign = (walk.direction == :ascending) ? 1 : -1
     delta = number - walk.extreme

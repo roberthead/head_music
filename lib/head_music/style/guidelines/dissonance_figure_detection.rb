@@ -1,20 +1,16 @@
 # Module for style guidelines.
 module HeadMusic::Style::Guidelines; end
 
-# Shared detection of ornamental dissonance figures (nota cambiata, double neighbor)
-# plus the melodic helpers those figures and their surrounding guidelines rely on.
-# Include in any dissonance treatment guideline that recognizes these figures.
-# Expects the including class to provide: #notes, #cantus_firmus, #voice.
+# Shared detection of ornamental dissonance figures (nota cambiata, double
+# neighbor). Expects the including class to provide #notes, #cantus_firmus, #voice.
 module HeadMusic::Style::Guidelines::DissonanceFigureDetection
   private
 
-  # A note whose pitch clashes with the cantus firmus in two-part harmony.
   def dissonant_with_cantus?(note)
     interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, note.position)
     interval.notes.length == 2 && interval.dissonance?(:two_part_harmony)
   end
 
-  # Positions where the cantus firmus sounds a note (the strong beats).
   def cantus_firmus_positions
     @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |note| note.position.to_s })
   end
@@ -70,7 +66,6 @@ module HeadMusic::Style::Guidelines::DissonanceFigureDetection
     steps_back_from?(leap, melodic_interval_between(n3, n4), melodic_interval_between(n4, n5))
   end
 
-  # Notes 3-4-5 must both step in the direction opposite the leap.
   def steps_back_from?(leap, step_back_1, step_back_2)
     step_back_1.step? && step_back_2.step? &&
       step_back_1.direction != leap.direction &&

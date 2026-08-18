@@ -4,21 +4,15 @@ module HeadMusic::Style::Guides; end
 # Base class for species melody guides. Inherits analysis behavior from Base;
 # exists as a semantic marker distinguishing melody guides from harmony guides.
 class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
-  # The precondition every species melody guide shares: three notes is where a
-  # contour becomes possible at all, and below it the melodic guidelines have
-  # nothing to look at.
+  # Three notes is where a contour becomes possible at all.
   #
-  # Splatted by each subclass rather than declared here. Declarations live in a
-  # per-class singleton ivar, so gate_items on this class would leave every
-  # subclass with an empty gate list -- and would not raise, because normalize
-  # only objects when all three tiers are empty and the subclasses have
-  # primaries. The suite would stay green with nothing gated.
+  # Splatted by each subclass rather than declared here: declarations are a
+  # per-class ivar, so gate_items here would leave every subclass ungated, and
+  # normalize would not object because the subclasses have primaries.
   MELODIC_GATES = [
     HeadMusic::Style::Guidelines::MinimumNotes.with(3)
   ].freeze
 
-  # Guidelines shared by every melodic guide. Subclasses splat this into their
-  # primary list: primary_items(*MELODIC_CORE, ...species-specific rules).
   MELODIC_CORE = [
     HeadMusic::Style::Guidelines::ConsonantClimax,
     HeadMusic::Style::Guidelines::Diatonic,
@@ -28,9 +22,8 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::SingableRange
   ].freeze
 
-  # Guidelines shared by every moving species (second through fifth), whose
-  # melodies progress within the bar rather than holding a whole note as in
-  # first species. Subclasses splat this in alongside MELODIC_CORE.
+  # For the moving species (second through fifth), whose melodies progress
+  # within the bar rather than holding a whole note.
   MOVING_MELODIC_CORE = [
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::EndOnTonic,
@@ -43,17 +36,12 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::StepUpToFinalNote
   ].freeze
 
-  # Everything a species guide inherits rather than teaches. A species guide is
-  # about its rhythm; general melodic craft is background it takes for granted.
+  # A species guide is about its rhythm; melodic craft is background.
   INHERITED_MELODIC_CRAFT = (MELODIC_CORE + MOVING_MELODIC_CORE).freeze
 
-  # A species guide's declaration, split by what it inherits and what it adds.
-  #
-  # Partitioning here rather than at each call site matters because the guides
-  # do not declare the cores the same way -- some splat a constant, some name
-  # its members individually, and one hand-rolls a near-copy. Membership decides
-  # the tier, so a guide that names an inherited guideline by hand still gets it
-  # demoted, and the two lists cannot drift apart.
+  # Partitioned by membership rather than at the call site, because guides do
+  # not declare the cores the same way -- some splat the constant, some name its
+  # members -- and a hand-named inherited guideline must still be demoted.
   def self.species_items(*entries)
     inherited, taught = entries.flatten.compact.partition do |entry|
       INHERITED_MELODIC_CRAFT.include?(entry)
@@ -62,13 +50,10 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
     primary_items(*taught) if taught.any?
   end
 
-  # Builds a moving-species primary list: the shared melodic and moving cores plus
-  # the species-specific guidelines passed in.
   def self.moving_species_items(*additional)
     [*MELODIC_CORE, *MOVING_MELODIC_CORE, *additional].freeze
   end
 
-  # Marks every guide descending from here as a melody guide.
   def self.category
     :melody
   end

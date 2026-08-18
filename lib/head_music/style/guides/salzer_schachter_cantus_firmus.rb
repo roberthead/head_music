@@ -3,11 +3,9 @@ module HeadMusic::Style::Guides; end
 
 # Cantus firmus rules after Salzer & Schachter, Counterpoint in Composition (1969).
 class HeadMusic::Style::Guides::SalzerSchachterCantusFirmus < HeadMusic::Style::Guides::SpeciesMelody
-  # The two questions a threshold can ask, asked separately. Three notes is
-  # whether this is a melody at all; eight to fourteen is Fux's prescription for
-  # a cantus firmus, which is a judgment about a melody that exists. A short
-  # line is now told it is short without also being marked down on a climax and
-  # leaps it was never assessed for.
+  # Two questions, asked separately: three notes is whether this is a melody at
+  # all, the prescription is a judgment about one that exists. A short line is
+  # told it is short without being marked down on a climax never assessed.
   gate_items(*MELODIC_GATES)
 
   primary_items(

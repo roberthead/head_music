@@ -4,10 +4,8 @@ module HeadMusic::Style; end
 # One guide applied to one voice: the grade, and the per-item findings it was
 # computed from.
 class HeadMusic::Style::GuideAssessment
-  # Primaries -- what the guide is about -- share phi^-1 of the rubric, and the
-  # background it inherits shares phi^-2. The two sum to 1, so a guide that
-  # teaches one thing against ten inherited ones grades the lesson as heavily
-  # as everything else together.
+  # Primaries share phi^-1 of the rubric and background phi^-2. The two sum to
+  # 1, so one taught rule weighs as heavily as ten inherited ones together.
   TIER_BUDGETS = {
     primary: HeadMusic::GOLDEN_RATIO_INVERSE,
     secondary: HeadMusic::GOLDEN_RATIO_INVERSE**2
@@ -15,11 +13,8 @@ class HeadMusic::Style::GuideAssessment
 
   attr_reader :guide, :voice
 
-  # Any object that can assess a whole voice item by item is a guide here --
-  # a guide class, a Guides::Configured, or a test double. Checking for
-  # assess_items rather than assess is what keeps a guideline out: guidelines
-  # and guide items answer assess too, with different arguments, so a bare
-  # respond_to?(:assess) would let one through and fail deep inside grading.
+  # assess_items rather than assess, because guidelines answer assess too with
+  # different arguments and would fail deep inside grading instead of here.
   def initialize(guide, voice)
     unless guide.respond_to?(:assess_items)
       raise ArgumentError, "guide must respond to #assess_items(voice) (got #{guide.inspect})"
@@ -37,21 +32,15 @@ class HeadMusic::Style::GuideAssessment
     @guide_item_assessments ||= @guide.assess_items(voice)
   end
 
-  # Whether this guide can say anything about this voice. A voice that fails a
-  # precondition has not earned a bad grade on the rest -- there was nothing
-  # there to grade -- so the rubric is not computed and fitness is the gates
-  # alone.
+  # A voice failing a precondition has not earned a bad grade on the rest, so
+  # the rubric is not computed and fitness is the gates alone.
   def assessable?
     gates.all?(&:adherent?)
   end
 
-  # The grade: gates multiply against a weighted average of the rubric.
-  #
-  # No special case for an unassessable voice is needed. When a gate fails the
-  # rubric is empty, rubric_fitness returns 1.0 at its own guard, and this
-  # collapses to the product of the gates; when every gate passes each of their
-  # fitnesses is exactly 1, so the product is bit-exactly 1.0 and the grade is
-  # the rubric alone.
+  # Gates multiply against a weighted average of the rubric. No special case
+  # for an unassessable voice: an empty rubric returns 1.0 and this collapses
+  # to the gates, and passing gates are exactly 1 rather than nearly so.
   def fitness
     return 1.0 if guide_item_assessments.empty?
 
@@ -86,14 +75,10 @@ class HeadMusic::Style::GuideAssessment
     rubric.each_with_index.sum { |assessment, index| weights[index] * assessment.fitness } / total
   end
 
-  # A rubric whose weights are all equal is an unweighted mean, and is computed
-  # as one: scaling every term by phi^-1/n and dividing the sum back out is
-  # exact in real arithmetic and lossy in binary. Nearly every guide is
-  # all-primary, so the naive form would drift about an ulp on most of them --
-  # enough to change a grade that should not have changed at all.
-  #
-  # Counts come from the rubric rather than from the guide, so a tier nobody
-  # declared cannot divide by zero.
+  # Equal weights are computed as an unweighted mean: scaling by phi^-1/n and
+  # dividing back out is exact in real arithmetic and lossy in binary, and
+  # nearly every guide is all-primary. Counts come from the rubric, so a tier
+  # nobody declared cannot divide by zero.
   def rubric_weights
     counts = rubric.group_by(&:tier).transform_values(&:size)
     raw = rubric.map { |assessment| TIER_BUDGETS.fetch(assessment.tier) / counts[assessment.tier] }

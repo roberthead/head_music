@@ -1,9 +1,6 @@
-# A Guideline is one rule of craft. Subclasses find faults in a voice and
-# report them as marks.
-#
-# The class is the rule; instances are the analysis context that finds it,
-# private to .assess. What a consumer holds is the GuideItemAssessment that
-# comes back.
+# A Guideline is one rule of craft: subclasses find faults in a voice and
+# report them as marks. The class is the rule; instances are the analysis
+# context, private to .assess, which returns a frozen GuideItemAssessment.
 class HeadMusic::Style::Guideline
   attr_reader :voice
 
@@ -31,15 +28,12 @@ class HeadMusic::Style::Guideline
     @options = options
   end
 
-  # Pairs this guideline with the configuration a guide gives it,
-  # e.g. MinimumNotes.with(5).
   def self.with(**options)
     HeadMusic::Style::GuideItem.new(self, options)
   end
 
-  # Guidelines are addressed in the locale files by the snake_case of their
-  # class name, so a new guideline needs no declaration -- the same convention
-  # Style::Guide.display_name_for already uses for guides.
+  # Addressed in the locale files by the snake_case of the class name, so a new
+  # guideline needs no declaration.
   def self.template_key
     @template_key ||= HeadMusic::Utilities::Case.to_snake_case(name.split("::").last)
   end
@@ -48,26 +42,19 @@ class HeadMusic::Style::Guideline
 
   def self.instruction_key = "guidelines.#{template_key}.instruction"
 
-  # Takes the configuration, because a guide may name a different template for
-  # the same guideline.
+  # Takes the configuration: a guide may name a different template.
   def self.violation_key(_config = {}) = "guidelines.#{template_key}.violations.default"
 
-  # Renders this guideline's violation for a given configuration. Pluralized
-  # guidelines are routed through Template.pluralize so that a locale without
-  # plural data falls back to Ruby rather than raising at a student.
-  # A guideline's name is no more fixed than its violation: MinimumNotes is
-  # "Minimum of eight notes" in one guide and "of three" in another. Where a
-  # locale has nothing to say, the class name read as a sentence is a better
-  # answer than nothing.
+  # Where a locale has nothing to say, the class name read as a sentence beats
+  # nothing.
   def self.render_name(config)
     return template_key.tr("_", " ").capitalize unless HeadMusic::Style::Template.exists?(name_key)
 
     render_template(name_key, config)
   end
 
-  # Guidelines are already phrased imperatively -- "Peak on...", "Use only...",
-  # "Avoid..." -- so a guideline with nothing more specific to say instructs
-  # with the sentence it would complain with.
+  # Violations are already phrased imperatively, so a guideline with nothing
+  # more specific to say instructs with the sentence it would complain with.
   def self.render_instruction(config)
     return render_violation(config) unless HeadMusic::Style::Template.exists?(instruction_key)
 
@@ -78,13 +65,8 @@ class HeadMusic::Style::Guideline
     render_template(violation_key(config), config)
   end
 
-  # Takes the configuration rather than the finished values, because the values
-  # are built inside the locale the template resolved in. A number humanized
-  # into the reader's language has no business in a sentence that fell back to
-  # English, and template_values is where the humanizing happens.
-  #
-  # extra_values are what one particular violation has to add; the item's own
-  # interpolations are the base.
+  # Takes the configuration rather than finished values, so template_values --
+  # where numbers humanize -- runs inside the locale the sentence renders in.
   def self.render_template(key, config, extra_values = {})
     HeadMusic::Style::Template.in_locale_of(key) do
       values = template_values(config).merge(extra_values)
@@ -96,19 +78,12 @@ class HeadMusic::Style::Guideline
     end
   end
 
-  # The values a template may interpolate. Deliberately NOT the config itself:
-  # seven guide items declare no config at all and read their message values
-  # from class constants, and I18n returns a template untouched when given no
-  # values, so those would ship "%{number}" to a student without raising.
-  # Subclasses whose messages say something override this.
+  # Not the config itself: seven items declare none and read their values from
+  # class constants, and I18n returns a template untouched when given no values.
   def self.template_values(config)
     config.except(:violation_key)
   end
 
-  # The analysis seam. The instance built here is the analysis context -- it
-  # memoizes intermediate work across the private predicates a guideline is
-  # written from -- and it does not escape: what comes back is a frozen record
-  # of what was found.
   def self.assess(voice, guide_item, tier)
     analyzer = new(voice, **guide_item.config)
     HeadMusic::Style::GuideItemAssessment.new(
@@ -145,18 +120,14 @@ class HeadMusic::Style::Guideline
     flattened_marks.map(&:end_position).max
   end
 
-  # Which violation fired, and what it needs to say it. Decided during
-  # analysis, so a guideline with more than one way to fail names the one it
-  # found -- see ConsonantClimax.
+  # Decided during analysis, so a guideline with more than one way to fail
+  # names the one it found -- see ConsonantClimax.
   def violation_key
     self.class.violation_key(options)
   end
 
-  # What this particular violation adds to the item's own interpolations. Empty
-  # unless the analysis found something the configuration does not already say.
-  # Not the item's interpolations themselves: those are rebuilt when the message
-  # renders, so an assessment made under one locale still reads correctly under
-  # another.
+  # Only what this violation adds. The item's own interpolations are rebuilt at
+  # render time, so an assessment made under one locale reads right in another.
   def violation_values
     {}
   end
@@ -173,25 +144,21 @@ class HeadMusic::Style::Guideline
     notes.last
   end
 
-  # Signpost rather than enforcement -- send and allocate still reach it,
-  # and a spec testing a guideline's internal reasoning legitimately does.
-  # The guarantee that matters is that .assess is the only caller in lib.
+  # Signpost rather than enforcement: send still reaches it, and specs do. The
+  # guarantee that matters is that .assess is the only caller in lib.
   private_class_method :new
 
   protected
 
   attr_reader :options
 
-  # Marks may be a single mark, an array, or nil depending on the guideline;
-  # normalizing here keeps fitness and position scans uniform.
+  # Marks may be one, many, or nil depending on the guideline.
   def flattened_marks
     [marks].flatten.compact
   end
 
-  # An empty voice has nowhere to put a mark, so a guideline that must fail it
-  # marks the opening bar instead. Without this, Mark.for_all([]) returns no
-  # marks at all and no marks means a fitness of 1.0 -- which is the mechanism
-  # behind an empty voice grading perfectly.
+  # An empty voice has nowhere to put a mark, and no marks means a fitness of
+  # 1.0 -- which is how an empty voice used to grade perfectly.
   def no_placements_mark
     HeadMusic::Style::Mark.new(
       HeadMusic::Content::Position.new(composition, "1:1"),
@@ -200,9 +167,8 @@ class HeadMusic::Style::Guideline
     )
   end
 
-  # Normalization rate for the product of mark fitnesses. Subclasses override
-  # (e.g. with an opportunity count) to score by violation rate rather than
-  # raw violation count. The default of 1 preserves the raw product.
+  # Subclasses override with an opportunity count to score by violation rate
+  # rather than raw count.
   def fitness_denominator
     1
   end
@@ -261,8 +227,7 @@ class HeadMusic::Style::Guideline
       )
   end
 
-  # Keeps only intervals where both voices actually sound, dropping any where
-  # one voice is silent (fewer than two notes).
+  # Fewer than two notes means one voice is silent, so nothing sounds together.
   def sounding_together(intervals)
     intervals.reject { |interval| interval.notes.length < 2 }
   end

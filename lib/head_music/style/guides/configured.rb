@@ -28,15 +28,14 @@ class HeadMusic::Style::Guides::Configured
     @items_by_tier ||= guide_class.items_by_tier(**options)
   end
 
-  # Re-dispatches through the guide class so layering revalidates:
-  # ContourMelody.with(contour: :arch).with(contour: :spiral) still raises.
+  # Through the guide class, so layering revalidates: .with(contour: :spiral)
+  # on an already-configured guide still raises.
   def with(**more)
     guide_class.with(**options.merge(more))
   end
 
-  # Reverse lookup, not derivation. An ad-hoc configuration outside the
-  # registry honestly has no key rather than claiming a key that resolves
-  # to a different configuration.
+  # Reverse lookup, not derivation: an ad-hoc configuration has no key rather
+  # than claiming one that resolves to a different configuration.
   def key
     HeadMusic::Style::Guide.key_for(self)
   end
@@ -49,8 +48,8 @@ class HeadMusic::Style::Guides::Configured
     key ? HeadMusic::Style::Guide.display_name_for(key) : guide_class.display_name
   end
 
-  # A configuration outside the registry has no key, so it has no instruction
-  # of its own -- it borrows the one belonging to the guide it configures.
+  # An unregistered configuration borrows the instruction of the guide it
+  # configures.
   def instruction
     key ? HeadMusic::Style::Guide.instruction_for(key) : guide_class.instruction
   end

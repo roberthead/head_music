@@ -3,16 +3,13 @@ module HeadMusic::Style::Guides; end
 
 # The assess loop, shared by a guide class and a configured guide.
 #
-# Gates run first and stop the assessment when one of them fails. A gate asks
-# whether this voice can be assessed at all, so a voice that fails one has not
-# earned a bad grade on the rest -- there was nothing there to grade. Stopping
-# is also what keeps a guideline from reaching for a companion voice that is not
-# there: the harmony guidelines raise on a solo voice, and their gate is what
-# now prevents them from being asked.
+# Gates run first and stop the assessment when one fails: a voice that fails a
+# precondition has not earned a bad grade on the rest, and stopping is what
+# keeps the harmony guidelines from reaching for a companion that is not there.
 module HeadMusic::Style::Guides::Assessment
   RUBRIC_TIERS = %i[primary secondary].freeze
 
-  # Every gate is assessed even once one has failed, so a consumer can see which
+  # Every gate runs even after one fails, so a consumer sees which
   # preconditions are unmet rather than only the first.
   def self.assess_items(voice, items_by_tier)
     gates = items_by_tier[:gate].map { |item| item.assess(voice, :gate) }

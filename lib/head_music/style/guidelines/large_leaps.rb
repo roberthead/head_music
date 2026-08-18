@@ -18,8 +18,7 @@ class HeadMusic::Style::Guidelines::LargeLeaps < HeadMusic::Style::Guideline
     maximum_consecutive_leaps: nil
   }.freeze
 
-  # A guide may name a different template; the default says what recovery is
-  # acceptable in general.
+  # A guide may name a different template.
   def self.violation_key(config = {})
     config[:violation_key] || super()
   end

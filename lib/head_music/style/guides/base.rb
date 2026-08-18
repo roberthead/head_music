@@ -1,18 +1,17 @@
 # Module for guides
 module HeadMusic::Style::Guides; end
 
-# Base class for style guides. A guide declares its guidelines in three tiers
-# and assesses a voice against them, producing one guideline instance per item.
+# Base class for style guides: declares guidelines in three tiers and assesses
+# a voice against them.
 #
 # Tier is the list an item is declared in rather than a property of the item,
-# because the shared cores are shared objects: SpeciesMelody::MELODIC_CORE is
-# splatted into six guides, and ContourMelody treats as background exactly what
-# DiatonicMelody teaches. One frozen item cannot carry both standings.
+# because the cores are shared objects -- ContourMelody treats as background
+# exactly what DiatonicMelody teaches, and one frozen item cannot carry both.
 class HeadMusic::Style::Guides::Base
   TIERS = %i[gate primary secondary].freeze
 
   class << self
-    # Preconditions: is this voice assessable by this guide at all?
+    # Preconditions: is this voice assessable at all?
     def gate_items(*entries, except: nil) = tier_items(:gate, entries, except)
 
     # What this guide is about.
@@ -21,39 +20,28 @@ class HeadMusic::Style::Guides::Base
     # Background craft this guide inherits rather than teaches.
     def secondary_items(*entries, except: nil) = tier_items(:secondary, entries, except)
 
-    # The three lists in tier order, for consumers that want everything.
     def guide_items
       @guide_items ||= TIERS.flat_map { |tier| items_by_tier[tier] }.freeze
     end
 
-    # The one reader. A guide whose lists depend on configuration overrides
-    # this with a keyword signature, so an unconfigured use raises here rather
-    # than grading a voice against nothing at a plausible 1.0 -- the same
-    # defense the old .ruleset indirection provided against Ruby resolving a
-    # ::RULESET constant up the ancestor chain.
+    # A guide whose lists depend on configuration overrides this with a keyword
+    # signature, so an unconfigured use raises rather than grading a voice
+    # against nothing at a plausible 1.0.
     def items_by_tier
       @items_by_tier ||= normalize(declarations)
     end
 
-    # The public seam: a graded assessment of one voice.
     def assess(voice)
       HeadMusic::Style::GuideAssessment.new(self, voice)
     end
 
-    # Each item assessed against the tier it was declared in, stopping at a
-    # failed gate. The grade is GuideAssessment's job; this is the material it
-    # grades.
+    # The material GuideAssessment grades, stopping at a failed gate.
     def assess_items(voice)
       HeadMusic::Style::Guides::Assessment.assess_items(voice, items_by_tier)
     end
 
-    # Pairs this guide with configuration: ContourMelody.with(contour: :arch).
-    #
-    # A guide gains configuration by declaring keywords on .items_by_tier, so a
-    # guide taking none accepts none. Saying that here, at configuration time,
-    # is the same choice ContourMelody makes in normalizing its contour in
-    # .with: the alternative is Ruby's bare "wrong number of arguments" at the
-    # first assessment, naming neither the guide nor the option.
+    # Rejected here rather than at the first assessment, where Ruby's bare
+    # "wrong number of arguments" would name neither the guide nor the option.
     def with(**options)
       if options.any? && method(:items_by_tier).parameters.empty?
         raise ArgumentError, "#{name} takes no configuration, so it cannot be given: #{options.keys.join(", ")}"
@@ -66,8 +54,7 @@ class HeadMusic::Style::Guides::Base
       HeadMusic::Utilities::Case.to_snake_case(name.split("::").last)
     end
 
-    # An open enum owned by the gem: :melody or :harmony today, with room for
-    # :rhythm or :form later. Declared on the semantic marker base classes.
+    # An open enum: :melody or :harmony today, declared on the marker bases.
     def category
       nil
     end
@@ -82,15 +69,10 @@ class HeadMusic::Style::Guides::Base
 
     protected
 
-    # Coerces bare guideline classes and freezes. Shared by the macro path and
-    # by a configured guide's override, so both get the same coercion and the
-    # same checks.
     def normalize(tiers)
       resolved = TIERS.to_h { |tier| [tier, wrap_list(tiers[tier])] }.freeze
-      # ArgumentError rather than NotImplementedError: this is a guide
-      # declared wrong, not an abstract method left unimplemented, and it
-      # should be catchable by an ordinary rescue like the other two guards
-      # in this file. NotImplementedError is a ScriptError and is not.
+      # ArgumentError, not NotImplementedError: the latter is a ScriptError and
+      # so escapes an ordinary rescue.
       if resolved.values.all?(&:empty?)
         raise ArgumentError, "#{name} declares no guide items"
       end
@@ -108,16 +90,13 @@ class HeadMusic::Style::Guides::Base
       nil
     end
 
-    # Per class on the singleton, never inherited: a subclass that omits a list
-    # gets an empty list rather than silently inheriting its ancestor's.
+    # Never inherited: a subclass that omits a list gets an empty one.
     def declarations
       @declarations ||= {}
     end
 
-    # except: is applied to the entries of the call that carried it, not to the
-    # tier as a whole. DiatonicMelody drops SingableIntervals from the splatted
-    # core and then declares its own configured one; a tier-wide filter would
-    # remove that too.
+    # except: applies to the entries of the call carrying it, not the tier:
+    # DiatonicMelody drops a core item and then declares its own configured one.
     def wrap_list(entries, excluded = nil)
       items = Array(entries).compact.map { |entry| HeadMusic::Style::GuideItem.wrap(entry) }
       return items.freeze if excluded.nil?
@@ -125,9 +104,8 @@ class HeadMusic::Style::Guides::Base
       items.reject { |item| Array(excluded).include?(item.guideline) }.freeze
     end
 
-    # A guideline may appear in two tiers -- MinimumNotes as a low gate and
-    # again as a stylistic minimum asks two different questions. The same
-    # guideline with the same configuration in two tiers is double-counting.
+    # MinimumNotes as a gate and again as a stylistic minimum asks two
+    # questions; the same configuration in two tiers is double-counting.
     def reject_duplicates(resolved)
       duplicated = resolved.values.flatten.tally.select { |_item, count| count > 1 }.keys
       return if duplicated.empty?
