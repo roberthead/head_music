@@ -85,10 +85,36 @@ describe HeadMusic::Style::GuideItem do
       expect(guidelines::ConsonantClimax.with.name).to eq "Consonant climax"
     end
 
+    it "says what the locale gives it, which is not the violation" do
+      item = probe_guideline("Write a melody of at least %{minimum} notes.").with(minimum: "eight")
+
+      expect(item.instruction).to eq "Write a melody of at least eight notes."
+      expect(item.violation_preview).to eq "Write at least eight notes."
+    end
+
     # Guidelines are already phrased imperatively, so one with nothing more
-    # specific to say instructs with the sentence it would complain with.
+    # specific to say instructs with the sentence it would complain with. Every
+    # shipped guideline carries an instruction now, so this is what a newly
+    # added one does until somebody writes it a sentence.
     it "instructs with the violation when there is no separate instruction" do
-      expect(guidelines::MinimumNotes.with(8).instruction).to eq "Write at least eight notes."
+      item = probe_guideline(nil).with(minimum: "eight")
+
+      expect(item.instruction).to eq "Write at least eight notes."
+      expect(item.instruction).to eq item.violation_preview
+    end
+
+    # Anonymous and keyed to a stored entry, so that borrowing a shipped
+    # guideline cannot change what every other spec reads for it.
+    # A key of its own for each case: store_translations merges, so one entry
+    # reused would keep the instruction the other example gave it.
+    def probe_guideline(instruction)
+      key = instruction ? "spec_probe_instructed" : "spec_probe_bare"
+      entry = {violations: {default: "Write at least %{minimum} notes."}}
+      entry[:instruction] = instruction if instruction
+      I18n.backend.store_translations(:en, {head_music: {style: {guidelines: {key.to_sym => entry}}}})
+      Class.new(HeadMusic::Style::Guideline) do
+        define_singleton_method(:template_key) { key }
+      end
     end
   end
 

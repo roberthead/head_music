@@ -10,15 +10,19 @@ en_GB:
     style:
       guidelines:
         florid_dissonance_treatment:
+          instruction: "Reach every dissonance as a passing tone, cambiata, or double neighbour on a weak beat, and prepare and resolve every tied suspension."
           violations:
-            default: "Treat dissonances appropriately: passing tones, cambiata, or double neighbour on weak beats; proper suspension treatment for tied notes."
+            default: "Treat each dissonance as a passing tone, cambiata, or double neighbour on a weak beat, and prepare and resolve every tied suspension."
         no_rests:
+          instruction: "Sound a note in every bar."
           violations:
             default: "Place a note in each bar."
         third_species_dissonance_treatment:
+          instruction: "Reach every dissonance as a passing tone, neighbour tone, cambiata, or double neighbour figure."
           violations:
             default: "Treat dissonances as passing tones, neighbour tones, cambiata, or double neighbour figures."
         triple_meter_dissonance_treatment:
+          instruction: "Reach every dissonance as a passing tone or a neighbour tone."
           violations:
             default: "Treat dissonances as passing tones or neighbour tones."
       guides:

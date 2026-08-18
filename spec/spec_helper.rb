@@ -225,7 +225,7 @@ FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS = [
     name: "Fux D with one measure of half notes",
     key: "D dorian", pitches: %w[D F E D G F A G F E D],
     durations: %i[whole whole whole half half whole],
-    expected_message: "Use consistent rhythmic unit."
+    expected_message: "Use the same rhythmic value throughout."
   },
   {
     name: "Fux D with unrecovered large leap",
