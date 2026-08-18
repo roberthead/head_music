@@ -75,6 +75,14 @@ describe HeadMusic::Style::Guide do
     expect(declared_violation_keys - swept_violation_keys).to be_empty
   end
 
+  # Declaring the keys is half of it. A renderer that dropped all but the first
+  # would leave the same branch unrendered at load and the guard above green.
+  it "renders every key it declares" do
+    short = items.reject { |item| item.violation_previews.size == item.guideline.violation_keys(item.config).size }
+
+    expect(short).to be_empty
+  end
+
   # Read from the file rather than the backend, which merges en_GB overrides of
   # these same keys back in.
   def declared_violation_keys

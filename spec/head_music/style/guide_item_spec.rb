@@ -129,6 +129,21 @@ describe HeadMusic::Style::GuideItem do
     end
   end
 
+  describe "#violation_previews" do
+    # ConsonantClimax decides between these two during the analysis, so the
+    # second is invisible to anything that only asks for the default.
+    it "renders both sentences a guideline chooses between" do
+      expect(guidelines::ConsonantClimax.with.violation_previews).to contain_exactly(
+        "Peak once, or twice with a step between.",
+        "Peak on a note that is consonant with the tonic."
+      )
+    end
+
+    it "renders the one sentence a guideline with a single branch has" do
+      expect(guidelines::MinimumNotes.with(8).violation_previews).to eq ["Write at least eight notes."]
+    end
+  end
+
   describe "removed options" do
     # An unrecognized key rides along in config and is dropped at render, so
     # ignoring message: would let a consumer's custom sentence disappear
