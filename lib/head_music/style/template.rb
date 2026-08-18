@@ -90,10 +90,11 @@ module HeadMusic::Style::Template
     @fell_back_to_ruby ||= []
   end
 
-  # Renders every string the registry can produce, at load, so a missing or
-  # unfillable template fails on require rather than in front of a student. In
-  # English deliberately: a host application's locale must not decide whether
-  # the gem loads. Returns the keys that needed the Ruby plural fallback.
+  # Renders every template the registry can produce -- including the violation
+  # branches an analysis chooses between -- at load, so a missing or unfillable
+  # one fails on require rather than in front of a student. In English
+  # deliberately: a host application's locale must not decide whether the gem
+  # loads. Returns the keys that needed the Ruby plural fallback.
   def verify!(entries)
     fell_back_to_ruby.clear
     I18n.with_locale(:en) do
@@ -102,7 +103,7 @@ module HeadMusic::Style::Template
         guide.guide_items.each do |item|
           item.name
           item.instruction
-          item.violation_preview
+          item.violation_previews
         end
       end
     end

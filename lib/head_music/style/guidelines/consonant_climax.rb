@@ -3,13 +3,19 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::ConsonantClimax < HeadMusic::Style::Guideline
+  DISSONANT_VIOLATION_KEY = "guidelines.consonant_climax.violations.dissonant"
+
+  def self.violation_keys(config = {})
+    super + [DISSONANT_VIOLATION_KEY]
+  end
+
   # Two ways to fail, and a student is owed the one that happened: a climax
   # dissonant with the tonic is a different mistake from a climax that keeps
   # coming back. The guideline already decided which, so it says so.
   def violation_key
     return self.class.violation_key if consonant_climax_pitch?
 
-    "guidelines.consonant_climax.violations.dissonant"
+    DISSONANT_VIOLATION_KEY
   end
 
   def marks

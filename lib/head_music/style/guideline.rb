@@ -65,6 +65,17 @@ class HeadMusic::Style::Guideline
     render_template(violation_key(config), config)
   end
 
+  # Every key an analysis can choose between, not only the one a bare config
+  # names. Load-time verification renders all of them: a branch reached by one
+  # kind of failure is otherwise unrendered until a student causes it.
+  def self.violation_keys(config = {})
+    [violation_key(config)]
+  end
+
+  def self.render_violations(config)
+    violation_keys(config).map { |key| render_template(key, config) }
+  end
+
   # Takes the configuration rather than finished values, so template_values --
   # where numbers humanize -- runs inside the locale the sentence renders in.
   def self.render_template(key, config, extra_values = {})

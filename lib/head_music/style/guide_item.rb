@@ -31,6 +31,12 @@ class HeadMusic::Style::GuideItem
     guideline.render_violation(config)
   end
 
+  # Every sentence the item can produce, including the branches an analysis
+  # chooses between. What load-time verification sweeps.
+  def violation_previews
+    guideline.render_violations(config)
+  end
+
   def assess(voice, tier)
     guideline.assess(voice, self, tier)
   end

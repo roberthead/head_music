@@ -20,19 +20,33 @@ describe HeadMusic::Style::Guide do
   def problems_in(locale)
     I18n.with_locale(locale) do
       guides.filter_map { |guide| problem_with(guide, :instruction) } +
-        items.flat_map { |item| %i[name instruction violation_preview].filter_map { |m| problem_with(item, m) } }
+        items.flat_map { |item| %i[name instruction].filter_map { |m| problem_with(item, m) } } +
+        items.flat_map { |item| violation_problems_with(item) }
     end
   end
 
-  def problem_with(subject, method)
-    rendered = subject.public_send(method)
-    return "#{subject.inspect}##{method} is not a string" unless rendered.is_a?(String)
-    return "#{subject.inspect}##{method} is empty" if rendered.empty?
-    return "#{subject.inspect}##{method} left an interpolation: #{rendered}" if rendered.include?("%{")
+  # Every branch, not only the default: the sentence a guideline picks during
+  # analysis has to survive each locale too.
+  def violation_problems_with(item)
+    item.violation_previews.each_with_index.filter_map do |rendered, index|
+      fault_in(rendered, "#{item.inspect}#violation_previews[#{index}]")
+    end
+  rescue => error
+    ["#{item.inspect}#violation_previews: #{error.class}: #{error.message}"]
+  end
 
-    nil
+  def problem_with(subject, method)
+    fault_in(subject.public_send(method), "#{subject.inspect}##{method}")
   rescue => error
     "#{subject.inspect}##{method}: #{error.class}: #{error.message}"
+  end
+
+  def fault_in(rendered, label)
+    return "#{label} is not a string" unless rendered.is_a?(String)
+    return "#{label} is empty" if rendered.empty?
+    return "#{label} left an interpolation: #{rendered}" if rendered.include?("%{")
+
+    nil
   end
 
   I18n.available_locales.each do |locale|
@@ -49,8 +63,31 @@ describe HeadMusic::Style::Guide do
   def strings_in(locale)
     I18n.with_locale(locale) do
       guides.map(&:instruction) +
-        items.flat_map { |item| [item.name, item.instruction, item.violation_preview] }
+        items.flat_map { |item| [item.name, item.instruction] + item.violation_previews }
     end
+  end
+
+  # The dissonant-climax sentence shipped unverified: ConsonantClimax picks it
+  # during analysis, and nothing that runs at load ever named it. A guideline
+  # that grows a second violation branch has to declare it here, or it stays
+  # unrendered until a student causes exactly that failure.
+  it "sweeps every violation entry its guidelines declare" do
+    expect(declared_violation_keys - swept_violation_keys).to be_empty
+  end
+
+  # Read from the file rather than the backend, which merges en_GB overrides of
+  # these same keys back in.
+  def declared_violation_keys
+    english = YAML.load_file(File.expand_path("../../../lib/head_music/locales/en.yml", __dir__))
+    registry_keys = items.map { |item| item.guideline.template_key }.uniq
+    entries = english.dig("en", "head_music", "style", "guidelines").slice(*registry_keys)
+    entries.flat_map do |key, entry|
+      (entry["violations"] || {}).keys.map { |form| "guidelines.#{key}.violations.#{form}" }
+    end
+  end
+
+  def swept_violation_keys
+    items.flat_map { |item| item.guideline.violation_keys(item.config) }.uniq
   end
 
   # No locale but en and en_GB carries a style entry, so a German reader's

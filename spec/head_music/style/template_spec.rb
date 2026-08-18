@@ -118,19 +118,19 @@ describe HeadMusic::Style::Template do
   end
 
   describe ".verify!" do
-    let(:item) { instance_double(HeadMusic::Style::GuideItem, name: "n", instruction: "i", violation_preview: "v") }
+    let(:item) { instance_double(HeadMusic::Style::GuideItem, name: "n", instruction: "i", violation_previews: ["v"]) }
     # A guide is a class rather than an instance of one.
     let(:guide) { class_double(HeadMusic::Style::Guides::Base, instruction: "write something", guide_items: [item]) }
 
     it "asks for every string a guide can produce" do
       expect { described_class.verify!([guide]) }.not_to raise_error
 
-      expect(item).to have_received(:violation_preview)
+      expect(item).to have_received(:violation_previews)
     end
 
     # Otherwise this is a decorative call at the bottom of guide.rb.
     it "raises for a guide item whose template is missing" do
-      allow(item).to receive(:violation_preview).and_raise(described_class::MissingTemplate)
+      allow(item).to receive(:violation_previews).and_raise(described_class::MissingTemplate)
 
       expect { described_class.verify!([guide]) }.to raise_error(described_class::MissingTemplate)
     end
@@ -139,8 +139,8 @@ describe HeadMusic::Style::Template do
     # locale data forever. A library has no business printing, so the report is
     # what comes back.
     it "reports the keys that needed the Ruby plural fallback" do
-      allow(item).to receive(:violation_preview) do
-        described_class.pluralize("spec_probe.partial", count: 4, number: "four")
+      allow(item).to receive(:violation_previews) do
+        [described_class.pluralize("spec_probe.partial", count: 4, number: "four")]
       end
 
       expect(described_class.verify!([guide])).to eq ["spec_probe.partial"]
