@@ -6,10 +6,8 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
 
   attr_reader :spelling, :register
 
-  delegate :letter_name, to: :spelling
+  delegate :letter_name, :alteration, :pitch_class, :sharp?, :flat?, to: :spelling
   delegate :series_ascending, :series_descending, to: :letter_name, prefix: true
-  delegate :alteration, :sharp?, :flat?, to: :spelling
-  delegate :pitch_class, to: :spelling
   delegate :number, to: :pitch_class, prefix: true
   delegate :pitch_class_number, to: :natural, prefix: true
   delegate :semitones, to: :alteration, prefix: true, allow_nil: true
@@ -64,21 +62,15 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
     fetch_or_create(HeadMusic::Rudiment::Spelling.from_number(number), (number_int / 12) - 1)
   end
 
+  # The register comes from the natural letter pitch and the alteration from the
+  # spelling, which measures it from the same place.
   def self.from_number_and_letter(number, letter_name)
-    letter_name = HeadMusic::Rudiment::LetterName.get(letter_name)
-    natural_letter_pitch = natural_letter_pitch(number, letter_name)
-    alteration_interval = natural_letter_pitch.smallest_interval_to(HeadMusic::Rudiment::PitchClass.get(number))
-    alteration = HeadMusic::Rudiment::Alteration.by(:semitones, alteration_interval) if alteration_interval != 0
-    spelling = HeadMusic::Rudiment::Spelling.fetch_or_create(letter_name, alteration)
-    fetch_or_create(spelling, natural_letter_pitch.register)
+    spelling = HeadMusic::Rudiment::Spelling.from_number_and_letter(number, letter_name)
+    fetch_or_create(spelling, natural_letter_pitch(number, letter_name).register)
   end
 
   def self.natural_letter_pitch(number, letter_name)
-    number_int = number.to_i
-    natural_letter_pitch = get(HeadMusic::Rudiment::LetterName.get(letter_name).pitch_class)
-    natural_letter_pitch += 12 while (number_int - natural_letter_pitch.to_i) >= 6
-    natural_letter_pitch -= 12 while (number_int - natural_letter_pitch.to_i) <= -6
-    get(natural_letter_pitch)
+    NaturalLetterPitch.get(number, letter_name)
   end
 
   def self.fetch_or_create(spelling, register = nil)
@@ -119,7 +111,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def helmholtz_notation
-    helmholtz_letter_name + helmholtz_marks
+    HelmholtzNotation.new(spelling, register).to_s
   end
 
   def natural
@@ -173,23 +165,10 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def steps_to(other)
-    other = HeadMusic::Rudiment::Pitch.get(other)
-    letter_name_steps_to(other) + 7 * octave_changes_to(other)
+    StepDistance.new(self, other).steps
   end
 
   private
-
-  def octave_changes_to(other)
-    other.register - register - octave_adjustment_to(other)
-  end
-
-  def octave_adjustment_to(other)
-    (pitch_class_above?(other) ? 1 : 0)
-  end
-
-  def pitch_class_above?(other)
-    natural_pitch_class_number > other.natural_pitch_class_number
-  end
 
   def enharmonic_equivalence
     @enharmonic_equivalence ||= HeadMusic::Rudiment::Pitch::EnharmonicEquivalence.get(self)
@@ -201,16 +180,5 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
 
   def tuning
     @tuning ||= HeadMusic::Rudiment::Tuning.new
-  end
-
-  def helmholtz_letter_name
-    spelling_str = spelling.to_s
-    return spelling_str.downcase if HeadMusic::Rudiment::Register.get(register).helmholtz_case == :lower
-
-    spelling_str
-  end
-
-  def helmholtz_marks
-    HeadMusic::Rudiment::Register.get(register).helmholtz_marks
   end
 end
