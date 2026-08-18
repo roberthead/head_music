@@ -80,7 +80,6 @@ def corpus
   entries
 end
 
-# Everything here must be answerable on both sides of the change.
 def grade(guide, voice)
   assessment = HeadMusic::Style::GuideAssessment.new(guide, voice)
   items = assessment.guide_item_assessments
@@ -89,7 +88,7 @@ def grade(guide, voice)
     adherent: assessment.adherent?,
     message_count: assessment.messages.length,
     item_count: items.length,
-    assessable: assessment.respond_to?(:assessable?) ? assessment.assessable? : nil,
+    assessable: assessment.assessable?,
     failed_gates: items.select { |item| item.gate? && !item.adherent? }.map { |item| item.guideline.name.split("::").last }.sort
   }
 rescue => error
