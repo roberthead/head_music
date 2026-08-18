@@ -81,28 +81,13 @@ GUIDE_ITEM_STRINGS = [
 ].freeze
 
 describe HeadMusic::Style::GuideItem do
-  let(:voice) do
-    composition = HeadMusic::Content::Composition.new(name: "probe", key_signature: "D dorian")
-    composition.add_voice(role: :counterpoint).tap do |part|
-      %w[D4 F4 E4 D4].each_with_index { |pitch, bar| part.place("#{bar + 1}:1", :whole, pitch) }
-    end
-  end
-
-  # After the move a guide item previews its violation directly; before it, the
-  # analyzer is the only thing that can render one.
-  def message_for(item)
-    return item.violation_preview if item.respond_to?(:violation_preview)
-
-    item.guideline.send(:new, voice, **item.config).message
-  end
-
   GUIDE_ITEM_STRINGS.each do |guideline_name, config, expected|
     label = config.empty? ? guideline_name : "#{guideline_name} #{config.inspect}"
 
     it "renders the violation message for #{label}" do
       guideline = HeadMusic::Style::Guidelines.const_get(guideline_name)
 
-      expect(message_for(described_class.new(guideline, config))).to eq expected
+      expect(described_class.new(guideline, config).violation_preview).to eq expected
     end
   end
 

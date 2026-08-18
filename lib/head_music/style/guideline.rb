@@ -132,10 +132,6 @@ class HeadMusic::Style::Guideline
     {}
   end
 
-  def message
-    self.class.render_template(violation_key, options, violation_values)
-  end
-
   def first_note
     notes.first
   end
