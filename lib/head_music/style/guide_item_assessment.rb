@@ -15,7 +15,9 @@ module HeadMusic::Style; end
 class HeadMusic::Style::GuideItemAssessment
   attr_reader :voice, :guide_item, :tier, :marks, :fitness, :violation_key, :violation_values
 
-  delegate :guideline, :config, to: :guide_item
+  # Including the name, which is the item's to give: what a guide calls a
+  # guideline it configured, not what the class is called.
+  delegate :guideline, :config, :name, to: :guide_item
 
   def initialize(voice:, guide_item:, tier:, marks:, fitness:, violation_key: nil, violation_values: {})
     @voice = voice
@@ -58,8 +60,5 @@ class HeadMusic::Style::GuideItemAssessment
     marks.map(&:end_position).max
   end
 
-  def name
-    guideline.name
-  end
   alias_method :to_s, :name
 end

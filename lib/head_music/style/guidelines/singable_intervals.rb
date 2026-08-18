@@ -48,23 +48,6 @@ class HeadMusic::Style::Guidelines::SingableIntervals < HeadMusic::Style::Guidel
     @config ||= DEFAULTS.merge(options)
   end
 
-  def permitted_descriptions
-    (ascending_shorthands | descending_shorthands).map do |shorthand|
-      describe_shorthand(shorthand)
-    end
-  end
-
-  def describe_shorthand(shorthand)
-    return shorthand if both_directions?(shorthand)
-
-    direction = ascending_shorthands.include?(shorthand) ? :ascending : :descending
-    HeadMusic::Style::Template.render("interval_directions.#{direction}", interval: shorthand)
-  end
-
-  def both_directions?(shorthand)
-    ascending_shorthands.include?(shorthand) && descending_shorthands.include?(shorthand)
-  end
-
   def permitted?(note_pair)
     melodic_interval = note_pair.melodic_interval
     whitelist_for_interval(melodic_interval).include?(melodic_interval.shorthand)

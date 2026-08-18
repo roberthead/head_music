@@ -73,8 +73,15 @@ describe HeadMusic::Style::GuideItemAssessment do
     end
   end
 
+  # A consumer building a results list holds assessments, not items, so this is
+  # where the rubric gets its labels. Answering with the class path meant the
+  # rendered name was reachable only by going through guide_item.
   describe "#name" do
-    its(:name) { is_expected.to eq "HeadMusic::Style::Guidelines::MinimumNotes" }
+    its(:name) { is_expected.to eq "Minimum of five notes" }
     its(:to_s) { is_expected.to eq assessment.name }
+
+    it "says what this guide configured, as the item does" do
+      expect(assessment.name).to eq guide_item.name
+    end
   end
 end
