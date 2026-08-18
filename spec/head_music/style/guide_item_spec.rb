@@ -81,8 +81,19 @@ describe HeadMusic::Style::GuideItem do
       expect(guidelines::MinimumNotes.with(3).name).to eq "Minimum of three notes"
     end
 
+    # Every shipped guideline carries a name now, so this is what a newly added
+    # one reads as until somebody writes it a label.
     it "reads the class name as a sentence when the locale has nothing better" do
-      expect(guidelines::ConsonantClimax.with.name).to eq "Consonant climax"
+      expect(probe_guideline(nil).with(minimum: "eight").name).to eq "Spec probe bare"
+    end
+
+    # One locale value, two readings: the label wants a capital and the
+    # sentence that embeds the same word mid-clause does not.
+    it "upcases a name that leads with an interpolated value" do
+      item = guidelines::Contoured.with(:arch)
+
+      expect(item.name).to eq "Arch contour"
+      expect(item.violation_preview).to eq "Write a melody with the arch contour."
     end
 
     it "says what the locale gives it, which is not the violation" do

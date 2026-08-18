@@ -22,6 +22,7 @@ en_GB:
           violations:
             default: "Treat dissonances as passing tones, neighbour tones, cambiata, or double neighbour figures."
         triple_meter_dissonance_treatment:
+          name: "Triple metre dissonance treatment"
           instruction: "Reach every dissonance as a passing tone or a neighbour tone."
           violations:
             default: "Treat dissonances as passing tones or neighbour tones."

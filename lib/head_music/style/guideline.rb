@@ -47,10 +47,18 @@ class HeadMusic::Style::Guideline
 
   # Where a locale has nothing to say, the class name read as a sentence beats
   # nothing.
+  #
+  # The first letter is upcased here rather than in the data because a name can
+  # lead with an interpolation -- "%{contour} contour" -- whose value has to
+  # stay lowercase for the violation sentence that embeds it mid-sentence.
   def self.render_name(config)
-    return template_key.tr("_", " ").capitalize unless HeadMusic::Style::Template.exists?(name_key)
-
-    render_template(name_key, config)
+    rendered =
+      if HeadMusic::Style::Template.exists?(name_key)
+        render_template(name_key, config)
+      else
+        template_key.tr("_", " ")
+      end
+    rendered.sub(/\A./) { |letter| letter.upcase }
   end
 
   # Violations are already phrased imperatively, so a guideline with nothing

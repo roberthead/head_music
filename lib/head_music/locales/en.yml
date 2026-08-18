@@ -586,11 +586,13 @@ en:
         whole: "whole"
       guidelines:
         large_leaps:
+          name: "Leap recovery"
           instruction: "Follow each large leap with a step, a repeated note, a change of direction, or the rest of a triad."
           violations:
             default: "Recover leaps by step, repetition, opposite direction, or spelling triad."
             fux_cantus_firmus: "Recover large leaps by step in the opposite direction."
         singable_intervals:
+          name: "Singable melodic intervals"
           instruction: "Build the line from %{intervals} only."
           violations:
             default: "Use only %{intervals} in the melodic line."
@@ -660,187 +662,233 @@ en:
               one: "Write at least %{number} note."
               other: "Write at least %{number} notes."
         allowed_rhythmic_values_for_combined123:
+          name: "Whole, half, and quarter notes only"
           instruction: "Write in whole notes, half notes, and quarter notes."
           violations:
             default: "Use only whole notes, half notes, and quarter notes."
         allowed_rhythmic_values_for_fifth_species:
+          name: "Fifth species note values"
           instruction: "Write in half notes, quarter notes, and paired stepwise eighth notes on weak beats, saving the whole note for the final bar."
           violations:
             default: "Use only whole notes in the final bar, half notes, quarter notes, and paired stepwise eighth notes on weak beats."
         always_move:
+          name: "No repeated notes"
           instruction: "Move to a different note each time rather than repeating one."
           violations:
             default: "Always move to a different note."
         approach_perfection_contrarily:
+          name: "Contrary approach to perfect consonances"
           instruction: "Approach every perfect consonance by contrary motion."
           violations:
             default: "Approach perfect consonances by contrary motion."
         avoid_crossing_voices:
+          name: "No voice crossing"
           instruction: "Keep your line on its own side of the other voice."
           violations:
             default: "Avoid crossing voices. Maintain the high-low relationship between voices."
         avoid_overlapping_voices:
+          name: "No voice overlap"
           instruction: "Keep every note on your own side of the notes next to it in the other voice."
           violations:
             default: "Avoid overlapping voices. Maintain the high-low relationship between voices even for adjacent notes."
         consonant_climax:
+          name: "Single consonant climax"
           instruction: "Give the line one clear peak, consonant with the tonic, sounded once or twice with a step between."
           violations:
             default: "Peak once, or twice with a step between."
             dissonant: "Peak on a note that is consonant with the tonic."
         consonant_downbeats:
+          name: "Consonant downbeats"
           instruction: "Sound a consonance on every downbeat, except where a tie suspends one."
           violations:
             default: "Use consonant harmonic intervals on every downbeat (unless a tied suspension)."
         diatonic:
+          name: "Diatonic notes only"
           instruction: "Write using only the notes of the key signature."
           violations:
             default: "Use only notes in the key signature."
         direction_changes:
+          name: "Changes of direction"
           instruction: "Change direction regularly rather than running one way for long."
           violations:
             default: "Change melodic direction regularly."
         end_on_perfect_consonance:
+          name: "Final note on the tonic or fifth"
           instruction: "Close the line on the first or the fifth scale degree."
           violations:
             default: "End on the first or the fifth scale degree."
         end_on_tonic:
+          name: "Final note on the tonic"
           instruction: "Close the line on the first scale degree."
           violations:
             default: "End on the first scale degree."
         first_bar_half_notes:
+          name: "Half notes in the first bar"
           instruction: "Open the first bar with half notes, or enter after a half rest."
           violations:
             default: "Begin the first bar with half notes, or enter after a half rest."
         first_bar_quarter_notes:
+          name: "Quarter notes in the first bar"
           instruction: "Open the first bar with quarter notes, or enter after a quarter rest."
           violations:
             default: "Begin the first bar with quarter notes, or enter after a quarter rest."
         first_bar_whole_note:
+          name: "Whole note in the first bar"
           instruction: "Open with a whole note in the first bar."
           violations:
             default: "Begin with a whole note in the first bar."
         florid_dissonance_treatment:
+          name: "Florid dissonance treatment"
           instruction: "Reach every dissonance as a passing tone, cambiata, or double neighbor on a weak beat, and prepare and resolve every tied suspension."
           violations:
             default: "Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak beat, and prepare and resolve every tied suspension."
         frequent_direction_changes:
+          name: "Frequent changes of direction"
           instruction: "Turn the line around often."
           violations:
             default: "Change melodic direction frequently."
         mixed_rhythmic_values:
+          name: "Three or more rhythmic values"
           instruction: "Use at least three different rhythmic values so the line is truly florid."
           violations:
             default: "Use at least three different rhythmic values for a truly florid line."
         moderate_direction_changes:
+          name: "Occasional changes of direction"
           instruction: "Turn the line around from time to time."
           violations:
             default: "Change melodic direction occasionally."
         mostly_conjunct:
+          name: "Mostly stepwise motion"
           instruction: "Move mostly by step, with leaps the exception."
           violations:
             default: "Use mostly conjunct motion."
         no_parallel_perfect_across_barline:
+          name: "No parallel perfect consonances across the barline"
           instruction: "Follow a fifth or octave on a weak beat with a different interval on the downbeat after it."
           violations:
             default: "Avoid parallel perfect consonances from weak beat to the following downbeat."
         no_parallel_perfect_on_downbeats:
+          name: "No parallel perfect consonances on downbeats"
           instruction: "Follow every downbeat fifth or octave with a different interval on the next downbeat."
           violations:
             default: "Avoid parallel perfect consonances on consecutive downbeats."
         no_parallel_perfect_with_syncopation:
+          name: "No parallel perfect consonances in syncopation"
           instruction: "Follow every syncopated fifth or octave with a different interval."
           violations:
             default: "Avoid parallel perfect consonances between syncopated notes."
         no_rests:
+          name: "No rests"
           instruction: "Sound a note in every measure."
           violations:
             default: "Place a note in each measure."
         no_rests_after_note:
+          name: "No rests once the line begins"
           instruction: "Once the line has begun, keep it sounding to the end."
           violations:
             default: "Do not rest after the first note has sounded."
         no_strong_beat_unisons:
+          name: "No unisons on strong beats"
           instruction: "Keep strong beats clear of unisons except at the beginning and the end."
           violations:
             default: "Avoid unisons on strong beats except at the beginning and end."
         no_unisons_in_middle:
+          name: "Unisons only at the ends"
           instruction: "Save the unison for the first and last notes."
           violations:
             default: "Use a unison only on the first or the last note."
         note_fills_final_bar:
+          name: "Single note in the final bar"
           instruction: "Close with one note that fills the final bar."
           violations:
             default: "End with a single note that fills the final bar."
         notes_same_length:
+          name: "One rhythmic value throughout"
           instruction: "Give every note the same rhythmic value."
           violations:
             default: "Use the same rhythmic value throughout."
         one_to_one:
+          name: "Note against note"
           instruction: "Write one note against each note of the other voice."
           violations:
             default: "Place a note for each note in the other voice."
         one_to_one_with_ties:
+          name: "Note against note with ties"
           instruction: "Write one note against each cantus firmus note, letting notes sustain across the barline."
           violations:
             default: "Place one note per cantus firmus note. Notes may sustain across the barline."
         prefer_contrary_motion:
+          name: "Contrary motion preferred"
           instruction: "Move the voices in opposite directions wherever the line allows."
           violations:
             default: "Prefer contrary motion. Move voices in different melodic directions."
         prefer_imperfect:
+          name: "Imperfect consonances preferred"
           instruction: "Favor imperfect consonances, thirds and sixths, over perfect ones."
           violations:
             default: "Prefer imperfect harmonic intervals."
         prepare_octave_leaps:
+          name: "Prepared octave leaps"
           instruction: "Approach and leave each octave leap from inside the octave."
           violations:
             default: "Approach and leave an octave leap from inside the octave."
         second_species_break:
+          name: "Rare breaks in the syncopation"
           instruction: "Where the syncopated texture has to break, break it with a passing tone, and rarely."
           violations:
             default: "Use only passing tones when breaking the syncopated texture, and break it rarely."
         set_against_another_voice:
+          name: "Set against another voice"
           instruction: "Write this voice against another."
           violations:
             default: "Set this voice against another voice."
         start_on_perfect_consonance:
+          name: "Perfect consonance at the start"
           instruction: "Begin on the tonic or a perfect consonance above it, unless this is the bass voice."
           violations:
             default: "Start on the tonic or a perfect consonance above the tonic (unless bass voice)."
         start_on_tonic:
+          name: "First note on the tonic"
           instruction: "Begin on the first scale degree."
           violations:
             default: "Start on the first scale degree."
         step_down_to_final_note:
+          name: "Stepwise descent to the final note"
           instruction: "Approach the final note by step from above."
           violations:
             default: "Step down to the final note."
         step_out_of_unison:
+          name: "Stepwise exit from a unison"
           instruction: "Leave every unison by step."
           violations:
             default: "Exit a unison by step."
         step_to_final_note:
+          name: "Stepwise approach to the final note"
           instruction: "Approach the final note by step."
           violations:
             default: "Step to the final note."
         step_up_to_final_note:
+          name: "Stepwise ascent to the final note"
           instruction: "Approach the final note by step from below."
           violations:
             default: "Step up to the final note."
         suspension_treatment:
+          name: "Suspension treatment"
           instruction: "Prepare every suspension as a consonance, then resolve it downward by step."
           violations:
             default: "Prepare each suspension as a consonance and resolve it downward by step."
         third_species_dissonance_treatment:
+          name: "Third species dissonance treatment"
           instruction: "Reach every dissonance as a passing tone, neighbor tone, cambiata, or double neighbor figure."
           violations:
             default: "Treat dissonances as passing tones, neighbor tones, cambiata, or double neighbor figures."
         triple_meter_dissonance_treatment:
+          name: "Triple meter dissonance treatment"
           instruction: "Reach every dissonance as a passing tone or a neighbor tone."
           violations:
             default: "Treat dissonances as passing tones or neighbor tones."
         weak_beat_dissonance_treatment:
+          name: "Weak beat dissonance treatment"
           instruction: "Use dissonance on the weak beat only as a passing tone."
           violations:
             default: "Use only passing tones for dissonances on the weak beat."
