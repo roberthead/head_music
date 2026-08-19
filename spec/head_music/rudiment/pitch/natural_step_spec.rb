@@ -44,4 +44,30 @@ describe HeadMusic::Rudiment::Pitch::NaturalStep do
       expect(step("C", -1).octaves_delta).to eq(-1)
     end
   end
+
+  describe "#applied_to" do
+    def pitch(name)
+      HeadMusic::Rudiment::Pitch.get(name)
+    end
+
+    it "keeps the register when the step stays inside the octave" do
+      expect(step("C", 2).applied_to(pitch("C4")).to_s).to eq "E4"
+    end
+
+    it "takes its register from the pitch rather than the letter name" do
+      expect(step("C", 2).applied_to(pitch("C7")).to_s).to eq "E7"
+    end
+
+    it "climbs a register when the letters wrap upward past B" do
+      expect(step("A", 2).applied_to(pitch("A4")).to_s).to eq "C5"
+    end
+
+    it "drops a register when the letters wrap downward past C" do
+      expect(step("C", -1).applied_to(pitch("C4")).to_s).to eq "B3"
+    end
+
+    it "drops the alteration, landing on the natural letter" do
+      expect(step("C", 1).applied_to(pitch("C#4")).to_s).to eq "D4"
+    end
+  end
 end

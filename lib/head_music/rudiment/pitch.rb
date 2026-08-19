@@ -4,6 +4,10 @@ module HeadMusic::Rudiment; end
 class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   include Comparable
 
+  SEMITONES_PER_OCTAVE = 12
+  # MIDI note 0 is C-1, so the register numbering starts an octave below zero.
+  LOWEST_MIDI_REGISTER = -1
+
   attr_reader :spelling, :register
 
   delegate :letter_name, :alteration, :pitch_class, :sharp?, :flat?, to: :spelling
@@ -59,7 +63,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
     number_int = number.to_i
     return nil unless number == number_int
 
-    fetch_or_create(HeadMusic::Rudiment::Spelling.from_number(number), (number_int / 12) - 1)
+    fetch_or_create(HeadMusic::Rudiment::Spelling.from_number(number), register_of(number_int))
   end
 
   # The register comes from the natural letter pitch and the alteration from the
@@ -71,6 +75,11 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
 
   def self.natural_letter_pitch(number, letter_name)
     NaturalLetterPitch.get(number, letter_name)
+  end
+
+  # The inverse of the register term in #midi_note_number.
+  def self.register_of(midi_note_number)
+    midi_note_number / SEMITONES_PER_OCTAVE + LOWEST_MIDI_REGISTER
   end
 
   def self.fetch_or_create(spelling, register = nil)
@@ -90,7 +99,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def midi_note_number
-    (register + 1) * 12 + letter_name.pitch_class.to_i + alteration_semitones.to_i
+    (register - LOWEST_MIDI_REGISTER) * SEMITONES_PER_OCTAVE + spelling.semitones_above_c
   end
 
   alias_method :midi, :midi_note_number
@@ -113,31 +122,15 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def natural
-    HeadMusic::Rudiment::Pitch.get(to_s.gsub(HeadMusic::Rudiment::Alteration::PATTERN, ""))
+    HeadMusic::Rudiment::Pitch.get([letter_name, register].join)
   end
 
   def +(other)
-    if other.is_a?(HeadMusic::Analysis::DiatonicInterval)
-      # return a pitch
-      other.above(self)
-    else
-      # assume value represents an interval in semitones and return another pitch
-      HeadMusic::Rudiment::Pitch.get(to_i + other.to_i)
-    end
+    Arithmetic.new(self, other).sum
   end
 
   def -(other)
-    # a diatonic interval below this pitch resolves to another pitch
-    return other.below(self) if other.is_a?(HeadMusic::Analysis::DiatonicInterval)
-
-    difference = to_i - other.to_i
-    if other.is_a?(HeadMusic::Rudiment::Pitch)
-      # the distance between two pitches is an interval
-      HeadMusic::Rudiment::ChromaticInterval.get(difference)
-    else
-      # otherwise treat the value as a number of semitones and return another pitch
-      HeadMusic::Rudiment::Pitch.get(difference)
-    end
+    Arithmetic.new(self, other).difference
   end
 
   def ==(other)
@@ -154,8 +147,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def natural_steps(num_steps)
-    step = NaturalStep.new(letter_name, num_steps)
-    HeadMusic::Rudiment::Pitch.get([step.target_letter_name, register + step.octaves_delta].join)
+    NaturalStep.new(letter_name, num_steps).applied_to(self)
   end
 
   def frequency

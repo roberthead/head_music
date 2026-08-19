@@ -100,6 +100,30 @@ describe HeadMusic::Rudiment::Spelling do
     end
   end
 
+  describe "#semitones_above_c" do
+    it "counts a natural from C" do
+      expect(described_class.get("E").semitones_above_c).to eq 4
+    end
+
+    it "adds the alteration" do
+      expect(described_class.get("F#").semitones_above_c).to eq 6
+    end
+
+    it "subtracts the alteration" do
+      expect(described_class.get("Eb").semitones_above_c).to eq 3
+    end
+
+    # Unwrapped on purpose: the pitch class would call these 0 and 11, which
+    # would put B# and Cb in the wrong octaves.
+    it "runs past the octave rather than wrapping" do
+      expect(described_class.get("B#").semitones_above_c).to eq 12
+    end
+
+    it "runs below zero rather than wrapping" do
+      expect(described_class.get("Cb").semitones_above_c).to eq(-1)
+    end
+  end
+
   describe "#scale" do
     context "without an argument" do
       subject(:scale) { described_class.get("D").scale }

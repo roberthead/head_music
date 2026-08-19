@@ -65,8 +65,14 @@ class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
   def initialize(letter_name, alteration = nil)
     @letter_name = HeadMusic::Rudiment::LetterName.get(letter_name.to_s)
     @alteration = HeadMusic::Rudiment::Alteration.get(alteration)
-    alteration_semitones = @alteration ? @alteration.semitones : 0
-    @pitch_class = HeadMusic::Rudiment::PitchClass.get(letter_name.pitch_class + alteration_semitones)
+    @pitch_class = HeadMusic::Rudiment::PitchClass.get(semitones_above_c)
+  end
+
+  # Where the spelling sits in the octave, counted from C and deliberately left
+  # unwrapped: B♯ is 12 rather than 0. A pitch needs it this way round, so that
+  # B♯4 and C5 come out as the same key rather than an octave apart.
+  def semitones_above_c
+    letter_name.pitch_class.to_i + alteration_semitones
   end
 
   def name
@@ -91,6 +97,10 @@ class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
   end
 
   private
+
+  def alteration_semitones
+    alteration&.semitones || 0
+  end
 
   def enharmonic_equivalence
     @enharmonic_equivalence ||= EnharmonicEquivalence.get(self)

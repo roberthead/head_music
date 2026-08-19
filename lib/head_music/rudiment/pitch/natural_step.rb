@@ -1,8 +1,9 @@
 class HeadMusic::Rudiment::Pitch
   # Computes where a signed number of diatonic (letter-name) steps lands
   # relative to a starting letter name: the destination letter and how many
-  # octaves the move crosses. Register-agnostic — it works purely from the
-  # letter name's position in the scale, so the Pitch supplies the register.
+  # octaves the move crosses. The computation is register-agnostic, working
+  # purely from the letter name's position in the scale, so #applied_to takes
+  # the pitch that supplies the register.
   class NaturalStep
     attr_reader :letter_name, :num_steps
 
@@ -21,6 +22,10 @@ class HeadMusic::Rudiment::Pitch
       return whole_octaves + 1 if wrapped_up?
 
       whole_octaves
+    end
+
+    def applied_to(pitch)
+      HeadMusic::Rudiment::Pitch.get([target_letter_name, pitch.register + octaves_delta].join)
     end
 
     private
