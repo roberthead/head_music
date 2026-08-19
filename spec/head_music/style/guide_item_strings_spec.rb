@@ -84,10 +84,16 @@ describe HeadMusic::Style::GuideItem do
   GUIDE_ITEM_STRINGS.each do |guideline_name, config, expected|
     label = config.empty? ? guideline_name : "#{guideline_name} #{config.inspect}"
 
+    # Pinned in en explicitly rather than in the ambient locale. Harmless while
+    # en_GB differed from en by five spellings; a real hazard now that it
+    # carries its own note vocabulary and these sentences would come out
+    # British.
     it "renders the violation message for #{label}" do
       guideline = HeadMusic::Style::Guidelines.const_get(guideline_name)
 
-      expect(described_class.new(guideline, config).violation_preview).to eq expected
+      rendered = I18n.with_locale(:en) { described_class.new(guideline, config).violation_preview }
+
+      expect(rendered).to eq expected
     end
   end
 
