@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-19T13:12:32-07:00
   planned_at:   2026-08-19T13:30:41-07:00
   finished_at:
-  updated_at:   2026-08-19T13:30:41-07:00
+  updated_at:   2026-08-19T14:45:30-07:00
 -->
 
 # Story: British Note Names
@@ -394,19 +394,50 @@ ones. Steps 3-5 must not be committed without running that file.
 
 ### Open questions to decide before implementing
 
-1. **Do `de`, `fr`, `it` and `ru` readers get crotchets?**
-   `guideline-strings-into-i18n.md:468` **already records** "`en_GB` stays
-   mid-chain… closer to international English than `en_US` is" — so this extends a
-   recorded decision rather than making a new one. But that decision was about
-   *spelling*, and vocabulary is a bigger claim. The honest cost: Italian
-   (*semibreve, minima*) and French (*ronde, blanche, noire*) sit close to the
-   British system, while German (*Viertelnote*) and Russian (*четвертная*) are
-   fractional and map word-for-word onto the **American** names. So this actively
-   moves German and Russian readers away from their own vocabulary. Still
-   defensible — they are reading an untranslated English stopgap, and the real fix
-   is `de.yml` — but it is a call to make. Reordering to `de: [de, en, en_GB]` is
-   *not* a cheap escape: it would hand those four readers "neighbor", "meter" and
-   "measure", undoing the previous story's entire deliverable.
+1. **Do `de`, `fr`, `it` and `ru` readers get crotchets? — decided: yes, and a
+   follow-up gives them their own words.** The surveyed terminology splits three
+   ways, not two: *fractional* (German, Russian, Dutch, Polish, Japanese — and
+   American English), *mensural-Latin* (British English, Italian, Portuguese),
+   and *shape-based* (French, Spanish, Catalan). Against that split, British
+   helps exactly one of the four locales:
+
+   | Locale | Family | Their quarter note | Effect of British |
+   | --- | --- | --- | --- |
+   | `it` | mensural-Latin | *semiminima* | mild win — *semibreve* is the same word, *minima* ≈ *minim* |
+   | `de` | fractional | *Viertelnote* | mild loss — maps word-for-word onto the **American** names |
+   | `ru` | fractional | *четвертная* | mild loss — same |
+   | `fr` | shape-based | *noire* | **real loss** — see below |
+
+   French is the sharpest case and the one the first draft of this plan got
+   wrong (it filed French alongside Italian as "close to the British system";
+   *ronde, blanche, noire* is shape-based and close to neither). French *croche*
+   is the **eighth** note where English *crotchet* is the **quarter** — cognates
+   from the same hooked-note root that drifted apart by a factor of two. A
+   French reader meets a familiar-looking word attached to the wrong duration,
+   which is worse than meeting a plainly foreign one. Spanish shares the false
+   friend (*corchea* = eighth) but is unaffected: `es: [es, en]` skips `en_GB`.
+
+   So the trade is one mild win, two mild losses and one real loss — weaker than
+   "they are reading a stopgap anyway" suggested, and weak enough that accepting
+   it silently would be the wrong call.
+
+   Accepted anyway, because of what reframes it: those four locales carry **no
+   style strings at all** today. A German reader already gets the entire style
+   module in English, so nobody loses their own vocabulary here — the only
+   question is which English they get. British serves the reader this story is
+   for, and the regression for the other three is bounded and temporary.
+
+   Recorded rather than absorbed: `user-stories/backlog/note-values-in-each-language.md`
+   gives `de`, `fr`, `it` and `ru` their own note values. That story fixes French,
+   which no choice of English can — option 4 (translating `de` and `ru` inside
+   this story) would have left French broken while costing most of the same work.
+
+   Reordering to `de: [de, en, en_GB]` remains rejected: it would hand those four
+   readers "neighbor", "meter" and "measure", undoing the previous story's entire
+   deliverable. The chain has one ordering to serve two independent axes —
+   spelling, where `en_GB` is better for every international reader, and note
+   vocabulary, where it depends on the family. Only per-locale entries separate
+   them.
 2. **Add `eighth`/`quaver` to `rhythmic_units`?** Nothing interpolates it — the
    four subclasses use only `:whole`, `:half`, `:quarter`, and the eighth notes in
    `allowed_rhythmic_values_for_fifth_species` are prose inside a sentence being
