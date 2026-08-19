@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-19T13:12:32-07:00
   planned_at:   2026-08-19T13:30:41-07:00
   finished_at:
-  updated_at:   2026-08-19T14:49:06-07:00
+  updated_at:   2026-08-19T15:05:15-07:00
 -->
 
 # Story: British Note Names
@@ -73,6 +73,58 @@ notation module benefits too.
 - `de`, `fr`, `it` and `ru` still render every string, since they route through
   `en_GB` — the property spec in `guide_strings_spec.rb` already covers this
 - The decision about `rhythmic_units` versus `Rudiment::RhythmicUnit` is recorded
+
+## Decisions taken
+
+**The British note vocabulary belongs to the style scope, in `en_GB.yml`, not to
+`Rudiment::RhythmicUnit`.** Two reasons, one mechanical and one about ownership.
+
+Mechanically, the vocabulary alone cannot reach a reader. `render_template` pins
+value-building to the locale that carries the sentence
+(`lib/head_music/style/guideline/wording.rb:62-63`), so a British
+`rhythmic_units` entry is never consulted unless `en_GB` also carries the
+sentence. Storing British words with no British sentence leaves every string
+unchanged — the override is not merely awkward, it is inert. Once `en_GB` carries
+the sentence, the vocabulary can live anywhere, so its home stops being the
+deciding question and proximity to the sentences wins.
+
+On ownership, `RhythmicUnit#name` is an identifier, not a label. `flags`
+(`rhythmic_unit.rb:106`), `common?` (`:115`) and the numerator/denominator
+derivation (`:157-159`) all index the American name arrays by it;
+`AllowedRhythmicValuesForFifthSpecies` compares `unit_name` against a literal
+`%w[whole half quarter eighth]`; MusicXML export raises on a miss
+(`duration_writer.rb:72`); and `Placement#to_h` serializes it into composition
+JSON (`placement.rb:124`). Making `#name` follow `I18n.locale` would make
+duration arithmetic, grading and export depend on the reader's language.
+`Named#name` takes an explicit `locale_code:` defaulting to the constant `:en_US`
+and never reads `I18n.locale` (`named.rb:26`), so it is a separate locale system,
+not an I18n seam. `RhythmicUnit#british_name` and `rhythmic_units.yml` keep
+serving the notation module unchanged; the two mechanisms stay deliberately
+separate, and a future reader should not "improve" that.
+
+**`de`, `fr`, `it` and `ru` inherit the British vocabulary, and a follow-up gives
+them their own.** Recorded in full under Open questions below, with the
+three-family survey that shows why no choice of English serves all four. The
+follow-up is `user-stories/backlog/note-values-in-each-language.md`.
+
+**One planned guard was dropped, not forgotten.** The plan called for a
+"complete-or-not-at-all overrides" spec asserting that an `en_GB` entry
+overriding one leaf overrides all its siblings. It is wrong: three existing
+entries override `instruction` and `violations.default` but not `name`,
+correctly, because those names carry no British divergence to make. Only
+siblings that actually differ need overriding, so the property is unwritable as
+stated -- and unnecessary, since item names are in `strings_in` and the
+vocabulary sweep already catches a sibling left in American. The
+`en_GB`-only-overrides-existing-keys guard it was paired with survives, compared
+at template-key rather than leaf granularity: the two locales pluralize
+different entries deliberately, and neither shape is a new key.
+
+**Deferred, deliberately.** No `eighth`/`quaver` vocabulary entry: nothing
+interpolates it, and it would have to be added to `en.yml` too. The two
+pre-existing English prose defects found while drafting the British copy (the
+misplaced final-bar qualifier and the inconsistent Oxford comma) stay unfixed on
+both sides, so the British copy mirrors the American shape and the diff stays
+honest. `rudiments.meter` stays American; it sits outside the style scope.
 
 ## Implementation Plan
 
