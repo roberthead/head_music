@@ -241,6 +241,29 @@ describe HeadMusic::Content::Voice do
     its(:to_s) { is_expected.to eq "G3 C4 D4 E♭4 F4 E♭4 G3" }
   end
 
+  describe "#melodic_line" do
+    before do
+      voice.place("1:1", :whole, "C4")
+      voice.place("2:1", :whole, "E4")
+    end
+
+    it "reads the melody as it stands when first asked" do
+      expect(voice.melodic_note_pairs.length).to eq 1
+    end
+
+    it "rereads the melody after a later placement" do
+      voice.melodic_note_pairs
+      voice.place("3:1", :whole, "G4")
+      expect(voice.melodic_note_pairs.length).to eq 2
+    end
+
+    it "rereads the intervals after a later placement" do
+      voice.melodic_intervals
+      voice.place("3:1", :whole, "G4")
+      expect(voice.melodic_intervals.map(&:shorthand)).to eq %w[M3 m3]
+    end
+  end
+
   describe "#melodic_note_pairs" do
     context "when a note precedes a chord" do
       before do
@@ -359,6 +382,28 @@ describe HeadMusic::Content::Voice do
 
       specify do
         expect(notes_during.map(&:to_s)).to eq ["whole F4 at 4:1:000", "whole A4 at 5:1:000", "whole G4 at 6:1:000"]
+      end
+    end
+  end
+
+  describe "bar numbers" do
+    context "when the voice is empty" do
+      its(:earliest_bar_number) { is_expected.to eq 1 }
+      its(:latest_bar_number) { is_expected.to eq 1 }
+    end
+
+    context "when the voice holds only rests" do
+      before do
+        voice.place("3:1", :whole)
+        voice.place("4:1", :whole)
+      end
+
+      it "reports the bar of the first rest" do
+        expect(voice.earliest_bar_number).to eq 3
+      end
+
+      it "reports the bar of the last rest" do
+        expect(voice.latest_bar_number).to eq 4
       end
     end
   end

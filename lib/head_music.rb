@@ -153,6 +153,7 @@ require "head_music/content/syllable"
 require "head_music/content/voice"
 require "head_music/content/voice/melodic_note_pair"
 require "head_music/content/voice/melodic_line"
+require "head_music/content/voice/continuity"
 
 # notation
 require "head_music/notation/placement_validation"
