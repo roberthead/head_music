@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-08-17T15:14:53-07:00
-  activated_at:
+  activated_at: 2026-08-19T13:12:32-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-17T15:14:53-07:00
+  updated_at:   2026-08-19T13:12:32-07:00
 -->
 
 # Story: British Note Names
