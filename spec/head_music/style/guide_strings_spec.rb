@@ -10,6 +10,27 @@ require "spec_helper"
 PLURAL_KEYS = %i[zero one two few many other].freeze
 ENGLISH_PLURAL_KEYS = %i[one other].freeze
 
+# The note-value words each naming family uses. American stays scoped to
+# note|rest: a bare word alternation matches the same strings today, but "half
+# step", "whole tone" and "half cadence" are ordinary theory terms waiting to
+# false-fire. British needs its word boundary -- an unanchored /minim/ flags
+# every "Minimum of ..." string MinimumNotes produces.
+NOTE_VOCABULARIES = {
+  american: /\b(whole|half|quarter|eighth|sixteenth)[-\s](note|rest)/i,
+  british: /\b(semibreve|minim|crotchet|quaver|semiquaver)s?\b/i
+}.freeze
+
+# Which vocabulary each locale resolves to. de, fr, it and ru read British by
+# inheritance, deliberately: they route through en_GB, and no choice of English
+# serves all four, so the story that gives them their own note values moves
+# these rows rather than reordering the chain. This map is that decision in
+# executable form -- edit the fallback chain and the sweep below fails until the
+# map moves with it.
+LOCALE_NOTE_VOCABULARY = {
+  en: :american, en_US: :american, es: :american,
+  en_GB: :british, de: :british, fr: :british, it: :british, ru: :british
+}.freeze
+
 describe HeadMusic::Style::Guide do
   let(:guides) { HeadMusic::Style::Guide::ALL }
   let(:items) { guides.flat_map(&:guide_items).uniq }
@@ -107,6 +128,91 @@ describe HeadMusic::Style::Guide do
     expect(strings_in(:de)).to eq strings_in(:en_GB)
   end
 
+  # The executable form of "a British reader gets British note values". Written
+  # as ownership rather than as a British-versus-American pair so that a locale
+  # gaining its own note words changes a row above, not this example. fetch with
+  # no default means a locale added to the gem fails here until someone decides
+  # which vocabulary it reads, rather than being swept as American by default.
+  it "gives every locale only the note vocabulary it owns" do
+    expect(I18n.available_locales.flat_map { |locale| foreign_vocabulary_in(locale) }).to be_empty
+  end
+
+  def foreign_vocabulary_in(locale)
+    foreign = NOTE_VOCABULARIES.except(LOCALE_NOTE_VOCABULARY.fetch(locale))
+    strings_in(locale).flat_map do |string|
+      foreign.filter_map { |family, pattern| "#{locale}: #{family} in #{string.inspect}" if pattern.match?(string) }
+    end
+  end
+
+  # The one pair worth pinning verbatim: the singular/plural boundary and the
+  # noun-drop at once. British names the value with a noun, so the "note" the
+  # American sentence needs is dropped rather than translated -- which is what a
+  # find-and-replace over the vocabulary gets wrong, in both directions.
+  describe "the British note_count_per_bar sentences" do
+    def british_violation(guideline)
+      I18n.with_locale(:en_GB) { guideline.with.violation_preview }
+    end
+
+    it "drops the noun in the plural" do
+      expect(british_violation(HeadMusic::Style::Guidelines::FourPerBar)).to eq "Use four crotchets in each middle bar."
+    end
+
+    it "drops the noun in the singular" do
+      expect(british_violation(HeadMusic::Style::Guidelines::OnePerBar)).to eq "Use one semibreve in each middle bar."
+    end
+  end
+
+  # A key in en_GB with no en counterpart raises for es and en readers, who
+  # never resolve through it, and leaks British terms to en_US.
+  #
+  # Compared as template keys rather than leaves, because whether an entry is
+  # pluralized is a per-locale decision and the two locales disagree in both
+  # directions here: English pluralizes note_count_per_bar's sentences where
+  # British flattens them, and British pluralizes rhythmic_units where English
+  # is scalar. Neither is a new key.
+  it "overrides English keys rather than introducing new ones" do
+    expect(british_template_keys - english_template_keys).to be_empty
+  end
+
+  # Read from the files rather than the backend, which merges en_GB into en.
+  def template_keys(locale)
+    tree = YAML.load_file(File.expand_path("../../../lib/head_music/locales/#{locale}.yml", __dir__))
+      .dig(locale.to_s, "head_music", "style") || {}
+    leaf_paths(tree).map { |path| without_plural_form(path).join(".") }.uniq
+  end
+
+  def without_plural_form(path)
+    PLURAL_KEYS.include?(path.last.to_sym) ? path[0..-2] : path
+  end
+
+  def leaf_paths(tree, path = [])
+    return [path] unless tree.is_a?(Hash)
+
+    tree.flat_map { |key, value| leaf_paths(value, path + [key]) }
+  end
+
+  def british_template_keys = @british_template_keys ||= template_keys(:en_GB)
+
+  def english_template_keys = @english_template_keys ||= template_keys(:en)
+
+  # es does not route through en_GB and en_US resolves past it, so both read
+  # American. Pinned so that a chain edit that changes what they read fails here
+  # rather than reaching a reader.
+  it "leaves the locales that do not resolve through en_GB reading American" do
+    expect(strings_in(:en_US)).to eq strings_in(:en)
+    expect(strings_in(:es)).to eq strings_in(:en)
+  end
+
+  # What a German reader actually resolves to, said out loud. The day the chain
+  # changes, this fails instead of the pronunciation quietly changing.
+  it "resolves the mid-chain locales through en_GB" do
+    resolved = %i[de fr it ru].map do |locale|
+      HeadMusic::Style::Template.resolved_locale("guidelines.note_count_per_bar.instruction", locale: locale)
+    end
+
+    expect(resolved).to all eq :en_GB
+  end
+
   # The path a student actually reads is the assessment, not the preview.
   # Rendering it through Template directly gave it neither the item's
   # interpolations nor the plural fallback the preview had.
@@ -154,12 +260,24 @@ describe HeadMusic::Style::Guide do
     expect(partial_plurals_in(british)).to be_empty
   end
 
-  # There are no pluralized British entries yet, so the guard above would pass
-  # on an empty tree. This is what it is guarding against.
+  # Proves the detector fires, which the guard above cannot: it asserts an
+  # absence, and an absence is what a walk over the wrong tree also reports.
   it "would catch a British entry that carried only one form" do
     incomplete = {guidelines: {note_count_per_bar: {name: {other: "%{number} crotchets per bar"}}}}
 
     expect(partial_plurals_in(incomplete)).to eq ["guidelines.note_count_per_bar.name"]
+  end
+
+  # And proves it fires at the real tree. The vocabulary entries are the only
+  # pluralized British data, so a typo that dropped rhythmic_units entirely
+  # would leave the guard above green over nothing -- passing for the reason it
+  # passed before there was any British plural data at all.
+  it "walks the British plural entries it is guarding" do
+    british = I18n.backend.send(:translations).fetch(:en_GB).dig(:head_music, :style) || {}
+    pluralized = british.fetch(:rhythmic_units).select { |_unit, forms| forms.is_a?(Hash) }
+
+    expect(pluralized.keys).to match_array %i[whole half quarter]
+    expect(pluralized.values.map(&:keys)).to all match_array ENGLISH_PLURAL_KEYS
   end
 
   # The Ruby fallback exists so a language with no plural data reads a little

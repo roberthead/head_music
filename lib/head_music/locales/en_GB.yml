@@ -2,13 +2,65 @@ en_GB:
   head_music:
     rudiments:
       grand_staff: great staff
-    # Only the strings whose spelling differs. Everything else falls through to
-    # en. Note that de, fr, it and ru route through here on their way to en, so
-    # a pluralized entry added below must carry the locale's complete set of
+    # The strings whose spelling differs -- neighbour, metre, a bar rather than
+    # a measure -- and the note values, which differ in vocabulary rather than
+    # spelling: semibreve, minim, crotchet, quaver. Everything else falls
+    # through to en.
+    #
+    # The note values need whole sentences here, not just words. British names
+    # the value with a noun and drops the "note" the American sentence carries
+    # -- four crotchets, not four crotchet notes -- so the sentence changes
+    # shape, not only vocabulary. A vocabulary entry alone would not even be
+    # read: render_template pins value-building to the locale carrying the
+    # sentence, so rhythmic_units below is consulted only because the
+    # note_count_per_bar entries beside it live here too.
+    #
+    # The vocabulary lives here rather than on Rudiment::RhythmicUnit because
+    # that class's #name is an identifier -- duration arithmetic, grading and
+    # MusicXML export all index by it -- not a label to localize.
+    #
+    # Note that de, fr, it and ru route through here on their way to en, so a
+    # pluralized entry added below must carry the locale's complete set of
     # plural forms -- a partial hash stops the fallback rather than continuing
-    # past it, and would break those four languages rather than this one.
+    # past it, and would break those four languages rather than this one. They
+    # inherit the British note values deliberately; note-values-in-each-language
+    # gives them their own.
     style:
+      rhythmic_units:
+        whole:
+          one: "semibreve"
+          other: "semibreves"
+        half:
+          one: "minim"
+          other: "minims"
+        quarter:
+          one: "crotchet"
+          other: "crotchets"
       guidelines:
+        allowed_rhythmic_values_for_combined123:
+          name: "Semibreves, minims, and crotchets only"
+          instruction: "Write in semibreves, minims, and crotchets."
+          violations:
+            default: "Use only semibreves, minims, and crotchets."
+        allowed_rhythmic_values_for_fifth_species:
+          instruction: "Write in minims, crotchets, and paired stepwise quavers on weak beats, saving the semibreve for the final bar."
+          violations:
+            default: "Use only semibreves in the final bar, minims, crotchets, and paired stepwise quavers on weak beats."
+        first_bar_half_notes:
+          name: "Minims in the first bar"
+          instruction: "Open the first bar with minims, or enter after a minim rest."
+          violations:
+            default: "Begin the first bar with minims, or enter after a minim rest."
+        first_bar_quarter_notes:
+          name: "Crotchets in the first bar"
+          instruction: "Open the first bar with crotchets, or enter after a crotchet rest."
+          violations:
+            default: "Begin the first bar with crotchets, or enter after a crotchet rest."
+        first_bar_whole_note:
+          name: "Semibreve in the first bar"
+          instruction: "Open with a semibreve in the first bar."
+          violations:
+            default: "Begin with a semibreve in the first bar."
         florid_dissonance_treatment:
           instruction: "Reach every dissonance as a passing tone, cambiata, or double neighbour on a weak beat, and prepare and resolve every tied suspension."
           violations:
@@ -17,6 +69,11 @@ en_GB:
           instruction: "Sound a note in every bar."
           violations:
             default: "Place a note in each bar."
+        note_count_per_bar:
+          name: "%{number} %{rhythmic_unit} per bar"
+          instruction: "Write %{number} %{rhythmic_unit} in each middle bar."
+          violations:
+            default: "Use %{number} %{rhythmic_unit} in each middle bar."
         third_species_dissonance_treatment:
           instruction: "Reach every dissonance as a passing tone, neighbour tone, cambiata, or double neighbour figure."
           violations:
@@ -27,5 +84,19 @@ en_GB:
           violations:
             default: "Treat dissonances as passing tones or neighbour tones."
       guides:
+        combined_first_second_third_species_melody:
+          instruction: "Combine semibreves, minims and crotchets in one line, changing rhythm between phrases."
+        first_species_melody:
+          instruction: "Write one semibreve against each note of the cantus firmus."
+        fux_cantus_firmus:
+          instruction: "Write a cantus firmus: a singable line of eight to fourteen semibreves that begins and ends on the tonic."
+        second_species_melody:
+          instruction: "Write two minims in each bar against the cantus firmus."
+        third_species_harmony:
+          instruction: "Keep the downbeats consonant, and treat the crotchet dissonances as passing or neighbour tones."
+        third_species_melody:
+          instruction: "Write four crotchets in each bar against the cantus firmus."
         third_species_triple_meter_harmony:
           instruction: "Keep the downbeats consonant in triple metre, and resolve every dissonance by step."
+        third_species_triple_meter_melody:
+          instruction: "Write three crotchets in each bar against the cantus firmus."
