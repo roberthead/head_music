@@ -31,9 +31,8 @@ class HeadMusic::Rudiment::Quality < HeadMusic::Rudiment::Base
   }.freeze
 
   def self.get(identifier)
-    @qualities ||= {}
     identifier = identifier.to_s.to_sym
-    @qualities[identifier] ||= new(identifier) if NAMES.include?(identifier)
+    fetch_or_register(identifier) if NAMES.include?(identifier)
   end
 
   def self.from(starting_quality, delta)

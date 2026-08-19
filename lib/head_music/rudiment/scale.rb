@@ -6,11 +6,10 @@ class HeadMusic::Rudiment::Scale < HeadMusic::Rudiment::Base
   def self.get(root_pitch, scale_type = nil)
     root_pitch = HeadMusic::Rudiment::Pitch.get(root_pitch)
     scale_type = HeadMusic::Rudiment::ScaleType.get(scale_type || HeadMusic::Rudiment::ScaleType::DEFAULT)
-    @scales ||= {}
     # Pitch#to_s already emits unicode accidentals and HashKey already desymbolizes
     # them, so no accidental normalization is needed here.
     hash_key = HeadMusic::Utilities::HashKey.for([root_pitch, scale_type].join(" "))
-    @scales[hash_key] ||= new(root_pitch, scale_type)
+    fetch_or_register(hash_key, root_pitch, scale_type)
   end
 
   delegate :letter_name_series_ascending, :letter_name_series_descending, to: :root_pitch

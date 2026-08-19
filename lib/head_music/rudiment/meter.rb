@@ -14,8 +14,7 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
     identifier = identifier.to_s
     hash_key = HeadMusic::Utilities::HashKey.for(identifier)
     time_signature_string = NAMED[hash_key] || identifier
-    @meters ||= {}
-    @meters[hash_key] ||= new(*time_signature_string.split("/"))
+    fetch_or_register(hash_key, *time_signature_string.split("/"))
   end
 
   def self.default

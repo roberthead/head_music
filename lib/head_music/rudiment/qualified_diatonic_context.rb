@@ -11,10 +11,9 @@ class HeadMusic::Rudiment::QualifiedDiatonicContext < HeadMusic::Rudiment::Diato
   def self.get(identifier)
     return identifier if identifier.is_a?(self)
 
-    @cache ||= {}
     tonic_spelling, qualifier = parse_identifier(identifier)
     hash_key = HeadMusic::Utilities::HashKey.for(identifier)
-    @cache[hash_key] ||= new(tonic_spelling, qualifier)
+    fetch_or_register(hash_key, tonic_spelling, qualifier)
   end
 
   def self.parse_identifier(identifier)

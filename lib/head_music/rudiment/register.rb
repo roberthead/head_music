@@ -22,20 +22,18 @@ class HeadMusic::Rudiment::Register < HeadMusic::Rudiment::Base
     return nil unless identifier.to_s == identifier.to_i.to_s
     return nil unless (-2..12).cover?(identifier.to_i)
 
-    @registers ||= {}
-    @registers[identifier.to_i] ||= new(identifier.to_i)
+    fetch_or_register(identifier.to_i)
   end
 
   def self.from_name(string)
     return unless string.to_s.match?(HeadMusic::Rudiment::Spelling::MATCHER)
 
     _letter, _sign, register_string = string.to_s.match(HeadMusic::Rudiment::Spelling::MATCHER).captures
-    @registers ||= {}
-    @registers[register_string.to_i] ||= new(register_string.to_i) if register_string
+    fetch_or_register(register_string.to_i) if register_string
   end
 
   def self.default
-    @registers[DEFAULT] ||= new(DEFAULT)
+    fetch_or_register(DEFAULT)
   end
 
   attr_reader :number

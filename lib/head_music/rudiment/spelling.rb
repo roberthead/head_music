@@ -59,9 +59,7 @@ class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
   end
 
   def self.fetch_or_create(letter_name, alteration)
-    @spellings ||= {}
-    hash_key = [letter_name, alteration].join
-    @spellings[hash_key] ||= new(letter_name, alteration)
+    fetch_or_register([letter_name, alteration].join, letter_name, alteration)
   end
 
   def initialize(letter_name, alteration = nil)

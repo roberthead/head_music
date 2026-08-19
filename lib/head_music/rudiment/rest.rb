@@ -19,9 +19,7 @@ class HeadMusic::Rudiment::Rest < HeadMusic::Rudiment::RhythmicElement
   end
 
   def self.fetch_or_create(rhythmic_value)
-    @rests ||= {}
-    hash_key = rhythmic_value.to_s
-    @rests[hash_key] ||= new(rhythmic_value)
+    fetch_or_register(rhythmic_value.to_s, rhythmic_value)
   end
 
   def name

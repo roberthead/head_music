@@ -23,9 +23,8 @@ class HeadMusic::Rudiment::Consonance < HeadMusic::Rudiment::Base
     return name if name.is_a?(self)
     return nil if name.nil?
 
-    @consonances ||= {}
     name_sym = name.to_sym
-    @consonances[name_sym] ||= new(name) if LEVELS.include?(name_sym)
+    fetch_or_register(name_sym, name) if LEVELS.include?(name_sym)
   end
 
   attr_reader :name

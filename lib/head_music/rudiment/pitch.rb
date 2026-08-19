@@ -77,9 +77,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
     register ||= HeadMusic::Rudiment::Register::DEFAULT
     return unless spelling && (-1..9).cover?(register)
 
-    @pitches ||= {}
-    hash_key = [spelling, register].join
-    @pitches[hash_key] ||= new(spelling, register)
+    fetch_or_register([spelling, register].join, spelling, register)
   end
 
   def initialize(spelling, register)

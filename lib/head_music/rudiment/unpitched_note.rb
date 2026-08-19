@@ -25,9 +25,8 @@ class HeadMusic::Rudiment::UnpitchedNote < HeadMusic::Rudiment::RhythmicElement
   end
 
   def self.fetch_or_create(rhythmic_value, instrument_name)
-    @unpitched_notes ||= {}
     hash_key = [rhythmic_value.to_s, instrument_name].compact.join("_")
-    @unpitched_notes[hash_key] ||= new(rhythmic_value, instrument_name)
+    fetch_or_register(hash_key, rhythmic_value, instrument_name)
   end
 
   def initialize(rhythmic_value, instrument_name = nil)

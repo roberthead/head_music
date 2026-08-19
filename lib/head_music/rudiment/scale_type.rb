@@ -95,10 +95,9 @@ class HeadMusic::Rudiment::ScaleType < HeadMusic::Rudiment::Base
   end
 
   def self.get(name)
-    @scale_types ||= {}
     identifier = HeadMusic::Utilities::HashKey.for(name)
     attributes = SCALE_TYPES[identifier]
-    @scale_types[identifier] ||= new(identifier, attributes)
+    fetch_or_register(identifier, identifier, attributes)
   end
 
   def self.default

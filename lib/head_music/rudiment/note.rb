@@ -50,9 +50,8 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   end
 
   def self.fetch_or_create(pitch, rhythmic_value)
-    @notes ||= {}
     hash_key = [pitch.to_s, rhythmic_value.to_s].join("_")
-    @notes[hash_key] ||= new(pitch, rhythmic_value)
+    fetch_or_register(hash_key, pitch, rhythmic_value)
   end
 
   def initialize(pitch, rhythmic_value)

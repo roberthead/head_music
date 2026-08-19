@@ -26,19 +26,17 @@ class HeadMusic::Rudiment::LetterName < HeadMusic::Rudiment::Base
   end
 
   def self.from_name(name)
-    @letter_names ||= {}
     name = name.to_s.first.upcase
-    @letter_names[name] ||= new(name) if NAMES.include?(name)
+    fetch_or_register(name) if NAMES.include?(name)
   end
 
   def self.from_pitch_class(pitch_class)
-    @letter_names ||= {}
     return nil if pitch_class.to_s == pitch_class
 
     pitch_class = pitch_class.to_i % 12
     name = NAMES.detect { |candidate| pitch_class == NATURAL_PITCH_CLASS_NUMBERS[candidate] }
     name ||= HeadMusic::Rudiment::PitchClass::SHARP_SPELLINGS[pitch_class].first
-    @letter_names[name] ||= new(name) if NAMES.include?(name)
+    fetch_or_register(name) if NAMES.include?(name)
   end
 
   attr_reader :name

@@ -14,12 +14,10 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
   def self.get(identifier)
     return identifier if identifier.is_a?(HeadMusic::Rudiment::KeySignature)
 
-    @key_signatures ||= {}
-
     if identifier.is_a?(String)
       tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
       hash_key = HeadMusic::Utilities::HashKey.for(identifier)
-      @key_signatures[hash_key] ||= new(tonic_spelling, scale_type_name)
+      fetch_or_register(hash_key, tonic_spelling, scale_type_name)
     elsif identifier.is_a?(HeadMusic::Rudiment::DiatonicContext)
       identifier.key_signature
     end

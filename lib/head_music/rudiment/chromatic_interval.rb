@@ -16,10 +16,9 @@ class HeadMusic::Rudiment::ChromaticInterval < HeadMusic::Rudiment::Base
   attr_reader :semitones
 
   def self.get(identifier)
-    @intervals ||= {}
     candidate = HeadMusic::Utilities::Case.to_snake_case(identifier)
     semitones = NAMES.index(candidate) || identifier.to_i
-    @intervals[semitones] ||= new(semitones.to_i)
+    fetch_or_register(semitones, semitones.to_i)
   end
 
   def initialize(identifier)
