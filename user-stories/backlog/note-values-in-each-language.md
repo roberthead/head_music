@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-08-19T14:45:24-07:00
+  updated_at:   2026-08-19T14:49:06-07:00
 -->
 
 # Story: Note Values in Each Language
@@ -71,9 +71,12 @@ and `it` are all leaves, but Russian's form set is genuinely different and the
 Ruby fallback at `template.rb` exists precisely for this.
 
 **Scope.** Four locales x the ~30 leaves `British Note Names` enumerated. Its
-census, its noun-drop rules and its dialect-purity sweep all transfer; the sweep
-generalizes from "no American words in `en_GB`" to "no borrowed words in any
-locale that has its own".
+census and its noun-drop rules transfer directly. Its vocabulary-ownership sweep
+was written in the general shape — *no locale carries note vocabulary from a
+family it does not own* — so this story adds a vocabulary pattern per language
+and moves four rows of `LOCALE_NOTE_VOCABULARY` off `:british`, rather than
+rewriting the spec. Those four rows are where the inheritance decision lives; the
+sweep fails until they move.
 
 Worth deciding first: whether `es` joins. Spanish is shape-based
 (*redonda, blanca, negra, corchea*) and shares the *corchea*/*crotchet* false

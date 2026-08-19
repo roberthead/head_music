@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-19T13:12:32-07:00
   planned_at:   2026-08-19T13:30:41-07:00
   finished_at:
-  updated_at:   2026-08-19T14:45:30-07:00
+  updated_at:   2026-08-19T14:49:06-07:00
 -->
 
 # Story: British Note Names
@@ -178,9 +178,12 @@ table to the census.
 
 **2. Write the failing guards first**
 
-Add the dialect-purity sweep and the two pinned `NoteCountPerBar` sentences to
-`spec/head_music/style/guide_strings_spec.rb`. Run and confirm the sweep fails
-naming 33 strings — that failure list is the work queue for steps 3-5.
+Add the vocabulary-ownership sweep and the two pinned `NoteCountPerBar`
+sentences to `spec/head_music/style/guide_strings_spec.rb`. Write the sweep in
+its general shape — *no locale carries note vocabulary from a family it does not
+own* — not as a British-versus-American pair; see Testing strategy for the form
+and for the two regex traps. Run it and confirm it fails naming 33 strings, which
+is the work queue for steps 3-5.
 
 **3. The vocabulary and the `note_count_per_bar` family** (one step — the pin
 couples them)
@@ -354,12 +357,63 @@ coverage only from `bundle exec rake`.)
 All additions go in `spec/head_music/style/guide_strings_spec.rb`, using its
 collect-then-assert idiom.
 
-- **Dialect purity** — the executable form of acceptance criterion 1. Sweep
-  `strings_in(:en_GB)` for American note values and rests; sweep `strings_in(:en)`
-  for British ones. A negative sweep beats an enumerated table because it catches
-  a *future* guideline that names a note value and never gets a British
-  counterpart. The regex must cover rests and the adjectival `quarter-note`. This
-  is the spec that fails today naming 33 strings.
+- **Vocabulary ownership** — the executable form of acceptance criterion 1, and
+  the one spec to write in its general shape from the start: *no locale carries
+  note vocabulary from a family it does not own*. Not "no American words in
+  `en_GB`", which would have to be rewritten the moment `de` gets its own words.
+
+  ```ruby
+  NOTE_VOCABULARIES = {
+    american: /\b(whole|half|quarter|eighth|sixteenth)[-\s](note|rest)/i,
+    british: /\b(semibreve|minim|crotchet|quaver|semiquaver)s?\b/i
+  }.freeze
+
+  # Which vocabulary each locale resolves to. de, fr, it and ru read British by
+  # inheritance -- deliberately, and recorded in the decision above. This map is
+  # that decision in executable form: change the fallback chain and the sweep
+  # fails until this changes with it.
+  LOCALE_NOTE_VOCABULARY = {
+    en: :american, en_US: :american, es: :american,
+    en_GB: :british, de: :british, fr: :british, it: :british, ru: :british
+  }.freeze
+
+  it "gives every locale only the note vocabulary it owns" do
+    trespasses = I18n.available_locales.flat_map do |locale|
+      owned = LOCALE_NOTE_VOCABULARY.fetch(locale)
+      foreign = NOTE_VOCABULARIES.except(owned)
+      strings_in(locale).flat_map do |string|
+        foreign.filter_map { |family, pattern| "#{locale}: #{family} in #{string.inspect}" if pattern.match?(string) }
+      end
+    end
+
+    expect(trespasses).to be_empty
+  end
+  ```
+
+  Three things this shape buys that the two-sweep version does not. `fetch` with
+  no default means a locale added to the gem fails loudly until someone decides
+  which vocabulary it reads, rather than being silently swept as American. The
+  map turns a fallback-chain edit into a failing test — the same "says so out
+  loud" property the `resolved_locale` pin gives, one level up. And the
+  follow-up story changes four rows and a hash rather than rewriting the spec.
+
+  Both patterns are load-bearing in their exact form, verified against the
+  corpus:
+
+  - **American must stay scoped to `note|rest`.** A bare
+    `/\b(whole|half|quarter)\b/` matches the same 33 strings today, so the
+    corpus does not distinguish them — but "half step", "whole tone", "quarter
+    tone" and "half cadence" are all ordinary theory terms that would false-fire
+    the day one enters the corpus. Scoping costs nothing now and does not need
+    revisiting later. It still catches the adjectival `quarter-note dissonances`
+    (`en.yml:923`), since the hyphen is followed by `note`.
+  - **British must be `\b`-anchored.** An unanchored `/minim/` flags five
+    existing strings — "Minimum of three notes", "Minimum of eight notes", and
+    three more from `MinimumNotes`. The trailing `s?` inside the boundary covers
+    the plurals the vocabulary hash introduces.
+
+  This is the spec that fails today, naming 33 strings, and that failure list is
+  the work queue for steps 3-5.
 - **The two pinned sentences** — `"Use four crotchets in each middle bar."` and
   `"Use one semibreve in each middle bar."` under `:en_GB`. The one pair worth
   pinning verbatim: the singular/plural boundary *and* the noun-drop, the two
