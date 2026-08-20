@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-17T15:14:53-07:00
   activated_at: 2026-08-19T13:12:32-07:00
   planned_at:   2026-08-19T13:30:41-07:00
-  finished_at:
-  updated_at:   2026-08-19T15:05:15-07:00
+  finished_at:  2026-08-19T20:08:02-07:00
+  updated_at:   2026-08-19T20:08:02-07:00
 -->
 
 # Story: British Note Names
@@ -48,22 +48,31 @@ British reader who wrote it. `guide_strings_spec.rb` guards this
 (`partial_plurals_in`), which is what makes the work safe to pick up — but it is
 the reason not to do it in passing at the end of another story.
 
-**Scope.** Sixteen touchpoints:
+**Scope.** Thirty `en.yml` leaves, which a British reader meets as 33 distinct
+strings. (This table first read "Sixteen touchpoints" over rows summing to 19.
+Both figures were guesses from reading the file; the census below came from
+probing the loaded gem, and the gap is the whole reason for `### A note on
+method` at the end of this story.)
 
-| Kind | Count | Which |
+| Kind | Leaves | Which |
 | --- | --- | --- |
-| Hardcode an American note value | 12 | 5 guideline violations — `allowed_rhythmic_values_for_combined123`, `allowed_rhythmic_values_for_fifth_species`, `first_bar_half_notes`, `first_bar_quarter_notes`, `first_bar_whole_note` — and 7 of the 23 guide instructions |
-| Interpolate `%{rhythmic_unit}` | 4 | `note_count_per_bar` name and violation, each `one:`/`other:` |
+| Hardcode an American note value | 21 | 14 across 5 guidelines — `allowed_rhythmic_values_for_combined123`, `allowed_rhythmic_values_for_fifth_species`, `first_bar_half_notes`, `first_bar_quarter_notes`, `first_bar_whole_note` — and 7 of the 23 guide instructions |
+| Interpolate `%{rhythmic_unit}` | 6 | `note_count_per_bar`'s name, instruction and violation, each `one:`/`other:` |
 | Vocabulary entries | 3 | `rhythmic_units.half`, `.quarter`, `.whole` |
 
+The 21 prose leaves are 21 strings; the `note_count_per_bar` family renders 12
+(four subclasses × name, instruction, violation). Hence 33.
+
 `rhythmic_units` has no `eighth`, though
-`allowed_rhythmic_values_for_fifth_species` names eighth notes in prose. Adding
-one is part of this work if the vocabulary route is taken.
+`allowed_rhythmic_values_for_fifth_species` names eighth notes in prose —
+deferred, since nothing interpolates it; see `## Decisions taken`.
 
 Worth deciding first: whether the British vocabulary belongs to the style scope
 or to `Rudiment::RhythmicUnit`, which is where the gem names these values for
 every other purpose. If the latter, this story is smaller than it looks and the
-notation module benefits too.
+notation module benefits too. **Decided: the style scope** — and it does not make
+the story smaller, because the pin means a vocabulary override alone renders
+nothing. See `## Decisions taken`.
 
 ## Acceptance Criteria
 
@@ -109,15 +118,29 @@ follow-up is `user-stories/backlog/note-values-in-each-language.md`.
 
 **One planned guard was dropped, not forgotten.** The plan called for a
 "complete-or-not-at-all overrides" spec asserting that an `en_GB` entry
-overriding one leaf overrides all its siblings. It is wrong: three existing
-entries override `instruction` and `violations.default` but not `name`,
-correctly, because those names carry no British divergence to make. Only
+overriding one leaf overrides all its siblings. It is wrong: four existing
+entries -- `allowed_rhythmic_values_for_fifth_species`,
+`florid_dissonance_treatment`, `no_rests` and
+`third_species_dissonance_treatment` -- override `instruction` and
+`violations.default` but not `name`, correctly, because those names carry no
+British divergence to make. Only
 siblings that actually differ need overriding, so the property is unwritable as
 stated -- and unnecessary, since item names are in `strings_in` and the
 vocabulary sweep already catches a sibling left in American. The
 `en_GB`-only-overrides-existing-keys guard it was paired with survives, compared
 at template-key rather than leaf granularity: the two locales pluralize
 different entries deliberately, and neither shape is a new key.
+
+**`third_species_harmony`'s spelling repair belongs to this story, not to its
+predecessor.** The entry needs an `en_GB` override for the note value regardless
+-- it is the 21st note-value string -- so the escaped `neighbour` comes along at
+no extra cost. Attributing it here rather than filing it as a defect against
+`Guideline Strings into I18n` keeps the changelog honest: the string changed in
+this story's diff, and splitting one entry's history across two changelog
+sections would serve nobody. Worth naming why it escaped: the predecessor's
+word-frequency scan reported zero divergences because it read the file rather
+than the rendered strings, which is the same failure `### A note on method`
+records.
 
 **Deferred, deliberately.** No `eighth`/`quaver` vocabulary entry: nothing
 interpolates it, and it would have to be added to `en.yml` too. The two
@@ -614,3 +637,198 @@ ones. Steps 3-5 must not be committed without running that file.
 story arrived at 16 touchpoints when there are 30, and how `third_species_harmony`
 survived a spelling sweep. Every count above came from running a probe against the
 loaded gem, not from reading the file.
+
+## Review
+
+Reviewed 2026-08-19 at `5ad03db` (the story's tip; `main` has since moved to
+`a6c7909` with three unrelated refactoring commits on top). Diff under review:
+`78fd01f..5ad03db`. Suite green — 6678 examples, 0 failures, 99.77% line
+coverage; `rubocop` clean across 518 files.
+
+Every claim below was re-derived by running the gem, not by reading the diff.
+
+### Acceptance criteria
+
+| Criterion | Verdict |
+| --- | --- |
+| A British reader gets British note values in every style string that names one | ✅ met |
+| Every pluralized `en_GB` entry carries the complete set of forms, proven by the guard | ✅ met |
+| `de`, `fr`, `it` and `ru` still render every string | ✅ met |
+| The `rhythmic_units` versus `Rudiment::RhythmicUnit` decision is recorded | ✅ met |
+
+**1 — British note values everywhere.** Sweeping every style string in every
+locale gives a clean partition with no mixed-dialect gap, which was this story's
+own top-stated risk:
+
+```
+en 0/33   en_US 0/33   es 0/33            (british/american)
+en_GB 33/0  de 33/0  fr 33/0  it 33/0  ru 33/0
+```
+
+`en` names an American value in exactly 33 strings and `en_GB` names a British
+one in exactly 33 — a one-for-one replacement, matching the plan's census. The
+sweep used a regex deliberately looser than the spec's (bare words and plurals,
+dropping the `note|rest` scoping) and still found zero American survivals. Both
+`NoteCountPerBar` plural boundaries render correctly: "Use one semibreve in each
+middle bar." and "Use four crotchets in each middle bar."
+
+**2 — Complete plural forms.** The only pluralized British entries are the three
+`rhythmic_units` hashes, each carrying exactly `one`/`other`. The guard walks the
+real backend tree (`guide_strings_spec.rb:256`), a fixture proves the detector
+fires (`:263`), and a third example proves the tree is non-empty (`:270`) —
+closing the "green over nothing" hole the old comment admitted to.
+
+**3 — The four inheriting locales.** All four produce every string: none empty,
+none raising, no surviving `%{}` interpolation. No `I18n::Backend::Pluralization`
+is included (`head_music.rb:24` adds only `Fallbacks`), so `one`/`other` is the
+complete form set the default backend can select — the British hashes do not
+stop the fallback for `de`, `fr`, `it` or `ru`.
+
+**4 — The decision.** Recorded at `:77-103` with both the mechanical argument
+(the `in_locale_of` pin makes a vocabulary-only override inert) and the ownership
+one, and condensed into `en_GB.yml:18-20` so a reader of the YAML meets it where
+they would be tempted to "improve" it.
+
+### Code review findings
+
+**1. The vocabulary sweep is blind to the one leak the noun-drop makes possible.**
+`NOTE_VOCABULARIES[:american]` (`guide_strings_spec.rb:19`) requires a
+`note|rest` head noun. That scoping is load-bearing and correct for prose — "half
+step" and "whole tone" are ordinary theory terms, and the British `\b` boundary
+stops `/minim/` firing on the five real "Minimum of eight notes" strings. But the
+British sentence *drops that head noun by design*, so an American word arriving
+through `%{rhythmic_unit}` arrives bare and the sweep cannot see it. Reproduced
+by adding an `eighth` unit to `en` only:
+
+```
+en    : "Use eight eighth notes in each middle bar."
+en_GB : "Use eight eighth in each middle bar."
+american sweep flags the en_GB string? false
+```
+
+Not a live defect — only `whole`, `half` and `quarter` units exist, and nothing
+leaks in any locale today. But this is exactly the regression the sweep was added
+to catch, and it bites on the next unit added. A key-parity guard over the
+vocabulary closes it without depending on any sentence rendering it:
+`template_keys(:en).grep(/\Arhythmic_units\./) - template_keys(:en_GB)...` is
+empty today.
+
+**2. `strings_in` does not sweep guide display names.** It collects
+`guides.map(&:instruction)` (`:84-88`) but not `guide.name`, which exists. No
+guide name names a note value today, so this is a blind spot rather than a miss —
+it matters because the plan sequences `sixteenth-century-style.md` and
+`split-counterpoint-species-by-author.md` behind this story precisely so they
+inherit the sweep.
+
+**3. Nitpick — `:279` pins the exact unit list.** `match_array %i[whole half
+quarter]` couples the example to today's vocabulary, so adding a `quaver` entry
+later fails with a message that reads like a regression. The key-parity guard
+above would carry the intent without the coupling.
+
+**4. Nitpick — the comment at `:270` overstates.** "And proves it fires at the
+real tree" describes an example that never calls `partial_plurals_in`. It proves
+the tree that guard walks is non-empty and well-formed, which is the useful
+thing; only the wording claims more.
+
+### Verified correct, no action
+
+The `render` → `pluralize` change is right and `count` is plumbed properly
+(`guard_value_keys!` explicitly permits a lone `:count`). The British is
+internally consistent, including every attributive use — "minim rest", "crotchet
+rest", "crotchet dissonances" — and leaving
+`allowed_rhythmic_values_for_fifth_species.name` un-overridden is correct, since
+"note values" is idiomatic in both dialects. Reading YAML from disk rather than
+the backend in `template_keys` and `declared_violation_keys` is load-bearing for
+a second reason the comments do not name: `template_spec.rb:5` and
+`guide_item_spec.rb:125` both `store_translations` into `:en` permanently within
+the suite process. The `I18n.with_locale(:en)` wrap in `guide_item_strings_spec.rb`
+is defensive rather than fixing a live failure — the repo sets no ambient locale —
+which is the right call for a locale-sensitive pin.
+
+### Story hygiene
+
+**Step 1 half-landed.** `### Decisions taken` was written, but "Correct the
+touchpoint table to the census" was not: the Notes section still announces
+"Sixteen touchpoints" (`:51`) over rows summing to 19, and still poses "Worth
+deciding first: whether the British vocabulary belongs to the style scope or to
+`Rudiment::RhythmicUnit`" (`:63-66`) as open — fifteen lines before
+`### Decisions taken` answers it. A future reader meets the stale framing first.
+
+**One stale count.** `:112` reads "three existing entries override `instruction`
+and `violations.default` but not `name`". It is four as of this diff:
+`allowed_rhythmic_values_for_fifth_species` joined `florid_dissonance_treatment`,
+`no_rests` and `third_species_dissonance_treatment`. The argument is unaffected.
+
+**Open question 4 was resolved in code but not in prose.** The
+`third_species_harmony` entry landed (`en_GB.yml:95-96`), repairing both the note
+value and the escaped `neighbour` spelling. But the question asked for an explicit
+in-scope confirmation *because it matters for changelog attribution*, and no such
+line exists in `### Decisions taken` or in the changelog.
+
+**The `rudiments.meter` deferral is right but its stated reason is not.**
+"Outside the style scope" is true as a key path, yet `en_GB.yml:3-4` already
+overrides `rudiments.grand_staff` (pinned by `head_music_spec.rb:25`), so a
+`rudiments` override is established practice in this very file rather than a scope
+crossing. `de` localizes the key (`"Takt"`), so it is meant to be localized, and
+the result is a within-reader inconsistency: a British reader gets `"meter"` in
+the glossary and `"Triple metre dissonance treatment"` one scope over. Still
+correctly out of the acceptance criteria — but the honest reason is that no
+reader path consumes it, not that the scope forbids it.
+
+### Verdict
+
+Nothing blocks finishing. Findings 1 and 2 are latent rather than live and can be
+one follow-up; the hygiene items are story-file edits.
+
+## Learnings
+
+**Counting by reading the file was wrong twice in the same lineage.** The Notes
+section claimed 16 touchpoints over rows summing to 19; probing the loaded gem
+found 30 leaves and 33 strings. The predecessor story's word-frequency scan had
+already made the identical mistake, reporting zero `en_GB` divergences while
+missing `neighbor` in three files -- one of which this story had to repair. Every
+count that came from a probe held up under review; every count that came from
+reading the file did not. That is what `### A note on method` is for, and it
+earned its place.
+
+**The stylistic argument was right; the mechanical one was decisive.** The Notes
+framed the design question as the noun-drop -- "four crotchets", not "four
+crotchet notes" -- which is a translation argument. Planning found the real
+constraint: `in_locale_of` pins value-building to whichever locale carries the
+sentence, so a British vocabulary with no British sentence is not merely awkward,
+it renders nothing at all. Same conclusion, but only the second reason rules out
+the tempting middle route of `rhythmic_units.plural.quarter`. When a design
+choice feels settled on taste, it is worth asking whether some mechanism already
+settled it harder.
+
+**Writing the guard before the YAML worked, and the commit order proves it**
+rather than merely asserting it: `Write the vocabulary sweep in its general
+shape` precedes `Give British readers British note values`. Writing it in
+*general* shape -- ownership per locale, `fetch` with no default -- turned the
+fallback-chain decision into executable form, so a locale added later fails until
+someone decides which vocabulary it reads.
+
+**A guard inherits the assumptions of the dialect it was written against.** The
+sweep requires a `note|rest` head noun, which is correct and load-bearing for
+prose -- "half step" and "whole tone" would otherwise false-fire. But this
+story's whole point is that British *drops that noun*, so the one leak the new
+design makes possible is precisely the one the guard cannot see. The change
+altered the shape of the string and the guard's pattern was never re-checked
+against the new shape. Found in review, not in implementation, and filed as
+`guard-the-vocabulary-sweep-itself.md`.
+
+**Abandoning a planned guard needs a recorded reason, or it comes back.** The
+complete-or-not-at-all overrides spec was unwritable as stated, because four
+entries correctly override `instruction` and `violations.default` but not `name`.
+Writing down *why* it was dropped is what stops the next reader re-proposing it.
+
+**Deferrals need reasons re-derived, not inherited.** Every deferral here was the
+right call, but `rudiments.meter`'s stated reason -- "outside the style scope" --
+did not survive checking: `en_GB` already overrides `rudiments.grand_staff`. The
+decision was right and the justification was wrong, which is the harder kind of
+error to catch.
+
+**Story prose ages against its own diff.** Step 1's second half silently did not
+land, and the "three entries" count went stale as the implementation grew a
+fourth. A story that documents its own reasoning at length needs the same review
+pass as the code.
