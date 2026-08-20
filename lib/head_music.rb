@@ -163,10 +163,13 @@ require "head_music/notation"
 
 # analysis
 require "head_music/analysis/circle"
+require "head_music/analysis/diatonic_interval/consonance_questions"
 require "head_music/analysis/diatonic_interval"
 require "head_music/analysis/diatonic_interval/category"
 require "head_music/analysis/diatonic_interval/naming"
 require "head_music/analysis/diatonic_interval/parser"
+require "head_music/analysis/diatonic_interval/localization"
+require "head_music/analysis/diatonic_interval/inversion"
 require "head_music/analysis/diatonic_interval/semitones"
 require "head_music/analysis/diatonic_interval/size"
 require "head_music/analysis/dyad"

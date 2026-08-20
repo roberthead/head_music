@@ -5,6 +5,7 @@ module HeadMusic::Analysis; end
 class HeadMusic::Analysis::DiatonicInterval
   include Comparable
   include HeadMusic::Named
+  include ConsonanceQuestions
 
   NUMBER_NAMES = %w[
     unison second third fourth fifth sixth seventh octave
@@ -57,38 +58,24 @@ class HeadMusic::Analysis::DiatonicInterval
 
   alias_method :to_i, :semitones
 
-  # Override Named module method to try I18n and fall back to computed name
+  # Overrides Named, which registers a name per object; an interval computes
+  # its own and looks the translation up by it.
   def name(locale_code: nil)
-    computed_name = naming.name
-    return computed_name unless locale_code
-
-    translations = I18n.backend.translations[locale_code]
-    return computed_name unless translations
-
-    name_key = HeadMusic::Utilities::HashKey.for(computed_name)
-    locale_data = translations[:head_music] || {}
-    locale_data.dig(:diatonic_intervals, name_key) ||
-      locale_data.dig(:chromatic_intervals, name_key) ||
-      computed_name
+    Localization.new(naming.name, locale_code).name
   end
 
   def to_s
     name
   end
 
-  # Accepts a name and returns the interval with middle c on the bottom
+  # Accepts a name and returns the interval with middle c on the bottom.
+  # Anything else is assumed to be an interval already.
   def self.get(identifier)
-    if identifier.is_a?(String) || identifier.is_a?(Symbol)
-      name = Parser.new(identifier)
-      semitones = Semitones.new(name.degree_name.to_sym, name.quality_name).count
-      middle_c = HeadMusic::Rudiment::Pitch.middle_c
-      higher_pitch = HeadMusic::Rudiment::Pitch.from_number_and_letter(middle_c + semitones, name.higher_letter)
-      interval = new(middle_c, higher_pitch)
-      interval.ensure_localized_name(name: identifier.to_s)
-      interval
-    else
-      identifier
-    end
+    return identifier unless identifier.is_a?(String) || identifier.is_a?(Symbol)
+
+    interval = Parser.new(identifier).interval
+    interval.ensure_localized_name(name: identifier.to_s)
+    interval
   end
 
   def initialize(first_pitch, second_pitch)
@@ -106,58 +93,16 @@ class HeadMusic::Analysis::DiatonicInterval
   end
 
   def inversion
-    inverted_low_pitch = lower_pitch
-    while inverted_low_pitch < higher_pitch
-      inverted_low_pitch = HeadMusic::Rudiment::Pitch.fetch_or_create(lower_pitch.spelling, inverted_low_pitch.register + 1)
-    end
-    HeadMusic::Analysis::DiatonicInterval.new(higher_pitch, inverted_low_pitch)
+    Inversion.new(lower_pitch, higher_pitch).interval
   end
   alias_method :invert, :inversion
 
-  def consonance(style = :standard_practice)
-    consonance_analysis(style).consonance
-  end
-
-  def consonance?(style = :standard_practice)
-    consonance(style).consonant?
-  end
-
-  def consonant?(style = :standard_practice)
-    consonance_analysis(style).consonant?
-  end
-
-  def perfect_consonance?(style = :standard_practice)
-    consonance_analysis(style).perfect_consonance?
-  end
-
-  def imperfect_consonance?(style = :standard_practice)
-    consonance_analysis(style).imperfect_consonance?
-  end
-
-  def dissonance?(style = :standard_practice)
-    consonance_analysis(style).dissonant?
-  end
-
-  def dissonant?(style = :standard_practice)
-    consonance_analysis(style).dissonant?
-  end
-
-  def consonance_analysis(style = :standard_practice)
-    HeadMusic::Analysis::IntervalConsonance.new(self, style)
-  end
-
-  def consonance_classification(style: :standard_practice)
-    consonance_analysis(style).classification
-  end
-
   def above(pitch)
-    pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-    HeadMusic::Rudiment::Pitch.from_number_and_letter(pitch + semitones, pitch.letter_name.steps_up(number - 1))
+    displaced(pitch, 1)
   end
 
   def below(pitch)
-    pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-    HeadMusic::Rudiment::Pitch.from_number_and_letter(pitch - semitones, pitch.letter_name.steps_down(number - 1))
+    displaced(pitch, -1)
   end
 
   def interval_class
@@ -186,6 +131,16 @@ class HeadMusic::Analysis::DiatonicInterval
   end
 
   private
+
+  # Both directions are the same move with the sign flipped: as many semitones
+  # and as many letter names as the interval spans, counted the other way.
+  def displaced(pitch, direction)
+    pitch = HeadMusic::Rudiment::Pitch.get(pitch)
+    HeadMusic::Rudiment::Pitch.from_number_and_letter(
+      pitch + (semitones * direction),
+      pitch.letter_name.steps_up((number - 1) * direction)
+    )
+  end
 
   def size
     @size ||= Size.new(@lower_pitch, @higher_pitch)

@@ -7,6 +7,21 @@ class HeadMusic::Analysis::DiatonicInterval::Parser
     @identifier = expand(identifier)
   end
 
+  # The interval the identifier names, voiced from middle C upward. Every
+  # interval of a given name is the same interval, so where it sits is
+  # arbitrary; middle C is simply a place to put it.
+  def interval
+    HeadMusic::Analysis::DiatonicInterval.new(middle_c, higher_pitch)
+  end
+
+  def higher_pitch
+    HeadMusic::Rudiment::Pitch.from_number_and_letter(middle_c + semitones, higher_letter)
+  end
+
+  def semitones
+    HeadMusic::Analysis::DiatonicInterval::Semitones.new(degree_name.to_sym, quality_name).count
+  end
+
   def words
     identifier.to_s.split(/[_ ]+/)
   end
@@ -24,7 +39,11 @@ class HeadMusic::Analysis::DiatonicInterval::Parser
   end
 
   def higher_letter
-    HeadMusic::Rudiment::Pitch.middle_c.letter_name.steps_up(steps)
+    middle_c.letter_name.steps_up(steps)
+  end
+
+  def middle_c
+    HeadMusic::Rudiment::Pitch.middle_c
   end
 
   def expand(identifier)
