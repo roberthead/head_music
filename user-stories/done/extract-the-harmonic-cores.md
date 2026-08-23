@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-16T21:38:46-07:00
   activated_at: 2026-08-20T09:16:47-07:00
   planned_at:   2026-08-22T18:41:07-07:00
-  finished_at:
-  updated_at:   2026-08-22T21:04:12-07:00
+  finished_at:  2026-08-22T22:02:23-07:00
+  updated_at:   2026-08-22T22:02:23-07:00
 -->
 
 # Extract the Harmonic Cores
@@ -275,7 +275,7 @@ The tooling from the re-tiering story still works and should be reused:
 bundle exec ruby bin/guide_grade_corpus.rb before.json   # at the merge-base
 bundle exec ruby bin/guide_grade_corpus.rb after.json    # here
 bundle exec ruby bin/guide_grade_table.rb before.json after.json \
-  user-stories/current/extract-the-harmonic-cores.grades.md
+  user-stories/done/extract-the-harmonic-cores.grades.md
 ```
 
 **Known limit of the corpus.** It holds 142 entries and grades 23 guides, for
@@ -1133,3 +1133,78 @@ as a positional hash — a second breaking change riding along with the intended
 one, documented in `CHANGELOG.md`. And `tmp/c0.json`–`c4.json` are gitignored, so
 every number here rests on captures that exist only on this machine; they were
 confirmed re-derivable via the recorded commands.
+
+## Learnings
+
+### What went well
+
+**Measuring the premise before planning killed the wrong story.** The original
+framing aimed at making a first-species line score badly against a third-species
+guide. Measurement on activation showed that outcome is unreachable by tiering at
+all — re-weighting cannot move a rubric whose items are all 1.0, and a
+first-species line is adherent on every item of `ThirdSpeciesHarmony`. That
+became [Tell the Species Apart](../backlog/tell-the-species-apart.md), and this
+story narrowed to the weighting decision alone. Had the plan been written first,
+most of it would have aimed at a target tiering cannot hit.
+
+**Attribution as a capture boundary, not a judgment.** Five captures and four
+single-cause deltas, because the re-tiering story mislabelled 205 rows by
+guessing cause from the guide a row belonged to. The strength classification and
+the harmonic demotion land on the *same seven guides*, so no after-the-fact rule
+could separate them. One change per join turned attribution into arithmetic.
+
+**The no-op proof is what made step 1 committable alone.** `c0 → c1` moving 0 of
+3266 rows is a stronger claim than a spec asserting inertness, and only a corpus
+can make it.
+
+**Enforcing a criterion by construction beats asserting it.** `strength :weak,
+because:` — required for `:weak`, refused for `:strong` — makes "every weak
+declaration carries a reason" true at `require` time. The inverse judgment was
+right for the same reason: a sweep spec over the weak set would be a pure
+change-detector whose only failure mode is "someone made a decision," so the
+56-row table is the artifact instead.
+
+**The story conceded its own counter-argument rather than glossing it.** A
+parallel octave now costs about half what it did, and the document says so.
+
+### What was surprising
+
+**The corpus means rose.** Every harmony guide improved, which reads as the story
+failing until the reason is visible: the corpus holds no second-through-fifth
+species material, so nothing in it fails a *taught* harmonic rule. What it fails
+is background, and background got cheaper. This is why the decisions rested on
+constructed cases — candidate weightings differ by about 0.005 in corpus means
+and enormously on the cases that matter.
+
+**Review found nothing wrong with the numbers and three things wrong with the
+code.** Every figure reproduced: the baseline against a fresh merge-base capture
+on all 3266 rows, the 56-row classification table, all 16 `MostlyConjunct` weight
+rows. The defects were in surfaces the diff *touched but did not re-check* — a
+README example line stale since before the branch, and the joiner's untested
+error paths.
+
+### What to do differently
+
+**The post-processor needed the same discipline as the capture script.**
+`bin/guide_grade_corpus.rb` was deliberately never edited, which is what made the
+columns comparable. `bin/guide_grade_table.rb` was rewritten freely and shipped
+with error paths that would crash on the next capture that raises — and it is the
+tool every story in this epic reuses.
+
+**Emit unmoved rows for anything a criterion names.** `grades.md` lists only rows
+that moved, which left the first-species 1.000 unverifiable from the committed
+artifact even though it was correct.
+
+**The missing species fixtures are the recurring blocker.** They confined this
+story to comparing each line against itself, and the follow-up cannot start
+without them.
+
+### Left open
+
+Review nits 4-8 are recorded in `## Review` and were not acted on. None is a
+defect in shipped behavior, but two fail quietly if someone reaches for them:
+`tier_by_membership` has no `except:` escape hatch, so a configured core member
+would be demoted alongside the bare one and double-graded without
+`reject_duplicates` objecting; and `GuideItem#inspect` calls `guideline.strength`
+while being the thing the new no-primary `ArgumentError` interpolates, so a
+malformed entry raises `NoMethodError` from inside the error construction.
