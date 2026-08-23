@@ -4,14 +4,15 @@ metadata:
   activated_at: 2026-08-20T09:16:47-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-20T09:34:46-07:00
+  updated_at:   2026-08-22T18:13:53-07:00
 -->
 
 # Extract the Harmonic Cores
 
 AS a student submitting a species harmony exercise
 
-I WANT the guide to weigh what it teaches above the general two-part craft it inherits
+I WANT the guide to weigh what it teaches above the general two-part craft it inherits,
+and to weigh a prohibition above a preference
 
 SO THAT the one rule that makes second species *second species* carries more of my
 grade than the seven rules about two-part writing that every harmony guide shares
@@ -59,86 +60,183 @@ first-species line has no dissonances to treat. Across all 26 Fux first-species
 voices the seven harmony guides span **0.973–0.982**, and `third_species_harmony`
 (0.978) grades the line *higher* than `first_species_harmony` (0.976).
 
-**Re-weighting cannot move a rubric whose items are all 1.0.** No candidate
-answer below changes that 1.000. The guides' inability to say "this is not third
-species" is the "no fault found vs. nothing to find fault in" confusion the
-re-tiering story logged as an epic theme, and it is a missing-guideline problem:
-`FirstSpeciesHarmony` has `OneToOne`, so a constructed third-species line scores
-0.847 there with `OneToOne` firing at 0.0, while the diminution guides have no
-species-identifying counterpart and so can reject nothing.
+**Re-weighting cannot move a rubric whose items are all 1.0.** No decision below
+changes that 1.000. That defect is
+[Tell the Species Apart](../backlog/tell-the-species-apart.md). This story is the
+weighting decision alone, and its measurements compare a line against *itself*
+before and after, as the melodic story did (0.883 → 0.561).
 
-That defect is [Tell the Species Apart](../backlog/tell-the-species-apart.md).
-This story is the weighting decision alone, and its measurements compare a line
-against *itself* before and after, as the melodic story did (0.883 → 0.561).
+## The decisions
 
-## Two things to explore, not one
+Both open questions are settled. The reasoning is recorded here because the
+numbers behind it are not obvious and the counter-arguments are real.
 
-The title says "extract" because there are two separable questions and the
-answer to the second may change the first.
+### Tier is the list; strength is the rule
 
-### 1. Should the cores be demoted to `secondary_items`?
+The rubric gains a second axis, orthogonal to tier.
 
-The direct analogue of the melodic decision, which chose to demote **wholesale**:
-`MELODIC_CORE` and `MOVING_MELODIC_CORE` were unioned into
-`INHERITED_MELODIC_CRAFT` and moved to `secondary_items` together, rather than
-split by subject.
+**Tier** stays what it is — the list a guide declares an item in, `gate`,
+`primary`, or `secondary`. It cannot be a property of the item, for the reason
+`Guides::Base` already gives: `ContourMelody` treats as background exactly what
+`DiatonicMelody` teaches, and one frozen item cannot carry both.
 
-A harmony guide teaches its species; general two-part craft is background it
-inherits. Demoting would make `WeakBeatDissonanceTreatment` carry φ⁻¹ of second
-species' rubric rather than a tenth.
+**Strength** is `strong` or `weak`, and it *is* a property of the item, because
+that conflict does not arise. `PreferContraryMotion` is a preference in every
+guide that declares it; `NoParallelPerfectOnDownbeats` is a prohibition in all
+of them. There is no guide in the tree that would need the same rule at a
+different strength. It is declared on the Guideline class, defaults to `strong`,
+and is overrideable at `GuideItem` construction for the tradition-dependent case
+— `ApproachPerfectionContrarily` is prohibited in Fux and merely cautioned in
+some later traditions.
 
-The counter-argument deserves a hearing, and it is stronger here than for
-melody: parallel fifths are not *background* in a counterpoint exercise. A
-student who writes flawless second-species rhythm over parallel octaves has not
-done well, and a demotion says they mostly have. Melodic craft is plausibly
-background to a rhythm lesson; harmonic craft may be the point of counterpoint
-regardless of species.
+`GuideItem` delegates it; `GuideItemAssessment` stamps it alongside tier, for the
+reason that class already gives for stamping tier — it is a frozen value object
+meant to be persisted and compared without the analysis machinery.
 
-Possible answers, and this story should pick one with measurements behind it:
+### The arithmetic
 
-- demote both cores wholesale, as melody does
-- demote `HARMONIC_CORE` but keep `DIMINUTION_HARMONIC_CORE` primary, since the
-  diminution rules exist precisely because of the species
-- split `HARMONIC_CORE` itself — the parallel-perfect and consonance rules stay
-  primary, the preference rules (`PreferContraryMotion`, `PreferImperfect`)
-  become secondary
-- leave them primary and accept that harmony guides grade differently from
-  melody guides, stating why
+- Tiers keep their budgets: primary φ⁻¹, secondary φ⁻². Fixed, so what a guide
+  teaches cannot erode as inherited guidelines accumulate.
+- Within a tier, `strong` weighs 2 and `weak` weighs 1, normalized by that
+  tier's own total.
+- Gates keep multiplying: `fitness = gate_factor × rubric_fitness`.
 
-### 2. Should the cores live on `SpeciesHarmony` at all?
+The alternative considered and rejected was a single global weighted mean over
+weights of 4 / 2 / 2 / 1 (primary-strong / primary-weak / secondary-strong /
+secondary-weak), with no tier budgets at all. It is the same 2:1 on both axes and
+it behaves well on today's guides, but the collection ratio becomes a consequence
+of how many items each tier happens to hold, and it erodes:
 
-`SpeciesHarmony` is described in its own comment as "a semantic marker
-distinguishing harmony guides from melody guides," yet it also holds three
-constants and a list-building helper.
+| inherited strong guidelines added | taught-rule share, global weights | with tier budgets |
+| ---: | ---: | ---: |
+| +0 | 0.200 | 0.206 |
+| +2 | 0.167 | 0.206 |
+| +4 | 0.143 | 0.206 |
+| +8 | 0.111 | 0.206 |
 
-The melodic side has since answered its half of this, and differently than the
-original framing expected. `SpeciesMelody.species_items` **partitions entries by
-membership** in `INHERITED_MELODIC_CRAFT` rather than trusting the call site to
-declare the right tier, precisely because "guides do not declare the cores the
-same way — some splat the constant, some name its members — and a hand-named
-inherited guideline must still be demoted."
+Measured on the case that motivated the concern: `ContourMelody` declares
+`primary: [Contoured.with(:arch)]` against `DiatonicMelody`'s eleven primaries as
+secondary. Under global weights the taught rule holds **0.190** of the grade, and
+a trough submitted for an arch scores **0.882** — worse than the 0.618 it scores
+today. A ceiling on the secondary share was considered as a repair; the ceiling
+value that preserves today's severity is φ⁻², at which point it binds on every
+guide in the tree and the tier half of 4 / 2 / 2 / 1 is doing nothing the budget
+was not already doing. So: keep the budgets, and let the weights carry strength.
 
-So the harmonic question is no longer "stop the guides reaching around the
-helper." It is whether to adopt the same partitioner (tolerating hand-naming and
-tiering correctly anyway), or to make the declarations uniform, or both. Today
-`FourthSpeciesHarmony` splats `HARMONIC_CORE` and then names `NoStrongBeatUnisons`
-individually; `FifthSpeciesHarmony` names both `NoParallelPerfectAcrossBarline`
-and `NoStrongBeatUnisons`. Both are `DIMINUTION_HARMONIC_CORE` members reached
-without `diminution_items`, so under a call-site-trusting scheme they would be
-mis-tiered, and under a partitioning scheme they would not.
+### Empty tiers renormalize; a guide with no primary raises
 
-`CombinedFirstSecondThirdSpeciesHarmony` omits the diminution core entirely
-despite covering second and third species — recorded as a defect during the
-re-tiering plan and still unfixed.
+`rubric_fitness` already divides by the actual weight sum rather than assuming
+the budgets total 1, and that behavior is deliberate and stays:
+
+| rubric | Σw | score |
+| --- | ---: | ---: |
+| primary only, one item at 0 | 0.618 | 0.0000 |
+| primary only, three items, one at 0 | 0.618 | 0.6000 |
+| secondary only, all adherent | 0.382 | 1.0000 |
+| secondary only, one item at 0 | 0.382 | 0.3333 |
+| both tiers, primary at 0 | 1.000 | 0.3820 |
+
+A lone tier takes the full range. Note the second row: "a primary at 0 zeroes the
+grade" holds when that item *is* the primary tier — true of the six contour
+guides and no others — not when it is one primary among several.
+
+A guide declaring **no primary items raises**, extending the `ArgumentError` that
+`Base#normalize` already raises when every tier is empty. A guide that is all
+background has no subject, and grading it 1.0 in silence is the same "nothing to
+find fault in" confusion the epic already tracks. All 23 registered guides
+declare at least one primary today, so this closes a door rather than fixing a
+break.
+
+### Both harmonic cores demote wholesale
+
+As melody does. `HARMONIC_CORE` and `DIMINUTION_HARMONIC_CORE` go to
+`secondary_items` together. The alternatives — demoting only `HARMONIC_CORE`, or
+keeping the parallel-perfect prohibitions primary — are retired: they used tier
+as a severity dial, which is now strength's job. Keeping `ConsonantDownbeats`
+primary was only ever a way to say it outranks `PreferImperfect`, and strength
+now says that directly.
+
+### Marks and weights say different things
+
+A mark's fitness positions the guideline between 0 and 1; the weight decides how
+much of the rubric that number governs. Marks are internal to the item, weights
+external to it — **and marks compound while weights do not.** With
+`fitness_denominator` at its default of 1, an item's fitness is the bare product
+of its mark fitnesses, so the factor sets both how bad one instance is and how
+fast the item collapses on repeats.
+
+`SMALL_PENALTY_FACTOR` (φ^-0.5 ≈ 0.786) therefore stays. Its two users differ:
+
+- `MostlyConjunct` is soft all the way through and should say so with
+  `strength :weak` and ordinary marks. This is a real behavioral change, not a
+  relabeling: it marks *every* skip and leap once it trips, so six leaps put it
+  at 0.786⁶ = 0.236 today and 0.618⁶ = 0.056 after. Measure it.
+- `SecondSpeciesBreak` uses the full penalty for an unprepared dissonance on a
+  break and the small penalty for breaking too often — two severities inside one
+  guideline. Both collapse into one item fitness before any weight applies, so a
+  weight cannot tell them apart. It keeps both factors and stays `strong`.
+
+The constant keeps its name and gains a comment saying which question it answers.
+
+## What this costs
+
+Recorded rather than glossed, because the story's own Background argued the
+other way. Share of the grade, before → after:
+
+| guide | items | taught rule | inherited prohibition | preference |
+| --- | ---: | ---: | ---: | ---: |
+| `first_species_harmony` | 9 | 0.111 → **0.309** | 0.111 → **0.064** | 0.111 → **0.032** |
+| `second_species_harmony` | 10 | 0.100 → **0.618** | 0.100 → **0.048** | 0.100 → **0.024** |
+| `third_species_harmony` | 10 | 0.100 → **0.618** | 0.100 → **0.048** | 0.100 → **0.024** |
+| `third_species_triple_meter_harmony` | 10 | 0.100 → **0.618** | 0.100 → **0.048** | 0.100 → **0.024** |
+| `fourth_species_harmony` | 11 | 0.091 → **0.309** | 0.091 → **0.048** | 0.091 → **0.024** |
+| `combined_first_second_third_species_harmony` | 8 | 0.125 → **0.618** | 0.125 → **0.064** | 0.125 → **0.032** |
+| `fifth_species_harmony` | 12 | 0.083 → **0.309** | 0.083 → **0.042** | 0.083 → **0.021** |
+
+And the resulting grades, `second_species_harmony`, one violation at φ⁻¹:
+
+| violated | before | after |
+| --- | ---: | ---: |
+| `WeakBeatDissonanceTreatment` *(taught)* | 0.9618 | **0.7639** |
+| `NoParallelPerfectOnDownbeats` | 0.9618 | **0.9818** |
+| `ConsonantDownbeats` | 0.9618 | **0.9818** |
+| `PreferContraryMotion` | 0.9618 | **0.9909** |
+
+**A parallel octave costs about half what it costs today.** That is the
+counter-argument this story recorded on activation — "parallel fifths are not
+background in a counterpoint exercise" — and demotion does not answer it; it
+concedes it. What strength buys is that the prohibition now costs twice a
+preference instead of the same, and the taught rule costs thirteen times either.
+The judgment being made is that a student who breaks the lesson has not done the
+assignment, while a student who writes one parallel octave has done the
+assignment imperfectly.
+
+If that judgment is wrong, the lever is `NoParallelPerfectOnDownbeats`'s own
+mark or a third strength, not the tier. That is deliberately not this story.
 
 ## Scope
 
-- Decide question 1 with measurements: what each harmony guide grades today, and
-  under each candidate answer, for the corpus material that can actually be
-  assessed harmonically.
-- Decide question 2 and make the declarations consistent — either by adopting a
-  membership partitioner like the melodic side's, or by making every guide use
-  the helper.
+- Add the strength axis: `Guideline.strength` defaulting to `:strong`,
+  `GuideItem` override and delegation, `GuideItemAssessment` stamping,
+  `GuideAssessment#rubric_weights` honoring it.
+- Classify every guideline. The proposed weak set is a starting point, not a
+  finding: `PreferContraryMotion`, `PreferImperfect`, `MostlyConjunct`,
+  `LimitOctaveLeaps`, `ModerateDirectionChanges`, `FrequentDirectionChanges`,
+  `PrepareOctaveLeaps`, `LargeLeaps`. Everything else is `strong` by default,
+  and each weak call needs a one-line reason.
+- Demote `HARMONIC_CORE` and `DIMINUTION_HARMONIC_CORE` to `secondary_items`.
+- Raise when a guide declares no primary items.
+- Convert `MostlyConjunct` to `strength :weak` with ordinary marks, and measure
+  the change to its own fitness separately from the rubric change.
+- Make the declarations consistent. `SpeciesMelody.species_items` **partitions
+  entries by membership** in `INHERITED_MELODIC_CRAFT` rather than trusting the
+  call site, because "guides do not declare the cores the same way — some splat
+  the constant, some name its members — and a hand-named inherited guideline must
+  still be demoted." Today `FourthSpeciesHarmony` splats `HARMONIC_CORE` and then
+  names `NoStrongBeatUnisons` individually, and `FifthSpeciesHarmony` names both
+  `NoParallelPerfectAcrossBarline` and `NoStrongBeatUnisons` — all
+  `DIMINUTION_HARMONIC_CORE` members reached without `diminution_items`. Adopt
+  the partitioner, or make every guide use the helper.
 - Fix `CombinedFirstSecondThirdSpeciesHarmony`'s missing diminution core, or
   record why its omission is correct.
 - Consider whether `StartOnPerfectConsonance` and `StepOutOfUnison` — harmonic
@@ -166,18 +264,33 @@ species fixtures belongs to
 [Tell the Species Apart](../backlog/tell-the-species-apart.md), which needs them
 to do its own job.
 
+The corpus is a regression check, not a decision procedure: of its 252 assessable
+rows only 35 fail anything, and **none of them fails a hard prohibition**. The
+decisions above rest on the constructed cases in this document, not on corpus
+means, which differ between candidates by about 0.005.
+
 ## Acceptance Criteria
 
-- Every harmony guide's tier assignment is deliberate and stated, with a
-  measurement behind it.
+- Every guideline carries an explicit or defaulted strength, and every `:weak`
+  declaration carries a one-line reason.
+- A strong guideline weighs exactly twice a weak one within the same tier, shown
+  by a spec that asserts the ratio rather than a fixture grade.
+- The tier budgets are unchanged and still φ⁻¹ / φ⁻², with the design comment on
+  `TIER_BUDGETS` rewritten to describe both axes.
+- A rubric of one tier renormalizes to the full range, covered for both tiers.
+- A guide declaring no primary items raises `ArgumentError` at declaration time,
+  naming the guide.
+- `CombinedFirstSecondThirdSpeciesHarmony` either declares the diminution core or
+  carries a comment explaining why it does not.
 - The declaration form is consistent: either no guide splats a core and then
   names a member of another core individually, or the tiering is decided by
   membership so that doing so is harmless.
-- `CombinedFirstSecondThirdSpeciesHarmony` either declares the diminution core or
-  carries a comment explaining why it does not.
 - A before/after grade table for every harmony guide across the assessable
   corpus, in the same shape as the re-tiering story's, with the 38-row limit
   stated in the document rather than left implicit.
+- `MostlyConjunct`'s own fitness change is reported separately from its rubric
+  weight change, since the two move in the same direction and would otherwise be
+  indistinguishable.
 - For at least one valid first-species line, the change in its grade against
   `SecondSpeciesHarmony` and `ThirdSpeciesHarmony` is reported and explained —
   including the expected result that a line adherent on every item stays at
@@ -194,9 +307,25 @@ and its own evidence rather than inheriting the melodic conclusion by symmetry.
 
 The original framing of this story aimed at making a first-species line score
 badly against a third-species guide. Measurement on activation showed that
-outcome is unreachable by tiering — see "What re-tiering will and will not fix"
-— so the goal was narrowed to the weighting question and the identification
-defect was split out.
+outcome is unreachable by tiering — see "What re-tiering will and will not fix" —
+so the goal was narrowed to the weighting question and the identification defect
+was split out.
+
+The strength axis is the larger half of this story and its blast radius is every
+guide, not only the harmonic ones: the melody guides are already re-tiered, so
+they get re-graded the moment strength lands. It is kept here because demoting
+the harmonic cores without it is measurably worse — a demoted prohibition would
+weigh 0.042 rather than 0.048, the same as a preference. If the harmonic change
+needs to land narrow, the axis splits out cleanly and this story depends on it.
+
+Two things this story deliberately does not fix, both already on record:
+
+- The rubric stays **compensatory** — excellence elsewhere always buys back a
+  violation. See [Disqualify, Don't Discount](../backlog/disqualify-dont-discount.md).
+- A wrong answer cannot score worse than the guideline's own mark, whatever the
+  weighting. `Contoured` marks a mismatched contour at φ⁻², so a trough submitted
+  for an arch floors at 0.382 even at 100% weight. See
+  [Tell the Species Apart](../backlog/tell-the-species-apart.md).
 
 ## Implementation Plan
 

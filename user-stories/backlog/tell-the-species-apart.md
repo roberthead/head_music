@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-08-20T09:34:46-07:00
+  updated_at:   2026-08-22T18:13:53-07:00
 -->
 
 # Tell the Species Apart
@@ -55,6 +55,37 @@ re-tiering story named as an epic-level theme. It has a melodic twin already on
 record there: `FourthSpeciesMelody` cannot distinguish fourth species from
 first, because `OneToOneWithTies` is adherent on a first-species line.
 
+## The floor: a wrong answer cannot score worse than its own mark
+
+Added by [Extract the Harmonic Cores](../current/extract-the-harmonic-cores.md),
+which hit this while trying to make a failed lesson score badly.
+
+`Contoured` marks a mismatched contour at φ⁻²:
+
+```ruby
+def marks
+  return if notes.empty? || matches_contour?
+  Mark.for_all(notes, fitness: HeadMusic::GOLDEN_RATIO_INVERSE**2)
+end
+```
+
+`ContourMelody` declares `primary: [Contoured.with(contour)]` and nothing else,
+so that one item is the whole primary tier. A trough submitted for an arch scores
+**0.618** today. Weighting can only interpolate between the guideline's own
+fitness and 1, so even at 100% of the rubric the floor is **0.382**. No tier,
+budget, cap, or weight reaches below it.
+
+Two candidate fixes, and they are the same two this story is already weighing:
+
+- **A harsher mark.** A trough is not a near-miss arch, and φ⁻² is the factor for
+  a near miss. `Contoured` could mark a total mismatch at 0.
+- **A gate.** "You were asked for an arch and wrote a trough" is a precondition,
+  not a rubric line — the same sentence as "this is not third species" with
+  different nouns. As a gate it gives `0.382 × rubric`.
+
+Whichever answer this story reaches for species identification should be the same
+answer here, because it is the same question.
+
 ## Questions to settle
 
 - Is species identification a harmonic concern, a melodic one, or a gate?
@@ -79,6 +110,8 @@ first, because `OneToOneWithTies` is adherent on a first-species line.
 - Decide the three questions above and implement the chosen answer.
 - Fix `FourthSpeciesMelody`'s inability to distinguish fourth species from
   first, or record why it is out of scope.
+- Apply the same answer to `Contoured`, so a contour that does not match at all
+  is distinguished from one that nearly does.
 
 ## Acceptance Criteria
 
@@ -92,6 +125,8 @@ first, because `OneToOneWithTies` is adherent on a first-species line.
   line's own species.
 - The decision on where species identification belongs is stated in the guide or
   guideline comments, not only in this story.
+- A trough submitted to `arch_contour_melody` scores materially below the 0.618
+  it scores today, and a near-miss arch still scores above it.
 
 ## Notes
 
