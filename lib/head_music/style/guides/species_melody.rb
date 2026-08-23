@@ -24,6 +24,20 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
 
   # For the moving species (second through fifth), whose melodies progress
   # within the bar rather than holding a whole note.
+  #
+  # Two of these read as harmonic rules and neither moves to the harmonic cores.
+  # StartOnPerfectConsonance is not harmonic despite its name -- it measures the
+  # interval from the key's tonic, not from the companion voice, so it scores a
+  # solo voice legitimately. StepOutOfUnison genuinely is harmonic and does score
+  # a free 1.0 for a solo voice, but that free-1.0 belongs to the identification
+  # problem rather than to a weighting question, and moving it costs six
+  # assertions across the melody specs to buy 0.007 of one harmony grade.
+  #
+  # Whoever revisits this must fix both call sites: FirstSpeciesMelody and
+  # CombinedFirstSecondThirdSpeciesMelody name these two by hand, so dropping
+  # them from INHERITED_MELODIC_CRAFT would send them to primary_items -- a
+  # background rule graded as a taught rule -- while the guides that splat
+  # moving_species_items would simply lose them.
   MOVING_MELODIC_CORE = [
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::EndOnTonic,
@@ -39,15 +53,8 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
   # A species guide is about its rhythm; melodic craft is background.
   INHERITED_MELODIC_CRAFT = (MELODIC_CORE + MOVING_MELODIC_CORE).freeze
 
-  # Partitioned by membership rather than at the call site, because guides do
-  # not declare the cores the same way -- some splat the constant, some name its
-  # members -- and a hand-named inherited guideline must still be demoted.
   def self.species_items(*entries)
-    inherited, taught = entries.flatten.compact.partition do |entry|
-      INHERITED_MELODIC_CRAFT.include?(entry)
-    end
-    secondary_items(*inherited) if inherited.any?
-    primary_items(*taught) if taught.any?
+    tier_by_membership(entries, INHERITED_MELODIC_CRAFT)
   end
 
   def self.moving_species_items(*additional)

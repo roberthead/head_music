@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-20T09:16:47-07:00
   planned_at:   2026-08-22T18:41:07-07:00
   finished_at:
-  updated_at:   2026-08-22T18:41:07-07:00
+  updated_at:   2026-08-22T20:15:09-07:00
 -->
 
 # Extract the Harmonic Cores
@@ -128,13 +128,16 @@ was not already doing. So: keep the budgets, and let the weights carry strength.
 `rubric_fitness` already divides by the actual weight sum rather than assuming
 the budgets total 1, and that behavior is deliberate and stays:
 
-| rubric | Σw | score |
-| --- | ---: | ---: |
-| primary only, one item at 0 | 0.618 | 0.0000 |
-| primary only, three items, one at 0 | 0.618 | 0.6000 |
-| secondary only, all adherent | 0.382 | 1.0000 |
-| secondary only, one item at 0 | 0.382 | 0.3333 |
-| both tiers, primary at 0 | 1.000 | 0.3820 |
+The item fitnesses are given, because the scores cannot be re-derived without
+them and two of these rows are the ones the new specs pin:
+
+| rubric | item fitnesses | Σw | score |
+| --- | --- | ---: | ---: |
+| primary only, one item | 0.0 | 0.618 | 0.0000 |
+| primary only, three items | 0.0, 1.0, 0.8 | 0.618 | 0.6000 |
+| secondary only, two items | 1.0, 1.0 | 0.382 | 1.0000 |
+| secondary only, three items | 0.0, 0.5, 0.5 | 0.382 | 0.3333 |
+| both tiers, primary at 0 | primary 0.0; secondary 1.0 | 1.000 | 0.3820 |
 
 A lone tier takes the full range. Note the second row: "a primary at 0 zeroes the
 grade" holds when that item *is* the primary tier — true of the six contour
@@ -190,13 +193,19 @@ other way. Share of the grade, before → after:
 | `third_species_harmony` | 10 | 0.100 → **0.618** | 0.100 → **0.048** | 0.100 → **0.024** |
 | `third_species_triple_meter_harmony` | 10 | 0.100 → **0.618** | 0.100 → **0.048** | 0.100 → **0.024** |
 | `fourth_species_harmony` | 11 | 0.091 → **0.309** | 0.091 → **0.048** | 0.091 → **0.024** |
-| `combined_first_second_third_species_harmony` | 8 → 10 | 0.125 → **0.618** | 0.125 → **0.048** | 0.125 → **0.032** |
+| `combined_first_second_third_species_harmony` | 8 → 10 | 0.125 → **0.618** | 0.125 → **0.048** | 0.125 → **0.024** |
 | `fifth_species_harmony` | 12 | 0.083 → **0.309** | 0.083 → **0.042** | 0.083 → **0.021** |
 
 Two rows depend on decisions taken elsewhere in this story, and the arithmetic
 does not work without them. `combined_first_second_third_species_harmony` gains
-the diminution core it is missing, so it grades 10 items rather than 8 — its
-preference column stays 0.032 only because the two added items are both strong.
+the diminution core it is missing, so it grades 10 items rather than 8, and both
+of its background columns move with the item count rather than with what was
+added: its secondary tier goes from 7 items (5 strong + 2 weak = 12 units) to 9
+(7 strong + 2 weak = 16 units), so a preference there falls from φ⁻²/12 = 0.032
+to φ⁻²/16 = **0.024**. Adding items dilutes a tier whatever their strength; the
+row is the same shape as second and third species because it now holds the same
+nine background items.
+
 And **`NoParallelPerfectWithSyncopation` demotes with the cores**, though it is a
 member of neither constant: it is the same prohibition as the other three,
 specialized for syncopation, and leaving it primary would give it φ⁻¹ of fourth
@@ -334,8 +343,10 @@ candidate weightings by about 0.005.
   weight change, since the two move in the same direction and would otherwise be
   indistinguishable — and separately again for the three guides where it is
   primary (`fux_cantus_firmus`, `salzer_schachter_cantus_firmus`,
-  `diatonic_melody`) versus the 13 where it is secondary, because a weak item
-  entering a previously uniform tier re-weights every sibling in those three.
+  `diatonic_melody`) versus the 13 where it is secondary. The reason is the
+  budget, not the re-weighting: a weak item re-weights every sibling in all 16,
+  since those secondary tiers are uniform-strength today too, but it does so
+  inside φ⁻¹ in the three and inside φ⁻² in the thirteen.
 - The first-species measurement names the corpus entry it was taken from, so the
   number can be re-derived from the committed grade table rather than trusted.
 - For at least one valid first-species line, the change in its grade against
@@ -513,9 +524,22 @@ asserting the weak set would be a pure change-detector whose only failure mode i
 "someone made a decision." Budget this as judgment work: 56 calls with no oracle,
 defended only by the table and the grade diff.
 
-Capture `tmp/c3.json`. **`c2 → c3` is the strength re-weighting alone**, and it
-moves melody guides only — the harmony guides are still all-primary and
-all-strong at this point, so their rows must be identical to `c2`.
+Capture `tmp/c3.json`. **`c2 → c3` is the strength re-weighting alone** — but it
+moves the harmony guides too, and expecting otherwise will cost an afternoon.
+`PreferContraryMotion` and `PreferImperfect` are *members of `HARMONIC_CORE`* and
+both are on the weak list, so at this step every harmony guide's primary tier
+becomes mixed-strength, `raw.uniq.one?` stops firing, and its weights move even
+though its tiering has not changed. Measured on the `second_species_harmony`
+fixture at `second_species_harmony_spec.rb:38`:
+
+| | fitness |
+| --- | ---: |
+| today (`c0`–`c2`) | 0.8236 |
+| after step 3 (`c3`) | **0.8040** |
+| after step 4 (`c4`) | 0.6979 |
+
+This is why four deltas and not three: `c2 → c3` and `c3 → c4` both land on the
+same seven harmony guides, and only the capture boundary separates them.
 
 ### 4. Demote the cores
 
@@ -541,13 +565,26 @@ correctly *without* editing those call sites, satisfying the second branch of th
 declaration-consistency criterion.
 
 `CombinedFirstSecondThirdSpeciesHarmony` gains the diminution core. The omission
-is not defensible: it covers second and third species, both diminution species,
-and its melody counterpart does declare the moving-melodic guidelines.
+is not defensible: it covers second and third species, both of them diminution
+species, so the two rules about setting several notes against one apply to it by
+construction. Do not lean on the melody counterpart for symmetry —
+`CombinedFirstSecondThirdSpeciesMelody` hand-names seven of the nine
+`MOVING_MELODIC_CORE` guidelines and omits `NoteFillsFinalBar` and
+`StepOutOfUnison`, so it has the same kind of gap. Whether *that* gap is
+deliberate is not this story's question; note it and leave it.
 
-Watch one trap: `reject_duplicates` compares across tiers, and `species_items`
+Watch two traps. `reject_duplicates` compares across tiers, and `species_items`
 calls `secondary_items` and `primary_items` separately, so a guideline named
 twice — once splatted, once by hand — now lands in two tiers and raises. No guide
 does this today, but it is the failure a careless conversion produces.
+
+The second is why `SpeciesMelody.species_items` guards each call with
+`if inherited.any?` / `if taught.any?`, and the guards must survive the lift.
+`tier_items` returns `items_by_tier[tier]` when given no entries and no `except:`,
+so a bare `primary_items()` *reads* the tier rather than declaring into it —
+which memoizes `@items_by_tier` from a half-declared class body. Combined with
+step 5 that turns into an `ArgumentError` blaming a guide that had simply not
+finished declaring yet.
 
 Capture `tmp/c4.json`. **`c3 → c4` is the demotion alone.**
 
@@ -573,9 +610,11 @@ name alone cannot distinguish six contour configurations.
 not try to verify via `ContourMelody.guide_items`, which raises
 `missing keyword: :contour` by design.
 
-Open question to settle here: **is a gate-only guide still legal?** It is today —
-`normalize` objects only when all three tiers are empty. This rule makes it
-illegal. Say so, or exempt it.
+Settled here rather than carried: **a gate-only guide becomes illegal**, and no
+exemption. Nothing in the tree is gate-only, a guide that only decides whether a
+voice is assessable has no subject to grade it against, and an exemption would
+mean two spellings of "this guide teaches nothing" — one that raises and one that
+returns 1.0. Say so in the raise's comment so the omission reads as a decision.
 
 ### 6. Record the `StartOnPerfectConsonance` / `StepOutOfUnison` decision
 
@@ -588,14 +627,22 @@ than this document.
 interval from the key's **tonic**, not from the companion voice, so it scores a
 solo voice legitimately. `StepOutOfUnison` genuinely is harmonic and does score a
 free 1.0 for a solo voice, but that free-1.0 defect belongs to
-[Tell the Species Apart](../backlog/tell-the-species-apart.md). Moving it also
-costs six assertions across the melody specs and would lift
-`SecondSpeciesHarmony`'s fixture grade back over 0.7, hiding this story's one
-honest regression.
+[Tell the Species Apart](../backlog/tell-the-species-apart.md). The cost of
+moving it is six assertions across the melody specs; that is the real argument.
+It would also lift `SecondSpeciesHarmony`'s fixture back over the old threshold,
+but only just, and the mechanism is worth stating so the number is not mistaken
+for a big effect: a new item lands in the *secondary* tier, whose budget is fixed
+at φ⁻², so the taught rule keeps its 0.618 and the only movement is dilution of
+the three failing background items (16 → 18 units). That is 0.6979 → **0.7052**.
+A 0.007 move is not "hiding a regression"; the spec assertions are.
 
-If this is overridden: `FirstSpeciesMelody` and
-`CombinedFirstSecondThirdSpeciesMelody` name them by hand rather than splatting,
-so they would lose them entirely rather than have them demoted.
+If this is overridden, the failure is not a loss but a **promotion**, and it is
+the one the partitioner section warns about. `FirstSpeciesMelody` and
+`CombinedFirstSecondThirdSpeciesMelody` name these two by hand, so once they are
+no longer members of `INHERITED_MELODIC_CRAFT` the partition sends them to
+`primary_items` — a background rule graded as a taught rule at φ⁻¹. It is the
+guides that *splat* `moving_species_items` that would simply lose them. Both
+outcomes are wrong; whoever moves these must fix both call sites.
 
 ### 7. Measure, then update the joiner, then report
 
@@ -623,9 +670,16 @@ split and the `tier` surface both become incomplete.
 full suite: `spec/head_music/style/guides/second_species_harmony_spec.rb:38`,
 `be > 0.7`, where the fixture goes **0.8236 → 0.6979**. The fixture fails the
 taught rule at φ⁻¹, which now carries 0.618 of the rubric, so its ceiling is
-0.618 × 0.618 + 0.382 = 0.7639. This is the story working. Fix it as two
-expectations plus a comment carrying that derivation, so the number is not a
-goalpost someone quietly moved.
+0.618 × 0.618 + 0.382 = 0.7639. It lands below that ceiling, at 0.6979, because
+it also fails three background items — `ApproachPerfectionContrarily` and
+`NoParallelPerfectOnDownbeats` at φ⁻¹ and `NoParallelPerfectAcrossBarline` at
+φ⁻². This is the story working. Fix it as two expectations plus a comment
+carrying both halves of that derivation, since the ceiling alone does not
+produce the number and the number alone is a goalpost someone can quietly move.
+
+Step 2 was run against the full suite on its own: dropping
+`SMALL_PENALTY_FACTOR` from `MostlyConjunct` breaks **nothing** (6678 examples, 0
+failures). So this one failure belongs to step 4, not to the mark change.
 
 New specs:
 
@@ -634,9 +688,13 @@ New specs:
   `(1 − strong_fails) == 2 × (1 − weak_fails)`. It must be mixed-strength, or the
   equal-weights collapse hands it `[1.0, 1.0]` and the assertion passes
   vacuously. Reuse the existing graded-stub helper with a strength argument.
-- Single-tier renormalization for **both** tiers, using rows 2 (→ 0.6000) and 4
-  (→ 0.3333) of the edge-case table. These are the load-bearing pair, because a
-  count-based rubric gives 0.667 for both. Assert the score, never Σw — the
+- Single-tier renormalization for **both** tiers, using rows 2 (0.0, 1.0, 0.8 →
+  0.6000) and 4 (0.0, 0.5, 0.5 → 0.3333) of the edge-case table. What they pin is
+  the division by Σw rather than by an assumed total of 1: a rubric that divided
+  by 1.0 would cap a lone tier at its budget and give 0.618 × 0.6 = 0.371 and
+  0.382 × 0.3333 = 0.127 instead. Both tiers are needed because a primary-only
+  rubric divided by 1.0 is wrong by φ⁻¹ and a secondary-only one by φ⁻², and only
+  the second is far enough off to be obvious. Assert the score, never Σw — the
   collapse means row 1's actual Σw is 1.0, not 0.618.
 - Strength declaration, default, validation, and non-inheritance pinned
   explicitly; `GuideItem` delegation and override; `GuideItemAssessment` stamping
@@ -646,10 +704,11 @@ New specs:
 - Do not assert exact `eq` on a mixed-strength rubric — use `be_within(1e-12)`.
   The existing exact-`eq` examples are uniform-strength and stay exact.
 
-**Coverage.** Currently 100% line and branch, so the 90% floor has headroom. The
-exposure is the new methods and the new raise branch; branch coverage is on, so
-both arms of the strength fallback, the validation, and the empty-primary check
-each need a direct example. Run `bundle exec rake` for the gate —
+**Coverage.** Currently 99.77% line (7460/7477) and 97.15% branch (1573/1619),
+measured by `bundle exec rspec` on this branch — not 100%, but far above the 90%
+floor, so there is headroom. The exposure is the new methods and the new raise
+branch; branch coverage is on, so both arms of the strength fallback, the
+validation, and the empty-primary check each need a direct example. Run `bundle exec rake` for the gate —
 `maximum_coverage_drop` compares against `coverage/.last_run.json`, so a targeted
 run right after a full one will trip it.
 
@@ -676,3 +735,221 @@ grade table is the real check.
 - The `ApproachPerfectionContrarily` override ships with spec coverage and no
   production caller until a tradition needs it. Build the seam anyway, since the
   partitioner fix it forces is worth having regardless.
+
+## What landed
+
+Implemented in the seven steps above, each captured so every delta has one
+cause. The full row-by-row tables are in
+[extract-the-harmonic-cores.grades.md](extract-the-harmonic-cores.grades.md).
+
+| join | cause | rows moved (of 3266) |
+| --- | --- | ---: |
+| `c0 → c1` | the strength axis | **0** |
+| `c1 → c2` | `MostlyConjunct`'s marks | 130 |
+| `c2 → c3` | the strength re-weighting | 833 |
+| `c3 → c4` | the harmonic demotion | 49 |
+
+`c0 → c1` moving nothing is the check that made step 1 committable alone: an
+axis whose every value defaults must be a provable no-op, and it is, across the
+whole corpus rather than by assertion.
+
+Both corpus denominators, stated rather than left implicit: **3266 rows** per
+capture — 142 corpus entries × 23 registry entries. Of the 994 harmony rows only
+**266 are assessable** (38 entries × 7 harmony guides), of which **252** come
+from published fixtures (36 voices) and **14** from 2 synthetic
+ladder-against-cantus voices.
+
+### The harmony guides, before and after
+
+Mean over the 38 assessable entries of each guide:
+
+| guide | c0 | c4 | delta |
+| --- | ---: | ---: | ---: |
+| `first_species_harmony` | 0.9608 | 0.9672 | +0.0064 |
+| `second_species_harmony` | 0.9670 | 0.9866 | +0.0196 |
+| `third_species_harmony` | 0.9670 | 0.9866 | +0.0196 |
+| `third_species_triple_meter_harmony` | 0.9670 | 0.9866 | +0.0196 |
+| `fourth_species_harmony` | 0.9670 | 0.9850 | +0.0180 |
+| `combined_first_second_third_species_harmony` | 0.9595 | 0.9703 | +0.0108 |
+| `fifth_species_harmony` | 0.9676 | 0.9786 | +0.0110 |
+
+The means **rise**, which is the story working rather than against it. The corpus
+holds no second-through-fifth species material, so nothing in it fails a taught
+harmonic rule; what it does fail is background — `ApproachPerfectionContrarily`,
+`PreferContraryMotion`, `AvoidCrossingVoices`, `AvoidOverlappingVoices` — and
+background now costs less. The one line that fails a taught rule is the
+`second_species_harmony` spec fixture, which is not in the corpus, and it falls
+0.8236 → 0.6979.
+
+### The first-species measurement
+
+Taken from corpus entry **`fux_first_species_examples-0-v0`**, so the number can
+be re-derived from the committed grade table rather than trusted:
+
+| guide | c0 | c4 |
+| --- | ---: | ---: |
+| `first_species_harmony` | 1.000 | 1.000 |
+| `second_species_harmony` | 1.000 | 1.000 |
+| `third_species_harmony` | 1.000 | 1.000 |
+
+**It does not move, and that is the expected result.** The line is adherent on
+every rubric item of all three guides — including
+`ThirdSpeciesDissonanceTreatment`, which returns 1.0 because a first-species line
+has no dissonances to treat. Re-weighting cannot move a rubric whose items are
+all 1.0, whatever the weights are. This is the defect split out as
+[Tell the Species Apart](../backlog/tell-the-species-apart.md); this story is the
+weighting decision alone, and it confirms rather than repairs the limit.
+
+Across all 26 Fux first-species voices the seven harmony guides went from
+0.973–0.982 to 0.989–0.992 — the same rise, and for the same reason: what those
+voices fail is background.
+
+### `MostlyConjunct`, reported in three parts
+
+The three effects move in the same direction and would otherwise be
+indistinguishable.
+
+**Its own fitness**, measured directly on a fixed six-leap voice (C4 E4 G4 E4 C4
+E4 G4), since the corpus records guide fitness only:
+
+| | fitness |
+| --- | ---: |
+| before (`SMALL_PENALTY_FACTOR`, 0.786⁶) | 0.2361 |
+| after (default penalty, 0.618⁶) | 0.0557 |
+
+**Its rubric weight**, which is the `c2 → c3` join and never touches the harmony
+guides. The share of the rubric it holds, before and after the weak declaration:
+
+| guide | tier | before | after |
+| --- | --- | ---: | ---: |
+| `fux_cantus_firmus` | primary | 0.0625 | 0.0357 |
+| `salzer_schachter_cantus_firmus` | primary | 0.0588 | 0.0345 |
+| `diatonic_melody` | primary | 0.0909 | 0.0588 |
+| `first_species_melody` | secondary | 0.0294 | 0.0174 |
+| `second_species_melody` | secondary | 0.0255 | 0.0147 |
+| `third_species_melody` | secondary | 0.0255 | 0.0147 |
+| `third_species_triple_meter_melody` | secondary | 0.0255 | 0.0147 |
+| `fourth_species_melody` | secondary | 0.0255 | 0.0147 |
+| `combined_first_second_third_species_melody` | secondary | 0.0294 | 0.0174 |
+| `fifth_species_melody` | secondary | 0.0255 | 0.0147 |
+| the six contour melodies | secondary | 0.0347 | 0.0225 |
+
+**The sibling re-normalization**, which is the reason the three are separated: a
+weak item re-weights *every* sibling in all 16 guides, because those tiers were
+uniform-strength before. The difference between the three and the thirteen is the
+budget it does that inside — φ⁻¹ in `fux_cantus_firmus`,
+`salzer_schachter_cantus_firmus` and `diatonic_melody`, φ⁻² in the other
+thirteen. That is why the `c1 → c2` mean deltas are −0.012 to −0.019 for the
+three and −0.005 to −0.006 for the species melodies.
+
+### Decisions recorded
+
+- **`StartOnPerfectConsonance` and `StepOutOfUnison` do not move** to the harmonic
+  cores. Recorded in a comment on `MOVING_MELODIC_CORE` as well as here, since
+  that is the constant a future reader will be looking at.
+  `StartOnPerfectConsonance` is not harmonic despite its name — it measures the
+  interval from the key's tonic, not from the companion voice, so it scores a
+  solo voice legitimately. `StepOutOfUnison` genuinely is harmonic and does score
+  a free 1.0 for a solo voice, but that free-1.0 belongs to
+  [Tell the Species Apart](../backlog/tell-the-species-apart.md). Moving it costs
+  six assertions across the melody specs and buys 0.007 on one harmony grade.
+- **The no-primary raise is not "declaration time" in general**, and the
+  acceptance criterion's wording is corrected here. `items_by_tier` memoizes
+  lazily; the registered guides hit it at `require` only because `Guide::ALL`
+  resolves eagerly, and the six contour entries earlier still via
+  `Configured#initialize`. An unregistered subclass raises on its first
+  assessment. The gem failing to load is the guard that actually matters; the
+  two specs over `Guide::ALL` and over a throwaway subclass are the second layer.
+- **A gate-only guide is illegal**, with no exemption. Nothing in the tree is
+  gate-only, and an exemption would leave two spellings of "this guide teaches
+  nothing" — one that raises and one that returns 1.0.
+- **`diminution_items` survives** the partitioner. It now only concatenates, but
+  it reads the same at its four call sites as `moving_species_items` does on the
+  melodic side.
+- **`MinimumNotes` keeps one strength for both its roles.** It is a gate in both
+  gate constants and a primary rubric item in `DiatonicMelody`, and strength is
+  inert on gates — `gate_factor` never consults a weight. Said so in the
+  `TIER_BUDGETS` comment, so nobody writes a `:weak` gate expecting an effect.
+- **The `second_species_harmony` fixture keeps its shape** and the spec's
+  threshold is replaced by two expectations plus the derivation. Repairing the
+  fixture would be the better spec but would change what the example
+  demonstrates; that is a separate decision.
+- **`MixedRhythmicValues` was not adopted** as a ninth weak guideline. It is
+  aspirationally worded and sits in `FifthSpeciesMelody`'s primary tier, so it is
+  a real candidate — flagged, not taken.
+- **`EndOnPerfectConsonance` stays as it is.** It is concrete and orphaned: no
+  registered guide declares it. Noted, left alone.
+
+### The classification
+
+All 56 guidelines declared by a registered guide, with the strength each carries.
+There are 63 `Guideline` subclasses; the seven not listed are six abstract bases
+(`DirectionChanges`, `DirectionalStepToFinalNote`, `FirstBarEntry`,
+`MinimumThreshold`, `NoParallelPerfect`, `NoteCountPerBar`) plus
+`EndOnPerfectConsonance`.
+
+This table, and not a spec, is the artifact demonstrating that every guideline
+was considered. A sweep spec asserting the weak set would be a pure
+change-detector whose only failure mode is "someone made a decision."
+
+| guideline | strength | declared as | uses |
+| --- | --- | --- | ---: |
+| `AllowedRhythmicValuesForCombined123` | strong | primary | 1 |
+| `AllowedRhythmicValuesForFifthSpecies` | strong | primary | 1 |
+| `AlwaysMove` | strong | primary, secondary | 8 |
+| `ApproachPerfectionContrarily` | strong | secondary | 7 |
+| `AvoidCrossingVoices` | strong | secondary | 7 |
+| `AvoidOverlappingVoices` | strong | secondary | 7 |
+| `ConsonantClimax` | strong | primary, secondary | 16 |
+| `ConsonantDownbeats` | strong | secondary | 7 |
+| `Contoured` | strong | primary | 6 |
+| `Diatonic` | strong | primary, secondary | 16 |
+| `EndOnTonic` | strong | primary, secondary | 9 |
+| `FirstBarHalfNotes` | strong | primary | 1 |
+| `FirstBarQuarterNotes` | strong | primary | 2 |
+| `FirstBarWholeNote` | strong | primary | 1 |
+| `FloridDissonanceTreatment` | strong | primary | 2 |
+| `FourPerBar` | strong | primary | 1 |
+| `FrequentDirectionChanges` | **weak** | primary, secondary | 8 |
+| `LargeLeaps` | **weak** | primary, secondary | 9 |
+| `LimitOctaveLeaps` | **weak** | primary, secondary | 16 |
+| `MaximumNotes` | strong | primary, secondary | 9 |
+| `MinimumMelodicIntervals` | strong | gate | 5 |
+| `MinimumNotes` | strong | gate, primary, secondary | 32 |
+| `MixedRhythmicValues` | strong | primary | 1 |
+| `ModerateDirectionChanges` | **weak** | primary, secondary | 8 |
+| `MostlyConjunct` | **weak** | primary, secondary | 16 |
+| `NoParallelPerfectAcrossBarline` | strong | secondary | 5 |
+| `NoParallelPerfectOnDownbeats` | strong | secondary | 7 |
+| `NoParallelPerfectWithSyncopation` | strong | secondary | 2 |
+| `NoRests` | strong | primary | 2 |
+| `NoRestsAfterNote` | strong | secondary | 6 |
+| `NoStrongBeatUnisons` | strong | secondary | 6 |
+| `NoUnisonsInMiddle` | strong | primary | 1 |
+| `NoteFillsFinalBar` | strong | secondary | 6 |
+| `NotesSameLength` | strong | primary | 2 |
+| `OnePerBar` | strong | primary | 1 |
+| `OneToOne` | strong | primary | 1 |
+| `OneToOneWithTies` | strong | primary | 1 |
+| `PreferContraryMotion` | **weak** | secondary | 7 |
+| `PreferImperfect` | **weak** | secondary | 7 |
+| `PrepareOctaveLeaps` | **weak** | primary, secondary | 15 |
+| `SecondSpeciesBreak` | strong | primary | 1 |
+| `SetAgainstAnotherVoice` | strong | gate | 7 |
+| `SingableIntervals` | strong | primary, secondary | 16 |
+| `SingableRange` | strong | primary, secondary | 16 |
+| `StartOnPerfectConsonance` | strong | secondary | 7 |
+| `StartOnTonic` | strong | primary | 2 |
+| `StepDownToFinalNote` | strong | primary | 1 |
+| `StepOutOfUnison` | strong | secondary | 6 |
+| `StepToFinalNote` | strong | primary | 1 |
+| `StepUpToFinalNote` | strong | secondary | 7 |
+| `SuspensionTreatment` | strong | primary | 2 |
+| `ThirdSpeciesDissonanceTreatment` | strong | primary | 1 |
+| `ThreePerBar` | strong | primary | 1 |
+| `TripleMeterDissonanceTreatment` | strong | primary | 1 |
+| `TwoPerBar` | strong | primary | 1 |
+| `WeakBeatDissonanceTreatment` | strong | primary | 1 |
+
+**8 weak, 48 strong.** Each `:weak` carries its one-line reason at the
+declaration site, required by the macro rather than asserted by a spec.

@@ -3,6 +3,8 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::PreferImperfect < HeadMusic::Style::Guideline
+  strength :weak, because: "a perfect consonance is legal everywhere this fires; only a majority of them is worth a word"
+
   def marks
     HeadMusic::Style::Mark.for_all(perfect_intervals.map(&:notes).flatten) if ratio_of_perfect_intervals >= 0.5
   end

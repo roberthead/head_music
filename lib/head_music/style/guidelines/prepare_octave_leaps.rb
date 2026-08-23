@@ -3,6 +3,8 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::PrepareOctaveLeaps < HeadMusic::Style::Guideline
+  strength :weak, because: "an unprepared octave is awkward rather than wrong; LimitOctaveLeaps already governs how many there may be"
+
   def marks
     external_entries_marks + external_exits_marks + octave_ending_marks
   end

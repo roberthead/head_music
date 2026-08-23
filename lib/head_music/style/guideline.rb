@@ -3,10 +3,12 @@
 # context, private to .assess, which returns a frozen GuideItemAssessment.
 #
 # The rule's own work -- marks and the fitness they add up to -- is here. What
-# a subclass reads to do that work comes from the context mixins, and what the
-# rule says about a fault comes from Wording.
+# a subclass reads to do that work comes from the context mixins, what the
+# rule says about a fault comes from Wording, and how much it weighs against
+# its siblings comes from Strength.
 class HeadMusic::Style::Guideline
   extend HeadMusic::Style::Guideline::Wording
+  extend HeadMusic::Style::Guideline::Strength
 
   include HeadMusic::Style::Guideline::VoiceContext
   include HeadMusic::Style::Guideline::HarmonicContext
@@ -38,8 +40,13 @@ class HeadMusic::Style::Guideline
     @options = options
   end
 
-  def self.with(**options)
-    HeadMusic::Style::GuideItem.new(self, options)
+  # Strength rides beside the configuration rather than inside it: config is
+  # splatted into the analyzer, returned as an I18n interpolation value, and --
+  # worst -- decides item equality, so an overridden ApproachPerfectionContrarily
+  # inside config would fall out of the core-membership partition and be graded
+  # as a taught rule at full primary weight.
+  def self.with(strength: nil, **options)
+    HeadMusic::Style::GuideItem.new(self, options, strength: strength)
   end
 
   def self.assess(voice, guide_item, tier)

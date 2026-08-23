@@ -4,6 +4,8 @@ module HeadMusic::Style::Guidelines; end
 # A counterpoint guideline: Use a maximum of one octave leap.
 # Configurable via the `maximum_leaps:` option.
 class HeadMusic::Style::Guidelines::LimitOctaveLeaps < HeadMusic::Style::Guideline
+  strength :weak, because: "a second octave leap is a matter of taste in a line that is otherwise well made"
+
   MAXIMUM_LEAPS = 1
 
   def marks

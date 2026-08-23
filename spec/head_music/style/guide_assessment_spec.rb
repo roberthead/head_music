@@ -78,7 +78,7 @@ describe HeadMusic::Style::GuideAssessment do
     let(:gate_item_assessment) do
       HeadMusic::Style::GuideItemAssessment.new(
         voice: voice,
-        guide_item: HeadMusic::Style::GuideItem.new(HeadMusic::Style::Guidelines::MinimumNotes, minimum: 1),
+        guide_item: HeadMusic::Style::GuideItem.new(HeadMusic::Style::Guidelines::MinimumNotes, {minimum: 1}),
         tier: :gate,
         marks: [],
         fitness: 0.4,
@@ -135,9 +135,9 @@ describe HeadMusic::Style::GuideAssessment do
     let(:guide) { GradedStubGuide.new(assessments) }
     let(:item) { HeadMusic::Style::GuideItem.new(HeadMusic::Style::Guidelines::ConsonantClimax) }
 
-    def graded(tier, fitness)
+    def graded(tier, fitness, strength = :strong)
       HeadMusic::Style::GuideItemAssessment.new(
-        voice: voice, guide_item: item, tier: tier, marks: [], fitness: fitness
+        voice: voice, guide_item: item, tier: tier, marks: [], fitness: fitness, strength: strength
       )
     end
 
@@ -180,6 +180,101 @@ describe HeadMusic::Style::GuideAssessment do
       it "grades their mean" do
         expect(analysis.fitness).to eq 0.5
       end
+    end
+  end
+
+  # A rubric of one tier is divided by the weights it actually has, not by an
+  # assumed total of 1, so a lone tier takes the full range rather than capping
+  # at its budget. Both tiers are covered because a primary-only rubric divided
+  # by 1.0 is wrong by phi^-1 and a secondary-only one by phi^-2, and only the
+  # second is far enough off to be obvious.
+  #
+  # The score is asserted, never the weight sum: the equal-weights collapse
+  # means a uniform tier's actual sum is its item count, not its budget.
+  describe "single-tier renormalization" do
+    subject(:analysis) { described_class.new(GradedStubGuide.new(assessments), voice) }
+
+    let(:item) { HeadMusic::Style::GuideItem.new(HeadMusic::Style::Guidelines::ConsonantClimax) }
+
+    def graded(tier, fitness)
+      HeadMusic::Style::GuideItemAssessment.new(
+        voice: voice, guide_item: item, tier: tier, marks: [], fitness: fitness
+      )
+    end
+
+    context "with primaries alone" do
+      let(:assessments) { [graded(:primary, 0.0), graded(:primary, 1.0), graded(:primary, 0.8)] }
+
+      # Dividing by 1.0 instead would give 0.618 * 0.6 = 0.371.
+      it "grades their mean rather than phi^-1 of it" do
+        expect(analysis.fitness).to be_within(1e-12).of(0.6)
+      end
+    end
+
+    context "with secondaries alone" do
+      let(:assessments) { [graded(:secondary, 0.0), graded(:secondary, 0.5), graded(:secondary, 0.5)] }
+
+      # Dividing by 1.0 instead would give 0.382 * 0.3333 = 0.127.
+      it "grades their mean rather than phi^-2 of it" do
+        expect(analysis.fitness).to be_within(1e-12).of(1.0 / 3)
+      end
+    end
+  end
+
+  # Strength is the rubric's second axis: within a tier, a prohibition weighs
+  # twice a preference.
+  describe "strength weighting" do
+    subject(:analysis) { described_class.new(GradedStubGuide.new(assessments), voice) }
+
+    let(:item) { HeadMusic::Style::GuideItem.new(HeadMusic::Style::Guidelines::ConsonantClimax) }
+
+    def graded(fitness, strength)
+      HeadMusic::Style::GuideItemAssessment.new(
+        voice: voice, guide_item: item, tier: :primary, marks: [], fitness: fitness, strength: strength
+      )
+    end
+
+    # Asserted as a ratio rather than as two fixture grades, and on a
+    # mixed-strength tier -- a uniform one collapses to equal weights and would
+    # pass this vacuously by handing back 1.0 twice.
+    it "costs exactly twice as much to fail the prohibition as the preference" do
+      strong_fails = described_class.new(GradedStubGuide.new([graded(0.0, :strong), graded(1.0, :weak)]), voice)
+      weak_fails = described_class.new(GradedStubGuide.new([graded(1.0, :strong), graded(0.0, :weak)]), voice)
+
+      expect(1 - strong_fails.fitness).to be_within(1e-12).of(2 * (1 - weak_fails.fitness))
+    end
+
+    it "splits a two-item tier two thirds to one" do
+      strong_fails = described_class.new(GradedStubGuide.new([graded(0.0, :strong), graded(1.0, :weak)]), voice)
+
+      expect(strong_fails.fitness).to be_within(1e-12).of(1.0 / 3)
+    end
+
+    # The equal-weights collapse survives: a uniform-strength tier gives every
+    # item budget * 2 / 2n, still all equal, so the exact-mean examples above
+    # stay exact and an all-strong rubric grades bit-identically to a rubric
+    # with no strength axis at all.
+    it "is inert until a tier mixes strengths" do
+      uniform = [graded(0.5, :strong), graded(1.0, :strong), graded(0.8, :strong)]
+      all_weak = [graded(0.5, :weak), graded(1.0, :weak), graded(0.8, :weak)]
+
+      expect(described_class.new(GradedStubGuide.new(uniform), voice).fitness).to eq((0.5 + 1.0 + 0.8) / 3)
+      expect(described_class.new(GradedStubGuide.new(all_weak), voice).fitness).to eq((0.5 + 1.0 + 0.8) / 3)
+    end
+
+    def graded_secondary(fitness, strength)
+      HeadMusic::Style::GuideItemAssessment.new(
+        voice: voice, guide_item: item, tier: :secondary, marks: [], fitness: fitness, strength: strength
+      )
+    end
+
+    # Strength never crosses a tier boundary: a strong secondary still weighs
+    # less than a weak primary, so the weak primary alone takes phi^-1.
+    it "stays inside its tier" do
+      mixed = [graded(1.0, :weak), graded_secondary(0.0, :strong)]
+
+      expect(described_class.new(GradedStubGuide.new(mixed), voice).fitness)
+        .to be_within(1e-12).of(HeadMusic::GOLDEN_RATIO_INVERSE)
     end
   end
 end

@@ -160,7 +160,59 @@ describe HeadMusic::Style::GuideItem do
     end
   end
 
+  describe "strength" do
+    it "takes the guideline's declaration by default" do
+      expect(described_class.wrap(guidelines::PreferImperfect).strength).to eq :weak
+      expect(described_class.wrap(guidelines::ConsonantDownbeats).strength).to eq :strong
+    end
+
+    # For the tradition-dependent case: ApproachPerfectionContrarily is
+    # prohibited in Fux and merely cautioned in some later traditions.
+    it "takes an override at construction" do
+      expect(guidelines::ApproachPerfectionContrarily.with(strength: :weak).strength).to eq :weak
+    end
+
+    it "validates the override, so a typo raises rather than weighting by nil" do
+      expect { guidelines::ApproachPerfectionContrarily.with(strength: :medium) }
+        .to raise_error(ArgumentError, /strong, weak/)
+    end
+
+    # Inside config it would be splatted into the analyzer, returned as an I18n
+    # interpolation value, and -- worst -- change item equality, so an overridden
+    # core member would fall out of the core-membership partition and be graded
+    # as a taught rule at full primary weight.
+    it "stays out of the configuration" do
+      expect(guidelines::ApproachPerfectionContrarily.with(strength: :weak).config).to eq({})
+    end
+
+    it "rides beside a configuration rather than replacing it" do
+      item = guidelines::MinimumNotes.with(8, strength: :weak)
+
+      expect(item.config).to eq(minimum: 8)
+      expect(item.strength).to eq :weak
+    end
+
+    # reject_duplicates asks one question -- is this rule graded twice -- and
+    # strength cannot change the answer. Were it part of equality, declaring a
+    # rule primary-strong and secondary-weak would slip past the guard.
+    it "participates in neither equality nor hash" do
+      strong = guidelines::ApproachPerfectionContrarily.with
+      weak = guidelines::ApproachPerfectionContrarily.with(strength: :weak)
+
+      expect(strong).to eq weak
+      expect([strong, weak].uniq.length).to eq 1
+    end
+  end
+
   describe "#inspect" do
+    it "shows a strength that differs from the guideline's declaration" do
+      expect(guidelines::ConsonantDownbeats.with(strength: :weak).inspect).to include "<weak>"
+    end
+
+    it "stays quiet about a strength the guideline already declares" do
+      expect(guidelines::ConsonantDownbeats.with.inspect).not_to include "<"
+    end
+
     # Printing the class name could not tell two configurations apart.
     it "distinguishes two configurations of one guideline" do
       expect(guidelines::MinimumNotes.with(8).inspect).to include "minimum"

@@ -5,7 +5,7 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::FifthSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   gate_items(*HARMONIC_GATES)
 
-  primary_items(
+  species_items(
     *HARMONIC_CORE,
     HeadMusic::Style::Guidelines::FloridDissonanceTreatment,
     HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline,

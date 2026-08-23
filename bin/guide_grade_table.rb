@@ -1,99 +1,150 @@
 #!/usr/bin/env ruby
-# Joins two guide_grade_corpus.rb captures into the before/after table.
+# Joins a sequence of guide_grade_corpus.rb captures into one before/after
+# document, one section per join.
 #
-#   bundle exec ruby bin/guide_grade_table.rb before.json after.json out.md
+#   bundle exec ruby bin/guide_grade_table.rb out.md \
+#     "the strength axis:tmp/c0.json:tmp/c1.json" \
+#     "mark softened:tmp/c1.json:tmp/c2.json"
 #
-# Every row that moved is attributed to the change responsible. The attribution
-# is by guide, because the four changes in this story landed on different
-# guides, and "the fitness moved and the voice is still assessable" is not on
-# its own enough to tell demotion from a changed threshold -- reading it that
-# way mislabelled two hundred rows in an earlier draft of this table.
+# Story-specific by design, and the counterpart of guide_grade_corpus.rb rather
+# than a second copy of it: the capture script is written to run UNMODIFIED on
+# both sides of a grading change, and this one is a post-processor over the JSON
+# it left behind. Editing it cannot influence either column, so it is edited
+# after both captures exist.
+#
+# ATTRIBUTION IS THE CAPTURE BOUNDARY, NOT A JUDGMENT. An earlier version of
+# this script guessed the cause from the guide the row belonged to, and
+# mislabelled two hundred rows: two changes landing on the same guides cannot be
+# told apart after the fact. Each join here spans exactly one change, and its
+# label is the cause. A row is relabelled only for the one thing that is visible
+# in the data and not in the label -- a voice that changed assessability, which
+# is a gate moving rather than a weight.
 
 require "json"
 
-# Read off the declarations, not inferred from the numbers.
-#
-# The species guides are the ones that route their declarations through
-# SpeciesMelody.species_items, so their inherited craft moved to secondary.
-DEMOTED = %w[
-  first_species_melody second_species_melody third_species_melody
-  third_species_triple_meter_melody fourth_species_melody
-  combined_first_second_third_species_melody fifth_species_melody
-].freeze
-
-# These kept flat rubrics and split their note minimum into a gate plus a
-# prescription. The contour guides inherit DiatonicMelody's, so they move with
-# it.
-SPLIT = (%w[fux_cantus_firmus salzer_schachter_cantus_firmus diatonic_melody] +
-  %w[arch ascending descending static valley wave].map { |c| "#{c}_contour_melody" }).freeze
-
-def why(before, after)
-  return "crash fixed" if before[:error]
-  return "gated" unless after[:assessable]
-  return "demoted" if DEMOTED.include?(after[:guide])
-  return "threshold split" if SPLIT.include?(after[:guide])
-
-  "gate added"
+def load_capture(path)
+  JSON.parse(File.read(path), symbolize_names: true)
 end
 
-before_path, after_path, out_path = ARGV
-before = JSON.parse(File.read(before_path), symbolize_names: true)
-after = JSON.parse(File.read(after_path), symbolize_names: true)
-indexed = before.to_h { |row| [[row[:corpus], row[:guide]], row] }
+def join(before_path, after_path)
+  before = load_capture(before_path)
+  after = load_capture(after_path)
+  indexed = before.to_h { |row| [[row[:corpus], row[:guide]], row] }
 
-moved = after.filter_map do |row|
-  prior = indexed.fetch([row[:corpus], row[:guide]])
-  next if !prior[:error] && prior[:fitness] == row[:fitness]
+  moved = after.filter_map do |row|
+    prior = indexed.fetch([row[:corpus], row[:guide]])
+    next if !prior[:error] && prior[:fitness] == row[:fitness]
 
-  {row: row, prior: prior, why: why(prior, row)}
+    {row: row, prior: prior}
+  end
+  [after, moved]
 end
 
-tally = moved.group_by { |entry| entry[:why] }.transform_values(&:length)
+def why(entry, label)
+  prior = entry[:prior]
+  row = entry[:row]
+  return "crash fixed" if prior[:error]
+  return "gated" if prior[:assessable] != row[:assessable]
+
+  label
+end
+
+def title_from(path)
+  File.basename(path).sub(/\.grades\.md\z/, "").tr("-", " ")
+    .split.map { |word| (word.length > 3) ? word.capitalize : word }.join(" ")
+end
+
+def section(label, before_path, after_path)
+  after, moved = join(before_path, after_path)
+  lines = []
+  lines << "## #{label.sub(/\A./, &:upcase)}"
+  lines << ""
+  lines << "`#{File.basename(before_path)}` → `#{File.basename(after_path)}`. " \
+           "#{moved.length} of #{after.length} rows moved, #{after.length - moved.length} unchanged."
+  lines << ""
+
+  if moved.empty?
+    lines << "No row moved. This change is a provable no-op across the whole corpus."
+    lines << ""
+    return lines
+  end
+
+  tally = moved.group_by { |entry| why(entry, label) }.transform_values(&:length)
+  lines << "| why it moved | rows |"
+  lines << "| --- | ---: |"
+  tally.sort.each { |reason, count| lines << "| #{reason} | #{count} |" }
+  lines << ""
+  lines << "| corpus | notes | guide | before | after | delta | assessable | why |"
+  lines << "| --- | ---: | --- | ---: | ---: | ---: | --- | --- |"
+  moved.each do |entry|
+    row = entry[:row]
+    prior = entry[:prior]
+    was = prior[:error] ? "raised" : format("%.3f", prior[:fitness])
+    now = format("%.3f", row[:fitness]) + (row[:assessable] ? "" : "*")
+    delta = prior[:error] ? "—" : format("%+.3f", row[:fitness] - prior[:fitness])
+    lines << "| #{row[:corpus]} | #{row[:notes]} | `#{row[:guide]}` | #{was} | #{now} | " \
+             "#{delta} | #{row[:assessable] ? "yes" : "no"} | #{why(entry, label)} |"
+  end
+  lines << ""
+  lines
+end
+
+out_path = ARGV.fetch(0)
+joins = ARGV.drop(1).map { |spec| spec.split(":", 3) }
+raise ArgumentError, "give at least one label:before:after join" if joins.empty?
+
+first_capture = load_capture(joins.first[1])
+last_capture = load_capture(joins.last[2])
+guides = first_capture.map { |row| row[:guide] }.uniq.length
+entries = first_capture.map { |row| row[:corpus] }.uniq.length
+
+harmony = last_capture.select { |row| row[:guide].end_with?("harmony") }
+assessable = harmony.select { |row| row[:assessable] }
+synthetic_entries = assessable.map { |row| row[:corpus] }.uniq.grep(/\Aagainst-|\Asolo-/)
+synthetic = assessable.count { |row| synthetic_entries.include?(row[:corpus]) }
 
 lines = []
-lines << "# Re-tier the Guides — grades before and after"
+lines << "# #{title_from(out_path)} — grades before and after"
 lines << ""
 lines << "Generated. Do not edit by hand:"
 lines << ""
 lines << "```"
-lines << "bundle exec ruby bin/guide_grade_corpus.rb before.json   # at the merge-base"
-lines << "bundle exec ruby bin/guide_grade_corpus.rb after.json    # here"
-lines << "bundle exec ruby bin/guide_grade_table.rb before.json after.json \\"
-lines << "  user-stories/current/re-tier-the-guides.grades.md"
+joins.each_with_index do |(_label, before_path, after_path), index|
+  lines << "bundle exec ruby bin/guide_grade_corpus.rb #{before_path}" if index.zero?
+  lines << "bundle exec ruby bin/guide_grade_corpus.rb #{after_path}"
+end
+lines << "bundle exec ruby bin/guide_grade_table.rb #{out_path} \\"
+joins.each_with_index do |(label, before_path, after_path), index|
+  suffix = (index == joins.length - 1) ? "" : " \\"
+  lines << "  \"#{label}:#{before_path}:#{after_path}\"#{suffix}"
+end
 lines << "```"
 lines << ""
-lines << "The capture script takes no arguments beyond its output path and asks only "
-lines << "what both trees can answer, so the two columns are the same measurement made "
-lines << "twice. **#{after.length} rows** — #{after.length / [before.map { |r| r[:guide] }.uniq.length, 1].max} corpus entries × " \
-         "#{before.map { |r| r[:guide] }.uniq.length} registry entries. #{moved.length} moved, " \
-         "#{after.length - moved.length} unchanged. An asterisk marks an unassessable voice."
-lines << ""
-lines << "| why it moved | rows |"
-lines << "| --- | ---: |"
-tally.sort.each { |reason, count| lines << "| #{reason} | #{count} |" }
-lines << ""
-lines << "- **crash fixed** — the harmony guides raised for a voice with no companion."
-lines << "- **gated** — a precondition now stops the assessment instead of scaling it."
-lines << "- **gate added** — a guide gained a precondition it did not have; the voice"
-lines << "  clears it, so the grade moves only by the gate's own fitness."
-lines << "- **threshold split** — a note minimum became a low gate plus a rubric"
-lines << "  prescription. These guides keep flat rubrics; nothing was demoted."
-lines << "- **demoted** — the species guides weigh what they teach above what they"
-lines << "  inherit."
-lines << ""
-lines << "## Every row that moved"
-lines << ""
-lines << "| corpus | notes | guide | before | after | delta | assessable | why |"
-lines << "| --- | ---: | --- | ---: | ---: | ---: | --- | --- |"
-moved.each do |entry|
-  row = entry[:row]
-  prior = entry[:prior]
-  was = prior[:error] ? "raised" : format("%.3f", prior[:fitness])
-  now = format("%.3f", row[:fitness]) + (row[:assessable] ? "" : "*")
-  delta = prior[:error] ? "—" : format("%+.3f", row[:fitness] - prior[:fitness])
-  lines << "| #{row[:corpus]} | #{row[:notes]} | `#{row[:guide]}` | #{was} | #{now} | " \
-           "#{delta} | #{row[:assessable] ? "yes" : "no"} | #{entry[:why]} |"
-end
+assessable_entries = assessable.map { |row| row[:corpus] }.uniq.length
+harmony_guides = harmony.map { |row| row[:guide] }.uniq.length
 
-File.write(out_path, lines.join("\n") + "\n")
-warn "moved=#{moved.length} #{tally.sort.map { |k, v| "#{k}=#{v}" }.join(" ")}"
+lines << "The capture script takes no arguments beyond its output path and asks only what " \
+         "every tree can answer, so each column is the same measurement made again. " \
+         "**#{first_capture.length} rows** per capture — #{entries} corpus entries × #{guides} registry entries. " \
+         "An asterisk marks an unassessable voice."
+lines << ""
+lines << "**Two denominators live in the harmony numbers and must not be conflated.** Of the " \
+         "#{harmony.length} harmony rows, only **#{assessable.length} are assessable** — " \
+         "#{assessable_entries} entries × #{harmony_guides} harmony guides. Of those, " \
+         "**#{assessable.length - synthetic}** come from published fixtures " \
+         "(#{assessable_entries - synthetic_entries.length} voices) and **#{synthetic}** from " \
+         "#{synthetic_entries.length} synthetic ladder-against-cantus " \
+         "#{(synthetic_entries.length == 1) ? "voice" : "voices"}. Every assessable harmony row is " \
+         "first-species or ladder material: there are no second, third, fourth, or fifth species " \
+         "fixtures anywhere in `spec/`, so this corpus compares each line against itself rather " \
+         "than against a line of another species."
+lines << ""
+lines << "One section per join, and **each join spans exactly one change**, so its label is its " \
+         "cause rather than a guess made from the numbers. A row is relabelled only when the " \
+         "voice changed assessability, which is a gate moving rather than a weight."
+lines << ""
+
+joins.each { |label, before_path, after_path| lines.concat(section(label, before_path, after_path)) }
+
+File.write(out_path, lines.join("\n").rstrip + "\n")
+warn joins.map { |label, before_path, after_path| "#{label}=#{join(before_path, after_path).last.length}" }.join(" ")

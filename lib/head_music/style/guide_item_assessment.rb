@@ -7,15 +7,23 @@ module HeadMusic::Style; end
 # A frozen value object that recomputes nothing, so it can be persisted or
 # compared without the analysis machinery that produced it. Tier is stamped
 # here because an item is shared between guides and has no single tier.
+#
+# Strength is stamped for a different reason -- an item does have a single
+# strength -- namely that a persisted assessment records the severity in force
+# when it was graded, so re-classifying a guideline later cannot silently
+# rewrite old grades. It defaults from the item, so the direct-construction
+# sites in specs and any external consumer keep working.
 class HeadMusic::Style::GuideItemAssessment
-  attr_reader :voice, :guide_item, :tier, :marks, :fitness, :violation_key, :violation_values
+  attr_reader :voice, :guide_item, :tier, :strength, :marks, :fitness, :violation_key, :violation_values
 
   delegate :guideline, :config, :name, to: :guide_item
 
-  def initialize(voice:, guide_item:, tier:, marks:, fitness:, violation_key: nil, violation_values: {})
+  def initialize(voice:, guide_item:, tier:, marks:, fitness:,
+    strength: guide_item.strength, violation_key: nil, violation_values: {})
     @voice = voice
     @guide_item = guide_item
     @tier = tier
+    @strength = strength
     @marks = [marks].flatten.compact.freeze
     @fitness = fitness
     @violation_key = violation_key

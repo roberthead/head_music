@@ -35,6 +35,20 @@ describe HeadMusic::Style::Guides::SecondSpeciesHarmony do
       voice.place("11:1", :whole, "D5")
     end
 
-    its(:fitness) { is_expected.to be > 0.7 }
+    # Two expectations, because neither is enough alone.
+    #
+    # The ceiling: this counterpoint fails the taught rule --
+    # WeakBeatDissonanceTreatment -- at phi^-1, and the taught rule is now the
+    # whole primary tier, carrying phi^-1 of the rubric. So the grade cannot
+    # exceed phi^-1 * phi^-1 + phi^-2 = 2 * phi^-2 = 0.7639 however well the
+    # background is written.
+    #
+    # The landing: it comes in below that ceiling, at 0.6979, because it also
+    # fails three background items -- ApproachPerfectionContrarily and
+    # NoParallelPerfectOnDownbeats at phi^-1, NoParallelPerfectAcrossBarline at
+    # phi^-2. The ceiling alone does not produce that number, and the number
+    # alone is a goalpost someone can quietly move.
+    its(:fitness) { is_expected.to be < 2 * HeadMusic::GOLDEN_RATIO_INVERSE**2 }
+    its(:fitness) { is_expected.to be_within(0.0005).of(0.6979) }
   end
 end

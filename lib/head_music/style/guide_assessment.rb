@@ -4,8 +4,22 @@ module HeadMusic::Style; end
 # One guide applied to one voice: the grade, and the per-item findings it was
 # computed from.
 class HeadMusic::Style::GuideAssessment
-  # Primaries share phi^-1 of the rubric and background phi^-2. The two sum to
-  # 1, so one taught rule weighs as heavily as ten inherited ones together.
+  # The rubric has two axes, and they never cross.
+  #
+  # TIER is the outer one: primaries share phi^-1 of the rubric and background
+  # phi^-2. The two sum to 1, so one taught rule weighs as heavily as ten
+  # inherited ones together. The budgets are fixed rather than derived from how
+  # many items each tier holds, because a derived share erodes -- with global
+  # weights, a guide's taught rule falls from 0.200 to 0.111 of the grade as
+  # eight inherited guidelines accumulate around it, while a fixed budget holds
+  # at 0.206. What a guide teaches must not thin out as it inherits more.
+  #
+  # STRENGTH is the inner one: within a tier, a prohibition weighs twice a
+  # preference, normalized by that tier's own total. It never crosses a tier
+  # boundary -- a strong secondary still weighs less than a weak primary.
+  #
+  # Gates sit outside both. They multiply the whole rubric, so strength is inert
+  # on a gate and declaring one :weak has no effect.
   TIER_BUDGETS = {
     primary: HeadMusic::GOLDEN_RATIO_INVERSE,
     secondary: HeadMusic::GOLDEN_RATIO_INVERSE**2
@@ -65,23 +79,38 @@ class HeadMusic::Style::GuideAssessment
     gates.map(&:fitness).reduce(1, :*)
   end
 
+  # Divides by the actual weight sum rather than by an assumed total of 1, so a
+  # rubric of one tier takes the full range instead of capping at its budget.
   def rubric_fitness
     return 1.0 if rubric.empty?
 
-    weights = rubric_weights
-    total = weights.sum
+    weighted = rubric_weights
+    total = weighted.sum { |_assessment, weight| weight }
     return 1.0 if total.zero?
 
-    rubric.each_with_index.sum { |assessment, index| weights[index] * assessment.fitness } / total
+    weighted.sum { |assessment, weight| weight * assessment.fitness } / total
   end
 
+  # Pairs rather than a parallel array: the natural group_by(&:tier) refactor
+  # mis-pairs a positional array silently, with no exception and a swapped
+  # weight still landing in [0, 1].
+  #
   # Equal weights are computed as an unweighted mean: scaling by phi^-1/n and
   # dividing back out is exact in real arithmetic and lossy in binary, and
-  # nearly every guide is all-primary. Counts come from the rubric, so a tier
-  # nobody declared cannot divide by zero.
+  # nearly every guide is all-primary. A uniform-strength tier still collapses
+  # this way -- every item gets budget * 2 / 2n -- so the branch stops firing
+  # only when a tier actually mixes strengths. Units come from the rubric, so a
+  # tier nobody declared cannot divide by zero.
   def rubric_weights
-    counts = rubric.group_by(&:tier).transform_values(&:size)
-    raw = rubric.map { |assessment| TIER_BUDGETS.fetch(assessment.tier) / counts[assessment.tier] }
-    raw.uniq.one? ? Array.new(raw.size, 1.0) : raw
+    units = rubric.group_by(&:tier).transform_values { |assessments| assessments.sum { |a| strength_units(a) } }
+    raw = rubric.map { |assessment| TIER_BUDGETS.fetch(assessment.tier) * strength_units(assessment) / units[assessment.tier] }
+    weights = raw.uniq.one? ? Array.new(raw.size, 1.0) : raw
+    rubric.zip(weights)
+  end
+
+  # fetch, so a strength that slipped past normalization raises rather than
+  # multiplying by nil.
+  def strength_units(assessment)
+    HeadMusic::Style::Guideline::Strength.units(assessment.strength)
   end
 end

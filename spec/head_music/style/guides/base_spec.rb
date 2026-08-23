@@ -66,6 +66,122 @@ describe HeadMusic::Style::Guides::Base do
     end
   end
 
+  # Written out rather than derived, and deliberately redundant with the two
+  # core-enforcement loops above. Rewriting seven guides through a partitioner
+  # can drop a rule and still produce a plausible grade, and the loops only ask
+  # that the cores are present -- not that nothing else went missing. These are
+  # the sets as they stood before the harmonic demotion, plus the diminution
+  # core the combined guide had been missing.
+  describe "the harmony guides hold the rules they held" do
+    expected = {
+      "first_species_harmony" => %w[
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
+        MinimumNotes NoParallelPerfectOnDownbeats NoUnisonsInMiddle OneToOne PreferContraryMotion
+        PreferImperfect SetAgainstAnotherVoice
+      ],
+      "second_species_harmony" => %w[
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
+        MinimumNotes NoParallelPerfectAcrossBarline NoParallelPerfectOnDownbeats NoStrongBeatUnisons
+        PreferContraryMotion PreferImperfect SetAgainstAnotherVoice WeakBeatDissonanceTreatment
+      ],
+      "third_species_harmony" => %w[
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
+        MinimumNotes NoParallelPerfectAcrossBarline NoParallelPerfectOnDownbeats NoStrongBeatUnisons
+        PreferContraryMotion PreferImperfect SetAgainstAnotherVoice ThirdSpeciesDissonanceTreatment
+      ],
+      "third_species_triple_meter_harmony" => %w[
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
+        MinimumNotes NoParallelPerfectAcrossBarline NoParallelPerfectOnDownbeats NoStrongBeatUnisons
+        PreferContraryMotion PreferImperfect SetAgainstAnotherVoice TripleMeterDissonanceTreatment
+      ],
+      "fourth_species_harmony" => %w[
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
+        MinimumNotes NoParallelPerfectOnDownbeats NoParallelPerfectWithSyncopation NoStrongBeatUnisons
+        PreferContraryMotion PreferImperfect SecondSpeciesBreak SetAgainstAnotherVoice SuspensionTreatment
+      ],
+      # The two diminution rules are the only addition anywhere in this change.
+      "combined_first_second_third_species_harmony" => %w[
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
+        FloridDissonanceTreatment MinimumNotes NoParallelPerfectAcrossBarline
+        NoParallelPerfectOnDownbeats NoStrongBeatUnisons PreferContraryMotion PreferImperfect
+        SetAgainstAnotherVoice
+      ],
+      "fifth_species_harmony" => %w[
+        ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
+        FloridDissonanceTreatment MinimumNotes NoParallelPerfectAcrossBarline
+        NoParallelPerfectOnDownbeats NoParallelPerfectWithSyncopation NoStrongBeatUnisons
+        PreferContraryMotion PreferImperfect SetAgainstAnotherVoice SuspensionTreatment
+      ]
+    }.freeze
+
+    harmonic_guides.each do |guide|
+      it "#{guide.key} grades exactly the rules it is meant to" do
+        names = guide.guide_items.map { |item| item.guideline.name.split("::").last }.sort
+
+        expect(names).to eq expected.fetch(guide.key)
+      end
+    end
+  end
+
+  # The demotion: a harmony guide weighs what it teaches above the two-part
+  # craft it inherits, so no member of the harmonic cores may sit in a primary
+  # tier -- and every guide must still teach something of its own.
+  describe "the harmonic cores are background" do
+    inherited = guides::SpeciesHarmony::INHERITED_HARMONIC_CRAFT
+
+    harmonic_guides.each do |guide|
+      it "#{guide.key} declares no inherited harmonic craft as primary" do
+        promoted = guide.items_by_tier[:primary].map(&:guideline) & inherited
+
+        expect(promoted).to be_empty
+      end
+
+      it "#{guide.key} teaches at least one rule of its own" do
+        expect(guide.items_by_tier[:primary]).not_to be_empty
+      end
+    end
+  end
+
+  # A guide that is all background has no subject, and grading it 1.0 in silence
+  # is the "nothing to find fault in" confusion. A gate-only guide falls to the
+  # same check, deliberately.
+  #
+  # Verified in two layers here; the third is the gem failing to load at all,
+  # which is the guard that actually matters. ContourMelody is safe by keyword
+  # signature -- its items_by_tier always passes a primary -- and cannot be
+  # checked through .guide_items, which raises "missing keyword: :contour" by
+  # design.
+  describe "a guide with no primary items" do
+    it "is not among the registered guides" do
+      without_primary = entries.reject { |entry| entry.items_by_tier[:primary].any? }.map(&:key)
+
+      expect(without_primary).to be_empty
+    end
+
+    # Named through stub_const before the body runs, because the raise reads the
+    # class name and an anonymous class would leave it empty.
+    def declare_all_background
+      stub_const("HeadMusic::Style::Guides::AllBackground", Class.new(HeadMusic::Style::Guides::Base)).tap do |klass|
+        klass.class_eval do
+          gate_items(HeadMusic::Style::Guidelines::MinimumNotes.with(3))
+          secondary_items(HeadMusic::Style::Guidelines::Diatonic)
+        end
+      end
+    end
+
+    it "raises, naming the guide and what it did declare" do
+      expect { declare_all_background.guide_items }.to raise_error(
+        ArgumentError, /AllBackground declares no primary guide items.*Diatonic/m
+      )
+    end
+
+    it "keeps the older message for a guide that declares nothing at all" do
+      klass = stub_const("HeadMusic::Style::Guides::Empty", Class.new(guides::Base))
+
+      expect { klass.guide_items }.to raise_error(ArgumentError, /Empty declares no guide items/)
+    end
+  end
+
   describe "class-level identity" do
     it "derives a key from the demodulized class name" do
       expect(guides::SalzerSchachterCantusFirmus.key).to eq "salzer_schachter_cantus_firmus"

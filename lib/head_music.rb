@@ -2,6 +2,11 @@ module HeadMusic
   GOLDEN_RATIO = (1 + 5**0.5) / 2.0
   GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO
   PENALTY_FACTOR = GOLDEN_RATIO_INVERSE
+  # A mark's fitness answers a question no rubric weight can: how bad one
+  # instance is, and -- because marks compound into the item's fitness while
+  # weights do not -- how fast the item collapses on repeats. Reach for the small
+  # penalty when a guideline holds two severities at once, as SecondSpeciesBreak
+  # does; reach for strength :weak when the whole rule is a preference.
   SMALL_PENALTY_FACTOR = GOLDEN_RATIO_INVERSE**0.5
 end
 
@@ -192,6 +197,7 @@ require "head_music/style/medieval_tradition"
 require "head_music/style/guide_assessment"
 require "head_music/style/template"
 require "head_music/style/guideline/wording"
+require "head_music/style/guideline/strength"
 require "head_music/style/guideline/voice_context"
 require "head_music/style/guideline/harmonic_context"
 require "head_music/style/guideline/melodic_context"

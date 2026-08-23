@@ -22,6 +22,43 @@ describe HeadMusic::Style::GuideItemAssessment do
     end
   end
 
+  # Stamped for a different reason than tier: an item does have a single
+  # strength. A persisted assessment records the severity in force when it was
+  # graded, so re-classifying a guideline later cannot rewrite old grades.
+  describe "strength" do
+    its(:strength) { is_expected.to eq :strong }
+
+    context "when the guideline declares a preference" do
+      let(:guide_item) { HeadMusic::Style::Guidelines::LimitOctaveLeaps.with }
+
+      its(:strength) { is_expected.to eq :weak }
+    end
+
+    context "when the item overrides the guideline" do
+      let(:guide_item) { HeadMusic::Style::Guidelines::MinimumNotes.with(minimum, strength: :weak) }
+
+      its(:strength) { is_expected.to eq :weak }
+    end
+
+    # Keyword-defaulted rather than required, so the direct-construction sites
+    # in specs and any external consumer keep working.
+    it "can be constructed without naming one" do
+      direct = described_class.new(
+        voice: voice, guide_item: guide_item, tier: :primary, marks: [], fitness: 1.0
+      )
+
+      expect(direct.strength).to eq :strong
+    end
+
+    it "records what it was given rather than re-asking the item" do
+      direct = described_class.new(
+        voice: voice, guide_item: guide_item, tier: :primary, marks: [], fitness: 1.0, strength: :weak
+      )
+
+      expect(direct.strength).to eq :weak
+    end
+  end
+
   describe "immutability" do
     it { is_expected.to be_frozen }
 

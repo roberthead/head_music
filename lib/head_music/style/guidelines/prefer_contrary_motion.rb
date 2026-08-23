@@ -3,6 +3,8 @@ module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
 class HeadMusic::Style::Guidelines::PreferContraryMotion < HeadMusic::Style::Guideline
+  strength :weak, because: "the name is the argument -- a preference about the balance of motion, not a prohibition on any one of them"
+
   def marks
     return nil if notes.length < 2
     return nil if direct_motion_ratio <= 0.5

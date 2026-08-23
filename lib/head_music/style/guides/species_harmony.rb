@@ -32,6 +32,27 @@ class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::NoStrongBeatUnisons
   ].freeze
 
+  # A species guide is about the dissonance treatment its rhythm makes possible;
+  # two-part craft is background.
+  #
+  # NoParallelPerfectWithSyncopation is a member of neither constant and is not
+  # put into one, because only the two syncopated species declare it and the
+  # constants are splatted wholesale. It belongs here all the same: it is the
+  # same prohibition as the other three, specialized for syncopation, and left
+  # primary it would take phi^-1 of fourth and fifth species by itself.
+  INHERITED_HARMONIC_CRAFT = [
+    *HARMONIC_CORE,
+    *DIMINUTION_HARMONIC_CORE,
+    HeadMusic::Style::Guidelines::NoParallelPerfectWithSyncopation
+  ].freeze
+
+  def self.species_items(*entries)
+    tier_by_membership(entries, INHERITED_HARMONIC_CRAFT)
+  end
+
+  # Concatenation only, now that tiering is decided by membership. Kept for the
+  # symmetry with SpeciesMelody.moving_species_items, which reads the same way at
+  # the four call sites that splat it.
   def self.diminution_items(*additional)
     [*HARMONIC_CORE, *DIMINUTION_HARMONIC_CORE, *additional].freeze
   end

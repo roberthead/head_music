@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The rubric gains a second axis, orthogonal to tier: **strength**. Within a tier, a `:strong` guideline weighs twice a `:weak` one, normalized by that tier's own total. `Guideline.strength` declares it — `strength :weak, because: "…"`, where the reason is required for `:weak` and refused for `:strong` — and it defaults to `:strong`, so the axis is inert until a guideline opts in. An all-strong rubric grades bit-identically to one with no strength axis at all.
+
+  Unlike tier, strength is a property of the guideline rather than of the list it was declared in: a preference is a preference in every guide that names it. It is never inherited by a subclass, because `WeakBeatDissonanceTreatment` bases two treatments that are the taught rule of their own guides. An item may override it — `Guideline.with(strength: :weak)` — for the tradition-dependent case, where `ApproachPerfectionContrarily` is prohibited in Fux and merely cautioned later.
+
+  Eight guidelines are classified `:weak`: `FrequentDirectionChanges`, `LargeLeaps`, `LimitOctaveLeaps`, `ModerateDirectionChanges`, `MostlyConjunct`, `PreferContraryMotion`, `PreferImperfect`, and `PrepareOctaveLeaps`.
+
+- `GuideItem#strength` and `GuideItemAssessment#strength`. The assessment's is keyword-defaulted from the item rather than required, so existing direct-construction sites keep working; it is stamped rather than delegated so that re-classifying a guideline later cannot silently rewrite a persisted grade.
+
 ### Changed
+
+- **Breaking.** `GuideItem#initialize` takes `strength:` as a keyword, so its configuration hash must now be passed explicitly — `GuideItem.new(SomeGuideline, {minimum: 3})` rather than `GuideItem.new(SomeGuideline, minimum: 3)`. `Guideline.with(minimum: 3)` is unaffected and remains the ordinary way to build one.
+
+- **Breaking.** A guide that declares no `primary_items` raises `ArgumentError`, naming the guide and what it did declare. A guide that is all background has no subject, and grading it 1.0 in silence is the same "nothing to find fault in" confusion the gates fixed. Gate-only guides fall to the same check, deliberately. Every registered guide already declared a primary, so this closes a door rather than fixing a break.
+
+- **Breaking.** The seven species harmony guides demote `SpeciesHarmony::HARMONIC_CORE`, `DIMINUTION_HARMONIC_CORE`, and `NoParallelPerfectWithSyncopation` to `secondary_items`, mirroring the melodic demotion. A harmony guide now weighs the dissonance treatment it teaches above the two-part craft every harmony guide shares. `SecondSpeciesHarmony` gave 9/10 of its grade to rules it did not write and now gives φ⁻¹ to `WeakBeatDissonanceTreatment` alone; a fixture failing that rule moves 0.824 → 0.698, and a parallel octave costs about half what it did.
+
+  Tiering is now decided by membership in the shared cores rather than by the list a guide named the rule in, so a hand-named core member is demoted like a splatted one. `CombinedFirstSecondThirdSpeciesHarmony` gains the diminution core it was missing — it covers two diminution species — and is the only guide anywhere whose set of guidelines changed.
+
+- `MostlyConjunct` marks each skip and leap at the ordinary penalty rather than `SMALL_PENALTY_FACTOR`, and says it is soft with `strength :weak` instead. The two say different things: a mark's fitness compounds into the item's own grade, so it set both how bad one instance was and how fast the item collapsed on repeats. Six leaps now grade 0.056 rather than 0.236. `SMALL_PENALTY_FACTOR` is unchanged and still used by `SecondSpeciesBreak`, which holds two severities inside one guideline.
 
 - **Breaking.** A guide declares its guidelines in three tiers rather than one flat `RULESET`, and the tier decides how much each one counts. `gate_items` are preconditions whose fitness multiplies the grade; `primary_items` are what the guide teaches and share φ⁻¹ of the rubric; `secondary_items` are background it inherits and share φ⁻². `Guides::Base.ruleset` and every `::RULESET` constant are removed — read `guide_items`, or one tier at a time.
 

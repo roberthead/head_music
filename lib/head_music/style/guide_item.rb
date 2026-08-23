@@ -5,9 +5,12 @@ module HeadMusic::Style; end
 # configured two ways is two items.
 #
 # Tier is deliberately absent: an item is shared between guides and has no
-# single standing, so tier is stamped onto the assessment instead.
+# single standing, so tier is stamped onto the assessment instead. Strength is
+# present, because a rule's severity does not change between guides -- the
+# override exists only for the tradition-dependent case, where
+# ApproachPerfectionContrarily is prohibited in Fux and merely cautioned later.
 class HeadMusic::Style::GuideItem
-  attr_reader :guideline, :config
+  attr_reader :guideline, :config, :strength
 
   def self.wrap(entry)
     entry.is_a?(self) ? entry : new(entry)
@@ -18,10 +21,13 @@ class HeadMusic::Style::GuideItem
   # message: would watch their sentence vanish without a word.
   REMOVED_OPTIONS = {message: :violation_key}.freeze
 
-  def initialize(guideline, config = {})
+  # Strength is resolved eagerly, before the freeze: asking the guideline for
+  # it lazily during grading would write a class ivar mid-assessment.
+  def initialize(guideline, config = {}, strength: nil)
     reject_removed_options!(config)
     @guideline = guideline
     @config = deep_freeze(config)
+    @strength = resolve_strength(guideline, strength)
     freeze
   end
 
@@ -43,6 +49,11 @@ class HeadMusic::Style::GuideItem
 
   # By value: identity matching is what made `CORE - [Guideline]` silently
   # remove nothing.
+  #
+  # Strength is deliberately omitted from both == and hash. reject_duplicates
+  # asks one question -- is this rule graded twice -- and strength cannot change
+  # the answer. Were it part of equality, declaring a rule primary-strong and
+  # secondary-weak would slip past the guard and be double-counted.
   def ==(other)
     other.is_a?(self.class) && guideline == other.guideline && config == other.config
   end
@@ -61,15 +72,23 @@ class HeadMusic::Style::GuideItem
   end
 
   # Distinguishes two configurations of one guideline, which the class name
-  # could not.
+  # could not. Strength shows only when it differs from the declaration, so the
+  # common case stays readable.
   def inspect
-    return guideline.name if config.empty?
+    overridden = (strength == guideline.strength) ? "" : "<#{strength}>"
+    return "#{guideline.name}#{overridden}" if config.empty?
 
-    "#{guideline.name}#{config.inspect}"
+    "#{guideline.name}#{overridden}#{config.inspect}"
   end
   alias_method :to_s, :inspect
 
   private
+
+  def resolve_strength(guideline, override)
+    return guideline.strength if override.nil?
+
+    HeadMusic::Style::Guideline::Strength.normalized(override, guideline.name)
+  end
 
   # At declaration time, so this fails on require rather than rendering the
   # wrong sentence for the life of the process.

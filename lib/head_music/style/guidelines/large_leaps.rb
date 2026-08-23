@@ -10,6 +10,8 @@ module HeadMusic::Style::Guidelines; end
 # - maximum_consecutive_leaps: cap on a run of consecutive qualifying leaps
 # - violation_key: names an alternative violation template
 class HeadMusic::Style::Guidelines::LargeLeaps < HeadMusic::Style::Guideline
+  strength :weak, because: "a large leap is permitted and only wants recovering from, so this grades the gesture around it rather than the leap"
+
   DEFAULTS = {
     minimum: :perfect_fourth,
     ascending: nil,

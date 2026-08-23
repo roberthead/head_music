@@ -85,8 +85,22 @@ assessment.fitness       # => the gates' product; the rubric was never reached
 ```
 
 Among the rules that are assessed, primaries share φ⁻¹ of the rubric and secondaries share φ⁻², which
-is why a species guide weighs its own rhythmic rules as heavily as all the melodic craft it inherits
-put together.
+is why a species guide weighs its own rules as heavily as all the craft it inherits put together. The
+budgets are fixed rather than divided by item count, so what a guide teaches does not thin out as it
+inherits more. A rubric that declares only one tier is renormalized to the full range.
+
+Within a tier, a second axis: **strength**. A prohibition (`:strong`, the default) weighs twice a
+preference (`:weak`), normalized by that tier's own total. Strength never crosses a tier boundary, and
+it is inert on gates, which multiply the whole rubric:
+
+```ruby
+HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats.strength  # => :strong
+HeadMusic::Style::Guidelines::PreferContraryMotion.strength          # => :weak
+```
+
+Unlike tier, strength is a property of the guideline rather than of the list it was declared in — a
+preference is a preference in every guide that names it. An item may override it for the
+tradition-dependent case, with `Guideline.with(strength: :weak)`.
 
 Each entry is a `Style::GuideItem` — a guideline plus the configuration this guide gives it — and
 assessing one yields a frozen `Style::GuideItemAssessment`:
@@ -95,9 +109,11 @@ assessing one yields a frozen `Style::GuideItemAssessment`:
 item = guide.primary_items.first
 item.guideline               # => HeadMusic::Style::Guidelines::ConsonantClimax
 item.config                  # => {}
+item.strength                # => :strong
 
-assessment.guide_item_assessments.first.tier     # => :gate
-assessment.guide_item_assessments.first.fitness  # => 0.0 to 1.0
+assessment.guide_item_assessments.first.tier      # => :gate
+assessment.guide_item_assessments.first.strength  # => :strong
+assessment.guide_item_assessments.first.fitness   # => 0.0 to 1.0
 ```
 
 Guides whose tiers vary by configuration are built with `.with`. The six contour melodies are

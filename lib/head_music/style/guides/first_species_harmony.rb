@@ -2,7 +2,7 @@
 class HeadMusic::Style::Guides::FirstSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   gate_items(*HARMONIC_GATES)
 
-  primary_items(
+  species_items(
     *HARMONIC_CORE,
     HeadMusic::Style::Guidelines::NoUnisonsInMiddle,
     HeadMusic::Style::Guidelines::OneToOne
