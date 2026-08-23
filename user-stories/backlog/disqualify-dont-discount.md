@@ -90,9 +90,14 @@ the floor is where the design gets argued about.
 - Decide the four questions above.
 - Implement the chosen arithmetic and state it in the `GuideAssessment` comment,
   which currently describes only the gate-times-rubric form.
-- Show the effect on the corpus, and expect it to be invisible: of 252 assessable
-  rows only 35 fail anything and **none fails a hard prohibition**, so the
-  corpus cannot demonstrate this and constructed cases must.
+- Show the effect on the corpus, and expect it to be nearly invisible. Of the 252
+  assessable harmony rows drawn from published fixtures, only 35 fail anything,
+  and the only four guidelines that ever fail are `ApproachPerfectionContrarily`,
+  `PreferContraryMotion`, `AvoidCrossingVoices`, and `AvoidOverlappingVoices` —
+  **no published fixture line fails a parallel-perfect prohibition.** The 14
+  remaining assessable rows come from two synthetic ladder voices which fail
+  nearly every prohibition at once, so they register a veto but cannot attribute
+  it. Constructed cases must carry this story.
 
 ## Acceptance Criteria
 
