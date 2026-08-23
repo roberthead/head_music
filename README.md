@@ -107,7 +107,7 @@ assessing one yields a frozen `Style::GuideItemAssessment`:
 
 ```ruby
 item = guide.primary_items.first
-item.guideline               # => HeadMusic::Style::Guidelines::ConsonantClimax
+item.guideline               # => HeadMusic::Style::Guidelines::NoUnisonsInMiddle
 item.config                  # => {}
 item.strength                # => :strong
 

@@ -57,6 +57,18 @@ describe HeadMusic::Style::GuideItemAssessment do
 
       expect(direct.strength).to eq :weak
     end
+
+    # This is a seam a caller can reach without going through GuideItem, so it
+    # validates too. Unvalidated, the value survives construction and surfaces
+    # as a bare KeyError from Strength.units during grading, far from the
+    # assessment that carried it.
+    it "rejects a strength the guideline could not have declared" do
+      expect {
+        described_class.new(
+          voice: voice, guide_item: guide_item, tier: :primary, marks: [], fitness: 1.0, strength: :medium
+        )
+      }.to raise_error(ArgumentError, /strength must be one of: strong, weak/)
+    end
   end
 
   describe "immutability" do

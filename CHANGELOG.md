@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Eight guidelines are classified `:weak`: `FrequentDirectionChanges`, `LargeLeaps`, `LimitOctaveLeaps`, `ModerateDirectionChanges`, `MostlyConjunct`, `PreferContraryMotion`, `PreferImperfect`, and `PrepareOctaveLeaps`.
 
-- `GuideItem#strength` and `GuideItemAssessment#strength`. The assessment's is keyword-defaulted from the item rather than required, so existing direct-construction sites keep working; it is stamped rather than delegated so that re-classifying a guideline later cannot silently rewrite a persisted grade.
+- `GuideItem#strength` and `GuideItemAssessment#strength`. The assessment's is keyword-defaulted from the item rather than required, so existing direct-construction sites keep working, and validated there as well, since it is a seam a caller can reach without going through `GuideItem`; it is stamped rather than delegated so that re-classifying a guideline later cannot silently rewrite a persisted grade.
 
 ### Changed
 

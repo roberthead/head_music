@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-20T09:16:47-07:00
   planned_at:   2026-08-22T18:41:07-07:00
   finished_at:
-  updated_at:   2026-08-22T20:15:09-07:00
+  updated_at:   2026-08-22T21:04:12-07:00
 -->
 
 # Extract the Harmonic Cores
@@ -792,6 +792,11 @@ be re-derived from the committed grade table rather than trusted:
 | `second_species_harmony` | 1.000 | 1.000 |
 | `third_species_harmony` | 1.000 | 1.000 |
 
+These three rows appear in none of the four join sections of `grades.md`, which
+lists only rows that moved. That absence *is* the evidence they did not move; the
+value 1.000 itself is not printed there, and is re-derived by re-running the
+capture commands in **Measurement** — the captures themselves are gitignored.
+
 **It does not move, and that is the expected result.** The line is adherent on
 every rubric item of all three guides — including
 `ThirdSpeciesDissonanceTreatment`, which returns 1.0 because a first-species line
@@ -953,3 +958,178 @@ change-detector whose only failure mode is "someone made a decision."
 
 **8 weak, 48 strong.** Each `:weak` carries its one-line reason at the
 declaration site, required by the macro rather than asserted by a spec.
+
+## Review
+
+Reviewed 2026-08-22 at commit `5eed0b0`, against merge-base `ab01d2f`. Working
+tree clean; everything under review is committed. Full suite **6732 examples, 0
+failures** (line 99.77%, branch 97.18%); `rubocop` clean across 520 files.
+
+The acceptance-criteria pass was verified independently rather than read off
+"What landed" — a worktree at the merge-base, a re-run of the corpus capture,
+and the weights re-derived by hand. Three results worth recording because they
+were the ones most likely to be wrong:
+
+- `c0` matches a fresh merge-base capture on **all 3266 rows**, so the baseline
+  the whole document rests on is genuine.
+- The 56-row classification table diffs **identically** to what the tree
+  actually declares — strength, tiers, and use counts.
+- Every one of the 16 `MostlyConjunct` weight rows reproduces to 4 dp, as do the
+  seven harmony-guide means and the 0.2361 → 0.0557 own-fitness figure.
+
+### Acceptance criteria
+
+| # | criterion | verdict |
+| ---: | --- | --- |
+| 1 | Explicit or defaulted strength; every `:weak` carries a reason | ✅ |
+| 2 | Strong weighs exactly twice weak, asserted as a ratio | ✅ |
+| 3 | Tier budgets unchanged; `TIER_BUDGETS` comment covers both axes | ✅ |
+| 4 | One-tier rubric renormalizes, both tiers covered | ✅ |
+| 5 | No-primary guide raises `ArgumentError` naming the guide | ✅ |
+| 6 | `CombinedFirstSecondThirdSpeciesHarmony` declares the diminution core | ✅ |
+| 7 | Declaration form consistent | ✅ |
+| 8 | Before/after table for all 23 entries, both denominators stated | ✅ |
+| 9 | Every harmony guide holds the same guidelines as before | ✅ |
+| 10 | An all-strong rubric grades bit-identically | ✅ |
+| 11 | `MostlyConjunct` reported in three parts | ✅ |
+| 12 | First-species measurement re-derivable from the committed table | ⚠️ |
+| 13 | First-species change against second and third species explained | ✅ |
+| 14 | `StartOnPerfectConsonance` / `StepOutOfUnison` decision recorded | ✅ |
+| 15 | `GuideItemAssessment#strength` defaults; CHANGELOG and README current | ✅ |
+
+Evidence for the ones that could have gone either way:
+
+- **#2** — `guide_assessment_spec.rb` "costs exactly twice as much to fail the
+  prohibition as the preference" builds *mixed-strength* rubrics and asserts
+  `(1 - strong_fails.fitness) == 2 * (1 - weak_fails.fitness)`. Mixed-strength is
+  what stops the equal-weights collapse making it vacuous.
+- **#5** — `guides/base.rb` raises inside `normalize`, before `@items_by_tier` is
+  assigned, so nothing partial memoizes and every later call re-raises. Specced
+  over `Guide::ALL` and over a `stub_const`-named throwaway subclass.
+- **#9** — verified by dumping every registered guide's sorted guideline names on
+  both trees. The **only** difference across all 23 guides is
+  `combined_first_second_third_species_harmony` gaining
+  `NoParallelPerfectAcrossBarline` and `NoStrongBeatUnisons`, which is AC #6.
+  Nothing lost, nothing else gained.
+- **#10** — `c0 → c1` moved 0 of 3266 rows, recomputed from the captures rather
+  than taken from the table.
+- **#12, the one partial** — the entry is named and the value is right
+  (`fux_first_species_examples-0-v0`, 1.0000 at both `c0` and `c4`), but
+  `grades.md` lists only rows that *moved*, so those three harmony rows appear
+  nowhere in the committed artifact. Absence across all four joins does prove
+  they did not move; the value 1.000 itself is only recoverable by re-running the
+  capture. One sentence in "The first-species measurement" saying so closes it.
+
+### Code review findings
+
+**Should fix**
+
+1. **`bin/guide_grade_table.rb:83-86` crashes on a row that errored in the
+   *after* capture.** `guide_grade_corpus.rb` emits `{fitness: nil, error: …}`
+   for a row that raised. `join` handles `prior[:error]` but never `row[:error]`,
+   so a newly-crashing row passes the filter and dies at
+   `format("%.3f", nil)` → `TypeError`. A row that crashed in *both* captures is
+   also not filtered and gets labelled `"crash fixed"` — backwards. Both abort
+   the document after the expensive captures are already on disk. Guard `now` and
+   `delta` on `row[:error]`, add a `"crashes now"` label, skip unchanged crashes,
+   and order the `assessable` comparison *after* the error checks (an error row
+   has `assessable: nil`, so a new crash would otherwise be mislabelled
+   `"gated"`).
+
+2. **`README.md:109` is stale in a block this change edited.** `guide` is
+   `first_species_harmony`, whose `primary_items.first` is now
+   `NoUnisonsInMiddle` — confirmed at runtime. `ConsonantClimax` is melodic and
+   appears in no harmony guide at all. The line was already wrong before this
+   branch, but the diff adds `item.strength` two lines below it. The neighbouring
+   `config # => {}` and `strength # => :strong` are both correct.
+
+3. **`guide_item_assessment.rb:21-25` is the one public seam that skips
+   `Strength.normalized`.** `Guideline.strength` validates and
+   `GuideItem#initialize` validates, but
+   `GuideItemAssessment.new(…, strength: :medium)` is accepted silently —
+   confirmed at runtime. The failure then surfaces as a bare `KeyError` from
+   `Strength.units`'s `fetch`, deep inside `rubric_weights`, for a value object
+   whose whole point is that it can be persisted and compared without the
+   analysis machinery. One line in the initializer fixes it, and the keyword
+   default round-trips because `guide_item.strength` is already normalized.
+
+**Nits**
+
+4. `guide_assessment_spec.rb:138` — `graded(tier, fitness, strength = :strong)`
+   gained a third parameter no call site in that block passes (145, 156, 168, 176
+   all pass two), and the item it builds already resolves to `:strong`. The hunk
+   is a no-op; the three new describes define their own helpers.
+5. `mostly_conjunct.rb:29-33` — now that each skip and leap marks at the full
+   `PENALTY_FACTOR`, a line missing the 38% threshold by a few points grades the
+   same as a wildly disjunct one (9 leaps → 0.013). `MaximumNotes` solves exactly
+   this with `fitness_denominator`. Net rubric impact is roughly neutral because
+   the weak weight offsets the steeper collapse, so this is about the item's own
+   score, not the grade.
+6. `guides/base.rb:85-92` — `tier_by_membership` has no `except:` escape hatch,
+   so `DiatonicMelody`'s "drop the core's version, teach my configured one"
+   pattern is inexpressible through `species_items`: a configured core member is
+   demoted alongside the bare one, and because `GuideItem#==` includes config,
+   `reject_duplicates` will not object. Latent — no guide does this today.
+7. `guide_item.rb:78` — `inspect` now calls `guideline.strength`, and `inspect`
+   is what the new no-primary `ArgumentError` interpolates. A malformed entry
+   turns a helpful message into a `NoMethodError` raised while building the
+   error.
+8. `guide_assessment.rb:89` — `return 1.0 if total.zero?` is unreachable; the
+   empty case already returned and every weight is strictly positive. Harmless,
+   but it reads like a live guard and shows as an uncovered branch.
+
+**Verified correct, no action:** the tier/strength normalization on every branch;
+the equal-weights collapse being mathematically a no-op; strength never crossing
+a tier boundary; gates rejected before any strength lookup, so a `:weak` gate is
+genuinely inert; the partition being total and non-duplicating; strength not
+inherited; `.with` overrides forwarding through `MinimumThreshold`,
+`MaximumNotes` and `Contoured`; no stdout assertions anywhere in the new specs;
+and the `GuideItem.new(k, minimum: 1)` break failing loudly and being documented.
+
+### Fixed in review
+
+Findings 1, 2 and 3 and the AC #12 sentence were applied on top of the reviewed
+commit. Suite **6733 examples, 0 failures**; rubocop clean.
+
+- **Finding 1.** `bin/guide_grade_table.rb` gains `unchanged?`, which compares
+  error classes when either capture raised instead of comparing a nil fitness,
+  and `why` gains `crash changed` / `crashes now` ahead of the `gated`
+  comparison. `section` guards the after, delta and assessable columns. Exercised
+  against a six-row synthetic pair covering an unchanged crash, a new crash, a
+  fixed crash and an ordinary move: it labels all four and no longer raises.
+  **The regenerated `grades.md` is byte-identical to the committed one** — the
+  fix touches only paths the real captures never took, and 0 / 130 / 833 / 49
+  reproduce.
+- **Finding 2.** `README.md:109` now reads `NoUnisonsInMiddle`. All three lines
+  of that example were re-checked against runtime; `config # => {}` and
+  `strength # => :strong` were already right.
+- **Finding 3.** `GuideItemAssessment#initialize` normalizes through
+  `Strength.normalized`, so the error names the item at construction rather than
+  arriving as a `KeyError` from `Strength.units` during grading. Pinned by
+  "rejects a strength the guideline could not have declared". The `CHANGELOG`
+  entry for the reader now says it validates.
+- **AC #12** is closed by a paragraph in "The first-species measurement": the
+  three rows are absent from all four joins because `grades.md` lists only rows
+  that moved, so the absence is the evidence, and the value is re-derived by
+  re-running the recorded commands.
+
+The five nits (4-8) are left as recorded — none is a defect in shipped behavior,
+and 6 and 7 are latent cases no guide reaches today.
+
+One further observation from testing finding 1, not acted on: `unchanged?` still
+compares fitness alone, so a row whose *assessability* changed while its grade
+did not would be filtered out before `why` could label it `gated`. No real
+capture can produce that — a gate closing multiplies the grade — and widening the
+filter would risk moving the committed row counts, so it stays.
+
+### Blocking `finish`
+
+Nothing. The three should-fixes are applied and the acceptance criteria are all
+met.
+
+Two disclosures rather than defects: `GuideItem#initialize` taking `strength:` as
+a keyword means `GuideItem.new(Guideline, minimum: 3)` must now pass its config
+as a positional hash — a second breaking change riding along with the intended
+one, documented in `CHANGELOG.md`. And `tmp/c0.json`–`c4.json` are gitignored, so
+every number here rests on captures that exist only on this machine; they were
+confirmed re-derivable via the recorded commands.

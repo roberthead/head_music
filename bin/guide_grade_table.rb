@@ -18,7 +18,8 @@
 # told apart after the fact. Each join here spans exactly one change, and its
 # label is the cause. A row is relabelled only for the one thing that is visible
 # in the data and not in the label -- a voice that changed assessability, which
-# is a gate moving rather than a weight.
+# is a gate moving rather than a weight, or a row that raised in one capture and
+# not the other, which is not a grading change at all.
 
 require "json"
 
@@ -33,16 +34,28 @@ def join(before_path, after_path)
 
   moved = after.filter_map do |row|
     prior = indexed.fetch([row[:corpus], row[:guide]])
-    next if !prior[:error] && prior[:fitness] == row[:fitness]
+    next if unchanged?(prior, row)
 
     {row: row, prior: prior}
   end
   [after, moved]
 end
 
+# An errored row carries fitness: nil, so comparing fitness alone would report
+# two identical crashes as a move and then divide nil in the delta column.
+def unchanged?(prior, row)
+  return prior[:error] == row[:error] if prior[:error] || row[:error]
+
+  prior[:fitness] == row[:fitness]
+end
+
+# The error cases come first because an errored row has assessable: nil, which
+# the gate comparison would otherwise read as a gate closing.
 def why(entry, label)
   prior = entry[:prior]
   row = entry[:row]
+  return "crash changed" if prior[:error] && row[:error]
+  return "crashes now" if row[:error]
   return "crash fixed" if prior[:error]
   return "gated" if prior[:assessable] != row[:assessable]
 
@@ -79,11 +92,21 @@ def section(label, before_path, after_path)
   moved.each do |entry|
     row = entry[:row]
     prior = entry[:prior]
+    raised = prior[:error] || row[:error]
     was = prior[:error] ? "raised" : format("%.3f", prior[:fitness])
-    now = format("%.3f", row[:fitness]) + (row[:assessable] ? "" : "*")
-    delta = prior[:error] ? "—" : format("%+.3f", row[:fitness] - prior[:fitness])
+    now = if row[:error]
+      "raised"
+    else
+      format("%.3f", row[:fitness]) + (row[:assessable] ? "" : "*")
+    end
+    delta = raised ? "—" : format("%+.3f", row[:fitness] - prior[:fitness])
+    assessable = if row[:error]
+      "—"
+    else
+      row[:assessable] ? "yes" : "no"
+    end
     lines << "| #{row[:corpus]} | #{row[:notes]} | `#{row[:guide]}` | #{was} | #{now} | " \
-             "#{delta} | #{row[:assessable] ? "yes" : "no"} | #{why(entry, label)} |"
+             "#{delta} | #{assessable} | #{why(entry, label)} |"
   end
   lines << ""
   lines

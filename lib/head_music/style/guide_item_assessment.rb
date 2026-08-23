@@ -12,7 +12,10 @@ module HeadMusic::Style; end
 # strength -- namely that a persisted assessment records the severity in force
 # when it was graded, so re-classifying a guideline later cannot silently
 # rewrite old grades. It defaults from the item, so the direct-construction
-# sites in specs and any external consumer keep working.
+# sites in specs and any external consumer keep working, and it is normalized
+# here as well: this is a seam a caller can reach without going through
+# GuideItem, and an unvalidated value would surface as a bare KeyError from
+# Strength.units, far from the construction that caused it.
 class HeadMusic::Style::GuideItemAssessment
   attr_reader :voice, :guide_item, :tier, :strength, :marks, :fitness, :violation_key, :violation_values
 
@@ -23,7 +26,7 @@ class HeadMusic::Style::GuideItemAssessment
     @voice = voice
     @guide_item = guide_item
     @tier = tier
-    @strength = strength
+    @strength = HeadMusic::Style::Guideline::Strength.normalized(strength, guide_item.name)
     @marks = [marks].flatten.compact.freeze
     @fitness = fitness
     @violation_key = violation_key
