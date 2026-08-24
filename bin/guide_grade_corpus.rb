@@ -9,6 +9,11 @@
 # the one is asked for conditionally and the other is recorded as a value rather
 # than being allowed to stop the run. Everything else is common to both trees.
 #
+# The invariant that sentence protects is that each column is the same
+# measurement made again -- not that the file is never edited. When a change
+# needs a seam this script does not yet have, the edit lands BEFORE both
+# captures and is proven a no-op by diffing a capture from either side of it.
+#
 # Loading the fixture exercises means loading spec_helper, which starts
 # SimpleCov and rewrites coverage/.last_run.json. That file is restored on the
 # way out, so a later `bundle exec rake` measures against the baseline it had.
@@ -81,7 +86,14 @@ def corpus
 end
 
 def grade(guide, voice)
-  assessment = HeadMusic::Style::GuideAssessment.new(guide, voice)
+  # Through the guide, not GuideAssessment.new: a composite guide grades its
+  # members separately and refuses that constructor, and the rescue below would
+  # have recorded the refusal as a per-row error while the run still exited 0.
+  # Identical for every leaf guide -- Guides::Base.assess and Configured#assess
+  # are both GuideAssessment.new(self, voice) -- so this edit was made before
+  # either capture was taken and proven a byte-identical no-op on the before
+  # tree.
+  assessment = guide.assess(voice)
   items = assessment.guide_item_assessments
   {
     fitness: assessment.fitness.round(12),
