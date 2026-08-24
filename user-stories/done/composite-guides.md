@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-23T15:37:56-07:00
   activated_at: 2026-08-23T16:57:38-07:00
   planned_at:   2026-08-23T18:13:44-07:00
-  finished_at:
-  updated_at:   2026-08-23T20:28:37-07:00
+  finished_at:  2026-08-23T20:55:58-07:00
+  updated_at:   2026-08-23T20:55:58-07:00
 -->
 
 # Composite Guides
@@ -1057,3 +1057,82 @@ registry: `fitness_by_category`'s recombination gap needs a composite whose
 categories are unevenly split, which no registered composite is, and the other
 two are guards that do not guard rather than defects. They belong to whoever next
 lets a composite hold more than two members.
+
+## Learnings
+
+### What went well
+
+**Measuring the premise before planning caught three of this story's own false
+assertions.** The planner verified rather than reasoned, and found that
+`bin/guide_grade_corpus.rb` built `GuideAssessment.new` directly — so the Scope's
+claim that composites "arrive on their own" in the corpus was wrong, and the
+script's bare rescue would have hidden the failure while exiting 0. It found the
+Grading section arguing for the gate-factor rule from a solo voice, which is the
+one case where that rule and its alternative provably cannot differ. And it found
+an acceptance criterion that would have stayed green under the implementation the
+story rejected. Same lesson as [Extract the Harmonic
+Cores](extract-the-harmonic-cores.md), arriving one level up: there the plan was
+aimed at an unreachable target, here the *story document* asserted things about
+its own codebase that were not true.
+
+**The mutation test is what actually proved the design.** Deleting the
+`assessable?` branch from `CompositeAssessment#fitness` and confirming that
+exactly one example failed — 6822 examples, 1 failure — is a stronger claim than
+any amount of reading the specs. Two reviewers observed that same single failure
+independently, one of them by accident while the other's experiment was running.
+Worth making a habit: for a load-bearing branch, delete it and count what breaks.
+
+**The sequencing was forced by a mechanism rather than by a maxim.** The renames
+land first not because mechanical changes conventionally go first, but because
+`bin/guide_grade_table.rb` joins captures with an unconditional `fetch` and would
+have raised on the first row carrying an old key. The plan went looking for the
+reason instead of inheriting the habit.
+
+**The no-op proof again carried the weight.** 0 of 3266 joined rows moved. A
+corpus-wide measurement is the only thing that can say "registering seven guides
+changed nothing about the other twenty-three," and no spec can.
+
+### What was surprising
+
+**Four instances of one failure mode, at four different layers.** An acceptance
+criterion that could not fail. A shared example that is tautological for the class
+it was written to guard — `!assessable? ⇒ fitness == gate_factor`, where for a
+composite both sides are the same expression over the same memo. A generated
+document asserting three things about its own rows that were false of 294 of
+them. And `join` printing "a provable no-op across the whole corpus" over rows it
+had silently dropped from the denominator. Criteria, specs, prose, tooling — and
+in each case a statement structurally incapable of being wrong, therefore
+worthless as evidence. Every one was caught by someone trying to make it fail
+rather than by reading it.
+
+**Generated prose is deliverable, not decoration.** The fix for the grades
+document was not better wording; it was deriving every clause from the capture —
+partition on whether the grade is zero, name the gate that fired rather than the
+shape of the composition, name two fractional rows with their grades so the claim
+can be checked against the table below it. A sentence about the data that is not
+computed from the data will drift and then lie.
+
+**The `join` defect escaped this branch by where the capture boundary fell.**
+`0c317af` removes two registry keys and adds two. Had the before capture been
+taken one commit earlier, the document would have printed its no-op sentence over
+284 rows it never looked at. The bug was latent here and would have been silent
+anywhere.
+
+### Worth carrying into the code
+
+**A composite grades by different arithmetic than its members, on purpose.**
+Inside a rubric, rules trade off against each other by weight. Across guides, both
+halves must hold. That asymmetry is *why* a composite composes grades rather than
+items — merging the item lists is not merely inconvenient (it collides on the
+shared gate) but wrong in kind, because it would grade two levels by one rule.
+The comment in `CompositeGuide` says this; it is the sentence to keep if the file
+is ever refactored.
+
+**Three findings were recorded rather than fixed, and the reason matters.**
+`fitness_by_category` does not recombine into `fitness` once a category holds more
+than one member; the shared-group gate assertion is tautological for the
+composite; and `fitness_by_category` reaches the gate branch by a path
+independent of `fitness`. None is reachable through the registry, because every
+registered composite is two members in two categories. They belong to whoever
+next lets a composite hold more than two — which is exactly when all three become
+live at once.

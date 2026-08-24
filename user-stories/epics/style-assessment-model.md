@@ -374,7 +374,7 @@ Sequenced so that each step is verifiable on its own.
    *not* bit-identical; gets a before/after fitness table instead. Fixes an empty
    voice scoring 1.000 against thirteen guides, and a crash in the harmony guides.
 
-5. **[Composite guides](../current/composite-guides.md).** A `CompositeGuide`
+5. ✅ **[Composite guides](../done/composite-guides.md).** A `CompositeGuide`
    that grades a melody guide and a harmony guide together, so a consumer asks
    for `first_species` rather than pairing the two halves and inventing a rule
    for combining their grades. Composes grades, not items — merging the item
