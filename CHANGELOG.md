@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Composite guides.** A species is a melody guide and a harmony guide, and a student submits one line to be judged by both. `Style::Guide.get("first_species")` now answers with a `Guides::CompositeGuide` over the two, and six siblings do the same: `second_species`, `third_species`, `third_species_triple_meter`, `fourth_species`, `fifth_species`, and `first_three_species`. `Guide.all` grows 23 → 30. Which two guides make up a species, and how their grades combine, is counterpoint pedagogy; it belongs here rather than in each consuming application.
+
+  A composite **composes grades, not items**. Merging its members' item lists cannot even be built — both members gate on `MinimumNotes.with(3)`, `GuideItem` equality is by value, and `Base.reject_duplicates` refuses the union — and would undo the tier budgets besides, putting nineteen primaries into one φ⁻¹ budget. The two levels grade by different arithmetic on purpose: rules inside a rubric trade off by weight, while a melody grade and a harmony grade must both hold.
+
+- `Style::CompositeAssessment`, which a composite returns from `assess(voice)`. Its `fitness` is the **geometric mean** of its members' grades, so a perfect melody against a half-graded harmony reads 0.707 rather than 0.75, and either half at zero takes the whole grade to zero. `assessments` holds one `GuideAssessment` per member, and `fitness_by_category` splits the grade into the melody and harmony halves a consumer wants to show separately.
+
+  When any member is unassessable the composite is too, and it grades on its members' **gate factors alone** — `GuideAssessment`'s own rule with the nouns raised: one member failing a precondition means the composite has not earned a grade on the other members either.
+
+- `GuideAssessment#assessments`, answering `[self]`, so a consumer walks a leaf assessment and a composite one the same way without asking which it holds. `GuideAssessment#fitness_by_category` answers the same shape, as one group of one.
+
+- `GuideAssessment#gate_factor` is public, and returns a `Float` for a gate-less guide rather than the Integer `1` it used to compute internally. A composite reads it when a member is unassessable.
+
+- `composite?` and `categories` on every guide. A composite spans its members' categories rather than claiming one, so its `category` is `nil` and a consumer grouping the registry by category gains a `nil` bucket; `categories` is what answers for it. A leaf answers `[category]`.
+
 - The rubric gains a second axis, orthogonal to tier: **strength**. Within a tier, a `:strong` guideline weighs twice a `:weak` one, normalized by that tier's own total. `Guideline.strength` declares it — `strength :weak, because: "…"`, where the reason is required for `:weak` and refused for `:strong` — and it defaults to `:strong`, so the axis is inert until a guideline opts in. An all-strong rubric grades bit-identically to one with no strength axis at all.
 
   Unlike tier, strength is a property of the guideline rather than of the list it was declared in: a preference is a preference in every guide that names it. It is never inherited by a subclass, because `WeakBeatDissonanceTreatment` bases two treatments that are the taught rule of their own guides. An item may override it — `Guideline.with(strength: :weak)` — for the tradition-dependent case, where `ApproachPerfectionContrarily` is prohibited in Fux and merely cautioned later.
@@ -18,6 +32,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GuideItem#strength` and `GuideItemAssessment#strength`. The assessment's is keyword-defaulted from the item rather than required, so existing direct-construction sites keep working, and validated there as well, since it is a seam a caller can reach without going through `GuideItem`; it is stamped rather than delegated so that re-classifying a guideline later cannot silently rewrite a persisted grade.
 
 ### Changed
+
+- **Breaking.** `GuideAssessment.new` raises `ArgumentError` when handed a composite guide, naming `guide.assess(voice)` as the seam that grades it correctly. Flattening a composite's items into one rubric would return a plausible number computed by the wrong arithmetic.
+
+- **Breaking.** Four renames, freeing the word "combined", which named mixed rhythm on two guides and would have named a guide composed of members as well:
+
+  | Was | Is |
+  | --- | --- |
+  | `Guides::CombinedFirstSecondThirdSpeciesMelody` | `Guides::FirstThreeSpeciesMelody` |
+  | `Guides::CombinedFirstSecondThirdSpeciesHarmony` | `Guides::FirstThreeSpeciesHarmony` |
+  | `Guidelines::AllowedRhythmicValuesForCombined123` | `Guidelines::AllowWholeHalfQuarterNotes` |
+  | `Guidelines::AllowedRhythmicValuesForFifthSpecies` | `Guidelines::AllowFifthSpeciesRhythmicValues` |
+
+  The registry keys `combined_first_second_third_species_melody` and `..._harmony` become `first_three_species_melody` and `first_three_species_harmony`, and the locale keys move with them. The two guideline names take different shapes deliberately: the first three species allow a set small enough to say in a name, and fifth species allows that set plus eighths and ties under conditions the guideline itself decides.
+
+- No existing guide's grade changes. Measured across the whole corpus — 3266 rows, 142 voices × 23 guides — every row is identical before and after.
 
 - **Breaking.** `GuideItem#initialize` takes `strength:` as a keyword, so its configuration hash must now be passed explicitly — `GuideItem.new(SomeGuideline, {minimum: 3})` rather than `GuideItem.new(SomeGuideline, minimum: 3)`. `Guideline.with(minimum: 3)` is unaffected and remains the ordinary way to build one.
 
