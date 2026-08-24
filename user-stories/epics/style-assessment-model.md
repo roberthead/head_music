@@ -363,7 +363,7 @@ Sequenced so that each step is verifiable on its own.
    `Guideline.assess`, `GuideItemAssessment`, `GuideAssessment`, and tier-derived
    weights. Guide fitness bit-identical — a cheap and total test. Breaking to a
    public seam; lands as 20.0. Retires `guideline-tiers.md` from the backlog.
-3. **[Guideline strings into i18n](../current/guideline-strings-into-i18n.md).**
+3. ✅ **[Guideline strings into i18n](../done/guideline-strings-into-i18n.md).**
    Forty-five `MESSAGE` constants, nine dynamic `#message` overrides, and one
    literal English sentence living in a guide file become templates plus English
    locale entries, alongside `name_key` and `instruction_key`. Depends on 2,
