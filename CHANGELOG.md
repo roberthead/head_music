@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [20.0.0] - 2026-08-23
+
+The [style assessment model](https://github.com/roberthead/head_music/tree/main/user-stories/epics/style-assessment-model.md) epic, released together. Five stories reshaped how a guide is declared, how it grades, what it says, and what a consumer asks for — so the breaking changes below are one migration rather than five.
+
+**Migrating from 19.0.0**, in the order a consumer will hit them:
+
+1. `Style::Analysis` is `Style::GuideAssessment`; `Guide#analyze(voice)` is `#assess(voice)`; `Analysis#annotations` is `GuideAssessment#guide_item_assessments`. `Style::Annotation` is `Style::Guideline`, and `Annotation::Configured` is `Style::GuideItem`.
+2. Ask for a species rather than pairing its halves: `Guide.get("first_species")` returns a composite that grades melody and harmony together and combines them geometrically. The seven composite keys are new; the two `combined_first_second_third_species_*` keys are now `first_three_species_*`.
+3. Grades move. Re-tiering weighs what a guide teaches above the craft it inherits, so any stored fitness from 19.0.0 is not comparable to one from 20.0.0. Regrade rather than migrate.
+4. Guideline strings are i18n templates. A consumer reading `MESSAGE` constants reads `GuideItemAssessment#message` instead.
+
 ### Added
 
 - **Composite guides.** A species is a melody guide and a harmony guide, and a student submits one line to be judged by both. `Style::Guide.get("first_species")` now answers with a `Guides::CompositeGuide` over the two, and six siblings do the same: `second_species`, `third_species`, `third_species_triple_meter`, `fourth_species`, `fifth_species`, and `first_three_species`. `Guide.all` grows 23 → 30. Which two guides make up a species, and how their grades combine, is counterpoint pedagogy; it belongs here rather than in each consuming application.
@@ -30,6 +41,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Eight guidelines are classified `:weak`: `FrequentDirectionChanges`, `LargeLeaps`, `LimitOctaveLeaps`, `ModerateDirectionChanges`, `MostlyConjunct`, `PreferContraryMotion`, `PreferImperfect`, and `PrepareOctaveLeaps`.
 
 - `GuideItem#strength` and `GuideItemAssessment#strength`. The assessment's is keyword-defaulted from the item rather than required, so existing direct-construction sites keep working, and validated there as well, since it is a seam a caller can reach without going through `GuideItem`; it is stamped rather than delegated so that re-classifying a guideline later cannot silently rewrite a persisted grade.
+
+- `HeadMusic::Style::Guidelines::SetAgainstAnotherVoice` — the definitional precondition of a harmony guide: counterpoint is a relationship between voices, and a voice alone has no harmony to assess.
+
+- `HeadMusic::Style::Template` — renders every customer-facing string in the style module, and refuses the four ways I18n fails quietly: a template rendered with no values keeps its `%{}` without raising, a value named for a reserved key hijacks the lookup, a missing key resolves to "Translation missing: …", and a word passed as `count` silently selects a plural. Every render passes `raise: true` and is checked for a surviving interpolation.
+
+  `Template.verify!` runs at load over the whole registry — twenty-three guide instructions, and every template the sixty-seven guide items can render, including the violation branches a guideline chooses between — so a missing entry stops `require` rather than reaching a student. It runs in English deliberately: a host application's locale must not decide whether the gem loads.
+
+  Where a locale has no plural data, `Template.pluralize` falls back to Ruby rather than raising, and records the key it fell back for.
+
+- British spellings for the five style strings that have them — `neighbour`, `metre`, and a bar rather than a measure. `en_GB` sits mid-chain, so German, French, Italian and Russian pick these up on the way to `en`. Note that any pluralized `en_GB` entry must carry the complete set of forms: I18n stops at a plural hash that is present but incomplete rather than continuing past it, so a partial one would raise for those four languages and never for a British reader.
 
 ### Changed
 
@@ -110,18 +131,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `GuideItemAssessment#name`, and `#to_s` with it, answer the item's rendered name — "Minimum of eight notes" — rather than the guideline's class path. A consumer building a results list holds assessments rather than items, so that is where a rubric gets its labels.
 
 - **Breaking.** Guides gain `#instruction` — what a guide asks a student to write, as distinct from how it grades what they wrote — and their names move under `head_music.style.guides.<key>.name` from the flat `<key>`. The twenty-three instructions are a first draft.
-
-### Added
-
-- `HeadMusic::Style::Guidelines::SetAgainstAnotherVoice` — the definitional precondition of a harmony guide: counterpoint is a relationship between voices, and a voice alone has no harmony to assess.
-
-- `HeadMusic::Style::Template` — renders every customer-facing string in the style module, and refuses the four ways I18n fails quietly: a template rendered with no values keeps its `%{}` without raising, a value named for a reserved key hijacks the lookup, a missing key resolves to "Translation missing: …", and a word passed as `count` silently selects a plural. Every render passes `raise: true` and is checked for a surviving interpolation.
-
-  `Template.verify!` runs at load over the whole registry — twenty-three guide instructions, and every template the sixty-seven guide items can render, including the violation branches a guideline chooses between — so a missing entry stops `require` rather than reaching a student. It runs in English deliberately: a host application's locale must not decide whether the gem loads.
-
-  Where a locale has no plural data, `Template.pluralize` falls back to Ruby rather than raising, and records the key it fell back for.
-
-- British spellings for the five style strings that have them — `neighbour`, `metre`, and a bar rather than a measure. `en_GB` sits mid-chain, so German, French, Italian and Russian pick these up on the way to `en`. Note that any pluralized `en_GB` entry must carry the complete set of forms: I18n stops at a plural hash that is present but incomplete rather than continuing past it, so a partial one would raise for those four languages and never for a British reader.
 
 ## [19.0.0] - 2026-08-07
 
@@ -691,7 +700,8 @@ note = HeadMusic::Rudiment::Note.get("F#4 dotted-quarter")
 
 For changes in versions prior to 0.28.0, please refer to the git history.
 
-[Unreleased]: https://github.com/roberthead/head_music/compare/v19.0.0...HEAD
+[Unreleased]: https://github.com/roberthead/head_music/compare/v20.0.0...HEAD
+[20.0.0]: https://github.com/roberthead/head_music/compare/v19.0.0...v20.0.0
 [19.0.0]: https://github.com/roberthead/head_music/compare/v18.0.0...v19.0.0
 [18.0.0]: https://github.com/roberthead/head_music/compare/v17.5.0...v18.0.0
 [17.5.0]: https://github.com/roberthead/head_music/compare/v17.3.0...v17.5.0
