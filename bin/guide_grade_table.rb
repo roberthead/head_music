@@ -27,24 +27,41 @@ def load_capture(path)
   JSON.parse(File.read(path), symbolize_names: true)
 end
 
-# A capture can hold guides the one before it did not: a story that registers a
-# new guide adds rows rather than moving them. Those are reported separately and
-# never counted as movement -- folding them into "N of M rows moved" would read
-# as a grading change to guides that did not have one, and an unconditional
-# fetch here would simply raise on the first of them.
+# Two captures need not hold the same guides. A story that registers a guide
+# adds rows; one that renames or removes a registry key takes rows away. Both
+# are reported and neither is counted as movement -- folding either into
+# "N of M rows moved" would read as a grading change to guides that did not
+# have one, and an unconditional fetch would simply raise on the first added row.
+#
+# Removed rows are the dangerous half, because nothing raises: they are absent
+# from the after capture, so they never enter the denominator and the section
+# would claim full coverage over rows it never looked at. Draw a capture
+# boundary across a rename without this and "a provable no-op across the whole
+# corpus" prints over hundreds of dropped rows.
 def join(before_path, after_path)
   before = load_capture(before_path)
   after = load_capture(after_path)
   indexed = before.to_h { |row| [[row[:corpus], row[:guide]], row] }
+  after_keys = after.to_h { |row| [[row[:corpus], row[:guide]], row] }
 
   joined, added = after.partition { |row| indexed.key?([row[:corpus], row[:guide]]) }
+  removed = before.reject { |row| after_keys.key?([row[:corpus], row[:guide]]) }
   moved = joined.filter_map do |row|
     prior = indexed.fetch([row[:corpus], row[:guide]])
     next if unchanged?(prior, row)
 
     {row: row, prior: prior}
   end
-  [joined, moved, added]
+  [joined, moved, added, removed]
+end
+
+# Names the registry entries a set of rows belongs to, for the added and removed
+# paragraphs.
+def entry_summary(rows, verb)
+  guides = rows.map { |row| row[:guide] }.uniq
+  "#{rows.length} #{(rows.length == 1) ? "row" : "rows"} #{verb}: #{guides.length} registry " \
+    "#{(guides.length == 1) ? "entry" : "entries"} " \
+    "(#{guides.map { |key| "`#{key}`" }.join(", ")})."
 end
 
 # An errored row carries fitness: nil, so comparing fitness alone would report
@@ -74,23 +91,37 @@ def title_from(path)
 end
 
 def section(label, before_path, after_path)
-  joined, moved, added = join(before_path, after_path)
+  joined, moved, added, removed = join(before_path, after_path)
   lines = []
   lines << "## #{label.sub(/\A./, &:upcase)}"
   lines << ""
   lines << "`#{File.basename(before_path)}` → `#{File.basename(after_path)}`. " \
            "#{moved.length} of #{joined.length} joined rows moved, #{joined.length - moved.length} unchanged."
   unless added.empty?
-    new_guides = added.map { |row| row[:guide] }.uniq
     lines << ""
-    lines << "#{added.length} further rows have no before column: #{new_guides.length} registry " \
-             "#{(new_guides.length == 1) ? "entry" : "entries"} this change adds. They are new rather than moved, " \
-             "and are excluded from the counts above."
+    lines << entry_summary(added, "have no before column") + " This change adds them. " \
+             "They are new rather than moved, and are excluded from the counts above."
+  end
+  unless removed.empty?
+    lines << ""
+    lines << entry_summary(removed, "have no after column") + " This change removes them, " \
+             "so nothing here measures them. They are excluded from the counts above, and the " \
+             "corpus is not fully covered by this join."
   end
   lines << ""
 
   if moved.empty?
-    lines << "No row moved. This change is a provable no-op across the whole corpus."
+    # Gated on removed rather than on added. A guide the after capture adds cannot
+    # have moved, and the paragraph above has already set those rows aside; the
+    # join still covered every row that could have moved. A guide it drops is the
+    # case that makes the sentence a lie, because those rows left the denominator
+    # without anything raising.
+    lines << if removed.empty?
+      "No row moved. This change is a provable no-op across the whole corpus."
+    else
+      "No joined row moved. Every guide both captures hold grades identically; the rows " \
+        "named above are outside that claim."
+    end
     lines << ""
     return lines
   end
@@ -174,22 +205,46 @@ def gated_composites(capture, members)
   gated = capture.select { |row| members.key?(row[:guide]) && !row[:assessable] }
   return [] if gated.empty?
 
+  # Every clause here is derived rather than asserted. An earlier version said
+  # these rows were single-voice compositions whose harmony member had no
+  # companion and which read 0.000, and all three were false of part of the set:
+  # the empty second voice of a cantus-firmus fixture has a companion and fails
+  # MinimumNotes instead, and MinimumNotes scores a fraction where
+  # SetAgainstAnotherVoice scores zero. Prose about the data is the deliverable
+  # here, so it is computed from the data.
+  zeroed, fractional = gated.partition { |row| row[:fitness].zero? }
   lines = []
-  lines << "The remaining #{gated.length} composite rows are unassessable single-voice " \
-           "compositions: the harmony member has no companion to be set against, so the " \
-           "composite grades on its members' gate factors and reads 0.000."
+  lines << "The remaining #{gated.length} composite rows are unassessable: at least one member " \
+           "failed a gate, so the composite grades on its members' gate factors rather than on " \
+           "a rubric it never earned."
   lines << ""
+  if fractional.any?
+    lines << "#{zeroed.length} of them read 0.000, where a failed gate scored zero. The other " \
+             "#{fractional.length} read a fraction, because `MinimumNotes` scores the proportion " \
+             "of the minimum a voice reached — #{fraction_examples(fractional)}."
+  end
+  lines << "" if fractional.any?
   lines << "A gate both members declare is assessed by each of them, so it appears twice in " \
-           "the raw capture. Deduplicated here rather than in the model, where the flat " \
-           "concatenation is what lets a consumer walk members and composite alike."
+           "the raw capture. Deduplicated per row here rather than in the model, where the flat " \
+           "concatenation is what lets a consumer walk members and composite alike. A row " \
+           "failing two different gates is counted under each, so the column below sums to more " \
+           "than #{gated.length}."
   lines << ""
-  lines << "| failed gate | composite rows |"
+  lines << "| failed gate | rows failing it |"
   lines << "| --- | ---: |"
   gated.flat_map { |row| row[:failed_gates].uniq }.tally.sort.each do |gate, count|
     lines << "| `#{gate}` | #{count} |"
   end
   lines << ""
   lines
+end
+
+# Names a couple of the fractional rows by corpus entry and grade, so the claim
+# above can be checked against the table rather than taken on faith.
+def fraction_examples(rows)
+  rows.group_by { |row| row[:corpus] }.sort.first(2).map { |corpus, group|
+    "`#{corpus}` reads #{format("%.6f", group.first[:fitness])}"
+  }.join(" and ")
 end
 
 out_path = ARGV.fetch(0)
@@ -253,6 +308,6 @@ lines.concat(composite_section(joins.last[2])) if composite_rows(last_capture).a
 
 File.write(out_path, lines.join("\n").rstrip + "\n")
 warn(joins.map { |label, before_path, after_path|
-  _joined, moved, added = join(before_path, after_path)
-  "#{label}: moved=#{moved.length} added=#{added.length}"
+  _joined, moved, added, removed = join(before_path, after_path)
+  "#{label}: moved=#{moved.length} added=#{added.length} removed=#{removed.length}"
 }.join(" "))

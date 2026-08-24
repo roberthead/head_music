@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-23T16:57:38-07:00
   planned_at:   2026-08-23T18:13:44-07:00
   finished_at:
-  updated_at:   2026-08-23T19:28:06-07:00
+  updated_at:   2026-08-23T20:28:37-07:00
 -->
 
 # Composite Guides
@@ -895,3 +895,165 @@ table collapses to seven single keys.
 - Performance, for context rather than concern: the `guide_spec.rb`
   assessability block roughly doubles, and the corpus capture goes 3266 → 4260
   rows, ~32s → ~45s.
+
+## Review
+
+2026-08-23, at `9dedd50`. Two reviewers ran against
+`git diff $(git merge-base main HEAD)...HEAD` — a product perspective on the
+acceptance criteria and a code perspective on the diff. Every finding below was
+re-verified directly before being written down; two of them turned out to differ
+from what was reported, and are corrected here.
+
+### Acceptance criteria
+
+All fourteen met. The verification went further than reading the specs: the
+whole capture chain was byte-reproduced from the commits themselves, in a
+throwaway worktree, rather than trusted from the generated document.
+
+| # | Criterion | Verdict |
+| --- | --- | --- |
+| 1 | Seven species keys resolve to a `CompositeGuide` over the right members | ✅ |
+| 2 | Fitness is the geometric mean, hand-computed against a Fux voice | ✅ |
+| 3 | 1.0 against 0.5 reads 0.707, not 0.75 | ✅ |
+| 4 | A zero member takes the composite to zero | ✅ |
+| 5 | Solo voice unassessable, grades 0.0, premise asserted | ✅ |
+| 6 | The gate-factor rule is pinned by a case that can fail | ✅ |
+| 7 | `assessments` is one element for a leaf, one per member for a composite | ✅ |
+| 8 | `fitness_by_category` answers both halves for every species | ✅ |
+| 9 | `GuideAssessment.new(composite, …)` raises, naming `assess` | ✅ |
+| 10 | 30 registry entries, all answering `instruction`, `Template.verify!` clean | ✅ |
+| 11 | No occurrence of the four old names in `lib/`, `spec/`, `bin/` | ✅ |
+| 12 | The 23 leaf guides grade bit-identically | ✅ |
+| 13 | A row per composite per fixture, each beside its members | ✅ |
+| 14 | `rake validate` green | ✅ |
+
+**Criterion 6 was tested by mutation, not by reading.** With
+`CompositeAssessment#fitness` rewritten to the rejected unconditional mean, the
+full suite gives **6822 examples, 1 failure** — `composite_assessment_spec.rb`'s
+"grades on gate factors alone rather than letting an assessable member's rubric
+in", and nothing else. The story's claim that this is the only example in the
+suite that would notice is confirmed rather than merely asserted. Two reviewers
+observed that failure independently, one of them by accident while the other's
+experiment was running.
+
+**Criterion 5's premise assertion is genuinely discriminating.** The two solo
+melodies grade 0.973473 and 0.938151 against the melody member, both assessable,
+so the conclusion — that the composite is unmoved — is about a melody that
+demonstrably moved.
+
+**Criterion 12 was reproduced end to end.** `tmp/before.json` regenerated from
+`77c811a` is byte-identical to the committed capture, `tmp/after.json` from HEAD
+likewise, and an independent join finds 3266 joined rows, 0 moved, 994 new keys,
+0 missing. The step-2 no-op also holds: a capture taken at `0c317af`, before the
+`guide.assess` seam edit, is byte-identical to the one taken after it.
+
+### Findings
+
+**1. The grades document asserts three things that are false of some of its
+rows.** `bin/guide_grade_table.rb:178-180` writes, of the 728 unassessable
+composite rows, that they are "unassessable single-voice compositions" whose
+"harmony member has no companion to be set against" and which "read 0.000". All
+three clauses are wrong for part of that set, and the reviewer's counts
+understated it — checked against the capture:
+
+- **294 rows have a companion**, not 21. They fail `MinimumNotes` alone and never
+  reach `SetAgainstAnotherVoice`. These are the `-v1` second voices of the
+  cantus-firmus fixtures, which are empty rather than absent, plus
+  `against-cantus-0/1/2`.
+- **14 rows do not read 0.000.** `against-cantus-1` reads 0.333333333333 and
+  `against-cantus-2` reads 0.666666666667 across all seven composites, because
+  `MinimumNotes` scores a fraction where `SetAgainstAnotherVoice` scores zero.
+- The tally beneath it heads its column "composite rows" but **sums to 791
+  against a stated 728**, because 63 rows fail both gates and are counted once
+  per gate.
+
+This is the artifact the story rests on, so its prose is deliverable rather than
+decoration. The fix is to derive the sentence from the data — partition on
+`fitness.zero?`, name the failed gates rather than the compositional cause, and
+head the tally column "rows failing it".
+
+**2. `join` drops rows that the before capture holds and the after capture does
+not, then calls the result a provable no-op.** `bin/guide_grade_table.rb:35-48`
+partitions the *after* capture into joined and added, so a removed registry key
+simply never enters the denominator. Reproduced with a two-row before and a
+one-row after:
+
+```
+`b.json` → `a.json`. 0 of 1 joined rows moved, 1 unchanged.
+
+No row moved. This change is a provable no-op across the whole corpus.
+```
+
+An entire registry entry vanished and the document claims full coverage. This
+branch escapes it only by where the capture boundary happened to fall: `0c317af`
+removes two registry keys and adds two, and had the boundary been drawn one
+commit earlier, that sentence would have printed over 284 dropped rows. The
+counterpart of the `added` paragraph is missing, and the "provable no-op"
+sentence should be gated on both sets being empty.
+
+**3. `fitness_by_category` values do not recombine into `fitness` once a category
+holds more than one member.** `lib/head_music/style/composite_assessment.rb:75-82`
+says in its own comment that a consumer "must not be handed three numbers that do
+not combine", but a geometric mean of per-group geometric means equals the whole
+only when the groups are equal-sized. Measured on a hand-built composite of two
+melody guides and one harmony guide:
+
+```
+members     = [0.982525, 0.575383, 0.809017]
+fitness     = 0.770465
+by_category = {melody: 0.751883, harmony: 0.809017}
+recombined  = 0.779927        # off by 0.009462
+```
+
+Unreachable through the registry — every registered composite is two members in
+two categories — but `reject_bad_members!` constrains only member count and
+nesting, so a consumer can build one. Either weight the per-group means by group
+size, or narrow the comment and let the constructor enforce the shape it
+describes.
+
+**4. One shared-group assertion is tautological for `CompositeAssessment`.**
+`spec/support/shared_examples_for_assessments.rb:49-53` asserts that an
+unassessable assessment grades on gates alone. For the composite, `fitness`'s
+unassessable branch and `gate_factor` are the same expression over the same
+memo, so it cannot fail. It earns its place on `GuideAssessment`, where the two
+are computed differently. The consequence is that the stub-member example is
+carrying the composite's gate rule alone — which the story anticipated as a risk
+and is now confirmed as fact.
+
+**5. `fitness_by_category` reaches the gate-factor branch by a separate path.**
+It goes through the private `member_fitness` rather than through `fitness`, so
+the two branches are pinned independently and can drift; its example survived the
+mutation that killed `fitness`'s.
+
+### Clean
+
+The reviewer checked and cleared, by running rather than reading: the geometric
+mean's domain (all 4260 corpus fitnesses lie in [0, 1], so no Complex result is
+reachable, and the single-member case is refused at construction); the frozen
+object hazard (all twelve public methods exercised on an unregistered composite,
+no `FrozenError` — the two eager calls in `initialize` cover every memo); the
+registry load order (nothing reachable from `initialize` reads `REGISTRY`); and
+the duck-typed guard's ordering and leniency.
+
+### Verdict
+
+The criteria do not block `finish`.
+
+**Findings 1 and 2 are fixed**, in `bin/guide_grade_table.rb`, and the document
+is regenerated. The gated-composite prose is now derived from the capture rather
+than asserted over it: it reports 714 rows reading 0.000 and 14 reading a
+fraction, names the two entries that do (`against-cantus-1` at 0.333333,
+`against-cantus-2` at 0.666667), attributes the cause to the gate that fired
+rather than to the shape of the composition, and heads the tally "rows failing
+it" while saying that a row failing two gates is counted under each. `join` now
+reports rows the after capture no longer holds, and the verbatim "provable no-op
+across the whole corpus" sentence is withheld when any exist — gated on removed
+rather than on added, since a guide the after capture adds cannot have moved and
+the join still covered every row that could have. Verified against a synthetic
+rename: the removal paragraph fires and the no-op claim is correctly withheld.
+
+Findings 3, 4 and 5 are recorded and not fixed. None is reachable through the
+registry: `fitness_by_category`'s recombination gap needs a composite whose
+categories are unevenly split, which no registered composite is, and the other
+two are guards that do not guard rather than defects. They belong to whoever next
+lets a composite hold more than two members.

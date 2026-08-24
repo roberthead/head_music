@@ -19,7 +19,7 @@ One section per join, and **each join spans exactly one change**, so its label i
 
 `before.json` → `after.json`. 0 of 3266 joined rows moved, 3266 unchanged.
 
-994 further rows have no before column: 7 registry entries this change adds. They are new rather than moved, and are excluded from the counts above.
+994 rows have no before column: 7 registry entries (`first_species`, `second_species`, `third_species`, `third_species_triple_meter`, `fourth_species`, `fifth_species`, `first_three_species`). This change adds them. They are new rather than moved, and are excluded from the counts above.
 
 No row moved. This change is a provable no-op across the whole corpus.
 
@@ -296,11 +296,13 @@ Every assessable composite row in `after.json`, with the two grades it was compu
 | davis_and_lybbert_first_species_examples-1-v1 | 11 | `fifth_species` | 0.758592 | 0.575462 | 1.000000 | 0.758592 |
 | davis_and_lybbert_first_species_examples-1-v1 | 11 | `first_three_species` | 1.000000 | 1.000000 | 1.000000 | 1.000000 |
 
-The remaining 728 composite rows are unassessable single-voice compositions: the harmony member has no companion to be set against, so the composite grades on its members' gate factors and reads 0.000.
+The remaining 728 composite rows are unassessable: at least one member failed a gate, so the composite grades on its members' gate factors rather than on a rubric it never earned.
 
-A gate both members declare is assessed by each of them, so it appears twice in the raw capture. Deduplicated here rather than in the model, where the flat concatenation is what lets a consumer walk members and composite alike.
+714 of them read 0.000, where a failed gate scored zero. The other 14 read a fraction, because `MinimumNotes` scores the proportion of the minimum a voice reached — `against-cantus-1` reads 0.333333 and `against-cantus-2` reads 0.666667.
 
-| failed gate | composite rows |
+A gate both members declare is assessed by each of them, so it appears twice in the raw capture. Deduplicated per row here rather than in the model, where the flat concatenation is what lets a consumer walk members and composite alike. A row failing two different gates is counted under each, so the column below sums to more than 728.
+
+| failed gate | rows failing it |
 | --- | ---: |
 | `MinimumNotes` | 357 |
 | `SetAgainstAnotherVoice` | 434 |
