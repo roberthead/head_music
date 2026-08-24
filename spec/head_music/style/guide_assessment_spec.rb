@@ -277,4 +277,60 @@ describe HeadMusic::Style::GuideAssessment do
         .to be_within(1e-12).of(HeadMusic::GOLDEN_RATIO_INVERSE)
     end
   end
+
+  describe "the composite protocol" do
+    let(:voice) { HeadMusic::Content::Voice.new }
+
+    context "with a guide class" do
+      let(:guide) { HeadMusic::Style::Guides::FuxCantusFirmus }
+
+      it_behaves_like "a style assessment", assessable: false
+    end
+
+    context "with a configured guide" do
+      let(:guide) { HeadMusic::Style::Guide.get!("arch_contour_melody") }
+
+      it_behaves_like "a style assessment", assessable: false
+    end
+
+    # The leaf half of the pattern: a consumer walks assessments without asking
+    # whether it holds one guide's grade or several.
+    it "answers assessments with itself alone" do
+      assessment = described_class.new(HeadMusic::Style::Guides::FuxCantusFirmus, voice)
+
+      expect(assessment.assessments).to eq [assessment]
+    end
+
+    it "answers fitness_by_category as one group of one" do
+      assessment = HeadMusic::Style::Guides::FirstSpeciesHarmony.assess(voice)
+
+      expect(assessment.fitness_by_category).to eq({harmony: assessment.fitness})
+    end
+
+    # Public now, because a composite grades on its members' gate factors when
+    # one of them is unassessable.
+    it "reports its gate factor as a Float, even with no gates to multiply" do
+      assessment = described_class.new(HeadMusic::Style::Guides::PermissiveGuide, voice)
+
+      expect(assessment.gate_factor).to be_a(Float).and eq(1.0)
+    end
+
+    # Not a nicety: flattening a composite's items into one rubric would put
+    # nineteen primaries in a single tier budget and grade by the wrong
+    # arithmetic, at a number plausible enough that nobody would look.
+    it "refuses a composite guide, naming the seam that grades it correctly" do
+      composite = HeadMusic::Style::Guide.get!("first_species")
+
+      expect { described_class.new(composite, voice) }
+        .to raise_error(ArgumentError, /grades its members separately -- use guide\.assess/)
+    end
+
+    # Order matters: the duck-type check runs first, so a guide that is no guide
+    # at all still fails as the missing duck type rather than as a missing
+    # predicate.
+    it "still refuses a non-guide as a non-guide" do
+      expect { described_class.new(nil, voice) }
+        .to raise_error(ArgumentError, /must respond to #assess_items/)
+    end
+  end
 end

@@ -34,9 +34,18 @@ describe HeadMusic::Style::Guides::Base do
     false
   end
 
+  # Recursive, because the registry holds three shapes: a guide class, a
+  # Configured wrapping one, and a CompositeGuide holding several of either.
+  def guide_classes_in(entry)
+    return [entry] if entry.is_a?(Class)
+    return entry.guides.flat_map { |member| guide_classes_in(member) } if entry.composite?
+
+    [entry.guide_class]
+  end
+
   it "registers every guide class that declares its own tiers" do
     classes = guides.constants.map { |const| guides.const_get(const) }.select { |klass| concrete_guide_class?(klass) }
-    registered = entries.map { |entry| entry.is_a?(Class) ? entry : entry.guide_class }.uniq
+    registered = entries.flat_map { |entry| guide_classes_in(entry) }.uniq
     expect(classes - registered).to be_empty
   end
 

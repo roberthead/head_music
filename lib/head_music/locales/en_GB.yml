@@ -84,6 +84,18 @@ en_GB:
           violations:
             default: "Treat dissonances as passing tones or neighbour tones."
       guides:
+        # Composite guides whose English instruction names an American note
+        # value. fourth_species and fifth_species name none and are not listed.
+        first_species:
+          instruction: "Write one semibreve against each note of the cantus firmus, consonant with it and moving mostly in contrary motion."
+        first_three_species:
+          instruction: "Combine semibreves, minims and crotchets in one line, keeping every downbeat consonant as the rhythm changes."
+        second_species:
+          instruction: "Write two minims in each bar, placing a consonance on each downbeat and passing through dissonance only by step."
+        third_species:
+          instruction: "Write four crotchets in each bar, keeping every downbeat consonant and treating each dissonance as a passing or neighbouring tone."
+        third_species_triple_meter:
+          instruction: "Write three crotchets in each bar of triple metre, keeping every downbeat consonant and resolving each dissonance by step."
         first_species_melody:
           instruction: "Write one semibreve against each note of the cantus firmus."
         first_three_species_melody:

@@ -90,15 +90,27 @@ describe HeadMusic::Style::Guide do
 
   describe ".all" do
     it "enumerates every registered guide" do
-      expect(described_class.all.length).to eq 23
+      expect(described_class.all.length).to eq 30
     end
 
     it "registers each guide once" do
       expect(described_class.all.uniq.length).to eq described_class.all.length
     end
 
-    it "categorizes every guide as melody or harmony" do
-      expect(described_class.all.map(&:category).uniq).to match_array %i[melody harmony]
+    it "categorizes every leaf guide as melody or harmony" do
+      leaves = described_class.all.reject(&:composite?)
+
+      expect(leaves.map(&:category).uniq).to match_array %i[melody harmony]
+    end
+
+    # A composite spans its members' categories rather than claiming one, so a
+    # consumer grouping the registry by category gets a nil bucket. categories
+    # is what answers for it, and is why every guide answers that too.
+    it "gives a composite no single category, and its members' categories together" do
+      composites = described_class.all.select(&:composite?)
+
+      expect(composites.map(&:category).uniq).to eq [nil]
+      expect(composites.map(&:categories).uniq).to eq [%i[melody harmony]]
     end
 
     it "gives every guide something to assess with" do
@@ -214,23 +226,30 @@ describe HeadMusic::Style::Guide do
       %w[
         arch_contour_melody
         ascending_contour_melody
+        first_three_species
         first_three_species_harmony
         first_three_species_melody
         descending_contour_melody
         diatonic_melody
+        fifth_species
         fifth_species_harmony
         fifth_species_melody
+        first_species
         first_species_harmony
         first_species_melody
+        fourth_species
         fourth_species_harmony
         fourth_species_melody
         fux_cantus_firmus
         salzer_schachter_cantus_firmus
+        second_species
         second_species_harmony
         second_species_melody
         static_contour_melody
+        third_species
         third_species_harmony
         third_species_melody
+        third_species_triple_meter
         third_species_triple_meter_harmony
         third_species_triple_meter_melody
         valley_contour_melody
@@ -242,8 +261,8 @@ describe HeadMusic::Style::Guide do
       expect(described_class.keys).to match_array published_keys
     end
 
-    it "returns twenty-three unique keys" do
-      expect(described_class.keys.uniq.length).to eq 23
+    it "returns thirty unique keys" do
+      expect(described_class.keys.uniq.length).to eq 30
     end
 
     it "returns strings, since keys cross the storage boundary" do

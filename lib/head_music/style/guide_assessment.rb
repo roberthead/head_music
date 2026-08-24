@@ -34,12 +34,31 @@ class HeadMusic::Style::GuideAssessment
       raise ArgumentError, "guide must respond to #assess_items(voice) (got #{guide.inspect})"
     end
 
+    # After the check above, not before: a nil guide must fail as the missing
+    # duck type rather than as a missing predicate. respond_to? rather than a
+    # bare call, because a guide here is a duck type and the test doubles that
+    # exercise it answer assess_items and nothing else.
+    if guide.respond_to?(:composite?) && guide.composite?
+      raise ArgumentError, "#{guide.inspect} grades its members separately -- use guide.assess(voice)"
+    end
+
     @guide = guide
     @voice = voice
   end
 
   def messages
     guide_item_assessments.reject(&:adherent?).map(&:message)
+  end
+
+  # The leaf half of the composite protocol: a consumer walks assessments and
+  # never asks whether it holds one guide's grade or several.
+  def assessments
+    [self]
+  end
+
+  # One group of one, so a leaf and a composite answer this the same way.
+  def fitness_by_category
+    {guide.respond_to?(:category) ? guide.category : nil => fitness}
   end
 
   def guide_item_assessments
@@ -65,6 +84,13 @@ class HeadMusic::Style::GuideAssessment
     guide_item_assessments.all?(&:adherent?)
   end
 
+  # Public because a composite grades on its members' gate factors when one of
+  # them is unassessable. Seeded with 1.0 rather than 1 so a gate-less guide
+  # answers a Float, as every other fitness on this class does.
+  def gate_factor
+    gates.map(&:fitness).reduce(1.0, :*)
+  end
+
   private
 
   def gates
@@ -73,10 +99,6 @@ class HeadMusic::Style::GuideAssessment
 
   def rubric
     guide_item_assessments.reject(&:gate?)
-  end
-
-  def gate_factor
-    gates.map(&:fitness).reduce(1, :*)
   end
 
   # Divides by the actual weight sum rather than by an assumed total of 1, so a

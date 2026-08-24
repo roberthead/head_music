@@ -59,6 +59,16 @@ class HeadMusic::Style::Guides::Base
       nil
     end
 
+    def composite?
+      false
+    end
+
+    # The guide-side twin of GuideAssessment#assessments: one category, so a
+    # registry sweep can ask every entry the same question.
+    def categories
+      [category].compact
+    end
+
     def display_name
       HeadMusic::Style::Guide.display_name_for(key)
     end

@@ -155,5 +155,10 @@ describe HeadMusic::Style::Guides::Configured do
     it "keeps the guide class's category" do
       expect(guide.category).to eq :melody
     end
+
+    it "is not a composite, and reports its one category as a list" do
+      expect(guide.composite?).to be false
+      expect(guide.categories).to eq [:melody]
+    end
   end
 end

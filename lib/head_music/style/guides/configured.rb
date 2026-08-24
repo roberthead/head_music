@@ -44,6 +44,16 @@ class HeadMusic::Style::Guides::Configured
     guide_class.category
   end
 
+  def composite?
+    false
+  end
+
+  # The guide-side twin of GuideAssessment#assessments: one category, so a
+  # registry sweep can ask every entry the same question.
+  def categories
+    [category].compact
+  end
+
   def display_name
     key ? HeadMusic::Style::Guide.display_name_for(key) : guide_class.display_name
   end

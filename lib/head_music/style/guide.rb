@@ -36,10 +36,34 @@ class HeadMusic::Style::Guide
     "wave_contour_melody" => {contour: :wave, minimum_melodic_intervals: 2}
   }.freeze
 
-  REGISTRY = GUIDE_CLASSES.to_h { |guide_class| [guide_class.key, guide_class] }
+  LEAF_REGISTRY = GUIDE_CLASSES.to_h { |guide_class| [guide_class.key, guide_class] }
     .merge(CONTOUR_CONFIGURATIONS.transform_values { |options|
       HeadMusic::Style::Guides::ContourMelody.with(**options)
     }).freeze
+
+  # A species is a melody guide and a harmony guide, and which two make up third
+  # species is counterpoint pedagogy rather than a consumer's configuration.
+  # Registered so a consumer asks for "third_species" and gets one grade back.
+  COMPOSITE_MEMBERS = {
+    "first_species" => %w[first_species_melody first_species_harmony],
+    "second_species" => %w[second_species_melody second_species_harmony],
+    "third_species" => %w[third_species_melody third_species_harmony],
+    "third_species_triple_meter" => %w[third_species_triple_meter_melody third_species_triple_meter_harmony],
+    "fourth_species" => %w[fourth_species_melody fourth_species_harmony],
+    "fifth_species" => %w[fifth_species_melody fifth_species_harmony],
+    "first_three_species" => %w[first_three_species_melody first_three_species_harmony]
+  }.freeze
+
+  # Two passes, because a composite names entries the first pass built. Merged
+  # over LEAF_REGISTRY rather than over REGISTRY, which does not exist yet.
+  #
+  # fetch, so a member renamed in Guides takes the gem down on require rather
+  # than leaving a species holding half a ruleset.
+  REGISTRY = LEAF_REGISTRY.merge(
+    COMPOSITE_MEMBERS.transform_values { |keys|
+      HeadMusic::Style::Guides::CompositeGuide.new(keys.map { |key| LEAF_REGISTRY.fetch(key) })
+    }
+  ).freeze
 
   ALL = REGISTRY.values.freeze
 

@@ -77,7 +77,7 @@ describe HeadMusic::Style::Guide do
   end
 
   it "covers every registry entry" do
-    expect(guides.size).to eq 23
+    expect(guides.size).to eq 30
     expect(items.size).to eq 67
   end
 

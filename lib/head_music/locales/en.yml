@@ -893,6 +893,22 @@ en:
           violations:
             default: "Use only passing tones for dissonances on the weak beat."
       guides:
+        # The composite guides. Instruction only: display_name_for humanizes
+        # "first_species" to "First Species" without help.
+        fifth_species:
+          instruction: "Write florid counterpoint against the cantus firmus, mixing note values and ties as the line requires and treating every dissonance as its figure demands."
+        first_species:
+          instruction: "Write one whole note against each note of the cantus firmus, consonant with it and moving mostly in contrary motion."
+        first_three_species:
+          instruction: "Combine whole, half and quarter notes in one line, keeping every downbeat consonant as the rhythm changes."
+        fourth_species:
+          instruction: "Tie each note across the barline, preparing every suspension as a consonance and resolving it downward by step."
+        second_species:
+          instruction: "Write two half notes in each bar, placing a consonance on each downbeat and passing through dissonance only by step."
+        third_species:
+          instruction: "Write four quarter notes in each bar, keeping every downbeat consonant and treating each dissonance as a passing or neighbor tone."
+        third_species_triple_meter:
+          instruction: "Write three quarter notes in each bar of triple meter, keeping every downbeat consonant and resolving each dissonance by step."
         # A guide needs a name entry only where the humanized default is
         # wrong; Style::Guide.display_name_for derives the rest. The
         # instructions are a first draft and say what to write, not how it
