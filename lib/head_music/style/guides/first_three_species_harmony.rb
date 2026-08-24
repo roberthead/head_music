@@ -1,8 +1,8 @@
 # Module for guides
 module HeadMusic::Style::Guides; end
 
-# Rules for combined first, second, and third species harmony
-class HeadMusic::Style::Guides::CombinedFirstSecondThirdSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
+# Rules for harmony in counterpoint combining the first three species
+class HeadMusic::Style::Guides::FirstThreeSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   gate_items(*HARMONIC_GATES)
 
   # The diminution core, absent until now: this guide covers second and third

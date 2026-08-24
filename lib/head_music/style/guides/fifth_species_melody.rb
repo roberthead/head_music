@@ -6,7 +6,7 @@ class HeadMusic::Style::Guides::FifthSpeciesMelody < HeadMusic::Style::Guides::S
   gate_items(*MELODIC_GATES)
 
   species_items(*moving_species_items(
-    HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies,
+    HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues,
     HeadMusic::Style::Guidelines::MixedRhythmicValues
   ))
 end

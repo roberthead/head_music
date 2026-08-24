@@ -214,8 +214,8 @@ describe HeadMusic::Style::Guide do
       %w[
         arch_contour_melody
         ascending_contour_melody
-        combined_first_second_third_species_harmony
-        combined_first_second_third_species_melody
+        first_three_species_harmony
+        first_three_species_melody
         descending_contour_melody
         diatonic_melody
         fifth_species_harmony

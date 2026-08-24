@@ -34,10 +34,10 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
   # assertions across the melody specs to buy 0.007 of one harmony grade.
   #
   # Whoever revisits this must fix both call sites: FirstSpeciesMelody and
-  # CombinedFirstSecondThirdSpeciesMelody name these two by hand, so dropping
-  # them from INHERITED_MELODIC_CRAFT would send them to primary_items -- a
-  # background rule graded as a taught rule -- while the guides that splat
-  # moving_species_items would simply lose them.
+  # FirstThreeSpeciesMelody name these two by hand, so dropping them from
+  # INHERITED_MELODIC_CRAFT would send them to primary_items -- a background rule
+  # graded as a taught rule -- while the guides that splat moving_species_items
+  # would simply lose them.
   MOVING_MELODIC_CORE = [
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::EndOnTonic,

@@ -11,8 +11,8 @@ require "spec_helper"
 # Each row is a guideline, the configuration a guide gives it, and the
 # violation message that pair renders.
 GUIDE_ITEM_STRINGS = [
-  ["AllowedRhythmicValuesForCombined123", {}, "Use only whole notes, half notes, and quarter notes."],
-  ["AllowedRhythmicValuesForFifthSpecies", {}, "Use only whole notes in the final bar, half notes, quarter notes, and paired stepwise eighth notes on weak beats."],
+  ["AllowWholeHalfQuarterNotes", {}, "Use only whole notes, half notes, and quarter notes."],
+  ["AllowFifthSpeciesRhythmicValues", {}, "Use only whole notes in the final bar, half notes, quarter notes, and paired stepwise eighth notes on weak beats."],
   ["AlwaysMove", {}, "Always move to a different note."],
   ["ApproachPerfectionContrarily", {}, "Approach perfect consonances by contrary motion."],
   ["AvoidCrossingVoices", {}, "Avoid crossing voices. Maintain the high-low relationship between voices."],

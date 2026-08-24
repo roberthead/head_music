@@ -2,8 +2,8 @@
 module HeadMusic::Style::Guidelines; end
 
 # Validates that counterpoint notes use only whole, half, or quarter note rhythmic values.
-# Appropriate for combined first, second, and third species counterpoint.
-class HeadMusic::Style::Guidelines::AllowedRhythmicValuesForCombined123 < HeadMusic::Style::Guideline
+# Appropriate for counterpoint combining the first three species.
+class HeadMusic::Style::Guidelines::AllowWholeHalfQuarterNotes < HeadMusic::Style::Guideline
   ALLOWED_TOTAL_VALUES = [1.0, 0.5, 0.25].freeze
 
   def marks

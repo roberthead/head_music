@@ -661,16 +661,16 @@ en:
             default:
               one: "Write at least %{number} note."
               other: "Write at least %{number} notes."
-        allowed_rhythmic_values_for_combined123:
-          name: "Whole, half, and quarter notes only"
-          instruction: "Write in whole notes, half notes, and quarter notes."
-          violations:
-            default: "Use only whole notes, half notes, and quarter notes."
-        allowed_rhythmic_values_for_fifth_species:
+        allow_fifth_species_rhythmic_values:
           name: "Fifth species note values"
           instruction: "Write in half notes, quarter notes, and paired stepwise eighth notes on weak beats, saving the whole note for the final bar."
           violations:
             default: "Use only whole notes in the final bar, half notes, quarter notes, and paired stepwise eighth notes on weak beats."
+        allow_whole_half_quarter_notes:
+          name: "Whole, half, and quarter notes only"
+          instruction: "Write in whole notes, half notes, and quarter notes."
+          violations:
+            default: "Use only whole notes, half notes, and quarter notes."
         always_move:
           name: "No repeated notes"
           instruction: "Move to a different note each time rather than repeating one."
@@ -929,9 +929,9 @@ en:
           instruction: "Tie each note across the barline, suspending it into the next bar."
         fourth_species_harmony:
           instruction: "Prepare each suspension as a consonance and resolve it downward by step."
-        combined_first_second_third_species_melody:
+        first_three_species_melody:
           instruction: "Combine whole, half and quarter notes in one line, changing rhythm between phrases."
-        combined_first_second_third_species_harmony:
+        first_three_species_harmony:
           instruction: "Set a mixed-rhythm line against the cantus firmus, keeping each downbeat consonant."
         fifth_species_melody:
           instruction: "Write florid counterpoint: mix note values and ties as the line requires."

@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies do
+describe HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues do
   subject(:guideline) { assess(described_class, counterpoint) }
 
   let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "4/4") }

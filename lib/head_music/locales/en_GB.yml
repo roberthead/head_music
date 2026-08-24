@@ -37,15 +37,15 @@ en_GB:
           one: "crotchet"
           other: "crotchets"
       guidelines:
-        allowed_rhythmic_values_for_combined123:
+        allow_fifth_species_rhythmic_values:
+          instruction: "Write in minims, crotchets, and paired stepwise quavers on weak beats, saving the semibreve for the final bar."
+          violations:
+            default: "Use only semibreves in the final bar, minims, crotchets, and paired stepwise quavers on weak beats."
+        allow_whole_half_quarter_notes:
           name: "Semibreves, minims, and crotchets only"
           instruction: "Write in semibreves, minims, and crotchets."
           violations:
             default: "Use only semibreves, minims, and crotchets."
-        allowed_rhythmic_values_for_fifth_species:
-          instruction: "Write in minims, crotchets, and paired stepwise quavers on weak beats, saving the semibreve for the final bar."
-          violations:
-            default: "Use only semibreves in the final bar, minims, crotchets, and paired stepwise quavers on weak beats."
         first_bar_half_notes:
           name: "Minims in the first bar"
           instruction: "Open the first bar with minims, or enter after a minim rest."
@@ -84,10 +84,10 @@ en_GB:
           violations:
             default: "Treat dissonances as passing tones or neighbour tones."
       guides:
-        combined_first_second_third_species_melody:
-          instruction: "Combine semibreves, minims and crotchets in one line, changing rhythm between phrases."
         first_species_melody:
           instruction: "Write one semibreve against each note of the cantus firmus."
+        first_three_species_melody:
+          instruction: "Combine semibreves, minims and crotchets in one line, changing rhythm between phrases."
         fux_cantus_firmus:
           instruction: "Write a cantus firmus: a singable line of eight to fourteen semibreves that begins and ends on the tonic."
         second_species_melody:

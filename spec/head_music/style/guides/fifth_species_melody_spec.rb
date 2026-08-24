@@ -17,7 +17,7 @@ describe HeadMusic::Style::Guides::FifthSpeciesMelody do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
-  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MixedRhythmicValues }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
 

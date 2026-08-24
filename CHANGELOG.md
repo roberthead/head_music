@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking.** The seven species harmony guides demote `SpeciesHarmony::HARMONIC_CORE`, `DIMINUTION_HARMONIC_CORE`, and `NoParallelPerfectWithSyncopation` to `secondary_items`, mirroring the melodic demotion. A harmony guide now weighs the dissonance treatment it teaches above the two-part craft every harmony guide shares. `SecondSpeciesHarmony` gave 9/10 of its grade to rules it did not write and now gives φ⁻¹ to `WeakBeatDissonanceTreatment` alone; a fixture failing that rule moves 0.824 → 0.698, and a parallel octave costs about half what it did.
 
-  Tiering is now decided by membership in the shared cores rather than by the list a guide named the rule in, so a hand-named core member is demoted like a splatted one. `CombinedFirstSecondThirdSpeciesHarmony` gains the diminution core it was missing — it covers two diminution species — and is the only guide anywhere whose set of guidelines changed.
+  Tiering is now decided by membership in the shared cores rather than by the list a guide named the rule in, so a hand-named core member is demoted like a splatted one. `FirstThreeSpeciesHarmony` gains the diminution core it was missing — it covers two diminution species — and is the only guide anywhere whose set of guidelines changed.
 
 - `MostlyConjunct` marks each skip and leap at the ordinary penalty rather than `SMALL_PENALTY_FACTOR`, and says it is soft with `strength :weak` instead. The two say different things: a mark's fitness compounds into the item's own grade, so it set both how bad one instance was and how fast the item collapsed on repeats. Six leaps now grade 0.056 rather than 0.236. `SMALL_PENALTY_FACTOR` is unchanged and still used by `SecondSpeciesBreak`, which holds two severities inside one guideline.
 
@@ -102,8 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   | Category | Keys |
   | --- | --- |
-  | `:melody` | `fux_cantus_firmus`, `salzer_schachter_cantus_firmus`, `diatonic_melody`, `first_species_melody`, `second_species_melody`, `third_species_melody`, `third_species_triple_meter_melody`, `fourth_species_melody`, `combined_first_second_third_species_melody`, `fifth_species_melody`, `arch_contour_melody`, `ascending_contour_melody`, `descending_contour_melody`, `static_contour_melody`, `valley_contour_melody`, `wave_contour_melody` |
-  | `:harmony` | `first_species_harmony`, `second_species_harmony`, `third_species_harmony`, `third_species_triple_meter_harmony`, `fourth_species_harmony`, `combined_first_second_third_species_harmony`, `fifth_species_harmony` |
+  | `:melody` | `fux_cantus_firmus`, `salzer_schachter_cantus_firmus`, `diatonic_melody`, `first_species_melody`, `second_species_melody`, `third_species_melody`, `third_species_triple_meter_melody`, `fourth_species_melody`, `first_three_species_melody`, `fifth_species_melody`, `arch_contour_melody`, `ascending_contour_melody`, `descending_contour_melody`, `static_contour_melody`, `valley_contour_melody`, `wave_contour_melody` |
+  | `:harmony` | `first_species_harmony`, `second_species_harmony`, `third_species_harmony`, `third_species_triple_meter_harmony`, `fourth_species_harmony`, `first_three_species_harmony`, `fifth_species_harmony` |
 
 - Guides now carry identity: `.key` (snake_case of the class name), `.category` (`:melody` or `:harmony`, derived from the `SpeciesMelody`/`SpeciesHarmony` ancestry), and `.display_name` (localizable, with a computed English default). Consumers no longer need to hand-maintain a map of guide constants to categories.
 - `HeadMusic::Style::Guides::Configured` — the guide-layer twin of `Annotation::Configured`. It pairs a guide class with options and answers `analyze(voice)`, so it drops into `Style::Analysis` wherever a guide class was expected. `Guides::Base.with(**options)` returns one, and `#with` layers further options without dropping earlier ones.

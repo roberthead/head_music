@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Style::Guides::CombinedFirstSecondThirdSpeciesMelody do
+describe HeadMusic::Style::Guides::FirstThreeSpeciesMelody do
   subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AlwaysMove }
@@ -15,10 +15,10 @@ describe HeadMusic::Style::Guides::CombinedFirstSecondThirdSpeciesMelody do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SingableRange }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StartOnPerfectConsonance }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
-  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AllowedRhythmicValuesForCombined123 }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AllowWholeHalfQuarterNotes }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
 
-  context "with a well-formed combined 1+2+3 species counterpoint" do
+  context "with a well-formed counterpoint combining the first three species" do
     let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "4/4") }
     let(:voice) { composition.add_voice(role: :counterpoint) }
 

@@ -19,8 +19,8 @@ class HeadMusic::Style::Guide
     HeadMusic::Style::Guides::ThirdSpeciesTripleMeterHarmony,
     HeadMusic::Style::Guides::FourthSpeciesMelody,
     HeadMusic::Style::Guides::FourthSpeciesHarmony,
-    HeadMusic::Style::Guides::CombinedFirstSecondThirdSpeciesMelody,
-    HeadMusic::Style::Guides::CombinedFirstSecondThirdSpeciesHarmony,
+    HeadMusic::Style::Guides::FirstThreeSpeciesMelody,
+    HeadMusic::Style::Guides::FirstThreeSpeciesHarmony,
     HeadMusic::Style::Guides::FifthSpeciesMelody,
     HeadMusic::Style::Guides::FifthSpeciesHarmony
   ].freeze

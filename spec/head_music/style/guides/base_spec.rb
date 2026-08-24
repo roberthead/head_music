@@ -100,7 +100,7 @@ describe HeadMusic::Style::Guides::Base do
         PreferContraryMotion PreferImperfect SecondSpeciesBreak SetAgainstAnotherVoice SuspensionTreatment
       ],
       # The two diminution rules are the only addition anywhere in this change.
-      "combined_first_second_third_species_harmony" => %w[
+      "first_three_species_harmony" => %w[
         ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
         FloridDissonanceTreatment MinimumNotes NoParallelPerfectAcrossBarline
         NoParallelPerfectOnDownbeats NoStrongBeatUnisons PreferContraryMotion PreferImperfect
