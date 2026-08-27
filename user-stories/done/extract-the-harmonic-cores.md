@@ -383,7 +383,10 @@ needs to land narrow, the axis splits out cleanly and this story depends on it.
 Two things this story deliberately does not fix, both already on record:
 
 - The rubric stays **compensatory** — excellence elsewhere always buys back a
-  violation. See [Disqualify, Don't Discount](../backlog/disqualify-dont-discount.md).
+  violation. Three ways out were measured and rejected here: more weight only
+  changes the exchange rate, a third tier subdivides a budget rather than
+  changing the arithmetic on it, and the strength axis fixes the ordering and
+  not the kind.
 - A wrong answer cannot score worse than the guideline's own mark, whatever the
   weighting. `Contoured` marks a mismatched contour at φ⁻², so a trough submitted
   for an arch floors at 0.382 even at 100% weight. See
