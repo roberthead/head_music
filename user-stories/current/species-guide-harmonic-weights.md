@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-08-27T16:10:10-07:00
-  activated_at:
+  activated_at: 2026-08-27T16:37:33-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-27T16:33:40-07:00
+  updated_at:   2026-08-27T16:37:33-07:00
 -->
 
 # Species Guide Harmonic Weights
