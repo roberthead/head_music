@@ -32,12 +32,6 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
   # a free 1.0 for a solo voice, but that free-1.0 belongs to the identification
   # problem rather than to a weighting question, and moving it costs six
   # assertions across the melody specs to buy 0.007 of one harmony grade.
-  #
-  # Whoever revisits this must fix both call sites: FirstSpeciesMelody and
-  # FirstThreeSpeciesMelody name these two by hand, so dropping them from
-  # INHERITED_MELODIC_CRAFT would send them to primary_items -- a background rule
-  # graded as a taught rule -- while the guides that splat moving_species_items
-  # would simply lose them.
   MOVING_MELODIC_CORE = [
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::EndOnTonic,
@@ -50,16 +44,11 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::StepUpToFinalNote
   ].freeze
 
-  # A species guide is about its rhythm; melodic craft is background.
-  INHERITED_MELODIC_CRAFT = (MELODIC_CORE + MOVING_MELODIC_CORE).freeze
-
-  def self.species_items(*entries)
-    tier_by_membership(entries, INHERITED_MELODIC_CRAFT)
-  end
-
-  def self.moving_species_items(*additional)
-    [*MELODIC_CORE, *MOVING_MELODIC_CORE, *additional].freeze
-  end
+  # What a moving species inherits: both cores, splatted into one
+  # secondary_items call. The two guides that hold a whole note per bar --
+  # FirstSpeciesMelody and FirstThreeSpeciesMelody -- name their background by
+  # hand instead, because each wants a different subset of MOVING_MELODIC_CORE.
+  MOVING_MELODIC_CRAFT = [*MELODIC_CORE, *MOVING_MELODIC_CORE].freeze
 
   def self.category
     :melody

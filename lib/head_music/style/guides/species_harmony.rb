@@ -32,30 +32,29 @@ class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
     HeadMusic::Style::Guidelines::NoStrongBeatUnisons
   ].freeze
 
-  # A species guide is about the dissonance treatment its rhythm makes possible;
-  # two-part craft is background.
+  # What a diminution species inherits: both cores, splatted into one
+  # secondary_items call so that adding to either reaches all four guides.
+  DIMINUTION_HARMONIC_CRAFT = [*HARMONIC_CORE, *DIMINUTION_HARMONIC_CORE].freeze
+
+  # The tier policy, not a mechanism: every harmony guide declares its own tiers
+  # outright, and this list is what base_spec holds them to -- no member of it
+  # may sit in a guide's primary tier, because a species guide is about the
+  # dissonance treatment its rhythm makes possible and two-part craft is
+  # background.
   #
-  # NoParallelPerfectWithSyncopation is a member of neither constant and is not
-  # put into one, because only the two syncopated species declare it and the
-  # constants are splatted wholesale. It belongs here all the same: it is the
-  # same prohibition as the other three, specialized for syncopation, and left
-  # primary it would take phi^-1 of fourth and fifth species by itself.
+  # Wider than either splat by one. NoParallelPerfectWithSyncopation is declared
+  # by hand in the only two guides that want it, so it is in no core constant,
+  # but it is the same prohibition as the other three specialized for
+  # syncopation: primary it would take phi^-1 of fourth and fifth species by
+  # itself.
+  #
+  # A deliberate promotion belongs here as a named exception, so that the
+  # decision to weigh an inherited rule as a taught one is written down once
+  # rather than inferred from a guide's declaration.
   INHERITED_HARMONIC_CRAFT = [
-    *HARMONIC_CORE,
-    *DIMINUTION_HARMONIC_CORE,
+    *DIMINUTION_HARMONIC_CRAFT,
     HeadMusic::Style::Guidelines::NoParallelPerfectWithSyncopation
   ].freeze
-
-  def self.species_items(*entries)
-    tier_by_membership(entries, INHERITED_HARMONIC_CRAFT)
-  end
-
-  # Concatenation only, now that tiering is decided by membership. Kept for the
-  # symmetry with SpeciesMelody.moving_species_items, which reads the same way at
-  # the four call sites that splat it.
-  def self.diminution_items(*additional)
-    [*HARMONIC_CORE, *DIMINUTION_HARMONIC_CORE, *additional].freeze
-  end
 
   def self.category
     :harmony

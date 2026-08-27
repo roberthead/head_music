@@ -2,7 +2,7 @@
 class HeadMusic::Style::Guides::SecondSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   gate_items(*HARMONIC_GATES)
 
-  species_items(*diminution_items(
-    HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment
-  ))
+  primary_items(HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment)
+
+  secondary_items(*DIMINUTION_HARMONIC_CRAFT)
 end

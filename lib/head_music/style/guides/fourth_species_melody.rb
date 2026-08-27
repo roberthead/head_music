@@ -5,7 +5,7 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::FourthSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   gate_items(*MELODIC_GATES)
 
-  species_items(*moving_species_items(
-    HeadMusic::Style::Guidelines::OneToOneWithTies
-  ))
+  primary_items(HeadMusic::Style::Guidelines::OneToOneWithTies)
+
+  secondary_items(*MOVING_MELODIC_CRAFT)
 end

@@ -5,8 +5,10 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::FifthSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   gate_items(*MELODIC_GATES)
 
-  species_items(*moving_species_items(
+  primary_items(
     HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues,
     HeadMusic::Style::Guidelines::MixedRhythmicValues
-  ))
+  )
+
+  secondary_items(*MOVING_MELODIC_CRAFT)
 end

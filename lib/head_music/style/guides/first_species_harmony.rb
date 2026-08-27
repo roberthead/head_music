@@ -2,11 +2,12 @@
 class HeadMusic::Style::Guides::FirstSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   gate_items(*HARMONIC_GATES)
 
-  species_items(
-    *HARMONIC_CORE,
+  primary_items(
     HeadMusic::Style::Guidelines::NoUnisonsInMiddle,
     HeadMusic::Style::Guidelines::OneToOne
   )
+
+  secondary_items(*HARMONIC_CORE)
 end
 
 # TODO: Guideline against leaping into P8 even by contrary motion.

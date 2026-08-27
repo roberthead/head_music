@@ -5,9 +5,10 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::FirstThreeSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   gate_items(*MELODIC_GATES)
 
-  species_items(
+  primary_items(HeadMusic::Style::Guidelines::AllowWholeHalfQuarterNotes)
+
+  secondary_items(
     *MELODIC_CORE,
-    HeadMusic::Style::Guidelines::AllowWholeHalfQuarterNotes,
     HeadMusic::Style::Guidelines::AlwaysMove,
     HeadMusic::Style::Guidelines::EndOnTonic,
     HeadMusic::Style::Guidelines::FrequentDirectionChanges,

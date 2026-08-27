@@ -79,28 +79,6 @@ class HeadMusic::Style::Guides::Base
 
     protected
 
-    # Tiers an entry by whether the rule it names is background craft, rather
-    # than by which list the call site put it in: guides do not declare the
-    # cores the same way -- some splat the constant, some name its members --
-    # and a hand-named inherited guideline must still be demoted.
-    #
-    # Compares guidelines, not entries. A configured entry, or one carrying an
-    # overriding strength, is a different GuideItem but the same rule, and
-    # matching by entry identity would silently promote it to a taught rule at
-    # full primary weight -- the same failure except: was already fixed for.
-    #
-    # Each call is guarded, because tier_items given no entries and no except:
-    # *reads* the tier rather than declaring into it, memoizing @items_by_tier
-    # from a class body that has not finished declaring.
-    def tier_by_membership(entries, inherited_craft)
-      background = inherited_craft.map { |entry| HeadMusic::Style::GuideItem.wrap(entry).guideline }
-      inherited, taught = entries.flatten.compact.partition do |entry|
-        background.include?(HeadMusic::Style::GuideItem.wrap(entry).guideline)
-      end
-      secondary_items(*inherited) if inherited.any?
-      primary_items(*taught) if taught.any?
-    end
-
     def normalize(tiers)
       resolved = TIERS.to_h { |tier| [tier, wrap_list(tiers[tier])] }.freeze
       # ArgumentError, not NotImplementedError: the latter is a ScriptError and
