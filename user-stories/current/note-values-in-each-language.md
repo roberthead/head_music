@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-28T11:57:55-07:00
   planned_at:   2026-08-28T13:04:15-07:00
   finished_at:
-  updated_at:   2026-08-28T14:31:07-07:00
+  updated_at:   2026-08-28T16:12:45-07:00
 -->
 
 # Story: Note Values in Each Language
@@ -213,6 +213,104 @@ cover what they can and exempt the rest by name.
 **When the remaining four land:** the same, per locale, with French's rests
 written as their own vocabulary rather than derived from its note names, and
 Russian's oblique cases in the sentences rather than the vocabulary hash.
+
+## Review
+
+2026-08-28, commit `5780ef3`. Suite green (6859 examples), rubocop clean,
+coverage 99.76%. Both reviewers verified by running and mutating the gem rather
+than reading alone; every finding below was reproduced independently before
+being written here.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict |
+| --- | --- | --- |
+| 1a | `quadruple_whole` no longer resolves to the whole note | ⚠️ literally false |
+| 1b | `%{number}` reads in the reader's language | ✅ |
+| 1c | Russian's plurals reachable, proven above four | ✅ |
+| 2 | Own note values in every string that names one | ✅ all five, 0 leaks |
+| 3 | Three groups × eleven units, keyed by identifier | ✅ 231 entries, all seven locales |
+| 4 | Tree walks cover all three groups | ⚠️ for `en`/`en_GB` only |
+| 5 | No locale inherits another's vocabulary | ⚠️ shipped state clean, guard has holes |
+| 6 | `en`/`en_GB`/`en_US` byte-identical | ✅ verified against merge-base |
+| 7 | Go/no-go recorded against real German output | ❌ recorded nowhere |
+| — | French rests their own vocabulary | ✅ |
+| — | Russian cases in sentences, not the hash | ⚠️ design held, one case wrong |
+
+**1a is a wording defect, not a code defect.** `RhythmicValue.get(:quadruple_whole)`
+still returns the whole note at 1.0 — `RhythmicUnit::PATTERN` is still a
+`Regexp.union`. What shipped is the *removal of the key* plus a guard pinning
+every key to a real identifier. The reachable defect is closed and a
+reintroduction fails a spec; the criterion describes a fix that was not made.
+
+### Blocking
+
+**B1. The Italian and British sweep patterns cannot match their own words.**
+`crome?` is `crom` + optional `e` + `\b`, which can never match *croma* — the
+`\b` fails between `m` and `a`. Every Italian singular is invisible to the
+Italian family, and `\bquaver` cannot fire inside a compound, so
+*demisemiquaver*, *hemidemisemiquaver* and *semihemidemisemiquaver* are invisible
+to British. Measured: 11 of Italian's 33 values unmatched. Concrete failure —
+`es.yml` shipping `eighth: croma` passes both sweeps, because the data check
+tests it against a pattern that cannot match it and no sentence renders that
+unit.
+
+**B2. `SHARED_MENSURAL_UNITS` exempts the `whole` row in every locale.** Combined
+with dropping `semibreve` from the British pattern (Italian spells it
+identically), `de.rhythmic_units.whole = "semibreve"` ships green — and
+`whole`/count-1 is one of only four unit/count pairs ever rendered. The most-read
+row is the least guarded. Narrow the exemption to *(locale, unit)* pairs.
+
+**B3. Three guards were built one step short of their data.** The plural guard
+runs only against `british_string_tree`; Russian's shipped tree is never walked,
+so rewriting `ru.rhythmic_units.half` as `{one, other}` stays green — the exact
+trap this story called "the one wrongness the suite cannot currently see".
+Per-locale key completeness was decided in the plan and never written: deleting
+`fr.rest_values.thirty_second` stays green. And the plural-gap example at `:649`
+is vacuous by construction — an earlier example already ran `problems_in` over
+every locale, and `fell_back_to_ruby` is a deduping module accumulator that is
+never reset, so the diff is always empty.
+
+**B4. `template_spec` permanently overwrites Russian note vocabulary.** Its
+`before` block stores *одна / две / пять* — the numerals — over the shipped note
+names with no cleanup, leaving `две две` in a rendered Russian sentence for the
+rest of the process. It survives only because an unrelated file's
+`I18n.backend.reload!` happens to scrub it.
+
+**B5. One grammatical error in shipped output.** `писать` governs the accusative,
+so `В каждом среднем такте писать одна целая` should read `одну целую`. Only the
+singular is wrong; the plurals are correct because inanimate accusative plural
+equals nominative plural. The `name` string is correctly nominative, so one hash
+cannot serve both — the fix is to phrase the sentence nominally, which keeps the
+decision to hold cases out of the vocabulary.
+
+**B6. The snapshot fixture documents a rake task that does not exist.**
+`bundle exec rake style:snapshot_english` aborts. It is the one comment in the
+diff a reader will execute, on a 577-line fixture nobody can hand-edit.
+
+### Non-blocking
+
+- The `counts` helper prepends an anonymous module to `Template`'s singleton
+  class and never removes it; the suite ends with two leaked wrappers.
+- `en_GB.yml:20-22` still says de/fr/it/ru "inherit the British note values
+  deliberately; note-values-in-each-language gives them their own" — this branch
+  *is* that story, and the sentence now asserts the opposite of the data.
+- `template.rb:41-42` explains that `guard_value_keys!` refuses `scope` as an
+  interpolation value. Since `scope:` became a declared keyword, `values` can
+  never contain it, so the guard never sees it. The conclusion holds; the stated
+  mechanism does not.
+- The same nine-line rationale is byte-identical in five locale files, and argues
+  about other languages in each — `es.yml` explains itself by citing Italian.
+- `en.yml` gained `rudiments.note` and `rudiments.rest`; nothing reads either.
+- `fell_back_to_ruby` keys on the template key alone, ignoring scope and locale.
+
+### The criteria need restating
+
+They were written for a German-only gate that has since been passed. They name
+German where they mean all five, split one deliverable across a "ships now /
+lands later" boundary that no longer exists, and 1a describes the wrong fix. The
+planning commit said to restate them around the gate; the gate is gone and the
+restatement is still owed.
 
 ## Implementation Plan
 

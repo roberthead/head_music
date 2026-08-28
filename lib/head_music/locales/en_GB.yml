@@ -18,8 +18,8 @@ en_GB:
     # pluralized entry added below must carry the locale's complete set of
     # plural forms -- a partial hash stops the fallback rather than continuing
     # past it, and would break those four languages rather than this one. They
-    # inherit the British note values deliberately; note-values-in-each-language
-    # gives them their own.
+    # no longer inherit the British note values -- each carries its own -- but
+    # they still route through here for every entry they do not translate.
     rudiments:
       grand_staff: great staff
       # British names the value with a noun, so the note value and the rhythmic
