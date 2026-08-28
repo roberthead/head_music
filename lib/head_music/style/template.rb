@@ -12,6 +12,10 @@ module HeadMusic::Style; end
 #   I18n.t("missing.key")         # -> "Translation missing: ..." rather than an error
 module HeadMusic::Style::Template
   SCOPE = "head_music.style"
+  # Note values are rudiment vocabulary that the sentences borrow. Reachable
+  # through the same seam so they get the plural fallback and the unfilled-
+  # interpolation guard the style strings get.
+  RUDIMENT_SCOPE = "head_music.rudiments"
   INTERPOLATION = /%\{/
   # count selects a plural form, so a value by that name never reaches the template.
   FORBIDDEN_VALUE_KEYS = (I18n::RESERVED_KEYS + [:count]).freeze
@@ -20,9 +24,11 @@ module HeadMusic::Style::Template
 
   module_function
 
-  def render(key, **values)
+  # scope is safe as a keyword rather than a value: I18n reserves it, so
+  # guard_value_keys! already refuses it as an interpolation.
+  def render(key, scope: SCOPE, **values)
     guard_value_keys!(values)
-    rendered = I18n.t(key, scope: SCOPE, raise: true, **values)
+    rendered = I18n.t(key, scope: scope, raise: true, **values)
     raise MissingTemplate, "#{key} did not render to a string" unless rendered.is_a?(String)
     raise MissingTemplate, "#{key} left an interpolation unfilled: #{rendered}" if INTERPOLATION.match?(rendered)
 
@@ -31,8 +37,8 @@ module HeadMusic::Style::Template
     raise MissingTemplate, "#{key}: #{e.message}"
   end
 
-  def exists?(key)
-    I18n.exists?("#{SCOPE}.#{key}")
+  def exists?(key, scope: SCOPE)
+    I18n.exists?("#{scope}.#{key}")
   end
 
   # humanize raises for a locale it does not ship, and the gem ships two it does
@@ -47,9 +53,9 @@ module HeadMusic::Style::Template
 
   # fallback: false because I18n.exists? consults the chain and so answers true
   # for every locale, which is no answer at all.
-  def resolved_locale(key, locale: I18n.locale)
+  def resolved_locale(key, locale: I18n.locale, scope: SCOPE)
     chain = I18n.fallbacks[locale]
-    chain.detect { |candidate| I18n.exists?("#{SCOPE}.#{key}", candidate, fallback: false) } || locale
+    chain.detect { |candidate| I18n.exists?("#{scope}.#{key}", candidate, fallback: false) } || locale
   end
 
   # Values are built in the locale the sentence renders in. Otherwise a German
@@ -69,14 +75,14 @@ module HeadMusic::Style::Template
   # A locale with no plural data should read a little wrong rather than raise at
   # a student. Narrow deliberately: rescuing MissingTemplate too would swallow
   # an unfilled interpolation, which is the failure verify! exists to catch.
-  def pluralize(key, count:, **values)
-    render(key, count: count, **values)
+  def pluralize(key, count:, scope: SCOPE, **values)
+    render(key, count: count, scope: scope, **values)
   rescue I18n::InvalidPluralizationData => error
     form = ruby_plural_form(error.entry, count)
     raise MissingTemplate, "#{key} has no plural form to fall back to" if form.nil?
 
     fell_back_to_ruby << key unless fell_back_to_ruby.include?(key)
-    render("#{key}.#{form}", count: count, **values)
+    render("#{key}.#{form}", count: count, scope: scope, **values)
   end
 
   # English's rule first, then whatever the entry carries. Reading the singular

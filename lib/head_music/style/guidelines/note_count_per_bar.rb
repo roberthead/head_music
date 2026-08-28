@@ -24,7 +24,9 @@ class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guidelin
       # Pluralized because British names the value with a noun and drops the
       # "note" the American sentence carries: four crotchets, not four crotchet
       # notes. English's entries stay scalar, which I18n reads past the count.
-      rhythmic_unit: HeadMusic::Style::Template.pluralize("rhythmic_units.#{unit}", count: count)
+      rhythmic_unit: HeadMusic::Style::Template.pluralize(
+        "rhythmic_units.#{unit}", count: count, scope: HeadMusic::Style::Template::RUDIMENT_SCOPE
+      )
     }
   end
 

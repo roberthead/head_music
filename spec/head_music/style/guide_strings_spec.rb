@@ -248,8 +248,26 @@ describe HeadMusic::Style::Guide do
   # Read from the files rather than the backend, which merges en_GB into en.
   def template_keys(locale)
     tree = YAML.load_file(File.expand_path("../../../lib/head_music/locales/#{locale}.yml", __dir__))
-      .dig(locale.to_s, "head_music", "style") || {}
-    leaf_paths(tree).map { |path| without_plural_form(path).join(".") }.uniq
+      .fetch(locale.to_s)
+    leaf_paths(guide_string_tree(tree, "")).map { |path| without_plural_form(path).join(".") }.uniq
+  end
+
+  # A guide string draws on two namespaces: the sentences under style, and the
+  # note values they borrow under rudiments, where the vocabulary belongs to the
+  # rudiment rather than to the guideline naming it. Rejoined under the key
+  # shape the sentences address them by, so every guard below reads the same
+  # whether the vocabulary sits beside the guidelines or beneath rudiments.
+  def guide_string_tree(tree, key = :"")
+    style = tree.dig(key_for("head_music", key), key_for("style", key)) || {}
+    units = tree.dig(key_for("head_music", key), key_for("rudiments", key), key_for("rhythmic_units", key)) || {}
+    units.empty? ? style : style.merge(key_for("rhythmic_units", key) => units)
+  end
+
+  # The file is string-keyed and the backend is symbol-keyed; both are walked.
+  def key_for(name, sample) = sample.is_a?(Symbol) ? name.to_sym : name
+
+  def british_string_tree
+    guide_string_tree(I18n.backend.send(:translations).fetch(:en_GB))
   end
 
   def without_plural_form(path)
@@ -334,9 +352,7 @@ describe HeadMusic::Style::Guide do
   end
 
   it "gives every pluralized en_GB entry a complete set of forms" do
-    british = I18n.backend.send(:translations).fetch(:en_GB).dig(:head_music, :style) || {}
-
-    expect(partial_plurals_in(british)).to be_empty
+    expect(partial_plurals_in(british_string_tree)).to be_empty
   end
 
   # Proves the detector fires, which the guard above cannot: it asserts an
@@ -352,8 +368,7 @@ describe HeadMusic::Style::Guide do
   # existed. Says every unit rather than naming today's three, so adding
   # quaver does not fail like a regression.
   it "walks the British plural entries it is guarding" do
-    british = I18n.backend.send(:translations).fetch(:en_GB).dig(:head_music, :style) || {}
-    units = british.fetch(:rhythmic_units)
+    units = british_string_tree.fetch(:rhythmic_units)
 
     expect(units).not_to be_empty
     expect(units.values).to all be_a(Hash)
