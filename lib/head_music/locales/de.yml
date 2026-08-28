@@ -346,6 +346,21 @@ de:
       meter: Takt
       motion: Bewegung
       musical_symbol: musikalisches Symbol
+      # Deutsch setzt nicht durchgängig zusammen: ganz und halb sind Adjektive
+      # und bleiben getrennte Wörter, Viertel und Achtel sind Substantive und
+      # bilden Komposita. Der Bruch liegt zwischen der Halben und dem Viertel,
+      # bei den Pausen genauso.
+      note_values:
+        double_whole: "Brevis"
+        eighth: "Achtelnote"
+        half: "halbe Note"
+        hundred_twenty_eighth: "Hundertachtundzwanzigstelnote"
+        longa: "Longa"
+        quarter: "Viertelnote"
+        sixteenth: "Sechzehntelnote"
+        sixty_fourth: "Vierundsechzigstelnote"
+        thirty_second: "Zweiunddreißigstelnote"
+        whole: "ganze Note"
       octave: Oktave
       pitch: Tonhöhe
       pitch_class: Tonhöhenklasse
@@ -353,8 +368,55 @@ de:
       pitch_set: Tonhöhensatz
       quality: Qualität
       reference_pitch: Referenztonhöhe
+      rest_values:
+        double_whole: "Brevis-Pause"
+        eighth: "Achtelpause"
+        half: "halbe Pause"
+        hundred_twenty_eighth: "Hundertachtundzwanzigstelpause"
+        longa: "Longa-Pause"
+        quarter: "Viertelpause"
+        sixteenth: "Sechzehntelpause"
+        sixty_fourth: "Vierundsechzigstelpause"
+        thirty_second: "Zweiunddreißigstelpause"
+        whole: "ganze Pause"
       rhythm: Rhythmus
       rhythmic_unit: rhythmische Einheit
+      # Die kurzen substantivierten Formen -- so sprechen Musiker. Nach einem
+      # Zahlwort bleibt der Plural unverändert: zwei Halbe, vier Viertel. Dass
+      # one und other dieselbe Zeichenkette tragen, ist richtig und kein
+      # Kopierfehler. Nur Longa und Brevis bilden als lateinische Lehnwörter
+      # einen eigenen Plural.
+      rhythmic_units:
+        double_whole:
+          one: "Brevis"
+          other: "Breven"
+        eighth:
+          one: "Achtel"
+          other: "Achtel"
+        half:
+          one: "Halbe"
+          other: "Halbe"
+        hundred_twenty_eighth:
+          one: "Hundertachtundzwanzigstel"
+          other: "Hundertachtundzwanzigstel"
+        longa:
+          one: "Longa"
+          other: "Longen"
+        quarter:
+          one: "Viertel"
+          other: "Viertel"
+        sixteenth:
+          one: "Sechzehntel"
+          other: "Sechzehntel"
+        sixty_fourth:
+          one: "Vierundsechzigstel"
+          other: "Vierundsechzigstel"
+        thirty_second:
+          one: "Zweiunddreißigstel"
+          other: "Zweiunddreißigstel"
+        whole:
+          one: "Ganze"
+          other: "Ganze"
       scale: Tonleiter
       scale_degree: Tonleiterstufe
       scale_type: Tonleiterart
@@ -365,3 +427,72 @@ de:
       staff: Notenlinien
       tuba: Tuba
       tuning: Stimmung
+    # Infinitivform durchgehend: "In Ganzen und Halben schreiben." Das umgeht
+    # die Anrede-Entscheidung (Sie oder du), die keine Spezifikation prüfen
+    # kann, und ist für Anweisungen und Regeln im Deutschen idiomatisch.
+    #
+    # Der Gegensatz schreiben/verwenden trägt das, was das Englische mit
+    # Write/Use unterscheidet: die Regel gegenüber der Beanstandung.
+    #
+    # Achtung auf den Kasus. Die Wertnamen stehen hier im Dativ Plural --
+    # Ganzen, Halben, Vierteln --, in rhythmic_units dagegen im Nominativ. Der
+    # Kasus gehört in den Satz, nicht in das Vokabular.
+    #
+    # render_name setzt den ersten Buchstaben groß, deshalb beginnt
+    # guidelines.*.name klein.
+    style:
+      guidelines:
+        allow_fifth_species_rhythmic_values:
+          instruction: "In Halben, Vierteln und paarweise schrittweisen Achteln auf leichten Zählzeiten schreiben und die Ganze für den Schlusstakt aufsparen."
+          violations:
+            default: "Im Schlusstakt nur Ganze verwenden, sonst Halbe, Viertel und paarweise schrittweise Achtel auf leichten Zählzeiten."
+        allow_whole_half_quarter_notes:
+          name: "nur Ganze, Halbe und Viertel"
+          instruction: "In Ganzen, Halben und Vierteln schreiben."
+          violations:
+            default: "Nur Ganze, Halbe und Viertel verwenden."
+        first_bar_half_notes:
+          name: "Halbe im ersten Takt"
+          instruction: "Den ersten Takt mit Halben eröffnen oder nach einer halben Pause einsetzen."
+          violations:
+            default: "Den ersten Takt mit Halben beginnen oder nach einer halben Pause einsetzen."
+        first_bar_quarter_notes:
+          name: "Viertel im ersten Takt"
+          instruction: "Den ersten Takt mit Vierteln eröffnen oder nach einer Viertelpause einsetzen."
+          violations:
+            default: "Den ersten Takt mit Vierteln beginnen oder nach einer Viertelpause einsetzen."
+        first_bar_whole_note:
+          name: "Ganze im ersten Takt"
+          instruction: "Im ersten Takt mit einer Ganzen eröffnen."
+          violations:
+            default: "Im ersten Takt mit einer Ganzen beginnen."
+        note_count_per_bar:
+          name: "%{number} %{rhythmic_unit} pro Takt"
+          instruction: "In jedem mittleren Takt %{number} %{rhythmic_unit} schreiben."
+          violations:
+            default: "In jedem mittleren Takt %{number} %{rhythmic_unit} verwenden."
+      guides:
+        first_species:
+          instruction: "Gegen jede Note des Cantus firmus eine Ganze schreiben, konsonant zu ihr und überwiegend in Gegenbewegung."
+        first_species_melody:
+          instruction: "Gegen jede Note des Cantus firmus eine Ganze schreiben."
+        first_three_species:
+          instruction: "Ganze, Halbe und Viertel in einer Stimme verbinden und dabei jede schwere Zählzeit konsonant halten, während sich der Rhythmus ändert."
+        first_three_species_melody:
+          instruction: "Ganze, Halbe und Viertel in einer Stimme verbinden und den Rhythmus zwischen den Phrasen wechseln."
+        fux_cantus_firmus:
+          instruction: "Einen Cantus firmus schreiben: eine singbare Linie aus acht bis vierzehn Ganzen, die auf der Tonika beginnt und endet."
+        second_species:
+          instruction: "In jedem Takt zwei Halbe schreiben, auf jede schwere Zählzeit eine Konsonanz setzen und Dissonanzen nur schrittweise durchschreiten."
+        second_species_melody:
+          instruction: "In jedem Takt zwei Halbe gegen den Cantus firmus schreiben."
+        third_species:
+          instruction: "In jedem Takt vier Viertel schreiben, jede schwere Zählzeit konsonant halten und jede Dissonanz als Durchgangs- oder Wechselnote behandeln."
+        third_species_harmony:
+          instruction: "Die schweren Zählzeiten konsonant halten und die Dissonanzen der Viertel als Durchgangs- oder Wechselnoten behandeln."
+        third_species_melody:
+          instruction: "In jedem Takt vier Viertel gegen den Cantus firmus schreiben."
+        third_species_triple_meter:
+          instruction: "In jedem Takt eines Dreiertakts drei Viertel schreiben, jede schwere Zählzeit konsonant halten und jede Dissonanz schrittweise auflösen."
+        third_species_triple_meter_melody:
+          instruction: "In jedem Takt drei Viertel gegen den Cantus firmus schreiben."
