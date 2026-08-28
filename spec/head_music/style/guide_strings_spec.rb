@@ -10,6 +10,30 @@ require "spec_helper"
 PLURAL_KEYS = %i[zero one two few many other].freeze
 ENGLISH_PLURAL_KEYS = %i[one other].freeze
 
+# The exact set each locale must carry, not a minimum. A subset test cannot
+# catch Russian written with English's forms, because {one, few, many, other} is
+# a superset of {one, other} -- and on the Simple backend that hash renders
+# `other` for counts 2, 3 and 5 without raising.
+LOCALE_PLURAL_FORMS = {en: ENGLISH_PLURAL_KEYS, en_GB: ENGLISH_PLURAL_KEYS, ru: %i[one few many]}.freeze
+
+# The three vocabulary groups a style sentence borrows from. Separate rather
+# than one, because the relationship between them is a per-language fact:
+# British collapses note_values into rhythmic_units, American needs the noun to
+# tell them apart, and French names its rests from an unrelated vocabulary.
+VOCABULARY_GROUPS = %w[rhythmic_units note_values rest_values].freeze
+
+# Exempt from the data-level sweep because no pattern can attribute them:
+# semibreve, breve and longa are spelled identically in British and Italian, and
+# longa in Spanish and German too. These are the words the story expected French
+# noire to be -- measured, noire scores zero hits in the English corpus and needs
+# no exemption, while these three cannot be told apart.
+SHARED_MENSURAL_UNITS = %w[longa double_whole whole].freeze
+
+# Identifiers with no vocabulary, which is allowed as long as it is declared:
+# reaching one raises MissingTemplate by name rather than rendering the wrong
+# note value, which is what quadruple_whole did.
+UNTRANSLATED_UNITS = %w[maxima two_hundred_fifty_sixth].freeze
+
 # The note-value words each naming family uses. American stays scoped to
 # note|rest: a bare word alternation matches the same strings today, but "half
 # step", "whole tone" and "half cadence" are ordinary theory terms waiting to
@@ -194,6 +218,60 @@ describe HeadMusic::Style::Guide do
     end
   end
 
+  # The prose scan above catches a foreign word hard-coded into a *sentence* --
+  # the way en_GB writes "quavers" into allow_fifth_species_rhythmic_values.
+  # It cannot catch a locale whose vocabulary hash carries the wrong family,
+  # because that word only reaches prose through the four unit/count pairs
+  # note_count_per_bar renders. Six of the ten units and both of the other two
+  # groups never appear in a sentence at all.
+  #
+  # So the vocabulary is checked as data, against the family the locale owns.
+  #
+  describe "the vocabulary as data" do
+    def vocabulary_values(locale)
+      tree = I18n.backend.send(:translations).fetch(locale).dig(:head_music, :rudiments) || {}
+      VOCABULARY_GROUPS.flat_map do |group|
+        (tree[group.to_sym] || {}).reject { |unit, _| SHARED_MENSURAL_UNITS.include?(unit.to_s) }
+          .flat_map { |unit, value| Array(value.is_a?(Hash) ? value.values : value).map { |v| [group, unit, v] } }
+      end
+    end
+
+    # Read from the backend for the locale itself, not the chain: a locale that
+    # carries no vocabulary of its own has nothing to be wrong about here, and
+    # is covered by the prose sweep instead.
+    def foreign_vocabulary_data_in(locale)
+      own = LOCALE_NOTE_VOCABULARY.fetch(locale)
+      NOTE_VOCABULARIES.except(own).flat_map do |family, pattern|
+        vocabulary_values(locale).filter_map do |group, unit, value|
+          "#{locale}.#{group}.#{unit} = #{value.inspect} matches #{family}" if pattern.match?(value)
+        end
+      end
+    end
+
+    it "gives every locale only words from the family it owns" do
+      offenders = LOCALE_NOTE_VOCABULARY.keys.select { |locale| I18n.backend.send(:translations).key?(locale) }
+        .flat_map { |locale| foreign_vocabulary_data_in(locale) }
+
+      expect(offenders).to be_empty
+    end
+
+    # Proves it fires. A British crotchet filed under American English is the
+    # exact leak the prose sweep cannot see, because no sentence renders it.
+    it "would catch a locale carrying another family's word" do
+      I18n.backend.store_translations(:en, {head_music: {rudiments: {rest_values: {sixteenth: "semiquaver rest"}}}})
+
+      expect(foreign_vocabulary_data_in(:en)).to include(/rest_values.sixteenth/)
+    ensure
+      I18n.backend.reload!
+      I18n.backend.send(:init_translations)
+    end
+
+    # The exemption has to be narrow enough to still be worth having.
+    it "exempts only the units no pattern can attribute" do
+      expect(SHARED_MENSURAL_UNITS).not_to include("half", "quarter", "eighth")
+    end
+  end
+
   # The one pair worth pinning verbatim: the singular/plural boundary and the
   # noun-drop at once. British names the value with a noun, so the "note" the
   # American sentence needs is dropped rather than translated -- which is what a
@@ -230,8 +308,8 @@ describe HeadMusic::Style::Guide do
   # flag without also flagging "half step". Scoped to rhythmic_units because
   # en_GB deliberately overrides only some keys; here a missing key is a leak.
   it "gives every English rhythmic unit a British name" do
-    expect(rhythmic_unit_keys(english_template_keys)).not_to be_empty
-    expect(unnamed_rhythmic_units(english: english_template_keys,
+    expect(vocabulary_keys(english_template_keys)).not_to be_empty
+    expect(unnamed_vocabulary(english: english_template_keys,
       british: british_template_keys)).to be_empty
   end
 
@@ -239,35 +317,37 @@ describe HeadMusic::Style::Guide do
   # than injected into the real list, so a real gap cannot report itself
   # twice; the guideline key is unmatched on purpose, showing the scoping.
   it "would catch a rhythmic unit added to English alone" do
-    english = ["rhythmic_units.whole", "rhythmic_units.eighth", "guidelines.no_rests.name"]
+    english = ["rhythmic_units.whole", "rest_values.eighth", "guidelines.no_rests.name"]
     british = ["rhythmic_units.whole"]
 
-    expect(unnamed_rhythmic_units(english: english, british: british)).to eq ["rhythmic_units.eighth"]
+    expect(unnamed_vocabulary(english: english, british: british)).to eq ["rest_values.eighth"]
   end
 
   # Read from the files rather than the backend, which merges en_GB into en.
   def template_keys(locale)
     tree = YAML.load_file(File.expand_path("../../../lib/head_music/locales/#{locale}.yml", __dir__))
       .fetch(locale.to_s)
-    leaf_paths(guide_string_tree(tree, "")).map { |path| without_plural_form(path).join(".") }.uniq
+    leaf_paths(localized_string_tree(tree, "")).map { |path| without_plural_form(path).join(".") }.uniq
   end
 
-  # A guide string draws on two namespaces: the sentences under style, and the
-  # note values they borrow under rudiments, where the vocabulary belongs to the
-  # rudiment rather than to the guideline naming it. Rejoined under the key
-  # shape the sentences address them by, so every guard below reads the same
-  # whether the vocabulary sits beside the guidelines or beneath rudiments.
-  def guide_string_tree(tree, key = :"")
+  # Two namespaces: the sentences under style, and the vocabulary they borrow
+  # under rudiments, where the words belong to the rudiment rather than to the
+  # guideline naming it. Rejoined under the key shape the sentences address them
+  # by, so every guard below reads the same whether the vocabulary sits beside
+  # the guidelines or beneath rudiments.
+  def localized_string_tree(tree, key = :"")
     style = tree.dig(key_for("head_music", key), key_for("style", key)) || {}
-    units = tree.dig(key_for("head_music", key), key_for("rudiments", key), key_for("rhythmic_units", key)) || {}
-    units.empty? ? style : style.merge(key_for("rhythmic_units", key) => units)
+    VOCABULARY_GROUPS.reduce(style) do |merged, group|
+      found = tree.dig(key_for("head_music", key), key_for("rudiments", key), key_for(group, key))
+      (found.nil? || found.empty?) ? merged : merged.merge(key_for(group, key) => found)
+    end
   end
 
   # The file is string-keyed and the backend is symbol-keyed; both are walked.
   def key_for(name, sample) = sample.is_a?(Symbol) ? name.to_sym : name
 
   def british_string_tree
-    guide_string_tree(I18n.backend.send(:translations).fetch(:en_GB))
+    localized_string_tree(I18n.backend.send(:translations).fetch(:en_GB))
   end
 
   def without_plural_form(path)
@@ -284,12 +364,97 @@ describe HeadMusic::Style::Guide do
 
   def english_template_keys = @english_template_keys ||= template_keys(:en)
 
-  def rhythmic_unit_keys(keys) = keys.grep(/\Arhythmic_units\./)
+  def vocabulary_keys(keys) = keys.grep(/\A(#{VOCABULARY_GROUPS.join("|")})\./)
 
   # Keywords: swapped positional arguments would invert the direction and
   # stay green over a real gap.
-  def unnamed_rhythmic_units(english:, british:)
-    rhythmic_unit_keys(english) - rhythmic_unit_keys(british)
+  def unnamed_vocabulary(english:, british:)
+    vocabulary_keys(english) - vocabulary_keys(british)
+  end
+
+  # The English a reader sees today, captured before the vocabulary moved and
+  # frozen. Nothing else pins en_GB's names and instructions, so without this a
+  # refactor of the rendering path could rewrite British prose and stay green.
+  #
+  # Regenerate deliberately -- never to make a red suite green -- with:
+  #   bundle exec rake style:snapshot_english
+  describe "the English strings" do
+    let(:snapshot) do
+      YAML.load_file(File.expand_path("../../fixtures/style/english_strings.yml", __dir__))
+    end
+
+    %w[en en_GB].each do |locale|
+      it "renders #{locale} exactly as it did before the vocabulary moved" do
+        expect(strings_in(locale.to_sym)).to eq snapshot.fetch(locale)
+      end
+    end
+  end
+
+  # quadruple_whole did not merely fail to resolve -- RhythmicUnit::PATTERN is a
+  # Regexp.union and the key contains "whole", so RhythmicValue.get returned the
+  # whole note at duration 1.0 while the sentence said "quadruple whole note". A
+  # key that is not an identifier is a wrong analysis, not a missing string.
+  #
+  describe "the vocabulary keys" do
+    let(:identifiers) { HeadMusic::Rudiment::RhythmicUnit.all.map { |unit| unit.name.tr(" -", "__") } }
+    let(:keys) { VOCABULARY_GROUPS.flat_map { |group| english_tree.fetch(group, {}).keys }.uniq }
+
+    def english_tree
+      YAML.load_file(File.expand_path("../../../lib/head_music/locales/en.yml", __dir__))
+        .dig("en", "head_music", "rudiments")
+    end
+
+    it "names a real rhythmic unit with every one of them" do
+      expect(keys - identifiers).to be_empty
+    end
+
+    it "translates every identifier it does not declare untranslated" do
+      expect(identifiers - keys - UNTRANSLATED_UNITS).to be_empty
+    end
+
+    # Proves the guard above would have caught quadruple_whole, which resolved
+    # to the whole note rather than raising.
+    it "would catch a key that is not an identifier" do
+      expect(%w[longa quadruple_whole] - identifiers).to eq ["quadruple_whole"]
+    end
+  end
+
+  # %{number} is not confined to note_count_per_bar: MinimumNotes renders eight,
+  # the cantus firmus range renders eight to fourteen, and one guideline renders
+  # thirty-two. A locale that spells its own numerals must cover every count the
+  # registry reaches, or a guideline silently drops an English word into its
+  # sentence -- exactly the failure the locale pin exists to prevent.
+  describe "the spelled-out numerals" do
+    let(:counts) do
+      rendered = []
+      HeadMusic::Style::Template.singleton_class.prepend(Module.new do
+        define_method(:number_word) do |number, locale: I18n.locale|
+          rendered << number
+          super(number, locale: locale)
+        end
+      end)
+      I18n.with_locale(:en) { problems_in(:en) }
+      rendered.uniq.sort
+    end
+
+    def locales_spelling_their_own
+      I18n.available_locales.select do |locale|
+        I18n.exists?("head_music.number_words", locale, fallback: false)
+      end
+    end
+
+    it "covers every count the registry renders, in every locale that spells any" do
+      missing = locales_spelling_their_own.flat_map do |locale|
+        counts.reject { |count| I18n.exists?("head_music.number_words.#{count}", locale, fallback: false) }
+          .map { |count| "#{locale}.#{count}" }
+      end
+
+      expect(missing).to be_empty
+    end
+
+    it "reaches counts beyond the four that note_count_per_bar renders" do
+      expect(counts).to include(8)
+    end
   end
 
   # es does not route through en_GB and en_US resolves past it, so both read
@@ -339,20 +504,19 @@ describe HeadMusic::Style::Guide do
   # at a plural hash that is present but incomplete rather than continuing past
   # it, so a British entry with only `other:` would raise for those four
   # languages and not for British readers -- who would never see it.
-  def partial_plurals_in(tree, path = [])
+  # Exact set, not a subset: Russian's {one, few, many} and English's
+  # {one, other} are each wrong for the other locale, and a subset test passes
+  # a superset silently.
+  def wrong_plurals_in(tree, forms, path = [])
     return [] unless tree.is_a?(Hash)
 
     keys = tree.keys.map(&:to_sym)
-    here = if (keys & PLURAL_KEYS).any? && (keys & ENGLISH_PLURAL_KEYS).size < ENGLISH_PLURAL_KEYS.size
-      [path.join(".")]
-    else
-      []
-    end
-    here + tree.flat_map { |key, value| partial_plurals_in(value, path + [key]) }
+    here = ((keys & PLURAL_KEYS).any? && keys.sort != forms.sort) ? [path.join(".")] : []
+    here + tree.flat_map { |key, value| wrong_plurals_in(value, forms, path + [key]) }
   end
 
   it "gives every pluralized en_GB entry a complete set of forms" do
-    expect(partial_plurals_in(british_string_tree)).to be_empty
+    expect(wrong_plurals_in(british_string_tree, LOCALE_PLURAL_FORMS.fetch(:en_GB))).to be_empty
   end
 
   # Proves the detector fires, which the guard above cannot: it asserts an
@@ -360,7 +524,19 @@ describe HeadMusic::Style::Guide do
   it "would catch a British entry that carried only one form" do
     incomplete = {guidelines: {note_count_per_bar: {name: {other: "%{number} crotchets per bar"}}}}
 
-    expect(partial_plurals_in(incomplete)).to eq ["guidelines.note_count_per_bar.name"]
+    expect(wrong_plurals_in(incomplete, ENGLISH_PLURAL_KEYS)).to eq ["guidelines.note_count_per_bar.name"]
+  end
+
+  # The trap the old subset test could not see. {one, few, many, other} contains
+  # English's pair, so a subset check passes it -- while the Simple backend
+  # renders `other` for counts 2, 3 and 5 and raises nothing.
+  it "would catch a Russian entry written with English's forms" do
+    english_shaped = {rhythmic_units: {half: {one: "половинная", other: "половинные"}}}
+    over_supplied = {rhythmic_units: {half: {one: "a", few: "b", many: "c", other: "d"}}}
+    russian = LOCALE_PLURAL_FORMS.fetch(:ru)
+
+    expect(wrong_plurals_in(english_shaped, russian)).to eq ["rhythmic_units.half"]
+    expect(wrong_plurals_in(over_supplied, russian)).to eq ["rhythmic_units.half"]
   end
 
   # And that the tree it walks is there and well formed -- an empty tree
@@ -372,7 +548,7 @@ describe HeadMusic::Style::Guide do
 
     expect(units).not_to be_empty
     expect(units.values).to all be_a(Hash)
-    expect(units.values.map(&:keys)).to all match_array ENGLISH_PLURAL_KEYS
+    expect(units.values.map(&:keys)).to all match_array LOCALE_PLURAL_FORMS.fetch(:en_GB)
   end
 
   # What the load-time check found, kept rather than discarded, so thin locale

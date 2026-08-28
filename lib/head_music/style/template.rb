@@ -16,6 +16,21 @@ module HeadMusic::Style::Template
   # through the same seam so they get the plural fallback and the unfilled-
   # interpolation guard the style strings get.
   RUDIMENT_SCOPE = "head_music.rudiments"
+  NUMBER_WORDS_SCOPE = "head_music.number_words"
+  # I18n's Simple backend implements English's rule and no other, so a locale
+  # whose forms differ raises rather than choosing. Kept here as a seam rather
+  # than by including I18n::Backend::Pluralization, which would switch
+  # pluralization on for the host application's locales too.
+  PLURAL_RULES = {
+    ru: ->(count) {
+      tens = count % 100
+      units = count % 10
+      if units == 1 && tens != 11 then :one
+      elsif (2..4).cover?(units) && !(12..14).cover?(tens) then :few
+      else :many
+      end
+    }
+  }.freeze
   INTERPOLATION = /%\{/
   # count selects a plural form, so a value by that name never reaches the template.
   FORBIDDEN_VALUE_KEYS = (I18n::RESERVED_KEYS + [:count]).freeze
@@ -41,10 +56,18 @@ module HeadMusic::Style::Template
     I18n.exists?("#{scope}.#{key}")
   end
 
-  # humanize raises for a locale it does not ship, and the gem ships two it does
-  # not know, so the chain is walked rather than asked directly.
+  # A locale that spells its own numerals wins. humanize ships no Italian at
+  # all, and where it does ship a locale the form is wrong for this sentence:
+  # capitalized mid-sentence for German, masculine where the note values being
+  # counted are feminine.
   def number_word(number, locale: I18n.locale)
-    number.humanize(locale: humanize_locale(locale))
+    spelled_number(number, locale) || number.humanize(locale: humanize_locale(locale))
+  end
+
+  # fallback: false so a locale without its own numerals falls through to
+  # humanize, rather than reading English's word as though it were its own.
+  def spelled_number(number, locale)
+    I18n.t(number.to_s, scope: NUMBER_WORDS_SCOPE, locale: locale, fallback: false, default: nil)
   end
 
   def humanize_locale(locale)
@@ -78,11 +101,22 @@ module HeadMusic::Style::Template
   def pluralize(key, count:, scope: SCOPE, **values)
     render(key, count: count, scope: scope, **values)
   rescue I18n::InvalidPluralizationData => error
+    known = known_plural_form(error.entry, count)
+    return render("#{key}.#{known}", count: count, scope: scope, **values) if known
+
     form = ruby_plural_form(error.entry, count)
     raise MissingTemplate, "#{key} has no plural form to fall back to" if form.nil?
 
     fell_back_to_ruby << key unless fell_back_to_ruby.include?(key)
     render("#{key}.#{form}", count: count, scope: scope, **values)
+  end
+
+  # Applying a rule the gem knows is not a fallback, so it is not recorded as
+  # one -- otherwise every Russian sentence would report a plural gap and the
+  # guard that watches for real ones would have to be loosened.
+  def known_plural_form(entry, count)
+    form = PLURAL_RULES[I18n.locale]&.call(count)
+    form if form && entry.key?(form)
   end
 
   # English's rule first, then whatever the entry carries. Reading the singular
