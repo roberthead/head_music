@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-08-19T14:45:24-07:00
-  activated_at:
+  activated_at: 2026-08-28T11:57:55-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-19T14:49:06-07:00
+  updated_at:   2026-08-28T12:06:14-07:00
 -->
 
 # Story: Note Values in Each Language
@@ -34,22 +34,33 @@ So no choice of English serves all four. British helps Italian, costs German and
 Russian the word-for-word correspondence their own names have with the American
 ones, and actively misleads French.
 
-**French is why this story exists rather than a chain reordering.** French
-*croche* is the **eighth** note; English *crotchet* is the **quarter**. They are
-cognates from the same hooked-note root that drifted apart by a factor of two,
-so a French reader meets a familiar-looking word attached to the wrong duration.
-No English is safe for French — only French is.
+**The false friend is why this story exists rather than a chain reordering.**
+French *croche* is the **eighth** note; English *crotchet* is the **quarter**.
+They are cognates from the same hooked-note root that drifted apart by a factor
+of two, so a French reader meets a familiar-looking word attached to the wrong
+duration. Italian *croma* and Spanish *corchea* are eighths too — *croma* only
+looks like the others, being usually traced to Greek *khrôma*, the blackened
+noteheads, rather than the hook. Three families' lookalikes mean eighth and only
+English's means quarter. No English is safe for them — only their own is.
 
 | Locale | whole | half | quarter | eighth |
 | --- | --- | --- | --- | --- |
-| `de` | ganze Note | halbe Note | Viertelnote | Achtelnote |
+| `de` | Ganze | Halbe | Viertel | Achtel |
 | `fr` | ronde | blanche | noire | croche |
 | `it` | semibreve | minima | semiminima | croma |
 | `ru` | целая | половинная | четвертная | восьмая |
+| `es` | redonda | blanca | negra | corchea |
 
-Verify each against a native source before shipping — this table is a starting
-point, not an authority, and the whole point of the story is that borrowed
-vocabulary is what it is replacing.
+Checked and correct. German takes the nominalized short forms rather than
+*ganze Note* / *Viertelnote*: they are what musicians say, they capitalize as
+nouns, and the noun-drop rules inherited from `British Note Names` fall out of
+them for free.
+
+**Only the first three columns are vocabulary entries.** `rhythmic_units`
+carries `whole`, `half` and `quarter` in both `en` and `en_GB`. The eighth-note
+word is never interpolated — it appears literally, inside
+`allow_fifth_species_rhythmic_values`. The eighth column is guidance for writing
+that one sentence, not a row to add.
 
 **The pin decides the shape of the work.** `render_template` resolves values in
 the locale that carries *the sentence*
@@ -70,27 +81,49 @@ guards `en_GB` only, because `en_GB` was the only mid-chain locale; `de`, `fr`
 and `it` are all leaves, but Russian's form set is genuinely different and the
 Ruby fallback at `template.rb` exists precisely for this.
 
-**Scope.** Four locales x the ~30 leaves `British Note Names` enumerated. Its
-census and its noun-drop rules transfer directly. Its vocabulary-ownership sweep
-was written in the general shape — *no locale carries note vocabulary from a
-family it does not own* — so this story adds a vocabulary pattern per language
-and moves four rows of `LOCALE_NOTE_VOCABULARY` off `:british`, rather than
-rewriting the spec. Those four rows are where the inheritance decision lives; the
-sweep fails until they move.
+**Russian needs cases, not only plurals.** `%{rhythmic_unit}` is interpolated by
+exactly one guideline — `note_count_per_bar`, three strings — where nominative
+and accusative carry it: *одна половинная*, *две половинные*, *пять половинных*.
+Everywhere else the word lands in an oblique case: "open the first bar with
+minims" wants the instrumental *половинными*. Because each locale writes its own
+leaves, Russian inlines the declined form directly in those ~29 sentences, and
+`rhythmic_units` carries only the four forms `note_count_per_bar` needs. Do not
+add a case dimension to the vocabulary hash for the sake of one template.
 
-Worth deciding first: whether `es` joins. Spanish is shape-based
-(*redonda, blanca, negra, corchea*) and shares the *corchea*/*crotchet* false
-friend, but `es: [es, en]` skips `en_GB`, so Spanish reads American today and is
-not regressed by `British Note Names`. It has the same underlying gap and none
-of the urgency.
+**Scope: five locales.** `es` is in. Spanish is shape-based like French, so its
+vocabulary and its sweep pattern come nearly free once French is done, and the
+*corchea*/*crotchet* false friend closes in the same pass. It differs from the
+other four in one way worth remembering: `es: [es, en]` skips `en_GB`, so
+Spanish reads American today and was never regressed by `British Note Names` —
+it is here for the gap, not for a regression.
+
+Five locales x the ~30 leaves `British Note Names` enumerated. Its census and
+its noun-drop rules transfer directly. Its vocabulary-ownership sweep was
+written in the general shape — *no locale carries note vocabulary from a family
+it does not own* — so this story adds a vocabulary pattern per language and
+moves the `de`, `fr`, `it` and `ru` rows of `LOCALE_NOTE_VOCABULARY` off
+`:british` and the `es` row off `:american`, rather than rewriting the spec.
+Those rows are where the inheritance decision lives; the sweep fails until they
+move.
+
+**The sweep's patterns will false-fire.** `NOTE_VOCABULARIES` works today
+because *semibreve*/*crotchet*/*quaver* are technical-only words and the
+American pattern anchors to `note|rest`. Neither property holds for the new
+families: French *ronde*, *blanche* and *noire* are round, white and black;
+Italian *minima* is "least"; Russian *целая* is "whole/entire" and *восьмая* is
+any one-eighth fraction. The `note|rest` anchor does not transfer either, since
+French, Italian and Spanish drop the noun — *une ronde*, not *une note ronde*.
+Expect each new pattern to need its own escape hatch, and expect *noire* to
+resist detection outright; budget for asserting that row some other way.
 
 ## Acceptance Criteria
 
-- A German, French, Italian or Russian reader gets their own note values in every
-  style string that names one
+- A German, French, Italian, Russian or Spanish reader gets their own note values
+  in every style string that names one
 - No locale inherits another language's note vocabulary — the dialect-purity
   sweep generalizes to cover every locale that carries its own words
 - Every pluralized entry carries the complete set of forms for its locale, and
   Russian's four-form set is proven rather than assumed
-- `en`, `en_GB` and `es` render exactly as they did before, pinned by spec
-- The decision about whether `es` is in scope is recorded
+- Russian's oblique cases live in the sentences that need them, not in the
+  vocabulary hash
+- `en` and `en_GB` render exactly as they did before, pinned by spec
