@@ -2,7 +2,7 @@
 
 The words each language uses for note values, rest values and bare rhythmic units, for the seven locales the gem ships. Intended as a reference for filling in `head_music.rudiments.note_values`, `rest_values` and `rhythmic_units` in `lib/head_music/locales/`.
 
-Marked **(check)** where the name is rare, contested between sources, or one I could not confirm. Everything unmarked is standard usage.
+Every cell is filled. Two languages leave their family partway down the table; §6 records where and why, because both break a mechanical fill-in.
 
 ---
 
@@ -26,8 +26,8 @@ The bare unit word, with no noun attached.
 
 | Key | `en` | `en_GB` | `de` | `fr` | `it` | `ru` | `es` |
 |---|---|---|---|---|---|---|---|
-| `longa` | quadruple whole | longa | Longa **(check)** | longue **(check)** | longa **(check)** | лонга **(check)** | longa **(check)** |
-| `double_whole` | double whole | breve | Brevis **(check)** | carrée **(check)** | breve | бревис **(check)** | cuadrada **(check)** |
+| `longa` | quadruple whole | longa | Longa | longue | longa | лонга | longa |
+| `double_whole` | double whole | breve | Brevis | brève | breve | бревис | breve |
 | `whole` | whole | semibreve | Ganze | ronde | semibreve | целая | redonda |
 | `half` | half | minim | Halbe | blanche | minima | половинная | blanca |
 | `quarter` | quarter | crotchet | Viertel | noire | semiminima | четвертная | negra |
@@ -35,11 +35,13 @@ The bare unit word, with no noun attached.
 | `sixteenth` | sixteenth | semiquaver | Sechzehntel | double croche | semicroma | шестнадцатая | semicorchea |
 | `thirty_second` | thirty-second | demisemiquaver | Zweiunddreißigstel | triple croche | biscroma | тридцать вторая | fusa |
 | `sixty_fourth` | sixty-fourth | hemidemisemiquaver | Vierundsechzigstel | quadruple croche | semibiscroma | шестьдесят четвёртая | semifusa |
-| `hundred_twenty_eighth` | hundred twenty-eighth | semihemidemisemiquaver | Hundertachtundzwanzigstel | quintuple croche | **(none confirmed)** | сто двадцать восьмая | garrapatea |
+| `hundred_twenty_eighth` | hundred twenty-eighth | semihemidemisemiquaver | Hundertachtundzwanzigstel | quintuple croche | centoventottavo | сто двадцать восьмая | garrapatea |
 
 **German** takes the nominalized short forms — *Ganze*, *Halbe*, *Viertel*, *Achtel* — rather than *ganze Note* / *Viertelnote*. They are what musicians say, and they capitalize as nouns.
 
-**Alternatives worth knowing:** German *Doppelganze* for *Brevis*; Spanish *breve* for *cuadrada*; French *brève* for *carrée*.
+**The two units above the whole keep their Latin names.** *Longa* and *brevis* are mensural terms every one of these languages borrowed rather than translated, each adapting the Latin to its own morphology — German keeps it whole (*Longa*, *Brevis*), French inflects it (*longue*, *brève*), Russian transliterates it (*лонга*, *бревис*), Italian and Spanish take it unchanged. The competing names reported by sources turn out to be variant spellings of one word rather than different words, which is why a single rule settles all ten cells.
+
+**Vernacular alternatives, deliberately not used:** German *Doppelganze*; French *carrée*; Spanish *cuadrada*. Each is attested and each would be defensible; they are set aside so the row is decided by one principle rather than five independent judgements. A native reviewer who prefers the vernacular should flip the whole row, not one cell.
 
 ### 2.1 Derivation Rules
 
@@ -47,7 +49,7 @@ The four middle rows (whole through eighth) are the anchors. The rest follow a r
 
 - **German** suffixes the fraction: *Sechzehntel*, *Zweiunddreißigstel*, *Vierundsechzigstel*, *Hundertachtundzwanzigstel*. The rule keeps going indefinitely.
 - **Russian** does the same with ordinals: *шестнадцатая*, *тридцать вторая*, *шестьдесят четвёртая*, *сто двадцать восьмая*.
-- **Italian** and **Spanish** modify the eighth: *semicroma*, *biscroma*, *semibiscroma*; *semicorchea*, *fusa*, *semifusa*, *garrapatea*. Italian runs out at the 64th.
+- **Italian** and **Spanish** modify the eighth: *semicroma*, *biscroma*, *semibiscroma*; *semicorchea*, *fusa*, *semifusa*, *garrapatea*. Italian's rule stops at the 64th and the 128th changes system entirely — see §6.
 - **French counts hooks**: *double croche* (16th), *triple croche* (32nd), *quadruple croche* (64th), *quintuple croche* (128th).
 
 > **Trap.** *Double croche* is a **sixteenth**, not a doubled eighth. The multiplier counts flags, not duration — it runs the opposite direction from *double whole*.
@@ -65,6 +67,7 @@ Whether the language attaches a noun to the unit word, and which.
 | `de` | **splits** — see below | Viertelnote |
 | `fr` | **drops it** | noire |
 | `it` | **drops it** | semiminima |
+| `it` (128th) | **drops it** | centoventottavo |
 | `ru` | keeps *нота* | четвертная нота |
 | `es` | **drops it** | negra |
 
@@ -81,7 +84,7 @@ Four of the seven make the note value identical to the rhythmic unit. German is 
 | `en` | *X rest* | quarter rest |
 | `en_GB` | *X rest* — keeps the noun it dropped for notes | crotchet rest |
 | `de` | **splits** — *ganze Pause*, *halbe Pause*, then compounds | Viertelpause |
-| `fr` | **its own vocabulary** | soupir |
+| `fr` | **its own vocabulary**, except the breve | soupir |
 | `it` | *pausa di X* | pausa di semiminima |
 | `ru` | *X пауза* | четвертная пауза |
 | `es` | *silencio de X* | silencio de negra |
@@ -92,7 +95,7 @@ Every other language here names the rest from the note. French does not — it h
 
 | Key | French rest |
 |---|---|
-| `double_whole` | bâton de pause **(check)** |
+| `double_whole` | pause de brève |
 | `whole` | pause |
 | `half` | demi-pause |
 | `quarter` | soupir |
@@ -116,7 +119,7 @@ Note the anchors differ from the note vocabulary: *pause* is the **whole** rest,
 | `en_GB` | `-s` | crotchet → crotchets |
 | `de` | **invariant after a numeral** | Viertel → Viertel |
 | `fr` | `-s`, and multi-word forms inflect **both** words | double croche → doubles croches |
-| `it` | `-e` / `-i` | semiminima → semiminime |
+| `it` | `-e` / `-i`, by gender | semiminima → semiminime; centoventottav**o** → centoventottav**i** |
 | `ru` | four forms: `one`/`few`/`many`/`other` | четвертная / четвертные / четвертных |
 | `es` | `-s` | negra → negras |
 
@@ -124,11 +127,19 @@ Only `en_GB` and `es` follow the English `-s` rule, so an inflector serves two o
 
 ---
 
-## 6. Where Sources Disagree
+## 6. Family Crossovers
 
-- **`longa` and `double_whole`** (the quadruple and double whole) are rare in every language and carry competing names. Check a native source rather than deriving.
-- **`hundred_twenty_eighth`** derives cleanly in German, Russian, French and Spanish. Italian has no confirmed name; *fusa* and *semifusa* are Spanish's 32nd and 64th, and in historical mensural usage *fusa* was the eighth, so they are not available to borrow.
-- **Russian** transliterates the two mensural values (*бревис*, *лонга*) rather than translating them. Confirm these are current usage rather than scholarly borrowings.
+Two languages leave their own family partway down the table. Both are places where deriving the next row from the last one produces a word that does not exist.
+
+**Italian is mensural-Latin down to the 64th, then fractional.** *Croma*, *semicroma*, *biscroma*, *semibiscroma* — and then the modifier rule stops. The 128th is **centoventottavo**, literally "one hundred twenty-eighth": the fractional logic German and Russian use throughout, appearing in one row of an otherwise mensural language. Nothing was available to borrow — *fusa* and *semifusa* are Spanish's 32nd and 64th, and in mensural usage *fusa* was the eighth.
+
+This carries a grammatical consequence. Italian's note words are feminine (*la semibreve*, *la croma*, plural *-e*); *centoventottavo* is masculine, plural *-i*. So the one row that changes family also changes gender, and pluralizes the other way. A find-and-replace over the Italian column gets this wrong in both directions.
+
+**French rests are their own vocabulary — except the breve.** *Pause*, *demi-pause*, *soupir*, *demi-soupir* and the fractions of a *soupir* owe nothing to the note names. The breve rest breaks the pattern: **pause de brève**, derived from the note after all. So §4.1's rule holds from the whole downward and inverts at the top of the table. (Of the attested alternatives — *double-pause*, *bâton de pause*, *silence de brève* — *pause de brève* is the one chosen here; *bâton de pause* is properly the multi-measure rest.)
+
+It is also the one French rest that depends on §2's Latin rule: *brève* rather than the vernacular *carrée*. Flipping that row to the vernacular would require *pause de carrée*, which is why the two decisions have to move together.
+
+**Russian's mensural pair** (*бревис*, *лонга*) is transliterated rather than translated, which is normal for these two terms.
 
 ---
 

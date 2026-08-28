@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-28T11:57:55-07:00
   planned_at:   2026-08-28T13:04:15-07:00
   finished_at:
-  updated_at:   2026-08-28T13:10:55-07:00
+  updated_at:   2026-08-28T13:24:07-07:00
 -->
 
 # Story: Note Values in Each Language
@@ -394,12 +394,48 @@ error.
 anything later needing a spelled-out number can reach it without importing
 style vocabulary.
 
-### Still open
+**The translations ship unreviewed.** No native speaker is lined up, and the
+risk is accepted rather than mitigated: imperfect German still beats British
+note names for a German reader. Be clear about what that means, because the
+green suite will not say it. The *vocabulary* is checkable — every word traces
+to `references/note-values-by-language.md`, which marks the rows no source
+confirms. The *sentences* are not: this story writes ~32 German sentences that
+exist nowhere to compare against, and every guard in the suite passes a string
+whose dative plurals are wrong or whose phrasing reads as noise to a German
+musician.
 
-1. **The `(check)` rows.** Omit an unresolved key rather than guessing — a
-   fallback arrives as a bare American word with no head noun, invisible to the
-   sweep by construction. Make omissions an explicit allowlist so the guard
-   becomes the ledger. Italian's `hundred_twenty_eighth` likely never resolves.
-2. **Who reviews the German, and later the Russian?** The declined forms are the
-   highest-risk data here and the only part no spec can check. The pilot is the
-   cheap moment to find that reviewer, while it is one language rather than five.
+Two things follow. The German gate now carries more weight than when it was
+chosen — it is the only reading anyone gives this prose before four more
+languages copy its patterns. And a translation correction arriving later is an
+ordinary bug, not a regression: no spec pins these sentences, so nothing breaks
+when a German reader tells us the phrasing is wrong.
+
+**The unconfirmed rows resolve by one rule, and the grid is now complete.**
+*Longa* and *brevis* are mensural terms every one of these languages borrowed
+rather than translated — German keeps the Latin whole, French inflects it,
+Russian transliterates it, Italian and Spanish take it unchanged. The competing
+names sources report turn out to be variant spellings of a single word, not
+different words, so one rule settles all ten cells rather than five independent
+guesses. The vernacular alternatives — *Doppelganze*, *carrée*, *cuadrada* — are
+attested and deliberately unused; a reviewer who prefers them should flip the
+whole row.
+
+The last two cells came from the project owner rather than a published source:
+French's breve rest is **pause de brève**, and Italian's 128th is
+**centoventottavo**, with **pausa di centoventottavo** for its rest. Nothing is
+omitted, so the completeness spec asserts every locale carries every key
+outright, with no allowlist. Keep the reason in a comment: an absent key falls
+through to a bare American *"quarter"* with no head noun, which
+`NOTE_VOCABULARIES[:american]` cannot match because its pattern is anchored to
+`note|rest`. A gap here is invisible to the prose sweep by construction, which
+is why it is asserted rather than tolerated.
+
+> **Both cells turned out to be family crossovers**, and each breaks a
+> mechanical fill-in. Italian is mensural-Latin down to the 64th and then goes
+> *fractional* — *centoventottavo* is literally "one hundred twenty-eighth" —
+> and that row also flips gender, from feminine `-a`/`-e` to masculine
+> `-o`/`-i`, so it pluralizes the other way from every other Italian row. And
+> French rests owe nothing to the note names *except* the breve: *pause de
+> brève* derives from the note after all, inverting §4.1's rule at the top of
+> the table. That row also depends on the Latin rule above — the vernacular
+> would force *pause de carrée* — so those two decisions move together.
