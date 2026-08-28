@@ -22,17 +22,21 @@ LOCALE_PLURAL_FORMS = {en: ENGLISH_PLURAL_KEYS, en_GB: ENGLISH_PLURAL_KEYS, ru: 
 # tell them apart, and French names its rests from an unrelated vocabulary.
 VOCABULARY_GROUPS = %w[rhythmic_units note_values rest_values].freeze
 
-# Exempt from the data-level sweep because no pattern can attribute them:
-# semibreve, breve and longa are spelled identically in British and Italian, and
-# longa in Spanish and German too. These are the words the story expected French
-# noire to be -- measured, noire scores zero hits in the English corpus and needs
-# no exemption, while these three cannot be told apart.
-SHARED_MENSURAL_UNITS = %w[longa double_whole whole].freeze
+# Exempt from the data-level sweep because no pattern can attribute them. Above
+# the double whole every language, American included, uses the Latin name, so
+# maxima and longa are spelled the same everywhere; semibreve and breve are
+# shared between British and Italian. These are the words the story expected
+# French noire to be -- measured, noire scores zero hits in the English corpus
+# and needs no exemption, while these four cannot be told apart.
+SHARED_MENSURAL_UNITS = %w[maxima longa double_whole whole].freeze
 
 # Identifiers with no vocabulary, which is allowed as long as it is declared:
 # reaching one raises MissingTemplate by name rather than rendering the wrong
 # note value, which is what quadruple_whole did.
-UNTRANSLATED_UNITS = %w[maxima two_hundred_fifty_sixth].freeze
+#
+# Only the 256th remains. No source in any of the seven languages names it, and
+# nothing in the gem renders it.
+UNTRANSLATED_UNITS = %w[two_hundred_fifty_sixth].freeze
 
 # The note-value words each naming family uses. American stays scoped to
 # note|rest: a bare word alternation matches the same strings today, but "half

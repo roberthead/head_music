@@ -26,7 +26,8 @@ The bare unit word, with no noun attached.
 
 | Key | `en` | `en_GB` | `de` | `fr` | `it` | `ru` | `es` |
 |---|---|---|---|---|---|---|---|
-| `longa` | quadruple whole | longa | Longa | longue | longa | лонга | longa |
+| `maxima` | maxima | maxima | Maxima | maxime | massima | максима | máxima |
+| `longa` | longa | longa | Longa | longue | longa | лонга | longa |
 | `double_whole` | double whole | breve | Brevis | brève | breve | бревис | breve |
 | `whole` | whole | semibreve | Ganze | ronde | semibreve | целая | redonda |
 | `half` | half | minim | Halbe | blanche | minima | половинная | blanca |
@@ -39,7 +40,17 @@ The bare unit word, with no noun attached.
 
 **German** takes the nominalized short forms — *Ganze*, *Halbe*, *Viertel*, *Achtel* — rather than *ganze Note* / *Viertelnote*. They are what musicians say, and they capitalize as nouns.
 
-**The two units above the whole keep their Latin names.** *Longa* and *brevis* are mensural terms every one of these languages borrowed rather than translated, each adapting the Latin to its own morphology — German keeps it whole (*Longa*, *Brevis*), French inflects it (*longue*, *brève*), Russian transliterates it (*лонга*, *бревис*), Italian and Spanish take it unchanged. The competing names reported by sources turn out to be variant spellings of one word rather than different words, which is why a single rule settles all ten cells.
+**Above the double whole, every language uses the Latin name — American included.** The fraction scheme is native to American usage and holds up through the double whole, but past that these values only appear in mensural and early-music contexts, where the Latin *is* the working vocabulary. So `en` reads *maxima* and *longa*, not *octuple whole* and *quadruple whole*; those phrases exist mostly as glosses in reference tables, the kind of thing people write but do not say.
+
+Each language adapts the Latin to its own morphology — German keeps it whole (*Maxima*, *Longa*, *Brevis*), French inflects it (*maxime*, *longue*, *brève*), Russian transliterates it (*максима*, *лонга*, *бревис*), Italian and Spanish take it with their own spelling (*massima*, *máxima*). The competing names sources report turn out to be variant spellings of one word rather than different words.
+
+**The boundary sits between the double whole and the longa**, and two independent naming conventions put it in the same place. Unicode uses the Latin throughout its mensural range — MAXIMA, LONGA, BREVIS. SMuFL is inconsistent in exactly the informative way: its rest glyphs run `restMaxima`, `restLonga`, then `restDoubleWhole`, `restWhole`. The switch happens where the American terminology switches.
+
+The double whole is the genuinely split one. *Double whole note* is the standard American term because it keeps the fraction series intact, and it is the default here. *Breve* is common among American choral singers, early-music players and engravers — partly because it is one word — and does not read as foreign the way *semibreve* or *crotchet* does. Treat it as an accepted alias, not a Britishism.
+
+German's plural of *Maxima* is given as *Maximen*, following *Longa* → *Longen*; note that *Maximen* is also the plural of the unrelated *Maxime*, a maxim.
+
+Historical aliases for the maxima, recorded but not used: *large*, and *duplex longa*.
 
 **Vernacular alternatives, deliberately not used:** German *Doppelganze*; French *carrée*; Spanish *cuadrada*. Each is attested and each would be defensible; they are set aside so the row is decided by one principle rather than five independent judgements. A native reviewer who prefers the vernacular should flip the whole row, not one cell.
 
@@ -62,7 +73,7 @@ Whether the language attaches a noun to the unit word, and which.
 
 | Locale | Noun | Quarter note |
 |---|---|---|
-| `en` | keeps *note* | quarter note |
+| `en` | keeps *note*, except above the double whole | quarter note; but *longa*, *maxima* |
 | `en_GB` | **drops it** | crotchet |
 | `de` | **splits** — see below | Viertelnote |
 | `fr` | **drops it** | noire |
@@ -153,9 +164,9 @@ The vocabulary lives under `head_music.rudiments`, not `head_music.style`: the w
 | `note_values` | not yet consumed | scalar |
 | `rest_values` | not yet consumed | scalar |
 
-Ten keys per group, largest first: `longa`, `double_whole`, `whole`, `half`, `quarter`, `eighth`, `sixteenth`, `thirty_second`, `sixty_fourth`, `hundred_twenty_eighth`.
+Eleven keys per group, largest first: `maxima`, `longa`, `double_whole`, `whole`, `half`, `quarter`, `eighth`, `sixteenth`, `thirty_second`, `sixty_fourth`, `hundred_twenty_eighth`.
 
-**Keys are identifiers.** Every key is the snake_cased `american_name` from `lib/head_music/rudiment/rhythmic_units.yml`, so a lookup built the way `NoteCountPerBar` builds one always resolves. This is why the 4.0 unit is keyed `longa` and not `quadruple_whole`, even though its `en` value reads "quadruple whole note". The rule is additive-safe: `maxima` (8.0) and `two_hundred_fifty_sixth` can join the ten later without disturbing it.
+**Keys are identifiers.** Every key is the snake_cased `american_name` from `lib/head_music/rudiment/rhythmic_units.yml`, so a lookup built the way `NoteCountPerBar` builds one always resolves. This is why the 4.0 unit is keyed `longa` and not `quadruple_whole`. `maxima` (8.0) joined on the same rule, closing a `MissingTemplate` a guideline configured with it would otherwise have raised. `two_hundred_fifty_sixth` stays untranslated and declared: no source in any of the seven names it.
 
 **The pin.** `render_template` resolves values in the locale carrying *the sentence* (`lib/head_music/style/guideline/wording.rb:62-63`), so a locale gets its own note words only if it also carries the style strings that name them. Vocabulary alone is never read.
 
