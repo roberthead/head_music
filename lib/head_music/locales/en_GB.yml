@@ -1,23 +1,18 @@
 en_GB:
   head_music:
-    rudiments:
-      grand_staff: great staff
-    # The strings whose spelling differs -- neighbour, metre, a bar rather than
-    # a measure -- and the note values, which differ in vocabulary rather than
-    # spelling: semibreve, minim, crotchet, quaver. Everything else falls
-    # through to en.
+    # The note values, which differ in vocabulary rather than spelling. They sit
+    # under rudiments because the vocabulary belongs to the rudiment: the style
+    # sentences borrow the words, they do not own them.
     #
-    # The note values need whole sentences here, not just words. British names
-    # the value with a noun and drops the "note" the American sentence carries
-    # -- four crotchets, not four crotchet notes -- so the sentence changes
-    # shape, not only vocabulary. A vocabulary entry alone would not even be
-    # read: render_template pins value-building to the locale carrying the
-    # sentence, so rhythmic_units below is consulted only because the
-    # note_count_per_bar entries beside it live here too.
+    # Still not on Rudiment::RhythmicUnit itself, because that class's #name is
+    # an identifier -- duration arithmetic, grading and MusicXML export all
+    # index by it -- not a label to localize.
     #
-    # The vocabulary lives here rather than on Rudiment::RhythmicUnit because
-    # that class's #name is an identifier -- duration arithmetic, grading and
-    # MusicXML export all index by it -- not a label to localize.
+    # Moving the namespace does not move the pin: render_template still builds
+    # values in the locale carrying the *sentence*, so these entries are
+    # consulted only because the note_count_per_bar entries under style are
+    # here too. Giving a locale its own note values still means giving it the
+    # sentences that name them.
     #
     # Note that de, fr, it and ru route through here on their way to en, so a
     # pluralized entry added below must carry the locale's complete set of
@@ -25,17 +20,75 @@ en_GB:
     # past it, and would break those four languages rather than this one. They
     # inherit the British note values deliberately; note-values-in-each-language
     # gives them their own.
-    style:
+    rudiments:
+      grand_staff: great staff
+      # British names the value with a noun, so the note value and the rhythmic
+      # unit are the same word: a crotchet, where American has a quarter and a
+      # quarter note. Rests do not follow -- there is no one-word British name
+      # for a rest, so these keep the noun the note values drop.
+      note_values:
+        double_whole: "breve"
+        eighth: "quaver"
+        half: "minim"
+        hundred_twenty_eighth: "semihemidemisemiquaver"
+        quadruple_whole: "longa"
+        quarter: "crotchet"
+        sixteenth: "semiquaver"
+        sixty_fourth: "hemidemisemiquaver"
+        thirty_second: "demisemiquaver"
+        whole: "semibreve"
+      rest_values:
+        double_whole: "breve rest"
+        eighth: "quaver rest"
+        half: "minim rest"
+        hundred_twenty_eighth: "semihemidemisemiquaver rest"
+        quadruple_whole: "longa rest"
+        quarter: "crotchet rest"
+        sixteenth: "semiquaver rest"
+        sixty_fourth: "hemidemisemiquaver rest"
+        thirty_second: "demisemiquaver rest"
+        whole: "semibreve rest"
+      # Pluralized where note_values above is scalar: note_count_per_bar counts
+      # these and drops the noun, so the word itself has to pluralize.
       rhythmic_units:
-        whole:
-          one: "semibreve"
-          other: "semibreves"
+        double_whole:
+          one: "breve"
+          other: "breves"
+        eighth:
+          one: "quaver"
+          other: "quavers"
         half:
           one: "minim"
           other: "minims"
+        hundred_twenty_eighth:
+          one: "semihemidemisemiquaver"
+          other: "semihemidemisemiquavers"
+        quadruple_whole:
+          one: "longa"
+          other: "longas"
         quarter:
           one: "crotchet"
           other: "crotchets"
+        sixteenth:
+          one: "semiquaver"
+          other: "semiquavers"
+        sixty_fourth:
+          one: "hemidemisemiquaver"
+          other: "hemidemisemiquavers"
+        thirty_second:
+          one: "demisemiquaver"
+          other: "demisemiquavers"
+        whole:
+          one: "semibreve"
+          other: "semibreves"
+    # The strings whose spelling differs -- neighbour, metre, a bar rather than
+    # a measure. Everything else falls through to en.
+    #
+    # The note values need whole sentences here, not just the words above:
+    # British names the value with a noun and drops the "note" the American
+    # sentence carries -- four crotchets, not four crotchet notes -- so the
+    # sentence changes shape, not only vocabulary.
+    style:
       guidelines:
         allow_fifth_species_rhythmic_values:
           instruction: "Write in minims, crotchets, and paired stepwise quavers on weak beats, saving the semibreve for the final bar."

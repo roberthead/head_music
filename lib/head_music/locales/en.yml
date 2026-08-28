@@ -548,6 +548,18 @@ en:
       meter: meter
       motion: motion
       musical_symbol: musical symbol
+      note: note
+      note_values:
+        double_whole: "double whole note"
+        eighth: "eighth note"
+        half: "half note"
+        hundred_twenty_eighth: "hundred twenty-eighth note"
+        quadruple_whole: "quadruple whole note"
+        quarter: "quarter note"
+        sixteenth: "sixteenth note"
+        sixty_fourth: "sixty-fourth note"
+        thirty_second: "thirty-second note"
+        whole: "whole note"
       octave: octave
       pitch: pitch
       pitch_class: pitch class
@@ -555,8 +567,31 @@ en:
       pitch_set: pitch set
       quality: quality
       reference_pitch: reference pitch
+      rest: rest
+      rest_values:
+        double_whole: "double whole rest"
+        eighth: "eighth rest"
+        half: "half rest"
+        hundred_twenty_eighth: "hundred twenty-eighth rest"
+        quadruple_whole: "quadruple whole rest"
+        quarter: "quarter rest"
+        sixteenth: "sixteenth rest"
+        sixty_fourth: "sixty-fourth rest"
+        thirty_second: "thirty-second rest"
+        whole: "whole rest"
       rhythm: rhythm
       rhythmic_unit: rhythmic unit
+      rhythmic_units:
+        double_whole: "double whole"
+        eighth: "eighth"
+        half: "half"
+        hundred_twenty_eighth: "hundred twenty-eighth"
+        quadruple_whole: "quadruple whole"
+        quarter: "quarter"
+        sixteenth: "sixteenth"
+        sixty_fourth: "sixty-fourth"
+        thirty_second: "thirty-second"
+        whole: "whole"
       scale: scale
       scale_degree: scale degree
       scale_type: scale type
@@ -580,10 +615,6 @@ en:
       ranges:
         "8": "an octave"
         "10": "a tenth"
-      rhythmic_units:
-        half: "half"
-        quarter: "quarter"
-        whole: "whole"
       guidelines:
         large_leaps:
           name: "Leap recovery"
