@@ -45,12 +45,29 @@ UNTRANSLATED_UNITS = %w[two_hundred_fifty_sixth].freeze
 # every "Minimum of ..." string MinimumNotes produces.
 NOTE_VOCABULARIES = {
   american: /\b(whole|half|quarter|eighth|sixteenth)[-\s](note|rest)/i,
-  british: /\b(semibreve|minim|crotchet|quaver|semiquaver)s?\b/i,
+  # semibreve is deliberately absent: Italian spells it the same, so no pattern
+  # can attribute it. minim, crotchet and quaver carry British on their own, and
+  # the shared mensural words are covered by the data check instead.
+  british: /\b(minim|crotchet|quaver|semiquaver)s?\b/i,
   # Capitalization is the anchor for the compounds -- Viertel is a note value,
   # viertel is not a word -- but ganz and halb are adjectives that stay
   # lowercase in their two-word forms, so those two carry both cases. No /i:
   # case is what does the work here.
-  german: /\b([Gg]anze|[Hh]albe|Viertel|Achtel|Sechzehntel|Zweiunddreißigstel|Vierundsechzigstel|Hundertachtundzwanzigstel)(n|note|noten|pause|pausen)?\b/
+  german: /\b([Gg]anze|[Hh]albe|Viertel|Achtel|Sechzehntel|Zweiunddreißigstel|Vierundsechzigstel|Hundertachtundzwanzigstel)(n|note|noten|pause|pausen)?\b/,
+  # The shape family. Its words are ordinary adjectives -- round, white, black --
+  # which the story expected to be undetectable. Measured against the English
+  # corpus they score zero hits, so no escape hatch is needed. soupir carries
+  # the rests, which owe nothing to the note names.
+  french: /\b(rondes?|blanches?|noires?|croches?|soupirs?)\b/i,
+  spanish: /\b(redondas?|blancas?|negras?|corcheas?|semicorcheas?|fusas?|semifusas?|garrapateas?)\b/i,
+  # Anchored on the crom- stem and the semi- compound. Bare minima is
+  # surrendered: it is ordinary Italian for "least". centoventottavo is the row
+  # where Italian leaves its family for the fractional scheme.
+  italian: /\b(semiminim[ae]|crome?|semicrome?|biscrome?|semibiscrome?|centoventottav[oi])\b/i,
+  # \b is ASCII-only in Ruby and would never fire between Cyrillic letters, so
+  # the boundaries are written with \p{L}. Stems rather than whole words,
+  # because these decline through four cases in the sentences.
+  russian: /(?<!\p{L})(цел[аы]\p{L}*|половинн\p{L}*|четвертн\p{L}*|восьм\p{L}*|шестнадцат\p{L}*)(?!\p{L})/
 }.freeze
 
 # Which vocabulary each locale resolves to. de, fr, it and ru read British by
@@ -60,9 +77,9 @@ NOTE_VOCABULARIES = {
 # executable form -- edit the fallback chain and the sweep below fails until the
 # map moves with it.
 LOCALE_NOTE_VOCABULARY = {
-  en: :american, en_US: :american, es: :american,
-  en_GB: :british, fr: :british, it: :british, ru: :british,
-  de: :german
+  en: :american, en_US: :american,
+  en_GB: :british,
+  de: :german, fr: :french, it: :italian, ru: :russian, es: :spanish
 }.freeze
 
 describe HeadMusic::Style::Guide do
@@ -103,6 +120,10 @@ describe HeadMusic::Style::Guide do
     # A blank interpolated value passes every check above: "Use eight
     # %{rhythmic_unit} in each bar" renders "Use eight  in each bar". Anchored
     # because "%{number} crotchets per bar" opens with its interpolation.
+    #
+    # \s is ASCII-only in Ruby, which is what lets French keep the space it
+    # needs before a colon: U+00A0, the non-breaking space its typography calls
+    # for, is not a blank value and does not match here.
     return "#{label} rendered a blank value: #{rendered.inspect}" if rendered.match?(/\s\s|\s[.,;:]|\A\s|\s\z/)
 
     nil
@@ -484,9 +505,18 @@ describe HeadMusic::Style::Guide do
   # es does not route through en_GB and en_US resolves past it, so both read
   # American. Pinned so that a chain edit that changes what they read fails here
   # rather than reaching a reader.
-  it "leaves the locales that do not resolve through en_GB reading American" do
+  # en_US carries nothing of its own, so it must read en exactly. es used to be
+  # asserted here for the same reason; it now carries its own note values, so
+  # what it shares with en is only the entries it does not translate.
+  it "leaves en_US reading American in full" do
     expect(strings_in(:en_US)).to eq strings_in(:en)
-    expect(strings_in(:es)).to eq strings_in(:en)
+  end
+
+  it "keeps es on American for the entries it does not carry" do
+    template = HeadMusic::Style::Template
+
+    expect(template.resolved_locale("guidelines.note_count_per_bar.instruction", locale: :es)).to eq :es
+    expect(template.resolved_locale("guidelines.no_rests.instruction", locale: :es)).to eq :en
   end
 
   # What each reader actually resolves to, said out loud. The day the chain
@@ -502,9 +532,19 @@ describe HeadMusic::Style::Guide do
     expect(resolved).to eq :de
   end
 
-  it "still routes the locales with no entry of their own through en_GB" do
-    resolved = %i[fr it ru].map do |locale|
+  # Every locale now carries note_count_per_bar, so none of them routes through
+  # en_GB for it any more. What still does is every entry they do not translate.
+  it "resolves each locale to itself for the entries it carries" do
+    resolved = %i[de fr it ru es].map do |locale|
       HeadMusic::Style::Template.resolved_locale("guidelines.note_count_per_bar.instruction", locale: locale)
+    end
+
+    expect(resolved).to eq %i[de fr it ru es]
+  end
+
+  it "still routes the mid-chain locales through en_GB for what they do not carry" do
+    resolved = %i[de fr it ru].map do |locale|
+      HeadMusic::Style::Template.resolved_locale("guidelines.no_rests.instruction", locale: locale)
     end
 
     expect(resolved).to all eq :en_GB

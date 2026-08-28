@@ -172,12 +172,14 @@ describe HeadMusic::Style::Template do
       expect(described_class.fell_back_to_ruby).to be_empty
     end
 
+    # Under a key of its own: every shipped entry is now complete, so a real one
+    # would have to be broken to prove the fallback still works.
     it "still records a genuinely thin entry" do
-      I18n.backend.store_translations(:fr, {head_music: {rudiments: {rhythmic_units: {half: {other: "blanches"}}}}})
+      I18n.backend.store_translations(:fr, {head_music: {rudiments: {rhythmic_units: {thin: {other: "blanches"}}}}})
 
-      I18n.with_locale(:fr) { described_class.pluralize(key, count: 1, scope: scope) }
+      I18n.with_locale(:fr) { described_class.pluralize("rhythmic_units.thin", count: 1, scope: scope) }
 
-      expect(described_class.fell_back_to_ruby).to eq [key]
+      expect(described_class.fell_back_to_ruby).to eq ["rhythmic_units.thin"]
     end
   end
 

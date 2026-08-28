@@ -339,6 +339,20 @@ it:
       meter: metro
       motion: movimento
       musical_symbol: simbolo musicale
+      # L'italiano lascia cadere il sostantivo: una semiminima, non una nota
+      # semiminima. note_values ripete quindi rhythmic_units parola per parola.
+      note_values:
+        double_whole: "breve"
+        eighth: "croma"
+        half: "minima"
+        hundred_twenty_eighth: "centoventottavo"
+        longa: "longa"
+        maxima: "massima"
+        quarter: "semiminima"
+        sixteenth: "semicroma"
+        sixty_fourth: "semibiscroma"
+        thirty_second: "biscroma"
+        whole: "semibreve"
       octave: ottava
       pitch: altezza del suono
       pitch_class: classe di altezza
@@ -346,8 +360,55 @@ it:
       pitch_set: insieme di altezze
       quality: qualità
       reference_pitch: altezza di riferimento
+      # Sempre pausa di X. Regolare, a differenza del francese.
+      rest_values:
+        double_whole: "pausa di breve"
+        eighth: "pausa di croma"
+        half: "pausa di minima"
+        hundred_twenty_eighth: "pausa di centoventottavo"
+        longa: "pausa di longa"
+        maxima: "pausa di massima"
+        quarter: "pausa di semiminima"
+        sixteenth: "pausa di semicroma"
+        sixty_fourth: "pausa di semibiscroma"
+        thirty_second: "pausa di biscroma"
+        whole: "pausa di semibreve"
       rhythm: ritmo
       rhythmic_unit: unità ritmica
+      rhythmic_units:
+        double_whole:
+          one: "breve"
+          other: "brevi"
+        eighth:
+          one: "croma"
+          other: "crome"
+        half:
+          one: "minima"
+          other: "minime"
+        hundred_twenty_eighth:
+          one: "centoventottavo"
+          other: "centoventottavi"
+        longa:
+          one: "longa"
+          other: "longhe"
+        maxima:
+          one: "massima"
+          other: "massime"
+        quarter:
+          one: "semiminima"
+          other: "semiminime"
+        sixteenth:
+          one: "semicroma"
+          other: "semicrome"
+        sixty_fourth:
+          one: "semibiscroma"
+          other: "semibiscrome"
+        thirty_second:
+          one: "biscroma"
+          other: "biscrome"
+        whole:
+          one: "semibreve"
+          other: "semibrevi"
       scale: scala
       scale_degree: grado della scala
       scale_type: tipo di scala
@@ -358,3 +419,66 @@ it:
       staff: pentagramma
       tuba: tuba
       tuning: accordatura
+    # Infinito ovunque: «Scrivere in semibrevi e minime.» Evita la scelta fra tu
+    # e Lei, che nessuna specifica puo verificare, ed e idiomatico per una regola.
+    #
+    # La coppia scrivere/usare porta cio che l'inglese distingue con Write/Use.
+    #
+    # render_name porta in maiuscola la prima lettera: guidelines.*.name inizia
+    # quindi in minuscolo.
+    style:
+      guidelines:
+        allow_fifth_species_rhythmic_values:
+          instruction: "Scrivere in minime, semiminime e crome congiunte appaiate sui tempi deboli, riservando la semibreve alla battuta finale."
+          violations:
+            default: "Usare solo semibrevi nella battuta finale, e minime, semiminime e crome congiunte appaiate sui tempi deboli."
+        allow_whole_half_quarter_notes:
+          name: "solo semibrevi, minime e semiminime"
+          instruction: "Scrivere in semibrevi, minime e semiminime."
+          violations:
+            default: "Usare solo semibrevi, minime e semiminime."
+        first_bar_half_notes:
+          name: "minime nella prima battuta"
+          instruction: "Aprire la prima battuta con minime, oppure entrare dopo una pausa di minima."
+          violations:
+            default: "Iniziare la prima battuta con minime, oppure entrare dopo una pausa di minima."
+        first_bar_quarter_notes:
+          name: "semiminime nella prima battuta"
+          instruction: "Aprire la prima battuta con semiminime, oppure entrare dopo una pausa di semiminima."
+          violations:
+            default: "Iniziare la prima battuta con semiminime, oppure entrare dopo una pausa di semiminima."
+        first_bar_whole_note:
+          name: "semibreve nella prima battuta"
+          instruction: "Aprire la prima battuta con una semibreve."
+          violations:
+            default: "Iniziare la prima battuta con una semibreve."
+        note_count_per_bar:
+          name: "%{number} %{rhythmic_unit} per battuta"
+          instruction: "In ogni battuta intermedia, scrivere %{number} %{rhythmic_unit}."
+          violations:
+            default: "In ogni battuta intermedia, usare %{number} %{rhythmic_unit}."
+      guides:
+        first_species:
+          instruction: "Scrivere una semibreve contro ogni nota del cantus firmus, consonante con essa e per lo piu in moto contrario."
+        first_species_melody:
+          instruction: "Scrivere una semibreve contro ogni nota del cantus firmus."
+        first_three_species:
+          instruction: "Combinare semibrevi, minime e semiminime in una sola linea, mantenendo consonante ogni tempo forte mentre il ritmo cambia."
+        first_three_species_melody:
+          instruction: "Combinare semibrevi, minime e semiminime in una sola linea, cambiando ritmo tra le frasi."
+        fux_cantus_firmus:
+          instruction: "Scrivere un cantus firmus: una linea cantabile da otto a quattordici semibrevi che inizia e termina sulla tonica."
+        second_species:
+          instruction: "Scrivere due minime per battuta, ponendo una consonanza su ogni tempo forte e attraversando la dissonanza solo per grado congiunto."
+        second_species_melody:
+          instruction: "Scrivere due minime per battuta contro il cantus firmus."
+        third_species:
+          instruction: "Scrivere quattro semiminime per battuta, mantenendo consonante ogni tempo forte e trattando ogni dissonanza come nota di passaggio o di volta."
+        third_species_harmony:
+          instruction: "Mantenere consonanti i tempi forti e trattare le dissonanze delle semiminime come note di passaggio o di volta."
+        third_species_melody:
+          instruction: "Scrivere quattro semiminime per battuta contro il cantus firmus."
+        third_species_triple_meter:
+          instruction: "Scrivere tre semiminime in ogni battuta ternaria, mantenendo consonante ogni tempo forte e risolvendo ogni dissonanza per grado congiunto."
+        third_species_triple_meter_melody:
+          instruction: "Scrivere tre semiminime per battuta contro il cantus firmus."

@@ -346,6 +346,20 @@ fr:
       meter: mesure
       motion: mouvement
       musical_symbol: symbole musical
+      # Le francais laisse tomber le nom : une ronde, pas une note ronde.
+      # note_values reprend donc rhythmic_units mot pour mot.
+      note_values:
+        double_whole: "brève"
+        eighth: "croche"
+        half: "blanche"
+        hundred_twenty_eighth: "quintuple croche"
+        longa: "longue"
+        maxima: "maxime"
+        quarter: "noire"
+        sixteenth: "double croche"
+        sixty_fourth: "quadruple croche"
+        thirty_second: "triple croche"
+        whole: "ronde"
       octave: octave
       pitch: hauteur de son
       pitch_class: classe de hauteur de son
@@ -353,8 +367,58 @@ fr:
       pitch_set: ensemble de hauteurs de son
       quality: qualité
       reference_pitch: hauteur de référence
+      # Vocabulaire propre, et non une derivation : pause, demi-pause, soupir,
+      # demi-soupir. Les points d'ancrage different de ceux des figures -- pause
+      # est la ronde, alors que croche est la huitieme. Seule la breve fait
+      # exception et se derive de la figure : pause de breve.
+      rest_values:
+        double_whole: "pause de brève"
+        eighth: "demi-soupir"
+        half: "demi-pause"
+        hundred_twenty_eighth: "trente-deuxième de soupir"
+        longa: "pause de longue"
+        maxima: "pause de maxime"
+        quarter: "soupir"
+        sixteenth: "quart de soupir"
+        sixty_fourth: "seizième de soupir"
+        thirty_second: "huitième de soupir"
+        whole: "pause"
       rhythm: rythme
       rhythmic_unit: unité rythmique
+      rhythmic_units:
+        double_whole:
+          one: "brève"
+          other: "brèves"
+        eighth:
+          one: "croche"
+          other: "croches"
+        half:
+          one: "blanche"
+          other: "blanches"
+        hundred_twenty_eighth:
+          one: "quintuple croche"
+          other: "quintuples croches"
+        longa:
+          one: "longue"
+          other: "longues"
+        maxima:
+          one: "maxime"
+          other: "maximes"
+        quarter:
+          one: "noire"
+          other: "noires"
+        sixteenth:
+          one: "double croche"
+          other: "doubles croches"
+        sixty_fourth:
+          one: "quadruple croche"
+          other: "quadruples croches"
+        thirty_second:
+          one: "triple croche"
+          other: "triples croches"
+        whole:
+          one: "ronde"
+          other: "rondes"
       scale: gamme
       scale_degree: degré de la gamme
       scale_type: type de gamme
@@ -365,3 +429,68 @@ fr:
       staff: portée
       tuba: tuba
       tuning: accord
+    # Infinitif partout : « Écrire en rondes et blanches. » Cela évite le choix
+    # entre tu et vous, qu'aucune spécification ne peut vérifier, et reste
+    # idiomatique pour une consigne.
+    #
+    # Le couple écrire/employer porte ce que l'anglais distingue par Write/Use :
+    # la règle face au constat.
+    #
+    # render_name met la première lettre en majuscule : guidelines.*.name
+    # commence donc en minuscule.
+    style:
+      guidelines:
+        allow_fifth_species_rhythmic_values:
+          instruction: "Écrire en blanches, noires et croches conjointes appariées sur les temps faibles, en réservant la ronde à la mesure finale."
+          violations:
+            default: "N'employer que des rondes à la mesure finale, des blanches, des noires et des croches conjointes appariées sur les temps faibles."
+        allow_whole_half_quarter_notes:
+          name: "rondes, blanches et noires seulement"
+          instruction: "Écrire en rondes, blanches et noires."
+          violations:
+            default: "N'employer que des rondes, des blanches et des noires."
+        first_bar_half_notes:
+          name: "blanches à la première mesure"
+          instruction: "Ouvrir la première mesure par des blanches, ou entrer après une demi-pause."
+          violations:
+            default: "Commencer la première mesure par des blanches, ou entrer après une demi-pause."
+        first_bar_quarter_notes:
+          name: "noires à la première mesure"
+          instruction: "Ouvrir la première mesure par des noires, ou entrer après un soupir."
+          violations:
+            default: "Commencer la première mesure par des noires, ou entrer après un soupir."
+        first_bar_whole_note:
+          name: "ronde à la première mesure"
+          instruction: "Ouvrir la première mesure par une ronde."
+          violations:
+            default: "Commencer la première mesure par une ronde."
+        note_count_per_bar:
+          name: "%{number} %{rhythmic_unit} par mesure"
+          instruction: "Dans chaque mesure intermédiaire, écrire %{number} %{rhythmic_unit}."
+          violations:
+            default: "Dans chaque mesure intermédiaire, employer %{number} %{rhythmic_unit}."
+      guides:
+        first_species:
+          instruction: "Écrire une ronde contre chaque note du cantus firmus, consonante avec elle et le plus souvent en mouvement contraire."
+        first_species_melody:
+          instruction: "Écrire une ronde contre chaque note du cantus firmus."
+        first_three_species:
+          instruction: "Combiner rondes, blanches et noires dans une même ligne, en gardant chaque temps fort consonant à mesure que le rythme change."
+        first_three_species_melody:
+          instruction: "Combiner rondes, blanches et noires dans une même ligne, en changeant de rythme entre les phrases."
+        fux_cantus_firmus:
+          instruction: "Écrire un cantus firmus : une ligne chantable de huit à quatorze rondes qui commence et finit sur la tonique."
+        second_species:
+          instruction: "Écrire deux blanches par mesure, en plaçant une consonance sur chaque temps fort et en ne traversant la dissonance que par degrés conjoints."
+        second_species_melody:
+          instruction: "Écrire deux blanches par mesure contre le cantus firmus."
+        third_species:
+          instruction: "Écrire quatre noires par mesure, en gardant chaque temps fort consonant et en traitant chaque dissonance comme note de passage ou broderie."
+        third_species_harmony:
+          instruction: "Garder les temps forts consonants et traiter les dissonances des noires comme notes de passage ou broderies."
+        third_species_melody:
+          instruction: "Écrire quatre noires par mesure contre le cantus firmus."
+        third_species_triple_meter:
+          instruction: "Écrire trois noires dans chaque mesure à trois temps, en gardant chaque temps fort consonant et en résolvant chaque dissonance par degrés conjoints."
+        third_species_triple_meter_melody:
+          instruction: "Écrire trois noires par mesure contre le cantus firmus."
