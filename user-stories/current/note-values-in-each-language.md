@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-28T11:57:55-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-28T12:31:07-07:00
+  updated_at:   2026-08-28T12:34:45-07:00
 -->
 
 # Story: Note Values in Each Language
@@ -131,6 +131,30 @@ not `one`/`other`. `partial_plurals_in` in `guide_strings_spec.rb` currently
 guards `en_GB` only, because `en_GB` was the only mid-chain locale; `de`, `fr`
 and `it` are all leaves, but Russian's form set is genuinely different and the
 Ruby fallback at `template.rb` exists precisely for this.
+
+**Write the plural forms out; do not derive them.** The `en_GB` hashes are
+load-bearing — collapsed to scalars, `note_count_per_bar` renders "Use four
+crotchet in each middle bar", because I18n reads a scalar past the count and the
+British sentence has dropped the noun that would otherwise carry the plural.
+`en` depends on that same read-past behaviour, so `Template.pluralize` cannot
+inflect scalars as a general rule without breaking English.
+
+Nor should it inflect for one locale. ActiveSupport is already a dependency and
+pluralizes all ten British names correctly, but `en_GB` and `es` are the only
+two of the six here where `-s` is right:
+
+| Locale | plural of the quarter-note word |
+| --- | --- |
+| `en_GB` | crotchet → crotchets |
+| `es` | negra → negras |
+| `de` | Viertel → Viertel — invariant after a numeral |
+| `it` | semiminima → semiminime |
+| `fr` | double croche → doubles croches — both words inflect |
+| `ru` | четвертная / четвертные / четвертных |
+
+German's `one` and `other` will be the same string. That is correct, not a
+copy-paste slip: *zwei Halbe*, *vier Viertel*. The verbosity is the shape the
+five locales have to fill in, and five of them cannot be generated.
 
 **Russian needs cases, not only plurals.** `%{rhythmic_unit}` is interpolated by
 exactly one guideline — `note_count_per_bar`, three strings — where nominative
