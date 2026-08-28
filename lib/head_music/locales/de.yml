@@ -311,6 +311,24 @@ de:
     reference_pitches:
       chamber_tone: Kammerton
       choir_tone: Chorton
+    # Spelled out for %{number}, because the humanize gem ships no Italian at all
+    # and the forms it does ship are wrong here: capitalized mid-sentence for
+    # German, and masculine where the nouns being counted -- note values, and
+    # notes -- are feminine in all five of these languages.
+    #
+    # Only 1, and 2 in Russian, inflect for gender; every larger number here is
+    # invariant. The counts are the ones the registry actually renders, guarded
+    # by a spec, so a guideline introducing a new one fails rather than quietly
+    # falling back to an English word.
+    number_words:
+      "1": "eine"
+      "2": "zwei"
+      "3": "drei"
+      "4": "vier"
+      "5": "fünf"
+      "8": "acht"
+      "14": "vierzehn"
+      "32": "zweiunddreißig"
     rudiments:
       alteration: Alteration
       chromatic_interval: chromatisches Intervall

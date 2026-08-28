@@ -105,15 +105,79 @@ describe HeadMusic::Style::Template do
   end
 
   describe ".number_word" do
+    # Lowercase, where humanize returns "Acht": these land mid-sentence.
     it "speaks the number in the reader's language" do
-      expect(described_class.number_word(8, locale: :de)).to eq "Acht"
+      expect(described_class.number_word(8, locale: :de)).to eq "acht"
     end
 
     # humanize raises for a locale it does not ship, and the gem ships two it
-    # does not know, so the chain is walked rather than asked directly.
+    # does not know, so the chain is walked rather than asked directly. Shown
+    # with a count no guideline renders, since the ones that are rendered are
+    # spelled out above and never reach humanize.
     it "falls down the chain for a locale humanize does not know" do
       expect(described_class.humanize_locale(:it)).to eq :en
-      expect(described_class.number_word(8, locale: :it)).to eq "eight"
+      expect(described_class.number_word(7, locale: :it)).to eq "seven"
+    end
+
+    # Which is why the counts a sentence actually renders are spelled out. The
+    # chain above is the reason Italian would otherwise read "Scrivi four
+    # semiminime": humanize has no Italian to fall down to.
+    it "prefers the locale's own numeral to what humanize would return" do
+      expect(described_class.number_word(4, locale: :it)).to eq "quattro"
+      expect(described_class.number_word(1, locale: :de)).to eq "eine"
+    end
+
+    it "leaves English to humanize" do
+      expect(described_class.number_word(4, locale: :en)).to eq "four"
+      expect(described_class.number_word(4, locale: :en_GB)).to eq "four"
+    end
+  end
+
+  # I18n's Simple backend implements English's one/other and nothing else, so a
+  # Russian entry carrying one/few/many renders `other` for counts 2, 3 and 5 --
+  # or raises when `other` is absent, which is the seam this uses.
+  describe "a locale whose plural rule the backend does not implement" do
+    let(:key) { "rhythmic_units.half" }
+    let(:scope) { described_class::RUDIMENT_SCOPE }
+
+    before do
+      I18n.backend.store_translations(
+        :ru, {head_music: {rudiments: {rhythmic_units: {half: {one: "одна", few: "две", many: "пять"}}}}}
+      )
+      described_class.fell_back_to_ruby.clear
+    end
+
+    def form_for(count) = I18n.with_locale(:ru) { described_class.pluralize(key, count: count, scope: scope) }
+
+    it "chooses one for 1 and 21, but not for 11" do
+      expect([form_for(1), form_for(21), form_for(101)]).to all eq "одна"
+      expect(form_for(11)).to eq "пять"
+    end
+
+    it "chooses few for 2 through 4, but not for 12 through 14" do
+      expect([form_for(2), form_for(3), form_for(4), form_for(22)]).to all eq "две"
+      expect([form_for(12), form_for(13)]).to all eq "пять"
+    end
+
+    it "chooses many for 5 and above" do
+      expect([form_for(5), form_for(25), form_for(100)]).to all eq "пять"
+    end
+
+    # Applying a rule the gem knows is not a fallback. Recorded as one, every
+    # Russian sentence would report a plural gap and the guard watching for real
+    # ones would have to be loosened until it caught nothing.
+    it "does not record a known rule as a fallback" do
+      form_for(2)
+
+      expect(described_class.fell_back_to_ruby).to be_empty
+    end
+
+    it "still records a genuinely thin entry" do
+      I18n.backend.store_translations(:fr, {head_music: {rudiments: {rhythmic_units: {half: {other: "blanches"}}}}})
+
+      I18n.with_locale(:fr) { described_class.pluralize(key, count: 1, scope: scope) }
+
+      expect(described_class.fell_back_to_ruby).to eq [key]
     end
   end
 

@@ -305,6 +305,24 @@ es:
       fr: francés
       it: italiano
       ru: ruso
+    # Spelled out for %{number}, because the humanize gem ships no Italian at all
+    # and the forms it does ship are wrong here: capitalized mid-sentence for
+    # German, and masculine where the nouns being counted -- note values, and
+    # notes -- are feminine in all five of these languages.
+    #
+    # Only 1, and 2 in Russian, inflect for gender; every larger number here is
+    # invariant. The counts are the ones the registry actually renders, guarded
+    # by a spec, so a guideline introducing a new one fails rather than quietly
+    # falling back to an English word.
+    number_words:
+      "1": "una"
+      "2": "dos"
+      "3": "tres"
+      "4": "cuatro"
+      "5": "cinco"
+      "8": "ocho"
+      "14": "catorce"
+      "32": "treinta y dos"
     rudiments:
       alteration: alteración
       chromatic_interval: intervalo cromático

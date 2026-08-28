@@ -31,7 +31,7 @@ en_GB:
         eighth: "quaver"
         half: "minim"
         hundred_twenty_eighth: "semihemidemisemiquaver"
-        quadruple_whole: "longa"
+        longa: "longa"
         quarter: "crotchet"
         sixteenth: "semiquaver"
         sixty_fourth: "hemidemisemiquaver"
@@ -42,7 +42,7 @@ en_GB:
         eighth: "quaver rest"
         half: "minim rest"
         hundred_twenty_eighth: "semihemidemisemiquaver rest"
-        quadruple_whole: "longa rest"
+        longa: "longa rest"
         quarter: "crotchet rest"
         sixteenth: "semiquaver rest"
         sixty_fourth: "hemidemisemiquaver rest"
@@ -63,7 +63,7 @@ en_GB:
         hundred_twenty_eighth:
           one: "semihemidemisemiquaver"
           other: "semihemidemisemiquavers"
-        quadruple_whole:
+        longa:
           one: "longa"
           other: "longas"
         quarter:

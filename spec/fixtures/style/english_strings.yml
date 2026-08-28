@@ -1,0 +1,577 @@
+---
+en:
+- Fux Cantus Firmus
+- 'Write a cantus firmus: a singable line of eight to fourteen whole notes that begins
+  and ends on the tonic.'
+- Salzer–Schachter Cantus Firmus
+- Write a cantus firmus with a single clear climax and stepwise motion away from every
+  leap.
+- Diatonic Melody
+- Write a singable diatonic melody that stays in one key.
+- First Species Melody
+- Write one whole note against each note of the cantus firmus.
+- First Species Harmony
+- Set your line against the cantus firmus in consonances, moving mostly in contrary
+  motion.
+- Second Species Melody
+- Write two half notes in each bar against the cantus firmus.
+- Second Species Harmony
+- Place a consonance on each downbeat, and pass through dissonance only by step on
+  the weak beat.
+- Third Species Melody
+- Write four quarter notes in each bar against the cantus firmus.
+- Third Species Harmony
+- Keep the downbeats consonant, and treat the quarter-note dissonances as passing
+  or neighbor tones.
+- Third Species Triple Meter Melody
+- Write three quarter notes in each bar against the cantus firmus.
+- Third Species Triple Meter Harmony
+- Keep the downbeats consonant in triple meter, and resolve every dissonance by step.
+- Fourth Species Melody
+- Tie each note across the barline, suspending it into the next bar.
+- Fourth Species Harmony
+- Prepare each suspension as a consonance and resolve it downward by step.
+- First Three Species Melody
+- Combine whole, half and quarter notes in one line, changing rhythm between phrases.
+- First Three Species Harmony
+- Set a mixed-rhythm line against the cantus firmus, keeping each downbeat consonant.
+- Fifth Species Melody
+- 'Write florid counterpoint: mix note values and ties as the line requires.'
+- Fifth Species Harmony
+- Write florid counterpoint against the cantus firmus, treating every dissonance as
+  its figure demands.
+- Arch Contour Melody
+- Write a melody that rises to a single peak and falls back.
+- Ascending Contour Melody
+- Write a melody that begins at its lowest note and ends at its highest.
+- Descending Contour Melody
+- Write a melody that begins at its highest note and ends at its lowest.
+- Static Contour Melody
+- Write a melody that stays within a narrow range and returns to where it began.
+- Valley Contour Melody
+- Write a melody that falls to a single low point and rises back.
+- Wave Contour Melody
+- Write a melody that changes direction three or more times.
+- First Species
+- Write one whole note against each note of the cantus firmus, consonant with it and
+  moving mostly in contrary motion.
+- Second Species
+- Write two half notes in each bar, placing a consonance on each downbeat and passing
+  through dissonance only by step.
+- Third Species
+- Write four quarter notes in each bar, keeping every downbeat consonant and treating
+  each dissonance as a passing or neighbor tone.
+- Third Species Triple Meter
+- Write three quarter notes in each bar of triple meter, keeping every downbeat consonant
+  and resolving each dissonance by step.
+- Fourth Species
+- Tie each note across the barline, preparing every suspension as a consonance and
+  resolving it downward by step.
+- Fifth Species
+- Write florid counterpoint against the cantus firmus, mixing note values and ties
+  as the line requires and treating every dissonance as its figure demands.
+- First Three Species
+- Combine whole, half and quarter notes in one line, keeping every downbeat consonant
+  as the rhythm changes.
+- Minimum of three notes
+- Write at least three notes.
+- Write at least three notes.
+- Single consonant climax
+- Give the line one clear peak, consonant with the tonic, sounded once or twice with
+  a step between.
+- Peak once, or twice with a step between.
+- Peak on a note that is consonant with the tonic.
+- Diatonic notes only
+- Write using only the notes of the key signature.
+- Use only notes in the key signature.
+- At most one octave leap
+- Use no more than one octave leap.
+- Use a maximum of one octave leap.
+- Mostly stepwise motion
+- Move mostly by step, with leaps the exception.
+- Use mostly conjunct motion.
+- Singable melodic intervals
+- Build the line from P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 only.
+- Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line.
+- Range of a tenth
+- Keep the melody within a tenth.
+- Limit melodic range to a tenth.
+- No repeated notes
+- Move to a different note each time rather than repeating one.
+- Always move to a different note.
+- Final note on the tonic
+- Close the line on the first scale degree.
+- End on the first scale degree.
+- Minimum of eight notes
+- Write at least eight notes.
+- Write at least eight notes.
+- Maximum of fourteen notes
+- Write no more than fourteen notes.
+- Write up to fourteen notes.
+- Frequent changes of direction
+- Turn the line around often.
+- Change melodic direction frequently.
+- No rests
+- Sound a note in every measure.
+- Place a note in each measure.
+- One rhythmic value throughout
+- Give every note the same rhythmic value.
+- Use the same rhythmic value throughout.
+- Leap recovery
+- Follow each large leap with a step, a repeated note, a change of direction, or the
+  rest of a triad.
+- Recover large leaps by step in the opposite direction.
+- First note on the tonic
+- Begin on the first scale degree.
+- Start on the first scale degree.
+- Stepwise descent to the final note
+- Approach the final note by step from above.
+- Step down to the final note.
+- Occasional changes of direction
+- Turn the line around from time to time.
+- Change melodic direction occasionally.
+- Prepared octave leaps
+- Approach and leave each octave leap from inside the octave.
+- Approach and leave an octave leap from inside the octave.
+- Leap recovery
+- Follow each large leap with a step, a repeated note, a change of direction, or the
+  rest of a triad.
+- Recover leaps by step, repetition, opposite direction, or spelling triad.
+- Stepwise approach to the final note
+- Approach the final note by step.
+- Step to the final note.
+- Singable melodic intervals
+- Build the line from P1, m2, M2, m3, M3, P4, P5, m6, M6, P8 only.
+- Use only P1, m2, M2, m3, M3, P4, P5, m6, M6, P8 in the melodic line.
+- Minimum of five notes
+- Write at least five notes.
+- Write at least five notes.
+- Maximum of thirty-two notes
+- Write no more than thirty-two notes.
+- Write up to thirty-two notes.
+- Whole note in the first bar
+- Open with a whole note in the first bar.
+- Begin with a whole note in the first bar.
+- One whole note per bar
+- Write one whole note in each middle bar.
+- Use one whole note in each middle bar.
+- Single note in the final bar
+- Close with one note that fills the final bar.
+- End with a single note that fills the final bar.
+- Perfect consonance at the start
+- Begin on the tonic or a perfect consonance above it, unless this is the bass voice.
+- Start on the tonic or a perfect consonance above the tonic (unless bass voice).
+- Stepwise exit from a unison
+- Leave every unison by step.
+- Exit a unison by step.
+- Stepwise ascent to the final note
+- Approach the final note by step from below.
+- Step up to the final note.
+- Set against another voice
+- Write this voice against another.
+- Set this voice against another voice.
+- Unisons only at the ends
+- Save the unison for the first and last notes.
+- Use a unison only on the first or the last note.
+- Note against note
+- Write one note against each note of the other voice.
+- Place a note for each note in the other voice.
+- No parallel perfect consonances on downbeats
+- Follow every downbeat fifth or octave with a different interval on the next downbeat.
+- Avoid parallel perfect consonances on consecutive downbeats.
+- Contrary approach to perfect consonances
+- Approach every perfect consonance by contrary motion.
+- Approach perfect consonances by contrary motion.
+- No voice crossing
+- Keep your line on its own side of the other voice.
+- Avoid crossing voices. Maintain the high-low relationship between voices.
+- No voice overlap
+- Keep every note on your own side of the notes next to it in the other voice.
+- Avoid overlapping voices. Maintain the high-low relationship between voices even
+  for adjacent notes.
+- Consonant downbeats
+- Sound a consonance on every downbeat, except where a tie suspends one.
+- Use consonant harmonic intervals on every downbeat (unless a tied suspension).
+- Contrary motion preferred
+- Move the voices in opposite directions wherever the line allows.
+- Prefer contrary motion. Move voices in different melodic directions.
+- Imperfect consonances preferred
+- Favor imperfect consonances, thirds and sixths, over perfect ones.
+- Prefer imperfect harmonic intervals.
+- Half notes in the first bar
+- Open the first bar with half notes, or enter after a half rest.
+- Begin the first bar with half notes, or enter after a half rest.
+- Two half notes per bar
+- Write two half notes in each middle bar.
+- Use two half notes in each middle bar.
+- No rests once the line begins
+- Once the line has begun, keep it sounding to the end.
+- Do not rest after the first note has sounded.
+- Weak beat dissonance treatment
+- Use dissonance on the weak beat only as a passing tone.
+- Use only passing tones for dissonances on the weak beat.
+- No parallel perfect consonances across the barline
+- Follow a fifth or octave on a weak beat with a different interval on the downbeat
+  after it.
+- Avoid parallel perfect consonances from weak beat to the following downbeat.
+- No unisons on strong beats
+- Keep strong beats clear of unisons except at the beginning and the end.
+- Avoid unisons on strong beats except at the beginning and end.
+- Quarter notes in the first bar
+- Open the first bar with quarter notes, or enter after a quarter rest.
+- Begin the first bar with quarter notes, or enter after a quarter rest.
+- Four quarter notes per bar
+- Write four quarter notes in each middle bar.
+- Use four quarter notes in each middle bar.
+- Third species dissonance treatment
+- Reach every dissonance as a passing tone, neighbor tone, cambiata, or double neighbor
+  figure.
+- Treat dissonances as passing tones, neighbor tones, cambiata, or double neighbor
+  figures.
+- Three quarter notes per bar
+- Write three quarter notes in each middle bar.
+- Use three quarter notes in each middle bar.
+- Triple meter dissonance treatment
+- Reach every dissonance as a passing tone or a neighbor tone.
+- Treat dissonances as passing tones or neighbor tones.
+- Note against note with ties
+- Write one note against each cantus firmus note, letting notes sustain across the
+  barline.
+- Place one note per cantus firmus note. Notes may sustain across the barline.
+- Rare breaks in the syncopation
+- Where the syncopated texture has to break, break it with a passing tone, and rarely.
+- Use only passing tones when breaking the syncopated texture, and break it rarely.
+- Suspension treatment
+- Prepare every suspension as a consonance, then resolve it downward by step.
+- Prepare each suspension as a consonance and resolve it downward by step.
+- No parallel perfect consonances in syncopation
+- Follow every syncopated fifth or octave with a different interval.
+- Avoid parallel perfect consonances between syncopated notes.
+- Whole, half, and quarter notes only
+- Write in whole notes, half notes, and quarter notes.
+- Use only whole notes, half notes, and quarter notes.
+- Florid dissonance treatment
+- Reach every dissonance as a passing tone, cambiata, or double neighbor on a weak
+  beat, and prepare and resolve every tied suspension.
+- Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak
+  beat, and prepare and resolve every tied suspension.
+- Fifth species note values
+- Write in half notes, quarter notes, and paired stepwise eighth notes on weak beats,
+  saving the whole note for the final bar.
+- Use only whole notes in the final bar, half notes, quarter notes, and paired stepwise
+  eighth notes on weak beats.
+- Three or more rhythmic values
+- Use at least three different rhythmic values so the line is truly florid.
+- Use at least three different rhythmic values for a truly florid line.
+- Minimum of two melodic intervals
+- Include at least two melodic intervals.
+- Write at least two melodic intervals.
+- Arch contour
+- Shape the line into the arch contour.
+- Write a melody with the arch contour.
+- Minimum of one melodic interval
+- Include at least one melodic interval.
+- Write at least one melodic interval.
+- Ascending contour
+- Shape the line into the ascending contour.
+- Write a melody with the ascending contour.
+- Descending contour
+- Shape the line into the descending contour.
+- Write a melody with the descending contour.
+- Static contour
+- Shape the line into the static contour.
+- Write a melody with the static contour.
+- Valley contour
+- Shape the line into the valley contour.
+- Write a melody with the valley contour.
+- Wave contour
+- Shape the line into the wave contour.
+- Write a melody with the wave contour.
+en_GB:
+- Fux Cantus Firmus
+- 'Write a cantus firmus: a singable line of eight to fourteen semibreves that begins
+  and ends on the tonic.'
+- Salzer–Schachter Cantus Firmus
+- Write a cantus firmus with a single clear climax and stepwise motion away from every
+  leap.
+- Diatonic Melody
+- Write a singable diatonic melody that stays in one key.
+- First Species Melody
+- Write one semibreve against each note of the cantus firmus.
+- First Species Harmony
+- Set your line against the cantus firmus in consonances, moving mostly in contrary
+  motion.
+- Second Species Melody
+- Write two minims in each bar against the cantus firmus.
+- Second Species Harmony
+- Place a consonance on each downbeat, and pass through dissonance only by step on
+  the weak beat.
+- Third Species Melody
+- Write four crotchets in each bar against the cantus firmus.
+- Third Species Harmony
+- Keep the downbeats consonant, and treat the crotchet dissonances as passing or neighbour
+  tones.
+- Third Species Triple Meter Melody
+- Write three crotchets in each bar against the cantus firmus.
+- Third Species Triple Meter Harmony
+- Keep the downbeats consonant in triple metre, and resolve every dissonance by step.
+- Fourth Species Melody
+- Tie each note across the barline, suspending it into the next bar.
+- Fourth Species Harmony
+- Prepare each suspension as a consonance and resolve it downward by step.
+- First Three Species Melody
+- Combine semibreves, minims and crotchets in one line, changing rhythm between phrases.
+- First Three Species Harmony
+- Set a mixed-rhythm line against the cantus firmus, keeping each downbeat consonant.
+- Fifth Species Melody
+- 'Write florid counterpoint: mix note values and ties as the line requires.'
+- Fifth Species Harmony
+- Write florid counterpoint against the cantus firmus, treating every dissonance as
+  its figure demands.
+- Arch Contour Melody
+- Write a melody that rises to a single peak and falls back.
+- Ascending Contour Melody
+- Write a melody that begins at its lowest note and ends at its highest.
+- Descending Contour Melody
+- Write a melody that begins at its highest note and ends at its lowest.
+- Static Contour Melody
+- Write a melody that stays within a narrow range and returns to where it began.
+- Valley Contour Melody
+- Write a melody that falls to a single low point and rises back.
+- Wave Contour Melody
+- Write a melody that changes direction three or more times.
+- First Species
+- Write one semibreve against each note of the cantus firmus, consonant with it and
+  moving mostly in contrary motion.
+- Second Species
+- Write two minims in each bar, placing a consonance on each downbeat and passing
+  through dissonance only by step.
+- Third Species
+- Write four crotchets in each bar, keeping every downbeat consonant and treating
+  each dissonance as a passing or neighbouring tone.
+- Third Species Triple Meter
+- Write three crotchets in each bar of triple metre, keeping every downbeat consonant
+  and resolving each dissonance by step.
+- Fourth Species
+- Tie each note across the barline, preparing every suspension as a consonance and
+  resolving it downward by step.
+- Fifth Species
+- Write florid counterpoint against the cantus firmus, mixing note values and ties
+  as the line requires and treating every dissonance as its figure demands.
+- First Three Species
+- Combine semibreves, minims and crotchets in one line, keeping every downbeat consonant
+  as the rhythm changes.
+- Minimum of three notes
+- Write at least three notes.
+- Write at least three notes.
+- Single consonant climax
+- Give the line one clear peak, consonant with the tonic, sounded once or twice with
+  a step between.
+- Peak once, or twice with a step between.
+- Peak on a note that is consonant with the tonic.
+- Diatonic notes only
+- Write using only the notes of the key signature.
+- Use only notes in the key signature.
+- At most one octave leap
+- Use no more than one octave leap.
+- Use a maximum of one octave leap.
+- Mostly stepwise motion
+- Move mostly by step, with leaps the exception.
+- Use mostly conjunct motion.
+- Singable melodic intervals
+- Build the line from P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 only.
+- Use only P1, m2, M2, m3, M3, P4, P5, m6 (ascending), P8 in the melodic line.
+- Range of a tenth
+- Keep the melody within a tenth.
+- Limit melodic range to a tenth.
+- No repeated notes
+- Move to a different note each time rather than repeating one.
+- Always move to a different note.
+- Final note on the tonic
+- Close the line on the first scale degree.
+- End on the first scale degree.
+- Minimum of eight notes
+- Write at least eight notes.
+- Write at least eight notes.
+- Maximum of fourteen notes
+- Write no more than fourteen notes.
+- Write up to fourteen notes.
+- Frequent changes of direction
+- Turn the line around often.
+- Change melodic direction frequently.
+- No rests
+- Sound a note in every bar.
+- Place a note in each bar.
+- One rhythmic value throughout
+- Give every note the same rhythmic value.
+- Use the same rhythmic value throughout.
+- Leap recovery
+- Follow each large leap with a step, a repeated note, a change of direction, or the
+  rest of a triad.
+- Recover large leaps by step in the opposite direction.
+- First note on the tonic
+- Begin on the first scale degree.
+- Start on the first scale degree.
+- Stepwise descent to the final note
+- Approach the final note by step from above.
+- Step down to the final note.
+- Occasional changes of direction
+- Turn the line around from time to time.
+- Change melodic direction occasionally.
+- Prepared octave leaps
+- Approach and leave each octave leap from inside the octave.
+- Approach and leave an octave leap from inside the octave.
+- Leap recovery
+- Follow each large leap with a step, a repeated note, a change of direction, or the
+  rest of a triad.
+- Recover leaps by step, repetition, opposite direction, or spelling triad.
+- Stepwise approach to the final note
+- Approach the final note by step.
+- Step to the final note.
+- Singable melodic intervals
+- Build the line from P1, m2, M2, m3, M3, P4, P5, m6, M6, P8 only.
+- Use only P1, m2, M2, m3, M3, P4, P5, m6, M6, P8 in the melodic line.
+- Minimum of five notes
+- Write at least five notes.
+- Write at least five notes.
+- Maximum of thirty-two notes
+- Write no more than thirty-two notes.
+- Write up to thirty-two notes.
+- Semibreve in the first bar
+- Open with a semibreve in the first bar.
+- Begin with a semibreve in the first bar.
+- One semibreve per bar
+- Write one semibreve in each middle bar.
+- Use one semibreve in each middle bar.
+- Single note in the final bar
+- Close with one note that fills the final bar.
+- End with a single note that fills the final bar.
+- Perfect consonance at the start
+- Begin on the tonic or a perfect consonance above it, unless this is the bass voice.
+- Start on the tonic or a perfect consonance above the tonic (unless bass voice).
+- Stepwise exit from a unison
+- Leave every unison by step.
+- Exit a unison by step.
+- Stepwise ascent to the final note
+- Approach the final note by step from below.
+- Step up to the final note.
+- Set against another voice
+- Write this voice against another.
+- Set this voice against another voice.
+- Unisons only at the ends
+- Save the unison for the first and last notes.
+- Use a unison only on the first or the last note.
+- Note against note
+- Write one note against each note of the other voice.
+- Place a note for each note in the other voice.
+- No parallel perfect consonances on downbeats
+- Follow every downbeat fifth or octave with a different interval on the next downbeat.
+- Avoid parallel perfect consonances on consecutive downbeats.
+- Contrary approach to perfect consonances
+- Approach every perfect consonance by contrary motion.
+- Approach perfect consonances by contrary motion.
+- No voice crossing
+- Keep your line on its own side of the other voice.
+- Avoid crossing voices. Maintain the high-low relationship between voices.
+- No voice overlap
+- Keep every note on your own side of the notes next to it in the other voice.
+- Avoid overlapping voices. Maintain the high-low relationship between voices even
+  for adjacent notes.
+- Consonant downbeats
+- Sound a consonance on every downbeat, except where a tie suspends one.
+- Use consonant harmonic intervals on every downbeat (unless a tied suspension).
+- Contrary motion preferred
+- Move the voices in opposite directions wherever the line allows.
+- Prefer contrary motion. Move voices in different melodic directions.
+- Imperfect consonances preferred
+- Favor imperfect consonances, thirds and sixths, over perfect ones.
+- Prefer imperfect harmonic intervals.
+- Minims in the first bar
+- Open the first bar with minims, or enter after a minim rest.
+- Begin the first bar with minims, or enter after a minim rest.
+- Two minims per bar
+- Write two minims in each middle bar.
+- Use two minims in each middle bar.
+- No rests once the line begins
+- Once the line has begun, keep it sounding to the end.
+- Do not rest after the first note has sounded.
+- Weak beat dissonance treatment
+- Use dissonance on the weak beat only as a passing tone.
+- Use only passing tones for dissonances on the weak beat.
+- No parallel perfect consonances across the barline
+- Follow a fifth or octave on a weak beat with a different interval on the downbeat
+  after it.
+- Avoid parallel perfect consonances from weak beat to the following downbeat.
+- No unisons on strong beats
+- Keep strong beats clear of unisons except at the beginning and the end.
+- Avoid unisons on strong beats except at the beginning and end.
+- Crotchets in the first bar
+- Open the first bar with crotchets, or enter after a crotchet rest.
+- Begin the first bar with crotchets, or enter after a crotchet rest.
+- Four crotchets per bar
+- Write four crotchets in each middle bar.
+- Use four crotchets in each middle bar.
+- Third species dissonance treatment
+- Reach every dissonance as a passing tone, neighbour tone, cambiata, or double neighbour
+  figure.
+- Treat dissonances as passing tones, neighbour tones, cambiata, or double neighbour
+  figures.
+- Three crotchets per bar
+- Write three crotchets in each middle bar.
+- Use three crotchets in each middle bar.
+- Triple metre dissonance treatment
+- Reach every dissonance as a passing tone or a neighbour tone.
+- Treat dissonances as passing tones or neighbour tones.
+- Note against note with ties
+- Write one note against each cantus firmus note, letting notes sustain across the
+  barline.
+- Place one note per cantus firmus note. Notes may sustain across the barline.
+- Rare breaks in the syncopation
+- Where the syncopated texture has to break, break it with a passing tone, and rarely.
+- Use only passing tones when breaking the syncopated texture, and break it rarely.
+- Suspension treatment
+- Prepare every suspension as a consonance, then resolve it downward by step.
+- Prepare each suspension as a consonance and resolve it downward by step.
+- No parallel perfect consonances in syncopation
+- Follow every syncopated fifth or octave with a different interval.
+- Avoid parallel perfect consonances between syncopated notes.
+- Semibreves, minims, and crotchets only
+- Write in semibreves, minims, and crotchets.
+- Use only semibreves, minims, and crotchets.
+- Florid dissonance treatment
+- Reach every dissonance as a passing tone, cambiata, or double neighbour on a weak
+  beat, and prepare and resolve every tied suspension.
+- Treat each dissonance as a passing tone, cambiata, or double neighbour on a weak
+  beat, and prepare and resolve every tied suspension.
+- Fifth species note values
+- Write in minims, crotchets, and paired stepwise quavers on weak beats, saving the
+  semibreve for the final bar.
+- Use only semibreves in the final bar, minims, crotchets, and paired stepwise quavers
+  on weak beats.
+- Three or more rhythmic values
+- Use at least three different rhythmic values so the line is truly florid.
+- Use at least three different rhythmic values for a truly florid line.
+- Minimum of two melodic intervals
+- Include at least two melodic intervals.
+- Write at least two melodic intervals.
+- Arch contour
+- Shape the line into the arch contour.
+- Write a melody with the arch contour.
+- Minimum of one melodic interval
+- Include at least one melodic interval.
+- Write at least one melodic interval.
+- Ascending contour
+- Shape the line into the ascending contour.
+- Write a melody with the ascending contour.
+- Descending contour
+- Shape the line into the descending contour.
+- Write a melody with the descending contour.
+- Static contour
+- Shape the line into the static contour.
+- Write a melody with the static contour.
+- Valley contour
+- Shape the line into the valley contour.
+- Write a melody with the valley contour.
+- Wave contour
+- Shape the line into the wave contour.
+- Write a melody with the wave contour.
