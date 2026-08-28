@@ -356,6 +356,7 @@ de:
         half: "halbe Note"
         hundred_twenty_eighth: "Hundertachtundzwanzigstelnote"
         longa: "Longa"
+        maxima: "Maxima"
         quarter: "Viertelnote"
         sixteenth: "Sechzehntelnote"
         sixty_fourth: "Vierundsechzigstelnote"
@@ -374,6 +375,7 @@ de:
         half: "halbe Pause"
         hundred_twenty_eighth: "Hundertachtundzwanzigstelpause"
         longa: "Longa-Pause"
+        maxima: "Maxima-Pause"
         quarter: "Viertelpause"
         sixteenth: "Sechzehntelpause"
         sixty_fourth: "Vierundsechzigstelpause"
@@ -402,6 +404,9 @@ de:
         longa:
           one: "Longa"
           other: "Longen"
+        maxima:
+          one: "Maxima"
+          other: "Maximen"
         quarter:
           one: "Viertel"
           other: "Viertel"

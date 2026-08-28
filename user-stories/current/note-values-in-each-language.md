@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-28T11:57:55-07:00
   planned_at:   2026-08-28T13:04:15-07:00
   finished_at:
-  updated_at:   2026-08-28T14:02:18-07:00
+  updated_at:   2026-08-28T14:31:07-07:00
 -->
 
 # Story: Note Values in Each Language
@@ -54,9 +54,9 @@ units, not one group of three.
 | `note_values` | quarter note | crotchet | scalar |
 | `rest_values` | quarter rest | crotchet rest | scalar |
 
-The ten units, in the key names the locale files use: `longa`, `double_whole`,
-`whole`, `half`, `quarter`, `eighth`, `sixteenth`, `thirty_second`,
-`sixty_fourth`, `hundred_twenty_eighth`.
+The eleven units, in the key names the locale files use: `maxima`, `longa`,
+`double_whole`, `whole`, `half`, `quarter`, `eighth`, `sixteenth`,
+`thirty_second`, `sixty_fourth`, `hundred_twenty_eighth`.
 
 So the vocabulary side is **30 entries per language, not 3** — 150 across the
 five. The sentence side is unchanged.
@@ -170,12 +170,16 @@ groups unchanged: the en_GB-introduces-no-new-key comparison, the every-English-
 unit-has-a-British-name check, the complete-plural-forms guard and its
 walks-what-it-guards companion.
 
-**Key by the identifier.** `quadruple_whole` becomes `longa`, and the `en` value
-stays "quadruple whole note". The rule is that every key is the snake_cased
+**Key by the identifier.** `quadruple_whole` becomes `longa`. The `en` *value*
+became "longa" too, once American usage was checked — see the Latin boundary
+above — but that is a separate question: the rule here is that every key is the
+snake_cased
 `american_name` from `rudiment/rhythmic_units.yml`, so a lookup built the way
 `note_count_per_bar` builds one always resolves; `quadruple_whole` was the only
-key breaking it. The rule is additive-safe: `maxima` (8.0) and
-`two_hundred_fifty_sixth` can join the ten later without disturbing it.
+key breaking it. `maxima` (8.0) joined on the same rule, closing the
+`MissingTemplate` a guideline configured with it would have raised.
+`two_hundred_fifty_sixth` stays declared-untranslated: no source in any of the
+seven languages names it.
 
 **The sweep gains a data-level check; the prose scan stays.** Neither alone
 covers both failures. Only the prose scan catches vocabulary hard-coded into a
@@ -195,7 +199,7 @@ cover what they can and exempt the rest by name.
 - A German reader gets their own note values in every style string that names
   one, with the declined form in the sentence and the nominative in the hash
 - All three groups — `rhythmic_units`, `note_values`, `rest_values` — carry all
-  ten units for German, keyed by the `RhythmicUnit` identifier
+  eleven units for German, keyed by the `RhythmicUnit` identifier
 - The spec's tree walks cover all three groups, so a key or a plural form missing
   from `note_values` or `rest_values` fails the way one missing from
   `rhythmic_units` does
@@ -290,10 +294,9 @@ Steps 1–5 are a gate: no locale data lands until they are green. Steps 6–10 
 one locale each and independent once the gate passes.
 
 1. **Rename `quadruple_whole` to `longa`** in all three groups in `en.yml` and
-   `en_GB.yml`; value stays "quadruple whole". Add `maxima` — it is a real
-   identifier, so `RhythmicValue.get("maxima")` reaching `NoteCountPerBar`
-   raises `MissingTemplate` today. Leave `two_hundred_fifty_sixth` out and
-   record why. Add the guard that would have caught this: every vocabulary key
+   `en_GB.yml`. Add `maxima` — it is a real identifier, so
+   `RhythmicValue.get("maxima")` reaching `NoteCountPerBar` raises
+   `MissingTemplate` today. Leave `two_hundred_fifty_sixth` out and record why. Add the guard that would have caught this: every vocabulary key
    names a real `RhythmicUnit` identifier. Do **not** rename the data file —
    `RhythmicUnit#name` is an identifier indexed by duration arithmetic, grading
    and MusicXML export.
@@ -411,8 +414,12 @@ ordinary bug, not a regression: no spec pins these sentences, so nothing breaks
 when a German reader tells us the phrasing is wrong.
 
 **The unconfirmed rows resolve by one rule, and the grid is now complete.**
-*Longa* and *brevis* are mensural terms every one of these languages borrowed
-rather than translated — German keeps the Latin whole, French inflects it,
+Above the double whole every language uses the Latin name, American included:
+the fraction scheme is native to American usage and holds through the double
+whole, but past that these values live only in mensural and early-music
+contexts where the Latin is the working vocabulary. Unicode and SMuFL put the
+boundary in the same place. *Maxima*, *longa* and *brevis* are borrowed rather
+than translated — German keeps the Latin whole, French inflects it,
 Russian transliterates it, Italian and Spanish take it unchanged. The competing
 names sources report turn out to be variant spellings of a single word, not
 different words, so one rule settles all ten cells rather than five independent
