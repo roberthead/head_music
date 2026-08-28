@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-08-19T19:53:16-07:00
-  activated_at:
+  activated_at: 2026-08-27T18:39:03-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-19T19:53:16-07:00
+  updated_at:   2026-08-27T18:39:03-07:00
 -->
 
 # Story: Guard the Vocabulary Sweep Itself
