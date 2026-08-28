@@ -66,15 +66,9 @@ describe HeadMusic::Style::Guide do
     return "#{label} is not a string" unless rendered.is_a?(String)
     return "#{label} is empty" if rendered.empty?
     return "#{label} left an interpolation: #{rendered}" if rendered.include?("%{")
-    # An interpolation filled with an empty value leaves its surrounding space
-    # behind: "Use eight %{rhythmic_unit} in each bar" becomes "Use eight  in
-    # each bar", which is neither empty nor interpolation-bearing and so passes
-    # every check above. A blank rhythmic unit is the way this arrives -- key
-    # parity sees a present key, and the sentence still reads as a sentence.
-    # Anchored as well as interior, because "%{number} crotchets per bar"
-    # opens with its interpolation, so a blank there leaves only a leading
-    # space. \s is ASCII-only: the non-breaking spaces correct French
-    # typography puts before punctuation cannot trip this.
+    # A blank interpolated value passes every check above: "Use eight
+    # %{rhythmic_unit} in each bar" renders "Use eight  in each bar". Anchored
+    # because "%{number} crotchets per bar" opens with its interpolation.
     return "#{label} rendered a blank value: #{rendered.inspect}" if rendered.match?(/\s\s|\s[.,;:]|\A\s|\s\z/)
 
     nil
@@ -86,22 +80,16 @@ describe HeadMusic::Style::Guide do
     end
   end
 
-  # A canary, not a census: these numbers are meant to fail when a guide or
-  # item is added, so that the addition is noticed and its strings get swept.
-  # Update them; do not loosen them.
+  # A canary: meant to fail when a guide or item is added, so the addition
+  # gets swept. Update the numbers; do not loosen them.
   it "covers every registry entry" do
     expect(guides.size).to eq 30
     expect(items.size).to eq 67
   end
 
-  # display_name, not name: Base.name, Configured#name and CompositeGuide#name
-  # all return Ruby class names, so sweeping name would sweep identifiers rather
-  # than the prose a reader sees.
-  #
-  # Shared with the two locale-equality examples on purpose. The day a locale
-  # gets its own guides.<key>.name, they are what checks it landed in the right
-  # file and that de inherits it -- so the fix for a failure there is to move
-  # the entry to the right locale file, not to loosen the example.
+  # display_name, not name: the name methods return Ruby class names. Shared
+  # with the locale-equality examples so that a locale-specific
+  # guides.<key>.name is checked into the right file and de inherits it.
   def strings_in(locale)
     I18n.with_locale(locale) do
       guides.flat_map { |guide| [guide.display_name, guide.instruction] } +
@@ -158,11 +146,8 @@ describe HeadMusic::Style::Guide do
     expect(I18n.available_locales.flat_map { |locale| foreign_vocabulary_in(locale) }).to be_empty
   end
 
-  # Both patterns are deliberately narrow, and nothing else says so. Widening
-  # either re-introduces a false positive that real strings trip today. The
-  # third string is dated, not hypothetical: sixteenth-century-style.md adds a
-  # guide whose humanized display name it is, and only the note|rest head noun
-  # keeps the American pattern off it.
+  # Enforces the narrowness NOTE_VOCABULARIES explains. The third string is
+  # the display name sixteenth-century-style.md adds, spared only by the noun.
   it "spares the theory terms the scoping exists to protect" do
     expect(NOTE_VOCABULARIES.values.flat_map { |pattern| spared_theory_terms.grep(pattern) }).to be_empty
   end
@@ -185,20 +170,17 @@ describe HeadMusic::Style::Guide do
     expect(silent.keys).to be_empty
   end
 
-  # The sweep reads whatever strings_in collects, so a guide whose name carried
-  # a note value would pass unless the names are in that list. They were not:
-  # the sweep read instructions only. See strings_in for why it is display_name.
+  # A guide name with a note value would pass unless names are in the swept
+  # list. They were not: the sweep read instructions only.
   it "sweeps the guide names a reader sees, not only the instructions" do
     names = I18n.with_locale(:en_GB) { guides.map(&:display_name) }
 
     expect(names - strings_in(:en_GB)).to be_empty
   end
 
-  # And that a name is worth sweeping. A guide with no name entry renders the
-  # humanized key, which is locale-independent, so a guide keyed
-  # whole_note_species reads "Whole Note Species" to a British student too. The
-  # remedy is a guides.<key>.name in en.yml and its British override in
-  # en_GB.yml; this says the sweep will ask for them.
+  # A guide with no name entry renders its humanized key in every locale, so
+  # whole_note_species reads "Whole Note Species" to a British student too.
+  # The remedy is a guides.<key>.name in en.yml with an en_GB override.
   it "would catch an American note value in a guide name" do
     expect(foreign_vocabulary_among(["Whole Note Species"], :en_GB)).not_to be_empty
   end
@@ -242,27 +224,20 @@ describe HeadMusic::Style::Guide do
     expect(british_template_keys - english_template_keys).to be_empty
   end
 
-  # The mirror, and the one guard the prose sweep cannot be. The American
-  # pattern needs a note|rest head noun, and the British sentence drops that
-  # noun by design -- four crotchets, not four crotchet notes -- so a unit with
-  # no British name reaches a British reader as a bare "eighth" that no
-  # vocabulary pattern can flag without also flagging "half step".
-  #
-  # Scoped to rhythmic_units rather than run as a blanket english - british:
-  # en_GB overrides only the entries whose wording differs, so most English
-  # keys have no British counterpart by design. These are the entries where a
-  # missing counterpart is a leak rather than an inheritance.
+  # The one guard the prose sweep cannot be: the American pattern needs its
+  # note|rest noun, and the British sentence drops that noun by design, so a
+  # unit with no British name renders as a bare "eighth" that no pattern can
+  # flag without also flagging "half step". Scoped to rhythmic_units because
+  # en_GB deliberately overrides only some keys; here a missing key is a leak.
   it "gives every English rhythmic unit a British name" do
     expect(rhythmic_unit_keys(english_template_keys)).not_to be_empty
     expect(unnamed_rhythmic_units(english: english_template_keys,
       british: british_template_keys)).to be_empty
   end
 
-  # Proves the diff fires, which the guard above cannot: it asserts an absence,
-  # and a prefix that stopped matching the tree reports the same absence. Given
-  # inline rather than by injecting a key into the real list, so that a real gap
-  # cannot report itself twice, and so the fixture can also show the scoping --
-  # the guideline key below is unmatched in British on purpose and is ignored.
+  # Proves the diff fires, which an absence-assertion cannot. Inline rather
+  # than injected into the real list, so a real gap cannot report itself
+  # twice; the guideline key is unmatched on purpose, showing the scoping.
   it "would catch a rhythmic unit added to English alone" do
     english = ["rhythmic_units.whole", "rhythmic_units.eighth", "guidelines.no_rests.name"]
     british = ["rhythmic_units.whole"]
@@ -293,8 +268,8 @@ describe HeadMusic::Style::Guide do
 
   def rhythmic_unit_keys(keys) = keys.grep(/\Arhythmic_units\./)
 
-  # Keywords, not positional: swapped arguments would invert this into the
-  # reverse-direction guard above and stay green over a real gap.
+  # Keywords: swapped positional arguments would invert the direction and
+  # stay green over a real gap.
   def unnamed_rhythmic_units(english:, british:)
     rhythmic_unit_keys(english) - rhythmic_unit_keys(british)
   end
@@ -372,15 +347,10 @@ describe HeadMusic::Style::Guide do
     expect(partial_plurals_in(incomplete)).to eq ["guidelines.note_count_per_bar.name"]
   end
 
-  # And that the tree that guard walks is really there and well formed, which
-  # the guard cannot say either. The vocabulary entries are the only pluralized
-  # British data, so a typo that dropped rhythmic_units entirely would leave it
-  # green over nothing -- passing for the reason it passed before there was any
-  # British plural data at all.
-  #
-  # Says every unit rather than naming today's three: which units exist is the
-  # vocabulary's business, and pinning the census turns adding quaver -- a
-  # correct change -- into a failure that reads like a regression.
+  # And that the tree it walks is there and well formed -- an empty tree
+  # passes the guard above exactly as it passed before any British plural data
+  # existed. Says every unit rather than naming today's three, so adding
+  # quaver does not fail like a regression.
   it "walks the British plural entries it is guarding" do
     british = I18n.backend.send(:translations).fetch(:en_GB).dig(:head_music, :style) || {}
     units = british.fetch(:rhythmic_units)
