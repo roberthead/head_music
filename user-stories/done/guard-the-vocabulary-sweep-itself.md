@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-19T19:53:16-07:00
   activated_at: 2026-08-27T18:39:03-07:00
   planned_at:   2026-08-27T19:05:38-07:00
-  finished_at:
-  updated_at:   2026-08-27T21:24:55-07:00
+  finished_at:  2026-08-27T19:45:55-07:00
+  updated_at:   2026-08-27T19:45:55-07:00
 -->
 
 # Story: Guard the Vocabulary Sweep Itself
@@ -567,3 +567,34 @@ than this file claims; every recorded drill reproduced exactly.
 
 Every new example was checked for vacuous or wrong-reason passes; none found. All new and edited
 comments verified against the code they describe. Nothing blocks `finish`.
+
+## Learnings
+
+- **The story's own Notes carried a wrong method name, caught only by running code.** Item 2 said to
+  sweep `guide.name`; that returns the Ruby class name, and the method a reader sees is
+  `display_name`. A sweep written from the Notes as filed would have swept identifiers and passed
+  vacuously. Every load-bearing claim in a story should be executed once before it becomes a plan.
+- **Verification discipline paid for itself twice more.** Planning ran each proposed formulation
+  against mutated locale data, so implementation was nearly transcription — 31/0 on the first run.
+  And the review's product-manager re-ran every drill independently; all three reproduced exactly,
+  which is what made "all criteria met" a finding rather than a claim.
+- **A verified plan still shipped one wrong dismissal — of the exact shape the story warns about.**
+  The plan rejected anchoring the blank-value regex because "the case cannot arise today," but the
+  evidence checked a neighboring property (no string has edge whitespace) rather than the case itself
+  (templates that *open* with an interpolation, of which two exist). When dismissing an edge case,
+  verify the case, not its neighbor. The review caught it; the fix was one alternation.
+- **Guarding a guard means making its narrowness falsifiable.** AC 4 ("keep the scoping, don't widen
+  it") was unenforceable as written — nothing failed if someone widened the regex. Two cheap examples
+  turned the criterion from a review note into a test: pin what the narrowness spares, and pin that
+  each pattern still matches its own family somewhere.
+- **Not all count-coupling is the same defect.** The census at the old line 279 and the `eq 30`
+  canary at line 80 looked identical; one was incidental coupling to decouple, the other is the
+  example's entire job and got a comment instead. Worth distinguishing explicitly before "fixing"
+  either.
+- **Drills must mutate the value, not the template.** One drill edited `%{number}` out of a template
+  and proved nothing — the leak shape is a *blank interpolated value*, which renders differently.
+  Also practical: Bundler's `gemspec` load path means drills must edit the real locale files;
+  scratch-tree copies are never read.
+- **Deciding open questions before implementation kept it linear.** Two question rounds settled
+  scope, placement, the helper signature, and an AC rewording; implementation then ran start to
+  finish with nothing relitigated.
