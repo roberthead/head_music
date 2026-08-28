@@ -35,9 +35,9 @@ describe HeadMusic::Style::Guide do
   let(:guides) { HeadMusic::Style::Guide::ALL }
   let(:items) { guides.flat_map(&:guide_items).uniq }
 
-  # Collected rather than asserted one at a time: 8 locales x (30 guides + 67
-  # items x 3 templates) is far too many examples, and a list of every broken
-  # string is a better failure than the first one.
+  # Collected rather than asserted one at a time: 8 locales x (30 guides x 2 +
+  # 67 items x 3 templates) is far too many examples, and a list of every
+  # broken string is a better failure than the first one.
   def problems_in(locale)
     I18n.with_locale(locale) do
       guides.flat_map { |guide| %i[display_name instruction].filter_map { |m| problem_with(guide, m) } } +
@@ -71,7 +71,11 @@ describe HeadMusic::Style::Guide do
     # each bar", which is neither empty nor interpolation-bearing and so passes
     # every check above. A blank rhythmic unit is the way this arrives -- key
     # parity sees a present key, and the sentence still reads as a sentence.
-    return "#{label} rendered a blank value: #{rendered.inspect}" if rendered.match?(/\s\s|\s[.,;:]/)
+    # Anchored as well as interior, because "%{number} crotchets per bar"
+    # opens with its interpolation, so a blank there leaves only a leading
+    # space. \s is ASCII-only: the non-breaking spaces correct French
+    # typography puts before punctuation cannot trip this.
+    return "#{label} rendered a blank value: #{rendered.inspect}" if rendered.match?(/\s\s|\s[.,;:]|\A\s|\s\z/)
 
     nil
   end
