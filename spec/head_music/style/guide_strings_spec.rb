@@ -41,7 +41,12 @@ UNTRANSLATED_UNITS = %w[maxima two_hundred_fifty_sixth].freeze
 # every "Minimum of ..." string MinimumNotes produces.
 NOTE_VOCABULARIES = {
   american: /\b(whole|half|quarter|eighth|sixteenth)[-\s](note|rest)/i,
-  british: /\b(semibreve|minim|crotchet|quaver|semiquaver)s?\b/i
+  british: /\b(semibreve|minim|crotchet|quaver|semiquaver)s?\b/i,
+  # Capitalization is the anchor for the compounds -- Viertel is a note value,
+  # viertel is not a word -- but ganz and halb are adjectives that stay
+  # lowercase in their two-word forms, so those two carry both cases. No /i:
+  # case is what does the work here.
+  german: /\b([Gg]anze|[Hh]albe|Viertel|Achtel|Sechzehntel|Zweiunddreißigstel|Vierundsechzigstel|Hundertachtundzwanzigstel)(n|note|noten|pause|pausen)?\b/
 }.freeze
 
 # Which vocabulary each locale resolves to. de, fr, it and ru read British by
@@ -52,7 +57,8 @@ NOTE_VOCABULARIES = {
 # map moves with it.
 LOCALE_NOTE_VOCABULARY = {
   en: :american, en_US: :american, es: :american,
-  en_GB: :british, de: :british, fr: :british, it: :british, ru: :british
+  en_GB: :british, fr: :british, it: :british, ru: :british,
+  de: :german
 }.freeze
 
 describe HeadMusic::Style::Guide do
@@ -152,13 +158,27 @@ describe HeadMusic::Style::Guide do
     items.flat_map { |item| item.guideline.violation_keys(item.config) }.uniq
   end
 
-  # No locale but en and en_GB carries a style entry, so a German reader's
-  # strings must be exactly the ones they fall back through. They were not: the
-  # sentence fell back to English while the number humanized into German, so a
-  # reader got "Write at least Acht notes." -- neither language, and the
-  # capitalization reads as a typo.
-  it "renders a fallback string wholly in the language it fell back to" do
-    expect(strings_in(:de)).to eq strings_in(:en_GB)
+  # The original bug was mixed language *inside one string*: the sentence fell
+  # back to English while the number humanized into German, so a reader got
+  # "Write at least Acht notes." -- neither language, the capitalization reading
+  # as a typo.
+  #
+  # Asserted per string rather than by comparing whole locales, because German
+  # now carries some of its own: a locale is expected to be a mix of languages
+  # across its strings, and is never allowed to be a mix within one.
+  it "renders each string wholly in one language" do
+    mixed = strings_in(:de).select do |string|
+      NOTE_VOCABULARIES.count { |_, pattern| pattern.match?(string) } > 1
+    end
+
+    expect(mixed).to be_empty
+  end
+
+  # Proves that property can fail, which an absence-assertion cannot.
+  it "would catch a sentence built from two languages" do
+    frankenstein = "In jedem mittleren Takt vier Viertel statt crotchets verwenden."
+
+    expect(NOTE_VOCABULARIES.count { |_, pattern| pattern.match?(frankenstein) }).to eq 2
   end
 
   # The executable form of "a British reader gets British note values". Written
@@ -465,14 +485,36 @@ describe HeadMusic::Style::Guide do
     expect(strings_in(:es)).to eq strings_in(:en)
   end
 
-  # What a German reader actually resolves to, said out loud. The day the chain
+  # What each reader actually resolves to, said out loud. The day the chain
   # changes, this fails instead of the pronunciation quietly changing.
-  it "resolves the mid-chain locales through en_GB" do
-    resolved = %i[de fr it ru].map do |locale|
+  #
+  # Split when German gained its own sentences: a locale now resolves per key,
+  # to itself where it carries the entry and through en_GB where it does not.
+  it "resolves a locale to itself for the entries it carries" do
+    resolved = HeadMusic::Style::Template.resolved_locale(
+      "guidelines.note_count_per_bar.instruction", locale: :de
+    )
+
+    expect(resolved).to eq :de
+  end
+
+  it "still routes the locales with no entry of their own through en_GB" do
+    resolved = %i[fr it ru].map do |locale|
       HeadMusic::Style::Template.resolved_locale("guidelines.note_count_per_bar.instruction", locale: locale)
     end
 
     expect(resolved).to all eq :en_GB
+  end
+
+  # German carries 32 of the 224 style leaves, so most of what a German reader
+  # sees is still English -- and which English depends on whether en_GB happens
+  # to override that entry. Pinned rather than left implicit: shipping a locale
+  # that is 15% translated is a decision, and so is the day it changes.
+  it "still falls through German for the entries it does not carry" do
+    template = HeadMusic::Style::Template
+
+    expect(template.resolved_locale("guidelines.no_rests.instruction", locale: :de)).to eq :en_GB
+    expect(template.resolved_locale("guidelines.singable_intervals.instruction", locale: :de)).to eq :en
   end
 
   # The path a student actually reads is the assessment, not the preview.

@@ -117,13 +117,13 @@ Note the anchors differ from the note vocabulary: *pause* is the **whole** rest,
 |---|---|---|
 | `en` | scalar; the *sentence* pluralizes | quarter → quarter |
 | `en_GB` | `-s` | crotchet → crotchets |
-| `de` | **invariant after a numeral** | Viertel → Viertel |
+| `de` | **invariant after a numeral**, except the two Latin borrowings | Viertel → Viertel; Longa → Longen; Brevis → Breven |
 | `fr` | `-s`, and multi-word forms inflect **both** words | double croche → doubles croches |
 | `it` | `-e` / `-i`, by gender | semiminima → semiminime; centoventottav**o** → centoventottav**i** |
 | `ru` | four forms: `one`/`few`/`many`/`other` | четвертная / четвертные / четвертных |
 | `es` | `-s` | negra → negras |
 
-Only `en_GB` and `es` follow the English `-s` rule, so an inflector serves two of the seven. German's `one` and `other` are the same string — *zwei Halbe*, *vier Viertel* — which reads as a copy-paste slip and is not one.
+Only `en_GB` and `es` follow the English `-s` rule, so an inflector serves two of the seven. German's `one` and `other` are the same string — *zwei Halbe*, *vier Viertel* — which reads as a copy-paste slip and is not one. Its two Latin borrowings are the exception that proves the rule needs to be data: *Longa* and *Brevis* are ordinary feminine nouns in German and take *Longen* and *Breven*, so even within one column the plural is not one rule.
 
 ---
 

@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-28T11:57:55-07:00
   planned_at:   2026-08-28T13:04:15-07:00
   finished_at:
-  updated_at:   2026-08-28T13:24:07-07:00
+  updated_at:   2026-08-28T14:02:18-07:00
 -->
 
 # Story: Note Values in Each Language
