@@ -4,18 +4,20 @@ metadata:
   activated_at: 2026-08-28T11:57:55-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-28T12:34:45-07:00
+  updated_at:   2026-08-28T12:41:20-07:00
 -->
 
 # Story: Note Values in Each Language
 
 ## Summary
 
-AS a German, French, Italian or Russian reader of a style guideline
+AS a German, French, Italian, Russian or Spanish reader of a style guideline
 I WANT note values named as my own teacher names them
 SO THAT I am not reading someone else's English for a word my language has
 
 ## Notes
+
+### Why no English serves them
 
 `British Note Names` gave `en_GB` its own note vocabulary, and `de`, `fr`, `it`
 and `ru` inherited it by routing through `en_GB` on their way to `en`. That was
@@ -30,9 +32,9 @@ readerships a fourth language's words.
 | Mensural-Latin | inherited from mensural notation | **British** English, Italian, Portuguese |
 | Shape / colour | what the notehead looks like | French, Spanish, Catalan |
 
-So no choice of English serves all four. British helps Italian, costs German and
-Russian the word-for-word correspondence their own names have with the American
-ones, and actively misleads French.
+So no choice of English serves all four inheritors. British helps Italian, costs
+German and Russian the word-for-word correspondence their own names have with
+the American ones, and actively misleads French.
 
 **The false friend is why this story exists rather than a chain reordering.**
 French *croche* is the **eighth** note; English *crotchet* is the **quarter**.
@@ -40,7 +42,7 @@ They are cognates from the same hooked-note root that drifted apart by a factor
 of two, so a French reader meets a familiar-looking word attached to the wrong
 duration. Italian *croma* and Spanish *corchea* are eighths too — *croma* only
 looks like the others, being usually traced to Greek *khrôma*, the blackened
-noteheads, rather than the hook. Three families' lookalikes mean eighth and only
+noteheads, rather than the hook. Three of the four lookalikes mean eighth; only
 English's means quarter. No English is safe for them — only their own is.
 
 | Locale (`rhythmic_units`) | whole | half | quarter | eighth |
@@ -57,7 +59,9 @@ as nouns. The structure below resolves the rest of that question on its own —
 the short form *is* `rhythmic_units` and the compound *is* `note_values`, so
 German no longer has to choose between them.
 
-**The vocabulary moved and grew before this story starts.** It lives at
+### What the vocabulary is now
+
+**It moved and grew before this story starts.** It lives at
 `head_music.rudiments` now, not `head_music.style`: the words belong to the
 rudiment and the style sentences borrow them. And it is three groups of ten
 units, not one group of three.
@@ -79,9 +83,9 @@ five. The sentence side is unchanged.
 for itself.** British collapses `note_values` into `rhythmic_units` — a crotchet
 is both the unit and the note — where American needs the noun to tell them
 apart. And British keeps the noun for rests after dropping it for notes: a
-*crotchet rest*, never a bare *crotchet*. Neither is a property of English.
-Both questions come up again in each of the five, and neither answer follows
-from the note-value table above.
+*crotchet rest*, never a bare *crotchet*. Neither is a property of English: both
+questions come up again in each of the five, and neither answer follows from the
+note-value table above.
 
 **How each family builds the other six.** The four columns checked above are the
 anchors; the rest derive, and the derivations are where a find-and-replace goes
@@ -106,11 +110,15 @@ soupir* (16th), *huitième de soupir* (32nd). A French `rest_values` built by
 suffixing its note names would be wrong in every row, and it is the one group
 that cannot lean on the note-value table at all.
 
-**The extremes are where sources disagree.** `quadruple_whole`, `double_whole`
-and `hundred_twenty_eighth` are rare enough that each language has competing or
-missing names — German *Brevis* against *Doppelganze*, Spanish *cuadrada*
-against *breve*, no confident Italian 128th. Derive the middle six; check these
-three against a native source.
+**The extremes are where sources disagree.** `quadruple_whole` and
+`double_whole` are rare enough that each language has competing names — German
+*Brevis* against *Doppelganze*, Spanish *cuadrada* against *breve*. The 128th is
+different: the fractional and modifier rules above carry it in German, Russian
+and Spanish, but Italian has no confident name for it. So derive the sub-eighth
+units, and check a native source for the two above the whole everywhere, and for
+Italian's 128th.
+
+### What makes it expensive
 
 **The pin decides the shape of the work.** `render_template` resolves values in
 the locale that carries *the sentence*
@@ -121,16 +129,17 @@ that settled `British Note Names`, and it means each locale needs the ~30 style
 leaves that name a note value **on top of** its 30 vocabulary entries. The
 vocabulary alone is never read.
 
-That makes this the first story to give `de`, `fr`, `it` or `ru` **any** style
-string at all. Everything in `HeadMusic::Style` is English fallback for them
-today. Expect the first locale to cost more than the three that follow, and
-expect it to surface whatever the fallback has been hiding.
+That makes this the first story to give any of the five **any** style string at
+all — everything in `HeadMusic::Style` is English fallback for them today.
+Expect the first locale to cost more than the four that follow, and expect it to
+surface whatever the fallback has been hiding.
 
-**Watch the plural forms.** Russian pluralizes on `one`/`few`/`many`/`other`,
-not `one`/`other`. `partial_plurals_in` in `guide_strings_spec.rb` currently
-guards `en_GB` only, because `en_GB` was the only mid-chain locale; `de`, `fr`
-and `it` are all leaves, but Russian's form set is genuinely different and the
-Ruby fallback at `template.rb` exists precisely for this.
+**The plural guard covers `en_GB` only.** `partial_plurals_in` in
+`guide_strings_spec.rb` guards it because it was the only mid-chain locale;
+`de`, `fr`, `it` and `es` are all leaves, so a partial hash there hurts only
+themselves. Russian is the exception worth widening for: it pluralizes on
+`one`/`few`/`many`/`other`, and the Ruby fallback at `template.rb` exists
+precisely for a form set that different.
 
 **Write the plural forms out; do not derive them.** The `en_GB` hashes are
 load-bearing — collapsed to scalars, `note_count_per_bar` renders "Use four
@@ -152,9 +161,9 @@ two of the six here where `-s` is right:
 | `fr` | double croche → doubles croches — both words inflect |
 | `ru` | четвертная / четвертные / четвертных |
 
-German's `one` and `other` will be the same string. That is correct, not a
-copy-paste slip: *zwei Halbe*, *vier Viertel*. The verbosity is the shape the
-five locales have to fill in, and five of them cannot be generated.
+German's `one` and `other` will be the same string — *zwei Halbe*, *vier
+Viertel*. That is correct, not a copy-paste slip. The verbosity is the shape
+four of the five have to be given by hand.
 
 **Russian needs cases, not only plurals.** `%{rhythmic_unit}` is interpolated by
 exactly one guideline — `note_count_per_bar`, three strings — where nominative
@@ -165,19 +174,21 @@ leaves, Russian inlines the declined form directly in those ~29 sentences, and
 `rhythmic_units` carries only the four forms `note_count_per_bar` needs. Do not
 add a case dimension to the vocabulary hash for the sake of one template.
 
-**Scope: five locales.** `es` is in. Spanish is shape-based like French, so its
+### Scope
+
+**Five locales.** `es` is in. Spanish is shape-based like French, so its
 vocabulary and its sweep pattern come nearly free once French is done, and the
 *corchea*/*crotchet* false friend closes in the same pass. It differs from the
 other four in one way worth remembering: `es: [es, en]` skips `en_GB`, so
 Spanish reads American today and was never regressed by `British Note Names` —
 it is here for the gap, not for a regression.
 
-Five locales x (30 vocabulary entries + the ~30 leaves `British Note Names`
-enumerated). Its census and
-its noun-drop rules transfer directly. Its vocabulary-ownership sweep was
-written in the general shape — *no locale carries note vocabulary from a family
-it does not own* — so this story adds a vocabulary pattern per language and
-moves the `de`, `fr`, `it` and `ru` rows of `LOCALE_NOTE_VOCABULARY` off
+Five locales x (30 vocabulary entries + the ~30 style leaves that name a note
+value). `British Note Names` enumerated those leaves, and its census and its
+noun-drop rules transfer directly. Its vocabulary-ownership sweep was written in
+the general shape — *no locale carries note vocabulary from a family it does not
+own* — so this story adds a vocabulary pattern per language and moves the `de`,
+`fr`, `it` and `ru` rows of `LOCALE_NOTE_VOCABULARY` off
 `:british` and the `es` row off `:american`, rather than rewriting the spec.
 Those rows are where the inheritance decision lives; the sweep fails until they
 move.
@@ -191,6 +202,8 @@ any one-eighth fraction. The `note|rest` anchor does not transfer either, since
 French, Italian and Spanish drop the noun — *une ronde*, not *une note ronde*.
 Expect each new pattern to need its own escape hatch, and expect *noire* to
 resist detection outright; budget for asserting that row some other way.
+
+### Settle before filling anything in
 
 **`note_values` and `rest_values` are unguarded today.** The spec's tree walks
 span `style` and `rudiments.rhythmic_units` only, so in the other two groups an
