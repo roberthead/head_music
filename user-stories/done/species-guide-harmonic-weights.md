@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-27T16:10:10-07:00
   activated_at: 2026-08-27T16:37:33-07:00
   planned_at:   2026-08-27T16:57:00-07:00
-  finished_at:
-  updated_at:   2026-08-27T17:17:15-07:00
+  finished_at:  2026-08-27T17:27:01-07:00
+  updated_at:   2026-08-27T17:27:01-07:00
 -->
 
 # Species Guide Harmonic Weights
@@ -97,7 +97,7 @@ doubled line satisfies at 1.0, so there is nothing to rescue.
 ## What was ruled out
 
 - **The arithmetic.** Three ways out were measured during
-  [Extract the Harmonic Cores](../done/extract-the-harmonic-cores.md) and
+  [Extract the Harmonic Cores](extract-the-harmonic-cores.md) and
   rejected: more weight only changes the exchange rate, a third tier subdivides
   a budget rather than changing the arithmetic on it, and the strength axis
   fixes the ordering and not the kind.
@@ -497,3 +497,103 @@ existed. Two prose defects, neither of which could touch a number:
   A story that adds a fixture grows the corpus mid-document, so it printed
   "4320 in the last, 142 × 30" — an equation that does not multiply out. Each
   multiplication now comes from its own capture.
+
+## Learnings
+
+### The plan's capture sequencing was the whole job, and it was right
+
+The plan called the ordering "the trap" and it was: three captures, two joins,
+with the fixture inside **both** columns of the promotion join. Had the fixture
+landed between a before and an after, its 60 rows would have been classified
+`added` and excluded from the counts — and the 0.8300 → 0.6674 drop, the single
+row this story exists to demonstrate, would have appeared in no table at all.
+The document would have looked complete and proven nothing.
+
+The `moved=0 added=60 removed=0` check that proves the fixture a no-op is worth
+more than it looks. A byte-diff cannot do that job, because the file gains 60
+rows by construction; only the join can say the other 4260 were untouched.
+
+### Planning left the tree dirty, and the plan did not say so
+
+Step 1 said "capture `c0` on a clean tree." By the time implementation started,
+the planner had already applied the step-2 fixture edits to `spec_helper.rb` and
+`guide_grade_corpus.rb`, and had left `c0`, `c1` and `noop.md` in `tmp/`. Taken
+literally, step 1 would have meant recapturing `c0` against a tree that already
+had the fixture — producing a `c0` that silently included it and destroying the
+join.
+
+It worked out because the artifacts were verifiable: `c0` had 4260 rows and zero
+doubled-octave rows, `c1` had 4320 and sixty, and `noop.md` reported the join.
+**A plan that measures things should say where it left the tree and which
+captures it already took**, because the next reader cannot tell a planner's
+leftovers from an interrupted implementation.
+
+### The plan predicted one generator defect; there were two
+
+It correctly foresaw that `guide_grade_table.rb` would call the doubled-octave
+line a published fixture. Reading the generated document turned up a second: the
+last capture's row count printed as `first_capture_entries × guides` — "4320 in
+the last, 142 × 30", an equation a reader can multiply out and find false. It
+only appears when a story grows the corpus mid-document, which is exactly what
+this story does, so it had been latent and correct until now.
+
+**Read the generated artifact, not just the summary line the generator prints.**
+`moved=18 added=0 removed=0` was true while the prose above it was wrong.
+
+### The first decomposition of the movement explained nothing
+
+Splitting each voice's delta into "from the three primaries" and "from the six
+background items" produced, for the sole riser, exactly `-0.000000` and
+`+0.044563`. The zero is real but useless — an artifact of that fixture's
+fitnesses cancelling — and the split gives no rule, because the primaries' net
+weight change is always −0.063661 and the background's always +0.063661
+regardless of the voice.
+
+Reframing as a **transfer** — two donors giving up 0.206011, seven receivers
+taking it — collapsed all nine voices to one rule:
+
+> Δ = 0.206011 × (what the voice scores on the receivers − what it scores on the donors)
+
+A voice rises exactly when it is written better on what gained weight than on
+what lost it, which explains the riser as designed behavior rather than an
+anomaly needing an excuse. **"Accounted for" means one rule that predicts every
+row, not a per-row arithmetic that happens to add up.**
+
+### An acceptance criterion was literally unsatisfiable
+
+The AC asked that `INHERITED_HARMONIC_CRAFT` record the promotion as a named
+exception. But that constant *is* the policy all seven guides are held to;
+removing `NoParallelPerfectOnDownbeats` from it would have converted an
+exception for one guide into permission for seven, with no spec left to notice.
+The sibling register `HARMONIC_CRAFT_PROMOTIONS`, keyed by guide, satisfies the
+intent — the decision written down once, where a reader finds it — while
+scoping the exception to its guide.
+
+Worth flagging rather than silently satisfying or silently skipping. The AC was
+written before anyone had looked closely at what that constant does.
+
+### What the measurement refuted
+
+The story guessed `PreferImperfect` might account for more of the 0.8300 than
+the tier did. It accounts for **0.014590** — 4.4% of the deficit, about a ninth
+of the tier move. The guess was wrong by an order of magnitude, and the story
+had explicitly asked for the number so the next story would not inherit the
+guess. That instruction paid for itself: a follow-up story chasing
+`PreferImperfect` would have been chasing 1.5 points.
+
+The real finding sits next to it: eleven notes of unbroken perfect octaves earn
+`PreferImperfect` **one** mark and `NoParallelPerfectOnDownbeats` **ten**. The
+contrast is about how a guideline *marks*, which is a larger question than how
+it is *weighed* — and it is now pinned in a spec rather than left as a
+recollection.
+
+### Do it this way again
+
+- Re-measure every number the story quotes rather than carrying it forward. All
+  of them reproduced here, but that is a finding, not an assumption.
+- Keep the tier declaration written out on both sides rather than derived from
+  the register. `reject_duplicates` raises at require time on a half-promotion,
+  so deriving would have bought nothing and hidden what the guide teaches.
+- Pin the register with a literal in `base_spec`. A purely derived loop greets a
+  promotion added to *both* the hash and a guide as consistent; only the literal
+  makes a second exception require a human to write down why.
