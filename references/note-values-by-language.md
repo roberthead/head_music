@@ -26,7 +26,7 @@ The bare unit word, with no noun attached.
 
 | Key | `en` | `en_GB` | `de` | `fr` | `it` | `ru` | `es` |
 |---|---|---|---|---|---|---|---|
-| `quadruple_whole` | quadruple whole | longa | Longa **(check)** | longue **(check)** | longa **(check)** | лонга **(check)** | longa **(check)** |
+| `longa` | quadruple whole | longa | Longa **(check)** | longue **(check)** | longa **(check)** | лонга **(check)** | longa **(check)** |
 | `double_whole` | double whole | breve | Brevis **(check)** | carrée **(check)** | breve | бревис **(check)** | cuadrada **(check)** |
 | `whole` | whole | semibreve | Ganze | ronde | semibreve | целая | redonda |
 | `half` | half | minim | Halbe | blanche | minima | половинная | blanca |
@@ -62,13 +62,15 @@ Whether the language attaches a noun to the unit word, and which.
 |---|---|---|
 | `en` | keeps *note* | quarter note |
 | `en_GB` | **drops it** | crotchet |
-| `de` | compounds *-note* | Viertelnote |
+| `de` | **splits** — see below | Viertelnote |
 | `fr` | **drops it** | noire |
 | `it` | **drops it** | semiminima |
 | `ru` | keeps *нота* | четвертная нота |
 | `es` | **drops it** | negra |
 
-Four of the seven make the note value identical to the rhythmic unit. German compounds where its short form stands alone: *Viertel* the unit, *Viertelnote* the note. That split is why the two groups exist separately rather than one serving both.
+Four of the seven make the note value identical to the rhythmic unit. German is the reason the two groups exist separately rather than one serving both: *Viertel* the unit, *Viertelnote* the note.
+
+**German does not compound uniformly.** *Ganz* and *halb* are adjectives and stay separate words with the noun capitalized — *ganze Note*, *halbe Note*. *Viertel* and *Achtel* are nouns and compound — *Viertelnote*, *Achtelnote*, *Sechzehntelnote*. The split falls between the half and the quarter, and it applies to rests identically.
 
 ---
 
@@ -78,7 +80,7 @@ Four of the seven make the note value identical to the rhythmic unit. German com
 |---|---|---|
 | `en` | *X rest* | quarter rest |
 | `en_GB` | *X rest* — keeps the noun it dropped for notes | crotchet rest |
-| `de` | compounds *-pause* | Viertelpause |
+| `de` | **splits** — *ganze Pause*, *halbe Pause*, then compounds | Viertelpause |
 | `fr` | **its own vocabulary** | soupir |
 | `it` | *pausa di X* | pausa di semiminima |
 | `ru` | *X пауза* | четвертная пауза |
@@ -124,7 +126,7 @@ Only `en_GB` and `es` follow the English `-s` rule, so an inflector serves two o
 
 ## 6. Where Sources Disagree
 
-- **`quadruple_whole` and `double_whole`** are rare in every language and carry competing names. Check a native source rather than deriving.
+- **`longa` and `double_whole`** (the quadruple and double whole) are rare in every language and carry competing names. Check a native source rather than deriving.
 - **`hundred_twenty_eighth`** derives cleanly in German, Russian, French and Spanish. Italian has no confirmed name; *fusa* and *semifusa* are Spanish's 32nd and 64th, and in historical mensural usage *fusa* was the eighth, so they are not available to borrow.
 - **Russian** transliterates the two mensural values (*бревис*, *лонга*) rather than translating them. Confirm these are current usage rather than scholarly borrowings.
 
@@ -140,8 +142,10 @@ The vocabulary lives under `head_music.rudiments`, not `head_music.style`: the w
 | `note_values` | not yet consumed | scalar |
 | `rest_values` | not yet consumed | scalar |
 
-Ten keys per group, largest first: `quadruple_whole`, `double_whole`, `whole`, `half`, `quarter`, `eighth`, `sixteenth`, `thirty_second`, `sixty_fourth`, `hundred_twenty_eighth`.
+Ten keys per group, largest first: `longa`, `double_whole`, `whole`, `half`, `quarter`, `eighth`, `sixteenth`, `thirty_second`, `sixty_fourth`, `hundred_twenty_eighth`.
+
+**Keys are identifiers.** Every key is the snake_cased `american_name` from `lib/head_music/rudiment/rhythmic_units.yml`, so a lookup built the way `NoteCountPerBar` builds one always resolves. This is why the 4.0 unit is keyed `longa` and not `quadruple_whole`, even though its `en` value reads "quadruple whole note". The rule is additive-safe: `maxima` (8.0) and `two_hundred_fifty_sixth` can join the ten later without disturbing it.
 
 **The pin.** `render_template` resolves values in the locale carrying *the sentence* (`lib/head_music/style/guideline/wording.rb:62-63`), so a locale gets its own note words only if it also carries the style strings that name them. Vocabulary alone is never read.
 
-**Identifier mismatch.** `lib/head_music/rudiment/rhythmic_units.yml` names the 4.0 unit `longa` in both dialects, so `quadruple_whole` matches no `RhythmicUnit` identifier. `double_whole` does. The data file also carries `maxima` (8.0) and `two_hundred_fifty_sixth`, which none of the three groups name.
+**The pin, restated for translators.** Filling in a locale's vocabulary is necessary but never sufficient. Until that locale also carries the style sentences that name a note value, every one of these words is unreachable.
