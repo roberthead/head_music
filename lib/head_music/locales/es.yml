@@ -340,6 +340,20 @@ es:
       meter: metro
       motion: movimiento
       musical_symbol: símbolo musical
+      # El espanol omite el sustantivo: una negra, no una nota negra.
+      # note_values repite por tanto rhythmic_units palabra por palabra.
+      note_values:
+        double_whole: "breve"
+        eighth: "corchea"
+        half: "blanca"
+        hundred_twenty_eighth: "garrapatea"
+        longa: "longa"
+        maxima: "máxima"
+        quarter: "negra"
+        sixteenth: "semicorchea"
+        sixty_fourth: "semifusa"
+        thirty_second: "fusa"
+        whole: "redonda"
       octave: octava
       pitch: tono
       pitch_class: clase de tono
@@ -347,8 +361,55 @@ es:
       pitch_set: conjunto de tonos
       quality: calidad
       reference_pitch: tono de referencia
+      # Siempre silencio de X. Regular, a diferencia del frances.
+      rest_values:
+        double_whole: "silencio de breve"
+        eighth: "silencio de corchea"
+        half: "silencio de blanca"
+        hundred_twenty_eighth: "silencio de garrapatea"
+        longa: "silencio de longa"
+        maxima: "silencio de máxima"
+        quarter: "silencio de negra"
+        sixteenth: "silencio de semicorchea"
+        sixty_fourth: "silencio de semifusa"
+        thirty_second: "silencio de fusa"
+        whole: "silencio de redonda"
       rhythm: ritmo
       rhythmic_unit: unidad rítmica
+      rhythmic_units:
+        double_whole:
+          one: "breve"
+          other: "breves"
+        eighth:
+          one: "corchea"
+          other: "corcheas"
+        half:
+          one: "blanca"
+          other: "blancas"
+        hundred_twenty_eighth:
+          one: "garrapatea"
+          other: "garrapateas"
+        longa:
+          one: "longa"
+          other: "longas"
+        maxima:
+          one: "máxima"
+          other: "máximas"
+        quarter:
+          one: "negra"
+          other: "negras"
+        sixteenth:
+          one: "semicorchea"
+          other: "semicorcheas"
+        sixty_fourth:
+          one: "semifusa"
+          other: "semifusas"
+        thirty_second:
+          one: "fusa"
+          other: "fusas"
+        whole:
+          one: "redonda"
+          other: "redondas"
       scale: escala
       scale_degree: grado de la escala
       scale_type: tipo de escala
@@ -359,3 +420,67 @@ es:
       staff: pentagrama
       tuba: tuba
       tuning: afinación
+    # Infinitivo en todo: «Escribir en redondas y blancas.» Evita elegir entre tu
+    # y usted, que ninguna especificacion puede comprobar, y es idiomatico para
+    # una consigna en Espana y en America por igual.
+    #
+    # La pareja escribir/emplear lleva lo que el ingles distingue con Write/Use.
+    #
+    # render_name pone en mayuscula la primera letra: guidelines.*.name empieza
+    # por tanto en minuscula.
+    style:
+      guidelines:
+        allow_fifth_species_rhythmic_values:
+          instruction: "Escribir en blancas, negras y corcheas conjuntas apareadas en tiempos débiles, reservando la redonda para el compás final."
+          violations:
+            default: "Emplear solo redondas en el compás final, y blancas, negras y corcheas conjuntas apareadas en tiempos débiles."
+        allow_whole_half_quarter_notes:
+          name: "solo redondas, blancas y negras"
+          instruction: "Escribir en redondas, blancas y negras."
+          violations:
+            default: "Emplear solo redondas, blancas y negras."
+        first_bar_half_notes:
+          name: "blancas en el primer compás"
+          instruction: "Abrir el primer compás con blancas, o entrar tras un silencio de blanca."
+          violations:
+            default: "Comenzar el primer compás con blancas, o entrar tras un silencio de blanca."
+        first_bar_quarter_notes:
+          name: "negras en el primer compás"
+          instruction: "Abrir el primer compás con negras, o entrar tras un silencio de negra."
+          violations:
+            default: "Comenzar el primer compás con negras, o entrar tras un silencio de negra."
+        first_bar_whole_note:
+          name: "redonda en el primer compás"
+          instruction: "Abrir el primer compás con una redonda."
+          violations:
+            default: "Comenzar el primer compás con una redonda."
+        note_count_per_bar:
+          name: "%{number} %{rhythmic_unit} por compás"
+          instruction: "En cada compás intermedio, escribir %{number} %{rhythmic_unit}."
+          violations:
+            default: "En cada compás intermedio, emplear %{number} %{rhythmic_unit}."
+      guides:
+        first_species:
+          instruction: "Escribir una redonda contra cada nota del cantus firmus, consonante con ella y en movimiento contrario la mayor parte del tiempo."
+        first_species_melody:
+          instruction: "Escribir una redonda contra cada nota del cantus firmus."
+        first_three_species:
+          instruction: "Combinar redondas, blancas y negras en una misma línea, manteniendo consonante cada tiempo fuerte a medida que cambia el ritmo."
+        first_three_species_melody:
+          instruction: "Combinar redondas, blancas y negras en una misma línea, cambiando de ritmo entre frases."
+        fux_cantus_firmus:
+          instruction: "Escribir un cantus firmus: una línea cantable de ocho a catorce redondas que empieza y termina en la tónica."
+        second_species:
+          instruction: "Escribir dos blancas por compás, colocando una consonancia en cada tiempo fuerte y atravesando la disonancia solo por grados conjuntos."
+        second_species_melody:
+          instruction: "Escribir dos blancas por compás contra el cantus firmus."
+        third_species:
+          instruction: "Escribir cuatro negras por compás, manteniendo consonante cada tiempo fuerte y tratando cada disonancia como nota de paso o bordadura."
+        third_species_harmony:
+          instruction: "Mantener consonantes los tiempos fuertes y tratar las disonancias de las negras como notas de paso o bordaduras."
+        third_species_melody:
+          instruction: "Escribir cuatro negras por compás contra el cantus firmus."
+        third_species_triple_meter:
+          instruction: "Escribir tres negras en cada compás ternario, manteniendo consonante cada tiempo fuerte y resolviendo cada disonancia por grados conjuntos."
+        third_species_triple_meter_melody:
+          instruction: "Escribir tres negras por compás contra el cantus firmus."
