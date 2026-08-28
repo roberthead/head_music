@@ -14,7 +14,11 @@ ENGLISH_PLURAL_KEYS = %i[one other].freeze
 # catch Russian written with English's forms, because {one, few, many, other} is
 # a superset of {one, other} -- and on the Simple backend that hash renders
 # `other` for counts 2, 3 and 5 without raising.
-LOCALE_PLURAL_FORMS = {en: ENGLISH_PLURAL_KEYS, en_GB: ENGLISH_PLURAL_KEYS, ru: %i[one few many]}.freeze
+LOCALE_PLURAL_FORMS = {
+  en: ENGLISH_PLURAL_KEYS, en_GB: ENGLISH_PLURAL_KEYS, de: ENGLISH_PLURAL_KEYS,
+  fr: ENGLISH_PLURAL_KEYS, it: ENGLISH_PLURAL_KEYS, es: ENGLISH_PLURAL_KEYS,
+  ru: %i[one few many]
+}.freeze
 
 # The three vocabulary groups a style sentence borrows from. Separate rather
 # than one, because the relationship between them is a per-language fact:
@@ -22,13 +26,14 @@ LOCALE_PLURAL_FORMS = {en: ENGLISH_PLURAL_KEYS, en_GB: ENGLISH_PLURAL_KEYS, ru: 
 # tell them apart, and French names its rests from an unrelated vocabulary.
 VOCABULARY_GROUPS = %w[rhythmic_units note_values rest_values].freeze
 
-# Exempt from the data-level sweep because no pattern can attribute them. Above
-# the double whole every language, American included, uses the Latin name, so
-# maxima and longa are spelled the same everywhere; semibreve and breve are
-# shared between British and Italian. These are the words the story expected
-# French noire to be -- measured, noire scores zero hits in the English corpus
-# and needs no exemption, while these four cannot be told apart.
-SHARED_MENSURAL_UNITS = %w[maxima longa double_whole whole].freeze
+# British and Italian spell the whole note identically, so semibreve is evidence
+# of neither. Blanked out of a string before either sweep reads it, for the two
+# locales that legitimately use it -- the rest of that string is still swept.
+#
+# Exempting the word rather than the row matters: a row-wide exemption excused
+# the whole row in *every* locale, so German could carry "semibreve" and nothing
+# noticed, and whole/count-1 is the most-rendered pair in the gem.
+SHARED_SPELLINGS = {en_GB: /\bsemibrev(?:es?|i)\b/i, it: /\bsemibrev(?:es?|i)\b/i}.freeze
 
 # Identifiers with no vocabulary, which is allowed as long as it is declared:
 # reaching one raises MissingTemplate by name rather than rendering the wrong
@@ -45,10 +50,11 @@ UNTRANSLATED_UNITS = %w[two_hundred_fifty_sixth].freeze
 # every "Minimum of ..." string MinimumNotes produces.
 NOTE_VOCABULARIES = {
   american: /\b(whole|half|quarter|eighth|sixteenth)[-\s](note|rest)/i,
-  # semibreve is deliberately absent: Italian spells it the same, so no pattern
-  # can attribute it. minim, crotchet and quaver carry British on their own, and
-  # the shared mensural words are covered by the data check instead.
-  british: /\b(minim|crotchet|quaver|semiquaver)s?\b/i,
+  # semibreve is here even though Italian spells it identically. Dropping it
+  # made every locale's whole row undetectable -- German could carry "semibreve"
+  # and nothing would notice -- so instead it stays, and the two locales that
+  # legitimately share it are named in SHARED_VOCABULARY below.
+  british: /\b(semibreve|minim|crotchet|\w*quaver)s?\b/i,
   # Capitalization is the anchor for the compounds -- Viertel is a note value,
   # viertel is not a word -- but ganz and halb are adjectives that stay
   # lowercase in their two-word forms, so those two carry both cases. No /i:
@@ -63,7 +69,7 @@ NOTE_VOCABULARIES = {
   # Anchored on the crom- stem and the semi- compound. Bare minima is
   # surrendered: it is ordinary Italian for "least". centoventottavo is the row
   # where Italian leaves its family for the fractional scheme.
-  italian: /\b(semiminim[ae]|crome?|semicrome?|biscrome?|semibiscrome?|centoventottav[oi])\b/i,
+  italian: /\b(\w*crom[ae]|\w*minim[ae]|centoventottav[oi])\b/i,
   # \b is ASCII-only in Ruby and would never fire between Cyrillic letters, so
   # the boundaries are written with \p{L}. Stems rather than whole words,
   # because these decline through four cases in the sentences.
@@ -259,8 +265,14 @@ describe HeadMusic::Style::Guide do
   def foreign_vocabulary_among(strings, locale)
     foreign = NOTE_VOCABULARIES.except(LOCALE_NOTE_VOCABULARY.fetch(locale))
     strings.flat_map do |string|
-      foreign.filter_map { |family, pattern| "#{locale}: #{family} in #{string.inspect}" if pattern.match?(string) }
+      scrubbed = without_shared_spellings(string, locale)
+      foreign.filter_map { |family, pattern| "#{locale}: #{family} in #{string.inspect}" if pattern.match?(scrubbed) }
     end
+  end
+
+  def without_shared_spellings(string, locale)
+    shared = SHARED_SPELLINGS[locale]
+    shared ? string.gsub(shared, "") : string
   end
 
   # The prose scan above catches a foreign word hard-coded into a *sentence* --
@@ -276,7 +288,7 @@ describe HeadMusic::Style::Guide do
     def vocabulary_values(locale)
       tree = I18n.backend.send(:translations).fetch(locale).dig(:head_music, :rudiments) || {}
       VOCABULARY_GROUPS.flat_map do |group|
-        (tree[group.to_sym] || {}).reject { |unit, _| SHARED_MENSURAL_UNITS.include?(unit.to_s) }
+        (tree[group.to_sym] || {})
           .flat_map { |unit, value| Array(value.is_a?(Hash) ? value.values : value).map { |v| [group, unit, v] } }
       end
     end
@@ -288,14 +300,14 @@ describe HeadMusic::Style::Guide do
       own = LOCALE_NOTE_VOCABULARY.fetch(locale)
       NOTE_VOCABULARIES.except(own).flat_map do |family, pattern|
         vocabulary_values(locale).filter_map do |group, unit, value|
-          "#{locale}.#{group}.#{unit} = #{value.inspect} matches #{family}" if pattern.match?(value)
+          scrubbed = without_shared_spellings(value, locale)
+          "#{locale}.#{group}.#{unit} = #{value.inspect} matches #{family}" if pattern.match?(scrubbed)
         end
       end
     end
 
     it "gives every locale only words from the family it owns" do
-      offenders = LOCALE_NOTE_VOCABULARY.keys.select { |locale| I18n.backend.send(:translations).key?(locale) }
-        .flat_map { |locale| foreign_vocabulary_data_in(locale) }
+      offenders = translated_locales.flat_map { |locale| foreign_vocabulary_data_in(locale) }
 
       expect(offenders).to be_empty
     end
@@ -311,9 +323,24 @@ describe HeadMusic::Style::Guide do
       I18n.backend.send(:init_translations)
     end
 
-    # The exemption has to be narrow enough to still be worth having.
-    it "exempts only the units no pattern can attribute" do
-      expect(SHARED_MENSURAL_UNITS).not_to include("half", "quarter", "eighth")
+    # The exemption must stay narrow enough to be worth having: only the rows
+    # two families genuinely spell the same, never a whole unit across locales.
+    it "excuses only the one spelling two families actually share" do
+      expect(SHARED_SPELLINGS.keys).to match_array %i[en_GB it]
+      expect(without_shared_spellings("semibreve minim", :it)).to eq " minim"
+    end
+
+    it "keeps every shipped word attributable to one family at most" do
+      expect(ambiguous_vocabulary).to be_empty
+    end
+
+    def ambiguous_vocabulary
+      translated_locales.flat_map do |locale|
+        vocabulary_values(locale).filter_map do |group, unit, value|
+          families = NOTE_VOCABULARIES.select { |_, pattern| pattern.match?(value) }.keys
+          "#{locale}.#{group}.#{unit} = #{value.inspect} -> #{families.inspect}" if families.size > 1
+        end
+      end
     end
   end
 
@@ -391,8 +418,24 @@ describe HeadMusic::Style::Guide do
   # The file is string-keyed and the backend is symbol-keyed; both are walked.
   def key_for(name, sample) = sample.is_a?(Symbol) ? name.to_sym : name
 
-  def british_string_tree
-    localized_string_tree(I18n.backend.send(:translations).fetch(:en_GB))
+  # From the files, not the backend. Other spec files store deliberately broken
+  # probe entries -- a plural hash missing the form English needs is exactly one
+  # of them -- and the backend keeps them for the rest of the run, which would
+  # make this guard report another file's fixtures as shipped data.
+  def string_tree_for(locale)
+    tree = YAML.load_file(File.expand_path("../../../lib/head_music/locales/#{locale}.yml", __dir__))
+      .fetch(locale.to_s)
+    localized_string_tree(tree, "")
+  end
+
+  def british_string_tree = string_tree_for(:en_GB)
+
+  # The locales carrying vocabulary of their own. en_US carries none and reads
+  # en, so it has nothing here to be wrong about.
+  def translated_locales
+    LOCALE_NOTE_VOCABULARY.keys.select do |locale|
+      VOCABULARY_GROUPS.any? { |group| I18n.exists?("head_music.rudiments.#{group}", locale, fallback: false) }
+    end
   end
 
   def without_plural_form(path)
@@ -462,6 +505,35 @@ describe HeadMusic::Style::Guide do
     it "would catch a key that is not an identifier" do
       expect(%w[longa quadruple_whole] - identifiers).to eq ["quadruple_whole"]
     end
+
+    # Per locale, not only English. A missing key falls through the chain to a
+    # bare American word with no head noun -- "quarter", not "quarter note" --
+    # which NOTE_VOCABULARIES[:american] cannot match, because that pattern is
+    # anchored to note|rest. A gap here is invisible to the prose sweep by
+    # construction, which is why it is asserted rather than tolerated.
+    it "gives every translated locale every key" do
+      expect(missing_vocabulary_keys).to be_empty
+    end
+
+    def missing_vocabulary_keys
+      expected = identifiers - UNTRANSLATED_UNITS
+      translated_locales.flat_map do |locale|
+        VOCABULARY_GROUPS.flat_map do |group|
+          (expected - vocabulary_keys_in(locale, group)).map { |unit| "#{locale}.#{group}.#{unit}" }
+        end
+      end
+    end
+
+    it "would catch a locale missing one key" do
+      expected = identifiers - UNTRANSLATED_UNITS
+
+      expect(expected - (vocabulary_keys_in(:fr, "rest_values") - ["thirty_second"])).to eq ["thirty_second"]
+    end
+
+    def vocabulary_keys_in(locale, group)
+      (I18n.backend.send(:translations).fetch(locale).dig(:head_music, :rudiments, group.to_sym) || {})
+        .keys.map(&:to_s)
+    end
   end
 
   # %{number} is not confined to note_count_per_bar: MinimumNotes renders eight,
@@ -472,12 +544,10 @@ describe HeadMusic::Style::Guide do
   describe "the spelled-out numerals" do
     let(:counts) do
       rendered = []
-      HeadMusic::Style::Template.singleton_class.prepend(Module.new do
-        define_method(:number_word) do |number, locale: I18n.locale|
-          rendered << number
-          super(number, locale: locale)
-        end
-      end)
+      allow(HeadMusic::Style::Template).to receive(:number_word).and_wrap_original do |original, number, **options|
+        rendered << number
+        original.call(number, **options)
+      end
       I18n.with_locale(:en) { problems_in(:en) }
       rendered.uniq.sort
     end
@@ -601,8 +671,15 @@ describe HeadMusic::Style::Guide do
     here + tree.flat_map { |key, value| wrong_plurals_in(value, forms, path + [key]) }
   end
 
-  it "gives every pluralized en_GB entry a complete set of forms" do
-    expect(wrong_plurals_in(british_string_tree, LOCALE_PLURAL_FORMS.fetch(:en_GB))).to be_empty
+  # Every locale that declares a form set, not only en_GB. Built against en_GB
+  # alone at first, which left Russian -- the locale the exact-set match exists
+  # for -- checked against nothing but the synthetic hashes below.
+  it "gives every pluralized entry the exact set of forms its locale uses" do
+    wrong = LOCALE_PLURAL_FORMS.flat_map do |locale, forms|
+      wrong_plurals_in(string_tree_for(locale), forms).map { |path| "#{locale}: #{path}" }
+    end
+
+    expect(wrong).to be_empty
   end
 
   # Proves the detector fires, which the guard above cannot: it asserts an
@@ -629,12 +706,22 @@ describe HeadMusic::Style::Guide do
   # passes the guard above exactly as it passed before any British plural data
   # existed. Says every unit rather than naming today's three, so adding
   # quaver does not fail like a regression.
-  it "walks the British plural entries it is guarding" do
-    units = british_string_tree.fetch(:rhythmic_units)
+  # Names which locales pluralize their vocabulary rather than trusting the
+  # walk to find some: en keeps its units scalar and pluralizes the sentence
+  # instead, so an empty result here would otherwise look like success.
+  it "walks the plural entries it is guarding, in every locale that pluralizes them" do
+    expect(pluralized_unit_trees.keys).to match_array %i[en_GB de fr it ru es]
+    pluralized_unit_trees.each do |locale, units|
+      forms = units.values.map { |entry| entry.keys.map(&:to_sym) }
 
-    expect(units).not_to be_empty
-    expect(units.values).to all be_a(Hash)
-    expect(units.values.map(&:keys)).to all match_array LOCALE_PLURAL_FORMS.fetch(:en_GB)
+      expect(forms).to all match_array LOCALE_PLURAL_FORMS.fetch(locale)
+    end
+  end
+
+  def pluralized_unit_trees
+    LOCALE_PLURAL_FORMS.keys
+      .to_h { |locale| [locale, string_tree_for(locale).fetch("rhythmic_units")] }
+      .select { |_, units| units.values.all?(Hash) }
   end
 
   # What the load-time check found, kept rather than discarded, so thin locale
@@ -646,11 +733,41 @@ describe HeadMusic::Style::Guide do
   # The Ruby fallback exists so a language with no plural data reads a little
   # wrong instead of raising. Reaching it for a guideline means an entry is
   # missing, which the fallback would otherwise hide forever.
+  #
+  # Cleared rather than diffed against what was already there. fell_back_to_ruby
+  # is a module accumulator that dedupes and never resets, and an earlier example
+  # sweeps the same locales -- so a diff against its prior contents was empty
+  # whatever the data said, and no arrangement of this file could fail it.
   it "needs the Ruby plural fallback for no guideline in any language" do
-    already_recorded = HeadMusic::Style::Template.fell_back_to_ruby.dup
+    HeadMusic::Style::Template.fell_back_to_ruby.clear
 
     I18n.available_locales.each { |locale| problems_in(locale) }
 
-    expect(HeadMusic::Style::Template.fell_back_to_ruby - already_recorded).to be_empty
+    expect(HeadMusic::Style::Template.fell_back_to_ruby).to be_empty
+  end
+
+  # Proves the recorder fires, which the guard above cannot: it asserts an
+  # absence, and an accumulator nobody writes to reports the same absence.
+  it "would catch an entry too thin to pluralize" do
+    template = store_thin_plural_probe
+
+    template.pluralize("rhythmic_units.gap_probe", count: 1, scope: template::RUDIMENT_SCOPE)
+
+    expect(template.fell_back_to_ruby).to eq ["rhythmic_units.gap_probe"]
+  ensure
+    restore_shipped_translations
+  end
+
+  def store_thin_plural_probe
+    HeadMusic::Style::Template.tap do |template|
+      template.fell_back_to_ruby.clear
+      I18n.backend.store_translations(:en, {head_music: {rudiments: {rhythmic_units: {gap_probe: {other: "probes"}}}}})
+    end
+  end
+
+  def restore_shipped_translations
+    HeadMusic::Style::Template.fell_back_to_ruby.clear
+    I18n.backend.reload!
+    I18n.backend.send(:init_translations)
   end
 end

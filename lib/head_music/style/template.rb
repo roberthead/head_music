@@ -39,8 +39,10 @@ module HeadMusic::Style::Template
 
   module_function
 
-  # scope is safe as a keyword rather than a value: I18n reserves it, so
-  # guard_value_keys! already refuses it as an interpolation.
+  # scope is safe as a keyword rather than a value: I18n reserves the name, so
+  # no template could ever have interpolated %{scope} anyway. Declaring it binds
+  # a caller's scope: to the parameter, which is why guard_value_keys! never
+  # sees it.
   def render(key, scope: SCOPE, **values)
     guard_value_keys!(values)
     rendered = I18n.t(key, scope: scope, raise: true, **values)

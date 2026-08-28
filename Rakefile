@@ -45,3 +45,26 @@ desc "Open coverage report in browser"
 task :coverage do
   sh "open coverage/index.html" if File.exist?("coverage/index.html")
 end
+
+namespace :style do
+  desc "Regenerate the pinned English guide strings (spec/fixtures/style/english_strings.yml)"
+  task :snapshot_english do
+    require "yaml"
+    $LOAD_PATH.unshift File.expand_path("lib", __dir__)
+    require "head_music"
+
+    guides = HeadMusic::Style::Guide::ALL
+    items = guides.flat_map(&:guide_items).uniq
+    snapshot = %i[en en_GB].to_h do |locale|
+      strings = I18n.with_locale(locale) do
+        guides.flat_map { |guide| [guide.display_name, guide.instruction] } +
+          items.flat_map { |item| [item.name, item.instruction] + item.violation_previews }
+      end
+      [locale.to_s, strings]
+    end
+
+    path = File.expand_path("spec/fixtures/style/english_strings.yml", __dir__)
+    File.write(path, snapshot.to_yaml)
+    puts "Wrote #{snapshot.values.sum(&:size)} strings to #{path}"
+  end
+end

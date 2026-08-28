@@ -21,6 +21,15 @@ describe HeadMusic::Style::Template do
     })
   end
 
+  # These probes are deliberately broken -- a plural hash missing the form
+  # English needs, another carrying only forms English cannot select. The
+  # backend keeps whatever is stored in it for the rest of the run, so without
+  # this they read as shipped data to any later spec that walks the tree.
+  after do
+    I18n.backend.reload!
+    I18n.backend.send(:init_translations)
+  end
+
   describe ".render" do
     it "interpolates the values it is given" do
       expect(described_class.render("spec_probe.filled", minimum: "eight")).to eq "Write at least eight notes."
@@ -137,14 +146,25 @@ describe HeadMusic::Style::Template do
   # Russian entry carrying one/few/many renders `other` for counts 2, 3 and 5 --
   # or raises when `other` is absent, which is the seam this uses.
   describe "a locale whose plural rule the backend does not implement" do
-    let(:key) { "rhythmic_units.half" }
+    # Under a probe key, never over a shipped one. Storing these three words on
+    # rhythmic_units.half replaced Russian's note names with the numerals one,
+    # two and five for the rest of the process -- "две две" in a rendered
+    # sentence -- and survived only because an unrelated file's reload! happened
+    # to scrub it.
+    let(:key) { "rhythmic_units.plural_probe" }
     let(:scope) { described_class::RUDIMENT_SCOPE }
 
     before do
       I18n.backend.store_translations(
-        :ru, {head_music: {rudiments: {rhythmic_units: {half: {one: "одна", few: "две", many: "пять"}}}}}
+        :ru, {head_music: {rudiments: {rhythmic_units: {plural_probe: {one: "одна", few: "две", many: "пять"}}}}}
       )
       described_class.fell_back_to_ruby.clear
+    end
+
+    after do
+      described_class.fell_back_to_ruby.clear
+      I18n.backend.reload!
+      I18n.backend.send(:init_translations)
     end
 
     def form_for(count) = I18n.with_locale(:ru) { described_class.pluralize(key, count: count, scope: scope) }
