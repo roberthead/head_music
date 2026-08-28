@@ -122,11 +122,11 @@ describe HeadMusic::Style::CompositeAssessment do
       let(:voice) { fux_first_species_examples[7].counterpoint_voice }
 
       it "is the geometric mean of its members' grades" do
-        expect(assessment.fitness).to be_within(1e-9).of(Math.sqrt(0.891254026250))
+        expect(assessment.fitness).to be_within(1e-9).of(Math.sqrt(0.869504831500))
       end
 
       it "is not the arithmetic mean" do
-        expect(assessment.fitness).not_to be_within(1e-4).of(0.945627013125)
+        expect(assessment.fitness).not_to be_within(1e-4).of(0.934752415750)
       end
     end
 

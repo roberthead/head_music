@@ -400,3 +400,20 @@ DAVIS_AND_LYBBERT_FIRST_SPECIES_EXAMPES = [
 def davis_and_lybbert_first_species_examples
   DAVIS_AND_LYBBERT_FIRST_SPECIES_EXAMPES.map { |params| CompositionContext.from_params(params) }
 end
+
+# Not a counterpoint: the Fux chapter one figure 5 cantus firmus sung again an
+# octave up. One line, twice. It breaks the one thing counterpoint is for while
+# satisfying most of what a first species guide measures, which is why it
+# belongs in the graded corpus rather than only in a spec.
+DOUBLED_OCTAVE_EXAMPLES = [
+  {
+    source: "Fux chapter one figure 5 doubled at the octave",
+    key: "D dorian",
+    cantus_firmus_pitches: %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4],
+    counterpoint_pitches: %w[D5 F5 E5 D5 G5 F5 A5 G5 F5 E5 D5]
+  }
+].freeze
+
+def doubled_octave_examples
+  DOUBLED_OCTAVE_EXAMPLES.map { |params| CompositionContext.from_params(params) }
+end

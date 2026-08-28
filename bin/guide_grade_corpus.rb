@@ -75,6 +75,7 @@ def corpus
     schoenberg_cantus_firmus_examples davis_and_lybbert_cantus_firmus_examples
     fux_cantus_firmus_examples_with_errors fux_first_species_examples
     clendinning_first_species_examples davis_and_lybbert_first_species_examples
+    doubled_octave_examples
   ].each do |source|
     Array(send(source)).each_with_index do |context, index|
       context.composition.voices.each_with_index do |voice, position|

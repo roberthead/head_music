@@ -48,13 +48,34 @@ class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
   # syncopation: primary it would take phi^-1 of fourth and fifth species by
   # itself.
   #
-  # A deliberate promotion belongs here as a named exception, so that the
-  # decision to weigh an inherited rule as a taught one is written down once
-  # rather than inferred from a guide's declaration.
+  # A deliberate promotion is not written here -- removing a member would relax
+  # the policy for all seven guides -- but in HARMONIC_CRAFT_PROMOTIONS below,
+  # which names the exception and the one guide it applies to.
   INHERITED_HARMONIC_CRAFT = [
     *DIMINUTION_HARMONIC_CRAFT,
     HeadMusic::Style::Guidelines::NoParallelPerfectWithSyncopation
   ].freeze
+
+  # The named exceptions to the policy above: guide key => the inherited items
+  # that guide weighs as taught rules. Every promotion is written down once
+  # here, so that a tier declaration in a guide can be read as a decision rather
+  # than as an oversight, and so that base_spec can hold the other guides to the
+  # policy without hard-coding which one departs from it.
+  #
+  # NoParallelPerfectOnDownbeats is primary in first species alone. First
+  # species has no dissonance treatment to be about -- its other two primaries
+  # are rhythm-and-texture bookkeeping -- so note-against-note consonance
+  # handling is what the species teaches. In the six guides that do teach a
+  # dissonance treatment, promoting it would weigh the prohibition as heavily as
+  # the treatment the guide exists for, and would raise the grade of a
+  # submission already failing that treatment by halving the weight it forgoes.
+  #
+  # Keyed by key string rather than class constant: head_music.rb loads this
+  # file before the guides that subclass it, so a class reference here is a
+  # load-time NameError.
+  HARMONIC_CRAFT_PROMOTIONS = {
+    "first_species_harmony" => [HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats]
+  }.freeze
 
   def self.category
     :harmony

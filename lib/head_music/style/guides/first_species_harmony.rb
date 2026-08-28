@@ -2,12 +2,23 @@
 class HeadMusic::Style::Guides::FirstSpeciesHarmony < HeadMusic::Style::Guides::SpeciesHarmony
   gate_items(*HARMONIC_GATES)
 
+  # NoParallelPerfectOnDownbeats is primary here and background in the other six
+  # harmony guides -- the one exception the tier policy allows, registered in
+  # SpeciesHarmony::HARMONIC_CRAFT_PROMOTIONS. Both sides are written out rather
+  # than derived from that register: forgetting the except: raises at require
+  # time via reject_duplicates, and excepting without promoting is caught by
+  # base_spec, so deriving them would buy nothing and hide what this guide
+  # teaches.
+  #
+  # NoUnisonsInMiddle stays first: README.md documents primary_items.first as
+  # that guideline for this guide.
   primary_items(
     HeadMusic::Style::Guidelines::NoUnisonsInMiddle,
-    HeadMusic::Style::Guidelines::OneToOne
+    HeadMusic::Style::Guidelines::OneToOne,
+    HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats
   )
 
-  secondary_items(*HARMONIC_CORE)
+  secondary_items(*HARMONIC_CORE, except: HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats)
 end
 
 # TODO: Guideline against leaping into P8 even by contrary motion.

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`NoParallelPerfectOnDownbeats` is a taught rule in first species harmony**, not inherited background. It moves from the secondary tier to the primary tier of `Guides::FirstSpeciesHarmony` alone, taking its weight from 0.0637 to 0.2060 while `NoUnisonsInMiddle` and `OneToOne` fall from 0.3090 to 0.2060 each. First-species harmony grades move; no other guide is affected.
+
+  A species guide is normally about the dissonance treatment its rhythm makes possible, and two-part craft is background. First species has no dissonance treatment, and its other two primaries are rhythm-and-texture bookkeeping — so note-against-note consonance handling is what the species teaches. Promoting the same rule in the six guides that *do* teach a dissonance treatment would weigh it as heavily as their subject, and would *raise* the grade of a submission already failing that subject by halving the weight it forgoes.
+
+  The exception is registered in `Guides::SpeciesHarmony::HARMONIC_CRAFT_PROMOTIONS`, and the specs hold every other harmony guide to the policy. Of 4320 graded corpus rows, 18 move: a cantus firmus doubled an octave above itself falls from 0.8300 to 0.6674, while Fux chapter one figure 5 as published still grades exactly 1.0.
+
 ## [20.0.0] - 2026-08-23
 
 The [style assessment model](https://github.com/roberthead/head_music/tree/main/user-stories/epics/style-assessment-model.md) epic, released together. Five stories reshaped how a guide is declared, how it grades, what it says, and what a consumer asks for — so the breaking changes below are one migration rather than five.

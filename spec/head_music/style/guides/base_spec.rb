@@ -133,20 +133,44 @@ describe HeadMusic::Style::Guides::Base do
   end
 
   # The demotion: a harmony guide weighs what it teaches above the two-part
-  # craft it inherits, so no member of the harmonic cores may sit in a primary
-  # tier -- and every guide must still teach something of its own.
+  # craft it inherits, so a member of the harmonic cores sits in a primary tier
+  # only where SpeciesHarmony::HARMONIC_CRAFT_PROMOTIONS says so -- and every
+  # guide must still teach a rule of its own that is not inherited craft.
+  #
+  # Three ways an unrecorded promotion could slip in, and an example closing
+  # each.
+  #
+  # The per-guide loop closes two of them with match_array rather than
+  # be_empty: a guide promoting an inherited rule it has not registered fails,
+  # and so does a guide registering a promotion it has not declared. Six of its
+  # seven examples assert an empty set, which is the "unchanged everywhere else"
+  # half of the policy.
+  #
+  # The third is a promotion added to both sides at once, which a purely derived
+  # loop would greet as consistent. Only a literal here catches that, so the
+  # register is pinned by hand: adding an exception means editing this spec and
+  # saying why.
   describe "the harmonic cores are background" do
     inherited = guides::SpeciesHarmony::INHERITED_HARMONIC_CRAFT
+    promotions = guides::SpeciesHarmony::HARMONIC_CRAFT_PROMOTIONS
+
+    it "records exactly one promotion, in first species" do
+      expect(promotions).to eq(
+        "first_species_harmony" => [HeadMusic::Style::Guidelines::NoParallelPerfectOnDownbeats]
+      )
+    end
 
     harmonic_guides.each do |guide|
-      it "#{guide.key} declares no inherited harmonic craft as primary" do
+      it "#{guide.key} promotes exactly the inherited craft it registers" do
         promoted = guide.items_by_tier[:primary].map(&:guideline) & inherited
 
-        expect(promoted).to be_empty
+        expect(promoted).to match_array promotions.fetch(guide.key, [])
       end
 
       it "#{guide.key} teaches at least one rule of its own" do
-        expect(guide.items_by_tier[:primary]).not_to be_empty
+        own = guide.items_by_tier[:primary].map(&:guideline) - inherited
+
+        expect(own).not_to be_empty
       end
     end
   end
