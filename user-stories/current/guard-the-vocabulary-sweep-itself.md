@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-27T18:39:03-07:00
   planned_at:   2026-08-27T19:05:38-07:00
   finished_at:
-  updated_at:   2026-08-27T20:31:12-07:00
+  updated_at:   2026-08-27T21:24:55-07:00
 -->
 
 # Story: Guard the Vocabulary Sweep Itself
@@ -423,11 +423,14 @@ the end of one (`"Write in %{rhythmic_unit}."` → `"Write in ."`).
 
 Verified clean before writing: across all eight locales, over guide display names, guide instructions,
 item names, item instructions and every violation preview, there are zero doubled spaces and zero
-spaces before punctuation. The check starts green and runs against real data on day one. (The same
-sweep found zero strings with leading or trailing whitespace, which this regex does not test — a
-blank interpolation at the very start or end of a template would still slip through. No template has
-one, and adding `\A\s|\s\z` to catch a case that cannot arise today is not worth the third
-alternation.)
+spaces before punctuation. The check starts green and runs against real data on day one.
+
+(As planned, this paragraph dismissed anchoring — `\A\s|\s\z` — as guarding a case that could not
+arise. The review overturned that: two swept templates *begin* with an interpolation
+(`"%{number} %{rhythmic_unit} per bar"`, `"%{contour} contour"`), so a blank value there leaves only
+a leading space, which the interior-only form misses. Zero strings carry leading or trailing
+whitespace today, so anchoring was safe to add, and the shipped regex is
+`/\s\s|\s[.,;:]|\A\s|\s\z/`.)
 
 This rides on `problems_in`, which step 1b widens to include guide display names, so the new check
 covers those too.
@@ -504,3 +507,63 @@ No open questions remain; the decisions are listed under Scope above.
   - *A shared helper for the two parity examples* — they are not mirror images: different direction
     *and* different scope, so a shared helper would take both as parameters and read worse than two
     short examples. `template_keys` is already the right amount of shared abstraction.
+
+## Review
+
+Reviewed 2026-08-27 at commit `1a44754`, plus two post-review fixes now in the working tree
+(uncommitted). Reviewers: product-manager (acceptance criteria, drills re-run independently) and
+code-reviewer (spec correctness, comment accuracy, false-positive analysis), run in parallel.
+Baseline both confirmed: 31 examples, 0 failures; rubocop clean.
+
+### Acceptance criteria
+
+- ✅ **A rhythmic unit added to `en.yml` without a British counterpart fails a spec, and the failure
+  names the unit** — drill re-run independently, not taken from this file: `eighth` in `en.yml` alone
+  gives exactly one failure, from `"gives every English rhythmic unit a British name"`, reading
+  `` expected `["rhythmic_units.eighth"].empty?` to be truthy ``.
+- ✅ **The guard does not depend on a sentence interpolating the unit** — `unnamed_rhythmic_units`
+  diffs `template_keys`, which `YAML.load_file`s the locale files directly; no rendering anywhere on
+  the path. The AC 1 drill doubles as proof: no sentence interpolates an `eighth` unit today, and the
+  guard fired anyway.
+- ✅ **A guide whose display name carries a note value is swept like its instruction** — `strings_in`
+  collects `guide.display_name`; the live sweep routes through it; one example pins names ⊆ swept
+  strings and another proves `"Whole Note Species"` is flagged in `en_GB` through the same helper the
+  sweep uses.
+- ✅ **The prose sweep keeps its `note|rest` scoping and its British word boundary** —
+  `NOTE_VOCABULARIES` verified byte-identical to the merge-base by direct comparison. Now falsifiable
+  from both sides: the spared-terms example pins the false positives the narrowness prevents
+  ("Minimum of eight notes." survives only the `s?\b`; "Sixteenth Century Cantus Firmus" only the
+  head noun), and `"recognizes each locale's own note vocabulary"` pins that each family actually
+  matches — 38 matches per locale, so a pattern broken to `/zzz/` cannot report a clean absence.
+- ✅ **No example hardcodes the list of rhythmic units; a correct addition changes no assertion** —
+  the census is gone; drill re-run: `eighth`/`quaver` in both files gives 31/0. Remaining literal
+  units (two verbatim-sentence pins, one inline fixture) are not censuses and did not move.
+
+Scope beyond the criteria — the `fault_in` blank check, the `problems_in` widening, the comment
+fixes — was all pre-declared in the plan and verified working. No criterion's evidence is weaker
+than this file claims; every recorded drill reproduced exactly.
+
+### Code review findings
+
+1. **(Important — fixed)** The blank-value check missed a blank interpolation in leading or trailing
+   position: both alternations required whitespace adjacent to other content, while
+   `"%{number} %{rhythmic_unit} per bar"` and `"%{contour} contour"` open with an interpolation, so a
+   blank there leaves a single leading space. Verified through the real render path
+   (`" crotchets per bar"` → no fault). This overturned the plan's own dismissal of anchoring, which
+   claimed the case could not arise. Fixed: the regex is now
+   `/\s\s|\s[.,;:]|\A\s|\s\z/`, safe because zero strings carry edge whitespace today, and the
+   comment names the leading-interpolation template that motivates the anchors.
+2. **(Important — fixed)** The scale comment's arithmetic went stale in this very branch: widening
+   `problems_in` to two strings per guide made "30 guides" undercount its own collector. Now reads
+   `30 guides x 2 + 67 items x 3 templates` (measured: 262 strings per locale).
+3. **(Note, no action)** French typography cannot false-trip the blank check: Ruby's `\s` is
+   ASCII-only, so the non-breaking spaces correct French puts before `:` and `;` are invisible to it,
+   and `!`/`?` are not in the punctuation class. The residual case — a plain-ASCII space before `:`
+   in a future `fr` style entry — becomes live only when note-values-in-each-language lands. Recorded
+   in the spec comment.
+4. **(Note, no action)** Widening `problems_in` to `display_name` quietly closed a fourth hole: raw
+   `I18n.translate` with a `default:` bypasses every `Template` guard, so an interpolation added to a
+   `guides.<key>.name` would have shipped unrendered; the `include?("%{")` check now catches it.
+
+Every new example was checked for vacuous or wrong-reason passes; none found. All new and edited
+comments verified against the code they describe. Nothing blocks `finish`.
