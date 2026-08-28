@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-28T11:57:55-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-08-28T12:41:20-07:00
+  updated_at:   2026-08-28T12:52:33-07:00
 -->
 
 # Story: Note Values in Each Language
@@ -24,40 +24,22 @@ and `ru` inherited it by routing through `en_GB` on their way to `en`. That was
 decided deliberately and recorded there, but it is a stopgap: it hands four
 readerships a fourth language's words.
 
-**The terminology splits three ways, and English sits in two of them.**
+The vocabulary splits three ways — fractional, mensural-Latin, and shape — and
+English sits in two of them, so no choice of English serves all four inheritors.
+British helps Italian, costs German and Russian the word-for-word correspondence
+their own names have with the American ones, and actively misleads French:
+*croche* is the **eighth**, where its cognate *crotchet* is the **quarter**. No
+English is safe for them — only their own is.
 
-| Family | Logic | Languages |
-| --- | --- | --- |
-| Fractional | arithmetic division of the whole | German, Russian, Dutch, Polish, Czech, Japanese, Turkish — and **American** English |
-| Mensural-Latin | inherited from mensural notation | **British** English, Italian, Portuguese |
-| Shape / colour | what the notehead looks like | French, Spanish, Catalan |
+**The words themselves live in `references/note-values-by-language.md`**, which
+carries the full grid, the derivation rules, the plural behaviour and the
+sources that disagree. This story is the decisions and the traps; that file is
+the vocabulary.
 
-So no choice of English serves all four inheritors. British helps Italian, costs
-German and Russian the word-for-word correspondence their own names have with
-the American ones, and actively misleads French.
-
-**The false friend is why this story exists rather than a chain reordering.**
-French *croche* is the **eighth** note; English *crotchet* is the **quarter**.
-They are cognates from the same hooked-note root that drifted apart by a factor
-of two, so a French reader meets a familiar-looking word attached to the wrong
-duration. Italian *croma* and Spanish *corchea* are eighths too — *croma* only
-looks like the others, being usually traced to Greek *khrôma*, the blackened
-noteheads, rather than the hook. Three of the four lookalikes mean eighth; only
-English's means quarter. No English is safe for them — only their own is.
-
-| Locale (`rhythmic_units`) | whole | half | quarter | eighth |
-| --- | --- | --- | --- | --- |
-| `de` | Ganze | Halbe | Viertel | Achtel |
-| `fr` | ronde | blanche | noire | croche |
-| `it` | semibreve | minima | semiminima | croma |
-| `ru` | целая | половинная | четвертная | восьмая |
-| `es` | redonda | blanca | negra | corchea |
-
-Checked and correct. German takes the nominalized short forms rather than
-*ganze Note* / *Viertelnote*: they are what musicians say, and they capitalize
-as nouns. The structure below resolves the rest of that question on its own —
-the short form *is* `rhythmic_units` and the compound *is* `note_values`, so
-German no longer has to choose between them.
+German takes the nominalized short forms — *Ganze*, *Halbe*, *Viertel*,
+*Achtel*. The structure below resolves the rest of that question on its own: the
+short form *is* `rhythmic_units` and the compound *is* `note_values`, so German
+no longer has to choose between them.
 
 ### What the vocabulary is now
 
@@ -85,38 +67,16 @@ is both the unit and the note — where American needs the noun to tell them
 apart. And British keeps the noun for rests after dropping it for notes: a
 *crotchet rest*, never a bare *crotchet*. Neither is a property of English: both
 questions come up again in each of the five, and neither answer follows from the
-note-value table above.
+vocabulary grid.
 
-**How each family builds the other six.** The four columns checked above are the
-anchors; the rest derive, and the derivations are where a find-and-replace goes
-wrong.
-
-- **German** suffixes the fraction: *Sechzehntel*, *Zweiunddreißigstel*,
-  *Vierundsechzigstel*, *Hundertachtundzwanzigstel*. Notes compound with
-  *-note*, rests with *-pause*.
-- **Russian** does the same with ordinals: *шестнадцатая*, *тридцать вторая*,
-  *шестьдесят четвёртая*, *сто двадцать восьмая*; rests take *пауза*.
-- **Italian** and **Spanish** modify the eighth: *semicroma*, *biscroma*,
-  *semibiscroma*; *semicorchea*, *fusa*, *semifusa*, *garrapatea*. Rests are
-  *pausa di X* and *silencio de X*.
-- **French counts hooks**: *double croche* (16th), *triple croche* (32nd),
-  *quadruple croche* (64th). A second trap on top of the *croche*/*crotchet*
-  one: *double croche* is a **sixteenth**, not a doubled eighth.
-
-**French rests are a separate vocabulary, not a derivation.** Every other
-language here names the rest from the note. French does not: *pause* (whole),
-*demi-pause* (half), *soupir* (quarter), *demi-soupir* (eighth), *quart de
-soupir* (16th), *huitième de soupir* (32nd). A French `rest_values` built by
-suffixing its note names would be wrong in every row, and it is the one group
-that cannot lean on the note-value table at all.
-
-**The extremes are where sources disagree.** `quadruple_whole` and
-`double_whole` are rare enough that each language has competing names — German
-*Brevis* against *Doppelganze*, Spanish *cuadrada* against *breve*. The 128th is
-different: the fractional and modifier rules above carry it in German, Russian
-and Spanish, but Italian has no confident name for it. So derive the sub-eighth
-units, and check a native source for the two above the whole everywhere, and for
-Italian's 128th.
+**Two traps in the grid, called out because they survive a careful reading.**
+French *double croche* is a **sixteenth**, not a doubled eighth — the multiplier
+counts flags, so it runs opposite to *double whole*. And French rests are a
+separate vocabulary rather than a derivation: *pause*, *demi-pause*, *soupir*,
+*demi-soupir*, anchored on the whole and the quarter where the note names anchor
+on the eighth. A French `rest_values` built by suffixing its note names would be
+wrong in every row. The reference marks both, along with the rows no source
+confirms.
 
 ### What makes it expensive
 
@@ -150,20 +110,12 @@ inflect scalars as a general rule without breaking English.
 
 Nor should it inflect for one locale. ActiveSupport is already a dependency and
 pluralizes all ten British names correctly, but `en_GB` and `es` are the only
-two of the six here where `-s` is right:
-
-| Locale | plural of the quarter-note word |
-| --- | --- |
-| `en_GB` | crotchet → crotchets |
-| `es` | negra → negras |
-| `de` | Viertel → Viertel — invariant after a numeral |
-| `it` | semiminima → semiminime |
-| `fr` | double croche → doubles croches — both words inflect |
-| `ru` | четвертная / четвертные / четвертных |
+two of the six where `-s` is right — German is invariant after a numeral,
+Italian takes `-e`/`-i`, French inflects both words of a *double croche*, and
+Russian has four forms. The reference tabulates all seven.
 
 German's `one` and `other` will be the same string — *zwei Halbe*, *vier
-Viertel*. That is correct, not a copy-paste slip. The verbosity is the shape
-four of the five have to be given by hand.
+Viertel*. That is correct, not a copy-paste slip.
 
 **Russian needs cases, not only plurals.** `%{rhythmic_unit}` is interpolated by
 exactly one guideline — `note_count_per_bar`, three strings — where nominative
