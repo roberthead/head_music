@@ -13,7 +13,9 @@ end
 gem "standard", require: false
 
 group :test do
-  gem "rubocop", require: false
+  # rubocop is not listed directly: standard pins it (~> 1.88.0) and must
+  # lead. Listing it here let Dependabot bump it past standard, which the
+  # resolver "fixed" by downgrading standard 1.56 -> 1.35.
   gem "rubocop-rspec", require: false
   gem "rubocop-rake", require: false
   # simplecov 1.1.x forwards an anonymous block inside a block, which is a

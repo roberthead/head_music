@@ -37,6 +37,10 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "i18n"
         update-types: ["version-update:semver-major"]
+      # simplecov 1.1.x is a SyntaxError on Ruby 3.3 (see the Gemfile comment).
+      # Dependabot rewrites a Gemfile constraint to get past it, so hold it here.
+      - dependency-name: "simplecov"
+        versions: [">= 1.1"]
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"

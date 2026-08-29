@@ -223,7 +223,6 @@ DEPENDENCIES
   rexml (~> 3.4)
   rspec (~> 3.0)
   rspec-its (~> 2.0)
-  rubocop
   rubocop-rake
   rubocop-rspec
   rubycritic
