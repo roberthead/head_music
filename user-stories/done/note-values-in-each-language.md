@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-19T14:45:24-07:00
   activated_at: 2026-08-28T11:57:55-07:00
   planned_at:   2026-08-28T13:04:15-07:00
-  finished_at:
-  updated_at:   2026-08-28T16:12:45-07:00
+  finished_at:  2026-08-28T17:03:06-07:00
+  updated_at:   2026-08-28T17:03:06-07:00
 -->
 
 # Story: Note Values in Each Language
@@ -191,28 +191,38 @@ cover what they can and exempt the rest by name.
 
 ## Acceptance Criteria
 
-**Ships in this story:**
+Restated at finish. They were written for a German-only gate, which named German
+where they meant all five, split one deliverable across a boundary that no longer
+exists, and described the `quadruple_whole` fix inaccurately. The gate was passed;
+the shape outlived it.
 
-- `quadruple_whole` no longer resolves to the whole note; `%{number}` reads in
-  the reader's language in all five locales; Russian's plural forms are
-  reachable and proven against counts above four
-- A German reader gets their own note values in every style string that names
-  one, with the declined form in the sentence and the nominative in the hash
+- No vocabulary key resolves to the wrong rhythmic unit: every key in every group
+  is a real `RhythmicUnit` identifier, `maxima` and `longa` included, with
+  `two_hundred_fifty_sixth` the only declared-untranslated one
+- `%{number}` reads in the reader's language, in the right gender, for every count
+  the registry renders — the eight it reaches, not the four `note_count_per_bar`
+  uses
+- Russian's `one`/`few`/`many` are reachable and proven against 1, 2, 5, 11, 21
+  and 22, with `other` absent and no plural gap recorded
+- A reader of `de`, `fr`, `it`, `ru` or `es` meets no American or British note
+  word in any style string, proven by rendering every string in every locale
 - All three groups — `rhythmic_units`, `note_values`, `rest_values` — carry all
-  eleven units for German, keyed by the `RhythmicUnit` identifier
-- The spec's tree walks cover all three groups, so a key or a plural form missing
-  from `note_values` or `rest_values` fails the way one missing from
-  `rhythmic_units` does
-- No locale inherits another language's note vocabulary — the sweep pairs a
-  prose scan with a data-level check, exempting the shared mensural rows by name
-- `en`, `en_GB` and `en_US` render exactly as they did before, pinned against a
-  snapshot taken before step 1
-- The go/no-go for `fr`, `it`, `ru` and `es` is recorded against real German
-  output
-
-**When the remaining four land:** the same, per locale, with French's rests
-written as their own vocabulary rather than derived from its note names, and
-Russian's oblique cases in the sentences rather than the vocabulary hash.
+  eleven units in all five locales, with French's rests written as their own
+  vocabulary and Italian's 128th crossing both family and gender
+- Declined forms live in the sentences and the nominative in the hash, for German
+  and Russian alike, and the sentences that interpolate the hash are phrased so
+  the nominative is the correct case
+- The guards run against shipped data, not only synthetic examples: the exact
+  plural-form set is checked for every locale that declares one, and every
+  translated locale is checked to carry every key
+- No locale's vocabulary carries another family's word, checked as prose and as
+  data, with the exemption narrowed to the one spelling two families share rather
+  than to whole rows
+- `en`, `en_GB` and `en_US` render byte-identically to `main`, pinned against
+  `spec/fixtures/style/english_strings.yml`, regenerable with
+  `rake style:snapshot_english`
+- The reading of real German output that authorized shipping the other four is
+  recorded in the story
 
 ## Review
 
@@ -311,6 +321,99 @@ German where they mean all five, split one deliverable across a "ships now /
 lands later" boundary that no longer exists, and 1a describes the wrong fix. The
 planning commit said to restate them around the gate; the gate is gone and the
 restatement is still owed.
+
+## Learnings
+
+### Rendering a locale found what reading the files could not
+
+Three defects blocked this story and none was in its notes after weeks of them
+being written: `quadruple_whole` silently resolving to the whole note, `%{number}`
+rendering *"Scrivi four semiminime"*, and Russian's four-form plurals being
+unreachable on `Backend::Simple`. All three surfaced within minutes of rendering
+a single locale. The story had reasoned carefully about the pin, the plural
+forms, and the sweep — and reasoning found none of them.
+
+That is the argument for the pilot, and it held: German paid for infrastructure
+the other four inherited for free.
+
+### Guards built one step short of their data — three times
+
+The recurring failure of this story was not writing the wrong guard. It was
+writing the right guard and pointing it at the wrong tree. The plural check ran
+only against `en_GB`, leaving Russian — the locale its exact-set match was
+invented for — checked against nothing but synthetic hashes. The vocabulary-key
+check read `en.yml` only. The plural-gap example diffed a module accumulator
+against its own prior contents, after an earlier example had already filled it.
+
+Each was decided correctly in the plan, built, and then aimed at the data that
+was convenient rather than the data it was for. Worth naming, because a guard
+that cannot fail is worse than no guard: it reports the absence it was written
+to detect.
+
+**Mutation testing is what caught it, and nothing else would have.** The suite
+was green at 6859 examples with all three holes open. A reviewer breaking the
+data on purpose found them in one pass.
+
+### A fix that looks right can still not work
+
+My first fix for the shared-word hole removed the row-wide exemption, which was
+the correct diagnosis and the wrong remedy — with `semibreve` in no pattern at
+all, nothing could flag German for using it. Only re-running the mutation showed
+that; the suite went green either way. Re-run the failing case after fixing it,
+not just the suite.
+
+### Measurement beat prediction, repeatedly
+
+The story predicted French *noire* would resist detection and warned to budget
+for it. Measured against the 303-string English corpus, *noire*, *ronde*,
+*blanche* and *minima* score zero hits; what actually resists is *semibreve*,
+which British and Italian spell identically. The plan said `%{number}` needed
+counts 1–4; instrumenting the registry showed eight. The forecast said German
+would still meet British note names; it meets none.
+
+Every one of those was cheap to measure and had been reasoned about instead.
+
+### Completing the reference is what produced its best content
+
+Extracting the vocabulary to `references/note-values-by-language.md` was done for
+length, but the real gain was being forced to fill every cell. That is what
+surfaced Italian running out of mensural names at the 64th and switching to a
+fractional ordinal — *centoventottavo*, which also flips gender and so pluralizes
+the other way from every other Italian row — and French's rest vocabulary owing
+nothing to its note names except at the breve. Neither would have appeared in a
+table with four columns and a promise that the rest derived.
+
+The reference also outlives the story, which the story does not.
+
+### Verify what an agent reports
+
+The planning agent presented findings from seven specialists when only one had
+reported, then retracted. The measurements it had actually run were sound and are
+what this plan rests on; the prose around them was invented. Independent
+verification before writing anything into the story is what made the difference
+between a good plan and a fabricated one.
+
+The two review agents, by contrast, mutated a throwaway worktree and reported
+what broke — and every one of their findings reproduced.
+
+### What we would do differently
+
+- Render the target before planning against it. The three blocking defects were
+  a fifteen-minute discovery that arrived after the plan was written.
+- Point every new guard at the shipped data in the same commit that adds it, and
+  prove it fails.
+- Treat "the story predicts X" as a hypothesis to measure, not a finding.
+
+### Known limits, shipped deliberately
+
+The translations are unreviewed by native speakers, accepted as a deliberate
+trade: imperfect German beats British note names for a German reader. The
+vocabulary is checkable and was checked; the ~150 sentences are original prose
+with nothing to compare against. One grammatical error was found in review — a
+Russian accusative — and it was found by a person's proxy, not by a spec. Expect
+more, and treat each as an ordinary bug rather than a regression, because no spec
+pins these sentences.
+
 
 ## Implementation Plan
 
@@ -463,11 +566,23 @@ would kill the tree walks step 4 widens. Write the duplicate groups out.
 
 ### Decisions
 
-**German is a gate, not just a first step.** Land steps 1–5 and German only.
-Then read a real First Species guide rendered in German — 7 German sentences
-among 44 English ones, with British note names still in the strings this story
-does not touch — and decide about `fr`, `it`, `ru` and `es` with that in front
-of you. The other four are conditional on that reading.
+**German was a gate, and it was passed.** Steps 1–5 and German landed first,
+and the German output was read before the other four were authorized.
+
+What the reading showed was better than the forecast. The prediction was that a
+German reader would still meet British note names throughout, because only 38 of
+255 strings flip. In fact the 32 leaves that name a note value are exactly the
+ones `en_GB` overrode for vocabulary, so translating them removed **every**
+foreign note name at once: zero American and zero British note words reach a
+German reader. What stays English is 217 sentences that name no note value —
+melodic and harmonic rules, not rhythm. The seam is cleaner than a 15% scatter,
+and `fr`, `it`, `ru` and `es` were approved on that basis.
+
+One blemish the reading also showed, which no criterion covers: Third Species
+renders one `en_GB` line, *"neighbour tone"*, between German and American
+English. German inherits mixed dialect for any `en_GB` entry it does not
+override. That is a spelling difference rather than a note name, so nothing in
+this story addresses it.
 
 **All three groups ship.** `note_values` and `rest_values` are written for each
 locale that lands, not deferred, so a later consumer finds the words waiting
