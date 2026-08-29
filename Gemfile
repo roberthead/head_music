@@ -16,7 +16,9 @@ group :test do
   gem "rubocop", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-rake", require: false
-  gem "simplecov", require: false
+  # simplecov 1.1.x forwards an anonymous block inside a block, which is a
+  # syntax error on Ruby 3.3. Unpin once upstream drops that or we drop 3.3.
+  gem "simplecov", "< 1.1", require: false
 end
 
 group :development do
