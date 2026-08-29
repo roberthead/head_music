@@ -340,6 +340,7 @@ es:
       meter: metro
       motion: movimiento
       musical_symbol: símbolo musical
+      note: nota
       # El espanol omite el sustantivo: una negra, no una nota negra.
       # note_values repite por tanto rhythmic_units palabra por palabra.
       note_values:
@@ -361,6 +362,7 @@ es:
       pitch_set: conjunto de tonos
       quality: calidad
       reference_pitch: tono de referencia
+      rest: silencio
       # Siempre silencio de X. Regular, a diferencia del frances.
       rest_values:
         double_whole: "silencio de breve"

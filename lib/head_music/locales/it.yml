@@ -339,6 +339,7 @@ it:
       meter: metro
       motion: movimento
       musical_symbol: simbolo musicale
+      note: nota
       # L'italiano lascia cadere il sostantivo: una semiminima, non una nota
       # semiminima. note_values ripete quindi rhythmic_units parola per parola.
       note_values:
@@ -360,6 +361,7 @@ it:
       pitch_set: insieme di altezze
       quality: qualità
       reference_pitch: altezza di riferimento
+      rest: pausa
       # Sempre pausa di X. Regolare, a differenza del francese.
       rest_values:
         double_whole: "pausa di breve"
