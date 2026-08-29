@@ -346,6 +346,7 @@ de:
       meter: Takt
       motion: Bewegung
       musical_symbol: musikalisches Symbol
+      note: Note
       # Deutsch setzt nicht durchgängig zusammen: ganz und halb sind Adjektive
       # und bleiben getrennte Wörter, Viertel und Achtel sind Substantive und
       # bilden Komposita. Der Bruch liegt zwischen der Halben und dem Viertel,
@@ -369,6 +370,7 @@ de:
       pitch_set: Tonhöhensatz
       quality: Qualität
       reference_pitch: Referenztonhöhe
+      rest: Pause
       rest_values:
         double_whole: "Brevis-Pause"
         eighth: "Achtelpause"

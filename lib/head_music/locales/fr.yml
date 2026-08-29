@@ -346,6 +346,7 @@ fr:
       meter: mesure
       motion: mouvement
       musical_symbol: symbole musical
+      note: note
       # Le francais laisse tomber le nom : une ronde, pas une note ronde.
       # note_values reprend donc rhythmic_units mot pour mot.
       note_values:
@@ -367,6 +368,7 @@ fr:
       pitch_set: ensemble de hauteurs de son
       quality: qualité
       reference_pitch: hauteur de référence
+      rest: silence
       # Vocabulaire propre, et non une derivation : pause, demi-pause, soupir,
       # demi-soupir. Les points d'ancrage different de ceux des figures -- pause
       # est la ronde, alors que croche est la huitieme. Seule la breve fait
