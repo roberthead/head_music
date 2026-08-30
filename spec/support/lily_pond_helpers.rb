@@ -32,7 +32,7 @@ module LilyPondHelpers
   def expect_valid_music_line(line)
     content = line.sub(/ \|\z/, "")
     content = content.gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
-    content = content.gsub(/#{CHORD}~?/, "")
+    content = content.gsub(/#{CHORD}~?/o, "")
     expect(content.split).to all(match(SIMPLE_TOKEN))
   end
 
