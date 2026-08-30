@@ -1,10 +1,13 @@
+# Organizing Content
 
-Project = overall container.
-Flow = segment-level unit (supports sketches, movements, cues).
-Sequence = neutral term for the editing canvas (2D space).
-Timeline = strictly the axis.
+Right now, we have "Composition", which is pretty vague.
 
+I want to work toward something like the following terminology.
 
+Project = overall container
+Flow = segment-level unit (supports sketches, movements, cues)
+Sequence = neutral term for the editing canvas (2D space)
+Timeline = strictly the axis
 
 
 ScorePart
