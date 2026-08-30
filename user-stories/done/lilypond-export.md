@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-07T11:19:50-07:00
   activated_at: 2026-08-29T18:03:27-07:00
   planned_at:   2026-08-29T18:17:39-07:00
-  finished_at:
-  updated_at:   2026-08-30T09:45:32-07:00
+  finished_at:  2026-08-30T11:48:40-07:00
+  updated_at:   2026-08-30T11:48:40-07:00
 -->
 
 # Story: LilyPond Export
@@ -233,3 +233,28 @@ Reviewed 2026-08-30 at commit `eb67b40` plus the uncommitted working tree (all i
 **Minor/advisory:** memoize `RenderPlan#bar_numbers` (rebuilt per bar in `writer.rb:103`); key/meter changes recorded past `latest_bar_number` are silently dropped (defensible, but silent); `**options` forwards into a `Writer#initialize` that takes none, giving an uninformative arity error (`MusicXML.render` takes no `**options` at all); strengthen the lyrics-drop spec to pin the surviving music (`bar_check_lines == ["c'1 |"]`); `installed_lilypond` should use `ENV.fetch("PATH", "")`.
 
 **Verified correct:** fail-before-emit holds on every path after `Preflight.check!`; escaping order (backslash first) confirmed by execution; octave marks, suffixes, ties, chord ordering, `R1*` sizing, and duplicated per-staff `\key` changes all compile clean; the ABC/MusicXML migration onto `PreflightChecks` is behaviorally equivalent with messages preserved verbatim; no stale `MusicXML::ClefSelector` references; CLAUDE.md spec rules honored.
+
+### Resolution (2026-08-30)
+
+All three findings fixed, one commit each: `d6ccc09` (Preflight rejects voices ending mid-bar), `e08e6d3` (dead `normalize_bar_markers` deleted along with its false comment and vacuous specs), `e106fee` (spec helper verifies every bar's durations sum to the effective meter; multi-voice, mid-piece, and empty-voice fixtures now compile through the guarded shared example). Plus `b70e52b` (a `standard:fix` regex `/o` flag). Suite: 6962 examples, 0 failures, 0 pending with lilypond installed. The minor advisories were left as scoped.
+
+## Learnings
+
+**What went well**
+
+- **Precedent made implementation mechanical.** With two sibling exporters (ABC, MusicXML) and a plan that pinned every signature and resolved every open question — including four owner-confirmed decisions recorded in the story before `implement` — the build needed no agents and no mid-stream design calls.
+- **The reviewer that compiled beat the reviewer that read.** The code-review agent ran seven rendered documents through the real `lilypond` binary and found the one genuine bug (a voice ending mid-bar fails the bar check and desyncs the staves) that 6,900 green examples and a byte-for-byte golden spec had missed.
+- **Rule-of-three extractions landed clean.** `ClefSelector`, `PreflightChecks`, and `RhythmicValue#tied_chain` moved with zero behavior drift — provable because the shared code preserved the sibling writers' error messages verbatim and `Continuity` matched ABC's deleted checks exactly.
+
+**What was surprising**
+
+- **The structural helper validated everything except the invariant that matters.** Token shapes, delimiter balance, and line counts all passed on output LilyPond rejects; `|` is a compile-time assertion about duration sums, and only a duration-sum check mirrors it. When a target format has a built-in assertion, the spec helper should assert the same thing from day one.
+- **Inherited code can carry a false "why".** `normalize_bar_markers` moved into the shared mixin verbatim with a comment claiming `Bar`'s accessors were bare — but `Bar` had grown coercing writers, making the method dead and its pinning specs vacuous. Promoting code into shared modules is the moment to re-verify its premises.
+- **The golden fixture was the only document compiled — and the least likely to be wrong.** Verification effort concentrated where confidence was already highest; the risky fixtures (multi-voice, meter changes, empty voices) never met the toolchain until the fix.
+- **Nested shell→Ruby quoting corrupted spec strings twice** (`String#sub` replacement collapsing `\\`, then `"\c"` becoming a control character). Writing edit scripts to files beats heredoc-in-heredoc escaping.
+
+**Do differently next time**
+
+- Derive spec-helper invariants from the target format's own failure modes, not from what is easy to regex.
+- MusicXML shares the underfilled-final-bar hole silently (it emits a short measure without complaint) — a small follow-up story candidate.
+- Route every distinct fixture shape through the real-toolchain check when one is available, not just the golden one.
