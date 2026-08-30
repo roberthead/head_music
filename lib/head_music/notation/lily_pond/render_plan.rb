@@ -2,11 +2,8 @@
 module HeadMusic::Notation::LilyPond
   # The computed musical facts a Writer needs to serialize a composition:
   # the token for every placement and the key/time signatures in force at
-  # each measure.
-  #
-  # Preflight must have run first (it normalizes bar markers). Construction
-  # eagerly computes everything that can raise on unmappable keys,
-  # durations, or alterations, so a RenderPlan that builds successfully
+  # each measure. Construction eagerly computes everything that can raise
+  # on unmappable keys, durations, or alterations, so a RenderPlan that builds successfully
   # cannot fail assembly on those grounds.
   class RenderPlan
     attr_reader :composition

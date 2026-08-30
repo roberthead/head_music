@@ -8,17 +8,6 @@ module HeadMusic
     module PreflightChecks
       private
 
-      # change_meter and change_key_signature store the caller's raw value
-      # (Bar's accessors are bare attr_accessors), and Position arithmetic
-      # breaks on an un-coerced meter string, so markers are normalized in
-      # place before any placement's next_position is computed.
-      def normalize_bar_markers(composition)
-        composition.bars.each do |bar|
-          bar.meter = HeadMusic::Rudiment::Meter.get(bar.meter) if bar.meter
-          bar.key_signature = HeadMusic::Rudiment::KeySignature.get(bar.key_signature) if bar.key_signature
-        end
-      end
-
       def ensure_contiguous_voices(composition)
         composition.voices.each do |voice|
           gap = voice.first_gap

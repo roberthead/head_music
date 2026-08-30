@@ -1,8 +1,7 @@
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Rejects compositions that cannot be expressed in the supported MusicXML
-  # subset, and normalizes each bar's meter and key-signature markers in place
-  # so later positional arithmetic and assembly can rely on coerced values.
+  # subset.
   #
   # Whole-composition problems (no voices, positional gaps, barline-crossing
   # notes, forbidden control characters) raise RenderError here, before the
@@ -25,7 +24,6 @@ module HeadMusic::Notation::MusicXML
 
     def check!
       ensure_voices
-      normalize_bar_markers(composition)
       ensure_renderable_text
       ensure_contiguous_voices(composition)
       ensure_notes_within_barlines(composition)

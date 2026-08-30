@@ -17,27 +17,6 @@ describe HeadMusic::Notation::MusicXML::Preflight do
       end
     end
 
-    context "with bar markers authored as strings" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
-        voice.place("1:1", :whole, "C4")
-        composition.change_meter(1, "4/4")
-        composition.change_key_signature(1, "D major")
-        composition
-      end
-
-      before { described_class.check!(composition) }
-
-      it "coerces the bar meter to a Meter in place" do
-        expect(composition.bars.find(&:meter).meter).to be_a HeadMusic::Rudiment::Meter
-      end
-
-      it "coerces the bar key signature to a KeySignature in place" do
-        expect(composition.bars.find(&:key_signature).key_signature).to be_a HeadMusic::Rudiment::KeySignature
-      end
-    end
-
     context "with no voices" do
       let(:composition) { HeadMusic::Content::Composition.new }
 

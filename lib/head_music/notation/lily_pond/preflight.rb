@@ -1,13 +1,10 @@
 # A namespace for LilyPond-notation rendering helpers
 module HeadMusic::Notation::LilyPond
   # Rejects compositions that cannot be expressed in the supported LilyPond
-  # subset, and normalizes each bar's meter and key-signature markers in
-  # place so later positional arithmetic and assembly can rely on coerced
-  # values.
+  # subset.
   #
   # Whole-composition problems (no voices, positional gaps, underfilled
-  # final bars, barline-crossing
-  # notes, unpitched sounds) raise RenderError here, before the Writer
+  # final bars, barline-crossing notes, unpitched sounds) raise RenderError here, before the Writer
   # assembles any output — so a successful check! is the Writer's guarantee
   # that assembly cannot fail on these grounds.
   class Preflight
@@ -24,7 +21,6 @@ module HeadMusic::Notation::LilyPond
 
     def check!
       ensure_voices
-      normalize_bar_markers(composition)
       ensure_contiguous_voices(composition)
       ensure_notes_within_barlines(composition)
       ensure_filled_final_bars

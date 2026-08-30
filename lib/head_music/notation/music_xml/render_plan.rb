@@ -6,8 +6,7 @@ module HeadMusic::Notation::MusicXML
   # from the Writer lets the beam and meter-tracking logic — the intricate part
   # of MusicXML rendering — be reasoned about and tested without generating XML.
   #
-  # Preflight must have run first (it normalizes bar markers). Construction
-  # eagerly computes everything that can raise on unmappable keys or durations,
+  # Construction eagerly computes everything that can raise on unmappable keys or durations,
   # so a RenderPlan that builds successfully cannot fail assembly on those
   # grounds; beam annotations stay lazy because their integer-duration check
   # raises only when a bar is actually laid out.
