@@ -89,10 +89,24 @@ describe HeadMusic::Notation::LilyPond::Preflight do
       end
     end
 
+    context "with a voice that ends mid-bar" do
+      let(:composition) do
+        composition = HeadMusic::Content::Composition.new
+        composition.add_voice.place("1:1", :whole, "E5")
+        composition.add_voice.place("1:1", :quarter, "C3")
+        composition
+      end
+
+      it "raises a render error rather than emitting an underfilled bar" do
+        expect { described_class.check!(composition) }
+          .to raise_error(render_error, /ends mid-bar at 1:2.*insert explicit rests to fill the final bar/)
+      end
+    end
+
     context "with an unpitched sound" do
       let(:composition) do
         HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
+          composition.add_voice.place("1:1", :whole, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
         end
       end
 
