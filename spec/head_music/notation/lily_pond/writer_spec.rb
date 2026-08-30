@@ -16,6 +16,15 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
   end
 
+  shared_examples "a compilable document" do
+    it "compiles with the lilypond binary when one is installed" do
+      lilypond = installed_lilypond
+      skip "lilypond is not installed" unless lilypond
+
+      expect(compile_quietly(lilypond, rendered)).to be true
+    end
+  end
+
   describe "#to_s" do
     context "with a single-voice diatonic tune" do
       let(:composition) { HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH) }
@@ -111,6 +120,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it "fills the short voice's missing bar with a whole-bar rest" do
         expect(bar_check_lines(rendered).last).to eq "R1*4/4 |"
       end
+
+      it_behaves_like "a compilable document"
     end
 
     context "with a mid-piece key and meter change" do
@@ -141,6 +152,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
         other_lines = bar_check_lines(rendered).reject { |line| line.include?("\\key") }
         expect(other_lines.length).to eq 4
       end
+
+      it_behaves_like "a compilable document"
     end
 
     context "with an empty voice" do
@@ -158,6 +171,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it "defaults the empty voice to the treble clef" do
         expect(rendered).to include "\\clef treble"
       end
+
+      it_behaves_like "a compilable document"
     end
 
     context "with sung placements" do
@@ -251,12 +266,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
         expect(rendered).to eq expected_document
       end
 
-      it "compiles with the lilypond binary when one is installed" do
-        lilypond = installed_lilypond
-        skip "lilypond is not installed" unless lilypond
-
-        expect(compile_quietly(lilypond, rendered)).to be true
-      end
+      it_behaves_like "a compilable document"
     end
 
     context "with no voices" do
