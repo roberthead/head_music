@@ -88,6 +88,10 @@ class HeadMusic::Content::Composition
     HeadMusic::Notation::MusicXML.render(self)
   end
 
+  def to_lilypond(**options)
+    HeadMusic::Notation::LilyPond.render(self, **options)
+  end
+
   def to_h
     {
       "schema_version" => SCHEMA_VERSION,

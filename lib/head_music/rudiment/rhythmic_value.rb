@@ -87,6 +87,14 @@ class HeadMusic::Rudiment::RhythmicValue
     unit_value * multiplier
   end
 
+  # The value and every link tied after it, in order. A value with no
+  # tied_value is a chain of one.
+  def tied_chain
+    chain = [self]
+    chain << chain.last.tied_value while chain.last.tied_value
+    chain
+  end
+
   def total_value
     relative_value + (tied_value ? tied_value.total_value : 0)
   end

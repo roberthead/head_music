@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-08-29T18:03:27-07:00
   planned_at:   2026-08-29T18:17:39-07:00
   finished_at:
-  updated_at:   2026-08-29T18:23:00-07:00
+  updated_at:   2026-08-30T09:45:32-07:00
 -->
 
 # Story: LilyPond Export
@@ -203,3 +203,33 @@ Steps 3–5 are independent and parallelizable once their signatures (pinned abo
 - **`\version "2.24.0"` pin** — lives in one Writer constant; the golden spec and guarded compile are the tripwires if a future LilyPond deprecates anything emitted.
 - **`ClefSelector` move** is a minor internal breaking change (`MusicXML::ClefSelector` ceases to exist; one in-repo call site); a one-line alias inside the MusicXML module is available if zero breakage is wanted.
 - **Golden-spec brittleness**: any formatting tweak rewrites the golden document — accepted, same trade MusicXML made.
+
+## Review
+
+Reviewed 2026-08-30 at commit `eb67b40` plus the uncommitted working tree (all implementation changes were uncommitted at review time). Product-manager and code-reviewer agents ran in parallel; the code reviewer compiled seven rendered documents through the installed `lilypond` 2.24 binary, and the two verification-sensitive findings below were independently re-confirmed against the code.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | `#to_lilypond` returns valid LilyPond source | ✅ (with the ragged-voice caveat in finding 1) | Delegate at `lib/head_music/content/composition.rb:91`; fail-before-emit traced through `Writer#to_s` |
+| 2 | `\header` with title, composer when present | ✅ | `Writer#header_lines` + `StringText.escape`; escaping specs |
+| 3 | One stream per voice, ordering/bars intact | ✅ | One `\new Staff`/`\new Voice` per voice in order; bar-check lines; specs pin note order and staff order |
+| 4 | Pitch spelling and octave marks | ✅ | `pitch_writer.rb`; table specs C4→`c'` … B0→`b,,,`, `aes'`/`ees''`, `cisis'`/`feses`; compiled clean |
+| 5 | Durations, dots, tied chains | ✅ | Symbolic map + `tied_chain` join with `~`; `c'2~ c'8` and chord-tie specs |
+| 6 | Rests | ✅ | `r` tokens, untied chains, `R1*n/d` fills |
+| 7 | First-measure `\key`/`\time`/clef; mid-piece changes at their bar | ✅ | Emitted per staff (correct, `\key` is per-staff in `<< >>`); specs assert exactly two bar-3 change lines |
+| 8 | Accepted by a LilyPond toolchain | ✅ | Guarded compile spec ran for real (lilypond on PATH) and passed; owner also compiled `chromatic_air.ly` manually on 2026-08-30 — the one-time manual compile the plan's Step 11 called for |
+| 9 | The five spec scenarios | ✅ | All five in `writer_spec.rb`, plus empty-voice, escaping, lyrics-drop, no-role, zero-voices, golden document |
+
+### Code review findings
+
+**1. Important — a voice ending mid-bar emits an under-filled bar that LilyPond rejects at the bar check.** `writer.rb` `bar_tokens` substitutes `R1*n/d` only for bars with *no* placements; a bar with some placements that don't fill it emits a short line (`c4 |` in 4/4), and `PreflightChecks#ensure_contiguous_voices` checks leading/interior gaps only, never trailing fill. Reproduced and compile-verified (bar check fails, staves desync). MusicXML shares the hole silently; LilyPond's `|` turns it into a compile failure. Fix: pad the trailing remainder with rests in `bar_tokens`, or reject trailing gaps in Preflight. **Blocks finish.**
+
+**2. Important — `normalize_bar_markers` is dead code with a false "why" comment, pinned by two vacuous specs.** `Bar#key_signature=`/`#meter=` are coercing writers (`bar.rb:20-26`, verified), so the mixin's comment ("Bar's accessors are bare attr_accessors") is wrong and the two "coerces … in place" specs in `lily_pond/preflight_spec.rb` (and their MusicXML precedent) pass with the method deleted. Either delete the method + specs, or keep it as a deliberate defensive guarantee with an honest comment. Confirmed independently.
+
+**3. Important — the structural spec helper cannot detect finding 1.** `lily_pond_helpers.rb` checks balance, line counts, and token shape but not that durations sum to the effective meter — the exact invariant `|` asserts. Add a duration-sum check, and/or route the multi-voice/meter-change/empty-voice fixtures through `compile_quietly` (currently only the golden fixture compiles).
+
+**Minor/advisory:** memoize `RenderPlan#bar_numbers` (rebuilt per bar in `writer.rb:103`); key/meter changes recorded past `latest_bar_number` are silently dropped (defensible, but silent); `**options` forwards into a `Writer#initialize` that takes none, giving an uninformative arity error (`MusicXML.render` takes no `**options` at all); strengthen the lyrics-drop spec to pin the surviving music (`bar_check_lines == ["c'1 |"]`); `installed_lilypond` should use `ENV.fetch("PATH", "")`.
+
+**Verified correct:** fail-before-emit holds on every path after `Preflight.check!`; escaping order (backslash first) confirmed by execution; octave marks, suffixes, ties, chord ordering, `R1*` sizing, and duplicated per-staff `\key` changes all compile clean; the ABC/MusicXML migration onto `PreflightChecks` is behaviorally equivalent with messages preserved verbatim; no stale `MusicXML::ClefSelector` references; CLAUDE.md spec rules honored.

@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-07-04T12:05:19-07:00
+  updated_at:   2026-08-29T18:42:59-07:00
 -->
 
 # Story: LilyPond Interpreter
@@ -57,6 +57,8 @@ composition.meter.to_s # => "4/4"
 - [ ] Maintains 90%+ test coverage
 
 ## Notes
+
+The round-trip specs must consume the LilyPond export story's golden fixtures (see `spec/head_music/notation/lily_pond/writer_spec.rb`), retroactively automating the export story's toolchain-acceptance proof.
 
 - Home for the interpreter: `HeadMusic::Notation`, mirroring the ABC story. Consider `lib/head_music/notation/lily_pond/` for the parser and its helpers.
 - The `Composition` API to target: `name`, `key_signature`, `meter`, and `voices` (via `add_voice`), with notes placed through the `Voice` / `Placement` / `Note` classes in `HeadMusic::Content`.

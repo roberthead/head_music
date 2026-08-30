@@ -117,6 +117,8 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
         )
       end
 
+      before { allow(value).to receive(:tied_chain).and_return([value]) }
+
       it "raises a render error" do
         expect { writer.components(value) }
           .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /no MusicXML note type/)

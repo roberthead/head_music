@@ -16,6 +16,7 @@ module HeadMusic::Notation::ABC
     BARS_PER_LINE = 4
 
     include HeadMusic::Notation::PlacementValidation
+    include HeadMusic::Notation::PreflightChecks
 
     attr_reader :composition, :reference_number
 
@@ -34,7 +35,7 @@ module HeadMusic::Notation::ABC
     def validate!
       ensure_single_voice
       ensure_no_mid_piece_changes
-      ensure_contiguous_placements
+      ensure_contiguous_voices(composition)
     end
 
     def ensure_single_voice
@@ -53,27 +54,6 @@ module HeadMusic::Notation::ABC
 
         raise RenderError, "cannot render the key signature change at bar #{bar_number} in ABC output"
       end
-    end
-
-    def ensure_contiguous_placements
-      first = placements.first
-      return unless first
-
-      ensure_placement_starts_bar(first)
-      placements.each_cons(2) do |previous, current|
-        next if current.position == previous.next_position
-
-        raise RenderError, "expected a placement at #{previous.next_position}, " \
-          "found one at #{current.position}; insert explicit rests to fill gaps"
-      end
-    end
-
-    def ensure_placement_starts_bar(placement)
-      position = placement.position
-      return if position.count == 1 && position.tick.zero?
-
-      raise RenderError, "the first placement must start its bar " \
-        "(found #{position}); insert explicit rests to fill the gap"
     end
 
     def placements

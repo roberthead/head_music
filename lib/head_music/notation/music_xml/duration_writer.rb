@@ -37,17 +37,11 @@ module HeadMusic::Notation::MusicXML
     end
 
     def components(rhythmic_value)
-      links = chain(rhythmic_value)
+      links = rhythmic_value.tied_chain
       links.each_with_index.map { |link, index| build_component(link, index, links.length) }
     end
 
     private
-
-    def chain(rhythmic_value)
-      links = [rhythmic_value]
-      links << links.last.tied_value while links.last.tied_value
-      links
-    end
 
     def build_component(link, index, length)
       Component.new(

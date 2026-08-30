@@ -310,4 +310,16 @@ describe HeadMusic::Rudiment::RhythmicValue do
       end
     end
   end
+
+  describe "#tied_chain" do
+    it "returns just the value itself when nothing is tied" do
+      value = described_class.get(:quarter)
+      expect(value.tied_chain).to eq [value]
+    end
+
+    it "returns each link in order for a chained tie" do
+      value = described_class.get("half tied to eighth tied to sixteenth")
+      expect(value.tied_chain.map(&:unit_name)).to eq %w[half eighth sixteenth]
+    end
+  end
 end

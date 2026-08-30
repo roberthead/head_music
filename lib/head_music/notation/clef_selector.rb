@@ -1,5 +1,5 @@
-# A namespace for MusicXML-notation rendering helpers
-module HeadMusic::Notation::MusicXML
+# A module for visual music notation
+module HeadMusic::Notation
   # Chooses a clef for a voice based on the midpoint of its pitch range.
   class ClefSelector
     MIDDLE_C_MIDI_NOTE_NUMBER = 60

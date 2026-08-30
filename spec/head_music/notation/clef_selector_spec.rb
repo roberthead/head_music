@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Notation::MusicXML::ClefSelector do
+describe HeadMusic::Notation::ClefSelector do
   subject(:clef) { described_class.for(voice) }
 
   let(:composition) { HeadMusic::Content::Composition.new }

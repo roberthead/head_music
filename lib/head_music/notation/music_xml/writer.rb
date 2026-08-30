@@ -166,7 +166,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def clef_lines(voice)
-      clef = ClefSelector.for(voice)
+      clef = HeadMusic::Notation::ClefSelector.for(voice)
       [
         "#{INDENT * 4}<clef>",
         "#{INDENT * 5}<sign>#{clef.pitch.letter_name}</sign>",
