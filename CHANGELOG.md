@@ -5,19 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [20.0.0] - 2026-08-30
 
-### Changed
-
-- **`NoParallelPerfectOnDownbeats` is a taught rule in first species harmony**, not inherited background. It moves from the secondary tier to the primary tier of `Guides::FirstSpeciesHarmony` alone, taking its weight from 0.0637 to 0.2060 while `NoUnisonsInMiddle` and `OneToOne` fall from 0.3090 to 0.2060 each. First-species harmony grades move; no other guide is affected.
-
-  A species guide is normally about the dissonance treatment its rhythm makes possible, and two-part craft is background. First species has no dissonance treatment, and its other two primaries are rhythm-and-texture bookkeeping — so note-against-note consonance handling is what the species teaches. Promoting the same rule in the six guides that *do* teach a dissonance treatment would weigh it as heavily as their subject, and would *raise* the grade of a submission already failing that subject by halving the weight it forgoes.
-
-  The exception is registered in `Guides::SpeciesHarmony::HARMONIC_CRAFT_PROMOTIONS`, and the specs hold every other harmony guide to the policy. Of 4320 graded corpus rows, 18 move: a cantus firmus doubled an octave above itself falls from 0.8300 to 0.6674, while Fux chapter one figure 5 as published still grades exactly 1.0.
-
-## [20.0.0] - 2026-08-23
-
-The [style assessment model](https://github.com/roberthead/head_music/tree/main/user-stories/epics/style-assessment-model.md) epic, released together. Five stories reshaped how a guide is declared, how it grades, what it says, and what a consumer asks for — so the breaking changes below are one migration rather than five.
+The [style assessment model](https://github.com/roberthead/head_music/tree/main/user-stories/epics/style-assessment-model.md) epic, released together. Five stories reshaped how a guide is declared, how it grades, what it says, and what a consumer asks for — so the breaking changes below are one migration rather than five. Two notation stories ride along: LilyPond export, and note values named in each reader's own language.
 
 **Migrating from 19.0.0**, in the order a consumer will hit them:
 
@@ -60,6 +50,16 @@ The [style assessment model](https://github.com/roberthead/head_music/tree/main/
 
 - British spellings for the five style strings that have them — `neighbour`, `metre`, and a bar rather than a measure. `en_GB` sits mid-chain, so German, French, Italian and Russian pick these up on the way to `en`. Note that any pluralized `en_GB` entry must carry the complete set of forms: I18n stops at a plural hash that is present but incomplete rather than continuing past it, so a partial one would raise for those four languages and never for a British reader.
 
+- **Note values in each language.** German, Spanish, French, Italian and Russian name note values as their own teachers do — *Viertel*, *negra*, *noire*, *semiminima*, *четвертная* — rather than inheriting British words on the way to `en`. No single English serves all four inheritors: the vocabulary splits into fractional, mensural-Latin, and shape families, and French *croche* is the **eighth** where its cognate *crotchet* is the quarter, so borrowed English actively misleads. The words, their derivation rules, plural behaviour, and the sources that disagree live in `references/note-values-by-language.md`.
+
+  The vocabulary itself lives under `head_music.rudiments`, beside the `rhythmic_unit` label already there, in three groups of eleven units each — `maxima` down to `hundred_twenty_eighth`: `rhythmic_units` (the bare unit, pluralizable, counted by `note_count_per_bar`), `note_values`, and `rest_values`. The three do not share a shape everywhere — a British note value drops the noun (*a crotchet*, not *a crotchet note*) while a British rest keeps it, and a French or Spanish rest names the concept (*soupir*, *silencio de negra*) rather than compounding the note value. Every locale also translates the words "note" and "rest" themselves. `Style::Template` gains a `scope:` keyword so style sentences borrow the rudiment vocabulary through the same seam that guards plural fallback and unfilled interpolations.
+
+- **LilyPond export.** `HeadMusic::Content::Composition#to_lilypond` renders a composition as a complete LilyPond document string, delegating to `HeadMusic::Notation::LilyPond.render(composition, **options)` — the outward complement of the inward `Notation::<Format>.parse` interpreters, in the same facade-plus-helpers shape as the ABC and MusicXML writers. The document carries a `\version` line, a `\header` with the composition's title and composer, and a `\score` with one staff per voice in absolute pitch mode — key signature, meter, and a clef chosen per voice, with mid-piece `\key` and `\time` changes emitted at the bar where they occur, one line per bar with a trailing bar check.
+
+  Whole-composition problems raise `Notation::LilyPond::RenderError` before any assembly — a voiceless composition, positional gaps, notes crossing barlines, a voice that ends mid-bar, unpitched sounds, and unmappable keys, durations, or alterations — so a returned string is always a complete document. Generated fixtures compile under the LilyPond CLI in the specs.
+
+- `Rudiment::RhythmicValue#tied_chain` — the value and every link tied after it, in order, so a writer walks a chain of tied values the same way it walks a chain of one.
+
 ### Changed
 
 - **Breaking.** `GuideAssessment.new` raises `ArgumentError` when handed a composite guide, naming `guide.assess(voice)` as the seam that grades it correctly. Flattening a composite's items into one rubric would return a plausible number computed by the wrong arithmetic.
@@ -83,7 +83,13 @@ The [style assessment model](https://github.com/roberthead/head_music/tree/main/
 
 - **Breaking.** The seven species harmony guides demote `SpeciesHarmony::HARMONIC_CORE`, `DIMINUTION_HARMONIC_CORE`, and `NoParallelPerfectWithSyncopation` to `secondary_items`, mirroring the melodic demotion. A harmony guide now weighs the dissonance treatment it teaches above the two-part craft every harmony guide shares. `SecondSpeciesHarmony` gave 9/10 of its grade to rules it did not write and now gives φ⁻¹ to `WeakBeatDissonanceTreatment` alone; a fixture failing that rule moves 0.824 → 0.698, and a parallel octave costs about half what it did.
 
-  Tiering is now decided by membership in the shared cores rather than by the list a guide named the rule in, so a hand-named core member is demoted like a splatted one. `FirstThreeSpeciesHarmony` gains the diminution core it was missing — it covers two diminution species — and is the only guide anywhere whose set of guidelines changed.
+  Each guide declares its tiers outright — `primary_items` for what it teaches, `secondary_items` splatting the shared craft constants — so the tier of every item is readable at the call site, and the specs hold the guides to the policy that a shared-core member stays background. `FirstThreeSpeciesHarmony` gains the diminution core it was missing — it covers two diminution species — and is the only guide anywhere whose set of guidelines changed.
+
+- **`NoParallelPerfectOnDownbeats` is a taught rule in first species harmony**, not inherited background — the one exception to the demotion above. It sits in the primary tier of `Guides::FirstSpeciesHarmony` alone, weighing 0.2060 beside `NoUnisonsInMiddle` and `OneToOne` at 0.2060 each, rather than the 0.0637 the shared harmonic core would give it; no other guide is affected.
+
+  A species guide is normally about the dissonance treatment its rhythm makes possible, and two-part craft is background. First species has no dissonance treatment, and its other two primaries are rhythm-and-texture bookkeeping — so note-against-note consonance handling is what the species teaches. Promoting the same rule in the six guides that *do* teach a dissonance treatment would weigh it as heavily as their subject, and would *raise* the grade of a submission already failing that subject by halving the weight it forgoes.
+
+  The exception is registered in `Guides::SpeciesHarmony::HARMONIC_CRAFT_PROMOTIONS`, and the specs hold every other harmony guide to the policy. A cantus firmus doubled an octave above itself grades 0.6674 where the shared-core weighting would read 0.8300, while Fux chapter one figure 5 as published still grades exactly 1.0.
 
 - `MostlyConjunct` marks each skip and leap at the ordinary penalty rather than `SMALL_PENALTY_FACTOR`, and says it is soft with `strength :weak` instead. The two say different things: a mark's fitness compounds into the item's own grade, so it set both how bad one instance was and how fast the item collapsed on repeats. Six leaps now grade 0.056 rather than 0.236. `SMALL_PENALTY_FACTOR` is unchanged and still used by `SecondSpeciesBreak`, which holds two severities inside one guideline.
 
@@ -139,6 +145,8 @@ The [style assessment model](https://github.com/roberthead/head_music/tree/main/
   `GuideItemAssessment#name`, and `#to_s` with it, answer the item's rendered name — "Minimum of eight notes" — rather than the guideline's class path. A consumer building a results list holds assessments rather than items, so that is where a rubric gets its labels.
 
 - **Breaking.** Guides gain `#instruction` — what a guide asks a student to write, as distinct from how it grades what they wrote — and their names move under `head_music.style.guides.<key>.name` from the flat `<key>`. The twenty-three instructions are a first draft.
+
+- **Breaking.** `Notation::MusicXML::ClefSelector` is now `Notation::ClefSelector`, and the old name no longer resolves. Choosing a clef for a voice's tessitura is format-independent, and the LilyPond writer reads it alongside the MusicXML one. The shared preflight checks the two writers agree on — contiguous placements, notes within barlines — move to `Notation::PreflightChecks` the same way.
 
 ## [19.0.0] - 2026-08-07
 
