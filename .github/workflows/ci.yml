@@ -74,6 +74,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     continue-on-error: true
+    env:
+      # Bundler otherwise switches to the lockfile's BUNDLED WITH, and 2.7.2
+      # raises "uninitialized constant Pathname::SEPARATOR_PAT" on a Ruby this
+      # new. A bundler bug is not the breakage this job exists to find.
+      BUNDLE_VERSION: system
     steps:
     - uses: actions/checkout@v7
 
@@ -81,9 +86,6 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: head
-        # The lockfile's bundler is not built for a Ruby this new -- 2.7.2
-        # crashes on ruby-head with an uninitialized Pathname::SEPARATOR_PAT
-        # -- and a bundler bug is not the breakage this job exists to find.
         bundler: latest
         bundler-cache: false
 
