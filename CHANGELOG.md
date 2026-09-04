@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **LilyPond import.** `HeadMusic::Notation::LilyPond.parse(string)` reads a LilyPond document, or a bare music expression, into a `Content::Composition`: absolute and `\relative` pitches with `is`/`es` accidentals and Dutch contractions, durations with dots and carry-over, rests and whole-bar rests, chords, intra-bar ties, `\key`, `\time` (including mid-piece changes), `\clef`, bar checks, `\header` title and composer, and `\new Staff` / `\new Voice` contexts with `instrumentName` as the voice role. Everything the LilyPond writer emits reads back, so `parse(render(composition))` reproduces the music. A bar-check mismatch raises `LilyPond::ParseError`; constructs outside the subset raise `LilyPond::UnsupportedFeatureError` rather than being skipped.
+- `HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)`, the inverse of `dotted_unit_fraction`, shared by the ABC and LilyPond readers.
+
 ## [20.0.0] - 2026-08-30
 
 The [style assessment model](https://github.com/roberthead/head_music/tree/main/user-stories/epics/style-assessment-model.md) epic, released together. Five stories reshaped how a guide is declared, how it grades, what it says, and what a consumer asks for — so the breaking changes below are one migration rather than five. Two notation stories ride along: LilyPond export, and note values named in each reader's own language.
