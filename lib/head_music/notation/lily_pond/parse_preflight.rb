@@ -19,17 +19,6 @@ module HeadMusic::Notation::LilyPond
       raise ParseError, "LilyPond input is blank"
     end
 
-    def self.reject_unsupported_tokens(tokens)
-      token = tokens.find { |candidate| candidate.type == :unsupported }
-      return unless token
-
-      lexeme = token.lexeme
-      raise UnsupportedFeatureError.new(
-        %(Unsupported LilyPond feature "#{lexeme}"),
-        line_number: token.line, column: token.column, snippet: lexeme
-      )
-    end
-
     # Braces, << >>, and chord brackets must nest; an unmatched opener is
     # reported at its own line, since that is where the author must look.
     def self.ensure_balanced_delimiters(tokens)

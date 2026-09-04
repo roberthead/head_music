@@ -18,6 +18,8 @@ module HeadMusic::Notation::LilyPond
     MAX_NESTING_DEPTH = 1000
     DEFAULT_RELATIVE_REFERENCE = "F3"
     ENVELOPE_COMMANDS = %w[version header score layout midi].freeze
+    HEADER_FIELDS = %w[title composer].freeze
+    WITH_FIELDS = %w[instrumentName].freeze
 
     # A Staff, Voice, or the implicit top level. It yields a voice when it
     # holds music, or when it is an explicit context with no children (an
@@ -103,7 +105,7 @@ module HeadMusic::Notation::LilyPond
     def read_header
       advance
       expect(:open_brace, "\\header expects a block")
-      read_assignments("\\header") do |name, value|
+      read_assignments("\\header", HEADER_FIELDS) do |name, value|
         @building.title = value if name == "title"
         @building.composer = value if name == "composer"
       end
@@ -125,20 +127,51 @@ module HeadMusic::Notation::LilyPond
       advance
     end
 
-    # Reads `name = "string"` pairs up to the closing brace, yielding each;
-    # anything but a string value is outside the supported subset.
-    def read_assignments(block_name)
+    # Reads `name = value` pairs up to the closing brace, yielding the ones
+    # the block uses. A field the block ignores carries no musical meaning
+    # and is commonly Scheme (tagline = ##f), so its value is skipped by
+    # balance; a field the block reads must be a quoted string.
+    def read_assignments(block_name, fields)
       until peek.type == :close_brace
-        name = expect(:word, "#{block_name} expects name = \"value\" assignments", unsupported: true)
-        expect(:equals, "#{block_name} expects name = \"value\" assignments", unsupported: true)
-        value = advance
-        unless value&.type == :string
-          raise unsupported("#{block_name} values other than quoted strings are not supported", value || name)
+        name = expect(:word, assignment_message(block_name), unsupported: true)
+        expect(:equals, assignment_message(block_name), unsupported: true)
+        if fields.include?(name.lexeme)
+          yield name.lexeme, assignment_string(block_name, name)
+        else
+          skip_assignment_value(block_name, name)
         end
-
-        yield name.lexeme, value.lexeme
       end
       advance
+    end
+
+    def assignment_message(block_name)
+      "#{block_name} expects name = \"value\" assignments"
+    end
+
+    def assignment_string(block_name, name)
+      value = advance
+      return value.lexeme if value&.type == :string
+
+      raise unsupported("#{block_name} values other than quoted strings are not supported", value || name)
+    end
+
+    def skip_assignment_value(block_name, name)
+      depth = 0
+      consumed = 0
+      until eos?
+        token = peek
+        break if depth.zero? && (next_assignment? || token.type == :close_brace)
+
+        depth += 1 if token.type == :open_brace
+        depth -= 1 if token.type == :close_brace
+        advance
+        consumed += 1
+      end
+      raise unsupported(assignment_message(block_name), name) if consumed.zero?
+    end
+
+    def next_assignment?
+      peek&.type == :word && peek(1)&.type == :equals
     end
 
     def skip_block
@@ -160,6 +193,7 @@ module HeadMusic::Notation::LilyPond
       when :open_brace then read_sequential(context)
       when :open_parallel then read_parallel(context)
       when :command then read_music_expression_command(context)
+      when :unsupported then raise unsupported_token(token)
       else raise error("Expected a music expression", token)
       end
     end
@@ -207,6 +241,8 @@ module HeadMusic::Notation::LilyPond
     # separation the model cannot represent.
     def read_parallel_item(context)
       token = peek
+      raise unsupported_token(token) if token.type == :unsupported
+
       case token.type == :command && token.lexeme
       when "new" then read_new(context)
       when "relative" then read_relative { read_parallel_item(context) }
@@ -264,7 +300,7 @@ module HeadMusic::Notation::LilyPond
       advance
       expect(:open_brace, "\\with expects a block")
       role = nil
-      read_assignments("\\with") do |name, value|
+      read_assignments("\\with", WITH_FIELDS) do |name, value|
         role = value if name == "instrumentName"
       end
       role
@@ -284,6 +320,7 @@ module HeadMusic::Notation::LilyPond
       when :open_brace then read_sequential(context)
       when :open_parallel then read_parallel(context)
       when :command then read_music_command(context)
+      when :unsupported then raise unsupported_token(token)
       else raise error(%(Unexpected token "#{token.lexeme}"), token)
       end
     end
@@ -348,6 +385,7 @@ module HeadMusic::Notation::LilyPond
 
     def chord_note
       token = advance
+      raise unsupported_token(token) if token.type == :unsupported
       raise error(%(Unexpected token "#{token.lexeme}" inside a chord), token) unless token.type == :note
       raise error("Chord notes cannot carry durations", token) if token.duration
 
@@ -450,6 +488,13 @@ module HeadMusic::Notation::LilyPond
         %(Unsupported LilyPond feature "\\#{token.lexeme}"),
         line_number: token.line, column: token.column, snippet: "\\#{token.lexeme}"
       )
+    end
+
+    # A construct the lexer could name but the model cannot hold. It is
+    # reported where the reader meets it, so the same construct inside a
+    # block the reader skips costs nothing.
+    def unsupported_token(token)
+      unsupported(%(Unsupported LilyPond feature "#{token.lexeme}"), token)
     end
   end
 end
