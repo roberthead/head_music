@@ -28,7 +28,7 @@ jobs:
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: '3.3.0'
+        ruby-version: .ruby-version
         bundler-cache: true
 
     - name: Install bundler-audit
