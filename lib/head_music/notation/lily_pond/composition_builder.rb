@@ -8,6 +8,35 @@ module HeadMusic::Notation::LilyPond
   class CompositionBuilder
     TICKS_PER_WHOLE_NOTE = HeadMusic::Rudiment::Rhythm::PPQN * 4
 
+    # One voice's place in the replay: the events it has left, and the
+    # voice they are being placed on.
+    class Cursor
+      attr_reader :voice
+
+      def initialize(stream, voice)
+        @events = stream.events.dup
+        @voice = voice
+      end
+
+      def event
+        @events.first
+      end
+
+      def done?
+        @events.empty?
+      end
+
+      def advance
+        @events.shift
+      end
+
+      # Key and meter changes are answered before the notes of the same
+      # position, so a bar is placed under the meter that governs it.
+      def sort_key
+        [voice.next_position, event.music? ? 1 : 0]
+      end
+    end
+
     attr_reader :document
 
     def initialize(document)
@@ -28,11 +57,22 @@ module HeadMusic::Notation::LilyPond
         name: document.title, composer: document.composer,
         key_signature: document.first_key_signature, meter: document.first_meter
       )
-      streams.each do |stream|
-        voice = composition.add_voice(role: stream.role)
-        stream.events.each { |event| apply(event, voice) }
-      end
+      replay(streams.map { |stream| Cursor.new(stream, composition.add_voice(role: stream.role)) })
       composition
+    end
+
+    # The voices advance together rather than one after another, so a
+    # \time or \key that one staff carries is in force before another
+    # staff places the bar it governs. Replaying a whole voice at a time
+    # would leave the earlier voices positioned under the old meter.
+    def replay(cursors)
+      cursors = cursors.reject(&:done?)
+      until cursors.empty?
+        cursor = cursors.min_by(&:sort_key)
+        apply(cursor.event, cursor.voice)
+        cursor.advance
+        cursors = cursors.reject(&:done?)
+      end
     end
 
     def apply(event, voice)
