@@ -81,6 +81,10 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: head
+        # The lockfile's bundler is not built for a Ruby this new -- 2.7.2
+        # crashes on ruby-head with an uninitialized Pathname::SEPARATOR_PAT
+        # -- and a bundler bug is not the breakage this job exists to find.
+        bundler: latest
         bundler-cache: false
 
     - name: Install dependencies
