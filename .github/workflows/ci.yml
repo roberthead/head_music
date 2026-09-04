@@ -91,6 +91,32 @@ jobs:
     - name: Run tests
       run: bundle exec rspec
 
+  # The LilyPond specs treat the real binary as an oracle and skip when none is
+  # installed, so without this job nothing proves the rendered documents
+  # actually compile. Runs the whole suite because SimpleCov's minimum applies
+  # to any rspec invocation.
+  test-lilypond:
+    name: test (with the lilypond toolchain)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Install LilyPond
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y lilypond
+        lilypond --version
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: .ruby-version
+        bundler-cache: true
+
+    - name: Run tests
+      run: bundle exec rspec
+
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
