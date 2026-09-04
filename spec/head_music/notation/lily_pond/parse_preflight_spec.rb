@@ -21,17 +21,6 @@ describe HeadMusic::Notation::LilyPond::ParsePreflight do
     end
   end
 
-  describe ".reject_unsupported_tokens" do
-    it "raises an UnsupportedFeatureError naming the lexeme and line" do
-      expect { described_class.reject_unsupported_tokens(tokens("c4\nd4-.")) }
-        .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Unsupported LilyPond feature "-\." \(line 2\)/)
-    end
-
-    it "passes when every token is supported" do
-      expect { described_class.reject_unsupported_tokens(tokens("c4 d4 |")) }.not_to raise_error
-    end
-  end
-
   describe ".ensure_balanced_delimiters" do
     it "passes for nested braces, parallel brackets, and chords" do
       expect { described_class.ensure_balanced_delimiters(tokens("{ << { <c e>4 } >> }")) }.not_to raise_error

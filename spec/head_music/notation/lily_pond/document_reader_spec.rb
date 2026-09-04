@@ -40,9 +40,24 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
       expect(document.title).to eq "Inner"
     end
 
+    it "ignores a scheme value in a field it does not use" do
+      document = read(%(\\header { tagline = ##f title = "Air" } { c'1 }))
+      expect(document.title).to eq "Air"
+    end
+
+    it "ignores a markup value in a field it does not use" do
+      document = read(%(\\header { subtitle = \\markup { \\italic "x" } composer = "Bach" } { c'1 }))
+      expect(document.composer).to eq "Bach"
+    end
+
     it "raises for a non-string value" do
       expect { read(%(\\header { title = \\markup { "x" } } { c'1 })) }
         .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /values other than quoted strings/)
+    end
+
+    it "raises for a field with no value" do
+      expect { read(%(\\header { subtitle = } { c'1 })) }
+        .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /name = "value"/)
     end
 
     it "raises for content that is not an assignment" do
@@ -67,6 +82,18 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
 
     it "skips a top-level layout block" do
       expect(voices("\\layout { } { c'1 }")).to eq [[nil, 1]]
+    end
+
+    it "skips the scheme inside a layout block" do
+      expect(voices("\\score { { c'1 } \\layout { indent = #0 ragged-right = ##t } }")).to eq [[nil, 1]]
+    end
+
+    it "skips a tempo inside a midi block" do
+      expect(voices("\\score { { c'1 } \\midi { \\tempo 4 = 120 } }")).to eq [[nil, 1]]
+    end
+
+    it "skips a nested context block inside a layout block" do
+      expect(voices("\\layout { \\context { \\Score \\override BarLine #'thickness = #2 } } { c'1 }")).to eq [[nil, 1]]
     end
 
     it "raises for a second score" do

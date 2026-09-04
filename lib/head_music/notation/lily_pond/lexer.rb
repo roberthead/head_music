@@ -9,7 +9,8 @@ module HeadMusic::Notation::LilyPond
   # (never pre-stripped, so a % inside a string survives and line numbers
   # stay true). Notes, rests, and chord closers carry their duration; every
   # other construct is a single-purpose token. Constructs outside the
-  # supported subset lex as :unsupported so the preflight can name them.
+  # supported subset lex as :unsupported so the reader can name them where
+  # it meets them, or skip them with the block they sit in.
   class Lexer
     DURATION_PATTERN = /(?:\d+|\\breve|\\longa|\\maxima)\.*/
     MULTIPLIER_PATTERN = %r{\*(\d+(?:/\d+)?)}
