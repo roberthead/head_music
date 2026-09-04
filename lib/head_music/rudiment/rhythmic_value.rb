@@ -99,6 +99,14 @@ class HeadMusic::Rudiment::RhythmicValue
     relative_value + (tied_value ? tied_value.total_value : 0)
   end
 
+  # A new value with `tail` tied on at the deep end of this value's chain,
+  # so "half tied to eighth" gains a further "tied to quarter". Values are
+  # immutable, so each link is rebuilt.
+  def append_tied(tail)
+    inner = tied_value ? tied_value.append_tied(tail) : tail
+    self.class.new(unit, dots: dots, tied_value: inner)
+  end
+
   def multiplier
     (0..dots).reduce(0) { |sum, i| sum + 0.5**i }
   end
