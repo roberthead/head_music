@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+# A rebase flow means force-pushes are routine; without this, each one leaves
+# the superseded run burning minutes alongside its replacement.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
