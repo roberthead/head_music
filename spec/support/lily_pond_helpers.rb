@@ -1,3 +1,5 @@
+require "tmpdir"
+
 # Structural checks every rendered LilyPond document should pass: balanced
 # delimiters, one bar check per bar per voice, only recognizable tokens
 # inside the music expressions, and every bar's durations summing to the
@@ -64,4 +66,34 @@ module LilyPondHelpers
   end
 end
 
-RSpec.configure { |config| config.include LilyPondHelpers }
+# The real toolchain as an oracle: a rendered document must compile with
+# the lilypond binary when one is installed. Callers set `rendered`.
+module LilyPondToolchain
+  def installed_lilypond
+    ENV["PATH"].split(File::PATH_SEPARATOR)
+      .map { |dir| File.join(dir, "lilypond") }
+      .find { |path| File.executable?(path) }
+  end
+
+  def compile_quietly(lilypond, source)
+    Dir.mktmpdir do |dir|
+      source_path = File.join(dir, "golden.ly")
+      File.write(source_path, source)
+      system(lilypond, "--output", dir, source_path, out: File::NULL, err: File::NULL)
+    end
+  end
+end
+
+RSpec.shared_examples "a compilable document" do
+  it "compiles with the lilypond binary when one is installed" do
+    lilypond = installed_lilypond
+    skip "lilypond is not installed" unless lilypond
+
+    expect(compile_quietly(lilypond, rendered)).to be true
+  end
+end
+
+RSpec.configure do |config|
+  config.include LilyPondHelpers
+  config.include LilyPondToolchain
+end
