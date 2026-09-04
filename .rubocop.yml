@@ -15,6 +15,14 @@ AllCops:
     - vendor/**/*
   TargetRubyVersion: 3.3.0
 
+# Off in standard's config, so the lint job missed them; the security
+# workflow's "--only Security" pass was the only thing covering them.
+Security/IoMethods:
+  Enabled: true
+
+Security/MarshalLoad:
+  Enabled: true
+
 RSpec:
   Enabled: true
 
