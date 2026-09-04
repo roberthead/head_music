@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-07-04T12:05:19-07:00
   activated_at: 2026-09-03T18:23:09-07:00
   planned_at:   2026-09-03T19:25:55-07:00
-  finished_at:
-  updated_at:   2026-09-04T15:13:46-07:00
+  finished_at:  2026-09-04T15:35:54-07:00
+  updated_at:   2026-09-04T15:35:54-07:00
 -->
 
 # Story: LilyPond Interpreter
@@ -370,3 +370,26 @@ Important 1 and 2 contradict criterion 10 and should be fixed before finish; bot
 ### Resolution (2026-09-04)
 
 All findings were taken. The blank-input check now strips on raw bytes so the lexer's UTF-8 guard is reached; the reader bounds nesting at 1000 levels and raises a `ParseError` beyond it; tie appending moved to `RhythmicValue#append_tied`, shared by both parsers; the key and meter appliers collapsed into one parameterized method; quarter-tone names lex as unsupported; invisible characters are named by their escape; and every spec noted above was tightened, collapsed into a table, or removed. Re-validated: 7492 examples, 0 failures, 99.75% line coverage, rubocop clean, rubycritic 86.92.
+
+## Learnings
+
+**What went well**
+
+- **A plan that pinned every name and signature, plus four owner decisions recorded before `implement`, made the build direct.** No agents at implement time, no mid-stream design calls, and every one of the planner's "verified facts" about the rudiments held when re-probed before coding.
+- **Extracting the writer's fixtures first paid for itself immediately.** With the fixtures shared, the round-trip spec was a ten-line loop, and the golden document re-rendered byte-identically on the first end-to-end run.
+- **Two oracles found what the suite could not.** The relative-mode table checked against the binary caught a wrong expectation in the author's own spec (from G3, `d` is a fourth down to D3, not a fifth up). The reviewer's targeted construction found the two real escapes from the `ParseError` family after 72,000 fuzz inputs had found none. Volume fuzzing proves the common path; only reasoning about what runs before each guard finds the ordering bugs.
+- **The scope re-derivation at plan time overturned the story text on chords**, and the round-trip requirement proved it right: the writer already emitted them.
+
+**What was surprising**
+
+- **Fail-before-building had two escapes that were both about ordering, not validation.** The blank-input check ran a `strip` before the lexer's encoding guard, so invalid UTF-8 raised the wrong class. The lexer and balance check were iterative but the reader recursed, so nesting that passed preflight overflowed the stack. Rule: anything that runs before a guard must be safe on the input the guard exists to reject, and a recursive reader behind an iterative preflight needs its own bound.
+- **RSpec support modules are included globally, so private helper names collide across them.** A private `expect_equivalent_placements` in the new LilyPond helper silently shadowed the ABC helper's method of the same name and broke six ABC specs. Prefix private helpers in support modules.
+- **The writer shapes the round-trip contract.** It pads a voice's missing bars with whole-bar rests and emits tied rest chains as consecutive rests, so "every original placement comes back; every extra one must be a rest" is the honest invariant, not placement-count equality.
+- **`rake validate` runs Standard's performance cops that plain `rubocop` does not**, so a green `rubocop` run is not the last word.
+- **Shell-wrapped Ruby edits mangled backslashes twice more**, exactly as the export story's learnings warned. The Edit tool is the reliable path for LilyPond text; a memory now records it.
+
+**Do differently next time**
+
+- Put the recursion bound and byte-safe preflight into any recursive-descent reader from the first step, and add "what runs before each guard" to the review checklist alongside "the target format's own failure modes".
+- Name private helpers in `spec/support` with a format prefix.
+- Follow-up story candidates, in rough value order: a rudiment-level meter validity guard (`Meter.get("0/4")` hangs the first placement, reachable from ABC's `M:0/4` too); `Voice#place` is O(n²) and now has a larger front door; multi-bar rests; mid-bar `\key` and `\time`; `\partial` pickups; `\addlyrics` into `Placement#sing`; variables and `\include`; voices on one staff via `\\`.
