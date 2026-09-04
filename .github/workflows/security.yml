@@ -31,8 +31,5 @@ jobs:
         ruby-version: .ruby-version
         bundler-cache: true
 
-    - name: Install bundler-audit
-      run: gem install bundler-audit
-
     - name: Run bundler-audit
-      run: bundle-audit check --update
+      run: bundle exec bundle-audit check --update
