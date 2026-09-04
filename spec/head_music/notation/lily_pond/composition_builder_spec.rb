@@ -167,6 +167,18 @@ describe HeadMusic::Notation::LilyPond::CompositionBuilder do
       expect { build(source) }.to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Conflicting \\time at bar 2/)
     end
 
+    it "applies a change from one staff to the voices that do not restate it" do
+      source = "<< \\new Staff { c'1 c'1 c'1 } \\new Staff { \\time 4/4 c1 | \\time 3/4 c4 c c | c4 c c } >>"
+      expect(build(source).voices.first.placements.map(&:position).map(&:to_s)).to eq %w[1:1:000 2:1:000 3:2:000]
+    end
+
+    it "reads the same score the same way whichever staff carries the change" do
+      plain = "\\new Staff { c'1 c'1 c'1 }"
+      changing = "\\new Staff { \\time 4/4 c1 | \\time 3/4 c4 c c | c4 c c }"
+      positions = ->(source) { build(source).voices.map { |voice| voice.placements.map { |p| p.position.to_s } } }
+      expect(positions.call("<< #{plain} #{changing} >>")).to eq positions.call("<< #{changing} #{plain} >>").reverse
+    end
+
     it "raises for a key change mid-bar" do
       expect { build("{ c'2 \\key d \\major d'2 }") }
         .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /\\key in the middle of a bar/)
