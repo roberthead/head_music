@@ -1,33 +1,9 @@
 require "spec_helper"
-require "tmpdir"
 
 describe HeadMusic::Notation::LilyPond::Writer do
-  def installed_lilypond
-    ENV["PATH"].split(File::PATH_SEPARATOR)
-      .map { |dir| File.join(dir, "lilypond") }
-      .find { |path| File.executable?(path) }
-  end
-
-  def compile_quietly(lilypond, source)
-    Dir.mktmpdir do |dir|
-      source_path = File.join(dir, "golden.ly")
-      File.write(source_path, source)
-      system(lilypond, "--output", dir, source_path, out: File::NULL, err: File::NULL)
-    end
-  end
-
-  shared_examples "a compilable document" do
-    it "compiles with the lilypond binary when one is installed" do
-      lilypond = installed_lilypond
-      skip "lilypond is not installed" unless lilypond
-
-      expect(compile_quietly(lilypond, rendered)).to be true
-    end
-  end
-
   describe "#to_s" do
     context "with a single-voice diatonic tune" do
-      let(:composition) { HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH) }
+      let(:composition) { LilyPondFixtures.speed_the_plough }
       let(:rendered) { described_class.new(composition).to_s }
 
       it "is structurally valid" do
@@ -52,7 +28,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with a tune with accidentals" do
-      let(:composition) { HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR) }
+      let(:composition) { LilyPondFixtures.chromatic_air }
       let(:rendered) { described_class.new(composition).to_s }
 
       it "is structurally valid" do
@@ -73,14 +49,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with rests" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Rests")
-        voice = composition.add_voice
-        voice.place("1:1", :quarter, "C4")
-        voice.place("1:2", :quarter)
-        voice.place("1:3", :half, "E4")
-        composition
-      end
+      let(:composition) { LilyPondFixtures.rests }
       let(:rendered) { described_class.new(composition).to_s }
 
       it "is structurally valid" do
@@ -93,15 +62,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with multiple voices" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Duo", key_signature: "C major", meter: "4/4")
-        upper = composition.add_voice(role: "Melody")
-        upper.place("1:1", :whole, "E5")
-        upper.place("2:1", :whole, "D5")
-        lower = composition.add_voice(role: "Bass line")
-        lower.place("1:1", :whole, "C3")
-        composition
-      end
+      let(:composition) { LilyPondFixtures.duo }
       let(:rendered) { described_class.new(composition).to_s }
 
       it "is structurally valid" do
@@ -125,18 +86,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with a mid-piece key and meter change" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Turn", key_signature: "G major", meter: "4/4")
-        %w[G4 G3].each do |pitch|
-          voice = composition.add_voice
-          voice.place("1:1", :whole, pitch)
-          voice.place("2:1", :whole, pitch)
-          voice.place("3:1", "dotted half", pitch)
-        end
-        composition.change_key_signature(3, "D major")
-        composition.change_meter(3, "3/4")
-        composition
-      end
+      let(:composition) { LilyPondFixtures.key_and_meter_change }
       let(:rendered) { described_class.new(composition).to_s }
 
       it "is structurally valid" do
@@ -157,11 +107,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with an empty voice" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Tacet")
-        composition.add_voice
-        composition
-      end
+      let(:composition) { LilyPondFixtures.tacet }
       let(:rendered) { described_class.new(composition).to_s }
 
       it "renders a staff of whole-bar rests without raising" do
@@ -176,11 +122,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with sung placements" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Song")
-        composition.add_voice.place("1:1", :whole, "C4").sing("shenandoah")
-        composition
-      end
+      let(:composition) { LilyPondFixtures.song }
       let(:rendered) { described_class.new(composition).to_s }
 
       it "drops the lyrics and renders the music" do
@@ -193,13 +135,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with quotes and backslashes in header fields" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(
-          name: %(The "Great" \\ Escape), composer: %(A. "Slash" Author)
-        )
-        composition.add_voice.place("1:1", :whole, "C4")
-        composition
-      end
+      let(:composition) { LilyPondFixtures.escaped_header }
       let(:rendered) { described_class.new(composition).to_s }
 
       it "escapes the title" do
@@ -212,11 +148,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with a voice without a role" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Anon")
-        composition.add_voice.place("1:1", :whole, "C4")
-        composition
-      end
+      let(:composition) { LilyPondFixtures.anonymous }
 
       it "omits the instrumentName block" do
         expect(described_class.new(composition).to_s).not_to include "instrumentName"
@@ -224,43 +156,9 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with the golden example" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(
-          name: "Air", key_signature: "G major", meter: "4/4", composer: "Aloysius"
-        )
-        voice = composition.add_voice(role: "Melody")
-        voice.place("1:1", :quarter, "G4")
-        voice.place("1:2", :quarter, "A4")
-        voice.place("1:3", :quarter, "B4")
-        voice.place("1:4", :quarter, "C5")
-        voice.place("2:1", :half, "D5")
-        voice.place("2:3", :half, "G4")
-        composition
-      end
+      let(:composition) { LilyPondFixtures.air }
       let(:rendered) { described_class.new(composition).to_s }
-      let(:expected_document) do
-        <<~LILYPOND
-          \\version "2.24.0"
-          \\header {
-            title = "Air"
-            composer = "Aloysius"
-          }
-          \\score {
-            <<
-              \\new Staff \\with { instrumentName = "Melody" } {
-                \\new Voice {
-                  \\clef treble
-                  \\key g \\major
-                  \\time 4/4
-                  g'4 a'4 b'4 c''4 |
-                  d''2 g'2 |
-                }
-              }
-            >>
-            \\layout { }
-          }
-        LILYPOND
-      end
+      let(:expected_document) { LilyPondFixtures::AIR_DOCUMENT }
 
       it "renders the exact document" do
         expect(rendered).to eq expected_document
