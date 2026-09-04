@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-03T18:23:09-07:00
   planned_at:   2026-09-03T19:25:55-07:00
   finished_at:
-  updated_at:   2026-09-03T19:37:09-07:00
+  updated_at:   2026-09-04T15:13:46-07:00
 -->
 
 # Story: LilyPond Interpreter
@@ -305,3 +305,68 @@ Risks and notes:
 - A hand-written note crossing a barline with no `|` parses (LilyPond auto-splits) but the writer's `Preflight` rejects re-rendering it — a parser/writer asymmetry, not a defect; pin in a spec.
 - Steps 1 and 2 touch done-story code (`writer_spec.rb`, `ABC::DurationResolver`); both are behavior-preserving and covered by existing specs, but keep them as separate commits.
 - Follow-up story candidates: `\`/`\voiceN` voices on one staff, `\partial` pickups, `\addlyrics` → `Placement#sing`, variables and `\include`, multi-bar rests, mid-bar key/time changes.
+
+## Review
+
+Reviewed 2026-09-03 at commit `7476e45` plus the uncommitted working tree (all implementation changes are uncommitted). Reviewers: product-manager (criteria), code-reviewer (quality, with the `lilypond` 2.26.0 binary as an oracle). Suite: 7478 examples, 0 failures, 99.75% line / 96.71% branch coverage; rubocop clean; rubycritic 86.73 (unchanged).
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | Documented entry point returns a `Composition` | ✅ | `lily_pond.rb` `self.parse`; README feature line, Quick Start heredoc, subset paragraph; CHANGELOG `[Unreleased]`. `parser_spec.rb` "the story's example". |
+| 2 | `\key` → `key_signature` | ✅ | `key_reader.rb` inverts `KeyMapper`'s table; builder seeds from `Document#first_key_signature`. `key_reader_spec.rb` (13 modes, inversion guard, 7 error rows), `composition_builder_spec.rb` seed/change/no-op/conflict rows. |
+| 3 | `\time` → `meter` | ✅ | `meter_reader.rb` rejects `0/4`, `4/0`, `4/3`, `4/512`; builder seeds and applies `change_meter`. `meter_reader_spec.rb`, `composition_builder_spec.rb`. |
+| 4 | Octave marks and `is`/`es` incl. doubles | ✅ | `lexer.rb` `NOTE_PATTERN` (alias-first, lookahead); `pitch_reader.rb` absolute mode. `pitch_reader_spec.rb` table + inversion guard over `PitchWriter::ALTERATION_SUFFIXES`; `lexer_spec.rb` alias and word rows. Reviewer swept all 84 letter×suffix combinations against the binary: only the 28 quarter-tone names differ, and the model cannot hold those. |
+| 5 | Durations, dots, carry-over | ✅ | `duration_reader.rb` (global carry, default quarter, dots carried). `duration_reader_spec.rb` (12 base durations, dots, carry across rests and chords, error rows). |
+| 6 | `\relative` and absolute modes | ✅ | `pitch_reader.rb` fourth-reach rule; reader stack for nested `\relative`/`\absolute`, default `f`. Reviewer checked 23 cases with `\displayLilyMusic`; all match. `pitch_reader_spec.rb` oracle table; five relative/absolute twin pairs in `lily_pond_round_trip_spec.rb`. |
+| 7 | Rests distinct from notes | ✅ | `VoiceStream` rest events carry no pitches. `composition_builder_spec.rb` "keeps rests distinct from notes"; `rests` fixture round trip. |
+| 8 | Staff/Voice groupings → voices | ✅ | `document_reader.rb` contexts and `Context#voice?`. `document_reader_spec.rb` (bare, Staff∘Voice, empty Staff, parallel order, sequential Voices, role inheritance); `duo` and `key_and_meter_change` round trips. |
+| 9 | Comments and whitespace ignored | ✅ | `lexer.rb` skips in-loop, never pre-strips. `lexer_spec.rb` (7 examples incl. line/column tracking across block comments), `parser_spec.rb` end-to-end. |
+| 10 | Malformed input raises specifically, never partial | ⚠️ | Two-pass fail-before-building holds under 72,000 fuzz inputs and the two mutation loops in `parser_spec.rb`. Two targeted escapes remain (Important 1 and 2 below). |
+| 11 | Representative excerpt + focused cases | ✅ | `parser_spec.rb` story example and full golden document (re-renders byte-identically); per-helper specs for pitch, octave, accidental, duration, relative, meter, key. |
+| 12 | 90%+ coverage | ✅ | 99.75% line. |
+| Notes | Round trip consumes the export story's golden fixtures | ✅ | `writer_spec.rb` now reads every fixture from `spec/support/lily_pond_fixtures.rb`; `lily_pond_round_trip_spec.rb` round-trips all 10 and compiles each with the binary, plus 13 hand-written inputs as authored and after parse-and-render. All 36 oracle examples ran. |
+| Decision 1 | Chords in scope | ✅ | `read_chord`; relative chord rule. `document_reader_spec.rb`, `composition_builder_spec.rb`, chord round trip and twin. |
+| Decision 2 | Bar-check mismatch raises | ✅ | `composition_builder.rb` "Bar check failed at: 3/4 in bar 1". Underfilled, overfilled, tick-level rows. |
+| Decision 3 | Unknown header fields ignored | ✅ | `document_reader.rb` `read_assignments`; `tagline`/`subtitle`/`shortInstrumentName` ignored, non-string values raise. |
+| Decision 4 | Intra-bar ties | ✅ | `voice_stream.rb` folds into one `tied_value` chain; tie across `|` raises. All five tie errors specced. |
+
+### Code review findings
+
+**Important**
+
+1. **`Encoding::CompatibilityError` escapes the `ParseError` family.** `parser.rb` runs `ParsePreflight.ensure_input_present` before the lexer, and its `strip` raises on a UTF-8-tagged string with invalid bytes, before the lexer's own UTF-8 guard can run. `File.read` returns UTF-8-tagged strings, so a `.ly` file saved in Latin-1 with an accented composer name hits this. Confirmed by running it. Fix: make the blank check encoding-safe (`to_s.b.strip.empty?`) or move it after lexing.
+2. **`SystemStackError` on deeply nested braces.** `read_sequential` recurses through `read_music_item` with no depth bound while the lexer and balance check are iterative, so nesting around 6000 deep passes preflight and overflows the reader. Confirmed at 8000. Purely adversarial. Fix: a depth counter in `read_music_expression` raising `ParseError "Music expressions are nested too deeply"`.
+3. **`append_tied` is byte-identical to `ABC::VoiceState#append_tied`**, the largest flay hit in the module (mass 96), and the same-pitch guard and its message duplicate too. The story handled exactly this for `DottedDuration` and did not follow through here. A shared `HeadMusic::Notation::TiedValue.append(head, tail)` beside `DottedDuration` would close it.
+4. **`apply_key_signature` and `apply_meter` are structurally identical** in `composition_builder.rb` (flay mass 86), differing only in four method names.
+5. **Three specs would pass with the behavior they name broken.** `voice_stream_spec.rb` "ties chords with the same pitches in any order" asserts only the event count; `composition_builder_spec.rb` "treats a restated key as a no-op" asserts only that nothing raises; `meter_reader_spec.rb` "returns the same meter the rudiment resolves" is tautological.
+
+**Minor**
+
+- `lily_pond_round_trip_spec.rb`: the `include LilyPondRoundTripSources` is dead (every reference is fully qualified); the relative/absolute twin examples compare two renders through the same writer rather than pinning one side to a pitch list; oracle examples are named by ordinal ("input 7") rather than by the descriptive keys the tables already have.
+- `composition_builder_spec.rb`: three bar-check "passes" examples are `not_to raise_error` where asserting placements would pin the boundaries.
+- Four `equal(x)` memoization examples pin `||=` rather than behavior; the "does not memoize a failure" example is the one that matters.
+- `lexer_spec.rb` suffix table is a self-map; an array says the same. Three error tables could be collapsed (`key_reader_spec.rb` five identical "expects a pitch and a mode" blocks, `voice_stream_spec.rb` four "must be followed by a note", `document_reader_spec.rb` three "Duration multipliers").
+- Quarter-tone note names (`cih`, `ceh`, …) surface as `Unexpected token` rather than an `UnsupportedFeatureError` naming the quarter tone. `lexer.rb` interpolates an unexpected character raw, so a NUL byte renders invisibly; `inspect` would read better.
+
+**Verified sound**
+
+- Relative-mode algorithm matches the binary on 23 cases including chord-internal relativity, nested `\relative`, `\absolute` inside `\relative`, and the default `f` reference.
+- The `DottedDuration` refactor is behavior-preserving: old and new resolvers agree on 270 values; three unreachable-unit error messages differ only in wording, with the new text the more accurate.
+- No nil-tonic key signature leaks across 9 modes × 8 tonics. Every listed hostile input (`\key` at EOF, `<<` inside chords, `R1*0`, `\time 0/4`, NUL bytes, `R1*1000000`, nested `\score`) lands as a `ParseError` with a line number.
+- `Voice#place` is O(n²) (4000 notes in 6.8s), but that is `HeadMusic::Content`, shared with ABC, and not introduced here.
+
+### Scope notes from the product review
+
+- The shipped unsupported set is wider than the story's out-of-scope list: mid-bar `\key`/`\time`, multi-bar and non-bar-filling `R`, `*` multipliers, `s` spacers, `\\`, `\partial`, `\bar`, `\tempo`, `\repeat`, `\transpose`, `\fixed`, `\grace`, `<< >>` without `\new` items or inside `\relative`, `\include`, Scheme, and `[ ] ( )` all raise `UnsupportedFeatureError`. Worth enumerating in the finish notes.
+- The round-trip spec lives at `spec/head_music/notation/lily_pond_round_trip_spec.rb`, not under `lily_pond/` as the plan said, to satisfy the spec-path cop for a spec describing the `LilyPond` module.
+- A note crossing a barline with no `|` parses but will not re-render (pinned in `parser_spec.rb`); `R1*5/4` re-renders as `r1 r4` (pinned). Both were predicted in the plan.
+
+### Blocks finish
+
+Important 1 and 2 contradict criterion 10 and should be fixed before finish; both are small. Important 3 through 5 are quality items the owner may take now or defer.
+
+### Resolution (2026-09-04)
+
+All findings were taken. The blank-input check now strips on raw bytes so the lexer's UTF-8 guard is reached; the reader bounds nesting at 1000 levels and raises a `ParseError` beyond it; tie appending moved to `RhythmicValue#append_tied`, shared by both parsers; the key and meter appliers collapsed into one parameterized method; quarter-tone names lex as unsupported; invisible characters are named by their escape; and every spec noted above was tightened, collapsed into a table, or removed. Re-validated: 7492 examples, 0 failures, 99.75% line coverage, rubocop clean, rubycritic 86.92.

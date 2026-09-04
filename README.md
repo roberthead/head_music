@@ -14,6 +14,7 @@ The **head_music** Ruby gem provides a toolkit for working with Western music th
 - **Style Analysis**: Rules for species counterpoint and voice leading
 - **Internationalization**: Support for multiple languages (English, French, German, Italian, Russian, Spanish)
 - **Instrument Modeling**: Extensive database of musical instruments with ranges and properties
+- **Notation Formats**: Read ABC and LilyPond into compositions; write compositions as ABC, LilyPond, and MusicXML
 
 ## Installation
 
@@ -50,7 +51,20 @@ puts scale.pitches.map(&:to_s)  # => ["C4", "D4", "E4", "F4", "G4", "A4", "B4"]
 pitches = %w[C4 E4 G4].map { |p| HeadMusic::Rudiment::Pitch.get(p) }
 chord = HeadMusic::Analysis::PitchSet.new(pitches)
 puts chord.major_triad?  # => true
+
+# Import a LilyPond excerpt as a composition
+composition = HeadMusic::Notation::LilyPond.parse(<<~'LILY')
+  \relative c' {
+    \key g \major
+    \time 4/4
+    g8 a b c d c b g |
+  }
+LILY
+puts composition.voices.first.pitches.map(&:to_s)  # => ["G3", "A3", "B3", "C4", "D4", "C4", "B3", "G3"]
+puts composition.to_lilypond                        # => a complete LilyPond document
 ```
+
+The LilyPond reader covers absolute and `\relative` pitches, durations and dots, rests and whole-bar rests, chords, intra-bar ties, `\key`, `\time`, `\clef`, bar checks, `\header` title and composer, and `\new Staff` / `\new Voice` contexts. Constructs outside that subset (tuplets, lyrics, variables, articulations, and so on) raise an `UnsupportedFeatureError` rather than being skipped.
 
 ## Style Analysis
 
