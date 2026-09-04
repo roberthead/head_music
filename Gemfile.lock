@@ -216,7 +216,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  bundler-audit
+  bundler-audit (~> 0.9, >= 0)
   head_music!
   kramdown
   rake (~> 13.0)
@@ -228,10 +228,10 @@ DEPENDENCIES
   rubycritic
   simplecov (< 1.1)
   standard
-  yard
+  yard (~> 0.9, >= 0)
 
 RUBY VERSION
    ruby 3.3.0p0
 
 BUNDLED WITH
-   2.4.12
+   2.7.2
