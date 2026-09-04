@@ -47,6 +47,16 @@ describe HeadMusic::Notation::LilyPond::PitchReader do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /out of range/)
     end
 
+    it "raises for octave marks far beyond the supported range" do
+      expect { reader.pitch(token("c,,,,,,,,,,")) }
+        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /out of range/)
+    end
+
+    it "raises rather than falling back to the default register" do
+      expect { reader.pitch(token("c''''''''''")) }
+        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /out of range/)
+    end
+
     it "reads chord pitches independently" do
       expect(reader.chord_pitches(tokens("c' e' g'")).map(&:to_s)).to eq %w[C4 E4 G4]
     end

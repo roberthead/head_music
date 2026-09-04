@@ -80,13 +80,21 @@ module HeadMusic::Notation::LilyPond
     end
 
     def build(token, register)
-      semitones = self.class.alterations_by_suffix.fetch(token.suffix.to_s)
-      name = "#{token.letter.upcase}#{FRAGMENTS_BY_SEMITONES.fetch(semitones)}#{register}"
-      HeadMusic::Rudiment::Pitch.from_name(name) ||
+      resolve(token, register) ||
         raise(ParseError.new(
           %(Pitch "#{token.lexeme}" is out of range),
           line_number: token.line, column: token.column, snippet: token.lexeme
         ))
+    end
+
+    # A register outside the numbered range is checked before the name is
+    # built, because Register.get answers an unreachable number with its
+    # default rather than with nil, which would silently move the pitch.
+    def resolve(token, register)
+      return unless HeadMusic::Rudiment::Register.from_number(register)
+
+      semitones = self.class.alterations_by_suffix.fetch(token.suffix.to_s)
+      HeadMusic::Rudiment::Pitch.from_name("#{token.letter.upcase}#{FRAGMENTS_BY_SEMITONES.fetch(semitones)}#{register}")
     end
   end
 end
