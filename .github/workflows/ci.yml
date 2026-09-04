@@ -67,6 +67,30 @@ jobs:
         fail_ci_if_error: false
         verbose: true
 
+  # Months of warning about upcoming Ruby releases, without a red check that
+  # blocks a merge.
+  test-ruby-head:
+    name: test (ruby-head, advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Set up Ruby head
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: head
+        bundler-cache: false
+
+    - name: Install dependencies
+      run: |
+        bundle config set --local path vendor/bundle
+        bundle install
+
+    - name: Run tests
+      run: bundle exec rspec
+
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
