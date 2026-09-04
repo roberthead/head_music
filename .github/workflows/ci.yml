@@ -17,13 +17,28 @@ concurrency:
 
 jobs:
   test:
+    name: test (ruby ${{ matrix.ruby-version }}, activesupport ${{ matrix.activesupport-version || 'latest' }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: ['3.3', '3.4']
-        activesupport-version: ['7.2', '8.0']
+        # The corners of the supported range rather than a full cross product.
+        # An empty activesupport-version installs from the lockfile, covering
+        # the newest release the gemspec allows; ActiveSupport 7.2 is not
+        # paired with Ruby 3.5, which it predates.
+        include:
+          - ruby-version: '3.3'
+            activesupport-version: '7.2'
+          - ruby-version: '3.3'
+            activesupport-version: ''
+            coverage: true
+          - ruby-version: '3.4'
+            activesupport-version: '7.2'
+          - ruby-version: '3.4'
+            activesupport-version: '8.0'
+          - ruby-version: '3.5'
+            activesupport-version: ''
 
     steps:
     - uses: actions/checkout@v7
@@ -34,16 +49,18 @@ jobs:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: false
 
-    - name: Install dependencies with ActiveSupport ${{ matrix.activesupport-version }}
+    - name: Install dependencies with ActiveSupport ${{ matrix.activesupport-version || 'latest' }}
+      env:
+        ACTIVESUPPORT_VERSION: ${{ matrix.activesupport-version }}
       run: |
         bundle config set --local path vendor/bundle
-        ACTIVESUPPORT_VERSION="${{ matrix.activesupport-version }}" bundle install
+        bundle install
 
     - name: Run tests
       run: bundle exec rspec
 
     - name: Upload coverage to Codecov
-      if: matrix.ruby-version == '3.3' && matrix.activesupport-version == '8.0'
+      if: matrix.coverage
       uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
