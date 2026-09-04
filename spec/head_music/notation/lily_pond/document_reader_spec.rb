@@ -120,8 +120,18 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
       expect(voices(source)).to eq [["A", 1], ["B", 1]]
     end
 
-    it "yields two sequential Voices in one Staff as two voices" do
-      expect(voices("\\new Staff { \\new Voice { c'1 } \\new Voice { d'1 } }")).to eq [[nil, 1], [nil, 1]]
+    it "raises for two sequential Voices in one Staff" do
+      expect { read("\\new Staff { \\new Voice { c'1 } \\new Voice { d'1 } }") }
+        .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /follows a \\new context/)
+    end
+
+    it "raises for a context that follows music in a sequence" do
+      expect { read("{ c'4 \\new Staff { d'4 } }") }
+        .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /follows music/)
+    end
+
+    it "reads a lone context inside a sequence" do
+      expect(voices("{ \\new Staff { c'4 d'4 } }")).to eq [[nil, 2]]
     end
 
     it "gives a Voice its own instrumentName over the Staff's" do

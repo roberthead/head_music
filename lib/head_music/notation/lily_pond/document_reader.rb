@@ -296,10 +296,22 @@ module HeadMusic::Notation::LilyPond
       when "clef" then read_clef
       when "relative" then read_relative { read_music_expression(context) }
       when "absolute" then read_absolute { read_music_expression(context) }
-      when "new" then read_new(context)
+      when "new" then read_sequential_new(context)
       when *ENVELOPE_COMMANDS then raise error(%(Unexpected \\#{token.lexeme} inside music), token)
       else raise unsupported_command(token)
       end
+    end
+
+    # LilyPond starts a context where the sequence around it has reached,
+    # but a stream always starts at bar one, so a context inside a sequence
+    # is only placed correctly when it is the whole of that sequence.
+    def read_sequential_new(context)
+      raise unsupported("A \\new context that follows music in a sequence is not supported", peek) if context.stream.music?
+
+      read_new(context)
+      return if peek&.type == :close_brace
+
+      raise unsupported("Music that follows a \\new context in a sequence is not supported", peek)
     end
 
     def read_note(context)
