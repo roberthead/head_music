@@ -142,6 +142,29 @@ describe HeadMusic::Rudiment::RhythmicValue do
     end
   end
 
+  describe "#append_tied" do
+    let(:quarter) { described_class.new(:quarter) }
+
+    it "ties the tail onto a single value" do
+      expect(described_class.new(:half).append_tied(quarter).to_s).to eq "half tied to quarter"
+    end
+
+    it "ties the tail onto the deep end of a chain" do
+      chain = described_class.new(:half, tied_value: described_class.new(:eighth))
+      expect(chain.append_tied(quarter).to_s).to eq "half tied to eighth tied to quarter"
+    end
+
+    it "keeps the head's dots" do
+      expect(described_class.new(:half, dots: 1).append_tied(quarter).to_s).to eq "dotted half tied to quarter"
+    end
+
+    it "does not change the receiver" do
+      chain = described_class.new(:half, tied_value: described_class.new(:eighth))
+      chain.append_tied(quarter)
+      expect(chain.to_s).to eq "half tied to eighth"
+    end
+  end
+
   describe "string round-trips through .get" do
     context "with a single tie" do
       let(:value) { described_class.new(:half, tied_value: described_class.new(:eighth)) }

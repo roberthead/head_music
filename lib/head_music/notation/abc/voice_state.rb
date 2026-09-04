@@ -146,16 +146,7 @@ module HeadMusic::Notation::ABC
     def pending_rhythmic_value(pending)
       own = @duration_resolver.rhythmic_value(pending.length, scale: pending.scale)
       prefix = pending.tied_prefix
-      prefix ? append_tied(prefix, own) : own
-    end
-
-    # Attaches `tail` at the deep end of `head`'s tied chain, rebuilding
-    # each link (RhythmicValue exposes no setter) so a chain like
-    # "half tied to eighth" gains a further "tied to quarter".
-    def append_tied(head, tail)
-      tied = head.tied_value
-      inner = tied ? append_tied(tied, tail) : tail
-      HeadMusic::Rudiment::RhythmicValue.new(head.unit, dots: head.dots, tied_value: inner)
+      prefix ? prefix.append_tied(own) : own
     end
   end
 end
