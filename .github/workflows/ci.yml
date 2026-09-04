@@ -26,7 +26,7 @@ jobs:
         # The corners of the supported range rather than a full cross product.
         # An empty activesupport-version installs from the lockfile, covering
         # the newest release the gemspec allows; ActiveSupport 7.2 is not
-        # paired with Ruby 3.5, which it predates.
+        # paired with Ruby 4.0, which it predates.
         include:
           - ruby-version: '3.3'
             activesupport-version: '7.2'
@@ -37,7 +37,7 @@ jobs:
             activesupport-version: '7.2'
           - ruby-version: '3.4'
             activesupport-version: '8.0'
-          - ruby-version: '3.5'
+          - ruby-version: '4.0'
             activesupport-version: ''
 
     steps:
