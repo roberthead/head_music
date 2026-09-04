@@ -296,6 +296,16 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
       expect(voices(source)).to eq [[nil, 1]]
     end
 
+    it "bounds relative nesting" do
+      expect { read("\\relative " * 1001 + "{ c'1 }") }
+        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /nested too deeply/)
+    end
+
+    it "bounds context nesting" do
+      expect { read("\\new Staff " * 1001 + "{ c'1 }") }
+        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /nested too deeply/)
+    end
+
     it "raises for a stray word" do
       expect { read("{ c'4 foo }") }.to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Unexpected token "foo"/)
     end

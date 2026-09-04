@@ -12,8 +12,9 @@ module HeadMusic::Notation::LilyPond
   # a \tuplet would yield a plausible but wrong composition.
   class DocumentReader
     CONTEXT_TYPES = %w[Staff Voice].freeze
-    # The reader recurses per brace level; the lexer and balance check do
-    # not, so nesting must be bounded here to stay inside ParseError.
+    # The reader recurses per brace level and per \relative, \absolute, or
+    # \new wrapper; the lexer and balance check do not, so nesting must be
+    # bounded here to stay inside ParseError.
     MAX_NESTING_DEPTH = 1000
     DEFAULT_RELATIVE_REFERENCE = "F3"
     ENVELOPE_COMMANDS = %w[version header score layout midi].freeze
@@ -215,10 +216,10 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_relative
-      advance
+      token = advance
       reference = relative_reference
       @readers.push(PitchReader.relative(reference))
-      yield
+      nested(token) { yield }
       @readers.pop
     end
 
@@ -232,14 +233,14 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_absolute
-      advance
+      token = advance
       @readers.push(PitchReader.absolute)
-      yield
+      nested(token) { yield }
       @readers.pop
     end
 
     def read_new(context)
-      advance
+      opener = advance
       type = expect(:word, "\\new expects a context type")
       raise unsupported(%(\\new #{type.lexeme} contexts are not supported), type) unless CONTEXT_TYPES.include?(type.lexeme)
 
@@ -248,7 +249,7 @@ module HeadMusic::Notation::LilyPond
       role ||= context.role if type.lexeme == "Voice"
       child = open_context(role, explicit: true)
       context.children += 1
-      read_music_expression(child)
+      nested(opener) { read_music_expression(child) }
       close_context(child)
     end
 
