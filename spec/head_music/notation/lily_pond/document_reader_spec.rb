@@ -268,6 +268,11 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Chord notes cannot carry durations/)
     end
 
+    it "raises for a chord note with a multiplier" do
+      expect { read("{ <c'*2 e'>4 }") }
+        .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Duration multipliers/)
+    end
+
     it "raises for a rest inside a chord" do
       expect { read("{ <c' r>4 }") }
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Unexpected token "r" inside a chord/)

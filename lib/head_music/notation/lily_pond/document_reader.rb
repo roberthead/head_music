@@ -338,6 +338,7 @@ module HeadMusic::Notation::LilyPond
       raise error(%(Unexpected token "#{token.lexeme}" inside a chord), token) unless token.type == :note
       raise error("Chord notes cannot carry durations", token) if token.duration
 
+      reject_multiplier(token)
       token
     end
 
