@@ -171,6 +171,7 @@ describe HeadMusic::Notation::LilyPond::Parser do
       "{ c'4-. }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"-\."/],
       "{ c'4 s4 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"s4"/],
       "{ c'4*2 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Duration multipliers/],
+      "{ <c'*2 e'>4 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Duration multipliers/],
       "{ R1*2 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Multi-bar rests/],
       "melody = { c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Variable assignments/],
       "\\new Lyrics { c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /\\new Lyrics/],
