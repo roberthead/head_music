@@ -39,12 +39,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    # Trusted publishing: RubyGems exchanges this job's OIDC token for a
+    # short-lived credential, so there is no API key to store or rotate.
+    # Requires head_music to have this workflow registered as a trusted
+    # publisher at rubygems.org/gems/head_music/trusted_publishers.
+    - name: Configure RubyGems credentials
+      uses: rubygems/configure-rubygems-credentials@v2
+
     - name: Publish to RubyGems
-      run: |
-        mkdir -p $HOME/.gem
-        touch $HOME/.gem/credentials
-        chmod 0600 $HOME/.gem/credentials
-        printf -- "---\n:rubygems_api_key: ${GEM_HOST_API_KEY}\n" > $HOME/.gem/credentials
-        gem push *.gem
-      env:
-        GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+      run: gem push *.gem
