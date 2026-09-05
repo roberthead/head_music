@@ -114,6 +114,23 @@ describe HeadMusic::Content::Voice do
         expect(voice.placements.map { |placement| placement.pitches.map(&:to_s) }).to eq [["B3"], %w[C4 E4 G4]]
       end
     end
+
+    context "when many notes arrive in shuffled order" do
+      let(:positions) { (1..40).map { |bar| "#{bar}:1:000" } }
+
+      before do
+        positions.shuffle(random: Random.new(1)).each { |position| voice.place(position, :whole, "C4") }
+      end
+
+      it "keeps them in position order" do
+        expect(voice.placements.map { |placement| placement.position.to_s }).to eq positions
+      end
+
+      it "merges a repeat of each position rather than adding one" do
+        expect { positions.each { |position| voice.place(position, :whole, "E4") } }
+          .not_to change(voice.placements, :length)
+      end
+    end
   end
 
   describe "#next_position" do

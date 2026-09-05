@@ -95,14 +95,21 @@ class HeadMusic::Content::Voice
   end
 
   def placement_at(position)
-    placements.find { |placement| placement.position == position }
+    candidate = placements.bsearch { |placement| placement.position >= position }
+    candidate if candidate&.position == position
   end
 
   # Positions are unique within a voice (place merges same-position
-  # placements), so insertion order is simply position order.
+  # placements), so insertion order is simply position order. Both the
+  # lookup and the insertion point are binary searches over that order,
+  # which keeps placing a long voice linear in its length rather than
+  # quadratic.
+  def insertion_index(placement)
+    placements.bsearch_index { |existing| existing > placement } || placements.length
+  end
+
   def insert_into_placements(placement)
-    index = placements.index { |existing| existing > placement } || placements.length
-    placements.insert(index, placement)
+    placements.insert(insertion_index(placement), placement)
   end
 
   def pitches_string
