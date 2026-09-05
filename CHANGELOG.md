@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [20.1.0] - 2026-09-05
+
+The other half of the LilyPond export released in 20.0.0. A document written by the writer, or by hand, now reads back into a composition, so `parse(render(composition))` reproduces the music. Nothing in 20.0.0 changed shape; a consumer upgrades by upgrading.
+
 ### Added
 
 - **LilyPond import.** `HeadMusic::Notation::LilyPond.parse(string)` reads a LilyPond document, or a bare music expression, into a `Content::Composition`: absolute and `\relative` pitches with `is`/`es` accidentals and Dutch contractions, durations with dots and carry-over, rests and whole-bar rests, chords, intra-bar ties, `\key`, `\time` (including mid-piece changes), `\clef`, bar checks, `\header` title and composer, and `\new Staff` / `\new Voice` contexts with `instrumentName` as the voice role. Everything the LilyPond writer emits reads back, so `parse(render(composition))` reproduces the music. `\version`, `\layout`, and `\midi` blocks are skipped whole, as are the header fields the reader does not use, so the Scheme in an everyday engraving preamble costs nothing. A bar-check mismatch raises `LilyPond::ParseError`; constructs outside the subset raise `LilyPond::UnsupportedFeatureError` rather than being skipped.
 - `HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)`, the inverse of `dotted_unit_fraction`, shared by the ABC and LilyPond readers.
+
+### Changed
+
+- **Placing a note no longer costs time linear in the voice's length.** `Content::Voice#place` scanned its placements from the front twice — once for a placement already at the position, once for the insertion point — so filling a long voice was quadratic in its length. Both are now binary searches over the position order the list already keeps. Reading a 28KB LilyPond score went from 76 seconds to under 9; the remaining time is in `Content::Position` arithmetic rather than here.
 
 ## [20.0.0] - 2026-08-30
 
@@ -723,7 +731,8 @@ note = HeadMusic::Rudiment::Note.get("F#4 dotted-quarter")
 
 For changes in versions prior to 0.28.0, please refer to the git history.
 
-[Unreleased]: https://github.com/roberthead/head_music/compare/v20.0.0...HEAD
+[Unreleased]: https://github.com/roberthead/head_music/compare/v20.1.0...HEAD
+[20.1.0]: https://github.com/roberthead/head_music/compare/v20.0.0...v20.1.0
 [20.0.0]: https://github.com/roberthead/head_music/compare/v19.0.0...v20.0.0
 [19.0.0]: https://github.com/roberthead/head_music/compare/v18.0.0...v19.0.0
 [18.0.0]: https://github.com/roberthead/head_music/compare/v17.5.0...v18.0.0
