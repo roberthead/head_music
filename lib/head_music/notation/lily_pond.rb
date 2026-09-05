@@ -1,5 +1,9 @@
 # Parses and renders LilyPond documents as HeadMusic::Content compositions
 module HeadMusic::Notation::LilyPond
+  # The commands that wrap a document rather than appear in its music. The
+  # DocumentReader dispatches on them; the MusicReader rejects them.
+  ENVELOPE_COMMANDS = %w[version header score layout midi].freeze
+
   # Interprets a LilyPond document, or a bare music expression, as a
   # composition. Raises before building on anything outside the supported
   # subset, so callers never receive a partial composition.
