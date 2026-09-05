@@ -1,16 +1,17 @@
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # The computed musical facts a Writer needs to serialize a composition: the
-  # divisions resolution, the duration components and beams of every notehead,
-  # and the key/time signatures in force at each measure. Separating this model
-  # from the Writer lets the beam and meter-tracking logic — the intricate part
-  # of MusicXML rendering — be reasoned about and tested without generating XML.
+  # divisions resolution, and the duration components and beams of every
+  # notehead, on top of the measure signatures the base plan tracks.
+  # Separating this model from the Writer lets the beam and meter-tracking
+  # logic — the intricate part of MusicXML rendering — be reasoned about and
+  # tested without generating XML.
   #
   # Construction eagerly computes everything that can raise on unmappable keys or durations,
   # so a RenderPlan that builds successfully cannot fail assembly on those
   # grounds; beam annotations stay lazy because their integer-duration check
   # raises only when a bar is actually laid out.
-  class RenderPlan
+  class RenderPlan < HeadMusic::Notation::RenderPlan
     # The number of beams a notehead of each MusicXML <type> carries alone.
     # Every other type (quarter and longer) and every rest carries none.
     BEAM_LEVELS_BY_TYPE = {
@@ -21,13 +22,6 @@ module HeadMusic::Notation::MusicXML
       "128th" => 5,
       "256th" => 6
     }.freeze
-
-    attr_reader :composition
-
-    def initialize(composition)
-      @composition = composition
-      precompute_eager_data
-    end
 
     def divisions
       @divisions ||= Divisions.for(composition)
@@ -50,41 +44,6 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
-    def bar_numbers
-      composition.earliest_bar_number..composition.latest_bar_number
-    end
-
-    def measure_key_changes
-      @measure_key_changes ||= bar_numbers.zip(composition.bars).filter_map { |bar_number, bar|
-        [bar_number, key_element_values(bar.key_signature)] if bar.key_signature
-      }.to_h
-    end
-
-    def measure_time_changes
-      @measure_time_changes ||= bar_numbers.zip(composition.bars).filter_map { |bar_number, bar|
-        [bar_number, bar.meter] if bar.meter
-      }.to_h
-    end
-
-    def first_measure_key
-      @first_measure_key ||=
-        measure_key_changes[bar_numbers.first] || key_element_values(composition.key_signature)
-    end
-
-    def first_measure_meter
-      @first_measure_meter ||= effective_meter(bar_numbers.first)
-    end
-
-    def effective_meter(bar_number)
-      change_bar = measure_time_changes.keys.select { |number| number <= bar_number }.max
-      change_bar ? measure_time_changes[change_bar] : composition.meter
-    end
-
-    def placements_by_bar(voice)
-      @placements_by_bar ||= {}
-      @placements_by_bar[voice] ||= voice.placements.group_by { |placement| placement.position.bar_number }
-    end
-
     # Divisions.for guarantees a whole measure of any effective meter is an
     # integer number of divisions, so the Rational's numerator is the value.
     def whole_measure_duration(bar_number)
@@ -94,15 +53,14 @@ module HeadMusic::Notation::MusicXML
 
     private
 
-    # Everything that can raise on unmappable keys or durations is computed
-    # here so it raises at construction, before the Writer assembles output.
     def precompute_eager_data
-      key_element_values(composition.key_signature)
-      first_measure_key
-      first_measure_meter
-      measure_key_changes
-      measure_time_changes
+      key_value(composition.key_signature)
+      super
       components_by_placement
+    end
+
+    def key_value(key_signature)
+      {fifths: KeyMapper.fifths(key_signature), mode: KeyMapper.mode(key_signature)}
     end
 
     def duration_writer
@@ -151,10 +109,6 @@ module HeadMusic::Notation::MusicXML
           "cannot express the beam group unit as an integer duration at #{divisions} divisions per quarter note"
       end
       fraction.to_i
-    end
-
-    def key_element_values(key_signature)
-      {fifths: KeyMapper.fifths(key_signature), mode: KeyMapper.mode(key_signature)}
     end
   end
 end
