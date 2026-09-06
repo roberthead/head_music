@@ -49,7 +49,7 @@ describe HeadMusic::Notation::ABC::VoiceState do
   describe "note assembly" do
     subject(:state) { described_class.new(voice, nil, duration_resolver) }
 
-    let(:voice) { HeadMusic::Content::Composition.new.add_voice(role: nil) }
+    let(:voice) { HeadMusic::Content::Flow.new.add_voice(role: nil) }
     let(:duration_resolver) { HeadMusic::Notation::ABC::DurationResolver.new("1/4") }
     let(:pitch) { HeadMusic::Rudiment::Pitch.get("C4") }
 

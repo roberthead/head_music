@@ -3,9 +3,9 @@ module HeadMusic::Rudiment; end
 
 # A Note is a fundamental musical element consisting of a pitch and a duration.
 # This is the rudiment version, representing the abstract concept of a note
-# independent of its placement in a composition.
+# independent of its placement in a flow.
 #
-# For notes placed within a composition context, see HeadMusic::Content::Note
+# For notes placed within a flow context, see HeadMusic::Content::Note
 class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   include HeadMusic::Named
 

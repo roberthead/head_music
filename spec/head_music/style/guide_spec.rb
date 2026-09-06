@@ -131,8 +131,8 @@ describe HeadMusic::Style::Guide do
       end
 
       def solo(pitch_count)
-        composition = HeadMusic::Content::Composition.new(key_signature: "D dorian")
-        voice = composition.add_voice(role: :counterpoint)
+        flow = HeadMusic::Content::Flow.new(key_signature: "D dorian")
+        voice = flow.add_voice(role: :counterpoint)
         %w[D4 F4 E4 G4 F4 A4 G4 F4].first(pitch_count).each_with_index do |pitch, bar|
           voice.place("#{bar + 1}:1", :whole, pitch)
         end

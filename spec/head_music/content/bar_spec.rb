@@ -1,71 +1,56 @@
 require "spec_helper"
 
 describe HeadMusic::Content::Bar do
-  subject(:bar) { described_class.new(composition) }
+  subject(:bar) { flow.bars(2).last }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D major", meter: "6/8") }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D major", meter: "6/8") }
 
+  its(:number) { is_expected.to eq 2 }
+
+  # A bar reports the change authored in it, not the value in force there --
+  # so a bar in a flow that merely opens in 6/8 reports no meter at all.
   its(:key_signature) { is_expected.to be_nil }
   its(:meter) { is_expected.to be_nil }
 
-  context "when specifying the key signature" do
-    subject(:bar) { described_class.new(composition, key_signature: "Bb minor") }
+  describe "the key signature authored here" do
+    before { flow.change_key_signature(2, "F# minor") }
 
-    its(:key_signature) { is_expected.to eq "Bb minor" }
-  end
-
-  context "when specifying the meter" do
-    subject(:bar) { described_class.new(composition, meter: "5/4") }
-
-    its(:meter) { is_expected.to eq "5/4" }
-    its(:to_s) { is_expected.to eq "Bar 5/4" }
-  end
-
-  describe "#key_signature=" do
-    it "coerces a string to a key signature" do
-      bar.key_signature = "F# minor"
+    it "is a key signature" do
       expect(bar.key_signature).to be_a(HeadMusic::Rudiment::KeySignature)
     end
 
-    it "coerces to the named key signature" do
-      bar.key_signature = "F# minor"
+    it "is the one that was authored" do
       expect(bar.key_signature).to eq "F# minor"
     end
 
-    it "accepts nil to clear the key signature" do
-      bar.key_signature = "F# minor"
-      bar.key_signature = nil
-      expect(bar.key_signature).to be_nil
+    it "leaves neighbouring bars reporting no change" do
+      expect(flow.bars(3).last.key_signature).to be_nil
     end
 
-    it "passes a key signature object through unchanged" do
-      key_signature = HeadMusic::Rudiment::KeySignature.get("Bb major")
-      bar.key_signature = key_signature
-      expect(bar.key_signature).to be(key_signature)
+    it "is still in force in the bars that follow" do
+      expect(flow.key_signature_at(3)).to eq "F# minor"
     end
   end
 
-  describe "#meter=" do
-    it "coerces a string to a meter" do
-      bar.meter = "6/8"
+  describe "the meter authored here" do
+    before { flow.change_meter(2, "5/4") }
+
+    it "is a meter" do
       expect(bar.meter).to be_a(HeadMusic::Rudiment::Meter)
     end
 
-    it "coerces to the named meter" do
-      bar.meter = "6/8"
-      expect(bar.meter).to eq "6/8"
+    it "is the one that was authored" do
+      expect(bar.meter).to eq "5/4"
     end
 
-    it "accepts nil to clear the meter" do
-      bar.meter = "6/8"
-      bar.meter = nil
-      expect(bar.meter).to be_nil
+    its(:to_s) { is_expected.to eq "Bar 5/4" }
+
+    it "leaves neighbouring bars reporting no change" do
+      expect(flow.bars(3).last.meter).to be_nil
     end
 
-    it "passes a meter object through unchanged" do
-      meter = HeadMusic::Rudiment::Meter.get("3/4")
-      bar.meter = meter
-      expect(bar.meter).to be(meter)
+    it "is still in force in the bars that follow" do
+      expect(flow.meter_at(3)).to eq "5/4"
     end
   end
 
@@ -165,14 +150,17 @@ describe HeadMusic::Content::Bar do
       expect(bar.to_h).to eq({})
     end
 
-    it "serializes the key signature by its parseable name" do
-      bar.key_signature = "F# minor"
-      expect(bar.to_h).to eq("key_signature" => "F♯ minor")
+    # Key and meter changes belong to the flow's timeline. A bar reports the
+    # ones authored in it, but does not serialize them -- a bar's own state is
+    # its repeat structure.
+    it "leaves the key signature to the timeline" do
+      flow.change_key_signature(2, "F# minor")
+      expect(bar.to_h).to eq({})
     end
 
-    it "serializes the meter" do
-      bar.meter = "6/8"
-      expect(bar.to_h).to eq("meter" => "6/8")
+    it "leaves the meter to the timeline" do
+      flow.change_meter(2, "6/8")
+      expect(bar.to_h).to eq({})
     end
 
     context "with repeat structure" do
@@ -192,9 +180,8 @@ describe HeadMusic::Content::Bar do
     end
 
     it "includes only the keys that are set" do
-      bar.meter = "3/4"
       bar.starts_repeat = true
-      expect(bar.to_h.keys).to contain_exactly("meter", "starts_repeat")
+      expect(bar.to_h.keys).to contain_exactly("starts_repeat")
     end
   end
 end

@@ -8,16 +8,16 @@ describe HeadMusic::Analysis::Motion do
     )
   end
 
-  let(:composition) { HeadMusic::Content::Composition.new }
+  let(:flow) { HeadMusic::Content::Flow.new }
   let(:upper_voice) do
-    composition.add_voice(role: :melody).tap do |voice|
+    flow.add_voice(role: :melody).tap do |voice|
       upper_voice_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end
     end
   end
   let(:lower_voice) do
-    composition.add_voice(role: :bass).tap do |voice|
+    flow.add_voice(role: :bass).tap do |voice|
       lower_voice_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end

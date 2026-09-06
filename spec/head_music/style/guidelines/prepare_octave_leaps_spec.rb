@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::PrepareOctaveLeaps do
   subject { assess(described_class, voice) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
-  let(:voice) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "C major") }
+  let(:voice) { flow.add_voice(role: :counterpoint) }
 
   context "with no notes" do
     it { is_expected.to be_adherent }

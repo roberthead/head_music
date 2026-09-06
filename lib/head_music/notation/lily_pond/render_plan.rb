@@ -1,13 +1,13 @@
 # A namespace for LilyPond-notation rendering helpers
 module HeadMusic::Notation::LilyPond
-  # The computed musical facts a Writer needs to serialize a composition:
+  # The computed musical facts a Writer needs to serialize a flow:
   # the token for every placement, on top of the measure signatures the base
   # plan tracks. Construction eagerly computes everything that can raise
   # on unmappable keys, durations, or alterations, so a RenderPlan that builds successfully
   # cannot fail assembly on those grounds.
   class RenderPlan < HeadMusic::Notation::RenderPlan
     def tokens_by_placement
-      @tokens_by_placement ||= composition.voices.flat_map(&:placements).to_h do |placement|
+      @tokens_by_placement ||= flow.voices.flat_map(&:placements).to_h do |placement|
         [placement, token(placement)]
       end
     end
@@ -19,8 +19,10 @@ module HeadMusic::Notation::LilyPond
       tokens_by_placement
     end
 
-    def key_value(key_signature)
-      KeyMapper.token(key_signature)
+    # LilyPond has no way to say "three flats read as dorian", so it renders
+    # what is printed at the clef.
+    def key_value(event)
+      KeyMapper.token(event.printed_key_signature)
     end
 
     # A tied chain within a placement joins its links with the tie mark;

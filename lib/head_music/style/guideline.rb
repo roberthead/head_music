@@ -17,7 +17,7 @@ class HeadMusic::Style::Guideline
   attr_reader :voice
 
   delegate(
-    :composition,
+    :flow,
     :highest_pitch,
     :lowest_pitch,
     :highest_notes,
@@ -32,7 +32,7 @@ class HeadMusic::Style::Guideline
     to: :voice
   )
 
-  delegate :key_signature, to: :composition
+  delegate :key_signature, to: :flow
   delegate :tonic_spelling, to: :key_signature
 
   def initialize(voice, **options)
@@ -114,8 +114,8 @@ class HeadMusic::Style::Guideline
   # 1.0 -- which is how an empty voice used to grade perfectly.
   def no_placements_mark
     HeadMusic::Style::Mark.new(
-      HeadMusic::Content::Position.new(composition, "1:1"),
-      HeadMusic::Content::Position.new(composition, "2:1"),
+      HeadMusic::Content::Position.new(flow, "1:1"),
+      HeadMusic::Content::Position.new(flow, "2:1"),
       fitness: 0
     )
   end

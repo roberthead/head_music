@@ -2,18 +2,18 @@ require "spec_helper"
 
 describe HeadMusic::Notation::LilyPond do
   describe ".render" do
-    let(:composition) do
-      composition = HeadMusic::Content::Composition.new(name: "Air")
-      composition.add_voice.place("1:1", :whole, "C4")
-      composition
+    let(:flow) do
+      flow = HeadMusic::Content::Flow.new(name: "Air")
+      flow.add_voice.place("1:1", :whole, "C4")
+      flow
     end
 
     it "renders a LilyPond source string" do
-      expect(described_class.render(composition)).to start_with %(\\version "2.24.0"\n)
+      expect(described_class.render(flow)).to start_with %(\\version "2.24.0"\n)
     end
 
     it "rejects options until the renderer defines some" do
-      expect { described_class.render(composition, transpose: 1) }.to raise_error(ArgumentError)
+      expect { described_class.render(flow, transpose: 1) }.to raise_error(ArgumentError)
     end
   end
 

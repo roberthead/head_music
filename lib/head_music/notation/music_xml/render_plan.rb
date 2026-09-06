@@ -1,6 +1,6 @@
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
-  # The computed musical facts a Writer needs to serialize a composition: the
+  # The computed musical facts a Writer needs to serialize a flow: the
   # divisions resolution, and the duration components and beams of every
   # notehead, on top of the measure signatures the base plan tracks.
   # Separating this model from the Writer lets the beam and meter-tracking
@@ -24,11 +24,11 @@ module HeadMusic::Notation::MusicXML
     }.freeze
 
     def divisions
-      @divisions ||= Divisions.for(composition)
+      @divisions ||= Divisions.for(flow)
     end
 
     def components_by_placement
-      @components_by_placement ||= composition.voices.flat_map(&:placements).to_h do |placement|
+      @components_by_placement ||= flow.voices.flat_map(&:placements).to_h do |placement|
         [placement, duration_writer.components(placement.rhythmic_value)]
       end
     end
@@ -38,7 +38,7 @@ module HeadMusic::Notation::MusicXML
     # a notehead's onset is its exact integer offset from the bar start.
     def beam_annotations
       @beam_annotations ||= {}.tap do |annotations|
-        composition.voices.each do |voice|
+        flow.voices.each do |voice|
           bar_numbers.each { |bar_number| annotate_bar(voice, bar_number, annotations) }
         end
       end
@@ -54,13 +54,15 @@ module HeadMusic::Notation::MusicXML
     private
 
     def precompute_eager_data
-      key_value(composition.key_signature)
+      key_value(flow.timeline.opening_key_signature_event)
       super
       components_by_placement
     end
 
-    def key_value(key_signature)
-      {fifths: KeyMapper.fifths(key_signature), mode: KeyMapper.mode(key_signature)}
+    # <fifths> is required and <mode> is optional, which is exactly the shape
+    # of the event: the signature always, the interpretation when there is one.
+    def key_value(event)
+      {fifths: event.signature, mode: KeyMapper.mode(event.tonal_context)}
     end
 
     def duration_writer

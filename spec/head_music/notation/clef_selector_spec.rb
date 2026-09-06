@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Notation::ClefSelector do
   subject(:clef) { described_class.for(voice) }
 
-  let(:composition) { HeadMusic::Content::Composition.new }
-  let(:voice) { composition.add_voice(role: "Melody") }
+  let(:flow) { HeadMusic::Content::Flow.new }
+  let(:voice) { flow.add_voice(role: "Melody") }
 
   context "when the voice sits high" do
     before do

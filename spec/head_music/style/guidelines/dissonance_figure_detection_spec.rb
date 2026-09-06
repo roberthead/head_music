@@ -22,8 +22,8 @@ describe HeadMusic::Style::Guidelines::DissonanceFigureDetection do
   let(:extra_note) { voice.notes.last }
   let(:host) { host_class.new(series) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
-  let(:voice) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "C major") }
+  let(:voice) { flow.add_voice(role: :counterpoint) }
 
   before do
     # A descending nota cambiata (C5 B4 G4 A4 B4) followed by an extra note.

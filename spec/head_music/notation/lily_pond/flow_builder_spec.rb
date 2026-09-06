@@ -1,10 +1,10 @@
 require "spec_helper"
 
-describe HeadMusic::Notation::LilyPond::CompositionBuilder do
+describe HeadMusic::Notation::LilyPond::FlowBuilder do
   def build(source)
     tokens = HeadMusic::Notation::LilyPond::Lexer.new(source).tokens
     document = HeadMusic::Notation::LilyPond::DocumentReader.new(tokens).document
-    described_class.new(document).composition
+    described_class.new(document).flow
   end
 
   def placements(source)
@@ -13,14 +13,14 @@ describe HeadMusic::Notation::LilyPond::CompositionBuilder do
 
   describe "identity" do
     it "seeds the name, composer, key, and meter" do
-      composition = build(%(\\header { title = "Air" composer = "A." } { \\key g \\major \\time 3/4 c'2. }))
-      expect([composition.name, composition.composer, composition.key_signature.to_s, composition.meter.to_s])
+      flow = build(%(\\header { title = "Air" composer = "A." } { \\key g \\major \\time 3/4 c'2. }))
+      expect([flow.name, flow.composer, flow.key_signature.to_s, flow.meter.to_s])
         .to eq ["Air", "A.", "1 sharp", "3/4"]
     end
 
     it "defaults to C major and 4/4, as LilyPond does" do
-      composition = build("{ c'1 }")
-      expect([composition.key_signature.to_s, composition.meter.to_s]).to eq ["no sharps or flats", "4/4"]
+      flow = build("{ c'1 }")
+      expect([flow.key_signature.to_s, flow.meter.to_s]).to eq ["no sharps or flats", "4/4"]
     end
 
     it "defaults the name" do
@@ -56,8 +56,8 @@ describe HeadMusic::Notation::LilyPond::CompositionBuilder do
     end
 
     it "gives each stream its own voice with its role" do
-      composition = build(%(<< \\new Staff \\with { instrumentName = "A" } { c'1 } \\new Staff { d'1 } >>))
-      expect(composition.voices.map { |voice| [voice.role, voice.pitches.map(&:to_s)] }).to eq [["A", %w[C4]], [nil, %w[D4]]]
+      flow = build(%(<< \\new Staff \\with { instrumentName = "A" } { c'1 } \\new Staff { d'1 } >>))
+      expect(flow.voices.map { |voice| [voice.role, voice.pitches.map(&:to_s)] }).to eq [["A", %w[C4]], [nil, %w[D4]]]
     end
 
     it "builds an empty voice for an empty staff" do
@@ -127,24 +127,24 @@ describe HeadMusic::Notation::LilyPond::CompositionBuilder do
 
   describe "key and meter changes" do
     it "applies a mid-piece key change to the bar" do
-      composition = build("{ c'1 | \\key d \\major d'1 | }")
-      expect([composition.key_signature_at(1).to_s, composition.key_signature_at(2).to_s]).to eq ["no sharps or flats", "2 sharps"]
+      flow = build("{ c'1 | \\key d \\major d'1 | }")
+      expect([flow.key_signature_at(1).to_s, flow.key_signature_at(2).to_s]).to eq ["no sharps or flats", "2 sharps"]
     end
 
     it "applies a mid-piece meter change to the bar" do
-      composition = build("{ c'1 | \\time 3/4 d'2. | }")
-      expect([composition.meter_at(1).to_s, composition.meter_at(2).to_s]).to eq ["4/4", "3/4"]
+      flow = build("{ c'1 | \\time 3/4 d'2. | }")
+      expect([flow.meter_at(1).to_s, flow.meter_at(2).to_s]).to eq ["4/4", "3/4"]
     end
 
     it "treats the same change in a second voice as a no-op" do
       source = "<< \\new Staff { c'1 | \\key d \\major \\time 3/4 d'2. | } \\new Staff { c1 | \\key d \\major \\time 3/4 d2. | } >>"
-      composition = build(source)
-      expect([composition.key_signature_at(2).to_s, composition.meter_at(2).to_s]).to eq ["2 sharps", "3/4"]
+      flow = build(source)
+      expect([flow.key_signature_at(2).to_s, flow.meter_at(2).to_s]).to eq ["2 sharps", "3/4"]
     end
 
     it "treats a restated key as a no-op that leaves the key in force" do
-      composition = build("{ \\key d \\major c'1 | \\key d \\major d'1 | }")
-      expect(composition.key_signature_at(2).to_s).to eq "2 sharps"
+      flow = build("{ \\key d \\major c'1 | \\key d \\major d'1 | }")
+      expect(flow.key_signature_at(2).to_s).to eq "2 sharps"
     end
 
     it "raises for a conflicting key at bar one" do

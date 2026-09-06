@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Content::Composition::SchemaValues do
+describe HeadMusic::Content::Flow::SchemaValues do
   subject(:values) { described_class.new }
 
   describe "#position" do
@@ -132,6 +132,100 @@ describe HeadMusic::Content::Composition::SchemaValues do
     it "raises with path context on a negative bar number" do
       expect { values.bar_number({"number" => -1}, 0) }
         .to raise_error(ArgumentError, /bars\[0\]: bar number must be an Integer of at least 0, got -1/)
+    end
+  end
+
+  describe "#tonal_context" do
+    it "reads a name into the context it names" do
+      expect(values.tonal_context("C dorian", "x")).to be_a HeadMusic::Rudiment::Mode
+    end
+
+    it "accepts no context at all" do
+      expect(values.tonal_context(nil, "x")).to be_nil
+    end
+
+    it "rejects a name that is not a key" do
+      expect { values.tonal_context("Q major", "x") }
+        .to raise_error ArgumentError, /x: unknown tonal context "Q major"/
+    end
+
+    # KeySignature.get raises rather than returning nil for some shapes, which
+    # is why the lookup is guarded rather than merely nil-checked.
+    it "rejects a value that is not nameable at all" do
+      expect { values.tonal_context({"key" => "C"}, "x") }
+        .to raise_error ArgumentError, /x: unknown tonal context/
+    end
+  end
+
+  describe "#fifths" do
+    it "accepts a count of fifths" do
+      expect(values.fifths(-3, "x")).to eq(-3)
+    end
+
+    it "accepts a theoretical signature past seven" do
+      expect(values.fifths(8, "x")).to eq 8
+    end
+
+    it "rejects a key signature name, which is an interpretation rather than a signature" do
+      expect { values.fifths("3 flats", "x") }
+        .to raise_error ArgumentError, /x: signature must be an Integer of fifths/
+    end
+  end
+
+  describe "#instrument" do
+    it "reads a name into an instrument" do
+      expect(values.instrument("piano", "x").name).to eq "piano"
+    end
+
+    it "accepts no instrument at all" do
+      expect(values.instrument(nil, "x")).to be_nil
+    end
+
+    it "rejects an unknown instrument" do
+      expect { values.instrument("kazoophone", "x") }
+        .to raise_error ArgumentError, /x: unknown instrument "kazoophone"/
+    end
+  end
+
+  describe "#staff_system" do
+    subject(:system) { values.staff_system({"bracket" => "brace", "staves" => [{"clef" => "treble_clef"}, {"clef" => "bass_clef"}]}, "x") }
+
+    it "reads the staves" do
+      expect(system.staves.map { |staff| staff.clef.to_s }).to eq ["treble clef", "bass clef"]
+    end
+
+    it "reads the bracket" do
+      expect(system.bracket).to eq :brace
+    end
+
+    it "accepts no staff system at all" do
+      expect(values.staff_system(nil, "x")).to be_nil
+    end
+
+    # A null clef is a staff whose clef was never authored, which the writers
+    # infer from a voice's range instead. It is a real state, not a missing one.
+    it "accepts a staff with no authored clef" do
+      expect(values.staff_system({"staves" => [{"clef" => nil}]}, "x").staves.first.clef).to be_nil
+    end
+
+    it "defaults the bracket to none" do
+      expect(values.staff_system({"staves" => [{"clef" => nil}]}, "x").bracket).to eq :none
+    end
+
+    it "rejects a staff system that is not a Hash" do
+      expect { values.staff_system(["treble"], "x") }
+        .to raise_error ArgumentError, /x: staff_system must be a Hash/
+    end
+
+    it "rejects an unknown bracket" do
+      expect { values.staff_system({"bracket" => "squiggle", "staves" => []}, "x") }
+        .to raise_error ArgumentError, /x: unknown bracket "squiggle"/
+    end
+
+    # Clef.get raises rather than returning nil for an unrecognized key.
+    it "rejects an unknown clef, naming the staff it was on" do
+      expect { values.staff_system({"staves" => [{"clef" => "bogus clef"}]}, "x") }
+        .to raise_error ArgumentError, /x\.staves\[0\]: unknown clef "bogus clef"/
     end
   end
 end

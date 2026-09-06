@@ -3,9 +3,9 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::AvoidCrossingVoices do
   subject { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:cantus_firmus) { composition.add_voice(role: :cantus_firmus) }
-  let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:cantus_firmus) { flow.add_voice(role: :cantus_firmus) }
+  let(:counterpoint) { flow.add_voice(role: :counterpoint) }
 
   it { expect(violation_text(described_class)).not_to be_empty }
 

@@ -3,14 +3,14 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::NoteCountPerBar do
   subject(:guideline) { assess(described_class, counterpoint, count: count, rhythmic_value: rhythmic_value) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:counterpoint) { flow.add_voice(role: :counterpoint) }
   let(:count) { 1 }
   let(:rhythmic_value) { :whole }
   let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4] }
 
   before do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
+    flow.add_voice(role: :cantus_firmus).tap do |voice|
       cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end
@@ -18,10 +18,10 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
   end
 
   context "without a cantus firmus voice" do
-    # The counterpoint belongs to its own composition with no other voice, so
+    # The counterpoint belongs to its own flow with no other voice, so
     # there is no cantus firmus and marks short-circuits to an empty array.
-    let(:solo_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-    let(:counterpoint) { solo_composition.add_voice(role: :counterpoint) }
+    let(:solo_flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+    let(:counterpoint) { solo_flow.add_voice(role: :counterpoint) }
 
     it { is_expected.to be_adherent }
 

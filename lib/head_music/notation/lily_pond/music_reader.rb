@@ -5,7 +5,7 @@ module HeadMusic::Notation::LilyPond
   # reads the \new Staff and \new Voice declarations inside, and a
   # MusicItemReader the notes, rests, and commands. Every other command
   # raises as unsupported rather than being skipped, because skipping a
-  # \transpose or a \tuplet would yield a plausible but wrong composition.
+  # \transpose or a \tuplet would yield a plausible but wrong flow.
   class MusicReader
     # The reader recurses per brace level and per \relative, \absolute, or
     # \new wrapper; the lexer and balance check do not, so nesting must be

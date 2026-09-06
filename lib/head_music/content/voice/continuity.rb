@@ -3,10 +3,10 @@ class HeadMusic::Content::Voice
   # A voice is continuous when its first placement starts a bar and every later
   # placement begins where the one before it ends.
   class Continuity
-    attr_reader :composition, :placements
+    attr_reader :flow, :placements
 
-    def initialize(composition, placements)
-      @composition = composition
+    def initialize(flow, placements)
+      @flow = flow
       @placements = placements
     end
 
@@ -41,7 +41,7 @@ class HeadMusic::Content::Voice
     end
 
     def bar_start_position(placement)
-      HeadMusic::Content::Position.new(composition, placement.position.bar_number, 1, 0)
+      HeadMusic::Content::Position.new(flow, placement.position.bar_number, 1, 0)
     end
   end
 end

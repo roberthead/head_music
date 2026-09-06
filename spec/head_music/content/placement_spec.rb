@@ -4,15 +4,15 @@ describe HeadMusic::Content::Placement do
   # rubocop:disable RSpec/MultipleMemoizedHelpers
   subject(:placement) { described_class.new(voice, position, rhythmic_value, pitch) }
 
-  let(:composition) { HeadMusic::Content::Composition.new.tap(&:add_voice) }
-  let(:voice) { composition.voices.first }
+  let(:flow) { HeadMusic::Content::Flow.new.tap(&:add_voice) }
+  let(:voice) { flow.voices.first }
   let(:position) { "2:2:240" }
   let(:pitch) { HeadMusic::Rudiment::Pitch.get("F#4") }
   let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.new(:eighth) }
 
-  its(:composition) { is_expected.to eq composition }
+  its(:flow) { is_expected.to eq flow }
   its(:voice) { is_expected.to eq voice }
-  its(:position) { is_expected.to eq HeadMusic::Content::Position.new(composition, "2:2:240") }
+  its(:position) { is_expected.to eq HeadMusic::Content::Position.new(flow, "2:2:240") }
   its(:pitch) { is_expected.to eq "F#4" }
 
   context "when pitch is omitted" do

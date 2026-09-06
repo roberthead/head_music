@@ -3,10 +3,10 @@ require "spec_helper"
 describe HeadMusic::Analysis::HarmonicInterval do # rubocop:disable RSpec/MultipleMemoizedHelpers
   subject(:harmonic_interval) { described_class.new(high_voice, low_voice, position) }
 
-  let(:composition) { HeadMusic::Content::Composition.new }
-  let!(:high_voice) { composition.add_voice(role: :melody) }
-  let!(:low_voice) { composition.add_voice(role: :bass_line) }
-  let(:position) { HeadMusic::Content::Position.new(composition, "2:1") }
+  let(:flow) { HeadMusic::Content::Flow.new }
+  let!(:high_voice) { flow.add_voice(role: :melody) }
+  let!(:low_voice) { flow.add_voice(role: :bass_line) }
+  let(:position) { HeadMusic::Content::Position.new(flow, "2:1") }
   let!(:high_note) { high_voice.place(position, :quarter, "D4") }
   let!(:low_note) { low_voice.place(position, :whole, "F3") }
 
@@ -34,7 +34,7 @@ describe HeadMusic::Analysis::HarmonicInterval do # rubocop:disable RSpec/Multip
     end
 
     it "is nil when the lower note belongs to neither compared voice" do
-      other_voice = composition.add_voice(role: :inner)
+      other_voice = flow.add_voice(role: :inner)
       foreign_note = HeadMusic::Content::Note.new("F3", :whole, other_voice, position)
       allow(harmonic_interval).to receive(:lower_note).and_return(foreign_note) # rubocop:disable RSpec/SubjectStub
       expect(harmonic_interval.pitch_orientation).to be_nil

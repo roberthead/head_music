@@ -1,8 +1,8 @@
-# Parses and renders ABC notation as HeadMusic::Content compositions
+# Parses and renders ABC notation as HeadMusic::Content flows
 module HeadMusic::Notation::ABC
-  # Renders a HeadMusic::Content::Composition as an ABC tune string.
+  # Renders a HeadMusic::Content::Flow as an ABC tune string.
   #
-  # Whole-composition problems (multiple voices, mid-piece meter or key
+  # Whole-flow problems (multiple voices, mid-piece meter or key
   # changes, positional gaps) raise before any string assembly, and #to_s
   # only returns a fully assembled document, so callers never receive a
   # truncated tune.
@@ -18,10 +18,10 @@ module HeadMusic::Notation::ABC
     include HeadMusic::Notation::PlacementValidation
     include HeadMusic::Notation::PreflightChecks
 
-    attr_reader :composition, :reference_number
+    attr_reader :flow, :reference_number
 
-    def initialize(composition, reference_number: 1)
-      @composition = composition
+    def initialize(flow, reference_number: 1)
+      @flow = flow
       @reference_number = reference_number
     end
 
@@ -35,39 +35,37 @@ module HeadMusic::Notation::ABC
     def validate!
       ensure_single_voice
       ensure_no_mid_piece_changes
-      ensure_contiguous_voices(composition)
+      ensure_contiguous_voices(flow)
     end
 
     def ensure_single_voice
-      return if composition.voices.length <= 1
+      return if flow.voices.length <= 1
 
       raise RenderError, "multi-voice ABC output is not supported"
     end
 
     def ensure_no_mid_piece_changes
-      composition.bars.each_with_index do |bar, index|
-        bar_number = composition.earliest_bar_number + index
-        if bar.meter
-          raise RenderError, "cannot render the meter change at bar #{bar_number} in ABC output"
-        end
-        next unless bar.key_signature
+      meter_change_bar = flow.meter_changes.keys.min
+      raise RenderError, "cannot render the meter change at bar #{meter_change_bar} in ABC output" if meter_change_bar
 
-        raise RenderError, "cannot render the key signature change at bar #{bar_number} in ABC output"
-      end
+      key_change_bar = flow.key_signature_changes.keys.min
+      return unless key_change_bar
+
+      raise RenderError, "cannot render the key signature change at bar #{key_change_bar} in ABC output"
     end
 
     def placements
-      voice = composition.voices.first
+      voice = flow.voices.first
       voice ? voice.placements : []
     end
 
     def header_lines
       [
         "X:#{reference_number}",
-        "T:#{composition.name}",
-        optional_field("C", composition.composer),
-        optional_field("O", composition.origin),
-        "M:#{composition.meter}",
+        "T:#{flow.name}",
+        optional_field("C", flow.composer),
+        optional_field("O", flow.origin),
+        "M:#{flow.meter}",
         unit_note_length_field,
         key_field
       ].compact
@@ -83,7 +81,7 @@ module HeadMusic::Notation::ABC
 
     def key_field
       # The parser requires K: to terminate the header.
-      "K:#{KeyMapper.abc_value(composition.key_signature)}"
+      "K:#{KeyMapper.abc_value(flow.key_signature)}"
     end
 
     def body_lines
@@ -101,7 +99,7 @@ module HeadMusic::Notation::ABC
     end
 
     def build_bar_strings
-      pitch_writer = PitchWriter.new(composition.key_signature)
+      pitch_writer = PitchWriter.new(flow.key_signature)
       duration_writer = DurationWriter.new(UNIT_NOTE_LENGTH)
       placements_by_bar.each_with_index.map do |bar_placements, index|
         # Accidental state must mirror what a re-parse accumulates bar by bar.
@@ -124,7 +122,7 @@ module HeadMusic::Notation::ABC
     # Suppresses the inter-token space only where the following placement was
     # authored as beamed to its predecessor (beam_break_before == false).
     # A true or nil flag keeps the space, so programmatic (nil-flag)
-    # compositions render with today's every-token spacing. Every bar token
+    # flows render with today's every-token spacing. Every bar token
     # (note, rest, or [..] chord) re-lexes unambiguously with no separator, so
     # dropping the space is safe.
     def join_bar_tokens(placements, tokens)

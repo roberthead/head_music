@@ -1,8 +1,8 @@
-class CompositionContext
-  attr_reader :composition, :source, :expected_messages
+class FlowContext
+  attr_reader :flow, :source, :expected_messages
 
-  delegate :cantus_firmus_voice, to: :composition
-  delegate :counterpoint_voice, to: :composition
+  delegate :cantus_firmus_voice, to: :flow
+  delegate :counterpoint_voice, to: :flow
   delegate :pitches, to: :cantus_firmus_voice, prefix: :cantus_firmus
   delegate :pitches, to: :counterpoint_voice, prefix: :counterpoint
 
@@ -11,19 +11,19 @@ class CompositionContext
   end
 
   def self.from_params(params)
-    composition = HeadMusic::Content::Composition.new(
+    flow = HeadMusic::Content::Flow.new(
       name: name_from_params(params),
       key_signature: HeadMusic::Rudiment::KeySignature.get(params[:key])
     )
-    add_voices(composition, params)
+    add_voices(flow, params)
     expected_messages = params[:expected_messages] || [params[:expected_message]].compact
-    new(composition: composition, source: params[:source], expected_messages: expected_messages)
+    new(flow: flow, source: params[:source], expected_messages: expected_messages)
   end
 
-  def self.add_voices(composition, params)
-    cantus_firmus = composition.add_voice(role: "cantus firmus")
+  def self.add_voices(flow, params)
+    cantus_firmus = flow.add_voice(role: "cantus firmus")
     add_pitches_to_voice(cantus_firmus, params[:cantus_firmus_pitches], params[:cantus_firmus_durations])
-    counterpoint = composition.add_voice(role: "counterpoint")
+    counterpoint = flow.add_voice(role: "counterpoint")
     add_pitches_to_voice(counterpoint, params[:counterpoint_pitches], params[:counterpoint_durations])
   end
 
@@ -43,14 +43,14 @@ class CompositionContext
     [pitches_string].flatten.map { |pitch| HeadMusic::Rudiment::Pitch.from_name(pitch) }
   end
 
-  def initialize(composition:, source: nil, expected_messages: [])
-    @composition = composition
+  def initialize(flow:, source: nil, expected_messages: [])
+    @flow = flow
     @source = source
     @expected_messages = expected_messages
   end
 
   def key
-    composition.key_signature
+    flow.key_signature
   end
 
   def description
@@ -65,11 +65,11 @@ class CompositionContext
   end
 
   def method_missing(method_name, *args, &block)
-    respond_to_missing?(method_name) ? composition.send(method_name, *args, &block) : super
+    respond_to_missing?(method_name) ? flow.send(method_name, *args, &block) : super
   end
 
   def respond_to_missing?(method_name, *_args)
-    composition.respond_to?(method_name)
+    flow.respond_to?(method_name)
   end
 
   private

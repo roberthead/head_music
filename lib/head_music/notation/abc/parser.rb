@@ -1,11 +1,11 @@
 # A namespace for ABC-notation parsing helpers
 module HeadMusic::Notation::ABC
-  # Interprets an ABC tune string as a HeadMusic::Content::Composition.
+  # Interprets an ABC tune string as a HeadMusic::Content::Flow.
   #
   # Everything that can be validated up front (blank input, header
   # problems, lexing errors, unsupported features) raises before the
-  # composition is constructed, so callers never receive a reference to
-  # a partially built composition.
+  # flow is constructed, so callers never receive a reference to
+  # a partially built flow.
   class Parser
     # Broken-rhythm scales: the mark's side gets the dot (x 3/2) and the
     # other side is halved.
@@ -21,8 +21,8 @@ module HeadMusic::Notation::ABC
       @start_line = start_line
     end
 
-    def composition
-      @composition ||= build_composition
+    def flow
+      @flow ||= build_flow
     end
 
     private
@@ -31,7 +31,7 @@ module HeadMusic::Notation::ABC
 
     # Per-voice interpretation state and note-assembly live in VoiceState.
 
-    def build_composition
+    def build_flow
       Preflight.ensure_input_present(@abc_string)
       @header = Header.new(@abc_string, start_line: @start_line)
       Preflight.reject_content_after_tune(header)
@@ -42,7 +42,7 @@ module HeadMusic::Notation::ABC
     end
 
     def interpret(tokens)
-      @building = HeadMusic::Content::Composition.new(
+      @building = HeadMusic::Content::Flow.new(
         name: header.title,
         key_signature: header.key_signature,
         meter: header.meter,

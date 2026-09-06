@@ -3,9 +3,9 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::SetAgainstAnotherVoice do
   subject { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:cantus_firmus) { composition.add_voice(role: :cantus_firmus) }
-  let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:cantus_firmus) { flow.add_voice(role: :cantus_firmus) }
+  let(:counterpoint) { flow.add_voice(role: :counterpoint) }
 
   its(:message) { is_expected.not_to be_empty }
 
@@ -32,8 +32,8 @@ describe HeadMusic::Style::Guidelines::SetAgainstAnotherVoice do
   context "when there is no companion voice at all" do
     subject { assess(described_class, solo) }
 
-    let(:solo_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-    let(:solo) { solo_composition.add_voice(role: :counterpoint) }
+    let(:solo_flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+    let(:solo) { solo_flow.add_voice(role: :counterpoint) }
 
     before { %w[A4 A4 G4 A4].each_with_index { |pitch, bar| solo.place("#{bar + 1}:1", :whole, pitch) } }
 
@@ -51,8 +51,8 @@ describe HeadMusic::Style::Guidelines::SetAgainstAnotherVoice do
   context "when the voice itself is empty and has no companion" do
     subject { assess(described_class, empty) }
 
-    let(:empty_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-    let(:empty) { empty_composition.add_voice(role: :counterpoint) }
+    let(:empty_flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+    let(:empty) { empty_flow.add_voice(role: :counterpoint) }
 
     it { is_expected.not_to be_adherent }
     its(:fitness) { is_expected.to eq 0 }

@@ -10,17 +10,26 @@ module LilyPondHelpers
   PITCH = /[a-g](?:is|es){0,2}(?:'+|,+)?/
   KEY_COMMAND = /\\key [a-g](?:is|es){0,2} \\[a-z]+/
   TIME_COMMAND = /\\time (\d+)\/(\d+)/
+  # A voice moves between the staves of its own part with \change Staff, which
+  # carries no duration and so is stripped like the other commands.
+  CHANGE_STAFF_COMMAND = /\\change Staff = "[^"]+"/
+  CLEF_COMMAND = /\\clef [a-z]+/
   CHORD = /<#{PITCH}(?: #{PITCH})*>#{DURATION}/
   SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|r#{DURATION}|R1\*\d+\/\d+)\z/
   WHOLE_BAR_REST = /R1\*(\d+)\/(\d+)/
   NAMED_DURATION_VALUES = {"\\breve" => 2r, "\\longa" => 4r, "\\maxima" => 8r}.freeze
 
-  def expect_structurally_valid_lilypond(source, bars:, voices:)
+  # `streams:` is how many bar-per-line music streams the document holds. It
+  # is the voice count for the one-staff-per-voice documents that make up most
+  # of the suite, but a part whose staves outnumber its voices carries a
+  # rest-filled stream for each staff nobody is written on, so the two part
+  # ways as soon as a piano appears.
+  def expect_structurally_valid_lilypond(source, bars:, voices:, streams: voices)
     expect(source.count("{")).to eq source.count("}")
     expect(source.scan("<<").length).to eq source.scan(">>").length
     expect(source).to end_with "\n"
     music_lines = bar_check_lines(source)
-    expect(music_lines.length).to eq bars * voices
+    expect(music_lines.length).to eq bars * streams
     music_lines.each { |line| expect_valid_music_line(line) }
     expect_full_bars(source)
   end
@@ -33,7 +42,7 @@ module LilyPondHelpers
 
   def expect_valid_music_line(line)
     content = line.sub(/ \|\z/, "")
-    content = content.gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
+    content = strip_commands(content)
     content = content.gsub(/#{CHORD}~?/o, "")
     expect(content.split).to all(match(SIMPLE_TOKEN))
   end
@@ -52,8 +61,13 @@ module LilyPondHelpers
     end
   end
 
+  def strip_commands(content)
+    content.gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
+      .gsub(CHANGE_STAFF_COMMAND, "").gsub(CLEF_COMMAND, "")
+  end
+
   def bar_duration(line)
-    content = line.sub(/ \|\z/, "").gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
+    content = strip_commands(line.sub(/ \|\z/, ""))
     whole_bar_rests = content.scan(WHOLE_BAR_REST)
     content = content.gsub(WHOLE_BAR_REST, "")
     rest_sum = whole_bar_rests.sum { |top, bottom| Rational(top.to_i, bottom.to_i) }

@@ -5,8 +5,8 @@ describe HeadMusic::Notation::MusicXML::Writer do
     1 + (rhythmic_value.tied_value ? chain_length(rhythmic_value.tied_value) : 0)
   end
 
-  def pitched_note_count(composition)
-    composition.voices.sum do |voice|
+  def pitched_note_count(flow)
+    flow.voices.sum do |voice|
       voice.placements.select(&:sounded?).sum { |placement| chain_length(placement.rhythmic_value) }
     end
   end
@@ -19,8 +19,8 @@ describe HeadMusic::Notation::MusicXML::Writer do
 
   describe "#to_s" do
     context "with a single-voice diatonic tune" do
-      let(:composition) { HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH) }
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "lists a single score part" do
         expect(xpath_count(document, "//part-list/score-part")).to eq 1
@@ -63,19 +63,19 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
-    context "with a small hand-built composition" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(
+    context "with a small hand-built flow" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(
           name: "Exercise", key_signature: "G major", meter: "4/4", composer: "Aloysius"
         )
-        voice = composition.add_voice
+        voice = flow.add_voice
         voice.place("1:1", :quarter, "G4")
         voice.place("1:2", :quarter, "A4")
         voice.place("1:3", :quarter, "B4")
         voice.place("1:4", :quarter, "A4")
         voice.place("2:1", :half, "G4")
         voice.place("2:3", :half, "D5")
-        composition
+        flow
       end
 
       let(:expected) do
@@ -171,13 +171,13 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       it "renders the exact golden document" do
-        expect(described_class.new(composition).to_s).to eq expected
+        expect(described_class.new(flow).to_s).to eq expected
       end
     end
 
     context "with a chromatic tune" do
-      let(:composition) { HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR) }
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "writes an alter element for the sharpened note in the first bar" do
         expect(xpath_texts(document, "//measure[@number='1']/note/pitch/alter")).to eq ["1"]
@@ -194,16 +194,16 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with rests" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Restful")
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Restful")
+        voice = flow.add_voice
         voice.place("1:1", :quarter, "C4")
         voice.place("1:2", :quarter)
         voice.place("1:3", :half)
         voice.place("2:1", :whole, "D4")
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "renders a rest element instead of a pitch" do
         expect(xpath_count(document, "//measure[@number='1']/note[rest]")).to eq 2
@@ -223,13 +223,13 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with lyrics" do
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       context "with a single-verse single word" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Sung")
-          composition.add_voice.place("1:1", :whole, "C4").sing("la")
-          composition
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Sung")
+          flow.add_voice.place("1:1", :whole, "C4").sing("la")
+          flow
         end
 
         it "renders the syllable text" do
@@ -246,13 +246,13 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       context "with a hyphenated word across three notes" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Kyrie")
-          voice = composition.add_voice
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Kyrie")
+          voice = flow.add_voice
           voice.place("1:1", :quarter, "C4").sing("Ky", hyphen_after: true)
           voice.place("1:2", :quarter, "D4").sing("ri", hyphen_after: true)
           voice.place("1:3", :half, "E4").sing("e")
-          composition
+          flow
         end
 
         it "derives begin, middle, and end from the hyphen booleans" do
@@ -261,12 +261,12 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       context "with a melisma (a syllable held over several notes)" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Amen")
-          voice = composition.add_voice
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Amen")
+          voice = flow.add_voice
           voice.place("1:1", :half, "C4").sing("A")
           voice.place("1:3", :half, "D4") # held: no syllable
-          composition
+          flow
         end
 
         it "emits a lyric only on the attacked syllable" do
@@ -275,14 +275,14 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       context "with a hyphenated word straddling a melisma gap" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Gapped")
-          voice = composition.add_voice
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Gapped")
+          voice = flow.add_voice
           voice.place("1:1", :quarter, "C4").sing("Ky", hyphen_after: true)
           voice.place("1:2", :quarter, "D4") # held: no syllable
           voice.place("1:3", :quarter, "E4").sing("ri", hyphen_after: true)
           voice.place("1:4", :quarter, "F4").sing("e")
-          composition
+          flow
         end
 
         it "derives syllabic from the previous sung note, skipping the gap" do
@@ -291,12 +291,12 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       context "with verses whose hyphenation differs" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Independent")
-          voice = composition.add_voice
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Independent")
+          voice = flow.add_voice
           voice.place("1:1", :quarter, "C4").sing("A", hyphen_after: true).sing("go", verse: 2)
           voice.place("1:2", :quarter, "D4").sing("men").sing("now", verse: 2)
-          composition
+          flow
         end
 
         it "derives each verse's syllabic independently" do
@@ -309,10 +309,10 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       context "with multiple verses on one note" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Verses")
-          composition.add_voice.place("1:1", :whole, "C4").sing("glo").sing("peace", verse: 2)
-          composition
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Verses")
+          flow.add_voice.place("1:1", :whole, "C4").sing("glo").sing("peace", verse: 2)
+          flow
         end
 
         it "renders one lyric per verse, numbered" do
@@ -326,10 +326,10 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       context "with a chord" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Chorale")
-          composition.add_voice.place("1:1", :whole, %w[C4 E4 G4]).sing("chord")
-          composition
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Chorale")
+          flow.add_voice.place("1:1", :whole, %w[C4 E4 G4]).sing("chord")
+          flow
         end
 
         it "renders the lyric only on the lead note of the chord" do
@@ -338,10 +338,10 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       context "with a tied note" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Tied")
-          composition.add_voice.place("1:1", "half tied to eighth", "C4").sing("held")
-          composition
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Tied")
+          flow.add_voice.place("1:1", "half tied to eighth", "C4").sing("held")
+          flow
         end
 
         it "renders the lyric only on the attack of the tied chain" do
@@ -350,10 +350,10 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       context "with markup characters in the text" do
-        let(:composition) do
-          composition = HeadMusic::Content::Composition.new(name: "Escaped")
-          composition.add_voice.place("1:1", :whole, "C4").sing("R&D <x>")
-          composition
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Escaped")
+          flow.add_voice.place("1:1", :whole, "C4").sing("R&D <x>")
+          flow
         end
 
         it "escapes the text so the document stays well-formed" do
@@ -363,17 +363,17 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with two voices of unequal lengths" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Duet")
-        soprano = composition.add_voice(role: "Soprano")
-        bass = composition.add_voice(role: "Bass")
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Duet")
+        soprano = flow.add_voice(role: "Soprano")
+        bass = flow.add_voice(role: "Bass")
         soprano.place("1:1", :whole, "E5")
         soprano.place("2:1", :whole, "D5")
         soprano.place("3:1", :whole, "C5")
         bass.place("1:1", :whole, "C3")
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "lists a score part per voice, named from the roles" do
         expect(xpath_texts(document, "//part-list/score-part/part-name")).to eq %w[Soprano Bass]
@@ -405,20 +405,20 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with mid-piece meter and key signature changes given as strings" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Changes")
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Changes")
+        voice = flow.add_voice
         %w[C4 D4 E4 F4].each_with_index { |pitch, index| voice.place("1:#{index + 1}", :quarter, pitch) }
         %w[G4 A4 B4 C5].each_with_index { |pitch, index| voice.place("2:#{index + 1}", :quarter, pitch) }
         voice.place("3:1", :eighth, "D5")
         voice.place("3:2", :eighth, "E5")
         voice.place("3:3", :eighth, "F#5")
         voice.place("4:1", :eighth, "D5")
-        composition.change_meter(3, "3/8")
-        composition.change_key_signature(3, "D major")
-        composition
+        flow.change_meter(3, "3/8")
+        flow.change_key_signature(3, "D major")
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "writes the changed key into the third measure" do
         fifths = xpath_text(document, "//measure[@number='3']/attributes/key/fifths")
@@ -445,16 +445,16 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a tied chain" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Tied")
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Tied")
+        voice = flow.add_voice
         value = HeadMusic::Rudiment::RhythmicValue.new(
           :half, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
         )
         voice.place("1:1", value, "C4")
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "renders one note per link of the chain" do
         expect(xpath_count(document, "//note")).to eq 2
@@ -484,10 +484,10 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a tie authored in ABC input" do
-      let(:composition) do
+      let(:flow) do
         HeadMusic::Notation::ABC.parse("X:1\nT:Tie\nM:6/8\nL:1/8\nK:C\nE3-E2 G |]\n")
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "renders the authored split as a dotted quarter, a quarter, and the following eighth" do
         expect(xpath_texts(document, "//note/type")).to eq %w[quarter quarter eighth]
@@ -503,16 +503,16 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a pickup bar written out in full with leading rests" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Pickup Study")
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Pickup Study")
+        voice = flow.add_voice
         voice.place("0:1", :half)
         voice.place("0:3", :quarter)
         voice.place("0:4", :quarter, "G3")
         voice.place("1:1", :whole, "C4")
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "marks the pickup measure implicit" do
         expect(xpath_count(document, "//measure[@number='0'][@implicit='yes']")).to eq 1
@@ -528,17 +528,45 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    # A key or meter change allocates its bar, and an allocated bar below the
+    # voices' earliest pulls the bar range down with it -- which is the only
+    # reason a measure 0 exists here at all, since no voice places anything in
+    # it. Pinned because the coupling is invisible: nothing in the writer
+    # mentions key changes, and a timeline that stops allocating bars would
+    # drop measure 0 silently.
+    context "with a key change in a bar no voice places into" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Pickup Key")
+        flow.add_voice.place("1:1", :whole, "C4")
+        flow.change_key_signature(0, "G major")
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "reaches back to the changed bar" do
+        expect(flow.earliest_bar_number).to eq 0
+      end
+
+      it "emits that bar as an implicit measure" do
+        expect(xpath_count(document, "//measure[@number='0'][@implicit='yes']")).to eq 1
+      end
+
+      it "carries the changed key signature" do
+        expect(xpath_texts(document, "//measure[@number='0']//fifths")).to eq %w[1]
+      end
+    end
+
     context "with a rest carrying a tied chain" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: "Rest Chain")
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Rest Chain")
+        voice = flow.add_voice
         value = HeadMusic::Rudiment::RhythmicValue.new(
           :half, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
         )
         voice.place("1:1", value)
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "renders one independent rest per link of the chain" do
         expect(xpath_count(document, "//note/rest")).to eq 2
@@ -552,40 +580,40 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a note that exactly fills more than one bar" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", "double whole", "C4")
-        composition
+        flow
       end
 
       it "raises a render error naming the position" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::MusicXML::RenderError,
           /the note at 1:1:000 crosses its barline/
         )
       end
     end
 
-    context "with a composition that has no voices" do
+    context "with a flow that has no voices" do
       it "raises a render error" do
-        composition = HeadMusic::Content::Composition.new
-        expect { described_class.new(composition).to_s }
+        flow = HeadMusic::Content::Flow.new
+        expect { described_class.new(flow).to_s }
           .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /no voices/)
       end
     end
 
     context "with a gap between placements" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", :quarter, "C4")
         voice.place("1:3", :quarter, "D4")
-        composition
+        flow
       end
 
       it "raises a render error naming the expected and found positions" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::MusicXML::RenderError,
           /expected a placement at 1:2:000, found one at 1:3:000/
         )
@@ -594,27 +622,27 @@ describe HeadMusic::Notation::MusicXML::Writer do
 
     context "with a first placement that starts mid-bar" do
       it "raises a render error" do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:2", :quarter, "C4")
-        expect { described_class.new(composition).to_s }
+        expect { described_class.new(flow).to_s }
           .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /first placement must start its bar/)
       end
     end
 
     context "with a note that crosses its barline" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", :quarter, "C4")
         voice.place("1:2", :quarter, "D4")
         voice.place("1:3", :quarter, "E4")
         voice.place("1:4", :whole, "F4")
-        composition
+        flow
       end
 
       it "raises a render error naming the position" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::MusicXML::RenderError,
           /the note at 1:4:000 crosses its barline/
         )
@@ -622,13 +650,13 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a chord placement" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", :half, %w[C4 E4 G4])
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "emits one note per pitched sound" do
         expect(xpath_count(document, "//measure[1]/note")).to eq 3
@@ -652,11 +680,11 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a chord, checking exact note markup" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", :half, %w[C4 E4])
-        composition
+        flow
       end
 
       # <chord/> must be the note's first child, before <pitch>; count-based
@@ -684,18 +712,18 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       it "places the chord element before the pitch on the upper note" do
-        expect(described_class.new(composition).to_s).to include(expected_notes)
+        expect(described_class.new(flow).to_s).to include(expected_notes)
       end
     end
 
     context "with a chord whose sounds are placed high to low" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", :half, %w[G4 C4 E4])
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "still emits the notes low to high" do
         expect(xpath_texts(document, "//measure[1]/note/pitch/step")).to eq %w[C E G]
@@ -703,13 +731,13 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a two-pitch chord placement" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", :half, %w[C4 E4])
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "emits two notes, the upper one carrying a chord element" do
         expect(xpath_count(document, "//measure[1]/note")).to eq 2
@@ -718,14 +746,14 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a measure mixing a chord and a single note" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(meter: "4/4")
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(meter: "4/4")
+        voice = flow.add_voice
         voice.place("1:1", :half, %w[C4 E4 G4])
         voice.place("1:3", :half, "D5")
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "emits the chord's stacked notes followed by the single note" do
         expect(xpath_texts(document, "//measure[1]/note/pitch/step")).to eq %w[C E G D]
@@ -741,16 +769,16 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a tied chord" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(meter: "4/4")
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(meter: "4/4")
+        voice = flow.add_voice
         value = HeadMusic::Rudiment::RhythmicValue.new(
           :half, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
         )
         voice.place("1:1", value, %w[C4 E4 G4])
-        composition
+        flow
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "renders a full chord stack for each tied link" do
         expect(xpath_count(document, "//measure[1]/note")).to eq 6
@@ -764,15 +792,15 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a single unpitched sound placement" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
-        composition
+        flow
       end
 
       it "raises a render error naming the sound and position" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::MusicXML::RenderError,
           /cannot render unpitched sound "snare drum" at 1:1.*percussion rendering is not yet supported/
         )
@@ -780,38 +808,38 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a mixed pitched and unpitched placement" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new
-        voice = composition.add_voice
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        voice = flow.add_voice
         voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
-        composition
+        flow
       end
 
       it "raises a render error naming the unpitched sound" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::MusicXML::RenderError,
           /cannot render unpitched sound "snare drum" at 1:1/
         )
       end
     end
 
-    context "with a control character in the composition name" do
+    context "with a control character in the flow name" do
       it "raises a render error" do
-        composition = HeadMusic::Content::Composition.new(name: "Bad#{7.chr}Name")
-        composition.add_voice
-        expect { described_class.new(composition).to_s }
+        flow = HeadMusic::Content::Flow.new(name: "Bad#{7.chr}Name")
+        flow.add_voice
+        expect { described_class.new(flow).to_s }
           .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /control characters/)
       end
     end
 
     context "with markup characters in the free-text fields" do
-      let(:composition) do
-        composition = HeadMusic::Content::Composition.new(name: 'Für <Elise> & "Friends"')
-        voice = composition.add_voice(role: "Bob's part")
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: 'Für <Elise> & "Friends"')
+        voice = flow.add_voice(role: "Bob's part")
         voice.place("1:1", :whole, "C4")
-        composition
+        flow
       end
-      let(:xml) { described_class.new(composition).to_s }
+      let(:xml) { described_class.new(flow).to_s }
 
       it "escapes the work title" do
         expect(xml).to include "<work-title>Für &lt;Elise&gt; &amp; &quot;Friends&quot;</work-title>"
@@ -827,17 +855,17 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     # Default (meter-derived) beaming applies when placements carry no authored
-    # beam flag, so these build the composition programmatically — ABC input is
+    # beam flag, so these build the flow programmatically — ABC input is
     # authoritative (every adjacency implies a join) and cannot express "no
     # opinion" for interior notes.
     context "with eight default-beamed eighth notes in 4/4" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new(meter: "4/4").tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
+          voice = flow.add_voice
           8.times { voice.place(voice.next_position, :eighth, "C4") }
         end
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "beams four two-note groups, one per beat" do
         expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
@@ -850,13 +878,13 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with six default-beamed eighth notes in 6/8" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new(meter: "6/8").tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "6/8").tap do |flow|
+          voice = flow.add_voice
           6.times { voice.place(voice.next_position, :eighth, "C4") }
         end
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "beams two three-note groups on the dotted-quarter boundary" do
         expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
@@ -868,23 +896,23 @@ describe HeadMusic::Notation::MusicXML::Writer do
     # even across a beat, and a space breaks the beam (the confirmed override).
     context "with authored ABC beam grouping in 4/4" do
       it "beams eight adjacent eighths as one group, spanning all beats" do
-        composition = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEFGABc |]\n")
-        document = parse_musicxml(described_class.new(composition).to_s)
+        flow = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEFGABc |]\n")
+        document = parse_musicxml(described_class.new(flow).to_s)
         expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
           .to eq %w[begin continue continue continue continue continue continue end]
       end
 
       it "breaks beams at authored spaces into one group per spaced pair" do
-        composition = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCD EF GA Bc |]\n")
-        document = parse_musicxml(described_class.new(composition).to_s)
+        flow = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCD EF GA Bc |]\n")
+        document = parse_musicxml(described_class.new(flow).to_s)
         expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
           .to eq %w[begin end begin end begin end begin end]
       end
     end
 
     context "with a quarter note breaking two eighth runs in 4/4" do
-      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:4/4\nL:1/8\nK:C\nCD E2 FG A2 |]\n") }
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:4/4\nL:1/8\nK:C\nCD E2 FG A2 |]\n") }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "emits no beam on the quarter notes" do
         expect(xpath_count(document, "//measure[@number='1']/note[type='quarter']/beam")).to eq 0
@@ -897,8 +925,8 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a rest breaking two eighth runs in 4/4" do
-      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:4/4\nL:1/8\nK:C\nCD z2 EF z2 |]\n") }
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:4/4\nL:1/8\nK:C\nCD z2 EF z2 |]\n") }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "emits no beam on the rests" do
         expect(xpath_count(document, "//measure[@number='1']/note[rest]/beam")).to eq 0
@@ -911,15 +939,15 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a chord of default-beamed eighths" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new(meter: "2/4").tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "2/4").tap do |flow|
+          voice = flow.add_voice
           [%w[C4 E4], %w[D4 F4], %w[E4 G4], %w[F4 A4]].each do |pitches|
             voice.place(voice.next_position, :eighth, pitches)
           end
         end
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "beams only the lead note of each chord, never a chord member" do
         expect(xpath_count(document, "//measure[@number='1']/note[chord]/beam")).to eq 0
@@ -929,8 +957,8 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with a lone eighth followed by a longer note" do
-      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:2/4\nL:1/8\nK:C\nC F3 |]\n") }
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nT:Beams\nM:2/4\nL:1/8\nK:C\nC F3 |]\n") }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "emits no beam on the lone eighth" do
         expect(xpath_count(document, "//measure[@number='1']/note/beam")).to eq 0
@@ -953,9 +981,9 @@ describe HeadMusic::Notation::MusicXML::Writer do
     # per link, and beams must attach per-component while the tie renders
     # alongside. The authored beam_break_before flag applies to link 0 only.
     context "with a tied chain of two eighths inside one beat group" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new(meter: "2/4").tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "2/4").tap do |flow|
+          voice = flow.add_voice
           value = HeadMusic::Rudiment::RhythmicValue.new(
             :eighth, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
           )
@@ -963,7 +991,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
           voice.place(voice.next_position, :quarter, "B4")
         end
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "beams the two tied links together, spanning both components" do
         expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
@@ -989,15 +1017,15 @@ describe HeadMusic::Notation::MusicXML::Writer do
     # in the placement list. A dotted-quarter rest makes the grouping
     # non-periodic: onset-0 grouping would beam a different pair.
     context "with a pickup bar whose beamed notes fall after a dotted-quarter rest" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new(meter: "4/4").tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
+          voice = flow.add_voice
           voice.place("0:1", HeadMusic::Rudiment::RhythmicValue.new(:quarter, dots: 1))
           5.times { voice.place(voice.next_position, :eighth, "G4") }
           voice.place("1:1", :whole, "C4")
         end
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "marks the pickup measure implicit" do
         expect(xpath_count(document, "//measure[@number='0'][@implicit='yes']")).to eq 1
@@ -1017,13 +1045,13 @@ describe HeadMusic::Notation::MusicXML::Writer do
     # 3/8 is a simple meter whose whole bar is one beam group (the beam group
     # unit is the dotted quarter), so three eighths beam as a single group.
     context "with three default-beamed eighths in 3/8" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new(meter: "3/8").tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "3/8").tap do |flow|
+          voice = flow.add_voice
           3.times { voice.place(voice.next_position, :eighth, "C4") }
         end
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "beams all three eighths as one whole-bar group" do
         expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
@@ -1037,13 +1065,13 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with eight default-beamed eighths, checking group adjacency in 4/4" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new(meter: "4/4").tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
+          voice = flow.add_voice
           8.times { voice.place(voice.next_position, :eighth, "C4") }
         end
       end
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
       let(:beams) { xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']") }
 
       it "abuts a group's end directly against the next group's begin, never continuing" do
@@ -1054,8 +1082,8 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
 
     context "with authored back-to-back four-note groups in 4/4" do
-      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCCCC CCCC |]\n") }
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCCCC CCCC |]\n") }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "honors the authored mid-bar space, beaming two four-note groups" do
         expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
@@ -1066,8 +1094,8 @@ describe HeadMusic::Notation::MusicXML::Writer do
     # An authored space can subdivide within a single dotted-quarter pulse: the
     # lone note between two beamed runs gets no beam at all.
     context "with an authored split below the pulse in 6/8" do
-      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nM:6/8\nL:1/8\nK:C\nab c def |]\n") }
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nM:6/8\nL:1/8\nK:C\nab c def |]\n") }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "beams the pair, leaves the lone note bare, and beams the triple" do
         expect(xpath_texts(document, "//measure[@number='1']/note/beam[@number='1']"))
@@ -1082,8 +1110,8 @@ describe HeadMusic::Notation::MusicXML::Writer do
     # A dotted-eighth + sixteenth pair must survive the full writer path with
     # both beam levels intact: the sixteenth ends level 1 and hooks level 2.
     context "with a dotted-eighth and sixteenth pair in 2/4" do
-      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nM:2/4\nL:1/16\nK:C\nC3D |]\n") }
-      let(:document) { parse_musicxml(described_class.new(composition).to_s) }
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nM:2/4\nL:1/16\nK:C\nC3D |]\n") }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
 
       it "carries the level-1 end and the level-2 backward hook on the sixteenth" do
         expect(xpath_text(document, "//measure[@number='1']/note[2]/beam[@number='1']")).to eq "end"
@@ -1101,9 +1129,9 @@ describe HeadMusic::Notation::MusicXML::Writer do
         "CHROMATIC_AIR" => ABCFixtures::CHROMATIC_AIR
       }.each do |fixture_name, abc|
         it "renders one pitched note per tied-chain link of #{fixture_name}" do
-          composition = HeadMusic::Notation::ABC.parse(abc)
-          document = parse_musicxml(described_class.new(composition).to_s)
-          expect(xpath_count(document, "//note[pitch]")).to eq pitched_note_count(composition)
+          flow = HeadMusic::Notation::ABC.parse(abc)
+          document = parse_musicxml(described_class.new(flow).to_s)
+          expect(xpath_count(document, "//note[pitch]")).to eq pitched_note_count(flow)
         end
       end
     end

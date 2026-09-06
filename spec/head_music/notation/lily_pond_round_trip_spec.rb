@@ -50,31 +50,31 @@ end
 # automating the export story's toolchain-acceptance proof, and the real
 # lilypond binary as an oracle for every input shape the parser accepts.
 describe HeadMusic::Notation::LilyPond do
-  def non_ascii_composition
-    composition = HeadMusic::Content::Composition.new(name: "Ægir", composer: "Dvořák")
-    composition.add_voice.place("1:1", :whole, "C4")
-    composition
+  def non_ascii_flow
+    flow = HeadMusic::Content::Flow.new(name: "Ægir", composer: "Dvořák")
+    flow.add_voice.place("1:1", :whole, "C4")
+    flow
   end
 
-  def chords_and_ties_composition
-    composition = HeadMusic::Content::Composition.new(name: "Chords", meter: "4/4")
-    voice = composition.add_voice
+  def chords_and_ties_flow
+    flow = HeadMusic::Content::Flow.new(name: "Chords", meter: "4/4")
+    voice = flow.add_voice
     voice.place("1:1", "half tied to eighth", %w[C4 E4 G4])
     voice.place("1:3:480", :eighth, "D4")
     voice.place("1:4", :quarter, "E4")
-    composition
+    flow
   end
 
   # A short second voice, so the writer pads its second bar with R1*5/4.
-  def five_four_composition
-    composition = HeadMusic::Content::Composition.new(name: "Five", meter: "5/4")
-    upper = composition.add_voice
+  def five_four_flow
+    flow = HeadMusic::Content::Flow.new(name: "Five", meter: "5/4")
+    upper = flow.add_voice
     upper.place("1:1", :whole, "C4")
     upper.place("1:5", :quarter, "D4")
     upper.place("2:1", :whole, "E4")
     upper.place("2:5", :quarter, "F4")
-    composition.add_voice.place("1:1", "whole tied to quarter", "C3")
-    composition
+    flow.add_voice.place("1:1", "whole tied to quarter", "C3")
+    flow
   end
 
   describe "round trips of the writer's fixtures" do
@@ -85,16 +85,16 @@ describe HeadMusic::Notation::LilyPond do
     end
 
     it "round-trips a non-ASCII header byte for byte" do
-      reparsed = expect_lily_pond_round_trip(non_ascii_composition)
+      reparsed = expect_lily_pond_round_trip(non_ascii_flow)
       expect([reparsed.name, reparsed.composer]).to eq ["Ægir", "Dvořák"]
     end
 
     it "round-trips chords and tied values" do
-      expect_lily_pond_round_trip(chords_and_ties_composition)
+      expect_lily_pond_round_trip(chords_and_ties_flow)
     end
 
     it "reads the writer's whole-bar padding in an odd meter as a rest of the bar's length" do
-      reparsed = expect_lily_pond_round_trip(five_four_composition)
+      reparsed = expect_lily_pond_round_trip(five_four_flow)
       expect(reparsed.voices.last.placements.last.to_s).to eq "whole tied to quarter rest at 2:1:000"
     end
   end

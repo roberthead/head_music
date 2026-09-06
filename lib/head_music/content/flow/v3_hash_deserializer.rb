@@ -1,12 +1,26 @@
-class HeadMusic::Content::Composition
-  # Rebuilds a composition from a schema v3 hash by replaying the public
-  # builder API in dependency order: meter and key changes first (position
-  # strings roll counts and ticks over via the meter map), then placements,
-  # then repeat flags (a pickup-bar flag needs its bar allocated), then
-  # comments. Raw values are validated at the boundary by SchemaValues so
-  # corrupted input raises ArgumentError with path context instead of
-  # silently deserializing wrong.
-  class HashDeserializer
+class HeadMusic::Content::Flow
+  # Rebuilds a flow from a **schema v3** hash by replaying the public builder
+  # API in dependency order: meter and key changes first (position strings roll
+  # counts and ticks over via the meter map), then placements, then repeat
+  # flags (a pickup-bar flag needs its bar allocated), then comments. Raw
+  # values are validated at the boundary by SchemaValues so corrupted input
+  # raises ArgumentError with path context instead of silently deserializing
+  # wrong.
+  #
+  # Retained read-only so that an application holding persisted v3 documents
+  # can migrate them by reading and re-saving, rather than by loading two gem
+  # versions at once. The earlier schema bumps shipped a migration recipe
+  # instead -- v2 to v3 was "rename each placement's pitches key to sounds",
+  # doable in SQL against a jsonb column -- but v3 to v4 restructures the
+  # container, so no equivalent recipe can be written.
+  #
+  # Every concept it replays has a home in the new model: a v3 voice becomes a
+  # part holding one voice, which is what Flow#add_voice already mints.
+  #
+  # Deleted in 22.0.0.
+  class V3HashDeserializer
+    SCHEMA_VERSION = 3
+
     def initialize(hash)
       raise ArgumentError, "expected a Hash, got #{hash.class}" unless hash.is_a?(Hash)
 
@@ -14,12 +28,12 @@ class HeadMusic::Content::Composition
       validate_schema_version
     end
 
-    def composition
-      @composition ||= build_base_composition.tap do |composition|
-        apply_bar_changes(composition)
-        build_voices(composition)
-        apply_repeat_flags(composition)
-        add_comments(composition)
+    def flow
+      @flow ||= build_base_flow.tap do |flow|
+        apply_bar_changes(flow)
+        build_voices(flow)
+        apply_repeat_flags(flow)
+        add_comments(flow)
       end
     end
 
@@ -35,16 +49,11 @@ class HeadMusic::Content::Composition
       version = hash["schema_version"]
       return if version.is_a?(Integer) && version == SCHEMA_VERSION
 
-      message = "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})"
-      if version == 2
-        message += "; migrate v2 \"pitches\" arrays to v3 \"sounds\" arrays " \
-          "(pitch strings unchanged; unpitched sounds are {\"unpitched\" => name_key} objects)"
-      end
-      raise ArgumentError, message
+      raise ArgumentError, "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})"
     end
 
-    def build_base_composition
-      HeadMusic::Content::Composition.new(
+    def build_base_flow
+      HeadMusic::Content::Flow.new(
         name: hash["name"],
         key_signature: values.key_signature(hash["key_signature"], "key_signature"),
         meter: values.meter(hash["meter"], "meter"),
@@ -57,20 +66,20 @@ class HeadMusic::Content::Composition
       @bar_hashes ||= Array(hash["bars"])
     end
 
-    def apply_bar_changes(composition)
+    def apply_bar_changes(flow)
       bar_hashes.each_with_index do |bar_hash, index|
         number = values.bar_number(bar_hash, index)
         path = "bars[#{index}]"
         key_signature = values.key_signature(bar_hash["key_signature"], path)
         meter = values.meter(bar_hash["meter"], path)
-        composition.change_key_signature(number, key_signature) if key_signature
-        composition.change_meter(number, meter) if meter
+        flow.change_key_signature(number, key_signature) if key_signature
+        flow.change_meter(number, meter) if meter
       end
     end
 
-    def build_voices(composition)
+    def build_voices(flow)
       Array(hash["voices"]).each_with_index do |voice_hash, voice_index|
-        voice = composition.add_voice(role: voice_hash["role"])
+        voice = flow.add_voice(role: voice_hash["role"])
         Array(voice_hash["placements"]).each_with_index do |placement_hash, placement_index|
           path = "voices[#{voice_index}].placements[#{placement_index}]"
           position = values.position(placement_hash["position"], path)
@@ -85,11 +94,11 @@ class HeadMusic::Content::Composition
       end
     end
 
-    def apply_repeat_flags(composition)
+    def apply_repeat_flags(flow)
       bar_hashes.each_with_index do |bar_hash, index|
         next unless repeat_state?(bar_hash)
 
-        bar = composition.bars(values.bar_number(bar_hash, index)).last
+        bar = flow.bars(values.bar_number(bar_hash, index)).last
         bar.starts_repeat = true if bar_hash["starts_repeat"]
         ends_repeat = bar_hash["ends_repeat_after_num_plays"]
         bar.ends_repeat_after_num_plays = ends_repeat if ends_repeat
@@ -98,11 +107,11 @@ class HeadMusic::Content::Composition
       end
     end
 
-    def add_comments(composition)
+    def add_comments(flow)
       Array(hash["comments"]).each_with_index do |comment_hash, index|
         raw_position = comment_hash["position"]
         position = values.position(raw_position, "comments[#{index}]") if raw_position
-        composition.add_comment(comment_hash["text"], position)
+        flow.add_comment(comment_hash["text"], position)
       end
     end
 

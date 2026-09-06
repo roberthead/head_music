@@ -1,6 +1,6 @@
 module HeadMusic
   module Notation
-    # Whole-composition checks shared by the notation writers' preflights.
+    # Whole-flow checks shared by the notation writers' preflights.
     # Each check raises before any output is assembled, so a caller that
     # passes them all can serialize without failing on these grounds; each
     # includer supplies its own format-specific RenderError subclass
@@ -8,15 +8,15 @@ module HeadMusic
     module PreflightChecks
       private
 
-      def ensure_contiguous_voices(composition)
-        composition.voices.each do |voice|
+      def ensure_contiguous_voices(flow)
+        flow.voices.each do |voice|
           gap = voice.first_gap
           raise_gap_error(voice, *gap) if gap
         end
       end
 
-      def ensure_notes_within_barlines(composition)
-        composition.voices.each do |voice|
+      def ensure_notes_within_barlines(flow)
+        flow.voices.each do |voice|
           voice.placements.each do |placement|
             next unless placement.next_position > placement.position.start_of_next_bar
 

@@ -1,11 +1,11 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
-  # Replays a Document's voice streams onto a fresh composition.
+  # Replays a Document's voice streams onto a fresh flow.
   #
   # Every placement lands at the voice's next position, so bar checks and
   # key or meter commands are verified against where the music actually
   # is, the way LilyPond verifies them at compile time.
-  class CompositionBuilder
+  class FlowBuilder
     TICKS_PER_WHOLE_NOTE = HeadMusic::Rudiment::Rhythm::PPQN * 4
 
     # One voice's place in the replay: the events it has left, and the
@@ -43,8 +43,8 @@ module HeadMusic::Notation::LilyPond
       @document = document
     end
 
-    def composition
-      @composition ||= build
+    def flow
+      @flow ||= build
     end
 
     private
@@ -53,12 +53,12 @@ module HeadMusic::Notation::LilyPond
       streams = document.streams
       raise ParseError, "LilyPond input contains no music" if streams.empty?
 
-      composition = HeadMusic::Content::Composition.new(
+      flow = HeadMusic::Content::Flow.new(
         name: document.title, composer: document.composer,
         key_signature: document.first_key_signature, meter: document.first_meter
       )
-      replay(streams.map { |stream| Cursor.new(stream, composition.add_voice(role: stream.role)) })
-      composition
+      replay(streams.map { |stream| Cursor.new(stream, flow.add_voice(role: stream.role)) })
+      flow
     end
 
     # The voices advance together rather than one after another, so a
@@ -105,7 +105,7 @@ module HeadMusic::Notation::LilyPond
         raise unsupported("A whole-bar rest must start a bar", event)
       end
 
-      meter = voice.composition.meter_at(position.bar_number)
+      meter = voice.flow.meter_at(position.bar_number)
       bar_fraction = Rational(meter.top_number, meter.bottom_number)
       rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(event.fraction)
       unless event.fraction == bar_fraction && rhythmic_value
@@ -119,15 +119,15 @@ module HeadMusic::Notation::LilyPond
     # each change in every voice); a different explicit value at that bar,
     # or any disagreement with the seed at bar one, is a conflict.
     def apply_change(event, voice, command, attribute, at_reader, changer)
-      composition = voice.composition
+      flow = voice.flow
       value = event.public_send(attribute)
       bar_number = change_bar_number(event, voice, command)
-      return if composition.public_send(at_reader, bar_number) == value
-      if bar_number == 1 || composition.bars(bar_number).last.public_send(attribute)
+      return if flow.public_send(at_reader, bar_number) == value
+      if bar_number == 1 || flow.public_send(:"#{attribute}_change_at", bar_number)
         raise ParseError.new("Conflicting #{command} at bar #{bar_number}", line_number: event.line)
       end
 
-      composition.public_send(changer, bar_number, value)
+      flow.public_send(changer, bar_number, value)
     end
 
     # Key and meter live on bars, so a change is only representable at a

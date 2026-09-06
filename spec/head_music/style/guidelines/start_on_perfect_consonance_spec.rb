@@ -3,11 +3,11 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::StartOnPerfectConsonance do
   subject { assess(described_class, voice) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
-  let(:voice) { composition.add_voice(role: "counterpoint") }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "C major") }
+  let(:voice) { flow.add_voice(role: "counterpoint") }
 
   before do
-    composition.add_voice(role: "cantus firmus").tap do |voice|
+    flow.add_voice(role: "cantus firmus").tap do |voice|
       voice.place("1:1", :whole, "C4")
     end
   end
@@ -81,9 +81,9 @@ describe HeadMusic::Style::Guidelines::StartOnPerfectConsonance do
   end
 
   context "when the intervals are compound" do
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "G mixolydian") }
+    let(:flow) { HeadMusic::Content::Flow.new(key_signature: "G mixolydian") }
     let(:voice) do
-      composition.add_voice(role: "counterpoint").tap do |voice|
+      flow.add_voice(role: "counterpoint").tap do |voice|
         counterpoint_pitches.each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1:0", :whole, pitch)
         end
@@ -93,7 +93,7 @@ describe HeadMusic::Style::Guidelines::StartOnPerfectConsonance do
     let(:counterpoint_pitches) { %w[D5 C5 G A G G F# G] }
 
     before do
-      composition.add_voice(role: "cantus firmus").tap do |voice|
+      flow.add_voice(role: "cantus firmus").tap do |voice|
         cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1:0", :whole, pitch)
         end

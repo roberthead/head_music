@@ -61,8 +61,8 @@ describe HeadMusic::Style::Guidelines::EndOnTonic do
 
       before do
         voice.place("1:1", :whole, "C")
-        composition = voice.composition
-        allow(composition).to receive(:key_signature).and_return(mock_key_signature)
+        flow = voice.flow
+        allow(flow).to receive(:key_signature).and_return(mock_key_signature)
       end
 
       it "handles nil tonic_spelling gracefully" do

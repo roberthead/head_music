@@ -4,11 +4,11 @@ describe HeadMusic::Style::Guidelines::FirstBarQuarterNotes do
   subject { assess(described_class, counterpoint) }
 
   context "with duple meter (4/4)" do
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-    let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+    let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+    let(:counterpoint) { flow.add_voice(role: :counterpoint) }
 
     before do
-      composition.add_voice(role: :cantus_firmus).tap do |voice|
+      flow.add_voice(role: :cantus_firmus).tap do |voice|
         %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1", :whole, pitch)
         end
@@ -85,11 +85,11 @@ describe HeadMusic::Style::Guidelines::FirstBarQuarterNotes do
   end
 
   context "with triple meter (3/4)" do
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "3/4") }
-    let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+    let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian", meter: "3/4") }
+    let(:counterpoint) { flow.add_voice(role: :counterpoint) }
 
     before do
-      composition.add_voice(role: :cantus_firmus).tap do |voice|
+      flow.add_voice(role: :cantus_firmus).tap do |voice|
         %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           voice.place("#{bar}:1", :dotted_half, pitch)
         end

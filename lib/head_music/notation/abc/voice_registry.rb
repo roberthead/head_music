@@ -9,8 +9,8 @@ module HeadMusic::Notation::ABC
   class VoiceRegistry
     include Enumerable
 
-    def initialize(composition, key_signature, duration_resolver)
-      @composition = composition
+    def initialize(flow, key_signature, duration_resolver)
+      @flow = flow
       @key_signature = key_signature
       @duration_resolver = duration_resolver
       @states = {}
@@ -31,7 +31,7 @@ module HeadMusic::Notation::ABC
 
     def state(role)
       @states[role] ||= VoiceState.new(
-        @composition.add_voice(role: role),
+        @flow.add_voice(role: role),
         PitchBuilder.new(@key_signature),
         @duration_resolver
       )
@@ -39,7 +39,7 @@ module HeadMusic::Notation::ABC
 
     # Body music before any V: line falls into a default unnamed voice, created
     # here on demand so a leading V: line doesn't force an empty one into the
-    # composition.
+    # flow.
     def current
       @current ||= state(nil)
     end

@@ -24,7 +24,7 @@ describe HeadMusic::Style::Guides::SalzerSchachterCantusFirmus do
   context "with Fux examples" do
     fux_cantus_firmus_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.cantus_firmus_voice }
+        let(:voice) { example.flow.cantus_firmus_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }
@@ -42,7 +42,7 @@ describe HeadMusic::Style::Guides::SalzerSchachterCantusFirmus do
   context "with Clendinning examples" do
     clendinning_cantus_firmus_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.cantus_firmus_voice }
+        let(:voice) { example.flow.cantus_firmus_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }
@@ -60,7 +60,7 @@ describe HeadMusic::Style::Guides::SalzerSchachterCantusFirmus do
   context "with Davis and Lybbert examples" do
     davis_and_lybbert_cantus_firmus_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.cantus_firmus_voice }
+        let(:voice) { example.flow.cantus_firmus_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }
@@ -78,7 +78,7 @@ describe HeadMusic::Style::Guides::SalzerSchachterCantusFirmus do
   context "with Schoenberg examples" do
     schoenberg_cantus_firmus_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.cantus_firmus_voice }
+        let(:voice) { example.flow.cantus_firmus_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }

@@ -3,12 +3,12 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::SuspensionTreatment do
   subject { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:counterpoint) { flow.add_voice(role: :counterpoint) }
   let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
   before do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
+    flow.add_voice(role: :cantus_firmus).tap do |voice|
       cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end
@@ -116,7 +116,7 @@ describe HeadMusic::Style::Guidelines::SuspensionTreatment do
     before { counterpoint.place("1:3", :whole, "A4") }
 
     it "cannot be prepared" do
-      cantus_firmus_voice = composition.voices.detect(&:cantus_firmus?)
+      cantus_firmus_voice = flow.voices.detect(&:cantus_firmus?)
       first_cf_note = cantus_firmus_voice.notes.first
       cp_note = counterpoint.notes.first
       expect(analyzer.send(:prepared?, cp_note, first_cf_note)).to be false
@@ -124,8 +124,8 @@ describe HeadMusic::Style::Guidelines::SuspensionTreatment do
   end
 
   context "without a cantus firmus" do
-    let(:bare_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-    let(:counterpoint) { bare_composition.add_voice(role: :counterpoint) }
+    let(:bare_flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+    let(:counterpoint) { bare_flow.add_voice(role: :counterpoint) }
 
     before { counterpoint.place("1:1", :whole, "A4") }
 

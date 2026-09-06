@@ -1,25 +1,25 @@
-# Renders a composition to ABC, re-parses the output, and asserts that the
+# Renders a flow to ABC, re-parses the output, and asserts that the
 # round trip preserves the musical content.
 #
 # Durations are compared through DurationWriter's exact Rational arithmetic
 # rather than RhythmicValue's Float relative_value.
 module ABCRoundTripHelper
-  def expect_abc_round_trip(composition)
-    rendered = HeadMusic::Notation::ABC.render(composition)
+  def expect_abc_round_trip(flow)
+    rendered = HeadMusic::Notation::ABC.render(flow)
     reparsed = HeadMusic::Notation::ABC.parse(rendered)
 
-    expect(reparsed.key_signature).to eq composition.key_signature
-    expect(reparsed.meter.to_s).to eq composition.meter.to_s
-    expect(reparsed.name).to eq composition.name
-    expect(reparsed.composer).to eq composition.composer
+    expect(reparsed.key_signature).to eq flow.key_signature
+    expect(reparsed.meter.to_s).to eq flow.meter.to_s
+    expect(reparsed.name).to eq flow.name
+    expect(reparsed.composer).to eq flow.composer
 
-    expect_equivalent_placements(reparsed, composition)
+    expect_equivalent_placements(reparsed, flow)
   end
 
   private
 
-  def expect_equivalent_placements(reparsed, composition)
-    original_placements = composition.voices.flat_map(&:placements)
+  def expect_equivalent_placements(reparsed, flow)
+    original_placements = flow.voices.flat_map(&:placements)
     reparsed_placements = reparsed.voices.flat_map(&:placements)
     expect(reparsed_placements.length).to eq original_placements.length
 

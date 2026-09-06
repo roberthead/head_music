@@ -86,7 +86,7 @@ FUX_FIRST_SPECIES_HARMONY_EXAMPLES = [
 ].freeze
 
 def fux_first_species_harmony_examples
-  FUX_FIRST_SPECIES_HARMONY_EXAMPLES.map { |params| CompositionContext.from_params(params) }
+  FUX_FIRST_SPECIES_HARMONY_EXAMPLES.map { |params| FlowContext.from_params(params) }
 end
 
 describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
@@ -122,7 +122,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
   # and before the promotion it graded 0.8300 -- a B -- because it satisfies
   # both of the structural primaries perfectly.
   describe "a line doubled at the octave" do
-    let(:voice) { doubled_octave_examples[0].composition.counterpoint_voice }
+    let(:voice) { doubled_octave_examples[0].flow.counterpoint_voice }
 
     # Two expectations, because neither is enough alone.
     #
@@ -164,7 +164,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
   # The promotion sharpens rather than depresses: the published line it is
   # measured against is untouched by it.
   describe "Fux chapter one figure 5 as published" do
-    let(:voice) { fux_first_species_examples[0].composition.counterpoint_voice }
+    let(:voice) { fux_first_species_examples[0].flow.counterpoint_voice }
 
     its(:fitness) { is_expected.to eq 1.0 }
   end
@@ -172,7 +172,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
   context "with Fux examples" do
     fux_first_species_harmony_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.counterpoint_voice }
+        let(:voice) { example.flow.counterpoint_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }
@@ -190,7 +190,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
   context "with Clendinning examples" do
     clendinning_first_species_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.counterpoint_voice }
+        let(:voice) { example.flow.counterpoint_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }
@@ -208,7 +208,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesHarmony do
   context "with Davis and Lybbert examples" do
     davis_and_lybbert_first_species_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.counterpoint_voice }
+        let(:voice) { example.flow.counterpoint_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }

@@ -4,8 +4,8 @@ describe HeadMusic::Style::Guidelines::LargeLeaps do
   subject(:guideline) { assess(described_class, voice, **options) }
 
   let(:options) { {} }
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:voice) { HeadMusic::Content::Voice.new(composition: composition) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:voice) { HeadMusic::Content::Voice.new(flow: flow) }
 
   def place_pitches(pitches)
     pitches.each.with_index(1) do |pitch, bar|
@@ -248,7 +248,7 @@ describe HeadMusic::Style::Guidelines::LargeLeaps do
       end
 
       context "when the leap is recovered by skip spelling a triad" do
-        let(:composition) { HeadMusic::Content::Composition.new(key_signature: "F lydian") }
+        let(:flow) { HeadMusic::Content::Flow.new(key_signature: "F lydian") }
 
         before do
           # FUX example
@@ -306,7 +306,7 @@ describe HeadMusic::Style::Guidelines::LargeLeaps do
       end
 
       context "when recovered by skip spelling a triad" do
-        let(:composition) { HeadMusic::Content::Composition.new(key_signature: "F lydian") }
+        let(:flow) { HeadMusic::Content::Flow.new(key_signature: "F lydian") }
 
         before do
           # FUX example

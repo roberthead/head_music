@@ -27,7 +27,7 @@ class HeadMusic::Style::Guidelines::NoteFillsFinalBar < HeadMusic::Style::Guidel
   end
 
   def bar_duration
-    meter = composition.meter_at(final_bar_number)
+    meter = flow.meter_at(final_bar_number)
     meter.count_unit.relative_value * meter.counts_per_bar
   end
 end
