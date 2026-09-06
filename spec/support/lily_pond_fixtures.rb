@@ -27,7 +27,8 @@ module LilyPondFixtures
       right_hand.place("#{bar}:1", :whole, "E5")
       left_hand.place("#{bar}:1", :whole, "C3")
     end
-    left_hand.cross_to(treble, from: 2, through: 3)
+    left_hand.cross_to(treble, from: 2)
+    left_hand.cross_to(bass, from: 4)
     flow
   end
 

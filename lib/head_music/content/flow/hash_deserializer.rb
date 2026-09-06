@@ -91,10 +91,8 @@ class HeadMusic::Content::Flow
       end
     end
 
-    # Assignments are replayed as bare map entries rather than through
-    # #cross_to, because the serialized form is the map -- a span's two events
-    # are already two entries, and reconstructing spans to re-derive them would
-    # be inventing information the document does not carry.
+    # Assignments are replayed as bare map entries, which is what they are: a
+    # crossing is one event, and the serialized form is the map.
     def apply_staff_assignments(voice, part, voice_hash)
       each_change(voice_hash["staff_assignments"], "staff_assignments") do |bar_number, assignment, _path|
         staff = part.staff_system_at(bar_number).staves[assignment["staff"].to_i]

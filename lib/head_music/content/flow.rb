@@ -16,6 +16,7 @@ class HeadMusic::Content::Flow
 
   delegate :meter_at, :key_signature_at, :tempo_at, to: :timeline
   delegate :meter_changes, :key_signature_changes, :tempo_changes, :meter_change_at, :tempo_change_at, to: :timeline
+  delegate :remove_meter_change, :remove_key_signature_change, :remove_tempo_change, to: :timeline
 
   def self.from_h(hash)
     HashDeserializer.new(hash).flow

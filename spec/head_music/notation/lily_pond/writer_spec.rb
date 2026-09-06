@@ -85,6 +85,94 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it_behaves_like "a compilable document"
     end
 
+    # Soprano and alto sharing a staff is the ordinary two-voice-one-part
+    # shape, and it renders as one staff, as MusicXML renders the same part.
+    context "with two voices sharing one staff" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Shared Staff").tap do |flow|
+          part = flow.add_part(instrument: "piano")
+          soprano = part.add_voice(role: "soprano")
+          alto = part.add_voice(role: "alto")
+          (1..2).each do |bar|
+            soprano.place("#{bar}:1", :whole, "E5")
+            alto.place("#{bar}:1", :whole, "C5")
+          end
+        end
+      end
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "emits one staff" do
+        expect(rendered.scan("\\new Staff").length).to eq 1
+      end
+
+      it "names the staff for the part rather than either voice" do
+        expect(rendered).to match(/\\new Staff \\with \{ instrumentName = "piano" \} <</i)
+      end
+
+      it "emits a voice per voice in parallel" do
+        expect(rendered.scan("\\new Voice").length).to eq 2
+      end
+
+      it "carries a stream per voice" do
+        expect_structurally_valid_lilypond(rendered, bars: 2, voices: 2)
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    # A tacet chair keeps its line in the score rather than vanishing.
+    context "with a part that has no voices" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Tacet").tap do |flow|
+          flow.add_voice(role: "Flute").place("1:1", :whole, "E5")
+          flow.add_part(instrument: "oboe")
+        end
+      end
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "emits a staff for the voiceless part, named for its instrument" do
+        expect(rendered.scan("\\new Staff").length).to eq 2
+        expect(rendered).to match(/instrumentName = "oboe"/i)
+      end
+
+      it "fills it with whole-bar rests under a full opening" do
+        expect(rendered).to include "\\clef treble", "\\key c \\major", "\\time 4/4"
+        expect(bar_check_lines(rendered).last).to eq "R1*4/4 |"
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with an authored clef other than treble or bass" do
+      def rendered_with(clef)
+        HeadMusic::Content::Flow.new(name: "Clef").tap do |flow|
+          part = flow.add_part(staff_system: HeadMusic::Content::StaffSystem.single_staff(clef: clef))
+          part.add_voice.place("1:1", :whole, "C4")
+        end.to_lilypond
+      end
+
+      it "writes the alto clef as alto" do
+        expect(rendered_with(:alto_clef)).to include "\\clef alto"
+      end
+
+      # :tenor_clef is an alias of the vocal tenor G clef; the C clef on the
+      # fourth line is :tenor_c_clef.
+      it "writes the tenor C clef as tenor" do
+        expect(rendered_with(:tenor_c_clef)).to include "\\clef tenor"
+      end
+
+      # The octave clefs carry characters LilyPond accepts only inside quotes.
+      it "writes the vocal tenor clef as a quoted octave treble" do
+        expect(rendered_with(:vocal_tenor_clef)).to include %(\\clef "treble_8")
+      end
+
+      it "writes every clef the gem knows" do
+        names = %i[french_violin_clef double_treble_clef soprano_clef mezzo_soprano_clef baritone_c_clef baritone_clef sub_bass_clef neutral_clef]
+        expect(names.map { |name| rendered_with(name)[/\\clef (\S+)/, 1] })
+          .to eq %w[french "treble^8" soprano mezzosoprano baritone varbaritone subbass percussion]
+      end
+    end
+
     context "with a mid-piece key and meter change" do
       let(:flow) { LilyPondFixtures.key_and_meter_change }
       let(:rendered) { described_class.new(flow).to_s }

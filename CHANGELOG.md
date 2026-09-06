@@ -36,12 +36,13 @@ This is a breaking release. `Composition` is removed rather than deprecated, and
 - **Voices orthogonal to staves.** A voice belongs to a part and *has* a staff at any given moment, so a piano voice can start in the bass staff and cross into the treble without leaving its part:
 
   ```ruby
-  left_hand.cross_to(treble_staff, from: 5, through: 8)
+  left_hand.cross_to(treble_staff, from: 5)
+  left_hand.cross_to(bass_staff, from: 9)
   left_hand.staff_at(6)   # => the treble staff
   left_hand.staff_at(9)   # => back to the bass staff
   ```
 
-  A span of one bar is a single cross-staff note; there is no note-level special case. (`through:` rather than `until:`, which is a Ruby keyword.) After a span the voice returns to the staff it was on, not to the part's first staff, so a left hand that rises for four bars comes back down.
+  A crossing is one event, not a span: a left hand that rises for four bars and comes back down is two crossings, each authored where it happens, and a single cross-staff note is a crossing and, a bar later, another. There is no note-level special case, and nothing to overlap.
 
   MusicXML renders the part as one `<score-part>` with `<staves>`, a numbered `<clef>` per staff, `<voice>` per voice separated by `<backup>`, and `<staff>` per note. LilyPond renders a `\new PianoStaff` (or `\new StaffGroup` for a bracket) with one named `\new Staff` per staff and `\change Staff` at the span boundaries. Both elements are omitted for a one-voice, one-staff part, so existing output is unchanged.
 
@@ -53,12 +54,13 @@ This is a breaking release. `Composition` is removed rather than deprecated, and
 
   Fifths rather than a `KeySignature` because a `KeySignature` cannot be built from a bare signature: `KeySignature.get("3 flats")` raises, so naming three flats means naming an interpretation of it, after which the stored tonic and quality are wrong whenever the interpretation disagrees. Fifths is also exactly what MusicXML stores.
 
-- **`HeadMusic::Rudiment::Key.for_fifths(n)`** — the conventional reading of a signature that carries no interpretation of its own, for the two consumers that cannot proceed without a tonic: LilyPond's `\key`, and the `Diatonic` guideline. Signatures themselves are unbounded, since a theoretical key such as G♯ major counts each double accidental twice and reaches eight; the table stops at ±7, because past that there is no conventional major key to name.
+- **`HeadMusic::Rudiment::Key.for_fifths(n)`** — the conventional reading of a signature that carries no interpretation of its own, for the two consumers that cannot proceed without a tonic: LilyPond's `\key`, and the `Diatonic` guideline. Signatures themselves are unbounded, since a theoretical key such as G♯ major counts each double accidental twice and reaches eight; the table stops at ±7, because past that there is no conventional major key to name. So past ±7 a `tonal_context` is required, and `change_key_signature` raises at authoring time rather than leaving every reader that needs a tonic to raise later.
 
 - **`HeadMusic::Content::CantusFirmus::Example#to_flow(rhythmic_value:, meter:)`.** An example was a catalog datum — a pitch list with a mode and a citation — that nothing in the gem turned into music. It now realizes as a standalone flow with one part, no player, and one note per bar. Rhythm and meter are the realization's choice rather than the datum's, so they are parameters.
 
 - **`Project#to_h` / `.from_h` / `#to_json` / `.from_json`**, and `Flow.from_v3_h`. Schema 4 round-trips players, flows, parts, voices, staff assignments, instrument changes, staff systems and their changes, clef changes, tempo and tempo changes, subtick-precise positions, and repeat structure, and round-trips a standalone flow as its own document. A tempo serializes as `{"beat_value", "beats_per_minute"}` rather than as a `"quarter = 72"` string, because `Tempo.get` reads the number by stripping non-digits and would turn 72.5 into 725.
 - **`Flow.new(tempo:)`, `Flow#tempo`, and `Flow#change_tempo`**, alongside the meter and key signature equivalents. A tempo change allocates its bar the way a meter change does, and accepts a `Tempo`, a tempo name, or a `"quarter = 96"` string.
+- **`Flow#remove_meter_change`, `#remove_key_signature_change`, and `#remove_tempo_change`** un-author a change, answering the removed value. 20.x cleared a change by passing `nil` to `change_*`; that now raises an `ArgumentError` naming the remover, rather than reaching a rudiment getter that would raise something unrelated.
 
 - `Flow#position`, `Content::Position#subtick`, `Voice#assign_staff`, `Part#instrument_at` / `#staff_system_at` / `#instruments`, `Player#instruments` / `#primary_instrument` (derived from the parts, so they cannot drift from the instrument changes authored on them).
 
@@ -91,6 +93,16 @@ This is a breaking release. `Composition` is removed rather than deprecated, and
 - **`Time::MusicalPosition#<=>` was not a total order across a meter change.** It converted both positions to elapsed subticks through a single stored meter, assuming every prior bar had it, so a position in bar 4 of 4/4 compared *greater* than one in bar 5 of 7/8. Positions now compare their component tuple lexically, which needs no meter at all.
 
   Both bugs were latent in 20.x only because `Time` was unused by `Content`. They are on the path every note travels now.
+
+- **A `Content::Position` rolled across a meter change kept the origin bar's count unit.** The tick carry ran under the meter of the bar the position started in, so a quarter after `1:4:480` in 4/4 landed in a 6/8 bar spelled `2:1:480`, where the same instant is `2:2:000`; the two compared unequal, so a placement rolled into the bar and one authored there did not merge. A position is now carried again under the destination bar's meter until it lands in a bar it was carried under.
+
+- **MusicXML `<backup>` rewound a whole measure regardless of what the preceding voice wrote.** In a multi-voice part whose earlier voice ended mid-bar, the cursor went negative -- invalid MusicXML, with no error. It now rewinds by the duration actually written. Whole-measure filler rests also carry `<voice>` and `<staff>`, where before a reader stacked them onto voice 1 of staff 1 and left a grand staff's bass staff empty.
+
+- **Every clef the gem knows renders to LilyPond** by its LilyPond name -- alto, tenor, soprano, mezzosoprano, baritone, varbaritone, french, subbass, percussion, and the quoted octave clefs `"treble_8"` and `"treble^8"` -- where an authored clef other than bass had rendered as treble.
+
+- **A part with no voices renders**, in both writers, as a staff of whole-measure rests under its clef, key, and time, so a tacet chair keeps its line in the score. LilyPond had dropped the part; MusicXML had raised `NoMethodError`.
+
+- **A one-staff part holding several voices renders in LilyPond as one staff** with a `\new Voice` per voice in parallel, named for its part, as MusicXML already rendered it. It had rendered as one staff per voice.
 
 ## [20.1.0] - 2026-09-05
 

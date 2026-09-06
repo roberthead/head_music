@@ -598,38 +598,45 @@ describe HeadMusic::Content::Voice do
       expect(flow.add_part.add_voice.staff_assignments).to be_empty
     end
 
-    context "with a span in the other staff" do
+    # A crossing is one event. A left hand that rises for four bars and comes
+    # back down is two of them, each authored where it happens.
+    context "with a rise into the other staff and a return" do
       before do
         left_hand.cross_to(bass, from: 1)
-        left_hand.cross_to(treble, from: 5, through: 8)
+        left_hand.cross_to(treble, from: 5)
+        left_hand.cross_to(bass, from: 9)
       end
 
-      it "reports a different staff on either side of the crossing" do
+      it "reports a different staff on either side of each crossing" do
         expect(clefs_through(1..10))
           .to eq %w[bass bass bass bass treble treble treble treble bass bass]
       end
 
-      # Not "the part's first staff": a left hand that rises for four bars
-      # comes back down to the staff it was on, which is what it was written
-      # on before the span.
-      it "returns to the staff it was on before the span" do
-        expect(left_hand.staff_at(9)).to be bass
-      end
-
-      it "records an event at each boundary" do
+      it "records an event at each crossing" do
         expect(left_hand.staff_assignments.keys).to eq [1, 5, 9]
       end
     end
 
-    # A single cross-staff note is a span of one bar. No note-level case.
-    it "crosses for a single bar" do
-      left_hand.cross_to(bass, from: 3, through: 3)
+    # A single cross-staff note is a crossing and, a bar later, another. No
+    # note-level case.
+    it "crosses for a single bar with two events" do
+      left_hand.cross_to(bass, from: 3)
+      left_hand.cross_to(treble, from: 4)
       expect(clefs_through(2..4)).to eq %w[treble bass treble]
     end
 
-    it "crosses for the rest of the flow when given no end" do
+    it "stays on the new staff for the rest of the flow" do
       left_hand.cross_to(bass, from: 3)
       expect(clefs_through(2..99).uniq).to eq %w[treble bass]
+    end
+
+    # Nothing to overlap: a later crossing at a bar already crossed in simply
+    # replaces it, and crossings in other bars are untouched.
+    it "lets a later crossing replace an earlier one in the same bar" do
+      left_hand.cross_to(bass, from: 3)
+      left_hand.cross_to(bass, from: 7)
+      left_hand.cross_to(treble, from: 3)
+      expect([left_hand.staff_assignments.keys, clefs_through(2..8)]).to eq [[3, 7], %w[treble treble treble treble treble bass bass]]
     end
 
     it "refuses a staff the part does not have" do

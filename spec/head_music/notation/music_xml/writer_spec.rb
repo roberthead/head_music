@@ -404,6 +404,83 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    # A tacet chair in one movement is an ordinary shape for a project, and it
+    # keeps its line in the score rather than crashing the writer.
+    context "with a part that has no voices" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Tacet")
+        flow.add_voice(role: "Flute").place("1:1", :whole, "E5")
+        flow.add_part(instrument: "oboe")
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "renders without raising" do
+        expect { described_class.new(flow).to_s }.not_to raise_error
+      end
+
+      it "fills the voiceless part with whole-measure rests" do
+        expect(xpath_count(document, "//part[@id='P2']/measure/note/rest[@measure='yes']")).to eq 1
+      end
+
+      it "gives the voiceless part a treble clef" do
+        expect(xpath_text(document, "//part[@id='P2']/measure[1]/attributes/clef/sign")).to eq "G"
+      end
+    end
+
+    # <backup> rewinds by what the previous voice wrote, which is less than a
+    # measure when that voice ended mid-bar; rewinding a whole measure would
+    # leave the cursor before the barline.
+    context "with two voices in one part where the first ends mid-bar" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Uneven")
+        part = flow.add_part
+        upper = part.add_voice(role: "upper")
+        lower = part.add_voice(role: "lower")
+        upper.place("1:1", :whole, "E5")
+        upper.place("2:1", :quarter, "D5")
+        lower.place("1:1", :whole, "C4")
+        lower.place("2:1", :whole, "B3")
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "rewinds a whole measure where the first voice filled it" do
+        expect(xpath_text(document, "//measure[@number='1']/backup/duration")).to eq "4"
+      end
+
+      it "rewinds only what the first voice wrote where it ended early" do
+        expect(xpath_text(document, "//measure[@number='2']/backup/duration")).to eq "1"
+      end
+    end
+
+    # A filler rest belongs to its voice and staff as much as a note does, or
+    # a reader stacks it onto voice 1 of staff 1 and leaves the bass staff empty.
+    context "with a grand-staff part whose left hand ends a bar early" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Short Left Hand")
+        system = HeadMusic::Content::StaffSystem.grand_staff
+        piano = flow.add_part(instrument: "piano", staff_system: system)
+        right_hand = piano.add_voice(role: "right hand")
+        left_hand = piano.add_voice(role: "left hand")
+        left_hand.cross_to(system.staves.last, from: 1)
+        right_hand.place("1:1", :whole, "E5")
+        right_hand.place("2:1", :whole, "D5")
+        left_hand.place("1:1", :whole, "C3")
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+      let(:filler_rest) { REXML::XPath.first(document, "//measure[@number='2']/note[rest[@measure='yes']]") }
+
+      it "stamps the filler rest with its voice" do
+        expect(filler_rest.elements["voice"].text).to eq "2"
+      end
+
+      it "stamps the filler rest with its staff" do
+        expect(filler_rest.elements["staff"].text).to eq "2"
+      end
+    end
+
     context "with mid-piece meter and key signature changes given as strings" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Changes")
