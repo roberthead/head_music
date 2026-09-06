@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+The [organizing content](https://github.com/roberthead/head_music/tree/main/user-stories/epics/organizing-content.md) epic's first story. `Content::Composition` was the document, the movement, the timeline, and the credits at once, and its `Voice` was a bare melodic line with no instrument, no staff, and no performer — a shape adequate for two-voice species counterpoint and for almost nothing else. Content is now `Project` → `Flow` → `Part` → `Voice` → `Placement`, and a voice can cross between the staves of its part.
+
+This is a breaking release. `Composition` is removed rather than deprecated, and the serialization schema goes to 4.
+
+**Migrating from 20.1.0**, in the order a consumer will hit them:
+
+1. **`HeadMusic::Content::Composition` is `HeadMusic::Content::Flow`.** The constant is gone, not aliased. `Flow.new` takes the same keyword arguments, and `#add_voice`, `#voices`, `#bars`, `#to_h`, `#to_abc`, `#to_lilypond`, and `#to_musicxml` all behave as they did, so most call sites need only the constant renamed. `#add_voice` now mints a `Part` per voice behind the scenes; every document this gem produced before still renders byte-identically.
+
+2. **`LilyPond.parse` and `ABC.parse` return a `Flow`.** So do `ABC::BookParser#flows` (was `#compositions`) and `LilyPond::FlowBuilder` (was `CompositionBuilder`). These changed return type five days after the LilyPond reader shipped in 20.1.0; they are named individually here because a reader scanning for "Composition" will not otherwise notice that `parse` moved.
+
+3. **Persisted schema-3 documents need one read-and-re-save.** `Flow.from_h` rejects a v3 hash with an error naming `Flow.from_v3_h`, which is retained read-only for this reason and removed in 22.0.0. The previous bumps shipped a key-rename recipe — v2 to v3 was "rename each placement's `pitches` key to `sounds`", doable in SQL against a jsonb column — but v3 to v4 restructures the container, so no equivalent recipe can be written. **20.1.0 is the last version that reads v3 directly.**
+
+4. **`HeadMusic::Content::Staff` is a different class under the same name.** The 20.x `Content::Staff` was dead code, referenced by nothing but its own spec, and has been deleted; the constant is now the instance-layer staff described below. The new one takes only keyword arguments, so `Content::Staff.new(:bass_clef)` raises `ArgumentError` rather than quietly reading the clef as something else — but the readers changed too: `#default_clef` is `#clef` (and answers `nil` where none was authored, rather than falling back to treble), and `#instrument` is `#instruments_staff`, which references the catalog staff instead of an instrument.
+
+5. **`Time::MusicalPosition#beat` is `#count`**, and `FIRST_BEAT` is `FIRST_COUNT`. `Meter` already distinguished the two — 6/8 has two beats and six counts — so a position was misnamed against the gem's own vocabulary.
+
+6. **Grades do not move.** Every guide assesses every voice of the pinned corpus to the fitness it produced before the refactor began, which is asserted rather than assumed. Stored fitness from 20.x remains comparable.
+
+### Added
+
+- **`HeadMusic::Content::Project`, `Flow`, `Part`, and `Player`.** A `Project` is the document: players and flows. A `Flow` is a continuous span of music owning its own timeline — a movement, a song, a cue, an exercise. A `Player` is a chair in the project ("Flute 1", "Piano"); a `Part` is that chair's music within one flow. Pairing them that way is what makes "the flute plays in movements 1 and 3" expressible without a nullable join — there is simply no `Part` for that player in movement 2 — and what makes an instrument change *within* a part honest, since conceptually it is still the same player.
+
+  **Containment is total; context is optional.** A voice is always in a part, always in a flow, so `voice.part.staff_system_at(bar)` never needs a nil check. What is optional is the upward reference: `Flow#project` and `Part#player` may be absent. A flow with no project is how a chunk of music lives outside a document — a cantus firmus, a scale, a parsed snippet — and it renders to ABC, LilyPond, and MusicXML with no project at all. `Project#add_flow` adopts such a flow, minting a player for each part that has none.
+
+- **Voices orthogonal to staves.** A voice belongs to a part and *has* a staff at any given moment, so a piano voice can start in the bass staff and cross into the treble without leaving its part:
+
+  ```ruby
+  left_hand.cross_to(treble_staff, from: 5, through: 8)
+  left_hand.staff_at(6)   # => the treble staff
+  left_hand.staff_at(9)   # => back to the bass staff
+  ```
+
+  A span of one bar is a single cross-staff note; there is no note-level special case. (`through:` rather than `until:`, which is a Ruby keyword.) After a span the voice returns to the staff it was on, not to the part's first staff, so a left hand that rises for four bars comes back down.
+
+  MusicXML renders the part as one `<score-part>` with `<staves>`, a numbered `<clef>` per staff, `<voice>` per voice separated by `<backup>`, and `<staff>` per note. LilyPond renders a `\new PianoStaff` (or `\new StaffGroup` for a bracket) with one named `\new Staff` per staff and `\change Staff` at the span boundaries. Both elements are omitted for a one-voice, one-staff part, so existing output is unchanged.
+
+- **`HeadMusic::Content::Staff` and `StaffSystem`** — the instance layer. A content staff has a line count, a clef map, and an optional reference to an `Instruments::Staff` for percussion mapping; the catalog class already owns the position-to-instrument mappings, so the instance layer references rather than re-implements it. A `StaffSystem` is an ordered set of staves with a brace, a bracket, or neither; `StaffSystem.grand_staff` and `.single_staff` are the two shapes almost everything uses.
+
+- **`HeadMusic::Time::EventMap`** — an ordered list of `(position, value)` events answering what is in force at a position. Everything that changes partway through a flow is this shape, and it is now written once: meter, tempo, and key signature on `Flow::Timeline`; instrument and staff system on `Part`; clef on `Staff`; staff assignment on `Voice`. Lookup is a binary search over tuples computed at insert. `#change_at` answers whether a change *starts* at a position, as distinct from what is in force there, which is what a writer needs in order to decide whether to print a signature.
+
+- **`HeadMusic::Time::KeySignatureEvent`**, carrying a signature as fifths and, optionally, the interpretation of it. Neither derives the other. A signature underdetermines its interpretation — two sharps is D major, B minor, E dorian, or A mixolydian — and an interpretation does not fix its signature either, because the two legitimately diverge: C dorian written in cantus mollis takes the parallel minor's three flats and naturalizes the sixth.
+
+  Fifths rather than a `KeySignature` because a `KeySignature` cannot be built from a bare signature: `KeySignature.get("3 flats")` raises, so naming three flats means naming an interpretation of it, after which the stored tonic and quality are wrong whenever the interpretation disagrees. Fifths is also exactly what MusicXML stores.
+
+- **`HeadMusic::Rudiment::Key.for_fifths(n)`** — the conventional reading of a signature that carries no interpretation of its own, for the two consumers that cannot proceed without a tonic: LilyPond's `\key`, and the `Diatonic` guideline. Signatures themselves are unbounded, since a theoretical key such as G♯ major counts each double accidental twice and reaches eight; the table stops at ±7, because past that there is no conventional major key to name.
+
+- **`HeadMusic::Content::CantusFirmus::Example#to_flow(rhythmic_value:, meter:)`.** An example was a catalog datum — a pitch list with a mode and a citation — that nothing in the gem turned into music. It now realizes as a standalone flow with one part, no player, and one note per bar. Rhythm and meter are the realization's choice rather than the datum's, so they are parameters.
+
+- **`Project#to_h` / `.from_h` / `#to_json` / `.from_json`**, and `Flow.from_v3_h`. Schema 4 round-trips players, flows, parts, voices, staff assignments, instrument changes, staff systems, and repeat structure, and round-trips a standalone flow as its own document.
+
+- `Flow#position`, `Content::Position#subtick`, `Voice#assign_staff`, `Part#instrument_at` / `#staff_system_at` / `#instruments`, `Player#instruments` / `#primary_instrument` (derived from the parts, so they cannot drift from the instrument changes authored on them).
+
+### Changed
+
+- **Schema version 4.** `Flow#to_h` carries a `timeline` (opening meter and key signature, plus the changes to each) and `parts` (each with its instrument, instrument changes, staff system, and voices). Key and meter changes are no longer serialized per bar; a bar's own state is its repeat structure.
+
+- **`Content::Bar` keeps only what is bar-shaped** — barlines, repeat structure, volta brackets. Its `#key_signature` and `#meter` are now derived reads of the change *authored in that bar*, and the writers `#key_signature=` and `#meter=` are gone; use `Flow#change_key_signature` and `#change_meter`. The bar had been carrying these in parallel with `Time::MeterMap` doing the same job properly and unused by `Content`.
+
+- **Meter and key signature changes take a bar number, and reject anything else.** Both are bar-aligned by definition, so `flow.change_meter("2:3", "3/4")` raises rather than rounding into a bar.
+
+- **`Content::Position` wraps a `Time::MusicalPosition`.** It gains a subtick, and is normalized once at construction and then frozen — it is a sort key that `Voice#place` binary-searches over, and a mutable sort key is a wrong-note bug that raises nothing. `#eql?` and `#hash` are defined on the component tuple alongside `#<=>`; the flow deliberately takes no part in comparison, preserving the behavior `Voice#placement_at` has always guarded with. `#values` is removed in favor of `#to_a`, which now has four components. `#code` emits a subtick only when there is one, so the everyday `"bar:count:tick"` form is unchanged.
+
+- **`Notation::RenderPlan#key_value` receives a key signature event** rather than a key signature, because the two formats want different things from it. `MusicXML::KeyMapper.mode` now takes a tonal context and returns `nil` where there is none, and the writer omits `<mode>` rather than inventing a major. LilyPond renders what is printed at the clef: the interpretation where it agrees with the signature, so a D dorian flow still prints `\key d \dorian`, and the signature where they diverge, so cantus mollis prints `\key c \minor`.
+
+- **`Notation::ClefSelector` is demoted to a fallback.** When a staff has an authored clef the writers use it; the selector infers one from a voice's pitch range only for a part whose staves were never authored — an ABC import, a bare counterpoint exercise. The fallback stays in the writers rather than moving onto `Staff`, because it reads a *voice's* range and a staff has no back-reference to one.
+
+- `Time::PPQN` is an alias of `Rudiment::Rhythm::PPQN` rather than a second literal 960.
+
+### Removed
+
+- `HeadMusic::Content::Composition`, and the dead `HeadMusic::Content::Staff` (see migration note 4).
+- `HeadMusic::Time::EventMapSupport`, superseded by `Time::EventMap`.
+- `Time::MusicalPosition#to_total_subticks` and its `#to_i` alias, `TempoMap#normalize_position`, and `TempoMap#meter=` — all of which existed to support the comparator fixed below.
+
+### Fixed
+
+- **`Time::MusicalPosition#normalize!` destroyed the last count of every bar.** `RadixCarry#carry` used `divmod`, which is correct for the 0-indexed tick and subtick and wrong for the 1-indexed count: in 3/4, `1:3:0:0` normalized to the invalid `2:0:0:0`, and so did `1:4:0:0` in 4/4 and `1:6:0:0` in 6/8. A 1-indexed component is now shifted into 0-indexed space and back.
+
+- **`Time::MusicalPosition#<=>` was not a total order across a meter change.** It converted both positions to elapsed subticks through a single stored meter, assuming every prior bar had it, so a position in bar 4 of 4/4 compared *greater* than one in bar 5 of 7/8. Positions now compare their component tuple lexically, which needs no meter at all.
+
+  Both bugs were latent in 20.x only because `Time` was unused by `Content`. They are on the path every note travels now.
+
 ## [20.1.0] - 2026-09-05
 
 The other half of the LilyPond export released in 20.0.0. A document written by the writer, or by hand, now reads back into a composition, so `parse(render(composition))` reproduces the music. Nothing in 20.0.0 changed shape; a consumer upgrades by upgrading.
