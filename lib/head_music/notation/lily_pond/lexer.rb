@@ -1,5 +1,3 @@
-require "strscan"
-
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # Splits a LilyPond document into tokens.
@@ -22,8 +20,6 @@ module HeadMusic::Notation::LilyPond
     SPACER_PATTERN = /s(?![A-Za-z])#{DURATION_PATTERN}?/o
     CLOSE_CHORD_PATTERN = />(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     STRING_PATTERN = /"((?:[^"\\]|\\.)*)"/m
-    BLOCK_COMMENT_PATTERN = /%\{.*?%\}/m
-    LINE_COMMENT_PATTERN = /%[^\n]*/
     COMMAND_PATTERN = /\\([A-Za-z]+)/
     WORD_PATTERN = /[A-Za-z_][A-Za-z0-9_]*/
     NUMBER_PATTERN = %r{\d+(?:/\d+)?}
@@ -31,7 +27,10 @@ module HeadMusic::Notation::LilyPond
     # the model cannot hold, so they are named as unsupported rather than
     # falling through as stray words.
     QUARTER_TONE_PATTERN = /[a-g](?:isih|eseh|ih|eh)(?![A-Za-z])(?:'+|,+)?#{DURATION_PATTERN}?/o
-    UNSUPPORTED_PATTERN = /\\\\|#\S*|[\[\]()]|[-^_][.>^_+!-]?|[:!?]/
+    MARK_PATTERN = /\\\\|#\S*|[\[\]()]|[-^_][.>^_+!-]?|[:!?]/
+    # A spacer rest starts with a letter no note or rest starts with, so it
+    # can be tried alongside the other unsupported constructs.
+    UNSUPPORTED_PATTERN = Regexp.union(MARK_PATTERN, QUARTER_TONE_PATTERN, SPACER_PATTERN)
 
     ALIAS_SUFFIXES = {"s" => "es", "ses" => "eses"}.freeze
 
@@ -42,10 +41,8 @@ module HeadMusic::Notation::LilyPond
     }.freeze
     SIMPLE_PATTERN = Regexp.union(SIMPLE_TOKENS.keys.sort_by { |key| -key.length })
 
-    SNIPPET_LENGTH = 20
-
     def initialize(source)
-      @source = normalize(source)
+      @source = source
     end
 
     def tokens
@@ -56,143 +53,83 @@ module HeadMusic::Notation::LilyPond
 
     attr_reader :scanner
 
-    def normalize(source)
-      text = source.to_s
-      text = text.dup.force_encoding(Encoding::UTF_8) unless text.encoding == Encoding::UTF_8
-      raise ParseError, "LilyPond input is not valid UTF-8" unless text.valid_encoding?
-
-      text.delete_prefix("\uFEFF")
-    end
+    delegate :consume, to: :scanner, private: true
 
     def scan
-      @scanner = StringScanner.new(@source)
-      @line = 1
-      @line_start = 0
+      @scanner = SourceScanner.new(@source)
       tokens = []
       until scanner.eos?
-        next if skip_insignificant
+        next if scanner.skip_insignificant
 
         tokens << next_token
       end
       tokens
     end
 
-    def skip_insignificant
-      consume(/\s+/) || skip_block_comment || consume(LINE_COMMENT_PATTERN)
-    end
-
-    def skip_block_comment
-      return consume(BLOCK_COMMENT_PATTERN) if scanner.match?(BLOCK_COMMENT_PATTERN)
-      return false unless scanner.match?(/%\{/)
-
-      raise error("Unterminated block comment")
-    end
-
+    # A token is stamped with where it began, remembered here because
+    # consuming its lexeme moves the scanner past it.
     def next_token
-      line = @line
-      column = scanner.charpos - @line_start + 1
-      read_token(line, column) || raise(error("Unexpected character #{scanner.peek(1).inspect} at column #{column}"))
+      @token_line = scanner.line
+      @token_column = scanner.column
+      read_token || raise(scanner.unexpected_character_error)
     end
 
-    def read_token(line, column)
-      string_token(line, column) ||
-        simple_token(line, column) ||
-        close_chord_token(line, column) ||
-        unsupported_token(line, column) ||
-        command_token(line, column) ||
-        note_token(line, column) ||
-        rest_token(line, column) ||
-        spacer_token(line, column) ||
-        word_token(line, column) ||
-        number_token(line, column)
+    def read_token
+      string_token || simple_token || close_chord_token ||
+        lexeme_token(UNSUPPORTED_PATTERN, :unsupported) || command_token ||
+        note_token || rest_token ||
+        lexeme_token(WORD_PATTERN, :word) || lexeme_token(NUMBER_PATTERN, :number)
     end
 
-    def string_token(line, column)
+    def string_token
       if consume(STRING_PATTERN)
-        token(:string, line, column, lexeme: StringText.unescape(scanner[1]))
+        token(:string, lexeme: StringText.unescape(scanner[1]))
       elsif scanner.match?(/"/)
-        raise error("Unterminated string")
+        raise scanner.error("Unterminated string")
       end
     end
 
-    def simple_token(line, column)
+    def simple_token
       lexeme = consume(SIMPLE_PATTERN)
-      lexeme && token(SIMPLE_TOKENS.fetch(lexeme), line, column, lexeme: lexeme)
+      lexeme && token(SIMPLE_TOKENS.fetch(lexeme), lexeme: lexeme)
     end
 
-    def close_chord_token(line, column)
-      return unless consume(CLOSE_CHORD_PATTERN)
-
-      token(:close_chord, line, column, lexeme: scanner.matched, duration: scanner[1], multiplier: scanner[2])
+    def close_chord_token
+      consume(CLOSE_CHORD_PATTERN) && timed_token(:close_chord, 1)
     end
 
-    def unsupported_token(line, column)
-      lexeme = consume(UNSUPPORTED_PATTERN) || consume(QUARTER_TONE_PATTERN)
-      lexeme && token(:unsupported, line, column, lexeme: lexeme)
+    def command_token
+      consume(COMMAND_PATTERN) && token(:command, lexeme: scanner[1])
     end
 
-    def command_token(line, column)
-      consume(COMMAND_PATTERN) && token(:command, line, column, lexeme: scanner[1])
-    end
-
-    def note_token(line, column)
+    def note_token
       return unless consume(NOTE_PATTERN)
 
-      letter = scanner[1] || scanner[3]
-      suffix = scanner[1] ? ALIAS_SUFFIXES.fetch(scanner[2]) : scanner[4]
+      alias_letter, alias_suffix, letter, suffix, octave_marks, duration, multiplier = scanner.captures
       token(
-        :note, line, column, lexeme: scanner.matched, letter: letter, suffix: suffix,
-        octave_marks: scanner[5], duration: scanner[6], multiplier: scanner[7]
+        :note, lexeme: scanner.matched,
+        letter: alias_letter || letter, suffix: alias_letter ? ALIAS_SUFFIXES.fetch(alias_suffix) : suffix,
+        octave_marks: octave_marks, duration: duration, multiplier: multiplier
       )
     end
 
-    def rest_token(line, column)
-      return unless consume(REST_PATTERN)
-
-      type = (scanner[1] == "R") ? :whole_bar_rest : :rest
-      token(type, line, column, lexeme: scanner.matched, duration: scanner[2], multiplier: scanner[3])
+    def rest_token
+      consume(REST_PATTERN) && timed_token((scanner[1] == "R") ? :whole_bar_rest : :rest, 2)
     end
 
-    def spacer_token(line, column)
-      lexeme = consume(SPACER_PATTERN)
-      lexeme && token(:unsupported, line, column, lexeme: lexeme)
+    # A token whose lexeme ends in an optional duration and multiplier, the
+    # capture groups from the given one onward.
+    def timed_token(type, duration_group)
+      token(type, lexeme: scanner.matched, duration: scanner[duration_group], multiplier: scanner[duration_group + 1])
     end
 
-    def word_token(line, column)
-      lexeme = consume(WORD_PATTERN)
-      lexeme && token(:word, line, column, lexeme: lexeme)
+    def lexeme_token(pattern, type)
+      lexeme = consume(pattern)
+      lexeme && token(type, lexeme: lexeme)
     end
 
-    def number_token(line, column)
-      lexeme = consume(NUMBER_PATTERN)
-      lexeme && token(:number, line, column, lexeme: lexeme)
-    end
-
-    def token(type, line, column, **fields)
-      Token.new(type: type, line: line, column: column, **fields)
-    end
-
-    # Consumes a match and keeps the line bookkeeping true across any
-    # newlines it spans (block comments, strings, whitespace runs).
-    def consume(pattern)
-      start = scanner.charpos
-      text = scanner.scan(pattern)
-      return unless text
-
-      newlines = text.count("\n")
-      if newlines.positive?
-        @line += newlines
-        @line_start = start + text.rindex("\n") + 1
-      end
-      text
-    end
-
-    def error(message)
-      ParseError.new(
-        message,
-        line_number: @line, column: scanner.charpos - @line_start + 1,
-        snippet: scanner.peek(SNIPPET_LENGTH).lines.first&.chomp
-      )
+    def token(type, **fields)
+      Token.new(type: type, line: @token_line, column: @token_column, **fields)
     end
   end
 end

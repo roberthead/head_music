@@ -5,6 +5,9 @@ module HeadMusic::Notation::LilyPond
   # identity, and a \score with one staff per voice in absolute pitch mode,
   # one line per bar with a trailing bar check.
   #
+  # Assembles the document down to the \new Voice block; VoiceWriter
+  # serializes what goes inside it.
+  #
   # Whole-flow problems (no voices, positional gaps, barline-crossing
   # notes, unmappable keys, durations, or alterations) raise before any
   # assembly, so #to_s only ever returns a complete document.
@@ -13,6 +16,14 @@ module HeadMusic::Notation::LilyPond
     INDENT = "  "
 
     attr_reader :flow
+
+    delegate :name, :composer, :parts, to: :flow, private: true
+
+    # The name a grouped staff is declared with, and that a \change Staff
+    # command refers back to.
+    def self.staff_id(part_index, staff_index)
+      "part#{part_index + 1}-staff#{staff_index + 1}"
+    end
 
     def initialize(flow)
       @flow = flow
@@ -32,6 +43,10 @@ module HeadMusic::Notation::LilyPond
       @plan ||= RenderPlan.new(flow)
     end
 
+    def voice_writer
+      @voice_writer ||= VoiceWriter.new(plan)
+    end
+
     def document_lines
       [
         %(\\version "#{LILYPOND_VERSION}"),
@@ -43,8 +58,8 @@ module HeadMusic::Notation::LilyPond
     def header_lines
       [
         "\\header {",
-        %(#{INDENT}title = "#{StringText.escape(flow.name)}"),
-        flow.composer && %(#{INDENT}composer = "#{StringText.escape(flow.composer)}"),
+        %(#{INDENT}title = "#{StringText.escape(name)}"),
+        composer && %(#{INDENT}composer = "#{StringText.escape(composer)}"),
         "}"
       ].compact
     end
@@ -53,7 +68,7 @@ module HeadMusic::Notation::LilyPond
       [
         "\\score {",
         "#{INDENT}<<",
-        *flow.parts.each_with_index.flat_map { |part, index| part_lines(part, index) },
+        *parts.each_with_index.flat_map { |part, index| part_lines(part, index) },
         "#{INDENT}>>",
         "#{INDENT}\\layout { }",
         "}"
@@ -83,47 +98,22 @@ module HeadMusic::Notation::LilyPond
     def grouped_staff_lines(part, part_index, staff, staff_index)
       voices = part.voices.select { |voice| voice.staff.equal?(staff) }
       [
-        %(#{INDENT * 3}\\new Staff = "#{staff_id(part_index, staff_index)}" <<),
-        *voices_or_silence(part, part_index, staff, voices).map { |line| INDENT * 4 + line },
+        %(#{INDENT * 3}\\new Staff = "#{Writer.staff_id(part_index, staff_index)}" <<),
+        *voices_or_silence(part_index, staff, voices).map { |line| INDENT * 4 + line },
         "#{INDENT * 3}>>"
       ]
     end
 
-    # A staff nobody begins on still has to appear, or the group loses a line
-    # of the system. It carries a rest-filled voice so the bars line up.
-    def voices_or_silence(part, part_index, staff, voices)
-      return [silent_staff_voice(staff)] if voices.empty?
+    def voices_or_silence(part_index, staff, voices)
+      return voice_block(voice_writer.silent_lines(staff)) if voices.empty?
 
-      voices.flat_map { |voice| voice_lines(voice, part_index, staff) }
-    end
-
-    def silent_staff_voice(staff)
-      [
-        "\\new Voice {",
-        *[clef_command_for(staff), *plan.bar_numbers.map { |bar_number| "#{whole_bar_rest(bar_number)} |" }].compact
-          .map { |line| INDENT + line },
-        "}"
-      ].join("\n#{INDENT * 4}")
-    end
-
-    def voice_lines(voice, part_index, staff)
-      [
-        "\\new Voice {",
-        *music_lines(voice, part_index: part_index, staff: staff).map { |line| INDENT + line },
-        "}"
-      ]
-    end
-
-    def staff_id(part_index, staff_index)
-      "part#{part_index + 1}-staff#{staff_index + 1}"
+      voices.flat_map { |voice| voice_block(voice_writer.lines(voice, part_index: part_index, staff: staff)) }
     end
 
     def staff_lines(voice)
       [
         "#{INDENT * 2}#{staff_open(voice)}",
-        "#{INDENT * 3}\\new Voice {",
-        *music_lines(voice, staff: voice.staff).map { |line| INDENT * 4 + line },
-        "#{INDENT * 3}}",
+        *voice_block(voice_writer.lines(voice, staff: voice.staff)).map { |line| INDENT * 3 + line },
         "#{INDENT * 2}}"
       ]
     end
@@ -134,79 +124,8 @@ module HeadMusic::Notation::LilyPond
       %(\\new Staff \\with { instrumentName = "#{StringText.escape(voice.role)}" } {)
     end
 
-    def music_lines(voice, part_index: nil, staff: nil)
-      [
-        "\\clef #{clef_name(voice, staff)}",
-        plan.first_measure_key,
-        time_command(plan.first_measure_meter),
-        *plan.bar_numbers.map { |bar_number| bar_line(voice, bar_number, part_index: part_index) }
-      ]
-    end
-
-    # An authored clef is the source of truth; the selector is the fallback for
-    # a part whose staves were never authored -- an ABC import, a bare
-    # counterpoint exercise. It reads a *voice's* pitch range, which is why the
-    # fallback lives here rather than on the staff.
-    def clef_name(voice, staff = nil)
-      clef = staff&.clef_at(plan.bar_numbers.first) || HeadMusic::Notation::ClefSelector.for(voice)
-      clef_word(clef)
-    end
-
-    def clef_command_for(staff)
-      clef = staff.clef_at(plan.bar_numbers.first)
-      clef && "\\clef #{clef_word(clef)}"
-    end
-
-    def clef_word(clef)
-      (clef == HeadMusic::Rudiment::Clef.get(:bass_clef)) ? "bass" : "treble"
-    end
-
-    def time_command(meter)
-      "\\time #{meter.top_number}/#{meter.bottom_number}"
-    end
-
-    # \key is per-staff inside << >>, so a mid-piece change is emitted in
-    # every voice's stream; \time propagates score-wide, and the duplicate
-    # commands are harmless.
-    def bar_line(voice, bar_number, part_index: nil)
-      tokens = []
-      unless bar_number == plan.bar_numbers.first
-        change_key = plan.measure_key_changes[bar_number]
-        tokens << change_key if change_key
-        change_meter = plan.measure_time_changes[bar_number]
-        tokens << time_command(change_meter) if change_meter
-      end
-      staff_change = staff_change_command(voice, bar_number, part_index)
-      tokens << staff_change if staff_change
-      tokens.concat(bar_tokens(voice, bar_number))
-      tokens.join(" ") + " |"
-    end
-
-    # A voice moves between the staves of its own part with \change Staff, at
-    # exactly the bars its staff-assignment map holds events for -- which is
-    # why the span boundaries and the commands are the same thing.
-    def staff_change_command(voice, bar_number, part_index)
-      return if part_index.nil?
-
-      staff = voice.staff_assignments[bar_number]
-      return if staff.nil? || bar_number == plan.bar_numbers.first
-
-      index = voice.part.staff_system_at(bar_number).staves.index { |candidate| candidate.equal?(staff) }
-      index && %(\\change Staff = "#{staff_id(part_index, index)}")
-    end
-
-    # A bar with no placements for this voice — a voice that ended early,
-    # or an empty voice — fills with a whole-bar rest in the effective meter.
-    def bar_tokens(voice, bar_number)
-      placements = plan.placements_by_bar(voice)[bar_number]
-      return [whole_bar_rest(bar_number)] unless placements
-
-      placements.map { |placement| plan.tokens_by_placement[placement] }
-    end
-
-    def whole_bar_rest(bar_number)
-      meter = plan.effective_meter(bar_number)
-      "R1*#{meter.top_number}/#{meter.bottom_number}"
+    def voice_block(lines)
+      ["\\new Voice {", *lines.map { |line| INDENT + line }, "}"]
     end
   end
 end
