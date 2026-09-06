@@ -30,7 +30,7 @@ class HeadMusic::Content::Flow
 
     def initialize(meter: nil, key_signature: nil, tempo: nil)
       @opening_meter = HeadMusic::Rudiment::Meter.get(meter || HeadMusic::Rudiment::Meter.default)
-      @opening_tempo = tempo || HeadMusic::Rudiment::Tempo.new("quarter", 120)
+      @opening_tempo = tempo ? self.class.tempo_for(tempo) : HeadMusic::Rudiment::Tempo.new("quarter", 120)
       @opening_key_signature_event = self.class.event_for(
         HeadMusic::Rudiment::KeySignature.get(key_signature || HeadMusic::Rudiment::KeySignature.default),
         downbeat_of(HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR)
@@ -82,7 +82,16 @@ class HeadMusic::Content::Flow
     end
 
     def change_tempo(bar_number, tempo)
-      @tempo_map.add(downbeat_of(bar_number), tempo).value
+      @tempo_map.add(downbeat_of(bar_number), self.class.tempo_for(tempo)).value
+    end
+
+    # Meter.get and KeySignature.get accept one of their own instances;
+    # Tempo.get does not, and handed a Tempo would stringify it and answer the
+    # default, so the check lives here.
+    def self.tempo_for(tempo)
+      return tempo if tempo.is_a?(HeadMusic::Rudiment::Tempo)
+
+      HeadMusic::Rudiment::Tempo.get(tempo)
     end
 
     # @param signature [Integer, HeadMusic::Rudiment::KeySignature, String] fifths,

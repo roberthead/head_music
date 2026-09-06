@@ -8,11 +8,12 @@ class HeadMusic::Content::Flow
   class SchemaValues
     # Position silently coerces garbage strings to "0:1:000", which would
     # mislocate content with no error, so the shape is validated up front.
-    # Accepts "bar", "bar:count", or "bar:count:tick" with non-negative parts.
+    # Accepts "bar", "bar:count", "bar:count:tick", or "bar:count:tick:subtick"
+    # with non-negative parts -- the four fields Position#code can emit.
     def position(value, path)
       return nil if value.nil?
 
-      unless value.is_a?(String) && value.match?(/\A\d+(:\d+){0,2}\z/)
+      unless value.is_a?(String) && value.match?(/\A\d+(:\d+){0,3}\z/)
         raise ArgumentError, "#{path}: unknown position #{value.inspect}"
       end
       value
@@ -54,6 +55,22 @@ class HeadMusic::Content::Flow
         raise ArgumentError, "#{path}: unknown rhythmic value #{value.inspect}"
       end
       rhythmic_value
+    end
+
+    # A tempo serializes as its two parts rather than as a "quarter = 72"
+    # string, because Tempo.get reads the number by stripping non-digits and so
+    # would turn 72.5 into 725.
+    def tempo(value, path)
+      return nil if value.nil?
+      raise ArgumentError, "#{path}: tempo must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
+
+      beats_per_minute = value["beats_per_minute"]
+      unless beats_per_minute.is_a?(Numeric) && beats_per_minute.positive?
+        raise ArgumentError, "#{path}: beats_per_minute must be a positive number, got #{beats_per_minute.inspect}"
+      end
+
+      beat_value = rhythmic_value(value["beat_value"], "#{path}.beat_value")
+      HeadMusic::Rudiment::Tempo.new(beat_value.to_s, beats_per_minute)
     end
 
     # "sounds" is an array of sound data, empty for a rest. A pitched sound
@@ -130,17 +147,28 @@ class HeadMusic::Content::Flow
       instrument
     end
 
-    # A staff system serializes as its bracket and the clef of each staff; a
-    # clef of null is a staff whose clef was never authored, which the writers
-    # infer from the voice instead.
+    # A staff system serializes as its bracket and, for each staff, its opening
+    # clef and clef changes; a clef of null is a staff whose clef was never
+    # authored, which the writers infer from the voice instead.
     def staff_system(value, path)
       return nil if value.nil?
       raise ArgumentError, "#{path}: staff_system must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
 
       staves = Array(value["staves"]).each_with_index.map do |staff_hash, index|
-        HeadMusic::Content::Staff.new(clef: clef(staff_hash["clef"], "#{path}.staves[#{index}]"))
+        staff(staff_hash, "#{path}.staves[#{index}]")
       end
       HeadMusic::Content::StaffSystem.new(staves: staves, bracket: bracket(value["bracket"], path))
+    end
+
+    def staff(value, path)
+      raise ArgumentError, "#{path}: staff must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
+
+      HeadMusic::Content::Staff.new(clef: clef(value["clef"], path)).tap do |staff|
+        Array(value["clef_changes"]).each_with_index do |change, index|
+          change_path = "#{path}.clef_changes[#{index}]"
+          staff.change_clef(bar_number(change, index, "#{path}.clef_changes"), clef_change(change["clef"], change_path))
+        end
+      end
     end
 
     def bracket(value, path)
@@ -163,6 +191,14 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "#{path}: unknown clef #{value.inspect}" if clef&.pitch.nil?
 
       clef
+    end
+
+    # Unlike an opening clef, a change to no clef means nothing: there is no
+    # "stop having a clef" in notation.
+    def clef_change(value, path)
+      raise ArgumentError, "#{path}: a clef change names a clef, got nil" if value.nil?
+
+      clef(value, path)
     end
 
     private

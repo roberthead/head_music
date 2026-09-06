@@ -57,6 +57,7 @@ class HeadMusic::Content::Flow
         name: hash["name"],
         key_signature: values.key_signature(timeline_hash["key_signature"], "timeline.key_signature"),
         meter: values.meter(timeline_hash["meter"], "timeline.meter"),
+        tempo: values.tempo(timeline_hash["tempo"], "timeline.tempo"),
         composer: hash["composer"],
         origin: hash["origin"]
       )
@@ -75,8 +76,14 @@ class HeadMusic::Content::Flow
           tonal_context: values.tonal_context(change["tonal_context"], path)
         )
       end
+      Array(timeline_hash["tempo_changes"]).each_with_index do |change, index|
+        path = "timeline.tempo_changes[#{index}]"
+        flow.change_tempo(values.bar_number(change, index, "timeline.tempo_changes"), values.tempo(change["tempo"], path))
+      end
     end
 
+    # Staff system changes replay before the voices because a voice's staff
+    # assignment is resolved against the system in force at its bar.
     def build_parts(flow)
       Array(hash["parts"]).each_with_index do |part_hash, part_index|
         path = "parts[#{part_index}]"
@@ -85,7 +92,18 @@ class HeadMusic::Content::Flow
           staff_system: values.staff_system(part_hash["staff_system"], path)
         )
         apply_instrument_changes(part, part_hash, part_index)
+        apply_staff_system_changes(part, part_hash, part_index)
         build_voices(part, part_hash, part_index)
+      end
+    end
+
+    def apply_staff_system_changes(part, part_hash, part_index)
+      Array(part_hash["staff_system_changes"]).each_with_index do |change, index|
+        base = "parts[#{part_index}].staff_system_changes"
+        staff_system = values.staff_system(change["staff_system"], "#{base}[#{index}]")
+        raise ArgumentError, "#{base}[#{index}]: a staff system change names a staff system, got nil" if staff_system.nil?
+
+        part.change_staff_system(values.bar_number(change, index, base), staff_system)
       end
     end
 

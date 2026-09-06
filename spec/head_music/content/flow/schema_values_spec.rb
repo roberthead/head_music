@@ -12,9 +12,68 @@ describe HeadMusic::Content::Flow::SchemaValues do
       expect(values.position("2:3:480", "path")).to eq "2:3:480"
     end
 
+    # Position#code emits a fourth field when a position carries subticks, so
+    # what the gem writes must be what it reads.
+    it "accepts the four-field form Position#code emits for subticks" do
+      expect(values.position("1:1:000:120", "path")).to eq "1:1:000:120"
+    end
+
     it "raises with path context on a malformed position" do
       expect { values.position("bogus", "comments[0]") }
         .to raise_error(ArgumentError, /comments\[0\]: unknown position "bogus"/)
+    end
+
+    it "raises on a fifth field" do
+      expect { values.position("1:1:000:000:1", "path") }
+        .to raise_error(ArgumentError, /path: unknown position "1:1:000:000:1"/)
+    end
+  end
+
+  describe "#tempo" do
+    it "returns nil for a nil value" do
+      expect(values.tempo(nil, "path")).to be_nil
+    end
+
+    it "builds a tempo from its beat value and beats per minute" do
+      tempo = values.tempo({"beat_value" => "half", "beats_per_minute" => 72.5}, "path")
+      expect([tempo.beat_value.to_s, tempo.beats_per_minute]).to eq ["half", 72.5]
+    end
+
+    it "raises on a non-Hash" do
+      expect { values.tempo("quarter = 120", "timeline.tempo") }
+        .to raise_error(ArgumentError, /timeline\.tempo: tempo must be a Hash/)
+    end
+
+    it "raises on a non-positive beats per minute" do
+      expect { values.tempo({"beat_value" => "quarter", "beats_per_minute" => 0}, "timeline.tempo") }
+        .to raise_error(ArgumentError, /timeline\.tempo: beats_per_minute must be a positive number, got 0/)
+    end
+
+    it "raises with path context on an unknown beat value" do
+      expect { values.tempo({"beat_value" => "bogus", "beats_per_minute" => 120}, "timeline.tempo") }
+        .to raise_error(ArgumentError, /timeline\.tempo\.beat_value: unknown rhythmic value "bogus"/)
+    end
+  end
+
+  describe "#staff" do
+    it "replays the clef changes onto the staff" do
+      staff = values.staff({"clef" => "treble_clef", "clef_changes" => [{"number" => 5, "clef" => "bass_clef"}]}, "path")
+      expect([staff.clef_at(4), staff.clef_at(5)]).to eq [HeadMusic::Rudiment::Clef.get(:treble_clef), HeadMusic::Rudiment::Clef.get(:bass_clef)]
+    end
+
+    it "raises on a non-Hash" do
+      expect { values.staff("treble_clef", "parts[0].staff_system.staves[0]") }
+        .to raise_error(ArgumentError, /staves\[0\]: staff must be a Hash/)
+    end
+
+    it "raises with path context on a clef change to nothing" do
+      expect { values.staff({"clef" => nil, "clef_changes" => [{"number" => 5, "clef" => nil}]}, "staves[0]") }
+        .to raise_error(ArgumentError, /staves\[0\]\.clef_changes\[0\]: a clef change names a clef, got nil/)
+    end
+
+    it "raises with path context on an unknown changed clef" do
+      expect { values.staff({"clef" => nil, "clef_changes" => [{"number" => 5, "clef" => "kazoo_clef"}]}, "staves[0]") }
+        .to raise_error(ArgumentError, /staves\[0\]\.clef_changes\[0\]: unknown clef "kazoo_clef"/)
     end
   end
 

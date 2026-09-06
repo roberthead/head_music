@@ -147,6 +147,44 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "the tempo" do
+    it "opens at quarter = 120 when none is given" do
+      expect([flow.tempo.beat_value.to_s, flow.tempo.beats_per_minute]).to eq ["quarter", 120.0]
+    end
+
+    it "takes an opening tempo the way it takes a meter" do
+      expect(described_class.new(tempo: "allegro").tempo.beats_per_minute).to eq 120.0
+      expect(described_class.new(tempo: "half = 60").tempo.beat_value.to_s).to eq "half"
+    end
+
+    it "takes a Tempo as well as a name" do
+      tempo = HeadMusic::Rudiment::Tempo.new("half", 72.5)
+      expect(described_class.new(tempo: tempo).tempo).to be tempo
+    end
+  end
+
+  describe "#change_tempo" do
+    before { flow.change_tempo(3, "quarter = 96") }
+
+    it "changes the tempo from that bar" do
+      expect([flow.tempo_at(2).beats_per_minute, flow.tempo_at(3).beats_per_minute]).to eq [120.0, 96.0]
+    end
+
+    it "reports the change by bar" do
+      expect(flow.tempo_changes.keys).to eq [3]
+      expect(flow.tempo_change_at(3).beats_per_minute).to eq 96.0
+    end
+
+    it "allocates the bar it changes in, so a pickup bar joins the range" do
+      flow.change_tempo(0, "quarter = 60")
+      expect(flow.earliest_bar_number).to eq 0
+    end
+
+    it "refuses a position, since a change falls on a downbeat" do
+      expect { flow.change_tempo("3:1", "quarter = 96") }.to raise_error(ArgumentError, /bar number/)
+    end
+  end
+
   describe "#to_abc" do
     it "renders an ABC tune string" do
       expect(flow.to_abc).to start_with "X:1\nT:Fruit Salad\n"
@@ -241,8 +279,10 @@ describe HeadMusic::Content::Flow do
       {
         "meter" => "3/4",
         "key_signature" => "D major",
+        "tempo" => {"beat_value" => "quarter", "beats_per_minute" => 120.0},
         "meter_changes" => [{"number" => 2, "meter" => "6/8"}],
-        "key_signature_changes" => []
+        "key_signature_changes" => [],
+        "tempo_changes" => []
       }
     end
 

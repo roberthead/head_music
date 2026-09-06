@@ -15,7 +15,7 @@ class HeadMusic::Content::Flow
   attr_accessor :project
 
   delegate :meter_at, :key_signature_at, :tempo_at, to: :timeline
-  delegate :meter_changes, :key_signature_changes, :meter_change_at, to: :timeline
+  delegate :meter_changes, :key_signature_changes, :tempo_changes, :meter_change_at, :tempo_change_at, to: :timeline
 
   def self.from_h(hash)
     HashDeserializer.new(hash).flow
@@ -33,8 +33,8 @@ class HeadMusic::Content::Flow
     from_h(JSON.parse(json))
   end
 
-  def initialize(name: nil, key_signature: nil, meter: nil, composer: nil, origin: nil, comments: nil)
-    ensure_attributes(name, key_signature, meter)
+  def initialize(name: nil, key_signature: nil, meter: nil, tempo: nil, composer: nil, origin: nil, comments: nil)
+    ensure_attributes(name, key_signature, meter, tempo)
     @composer = composer
     @origin = origin
     @parts = []
@@ -81,6 +81,10 @@ class HeadMusic::Content::Flow
     timeline.opening_meter
   end
 
+  def tempo
+    timeline.opening_tempo
+  end
+
   # The key signature authored in a bar, as distinct from the one in force
   # there. Nil in a bar nothing was authored in.
   def key_signature_change_at(bar_number)
@@ -109,6 +113,12 @@ class HeadMusic::Content::Flow
     Timeline.ensure_downbeat!(bar_number)
     bars(bar_number)
     timeline.change_meter(bar_number, meter)
+  end
+
+  def change_tempo(bar_number, tempo)
+    Timeline.ensure_downbeat!(bar_number)
+    bars(bar_number)
+    timeline.change_tempo(bar_number, tempo)
   end
 
   def earliest_bar_number
@@ -163,10 +173,12 @@ class HeadMusic::Content::Flow
     {
       "meter" => meter.to_s,
       "key_signature" => key_signature.name,
+      "tempo" => tempo_to_h(tempo),
       "meter_changes" => timeline.meter_changes.map { |bar_number, value| {"number" => bar_number, "meter" => value.to_s} },
       "key_signature_changes" => timeline.key_signature_changes.map { |bar_number, event|
         {"number" => bar_number, "signature" => event.signature, "tonal_context" => event.tonal_context&.name}
-      }
+      },
+      "tempo_changes" => timeline.tempo_changes.map { |bar_number, value| {"number" => bar_number, "tempo" => tempo_to_h(value)} }
     }
   end
 
@@ -182,9 +194,15 @@ class HeadMusic::Content::Flow
     (@bars || []).index { |bar| !bar.nil? }
   end
 
-  def ensure_attributes(name, key_signature, meter)
+  def ensure_attributes(name, key_signature, meter, tempo)
     @name = name || "Composition"
-    @timeline = Timeline.new(key_signature: key_signature, meter: meter)
+    @timeline = Timeline.new(key_signature: key_signature, meter: meter, tempo: tempo)
+  end
+
+  # Two fields rather than a "quarter = 72" string, so that a fractional
+  # tempo survives: Tempo.get reads the number by stripping non-digits.
+  def tempo_to_h(tempo)
+    {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}
   end
 
   # Iterates the raw sparse array (not the public #bars slice, which loses the

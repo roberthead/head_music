@@ -57,7 +57,10 @@ class HeadMusic::Content::Staff
   # A null clef is a staff whose clef was never authored, which the writers
   # infer from a voice's range instead. It is a real state, not a missing one.
   def to_h
-    {"clef" => clef&.name_key&.to_s}
+    hash = {"clef" => clef&.name_key&.to_s}
+    changes = clef_changes.map { |bar_number, value| {"number" => bar_number, "clef" => value.name_key.to_s} }
+    hash["clef_changes"] = changes unless changes.empty?
+    hash
   end
 
   private
