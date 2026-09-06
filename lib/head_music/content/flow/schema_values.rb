@@ -6,6 +6,8 @@ class HeadMusic::Content::Flow
   # deserializer stays responsible for *where* values come from and this class
   # for *what* a value is allowed to be.
   class SchemaValues
+    delegate :staff_system, :staff, to: :staff_system_values
+
     # Position silently coerces garbage strings to "0:1:000", which would
     # mislocate content with no error, so the shape is validated up front.
     # Accepts "bar", "bar:count", "bar:count:tick", or "bar:count:tick:subtick"
@@ -24,11 +26,7 @@ class HeadMusic::Content::Flow
     def key_signature(value, path)
       return nil if value.nil?
 
-      key_signature = begin
-        HeadMusic::Rudiment::KeySignature.get(value)
-      rescue
-        nil
-      end
+      key_signature = attempt { HeadMusic::Rudiment::KeySignature.get(value) }
       unless key_signature&.tonic_spelling
         raise ArgumentError, "#{path}: unknown key signature #{value.inspect}"
       end
@@ -38,11 +36,7 @@ class HeadMusic::Content::Flow
     def meter(value, path)
       return nil if value.nil?
 
-      meter = begin
-        HeadMusic::Rudiment::Meter.get(value)
-      rescue
-        nil
-      end
+      meter = attempt { HeadMusic::Rudiment::Meter.get(value) }
       unless meter&.top_number&.positive? && meter.bottom_number.positive?
         raise ArgumentError, "#{path}: unknown meter #{value.inspect}"
       end
@@ -65,9 +59,7 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "#{path}: tempo must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
 
       beats_per_minute = value["beats_per_minute"]
-      unless beats_per_minute.is_a?(Numeric) && beats_per_minute.positive?
-        raise ArgumentError, "#{path}: beats_per_minute must be a positive number, got #{beats_per_minute.inspect}"
-      end
+      raise ArgumentError, "#{path}: beats_per_minute must be a positive number, got #{beats_per_minute.inspect}" unless positive_number?(beats_per_minute)
 
       beat_value = rhythmic_value(value["beat_value"], "#{path}.beat_value")
       HeadMusic::Rudiment::Tempo.new(beat_value.to_s, beats_per_minute)
@@ -128,11 +120,7 @@ class HeadMusic::Content::Flow
     def tonal_context(value, path)
       return nil if value.nil?
 
-      context = begin
-        HeadMusic::Rudiment::KeySignature.get(value)
-      rescue
-        nil
-      end
+      context = attempt { HeadMusic::Rudiment::KeySignature.get(value) }
       raise ArgumentError, "#{path}: unknown tonal context #{value.inspect}" unless context&.tonic_spelling
 
       HeadMusic::Content::Flow::Timeline.tonal_context_of(context)
@@ -147,61 +135,23 @@ class HeadMusic::Content::Flow
       instrument
     end
 
-    # A staff system serializes as its bracket and, for each staff, its opening
-    # clef and clef changes; a clef of null is a staff whose clef was never
-    # authored, which the writers infer from the voice instead.
-    def staff_system(value, path)
-      return nil if value.nil?
-      raise ArgumentError, "#{path}: staff_system must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
-
-      staves = Array(value["staves"]).each_with_index.map do |staff_hash, index|
-        staff(staff_hash, "#{path}.staves[#{index}]")
-      end
-      HeadMusic::Content::StaffSystem.new(staves: staves, bracket: bracket(value["bracket"], path))
-    end
-
-    def staff(value, path)
-      raise ArgumentError, "#{path}: staff must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
-
-      HeadMusic::Content::Staff.new(clef: clef(value["clef"], path)).tap do |staff|
-        Array(value["clef_changes"]).each_with_index do |change, index|
-          change_path = "#{path}.clef_changes[#{index}]"
-          staff.change_clef(bar_number(change, index, "#{path}.clef_changes"), clef_change(change["clef"], change_path))
-        end
-      end
-    end
-
-    def bracket(value, path)
-      return :none if value.nil?
-
-      symbol = value.to_sym
-      raise ArgumentError, "#{path}: unknown bracket #{value.inspect}" unless HeadMusic::Content::StaffSystem::BRACKETS.include?(symbol)
-
-      symbol
-    end
-
-    def clef(value, path)
-      return nil if value.nil?
-
-      clef = begin
-        HeadMusic::Rudiment::Clef.get(value)
-      rescue
-        nil
-      end
-      raise ArgumentError, "#{path}: unknown clef #{value.inspect}" if clef&.pitch.nil?
-
-      clef
-    end
-
-    # Unlike an opening clef, a change to no clef means nothing: there is no
-    # "stop having a clef" in notation.
-    def clef_change(value, path)
-      raise ArgumentError, "#{path}: a clef change names a clef, got nil" if value.nil?
-
-      clef(value, path)
-    end
-
     private
+
+    def staff_system_values
+      @staff_system_values ||= StaffSystemValues.new(self)
+    end
+
+    # The rudiment getters raise on some garbage and answer a hollow object on
+    # the rest, so a validator treats both the same way: as nil, then checks.
+    def attempt
+      yield
+    rescue
+      nil
+    end
+
+    def positive_number?(value)
+      value.is_a?(Numeric) && value.positive?
+    end
 
     # RhythmicValue.get returns a hollow object (nil unit) for garbage rather
     # than nil, and a tied tail can be hollow while the head parses, so the
