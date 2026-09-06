@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-05T17:50:48-07:00
   planned_at:   2026-09-05T20:48:21-07:00
   finished_at:
-  updated_at:   2026-09-05T21:41:07-07:00
+  updated_at:   2026-09-06T10:39:11-07:00
 -->
 
 # Content Architecture
@@ -132,10 +132,19 @@ Stored as `signature: -3, tonal_context: C dorian`, the A-naturals are ordinary
 accidentals on the notes. Neither field derives the other, which is why both are
 kept.
 
-The interpretation is a `Key` or a `Mode` — the `QualifiedDiatonicContext`
+The interpretation is usually a `Key` or a `Mode` — the `QualifiedDiatonicContext`
 subclasses. `DiatonicContext` is *not* the signature-only abstraction it might
 appear to be; `TonalContext` requires a `tonic_spelling`, so every diatonic
 context already carries a tonal center.
+
+**But `Key` and `Mode` do not cover every signature the gem admits, so the
+interpretation may also be a `KeySignature`.** `KeySignature.get("C harmonic_minor")`
+is valid, and `harmonic_minor` is neither a `Key::QUALITIES` member nor one of
+`Mode::MODES`. Narrowing every signature into one of the two subclasses moves
+that limit from render time to *construction* time: a flow in C harmonic minor
+becomes unbuildable, when today it builds fine and merely cannot be rendered as
+a MusicXML `<key>` element. So the tonal context narrows to a `Key` or a `Mode`
+where the scale type is one, and stays a `KeySignature` where it is not.
 
 The two export formats disagree about which field they need:
 
@@ -753,3 +762,22 @@ Two consequences worth carrying into implementation:
 - **Capture the corpus fitness fixture in Phase 0**, before any structural change.
   Without a baseline, "guides assess unchanged" means only "the specs still pass",
   because most guideline specs assert `marks_count` on hand-built material.
+
+## Corrections Found in Implementation
+
+Recorded here rather than silently changed, because each contradicts something
+the sections above asserted.
+
+| Section | What it said | What implementation found |
+|---|---|---|
+| Decision 2 | The interpretation "is a `Key` or a `Mode`" | Those two cannot hold every signature the gem admits. Narrowing to them made a flow in C harmonic minor raise at construction, where it had raised only at render. The tonal context now stays a `KeySignature` for a scale type neither subclass holds. |
+| Plan, Phase 1 | Keep `TempoMap`'s normalizing wrapper — "`Conductor` depends on the difference" | It does not. Phase 0 deleted `normalize_position` and its `attr_writer :meter`, and unwired `Conductor`'s link between the maps; `conductor_spec.rb` stayed green untouched. Phase 0's own text called for exactly this, so the two paragraphs disagreed. |
+| Plan, Phase 3 | Restrict the `sed` to the constant; leave method and variable names to a cosmetic pass | The half-state is worse than either end — `Voice#composition` returning a `Flow`, a `composition:` keyword argument, `RenderPlan#composition`. The identifier was renamed with the constant. `\bcomposition\b` does not match `CompositionContext`, so the spec-support rename stays parked for Phase 8 as planned. |
+| Plan, Phase 4b | "Then drop the `Bar` readers and their serialization" | The duplicate *storage* is gone — the readers are derived views of the timeline — but `Bar#to_h` is how schema 3 serializes mid-piece changes, so dropping the readers outright would break v3 round-tripping before v4 exists. They go in Phase 8 with the schema bump. |
+| Decision 4 / Phase 5 | `beat` → `count` framed as a naming correction | It is also a **breaking rename of a public reader**: `MusicalPosition#beat` and `FIRST_BEAT` are gone rather than aliased. Belongs in the 21.0.0 migration notes alongside `Composition`. |
+| Decision 4 / Phase 5 | `Content::Position` delegates to `MusicalPosition` for "`RadixCarry` normalization" | Only half of it can. `normalize!` carries counts into bars with a single `divmod`, which assumes every crossed bar has the same count — ten quarter notes from `1:1` in a flow that turns 3/4 at bar 2 answered `3:3:000` instead of `4:1:000`. The subtick and tick carry delegates; the bar walk is done here, one bar at a time, asking the flow for each bar's meter. |
+| Acceptance criteria | `staff_at` past the end of a `cross_to` span "returns the part's first staff" | True only for a voice that had never moved. A left hand assigned to the bass staff and crossing up for four bars must come back down to the bass staff, not to the first staff. The span restores whatever was in force before it, which reduces to the first staff in the case the criterion describes. |
+| Plan, Phase 8 | `HashDeserializer` "becomes the v3 path" | It became `V3HashDeserializer`, and a new `HashDeserializer` was written for v4 beside it. Keeping one class serving two schemas would have meant a version switch inside every walk. `SchemaValues` is what is actually reused wholesale, as the plan predicted — its validators are container-agnostic, and only five new ones were needed (`fifths`, `tonal_context`, `instrument`, `staff_system`, `clef`). |
+| Plan, Phase 6 / decision 3 | `cross_to` is how a staff assignment is made | Deserialization needs a bare map write, because the serialized form *is* the map: a span's two events are already two entries, and reconstructing spans to re-derive them would invent information the document does not carry. `Voice#assign_staff` is that write, and `cross_to` is it plus the bookend. |
+| Decision 2 | LilyPond should "prefer the signature" where the two fields diverge | Only where they *diverge*. Preferring it always would print a D dorian flow as `\key c \major`, throwing away a mode LilyPond can express and changing every existing counterpoint document. `printed_key_signature` keeps the interpretation when it agrees with the signature, and where they diverge keeps the tonic if an ordinary key on it prints that signature — which is what yields the `\key c \minor` the criteria ask for, rather than its relative `\key ees \major`. |
+| Acceptance criteria | A signature beyond ±7 with no tonal context "raises" | Only for LilyPond. MusicXML stores fifths, which the event already holds, so it renders 8 with or without an interpretation. The fallback table has exactly two callers, and MusicXML is not one of them. |
