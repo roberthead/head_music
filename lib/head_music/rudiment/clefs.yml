@@ -24,7 +24,6 @@
   :modern: true
   :name_key: vocal_tenor_clef
   :alias_name_keys:
-  - tenor_clef
   - tenor_g_clef
   - g_clef_ottava_bassa
   - octave_treble_clef

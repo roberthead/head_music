@@ -99,24 +99,31 @@ describe HeadMusic::Rudiment::Clef do
     specify { expect(clef.pitch_for_line(2)).to eq "C4" }
   end
 
+  # "Tenor clef" unqualified is the C clef on the fourth line, as in every
+  # theory text. The octave-down G clef of vocal scores is the vocal tenor clef.
   context "when the tenor clef" do
     context "when constructed with the name 'tenor clef'" do
       let(:name) { "tenor clef" }
 
-      its(:unicode) { is_expected.to eq "𝄠" }
-      its(:clef_type) { is_expected.to eq "G-clef" }
+      its(:unicode) { is_expected.to eq "𝄡" }
+      its(:clef_type) { is_expected.to eq "C-clef" }
 
-      it { is_expected.to eq "vocal tenor clef" }
+      it { is_expected.to eq "tenor clef" }
     end
 
     context "when constructed with the name 'tenor C-clef'" do
       let(:name) { "tenor C-clef" }
 
-      its(:unicode) { is_expected.to eq "𝄡" }
-
-      it "returns the traditional tenor clef" do
-        expect(clef.clef_type).to eq "C-clef"
+      it "is the same clef" do
+        expect(clef).to eq described_class.get("tenor clef")
       end
+    end
+
+    context "when constructed with the name 'vocal tenor clef'" do
+      let(:name) { "vocal tenor clef" }
+
+      its(:unicode) { is_expected.to eq "𝄠" }
+      its(:clef_type) { is_expected.to eq "G-clef" }
     end
   end
 
