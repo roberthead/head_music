@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [21.0.0] - 2026-09-06
+
 The [organizing content](https://github.com/roberthead/head_music/tree/main/user-stories/epics/organizing-content.md) epic's first story. `Content::Composition` was the document, the movement, the timeline, and the credits at once, and its `Voice` was a bare melodic line with no instrument, no staff, and no performer — a shape adequate for two-voice species counterpoint and for almost nothing else. Content is now `Project` → `Flow` → `Part` → `Voice` → `Placement`, and a voice can cross between the staves of its part.
 
 This is a breaking release. `Composition` is removed rather than deprecated, and the serialization schema goes to 4.
@@ -814,7 +816,8 @@ note = HeadMusic::Rudiment::Note.get("F#4 dotted-quarter")
 
 For changes in versions prior to 0.28.0, please refer to the git history.
 
-[Unreleased]: https://github.com/roberthead/head_music/compare/v20.1.0...HEAD
+[Unreleased]: https://github.com/roberthead/head_music/compare/v21.0.0...HEAD
+[21.0.0]: https://github.com/roberthead/head_music/compare/v20.1.0...v21.0.0
 [20.1.0]: https://github.com/roberthead/head_music/compare/v20.0.0...v20.1.0
 [20.0.0]: https://github.com/roberthead/head_music/compare/v19.0.0...v20.0.0
 [19.0.0]: https://github.com/roberthead/head_music/compare/v18.0.0...v19.0.0
