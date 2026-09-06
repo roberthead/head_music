@@ -118,5 +118,13 @@ describe HeadMusic::Content::Part do
     it "reports the bars a system was authored in" do
       expect(part.staff_system_changes.keys).to eq [9]
     end
+
+    it "serializes the changes alongside the opening system" do
+      hash = part.to_h
+      expect(hash["staff_system"]["staves"].length).to eq 2
+      expect(hash["staff_system_changes"]).to eq [
+        {"number" => 9, "staff_system" => {"bracket" => "none", "staves" => [{"clef" => "treble_clef"}]}}
+      ]
+    end
   end
 end

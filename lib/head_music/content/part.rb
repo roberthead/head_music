@@ -92,6 +92,8 @@ class HeadMusic::Content::Part
     changes = instrument_changes.map { |bar_number, value| {"number" => bar_number, "instrument" => value.name} }
     hash["instrument_changes"] = changes unless changes.empty?
     hash["staff_system"] = staff_system.to_h if authored_staff_system?
+    system_changes = staff_system_changes.map { |bar_number, value| {"number" => bar_number, "staff_system" => value.to_h} }
+    hash["staff_system_changes"] = system_changes unless system_changes.empty?
     hash
   end
 

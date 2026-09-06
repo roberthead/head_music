@@ -411,6 +411,88 @@ describe HeadMusic::Content::Flow do
     it "round-trips losslessly" do
       expect_lossless_round_trip(flow)
     end
+
+    # Subticks add a fourth field to the position code, which the reader must
+    # accept or the gem refuses documents it wrote itself.
+    context "with subtick-precise placements and comments" do
+      let(:flow) do
+        described_class.new(name: "Subticks").tap do |ticked|
+          voice = ticked.add_voice(role: "melody")
+          voice.place("1:1:000", :half, "C4")
+          voice.place(ticked.position(1, 3, 0, 120), :half, "E4")
+          ticked.add_comment("a hair late", ticked.position(1, 3, 0, 120))
+        end
+      end
+
+      it "serializes the subticks as a fourth field" do
+        hash = flow.to_h
+        positions = voices_in(hash).first["placements"].map { |placement| placement["position"] }
+        expect([positions, hash["comments"].first["position"]]).to eq [%w[1:1:000 1:3:000:120], "1:3:000:120"]
+      end
+
+      it "reads back the subticks it wrote" do
+        restored = described_class.from_h(flow.to_h)
+        expect(restored.to_h).to eq flow.to_h
+        expect(restored.voices.first.placements.last.position.subtick).to eq 120
+      end
+    end
+  end
+
+  describe "changes authored on parts, staves, and the tempo" do
+    let(:flow) do
+      described_class.new(name: "Changes", tempo: "quarter = 96").tap do |changing|
+        part = changing.add_part(staff_system: HeadMusic::Content::StaffSystem.single_staff(clef: :treble_clef))
+        part.change_staff_system(3, HeadMusic::Content::StaffSystem.grand_staff)
+        part.staff_system.first_staff.change_clef(2, :bass_clef)
+        voice = part.add_voice
+        1.upto(4) { |bar| voice.place("#{bar}:1:000", :whole, "C4") }
+        voice.assign_staff(3, part.staff_system_at(3).staves.last)
+        changing.change_tempo(3, HeadMusic::Rudiment::Tempo.new("half", 72.5))
+      end
+    end
+
+    let(:restored) { described_class.from_h(flow.to_h) }
+    let(:restored_part) { restored.parts.first }
+
+    it "serializes the opening tempo and the tempo changes as beat value and beats per minute" do
+      expect(flow.to_h["timeline"]).to include(
+        "tempo" => {"beat_value" => "quarter", "beats_per_minute" => 96.0},
+        "tempo_changes" => [{"number" => 3, "tempo" => {"beat_value" => "half", "beats_per_minute" => 72.5}}]
+      )
+    end
+
+    it "serializes the staff system changes and clef changes" do
+      part_hash = flow.to_h["parts"].first
+      expect(part_hash["staff_system"]["staves"].first["clef_changes"]).to eq [{"number" => 2, "clef" => "bass_clef"}]
+      expect(part_hash["staff_system_changes"].map { |change| [change["number"], change["staff_system"]["staves"].length] }).to eq [[3, 2]]
+    end
+
+    it "round-trips to the same hash and the same LilyPond" do
+      expect(restored.to_h).to eq flow.to_h
+      expect(restored.to_lilypond).to eq flow.to_lilypond
+    end
+
+    it "restores the staff system changes" do
+      expect(restored_part.staff_system_changes.keys).to eq [3]
+      expect(restored_part.staff_system_at(3).length).to eq 2
+    end
+
+    it "restores the clef changes" do
+      expect(restored_part.staff_system.first_staff.clef_at(2)).to eq HeadMusic::Rudiment::Clef.get(:bass_clef)
+    end
+
+    it "restores a staff assignment that names a staff of a later system" do
+      voice = restored.voices.first
+      expect(voice.staff_at(3)).to be restored_part.staff_system_at(3).staves.last
+    end
+
+    it "restores the tempo and its changes" do
+      expect([restored.tempo.beats_per_minute, restored.tempo_at(2).beats_per_minute, restored.tempo_at(3).beats_per_minute]).to eq [96.0, 96.0, 72.5]
+    end
+
+    it "survives JSON" do
+      expect(described_class.from_json(flow.to_json).to_h).to eq flow.to_h
+    end
   end
 
   describe "mid-piece key signature change" do
@@ -619,6 +701,25 @@ describe HeadMusic::Content::Flow do
     it "raises ArgumentError on a non-Hash" do
       expect { described_class.from_h("not a hash") }
         .to raise_error(ArgumentError, /expected a Hash, got String/)
+    end
+
+    it "raises ArgumentError with path context on a tempo change with no beats per minute" do
+      hash = base_hash.merge("timeline" => {"tempo_changes" => [{"number" => 3, "tempo" => {"beat_value" => "quarter"}}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /timeline\.tempo_changes\[0\]: beats_per_minute must be a positive number, got nil/)
+    end
+
+    it "raises ArgumentError with path context on a staff system change to nothing" do
+      hash = base_hash.merge("parts" => [{"voices" => [], "staff_system_changes" => [{"number" => 3}]}])
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /parts\[0\]\.staff_system_changes\[0\]: a staff system change names a staff system, got nil/)
+    end
+
+    it "raises ArgumentError with path context on an unknown clef in a changed staff system" do
+      changed_system = {"staves" => [{"clef" => "kazoo_clef"}]}
+      hash = base_hash.merge("parts" => [{"voices" => [], "staff_system_changes" => [{"number" => 3, "staff_system" => changed_system}]}])
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /parts\[0\]\.staff_system_changes\[0\]\.staves\[0\]: unknown clef "kazoo_clef"/)
     end
 
     it "raises ArgumentError when a placement uses the retired v2 pitches key" do

@@ -55,7 +55,8 @@ This is a breaking release. `Composition` is removed rather than deprecated, and
 
 - **`HeadMusic::Content::CantusFirmus::Example#to_flow(rhythmic_value:, meter:)`.** An example was a catalog datum — a pitch list with a mode and a citation — that nothing in the gem turned into music. It now realizes as a standalone flow with one part, no player, and one note per bar. Rhythm and meter are the realization's choice rather than the datum's, so they are parameters.
 
-- **`Project#to_h` / `.from_h` / `#to_json` / `.from_json`**, and `Flow.from_v3_h`. Schema 4 round-trips players, flows, parts, voices, staff assignments, instrument changes, staff systems, and repeat structure, and round-trips a standalone flow as its own document.
+- **`Project#to_h` / `.from_h` / `#to_json` / `.from_json`**, and `Flow.from_v3_h`. Schema 4 round-trips players, flows, parts, voices, staff assignments, instrument changes, staff systems and their changes, clef changes, tempo and tempo changes, subtick-precise positions, and repeat structure, and round-trips a standalone flow as its own document. A tempo serializes as `{"beat_value", "beats_per_minute"}` rather than as a `"quarter = 72"` string, because `Tempo.get` reads the number by stripping non-digits and would turn 72.5 into 725.
+- **`Flow.new(tempo:)`, `Flow#tempo`, and `Flow#change_tempo`**, alongside the meter and key signature equivalents. A tempo change allocates its bar the way a meter change does, and accepts a `Tempo`, a tempo name, or a `"quarter = 96"` string.
 
 - `Flow#position`, `Content::Position#subtick`, `Voice#assign_staff`, `Part#instrument_at` / `#staff_system_at` / `#instruments`, `Player#instruments` / `#primary_instrument` (derived from the parts, so they cannot drift from the instrument changes authored on them).
 
