@@ -122,7 +122,7 @@ module HeadMusic::Notation::LilyPond
       [
         "#{INDENT * 2}#{staff_open(voice)}",
         "#{INDENT * 3}\\new Voice {",
-        *music_lines(voice).map { |line| INDENT * 4 + line },
+        *music_lines(voice, staff: voice.staff).map { |line| INDENT * 4 + line },
         "#{INDENT * 3}}",
         "#{INDENT * 2}}"
       ]

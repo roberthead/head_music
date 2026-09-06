@@ -69,4 +69,28 @@ describe HeadMusic::Notation::LilyPond::Writer do
 
     it_behaves_like "a compilable document"
   end
+
+  # An authored clef is the source of truth; the selector is the fallback for a
+  # part whose staves were never authored, which is what an ABC import and a
+  # bare counterpoint exercise are.
+  describe "a single-staff part with an authored clef" do
+    subject(:rendered) { described_class.new(flow).to_s }
+
+    let(:flow) do
+      HeadMusic::Content::Flow.new(name: "Authored Clef").tap do |flow|
+        part = flow.add_part(staff_system: HeadMusic::Content::StaffSystem.single_staff(clef: :treble_clef))
+        part.add_voice.place("1:1", :whole, "C2")
+      end
+    end
+
+    it "uses the authored clef rather than the one the range suggests" do
+      expect(rendered).to include "\\clef treble"
+    end
+
+    it "still infers a clef where none was authored" do
+      bare = HeadMusic::Content::Flow.new(name: "Inferred")
+      bare.add_voice.place("1:1", :whole, "C2")
+      expect(described_class.new(bare).to_s).to include "\\clef bass"
+    end
+  end
 end
