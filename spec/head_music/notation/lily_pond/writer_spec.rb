@@ -155,10 +155,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
         expect(rendered_with(:alto_clef)).to include "\\clef alto"
       end
 
-      # :tenor_clef is an alias of the vocal tenor G clef; the C clef on the
-      # fourth line is :tenor_c_clef.
-      it "writes the tenor C clef as tenor" do
-        expect(rendered_with(:tenor_c_clef)).to include "\\clef tenor"
+      it "writes the tenor clef as tenor" do
+        expect(rendered_with(:tenor_clef)).to include "\\clef tenor"
       end
 
       # The octave clefs carry characters LilyPond accepts only inside quotes.
