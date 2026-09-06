@@ -75,17 +75,20 @@ module HeadMusic::Notation::LilyPond
       ]
     end
 
-    # A part on one staff renders exactly as a voice used to, which is what
-    # keeps every existing document byte-identical. A part on several renders
-    # a braced or bracketed group, one \\new Staff per staff, each carrying the
-    # voices that begin on it.
+    # A part on one staff holding one voice renders exactly as a voice used to,
+    # which is what keeps every existing document byte-identical. Holding
+    # several, it renders one staff with the voices in parallel, as MusicXML
+    # renders the same part; holding none, a silent staff, so the chair keeps
+    # its line in the score. A part on several staves renders a braced or
+    # bracketed group, one \\new Staff per staff, each carrying the voices that
+    # begin on it.
     def part_lines(part, part_index)
-      return part.voices.flat_map { |voice| staff_lines(voice) } if part.staff_system.length == 1
+      return single_staff_lines(part) if part.staff_system.length == 1
 
       [
         "#{INDENT * 2}#{group_open(part)}",
         *part.staff_system.staves.each_with_index.flat_map { |staff, staff_index|
-          grouped_staff_lines(part, part_index, staff, staff_index)
+          grouped_staff_lines(part, part_index, staff, staff_index).map { |line| INDENT + line }
         },
         "#{INDENT * 2}>>"
       ]
@@ -97,31 +100,39 @@ module HeadMusic::Notation::LilyPond
 
     def grouped_staff_lines(part, part_index, staff, staff_index)
       voices = part.voices.select { |voice| voice.staff.equal?(staff) }
+      voices_lines = voices.map { |voice| voice_writer.lines(voice, part_index: part_index, staff: staff) }
+      voices_lines = [voice_writer.silent_lines(staff)] if voices_lines.empty?
+      staff_block(%(\\new Staff = "#{Writer.staff_id(part_index, staff_index)}" <<), voices_lines, ">>")
+    end
+
+    def single_staff_lines(part)
+      staff = part.staff_system.first_staff
+      case part.voices.length
+      when 0 then staff_block(staff_open(part_name(part), "{"), [voice_writer.silent_lines(staff)], "}")
+      when 1 then staff_block(staff_open(part.voices.first.role, "{"), [voice_writer.lines(part.voices.first, staff: staff)], "}")
+      else staff_block(staff_open(part_name(part), "<<"), part.voices.map { |voice| voice_writer.lines(voice, staff: staff) }, ">>")
+      end
+    end
+
+    # A staff of several voices, or of none, is named for its part rather than
+    # for any one voice's role.
+    def part_name(part)
+      part.player&.name || part.instrument&.name
+    end
+
+    def staff_open(name, opener)
+      return "\\new Staff #{opener}" unless name
+
+      %(\\new Staff \\with { instrumentName = "#{StringText.escape(name)}" } #{opener})
+    end
+
+    # A staff: its opening, one \new Voice block per voice, and its closer.
+    def staff_block(opening, voices_lines, closer)
       [
-        %(#{INDENT * 3}\\new Staff = "#{Writer.staff_id(part_index, staff_index)}" <<),
-        *voices_or_silence(part_index, staff, voices).map { |line| INDENT * 4 + line },
-        "#{INDENT * 3}>>"
+        "#{INDENT * 2}#{opening}",
+        *voices_lines.flat_map { |lines| voice_block(lines) }.map { |line| INDENT * 3 + line },
+        "#{INDENT * 2}#{closer}"
       ]
-    end
-
-    def voices_or_silence(part_index, staff, voices)
-      return voice_block(voice_writer.silent_lines(staff)) if voices.empty?
-
-      voices.flat_map { |voice| voice_block(voice_writer.lines(voice, part_index: part_index, staff: staff)) }
-    end
-
-    def staff_lines(voice)
-      [
-        "#{INDENT * 2}#{staff_open(voice)}",
-        *voice_block(voice_writer.lines(voice, staff: voice.staff)).map { |line| INDENT * 3 + line },
-        "#{INDENT * 2}}"
-      ]
-    end
-
-    def staff_open(voice)
-      return "\\new Staff {" unless voice.role
-
-      %(\\new Staff \\with { instrumentName = "#{StringText.escape(voice.role)}" } {)
     end
 
     def voice_block(lines)

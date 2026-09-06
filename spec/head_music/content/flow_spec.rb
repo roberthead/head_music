@@ -185,6 +185,41 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  # 20.x cleared a change by passing nil. Clearing now has its own verb, and
+  # nil is refused where it is passed rather than reaching a rudiment getter.
+  describe "removing an authored change" do
+    before do
+      flow.change_meter(3, "3/4")
+      flow.change_key_signature(3, "G major")
+      flow.change_tempo(3, "quarter = 96")
+    end
+
+    it "answers the removed value and reverts what is in force" do
+      expect(flow.remove_meter_change(3)).to eq HeadMusic::Rudiment::Meter.get("3/4")
+      expect([flow.meter_at(3), flow.meter_changes]).to eq [HeadMusic::Rudiment::Meter.get("4/4"), {}]
+    end
+
+    it "removes a key signature change" do
+      flow.remove_key_signature_change(3)
+      expect([flow.key_signature_at(3).name, flow.key_signature_changes]).to eq ["C major", {}]
+    end
+
+    it "removes a tempo change" do
+      flow.remove_tempo_change(3)
+      expect([flow.tempo_at(3).beats_per_minute, flow.tempo_changes]).to eq [120.0, {}]
+    end
+
+    it "answers nil where nothing was authored" do
+      expect(flow.remove_meter_change(5)).to be_nil
+    end
+
+    it "refuses nil as a change, pointing at the remover" do
+      expect { flow.change_meter(3, nil) }.to raise_error ArgumentError, /got nil; to clear an authored change, use #remove_meter_change/
+      expect { flow.change_key_signature(3, nil) }.to raise_error ArgumentError, /use #remove_key_signature_change/
+      expect { flow.change_tempo(3, nil) }.to raise_error ArgumentError, /use #remove_tempo_change/
+    end
+  end
+
   describe "#to_abc" do
     it "renders an ABC tune string" do
       expect(flow.to_abc).to start_with "X:1\nT:Fruit Salad\n"

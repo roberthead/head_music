@@ -6,6 +6,13 @@ describe HeadMusic::Notation::ClefSelector do
   let(:flow) { HeadMusic::Content::Flow.new }
   let(:voice) { flow.add_voice(role: "Melody") }
 
+  # A part nobody plays in still gets a staff, and the staff gets a clef.
+  context "when there is no voice at all" do
+    let(:voice) { nil }
+
+    it { is_expected.to eq HeadMusic::Rudiment::Clef.get(:treble_clef) }
+  end
+
   context "when the voice sits high" do
     before do
       voice.place("1:1", :quarter, "C5")

@@ -34,6 +34,20 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
+    # The whole-measure rest that stands in for a bar the voice places nothing
+    # in. It belongs to its voice and staff as much as a note does, or a reader
+    # stacks it onto voice 1 of staff 1.
+    def whole_measure_rest_lines(bar_number, voice_number: nil, staff_number: nil)
+      [
+        "#{INDENT * 3}<note>",
+        %(#{INDENT * 4}<rest measure="yes"/>),
+        "#{INDENT * 4}<duration>#{plan.whole_measure_duration(bar_number)}</duration>",
+        voice_number && "#{INDENT * 4}<voice>#{voice_number}</voice>",
+        staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>",
+        "#{INDENT * 3}</note>"
+      ].compact
+    end
+
     private
 
     attr_reader :plan, :lyric_writer

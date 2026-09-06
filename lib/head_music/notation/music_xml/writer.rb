@@ -18,7 +18,7 @@ module HeadMusic::Notation::MusicXML
 
     # The rendering facts the serialization methods below read; RenderPlan
     # computes them from the flow.
-    delegate :bar_numbers, :placements_by_bar, :whole_measure_duration, to: :plan
+    delegate :bar_numbers, :placements_by_bar, :written_duration, to: :plan
 
     def initialize(flow)
       @flow = flow
@@ -122,23 +122,25 @@ module HeadMusic::Notation::MusicXML
       ]
     end
 
-    # Each voice after the first is preceded by a <backup> that rewinds the
-    # measure, which is how MusicXML writes simultaneous voices in one part.
+    # Each voice after the first is preceded by a <backup> that rewinds to the
+    # start of the measure, which is how MusicXML writes simultaneous voices in
+    # one part. It rewinds by what the previous voice actually wrote, which is
+    # less than a measure when that voice ended mid-bar.
     def part_content_lines(part, bar_number)
       return measure_content_lines(part, part.voices.first, bar_number) if part.voices.length <= 1
 
       part.voices.each_with_index.flat_map do |voice, index|
         [
-          *(index.positive? ? backup_lines(bar_number) : []),
+          *(index.positive? ? backup_lines(written_duration(part.voices[index - 1], bar_number)) : []),
           *measure_content_lines(part, voice, bar_number)
         ]
       end
     end
 
-    def backup_lines(bar_number)
+    def backup_lines(duration)
       [
         "#{INDENT * 3}<backup>",
-        "#{INDENT * 4}<duration>#{whole_measure_duration(bar_number)}</duration>",
+        "#{INDENT * 4}<duration>#{duration}</duration>",
         "#{INDENT * 3}</backup>"
       ]
     end
@@ -151,13 +153,16 @@ module HeadMusic::Notation::MusicXML
       %(#{INDENT * 2}<measure number="#{bar_number}"#{implicit}>)
     end
 
+    # A voice of nil is a part nobody plays in, which renders as whole-measure
+    # rests on its first staff so the chair keeps its line in the score.
     def measure_content_lines(part, voice, bar_number)
-      placements = voice && placements_by_bar(voice)[bar_number]
-      return whole_measure_rest_lines(bar_number) unless placements
-
       voice_number = (part.voices.length > 1) ? part.voices.index(voice) + 1 : nil
+      staff_number = staff_number(part, voice, bar_number)
+      placements = voice && placements_by_bar(voice)[bar_number]
+      return note_writer.whole_measure_rest_lines(bar_number, voice_number: voice_number, staff_number: staff_number) unless placements
+
       placements.flat_map do |placement|
-        note_writer.lines(placement, voice_number: voice_number, staff_number: staff_number(part, voice, bar_number))
+        note_writer.lines(placement, voice_number: voice_number, staff_number: staff_number)
       end
     end
 
@@ -165,19 +170,10 @@ module HeadMusic::Notation::MusicXML
     # shows up: the same voice reports a different staff on either side of it.
     def staff_number(part, voice, bar_number)
       staves = part.staff_system_at(bar_number).staves
-      return nil if staves.length <= 1
+      return nil if staves.length <= 1 || voice.nil?
 
       index = staves.index { |staff| staff.equal?(voice.staff_at(bar_number)) }
       index && index + 1
-    end
-
-    def whole_measure_rest_lines(bar_number)
-      [
-        "#{INDENT * 3}<note>",
-        %(#{INDENT * 4}<rest measure="yes"/>),
-        "#{INDENT * 4}<duration>#{whole_measure_duration(bar_number)}</duration>",
-        "#{INDENT * 3}</note>"
-      ]
     end
   end
 end

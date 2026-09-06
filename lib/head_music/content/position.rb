@@ -105,14 +105,23 @@ class HeadMusic::Content::Position
   # bars step is a single divmod, and that silently assumes every bar it
   # crosses has the same number of counts. So the bar carry is walked here one
   # bar at a time, asking the flow for each bar's meter as it goes.
+  #
+  # And the radix carry was done under the *origin* bar's meter, so a position
+  # that lands in a bar with a different count unit is carried again under
+  # that bar's, until it lands in a bar it was carried under. One instant then
+  # has one spelling, which is what equality and hashing depend on.
   def normalize
-    counts, tick, subtick = carried_counts
-    bar = value.bar
-    while counts > flow.meter_at(bar).counts_per_bar
-      counts -= flow.meter_at(bar).counts_per_bar
-      bar += 1
+    loop do
+      origin_bar = value.bar
+      counts, tick, subtick = carried_counts
+      bar = origin_bar
+      while counts > flow.meter_at(bar).counts_per_bar
+        counts -= flow.meter_at(bar).counts_per_bar
+        bar += 1
+      end
+      @value = HeadMusic::Time::MusicalPosition.new(bar, counts, tick, subtick)
+      break if bar == origin_bar
     end
-    @value = HeadMusic::Time::MusicalPosition.new(bar, counts, tick, subtick)
   end
 
   # The count the subticks and ticks carry up to, which may be more than a bar

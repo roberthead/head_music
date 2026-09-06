@@ -15,7 +15,8 @@ describe HeadMusic::Content::Project do
     left_hand = piano.add_voice(role: "left hand")
     left_hand.place("1:1", :whole, "C3")
     left_hand.cross_to(staff_system.staves.last, from: 1)
-    left_hand.cross_to(staff_system.staves.first, from: 5, through: 6)
+    left_hand.cross_to(staff_system.staves.first, from: 5)
+    left_hand.cross_to(staff_system.staves.last, from: 7)
     first.add_part(instrument: "flute").add_voice(role: "flute").place("1:1", :whole, "C5")
     first.bars(2).last.starts_repeat = true
     first.change_key_signature(5, -3, tonal_context: HeadMusic::Rudiment::Mode.get("C dorian"))

@@ -66,6 +66,7 @@ class HeadMusic::Content::Flow
     end
 
     def change_meter(bar_number, meter)
+      ensure_value!(meter, "meter", :remove_meter_change)
       @meter_map.add(downbeat_of(bar_number), HeadMusic::Rudiment::Meter.get(meter)).value
     end
 
@@ -82,6 +83,7 @@ class HeadMusic::Content::Flow
     end
 
     def change_tempo(bar_number, tempo)
+      ensure_value!(tempo, "tempo", :remove_tempo_change)
       @tempo_map.add(downbeat_of(bar_number), self.class.tempo_for(tempo)).value
     end
 
@@ -98,9 +100,11 @@ class HeadMusic::Content::Flow
     #   or something namable as a key signature, from which fifths and an
     #   interpretation are both taken
     def change_key_signature(bar_number, signature, tonal_context: nil)
+      ensure_value!(signature, "key signature", :remove_key_signature_change)
       position = downbeat_of(bar_number)
       event =
         if signature.is_a?(Integer)
+          ensure_readable!(signature, tonal_context, bar_number)
           HeadMusic::Time::KeySignatureEvent.new(position, signature, tonal_context: tonal_context)
         else
           self.class.event_for(HeadMusic::Rudiment::KeySignature.get(signature), position, tonal_context: tonal_context)
@@ -121,6 +125,21 @@ class HeadMusic::Content::Flow
 
     def tempo_change_at(bar_number)
       @tempo_map.change_at(downbeat_of(bar_number))&.value
+    end
+
+    # Un-author a change. The value in force reverts to whatever the previous
+    # change, or the opening value, says. Answers the removed value, or nil
+    # where nothing was authored in that bar.
+    def remove_meter_change(bar_number)
+      @meter_map.remove(downbeat_of(bar_number))&.value
+    end
+
+    def remove_key_signature_change(bar_number)
+      @key_signature_map.remove(downbeat_of(bar_number))&.value
+    end
+
+    def remove_tempo_change(bar_number)
+      @tempo_map.remove(downbeat_of(bar_number))&.value
     end
 
     # The authored changes, by bar number. The {bar_number => value} shape is
@@ -183,6 +202,26 @@ class HeadMusic::Content::Flow
     end
 
     private
+
+    # 20.x cleared a change by passing nil. That now has its own verb, and nil
+    # is refused here rather than reaching a rudiment getter that would raise
+    # something unrelated.
+    def ensure_value!(value, noun, remover)
+      return unless value.nil?
+
+      raise ArgumentError, "a #{noun} change takes a #{noun}, got nil; to clear an authored change, use ##{remover}"
+    end
+
+    # A signature past the conventional table -- eight sharps is G sharp major
+    # -- has no reading of its own, so every consumer that needs a tonic would
+    # raise later, far from here. Requiring the interpretation up front puts
+    # the error where the signature was authored.
+    def ensure_readable!(signature, tonal_context, bar_number)
+      return if tonal_context || HeadMusic::Rudiment::Key::MAJOR_KEY_NAMES_BY_FIFTHS.key?(signature)
+
+      raise ArgumentError,
+        "a signature of #{signature} fifths at bar #{bar_number} has no conventional key; give it a tonal_context"
+    end
 
     def changes_by_bar(map)
       map.events.to_h { |event| [event.position.bar, event.value] }

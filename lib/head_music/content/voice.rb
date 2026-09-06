@@ -38,38 +38,25 @@ class HeadMusic::Content::Voice
     staff_at(HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR)
   end
 
-  # Move this voice onto another staff of its own part for a span of bars.
+  # Write this voice onto a staff of its own part from a bar onward.
   #
-  # A left-hand piano voice that rises into the treble staff for four bars is
-  # this with a four-bar span; a single cross-staff note is the same thing over
-  # one bar. There is no note-level special case.
-  #
-  # `through:` rather than `until:` because until is a Ruby keyword. The span
-  # is inclusive, and after it the voice goes back to whatever staff it was on
-  # before -- which is the part's first staff for a voice that had never moved,
-  # and the bass staff for a left hand that had.
+  # A crossing is one event, not a span: a left hand that rises into the
+  # treble staff at bar 5 and comes back down at bar 9 is two crossings, each
+  # authored where it happens. A single cross-staff note is a crossing and, a
+  # bar later, another. There is no note-level special case, and nothing to
+  # overlap.
   #
   # @param staff [HeadMusic::Content::Staff] a staff of this part's system
-  # @param from [Integer] the first bar on that staff
-  # @param through [Integer, nil] the last bar on it; nil for the rest of the flow
-  # Write this voice onto a staff from a bar onward, with no span and no
-  # restore. #cross_to is this plus the bookend; deserialization is this alone,
-  # because the serialized form is the map and its entries are already the
-  # events a span would have produced.
+  # @param bar_number [Integer] the first bar on that staff
   def assign_staff(bar_number, staff)
     ensure_staff_in_system!(staff, bar_number)
     @staff_assignment_map.add(downbeat_of(bar_number), staff).value
   end
 
-  def cross_to(staff, from:, through: nil)
-    ensure_staff_in_system!(staff, from)
-    staff_before_the_span = staff_at(from)
-    @staff_assignment_map.add(downbeat_of(from), staff)
-    return staff if through.nil?
-
-    ensure_staff_in_system!(staff, through)
-    @staff_assignment_map.add(downbeat_of(through + 1), staff_before_the_span)
-    staff
+  # #assign_staff in the order the sentence is spoken: cross to the treble
+  # staff from bar 5.
+  def cross_to(staff, from:)
+    assign_staff(from, staff)
   end
 
   def staff_assignments

@@ -297,6 +297,32 @@ describe HeadMusic::Content::Position do
       expect(flow.position(1, 1, 960 * 10).code).to eq "4:1:000"
     end
 
+    # The tick carry was done under the origin bar's count unit. Landing in a
+    # bar whose count is an eighth, a leftover half-count of ticks is a whole
+    # count there, so the position is carried again under that bar's meter.
+    context "when the destination bar has a different count unit" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap { |flow| flow.change_meter(2, "6/8") }
+      end
+
+      it "respells the leftover ticks in the destination bar's counts" do
+        expect((flow.position("1:4:480") + :quarter).code).to eq "2:2:000"
+      end
+
+      it "gives one instant one spelling, so equality and hashing agree" do
+        rolled = flow.position("1:4:480") + :quarter
+        expect([rolled == flow.position("2:2"), rolled.hash == flow.position("2:2").hash]).to eq [true, true]
+      end
+
+      it "merges a placement rolled into the bar with one authored there" do
+        voice = flow.add_voice
+        voice.place("1:4:480", :quarter, "F4")
+        voice.place(voice.next_position, :eighth, "G4")
+        voice.place(flow.position("2:2"), :eighth, "A4")
+        expect(voice.placements.map { |placement| placement.position.code }).to eq %w[1:4:480 2:2:000]
+      end
+    end
+
     it "leaves a position within the opening bar alone" do
       expect(flow.position(1, 1, 960 * 2).code).to eq "1:3:000"
     end

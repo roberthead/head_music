@@ -51,6 +51,16 @@ module HeadMusic::Notation::MusicXML
       (Rational(4 * meter.top_number, meter.bottom_number) * divisions).numerator
     end
 
+    # The divisions a voice's notes occupy in a bar: the sum of its components
+    # there, or the whole-measure rest that stands in for an empty bar. Less
+    # than a measure where the voice ended mid-bar.
+    def written_duration(voice, bar_number)
+      placements = placements_by_bar(voice)[bar_number]
+      return whole_measure_duration(bar_number) unless placements
+
+      placements.sum { |placement| components_by_placement[placement].sum(&:duration) }
+    end
+
     private
 
     def precompute_eager_data

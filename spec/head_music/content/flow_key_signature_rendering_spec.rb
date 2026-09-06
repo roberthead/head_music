@@ -69,10 +69,9 @@ describe HeadMusic::Content::Flow do
 
   # The signature itself is unbounded -- G sharp major counts each double sharp
   # twice and reaches eight -- but the fallback table stops at seven, because
-  # past that there is no conventional major key to name.
-  #
-  # Only LilyPond consults the table, because only LilyPond needs a tonic.
-  # MusicXML stores fifths, which is what the event already holds.
+  # past that there is no conventional major key to name. So past seven the
+  # interpretation is required, at authoring time, rather than every reader
+  # that needs a tonic raising later.
   context "with a theoretical signature beyond the fallback table" do
     context "when the event carries an interpretation" do
       before { flow.change_key_signature(1, 8, tonal_context: HeadMusic::Rudiment::Key.get("G# major")) }
@@ -87,15 +86,20 @@ describe HeadMusic::Content::Flow do
     end
 
     context "when it does not" do
-      before { flow.change_key_signature(1, 8) }
-
-      it "still renders to MusicXML, which needs no tonic" do
-        expect(flow.to_musicxml).to include "<fifths>8</fifths>"
+      it "is refused where it is authored, naming the bar" do
+        expect { flow.change_key_signature(1, 8) }
+          .to raise_error ArgumentError, /8 fifths at bar 1 has no conventional key; give it a tonal_context/
       end
 
-      it "raises for LilyPond, which does" do
-        expect { flow.to_lilypond }
-          .to raise_error ArgumentError, /no conventional key for a signature of 8 fifths/
+      it "is refused on deserialization too" do
+        hash = flow.to_h
+        hash["timeline"]["key_signature_changes"] = [{"number" => 1, "signature" => 8, "tonal_context" => nil}]
+        expect { described_class.from_h(hash) }.to raise_error ArgumentError, /8 fifths at bar 1/
+      end
+
+      it "leaves every signature within the table alone" do
+        expect { flow.change_key_signature(1, 7) }.not_to raise_error
+        expect { flow.change_key_signature(2, -7) }.not_to raise_error
       end
     end
   end

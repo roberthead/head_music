@@ -4,12 +4,12 @@ module HeadMusic::Notation
   class ClefSelector
     MIDDLE_C_MIDI_NOTE_NUMBER = 60
 
-    # Returns the treble clef for a voice with no notes (rest-only or empty),
-    # and otherwise the clef whose side of middle C matches the midpoint of
-    # the voice's lowest and highest pitches. A midpoint exactly on middle C
-    # is treated as treble.
+    # Returns the treble clef for no voice at all (a part nobody plays in) or
+    # a voice with no notes (rest-only or empty), and otherwise the clef whose
+    # side of middle C matches the midpoint of the voice's lowest and highest
+    # pitches. A midpoint exactly on middle C is treated as treble.
     def self.for(voice)
-      return HeadMusic::Rudiment::Clef.get(:treble_clef) unless voice.lowest_pitch
+      return HeadMusic::Rudiment::Clef.get(:treble_clef) unless voice&.lowest_pitch
 
       if midpoint(voice) < MIDDLE_C_MIDI_NOTE_NUMBER
         HeadMusic::Rudiment::Clef.get(:bass_clef)
