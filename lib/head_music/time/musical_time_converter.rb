@@ -69,7 +69,7 @@ module HeadMusic
         subticks_per_bar = meter.counts_per_bar * subticks_per_count
 
         (position.bar - 1) * subticks_per_bar +
-          (position.beat - 1) * subticks_per_count +
+          (position.count - 1) * subticks_per_count +
           position.tick * HeadMusic::Time::SUBTICKS_PER_TICK +
           position.subtick
       end
@@ -88,16 +88,16 @@ module HeadMusic
         (ticks * HeadMusic::Time::SUBTICKS_PER_TICK).round
       end
 
-      # Decompose total subticks into a normalized bar:beat:tick:subtick position
+      # Decompose total subticks into a normalized bar:count:tick:subtick position
       def subticks_to_musical_position(total_subticks, meter)
         subticks_per_count = meter.ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
         subticks_per_bar = meter.counts_per_bar * subticks_per_count
 
         bars, remaining = total_subticks.divmod(subticks_per_bar)
-        beats, remaining = remaining.divmod(subticks_per_count)
+        counts, remaining = remaining.divmod(subticks_per_count)
         ticks, subticks = remaining.divmod(HeadMusic::Time::SUBTICKS_PER_TICK)
 
-        MusicalPosition.new(bars + 1, beats + 1, ticks, subticks).normalize!(meter)
+        MusicalPosition.new(bars + 1, counts + 1, ticks, subticks).normalize!(meter)
       end
     end
   end

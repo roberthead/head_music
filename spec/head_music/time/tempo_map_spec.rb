@@ -72,6 +72,20 @@ describe HeadMusic::Time::TempoMap do
     end
   end
 
+  describe "#change_at" do
+    subject(:tempo_map) { described_class.new }
+
+    before { tempo_map.add_change(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0), "quarter", 96) }
+
+    it "finds a tempo change starting exactly at the position" do
+      expect(tempo_map.change_at(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)).tempo.beats_per_minute).to eq 96.0
+    end
+
+    it "finds nothing where a tempo is merely in force" do
+      expect(tempo_map.change_at(HeadMusic::Time::MusicalPosition.new(7, 1, 0, 0))).to be_nil
+    end
+  end
+
   describe "#tempo_at" do
     subject(:tempo_map) { described_class.new }
 

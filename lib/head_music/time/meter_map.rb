@@ -23,60 +23,46 @@ module HeadMusic
     #     # Process each meter segment
     #   end
     class MeterMap
-      include EventMapSupport
-
-      # @return [Array<MeterEvent>] all meter events in chronological order
-      attr_reader :events
-
       def initialize(starting_meter: nil, starting_position: nil)
         starting_meter = HeadMusic::Rudiment::Meter.get(starting_meter || "4/4")
         starting_position ||= MusicalPosition.new
-        @events = [MeterEvent.new(starting_position, starting_meter)]
+        # The opening meter is not removable: a timeline with no meter at all
+        # has no bars, so there is always one in force.
+        @map = EventMap.new(removable_first_event: false)
+        @map.add(starting_position, MeterEvent.new(starting_position, starting_meter))
+      end
+
+      # @return [Array<MeterEvent>] all meter events in chronological order
+      def events
+        @map.values
       end
 
       def add_change(position, meter_or_identifier)
-        remove_change(position)
         meter = meter_or_identifier.is_a?(HeadMusic::Rudiment::Meter) ? meter_or_identifier : HeadMusic::Rudiment::Meter.get(meter_or_identifier)
-        event = MeterEvent.new(position, meter)
-        @events << event
-        sort_events!
-        event
+        MeterEvent.new(position, meter).tap { |event| @map.add(position, event) }
       end
 
       def remove_change(position)
-        @events.reject! do |event|
-          event != @events.first && positions_equal?(event.position, position)
-        end
+        @map.remove(position)
       end
 
       def clear_changes
-        @events = [@events.first]
+        @map.clear
       end
 
       def meter_at(position)
-        active_event = @events.reverse.find do |event|
-          compare_positions(event.position, position) <= 0
-        end
-        active_event&.meter || @events.first.meter
+        @map.at(position)&.meter || events.first.meter
       end
 
-      def each_segment(from_position, to_position)
-        relevant_events = @events.select do |event|
-          compare_positions(event.position, to_position) < 0
+      # @return [MeterEvent, nil] the meter change starting exactly here
+      def change_at(position)
+        @map.change_at(position)&.value
+      end
+
+      def each_segment(from_position, to_position, &block)
+        @map.each_segment(from_position, to_position) do |start_position, end_position, event|
+          block.call(start_position, end_position, event&.meter || events.first.meter)
         end
-
-        current_pos = from_position
-        current_meter = meter_at(from_position)
-
-        relevant_events.each do |event|
-          next if compare_positions(event.position, from_position) <= 0
-
-          yield current_pos, event.position, current_meter
-          current_pos = event.position
-          current_meter = event.meter
-        end
-
-        yield current_pos, to_position, current_meter
       end
     end
   end

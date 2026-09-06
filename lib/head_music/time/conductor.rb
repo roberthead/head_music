@@ -87,9 +87,6 @@ module HeadMusic
           starting_meter: starting_meter || "4/4",
           starting_position: @starting_musical_position
         )
-
-        # Link maps together for position normalization
-        @tempo_map.meter = @meter_map.meter_at(@starting_musical_position)
       end
 
       # Convert clock position to musical position

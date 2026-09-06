@@ -7,7 +7,7 @@ module HeadMusic
     # A MusicalPosition represents a point in musical time using a hierarchical
     # structure:
     # - bar: the measure number (1-indexed)
-    # - beat: the beat within the bar (1-indexed)
+    # - count: the count within the bar (1-indexed)
     # - tick: subdivision of a beat (0-indexed, 960 ticks per quarter note)
     # - subtick: finest resolution (0-indexed, 240 subticks per tick)
     #
@@ -22,7 +22,7 @@ module HeadMusic
     # @example Parsing from a string
     #   position = HeadMusic::Time::MusicalPosition.parse("2:3:480:0")
     #   position.bar # => 2
-    #   position.beat # => 3
+    #   position.count # => 3
     #
     # @example Normalizing with overflow
     #   meter = HeadMusic::Rudiment::Meter.get("4/4")
@@ -44,8 +44,11 @@ module HeadMusic
       # @return [Integer] the bar (measure) number (1-indexed)
       attr_reader :bar
 
-      # @return [Integer] the beat within the bar (1-indexed)
-      attr_reader :beat
+      # @return [Integer] the count within the bar (1-indexed)
+      #
+      # A count, not a beat: Meter distinguishes the two, and in 6/8 there are
+      # two beats and six counts. A position addresses the latter.
+      attr_reader :count
 
       # @return [Integer] the tick within the beat (0-indexed)
       attr_reader :tick
@@ -56,8 +59,8 @@ module HeadMusic
       # Default starting bar number
       DEFAULT_FIRST_BAR = 1
 
-      # First beat in a bar
-      FIRST_BEAT = 1
+      # First count in a bar
+      FIRST_COUNT = 1
 
       # First tick in a beat
       FIRST_TICK = 0
@@ -67,7 +70,7 @@ module HeadMusic
 
       # Parse a position from a string representation
       #
-      # @param identifier [String] position in "bar:beat:tick:subtick" format
+      # @param identifier [String] position in "bar:count:tick:subtick" format
       # @return [MusicalPosition] the parsed position
       # @example
       #   MusicalPosition.parse("2:3:480:120")
@@ -78,35 +81,33 @@ module HeadMusic
       # Create a new musical position
       #
       # @param bar [Integer, String] the bar number (default: 1)
-      # @param beat [Integer, String] the beat number (default: 1)
+      # @param count [Integer, String] the count number (default: 1)
       # @param tick [Integer, String] the tick number (default: 0)
       # @param subtick [Integer, String] the subtick number (default: 0)
       def initialize(
         bar = DEFAULT_FIRST_BAR,
-        beat = FIRST_BEAT,
+        count = FIRST_COUNT,
         tick = FIRST_TICK,
         subtick = FIRST_SUBTICK
       )
         @bar = bar.to_i
-        @beat = beat.to_i
+        @count = count.to_i
         @tick = tick.to_i
         @subtick = subtick.to_i
-        @meter = nil
-        @total_subticks = nil
       end
 
       # Convert position to array format
       #
-      # @return [Array<Integer>] [bar, beat, tick, subtick]
+      # @return [Array<Integer>] [bar, count, tick, subtick]
       def to_a
-        [bar, beat, tick, subtick]
+        [bar, count, tick, subtick]
       end
 
       # Convert position to string format
       #
-      # @return [String] position in "bar:beat:tick:subtick" format
+      # @return [String] position in "bar:count:tick:subtick" format
       def to_s
-        "#{bar}:#{beat}:#{tick}:#{subtick}"
+        "#{bar}:#{count}:#{tick}:#{subtick}"
       end
 
       # Normalize the position according to a meter, handling overflow
@@ -124,53 +125,39 @@ module HeadMusic
       def normalize!(meter)
         return self unless meter
 
-        @meter = meter
-        @total_subticks = nil # Invalidate cached value
-
         # Carry overflow (and borrow underflow) up through each level.
         # divmod handles both in-range and out-of-range values uniformly.
         @tick += carry(:subtick, HeadMusic::Time::SUBTICKS_PER_TICK)
-        @beat += carry(:tick, meter.ticks_per_count)
-        @bar += carry(:beat, meter.counts_per_bar)
+        @count += carry(:tick, meter.ticks_per_count)
+        @bar += carry(:count, meter.counts_per_bar, first: FIRST_COUNT)
 
         self
       end
 
       # Compare this position to another
       #
-      # Note: For accurate comparison, both positions should be normalized
-      # with the same meter first.
+      # Positions compare lexically on [bar, count, tick, subtick]. Elapsed
+      # time is deliberately not consulted: a position is a coordinate, and
+      # converting it to a duration requires the meter of every intervening
+      # bar, which only a meter map knows. Ordering two normalized positions
+      # needs no such knowledge.
       #
       # @param other [MusicalPosition] another position to compare
       # @return [Integer] -1 if less than, 0 if equal, 1 if greater than
       def <=>(other)
-        to_total_subticks <=> other.to_total_subticks
+        to_a <=> other.to_a
       end
 
-      # Convert position to total subticks for comparison and calculation
-      #
-      # @return [Integer] total subticks from the beginning
-      # @note This calculation assumes the position has been normalized
-      def to_total_subticks
-        return @total_subticks if @total_subticks
-
-        # Note: This is a simplified calculation that assumes consistent meter
-        ticks_per_count = @meter&.ticks_per_count || HeadMusic::Time::PPQN
-        counts_per_bar = @meter&.counts_per_bar || 4
-        subticks_per_count = ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
-        subticks_per_bar = counts_per_bar * subticks_per_count
-
-        @total_subticks =
-          (bar - 1) * subticks_per_bar +
-          (beat - 1) * subticks_per_count +
-          tick * HeadMusic::Time::SUBTICKS_PER_TICK +
-          subtick
+      # @return [Integer] a hash over the position's components
+      def hash
+        to_a.hash
       end
 
-      protected
-
-      # Allow other MusicalPosition instances to access this method for comparison
-      alias_method :to_i, :to_total_subticks
+      # @param other [Object] the object to compare
+      # @return [Boolean] true when other is a position with the same components
+      def eql?(other)
+        other.is_a?(self.class) && to_a == other.to_a
+      end
     end
   end
 end

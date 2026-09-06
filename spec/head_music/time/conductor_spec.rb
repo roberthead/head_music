@@ -76,7 +76,7 @@ describe HeadMusic::Time::Conductor do
         clock_pos = HeadMusic::Time::ClockPosition.new(250_000_000)
         musical_pos = conductor.clock_to_musical(clock_pos)
         expect(musical_pos.bar).to eq 1
-        expect(musical_pos.beat).to eq 1
+        expect(musical_pos.count).to eq 1
         expect(musical_pos.tick).to eq 480
       end
     end
@@ -271,7 +271,7 @@ describe HeadMusic::Time::Conductor do
         clock = HeadMusic::Time::ClockPosition.new(8_000_000_000)
         position = conductor.clock_to_musical(clock)
         expect(position.bar).to eq 5
-        expect(position.beat).to eq 1
+        expect(position.count).to eq 1
       end
 
       it "finds position in second tempo segment" do
@@ -279,7 +279,7 @@ describe HeadMusic::Time::Conductor do
         clock = HeadMusic::Time::ClockPosition.new(10_500_000_000)
         position = conductor.clock_to_musical(clock)
         expect(position.bar).to eq 6
-        expect(position.beat).to eq 1
+        expect(position.count).to eq 1
       end
 
       it "finds position in third tempo segment" do
@@ -287,7 +287,7 @@ describe HeadMusic::Time::Conductor do
         clock = HeadMusic::Time::ClockPosition.new(18_000_000_000)
         position = conductor.clock_to_musical(clock)
         expect(position.bar).to eq 9
-        expect(position.beat).to eq 1
+        expect(position.count).to eq 1
       end
     end
 
@@ -295,7 +295,7 @@ describe HeadMusic::Time::Conductor do
       it "maintains accuracy across tempo boundaries" do
         original_position = HeadMusic::Time::MusicalPosition.new(7, 3, 480, 0)
         result_position = conductor.clock_to_musical(conductor.musical_to_clock(original_position))
-        expect(result_position).to have_attributes(bar: original_position.bar, beat: original_position.beat)
+        expect(result_position).to have_attributes(bar: original_position.bar, count: original_position.count)
         expect(result_position.tick).to be_within(5).of(original_position.tick)
       end
     end
@@ -344,7 +344,7 @@ describe HeadMusic::Time::Conductor do
       position = HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)
       clock = conductor.musical_to_clock(position)
       expect(clock.to_seconds).to be_within(0.01).of(8.0)
-      expect(conductor.clock_to_musical(clock)).to have_attributes(bar: 5, beat: 1)
+      expect(conductor.clock_to_musical(clock)).to have_attributes(bar: 5, count: 1)
     end
 
     it "calculates within the new meter and tempo" do
