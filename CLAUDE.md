@@ -10,42 +10,18 @@ HeadMusic is a Ruby gem for Western music theory. It provides a comprehensive to
 
 ### Essential Commands
 
+`rake -T` lists the custom tasks. Two distinctions it does not make obvious:
+
 ```bash
-# Install dependencies
-bin/setup
-
-# Run tests with coverage
-bundle exec rake
-
-# Run tests without coverage
-bundle exec rspec
-
-# Run a specific test file
-bundle exec rspec spec/head_music/rudiments/pitch_spec.rb
-
-# Run linting
-bundle exec rubocop
-
-# Run all validation checks (tests, linting, security)
-bundle exec rake validate
-
-# Open interactive console with gem loaded
-bin/console
-# or
-bundle exec rake console
-
-# Generate documentation
-bundle exec rake doc
-
-# Check documentation coverage
-bundle exec rake doc_stats
+bundle exec rake     # tests WITH coverage (the default task)
+bundle exec rspec    # tests WITHOUT coverage
 ```
 
 ### Git Etiquette
 
 **IMPORTANT: Do not make a commit unless I explicitly ask you to.** Wait for explicit instruction before running `git commit`.
 
-When composing git commit messages, follow best-practices. However, do not mention yourself (claude) or list yourself as a co-author.
+When composing git commit messages, follow best-practices. Describe the change itself — do not narrate the assistant's process in the message body. Attribution trailers (`Co-Authored-By`, `Claude-Session`) are added when the session's attribution setting asks for them.
 
 This project uses a rebase flow and `main` as the mainline branch.
 
@@ -130,9 +106,7 @@ The codebase follows a domain-driven design with clear module boundaries:
 
 ### Entry Points
 
-- Main file: `lib/head_music.rb`
-- Module loading order is important and defined in the main file
-- Constants like GOLDEN_RATIO are defined at the top level
+Module loading order matters and is defined in `lib/head_music.rb`.
 
 ## Important Implementation Details
 
@@ -185,22 +159,6 @@ This project deliberately deprioritizes formal documentation in favor of clear, 
 - Follow Standard Ruby style guide
 - Prefer delegation over inheritance
 - Always run `bundle exec rubocop -a` after editing ruby code
-
-## Common Development Tasks
-
-### Adding a New Musical Concept
-
-1. Create the class in the appropriate module
-2. Include `HeadMusic::Named` if it needs internationalization
-3. Add factory method `.get()` if appropriate
-4. Create corresponding spec file
-5. Add translations to locale files if using Named
-
-### Modifying Existing Classes
-
-1. Check for dependent classes that might be affected
-2. Run tests for the specific module: `bundle exec rspec spec/head_music/[module_name]`
-3. Ensure translations are updated if names change
 
 ## Reference Documents
 
