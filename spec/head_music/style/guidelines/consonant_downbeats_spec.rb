@@ -3,9 +3,9 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
   subject { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
   let(:counterpoint) do
-    composition.add_voice(role: :counterpoint).tap do |voice|
+    flow.add_voice(role: :counterpoint).tap do |voice|
       counterpoint_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end
@@ -14,7 +14,7 @@ describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
   let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
   before do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
+    flow.add_voice(role: :cantus_firmus).tap do |voice|
       cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end
@@ -46,7 +46,7 @@ describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
   end
 
   context "when the intervals are compound" do
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "G mixolydian") }
+    let(:flow) { HeadMusic::Content::Flow.new(key_signature: "G mixolydian") }
 
     let(:cantus_firmus_pitches) { %w[G3 A3 B3 A3 C B3 A3 G3] }
     let(:counterpoint_pitches) { %w[D5 C5 G A G G F# G] }
@@ -59,7 +59,7 @@ describe HeadMusic::Style::Guidelines::ConsonantDownbeats do
     let(:analyzer) { described_class.send(:new, counterpoint) }
 
     it "is not treated as a tied suspension" do
-      cantus_firmus_voice = composition.voices.detect(&:cantus_firmus?)
+      cantus_firmus_voice = flow.voices.detect(&:cantus_firmus?)
       interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus_voice, counterpoint, "20:1:0")
       expect(analyzer.send(:tied_suspension?, interval)).to be false
     end

@@ -3,13 +3,13 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::ThirdSpeciesDissonanceTreatment do
   subject { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
-  let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "C major") }
+  let(:counterpoint) { flow.add_voice(role: :counterpoint) }
   # Simple 5-bar CF in C major for targeted tests
   let(:cantus_firmus_pitches) { %w[C4 D4 E4 F4 C4] }
 
   before do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
+    flow.add_voice(role: :cantus_firmus).tap do |voice|
       cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end

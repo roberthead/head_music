@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::GuideItemAssessment do
   subject(:assessment) { guide_item.assess(voice, tier) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:voice) { HeadMusic::Content::Voice.new(composition: composition, role: "Cantus Firmus") }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:voice) { HeadMusic::Content::Voice.new(flow: flow, role: "Cantus Firmus") }
   let(:guide_item) { HeadMusic::Style::Guidelines::MinimumNotes.with(minimum) }
   let(:minimum) { 5 }
   let(:tier) { :primary }

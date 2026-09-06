@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::MinimumNotes do
   subject { assess(described_class, voice, minimum: minimum) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:voice) { HeadMusic::Content::Voice.new(composition: composition, role: "Cantus Firmus") }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:voice) { HeadMusic::Content::Voice.new(flow: flow, role: "Cantus Firmus") }
   let(:minimum) { 5 }
 
   context "with fewer than the configured minimum" do

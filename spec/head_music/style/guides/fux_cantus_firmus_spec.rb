@@ -34,8 +34,8 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
   describe "a four-note line" do
     subject(:assessment) { described_class.assess(short) }
 
-    let(:short_composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-    let(:short) { short_composition.add_voice(role: :counterpoint) }
+    let(:short_flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+    let(:short) { short_flow.add_voice(role: :counterpoint) }
 
     before { %w[D4 F4 E4 D4].each_with_index { |pitch, bar| short.place("#{bar + 1}:1", :whole, pitch) } }
 
@@ -63,7 +63,7 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
   context "with Fux examples" do
     fux_cantus_firmus_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.cantus_firmus_voice }
+        let(:voice) { example.flow.cantus_firmus_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }
@@ -81,7 +81,7 @@ describe HeadMusic::Style::Guides::FuxCantusFirmus do
   context "with Fux examples with errors introduced" do
     fux_cantus_firmus_examples_with_errors.each do |example|
       context example.description do
-        let(:voice) { example.composition.cantus_firmus_voice }
+        let(:voice) { example.flow.cantus_firmus_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }

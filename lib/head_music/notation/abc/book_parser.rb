@@ -1,5 +1,5 @@
 # Interprets an ABC tune book — one or more tunes separated by blank
-# lines, each beginning with an X: field — as an array of compositions.
+# lines, each beginning with an X: field — as an array of flows.
 #
 # Parsing is all-or-nothing: any invalid tune raises, so callers never
 # receive a partial array. Each tune is delegated to Parser with its
@@ -11,8 +11,8 @@ class HeadMusic::Notation::ABC::BookParser
     @book_string = book_string.to_s
   end
 
-  def compositions
-    @compositions ||= parse_segments
+  def flows
+    @flows ||= parse_segments
   end
 
   private
@@ -22,7 +22,7 @@ class HeadMusic::Notation::ABC::BookParser
     segments = split_into_segments
     ensure_tunes_found(segments)
     segments.map do |segment|
-      HeadMusic::Notation::ABC::Parser.new(segment.text, start_line: segment.start_line).composition
+      HeadMusic::Notation::ABC::Parser.new(segment.text, start_line: segment.start_line).flow
     end
   end
 

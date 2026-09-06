@@ -3,7 +3,7 @@ module HeadMusic::Rudiment; end
 
 # An UnpitchedNote represents a percussion note with rhythm but no specific pitch.
 # It inherits from RhythmicElement and can optionally have an instrument name.
-# Intended future composition: UnpitchedNote ≈ UnpitchedSound + rhythmic value.
+# Intended future flow: UnpitchedNote ≈ UnpitchedSound + rhythmic value.
 class HeadMusic::Rudiment::UnpitchedNote < HeadMusic::Rudiment::RhythmicElement
   include HeadMusic::Named
   include HeadMusic::ValueEquality

@@ -11,31 +11,29 @@ module HeadMusic::Notation; end
 # key or meter, so a plan that builds successfully cannot fail assembly on
 # those grounds.
 class HeadMusic::Notation::RenderPlan
-  attr_reader :composition
+  attr_reader :flow
 
-  def initialize(composition)
-    @composition = composition
+  def initialize(flow)
+    @flow = flow
     precompute_eager_data
   end
 
   def bar_numbers
-    composition.earliest_bar_number..composition.latest_bar_number
+    flow.earliest_bar_number..flow.latest_bar_number
   end
 
   def measure_key_changes
-    @measure_key_changes ||= bar_numbers.zip(composition.bars).filter_map { |bar_number, bar|
-      [bar_number, key_value(bar.key_signature)] if bar.key_signature
-    }.to_h
+    @measure_key_changes ||= flow.key_signature_changes
+      .select { |bar_number, _| bar_numbers.cover?(bar_number) }
+      .transform_values { |event| key_value(event) }
   end
 
   def measure_time_changes
-    @measure_time_changes ||= bar_numbers.zip(composition.bars).filter_map { |bar_number, bar|
-      [bar_number, bar.meter] if bar.meter
-    }.to_h
+    @measure_time_changes ||= flow.meter_changes.select { |bar_number, _| bar_numbers.cover?(bar_number) }
   end
 
   def first_measure_key
-    @first_measure_key ||= measure_key_changes[bar_numbers.first] || key_value(composition.key_signature)
+    @first_measure_key ||= measure_key_changes[bar_numbers.first] || key_value(flow.timeline.opening_key_signature_event)
   end
 
   def first_measure_meter
@@ -44,7 +42,7 @@ class HeadMusic::Notation::RenderPlan
 
   def effective_meter(bar_number)
     change_bar = measure_time_changes.keys.select { |number| number <= bar_number }.max
-    change_bar ? measure_time_changes[change_bar] : composition.meter
+    change_bar ? measure_time_changes[change_bar] : flow.meter
   end
 
   def placements_by_bar(voice)
@@ -63,9 +61,14 @@ class HeadMusic::Notation::RenderPlan
     measure_time_changes
   end
 
-  # How the format renders a key signature. A subclass answers in the shape
-  # its Writer emits: a LilyPond token, a Hash of MusicXML element values.
-  def key_value(key_signature)
-    raise NotImplementedError, "#{self.class} must map a key signature to its rendering"
+  # How the format renders a key signature event. A subclass answers in the
+  # shape its Writer emits: a LilyPond token, a Hash of MusicXML element
+  # values.
+  #
+  # The event rather than a key signature, because the two fields render
+  # differently: MusicXML wants the signature and the interpretation as
+  # separate elements, and LilyPond can only say one of them.
+  def key_value(event)
+    raise NotImplementedError, "#{self.class} must map a key signature event to its rendering"
   end
 end

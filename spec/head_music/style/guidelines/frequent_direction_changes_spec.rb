@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::FrequentDirectionChanges do
   subject { assess(described_class, voice) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:voice) { HeadMusic::Content::Voice.new(composition: composition) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:voice) { HeadMusic::Content::Voice.new(flow: flow) }
 
   context "when there are no notes" do
     it { is_expected.to be_adherent }

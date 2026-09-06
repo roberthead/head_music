@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::Diatonic do
   subject(:guideline) { assess(described_class, voice) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:voice) { composition.add_voice }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:voice) { flow.add_voice }
 
   it { expect(violation_text(described_class)).not_to be_empty }
 

@@ -29,10 +29,10 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
-  describe "#composition" do
-    it "memoizes the composition" do
+  describe "#flow" do
+    it "memoizes the flow" do
       parser = described_class.new("X:1\nK:C\nCDE|\n")
-      expect(parser.composition).to equal(parser.composition)
+      expect(parser.flow).to equal(parser.flow)
     end
   end
 
@@ -57,12 +57,12 @@ describe HeadMusic::Notation::ABC::Parser do
   end
 
   describe "a single-voice tune" do
-    subject(:composition) { parse_body("CDEF|GABc|") }
+    subject(:flow) { parse_body("CDEF|GABc|") }
 
-    let(:voice) { composition.voices.first }
+    let(:voice) { flow.voices.first }
 
     it "creates a single voice with a nil role" do
-      expect(composition.voices.map(&:role)).to eq [nil]
+      expect(flow.voices.map(&:role)).to eq [nil]
     end
 
     it "places each note with its pitch" do
@@ -83,9 +83,9 @@ describe HeadMusic::Notation::ABC::Parser do
   end
 
   describe "note lengths" do
-    subject(:composition) { parse_body("C2 D E/|") }
+    subject(:flow) { parse_body("C2 D E/|") }
 
-    let(:names) { composition.voices.first.placements.map { |placement| placement.rhythmic_value.name } }
+    let(:names) { flow.voices.first.placements.map { |placement| placement.rhythmic_value.name } }
 
     it "resolves multipliers against the unit note length" do
       expect(names).to eq ["half", "quarter", "eighth"]
@@ -93,9 +93,9 @@ describe HeadMusic::Notation::ABC::Parser do
   end
 
   describe "rests" do
-    subject(:composition) { parse_body("C z D|") }
+    subject(:flow) { parse_body("C z D|") }
 
-    let(:voice) { composition.voices.first }
+    let(:voice) { flow.voices.first }
 
     it "places the rest with no pitch" do
       expect(voice.placements[1].pitch).to be_nil
@@ -111,7 +111,7 @@ describe HeadMusic::Notation::ABC::Parser do
   end
 
   describe "header mapping" do
-    subject(:composition) { parse(<<~ABC) }
+    subject(:flow) { parse(<<~ABC) }
       X:1
       T:Test Tune
       C:Trad.
@@ -125,48 +125,48 @@ describe HeadMusic::Notation::ABC::Parser do
     ABC
 
     it "maps the title to the name" do
-      expect(composition.name).to eq "Test Tune"
+      expect(flow.name).to eq "Test Tune"
     end
 
     it "maps the composer" do
-      expect(composition.composer).to eq "Trad."
+      expect(flow.composer).to eq "Trad."
     end
 
     it "maps the origin" do
-      expect(composition.origin).to eq "Ireland"
+      expect(flow.origin).to eq "Ireland"
     end
 
     it "maps annotations to unpositioned comments in order" do
-      expect(composition.comments.map(&:text)).to eq ["first note", "second note"]
+      expect(flow.comments.map(&:text)).to eq ["first note", "second note"]
     end
 
     it "leaves the comments unpositioned" do
-      expect(composition.comments.map(&:position)).to all(be_nil)
+      expect(flow.comments.map(&:position)).to all(be_nil)
     end
 
     it "maps the key signature" do
-      expect(composition.key_signature.name).to eq "D major"
+      expect(flow.key_signature.name).to eq "D major"
     end
 
     it "maps the meter" do
-      expect(composition.meter.to_s).to eq "3/4"
+      expect(flow.meter.to_s).to eq "3/4"
     end
 
     it "applies the key signature to unmarked notes" do
-      expect(composition.voices.first.pitches.map(&:to_s)).to eq %w[A4 B4 C♯5]
+      expect(flow.voices.first.pitches.map(&:to_s)).to eq %w[A4 B4 C♯5]
     end
 
     context "without a title" do
-      subject(:composition) { parse("X:1\nK:C\nCDE|\n") }
+      subject(:flow) { parse("X:1\nK:C\nCDE|\n") }
 
-      it "defaults the composition name" do
-        expect(composition.name).to eq "Composition"
+      it "defaults the flow name" do
+        expect(flow.name).to eq "Composition"
       end
     end
   end
 
   describe "multiple voices" do
-    subject(:composition) { parse(<<~ABC) }
+    subject(:flow) { parse(<<~ABC) }
       X:1
       V:1
       V:2
@@ -179,11 +179,11 @@ describe HeadMusic::Notation::ABC::Parser do
       EF
     ABC
 
-    let(:first_voice) { composition.voices.first }
-    let(:second_voice) { composition.voices.last }
+    let(:first_voice) { flow.voices.first }
+    let(:second_voice) { flow.voices.last }
 
     it "creates a voice for each header V: field" do
-      expect(composition.voices.map(&:role)).to eq %w[1 2]
+      expect(flow.voices.map(&:role)).to eq %w[1 2]
     end
 
     it "routes placements to the voice selected by body V: lines" do
@@ -199,15 +199,15 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     context "when a body V: names an unknown voice" do
-      subject(:composition) { parse("X:1\nK:C\nV:9\nCDE|\n") }
+      subject(:flow) { parse("X:1\nK:C\nV:9\nCDE|\n") }
 
       it "creates the voice on demand" do
-        expect(composition.voices.map(&:role)).to eq ["9"]
+        expect(flow.voices.map(&:role)).to eq ["9"]
       end
     end
 
     context "with accidentals in one voice" do
-      subject(:composition) { parse(<<~ABC) }
+      subject(:flow) { parse(<<~ABC) }
         X:1
         K:C
         V:1
@@ -217,7 +217,7 @@ describe HeadMusic::Notation::ABC::Parser do
       ABC
 
       it "keeps accidental state independent between voices" do
-        pitches = composition.voices.map { |voice| voice.pitches.map(&:to_s) }
+        pitches = flow.voices.map { |voice| voice.pitches.map(&:to_s) }
         expect(pitches).to eq [%w[F♯4 F♯4], %w[F4]]
       end
     end
@@ -225,14 +225,14 @@ describe HeadMusic::Notation::ABC::Parser do
 
   describe "broken rhythm" do
     it "dots the left note and halves the right note for >" do
-      composition = parse_body("A>B|")
-      names = composition.voices.first.placements.map { |placement| placement.rhythmic_value.name }
+      flow = parse_body("A>B|")
+      names = flow.voices.first.placements.map { |placement| placement.rhythmic_value.name }
       expect(names).to eq ["dotted quarter", "eighth"]
     end
 
     it "halves the left note and dots the right note for <" do
-      composition = parse_body("A<B|")
-      names = composition.voices.first.placements.map { |placement| placement.rhythmic_value.name }
+      flow = parse_body("A<B|")
+      names = flow.voices.first.placements.map { |placement| placement.rhythmic_value.name }
       expect(names).to eq ["eighth", "dotted quarter"]
     end
 
@@ -324,67 +324,67 @@ describe HeadMusic::Notation::ABC::Parser do
   end
 
   describe "accidental persistence" do
-    subject(:composition) { parse_body("^FF|F2|") }
+    subject(:flow) { parse_body("^FF|F2|") }
 
     it "persists an accidental to the end of the bar and resets at the bar line" do
-      expect(composition.voices.first.pitches.map(&:to_s)).to eq %w[F♯4 F♯4 F4]
+      expect(flow.voices.first.pitches.map(&:to_s)).to eq %w[F♯4 F♯4 F4]
     end
   end
 
   describe "repeats" do
     context "with a repeated section spanning the whole tune" do
-      subject(:composition) { parse_body("|:CDEF:|") }
+      subject(:flow) { parse_body("|:CDEF:|") }
 
       it "starts the repeat on bar one" do
-        expect(composition.bars(1).last.starts_repeat?).to be true
+        expect(flow.bars(1).last.starts_repeat?).to be true
       end
 
       it "ends the repeat on bar one after two plays" do
-        expect(composition.bars(1).last.ends_repeat_after_num_plays).to eq 2
+        expect(flow.bars(1).last.ends_repeat_after_num_plays).to eq 2
       end
     end
 
     context "with a mid-tune repeat ending" do
-      subject(:composition) { parse_body("CDEF|GABc:|") }
+      subject(:flow) { parse_body("CDEF|GABc:|") }
 
       it "ends the repeat on the completed bar" do
-        expect(composition.bars(2).last.ends_repeat_after_num_plays).to eq 2
+        expect(flow.bars(2).last.ends_repeat_after_num_plays).to eq 2
       end
 
       it "leaves earlier bars without a repeat ending" do
-        expect(composition.bars(1).first.ends_repeat?).to be false
+        expect(flow.bars(1).first.ends_repeat?).to be false
       end
     end
 
     context "with a double repeat bar" do
-      subject(:composition) { parse_body("CDEF::GABc|]") }
+      subject(:flow) { parse_body("CDEF::GABc|]") }
 
       it "ends a repeat on the completed bar" do
-        expect(composition.bars(1).first.ends_repeat_after_num_plays).to eq 2
+        expect(flow.bars(1).first.ends_repeat_after_num_plays).to eq 2
       end
 
       it "starts a repeat on the entered bar" do
-        expect(composition.bars(2).last.starts_repeat?).to be true
+        expect(flow.bars(2).last.starts_repeat?).to be true
       end
     end
 
     it "ignores a repeat ending before any placements" do
-      composition = parse_body(":|CDEF|")
-      expect(composition.bars(1).first.ends_repeat?).to be false
+      flow = parse_body(":|CDEF|")
+      expect(flow.bars(1).first.ends_repeat?).to be false
     end
 
     it "sets no repeat flags for plain and section bar lines" do
-      composition = parse_body("CDEF|GABc|]")
-      bars = composition.bars(2)
+      flow = parse_body("CDEF|GABc|]")
+      bars = flow.bars(2)
       expect(bars.map(&:starts_repeat?) + bars.map(&:ends_repeat?)).to all(be false)
     end
   end
 
   describe "voltas" do
     context "with first and second endings" do
-      subject(:composition) { parse_body("|:CDEF|1 GABc:|2 cdef|]") }
+      subject(:flow) { parse_body("|:CDEF|1 GABc:|2 cdef|]") }
 
-      let(:bars) { composition.bars(3) }
+      let(:bars) { flow.bars(3) }
 
       it "starts the repeat on bar one" do
         expect(bars[0].starts_repeat?).to be true
@@ -408,9 +408,9 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     context "with a multi-bar volta" do
-      subject(:composition) { parse_body("CDEF|1 GABc|cdef:|[2 gabc|]") }
+      subject(:flow) { parse_body("CDEF|1 GABc|cdef:|[2 gabc|]") }
 
-      let(:bars) { composition.bars(4) }
+      let(:bars) { flow.bars(4) }
 
       it "tags every bar under the first ending" do
         expect(bars[1..2].map(&:plays_on_passes)).to eq [[1], [1]]
@@ -426,18 +426,18 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     context "with a pass list" do
-      subject(:composition) { parse_body("CDEF|1,3 GABc:|") }
+      subject(:flow) { parse_body("CDEF|1,3 GABc:|") }
 
       it "carries the full pass list onto the bar" do
-        expect(composition.bars(2).last.plays_on_passes).to eq [1, 3]
+        expect(flow.bars(2).last.plays_on_passes).to eq [1, 3]
       end
     end
 
     context "when the tune ends inside a volta" do
-      subject(:composition) { parse_body("CDEF|1 GABc:|2 cdef") }
+      subject(:flow) { parse_body("CDEF|1 GABc:|2 cdef") }
 
       it "tags the final bar at end of input" do
-        expect(composition.bars(3).last.plays_on_passes).to eq [2]
+        expect(flow.bars(3).last.plays_on_passes).to eq [2]
       end
     end
   end
@@ -478,7 +478,7 @@ describe HeadMusic::Notation::ABC::Parser do
   end
 
   describe "chords" do
-    subject(:composition) { parse(<<~ABC) }
+    subject(:flow) { parse(<<~ABC) }
       X:1
       T:Chorale Fragment
       M:4/4
@@ -487,7 +487,7 @@ describe HeadMusic::Notation::ABC::Parser do
       [CEG]2 [DFA]2 | [EGC']4 |]
     ABC
 
-    let(:voice) { composition.voices.first }
+    let(:voice) { flow.voices.first }
 
     it "places each chord as one placement holding the bracketed pitches" do
       expect(voice.placements.map { |placement| [placement.position.to_s, placement.pitches.map(&:to_s)] })

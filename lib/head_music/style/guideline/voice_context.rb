@@ -1,13 +1,13 @@
 module HeadMusic::Style; end
 
 class HeadMusic::Style::Guideline
-  # The company the voice keeps: the other parts of the composition, sorted and
+  # The company the voice keeps: the other parts of the flow, sorted and
   # named the way a counterpoint rule asks after them.
   module VoiceContext
     protected
 
     def voices
-      @voices ||= voice.composition.voices
+      @voices ||= voice.flow.voices
     end
 
     def other_voices

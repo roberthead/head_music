@@ -1,7 +1,7 @@
 # A module for musical content
 module HeadMusic::Content; end
 
-# A placement is a note, chord, or rest at a position within a voice in a composition
+# A placement is a note, chord, or rest at a position within a voice in a flow
 class HeadMusic::Content::Placement
   include Comparable
 
@@ -14,7 +14,7 @@ class HeadMusic::Content::Placement
   # MusicXML writer, which prefers it over the default grouping.
   attr_accessor :beam_break_before
 
-  delegate :composition, to: :voice
+  delegate :flow, to: :voice
   delegate :spelling, to: :pitch, allow_nil: true
 
   def initialize(voice, position, rhythmic_value, sound_or_sounds = nil)
@@ -165,7 +165,7 @@ class HeadMusic::Content::Placement
     @position = if position.is_a?(HeadMusic::Content::Position)
       position
     else
-      HeadMusic::Content::Position.new(composition, position)
+      HeadMusic::Content::Position.new(flow, position)
     end
   end
 end

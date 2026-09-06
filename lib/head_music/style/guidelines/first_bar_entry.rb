@@ -39,7 +39,7 @@ class HeadMusic::Style::Guidelines::FirstBarEntry < HeadMusic::Style::Guideline
   end
 
   def expected_notes_in_first_bar
-    meter = composition.meter_at(1)
+    meter = flow.meter_at(1)
     bar_duration = meter.count_unit.relative_value * meter.counts_per_bar
     (bar_duration / expected_rhythmic_value.total_value).round
   end

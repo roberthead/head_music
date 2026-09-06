@@ -1,15 +1,15 @@
 require "spec_helper"
 
 describe HeadMusic::Content::Voice do
-  subject(:voice) { described_class.new(composition: composition) }
+  subject(:voice) { described_class.new(flow: flow) }
 
-  let(:composition) { HeadMusic::Content::Composition.new }
+  let(:flow) { HeadMusic::Content::Flow.new }
 
-  its(:composition) { is_expected.to eq composition }
+  its(:flow) { is_expected.to eq flow }
 
   describe "#place" do
     let(:position) do
-      HeadMusic::Content::Position.new(composition, "5:1:0")
+      HeadMusic::Content::Position.new(flow, "5:1:0")
     end
 
     it "adds a placement" do
@@ -21,8 +21,8 @@ describe HeadMusic::Content::Voice do
     end
 
     describe "sorting" do
-      let!(:fifth_method_position) { voice.place(HeadMusic::Content::Position.new(composition, "5:1:0"), :quarter) }
-      let!(:fourth_method_position) { voice.place(HeadMusic::Content::Position.new(composition, "4:3:0"), :quarter) }
+      let!(:fifth_method_position) { voice.place(HeadMusic::Content::Position.new(flow, "5:1:0"), :quarter) }
+      let!(:fourth_method_position) { voice.place(HeadMusic::Content::Position.new(flow, "4:3:0"), :quarter) }
 
       it "sorts by position" do
         expect(voice.placements).to eq [fourth_method_position, fifth_method_position]
@@ -136,28 +136,28 @@ describe HeadMusic::Content::Voice do
   describe "#next_position" do
     context "when there are notes" do
       before do
-        voice.place(HeadMusic::Content::Position.new(composition, "1:1:0"), :quarter, "C")
-        voice.place(HeadMusic::Content::Position.new(composition, "1:2:0"), :quarter, "D")
-        voice.place(HeadMusic::Content::Position.new(composition, "1:3:0"), :quarter, "E")
+        voice.place(HeadMusic::Content::Position.new(flow, "1:1:0"), :quarter, "C")
+        voice.place(HeadMusic::Content::Position.new(flow, "1:2:0"), :quarter, "D")
+        voice.place(HeadMusic::Content::Position.new(flow, "1:3:0"), :quarter, "E")
       end
 
       it "returns the position after the last note" do
-        expect(voice.next_position).to eq HeadMusic::Content::Position.new(composition, "1:4:0")
+        expect(voice.next_position).to eq HeadMusic::Content::Position.new(flow, "1:4:0")
       end
     end
 
     context "when there are no notes" do
       it "returns the first position" do
-        expect(voice.next_position).to eq HeadMusic::Content::Position.new(composition, "1:1:0")
+        expect(voice.next_position).to eq HeadMusic::Content::Position.new(flow, "1:1:0")
       end
     end
   end
 
   describe "#notes and #rests" do
-    let!(:first_beat_d) { voice.place(HeadMusic::Content::Position.new(composition, "1:1:0"), :quarter, "D") }
-    let!(:second_beat_rest) { voice.place(HeadMusic::Content::Position.new(composition, "1:2:0"), :quarter) }
-    let!(:third_beat_g) { voice.place(HeadMusic::Content::Position.new(composition, "1:3:0"), :quarter, "G") }
-    let!(:fourth_beat_rest) { voice.place(HeadMusic::Content::Position.new(composition, "1:4:0"), :quarter) }
+    let!(:first_beat_d) { voice.place(HeadMusic::Content::Position.new(flow, "1:1:0"), :quarter, "D") }
+    let!(:second_beat_rest) { voice.place(HeadMusic::Content::Position.new(flow, "1:2:0"), :quarter) }
+    let!(:third_beat_g) { voice.place(HeadMusic::Content::Position.new(flow, "1:3:0"), :quarter, "G") }
+    let!(:fourth_beat_rest) { voice.place(HeadMusic::Content::Position.new(flow, "1:4:0"), :quarter) }
 
     its(:notes) { are_expected.to eq [first_beat_d, third_beat_g] }
     its(:rests) { are_expected.to eq [second_beat_rest, fourth_beat_rest] }
@@ -295,7 +295,7 @@ describe HeadMusic::Content::Voice do
   end
 
   context "when a role is provided" do
-    subject(:voice) { described_class.new(composition: composition, role: "Cantus Firmus") }
+    subject(:voice) { described_class.new(flow: flow, role: "Cantus Firmus") }
 
     before do
       %w[G3 C4 D4 Eb4 F4 Eb G3].each.with_index(1) do |pitch, bar|
@@ -321,26 +321,26 @@ describe HeadMusic::Content::Voice do
     end
 
     context "for a downbeat with a note" do
-      let(:position) { HeadMusic::Content::Position.new(composition, "5:1:000") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "5:1:000") }
 
       its(:pitch) { is_expected.to eq "A4" }
     end
 
     context "for an offbeat in the middle of the duration of a note" do
-      let(:position) { HeadMusic::Content::Position.new(composition, "5:2:000") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "5:2:000") }
 
       its(:pitch) { is_expected.to eq "A4" }
     end
 
     context "for a tick in the middle of the duration of a note" do
-      let(:position) { HeadMusic::Content::Position.new(composition, "5:1:001") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "5:1:001") }
 
       its(:pitch) { is_expected.to eq "A4" }
     end
 
     context "for a downbeat where there is no note" do
       let(:pitches) { ["C", "E", "G", "F", nil, "G", "E", "D", "C"] }
-      let(:position) { HeadMusic::Content::Position.new(composition, "5:1:000") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "5:1:000") }
 
       it { is_expected.to be_nil }
     end
@@ -350,7 +350,7 @@ describe HeadMusic::Content::Voice do
     subject(:notes_during) { voice.notes_during(placement) }
 
     let(:pitches) { %w[C E G F A G E D C] }
-    let(:placement) { HeadMusic::Content::Placement.new(composition, position, rhythmic_value) }
+    let(:placement) { HeadMusic::Content::Placement.new(flow, position, rhythmic_value) }
 
     before do
       pitches.each.with_index(1) do |pitch, bar|
@@ -359,7 +359,7 @@ describe HeadMusic::Content::Voice do
     end
 
     context "for a downbeat with a note" do
-      let(:position) { HeadMusic::Content::Position.new(composition, "5:1:000") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "5:1:000") }
       let(:rhythmic_value) { :quarter }
 
       specify do
@@ -368,7 +368,7 @@ describe HeadMusic::Content::Voice do
     end
 
     context "for an offbeat in the middle of the duration of a note" do
-      let(:position) { HeadMusic::Content::Position.new(composition, "5:2:000") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "5:2:000") }
       let(:rhythmic_value) { :quarter }
 
       specify do
@@ -377,7 +377,7 @@ describe HeadMusic::Content::Voice do
     end
 
     context "for a tick in the middle of the duration of a note" do
-      let(:position) { HeadMusic::Content::Position.new(composition, "5:1:001") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "5:1:001") }
       let(:rhythmic_value) { :"thirty-second" }
 
       specify do
@@ -387,14 +387,14 @@ describe HeadMusic::Content::Voice do
 
     context "for a downbeat where there is no note" do
       let(:pitches) { ["C", "E", "G", "F", nil, "G", "E", "D", "C"] }
-      let(:position) { HeadMusic::Content::Position.new(composition, "5:1:000") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "5:1:000") }
       let(:rhythmic_value) { :"thirty-second" }
 
       it { is_expected.to eq [] }
     end
 
     context "for a duration where there are multiple notes during the placement" do
-      let(:position) { HeadMusic::Content::Position.new(composition, "4:3:000") }
+      let(:position) { HeadMusic::Content::Position.new(flow, "4:3:000") }
       let(:rhythmic_value) { :breve }
 
       specify do
@@ -435,7 +435,7 @@ describe HeadMusic::Content::Voice do
     context "when the placements are contiguous" do
       subject(:first_gap) { parsed_voice.first_gap }
 
-      let(:parsed_composition) do
+      let(:parsed_flow) do
         HeadMusic::Notation::ABC.parse(<<~ABC)
           X:1
           T:Contiguous
@@ -445,7 +445,7 @@ describe HeadMusic::Content::Voice do
           C D E F | G A B c |
         ABC
       end
-      let(:parsed_voice) { parsed_composition.voices.first }
+      let(:parsed_voice) { parsed_flow.voices.first }
 
       it { is_expected.to be_nil }
     end
@@ -467,7 +467,7 @@ describe HeadMusic::Content::Voice do
       end
 
       it "returns the expected position and the placement found after the gap" do
-        expected_position = HeadMusic::Content::Position.new(composition, "1:2:0")
+        expected_position = HeadMusic::Content::Position.new(flow, "1:2:0")
         found_placement = voice.placements.last
         expect(first_gap).to eq [expected_position, found_placement]
       end
@@ -479,7 +479,7 @@ describe HeadMusic::Content::Voice do
       end
 
       it "returns the start of the bar and the first placement" do
-        expected_position = HeadMusic::Content::Position.new(composition, "2:1:0")
+        expected_position = HeadMusic::Content::Position.new(flow, "2:1:0")
         expect(first_gap).to eq [expected_position, voice.placements.first]
       end
     end
@@ -508,7 +508,7 @@ describe HeadMusic::Content::Voice do
     end
 
     context "when the role is a string" do
-      subject(:voice) { described_class.new(composition: composition, role: "melody") }
+      subject(:voice) { described_class.new(flow: flow, role: "melody") }
 
       it "serializes the role" do
         expect(voice.to_h["role"]).to eq "melody"
@@ -516,7 +516,7 @@ describe HeadMusic::Content::Voice do
     end
 
     context "when the role is a symbol" do
-      subject(:voice) { described_class.new(composition: composition, role: :melody) }
+      subject(:voice) { described_class.new(flow: flow, role: :melody) }
 
       it "serializes the role as a string" do
         expect(voice.to_h["role"]).to eq "melody"
@@ -527,6 +527,114 @@ describe HeadMusic::Content::Voice do
       it "serializes the role as nil" do
         expect(voice.to_h["role"]).to be_nil
       end
+    end
+  end
+
+  # Voice#place binary-searches over Position#<=>, so a comparator that is not
+  # a total order does not raise -- it returns the wrong placement, and the
+  # music is quietly wrong. A meter change is where a comparator that reasons
+  # about elapsed time rather than coordinates comes apart, so notes are placed
+  # across one here and both the ordering and the lookup are asserted.
+  describe "placing notes across a meter change" do
+    subject(:voice) { flow.add_voice }
+
+    let(:flow) do
+      HeadMusic::Content::Flow.new(meter: "4/4").tap { |flow| flow.change_meter(3, "3/4") }
+    end
+
+    let(:codes) { ["1:1", "1:3", "2:1", "2:3", "3:1", "3:2", "3:3", "4:1", "4:2"] }
+
+    before { codes.each { |code| voice.place(code, :quarter, "C4") } }
+
+    it "keeps the placements in ascending position order" do
+      positions = voice.placements.map(&:position)
+      expect(positions).to eq positions.sort
+    end
+
+    it "places every note rather than merging any of them" do
+      expect(voice.placements.map { |placement| placement.position.code })
+        .to eq codes.map { |code| flow.position(code).code }
+    end
+
+    # place looks for an existing placement with a binary search before it
+    # inserts, so replacing every note is the lookup exercised at every
+    # position on both sides of the change.
+    it "finds each existing placement again rather than duplicating it" do
+      codes.each { |code| voice.place(code, :quarter, "D4") }
+      expect(voice.placements.length).to eq codes.length
+    end
+
+    it "merges into the placement it found" do
+      voice.place("3:2", :quarter, "D4")
+      expect(voice.note_at(flow.position("3:2")).pitch.to_s).to eq "D4"
+    end
+
+    it "reports the meter change to the positions after it" do
+      expect(flow.position("3:1").meter.to_s).to eq "3/4"
+    end
+  end
+
+  # The epic's central requirement: a voice belongs to a part and *has* a staff
+  # at any given moment, so a piano voice can start in the bass staff and cross
+  # into the treble without leaving its part.
+  describe "crossing between staves" do
+    subject(:left_hand) { piano.add_voice(role: "left hand") }
+
+    let(:flow) { HeadMusic::Content::Flow.new }
+    let(:staff_system) { HeadMusic::Content::StaffSystem.grand_staff }
+    let(:treble) { staff_system.staves.first }
+    let(:bass) { staff_system.staves.last }
+    let(:piano) { flow.add_part(instrument: "piano", staff_system: staff_system) }
+
+    def clefs_through(bar_range)
+      bar_range.map { |bar| left_hand.staff_at(bar).clef.to_s.split.first }
+    end
+
+    it "sits on the part's first staff until it says otherwise" do
+      expect(left_hand.staff).to be treble
+    end
+
+    it "needs no assignments at all on a single-staff part" do
+      expect(flow.add_part.add_voice.staff_assignments).to be_empty
+    end
+
+    context "with a span in the other staff" do
+      before do
+        left_hand.cross_to(bass, from: 1)
+        left_hand.cross_to(treble, from: 5, through: 8)
+      end
+
+      it "reports a different staff on either side of the crossing" do
+        expect(clefs_through(1..10))
+          .to eq %w[bass bass bass bass treble treble treble treble bass bass]
+      end
+
+      # Not "the part's first staff": a left hand that rises for four bars
+      # comes back down to the staff it was on, which is what it was written
+      # on before the span.
+      it "returns to the staff it was on before the span" do
+        expect(left_hand.staff_at(9)).to be bass
+      end
+
+      it "records an event at each boundary" do
+        expect(left_hand.staff_assignments.keys).to eq [1, 5, 9]
+      end
+    end
+
+    # A single cross-staff note is a span of one bar. No note-level case.
+    it "crosses for a single bar" do
+      left_hand.cross_to(bass, from: 3, through: 3)
+      expect(clefs_through(2..4)).to eq %w[treble bass treble]
+    end
+
+    it "crosses for the rest of the flow when given no end" do
+      left_hand.cross_to(bass, from: 3)
+      expect(clefs_through(2..99).uniq).to eq %w[treble bass]
+    end
+
+    it "refuses a staff the part does not have" do
+      expect { left_hand.cross_to(HeadMusic::Content::Staff.new(clef: :alto_clef), from: 3) }
+        .to raise_error ArgumentError, /not in the part's staff system/
     end
   end
 end

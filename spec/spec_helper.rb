@@ -24,7 +24,7 @@ end
 
 require "rspec/its"
 require "head_music"
-require "composition_context"
+require "flow_context"
 
 Dir[File.join(__dir__, "support", "**", "*.rb")].sort.each { |file| require file }
 
@@ -88,7 +88,7 @@ FUX_CANTUS_FIRMUS_EXAMPLES = [
 
 def fux_cantus_firmus_examples
   @fux_cantus_firmus_examples ||=
-    FUX_CANTUS_FIRMUS_EXAMPLES.map { |params| CompositionContext.from_cantus_firmus_params(params) }
+    FUX_CANTUS_FIRMUS_EXAMPLES.map { |params| FlowContext.from_cantus_firmus_params(params) }
 end
 
 CLENDINNING_CANTUS_FIRMUS_EXAMPLES = [
@@ -112,14 +112,14 @@ CLENDINNING_CANTUS_FIRMUS_EXAMPLES = [
 
 def clendinning_cantus_firmus_examples
   @clendinning_cantus_firmus_examples ||=
-    CLENDINNING_CANTUS_FIRMUS_EXAMPLES.map { |params| CompositionContext.from_cantus_firmus_params(params) }
+    CLENDINNING_CANTUS_FIRMUS_EXAMPLES.map { |params| FlowContext.from_cantus_firmus_params(params) }
 end
 
 def schoenberg_cantus_firmus_examples
   @schoenberg_cantus_firmus_examples ||= [
     {source: "Schoenberg", key: "Eb major", pitches: %w[Eb D G3 Ab3 C Ab3 F3 Eb3]},
     {source: "Schoenberg", key: "A major", pitches: %w[A3 C#4 B3 F#3 A3 F#3 G#3 A3]}
-  ].map { |params| CompositionContext.from_cantus_firmus_params(params) }
+  ].map { |params| FlowContext.from_cantus_firmus_params(params) }
 end
 
 DAVIS_AND_LYBBERT_CANTUS_FIRMUS_EXAMPLES = [
@@ -167,7 +167,7 @@ DAVIS_AND_LYBBERT_CANTUS_FIRMUS_EXAMPLES = [
 
 def davis_and_lybbert_cantus_firmus_examples
   @davis_and_lybbert_cantus_firmus_examples ||=
-    DAVIS_AND_LYBBERT_CANTUS_FIRMUS_EXAMPLES.map { |params| CompositionContext.from_cantus_firmus_params(params) }
+    DAVIS_AND_LYBBERT_CANTUS_FIRMUS_EXAMPLES.map { |params| FlowContext.from_cantus_firmus_params(params) }
 end
 
 FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS = [
@@ -255,7 +255,7 @@ FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS = [
 ].freeze
 
 def fux_cantus_firmus_examples_with_errors
-  FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS.map { |params| CompositionContext.from_cantus_firmus_params(params) }
+  FUX_CANTUS_FIRMUS_EXAMPLES_WITH_ERRORS.map { |params| FlowContext.from_cantus_firmus_params(params) }
 end
 
 FUX_FIRST_SPECIES_EXAMPLES = [
@@ -343,7 +343,7 @@ FUX_FIRST_SPECIES_EXAMPLES = [
 ].freeze
 
 def fux_first_species_examples
-  FUX_FIRST_SPECIES_EXAMPLES.map { |params| CompositionContext.from_params(params) }
+  FUX_FIRST_SPECIES_EXAMPLES.map { |params| FlowContext.from_params(params) }
 end
 
 CLENDINNING_FIRST_SPECIES_EXAMPLES = [
@@ -374,7 +374,7 @@ CLENDINNING_FIRST_SPECIES_EXAMPLES = [
 ].freeze
 
 def clendinning_first_species_examples
-  CLENDINNING_FIRST_SPECIES_EXAMPLES.map { |params| CompositionContext.from_params(params) }
+  CLENDINNING_FIRST_SPECIES_EXAMPLES.map { |params| FlowContext.from_params(params) }
 end
 
 DAVIS_AND_LYBBERT_FIRST_SPECIES_EXAMPES = [
@@ -393,7 +393,7 @@ DAVIS_AND_LYBBERT_FIRST_SPECIES_EXAMPES = [
 ].freeze
 
 def davis_and_lybbert_first_species_examples
-  DAVIS_AND_LYBBERT_FIRST_SPECIES_EXAMPES.map { |params| CompositionContext.from_params(params) }
+  DAVIS_AND_LYBBERT_FIRST_SPECIES_EXAMPES.map { |params| FlowContext.from_params(params) }
 end
 
 # Not a counterpoint: the Fux chapter one figure 5 cantus firmus sung again an
@@ -410,5 +410,5 @@ DOUBLED_OCTAVE_EXAMPLES = [
 ].freeze
 
 def doubled_octave_examples
-  DOUBLED_OCTAVE_EXAMPLES.map { |params| CompositionContext.from_params(params) }
+  DOUBLED_OCTAVE_EXAMPLES.map { |params| FlowContext.from_params(params) }
 end

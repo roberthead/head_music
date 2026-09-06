@@ -1,70 +1,55 @@
 require "spec_helper"
 
 describe HeadMusic::Content::Staff do
-  subject { described_class.new(:treble_clef) }
+  subject(:staff) { described_class.new(clef: :bass_clef) }
 
-  its(:clef) { is_expected.to eq :treble_clef }
-  its(:line_count) { is_expected.to be 5 }
-  its(:instrument) { is_expected.to be_nil }
+  its(:line_count) { is_expected.to eq 5 }
+  its(:clef) { is_expected.to eq HeadMusic::Rudiment::Clef.get(:bass_clef) }
+  its(:to_s) { is_expected.to eq "bass clef 5-line" }
 
-  context "when passed an instrument" do
-    subject(:staff) { described_class.new(:alto_clef, instrument: :viola) }
+  # Nil rather than a guess: choosing a clef from a voice's range needs a
+  # voice, and a staff has no back-reference to one.
+  describe "a staff with no authored clef" do
+    subject(:staff) { described_class.new }
 
-    its(:clef) { is_expected.to eq :alto_clef }
-    its(:line_count) { is_expected.to be 5 }
-
-    it "has an instrument with name_key :viola" do
-      expect(staff.instrument).to be_a(HeadMusic::Instruments::Instrument)
-      expect(staff.instrument.name_key).to eq :viola
-    end
-
-    context "when default clef is not specified" do
-      subject(:foo_clef) { described_class.new("foo", instrument: :viola) }
-
-      its(:clef) { is_expected.to eq :alto_clef }
-      its(:line_count) { is_expected.to be 5 }
-
-      it "has an instrument with name_key :viola" do
-        expect(foo_clef.instrument).to be_a(HeadMusic::Instruments::Instrument)
-        expect(foo_clef.instrument.name_key).to eq :viola
-      end
-
-      it "recovers from the unrecognized key instead of raising" do
-        expect { foo_clef }.not_to raise_error
-      end
-
-      # The distinguishing behavior of this branch: an unrecognized key resolves to
-      # the instrument's own clef, not to the generic default the no-instrument case
-      # falls back to.
-      it "prefers the instrument's clef over the generic fallback" do
-        expect(foo_clef.clef).not_to eq described_class.new("foo").clef
-      end
+    it "answers no clef rather than inventing one" do
+      expect(staff.clef_at(1)).to be_nil
     end
   end
 
-  context "when default clef is not found and no instrument is passed" do
-    subject(:foo_clef) { described_class.new("foo") }
+  describe "#change_clef" do
+    before { staff.change_clef(5, :tenor_clef) }
 
-    its(:clef) { is_expected.to eq :treble_clef }
-    its(:line_count) { is_expected.to be 5 }
-    its(:instrument) { is_expected.to be_nil }
-
-    it "recovers from the unrecognized key instead of raising" do
-      expect { foo_clef }.not_to raise_error
+    it "leaves the bars before it alone" do
+      expect(staff.clef_at(4)).to eq HeadMusic::Rudiment::Clef.get(:bass_clef)
     end
 
-    it "builds a usable staff from the fallback" do
-      expect(foo_clef.clef).to eq described_class.new(:treble_clef).clef
+    it "takes effect from its bar" do
+      expect(staff.clef_at(5)).to eq HeadMusic::Rudiment::Clef.get(:tenor_clef)
+    end
+
+    it "stays in force afterwards" do
+      expect(staff.clef_at(50)).to eq HeadMusic::Rudiment::Clef.get(:tenor_clef)
+    end
+
+    it "reports the bars a clef was authored in" do
+      expect(staff.clef_changes.keys).to eq [5]
     end
   end
 
-  context "when the clef key is nil" do
-    subject(:nil_clef) { described_class.new(nil) }
+  describe "a staff realizing a catalog staff" do
+    subject(:staff) { described_class.new(instruments_staff: catalog_staff) }
 
-    it "recovers instead of raising" do
-      expect { nil_clef }.not_to raise_error
+    let(:catalog_staff) { HeadMusic::Instruments::Instrument.get("snare drum").default_staves.first }
+
+    it "keeps the reference rather than copying the mappings" do
+      expect(staff.instruments_staff).to be catalog_staff
     end
+  end
 
-    its(:clef) { is_expected.to eq :treble_clef }
+  describe "a staff with no catalog staff" do
+    it "has no instrument at a percussion position" do
+      expect(described_class.new.instrument_for_position(0)).to be_nil
+    end
   end
 end

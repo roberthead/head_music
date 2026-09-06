@@ -54,16 +54,16 @@ describe HeadMusic::Notation::LilyPond::Parser do
     end
   end
 
-  describe "#composition" do
+  describe "#flow" do
     it "does not memoize a failure" do
       parser = described_class.new("{ c'1 d'4 | }")
-      expect { parser.composition }.to raise_error(HeadMusic::Notation::LilyPond::ParseError)
-      expect { parser.composition }.to raise_error(HeadMusic::Notation::LilyPond::ParseError)
+      expect { parser.flow }.to raise_error(HeadMusic::Notation::LilyPond::ParseError)
+      expect { parser.flow }.to raise_error(HeadMusic::Notation::LilyPond::ParseError)
     end
   end
 
   describe "the story's example" do
-    subject(:composition) do
+    subject(:flow) do
       parse(<<~LILY)
         \\relative c' {
           \\key g \\major
@@ -73,22 +73,22 @@ describe HeadMusic::Notation::LilyPond::Parser do
       LILY
     end
 
-    let(:voice) { composition.voices.first }
+    let(:voice) { flow.voices.first }
 
-    it "returns a composition" do
-      expect(composition).to be_a HeadMusic::Content::Composition
+    it "returns a flow" do
+      expect(flow).to be_a HeadMusic::Content::Flow
     end
 
     it "maps the key" do
-      expect(composition.key_signature).to eq HeadMusic::Rudiment::KeySignature.get("G major")
+      expect(flow.key_signature).to eq HeadMusic::Rudiment::KeySignature.get("G major")
     end
 
     it "maps the meter" do
-      expect(composition.meter.to_s).to eq "4/4"
+      expect(flow.meter.to_s).to eq "4/4"
     end
 
     it "produces one voice" do
-      expect(composition.voices.length).to eq 1
+      expect(flow.voices.length).to eq 1
     end
 
     it "resolves the relative pitches" do
@@ -105,22 +105,22 @@ describe HeadMusic::Notation::LilyPond::Parser do
   end
 
   describe "a full document" do
-    subject(:composition) { parse(LilyPondFixtures::AIR_DOCUMENT) }
+    subject(:flow) { parse(LilyPondFixtures::AIR_DOCUMENT) }
 
     it "maps the header" do
-      expect([composition.name, composition.composer]).to eq ["Air", "Aloysius"]
+      expect([flow.name, flow.composer]).to eq ["Air", "Aloysius"]
     end
 
     it "maps the instrument name to the voice role" do
-      expect(composition.voices.map(&:role)).to eq ["Melody"]
+      expect(flow.voices.map(&:role)).to eq ["Melody"]
     end
 
     it "reads the absolute pitches" do
-      expect(composition.voices.first.pitches.map(&:to_s)).to eq %w[G4 A4 B4 C5 D5 G4]
+      expect(flow.voices.first.pitches.map(&:to_s)).to eq %w[G4 A4 B4 C5 D5 G4]
     end
 
-    it "is the composition the writer rendered" do
-      expect(composition.to_lilypond).to eq LilyPondFixtures::AIR_DOCUMENT
+    it "is the flow the writer rendered" do
+      expect(flow.to_lilypond).to eq LilyPondFixtures::AIR_DOCUMENT
     end
   end
 
@@ -201,9 +201,9 @@ describe HeadMusic::Notation::LilyPond::Parser do
 
   describe "a note crossing a barline without a bar check" do
     it "parses, as LilyPond auto-splits it, even though the writer will refuse to re-render it" do
-      composition = parse("{ c'2 d'1 e'2 }")
-      expect(composition.voices.first.placements.map { |placement| placement.position.to_s }).to eq %w[1:1:000 1:3:000 2:3:000]
-      expect { composition.to_lilypond }.to raise_error(HeadMusic::Notation::LilyPond::RenderError)
+      flow = parse("{ c'2 d'1 e'2 }")
+      expect(flow.voices.first.placements.map { |placement| placement.position.to_s }).to eq %w[1:1:000 1:3:000 2:3:000]
+      expect { flow.to_lilypond }.to raise_error(HeadMusic::Notation::LilyPond::RenderError)
     end
   end
 end

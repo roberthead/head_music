@@ -1,12 +1,12 @@
 # A module for musical content
 module HeadMusic::Content; end
 
-# A comment is a free-text annotation, optionally anchored to a position in a composition.
+# A comment is a free-text annotation, optionally anchored to a position in a flow.
 class HeadMusic::Content::Comment
-  attr_reader :composition, :text, :position
+  attr_reader :flow, :text, :position
 
-  def initialize(composition, text, position = nil)
-    @composition = composition
+  def initialize(flow, text, position = nil)
+    @flow = flow
     @text = text
     ensure_position(position)
   end
@@ -25,12 +25,12 @@ class HeadMusic::Content::Comment
     return if position.nil?
 
     @position = if position.is_a?(HeadMusic::Content::Position)
-      unless position.composition.equal?(composition)
-        raise ArgumentError, "position belongs to a different composition"
+      unless position.flow.equal?(flow)
+        raise ArgumentError, "position belongs to a different flow"
       end
       position
     else
-      HeadMusic::Content::Position.new(composition, position)
+      HeadMusic::Content::Position.new(flow, position)
     end
   end
 end

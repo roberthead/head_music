@@ -94,8 +94,8 @@ describe HeadMusic::Style::CompositeAssessment do
 
     context "with a solo voice, which the harmony member gates out" do
       let(:voice) do
-        composition = HeadMusic::Content::Composition.new(name: "Solo", key_signature: "D dorian")
-        composition.add_voice(role: :counterpoint).tap do |part|
+        flow = HeadMusic::Content::Flow.new(name: "Solo", key_signature: "D dorian")
+        flow.add_voice(role: :counterpoint).tap do |part|
           %w[D4 F4 E4 D4].each_with_index { |pitch, bar| part.place("#{bar + 1}:1", :whole, pitch) }
         end
       end
@@ -170,15 +170,15 @@ describe HeadMusic::Style::CompositeAssessment do
 
   describe "an unassessable composite" do
     let(:voice) do
-      composition = HeadMusic::Content::Composition.new(name: "Solo", key_signature: "D dorian")
-      composition.add_voice(role: :counterpoint).tap do |part|
+      flow = HeadMusic::Content::Flow.new(name: "Solo", key_signature: "D dorian")
+      flow.add_voice(role: :counterpoint).tap do |part|
         %w[D4 F4 E4 G4 F4 A4 G4 F4].each_with_index { |pitch, bar| part.place("#{bar + 1}:1", :whole, pitch) }
       end
     end
 
     let(:lower_voice) do
-      composition = HeadMusic::Content::Composition.new(name: "Solo", key_signature: "D dorian")
-      composition.add_voice(role: :counterpoint).tap do |part|
+      flow = HeadMusic::Content::Flow.new(name: "Solo", key_signature: "D dorian")
+      flow.add_voice(role: :counterpoint).tap do |part|
         %w[D4 E4 E4 E4 E4 E4 E4 D4].each_with_index { |pitch, bar| part.place("#{bar + 1}:1", :whole, pitch) }
       end
     end

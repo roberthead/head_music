@@ -3,10 +3,10 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::NoUnisonsInMiddle do
   subject { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
   let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
   let(:counterpoint) do
-    composition.add_voice(role: :counterpoint).tap do |voice|
+    flow.add_voice(role: :counterpoint).tap do |voice|
       counterpoint_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end
@@ -14,7 +14,7 @@ describe HeadMusic::Style::Guidelines::NoUnisonsInMiddle do
   end
 
   before do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
+    flow.add_voice(role: :cantus_firmus).tap do |voice|
       cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end

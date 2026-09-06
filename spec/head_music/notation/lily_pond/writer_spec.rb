@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Notation::LilyPond::Writer do
   describe "#to_s" do
     context "with a single-voice diatonic tune" do
-      let(:composition) { LilyPondFixtures.speed_the_plough }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.speed_the_plough }
+      let(:rendered) { described_class.new(flow).to_s }
 
       it "is structurally valid" do
         expect_structurally_valid_lilypond(rendered, bars: 8, voices: 1)
@@ -28,8 +28,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with a tune with accidentals" do
-      let(:composition) { LilyPondFixtures.chromatic_air }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.chromatic_air }
+      let(:rendered) { described_class.new(flow).to_s }
 
       it "is structurally valid" do
         expect_structurally_valid_lilypond(rendered, bars: 4, voices: 1)
@@ -49,8 +49,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with rests" do
-      let(:composition) { LilyPondFixtures.rests }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.rests }
+      let(:rendered) { described_class.new(flow).to_s }
 
       it "is structurally valid" do
         expect_structurally_valid_lilypond(rendered, bars: 1, voices: 1)
@@ -62,14 +62,14 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with multiple voices" do
-      let(:composition) { LilyPondFixtures.duo }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.duo }
+      let(:rendered) { described_class.new(flow).to_s }
 
       it "is structurally valid" do
         expect_structurally_valid_lilypond(rendered, bars: 2, voices: 2)
       end
 
-      it "emits one staff per voice, in composition order" do
+      it "emits one staff per voice, in flow order" do
         names = rendered.scan(/instrumentName = "([^"]+)"/).flatten
         expect(names).to eq ["Melody", "Bass line"]
       end
@@ -86,8 +86,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with a mid-piece key and meter change" do
-      let(:composition) { LilyPondFixtures.key_and_meter_change }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.key_and_meter_change }
+      let(:rendered) { described_class.new(flow).to_s }
 
       it "is structurally valid" do
         expect_structurally_valid_lilypond(rendered, bars: 3, voices: 2)
@@ -107,8 +107,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with an empty voice" do
-      let(:composition) { LilyPondFixtures.tacet }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.tacet }
+      let(:rendered) { described_class.new(flow).to_s }
 
       it "renders a staff of whole-bar rests without raising" do
         expect(bar_check_lines(rendered)).to eq ["R1*4/4 |"]
@@ -122,8 +122,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with sung placements" do
-      let(:composition) { LilyPondFixtures.song }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.song }
+      let(:rendered) { described_class.new(flow).to_s }
 
       it "drops the lyrics and renders the music" do
         expect(rendered).not_to include "shenandoah"
@@ -135,8 +135,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with quotes and backslashes in header fields" do
-      let(:composition) { LilyPondFixtures.escaped_header }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.escaped_header }
+      let(:rendered) { described_class.new(flow).to_s }
 
       it "escapes the title" do
         expect(rendered).to include %(title = "The \\"Great\\" \\\\ Escape")
@@ -148,16 +148,16 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with a voice without a role" do
-      let(:composition) { LilyPondFixtures.anonymous }
+      let(:flow) { LilyPondFixtures.anonymous }
 
       it "omits the instrumentName block" do
-        expect(described_class.new(composition).to_s).not_to include "instrumentName"
+        expect(described_class.new(flow).to_s).not_to include "instrumentName"
       end
     end
 
     context "with the golden example" do
-      let(:composition) { LilyPondFixtures.air }
-      let(:rendered) { described_class.new(composition).to_s }
+      let(:flow) { LilyPondFixtures.air }
+      let(:rendered) { described_class.new(flow).to_s }
       let(:expected_document) { LilyPondFixtures::AIR_DOCUMENT }
 
       it "renders the exact document" do
@@ -168,10 +168,10 @@ describe HeadMusic::Notation::LilyPond::Writer do
     end
 
     context "with no voices" do
-      let(:composition) { HeadMusic::Content::Composition.new }
+      let(:flow) { HeadMusic::Content::Flow.new }
 
       it "raises a render error before any assembly" do
-        expect { described_class.new(composition).to_s }
+        expect { described_class.new(flow).to_s }
           .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /no voices/)
       end
     end

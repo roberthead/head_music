@@ -8,7 +8,7 @@ class HeadMusic::Analysis::HarmonicInterval
   def initialize(voice1, voice2, position)
     @voice1 = voice1
     @voice2 = voice2
-    @position = position.is_a?(String) ? HeadMusic::Content::Position.new(voice1.composition, position) : position
+    @position = position.is_a?(String) ? HeadMusic::Content::Position.new(voice1.flow, position) : position
   end
 
   def diatonic_interval

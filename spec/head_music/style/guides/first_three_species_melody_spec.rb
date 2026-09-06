@@ -19,11 +19,11 @@ describe HeadMusic::Style::Guides::FirstThreeSpeciesMelody do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
 
   context "with a well-formed counterpoint combining the first three species" do
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "4/4") }
-    let(:voice) { composition.add_voice(role: :counterpoint) }
+    let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian", meter: "4/4") }
+    let(:voice) { flow.add_voice(role: :counterpoint) }
 
     before do
-      composition.add_voice(role: "cantus firmus").tap do |cantus|
+      flow.add_voice(role: "cantus firmus").tap do |cantus|
         %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           cantus.place("#{bar}:1", :whole, pitch)
         end

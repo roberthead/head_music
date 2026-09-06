@@ -26,11 +26,18 @@ module HeadMusic::Notation::MusicXML
       key_signature.num_sharps - key_signature.num_flats
     end
 
-    # Returns the <mode> element value for a key signature.
-    def self.mode(key_signature)
-      key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature)
-      MODE_NAMES_BY_SCALE_TYPE[key_signature.scale_type.name.to_s] ||
-        raise_render_error("Cannot render scale type #{key_signature.scale_type} in a MusicXML <key> element")
+    # Returns the <mode> element value for a tonal context, or nil where there
+    # is none.
+    #
+    # <mode> is optional in MusicXML, so a signature carrying no interpretation
+    # renders as <fifths> alone rather than as an invented major.
+    def self.mode(tonal_context)
+      return nil if tonal_context.nil?
+
+      identifier = tonal_context.is_a?(String) ? tonal_context : tonal_context.name
+      scale_type = HeadMusic::Rudiment::KeySignature.get(identifier).scale_type
+      MODE_NAMES_BY_SCALE_TYPE[scale_type.name.to_s] ||
+        raise_render_error("Cannot render scale type #{scale_type} in a MusicXML <key> element")
     end
 
     def self.raise_render_error(message)

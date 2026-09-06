@@ -1,4 +1,4 @@
-class HeadMusic::Content::Composition
+class HeadMusic::Content::Flow
   # Validates and coerces raw schema values into domain objects for the
   # HashDeserializer. Every method takes the raw value and the path it came
   # from, returning a validated object or raising ArgumentError with that path
@@ -90,12 +90,79 @@ class HeadMusic::Content::Composition
       end
     end
 
-    def bar_number(bar_hash, index)
+    def bar_number(bar_hash, index, path = "bars")
       number = bar_hash["number"]
       unless number.is_a?(Integer) && number >= 0
-        raise ArgumentError, "bars[#{index}]: bar number must be an Integer of at least 0, got #{number.inspect}"
+        raise ArgumentError, "#{path}[#{index}]: bar number must be an Integer of at least 0, got #{number.inspect}"
       end
       number
+    end
+
+    # Sharps positive, flats negative, and unbounded: a theoretical key such as
+    # G sharp major counts each double accidental twice and reaches eight.
+    def fifths(value, path)
+      raise ArgumentError, "#{path}: signature must be an Integer of fifths, got #{value.inspect}" unless value.is_a?(Integer)
+
+      value
+    end
+
+    # A Key, a Mode, or -- for a scale type neither can hold -- a KeySignature.
+    # Round-tripped by name, which is what each of the three parses back from.
+    def tonal_context(value, path)
+      return nil if value.nil?
+
+      context = begin
+        HeadMusic::Rudiment::KeySignature.get(value)
+      rescue
+        nil
+      end
+      raise ArgumentError, "#{path}: unknown tonal context #{value.inspect}" unless context&.tonic_spelling
+
+      HeadMusic::Content::Flow::Timeline.tonal_context_of(context)
+    end
+
+    def instrument(value, path)
+      return nil if value.nil?
+
+      instrument = HeadMusic::Instruments::Instrument.get(value)
+      raise ArgumentError, "#{path}: unknown instrument #{value.inspect}" if instrument.nil?
+
+      instrument
+    end
+
+    # A staff system serializes as its bracket and the clef of each staff; a
+    # clef of null is a staff whose clef was never authored, which the writers
+    # infer from the voice instead.
+    def staff_system(value, path)
+      return nil if value.nil?
+      raise ArgumentError, "#{path}: staff_system must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
+
+      staves = Array(value["staves"]).each_with_index.map do |staff_hash, index|
+        HeadMusic::Content::Staff.new(clef: clef(staff_hash["clef"], "#{path}.staves[#{index}]"))
+      end
+      HeadMusic::Content::StaffSystem.new(staves: staves, bracket: bracket(value["bracket"], path))
+    end
+
+    def bracket(value, path)
+      return :none if value.nil?
+
+      symbol = value.to_sym
+      raise ArgumentError, "#{path}: unknown bracket #{value.inspect}" unless HeadMusic::Content::StaffSystem::BRACKETS.include?(symbol)
+
+      symbol
+    end
+
+    def clef(value, path)
+      return nil if value.nil?
+
+      clef = begin
+        HeadMusic::Rudiment::Clef.get(value)
+      rescue
+        nil
+      end
+      raise ArgumentError, "#{path}: unknown clef #{value.inspect}" if clef&.pitch.nil?
+
+      clef
     end
 
     private

@@ -1,7 +1,7 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # The ordered events of one voice as read from the document, before any
-  # composition exists: notes, rests, whole-bar rests, bar checks, and key
+  # flow exists: notes, rests, whole-bar rests, bar checks, and key
   # or meter commands. Ties fold here, so a tied pair reaches the builder
   # as one note whose rhythmic value carries the author's split.
   class VoiceStream

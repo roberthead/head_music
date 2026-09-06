@@ -1,20 +1,20 @@
-# Parses and renders LilyPond documents as HeadMusic::Content compositions
+# Parses and renders LilyPond documents as HeadMusic::Content flows
 module HeadMusic::Notation::LilyPond
   # The commands that wrap a document rather than appear in its music. The
   # DocumentReader dispatches on them; the MusicReader rejects them.
   ENVELOPE_COMMANDS = %w[version header score layout midi].freeze
 
   # Interprets a LilyPond document, or a bare music expression, as a
-  # composition. Raises before building on anything outside the supported
-  # subset, so callers never receive a partial composition.
+  # flow. Raises before building on anything outside the supported
+  # subset, so callers never receive a partial flow.
   def self.parse(lily_pond_string)
-    Parser.new(lily_pond_string).composition
+    Parser.new(lily_pond_string).flow
   end
 
-  # Renders a composition as a complete LilyPond source string.
+  # Renders a flow as a complete LilyPond source string.
   # No rendering options exist yet; keywords will be added with the first one.
-  def self.render(composition, **options)
-    Writer.new(composition, **options).to_s
+  def self.render(flow, **options)
+    Writer.new(flow, **options).to_s
   end
 
   # Raised when a LilyPond string cannot be interpreted
@@ -33,7 +33,7 @@ module HeadMusic::Notation::LilyPond
   # Raised for valid LilyPond constructs that this parser does not support
   class UnsupportedFeatureError < ParseError; end
 
-  # Raised when a composition cannot be expressed in the supported LilyPond subset
+  # Raised when a flow cannot be expressed in the supported LilyPond subset
   class RenderError < HeadMusic::Notation::RenderError; end
 end
 

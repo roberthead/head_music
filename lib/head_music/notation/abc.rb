@@ -1,18 +1,18 @@
-# Parses and renders ABC notation as HeadMusic::Content compositions
+# Parses and renders ABC notation as HeadMusic::Content flows
 module HeadMusic::Notation::ABC
   # Parses exactly one tune. Raises when the input holds more than one.
   def self.parse(abc_string)
-    Parser.new(abc_string).composition
+    Parser.new(abc_string).flow
   end
 
   # Parses a tune book — one or more blank-line-separated tunes.
   def self.parse_book(abc_string)
-    BookParser.new(abc_string).compositions
+    BookParser.new(abc_string).flows
   end
 
-  # Renders a composition as an ABC tune string.
-  def self.render(composition, **options)
-    Writer.new(composition, **options).to_s
+  # Renders a flow as an ABC tune string.
+  def self.render(flow, **options)
+    Writer.new(flow, **options).to_s
   end
 
   # Raised when an ABC string cannot be interpreted
@@ -30,7 +30,7 @@ module HeadMusic::Notation::ABC
   # Raised for valid ABC constructs that this parser does not support
   class UnsupportedFeatureError < ParseError; end
 
-  # Raised when a composition cannot be expressed in the supported ABC subset
+  # Raised when a flow cannot be expressed in the supported ABC subset
   class RenderError < HeadMusic::Notation::RenderError; end
 end
 

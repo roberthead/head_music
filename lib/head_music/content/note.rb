@@ -13,7 +13,7 @@ class HeadMusic::Content::Note
     @pitch = HeadMusic::Rudiment::Pitch.get(pitch)
     @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
     @voice = voice || HeadMusic::Content::Voice.new
-    @position = position || HeadMusic::Content::Position.new(@voice.composition, "1:1")
+    @position = position || HeadMusic::Content::Position.new(@voice.flow, "1:1")
   end
 
   def placement

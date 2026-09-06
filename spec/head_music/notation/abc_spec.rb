@@ -51,33 +51,33 @@ describe HeadMusic::Notation::ABC do
 
   describe ".parse" do
     context "with Speed the Plough" do
-      subject(:composition) { described_class.parse(ABCFixtures::SPEED_THE_PLOUGH) }
+      subject(:flow) { described_class.parse(ABCFixtures::SPEED_THE_PLOUGH) }
 
-      let(:voice) { composition.voices.first }
+      let(:voice) { flow.voices.first }
       let(:placements) { voice.placements }
 
-      it "returns a composition" do
-        expect(composition).to be_a(HeadMusic::Content::Composition)
+      it "returns a flow" do
+        expect(flow).to be_a(HeadMusic::Content::Flow)
       end
 
-      it "names the composition from the title field" do
-        expect(composition.name).to eq "Speed the Plough"
+      it "names the flow from the title field" do
+        expect(flow.name).to eq "Speed the Plough"
       end
 
       it "sets the meter to 4/4" do
-        expect(composition.meter.to_s).to eq "4/4"
+        expect(flow.meter.to_s).to eq "4/4"
       end
 
       it "sets the key signature to G major" do
-        expect(composition.key_signature).to eq HeadMusic::Rudiment::KeySignature.get("G major")
+        expect(flow.key_signature).to eq HeadMusic::Rudiment::KeySignature.get("G major")
       end
 
       it "gives the key signature one sharp" do
-        expect(composition.key_signature.num_sharps).to eq 1
+        expect(flow.key_signature.num_sharps).to eq 1
       end
 
       it "creates a single voice" do
-        expect(composition.voices.length).to eq 1
+        expect(flow.voices.length).to eq 1
       end
 
       it "opens with G4 A4 B4 C5" do
@@ -115,20 +115,20 @@ describe HeadMusic::Notation::ABC do
       end
 
       it "starts the repeat on the first bar" do
-        expect(composition.bars(1).last.starts_repeat?).to be true
+        expect(flow.bars(1).last.starts_repeat?).to be true
       end
 
       it "ends the repeat on the final bar" do
-        expect(composition.bars(8).last.ends_repeat?).to be true
+        expect(flow.bars(8).last.ends_repeat?).to be true
       end
 
       it "plays the repeated section twice" do
-        expect(composition.bars(8).last.ends_repeat_after_num_plays).to eq 2
+        expect(flow.bars(8).last.ends_repeat_after_num_plays).to eq 2
       end
     end
 
     context "with a jig in compound meter" do
-      subject(:composition) { described_class.parse(<<~ABC) }
+      subject(:flow) { described_class.parse(<<~ABC) }
         X:2
         T:Test Jig
         M:6/8
@@ -137,10 +137,10 @@ describe HeadMusic::Notation::ABC do
         DED FEF|d2f ecA|
       ABC
 
-      let(:placements) { composition.voices.first.placements }
+      let(:placements) { flow.voices.first.placements }
 
       it "sets the meter to 6/8" do
-        expect(composition.meter.to_s).to eq "6/8"
+        expect(flow.meter.to_s).to eq "6/8"
       end
 
       it "fills the first bar with six eighth notes" do
@@ -170,14 +170,14 @@ describe HeadMusic::Notation::ABC do
 
     context "without an L: field" do
       it "defaults the unit note length to a sixteenth when the meter is smaller than 3/4" do
-        composition = described_class.parse("X:1\nM:2/4\nK:C\nC|\n")
-        placement = composition.voices.first.placements.first
+        flow = described_class.parse("X:1\nM:2/4\nK:C\nC|\n")
+        placement = flow.voices.first.placements.first
         expect(placement.rhythmic_value.name).to eq "sixteenth"
       end
 
       it "defaults the unit note length to an eighth when the meter is 3/4 or larger" do
-        composition = described_class.parse("X:1\nM:4/4\nK:C\nC|\n")
-        placement = composition.voices.first.placements.first
+        flow = described_class.parse("X:1\nM:4/4\nK:C\nC|\n")
+        placement = flow.voices.first.placements.first
         expect(placement.rhythmic_value.name).to eq "eighth"
       end
     end
@@ -202,7 +202,7 @@ describe HeadMusic::Notation::ABC do
       ABC
     end
 
-    it "returns a composition per tune" do
+    it "returns a flow per tune" do
       expect(described_class.parse_book(book).map(&:name)).to eq ["Speed the Plough", "Test Jig"]
     end
 

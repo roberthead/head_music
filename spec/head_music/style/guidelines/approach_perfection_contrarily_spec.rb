@@ -3,10 +3,10 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::ApproachPerfectionContrarily do
   subject { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "C major") }
   let(:cantus_firmus_pitches) { [] }
   let(:counterpoint) do
-    composition.add_voice(role: :counterpoint).tap do |voice|
+    flow.add_voice(role: :counterpoint).tap do |voice|
       counterpoint_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end
@@ -14,7 +14,7 @@ describe HeadMusic::Style::Guidelines::ApproachPerfectionContrarily do
   end
 
   before do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
+    flow.add_voice(role: :cantus_firmus).tap do |voice|
       cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1:0", :whole, pitch)
       end

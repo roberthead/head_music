@@ -1,6 +1,6 @@
-# The compositions the LilyPond writer specs render, shared with the parser's
+# The flows the LilyPond writer specs render, shared with the parser's
 # round-trip specs so every fixture shape the writer emits is also proven to
-# read back. Each method builds a fresh composition.
+# read back. Each method builds a fresh flow.
 module LilyPondFixtures
   module_function
 
@@ -12,76 +12,104 @@ module LilyPondFixtures
     HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR)
   end
 
+  # A piano part on a grand staff whose left hand rises into the treble staff
+  # for two bars. Deliberately not in the round-trip set: the reader has no
+  # notion of a staff group, so this fixture is a writer fixture only.
+  def cross_staff_piano
+    flow = HeadMusic::Content::Flow.new(name: "Cross Staff", key_signature: "C major", meter: "4/4")
+    staff_system = HeadMusic::Content::StaffSystem.grand_staff
+    treble, bass = staff_system.staves
+    piano = flow.add_part(instrument: "piano", staff_system: staff_system)
+    right_hand = piano.add_voice(role: "right hand")
+    left_hand = piano.add_voice(role: "left hand")
+    left_hand.cross_to(bass, from: 1)
+    (1..4).each do |bar|
+      right_hand.place("#{bar}:1", :whole, "E5")
+      left_hand.place("#{bar}:1", :whole, "C3")
+    end
+    left_hand.cross_to(treble, from: 2, through: 3)
+    flow
+  end
+
+  # A grand staff with only a right hand, so the bass staff carries nobody.
+  def one_handed_piano
+    flow = HeadMusic::Content::Flow.new(name: "One Hand", key_signature: "C major", meter: "4/4")
+    piano = flow.add_part(instrument: "piano", staff_system: HeadMusic::Content::StaffSystem.grand_staff)
+    right_hand = piano.add_voice(role: "right hand")
+    (1..2).each { |bar| right_hand.place("#{bar}:1", :whole, "E5") }
+    flow
+  end
+
   def rests
-    composition = HeadMusic::Content::Composition.new(name: "Rests")
-    voice = composition.add_voice
+    flow = HeadMusic::Content::Flow.new(name: "Rests")
+    voice = flow.add_voice
     voice.place("1:1", :quarter, "C4")
     voice.place("1:2", :quarter)
     voice.place("1:3", :half, "E4")
-    composition
+    flow
   end
 
   def duo
-    composition = HeadMusic::Content::Composition.new(name: "Duo", key_signature: "C major", meter: "4/4")
-    upper = composition.add_voice(role: "Melody")
+    flow = HeadMusic::Content::Flow.new(name: "Duo", key_signature: "C major", meter: "4/4")
+    upper = flow.add_voice(role: "Melody")
     upper.place("1:1", :whole, "E5")
     upper.place("2:1", :whole, "D5")
-    lower = composition.add_voice(role: "Bass line")
+    lower = flow.add_voice(role: "Bass line")
     lower.place("1:1", :whole, "C3")
-    composition
+    flow
   end
 
   def key_and_meter_change
-    composition = HeadMusic::Content::Composition.new(name: "Turn", key_signature: "G major", meter: "4/4")
+    flow = HeadMusic::Content::Flow.new(name: "Turn", key_signature: "G major", meter: "4/4")
     %w[G4 G3].each do |pitch|
-      voice = composition.add_voice
+      voice = flow.add_voice
       voice.place("1:1", :whole, pitch)
       voice.place("2:1", :whole, pitch)
       voice.place("3:1", "dotted half", pitch)
     end
-    composition.change_key_signature(3, "D major")
-    composition.change_meter(3, "3/4")
-    composition
+    flow.change_key_signature(3, "D major")
+    flow.change_meter(3, "3/4")
+    flow
   end
 
   def tacet
-    composition = HeadMusic::Content::Composition.new(name: "Tacet")
-    composition.add_voice
-    composition
+    flow = HeadMusic::Content::Flow.new(name: "Tacet")
+    flow.add_voice
+    flow
   end
 
   def song
-    composition = HeadMusic::Content::Composition.new(name: "Song")
-    composition.add_voice.place("1:1", :whole, "C4").sing("shenandoah")
-    composition
+    flow = HeadMusic::Content::Flow.new(name: "Song")
+    flow.add_voice.place("1:1", :whole, "C4").sing("shenandoah")
+    flow
   end
 
   def escaped_header
-    composition = HeadMusic::Content::Composition.new(
+    flow = HeadMusic::Content::Flow.new(
       name: %(The "Great" \\ Escape), composer: %(A. "Slash" Author)
     )
-    composition.add_voice.place("1:1", :whole, "C4")
-    composition
+    flow.add_voice.place("1:1", :whole, "C4")
+    flow
   end
 
   def anonymous
-    composition = HeadMusic::Content::Composition.new(name: "Anon")
-    composition.add_voice.place("1:1", :whole, "C4")
-    composition
+    flow = HeadMusic::Content::Flow.new(name: "Anon")
+    flow.add_voice.place("1:1", :whole, "C4")
+    flow
   end
 
   def air
-    composition = HeadMusic::Content::Composition.new(
+    flow = HeadMusic::Content::Flow.new(
       name: "Air", key_signature: "G major", meter: "4/4", composer: "Aloysius"
     )
-    voice = composition.add_voice(role: "Melody")
+    voice = flow.add_voice(role: "Melody")
     voice.place("1:1", :quarter, "G4")
     voice.place("1:2", :quarter, "A4")
     voice.place("1:3", :quarter, "B4")
     voice.place("1:4", :quarter, "C5")
     voice.place("2:1", :half, "D5")
     voice.place("2:3", :half, "G4")
-    composition
+    flow
   end
 
   # The exact document the writer renders for #air.

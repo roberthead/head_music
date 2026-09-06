@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guides::Configured do
   subject(:guide) { HeadMusic::Style::Guides::ContourMelody.with(contour: :arch, minimum_melodic_intervals: 2) }
 
-  let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
-  let(:voice) { composition.voices.first }
+  let(:flow) { HeadMusic::Notation::ABC.parse(abc) }
+  let(:voice) { flow.voices.first }
 
   let(:abc) do
     <<~ABC

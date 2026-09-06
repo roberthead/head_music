@@ -1,9 +1,9 @@
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
-  # Rejects compositions that cannot be expressed in the supported MusicXML
+  # Rejects flows that cannot be expressed in the supported MusicXML
   # subset.
   #
-  # Whole-composition problems (no voices, positional gaps, barline-crossing
+  # Whole-flow problems (no voices, positional gaps, barline-crossing
   # notes, forbidden control characters) raise RenderError here, before the
   # Writer assembles any output — so a successful check! is the Writer's
   # guarantee that assembly cannot fail on these grounds.
@@ -14,33 +14,33 @@ module HeadMusic::Notation::MusicXML
     # carriage return, even as character references.
     FORBIDDEN_TEXT_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/
 
-    def self.check!(composition)
-      new(composition).check!
+    def self.check!(flow)
+      new(flow).check!
     end
 
-    def initialize(composition)
-      @composition = composition
+    def initialize(flow)
+      @flow = flow
     end
 
     def check!
       ensure_voices
       ensure_renderable_text
-      ensure_contiguous_voices(composition)
-      ensure_notes_within_barlines(composition)
+      ensure_contiguous_voices(flow)
+      ensure_notes_within_barlines(flow)
     end
 
     private
 
-    attr_reader :composition
+    attr_reader :flow
 
     def ensure_voices
-      return unless composition.voices.empty?
+      return unless flow.voices.empty?
 
-      raise RenderError, "cannot render a composition with no voices as MusicXML"
+      raise RenderError, "cannot render a flow with no voices as MusicXML"
     end
 
     def ensure_renderable_text
-      texts = [composition.name, composition.composer] + composition.voices.map(&:role)
+      texts = [flow.name, flow.composer] + flow.voices.map(&:role)
       texts.compact.each do |text|
         next unless text.to_s.match?(FORBIDDEN_TEXT_CHARACTERS)
 

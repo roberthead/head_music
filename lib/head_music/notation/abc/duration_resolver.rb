@@ -1,4 +1,4 @@
-# Parses ABC notation into HeadMusic::Content compositions
+# Parses ABC notation into HeadMusic::Content flows
 module HeadMusic::Notation::ABC
   # Converts the tune's unit note length and a per-note multiplier string
   # (e.g. "2", "3/2", "/", "//") into a HeadMusic::Rudiment::RhythmicValue.

@@ -2,7 +2,7 @@
 #
 # The K: (key) field is required and must be the last header field;
 # everything after that line is the tune body. Requiring K: avoids
-# silently defaulting the composition to C major.
+# silently defaulting the flow to C major.
 class HeadMusic::Notation::ABC::Header
   FIELD_PATTERN = /\A([A-Za-z]):(.*)\z/
   FRACTION_PATTERN = %r{\A\d+/\d+\z}

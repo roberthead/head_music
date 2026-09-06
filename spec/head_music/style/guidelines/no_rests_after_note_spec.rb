@@ -3,11 +3,11 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::NoRestsAfterNote do
   subject { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major", meter: "4/4") }
-  let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "C major", meter: "4/4") }
+  let(:counterpoint) { flow.add_voice(role: :counterpoint) }
 
   before do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
+    flow.add_voice(role: :cantus_firmus).tap do |voice|
       %w[C4 D4 E4 F4 G4 F4 E4 D4 C4].each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", :whole, pitch)
       end

@@ -1,28 +1,30 @@
 # A module for musical content
 module HeadMusic::Content; end
 
-# Representation of a bar in a composition
+# Representation of a bar in a flow
 # Encapsulates meter and key signature changes
 # and repeat structure (repeat barlines and volta brackets) as content semantics
 class HeadMusic::Content::Bar
-  attr_reader :composition, :ends_repeat_after_num_plays, :plays_on_passes, :key_signature, :meter
+  attr_reader :flow, :number, :ends_repeat_after_num_plays, :plays_on_passes
   attr_writer :starts_repeat
 
-  def initialize(composition, key_signature: nil, meter: nil)
-    @composition = composition
-    self.key_signature = key_signature
-    self.meter = meter
+  def initialize(flow, number: HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR)
+    @flow = flow
+    @number = number
     @starts_repeat = false
     @ends_repeat_after_num_plays = nil
     @plays_on_passes = nil
   end
 
-  def key_signature=(value)
-    @key_signature = value ? HeadMusic::Rudiment::KeySignature.get(value) : nil
+  # The key signature and meter a bar reports are the changes authored here,
+  # read from the flow's timeline rather than stored -- nil where nothing was
+  # authored, which is what a writer reads to decide whether to print one.
+  def key_signature
+    flow.timeline.key_signature_change_at(number)&.key_signature
   end
 
-  def meter=(value)
-    @meter = value ? HeadMusic::Rudiment::Meter.get(value) : nil
+  def meter
+    flow.timeline.meter_change_at(number)
   end
 
   def starts_repeat?
@@ -56,12 +58,11 @@ class HeadMusic::Content::Bar
   end
 
   # Sparse serialization: only non-default state, so a default bar is {}.
-  # KeySignature serializes via #name ("F♯ minor") because #to_s ("3 sharps")
-  # cannot be parsed back by KeySignature.get.
+  #
+  # Key and meter changes are not here: they belong to the flow's timeline, and
+  # a bar merely reports the ones authored in it.
   def to_h
     hash = {}
-    hash["key_signature"] = key_signature.name if key_signature
-    hash["meter"] = meter.to_s if meter
     hash["starts_repeat"] = true if starts_repeat?
     hash["ends_repeat_after_num_plays"] = ends_repeat_after_num_plays if ends_repeat?
     hash["plays_on_passes"] = plays_on_passes.dup if plays_on_passes

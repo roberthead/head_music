@@ -1,9 +1,9 @@
 # A namespace for LilyPond-notation rendering helpers
 module HeadMusic::Notation::LilyPond
-  # Rejects compositions that cannot be expressed in the supported LilyPond
+  # Rejects flows that cannot be expressed in the supported LilyPond
   # subset.
   #
-  # Whole-composition problems (no voices, positional gaps, underfilled
+  # Whole-flow problems (no voices, positional gaps, underfilled
   # final bars, barline-crossing notes, unpitched sounds) raise RenderError here, before the Writer
   # assembles any output — so a successful check! is the Writer's guarantee
   # that assembly cannot fail on these grounds.
@@ -11,34 +11,34 @@ module HeadMusic::Notation::LilyPond
     include HeadMusic::Notation::PreflightChecks
     include HeadMusic::Notation::PlacementValidation
 
-    def self.check!(composition)
-      new(composition).check!
+    def self.check!(flow)
+      new(flow).check!
     end
 
-    def initialize(composition)
-      @composition = composition
+    def initialize(flow)
+      @flow = flow
     end
 
     def check!
       ensure_voices
-      ensure_contiguous_voices(composition)
-      ensure_notes_within_barlines(composition)
+      ensure_contiguous_voices(flow)
+      ensure_notes_within_barlines(flow)
       ensure_filled_final_bars
       ensure_pitched_placements
     end
 
     private
 
-    attr_reader :composition
+    attr_reader :flow
 
     def ensure_voices
-      return unless composition.voices.empty?
+      return unless flow.voices.empty?
 
-      raise RenderError, "cannot render a composition with no voices as LilyPond"
+      raise RenderError, "cannot render a flow with no voices as LilyPond"
     end
 
     def ensure_pitched_placements
-      composition.voices.each do |voice|
+      flow.voices.each do |voice|
         voice.placements.each { |placement| ensure_pitched_sounds(placement) }
       end
     end
@@ -47,7 +47,7 @@ module HeadMusic::Notation::LilyPond
     # its bar check, which LilyPond rejects at compile time — unlike a bar
     # with none, which the Writer fills with a whole-bar rest.
     def ensure_filled_final_bars
-      composition.voices.each do |voice|
+      flow.voices.each do |voice|
         placement = voice.last_placement
         next unless placement
         next if placement.next_position == placement.position.start_of_next_bar

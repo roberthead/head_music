@@ -81,8 +81,8 @@ describe HeadMusic::Style::Guides::DiatonicMelody do
   describe "analysis of familiar melodies" do
     subject(:analysis) { HeadMusic::Style::GuideAssessment.new(described_class, voice) }
 
-    let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
-    let(:voice) { composition.voices.first }
+    let(:flow) { HeadMusic::Notation::ABC.parse(abc) }
+    let(:voice) { flow.voices.first }
 
     # ConsonantClimax reports two different violations; these voices repeat
     # their peak rather than peaking on a dissonance.

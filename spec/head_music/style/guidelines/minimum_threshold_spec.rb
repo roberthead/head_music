@@ -1,8 +1,8 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::MinimumThreshold do
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:voice) { HeadMusic::Content::Voice.new(composition: composition) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:voice) { HeadMusic::Content::Voice.new(flow: flow) }
 
   describe ".with" do
     it "carries the minimum as configuration" do

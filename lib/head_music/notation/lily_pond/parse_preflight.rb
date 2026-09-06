@@ -1,7 +1,7 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # Boundary checks the Parser runs before it reads a document, so a caller
-  # never receives a reference to a partially built composition. Each check
+  # never receives a reference to a partially built flow. Each check
   # raises on the first problem it finds and is otherwise a no-op.
   class ParsePreflight
     OPENERS = {open_brace: :close_brace, open_parallel: :close_parallel, open_chord: :close_chord}.freeze

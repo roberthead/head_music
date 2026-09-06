@@ -3,11 +3,11 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
   subject { assess(described_class, counterpoint) }
 
-  let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:counterpoint) { flow.add_voice(role: :counterpoint) }
   let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4] }
 
   before do
-    composition.add_voice(role: :cantus_firmus).tap do |voice|
+    flow.add_voice(role: :cantus_firmus).tap do |voice|
       cantus_firmus_pitches.each.with_index(1) do |pitch, bar|
         voice.place("#{bar}:1", cf_rhythmic_value, pitch)
       end
@@ -15,7 +15,7 @@ describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
   end
 
   context "with 4/4 meter" do
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
+    let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
     let(:cf_rhythmic_value) { :whole }
 
     context "with no notes in the counterpoint" do
@@ -85,7 +85,7 @@ describe HeadMusic::Style::Guidelines::NoteFillsFinalBar do
   end
 
   context "with 3/4 meter" do
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian", meter: "3/4") }
+    let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian", meter: "3/4") }
     let(:cf_rhythmic_value) { :dotted_half }
 
     context "with a dotted half note in the final bar" do

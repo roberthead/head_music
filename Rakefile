@@ -67,4 +67,11 @@ namespace :style do
     File.write(path, snapshot.to_yaml)
     puts "Wrote #{snapshot.values.sum(&:size)} strings to #{path}"
   end
+
+  desc "Regenerate the pinned corpus grading (spec/fixtures/style/corpus_fitness.json)"
+  task :snapshot_corpus_fitness do
+    path = File.expand_path("spec/fixtures/style/corpus_fitness.json", __dir__)
+    sh "bundle exec ruby bin/guide_grade_corpus.rb #{path}"
+    puts "Wrote #{path}"
+  end
 end

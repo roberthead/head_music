@@ -1,7 +1,7 @@
 # A namespace for ABC-notation parsing helpers
 module HeadMusic::Notation::ABC
   # Boundary checks the Parser runs before it interprets a tune, so a caller
-  # never receives a reference to a partially built composition. Each check
+  # never receives a reference to a partially built flow. Each check
   # raises on the first problem it finds and is otherwise a no-op. They run at
   # distinct points of construction — blank input before the header is read,
   # trailing content once the header exists, unsupported tokens after lexing —

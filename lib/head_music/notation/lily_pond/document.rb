@@ -1,8 +1,8 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
-  # Everything the reader learned from a document, before any composition
+  # Everything the reader learned from a document, before any flow
   # exists: the header's identity fields and one event stream per voice.
-  # The composition cannot be constructed until the opening key and meter
+  # The flow cannot be constructed until the opening key and meter
   # are known, and they arrive inside the first voice, so the document
   # holds the streams until the reader is done.
   class Document

@@ -16,14 +16,19 @@ module HeadMusic::Notation::MusicXML
       @lyric_writer = LyricWriter.new
     end
 
-    def lines(placement)
+    # @param voice_number [Integer, nil] the <voice> a part's notes belong to,
+    #   omitted for a part holding one voice
+    # @param staff_number [Integer, nil] the <staff> the note is written on,
+    #   omitted for a part on one staff
+    def lines(placement, voice_number: nil, staff_number: nil)
       ensure_pitched_sounds(placement)
 
       components_by_placement[placement].each_with_index.flat_map do |component, component_index|
         beams = beam_annotations[[placement, component_index]] || []
         note_slots(placement).each_with_index.flat_map do |pitch, index|
           element_lines(
-            placement, component, pitch: pitch, chord: index.positive?, beams: index.zero? ? beams : []
+            placement, component, pitch: pitch, chord: index.positive?, beams: index.zero? ? beams : [],
+            voice_number: voice_number, staff_number: staff_number
           )
         end
       end
@@ -49,20 +54,26 @@ module HeadMusic::Notation::MusicXML
     # A chord note carries <chord/> as its first child, before <pitch>, marking
     # it as sounding with the preceding note; the lead note (and every single
     # note and rest) omits it, so this path stays byte-identical for those.
-    def element_lines(placement, component, pitch: nil, chord: false, beams: [])
+    # Element order inside <note> is fixed by the DTD: <voice> follows the ties
+    # and precedes <type>, and <staff> follows the dots and precedes the beams.
+    # Both are omitted entirely for the one-voice, one-staff part that every
+    # existing document is made of, which is what keeps this byte-identical.
+    def element_lines(placement, component, pitch: nil, chord: false, beams: [], voice_number: nil, staff_number: nil)
       [
         "#{INDENT * 3}<note>",
         *(chord ? ["#{INDENT * 4}<chord/>"] : []),
         *(pitch ? pitch_lines(pitch) : ["#{INDENT * 4}<rest/>"]),
         "#{INDENT * 4}<duration>#{component.duration}</duration>",
         *tie_lines(placement, component),
+        voice_number && "#{INDENT * 4}<voice>#{voice_number}</voice>",
         "#{INDENT * 4}<type>#{component.type}</type>",
         *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
+        staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>",
         *beam_lines(beams),
         *notation_lines(placement, component),
         *lyric_writer.lines(placement, component, chord: chord),
         "#{INDENT * 3}</note>"
-      ]
+      ].compact
     end
 
     def beam_lines(beams)

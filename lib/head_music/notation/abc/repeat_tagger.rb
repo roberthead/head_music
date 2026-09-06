@@ -1,9 +1,9 @@
 # A namespace for ABC-notation parsing helpers
 module HeadMusic::Notation::ABC
-  # Records repeat and volta structure on the composition's bars.
+  # Records repeat and volta structure on the flow's bars.
   #
   # ABC spells this structure on bar lines and volta brackets, but the
-  # composition carries it on the bars themselves, so the marks are applied as
+  # flow carries it on the bars themselves, so the marks are applied as
   # each bar is completed rather than as each token arrives.
   class RepeatTagger
     # Bar styles that end a repeated section, terminating any volta.
@@ -11,8 +11,8 @@ module HeadMusic::Notation::ABC
     REPEAT_STARTING_STYLES = ["|:", "::"].freeze
     SECTION_ENDING_STYLES = ["||", "|]", "[|"].freeze
 
-    def initialize(composition)
-      @composition = composition
+    def initialize(flow)
+      @flow = flow
     end
 
     # A bar line closes the bar before it and may open or close a repeat.
@@ -41,7 +41,7 @@ module HeadMusic::Notation::ABC
 
     private
 
-    attr_reader :composition
+    attr_reader :flow
 
     def apply_repeat_flags(state, style)
       if REPEAT_ENDING_STYLES.include?(style)
@@ -61,7 +61,7 @@ module HeadMusic::Notation::ABC
     end
 
     def bar(bar_number)
-      composition.bars(bar_number).last
+      flow.bars(bar_number).last
     end
   end
 end

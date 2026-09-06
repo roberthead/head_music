@@ -3,9 +3,9 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
   subject(:guideline) { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:cantus_firmus) { composition.add_voice(role: :cantus_firmus) }
-  let(:counterpoint) { composition.add_voice(role: :counterpoint) }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:cantus_firmus) { flow.add_voice(role: :cantus_firmus) }
+  let(:counterpoint) { flow.add_voice(role: :counterpoint) }
 
   it { expect(violation_text(described_class)).not_to be_empty }
 
@@ -96,10 +96,10 @@ describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
   context "with multiple voices to test both higher and lower voice branches" do
     subject(:guideline) { assess(described_class, alto) }
 
-    let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
-    let(:soprano) { composition.add_voice(role: :soprano) }
-    let(:alto) { composition.add_voice(role: :alto) }
-    let(:bass) { composition.add_voice(role: :bass) }
+    let(:flow) { HeadMusic::Content::Flow.new(key_signature: "C major") }
+    let(:soprano) { flow.add_voice(role: :soprano) }
+    let(:alto) { flow.add_voice(role: :alto) }
+    let(:bass) { flow.add_voice(role: :bass) }
 
     context "when lower voice overlaps by going above alto" do
       before do

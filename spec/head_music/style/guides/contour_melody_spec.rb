@@ -155,8 +155,8 @@ describe HeadMusic::Style::Guides::ContourMelody do
     subject(:analysis) { HeadMusic::Style::GuideAssessment.new(guide, voice) }
 
     let(:guide) { HeadMusic::Style::Guide.get(guide_key) }
-    let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
-    let(:voice) { composition.voices.first }
+    let(:flow) { HeadMusic::Notation::ABC.parse(abc) }
+    let(:voice) { flow.voices.first }
 
     let(:abc) do
       <<~ABC
@@ -237,8 +237,8 @@ describe HeadMusic::Style::Guides::ContourMelody do
       end
 
       context "with an empty voice" do
-        let(:composition) { HeadMusic::Content::Composition.new(key_signature: "C major") }
-        let(:voice) { composition.add_voice(role: :melody) }
+        let(:flow) { HeadMusic::Content::Flow.new(key_signature: "C major") }
+        let(:voice) { flow.add_voice(role: :melody) }
 
         it "gates the grade to zero" do
           expect(analysis.fitness).to eq 0.0

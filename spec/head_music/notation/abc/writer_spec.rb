@@ -3,9 +3,9 @@ require "spec_helper"
 describe HeadMusic::Notation::ABC::Writer do
   describe "#to_s" do
     context "with a diatonic single-voice tune" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) { HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH) }
 
       let(:expected) do
         <<~ABC
@@ -25,9 +25,9 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with accidentals and same-bar natural cancellations" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) { HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR) }
 
       let(:expected) do
         <<~ABC
@@ -49,14 +49,14 @@ describe HeadMusic::Notation::ABC::Writer do
       it "reproduces the original pitch spellings on re-parse" do
         reparsed = HeadMusic::Notation::ABC.parse(rendered)
         expect(reparsed.voices.first.pitches.map(&:to_s))
-          .to eq composition.voices.first.pitches.map(&:to_s)
+          .to eq flow.voices.first.pitches.map(&:to_s)
       end
     end
 
     context "with varied durations and rests" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
         X:1
         T:Rest Study
         M:3/4
@@ -86,9 +86,9 @@ describe HeadMusic::Notation::ABC::Writer do
     # collapses any tied chain back to a single multiplier. The authored
     # split is intentionally not round-tripped through ABC export.
     context "with an authored tie collapsing to a single multiplier" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
         X:1
         T:Tie Study
         M:6/8
@@ -114,9 +114,9 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with fractional durations shorter than the unit note length" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
         X:1
         T:Sixteenth Study
         M:4/4
@@ -141,24 +141,24 @@ describe HeadMusic::Notation::ABC::Writer do
       end
 
       it "round-trips" do
-        expect_abc_round_trip(composition)
+        expect_abc_round_trip(flow)
       end
     end
 
     context "with a custom reference number" do
-      subject(:rendered) { described_class.new(composition, reference_number: 7).to_s }
+      subject(:rendered) { described_class.new(flow, reference_number: 7).to_s }
 
-      let(:composition) { HeadMusic::Content::Composition.new(name: "Ref Test") }
+      let(:flow) { HeadMusic::Content::Flow.new(name: "Ref Test") }
 
       it "writes the reference number into the X: field" do
         expect(rendered).to start_with "X:7\n"
       end
     end
 
-    context "with a composition that has no voices" do
-      subject(:rendered) { described_class.new(composition).to_s }
+    context "with a flow that has no voices" do
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) { HeadMusic::Content::Composition.new(name: "Nothing Yet") }
+      let(:flow) { HeadMusic::Content::Flow.new(name: "Nothing Yet") }
 
       let(:expected) do
         <<~ABC
@@ -179,11 +179,11 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a composition that has one empty voice" do
-      subject(:rendered) { described_class.new(composition).to_s }
+    context "with a flow that has one empty voice" do
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) do
-        HeadMusic::Content::Composition.new(name: "Nothing Yet").tap(&:add_voice)
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Nothing Yet").tap(&:add_voice)
       end
 
       it "renders the header with no body" do
@@ -191,71 +191,71 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a multi-voice composition" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice
-          composition.add_voice
+    context "with a multi-voice flow" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          flow.add_voice
+          flow.add_voice
         end
       end
 
       it "raises a RenderError" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::ABC::RenderError, /multi-voice/
         )
       end
     end
 
     context "with a mid-piece meter change" do
-      let(:composition) do
-        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\nC8|D8|E8|F8|\n").tap do |composition|
-          composition.change_meter(3, "3/4")
+      let(:flow) do
+        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\nC8|D8|E8|F8|\n").tap do |flow|
+          flow.change_meter(3, "3/4")
         end
       end
 
       it "raises a RenderError" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::ABC::RenderError, /meter change at bar 3/
         )
       end
     end
 
     context "with a mid-piece key signature change" do
-      let(:composition) do
-        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\nC8|D8|E8|F8|\n").tap do |composition|
-          composition.change_key_signature(2, "G major")
+      let(:flow) do
+        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\nC8|D8|E8|F8|\n").tap do |flow|
+          flow.change_key_signature(2, "G major")
         end
       end
 
       it "raises a RenderError" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::ABC::RenderError, /key signature change at bar 2/
         )
       end
     end
 
     context "with a positional gap between placements" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          voice = flow.add_voice
           voice.place("1:1", :quarter, "C4")
           voice.place("2:1", :quarter, "D4")
         end
       end
 
       it "raises a RenderError telling the caller to insert rests" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::ABC::RenderError, /insert explicit rests/
         )
       end
     end
 
     context "with a two-pitch chord placement" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice.place("1:1", :half, %w[C4 E4])
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          flow.add_voice.place("1:1", :half, %w[C4 E4])
         end
       end
 
@@ -265,11 +265,11 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with a three-pitch chord placement" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice.place("1:1", :half, %w[C4 E4 G4])
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          flow.add_voice.place("1:1", :half, %w[C4 E4 G4])
         end
       end
 
@@ -279,11 +279,11 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with chord pitches placed in scrambled order" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice.place("1:1", :half, %w[G4 C4 E4])
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          flow.add_voice.place("1:1", :half, %w[G4 C4 E4])
         end
       end
 
@@ -293,11 +293,11 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with a chord containing an accidental" do
-      subject(:rendered) { described_class.new(composition).to_s }
+      subject(:rendered) { described_class.new(flow).to_s }
 
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          voice = composition.add_voice
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          voice = flow.add_voice
           voice.place("1:1", :half, %w[C4 E4 G#4])
           voice.place("1:3", :quarter, "G#4")
           voice.place("1:4", :quarter, "G4")
@@ -310,14 +310,14 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with a single unpitched sound placement" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          flow.add_voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
         end
       end
 
       it "raises a RenderError naming the sound and position" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::ABC::RenderError,
           /cannot render unpitched sound "snare drum" at 1:1.*percussion rendering is not yet supported/
         )
@@ -325,14 +325,14 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with a mixed pitched and unpitched placement" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          flow.add_voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
         end
       end
 
       it "raises a RenderError naming the unpitched sound" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::ABC::RenderError,
           /cannot render unpitched sound "snare drum" at 1:1/
         )
@@ -340,14 +340,14 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with a first placement that does not start its bar" do
-      let(:composition) do
-        HeadMusic::Content::Composition.new.tap do |composition|
-          composition.add_voice.place("1:2", :quarter, "C4")
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          flow.add_voice.place("1:2", :quarter, "C4")
         end
       end
 
       it "raises a RenderError telling the caller to insert rests" do
-        expect { described_class.new(composition).to_s }.to raise_error(
+        expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::ABC::RenderError, /insert explicit rests/
         )
       end
@@ -360,20 +360,20 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     it "suppresses spaces inside an authored beam group but keeps the authored space" do
-      composition = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEF GABc|]\n")
-      rendered = HeadMusic::Notation::ABC.render(composition)
+      flow = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEF GABc|]\n")
+      rendered = HeadMusic::Notation::ABC.render(flow)
       expect(body_line(rendered)).to eq "CDEF GABc|]"
     end
 
     it "keeps one space per authored beam break" do
-      composition = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCD EF GA Bc|]\n")
-      rendered = HeadMusic::Notation::ABC.render(composition)
+      flow = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCD EF GA Bc|]\n")
+      rendered = HeadMusic::Notation::ABC.render(flow)
       expect(body_line(rendered)).to eq "CD EF GA Bc|]"
     end
 
-    context "with a programmatic (nil-flag) composition" do
+    context "with a programmatic (nil-flag) flow" do
       let(:programmatic) do
-        HeadMusic::Content::Composition.new.tap do |comp|
+        HeadMusic::Content::Flow.new.tap do |comp|
           voice = comp.add_voice
           %w[1:1 1:1:480 1:2 1:2:480].zip(%w[C4 D4 E4 F4]).each do |position, pitch|
             voice.place(position, :eighth, pitch)
@@ -387,8 +387,8 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     describe "idempotence" do
-      let(:composition) { HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEF GABc|]\n") }
-      let(:rendered) { HeadMusic::Notation::ABC.render(composition) }
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/8\nK:C\nCDEF GABc|]\n") }
+      let(:rendered) { HeadMusic::Notation::ABC.render(flow) }
       let(:reparsed) { HeadMusic::Notation::ABC.parse(rendered) }
 
       def flags(comp)
@@ -396,7 +396,7 @@ describe HeadMusic::Notation::ABC::Writer do
       end
 
       it "preserves the beam_break_before sequence on re-parse" do
-        expect(flags(reparsed)).to eq flags(composition)
+        expect(flags(reparsed)).to eq flags(flow)
       end
 
       it "reaches a string fixpoint" do
@@ -415,7 +415,7 @@ describe HeadMusic::Notation::ABC::Writer do
     end
 
     context "with the chorale chord example" do
-      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
         X:1
         T:Chorale Fragment
         M:4/4
@@ -425,12 +425,12 @@ describe HeadMusic::Notation::ABC::Writer do
       ABC
 
       it "round-trips" do
-        expect_abc_round_trip(composition)
+        expect_abc_round_trip(flow)
       end
     end
 
     context "with chords containing accidentals" do
-      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
         X:1
         T:Accidental Chords
         M:4/4
@@ -440,12 +440,12 @@ describe HeadMusic::Notation::ABC::Writer do
       ABC
 
       it "round-trips" do
-        expect_abc_round_trip(composition)
+        expect_abc_round_trip(flow)
       end
     end
 
     context "with uniform per-note lengths" do
-      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
         X:1
         T:Uniform Inner Lengths
         M:4/4
@@ -455,16 +455,16 @@ describe HeadMusic::Notation::ABC::Writer do
       ABC
 
       it "round-trips" do
-        expect_abc_round_trip(composition)
+        expect_abc_round_trip(flow)
       end
 
       it "normalizes inner lengths to the canonical outer-length form" do
-        expect(HeadMusic::Notation::ABC.render(composition)).to include("[CEG]4 [DFA]4|[EGc]8")
+        expect(HeadMusic::Notation::ABC.render(flow)).to include("[CEG]4 [DFA]4|[EGc]8")
       end
     end
 
     context "with a single-pitch bracket" do
-      let(:composition) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+      let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
         X:1
         T:Singleton
         M:4/4
@@ -473,7 +473,7 @@ describe HeadMusic::Notation::ABC::Writer do
         [C]4 |]
       ABC
 
-      let(:rendered) { HeadMusic::Notation::ABC.render(composition) }
+      let(:rendered) { HeadMusic::Notation::ABC.render(flow) }
       let(:reparsed_placement) { HeadMusic::Notation::ABC.parse(rendered).voices.first.placements.first }
 
       it "normalizes to an unbracketed note" do
@@ -489,8 +489,8 @@ describe HeadMusic::Notation::ABC::Writer do
 
     it "reaches a string fixpoint after one render" do
       [ABCFixtures::SPEED_THE_PLOUGH, ABCFixtures::CHROMATIC_AIR].each do |fixture|
-        composition = HeadMusic::Notation::ABC.parse(fixture)
-        rendered = HeadMusic::Notation::ABC.render(composition)
+        flow = HeadMusic::Notation::ABC.parse(fixture)
+        rendered = HeadMusic::Notation::ABC.render(flow)
         expect(HeadMusic::Notation::ABC.render(HeadMusic::Notation::ABC.parse(rendered))).to eq rendered
       end
     end

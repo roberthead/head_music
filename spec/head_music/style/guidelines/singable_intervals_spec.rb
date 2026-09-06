@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::SingableIntervals do
   subject { assess(described_class, voice) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(name: "C Major", key_signature: "C Major") }
-  let(:voice) { HeadMusic::Content::Voice.new(composition: composition) }
+  let(:flow) { HeadMusic::Content::Flow.new(name: "C Major", key_signature: "C Major") }
+  let(:voice) { HeadMusic::Content::Voice.new(flow: flow) }
 
   context "with no notes" do
     it { is_expected.to be_adherent }

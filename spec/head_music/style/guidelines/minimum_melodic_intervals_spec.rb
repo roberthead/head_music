@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::MinimumMelodicIntervals do
   subject { assess(described_class, voice, minimum: minimum) }
 
-  let(:composition) { HeadMusic::Notation::ABC.parse(abc) }
-  let(:voice) { composition.voices.first }
+  let(:flow) { HeadMusic::Notation::ABC.parse(abc) }
+  let(:voice) { flow.voices.first }
   let(:minimum) { 2 }
 
   let(:abc) do

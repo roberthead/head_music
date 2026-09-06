@@ -22,7 +22,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
   context "with Fux examples" do
     fux_first_species_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.counterpoint_voice }
+        let(:voice) { example.flow.counterpoint_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }
@@ -40,7 +40,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
   context "with Clendinning examples" do
     clendinning_first_species_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.counterpoint_voice }
+        let(:voice) { example.flow.counterpoint_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }
@@ -58,7 +58,7 @@ describe HeadMusic::Style::Guides::FirstSpeciesMelody do
   context "with Davis and Lybbert examples" do
     davis_and_lybbert_first_species_examples.each do |example|
       context example.description do
-        let(:voice) { example.composition.counterpoint_voice }
+        let(:voice) { example.flow.counterpoint_voice }
 
         if example.expected_messages.any?
           it { is_expected.not_to be_adherent }

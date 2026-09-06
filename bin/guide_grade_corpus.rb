@@ -4,15 +4,15 @@
 #
 #   bundle exec ruby bin/guide_grade_corpus.rb out.json
 #
-# Written to run UNMODIFIED on both sides of a grading change. At the merge-base
-# `assessable?` does not exist and the harmony guides raise on a solo voice, so
-# the one is asked for conditionally and the other is recorded as a value rather
-# than being allowed to stop the run. Everything else is common to both trees.
+# Written to run on both sides of a grading change: the corpus and the grading
+# live in spec/support/guide_grading.rb, and this script is only the file-writing
+# wrapper around them. `rake style:snapshot_corpus_fitness` writes the pinned
+# snapshot; this script exists for capturing a second one to diff against it.
 #
-# The invariant that sentence protects is that each column is the same
-# measurement made again -- not that the file is never edited. When a change
-# needs a seam this script does not yet have, the edit lands BEFORE both
-# captures and is proven a no-op by diffing a capture from either side of it.
+# The invariant is that each column is the same measurement made again -- not
+# that the file is never edited. When a change needs a seam this script does not
+# yet have, the edit lands BEFORE both captures and is proven a no-op by diffing
+# a capture from either side of it.
 #
 # Loading the fixture exercises means loading spec_helper, which starts
 # SimpleCov and rewrites coverage/.last_run.json. That file is restored on the
@@ -34,91 +34,13 @@ at_exit do
 end
 
 require "head_music"
-require "composition_context"
+require "flow_context"
 require "spec_helper"
 
-LADDER = %w[D4 F4 E4 G4 F4 A4 G4 F4].freeze
-REPEATED = Array.new(8, "E4").freeze
-CANTUS = %w[D4 F4 E4 D4 G4 F4 E4 D4].freeze
+rows = GuideGrading.rows
 
-def composition(key: "D dorian")
-  HeadMusic::Content::Composition.new(name: "corpus", key_signature: key)
-end
-
-def place(voice, pitches)
-  pitches.each_with_index { |pitch, bar| voice.place("#{bar + 1}:1", :whole, pitch) }
-  voice
-end
-
-# A voice alone in its composition: no companion, so the harmony guides have
-# nothing to be set against.
-def solo(pitches)
-  place(composition.add_voice(role: :counterpoint), pitches)
-end
-
-# A counterpoint voice with a companion, which may itself be empty.
-def accompanied(pitches, companion_pitches)
-  comp = composition
-  place(comp.add_voice(role: "Cantus Firmus"), companion_pitches)
-  place(comp.add_voice(role: :counterpoint), pitches)
-end
-
-def corpus
-  entries = []
-  (0..8).each { |n| entries << ["solo-ascending-#{n}", solo(LADDER.first(n))] }
-  (0..8).each { |n| entries << ["solo-repeated-#{n}", solo(REPEATED.first(n))] }
-  [0, 1, 2, 4, 8].each { |n| entries << ["against-empty-#{n}", accompanied(LADDER.first(n), [])] }
-  [0, 1, 2, 4, 8].each { |n| entries << ["against-cantus-#{n}", accompanied(LADDER.first(n), CANTUS)] }
-
-  %w[
-    fux_cantus_firmus_examples clendinning_cantus_firmus_examples
-    schoenberg_cantus_firmus_examples davis_and_lybbert_cantus_firmus_examples
-    fux_cantus_firmus_examples_with_errors fux_first_species_examples
-    clendinning_first_species_examples davis_and_lybbert_first_species_examples
-    doubled_octave_examples
-  ].each do |source|
-    Array(send(source)).each_with_index do |context, index|
-      context.composition.voices.each_with_index do |voice, position|
-        entries << ["#{source}-#{index}-v#{position}", voice]
-      end
-    end
-  end
-  entries
-end
-
-def grade(guide, voice)
-  # Through the guide, not GuideAssessment.new: a composite guide grades its
-  # members separately and refuses that constructor, and the rescue below would
-  # have recorded the refusal as a per-row error while the run still exited 0.
-  # Identical for every leaf guide -- Guides::Base.assess and Configured#assess
-  # are both GuideAssessment.new(self, voice) -- so this edit was made before
-  # either capture was taken and proven a byte-identical no-op on the before
-  # tree.
-  assessment = guide.assess(voice)
-  items = assessment.guide_item_assessments
-  {
-    fitness: assessment.fitness.round(12),
-    adherent: assessment.adherent?,
-    message_count: assessment.messages.length,
-    item_count: items.length,
-    assessable: assessment.assessable?,
-    failed_gates: items.select { |item| item.gate? && !item.adherent? }.map { |item| item.guideline.name.split("::").last }.sort
-  }
-rescue => error
-  {fitness: nil, adherent: nil, message_count: nil, item_count: nil, assessable: nil,
-   failed_gates: [], error: error.class.name}
-end
-
-rows = corpus.flat_map do |label, voice|
-  HeadMusic::Style::Guide::ALL.map do |guide|
-    {
-      corpus: label,
-      notes: voice.notes.length,
-      guide: HeadMusic::Style::Guide.key_for(guide)
-    }.merge(grade(guide, voice))
-  end
-end
-
-File.write(ARGV.fetch(0), JSON.pretty_generate(rows))
-warn "rows=#{rows.length} corpus=#{corpus.length} guides=#{HeadMusic::Style::Guide::ALL.length} " \
+# One row per line: valid JSON, but a third the size of a pretty-printed dump
+# and diffable a row at a time, which is how the snapshot is read.
+File.write(ARGV.fetch(0), "[\n#{rows.map { |row| JSON.generate(row) }.join(",\n")}\n]\n")
+warn "rows=#{rows.length} guides=#{HeadMusic::Style::Guide::ALL.length} " \
      "errors=#{rows.count { |row| row[:error] }}"

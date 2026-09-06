@@ -1,4 +1,4 @@
-# Parses and renders ABC notation as HeadMusic::Content compositions
+# Parses and renders ABC notation as HeadMusic::Content flows
 module HeadMusic::Notation::ABC
   # Converts a HeadMusic::Rudiment::RhythmicValue back into the ABC note-length
   # multiplier string relative to the tune's unit note length — the inverse of

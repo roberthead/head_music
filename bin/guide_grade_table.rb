@@ -167,7 +167,7 @@ def composite_members(capture)
 end
 
 # Only assessable rows carry information. Every solo entry and every cantus
-# firmus fixture is a single-voice composition, so its harmony member gates out
+# firmus fixture is a single-voice flow, so its harmony member gates out
 # and the composite reads 0.000 by construction.
 def composite_rows(capture)
   members = composite_members(capture)

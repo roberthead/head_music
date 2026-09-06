@@ -1,26 +1,26 @@
 require "spec_helper"
 
 describe HeadMusic::Content::Comment do
-  let(:composition) { HeadMusic::Content::Composition.new(name: "Reel Thing") }
+  let(:flow) { HeadMusic::Content::Flow.new(name: "Reel Thing") }
 
   context "when constructed with text only" do
-    subject(:comment) { described_class.new(composition, "from a session in Doolin") }
+    subject(:comment) { described_class.new(flow, "from a session in Doolin") }
 
-    its(:composition) { is_expected.to eq composition }
+    its(:flow) { is_expected.to eq flow }
     its(:text) { is_expected.to eq "from a session in Doolin" }
     its(:position) { is_expected.to be_nil }
     its(:to_s) { is_expected.to eq "from a session in Doolin" }
   end
 
   context "when constructed with a string position" do
-    subject(:comment) { described_class.new(composition, "key change ahead", "3:1") }
+    subject(:comment) { described_class.new(flow, "key change ahead", "3:1") }
 
     it "coerces the string to a position" do
       expect(comment.position).to be_a(HeadMusic::Content::Position)
     end
 
-    it "anchors the position to the composition" do
-      expect(comment.position.composition).to eq composition
+    it "anchors the position to the flow" do
+      expect(comment.position.flow).to eq flow
     end
 
     it "places the position at the given bar and count" do
@@ -28,28 +28,28 @@ describe HeadMusic::Content::Comment do
     end
   end
 
-  context "when constructed with a position from the same composition" do
-    subject(:comment) { described_class.new(composition, "the turn", position) }
+  context "when constructed with a position from the same flow" do
+    subject(:comment) { described_class.new(flow, "the turn", position) }
 
-    let(:position) { HeadMusic::Content::Position.new(composition, "2:1") }
+    let(:position) { HeadMusic::Content::Position.new(flow, "2:1") }
 
     it "accepts the position as given" do
       expect(comment.position).to be position
     end
   end
 
-  context "when constructed with a position from a different composition" do
-    let(:other_composition) { HeadMusic::Content::Composition.new(name: "Other Tune") }
-    let(:position) { HeadMusic::Content::Position.new(other_composition, "2:1") }
+  context "when constructed with a position from a different flow" do
+    let(:other_flow) { HeadMusic::Content::Flow.new(name: "Other Tune") }
+    let(:position) { HeadMusic::Content::Position.new(other_flow, "2:1") }
 
     it "raises an error" do
-      expect { described_class.new(composition, "the turn", position) }.to raise_error(ArgumentError)
+      expect { described_class.new(flow, "the turn", position) }.to raise_error(ArgumentError)
     end
   end
 
   describe "#to_h" do
     context "with a position" do
-      subject(:comment) { described_class.new(composition, "the turn", "2:1") }
+      subject(:comment) { described_class.new(flow, "the turn", "2:1") }
 
       it "serializes the text and position string" do
         expect(comment.to_h).to eq("text" => "the turn", "position" => "2:1:000")
@@ -57,7 +57,7 @@ describe HeadMusic::Content::Comment do
     end
 
     context "without a position" do
-      subject(:comment) { described_class.new(composition, "Traditional") }
+      subject(:comment) { described_class.new(flow, "Traditional") }
 
       it "serializes the position as nil" do
         expect(comment.to_h).to eq("text" => "Traditional", "position" => nil)

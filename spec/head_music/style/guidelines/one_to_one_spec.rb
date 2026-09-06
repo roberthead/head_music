@@ -3,8 +3,8 @@ require "spec_helper"
 describe HeadMusic::Style::Guidelines::OneToOne do
   subject(:guideline) { assess(described_class, counterpoint) }
 
-  let(:composition) { HeadMusic::Content::Composition.new(key_signature: "D dorian") }
-  let(:counterpoint) { composition.add_voice(role: "counterpoint") }
+  let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
+  let(:counterpoint) { flow.add_voice(role: "counterpoint") }
 
   context "without another voice" do
     it { is_expected.to be_adherent }
@@ -12,7 +12,7 @@ describe HeadMusic::Style::Guidelines::OneToOne do
 
   context "with another voice that has no notes" do
     before do
-      composition.add_voice(role: "cantus firmus")
+      flow.add_voice(role: "cantus firmus")
     end
 
     it { is_expected.to be_adherent }
@@ -24,7 +24,7 @@ describe HeadMusic::Style::Guidelines::OneToOne do
 
   context "with another voice" do
     before do
-      counterpoint.composition.add_voice(role: "cantus firmus").tap do |cantus|
+      counterpoint.flow.add_voice(role: "cantus firmus").tap do |cantus|
         %w[D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4].each.with_index(1) do |pitch, bar|
           cantus.place("#{bar}:1", :whole, pitch)
         end

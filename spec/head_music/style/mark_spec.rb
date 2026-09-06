@@ -3,13 +3,13 @@ require "spec_helper"
 describe HeadMusic::Style::Mark do
   subject(:mark) {
     described_class.new(
-      HeadMusic::Content::Position.new(composition, "3:2:480"),
-      HeadMusic::Content::Position.new(composition, "4:1"),
+      HeadMusic::Content::Position.new(flow, "3:2:480"),
+      HeadMusic::Content::Position.new(flow, "4:1"),
       fitness: 0.9
     )
   }
 
-  let(:composition) { HeadMusic::Content::Composition.new }
+  let(:flow) { HeadMusic::Content::Flow.new }
 
   its(:code) { is_expected.to eq "3:2:480 to 4:1:000" }
   its(:to_s) { is_expected.to eq "3:2:480 to 4:1:000" }
