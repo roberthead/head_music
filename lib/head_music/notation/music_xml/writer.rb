@@ -5,8 +5,8 @@ module HeadMusic::Notation::MusicXML
   # Renders a HeadMusic::Content::Flow as a score-partwise MusicXML 4.0
   # document string.
   #
-  # Assembles the document down to the measure; NoteWriter serializes what goes
-  # inside each measure.
+  # Assembles the document down to the measure; AttributesWriter serializes a
+  # measure's attributes and NoteWriter its notes.
   #
   # Whole-flow problems (no voices, positional gaps, barline-crossing
   # notes, unmappable keys or durations, forbidden control characters) raise
@@ -18,12 +18,7 @@ module HeadMusic::Notation::MusicXML
 
     # The rendering facts the serialization methods below read; RenderPlan
     # computes them from the flow.
-    delegate(
-      :divisions, :bar_numbers, :measure_key_changes, :measure_time_changes,
-      :first_measure_key, :first_measure_meter, :placements_by_bar,
-      :whole_measure_duration,
-      to: :plan
-    )
+    delegate :bar_numbers, :placements_by_bar, :whole_measure_duration, to: :plan
 
     def initialize(flow)
       @flow = flow
@@ -45,6 +40,10 @@ module HeadMusic::Notation::MusicXML
 
     def note_writer
       @note_writer ||= NoteWriter.new(plan)
+    end
+
+    def attributes_writer
+      @attributes_writer ||= AttributesWriter.new(plan)
     end
 
     def document_lines
@@ -117,7 +116,7 @@ module HeadMusic::Notation::MusicXML
     def measure_lines(part, bar_number)
       [
         measure_open_tag(bar_number),
-        *attribute_lines(part, bar_number),
+        *attributes_writer.lines(part, bar_number),
         *part_content_lines(part, bar_number),
         "#{INDENT * 2}</measure>"
       ]
@@ -150,77 +149,6 @@ module HeadMusic::Notation::MusicXML
     def measure_open_tag(bar_number)
       implicit = (bar_number < 1) ? %( implicit="yes") : ""
       %(#{INDENT * 2}<measure number="#{bar_number}"#{implicit}>)
-    end
-
-    def attribute_lines(part, bar_number)
-      return first_measure_attribute_lines(part) if bar_number == bar_numbers.first
-
-      key = measure_key_changes[bar_number]
-      meter = measure_time_changes[bar_number]
-      return [] unless key || meter
-
-      [
-        "#{INDENT * 3}<attributes>",
-        *(key ? key_lines(key) : []),
-        *(meter ? time_lines(meter) : []),
-        "#{INDENT * 3}</attributes>"
-      ]
-    end
-
-    def first_measure_attribute_lines(part)
-      [
-        "#{INDENT * 3}<attributes>",
-        "#{INDENT * 4}<divisions>#{divisions}</divisions>",
-        *key_lines(first_measure_key),
-        *time_lines(first_measure_meter),
-        *staves_lines(part),
-        *clef_lines(part),
-        "#{INDENT * 3}</attributes>"
-      ]
-    end
-
-    # <staves> is omitted for the single-staff part, where it would be noise.
-    def staves_lines(part)
-      count = part.staff_system.length
-      (count > 1) ? ["#{INDENT * 4}<staves>#{count}</staves>"] : []
-    end
-
-    def key_lines(key)
-      [
-        "#{INDENT * 4}<key>",
-        "#{INDENT * 5}<fifths>#{key[:fifths]}</fifths>",
-        key[:mode] && "#{INDENT * 5}<mode>#{key[:mode]}</mode>",
-        "#{INDENT * 4}</key>"
-      ].compact
-    end
-
-    def time_lines(meter)
-      [
-        "#{INDENT * 4}<time>",
-        "#{INDENT * 5}<beats>#{meter.top_number}</beats>",
-        "#{INDENT * 5}<beat-type>#{meter.bottom_number}</beat-type>",
-        "#{INDENT * 4}</time>"
-      ]
-    end
-
-    # One <clef> per staff, numbered when there is more than one.
-    #
-    # An authored clef wins; the selector is the fallback for a part whose
-    # staves were never authored. It reads a *voice's* pitch range, which is
-    # why the fallback lives here, where a voice is in scope, rather than on
-    # the staff.
-    def clef_lines(part)
-      staves = part.staff_system.staves
-      staves.each_with_index.flat_map do |staff, index|
-        clef = staff.clef_at(bar_numbers.first) || HeadMusic::Notation::ClefSelector.for(part.voices.first)
-        number = (staves.length > 1) ? %( number="#{index + 1}") : ""
-        [
-          "#{INDENT * 4}<clef#{number}>",
-          "#{INDENT * 5}<sign>#{clef.pitch.letter_name}</sign>",
-          "#{INDENT * 5}<line>#{clef.line}</line>",
-          "#{INDENT * 4}</clef>"
-        ]
-      end
     end
 
     def measure_content_lines(part, voice, bar_number)
