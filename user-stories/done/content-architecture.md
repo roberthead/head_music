@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-05T16:38:54-07:00
   activated_at: 2026-09-05T17:50:48-07:00
   planned_at:   2026-09-05T20:48:21-07:00
-  finished_at:
-  updated_at:   2026-09-06T10:39:11-07:00
+  finished_at:  2026-09-06T16:11:11-07:00
+  updated_at:   2026-09-06T16:11:11-07:00
 -->
 
 # Content Architecture
@@ -783,3 +783,52 @@ the sections above asserted.
 | Acceptance criteria | A signature beyond ±7 with no tonal context "raises" | Only for LilyPond. MusicXML stores fifths, which the event already holds, so it renders 8 with or without an interpretation. The fallback table has exactly two callers, and MusicXML is not one of them. |
 | Decision 5 | A 20.x `Content::Staff.new(:bass_clef)` "gets wrong output rather than a `NoMethodError`", so it needs its own migration bullet | It raises `ArgumentError`, because the replacement takes only keyword arguments. The bullet is still worth having — `#default_clef` became `#clef` and now answers `nil` rather than falling back to treble — but the silent-wrong-output hazard the decision predicted does not exist. |
 | Decision 5 / Phase 7 | "When a staff has an authored clef, writers use it" | MusicXML did from the start, because it walks the part's staves. LilyPond did not: its single-staff path — which is every document the gem produced before this story — never consulted the staff at all, so an authored clef was silently ignored and the range-based selector answered instead. Found by checking the claim rather than by a spec. |
+
+## Learnings
+
+**What went well**
+
+- Planning earned its cost. Seventeen objections and questions, then nine more from
+  a consistency pass, were resolved before any code moved. Storing the key
+  signature as a fifths integer, raised as an objection, is what unblocked the
+  whole key-signature strand and kept `KeySignature` construction out of scope.
+- Recording contradictions in a table instead of silently editing the story kept
+  the reasoning traceable. The code review later found the same fault lines and
+  the decisions were already written down.
+- The corpus fitness fixture captured in Phase 0 gave "the guides assess unchanged"
+  a real meaning across eight phases of structural change.
+- Extracting a class at each pressure point (`Flow::Timeline`, the `Deserializer`
+  base class, `SourceScanner`, `VoiceWriter`, `AttributesWriter`) kept RubyCritic
+  free of D and F grades without a separate cleanup pass.
+
+**What was surprising**
+
+- A staff crossing is an event, not a span. The `from:`/`through:` API layered a
+  span over an event map and invented an end the document never carries;
+  deserialization needed a bare map write to get around it. The review settled on
+  events only, and the API shrank to `assign_staff` plus a `cross_to` synonym.
+- Schema 4 shipped with two data-loss bugs: staff system changes, clef changes, and
+  tempo were absent from `to_h`. The round-trip spec passed because the document it
+  serialized used none of them.
+- `Position#normalize` carried counts under the origin bar's meter only; ten quarter
+  notes across a change to 3/4 landed in the wrong bar until the walk re-carried
+  under each destination meter.
+- Catalog data was wrong in a way no spec had pinned: `tenor_clef` was an alias of
+  the octave-down G clef, so `Clef.get(:tenor_clef)` answered a vocal clef.
+- The LilyPond single-staff path, which is every document the gem produced before
+  this story, never consulted the staff for its clef. Found by checking the claim
+  "writers use the authored clef" against each writer's each path.
+- `StringScanner#captures` answers an empty string, not nil, for a group that did
+  not participate.
+
+**What to do differently**
+
+- Build round-trip serialization specs from the most featured document the model can
+  express, one of every change type, rather than the minimal one. Equality on a
+  sparse document proves nothing about the fields it omits.
+- Model change points as events from the start. If an API wants a span, ask what
+  the end event restores and whether the document can answer.
+- When a story asserts a property of "the writers", enumerate each writer's code
+  paths and check the claim against each, rather than trusting the one spec.
+- Run the full suite sequentially. Concurrent SimpleCov runs corrupt the coverage
+  result and hide whether the threshold was met.
