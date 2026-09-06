@@ -14,8 +14,11 @@ module HeadMusic
   #   clock_pos = HeadMusic::Time::ClockPosition.new(1_000_000_000) # 1 second
   #   musical_pos = conductor.clock_to_musical(clock_pos)
   module Time
-    # Ticks per quarter note value (MIDI standard)
-    PPQN = PULSES_PER_QUARTER_NOTE = 960
+    # Ticks per quarter note value (MIDI standard).
+    #
+    # Aliased rather than redeclared: a second literal 960 is a second thing to
+    # keep in step, and the two modules resolve the same ticks.
+    PPQN = PULSES_PER_QUARTER_NOTE = HeadMusic::Rudiment::Rhythm::PPQN
 
     # Subticks provide finer resolution than ticks for precise timing
     SUBTICKS_PER_TICK = 240
@@ -28,7 +31,8 @@ require_relative "time/musical_position"
 require_relative "time/smpte_timecode"
 require_relative "time/meter_event"
 require_relative "time/tempo_event"
-require_relative "time/event_map_support"
+require_relative "time/key_signature_event"
+require_relative "time/event_map"
 require_relative "time/tempo_map"
 require_relative "time/meter_map"
 require_relative "time/smpte_converter"

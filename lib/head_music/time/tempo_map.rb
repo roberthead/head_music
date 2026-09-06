@@ -23,20 +23,21 @@ module HeadMusic
     #     # Calculate clock time for this segment
     #   end
     class TempoMap
-      include EventMapSupport
-
-      # @return [Array<TempoEvent>] all tempo events in chronological order
-      attr_reader :events
-
       def initialize(starting_tempo: nil, starting_position: nil)
         starting_tempo ||= HeadMusic::Rudiment::Tempo.new("quarter", 120)
         starting_position ||= MusicalPosition.new
-        @events = [TempoEvent.new(starting_position, starting_tempo.beat_value.to_s, starting_tempo.beats_per_minute)]
-        @meter = nil
+        # The opening tempo is not removable: converting a position to clock
+        # time needs a tempo in force from the beginning.
+        @map = EventMap.new(removable_first_event: false)
+        @map.add(starting_position, TempoEvent.new(starting_position, starting_tempo.beat_value.to_s, starting_tempo.beats_per_minute))
+      end
+
+      # @return [Array<TempoEvent>] all tempo events in chronological order
+      def events
+        @map.values
       end
 
       def add_change(position, beat_value_or_tempo, beats_per_minute = nil)
-        remove_change(position)
         event = if beat_value_or_tempo.is_a?(HeadMusic::Rudiment::Tempo)
           TempoEvent.new(position, beat_value_or_tempo.beat_value.to_s, beat_value_or_tempo.beats_per_minute).tap do |tempo_event|
             tempo_event.tempo = beat_value_or_tempo
@@ -44,61 +45,31 @@ module HeadMusic
         else
           TempoEvent.new(position, beat_value_or_tempo, beats_per_minute)
         end
-        @events << event
-        sort_events!
+        @map.add(position, event)
         event
       end
 
       def remove_change(position)
-        @events.reject! do |event|
-          event != @events.first && positions_equal?(event.position, position)
-        end
+        @map.remove(position)
       end
 
       def clear_changes
-        @events = [@events.first]
+        @map.clear
       end
 
       def tempo_at(position)
-        normalized_pos = normalize_position(position)
-        active_event = @events.reverse.find do |event|
-          normalize_position(event.position) <= normalized_pos
-        end
-        active_event&.tempo || @events.first.tempo
+        @map.at(position)&.tempo || events.first.tempo
       end
 
-      def each_segment(from_position, to_position)
-        from_pos = normalize_position(from_position)
-        to_pos = normalize_position(to_position)
-
-        relevant_events = @events.select do |event|
-          normalize_position(event.position) < to_pos
-        end
-
-        current_pos = from_pos
-        current_tempo = tempo_at(from_pos)
-
-        relevant_events.each do |event|
-          normalized_event_pos = normalize_position(event.position)
-          next if normalized_event_pos <= from_pos
-
-          yield current_pos, normalized_event_pos, current_tempo
-          current_pos = normalized_event_pos
-          current_tempo = event.tempo
-        end
-
-        yield current_pos, to_pos, current_tempo
+      # @return [TempoEvent, nil] the tempo change starting exactly here
+      def change_at(position)
+        @map.change_at(position)&.value
       end
 
-      # @api private
-      attr_writer :meter
-
-      private
-
-      def normalize_position(position)
-        return position unless @meter
-
-        position.dup.tap { |pos| pos.normalize!(@meter) }
+      def each_segment(from_position, to_position, &block)
+        @map.each_segment(from_position, to_position) do |start_position, end_position, event|
+          block.call(start_position, end_position, event&.tempo || events.first.tempo)
+        end
       end
     end
   end

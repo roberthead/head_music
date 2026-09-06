@@ -10,11 +10,16 @@ module HeadMusic
       # Divide the named component by its radix, store the remainder back,
       # and return the amount to carry into the next-higher component.
       #
+      # A 1-indexed component (a beat, whose values run 1..radix) is shifted
+      # into 0-indexed space before the divmod and back afterward, so that the
+      # last value in the range stays put instead of carrying.
+      #
+      # @param first [Integer] the component's lowest valid value
       # @return [Integer] the carry (may be negative when borrowing)
-      def carry(component, radix)
+      def carry(component, radix, first: 0)
         ivar = :"@#{component}"
-        delta, remainder = instance_variable_get(ivar).divmod(radix)
-        instance_variable_set(ivar, remainder)
+        delta, remainder = (instance_variable_get(ivar) - first).divmod(radix)
+        instance_variable_set(ivar, remainder + first)
         delta
       end
     end

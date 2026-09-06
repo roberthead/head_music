@@ -72,6 +72,20 @@ describe HeadMusic::Time::MeterMap do
     end
   end
 
+  describe "#change_at" do
+    subject(:meter_map) { described_class.new }
+
+    before { meter_map.add_change(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0), "3/4") }
+
+    it "finds a meter change starting exactly at the position" do
+      expect(meter_map.change_at(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)).meter.to_s).to eq "3/4"
+    end
+
+    it "finds nothing where a meter is merely in force" do
+      expect(meter_map.change_at(HeadMusic::Time::MusicalPosition.new(7, 1, 0, 0))).to be_nil
+    end
+  end
+
   describe "#meter_at" do
     subject(:meter_map) { described_class.new }
 

@@ -6,7 +6,7 @@ module HeadMusic
     #
     # MeterEvent marks a point in a musical timeline where the meter
     # (time signature) changes. This is essential for properly calculating
-    # musical positions and normalizing bar:beat:tick:subtick values.
+    # musical positions and normalizing bar:count:tick:subtick values.
     #
     # @example Creating a meter change to 3/4 at bar 5
     #   position = HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0)

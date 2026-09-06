@@ -27,18 +27,18 @@ describe HeadMusic::Time::MusicalTimeConverter do
   describe "#clock_to_musical" do
     it "maps zero nanoseconds to the starting position" do
       position = converter.clock_to_musical(HeadMusic::Time::ClockPosition.new(0))
-      expect([position.bar, position.beat]).to eq [1, 1]
+      expect([position.bar, position.count]).to eq [1, 1]
     end
 
     it "maps half a second at 120 bpm to the second beat" do
       position = converter.clock_to_musical(HeadMusic::Time::ClockPosition.new(500_000_000))
-      expect([position.bar, position.beat]).to eq [1, 2]
+      expect([position.bar, position.count]).to eq [1, 2]
     end
   end
 
   it "round-trips a musical position" do
     original = HeadMusic::Time::MusicalPosition.new(2, 3, 0, 0)
     result = converter.clock_to_musical(converter.musical_to_clock(original))
-    expect([result.bar, result.beat]).to eq [2, 3]
+    expect([result.bar, result.count]).to eq [2, 3]
   end
 end

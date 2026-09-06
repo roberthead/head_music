@@ -139,4 +139,27 @@ describe HeadMusic::Rudiment::Key do
       expect(first_c_major).not_to eq d_major
     end
   end
+
+  describe ".for_fifths" do
+    it "reads a signature of no accidentals as C major" do
+      expect(described_class.for_fifths(0).name).to eq "C major"
+    end
+
+    it "reads sharps as the major key with that many" do
+      expect((1..7).map { |n| described_class.for_fifths(n).name })
+        .to eq ["G major", "D major", "A major", "E major", "B major", "F♯ major", "C♯ major"]
+    end
+
+    it "reads flats as the major key with that many" do
+      expect((-7..-1).map { |n| described_class.for_fifths(n).name })
+        .to eq ["C♭ major", "G♭ major", "D♭ major", "A♭ major", "E♭ major", "B♭ major", "F major"]
+    end
+
+    # Signatures themselves run past seven -- G♯ major counts each double sharp
+    # twice and reaches eight -- but no conventional major key names one.
+    it "has no reading for a theoretical signature" do
+      expect { described_class.for_fifths(8) }
+        .to raise_error ArgumentError, /no conventional key for a signature of 8 fifths/
+    end
+  end
 end
