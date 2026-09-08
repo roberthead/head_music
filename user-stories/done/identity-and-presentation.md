@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-05T16:38:54-07:00
   activated_at: 2026-09-08T09:39:00-07:00
   planned_at:   2026-09-08T10:14:57-07:00
-  finished_at:
-  updated_at:   2026-09-08T16:01:22-07:00
+  finished_at:  2026-09-08T16:23:53-07:00
+  updated_at:   2026-09-08T16:23:53-07:00
 -->
 
 # Identity and Presentation
@@ -372,3 +372,53 @@ Applied 2026-09-08, uncommitted at the time of writing:
 ### Done well
 
 `Transposition` is a pure value object specced with no flow at all, and deriving `fifths_delta` from the move itself avoids a second table. Realizing a derived flow keeps the writers, both render plans, and both preflights ignorant of selection, and the byte-identity guards pin it. `ScoreOrder`'s single section index makes ordering and grouping unable to disagree. Passing the pre-existing `Source` specs unedited is exactly the right oracle for the `Publication` absorption.
+
+## Learnings
+
+**What went well**
+
+- Numbered design decisions with the rejected alternative written beside each let
+  the review tell a decision from a defect. The "authored composer string is lost
+  on round-trip" finding traced straight to decision 3 and became a wording fix
+  rather than a code change.
+- Compatibility had real oracles: the pre-existing `Source` specs passing
+  unedited, the identity layout byte-identical to `flow.to_*`, and the
+  concert-pitch score byte-identical to the flow's own output. All eight
+  criteria were met at the first review.
+- Realizing a derived flow per layout kept every writer, both render plans, and
+  both preflights ignorant of selection. `Transposition` as a pure value object,
+  specced with no flow at all, kept the hardest arithmetic in the smallest room.
+- One section index behind `ScoreOrder`'s ordering and grouping made the two
+  structurally unable to disagree.
+
+**What was surprising**
+
+- Two of the three "important" code-review findings did not hold as stated once
+  reproduced. The score-kind round-trip changed the class but not the rendering,
+  because a nil ensemble type keeps authored order; the composer finding was by
+  design. Only the silent selection drop was a genuine bug. Reproducing each
+  claim cost minutes and changed two severities.
+- `filter_map` on a serialization path turns a dangling reference into an
+  absence. The model's positional references, a player identified only by its
+  index, make that failure mode easy to write and hard to notice until render.
+- Letting a subclass claim a kind from the parent's `KINDS` made the object's
+  class unstable across a round trip. A kind that maps to a class belongs to that
+  class alone.
+- Touching the writers for transposition swept out unrelated "why" comments in
+  six files. The review caught it; the `score_order.rb` comments that went were
+  "what" comments and stayed gone.
+- CLAUDE.md's locale list is stale (`ja` and `nl` do not exist; `ru` and `en_GB`
+  do). The plan noticed and the branch left it, so it is still wrong.
+
+**What to do differently**
+
+- Reproduce every review finding before recording its severity. An agent's claim
+  that "rendering differs" needs the two strings side by side.
+- Write one spec per clause of a criterion, literally. "Without changing the
+  work's title" and "flows may cite different works" each lacked a direct
+  assertion until the review asked for one.
+- Raise on a reference the document cannot resolve. Never filter it.
+- Keep comment cleanup out of feature commits, or make it its own commit so the
+  rationale being dropped is visible in the diff.
+- When a plan notices stale project documentation, fix it in the same story.
+  Noting the staleness twice cost more than the one-line fix.
