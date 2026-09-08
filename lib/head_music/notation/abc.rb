@@ -10,7 +10,8 @@ module HeadMusic::Notation::ABC
     BookParser.new(abc_string).flows
   end
 
-  # Renders a flow as an ABC tune string.
+  # +transposed:+ says the flow's pitches are already the written ones, so that
+  # K: names the key its player reads.
   def self.render(flow, **options)
     Writer.new(flow, **options).to_s
   end

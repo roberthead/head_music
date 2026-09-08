@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-08T09:39:00-07:00
   planned_at:   2026-09-08T10:14:57-07:00
   finished_at:
-  updated_at:   2026-09-08T11:44:23-07:00
+  updated_at:   2026-09-08T15:33:38-07:00
 -->
 
 # Identity and Presentation
@@ -59,12 +59,12 @@ Work                        # optional; cited by a Flow
   credits []                # composer, lyricist, librettist, songwriter
 
 Project
-  credits []                # arranger, transcriber, editor — this version
+  credits []                # arranger, transcriber, orchestrator — this version
   layouts []
 
 Publication                 # generalizes CantusFirmus::Source
   title, edition, year, publisher
-  credits []                # editor, engraver
+  credits []                # author, editor, engraver
 
 Person
   full_name, sort_name
@@ -82,7 +82,7 @@ Layout
   title_override
 
 Score < Layout
-  ensemble_type             # :orchestral, :band, :chamber, :pop, :solo
+  ensemble_type             # a ScoreOrder key (:orchestral, :band, ...) or nil
 ```
 
 ## Design Decisions
@@ -96,9 +96,11 @@ publisher as having composed the music:
 |---|---|
 | `Work` | composer, songwriter, lyricist, librettist |
 | `Project` | arranger, transcriber, orchestrator, reconstructor |
-| `Publication` | editor, engraver, publisher |
+| `Publication` | author, editor, engraver, publisher |
 
 Roles are `Named`, and so translated like the rest of the gem's vocabulary.
+`author` joins the publication level because the existing cantus firmus sources
+are treatises, and their people are authors rather than editors.
 
 ### `Score` orders and groups its players
 

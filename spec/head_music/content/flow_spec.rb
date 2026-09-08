@@ -27,6 +27,52 @@ describe HeadMusic::Content::Flow do
     its(:origin) { is_expected.to eq "Ireland" }
   end
 
+  describe "#composer" do
+    let(:bach) { HeadMusic::Content::Person.new(full_name: "Johann Sebastian Bach") }
+    let(:cello_suite) do
+      HeadMusic::Content::Work.new(
+        title: "Cello Suite No. 1",
+        catalog_number: "BWV 1007",
+        credits: [HeadMusic::Content::Credit.new(person: bach, role: :composer)]
+      )
+    end
+
+    context "when the flow cites a work and also carries an authored string" do
+      subject(:flow) { described_class.new(name: "Prélude", composer: "Bach", work: cello_suite) }
+
+      it "answers the work's composer" do
+        expect(flow.composer).to eq "Johann Sebastian Bach"
+      end
+    end
+
+    context "when the cited work has no composer credit" do
+      subject(:flow) { described_class.new(name: "Prélude", composer: "Bach", work: lyricist_only_work) }
+
+      let(:lyricist_only_work) do
+        HeadMusic::Content::Work.new(
+          title: "Anonymous Air",
+          credits: [HeadMusic::Content::Credit.new(person: "W. S. Gilbert", role: :lyricist)]
+        )
+      end
+
+      it "falls back to the authored string" do
+        expect(flow.composer).to eq "Bach"
+      end
+    end
+
+    context "when the flow cites no work" do
+      subject(:flow) { described_class.new(name: "Prélude", composer: "Bach") }
+
+      it "answers the authored string" do
+        expect(flow.composer).to eq "Bach"
+      end
+
+      it "mints no work" do
+        expect(flow.work).to be_nil
+      end
+    end
+  end
+
   context "when constructed with a single comment string" do
     subject(:flow) { described_class.new(name: "The Banshee", comments: "collected in Clare") }
 
@@ -335,7 +381,7 @@ describe HeadMusic::Content::Flow do
 
     it "includes all top-level keys" do
       expect(hash.keys).to contain_exactly(
-        "schema_version", "name", "composer", "origin", "timeline", "parts", "bars", "comments"
+        "schema_version", "name", "composer", "origin", "work", "source", "timeline", "parts", "bars", "comments"
       )
     end
 
@@ -373,7 +419,7 @@ describe HeadMusic::Content::Flow do
       subject(:hash) { described_class.new(name: "Plain").to_h }
 
       let(:expected_defaults) do
-        {"composer" => nil, "origin" => nil, "parts" => [], "bars" => [], "comments" => []}
+        {"composer" => nil, "origin" => nil, "work" => nil, "source" => nil, "parts" => [], "bars" => [], "comments" => []}
       end
 
       it "emits nils and empty collections rather than omitting keys" do

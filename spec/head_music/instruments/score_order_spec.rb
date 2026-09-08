@@ -475,4 +475,73 @@ describe HeadMusic::Instruments::ScoreOrder do
       end
     end
   end
+
+  describe "#position_of" do
+    subject(:orchestral_order) { described_class.get(:orchestral) }
+
+    it "counts from the top of the score" do
+      expect(orchestral_order.position_of("piccolo")).to be < orchestral_order.position_of("flute")
+    end
+
+    it "answers nil for an instrument the order does not place" do
+      expect(orchestral_order.position_of("guitar")).to be_nil
+    end
+
+    it "answers nil for no instrument at all" do
+      expect(orchestral_order.position_of(nil)).to be_nil
+    end
+
+    it "reports the same order #order sorts into" do
+      positions = %w[violin timpani trumpet flute].map { |name| orchestral_order.position_of(name) }
+      expect(positions).to eq positions.sort.reverse
+    end
+  end
+
+  describe "#group" do
+    subject(:grouped) { score_order.group(instruments).map { |section, members| [section, members.map(&:name)] } }
+
+    context "with an orchestra" do
+      let(:score_order) { described_class.get(:orchestral) }
+      let(:instruments) { %w[violin trumpet flute timpani cello] }
+
+      it "returns the sections in score order, each holding its own" do
+        expect(grouped).to eq [
+          [:woodwind, ["flute"]], [:brass, ["trumpet"]],
+          [:percussion, ["timpani"]], [:string, ["violin", "cello"]]
+        ]
+      end
+    end
+
+    context "with a concert band" do
+      let(:score_order) { described_class.get(:band) }
+      let(:instruments) { %w[alto_saxophone trumpet flute tuba clarinet] }
+
+      it "puts the whole woodwind section before the brass" do
+        expect(grouped).to eq [
+          [:woodwind, ["flute", "clarinet", "alto saxophone"]],
+          [:brass, ["trumpet", "tuba"]]
+        ]
+      end
+    end
+
+    context "with an instrument the order does not place" do
+      let(:score_order) { described_class.get(:orchestral) }
+      let(:instruments) { %w[guitar violin flute] }
+
+      it "files it last under no section" do
+        expect(grouped.last).to eq [nil, ["guitar"]]
+      end
+
+      it "leaves the placed instruments in their own sections" do
+        expect(grouped.map(&:first)).to eq [:woodwind, :string, nil]
+      end
+    end
+
+    context "with nothing to group" do
+      let(:score_order) { described_class.get(:orchestral) }
+      let(:instruments) { [] }
+
+      it { is_expected.to be_empty }
+    end
+  end
 end

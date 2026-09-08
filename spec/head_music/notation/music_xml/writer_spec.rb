@@ -17,6 +17,32 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
   end
 
+  describe "the composer credit" do
+    def flow_with(**attributes)
+      HeadMusic::Content::Flow.new(name: "Prelude", **attributes).tap do |flow|
+        flow.add_voice.place("1:1", :whole, "C4")
+      end
+    end
+
+    let(:bach) do
+      HeadMusic::Content::Work.new(
+        title: "Cello Suite No. 1",
+        catalog_number: "BWV 1007",
+        credits: [HeadMusic::Content::Credit.new(person: "Johann Sebastian Bach", role: :composer)]
+      )
+    end
+
+    it "carries the cited work's composer" do
+      document = parse_musicxml(described_class.new(flow_with(composer: "Bach", work: bach)).to_s)
+      expect(xpath_text(document, %(//identification/creator[@type="composer"]))).to eq "Johann Sebastian Bach"
+    end
+
+    it "leaves a legacy composer string untouched" do
+      document = parse_musicxml(described_class.new(flow_with(composer: "Trad.")).to_s)
+      expect(xpath_text(document, %(//identification/creator[@type="composer"]))).to eq "Trad."
+    end
+  end
+
   describe "#to_s" do
     context "with a single-voice diatonic tune" do
       let(:flow) { HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH) }

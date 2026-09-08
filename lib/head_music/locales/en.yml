@@ -150,6 +150,19 @@ en:
       treble_clef: treble clef
       viola_clef: viola clef
       violin_clef: treble clef
+    credit_roles:
+      composer: composer
+      songwriter: songwriter
+      lyricist: lyricist
+      librettist: librettist
+      arranger: arranger
+      transcriber: transcriber
+      orchestrator: orchestrator
+      reconstructor: reconstructor
+      author: author
+      editor: editor
+      engraver: engraver
+      publisher: publisher
     instrument_abbreviations:
       accordion:
       - acc

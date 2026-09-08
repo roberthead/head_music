@@ -58,6 +58,19 @@ es:
       viola_clef: clave de do
       violin_clef: clave de sol
       vocal_tenor_clef: clave de tenor vocal
+    credit_roles:
+      composer: compositor
+      songwriter: cantautor
+      lyricist: letrista
+      librettist: libretista
+      arranger: arreglista
+      transcriber: transcriptor
+      orchestrator: orquestador
+      reconstructor: reconstructor
+      author: autor
+      editor: editor
+      engraver: grabador
+      publisher: editorial
     instrument_classifications:
       aerophone: aerófono
       bowed: de arco

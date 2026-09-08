@@ -2,17 +2,18 @@
 module HeadMusic::Content; end
 
 # A flow is a continuous span of music with its own timeline: a movement, a
-# song, a cue, or a single exercise.
-#
-# A flow may stand alone. Its project is optional, which is what lets a cantus
-# firmus, a scale, or a parsed snippet be content without inventing a noun for
-# it. What is not optional is containment below: every voice is in a part, and
-# every part is in a flow.
+# song, a cue, or a single exercise. Its project is optional, so a flow may
+# stand alone; containment below is not: every voice is in a part, and every
+# part is in a flow.
 class HeadMusic::Content::Flow
   SCHEMA_VERSION = 4
 
-  attr_reader :name, :parts, :composer, :origin, :comments, :timeline
+  attr_reader :name, :parts, :origin, :comments, :timeline
   attr_accessor :project
+
+  # The catalog identity this flow is one notation of, and the publication it
+  # was taken from. Both optional: a parsed snippet cites neither.
+  attr_accessor :work, :source
 
   delegate :meter_at, :key_signature_at, :tempo_at, to: :timeline
   delegate :meter_changes, :key_signature_changes, :tempo_changes, :meter_change_at, :tempo_change_at, to: :timeline
@@ -22,8 +23,6 @@ class HeadMusic::Content::Flow
     HashDeserializer.new(hash).flow
   end
 
-  # Read a schema v3 document.
-  #
   # Retained read-only through 21.x so that persisted v3 data can be migrated
   # by reading and re-saving. Removed in 22.0.0.
   def self.from_v3_h(hash)
@@ -34,21 +33,29 @@ class HeadMusic::Content::Flow
     from_h(JSON.parse(json))
   end
 
-  def initialize(name: nil, key_signature: nil, meter: nil, tempo: nil, composer: nil, origin: nil, comments: nil)
+  def initialize(
+    name: nil, key_signature: nil, meter: nil, tempo: nil,
+    composer: nil, origin: nil, comments: nil, work: nil, source: nil
+  )
     ensure_attributes(name, key_signature, meter, tempo)
     @composer = composer
     @origin = origin
+    @work = ensure_work(work)
+    @source = ensure_source(source)
     @parts = []
     @comments = Array(comments).map { |text| HeadMusic::Content::Comment.new(self, text) }
   end
 
-  # The voices of every part, in part order.
+  # The cited work's composer wins over the authored string, which stays as the
+  # fallback for the parsed documents that have a name but no work.
+  def composer
+    work&.composer || @composer
+  end
+
   def voices
     parts.flat_map(&:voices)
   end
 
-  # @param player [HeadMusic::Content::Player, nil] the chair this part fills;
-  #   a part with no player is simply a staff of music
   def add_part(player: nil, instrument: nil, staff_system: nil)
     HeadMusic::Content::Part
       .new(flow: self, player: player, instrument: instrument, staff_system: staff_system)
@@ -66,14 +73,13 @@ class HeadMusic::Content::Flow
     @comments.last
   end
 
-  # A position in this flow, from a "bar:count:tick" code or its components.
   def position(code_or_bar, count = nil, tick = nil, subtick = nil)
     HeadMusic::Content::Position.new(self, code_or_bar, count, tick, subtick)
   end
 
-  # The signature and meter the flow opens in. Both are the timeline's, so a
-  # change at bar 1 is a change like any other rather than a rewrite of the
-  # flow's own attributes.
+  # The opening signature, meter, and tempo are the timeline's, so a change at
+  # bar 1 is a change like any other rather than a rewrite of the flow's own
+  # attributes.
   def key_signature
     timeline.opening_key_signature_event.key_signature
   end
@@ -160,6 +166,8 @@ class HeadMusic::Content::Flow
       "name" => name,
       "composer" => composer&.to_s,
       "origin" => origin&.to_s,
+      "work" => work&.to_h,
+      "source" => source&.to_h,
       "timeline" => timeline_to_h,
       "parts" => parts.map(&:to_h),
       "bars" => bars_to_h,
@@ -195,6 +203,18 @@ class HeadMusic::Content::Flow
     (@bars || []).index { |bar| !bar.nil? }
   end
 
+  def ensure_work(work)
+    return HeadMusic::Content::Work.from_h(work) if work.is_a?(Hash)
+
+    work
+  end
+
+  def ensure_source(source)
+    return HeadMusic::Content::Publication.from_h(source) if source.is_a?(Hash)
+
+    source
+  end
+
   def ensure_attributes(name, key_signature, meter, tempo)
     @name = name || "Composition"
     @timeline = Timeline.new(key_signature: key_signature, meter: meter, tempo: tempo)
@@ -206,10 +226,8 @@ class HeadMusic::Content::Flow
     {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}
   end
 
-  # Iterates the raw sparse array (not the public #bars slice, which loses the
-  # number offset), pairing each non-default bar with its number. Key and meter
-  # changes are the timeline's now, so a bar serializes its repeat structure
-  # and nothing else.
+  # Iterates the raw sparse array rather than the public #bars slice, which
+  # loses the number offset.
   def bars_to_h
     (@bars || []).each_with_index.filter_map do |bar, number|
       next if bar.nil?

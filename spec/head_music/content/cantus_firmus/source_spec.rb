@@ -136,6 +136,53 @@ describe HeadMusic::Content::CantusFirmus::Source do
     end
   end
 
+  describe "as a publication" do
+    subject(:source) { described_class.get(:fux) }
+
+    it "is a Publication" do
+      expect(source).to be_a(HeadMusic::Content::Publication)
+    end
+
+    its(:title) { is_expected.to eq "Gradus ad Parnassum" }
+    its(:abbreviation) { is_expected.to eq "Fux" }
+
+    it "credits its authors" do
+      expect(source.credits.names(:author)).to eq ["Johann Joseph Fux"]
+    end
+
+    it "keeps the notes intact" do
+      expect(source.notes).to eq(
+        "A foundational text on counterpoint by Johann Joseph Fux, first published in 1725."
+      )
+    end
+
+    context "with an edition and two authors" do
+      subject(:source) { described_class.get("Clendinning & Marvin") }
+
+      its(:edition) { is_expected.to eq "3rd" }
+      its(:abbreviation) { is_expected.to eq "C&M" }
+
+      it "credits both authors in order" do
+        expect(source.credits.names(:author)).to eq ["Jane Piper Clendinning", "Elizabeth West Marvin"]
+      end
+    end
+
+    it "serializes with its catalog key" do
+      expect(source.to_h["key"]).to eq "fux"
+    end
+
+    it "is restored from a flow document as the catalog entry itself" do
+      flow = HeadMusic::Content::Flow.new(name: "Cited", source: source)
+      expect(HeadMusic::Content::Flow.from_h(flow.to_h).source).to equal source
+    end
+
+    it "reads as a plain, equal publication outside a flow document" do
+      restored = HeadMusic::Content::Publication.from_h(source.to_h)
+      expect(restored).to eq source
+      expect(restored).not_to be_a(described_class)
+    end
+  end
+
   describe "a source whose data omits notes" do
     subject(:source) do
       described_class.send(:new, key: :test_source, data: {"publication_name" => "Untitled"})

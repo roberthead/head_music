@@ -20,6 +20,19 @@ ru:
       minor_seventh: малая септима
       major_seventh: большая септима
       perfect_octave: чистая октава
+    credit_roles:
+      composer: композитор
+      songwriter: автор песен
+      lyricist: поэт-песенник
+      librettist: либреттист
+      arranger: аранжировщик
+      transcriber: транскриптор
+      orchestrator: оркестровщик
+      reconstructor: реконструктор
+      author: автор
+      editor: редактор
+      engraver: гравёр
+      publisher: издатель
     instrument_classifications:
       aerophone: аэрофон
       bowed: смычковые

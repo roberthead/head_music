@@ -905,4 +905,76 @@ describe HeadMusic::Content::Flow do
       expect(unnamed.to_h["name"]).to eq "Composition"
     end
   end
+
+  describe "a flow that cites a work" do
+    let(:work) do
+      HeadMusic::Content::Work.new(
+        title: "Cello Suite No. 1",
+        catalog_number: "BWV 1007",
+        year: 1720,
+        credits: [HeadMusic::Content::Credit.new(person: "Johann Sebastian Bach", role: :composer)]
+      )
+    end
+    let(:flow) do
+      described_class.new(name: "Prelude", composer: "Bach", work: work).tap do |prelude|
+        prelude.add_voice(role: "melody").place("1:1:000", :whole, "G3")
+      end
+    end
+
+    it "writes the work inline" do
+      expect(flow.to_h["work"]).to eq work.to_h
+    end
+
+    it "writes the derived composer, so an old reader keeps the printed name" do
+      expect(flow.to_h["composer"]).to eq "Johann Sebastian Bach"
+    end
+
+    it "round-trips the work" do
+      expect(described_class.from_h(flow.to_h).work).to eq work
+    end
+
+    it "round-trips losslessly" do
+      expect_lossless_round_trip(flow)
+    end
+
+    it "reads a document the work key was stripped from, keeping the composer string" do
+      hash = flow.to_h
+      hash.delete("work")
+      restored = described_class.from_h(hash)
+      expect(restored.work).to be_nil
+      expect(restored.composer).to eq "Johann Sebastian Bach"
+    end
+
+    it "reads a 21.0.0-shaped document that has neither citation key" do
+      hash = flow.to_h.except("work", "source")
+      expect(described_class.from_h(hash).to_h).to eq flow.to_h.merge("work" => nil)
+    end
+  end
+
+  describe "a flow that cites a publication" do
+    let(:publication) do
+      HeadMusic::Content::Publication.new(
+        title: "Gradus ad Parnassum",
+        edition: "2nd",
+        year: 1725,
+        publisher: "Van Ghelen",
+        abbreviation: "Fux",
+        notes: "A foundational text.",
+        credits: [HeadMusic::Content::Credit.new(person: "Johann Joseph Fux", role: :author)]
+      )
+    end
+    let(:flow) do
+      described_class.new(name: "Cantus firmus", source: publication).tap do |cantus|
+        cantus.add_voice(role: "cantus firmus").place("1:1:000", :whole, "D4")
+      end
+    end
+
+    it "round-trips the publication" do
+      expect(described_class.from_h(flow.to_h).source).to eq publication
+    end
+
+    it "round-trips losslessly" do
+      expect_lossless_round_trip(flow)
+    end
+  end
 end

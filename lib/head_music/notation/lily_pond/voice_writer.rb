@@ -1,11 +1,10 @@
 # A namespace for LilyPond-notation rendering helpers
 module HeadMusic::Notation::LilyPond
-  # The lines inside a \new Voice block: the clef, key, and time the voice
-  # opens with, then one line per bar with a trailing bar check. Writer
-  # decides which staves and voices exist; this decides what each one says.
+  # The lines inside a \new Voice block. Writer decides which staves and voices
+  # exist; this decides what each one says.
   class VoiceWriter
-    # Every clef the gem knows, by LilyPond's name for it. The octave clefs
-    # carry characters LilyPond only accepts inside quotes.
+    # By LilyPond's name. The octave clefs carry characters LilyPond only
+    # accepts inside quotes.
     CLEF_NAMES = {
       treble_clef: "treble",
       french_violin_clef: "french",
@@ -22,29 +21,30 @@ module HeadMusic::Notation::LilyPond
       neutral_clef: "percussion"
     }.freeze
 
+    # \transposition names the sounding pitch of a written middle C.
+    MIDDLE_C = "C4"
+
     def initialize(plan)
       @plan = plan
     end
 
-    # @param part_index [Integer, nil] nil for a voice on a single-staff part,
-    #   which has no other staff to change to
     def lines(voice, part_index: nil, staff: nil)
       [
         "\\clef #{clef_name(voice, staff)}",
-        plan.first_measure_key,
+        *transposition_line(voice.part),
+        plan.first_measure_key(voice.part),
         time_command(plan.first_measure_meter),
         *plan.bar_numbers.map { |bar_number| bar_line(voice, bar_number, part_index) }
       ]
     end
 
-    # A staff nobody is written on still has to appear, or the group loses a
-    # line of the system and a tacet part loses its line in the score. It
-    # carries a rest-filled voice, opened like any other so the key and time
-    # print, so the bars line up.
-    def silent_lines(staff)
+    # A staff nobody is written on still has to appear, or a tacet part loses
+    # its line in the score.
+    def silent_lines(staff, part: nil)
       [
         "\\clef #{clef_name(nil, staff)}",
-        plan.first_measure_key,
+        *transposition_line(part),
+        plan.first_measure_key(part),
         time_command(plan.first_measure_meter),
         *plan.bar_numbers.map { |bar_number| "#{whole_bar_rest(bar_number)} |" }
       ]
@@ -54,10 +54,9 @@ module HeadMusic::Notation::LilyPond
 
     attr_reader :plan
 
-    # An authored clef is the source of truth; the selector is the fallback for
-    # a part whose staves were never authored -- an ABC import, a bare
-    # counterpoint exercise. It reads a *voice's* pitch range, which is why the
-    # fallback lives here rather than on the staff.
+    # The selector is the fallback for a part whose staves were never authored.
+    # It reads a *voice's* pitch range, which is why the fallback lives here
+    # rather than on the staff.
     def clef_name(voice, staff)
       clef = staff&.clef_at(plan.bar_numbers.first) || HeadMusic::Notation::ClefSelector.for(voice)
       clef_word(clef)
@@ -71,9 +70,21 @@ module HeadMusic::Notation::LilyPond
       "\\time #{meter.top_number}/#{meter.bottom_number}"
     end
 
+    # What the written pitches sound like. A part carries this rather than a
+    # \transpose wrapper, which would move notes that are already written.
+    def transposition_line(part)
+      return [] unless plan.transposed?
+
+      instrument = part&.instrument_at(plan.bar_numbers.first)
+      return [] unless instrument&.transposing?
+
+      sounding = HeadMusic::Content::Layout::Transposition.for(instrument).sounding(MIDDLE_C)
+      ["\\transposition #{PitchWriter.token(sounding)}"]
+    end
+
     def bar_line(voice, bar_number, part_index)
       tokens = [
-        *change_commands(bar_number),
+        *change_commands(voice.part, bar_number),
         staff_change_command(voice, bar_number, part_index),
         *bar_tokens(voice, bar_number)
       ]
@@ -83,16 +94,13 @@ module HeadMusic::Notation::LilyPond
     # \key is per-staff inside << >>, so a mid-piece change is emitted in
     # every voice's stream; \time propagates score-wide, and the duplicate
     # commands are harmless.
-    def change_commands(bar_number)
+    def change_commands(part, bar_number)
       return [] if bar_number == plan.bar_numbers.first
 
       meter = plan.measure_time_changes[bar_number]
-      [plan.measure_key_changes[bar_number], meter && time_command(meter)].compact
+      [plan.measure_key_changes(part)[bar_number], meter && time_command(meter)].compact
     end
 
-    # A voice moves between the staves of its own part with \change Staff, at
-    # exactly the bars its staff-assignment map holds events for -- which is
-    # why the crossings and the commands are the same thing.
     def staff_change_command(voice, bar_number, part_index)
       return if part_index.nil?
 
@@ -103,8 +111,6 @@ module HeadMusic::Notation::LilyPond
       index && %(\\change Staff = "#{Writer.staff_id(part_index, index)}")
     end
 
-    # A bar with no placements for this voice — a voice that ended early,
-    # or an empty voice — fills with a whole-bar rest in the effective meter.
     def bar_tokens(voice, bar_number)
       placements = plan.placements_by_bar(voice)[bar_number]
       return [whole_bar_rest(bar_number)] unless placements

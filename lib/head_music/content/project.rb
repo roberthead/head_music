@@ -1,15 +1,13 @@
 # A module for musical content
 module HeadMusic::Content; end
 
-# A project is the document: a set of players and the flows they play in.
-#
-# A project supplies only what multi-part coordination needs -- players, score
-# order, and (later) layouts. Music that needs none of that is a flow standing
-# on its own.
+# A project is the document: a set of players and the flows they play in. It
+# supplies only what multi-part coordination needs -- players, score order, and
+# layouts. Music that needs none of that is a flow standing on its own.
 class HeadMusic::Content::Project
   SCHEMA_VERSION = HeadMusic::Content::Flow::SCHEMA_VERSION
 
-  attr_reader :players, :flows
+  attr_reader :players, :flows, :layouts, :credits
   attr_accessor :name
 
   def self.from_h(hash)
@@ -19,11 +17,14 @@ class HeadMusic::Content::Project
     version = hash["schema_version"]
     raise ArgumentError, "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})" unless version == SCHEMA_VERSION
 
-    new(name: hash["name"]).tap do |project|
+    new(name: hash["name"], credits: Array(hash["credits"])).tap do |project|
       Array(hash["players"]).each { |player_hash| project.add_player(name: player_hash["name"]) }
       Array(hash["flows"]).each_with_index do |flow_hash, index|
         project.adopt_flow_at(HeadMusic::Content::Flow.from_h(flow_hash), Array(hash["flows"])[index]["players"])
       end
+      # Layouts last: a layout selects flows and players by index, so both
+      # collections must be in place before one can be resolved.
+      Array(hash["layouts"]).each { |layout_hash| project.add_layout_from_h(layout_hash) }
     end
   end
 
@@ -31,10 +32,21 @@ class HeadMusic::Content::Project
     from_h(JSON.parse(json))
   end
 
-  def initialize(name: nil)
+  def initialize(name: nil, credits: [])
     @name = name || "Project"
     @players = []
     @flows = []
+    @layouts = []
+    @credits = HeadMusic::Content::Credits.new(:project, credits)
+  end
+
+  # This version's people, as distinct from the work's composer.
+  def add_credit(person, role)
+    @credits = credits.add(person, role)
+  end
+
+  def works
+    flows.filter_map(&:work).uniq
   end
 
   # Players keep authored order. Sorting them into score order is a score's
@@ -44,14 +56,8 @@ class HeadMusic::Content::Project
   end
 
   # Adopt a standalone flow, minting a player for each of its parts that has
-  # none.
-  #
-  # This is the operation that closes the gap the model deliberately leaves
-  # open: a flow may stand alone, and a part may have no player, right up until
-  # a document needs chairs to coordinate. Parts that already have players keep
-  # them, so adopting a flow twice changes nothing.
-  #
-  # @return [HeadMusic::Content::Flow] the flow, now owned
+  # none. Parts that already have players keep them, so adopting a flow twice
+  # changes nothing.
   def add_flow(flow)
     return flow if flows.any? { |owned| owned.equal?(flow) }
     raise ArgumentError, "the flow belongs to another project" if flow.project && !flow.project.equal?(self)
@@ -60,6 +66,26 @@ class HeadMusic::Content::Project
     flow.project = self
     flow.parts.each_with_index { |part, index| part.player ||= add_player(name: player_name_for(part, index)) }
     flow
+  end
+
+  # The project holds its layouts but renders nothing itself -- rendering is a
+  # layout's job.
+  def add_layout(**kwargs)
+    HeadMusic::Content::Layout.new(project: self, **kwargs).tap { |layout| @layouts << layout }
+  end
+
+  def add_score(ensemble_type: nil, **kwargs)
+    HeadMusic::Content::Score.new(project: self, ensemble_type: ensemble_type, **kwargs)
+      .tap { |score| @layouts << score }
+  end
+
+  # A score reads back as a Score so that it keeps ordering its players.
+  #
+  # @api private for Project.from_h
+  def add_layout_from_h(layout_hash)
+    klass = (layout_hash["kind"].to_s == "score") ? HeadMusic::Content::Score : HeadMusic::Content::Layout
+    attributes = klass.attributes_from_h(layout_hash, project: self)
+    (klass == HeadMusic::Content::Score) ? add_score(**attributes) : add_layout(**attributes)
   end
 
   # A flow is adopted with its parts already paired to players by index, which
@@ -81,8 +107,10 @@ class HeadMusic::Content::Project
     {
       "schema_version" => SCHEMA_VERSION,
       "name" => name,
+      "credits" => credits.to_h,
       "players" => players.map { |player| {"name" => player.name} },
-      "flows" => flows.map { |flow| flow.to_h.merge("players" => player_indexes_for(flow)) }
+      "flows" => flows.map { |flow| flow.to_h.merge("players" => player_indexes_for(flow)) },
+      "layouts" => layouts.map(&:to_h)
     }
   end
 

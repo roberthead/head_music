@@ -58,6 +58,19 @@ de:
       treble_clef: Violinschlüssel
       viola_clef: Bratschenschlüssel
       violin_clef: Violinschlüssel
+    credit_roles:
+      composer: Komponist
+      songwriter: Liedermacher
+      lyricist: Textdichter
+      librettist: Librettist
+      arranger: Arrangeur
+      transcriber: Transkribent
+      orchestrator: Orchestrator
+      reconstructor: Rekonstrukteur
+      author: Autor
+      editor: Herausgeber
+      engraver: Notenstecher
+      publisher: Verleger
     instrument_classifications:
       aerophone: Aerophon
       bowed: Streichinstrument

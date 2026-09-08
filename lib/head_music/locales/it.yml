@@ -58,6 +58,19 @@ it:
       treble_clef: chiave di violino
       viola_clef: chiave di viola
       violin_clef: chiave di violino
+    credit_roles:
+      composer: compositore
+      songwriter: cantautore
+      lyricist: paroliere
+      librettist: librettista
+      arranger: arrangiatore
+      transcriber: trascrittore
+      orchestrator: orchestratore
+      reconstructor: ricostruttore
+      author: autore
+      editor: curatore
+      engraver: incisore
+      publisher: editore
     instrument_classifications:
       aerophone: aerofono
       bowed: ad arco

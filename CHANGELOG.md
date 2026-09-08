@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [21.1.0] - 2026-09-08
+
+The [organizing content](https://github.com/roberthead/head_music/tree/main/user-stories/epics/organizing-content.md) epic's second story. 21.0.0 separated the document from the music; this separates the music from what it *is* and from how it is *shown*. A flow may now cite a `Work` — the piece, with its catalog number and its people — while a project credits whoever made *this version* of it, so Bach is credited for the work and Segovia for the arrangement. A `Layout` is a view of a project: which flows, which players, concert or written pitch, under what title. Two layouts over one project — a transposed score and a flute part book — are two documents from one body of music.
+
+**This is a minor release.** Everything below is additive: no public method changes signature or return type, `Flow#composer` is still a `String` or nil, `Flow.new`'s keywords are only extended, every writer's new option defaults to what it did before, and `Flow#to_abc`, `#to_lilypond`, and `#to_musicxml` are byte-identical for every flow that existed in 21.0.0. The serialization schema stays at 4 (see the last entry). A consumer upgrades by upgrading.
+
+### Added
+
+- **`HeadMusic::Content::Work`, with `Person`, `Credit`, `Credits`, and `Role`.** A work is the catalog identity of a composition — a title, a catalog number, a year, and its people — independent of any one notated version of it. A `Flow` may cite one, or cite none, and flows in one project may cite different works: a sonata is one project whose four flows cite one work, a fake book is one project whose eighty flows cite eighty, and a counterpoint exercise cites none. Putting the identity on the project instead would have made the model lie in exactly the cases this gem is most used for.
+
+  **Credits are constrained by the level they attach to**, so the model cannot record a publisher as having composed the music:
+
+  | Level | Roles |
+  |---|---|
+  | `Work` | composer, songwriter, lyricist, librettist |
+  | `Project` | arranger, transcriber, orchestrator, reconstructor |
+  | `Publication` | author, editor, engraver, publisher |
+
+  `Credits.new(level)` is the single place that constraint is enforced — `credits.add(person, :arranger)` on a work raises `ArgumentError` naming both levels — and `Credit` itself is level-agnostic. `Role` is `Named` and translated like the rest of the gem's vocabulary, but unlike a rudiment getter an unrecognized identifier raises rather than minting a role: the twelve are the whole vocabulary. `Person` is one identity rather than one spelling of a name, with an optional sort name and independently optional birth and death years; `Work`, `Person`, `Credit`, and `Credits` are all frozen values, so two flows citing the same work hold two equal objects and `project.works` deduplicates them.
+
+- **`Flow#work` and `Flow#source`, and `Project#credits`.** `Flow#composer` now answers the cited work's composer and falls back to the authored string, which is what the ABC `C:` and LilyPond `composer =` readers fill with text like "Trad." or "arr. J. Smith" — not a person, and never minting a work. A work with no composer credit falls through to the string too, so a lyricist-only work still prints the name it was authored with, and `Flow#to_h` writes the derived string, so **every existing document renders exactly as it did**. `origin` stays a plain string: ABC's `O:` is geographic provenance, which nothing at the work level holds. `Project#add_credit(person, role)` records this version's people.
+
+- **`HeadMusic::Content::Publication`**, the edition a flow cites as its `source` — the book, treatise, or score, with its own credits, distinct from the work it publishes. `CantusFirmus::Source` is now a `Publication` carrying a catalog key: `Source.get`, `.all`, `.keys`, `#publication_name`, `#publication_edition`, `#author_names`, `#abbreviation`, and `#notes` are all unchanged, and their specs pass unedited. `Example#to_flow` cites its source on the flow it builds, so the citation is a fact about the music rather than only about the catalog, and a serialized source round-trips through its key back into the catalog entry itself. `author` joins the publication-level roles because these sources are treatises, whose people are authors rather than editors.
+
+- **`HeadMusic::Content::Layout`.** A layout selects flows and players (`nil` means all of them), renders in concert or written pitch, and titles the document with `title_override` — which changes what is displayed without touching `work.title` or `flow.name`. A selected flow that no selected player has a part in is skipped rather than rendered empty: a flute part book has two movements, not a silent third.
+
+  ```ruby
+  score = project.add_score(ensemble_type: :orchestral, concert_pitch: false)
+  book  = project.add_layout(kind: :part, players: [flutist], title_override: "Flute")
+  ```
+
+  Each format renders a document of the shape that format has for a book: `#to_abc` writes a tune book, one numbered `X:` per flow separated by a blank line, which `ABC.parse_book` reads back; `#to_lilypond` writes one document with one `\header` and one `\score` per flow, each headed with its movement's own `piece`, via the new `LilyPond::BookWriter`; and because MusicXML holds one flow per document, `#to_musicxml_documents` answers one string per flow and `#to_musicxml` raises for more than one, naming the plural method. Rendering goes through a realized flow rather than through writer options, so the writers, both render plans, and both preflights know nothing about selection — and an all-flows, all-players, concert-pitch layout of one flow renders byte-identically to that flow's own output, in all three formats.
+
+- **`HeadMusic::Content::Score`,** the layout that shows the players together. `#ordered_players` is a permutation of the layout's players in the ensemble's conventional order, and `#player_groups` splits them into the sections a score brackets. Neither is the score's own knowledge: `Instruments::ScoreOrder` already carried it per ensemble type and now exposes `#position_of(instrument)`, `#section_key_of(instrument)`, and `#group(instruments)`, sharing one section index with `#order` so ordering and grouping cannot disagree. Ties keep authored order, so two clarinets stay first and second, and a chair with an unknown instrument or none at all sorts last under a `nil` section key rather than disappearing. `ensemble_type` must be a `ScoreOrder` key or nil, which is authored order.
+
+- **Transposition to written pitch.** A transposed layout renders each part at the pitch its player reads. The move is spelled rather than counted — the semitones decompose into a diatonic interval plus whole octaves — so a clarinet's sounding D is a written E and never an F♭, and a key signature moves by moving its tonic spelling and keeping its scale type rather than by arithmetic on fifths.
+
+  **Each part gets its own written key**, so a mixed ensemble renders as one document: a transposed score of flute, B♭ clarinet, and horn in F carries three key signatures, and a part that picks up an A clarinet at bar 9 gains a key change there that no other part sees. The written key is derived at render time by `Notation::RenderPlan`, whose `#first_measure_key` and `#measure_key_changes` now take the part; it is a rendering fact, not content, so it reaches no model field and no schema key. MusicXML gains `<transpose>` after `<clef>`, LilyPond a `\transposition` per staff, and ABC writes the written key into `K:`. Concert pitch means sounding pitch for every part, octave transposers included. A written key needing more than seven sharps or flats raises `RenderError` naming the enharmonic to write the part in instead, rather than failing midway through assembly.
+
+- **Writer options, each defaulting to prior behavior**: `transposed:` on `ABC.render`, `LilyPond.render`, and `MusicXML.render`; `work_title:` and `movement_number:` on `MusicXML.render`, which emit `<movement-title>` and `<movement-number>` only when a document names a whole this flow is one movement of; and `arranger:` on `LilyPond.render` and `MusicXML.render`, which emit `arranger = "..."` and `<creator type="arranger">`. A `Layout` fills the last of these from `project.credits`, which is what makes the story's arranger visible on the page; `Flow#to_*` passes none of them, so its output is unchanged. ABC has no arranger field and no book title, so a multi-tune layout's title is not rendered there.
+
+- **Optional document keys**: `"work"` and `"source"` on a flow, `"credits"` and `"layouts"` on a project, all absent-means-none. **The schema stays 4.** The rule, now written into `references/content-schema.md`: a rename or a container restructure bumps the schema version, because an old reader would read such a document *wrongly*; a new optional key does not, because the readers look up the keys they know and never enumerate the hash. A 21.0.0 reader accepts a 21.1.0 document and ignores what it has no home for — and `"composer"` still carries the derived name, so even that loss does not reach the page. Bumping to 5 would only have made 21.0.0 reject documents it reads perfectly well.
+
 ## [21.0.0] - 2026-09-06
 
 The [organizing content](https://github.com/roberthead/head_music/tree/main/user-stories/epics/organizing-content.md) epic's first story. `Content::Composition` was the document, the movement, the timeline, and the credits at once, and its `Voice` was a bare melodic line with no instrument, no staff, and no performer — a shape adequate for two-voice species counterpoint and for almost nothing else. Content is now `Project` → `Flow` → `Part` → `Voice` → `Placement`, and a voice can cross between the staves of its part.

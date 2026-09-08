@@ -9,7 +9,6 @@ class HeadMusic::Instruments::ScoreOrder
 
   attr_reader :ensemble_type_key, :sections
 
-  # Factory method to get a ScoreOrder instance for a specific ensemble type
   def self.get(ensemble_type)
     @instances ||= {}
     key = HeadMusic::Utilities::HashKey.for(ensemble_type)
@@ -18,21 +17,39 @@ class HeadMusic::Instruments::ScoreOrder
     @instances[key] ||= new(key)
   end
 
-  # Convenience method to order instruments in orchestral order
   def self.in_orchestral_order(instruments)
     get(:orchestral).order(instruments)
   end
 
-  # Convenience method to order instruments in concert band order
   def self.in_band_order(instruments)
     get(:band).order(instruments)
   end
 
-  # Accepts a list of instruments and orders them according to this ensemble type's conventions
   def order(instruments)
-    ordering_index = build_ordering_index
-    known, unknown = partition_by_known_position(normalize_inputs(instruments), ordering_index)
+    known, unknown = partition_by_known_position(normalize_inputs(instruments))
     sort_known(known) + unknown.sort_by(&:to_s)
+  end
+
+  # Where the instrument sits in the score, counting from the top, or nil where
+  # this order does not know it.
+  def position_of(instrument)
+    entry_for(instrument)&.fetch(:position)
+  end
+
+  # Which section the instrument belongs to -- what a score brackets together.
+  # Nil where this order does not know the instrument.
+  def section_key_of(instrument)
+    entry_for(instrument)&.fetch(:section_key)
+  end
+
+  # The same instruments as #order, split into their sections. Instruments this
+  # order does not know come last, under a nil section key.
+  def group(instruments)
+    # slice_when rather than chunk, which drops the nil-keyed run that the
+    # unknown instruments belong to.
+    order(instruments)
+      .slice_when { |one, other| section_key_of(one) != section_key_of(other) }
+      .map { |members| [section_key_of(members.first), members] }
   end
 
   private_class_method :new
@@ -47,18 +64,16 @@ class HeadMusic::Instruments::ScoreOrder
     self.name = data["name"] || ensemble_type_key.to_s.tr("_", " ").capitalize
   end
 
-  # Discards blank inputs and converts the rest to Instrument objects
   def normalize_inputs(instruments)
     valid_inputs = instruments.compact.reject { |i| i.respond_to?(:empty?) && i.empty? }
     valid_inputs.map { |i| normalize_to_instrument(i) }.compact
   end
 
-  # Splits instruments into those with a known score position and those without
-  def partition_by_known_position(instrument_objects, ordering_index)
+  def partition_by_known_position(instrument_objects)
     known = []
     unknown = []
     instrument_objects.each do |instrument|
-      position_info = find_position_with_transposition(instrument, ordering_index)
+      position_info = find_position_with_transposition(instrument)
       if position_info
         known << [instrument, position_info]
       else
@@ -68,32 +83,41 @@ class HeadMusic::Instruments::ScoreOrder
     [known, unknown]
   end
 
-  # Sorts known instruments by position (primary) and transposition (secondary)
   def sort_known(known)
     known.sort_by { |_, pos_info| [pos_info[:position], -pos_info[:transposition]] }.map(&:first)
   end
 
-  def normalize_to_instrument(input)
-    # Return if already an Instrument instance
-    return input if input.is_a?(HeadMusic::Instruments::Instrument)
+  def entry_for(instrument)
+    return nil if instrument.nil?
 
-    # Return other objects that respond to required methods (mock objects, etc.)
+    normalized = normalize_to_instrument(instrument)
+    normalized && find_entry(normalized)
+  end
+
+  def normalize_to_instrument(input)
+    return input if input.is_a?(HeadMusic::Instruments::Instrument)
     return input if input.respond_to?(:name_key) && input.respond_to?(:family_key)
 
-    # Create an Instrument instance for string inputs
     HeadMusic::Instruments::Instrument.get(input)
   end
 
-  # Builds an index mapping instrument names to their position in the order
-  def build_ordering_index
+  # One index behind both the ordering and the grouping, so the two cannot
+  # disagree about where an instrument belongs.
+  def section_index
+    @section_index ||= build_section_index
+  end
+
+  # A key listed twice -- two trumpets in a quintet -- keeps the last position,
+  # which is where the section still ends.
+  def build_section_index
     index = {}
     position = 0
 
     sections.each do |section|
+      section_key = section["section_key"]&.to_sym
       instruments = section["instruments"] || []
       instruments.each do |instrument_key|
-        # Store position for this instrument key
-        index[instrument_key.to_s] = position
+        index[instrument_key.to_s] = {position: position, section_key: section_key}
         position += 1
       end
     end
@@ -101,46 +125,37 @@ class HeadMusic::Instruments::ScoreOrder
     index
   end
 
-  # Finds the position of an instrument in the ordering.
-  # Positions are non-negative integers, so a nil lookup safely means "absent".
-  def find_position(instrument, ordering_index)
-    position_by_name_key(instrument, ordering_index) ||
-      position_by_family(instrument, ordering_index) ||
-      position_by_normalized_name(instrument, ordering_index)
+  # An entry is a Hash, so a nil lookup safely means "absent".
+  def find_entry(instrument)
+    entry_by_name_key(instrument) ||
+      entry_by_family(instrument) ||
+      entry_by_normalized_name(instrument)
   end
 
-  # Exact match on the instrument's name_key
-  def position_by_name_key(instrument, ordering_index)
+  def entry_by_name_key(instrument)
     return nil unless instrument.name_key
 
-    ordering_index[instrument.name_key.to_s]
+    section_index[instrument.name_key.to_s]
   end
 
-  # Match a family variant (e.g., alto_saxophone -> saxophone family)
-  def position_by_family(instrument, ordering_index)
+  def entry_by_family(instrument)
     return nil unless instrument.family_key
 
     family_base = instrument.family_key.to_s
     instrument_key = instrument.name_key.to_s
     return nil unless instrument_key.include?(family_base)
 
-    # Prefer the specific variant, then fall back to the generic family instrument
-    ordering_index[instrument_key] || ordering_index[family_base]
+    section_index[instrument_key] || section_index[family_base]
   end
 
-  # Match the normalized (lowercase, underscored) display name
-  def position_by_normalized_name(instrument, ordering_index)
-    ordering_index[HeadMusic::Utilities::Case.to_snake_case(instrument.name)]
+  def entry_by_normalized_name(instrument)
+    section_index[HeadMusic::Utilities::Case.to_snake_case(instrument.name)]
   end
 
-  # Finds the position and transposition information for an instrument
-  def find_position_with_transposition(instrument, ordering_index)
-    position = find_position(instrument, ordering_index)
-    return nil unless position
+  def find_position_with_transposition(instrument)
+    entry = find_entry(instrument)
+    return nil unless entry
 
-    # Get the sounding transposition for secondary sorting
-    transposition = instrument.default_sounding_transposition || 0
-
-    {position: position, transposition: transposition}
+    entry.merge(transposition: instrument.default_sounding_transposition || 0)
   end
 end

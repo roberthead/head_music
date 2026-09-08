@@ -183,6 +183,30 @@ describe HeadMusic::Notation::ABC do
     end
   end
 
+  describe ".render" do
+    def flow_with(**attributes)
+      HeadMusic::Content::Flow.new(name: "Prelude", **attributes).tap do |flow|
+        flow.add_voice.place("1:1", :whole, "C4")
+      end
+    end
+
+    let(:bach) do
+      HeadMusic::Content::Work.new(
+        title: "Cello Suite No. 1",
+        catalog_number: "BWV 1007",
+        credits: [HeadMusic::Content::Credit.new(person: "Johann Sebastian Bach", role: :composer)]
+      )
+    end
+
+    it "carries the cited work's composer in the C: field" do
+      expect(described_class.render(flow_with(composer: "Bach", work: bach))).to include "C:Johann Sebastian Bach\n"
+    end
+
+    it "leaves a legacy composer string untouched" do
+      expect(described_class.render(flow_with(composer: "Trad."))).to include "C:Trad.\n"
+    end
+  end
+
   describe ".parse_book" do
     let(:book) do
       <<~ABC

@@ -1,9 +1,12 @@
 # Renders HeadMusic::Content flows as MusicXML documents
 module HeadMusic::Notation::MusicXML
-  # Renders a flow as a score-partwise MusicXML string.
-  # No rendering options exist yet; keywords will be added with the first one.
-  def self.render(flow)
-    Writer.new(flow).to_s
+  # +work_title:+ names the whole this flow is a movement of and
+  # +movement_number:+ its place in it; alone, a flow names only itself.
+  #
+  # +transposed:+ says the flow's pitches are already the written ones, so that
+  # each part prints its own key and a <transpose> naming what it sounds.
+  def self.render(flow, **options)
+    Writer.new(flow, **options).to_s
   end
 
   # Raised when a flow cannot be expressed in the supported MusicXML subset

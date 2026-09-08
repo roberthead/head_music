@@ -1,20 +1,14 @@
 class HeadMusic::Content::Flow
-  # Rebuilds a flow from a schema v4 hash.
-  #
-  # The order is the model's own dependency order: the timeline first, because
-  # a position string rolls its counts and ticks over through the meter map;
-  # then parts, with their instrument and staff-system changes, because a
-  # voice's staff assignment names a staff of its part's system; then
-  # placements; then repeat flags, which need their bar allocated; then
-  # comments.
+  # Rebuilds a flow from a schema v4 hash, in dependency order: the timeline
+  # first, because a position string rolls its counts and ticks over through the
+  # meter map; then parts, because a voice's staff assignment names a staff of
+  # its part's system; then placements; then repeat flags, which need their bar
+  # allocated.
   class HashDeserializer < Deserializer
     SCHEMA_VERSION = HeadMusic::Content::Flow::SCHEMA_VERSION
 
     private
 
-    # A v3 document names 20.1.0 rather than merely being rejected, because the
-    # reader that understands it still ships and a caller needs to be told
-    # where to find it.
     def unsupported_version_message(version)
       message = super
       message += "; read it with Flow.from_v3_h, which is retained in 21.x and removed in 22.0.0" if version == 3
@@ -30,10 +24,27 @@ class HeadMusic::Content::Flow
     end
 
     def build(flow)
+      apply_citations(flow)
       apply_timeline_changes(flow)
       build_parts(flow)
       apply_repeat_flags(flow)
       add_comments(flow)
+    end
+
+    # Read here rather than on the shared base, so the v3 reader gains nothing.
+    # A document written before these keys existed has neither, and reads.
+    def apply_citations(flow)
+      work = hash["work"]
+      flow.work = HeadMusic::Content::Work.from_h(work) if work
+      source = hash["source"]
+      flow.source = publication_from_h(source) if source
+    end
+
+    # A source written from the cantus firmus catalog carries its key, and
+    # reads back as the catalog entry itself rather than as a copy of its fields.
+    def publication_from_h(source_hash)
+      key = source_hash["key"]
+      (key && HeadMusic::Content::CantusFirmus::Source.get(key)) || HeadMusic::Content::Publication.from_h(source_hash)
     end
 
     def apply_timeline_changes(flow)
@@ -91,8 +102,6 @@ class HeadMusic::Content::Flow
       end
     end
 
-    # Assignments are replayed as bare map entries, which is what they are: a
-    # crossing is one event, and the serialized form is the map.
     def apply_staff_assignments(voice, part, voice_hash)
       each_change(voice_hash["staff_assignments"], "staff_assignments") do |bar_number, assignment, _path|
         staff = part.staff_system_at(bar_number).staves[assignment["staff"].to_i]

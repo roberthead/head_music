@@ -11,8 +11,8 @@ module HeadMusic::Notation::LilyPond
     Parser.new(lily_pond_string).flow
   end
 
-  # Renders a flow as a complete LilyPond source string.
-  # No rendering options exist yet; keywords will be added with the first one.
+  # +transposed:+ says the flow's pitches are already the written ones, so that
+  # each part prints its own key and a \transposition naming what it sounds.
   def self.render(flow, **options)
     Writer.new(flow, **options).to_s
   end

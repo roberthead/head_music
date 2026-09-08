@@ -26,6 +26,12 @@ describe HeadMusic::Content::Project do
 
     project.add_flow(first)
     project.add_flow(second)
+
+    project.add_layout(kind: :score)
+    project.add_layout(
+      kind: :part, flows: [first], players: [project.players.first],
+      concert_pitch: false, title_override: "Keyboard"
+    )
   end
 
   it "round-trips losslessly" do
@@ -79,6 +85,41 @@ describe HeadMusic::Content::Project do
     it "keeps a key signature that diverges from its printed signature" do
       timeline = restored.flows.first.timeline
       expect([timeline.signature_at(5), timeline.tonal_context_at(5).name]).to eq [-3, "C dorian"]
+    end
+  end
+
+  # A layout selects flows and players by their place in the project's authored
+  # order, which is the only identity either has.
+  describe "layouts" do
+    subject(:restored) { described_class.from_h(project.to_h) }
+
+    it "restores both layouts" do
+      expect(restored.layouts.map(&:kind)).to eq %i[score part]
+    end
+
+    it "restores an unselected layout as one that answers everything" do
+      expect(restored.layouts.first.flows.length).to eq restored.flows.length
+    end
+
+    it "restores a selection to the project's own flows" do
+      expect(restored.layouts.last.flows).to eq [restored.flows.first]
+    end
+
+    it "restores a selection to the project's own players" do
+      expect(restored.layouts.last.players).to eq [restored.players.first]
+    end
+
+    it "restores the title override" do
+      expect(restored.layouts.last.title).to eq "Keyboard"
+    end
+
+    it "restores the written-pitch flag" do
+      expect(restored.layouts.map(&:concert_pitch?)).to eq [true, false]
+    end
+
+    it "reads a document written before layouts existed" do
+      hash = project.to_h.except("layouts")
+      expect(described_class.from_h(hash).layouts).to be_empty
     end
   end
 

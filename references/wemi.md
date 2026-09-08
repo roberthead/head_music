@@ -1,6 +1,6 @@
 # WEMI: Work, Expression, Manifestation, Item
 
-Four levels of "the same thing." A model from library cataloging for saying which sameness you mean when two objects are both, somehow, Beethoven's Fifth. Intended as background for the `Work`, `Score`, and `Layout` entities proposed in the Identity and Presentation story, and for placing `Project` and `Flow` correctly relative to them.
+Four levels of "the same thing." A model from library cataloging for saying which sameness you mean when two objects are both, somehow, Beethoven's Fifth. Intended as background for the `Work`, `Score`, and `Layout` entities the Identity and Presentation story added, and for placing `Project` and `Flow` correctly relative to them.
 
 ---
 
@@ -77,17 +77,17 @@ The gem's content model, Project → Flow → Part → Voice, sits almost entire
 
 | Level | In head_music | Status |
 |---|---|---|
-| **Work** | The proposed `Work` entity, with `Person` and `Credit`. A title and its people, independent of any one notated version. Today `Flow#composer` and `#origin` are plain strings standing in for it. | Identity and Presentation story |
-| **Expression** | `Project` and `Flow`, down through parts, voices, placements, and the timeline. Two arrangements are two projects, both expressions of one work. | Shipped in 21.0.0 |
-| **Manifestation** | The proposed `Score` and `Layout`: which parts appear, in what order, with what page and staff layout. The LilyPond, MusicXML, and ABC writers each produce a manifestation of a flow. | Identity and Presentation story |
+| **Work** | `Content::Work`, with `Person`, `Credit`, `Credits`, and `Role`. A title, a catalog number, a year, and its people, independent of any one notated version. A `Flow` cites one, or cites none; `Flow#composer` answers the cited work's composer and keeps the plain string as its fallback. | Shipped in 21.1.0 |
+| **Expression** | `Project` and `Flow`, down through parts, voices, placements, and the timeline. Two arrangements are two projects, both expressions of one work. The expression's own people — arranger, transcriber, orchestrator, reconstructor — are `Project#credits`; there is no third container for them. | Shipped in 21.0.0; project credits in 21.1.0 |
+| **Manifestation** | `Content::Layout` and `Content::Score`: which flows and players appear, in what order, in concert or written pitch, under what title. The LilyPond, MusicXML, and ABC documents they produce are each a manifestation. `Content::Publication` is the manifestation on the other side of the citation — the edition a flow names as its `source`, whose credits (author, editor, engraver, publisher) attach to the edition rather than to the music. | Shipped in 21.1.0 |
 | **Item** | A particular file on disk, a particular printed copy. The gem produces the bytes and stops. | Out of scope |
 
 Two consequences worth holding onto:
 
 - **`Project` is not `Work`.** A project holds one set of players and one set of flows; a work can have many such projects. The multi-movement grouping that motivated `Project` is an expression-level fact (this realization has four movements), not a work-level one.
-- **The rendering methods on `Flow` cross a level boundary**, an expression producing its own manifestation. That is fine as long as layout decisions live on the manifestation side when `Score` arrives, so that one flow can render to many scores.
+- **The rendering methods on `Flow` cross a level boundary**, an expression producing its own manifestation. They are kept, because a flow standing outside any project must still render; what `Layout` adds is that one flow can render to many manifestations, and every layout decision — selection, order, written pitch, displayed title — lives on the manifestation side. A `Project` still has no render method.
 
-This mapping is a proposal, not settled doctrine. If the Identity and Presentation story lands differently, revise this section to match.
+The Identity and Presentation story landed as mapped, with one deviation. The story's publication-level roles were editor, engraver, and publisher; **`author` was added to them**, because the cantus firmus sources `Publication` absorbed are treatises — Fux's *Gradus ad Parnassum*, Clendinning & Marvin — whose people are authors of the edition, not editors of someone else's music. Without it the story's own criterion, that the existing sources keep their data intact, could not be met.
 
 ---
 

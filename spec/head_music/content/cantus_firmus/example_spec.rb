@@ -199,6 +199,21 @@ describe HeadMusic::Content::CantusFirmus::Example do
     end
   end
 
+  describe "#to_flow" do
+    subject(:flow) { example.to_flow }
+
+    let(:example) { described_class.find_by_slug("fux-d-dorian") }
+
+    it "cites the example's publication" do
+      expect(flow.source).to eq HeadMusic::Content::CantusFirmus::Source.get(:fux)
+    end
+
+    it "keeps the citation through a serialization round trip" do
+      restored = HeadMusic::Content::Flow.from_h(flow.to_h)
+      expect(restored.source).to eq HeadMusic::Content::CantusFirmus::Source.get(:fux)
+    end
+  end
+
   describe "an example whose data omits the mode" do
     subject(:example) do
       described_class.send(

@@ -2,26 +2,23 @@ require_relative "xml_text"
 
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
-  # Renders a HeadMusic::Content::Flow as a score-partwise MusicXML 4.0
-  # document string.
-  #
-  # Assembles the document down to the measure; AttributesWriter serializes a
-  # measure's attributes and NoteWriter its notes.
-  #
-  # Whole-flow problems (no voices, positional gaps, barline-crossing
-  # notes, unmappable keys or durations, forbidden control characters) raise
-  # before any assembly, so #to_s only ever returns a complete document.
+  # Renders a flow as a score-partwise MusicXML 4.0 document, assembled down to
+  # the measure; AttributesWriter serializes a measure's attributes and
+  # NoteWriter its notes. Whole-flow problems raise before any assembly, so #to_s
+  # only ever returns a complete document.
   class Writer
     include XmlText
 
-    attr_reader :flow
+    attr_reader :flow, :work_title, :movement_number, :transposed, :arranger
 
-    # The rendering facts the serialization methods below read; RenderPlan
-    # computes them from the flow.
     delegate :bar_numbers, :placements_by_bar, :written_duration, to: :plan
 
-    def initialize(flow)
+    def initialize(flow, work_title: nil, movement_number: nil, transposed: false, arranger: nil)
       @flow = flow
+      @work_title = work_title
+      @movement_number = movement_number
+      @transposed = transposed
+      @arranger = arranger
     end
 
     def to_s
@@ -35,7 +32,7 @@ module HeadMusic::Notation::MusicXML
     # The computed rendering facts. Built here — before assembly — so an
     # unmappable key or duration raises before any output is produced.
     def plan
-      @plan ||= RenderPlan.new(flow)
+      @plan ||= RenderPlan.new(flow, transposed: transposed)
     end
 
     def note_writer
@@ -52,6 +49,7 @@ module HeadMusic::Notation::MusicXML
         %(<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">),
         %(<score-partwise version="4.0">),
         *work_lines,
+        *movement_lines,
         *identification_lines,
         *part_list_lines,
         *part_lines,
@@ -62,15 +60,25 @@ module HeadMusic::Notation::MusicXML
     def work_lines
       [
         "#{INDENT}<work>",
-        "#{INDENT * 2}<work-title>#{escape(flow.name)}</work-title>",
+        "#{INDENT * 2}<work-title>#{escape(work_title || flow.name)}</work-title>",
         "#{INDENT}</work>"
       ]
+    end
+
+    # A movement titles itself only where a work titles the whole; a document
+    # standing alone would otherwise say the same name twice.
+    def movement_lines
+      [
+        movement_number && "#{INDENT}<movement-number>#{escape(movement_number.to_s)}</movement-number>",
+        work_title && "#{INDENT}<movement-title>#{escape(flow.name)}</movement-title>"
+      ].compact
     end
 
     def identification_lines
       [
         "#{INDENT}<identification>",
         flow.composer && %(#{INDENT * 2}<creator type="composer">#{escape(flow.composer)}</creator>),
+        arranger && %(#{INDENT * 2}<creator type="arranger">#{escape(arranger)}</creator>),
         "#{INDENT * 2}<encoding>",
         "#{INDENT * 3}<software>head_music #{HeadMusic::VERSION}</software>",
         "#{INDENT * 2}</encoding>",
@@ -78,9 +86,8 @@ module HeadMusic::Notation::MusicXML
       ].compact
     end
 
-    # One <score-part> per part, not per voice. A part holding one voice -- the
-    # shape Flow#add_voice mints, and so the shape of every document this gem
-    # produced before parts existed -- renders exactly as it always did.
+    # One <score-part> per part, not per voice. A part holding one voice renders
+    # exactly as it always did, which keeps existing documents unchanged.
     def part_list_lines
       score_part_lines = flow.parts.each_with_index.flat_map do |part, index|
         [
@@ -92,10 +99,8 @@ module HeadMusic::Notation::MusicXML
       ["#{INDENT}<part-list>", *score_part_lines, "#{INDENT}</part-list>"]
     end
 
-    # A part's name, in decreasing order of authority: the chair it fills, the
-    # instrument it plays, and -- only where the part holds a single voice, so
-    # that the name is not one voice's role standing for several -- that
-    # voice's role.
+    # A voice's role names the part only where the part holds a single voice, so
+    # that one voice's role does not stand for several.
     def part_name(part, index)
       part.player&.name ||
         part.instrument&.name ||
@@ -122,10 +127,9 @@ module HeadMusic::Notation::MusicXML
       ]
     end
 
-    # Each voice after the first is preceded by a <backup> that rewinds to the
-    # start of the measure, which is how MusicXML writes simultaneous voices in
-    # one part. It rewinds by what the previous voice actually wrote, which is
-    # less than a measure when that voice ended mid-bar.
+    # A <backup> before each voice after the first is how MusicXML writes
+    # simultaneous voices in one part. It rewinds by what the previous voice
+    # actually wrote, which is less than a measure when it ended mid-bar.
     def part_content_lines(part, bar_number)
       return measure_content_lines(part, part.voices.first, bar_number) if part.voices.length <= 1
 
@@ -145,9 +149,8 @@ module HeadMusic::Notation::MusicXML
       ]
     end
 
-    # A bar before bar 1 — a pickup written out in full with leading rests —
-    # is marked implicit by convention. A partially filled first bar is
-    # rejected as a gap in Preflight, so only complete pickup bars reach here.
+    # A bar before bar 1 is marked implicit by convention. A partially filled
+    # first bar is rejected as a gap in Preflight.
     def measure_open_tag(bar_number)
       implicit = (bar_number < 1) ? %( implicit="yes") : ""
       %(#{INDENT * 2}<measure number="#{bar_number}"#{implicit}>)
@@ -166,8 +169,6 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
-    # The staff a voice is written on in this bar, which is where a crossing
-    # shows up: the same voice reports a different staff on either side of it.
     def staff_number(part, voice, bar_number)
       staves = part.staff_system_at(bar_number).staves
       return nil if staves.length <= 1 || voice.nil?

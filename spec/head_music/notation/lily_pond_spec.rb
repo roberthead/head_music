@@ -17,6 +17,31 @@ describe HeadMusic::Notation::LilyPond do
     end
   end
 
+  describe "the composer header" do
+    def flow_with(**attributes)
+      HeadMusic::Content::Flow.new(name: "Prelude", **attributes).tap do |flow|
+        flow.add_voice.place("1:1", :whole, "C4")
+      end
+    end
+
+    let(:bach) do
+      HeadMusic::Content::Work.new(
+        title: "Cello Suite No. 1",
+        catalog_number: "BWV 1007",
+        credits: [HeadMusic::Content::Credit.new(person: "Johann Sebastian Bach", role: :composer)]
+      )
+    end
+
+    it "carries the cited work's composer" do
+      expect(described_class.render(flow_with(composer: "Bach", work: bach)))
+        .to include %(composer = "Johann Sebastian Bach")
+    end
+
+    it "leaves a legacy composer string untouched" do
+      expect(described_class.render(flow_with(composer: "Trad."))).to include %(composer = "Trad.")
+    end
+  end
+
   describe "RenderError" do
     it "subclasses the shared notation render error" do
       expect(described_class::RenderError.superclass).to eq HeadMusic::Notation::RenderError

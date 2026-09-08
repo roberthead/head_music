@@ -1,14 +1,8 @@
 # Parses and renders ABC notation as HeadMusic::Content flows
 module HeadMusic::Notation::ABC
-  # Renders a HeadMusic::Content::Flow as an ABC tune string.
-  #
-  # Whole-flow problems (multiple voices, mid-piece meter or key
-  # changes, positional gaps) raise before any string assembly, and #to_s
-  # only returns a fully assembled document, so callers never receive a
-  # truncated tune.
-  #
-  # Repeat barlines and voltas are deliberately not rendered; bars carrying
-  # repeat flags degrade to plain bar lines.
+  # Renders a flow as an ABC tune string. Whole-flow problems raise before any
+  # string assembly, so callers never receive a truncated tune. Repeat barlines
+  # and voltas are deliberately not rendered.
   class Writer
     # A fixed unit note length keeps the L: field and the duration
     # multiplier arithmetic in sync.
@@ -18,11 +12,12 @@ module HeadMusic::Notation::ABC
     include HeadMusic::Notation::PlacementValidation
     include HeadMusic::Notation::PreflightChecks
 
-    attr_reader :flow, :reference_number
+    attr_reader :flow, :reference_number, :transposed
 
-    def initialize(flow, reference_number: 1)
+    def initialize(flow, reference_number: 1, transposed: false)
       @flow = flow
       @reference_number = reference_number
+      @transposed = transposed
     end
 
     def to_s
@@ -35,6 +30,7 @@ module HeadMusic::Notation::ABC
     def validate!
       ensure_single_voice
       ensure_no_mid_piece_changes
+      ensure_no_instrument_change
       ensure_contiguous_voices(flow)
     end
 
@@ -54,9 +50,31 @@ module HeadMusic::Notation::ABC
       raise RenderError, "cannot render the key signature change at bar #{key_change_bar} in ABC output"
     end
 
+    # A tune has one K: field, so a part that picks up an instrument reading in
+    # another key cannot be written -- the same limit as a mid-piece key change.
+    def ensure_no_instrument_change
+      return unless transposed
+
+      change_bar = flow.parts.flat_map { |part| part.instrument_changes.keys }.min
+      return unless change_bar
+
+      raise RenderError, "cannot render the instrument change at bar #{change_bar} in ABC output"
+    end
+
     def placements
       voice = flow.voices.first
       voice ? voice.placements : []
+    end
+
+    # No %%transpose directive is emitted: the pitches are already written, and
+    # abcm2ps would move them a second time.
+    def written_key_signature
+      @written_key_signature ||= transposition.key_signature(flow.key_signature)
+    end
+
+    def transposition
+      instrument = transposed ? (flow.voices.first&.part || flow.parts.first)&.instrument : nil
+      HeadMusic::Content::Layout::Transposition.for(instrument)
     end
 
     def header_lines
@@ -81,7 +99,7 @@ module HeadMusic::Notation::ABC
 
     def key_field
       # The parser requires K: to terminate the header.
-      "K:#{KeyMapper.abc_value(flow.key_signature)}"
+      "K:#{KeyMapper.abc_value(written_key_signature)}"
     end
 
     def body_lines
@@ -99,7 +117,7 @@ module HeadMusic::Notation::ABC
     end
 
     def build_bar_strings
-      pitch_writer = PitchWriter.new(flow.key_signature)
+      pitch_writer = PitchWriter.new(written_key_signature)
       duration_writer = DurationWriter.new(UNIT_NOTE_LENGTH)
       placements_by_bar.each_with_index.map do |bar_placements, index|
         # Accidental state must mirror what a re-parse accumulates bar by bar.
@@ -119,12 +137,9 @@ module HeadMusic::Notation::ABC
       join_bar_tokens(bar_placements, tokens)
     end
 
-    # Suppresses the inter-token space only where the following placement was
-    # authored as beamed to its predecessor (beam_break_before == false).
-    # A true or nil flag keeps the space, so programmatic (nil-flag)
-    # flows render with today's every-token spacing. Every bar token
-    # (note, rest, or [..] chord) re-lexes unambiguously with no separator, so
-    # dropping the space is safe.
+    # A true or nil beam_break_before keeps the space, so programmatic
+    # (nil-flag) flows render with today's every-token spacing. Every bar token
+    # re-lexes unambiguously with no separator, so dropping it is safe.
     def join_bar_tokens(placements, tokens)
       tokens.each_with_index.reduce(+"") do |line, (token, index)|
         separator = (index.zero? || placements[index].beam_break_before == false) ? "" : " "
@@ -143,9 +158,8 @@ module HeadMusic::Notation::ABC
     end
 
     def chord_token(placement, pitch_writer, multiplier)
-      # Pitches are emitted low-to-high, and the oracle sees them in that
-      # same order, so the writer's bar-accidental state cannot diverge from
-      # what a re-parse of the emitted brackets accumulates.
+      # Pitches are emitted low-to-high so the writer's bar-accidental state
+      # cannot diverge from what a re-parse of the brackets accumulates.
       pitch_tokens = placement.pitches.sort.map { |pitch| pitch_writer.token(pitch) }
       "[#{pitch_tokens.join}]#{multiplier}"
     end
