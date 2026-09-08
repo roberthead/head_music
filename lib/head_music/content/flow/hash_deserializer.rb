@@ -9,6 +9,8 @@ class HeadMusic::Content::Flow
 
     private
 
+    # A v3 document is told where 20.1.0 still reads it, rather than merely
+    # rejected, because that reader still ships.
     def unsupported_version_message(version)
       message = super
       message += "; read it with Flow.from_v3_h, which is retained in 21.x and removed in 22.0.0" if version == 3
@@ -102,6 +104,8 @@ class HeadMusic::Content::Flow
       end
     end
 
+    # Replayed as bare map entries: a crossing is one event, and the serialized
+    # form is the map.
     def apply_staff_assignments(voice, part, voice_hash)
       each_change(voice_hash["staff_assignments"], "staff_assignments") do |bar_number, assignment, _path|
         staff = part.staff_system_at(bar_number).staves[assignment["staff"].to_i]

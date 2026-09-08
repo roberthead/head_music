@@ -51,6 +51,12 @@ describe HeadMusic::Content::Person do
     end
   end
 
+  context "without a full name" do
+    it "raises" do
+      expect { described_class.new(full_name: nil) }.to raise_error ArgumentError, /full name/
+    end
+  end
+
   describe "value semantics" do
     let(:twin) { described_class.new(full_name: "Johann Sebastian Bach", birth_year: 1685, death_year: 1750) }
 

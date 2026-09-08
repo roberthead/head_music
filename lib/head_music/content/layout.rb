@@ -6,7 +6,8 @@ module HeadMusic::Content; end
 # The music is the project's; a layout adds no content and changes none. It
 # selects, and it renders.
 class HeadMusic::Content::Layout
-  KINDS = %i[score part custom].freeze
+  # A score is its own class, so that it reads back as one; see Score.
+  KINDS = %i[part custom].freeze
 
   attr_reader :project, :kind, :title_override
   # Nil when unselected, which is what serialization writes and what keeps a
@@ -17,20 +18,20 @@ class HeadMusic::Content::Layout
     hash = hash.transform_keys(&:to_s)
     {
       kind: (hash["kind"] || :custom).to_sym,
-      flows: hash["flows"] && Array(hash["flows"]).filter_map { |index| project.flows[index] },
-      players: hash["players"] && Array(hash["players"]).filter_map { |index| project.players[index] },
+      flows: hash["flows"] && Array(hash["flows"]).map { |index| project.flows[index] },
+      players: hash["players"] && Array(hash["players"]).map { |index| project.players[index] },
       concert_pitch: hash.fetch("concert_pitch", true),
       title_override: hash["title_override"]
     }
   end
 
   def initialize(project:, kind: :custom, flows: nil, players: nil, concert_pitch: true, title_override: nil)
-    raise ArgumentError, "unknown layout kind: #{kind.inspect} (known: #{KINDS.join(", ")})" unless KINDS.include?(kind.to_sym)
+    ensure_known_kind!(kind)
 
     @project = project
     @kind = kind.to_sym
-    @selected_flows = flows
-    @selected_players = players
+    @selected_flows = ensure_members(flows, project.flows, "flow")
+    @selected_players = ensure_members(players, project.players, "player")
     @concert_pitch = concert_pitch
     @title_override = title_override
   end
@@ -142,6 +143,24 @@ class HeadMusic::Content::Layout
 
   private
 
+  def ensure_known_kind!(kind)
+    kinds = self.class::KINDS
+    return if kinds.include?(kind.to_sym)
+
+    raise ArgumentError, "unknown layout kind: #{kind.inspect} (known: #{kinds.join(", ")})"
+  end
+
+  # Refused on entry: a stray member would otherwise serialize as an absence
+  # and surface only when the layout was rendered.
+  def ensure_members(selection, collection, noun)
+    return nil if selection.nil?
+
+    unknown = selection.reject { |member| collection.any? { |candidate| candidate.equal?(member) } }
+    raise ArgumentError, "the layout selects a #{noun} the project does not hold" unless unknown.empty?
+
+    selection
+  end
+
   def single_flow?
     rendered_flows.one?
   end
@@ -175,6 +194,6 @@ class HeadMusic::Content::Layout
   # Positions, not objects: a player and a flow are identified in a document
   # by their place in the project's authored order.
   def selection_indexes(selection, collection)
-    selection&.filter_map { |member| collection.index { |candidate| candidate.equal?(member) } }
+    selection&.map { |member| collection.index { |candidate| candidate.equal?(member) } }
   end
 end

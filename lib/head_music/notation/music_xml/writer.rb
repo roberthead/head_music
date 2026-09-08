@@ -169,6 +169,8 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
+    # Where a crossing shows up: the same voice reports a different staff on
+    # either side of it.
     def staff_number(part, voice, bar_number)
       staves = part.staff_system_at(bar_number).staves
       return nil if staves.length <= 1 || voice.nil?

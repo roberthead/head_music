@@ -21,6 +21,15 @@ describe HeadMusic::Content::Layout do
       expect { project.add_layout(kind: :lead_sheet) }
         .to raise_error ArgumentError, /unknown layout kind: :lead_sheet/
     end
+
+    it "answers a score for the score kind" do
+      expect(project.add_layout(kind: :score)).to be_a HeadMusic::Content::Score
+    end
+
+    it "leaves the score kind to Score" do
+      expect { described_class.new(project: project, kind: :score) }
+        .to raise_error ArgumentError, /unknown layout kind: :score/
+    end
   end
 
   describe "selection" do
@@ -44,6 +53,17 @@ describe HeadMusic::Content::Layout do
 
     it "answers only the players it was given" do
       expect(project.add_layout(players: [flute]).players).to eq [flute]
+    end
+
+    it "refuses a player the project does not hold" do
+      stranger = HeadMusic::Content::Project.new(name: "Other").add_player(name: "Stranger")
+      expect { project.add_layout(players: [stranger]) }
+        .to raise_error ArgumentError, /selects a player the project does not hold/
+    end
+
+    it "refuses a flow the project does not hold" do
+      expect { project.add_layout(flows: [HeadMusic::Content::Flow.new(name: "Stray")]) }
+        .to raise_error ArgumentError, /selects a flow the project does not hold/
     end
   end
 

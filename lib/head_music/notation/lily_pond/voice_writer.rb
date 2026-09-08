@@ -39,7 +39,8 @@ module HeadMusic::Notation::LilyPond
     end
 
     # A staff nobody is written on still has to appear, or a tacet part loses
-    # its line in the score.
+    # its line in the score. Its rest-filled voice opens like any other so the
+    # key and time print and the bars line up.
     def silent_lines(staff, part: nil)
       [
         "\\clef #{clef_name(nil, staff)}",
@@ -101,6 +102,8 @@ module HeadMusic::Notation::LilyPond
       [plan.measure_key_changes(part)[bar_number], meter && time_command(meter)].compact
     end
 
+    # Emitted at exactly the bars the voice's staff-assignment map holds events
+    # for, so the crossings and the commands are the same thing.
     def staff_change_command(voice, bar_number, part_index)
       return if part_index.nil?
 

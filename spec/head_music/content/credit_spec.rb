@@ -63,5 +63,9 @@ describe HeadMusic::Content::Credit do
 
     specify { expect(credit.to_h).to eq("role" => "composer", "person" => person_hash) }
     specify { expect(described_class.from_h(credit.to_h)).to eq credit }
+
+    it "reads symbol keys" do
+      expect(described_class.from_h(person: {full_name: "Erik Satie"}, role: :composer).role.key).to eq :composer
+    end
   end
 end

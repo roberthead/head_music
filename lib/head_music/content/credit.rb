@@ -5,7 +5,8 @@ module HeadMusic::Content; end
 # holds it is what constrains which roles are admissible.
 HeadMusic::Content::Credit = Data.define(:person, :role) do
   def self.from_h(hash)
-    new(person: hash["person"], role: hash["role"])
+    values = hash.transform_keys(&:to_s)
+    new(person: values["person"], role: values["role"])
   end
 
   def initialize(person:, role:)

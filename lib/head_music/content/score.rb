@@ -5,6 +5,8 @@ module HeadMusic::Content; end
 # one system, in the order and the grouping the ensemble conventionally puts
 # them in.
 class HeadMusic::Content::Score < HeadMusic::Content::Layout
+  KINDS = %i[score].freeze
+
   attr_reader :ensemble_type
 
   def self.attributes_from_h(hash, project:)
@@ -53,7 +55,8 @@ class HeadMusic::Content::Score < HeadMusic::Content::Layout
   #
   # @api private for Layout::Realization
   def kept_part_indexes(flow)
-    super.sort_by { |index| [rank_of(flow.parts[index]), index] }
+    order = ordered_players
+    super.sort_by { |index| [rank_of(flow.parts[index], order), index] }
   end
 
   private
@@ -68,9 +71,9 @@ class HeadMusic::Content::Score < HeadMusic::Content::Layout
 
   # A part whose chair this score does not place keeps its authored place at
   # the bottom, which is where an unplaced chair sits in #ordered_players too.
-  def rank_of(part)
-    index = part.player && ordered_players.index { |player| player.equal?(part.player) }
-    index || ordered_players.length
+  def rank_of(part, order)
+    index = part.player && order.index { |player| player.equal?(part.player) }
+    index || order.length
   end
 
   def ensure_known_ensemble_type!

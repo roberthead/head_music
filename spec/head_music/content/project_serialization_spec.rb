@@ -42,8 +42,19 @@ describe HeadMusic::Content::Project do
     expect(described_class.from_json(project.to_json).to_h).to eq project.to_h
   end
 
+  it "refuses a layout that selects a player the document does not hold" do
+    document = project.to_h
+    document["layouts"].last["players"] = [9]
+    expect { described_class.from_h(document) }
+      .to raise_error ArgumentError, /selects a player the project does not hold/
+  end
+
   describe "what survives the round trip" do
     subject(:restored) { described_class.from_h(project.to_h) }
+
+    it "keeps each layout's class" do
+      expect(restored.layouts.map(&:class)).to eq [HeadMusic::Content::Score, HeadMusic::Content::Layout]
+    end
 
     it "keeps the players in authored order" do
       expect(restored.players.map(&:name)).to eq project.players.map(&:name)

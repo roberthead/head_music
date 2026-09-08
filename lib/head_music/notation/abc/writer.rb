@@ -2,7 +2,8 @@
 module HeadMusic::Notation::ABC
   # Renders a flow as an ABC tune string. Whole-flow problems raise before any
   # string assembly, so callers never receive a truncated tune. Repeat barlines
-  # and voltas are deliberately not rendered.
+  # and voltas are deliberately not rendered; bars carrying repeat flags degrade
+  # to plain bar lines.
   class Writer
     # A fixed unit note length keeps the L: field and the duration
     # multiplier arithmetic in sync.
@@ -137,8 +138,9 @@ module HeadMusic::Notation::ABC
       join_bar_tokens(bar_placements, tokens)
     end
 
-    # A true or nil beam_break_before keeps the space, so programmatic
-    # (nil-flag) flows render with today's every-token spacing. Every bar token
+    # The inter-token space is dropped only where the placement was authored as
+    # beamed to its predecessor; a true or nil beam_break_before keeps it, so
+    # programmatic flows render with every-token spacing. Every bar token
     # re-lexes unambiguously with no separator, so dropping it is safe.
     def join_bar_tokens(placements, tokens)
       tokens.each_with_index.reduce(+"") do |line, (token, index)|

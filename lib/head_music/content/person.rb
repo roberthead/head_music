@@ -19,6 +19,8 @@ HeadMusic::Content::Person = Data.define(:full_name, :sort_name, :birth_year, :d
   # The sort name is resolved here rather than in the reader so that a person
   # given no sort name equals the same person given the obvious one.
   def initialize(full_name:, sort_name: nil, birth_year: nil, death_year: nil)
+    raise ArgumentError, "a person needs a full name" if full_name.to_s.strip.empty?
+
     validate_years(birth_year, death_year)
     super(
       full_name: full_name.to_s,

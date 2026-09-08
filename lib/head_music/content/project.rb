@@ -56,8 +56,9 @@ class HeadMusic::Content::Project
   end
 
   # Adopt a standalone flow, minting a player for each of its parts that has
-  # none. Parts that already have players keep them, so adopting a flow twice
-  # changes nothing.
+  # none. This closes the gap the model leaves open: a flow may stand alone and
+  # a part may have no player until a document needs chairs to coordinate.
+  # Parts that already have players keep them, so adopting twice changes nothing.
   def add_flow(flow)
     return flow if flows.any? { |owned| owned.equal?(flow) }
     raise ArgumentError, "the flow belongs to another project" if flow.project && !flow.project.equal?(self)
@@ -70,8 +71,10 @@ class HeadMusic::Content::Project
 
   # The project holds its layouts but renders nothing itself -- rendering is a
   # layout's job.
-  def add_layout(**kwargs)
-    HeadMusic::Content::Layout.new(project: self, **kwargs).tap { |layout| @layouts << layout }
+  def add_layout(kind: :custom, **kwargs)
+    return add_score(**kwargs) if kind.to_sym == :score
+
+    HeadMusic::Content::Layout.new(project: self, kind: kind, **kwargs).tap { |layout| @layouts << layout }
   end
 
   def add_score(ensemble_type: nil, **kwargs)
@@ -79,13 +82,10 @@ class HeadMusic::Content::Project
       .tap { |score| @layouts << score }
   end
 
-  # A score reads back as a Score so that it keeps ordering its players.
-  #
   # @api private for Project.from_h
   def add_layout_from_h(layout_hash)
     klass = (layout_hash["kind"].to_s == "score") ? HeadMusic::Content::Score : HeadMusic::Content::Layout
-    attributes = klass.attributes_from_h(layout_hash, project: self)
-    (klass == HeadMusic::Content::Score) ? add_score(**attributes) : add_layout(**attributes)
+    add_layout(**klass.attributes_from_h(layout_hash, project: self))
   end
 
   # A flow is adopted with its parts already paired to players by index, which

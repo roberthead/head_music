@@ -227,7 +227,8 @@ class HeadMusic::Content::Flow
   end
 
   # Iterates the raw sparse array rather than the public #bars slice, which
-  # loses the number offset.
+  # loses the number offset. Key and meter changes are the timeline's, so a bar
+  # serializes its repeat structure and nothing else.
   def bars_to_h
     (@bars || []).each_with_index.filter_map do |bar, number|
       next if bar.nil?
