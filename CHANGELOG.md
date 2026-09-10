@@ -7,15 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- **`Style::Guidelines::Contoured` judges arch and valley by the whole line.** An arch is now a melody whose trend directions are exactly ascending then descending, one rise past the reversal threshold and one fall, and a valley is the mirror. Before, an interior climax alone made an arch, so a line that rose a third, plunged a sixth, and climbed back passed arch, valley, and wave at once. Arch, valley, and wave are now mutually exclusive. Neighbor-note motion stays under the threshold, so an arch with a passing dip on the way up, or a 7-1 step at the close, still reads as an arch. **Some melodies previously graded as arch or valley now grade as wave, or as no contour at all**: in the pinned corpus, 47 of the 63 voices that passed `arch_contour_melody` and 23 of the 26 that passed `valley_contour_melody` now fail it. Nearly all of those are published cantus firmi and first-species lines that rise and fall more than once and now read as waves; a few that climb without a real reversal read as ascending only. `ascending`, `descending`, `static`, and `wave` are unchanged, as are the registered contour guides and their gates.
-
-## [21.1.0] - 2026-09-08
+## [21.1.0] - 2026-09-10
 
 The [organizing content](https://github.com/roberthead/head_music/tree/main/user-stories/epics/organizing-content.md) epic's second story. 21.0.0 separated the document from the music; this separates the music from what it *is* and from how it is *shown*. A flow may now cite a `Work` — the piece, with its catalog number and its people — while a project credits whoever made *this version* of it, so Bach is credited for the work and Segovia for the arrangement. A `Layout` is a view of a project: which flows, which players, concert or written pitch, under what title. Two layouts over one project — a transposed score and a flute part book — are two documents from one body of music.
 
-**This is a minor release.** Everything below is additive: no public method changes signature or return type, `Flow#composer` is still a `String` or nil, `Flow.new`'s keywords are only extended, every writer's new option defaults to what it did before, and `Flow#to_abc`, `#to_lilypond`, and `#to_musicxml` are byte-identical for every flow that existed in 21.0.0. The serialization schema stays at 4 (see the last entry). A consumer upgrades by upgrading.
+**This is a minor release.** Everything below is additive: no public method changes signature or return type, `Flow#composer` is still a `String` or nil, `Flow.new`'s keywords are only extended, every writer's new option defaults to what it did before, and `Flow#to_abc`, `#to_lilypond`, and `#to_musicxml` are byte-identical for every flow that existed in 21.0.0. The serialization schema stays at 4 (see the last entry). The one behavioral change is the contour grading under Changed, which alters no signature but does regrade some melodies. A consumer upgrades by upgrading.
 
 ### Added
 
@@ -53,6 +49,10 @@ The [organizing content](https://github.com/roberthead/head_music/tree/main/user
 - **Writer options, each defaulting to prior behavior**: `transposed:` on `ABC.render`, `LilyPond.render`, and `MusicXML.render`; `work_title:` and `movement_number:` on `MusicXML.render`, which emit `<movement-title>` and `<movement-number>` only when a document names a whole this flow is one movement of; and `arranger:` on `LilyPond.render` and `MusicXML.render`, which emit `arranger = "..."` and `<creator type="arranger">`. A `Layout` fills the last of these from `project.credits`, which is what makes the story's arranger visible on the page; `Flow#to_*` passes none of them, so its output is unchanged. ABC has no arranger field and no book title, so a multi-tune layout's title is not rendered there.
 
 - **Optional document keys**: `"work"` and `"source"` on a flow, `"credits"` and `"layouts"` on a project, all absent-means-none. **The schema stays 4.** The rule, now written into `references/content-schema.md`: a rename or a container restructure bumps the schema version, because an old reader would read such a document *wrongly*; a new optional key does not, because the readers look up the keys they know and never enumerate the hash. A 21.0.0 reader accepts a 21.1.0 document and ignores what it has no home for — and `"composer"` still carries the derived name, so even that loss does not reach the page. Bumping to 5 would only have made 21.0.0 reject documents it reads perfectly well.
+
+### Changed
+
+- **`Style::Guidelines::Contoured` judges arch and valley by the whole line.** An arch is now a melody whose trend directions are exactly ascending then descending, one rise past the reversal threshold and one fall, and a valley is the mirror. Before, an interior climax alone made an arch, so a line that rose a third, plunged a sixth, and climbed back passed arch, valley, and wave at once. Arch, valley, and wave are now mutually exclusive. Neighbor-note motion stays under the threshold, so an arch with a passing dip on the way up, or a 7-1 step at the close, still reads as an arch. **Some melodies previously graded as arch or valley now grade as wave, or as no contour at all**: in the pinned corpus, 47 of the 63 voices that passed `arch_contour_melody` and 23 of the 26 that passed `valley_contour_melody` now fail it. Nearly all of those are published cantus firmi and first-species lines that rise and fall more than once and now read as waves; a few that climb without a real reversal read as ascending only. `ascending`, `descending`, `static`, and `wave` are unchanged, as are the registered contour guides and their gates.
 
 ## [21.0.0] - 2026-09-06
 
