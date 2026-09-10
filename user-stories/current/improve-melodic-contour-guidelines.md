@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-09T13:54:03-07:00
   planned_at:   2026-09-10T11:25:28-07:00
   finished_at:
-  updated_at:   2026-09-10T11:35:40-07:00
+  updated_at:   2026-09-10T12:37:07-07:00
 -->
 
 # Improve Melodic Contour Guidelines
@@ -295,3 +295,81 @@ now lands on top of other faults. Reproduce these numbers in step 4.
   by this work and outside the criteria.
 - **CHANGELOG numbers** are accurate for the pinned corpus and will drift if
   the corpus changes. Keep them or make the entry qualitative.
+
+## Review
+
+Reviewed 2026-09-10 at commit f71f9e3. Nothing uncommitted. Reviewers: a
+product-manager pass over the acceptance criteria and a code-reviewer pass over
+the diff. Both reran the three affected spec files (170 examples, 0 failures)
+and probed the walk directly. Disputed numbers were re-measured against the
+snapshot before writing this section.
+
+### Acceptance criteria
+
+- ✅ `arch?` is exactly ascending then descending, and the endpoint property
+  holds. `contoured.rb:56` matches the trend array. Probes of a line starting
+  or ending on its peak, or returning to the peak on the way down, all report
+  ascending only, descending only, or wave. Pinned by "climax at the last
+  note" and the exclusivity rows for `CDEF|G4|` and `CDGE|GEDC|`.
+- ✅ `valley?` is the mirror. `contoured.rb:60`. Pinned by "nadir at the last
+  note", "arch whose close dips below its opening", and the valley rows.
+- ✅ The submission grades as wave only. Pinned in the arch, valley, and wave
+  contexts and in the exclusivity table.
+- ✅ The three arches and the valley from the story table keep their verdicts,
+  including the neighbor-note dip. Pinned in the arch and valley contexts and
+  the table. Row 5 loses its spurious valley pass, which is the fix.
+- ✅ Arch, valley, and wave are mutually exclusive, stated over fifteen shapes
+  in `describe "arch, valley, and wave"`. The predicates are disjoint by
+  construction on one array.
+- ✅ Registered guides and gates unchanged. `guide.rb` and the locales have
+  no diff. No corpus row outside the two guides changed.
+- ✅ The violation sentence is untouched and still correct: "Write a melody
+  with the arch contour." The guide instruction "rises to a single peak and
+  falls back" is now literally true. The story's quoted phrase does not exist
+  in any locale.
+- ✅ CHANGELOG entry present under Unreleased with the required sentence.
+  Counts verified: 47 of 63 arch and 23 of 26 valley guide-level adherent
+  verdicts flip. Two secondary claims in the entry overstate; see below.
+
+### Code review findings
+
+1. **CHANGELOG wording overstates twice** (`CHANGELOG.md:12`). "Now grade as
+   wave": 67 of the 70 flips do, but 3 reduce to a single ascending trend and
+   grade as none of arch, valley, or wave (the solo ladder voices and one
+   first-species voice). "Most of them published cantus firmi": the arch flips
+   split evenly between cantus firmi and first-species lines, and the valley
+   flips are mostly first-species lines (16 of 23). The headline counts are
+   correct. The reviewer's competing figures (53 of 71, 26 of 29) count the
+   contour item alone rather than the guide verdict; both are true measurements
+   and the entry should say which it means.
+2. **"leaves nadir multiplicity to ConsonantClimax" passes for the wrong
+   reason** (`contoured_spec.rb:161`). The old melody opened on its highest
+   pitch spelled as the tonic, so ConsonantClimax took its low-pitch branch and
+   failed on the repeated nadir. The replacement `GFEC|CDEG|` peaks on G, so
+   the guideline takes the high-pitch branch and fails on the two G4s instead.
+   The example still passes but no longer demonstrates its title. Verified
+   fix: `CB,A,G,|G,A,B,C|` is a valley, opens on the tonic as its highest
+   pitch, and fails ConsonantClimax on the adjacent repeated nadir.
+3. **Eight of the nine new per-contour contexts restate exclusivity-table
+   rows** (`contoured_spec.rb:112-136`, `:166-182`, `:202-206`). The table
+   asserts the same melodies against the same three predicates and adds what
+   they do not match. The only assertion outside the table, the fitness and
+   marks pair at `:134-135`, duplicates the pair already on "climax at the
+   last note". Judgment call: keep the narrative contexts as the readable
+   documentation and accept the overlap, or trim to the table.
+4. **Redundancy argument for dropping the endpoint guard holds.** The reviewer
+   attempted counterexamples and closed the proof both ways. Incidentally the
+   walk compares MIDI numbers where the old guard compared `Pitch` objects,
+   so an enharmonic endpoint (B sharp against C) no longer reads as interior.
+5. **Every ABC string in the table says what its description says**, and the
+   swapped sixteen-note arch in `contour_melody_spec.rb:265` is a genuine
+   up-down line with the same chromatic rate.
+6. Below threshold, pre-existing, untouched: the `contoured.rb:39` comment
+   describes a `.new` bypass that `private_class_method` closes; the wave
+   instruction says "three or more" direction changes where `wave?` counts
+   three legs, which is two changes; the exclusivity block's
+   `matching_contours` bypasses the file's subject, so a stray `is_expected`
+   there would raise rather than fail.
+
+Nothing blocks finishing. Items 1 and 2 were fixed in the commit after the
+review; item 3 is the owner's call and was left as is.

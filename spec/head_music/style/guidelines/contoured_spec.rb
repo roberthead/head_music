@@ -154,7 +154,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     context "with a repeated interior nadir" do
-      let(:melody) { "GFEC|CDEG|" }
+      let(:melody) { "CB,A,G,|G,A,B,C|" }
 
       it { is_expected.to be_adherent }
 
