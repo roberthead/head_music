@@ -194,7 +194,7 @@ bundle exec rake doc
 
 ### Releasing a New Version
 
-The release checklist lives in [`.claude/skills/release/SKILL.md`](.claude/skills/release/SKILL.md). Run `/release` in Claude Code, or follow it by hand. In short: move the Unreleased changelog entries under a dated heading, bump `lib/head_music/version.rb`, refresh `Gemfile.lock`, commit as `Release X.Y.Z`, and then `bundle exec rake release` tags and publishes the gem.
+The release checklist lives in [`.claude/skills/release/SKILL.md`](.claude/skills/release/SKILL.md). Run `/release` in Claude Code, or follow it by hand. In short: move the Unreleased changelog entries under a dated heading, bump `lib/head_music/version.rb`, refresh `Gemfile.lock`, commit as `Release X.Y.Z`, and then `bundle exec rake release:source_control_push` tags the release. The tag push runs the release workflow, which publishes the gem to RubyGems and creates the GitHub Release.
 
 ## Contributing
 

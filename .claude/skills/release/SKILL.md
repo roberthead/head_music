@@ -57,26 +57,36 @@ Only when the user asks. Subject is `Release X.Y.Z`. Add a body only when the
 number needs explaining, such as why a release is major or which behavior
 changed. Push `main`.
 
-## 5. Publish
+## 5. Tag
 
-Stop here. Do not run the release task without the user's explicit go in this
-conversation. It pushes a tag and uploads to RubyGems, and neither can be
-undone.
+Stop here. Do not tag without the user's explicit go in this conversation.
+Pushing the tag starts the publish, and a published version cannot be
+withdrawn.
 
 ```bash
-bundle exec rake release
+bundle exec rake release:source_control_push
 ```
 
-This builds the gem, creates the annotated tag `vX.Y.Z`, pushes the tag, and
-pushes the gem to RubyGems. RubyGems requires a one-time password for this
-gem, so the user will usually run it themselves with the `!` prefix.
+This creates the annotated tag `vX.Y.Z` and pushes it. It does not push the
+gem. The tag push triggers `.github/workflows/release.yml`, which runs the
+suite and linter, builds the gem, creates the GitHub Release, and publishes to
+RubyGems through trusted publishing. Do not run plain `rake release`: its gem
+push would race the workflow's, and one of them would be rejected as a
+re-push.
+
+Prerequisite, once: the workflow must be registered as a trusted publisher at
+rubygems.org/gems/head_music/trusted_publishers, with repository
+`roberthead/head_music` and workflow file `release.yml`.
 
 ## 6. Verify
 
+- `gh run watch` on the run that the tag started, or
+  `gh run list --workflow=release.yml --limit 1`. Report its status. Do not
+  assume it passed. The workflow failed on every run before 2026-09-10, first
+  on a denied API key and then on an action version that did not exist.
 - `gem search -r head_music` lists the new version.
-- `git ls-remote --tags origin` shows `vX.Y.Z`.
-- `gh run list --workflow=release.yml --limit 1` shows the tag-triggered
-  workflow. As of 2026-09-10 that workflow has failed on every run, most
-  recently because it names a version of the RubyGems credentials action that
-  does not exist, so no GitHub Release is created and the local push above is
-  what publishes the gem. Report the run's status. Do not assume it passed.
+- `gh release view vX.Y.Z` shows the GitHub Release with the gem attached.
+
+If the workflow fails after the tag is pushed, the fallback is
+`bundle exec rake release:rubygem_push`, which needs a RubyGems one-time
+password and so is the user's to run with the `!` prefix.

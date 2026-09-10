@@ -43,8 +43,10 @@ jobs:
     # short-lived credential, so there is no API key to store or rotate.
     # Requires head_music to have this workflow registered as a trusted
     # publisher at rubygems.org/gems/head_music/trusted_publishers.
+    # The action publishes full version tags only, no v2 alias, so it is
+    # pinned to a release.
     - name: Configure RubyGems credentials
-      uses: rubygems/configure-rubygems-credentials@v2
+      uses: rubygems/configure-rubygems-credentials@v2.1.0
 
     - name: Publish to RubyGems
       run: gem push *.gem
