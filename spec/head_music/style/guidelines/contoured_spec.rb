@@ -100,13 +100,39 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     context "with a repeated interior climax" do
-      let(:melody) { "CDGE|GEDC|" }
+      let(:melody) { "CDEG|GEDC|" }
 
       it { is_expected.to be_adherent }
 
       it "leaves climax multiplicity to ConsonantClimax" do
         expect(assess(HeadMusic::Style::Guidelines::ConsonantClimax, voice)).not_to be_adherent
       end
+    end
+
+    context "with a long rise and fall" do
+      let(:melody) { "CDEF|GAGF|EDC2|" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "with a neighbor-note dip on the way up" do
+      let(:melody) { "CDED|EFGF|EDC2|" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "with a closing step against the descent" do
+      let(:melody) { "CEGF|EDCB,|C4|" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "with a rise, a plunge, and a climb back" do
+      let(:melody) { "CDED|B,A,G,B,|C4|" }
+
+      it { is_expected.not_to be_adherent }
+      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
+      its(:marks_count) { is_expected.to eq 1 }
     end
 
     context "with the climax at the last note" do
@@ -128,13 +154,31 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     context "with a repeated interior nadir" do
-      let(:melody) { "cAEG|EGAc|" }
+      let(:melody) { "GFEC|CDEG|" }
 
       it { is_expected.to be_adherent }
 
       it "leaves nadir multiplicity to ConsonantClimax" do
         expect(assess(HeadMusic::Style::Guidelines::ConsonantClimax, voice)).not_to be_adherent
       end
+    end
+
+    context "with a fall and rise between the same pitch" do
+      let(:melody) { "GFED|CDEF|G4|" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "with a rise, a plunge, and a climb back" do
+      let(:melody) { "CDED|B,A,G,B,|C4|" }
+
+      it { is_expected.not_to be_adherent }
+    end
+
+    context "with an arch whose close dips below its opening" do
+      let(:melody) { "CEGF|EDCB,|C4|" }
+
+      it { is_expected.not_to be_adherent }
     end
 
     context "with the nadir at the last note" do
@@ -151,6 +195,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
 
     context "with three trend legs" do
       let(:melody) { "CDED|CDE2|" }
+
+      it { is_expected.to be_adherent }
+    end
+
+    context "with a rise, a plunge, and a climb back" do
+      let(:melody) { "CDED|B,A,G,B,|C4|" }
 
       it { is_expected.to be_adherent }
     end
@@ -221,6 +271,37 @@ describe HeadMusic::Style::Guidelines::Contoured do
       let(:melody) { "EDED|C4|" }
 
       it { is_expected.not_to be_adherent }
+    end
+  end
+
+  describe "arch, valley, and wave" do
+    shapes = {
+      "a three-note arch" => ["CEC2|", :arch],
+      "a long rise and fall" => ["CDEF|GAGF|EDC2|", :arch],
+      "an arch with a neighbor-note dip on the way up" => ["CDED|EFGF|EDC2|", :arch],
+      "an arch with a closing step against the descent" => ["CEGF|EDCB,|C4|", :arch],
+      "an arch with a repeated climax" => ["CDEG|GEDC|", :arch],
+      "a three-note valley" => ["ECE2|", :valley],
+      "a valley" => ["GFED|CDEF|G4|", :valley],
+      "a valley with a repeated nadir" => ["GFEC|CDEG|", :valley],
+      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", :wave],
+      "a three-leg wave" => ["CDED|CDE2|", :wave],
+      "a wave of minor thirds" => ["DFDF|D4|", :wave],
+      "a four-leg wave with a single peak" => ["CDED|CDEF|EDC2|", :wave],
+      "a repeated climax a third apart" => ["CDGE|GEDC|", :wave],
+      "undulation below the trend threshold" => ["CDCD|C4|", nil],
+      "a line climaxing on its last note" => ["CDEF|G4|", nil]
+    }
+
+    shapes.each do |description, (shape, expected)|
+      context "with #{description}" do
+        let(:melody) { shape }
+        let(:matching_contours) do
+          %i[arch valley wave].select { |key| assess(described_class, voice, contour: key).adherent? }
+        end
+
+        it { expect(matching_contours).to eq Array(expected) }
+      end
     end
   end
 

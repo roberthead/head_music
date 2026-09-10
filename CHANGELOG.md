@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`Style::Guidelines::Contoured` judges arch and valley by the whole line.** An arch is now a melody whose trend directions are exactly ascending then descending, one rise past the reversal threshold and one fall, and a valley is the mirror. Before, an interior climax alone made an arch, so a line that rose a third, plunged a sixth, and climbed back passed arch, valley, and wave at once. Arch, valley, and wave are now mutually exclusive. Neighbor-note motion stays under the threshold, so an arch with a passing dip on the way up, or a 7-1 step at the close, still reads as an arch. **Some melodies previously graded as arch or valley now grade as wave**: in the pinned corpus, 47 of 63 arch verdicts and 23 of 26 valley verdicts flip, most of them published cantus firmi that rise and fall more than once. `ascending`, `descending`, `static`, and `wave` are unchanged, as are the registered contour guides and their gates.
+
 ## [21.1.0] - 2026-09-08
 
 The [organizing content](https://github.com/roberthead/head_music/tree/main/user-stories/epics/organizing-content.md) epic's second story. 21.0.0 separated the document from the music; this separates the music from what it *is* and from how it is *shown*. A flow may now cite a `Work` — the piece, with its catalog number and its people — while a project credits whoever made *this version* of it, so Bach is credited for the work and Segovia for the arrangement. A `Layout` is a view of a project: which flows, which players, concert or written pitch, under what title. Two layouts over one project — a transposed score and a flute part book — are two documents from one body of music.

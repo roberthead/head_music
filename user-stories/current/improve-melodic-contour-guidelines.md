@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-09T13:54:03-07:00
   planned_at:   2026-09-10T11:25:28-07:00
   finished_at:
-  updated_at:   2026-09-10T11:25:28-07:00
+  updated_at:   2026-09-10T11:35:40-07:00
 -->
 
 # Improve Melodic Contour Guidelines
@@ -80,6 +80,12 @@ threshold stays a constant.
 have stored submissions graded under the old predicate; a sweep of the pinned
 melody corpus (or a handful of Fux lines used as free melodies) shows how many
 verdicts flip. Record the count in the story.
+
+Measured on 2026-09-10 by regenerating `spec/fixtures/style/corpus_fitness.json`:
+70 of the 288 arch and valley corpus verdicts flip, all from adherent to not
+adherent. 47 of the 63 previously adherent arch rows and 23 of the 26 valley
+rows. 9 more rows under those two guides change fitness without changing
+verdict. Wave and every other guide are unchanged.
 
 **Release.** bardtheory pins `~> 20.0` but will be upgraded to `~> 21.1` to
 land this (and the previous refactoring).

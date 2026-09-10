@@ -262,7 +262,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
       context "with the same chromatic violation rate at different lengths" do
         let(:short_analysis) { analysis_for("CDE^F|GEDC|") }
-        let(:long_analysis) { analysis_for("CDE^F|GAGE|^FGED|EDCC|") }
+        let(:long_analysis) { analysis_for("CDE^F|G^FGA|GFED|EDCC|") }
 
         def analysis_for(melody)
           abc = <<~ABC

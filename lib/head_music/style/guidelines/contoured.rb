@@ -53,20 +53,12 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     first_note.pitch == highest_pitch && last_note.pitch == lowest_pitch
   end
 
-  # The climax is the maximum by definition, so "rise then fall" reduces to both
-  # endpoints sitting below it. Uniqueness and consonance are ConsonantClimax's.
   def arch?
-    endpoints_interior_to?(highest_pitch)
+    trend_directions == %i[ascending descending]
   end
 
   def valley?
-    endpoints_interior_to?(lowest_pitch)
-  end
-
-  # The pitch is a running extreme, so no endpoint can pass it and "interior"
-  # means neither endpoint touches it.
-  def endpoints_interior_to?(extreme_pitch)
-    notes.length >= 3 && first_note.pitch != extreme_pitch && last_note.pitch != extreme_pitch
+    trend_directions == %i[descending ascending]
   end
 
   def wave?
