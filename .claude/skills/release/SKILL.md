@@ -82,9 +82,10 @@ rubygems.org/gems/head_music/trusted_publishers, with repository
 
 - `gh run watch` on the run that the tag started, or
   `gh run list --workflow=release.yml --limit 1`. Report its status. Do not
-  assume it passed. The workflow failed on every run before 2026-09-10, first
-  on a denied API key and then on an action version that did not exist.
-- `gem search -r head_music` lists the new version.
+  assume it passed.
+- `curl -s https://rubygems.org/api/v1/versions/head_music/latest.json`
+  reports the new version. `gem search -r` lags behind the API by minutes,
+  so do not read a stale result there as a failed publish.
 - `gh release view vX.Y.Z` shows the GitHub Release with the gem attached.
 
 If the workflow fails after the tag is pushed, the fallback is
