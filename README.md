@@ -194,21 +194,7 @@ bundle exec rake doc
 
 ### Releasing a New Version
 
-1. Update the version number in `lib/head_music/version.rb`
-2. Commit the version change: `git commit -am "Bump version to X.Y.Z"`
-3. Push to main: `git push origin main`
-4. Release the gem:
-
-```bash
-bundle exec rake release
-```
-
-This will:
-- Build the gem
-- Create and push a git tag (e.g., `vX.Y.Z`)
-- Push the gem to RubyGems
-
-The git tag push also triggers a GitHub Actions workflow that creates a GitHub Release with auto-generated release notes.
+The release checklist lives in [`.claude/skills/release/SKILL.md`](.claude/skills/release/SKILL.md). Run `/release` in Claude Code, or follow it by hand. In short: move the Unreleased changelog entries under a dated heading, bump `lib/head_music/version.rb`, refresh `Gemfile.lock`, commit as `Release X.Y.Z`, and then `bundle exec rake release` tags and publishes the gem.
 
 ## Contributing
 
