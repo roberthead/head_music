@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-09T12:17:16-07:00
   activated_at: 2026-09-09T13:54:03-07:00
   planned_at:   2026-09-10T11:25:28-07:00
-  finished_at:
-  updated_at:   2026-09-10T12:37:07-07:00
+  finished_at:  2026-09-10T12:48:21-07:00
+  updated_at:   2026-09-10T12:48:21-07:00
 -->
 
 # Improve Melodic Contour Guidelines
@@ -373,3 +373,26 @@ snapshot before writing this section.
 
 Nothing blocks finishing. Items 1 and 2 were fixed in the commit after the
 review; item 3 is the owner's call and was left as is.
+
+## Learnings
+
+- **Talking through the options before planning paid off.** Five decisions
+  were settled in one exchange, the story shrank rather than grew, and the
+  planner had nothing to guess at. The one decision left open (drop or keep
+  the endpoint guard) was the one the planner could prove on its own.
+- **Measure the corpus during planning, not after.** Patching the predicates
+  in a scratch script and re-grading the pinned corpus gave the flip counts
+  before any code changed. The implementation then reproduced them exactly,
+  which is a stronger check than a green snapshot spec.
+- **Verify agent claims, both ways.** The planner said the contour guide spec
+  would stay green; one melody there was a wave all along. The code reviewer
+  said the CHANGELOG counts were wrong; they were a different but valid
+  measurement. Both claims were worth checking before acting, and the checks
+  were cheap.
+- **A replacement spec melody must fail for the same reason.** Swapping a
+  melody that had become a wave kept the example green but changed which
+  branch of ConsonantClimax it exercised. When a spec's title says why it
+  fails, confirm the new input fails that way.
+- **A stricter shape rule flips textbook lines.** Most published cantus firmi
+  in the corpus rise and fall more than once and now grade as waves. That is
+  the rule working, but it is the number to show whoever writes the exercise.
