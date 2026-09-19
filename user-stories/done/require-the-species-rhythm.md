@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-08-20T09:34:46-07:00
   activated_at: 2026-09-18T14:50:10-07:00
   planned_at:   2026-09-18T15:46:25-07:00
-  finished_at:
-  updated_at:   2026-09-18T19:33:54-07:00
+  finished_at:  2026-09-18T21:10:48-07:00
+  updated_at:   2026-09-18T21:10:48-07:00
 -->
 
 # Require the Species Rhythm
@@ -126,6 +126,39 @@ same chapter the first-species fixtures came from. Every Fux transcription is
 labeled by figure number in the Mann translation. Triple-meter third species is
 not in Fux, so that fixture is constructed; its source names the cantus firmus
 it is built on and says it is not in Gradus.
+
+## Learnings
+
+- **Measure the composite before believing a harmony-only number.** The
+  story arrived claiming every species guide was blind to species. Grading
+  the first-species voices against the composites showed four of six were
+  already discounting a wrong-species line by a quarter through their melody
+  primaries. One probe script turned an epic into a one-guideline story.
+- **Ask what the requirement is before designing detection.** Rob's reframing,
+  that a guide only needs to insist on its own rhythm rather than identify a
+  submission's species, dissolved the gate-versus-primary debate and the
+  "not applicable" outcome idea in one sentence.
+- **The source was on disk.** Mann's translation was a scanned PDF in Rob's
+  documents. Reading it at up to 1200 dpi got the interval figures, and the
+  kern transcriptions in MarkGotham/species, keyed by the same figure numbers,
+  settled the one accidental the scan could not. Transcribing from memory
+  would have produced misattributed fixtures.
+- **A fixture format must not fight the guides.** The plan's overflow spelling
+  for ties made dotted values that the fifth-species rhythm guideline marks.
+  Teaching the ABC parser to carry a tie across a bar line was the smaller,
+  truer change, but it had consequences the first pass missed: repeat tagging
+  read bar numbers from placed notes, and the writer could not write what the
+  parser now read. The review caught both; the lesson is that lifting a
+  "not yet supported" guard means auditing every consumer of the state it
+  protected.
+- **The diagonal spec earns its cost.** It found nothing wrong with the
+  rhythm work, and everything wrong with fifth-species suspensions. That is
+  what a cross-species matrix is for. Keep it, and let a pending cell name
+  the story that closes it.
+- **Verify agent numbers, and your own.** The planner's locale claim was
+  right and the brief's was wrong; the reviewer's timing was right and my
+  "about two seconds" was not. Every number that went into the story was
+  re-measured before it was written down.
 
 ## Review
 

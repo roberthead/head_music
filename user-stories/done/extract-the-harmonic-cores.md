@@ -62,7 +62,7 @@ voices the seven harmony guides span **0.973–0.982**, and `third_species_harmo
 
 **Re-weighting cannot move a rubric whose items are all 1.0.** No decision below
 changes that 1.000. That defect is
-[Require the Species Rhythm](../current/require-the-species-rhythm.md). This story is the
+[Require the Species Rhythm](../done/require-the-species-rhythm.md). This story is the
 weighting decision alone, and its measurements compare a line against *itself*
 before and after, as the melodic story did (0.883 → 0.561).
 
@@ -285,7 +285,7 @@ because there are no second, third, fourth, or fifth species fixtures anywhere i
 `spec/`. So this story cannot compare a first-species line against a
 *third-species* line. It compares each line against itself, before and after.
 Adding the missing species fixtures belongs to
-[Require the Species Rhythm](../current/require-the-species-rhythm.md), which needs them
+[Require the Species Rhythm](../done/require-the-species-rhythm.md), which needs them
 to do its own job.
 
 Two denominators live in that number and must not be conflated, which is how the
@@ -390,7 +390,7 @@ Two things this story deliberately does not fix, both already on record:
 - A wrong answer cannot score worse than the guideline's own mark, whatever the
   weighting. `Contoured` marks a mismatched contour at φ⁻², so a trough submitted
   for an arch floors at 0.382 even at 100% weight. See
-  [Require the Species Rhythm](../current/require-the-species-rhythm.md).
+  [Require the Species Rhythm](../done/require-the-species-rhythm.md).
 
 ## Implementation Plan
 
@@ -630,7 +630,7 @@ than this document.
 interval from the key's **tonic**, not from the companion voice, so it scores a
 solo voice legitimately. `StepOutOfUnison` genuinely is harmonic and does score a
 free 1.0 for a solo voice, but that free-1.0 defect belongs to
-[Require the Species Rhythm](../current/require-the-species-rhythm.md). The cost of
+[Require the Species Rhythm](../done/require-the-species-rhythm.md). The cost of
 moving it is six assertions across the melody specs; that is the real argument.
 It would also lift `SecondSpeciesHarmony`'s fixture back over the old threshold,
 but only just, and the mechanism is worth stating so the number is not mistaken
@@ -805,7 +805,7 @@ every rubric item of all three guides — including
 `ThirdSpeciesDissonanceTreatment`, which returns 1.0 because a first-species line
 has no dissonances to treat. Re-weighting cannot move a rubric whose items are
 all 1.0, whatever the weights are. This is the defect split out as
-[Require the Species Rhythm](../current/require-the-species-rhythm.md); this story is the
+[Require the Species Rhythm](../done/require-the-species-rhythm.md); this story is the
 weighting decision alone, and it confirms rather than repairs the limit.
 
 Across all 26 Fux first-species voices the seven harmony guides went from
@@ -859,7 +859,7 @@ three and −0.005 to −0.006 for the species melodies.
   interval from the key's tonic, not from the companion voice, so it scores a
   solo voice legitimately. `StepOutOfUnison` genuinely is harmonic and does score
   a free 1.0 for a solo voice, but that free-1.0 belongs to
-  [Require the Species Rhythm](../current/require-the-species-rhythm.md). Moving it costs
+  [Require the Species Rhythm](../done/require-the-species-rhythm.md). Moving it costs
   six assertions across the melody specs and buys 0.007 on one harmony grade.
 - **The no-primary raise is not "declaration time" in general**, and the
   acceptance criterion's wording is corrected here. `items_by_tier` memoizes
@@ -1146,7 +1146,7 @@ framing aimed at making a first-species line score badly against a third-species
 guide. Measurement on activation showed that outcome is unreachable by tiering at
 all — re-weighting cannot move a rubric whose items are all 1.0, and a
 first-species line is adherent on every item of `ThirdSpeciesHarmony`. That
-became [Require the Species Rhythm](../current/require-the-species-rhythm.md), and this
+became [Require the Species Rhythm](../done/require-the-species-rhythm.md), and this
 story narrowed to the weighting decision alone. Had the plan been written first,
 most of it would have aimed at a target tiering cannot hit.
 

@@ -17,7 +17,7 @@ the right shape
 SO THAT a trough handed to `arch_contour_melody` is not graded as a near-miss
 arch
 
-Split out of [Require the Species Rhythm](../current/require-the-species-rhythm.md),
+Split out of [Require the Species Rhythm](../done/require-the-species-rhythm.md),
 which inherited it from
 [Extract the Harmonic Cores](../done/extract-the-harmonic-cores.md). It is
 unrelated to species rhythm and is decided on its own terms.

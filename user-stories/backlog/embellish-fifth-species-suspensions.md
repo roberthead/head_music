@@ -17,7 +17,7 @@ allows to be graded as a suspension, not as a fault
 SO THAT Fux's own fifth-species example grades higher on the fifth-species
 composite than a fourth-species line does
 
-Found by [Require the Species Rhythm](../current/require-the-species-rhythm.md)
+Found by [Require the Species Rhythm](../done/require-the-species-rhythm.md)
 when Fux's chapter five figure 82 became a fixture.
 
 ## The defect
