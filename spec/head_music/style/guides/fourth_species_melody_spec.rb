@@ -19,6 +19,19 @@ describe HeadMusic::Style::Guides::FourthSpeciesMelody do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SustainAcrossBarlines }
+
+  context "with Fux's fourth-species line" do
+    let(:voice) { fux_fourth_species_examples.first.counterpoint_voice }
+
+    its(:fitness) { is_expected.to be > 0.95 }
+  end
+
+  context "with a first-species line" do
+    let(:voice) { fux_first_species_examples.first.counterpoint_voice }
+
+    its(:fitness) { is_expected.to be < 0.75 }
+  end
 
   context "with a well-formed fourth-species counterpoint" do
     let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }

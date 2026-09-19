@@ -924,6 +924,11 @@ en:
           instruction: "Prepare every suspension as a consonance, then resolve it downward by step."
           violations:
             default: "Prepare each suspension as a consonance and resolve it downward by step."
+        sustain_across_barlines:
+          name: "Sustained across the barline"
+          instruction: "Begin each note on the weak beat and hold it across the barline into the next downbeat, breaking the syncopation only rarely."
+          violations:
+            default: "Sustain a note across the barline into most downbeats, breaking the syncopation only rarely."
         third_species_dissonance_treatment:
           name: "Third species dissonance treatment"
           instruction: "Reach every dissonance as a passing tone, neighbor tone, cambiata, or double neighbor figure."

@@ -10,6 +10,14 @@ class FlowContext
     from_params(params.merge(cantus_firmus_pitches: params[:pitches], cantus_firmus_durations: params[:durations]))
   end
 
+  # For the species whose bars hold more than one note: the parser places the
+  # rhythm, and a tie across the bar line becomes one sustained placement.
+  def self.from_abc(params)
+    flow = HeadMusic::Notation::ABC.parse(params[:abc])
+    expected_messages = params[:expected_messages] || [params[:expected_message]].compact
+    new(flow: flow, source: params[:source], expected_messages: expected_messages)
+  end
+
   def self.from_params(params)
     flow = HeadMusic::Content::Flow.new(
       name: name_from_params(params),

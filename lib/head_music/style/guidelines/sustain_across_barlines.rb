@@ -1,0 +1,54 @@
+# Module for style guidelines.
+module HeadMusic::Style::Guidelines; end
+
+# The syncopated texture of fourth species: the note sounding at a downbeat
+# began before it. Judged over the voice's own bars rather than the cantus
+# firmus's, so a solo line is held to it too. Notation-agnostic, so a whole
+# note on beat three and a half tied to a half count the same.
+class HeadMusic::Style::Guidelines::SustainAcrossBarlines < HeadMusic::Style::Guideline
+  MAX_BREAK_RATIO = 0.25
+
+  def marks
+    return [] if notes.empty?
+
+    excess_breaks.map { |bar_number| mark_bar(bar_number) }
+  end
+
+  private
+
+  def max_break_ratio
+    options.fetch(:max_break_ratio) { self.class::MAX_BREAK_RATIO }
+  end
+
+  # Fux allows the ligature to be dropped where none will fit, so the first
+  # few breaks are free and only the rest are faults.
+  def excess_breaks
+    breaks = middle_bar_numbers.reject { |bar_number| sustained_into?(bar_number) }
+    breaks.drop((middle_bar_numbers.length * max_break_ratio).floor)
+  end
+
+  def middle_bar_numbers
+    @middle_bar_numbers ||= begin
+      first = notes.first.position.bar_number
+      last = notes.last.position.bar_number
+      ((first + 1)...last).to_a
+    end
+  end
+
+  def sustained_into?(bar_number)
+    downbeat = downbeat_of(bar_number)
+    held = voice.note_at(downbeat)
+    !held.nil? && held.position < downbeat
+  end
+
+  def downbeat_of(bar_number)
+    HeadMusic::Content::Position.new(flow, "#{bar_number}:1")
+  end
+
+  def mark_bar(bar_number)
+    bar_notes = notes.select { |note| note.position.bar_number == bar_number }
+    return HeadMusic::Style::Mark.for_all(bar_notes) if bar_notes.any?
+
+    HeadMusic::Style::Mark.new(downbeat_of(bar_number), downbeat_of(bar_number + 1))
+  end
+end

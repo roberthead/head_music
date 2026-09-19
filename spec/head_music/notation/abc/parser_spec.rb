@@ -297,9 +297,21 @@ describe HeadMusic::Notation::ABC::Parser do
         .to raise_error(HeadMusic::Notation::ABC::ParseError, /same pitch/)
     end
 
-    it "raises for a tie across a barline" do
-      expect { parse_compound("E3-|E3 |]") }
-        .to raise_error(HeadMusic::Notation::ABC::ParseError, /across barlines/)
+    it "ties a note across a barline into one placement" do
+      placements = parse_compound("E3-|E3 |]").voices.first.placements
+      expect(placements.length).to eq 1
+      expect(placements.first.rhythmic_value.name).to eq "dotted quarter tied to dotted quarter"
+    end
+
+    it "sustains a tie across a barline through the next downbeat" do
+      voice = parse_body("z2 A2-|A2 D2 |]").voices.first
+      expect(voice.notes.map { |note| note.position.code }).to eq %w[1:3:000 2:3:000]
+      expect(voice.note_at(HeadMusic::Content::Position.new(voice.flow, "2:1")).pitch.to_s).to eq "A4"
+    end
+
+    it "still rejects a tie across a barline onto a different pitch" do
+      expect { parse_compound("E3-|D3 |]") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /same pitch/)
     end
 
     it "raises for a dangling tie at the end of the tune" do

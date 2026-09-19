@@ -119,8 +119,9 @@ module HeadMusic::Notation::ABC
     end
 
     # A tie left open by a non-note terminator can never close, so each
-    # terminator rejects it. A bar line gets its own message: an author
-    # tie across a barline is a real, but not-yet-supported, request.
+    # terminator rejects it. A bar line is not a terminator: the tied note
+    # stays pending across it and closes on the next note, as in
+    # handle_bar_line.
     def reject_open_tie(state, line, message)
       return unless state&.tie_open?
 
@@ -145,12 +146,15 @@ module HeadMusic::Notation::ABC
       state.broken_line = line
     end
 
+    # A note tied across the bar line is left pending rather than flushed, so
+    # the note after the bar line fuses onto it the way an in-bar tie does.
+    # Its pitches were resolved when it was buffered, so the bar's accidental
+    # reset below cannot reach them.
     def handle_bar_line(token)
       ensure_not_awaiting_note(token)
       state = current_state
       style = token.style
-      reject_open_tie(state, token.line, "Ties across barlines are not yet supported")
-      state.flush_pending_note
+      state.flush_pending_note unless state.tie_open?
       state.reset_beam_adjacency
       repeat_tagger.bar_line(state, style)
       state.pitch_builder.start_new_bar

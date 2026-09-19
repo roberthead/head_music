@@ -18,6 +18,8 @@ module GuideGrading
     fux_cantus_firmus_examples_with_errors fux_first_species_examples
     clendinning_first_species_examples davis_and_lybbert_first_species_examples
     doubled_octave_examples
+    fux_second_species_examples fux_third_species_examples third_species_triple_meter_examples
+    fux_fourth_species_examples fux_fifth_species_examples
   ].freeze
 
   module_function

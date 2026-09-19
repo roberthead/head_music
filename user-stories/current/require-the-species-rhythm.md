@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-18T14:50:10-07:00
   planned_at:   2026-09-18T15:46:25-07:00
   finished_at:
-  updated_at:   2026-09-18T15:52:25-07:00
+  updated_at:   2026-09-18T17:00:05-07:00
 -->
 
 # Require the Species Rhythm
@@ -82,11 +82,10 @@ first species -- when the entire lesson of fourth species is syncopation.
   Wire them into `GuideGrading::PUBLISHED_SOURCES` so the corpus snapshot covers
   every species the registry has a composite for.
 - Fixtures for species two through five are ABC text built by a new
-  `FlowContext.from_abc`. Fourth species is spelled as whole notes on beat 3,
-  which the parser places across the barline and which the reference's
-  notation-agnostic principle treats as tied halves. One example per species on
-  the D dorian cantus firmus in this story; the other cantus firmi are a
-  follow-up.
+  `FlowContext.from_abc`. Ties across the barline are written as Fux wrote
+  them: the ABC parser now carries a tie over a bar line into one sustained
+  placement, where it used to raise. One example per species on the D dorian
+  cantus firmus in this story; the other cantus firmi are a follow-up.
 - Pin the diagonal with a spec: for each species composite, its own fixture
   grades at least as high as a fixture of any other species.
 
@@ -123,6 +122,35 @@ same chapter the first-species fixtures came from. Every Fux transcription is
 labeled by figure number in the Mann translation. Triple-meter third species is
 not in Fux, so that fixture is constructed; its source names the cantus firmus
 it is built on and says it is not in Gradus.
+
+## Implementation Notes
+
+Implemented 2026-09-18, directly rather than through agents.
+
+- **Transcriptions were checked against two sources.** Mann's translation
+  is on disk as a scan, read at up to 1200 dpi for the interval figures and
+  accidentals, and every line was then confirmed against the Humdrum kern
+  files in MarkGotham/species, which are keyed by the same figure numbers.
+  Figure 55 bar 8 ends on B-flat, which only the kern made certain.
+- **The ABC parser learned ties across bar lines** instead of the fixtures
+  spelling a tied note as an overflowing whole. The overflow spelling turned
+  a half tied to a quarter into a dotted half, which
+  `AllowFifthSpeciesRhythmicValues` marks, so it could not carry the fifth
+  species fixture. The change is one guard in `handle_bar_line`: a pending
+  tied note is left pending across the bar rather than flushed.
+- **Fifth species is the one cell the diagonal does not yet close.** The
+  melody diagonal holds for every species. On the composite, Fux's florid
+  line (0.891) loses to his fourth-species line (0.929) because
+  `SuspensionTreatment` marks the delayed resolution in bar 9, a fifth-species
+  idiom the reference documents. That example is pending in the diagonal
+  spec and the gap has its own story,
+  [Embellish Fifth Species Suspensions](../backlog/embellish-fifth-species-suspensions.md).
+- **Snapshot movement matches the plan.** Rows 4320 to 4620, no errors,
+  pre-existing rows changed only under `fourth_species_melody` and
+  `fourth_species`, and distinct published voices a harmony guide can assess
+  rose from 38 to 48.
+- **Only `en.yml` carries the new strings.** The other locales hold entries
+  only for sentences that name note values and fall back to English.
 
 ## Implementation Plan
 

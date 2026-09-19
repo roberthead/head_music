@@ -5,7 +5,13 @@ module HeadMusic::Style::Guides; end
 class HeadMusic::Style::Guides::FourthSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
   gate_items(*MELODIC_GATES)
 
-  primary_items(HeadMusic::Style::Guidelines::OneToOneWithTies)
+  # OneToOneWithTies bounds how many notes sound against each cantus firmus
+  # note; SustainAcrossBarlines asks for the ligature itself. A first-species
+  # line passes the first and fails the second.
+  primary_items(
+    HeadMusic::Style::Guidelines::OneToOneWithTies,
+    HeadMusic::Style::Guidelines::SustainAcrossBarlines
+  )
 
   secondary_items(*MOVING_MELODIC_CRAFT)
 end
