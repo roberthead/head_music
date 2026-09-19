@@ -6,8 +6,7 @@ class HeadMusic::Style::Guides::FourthSpeciesMelody < HeadMusic::Style::Guides::
   gate_items(*MELODIC_GATES)
 
   # OneToOneWithTies bounds how many notes sound against each cantus firmus
-  # note; SustainAcrossBarlines asks for the ligature itself. A first-species
-  # line passes the first and fails the second.
+  # note; SustainAcrossBarlines asks for the ligature itself.
   primary_items(
     HeadMusic::Style::Guidelines::OneToOneWithTies,
     HeadMusic::Style::Guidelines::SustainAcrossBarlines

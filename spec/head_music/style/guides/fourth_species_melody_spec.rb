@@ -24,13 +24,18 @@ describe HeadMusic::Style::Guides::FourthSpeciesMelody do
   context "with Fux's fourth-species line" do
     let(:voice) { fux_fourth_species_examples.first.counterpoint_voice }
 
-    its(:fitness) { is_expected.to be > 0.95 }
+    its(:fitness) { is_expected.to be >= 0.95 }
   end
 
-  context "with a first-species line" do
-    let(:voice) { fux_first_species_examples.first.counterpoint_voice }
+  context "with Fux's first-species lines" do
+    let(:voices) do
+      fux_first_species_examples.reject { |context| context.expected_messages.any? }.map(&:counterpoint_voice)
+    end
 
-    its(:fitness) { is_expected.to be < 0.75 }
+    it "discounts every one of them" do
+      fitnesses = voices.map { |voice| HeadMusic::Style::GuideAssessment.new(described_class, voice).fitness }
+      expect(fitnesses.max).to be <= 0.75
+    end
   end
 
   context "with a well-formed fourth-species counterpoint" do

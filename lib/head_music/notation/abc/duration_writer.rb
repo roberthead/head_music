@@ -11,7 +11,12 @@ module HeadMusic::Notation::ABC
     end
 
     def multiplier_string(rhythmic_value)
-      fraction = total_fraction(rhythmic_value)
+      multiplier_string_for_fraction(total_fraction(rhythmic_value), rhythmic_value)
+    end
+
+    # For the part of a value that falls inside one bar; the rhythmic value is
+    # only named in the error.
+    def multiplier_string_for_fraction(fraction, rhythmic_value)
       validate_fraction!(fraction, rhythmic_value)
       format_multiplier(fraction / unit_note_length)
     end

@@ -12,11 +12,9 @@ class HeadMusic::Style::Guides::SpeciesHarmony < HeadMusic::Style::Guides::Base
   # right. Splatted by each subclass, for the reason MELODIC_GATES gives.
   #
   # Nor does any harmony guide ask whether the rhythm is the species' own. That
-  # is the melody guide's primary tier -- OnePerBar, TwoPerBar, FourPerBar,
-  # ThreePerBar, SustainAcrossBarlines, MixedRhythmicValues -- and a harmony
-  # guide judges the dissonance treatment that rhythm makes possible. Handed
-  # the wrong species it grades what it can see, and the composite the student
-  # is graded by carries the melody guide's verdict.
+  # is the melody guide's primary tier; a harmony guide judges the dissonance
+  # treatment that rhythm makes possible, and the composite a student is graded
+  # by carries the melody guide's verdict.
   HARMONIC_GATES = [
     HeadMusic::Style::Guidelines::SetAgainstAnotherVoice,
     HeadMusic::Style::Guidelines::MinimumNotes.with(3)

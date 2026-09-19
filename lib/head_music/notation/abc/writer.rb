@@ -120,22 +120,58 @@ module HeadMusic::Notation::ABC
     def build_bar_strings
       pitch_writer = PitchWriter.new(written_key_signature)
       duration_writer = DurationWriter.new(UNIT_NOTE_LENGTH)
-      placements_by_bar.each_with_index.map do |bar_placements, index|
+      segments_by_bar.each_with_index.map do |bar_segments, index|
         # Accidental state must mirror what a re-parse accumulates bar by bar.
         pitch_writer.start_new_bar if index.positive?
-        render_bar(bar_placements, pitch_writer, duration_writer)
+        render_bar(bar_segments, pitch_writer, duration_writer)
       end
     end
 
-    def placements_by_bar
-      placements.chunk_while do |previous, current|
-        previous.position.bar_number == current.position.bar_number
-      end
+    # A placement sounding across a bar line is written as one note per bar,
+    # tied, since ABC has no other way to cross the line. A fraction of nil
+    # means the placement fits its bar and renders from its own rhythmic
+    # value, which keeps the exporter's canonical collapse of tied chains.
+    Segment = Data.define(:placement, :bar_number, :fraction, :continues)
+
+    def segments_by_bar
+      placements.flat_map { |placement| segments_of(placement) }
+        .chunk_while { |previous, current| previous.bar_number == current.bar_number }
     end
 
-    def render_bar(bar_placements, pitch_writer, duration_writer)
-      tokens = bar_placements.map { |placement| token(placement, pitch_writer, duration_writer) }
-      join_bar_tokens(bar_placements, tokens)
+    def segments_of(placement)
+      start = placement.position
+      finish = placement.next_position
+      segments = []
+      while finish > start.start_of_next_bar
+        segments << Segment.new(placement, start.bar_number, fraction_to_bar_end(start), true)
+        start = start.start_of_next_bar
+      end
+      fraction = segments.empty? ? nil : fraction_within_bar(start, finish)
+      segments << Segment.new(placement, start.bar_number, fraction, false)
+    end
+
+    def fraction_to_bar_end(position)
+      meter = position.meter
+      count_fraction(meter) * meter.counts_per_bar - offset_in_bar(position)
+    end
+
+    def fraction_within_bar(from, to)
+      offset_in_bar(to) - offset_in_bar(from)
+    end
+
+    def offset_in_bar(position)
+      meter = position.meter
+      count_fraction(meter) * ((position.count - 1) + Rational(position.tick, meter.ticks_per_count))
+    end
+
+    def count_fraction(meter)
+      unit = meter.count_unit
+      Rational(unit.numerator, unit.denominator)
+    end
+
+    def render_bar(bar_segments, pitch_writer, duration_writer)
+      tokens = bar_segments.map { |segment| token(segment, pitch_writer, duration_writer) }
+      join_bar_tokens(bar_segments.map(&:placement), tokens)
     end
 
     # The inter-token space is dropped only where the placement was authored as
@@ -149,14 +185,22 @@ module HeadMusic::Notation::ABC
       end
     end
 
-    def token(placement, pitch_writer, duration_writer)
+    def token(segment, pitch_writer, duration_writer)
+      placement = segment.placement
       ensure_pitched_sounds(placement)
 
-      multiplier = duration_writer.multiplier_string(placement.rhythmic_value)
+      multiplier = multiplier_for(segment, duration_writer)
+      tie = segment.continues ? "-" : ""
       return "z#{multiplier}" if placement.rest?
-      return chord_token(placement, pitch_writer, multiplier) if placement.chord?
+      return chord_token(placement, pitch_writer, multiplier) + tie if placement.chord?
 
-      "#{pitch_writer.token(placement.pitch)}#{multiplier}"
+      "#{pitch_writer.token(placement.pitch)}#{multiplier}#{tie}"
+    end
+
+    def multiplier_for(segment, duration_writer)
+      return duration_writer.multiplier_string(segment.placement.rhythmic_value) unless segment.fraction
+
+      duration_writer.multiplier_string_for_fraction(segment.fraction, segment.placement.rhythmic_value)
     end
 
     def chord_token(placement, pitch_writer, multiplier)

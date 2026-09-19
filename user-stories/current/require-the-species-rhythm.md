@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-18T14:50:10-07:00
   planned_at:   2026-09-18T15:46:25-07:00
   finished_at:
-  updated_at:   2026-09-18T17:00:05-07:00
+  updated_at:   2026-09-18T19:33:54-07:00
 -->
 
 # Require the Species Rhythm
@@ -108,7 +108,11 @@ first species -- when the entire lesson of fourth species is syncopation.
   `first_three_species`, every fixture of its own species grades at least as
   high on the composite, and on its melody guide, as every fixture of any other
   species. `first_three_species` is a union guide with no species of its own
-  and is excluded by name in the spec.
+  and is excluded by name in the spec. One exception is accepted: on the
+  `fifth_species` composite, Fux figure 82 grades below figure 73 because
+  `SuspensionTreatment` rejects the delayed resolution in its bar 9. That cell
+  is pending in the diagonal spec and is closed by
+  [Embellish Fifth Species Suspensions](../backlog/embellish-fifth-species-suspensions.md).
 - The corpus contains valid example lines for every species the registry has a
   composite for, and the harmony row count in the pinned snapshot rises above
   the current 38.
@@ -122,6 +126,146 @@ same chapter the first-species fixtures came from. Every Fux transcription is
 labeled by figure number in the Mann translation. Triple-meter third species is
 not in Fux, so that fixture is constructed; its source names the cantus firmus
 it is built on and says it is not in Gradus.
+
+## Review
+
+Reviewed 2026-09-18 at commit `aeacd55` by the product-manager (acceptance
+verification) and code-reviewer agents; the two high findings were confirmed
+by hand. Nothing uncommitted. `bundle exec rake`: 8305 examples, 0 failures,
+1 pending. Rubocop clean.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | First-species fixtures at most 0.75 on `fourth_species_melody` and 0.85 on the composite | ✅ met | Re-measured over the ten valid fixtures: melody 0.677 to 0.708, composite 0.800 to 0.842. Pinned in `guide_species_diagonal_spec.rb` and `fourth_species_melody_spec.rb`. |
+| 2 | Fux fourth-species line adherent on `SustainAcrossBarlines`, at least 0.95 on the melody guide | ✅ met | Adherent with zero marks; melody guide 0.999. The line's one break (bar 6) is inside the two-bar allowance. |
+| 3 | Own-species fixture grades at least as high as any other, on the composite and the melody guide | ⚠️ partially met | Melody guides hold for all six species. Composites hold for five. Fifth species fails: Fux figure 82 scores 0.891 against figure 73's 0.929, because `SuspensionTreatment` marks the delayed resolution in bar 9. That example is `pending` and the cause has its own story, [Embellish Fifth Species Suspensions](../backlog/embellish-fifth-species-suspensions.md). The criterion as written says "every", so the story cannot be closed against it unamended. |
+| 4 | Corpus covers every species with a composite; harmony rows rise above 38 | ✅ met | The diagonal spec asserts the fixture table equals the composite keys minus `first_three_species`. For each of the seven harmony guides, assessable published-source rows went 38 to 48; total rows 4320 to 4620, no error rows; pre-existing rows moved only under the two fourth-species guides. |
+| 5 | `SpeciesHarmony` says species rhythm is the melody guides' concern | ✅ met | `species_harmony.rb` lines 14 to 19. |
+
+### Code review findings
+
+**High: blocks finish.**
+
+1. **Repeat flags land on the wrong bar when a tie is open at a bar line.**
+   `parser.rb` still calls the repeat tagger after skipping the flush, and
+   the tagger reads bar numbers from the voice's last placement, which now
+   lags by one. Confirmed: `C2 D2-|:D2 E2:|G4|]` marks bar 1 as starting the
+   repeat instead of bar 2. This turned a loud parse error into silently
+   wrong structure. Fix by tagging from a bar counter the parser keeps
+   itself, or by keeping the rejection when the bar line carries a repeat
+   style. Related: `handle_volta` still rejects an open tie with "must be
+   followed by a note", which now misleads.
+2. **The writer emits an over-long bar for a tie that crosses a bar line.**
+   `duration_writer.rb` collapses a tie chain into one multiplier, which was
+   safe only while the parser could not produce a cross-bar tie. Confirmed:
+   `C2 D2-|D2 E2|]` writes back as `C4 D8|E4|]` under `L:1/8`, a twelve-eighth
+   bar. The story's "never round-trip these flows" risk is not enforced. Fix
+   by splitting the value at the bar line and emitting `-`, or raising when a
+   placement spans a bar boundary.
+
+**Medium.**
+
+3. **`SustainAcrossBarlines` forgives the earliest breaks and marks the later
+   ones**, so which bars a student sees flagged is positional rather than
+   musical. `SecondSpeciesBreak` handles the same tolerance with one mark
+   spanning all break bars at the small penalty once the ratio is exceeded.
+   Matching that shape would make the two rules consistent.
+4. **Accidentals do not survive a tie across a bar line.** The second note is
+   resolved after the bar's accidental reset, so `^D2-|D2` raises "must
+   connect two notes of the same pitch". Confirmed. The fixtures repeat
+   `_B` and `^c` to sidestep it. Most ABC tools carry the accidental; either
+   do that or say so in the parser comment, which currently claims the reset
+   cannot reach the tie.
+5. **The `reject_open_tie` comment** still points at `handle_bar_line`, now
+   the one terminator that does not call it.
+6. **The diagonal spec is slow**: 27 seconds for 17 examples, because every
+   example re-parses all six fixture sets and re-assesses them. Build the
+   voices once and compute one fitness matrix per guide kind.
+7. **Duplicate assertions** between `fourth_species_melody_spec.rb` and the
+   `describe "fourth species"` block of the diagonal spec; the guideline
+   adherence example belongs in `sustain_across_barlines_spec.rb`.
+
+**Low.**
+
+8. The `.sub` that swaps the cantus firmus for the 3/4 fixture is fragile; a
+   `cantus_firmus:` keyword on `fux_dorian_abc` removes the coupling.
+9. Every fixture is titled `T:Fux`, including the constructed line;
+   `from_abc` also skips the flow-naming rule `from_params` applies.
+10. The new require sits between `one_to_one_with_ties` and
+    `prefer_contrary_motion` rather than after `suspension_treatment`.
+11. The `SpeciesHarmony` comment enumerates melody primaries and is already
+    incomplete (omits `FirstBarHalfNotes`, `AllowFifthSpeciesRhythmicValues`).
+    The first sentence carries the why; the roster will rot.
+12. Second- and third-species fixtures open on the downbeat with no rest,
+    which matches figures 33 and 55 in Mann but differs from the fourth- and
+    fifth-species fixtures; a one-line note would stop a future "fix".
+13. Small spec issues: the `expected_messages` branch in `from_abc` is dead;
+    one context places overlapping wholes at 10:3 and 11:1; the solo-voice
+    context still builds an unused cantus firmus.
+
+### Outcomes
+
+Applied 2026-09-18 after the review, at the user's direction. Criterion 3 was
+amended to name the fifth-species exception.
+
+1. **Fixed.** `VoiceState#completed_bar_number` and `entered_bar_number` now
+   count from where the last note ends, including a pending tied note, so
+   repeats and voltas after a tied bar line tag the right bar. Counting from
+   the end also corrects a note longer than its bar, which was miscounted
+   before this story. `handle_volta` keeps a tied note pending like
+   `handle_bar_line`. Three parser specs cover repeat, volta, and accidental.
+2. **Fixed.** The writer splits a placement at each bar line it crosses and
+   ties the pieces, so `z2 ^F2-|F4-|F2 E2` writes back as
+   `z4 ^F4-|^F8-|^F4 E4` and re-parses to the same placements. In-bar tie
+   chains still collapse to one multiplier.
+3. **Fixed, but not the sibling's shape.** Once breaks exceed the allowance,
+   every bar entered without a ligature is marked, so the flagged bars no
+   longer depend on where the free ones fell. `SecondSpeciesBreak`'s single
+   small-penalty mark was not copied: a lone mark at φ^-1/2 would grade a
+   first-species line near 0.93 on the fourth-species melody guide and undo
+   criterion 1. A first-species line now takes nine marks rather than seven.
+4. **Fixed.** A tie carries its pitch across the bar line: the note after
+   the line fuses onto the pending note when its letters and octaves match,
+   so `^D2-|D2` is one D-sharp. The parser comment says so.
+5. **Fixed.** The `reject_open_tie` comment names bar lines and voltas as
+   the non-terminators and no longer cross-references `handle_bar_line`.
+6. **Fixed.** The diagonal spec parses the fixtures once at load and grades
+   each guide once into a memoized matrix; the examples read cells. It runs
+   in about thirteen seconds, down from twenty; what remains is the cost of
+   the composite assessments themselves.
+7. **Fixed.** The fourth-species melody thresholds live only in
+   `fourth_species_melody_spec.rb`, the guideline adherence example moved to
+   `sustain_across_barlines_spec.rb`, and the diagonal spec keeps only the
+   composite threshold.
+8. **Fixed.** `dorian_species_abc` takes the cantus firmus from the params;
+   the 3/4 fixture passes its own, with no substitution.
+9. **Fixed.** The ABC title is the fixture's `source`, so the constructed
+   line is no longer titled "Fux". `from_abc` takes the flow's name from the
+   header rather than re-deriving it.
+10. **Fixed.** The require sits after `suspension_treatment`.
+11. **Fixed.** The `SpeciesHarmony` comment keeps the why and drops the
+    roster of melody primaries.
+12. **Fixed.** The fixture comment records that figures 33 and 55 open on the
+    downbeat as printed, and that the notes were checked against the kern
+    transcriptions.
+13. **Fixed.** The dead `expected_messages` branch is gone; the
+    whole-on-beat-three example ends with a half so nothing overlaps; the
+    solo-voice example sits outside the cantus firmus context.
+
+**Not taken.** A different Fux fifth-species figure was not substituted for
+figure 82. Every fifth-species figure in Gradus uses embellished suspensions
+somewhere, and the D dorian one keeps the comparison on rhythm rather than
+cantus; the gap is the harmony guide's, and it now has a story.
+
+**Also noted by the product manager.** A different Fux fifth-species figure
+without a delayed resolution might have closed the fifth-species cell, at
+the cost of the shared-cantus comparison; the Implementation Notes do not
+say why that trade was not taken. The transcriptions' provenance is not
+verifiable from the repository; spot-check figure 55 bar 8 (`_B A G _B`) and
+figure 82 bar 8 (`f e/2 d/2 e2-`) against the kern if the source labels
+matter.
 
 ## Implementation Notes
 

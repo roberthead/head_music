@@ -34,12 +34,18 @@ module HeadMusic::Notation::ABC
       @tie_open = false
     end
 
+    # Counted from where the last note ends rather than where it starts: a
+    # note tied across a bar line is still pending when the repeat tagger
+    # asks, and a note longer than its bar has crossed one already.
     def completed_bar_number
-      voice.last_placement&.position&.bar_number
+      finish = pending_note ? pending_end_position : voice.last_placement&.next_position
+      return unless finish
+
+      bar_start?(finish) ? finish.bar_number - 1 : finish.bar_number
     end
 
     def entered_bar_number
-      voice.next_position.bar_number
+      pending_note ? pending_end_position.bar_number : voice.next_position.bar_number
     end
 
     # Records an explicit beam break; the next note consumes it.
@@ -123,22 +129,37 @@ module HeadMusic::Notation::ABC
     # rhythmic value carries the author's chosen split.
     def tie_onto_pending(pitches, length, scale)
       pending = pending_note
-      ensure_tie_pitches_match(pending, pitches)
       prefix = pending_rhythmic_value(pending)
       close_tie
       self.pending_note = PendingNote.new(
-        pitches: pitches, length: length, scale: scale, tied_prefix: prefix,
+        pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
         beam_break: pending.beam_break
       )
     end
 
-    def ensure_tie_pitches_match(pending, pitches)
-      return if pending.pitches.sort == pitches.sort
+    # A tie carries its accidental across the bar line, where the key
+    # signature would otherwise respell the note, so the same letters in the
+    # same octaves are the same pitches.
+    def tied_pitches(pending, pitches)
+      return pending.pitches if same_letters?(pending.pitches, pitches)
 
       raise ParseError.new(
         "A tie must connect two notes of the same pitch",
         line_number: tie_line, snippet: "-"
       )
+    end
+
+    def same_letters?(pitches, other_pitches)
+      letters = ->(list) { list.map { |pitch| [pitch.letter_name.to_s, pitch.register] }.sort }
+      letters.call(pitches) == letters.call(other_pitches)
+    end
+
+    def pending_end_position
+      voice.next_position + pending_rhythmic_value(pending_note)
+    end
+
+    def bar_start?(position)
+      position.count == 1 && position.tick.zero? && position.subtick.zero?
     end
 
     # A pending note's own value, with any tied prefix appended ahead of

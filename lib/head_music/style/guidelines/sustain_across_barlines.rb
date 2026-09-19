@@ -10,8 +10,9 @@ class HeadMusic::Style::Guidelines::SustainAcrossBarlines < HeadMusic::Style::Gu
 
   def marks
     return [] if notes.empty?
+    return [] if breaks.length <= allowed_breaks
 
-    excess_breaks.map { |bar_number| mark_bar(bar_number) }
+    breaks.map { |bar_number| mark_bar(bar_number) }
   end
 
   private
@@ -20,11 +21,16 @@ class HeadMusic::Style::Guidelines::SustainAcrossBarlines < HeadMusic::Style::Gu
     options.fetch(:max_break_ratio) { self.class::MAX_BREAK_RATIO }
   end
 
-  # Fux allows the ligature to be dropped where none will fit, so the first
-  # few breaks are free and only the rest are faults.
-  def excess_breaks
-    breaks = middle_bar_numbers.reject { |bar_number| sustained_into?(bar_number) }
-    breaks.drop((middle_bar_numbers.length * max_break_ratio).floor)
+  # Fux allows the ligature to be dropped where none will fit, so a few breaks
+  # are free. Past that, every break is marked rather than only the ones past
+  # the allowance, so which bars a student sees flagged does not depend on
+  # where the free ones happened to fall.
+  def breaks
+    @breaks ||= middle_bar_numbers.reject { |bar_number| sustained_into?(bar_number) }
+  end
+
+  def allowed_breaks
+    (middle_bar_numbers.length * max_break_ratio).floor
   end
 
   def middle_bar_numbers

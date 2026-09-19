@@ -314,6 +314,23 @@ describe HeadMusic::Notation::ABC::Parser do
         .to raise_error(HeadMusic::Notation::ABC::ParseError, /same pitch/)
     end
 
+    it "carries an accidental across the barline with the tie" do
+      note = parse_body("^D2-|D2 z2 |]").voices.first.notes.first
+      expect(note.pitch.to_s).to eq "D♯4"
+      expect(note.rhythmic_value.name).to eq "half tied to half"
+    end
+
+    it "tags a repeat opened after a tied barline on the right bar" do
+      flow = parse_body("C2 D2-|:D2 E2:|G4 |]")
+      expect(flow.bars.select(&:starts_repeat?).map(&:number)).to eq [2]
+      expect(flow.bars.select(&:ends_repeat_after_num_plays).map(&:number)).to eq [2]
+    end
+
+    it "tags a volta entered through a tied barline on the right bar" do
+      flow = parse_body("C4|E4-|[1 E4:|[2 G4 |]")
+      expect(flow.bars.map(&:plays_on_passes)).to eq [nil, nil, [1], [2]]
+    end
+
     it "raises for a dangling tie at the end of the tune" do
       expect { parse_compound("E3-") }
         .to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)

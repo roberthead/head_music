@@ -348,44 +348,51 @@ end
 
 # The diminution species, each set above the D dorian cantus firmus that opens
 # every chapter of Gradus, so that grading one against another compares rhythm
-# rather than cantus. Figure numbers follow Mann's translation. In ABC, `d` is
-# D5 and `A` is A4; a tie across the bar line is written as Fux wrote it.
+# rather than cantus. Figure numbers follow Mann's translation; the notes were
+# checked against the kern transcriptions in MarkGotham/species. In ABC, `d` is
+# D5 and `A` is A4, and a tie across the bar line is written as Fux wrote it.
+# Figures 33 and 55 open on the downbeat, as printed; only 73 and 82 enter
+# after a half rest.
 FUX_DORIAN_CANTUS_FIRMUS_ABC = "D4|F4|E4|D4|G4|F4|A4|G4|F4|E4|D4|]".freeze
 
-def fux_dorian_abc(counterpoint, meter: "4/4")
+def dorian_species_abc(params)
   <<~ABC
     X:1
-    T:Fux
-    M:#{meter}
+    T:#{params.fetch(:source)}
+    M:#{params.fetch(:meter, "4/4")}
     L:1/4
     K:Ddor
     V:cantus firmus
-    #{FUX_DORIAN_CANTUS_FIRMUS_ABC}
+    #{params.fetch(:cantus_firmus, FUX_DORIAN_CANTUS_FIRMUS_ABC)}
     V:counterpoint
-    #{counterpoint}
+    #{params.fetch(:counterpoint)}
   ABC
+end
+
+def dorian_species_examples(params_list)
+  params_list.map { |params| FlowContext.from_abc(params.merge(abc: dorian_species_abc(params))) }
 end
 
 FUX_SECOND_SPECIES_EXAMPLES = [
   {
     source: "Fux chapter two figure 33",
-    abc: fux_dorian_abc("A2 d2|A2 B2|c2 G2|A2 d2|B2 c2|d2 A2|c2 d2|e2 B2|d2 A2|B2 ^c2|d4|]")
+    counterpoint: "A2 d2|A2 B2|c2 G2|A2 d2|B2 c2|d2 A2|c2 d2|e2 B2|d2 A2|B2 ^c2|d4|]"
   }
 ].freeze
 
 def fux_second_species_examples
-  FUX_SECOND_SPECIES_EXAMPLES.map { |params| FlowContext.from_abc(params) }
+  dorian_species_examples(FUX_SECOND_SPECIES_EXAMPLES)
 end
 
 FUX_THIRD_SPECIES_EXAMPLES = [
   {
     source: "Fux chapter three figure 55",
-    abc: fux_dorian_abc("D E F G|A B c d|e d B c|d c _B A|_B c d e|f F A B|c A _B c|_B A G _B|A D E F|G A B ^c|d4|]")
+    counterpoint: "D E F G|A B c d|e d B c|d c _B A|_B c d e|f F A B|c A _B c|_B A G _B|A D E F|G A B ^c|d4|]"
   }
 ].freeze
 
 def fux_third_species_examples
-  FUX_THIRD_SPECIES_EXAMPLES.map { |params| FlowContext.from_abc(params) }
+  dorian_species_examples(FUX_THIRD_SPECIES_EXAMPLES)
 end
 
 # Not in Gradus, which has no triple-meter species. Built on Fux's D dorian
@@ -393,35 +400,36 @@ end
 THIRD_SPECIES_TRIPLE_METER_EXAMPLES = [
   {
     source: "Constructed triple-meter third species on Fux's D dorian cantus firmus",
-    abc: fux_dorian_abc("z A B|c d e|d c B|A B c|d c B|A B c|c d e|d e d|c d c|B c ^c|d3|]", meter: "3/4")
-      .sub(FUX_DORIAN_CANTUS_FIRMUS_ABC, "D3|F3|E3|D3|G3|F3|A3|G3|F3|E3|D3|]")
+    meter: "3/4",
+    cantus_firmus: "D3|F3|E3|D3|G3|F3|A3|G3|F3|E3|D3|]",
+    counterpoint: "z A B|c d e|d c B|A B c|d c B|A B c|c d e|d e d|c d c|B c ^c|d3|]"
   }
 ].freeze
 
 def third_species_triple_meter_examples
-  THIRD_SPECIES_TRIPLE_METER_EXAMPLES.map { |params| FlowContext.from_abc(params) }
+  dorian_species_examples(THIRD_SPECIES_TRIPLE_METER_EXAMPLES)
 end
 
 FUX_FOURTH_SPECIES_EXAMPLES = [
   {
     source: "Fux chapter four figure 73",
-    abc: fux_dorian_abc("z2 A2-|A2 d2-|d2 c2-|c2 _B2-|_B2 G2|A2 c2-|c2 f2-|f2 e2-|e2 d2-|d2 ^c2|d4|]")
+    counterpoint: "z2 A2-|A2 d2-|d2 c2-|c2 _B2-|_B2 G2|A2 c2-|c2 f2-|f2 e2-|e2 d2-|d2 ^c2|d4|]"
   }
 ].freeze
 
 def fux_fourth_species_examples
-  FUX_FOURTH_SPECIES_EXAMPLES.map { |params| FlowContext.from_abc(params) }
+  dorian_species_examples(FUX_FOURTH_SPECIES_EXAMPLES)
 end
 
 FUX_FIFTH_SPECIES_EXAMPLES = [
   {
     source: "Fux chapter five figure 82",
-    abc: fux_dorian_abc("z2 A2-|A D E F|G F E G|F D d2-|d c _B G|A B c2-|c2 f2-|f e/2 d/2 e2-|e A d2-|d2 ^c2|d4|]")
+    counterpoint: "z2 A2-|A D E F|G F E G|F D d2-|d c _B G|A B c2-|c2 f2-|f e/2 d/2 e2-|e A d2-|d2 ^c2|d4|]"
   }
 ].freeze
 
 def fux_fifth_species_examples
-  FUX_FIFTH_SPECIES_EXAMPLES.map { |params| FlowContext.from_abc(params) }
+  dorian_species_examples(FUX_FIFTH_SPECIES_EXAMPLES)
 end
 
 CLENDINNING_FIRST_SPECIES_EXAMPLES = [

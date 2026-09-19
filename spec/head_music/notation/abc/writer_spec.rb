@@ -113,6 +113,43 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
+    # The parser fuses a tie across a bar line into one placement, and ABC
+    # has no other way to write a note that crosses the line, so the writer
+    # splits it back at each bar and ties the pieces.
+    context "with a placement sounding across a bar line" do
+      subject(:rendered) { described_class.new(flow).to_s }
+
+      let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
+        X:1
+        T:Ligature
+        M:4/4
+        L:1/4
+        K:C
+        z2 ^F2-|F4-|F2 E2|]
+      ABC
+
+      let(:expected) do
+        <<~ABC
+          X:1
+          T:Ligature
+          M:4/4
+          L:1/8
+          K:C
+          z4 ^F4-|^F8-|^F4 E4|]
+        ABC
+      end
+
+      it "writes one tied note per bar" do
+        expect(rendered).to eq expected
+      end
+
+      it "round-trips to the same placements" do
+        reparsed = HeadMusic::Notation::ABC.parse(rendered).voices.first.placements
+        expect(reparsed.map { |placement| [placement.position.code, placement.rhythmic_value.total_value] })
+          .to eq flow.voices.first.placements.map { |placement| [placement.position.code, placement.rhythmic_value.total_value] }
+      end
+    end
+
     context "with fractional durations shorter than the unit note length" do
       subject(:rendered) { described_class.new(flow).to_s }
 

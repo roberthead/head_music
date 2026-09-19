@@ -119,9 +119,8 @@ module HeadMusic::Notation::ABC
     end
 
     # A tie left open by a non-note terminator can never close, so each
-    # terminator rejects it. A bar line is not a terminator: the tied note
-    # stays pending across it and closes on the next note, as in
-    # handle_bar_line.
+    # terminator rejects it. A bar line or volta is not a terminator: the
+    # tied note stays pending across it and closes on the next note.
     def reject_open_tie(state, line, message)
       return unless state&.tie_open?
 
@@ -147,9 +146,9 @@ module HeadMusic::Notation::ABC
     end
 
     # A note tied across the bar line is left pending rather than flushed, so
-    # the note after the bar line fuses onto it the way an in-bar tie does.
-    # Its pitches were resolved when it was buffered, so the bar's accidental
-    # reset below cannot reach them.
+    # the note after the bar line fuses onto it the way an in-bar tie does,
+    # keeping the pending note's pitch: the bar's accidental reset below
+    # would otherwise strip the sharp or flat the tie carries.
     def handle_bar_line(token)
       ensure_not_awaiting_note(token)
       state = current_state
@@ -167,8 +166,7 @@ module HeadMusic::Notation::ABC
       raise ParseError.new("Volta has no passes", line_number: line) if passes.empty?
 
       state = current_state
-      reject_open_tie(state, line, "A tie must be followed by a note")
-      state.flush_pending_note
+      state.flush_pending_note unless state.tie_open?
       state.reset_beam_adjacency
       repeat_tagger.open_volta(state, passes)
     end
