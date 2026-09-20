@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-19T08:36:41-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-19T08:36:41-07:00
+  updated_at:   2026-09-20T13:20:04-07:00
 -->
 
 # Embellish Fifth Species Suspensions
@@ -57,11 +57,17 @@ cantus), `PreferContraryMotion` (seven marks on a florid line), and
 because its lowest note ties the cantus firmus's lowest note. Worth a look
 while here, but the suspension is the one that moves the grade.
 
+## Decisions
+
+- **A separate guideline, not a configured `SuspensionTreatment`.** Decided
+  2026-09-20. `EmbellishedSuspensionTreatment`, the name the reference
+  proposes, is declared by `FifthSpeciesHarmony` in place of
+  `SuspensionTreatment`. Fourth species keeps the strict rule untouched:
+  it has no room for an intervening note, so a leap between suspension and
+  resolution there is a genuine fault.
+
 ## Questions to settle
 
-- One guideline with the five shapes, or `SuspensionTreatment` grown to
-  accept them only when configured for fifth species? Fourth species has no
-  room for an intervening note, so the strict rule is right there.
 - Does the delayed resolution require the intervening note to be a quarter,
   so the resolution still lands on beat 3, as Girton insists?
 
