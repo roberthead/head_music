@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-18T17:00:05-07:00
   activated_at: 2026-09-19T08:36:41-07:00
   planned_at:   2026-09-20T13:36:21-07:00
-  finished_at:
-  updated_at:   2026-09-20T16:55:48-07:00
+  finished_at:  2026-09-21T08:34:18-07:00
+  updated_at:   2026-09-21T08:34:18-07:00
 -->
 
 # Embellish Fifth Species Suspensions
@@ -116,6 +116,35 @@ while here, but the suspension is the one that moves the grade.
   82's `fifth_species_harmony` and `fifth_species` rows.
 - `FloridDissonanceTreatment`'s English strings no longer promise to prepare
   and resolve tied suspensions, which that guideline never sees.
+
+## Learnings
+
+- **Explain the choice before asking for it.** The beat-3 question stalled
+  as a one-line option until it was laid out as three concrete rules with
+  the shapes each accepts and marks. The decision then took one exchange, and
+  it was the right one: every source that describes the embellishments keeps
+  the beat-3 framework.
+- **Prototype the rule in memory before writing the plan.** A dozen lines
+  run against the real guides confirmed the planner's numbers (0.937 and
+  0.953 against 0.929) before anything was committed to the story. Numbers
+  that go into a story should be re-measured, not relayed.
+- **The corpus snapshot is a better reviewer than it looks.** The first
+  regeneration moved eight rows, not two. The six extras were cantus firmus
+  voices graded against their florid partner, and they exposed that the
+  beat-3 slot only makes sense for a suspension over a downbeat that lasts
+  to that beat. The guard was tightened twice: once on the count, then, after
+  the code reviewer found a cantus of quarters slipping through, on the tick
+  and on whether the cantus note still sounds there.
+- **Trimming a promise from the strings means trimming the code that made
+  it.** The unreachable suspension branch in `FloridDissonanceTreatment` had
+  two specs reaching it through `send`, which is how dead code stays alive.
+  One behavioral example replaced them.
+- **Wording has a meter.** "On the third beat" was true in 4/4 and wrong in
+  cut time. "Halfway through the bar" is what the code checks in every meter
+  that has a second strong beat.
+- **A subclass that overrides one private predicate is the right size.**
+  Eighteen guidelines already do it; nothing shared by class name broke, and
+  fourth species never noticed.
 
 ## Review
 
