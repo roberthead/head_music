@@ -117,9 +117,9 @@ describe HeadMusic::Style::Guides::Base do
       ],
       "fifth_species_harmony" => %w[
         ApproachPerfectionContrarily AvoidCrossingVoices AvoidOverlappingVoices ConsonantDownbeats
-        FloridDissonanceTreatment MinimumNotes NoParallelPerfectAcrossBarline
+        EmbellishedSuspensionTreatment FloridDissonanceTreatment MinimumNotes NoParallelPerfectAcrossBarline
         NoParallelPerfectOnDownbeats NoParallelPerfectWithSyncopation NoStrongBeatUnisons
-        PreferContraryMotion PreferImperfect SetAgainstAnotherVoice SuspensionTreatment
+        PreferContraryMotion PreferImperfect SetAgainstAnotherVoice
       ]
     }.freeze
 

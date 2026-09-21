@@ -4605,7 +4605,7 @@
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"first_three_species_melody","fitness":0.402482411533,"adherent":false,"message_count":3,"item_count":15,"assessable":true,"failed_gates":[]},
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"first_three_species_harmony","fitness":0.929203598984,"adherent":false,"message_count":3,"item_count":12,"assessable":true,"failed_gates":[]},
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"fifth_species_melody","fitness":0.970057848798,"adherent":false,"message_count":3,"item_count":18,"assessable":true,"failed_gates":[]},
-{"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"fifth_species_harmony","fitness":0.819035877014,"adherent":false,"message_count":4,"item_count":14,"assessable":true,"failed_gates":[]},
+{"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"fifth_species_harmony","fitness":0.937069865764,"adherent":false,"message_count":3,"item_count":14,"assessable":true,"failed_gates":[]},
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"arch_contour_melody","fitness":0.617177288235,"adherent":false,"message_count":2,"item_count":14,"assessable":true,"failed_gates":[]},
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"ascending_contour_melody","fitness":0.617177288235,"adherent":false,"message_count":2,"item_count":14,"assessable":true,"failed_gates":[]},
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"descending_contour_melody","fitness":0.617177288235,"adherent":false,"message_count":2,"item_count":14,"assessable":true,"failed_gates":[]},
@@ -4617,6 +4617,6 @@
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"third_species","fitness":0.714616020964,"adherent":false,"message_count":8,"item_count":30,"assessable":true,"failed_gates":[]},
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"third_species_triple_meter","fitness":0.717254179161,"adherent":false,"message_count":8,"item_count":30,"assessable":true,"failed_gates":[]},
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"fourth_species","fitness":0.569711950688,"adherent":false,"message_count":10,"item_count":31,"assessable":true,"failed_gates":[]},
-{"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"fifth_species","fitness":0.891354127687,"adherent":false,"message_count":7,"item_count":32,"assessable":true,"failed_gates":[]},
+{"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"fifth_species","fitness":0.953421196616,"adherent":false,"message_count":6,"item_count":32,"assessable":true,"failed_gates":[]},
 {"corpus":"fux_fifth_species_examples-0-v1","notes":25,"guide":"first_three_species","fitness":0.611545669042,"adherent":false,"message_count":6,"item_count":27,"assessable":true,"failed_gates":[]}
 ]

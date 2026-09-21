@@ -40,11 +40,6 @@ describe HeadMusic::Style::Guide do
   fixtures_by_species.each_key do |species|
     context "for #{species}" do
       it "grades its own species at least as high as any other on the composite" do
-        # Fux delays the resolution of the bar 9 suspension by an interpolated
-        # consonance, which SuspensionTreatment does not yet recognize, so the
-        # harmony side grades his florid line below a fourth-species one. See
-        # user-stories/backlog/embellish-fifth-species-suspensions.md.
-        pending "fifth species harmony rejects Fux's delayed resolution" if species == "fifth_species"
         own, others = own_and_others.call(species, species)
         expect(own).to be >= others
       end

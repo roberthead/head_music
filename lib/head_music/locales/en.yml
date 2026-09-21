@@ -759,6 +759,11 @@ en:
           instruction: "Change direction regularly rather than running one way for long."
           violations:
             default: "Change melodic direction regularly."
+        embellished_suspension_treatment:
+          name: "Embellished suspension treatment"
+          instruction: "Prepare every suspension as a consonance, then resolve it downward by step halfway through the bar, however the resolution is delayed or decorated."
+          violations:
+            default: "Prepare each suspension as a consonance and resolve it downward by step halfway through the bar, however the resolution is delayed or decorated."
         end_on_perfect_consonance:
           name: "Final note on the tonic or fifth"
           instruction: "Close the line on the first or the fifth scale degree."
@@ -786,9 +791,9 @@ en:
             default: "Begin with a whole note in the first bar."
         florid_dissonance_treatment:
           name: "Florid dissonance treatment"
-          instruction: "Reach every dissonance as a passing tone, cambiata, or double neighbor on a weak beat, and prepare and resolve every tied suspension."
+          instruction: "Reach every dissonance as a passing tone, cambiata, or double neighbor on a weak beat."
           violations:
-            default: "Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak beat, and prepare and resolve every tied suspension."
+            default: "Treat each dissonance as a passing tone, cambiata, or double neighbor on a weak beat."
         frequent_direction_changes:
           name: "Frequent changes of direction"
           instruction: "Turn the line around often."

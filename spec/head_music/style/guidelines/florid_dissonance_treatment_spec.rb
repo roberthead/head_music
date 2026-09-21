@@ -122,39 +122,21 @@ describe HeadMusic::Style::Guidelines::FloridDissonanceTreatment do
     its(:fitness) { is_expected.to be < 1 }
   end
 
-  context "when resolving a strong-beat suspension by step" do
-    let(:analyzer) { described_class.send(:new, counterpoint) }
+  # A held-over suspension starts on a weak beat and is consonant there, so
+  # the only strong-beat dissonance this guideline can see is one attacked
+  # on the downbeat, which is always a fault.
+  context "with a dissonance attacked on a downbeat" do
+    let(:cantus_firmus_pitches) { %w[D4 F4 E4 D4] }
 
     before do
-      counterpoint.place("1:1", :quarter, "A4")
-      counterpoint.place("1:2", :quarter, "B4")
-      counterpoint.place("1:3", :quarter, "E5")
-      counterpoint.place("1:4", :quarter, "A4")
+      counterpoint.place("1:1", :whole, "A4")
+      counterpoint.place("2:1", :whole, "E4")
+      counterpoint.place("3:1", :whole, "G4")
+      counterpoint.place("4:1", :whole, "A4")
     end
 
-    it "resolves by step when the next note steps to a consonance" do
-      # A4 -> B4 is a step, and B4 (M6 with CF D4) is consonant.
-      expect(analyzer.send(:resolved_by_step?, counterpoint.notes[0])).to be true
-    end
-
-    it "does not resolve by step when the next note is reached by leap" do
-      # B4 -> E5 is a perfect fourth, not a step.
-      expect(analyzer.send(:resolved_by_step?, counterpoint.notes[1])).to be false
-    end
-
-    it "does not resolve by step when there is no following note" do
-      expect(analyzer.send(:resolved_by_step?, counterpoint.notes.last)).to be false
-    end
-  end
-
-  context "when a strong-beat note has no cantus firmus note at its position" do
-    let(:analyzer) { described_class.send(:new, counterpoint) }
-
-    before { counterpoint.place("12:1", :whole, "A4") }
-
-    it "is not treated as a proper suspension" do
-      note = counterpoint.notes.last
-      expect(analyzer.send(:properly_treated_suspension?, note)).to be false
+    it "marks the downbeat note" do
+      expect(assess(described_class, counterpoint).marks.map(&:code)).to eq ["2:1:000 to 3:1:000"]
     end
   end
 

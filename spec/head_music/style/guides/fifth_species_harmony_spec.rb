@@ -14,7 +14,35 @@ describe HeadMusic::Style::Guides::FifthSpeciesHarmony do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferContraryMotion }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferImperfect }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::FloridDissonanceTreatment }
-  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SuspensionTreatment }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment }
+  specify { expect(guidelines_of(described_class)).not_to include HeadMusic::Style::Guidelines::SuspensionTreatment }
+
+  def item_assessment(guideline)
+    analysis.guide_item_assessments.detect { |item| item.guideline == guideline }
+  end
+
+  context "with Fux's fifth-species line" do
+    let(:voice) { fux_fifth_species_examples.first.counterpoint_voice }
+
+    it "finds every embellished suspension properly treated" do
+      expect(item_assessment(HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment)).to be_adherent
+    end
+  end
+
+  # The suspension rule looks only at what sounds on beat 3; a dissonant
+  # quarter leapt to on beat 2 is FloridDissonanceTreatment's finding.
+  context "with a dissonant quarter leapt to from a suspension" do
+    let(:voice) do
+      HeadMusic::Notation::ABC.parse(
+        dorian_species_abc(source: "leap", cantus_firmus: "D4|F4|E4|D4|]", counterpoint: "z2 A2|A2 d2-|d F c2|A4|]")
+      ).counterpoint_voice
+    end
+
+    it "marks the quarter once, under florid dissonance treatment" do
+      expect(item_assessment(HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment)).to be_adherent
+      expect(item_assessment(HeadMusic::Style::Guidelines::FloridDissonanceTreatment).marks.map(&:code)).to eq ["3:2:000 to 3:3:000"]
+    end
+  end
 
   context "with a well-formed fifth species counterpoint" do
     let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian", meter: "4/4") }

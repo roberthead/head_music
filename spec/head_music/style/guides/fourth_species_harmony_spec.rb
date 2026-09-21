@@ -15,6 +15,10 @@ describe HeadMusic::Style::Guides::FourthSpeciesHarmony do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SecondSpeciesBreak }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::SuspensionTreatment }
 
+  def item_assessment(guideline)
+    analysis.guide_item_assessments.detect { |item| item.guideline == guideline }
+  end
+
   context "with a well-formed fourth-species counterpoint" do
     let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
     let(:voice) { flow.add_voice(role: :counterpoint) }
@@ -34,5 +38,17 @@ describe HeadMusic::Style::Guides::FourthSpeciesHarmony do
     end
 
     its(:fitness) { is_expected.to be > 0.5 }
+  end
+
+  context "with a leap between suspension and resolution" do
+    let(:voice) do
+      HeadMusic::Notation::ABC.parse(
+        dorian_species_abc(source: "leap", cantus_firmus: "D4|F4|E4|D4|]", counterpoint: "z2 A2|A2 d2-|d B c2|A4|]")
+      ).counterpoint_voice
+    end
+
+    it "still marks the suspension" do
+      expect(item_assessment(HeadMusic::Style::Guidelines::SuspensionTreatment).marks.length).to eq 1
+    end
   end
 end

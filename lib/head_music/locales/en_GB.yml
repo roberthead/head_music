@@ -120,9 +120,9 @@ en_GB:
           violations:
             default: "Begin with a semibreve in the first bar."
         florid_dissonance_treatment:
-          instruction: "Reach every dissonance as a passing tone, cambiata, or double neighbour on a weak beat, and prepare and resolve every tied suspension."
+          instruction: "Reach every dissonance as a passing tone, cambiata, or double neighbour on a weak beat."
           violations:
-            default: "Treat each dissonance as a passing tone, cambiata, or double neighbour on a weak beat, and prepare and resolve every tied suspension."
+            default: "Treat each dissonance as a passing tone, cambiata, or double neighbour on a weak beat."
         no_rests:
           instruction: "Sound a note in every bar."
           violations:

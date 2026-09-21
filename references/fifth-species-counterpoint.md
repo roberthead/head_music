@@ -461,7 +461,7 @@ primary_items(
   HeadMusic::Style::Guidelines::PreferContraryMotion,
   HeadMusic::Style::Guidelines::PreferImperfect,
   HeadMusic::Style::Guidelines::FloridDissonanceTreatment,
-  HeadMusic::Style::Guidelines::SuspensionTreatment
+  HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment
 )
 ```
 
@@ -499,8 +499,8 @@ primary_items(
 | **NoParallelPerfectWithSyncopation** | Correct | Handles parallel checking with tied notes |
 | **PreferContraryMotion** | Correct | |
 | **PreferImperfect** | Correct | Prefer imperfect consonances on downbeats |
-| **FloridDissonanceTreatment** | Correct | Validates passing tones, neighbor tones, and suspension treatment |
-| **SuspensionTreatment** | Correct | Validates preparation, suspension, resolution phases |
+| **FloridDissonanceTreatment** | Correct | Validates passing tones, neighbor tones, cambiata, and double neighbors. Judges each note at its attack, so a held-over suspension is left to EmbellishedSuspensionTreatment, and the consonance of a note interposed before a resolution (types 4 and 5) is checked here |
+| **EmbellishedSuspensionTreatment** | Correct | Validates preparation and a resolution sounding on the bar's second strong beat, however the surface between is decorated (section 3.4.5); the strict SuspensionTreatment applies in fourth species, in meters with no such beat, and when the cantus note does not last to it |
 
 ### 6.3 Potential Enhancements
 
@@ -522,7 +522,6 @@ Based on the pedagogical survey, the following enhancements could strengthen the
 
 | Enhancement | Priority | Description |
 |---|---|---|
-| **EmbellishedSuspensionTreatment** | New (medium) | Validate the five embellished suspension types: anticipated resolution, eighth-note neighbor, escape tone embellishment, consonant leap, delayed resolution |
 | **NoParallelPerfectBetweenAdjacentAttacks** | New (hard) | Check parallel perfect consonances between any two consecutive note attacks, regardless of rhythmic value |
 
 ### 6.4 Hard vs. Soft Classification (after Schubert)

@@ -291,6 +291,7 @@ require "head_music/style/guidelines/second_species_break"
 require "head_music/style/guidelines/allow_whole_half_quarter_notes"
 require "head_music/style/guidelines/allow_fifth_species_rhythmic_values"
 require "head_music/style/guidelines/florid_dissonance_treatment"
+require "head_music/style/guidelines/embellished_suspension_treatment"
 require "head_music/style/guidelines/mixed_rhythmic_values"
 
 # style guides

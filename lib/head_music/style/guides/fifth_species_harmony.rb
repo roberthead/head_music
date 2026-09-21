@@ -7,7 +7,7 @@ class HeadMusic::Style::Guides::FifthSpeciesHarmony < HeadMusic::Style::Guides::
 
   primary_items(
     HeadMusic::Style::Guidelines::FloridDissonanceTreatment,
-    HeadMusic::Style::Guidelines::SuspensionTreatment
+    HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment
   )
 
   secondary_items(
