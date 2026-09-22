@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-21T15:18:56-07:00
   planned_at:   2026-09-21T18:25:44-07:00
   finished_at:
-  updated_at:   2026-09-22T11:47:28-07:00
+  updated_at:   2026-09-22T12:40:58-07:00
 -->
 
 # Grade Every Fux Fifth-Species Figure
@@ -294,13 +294,21 @@ every moved row.
    counterpoint voice, so middle bars are enumerated once per companion note
    rather than once per bar. Pinning 330 cantus rows computed that way and
    moving them later would put two causes in one snapshot change.
+   Own span is the rule: a voice whose first note is in bar 3 treats bar 3
+   as its first bar. Whether a voice covers the whole cantus is another
+   guideline's question.
    Expected movement, by class: whole-note voices with no companion notes
    (solo ladders, `against-empty`, every cantus-firmus corpus voice) now
    marked by Two/Three/FourPerBar under the second- and third-species melody
    guides and composites; the with-errors cantus examples now marked by
-   `OnePerBar`; `against-cantus-1/2/4` improved on `first_species_melody`,
-   because bars the voice never reached are no longer marked. A row moving
-   under a harmony guide, or for a counterpoint voice with a cantus, is a
+   `OnePerBar`; the empty counterpoint voice of every cantus-firmus fixture
+   loses the marks it placed on the cantus's notes, and the minimum-notes
+   gate keeps failing it; the cantus voices of the species fixtures improve
+   wherever a florid companion charged them once per note (figure 82's
+   cantus carries 23 TwoPerBar marks over 9 middle bars today);
+   `against-cantus-1/2/4` improved on `first_species_melody`, because bars
+   the voice never reached are no longer marked. A row moving under a
+   harmony guide, or for a non-empty counterpoint voice with a cantus, is a
    defect.
 
 2. **Key-aware species helper.** Snapshot byte-identical.
