@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-21T15:18:56-07:00
   planned_at:   2026-09-21T18:25:44-07:00
   finished_at:
-  updated_at:   2026-09-21T19:56:21-07:00
+  updated_at:   2026-09-22T11:24:24-07:00
 -->
 
 # Grade Every Fux Fifth-Species Figure
@@ -53,23 +53,68 @@ first-species fixtures already put the counterpoint below, but no fixture of
 a moving species does, so the florid dissonance and suspension rules have
 never graded a published bass line.
 
+### Fux's lines are evidence, not an oracle
+
+Twentieth-century scholarship holds that Fux's guidelines contradict one
+another at times and that his examples follow practices his rules do not
+state. Fux acknowledges some of this himself: Aloysius's "small errors for
+which you have yet had no rules", the N.B. markings, a manuscript correction
+to a third-species penultimate bar that Mann footnotes, and the errata page of
+the 1725 edition. Everyone who has graded the figures mechanically finds
+marks. Samory, Mandanici, Canazza, and Peserico found four of nine general
+rules broken across six of Fux's cantus firmi, including repeated arpeggios
+against an absolute rule. Sprockeels, Wafflard, Van Roy, and Haddad scored
+Fux's own lydian counterpoint at more than twice the cost of their solver's
+best and concluded that "Fux establishes preferences but does not seem to
+follow them closely". Wafflard records Fux breaking the fourth-species
+syncopation rule "to avoid monotony" and drops one third-species penultimate
+bar from the model "because of its inconsistency with the rest". McGill's
+study guide to the Mann edition cites the second-species phrygian line's
+c-f-c'-f' against Fux's own advice on successive skips.
+
+- Ewing, John. *A Historical and Algorithmic Study of Fux's Approach to
+  Counterpoint*. New College of Florida, 2009.
+  <https://digitalcommons.ncf.edu/theses_etds/4097/>
+- Samory, Mattia, Marcella Mandanici, Sergio Canazza, and Enoch Peserico.
+  "The Counterpoint Game: Rules, Constraints and Computational Spaces."
+  ICMC/SMC 2014.
+  <https://www.icmc14-smc14.net/images/proceedings/PS3-B07-TheCounterpointGame.pdf>
+- Sprockeels, Damien, Thibault Wafflard, Peter Van Roy, and Karim Haddad.
+  "A Constraint Formalization of Fux's Counterpoint." JIM 2023.
+  <https://jim2023.sciencesconf.org/data/pages/3_2_SPROCKEELS_ET_AL.pdf>
+- Wafflard, Thibault. *A Constraint Programming Based Tool Formalizing Fux's
+  Counterpoint*. UCLouvain, 2023.
+  <https://webperso.info.ucl.ac.be/~pvr/WAFFLARD_46581700_2023.pdf>
+- McGill, Scott. *Study Guide for Fux Gradus ad Parnassum*.
+  <https://www.scribd.com/document/350328102/Study-Guide-for-Fux-Gradus-Ad-Parnassum>
+- Schulte, Sara Miller. *Gradus ad Parnassum: A Reader's Edition and
+  Commentary*. Western Michigan University, 2017.
+  <https://scholarworks.wmich.edu/masters_theses/1993/>
+- Mann, Alfred, trans. *The Study of Counterpoint from Johann Joseph Fux's
+  Gradus ad Parnassum*. Norton, 1965. The "small errors" passage is on page
+  37 and the manuscript-correction footnote on page 54.
+
 ## What Fux's lines show
 
 Grading the ten kern transcriptions ahead of the work, converted mechanically
 to ABC, produced two marks and exposed one gap in the sources. Each is settled
 here, and the rest of the story is written to the settled state.
 
-**Figure 85b, bar 2, changes the resolution rule.** F3 is held from bar 1
-under the cantus G3, resolves to E3 as an eighth on beat 2, passes through D3,
-and sounds C3 on beat 3. This is the shape the last story chose to mark, by
-requiring the resolution to sound on beat 3. Its mirror, figure 85a, holds the
-same suspension a half note and is adherent. Fux wrote both, so beat 3 is the
-latest the resolution may arrive, not the moment it must sound.
-`EmbellishedSuspensionTreatment#resolved?` accepts either the strict rule's
-answer or the beat-3 slot's. Exactly one existing spec expectation flips,
-"when the anticipated resolution is not held on beat three". The guideline's
-sentences stop saying "halfway through the bar". Under the relaxed rule 85b
-grades 0.977 on the composite with no primary marks.
+**Figure 85b, bar 2, is a liberty Fux took, and the mark stands.** F3 is
+held from bar 1 under the cantus G3, resolves to E3 as an eighth on beat 2,
+passes through D3, and sounds C3 on beat 3. This is the shape the last story
+chose to mark, by requiring the resolution to sound on beat 3. Its mirror,
+figure 85a, holds the same suspension a half note and is adherent. An earlier
+draft of this story relaxed the rule so that beat 3 bounded the resolution
+instead of placing it. That reading had Fux alone behind it. The survey in
+`references/fifth-species-counterpoint.md` quotes Girton's constraint that
+the resolution sounds on beat 3 "whether or not the resolution is
+anticipated", and none of its five embellishment types has the resolution
+moved on by beat 3. A rule change needs a source other than Fux, and the
+scholarship above says one Fux figure is weak evidence. So the strict rule
+stays, 85b keeps its one primary mark, and the fixture pins it. The cost is
+proportionate: 0.916 on the composite and 0.850 on the harmony guide, high
+marks for a line the guide is right to notice.
 
 **Figure 86a, bar 12, is a transcription error in the kern.** The kern
 re-strikes A4 on the downbeat over the cantus B3, an attacked seventh that
@@ -90,11 +135,11 @@ corpus rows for reasons this story does not own; they are a follow-up.
 
 ## Measured
 
-Kern-derived ABC, figure 86a with its tie restored, before the rule change.
-The other-species maxima under the fifth-species guides come from the pinned
-snapshot: 0.929 on the composite (figure 73, fourth species) and 0.881 on the
-melody guide. Replace this table with the committed fixtures' numbers at
-checkpoint D.
+Kern-derived ABC, figure 86a with its tie restored, under the guidelines as
+they stand. The other-species maxima under the fifth-species guides come from
+the pinned snapshot: 0.929 on the composite (figure 73, fourth species) and
+0.881 on the melody guide. Replace this table with the committed fixtures'
+numbers at checkpoint 3.
 
 | Figure | composite | melody | harmony | primary marks |
 | --- | --- | --- | --- | --- |
@@ -112,7 +157,9 @@ checkpoint D.
 | 88b | 0.994 | 0.989 | 1.000 | none |
 
 The melody diagonal holds for all ten measured figures. The composite
-diagonal fails for 85b alone, and only because of the one mark.
+diagonal fails for 85b alone, and only because of the one mark, so the spec
+excludes that cell by name. No figure scores 1.000 on every guide, and none
+is expected to.
 
 ## Acceptance Criteria
 
@@ -130,27 +177,25 @@ diagonal fails for 85b alone, and only because of the one mark.
   first, in its own commit, and its movement is explained by class. The
   cantus-firmus rows of the new fixtures are pinned but not asserted; the
   diagonal grades `counterpoint_voice` only.
-- Every new counterpoint is adherent to both primary items of
-  `FifthSpeciesHarmony`: 85b under the relaxed rule, 86a with its tie. Any
-  mark that survives transcription is listed under "Marks on Fux's lines" with
-  figure, bar and beat, guideline, the notes involved, and how it was settled:
-  a corrected reading of the scan, a liberty Fux took, or a named rule change.
-- `EmbellishedSuspensionTreatment` accepts a resolution that steps down on
-  beat 2 and has moved on by beat 3, while still marking a suspension that
-  leaps away, resolves upward, is unprepared, is held through the bar, or
-  first resolves after beat 3. The flipped spec context is renamed for the
-  shape it now accepts, and a mirror context pins the beat-2 step that then
-  leaps as still marked. The instruction becomes "Prepare every suspension as
-  a consonance, then resolve it downward by step no later than the middle of
-  the bar, however the resolution is decorated", the violation sentence
-  likewise, in every locale that carries the key; `english_strings.yml` and
-  the literal in `guide_item_strings_spec.rb` follow. No other string
-  changes.
+- Fux's lines are graded as evidence, not as an oracle. No fixture is
+  required to score 1.000, and no guideline is loosened to make a Fux line
+  pass. Every primary mark on a Fux line is settled and listed under "Marks
+  on Fux's lines" with figure, bar and beat, guideline, the notes involved,
+  and how it was settled: a corrected reading of the scan, a liberty Fux
+  took, or a named rule change. A rule change requires support from a source
+  other than Fux, named in the story; a liberty keeps its mark and its cost.
+  Under this standard 86a is adherent with its tie and 85b carries one
+  `EmbellishedSuspensionTreatment` mark.
+- `EmbellishedSuspensionTreatment` is unchanged. A spec context pins figure
+  85b's bar-2 shape as marked, beside the existing figure 82 context, so the
+  liberty is a recorded verdict rather than an accident of the corpus. No
+  locale string changes.
 - `guide_species_diagonal_spec` runs over all fifth-species fixtures with no
   change to its table. On `fifth_species_melody` and on `fifth_species`,
   every fifth-species fixture grades at least as high as any other-species
   fixture. A cell may be excluded only by name in the spec, never by loosening
-  the comparison.
+  the comparison. Figure 85b on `fifth_species` is excluded by name, with the
+  liberty cited; it is the only expected exclusion.
 - The counterpoint-below fixtures grade through the fifth-species harmony
   guide without error, and no guideline marks a bass counterpoint for a rule
   that applies only above the cantus.
@@ -204,7 +249,7 @@ diagonal fails for 85b alone, and only because of the one mark.
 
 | Figure | bar:beat | guideline | notes involved | settled |
 | --- | --- | --- | --- | --- |
-| 85b | held from 1:3, resolves 2:2 | EmbellishedSuspensionTreatment | F3 under G3, E3 as an eighth, C3 on beat 3 | rule change: beat 3 is the latest the resolution may arrive |
+| 85b | held from 1:3, resolves 2:2 | EmbellishedSuspensionTreatment | F3 under G3, E3 as an eighth, C3 on beat 3 | Fux liberty: the resolution has moved on by beat 3; no source other than Fux sanctions the shape, so the mark stands |
 | 86a | 12:1 | FloridDissonanceTreatment | A4 over B3 | scan reading: the kern dropped the tie from bar 11 |
 
 ## Follow-ups
@@ -213,15 +258,22 @@ diagonal fails for 85b alone, and only because of the one mark.
   87a bar 8, and 88b bar 7.
 - The C ionian and lydian entries of `FUX_CANTUS_FIRMUS_EXAMPLES` disagree
   with Fux's printed figures.
+- The composite diagonal's margin is thin for a structural reason. A
+  fourth-species line scores high on the fifth-species guide because florid
+  counterpoint contains suspensions, and nothing charges a fifth-species line
+  for being all one rhythm. The survey's rule that no single species should
+  dominate is the guideline that would separate them; it is the real fix for
+  the fragility, and it belongs to its own story.
 - Figure 88's N.B. at bar 5 of the upper voice: two quarters opening the bar
   with no ligature following, which Fux flags himself and answers with figure
-  89 as "better". No guideline marks it.
+  89 as "better". No guideline marks it. A guideline that marks what Fux
+  flagged himself would be evidence of calibration, not dogmatism.
 - Whether to report the dropped tie in `gap_086a.krn` upstream.
 - Second through fourth species in the other modes.
 
 ## Implementation Plan
 
-Five checkpoints, each a point to commit at, each with one cause for any
+Four checkpoints, each a point to commit at, each with one cause for any
 snapshot movement. Capture `bin/guide_grade_corpus.rb` output before and after
 each checkpoint and join the two with `bin/guide_grade_table.rb` to attribute
 every moved row.
@@ -252,15 +304,7 @@ every moved row.
    by key; `dorian_species_abc` and `dorian_species_examples` delegate, since
    guideline specs call them directly.
 
-3. **Relax the resolution rule.** Snapshot unchanged, since figure 82 has no
-   beat-2 resolution. `EmbellishedSuspensionTreatment#resolved?` becomes
-   `super || slot_resolved?(cp_note, cf_note)` with the current body moved to
-   `slot_resolved?`; the class comment follows. Rename the flipped spec
-   context, add the mirror that still marks, reword the sentences in every
-   locale that carries the key, run `rake style:snapshot_english`, and update
-   the literal in `guide_item_strings_spec.rb`.
-
-4. **Transcribe and pin the figures.** One commit per mode pair. Order 83,
+3. **Transcribe and pin the figures.** One commit per mode pair. Order 83,
    84a/b, 85a/b, 86a/b, 87a and 87 upper, 88a/b. Read each figure from the
    scan, convert the kern mechanically, and reconcile; every repeated pitch
    across a bar line is checked on the scan. Append the entries after figure
@@ -268,13 +312,16 @@ every moved row.
    `PUBLISHED_SOURCES` already lists the accessor. Grade every new
    counterpoint with the two primary harmony items and the three
    fifth-species guides before pinning, and replace the Measured table with
-   the committed numbers. Add a spec context pinning 85b adherent beside the
-   existing figure 82 context. Regenerate: 660 rows added, none moved. If a
-   diagonal cell fails, dump the per-item assessments, re-read the scan for a
-   dropped tie, and ask whether a guideline is charging bass position or mode
-   rather than species. Never loosen the comparison or drop a fixture.
+   the committed numbers. Add a spec context pinning 85b's bar-2 mark beside
+   the existing figure 82 context, and exclude 85b on `fifth_species` by name
+   in the diagonal spec with the liberty cited. Regenerate: 660 rows added,
+   none moved. If any other diagonal cell fails, dump the per-item
+   assessments, re-read the scan for a dropped tie, and ask whether a
+   guideline is charging bass position or mode rather than species. A mark
+   that survives that review is a liberty and is listed, not fixed. Never
+   loosen the comparison or drop a fixture.
 
-5. **Wrap up.** Fill "Marks on Fux's lines" from the committed fixtures,
+4. **Wrap up.** Fill "Marks on Fux's lines" from the committed fixtures,
    record the moved-row classes from step 1, and add the CHANGELOG entry.
 
 ### Testing
@@ -288,7 +335,8 @@ the snapshot, species separation in the diagonal. No stdout assertions.
 
 - The composite margin is 0.024: figure 82 at 0.953 against figure 73 at
   0.929. A transcription slip in any below-cantus figure can breach it, and
-  the kern's dropped ties are the known failure mode.
-- Relaxing the rule reverses a recorded pedagogical decision. Every source
-  keeps the beat-3 framework; the reading here is that it bounds the
-  resolution rather than placing it.
+  the kern's dropped ties are the known failure mode. A second liberty would
+  breach it too, and would be a second named exclusion, not a rule change.
+- Named exclusions can accumulate until the diagonal asserts little. One is
+  expected; a third should send the story back to the rhythm-mixture
+  follow-up rather than add a fourth.
