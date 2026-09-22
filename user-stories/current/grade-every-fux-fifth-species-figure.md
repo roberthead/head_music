@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-21T15:18:56-07:00
   planned_at:   2026-09-21T18:25:44-07:00
   finished_at:
-  updated_at:   2026-09-22T11:24:24-07:00
+  updated_at:   2026-09-22T11:47:28-07:00
 -->
 
 # Grade Every Fux Fifth-Species Figure
@@ -97,24 +97,22 @@ c-f-c'-f' against Fux's own advice on successive skips.
 ## What Fux's lines show
 
 Grading the ten kern transcriptions ahead of the work, converted mechanically
-to ABC, produced two marks and exposed one gap in the sources. Each is settled
-here, and the rest of the story is written to the settled state.
+to ABC, produced two marks, exposed one gap in the sources, and found the
+cantus constants disagreeing with the scan. Each is settled here, and the
+rest of the story is written to the settled state.
 
 **Figure 85b, bar 2, is a liberty Fux took, and the mark stands.** F3 is
 held from bar 1 under the cantus G3, resolves to E3 as an eighth on beat 2,
 passes through D3, and sounds C3 on beat 3. This is the shape the last story
 chose to mark, by requiring the resolution to sound on beat 3. Its mirror,
-figure 85a, holds the same suspension a half note and is adherent. An earlier
-draft of this story relaxed the rule so that beat 3 bounded the resolution
-instead of placing it. That reading had Fux alone behind it. The survey in
+figure 85a, holds the same suspension a half note and is adherent. The strict
+rule stays because only Fux sanctions the shape: the survey in
 `references/fifth-species-counterpoint.md` quotes Girton's constraint that
 the resolution sounds on beat 3 "whether or not the resolution is
 anticipated", and none of its five embellishment types has the resolution
-moved on by beat 3. A rule change needs a source other than Fux, and the
-scholarship above says one Fux figure is weak evidence. So the strict rule
-stays, 85b keeps its one primary mark, and the fixture pins it. The cost is
-proportionate: 0.916 on the composite and 0.850 on the harmony guide, high
-marks for a line the guide is right to notice.
+moved on by beat 3. 85b keeps its one primary mark and the fixture pins it.
+The cost is proportionate: 0.916 on the composite and 0.850 on the harmony
+guide, high marks for a line the guide is right to notice.
 
 **Figure 86a, bar 12, is a transcription error in the kern.** The kern
 re-strikes A4 on the downbeat over the cantus B3, an attacked seventh that
@@ -173,10 +171,9 @@ is expected to.
   lines" when it changes a grade. `V:cantus firmus` is the first voice in
   every fixture, including the counterpoint-below ones.
 - The fixtures are in `PUBLISHED_SOURCES`, adding 660 rows to
-  `corpus_fitness.json` and moving none. The count-guideline change lands
-  first, in its own commit, and its movement is explained by class. The
-  cantus-firmus rows of the new fixtures are pinned but not asserted; the
-  diagonal grades `counterpoint_voice` only.
+  `corpus_fitness.json` and moving none. The cantus-firmus rows of the new
+  fixtures are pinned but not asserted; the diagonal grades
+  `counterpoint_voice` only.
 - Fux's lines are graded as evidence, not as an oracle. No fixture is
   required to score 1.000, and no guideline is loosened to make a Fux line
   pass. Every primary mark on a Fux line is settled and listed under "Marks
@@ -194,18 +191,20 @@ is expected to.
   change to its table. On `fifth_species_melody` and on `fifth_species`,
   every fifth-species fixture grades at least as high as any other-species
   fixture. A cell may be excluded only by name in the spec, never by loosening
-  the comparison. Figure 85b on `fifth_species` is excluded by name, with the
-  liberty cited; it is the only expected exclusion.
+  the comparison. The spec holds a map from guide key to excluded fixture
+  sources, consulted where it takes the species minimum, with the liberty
+  cited beside the entry. Figure 85b on `fifth_species` is its only entry.
 - The counterpoint-below fixtures grade through the fifth-species harmony
-  guide without error, and no guideline marks a bass counterpoint for a rule
-  that applies only above the cantus.
+  guide without error.
 - `NoteCountPerBar`, the base of `OnePerBar`, `TwoPerBar`, `ThreePerBar`, and
   `FourPerBar`, counts middle bars over the voice's own span, as
   `SustainAcrossBarlines` does, and no longer returns early without a cantus
   firmus, so a solo voice no longer passes vacuously. An empty middle bar gets
   the bar-spanning mark `SustainAcrossBarlines` uses. A voice of two bars or
   fewer has no middle bars. The "without a cantus firmus voice" context in
-  `note_count_per_bar_spec.rb` asserts the marks.
+  `note_count_per_bar_spec.rb` places notes in the solo voice and asserts the
+  marks. This change lands first, in its own commit, with its snapshot
+  movement explained by class.
 
 ## Notes
 
@@ -287,8 +286,14 @@ every moved row.
    the cantus-note fallback, since the defect belongs to the graded voice.
    The rule lives in the base class, so `ThreePerBar` is covered. In
    `note_count_per_bar_spec.rb`, invert "without a cantus firmus voice" to
-   assert marks on a solo voice, pin the span mark for an empty bar, and add
-   contexts for a voice that starts after or ends before the cantus.
+   place notes in the solo voice and assert marks (an empty voice still
+   returns none), pin the span mark for an empty bar, and add contexts for a
+   voice that starts after or ends before the cantus.
+   This lands first because of the new fixtures' cantus rows. When a cantus
+   voice is graded, the guideline's cantus lookup falls back to the
+   counterpoint voice, so middle bars are enumerated once per companion note
+   rather than once per bar. Pinning 330 cantus rows computed that way and
+   moving them later would put two causes in one snapshot change.
    Expected movement, by class: whole-note voices with no companion notes
    (solo ladders, `against-empty`, every cantus-firmus corpus voice) now
    marked by Two/Three/FourPerBar under the second- and third-species melody
@@ -299,10 +304,12 @@ every moved row.
    defect.
 
 2. **Key-aware species helper.** Snapshot byte-identical.
-   `spec/spec_helper.rb`: `FUX_CANTUS_FIRMUS_ABC` keyed by ABC key;
-   `species_abc(params)` takes `key:` (default `Ddor`) and looks the cantus up
-   by key; `dorian_species_abc` and `dorian_species_examples` delegate, since
-   guideline specs call them directly.
+   `spec/spec_helper.rb`: `FUX_CANTUS_FIRMUS_ABC` keyed by ABC key, and
+   `dorian_species_abc` reads `key:` (default `Ddor`) for its `K:` line and
+   for the cantus default. The helper already accepts a `cantus_firmus:`
+   override, so this is a two-line change. Rename it to `species_abc`, with
+   `dorian_species_examples` to `species_examples`, and update the three
+   caller files; no delegating aliases.
 
 3. **Transcribe and pin the figures.** One commit per mode pair. Order 83,
    84a/b, 85a/b, 86a/b, 87a and 87 upper, 88a/b. Read each figure from the
@@ -313,8 +320,8 @@ every moved row.
    counterpoint with the two primary harmony items and the three
    fifth-species guides before pinning, and replace the Measured table with
    the committed numbers. Add a spec context pinning 85b's bar-2 mark beside
-   the existing figure 82 context, and exclude 85b on `fifth_species` by name
-   in the diagonal spec with the liberty cited. Regenerate: 660 rows added,
+   the existing figure 82 context, and add the exclusion map to the diagonal
+   spec with 85b on `fifth_species` as its entry. Regenerate: 660 rows added,
    none moved. If any other diagonal cell fails, dump the per-item
    assessments, re-read the scan for a dropped tie, and ask whether a
    guideline is charging bass position or mode rather than species. A mark
@@ -338,5 +345,5 @@ the snapshot, species separation in the diagonal. No stdout assertions.
   the kern's dropped ties are the known failure mode. A second liberty would
   breach it too, and would be a second named exclusion, not a rule change.
 - Named exclusions can accumulate until the diagonal asserts little. One is
-  expected; a third should send the story back to the rhythm-mixture
-  follow-up rather than add a fourth.
+  expected. More than one means the composite is not separating species, and
+  the fix is the rhythm-mixture follow-up, not another exclusion.
