@@ -7,7 +7,7 @@ describe HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment do
   # from bar 2 into bar 3, a seventh over E4 that resolves to C5.
   def counterpoint_over(cantus_firmus, abc, meter: "4/4")
     HeadMusic::Notation::ABC.parse(
-      dorian_species_abc(source: "example", meter: meter, cantus_firmus: cantus_firmus, counterpoint: abc)
+      species_abc(source: "example", meter: meter, cantus_firmus: cantus_firmus, counterpoint: abc)
     ).counterpoint_voice
   end
 

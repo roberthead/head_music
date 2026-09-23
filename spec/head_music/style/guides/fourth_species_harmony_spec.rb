@@ -43,7 +43,7 @@ describe HeadMusic::Style::Guides::FourthSpeciesHarmony do
   context "with a leap between suspension and resolution" do
     let(:voice) do
       HeadMusic::Notation::ABC.parse(
-        dorian_species_abc(source: "leap", cantus_firmus: "D4|F4|E4|D4|]", counterpoint: "z2 A2|A2 d2-|d B c2|A4|]")
+        species_abc(source: "leap", cantus_firmus: "D4|F4|E4|D4|]", counterpoint: "z2 A2|A2 d2-|d B c2|A4|]")
       ).counterpoint_voice
     end
 

@@ -353,24 +353,34 @@ end
 # D5 and `A` is A4, and a tie across the bar line is written as Fux wrote it.
 # Figures 33 and 55 open on the downbeat, as printed; only 73 and 82 enter
 # after a half rest.
-FUX_DORIAN_CANTUS_FIRMUS_ABC = "D4|F4|E4|D4|G4|F4|A4|G4|F4|E4|D4|]".freeze
+# Fux's cantus firmi keyed by ABC key, in the register of the Gradus scan.
+# Lydian sits an octave below the F4 of FUX_CANTUS_FIRMUS_EXAMPLES.
+FUX_CANTUS_FIRMUS_ABC = {
+  "Ddor" => "D4|F4|E4|D4|G4|F4|A4|G4|F4|E4|D4|]",
+  "Ephr" => "E4|C4|D4|C4|A,4|A4|G4|E4|F4|E4|]",
+  "Flyd" => "F,4|G,4|A,4|F,4|D,4|E,4|F,4|C4|A,4|F,4|G,4|F,4|]",
+  "Gmix" => "G,4|C4|B,4|G,4|C4|E4|D4|G4|E4|C4|D4|B,4|A,4|G,4|]",
+  "Aaeo" => "A,4|C4|B,4|D4|C4|E4|F4|E4|D4|C4|B,4|A,4|]",
+  "Cion" => "C4|D4|F4|E4|G4|F4|E4|D4|C4|]"
+}.freeze
 
-def dorian_species_abc(params)
+def species_abc(params)
+  key = params.fetch(:key, "Ddor")
   <<~ABC
     X:1
     T:#{params.fetch(:source)}
     M:#{params.fetch(:meter, "4/4")}
     L:1/4
-    K:Ddor
+    K:#{key}
     V:cantus firmus
-    #{params.fetch(:cantus_firmus, FUX_DORIAN_CANTUS_FIRMUS_ABC)}
+    #{params.fetch(:cantus_firmus) { FUX_CANTUS_FIRMUS_ABC.fetch(key) }}
     V:counterpoint
     #{params.fetch(:counterpoint)}
   ABC
 end
 
-def dorian_species_examples(params_list)
-  params_list.map { |params| FlowContext.from_abc(params.merge(abc: dorian_species_abc(params))) }
+def species_examples(params_list)
+  params_list.map { |params| FlowContext.from_abc(params.merge(abc: species_abc(params))) }
 end
 
 FUX_SECOND_SPECIES_EXAMPLES = [
@@ -381,7 +391,7 @@ FUX_SECOND_SPECIES_EXAMPLES = [
 ].freeze
 
 def fux_second_species_examples
-  dorian_species_examples(FUX_SECOND_SPECIES_EXAMPLES)
+  species_examples(FUX_SECOND_SPECIES_EXAMPLES)
 end
 
 FUX_THIRD_SPECIES_EXAMPLES = [
@@ -392,7 +402,7 @@ FUX_THIRD_SPECIES_EXAMPLES = [
 ].freeze
 
 def fux_third_species_examples
-  dorian_species_examples(FUX_THIRD_SPECIES_EXAMPLES)
+  species_examples(FUX_THIRD_SPECIES_EXAMPLES)
 end
 
 # Not in Gradus, which has no triple-meter species. Built on Fux's D dorian
@@ -407,7 +417,7 @@ THIRD_SPECIES_TRIPLE_METER_EXAMPLES = [
 ].freeze
 
 def third_species_triple_meter_examples
-  dorian_species_examples(THIRD_SPECIES_TRIPLE_METER_EXAMPLES)
+  species_examples(THIRD_SPECIES_TRIPLE_METER_EXAMPLES)
 end
 
 FUX_FOURTH_SPECIES_EXAMPLES = [
@@ -418,7 +428,7 @@ FUX_FOURTH_SPECIES_EXAMPLES = [
 ].freeze
 
 def fux_fourth_species_examples
-  dorian_species_examples(FUX_FOURTH_SPECIES_EXAMPLES)
+  species_examples(FUX_FOURTH_SPECIES_EXAMPLES)
 end
 
 FUX_FIFTH_SPECIES_EXAMPLES = [
@@ -429,7 +439,7 @@ FUX_FIFTH_SPECIES_EXAMPLES = [
 ].freeze
 
 def fux_fifth_species_examples
-  dorian_species_examples(FUX_FIFTH_SPECIES_EXAMPLES)
+  species_examples(FUX_FIFTH_SPECIES_EXAMPLES)
 end
 
 CLENDINNING_FIRST_SPECIES_EXAMPLES = [

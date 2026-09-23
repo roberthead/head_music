@@ -34,7 +34,7 @@ describe HeadMusic::Style::Guides::FifthSpeciesHarmony do
   context "with a dissonant quarter leapt to from a suspension" do
     let(:voice) do
       HeadMusic::Notation::ABC.parse(
-        dorian_species_abc(source: "leap", cantus_firmus: "D4|F4|E4|D4|]", counterpoint: "z2 A2|A2 d2-|d F c2|A4|]")
+        species_abc(source: "leap", cantus_firmus: "D4|F4|E4|D4|]", counterpoint: "z2 A2|A2 d2-|d F c2|A4|]")
       ).counterpoint_voice
     end
 
