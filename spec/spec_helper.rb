@@ -453,11 +453,25 @@ FUX_FIFTH_SPECIES_EXAMPLES = [
     source: "Fux chapter five figure 84b",
     key: "Ephr",
     counterpoint: "z2 E,2|A, B, C2-|C B,/2 A,/2 B, G,|A,2 E,2|F, D, F,2-|F, G, A, B,|C B, C2-|C D E2-|E2 D2|E4|]"
+  },
+  {
+    source: "Fux chapter five figure 85a",
+    key: "Flyd",
+    counterpoint: "z2 F2-|F2 E D|C A, C2-|C A, D2-|D C _B, A,|G,2 C _B,|A,2 A2-|A2 G2|A G F E|D C F2-|F2 E2|F4|]"
+  },
+  {
+    source: "Fux chapter five figure 85b",
+    key: "Flyd",
+    counterpoint: "z2 F,2-|F, E,/2 D,/2 C, _B,,|A,, G,, F,,2-|F,, A,, _B,,2-|_B,, C, D,2-|D,2 C, _B,,|A,,2 F,2|E,2 F,2-|F, E, D,2|D, E, F,2-|F,2 E,2|F,4|]"
   }
 ].freeze
 
 def fux_fifth_species_examples
   species_examples(FUX_FIFTH_SPECIES_EXAMPLES)
+end
+
+def fux_fifth_species_example(figure)
+  fux_fifth_species_examples.detect { |context| context.source.end_with?(figure) }
 end
 
 CLENDINNING_FIRST_SPECIES_EXAMPLES = [

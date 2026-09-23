@@ -73,6 +73,18 @@ describe HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment do
     it { is_expected.to be_adherent }
   end
 
+  # Figure 85b, bar 2: F3 held from bar 1 under the cantus G3 resolves to E3
+  # as an eighth on beat 2, passes through D3, and sounds C3 on beat 3. Only
+  # Fux sanctions a resolution that has moved on by beat 3, so the strict rule
+  # stands and the mark records his liberty.
+  context "with Fux's lydian line below the cantus" do
+    let(:counterpoint) { fux_fifth_species_example("figure 85b").counterpoint_voice }
+
+    it "marks the suspension whose resolution has moved on by beat three" do
+      expect(guideline.marks.map(&:code)).to eq ["1:3:000 to 2:2:000"]
+    end
+  end
+
   context "when the suspension leaps away and never resolves" do
     let(:abc) { "z2 A2|A2 d2-|d2 B2|A4|]" }
 
