@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-21T15:18:56-07:00
   activated_at: 2026-09-21T15:18:56-07:00
   planned_at:   2026-09-21T18:25:44-07:00
-  finished_at:
-  updated_at:   2026-09-22T20:09:45-07:00
+  finished_at:  2026-09-22T20:16:29-07:00
+  updated_at:   2026-09-22T20:16:29-07:00
 -->
 
 # Grade Every Fux Fifth-Species Figure
@@ -439,3 +439,41 @@ finding below was checked against the files before it was recorded.
    follow-up.
 
 Findings 1 to 3 were fixed after the review; nothing blocks `finish`.
+
+## Learnings
+
+- **Grading the figures before planning paid for itself.** Converting the
+  kern mechanically and grading all ten figures ahead of the work meant the
+  plan was written to a settled state, every mark was decided before a line
+  of code changed, and the committed numbers reproduced the pre-measured
+  ones to three decimals. The scholarship review did the same for policy:
+  deciding that a Fux line is evidence rather than an oracle before the
+  first mark appeared kept the one liberty from turning into a rule change.
+- **One cause per snapshot change is worth a checkpoint of its own.** Landing
+  the count-guideline rewrite first, with its 362 rows explained by class,
+  left the six fixture commits with nothing to explain: 660 rows added,
+  none moved. The before-and-after captures made each attribution a diff
+  rather than an argument.
+- **Grading is a transcription check.** Figure 87's upper voice was first
+  written an octave too low and eight voice-crossing marks said so at once.
+  Every repeated pitch across a bar line was checked on the scan because the
+  kern drops ties at system breaks, and that check found the one dropped
+  tie that changed a verdict.
+- **Predictions of snapshot movement miss on gates and rhythm.** The plan
+  expected the with-errors cantus examples to move under `OnePerBar` and the
+  empty companion voices to move; whole-note voices never trip a one-per-bar
+  rule, and the minimum-notes gate stops an empty voice before any count
+  guideline runs. Predict movement after reading the gates.
+- **Count movement by fitness and say so.** "362 rows moved" counted any
+  changed field; 201 changed in fitness. Wording in the CHANGELOG then
+  drifted from the measured classes to the plan's prediction and claimed
+  no counterpoint with notes moved when the short ladder had. Write the
+  CHANGELOG from the captured diff, not from the plan.
+- **A comment that enumerates fixtures rots when fixtures are added.** The
+  paragraph above the diminution fixtures listed which figures enter after
+  a half rest and which cantus they sit on, and eleven new entries made
+  both claims false without any test noticing. Review caught it; the
+  reviewer's other catches were the same kind, prose that summarised code.
+- **Copying `SustainAcrossBarlines`'s span methods was the plan's choice**,
+  and it left three identical methods in two guidelines. The next guideline
+  that needs the voice's own span should extract the module instead.
