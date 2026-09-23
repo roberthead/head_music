@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-21T15:18:56-07:00
   planned_at:   2026-09-21T18:25:44-07:00
   finished_at:
-  updated_at:   2026-09-22T18:42:05-07:00
+  updated_at:   2026-09-22T20:09:45-07:00
 -->
 
 # Grade Every Fux Fifth-Species Figure
@@ -373,3 +373,69 @@ the snapshot, species separation in the diagonal. No stdout assertions.
 - Named exclusions can accumulate until the diagonal asserts little. One is
   expected. More than one means the composite is not separating species, and
   the fix is the rhythm-mixture follow-up, not another exclusion.
+
+## Review
+
+Reviewed 2026-09-22 at ff8b76b, working tree clean. Full suite 8337 examples,
+0 failures, 99.74% line coverage; rubocop clean on the nine changed Ruby
+files. Product-manager verification and code review ran as agents; every
+finding below was checked against the files before it was recorded.
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+| --- | --- | --- |
+| Eleven fixtures, on Fux's cantus in the scan's register, `V:cantus firmus` first, read from the scan and confirmed against the kern, 87 upper marked scan-only | ⚠️ met on every repo-checkable point; the scan reading needs a human spot-check | `spec/spec_helper.rb` entries after figure 82, each with `source` and `key`; `species_abc` emits the cantus voice first. A mechanical kern-to-ABC rerun matches all ten kern figures bar for bar, with the one intended exception at 86a bar 11 (tie). Figure 87 upper has no kern and rests on the transcription in the story; the scratchpad crops support the 86a tie. |
+| In `PUBLISHED_SOURCES`, 660 rows added, none moved; cantus rows pinned, diagonal grades `counterpoint_voice` only | ✅ met | Row counts by commit: 4620 at merge-base and after 475492d and 4600a2e; 4680 after 6214d7a; 5280 after 8b08b38. The six fixture commits changed no existing row. `guide_species_diagonal_spec.rb` assesses `context.counterpoint_voice`. |
+| Evidence, not oracle: no loosening, every primary mark settled and listed, 86a adherent with its tie, 85b one mark | ✅ met | The only `lib/` change tightens `NoteCountPerBar`. Grading all twelve fixtures on the two primary harmony items finds one non-adherent item, 85b at `1:3:000 to 2:2:000`; 86a without the tie reproduces the story's 0.885 and the `12:1` mark. Both are in "Marks on Fux's lines". |
+| `EmbellishedSuspensionTreatment` unchanged, 85b context beside figure 82's, no locale changes | ✅ met | Diff of the guideline and `lib/head_music/locales` is empty. `embellished_suspension_treatment_spec.rb` "with Fux's lydian line below the cantus" asserts the one mark code. |
+| Diagonal spec: table unchanged, exclusion by name only, map keyed by guide and consulted at the species minimum, 85b on `fifth_species` the only entry | ✅ met | `fixtures_by_species` untouched. `liberties` has one entry, cited in the comment above it, applied only on the `own` side. Melody minimum 0.966 against 0.881; composite minimum without 85b 0.953 against 0.929. |
+| Counterpoint-below fixtures grade through the harmony guide without error | ✅ met | Snapshot rows for the six below-cantus voices on `fifth_species_harmony`: 1.000, 1.000, 0.850, 0.984, 1.000, 1.000; no error, no failed gate. |
+| `NoteCountPerBar` over the voice's own span, no early return, span mark for an empty bar, two bars or fewer no middle bars, solo context asserts marks, lands first in its own commit with movement by class | ✅ met | `note_count_per_bar.rb` `middle_bars`, `downbeat_of`, and `mark_bar` mirror `SustainAcrossBarlines`. Spec contexts cover no notes, two bars, late start, early end, and the empty-bar span. Commit 475492d is the first code commit and the only one touching `lib/`; the story's "Snapshot movement at checkpoint 1" gives the classes. |
+
+### Code review findings
+
+1. **CHANGELOG count is off by one.** The fifth-species Added entry ends
+   "the other ten grade between 0.953 and 1.000". Twelve fixtures less 85b
+   is eleven. Fixed.
+2. **CHANGELOG overstates the no-movement claim.** The `NoteCountPerBar`
+   Changed entry ends "No harmony grade and no counterpoint with notes
+   moves." The four-note ladder `against-cantus-4` moved on eight rows at
+   475492d, for example 0.705 to 0.941 on `first_species_melody`, because
+   bars it never reached are no longer marked. The story's own movement
+   subsection records this class; the CHANGELOG sentence should say no
+   counterpoint that runs the length of its cantus moves, and name the short
+   counterpoint as the fourth class. Fixed.
+3. **Stale comment above `FUX_CANTUS_FIRMUS_ABC`.** The paragraph that
+   introduced the diminution-species fixtures still says they are each set
+   above the D dorian cantus and that "only 73 and 82 enter after a half
+   rest", and the two new comment lines run on from it with no separation.
+   Both claims are now false for the fifth-species entries. Rewrite the
+   paragraph and separate the constant's own comment. Fixed.
+4. **`NoteCountPerBar` duplicates three methods of `SustainAcrossBarlines`.**
+   `middle_bars`, `downbeat_of`, and `mark_bar` are the same code, and
+   `mark_bar` is identical apart from one local name. A small shared module
+   would carry the span concept once; flay duplication moves the RubyCritic
+   score. Optional here; the story asked for the same rule, not shared code.
+5. **The C ionian entry of `FUX_CANTUS_FIRMUS_EXAMPLES` disagrees with the
+   new map.** Line 86 reads C E F E G F E D C; the map and the scan read
+   C D F E G F E D C, and the D is what makes 88a's and 88b's tied C a
+   seventh. Already listed under Follow-ups; the two now sit in one file
+   with nothing saying which is authoritative.
+6. **`liberties` is keyed by guide and reads as keyed by species.** The
+   melody check gets no exclusion, which is correct today. A stale liberty
+   would never fail on its own; the 85b context in the embellished-suspension
+   spec is what keeps it honest. An assertion that each named liberty is
+   present and marked would make that explicit. Optional.
+7. **Snapshot movement is counted by any field.** The story's 362 rows at
+   checkpoint 1 counts every row whose record changed; 201 changed in
+   fitness and the other 161 only in message or item counts. Worth one
+   clause in the movement subsection.
+8. **Minor.** Two comments in `note_count_per_bar_spec.rb` restate their
+   example names. `fux_fifth_species_example` re-parses every fixture per
+   call and returns nil on a miss. Figure 87 upper's source string carries
+   its provenance, which the acceptance criteria require, so it stands.
+   The `AlwaysMove` marks on the re-struck anticipations are already a
+   follow-up.
+
+Findings 1 to 3 were fixed after the review; nothing blocks `finish`.

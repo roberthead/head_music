@@ -346,13 +346,15 @@ def fux_first_species_examples
   FUX_FIRST_SPECIES_EXAMPLES.map { |params| FlowContext.from_params(params) }
 end
 
-# The diminution species, each set above the D dorian cantus firmus that opens
-# every chapter of Gradus, so that grading one against another compares rhythm
-# rather than cantus. Figure numbers follow Mann's translation; the notes were
-# checked against the kern transcriptions in MarkGotham/species. In ABC, `d` is
-# D5 and `A` is A4, and a tie across the bar line is written as Fux wrote it.
-# Figures 33 and 55 open on the downbeat, as printed; only 73 and 82 enter
-# after a half rest.
+# The diminution species. Second, third, and fourth species sit above the D
+# dorian cantus firmus that opens every chapter of Gradus, so that grading one
+# against another compares rhythm rather than cantus; fifth species covers all
+# six modes, above and below the cantus. Figure numbers follow Mann's
+# translation; the notes were checked against the kern transcriptions in
+# MarkGotham/species. In ABC, `d` is D5 and `A` is A4, and a tie across the
+# bar line is written as Fux wrote it. Figures 33 and 55 open on the downbeat,
+# as printed; the others enter after a half rest.
+
 # Fux's cantus firmi keyed by ABC key, in the register of the Gradus scan.
 # Lydian sits an octave below the F4 of FUX_CANTUS_FIRMUS_EXAMPLES.
 FUX_CANTUS_FIRMUS_ABC = {
