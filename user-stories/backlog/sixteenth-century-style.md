@@ -1,3 +1,12 @@
+<!--
+metadata:
+  created_at:
+  activated_at:
+  planned_at:
+  finished_at:
+  updated_at:   2026-09-23T09:58:04-07:00
+-->
+
 # Sixteenth-Century (Renaissance) Style Guides
 
 AS a counterpoint student or researcher
@@ -111,3 +120,81 @@ Then the guide reports adherence (or the source's own flagged faults) matching t
 - Knud Jeppesen, *Counterpoint: The Polyphonic Vocal Style of the Sixteenth Century* (1931) — historical anchor.
 - Peter Schubert, *Modal Counterpoint, Renaissance Style* (Oxford) — modern academic standard; "hard"/"soft" rule distinction.
 - Robert Gauldin, *A Practical Approach to Sixteenth-Century Counterpoint* — clear, widely-adopted rule lists.
+
+## Jeppesen as the primary source
+
+Moved here on 2026-09-23 from
+[Fifth Species Guide Improvements](../current/fifth-species-guide-improvements.md),
+which had planned to grade Jeppesen's fifth-species examples under the
+Fux-derived guides and to cite him for changes to them. Fux represents
+eighteenth-century practice; Jeppesen describes Palestrina's, which is this
+story's tradition. His book is the natural primary source for the modal
+guides, and his examples are their validation set.
+
+- Jeppesen, Knud. *Counterpoint: The Polyphonic Vocal Style of the
+  Sixteenth Century*, trans. Glen Haydon. Prentice-Hall, 1939; the 1960
+  printing is public on the Internet Archive at
+  <https://archive.org/details/counterpointpoly00jepp>, with OCR text and a
+  PDF whose page number is the printed page plus 22.
+- Passages: the modes and their accidentals, pp. 60 to 62 and 73 (C-sharp in
+  dorian, F-sharp in mixolydian, G-sharp in aeolian raise the third of the
+  dominant triad at cadences; "B-flat was often used in all modes instead of
+  B" in descending figures and to avoid F against B, but not "if the
+  progressions continued upward to the C"; in polyphony the lydian "B is
+  changed to B-flat"); the anticipation, pp. 94 to 95 and 148 to 149, and
+  the summary p. 290 ("an unaccented quarter note which anticipates the
+  following accented note", "used only when approached by step from above",
+  "generally occurs before a syncopated note" but "does appear quite often
+  without being followed by a suspension"); tonal repetition, p. 94 ("very
+  common ... especially with longer note values", governed by the text); the
+  culmination, p. 95 note 9 and pp. 122 to 123 (repeated in quicker rhythms
+  "only if it comes on two tones which are separated by a single tone", his
+  example separating by a third; a culmination at the very end
+  "inadvisable"); the unison, pp. 116 to 117, 160, and the summary p. 288
+  (a second-species preference, "so far as possible"; in free counterpoint
+  "freely, of course, but with caution"); fifth-species rhythm, pp. 135 to
+  139 ("only a poor melody would have the first four measures in half notes,
+  the next four in quarter notes"; contrasts "introduced smoothly and
+  evenly"; in descending movement longer values before shorter, in ascending
+  "quite correct to begin with the quicker notes"); the fifth-species
+  examples, pp. 149 to 152; the summary of rules, pp. 288 to 291.
+- Notation differences from Fux that a modal guide must accept: the dotted
+  half where Fux ties a half to a quarter ("the anticipation usually follows
+  a dotted half", p. 94); a whole note or dotted half opening the line;
+  quarters dissonant after a suspension or dotted half; the cambiata opening
+  on a dotted half; an anticipation that dissonates. Ars Nova's
+  fifth-species instructions say "Dotted notes will not be used", which is
+  the eighteenth-century position.
+- Examples, pp. 149 to 151, one per mode, each a three-stave system with the
+  counterpoint above in soprano clef, the cantus firmus in alto clef, and
+  the counterpoint below in tenor clef, in cut time. Only the dorian sits on
+  Fux's cantus; the other four use Jeppesen's own: phrygian
+  `E4|D4|E4|F4|G4|A4|D4|F4|E4`, mixolydian `G,4|D4|C4|A,4|B,4|C4|B,4|A,4|G,4`,
+  aeolian `A,4|A4|G4|E4|F4|E4|D4|C4|B,4|A,4`, ionian
+  `C4|E4|F4|G4|E4|A4|G4|E4|F4|E4|D4|C4`. A triple-meter ionian example is on
+  p. 152. He marks cambiatas with a small `c` and anticipations with an
+  asterisk.
+- A first transcription of the ten duple-meter lines, one agent's reading
+  from a 300 dpi render, unverified note by note and to be re-read before
+  any pinning (ABC, `L:1/4`, `M:4/4`, cantus as above):
+  dorian above `A4-|A2 F2|G2 A2|_B3 A|_B c d e|f e d2-|d2 c d|e f g e|a2 d2-|d ^c/2 B/2 ^c2|d4|]`,
+  below `z2 D,2-|D,2 D2-|D2 C2|_B,2 D2|C2 _B,2|A,3 G,|F, G, A, B,|C D E2-|E D D2-|D ^C/2 B,/2 ^C2|D4|]`;
+  phrygian above `B2 G2|A2 B2|c3 B|A B c d|e f g2-|g2 f2-|f e d2-|d c A2|B4|]`,
+  below `z2 E, F,|G, A, B, G,|C3 B,|A,2 D2|E3 D|C B, A, G,|F, E, D, C,|D,4|E,4|]`;
+  mixolydian above `z2 G2-|G2 F2|E2 e2-|e d c B|G A B2-|B2 A2-|A G G2-|G ^F/2 E/2 ^F2|G4|]`,
+  below `z2 G,2|F,2 G,2|A,2 B,2|C D E2-|E2 D C|A, B, C A,|D2 G,2-|G, ^F,/2 E,/2 ^F,2|G,4|]`;
+  aeolian above `z2 e2-|e2 d c|B2 G2|c3 B|A B c d|e f g2-|g2 f2|e E A2-|A ^G/2 ^F/2 ^G2|A4|]`,
+  below `A,3 B,|C B, A, G,|E, F, G,2-|G,2 F, E,|D,2 D2-|D2 C2|B,2 A, G,|A, E, A,2-|A, ^G,/2 ^F,/2 ^G,2|A,4|]`;
+  ionian above `c3 B|G A B c|d e f2-|f2 e d|c2 g2-|g2 f2|e3 d|c2 B2|A2 d2-|d c c2-|c B/2 A/2 B2|c4|]`,
+  below `z2 C2-|C2 A,2-|A,2 F2|E3 D|C B, A, G,|F, G, A, B,|C G, C2-|C B, A,2-|A,2 D2-|D2 C2-|C B,/2 A,/2 B,2|C4|]`.
+- Graded under the current Fux-derived fifth-species guides as a scratch
+  measurement, not pinned: composite 0.873 to 0.985, melody 0.761 to 0.988,
+  harmony 0.921 to 1.000; no harmony primary mark on any line; every melody
+  primary mark is `AllowFifthSpeciesRhythmicValues` on a dotted half or on
+  the body whole notes at dorian above 1:1 and phrygian below 8:1. All ten
+  lines are adherent to the prototype mixture guideline. Secondary findings
+  worth a modal guide's attention: the raised-seventh eighth that steps down
+  before returning (`^c/2 B/2 ^c2` and its cousins) and the raised sixth in
+  the aeolian cadence charged by `Diatonic`; `EndOnTonic` on phrygian above,
+  which ends on the fifth; voice crossing on the aeolian and mixolydian
+  lower lines against his leaping cantus.
