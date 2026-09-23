@@ -431,10 +431,18 @@ def fux_fourth_species_examples
   species_examples(FUX_FOURTH_SPECIES_EXAMPLES)
 end
 
+# Figures 82 to 88 of Gradus, in Mann's numbering: each mode once with the
+# counterpoint above the cantus and once below. Pitches read from the scan and
+# confirmed against Mark Gotham's kern transcriptions, except figure 87's upper
+# counterpoint, which has no kern.
 FUX_FIFTH_SPECIES_EXAMPLES = [
   {
     source: "Fux chapter five figure 82",
     counterpoint: "z2 A2-|A D E F|G F E G|F D d2-|d c _B G|A B c2-|c2 f2-|f e/2 d/2 e2-|e A d2-|d2 ^c2|d4|]"
+  },
+  {
+    source: "Fux chapter five figure 83",
+    counterpoint: "z2 D2-|D2 A, B,|C G, C2-|C B,/2 A,/2 B, A,|G, A, B, C|D A, D2-|D E F2-|F E/2 D/2 E2-|E A, D2-|D2 ^C2|D4|]"
   }
 ].freeze
 
