@@ -463,6 +463,18 @@ FUX_FIFTH_SPECIES_EXAMPLES = [
     source: "Fux chapter five figure 85b",
     key: "Flyd",
     counterpoint: "z2 F,2-|F, E,/2 D,/2 C, _B,,|A,, G,, F,,2-|F,, A,, _B,,2-|_B,, C, D,2-|D,2 C, _B,,|A,,2 F,2|E,2 F,2-|F, E, D,2|D, E, F,2-|F,2 E,2|F,4|]"
+  },
+  {
+    # The kern drops the tie from bar 11 into bar 12 at the scan's system
+    # break; the scan ties them.
+    source: "Fux chapter five figure 86a",
+    key: "Gmix",
+    counterpoint: "z2 G2-|G F E D/2 C/2|D2 G A|B c d B|e d c2-|c B A G|A B/2 c/2 d c|B G B2-|B A G2-|G F E G|^F G A2-|A G G2-|G2 ^F2|G4|]"
+  },
+  {
+    source: "Fux chapter five figure 86b",
+    key: "Gmix",
+    counterpoint: "z2 G,2|E,2 A,2-|A,2 G, F,|E, C, E,2-|E,2 A,2-|A, B, C2-|C2 B, A,|B,2 E D|C B, A,2-|A, B, C2-|C2 B, A,|G, D, G,2-|G,2 ^F,2|G,4|]"
   }
 ].freeze
 
