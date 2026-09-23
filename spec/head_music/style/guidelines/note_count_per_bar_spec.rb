@@ -18,10 +18,36 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
   end
 
   context "without a cantus firmus voice" do
-    # The counterpoint belongs to its own flow with no other voice, so
-    # there is no cantus firmus and marks short-circuits to an empty array.
     let(:solo_flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
     let(:counterpoint) { solo_flow.add_voice(role: :counterpoint) }
+
+    before do
+      counterpoint.place("1:1", :whole, "A4")
+      counterpoint.place("2:1", :half, "A4")
+      counterpoint.place("2:3", :half, "C5")
+      counterpoint.place("3:1", :whole, "B4")
+    end
+
+    it { is_expected.not_to be_adherent }
+
+    it "marks the solo voice's own middle bar" do
+      expect(guideline.marks.map(&:code)).to eq ["2:1:000 to 3:1:000"]
+    end
+  end
+
+  context "with no notes" do
+    it { is_expected.to be_adherent }
+
+    it "returns no marks" do
+      expect(guideline.marks).to eq []
+    end
+  end
+
+  context "with notes in two or fewer bars (no middle bars)" do
+    before do
+      counterpoint.place("1:1", :half, "A4")
+      counterpoint.place("2:1", :half, "A4")
+    end
 
     it { is_expected.to be_adherent }
 
@@ -30,14 +56,31 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
     end
   end
 
-  context "with two or fewer cantus firmus notes (no middle bars)" do
-    let(:cantus_firmus_pitches) { %w[D4 D4] }
+  context "when the voice starts after the cantus firmus" do
+    before do
+      # Bars 2 and 5 are the voice's own first and last bars, so only bars 3
+      # and 4 are judged; bar 1 is not an empty middle bar.
+      counterpoint.place("2:1", :whole, "A4")
+      counterpoint.place("3:1", :whole, "A4")
+      counterpoint.place("4:1", :half, "B4")
+      counterpoint.place("4:3", :half, "C5")
+      counterpoint.place("5:1", :whole, "D5")
+    end
+
+    it "judges only the bars between the voice's first and last" do
+      expect(guideline.marks.map(&:code)).to eq ["4:1:000 to 5:1:000"]
+    end
+  end
+
+  context "when the voice ends before the cantus firmus" do
+    before do
+      # The voice's last bar is 3, so bars 4 and 5 are not empty middle bars.
+      counterpoint.place("1:1", :whole, "A4")
+      counterpoint.place("2:1", :whole, "A4")
+      counterpoint.place("3:1", :whole, "B4")
+    end
 
     it { is_expected.to be_adherent }
-
-    it "returns no marks" do
-      expect(guideline.marks).to eq []
-    end
   end
 
   context "with the correct note in each middle bar" do
@@ -71,8 +114,6 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
 
   context "with an empty middle bar" do
     before do
-      # Middle bars are 2, 3, 4. Place notes in bars 1, 2, 4 but leave bar 3
-      # empty so the empty-bar branch marks the cantus firmus note there.
       counterpoint.place("1:1", :whole, "A4")
       counterpoint.place("2:1", :whole, "A4")
       counterpoint.place("4:1", :whole, "B4")
@@ -80,12 +121,21 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
 
     it { is_expected.not_to be_adherent }
 
-    it "marks the empty middle bar" do
-      expect(guideline.marks).not_to be_empty
+    it "marks the span of the empty bar with no placements" do
+      mark = guideline.marks.first
+      expect(guideline.marks.length).to eq 1
+      expect(mark.code).to eq "3:1:000 to 4:1:000"
+      expect(mark.placements).to be_empty
     end
   end
 
   describe "#message" do
+    before do
+      counterpoint.place("1:1", :whole, "A4")
+      counterpoint.place("2:1", :quarter, "A4")
+      counterpoint.place("3:1", :whole, "B4")
+    end
+
     context "when the count is one" do
       let(:count) { 1 }
       let(:rhythmic_value) { :whole }

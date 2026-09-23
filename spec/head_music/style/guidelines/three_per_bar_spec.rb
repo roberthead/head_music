@@ -48,6 +48,7 @@ describe HeadMusic::Style::Guidelines::ThreePerBar do
   end
 
   context "with no notes" do
-    its(:fitness) { is_expected.to be < 1 }
+    # An empty voice is the minimum-notes gate's finding, not this one's.
+    it { is_expected.to be_adherent }
   end
 end

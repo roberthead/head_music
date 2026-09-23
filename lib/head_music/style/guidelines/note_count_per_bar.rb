@@ -4,9 +4,11 @@ module HeadMusic::Style::Guidelines; end
 # Checks that each middle bar (not first or last) contains an exact number of
 # notes of a given rhythmic value. Configurable via the `count:` and
 # `rhythmic_value:` options; subclasses may set COUNT and RHYTHMIC_VALUE defaults.
+# Judged over the voice's own bars, as SustainAcrossBarlines is, so a solo line
+# is held to it too.
 class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guideline
   def marks
-    return [] unless cantus_firmus&.notes&.any?
+    return [] if notes.empty?
 
     middle_bars.filter_map { |bar_number| check_middle_bar(bar_number) }
   end
@@ -52,23 +54,23 @@ class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guidelin
   end
 
   def middle_bars
-    cf_notes = cantus_firmus.notes
-    return [] if cf_notes.length <= 2
-
-    cf_notes[1..-2].map { |note| note.position.bar_number }
+    first = notes.first.position.bar_number
+    last = notes.last.position.bar_number
+    ((first + 1)...last).to_a
   end
 
   def notes_in_bar(bar_number)
     notes.select { |note| note.position.bar_number == bar_number }
   end
 
+  def downbeat_of(bar_number)
+    HeadMusic::Content::Position.new(flow, "#{bar_number}:1")
+  end
+
   def mark_bar(bar_number)
-    bar_placements = notes_in_bar(bar_number)
-    if bar_placements.any?
-      HeadMusic::Style::Mark.for_all(bar_placements)
-    else
-      cf_note = cantus_firmus.notes.detect { |note| note.position.bar_number == bar_number }
-      HeadMusic::Style::Mark.for(cf_note) if cf_note
-    end
+    bar_notes = notes_in_bar(bar_number)
+    return HeadMusic::Style::Mark.for_all(bar_notes) if bar_notes.any?
+
+    HeadMusic::Style::Mark.new(downbeat_of(bar_number), downbeat_of(bar_number + 1))
   end
 end
