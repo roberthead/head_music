@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-09-22T20:42:44-07:00
-  activated_at:
+  activated_at: 2026-09-22T21:02:07-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-22T20:56:38-07:00
+  updated_at:   2026-09-22T21:02:07-07:00
 -->
 
 # Story: Fifth Species Guide Improvements
