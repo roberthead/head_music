@@ -475,6 +475,16 @@ FUX_FIFTH_SPECIES_EXAMPLES = [
     source: "Fux chapter five figure 86b",
     key: "Gmix",
     counterpoint: "z2 G,2|E,2 A,2-|A,2 G, F,|E, C, E,2-|E,2 A,2-|A, B, C2-|C2 B, A,|B,2 E D|C B, A,2-|A, B, C2-|C2 B, A,|G, D, G,2-|G,2 ^F,2|G,4|]"
+  },
+  {
+    source: "Fux chapter five figure 87 upper counterpoint (scan only; no kern transcription)",
+    key: "Aaeo",
+    counterpoint: "z2 A2-|A2 G A|B G B2-|B2 A B|c G c2-|c B/2 A/2 B c|d A d2-|d c c2-|c B/2 A/2 B2-|B E A2-|A2 ^G2|A4|]"
+  },
+  {
+    source: "Fux chapter five figure 87a",
+    key: "Aaeo",
+    counterpoint: "z2 A,2-|A, G, E, F,|G, D, G,2-|G, A, B,2-|B,2 A,2-|A, B, C B,|A,2 D2-|D C C2-|C B,/2 A,/2 B,2-|B, E, A,2-|A,2 ^G,2|A,4|]"
   }
 ].freeze
 
