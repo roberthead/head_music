@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-21T15:18:56-07:00
   planned_at:   2026-09-21T18:25:44-07:00
   finished_at:
-  updated_at:   2026-09-22T12:40:58-07:00
+  updated_at:   2026-09-22T18:42:05-07:00
 -->
 
 # Grade Every Fux Fifth-Species Figure
@@ -133,11 +133,11 @@ corpus rows for reasons this story does not own; they are a follow-up.
 
 ## Measured
 
-Kern-derived ABC, figure 86a with its tie restored, under the guidelines as
-they stand. The other-species maxima under the fifth-species guides come from
-the pinned snapshot: 0.929 on the composite (figure 73, fourth species) and
-0.881 on the melody guide. Replace this table with the committed fixtures'
-numbers at checkpoint 3.
+The committed fixtures, graded at checkpoint 3. The ten kern-derived figures
+reproduce the numbers measured before the work to three decimals. The
+other-species maxima under the fifth-species guides come from the pinned
+snapshot: 0.929 on the composite (figure 73, fourth species) and 0.881 on the
+melody guide.
 
 | Figure | composite | melody | harmony | primary marks |
 | --- | --- | --- | --- | --- |
@@ -149,15 +149,32 @@ numbers at checkpoint 3.
 | 85b | 0.916 | 0.987 | 0.850 | EmbellishedSuspensionTreatment on the note held from 1:3 |
 | 86a | 0.959 | 0.977 | 0.941 | none (0.885 and FloridDissonanceTreatment 12:1 without the tie) |
 | 86b | 0.986 | 0.989 | 0.984 | none |
-| 87 upper | | | | not measured; no kern |
+| 87 upper | 0.985 | 0.971 | 1.000 | none (scan only) |
 | 87a | 0.994 | 0.989 | 1.000 | none |
 | 88a | 1.000 | 1.000 | 1.000 | none |
 | 88b | 0.994 | 0.989 | 1.000 | none |
 
-The melody diagonal holds for all ten measured figures. The composite
-diagonal fails for 85b alone, and only because of the one mark, so the spec
-excludes that cell by name. No figure scores 1.000 on every guide, and none
-is expected to.
+The melody diagonal holds for all eleven figures. The composite diagonal
+fails for 85b alone, and only because of the one mark, so the spec excludes
+that cell by name. No figure scores 1.000 on every guide, and none is
+expected to.
+
+### Snapshot movement at checkpoint 1
+
+The count-guideline change moved 362 of 4620 rows, every one under a first-,
+second-, or third-species guide and none under a harmony guide or for a
+counterpoint voice with notes. By class: the solo ladders and the
+`against-empty` voices are now marked; every cantus-firmus corpus voice,
+whose companion voice is empty, is now marked by Two/Three/FourPerBar under
+the second- and third-species melody guides and composites; the cantus voices
+of the species fixtures improve by a few thousandths where a florid companion
+had charged them once per note; `against-cantus-4` improves where bars it
+never reached are no longer marked. Two predictions missed. The with-errors
+cantus examples moved with the other cantus voices rather than under
+`OnePerBar`, since all their notes are whole notes, and the empty companion
+voices did not move at all, because the minimum-notes gate stops their
+assessment before the count guidelines run. The fixtures then added 660 rows
+across six commits and moved none.
 
 ## Acceptance Criteria
 
@@ -238,7 +255,8 @@ is expected to.
   penultimate bar, the lydian B-flats, and 86a's mid-line F-sharp. `Diatonic`
   charges them and melody scores still clear 0.966.
 - Figure 84a earns three `ConsonantClimax` marks because the phrygian line
-  opens on its peak. A modal artifact, pinned and not acted on.
+  opens on its peak. A modal artifact, pinned and not acted on. Figure 87's
+  upper counterpoint earns two because its peak D5 sounds in bars 7 and 8.
 - Second, third, and fourth species in the other modes are left out. Their
   rhythm guidelines already separate the species on the dorian diagonal and
   were not touched by the last story, so those fixtures would cost the same
@@ -254,7 +272,7 @@ is expected to.
 ## Follow-ups
 
 - `AlwaysMove` charges Fux's re-struck anticipated resolution in 86a bar 12,
-  87a bar 8, and 88b bar 7.
+  87a bar 8, the upper counterpoint of 87 bar 8, and 88b bar 7.
 - The C ionian and lydian entries of `FUX_CANTUS_FIRMUS_EXAMPLES` disagree
   with Fux's printed figures.
 - The composite diagonal's margin is thin for a structural reason. A
