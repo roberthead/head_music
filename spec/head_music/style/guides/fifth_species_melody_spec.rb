@@ -18,8 +18,15 @@ describe HeadMusic::Style::Guides::FifthSpeciesMelody do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepOutOfUnison }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::StepUpToFinalNote }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues }
-  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MixedRhythmicValues }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MixSpeciesTextures }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
+
+  it "holds the species rhythm and its mixture as the primary items" do
+    expect(described_class.items_by_tier[:primary].map(&:guideline)).to eq [
+      HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues,
+      HeadMusic::Style::Guidelines::MixSpeciesTextures
+    ]
+  end
 
   context "with a well-formed fifth species counterpoint" do
     let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian", meter: "4/4") }

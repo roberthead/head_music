@@ -273,6 +273,9 @@ Eighth notes follow the same dissonance rules as quarter notes: if dissonant wit
 | **ntoll.org** | "A liberal mixture of all the previous species will produce the best results" |
 | **Hansen Media** | "No more than two consecutive measures with identical rhythmic patterns" |
 | **Girton** | "Try to avoid rhythmic sequences, or the repetition of a rhythmic figure" |
+| **Salzer & Schachter** | "More than two, or at most, two-and-a-half measures of a single note value will destroy the rhythmic balance of the line"; "a mixture of note values should preponderate over single values unmixed" (pp. 101-102) |
+
+**In head_music:** `MixSpeciesTextures`, primary and strong in `FifthSpeciesMelody`, classifies each bar from the first to the one before the last by the single-species texture it shows (a whole note, halves, quarters and eighth pairs, or a ligature entered by tie) and marks every bar of a run of more than two bars in one texture. A bar that mixes them is florid and an empty bar is left to the rest rules; either ends a run. The run limit is the strict end of Salzer and Schachter's range.
 
 **Rhythmic arc:** Several sources describe a characteristic rhythmic shape:
 
@@ -429,24 +432,17 @@ The fifth-species guides are already implemented in `head_music`:
 **FifthSpeciesMelody** (`lib/head_music/style/guides/fifth_species_melody.rb`):
 
 ```ruby
+gate_items(*MELODIC_GATES)
+
 primary_items(
-  HeadMusic::Style::Guidelines::AlwaysMove,
-  HeadMusic::Style::Guidelines::ConsonantClimax,
-  HeadMusic::Style::Guidelines::Diatonic,
-  HeadMusic::Style::Guidelines::EndOnTonic,
-  HeadMusic::Style::Guidelines::FrequentDirectionChanges,
-  HeadMusic::Style::Guidelines::LimitOctaveLeaps,
-  HeadMusic::Style::Guidelines::MostlyConjunct,
-  HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
-  HeadMusic::Style::Guidelines::SingableIntervals,
-  HeadMusic::Style::Guidelines::SingableRange,
-  HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
-  HeadMusic::Style::Guidelines::StepUpToFinalNote,
-  HeadMusic::Style::Guidelines::AllowedRhythmicValuesForFifthSpecies,
-  HeadMusic::Style::Guidelines::MixedRhythmicValues,
-  HeadMusic::Style::Guidelines::NoRestsAfterNote
+  HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues,
+  HeadMusic::Style::Guidelines::MixSpeciesTextures
 )
+
+secondary_items(*MOVING_MELODIC_CRAFT)
 ```
+
+The melodic rules shared by every moving species (`AlwaysMove`, `ConsonantClimax`, `Diatonic`, `StepOutOfUnison`, and the rest assessed below) arrive as secondary items through `MOVING_MELODIC_CRAFT`.
 
 **FifthSpeciesHarmony** (`lib/head_music/style/guides/fifth_species_harmony.rb`):
 
@@ -483,8 +479,8 @@ primary_items(
 | **SingableRange** | Correct | Generally within a tenth |
 | **StartOnPerfectConsonance** | Correct | First note forms P1/P5/P8 with CF |
 | **StepUpToFinalNote** | Correct | Leading tone approach to tonic |
-| **AllowedRhythmicValuesForFifthSpecies** | Placeholder | Currently always passes (returns `[]`); should validate permitted values |
-| **MixedRhythmicValues** | Correct | Requires at least 2 different rhythmic value durations |
+| **AllowFifthSpeciesRhythmicValues** | Correct | Whole notes in the final bar only, no dotted values, eighths in stepwise pairs on weak beats |
+| **MixSpeciesTextures** | Correct | No more than two consecutive bars in one species texture (Salzer & Schachter pp. 101-102); replaced `MixedRhythmicValues`, which asked only for three distinct durations |
 | **NoRestsAfterNote** | Correct | No rests after the first note has sounded |
 
 #### Harmony Guidelines -- Assessment
@@ -513,7 +509,7 @@ Based on the pedagogical survey, the following enhancements could strengthen the
 | **AllowedRhythmicValuesForFifthSpecies** | Medium | Currently a no-op placeholder. Could validate: no dotted notes, eighth notes only in pairs on weak beats, no values shorter than eighth |
 | **EighthNoteConstraints** | New (soft) | Enforce: pairs only, weak beats only, stepwise only, one pair per bar max |
 | **NoWholeNotesInBody** | New (hard) | Whole notes forbidden except in the final bar |
-| **RhythmicVariety** | New (soft) | No more than two consecutive bars with identical rhythmic patterns (Hansen Media) |
+| **RhythmicVariety** | Landed | As `MixSpeciesTextures`, strong and primary: no more than two consecutive bars in one species texture (Salzer & Schachter, Hansen Media) |
 | **PreferLongBeforeShort** | New (soft) | Within a bar, half notes should precede quarter notes (S&S) |
 | **LeapSizeByRhythmicValue** | New (soft) | Restrict large leaps to longer note values; quarters limited to P5 or less |
 | **FirstBarEntry** | Verify | Confirm it enforces rest + half note or rest + quarter note at opening |
@@ -534,6 +530,7 @@ Based on the pedagogical survey, the following enhancements could strengthen the
 - Diatonic
 - Singable intervals
 - Whole notes only in final bar
+- Rhythmic mixture: no more than two consecutive bars in one species texture (MixSpeciesTextures)
 - Eighth notes in pairs, on weak beats, stepwise
 - Suspension resolution by step downward
 
@@ -541,8 +538,6 @@ Based on the pedagogical survey, the following enhancements could strengthen the
 - Prefer contrary motion
 - Prefer imperfect consonances on downbeats
 - Mostly conjunct
-- Mixed rhythmic values (at least 2 different durations)
-- Rhythmic variety (avoid repeating patterns)
 - Consonant climax
 - Singable range
 - Frequent direction changes

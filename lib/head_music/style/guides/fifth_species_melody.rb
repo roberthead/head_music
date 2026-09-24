@@ -7,7 +7,7 @@ class HeadMusic::Style::Guides::FifthSpeciesMelody < HeadMusic::Style::Guides::S
 
   primary_items(
     HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues,
-    HeadMusic::Style::Guidelines::MixedRhythmicValues
+    HeadMusic::Style::Guidelines::MixSpeciesTextures
   )
 
   secondary_items(*MOVING_MELODIC_CRAFT)

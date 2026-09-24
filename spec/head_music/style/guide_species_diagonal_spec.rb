@@ -66,4 +66,18 @@ describe HeadMusic::Style::Guide do
   it "discounts a first-species line on the fourth-species composite" do
     expect(fitness_by_guide["fourth_species"].fetch("first_species").values.max).to be <= 0.85
   end
+
+  (fixtures_by_species.keys - ["fifth_species"]).each do |species|
+    it "discounts a #{species} line on the fifth-species composite" do
+      expect(fitness_by_guide["fifth_species"].fetch(species).values.max).to be <= 0.85
+    end
+  end
+
+  liberties.each do |guide_key, sources|
+    sources.each do |source|
+      it "finds #{source} among the fixtures and marks it on #{guide_key}" do
+        expect(fitness_by_guide[guide_key].fetch(guide_key).fetch(source)).to be < 1
+      end
+    end
+  end
 end

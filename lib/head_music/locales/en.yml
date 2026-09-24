@@ -799,11 +799,11 @@ en:
           instruction: "Turn the line around often."
           violations:
             default: "Change melodic direction frequently."
-        mixed_rhythmic_values:
-          name: "Three or more rhythmic values"
-          instruction: "Use at least three different rhythmic values so the line is truly florid."
+        mix_species_textures:
+          name: "Mixed species textures"
+          instruction: "Mix the textures of the first four species; let no one of them run on for more than two bars."
           violations:
-            default: "Use at least three different rhythmic values for a truly florid line."
+            default: "Mix the textures of the first four species; no one of them may run on for more than two bars."
         moderate_direction_changes:
           name: "Occasional changes of direction"
           instruction: "Turn the line around from time to time."

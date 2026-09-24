@@ -44,7 +44,7 @@ GUIDE_ITEM_STRINGS = [
   ["MinimumNotes", {minimum: 3}, "Write at least three notes."],
   ["MinimumNotes", {minimum: 5}, "Write at least five notes."],
   ["MinimumNotes", {minimum: 8}, "Write at least eight notes."],
-  ["MixedRhythmicValues", {}, "Use at least three different rhythmic values for a truly florid line."],
+  ["MixSpeciesTextures", {}, "Mix the textures of the first four species; no one of them may run on for more than two bars."],
   ["ModerateDirectionChanges", {}, "Change melodic direction occasionally."],
   ["MostlyConjunct", {}, "Use mostly conjunct motion."],
   ["NoParallelPerfectAcrossBarline", {}, "Avoid parallel perfect consonances from weak beat to the following downbeat."],
