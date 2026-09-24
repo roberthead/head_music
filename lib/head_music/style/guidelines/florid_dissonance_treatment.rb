@@ -13,7 +13,7 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
   def marks
     return [] unless cantus_firmus&.notes&.any?
 
-    improperly_treated_notes.map { |note| HeadMusic::Style::Mark.for(note) }
+    HeadMusic::Style::Mark.for_each(improperly_treated_notes)
   end
 
   private

@@ -7,7 +7,7 @@ class HeadMusic::Style::Guidelines::AllowWholeHalfQuarterNotes < HeadMusic::Styl
   ALLOWED_TOTAL_VALUES = [1.0, 0.5, 0.25].freeze
 
   def marks
-    violating_notes.map { |note| HeadMusic::Style::Mark.for(note) }
+    HeadMusic::Style::Mark.for_each(violating_notes)
   end
 
   private

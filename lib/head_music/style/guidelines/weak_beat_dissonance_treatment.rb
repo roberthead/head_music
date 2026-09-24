@@ -8,9 +8,7 @@ class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Sty
   def marks
     return [] unless cantus_firmus&.notes&.any?
 
-    dissonant_weak_beat_notes.reject { |note| recognized_figure?(note) }.map do |note|
-      HeadMusic::Style::Mark.for(note)
-    end
+    HeadMusic::Style::Mark.for_each(dissonant_weak_beat_notes.reject { |note| recognized_figure?(note) })
   end
 
   private

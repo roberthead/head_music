@@ -17,10 +17,9 @@ class HeadMusic::Style::Guidelines::SecondSpeciesBreak < HeadMusic::Style::Guide
   private
 
   def dissonance_marks
-    break_bar_off_beat_notes
-      .select { |note| dissonant_with_cantus?(note) }
-      .reject { |note| passing_tone?(note) }
-      .map { |note| HeadMusic::Style::Mark.for(note) }
+    HeadMusic::Style::Mark.for_each(
+      break_bar_off_beat_notes.select { |note| dissonant_with_cantus?(note) && !passing_tone?(note) }
+    )
   end
 
   def max_break_ratio

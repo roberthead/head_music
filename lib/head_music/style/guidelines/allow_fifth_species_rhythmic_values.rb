@@ -55,7 +55,7 @@ class HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues < HeadMusic:
   end
 
   def mark_each(violating_notes)
-    violating_notes.map { |note| HeadMusic::Style::Mark.for(note) }
+    HeadMusic::Style::Mark.for_each(violating_notes)
   end
 
   def eighth_notes

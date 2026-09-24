@@ -10,9 +10,7 @@ class HeadMusic::Style::Guidelines::SuspensionTreatment < HeadMusic::Style::Guid
   def marks
     return [] unless cantus_firmus&.notes&.any?
 
-    improperly_treated_suspensions.map do |note|
-      HeadMusic::Style::Mark.for(note)
-    end
+    HeadMusic::Style::Mark.for_each(improperly_treated_suspensions)
   end
 
   private
