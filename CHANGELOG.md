@@ -41,6 +41,8 @@ Four counterpoint stories, [Require the Species Rhythm](https://github.com/rober
 
 - **`FloridDissonanceTreatment`'s strings no longer promise to prepare and resolve tied suspensions.** The guideline judges each note at its attack, so a held-over suspension never reached it and the branch that claimed to handle one was unreachable; the branch is deleted and the English and British sentences now end at "on a weak beat". No grade changes.
 
+- **Guide grading allocates less than half as many objects.** Positions compare field by field rather than through arrays, pitch and spelling names are memoized, pitch classes and chromatic intervals looked up by number skip name parsing, and `AvoidCrossingVoices` finds the predominant orientation once per assessment. Grading the pinned corpus falls from about 18.5 to 13.3 seconds, and no grade moves. `Pitch#name` and `Spelling#name` now return frozen strings.
+
 ### Removed
 
 - **`Style::Guidelines::MixedRhythmicValues`.** It asked only for three distinct durations and placed one mark when a line had fewer, which is why Fux's fourth-species line graded within 0.024 of his fifth-species line on the `fifth_species` composite. `MixSpeciesTextures` replaces it; no other guide used it.
@@ -48,6 +50,8 @@ Four counterpoint stories, [Require the Species Rhythm](https://github.com/rober
 ### Fixed
 
 - **ABC repeat and volta tagging for a note that outlasts its bar.** The parser counted completed bars from where the last note started, so a note longer than its bar, or one now tied across the line, shifted every following repeat flag by a bar. Bars are counted from where the last note ends.
+
+- **`AvoidCrossingVoices` marks the bars that leave the predominant orientation.** It deduplicated the voices' orientations before counting them, so the orientation heard first always won, and a counterpoint that opened below the cantus firmus and then stayed above it had its in-order bars marked as the crossings. The most common orientation now wins, and a tie still goes to the one heard first. No row of the pinned corpus moves: every crossing voice in it opens in its predominant orientation.
 
 ## [21.1.0] - 2026-09-10
 
