@@ -45,7 +45,7 @@ module HeadMusic::Notation::ABC
     end
 
     def entered_bar_number
-      pending_note ? pending_end_position.bar_number : voice.next_position.bar_number
+      (pending_note ? pending_end_position : voice.next_position).bar_number
     end
 
     # Records an explicit beam break; the next note consumes it.
@@ -111,18 +111,20 @@ module HeadMusic::Notation::ABC
       return unless pending
 
       self.pending_note = nil
-      placement = voice.place(voice.next_position, pending_rhythmic_value(pending), pending.pitches)
-      placement.beam_break_before = pending.beam_break
+      place_next(pending_rhythmic_value(pending), pending.pitches).beam_break_before = pending.beam_break
     end
 
     # Places a note, chord, or rest (nil pitches) directly onto the voice,
     # bypassing the pending-note buffer.
     def place(length, pitches, scale: ONE)
-      rhythmic_value = @duration_resolver.rhythmic_value(length, scale: scale)
-      voice.place(voice.next_position, rhythmic_value, pitches)
+      place_next(@duration_resolver.rhythmic_value(length, scale: scale), pitches)
     end
 
     private
+
+    def place_next(rhythmic_value, pitches)
+      voice.place(voice.next_position, rhythmic_value, pitches)
+    end
 
     # Closes an open tie: the pending note becomes the new note's tied prefix,
     # so the pair (and any longer chain) resolves to a single placement whose
@@ -150,8 +152,11 @@ module HeadMusic::Notation::ABC
     end
 
     def same_letters?(pitches, other_pitches)
-      letters = ->(list) { list.map { |pitch| [pitch.letter_name.to_s, pitch.register] }.sort }
-      letters.call(pitches) == letters.call(other_pitches)
+      letters_and_registers(pitches) == letters_and_registers(other_pitches)
+    end
+
+    def letters_and_registers(pitches)
+      pitches.map { |pitch| [pitch.letter_name.to_s, pitch.register] }.sort
     end
 
     def pending_end_position
@@ -159,7 +164,7 @@ module HeadMusic::Notation::ABC
     end
 
     def bar_start?(position)
-      position.count == 1 && position.tick.zero? && position.subtick.zero?
+      position.to_a.drop(1) == [1, 0, 0]
     end
 
     # A pending note's own value, with any tied prefix appended ahead of
