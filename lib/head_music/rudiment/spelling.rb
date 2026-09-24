@@ -76,7 +76,7 @@ class HeadMusic::Rudiment::Spelling < HeadMusic::Rudiment::Base
   end
 
   def name
-    [letter_name, alteration].join
+    @name ||= [letter_name, alteration].join.freeze
   end
 
   def to_s

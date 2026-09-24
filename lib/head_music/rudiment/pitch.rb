@@ -95,7 +95,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def name
-    [spelling, register].join
+    @name ||= [spelling, register].join.freeze
   end
 
   def midi_note_number
