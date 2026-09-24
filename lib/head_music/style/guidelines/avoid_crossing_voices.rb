@@ -17,16 +17,12 @@ class HeadMusic::Style::Guidelines::AvoidCrossingVoices < HeadMusic::Style::Guid
     end
   end
 
+  # A tie goes to the orientation heard first.
   def predominant_pitch_orientation
-    @predominant_pitch_orientation ||=
-      pitch_orientations
-        .compact
-        .group_by { |orientation| orientation }
-        .max { |a, b| a[1].length <=> b[1].length }
-        .first
+    @predominant_pitch_orientation ||= pitch_orientations.tally.max_by { |_, count| count }.first
   end
 
   def pitch_orientations
-    harmonic_intervals.map(&:pitch_orientation).compact.uniq
+    harmonic_intervals.map(&:pitch_orientation).compact
   end
 end

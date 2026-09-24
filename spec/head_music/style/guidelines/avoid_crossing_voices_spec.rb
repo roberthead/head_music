@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Style::Guidelines::AvoidCrossingVoices do
-  subject { assess(described_class, counterpoint) }
+  subject(:assessment) { assess(described_class, counterpoint) }
 
   let(:flow) { HeadMusic::Content::Flow.new(key_signature: "D dorian") }
   let(:cantus_firmus) { flow.add_voice(role: :cantus_firmus) }
@@ -31,6 +31,15 @@ describe HeadMusic::Style::Guidelines::AvoidCrossingVoices do
       let(:counterpoint_pitches) { %w[C5 B G F E A G B C5] }
 
       its(:fitness) { is_expected.to be < 1 }
+    end
+
+    context "and the voices start crossed but mostly sit in order" do
+      let(:cantus_firmus_pitches) { %w[C D E F G F E D C] }
+      let(:counterpoint_pitches) { %w[A3 B3 G A B A G B C5] }
+
+      it "marks only the bars where the counterpoint is below" do
+        expect(assessment.marks.map { |mark| mark.start_position.bar_number }).to eq [1, 2]
+      end
     end
   end
 end
