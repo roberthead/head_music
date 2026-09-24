@@ -60,6 +60,7 @@ GUIDE_ITEM_STRINGS = [
   ["OneToOne", {}, "Place a note for each note in the other voice."],
   ["OneToOneWithTies", {}, "Place one note per cantus firmus note. Notes may sustain across the barline."],
   ["PreferContraryMotion", {}, "Prefer contrary motion. Move voices in different melodic directions."],
+  ["PreferLongBeforeShort", {}, "Put the longer note before the shorter ones unless it ties forward."],
   ["PreferImperfect", {}, "Prefer imperfect harmonic intervals."],
   ["PrepareOctaveLeaps", {}, "Approach and leave an octave leap from inside the octave."],
   ["SecondSpeciesBreak", {}, "Use only passing tones when breaking the syncopated texture, and break it rarely."],

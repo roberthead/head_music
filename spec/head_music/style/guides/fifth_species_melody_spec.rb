@@ -20,12 +20,17 @@ describe HeadMusic::Style::Guides::FifthSpeciesMelody do
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::MixSpeciesTextures }
   specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::NoRestsAfterNote }
+  specify { expect(guidelines_of(described_class)).to include HeadMusic::Style::Guidelines::PreferLongBeforeShort }
 
   it "holds the species rhythm and its mixture as the primary items" do
     expect(described_class.items_by_tier[:primary].map(&:guideline)).to eq [
       HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues,
       HeadMusic::Style::Guidelines::MixSpeciesTextures
     ]
+  end
+
+  it "holds the static point as a secondary item" do
+    expect(described_class.items_by_tier[:secondary].map(&:guideline)).to include HeadMusic::Style::Guidelines::PreferLongBeforeShort
   end
 
   context "with a well-formed fifth species counterpoint" do

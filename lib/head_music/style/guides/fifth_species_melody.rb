@@ -10,5 +10,5 @@ class HeadMusic::Style::Guides::FifthSpeciesMelody < HeadMusic::Style::Guides::S
     HeadMusic::Style::Guidelines::MixSpeciesTextures
   )
 
-  secondary_items(*MOVING_MELODIC_CRAFT)
+  secondary_items(*MOVING_MELODIC_CRAFT, HeadMusic::Style::Guidelines::PreferLongBeforeShort)
 end

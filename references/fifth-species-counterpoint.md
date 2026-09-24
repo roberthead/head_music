@@ -371,7 +371,9 @@ The half note occupies a special structural role in fifth species:
 
 **Preparation and resolution of suspensions:** Suspensions are prepared with half notes on beat 3 and resolve on half-note positions. This is the primary rhythmic unit for the 4th-species component.
 
-**Half note before quarters (S&S):** "In a measure containing both long and short values, half notes should precede quarter notes unless a half note is suspended into the following measure." The pattern half-quarter-quarter is natural; quarter-quarter-half is not (unless the half ties forward).
+**Half note before quarters (S&S):** "In a measure containing both long and short values, half notes should precede quarter notes unless a half note is suspended into the following measure." The pattern half-quarter-quarter is natural; quarter-quarter-half is not (unless the half ties forward). Their reason (p. 103, Examples 5-4 and 5-5): "Coming after the two short notes, the half note constitutes a static point; it blocks the flow from the two quarters rather than channeling it into the following measure." Fux marks the shape N.B. in figure 88 bar 5 and offers figure 89 as better.
+
+**In head_music:** `PreferLongBeforeShort`, secondary and weak in `FifthSpeciesMelody`, marks a bar that opens with two quarters and closes with a longer note that does not tie forward. It is weak because Fux calls figure 89 better rather than figure 88 wrong, although Salzer and Schachter's "must not" would support strong. ntoll.org's exception, that the shape is acceptable after a bar ending in two quarters, is not adopted: Fux's N.B. sits on exactly such a bar.
 
 ### 3.15 Interaction Between Species Textures
 
@@ -510,7 +512,7 @@ Based on the pedagogical survey, the following enhancements could strengthen the
 | **EighthNoteConstraints** | New (soft) | Enforce: pairs only, weak beats only, stepwise only, one pair per bar max |
 | **NoWholeNotesInBody** | New (hard) | Whole notes forbidden except in the final bar |
 | **RhythmicVariety** | Landed | As `MixSpeciesTextures`, strong and primary: no more than two consecutive bars in one species texture (Salzer & Schachter, Hansen Media) |
-| **PreferLongBeforeShort** | New (soft) | Within a bar, half notes should precede quarter notes (S&S) |
+| **PreferLongBeforeShort** | Landed | Secondary and weak: two quarters opening a bar may not be followed by a longer note that closes it (S&S p. 103) |
 | **LeapSizeByRhythmicValue** | New (soft) | Restrict large leaps to longer note values; quarters limited to P5 or less |
 | **FirstBarEntry** | Verify | Confirm it enforces rest + half note or rest + quarter note at opening |
 
@@ -541,7 +543,7 @@ Based on the pedagogical survey, the following enhancements could strengthen the
 - Consonant climax
 - Singable range
 - Frequent direction changes
-- Half notes before quarter notes within a bar
+- Half notes before quarter notes within a bar (PreferLongBeforeShort)
 - No more than one eighth-note pair every three bars
 
 ---

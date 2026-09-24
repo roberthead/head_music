@@ -874,6 +874,11 @@ en:
           instruction: "Move the voices in opposite directions wherever the line allows."
           violations:
             default: "Prefer contrary motion. Move voices in different melodic directions."
+        prefer_long_before_short:
+          name: "Longer notes before shorter ones"
+          instruction: "Put the longer note before the shorter ones in a bar unless it ties forward."
+          violations:
+            default: "Put the longer note before the shorter ones unless it ties forward."
         prefer_imperfect:
           name: "Imperfect consonances preferred"
           instruction: "Favor imperfect consonances, thirds and sixths, over perfect ones."

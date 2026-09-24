@@ -270,6 +270,9 @@ en:
   two bars.
 - Mix the textures of the first four species; no one of them may run on for more than
   two bars.
+- Longer notes before shorter ones
+- Put the longer note before the shorter ones in a bar unless it ties forward.
+- Put the longer note before the shorter ones unless it ties forward.
 - Embellished suspension treatment
 - Prepare every suspension as a consonance, then resolve it downward by step halfway
   through the bar, however the resolution is delayed or decorated.
@@ -570,6 +573,9 @@ en_GB:
   two bars.
 - Mix the textures of the first four species; no one of them may run on for more than
   two bars.
+- Longer notes before shorter ones
+- Put the longer note before the shorter ones in a bar unless it ties forward.
+- Put the longer note before the shorter ones unless it ties forward.
 - Embellished suspension treatment
 - Prepare every suspension as a consonance, then resolve it downward by step halfway
   through the bar, however the resolution is delayed or decorated.
