@@ -7,10 +7,12 @@ module HeadMusic::Style::Guidelines; end
 # Judged over the voice's own bars, as SustainAcrossBarlines is, so a solo line
 # is held to it too.
 class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guideline
+  include HeadMusic::Style::Guideline::BarSpan
+
   def marks
     return [] if notes.empty?
 
-    middle_bars.filter_map { |bar_number| check_middle_bar(bar_number) }
+    middle_bar_numbers.filter_map { |bar_number| check_middle_bar(bar_number) }
   end
 
   # One template for all four subclasses: they differ by count and unit, not by
@@ -51,26 +53,5 @@ class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guidelin
     return if bar_notes.length == count && bar_notes.all? { |note| note.rhythmic_value == rhythmic_value }
 
     mark_bar(bar_number)
-  end
-
-  def middle_bars
-    first = notes.first.position.bar_number
-    last = notes.last.position.bar_number
-    ((first + 1)...last).to_a
-  end
-
-  def notes_in_bar(bar_number)
-    notes.select { |note| note.position.bar_number == bar_number }
-  end
-
-  def downbeat_of(bar_number)
-    HeadMusic::Content::Position.new(flow, "#{bar_number}:1")
-  end
-
-  def mark_bar(bar_number)
-    bar_notes = notes_in_bar(bar_number)
-    return HeadMusic::Style::Mark.for_all(bar_notes) if bar_notes.any?
-
-    HeadMusic::Style::Mark.new(downbeat_of(bar_number), downbeat_of(bar_number + 1))
   end
 end

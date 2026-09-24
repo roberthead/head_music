@@ -6,6 +6,8 @@ module HeadMusic::Style::Guidelines; end
 # firmus's, so a solo line is held to it too. Notation-agnostic, so a whole
 # note on beat three and a half tied to a half count the same.
 class HeadMusic::Style::Guidelines::SustainAcrossBarlines < HeadMusic::Style::Guideline
+  include HeadMusic::Style::Guideline::BarSpan
+
   MAX_BREAK_RATIO = 0.25
 
   def marks
@@ -33,28 +35,9 @@ class HeadMusic::Style::Guidelines::SustainAcrossBarlines < HeadMusic::Style::Gu
     (middle_bar_numbers.length * max_break_ratio).floor
   end
 
-  def middle_bar_numbers
-    @middle_bar_numbers ||= begin
-      first = notes.first.position.bar_number
-      last = notes.last.position.bar_number
-      ((first + 1)...last).to_a
-    end
-  end
-
   def sustained_into?(bar_number)
     downbeat = downbeat_of(bar_number)
     held = voice.note_at(downbeat)
     !held.nil? && held.position < downbeat
-  end
-
-  def downbeat_of(bar_number)
-    HeadMusic::Content::Position.new(flow, "#{bar_number}:1")
-  end
-
-  def mark_bar(bar_number)
-    bar_notes = notes.select { |note| note.position.bar_number == bar_number }
-    return HeadMusic::Style::Mark.for_all(bar_notes) if bar_notes.any?
-
-    HeadMusic::Style::Mark.new(downbeat_of(bar_number), downbeat_of(bar_number + 1))
   end
 end
