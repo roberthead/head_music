@@ -12,35 +12,26 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
   end
 
   def self.get(identifier)
-    return identifier if identifier.is_a?(HeadMusic::Rudiment::KeySignature)
-
-    if identifier.is_a?(String)
-      tonic_spelling, scale_type_name = identifier.strip.split(/\s/)
-      hash_key = HeadMusic::Utilities::HashKey.for(identifier)
-      fetch_or_register(hash_key, tonic_spelling, scale_type_name)
-    elsif identifier.is_a?(HeadMusic::Rudiment::DiatonicContext)
-      identifier.key_signature
+    case identifier
+    when self then identifier
+    when String then fetch_or_register(HeadMusic::Utilities::HashKey.for(identifier), *identifier.strip.split(/\s/).first(2))
+    when HeadMusic::Rudiment::DiatonicContext then identifier.key_signature
     end
   end
 
   def self.from_scale(scale)
-    # Find a key or mode that uses this scale
-    tonic = scale.root_pitch.spelling
-    scale_type = scale.scale_type
-    new(tonic, scale_type)
+    new(scale.root_pitch.spelling, scale.scale_type)
   end
 
   attr_reader :tonic_spelling, :scale_type, :scale
 
   delegate :pitch_class, to: :tonic_spelling, prefix: :tonic
   delegate :pitches, :pitch_classes, to: :scale
-  delegate :to_s, to: :name
 
   def initialize(tonic_spelling, scale_type = nil)
     @tonic_spelling = HeadMusic::Rudiment::Spelling.get(tonic_spelling)
-    @scale_type = HeadMusic::Rudiment::ScaleType.get(scale_type) if scale_type
-    @scale_type ||= HeadMusic::Rudiment::ScaleType.default
-    @scale_type = @scale_type.parent || @scale_type
+    scale_type = HeadMusic::Rudiment::ScaleType.get(scale_type || :major)
+    @scale_type = scale_type.parent || scale_type
     @scale = HeadMusic::Rudiment::Scale.get(@tonic_spelling, @scale_type)
   end
 
@@ -92,10 +83,8 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
   end
 
   def to_s
-    return pluralize(sharps.length, "sharp") if sharps.any?
-    return pluralize(flats.length, "flat") if flats.any?
-
-    "no sharps or flats"
+    count, noun = sharps.any? ? [sharps.length, "sharp"] : [flats.length, "flat"]
+    count.zero? ? "no sharps or flats" : "#{count} #{noun.pluralize(count)}"
   end
 
   def enharmonic_equivalent?(other)
@@ -108,10 +97,6 @@ class HeadMusic::Rudiment::KeySignature < HeadMusic::Rudiment::Base
     spellings.select(&predicate).sort_by do |spelling|
       letter_name_order.index(spelling.letter_name.to_s)
     end
-  end
-
-  def pluralize(count, noun)
-    (count == 1) ? "1 #{noun}" : "#{count} #{noun}s"
   end
 
   def enharmonic_equivalence
