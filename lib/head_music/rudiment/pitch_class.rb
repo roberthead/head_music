@@ -13,6 +13,8 @@ class HeadMusic::Rudiment::PitchClass < HeadMusic::Rudiment::Base
   INTEGER_NOTATION = %w[0 1 2 3 4 5 6 7 8 9 t e].freeze
 
   def self.get(identifier)
+    return fetch_or_register(identifier % 12) if identifier.is_a?(Integer)
+
     if HeadMusic::Rudiment::Spelling.matching_string(identifier)
       spelling = HeadMusic::Rudiment::Spelling.get(identifier)
       number = spelling.pitch_class.to_i
