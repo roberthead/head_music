@@ -15,6 +15,8 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
+    UNFOLLOWED_TIE = "A tie must be followed by a note"
+
     attr_reader :role, :events
 
     def initialize(role = nil)
@@ -37,13 +39,11 @@ module HeadMusic::Notation::LilyPond
     end
 
     def add_rest(rhythmic_value, line)
-      terminate("A tie must be followed by a note", line)
-      events << Event.new(kind: :rest, line: line, rhythmic_value: rhythmic_value)
+      append(line, kind: :rest, rhythmic_value: rhythmic_value)
     end
 
     def add_whole_bar_rest(fraction, line)
-      terminate("A tie must be followed by a note", line)
-      events << Event.new(kind: :whole_bar_rest, line: line, fraction: fraction)
+      append(line, kind: :whole_bar_rest, fraction: fraction)
     end
 
     def open_tie(line)
@@ -54,26 +54,28 @@ module HeadMusic::Notation::LilyPond
     end
 
     def bar_check(line)
-      terminate("Ties across bar checks are not yet supported", line)
-      events << Event.new(kind: :bar_check, line: line)
+      append(line, "Ties across bar checks are not yet supported", kind: :bar_check)
     end
 
     def change_key_signature(key_signature, line)
-      terminate("A tie must be followed by a note", line)
-      events << Event.new(kind: :key, line: line, key_signature: key_signature)
+      append(line, kind: :key, key_signature: key_signature)
     end
 
     def change_meter(meter, line)
-      terminate("A tie must be followed by a note", line)
-      events << Event.new(kind: :time, line: line, meter: meter)
+      append(line, kind: :time, meter: meter)
     end
 
     def finish
-      terminate("A tie must be followed by a note", nil)
+      terminate(UNFOLLOWED_TIE, nil)
       self
     end
 
     private
+
+    def append(line, tie_message = UNFOLLOWED_TIE, **attributes)
+      terminate(tie_message, line)
+      events << Event.new(line: line, **attributes)
+    end
 
     # Anything that is not a note ends the pending note; an open tie can
     # then never close, so it is rejected with the caller's message.

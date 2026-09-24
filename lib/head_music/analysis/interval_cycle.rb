@@ -39,9 +39,14 @@ class HeadMusic::Analysis::IntervalCycle
   protected
 
   def pitches_up
-    @pitches_up ||= [starting_pitch].tap do |list|
+    @pitches_up ||= cycle_of_pitches { |pitch| folded_up(pitch) }
+  end
+
+  # Steps from the starting pitch until the cycle returns to its pitch class.
+  def cycle_of_pitches
+    [starting_pitch].tap do |list|
       loop do
-        next_pitch = folded_up(list.last)
+        next_pitch = yield(list.last)
         break if next_pitch.pitch_class == starting_pitch.pitch_class
 
         list << next_pitch

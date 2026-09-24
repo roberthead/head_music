@@ -44,14 +44,7 @@ class HeadMusic::Analysis::Circle < HeadMusic::Analysis::IntervalCycle
   end
 
   def pitches_down
-    @pitches_down ||= [starting_pitch].tap do |list|
-      loop do
-        next_pitch = folded_down(list.last)
-        break if next_pitch.pitch_class == starting_pitch.pitch_class
-
-        list << next_pitch
-      end
-    end
+    @pitches_down ||= cycle_of_pitches { |pitch| folded_down(pitch) }
   end
 
   private
