@@ -44,8 +44,14 @@ describe HeadMusic::Style::Guidelines::PreferLongBeforeShort do
     it { is_expected.to be_adherent }
   end
 
-  context "with a triple-meter bar" do
-    let(:voice) { counterpoint("z A B|c B A|B c d|e3|]", meter: "3/4", cantus_firmus: "D3|F3|E3|D3|]") }
+  context "with two quarters and a whole that closes a bar of 3/2" do
+    let(:voice) { counterpoint("z2 A4|c B A4|B2 c2 d2|e6|]", meter: "3/2", cantus_firmus: "D6|F6|E6|D6|]") }
+
+    its(:first_mark_code) { is_expected.to eq "2:1:000 to 3:1:000" }
+  end
+
+  context "with two quarters and a whole that ties forward in 3/2" do
+    let(:voice) { counterpoint("z2 A4|c B A4-|A2 c2 d2|e6|]", meter: "3/2", cantus_firmus: "D6|F6|E6|D6|]") }
 
     it { is_expected.to be_adherent }
   end

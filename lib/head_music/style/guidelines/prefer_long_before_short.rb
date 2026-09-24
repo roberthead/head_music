@@ -20,18 +20,21 @@ class HeadMusic::Style::Guidelines::PreferLongBeforeShort < HeadMusic::Style::Gu
 
   private
 
+  # Read from the notes' own positions rather than beat numbers, so a half
+  # beat in 3/2 is judged as a quarter beat is in 4/4.
   def static_point?(opening, bar_number)
     return false unless opening.length == 3
 
     first, second, third = opening
-    quarter_on?(first, 1) && quarter_on?(second, 2) &&
+    first.position == downbeat_of(bar_number) &&
+      undotted_quarter?(first) && undotted_quarter?(second) &&
+      second.position == first.next_position && third.position == second.next_position &&
       third.rhythmic_value.total_value >= half_value &&
       third.next_position == downbeat_of(bar_number + 1)
   end
 
-  def quarter_on?(note, count)
-    note.position.count == count && note.position.tick.zero? &&
-      note.rhythmic_value.unit_name == "quarter" && note.rhythmic_value.dots.zero?
+  def undotted_quarter?(note)
+    note.rhythmic_value.unit_name == "quarter" && note.rhythmic_value.dots.zero?
   end
 
   def half_value
