@@ -41,7 +41,7 @@ Four counterpoint stories, [Require the Species Rhythm](https://github.com/rober
 
 - **`FloridDissonanceTreatment`'s strings no longer promise to prepare and resolve tied suspensions.** The guideline judges each note at its attack, so a held-over suspension never reached it and the branch that claimed to handle one was unreachable; the branch is deleted and the English and British sentences now end at "on a weak beat". No grade changes.
 
-- **Guide grading allocates less than half as many objects.** Positions compare field by field rather than through arrays, pitch and spelling names are memoized, pitch classes and chromatic intervals looked up by number skip name parsing, and `AvoidCrossingVoices` finds the predominant orientation once per assessment. Grading the pinned corpus falls from about 18.5 to 13.3 seconds, and no grade moves. `Pitch#name` and `Spelling#name` now return frozen strings.
+- **Guide grading allocates about a quarter as many objects.** Positions compare field by field rather than through arrays; pitch and spelling names, a pitch's natural, a letter name's pitch class, and a diatonic interval's quality are memoized; pitch classes and chromatic intervals looked up by number skip name parsing; rhythmic unit names are indexed once rather than normalized on every parse; and `AvoidCrossingVoices` finds the predominant orientation once per assessment. Grading the pinned corpus falls from about 18.5 to 9.4 seconds, and no grade moves. `Pitch#name` and `Spelling#name` now return frozen strings.
 
 ### Removed
 
