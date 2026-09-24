@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [22.0.0] - 2026-09-24
+
 Four counterpoint stories, [Require the Species Rhythm](https://github.com/roberthead/head_music/tree/main/user-stories/done/require-the-species-rhythm.md), [Embellish Fifth Species Suspensions](https://github.com/roberthead/head_music/tree/main/user-stories/done/embellish-fifth-species-suspensions.md), [Grade Every Fux Fifth-Species Figure](https://github.com/roberthead/head_music/tree/main/user-stories/done/grade-every-fux-fifth-species-figure.md), and [Fifth Species Guide Improvements](https://github.com/roberthead/head_music/tree/main/user-stories/done/fifth-species-guide-improvements.md). Every species guide now insists on the rhythm its species teaches, fifth species accepts the decorated suspensions Fux allows and requires the mixture that defines it, and every two-voice fifth-species figure in Gradus is graded and pinned. Fux's lines are graded as evidence, not as an oracle: where one of them outruns a rule that every other source keeps, the mark stands and is recorded as his liberty. Two grades move, both in the direction the pedagogy says they should, and the count guidelines now grade the solo and cantus-firmus lines they had passed on nothing; everything else is additive, including ties across bar lines in ABC.
+
+Grading is also faster: the pinned corpus grades in about half the time, with no grade moving for it.
+
+**This is a major release**, because two public classes are removed. A consumer that names neither and stores no schema-3 documents upgrades by upgrading.
+
+**Migrating from 21.1.0**, in the order a consumer will hit them:
+
+1. **`Style::Guidelines::MixedRhythmicValues` is gone.** A custom guide that names it raises `NameError` on load. `MixSpeciesTextures` replaces it in `FifthSpeciesMelody` and judges runs of one texture rather than counting distinct durations, so it is a successor rather than a rename.
+
+2. **`Content::Flow.from_v3_h` is gone, as 21.0.0 announced.** A schema-3 document must be read with head_music 21.x and saved again before upgrading; `Flow.from_h` rejects one with an error saying so. Schema-4 documents are unaffected.
+
+3. **Some grades move.** The rule changes under Added and Changed regrade existing lines: the fourth- and fifth-species guides most, and `Diatonic`, `StepOutOfUnison`, `AlwaysMove`, and the count guidelines in places. Stored fitness from 21.x is not comparable for the guides they touch.
+
+4. **`Pitch#name` and `Spelling#name` return frozen strings.** Code that modifies the returned name in place raises `FrozenError`; `dup` it first.
 
 ### Added
 
