@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-22T21:02:07-07:00
   planned_at:   2026-09-23T09:57:17-07:00
   finished_at:
-  updated_at:   2026-09-23T14:53:11-07:00
+  updated_at:   2026-09-23T16:16:56-07:00
 -->
 
 # Story: Fifth Species Guide Improvements
@@ -99,14 +99,17 @@ figure 82 is noted and not settled here.
   and survey rows; no other guide uses it. The new guideline's sentences
   avoid note-value nouns so `en.yml` is the only locale touched.
 - **The composite diagonal widens on the merits.** Fux's fourth-species
-  figure 73, whose eight ligature bars form one run, and every first-,
+  figure 73, whose eight ligature bars form two runs of four on either side
+  of one untied bar, and every first-,
   second-, and third-species fixture, each a single run, fall to 0.85 or
   below on the `fifth_species` composite, and the diagonal spec asserts it
   for each other species. The dominance-share prototype measured figure 73
   at 0.826 with every dominant bar marked; the run limit marks the same
   eight bars of figure 73 and the plan re-measures the rest before the
   guideline is written, and reports if the target is not reached rather
-  than reshaping the rule to reach it. All twelve Fux fifth-species
+  than reshaping the rule to reach it. Re-measured: figure 73 grades 0.826,
+  figure 33 0.815, figure 55 0.795, the triple-meter line 0.607, and the
+  first-species counterpoints at most 0.629, so the target is reached. All twelve Fux fifth-species
   fixtures are adherent to the new guideline, none holding a run longer
   than two bars. The liberties map gains no entry;
   85b's entry stays as a recorded verdict, and the spec asserts each named
@@ -242,8 +245,66 @@ figure 82 is noted and not settled here.
   marked here and belongs to the sixteenth-century story with Jeppesen.
 - The survey in `references/fifth-species-counterpoint.md` section 6.3 lists
   `RhythmicVariety` and `PreferLongBeforeShort` as proposed enhancements;
-  `RhythmicVariety` lands as `MixSpeciesTextures` with the share measure and
+  `RhythmicVariety` lands as `MixSpeciesTextures` with the run limit and
   `PreferLongBeforeShort` lands by name.
+
+## Marks on Fux's lines
+
+Every melodic mark left on the twelve counterpoints after this story, read
+from the committed fixtures, with its verdict. The harmony marks, including
+`StartOnPerfectConsonance` on 82 and 85b's `EmbellishedSuspensionTreatment`,
+are outside this story. Grades are on the `fifth_species` composite, before
+this story and after it.
+
+| Figure | before | after | melodic marks remaining | verdict |
+| --- | --- | --- | --- | --- |
+| 82 | 0.953 | 0.954 | `StepOutOfUnison` 3:3, 4:2 | Fux's liberty: interior unisons left by leap (S&S p. 106) |
+| 83 | 0.994 | 1.000 | none | the opening unison is exempt |
+| 84a | 0.959 | 0.959 | `ConsonantClimax` 1:3, 8:3, 10:1; `StepOutOfUnison` 8:2 | Fux's liberties: the peak repeated (S&S pp. 8, 42), an interior unison left by leap |
+| 84b | 1.000 | 1.000 | none | |
+| 85a | 0.986 | 0.986 | `StepOutOfUnison` 3:2 | Fux's liberty |
+| 85b | 0.916 | 0.917 | `AlwaysMove` 9:3 | Fux's liberty: a half repeated across the bar line, untied on the scan |
+| 86a | 0.959 | 0.965 | `StepOutOfUnison` 8:2 | Fux's liberty |
+| 86b | 0.986 | 0.992 | none | the opening unison is exempt |
+| 87 upper | 0.985 | 0.991 | `ConsonantClimax` 7:1, 7:3 | Fux's liberty: the peak re-approached by leap within one bar |
+| 87a | 0.994 | 1.000 | none | |
+| 88a | 1.000 | 0.997 | `PreferLongBeforeShort` 5:1 | Fux's own N.B.; he offers figure 89 as better |
+| 88b | 0.994 | 1.000 | none | |
+
+The rule changes cleared `AlwaysMove` on 86a, 87 upper, 87a, and 88b;
+`Diatonic` on 82, 85a, 85b, and 86a; and `StepOutOfUnison` on 83 and 86b.
+
+## Corpus movement
+
+Each checkpoint was captured before and after with `bin/guide_grade_corpus.rb`
+and joined with `bin/guide_grade_table.rb`.
+
+0. `BarSpan` extraction: none; the captures are byte-identical.
+1. `MixSpeciesTextures`: 173 rows, all on `fifth_species_melody` and the
+   `fifth_species` composite. Every one-texture voice falls: every cantus
+   firmus, every first-species counterpoint, the solo and against-empty
+   lines, figures 33, 55, and 73, and the triple-meter counterpoint and
+   cantus. Two three-bar solo lines rise and lose their message, since two
+   body bars cannot hold an over-long run. No other message or item count
+   moves.
+2. `AlwaysMove`: 56 rows, figures 86a, 87 upper, 87a, and 88b under the 14
+   guides that carry it, each up and one message fewer.
+3. `PreferLongBeforeShort`: 250 rows on the two fifth-species guides gain one
+   item. Figure 88a falls, to 0.995 on the melody guide; 176 rows rise by at
+   most 0.005 as the secondary tier's weight is shared by one more item; 72
+   move in item count only.
+4. `Diatonic`: 138 rows, six counterpoints (82, 85a, 85b, 86a, 73, and 55)
+   under the 23 guides that carry it; none falls.
+5. `ConsonantClimax`: none.
+6. `StepOutOfUnison`: 120 rows, ten voices under the 12 guides that carry
+   it, each an opening unison left by leap: counterpoints 83 and 86b, the
+   cantus firmi of 83, 86b, 87a, figure 55, and two first-species figures,
+   and the two against-cantus lines; none falls.
+
+Implementation surfaced one correction to the classification as planned: a
+note that fills its bar is whole-note texture however it is notated, so the
+triple-meter cantus's dotted wholes count. Classifying by notation first had
+let that cantus rise.
 
 ## Implementation Plan
 
