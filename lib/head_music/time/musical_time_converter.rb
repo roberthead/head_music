@@ -17,8 +17,7 @@ module HeadMusic
       # @param clock_position [ClockPosition] the clock time to convert
       # @return [MusicalPosition] the corresponding musical position
       def clock_to_musical(clock_position)
-        target_nanoseconds = clock_position.nanoseconds
-        accumulated_nanoseconds = 0
+        remaining_nanoseconds = clock_position.nanoseconds
         current_position = starting_musical_position
 
         # We need an end position far enough to contain our target clock time
@@ -29,14 +28,13 @@ module HeadMusic
           segment_nanoseconds = nanoseconds_in_segment(start_pos, end_pos, tempo, meter)
 
           # If our target falls within this segment, calculate the exact position
-          if accumulated_nanoseconds + segment_nanoseconds >= target_nanoseconds
-            remaining_nanoseconds = target_nanoseconds - accumulated_nanoseconds
+          if segment_nanoseconds >= remaining_nanoseconds
             total_subticks = musical_position_to_subticks(start_pos, meter) +
               nanoseconds_to_subticks(remaining_nanoseconds, tempo)
             return subticks_to_musical_position(total_subticks, meter)
           end
 
-          accumulated_nanoseconds += segment_nanoseconds
+          remaining_nanoseconds -= segment_nanoseconds
           current_position = end_pos
         end
 
@@ -65,8 +63,7 @@ module HeadMusic
       # Convert a musical position to total subticks for calculation
       def musical_position_to_subticks(position, meter = nil)
         meter ||= meter_map.meter_at(position)
-        subticks_per_count = meter.ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
-        subticks_per_bar = meter.counts_per_bar * subticks_per_count
+        subticks_per_count, subticks_per_bar = subtick_sizes(meter)
 
         (position.bar - 1) * subticks_per_bar +
           (position.count - 1) * subticks_per_count +
@@ -90,14 +87,18 @@ module HeadMusic
 
       # Decompose total subticks into a normalized bar:count:tick:subtick position
       def subticks_to_musical_position(total_subticks, meter)
-        subticks_per_count = meter.ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
-        subticks_per_bar = meter.counts_per_bar * subticks_per_count
-
+        subticks_per_count, subticks_per_bar = subtick_sizes(meter)
         bars, remaining = total_subticks.divmod(subticks_per_bar)
         counts, remaining = remaining.divmod(subticks_per_count)
         ticks, subticks = remaining.divmod(HeadMusic::Time::SUBTICKS_PER_TICK)
 
         MusicalPosition.new(bars + 1, counts + 1, ticks, subticks).normalize!(meter)
+      end
+
+      # Subticks in one count and in one bar of the meter
+      def subtick_sizes(meter)
+        per_count = meter.ticks_per_count * HeadMusic::Time::SUBTICKS_PER_TICK
+        [per_count, meter.counts_per_bar * per_count]
       end
     end
   end
