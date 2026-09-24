@@ -3,6 +3,16 @@ class HeadMusic::Rudiment::RhythmicUnit::Parser
 
   RHYTHMIC_UNITS_DATA = HeadMusic::Rudiment::RhythmicUnit::RHYTHMIC_UNITS_DATA
 
+  def self.units_by_normalized(key)
+    RHYTHMIC_UNITS_DATA.each_with_object({}) do |unit, units|
+      units[HeadMusic::Utilities::Case.to_snake_case(unit[key])] ||= unit if unit[key]
+    end.freeze
+  end
+
+  UNITS_BY_AMERICAN_NAME = units_by_normalized("american_name")
+  UNITS_BY_BRITISH_NAME = units_by_normalized("british_name")
+  private_class_method :units_by_normalized
+
   TEMPO_SHORTHAND_PATTERN = RHYTHMIC_UNITS_DATA.map { |unit| unit["tempo_shorthand"] }.compact.uniq.sort_by { |s| -s.length }.join("|")
 
   def self.parse(identifier)
@@ -42,15 +52,11 @@ class HeadMusic::Rudiment::RhythmicUnit::Parser
   end
 
   def from_american_name
-    RHYTHMIC_UNITS_DATA.find do |unit|
-      normalize_name(unit["american_name"]) == normalized_identifier
-    end
+    UNITS_BY_AMERICAN_NAME[normalized_identifier]
   end
 
   def from_british_name
-    RHYTHMIC_UNITS_DATA.find do |unit|
-      normalize_name(unit["british_name"]) == normalized_identifier
-    end
+    UNITS_BY_BRITISH_NAME[normalized_identifier]
   end
 
   def from_tempo_shorthand
@@ -81,10 +87,5 @@ class HeadMusic::Rudiment::RhythmicUnit::Parser
 
     numerator, denominator = identifier.split("/").map(&:to_f)
     numerator / denominator
-  end
-
-  def normalize_name(name)
-    return nil if name.nil?
-    HeadMusic::Utilities::Case.to_snake_case(name)
   end
 end
