@@ -18,11 +18,12 @@ class HeadMusic::Style::Guidelines::AvoidCrossingVoices < HeadMusic::Style::Guid
   end
 
   def predominant_pitch_orientation
-    pitch_orientations
-      .compact
-      .group_by { |orientation| orientation }
-      .max { |a, b| a[1].length <=> b[1].length }
-      .first
+    @predominant_pitch_orientation ||=
+      pitch_orientations
+        .compact
+        .group_by { |orientation| orientation }
+        .max { |a, b| a[1].length <=> b[1].length }
+        .first
   end
 
   def pitch_orientations
