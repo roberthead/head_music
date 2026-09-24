@@ -89,7 +89,7 @@ class HeadMusic::Analysis::DiatonicInterval
   end
 
   def quality
-    HeadMusic::Rudiment::Quality.get(quality_name)
+    @quality ||= HeadMusic::Rudiment::Quality.get(quality_name)
   end
 
   def inversion
