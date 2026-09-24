@@ -11,6 +11,8 @@ class HeadMusic::Style::Guides::Base
   TIERS = %i[gate primary secondary].freeze
 
   class << self
+    include HeadMusic::Style::Guides::TieredItems
+
     # Preconditions: is this voice assessable at all?
     def gate_items(*entries, except: nil) = tier_items(:gate, entries, except)
 
@@ -19,10 +21,6 @@ class HeadMusic::Style::Guides::Base
 
     # Background craft this guide inherits rather than teaches.
     def secondary_items(*entries, except: nil) = tier_items(:secondary, entries, except)
-
-    def guide_items
-      @guide_items ||= TIERS.flat_map { |tier| items_by_tier[tier] }.freeze
-    end
 
     # A guide whose lists depend on configuration overrides this with a keyword
     # signature, so an unconfigured use raises rather than grading a voice

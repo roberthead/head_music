@@ -28,6 +28,8 @@ module HeadMusic::Style::Guides; end
 # items -- 27 against 26 for first species, because each member assesses the
 # shared gate itself.
 class HeadMusic::Style::Guides::CompositeGuide
+  include HeadMusic::Style::Guides::TieredItems
+
   attr_reader :guides
 
   # Members resolved eagerly, for the reason Configured resolves its own: a bad
@@ -55,10 +57,6 @@ class HeadMusic::Style::Guides::CompositeGuide
   # grading path.
   def assess_items(voice)
     guides.flat_map { |guide| guide.assess_items(voice) }
-  end
-
-  def guide_items
-    @guide_items ||= HeadMusic::Style::Guides::Base::TIERS.flat_map { |tier| items_by_tier[tier] }.freeze
   end
 
   # Deduplicated within each tier rather than across the whole list, so a rule a

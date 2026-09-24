@@ -299,6 +299,7 @@ require "head_music/style/guidelines/mix_species_textures"
 
 # style guides
 require "head_music/style/guides/assessment"
+require "head_music/style/guides/tiered_items"
 require "head_music/style/guides/base"
 require "head_music/style/guides/configured"
 require "head_music/style/guides/composite_guide"
