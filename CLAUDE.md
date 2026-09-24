@@ -10,11 +10,12 @@ HeadMusic is a Ruby gem for Western music theory. It provides a comprehensive to
 
 ### Essential Commands
 
-`rake -T` lists the custom tasks. Two distinctions it does not make obvious:
+`rake -T` lists the custom tasks.
 
 ```bash
-bundle exec rake     # tests WITH coverage (the default task)
-bundle exec rspec    # tests WITHOUT coverage
+bundle exec rake           # the default task, same as `rake spec`
+bundle exec rspec          # also measures coverage: spec_helper.rb always starts SimpleCov
+bundle exec rake coverage  # opens the last coverage report
 ```
 
 ### Git Etiquette
