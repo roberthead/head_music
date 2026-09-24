@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-22T21:02:07-07:00
   planned_at:   2026-09-23T09:57:17-07:00
   finished_at:
-  updated_at:   2026-09-23T16:16:56-07:00
+  updated_at:   2026-09-24T09:45:40-07:00
 -->
 
 # Story: Fifth Species Guide Improvements
@@ -107,12 +107,12 @@ figure 82 is noted and not settled here.
   at 0.826 with every dominant bar marked; the run limit marks the same
   eight bars of figure 73 and the plan re-measures the rest before the
   guideline is written, and reports if the target is not reached rather
-  than reshaping the rule to reach it. Re-measured: figure 73 grades 0.826,
-  figure 33 0.815, figure 55 0.795, the triple-meter line 0.607, and the
-  first-species counterpoints at most 0.629, so the target is reached. All twelve Fux fifth-species
-  fixtures are adherent to the new guideline, none holding a run longer
-  than two bars. The liberties map gains no entry;
-  85b's entry stays as a recorded verdict, and the spec asserts each named
+  than reshaping the rule to reach it. Re-measured at the end of the story:
+  figure 73 grades 0.827, figure 33 0.815, figure 55 0.796, the triple-meter
+  line 0.608, and the first-species counterpoints at most 0.625, so the
+  target is reached. All twelve Fux fifth-species fixtures are adherent to
+  the new guideline, none holding a run longer than two bars. The liberties
+  map gains no entry; 85b's entry stays as a recorded verdict, and the spec asserts each named
   liberty is present in the fixtures and marked on that guide.
 - **`AlwaysMove` knows the anticipated resolution.** What Fux writes in
   86a bar 12, 87 upper bar 8, 87a bar 8, and 88b bar 7 is a suspension
@@ -143,7 +143,7 @@ figure 82 is noted and not settled here.
   bar. It is weak because Fux calls figure 89 better rather than 88 wrong,
   although Salzer and Schachter's "must not" would support strong; the
   story records the choice.
-  Figure 88a is the only corpus voice marked; nineteen Fux bars have the
+  Figure 88a is the only corpus voice marked; twenty-three Fux bars have the
   shape tied forward and are exempt. Adding a secondary item changes the
   item count on every gated row of the two fifth-species guides and
   redistributes secondary weight, so every voice with a secondary mark moves
@@ -280,13 +280,13 @@ Each checkpoint was captured before and after with `bin/guide_grade_corpus.rb`
 and joined with `bin/guide_grade_table.rb`.
 
 0. `BarSpan` extraction: none; the captures are byte-identical.
-1. `MixSpeciesTextures`: 173 rows, all on `fifth_species_melody` and the
+1. `MixSpeciesTextures`: 175 rows, all on `fifth_species_melody` and the
    `fifth_species` composite. Every one-texture voice falls: every cantus
    firmus, every first-species counterpoint, the solo and against-empty
    lines, figures 33, 55, and 73, and the triple-meter counterpoint and
-   cantus. Two three-bar solo lines rise and lose their message, since two
-   body bars cannot hold an over-long run. No other message or item count
-   moves.
+   cantus. Two three-bar solo lines rise on the melody guide and lose their
+   message on both guides, since two body bars cannot hold an over-long run.
+   No other message or item count moves.
 2. `AlwaysMove`: 56 rows, figures 86a, 87 upper, 87a, and 88b under the 14
    guides that carry it, each up and one message fewer.
 3. `PreferLongBeforeShort`: 250 rows on the two fifth-species guides gain one
@@ -305,6 +305,90 @@ Implementation surfaced one correction to the classification as planned: a
 note that fills its bar is whole-note texture however it is notated, so the
 triple-meter cantus's dotted wholes count. Classifying by notation first had
 let that cantus rise.
+
+## Review
+
+Reviewed 2026-09-24 at commit `131dcd0`, the eight commits from `267299a` on.
+A product-manager agent verified the criteria; it checked out every commit
+that touches `lib/` and ran the snapshot and diagonal specs at each. A
+code-reviewer agent reviewed `lib/` and `spec/`. Every example under
+`spec/head_music/style` passes and rubocop is clean.
+
+### Acceptance criteria
+
+| # | Criterion | Verdict | Evidence |
+| --- | --- | --- | --- |
+| 1 | Mixture is a primary guideline | ✅ | `mix_species_textures.rb` marks every bar of a run of more than two in one texture; the primary tier is pinned in `fifth_species_melody_spec.rb` |
+| 2 | It is strong | ✅ | no `strength` call; the class comment answers `MostlyConjunct`'s precedent |
+| 3 | It replaces `MixedRhythmicValues` | ✅ | class, spec, require, and `en.yml` entry deleted; `en.yml` is the only locale in the diff |
+| 4 | The diagonal widens on the merits | ✅ | `guide_species_diagonal_spec.rb` asserts ≤ 0.85 for each other species; figure 73 0.827 at HEAD; all twelve Fux figures adherent; the liberties map is unchanged |
+| 5 | `AlwaysMove` knows the anticipated resolution | ✅ | 86a, 87 upper, 87a, 88b clear; 85b keeps `9:3:000 to 10:2:000`; 56 rows, none down |
+| 6 | Fux's N.B. is marked | ⚠️ | code, tier, and 88a's only mark all match; the criterion's count of "nineteen" tied-forward bars is 23 by the rule's own conditions |
+| 7 | `Diatonic` stops charging the modal accidentals | ✅ | 82, 85a, 85b, 86a clear; the chromatic-error cantus keeps three marks; figure 55 keeps its three ascending B-flats |
+| 8 | `ConsonantClimax` keeps both marks | ✅ | guideline not in the diff; 84a and 87 upper pinned by code |
+| 9 | `StepOutOfUnison` learns the opening and the tie | ✅ | 83 and 86b clear; 82 (twice), 84a, 85a, 86a pinned |
+| 10 | Every corpus movement has one cause | ⚠️ | one cause per commit, each commit's snapshot matching its code, and no harmony guide moving; the recorded numbers drift slightly (findings 3 and 4) |
+
+### Code review findings
+
+1. **`MixSpeciesTextures` calls a lone note a whole-note bar wherever it
+   starts** (`mix_species_textures.rb:72`, important). The test checks only
+   that the note reaches the bar line, so a half after a half rest, `z2 A2`,
+   is classified `:whole`. Verified: `z2 A2|A4|G4|...` is marked as a
+   three-bar whole-note run when only two bars are whole notes, and every
+   Fux entry after a half rest classifies as `:whole` rather than `:half`.
+   Fix: also require the note to start on the downbeat, and add the
+   second-species-opening spec. The corpus may move slightly.
+2. **A comment on `long_runs` contradicts the code**
+   (`mix_species_textures.rb:31-32`). It says neither the first nor the last
+   bar is counted, but `body_bar_numbers` includes the first bar, as the plan
+   intended and the specs assert. Reword it to say only the last bar is left
+   out.
+3. **The re-measured grades were taken at the mixture commit, not at
+   HEAD.** Figure 73 0.826, figure 55 0.795, and the triple-meter line 0.607
+   in criterion 4 and the CHANGELOG are the values after `703b66a`; later
+   commits nudged them to 0.827, 0.796, and 0.608. Label them or restate them.
+4. **The mixture commit moved 175 rows, not 173.** Two composite rows,
+   `solo-ascending-3` and `solo-repeated-3` on `fifth_species`, lost a message
+   without a fitness change. "Two three-bar solo lines rise" is true on the
+   melody guide only. Fix in the CHANGELOG and in "Corpus movement".
+5. **The criterion's tied-forward count** (criterion 6) is 23, not nineteen.
+6. **Stale plan text.** Risks still says figure 73 "is one run of eight
+   ligature bars"; it is two runs of four.
+7. **A mislabeled spec example** (`diatonic_spec.rb`, "marks a phrygian
+   lowered fourth"). B-flat in E phrygian is the lowered fifth. The behavior
+   is right; only the name is wrong.
+8. **`Diatonic#raised_sixth_to_raised_seventh?` does not require the raised
+   seventh to reach the tonic** (minor). In A aeolian, `F# G# E` marks the
+   G-sharp but passes the F-sharp. Requiring `raised_seventh_to_tonic?` of the
+   following note would bind the pair, as Salzer and Schachter's cadence does.
+9. **A vacuous spec** (minor). `PreferLongBeforeShort`'s triple-meter example
+   has no half in the bar, so it passes on the missing half, not the meter.
+10. **The CHANGELOG links the story under `done/`**, which resolves only
+    after `/stories finish`. Expected; no change needed.
+
+Nothing fails a criterion, but finding 1 is a real misclassification in the
+story's central guideline and should be fixed before `finish`. Findings 2 to
+9 are small.
+
+### Resolution
+
+Findings 1 to 9 were fixed on 2026-09-24, and none moved a corpus grade.
+
+- 1 and 2: `d97b89b`. A bar is whole-note texture only when its note starts
+  on the downbeat, so Fux's half-rest entries now read as half-note bars; two
+  specs pin the second-species opening. The comment now says only the last
+  bar is left out.
+- 7 and 8: `13989db`. The raised sixth is exempt only when its raised seventh
+  reaches the tonic; the phrygian spec is renamed for the lowered fifth.
+- 9: `76bcf62`. The spec's vacuity hid a real gap: the rule found the static
+  point by beat number, so it missed two quarters and a whole in 3/2. It now
+  reads the notes' positions, and the triple-meter specs are 3/2 bars marked,
+  and adherent when tied forward.
+- 3 to 6: the story and CHANGELOG restate the grades at the end of the story
+  (figure 73 0.827, figure 55 0.796, the triple-meter line 0.608, first
+  species at most 0.625), count 175 rows for the mixture commit, count
+  twenty-three tied-forward bars, and describe figure 73 as two runs of four.
 
 ## Implementation Plan
 
@@ -492,7 +576,7 @@ percent floor. No stdout assertions.
 ### Risks
 
 - The run limit was chosen from the source after the dominance share was
-  measured, so its grades are not yet known. Figure 73 is one run of eight
+  measured, so its grades are not yet known. Figure 73 is two runs of four
   ligature bars and the lower species are single runs, so the shape of the
   result is the same as the share prototype's, but the number is not
   proven until step 1 measures it. If figure 73 stays above 0.85, the plan
