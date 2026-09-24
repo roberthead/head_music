@@ -122,7 +122,7 @@ class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   end
 
   def natural
-    HeadMusic::Rudiment::Pitch.get([letter_name, register].join)
+    @natural ||= HeadMusic::Rudiment::Pitch.get([letter_name, register].join)
   end
 
   def +(other)

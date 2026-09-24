@@ -50,7 +50,7 @@ class HeadMusic::Rudiment::LetterName < HeadMusic::Rudiment::Base
   end
 
   def pitch_class
-    HeadMusic::Rudiment::PitchClass.get(NATURAL_PITCH_CLASS_NUMBERS[name])
+    @pitch_class ||= HeadMusic::Rudiment::PitchClass.get(NATURAL_PITCH_CLASS_NUMBERS[name])
   end
 
   def ==(other)
