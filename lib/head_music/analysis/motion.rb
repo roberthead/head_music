@@ -24,20 +24,15 @@ class HeadMusic::Analysis::Motion
   end
 
   def parallel?
-    upper_melodic_interval.moving? &&
-      upper_melodic_interval.direction == lower_melodic_interval.direction &&
-      upper_melodic_interval.steps == lower_melodic_interval.steps
+    upper_melodic_interval.moving? && same_direction? && same_steps?
   end
 
   def similar?
-    upper_melodic_interval.direction == lower_melodic_interval.direction &&
-      upper_melodic_interval.steps != lower_melodic_interval.steps
+    same_direction? && !same_steps?
   end
 
   def contrary?
-    upper_melodic_interval.moving? &&
-      lower_melodic_interval.moving? &&
-      upper_melodic_interval.direction != lower_melodic_interval.direction
+    upper_melodic_interval.moving? && lower_melodic_interval.moving? && !same_direction?
   end
 
   def notes
@@ -51,19 +46,27 @@ class HeadMusic::Analysis::Motion
   end
 
   def to_s
-    return "repetition of a #{second_harmonic_interval}" unless contrapuntal_motion != :repetition
+    return "repetition of a #{second_harmonic_interval}" if contrapuntal_motion == :repetition
 
     "#{contrapuntal_motion} motion from a #{first_harmonic_interval} to a #{second_harmonic_interval}"
   end
 
   private
 
+  def same_direction?
+    upper_melodic_interval.direction == lower_melodic_interval.direction
+  end
+
+  def same_steps?
+    upper_melodic_interval.steps == lower_melodic_interval.steps
+  end
+
   def upper_melodic_interval
-    HeadMusic::Analysis::MelodicInterval.new(upper_notes.first, upper_notes.last)
+    @upper_melodic_interval ||= HeadMusic::Analysis::MelodicInterval.new(*upper_notes)
   end
 
   def lower_melodic_interval
-    HeadMusic::Analysis::MelodicInterval.new(lower_notes.first, lower_notes.last)
+    @lower_melodic_interval ||= HeadMusic::Analysis::MelodicInterval.new(*lower_notes)
   end
 
   def upper_notes
