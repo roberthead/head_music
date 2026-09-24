@@ -107,6 +107,10 @@ describe HeadMusic::Style::Guidelines::Diatonic do
       expect(marks_on("A aeolian", %w[A4 E4 F#4 E4 A4])).to eq 1
     end
 
+    it "marks a raised sixth and seventh that do not reach the tonic" do
+      expect(marks_on("A aeolian", %w[A4 E4 F#4 G#4 E4 A4])).to eq 2
+    end
+
     it "passes the lydian lowered fourth" do
       expect(marks_on("F lydian", %w[F4 A4 Bb4 A4 G4 F4])).to eq 0
     end
@@ -123,7 +127,7 @@ describe HeadMusic::Style::Guidelines::Diatonic do
       expect(marks_on("G mixolydian", %w[G4 C5 Bb4 A4 G4])).to eq 0
     end
 
-    it "marks a phrygian lowered fourth" do
+    it "marks a phrygian lowered fifth" do
       expect(marks_on("E phrygian", %w[E4 C5 Bb4 A4 E4])).to eq 1
     end
   end

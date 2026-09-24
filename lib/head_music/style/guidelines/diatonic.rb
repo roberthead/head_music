@@ -38,7 +38,7 @@ class HeadMusic::Style::Guidelines::Diatonic < HeadMusic::Style::Guideline
   # tone must also be raised."
   def raised_sixth_to_raised_seventh?(note)
     following = following_note(note)
-    altered?(note, 6, 1) && following && altered?(following, 7, 1)
+    altered?(note, 6, 1) && following && raised_seventh_to_tonic?(following)
   end
 
   # "The Lydian mode (on F) regularly employs B flat."
