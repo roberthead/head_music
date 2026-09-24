@@ -294,7 +294,7 @@ All melodic guidelines from previous species carry forward, with adjustments for
 - **Singable range** -- generally not exceeding a tenth.
 - **Diatonic** -- stay within the mode/key.
 - **Recover large leaps** by stepwise motion in the opposite direction.
-- **No repeated notes** -- same pitch on consecutive notes is forbidden.
+- **No repeated notes** -- same pitch on consecutive notes is forbidden, with one exception: a suspension's resolution anticipated as a quarter on beat 2 and struck again on beat 3, which Salzer & Schachter list among the decorations of the resolution (p. 104, Example 5-9). `AlwaysMove` exempts exactly that shape, whether or not the beat-3 note ties forward; a repeated half, a repetition with no suspension before it, and a quarter approached from below stay marked.
 - **Frequent direction changes** -- avoid extended passages of more than 5-6 notes in the same direction.
 
 **Leap restrictions with shorter note values:**
