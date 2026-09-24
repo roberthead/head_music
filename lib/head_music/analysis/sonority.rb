@@ -37,25 +37,15 @@ class HeadMusic::Analysis::Sonority
   # @param inversion [Integer] the inversion number (default: 0 for root position)
   # @return [Sonority, nil] the sonority object, or nil if identifier not found
   def self.get(identifier, root: DEFAULT_ROOT, inversion: 0)
-    identifier = identifier.to_sym
-    return nil unless SONORITIES.key?(identifier)
+    interval_shorthands = SONORITIES[identifier.to_sym]
+    return nil unless interval_shorthands
 
     root_pitch = HeadMusic::Rudiment::Pitch.get(root)
-    interval_shorthands = SONORITIES[identifier]
-
-    # Build pitches: root + intervals above root
     pitches = [root_pitch] + interval_shorthands.map do |shorthand|
-      interval = HeadMusic::Analysis::DiatonicInterval.get(shorthand)
-      interval.above(root_pitch)
+      HeadMusic::Analysis::DiatonicInterval.get(shorthand).above(root_pitch)
     end
-
     pitch_collection = HeadMusic::Analysis::PitchCollection.new(pitches)
-
-    # Apply inversions if requested
-    inversion.times do
-      pitch_collection = pitch_collection.invert
-    end
-
+    inversion.times { pitch_collection = pitch_collection.invert }
     new(pitch_collection)
   end
 
@@ -83,28 +73,22 @@ class HeadMusic::Analysis::Sonority
   def identifier
     return @identifier if defined?(@identifier)
 
-    @identifier = SONORITIES.keys.detect do |key|
-      inversions.map do |inversion|
-        inversion.diatonic_intervals_above_bass_pitch.map(&:shorthand)
-      end.include?(SONORITIES[key])
-    end
+    @identifier = SONORITIES.keys.detect { |key| inversion_shorthands.include?(SONORITIES[key]) }
   end
 
   def inversion
-    @inversion ||= inversions.index do |inversion|
-      SONORITIES[identifier] == inversion.diatonic_intervals_above_bass_pitch.map(&:shorthand)
-    end
+    @inversion ||= inversion_shorthands.index(SONORITIES[identifier])
   end
 
   def inversions
-    @inversions ||= begin
-      inversion = reduction
-      inversions = []
-      inversion.pitches.length.times do |_i|
-        inversions << inversion
-        inversion = inversion.uninvert
-      end
-      inversions
+    @inversions ||= reduction.pitches.each_with_object([]) do |_pitch, list|
+      list << (list.last&.uninvert || reduction)
+    end
+  end
+
+  def inversion_shorthands
+    @inversion_shorthands ||= inversions.map do |inversion|
+      inversion.diatonic_intervals_above_bass_pitch.map(&:shorthand)
     end
   end
 
