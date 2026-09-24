@@ -145,7 +145,12 @@ module HeadMusic
       # @param other [MusicalPosition] another position to compare
       # @return [Integer] -1 if less than, 0 if equal, 1 if greater than
       def <=>(other)
-        to_a <=> other.to_a
+        return to_a <=> other.to_a unless other.is_a?(MusicalPosition)
+
+        (bar <=> other.bar).nonzero? ||
+          (count <=> other.count).nonzero? ||
+          (tick <=> other.tick).nonzero? ||
+          (subtick <=> other.subtick)
       end
 
       # @return [Integer] a hash over the position's components

@@ -60,6 +60,8 @@ class HeadMusic::Content::Position
   # exactly that comparison -- narrowing it would silently change note lookup.
   def <=>(other)
     other = self.class.new(flow, other) if other.is_a?(String) && other =~ /\D/
+    return value <=> other.value if other.is_a?(self.class)
+
     to_a <=> other.to_a
   end
 
@@ -92,9 +94,11 @@ class HeadMusic::Content::Position
     self.class.new(flow, bar_number + 1, 1, 0)
   end
 
-  private
+  protected
 
   attr_reader :value
+
+  private
 
   # Normalizing a flow-bound position is not one carry but two jobs, because
   # the bars it crosses need not share a meter.
