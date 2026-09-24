@@ -28,8 +28,7 @@ class HeadMusic::Style::Guidelines::MixSpeciesTextures < HeadMusic::Style::Guide
     options.fetch(:maximum_run) { self.class::MAXIMUM_RUN }
   end
 
-  # The first bar is texture the author chose, and the last bar is a whole
-  # note by another rule, so neither is counted.
+  # The last bar is a whole note by another rule, so it is not counted.
   def long_runs
     body_bar_numbers
       .chunk_while { |bar_number, next_bar_number| texture(bar_number) == texture(next_bar_number) }
@@ -68,11 +67,15 @@ class HeadMusic::Style::Guidelines::MixSpeciesTextures < HeadMusic::Style::Guide
   # A note that fills its bar is the first-species texture however it is
   # notated, so the dotted whole of a triple-meter cantus counts.
   def attack_texture(attacks, bar_number)
-    return :whole if attacks.one? && attacks.first.next_position >= downbeat_of(bar_number + 1)
+    return :whole if attacks.one? && fills_bar?(attacks.first, bar_number)
     return :half if attacks.all? { |note| undotted?(note, "half") }
     return :quarter if attacks.all? { |note| undotted?(note, "quarter") || undotted?(note, "eighth") }
 
     :florid
+  end
+
+  def fills_bar?(note, bar_number)
+    note.position == downbeat_of(bar_number) && note.next_position >= downbeat_of(bar_number + 1)
   end
 
   def undotted?(note, unit_name)

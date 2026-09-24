@@ -79,6 +79,22 @@ describe HeadMusic::Style::Guidelines::MixSpeciesTextures do
     end
   end
 
+  context "with a half after a half rest before two whole-note bars" do
+    let(:abc) { "z2 A2|A4|G4|B2 c2|d c B A|G2 A2|B c d e|d4|]" }
+
+    it "counts the entry as a half-note bar" do
+      expect(guideline).to be_adherent
+    end
+  end
+
+  context "with a half after a half rest before two half-note bars" do
+    let(:abc) { "z2 A2|B2 c2|d2 c2|B A G A|B4|A B c d|e d c B|c4|]" }
+
+    it "counts the entry toward the run of halves" do
+      expect(marked_bars).to eq [1, 2, 3]
+    end
+  end
+
   context "with a run of exactly two bars in one texture" do
     let(:abc) { "A2 d2|c2 B2|A B c d|e2 d2-|d c B A|B2 c2|B G A B|A4|]" }
 
