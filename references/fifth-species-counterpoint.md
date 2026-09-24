@@ -290,7 +290,7 @@ Eighth notes follow the same dissonance rules as quarter notes: if dissonant wit
 All melodic guidelines from previous species carry forward, with adjustments for the mixed-rhythm context:
 
 - **Primarily stepwise motion** -- even more so than in any single species, because the mixture of values gives many opportunities for conjunct motion.
-- **Single overall climax** that does not coincide with the CF climax. One or two secondary climaxes permitted.
+- **Single overall climax** that does not coincide with the CF climax. One or two secondary climaxes permitted. Salzer & Schachter: "The high point of a line should never be repeated" (p. 8), and in the moving species "the climax itself should not be repeated" even when a subsidiary high point is planned (p. 42). Two Fux lines repeat theirs, figure 84a, whose phrygian line opens and closes on its peak, and figure 87's upper counterpoint, which re-approaches its peak by leap within one bar; `ConsonantClimax` keeps both marks as Fux's liberties.
 - **Singable range** -- generally not exceeding a tenth.
 - **Diatonic** -- stay within the mode/key, except for the accidentals the modes require. Salzer & Schachter (pp. 9-10, 20) name four, and `Diatonic` exempts exactly those: a raised seventh that steps up to the tonic, wherever it occurs; a raised sixth that steps up to a raised seventh; the lowered fourth in lydian ("the Lydian mode (on F) regularly employs B flat"); and the lowered sixth in dorian or lowered third in mixolydian approached from above and left downward ("the natural ... used in ascending lines and the flat ... in descent"). Phrygian gets no B-flat, which it "seldom uses".
 - **Recover large leaps** by stepwise motion in the opposite direction.

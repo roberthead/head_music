@@ -144,4 +144,22 @@ describe HeadMusic::Style::Guidelines::ConsonantClimax do
       end
     end
   end
+
+  # Salzer and Schachter: "The high point of a line should never be repeated"
+  # (p. 8), and in the moving species "the climax itself should not be
+  # repeated" (p. 42). No species-tradition source clears either shape.
+  context "with Fux's liberties at the climax" do
+    def climax_marks(figure)
+      assess(described_class, fux_fifth_species_example(figure).counterpoint_voice).marks.map(&:code)
+    end
+
+    it "marks figure 84a, whose phrygian line opens and closes on its peak" do
+      expect(climax_marks("84a")).to eq ["1:3:000 to 2:2:000", "8:3:000 to 9:3:000", "10:1:000 to 11:1:000"]
+    end
+
+    it "marks figure 87 upper, whose peak is re-approached by leap within one bar" do
+      expect(climax_marks("87 upper counterpoint (scan only; no kern transcription)"))
+        .to eq ["7:1:000 to 7:2:000", "7:3:000 to 8:2:000"]
+    end
+  end
 end
