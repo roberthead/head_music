@@ -19,7 +19,7 @@ bundle exec rspec    # tests WITHOUT coverage
 
 ### Git Etiquette
 
-**IMPORTANT: Do not make a commit unless I explicitly ask you to.** Wait for explicit instruction before running `git commit`.
+Commit when your judgment says the work is ready: a coherent, tested change, with one cause per commit where the work calls for it. You do not need to wait to be asked. Pushing, merging, and rewriting published history still wait for my go-ahead.
 
 When composing git commit messages, follow best-practices. Describe the change itself — do not narrate the assistant's process in the message body. Attribution trailers (`Co-Authored-By`, `Claude-Session`) are added when the session's attribution setting asks for them.
 
