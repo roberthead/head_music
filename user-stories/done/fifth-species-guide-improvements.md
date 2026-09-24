@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-22T20:42:44-07:00
   activated_at: 2026-09-22T21:02:07-07:00
   planned_at:   2026-09-23T09:57:17-07:00
-  finished_at:
-  updated_at:   2026-09-24T09:45:40-07:00
+  finished_at:  2026-09-24T09:48:31-07:00
+  updated_at:   2026-09-24T09:48:31-07:00
 -->
 
 # Story: Fifth Species Guide Improvements
@@ -389,6 +389,45 @@ Findings 1 to 9 were fixed on 2026-09-24, and none moved a corpus grade.
   (figure 73 0.827, figure 55 0.796, the triple-meter line 0.608, first
   species at most 0.625), count 175 rows for the mixture commit, count
   twenty-three tied-forward bars, and describe figure 73 as two runs of four.
+
+## Learnings
+
+- **The source standard paid for itself.** Settling every trace from Salzer
+  and Schachter before implementing meant each checkpoint was a known rule
+  with a known page, and the only open question was measurement. Reading the
+  source also changed two decisions made before it was in hand: the mixture
+  measure became their run limit rather than a dominance share, and
+  `StepOutOfUnison` stayed because they apply it to fifth species. Deciding
+  on Jeppesen before checking which tradition he describes cost a planning
+  round; ask what tradition a source belongs to before adopting it.
+- **Re-measure before writing specs.** The plan's rule to grade the corpus
+  before writing a guideline's specs caught the triple-meter cantus rising
+  under `MixSpeciesTextures`, which exposed classification by notation
+  instead of by duration. The review then caught the mirror image, a note
+  that fills the bar's end but not its start. Both were questions of what
+  "fills the bar" means; a rule that classifies bars needs specs on bars that
+  open with a rest and bars in another meter from the start.
+- **Beat numbers are a 4/4 assumption.** `PreferLongBeforeShort` and
+  `AlwaysMove` both named beats 2 and 3. The review found the first silently
+  ignored 3/2; reading the shape from the notes' own positions fixed it.
+  `AlwaysMove`'s anticipation still reads beat numbers and is worth the same
+  treatment when a triple-meter fifth species appears.
+- **Per-cause commits without committing early.** Saving each checkpoint as
+  a patch and staging it, then replaying the patches as commits when asked,
+  kept both the one-cause-per-commit criterion and the rule against
+  committing unasked. Verifying that the patch chain rebuilt the staged tree
+  was what made it safe; `git rm` stages outside `git diff`, which the first
+  patch missed.
+- **Numbers recorded mid-story drift.** Grades written at the checkpoint
+  that caused them moved by a thousandth under later checkpoints, and a
+  movement count that looked only at fitness missed two rows whose message
+  count moved. Record the measuring commit beside each number, and count a
+  row as moved when any column changes.
+- **Vacuous specs hide real gaps.** Both passing-for-the-wrong-reason specs
+  the review found (the triple-meter bar with no half, adherent cases that
+  passed without the exemption) pointed at behavior worth testing. Temporarily
+  reverting the change to confirm a new spec fails was cheap and should be
+  routine for exemption specs.
 
 ## Implementation Plan
 
