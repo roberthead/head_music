@@ -34,4 +34,9 @@ module HeadMusic::ValueEquality
 
     self.class.value_equality_attributes.all? { |attribute| send(attribute) == other.send(attribute) }
   end
+  alias_method :eql?, :==
+
+  def hash
+    [self.class, *self.class.value_equality_attributes.map { |attribute| send(attribute) }].hash
+  end
 end

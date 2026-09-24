@@ -5,6 +5,7 @@ module HeadMusic::Content; end
 # single place the level constraint is enforced.
 class HeadMusic::Content::Credits
   include Enumerable
+  include HeadMusic::ValueEquality
 
   LEVELS = HeadMusic::Content::Role::LEVELS
 
@@ -13,6 +14,8 @@ class HeadMusic::Content::Credits
   end
 
   attr_reader :level, :credits
+
+  value_equality :level, :credits
 
   def initialize(level, credits = [])
     @level = level&.to_sym
@@ -49,15 +52,6 @@ class HeadMusic::Content::Credits
 
   def to_h
     credits.map(&:to_h)
-  end
-
-  def ==(other)
-    other.is_a?(self.class) && level == other.level && credits == other.credits
-  end
-  alias_method :eql?, :==
-
-  def hash
-    [self.class, level, credits].hash
   end
 
   private

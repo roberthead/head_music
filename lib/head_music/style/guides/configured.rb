@@ -4,7 +4,12 @@ module HeadMusic::Style::Guides; end
 # A guide class paired with configuration. Stands in for a guide class
 # wherever one is expected by answering assess(voice) and assess_items(voice).
 class HeadMusic::Style::Guides::Configured
+  include HeadMusic::ValueEquality
+  include HeadMusic::Style::Guides::TieredItems
+
   attr_reader :guide_class, :options
+
+  value_equality :guide_class, :options
 
   def initialize(guide_class, options)
     @guide_class = guide_class
@@ -18,10 +23,6 @@ class HeadMusic::Style::Guides::Configured
 
   def assess_items(voice)
     HeadMusic::Style::Guides::Assessment.assess_items(voice, items_by_tier)
-  end
-
-  def guide_items
-    @guide_items ||= HeadMusic::Style::Guides::Base::TIERS.flat_map { |tier| items_by_tier[tier] }.freeze
   end
 
   def items_by_tier
@@ -62,15 +63,6 @@ class HeadMusic::Style::Guides::Configured
   # configures.
   def instruction
     key ? HeadMusic::Style::Guide.instruction_for(key) : guide_class.instruction
-  end
-
-  def ==(other)
-    other.is_a?(self.class) && guide_class == other.guide_class && options == other.options
-  end
-  alias_method :eql?, :==
-
-  def hash
-    [guide_class, options].hash
   end
 
   def name

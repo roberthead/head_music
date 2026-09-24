@@ -10,7 +10,18 @@ module HeadMusic::Style; end
 # override exists only for the tradition-dependent case, where
 # ApproachPerfectionContrarily is prohibited in Fux and merely cautioned later.
 class HeadMusic::Style::GuideItem
+  include HeadMusic::ValueEquality
+
   attr_reader :guideline, :config, :strength
+
+  # By value: identity matching is what made `CORE - [Guideline]` silently
+  # remove nothing.
+  #
+  # Strength is deliberately omitted. reject_duplicates asks one question -- is
+  # this rule graded twice -- and strength cannot change the answer. Were it
+  # part of equality, declaring a rule primary-strong and secondary-weak would
+  # slip past the guard and be double-counted.
+  value_equality :guideline, :config
 
   def self.wrap(entry)
     entry.is_a?(self) ? entry : new(entry)
@@ -45,22 +56,6 @@ class HeadMusic::Style::GuideItem
 
   def assess(voice, tier)
     guideline.assess(voice, self, tier)
-  end
-
-  # By value: identity matching is what made `CORE - [Guideline]` silently
-  # remove nothing.
-  #
-  # Strength is deliberately omitted from both == and hash. reject_duplicates
-  # asks one question -- is this rule graded twice -- and strength cannot change
-  # the answer. Were it part of equality, declaring a rule primary-strong and
-  # secondary-weak would slip past the guard and be double-counted.
-  def ==(other)
-    other.is_a?(self.class) && guideline == other.guideline && config == other.config
-  end
-  alias_method :eql?, :==
-
-  def hash
-    [guideline, config].hash
   end
 
   def name
