@@ -15,6 +15,7 @@ describe HeadMusic::Content::Flow do
 
   its(:latest_bar_number) { is_expected.to eq 1 }
   its(:to_s) { is_expected.to eq "Fruit Salad — 0 voices" }
+  its(:inspect) { is_expected.to eq "#<HeadMusic::Content::Flow Fruit Salad — 0 voices>" }
 
   its(:composer) { is_expected.to be_nil }
   its(:origin) { is_expected.to be_nil }

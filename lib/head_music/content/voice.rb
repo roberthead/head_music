@@ -125,6 +125,10 @@ class HeadMusic::Content::Voice
     [role, pitches_string].join(": ")
   end
 
+  def inspect
+    "#<#{self.class.name} #{self}>"
+  end
+
   def to_h
     hash = {"role" => role&.to_s, "placements" => placements.map(&:to_h)}
     assignments = staff_assignments_to_h

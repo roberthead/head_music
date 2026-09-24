@@ -43,6 +43,8 @@ Four counterpoint stories, [Require the Species Rhythm](https://github.com/rober
 
 - **Guide grading allocates about a quarter as many objects.** Positions compare field by field rather than through arrays; pitch and spelling names, a pitch's natural, a letter name's pitch class, and a diatonic interval's quality are memoized; pitch classes and chromatic intervals looked up by number skip name parsing; rhythmic unit names are indexed once rather than normalized on every parse; and `AvoidCrossingVoices` finds the predominant orientation once per assessment. Grading the pinned corpus falls from about 18.5 to 9.4 seconds, and no grade moves. `Pitch#name` and `Spelling#name` now return frozen strings.
 
+- **`Flow`, `Voice`, `Position`, and `Placement` inspect as one line.** Each shows its class and `to_s`, as in `#<HeadMusic::Content::Placement eighth F♯4 at 2:2:240>`. The default printed the whole composition, since every placement reaches its voice and every voice its flow: two melodic note pairs from a seven-note voice inspected to two megabytes, in irb, in failure messages, and in RSpec's generated example descriptions.
+
 ### Removed
 
 - **`Style::Guidelines::MixedRhythmicValues`.** It asked only for three distinct durations and placed one mark when a line had fewer, which is why Fux's fourth-species line graded within 0.024 of his fifth-species line on the `fifth_species` composite. `MixSpeciesTextures` replaces it; no other guide used it.

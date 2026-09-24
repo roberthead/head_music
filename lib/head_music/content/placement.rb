@@ -119,6 +119,10 @@ class HeadMusic::Content::Placement
     "#{rhythmic_value} #{sounds.any? ? sounds.map { |sound| sound_label(sound) }.join(" ") : "rest"} at #{position}"
   end
 
+  def inspect
+    "#<#{self.class.name} #{self}>"
+  end
+
   def to_h
     hash = {
       "position" => position.to_s,

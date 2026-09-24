@@ -256,6 +256,7 @@ describe HeadMusic::Content::Voice do
     its(:leaps) { are_expected.to eq [voice.melodic_note_pairs[0], voice.melodic_note_pairs[5]] }
     its(:large_leaps) { are_expected.to eq [voice.melodic_note_pairs[0], voice.melodic_note_pairs[5]] }
     its(:to_s) { is_expected.to eq "G3 C4 D4 E♭4 F4 E♭4 G3" }
+    its(:inspect) { is_expected.to eq "#<HeadMusic::Content::Voice G3 C4 D4 E♭4 F4 E♭4 G3>" }
   end
 
   describe "#melodic_line" do

@@ -148,6 +148,12 @@ class HeadMusic::Content::Flow
     "#{name} — #{voices.count} #{"voice".pluralize(voices.count)}"
   end
 
+  # The default would print the whole composition, since every placement
+  # reaches its voice and every voice its flow.
+  def inspect
+    "#<#{self.class.name} #{self}>"
+  end
+
   def to_abc(**options)
     HeadMusic::Notation::ABC.render(self, **options)
   end

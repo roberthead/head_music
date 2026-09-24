@@ -14,6 +14,7 @@ describe HeadMusic::Content::Position do
   its(:count) { is_expected.to eq 2 }
   its(:tick) { is_expected.to eq 480 }
   its(:to_s) { is_expected.to eq "3:2:480" }
+  its(:inspect) { is_expected.to eq "#<HeadMusic::Content::Position 3:2:480>" }
   its(:start_of_next_bar) { is_expected.to eq "4:1:000" }
 
   context "when there are a small number of ticks" do

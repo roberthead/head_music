@@ -478,6 +478,8 @@ describe HeadMusic::Content::Placement do
     end
   end
 
+  its(:inspect) { is_expected.to eq "#<HeadMusic::Content::Placement eighth F♯4 at 2:2:240>" }
+
   describe "#to_s" do
     context "with an unpitched sound alongside a pitch" do
       let(:pitch) { ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")] }

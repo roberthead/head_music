@@ -51,6 +51,10 @@ class HeadMusic::Content::Position
     subtick.zero? ? base : "#{base}:#{subtick.to_s.rjust(3, "0")}"
   end
 
+  def inspect
+    "#<#{self.class.name} #{self}>"
+  end
+
   def within_placement?(placement)
     placement.position <= self && placement.next_position > self
   end
