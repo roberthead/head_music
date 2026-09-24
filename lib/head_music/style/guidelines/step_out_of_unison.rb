@@ -1,7 +1,9 @@
 # Module for style guidelines.
 module HeadMusic::Style::Guidelines; end
 
-# A counterpoint guideline
+# A counterpoint guideline. Salzer and Schachter permit a unison off the
+# downbeat "if tied over or followed by stepwise motion" (p. 106), and the
+# opening unison is outside the rule (p. 40).
 class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Guideline
   def marks
     leaps_following_unisons.map do |note_pair|
@@ -12,7 +14,17 @@ class HeadMusic::Style::Guidelines::StepOutOfUnison < HeadMusic::Style::Guidelin
   private
 
   def leaps_following_unisons
-    melodic_note_pairs_following_unisons.select(&:leap?)
+    melodic_note_pairs_following_unisons
+      .select(&:leap?)
+      .reject { |pair| opening?(pair.first_note) || tied_over?(pair.first_note) }
+  end
+
+  def opening?(note)
+    note == first_note
+  end
+
+  def tied_over?(note)
+    note.next_position > note.position.start_of_next_bar
   end
 
   def melodic_note_pairs_following_unisons

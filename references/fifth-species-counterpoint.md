@@ -346,7 +346,9 @@ The general principle is that parallel perfect consonances are checked according
 | Interior downbeats (beat 1) | **Forbidden** (universal) |
 | Interior weak beats (2, 3, 4) | Permitted when necessary for good voice-leading |
 
-Approach and departure: step out of unisons (do not leap to or from a unison).
+Approach and departure: step out of unisons (do not leap to or from a unison). Salzer & Schachter state it for fifth species (p. 106): unisons "are permitted on the first beat only through suspension. They may occur elsewhere in the measure if tied over or followed by stepwise motion." The opening tone is outside the rule, since the lower counterpoint begins on "a unison or octave" (p. 40).
+
+**In head_music:** `StepOutOfUnison` marks a unison left by leap, exempting the voice's first note and a unison tied over the bar line. Four Fux fifth-species lines leave an interior unison by leap (82 twice, 84a, 85a, 86a); those marks stay as his liberties.
 
 ### 3.12 Voice Crossing and Overlap
 
