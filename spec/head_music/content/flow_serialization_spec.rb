@@ -658,11 +658,11 @@ describe HeadMusic::Content::Flow do
     end
 
     # v3 restructured into v4, so no key-rename recipe can migrate it in place
-    # the way v2 to v3 was migrated. The reader that understands v3 still ships,
-    # and the error says so rather than leaving a caller stuck.
-    it "points a v3 document at the reader that still understands it" do
+    # the way v2 to v3 was migrated. The error names the release whose reader
+    # still understands it rather than leaving a caller stuck.
+    it "points a v3 document at the release that still reads it" do
       expect { described_class.from_h({"schema_version" => 3, "name" => "Legacy"}) }
-        .to raise_error(ArgumentError, /unsupported schema_version: 3 .*Flow\.from_v3_h.*22\.0\.0/)
+        .to raise_error(ArgumentError, /unsupported schema_version: 3 .*Flow\.from_v3_h in head_music 21\.x/)
     end
 
     it "raises ArgumentError on the retired version 2" do

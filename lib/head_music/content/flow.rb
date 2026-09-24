@@ -23,12 +23,6 @@ class HeadMusic::Content::Flow
     HashDeserializer.new(hash).flow
   end
 
-  # Retained read-only through 21.x so that persisted v3 data can be migrated
-  # by reading and re-saving. Removed in 22.0.0.
-  def self.from_v3_h(hash)
-    V3HashDeserializer.new(hash).flow
-  end
-
   def self.from_json(json)
     from_h(JSON.parse(json))
   end

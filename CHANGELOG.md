@@ -47,6 +47,8 @@ Four counterpoint stories, [Require the Species Rhythm](https://github.com/rober
 
 ### Removed
 
+- **`Content::Flow.from_v3_h` and `Content::Flow::V3HashDeserializer`,** as 21.0.0 announced. A schema-3 document is read with `Flow.from_v3_h` in head_music 21.x and saved again; `Flow.from_h` still rejects one with an error saying so.
+
 - **`Style::Guidelines::MixedRhythmicValues`.** It asked only for three distinct durations and placed one mark when a line had fewer, which is why Fux's fourth-species line graded within 0.024 of his fifth-species line on the `fifth_species` composite. `MixSpeciesTextures` replaces it; no other guide used it.
 
 ### Fixed

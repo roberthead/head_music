@@ -9,11 +9,11 @@ class HeadMusic::Content::Flow
 
     private
 
-    # A v3 document is told where 20.1.0 still reads it, rather than merely
-    # rejected, because that reader still ships.
+    # No recipe migrates v3 in place, so a v3 document is told which release
+    # still reads it rather than merely rejected.
     def unsupported_version_message(version)
       message = super
-      message += "; read it with Flow.from_v3_h, which is retained in 21.x and removed in 22.0.0" if version == 3
+      message += "; read it with Flow.from_v3_h in head_music 21.x and save it again" if version == 3
       message
     end
 

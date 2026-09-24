@@ -509,7 +509,7 @@ Written by `Position#code` as `"<bar>:<count>:<tick, three digits>"`, with `":<s
 
 ## 5. What Moved from Schema 3
 
-`Flow.from_v3_h` reads the 20.x document and is removed in 22.0.0. The difference is structural, not a renaming of keys.
+`Flow.from_v3_h` read the 20.x document through 21.x and was removed in 22.0.0, so a v3 document is read with head_music 21.x and saved again. The difference is structural, not a renaming of keys.
 
 | Schema 3 (20.x) | Schema 4 (21.0.0) |
 |---|---|
@@ -541,6 +541,6 @@ The rule the version number follows, stated once so that the next key does not h
 - **A rename or a container restructure bumps the schema version.** Both bumps so far were earned that way: schema 3 renamed each placement's `pitches` to `sounds`, and schema 4 moved key, meter, and tempo off the bars and onto a timeline, and voices under parts. An old reader handed such a document reads it *wrongly*, so it must be told to refuse.
 - **A new optional key does not.** `Flow#to_h` and `Project#to_h` are read by `HashDeserializer#build` and `Project.from_h`, which look up the keys they know and never enumerate the hash, so an unrecognized key costs nothing. A 21.0.0 reader accepts a 21.1.0 document and loses only the information it has no home for — and `"composer"` still carries the derived name, so even that loss does not reach the page.
 
-Schema 4 therefore covers 21.0.0 and 21.1.0 alike. `"work"`, `"source"`, `"credits"`, and `"layouts"` were added under it, and a document from either version reads in either direction. Bumping to 5 would have made 21.0.0 *reject* documents it can read perfectly well, and forced a second retained reader alongside `Flow.from_v3_h`, which is promised until 22.0.0.
+Schema 4 therefore covers 21.0.0 and 21.1.0 alike. `"work"`, `"source"`, `"credits"`, and `"layouts"` were added under it, and a document from either version reads in either direction. Bumping to 5 would have made 21.0.0 *reject* documents it can read perfectly well, and forced a second retained reader alongside `Flow.from_v3_h`, which was kept until 22.0.0.
 
 The rule has one condition: a new key must be optional on read and meaningless to a reader that ignores it. A key an old reader would need in order to be correct is a restructure wearing a new name, and takes the bump.
