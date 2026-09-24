@@ -292,7 +292,7 @@ All melodic guidelines from previous species carry forward, with adjustments for
 - **Primarily stepwise motion** -- even more so than in any single species, because the mixture of values gives many opportunities for conjunct motion.
 - **Single overall climax** that does not coincide with the CF climax. One or two secondary climaxes permitted.
 - **Singable range** -- generally not exceeding a tenth.
-- **Diatonic** -- stay within the mode/key.
+- **Diatonic** -- stay within the mode/key, except for the accidentals the modes require. Salzer & Schachter (pp. 9-10, 20) name four, and `Diatonic` exempts exactly those: a raised seventh that steps up to the tonic, wherever it occurs; a raised sixth that steps up to a raised seventh; the lowered fourth in lydian ("the Lydian mode (on F) regularly employs B flat"); and the lowered sixth in dorian or lowered third in mixolydian approached from above and left downward ("the natural ... used in ascending lines and the flat ... in descent"). Phrygian gets no B-flat, which it "seldom uses".
 - **Recover large leaps** by stepwise motion in the opposite direction.
 - **No repeated notes** -- same pitch on consecutive notes is forbidden, with one exception: a suspension's resolution anticipated as a quarter on beat 2 and struck again on beat 3, which Salzer & Schachter list among the decorations of the resolution (p. 104, Example 5-9). `AlwaysMove` exempts exactly that shape, whether or not the beat-3 note ties forward; a repeated half, a repetition with no suspension before it, and a quarter approached from below stay marked.
 - **Frequent direction changes** -- avoid extended passages of more than 5-6 notes in the same direction.
