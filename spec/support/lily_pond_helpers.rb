@@ -82,6 +82,8 @@ end
 
 # The real toolchain as an oracle: a rendered document must compile with
 # the lilypond binary when one is installed. Callers set `rendered`.
+# Pages are typeset but not written, which still fails on bad input and saves
+# a quarter of each compile.
 module LilyPondToolchain
   def installed_lilypond
     ENV["PATH"].split(File::PATH_SEPARATOR)
@@ -93,7 +95,7 @@ module LilyPondToolchain
     Dir.mktmpdir do |dir|
       source_path = File.join(dir, "golden.ly")
       File.write(source_path, source)
-      system(lilypond, "--output", dir, source_path, out: File::NULL, err: File::NULL)
+      system(lilypond, "-dno-print-pages", "--output", dir, source_path, out: File::NULL, err: File::NULL)
     end
   end
 end
