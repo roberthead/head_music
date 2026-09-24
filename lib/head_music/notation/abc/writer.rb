@@ -42,13 +42,8 @@ module HeadMusic::Notation::ABC
     end
 
     def ensure_no_mid_piece_changes
-      meter_change_bar = flow.meter_changes.keys.min
-      raise RenderError, "cannot render the meter change at bar #{meter_change_bar} in ABC output" if meter_change_bar
-
-      key_change_bar = flow.key_signature_changes.keys.min
-      return unless key_change_bar
-
-      raise RenderError, "cannot render the key signature change at bar #{key_change_bar} in ABC output"
+      refuse_change("meter", flow.meter_changes.keys)
+      refuse_change("key signature", flow.key_signature_changes.keys)
     end
 
     # A tune has one K: field, so a part that picks up an instrument reading in
@@ -56,10 +51,14 @@ module HeadMusic::Notation::ABC
     def ensure_no_instrument_change
       return unless transposed
 
-      change_bar = flow.parts.flat_map { |part| part.instrument_changes.keys }.min
-      return unless change_bar
+      refuse_change("instrument", flow.parts.flat_map { |part| part.instrument_changes.keys })
+    end
 
-      raise RenderError, "cannot render the instrument change at bar #{change_bar} in ABC output"
+    def refuse_change(subject, bar_numbers)
+      bar_number = bar_numbers.min
+      return unless bar_number
+
+      raise RenderError, "cannot render the #{subject} change at bar #{bar_number} in ABC output"
     end
 
     def placements
@@ -104,12 +103,8 @@ module HeadMusic::Notation::ABC
     end
 
     def body_lines
-      return [] if bar_strings.empty?
-
-      lines = bar_strings.each_slice(BARS_PER_LINE).map do |line_bars|
-        line_bars.join("|") + "|"
-      end
-      lines[-1] = lines[-1].sub(/\|\z/, "|]")
+      lines = bar_strings.each_slice(BARS_PER_LINE).map { |line_bars| "#{line_bars.join("|")}|" }
+      lines.last&.concat("]")
       lines
     end
 
@@ -120,9 +115,9 @@ module HeadMusic::Notation::ABC
     def build_bar_strings
       pitch_writer = PitchWriter.new(written_key_signature)
       duration_writer = DurationWriter.new(UNIT_NOTE_LENGTH)
-      segments_by_bar.each_with_index.map do |bar_segments, index|
+      segments_by_bar.map do |bar_segments|
         # Accidental state must mirror what a re-parse accumulates bar by bar.
-        pitch_writer.start_new_bar if index.positive?
+        pitch_writer.start_new_bar
         render_bar(bar_segments, pitch_writer, duration_writer)
       end
     end
@@ -152,7 +147,7 @@ module HeadMusic::Notation::ABC
 
     def fraction_to_bar_end(position)
       meter = position.meter
-      count_fraction(meter) * meter.counts_per_bar - offset_in_bar(position)
+      Rational(meter.top_number, meter.bottom_number) - offset_in_bar(position)
     end
 
     def fraction_within_bar(from, to)
@@ -161,28 +156,18 @@ module HeadMusic::Notation::ABC
 
     def offset_in_bar(position)
       meter = position.meter
-      count_fraction(meter) * ((position.count - 1) + Rational(position.tick, meter.ticks_per_count))
-    end
-
-    def count_fraction(meter)
-      unit = meter.count_unit
-      Rational(unit.numerator, unit.denominator)
-    end
-
-    def render_bar(bar_segments, pitch_writer, duration_writer)
-      tokens = bar_segments.map { |segment| token(segment, pitch_writer, duration_writer) }
-      join_bar_tokens(bar_segments.map(&:placement), tokens)
+      (position.count - 1 + Rational(position.tick, meter.ticks_per_count)) / meter.bottom_number
     end
 
     # The inter-token space is dropped only where the placement was authored as
     # beamed to its predecessor; a true or nil beam_break_before keeps it, so
     # programmatic flows render with every-token spacing. Every bar token
     # re-lexes unambiguously with no separator, so dropping it is safe.
-    def join_bar_tokens(placements, tokens)
-      tokens.each_with_index.reduce(+"") do |line, (token, index)|
-        separator = (index.zero? || placements[index].beam_break_before == false) ? "" : " "
-        line << separator << token
-      end
+    def render_bar(bar_segments, pitch_writer, duration_writer)
+      bar_segments.map do |segment|
+        token = token(segment, pitch_writer, duration_writer)
+        (segment.placement.beam_break_before == false) ? token : " #{token}"
+      end.join.lstrip
     end
 
     def token(segment, pitch_writer, duration_writer)

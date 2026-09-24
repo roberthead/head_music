@@ -19,8 +19,8 @@ class HeadMusic::Content::Project
 
     new(name: hash["name"], credits: Array(hash["credits"])).tap do |project|
       Array(hash["players"]).each { |player_hash| project.add_player(name: player_hash["name"]) }
-      Array(hash["flows"]).each_with_index do |flow_hash, index|
-        project.adopt_flow_at(HeadMusic::Content::Flow.from_h(flow_hash), Array(hash["flows"])[index]["players"])
+      Array(hash["flows"]).each do |flow_hash|
+        project.adopt_flow_at(HeadMusic::Content::Flow.from_h(flow_hash), flow_hash["players"])
       end
       # Layouts last: a layout selects flows and players by index, so both
       # collections must be in place before one can be resolved.
@@ -74,12 +74,11 @@ class HeadMusic::Content::Project
   def add_layout(kind: :custom, **kwargs)
     return add_score(**kwargs) if kind.to_sym == :score
 
-    HeadMusic::Content::Layout.new(project: self, kind: kind, **kwargs).tap { |layout| @layouts << layout }
+    hold_layout(HeadMusic::Content::Layout.new(project: self, kind: kind, **kwargs))
   end
 
   def add_score(ensemble_type: nil, **kwargs)
-    HeadMusic::Content::Score.new(project: self, ensemble_type: ensemble_type, **kwargs)
-      .tap { |score| @layouts << score }
+    hold_layout(HeadMusic::Content::Score.new(project: self, ensemble_type: ensemble_type, **kwargs))
   end
 
   # @api private for Project.from_h
@@ -119,10 +118,15 @@ class HeadMusic::Content::Project
   end
 
   def to_s
-    "#{name} — #{flows.length} #{(flows.length == 1) ? "flow" : "flows"}"
+    "#{name} — #{flows.length} #{"flow".pluralize(flows.length)}"
   end
 
   private
+
+  def hold_layout(layout)
+    @layouts << layout
+    layout
+  end
 
   # Which chair each part fills, by index into the project's players. Null for
   # a part with no player, which stays a plain staff of music.

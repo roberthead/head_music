@@ -18,12 +18,17 @@ class HeadMusic::Content::Layout
     hash = hash.transform_keys(&:to_s)
     {
       kind: (hash["kind"] || :custom).to_sym,
-      flows: hash["flows"] && Array(hash["flows"]).map { |index| project.flows[index] },
-      players: hash["players"] && Array(hash["players"]).map { |index| project.players[index] },
+      flows: members_at(hash["flows"], project.flows),
+      players: members_at(hash["players"], project.players),
       concert_pitch: hash.fetch("concert_pitch", true),
       title_override: hash["title_override"]
     }
   end
+
+  def self.members_at(indexes, collection)
+    indexes && Array(indexes).map { |index| collection[index] }
+  end
+  private_class_method :members_at
 
   def initialize(project:, kind: :custom, flows: nil, players: nil, concert_pitch: true, title_override: nil)
     ensure_known_kind!(kind)
@@ -68,11 +73,12 @@ class HeadMusic::Content::Layout
     Realization.new(self, flow).flow
   end
 
+  # A selection holds only the project's players, never nil, so a part with no
+  # player is kept only when nothing is selected.
+  #
   # @api private for Layout::Realization
   def selects?(part)
-    return true if selected_players.nil?
-
-    !part.player.nil? && selected_players.include?(part.player)
+    selected_players.nil? || selected_players.include?(part.player)
   end
 
   # Which of the flow's parts survive the selection, by index, in the order they
@@ -95,9 +101,9 @@ class HeadMusic::Content::Layout
   # rendered; each tune carries its own T:.
   def to_abc
     ensure_something_to_render!
-    rendered_flows.each_with_index
-      .map { |flow, index| HeadMusic::Notation::ABC.render(realize(flow), reference_number: index + 1, transposed: transposed?) }
-      .join("\n")
+    rendered_flows.map.with_index(1) do |flow, number|
+      HeadMusic::Notation::ABC.render(realize(flow), reference_number: number, transposed: transposed?)
+    end.join("\n")
   end
 
   # A single flow renders exactly as the flow would on its own; several render
@@ -105,15 +111,16 @@ class HeadMusic::Content::Layout
   def to_lilypond
     ensure_something_to_render!
     realized = rendered_flows.map { |flow| realize(flow) }
-    return HeadMusic::Notation::LilyPond.render(realized.first, transposed: transposed?, arranger: arranger) if realized.one?
+    return HeadMusic::Notation::LilyPond.render(realized.first, **rendering_options) if realized.one?
 
-    HeadMusic::Notation::LilyPond::BookWriter.new(realized, title: title, transposed: transposed?, arranger: arranger).to_s
+    HeadMusic::Notation::LilyPond::BookWriter.new(realized, title: title, **rendering_options).to_s
   end
 
   def to_musicxml
-    if rendered_flows.length > 1
+    count = rendered_flows.length
+    if count > 1
       raise HeadMusic::Notation::RenderError,
-        "MusicXML holds one flow per document and this layout renders #{rendered_flows.length}; use #to_musicxml_documents"
+        "MusicXML holds one flow per document and this layout renders #{count}; use #to_musicxml_documents"
     end
 
     to_musicxml_documents.first
@@ -121,8 +128,8 @@ class HeadMusic::Content::Layout
 
   def to_musicxml_documents
     ensure_something_to_render!
-    rendered_flows.each_with_index.map do |flow, index|
-      HeadMusic::Notation::MusicXML.render(realize(flow), **musicxml_options(index))
+    rendered_flows.map.with_index(1) do |flow, number|
+      HeadMusic::Notation::MusicXML.render(realize(flow), **musicxml_options(number))
     end
   end
 
@@ -138,7 +145,7 @@ class HeadMusic::Content::Layout
   end
 
   def to_s
-    "#{title} — #{kind} layout of #{rendered_flows.length} #{(rendered_flows.length == 1) ? "flow" : "flows"}"
+    "#{title} — #{kind} layout of #{rendered_flows.length} #{"flow".pluralize(rendered_flows.length)}"
   end
 
   private
@@ -167,10 +174,14 @@ class HeadMusic::Content::Layout
 
   # A document standing alone names only itself, which is what keeps a one-flow
   # layout byte-identical to the flow's own output.
-  def musicxml_options(index)
-    return {transposed: transposed?, arranger: arranger} if single_flow?
+  def musicxml_options(movement_number)
+    return rendering_options if single_flow?
 
-    {work_title: title, movement_number: index + 1, transposed: transposed?, arranger: arranger}
+    rendering_options.merge(work_title: title, movement_number: movement_number)
+  end
+
+  def rendering_options
+    {transposed: transposed?, arranger: arranger}
   end
 
   # The project's arrangers, joined as the composer is: this version's credit,
@@ -187,8 +198,8 @@ class HeadMusic::Content::Layout
   end
 
   def shared_work_title
-    works = flows.map(&:work)
-    works.first&.title if works.uniq.length == 1
+    works = flows.map(&:work).uniq
+    works.first&.title if works.size == 1
   end
 
   # Positions, not objects: a player and a flow are identified in a document

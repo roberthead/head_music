@@ -81,7 +81,7 @@ class HeadMusic::Content::Part
   end
 
   def to_s
-    [player&.name, "#{voices.length} #{(voices.length == 1) ? "voice" : "voices"}"].compact.join(": ")
+    [player&.name, "#{voices.length} #{"voice".pluralize(voices.length)}"].compact.join(": ")
   end
 
   # Sparse: a part with no instrument and no authored staves serializes as its

@@ -145,7 +145,7 @@ class HeadMusic::Content::Flow
   end
 
   def to_s
-    "#{name} — #{voices.count} #{(voices.count == 1) ? "voice" : "voices"}"
+    "#{name} — #{voices.count} #{"voice".pluralize(voices.count)}"
   end
 
   def to_abc(**options)
