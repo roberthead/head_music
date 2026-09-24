@@ -1,25 +1,30 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
-require "simplecov"
 
-SimpleCov.start do
-  skip "/spec/"
-  skip "/vendor/"
+# Opt-in, so a focused run is not failed by the suite-wide minimum. `rake spec`
+# (and so `rake` and `rake validate`) sets it.
+if ENV["COVERAGE"] == "true"
+  require "simplecov"
 
-  # Set minimum coverage threshold
-  minimum_coverage 90
+  SimpleCov.start do
+    skip "/spec/"
+    skip "/vendor/"
 
-  # Enable different coverage metrics
-  enable_coverage :branch
+    # Set minimum coverage threshold
+    minimum_coverage 90
 
-  # Add groups for better organization
-  group "Analysis", "lib/head_music/analysis"
-  group "Content", "lib/head_music/content"
-  group "Instruments", "lib/head_music/instruments"
-  group "Rudiments", "lib/head_music/rudiment"
-  group "Style", "lib/head_music/style"
+    # Enable different coverage metrics
+    enable_coverage :branch
 
-  # Refuse coverage drops below threshold
-  maximum_coverage_drop 1.0 # 1% drop allowed
+    # Add groups for better organization
+    group "Analysis", "lib/head_music/analysis"
+    group "Content", "lib/head_music/content"
+    group "Instruments", "lib/head_music/instruments"
+    group "Rudiments", "lib/head_music/rudiment"
+    group "Style", "lib/head_music/style"
+
+    # Refuse coverage drops below threshold
+    maximum_coverage_drop 1.0 # 1% drop allowed
+  end
 end
 
 require "rspec/its"

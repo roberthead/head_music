@@ -57,6 +57,8 @@ jobs:
         bundle install
 
     - name: Run tests
+      env:
+        COVERAGE: ${{ matrix.coverage && 'true' || '' }}
       run: bundle exec rspec
 
     - name: Upload coverage to Codecov
@@ -99,8 +101,8 @@ jobs:
 
   # The LilyPond specs treat the real binary as an oracle and skip when none is
   # installed, so without this job nothing proves the rendered documents
-  # actually compile. Runs the whole suite because SimpleCov's minimum applies
-  # to any rspec invocation.
+  # actually compile. Only the specs that call the binary run here; the test
+  # job covers the rest.
   test-lilypond:
     name: test (with the lilypond toolchain)
     runs-on: ubuntu-latest
@@ -121,7 +123,7 @@ jobs:
         bundler-cache: true
 
     - name: Run tests
-      run: bundle exec rspec
+      run: bundle exec rspec spec/head_music/notation/lily_pond_round_trip_spec.rb spec/head_music/notation/lily_pond
 
   lint:
     runs-on: ubuntu-latest

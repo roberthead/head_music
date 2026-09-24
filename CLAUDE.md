@@ -13,8 +13,9 @@ HeadMusic is a Ruby gem for Western music theory. It provides a comprehensive to
 `rake -T` lists the custom tasks.
 
 ```bash
-bundle exec rake           # the default task, same as `rake spec`
-bundle exec rspec          # also measures coverage: spec_helper.rb always starts SimpleCov
+bundle exec rake validate  # tests with coverage, linting, security audit, code quality
+bundle exec rake           # tests WITH coverage (the default task, same as `rake spec`)
+bundle exec rspec          # tests WITHOUT coverage, so a single file can run on its own
 bundle exec rake coverage  # opens the last coverage report
 ```
 
@@ -40,7 +41,7 @@ Do not use an assignment inside a condition.
 
 ### Testing
 
-Tests are written in RSpec and located in the `/spec` directory, mirroring the `/lib` structure. The project requires 90% code coverage minimum.
+Tests are written in RSpec and located in the `/spec` directory, mirroring the `/lib` structure. The project requires 90% code coverage minimum. Coverage is opt-in: `rake spec` sets `COVERAGE=true`, and `spec_helper.rb` starts SimpleCov only then.
 
 ## Architecture
 
