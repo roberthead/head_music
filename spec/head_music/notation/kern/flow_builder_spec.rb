@@ -247,6 +247,68 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
   end
 
+  describe "ties" do
+    it "fuses a tie into one placement" do
+      expect(placements(parse("**kern\n[4c\n4c]\n2d\n*-").voices.first))
+        .to eq ["quarter tied to quarter C4 at 1:1:000", "half D4 at 1:3:000"]
+    end
+
+    it "fuses a tie across a barline between different durations into one placement" do
+      flow = parse("**kern\n*M2/4\n=1\n4c\n[4g\n=2\n8g]\n8a\n4b\n*-")
+      expect(placements(flow.voices.first)[1..2]).to eq ["quarter tied to eighth G4 at 1:2:000", "eighth A4 at 2:1:480"]
+    end
+
+    it "fuses a longer chain" do
+      flow = parse("**kern\n*M2/4\n=1\n[2c\n=2\n2c_\n=3\n2c]\n*-")
+      expect(placements(flow.voices.first)).to eq ["half tied to half tied to half C4 at 1:1:000"]
+    end
+
+    it "ties chords" do
+      expect(placements(parse("**kern\n[2c [2e\n2c] 2e]\n*-").voices.first)).to eq ["half tied to half C4 E4 at 1:1:000"]
+    end
+
+    it "keeps the spine's time across the tie" do
+      flow = parse("**kern  **kern\n[4c  2e\n4c]  .\n2d  2f\n*-  *-")
+      expect(placements(flow.voices.last).last).to eq "half D4 at 1:3:000"
+    end
+
+    it "raises when a tie is never closed" do
+      expect { parse("**kern\n[4c\n4d\n*-") }
+        .to raise_error(HeadMusic::Notation::Kern::ParseError, /tie is never closed \(line 2\)/)
+    end
+
+    it "raises when a tie is still open at the end" do
+      expect { parse("**kern\n4c\n[4c\n*-") }.to raise_error(HeadMusic::Notation::Kern::ParseError, /never closed \(line 3\)/)
+    end
+
+    it "raises for a stray ]" do
+      expect { parse("**kern\n4c]\n*-") }
+        .to raise_error(HeadMusic::Notation::Kern::ParseError, /\] continues a tie that was never opened \(line 2\)/)
+    end
+
+    it "raises for a stray _" do
+      expect { parse("**kern\n4c_\n*-") }.to raise_error(HeadMusic::Notation::Kern::ParseError, /_ continues a tie/)
+    end
+
+    it "raises for a tie between different pitches" do
+      expect { parse("**kern\n[4c\n4d]\n*-") }
+        .to raise_error(HeadMusic::Notation::Kern::ParseError, /same pitch \(line 3\)/)
+    end
+
+    it "raises for a tie between a note and a differently spelled pitch" do
+      expect { parse("**kern\n[4c#\n4d-]\n*-") }.to raise_error(HeadMusic::Notation::Kern::ParseError, /same pitch/)
+    end
+
+    it "raises for a tied rest" do
+      expect { parse("**kern\n[4r\n4r]\n*-") }.to raise_error(HeadMusic::Notation::Kern::ParseError, /rest cannot be tied/)
+    end
+
+    it "raises an unsupported-feature error for a chord tied only in part" do
+      expect { parse("**kern\n[4c 4e\n4c] 4e\n*-") }
+        .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /tied only in part/)
+    end
+  end
+
   describe "time slices" do
     it "raises when a note begins before the note before it ends" do
       expect { parse("**kern  **kern\n2c  4e\n4d  4f\n*-  *-") }

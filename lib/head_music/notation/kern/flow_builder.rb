@@ -178,9 +178,18 @@ module HeadMusic::Notation::Kern
 
         case manipulation.type
         when :split, :join then manipulate_before_music(manipulation, row.record.line)
-        when :end then @cursors.delete(tracks.first)
+        when :end then end_cursor(tracks.first)
         end
       end
+    end
+
+    # Once every spine has ended, the time is where the longest one did.
+    def end_cursor(track)
+      cursor = @cursors.delete(track)
+      return unless cursor
+
+      cursor.ensure_tie_closed
+      @last_time = [@last_time, cursor.busy_until].compact.max
     end
 
     def manipulate_before_music(manipulation, line)
@@ -245,7 +254,6 @@ module HeadMusic::Notation::Kern
       clock.ensure_music_allowed
       time = current_time
       tokens.each { |cursor, token, column| read_token(cursor, token, time, column, line) }
-      @last_time = current_time
     end
 
     def read_token(cursor, token, time, column, line)
@@ -253,7 +261,7 @@ module HeadMusic::Notation::Kern
         if cursor.busy_until > time
           raise ParseError.new("A note in spine #{column} begins before the note before it ends", line_number: line)
         end
-        cursor.read(token, time)
+        cursor.read(token, time, line)
       elsif token.type == :null && cursor.busy_until <= time
         raise ParseError.new("A null token in spine #{column} falls where no note is sounding", line_number: line)
       end
