@@ -820,6 +820,50 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with a note tied across a key change" do
+      let(:document) { parse_musicxml(described_class.new(LilyPondFixtures.tie_into_key_change).to_s) }
+      let(:tied_notes) { REXML::XPath.match(document, "//note[pitch/step='D']") }
+
+      it "changes the key at the measure the tie carries into" do
+        expect(REXML::XPath.match(document, "//part[@id='P1']/measure[attributes/key]").map { |measure| measure.attributes["number"] }).to eq %w[1 2]
+        expect(xpath_text(document, "//part[@id='P1']/measure[@number='2']/attributes/key/fifths")).to eq "1"
+      end
+
+      it "carries the tie across the key change" do
+        expect(tied_notes.map { |note| [note.parent.attributes["number"], note.elements["tie"].attributes["type"]] })
+          .to eq [%w[1 start], %w[2 stop]]
+      end
+    end
+
+    context "with a note tied across a meter change" do
+      let(:document) { parse_musicxml(described_class.new(LilyPondFixtures.tie_into_meter_change).to_s) }
+      let(:tied_notes) { REXML::XPath.match(document, "//part[@id='P1']//note[pitch/step='A']") }
+
+      it "changes the meter at the measure the tie carries into" do
+        expect(REXML::XPath.match(document, "//part[@id='P1']/measure[attributes/time]").map { |measure| measure.attributes["number"] }).to eq %w[1 2]
+        expect(xpath_text(document, "//part[@id='P1']/measure[@number='2']/attributes/time/beats")).to eq "3"
+      end
+
+      it "carries the tie across the meter change" do
+        expect(tied_notes.map { |note| [note.parent.attributes["number"], note.elements["tie"].attributes["type"]] })
+          .to eq [%w[1 start], %w[2 stop]]
+      end
+    end
+
+    context "with a note tied across the barline where its voice crosses staves" do
+      let(:document) { parse_musicxml(described_class.new(LilyPondFixtures.tie_into_staff_crossing).to_s) }
+      let(:tied_notes) { REXML::XPath.match(document, "//note[pitch/step='C'][pitch/octave='4']") }
+
+      it "writes each half of the tie on the staff its bar is on" do
+        expect(tied_notes.map { |note| [note.parent.attributes["number"], note.text("staff")] })
+          .to eq [%w[1 2], %w[2 1]]
+      end
+
+      it "carries the tie across the staff change" do
+        expect(tied_notes.map { |note| note.elements["tie"].attributes["type"] }).to eq %w[start stop]
+      end
+    end
+
     context "with a chord that crosses its barline" do
       let(:flow) do
         HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|

@@ -212,6 +212,28 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it_behaves_like "a compilable document"
     end
 
+    context "with a note tied across a key change" do
+      let(:flow) { LilyPondFixtures.tie_into_key_change }
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "writes the key change between the halves of the tie" do
+        expect(bar_check_lines(rendered).first(2)).to eq ["c''2 d''2~ |", "\\key g \\major d''2 fis''2 |"]
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with a note tied across a meter change" do
+      let(:flow) { LilyPondFixtures.tie_into_meter_change }
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "writes the meter change between the halves of the tie" do
+        expect(bar_check_lines(rendered).first(2)).to eq ["g'2 a'2~ |", "\\time 3/4 a'2 b'4 |"]
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
     context "with an empty voice" do
       let(:flow) { LilyPondFixtures.tacet }
       let(:rendered) { described_class.new(flow).to_s }

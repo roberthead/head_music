@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:   2026-09-24T19:56:33-07:00
   finished_at:
-  updated_at:   2026-09-24T21:17:27-07:00
+  updated_at:   2026-09-24T22:06:34-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -147,6 +147,8 @@ flow.to_kern       # => the same spines back
 - [ ] The MusicXML and LilyPond writers render a placement that crosses a barline as tied notes, one per bar, instead of raising `RenderError`
 - [ ] The splitting logic is shared by the ABC, kern, MusicXML, and LilyPond writers, rather than copied into each
 - [ ] A fourth-species flow, with ties across every barline, renders to MusicXML and LilyPond, and LilyPond compiles it when the binary is installed
+- [ ] A key, meter, or staff change at a barline that a tied note crosses renders in MusicXML and LilyPond, and the LilyPond parser reads it back, applying the change at that barline and keeping the tied note as one placement
+- [ ] A command in the middle of a bar while a tie is open still raises `ParseError` naming the line
 - [ ] The hand-encoded chorale fixture, imported from kern, renders to MusicXML and LilyPond
 
 ### Kern: round trip and corpus

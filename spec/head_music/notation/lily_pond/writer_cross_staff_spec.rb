@@ -93,4 +93,16 @@ describe HeadMusic::Notation::LilyPond::Writer do
       expect(described_class.new(bare).to_s).to include "\\clef bass"
     end
   end
+
+  describe "a note tied across the barline where its voice crosses staves" do
+    subject(:rendered) { described_class.new(flow).to_s }
+
+    let(:flow) { LilyPondFixtures.tie_into_staff_crossing }
+
+    it "writes the staff change between the halves of the tie" do
+      expect(rendered).to include(%(c2 c'2~ |\n), %(\\change Staff = "part1-staff1" c'2 d'2 |\n))
+    end
+
+    it_behaves_like "a compilable document"
+  end
 end
