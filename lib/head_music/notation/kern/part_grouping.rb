@@ -7,7 +7,8 @@ module HeadMusic::Notation::Kern
   # the left, so parts are ordered top-down by their rightmost spine, and
   # *staff1 is the top staff. Within one staff the leftmost spine is the
   # upper voice, following Verovio's layer convention. Spines with no
-  # *part tag each form a part of their own.
+  # *part tag each form a part of their own, shared with the sub-spines
+  # split from them.
   class PartGrouping
     PartPlan = Data.define(:staves, :code, :name)
     StaffPlan = Data.define(:number, :clef, :tracks)
@@ -18,11 +19,16 @@ module HeadMusic::Notation::Kern
     end
 
     def parts
-      groups = @tracks.group_by { |track| @tags.fetch(track).part || track }.values
+      groups = @tracks.group_by { |track| part_key(track) }.values
       groups.sort_by { |group| -@tracks.index(group.last) }.map { |group| plan(group) }
     end
 
     private
+
+    def part_key(track)
+      number = @tags.fetch(track).part
+      number ? [:part, number] : [:spine, track.origin]
+    end
 
     def plan(group)
       PartPlan.new(

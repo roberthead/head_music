@@ -220,28 +220,63 @@ module HeadMusic::Notation::Kern
         next unless tracks.first.kern?
 
         case manipulation.type
-        when :split, :join then manipulate_before_music(manipulation, row.record.line)
+        when :split then split(*tracks)
+        when :join then join(tracks, row.record.line)
         when :end then end_cursor(tracks.first)
         end
       end
     end
 
-    # Once every spine has ended, the time is where the longest one did.
+    # The left sub-spine continues its voice as the upper voice. The right
+    # one wakes a dormant voice of the same part and staff, or else starts
+    # a new one; either is padded with rests up to its first note.
+    def split(left, right)
+      unless @flow
+        @tags[right] = @tags.fetch(left).dup.tap { |tags| tags.lines = tags.lines.dup }
+        return
+      end
+
+      cursor = @cursors.fetch(left)
+      layer = dormant_layer(cursor.layer) || add_layer(cursor.layer.voice.part, cursor.layer.staff)
+      @cursors[right] = VoiceCursor.new(layer, cursor.busy_until)
+    end
+
+    # Reusing a dormant voice keeps a part to as many voices as it ever has
+    # sub-spines at once. One still sounding when the split comes is not
+    # dormant yet.
+    def dormant_layer(sibling)
+      live = @cursors.values.map(&:layer)
+      @layers.find do |layer|
+        !live.include?(layer) && layer.voice.part.equal?(sibling.voice.part) && layer.staff.equal?(sibling.staff) &&
+          (layer.end_time.nil? || layer.end_time <= current_time)
+      end
+    end
+
+    # The leftmost sub-spine continues its voice; the others go dormant.
+    def join(tracks, line)
+      return unless @flow
+
+      survivor, *others = tracks.map { |track| @cursors.fetch(track) }
+      if others.any? { |cursor| !same_staff?(cursor.layer, survivor.layer) }
+        raise UnsupportedFeatureError.new("Joining spines of different parts or staves is not supported", line_number: line)
+      end
+
+      tracks.drop(1).each { |track| end_cursor(track) }
+    end
+
+    def same_staff?(layer, other)
+      layer.voice.part.equal?(other.voice.part) && layer.staff.equal?(other.staff)
+    end
+
+    # A spine that ends before the others leaves its voice dormant, as a
+    # join does. Once every spine has ended, the time is where the longest
+    # one did.
     def end_cursor(track)
       cursor = @cursors.delete(track)
       return unless cursor
 
       cursor.ensure_tie_closed
       @last_time = [@last_time, cursor.busy_until].compact.max
-    end
-
-    def manipulate_before_music(manipulation, line)
-      raise UnsupportedFeatureError.new("Spine splits and joins are not yet supported", line_number: line) if @flow
-
-      left, right = manipulation.tracks
-      return unless manipulation.type == :split
-
-      @tags[right] = @tags.fetch(left).dup.tap { |tags| tags.lines = tags.lines.dup }
     end
 
     # The flow

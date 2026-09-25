@@ -481,11 +481,6 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       expect { builder.flow }.to raise_error(HeadMusic::Notation::Kern::ParseError)
     end
 
-    it "raises an unsupported-feature error for a split in the music" do
-      expect { parse("**kern\n1c\n*^\n1c  1e\n*v  *v\n*-") }
-        .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /not yet supported/)
-    end
-
     it "raises an unsupported-feature error for an instrument change in the middle of a spine" do
       expect { parse("**kern\n*I\"Flute\n1c\n*I\"Oboe\n1d\n*-") }
         .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /Changing \*I"Oboe.*\(line 4\)/)
