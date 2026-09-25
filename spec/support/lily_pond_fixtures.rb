@@ -73,6 +73,32 @@ module LilyPondFixtures
     flow
   end
 
+  # A one-beat upbeat padded to a full first bar, balanced by a two-beat
+  # final bar that both voices end together.
+  def short_final_bar
+    flow = HeadMusic::Content::Flow.new(name: "Short End", key_signature: "C major", meter: "3/4")
+    [%w[G4 C5 B4], %w[G3 C3 G3]].each do |upbeat, downbeat, last|
+      voice = flow.add_voice
+      voice.place("1:1", :half)
+      voice.place("1:3", :quarter, upbeat)
+      voice.place("2:1", :dotted_half, downbeat)
+      voice.place("3:1", :half, last)
+    end
+    flow
+  end
+
+  # The same balance with the upbeat in a pickup bar, and a tacet voice.
+  def pickup_and_short_final_bar
+    flow = HeadMusic::Content::Flow.new(name: "Pickup", key_signature: "C major", meter: "3/4")
+    voice = flow.add_voice(role: "Melody")
+    voice.place("0:1", :half)
+    voice.place("0:3", :quarter, "G4")
+    voice.place("1:1", :dotted_half, "C5")
+    voice.place("2:1", :half, "B4")
+    flow.add_voice(role: "Tacet")
+    flow
+  end
+
   def rests
     flow = HeadMusic::Content::Flow.new(name: "Rests")
     voice = flow.add_voice

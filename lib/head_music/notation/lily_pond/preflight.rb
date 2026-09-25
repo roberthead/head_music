@@ -42,23 +42,19 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    # A bar with some placements that do not fill it would render short of
-    # its bar check, which LilyPond rejects at compile time — unlike a bar
-    # with none, which the Writer fills with a whole-bar rest.
+    # A short final bar, such as one that balances a pickup, is written
+    # without a bar check after it, which is only true when every voice ends
+    # there. A voice that ends short of the others leaves a gap instead, which
+    # would render short of its bar check.
     def ensure_filled_final_bars
-      flow.voices.each do |voice|
-        placement = voice.last_placement
-        next unless placement
-        next if ends_on_barline?(placement)
+      endings = flow.voices.filter_map { |voice| voice.last_placement&.next_position }
+      return if endings.uniq.length <= 1
 
-        raise RenderError, "the voice ends mid-bar at #{placement.next_position}; " \
-          "insert explicit rests to fill the final bar"
-      end
-    end
+      finish = endings.find { |ending| !HeadMusic::Notation::BarSplitter.offset_in_bar(ending).zero? }
+      return unless finish
 
-    def ends_on_barline?(placement)
-      finish = placement.next_position
-      finish == HeadMusic::Content::Position.new(finish.flow, finish.bar_number)
+      raise RenderError, "the voice ends mid-bar at #{finish}; " \
+        "insert explicit rests to fill the final bar"
     end
 
     def render_error_class

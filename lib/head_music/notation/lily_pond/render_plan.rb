@@ -12,6 +12,16 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
+    # The length, as a fraction of a whole note, of a final bar that every
+    # voice ends short of together, or nil where the final bar is full.
+    def short_final_bar_fraction
+      return @short_final_bar_fraction if defined?(@short_final_bar_fraction)
+
+      finish = flow.voices.filter_map { |voice| voice.last_placement&.next_position }.max
+      offset = finish && HeadMusic::Notation::BarSplitter.offset_in_bar(finish)
+      @short_final_bar_fraction = (offset && !offset.zero?) ? offset : nil
+    end
+
     private
 
     def precompute_eager_data

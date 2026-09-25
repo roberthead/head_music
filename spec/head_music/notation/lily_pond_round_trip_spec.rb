@@ -42,7 +42,7 @@ module LilyPondRoundTripSources
   FIXTURE_NAMES = %i[
     speed_the_plough chromatic_air rests duo key_and_meter_change tacet song escaped_header anonymous air fourth_species
     tie_into_key_change tie_into_meter_change
-    cross_staff_piano one_handed_piano tie_into_staff_crossing piano_and_melody choir_on_two_staves
+    cross_staff_piano one_handed_piano tie_into_staff_crossing piano_and_melody choir_on_two_staves short_final_bar
   ].freeze
 
   ALL_HAND_WRITTEN = RELATIVE_TWINS.flat_map { |name, twin| [["#{name} (relative)", twin[:relative]], ["#{name} (absolute)", twin[:absolute]]] }

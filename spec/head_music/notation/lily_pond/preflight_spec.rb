@@ -80,6 +80,19 @@ describe HeadMusic::Notation::LilyPond::Preflight do
       end
     end
 
+    context "with voices that end together short of the final bar's end" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(meter: "3/4")
+        flow.add_voice.place("1:1", :half, "E5")
+        flow.add_voice.place("1:1", :half, "C3")
+        flow
+      end
+
+      it "passes, leaving the writer to end on a short bar" do
+        expect { described_class.check!(flow) }.not_to raise_error
+      end
+    end
+
     context "with a voice that ends mid-bar" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new

@@ -70,6 +70,11 @@ describe HeadMusic::Notation::LilyPond do
     expect([part.staff_system.length, part.voices.map(&:role)]).to eq [2, ["right hand"]]
   end
 
+  it "keeps a silent staff silent through a short final bar" do
+    source = group("PianoStaff", staff("a", voice("\\time 3/4 e''2", name: "right hand")), staff("b", voice("\\time 3/4 r2")))
+    expect(described_class.parse(source).voices.map(&:role)).to eq ["right hand"]
+  end
+
   describe "a staff change at a barline inside a tied note" do
     let(:lower_voice) do
       described_class.parse(

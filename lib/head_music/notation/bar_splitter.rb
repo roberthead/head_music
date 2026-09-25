@@ -50,7 +50,7 @@ module HeadMusic
         (position.count - 1 + Rational(position.tick, meter.ticks_per_count)) / meter.bottom_number
       end
 
-      private_class_method :fraction_to_bar_end, :fraction_within_bar, :offset_in_bar
+      private_class_method :fraction_to_bar_end, :fraction_within_bar
     end
   end
 end

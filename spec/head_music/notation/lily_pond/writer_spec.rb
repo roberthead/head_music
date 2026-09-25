@@ -234,6 +234,28 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it_behaves_like "a compilable document"
     end
 
+    context "with voices that end together in a short final bar" do
+      let(:flow) { LilyPondFixtures.short_final_bar }
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "leaves the bar check off the short final bar only" do
+        expect(rendered.lines.map(&:strip).grep(/\A(r2 |c'?'?2\.|b'2|g2)/)).to eq ["r2 g'4 |", "c''2. |", "b'2", "r2 g4 |", "c2. |", "g2"]
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with a pickup, a short final bar, and a tacet voice" do
+      let(:flow) { LilyPondFixtures.pickup_and_short_final_bar }
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "rests the tacet voice only as long as the short final bar" do
+        expect(rendered.lines.map(&:strip).each_cons(3)).to include ["R1*3/4 |", "R1*3/4 |", "r2"]
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
     context "with an empty voice" do
       let(:flow) { LilyPondFixtures.tacet }
       let(:rendered) { described_class.new(flow).to_s }

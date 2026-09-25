@@ -88,11 +88,11 @@ module HeadMusic::Notation::LilyPond
       @opening_clef = name
     end
 
-    # What the writer fills a staff nobody is written on with: whole-bar rests
-    # and nothing else.
+    # What the writer fills a staff nobody is written on with: rests and
+    # nothing else, whole-bar ones except in a short final bar.
     def silent?
       finish
-      events.select(&:music?).all? { |event| event.kind == :whole_bar_rest }
+      events.select(&:music?).none? { |event| event.kind == :note }
     end
 
     def finish

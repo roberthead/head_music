@@ -80,6 +80,20 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
     end
   end
 
+  describe "#short_final_bar_fraction" do
+    it "is nil where the final bar is full" do
+      flow = build_flow
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect(described_class.new(flow).short_final_bar_fraction).to be_nil
+    end
+
+    it "is the length the voices fill of a final bar they end short of" do
+      flow = build_flow(meter: "3/4")
+      flow.add_voice.place("1:1", :half, "C4")
+      expect(described_class.new(flow).short_final_bar_fraction).to eq Rational(1, 2)
+    end
+  end
+
   describe "signature tracking" do
     let(:flow) do
       flow = build_flow(key_signature: "G major")

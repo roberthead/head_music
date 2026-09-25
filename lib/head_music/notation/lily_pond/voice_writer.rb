@@ -38,7 +38,7 @@ module HeadMusic::Notation::LilyPond
     # key and time print and the bars line up.
     def silent_lines(staff, part: nil)
       opening_lines(clef_name(nil, staff), part) +
-        plan.bar_numbers.map { |bar_number| "#{whole_bar_rest(bar_number)} |" }
+        plan.bar_numbers.map { |bar_number| bar_check_after(whole_bar_rest(bar_number), bar_number) }
     end
 
     private
@@ -92,7 +92,17 @@ module HeadMusic::Notation::LilyPond
         staff_change_command(voice, bar_number, part_index),
         *bar_tokens(voice, bar_number)
       ]
-      "#{tokens.compact.join(" ")} |"
+      bar_check_after(tokens.compact.join(" "), bar_number)
+    end
+
+    # A short final bar has no bar check after it, so LilyPond does not
+    # expect the bar to be full.
+    def bar_check_after(text, bar_number)
+      short_final_bar?(bar_number) ? text : "#{text} |"
+    end
+
+    def short_final_bar?(bar_number)
+      bar_number == plan.bar_numbers.last && plan.short_final_bar_fraction
     end
 
     # \key is per-staff inside << >>, so a mid-piece change is emitted in
@@ -122,9 +132,17 @@ module HeadMusic::Notation::LilyPond
       segments.map { |segment| plan.tokens_by_segment[segment] }
     end
 
+    # A voice with nothing in a short final bar rests only as long as the bar.
     def whole_bar_rest(bar_number)
+      return short_bar_rest if short_final_bar?(bar_number)
+
       meter = plan.effective_meter(bar_number)
       "R1*#{meter.top_number}/#{meter.bottom_number}"
+    end
+
+    def short_bar_rest
+      HeadMusic::Notation::DottedDuration.rhythmic_value_for(plan.short_final_bar_fraction)
+        .tied_chain.map { |link| "r#{DurationWriter.token(link)}" }.join(" ")
     end
   end
 end
