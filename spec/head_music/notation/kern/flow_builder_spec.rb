@@ -347,6 +347,46 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
   end
 
+  describe "interpretations at a barline inside a tie" do
+    def tied_across(interpretation)
+      parse("**kern\n*clefG2\n*M2/4\n*k[]\n=1\n[2d\n=2\n#{interpretation}\n2d]\n=3\n2e\n*-")
+    end
+
+    def placements_of(flow)
+      placements(flow.voices.first)
+    end
+
+    it "changes the key signature at the barline's downbeat" do
+      flow = tied_across("*k[f#]")
+      expect([flow.timeline.key_signature_change_at(2)&.signature, placements_of(flow).first])
+        .to eq [1, "half tied to half D4 at 1:1:000"]
+    end
+
+    it "changes the tonal context at the barline's downbeat" do
+      expect(tied_across("*D:").timeline.key_signature_change_at(2).tonal_context.name).to eq "D major"
+    end
+
+    it "changes the meter at the barline's downbeat" do
+      flow = parse("**kern\n*M2/4\n=1\n[2d\n=2\n*M3/4\n2.d]\n=3\n2.e\n*-")
+      expect([flow.meter_changes.transform_values(&:to_s), placements_of(flow).first])
+        .to eq [{2 => "3/4"}, "half tied to dotted half D4 at 1:1:000"]
+    end
+
+    it "changes the tempo at the barline's downbeat" do
+      expect(tied_across("*MM60").tempo_at(2).beats_per_minute).to eq 60.0
+    end
+
+    it "changes the clef at the barline's downbeat" do
+      flow = tied_across("*clefC3")
+      expect([flow.parts.first.staff_system.first_staff.clef_changes.keys, placements_of(flow).length]).to eq [[2], 2]
+    end
+
+    it "still raises for a change in the middle of a bar while a tie is open" do
+      expect { parse("**kern\n*M2/4\n=1\n4c\n[4d\n=2\n4d]\n*k[f#]\n4e\n*-") }
+        .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /\*k\[f#\] in the middle of a bar.*\(line 8\)/)
+    end
+  end
+
   describe "ties" do
     it "fuses a tie into one placement" do
       expect(placements(parse("**kern\n[4c\n4c]\n2d\n*-").voices.first))
