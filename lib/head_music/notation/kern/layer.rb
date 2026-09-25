@@ -3,10 +3,11 @@ module HeadMusic::Notation::Kern
   # One voice's music as the reader collects it: events at exact times,
   # placed on the voice only once every bar is known.
   #
-  # A voice may begin at any bar's downbeat and must then be gap-free
-  # (Voice::Continuity), so the stretch from its bar's downbeat to its
-  # first event, and any stretch it sat out, is filled with rests, split
-  # at the barlines.
+  # Every voice spans the whole flow, as a spine does, so a voice a split
+  # starts late or a join ends early is filled with rests from the flow's
+  # first bar to its end, and across any stretch it sat out, split at the
+  # barlines. That is also how the writer lays each voice out, so a flow
+  # read back from what it wrote is the flow it was.
   class Layer
     Event = Struct.new(:time, :rhythmic_value, :fraction, :pitches, :syllables)
 
@@ -30,14 +31,13 @@ module HeadMusic::Notation::Kern
       last && (last.time + last.fraction)
     end
 
-    def place(clock)
-      assign_opening_staff(clock.bars.first.number)
-      return if events.empty?
-
-      bar = clock.bar_containing(events.first.time)
-      @position = voice.flow.position(bar.number, 1, 0)
-      @time = bar.start
+    def place(clock, finish_time)
+      first_bar = clock.bars.first
+      assign_opening_staff(first_bar.number)
+      @position = voice.flow.position(first_bar.number, 1, 0)
+      @time = first_bar.start
       events.each { |event| place_event(event, clock) }
+      rest_until(finish_time, clock)
     end
 
     private

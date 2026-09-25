@@ -42,9 +42,9 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
         .to eq ["half C4 at 1:1:000", "half E4 at 1:3:000", "half D4 at 2:1:000", "half F4 at 2:3:000", "whole C4 at 3:1:000"]
     end
 
-    it "pads the new voice from its bar's downbeat, and reuses it across its dormant stretch" do
+    it "pads the new voice to the whole flow, and reuses it across its dormant stretch" do
       expect(placements(voices.last))
-        .to eq ["half rest at 1:1:000", "quarter G4 at 1:3:000", "quarter A4 at 1:4:000", "half rest at 2:1:000", "half B4 at 2:3:000"]
+        .to eq ["half rest at 1:1:000", "quarter G4 at 1:3:000", "quarter A4 at 1:4:000", "half rest at 2:1:000", "half B4 at 2:3:000", "whole rest at 3:1:000"]
     end
 
     it "leaves every voice continuous" do

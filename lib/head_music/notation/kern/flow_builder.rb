@@ -40,9 +40,25 @@ module HeadMusic::Notation::Kern
       raise ParseError, "kern input contains no music" unless @flow
 
       clock.finish(current_time, document.rows.last.record.line)
-      @layers.each { |layer| layer.place(clock) }
+      finish_time = @layers.filter_map(&:end_time).max
+      @layers.each { |layer| layer.place(clock, finish_time) }
       mark_repeats
+      order_voices_by_staff
       @flow
+    end
+
+    # A split adds its voice to the part when it happens, after any voice on
+    # a lower staff, so a part's voices are put back top staff first, in the
+    # order they appeared, as they are for the spines of the header.
+    def order_voices_by_staff
+      first_bar = @flow.earliest_bar_number
+      @flow.parts.each do |part|
+        staves = part.staff_system_at(first_bar).staves
+        ordered = part.voices.each_with_index.sort_by do |voice, index|
+          [staves.index { |staff| staff.equal?(voice.staff_at(first_bar)) }, index]
+        end
+        part.voices.replace(ordered.map(&:first))
+      end
     end
 
     def mark_repeats
