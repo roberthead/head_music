@@ -164,6 +164,7 @@ describe HeadMusic::Notation::LilyPond::Parser do
       "{ c'4~ }" => [HeadMusic::Notation::LilyPond::ParseError, /must be followed by a note/],
       "{ c'2~ | c'2 }" => [HeadMusic::Notation::LilyPond::ParseError, /Bar check failed at: 1\/2 in bar 1/],
       "{ c'1~ | d'1 }" => [HeadMusic::Notation::LilyPond::ParseError, /same pitch/],
+      "{ c'2~ \\time 3/4 c'2 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /\\time in the middle of a bar/],
       "{ c'2 | }" => [HeadMusic::Notation::LilyPond::ParseError, /Bar check failed/],
       "<< \\new Staff { \\key g \\major c'1 } \\new Staff { \\key d \\major c1 } >>" => [HeadMusic::Notation::LilyPond::ParseError, /Conflicting \\key/],
       "{ <>4 }" => [HeadMusic::Notation::LilyPond::ParseError, /Empty chord/],

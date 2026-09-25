@@ -5,13 +5,14 @@ module HeadMusic::Notation::LilyPond
   # or meter commands. Ties fold here, so a tied pair reaches the builder
   # as one note whose rhythmic value carries the author's split.
   class VoiceStream
-    # A bar check inside a tied note records how much of the note precedes it,
-    # so the builder can verify it once the note has a position.
-    InnerBarCheck = Data.define(:elapsed, :line)
+    # A bar check, \key, or \time between the halves of a tied note records
+    # how much of the note precedes it, so the builder can apply it once the
+    # note has a position.
+    InnerEvent = Data.define(:elapsed, :event)
 
-    Event = Data.define(:kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :inner_bar_checks) do
+    Event = Data.define(:kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :inner_events) do
       def initialize(
-        kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil, inner_bar_checks: []
+        kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil, inner_events: []
       )
         super
       end
@@ -60,35 +61,39 @@ module HeadMusic::Notation::LilyPond
     end
 
     def bar_check(line)
-      return check_bar_inside_tie(line) if @tie_open
-
-      append(line, kind: :bar_check)
+      mark(line, kind: :bar_check)
     end
 
     def change_key_signature(key_signature, line)
-      append(line, kind: :key, key_signature: key_signature)
+      mark(line, kind: :key, key_signature: key_signature)
     end
 
     def change_meter(meter, line)
-      append(line, kind: :time, meter: meter)
+      mark(line, kind: :time, meter: meter)
     end
 
     def finish
-      terminate(UNFOLLOWED_TIE, nil)
+      terminate(nil)
       self
     end
 
     private
 
-    def append(line, tie_message = UNFOLLOWED_TIE, **attributes)
-      terminate(tie_message, line)
+    def append(line, **attributes)
+      terminate(line)
       events << Event.new(line: line, **attributes)
     end
 
-    # Anything that is not a note ends the pending note; an open tie can
-    # then never close, so it is rejected with the caller's message.
-    def terminate(tie_message, line)
-      raise error(tie_message, line || @tie_line) if @tie_open
+    def mark(line, **attributes)
+      return hold_inside_tie(Event.new(line: line, **attributes)) if @tie_open
+
+      append(line, **attributes)
+    end
+
+    # Any music that is not a note ends the pending note; an open tie can
+    # then never close, so it is rejected.
+    def terminate(line)
+      raise error(UNFOLLOWED_TIE, line || @tie_line) if @tie_open
 
       flush_pending_note
     end
@@ -113,10 +118,10 @@ module HeadMusic::Notation::LilyPond
       @pending_note = pending.with(rhythmic_value: pending.rhythmic_value.append_tied(rhythmic_value))
     end
 
-    def check_bar_inside_tie(line)
+    def hold_inside_tie(event)
       pending = @pending_note
-      check = InnerBarCheck.new(elapsed: pending.rhythmic_value, line: line)
-      @pending_note = pending.with(inner_bar_checks: pending.inner_bar_checks + [check])
+      inner_event = InnerEvent.new(elapsed: pending.rhythmic_value, event: event)
+      @pending_note = pending.with(inner_events: pending.inner_events + [inner_event])
     end
 
     def error(message, line)

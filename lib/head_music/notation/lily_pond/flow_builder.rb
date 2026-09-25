@@ -80,28 +80,33 @@ module HeadMusic::Notation::LilyPond
       when :note then place_note(event, voice)
       when :rest then voice.place(voice.next_position, event.rhythmic_value)
       when :whole_bar_rest then place_whole_bar_rest(event, voice)
-      when :bar_check then check_bar(event, voice)
-      when :key then apply_change(event, voice, "\\key", :key_signature, :key_signature_at, :change_key_signature)
-      when :time then apply_change(event, voice, "\\time", :meter, :meter_at, :change_meter)
+      else apply_marker(event, voice.flow, voice.next_position)
       end
     end
 
+    def apply_marker(event, flow, position)
+      case event.kind
+      when :bar_check then check_bar(event, position)
+      when :key then apply_change(event, flow, position, "\\key", :key_signature, :key_signature_at, :change_key_signature)
+      when :time then apply_change(event, flow, position, "\\time", :meter, :meter_at, :change_meter)
+      end
+    end
+
+    # What was written between the halves of a tied note takes effect where it
+    # was written, in order, so a meter change is in force before the position
+    # of anything after it is worked out.
     def place_note(event, voice)
       position = voice.next_position
-      event.inner_bar_checks.each { |check| verify_bar_check(position + check.elapsed, check.line) }
+      event.inner_events.each { |inner| apply_marker(inner.event, voice.flow, position + inner.elapsed) }
       voice.place(position, event.rhythmic_value, event.pitches)
     end
 
-    def check_bar(event, voice)
-      verify_bar_check(voice.next_position, event.line)
-    end
-
-    def verify_bar_check(position, line)
+    def check_bar(event, position)
       return if bar_start?(position)
 
       raise ParseError.new(
         "Bar check failed at: #{elapsed_fraction(position)} in bar #{position.bar_number}",
-        line_number: line, snippet: "|"
+        line_number: event.line, snippet: "|"
       )
     end
 
@@ -127,10 +132,9 @@ module HeadMusic::Notation::LilyPond
     # A change already in force at its bar is a no-op (the writer repeats
     # each change in every voice); a different explicit value at that bar,
     # or any disagreement with the seed at bar one, is a conflict.
-    def apply_change(event, voice, command, attribute, at_reader, changer)
-      flow = voice.flow
+    def apply_change(event, flow, position, command, attribute, at_reader, changer)
       value = event.public_send(attribute)
-      bar_number = change_bar_number(event, voice, command)
+      bar_number = change_bar_number(event, position, command)
       return if flow.public_send(at_reader, bar_number) == value
       if bar_number == 1 || flow.public_send(:"#{attribute}_change_at", bar_number)
         raise ParseError.new("Conflicting #{command} at bar #{bar_number}", line_number: event.line)
@@ -141,8 +145,7 @@ module HeadMusic::Notation::LilyPond
 
     # Key and meter live on bars, so a change is only representable at a
     # bar's start.
-    def change_bar_number(event, voice, command)
-      position = voice.next_position
+    def change_bar_number(event, position, command)
       return position.bar_number if bar_start?(position)
 
       raise unsupported("#{command} in the middle of a bar is not supported", event)

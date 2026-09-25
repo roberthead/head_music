@@ -8,7 +8,11 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
   end
 
   def placements(source)
-    build(source).voices.flat_map { |voice| voice.placements.map(&:to_s) }
+    placements_of(build(source))
+  end
+
+  def placements_of(flow)
+    flow.voices.flat_map { |voice| voice.placements.map(&:to_s) }
   end
 
   describe "identity" do
@@ -97,6 +101,26 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     it "raises for a bar check inside a tied note that is not at a barline, at the check's line" do
       expect { build("{ c'4~\n| c'2. }") }
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Bar check failed at: 1\/4 in bar 1 \(line 2\)/)
+    end
+
+    it "applies a key change written between the halves of a tied note at its barline" do
+      flow = build("{ c'2 d'2~ | \\key g \\major d'2 e'2 | }")
+      expect([flow.key_signature_changes.keys, flow.voices.first.placements.length]).to eq [[2], 3]
+    end
+
+    it "applies a meter change written between the halves of a tied note at its barline" do
+      flow = build("{ c'2 d'2~ | \\time 3/4 d'2 e'4 | f'2. | }")
+      expect([flow.meter_changes.keys, placements_of(flow).last]).to eq [[2], "dotted half F4 at 3:1:000"]
+    end
+
+    it "applies a change at a barline inside a tied note even without a bar check" do
+      expect(build("{ c'2 d'2~ \\key g \\major d'2 e'2 }").key_signature_changes.keys).to eq [2]
+    end
+
+    it "raises for a change in the middle of a bar inside a tied note, at the change's line" do
+      expect { build("{ c'2~\n\\key g \\major c'2 }") }.to raise_error(
+        HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /\\key in the middle of a bar is not supported \(line 2\)/
+      )
     end
 
     it "reports a partial count in ticks" do

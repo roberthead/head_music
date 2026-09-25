@@ -133,8 +133,6 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
 
     {
       "a rest" => ->(stream) { stream.add_rest(HeadMusic::Rudiment::RhythmicValue.get(:quarter), 1) },
-      "a key change" => ->(stream) { stream.change_key_signature(HeadMusic::Rudiment::KeySignature.get("G major"), 1) },
-      "a meter change" => ->(stream) { stream.change_meter(HeadMusic::Rudiment::Meter.get("3/4"), 1) },
       "a whole-bar rest" => ->(stream) { stream.add_whole_bar_rest(1, 1) }
     }.each do |follower, follow|
       it "raises for a tie followed by #{follower}" do
@@ -161,11 +159,13 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
     end
   end
 
-  describe "a tie across a bar check" do
+  describe "a tie across a bar check and the changes after it" do
     before do
       stream.add_note([c4], half, 1)
       stream.open_tie(1)
       stream.bar_check(1)
+      stream.change_key_signature(g_major, 2)
+      stream.change_meter(three_four, 2)
       stream.add_note([c4], quarter, 2)
     end
 
@@ -175,8 +175,9 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
       expect(stream.finish.events.map(&:kind)).to eq %i[note]
     end
 
-    it "records how much of the note precedes the bar check, and where it was written" do
-      expect(note.inner_bar_checks.map { |check| [check.elapsed, check.line] }).to eq [[half, 1]]
+    it "records each in order, with how much of the note precedes it" do
+      expect(note.inner_events.map { |inner| [inner.event.kind, inner.elapsed, inner.event.line] })
+        .to eq [[:bar_check, half, 1], [:key, half, 2], [:time, half, 2]]
     end
   end
 end
