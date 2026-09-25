@@ -14,7 +14,7 @@ module HeadMusic::Notation::Kern
 
     def build_flow
       ensure_input_present
-      Lexer.new(@kern_string).records
+      Document.new(Lexer.new(@kern_string).records)
       raise UnsupportedFeatureError, "kern import is not implemented yet"
     end
 
