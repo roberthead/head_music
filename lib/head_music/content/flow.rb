@@ -160,6 +160,10 @@ class HeadMusic::Content::Flow
     HeadMusic::Notation::LilyPond.render(self, **options)
   end
 
+  def to_kern(**options)
+    HeadMusic::Notation::Kern.render(self, **options)
+  end
+
   def to_h
     {
       "schema_version" => SCHEMA_VERSION,

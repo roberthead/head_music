@@ -14,7 +14,7 @@ The **head_music** Ruby gem provides a toolkit for working with Western music th
 - **Style Analysis**: Rules for species counterpoint and voice leading
 - **Internationalization**: Support for multiple languages (English, French, German, Italian, Russian, Spanish)
 - **Instrument Modeling**: Extensive database of musical instruments with ranges and properties
-- **Notation Formats**: Read ABC and LilyPond into compositions; write compositions as ABC, LilyPond, and MusicXML
+- **Notation Formats**: Read ABC, LilyPond, and Humdrum `**kern` into compositions; write compositions as ABC, LilyPond, MusicXML, and `**kern`
 
 ## Installation
 
@@ -64,7 +64,17 @@ puts composition.voices.first.pitches.map(&:to_s)  # => ["G3", "A3", "B3", "C4",
 puts composition.to_lilypond                        # => a complete LilyPond document
 ```
 
-The LilyPond reader covers absolute and `\relative` pitches, durations and dots, rests and whole-bar rests, chords, intra-bar ties, `\key`, `\time`, `\clef`, bar checks, `\header` title and composer, and `\new Staff` / `\new Voice` contexts. Constructs outside that subset (tuplets, lyrics, variables, articulations, and so on) raise an `UnsupportedFeatureError` rather than being skipped.
+The LilyPond reader covers absolute and `\relative` pitches, durations and dots, rests and whole-bar rests, chords, ties (including across bar checks), `\key`, `\time`, `\clef`, bar checks, `\header` title and composer, `\new Staff` / `\new Voice` contexts, and grand staves and staff groups with `\change Staff`. Constructs outside that subset (tuplets, lyrics, variables, articulations, and so on) raise an `UnsupportedFeatureError` rather than being skipped.
+
+```ruby
+# Read a Humdrum **kern file, such as a Bach chorale from KernScores
+chorale = HeadMusic::Notation::Kern.parse(File.read("chor001.krn"))
+chorale.parts.map { |part| part.player.name }  # => ["Soprano", "Alto", "Tenor", "Bass"]
+chorale.work.catalog_number                     # => "BWV 269"
+puts chorale.to_kern                            # => the same spines back
+```
+
+The kern reader covers pitches, durations and dots, rests, chords, ties across barlines, pickups and short final bars, repeat barlines, `*k`, key and mode designations, `*M`, `*MM`, `*clef`, `*I` names and vocal and piano codes, `*part` / `*staff` grouping, spine splits, joins, and exchanges, `**text` lyrics, and the reference records of a work. Tuplets, `*+`, and transposed spines raise an `UnsupportedFeatureError`; grace notes, ornaments, articulations, beams, and fermatas are dropped.
 
 ## Style Analysis
 

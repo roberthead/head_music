@@ -337,6 +337,22 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "#to_kern" do
+    it "renders a **kern document string" do
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect(flow.to_kern).to include "!!!OTL: Fruit Salad\n**kern\n"
+    end
+
+    it "propagates render errors" do
+      expect { flow.to_kern }.to raise_error(HeadMusic::Notation::Kern::RenderError)
+    end
+
+    it "passes its options to the renderer" do
+      flow.add_part(instrument: "clarinet").add_voice.place("1:1", :whole, "C4")
+      expect { flow.to_kern(transposed: true) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /concert pitch/)
+    end
+  end
+
   describe "#to_h" do
     subject(:hash) { flow.to_h }
 
