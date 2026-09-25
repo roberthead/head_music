@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:   2026-09-24T19:56:33-07:00
   finished_at:
-  updated_at:   2026-09-24T19:56:33-07:00
+  updated_at:   2026-09-24T20:08:13-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -88,7 +88,16 @@ flow.to_kern       # => the same spines back
 - [ ] A spine's display name (`*I"Soprano`) becomes its part's player name on import, and a part's player name is written as `*I"` on export; two parts sharing a player write the same name, and on import every spine gets its own player
 - [ ] Transposed spines (`*ITr`, `*Trd`) raise `UnsupportedFeatureError`
 - [ ] Interpretations that disagree across kern spines on one row raise `UnsupportedFeatureError`
-- [ ] `!!!COM` becomes the composer; `!!!OTL`, falling back to `!!!OTL@@xx`, becomes the flow name; other reference records (including `!!!!` universal records) and all `!`/`!!` comments are dropped
+- [ ] `!!!OTL`, falling back to `!!!OTL@@xx`, becomes the flow name; other reference records not listed below (including `!!!!` universal records) and all `!`/`!!` comments are dropped
+
+### Kern: work citation
+
+- [ ] When the file has a title, import builds a `Work` on the flow: title from `!!!OTL` (or `!!!OTL@@xx`), `catalog_number` from `!!!SCT`, and `year` from the first year in `!!!ODT`
+- [ ] `!!!COM` in sort order (`Bach, Johann Sebastian`) becomes a composer `Credit` whose `Person` has full name `Johann Sebastian Bach` and that sort name; a name without a comma is taken as both
+- [ ] `!!!CDT` birth and death years (`1685/02/21/-1750/07/28/`) set the composer's `birth_year` and `death_year`; a date the reader cannot parse is ignored rather than raised
+- [ ] Several `!!!COM` records become several composer credits
+- [ ] A file with `!!!COM` but no title keeps the composer as the flow's composer string, since a `Work` requires a title
+- [ ] The writer emits `!!!COM` (sort name), `!!!CDT` (years), `!!!OTL`, `!!!SCT`, and `!!!ODT` from the flow's work, and falls back to the flow's name and composer string when it has no work
 
 ### Kern: bars
 
@@ -109,6 +118,13 @@ flow.to_kern       # => the same spines back
 
 - [ ] The writer raises `RenderError` for a part with more than one voice, an empty flow, unspellable or unpitched notes, and `transposed: true` with a transposing instrument
 
+### Notes that cross a barline in MusicXML and LilyPond
+
+- [ ] The MusicXML and LilyPond writers render a placement that crosses a barline as tied notes, one per bar, instead of raising `RenderError`
+- [ ] The splitting logic is shared by the ABC, kern, MusicXML, and LilyPond writers, rather than copied into each
+- [ ] A fourth-species flow, with ties across every barline, renders to MusicXML and LilyPond, and LilyPond compiles it when the binary is installed
+- [ ] The hand-encoded chorale fixture, imported from kern, renders to MusicXML and LilyPond
+
 ### Kern: round trip and corpus
 
 - [ ] Parsing the writer's output of a parsed file gives an equal `to_h` (the reader is idempotent)
@@ -121,7 +137,6 @@ flow.to_kern       # => the same spines back
 
 - Kern prints spines lowest voice first (the bass is the leftmost column). Import and export both respect that order.
 - Grace notes (`q`), ornaments, articulations, beams (`L`, `J`), and stem directions are ignored on import and omitted on export in v1.
-- Imported chorales will not render to MusicXML or LilyPond yet, because their tied notes cross barlines and `ensure_notes_within_barlines` (`lib/head_music/notation/preflight_checks.rb:18-27`) rejects them. The same is true of ABC imports today. Teaching those writers to split at barlines, as the ABC writer does, is a follow-up.
 - A repeat mark in the middle of a bar is recorded on its whole bar, as ABC does, so a repeat's extent is approximate on export. The notes stay correct.
 - Kern has no field for voice role, so a re-imported counterpoint flow has no `cantus_firmus_voice`.
 
@@ -135,12 +150,13 @@ flow.to_kern       # => the same spines back
 - **Spine splits and tuplets raise in v1** (decided 2026-09-24). A split is a second voice that exists for only part of the piece, which every writer's continuity check rejects unless it is padded with phantom rests. A tuplet needs a tuplet ratio that `RhythmicValue` does not have, which would be a change to the core duration model.
 - **The chorale corpus is not vendored** (decided 2026-09-24). `craigsapp/bach-370-chorales` is CC BY-NC-SA 4.0 and this repo is MIT. The committed fixture is hand-encoded, and the real corpus runs only when `KERN_CORPUS` points at a local clone.
 - **One story, not two** (decided 2026-09-24). The reader and writer share their token and interpretation tables, and the round-trip criteria need both.
+- **Import builds a `Work`** (decided 2026-09-24) from the title, catalog number, date, and composer records, with the composer as a `Person` credit. The writer emits those records back.
+- **The MusicXML and LilyPond writers learn to split notes that cross a barline** (decided 2026-09-24), in this story, so an imported chorale renders. Today `ensure_notes_within_barlines` (`lib/head_music/notation/preflight_checks.rb:18-27`) rejects them, which also blocks fourth-species flows and ABC imports with ties across barlines.
+- **`Project#add_flow` raises** (decided 2026-09-24) when a part's player belongs to another project, matching the existing check that a flow belongs to one project. The CHANGELOG records it under Changed.
 
 ## Open Questions
 
-1. Should `!!!SCT`/`!!!ODT` build a `Work`? `Work.new` requires a title, and `!!!COM` is written in sort order ("Bach, Johann Sebastian"), so a `Person` credit would need parsing.
-2. Should `*part`/`*staff` grouping (multi-voice parts, grand staves) be a follow-up story?
-3. Should the MusicXML and LilyPond writers learn to split notes at barlines, so imported chorales render? (A follow-up either way.)
+1. Should `*part`/`*staff` grouping (multi-voice parts, grand staves) be a follow-up story?
 
 ## Implementation Plan
 
@@ -161,6 +177,7 @@ Each step is one commit, with its specs.
      - A part with no player gets one minted, as today.
      - A part whose player has no project gets `player.project = self`, and the player is appended to `players` only if it is not already there by identity (`equal?`), so a shared player is appended once.
      - Adding the same flow twice still returns early.
+   - CHANGELOG, under Changed: `add_flow` now raises for a player that belongs to another project.
    - Update the comment near `references/content-schema.md:87`.
    - Specs: `spec/head_music/content/project_spec.rb`; `spec/head_music/content/player_spec.rb` (`#parts` works after adoption).
 
@@ -196,7 +213,7 @@ Each step is one commit, with its specs.
 
 5. **Document**
    - Classify the spines as kern, lyric (`**text`, `**silbe`), or skipped. Raise `ParseError` when there is no kern spine.
-   - Reference records: `!!!COM` becomes the composer, verbatim. `!!!OTL`, or failing that `!!!OTL@@xx`, becomes the name.
+   - Collect the citation records: every `!!!COM` in order, `!!!CDT`, `!!!OTL` (or failing that `!!!OTL@@xx`), `!!!SCT`, `!!!ODT`.
    - Everything else is ignored: other reference records, `!!!!` records, `!!`/`!` comments, `*>` labels and expansion lists.
    - Files: `kern/document.rb`, and a spec.
 
@@ -260,8 +277,22 @@ Each step is one commit, with its specs.
     - A syllable on a row with no attack in its kern spine raises `ParseError`.
     - Files: `kern/lyric_reader.rb`, `flow_builder.rb`, and specs.
 
-12. **Writer core**
-    - Header records (`!!!COM`, `!!!OTL`).
+12. **Work citation import**
+    - `kern/citation_reader.rb` turns the collected records into a `HeadMusic::Content::Work` (`lib/head_music/content/work.rb`).
+    - Title: `!!!OTL`, or failing that `!!!OTL@@xx`. With no title, build no `Work`, and pass the first `!!!COM` as the flow's `composer:` string, as today.
+    - `catalog_number`: `!!!SCT`, verbatim. `year`: the first four-digit year in `!!!ODT`.
+    - Composers: each `!!!COM` becomes `Person.new(full_name:, sort_name:)`. `Last, First Middle` becomes the full name `First Middle Last`, with the record as the sort name; a name without a comma is used as both. Add each one with `with_credit(person, :composer)`.
+    - `!!!CDT`: when there is one composer, the years before and after the `-` set `birth_year` and `death_year`. Kern's approximate-date marks (`~`, `?`, `<`, `>`) keep the year that follows them. Anything unparseable is ignored, since `Person` validates years and a bad date should not sink the music.
+    - The flow's name stays the title, so `flow.name` and `flow.work.title` agree.
+    - Files: `kern/citation_reader.rb`, `flow_builder.rb`, `spec/head_music/notation/kern/citation_reader_spec.rb`.
+
+13. **Extract a shared bar splitter from the ABC writer**
+    - Move `Segment` and `segments_of` / `fraction_to_bar_end` / `fraction_within_bar` (`lib/head_music/notation/abc/writer.rb:125-150`) into `HeadMusic::Notation::BarSplitter`. It yields, for each placement, one segment per bar it sounds in, with the fraction in that bar and whether it continues.
+    - Point the ABC writer at it. This step is a pure refactor: every ABC spec passes unchanged.
+    - Files: `lib/head_music/notation/bar_splitter.rb`, `abc/writer.rb`, `spec/head_music/notation/bar_splitter_spec.rb`.
+
+14. **Writer core**
+    - Header records from the flow's work: `!!!COM` (each composer's sort name), `!!!CDT` (when a composer has years, as `YYYY/-YYYY/`), `!!!OTL`, `!!!SCT`, `!!!ODT`. With no work, write `!!!COM` from the composer string and `!!!OTL` from the name.
     - One `**kern` spine per part, written in reverse part order.
     - Interpretation rows: `*I"name`, the `*I` code (only for instruments in the table), clef (the authored clef, or `ClefSelector` as a fallback), `*k[...]`, the designation, `*M`, and `*MM` converted to quarter notes per minute.
     - End with `==` and `*-`.
@@ -269,15 +300,25 @@ Each step is one commit, with its specs.
     - `Kern::Preflight` includes `ensure_contiguous_voices` and `PlacementValidation`, but not `ensure_notes_within_barlines`. It adds these `RenderError`s: a part with other than exactly one voice, an empty flow, unspellable or unpitched notes, and `transposed: true` with a transposing instrument.
     - Files: `kern/writer.rb`, `render_plan.rb`, `preflight.rb`, `pitch_writer.rb`, `duration_writer.rb`, and specs.
 
-13. **Writer structure and lyrics**
-    - Split placements at barlines into tied tokens, adapting `abc/writer.rb:125-145`.
+15. **Writer structure and lyrics**
+    - Split placements at barlines into tied tokens with `BarSplitter`.
     - Emit chords.
     - Leave out the pickup bar's leading rest.
     - Write repeat barlines and mid-piece interpretation changes.
     - Pad shorter voices with rests.
     - Emit a `**text` spine to the right of each sung part, one per verse: a hyphen after a syllable with `hyphen_after`, a leading hyphen on the next syllable, and `.` elsewhere.
 
-14. **Round trip**
+16. **MusicXML splits notes at barlines**
+    - `MusicXML::NoteWriter` already writes a tied chain as one `<note>` per component with `<tie>`/`<tied>` start and stop (`music_xml/note_writer.rb:7`, `:110-120`). Feed it `BarSplitter` segments, so a placement that crosses a barline becomes the tail of one `<measure>` and the head of the next, with the tie carried across.
+    - Drop `ensure_notes_within_barlines` from `music_xml/preflight.rb:29`.
+    - Specs: the preflight spec at `music_xml/preflight_spec.rb:54-63` and the writer spec at `music_xml/writer_spec.rb:696` flip from expecting `RenderError` to asserting the tied notes; a fourth-species flow renders; a tie across a barline between different durations renders.
+
+17. **LilyPond splits notes at barlines**
+    - Split with `BarSplitter` in the LilyPond voice writer, joining the pieces with `~` so that bar checks stay true.
+    - Drop `ensure_notes_within_barlines` from `lily_pond/preflight.rb:25`. Once no writer calls it, remove it from `preflight_checks.rb`.
+    - Specs: `lily_pond/preflight_spec.rb:56-67` flips; a fourth-species flow round-trips through `LilyPond.parse`, which already folds `~` into tied values; add it to `LilyPondFixtures` so the binary oracle compiles it when LilyPond is installed.
+
+18. **Round trip**
     - `spec/support/kern_round_trip.rb` compares a normalized `Flow#to_h`. The normalization:
       - drops voice `role`, `beam_break_before`, `comments`, `origin`, `work` and `source`;
       - merges bar 0's leading rests, and joins consecutive linked rests;
@@ -286,7 +327,7 @@ Each step is one commit, with its specs.
     - It also asserts idempotence: `parse(render(parse(x))).to_h == parse(x).to_h`.
     - Cover hand-built flows, `LilyPondFixtures`, a `CantusFirmus::Example#to_flow`, and a sung flow with two verses.
 
-15. **Hand-encoded fixture and corpus sweep**
+19. **Hand-encoded fixture and corpus sweep**
     - `spec/fixtures/notation/kern/satb_chorale.krn`: an original four-part setting written for the test, released under the repo's MIT license. It is modeled on the features of `chor001.krn` but copies none of its music:
       - a 3/4 pickup, and a short final bar;
       - ties across barlines, including one between different durations (`[4g` then `8g]`);
@@ -301,12 +342,14 @@ Each step is one commit, with its specs.
       - G major, 3/4, quarter = 100;
       - the tie and the repeat flag;
       - the lyrics;
-      - an idempotent round trip.
+      - the work: title, catalog number, and a composer credit with a sort name and years;
+      - an idempotent round trip;
+      - `to_musicxml` and `to_lilypond` succeed on the imported flow.
     - `spec/head_music/notation/kern_corpus_spec.rb`:
       - Skips unless `ENV["KERN_CORPUS"]` is set, much as the lilypond-binary specs skip when the binary is missing (`lily_pond_round_trip_spec.rb:128-131`). The variable points at a local clone of `craigsapp/bach-370-chorales`, which is never committed.
       - Every file must parse, except that files with short bars in the middle of the piece must raise `UnsupportedFeatureError`. The planner reported chor011, chor130, chor197 and chor280; verify that list when first running the sweep.
 
-16. **`Flow#to_kern` delegate and docs**
+20. **`Flow#to_kern` delegate and docs**
     - Add it next to `to_abc` and `to_lilypond` (`flow.rb:151-161`).
     - Update the README format list and the CHANGELOG.
 
