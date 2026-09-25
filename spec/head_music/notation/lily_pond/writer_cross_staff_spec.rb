@@ -44,6 +44,10 @@ describe HeadMusic::Notation::LilyPond::Writer do
 
   it_behaves_like "a compilable document"
 
+  it "names each voice for its role" do
+    expect(rendered.scan(/\\new Voice = "([^"]+)"/).flatten).to eq ["right hand", "left hand"]
+  end
+
   # A staff nobody is written on still has to appear, or the grand staff loses
   # a line of the system and the piano looks like a flute.
   describe "a staff with no voice on it" do
@@ -53,6 +57,10 @@ describe HeadMusic::Notation::LilyPond::Writer do
 
     it "still emits both staves" do
       expect(rendered.scan(/\\new Staff = "[^"]+"/).length).to eq 2
+    end
+
+    it "leaves the empty staff's voice unnamed" do
+      expect(rendered.scan(/\\new Voice( = "[^"]+")? \{/).map(&:first)).to eq [%( = "right hand"), nil]
     end
 
     it "fills the empty staff with whole-bar rests" do

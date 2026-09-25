@@ -108,19 +108,23 @@ module HeadMusic::Notation::LilyPond
       (part.staff_system.bracket == :bracket) ? "\\new StaffGroup <<" : "\\new PianoStaff <<"
     end
 
+    # A grouped staff carries no instrument name, so each voice is named for
+    # its role instead, where the reader can find it again.
     def grouped_staff_lines(part, part_index, staff, staff_index)
       voices = part.voices.select { |voice| voice.staff.equal?(staff) }
-      voices_lines = voices.map { |voice| voice_writer.lines(voice, part_index: part_index, staff: staff) }
-      voices_lines = [voice_writer.silent_lines(staff, part: part)] if voices_lines.empty?
-      staff_block(%(\\new Staff = "#{Writer.staff_id(part_index, staff_index)}" <<), voices_lines, ">>")
+      voices_blocks = voices.map do |voice|
+        voice_block(voice_writer.lines(voice, part_index: part_index, staff: staff), name: voice.role)
+      end
+      voices_blocks = [voice_block(voice_writer.silent_lines(staff, part: part))] if voices_blocks.empty?
+      staff_block(%(\\new Staff = "#{Writer.staff_id(part_index, staff_index)}" <<), voices_blocks, ">>")
     end
 
     def single_staff_lines(part)
       staff = part.staff_system.first_staff
       case part.voices.length
-      when 0 then staff_block(staff_open(part_name(part), "{"), [voice_writer.silent_lines(staff, part: part)], "}")
-      when 1 then staff_block(staff_open(part.voices.first.role, "{"), [voice_writer.lines(part.voices.first, staff: staff)], "}")
-      else staff_block(staff_open(part_name(part), "<<"), part.voices.map { |voice| voice_writer.lines(voice, staff: staff) }, ">>")
+      when 0 then staff_block(staff_open(part_name(part), "{"), [voice_block(voice_writer.silent_lines(staff, part: part))], "}")
+      when 1 then staff_block(staff_open(part.voices.first.role, "{"), [voice_block(voice_writer.lines(part.voices.first, staff: staff))], "}")
+      else staff_block(staff_open(part_name(part), "<<"), part.voices.map { |voice| voice_block(voice_writer.lines(voice, staff: staff)) }, ">>")
       end
     end
 
@@ -136,16 +140,17 @@ module HeadMusic::Notation::LilyPond
       %(\\new Staff \\with { instrumentName = "#{StringText.escape(name)}" } #{opener})
     end
 
-    def staff_block(opening, voices_lines, closer)
+    def staff_block(opening, voice_blocks, closer)
       [
         "#{INDENT * 2}#{opening}",
-        *voices_lines.flat_map { |lines| voice_block(lines) }.map { |line| INDENT * 3 + line },
+        *voice_blocks.flatten.map { |line| INDENT * 3 + line },
         "#{INDENT * 2}#{closer}"
       ]
     end
 
-    def voice_block(lines)
-      ["\\new Voice {", *lines.map { |line| INDENT + line }, "}"]
+    def voice_block(lines, name: nil)
+      opener = name ? %(\\new Voice = "#{StringText.escape(name)}" {) : "\\new Voice {"
+      [opener, *lines.map { |line| INDENT + line }, "}"]
     end
   end
 end
