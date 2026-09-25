@@ -123,40 +123,10 @@ module HeadMusic::Notation::ABC
     end
 
     # A placement sounding across a bar line is written as one note per bar,
-    # tied, since ABC has no other way to cross the line. A fraction of nil
-    # means the placement fits its bar and renders from its own rhythmic
-    # value, which keeps the exporter's canonical collapse of tied chains.
-    Segment = Data.define(:placement, :bar_number, :fraction, :continues)
-
+    # tied, since ABC has no other way to cross the line.
     def segments_by_bar
-      placements.flat_map { |placement| segments_of(placement) }
+      HeadMusic::Notation::BarSplitter.segments(placements)
         .chunk_while { |previous, current| previous.bar_number == current.bar_number }
-    end
-
-    def segments_of(placement)
-      start = placement.position
-      finish = placement.next_position
-      segments = []
-      while finish > start.start_of_next_bar
-        segments << Segment.new(placement, start.bar_number, fraction_to_bar_end(start), true)
-        start = start.start_of_next_bar
-      end
-      fraction = segments.empty? ? nil : fraction_within_bar(start, finish)
-      segments << Segment.new(placement, start.bar_number, fraction, false)
-    end
-
-    def fraction_to_bar_end(position)
-      meter = position.meter
-      Rational(meter.top_number, meter.bottom_number) - offset_in_bar(position)
-    end
-
-    def fraction_within_bar(from, to)
-      offset_in_bar(to) - offset_in_bar(from)
-    end
-
-    def offset_in_bar(position)
-      meter = position.meter
-      (position.count - 1 + Rational(position.tick, meter.ticks_per_count)) / meter.bottom_number
     end
 
     # The inter-token space is dropped only where the placement was authored as
