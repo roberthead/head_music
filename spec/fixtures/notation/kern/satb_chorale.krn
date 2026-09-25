@@ -1,0 +1,38 @@
+!!!!SEGMENT: satb_chorale.krn
+!!!COM: Doe, Jane
+!!!CDT: 1901/03/04/-1977/05/06/
+!!!OTL: Wake the Morning
+!!!SCT: HM 1
+!!!ODT: 1950
+!! An original setting written for the head_music specs.
+**kern	**kern	**kern	**kern	**text
+*ICvox	*ICvox	*ICvox	*ICvox	*
+*Ibass	*Itenor	*Ialto	*Isoprn	*
+*I"Bass	*I"Tenor	*I"Alto	*I"Soprano	*
+*clefF4	*clefGv2	*clefG2	*clefG2	*
+*k[f#]	*k[f#]	*k[f#]	*k[f#]	*
+*G:	*G:	*G:	*G:	*
+*M3/4	*M3/4	*M3/4	*M3/4	*
+*MM100	*MM100	*MM100	*MM100	*
+4G	4B	4d	4g	Wake
+=1	=1	=1	=1	=1
+4E	4B	4e	4g	the
+4C	4c	4e	4a	morn-
+4D	4A	[4f#	4dd	-ing
+=2	=2	=2	=2	=2
+4G	4B	8f#]L	4g	light
+.	.	8gJ	.	.
+4D;	4A;	4f#;	4a;	.
+=:|!	=:|!	=:|!	=:|!	=:|!
+4G	4B	4d	4b	now
+=3	=3	=3	=3	=3
+4C	4c	4e	4cc	the
+4D	4A	4f#	4a	day
+4E	[4B	4e	4g	is
+=4	=4	=4	=4	=4
+4D	8B]L	4f#	4a	be-
+.	8AJ	.	.	.
+4GG;	4G;	4d;	4g;	-gun
+==	==	==	==	==
+!! Written for the tests; released under the repository's MIT license.
+*-	*-	*-	*-	*-

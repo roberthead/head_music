@@ -113,7 +113,8 @@ flow.to_kern       # => the same spines back
 ### Kern: spine splits, joins, and exchanges
 
 - [ ] `*^` splits a kern spine into two sub-spines in the same part and on the same staff; the left sub-spine continues the existing voice as the upper voice, and the right sub-spine becomes another voice
-- [ ] A voice that begins at a split is padded with a rest from its bar's downbeat to the split, so it satisfies `Voice::Continuity`
+- [ ] Every voice spans the whole flow, as a spine does: a voice that begins at a split, or ends at a join or a partial `*-`, is padded with rests from the flow's first bar and to its end, so it satisfies `Voice::Continuity` and reads back unchanged from what the writer writes
+- [ ] A part's voices come out top staff first, in the order they appeared, including voices a split starts
 - [ ] `*v` joins adjacent sub-spines; the leftmost continues its voice, and the others' voices go dormant
 - [ ] A later split in the same part and staff reuses a dormant voice, padding the stretch it was dormant with rests, so a part has as many voices as it ever has sub-spines at once
 - [ ] `*x` exchanges two adjacent spines, and each keeps its voice
@@ -312,7 +313,7 @@ Each step is one commit, with its specs.
 
 12. **Spine splits, joins, and exchanges (import)**
     - The FlowBuilder maps each kern track from `SpineLayout` to a voice.
-    - On `*^`, the left track keeps the voice. The right track takes a dormant voice of the same part and staff if there is one, or else a new voice added with `part.add_voice` and assigned to that staff. The new or reawakened voice is padded with a rest from its bar's downbeat (or from where it went dormant) to the split, using `DottedDuration` fractions and ties where one value won't do.
+    - On `*^`, the left track keeps the voice. The right track takes a dormant voice of the same part and staff if there is one, or else a new voice added with `part.add_voice` and assigned to that staff. Every voice is padded with rests, split at the barlines, from the flow's first bar to its first note, across any dormant stretch, and from its last note to the flow's end, which is how the writer lays out every spine; once the flow is built, each part's voices are ordered top staff first, in order of appearance. (Changed during implementation from padding only back to the split bar's downbeat, which left the reader not idempotent.)
     - On `*v` or a partial `*-`, the surviving leftmost track keeps its voice, and the others go dormant. A join across parts or staves raises `UnsupportedFeatureError`.
     - On `*x`, the voice mapping follows the tracks.
     - Voice order within a staff is kept as the order of first appearance, left to right, so the upper voice stays first.

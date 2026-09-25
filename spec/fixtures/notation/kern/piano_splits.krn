@@ -1,0 +1,34 @@
+!!!OTL: Splits for the Right Hand
+!! An original piece written for the head_music specs; released under the repository's MIT license.
+**kern	**dynam	**kern
+*part1	*	*part1
+*staff2	*	*staff1
+*Ipiano	*	*Ipiano
+*I"Piano	*	*I"Piano
+*clefF4	*	*clefG2
+*k[]	*	*k[]
+*C:	*	*C:
+*M4/4	*	*M4/4
+=1	=1	=1
+1C	p	2e
+.	.	2g
+=2	=2	=2
+1G	.	2g
+*	*^	*^
+.	.	.	4cc	2e
+.	.	.	4dd	.
+=3	=3	=3	=3	=3
+*	*	*	*x	*x
+1F	f	.	1c	1ee
+=4	=4	=4	=4	=4
+*	*v	*v	*	*
+*	*	*v	*v
+1E	.	1g
+=5	=5	=5
+*	*	*^
+1D	.	1dd	1f
+=6	=6	=6	=6
+*	*	*	*-
+1C	p	1cc
+==	==	==
+*-	*-	*-
