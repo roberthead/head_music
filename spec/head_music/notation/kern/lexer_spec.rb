@@ -62,19 +62,19 @@ describe HeadMusic::Notation::Kern::Lexer do
     end
 
     it "ignores a byte order mark" do
-      expect(kinds("﻿**kern\n*-")).to eq %i[exclusive interpretation]
+      expect(kinds("\uFEFF**kern\n*-")).to eq %i[exclusive interpretation]
     end
   end
 
   describe "errors" do
     it "raises for input that is not valid UTF-8" do
       latin1 = "!!!COM: Josquin des Pr\xE9s\n**kern\n*-".dup.force_encoding(Encoding::UTF_8)
-      expect { records(latin1) }.to raise_error(HeadMusic::Notation::Kern::ParseError, /not valid UTF-8/)
+      expect { records(latin1) }.to raise_error(HeadMusic::Notation::Kern::ParseError, /not valid UTF-8 \(line 1\)/)
     end
 
     it "raises for input tagged with another encoding that is not valid UTF-8" do
       latin1 = "**kern\n4c\xE9\n*-".dup.force_encoding(Encoding::ASCII_8BIT)
-      expect { records(latin1) }.to raise_error(HeadMusic::Notation::Kern::ParseError, /not valid UTF-8/)
+      expect { records(latin1) }.to raise_error(HeadMusic::Notation::Kern::ParseError, /not valid UTF-8 \(line 2\)/)
     end
 
     it "raises for an empty field, naming the line" do

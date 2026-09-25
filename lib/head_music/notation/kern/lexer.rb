@@ -37,9 +37,13 @@ module HeadMusic::Notation::Kern
     def normalized_lines
       text = @kern_string.to_s
       text = text.dup.force_encoding(Encoding::UTF_8) unless text.encoding == Encoding::UTF_8
-      raise ParseError, "kern input is not valid UTF-8" unless text.valid_encoding?
+      raise ParseError.new("kern input is not valid UTF-8", line_number: invalid_line(text)) unless text.valid_encoding?
 
       text.delete_prefix("﻿").split("\n").each_with_index.map { |line, index| [line.delete_suffix("\r"), index + 1] }
+    end
+
+    def invalid_line(text)
+      text.b.split("\n").index { |line| !line.dup.force_encoding(Encoding::UTF_8).valid_encoding? } + 1
     end
 
     def classify(text, line_number)
