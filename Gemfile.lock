@@ -5,6 +5,7 @@ PATH
       activesupport (>= 7.0, < 10)
       humanize (>= 2, < 4)
       i18n (~> 1.8)
+      rexml (~> 3.4)
 
 GEM
   remote: https://rubygems.org/
@@ -220,7 +221,6 @@ DEPENDENCIES
   head_music!
   kramdown
   rake (~> 13.0)
-  rexml (~> 3.4)
   rspec (~> 3.0)
   rspec-its (~> 2.0)
   rubocop-rake

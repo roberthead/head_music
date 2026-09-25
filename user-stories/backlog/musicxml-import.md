@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T18:58:30-07:00
+  updated_at:   2026-09-24T19:23:10-07:00
 -->
 
 # Story: MusicXML Import
@@ -55,10 +55,13 @@ flow.voices.length # => 4
 - Layout, engraving, and presentation elements (`<print>`, `<defaults>`, `<credit>`, stem and beam directions) should be skipped, not rejected — nearly every real export carries them.
 - Probably out of scope for v1: tuplets, grace notes, repeats and endings, multi-staff parts (piano), dynamics, and articulations. Decide during planning which of these must be skipped silently and which must raise.
 
+## Decisions
+
+- **XML parsing uses REXML.** `rexml` is a runtime dependency of the gem (decided 2026-09-24), so the reader builds on `REXML::Document` rather than a hand-rolled parser.
+
 ## Open Questions
 
-1. XML parsing: `rexml` is currently a development dependency only. Promote it to a runtime dependency, or keep the gem dependency-free with a small hand-rolled reader?
-2. A multi-part score with players — should `parse` return a `Flow`, or should a companion entry point return a `Project` with players and a layout?
+1. A multi-part score with players — should `parse` return a `Flow`, or should a companion entry point return a `Project` with players and a layout?
 
 ## Implementation Plan
 

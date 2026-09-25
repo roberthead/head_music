@@ -35,9 +35,9 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "activesupport", ">= 7.0", "< 10"
   spec.add_runtime_dependency "humanize", ">= 2", "< 4"
   spec.add_runtime_dependency "i18n", "~> 1.8"
+  spec.add_runtime_dependency "rexml", "~> 3.4"
 
   spec.add_development_dependency "rake", "~> 13.0"
-  spec.add_development_dependency "rexml", "~> 3.4"
   spec.add_development_dependency "rspec", "~> 3.0"
   spec.add_development_dependency "rspec-its", "~> 2.0"
   spec.add_development_dependency "bundler-audit", "~> 0.9"

@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T18:58:30-07:00
+  updated_at:   2026-09-24T19:23:10-07:00
 -->
 
 # Story: MEI Import
@@ -51,7 +51,7 @@ flow.voices.length # => one per staff layer
 
 ## Notes
 
-- Shares the XML-parsing decision with [MusicXML Import](musicxml-import.md); whichever story lands first settles it.
+- Parse with REXML, which is a runtime dependency of the gem (decided 2026-09-24).
 - Mensural notation is the most interesting long-term reason to read MEI for this gem, since the species and Renaissance guides grade that repertoire. It is also a large model question (ligatures, proportions, no barlines), so it is a follow-up here.
 - Target MEI 5 and accept MEI 4 where the elements are the same.
 
