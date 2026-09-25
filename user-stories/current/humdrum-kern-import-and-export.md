@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:   2026-09-24T19:56:33-07:00
   finished_at:
-  updated_at:   2026-09-24T21:06:36-07:00
+  updated_at:   2026-09-24T21:17:27-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -62,9 +62,9 @@ flow.to_kern       # => the same spines back
 
 - [ ] `HeadMusic::Notation::Kern.parse(string)` returns a `HeadMusic::Content::Flow`
 - [ ] `HeadMusic::Notation::Kern.render(flow)` and `Flow#to_kern` return a `**kern` string
-- [ ] Each `**kern` spine becomes a voice; spines without `*part` tags each get a part of their own; `**dynam`, `**harm`, and other non-kern, non-lyric spines are skipped on import
-- [ ] Kern spines are read left to right as bass to top; `flow.parts` are ordered top-down, and the writer reverses them
-- [ ] Rows whose field count does not match the active spines, input that is not UTF-8, a missing `*-`, and files with no `**kern` spine raise `ParseError` with a line number
+- [ ] Each `**kern` spine in the header becomes a voice (splits add more; see below); spines without `*part` tags each get a part of their own; `**dynam`, `**harm`, and other non-kern, non-lyric spines are skipped on import
+- [ ] Between parts, and between staves within a part, spines are read left to right as bottom to top, so `flow.parts` come out top-down and the writer reverses them; within one staff, the leftmost spine is the upper voice (see Parts, staves, and voices)
+- [ ] Rows whose field count does not match the live spines, input that is not UTF-8, a missing final `*-` row, and files with no `**kern` spine raise `ParseError` with a line number
 
 ### Kern: tokens
 
@@ -82,21 +82,21 @@ flow.to_kern       # => the same spines back
 - [ ] `*k[...]` maps to the key signature and `*G:`/`*a:`/`*d:dor` to its tonal context, independently of each other, including mid-piece changes
 - [ ] `*M` maps to the meter, including mid-piece changes
 - [ ] `*MM` is read as quarter notes per minute, and other beat values are converted on export
-- [ ] `*clef` interpretations (`G2`, `F4`, `Gv2`, `C1`–`C4`) set the part's clef
+- [ ] `*clef` interpretations (`G2`, `F4`, `Gv2`, `C1`–`C4`) set the clef of the spine's staff
 - [ ] `*Isoprn`, `*Ialto`, `*Itenor`, `*Ibass` map to catalog instruments; unknown codes leave the instrument nil
-- [ ] A spine's display name (`*I"Soprano`) becomes its part's player name on import, and a part's player name is written as `*I"` on export; two parts sharing a player write the same name, and on import every spine gets its own player
+- [ ] A spine's display name (`*I"Soprano`) becomes its part's player name on import, and a part's player name is written as `*I"` on export; two parts sharing a player write the same name, and on import every part gets its own player
 - [ ] Transposed spines (`*ITr`, `*Trd`) raise `UnsupportedFeatureError`
-- [ ] Interpretations that disagree across kern spines on one row raise `UnsupportedFeatureError`
+- [ ] Timeline interpretations (`*k`, tonal designations, `*M`, `*MM`) that disagree across kern spines on one row raise `UnsupportedFeatureError`
 - [ ] `!!!OTL`, falling back to `!!!OTL@@xx`, becomes the flow name; other reference records not listed below (including `!!!!` universal records) and all `!`/`!!` comments are dropped
 
 ### Kern: work citation
 
 - [ ] When the file has a title, import builds a `Work` on the flow: title from `!!!OTL` (or `!!!OTL@@xx`), `catalog_number` from `!!!SCT`, and `year` from the first year in `!!!ODT`
 - [ ] `!!!COM` in sort order (`Bach, Johann Sebastian`) becomes a composer `Credit` whose `Person` has full name `Johann Sebastian Bach` and that sort name; a name without a comma is taken as both
-- [ ] `!!!CDT` birth and death years (`1685/02/21/-1750/07/28/`) set the composer's `birth_year` and `death_year`; a date the reader cannot parse is ignored rather than raised
-- [ ] Several `!!!COM` records become several composer credits
-- [ ] A file with `!!!COM` but no title keeps the composer as the flow's composer string, since a `Work` requires a title
-- [ ] The writer emits `!!!COM` (sort name), `!!!CDT` (years), `!!!OTL`, `!!!SCT`, and `!!!ODT` from the flow's work, and falls back to the flow's name and composer string when it has no work
+- [ ] When the file names one composer, `!!!CDT` birth and death years (`1685/02/21/-1750/07/28/`) set that composer's `birth_year` and `death_year`; a date the reader cannot parse is ignored rather than raised
+- [ ] Several `!!!COM` records become several composer credits, and `!!!CDT` is then ignored
+- [ ] A file with `!!!COM` but no title builds no `Work`, since a `Work` requires a title; its composer names become the flow's composer string, joined with `, ` as `Work#composer` joins them
+- [ ] The writer emits `!!!OTL` from the flow's name, and `!!!COM` (sort names), `!!!SCT`, and `!!!ODT` from the flow's work; it emits `!!!CDT` only when the work has exactly one composer with years; with no work, `!!!COM` comes from the flow's composer string
 
 ### Kern: parts, staves, and voices
 
@@ -118,7 +118,7 @@ flow.to_kern       # => the same spines back
 - [ ] A later split in the same part and staff reuses a dormant voice, padding the stretch it was dormant with rests, so a part has as many voices as it ever has sub-spines at once
 - [ ] `*x` exchanges two adjacent spines, and each keeps its voice
 - [ ] A `*-` that ends one sub-spine before the end of the file ends its voice there, as a join does
-- [ ] Field counts are checked against the spine layout as it changes; a join of non-adjacent spines, a lone `*v`, an unpaired `*x`, or a join across parts or staves raises `ParseError` or `UnsupportedFeatureError`, naming the line
+- [ ] Field counts are checked against the spine layout as it changes; a lone `*v`, a join of non-adjacent spines, or an unpaired `*x` raises `ParseError`, and a join across parts or staves raises `UnsupportedFeatureError`, each naming the line
 - [ ] Manipulators in skipped spines are tracked so columns stay aligned; a split in a lyric spine raises `UnsupportedFeatureError`
 - [ ] `*+` (adding a new spine mid-piece) raises `UnsupportedFeatureError`
 - [ ] The writer does not emit splits: each voice is written as a full-length spine with its padding rests, which is valid kern; parsing that output gives the same voices
@@ -136,7 +136,7 @@ flow.to_kern       # => the same spines back
 - [ ] A `**text` or `**silbe` spine attaches its syllables to the nearest `**kern` spine on its left (to its upper voice, when that spine is split); successive text spines for one kern spine become verses 1, 2, …
 - [ ] Kern hyphenation (`mei-` / `-nes`) sets `hyphen_after` on the syllable before the break
 - [ ] A syllable with no note under it raises `ParseError`
-- [ ] The writer emits a `**text` spine to the right of each sung part, one per verse
+- [ ] The writer emits a `**text` spine immediately to the right of each sung voice's spine, one per verse
 
 ### Kern: writer errors
 
@@ -152,7 +152,7 @@ flow.to_kern       # => the same spines back
 ### Kern: round trip and corpus
 
 - [ ] Parsing the writer's output of a parsed file gives an equal `to_h` (the reader is idempotent)
-- [ ] For arbitrary flows, render then parse gives an equal normalized `to_h`, excluding voice role, comments, citations, and beam breaks
+- [ ] For arbitrary flows, render then parse gives an equal normalized `to_h`, excluding voice role, comments, the work and source citations, and beam breaks; the work citation's round trip has specs of its own
 - [ ] A hand-encoded fixture with a pickup, ties across barlines, a repeat in the middle of a bar, SATB `*I"` names, `*MM`, a tonal designation, and a lyric spine parses end to end
 - [ ] A hand-encoded grand-staff piano fixture with splits, joins, a re-split, an exchange, and a partial termination parses end to end, round-trips, and renders to MusicXML and LilyPond
 - [ ] With `KERN_CORPUS` pointing at a local clone of the Bach chorales, every chorale parses except the known ones with short bars in the middle of the piece
@@ -160,7 +160,8 @@ flow.to_kern       # => the same spines back
 
 ## Notes
 
-- Kern prints spines lowest voice first (the bass is the leftmost column). Import and export both respect that order.
+- Kern prints parts and staves lowest first (the bass is the leftmost column), but within one staff the leftmost spine is the upper voice. Import and export both respect both orders.
+- A `Work` title that differs from the flow's name is not kept through kern, which has one title record; the writer uses the flow's name.
 - Grace notes (`q`), ornaments, articulations, beams (`L`, `J`), and stem directions are ignored on import and omitted on export in v1.
 - A repeat mark in the middle of a bar is recorded on its whole bar, as ABC does, so a repeat's extent is approximate on export. The notes stay correct.
 - Kern has no field for voice role, so a re-imported counterpoint flow has no `cantus_firmus_voice`.
@@ -187,7 +188,7 @@ Consulted: product-manager and developer, via the story-planner. Load-bearing cl
 
 ### Overview
 
-Parts first get players that survive Flow JSON within schema 4: a sparse flow-level `"part_players"` list and a per-part `"player"` index. `Project#to_h` strips both, so the project's player indexes stay the only source of truth, and `Project#add_flow` adopts those players. Then comes a LilyPond-shaped kern pipeline (Lexer, Document, FlowBuilder, Preflight, Writer) that validates before building and rejects any token it does not recognize.
+Parts first get players that survive Flow JSON within schema 4: a sparse flow-level `"part_players"` list and a per-part `"player"` index. `Project#to_h` strips both, so the project's player indexes stay the only source of truth, and `Project#add_flow` adopts those players. Then comes a LilyPond-shaped kern pipeline (Lexer, Document with a SpineLayout, FlowBuilder, Preflight, Writer) that validates before building and rejects any token it does not recognize. The reader is built up in layers: one part per spine first, then pickups and repeats, then `*part`/`*staff` grouping, spine splits, lyrics, and the work citation. Before the writer, the ABC writer's bar splitting is extracted into a shared `BarSplitter`, which the kern writer uses and which then lets the MusicXML and LilyPond writers accept notes that cross a barline.
 
 ### Steps
 
@@ -228,15 +229,14 @@ Each step is one commit, with its specs.
    - Strip CR.
    - Raise `ParseError` for:
      - input that is not valid UTF-8 (older KernScores files are Latin-1, so this must not escape as an `Encoding::` error);
-     - a field-count mismatch, naming the line and both counts;
-     - data before the `**` header;
-     - a missing `*-`, or content after it.
-   - The lexer checks only that a row's fields are tab-separated and non-empty. Field counts depend on the spine layout, which the Document tracks.
+     - an empty field;
+     - data before the `**` header.
+   - Field counts and the final `*-` row are not the lexer's job: both depend on the spine layout, which the Document tracks (step 5).
    - Files: `kern/lexer.rb`, `kern/record.rb`, and a spec.
 
 5. **Document**
    - Classify the spines as kern, lyric (`**text`, `**silbe`), or skipped. Raise `ParseError` when there is no kern spine.
-   - `kern/spine_layout.rb` follows the columns through the file. Each column is a track with a stable identity and a kind. Manipulator rows are applied left to right under the Humdrum rules: `*^` replaces a track with two; adjacent `*v`s merge into their leftmost track; a pair of adjacent `*x`s swaps two tracks; `*-` ends a track. Every non-manipulator row must have exactly one field per live track, or `ParseError` names the line and both counts.
+   - `kern/spine_layout.rb` follows the columns through the file. Each column is a track with a stable identity and a kind. Manipulator rows are applied left to right under the Humdrum rules: `*^` replaces a track with two; adjacent `*v`s merge into their leftmost track; a pair of adjacent `*x`s swaps two tracks; `*-` ends a track. Every row must have exactly one field per live track, or `ParseError` names the line and both counts. The file must end with a row that terminates every live track, with nothing after it but reference records.
    - Malformed manipulations raise `ParseError`: a lone `*v`, non-adjacent joins, an unpaired or triple `*x`. A split in a lyric spine and any `*+` raise `UnsupportedFeatureError`. Skipped spines are tracked like the others, so their manipulators keep the columns aligned.
    - Collect the citation records: every `!!!COM` in order, `!!!CDT`, `!!!OTL` (or failing that `!!!OTL@@xx`), `!!!SCT`, `!!!ODT`.
    - Everything else is ignored: other reference records, `!!!!` records, `!!`/`!` comments, `*>` labels and expansion lists.
@@ -293,6 +293,7 @@ Each step is one commit, with its specs.
     - Data before the first numbered barline becomes bar N−1, right-aligned and padded with one leading rest from `0:1`. Writers require a voice's first placement to start its bar (`voice/continuity.rb:23-27`, `preflight_checks.rb:29-33`), and bar 0 is already the pickup convention (`flow.rb:104-106`, `music_xml/writer.rb:152-157`).
     - A short final bar is accepted and not padded.
     - `!|:` sets `starts_repeat`, and `:|!` sets `ends_repeat_after_num_plays = 2` on the bar that contains it, as ABC's `RepeatTagger` does (`abc/repeat_tagger.rb:47-53`).
+    - Files: `kern/flow_builder.rb`, and specs.
 
 11. **Parts, staves, and voices (import)**
     - `kern/part_grouping.rb` reads the `*partN` and `*staffN` tags from the interpretation rows before the first data row. Spines with no `*part` tag each form a part of their own.
@@ -323,10 +324,10 @@ Each step is one commit, with its specs.
 
 14. **Work citation import**
     - `kern/citation_reader.rb` turns the collected records into a `HeadMusic::Content::Work` (`lib/head_music/content/work.rb`).
-    - Title: `!!!OTL`, or failing that `!!!OTL@@xx`. With no title, build no `Work`, and pass the first `!!!COM` as the flow's `composer:` string, as today.
+    - Title: `!!!OTL`, or failing that `!!!OTL@@xx`. With no title, build no `Work`, and pass the `!!!COM` names, joined with `, `, as the flow's `composer:` string.
     - `catalog_number`: `!!!SCT`, verbatim. `year`: the first four-digit year in `!!!ODT`.
     - Composers: each `!!!COM` becomes `Person.new(full_name:, sort_name:)`. `Last, First Middle` becomes the full name `First Middle Last`, with the record as the sort name; a name without a comma is used as both. Add each one with `with_credit(person, :composer)`.
-    - `!!!CDT`: when there is one composer, the years before and after the `-` set `birth_year` and `death_year`. Kern's approximate-date marks (`~`, `?`, `<`, `>`) keep the year that follows them. Anything unparseable is ignored, since `Person` validates years and a bad date should not sink the music.
+    - `!!!CDT`: only when there is exactly one composer, the years before and after the `-` set `birth_year` and `death_year`. Kern's approximate-date marks (`~`, `?`, `<`, `>`) keep the year that follows them. Anything unparseable is ignored, since `Person` validates years and a bad date should not sink the music.
     - The flow's name stays the title, so `flow.name` and `flow.work.title` agree.
     - Files: `kern/citation_reader.rb`, `flow_builder.rb`, `spec/head_music/notation/kern/citation_reader_spec.rb`.
 
@@ -336,7 +337,7 @@ Each step is one commit, with its specs.
     - Files: `lib/head_music/notation/bar_splitter.rb`, `abc/writer.rb`, `spec/head_music/notation/bar_splitter_spec.rb`.
 
 16. **Writer core**
-    - Header records from the flow's work: `!!!COM` (each composer's sort name), `!!!CDT` (when a composer has years, as `YYYY/-YYYY/`), `!!!OTL`, `!!!SCT`, `!!!ODT`. With no work, write `!!!COM` from the composer string and `!!!OTL` from the name.
+    - Header records: `!!!OTL` from the flow's name. From the flow's work: `!!!COM` (each composer's sort name), `!!!SCT`, `!!!ODT`, and `!!!CDT` as `YYYY/-YYYY/` only when the work has exactly one composer with years. With no work, `!!!COM` comes from the flow's composer string.
     - One full-length `**kern` spine per voice; the writer never emits splits. Parts are written bottom to top, and so are the staves within a part, so the bass is leftmost. Within a staff, voices are written left to right in voice order, upper voice first, so that the reader's layer convention gives them back in the same order.
     - Interpretation rows: `*I"name`, the `*I` code (only for instruments in the table), clef (the authored clef, or `ClefSelector` as a fallback), `*k[...]`, the designation, `*M`, and `*MM` converted to quarter notes per minute.
     - End with `==` and `*-`.
@@ -351,8 +352,8 @@ Each step is one commit, with its specs.
     - Write repeat barlines and mid-piece interpretation changes.
     - Pad shorter voices with rests.
     - Parts and staves: when any part has more than one voice or staff, every spine gets `*partN` (parts numbered top-down) and `*staffN` (staves numbered top-down within the part, from the voice's staff at the opening). A staff crossing becomes a mid-spine `*staffN` at its bar. Each spine's `*clef` is its staff's clef. The part's `*I` code and `*I"` name go on every spine of the part, so the reader's agreement check passes. With no grouped parts, no tags are written.
-    - Specs: the piano grand staff and the shared-staff soprano and alto round-trip to equal parts, staves, and staff assignments.
-    - Emit a `**text` spine to the right of each sung part, one per verse: a hyphen after a syllable with `hyphen_after`, a leading hyphen on the next syllable, and `.` elsewhere.
+    - Lyrics: emit a `**text` spine immediately to the right of each sung voice's spine, one per verse: a hyphen after a syllable with `hyphen_after`, a leading hyphen on the next syllable, and `.` elsewhere.
+    - Specs: the piano grand staff and the shared-staff soprano and alto round-trip to equal parts, staves, and staff assignments; a sung voice with two verses round-trips.
 
 18. **MusicXML splits notes at barlines**
     - `MusicXML::NoteWriter` already writes a tied chain as one `<note>` per component with `<tie>`/`<tied>` start and stop (`music_xml/note_writer.rb:7`, `:110-120`). Feed it `BarSplitter` segments, so a placement that crosses a barline becomes the tail of one `<measure>` and the head of the next, with the tie carried across.
@@ -414,11 +415,13 @@ Each step is one commit, with its specs.
   - misaligned null tokens;
   - CRLF input and invalid encoding;
   - a syllable with no note under it.
+- The grouping, split, and citation edge cases are listed in their own steps (11, 12, 14).
 - Round-trip equality has two levels: the reader is exactly idempotent, and arbitrary flows are compared by normalized `to_h`. A future schema field then fails the kern round trip until kern carries it or the normalization excludes it on purpose.
 
 ### Risks
 
 - **`Project#add_flow` changes behavior.** It now sets `player.project`, and it raises for a player that belongs to another project.
 - **Instrument codes** beyond the four vocal ones need checking against the Humdrum `*I` reference. Unmapped instruments are left out on export. `*Ivox` cannot resolve, because `voice` is only a family in the catalog.
+- **The sub-spine order** (left is the upper voice) comes from Verovio's documentation ("the highest part on the staff will typically be left most"), not from the Humdrum reference, which is silent on it. Check it against a real split-heavy file on the first corpus sweep.
 - **The clef fallback on export** relies on `ClefSelector`, which knows only treble and bass (`clef_selector.rb:11-19`). The round-trip normalization absorbs this.
 - **Corpus statistics:** checked 2026-09-24 that 251 of the 370 chorales have pickups and none uses splits, `*part`/`*staff`, text spines, or tuplets. The planner reported that 366 of 370 validate; confirm that with the first `KERN_CORPUS` run.
