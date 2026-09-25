@@ -4,9 +4,9 @@ require_relative "xml_text"
 module HeadMusic::Notation::MusicXML
   # Serializes the <note> elements a placement occupies.
   #
-  # A placement becomes one <note> per tied component per sounding pitch: the
-  # components come from the render plan's duration split, and a chord renders
-  # as a lead note followed by its <chord/> members.
+  # A placement becomes one <note> per tied component per sounding pitch in
+  # each bar it sounds in: the components come from the render plan's duration
+  # split, and a chord renders as a lead note followed by its <chord/> members.
   class NoteWriter
     include XmlText
     include HeadMusic::Notation::PlacementValidation
@@ -20,11 +20,12 @@ module HeadMusic::Notation::MusicXML
     #   omitted for a part holding one voice
     # @param staff_number [Integer, nil] the <staff> the note is written on,
     #   omitted for a part on one staff
-    def lines(placement, voice_number: nil, staff_number: nil)
+    def lines(segment, voice_number: nil, staff_number: nil)
+      placement = segment.placement
       ensure_pitched_sounds(placement)
 
-      components_by_placement[placement].each_with_index.flat_map do |component, component_index|
-        beams = beam_annotations[[placement, component_index]] || []
+      components_by_segment[segment].each_with_index.flat_map do |component, component_index|
+        beams = beam_annotations[[segment, component_index]] || []
         note_slots(placement).each_with_index.flat_map do |pitch, index|
           element_lines(
             placement, component, pitch: pitch, chord: index.positive?, beams: index.zero? ? beams : [],
@@ -52,7 +53,7 @@ module HeadMusic::Notation::MusicXML
 
     attr_reader :plan, :lyric_writer
 
-    delegate :components_by_placement, :beam_annotations, to: :plan
+    delegate :components_by_segment, :beam_annotations, to: :plan
 
     # A rest emits one empty slot; a sounded placement emits its pitches low to
     # high, so the lowest note leads and the rest carry <chord/>. ensure_pitched_sounds

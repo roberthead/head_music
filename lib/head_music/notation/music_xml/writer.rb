@@ -11,7 +11,7 @@ module HeadMusic::Notation::MusicXML
 
     attr_reader :flow, :work_title, :movement_number, :transposed, :arranger
 
-    delegate :bar_numbers, :placements_by_bar, :written_duration, to: :plan
+    delegate :bar_numbers, :segments_by_bar, :written_duration, to: :plan
 
     def initialize(flow, work_title: nil, movement_number: nil, transposed: false, arranger: nil)
       @flow = flow
@@ -161,11 +161,11 @@ module HeadMusic::Notation::MusicXML
     def measure_content_lines(part, voice, bar_number)
       voice_number = (part.voices.length > 1) ? part.voices.index(voice) + 1 : nil
       staff_number = staff_number(part, voice, bar_number)
-      placements = voice && placements_by_bar(voice)[bar_number]
-      return note_writer.whole_measure_rest_lines(bar_number, voice_number: voice_number, staff_number: staff_number) unless placements
+      segments = voice && segments_by_bar(voice)[bar_number]
+      return note_writer.whole_measure_rest_lines(bar_number, voice_number: voice_number, staff_number: staff_number) unless segments
 
-      placements.flat_map do |placement|
-        note_writer.lines(placement, voice_number: voice_number, staff_number: staff_number)
+      segments.flat_map do |segment|
+        note_writer.lines(segment, voice_number: voice_number, staff_number: staff_number)
       end
     end
 

@@ -125,4 +125,23 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
       end
     end
   end
+
+  describe "#split_components" do
+    let(:divisions) { 2 }
+    let(:pieces) do
+      writer.split_components([
+        HeadMusic::Rudiment::RhythmicValue.get(:half),
+        HeadMusic::Rudiment::RhythmicValue.new(:quarter, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth))
+      ])
+    end
+
+    it "keeps one list of components per piece" do
+      expect(pieces.map { |components| components.map(&:type) }).to eq [%w[half], %w[quarter eighth]]
+    end
+
+    it "ties through the pieces as one chain" do
+      flags = pieces.flatten.map { |component| [component.tie_start, component.tie_stop] }
+      expect(flags).to eq [[true, false], [true, true], [false, true]]
+    end
+  end
 end

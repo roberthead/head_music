@@ -27,13 +27,15 @@ module HeadMusic::Notation::MusicXML
       @divisions ||= Divisions.for(flow)
     end
 
-    def components_by_placement
-      @components_by_placement ||= flow.voices.flat_map(&:placements).to_h do |placement|
-        [placement, duration_writer.components(placement.rhythmic_value)]
+    def components_by_segment
+      @components_by_segment ||= flow.voices.flat_map(&:placements).each_with_object({}) do |placement, components|
+        segments = HeadMusic::Notation::BarSplitter.segments_of(placement)
+        pieces = duration_writer.split_components(segments.map { |segment| segment_rhythmic_value(segment) })
+        segments.zip(pieces) { |segment, piece| components[segment] = piece }
       end
     end
 
-    # A Hash keyed by [placement, component_index] holding the Array<Beam>
+    # A Hash keyed by [segment, component_index] holding the Array<Beam>
     # that BeamGrouper computed for that notehead. Built one bar at a time so
     # a notehead's onset is its exact integer offset from the bar start.
     def beam_annotations
@@ -55,10 +57,10 @@ module HeadMusic::Notation::MusicXML
     # there, or the whole-measure rest that stands in for an empty bar. Less
     # than a measure where the voice ended mid-bar.
     def written_duration(voice, bar_number)
-      placements = placements_by_bar(voice)[bar_number]
-      return whole_measure_duration(bar_number) unless placements
+      segments = segments_by_bar(voice)[bar_number]
+      return whole_measure_duration(bar_number) unless segments
 
-      placements.sum { |placement| components_by_placement[placement].sum(&:duration) }
+      segments.sum { |segment| components_by_segment[segment].sum(&:duration) }
     end
 
     private
@@ -66,7 +68,7 @@ module HeadMusic::Notation::MusicXML
     def precompute_eager_data
       key_value(flow.timeline.opening_key_signature_event)
       super
-      components_by_placement
+      components_by_segment
     end
 
     # <fifths> is required and <mode> is optional, which is exactly the shape
@@ -79,26 +81,35 @@ module HeadMusic::Notation::MusicXML
       @duration_writer ||= DurationWriter.new(divisions)
     end
 
+    def segment_rhythmic_value(segment)
+      segment.rhythmic_value || raise(
+        RenderError,
+        "cannot express the part of the note at #{segment.placement.position} in bar #{segment.bar_number} " \
+        "in binary note values"
+      )
+    end
+
     def annotate_bar(voice, bar_number, annotations)
-      placements = placements_by_bar(voice)[bar_number]
-      return unless placements
+      segments = segments_by_bar(voice)[bar_number]
+      return unless segments
 
       keys = []
-      events = build_bar_events(placements, keys)
+      events = build_bar_events(segments, keys)
       beams = BeamGrouper.annotate(events, group_unit_divisions(bar_number))
       keys.each_with_index { |key, index| annotations[key] = beams[index] }
     end
 
-    def build_bar_events(placements, keys)
+    def build_bar_events(segments, keys)
       onset = 0
-      placements.flat_map do |placement|
-        components_by_placement[placement].each_with_index.map do |component, component_index|
+      segments.flat_map do |segment|
+        placement = segment.placement
+        components_by_segment[segment].each_with_index.map do |component, component_index|
           event = BeamGrouper::Event.new(
             levels: beam_levels(placement, component),
             onset: onset,
             beam_break_before: component_index.zero? ? placement.beam_break_before : nil
           )
-          keys << [placement, component_index]
+          keys << [segment, component_index]
           onset += component.duration
           event
         end

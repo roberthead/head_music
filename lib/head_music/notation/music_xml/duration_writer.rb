@@ -37,8 +37,18 @@ module HeadMusic::Notation::MusicXML
     end
 
     def components(rhythmic_value)
-      links = rhythmic_value.tied_chain
-      links.each_with_index.map { |link, index| build_component(link, index, links.length) }
+      split_components([rhythmic_value]).first
+    end
+
+    # One list of components per piece of a note split at barlines, tied
+    # through from the first piece's attack to the last piece's release.
+    def split_components(rhythmic_values)
+      chains = rhythmic_values.map(&:tied_chain)
+      length = chains.sum(&:length)
+      index = -1
+      chains.map do |links|
+        links.map { |link| build_component(link, index += 1, length) }
+      end
     end
 
     private

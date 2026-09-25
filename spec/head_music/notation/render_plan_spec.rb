@@ -25,6 +25,19 @@ describe HeadMusic::Notation::RenderPlan do
       expect(plan.bar_numbers).to eq(1..3)
     end
 
+    it "tracks the bars a note sounds in after the one it starts in" do
+      flow.add_voice.place("1:3", :"double whole", "C4")
+      expect(plan.bar_numbers).to eq(1..3)
+    end
+
+    it "groups a voice's segments by each bar they sound in" do
+      voice = flow.add_voice
+      voice.place("1:1", :half, "C4")
+      voice.place("1:3", :whole, "D4")
+      expect(plan.segments_by_bar(voice).transform_values { |segments| segments.map(&:placement) })
+        .to eq(1 => voice.placements, 2 => [voice.placements.last])
+    end
+
     it "answers the flow's key signature for the first measure" do
       expect(plan.first_measure_key).to eq flow.key_signature.to_s
     end

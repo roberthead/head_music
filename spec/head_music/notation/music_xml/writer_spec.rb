@@ -690,11 +690,15 @@ describe HeadMusic::Notation::MusicXML::Writer do
         flow
       end
 
-      it "raises a render error naming the position" do
-        expect { described_class.new(flow).to_s }.to raise_error(
-          HeadMusic::Notation::MusicXML::RenderError,
-          /the note at 1:1:000 crosses its barline/
-        )
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "writes a whole note in each bar" do
+        expect(xpath_texts(document, "//measure/note/type")).to eq %w[whole whole]
+      end
+
+      it "ties the first bar's note to the second's" do
+        expect(xpath_count(document, "//measure[@number='1']/note/tie[@type='start']")).to eq 1
+        expect(xpath_count(document, "//measure[@number='2']/note/tie[@type='stop']")).to eq 1
       end
     end
 
@@ -744,11 +748,158 @@ describe HeadMusic::Notation::MusicXML::Writer do
         flow
       end
 
-      it "raises a render error naming the position" do
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      let(:crossing_notes) { REXML::XPath.match(document, "//note[pitch/step='F']") }
+
+      it "writes the head of the note at the end of its bar and the tail in the next" do
+        expect(crossing_notes.map { |note| note.parent.attributes["number"] }).to eq %w[1 2]
+      end
+
+      it "writes each piece at the length it fills" do
+        expect(crossing_notes.map { |note| [note.text("type"), note.get_elements("dot").length] })
+          .to eq [["quarter", 0], ["half", 1]]
+      end
+
+      it "ties the pieces across the barline" do
+        expect(crossing_notes.map { |note| note.get_elements("tie").map { |tie| tie.attributes["type"] } })
+          .to eq [["start"], ["stop"]]
+      end
+    end
+
+    context "with a dotted half starting on beat 3 of 4/4" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
+          voice = flow.add_voice
+          voice.place("1:1", :half, "C4")
+          voice.place("1:3", :dotted_half, "D4")
+          voice.place("2:2", :dotted_half, "E4")
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+      let(:crossing_notes) { REXML::XPath.match(document, "//note[pitch/step='D']") }
+
+      it "ties a half note to a quarter note across the barline" do
+        expect(crossing_notes.map { |note| [note.parent.attributes["number"], note.text("type"), note.elements["tie"].attributes["type"]] })
+          .to eq [%w[1 half start], %w[2 quarter stop]]
+      end
+    end
+
+    context "with a fourth-species counterpoint" do
+      let(:flow) { fux_fourth_species_examples.first.flow }
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+      let(:counterpoint_part) { "//part[@id='P#{flow.parts.index(flow.counterpoint_voice.part) + 1}']" }
+
+      it "ties each syncopation across its barline" do
+        starts = REXML::XPath.match(document, "#{counterpoint_part}/measure/note[tie[@type='start']]")
+        expect(starts.map { |note| note.parent.attributes["number"].to_i }).to eq [1, 2, 3, 4, 6, 7, 8, 9]
+      end
+
+      it "fills every bar of the counterpoint" do
+        durations = REXML::XPath.match(document, "#{counterpoint_part}/measure").map do |measure|
+          measure.get_elements("note/duration").sum { |duration| duration.text.to_i }
+        end
+        expect(durations.uniq.length).to eq 1
+      end
+    end
+
+    context "with a piece of a crossing note too long for any note value" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "12/1").tap do |flow|
+          voice = flow.add_voice
+          voice.place("1:1", :whole, "C4")
+          maxima = HeadMusic::Rudiment::RhythmicValue.get(:maxima)
+          voice.place("1:2", HeadMusic::Rudiment::RhythmicValue.new(:maxima, tied_value: maxima), "D4")
+        end
+      end
+
+      it "raises a render error naming the note and the bar" do
         expect { described_class.new(flow).to_s }.to raise_error(
-          HeadMusic::Notation::MusicXML::RenderError,
-          /the note at 1:4:000 crosses its barline/
+          HeadMusic::Notation::MusicXML::RenderError, /note at 1:2:000 in bar 1/
         )
+      end
+    end
+
+    context "with a chord that crosses its barline" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
+          voice = flow.add_voice
+          voice.place("1:1", :dotted_half, "C4")
+          voice.place("1:4", :half, %w[E4 G4])
+          voice.place("2:2", :dotted_half, "C4")
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "ties each pitch of the chord" do
+        expect(xpath_count(document, "//measure[@number='1']/note[tie[@type='start']]")).to eq 2
+        expect(xpath_count(document, "//measure[@number='2']/note[tie[@type='stop']]")).to eq 2
+      end
+
+      it "keeps the chord together on each side of the barline" do
+        expect(xpath_count(document, "//measure/note[chord]")).to eq 2
+      end
+    end
+
+    context "with a rest that crosses its barline" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
+          voice = flow.add_voice
+          voice.place("1:1", :dotted_half, "C4")
+          voice.place("1:4", :half)
+          voice.place("2:2", :dotted_half, "C4")
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "writes a rest on each side of the barline" do
+        expect(xpath_texts(document, "//measure/note[rest]/duration")).to eq %w[1 1]
+      end
+
+      it "does not tie the rests" do
+        expect(xpath_count(document, "//note[rest]/tie")).to eq 0
+        expect(xpath_count(document, "//note[rest]/notations")).to eq 0
+      end
+    end
+
+    context "with two voices in one part where one crosses a barline" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Suspension")
+        part = flow.add_part
+        upper = part.add_voice(role: "upper")
+        lower = part.add_voice(role: "lower")
+        upper.place("1:1", :half, "E5")
+        upper.place("1:3", :whole, "D5")
+        upper.place("2:3", :half, "C5")
+        lower.place("1:1", :whole, "C4")
+        lower.place("2:1", :whole, "B3")
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "rewinds a whole measure in each bar" do
+        expect(xpath_texts(document, "//measure/backup/duration")).to eq %w[4 4]
+      end
+
+      it "starts the second bar with the tied tail of the first voice's note" do
+        expect(REXML::XPath.first(document, "//measure[@number='2']/note[1]/tie").attributes["type"]).to eq "stop"
+        expect(xpath_text(document, "//measure[@number='2']/note[1]/voice")).to eq "1"
+      end
+    end
+
+    context "with a sung note that crosses its barline" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
+          voice = flow.add_voice
+          voice.place("1:1", :half, "C4").sing("Glo", hyphen_after: true)
+          voice.place("1:3", :whole, "D4").sing("ri")
+          voice.place("2:3", :half, "E4").sing("a")
+        end
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "sings the syllable once, on the attack" do
+        expect(xpath_texts(document, "//note/lyric/text")).to eq %w[Glo ri a]
       end
     end
 

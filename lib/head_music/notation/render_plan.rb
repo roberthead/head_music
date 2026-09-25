@@ -20,7 +20,7 @@ class HeadMusic::Notation::RenderPlan
   end
 
   def bar_numbers
-    flow.earliest_bar_number..flow.latest_bar_number
+    @bar_numbers ||= flow.earliest_bar_number..last_sounding_bar_number
   end
 
   # The key changes to print in this part, by bar. A nil part answers the
@@ -51,7 +51,24 @@ class HeadMusic::Notation::RenderPlan
     @placements_by_bar[voice] ||= voice.placements.group_by { |placement| placement.position.bar_number }
   end
 
+  # What each bar holds of the voice, with a placement that crosses a barline
+  # appearing in every bar it sounds in.
+  def segments_by_bar(voice)
+    @segments_by_bar ||= {}
+    @segments_by_bar[voice] ||= HeadMusic::Notation::BarSplitter.segments(voice.placements).group_by(&:bar_number)
+  end
+
   private
+
+  # The flow's latest bar is where its last placement starts, but a placement
+  # crossing a barline also sounds in the bars after that.
+  def last_sounding_bar_number
+    last_bars = flow.voices.filter_map do |voice|
+      placement = voice.last_placement
+      placement && HeadMusic::Notation::BarSplitter.segments_of(placement).last.bar_number
+    end
+    [flow.latest_bar_number, *last_bars].max
+  end
 
   # A subclass computes here whatever else must raise at construction, and
   # calls super for the signatures every format needs.

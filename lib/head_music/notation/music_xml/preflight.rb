@@ -3,8 +3,8 @@ module HeadMusic::Notation::MusicXML
   # Rejects flows that cannot be expressed in the supported MusicXML
   # subset.
   #
-  # Whole-flow problems (no voices, positional gaps, barline-crossing
-  # notes, forbidden control characters) raise RenderError here, before the
+  # Whole-flow problems (no voices, positional gaps, forbidden control
+  # characters) raise RenderError here, before the
   # Writer assembles any output — so a successful check! is the Writer's
   # guarantee that assembly cannot fail on these grounds.
   class Preflight
@@ -26,7 +26,6 @@ module HeadMusic::Notation::MusicXML
       ensure_voices
       ensure_renderable_text
       ensure_contiguous_voices(flow)
-      ensure_notes_within_barlines(flow)
     end
 
     private

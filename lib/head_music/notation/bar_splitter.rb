@@ -6,7 +6,14 @@ module HeadMusic
       # The fraction is of a whole note. It is nil when the placement fits its
       # bar, so a writer renders it from its own rhythmic value and keeps the
       # tied chain as authored.
-      Segment = Data.define(:placement, :bar_number, :fraction, :continues)
+      Segment = Data.define(:placement, :bar_number, :fraction, :continues) do
+        # Nil when no binary note value, or tied chain of them, spans the fraction.
+        def rhythmic_value
+          return placement.rhythmic_value unless fraction
+
+          DottedDuration.rhythmic_value_for(fraction)
+        end
+      end
 
       module_function
 

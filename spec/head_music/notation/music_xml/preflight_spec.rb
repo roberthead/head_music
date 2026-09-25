@@ -59,8 +59,8 @@ describe HeadMusic::Notation::MusicXML::Preflight do
         flow
       end
 
-      it "raises a render error" do
-        expect { described_class.check!(flow) }.to raise_error(render_error, /crosses its barline/)
+      it "passes, leaving the writer to split the note at the barline" do
+        expect { described_class.check!(flow) }.not_to raise_error
       end
     end
   end
