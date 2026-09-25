@@ -41,7 +41,7 @@ module HeadMusic::Notation::LilyPond
     # chord repeats the whole chord.
     def token(segment)
       placement = segment.placement
-      links = segment_rhythmic_value(segment).tied_chain
+      links = segment.rhythmic_value!(RenderError).tied_chain
       return links.map { |link| "r#{DurationWriter.token(link)}" }.join(" ") if placement.rest?
 
       body = placement.chord? ? chord_body(placement) : PitchWriter.token(placement.pitch)
@@ -51,14 +51,6 @@ module HeadMusic::Notation::LilyPond
 
     def chord_body(placement)
       "<#{placement.pitches.sort.map { |pitch| PitchWriter.token(pitch) }.join(" ")}>"
-    end
-
-    def segment_rhythmic_value(segment)
-      segment.rhythmic_value || raise(
-        RenderError,
-        "cannot express the part of the note at #{segment.placement.position} in bar #{segment.bar_number} " \
-        "in binary note values"
-      )
     end
   end
 end

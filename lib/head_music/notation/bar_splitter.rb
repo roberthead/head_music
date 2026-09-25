@@ -13,6 +13,13 @@ module HeadMusic
 
           DottedDuration.rhythmic_value_for(fraction)
         end
+
+        def rhythmic_value!(error_class)
+          rhythmic_value || raise(
+            error_class,
+            "cannot express the part of the note at #{placement.position} in bar #{bar_number} in binary note values"
+          )
+        end
       end
 
       module_function

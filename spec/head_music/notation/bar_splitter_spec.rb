@@ -75,4 +75,19 @@ describe HeadMusic::Notation::BarSplitter do
       ]
     end
   end
+
+  describe "Segment#rhythmic_value!" do
+    let(:placement) { voice.place("1:1", :half, "C4") }
+
+    it "answers the segment's rhythmic value" do
+      segment = described_class::Segment.new(placement, 1, Rational(3, 8), false)
+      expect(segment.rhythmic_value!(ArgumentError)).to eq HeadMusic::Rudiment::RhythmicValue.get("dotted quarter")
+    end
+
+    it "raises the writer's error for a piece no binary note value spans" do
+      segment = described_class::Segment.new(placement, 1, Rational(1, 3), false)
+      expect { segment.rhythmic_value!(ArgumentError) }
+        .to raise_error(ArgumentError, /cannot express the part of the note at 1:1:000 in bar 1 in binary note values/)
+    end
+  end
 end

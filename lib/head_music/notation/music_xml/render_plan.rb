@@ -30,7 +30,7 @@ module HeadMusic::Notation::MusicXML
     def components_by_segment
       @components_by_segment ||= flow.voices.flat_map(&:placements).each_with_object({}) do |placement, components|
         segments = HeadMusic::Notation::BarSplitter.segments_of(placement)
-        pieces = duration_writer.split_components(segments.map { |segment| segment_rhythmic_value(segment) })
+        pieces = duration_writer.split_components(segments.map { |segment| segment.rhythmic_value!(RenderError) })
         segments.zip(pieces) { |segment, piece| components[segment] = piece }
       end
     end
@@ -79,14 +79,6 @@ module HeadMusic::Notation::MusicXML
 
     def duration_writer
       @duration_writer ||= DurationWriter.new(divisions)
-    end
-
-    def segment_rhythmic_value(segment)
-      segment.rhythmic_value || raise(
-        RenderError,
-        "cannot express the part of the note at #{segment.placement.position} in bar #{segment.bar_number} " \
-        "in binary note values"
-      )
     end
 
     def annotate_bar(voice, bar_number, annotations)

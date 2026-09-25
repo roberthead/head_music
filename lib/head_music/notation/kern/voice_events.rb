@@ -33,11 +33,6 @@ module HeadMusic::Notation::Kern
     TIE_OPENING = {nil => "", :start => "[", :middle => "", :end => ""}.freeze
     TIE_CLOSING = {nil => "", :start => "", :middle => "_", :end => "]"}.freeze
 
-    def self.offset_in_bar(position)
-      meter = position.meter
-      (position.count - 1 + Rational(position.tick, meter.ticks_per_count)) / meter.bottom_number
-    end
-
     def self.rests(from, to)
       return [] unless to > from
 
@@ -79,7 +74,7 @@ module HeadMusic::Notation::Kern
     def placement_links(placement)
       HeadMusic::Notation::BarSplitter.segments_of(placement).flat_map do |segment|
         offset = segment_offset(segment)
-        segment_rhythmic_value(segment).tied_chain.map do |link|
+        segment.rhythmic_value!(RenderError).tied_chain.map do |link|
           [segment.bar_number, link, offset].tap { offset += DurationWriter.fraction(link) }
         end
       end
@@ -104,15 +99,7 @@ module HeadMusic::Notation::Kern
     def segment_offset(segment)
       return 0 unless segment.placement.position.bar_number == segment.bar_number
 
-      self.class.offset_in_bar(segment.placement.position)
-    end
-
-    def segment_rhythmic_value(segment)
-      segment.rhythmic_value || raise(
-        RenderError,
-        "cannot express the part of the note at #{segment.placement.position} in bar #{segment.bar_number} " \
-        "in binary note values"
-      )
+      HeadMusic::Notation::BarSplitter.offset_in_bar(segment.placement.position)
     end
 
     def filled(events, length)
