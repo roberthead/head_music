@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:   2026-09-24T19:56:33-07:00
   finished_at:
-  updated_at:   2026-09-24T22:50:11-07:00
+  updated_at:   2026-09-25T07:32:30-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -431,3 +431,45 @@ Each step is one commit, with its specs.
 - **The sub-spine order** (left is the upper voice) comes from Verovio's documentation ("the highest part on the staff will typically be left most"), not from the Humdrum reference, which is silent on it. Check it against a real split-heavy file on the first corpus sweep.
 - **The clef fallback on export** relies on `ClefSelector`, which knows only treble and bass (`clef_selector.rb:11-19`). The round-trip normalization absorbs this.
 - **Corpus statistics:** checked 2026-09-24 that 251 of the 370 chorales have pickups and none uses splits, `*part`/`*staff`, text spines, or tuplets. The planner reported that 366 of 370 validate; confirm that with the first `KERN_CORPUS` run.
+
+## Review
+
+Reviewed 2026-09-25 at commit `fd3908d` (46 commits over `main`, clean tree).
+
+### Verification run
+
+- `bundle exec rake validate`: 9222 examples, 0 failures, 1 pending (corpus, skipped without `KERN_CORPUS`); 99.75% line and 95.27% branch coverage; no vulnerabilities; RubyCritic 85.44; rubocop clean
+- `KERN_CORPUS` sweep against a fresh clone of `craigsapp/bach-370-chorales`: 371 examples, 0 failures — 366 chorales read, reread identically, and render to MusicXML and LilyPond; the four named exceptions raise as pinned
+- LilyPond is installed locally, so the conditional compile specs ran and passed
+
+### Acceptance criteria
+
+No criterion is unmet. All are ✅ with an implementing line and a pinning spec, except these four:
+
+- ⚠️ **Soprano and alto sharing one staff round-trip** — import is pinned (`part_grouping_spec.rb:62`) and a probe round-trips, but no render-then-parse spec exists; the grand-staff half is pinned (`kern_round_trip_spec.rb:89`)
+- ⚠️ **Writer raises `RenderError` for unspellable notes** — no such check or spec; it appears unreachable, since the model allows at most two alterations and `PitchWriter` spells all five. Drop the word from the criterion
+- ⚠️ **Render then parse gives an equal normalized `to_h`** — `spec/support/kern_round_trip.rb` compares a hand-picked field list rather than a normalized `to_h`, so a new schema field would not fail the kern round trip. Two LilyPond fixtures are left out because they lose information, confirmed by probe: `one_handed_piano` drops its empty second staff (2 staves → 1, brace → none), and `choir_on_two_staves` turns its `:bracket` into `:brace`
+- ⚠️ **Corpus: every chorale parses except the known short-bar ones** — the sweep passes, but only chor197 and chor280 have short interior bars; chor011 has `*M3/4` in the middle of a bar and chor130 an overlong bar. The spec's comment is accurate; the criterion's wording is not. chor130's expectation (`ParseError`) also accepts the `UnsupportedFeatureError` subclass
+
+Every checkbox in the story is still unchecked.
+
+### Code review findings
+
+Each of these was reproduced or confirmed by reading the code path.
+
+1. **Valid kern rejected when a new sub-spine attacks while the left sub-spine holds a note** (`flow_builder.rb:257`). `VoiceCursor.new(layer, cursor.busy_until)` starts the new sub-spine at the end of the left note instead of the split time. `2c 4g` / `*^ *` / `. 4e 4a` raises `ParseError: A note in spine 2 begins before the note before it ends`. This split pattern is common in hand-encoded keyboard music
+2. **Parse → render → parse is not idempotent for files without `!!!OTL` or `*clef`** (`writer.rb:80-99`). The default flow name comes back as `!!!OTL: Composition`, which builds a `Work` the first parse did not have; the writer's fallback `*clef` comes back as an authored staff system. `KernRoundTripHelper` compares the second parse to the third, so the first parse is never checked. The idempotence criterion is marked met, but only for inputs that carry both records
+3. **Composer strings with commas are scrambled on the no-work path** (`writer.rb`, `citation_reader.rb:33`). Two `!!!COM` records and no title join to `"J. S. Bach, G. F. Handel"`; writing that back as one `!!!COM` and rereading gives `"G. F. Handel J. S. Bach"`
+4. **Clef change is written before the staff change it depends on** (`writer.rb:208-209`). `clef_change` reports the clef of the staff the voice moves to, but the reader applies `*clef` to the spine's current staff, which only changes on the following `*staffN` row. A staff crossing and a clef change in the same bar put the clef on the wrong staff. Swap the two rows
+5. **`KeyError` on `*partN` restated after a mid-piece split** (`flow_builder.rb:185`). `@tags` is only filled for header tracks and for splits before the first data row, so a restated `*part1 *part1` after a later `*^` raises `KeyError` rather than a `ParseError` with a line
+6. **Leftover copies despite the shared `BarSplitter`** — `segment_rhythmic_value` appears three times (`kern/voice_events.rb:110`, `lily_pond/render_plan.rb:56`, `music_xml/render_plan.rb:84`), and `VoiceEvents.offset_in_bar` duplicates `BarSplitter.offset_in_bar`. Move the first onto the base `RenderPlan` via `render_error_class` and delete the second
+7. *Lower confidence, not reproduced:* the LilyPond reader skips an all-rest staff-group voice with no role (`lily_pond/flow_builder.rb`, `cursor_for`); kern leaves every role nil, so such a voice could be lost going through LilyPond
+
+Also noted: a file with no header row raises `ParseError` without a line number (`document.rb:93`), and only the meter case of disagreeing timeline interpretations is specced.
+
+### Before `finish`
+
+- Fix findings 1–5, each with a spec; 6 is a small cleanup
+- Add a render-then-parse spec for soprano and alto on one staff
+- Reword the unspellable, normalized-`to_h`, and corpus criteria to match what was built, and record the empty-staff and bracket-to-brace losses under Notes as known limits (or fix them)
+- Check the acceptance-criteria boxes
