@@ -7,6 +7,12 @@ module HeadMusic::Notation::Kern
     Parser.new(kern_string).flow
   end
 
+  # +transposed:+ is accepted for parity with the other writers, but kern is
+  # written at concert pitch, so a transposing part raises RenderError.
+  def self.render(flow, transposed: false)
+    Writer.new(flow, transposed: transposed).to_s
+  end
+
   # Raised when a **kern string cannot be interpreted
   class ParseError < HeadMusic::Notation::ParseError
     attr_reader :line_number, :snippet
