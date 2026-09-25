@@ -202,9 +202,109 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       expect(placements(flow.voices.first)).to eq ["half C4 at 5:1:000", "half D4 at 6:1:000"]
     end
 
-    it "reads music before the first barline as the bar before it" do
+    it "reads a full bar before the first barline as the bar before it" do
       flow = parse("**kern\n*M2/4\n2c\n=1\n2d\n*-")
       expect(placements(flow.voices.first)).to eq ["half C4 at 0:1:000", "half D4 at 1:1:000"]
+    end
+
+    describe "a pickup" do
+      subject(:flow) do
+        parse(<<~KERN)
+          **kern  **kern
+          *M3/4  *M3/4
+          4G  8e
+          .  8f
+          =1  =1
+          2.C  2.g
+          *-  *-
+        KERN
+      end
+
+      it "becomes bar 0, padded with a leading rest from its downbeat" do
+        expect(placements(flow.voices.last)).to eq ["half rest at 0:1:000", "quarter G3 at 0:3:000", "dotted half C3 at 1:1:000"]
+      end
+
+      it "pads each voice by the same amount" do
+        expect(placements(flow.voices.first).first(3)).to eq ["half rest at 0:1:000", "eighth E4 at 0:3:000", "eighth F4 at 0:3:480"]
+      end
+
+      it "leaves every voice continuous" do
+        expect(flow.voices.map(&:first_gap)).to eq [nil, nil]
+      end
+    end
+
+    it "numbers a pickup from the first barline" do
+      flow = parse("**kern\n*M2/4\n4c\n=5\n2d\n*-")
+      expect(placements(flow.voices.first)).to eq ["quarter rest at 4:1:000", "quarter C4 at 4:2:000", "half D4 at 5:1:000"]
+    end
+
+    it "has no pickup when the first barline precedes the music" do
+      flow = parse("**kern\n*M3/4\n=1-\n2.c\n=2\n2.d\n*-")
+      expect(placements(flow.voices.first)).to eq ["dotted half C4 at 1:1:000", "dotted half D4 at 2:1:000"]
+    end
+
+    it "raises when a pickup is longer than its bar" do
+      expect { parse("**kern\n*M2/4\n1c\n=1\n2d\n*-") }
+        .to raise_error(HeadMusic::Notation::Kern::ParseError, /pickup bar is longer than bar 0's meter \(line 4\)/)
+    end
+
+    it "raises an unsupported-feature error for a pickup before bar 0" do
+      expect { parse("**kern\n*M2/4\n4c\n=0\n2d\n*-") }
+        .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /pickup before bar 0/)
+    end
+
+    it "applies a change read in the pickup from bar 1" do
+      flow = parse("**kern\n*M2/4\n4c\n*M3/4\n=1\n2.d\n*-")
+      expect(flow.meter_changes.transform_values(&:to_s)).to eq(1 => "3/4")
+    end
+
+    describe "repeats" do
+      subject(:flow) do
+        parse(<<~KERN)
+          **kern
+          *M3/4
+          4c
+          =1!|:
+          2.d
+          =2
+          2e
+          =:|!
+          4f
+          =3:|!|:
+          2.g
+          ==:|!
+          *-
+        KERN
+      end
+
+      def repeat_flags
+        flow.bars(3).to_h { |bar| [bar.number, [bar.starts_repeat?, bar.ends_repeat_after_num_plays]] }
+      end
+
+      it "starts a repeat on the bar after !|:" do
+        expect(repeat_flags[1]).to eq [true, nil]
+      end
+
+      it "records a repeat sign in the middle of a bar on its whole bar" do
+        expect(repeat_flags[2]).to eq [false, 2]
+      end
+
+      it "keeps the bar whole across a repeat sign in its middle" do
+        expect(placements(flow.voices.first)[4]).to eq "quarter F4 at 2:3:000"
+      end
+
+      it "ends a repeat on the bar before :|! and starts one on the bar after" do
+        expect(repeat_flags[3]).to eq [true, 2]
+      end
+
+      it "leaves the pickup bar without repeats" do
+        expect(repeat_flags[0]).to eq [false, nil]
+      end
+    end
+
+    it "ignores a repeat end at the first barline when nothing precedes it" do
+      flow = parse("**kern\n=1:|!\n1c\n*-")
+      expect(flow.bars(1).map(&:ends_repeat?)).to eq [false]
     end
 
     it "accepts a short final bar" do

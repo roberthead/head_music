@@ -37,7 +37,13 @@ module HeadMusic::Notation::Kern
 
       clock.finish(current_time, document.rows.last.record.line)
       @layers.each { |layer| layer.place(clock) }
+      mark_repeats
       @flow
+    end
+
+    def mark_repeats
+      clock.repeat_starts.each { |number| @flow.bars(number).last.starts_repeat = true }
+      clock.repeat_ends.each { |number| @flow.bars(number).last.ends_repeat_after_num_plays = 2 }
     end
 
     def read(row)

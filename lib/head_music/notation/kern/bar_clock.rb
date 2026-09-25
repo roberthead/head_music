@@ -4,14 +4,19 @@ module HeadMusic::Notation::Kern
   # starts, and whether each bar is as long as its meter says.
   #
   # Time is an exact Rational count of whole notes from the first data
-  # row. Changes that live on bars (meter, key, tempo, clef) are applied
-  # at a downbeat; one read in the middle of a bar waits for the next
-  # barline, and raises if more music arrives before it.
+  # row. Music before the first barline is a pickup, the right-aligned end
+  # of the bar before it. Changes that live on bars (meter, key, tempo,
+  # clef) are applied at a downbeat; one read in the middle of a bar waits
+  # for the next barline, and raises if more music arrives before it.
+  #
+  # An unnumbered barline in the middle of a bar, such as a repeat sign
+  # halfway through one, does not end the bar. Its repeat is recorded on
+  # the whole bar, as ABC's RepeatTagger does.
   class BarClock
     Bar = Data.define(:number, :start)
     Pending = Data.define(:description, :line, :change)
 
-    attr_reader :number, :bars
+    attr_reader :number, :bars, :repeat_starts, :repeat_ends
 
     def initialize(&meter_at)
       @meter_at = meter_at
@@ -20,15 +25,23 @@ module HeadMusic::Notation::Kern
       @bar_start = 0
       @pending = []
       @short_bar = nil
+      @repeat_starts = []
+      @repeat_ends = []
     end
 
     def barline(barline, time, line)
       elapsed = time - @bar_start
       if @number.nil?
         first_barline(barline, time, elapsed, line)
-      elsif elapsed.positive?
+      elsif elapsed.zero?
+        mark_repeats(barline, @number - 1, @number)
+      elsif within_bar?(barline, elapsed)
+        mark_repeats(barline, @number, @number)
+      else
         close_bar(elapsed, line)
+        completed = @number
         open_bar(next_number(barline, line), time)
+        mark_repeats(barline, completed, @number)
       end
     end
 
@@ -78,14 +91,28 @@ module HeadMusic::Notation::Kern
 
     def first_barline(barline, time, elapsed, line)
       number = barline.number || HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR
-      if elapsed.positive?
-        length = bar_length(number - 1)
-        raise ParseError.new("Bar #{number - 1} is too long", line_number: line) if elapsed > length
-        raise UnsupportedFeatureError.new("Pickup bars are not yet supported", line_number: line) if elapsed < length
-
-        @bars << Bar.new(number: number - 1, start: time - length)
-      end
+      open_pickup(number - 1, time, elapsed, line) if elapsed.positive?
       open_bar(number, time)
+      mark_repeats(barline, number - 1, number)
+    end
+
+    def open_pickup(number, time, elapsed, line)
+      raise UnsupportedFeatureError.new("A pickup before bar 0 is not supported", line_number: line) if number.negative?
+
+      length = bar_length(number)
+      raise ParseError.new("The pickup bar is longer than bar #{number}'s meter", line_number: line) if elapsed > length
+
+      @bars << Bar.new(number: number, start: time - length)
+    end
+
+    def within_bar?(barline, elapsed)
+      barline.number.nil? && !barline.final && elapsed < bar_length(@number)
+    end
+
+    # A repeat cannot end a bar that was never read.
+    def mark_repeats(barline, completed, entered)
+      @repeat_ends << completed if barline.ends_repeat && bars.any? { |bar| bar.number == completed }
+      @repeat_starts << entered if barline.starts_repeat
     end
 
     def close_bar(elapsed, line)
