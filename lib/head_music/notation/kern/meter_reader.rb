@@ -14,7 +14,7 @@ module HeadMusic::Notation::Kern
 
     # *MM is tempo, not meter.
     def meter?(field)
-      field.start_with?("*M") && !field.start_with?("*MM")
+      field.match?(/\A\*M\d/)
     end
 
     def meter(field, line_number: nil)

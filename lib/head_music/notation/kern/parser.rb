@@ -1,6 +1,11 @@
 # A namespace for **kern parsing helpers
 module HeadMusic::Notation::Kern
   # Interprets a **kern string as a HeadMusic::Content::Flow.
+  #
+  # The pipeline validates in stages -- blank input, lexing, then the
+  # spine structure of the whole file -- before the FlowBuilder reads any
+  # music, and the FlowBuilder raises before returning, so a caller never
+  # receives a partially built flow.
   class Parser
     def initialize(kern_string)
       @kern_string = kern_string
@@ -14,8 +19,8 @@ module HeadMusic::Notation::Kern
 
     def build_flow
       ensure_input_present
-      Document.new(Lexer.new(@kern_string).records)
-      raise UnsupportedFeatureError, "kern import is not implemented yet"
+      document = Document.new(Lexer.new(@kern_string).records)
+      FlowBuilder.new(document).flow
     end
 
     # Checked on the raw bytes: String#strip raises on invalid UTF-8, and

@@ -6,7 +6,7 @@ describe HeadMusic::Notation::Kern::MeterReader do
   end
 
   it "recognizes a meter but not a tempo or a mensuration sign" do
-    expect(%w[*M6/8 *MM100 *met(c)].map { |field| described_class.meter?(field) }).to eq [true, false, false]
+    expect(%w[*M6/8 *MM100 *met(c) *MX].map { |field| described_class.meter?(field) }).to eq [true, false, false, false]
   end
 
   %w[*M3/5 *M0/4 *MX *M3/4+2/8].each do |field|
