@@ -1,3 +1,14 @@
+<!--
+metadata:
+  created_at:
+  activated_at:
+  planned_at:
+  finished_at:
+  updated_at:   2026-09-25T13:09:06-07:00
+-->
+
+# Story: A Common Superclass for Notes and Rests
+
 IN ORDER TO accurately model sound events
 AS a developer
 I WANT a clear way to group the notion of a Note (pitch + rhythmic value) and an unpitched note.

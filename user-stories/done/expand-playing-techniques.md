@@ -1,4 +1,13 @@
-## User Story: Load Playing Techniques from YAML Data File
+<!--
+metadata:
+  created_at:
+  activated_at:
+  planned_at:
+  finished_at:
+  updated_at:   2026-09-25T13:09:06-07:00
+-->
+
+# Story: Load Playing Techniques from YAML Data File
 
 **As a** client of the HeadMusic gem
 

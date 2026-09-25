@@ -1,4 +1,13 @@
-## Instrument Variant Refactoring
+<!--
+metadata:
+  created_at:
+  activated_at:
+  planned_at:
+  finished_at:
+  updated_at:   2026-09-25T13:09:06-07:00
+-->
+
+# Story: Instrument Variant Refactoring
 
 ### Background
 The current architecture conflates instrument catalog data with specific instrument instances. We need to separate these concerns to better represent how instruments are actually used in musical scores.
