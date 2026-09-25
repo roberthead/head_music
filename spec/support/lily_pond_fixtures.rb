@@ -85,16 +85,13 @@ module LilyPondFixtures
     HeadMusic::Notation::ABC.parse(species_abc(FUX_FOURTH_SPECIES_EXAMPLES.first))
   end
 
-  # The tied notes in these fixtures are spelled as the writer splits them,
-  # since a round trip reads back the split rather than a whole note.
-  #
   # The upper voice's D5 is tied across the barline where the key changes.
   def tie_into_key_change
     flow = HeadMusic::Content::Flow.new(name: "Tied Key", key_signature: "C major", meter: "4/4")
     flow.change_key_signature(2, "G major")
     upper = flow.add_voice
     upper.place("1:1", :half, "C5")
-    upper.place("1:3", "half tied to half", "D5")
+    upper.place("1:3", :whole, "D5")
     upper.place("2:3", :half, "F#5")
     lower = flow.add_voice
     lower.place("1:1", :whole, "C4")
@@ -108,7 +105,7 @@ module LilyPondFixtures
     flow.change_meter(2, "3/4")
     upper = flow.add_voice
     upper.place("1:1", :half, "G4")
-    upper.place("1:3", "half tied to half", "A4")
+    upper.place("1:3", :whole, "A4")
     upper.place("2:3", :quarter, "B4")
     upper.place("3:1", :dotted_half, "C5")
     lower = flow.add_voice
@@ -132,7 +129,7 @@ module LilyPondFixtures
     right_hand.place("1:1", :whole, "E5")
     right_hand.place("2:1", :whole, "G5")
     left_hand.place("1:1", :half, "C3")
-    left_hand.place("1:3", "half tied to half", "C4")
+    left_hand.place("1:3", :whole, "C4")
     left_hand.place("2:3", :half, "D4")
     flow
   end

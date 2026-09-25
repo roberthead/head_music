@@ -3,7 +3,7 @@
 #
 # The writer pads a voice's missing bars with whole-bar rests, so the
 # reparsed flow may hold rests the original did not; every original
-# placement must come back at its position with its pitches and value, and
+# placement must come back at its position with its pitches and duration, and
 # every extra reparsed placement must be such a rest.
 module LilyPondRoundTripHelper
   def expect_lily_pond_round_trip(flow)
@@ -38,9 +38,15 @@ module LilyPondRoundTripHelper
       actual = actual_by_position.delete(expected.position.to_s)
       expect(actual).not_to be_nil, "no placement came back at #{expected.position}"
       expect(actual.pitches.sort.map(&:to_s)).to eq expected.pitches.sort.map(&:to_s)
-      expect(actual.rhythmic_value.to_s).to eq expected.rhythmic_value.to_s
+      expect(total_duration(actual)).to eq total_duration(expected)
     end
     expect(actual_by_position.values).to all(be_rest)
+  end
+
+  # By total duration rather than spelling, since a note the writer splits at
+  # a barline reads back as a tied chain.
+  def total_duration(placement)
+    placement.rhythmic_value.tied_chain.sum { |link| HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link) }
   end
 end
 
