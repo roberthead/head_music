@@ -80,7 +80,7 @@ module HeadMusic::Notation::Kern
     end
 
     def bar_containing(time)
-      bars.select { |bar| bar.start <= time }.last
+      bars.reverse.find { |bar| bar.start <= time }
     end
 
     def next_bar_start(time)
