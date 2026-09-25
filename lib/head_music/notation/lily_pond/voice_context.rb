@@ -5,14 +5,19 @@ module HeadMusic::Notation::LilyPond
   # or when it is an explicit context with no children (an empty
   # \new Staff { } is a legitimate silent voice).
   class VoiceContext
-    attr_reader :role, :stream
+    attr_reader :role, :stream, :group, :group_staff
     attr_accessor :children
 
-    def initialize(document, role, explicit:)
+    # A group is the \new PianoStaff or \new StaffGroup this context is; a
+    # group staff is the staff of one that this context's music is written on.
+    def initialize(document, role, explicit:, group: nil, group_staff: nil)
       @document = document
       @role = role
       @stream = document.add_stream(role)
+      @stream.group_staff = group_staff
       @explicit = explicit
+      @group = group
+      @group_staff = group_staff
       @children = 0
     end
 

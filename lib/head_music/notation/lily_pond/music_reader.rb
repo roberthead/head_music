@@ -45,6 +45,10 @@ module HeadMusic::Notation::LilyPond
       readers.absolute { nested(token, &block) }
     end
 
+    def relative?
+      readers.current.relative?
+    end
+
     def nested(opener)
       @depth += 1
       raise cursor.error("Music expressions are nested too deeply", opener) if @depth > MAX_NESTING_DEPTH
@@ -76,7 +80,7 @@ module HeadMusic::Notation::LilyPond
 
     def read_parallel(context)
       token = cursor.advance
-      raise cursor.unsupported("Simultaneous music inside \\relative is not supported", token) if readers.current.relative?
+      raise cursor.unsupported("Simultaneous music inside \\relative is not supported", token) if relative?
 
       nested(token) do
         contexts.read_parallel_item(context) until cursor.peek.type == :close_parallel
@@ -115,7 +119,8 @@ module HeadMusic::Notation::LilyPond
       case token.lexeme
       when "key" then items.read_key(context)
       when "time" then items.read_time(context)
-      when "clef" then items.read_clef
+      when "clef" then items.read_clef(context)
+      when "change" then items.read_staff_change(context)
       when "relative" then read_relative { read_expression(context) }
       when "absolute" then read_absolute { read_expression(context) }
       when "new" then contexts.read_sequential_new(context)

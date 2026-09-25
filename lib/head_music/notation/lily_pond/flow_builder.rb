@@ -57,8 +57,55 @@ module HeadMusic::Notation::LilyPond
         name: document.title, composer: document.composer,
         key_signature: document.first_key_signature, meter: document.first_meter
       )
-      replay(streams.map { |stream| Cursor.new(stream, flow.add_voice(role: stream.role)) })
+      replay(streams.filter_map { |stream| cursor_for(flow, stream) })
       flow
+    end
+
+    # A staff group is one part, whose staff system holds the group's staves
+    # in order. A silent staff keeps its place in the system without a voice,
+    # since that is how the writer renders a staff nobody is written on.
+    def cursor_for(flow, stream)
+      group_staff = stream.group_staff
+      return Cursor.new(stream, flow.add_voice(role: stream.role)) unless group_staff
+
+      part = part_for(flow, group_staff.group)
+      return if stream.silent? && stream.role.nil?
+
+      voice = part.add_voice(role: stream.role)
+      staff = staves_by_group_staff[group_staff]
+      voice.assign_staff(HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR, staff) unless staff.equal?(part.staff_system.first_staff)
+      Cursor.new(stream, voice)
+    end
+
+    def part_for(flow, group)
+      parts_by_group[group] ||= begin
+        staves = group.staves.map { |group_staff| staves_by_group_staff[group_staff] = HeadMusic::Content::Staff.new(clef: clef_key(group_staff)) }
+        part = flow.add_part(staff_system: HeadMusic::Content::StaffSystem.new(staves: staves, bracket: group.bracket))
+        staves_by_name[part] = group.staves.zip(staves).reverse.to_h { |group_staff, staff| [group_staff.name, staff] }
+        part
+      end
+    end
+
+    # The clef a staff's first voice opens with, where the writer puts it.
+    def clef_key(group_staff)
+      name = document.streams.select { |stream| stream.group_staff.equal?(group_staff) }.filter_map(&:opening_clef).first
+      name && clef_keys[name]
+    end
+
+    def clef_keys
+      @clef_keys ||= VoiceWriter::CLEF_NAMES.to_h { |key, name| [name.delete('"'), key] }
+    end
+
+    def parts_by_group
+      @parts_by_group ||= {}.compare_by_identity
+    end
+
+    def staves_by_group_staff
+      @staves_by_group_staff ||= {}.compare_by_identity
+    end
+
+    def staves_by_name
+      @staves_by_name ||= {}.compare_by_identity
     end
 
     # The voices advance together rather than one after another, so a
@@ -80,16 +127,28 @@ module HeadMusic::Notation::LilyPond
       when :note then place_note(event, voice)
       when :rest then voice.place(voice.next_position, event.rhythmic_value)
       when :whole_bar_rest then place_whole_bar_rest(event, voice)
-      else apply_marker(event, voice.flow, voice.next_position)
+      else apply_marker(event, voice, voice.next_position)
       end
     end
 
-    def apply_marker(event, flow, position)
+    def apply_marker(event, voice, position)
       case event.kind
       when :bar_check then check_bar(event, position)
-      when :key then apply_change(event, flow, position, "\\key", :key_signature, :key_signature_at, :change_key_signature)
-      when :time then apply_change(event, flow, position, "\\time", :meter, :meter_at, :change_meter)
+      when :key then apply_change(event, voice.flow, position, "\\key", :key_signature, :key_signature_at, :change_key_signature)
+      when :time then apply_change(event, voice.flow, position, "\\time", :meter, :meter_at, :change_meter)
+      when :staff_change then change_staff(event, voice, position)
       end
+    end
+
+    # A crossing is a staff assignment from a bar onward, so it can only be
+    # made at a bar's start, and only to a staff of the voice's own group.
+    def change_staff(event, voice, position)
+      staff = staves_by_name.fetch(voice.part, {})[event.staff_name]
+      unless staff
+        raise ParseError.new(%(No staff named "#{event.staff_name}" in this voice's staff group), line_number: event.line)
+      end
+
+      voice.cross_to(staff, from: change_bar_number(event, position, "\\change Staff"))
     end
 
     # What was written between the halves of a tied note takes effect where it
@@ -97,7 +156,7 @@ module HeadMusic::Notation::LilyPond
     # of anything after it is worked out.
     def place_note(event, voice)
       position = voice.next_position
-      event.inner_events.each { |inner| apply_marker(inner.event, voice.flow, position + inner.elapsed) }
+      event.inner_events.each { |inner| apply_marker(inner.event, voice, position + inner.elapsed) }
       voice.place(position, event.rhythmic_value, event.pitches)
     end
 

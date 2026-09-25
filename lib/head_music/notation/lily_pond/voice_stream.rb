@@ -5,14 +5,17 @@ module HeadMusic::Notation::LilyPond
   # or meter commands. Ties fold here, so a tied pair reaches the builder
   # as one note whose rhythmic value carries the author's split.
   class VoiceStream
-    # A bar check, \key, or \time between the halves of a tied note records
-    # how much of the note precedes it, so the builder can apply it once the
-    # note has a position.
+    # A bar check, \key, \time, or \change Staff between the halves of a
+    # tied note records how much of the note precedes it, so the builder can
+    # apply it once the note has a position.
     InnerEvent = Data.define(:elapsed, :event)
 
-    Event = Data.define(:kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :inner_events) do
+    Event = Data.define(
+      :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events
+    ) do
       def initialize(
-        kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil, inner_events: []
+        kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil,
+        staff_name: nil, inner_events: []
       )
         super
       end
@@ -24,7 +27,8 @@ module HeadMusic::Notation::LilyPond
 
     UNFOLLOWED_TIE = "A tie must be followed by a note"
 
-    attr_reader :role, :events
+    attr_reader :role, :events, :opening_clef
+    attr_accessor :group_staff
 
     def initialize(role = nil)
       @role = role
@@ -70,6 +74,25 @@ module HeadMusic::Notation::LilyPond
 
     def change_meter(meter, line)
       mark(line, kind: :time, meter: meter)
+    end
+
+    def change_staff(staff_name, line)
+      mark(line, kind: :staff_change, staff_name: staff_name)
+    end
+
+    # Only the clef a voice opens with names its staff's clef; a later one is
+    # read and ignored, as it always has been.
+    def clef(name)
+      return if @opening_clef || @pending_note || events.any?(&:music?)
+
+      @opening_clef = name
+    end
+
+    # What the writer fills a staff nobody is written on with: whole-bar rests
+    # and nothing else.
+    def silent?
+      finish
+      events.select(&:music?).all? { |event| event.kind == :whole_bar_rest }
     end
 
     def finish

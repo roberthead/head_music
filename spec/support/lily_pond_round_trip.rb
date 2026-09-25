@@ -19,11 +19,27 @@ module LilyPondRoundTripHelper
     expect_equivalent_bar_changes(reparsed, flow)
     reparsed.voices.zip(flow.voices).each do |actual, expected|
       expect_equivalent_voice_placements(actual, expected)
+      expect_equivalent_staves(actual, expected) if expected.part.staff_system.length > 1
     end
     reparsed
   end
 
   private
+
+  def expect_equivalent_staves(actual_voice, expected_voice)
+    expect(staff_system_summary(actual_voice.part)).to eq staff_system_summary(expected_voice.part)
+    bars = expected_voice.flow.earliest_bar_number..expected_voice.flow.latest_bar_number
+    expect(bars.map { |bar| staff_index(actual_voice, bar) }).to eq(bars.map { |bar| staff_index(expected_voice, bar) })
+  end
+
+  def staff_system_summary(part)
+    system = part.staff_system
+    [system.bracket, system.staves.map { |staff| staff.clef&.name_key }]
+  end
+
+  def staff_index(voice, bar_number)
+    voice.part.staff_system_at(bar_number).staves.index { |staff| staff.equal?(voice.staff_at(bar_number)) }
+  end
 
   def expect_equivalent_bar_changes(reparsed, flow)
     (flow.earliest_bar_number..flow.latest_bar_number).each do |bar_number|

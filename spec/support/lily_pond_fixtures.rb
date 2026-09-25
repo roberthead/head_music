@@ -13,8 +13,7 @@ module LilyPondFixtures
   end
 
   # A piano part on a grand staff whose left hand rises into the treble staff
-  # for two bars. Deliberately not in the round-trip set: the reader has no
-  # notion of a staff group, so this fixture is a writer fixture only.
+  # for two bars.
   def cross_staff_piano
     flow = HeadMusic::Content::Flow.new(name: "Cross Staff", key_signature: "C major", meter: "4/4")
     staff_system = HeadMusic::Content::StaffSystem.grand_staff
@@ -38,6 +37,39 @@ module LilyPondFixtures
     piano = flow.add_part(instrument: "piano", staff_system: HeadMusic::Content::StaffSystem.grand_staff)
     right_hand = piano.add_voice(role: "right hand")
     (1..2).each { |bar| right_hand.place("#{bar}:1", :whole, "E5") }
+    flow
+  end
+
+  # A grand-staff part and a single-staff part in one score.
+  def piano_and_melody
+    flow = HeadMusic::Content::Flow.new(name: "Piano and Melody", key_signature: "C major", meter: "4/4")
+    staff_system = HeadMusic::Content::StaffSystem.grand_staff
+    piano = flow.add_part(instrument: "piano", staff_system: staff_system)
+    right_hand = piano.add_voice(role: "right hand")
+    left_hand = piano.add_voice(role: "left hand")
+    left_hand.cross_to(staff_system.staves.last, from: 1)
+    melody = flow.add_voice(role: "Melody")
+    (1..2).each do |bar|
+      right_hand.place("#{bar}:1", :whole, "E5")
+      left_hand.place("#{bar}:1", :whole, "C3")
+      melody.place("#{bar}:1", :whole, "G4")
+    end
+    flow
+  end
+
+  # Two voices sharing the upper staff of a bracketed pair.
+  def choir_on_two_staves
+    flow = HeadMusic::Content::Flow.new(name: "Choir", key_signature: "C major", meter: "4/4")
+    upper = HeadMusic::Content::Staff.new(clef: :treble_clef)
+    lower = HeadMusic::Content::Staff.new(clef: :bass_clef)
+    choir = flow.add_part(staff_system: HeadMusic::Content::StaffSystem.new(staves: [upper, lower], bracket: :bracket))
+    soprano = choir.add_voice(role: "Soprano")
+    alto = choir.add_voice(role: "Alto")
+    bass = choir.add_voice(role: "Bass")
+    bass.cross_to(lower, from: 1)
+    soprano.place("1:1", :whole, "E5")
+    alto.place("1:1", :whole, "C5")
+    bass.place("1:1", :whole, "C3")
     flow
   end
 

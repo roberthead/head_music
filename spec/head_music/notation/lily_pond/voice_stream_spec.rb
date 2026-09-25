@@ -180,4 +180,28 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
         .to eq [[:bar_check, half, 1], [:key, half, 2], [:time, half, 2]]
     end
   end
+
+  describe "#clef" do
+    it "keeps the clef the voice opens with" do
+      stream.clef("bass")
+      stream.clef("treble")
+      expect(stream.opening_clef).to eq "bass"
+    end
+
+    it "ignores a clef that comes after music" do
+      stream.add_note([c4], half, 1)
+      stream.clef("bass")
+      expect(stream.opening_clef).to be_nil
+    end
+  end
+
+  describe "#change_staff" do
+    it "holds a staff change inside a tied note" do
+      stream.add_note([c4], half, 1)
+      stream.open_tie(1)
+      stream.change_staff("upper", 2)
+      inner_events = tie_through(half).first.inner_events
+      expect(inner_events.map { |inner| [inner.event.kind, inner.event.staff_name] }).to eq [[:staff_change, "upper"]]
+    end
+  end
 end

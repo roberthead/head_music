@@ -1,7 +1,7 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # Reads the items a sequence of music is made of — notes, rests, chords,
-  # ties, bar checks, and the \key, \time, and \clef commands that appear
+  # ties, bar checks, and the \key, \time, \clef, and \change Staff commands that appear
   # among them — into the stream of the context that holds them. Everything
   # that opens a level of its own belongs to the MusicReader that calls this
   # one.
@@ -65,17 +65,36 @@ module HeadMusic::Notation::LilyPond
       located(command) { context.stream.change_meter(MeterReader.meter(meter_token), command.line) }
     end
 
-    def read_clef
+    def read_clef(context)
       command = cursor.advance
       token = cursor.advance
-      return if token && (%i[word string].include?(token.type) || (token.type == :note && token.duration.nil?))
+      raise cursor.error("\\clef expects a clef name", token || command) unless clef_name?(token)
 
-      raise cursor.error("\\clef expects a clef name", token || command)
+      context.stream.clef(token.lexeme)
+    end
+
+    def read_staff_change(context)
+      command = cursor.advance
+      target = cursor.peek
+      unless target&.type == :word && target.lexeme == "Staff"
+        raise cursor.unsupported("\\change is supported only for a Staff", target || command)
+      end
+
+      cursor.advance
+      cursor.expect(:equals, "\\change Staff expects = and a staff name")
+      name = cursor.expect(:string, "\\change Staff expects a quoted staff name")
+      context.stream.change_staff(name.lexeme, command.line)
     end
 
     private
 
     attr_reader :cursor, :readers, :duration_reader
+
+    def clef_name?(token)
+      return false unless token
+
+      %i[word string].include?(token.type) || (token.type == :note && token.duration.nil?)
+    end
 
     def chord_note
       token = cursor.advance

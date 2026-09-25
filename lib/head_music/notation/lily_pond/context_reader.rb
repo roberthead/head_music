@@ -3,9 +3,11 @@ module HeadMusic::Notation::LilyPond
   # Reads the declaration of a Staff or Voice context — \new, the optional
   # context name, and the \with block that can name the instrument — and
   # the rules about where a context may appear. The music inside it is read
-  # by the MusicReader that opened this one.
+  # by the MusicReader that opened this one. A \new PianoStaff or \new
+  # StaffGroup holds the staves of one part.
   class ContextReader
-    CONTEXT_TYPES = %w[Staff Voice].freeze
+    BRACKETS_BY_GROUP_TYPE = {"PianoStaff" => :brace, "StaffGroup" => :bracket}.freeze
+    CONTEXT_TYPES = (%w[Staff Voice] + BRACKETS_BY_GROUP_TYPE.keys).freeze
     WITH_FIELDS = %w[instrumentName].freeze
 
     def initialize(cursor, document, music)
@@ -21,9 +23,13 @@ module HeadMusic::Notation::LilyPond
         raise cursor.unsupported(%(\\new #{type.lexeme} contexts are not supported), type)
       end
 
-      skip_context_name
-      child = VoiceContext.new(document, role(context, type), explicit: true)
+      name = context_name
       context.children += 1
+      return read_group(opener, type, context) if BRACKETS_BY_GROUP_TYPE.key?(type.lexeme)
+
+      child = VoiceContext.new(
+        document, role(context, type, name), explicit: true, group_staff: group_staff(context, type, name)
+      )
       music.nested(opener) { music.read_expression(child) }
       child.close
     end
@@ -58,16 +64,55 @@ module HeadMusic::Notation::LilyPond
 
     attr_reader :cursor, :document, :music
 
-    # A Voice with no name of its own belongs to the staff that holds it.
-    def role(context, type)
-      with_role || (context.role if type.lexeme == "Voice")
+    # A group is one part, so it holds staves and nothing else, and one group
+    # cannot hold another.
+    def read_group(opener, type, context)
+      if context.group || context.group_staff
+        raise cursor.unsupported(%(\\new #{type.lexeme} inside another staff group is not supported), type)
+      end
+
+      group = document.add_group(BRACKETS_BY_GROUP_TYPE.fetch(type.lexeme))
+      group_context = VoiceContext.new(document, nil, explicit: false, group: group)
+      music.nested(opener) { read_group_staves(group_context, type) }
+      group_context.close
     end
 
-    def skip_context_name
+    def read_group_staves(group_context, type)
+      opener = cursor.expect(:open_parallel, %(\\new #{type.lexeme} expects its staves inside << >>), unsupported: true)
+      raise cursor.unsupported("Simultaneous music inside \\relative is not supported", opener) if music.relative?
+
+      until cursor.peek.type == :close_parallel
+        unless cursor.peek.type == :command && cursor.peek.lexeme == "new" && cursor.peek(1)&.lexeme == "Staff"
+          raise cursor.unsupported(%(Only \\new Staff contexts are supported inside \\new #{type.lexeme}), cursor.peek)
+        end
+
+        read_new(group_context)
+      end
+      cursor.advance
+    end
+
+    def group_staff(context, type, name)
+      return context.group_staff if type.lexeme == "Voice"
+
+      context.group && document.add_group_staff(context.group, name)
+    end
+
+    # A Voice with no name of its own belongs to the staff that holds it. In
+    # a staff group, where staves carry no instrument name, a Voice's context
+    # name is its role.
+    def role(context, type, name)
+      with_role || (voice_role(context, name) if type.lexeme == "Voice")
+    end
+
+    def voice_role(context, name)
+      (context.group_staff && name) || context.role
+    end
+
+    def context_name
       return unless cursor.peek&.type == :equals
 
       cursor.advance
-      cursor.expect(:string, "A context name must be a quoted string")
+      cursor.expect(:string, "A context name must be a quoted string").lexeme
     end
 
     def with_role

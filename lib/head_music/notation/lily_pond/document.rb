@@ -6,11 +6,25 @@ module HeadMusic::Notation::LilyPond
   # are known, and they arrive inside the first voice, so the document
   # holds the streams until the reader is done.
   class Document
+    # A \new PianoStaff or \new StaffGroup, with the staves declared in it in
+    # order. A staff's name is what a \change Staff command refers to.
+    Group = Struct.new(:bracket, :staves)
+    GroupStaff = Struct.new(:group, :name)
+
     attr_accessor :title, :composer
-    attr_reader :streams
+    attr_reader :streams, :groups
 
     def initialize
       @streams = []
+      @groups = []
+    end
+
+    def add_group(bracket)
+      Group.new(bracket, []).tap { |group| @groups << group }
+    end
+
+    def add_group_staff(group, name)
+      GroupStaff.new(group, name).tap { |staff| group.staves << staff }
     end
 
     def add_stream(role = nil)
