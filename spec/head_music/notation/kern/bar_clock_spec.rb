@@ -28,6 +28,13 @@ describe HeadMusic::Notation::Kern::BarClock do
     expect([clock.number, clock.repeat_ends]).to eq [1, [1]]
   end
 
+  it "reads a barline right after another as marking the bars on either side" do
+    clock.barline(barline("=1"), 0, 3)
+    clock.barline(barline("=2"), Rational(3, 4), 5)
+    clock.barline(barline("=:|!|:"), Rational(3, 4), 6)
+    expect([clock.number, clock.repeat_ends, clock.repeat_starts]).to eq [2, [1], [2]]
+  end
+
   it "applies a change waiting for the next downbeat to the bar it opens" do
     changed = []
     clock.barline(barline("=1"), 0, 3)
