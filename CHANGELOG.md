@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `rexml` is now a runtime dependency, in preparation for reading MusicXML and MEI.
 - `Project#add_flow` adopts a player that a part already carries into the project's `players`, rather than leaving it out, and raises `ArgumentError` when that player belongs to another project.
 
+### Fixed
+
+- The ABC writer no longer writes a zero-length note (`C8-|C0`) for a note that crosses a barline and ends on a later one.
+
 ## [22.0.0] - 2026-09-24
 
 Four counterpoint stories, [Require the Species Rhythm](https://github.com/roberthead/head_music/tree/main/user-stories/done/require-the-species-rhythm.md), [Embellish Fifth Species Suspensions](https://github.com/roberthead/head_music/tree/main/user-stories/done/embellish-fifth-species-suspensions.md), [Grade Every Fux Fifth-Species Figure](https://github.com/roberthead/head_music/tree/main/user-stories/done/grade-every-fux-fifth-species-figure.md), and [Fifth Species Guide Improvements](https://github.com/roberthead/head_music/tree/main/user-stories/done/fifth-species-guide-improvements.md). Every species guide now insists on the rhythm its species teaches, fifth species accepts the decorated suspensions Fux allows and requires the mixture that defines it, and every two-voice fifth-species figure in Gradus is graded and pinned. Fux's lines are graded as evidence, not as an oracle: where one of them outruns a rule that every other source keeps, the mark stands and is recorded as his liberty. Two grades move, both in the direction the pedagogy says they should, and the count guidelines now grade the solo and cantus-firmus lines they had passed on nothing; everything else is additive, including ties across bar lines in ABC.

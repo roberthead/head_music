@@ -31,7 +31,10 @@ module HeadMusic
         Rational(meter.top_number, meter.bottom_number) - offset_in_bar(position)
       end
 
+      # A placement ending on a barline ends at offset zero of the next bar.
       def fraction_within_bar(from, to)
+        return fraction_to_bar_end(from) if to == from.start_of_next_bar
+
         offset_in_bar(to) - offset_in_bar(from)
       end
 

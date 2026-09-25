@@ -150,6 +150,20 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
+    context "with a placement crossing a bar line and ending on a later one" do
+      subject(:rendered) { described_class.new(flow).to_s }
+
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Breve", key_signature: "C major", meter: "4/4").tap do |flow|
+          flow.add_voice.place("1:1", :"double whole", "C4")
+        end
+      end
+
+      it "writes a full bar on each side of the line" do
+        expect(rendered).to end_with "C8-|C8|]\n"
+      end
+    end
+
     context "with fractional durations shorter than the unit note length" do
       subject(:rendered) { described_class.new(flow).to_s }
 

@@ -36,6 +36,14 @@ describe HeadMusic::Notation::BarSplitter do
       ]
     end
 
+    it "gives the last piece a full bar when the placement ends on a later barline" do
+      placement = voice.place("1:1", :"double whole", "C4")
+      expect(summary(described_class.segments_of(placement))).to eq [
+        [1, Rational(1), true],
+        [2, Rational(1), false]
+      ]
+    end
+
     it "keeps the placement on every segment" do
       placement = voice.place("1:4", :half, "C4")
       expect(described_class.segments_of(placement).map(&:placement)).to all(equal(placement))
