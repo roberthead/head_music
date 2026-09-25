@@ -25,14 +25,16 @@ module GuideGrading
   module_function
 
   def rows
-    corpus.flat_map do |label, voice|
-      HeadMusic::Style::Guide::ALL.map do |guide|
-        {
-          corpus: label,
-          notes: voice.notes.length,
-          guide: HeadMusic::Style::Guide.key_for(guide)
-        }.merge(grade(guide, voice))
-      end
+    corpus.flat_map { |label, voice| rows_for(label, voice) }
+  end
+
+  def rows_for(label, voice)
+    HeadMusic::Style::Guide::ALL.map do |guide|
+      {
+        corpus: label,
+        notes: voice.notes.length,
+        guide: HeadMusic::Style::Guide.key_for(guide)
+      }.merge(grade(guide, voice))
     end
   end
 
