@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:   2026-09-24T19:56:33-07:00
   finished_at:
-  updated_at:   2026-09-24T22:06:34-07:00
+  updated_at:   2026-09-24T22:27:05-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -149,6 +149,8 @@ flow.to_kern       # => the same spines back
 - [ ] A fourth-species flow, with ties across every barline, renders to MusicXML and LilyPond, and LilyPond compiles it when the binary is installed
 - [ ] A key, meter, or staff change at a barline that a tied note crosses renders in MusicXML and LilyPond, and the LilyPond parser reads it back, applying the change at that barline and keeping the tied note as one placement
 - [ ] A command in the middle of a bar while a tie is open still raises `ParseError` naming the line
+- [ ] The LilyPond parser reads the grand-staff and staff-group parts the writer emits — `\new PianoStaff`/`\new StaffGroup`, named staves, several voices per staff, and `\change Staff` at a barline, including inside a tie — into one part with its staff system and staff assignments
+- [ ] LilyPond round trips compare tied chains by total duration, so a note that crosses a barline round-trips as written
 - [ ] The hand-encoded chorale fixture, imported from kern, renders to MusicXML and LilyPond
 
 ### Kern: round trip and corpus
@@ -183,6 +185,7 @@ flow.to_kern       # => the same spines back
 - **The MusicXML and LilyPond writers learn to split notes that cross a barline** (decided 2026-09-24), in this story, so an imported chorale renders. Today `ensure_notes_within_barlines` (`lib/head_music/notation/preflight_checks.rb:18-27`) rejects them, which also blocks fourth-species flows and ABC imports with ties across barlines.
 - **`Project#add_flow` raises** (decided 2026-09-24) when a part's player belongs to another project, matching the existing check that a flow belongs to one project. The CHANGELOG records it under Changed.
 - **`*part`/`*staff` grouping is read and written in this story** (decided 2026-09-24). Spines that share a part become voices of one part, staves become the part's staff system, and the writer emits the tags back. The model already holds all of it (`StaffSystem`, `Voice#assign_staff`), and the MusicXML and LilyPond writers already render parts with several voices and staves.
+- **The LilyPond parser learns grand staves** (decided 2026-09-24), so the staff-crossing case of a tie at a barline round-trips; the writer already emitted them.
 
 ## Implementation Plan
 
