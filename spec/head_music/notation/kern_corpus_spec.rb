@@ -23,7 +23,7 @@ describe HeadMusic::Notation::Kern do
 
     if unreadable.key?(name)
       it "refuses #{name}" do
-        expect { described_class.parse(File.read(path)) }.to raise_error unreadable.fetch(name)
+        expect { described_class.parse(File.read(path)) }.to raise_error { |error| expect(error.class).to eq unreadable.fetch(name) }
       end
     else
       it "reads #{name}, writes it back to itself, and renders it" do

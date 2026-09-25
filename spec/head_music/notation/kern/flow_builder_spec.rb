@@ -108,9 +108,16 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
         .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /does not match the designation.*\(line 3\)/)
     end
 
-    it "raises an unsupported-feature error when spines disagree on a row" do
-      expect { parse("**kern  **kern\n*M3/4  *M4/4\n1c  1e\n*-  *-") }
-        .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /disagree on one row.*\(line 2\)/)
+    {
+      "meter" => "*M3/4  *M4/4",
+      "key signature" => "*k[f#]  *k[]",
+      "tonal designation" => "*G:  *e:",
+      "tempo" => "*MM60  *MM72"
+    }.each do |kind, row|
+      it "raises an unsupported-feature error when spines disagree on the #{kind} on a row" do
+        expect { parse("**kern  **kern\n#{row}\n1c  1e\n*-  *-") }
+          .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /disagree on one row.*\(line 2\)/)
+      end
     end
 
     describe "changes in the middle of the piece" do

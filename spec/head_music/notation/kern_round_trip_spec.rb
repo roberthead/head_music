@@ -86,6 +86,25 @@ describe HeadMusic::Notation::Kern do
       it("round-trips") { expect_kern_round_trip(flow) }
     end
 
+    context "with soprano and alto sharing one staff" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |choral|
+          upper = choral.add_part(
+            player: HeadMusic::Content::Player.new(name: "Women"),
+            staff_system: HeadMusic::Content::StaffSystem.single_staff(clef: :treble_clef)
+          )
+          place_bars(upper.add_voice, %w[E5 D5])
+          place_bars(upper.add_voice, %w[C5 B4])
+          place_bars(choral.add_voice, %w[C3 G3])
+        end
+      end
+
+      it "round-trips" do
+        reparsed = expect_kern_round_trip(flow)
+        expect(reparsed.parts.map { |part| [part.voices.length, part.staff_system.length] }).to eq [[2, 1], [1, 1]]
+      end
+    end
+
     context "with a grand-staff part whose voice crosses staves" do
       let(:staff_system) { HeadMusic::Content::StaffSystem.grand_staff }
       let(:flow) do
