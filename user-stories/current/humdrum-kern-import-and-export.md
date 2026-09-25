@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T19:27:11-07:00
+  updated_at:   2026-09-24T19:29:52-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -21,9 +21,9 @@ SO THAT I can analyze the large scholarly corpora encoded in kern — the Bach c
 
 [Humdrum](https://www.humdrum.org/) is a text-based representation for computational musicology. A `**kern` file lays voices out in tab-separated spines, one column per voice, one row per time slice. Each token combines a duration and a pitch (`4cc#` is a quarter C♯5; `8.GG` a dotted eighth G2). Interpretation records (`*k[f#]`, `*M3/4`, `*clefG2`) carry key, meter, and clef, and `=` rows mark barlines.
 
-Kern is the most widely used format for the repertoire the Style guides grade. Reading it gives the counterpoint work real corpora to measure against, such as the Palestrina validation set that [Sixteenth-Century Style](sixteenth-century-style.md) needs. Writing it lets the gem's output flow into the Humdrum toolkit and Verovio.
+Kern is the most widely used format for the repertoire the Style guides grade. Reading it gives the counterpoint work real corpora to measure against, such as the Palestrina validation set that [Sixteenth-Century Style](../backlog/sixteenth-century-style.md) needs. Writing it lets the gem's output flow into the Humdrum toolkit and Verovio.
 
-This story follows the entry-point shape of ABC and LilyPond: `HeadMusic::Notation::Humdrum.parse` and `.render`, with a `Flow#to_kern` delegate.
+This story follows the entry-point shape of ABC and LilyPond: `HeadMusic::Notation::Kern.parse` and `.render`, with a `Flow#to_kern` delegate.
 
 ## Example
 
@@ -41,15 +41,15 @@ kern = <<~KERN
   *-	*-
 KERN
 
-flow = HeadMusic::Notation::Humdrum.parse(kern)
+flow = HeadMusic::Notation::Kern.parse(kern)
 flow.voices.length # => 2
 flow.to_kern       # => the same spines back
 ```
 
 ## Acceptance Criteria
 
-- [ ] `HeadMusic::Notation::Humdrum.parse(string)` returns a `HeadMusic::Content::Flow`
-- [ ] `HeadMusic::Notation::Humdrum.render(flow)` and `Flow#to_kern` return a `**kern` string
+- [ ] `HeadMusic::Notation::Kern.parse(string)` returns a `HeadMusic::Content::Flow`
+- [ ] `HeadMusic::Notation::Kern.render(flow)` and `Flow#to_kern` return a `**kern` string
 - [ ] Each `**kern` spine becomes a voice; non-kern spines (`**dynam`, `**text`, `**harm`) are skipped on import, except `**text` / `**silbe` lyrics if planning keeps them in scope
 - [ ] Pitch tokens (letter case and repetition for register, `#`/`-`/`n` accidentals) map to the right pitches both ways
 - [ ] Duration tokens, including dots, map to rhythmic values both ways
@@ -68,10 +68,14 @@ flow.to_kern       # => the same spines back
 - Tuplets in kern are expressed as non-power-of-two durations (`6` is a triplet eighth); decide whether the model can hold them or whether they raise.
 - Grace notes (`q`), ornaments, articulations, beams (`L`, `J`), and stem directions can be ignored on import and omitted on export in v1.
 
+## Decisions
+
+- **The module is `HeadMusic::Notation::Kern`** (decided 2026-09-24). Other Humdrum representations such as `**mens` would get modules of their own if they come.
+
 ## Open Questions
 
-1. Should the entry module be `Humdrum` (leaving room for `**mens` and other representations) or `Kern`?
-2. Should import produce a `Project` with one player per spine when the file carries instrument interpretations (`*I"Soprano`)?
+1. Should import return a `Flow` or a `Project`? Recommended: a `Flow`, as ABC and LilyPond import do. Players are project-level chairs that last across flows, and a kern file is one flow. A spine's instrument code (`*Ivox`, `*Ivioln`) maps to its part's `instrument`, and `Project#add_flow` mints players named for those instruments when a caller wants them.
+2. Where does a spine's display name (`*I"Soprano`) go on a part with no player? Voice `role` is the likely home, but it also carries the cantus-firmus meaning.
 
 ## Implementation Plan
 
