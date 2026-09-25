@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-24T18:58:30-07:00
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:   2026-09-24T19:56:33-07:00
-  finished_at:
-  updated_at:   2026-09-25T11:59:49-07:00
+  finished_at:  2026-09-25T12:57:14-07:00
+  updated_at:   2026-09-25T12:57:14-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -434,6 +434,27 @@ Each step is one commit, with its specs.
 - **The sub-spine order** (left is the upper voice) comes from Verovio's documentation ("the highest part on the staff will typically be left most"), not from the Humdrum reference, which is silent on it. Check it against a real split-heavy file on the first corpus sweep.
 - **The clef fallback on export** relies on `ClefSelector`, which knows only treble and bass (`clef_selector.rb:11-19`). The round-trip normalization absorbs this.
 - **Corpus statistics:** checked 2026-09-24 that 251 of the 370 chorales have pickups and none uses splits, `*part`/`*staff`, text spines, or tuplets. The planner reported that 366 of 370 validate; confirm that with the first `KERN_CORPUS` run.
+
+## Learnings
+
+### What went well
+
+- **Pinned fixtures and a corpus sweep caught real problems.** A hand-encoded chorale and a split-heavy piano fixture pinned the hard cases, and the opt-in sweep over the 370 Bach chorales stayed reproducible without vendoring non-commercial data. Every file reads, reads back to itself, and renders, except four named exceptions.
+- **A shared `BarSplitter` paid off.** Extracting it from the ABC writer let MusicXML, LilyPond, and kern split notes at barlines the same way. Fourth-species flows and imported chorales render as a side effect.
+- **Doing the projectless-player change first kept the kern work simple.** `*I"` names had somewhere to go from the start.
+
+### What was surprising
+
+- **The scope grew four times after the story was written:** work citations and barline ties, `*part`/`*staff` grouping, spine splits, and LilyPond grand staves. Each was the right call, but the story ended with 79 criteria and more than 50 commits, and its criteria drifted from what was built: "unspellable" notes, a "normalized `to_h`", and the corpus exceptions all needed rewording at review.
+- **99.75% coverage still hid five real bugs.** The round-trip helper compared the second parse with the third, so it never saw a first parse that differs from what the writer gives back: a default title that cites a work, composer strings, and fallback clefs. The Bach corpus has no spine splits, so a split under a held note, which is ordinary in keyboard files, was never exercised.
+- **One reviewer reproduction was mis-encoded kern, but the bug behind it was real.** Row timing in kern comes from the shortest note on the row, so a hand-written probe has to encode that correctly before it proves anything.
+
+### What to do differently
+
+- **Compare the first parse too.** For a format round trip, check parse(render(parse(file))) against parse(file), not only a later generation against the one before.
+- **Test each spine manipulator across every timing,** at a barline, mid-note, and before and after the music starts, rather than relying on a corpus that may never use it.
+- **Split a story when its scope widens more than once.** Here the barline splitting for MusicXML and LilyPond and the LilyPond grand-staff reader could each have been a story of their own, and their criteria would have been checked when written.
+- **Reword a criterion as soon as the implementation settles it differently,** rather than leaving the mismatch for review.
 
 ## Review
 
