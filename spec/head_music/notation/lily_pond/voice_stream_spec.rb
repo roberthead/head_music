@@ -152,11 +152,31 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /must be followed by a note \(line 4\)/)
     end
 
-    it "raises for a tie across a bar check" do
+    it "raises for a tie across a bar check that no note closes" do
       stream.add_note([c4], half, 1)
       stream.open_tie(1)
-      expect { stream.bar_check(1) }
-        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Ties across bar checks are not yet supported/)
+      stream.bar_check(1)
+      expect { stream.finish }
+        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /A tie must be followed by a note/)
+    end
+  end
+
+  describe "a tie across a bar check" do
+    before do
+      stream.add_note([c4], half, 1)
+      stream.open_tie(1)
+      stream.bar_check(1)
+      stream.add_note([c4], quarter, 2)
+    end
+
+    let(:note) { stream.finish.events.first }
+
+    it "folds into one note" do
+      expect(stream.finish.events.map(&:kind)).to eq %i[note]
+    end
+
+    it "records how much of the note precedes the bar check, and where it was written" do
+      expect(note.inner_bar_checks.map { |check| [check.elapsed, check.line] }).to eq [[half, 1]]
     end
   end
 end

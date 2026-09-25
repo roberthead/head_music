@@ -5,8 +5,14 @@ module HeadMusic::Notation::LilyPond
   # or meter commands. Ties fold here, so a tied pair reaches the builder
   # as one note whose rhythmic value carries the author's split.
   class VoiceStream
-    Event = Data.define(:kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter) do
-      def initialize(kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil)
+    # A bar check inside a tied note records how much of the note precedes it,
+    # so the builder can verify it once the note has a position.
+    InnerBarCheck = Data.define(:elapsed, :line)
+
+    Event = Data.define(:kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :inner_bar_checks) do
+      def initialize(
+        kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil, inner_bar_checks: []
+      )
         super
       end
 
@@ -54,7 +60,9 @@ module HeadMusic::Notation::LilyPond
     end
 
     def bar_check(line)
-      append(line, "Ties across bar checks are not yet supported", kind: :bar_check)
+      return check_bar_inside_tie(line) if @tie_open
+
+      append(line, kind: :bar_check)
     end
 
     def change_key_signature(key_signature, line)
@@ -103,6 +111,12 @@ module HeadMusic::Notation::LilyPond
 
       @tie_open = false
       @pending_note = pending.with(rhythmic_value: pending.rhythmic_value.append_tied(rhythmic_value))
+    end
+
+    def check_bar_inside_tie(line)
+      pending = @pending_note
+      check = InnerBarCheck.new(elapsed: pending.rhythmic_value, line: line)
+      @pending_note = pending.with(inner_bar_checks: pending.inner_bar_checks + [check])
     end
 
     def error(message, line)

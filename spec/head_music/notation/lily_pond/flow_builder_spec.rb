@@ -88,6 +88,17 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Bar check failed at: 1\/4 in bar 2/)
     end
 
+    it "passes inside a note tied across the barline" do
+      expect(placements("{ c'2 d'2~ | d'4 e'2. | }")).to eq [
+        "half C4 at 1:1:000", "half tied to quarter D4 at 1:3:000", "dotted half E4 at 2:2:000"
+      ]
+    end
+
+    it "raises for a bar check inside a tied note that is not at a barline, at the check's line" do
+      expect { build("{ c'4~\n| c'2. }") }
+        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Bar check failed at: 1\/4 in bar 1 \(line 2\)/)
+    end
+
     it "reports a partial count in ticks" do
       expect { build("{ c'8 | }") }.to raise_error(HeadMusic::Notation::LilyPond::ParseError, /failed at: 1\/8 in bar 1/)
     end

@@ -77,7 +77,7 @@ module HeadMusic::Notation::LilyPond
 
     def apply(event, voice)
       case event.kind
-      when :note then voice.place(voice.next_position, event.rhythmic_value, event.pitches)
+      when :note then place_note(event, voice)
       when :rest then voice.place(voice.next_position, event.rhythmic_value)
       when :whole_bar_rest then place_whole_bar_rest(event, voice)
       when :bar_check then check_bar(event, voice)
@@ -86,13 +86,22 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    def check_bar(event, voice)
+    def place_note(event, voice)
       position = voice.next_position
+      event.inner_bar_checks.each { |check| verify_bar_check(position + check.elapsed, check.line) }
+      voice.place(position, event.rhythmic_value, event.pitches)
+    end
+
+    def check_bar(event, voice)
+      verify_bar_check(voice.next_position, event.line)
+    end
+
+    def verify_bar_check(position, line)
       return if bar_start?(position)
 
       raise ParseError.new(
         "Bar check failed at: #{elapsed_fraction(position)} in bar #{position.bar_number}",
-        line_number: event.line, snippet: "|"
+        line_number: line, snippet: "|"
       )
     end
 
