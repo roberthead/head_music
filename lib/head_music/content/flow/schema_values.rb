@@ -135,6 +135,13 @@ class HeadMusic::Content::Flow
       instrument
     end
 
+    def player(value, players, path)
+      return nil if value.nil?
+      return players[value] if value.is_a?(Integer) && value.between?(0, players.length - 1)
+
+      raise ArgumentError, "#{path}: unknown player index #{value.inspect} (#{players.length} part players)"
+    end
+
     private
 
     def staff_system_values

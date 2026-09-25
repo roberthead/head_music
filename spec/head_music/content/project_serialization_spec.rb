@@ -162,4 +162,46 @@ describe HeadMusic::Content::Project do
       expect(HeadMusic::Content::Flow.from_h(flow.to_h).to_h).to eq flow.to_h
     end
   end
+
+  # A flow that names its chairs before a project holds it keeps those names
+  # once adopted. The project's own indexes stay the one record of them.
+  describe "a flow adopted with players of its own" do
+    subject(:restored) { described_class.from_h(chorale_project.to_h) }
+
+    let(:chorale_project) { described_class.new(name: "Chorales").tap { |chorales| chorales.add_flow(chorale) } }
+    let(:chorale) do
+      HeadMusic::Content::Flow.from_h(
+        HeadMusic::Content::Flow.new(name: "Chorale").tap { |flow|
+          flow.add_part(player: HeadMusic::Content::Player.new(name: "Soprano")).add_voice.place("1:1", :whole, "C5")
+          flow.add_part(player: HeadMusic::Content::Player.new(name: "Bass")).add_voice.place("1:1", :whole, "C3")
+        }.to_h
+      )
+    end
+
+    it "keeps the adopted players" do
+      expect(restored.players.map(&:name)).to eq %w[Soprano Bass]
+    end
+
+    it "pairs each part with the project's own player" do
+      expect(restored.flows.first.parts.map(&:player)).to eq restored.players
+    end
+
+    it "lets a layout select an adopted player" do
+      chorale_project.add_layout(kind: :part, players: [chorale_project.players.last])
+      expect(restored.layouts.last.players.map(&:name)).to eq ["Bass"]
+    end
+
+    it "writes no part players into the project document" do
+      flow_hash = chorale_project.to_h["flows"].first
+      expect([flow_hash.key?("part_players"), flow_hash["parts"].map { |part| part.key?("player") }])
+        .to eq [false, [false, false]]
+    end
+
+    it "trusts the project's indexes over a flow's own players" do
+      document = chorale_project.to_h
+      document["flows"].first.merge!("part_players" => [{"name" => "Stray"}], "players" => [1, nil])
+      document["flows"].first["parts"].first["player"] = 0
+      expect(described_class.from_h(document).flows.first.parts.map { |part| part.player&.name }).to eq ["Bass", nil]
+    end
+  end
 end

@@ -27,8 +27,8 @@ class HeadMusic::Content::Layout
       hash
     end
 
-    # Computed from the live parts rather than from the hash, which carries no
-    # players.
+    # Computed from the live parts rather than from the hash, which carries
+    # player names but not the project's player objects.
     def kept_indexes
       @kept_indexes ||= layout.kept_part_indexes(source)
     end
@@ -61,8 +61,8 @@ class HeadMusic::Content::Layout
       placement_hash["position"].to_s.split(":").first.to_i
     end
 
-    # A part carries its player by reference, which no hash can express, so the
-    # chairs are put back by position after the read.
+    # The read mints players from their names, but a layout selects the
+    # project's own objects, so the chairs are put back by position.
     def attach_players(realized)
       realized.parts.each_with_index do |part, index|
         part.player = source.parts[kept_indexes[index]].player

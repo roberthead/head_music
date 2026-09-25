@@ -977,4 +977,57 @@ describe HeadMusic::Content::Flow do
       expect_lossless_round_trip(flow)
     end
   end
+
+  # A standalone flow's parts may name their chairs before any project holds
+  # them. The names are written once and each part points at its own by index.
+  describe "part players" do
+    let(:soprano) { HeadMusic::Content::Player.new(name: "Soprano") }
+    let(:flow) do
+      described_class.new(name: "Chorale").tap do |chorale|
+        chorale.add_part(player: soprano).add_voice.place("1:1", :whole, "C5")
+        chorale.add_part(player: HeadMusic::Content::Player.new(name: "Voice")).add_voice.place("1:1", :whole, "E4")
+        chorale.add_part(player: HeadMusic::Content::Player.new(name: "Voice")).add_voice.place("1:1", :whole, "C4")
+        chorale.add_part.add_voice.place("1:1", :whole, "C3")
+      end
+    end
+    let(:restored) { described_class.from_h(flow.to_h) }
+
+    it "round-trips losslessly" do
+      expect_lossless_round_trip(flow, abc: false)
+    end
+
+    it "writes each distinct player once" do
+      expect(flow.to_h["part_players"]).to eq [{"name" => "Soprano"}, {"name" => "Voice"}, {"name" => "Voice"}]
+    end
+
+    it "points each part at its player, and leaves a part with none alone" do
+      expect(flow.to_h["parts"].map { |part| part["player"] }).to eq [0, 1, 2, nil]
+    end
+
+    it "restores the names as players with no project" do
+      expect(restored.parts.map { |part| [part.player&.name, part.player&.project] })
+        .to eq [["Soprano", nil], ["Voice", nil], ["Voice", nil], [nil, nil]]
+    end
+
+    it "keeps two players that share a name as two" do
+      expect(restored.parts[1].player).not_to equal restored.parts[2].player
+    end
+
+    it "keeps one player shared by two parts as one" do
+      flow.parts.last.player = soprano
+      expect(restored.parts.first.player).to equal restored.parts.last.player
+    end
+
+    it "reads a document written before part players existed" do
+      hash = flow.to_h.except("part_players")
+      hash["parts"] = hash["parts"].map { |part| part.except("player") }
+      expect(described_class.from_h(hash).parts.map(&:player)).to all be_nil
+    end
+
+    it "refuses a part that points past the players" do
+      hash = flow.to_h
+      hash["parts"].last["player"] = 7
+      expect { described_class.from_h(hash) }.to raise_error ArgumentError, /parts\[3\]\.player: unknown player index 7/
+    end
+  end
 end

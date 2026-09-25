@@ -69,9 +69,11 @@ class HeadMusic::Content::Flow
     # Staff system changes replay before the voices because a voice's staff
     # assignment is resolved against the system in force at its bar.
     def build_parts(flow)
+      players = Array(hash["part_players"]).map { |player_hash| HeadMusic::Content::Player.new(name: player_hash["name"]) }
       Array(hash["parts"]).each_with_index do |part_hash, part_index|
         path = "parts[#{part_index}]"
         part = flow.add_part(
+          player: values.player(part_hash["player"], players, "#{path}.player"),
           instrument: values.instrument(part_hash["instrument"], path),
           staff_system: values.staff_system(part_hash["staff_system"], path)
         )

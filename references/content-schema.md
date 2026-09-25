@@ -103,7 +103,7 @@ Cardinality is from the owner's point of view. *Back-ref* marks a reference the 
 | `parts` | derived: parts across the project's flows whose player is self | 0..* |
 | `instruments`, `primary_instrument` | derived from parts | |
 
-Serialized as `{"name"}` only.
+Serialized as `{"name"}` only: in a project document under `"players"`, and in a standalone flow document under `"part_players"`.
 
 ### Layout (`content/layout.rb`)
 
@@ -480,13 +480,13 @@ Repeat structure only. Key and meter storage moved to the timeline in this relea
 |---|---|---|
 | Project | `schema_version`, `name`, `players`, `flows`, `layouts`, `credits` | |
 | Layout entry | `kind`, `title_override` (nullable), `concert_pitch`, `ensemble_type` (nullable; non-null only on a score), `flows` (nullable), `players` (nullable) | |
-| Flow | `schema_version`, `name`, `composer` (nullable), `origin` (nullable), `work` (nullable), `source` (nullable), `timeline`, `parts`, `bars`, `comments` | |
+| Flow | `schema_version`, `name`, `composer` (nullable), `origin` (nullable), `work` (nullable), `source` (nullable), `timeline`, `parts`, `bars`, `comments` | `part_players`, and never inside a project document |
 | Work | `title`, `catalog_number` (nullable), `year` (nullable), `credits` | |
 | Publication | `title`, `edition`, `year`, `publisher`, `abbreviation`, `notes`, all nullable, and `credits` | `key`, written only by a catalog entry |
 | Credit | `role`, `person` | |
 | Person | `full_name`, `sort_name`, `birth_year` (nullable), `death_year` (nullable) | |
 | timeline | `meter`, `key_signature`, `tempo`, `meter_changes`, `key_signature_changes`, `tempo_changes` | |
-| Part | `voices` | `instrument`, `instrument_changes`, `staff_system`, `staff_system_changes` |
+| Part | `voices` | `player` (never inside a project document), `instrument`, `instrument_changes`, `staff_system`, `staff_system_changes` |
 | Voice | `role` (nullable), `placements` | `staff_assignments` |
 | Placement | `position`, `rhythmic_value`, `sounds` | `beam_break_before`, `syllables` |
 | Syllable | `text` | `verse` when 1, `hyphen_after` when false |
@@ -496,6 +496,8 @@ Repeat structure only. Key and meter storage moved to the timeline in this relea
 | Comment | `text`, `position` (nullable) | |
 
 The four keys added in 21.1.0 — `"work"` and `"source"` on a flow, `"credits"` and `"layouts"` on a project — are always written and never required. Absent means none: a document written by 21.0.0 reads to a flow citing nothing and a project with no credits and no layouts, rather than raising.
+
+A standalone flow whose parts carry players writes `"part_players"`, a list of `{"name"}` with each distinct player once, and gives each such part a `"player"` index into it. Both are sparse and never required: a document without them reads to parts with no players. A project document leaves both out, because its own `"players"` indexes are the one record of which chair a part fills; if a hand-written project document carries both, the project's indexes win.
 
 ### Position strings
 

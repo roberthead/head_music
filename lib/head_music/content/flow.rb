@@ -169,10 +169,10 @@ class HeadMusic::Content::Flow
       "work" => work&.to_h,
       "source" => source&.to_h,
       "timeline" => timeline_to_h,
-      "parts" => parts.map(&:to_h),
+      "parts" => parts_to_h,
       "bars" => bars_to_h,
       "comments" => comments.map(&:to_h)
-    }
+    }.merge(part_players_to_h)
   end
 
   # Both fields of a key signature event, always: the signature is what is
@@ -224,6 +224,29 @@ class HeadMusic::Content::Flow
   # tempo survives: Tempo.get reads the number by stripping non-digits.
   def tempo_to_h(tempo)
     {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}
+  end
+
+  # A player is written once and each part points at it by index, so two parts
+  # sharing one chair still share it when read back, and two chairs that happen
+  # to share a name stay two. The key is not "players" because a project
+  # document already uses that name for its own indexes.
+  def part_players
+    parts.filter_map(&:player).uniq(&:object_id)
+  end
+
+  def part_players_to_h
+    players = part_players
+    return {} if players.empty?
+
+    {"part_players" => players.map { |player| {"name" => player.name} }}
+  end
+
+  def parts_to_h
+    players = part_players
+    parts.map do |part|
+      index = part.player && players.index { |player| player.equal?(part.player) }
+      index ? part.to_h.merge("player" => index) : part.to_h
+    end
   end
 
   # Iterates the raw sparse array rather than the public #bars slice, which

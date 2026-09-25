@@ -101,7 +101,7 @@ class HeadMusic::Content::Project
     flow.project = self
     flow.parts.each_with_index do |part, index|
       player_index = Array(player_indexes)[index]
-      part.player = players[player_index] if player_index
+      part.player = player_index && players[player_index]
     end
     flow
   end
@@ -112,7 +112,7 @@ class HeadMusic::Content::Project
       "name" => name,
       "credits" => credits.to_h,
       "players" => players.map { |player| {"name" => player.name} },
-      "flows" => flows.map { |flow| flow.to_h.merge("players" => player_indexes_for(flow)) },
+      "flows" => flows.map { |flow| flow_to_h(flow) },
       "layouts" => layouts.map(&:to_h)
     }
   end
@@ -130,6 +130,14 @@ class HeadMusic::Content::Project
   def hold_layout(layout)
     @layouts << layout
     layout
+  end
+
+  # The project's own indexes are the one record of which chair a part fills,
+  # so the standalone flow's copy of its players is left out.
+  def flow_to_h(flow)
+    hash = flow.to_h.except("part_players")
+    hash["parts"] = hash["parts"].map { |part_hash| part_hash.except("player") }
+    hash.merge("players" => player_indexes_for(flow))
   end
 
   # Which chair each part fills, by index into the project's players. Null for

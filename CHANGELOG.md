@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A standalone flow's JSON keeps the players its parts carry, as a sparse `"part_players"` list with a `"player"` index on each such part, within schema 4. Project documents are unchanged: the project's own player indexes remain the record of which chair a part fills.
+
 ### Changed
 
 - `rexml` is now a runtime dependency, in preparation for reading MusicXML and MEI.
