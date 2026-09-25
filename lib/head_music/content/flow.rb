@@ -7,6 +7,7 @@ module HeadMusic::Content; end
 # part is in a flow.
 class HeadMusic::Content::Flow
   SCHEMA_VERSION = 4
+  DEFAULT_NAME = "Composition"
 
   attr_reader :name, :parts, :origin, :comments, :timeline
   attr_accessor :project
@@ -220,7 +221,7 @@ class HeadMusic::Content::Flow
   end
 
   def ensure_attributes(name, key_signature, meter, tempo)
-    @name = name || "Composition"
+    @name = name || DEFAULT_NAME
     @timeline = Timeline.new(key_signature: key_signature, meter: meter, tempo: tempo)
   end
 

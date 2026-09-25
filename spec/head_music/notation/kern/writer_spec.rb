@@ -115,6 +115,27 @@ describe HeadMusic::Notation::Kern::Writer do
       expect(render(flow).lines.first(2)).to eq ["!!!COM: Anonymous\n", "!!!OTL: Chorale\n"]
     end
 
+    it "leaves out the title of a flow with the default name and no work" do
+      flow = HeadMusic::Content::Flow.new
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect(render(flow)).not_to include "!!!OTL"
+    end
+
+    it "reads a file with neither a title nor a work back to itself" do
+      flow = parse("**kern\n*clefG2\n*M4/4\n=1\n1c\n==\n*-")
+      expect(HeadMusic::Notation::Kern.parse(render(flow)).to_h).to eq flow.to_h
+    end
+
+    it "writes each name of a composer string that holds several as its own record" do
+      flow = parse("!!!COM: Bach, J. S.\n!!!COM: Handel, G. F.\n**kern\n*clefG2\n*M4/4\n=1\n1c\n==\n*-")
+      expect(render(flow).lines.grep(/COM/).map(&:chomp)).to eq ["!!!COM: J. S. Bach", "!!!COM: G. F. Handel"]
+    end
+
+    it "reads several composers of a file with no title back to themselves" do
+      flow = parse("!!!COM: Bach, J. S.\n!!!COM: Handel, G. F.\n**kern\n*clefG2\n*M4/4\n=1\n1c\n==\n*-")
+      expect(HeadMusic::Notation::Kern.parse(render(flow)).composer).to eq "J. S. Bach, G. F. Handel"
+    end
+
     context "when the flow cites a work" do
       before do
         bach = HeadMusic::Content::Person.new(

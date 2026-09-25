@@ -82,20 +82,28 @@ module HeadMusic::Notation::Kern
       [
         *composer_names.map { |name| "!!!COM: #{name}" },
         composer_dates && "!!!CDT: #{composer_dates}",
-        "!!!OTL: #{flow.name}",
+        title && "!!!OTL: #{title}",
         work&.catalog_number && "!!!SCT: #{work.catalog_number}",
         work&.year && "!!!ODT: #{work.year}"
       ].compact
+    end
+
+    # The default name is left out, since the reader gives it back to a file
+    # with no title, and a title would cite a work the flow never had.
+    def title
+      flow.name unless flow.work.nil? && flow.name == HeadMusic::Content::Flow::DEFAULT_NAME
     end
 
     def composers
       flow.work ? flow.work.credits.for(:composer).map(&:person) : []
     end
 
+    # A file with composers and no title is read into one composer string,
+    # so the string is written back a name to a record.
     def composer_names
       return composers.map(&:sort_name) if flow.work
 
-      flow.composer ? [flow.composer.to_s] : []
+      flow.composer.to_s.split(",").map(&:strip).reject(&:empty?)
     end
 
     def composer_dates
