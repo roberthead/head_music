@@ -11,9 +11,13 @@ module HeadMusic::Notation::Kern
     Event = Struct.new(:time, :rhythmic_value, :fraction, :pitches, :syllables)
 
     attr_reader :voice, :events
+    # The staff the layer is written on now, which can change mid-spine.
+    attr_accessor :staff
 
-    def initialize(voice)
+    def initialize(voice, staff)
       @voice = voice
+      @staff = staff
+      @opening_staff = staff
       @events = []
     end
 
@@ -27,6 +31,7 @@ module HeadMusic::Notation::Kern
     end
 
     def place(clock)
+      assign_opening_staff(clock.bars.first.number)
       return if events.empty?
 
       bar = clock.bar_containing(events.first.time)
@@ -36,6 +41,14 @@ module HeadMusic::Notation::Kern
     end
 
     private
+
+    # A voice sits on its part's first staff unless it says otherwise, and
+    # it says so from the flow's first bar, pickup included.
+    def assign_opening_staff(first_bar)
+      return if @opening_staff.equal?(voice.part.staff_system_at(first_bar).first_staff)
+
+      voice.assign_staff(first_bar, @opening_staff)
+    end
 
     def place_event(event, clock)
       rest_until(event.time, clock)

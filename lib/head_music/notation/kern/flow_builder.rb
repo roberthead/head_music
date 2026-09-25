@@ -9,7 +9,10 @@ module HeadMusic::Notation::Kern
   # wait until the end, when every bar's number and start are known.
   class FlowBuilder
     TIMELINE_KINDS = %i[signature designation meter tempo].freeze
-    TrackTags = Struct.new(:clef, :code, :name, :part, :staff)
+    PartState = Data.define(:code, :name, :staves_by_number)
+    # What a spine's interpretations said before the first data row, and
+    # the line each was read on.
+    TrackTags = Struct.new(:clef, :code, :name, :part, :staff, :lines)
 
     attr_reader :document
 
@@ -26,7 +29,8 @@ module HeadMusic::Notation::Kern
     attr_reader :clock
 
     def build
-      @tags = document.kern_tracks.to_h { |track| [track, TrackTags.new] }
+      @tags = document.kern_tracks.to_h { |track| [track, TrackTags.new(lines: {})] }
+      @part_states = {}
       @opening = {}
       @cursors = {}
       @layers = []
@@ -108,11 +112,16 @@ module HeadMusic::Notation::Kern
 
     def read_opening(timeline, spine, line)
       timeline.each_value { |interpretation| @opening[interpretation.kind] = [interpretation.value, line] }
-      spine.each { |track, interpretation| @tags[track][interpretation.kind] = interpretation.value }
+      spine.each do |track, interpretation|
+        tags = @tags.fetch(track)
+        tags[interpretation.kind] = interpretation.value
+        tags.lines[interpretation.kind] = line
+      end
     end
 
     def read_changes(timeline, spine, line)
       timeline.each_value { |interpretation| change_timeline(interpretation, line) }
+      @row_clefs = {}
       spine.each { |track, interpretation| change_spine(track, interpretation, line) }
     end
 
@@ -153,24 +162,52 @@ module HeadMusic::Notation::Kern
     end
 
     def change_spine(track, interpretation, line)
+      layer = @cursors.fetch(track).layer
       case interpretation.kind
-      when :clef then change_clef(track, interpretation, line)
-      when :code, :name, :part then ensure_unchanged(track, interpretation, line)
+      when :clef then change_clef(layer, interpretation, line)
+      when :staff then change_staff(layer, interpretation, line)
+      when :part then ensure_unchanged(@tags.fetch(track).part, interpretation, line)
+      when :code, :name then ensure_unchanged(@part_states.fetch(layer.voice.part).public_send(interpretation.kind), interpretation, line)
       end
     end
 
-    def change_clef(track, interpretation, line)
+    def change_clef(layer, interpretation, line)
       clef = interpretation.value
-      staff = @cursors.fetch(track).layer.voice.staff_at(in_force_bar)
-      return if clef.nil? || staff.clef_at(in_force_bar) == clef
+      return if clef.nil?
+
+      staff = layer.staff
+      ensure_one_clef(staff, clef, line)
+      return if staff.clef_at(in_force_bar) == clef
 
       clock.at_downbeat(current_time, interpretation.field, line) do |bar_number|
         staff.change_clef(bar_number, clef) unless staff.clef_at(bar_number) == clef
       end
     end
 
-    def ensure_unchanged(track, interpretation, line)
-      return if @tags.fetch(track)[interpretation.kind] == interpretation.value
+    def ensure_one_clef(staff, clef, line)
+      stated = @row_clefs[staff]
+      @row_clefs[staff] = clef
+      return if stated.nil? || stated == clef
+
+      raise UnsupportedFeatureError.new("Spines on one staff disagree on its clef", line_number: line)
+    end
+
+    # A staff crossing, which lives on bars as a clef change does.
+    def change_staff(layer, interpretation, line)
+      staff = @part_states.fetch(layer.voice.part).staves_by_number[interpretation.value]
+      unless staff
+        raise UnsupportedFeatureError.new("#{interpretation.field} is not a staff of its spine's part", line_number: line)
+      end
+      return if staff.equal?(layer.staff)
+
+      layer.staff = staff
+      clock.at_downbeat(current_time, interpretation.field, line) do |bar_number|
+        layer.voice.assign_staff(bar_number, staff)
+      end
+    end
+
+    def ensure_unchanged(value, interpretation, line)
+      return if value == interpretation.value
 
       raise UnsupportedFeatureError.new(
         "Changing #{interpretation.field} in the middle of a spine is not supported", line_number: line
@@ -202,7 +239,9 @@ module HeadMusic::Notation::Kern
       raise UnsupportedFeatureError.new("Spine splits and joins are not yet supported", line_number: line) if @flow
 
       left, right = manipulation.tracks
-      @tags[right] = @tags.fetch(left).dup if manipulation.type == :split
+      return unless manipulation.type == :split
+
+      @tags[right] = @tags.fetch(left).dup.tap { |tags| tags.lines = tags.lines.dup }
     end
 
     # The flow
@@ -214,7 +253,7 @@ module HeadMusic::Notation::Kern
         meter: @opening[:meter]&.first,
         tempo: @opening[:tempo]&.first
       )
-      row.tracks.select(&:kern?).reverse_each { |track| add_part(track) }
+      PartGrouping.new(row.tracks.select(&:kern?), @tags).parts.each { |plan| add_part(plan) }
     end
 
     # The timeline opens with one event holding both the signature and its
@@ -235,16 +274,37 @@ module HeadMusic::Notation::Kern
       key_signature
     end
 
-    def add_part(track)
-      tags = @tags.fetch(track)
+    # One player per part, even where two parts share a name: kern has no
+    # way to say two spines are one chair.
+    def add_part(plan)
       part = @flow.add_part(
-        player: tags.name && HeadMusic::Content::Player.new(name: tags.name),
-        instrument: tags.code && InstrumentCodes.instrument(tags.code),
-        staff_system: tags.clef && HeadMusic::Content::StaffSystem.single_staff(clef: tags.clef)
+        player: plan.name && HeadMusic::Content::Player.new(name: plan.name),
+        instrument: plan.code && InstrumentCodes.instrument(plan.code),
+        staff_system: staff_system_for(plan)
       )
-      layer = Layer.new(part.add_voice)
-      @layers << layer
-      @cursors[track] = VoiceCursor.new(layer, current_time)
+      staves = part.staff_system.staves
+      @part_states[part] = PartState.new(
+        code: plan.code, name: plan.name, staves_by_number: plan.staves.map(&:number).zip(staves).to_h
+      )
+      plan.staves.zip(staves).each do |staff_plan, staff|
+        staff_plan.tracks.each { |track| @cursors[track] = VoiceCursor.new(add_layer(part, staff), current_time) }
+      end
+    end
+
+    # A single staff with no clef is left to the part's fallback system, so
+    # that nothing unauthored is serialized.
+    def staff_system_for(plan)
+      clefs = plan.staves.map(&:clef)
+      return if clefs.length == 1 && clefs.first.nil?
+
+      HeadMusic::Content::StaffSystem.new(
+        staves: clefs.map { |clef| HeadMusic::Content::Staff.new(clef: clef) },
+        bracket: (clefs.length > 1) ? :brace : :none
+      )
+    end
+
+    def add_layer(part, staff)
+      Layer.new(part.add_voice, staff).tap { |layer| @layers << layer }
     end
 
     # Data and barlines
