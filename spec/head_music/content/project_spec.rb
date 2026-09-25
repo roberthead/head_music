@@ -79,6 +79,54 @@ describe HeadMusic::Content::Project do
       expect { described_class.new.add_flow(flow) }
         .to raise_error ArgumentError, /belongs to another project/
     end
+
+    context "when a part already carries a player of its own" do
+      let(:soprano) { HeadMusic::Content::Player.new(name: "Soprano") }
+
+      before { flow.parts.first.player = soprano }
+
+      it "keeps the part's player" do
+        project.add_flow(flow)
+        expect(flow.parts.first.player).to be soprano
+      end
+
+      it "adopts the player into the project's chairs" do
+        project.add_flow(flow)
+        expect(project.players).to eq [soprano, flow.parts.last.player]
+      end
+
+      it "gives the player to the project" do
+        project.add_flow(flow)
+        expect(soprano.project).to be project
+      end
+
+      it "adopts a player shared by two parts once" do
+        flow.parts.last.player = soprano
+        project.add_flow(flow)
+        expect(project.players).to eq [soprano]
+      end
+
+      it "adopts a player shared across two flows once" do
+        second = HeadMusic::Content::Flow.new(name: "II")
+        second.add_part(player: soprano).add_voice
+        project.add_flow(flow)
+        project.add_flow(second)
+        expect(project.players.count { |player| player.equal?(soprano) }).to eq 1
+      end
+    end
+
+    context "when a part's player belongs to another project" do
+      before { flow.parts.first.player = described_class.new.add_player(name: "Oboe") }
+
+      it "refuses the flow" do
+        expect { project.add_flow(flow) }.to raise_error ArgumentError, /player belongs to another project/
+      end
+
+      it "takes nothing from the flow it refuses" do
+        expect { project.add_flow(flow) }.to raise_error(ArgumentError)
+        expect([project.flows, project.players, flow.project]).to eq [[], [], nil]
+      end
+    end
   end
 
   describe "a player's instruments" do

@@ -58,14 +58,18 @@ class HeadMusic::Content::Project
   # Adopt a standalone flow, minting a player for each of its parts that has
   # none. This closes the gap the model leaves open: a flow may stand alone and
   # a part may have no player until a document needs chairs to coordinate.
-  # Parts that already have players keep them, so adopting twice changes nothing.
+  # A part's own player becomes one of this project's, so its name survives
+  # into the project's chairs; adopting twice changes nothing.
   def add_flow(flow)
     return flow if flows.any? { |owned| owned.equal?(flow) }
     raise ArgumentError, "the flow belongs to another project" if flow.project && !flow.project.equal?(self)
+    raise ArgumentError, "a part's player belongs to another project" if foreign_player?(flow)
 
     @flows << flow
     flow.project = self
-    flow.parts.each_with_index { |part, index| part.player ||= add_player(name: player_name_for(part, index)) }
+    flow.parts.each_with_index do |part, index|
+      part.player ? adopt_player(part.player) : part.player = add_player(name: player_name_for(part, index))
+    end
     flow
   end
 
@@ -132,6 +136,15 @@ class HeadMusic::Content::Project
   # a part with no player, which stays a plain staff of music.
   def player_indexes_for(flow)
     flow.parts.map { |part| part.player && players.index { |player| player.equal?(part.player) } }
+  end
+
+  def foreign_player?(flow)
+    flow.parts.any? { |part| part.player&.project && !part.player.project.equal?(self) }
+  end
+
+  def adopt_player(player)
+    player.project = self
+    @players << player unless players.any? { |owned| owned.equal?(player) }
   end
 
   # Named for what the part plays, falling back to its position, because a

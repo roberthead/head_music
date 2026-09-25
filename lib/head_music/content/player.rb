@@ -9,8 +9,7 @@ module HeadMusic::Content; end
 # instrument change within a part honest, since conceptually it is still the
 # same player.
 class HeadMusic::Content::Player
-  attr_reader :project
-  attr_accessor :name
+  attr_accessor :project, :name
 
   def initialize(project: nil, name: nil)
     @project = project

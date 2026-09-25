@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `rexml` is now a runtime dependency, in preparation for reading MusicXML and MEI.
+- `Project#add_flow` adopts a player that a part already carries into the project's `players`, rather than leaving it out, and raises `ArgumentError` when that player belongs to another project.
 
 ## [22.0.0] - 2026-09-24
 

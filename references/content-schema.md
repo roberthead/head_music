@@ -90,7 +90,7 @@ Cardinality is from the owner's point of view. *Back-ref* marks a reference the 
 | `credits` | `Credits` at the `:project` level | 1 |
 | `works` | derived: `flows.filter_map(&:work).uniq` | 0..* |
 
-`add_flow` adopts a standalone flow, mints a `Player` for each player-less part, and raises if the flow belongs to another project. Players and flows match by object identity. `add_credit(person, role)` replaces the credits with the collection one longer, so the project's arranger is recorded here rather than on any flow. `add_layout(**kwargs)` mints a layout bound to this project and `add_score(ensemble_type:, **kwargs)` mints a `Score`; the project itself renders nothing.
+`add_flow` adopts a standalone flow, mints a `Player` for each player-less part, adopts any player a part already carries into `players` (once, by identity), and raises if the flow, or any of its parts' players, belongs to another project. Players and flows match by object identity. `add_credit(person, role)` replaces the credits with the collection one longer, so the project's arranger is recorded here rather than on any flow. `add_layout(**kwargs)` mints a layout bound to this project and `add_score(ensemble_type:, **kwargs)` mints a `Score`; the project itself renders nothing.
 
 ### Player (`content/player.rb`)
 

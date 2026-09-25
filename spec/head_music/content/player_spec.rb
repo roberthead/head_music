@@ -27,4 +27,19 @@ describe HeadMusic::Content::Player do
       expect(described_class.new(name: "Nobody").parts).to be_empty
     end
   end
+
+  describe "a standalone flow's player, once its flow is adopted" do
+    subject(:player) { described_class.new(name: "Soprano") }
+
+    let(:flow) { HeadMusic::Content::Flow.new(name: "I") }
+
+    before do
+      flow.add_part(player: player).add_voice
+      project.add_flow(flow)
+    end
+
+    it "finds its part" do
+      expect(player.parts.map(&:flow)).to eq [flow]
+    end
+  end
 end
