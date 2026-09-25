@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T19:31:27-07:00
+  updated_at:   2026-09-24T19:36:05-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -48,6 +48,18 @@ flow.to_kern       # => the same spines back
 
 ## Acceptance Criteria
 
+### First step: players in a standalone flow
+
+- [ ] A part in a flow with no project can carry a `Player` that has no project
+- [ ] `Flow#to_h` writes a part's player name when it has one, and `Flow.from_h` restores it as a projectless `Player`; a part with no player serializes as it does now
+- [ ] `Project#add_flow` adopts a part's existing player into `project.players` when the project does not own it yet, rather than leaving it orphaned; adopting the same flow twice still changes nothing
+- [ ] Two parts in one flow that share a player object still share one player after adoption and after a Flow JSON round trip
+- [ ] A project saved and read back keeps adopted players, and layouts can select them
+- [ ] Existing schema-4 documents read unchanged
+
+### Kern
+
+- [ ] A spine's display name (`*I"Soprano`) becomes its part's player name on import, and a part's player name is written as `*I"` on export
 - [ ] `HeadMusic::Notation::Kern.parse(string)` returns a `HeadMusic::Content::Flow`
 - [ ] `HeadMusic::Notation::Kern.render(flow)` and `Flow#to_kern` return a `**kern` string
 - [ ] Each `**kern` spine becomes a voice; non-kern spines (`**dynam`, `**text`, `**harm`) are skipped on import, except `**text` / `**silbe` lyrics if planning keeps them in scope
@@ -66,16 +78,18 @@ flow.to_kern       # => the same spines back
 
 - Kern prints spines lowest voice first (the bass is the leftmost column). Import and export should both respect that order.
 - Tuplets in kern are expressed as non-power-of-two durations (`6` is a triplet eighth); decide whether the model can hold them or whether they raise.
+- `Project#to_h` embeds each `flow.to_h` and already pairs parts with players by index. Once a part's hash carries a player name, a project document says the player twice. Planning should decide whether the project writer drops the per-part name or the reader treats the index as the source of truth.
 - Grace notes (`q`), ornaments, articulations, beams (`L`, `J`), and stem directions can be ignored on import and omitted on export in v1.
 
 ## Decisions
 
 - **The module is `HeadMusic::Notation::Kern`** (decided 2026-09-24). Other Humdrum representations such as `**mens` would get modules of their own if they come.
 - **Import returns a `Flow`** (decided 2026-09-24), as ABC and LilyPond import do. Players are project-level chairs that last across flows, and a kern file is one flow. A spine's instrument code (`*Ivox`, `*Ivioln`) maps to its part's `instrument`, and `Project#add_flow` mints players named for those instruments when a caller wants them.
+- **A part in a standalone flow may carry a player** (decided 2026-09-24), and that is where a spine's display name (`*I"Soprano`) goes. Until now, readers left `Part#player` nil by convention. A player without a project was possible, but Flow JSON did not save it, and `Project#add_flow` kept it without adding it to `project.players`, so the name was lost either way. Fixing that is this story's first step, ahead of the kern reader. It also opens the way for ABC `V:` names and LilyPond `\new Staff = "..."` names to become players later.
 
 ## Open Questions
 
-1. Where does a spine's display name (`*I"Soprano`) go on a part with no player? Voice `role` is the likely home, but it also carries the cantus-firmus meaning.
+1. Does the player name belong in the schema as a per-part field of Flow JSON, and does that need a schema version bump, or is an optional field additive within schema 4?
 
 ## Implementation Plan
 
