@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-09-24T18:58:30-07:00
-  activated_at:
+  activated_at: 2026-09-24T19:27:11-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T18:58:30-07:00
+  updated_at:   2026-09-24T19:27:11-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
