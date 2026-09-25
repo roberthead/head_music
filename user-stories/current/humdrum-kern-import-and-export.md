@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:   2026-09-24T19:56:33-07:00
   finished_at:
-  updated_at:   2026-09-24T21:00:08-07:00
+  updated_at:   2026-09-24T21:06:36-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -65,7 +65,6 @@ flow.to_kern       # => the same spines back
 - [ ] Each `**kern` spine becomes a voice; spines without `*part` tags each get a part of their own; `**dynam`, `**harm`, and other non-kern, non-lyric spines are skipped on import
 - [ ] Kern spines are read left to right as bass to top; `flow.parts` are ordered top-down, and the writer reverses them
 - [ ] Rows whose field count does not match the active spines, input that is not UTF-8, a missing `*-`, and files with no `**kern` spine raise `ParseError` with a line number
-- [ ] Spine splits and joins (`*^`, `*v`, `*x`, `*+`) raise `UnsupportedFeatureError` in any spine, including skipped ones
 
 ### Kern: tokens
 
@@ -103,13 +102,26 @@ flow.to_kern       # => the same spines back
 
 - [ ] Kern spines that share a `*partN` number become voices of one part; distinct `*partN` numbers become distinct parts, ordered top-down by the rightmost spine of each
 - [ ] Within a part, distinct `*staffN` numbers become the staves of its staff system, `*staff1` on top; two staves get a brace, as `StaffSystem.grand_staff` does
-- [ ] Each voice is assigned to the staff its spine names; spines that share a `*staffN` become several voices on one staff
+- [ ] Each voice is assigned to the staff its spine names; spines that share a `*staffN` become several voices on one staff, the leftmost as the upper voice (Verovio's layer convention)
 - [ ] A `*staffN` change in the middle of a spine becomes a staff crossing (`Voice#assign_staff`) at that bar; a change that is not at a downbeat raises `UnsupportedFeatureError`
 - [ ] `*clef` on a spine sets its staff's clef; two spines on one staff that disagree on its clef raise `UnsupportedFeatureError`
 - [ ] `*I` codes and `*I"` names on the spines of one part must agree, or appear on only one of them; a disagreement raises `UnsupportedFeatureError`
 - [ ] A cross-staff tag (`*staff1/2`) raises `UnsupportedFeatureError`
 - [ ] The writer emits one spine per voice. When a flow has any part with more than one voice or staff, every spine gets `*partN` and `*staffN` tags, numbered top-down; otherwise no tags are written
 - [ ] A flow with a grand-staff piano part holding two voices, and a flow with soprano and alto sharing one staff, round-trip through kern to equal parts, staves, and staff assignments
+
+### Kern: spine splits, joins, and exchanges
+
+- [ ] `*^` splits a kern spine into two sub-spines in the same part and on the same staff; the left sub-spine continues the existing voice as the upper voice, and the right sub-spine becomes another voice
+- [ ] A voice that begins at a split is padded with a rest from its bar's downbeat to the split, so it satisfies `Voice::Continuity`
+- [ ] `*v` joins adjacent sub-spines; the leftmost continues its voice, and the others' voices go dormant
+- [ ] A later split in the same part and staff reuses a dormant voice, padding the stretch it was dormant with rests, so a part has as many voices as it ever has sub-spines at once
+- [ ] `*x` exchanges two adjacent spines, and each keeps its voice
+- [ ] A `*-` that ends one sub-spine before the end of the file ends its voice there, as a join does
+- [ ] Field counts are checked against the spine layout as it changes; a join of non-adjacent spines, a lone `*v`, an unpaired `*x`, or a join across parts or staves raises `ParseError` or `UnsupportedFeatureError`, naming the line
+- [ ] Manipulators in skipped spines are tracked so columns stay aligned; a split in a lyric spine raises `UnsupportedFeatureError`
+- [ ] `*+` (adding a new spine mid-piece) raises `UnsupportedFeatureError`
+- [ ] The writer does not emit splits: each voice is written as a full-length spine with its padding rests, which is valid kern; parsing that output gives the same voices
 
 ### Kern: bars
 
@@ -121,7 +133,7 @@ flow.to_kern       # => the same spines back
 
 ### Kern: lyrics
 
-- [ ] A `**text` or `**silbe` spine attaches its syllables to the nearest `**kern` spine on its left; successive text spines for one kern spine become verses 1, 2, …
+- [ ] A `**text` or `**silbe` spine attaches its syllables to the nearest `**kern` spine on its left (to its upper voice, when that spine is split); successive text spines for one kern spine become verses 1, 2, …
 - [ ] Kern hyphenation (`mei-` / `-nes`) sets `hyphen_after` on the syllable before the break
 - [ ] A syllable with no note under it raises `ParseError`
 - [ ] The writer emits a `**text` spine to the right of each sung part, one per verse
@@ -142,6 +154,7 @@ flow.to_kern       # => the same spines back
 - [ ] Parsing the writer's output of a parsed file gives an equal `to_h` (the reader is idempotent)
 - [ ] For arbitrary flows, render then parse gives an equal normalized `to_h`, excluding voice role, comments, citations, and beam breaks
 - [ ] A hand-encoded fixture with a pickup, ties across barlines, a repeat in the middle of a bar, SATB `*I"` names, `*MM`, a tonal designation, and a lyric spine parses end to end
+- [ ] A hand-encoded grand-staff piano fixture with splits, joins, a re-split, an exchange, and a partial termination parses end to end, round-trips, and renders to MusicXML and LilyPond
 - [ ] With `KERN_CORPUS` pointing at a local clone of the Bach chorales, every chorale parses except the known ones with short bars in the middle of the piece
 - [ ] Maintains 90%+ test coverage
 
@@ -159,13 +172,14 @@ flow.to_kern       # => the same spines back
 - **A part in a standalone flow may carry a player** (decided 2026-09-24), and that is where a spine's display name (`*I"Soprano`) goes. Until now, readers left `Part#player` nil by convention. Flow JSON did not save it, and `Project#add_flow` kept it without adding it to `project.players`, so the name was lost either way. Fixing that is this story's first step. It also opens the way for ABC `V:` names and LilyPond `\new Staff = "..."` names to become players later.
 - **Part players stay within schema 4** (decided 2026-09-24). They follow the precedent of `work`/`source`, which were added as optional keys (`lib/head_music/content/flow/hash_deserializer.rb:36-43`). A bump to 5 would make every existing document unreadable, because the version check is exact (`flow/deserializer.rb:30-35`). The key is `part_players`, because `Project#to_h` already merges `"players"` into each flow hash (`project.rb:111`).
 - **Lyrics are in scope** (decided 2026-09-24), both directions.
-- **Spine splits and tuplets raise in v1** (decided 2026-09-24). A split is a second voice that exists for only part of the piece, which every writer's continuity check rejects unless it is padded with phantom rests. A tuplet needs a tuplet ratio that `RhythmicValue` does not have, which would be a change to the core duration model.
+- **Spine splits, joins, exchanges, and partial terminations are in scope** (decided 2026-09-24; this reverses an earlier deferral). A voice may begin at any bar's downbeat and need only be gap-free from there (`lib/head_music/content/voice/continuity.rb`), so a voice born at a split is padded with rests to its bar's downbeat and across any stretch it is merged away. Reusing dormant voices keeps a much-split piano part to as many voices as it ever sounds at once. None of the 370 chorales splits (checked 2026-09-24), so splits get a fixture of their own. `*+` still raises: it adds a new spine, possibly of a new kind, in the middle of the piece, which is rare and is not a split.
+- **Tuplets raise in v1** (decided 2026-09-24). A tuplet needs a tuplet ratio that `RhythmicValue` does not have, which would be a change to the core duration model.
 - **The chorale corpus is not vendored** (decided 2026-09-24). `craigsapp/bach-370-chorales` is CC BY-NC-SA 4.0 and this repo is MIT. The committed fixture is hand-encoded, and the real corpus runs only when `KERN_CORPUS` points at a local clone.
 - **One story, not two** (decided 2026-09-24). The reader and writer share their token and interpretation tables, and the round-trip criteria need both.
 - **Import builds a `Work`** (decided 2026-09-24) from the title, catalog number, date, and composer records, with the composer as a `Person` credit. The writer emits those records back.
 - **The MusicXML and LilyPond writers learn to split notes that cross a barline** (decided 2026-09-24), in this story, so an imported chorale renders. Today `ensure_notes_within_barlines` (`lib/head_music/notation/preflight_checks.rb:18-27`) rejects them, which also blocks fourth-species flows and ABC imports with ties across barlines.
 - **`Project#add_flow` raises** (decided 2026-09-24) when a part's player belongs to another project, matching the existing check that a flow belongs to one project. The CHANGELOG records it under Changed.
-- **`*part`/`*staff` grouping is read and written in this story** (decided 2026-09-24). Spines that share a part become voices of one part, staves become the part's staff system, and the writer emits the tags back. The model already holds all of it (`StaffSystem`, `Voice#assign_staff`), and the MusicXML and LilyPond writers already render parts with several voices and staves. Spine splits (`*^`/`*v`) still raise; they are the other way kern writes several voices in one part, and a follow-up story can build on this one.
+- **`*part`/`*staff` grouping is read and written in this story** (decided 2026-09-24). Spines that share a part become voices of one part, staves become the part's staff system, and the writer emits the tags back. The model already holds all of it (`StaffSystem`, `Voice#assign_staff`), and the MusicXML and LilyPond writers already render parts with several voices and staves.
 
 ## Implementation Plan
 
@@ -217,11 +231,13 @@ Each step is one commit, with its specs.
      - a field-count mismatch, naming the line and both counts;
      - data before the `**` header;
      - a missing `*-`, or content after it.
-   - Raise `UnsupportedFeatureError` for `*^`, `*v`, `*x`, `*+`, or a partial `*-` in any spine.
+   - The lexer checks only that a row's fields are tab-separated and non-empty. Field counts depend on the spine layout, which the Document tracks.
    - Files: `kern/lexer.rb`, `kern/record.rb`, and a spec.
 
 5. **Document**
    - Classify the spines as kern, lyric (`**text`, `**silbe`), or skipped. Raise `ParseError` when there is no kern spine.
+   - `kern/spine_layout.rb` follows the columns through the file. Each column is a track with a stable identity and a kind. Manipulator rows are applied left to right under the Humdrum rules: `*^` replaces a track with two; adjacent `*v`s merge into their leftmost track; a pair of adjacent `*x`s swaps two tracks; `*-` ends a track. Every non-manipulator row must have exactly one field per live track, or `ParseError` names the line and both counts.
+   - Malformed manipulations raise `ParseError`: a lone `*v`, non-adjacent joins, an unpaired or triple `*x`. A split in a lyric spine and any `*+` raise `UnsupportedFeatureError`. Skipped spines are tracked like the others, so their manipulators keep the columns aligned.
    - Collect the citation records: every `!!!COM` in order, `!!!CDT`, `!!!OTL` (or failing that `!!!OTL@@xx`), `!!!SCT`, `!!!ODT`.
    - Everything else is ignored: other reference records, `!!!!` records, `!!`/`!` comments, `*>` labels and expansion lists.
    - Files: `kern/document.rb`, and a spec.
@@ -282,21 +298,30 @@ Each step is one commit, with its specs.
     - `kern/part_grouping.rb` reads the `*partN` and `*staffN` tags from the interpretation rows before the first data row. Spines with no `*part` tag each form a part of their own.
     - A part is created for each distinct part number, ordered top-down by its rightmost spine. Within it:
       - Staves come from the distinct staff numbers, `*staff1` on top, each with the clef its spines name. Two staves get `bracket: :brace`, and one stays `StaffSystem.single_staff(clef:)`.
-      - Voices come from the spines, rightmost first, each assigned to its staff with `voice.assign_staff`.
+      - Voices come from the spines, each assigned to its staff with `voice.assign_staff`. Within a staff, the leftmost spine is the upper voice and comes first, following Verovio's layer convention, which is the reverse of the bottom-to-top order between staves.
     - Instruments and players: the part's `*I` code and `*I"` name come from whichever of its spines carries them; a disagreement raises `UnsupportedFeatureError`.
     - A mid-spine `*staffN` becomes `assign_staff(bar, staff)` at a downbeat; one that is not at a downbeat raises. `*staff1/2` raises.
     - Two spines on one staff that disagree on `*clef` raise.
     - Files: `kern/part_grouping.rb`, `flow_builder.rb`, `spec/head_music/notation/kern/part_grouping_spec.rb`, with a piano grand staff and a soprano-and-alto-on-one-staff case built with `ABC.parse` or by hand.
 
-12. **Lyrics import**
-    - Each `**text`/`**silbe` spine attaches to the nearest kern spine on its left. Successive text spines for one kern spine become verses.
+12. **Spine splits, joins, and exchanges (import)**
+    - The FlowBuilder maps each kern track from `SpineLayout` to a voice.
+    - On `*^`, the left track keeps the voice. The right track takes a dormant voice of the same part and staff if there is one, or else a new voice added with `part.add_voice` and assigned to that staff. The new or reawakened voice is padded with a rest from its bar's downbeat (or from where it went dormant) to the split, using `DottedDuration` fractions and ties where one value won't do.
+    - On `*v` or a partial `*-`, the surviving leftmost track keeps its voice, and the others go dormant. A join across parts or staves raises `UnsupportedFeatureError`.
+    - On `*x`, the voice mapping follows the tracks.
+    - Voice order within a staff is kept as the order of first appearance, left to right, so the upper voice stays first.
+    - Bar validation (step 8) runs per live track, and a dormant voice needs no notes in that bar.
+    - Specs: a split in the middle of a bar and a join; a re-split that reuses the dormant voice (the part has two voices, not three); an exchange; a split beside a skipped `**dynam` spine and beside a `**text` spine; a split in a lyric spine raises; `*+` raises; a lone `*v` raises.
+
+13. **Lyrics import**
+    - Each `**text`/`**silbe` spine attaches to the nearest kern spine on its left, and to that spine's upper voice when it is split. Successive text spines for one kern spine become verses.
     - A syllable goes to the placement attacked on its row through `Placement#sing(text, verse:, hyphen_after:)`.
     - A trailing `-` sets `hyphen_after`; a leading `-` is stripped.
     - Null tokens and `|`/`_` melisma marks are skipped.
     - A syllable on a row with no attack in its kern spine raises `ParseError`.
     - Files: `kern/lyric_reader.rb`, `flow_builder.rb`, and specs.
 
-13. **Work citation import**
+14. **Work citation import**
     - `kern/citation_reader.rb` turns the collected records into a `HeadMusic::Content::Work` (`lib/head_music/content/work.rb`).
     - Title: `!!!OTL`, or failing that `!!!OTL@@xx`. With no title, build no `Work`, and pass the first `!!!COM` as the flow's `composer:` string, as today.
     - `catalog_number`: `!!!SCT`, verbatim. `year`: the first four-digit year in `!!!ODT`.
@@ -305,21 +330,21 @@ Each step is one commit, with its specs.
     - The flow's name stays the title, so `flow.name` and `flow.work.title` agree.
     - Files: `kern/citation_reader.rb`, `flow_builder.rb`, `spec/head_music/notation/kern/citation_reader_spec.rb`.
 
-14. **Extract a shared bar splitter from the ABC writer**
+15. **Extract a shared bar splitter from the ABC writer**
     - Move `Segment` and `segments_of` / `fraction_to_bar_end` / `fraction_within_bar` (`lib/head_music/notation/abc/writer.rb:125-150`) into `HeadMusic::Notation::BarSplitter`. It yields, for each placement, one segment per bar it sounds in, with the fraction in that bar and whether it continues.
     - Point the ABC writer at it. This step is a pure refactor: every ABC spec passes unchanged.
     - Files: `lib/head_music/notation/bar_splitter.rb`, `abc/writer.rb`, `spec/head_music/notation/bar_splitter_spec.rb`.
 
-15. **Writer core**
+16. **Writer core**
     - Header records from the flow's work: `!!!COM` (each composer's sort name), `!!!CDT` (when a composer has years, as `YYYY/-YYYY/`), `!!!OTL`, `!!!SCT`, `!!!ODT`. With no work, write `!!!COM` from the composer string and `!!!OTL` from the name.
-    - One `**kern` spine per voice. Voices are ordered top-down — by part, then by staff, then by voice order — and written in reverse, so the bass is leftmost.
+    - One full-length `**kern` spine per voice; the writer never emits splits. Parts are written bottom to top, and so are the staves within a part, so the bass is leftmost. Within a staff, voices are written left to right in voice order, upper voice first, so that the reader's layer convention gives them back in the same order.
     - Interpretation rows: `*I"name`, the `*I` code (only for instruments in the table), clef (the authored clef, or `ClefSelector` as a fallback), `*k[...]`, the designation, `*M`, and `*MM` converted to quarter notes per minute.
     - End with `==` and `*-`.
     - `Kern::RenderPlan < Notation::RenderPlan`.
     - `Kern::Preflight` includes `ensure_contiguous_voices` and `PlacementValidation`, but not `ensure_notes_within_barlines`. It adds these `RenderError`s: an empty flow, unspellable or unpitched notes, and `transposed: true` with a transposing instrument.
     - Files: `kern/writer.rb`, `render_plan.rb`, `preflight.rb`, `pitch_writer.rb`, `duration_writer.rb`, and specs.
 
-16. **Writer structure and lyrics**
+17. **Writer structure and lyrics**
     - Split placements at barlines into tied tokens with `BarSplitter`.
     - Emit chords.
     - Leave out the pickup bar's leading rest.
@@ -329,17 +354,17 @@ Each step is one commit, with its specs.
     - Specs: the piano grand staff and the shared-staff soprano and alto round-trip to equal parts, staves, and staff assignments.
     - Emit a `**text` spine to the right of each sung part, one per verse: a hyphen after a syllable with `hyphen_after`, a leading hyphen on the next syllable, and `.` elsewhere.
 
-17. **MusicXML splits notes at barlines**
+18. **MusicXML splits notes at barlines**
     - `MusicXML::NoteWriter` already writes a tied chain as one `<note>` per component with `<tie>`/`<tied>` start and stop (`music_xml/note_writer.rb:7`, `:110-120`). Feed it `BarSplitter` segments, so a placement that crosses a barline becomes the tail of one `<measure>` and the head of the next, with the tie carried across.
     - Drop `ensure_notes_within_barlines` from `music_xml/preflight.rb:29`.
     - Specs: the preflight spec at `music_xml/preflight_spec.rb:54-63` and the writer spec at `music_xml/writer_spec.rb:696` flip from expecting `RenderError` to asserting the tied notes; a fourth-species flow renders; a tie across a barline between different durations renders.
 
-18. **LilyPond splits notes at barlines**
+19. **LilyPond splits notes at barlines**
     - Split with `BarSplitter` in the LilyPond voice writer, joining the pieces with `~` so that bar checks stay true.
     - Drop `ensure_notes_within_barlines` from `lily_pond/preflight.rb:25`. Once no writer calls it, remove it from `preflight_checks.rb`.
     - Specs: `lily_pond/preflight_spec.rb:56-67` flips; a fourth-species flow round-trips through `LilyPond.parse`, which already folds `~` into tied values; add it to `LilyPondFixtures` so the binary oracle compiles it when LilyPond is installed.
 
-19. **Round trip**
+20. **Round trip**
     - `spec/support/kern_round_trip.rb` compares a normalized `Flow#to_h`. The normalization:
       - drops voice `role`, `beam_break_before`, `comments`, `origin`, `work` and `source`;
       - merges bar 0's leading rests, and joins consecutive linked rests;
@@ -348,7 +373,7 @@ Each step is one commit, with its specs.
     - It also asserts idempotence: `parse(render(parse(x))).to_h == parse(x).to_h`.
     - Cover hand-built flows, `LilyPondFixtures`, a `CantusFirmus::Example#to_flow`, and a sung flow with two verses.
 
-20. **Hand-encoded fixture and corpus sweep**
+21. **Hand-encoded fixture and corpus sweep**
     - `spec/fixtures/notation/kern/satb_chorale.krn`: an original four-part setting written for the test, released under the repo's MIT license. It is modeled on the features of `chor001.krn` but copies none of its music:
       - a 3/4 pickup, and a short final bar;
       - ties across barlines, including one between different durations (`[4g` then `8g]`);
@@ -357,6 +382,7 @@ Each step is one commit, with its specs.
       - SATB `*I"` names and `*I` codes;
       - a `**text` spine under the soprano;
       - a `!!!!SEGMENT` record, `!!` comments, fermatas and beams.
+    - `spec/fixtures/notation/kern/piano_splits.krn`: an original grand-staff piano piece written for the test. It uses `*part1`/`*staff1`/`*staff2`; a right-hand split in the middle of a bar and a join; a re-split that reuses the dormant voice; a `*x`; a partial `*-`; and a skipped `**dynam` spine that splits alongside. Its spec checks one part, two staves, the voice count and staff assignments, the padding rests, an idempotent round trip, and that `to_musicxml` and `to_lilypond` succeed.
     - `spec/head_music/notation/kern/chorale_fixture_spec.rb` checks:
       - four parts ordered Soprano to Bass;
       - the bar 0 pickup;
@@ -370,7 +396,7 @@ Each step is one commit, with its specs.
       - Skips unless `ENV["KERN_CORPUS"]` is set, much as the lilypond-binary specs skip when the binary is missing (`lily_pond_round_trip_spec.rb:128-131`). The variable points at a local clone of `craigsapp/bach-370-chorales`, which is never committed.
       - Every file must parse, except that files with short bars in the middle of the piece must raise `UnsupportedFeatureError`. The planner reported chor011, chor130, chor197 and chor280; verify that list when first running the sweep.
 
-21. **`Flow#to_kern` delegate and docs**
+22. **`Flow#to_kern` delegate and docs**
     - Add it next to `to_abc` and `to_lilypond` (`flow.rb:151-161`).
     - Update the README format list and the CHANGELOG.
 
@@ -395,4 +421,4 @@ Each step is one commit, with its specs.
 - **`Project#add_flow` changes behavior.** It now sets `player.project`, and it raises for a player that belongs to another project.
 - **Instrument codes** beyond the four vocal ones need checking against the Humdrum `*I` reference. Unmapped instruments are left out on export. `*Ivox` cannot resolve, because `voice` is only a family in the catalog.
 - **The clef fallback on export** relies on `ClefSelector`, which knows only treble and bass (`clef_selector.rb:11-19`). The round-trip normalization absorbs this.
-- **Corpus statistics are the developer's report, not verified:** 251 of the 370 chorales have pickups, and 366 of 370 validate. Confirm them with the first `KERN_CORPUS` run.
+- **Corpus statistics:** checked 2026-09-24 that 251 of the 370 chorales have pickups and none uses splits, `*part`/`*staff`, text spines, or tuplets. The planner reported that 366 of 370 validate; confirm that with the first `KERN_CORPUS` run.
