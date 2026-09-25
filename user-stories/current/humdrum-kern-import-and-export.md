@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-24T19:27:11-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T19:29:52-07:00
+  updated_at:   2026-09-24T19:31:27-07:00
 -->
 
 # Story: Humdrum **kern Import and Export
@@ -71,11 +71,11 @@ flow.to_kern       # => the same spines back
 ## Decisions
 
 - **The module is `HeadMusic::Notation::Kern`** (decided 2026-09-24). Other Humdrum representations such as `**mens` would get modules of their own if they come.
+- **Import returns a `Flow`** (decided 2026-09-24), as ABC and LilyPond import do. Players are project-level chairs that last across flows, and a kern file is one flow. A spine's instrument code (`*Ivox`, `*Ivioln`) maps to its part's `instrument`, and `Project#add_flow` mints players named for those instruments when a caller wants them.
 
 ## Open Questions
 
-1. Should import return a `Flow` or a `Project`? Recommended: a `Flow`, as ABC and LilyPond import do. Players are project-level chairs that last across flows, and a kern file is one flow. A spine's instrument code (`*Ivox`, `*Ivioln`) maps to its part's `instrument`, and `Project#add_flow` mints players named for those instruments when a caller wants them.
-2. Where does a spine's display name (`*I"Soprano`) go on a part with no player? Voice `role` is the likely home, but it also carries the cantus-firmus meaning.
+1. Where does a spine's display name (`*I"Soprano`) go on a part with no player? Voice `role` is the likely home, but it also carries the cantus-firmus meaning.
 
 ## Implementation Plan
 
