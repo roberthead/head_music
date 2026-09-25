@@ -285,10 +285,10 @@ module HeadMusic::Notation::Kern
     end
 
     # Every bar's full length, except the last, which ends where the longest
-    # voice does.
+    # voice does. A flow whose voices hold nothing is one bar of rest.
     def bar_lengths
       @bar_lengths ||= begin
-        last_bar, last_offset = event_sources.values.filter_map(&:finish).max
+        last_bar, last_offset = event_sources.values.filter_map(&:finish).max || [first_bar, full_length(first_bar)]
         (first_bar..last_bar).to_h do |bar_number|
           [bar_number, (bar_number == last_bar) ? last_offset : full_length(bar_number)]
         end
