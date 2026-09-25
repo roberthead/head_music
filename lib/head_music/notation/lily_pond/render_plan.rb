@@ -1,14 +1,14 @@
 # A namespace for LilyPond-notation rendering helpers
 module HeadMusic::Notation::LilyPond
   # The computed musical facts a Writer needs to serialize a flow:
-  # the token for every placement, on top of the measure signatures the base
+  # the tokens for every placement in each bar it sounds in, on top of the measure signatures the base
   # plan tracks. Construction eagerly computes everything that can raise
   # on unmappable keys, durations, or alterations, so a RenderPlan that builds successfully
   # cannot fail assembly on those grounds.
   class RenderPlan < HeadMusic::Notation::RenderPlan
-    def tokens_by_placement
-      @tokens_by_placement ||= flow.voices.flat_map(&:placements).to_h do |placement|
-        [placement, token(placement)]
+    def tokens_by_segment
+      @tokens_by_segment ||= flow.voices.flat_map { |voice| segments_by_bar(voice).values.flatten }.to_h do |segment|
+        [segment, token(segment)]
       end
     end
 
@@ -16,7 +16,7 @@ module HeadMusic::Notation::LilyPond
 
     def precompute_eager_data
       super
-      tokens_by_placement
+      tokens_by_segment
     end
 
     # LilyPond has no way to say "three flats read as dorian", so it renders
@@ -25,28 +25,30 @@ module HeadMusic::Notation::LilyPond
       KeyMapper.token(event.printed_key_signature)
     end
 
-    # A tied chain within a placement joins its links with the tie mark;
-    # a chain of rests emits consecutive untied rests, and a tied chord
-    # repeats the whole chord.
-    def token(placement)
-      return rest_token(placement) if placement.rest?
-      return chord_token(placement) if placement.chord?
+    # A tied chain within a placement joins its links with the tie mark, and
+    # so does a placement split at a barline, whose piece before the bar check
+    # ends in one; a chain of rests emits consecutive untied rests, and a tied
+    # chord repeats the whole chord.
+    def token(segment)
+      placement = segment.placement
+      links = segment_rhythmic_value(segment).tied_chain
+      return links.map { |link| "r#{DurationWriter.token(link)}" }.join(" ") if placement.rest?
 
-      note_token(placement)
+      body = placement.chord? ? chord_body(placement) : PitchWriter.token(placement.pitch)
+      tokens = links.map { |link| "#{body}#{DurationWriter.token(link)}" }.join("~ ")
+      segment.continues ? "#{tokens}~" : tokens
     end
 
-    def rest_token(placement)
-      placement.rhythmic_value.tied_chain.map { |link| "r#{DurationWriter.token(link)}" }.join(" ")
+    def chord_body(placement)
+      "<#{placement.pitches.sort.map { |pitch| PitchWriter.token(pitch) }.join(" ")}>"
     end
 
-    def note_token(placement)
-      pitch_token = PitchWriter.token(placement.pitch)
-      placement.rhythmic_value.tied_chain.map { |link| "#{pitch_token}#{DurationWriter.token(link)}" }.join("~ ")
-    end
-
-    def chord_token(placement)
-      body = "<#{placement.pitches.sort.map { |pitch| PitchWriter.token(pitch) }.join(" ")}>"
-      placement.rhythmic_value.tied_chain.map { |link| "#{body}#{DurationWriter.token(link)}" }.join("~ ")
+    def segment_rhythmic_value(segment)
+      segment.rhythmic_value || raise(
+        RenderError,
+        "cannot express the part of the note at #{segment.placement.position} in bar #{segment.bar_number} " \
+        "in binary note values"
+      )
     end
   end
 end

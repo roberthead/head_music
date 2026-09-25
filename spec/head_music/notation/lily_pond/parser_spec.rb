@@ -201,10 +201,13 @@ describe HeadMusic::Notation::LilyPond::Parser do
   end
 
   describe "a note crossing a barline without a bar check" do
-    it "parses, as LilyPond auto-splits it, even though the writer will refuse to re-render it" do
+    it "parses, as LilyPond auto-splits it" do
       flow = parse("{ c'2 d'1 e'2 }")
       expect(flow.voices.first.placements.map { |placement| placement.position.to_s }).to eq %w[1:1:000 1:3:000 2:3:000]
-      expect { flow.to_lilypond }.to raise_error(HeadMusic::Notation::LilyPond::RenderError)
+    end
+
+    it "re-renders the note split at the barline and tied" do
+      expect(parse("{ c'2 d'1 e'2 }").to_lilypond).to include("c'2 d'2~ |\n", "d'2 e'2 |\n")
     end
   end
 end

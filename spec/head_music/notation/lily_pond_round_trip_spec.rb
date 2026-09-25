@@ -39,7 +39,9 @@ module LilyPondRoundTripSources
 
   FIVE_FOUR_REST = "{ \\time 5/4 c'1 c'4 | R1*5/4 | }".freeze
 
-  FIXTURE_NAMES = %i[speed_the_plough chromatic_air rests duo key_and_meter_change tacet song escaped_header anonymous air].freeze
+  FIXTURE_NAMES = %i[
+    speed_the_plough chromatic_air rests duo key_and_meter_change tacet song escaped_header anonymous air fourth_species
+  ].freeze
 
   ALL_HAND_WRITTEN = RELATIVE_TWINS.flat_map { |name, twin| [["#{name} (relative)", twin[:relative]], ["#{name} (absolute)", twin[:absolute]]] }
     .concat(OTHER_SOURCES.to_a, [["a whole-bar rest in 5/4", FIVE_FOUR_REST]])

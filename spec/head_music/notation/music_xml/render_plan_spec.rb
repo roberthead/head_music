@@ -25,8 +25,8 @@ describe HeadMusic::Notation::MusicXML::RenderPlan do
     expect(plan.first_measure_key).to include(:fifths, :mode)
   end
 
-  it "groups a voice's placements by bar number" do
-    expect(plan.placements_by_bar(voice).keys).to eq [1, 2]
+  it "groups a voice's segments by bar number" do
+    expect(plan.segments_by_bar(voice).keys).to eq [1, 2]
   end
 
   it "gives a whole-measure rest an integer duration" do

@@ -46,11 +46,6 @@ class HeadMusic::Notation::RenderPlan
     change_bar ? measure_time_changes[change_bar] : flow.meter
   end
 
-  def placements_by_bar(voice)
-    @placements_by_bar ||= {}
-    @placements_by_bar[voice] ||= voice.placements.group_by { |placement| placement.position.bar_number }
-  end
-
   # What each bar holds of the voice, with a placement that crosses a barline
   # appearing in every bar it sounds in.
   def segments_by_bar(voice)

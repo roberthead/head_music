@@ -59,12 +59,24 @@ describe HeadMusic::Notation::LilyPond::Preflight do
         voice = flow.add_voice
         %w[C4 D4 E4].each_with_index { |pitch, index| voice.place("1:#{index + 1}", :quarter, pitch) }
         voice.place("1:4", :half, "F4")
+        voice.place("2:2", :dotted_half, "G4")
         flow
       end
 
-      it "raises a render error" do
-        expect { described_class.check!(flow) }
-          .to raise_error(render_error, /crosses its barline/)
+      it "passes, leaving the writer to split the note at the barline" do
+        expect { described_class.check!(flow) }.not_to raise_error
+      end
+    end
+
+    context "with a final note that crosses a barline and ends on a later one" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new
+        flow.add_voice.place("1:1", "double whole", "C4")
+        flow
+      end
+
+      it "treats the final bar as filled" do
+        expect { described_class.check!(flow) }.not_to raise_error
       end
     end
 

@@ -192,6 +192,26 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it_behaves_like "a compilable document"
     end
 
+    context "with a fourth-species counterpoint" do
+      let(:flow) { LilyPondFixtures.fourth_species }
+      let(:rendered) { described_class.new(flow).to_s }
+      let(:counterpoint_lines) { bar_check_lines(rendered).last(11) }
+
+      it "is structurally valid" do
+        expect_structurally_valid_lilypond(rendered, bars: 11, voices: 2)
+      end
+
+      it "ties each syncopation across its bar check" do
+        expect(counterpoint_lines.first(3)).to eq ["r2 a'2~ |", "a'2 d''2~ |", "d''2 c''2~ |"]
+      end
+
+      it "leaves the bars without a syncopation untied" do
+        expect(counterpoint_lines.values_at(4, 9)).to eq ["bes'2 g'2 |", "d''2 cis''2 |"]
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
     context "with an empty voice" do
       let(:flow) { LilyPondFixtures.tacet }
       let(:rendered) { described_class.new(flow).to_s }

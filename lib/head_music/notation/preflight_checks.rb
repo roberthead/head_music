@@ -15,17 +15,6 @@ module HeadMusic
         end
       end
 
-      def ensure_notes_within_barlines(flow)
-        flow.voices.each do |voice|
-          voice.placements.each do |placement|
-            next unless placement.next_position > placement.position.start_of_next_bar
-
-            raise render_error_class, "the note at #{placement.position} crosses its barline; " \
-              "splitting notes across barlines is not supported"
-          end
-        end
-      end
-
       def raise_gap_error(voice, expected_position, found_placement)
         if found_placement.equal?(voice.placements.first)
           raise render_error_class, "the first placement must start its bar " \

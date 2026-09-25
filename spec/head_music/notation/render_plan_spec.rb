@@ -68,12 +68,5 @@ describe HeadMusic::Notation::RenderPlan do
       voice.place("2:1", :half, "D4")
       expect(plan.effective_meter(3)).to eq HeadMusic::Rudiment::Meter.get("3/4")
     end
-
-    it "groups a voice's placements by bar" do
-      voice = flow.add_voice
-      voice.place("1:1", :whole, "C4")
-      voice.place("2:1", :whole, "D4")
-      expect(plan.placements_by_bar(voice).keys).to eq [1, 2]
-    end
   end
 end

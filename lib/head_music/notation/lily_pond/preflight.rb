@@ -4,7 +4,7 @@ module HeadMusic::Notation::LilyPond
   # subset.
   #
   # Whole-flow problems (no voices, positional gaps, underfilled
-  # final bars, barline-crossing notes, unpitched sounds) raise RenderError here, before the Writer
+  # final bars, unpitched sounds) raise RenderError here, before the Writer
   # assembles any output — so a successful check! is the Writer's guarantee
   # that assembly cannot fail on these grounds.
   class Preflight
@@ -22,7 +22,6 @@ module HeadMusic::Notation::LilyPond
     def check!
       ensure_voices
       ensure_contiguous_voices(flow)
-      ensure_notes_within_barlines(flow)
       ensure_filled_final_bars
       ensure_pitched_placements
     end
@@ -50,11 +49,16 @@ module HeadMusic::Notation::LilyPond
       flow.voices.each do |voice|
         placement = voice.last_placement
         next unless placement
-        next if placement.next_position == placement.position.start_of_next_bar
+        next if ends_on_barline?(placement)
 
         raise RenderError, "the voice ends mid-bar at #{placement.next_position}; " \
           "insert explicit rests to fill the final bar"
       end
+    end
+
+    def ends_on_barline?(placement)
+      finish = placement.next_position
+      finish == HeadMusic::Content::Position.new(finish.flow, finish.bar_number)
     end
 
     def render_error_class

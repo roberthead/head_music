@@ -116,10 +116,10 @@ module HeadMusic::Notation::LilyPond
     end
 
     def bar_tokens(voice, bar_number)
-      placements = plan.placements_by_bar(voice)[bar_number]
-      return [whole_bar_rest(bar_number)] unless placements
+      segments = plan.segments_by_bar(voice)[bar_number]
+      return [whole_bar_rest(bar_number)] unless segments
 
-      placements.map { |placement| plan.tokens_by_placement[placement] }
+      segments.map { |segment| plan.tokens_by_segment[segment] }
     end
 
     def whole_bar_rest(bar_number)

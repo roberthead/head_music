@@ -79,6 +79,12 @@ module LilyPondFixtures
     flow
   end
 
+  # Ties across every barline but two, so the writer splits each syncopation
+  # into a tied pair of quarter-note halves either side of the bar check.
+  def fourth_species
+    HeadMusic::Notation::ABC.parse(species_abc(FUX_FOURTH_SPECIES_EXAMPLES.first))
+  end
+
   def song
     flow = HeadMusic::Content::Flow.new(name: "Song")
     flow.add_voice.place("1:1", :whole, "C4").sing("shenandoah")
