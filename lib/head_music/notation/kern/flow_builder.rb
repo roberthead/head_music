@@ -282,8 +282,12 @@ module HeadMusic::Notation::Kern
     # The flow
 
     def start_flow(row)
+      citation = CitationReader.new(document)
+      work = citation.work
       @flow = HeadMusic::Content::Flow.new(
         name: document.title,
+        work: work,
+        composer: work ? nil : citation.composer,
         key_signature: opening_key_signature,
         meter: @opening[:meter]&.first,
         tempo: @opening[:tempo]&.first
