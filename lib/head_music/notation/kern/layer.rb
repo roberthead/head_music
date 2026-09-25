@@ -53,6 +53,9 @@ module HeadMusic::Notation::Kern
     def place_event(event, clock)
       rest_until(event.time, clock)
       placement = voice.place(@position, event.rhythmic_value, event.pitches)
+      event.syllables.each do |syllable|
+        placement.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
+      end
       @position = placement.next_position
       @time = event.time + event.fraction
     end

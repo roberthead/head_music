@@ -348,16 +348,18 @@ module HeadMusic::Notation::Kern
       start_flow(row) unless @flow
       line = row.record.line
       tokens = kern_fields(row).map do |track, field, column|
-        [@cursors.fetch(track), TokenReader.read(field, line_number: line), column]
+        [track, TokenReader.read(field, line_number: line), column]
       end
-      return if tokens.none? { |_cursor, token, _column| token.attack? }
-
-      clock.ensure_music_allowed
+      attacked = tokens.any? { |_track, token, _column| token.attack? }
+      clock.ensure_music_allowed if attacked
       time = current_time
-      tokens.each { |cursor, token, column| read_token(cursor, token, time, column, line) }
+      events = attacked ? tokens.to_h { |track, token, column| [track, read_token(track, token, time, column, line)] } : {}
+      sing(row, events)
     end
 
-    def read_token(cursor, token, time, column, line)
+    # Answers the event the token attacked, if any.
+    def read_token(track, token, time, column, line)
+      cursor = @cursors.fetch(track)
       if token.attack?
         if cursor.busy_until > time
           raise ParseError.new("A note in spine #{column} begins before the note before it ends", line_number: line)
@@ -365,6 +367,19 @@ module HeadMusic::Notation::Kern
         cursor.read(token, time, line)
       elsif token.type == :null && cursor.busy_until <= time
         raise ParseError.new("A null token in spine #{column} falls where no note is sounding", line_number: line)
+      end
+    end
+
+    # A syllable goes to the note its kern spine attacks on the same row.
+    def sing(row, events)
+      LyricReader.new(row).syllables.each do |syllable|
+        event = events[syllable.track]
+        if event.nil? || event.pitches.empty?
+          raise ParseError.new(
+            %(The syllable "#{syllable.text}" in spine #{syllable.column} has no note under it), line_number: row.record.line
+          )
+        end
+        event.syllables << syllable
       end
     end
 
