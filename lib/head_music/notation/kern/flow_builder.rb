@@ -246,15 +246,16 @@ module HeadMusic::Notation::Kern
     # The left sub-spine continues its voice as the upper voice. The right
     # one wakes a dormant voice of the same part and staff, or else starts
     # a new one; either is padded with rests up to its first note.
+    #
+    # The right one may attack while the left still holds a note, since the
+    # split is where it begins.
     def split(left, right)
-      unless @flow
-        @tags[right] = @tags.fetch(left).dup.tap { |tags| tags.lines = tags.lines.dup }
-        return
-      end
+      @tags[right] = @tags.fetch(left).dup.tap { |tags| tags.lines = tags.lines.dup }
+      return unless @flow
 
       cursor = @cursors.fetch(left)
       layer = dormant_layer(cursor.layer) || add_layer(cursor.layer.voice.part, cursor.layer.staff)
-      @cursors[right] = VoiceCursor.new(layer, cursor.busy_until)
+      @cursors[right] = VoiceCursor.new(layer, cursor.busy_until, starts_at: current_time)
     end
 
     # Reusing a dormant voice keeps a part to as many voices as it ever has
@@ -381,7 +382,7 @@ module HeadMusic::Notation::Kern
     def read_token(track, token, time, column, line)
       cursor = @cursors.fetch(track)
       if token.attack?
-        if cursor.busy_until > time
+        unless cursor.attackable_at?(time)
           raise ParseError.new("A note in spine #{column} begins before the note before it ends", line_number: line)
         end
         cursor.read(token, time, line)

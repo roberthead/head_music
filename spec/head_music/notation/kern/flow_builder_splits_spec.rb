@@ -57,6 +57,16 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     expect(placements(flow.voices.last)).to eq ["half E4 at 1:1:000", "half rest at 2:1:000", "half E4 at 3:1:000"]
   end
 
+  it "lets a split's new sub-spine enter while the left one holds its note" do
+    flow = parse("**kern  **kern\n*M2/4  *M2/4\n=1  =1\n2c  4g\n*^  *\n.  4e  4a\n*v  *v  *\n=2  =2\n2c  2g\n*-  *-")
+    expect(placements(flow.parts.last.voices.last)).to eq ["quarter rest at 1:1:000", "quarter E4 at 1:2:000", "half rest at 2:1:000"]
+  end
+
+  it "accepts a restated *part on the sub-spines of a split in the middle of the piece" do
+    source = "**kern\n*part1\n*M2/4\n=1\n2c\n=2\n*^\n4c  4e\n*part1  *part1\n4c  4e\n*v  *v\n*-"
+    expect(parse(source).voices.length).to eq 2
+  end
+
   it "reads a split before the music as two voices on one staff" do
     flow = parse("**kern\n*clefG2\n*^\n1e  1c\n*v  *v\n*-")
     expect(flow.parts.map { |part| [part.staff_system.length, part.voices.map { |voice| voice.pitches.first.to_s }] })
@@ -118,6 +128,12 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     it "raises an unsupported-feature error for a split in a lyric spine" do
       expect { parse("**kern  **text\n1c  la\n*  *^\n1c  la  .\n*-  *-  *-") }
         .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /Splitting a \*\*text spine/)
+    end
+
+    it "raises an unsupported-feature error for a sub-spine that changes its *part in the middle of the piece" do
+      source = "**kern\n*part1\n*M2/4\n=1\n2c\n=2\n*^\n4c  4e\n*part1  *part2\n4c  4e\n*v  *v\n*-"
+      expect { parse(source) }
+        .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /Changing \*part2 .*\(line 9\)/)
     end
 
     it "raises an unsupported-feature error for *+" do

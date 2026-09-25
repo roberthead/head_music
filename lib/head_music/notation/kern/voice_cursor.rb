@@ -11,15 +11,24 @@ module HeadMusic::Notation::Kern
     attr_reader :layer
     attr_accessor :busy_until
 
-    def initialize(layer, busy_until)
+    # A sub-spine a split starts may attack from the split on, while its
+    # clock waits on the note its left sibling still holds, so that the
+    # null tokens under that note read as they do in the left sub-spine.
+    def initialize(layer, busy_until, starts_at: nil)
       @layer = layer
       @busy_until = busy_until
+      @starts_at = starts_at
       @tie = nil
       @tie_line = nil
     end
 
+    def attackable_at?(time)
+      busy_until <= time || (!@starts_at.nil? && @starts_at <= time)
+    end
+
     # Answers the event the token attacked, or nil when it continued a tie.
     def read(token, time, line)
+      @starts_at = nil
       @busy_until = time + token.fraction
       return continue_tie(token, line) if %i[middle end].include?(token.tie)
 
