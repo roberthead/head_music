@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe HeadMusic::Notation::Kern::InstrumentCodes do
-  {"soprn" => "soprano_voice", "alto" => "alto_voice", "tenor" => "tenor_voice", "bass" => "bass_voice"}.each do |code, name|
+  {"soprn" => "soprano_voice", "alto" => "alto_voice", "tenor" => "tenor_voice", "bass" => "bass_voice", "piano" => "piano"}.each do |code, name|
     it "maps *I#{code} to #{name}" do
       expect(described_class.instrument(code).name_key).to eq name.to_sym
     end
@@ -33,7 +33,7 @@ describe HeadMusic::Notation::Kern::InstrumentCodes do
   end
 
   it "writes no code for an instrument outside the table" do
-    expect(described_class.code_field(HeadMusic::Instruments::Instrument.get("piano"))).to be_nil
+    expect(described_class.code_field(HeadMusic::Instruments::Instrument.get("violin"))).to be_nil
   end
 
   it "writes a display name" do

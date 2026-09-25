@@ -55,7 +55,7 @@ describe HeadMusic::Notation::Kern::PartGrouping do
     end
 
     it "gives the part the name and code stated on one of its spines" do
-      expect([part.player.name, part.instrument]).to eq ["Piano", nil]
+      expect([part.player.name, part.instrument.name_key]).to eq ["Piano", :piano]
     end
   end
 

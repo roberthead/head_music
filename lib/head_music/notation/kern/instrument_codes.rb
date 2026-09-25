@@ -4,9 +4,9 @@ module HeadMusic::Notation::Kern
   # (*Isoprn), a display name (*I"Soprano), and the class, group, and
   # abbreviation forms (*ICvox, *IGsolo, *I'S.), which are ignored.
   #
-  # The codes are the vocal ranges of the Humdrum instrument table, plus
-  # *Ialto, which the Bach chorales use; the first code listed for an
-  # instrument is the one written.
+  # The codes are the vocal ranges of the Humdrum instrument table and the
+  # piano, plus *Ialto, which the Bach chorales use; the first code listed
+  # for an instrument is the one written.
   module InstrumentCodes
     INSTRUMENTS_BY_CODE = {
       "soprn" => "soprano_voice",
@@ -15,7 +15,8 @@ module HeadMusic::Notation::Kern
       "calto" => "alto_voice",
       "tenor" => "tenor_voice",
       "barit" => "baritone_voice",
-      "bass" => "bass_voice"
+      "bass" => "bass_voice",
+      "piano" => "piano"
     }.freeze
     IGNORED_PREFIXES = %w[*IC *IG *I' *I#].freeze
     CODE = /\A\*I([a-z]\w*)\z/
