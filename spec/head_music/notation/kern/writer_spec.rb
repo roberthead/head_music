@@ -361,6 +361,19 @@ describe HeadMusic::Notation::Kern::Writer do
         .to eq [[0, 0], [0, 0], [1, 0]]
     end
 
+    context "when the staff a voice crosses to changes its clef in the same bar" do
+      before { grand_staff.staves.first.change_clef(2, HeadMusic::Rudiment::Clef.get("alto_clef")) }
+
+      it "writes the crossing before the clef" do
+        expect(body(flow)[3..4]).to eq ["*staff1\t*\t*", "*clefC3\t*clefC3\t*clefC3"]
+      end
+
+      it "reads back the clef change on that staff alone" do
+        expect(restored.parts.first.staff_system.staves.map { |staff| staff.clef_at(2).name_key })
+          .to eq %w[alto_clef bass_clef]
+      end
+    end
+
     it "reads back the voices in order" do
       expect(restored.voices.map { |voice| voice.placements.map(&:to_s) })
         .to eq flow.voices.map { |voice| voice.placements.map(&:to_s) }

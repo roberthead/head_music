@@ -213,8 +213,8 @@ module HeadMusic::Notation::Kern
     def change_rows(bar_number)
       key = plan.measure_key_changes[bar_number]
       [
-        kern_row_unless_null { |column| clef_change(column, bar_number) },
         kern_row_unless_null { |column| staff_change(column, bar_number) },
+        kern_row_unless_null { |column| clef_change(column, bar_number) },
         key && kern_row { key.signature },
         key && kern_row_unless_null { key.designation },
         plan.measure_time_changes[bar_number] && kern_row { MeterReader.meter_field(plan.measure_time_changes[bar_number]) },
