@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T19:23:10-07:00
+  updated_at:   2026-09-26T15:10:40-07:00
 -->
 
 # Story: MEI Import
@@ -39,10 +39,10 @@ flow.voices.length # => one per staff layer
 - [ ] `<meiHead>` title and composer map to the flow's identity
 - [ ] Each `<staffDef>` becomes a part, and each `<layer>` becomes a voice
 - [ ] `<note>` attributes `@pname`, `@oct`, `@accid` / `@accid.ges`, `@dur`, and `@dots`, and child `<accid>` elements, map to pitches and rhythmic values
-- [ ] `<rest>`, `<mRest>`, `<chord>`, and ties (`@tie` or `<tie>`) map to placements
+- [ ] `<rest>`, `<mRest>`, `<chord>`, and ties (`@tie` or `<tie>`) map to note and rest events
 - [ ] `<scoreDef>` / `<staffDef>` key (`@key.sig` or `<keySig>`) and meter (`@meter.count`, `@meter.unit`, or `<meterSig>`) map to the timeline, including mid-piece `<scoreDef>` changes
 - [ ] `@trans.diat` / `@trans.semi` on a staff definition are honored so transposing parts land in concert pitch
-- [ ] `<verse>/<syl>` lyrics attach to placements
+- [ ] `<verse>/<syl>` lyrics attach to note events
 - [ ] Editorial markup has a documented rule: for example, `<app>` takes `<lem>` and `<choice>` takes `<corr>` / `<reg>` by default
 - [ ] Mensural MEI and other unsupported modules raise `MEI::UnsupportedFeatureError`
 - [ ] Malformed XML raises `MEI::ParseError`

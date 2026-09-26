@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T19:23:10-07:00
+  updated_at:   2026-09-26T15:10:38-07:00
 -->
 
 # Story: MusicXML Import
@@ -38,11 +38,11 @@ flow.voices.length # => 4
 - [ ] `<score-partwise>` documents are read; `<score-timewise>` either is read or raises `UnsupportedFeatureError`
 - [ ] `<work-title>` / `<movement-title>` and `<creator type="composer">` map to the flow's identity
 - [ ] Each `<part>` becomes a part; multiple `<voice>` numbers within a part become separate voices
-- [ ] `<pitch>` (step, alter, octave), `<rest>`, `<chord/>`, `<duration>` with `<divisions>`, `<type>`, and `<dot>` map to placements with the right pitches and rhythmic values
+- [ ] `<pitch>` (step, alter, octave), `<rest>`, `<chord/>`, `<duration>` with `<divisions>`, `<type>`, and `<dot>` map to note and rest events with the right pitches and rhythmic values
 - [ ] `<key>` (fifths and mode), `<time>`, and mid-piece `<attributes>` changes map to the flow's timeline
 - [ ] Ties (`<tie>`) fold into tied values as they do for ABC and LilyPond
 - [ ] `<transpose>` is honored so that a transposing part's pitches land in concert pitch
-- [ ] `<lyric>` syllables attach to placements
+- [ ] `<lyric>` syllables attach to note events
 - [ ] `<backup>` and `<forward>` are handled well enough to read multi-voice parts correctly
 - [ ] Malformed XML raises `MusicXML::ParseError`; valid constructs outside the subset raise `MusicXML::UnsupportedFeatureError`
 - [ ] Every golden fixture from the MusicXML writer specs round-trips: render → parse → render yields the same document

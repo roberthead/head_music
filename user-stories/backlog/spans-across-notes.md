@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-25T14:05:55-07:00
+  updated_at:   2026-09-26T15:10:44-07:00
 -->
 
 # Story: Spans Across Notes: Slurs, Hairpins, and Melismas
@@ -40,24 +40,24 @@ voice.add_span(:phrase, from: "1:1", to: "4:1")
 voice.add_span(:crescendo, from: "2:1", to: "3:1")
 
 voice.spans_at("1:2").map(&:kind) # => [:slur, :phrase]
-placement.syllable.extends_to     # => position of the melisma's last note
+note_event.syllable.extends_to    # => position of the melisma's last note
 ```
 
 ## Acceptance Criteria
 
 ### Model
 
-- [ ] A voice can hold spans, each with a kind (slur, phrase, crescendo, diminuendo), a starting placement, and an ending placement in the same voice
+- [ ] A voice can hold spans, each with a kind (slur, phrase, crescendo, diminuendo), a starting voice event, and an ending voice event in the same voice
 - [ ] A span can cross barlines and staff crossings, and still spans the right notes after a writer splits a note at a barline
 - [ ] Slurs can nest inside phrase marks; two overlapping slurs in one voice raise `ArgumentError`, as they do in LilyPond
-- [ ] A span that starts or ends where the voice has no placement raises `ArgumentError`
-- [ ] Removing or moving a placement that a span ends on raises rather than leaving the span dangling
-- [ ] A syllable can extend over a melisma to a later placement, and the extender is kept through JSON
+- [ ] A span that starts or ends where the voice has no voice event raises `ArgumentError`
+- [ ] Removing or moving a voice event that a span ends on raises rather than leaving the span dangling
+- [ ] A syllable can extend over a melisma to a later note event, and the extender is kept through JSON
 - [ ] A voice can answer the spans in force at a position
 
 ### Serialization and formats
 
-- [ ] Flow JSON writes spans per voice as placement references, within schema 4; existing schema-4 documents read unchanged
+- [ ] Flow JSON writes spans per voice as voice event references, within schema 5; existing schema-5 documents read unchanged
 - [ ] ABC reads and writes slurs, hairpins, and `_` extenders in `w:` lines (once ABC lyrics exist; see Notes)
 - [ ] LilyPond reads and writes slurs, phrasing slurs, and hairpins, and `__` extenders once LilyPond lyrics exist
 - [ ] MusicXML writes `<slur>`, `<wedge>`, and `<extend>`
@@ -73,7 +73,7 @@ placement.syllable.extends_to     # => position of the melisma's last note
 
 ## Open Questions
 
-1. Should a span refer to placements or to positions? A reference to a placement follows it when notes move; a position is simpler to serialize.
+1. Should a span refer to voice events or to positions? A reference to a voice event follows it when notes move; a position is simpler to serialize.
 2. Should the gem infer melismas from slurs in vocal music when a file has no extenders?
 
 ## Implementation Plan

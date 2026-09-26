@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T18:58:30-07:00
+  updated_at:   2026-09-26T15:10:39-07:00
 -->
 
 # Story: MIDI Export
@@ -21,7 +21,7 @@ SO THAT I can hear what I have composed or generated, and hand it to DAWs, seque
 
 A Standard MIDI File (SMF) is a binary format of timed events: note on and note off with a key number and velocity, plus meta events for tempo, time signature, key signature, and track name. Unlike the notation formats, MIDI records performance, not spelling: C♯ and D♭ are the same key number, and durations are ticks rather than note values.
 
-`HeadMusic::Time` already has what export needs: the `Conductor`, `TempoMap`, and `MeterMap` convert musical positions to clock time, and pitches already know their MIDI numbers. Export is mostly the job of walking placements and writing the bytes.
+`HeadMusic::Time` already has what export needs: the `Conductor`, `TempoMap`, and `MeterMap` convert musical positions to clock time, and pitches already know their MIDI numbers. Export is mostly the job of walking voice events and writing the bytes.
 
 ## Example
 
@@ -34,7 +34,7 @@ File.binwrite("exercise.mid", bytes)
 
 - [ ] `HeadMusic::Notation::MIDI.render(flow)` and `Flow#to_midi` return a binary String holding a valid SMF
 - [ ] Format 1 is written: a conductor track carrying tempo, time-signature, and key-signature meta events, then one track per voice (or per part — see Open Questions)
-- [ ] Each pitched placement emits note on / note off at the correct tick; chords emit one note per pitch; rests emit nothing
+- [ ] Each pitched note event emits note on / note off at the correct tick; chords emit one note per pitch; rests emit nothing
 - [ ] Tied notes sound as one note, not re-articulated
 - [ ] Mid-piece tempo, meter, and key changes emit meta events at the correct ticks
 - [ ] Track names come from the part or voice role; the flow's name becomes the sequence name

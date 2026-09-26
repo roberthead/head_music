@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-25T14:05:52-07:00
+  updated_at:   2026-09-26T15:10:41-07:00
 -->
 
 # Story: Tuplets and Grace Notes
@@ -47,20 +47,20 @@ voice.place("1:3", :quarter, "G4").grace_notes << HeadMusic::Content::GraceNote.
 
 - [ ] A rhythmic value can carry a tuplet ratio (`3:2`, `5:4`, `6:4`, `2:3`, …), and its total value is scaled by the ratio
 - [ ] Positions and durations stay exact for every ratio the formats use; a ratio the tick resolution cannot represent raises `ArgumentError` rather than rounding
-- [ ] Tuplet membership is kept: a flow can tell which placements form one tuplet group, so a writer can bracket them and a reader's grouping round-trips
+- [ ] Tuplet membership is kept: a flow can tell which voice events form one tuplet group, so a writer can bracket them and a reader's grouping round-trips
 - [ ] A tuplet group that crosses a barline raises in the writers that cannot split it
 - [ ] Nested tuplets raise `UnsupportedFeatureError` in v1
 - [ ] `Voice::Continuity` and the bar-length checks accept bars filled with tuplets
 
 ### Grace notes in the model
 
-- [ ] A placement can carry grace notes that come before it, each with pitches, a notated rhythmic value, and a slashed (acciaccatura) or unslashed (appoggiatura) flag
+- [ ] A note event can carry grace notes that come before it, each with pitches, a notated rhythmic value, and a slashed (acciaccatura) or unslashed (appoggiatura) flag
 - [ ] Grace notes take no time: they do not move positions, fill bars, or count toward continuity
 - [ ] Melodic and harmonic analysis ignore grace notes by default (see Open Questions)
 
 ### Serialization and formats
 
-- [ ] Flow JSON writes tuplet ratios, tuplet groups, and grace notes, within schema 4 as optional keys; existing schema-4 documents read unchanged
+- [ ] Flow JSON writes tuplet ratios, tuplet groups, and grace notes, within schema 5 as optional keys; existing schema-5 documents read unchanged
 - [ ] ABC, LilyPond, and kern read tuplets and grace notes that they refuse or drop today
 - [ ] ABC, LilyPond, MusicXML, and kern write them
 - [ ] Each format round-trips a flow that has triplets, a quintuplet, and grace notes before a downbeat
@@ -75,7 +75,7 @@ voice.place("1:3", :quarter, "G4").grace_notes << HeadMusic::Content::GraceNote.
 
 ## Open Questions
 
-1. Is a tuplet a property of each rhythmic value, or a group object that owns its placements? Formats disagree: kern puts it on each duration, while ABC, LilyPond, and MusicXML bracket a group.
+1. Is a tuplet a property of each rhythmic value, or a group object that owns its voice events? Formats disagree: kern puts it on each duration, while ABC, LilyPond, and MusicXML bracket a group.
 2. Should analysis be able to include grace notes when a caller asks, for example when checking an ornamented melody?
 
 ## Implementation Plan

@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-24T18:58:30-07:00
+  updated_at:   2026-09-26T15:10:37-07:00
 -->
 
 # Story: MIDI Import
@@ -31,14 +31,14 @@ That inference is why this story is separate from, and lower priority than, [MID
 
 ```ruby
 flow = HeadMusic::Notation::MIDI.parse(File.binread("invention.mid"))
-flow.voices.first.placements.first.pitch.to_s # => "C4"
+flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 ```
 
 ## Acceptance Criteria
 
 - [ ] `HeadMusic::Notation::MIDI.parse(bytes)` returns a `HeadMusic::Content::Flow` from SMF formats 0 and 1
 - [ ] Tempo, time-signature, and key-signature meta events map to the flow's timeline, including changes
-- [ ] Note on / note off pairs (including note on with velocity 0) become placements
+- [ ] Note on / note off pairs (including note on with velocity 0) become note events
 - [ ] Pitches are spelled from the key signature, falling back to a documented rule when it is absent or ambiguous
 - [ ] Onsets and durations are quantized to a grid, with a configurable resolution
 - [ ] Notes that cross a barline are split and tied

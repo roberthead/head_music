@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-25T14:05:54-07:00
+  updated_at:   2026-09-26T15:10:43-07:00
 -->
 
 # Story: Bar Markings: Barline Styles, Rehearsal Marks, and Navigation
@@ -53,7 +53,7 @@ flow.performance_order # => [1, 2, ..., 16, 9, 10, 11, 12]
 
 ### Serialization and formats
 
-- [ ] Flow JSON writes the new bar fields sparsely, within schema 4; existing schema-4 documents read unchanged
+- [ ] Flow JSON writes the new bar fields sparsely, within schema 5; existing schema-5 documents read unchanged
 - [ ] ABC reads and writes double and final barlines, `P:` sections, and the navigation decorations
 - [ ] LilyPond reads and writes `\bar` styles and `\mark`, and writes segno and coda marks
 - [ ] MusicXML writes `<bar-style>`, `<rehearsal>`, `<segno>`, `<coda>`, and the `<sound>` attributes for jumps
