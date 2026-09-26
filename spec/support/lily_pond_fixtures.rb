@@ -192,6 +192,37 @@ module LilyPondFixtures
     flow
   end
 
+  # A one-staff part whose dynamics are the part's, two of them in the middle
+  # of held notes, across a change of meter. The voice's own pp under the
+  # first note is overtaken by the part's mf before the next note.
+  def melody_with_part_dynamics
+    flow = HeadMusic::Content::Flow.new(name: "Part Dynamics", key_signature: "C major", meter: "4/4")
+    flow.change_meter(3, "3/4")
+    part = flow.add_part(instrument: "violin")
+    voice = part.add_voice(role: "Violin")
+    [["1:1", :whole, "G4"], ["2:1", :half, "A4"], ["2:3", :half, "B4"], ["3:1", :dotted_half, "C5"]].each do |position, value, pitch|
+      voice.place(position, value, pitch)
+    end
+    voice.place_dynamic("1:2", :pp)
+    {"1:1" => :p, "1:3" => :mf, "2:4" => :f, "3:2" => :ff}.each { |position, level| part.place_dynamic(position, level) }
+    flow
+  end
+
+  # Two unnamed voices sharing one staff, under their part's dynamics.
+  def duet_with_part_dynamics
+    flow = HeadMusic::Content::Flow.new(name: "Duet Dynamics", key_signature: "C major", meter: "4/4")
+    part = flow.add_part
+    upper = part.add_voice
+    lower = part.add_voice
+    (1..2).each do |bar|
+      upper.place("#{bar}:1", :whole, "E5")
+      lower.place("#{bar}:1", :whole, "C5")
+    end
+    part.place_dynamic("1:1", :mp)
+    part.place_dynamic("2:1", :f)
+    flow
+  end
+
   def song
     flow = HeadMusic::Content::Flow.new(name: "Song")
     flow.add_voice.place("1:1", :whole, "C4").sing("shenandoah")

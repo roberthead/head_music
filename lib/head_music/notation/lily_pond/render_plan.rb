@@ -22,11 +22,48 @@ module HeadMusic::Notation::LilyPond
       @short_final_bar_fraction = (offset && !offset.zero?) ? offset : nil
     end
 
+    # What a part's \new Dynamics says in each bar: spacers that reach each of
+    # its levels at the level's exact position. A level after the music ends
+    # has nowhere to be written and is left out.
+    def dynamics_bars(part)
+      @dynamics_bars ||= {}.compare_by_identity
+      @dynamics_bars[part] ||= begin
+        events_by_bar = part.dynamic_events.group_by { |event| event.position.bar_number }
+        bar_numbers.to_h { |bar_number| [bar_number, dynamics_bar(bar_number, events_by_bar.fetch(bar_number, []))] }
+      end
+    end
+
     private
 
     def precompute_eager_data
       super
       tokens_by_segment
+      flow.parts.each { |part| dynamics_bars(part) unless part.dynamic_events.empty? }
+    end
+
+    def dynamics_bar(bar_number, events)
+      length = bar_length(bar_number)
+      levels = events.to_h { |event| [HeadMusic::Notation::BarSplitter.offset_in_bar(event.position), event.level] }
+        .select { |offset, _level| offset < length }
+      [0r, *levels.keys, length].uniq.each_cons(2).flat_map { |from, to|
+        first, *later = spacers(to - from, bar_number)
+        level = levels[from]
+        [level ? "#{first}\\#{level.name_key}" : first, *later]
+      }.join(" ")
+    end
+
+    def bar_length(bar_number)
+      return short_final_bar_fraction if bar_number == bar_numbers.last && short_final_bar_fraction
+
+      meter = effective_meter(bar_number)
+      Rational(meter.top_number, meter.bottom_number)
+    end
+
+    def spacers(fraction, bar_number)
+      value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
+      raise RenderError, "cannot reach the part's dynamics in bar #{bar_number} in binary note values" unless value
+
+      value.tied_chain.map { |link| "s#{DurationWriter.token(link)}" }
     end
 
     # LilyPond has no way to say "three flats read as dorian", so it renders
@@ -62,7 +99,15 @@ module HeadMusic::Notation::LilyPond
       voice_event = segment.voice_event
       return "" unless segment.bar_number == voice_event.position.bar_number
 
-      MarkWriter.token(voice_event, dynamic_placement(voice_event.voice).level_for(voice_event))
+      MarkWriter.token(voice_event, voice_level(voice_event))
+    end
+
+    # A voice's level moved onto a later note is written only if it is still
+    # in force there, so it cannot override a part's level that came between.
+    def voice_level(voice_event)
+      voice = voice_event.voice
+      level = dynamic_placement(voice).level_for(voice_event)
+      level if level && voice.dynamic_at(voice_event.position) == level
     end
 
     # A part's own dynamics are written in a \new Dynamics, so only the voice's

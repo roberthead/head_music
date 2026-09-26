@@ -17,7 +17,7 @@ module LilyPondHelpers
   # The marks written after a note or rest carry no duration of their own.
   MARK = /\\(?:ppp|pp|p|mp|mf|f|ff|fff|sf|sfz|rfz|fp|trill|mordent|prall|turn)(?![a-z])|-[.!>^-]/
   CHORD = /<#{PITCH}(?: #{PITCH})*>#{DURATION}/
-  SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|r#{DURATION}|R1\*\d+\/\d+)\z/
+  SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|[rs]#{DURATION}|R1\*\d+\/\d+)\z/
   WHOLE_BAR_REST = /R1\*(\d+)\/(\d+)/
   NAMED_DURATION_VALUES = {"\\breve" => 2r, "\\longa" => 4r, "\\maxima" => 8r}.freeze
 
@@ -51,15 +51,25 @@ module LilyPondHelpers
 
   # Walks the document in order, tracking the meter in force (each voice's
   # stream re-declares it, and an inline \time applies to its own bar), and
-  # asserts every bar's durations sum to it.
+  # asserts every bar's durations sum to it. A \new Dynamics carries no \time,
+  # so its bars are held to the meters the first stream's bars had.
   def expect_full_bars(source)
     meter = nil
+    meters_by_bar = []
+    bar_index = 0
+    dynamics = false
     source.lines.map(&:strip).each do |line|
+      if line.start_with?("\\new Dynamics", "\\new Voice")
+        dynamics = line.start_with?("\\new Dynamics")
+        bar_index = 0
+      end
       time_match = line.match(TIME_COMMAND)
       meter = Rational(time_match[1].to_i, time_match[2].to_i) if time_match
       next unless line.end_with?(" |")
 
-      expect(bar_duration(line)).to eq meter
+      meters_by_bar[bar_index] ||= meter unless dynamics
+      expect(bar_duration(line)).to eq(dynamics ? meters_by_bar[bar_index] : meter)
+      bar_index += 1
     end
   end
 

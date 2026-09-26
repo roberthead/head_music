@@ -41,6 +41,11 @@ module HeadMusic::Notation::LilyPond
         plan.bar_numbers.map { |bar_number| bar_check_after(whole_bar_rest(bar_number), bar_number) }
     end
 
+    # The lines inside a part's \new Dynamics, bar-checked like a voice's.
+    def dynamics_lines(part)
+      plan.bar_numbers.map { |bar_number| bar_check_after(plan.dynamics_bars(part).fetch(bar_number), bar_number) }
+    end
+
     private
 
     attr_reader :plan

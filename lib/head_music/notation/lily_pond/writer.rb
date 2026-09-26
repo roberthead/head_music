@@ -91,17 +91,27 @@ module HeadMusic::Notation::LilyPond
     end
 
     # A part on one staff holding one voice renders exactly as a voice used to,
-    # which is what keeps every existing document byte-identical.
+    # which is what keeps every existing document byte-identical. A part's own
+    # dynamics go in a \new Dynamics between its first two staves, or beside
+    # its one staff, where the reader finds the part again.
     def part_lines(part, part_index)
-      return single_staff_lines(part) if part.staff_system.length == 1
+      return single_staff_lines(part) + dynamics_lines(part) if part.staff_system.length == 1
 
+      staff_lines = part.staff_system.staves.each_with_index.map do |staff, staff_index|
+        grouped_staff_lines(part, part_index, staff, staff_index)
+      end
+      staff_lines.insert(1, dynamics_lines(part))
       [
         "#{INDENT * 2}#{group_open(part)}",
-        *part.staff_system.staves.each_with_index.flat_map { |staff, staff_index|
-          grouped_staff_lines(part, part_index, staff, staff_index).map { |line| INDENT + line }
-        },
+        *staff_lines.flatten.map { |line| INDENT + line },
         "#{INDENT * 2}>>"
       ]
+    end
+
+    def dynamics_lines(part)
+      return [] if part.dynamic_events.empty?
+
+      staff_block("\\new Dynamics {", [voice_writer.dynamics_lines(part)], "}")
     end
 
     def group_open(part)

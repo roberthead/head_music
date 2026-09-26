@@ -43,7 +43,10 @@ module LilyPondRoundTripSources
     speed_the_plough chromatic_air rests duo key_and_meter_change tacet song escaped_header anonymous air fourth_species
     tie_into_key_change tie_into_meter_change
     cross_staff_piano one_handed_piano tie_into_staff_crossing piano_and_melody choir_on_two_staves short_final_bar
+    melody_with_part_dynamics duet_with_part_dynamics
   ].freeze
+
+  MARKING_FIXTURE_NAMES = %i[marked_melody grand_staff_piano_with_dynamics].freeze
 
   ALL_HAND_WRITTEN = RELATIVE_TWINS.flat_map { |name, twin| [["#{name} (relative)", twin[:relative]], ["#{name} (absolute)", twin[:absolute]]] }
     .concat(OTHER_SOURCES.to_a, [["a whole-bar rest in 5/4", FIVE_FOUR_REST]])
@@ -101,6 +104,17 @@ describe HeadMusic::Notation::LilyPond do
       reparsed = expect_lily_pond_round_trip(five_four_flow)
       expect(reparsed.voices.last.voice_events.last.to_s).to eq "whole tied to quarter rest at 2:1:000"
     end
+
+    LilyPondRoundTripSources::MARKING_FIXTURE_NAMES.each do |name|
+      it "round-trips #{name} with its markings and dynamics" do
+        expect_lily_pond_round_trip(MarkingFixtures.public_send(name))
+      end
+    end
+
+    it "brings a part's dynamics back on the part, not the voices" do
+      reparsed = expect_lily_pond_round_trip(MarkingFixtures.grand_staff_piano_with_dynamics)
+      expect(reparsed.voices.map { |voice| voice.dynamic_events.map(&:to_h) }).to eq [[{"position" => "3:1:000", "level" => "mf"}], []]
+    end
   end
 
   describe "hand-written inputs" do
@@ -147,6 +161,12 @@ describe HeadMusic::Notation::LilyPond do
     LilyPondRoundTripSources::FIXTURE_NAMES.each do |name|
       it "compiles the rendered #{name} fixture" do
         expect(compile_quietly(installed_lilypond, LilyPondFixtures.public_send(name).to_lilypond)).to be true
+      end
+    end
+
+    LilyPondRoundTripSources::MARKING_FIXTURE_NAMES.each do |name|
+      it "compiles the rendered #{name} marking fixture" do
+        expect(compile_quietly(installed_lilypond, MarkingFixtures.public_send(name).to_lilypond)).to be true
       end
     end
   end

@@ -3,8 +3,10 @@
 #
 # The writer pads a voice's missing bars with whole-bar rests, so the
 # reparsed flow may hold rests the original did not; every original
-# voice event must come back at its position with its pitches and duration, and
-# every extra reparsed voice event must be such a rest.
+# voice event must come back at its position with its pitches, duration, and
+# markings, and every extra reparsed voice event must be such a rest. A part's
+# dynamic events come back exactly; a voice's may move to the next note, so
+# they are held to the dynamic in force at every note instead.
 module LilyPondRoundTripHelper
   def expect_lily_pond_round_trip(flow)
     rendered = HeadMusic::Notation::LilyPond.render(flow)
@@ -20,11 +22,21 @@ module LilyPondRoundTripHelper
     reparsed.voices.zip(flow.voices).each do |actual, expected|
       expect_equivalent_voice_voice_events(actual, expected)
       expect_equivalent_staves(actual, expected) if expected.part.staff_system.length > 1
+      expect(part_dynamics(actual.part)).to eq part_dynamics(expected.part)
     end
+    expect_same_markings(flow, reparsed)
     reparsed
   end
 
   private
+
+  def part_dynamics(part)
+    part.dynamic_events.map { |event| [event.position.to_s, event.level.name_key] }
+  end
+
+  def markings(voice_event)
+    [voice_event.articulations, voice_event.ornaments, [voice_event.note_dynamic].compact].map { |marks| marks.map(&:name_key) }
+  end
 
   def expect_equivalent_staves(actual_voice, expected_voice)
     expect(staff_system_summary(actual_voice.part)).to eq staff_system_summary(expected_voice.part)
@@ -55,6 +67,7 @@ module LilyPondRoundTripHelper
       expect(actual).not_to be_nil, "no voice event came back at #{expected.position}"
       expect(actual.pitches.sort.map(&:to_s)).to eq expected.pitches.sort.map(&:to_s)
       expect(total_duration(actual)).to eq total_duration(expected)
+      expect(markings(actual)).to eq markings(expected)
     end
     expect(actual_by_position.values).to all(be_rest)
   end

@@ -386,5 +386,64 @@ describe HeadMusic::Notation::LilyPond::Writer do
         expect(bar_check_lines(described_class.new(flow).to_s)).to eq ["<c' e' g'>1--\\rfz |"]
       end
     end
+
+    context "with part dynamics on a grand staff" do
+      let(:flow) { MarkingFixtures.grand_staff_piano_with_dynamics }
+      let(:rendered) { described_class.new(flow).to_s }
+      let(:dynamics_between_staves) do
+        <<~LILYPOND.gsub(/^/, " " * 6)
+          >>
+          \\new Dynamics {
+            s1\\p |
+            s2 s2\\f |
+            s1 |
+            s1\\mp |
+          }
+          \\new Staff = "part1-staff2" <<
+        LILYPOND
+      end
+
+      it "is structurally valid, with the Dynamics context as a stream of its own" do
+        expect_structurally_valid_lilypond(rendered, bars: 4, voices: 2, streams: 3)
+      end
+
+      it "writes the part's levels between the staves at their exact positions" do
+        expect(rendered).to include dynamics_between_staves
+      end
+
+      it "writes the voice's own level on its note" do
+        expect(bar_check_lines(rendered)[2]).to eq "e''1\\mf |"
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with part dynamics beside a single staff" do
+      let(:flow) { LilyPondFixtures.melody_with_part_dynamics }
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "is structurally valid across the change of meter" do
+        expect_structurally_valid_lilypond(rendered, bars: 3, voices: 1, streams: 2)
+      end
+
+      it "writes the Dynamics context after the staff, reaching each level with spacers" do
+        expect(rendered).to include("    }\n    \\new Dynamics {\n", "s2\\p s2\\mf |\n", "s2. s4\\f |\n", "s4 s2\\ff |\n")
+      end
+
+      it "leaves out the voice's level where the part's has overtaken it" do
+        expect(rendered).not_to include "\\pp"
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with a part dynamic between the ticks of binary note values" do
+      let(:flow) { LilyPondFixtures.anonymous.tap { |flow| flow.parts.first.place_dynamic("1:1:320", :f) } }
+
+      it "raises a render error before any assembly" do
+        expect { described_class.new(flow).to_s }
+          .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /part's dynamics in bar 1/)
+      end
+    end
   end
 end

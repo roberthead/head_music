@@ -56,6 +56,10 @@ describe HeadMusic::Notation::LilyPond do
     expect(part_levels(described_class.parse(piano("R1*4/4 | r2 r2\\f | s1")).parts.first)).to eq [%w[2:3:000 f]]
   end
 
+  it "reads nested braces there" do
+    expect(part_levels(described_class.parse(piano("{ s1 | } { s1\\f | s1 }")).parts.first)).to eq [%w[2:1:000 f]]
+  end
+
   it "drops articulations and sforzandos there" do
     expect(part_levels(described_class.parse(piano("s1-.\\sfz\\p\\trill | s1 | s1")).parts.first)).to eq [%w[1:1:000 p]]
   end
