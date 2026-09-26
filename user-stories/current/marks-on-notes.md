@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-09-25T14:05:57-07:00
-  activated_at:
+  activated_at: 2026-09-25T17:40:58-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-25T14:05:57-07:00
+  updated_at:   2026-09-25T17:40:58-07:00
 -->
 
 # Story: Marks on Notes: Articulations, Ornaments, Fermatas, and Dynamics
