@@ -84,7 +84,7 @@ flow.meter.symbol     # => :common
 ## Notes
 
 - Timeline changes are downbeat-only (`Timeline.ensure_downbeat!`). Ramps and fermatas both need positions in the middle of a bar, so they probably live beside the timeline's changes rather than among them, and should share that mechanism. Planning should decide.
-- Fermatas moved here from [Articulations, Ornaments, Dynamics](../current/articulations-ornaments-fermatas-dynamics.md) (2026-09-26), so the mid-bar timeline mechanism is built once. Until this story lands, the readers drop fermatas.
+- Fermatas moved here from [Articulations, Ornaments, Dynamics](../current/articulations-ornaments-dynamics.md) (2026-09-26), so the mid-bar timeline mechanism is built once. Until this story lands, the readers drop fermatas.
 - Deriving the written symbols normalizes some sources: a part that marked only its last moving note under a held note in another voice, a fermata over a barline, and a general pause all come back as a fermata on every voice event sounding when the hold begins.
 - MIDI export (backlog) will want ramps too, since tempo meta events can step through one.
 - Chord symbols are also a layer on the timeline, but they tie into harmony analysis and should get a story of their own.
@@ -93,7 +93,7 @@ flow.meter.symbol     # => :common
 
 1. Is a ramp's shape always linear in beats per minute, or should it allow a curve?
 2. When fermatas in different voices sit on events that start at different times, such as a bass eighth under a soprano quarter, where does the one hold begin, and what span does it hold?
-3. Does tempo text also cover character words that are not tempos ("dolce", "maestoso"), or do those wait for the free-text directions that [Articulations, Ornaments, Dynamics](../current/articulations-ornaments-fermatas-dynamics.md) left out of scope?
+3. Does tempo text also cover character words that are not tempos ("dolce", "maestoso"), or do those wait for the free-text directions that [Articulations, Ornaments, Dynamics](../current/articulations-ornaments-dynamics.md) left out of scope?
 
 ## Implementation Plan
 
