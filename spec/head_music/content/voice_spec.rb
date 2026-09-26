@@ -183,6 +183,21 @@ describe HeadMusic::Content::Voice do
     end
   end
 
+  describe "#place onto a marked note event" do
+    before do
+      voice.place("1:1", :quarter, "C5").articulate(:staccato).embellish(:trill).note_dynamic = :sfz
+      voice.place("1:1", :quarter, "E5")
+    end
+
+    it "keeps the existing event's markings when a chord tone joins it" do
+      expect(voice.voice_events.first).to have_attributes(
+        articulations: [HeadMusic::Rudiment::Articulation.get(:staccato)],
+        ornaments: [HeadMusic::Rudiment::Ornament.get(:trill)],
+        note_dynamic: HeadMusic::Rudiment::Dynamic.get(:sfz)
+      )
+    end
+  end
+
   describe "#place with sounds" do
     it "accepts a bare unpitched instrument name" do
       voice_event = voice.place("1:1", :quarter, "snare drum")

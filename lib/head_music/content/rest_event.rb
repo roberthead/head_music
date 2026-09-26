@@ -12,4 +12,16 @@ class HeadMusic::Content::RestEvent < HeadMusic::Content::VoiceEvent
   def sing(_text, **)
     raise ArgumentError, "a rest cannot sing; the syllable at #{position} needs a note"
   end
+
+  def articulate(*)
+    raise ArgumentError, "a rest cannot be articulated; the articulation at #{position} needs a note"
+  end
+
+  def embellish(*)
+    raise ArgumentError, "a rest cannot be ornamented; the ornament at #{position} needs a note"
+  end
+
+  def note_dynamic=(_identifier)
+    raise ArgumentError, "a rest cannot be accented; the dynamic at #{position} needs a note"
+  end
 end

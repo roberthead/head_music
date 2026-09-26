@@ -18,4 +18,23 @@ describe HeadMusic::Content::RestEvent do
   it "refuses a syllable" do
     expect { rest.sing("la") }.to raise_error(ArgumentError, "a rest cannot sing; the syllable at 1:1:000 needs a note")
   end
+
+  its(:articulations) { is_expected.to eq [] }
+  its(:ornaments) { is_expected.to eq [] }
+  its(:note_dynamic) { is_expected.to be_nil }
+
+  it "refuses an articulation" do
+    expect { rest.articulate(:staccato) }
+      .to raise_error(ArgumentError, "a rest cannot be articulated; the articulation at 1:1:000 needs a note")
+  end
+
+  it "refuses an ornament" do
+    expect { rest.embellish(:trill) }
+      .to raise_error(ArgumentError, "a rest cannot be ornamented; the ornament at 1:1:000 needs a note")
+  end
+
+  it "refuses a note dynamic" do
+    expect { rest.note_dynamic = :sfz }
+      .to raise_error(ArgumentError, "a rest cannot be accented; the dynamic at 1:1:000 needs a note")
+  end
 end

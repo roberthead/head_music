@@ -57,6 +57,20 @@ class HeadMusic::Content::VoiceEvent
     syllables.any?
   end
 
+  # Markings written on the event. Only a NoteEvent carries them; the rest
+  # have none, so readers and writers need not ask which kind they hold.
+  def articulations
+    []
+  end
+
+  def ornaments
+    []
+  end
+
+  def note_dynamic
+    nil
+  end
+
   # The top pitch of a chord (or the only pitch of a note), which melodic
   # analysis treats as the melody note. Returns nil for rests and
   # unpitched-only events; pitched? is the guard. Enharmonic ties

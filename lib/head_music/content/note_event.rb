@@ -3,7 +3,7 @@ module HeadMusic::Content; end
 
 # A voice event that sounds: one Soundable, or several at once as a chord.
 class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
-  attr_reader :sounds
+  attr_reader :sounds, :note_dynamic
 
   public_class_method :new
 
@@ -29,11 +29,36 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
     self
   end
 
+  def articulations
+    sorted_markings(articulation_map)
+  end
+
+  def ornaments
+    sorted_markings(ornament_map)
+  end
+
+  # Adds articulations by key, such as :staccato. A marking the event already
+  # carries is ignored. Returns self so calls chain.
+  def articulate(*identifiers)
+    add_markings(articulation_map, HeadMusic::Rudiment::Articulation, identifiers)
+  end
+
+  # Adds ornaments by key, such as :trill.
+  def embellish(*identifiers)
+    add_markings(ornament_map, HeadMusic::Rudiment::Ornament, identifiers)
+  end
+
+  # An accent that lasts this one note, such as :sfz; nil clears it. A level
+  # governs the music after it, so it is placed on the voice instead.
+  def note_dynamic=(identifier)
+    @note_dynamic = identifier.nil? ? nil : accent_for(identifier)
+  end
+
   # Voice#place merges a same-position note event into the existing one, so a
   # position holds at most one event. The sound union keeps the chord free
   # of duplicates, making placing a sound again idempotent. Syllables
-  # are left untouched: a chord sings one syllable per verse, and the receiver
-  # (the event already at this position) keeps its own.
+  # and markings are left untouched: a chord sings one syllable per verse, and
+  # the receiver (the event already at this position) keeps its own.
   def merge(other)
     unless rhythmic_value == other.rhythmic_value
       raise ArgumentError,
@@ -42,5 +67,39 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
 
     @sounds = (sounds + other.sounds).uniq.freeze
     self
+  end
+
+  private
+
+  def articulation_map
+    @articulation_map ||= {}
+  end
+
+  def ornament_map
+    @ornament_map ||= {}
+  end
+
+  def add_markings(markings, catalog, identifiers)
+    identifiers.each do |identifier|
+      marking = catalog.get(identifier)
+      raise ArgumentError, "unknown #{catalog.name.demodulize.downcase}: #{identifier.inspect}" unless marking
+
+      markings[marking.name_key] ||= marking
+    end
+    self
+  end
+
+  def sorted_markings(markings)
+    markings.keys.sort.map { |key| markings[key] }.freeze
+  end
+
+  def accent_for(identifier)
+    dynamic = HeadMusic::Rudiment::Dynamic.get(identifier)
+    raise ArgumentError, "unknown dynamic: #{identifier.inspect}" unless dynamic
+    unless dynamic.accent?
+      raise ArgumentError, "#{dynamic.name_key} is a level, not an accent; place it on the voice with place_dynamic"
+    end
+
+    dynamic
   end
 end
