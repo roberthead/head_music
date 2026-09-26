@@ -85,7 +85,7 @@ module HeadMusic::Notation::MusicXML
         *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
         staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>",
         *beam_lines(beams),
-        *notation_lines(voice_event, component),
+        *notation_lines(voice_event, component, chord: chord),
         *lyric_writer.lines(voice_event, component, chord: chord),
         "#{INDENT * 3}</note>"
       ].compact
@@ -117,15 +117,50 @@ module HeadMusic::Notation::MusicXML
       ].compact
     end
 
-    def notation_lines(voice_event, component)
-      return [] if voice_event.rest? || (!component.tie_start && !component.tie_stop)
+    def notation_lines(voice_event, component, chord:)
+      return [] if voice_event.rest?
 
-      [
-        "#{INDENT * 4}<notations>",
+      lines = [
         component.tie_stop ? %(#{INDENT * 5}<tied type="stop"/>) : nil,
         component.tie_start ? %(#{INDENT * 5}<tied type="start"/>) : nil,
-        "#{INDENT * 4}</notations>"
+        *marking_lines(voice_event, component, chord: chord)
       ].compact
+      return [] if lines.empty?
+
+      ["#{INDENT * 4}<notations>", *lines, "#{INDENT * 4}</notations>"]
+    end
+
+    # Markings ride the chord's first note (the one without <chord/>) and
+    # only the first written fragment of a tied or bar-split note, following
+    # LyricWriter's own-attack rule: every later component's tie_stop is set.
+    def marking_lines(voice_event, component, chord:)
+      return [] if chord || component.tie_stop
+
+      [
+        *marking_group_lines("ornaments", voice_event.ornaments, MarkingWriter.method(:ornament_element)),
+        *marking_group_lines("articulations", voice_event.articulations, MarkingWriter.method(:articulation_element)),
+        *dynamic_notation_lines(voice_event.note_dynamic)
+      ]
+    end
+
+    def marking_group_lines(tag, markings, element_for)
+      return [] if markings.empty?
+
+      [
+        "#{INDENT * 5}<#{tag}>",
+        *markings.map { |marking| "#{INDENT * 6}<#{element_for.call(marking)}/>" },
+        "#{INDENT * 5}</#{tag}>"
+      ]
+    end
+
+    def dynamic_notation_lines(note_dynamic)
+      return [] unless note_dynamic
+
+      [
+        "#{INDENT * 5}<dynamics>",
+        "#{INDENT * 6}<#{MarkingWriter.dynamic_element(note_dynamic)}/>",
+        "#{INDENT * 5}</dynamics>"
+      ]
     end
   end
 end

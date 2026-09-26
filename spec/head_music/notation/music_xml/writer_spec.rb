@@ -605,6 +605,106 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with markings" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Marked", meter: "4/4")
+        voice = flow.add_voice
+        voice.place("1:1", :quarter, "C4").articulate(:staccato, :accent)
+        voice.place("1:2", :quarter, "D4").embellish(:trill)
+        voice.place("1:3", :quarter, "E4").note_dynamic = :sfz
+        voice.place("1:4", :quarter, "F4")
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "writes each articulation as its own element, sorted by name" do
+        expect(xpath_names(document, "//note[1]/notations/articulations/*")).to eq %w[accent staccato]
+      end
+
+      it "writes an ornament under its own element" do
+        expect(xpath_names(document, "//note[2]/notations/ornaments/*")).to eq %w[trill-mark]
+      end
+
+      it "writes the note dynamic under its own dynamics element" do
+        expect(xpath_names(document, "//note[3]/notations/dynamics/*")).to eq %w[sfz]
+      end
+
+      it "writes no notations on an unmarked note" do
+        expect(xpath_count(document, "//note[4]/notations")).to eq 0
+      end
+
+      context "with marcato" do
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Marcato", meter: "4/4")
+          flow.add_voice.place("1:1", :whole, "C4").articulate(:marcato)
+          flow
+        end
+
+        it "writes marcato as a strong accent" do
+          expect(xpath_names(document, "//note/notations/articulations/*")).to eq %w[strong-accent]
+        end
+      end
+
+      context "with both an ornament and an articulation" do
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Order", meter: "4/4")
+          flow.add_voice.place("1:1", :whole, "C4").articulate(:staccato).embellish(:turn)
+          flow
+        end
+
+        it "orders the ornaments element before the articulations element" do
+          expect(xpath_names(document, "//note/notations/*")).to eq %w[ornaments articulations]
+        end
+      end
+
+      context "with a mordent and an inverted mordent" do
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Mordents", meter: "4/4")
+          voice = flow.add_voice
+          voice.place("1:1", :quarter, "C4").embellish(:mordent)
+          voice.place("1:2", :quarter, "D4").embellish(:inverted_mordent)
+          flow
+        end
+
+        it "names the lower mordent <mordent> and the upper <inverted-mordent>" do
+          expect(xpath_names(document, "//note/notations/ornaments/*")).to eq %w[mordent inverted-mordent]
+        end
+      end
+
+      context "with a chord" do
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Chord", meter: "4/4")
+          flow.add_voice.place("1:1", :whole, %w[C4 E4 G4]).articulate(:staccato)
+          flow
+        end
+
+        it "writes the articulation only on the lead note" do
+          expect(xpath_count(document, "//note/notations/articulations")).to eq 1
+        end
+      end
+
+      context "with a note tied across a bar line" do
+        let(:flow) do
+          flow = HeadMusic::Content::Flow.new(name: "Split", meter: "4/4")
+          voice = flow.add_voice
+          voice.place("1:1", :whole, "C4")
+          voice.place("2:1", :dotted_half)
+          voice.place("2:4", :half, "D4").articulate(:staccato)
+          flow
+        end
+
+        it "writes the articulation only on the first written fragment" do
+          expect(xpath_count(document, "//note[pitch/step='D']")).to eq 2
+          expect(xpath_count(document, "//note[pitch/step='D']/notations/articulations")).to eq 1
+        end
+
+        it "writes it on the note in the bar the note starts in" do
+          expect(xpath_count(document, "//measure[@number='2']/note/notations/articulations")).to eq 1
+          expect(xpath_count(document, "//measure[@number='3']/note/notations/articulations")).to eq 0
+        end
+      end
+    end
+
     context "with a pickup bar written out in full with leading rests" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Pickup Study")

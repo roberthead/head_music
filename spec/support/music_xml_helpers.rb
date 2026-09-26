@@ -17,6 +17,10 @@ module MusicXMLHelpers
     REXML::XPath.match(document, xpath).map(&:text)
   end
 
+  def xpath_names(document, xpath)
+    REXML::XPath.match(document, xpath).map(&:name)
+  end
+
   def xpath_count(document, xpath)
     REXML::XPath.match(document, xpath).length
   end
