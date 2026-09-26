@@ -56,6 +56,6 @@ class HeadMusic::Style::Guidelines::FirstBarEntry < HeadMusic::Style::Guideline
   end
 
   def rests_in_first_bar
-    rests.select { |rest| rest.position.bar_number == 1 }
+    rest_events.select { |rest| rest.position.bar_number == 1 }
   end
 end

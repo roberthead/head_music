@@ -23,7 +23,7 @@ module HeadMusic::Notation::LilyPond
       ensure_voices
       ensure_contiguous_voices(flow)
       ensure_filled_final_bars
-      ensure_pitched_placements
+      ensure_pitched_voice_events
     end
 
     private
@@ -36,9 +36,9 @@ module HeadMusic::Notation::LilyPond
       raise RenderError, "cannot render a flow with no voices as LilyPond"
     end
 
-    def ensure_pitched_placements
+    def ensure_pitched_voice_events
       flow.voices.each do |voice|
-        voice.placements.each { |placement| ensure_pitched_sounds(placement) }
+        voice.voice_events.each { |voice_event| ensure_pitched_sounds(voice_event) }
       end
     end
 
@@ -47,7 +47,7 @@ module HeadMusic::Notation::LilyPond
     # there. A voice that ends short of the others leaves a gap instead, which
     # would render short of its bar check.
     def ensure_filled_final_bars
-      endings = flow.voices.filter_map { |voice| voice.last_placement&.next_position }
+      endings = flow.voices.filter_map { |voice| voice.last_voice_event&.next_position }
       return if endings.uniq.length <= 1
 
       finish = endings.find { |ending| !HeadMusic::Notation::BarSplitter.offset_in_bar(ending).zero? }

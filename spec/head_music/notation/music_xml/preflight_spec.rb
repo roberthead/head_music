@@ -37,7 +37,7 @@ describe HeadMusic::Notation::MusicXML::Preflight do
       end
     end
 
-    context "with a gap between placements" do
+    context "with a gap between voice events" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new
         voice = flow.add_voice
@@ -47,7 +47,7 @@ describe HeadMusic::Notation::MusicXML::Preflight do
       end
 
       it "raises a render error naming the expected position" do
-        expect { described_class.check!(flow) }.to raise_error(render_error, /expected a placement at 1:2:000/)
+        expect { described_class.check!(flow) }.to raise_error(render_error, /expected a voice event at 1:2:000/)
       end
     end
 

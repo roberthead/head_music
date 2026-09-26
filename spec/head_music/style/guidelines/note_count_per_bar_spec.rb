@@ -96,7 +96,7 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
   context "with the wrong notes in a middle bar" do
     before do
       # Middle bar 2 has two half notes instead of the required single whole
-      # note, so its placements are marked.
+      # note, so its voice events are marked.
       counterpoint.place("1:1", :whole, "A4")
       counterpoint.place("2:1", :half, "A4")
       counterpoint.place("2:3", :half, "C5")
@@ -121,11 +121,11 @@ describe HeadMusic::Style::Guidelines::NoteCountPerBar do
 
     it { is_expected.not_to be_adherent }
 
-    it "marks the span of the empty bar with no placements" do
+    it "marks the span of the empty bar with no voice events" do
       mark = guideline.marks.first
       expect(guideline.marks.length).to eq 1
       expect(mark.code).to eq "3:1:000 to 4:1:000"
-      expect(mark.placements).to be_empty
+      expect(mark.voice_events).to be_empty
     end
   end
 

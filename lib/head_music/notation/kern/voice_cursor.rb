@@ -4,7 +4,7 @@ module HeadMusic::Notation::Kern
   # when the note it last attacked stops sounding, and the tie chain it
   # has open.
   #
-  # A tie chain ([, _, ]) becomes one placement whose rhythmic value
+  # A tie chain ([, _, ]) becomes one voice event whose rhythmic value
   # carries each tied link, as ABC's tie handling does, and it may cross
   # any number of barlines.
   class VoiceCursor

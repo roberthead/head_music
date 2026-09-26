@@ -25,7 +25,7 @@ describe HeadMusic::Notation::LilyPond::Preflight do
       end
     end
 
-    context "with a first placement that does not start its bar" do
+    context "with a first voice event that does not start its bar" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new
         flow.add_voice.place("1:2", :quarter, "C4")
@@ -34,11 +34,11 @@ describe HeadMusic::Notation::LilyPond::Preflight do
 
       it "raises a render error" do
         expect { described_class.check!(flow) }
-          .to raise_error(render_error, /first placement must start its bar/)
+          .to raise_error(render_error, /first voice event must start its bar/)
       end
     end
 
-    context "with a positional gap between placements" do
+    context "with a positional gap between voice events" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new
         voice = flow.add_voice

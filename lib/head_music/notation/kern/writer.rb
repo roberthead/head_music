@@ -53,7 +53,7 @@ module HeadMusic::Notation::Kern
     end
 
     def verses(voice)
-      last_verse = voice.placements.flat_map { |placement| placement.syllables.keys }.max
+      last_verse = voice.voice_events.flat_map { |voice_event| voice_event.syllables.keys }.max
       last_verse ? (1..last_verse).to_a : []
     end
 

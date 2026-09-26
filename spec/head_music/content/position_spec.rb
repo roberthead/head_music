@@ -198,39 +198,39 @@ describe HeadMusic::Content::Position do
     end
   end
 
-  describe "#within_placement?" do
-    let!(:placement) do
+  describe "#within_voice_event?" do
+    let!(:voice_event) do
       HeadMusic::Content::RestEvent.new(flow.add_voice, "3:2:000", :quarter)
     end
 
-    context "when the position is before the start of the placement" do
+    context "when the position is before the start of the voice event" do
       subject(:position) { described_class.new(flow, 3, 1, 0) }
 
-      it { is_expected.not_to be_within_placement(placement) }
+      it { is_expected.not_to be_within_voice_event(voice_event) }
     end
 
-    context "when the position is at the start of the placement" do
+    context "when the position is at the start of the voice event" do
       subject(:position) { described_class.new(flow, 3, 2, 0) }
 
-      it { is_expected.to be_within_placement(placement) }
+      it { is_expected.to be_within_voice_event(voice_event) }
     end
 
-    context "when the position is with the placement" do
+    context "when the position is with the voice event" do
       subject(:position) { described_class.new(flow, 3, 2, 240) }
 
-      it { is_expected.to be_within_placement(placement) }
+      it { is_expected.to be_within_voice_event(voice_event) }
     end
 
-    context "when at the end of the placement" do
+    context "when at the end of the voice event" do
       subject(:position) { described_class.new(flow, 3, 3, 0) }
 
-      it { is_expected.not_to be_within_placement(placement) }
+      it { is_expected.not_to be_within_voice_event(voice_event) }
     end
 
-    context "when after the end of the placement" do
+    context "when after the end of the voice event" do
       subject(:position) { described_class.new(flow, 3, 4, 0) }
 
-      it { is_expected.not_to be_within_placement(placement) }
+      it { is_expected.not_to be_within_voice_event(voice_event) }
     end
   end
   # rubocop:enable RSpec/MultipleMemoizedHelpers
@@ -280,7 +280,7 @@ describe HeadMusic::Content::Position do
     end
 
     # Positions in different flows have always compared equal here, and
-    # Voice#placement_at guards with exactly that comparison.
+    # Voice#voice_event_at guards with exactly that comparison.
     it "ignores the flow" do
       expect(flow.position("2:3:480")).to eq other_flow.position("2:3:480")
     end
@@ -315,12 +315,12 @@ describe HeadMusic::Content::Position do
         expect([rolled == flow.position("2:2"), rolled.hash == flow.position("2:2").hash]).to eq [true, true]
       end
 
-      it "merges a placement rolled into the bar with one authored there" do
+      it "merges a voice event rolled into the bar with one authored there" do
         voice = flow.add_voice
         voice.place("1:4:480", :quarter, "F4")
         voice.place(voice.next_position, :eighth, "G4")
         voice.place(flow.position("2:2"), :eighth, "A4")
-        expect(voice.placements.map { |placement| placement.position.code }).to eq %w[1:4:480 2:2:000]
+        expect(voice.voice_events.map { |voice_event| voice_event.position.code }).to eq %w[1:4:480 2:2:000]
       end
     end
 

@@ -15,14 +15,14 @@ module HeadMusic
         end
       end
 
-      def raise_gap_error(voice, expected_position, found_placement)
-        if found_placement.equal?(voice.placements.first)
-          raise render_error_class, "the first placement must start its bar " \
-            "(found #{found_placement.position}); insert explicit rests to fill the gap"
+      def raise_gap_error(voice, expected_position, found_voice_event)
+        if found_voice_event.equal?(voice.voice_events.first)
+          raise render_error_class, "the first voice event must start its bar " \
+            "(found #{found_voice_event.position}); insert explicit rests to fill the gap"
         end
 
-        raise render_error_class, "expected a placement at #{expected_position}, " \
-          "found one at #{found_placement.position}; insert explicit rests to fill gaps"
+        raise render_error_class, "expected a voice event at #{expected_position}, " \
+          "found one at #{found_voice_event.position}; insert explicit rests to fill gaps"
       end
     end
   end

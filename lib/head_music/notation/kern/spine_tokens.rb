@@ -3,9 +3,9 @@ module HeadMusic::Notation::Kern
   # One voice's tokens, bar by bar, each at its offset in the bar as a
   # fraction of a whole note.
   #
-  # A placement that crosses a barline, or whose value is a tied chain, is
+  # A voice event that crosses a barline, or whose value is a tied chain, is
   # written as one token per link, and the tie marks run across the whole
-  # placement: [ on the first link, _ between, ] on the last. A kern spine
+  # voice event: [ on the first link, _ between, ] on the last. A kern spine
   # must sound from its first row to its last, so every bar is filled with
   # rests wherever the voice is silent.
   class SpineTokens
@@ -50,10 +50,10 @@ module HeadMusic::Notation::Kern
 
     # The voice's own events by bar number, before any padding.
     def placed
-      @placed ||= voice.placements.each_with_object(Hash.new { |hash, key| hash[key] = [] }) do |placement, events|
-        links = placement_links(placement)
+      @placed ||= voice.voice_events.each_with_object(Hash.new { |hash, key| hash[key] = [] }) do |voice_event, events|
+        links = voice_event_links(voice_event)
         links.each_with_index do |(bar_number, link, offset), index|
-          events[bar_number] << event_for(placement, link, offset, tie_for(index, links.length), index)
+          events[bar_number] << event_for(voice_event, link, offset, tie_for(index, links.length), index)
         end
       end
     end
@@ -71,8 +71,8 @@ module HeadMusic::Notation::Kern
 
     private
 
-    def placement_links(placement)
-      HeadMusic::Notation::BarSplitter.segments_of(placement).flat_map do |segment|
+    def voice_event_links(voice_event)
+      HeadMusic::Notation::BarSplitter.segments_of(voice_event).flat_map do |segment|
         offset = segment_offset(segment)
         segment.rhythmic_value!(RenderError).tied_chain.map do |link|
           [segment.bar_number, link, offset].tap { offset += DurationWriter.fraction(link) }
@@ -80,12 +80,12 @@ module HeadMusic::Notation::Kern
       end
     end
 
-    def event_for(placement, link, offset, tie, index)
+    def event_for(voice_event, link, offset, tie, index)
       Event.new(
         offset: offset, link: link,
-        pitches: placement.rest? ? nil : placement.pitches,
-        tie: placement.rest? ? nil : tie,
-        syllables: index.zero? ? placement.syllables : {}
+        pitches: voice_event.rest? ? nil : voice_event.pitches,
+        tie: voice_event.rest? ? nil : tie,
+        syllables: index.zero? ? voice_event.syllables : {}
       )
     end
 
@@ -97,9 +97,9 @@ module HeadMusic::Notation::Kern
     end
 
     def segment_offset(segment)
-      return 0 unless segment.placement.position.bar_number == segment.bar_number
+      return 0 unless segment.voice_event.position.bar_number == segment.bar_number
 
-      HeadMusic::Notation::BarSplitter.offset_in_bar(segment.placement.position)
+      HeadMusic::Notation::BarSplitter.offset_in_bar(segment.voice_event.position)
     end
 
     def filled(events, length)

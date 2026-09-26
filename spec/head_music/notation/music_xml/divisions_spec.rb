@@ -23,7 +23,7 @@ describe HeadMusic::Notation::MusicXML::Divisions do
   end
 
   # flow.bars only materializes through the last bar that has a
-  # placement, so the meter change is followed by a note to bring it within
+  # voice event, so the meter change is followed by a note to bring it within
   # range of the default (flow.bars) call. Position arithmetic for
   # that later note needs a real Meter (Bar#meter is a bare attr_accessor),
   # so change_meter is given a Meter instance rather than the bare string

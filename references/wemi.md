@@ -78,7 +78,7 @@ The gem's content model, Project → Flow → Part → Voice, sits almost entire
 | Level | In head_music | Status |
 |---|---|---|
 | **Work** | `Content::Work`, with `Person`, `Credit`, `Credits`, and `Role`. A title, a catalog number, a year, and its people, independent of any one notated version. A `Flow` cites one, or cites none; `Flow#composer` answers the cited work's composer and keeps the plain string as its fallback. | Shipped in 21.1.0 |
-| **Expression** | `Project` and `Flow`, down through parts, voices, placements, and the timeline. Two arrangements are two projects, both expressions of one work. The expression's own people — arranger, transcriber, orchestrator, reconstructor — are `Project#credits`; there is no third container for them. | Shipped in 21.0.0; project credits in 21.1.0 |
+| **Expression** | `Project` and `Flow`, down through parts, voices, voice events, and the timeline. Two arrangements are two projects, both expressions of one work. The expression's own people — arranger, transcriber, orchestrator, reconstructor — are `Project#credits`; there is no third container for them. | Shipped in 21.0.0; project credits in 21.1.0 |
 | **Manifestation** | `Content::Layout` and `Content::Score`: which flows and players appear, in what order, in concert or written pitch, under what title. The LilyPond, MusicXML, and ABC documents they produce are each a manifestation. `Content::Publication` is the manifestation on the other side of the citation — the edition a flow names as its `source`, whose credits (author, editor, engraver, publisher) attach to the edition rather than to the music. | Shipped in 21.1.0 |
 | **Item** | A particular file on disk, a particular printed copy. The gem produces the bytes and stops. | Out of scope |
 

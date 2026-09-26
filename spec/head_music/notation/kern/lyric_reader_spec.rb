@@ -6,7 +6,7 @@ describe HeadMusic::Notation::Kern::LyricReader do
   end
 
   def lyrics(voice, verse = 1)
-    voice.placements.map { |placement| placement.syllable(verse)&.then { |syllable| [syllable.text, syllable.hyphen_after?] } }
+    voice.voice_events.map { |voice_event| voice_event.syllable(verse)&.then { |syllable| [syllable.text, syllable.hyphen_after?] } }
   end
 
   describe "a sung voice with two verses" do
@@ -33,18 +33,18 @@ describe HeadMusic::Notation::Kern::LyricReader do
     end
 
     it "leaves the kern spine on the right unsung" do
-      expect(flow.parts.first.voices.first.placements.none?(&:sung?)).to be true
+      expect(flow.parts.first.voices.first.voice_events.none?(&:sung?)).to be true
     end
   end
 
   it "sings to the upper voice of a split spine" do
     flow = parse("**kern  **text\n*^  *\n2e  2c  la\n2f  2d  -la\n*v  *v  *\n*-  *-")
-    expect(flow.voices.map { |voice| voice.placements.map(&:sung?) }).to eq [[true, true], [false, false]]
+    expect(flow.voices.map { |voice| voice.voice_events.map(&:sung?) }).to eq [[true, true], [false, false]]
   end
 
   it "attaches a syllable to the whole of a tied note" do
     flow = parse("**kern  **text\n[2c  la\n2c]  .\n*-  *-")
-    expect(flow.voices.first.placements.map { |placement| placement.syllable&.text }).to eq ["la"]
+    expect(flow.voices.first.voice_events.map { |voice_event| voice_event.syllable&.text }).to eq ["la"]
   end
 
   describe "errors" do

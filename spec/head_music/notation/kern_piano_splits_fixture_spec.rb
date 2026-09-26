@@ -10,8 +10,8 @@ describe HeadMusic::Notation::Kern do
   let(:part) { flow.parts.first }
   let(:staves) { part.staff_system.staves }
 
-  def placements(voice)
-    voice.placements.map(&:to_s)
+  def voice_events(voice)
+    voice.voice_events.map(&:to_s)
   end
 
   it "reads one braced piano part on two staves" do
@@ -24,12 +24,12 @@ describe HeadMusic::Notation::Kern do
   end
 
   it "keeps the first right-hand voice through the exchange, and rests it while it is joined away" do
-    expect(placements(part.voices.first).last(4))
+    expect(voice_events(part.voices.first).last(4))
       .to eq ["whole E5 at 3:1:000", "whole rest at 4:1:000", "whole F4 at 5:1:000", "whole rest at 6:1:000"]
   end
 
   it "pads the voice the first split starts from the flow's first bar" do
-    expect(placements(part.voices[1]).first(3)).to eq ["whole rest at 1:1:000", "half rest at 2:1:000", "half E4 at 2:3:000"]
+    expect(voice_events(part.voices[1]).first(3)).to eq ["whole rest at 1:1:000", "half rest at 2:1:000", "half E4 at 2:3:000"]
   end
 
   it "leaves every voice continuous" do

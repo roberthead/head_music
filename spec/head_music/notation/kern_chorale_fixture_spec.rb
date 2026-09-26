@@ -19,15 +19,15 @@ describe HeadMusic::Notation::Kern do
   end
 
   it "reads the pickup as bar 0, padded before its first note" do
-    expect(soprano.placements.first(2).map(&:to_s)).to eq ["half rest at 0:1:000", "quarter G4 at 0:3:000"]
+    expect(soprano.voice_events.first(2).map(&:to_s)).to eq ["half rest at 0:1:000", "quarter G4 at 0:3:000"]
   end
 
   it "reads the key, its reading, the meter, and the tempo" do
     expect([flow.key_signature.name, flow.meter.to_s, flow.tempo.beats_per_minute]).to eq ["G major", "3/4", 100]
   end
 
-  it "fuses a tie across a barline into one placement" do
-    expect(flow.parts[1].voices.first.placements.map(&:to_s)).to include "quarter tied to eighth F♯4 at 1:3:000"
+  it "fuses a tie across a barline into one voice event" do
+    expect(flow.parts[1].voices.first.voice_events.map(&:to_s)).to include "quarter tied to eighth F♯4 at 1:3:000"
   end
 
   it "marks the repeat on the bar that holds it" do
@@ -35,7 +35,7 @@ describe HeadMusic::Notation::Kern do
   end
 
   it "sings the text spine on the soprano" do
-    words = soprano.placements.filter_map { |placement| placement.syllable&.then { |syllable| "#{syllable.text}#{"-" if syllable.hyphen_after?}" } }
+    words = soprano.voice_events.filter_map { |voice_event| voice_event.syllable&.then { |syllable| "#{syllable.text}#{"-" if syllable.hyphen_after?}" } }
     expect(words.join(" ")).to eq "Wake the morn- ing light now the day is be- gun"
   end
 

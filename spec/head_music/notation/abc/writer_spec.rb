@@ -113,10 +113,10 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    # The parser fuses a tie across a bar line into one placement, and ABC
+    # The parser fuses a tie across a bar line into one voice event, and ABC
     # has no other way to write a note that crosses the line, so the writer
     # splits it back at each bar and ties the pieces.
-    context "with a placement sounding across a bar line" do
+    context "with a voice event sounding across a bar line" do
       subject(:rendered) { described_class.new(flow).to_s }
 
       let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
@@ -143,14 +143,14 @@ describe HeadMusic::Notation::ABC::Writer do
         expect(rendered).to eq expected
       end
 
-      it "round-trips to the same placements" do
-        reparsed = HeadMusic::Notation::ABC.parse(rendered).voices.first.placements
-        expect(reparsed.map { |placement| [placement.position.code, placement.rhythmic_value.total_value] })
-          .to eq flow.voices.first.placements.map { |placement| [placement.position.code, placement.rhythmic_value.total_value] }
+      it "round-trips to the same voice events" do
+        reparsed = HeadMusic::Notation::ABC.parse(rendered).voices.first.voice_events
+        expect(reparsed.map { |voice_event| [voice_event.position.code, voice_event.rhythmic_value.total_value] })
+          .to eq flow.voices.first.voice_events.map { |voice_event| [voice_event.position.code, voice_event.rhythmic_value.total_value] }
       end
     end
 
-    context "with a placement crossing a bar line and ending on a later one" do
+    context "with a voice event crossing a bar line and ending on a later one" do
       subject(:rendered) { described_class.new(flow).to_s }
 
       let(:flow) do
@@ -285,7 +285,7 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a positional gap between placements" do
+    context "with a positional gap between voice events" do
       let(:flow) do
         HeadMusic::Content::Flow.new.tap do |flow|
           voice = flow.add_voice
@@ -301,7 +301,7 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a two-pitch chord placement" do
+    context "with a two-pitch chord voice event" do
       subject(:rendered) { described_class.new(flow).to_s }
 
       let(:flow) do
@@ -315,7 +315,7 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a three-pitch chord placement" do
+    context "with a three-pitch chord voice event" do
       subject(:rendered) { described_class.new(flow).to_s }
 
       let(:flow) do
@@ -360,7 +360,7 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a single unpitched sound placement" do
+    context "with a single unpitched sound voice event" do
       let(:flow) do
         HeadMusic::Content::Flow.new.tap do |flow|
           flow.add_voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
@@ -375,7 +375,7 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a mixed pitched and unpitched placement" do
+    context "with a mixed pitched and unpitched voice event" do
       let(:flow) do
         HeadMusic::Content::Flow.new.tap do |flow|
           flow.add_voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
@@ -390,7 +390,7 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a first placement that does not start its bar" do
+    context "with a first voice event that does not start its bar" do
       let(:flow) do
         HeadMusic::Content::Flow.new.tap do |flow|
           flow.add_voice.place("1:2", :quarter, "C4")
@@ -443,7 +443,7 @@ describe HeadMusic::Notation::ABC::Writer do
       let(:reparsed) { HeadMusic::Notation::ABC.parse(rendered) }
 
       def flags(comp)
-        comp.voices.first.placements.map(&:beam_break_before)
+        comp.voices.first.voice_events.map(&:beam_break_before)
       end
 
       it "preserves the beam_break_before sequence on re-parse" do
@@ -525,16 +525,16 @@ describe HeadMusic::Notation::ABC::Writer do
       ABC
 
       let(:rendered) { HeadMusic::Notation::ABC.render(flow) }
-      let(:reparsed_placement) { HeadMusic::Notation::ABC.parse(rendered).voices.first.placements.first }
+      let(:reparsed_voice_event) { HeadMusic::Notation::ABC.parse(rendered).voices.first.voice_events.first }
 
       it "normalizes to an unbracketed note" do
         expect(rendered.lines.last).to eq "C8|]\n"
       end
 
-      it "re-parses as an equivalent single-note placement" do
-        expect(reparsed_placement.note?).to be true
-        expect(reparsed_placement.chord?).to be false
-        expect(reparsed_placement.pitch.to_s).to eq "C4"
+      it "re-parses as an equivalent single-note voice event" do
+        expect(reparsed_voice_event.note?).to be true
+        expect(reparsed_voice_event.chord?).to be false
+        expect(reparsed_voice_event.pitch.to_s).to eq "C4"
       end
     end
 

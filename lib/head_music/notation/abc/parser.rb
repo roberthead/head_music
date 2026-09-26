@@ -82,13 +82,13 @@ module HeadMusic::Notation::ABC
     def handle_note(token)
       state = current_state
       pitch = state.pitch_builder.pitch(token.letter, token.octave_marks, token.accidental)
-      state.defer_placement([pitch], token.length)
+      state.defer_voice_event([pitch], token.length)
     end
 
     def handle_chord(token)
       state = current_state
       pitches, inner_length = chord_reader.read(token, state.pitch_builder)
-      state.defer_placement(pitches, token.length, inner_length)
+      state.defer_voice_event(pitches, token.length, inner_length)
     end
 
     # The lexer only emits :beam_break after a music token, so a voice

@@ -4,7 +4,7 @@ module HeadMusic::Content; end
 # A Voice is a stream of music with some indepedence that is conceptually one part or for one performer.
 # The melodic lines in counterpoint are each a voice.
 class HeadMusic::Content::Voice
-  attr_reader :part, :placements, :role
+  attr_reader :part, :voice_events, :role
 
   delegate :flow, to: :part
   delegate :key_signature, to: :flow
@@ -20,7 +20,7 @@ class HeadMusic::Content::Voice
   def initialize(part: nil, flow: nil, role: nil)
     @part = part || detached_part(flow)
     @role = role
-    @placements = []
+    @voice_events = []
     # No stored event for the opening staff: a voice sits on its part's first
     # staff until it says otherwise, and a single-staff part needs no
     # assignments at all.
@@ -64,24 +64,28 @@ class HeadMusic::Content::Voice
   end
 
   def place(position, rhythmic_value, sound_or_sounds = nil)
-    # The melodic line is a snapshot of the notes, so any placement invalidates it.
+    # The melodic line is a snapshot of the notes, so placing anything invalidates it.
     @melodic_line = nil
-    placement = HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds)
-    existing = placement_at(placement.position)
-    return merge_at(existing, placement) if existing
+    voice_event = HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds)
+    existing = voice_event_at(voice_event.position)
+    return merge_at(existing, voice_event) if existing
 
-    insert_into_placements(placement)
-    placement
+    insert_into_voice_events(voice_event)
+    voice_event
   end
 
-  # Placements are kept in position order, so the notes and rests drawn from
+  # Voice events are kept in position order, so the notes and rests drawn from
   # them are already ordered.
   def notes
-    placements.select(&:pitched?)
+    voice_events.select(&:pitched?)
   end
 
-  def rests
-    placements.select(&:rest?)
+  def note_events
+    voice_events.grep(HeadMusic::Content::NoteEvent)
+  end
+
+  def rest_events
+    voice_events.grep(HeadMusic::Content::RestEvent)
   end
 
   def notes_not_in_key
@@ -98,25 +102,25 @@ class HeadMusic::Content::Voice
   end
 
   def earliest_bar_number
-    bar_number_of(placements.first)
+    bar_number_of(voice_events.first)
   end
 
   def latest_bar_number
-    bar_number_of(placements.last)
+    bar_number_of(voice_events.last)
   end
 
-  def last_placement
-    placements.last
+  def last_voice_event
+    voice_events.last
   end
 
   def next_position
-    last_placement ? last_placement.next_position : HeadMusic::Content::Position.new(flow, 1, 1, 0)
+    last_voice_event ? last_voice_event.next_position : HeadMusic::Content::Position.new(flow, 1, 1, 0)
   end
 
-  # Returns nil if placements are contiguous, or [expected_position, found_placement]
+  # Returns nil if voice events are contiguous, or [expected_position, found_voice_event]
   # for the first gap.
   def first_gap
-    Continuity.new(flow, placements).first_gap
+    Continuity.new(flow, voice_events).first_gap
   end
 
   def to_s
@@ -130,7 +134,7 @@ class HeadMusic::Content::Voice
   end
 
   def to_h
-    hash = {"role" => role&.to_s, "placements" => placements.map(&:to_h)}
+    hash = {"role" => role&.to_s, "placements" => voice_events.map(&:to_h)}
     assignments = staff_assignments_to_h
     hash["staff_assignments"] = assignments unless assignments.empty?
     hash
@@ -168,41 +172,41 @@ class HeadMusic::Content::Voice
     HeadMusic::Content::Part.new(flow: flow || HeadMusic::Content::Flow.new)
   end
 
-  def bar_number_of(placement)
-    placement ? placement.position.bar_number : 1
+  def bar_number_of(voice_event)
+    voice_event ? voice_event.position.bar_number : 1
   end
 
-  def placement_at(position)
-    candidate = placements.bsearch { |placement| placement.position >= position }
+  def voice_event_at(position)
+    candidate = voice_events.bsearch { |voice_event| voice_event.position >= position }
     candidate if candidate&.position == position
   end
 
   # Positions are unique within a voice (place merges same-position
-  # placements), so insertion order is simply position order. Both the
+  # voice events), so insertion order is simply position order. Both the
   # lookup and the insertion point are binary searches over that order,
   # which keeps placing a long voice linear in its length rather than
   # quadratic.
-  def insertion_index(placement)
-    placements.bsearch_index { |existing| existing > placement } || placements.length
+  def insertion_index(voice_event)
+    voice_events.bsearch_index { |existing| existing > voice_event } || voice_events.length
   end
 
   # A position holds one event. Sounds placed where a note already sounds
   # join it as a chord; a note placed on a rest takes the rest's place; a
   # rest placed on anything leaves it as it was.
-  def merge_at(existing, placement)
-    unless existing.rhythmic_value == placement.rhythmic_value
+  def merge_at(existing, voice_event)
+    unless existing.rhythmic_value == voice_event.rhythmic_value
       raise ArgumentError,
-        "cannot place a #{placement.rhythmic_value} at #{existing.position}: position occupied by a #{existing.rhythmic_value}"
+        "cannot place a #{voice_event.rhythmic_value} at #{existing.position}: position occupied by a #{existing.rhythmic_value}"
     end
-    return existing if placement.rest?
-    return existing.merge(placement) unless existing.rest?
+    return existing if voice_event.rest?
+    return existing.merge(voice_event) unless existing.rest?
 
-    placement.beam_break_before = existing.beam_break_before
-    placements[placements.index(existing)] = placement
+    voice_event.beam_break_before = existing.beam_break_before
+    voice_events[voice_events.index(existing)] = voice_event
   end
 
-  def insert_into_placements(placement)
-    placements.insert(insertion_index(placement), placement)
+  def insert_into_voice_events(voice_event)
+    voice_events.insert(insertion_index(voice_event), voice_event)
   end
 
   def pitches_string

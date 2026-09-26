@@ -7,7 +7,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
 
   def pitched_note_count(flow)
     flow.voices.sum do |voice|
-      voice.placements.select(&:sounded?).sum { |placement| chain_length(placement.rhythmic_value) }
+      voice.voice_events.select(&:sounded?).sum { |voice_event| chain_length(voice_event.rhythmic_value) }
     end
   end
 
@@ -710,7 +710,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
-    context "with a gap between placements" do
+    context "with a gap between voice events" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new
         voice = flow.add_voice
@@ -722,18 +722,18 @@ describe HeadMusic::Notation::MusicXML::Writer do
       it "raises a render error naming the expected and found positions" do
         expect { described_class.new(flow).to_s }.to raise_error(
           HeadMusic::Notation::MusicXML::RenderError,
-          /expected a placement at 1:2:000, found one at 1:3:000/
+          /expected a voice event at 1:2:000, found one at 1:3:000/
         )
       end
     end
 
-    context "with a first placement that starts mid-bar" do
+    context "with a first voice event that starts mid-bar" do
       it "raises a render error" do
         flow = HeadMusic::Content::Flow.new
         voice = flow.add_voice
         voice.place("1:2", :quarter, "C4")
         expect { described_class.new(flow).to_s }
-          .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /first placement must start its bar/)
+          .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /first voice event must start its bar/)
       end
     end
 
@@ -947,7 +947,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
-    context "with a chord placement" do
+    context "with a chord voice event" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new
         voice = flow.add_voice
@@ -972,7 +972,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
         expect(xpath_texts(document, "//measure[1]/note/pitch/step")).to eq %w[C E G]
       end
 
-      it "shares the placement's duration across every note" do
+      it "shares the voice event's duration across every note" do
         expect(xpath_texts(document, "//measure[1]/note/duration")).to eq %w[2 2 2]
       end
     end
@@ -1028,7 +1028,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
-    context "with a two-pitch chord placement" do
+    context "with a two-pitch chord voice event" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new
         voice = flow.add_voice
@@ -1089,7 +1089,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
-    context "with a single unpitched sound placement" do
+    context "with a single unpitched sound voice event" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new
         voice = flow.add_voice
@@ -1105,7 +1105,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
-    context "with a mixed pitched and unpitched placement" do
+    context "with a mixed pitched and unpitched voice event" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new
         voice = flow.add_voice
@@ -1152,7 +1152,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
-    # Default (meter-derived) beaming applies when placements carry no authored
+    # Default (meter-derived) beaming applies when voice events carry no authored
     # beam flag, so these build the flow programmatically — ABC input is
     # authoritative (every adjacency implies a join) and cannot express "no
     # opinion" for interior notes.
@@ -1275,7 +1275,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
-    # A placement whose rhythmic_value is a tied chain expands into one <note>
+    # A voice event whose rhythmic_value is a tied chain expands into one <note>
     # per link, and beams must attach per-component while the tie renders
     # alongside. The authored beam_break_before flag applies to link 0 only.
     context "with a tied chain of two eighths inside one beat group" do
@@ -1312,7 +1312,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
 
     # A pickup written out with leading rests still numbers onsets from the bar
     # start, so beam grouping must follow each note's true onset, not its offset
-    # in the placement list. A dotted-quarter rest makes the grouping
+    # in the voice event list. A dotted-quarter rest makes the grouping
     # non-periodic: onset-0 grouping would beam a different pair.
     context "with a pickup bar whose beamed notes fall after a dotted-quarter rest" do
       let(:flow) do

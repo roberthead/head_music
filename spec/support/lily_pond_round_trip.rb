@@ -3,8 +3,8 @@
 #
 # The writer pads a voice's missing bars with whole-bar rests, so the
 # reparsed flow may hold rests the original did not; every original
-# placement must come back at its position with its pitches and duration, and
-# every extra reparsed placement must be such a rest.
+# voice event must come back at its position with its pitches and duration, and
+# every extra reparsed voice event must be such a rest.
 module LilyPondRoundTripHelper
   def expect_lily_pond_round_trip(flow)
     rendered = HeadMusic::Notation::LilyPond.render(flow)
@@ -18,7 +18,7 @@ module LilyPondRoundTripHelper
 
     expect_equivalent_bar_changes(reparsed, flow)
     reparsed.voices.zip(flow.voices).each do |actual, expected|
-      expect_equivalent_voice_placements(actual, expected)
+      expect_equivalent_voice_voice_events(actual, expected)
       expect_equivalent_staves(actual, expected) if expected.part.staff_system.length > 1
     end
     reparsed
@@ -48,11 +48,11 @@ module LilyPondRoundTripHelper
     end
   end
 
-  def expect_equivalent_voice_placements(actual_voice, expected_voice)
-    actual_by_position = actual_voice.placements.to_h { |placement| [placement.position.to_s, placement] }
-    expected_voice.placements.each do |expected|
+  def expect_equivalent_voice_voice_events(actual_voice, expected_voice)
+    actual_by_position = actual_voice.voice_events.to_h { |voice_event| [voice_event.position.to_s, voice_event] }
+    expected_voice.voice_events.each do |expected|
       actual = actual_by_position.delete(expected.position.to_s)
-      expect(actual).not_to be_nil, "no placement came back at #{expected.position}"
+      expect(actual).not_to be_nil, "no voice event came back at #{expected.position}"
       expect(actual.pitches.sort.map(&:to_s)).to eq expected.pitches.sort.map(&:to_s)
       expect(total_duration(actual)).to eq total_duration(expected)
     end
@@ -61,8 +61,8 @@ module LilyPondRoundTripHelper
 
   # By total duration rather than spelling, since a note the writer splits at
   # a barline reads back as a tied chain.
-  def total_duration(placement)
-    placement.rhythmic_value.tied_chain.sum { |link| HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link) }
+  def total_duration(voice_event)
+    voice_event.rhythmic_value.tied_chain.sum { |link| HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link) }
   end
 end
 

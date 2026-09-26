@@ -10,7 +10,7 @@ module HeadMusic::Notation::ABC
     # The identity length scale, used wherever no stretching applies.
     ONE = Rational(1)
 
-    # A note or chord whose placement is deferred until we know whether a
+    # A note or chord whose placing is deferred until we know whether a
     # broken-rhythm mark follows it. The pitches are computed eagerly so
     # bar-line accidental resets cannot corrupt them. `tied_prefix`, when
     # present, is the already-built rhythmic value of everything tied ahead of
@@ -38,7 +38,7 @@ module HeadMusic::Notation::ABC
     # note tied across a bar line is still pending when the repeat tagger
     # asks, and a note longer than its bar has crossed one already.
     def completed_bar_number
-      finish = pending_note ? pending_end_position : voice.last_placement&.next_position
+      finish = pending_note ? pending_end_position : voice.last_voice_event&.next_position
       return unless finish
 
       bar_start?(finish) ? finish.bar_number - 1 : finish.bar_number
@@ -93,7 +93,7 @@ module HeadMusic::Notation::ABC
     # pending first. A broken-rhythm scale awaiting its right note, and any
     # per-chord inner scale, fold into the buffered length. When a tie is
     # open the arriving note instead extends the pending tie chain.
-    def defer_placement(pitches, length, inner_scale = ONE)
+    def defer_voice_event(pitches, length, inner_scale = ONE)
       scale = (awaiting_scale || ONE) * inner_scale
       self.awaiting_scale = nil
       return tie_onto_pending(pitches, length, scale) if tie_open?
@@ -105,7 +105,7 @@ module HeadMusic::Notation::ABC
     end
 
     # Places the pending note onto the voice, if any, carrying its authored
-    # beam break onto the placement.
+    # beam break onto the voice event.
     def flush_pending_note
       pending = pending_note
       return unless pending
@@ -127,7 +127,7 @@ module HeadMusic::Notation::ABC
     end
 
     # Closes an open tie: the pending note becomes the new note's tied prefix,
-    # so the pair (and any longer chain) resolves to a single placement whose
+    # so the pair (and any longer chain) resolves to a single voice event whose
     # rhythmic value carries the author's chosen split.
     def tie_onto_pending(pitches, length, scale)
       pending = pending_note

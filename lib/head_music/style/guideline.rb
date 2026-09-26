@@ -26,9 +26,9 @@ class HeadMusic::Style::Guideline
     :melodic_intervals,
     :notes,
     :notes_not_in_key,
-    :placements,
+    :voice_events,
     :range,
-    :rests,
+    :rest_events,
     to: :voice
   )
 
@@ -112,7 +112,7 @@ class HeadMusic::Style::Guideline
 
   # An empty voice has nowhere to put a mark, and no marks means a fitness of
   # 1.0 -- which is how an empty voice used to grade perfectly.
-  def no_placements_mark
+  def no_voice_events_mark
     HeadMusic::Style::Mark.new(
       HeadMusic::Content::Position.new(flow, "1:1"),
       HeadMusic::Content::Position.new(flow, "2:1"),

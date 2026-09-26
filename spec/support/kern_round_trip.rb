@@ -66,18 +66,18 @@ module KernRoundTripHelper
 
   def kern_voice(voice, staves)
     {
-      "staves" => voice.placements.reject(&:rest?).map { |placement| staves.index { |staff| staff.equal?(voice.staff_at(placement.position.bar_number)) } }.uniq,
-      "placements" => kern_placements(voice)
+      "staves" => voice.voice_events.reject(&:rest?).map { |voice_event| staves.index { |staff| staff.equal?(voice.staff_at(voice_event.position.bar_number)) } }.uniq,
+      "placements" => kern_voice_events(voice)
     }
   end
 
-  def kern_placements(voice)
-    entries = voice.placements.map do |placement|
+  def kern_voice_events(voice)
+    entries = voice.voice_events.map do |voice_event|
       {
-        "position" => placement.position.to_s,
-        "pitches" => placement.pitches.map(&:to_s).sort,
-        "length" => placement.rhythmic_value.tied_chain.sum { |link| HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link) },
-        "syllables" => placement.syllables.transform_values(&:to_h)
+        "position" => voice_event.position.to_s,
+        "pitches" => voice_event.pitches.map(&:to_s).sort,
+        "length" => voice_event.rhythmic_value.tied_chain.sum { |link| HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link) },
+        "syllables" => voice_event.syllables.transform_values(&:to_h)
       }
     end
     joined = entries.slice_when { |before, after| !(before["pitches"].empty? && after["pitches"].empty?) }.map do |run|

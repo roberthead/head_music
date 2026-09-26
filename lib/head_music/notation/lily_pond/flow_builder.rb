@@ -2,7 +2,7 @@
 module HeadMusic::Notation::LilyPond
   # Replays a Document's voice streams onto a fresh flow.
   #
-  # Every placement lands at the voice's next position, so bar checks and
+  # Every voice event lands at the voice's next position, so bar checks and
   # key or meter commands are verified against where the music actually
   # is, the way LilyPond verifies them at compile time.
   class FlowBuilder
@@ -169,8 +169,8 @@ module HeadMusic::Notation::LilyPond
       )
     end
 
-    # A whole-bar rest is one placement filling the bar it starts; a
-    # longer span (R1*2 is two bars in LilyPond) has no single-placement
+    # A whole-bar rest is one voice event filling the bar it starts; a
+    # longer span (R1*2 is two bars in LilyPond) has no single voice event
     # representation yet.
     def place_whole_bar_rest(event, voice)
       position = voice.next_position

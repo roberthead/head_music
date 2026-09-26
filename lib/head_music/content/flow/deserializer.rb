@@ -1,6 +1,6 @@
 class HeadMusic::Content::Flow
   # What every schema version's reader does the same way: check the version,
-  # build the base flow, and replay placements, repeat flags, and comments
+  # build the base flow, and replay voice events, repeat flags, and comments
   # through the public builder API. A subclass names its SCHEMA_VERSION, says
   # where the opening timeline values live, and walks its own containers.
   #
@@ -61,20 +61,20 @@ class HeadMusic::Content::Flow
       end
     end
 
-    def build_placements(voice, voice_hash, voice_path)
-      Array(voice_hash["placements"]).each_with_index do |placement_hash, placement_index|
-        path = "#{voice_path}.placements[#{placement_index}]"
-        placement = voice.place(
-          values.position(placement_hash["position"], path),
-          values.rhythmic_value(placement_hash["rhythmic_value"], path),
-          values.placement_sounds(placement_hash, path)
+    def build_voice_events(voice, voice_hash, voice_path)
+      Array(voice_hash["placements"]).each_with_index do |voice_event_hash, voice_event_index|
+        path = "#{voice_path}.placements[#{voice_event_index}]"
+        voice_event = voice.place(
+          values.position(voice_event_hash["position"], path),
+          values.rhythmic_value(voice_event_hash["rhythmic_value"], path),
+          values.voice_event_sounds(voice_event_hash, path)
         )
-        placement.beam_break_before = placement_hash["beam_break_before"] if placement_hash.key?("beam_break_before")
-        syllables = values.placement_syllables(placement_hash, path)
-        raise ArgumentError, "#{path}: a rest cannot carry syllables" if placement.rest? && syllables.any?
+        voice_event.beam_break_before = voice_event_hash["beam_break_before"] if voice_event_hash.key?("beam_break_before")
+        syllables = values.voice_event_syllables(voice_event_hash, path)
+        raise ArgumentError, "#{path}: a rest cannot carry syllables" if voice_event.rest? && syllables.any?
 
         syllables.each do |syllable|
-          placement.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
+          voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
         end
       end
     end

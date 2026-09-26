@@ -31,7 +31,7 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
 
   # Voice#place merges a same-position note event into the existing one, so a
   # position holds at most one event. The sound union keeps the chord free
-  # of duplicates, making repeated placement of a sound idempotent. Syllables
+  # of duplicates, making placing a sound again idempotent. Syllables
   # are left untouched: a chord sings one syllable per verse, and the receiver
   # (the event already at this position) keeps its own.
   def merge(other)

@@ -21,6 +21,6 @@ class HeadMusic::Style::Guidelines::MinimumThreshold < HeadMusic::Style::Guideli
   def deficiency_mark
     return unless actual_count < minimum
 
-    HeadMusic::Style::Mark.for_all(placements, fitness: actual_count.to_f / minimum)
+    HeadMusic::Style::Mark.for_all(voice_events, fitness: actual_count.to_f / minimum)
   end
 end

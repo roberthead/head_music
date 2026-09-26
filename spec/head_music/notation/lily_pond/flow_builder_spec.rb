@@ -7,12 +7,12 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     described_class.new(document).flow
   end
 
-  def placements(source)
-    placements_of(build(source))
+  def voice_events(source)
+    voice_events_of(build(source))
   end
 
-  def placements_of(flow)
-    flow.voices.flat_map { |voice| voice.placements.map(&:to_s) }
+  def voice_events_of(flow)
+    flow.voices.flat_map { |voice| voice.voice_events.map(&:to_s) }
   end
 
   describe "identity" do
@@ -36,27 +36,27 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     end
   end
 
-  describe "placements" do
+  describe "voice events" do
     it "places notes and rests consecutively" do
-      expect(placements("{ c'4 r4 e'2 }")).to eq ["quarter C4 at 1:1:000", "quarter rest at 1:2:000", "half E4 at 1:3:000"]
+      expect(voice_events("{ c'4 r4 e'2 }")).to eq ["quarter C4 at 1:1:000", "quarter rest at 1:2:000", "half E4 at 1:3:000"]
     end
 
     it "keeps rests distinct from notes" do
       voice = build("{ c'4 r4 }").voices.first
-      expect([voice.notes.length, voice.rests.length]).to eq [1, 1]
+      expect([voice.notes.length, voice.rest_events.length]).to eq [1, 1]
     end
 
-    it "places a chord as one placement" do
-      placement = build("{ <c' e' g'>1 }").voices.first.placements.first
-      expect([placement.chord?, placement.pitches.map(&:to_s)]).to eq [true, %w[C4 E4 G4]]
+    it "places a chord as one voice event" do
+      voice_event = build("{ <c' e' g'>1 }").voices.first.voice_events.first
+      expect([voice_event.chord?, voice_event.pitches.map(&:to_s)]).to eq [true, %w[C4 E4 G4]]
     end
 
-    it "carries a tied value into one placement" do
-      expect(placements("{ c'2~ c'8 d'8 e'4 }").first).to eq "half tied to eighth C4 at 1:1:000"
+    it "carries a tied value into one voice event" do
+      expect(voice_events("{ c'2~ c'8 d'8 e'4 }").first).to eq "half tied to eighth C4 at 1:1:000"
     end
 
     it "rolls into the next bar" do
-      expect(placements("{ c'1 d'1 }").last).to eq "whole D4 at 2:1:000"
+      expect(voice_events("{ c'1 d'1 }").last).to eq "whole D4 at 2:1:000"
     end
 
     it "gives each stream its own voice with its role" do
@@ -65,21 +65,21 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     end
 
     it "builds an empty voice for an empty staff" do
-      expect(build("\\new Staff { }").voices.first.placements).to be_empty
+      expect(build("\\new Staff { }").voices.first.voice_events).to be_empty
     end
   end
 
   describe "bar checks" do
     it "passes at the start of a bar" do
-      expect(placements("{ c'2 d'2 | e'1 | }").last).to eq "whole E4 at 2:1:000"
+      expect(voice_events("{ c'2 d'2 | e'1 | }").last).to eq "whole E4 at 2:1:000"
     end
 
     it "passes at the very start" do
-      expect(placements("{ | c'1 }")).to eq ["whole C4 at 1:1:000"]
+      expect(voice_events("{ | c'1 }")).to eq ["whole C4 at 1:1:000"]
     end
 
     it "passes across a meter change" do
-      expect(placements("{ c'1 | \\time 3/4 d'2. | e'4 }").last).to eq "quarter E4 at 3:1:000"
+      expect(voice_events("{ c'1 | \\time 3/4 d'2. | e'4 }").last).to eq "quarter E4 at 3:1:000"
     end
 
     it "raises for an underfilled bar with the elapsed fraction" do
@@ -93,7 +93,7 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     end
 
     it "passes inside a note tied across the barline" do
-      expect(placements("{ c'2 d'2~ | d'4 e'2. | }")).to eq [
+      expect(voice_events("{ c'2 d'2~ | d'4 e'2. | }")).to eq [
         "half C4 at 1:1:000", "half tied to quarter D4 at 1:3:000", "dotted half E4 at 2:2:000"
       ]
     end
@@ -105,12 +105,12 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
 
     it "applies a key change written between the halves of a tied note at its barline" do
       flow = build("{ c'2 d'2~ | \\key g \\major d'2 e'2 | }")
-      expect([flow.key_signature_changes.keys, flow.voices.first.placements.length]).to eq [[2], 3]
+      expect([flow.key_signature_changes.keys, flow.voices.first.voice_events.length]).to eq [[2], 3]
     end
 
     it "applies a meter change written between the halves of a tied note at its barline" do
       flow = build("{ c'2 d'2~ | \\time 3/4 d'2 e'4 | f'2. | }")
-      expect([flow.meter_changes.keys, placements_of(flow).last]).to eq [[2], "dotted half F4 at 3:1:000"]
+      expect([flow.meter_changes.keys, voice_events_of(flow).last]).to eq [[2], "dotted half F4 at 3:1:000"]
     end
 
     it "applies a change at a barline inside a tied note even without a bar check" do
@@ -130,19 +130,19 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
 
   describe "whole-bar rests" do
     it "places a whole rest in 4/4" do
-      expect(placements("{ R1*4/4 c'1 }").first).to eq "whole rest at 1:1:000"
+      expect(voice_events("{ R1*4/4 c'1 }").first).to eq "whole rest at 1:1:000"
     end
 
     it "places a dotted half rest in 3/4" do
-      expect(placements("{ \\time 3/4 R1*3/4 }").first).to eq "dotted half rest at 1:1:000"
+      expect(voice_events("{ \\time 3/4 R1*3/4 }").first).to eq "dotted half rest at 1:1:000"
     end
 
     it "places a tied rest in 5/4" do
-      expect(placements("{ \\time 5/4 R1*5/4 }").first).to eq "whole tied to quarter rest at 1:1:000"
+      expect(voice_events("{ \\time 5/4 R1*5/4 }").first).to eq "whole tied to quarter rest at 1:1:000"
     end
 
     it "accepts a bare R1 in 4/4" do
-      expect(placements("{ R1 }").first).to eq "whole rest at 1:1:000"
+      expect(voice_events("{ R1 }").first).to eq "whole rest at 1:1:000"
     end
 
     it "raises for a multi-bar rest" do
@@ -204,13 +204,13 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
 
     it "applies a change from one staff to the voices that do not restate it" do
       source = "<< \\new Staff { c'1 c'1 c'1 } \\new Staff { \\time 4/4 c1 | \\time 3/4 c4 c c | c4 c c } >>"
-      expect(build(source).voices.first.placements.map(&:position).map(&:to_s)).to eq %w[1:1:000 2:1:000 3:2:000]
+      expect(build(source).voices.first.voice_events.map(&:position).map(&:to_s)).to eq %w[1:1:000 2:1:000 3:2:000]
     end
 
     it "reads the same score the same way whichever staff carries the change" do
       plain = "\\new Staff { c'1 c'1 c'1 }"
       changing = "\\new Staff { \\time 4/4 c1 | \\time 3/4 c4 c c | c4 c c }"
-      positions = ->(source) { build(source).voices.map { |voice| voice.placements.map { |p| p.position.to_s } } }
+      positions = ->(source) { build(source).voices.map { |voice| voice.voice_events.map { |p| p.position.to_s } } }
       expect(positions.call("<< #{plain} #{changing} >>")).to eq positions.call("<< #{changing} #{plain} >>").reverse
     end
 

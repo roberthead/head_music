@@ -24,7 +24,7 @@ module HeadMusic::Notation::MusicXML
 
     def self.note_denominators(flow)
       flow.voices.flat_map do |voice|
-        voice.placements.flat_map { |placement| chain_denominators(placement.rhythmic_value) }
+        voice.voice_events.flat_map { |voice_event| chain_denominators(voice_event.rhythmic_value) }
       end
     end
     private_class_method :note_denominators

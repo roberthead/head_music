@@ -123,7 +123,7 @@ describe HeadMusic::Content::Layout do
 
     it "carries the music of the part it keeps" do
       realized = project.add_layout(kind: :part, players: [flute]).realize(flow)
-      expect(realized.voices.first.placements.map { |placement| placement.sounds.first.to_s })
+      expect(realized.voices.first.voice_events.map { |voice_event| voice_event.sounds.first.to_s })
         .to eq %w[C5 D5 E5 F5]
     end
   end

@@ -19,8 +19,8 @@ describe HeadMusic::Notation::Kern::Writer do
     render(flow).lines.map(&:chomp).drop_while { |line| !line.start_with?("=") }
   end
 
-  def length_of(placement)
-    [placement.position.to_s, placement.pitches.map(&:to_s), placement.rhythmic_value.total_value]
+  def length_of(voice_event)
+    [voice_event.position.to_s, voice_event.pitches.map(&:to_s), voice_event.rhythmic_value.total_value]
   end
 
   def music_of(flow)
@@ -180,9 +180,9 @@ describe HeadMusic::Notation::Kern::Writer do
       expect(body(flow).first(8)).to eq ["=1-", "4c 4e 4g", "4r", "[2ff#", "=2", "4ff#]", "2.BB-", "=="]
     end
 
-    it "reads the tied note back as one placement of the same length" do
-      expect(HeadMusic::Notation::Kern.parse(render(flow)).voices.first.placements.map { |placement| length_of(placement) })
-        .to eq flow.voices.first.placements.map { |placement| length_of(placement) }
+    it "reads the tied note back as one voice event of the same length" do
+      expect(HeadMusic::Notation::Kern.parse(render(flow)).voices.first.voice_events.map { |voice_event| length_of(voice_event) })
+        .to eq flow.voices.first.voice_events.map { |voice_event| length_of(voice_event) }
     end
   end
 
@@ -375,8 +375,8 @@ describe HeadMusic::Notation::Kern::Writer do
     end
 
     it "reads back the voices in order" do
-      expect(restored.voices.map { |voice| voice.placements.map(&:to_s) })
-        .to eq flow.voices.map { |voice| voice.placements.map(&:to_s) }
+      expect(restored.voices.map { |voice| voice.voice_events.map(&:to_s) })
+        .to eq flow.voices.map { |voice| voice.voice_events.map(&:to_s) }
     end
   end
 
@@ -411,8 +411,8 @@ describe HeadMusic::Notation::Kern::Writer do
 
     it "reads the syllables back" do
       restored = HeadMusic::Notation::Kern.parse(render(flow))
-      expect(restored.voices.first.placements.map { |placement| placement.syllables.transform_values(&:to_h) })
-        .to eq flow.voices.first.placements.map { |placement| placement.syllables.transform_values(&:to_h) }
+      expect(restored.voices.first.voice_events.map { |voice_event| voice_event.syllables.transform_values(&:to_h) })
+        .to eq flow.voices.first.voice_events.map { |voice_event| voice_event.syllables.transform_values(&:to_h) }
     end
   end
 

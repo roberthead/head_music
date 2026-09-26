@@ -43,22 +43,22 @@ class HeadMusic::Content::Layout
     end
 
     def written_voice(voice_hash, part)
-      voice_hash.merge("placements" => voice_hash["placements"].map { |placement_hash| written_placement(placement_hash, part) })
+      voice_hash.merge("placements" => voice_hash["placements"].map { |voice_event_hash| written_voice_event(voice_event_hash, part) })
     end
 
-    def written_placement(placement_hash, part)
-      sounds = placement_hash["sounds"]
-      return placement_hash if sounds.empty?
+    def written_voice_event(voice_event_hash, part)
+      sounds = voice_event_hash["sounds"]
+      return voice_event_hash if sounds.empty?
 
-      transposition = HeadMusic::Content::Layout::Transposition.for(part.instrument_at(bar_number_of(placement_hash)))
-      return placement_hash if transposition.identity?
+      transposition = HeadMusic::Content::Layout::Transposition.for(part.instrument_at(bar_number_of(voice_event_hash)))
+      return voice_event_hash if transposition.identity?
 
-      placement_hash.merge("sounds" => sounds.map { |sound| transposition.written_sound(sound) })
+      voice_event_hash.merge("sounds" => sounds.map { |sound| transposition.written_sound(sound) })
     end
 
     # A position serializes as "bar:count:tick:subtick".
-    def bar_number_of(placement_hash)
-      placement_hash["position"].to_s.split(":").first.to_i
+    def bar_number_of(voice_event_hash)
+      voice_event_hash["position"].to_s.split(":").first.to_i
     end
 
     # The read mints players from their names, but a layout selects the

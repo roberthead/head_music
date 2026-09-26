@@ -21,7 +21,7 @@ module HeadMusic::Notation::Kern
     def check!
       ensure_voices
       ensure_contiguous_voices(flow)
-      ensure_pitched_placements
+      ensure_pitched_voice_events
       ensure_concert_pitch
       ensure_steady_parts
     end
@@ -34,9 +34,9 @@ module HeadMusic::Notation::Kern
       raise RenderError, "cannot render a flow with no voices as kern" if flow.voices.empty?
     end
 
-    def ensure_pitched_placements
+    def ensure_pitched_voice_events
       flow.voices.each do |voice|
-        voice.placements.each { |placement| ensure_pitched_sounds(placement) }
+        voice.voice_events.each { |voice_event| ensure_pitched_sounds(voice_event) }
       end
     end
 

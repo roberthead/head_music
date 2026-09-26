@@ -1,7 +1,7 @@
 # A namespace for LilyPond-notation rendering helpers
 module HeadMusic::Notation::LilyPond
   # The computed musical facts a Writer needs to serialize a flow:
-  # the tokens for every placement in each bar it sounds in, on top of the measure signatures the base
+  # the tokens for every voice event in each bar it sounds in, on top of the measure signatures the base
   # plan tracks. Construction eagerly computes everything that can raise
   # on unmappable keys, durations, or alterations, so a RenderPlan that builds successfully
   # cannot fail assembly on those grounds.
@@ -17,7 +17,7 @@ module HeadMusic::Notation::LilyPond
     def short_final_bar_fraction
       return @short_final_bar_fraction if defined?(@short_final_bar_fraction)
 
-      finish = flow.voices.filter_map { |voice| voice.last_placement&.next_position }.max
+      finish = flow.voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
       offset = finish && HeadMusic::Notation::BarSplitter.offset_in_bar(finish)
       @short_final_bar_fraction = (offset && !offset.zero?) ? offset : nil
     end
@@ -35,22 +35,22 @@ module HeadMusic::Notation::LilyPond
       KeyMapper.token(event.printed_key_signature)
     end
 
-    # A tied chain within a placement joins its links with the tie mark, and
-    # so does a placement split at a barline, whose piece before the bar check
+    # A tied chain within a voice event joins its links with the tie mark, and
+    # so does a voice event split at a barline, whose piece before the bar check
     # ends in one; a chain of rests emits consecutive untied rests, and a tied
     # chord repeats the whole chord.
     def token(segment)
-      placement = segment.placement
+      voice_event = segment.voice_event
       links = segment.rhythmic_value!(RenderError).tied_chain
-      return links.map { |link| "r#{DurationWriter.token(link)}" }.join(" ") if placement.rest?
+      return links.map { |link| "r#{DurationWriter.token(link)}" }.join(" ") if voice_event.rest?
 
-      body = placement.chord? ? chord_body(placement) : PitchWriter.token(placement.pitch)
+      body = voice_event.chord? ? chord_body(voice_event) : PitchWriter.token(voice_event.pitch)
       tokens = links.map { |link| "#{body}#{DurationWriter.token(link)}" }.join("~ ")
       segment.continues ? "#{tokens}~" : tokens
     end
 
-    def chord_body(placement)
-      "<#{placement.pitches.sort.map { |pitch| PitchWriter.token(pitch) }.join(" ")}>"
+    def chord_body(voice_event)
+      "<#{voice_event.pitches.sort.map { |pitch| PitchWriter.token(pitch) }.join(" ")}>"
     end
   end
 end

@@ -69,8 +69,8 @@ class HeadMusic::Content::Flow
     # is a pitch string; an unpitched sound is a one-key
     # {"unpitched" => name_key} hash. A nil element is never a rest, so it
     # fails like any other unknown sound.
-    def placement_sounds(placement_hash, path)
-      values = placement_hash["sounds"]
+    def voice_event_sounds(voice_event_hash, path)
+      values = voice_event_hash["sounds"]
       unless values.is_a?(Array)
         raise ArgumentError, "#{path}: sounds must be an Array, got #{values.inspect}"
       end
@@ -83,10 +83,10 @@ class HeadMusic::Content::Flow
     # "syllables" is an optional array of sung-text data, one entry per verse.
     # Each entry is a {"text" => ..., "verse" => ..., "hyphen_after" => ...}
     # hash; verse defaults to 1. Text must be a non-empty string, verse a
-    # positive integer, and no two entries may share a verse (a placement holds
+    # positive integer, and no two entries may share a verse (a voice event holds
     # at most one syllable per verse).
-    def placement_syllables(placement_hash, path)
-      values = placement_hash["syllables"]
+    def voice_event_syllables(voice_event_hash, path)
+      values = voice_event_hash["syllables"]
       return [] if values.nil?
 
       unless values.is_a?(Array)

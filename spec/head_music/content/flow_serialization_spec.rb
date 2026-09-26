@@ -18,7 +18,7 @@ describe HeadMusic::Content::Flow do
   end
 
   # Voices live under parts now. Flattening them here keeps the assertions
-  # about placements about placements, rather than about the container.
+  # about voice events about voice events, rather than about the container.
   def voices_in(hash)
     hash["parts"].flat_map { |part| part["voices"] }
   end
@@ -40,7 +40,7 @@ describe HeadMusic::Content::Flow do
   end
 
   # Exercises every branch of the schema: two voices (one with a chord), a
-  # rest, a tick-offset placement, a tied duration, mid-piece key and meter
+  # rest, a tick-offset voice event, a tied duration, mid-piece key and meter
   # changes, repeat and volta flags, and comments with and without positions.
   let(:rich_flow) do
     described_class.new(
@@ -109,7 +109,7 @@ describe HeadMusic::Content::Flow do
     context "with the chromatic ABC fixture" do
       let(:flow) { HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR) }
       let(:hash) { flow.to_h }
-      let(:pitches) { voices_in(hash).first["placements"].flat_map { |placement| placement["sounds"] } }
+      let(:pitches) { voices_in(hash).first["placements"].flat_map { |voice_event| voice_event["sounds"] } }
 
       it "serializes the minor key, composer, and origin" do
         expect(hash.merge(hash["timeline"])).to include(
@@ -135,7 +135,7 @@ describe HeadMusic::Content::Flow do
         end
       end
 
-      let(:pitches) { voices_in(flow.to_h).first["placements"].flat_map { |placement| placement["sounds"] } }
+      let(:pitches) { voices_in(flow.to_h).first["placements"].flat_map { |voice_event| voice_event["sounds"] } }
 
       it "does not normalize enharmonic spellings" do
         expect(pitches).to eq %w[B♭4 A♯4]
@@ -181,7 +181,7 @@ describe HeadMusic::Content::Flow do
       end
     end
 
-    it "serializes a placement without a sound as an empty-sounds rest" do
+    it "serializes a voice event without a sound as an empty-sounds rest" do
       expect(voices_in(flow.to_h).first["placements"][1]).to eq(
         "position" => "1:2:000", "rhythmic_value" => "quarter", "sounds" => []
       )
@@ -189,7 +189,7 @@ describe HeadMusic::Content::Flow do
 
     it "round-trips the rest" do
       restored = expect_lossless_round_trip(flow)
-      expect(restored.voices.first.rests.length).to eq 1
+      expect(restored.voices.first.rest_events.length).to eq 1
     end
   end
 
@@ -203,17 +203,17 @@ describe HeadMusic::Content::Flow do
       end
     end
 
-    it "merges into a single chord placement" do
-      placements = flow.voices.first.placements
-      expect(placements.length).to eq 1
-      expect(placements.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
+    it "merges into a single chord voice event" do
+      voice_events = flow.voices.first.voice_events
+      expect(voice_events.length).to eq 1
+      expect(voice_events.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
     end
 
     # ABC chord export is still pending, so that comparison stays off; the
     # MusicXML writer now renders chords, so it round-trips.
     it "preserves chord-note order through the round trip" do
       restored = expect_lossless_round_trip(flow, abc: false)
-      expect(restored.voices.first.placements.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
+      expect(restored.voices.first.voice_events.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
     end
 
     it "renders the chord as stacked notes on the restored flow" do
@@ -236,33 +236,33 @@ describe HeadMusic::Content::Flow do
 
     it "round-trips the syllables" do
       restored = expect_lossless_round_trip(flow, abc: false)
-      first = restored.voices.first.placements.first
+      first = restored.voices.first.voice_events.first
       expect(first.syllable(1)).to eq HeadMusic::Content::Syllable.new("A", hyphen_after: true)
       expect(first.syllable(2)).to eq HeadMusic::Content::Syllable.new("peace", verse: 2)
-      expect(restored.voices.first.placements.last).not_to be_sung
+      expect(restored.voices.first.voice_events.last).not_to be_sung
     end
   end
 
-  describe "a chord placement (multiple pitches in one placement)" do
+  describe "a chord voice event (multiple pitches in one voice event)" do
     let(:flow) do
-      described_class.new(name: "Chord Placement").tap do |chordal|
+      described_class.new(name: "Chord Voice Event").tap do |chordal|
         voice = chordal.add_voice(role: "harmony")
         voice.place("1:1:000", :half, %w[C4 E4 G4])
         voice.place("1:3:000", :half, "C5")
       end
     end
 
-    it "serializes the chord as an ordered sounds array in one placement" do
+    it "serializes the chord as an ordered sounds array in one voice event" do
       expect(voices_in(flow.to_h).first["placements"].first["sounds"]).to eq %w[C4 E4 G4]
     end
 
-    # The notation writers do not render chord placements, so the comparison
+    # The notation writers do not render chord voice events, so the comparison
     # is hash-only.
-    it "round-trips losslessly to a single chord placement" do
+    it "round-trips losslessly to a single chord voice event" do
       restored = expect_lossless_round_trip(flow, abc: false, musicxml: false)
       voice = restored.voices.first
-      expect(voice.placements.length).to eq 2
-      expect(voice.placements.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
+      expect(voice.voice_events.length).to eq 2
+      expect(voice.voice_events.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
     end
   end
 
@@ -280,27 +280,27 @@ describe HeadMusic::Content::Flow do
     end
 
     it "omits the key for a nil flag and serializes true/false flags" do
-      placements = voices_in(flow.to_h).first["placements"]
-      expect(placements[0]).not_to have_key("beam_break_before")
-      expect(placements[1]["beam_break_before"]).to be false
-      expect(placements[2]["beam_break_before"]).to be true
+      voice_events = voices_in(flow.to_h).first["placements"]
+      expect(voice_events[0]).not_to have_key("beam_break_before")
+      expect(voice_events[1]["beam_break_before"]).to be false
+      expect(voice_events[2]["beam_break_before"]).to be true
     end
 
     it "restores the true/false flags through a from_h(to_h) cycle" do
       restored = described_class.from_h(flow.to_h)
-      flags = restored.voices.first.placements.map(&:beam_break_before)
+      flags = restored.voices.first.voice_events.map(&:beam_break_before)
       expect(flags).to eq [nil, false, true]
     end
 
     it "survives a JSON round trip (false is distinct from an absent nil)" do
       restored = described_class.from_h(JSON.parse(flow.to_json))
-      flags = restored.voices.first.placements.map(&:beam_break_before)
+      flags = restored.voices.first.voice_events.map(&:beam_break_before)
       expect(flags).to eq [nil, false, true]
     end
   end
 
   describe "unpitched sounds" do
-    context "with named, generic, and mixed placements" do
+    context "with named, generic, and mixed voice events" do
       let(:flow) do
         described_class.new(name: "Percussive").tap do |percussive|
           voice = percussive.add_voice(role: "percussion")
@@ -311,7 +311,7 @@ describe HeadMusic::Content::Flow do
       end
 
       let(:serialized_sounds) do
-        voices_in(flow.to_h).first["placements"].map { |placement| placement["sounds"] }
+        voices_in(flow.to_h).first["placements"].map { |voice_event| voice_event["sounds"] }
       end
 
       it "serializes unpitched sounds as one-key hashes, the generic sound with a null name" do
@@ -324,8 +324,8 @@ describe HeadMusic::Content::Flow do
       # comparison is hash-only.
       it "round-trips order and content losslessly" do
         restored = expect_lossless_round_trip(flow, abc: false, musicxml: false)
-        placements = restored.voices.first.placements
-        expect(placements.map { |placement| placement.sounds.map(&:to_s) }).to eq [
+        voice_events = restored.voices.first.voice_events
+        expect(voice_events.map { |voice_event| voice_event.sounds.map(&:to_s) }).to eq [
           ["snare drum"], ["unpitched"], ["C4", "bass drum"]
         ]
       end
@@ -362,7 +362,7 @@ describe HeadMusic::Content::Flow do
 
       it "round-trips the pitched instrument as a valid hit surface" do
         restored = described_class.from_h(hash)
-        sound = restored.voices.first.placements.first.sounds.first
+        sound = restored.voices.first.voice_events.first.sounds.first
         expect(sound).to be_a(HeadMusic::Rudiment::UnpitchedSound)
         expect(sound.name_key).to eq :violin
         expect(voices_in(restored.to_h).first["placements"].first["sounds"]).to eq [{"unpitched" => "violin"}]
@@ -404,7 +404,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "serializes tick offsets at full precision" do
-      positions = voices_in(flow.to_h).first["placements"].map { |placement| placement["position"] }
+      positions = voices_in(flow.to_h).first["placements"].map { |voice_event| voice_event["position"] }
       expect(positions).to eq %w[1:1:000 1:1:480 1:2:000 1:4:000]
     end
 
@@ -414,7 +414,7 @@ describe HeadMusic::Content::Flow do
 
     # Subticks add a fourth field to the position code, which the reader must
     # accept or the gem refuses documents it wrote itself.
-    context "with subtick-precise placements and comments" do
+    context "with subtick-precise voice events and comments" do
       let(:flow) do
         described_class.new(name: "Subticks").tap do |ticked|
           voice = ticked.add_voice(role: "melody")
@@ -426,14 +426,14 @@ describe HeadMusic::Content::Flow do
 
       it "serializes the subticks as a fourth field" do
         hash = flow.to_h
-        positions = voices_in(hash).first["placements"].map { |placement| placement["position"] }
+        positions = voices_in(hash).first["placements"].map { |voice_event| voice_event["position"] }
         expect([positions, hash["comments"].first["position"]]).to eq [%w[1:1:000 1:3:000:120], "1:3:000:120"]
       end
 
       it "reads back the subticks it wrote" do
         restored = described_class.from_h(flow.to_h)
         expect(restored.to_h).to eq flow.to_h
-        expect(restored.voices.first.placements.last.position.subtick).to eq 120
+        expect(restored.voices.first.voice_events.last.position.subtick).to eq 120
       end
     end
   end
@@ -531,7 +531,7 @@ describe HeadMusic::Content::Flow do
       end
     end
 
-    let(:positions) { voices_in(flow.to_h).first["placements"].map { |placement| placement["position"] } }
+    let(:positions) { voices_in(flow.to_h).first["placements"].map { |voice_event| voice_event["position"] } }
 
     it "serializes the meter change into the sparse bars array" do
       expect(flow.to_h["timeline"]["meter_changes"]).to eq [{"number" => 3, "meter" => "6/8"}]
@@ -546,7 +546,7 @@ describe HeadMusic::Content::Flow do
 
     it "round-trips the 6/8 positions to the same strings" do
       restored = expect_lossless_round_trip(flow, abc: false)
-      restored_positions = voices_in(restored.to_h).first["placements"].map { |placement| placement["position"] }
+      restored_positions = voices_in(restored.to_h).first["placements"].map { |voice_event| voice_event["position"] }
       expect(restored_positions).to eq positions
     end
   end
@@ -616,7 +616,7 @@ describe HeadMusic::Content::Flow do
       end
 
       let(:rhythmic_values) do
-        voices_in(flow.to_h).first["placements"].map { |placement| placement["rhythmic_value"] }
+        voices_in(flow.to_h).first["placements"].map { |voice_event| voice_event["rhythmic_value"] }
       end
 
       it "serializes the cross-unit duration as a tied rhythmic value" do
@@ -642,7 +642,7 @@ describe HeadMusic::Content::Flow do
 
       it "round-trips the total duration" do
         restored = expect_lossless_round_trip(flow)
-        expect(restored.voices.first.placements.first.rhythmic_value.total_value).to eq tied.total_value
+        expect(restored.voices.first.voice_events.first.rhythmic_value.total_value).to eq tied.total_value
       end
     end
   end
@@ -694,8 +694,8 @@ describe HeadMusic::Content::Flow do
   describe "malformed input" do
     let(:base_hash) { {"schema_version" => 4, "name" => "Corrupted"} }
 
-    def hash_with_placement(placement_hash)
-      base_hash.merge("parts" => [{"voices" => [{"role" => nil, "placements" => [placement_hash]}]}])
+    def hash_with_voice_event(voice_event_hash)
+      base_hash.merge("parts" => [{"voices" => [{"role" => nil, "placements" => [voice_event_hash]}]}])
     end
 
     it "raises ArgumentError on a non-Hash" do
@@ -722,14 +722,14 @@ describe HeadMusic::Content::Flow do
         .to raise_error(ArgumentError, /parts\[0\]\.staff_system_changes\[0\]\.staves\[0\]: unknown clef "kazoo_clef"/)
     end
 
-    it "raises ArgumentError when a placement uses the retired v2 pitches key" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => ["C4"])
+    it "raises ArgumentError when a voice event uses the retired v2 pitches key" do
+      hash = hash_with_voice_event("position" => "1:1:000", "rhythmic_value" => "quarter", "pitches" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: sounds must be an Array, got nil/)
     end
 
     it "raises ArgumentError with path context on a rest that carries syllables" do
-      hash = hash_with_placement(
+      hash = hash_with_voice_event(
         "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [], "syllables" => [{"text" => "la", "verse" => 1}]
       )
       expect { described_class.from_h(hash) }
@@ -737,31 +737,31 @@ describe HeadMusic::Content::Flow do
     end
 
     it "raises ArgumentError when sounds is not an Array" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => "C4")
+      hash = hash_with_voice_event("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => "C4")
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: sounds must be an Array, got "C4"/)
     end
 
     it "raises ArgumentError with element path context on an unknown pitch in a chord" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4", "H#4"])
+      hash = hash_with_voice_event("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4", "H#4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[1\]: unknown pitch "H#4"/)
     end
 
     it "raises ArgumentError on a nil element in sounds" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [nil])
+      hash = hash_with_voice_event("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [nil])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown sound nil/)
     end
 
     it "raises ArgumentError on a non-string non-hash element in sounds" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [42])
+      hash = hash_with_voice_event("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [42])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown sound 42/)
     end
 
     it "raises ArgumentError with element path context on an unknown instrument name" do
-      hash = hash_with_placement(
+      hash = hash_with_voice_event(
         "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"unpitched" => "kazoodle"}]
       )
       expect { described_class.from_h(hash) }
@@ -769,7 +769,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "raises ArgumentError on an empty-string instrument name" do
-      hash = hash_with_placement(
+      hash = hash_with_voice_event(
         "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"unpitched" => ""}]
       )
       expect { described_class.from_h(hash) }
@@ -777,7 +777,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "raises ArgumentError on an unpitched hash with extra keys" do
-      hash = hash_with_placement(
+      hash = hash_with_voice_event(
         "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"unpitched" => "snare_drum", "y" => 1}]
       )
       expect { described_class.from_h(hash) }
@@ -785,7 +785,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "raises ArgumentError on a hash element with the wrong key" do
-      hash = hash_with_placement(
+      hash = hash_with_voice_event(
         "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [{"instrument" => "snare_drum"}]
       )
       expect { described_class.from_h(hash) }
@@ -793,7 +793,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "raises ArgumentError with path context on an unknown rhythmic value" do
-      hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "sesquialtera", "sounds" => ["C4"])
+      hash = hash_with_voice_event("position" => "1:1:000", "rhythmic_value" => "sesquialtera", "sounds" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown rhythmic value "sesquialtera"/)
     end
@@ -828,14 +828,14 @@ describe HeadMusic::Content::Flow do
         .to raise_error(ArgumentError, /signature must be an Integer of fifths/)
     end
 
-    it "raises ArgumentError with path context on an unparseable placement position" do
-      hash = hash_with_placement("position" => "not-a-position", "rhythmic_value" => "quarter", "sounds" => ["C4"])
+    it "raises ArgumentError with path context on an unparseable voice event position" do
+      hash = hash_with_voice_event("position" => "not-a-position", "rhythmic_value" => "quarter", "sounds" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown position "not-a-position"/)
     end
 
-    it "raises ArgumentError with path context on a negative placement position" do
-      hash = hash_with_placement("position" => "-1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4"])
+    it "raises ArgumentError with path context on a negative voice event position" do
+      hash = hash_with_voice_event("position" => "-1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown position "-1:1:000"/)
     end
@@ -864,12 +864,12 @@ describe HeadMusic::Content::Flow do
       end
     end
 
-    context "with a voice that has a role but no placements" do
+    context "with a voice that has a role but no voice events" do
       let(:flow) do
         described_class.new(name: "Silent Voice").tap { |silent| silent.add_voice(role: "melody") }
       end
 
-      it "serializes the voice with an empty placements array" do
+      it "serializes the voice with an empty voice events array" do
         expect(voices_in(flow.to_h)).to eq [{"role" => "melody", "placements" => []}]
       end
 

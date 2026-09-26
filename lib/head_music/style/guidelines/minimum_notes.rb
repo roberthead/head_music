@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 # Configure the threshold with the factory, e.g. MinimumNotes.with(8).
 class HeadMusic::Style::Guidelines::MinimumNotes < HeadMusic::Style::Guidelines::MinimumThreshold
   def marks
-    placements.empty? ? no_placements_mark : deficiency_mark
+    voice_events.empty? ? no_voice_events_mark : deficiency_mark
   end
 
   # The count comes from the configuration or the class default -- never from

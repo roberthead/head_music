@@ -224,7 +224,7 @@ describe HeadMusic::Style::Guidelines::AvoidOverlappingVoices do
     # Note: The &.pitch safe navigation operator on lines 39-40 is defensive programming
     # that protects against edge cases (nil pitch, UnpitchedNote, etc.) that cannot
     # realistically occur through the public API, as voice.notes filters to only
-    # placements with valid pitch objects. These branches represent important defensive
+    # voice events with valid pitch objects. These branches represent important defensive
     # code but are difficult to test without breaking other assumptions in the codebase.
   end
 end

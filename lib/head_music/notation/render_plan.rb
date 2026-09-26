@@ -46,21 +46,21 @@ class HeadMusic::Notation::RenderPlan
     change_bar ? measure_time_changes[change_bar] : flow.meter
   end
 
-  # What each bar holds of the voice, with a placement that crosses a barline
+  # What each bar holds of the voice, with a voice event that crosses a barline
   # appearing in every bar it sounds in.
   def segments_by_bar(voice)
     @segments_by_bar ||= {}
-    @segments_by_bar[voice] ||= HeadMusic::Notation::BarSplitter.segments(voice.placements).group_by(&:bar_number)
+    @segments_by_bar[voice] ||= HeadMusic::Notation::BarSplitter.segments(voice.voice_events).group_by(&:bar_number)
   end
 
   private
 
-  # The flow's latest bar is where its last placement starts, but a placement
+  # The flow's latest bar is where its last voice event starts, but a voice event
   # crossing a barline also sounds in the bars after that.
   def last_sounding_bar_number
     last_bars = flow.voices.filter_map do |voice|
-      placement = voice.last_placement
-      placement && HeadMusic::Notation::BarSplitter.segments_of(placement).last.bar_number
+      voice_event = voice.last_voice_event
+      voice_event && HeadMusic::Notation::BarSplitter.segments_of(voice_event).last.bar_number
     end
     [flow.latest_bar_number, *last_bars].max
   end

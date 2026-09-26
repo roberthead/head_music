@@ -34,8 +34,8 @@ describe HeadMusic::Notation::RenderPlan do
       voice = flow.add_voice
       voice.place("1:1", :half, "C4")
       voice.place("1:3", :whole, "D4")
-      expect(plan.segments_by_bar(voice).transform_values { |segments| segments.map(&:placement) })
-        .to eq(1 => voice.placements, 2 => [voice.placements.last])
+      expect(plan.segments_by_bar(voice).transform_values { |segments| segments.map(&:voice_event) })
+        .to eq(1 => voice.voice_events, 2 => [voice.voice_events.last])
     end
 
     it "answers the flow's key signature for the first measure" do

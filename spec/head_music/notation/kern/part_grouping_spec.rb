@@ -137,7 +137,7 @@ describe HeadMusic::Notation::Kern::PartGrouping do
       end
 
       it "still fuses the tied notes" do
-        expect(voice.placements.map(&:to_s)).to eq ["half tied to half C3 at 1:1:000"]
+        expect(voice.voice_events.map(&:to_s)).to eq ["half tied to half C3 at 1:1:000"]
       end
     end
 

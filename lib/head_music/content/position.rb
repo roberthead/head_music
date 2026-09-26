@@ -55,12 +55,12 @@ class HeadMusic::Content::Position
     "#<#{self.class.name} #{self}>"
   end
 
-  def within_placement?(placement)
-    placement.position <= self && placement.next_position > self
+  def within_voice_event?(voice_event)
+    voice_event.position <= self && voice_event.next_position > self
   end
 
   # The flow deliberately takes no part in comparison. Positions in different
-  # flows have always compared equal here, and Voice#placement_at guards with
+  # flows have always compared equal here, and Voice#voice_event_at guards with
   # exactly that comparison -- narrowing it would silently change note lookup.
   def <=>(other)
     other = self.class.new(flow, other) if other.is_a?(String) && other =~ /\D/

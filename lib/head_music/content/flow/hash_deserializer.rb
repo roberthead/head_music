@@ -2,7 +2,7 @@ class HeadMusic::Content::Flow
   # Rebuilds a flow from a schema v4 hash, in dependency order: the timeline
   # first, because a position string rolls its counts and ticks over through the
   # meter map; then parts, because a voice's staff assignment names a staff of
-  # its part's system; then placements; then repeat flags, which need their bar
+  # its part's system; then voice events; then repeat flags, which need their bar
   # allocated.
   class HashDeserializer < Deserializer
     SCHEMA_VERSION = HeadMusic::Content::Flow::SCHEMA_VERSION
@@ -101,7 +101,7 @@ class HeadMusic::Content::Flow
     def build_voices(part, part_hash, part_path)
       Array(part_hash["voices"]).each_with_index do |voice_hash, voice_index|
         voice = part.add_voice(role: voice_hash["role"])
-        build_placements(voice, voice_hash, "#{part_path}.voices[#{voice_index}]")
+        build_voice_events(voice, voice_hash, "#{part_path}.voices[#{voice_index}]")
         apply_staff_assignments(voice, part, voice_hash)
       end
     end

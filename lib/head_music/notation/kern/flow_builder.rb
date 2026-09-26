@@ -5,7 +5,7 @@ module HeadMusic::Notation::Kern
   # Rows are read in order, so an interpretation is in force before the
   # bar it governs. Each data row is a time slice: every note it attacks
   # must begin exactly when the previous note in its spine ends, and a
-  # null token must fall inside a note that is still sounding. Placements
+  # null token must fall inside a note that is still sounding. Voice events
   # wait until the end, when every bar's number and start are known.
   class FlowBuilder
     TIMELINE_KINDS = %i[signature designation meter tempo].freeze

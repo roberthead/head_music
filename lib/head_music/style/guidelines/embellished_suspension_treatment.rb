@@ -31,6 +31,6 @@ class HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment < HeadMusic::
     slot = (2..position.meter.counts_per_bar)
       .map { |count| HeadMusic::Content::Position.new(flow, "#{position.bar_number}:#{count}") }
       .detect(&:strong?)
-    slot if slot&.within_placement?(cf_note)
+    slot if slot&.within_voice_event?(cf_note)
   end
 end

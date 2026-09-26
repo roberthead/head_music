@@ -271,7 +271,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it_behaves_like "a compilable document"
     end
 
-    context "with sung placements" do
+    context "with sung voice events" do
       let(:flow) { LilyPondFixtures.song }
       let(:rendered) { described_class.new(flow).to_s }
 

@@ -28,8 +28,8 @@ module HeadMusic::Notation::MusicXML
     end
 
     def components_by_segment
-      @components_by_segment ||= flow.voices.flat_map(&:placements).each_with_object({}) do |placement, components|
-        segments = HeadMusic::Notation::BarSplitter.segments_of(placement)
+      @components_by_segment ||= flow.voices.flat_map(&:voice_events).each_with_object({}) do |voice_event, components|
+        segments = HeadMusic::Notation::BarSplitter.segments_of(voice_event)
         pieces = duration_writer.split_components(segments.map { |segment| segment.rhythmic_value!(RenderError) })
         segments.zip(pieces) { |segment, piece| components[segment] = piece }
       end
@@ -94,12 +94,12 @@ module HeadMusic::Notation::MusicXML
     def build_bar_events(segments, keys)
       onset = 0
       segments.flat_map do |segment|
-        placement = segment.placement
+        voice_event = segment.voice_event
         components_by_segment[segment].each_with_index.map do |component, component_index|
           event = BeamGrouper::Event.new(
-            levels: beam_levels(placement, component),
+            levels: beam_levels(voice_event, component),
             onset: onset,
-            beam_break_before: component_index.zero? ? placement.beam_break_before : nil
+            beam_break_before: component_index.zero? ? voice_event.beam_break_before : nil
           )
           keys << [segment, component_index]
           onset += component.duration
@@ -108,8 +108,8 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
-    def beam_levels(placement, component)
-      return 0 if placement.rest?
+    def beam_levels(voice_event, component)
+      return 0 if voice_event.rest?
 
       BEAM_LEVELS_BY_TYPE.fetch(component.type, 0)
     end

@@ -29,7 +29,7 @@ describe HeadMusic::Content::CantusFirmus::Example do
   end
 
   it "places one note per bar" do
-    expect(flow.voices.first.placements.map { |placement| placement.position.bar_number }).to eq (1..example.length).to_a
+    expect(flow.voices.first.voice_events.map { |voice_event| voice_event.position.bar_number }).to eq (1..example.length).to_a
   end
 
   # The mode is carried by the tonal context, not inferred from the signature,
@@ -51,11 +51,11 @@ describe HeadMusic::Content::CantusFirmus::Example do
 
   describe "the realization's own choices" do
     it "uses whole notes by default" do
-      expect(flow.voices.first.placements.first.rhythmic_value.to_s).to eq "whole"
+      expect(flow.voices.first.voice_events.first.rhythmic_value.to_s).to eq "whole"
     end
 
     it "takes a rhythmic value" do
-      expect(example.to_flow(rhythmic_value: :half).voices.first.placements.first.rhythmic_value.to_s).to eq "half"
+      expect(example.to_flow(rhythmic_value: :half).voices.first.voice_events.first.rhythmic_value.to_s).to eq "half"
     end
 
     it "takes a meter" do

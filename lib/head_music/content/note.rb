@@ -3,7 +3,7 @@ module HeadMusic::Content; end
 
 # A note is a pitch with a duration.
 #
-# Note quacks like a placement, but requires a different set of construction arguments
+# Note quacks like a voice event, but requires a different set of construction arguments
 #   - always has a pitch
 #   - receives a voice and position if unspecified
 class HeadMusic::Content::Note
@@ -16,8 +16,8 @@ class HeadMusic::Content::Note
     @position = position || HeadMusic::Content::Position.new(@voice.flow, "1:1")
   end
 
-  def placement
-    @placement ||= HeadMusic::Content::NoteEvent.new(voice, position, rhythmic_value, pitch)
+  def voice_event
+    @voice_event ||= HeadMusic::Content::NoteEvent.new(voice, position, rhythmic_value, pitch)
   end
 
   def to_s
@@ -25,10 +25,10 @@ class HeadMusic::Content::Note
   end
 
   def method_missing(method_name, *args, &block)
-    respond_to_missing?(method_name) ? placement.send(method_name, *args, &block) : super
+    respond_to_missing?(method_name) ? voice_event.send(method_name, *args, &block) : super
   end
 
   def respond_to_missing?(method_name, *_args)
-    placement.respond_to?(method_name)
+    voice_event.respond_to?(method_name)
   end
 end

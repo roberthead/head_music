@@ -13,7 +13,7 @@ describe HeadMusic::Content::Note do
     it { is_expected.to be_note }
     it { is_expected.not_to be_rest }
 
-    it "responds only to placement methods" do
+    it "responds only to voice event methods" do
       expect {
         note.foo
       }.to raise_error(NoMethodError, /undefined method [`']foo'/)

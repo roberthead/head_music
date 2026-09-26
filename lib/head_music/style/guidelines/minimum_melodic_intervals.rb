@@ -25,9 +25,9 @@ class HeadMusic::Style::Guidelines::MinimumMelodicIntervals < HeadMusic::Style::
   end
 
   def no_motion_mark
-    return no_placements_mark if placements.empty?
+    return no_voice_events_mark if voice_events.empty?
 
-    HeadMusic::Style::Mark.for_all(placements, fitness: 0)
+    HeadMusic::Style::Mark.for_all(voice_events, fitness: 0)
   end
 
   def actual_count

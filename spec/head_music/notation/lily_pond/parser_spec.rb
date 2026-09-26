@@ -96,7 +96,7 @@ describe HeadMusic::Notation::LilyPond::Parser do
     end
 
     it "carries the eighth duration through the bar" do
-      expect(voice.placements.map { |placement| placement.rhythmic_value.to_s }.uniq).to eq ["eighth"]
+      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_value.to_s }.uniq).to eq ["eighth"]
     end
 
     it "fills exactly one bar" do
@@ -204,7 +204,7 @@ describe HeadMusic::Notation::LilyPond::Parser do
   describe "a note crossing a barline without a bar check" do
     it "parses, as LilyPond auto-splits it" do
       flow = parse("{ c'2 d'1 e'2 }")
-      expect(flow.voices.first.placements.map { |placement| placement.position.to_s }).to eq %w[1:1:000 1:3:000 2:3:000]
+      expect(flow.voices.first.voice_events.map { |voice_event| voice_event.position.to_s }).to eq %w[1:1:000 1:3:000 2:3:000]
     end
 
     it "re-renders the note split at the barline and tied" do

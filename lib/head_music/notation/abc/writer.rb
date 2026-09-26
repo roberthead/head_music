@@ -61,9 +61,9 @@ module HeadMusic::Notation::ABC
       raise RenderError, "cannot render the #{subject} change at bar #{bar_number} in ABC output"
     end
 
-    def placements
+    def voice_events
       voice = flow.voices.first
-      voice ? voice.placements : []
+      voice ? voice.voice_events : []
     end
 
     # No %%transpose directive is emitted: the pitches are already written, and
@@ -122,46 +122,46 @@ module HeadMusic::Notation::ABC
       end
     end
 
-    # A placement sounding across a bar line is written as one note per bar,
+    # A voice event sounding across a bar line is written as one note per bar,
     # tied, since ABC has no other way to cross the line.
     def segments_by_bar
-      HeadMusic::Notation::BarSplitter.segments(placements)
+      HeadMusic::Notation::BarSplitter.segments(voice_events)
         .chunk_while { |previous, current| previous.bar_number == current.bar_number }
     end
 
-    # The inter-token space is dropped only where the placement was authored as
+    # The inter-token space is dropped only where the voice event was authored as
     # beamed to its predecessor; a true or nil beam_break_before keeps it, so
     # programmatic flows render with every-token spacing. Every bar token
     # re-lexes unambiguously with no separator, so dropping it is safe.
     def render_bar(bar_segments, pitch_writer, duration_writer)
       bar_segments.map do |segment|
         token = token(segment, pitch_writer, duration_writer)
-        (segment.placement.beam_break_before == false) ? token : " #{token}"
+        (segment.voice_event.beam_break_before == false) ? token : " #{token}"
       end.join.lstrip
     end
 
     def token(segment, pitch_writer, duration_writer)
-      placement = segment.placement
-      ensure_pitched_sounds(placement)
+      voice_event = segment.voice_event
+      ensure_pitched_sounds(voice_event)
 
       multiplier = multiplier_for(segment, duration_writer)
       tie = segment.continues ? "-" : ""
-      return "z#{multiplier}" if placement.rest?
-      return chord_token(placement, pitch_writer, multiplier) + tie if placement.chord?
+      return "z#{multiplier}" if voice_event.rest?
+      return chord_token(voice_event, pitch_writer, multiplier) + tie if voice_event.chord?
 
-      "#{pitch_writer.token(placement.pitch)}#{multiplier}#{tie}"
+      "#{pitch_writer.token(voice_event.pitch)}#{multiplier}#{tie}"
     end
 
     def multiplier_for(segment, duration_writer)
-      return duration_writer.multiplier_string(segment.placement.rhythmic_value) unless segment.fraction
+      return duration_writer.multiplier_string(segment.voice_event.rhythmic_value) unless segment.fraction
 
-      duration_writer.multiplier_string_for_fraction(segment.fraction, segment.placement.rhythmic_value)
+      duration_writer.multiplier_string_for_fraction(segment.fraction, segment.voice_event.rhythmic_value)
     end
 
-    def chord_token(placement, pitch_writer, multiplier)
+    def chord_token(voice_event, pitch_writer, multiplier)
       # Pitches are emitted low-to-high so the writer's bar-accidental state
       # cannot diverge from what a re-parse of the brackets accumulates.
-      pitch_tokens = placement.pitches.sort.map { |pitch| pitch_writer.token(pitch) }
+      pitch_tokens = voice_event.pitches.sort.map { |pitch| pitch_writer.token(pitch) }
       "[#{pitch_tokens.join}]#{multiplier}"
     end
 

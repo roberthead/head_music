@@ -7,8 +7,8 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     HeadMusic::Notation::Kern.parse(text.gsub(/ {2,}/, "\t"))
   end
 
-  def placements(voice)
-    voice.placements.map(&:to_s)
+  def voice_events(voice)
+    voice.voice_events.map(&:to_s)
   end
 
   describe "parts and voices" do
@@ -32,11 +32,11 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
 
     it "gives each spine a part of its own, top-down from the rightmost" do
-      expect(flow.parts.map { |part| part.voices.first.placements.first.pitch.to_s }).to eq %w[E4 C3]
+      expect(flow.parts.map { |part| part.voices.first.voice_events.first.pitch.to_s }).to eq %w[E4 C3]
     end
 
     it "places notes, chords, and rests" do
-      expect(placements(flow.voices.first))
+      expect(voice_events(flow.voices.first))
         .to eq ["half E4 at 1:1:000", "quarter D4 F4 at 1:3:000", "quarter rest at 1:4:000", "whole C4 at 2:1:000"]
     end
 
@@ -166,7 +166,7 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       end
 
       it "places the music under the changed meter" do
-        expect(placements(flow.voices.last).last).to eq "dotted half E4 at 4:1:000"
+        expect(voice_events(flow.voices.last).last).to eq "dotted half E4 at 4:1:000"
       end
     end
 
@@ -201,17 +201,17 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
   describe "bars" do
     it "continues the count past an unnumbered barline" do
       flow = parse("**kern\n*M2/4\n=1\n2c\n=\n2d\n=\n2e\n*-")
-      expect(placements(flow.voices.first).last).to eq "half E4 at 3:1:000"
+      expect(voice_events(flow.voices.first).last).to eq "half E4 at 3:1:000"
     end
 
     it "starts from the first barline's number" do
       flow = parse("**kern\n*M2/4\n=5\n2c\n=6\n2d\n*-")
-      expect(placements(flow.voices.first)).to eq ["half C4 at 5:1:000", "half D4 at 6:1:000"]
+      expect(voice_events(flow.voices.first)).to eq ["half C4 at 5:1:000", "half D4 at 6:1:000"]
     end
 
     it "reads a full bar before the first barline as the bar before it" do
       flow = parse("**kern\n*M2/4\n2c\n=1\n2d\n*-")
-      expect(placements(flow.voices.first)).to eq ["half C4 at 0:1:000", "half D4 at 1:1:000"]
+      expect(voice_events(flow.voices.first)).to eq ["half C4 at 0:1:000", "half D4 at 1:1:000"]
     end
 
     describe "a pickup" do
@@ -228,11 +228,11 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       end
 
       it "becomes bar 0, padded with a leading rest from its downbeat" do
-        expect(placements(flow.voices.last)).to eq ["half rest at 0:1:000", "quarter G3 at 0:3:000", "dotted half C3 at 1:1:000"]
+        expect(voice_events(flow.voices.last)).to eq ["half rest at 0:1:000", "quarter G3 at 0:3:000", "dotted half C3 at 1:1:000"]
       end
 
       it "pads each voice by the same amount" do
-        expect(placements(flow.voices.first).first(3)).to eq ["half rest at 0:1:000", "eighth E4 at 0:3:000", "eighth F4 at 0:3:480"]
+        expect(voice_events(flow.voices.first).first(3)).to eq ["half rest at 0:1:000", "eighth E4 at 0:3:000", "eighth F4 at 0:3:480"]
       end
 
       it "leaves every voice continuous" do
@@ -242,12 +242,12 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
 
     it "numbers a pickup from the first barline" do
       flow = parse("**kern\n*M2/4\n4c\n=5\n2d\n*-")
-      expect(placements(flow.voices.first)).to eq ["quarter rest at 4:1:000", "quarter C4 at 4:2:000", "half D4 at 5:1:000"]
+      expect(voice_events(flow.voices.first)).to eq ["quarter rest at 4:1:000", "quarter C4 at 4:2:000", "half D4 at 5:1:000"]
     end
 
     it "has no pickup when the first barline precedes the music" do
       flow = parse("**kern\n*M3/4\n=1-\n2.c\n=2\n2.d\n*-")
-      expect(placements(flow.voices.first)).to eq ["dotted half C4 at 1:1:000", "dotted half D4 at 2:1:000"]
+      expect(voice_events(flow.voices.first)).to eq ["dotted half C4 at 1:1:000", "dotted half D4 at 2:1:000"]
     end
 
     it "raises when a pickup is longer than its bar" do
@@ -297,7 +297,7 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       end
 
       it "keeps the bar whole across a repeat sign in its middle" do
-        expect(placements(flow.voices.first)[4]).to eq "quarter F4 at 2:3:000"
+        expect(voice_events(flow.voices.first)[4]).to eq "quarter F4 at 2:3:000"
       end
 
       it "ends a repeat on the bar before :|! and starts one on the bar after" do
@@ -316,7 +316,7 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
 
     it "accepts a short final bar" do
       flow = parse("**kern\n*M3/4\n=1\n2.c\n=2\n2d\n==\n*-")
-      expect(placements(flow.voices.first).last).to eq "half D4 at 2:1:000"
+      expect(voice_events(flow.voices.first).last).to eq "half D4 at 2:1:000"
     end
 
     it "raises when a bar is too long" do
@@ -330,7 +330,7 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
 
     it "reads a file with no barlines from bar 1" do
-      expect(placements(parse("**kern\n1c\n1d\n*-").voices.first)).to eq ["whole C4 at 1:1:000", "whole D4 at 2:1:000"]
+      expect(voice_events(parse("**kern\n1c\n1d\n*-").voices.first)).to eq ["whole C4 at 1:1:000", "whole D4 at 2:1:000"]
     end
 
     it "raises when spines disagree on a bar's length" do
@@ -359,13 +359,13 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       parse("**kern\n*clefG2\n*M2/4\n*k[]\n=1\n[2d\n=2\n#{interpretation}\n2d]\n=3\n2e\n*-")
     end
 
-    def placements_of(flow)
-      placements(flow.voices.first)
+    def voice_events_of(flow)
+      voice_events(flow.voices.first)
     end
 
     it "changes the key signature at the barline's downbeat" do
       flow = tied_across("*k[f#]")
-      expect([flow.timeline.key_signature_change_at(2)&.signature, placements_of(flow).first])
+      expect([flow.timeline.key_signature_change_at(2)&.signature, voice_events_of(flow).first])
         .to eq [1, "half tied to half D4 at 1:1:000"]
     end
 
@@ -375,7 +375,7 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
 
     it "changes the meter at the barline's downbeat" do
       flow = parse("**kern\n*M2/4\n=1\n[2d\n=2\n*M3/4\n2.d]\n=3\n2.e\n*-")
-      expect([flow.meter_changes.transform_values(&:to_s), placements_of(flow).first])
+      expect([flow.meter_changes.transform_values(&:to_s), voice_events_of(flow).first])
         .to eq [{2 => "3/4"}, "half tied to dotted half D4 at 1:1:000"]
     end
 
@@ -385,7 +385,7 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
 
     it "changes the clef at the barline's downbeat" do
       flow = tied_across("*clefC3")
-      expect([flow.parts.first.staff_system.first_staff.clef_changes.keys, placements_of(flow).length]).to eq [[2], 2]
+      expect([flow.parts.first.staff_system.first_staff.clef_changes.keys, voice_events_of(flow).length]).to eq [[2], 2]
     end
 
     it "still raises for a change in the middle of a bar while a tie is open" do
@@ -395,28 +395,28 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
   end
 
   describe "ties" do
-    it "fuses a tie into one placement" do
-      expect(placements(parse("**kern\n[4c\n4c]\n2d\n*-").voices.first))
+    it "fuses a tie into one voice event" do
+      expect(voice_events(parse("**kern\n[4c\n4c]\n2d\n*-").voices.first))
         .to eq ["quarter tied to quarter C4 at 1:1:000", "half D4 at 1:3:000"]
     end
 
-    it "fuses a tie across a barline between different durations into one placement" do
+    it "fuses a tie across a barline between different durations into one voice event" do
       flow = parse("**kern\n*M2/4\n=1\n4c\n[4g\n=2\n8g]\n8a\n4b\n*-")
-      expect(placements(flow.voices.first)[1..2]).to eq ["quarter tied to eighth G4 at 1:2:000", "eighth A4 at 2:1:480"]
+      expect(voice_events(flow.voices.first)[1..2]).to eq ["quarter tied to eighth G4 at 1:2:000", "eighth A4 at 2:1:480"]
     end
 
     it "fuses a longer chain" do
       flow = parse("**kern\n*M2/4\n=1\n[2c\n=2\n2c_\n=3\n2c]\n*-")
-      expect(placements(flow.voices.first)).to eq ["half tied to half tied to half C4 at 1:1:000"]
+      expect(voice_events(flow.voices.first)).to eq ["half tied to half tied to half C4 at 1:1:000"]
     end
 
     it "ties chords" do
-      expect(placements(parse("**kern\n[2c [2e\n2c] 2e]\n*-").voices.first)).to eq ["half tied to half C4 E4 at 1:1:000"]
+      expect(voice_events(parse("**kern\n[2c [2e\n2c] 2e]\n*-").voices.first)).to eq ["half tied to half C4 E4 at 1:1:000"]
     end
 
     it "keeps the spine's time across the tie" do
       flow = parse("**kern  **kern\n[4c  2e\n4c]  .\n2d  2f\n*-  *-")
-      expect(placements(flow.voices.last).last).to eq "half D4 at 1:3:000"
+      expect(voice_events(flow.voices.last).last).to eq "half D4 at 1:3:000"
     end
 
     it "raises when a tie is never closed" do
@@ -468,11 +468,11 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
 
     it "passes over a row with no attacks" do
-      expect(parse("**kern  **dynam\n2c  p\n.  <\n2d  .\n*-  *-").voices.first.placements.length).to eq 2
+      expect(parse("**kern  **dynam\n2c  p\n.  <\n2d  .\n*-  *-").voices.first.voice_events.length).to eq 2
     end
 
     it "drops grace notes" do
-      expect(placements(parse("**kern\n8qc\n1d\n*-").voices.first)).to eq ["whole D4 at 1:1:000"]
+      expect(voice_events(parse("**kern\n8qc\n1d\n*-").voices.first)).to eq ["whole D4 at 1:1:000"]
     end
   end
 

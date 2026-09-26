@@ -36,11 +36,11 @@ class HeadMusic::Content::Voice
     end
 
     def note_at(position)
-      notes.detect { |note| position.within_placement?(note) }
+      notes.detect { |note| position.within_voice_event?(note) }
     end
 
-    def notes_during(placement)
-      notes.select { |note| note.during?(placement) }
+    def notes_during(voice_event)
+      notes.select { |note| note.during?(voice_event) }
     end
 
     def note_preceding(position)

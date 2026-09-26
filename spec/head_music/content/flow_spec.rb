@@ -123,7 +123,7 @@ describe HeadMusic::Content::Flow do
     end
   end
 
-  context "with some placements" do
+  context "with some voice events" do
     let(:voice) { flow.add_voice(role: "melody") }
 
     before do
@@ -410,7 +410,7 @@ describe HeadMusic::Content::Flow do
       expect(hash["timeline"]).to eq expected_timeline
     end
 
-    it "serializes the voices with their placements" do
+    it "serializes the voices with their voice events" do
       expect(hash["parts"].flat_map { |part| part["voices"] }).to eq expected_voices
     end
 
@@ -463,10 +463,10 @@ describe HeadMusic::Content::Flow do
       flow
     end
 
-    def single_placement_hash(placement_hash)
+    def single_voice_event_hash(voice_event_hash)
       {
         "schema_version" => 4,
-        "parts" => [{"voices" => [{"role" => nil, "placements" => [placement_hash]}]}]
+        "parts" => [{"voices" => [{"role" => nil, "placements" => [voice_event_hash]}]}]
       }
     end
 
@@ -503,13 +503,13 @@ describe HeadMusic::Content::Flow do
     end
 
     it "raises with path context on an unknown pitch" do
-      hash = single_placement_hash("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["H#4"])
+      hash = single_voice_event_hash("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["H#4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, 'parts[0].voices[0].placements[0].sounds[0]: unknown pitch "H#4"')
     end
 
     it "raises with path context on an unknown rhythmic value" do
-      hash = single_placement_hash("position" => "1:1:000", "rhythmic_value" => "flurble", "sounds" => ["C4"])
+      hash = single_voice_event_hash("position" => "1:1:000", "rhythmic_value" => "flurble", "sounds" => ["C4"])
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /parts\[0\]\.voices\[0\]\.placements\[0\]: unknown rhythmic value "flurble"/)
     end

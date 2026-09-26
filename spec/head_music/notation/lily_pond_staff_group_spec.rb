@@ -83,7 +83,7 @@ describe HeadMusic::Notation::LilyPond do
     end
 
     it "crosses at that barline, keeping the tied note whole" do
-      expect([staff_indexes(lower_voice, 1..2), lower_voice.placements.map(&:to_s)[1]])
+      expect([staff_indexes(lower_voice, 1..2), lower_voice.voice_events.map(&:to_s)[1]])
         .to eq [[1, 0], "half tied to half C4 at 1:3:000"]
     end
   end

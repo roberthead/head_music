@@ -23,14 +23,14 @@ describe HeadMusic::Style::Mark do
     context "given a single note" do
       subject(:mark) { described_class.for_all(note) }
 
-      its(:placements) { are_expected.to eq [note] }
+      its(:voice_events) { are_expected.to eq [note] }
       its(:code) { is_expected.to eq "5:3:000 to 5:4:000" }
     end
 
-    context "given multiple placements" do
+    context "given multiple voice events" do
       subject(:mark) { described_class.for_all([note, rest]) }
 
-      its(:placements) { are_expected.to eq [note, rest] }
+      its(:voice_events) { are_expected.to eq [note, rest] }
       its(:code) { is_expected.to eq "5:3:000 to 6:1:000" }
     end
   end

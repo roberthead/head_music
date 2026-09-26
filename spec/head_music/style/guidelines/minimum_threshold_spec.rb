@@ -57,8 +57,8 @@ describe HeadMusic::Style::Guidelines::MinimumThreshold do
 
       it { is_expected.not_to be_adherent }
 
-      it "marks every placement" do
-        expect(assessment.first_mark.placements).to eq voice.placements
+      it "marks every voice event" do
+        expect(assessment.first_mark.voice_events).to eq voice.voice_events
       end
 
       it "scores fitness as the count's proportion of the minimum" do

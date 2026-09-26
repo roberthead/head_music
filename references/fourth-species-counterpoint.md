@@ -107,7 +107,7 @@ The syncopated texture is sometimes interrupted -- the tie does not occur and th
 
 This is the only context in fourth species where a dissonance may appear without being a suspension. The break allows the voice to redirect melodically when a suspension would produce forbidden parallels or other violations.
 
-**Implementation note:** Detecting a second species break requires knowing whether a `VoiceEvent` at a weak beat position ties into the next downbeat. If `placement.next_position` falls on a downbeat and `voice.note_at(next_downbeat)` returns a different pitch (or no pitch), the tie has broken.
+**Implementation note:** Detecting a second species break requires knowing whether a `VoiceEvent` at a weak beat position ties into the next downbeat. If `voice_event.next_position` falls on a downbeat and `voice.note_at(next_downbeat)` returns a different pitch (or no pitch), the tie has broken.
 
 ---
 
@@ -138,8 +138,8 @@ Analytical guidelines should never count note heads or detect ties in the notate
 
 ```
 Voice
-  #placements       -> [VoiceEvent, ...]  all sounding events (notes and rests)
-  #notes            -> [VoiceEvent, ...]  only pitched placements
+  #voice_events     -> [VoiceEvent, ...]  all sounding events (notes and rests)
+  #notes            -> [VoiceEvent, ...]  only pitched voice events
   #note_at(pos)     -> VoiceEvent | nil   what is sounding at a given Position
   #note_preceding(pos) -> VoiceEvent | nil the note whose position is before pos
   #note_following(pos) -> VoiceEvent | nil the note whose position is after pos
@@ -157,15 +157,15 @@ VoiceEvent
 
 ```
 Position
-  #within_placement?(placement) -> bool   true if self >= placement.position
-                                          AND self < placement.next_position
+  #within_voice_event?(voice_event) -> bool   true if self >= voice_event.position
+                                          AND self < voice_event.next_position
   #strong?          -> bool               downbeat (strength >= 80)
   #weak?            -> bool               not strong
   #bar_number       -> Integer
   #count            -> Integer            beat within bar
 ```
 
-`Position#within_placement?` is the key predicate for "is this pitch sounding at this moment?" It returns true for any position that falls during the placement's duration -- including the middle of a long note. This is the mechanism that makes sustained notes invisible to position-based queries.
+`Position#within_voice_event?` is the key predicate for "is this pitch sounding at this moment?" It returns true for any position that falls during the voice event's duration -- including the middle of a long note. This is the mechanism that makes sustained notes invisible to position-based queries.
 
 ### HarmonicInterval
 
@@ -173,7 +173,7 @@ Position
 HarmonicInterval.new(voice1, voice2, position)
 ```
 
-Internally calls `voice.note_at(position)` for each voice. Because `note_at` uses `position.within_placement?`, it correctly finds notes that **began earlier and are still sounding**, not only notes that **start at** the given position.
+Internally calls `voice.note_at(position)` for each voice. Because `note_at` uses `position.within_voice_event?`, it correctly finds notes that **began earlier and are still sounding**, not only notes that **start at** the given position.
 
 This means `HarmonicInterval` already handles sustained pitches correctly. A suspended note that began on beat 3 and is still sounding on beat 1 of the next bar will be found and evaluated as a harmonic interval at beat 1 without any special casing in the guideline code.
 
@@ -188,8 +188,8 @@ suspended_note = counterpoint_voice.note_at(downbeat_position)
 # It is a suspension only if it started before the downbeat
 is_suspension = suspended_note && suspended_note.position < downbeat_position
 
-# Preparation: the same placement, evaluated at the previous weak beat
-# (suspended_note itself IS the preparation placement)
+# Preparation: the same voice event, evaluated at the previous weak beat
+# (suspended_note itself IS the preparation voice event)
 preparation_harmonic_interval = HarmonicInterval.new(
   cantus_firmus, counterpoint_voice, suspended_note.position
 )
@@ -210,10 +210,10 @@ Guidelines inherit from `HeadMusic::Style::Guideline` and override the `marks` m
 ```ruby
 class MyGuideline < HeadMusic::Style::Guideline
   def marks
-    # Collect placements that violate the rule.
+    # Collect voice events that violate the rule.
     # Return Mark objects for each violation.
-    violating_placements.map do |placement|
-      HeadMusic::Style::Mark.for(placement, fitness: 0)
+    violating_voice_events.map do |voice_event|
+      HeadMusic::Style::Mark.for(voice_event, fitness: 0)
     end
   end
 end
@@ -238,7 +238,7 @@ variant of the sentence. Every entry is rendered at load by
 `Style::Template.verify!`, so a missing one or an unfilled `%{}` fails on
 `require` rather than in front of a student.
 
-`Mark.for(placement)` creates a mark spanning `placement.position` to `placement.next_position`. `Mark.for_all(placements)` creates a single mark spanning a group. `Mark.for_each(placements)` creates one mark per placement.
+`Mark.for(voice_event)` creates a mark spanning `voice_event.position` to `voice_event.next_position`. `Mark.for_all(voice_events)` creates a single mark spanning a group. `Mark.for_each(voice_events)` creates one mark per voice event.
 
 Fitness of `0` signals a hard violation (forbidden). The default `HeadMusic::PENALTY_FACTOR` is used for soft violations (discouraged but not forbidden).
 

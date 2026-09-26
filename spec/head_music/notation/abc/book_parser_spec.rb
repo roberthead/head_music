@@ -40,7 +40,7 @@ describe HeadMusic::Notation::ABC::BookParser do
     end
 
     it "places each tune's notes in its own flow" do
-      expect(flows.map { |flow| flow.voices.first.placements.length }).to eq [8, 6]
+      expect(flows.map { |flow| flow.voices.first.voice_events.length }).to eq [8, 6]
     end
   end
 

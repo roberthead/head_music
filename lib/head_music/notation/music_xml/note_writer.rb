@@ -2,9 +2,9 @@ require_relative "xml_text"
 
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
-  # Serializes the <note> elements a placement occupies.
+  # Serializes the <note> elements a voice event occupies.
   #
-  # A placement becomes one <note> per tied component per sounding pitch in
+  # A voice event becomes one <note> per tied component per sounding pitch in
   # each bar it sounds in: the components come from the render plan's duration
   # split, and a chord renders as a lead note followed by its <chord/> members.
   class NoteWriter
@@ -21,14 +21,14 @@ module HeadMusic::Notation::MusicXML
     # @param staff_number [Integer, nil] the <staff> the note is written on,
     #   omitted for a part on one staff
     def lines(segment, voice_number: nil, staff_number: nil)
-      placement = segment.placement
-      ensure_pitched_sounds(placement)
+      voice_event = segment.voice_event
+      ensure_pitched_sounds(voice_event)
 
       components_by_segment[segment].each_with_index.flat_map do |component, component_index|
         beams = beam_annotations[[segment, component_index]] || []
-        note_slots(placement).each_with_index.flat_map do |pitch, index|
+        note_slots(voice_event).each_with_index.flat_map do |pitch, index|
           element_lines(
-            placement, component, pitch: pitch, chord: index.positive?, beams: index.zero? ? beams : [],
+            voice_event, component, pitch: pitch, chord: index.positive?, beams: index.zero? ? beams : [],
             voice_number: voice_number, staff_number: staff_number
           )
         end
@@ -55,11 +55,11 @@ module HeadMusic::Notation::MusicXML
 
     delegate :components_by_segment, :beam_annotations, to: :plan
 
-    # A rest emits one empty slot; a sounded placement emits its pitches low to
+    # A rest emits one empty slot; a sounded voice event emits its pitches low to
     # high, so the lowest note leads and the rest carry <chord/>. ensure_pitched_sounds
     # has already rejected any unpitched sound, so pitches covers every sound here.
-    def note_slots(placement)
-      placement.rest? ? [nil] : placement.pitches.sort
+    def note_slots(voice_event)
+      voice_event.rest? ? [nil] : voice_event.pitches.sort
     end
 
     def render_error_class
@@ -73,20 +73,20 @@ module HeadMusic::Notation::MusicXML
     # and precedes <type>, and <staff> follows the dots and precedes the beams.
     # Both are omitted entirely for the one-voice, one-staff part that every
     # existing document is made of, which is what keeps this byte-identical.
-    def element_lines(placement, component, pitch: nil, chord: false, beams: [], voice_number: nil, staff_number: nil)
+    def element_lines(voice_event, component, pitch: nil, chord: false, beams: [], voice_number: nil, staff_number: nil)
       [
         "#{INDENT * 3}<note>",
         *(chord ? ["#{INDENT * 4}<chord/>"] : []),
         *(pitch ? pitch_lines(pitch) : ["#{INDENT * 4}<rest/>"]),
         "#{INDENT * 4}<duration>#{component.duration}</duration>",
-        *tie_lines(placement, component),
+        *tie_lines(voice_event, component),
         voice_number && "#{INDENT * 4}<voice>#{voice_number}</voice>",
         "#{INDENT * 4}<type>#{component.type}</type>",
         *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
         staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>",
         *beam_lines(beams),
-        *notation_lines(placement, component),
-        *lyric_writer.lines(placement, component, chord: chord),
+        *notation_lines(voice_event, component),
+        *lyric_writer.lines(voice_event, component, chord: chord),
         "#{INDENT * 3}</note>"
       ].compact
     end
@@ -108,8 +108,8 @@ module HeadMusic::Notation::MusicXML
 
     # Rests take no tie elements; the links of a rest's tied chain render as
     # consecutive independent rests.
-    def tie_lines(placement, component)
-      return [] if placement.rest?
+    def tie_lines(voice_event, component)
+      return [] if voice_event.rest?
 
       [
         component.tie_stop ? %(#{INDENT * 4}<tie type="stop"/>) : nil,
@@ -117,8 +117,8 @@ module HeadMusic::Notation::MusicXML
       ].compact
     end
 
-    def notation_lines(placement, component)
-      return [] if placement.rest? || (!component.tie_start && !component.tie_stop)
+    def notation_lines(voice_event, component)
+      return [] if voice_event.rest? || (!component.tie_start && !component.tie_stop)
 
       [
         "#{INDENT * 4}<notations>",

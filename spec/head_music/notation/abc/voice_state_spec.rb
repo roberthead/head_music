@@ -59,22 +59,22 @@ describe HeadMusic::Notation::ABC::VoiceState do
     end
 
     it "buffers a deferred note until it is flushed" do
-      state.defer_placement([pitch], "1")
+      state.defer_voice_event([pitch], "1")
       expect(voice.notes).to be_empty
       state.flush_pending_note
       expect(voice.notes.map { |note| note.pitch.to_s }).to eq ["C4"]
     end
 
-    it "carries the beam break onto the flushed placement" do
-      state.defer_placement([pitch], "1")
+    it "carries the beam break onto the flushed voice event" do
+      state.defer_voice_event([pitch], "1")
       state.mark_beam_break
-      state.defer_placement([pitch], "1")
+      state.defer_voice_event([pitch], "1")
       state.flush_pending_note
-      expect(voice.placements.last.beam_break_before).to be true
+      expect(voice.voice_events.last.beam_break_before).to be true
     end
 
     it "flushing with nothing pending is a no-op" do
-      expect { state.flush_pending_note }.not_to change(voice, :placements)
+      expect { state.flush_pending_note }.not_to change(voice, :voice_events)
     end
   end
 end

@@ -48,11 +48,11 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "allows trailing blank lines" do
-      expect(parse("X:1\nK:C\nCDEF|\n\n\n").voices.first.placements.length).to eq 4
+      expect(parse("X:1\nK:C\nCDEF|\n\n\n").voices.first.voice_events.length).to eq 4
     end
 
     it "allows trailing comment lines after the tune" do
-      expect(parse("X:1\nK:C\nCDEF|\n\n% the end\n").voices.first.placements.length).to eq 4
+      expect(parse("X:1\nK:C\nCDEF|\n\n% the end\n").voices.first.voice_events.length).to eq 4
     end
   end
 
@@ -70,22 +70,22 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "places each note with its rhythmic value" do
-      expect(voice.placements.map { |placement| placement.rhythmic_value.name }.uniq).to eq ["quarter"]
+      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_value.name }.uniq).to eq ["quarter"]
     end
 
     it "places the first note at the start of bar one" do
-      expect(voice.placements.first.position.to_s).to eq "1:1:000"
+      expect(voice.voice_events.first.position.to_s).to eq "1:1:000"
     end
 
-    it "rolls placements over into the second bar" do
-      expect(voice.placements[4].position.to_s).to eq "2:1:000"
+    it "rolls voice events over into the second bar" do
+      expect(voice.voice_events[4].position.to_s).to eq "2:1:000"
     end
   end
 
   describe "note lengths" do
     subject(:flow) { parse_body("C2 D E/|") }
 
-    let(:names) { flow.voices.first.placements.map { |placement| placement.rhythmic_value.name } }
+    let(:names) { flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_value.name } }
 
     it "resolves multipliers against the unit note length" do
       expect(names).to eq ["half", "quarter", "eighth"]
@@ -98,15 +98,15 @@ describe HeadMusic::Notation::ABC::Parser do
     let(:voice) { flow.voices.first }
 
     it "places the rest with no pitch" do
-      expect(voice.placements[1].pitch).to be_nil
+      expect(voice.voice_events[1].pitch).to be_nil
     end
 
-    it "marks the placement as a rest" do
-      expect(voice.placements[1]).to be_rest
+    it "marks the voice event as a rest" do
+      expect(voice.voice_events[1]).to be_rest
     end
 
     it "advances the cursor past the rest" do
-      expect(voice.placements[2].position.to_s).to eq "1:3:000"
+      expect(voice.voice_events[2].position.to_s).to eq "1:3:000"
     end
   end
 
@@ -186,7 +186,7 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(flow.voices.map(&:role)).to eq %w[1 2]
     end
 
-    it "routes placements to the voice selected by body V: lines" do
+    it "routes voice events to the voice selected by body V: lines" do
       expect(second_voice.pitches.map(&:to_s)).to eq %w[G4 A4]
     end
 
@@ -194,8 +194,8 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(first_voice.pitches.map(&:to_s)).to eq %w[C4 D4 E4 F4]
     end
 
-    it "keeps each voice's placements sequential from bar one" do
-      expect(second_voice.placements.first.position.to_s).to eq "1:1:000"
+    it "keeps each voice's voice events sequential from bar one" do
+      expect(second_voice.voice_events.first.position.to_s).to eq "1:1:000"
     end
 
     context "when a body V: names an unknown voice" do
@@ -226,13 +226,13 @@ describe HeadMusic::Notation::ABC::Parser do
   describe "broken rhythm" do
     it "dots the left note and halves the right note for >" do
       flow = parse_body("A>B|")
-      names = flow.voices.first.placements.map { |placement| placement.rhythmic_value.name }
+      names = flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_value.name }
       expect(names).to eq ["dotted quarter", "eighth"]
     end
 
     it "halves the left note and dots the right note for <" do
       flow = parse_body("A<B|")
-      names = flow.voices.first.placements.map { |placement| placement.rhythmic_value.name }
+      names = flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_value.name }
       expect(names).to eq ["eighth", "dotted quarter"]
     end
 
@@ -264,31 +264,31 @@ describe HeadMusic::Notation::ABC::Parser do
       ABC
     end
 
-    it "fuses a tied pair into a single placement" do
+    it "fuses a tied pair into a single voice event" do
       voice = parse_compound("E3-E2 G |]").voices.first
-      expect(voice.placements.length).to eq 2
+      expect(voice.voice_events.length).to eq 2
     end
 
     it "honors the authored split instead of the greedy decomposition" do
-      value = parse_compound("E3-E2 G |]").voices.first.placements.first.rhythmic_value
+      value = parse_compound("E3-E2 G |]").voices.first.voice_events.first.rhythmic_value
       expect(value.name).to eq "dotted quarter tied to quarter"
     end
 
     it "differs from the greedy split of the same total duration" do
-      greedy = parse_compound("E5 G |]").voices.first.placements.first.rhythmic_value
-      authored = parse_compound("E3-E2 G |]").voices.first.placements.first.rhythmic_value
+      greedy = parse_compound("E5 G |]").voices.first.voice_events.first.rhythmic_value
+      authored = parse_compound("E3-E2 G |]").voices.first.voice_events.first.rhythmic_value
       expect(greedy.name).to eq "half tied to eighth"
       expect(authored.total_value).to eq greedy.total_value
       expect(authored.name).not_to eq greedy.name
     end
 
     it "chains three tied notes into one nested value" do
-      value = parse_compound("C2-C2-C2 |]").voices.first.placements.first.rhythmic_value
+      value = parse_compound("C2-C2-C2 |]").voices.first.voice_events.first.rhythmic_value
       expect(value.name).to eq "quarter tied to quarter tied to quarter"
     end
 
     it "ties a note across the whole bar in simple meter" do
-      value = parse_body("C3-C |").voices.first.placements.first.rhythmic_value
+      value = parse_body("C3-C |").voices.first.voice_events.first.rhythmic_value
       expect(value.name).to eq "dotted half tied to quarter"
     end
 
@@ -297,10 +297,10 @@ describe HeadMusic::Notation::ABC::Parser do
         .to raise_error(HeadMusic::Notation::ABC::ParseError, /same pitch/)
     end
 
-    it "ties a note across a barline into one placement" do
-      placements = parse_compound("E3-|E3 |]").voices.first.placements
-      expect(placements.length).to eq 1
-      expect(placements.first.rhythmic_value.name).to eq "dotted quarter tied to dotted quarter"
+    it "ties a note across a barline into one voice event" do
+      voice_events = parse_compound("E3-|E3 |]").voices.first.voice_events
+      expect(voice_events.length).to eq 1
+      expect(voice_events.first.rhythmic_value.name).to eq "dotted quarter tied to dotted quarter"
     end
 
     it "sustains a tie across a barline through the next downbeat" do
@@ -397,7 +397,7 @@ describe HeadMusic::Notation::ABC::Parser do
       end
     end
 
-    it "ignores a repeat ending before any placements" do
+    it "ignores a repeat ending before any voice events" do
       flow = parse_body(":|CDEF|")
       expect(flow.bars(1).first.ends_repeat?).to be false
     end
@@ -518,40 +518,40 @@ describe HeadMusic::Notation::ABC::Parser do
 
     let(:voice) { flow.voices.first }
 
-    it "places each chord as one placement holding the bracketed pitches" do
-      expect(voice.placements.map { |placement| [placement.position.to_s, placement.pitches.map(&:to_s)] })
+    it "places each chord as one voice event holding the bracketed pitches" do
+      expect(voice.voice_events.map { |voice_event| [voice_event.position.to_s, voice_event.pitches.map(&:to_s)] })
         .to eq [["1:1:000", %w[C4 E4 G4]], ["1:3:000", %w[D4 F4 A4]], ["2:1:000", %w[E4 G4 C5]]]
     end
 
-    it "marks the placements as chords" do
-      expect(voice.placements).to all(be_chord)
+    it "marks the voice events as chords" do
+      expect(voice.voice_events).to all(be_chord)
     end
 
     it "applies the length after the bracket to the whole chord" do
-      expect(voice.placements.map { |placement| placement.rhythmic_value.name })
+      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_value.name })
         .to eq ["half", "half", "whole"]
     end
 
-    it "parses a single-note bracket as an ordinary note placement" do
-      placement = parse_body("[C] D|").voices.first.placements.first
-      expect([placement.note?, placement.chord?, placement.pitches.map(&:to_s)])
+    it "parses a single-note bracket as an ordinary note voice event" do
+      voice_event = parse_body("[C] D|").voices.first.voice_events.first
+      expect([voice_event.note?, voice_event.chord?, voice_event.pitches.map(&:to_s)])
         .to eq [true, false, ["C4"]]
     end
 
     it "reads uniform per-note lengths as the chord's length" do
-      placement = parse_body("[C2E2G2]|").voices.first.placements.first
-      expect(placement.rhythmic_value.name).to eq "half"
+      voice_event = parse_body("[C2E2G2]|").voices.first.voice_events.first
+      expect(voice_event.rhythmic_value.name).to eq "half"
     end
 
     it "multiplies uniform inner lengths with the outer length (ABC 2.1 sec. 4.17)" do
-      inner_outer = parse_body("[C2E2G2]3|").voices.first.placements.first
-      outer_only = parse_body("[CEG]6|").voices.first.placements.first
+      inner_outer = parse_body("[C2E2G2]3|").voices.first.voice_events.first
+      outer_only = parse_body("[CEG]6|").voices.first.voice_events.first
       expect(inner_outer.rhythmic_value).to eq outer_only.rhythmic_value
     end
 
     it "treats differently-spelled equal inner lengths as uniform" do
-      placement = parse_body("[C4/2E2G2]|").voices.first.placements.first
-      expect(placement.rhythmic_value.name).to eq "half"
+      voice_event = parse_body("[C4/2E2G2]|").voices.first.voice_events.first
+      expect(voice_event.rhythmic_value.name).to eq "half"
     end
 
     it "raises when bracketed notes have unequal lengths" do
@@ -569,19 +569,19 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "allows the same letter an octave apart" do
-      placement = parse_body("[Cc]|").voices.first.placements.first
-      expect([placement.chord?, placement.pitches.map(&:to_s)]).to eq [true, %w[C4 C5]]
+      voice_event = parse_body("[Cc]|").voices.first.voice_events.first
+      expect([voice_event.chord?, voice_event.pitches.map(&:to_s)]).to eq [true, %w[C4 C5]]
     end
 
     it "applies broken rhythm across two chords" do
-      placements = parse_body("[CEG]>[DFA]|").voices.first.placements
-      expect(placements.map { |placement| placement.rhythmic_value.name })
+      voice_events = parse_body("[CEG]>[DFA]|").voices.first.voice_events
+      expect(voice_events.map { |voice_event| voice_event.rhythmic_value.name })
         .to eq ["dotted quarter", "eighth"]
     end
 
     it "keeps both sides of a broken rhythm as chords" do
-      placements = parse_body("[CEG]>[DFA]|").voices.first.placements
-      expect(placements).to all(be_chord)
+      voice_events = parse_body("[CEG]>[DFA]|").voices.first.voice_events
+      expect(voice_events).to all(be_chord)
     end
 
     it "still rejects an inline field next to a chord as unsupported, not a chord" do
@@ -590,20 +590,20 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "persists an accidental inside a chord for the rest of the bar" do
-      placements = parse_body("[^FA] F|").voices.first.placements
-      expect(placements.map { |placement| placement.pitches.map(&:to_s) })
+      voice_events = parse_body("[^FA] F|").voices.first.voice_events
+      expect(voice_events.map { |voice_event| voice_event.pitches.map(&:to_s) })
         .to eq [%w[F♯4 A4], %w[F♯4]]
     end
 
     it "resets a chord accidental at the bar line" do
-      placements = parse_body("[^FA] F|F|").voices.first.placements
-      expect(placements.last.pitches.map(&:to_s)).to eq %w[F4]
+      voice_events = parse_body("[^FA] F|F|").voices.first.voice_events
+      expect(voice_events.last.pitches.map(&:to_s)).to eq %w[F4]
     end
   end
 
   describe "beam breaks" do
-    def placements(body, meter: "C")
-      parse(<<~ABC).voices.first.placements.sort_by(&:position)
+    def voice_events(body, meter: "C")
+      parse(<<~ABC).voices.first.voice_events.sort_by(&:position)
         X:1
         L:1/8
         M:#{meter}
@@ -613,7 +613,7 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     def flags(body, meter: "C")
-      placements(body, meter: meter).map(&:beam_break_before)
+      voice_events(body, meter: meter).map(&:beam_break_before)
     end
 
     it "beams a run of adjacent notes as one group" do
@@ -636,8 +636,8 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(flags("CC z CC")).to eq [nil, false, nil, true, false]
     end
 
-    it "fuses a tied pair into one placement whose beam flag is nil" do
-      expect(placements("C-C DD").length).to eq 3
+    it "fuses a tied pair into one voice event whose beam flag is nil" do
+      expect(voice_events("C-C DD").length).to eq 3
     end
 
     it "carries the head's flag through a tie and breaks before a spaced note" do

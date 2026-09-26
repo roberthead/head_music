@@ -12,11 +12,11 @@ describe HeadMusic::Content::Voice do
       HeadMusic::Content::Position.new(flow, "5:1:0")
     end
 
-    it "adds a placement" do
+    it "adds a voice event" do
       expect do
         voice.place(position, :quarter)
       end.to change {
-        voice.placements.length
+        voice.voice_events.length
       }.by 1
     end
 
@@ -25,7 +25,7 @@ describe HeadMusic::Content::Voice do
       let!(:fourth_method_position) { voice.place(HeadMusic::Content::Position.new(flow, "4:3:0"), :quarter) }
 
       it "sorts by position" do
-        expect(voice.placements).to eq [fourth_method_position, fifth_method_position]
+        expect(voice.voice_events).to eq [fourth_method_position, fifth_method_position]
       end
     end
 
@@ -36,9 +36,9 @@ describe HeadMusic::Content::Voice do
         voice.place("1:1", :quarter, "G4")
       end
 
-      it "merges them into one chord placement, preserving placement order" do
-        expect(voice.placements.length).to eq 1
-        expect(voice.placements.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
+      it "merges them into one chord voice event, preserving voice event order" do
+        expect(voice.voice_events.length).to eq 1
+        expect(voice.voice_events.first.pitches.map(&:to_s)).to eq %w[C4 E4 G4]
       end
     end
 
@@ -49,7 +49,7 @@ describe HeadMusic::Content::Voice do
       end
 
       it "is idempotent" do
-        expect(voice.placements.first.pitches.map(&:to_s)).to eq %w[C4 E4]
+        expect(voice.voice_events.first.pitches.map(&:to_s)).to eq %w[C4 E4]
       end
     end
 
@@ -60,8 +60,8 @@ describe HeadMusic::Content::Voice do
       end
 
       it "turns the rest into a note" do
-        expect(voice.placements.length).to eq 1
-        expect(voice.placements.first).to be_note
+        expect(voice.voice_events.length).to eq 1
+        expect(voice.voice_events.first).to be_note
       end
     end
 
@@ -72,8 +72,8 @@ describe HeadMusic::Content::Voice do
       end
 
       it "leaves the note unchanged" do
-        expect(voice.placements.length).to eq 1
-        expect(voice.placements.first.pitches.map(&:to_s)).to eq %w[C4]
+        expect(voice.voice_events.length).to eq 1
+        expect(voice.voice_events.first.pitches.map(&:to_s)).to eq %w[C4]
       end
     end
 
@@ -86,8 +86,8 @@ describe HeadMusic::Content::Voice do
       end
     end
 
-    context "when merging into an existing placement" do
-      it "returns the existing placement" do
+    context "when merging into an existing voice event" do
+      it "returns the existing voice event" do
         first = voice.place("1:1", :quarter, "C4")
         second = voice.place("1:1", :quarter, "E4")
         expect(second).to be first
@@ -95,10 +95,10 @@ describe HeadMusic::Content::Voice do
     end
 
     context "when given an array of pitches" do
-      it "creates exactly one placement" do
+      it "creates exactly one voice event" do
         expect do
           voice.place("2:1", :half, %w[C4 E4 G4])
-        end.to change { voice.placements.length }.by 1
+        end.to change { voice.voice_events.length }.by 1
       end
     end
 
@@ -111,7 +111,7 @@ describe HeadMusic::Content::Voice do
       end
 
       it "sorts by position and merges the co-positioned pitches" do
-        expect(voice.placements.map { |placement| placement.pitches.map(&:to_s) }).to eq [["B3"], %w[C4 E4 G4]]
+        expect(voice.voice_events.map { |voice_event| voice_event.pitches.map(&:to_s) }).to eq [["B3"], %w[C4 E4 G4]]
       end
     end
 
@@ -123,12 +123,12 @@ describe HeadMusic::Content::Voice do
       end
 
       it "keeps them in position order" do
-        expect(voice.placements.map { |placement| placement.position.to_s }).to eq positions
+        expect(voice.voice_events.map { |voice_event| voice_event.position.to_s }).to eq positions
       end
 
       it "merges a repeat of each position rather than adding one" do
         expect { positions.each { |position| voice.place(position, :whole, "E4") } }
-          .not_to change(voice.placements, :length)
+          .not_to change(voice.voice_events, :length)
       end
     end
   end
@@ -153,61 +153,67 @@ describe HeadMusic::Content::Voice do
     end
   end
 
-  describe "#notes and #rests" do
+  describe "#notes, #note_events, and #rest_events" do
     let!(:first_beat_d) { voice.place(HeadMusic::Content::Position.new(flow, "1:1:0"), :quarter, "D") }
     let!(:second_beat_rest) { voice.place(HeadMusic::Content::Position.new(flow, "1:2:0"), :quarter) }
     let!(:third_beat_g) { voice.place(HeadMusic::Content::Position.new(flow, "1:3:0"), :quarter, "G") }
     let!(:fourth_beat_rest) { voice.place(HeadMusic::Content::Position.new(flow, "1:4:0"), :quarter) }
 
     its(:notes) { are_expected.to eq [first_beat_d, third_beat_g] }
-    its(:rests) { are_expected.to eq [second_beat_rest, fourth_beat_rest] }
+    its(:note_events) { are_expected.to eq [first_beat_d, third_beat_g] }
+    its(:rest_events) { are_expected.to eq [second_beat_rest, fourth_beat_rest] }
+
+    it "counts an unpitched note event among the note events but not the notes" do
+      drum = voice.place("2:1", :quarter, "snare drum")
+      expect([voice.note_events.include?(drum), voice.notes.include?(drum)]).to eq [true, false]
+    end
   end
 
   describe "#notes with unpitched sounds" do
     let!(:pitched_note) { voice.place("1:1", :quarter, "C4") }
-    let!(:mixed_placement) { voice.place("1:4", :quarter, ["E4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")]) }
+    let!(:mixed_voice_event) { voice.place("1:4", :quarter, ["E4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")]) }
 
     before do
       voice.place("1:2", :quarter, HeadMusic::Rudiment::UnpitchedSound.get)
       voice.place("1:3", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
     end
 
-    it "excludes unpitched-only placements but includes mixed placements" do
-      expect(voice.notes).to eq [pitched_note, mixed_placement]
+    it "excludes unpitched-only voice events but includes mixed voice events" do
+      expect(voice.notes).to eq [pitched_note, mixed_voice_event]
     end
   end
 
   describe "#place with sounds" do
     it "accepts a bare unpitched instrument name" do
-      placement = voice.place("1:1", :quarter, "snare drum")
-      expect(placement.sounds.map(&:name_key)).to eq [:snare_drum]
+      voice_event = voice.place("1:1", :quarter, "snare drum")
+      expect(voice_event.sounds.map(&:name_key)).to eq [:snare_drum]
     end
 
     it "accepts the generic unpitched sound" do
-      placement = voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get)
-      expect(placement).to be_unpitched_note
+      voice_event = voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get)
+      expect(voice_event).to be_unpitched_note
     end
 
     it "accepts an instrument-backed unpitched sound" do
-      placement = voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("bass drum"))
-      expect(placement.sounds.map(&:name_key)).to eq [:bass_drum]
+      voice_event = voice.place("1:1", :quarter, HeadMusic::Rudiment::UnpitchedSound.get("bass drum"))
+      expect(voice_event.sounds.map(&:name_key)).to eq [:bass_drum]
     end
 
     it "accepts an unpitched instrument instance" do
-      placement = voice.place("1:1", :quarter, HeadMusic::Instruments::Instrument.get("snare drum"))
-      expect(placement).to be_unpitched_note
+      voice_event = voice.place("1:1", :quarter, HeadMusic::Instruments::Instrument.get("snare drum"))
+      expect(voice_event).to be_unpitched_note
     end
 
     it "accepts a pitched instrument instance as an unpitched hit" do
-      placement = voice.place("1:1", :quarter, HeadMusic::Instruments::Instrument.get("violin"))
-      expect(placement.sounds.map(&:name_key)).to eq [:violin]
-      expect(placement).not_to be_pitched
+      voice_event = voice.place("1:1", :quarter, HeadMusic::Instruments::Instrument.get("violin"))
+      expect(voice_event.sounds.map(&:name_key)).to eq [:violin]
+      expect(voice_event).not_to be_pitched
     end
 
     it "accepts a mixed array of pitches and unpitched sounds" do
-      placement = voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
-      expect(placement.pitches.map(&:to_s)).to eq ["C4"]
-      expect(placement.sounds.length).to eq 2
+      voice_event = voice.place("1:1", :quarter, ["C4", HeadMusic::Rudiment::UnpitchedSound.get("snare drum")])
+      expect(voice_event.pitches.map(&:to_s)).to eq ["C4"]
+      expect(voice_event.sounds.length).to eq 2
     end
 
     it "raises for a bare pitched instrument name" do
@@ -224,7 +230,7 @@ describe HeadMusic::Content::Voice do
 
       it "replaces the rest with a note placed there" do
         note = voice.place("1:1", :quarter, "C4")
-        expect(voice.placements).to eq [note]
+        expect(voice.voice_events).to eq [note]
         expect(note).to be_a HeadMusic::Content::NoteEvent
       end
 
@@ -248,12 +254,12 @@ describe HeadMusic::Content::Voice do
       expect(note.pitches.map(&:to_s)).to eq ["C4"]
     end
 
-    it "merges a pitched placement into an unpitched one at the same position" do
+    it "merges a pitched voice event into an unpitched one at the same position" do
       voice.place("1:1", :quarter, "snare drum")
-      placement = voice.place("1:1", :quarter, "C4")
-      expect(voice.placements.length).to eq 1
-      expect(placement).to be_pitched
-      expect(placement.sounds.length).to eq 2
+      voice_event = voice.place("1:1", :quarter, "C4")
+      expect(voice.voice_events.length).to eq 1
+      expect(voice_event).to be_pitched
+      expect(voice_event.sounds.length).to eq 2
     end
   end
 
@@ -303,13 +309,13 @@ describe HeadMusic::Content::Voice do
       expect(voice.melodic_note_pairs.length).to eq 1
     end
 
-    it "rereads the melody after a later placement" do
+    it "rereads the melody after a later placing" do
       voice.melodic_note_pairs
       voice.place("3:1", :whole, "G4")
       expect(voice.melodic_note_pairs.length).to eq 2
     end
 
-    it "rereads the intervals after a later placement" do
+    it "rereads the intervals after a later placing" do
       voice.melodic_intervals
       voice.place("3:1", :whole, "G4")
       expect(voice.melodic_intervals.map(&:shorthand)).to eq %w[M3 m3]
@@ -382,10 +388,10 @@ describe HeadMusic::Content::Voice do
   end
 
   describe "notes_during" do
-    subject(:notes_during) { voice.notes_during(placement) }
+    subject(:notes_during) { voice.notes_during(voice_event) }
 
     let(:pitches) { %w[C E G F A G E D C] }
-    let(:placement) { HeadMusic::Content::RestEvent.new(flow, position, rhythmic_value) }
+    let(:voice_event) { HeadMusic::Content::RestEvent.new(flow, position, rhythmic_value) }
 
     before do
       pitches.each.with_index(1) do |pitch, bar|
@@ -416,7 +422,7 @@ describe HeadMusic::Content::Voice do
       let(:rhythmic_value) { :"thirty-second" }
 
       specify do
-        expect(voice.notes_during(placement).map(&:to_s)).to match ["whole A4 at 5:1:000"]
+        expect(voice.notes_during(voice_event).map(&:to_s)).to match ["whole A4 at 5:1:000"]
       end
     end
 
@@ -428,7 +434,7 @@ describe HeadMusic::Content::Voice do
       it { is_expected.to eq [] }
     end
 
-    context "for a duration where there are multiple notes during the placement" do
+    context "for a duration where there are multiple notes during the voice event" do
       let(:position) { HeadMusic::Content::Position.new(flow, "4:3:000") }
       let(:rhythmic_value) { :breve }
 
@@ -463,11 +469,11 @@ describe HeadMusic::Content::Voice do
   describe "#first_gap" do
     subject(:first_gap) { voice.first_gap }
 
-    context "when the voice has no placements" do
+    context "when the voice has no voice events" do
       it { is_expected.to be_nil }
     end
 
-    context "when the placements are contiguous" do
+    context "when the voice events are contiguous" do
       subject(:first_gap) { parsed_voice.first_gap }
 
       let(:parsed_flow) do
@@ -495,33 +501,33 @@ describe HeadMusic::Content::Voice do
       it { is_expected.to be_nil }
     end
 
-    context "when there is a gap between two placements" do
+    context "when there is a gap between two voice events" do
       before do
         voice.place("1:1", :quarter, "C4")
         voice.place("2:1", :quarter, "D4")
       end
 
-      it "returns the expected position and the placement found after the gap" do
+      it "returns the expected position and the voice event found after the gap" do
         expected_position = HeadMusic::Content::Position.new(flow, "1:2:0")
-        found_placement = voice.placements.last
-        expect(first_gap).to eq [expected_position, found_placement]
+        found_voice_event = voice.voice_events.last
+        expect(first_gap).to eq [expected_position, found_voice_event]
       end
     end
 
-    context "when the first placement does not start its bar" do
+    context "when the first voice event does not start its bar" do
       before do
         voice.place("2:2:480", :quarter, "D4")
       end
 
-      it "returns the start of the bar and the first placement" do
+      it "returns the start of the bar and the first voice event" do
         expected_position = HeadMusic::Content::Position.new(flow, "2:1:0")
-        expect(first_gap).to eq [expected_position, voice.placements.first]
+        expect(first_gap).to eq [expected_position, voice.voice_events.first]
       end
     end
   end
 
   describe "#to_h" do
-    context "with placements" do
+    context "with voice events" do
       let(:expected_hash) do
         {
           "role" => nil,
@@ -537,7 +543,7 @@ describe HeadMusic::Content::Voice do
         voice.place("1:2", :quarter)
       end
 
-      it "serializes the placements in order" do
+      it "serializes the voice events in order" do
         expect(voice.to_h).to eq expected_hash
       end
     end
@@ -566,7 +572,7 @@ describe HeadMusic::Content::Voice do
   end
 
   # Voice#place binary-searches over Position#<=>, so a comparator that is not
-  # a total order does not raise -- it returns the wrong placement, and the
+  # a total order does not raise -- it returns the wrong voice event, and the
   # music is quietly wrong. A meter change is where a comparator that reasons
   # about elapsed time rather than coordinates comes apart, so notes are placed
   # across one here and both the ordering and the lookup are asserted.
@@ -581,25 +587,25 @@ describe HeadMusic::Content::Voice do
 
     before { codes.each { |code| voice.place(code, :quarter, "C4") } }
 
-    it "keeps the placements in ascending position order" do
-      positions = voice.placements.map(&:position)
+    it "keeps the voice events in ascending position order" do
+      positions = voice.voice_events.map(&:position)
       expect(positions).to eq positions.sort
     end
 
     it "places every note rather than merging any of them" do
-      expect(voice.placements.map { |placement| placement.position.code })
+      expect(voice.voice_events.map { |voice_event| voice_event.position.code })
         .to eq codes.map { |code| flow.position(code).code }
     end
 
-    # place looks for an existing placement with a binary search before it
+    # place looks for an existing voice event with a binary search before it
     # inserts, so replacing every note is the lookup exercised at every
     # position on both sides of the change.
-    it "finds each existing placement again rather than duplicating it" do
+    it "finds each existing voice event again rather than duplicating it" do
       codes.each { |code| voice.place(code, :quarter, "D4") }
-      expect(voice.placements.length).to eq codes.length
+      expect(voice.voice_events.length).to eq codes.length
     end
 
-    it "merges into the placement it found" do
+    it "merges into the voice event it found" do
       voice.place("3:2", :quarter, "D4")
       expect(voice.note_at(flow.position("3:2")).pitch.to_s).to eq "D4"
     end

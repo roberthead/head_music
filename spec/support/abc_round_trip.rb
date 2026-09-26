@@ -13,18 +13,18 @@ module ABCRoundTripHelper
     expect(reparsed.name).to eq flow.name
     expect(reparsed.composer).to eq flow.composer
 
-    expect_equivalent_placements(reparsed, flow)
+    expect_equivalent_voice_events(reparsed, flow)
   end
 
   private
 
-  def expect_equivalent_placements(reparsed, flow)
-    original_placements = flow.voices.flat_map(&:placements)
-    reparsed_placements = reparsed.voices.flat_map(&:placements)
-    expect(reparsed_placements.length).to eq original_placements.length
+  def expect_equivalent_voice_events(reparsed, flow)
+    original_voice_events = flow.voices.flat_map(&:voice_events)
+    reparsed_voice_events = reparsed.voices.flat_map(&:voice_events)
+    expect(reparsed_voice_events.length).to eq original_voice_events.length
 
     duration_writer = HeadMusic::Notation::ABC::DurationWriter.new(Rational(1, 8))
-    reparsed_placements.zip(original_placements).each do |actual, expected|
+    reparsed_voice_events.zip(original_voice_events).each do |actual, expected|
       expect(actual.pitches.sort.map(&:to_s)).to eq expected.pitches.sort.map(&:to_s)
       expect(actual.position.to_s).to eq expected.position.to_s
       expect(duration_writer.multiplier_string(actual.rhythmic_value))

@@ -6,7 +6,7 @@ module HeadMusic::Content; end
 # continues onto the next sung note (hyphen_after). The MusicXML `syllabic`
 # value (single/begin/middle/end) is derived from these at render time rather
 # than stored, and melisma is represented by the absence of a syllable on the
-# following placements, so nothing here encodes it.
+# following voice events, so nothing here encodes it.
 class HeadMusic::Content::Syllable
   attr_reader :text, :verse, :hyphen_after
 

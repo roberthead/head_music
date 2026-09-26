@@ -9,9 +9,9 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::SetAgainstAnotherVoice < HeadMusic::Style::Guideline
   def marks
     return if companion_sounds?
-    return no_placements_mark if placements.empty?
+    return no_voice_events_mark if voice_events.empty?
 
-    HeadMusic::Style::Mark.for_all(placements, fitness: 0)
+    HeadMusic::Style::Mark.for_all(voice_events, fitness: 0)
   end
 
   private

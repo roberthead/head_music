@@ -11,7 +11,7 @@ class FlowContext
   end
 
   # For the species whose bars hold more than one note: the parser places the
-  # rhythm, and a tie across the bar line becomes one sustained placement.
+  # rhythm, and a tie across the bar line becomes one sustained voice event.
   def self.from_abc(params)
     new(flow: HeadMusic::Notation::ABC.parse(params[:abc]), source: params[:source])
   end

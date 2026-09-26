@@ -99,7 +99,7 @@ describe HeadMusic::Notation::LilyPond do
 
     it "reads the writer's whole-bar padding in an odd meter as a rest of the bar's length" do
       reparsed = expect_lily_pond_round_trip(five_four_flow)
-      expect(reparsed.voices.last.placements.last.to_s).to eq "whole tied to quarter rest at 2:1:000"
+      expect(reparsed.voices.last.voice_events.last.to_s).to eq "whole tied to quarter rest at 2:1:000"
     end
   end
 
@@ -121,11 +121,11 @@ describe HeadMusic::Notation::LilyPond do
     end
 
     # The writer emits a tied rest chain as consecutive rests, so a
-    # whole-bar rest in an odd meter comes back as two placements of the
+    # whole-bar rest in an odd meter comes back as two voice events of the
     # same total length rather than one.
     it "re-renders a whole-bar rest in 5/4 as consecutive rests of the same total length" do
       reparsed = described_class.parse(described_class.parse(LilyPondRoundTripSources::FIVE_FOUR_REST).to_lilypond)
-      expect(reparsed.voices.first.placements.map(&:to_s).last(2)).to eq ["whole rest at 2:1:000", "quarter rest at 2:5:000"]
+      expect(reparsed.voices.first.voice_events.map(&:to_s).last(2)).to eq ["whole rest at 2:1:000", "quarter rest at 2:5:000"]
     end
   end
 

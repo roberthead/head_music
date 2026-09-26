@@ -65,7 +65,7 @@ describe HeadMusic::Notation::ClefSelector do
     it { is_expected.to eq HeadMusic::Rudiment::Clef.get(:treble_clef) }
   end
 
-  context "when the voice has no placements" do
+  context "when the voice has no voice events" do
     it { is_expected.to eq HeadMusic::Rudiment::Clef.get(:treble_clef) }
   end
 

@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 # of the voice. Rests before the first note (a leading rest) are allowed.
 class HeadMusic::Style::Guidelines::NoRestsAfterNote < HeadMusic::Style::Guideline
   def marks
-    return [] if rests.empty? || notes.empty?
+    return [] if rest_events.empty? || notes.empty?
 
     HeadMusic::Style::Mark.for_each(rests_after_first_note)
   end
@@ -13,6 +13,6 @@ class HeadMusic::Style::Guidelines::NoRestsAfterNote < HeadMusic::Style::Guideli
   private
 
   def rests_after_first_note
-    rests.select { |rest| rest.position >= first_note.position }
+    rest_events.select { |rest| rest.position >= first_note.position }
   end
 end
