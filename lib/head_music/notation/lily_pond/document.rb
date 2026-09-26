@@ -12,11 +12,12 @@ module HeadMusic::Notation::LilyPond
     GroupStaff = Struct.new(:group, :name)
 
     attr_accessor :title, :composer
-    attr_reader :streams, :groups
+    attr_reader :streams, :groups, :dynamics_streams
 
     def initialize
       @streams = []
       @groups = []
+      @dynamics_streams = []
     end
 
     def add_group(bracket)
@@ -35,6 +36,16 @@ module HeadMusic::Notation::LilyPond
 
     def remove_stream(stream)
       @streams.delete(stream)
+    end
+
+    # A \new Dynamics holds no voice, so its stream is kept apart from the
+    # voices'. Its target is the Group, or the voice streams of the staff,
+    # whose part its dynamics govern.
+    def add_dynamics_stream(target)
+      stream = VoiceStream.new
+      stream.dynamics_target = target
+      @dynamics_streams << stream
+      stream
     end
 
     def first_key_signature

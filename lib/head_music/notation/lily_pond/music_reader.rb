@@ -82,6 +82,7 @@ module HeadMusic::Notation::LilyPond
       token = cursor.advance
       raise cursor.unsupported("Simultaneous music inside \\relative is not supported", token) if relative?
 
+      context.preceding_staff = nil
       nested(token) do
         contexts.read_parallel_item(context) until cursor.peek.type == :close_parallel
       end
@@ -98,6 +99,8 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_item(context)
+      return read_dynamics_item(context) if context.dynamics?
+
       token = cursor.peek
       case token.type
       when :note then items.read_note(context)
@@ -109,8 +112,23 @@ module HeadMusic::Notation::LilyPond
       when :open_brace then read_sequential(context)
       when :open_parallel then read_parallel(context)
       when :command then read_item_command(context)
-      when :unsupported then raise cursor.unsupported_token(token)
+      when :unsupported, :spacer then raise cursor.unsupported_token(token)
       else raise cursor.error(%(Unexpected token "#{token.lexeme}"), token)
+      end
+    end
+
+    # A Dynamics context only marks time, so a rest there is a spacer and
+    # anything that sounds is refused.
+    def read_dynamics_item(context)
+      token = cursor.peek
+      case token.type
+      when :spacer, :rest, :whole_bar_rest then items.read_spacer(context)
+      when :bar_check then items.read_bar_check(context)
+      when :open_brace then read_sequential(context)
+      when :note, :open_chord then raise cursor.unsupported("Notes inside \\new Dynamics are not supported", token)
+      when :command then raise cursor.unsupported_command(token)
+      when :unsupported then raise cursor.unsupported_token(token)
+      else raise cursor.error(%(Unexpected token "#{token.lexeme}" inside \\new Dynamics), token)
       end
     end
 

@@ -1,19 +1,22 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
-  # A Staff, a Voice, or the implicit top level, and the stream the reader
-  # collects into while it is open. It yields a voice when it holds music,
-  # or when it is an explicit context with no children (an empty
-  # \new Staff { } is a legitimate silent voice).
+  # A Staff, a Voice, a Dynamics, or the implicit top level, and the stream
+  # the reader collects into while it is open. It yields a voice when it holds
+  # music, or when it is an explicit context with no children (an empty
+  # \new Staff { } is a legitimate silent voice). A Dynamics context yields
+  # dynamics for a part rather than a voice.
   class VoiceContext
     attr_reader :role, :stream, :group, :group_staff
-    attr_accessor :children
+    attr_accessor :children, :preceding_staff
 
     # A group is the \new PianoStaff or \new StaffGroup this context is; a
     # group staff is the staff of one that this context's music is written on.
-    def initialize(document, role, explicit:, group: nil, group_staff: nil)
+    # The preceding staff is the last staff or group read among this context's
+    # children, which a \new Dynamics beside it belongs to.
+    def initialize(document, role, explicit:, group: nil, group_staff: nil, dynamics_target: nil)
       @document = document
       @role = role
-      @stream = document.add_stream(role)
+      @stream = dynamics_target ? document.add_dynamics_stream(dynamics_target) : document.add_stream(role)
       @stream.group_staff = group_staff
       @explicit = explicit
       @group = group
@@ -21,11 +24,15 @@ module HeadMusic::Notation::LilyPond
       @children = 0
     end
 
+    def dynamics?
+      !stream.dynamics_target.nil?
+    end
+
     # A context that yields no voice may still have collected commands;
     # dropping them silently would lose a key or meter, so they raise.
     def close
       stream.finish
-      return if voice?
+      return if dynamics? || voice?
 
       document.remove_stream(stream)
       event = stream.events.find { |candidate| %i[key time].include?(candidate.kind) }

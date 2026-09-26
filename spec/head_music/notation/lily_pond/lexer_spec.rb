@@ -78,9 +78,18 @@ describe HeadMusic::Notation::LilyPond::Lexer do
       expect([token.type, token.duration, token.multiplier]).to eq [:whole_bar_rest, "1", "4/4"]
     end
 
-    it "lexes a spacer rest as unsupported" do
-      token = first_token("s4")
-      expect([token.type, token.lexeme]).to eq [:unsupported, "s4"]
+    it "lexes a spacer rest with its duration" do
+      token = first_token("s4.")
+      expect([token.type, token.lexeme, token.duration]).to eq [:spacer, "s4.", "4."]
+    end
+
+    it "lexes a spacer rest with its multiplier" do
+      token = first_token("s1*16")
+      expect([token.type, token.duration, token.multiplier]).to eq [:spacer, "1", "16"]
+    end
+
+    it "does not mistake a word for a spacer" do
+      expect(first_token("staff").type).to eq :word
     end
 
     it "does not mistake relative for a rest" do

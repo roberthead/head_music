@@ -4,10 +4,12 @@ module HeadMusic::Notation::LilyPond
   # context name, and the \with block that can name the instrument — and
   # the rules about where a context may appear. The music inside it is read
   # by the MusicReader that opened this one. A \new PianoStaff or \new
-  # StaffGroup holds the staves of one part.
+  # StaffGroup holds the staves of one part. A \new Dynamics holds the
+  # dynamics of the part it sits in, or of the staff it follows.
   class ContextReader
     BRACKETS_BY_GROUP_TYPE = {"PianoStaff" => :brace, "StaffGroup" => :bracket}.freeze
-    CONTEXT_TYPES = (%w[Staff Voice] + BRACKETS_BY_GROUP_TYPE.keys).freeze
+    CONTEXT_TYPES = (%w[Staff Voice Dynamics] + BRACKETS_BY_GROUP_TYPE.keys).freeze
+    GROUP_MEMBER_TYPES = %w[Staff Dynamics].freeze
     WITH_FIELDS = %w[instrumentName].freeze
 
     def initialize(cursor, document, music)
@@ -18,6 +20,8 @@ module HeadMusic::Notation::LilyPond
 
     def read_new(context)
       opener = cursor.advance
+      raise cursor.unsupported("Contexts inside \\new Dynamics are not supported", opener) if context.dynamics?
+
       type = cursor.expect(:word, "\\new expects a context type")
       unless CONTEXT_TYPES.include?(type.lexeme)
         raise cursor.unsupported(%(\\new #{type.lexeme} contexts are not supported), type)
@@ -26,12 +30,9 @@ module HeadMusic::Notation::LilyPond
       name = context_name
       context.children += 1
       return read_group(opener, type, context) if BRACKETS_BY_GROUP_TYPE.key?(type.lexeme)
+      return read_dynamics(opener, type, context) if type.lexeme == "Dynamics"
 
-      child = VoiceContext.new(
-        document, role(context, type, name), explicit: true, group_staff: group_staff(context, type, name)
-      )
-      music.nested(opener) { music.read_expression(child) }
-      child.close
+      read_staff_or_voice(opener, type, name, context)
     end
 
     # Each parallel item must open a context; parallel bare music is voice
@@ -64,6 +65,31 @@ module HeadMusic::Notation::LilyPond
 
     attr_reader :cursor, :document, :music
 
+    # The streams a staff leaves behind are its voices', so they are what a
+    # \new Dynamics after it governs.
+    def read_staff_or_voice(opener, type, name, context)
+      streams_before = document.streams.dup
+      child = VoiceContext.new(
+        document, role(context, type, name), explicit: true, group_staff: group_staff(context, type, name)
+      )
+      music.nested(opener) { music.read_expression(child) }
+      child.close
+      context.preceding_staff = document.streams - streams_before if type.lexeme == "Staff"
+    end
+
+    def read_dynamics(opener, type, context)
+      target = context.group || context.preceding_staff
+      unless target
+        raise cursor.unsupported(
+          "\\new Dynamics must be inside a \\new PianoStaff or \\new StaffGroup, or follow a \\new Staff in the same << >>", type
+        )
+      end
+
+      child = VoiceContext.new(document, nil, explicit: true, dynamics_target: target)
+      music.nested(opener) { music.read_expression(child) }
+      child.close
+    end
+
     # A group is one part, so it holds staves and nothing else, and one group
     # cannot hold another.
     def read_group(opener, type, context)
@@ -75,6 +101,7 @@ module HeadMusic::Notation::LilyPond
       group_context = VoiceContext.new(document, nil, explicit: false, group: group)
       music.nested(opener) { read_group_staves(group_context, type) }
       group_context.close
+      context.preceding_staff = group
     end
 
     def read_group_staves(group_context, type)
@@ -82,13 +109,17 @@ module HeadMusic::Notation::LilyPond
       raise cursor.unsupported("Simultaneous music inside \\relative is not supported", opener) if music.relative?
 
       until cursor.peek.type == :close_parallel
-        unless cursor.peek.type == :command && cursor.peek.lexeme == "new" && cursor.peek(1)&.lexeme == "Staff"
-          raise cursor.unsupported(%(Only \\new Staff contexts are supported inside \\new #{type.lexeme}), cursor.peek)
+        unless group_member?
+          raise cursor.unsupported(%(Only \\new Staff and \\new Dynamics contexts are supported inside \\new #{type.lexeme}), cursor.peek)
         end
 
         read_new(group_context)
       end
       cursor.advance
+    end
+
+    def group_member?
+      cursor.peek.type == :command && cursor.peek.lexeme == "new" && GROUP_MEMBER_TYPES.include?(cursor.peek(1)&.lexeme)
     end
 
     def group_staff(context, type, name)

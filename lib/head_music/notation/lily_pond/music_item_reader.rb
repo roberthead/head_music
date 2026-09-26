@@ -31,6 +31,11 @@ module HeadMusic::Notation::LilyPond
       context.stream.add_whole_bar_rest(duration_reader.whole_bar_fraction(token), token.line, mark_reader.read)
     end
 
+    def read_spacer(context)
+      token = cursor.advance
+      context.stream.add_spacer(duration_reader.spacer_fraction(token), token.line, mark_reader.read)
+    end
+
     def read_chord(context)
       opener = cursor.advance
       notes = []

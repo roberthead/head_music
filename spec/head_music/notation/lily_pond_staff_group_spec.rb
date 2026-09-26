@@ -112,11 +112,11 @@ describe HeadMusic::Notation::LilyPond do
       ],
       "a voice directly inside a staff group" => [
         %(\\new PianoStaff << \\new Voice { c'1 } >>),
-        HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Only \\new Staff contexts are supported inside \\new PianoStaff/
+        HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Only \\new Staff and \\new Dynamics contexts are supported inside \\new PianoStaff/
       ],
       "a staff group inside another" => [
         %(\\new StaffGroup << \\new PianoStaff << \\new Staff { c'1 } >> >>),
-        HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Only \\new Staff contexts are supported/
+        HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Only \\new Staff and \\new Dynamics contexts are supported/
       ],
       "a staff group whose staves are not simultaneous" => [
         %(\\new PianoStaff { \\new Staff { c'1 } }),

@@ -32,14 +32,23 @@ module HeadMusic::Notation::LilyPond
     # The fraction of a whole note a whole-bar rest spans: its duration
     # times any multiplier (R1*3/4 spans three quarters).
     def whole_bar_fraction(token)
-      fraction = HeadMusic::Notation::DottedDuration.dotted_unit_fraction(rhythmic_value(token))
-      fraction *= multiplier(token) if token.multiplier
-      raise error("A whole-bar rest must span a positive duration", token) unless fraction.positive?
+      spanned_fraction(token, "A whole-bar rest")
+    end
 
-      fraction
+    # Spacers mark time in a \new Dynamics, where s1*16 is sixteen bars.
+    def spacer_fraction(token)
+      spanned_fraction(token, "A spacer")
     end
 
     private
+
+    def spanned_fraction(token, name)
+      fraction = HeadMusic::Notation::DottedDuration.dotted_unit_fraction(rhythmic_value(token))
+      fraction *= multiplier(token) if token.multiplier
+      raise error("#{name} must span a positive duration", token) unless fraction.positive?
+
+      fraction
+    end
 
     def build(duration, token)
       base = duration.delete(".")

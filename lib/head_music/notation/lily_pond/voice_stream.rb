@@ -28,7 +28,7 @@ module HeadMusic::Notation::LilyPond
     UNFOLLOWED_TIE = "A tie must be followed by a note"
 
     attr_reader :role, :events, :opening_clef
-    attr_accessor :group_staff
+    attr_accessor :group_staff, :dynamics_target
 
     def initialize(role = nil)
       @role = role
@@ -55,6 +55,10 @@ module HeadMusic::Notation::LilyPond
 
     def add_whole_bar_rest(fraction, line, marks = MarkReader::NONE)
       append(line, kind: :whole_bar_rest, fraction: fraction, marks: marks)
+    end
+
+    def add_spacer(fraction, line, marks = MarkReader::NONE)
+      append(line, kind: :spacer, fraction: fraction, marks: marks)
     end
 
     def open_tie(line)

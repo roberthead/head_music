@@ -17,7 +17,7 @@ module HeadMusic::Notation::LilyPond
     # words that start with a note letter (bass, alto, composer) whole.
     NOTE_PATTERN = /(?:(a|e)(ses|s)|([a-g])(isis|eses|is|es)?)(?![A-Za-z])('+|,+)?(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     REST_PATTERN = /([rR])(?![A-Za-z])(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
-    SPACER_PATTERN = /s(?![A-Za-z])#{DURATION_PATTERN}?/o
+    SPACER_PATTERN = /s(?![A-Za-z])(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     CLOSE_CHORD_PATTERN = />(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     STRING_PATTERN = /"((?:[^"\\]|\\.)*)"/m
     COMMAND_PATTERN = /\\([A-Za-z]+)/
@@ -28,9 +28,7 @@ module HeadMusic::Notation::LilyPond
     # falling through as stray words.
     QUARTER_TONE_PATTERN = /[a-g](?:isih|eseh|ih|eh)(?![A-Za-z])(?:'+|,+)?#{DURATION_PATTERN}?/o
     MARK_PATTERN = /\\\\|#\S*|[\[\]()]|[-^_][.>^_+!-]?|[:!?]/
-    # A spacer rest starts with a letter no note or rest starts with, so it
-    # can be tried alongside the other unsupported constructs.
-    UNSUPPORTED_PATTERN = Regexp.union(MARK_PATTERN, QUARTER_TONE_PATTERN, SPACER_PATTERN)
+    UNSUPPORTED_PATTERN = Regexp.union(MARK_PATTERN, QUARTER_TONE_PATTERN)
 
     ALIAS_SUFFIXES = {"s" => "es", "ses" => "eses"}.freeze
 
@@ -77,7 +75,7 @@ module HeadMusic::Notation::LilyPond
     def read_token
       string_token || simple_token || close_chord_token ||
         lexeme_token(UNSUPPORTED_PATTERN, :unsupported) || command_token ||
-        note_token || rest_token ||
+        note_token || rest_token || spacer_token ||
         lexeme_token(WORD_PATTERN, :word) || lexeme_token(NUMBER_PATTERN, :number)
     end
 
@@ -115,6 +113,10 @@ module HeadMusic::Notation::LilyPond
 
     def rest_token
       consume(REST_PATTERN) && timed_token((scanner[1] == "R") ? :whole_bar_rest : :rest, 2)
+    end
+
+    def spacer_token
+      consume(SPACER_PATTERN) && timed_token(:spacer, 1)
     end
 
     # A token whose lexeme ends in an optional duration and multiplier, the

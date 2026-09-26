@@ -58,6 +58,7 @@ module HeadMusic::Notation::LilyPond
         key_signature: document.first_key_signature, meter: document.first_meter
       )
       replay(streams.filter_map { |stream| cursor_for(flow, stream) })
+      document.dynamics_streams.each { |stream| place_part_dynamics(flow, stream) }
       flow
     end
 
@@ -66,7 +67,10 @@ module HeadMusic::Notation::LilyPond
     # since that is how the writer renders a staff nobody is written on.
     def cursor_for(flow, stream)
       group_staff = stream.group_staff
-      return Cursor.new(stream, flow.add_voice(role: stream.role)) unless group_staff
+      unless group_staff
+        voices_by_stream[stream] = flow.add_voice(role: stream.role)
+        return Cursor.new(stream, voices_by_stream[stream])
+      end
 
       part = part_for(flow, group_staff.group)
       return if stream.silent? && stream.role.nil?
@@ -75,6 +79,40 @@ module HeadMusic::Notation::LilyPond
       staff = staves_by_group_staff[group_staff]
       voice.assign_staff(HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR, staff) unless staff.equal?(part.staff_system.first_staff)
       Cursor.new(stream, voice)
+    end
+
+    # Placed once the voices are, so every meter change is in force. The
+    # context's own spacers say where each level falls, so it keeps its exact
+    # position, even in the middle of a note.
+    def place_part_dynamics(flow, stream)
+      parts = dynamics_parts(stream.dynamics_target)
+      position = HeadMusic::Content::Position.new(flow, 1, 1, 0)
+      stream.events.each do |event|
+        check_bar(event, position) if event.kind == :bar_check
+        next unless event.kind == :spacer
+
+        parts.each { |part| place_level(part, position, event) }
+        position = after_spacer(flow, position, event)
+      end
+    end
+
+    # A staff outside a group may hold several voices, each read as a part of
+    # its own, so its dynamics go to each of them.
+    def dynamics_parts(target)
+      return [parts_by_group[target]].compact if target.is_a?(Document::Group)
+
+      target.filter_map { |stream| voices_by_stream[stream]&.part }
+    end
+
+    def after_spacer(flow, position, event)
+      ticks = event.fraction * TICKS_PER_WHOLE_NOTE
+      raise unsupported("A spacer of #{event.fraction} whole notes falls between ticks", event) unless ticks.denominator == 1
+
+      HeadMusic::Content::Position.new(flow, position.bar_number, position.count, position.tick + ticks.to_i)
+    end
+
+    def voices_by_stream
+      @voices_by_stream ||= {}.compare_by_identity
     end
 
     def part_for(flow, group)
