@@ -39,6 +39,10 @@ module HeadMusic::Notation::MusicXML
       @note_writer ||= NoteWriter.new(plan)
     end
 
+    def direction_writer
+      @direction_writer ||= DirectionWriter.new(plan)
+    end
+
     def attributes_writer
       @attributes_writer ||= AttributesWriter.new(plan)
     end
@@ -122,6 +126,7 @@ module HeadMusic::Notation::MusicXML
       [
         measure_open_tag(bar_number),
         *attributes_writer.lines(part, bar_number),
+        *direction_writer.part_lines(part, bar_number),
         *part_content_lines(part, bar_number),
         "#{INDENT * 2}</measure>"
       ]
@@ -162,11 +167,21 @@ module HeadMusic::Notation::MusicXML
       voice_number = (part.voices.length > 1) ? part.voices.index(voice) + 1 : nil
       staff_number = staff_number(part, voice, bar_number)
       segments = voice && segments_by_bar(voice)[bar_number]
-      return note_writer.whole_measure_rest_lines(bar_number, voice_number: voice_number, staff_number: staff_number) unless segments
+      return whole_measure_content_lines(voice, bar_number, voice_number, staff_number) unless segments
 
       segments.flat_map do |segment|
-        note_writer.lines(segment, voice_number: voice_number, staff_number: staff_number)
+        [
+          *direction_writer.voice_lines(voice, bar_number, segment, voice_number: voice_number, staff_number: staff_number),
+          *note_writer.lines(segment, voice_number: voice_number, staff_number: staff_number)
+        ]
       end
+    end
+
+    def whole_measure_content_lines(voice, bar_number, voice_number, staff_number)
+      [
+        *(voice && direction_writer.voice_rest_lines(voice, bar_number, voice_number: voice_number, staff_number: staff_number)),
+        *note_writer.whole_measure_rest_lines(bar_number, voice_number: voice_number, staff_number: staff_number)
+      ]
     end
 
     # Where a crossing shows up: the same voice reports a different staff on

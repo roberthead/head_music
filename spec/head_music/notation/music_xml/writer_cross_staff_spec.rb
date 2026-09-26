@@ -56,6 +56,29 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
   end
 
+  describe "a grand staff with dynamics" do
+    let(:flow) { MarkingFixtures.grand_staff_piano_with_dynamics }
+
+    it "writes every part and voice dynamic as a direction" do
+      expect(xpath_count(document, "//direction/direction-type/dynamics")).to eq 4
+    end
+
+    it "leaves the backup durations exactly as they are without dynamics" do
+      expect(xpath_texts(document, "//backup/duration")).to eq %w[4 4 4 4]
+    end
+
+    it "writes no staff on a part's own dynamic, even on a grand staff" do
+      part_levels = flow.parts.first.dynamic_events.map(&:name_key)
+      xpaths = part_levels.map { |level| "//direction[direction-type/dynamics/#{level}]/staff" }
+      expect(xpaths.sum { |xpath| xpath_count(document, xpath) }).to eq 0
+    end
+
+    it "numbers the voice's own dynamic with its voice and staff" do
+      expect(xpath_text(document, "//direction[direction-type/dynamics/mf]/voice")).to eq "1"
+      expect(xpath_text(document, "//direction[direction-type/dynamics/mf]/staff")).to eq "1"
+    end
+  end
+
   describe "a part on one staff" do
     let(:flow) { LilyPondFixtures.duo }
 

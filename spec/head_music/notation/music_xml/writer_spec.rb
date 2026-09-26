@@ -705,6 +705,68 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with dynamics" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Dynamics", meter: "4/4")
+        voice = flow.add_voice
+        voice.place("1:1", :quarter, "C4")
+        voice.place("1:2", :half, "D4")
+        voice.place("1:4", :quarter)
+        voice.place_dynamic("1:1", :p)
+        voice.place_dynamic("1:3", :f)
+        voice.place_dynamic("1:4", :mp)
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "writes a direction below the staff for each dynamic, level for level" do
+        expect(xpath_names(document, "//direction[@placement='below']/direction-type/dynamics/*")).to eq %w[p f mp]
+      end
+
+      it "omits the offset for a dynamic at a note's own start" do
+        expect(xpath_count(document, "//direction[direction-type/dynamics/p]/offset")).to eq 0
+      end
+
+      it "offsets a dynamic that falls under a held note" do
+        expect(xpath_text(document, "//direction[direction-type/dynamics/f]/offset")).not_to be_nil
+      end
+
+      it "writes a dynamic under a rest as its own direction with no offset" do
+        expect(xpath_count(document, "//direction[direction-type/dynamics/mp]/offset")).to eq 0
+      end
+
+      it "writes no voice or staff number for a single-voice part, as notes do" do
+        expect(xpath_count(document, "//direction/voice") + xpath_count(document, "//direction/staff")).to eq 0
+      end
+
+      it "adds no duration, leaving the measure's notes and rest unaffected" do
+        expect(xpath_texts(document, "//note/duration")).to eq %w[1 2 1]
+      end
+    end
+
+    context "with a part's dynamic events" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Part Dynamics", meter: "4/4")
+        flow.add_voice.place("1:1", :whole, "C4")
+        flow.parts.first.place_dynamic("1:1", :p)
+        flow.parts.first.place_dynamic("1:3", :f)
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "writes a direction for each of the part's dynamic events" do
+        expect(xpath_names(document, "//direction/direction-type/dynamics/*")).to eq %w[p f]
+      end
+
+      it "writes the part's directions before the note, not after it" do
+        expect(xpath_names(document, "//measure[@number='1']/*")).to eq %w[attributes direction direction note]
+      end
+
+      it "writes neither a voice nor a staff number on a part's dynamic" do
+        expect(xpath_count(document, "//direction/voice") + xpath_count(document, "//direction/staff")).to eq 0
+      end
+    end
+
     context "with a pickup bar written out in full with leading rests" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Pickup Study")
@@ -1532,6 +1594,37 @@ describe HeadMusic::Notation::MusicXML::Writer do
           expect(xpath_count(document, "//note[pitch]")).to eq pitched_note_count(flow)
         end
       end
+    end
+  end
+
+  describe "no loss of markings" do
+    let(:flow) { MarkingFixtures.marked_melody }
+    let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+    let(:voice) { flow.voices.first }
+
+    it "writes one <articulations> group per articulated note" do
+      articulated = voice.note_events.count { |event| event.articulations.any? }
+      expect(xpath_count(document, "//notations/articulations")).to eq articulated
+    end
+
+    it "writes one <ornaments> group per embellished note" do
+      embellished = voice.note_events.count { |event| event.ornaments.any? }
+      expect(xpath_count(document, "//notations/ornaments")).to eq embellished
+    end
+
+    it "writes one note-dynamic <dynamics> group per accented note" do
+      accented = voice.note_events.count(&:note_dynamic)
+      expect(xpath_count(document, "//notations/dynamics")).to eq accented
+    end
+
+    it "writes one direction per dynamic event on the voice" do
+      expect(xpath_count(document, "//direction/direction-type/dynamics")).to eq voice.dynamic_events.length
+    end
+
+    it "writes every dynamic level and note-dynamic accent the fixture carries" do
+      written = xpath_names(document, "//direction/direction-type/dynamics/*") + xpath_names(document, "//notations/dynamics/*")
+      expected = voice.dynamic_events.map(&:name_key) + voice.note_events.filter_map { |event| event.note_dynamic&.name_key }
+      expect(written.sort).to eq expected.sort
     end
   end
 end
