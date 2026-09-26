@@ -90,4 +90,35 @@ describe HeadMusic::Notation::BarSplitter do
         .to raise_error(ArgumentError, /cannot express the part of the note at 1:1:000 in bar 1 in binary note values/)
     end
   end
+
+  describe ".position_at" do
+    def position_at(bar_number, offset)
+      described_class.position_at(flow, bar_number, offset).to_s
+    end
+
+    {0 => "3:1:000", Rational(1, 4) => "3:2:000", Rational(5, 8) => "3:3:480", Rational(3, 32) => "3:1:360"}.each do |offset, code|
+      it "places #{offset} of a whole note into a 4/4 bar at #{code}" do
+        expect(position_at(3, offset)).to eq code
+      end
+    end
+
+    context "with a compound meter" do
+      let(:meter) { "6/8" }
+
+      {Rational(3, 8) => "2:4:000", Rational(5, 8) => "2:6:000", Rational(11, 16) => "2:6:240"}.each do |offset, code|
+        it "places #{offset} of a whole note into a 6/8 bar at #{code}, counting eighths" do
+          expect(position_at(2, offset)).to eq code
+        end
+      end
+    end
+
+    it "carries a fraction of a tick into subticks" do
+      expect(position_at(1, Rational(1, 7680))).to eq "1:1:000:120"
+    end
+
+    it "inverts offset_in_bar" do
+      position = flow.position("4:3:240")
+      expect(described_class.position_at(flow, 4, described_class.offset_in_bar(position))).to eq position
+    end
+  end
 end

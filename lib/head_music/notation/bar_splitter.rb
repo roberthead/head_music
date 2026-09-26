@@ -57,6 +57,16 @@ module HeadMusic
         (position.count - 1 + Rational(position.tick, meter.ticks_per_count)) / meter.bottom_number
       end
 
+      # The inverse of offset_in_bar: the position +offset+ of a whole note
+      # into bar +bar_number+.
+      def position_at(flow, bar_number, offset)
+        meter = flow.meter_at(bar_number)
+        counts = offset * meter.bottom_number
+        ticks = (counts - counts.floor) * meter.ticks_per_count
+        subticks = (ticks - ticks.floor) * HeadMusic::Time::SUBTICKS_PER_TICK
+        flow.position(bar_number, counts.floor + 1, ticks.floor, subticks.round)
+      end
+
       private_class_method :fraction_to_bar_end, :fraction_within_bar
     end
   end
