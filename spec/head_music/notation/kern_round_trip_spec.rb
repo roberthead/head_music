@@ -144,6 +144,25 @@ describe HeadMusic::Notation::Kern do
     end
   end
 
+  describe "the marking fixtures" do
+    it "round-trips the marked melody, keeping every marking and the dynamic in force at every note" do
+      original = MarkingFixtures.marked_melody
+      expect_same_markings(original, expect_kern_round_trip(original))
+    end
+
+    it "round-trips the grand-staff piano's music" do
+      expect_kern_round_trip(MarkingFixtures.grand_staff_piano_with_dynamics)
+    end
+
+    # The **dynam spine cannot say which voice it means, so the right hand's
+    # own mf comes back as the part's, and reaches the left hand too.
+    it "gives the grand-staff piano's voice dynamic to the whole part" do
+      original = MarkingFixtures.grand_staff_piano_with_dynamics
+      expected = marking_summary(original).tap { |voices| voices.last[2][4] = "mf" }
+      expect(marking_summary(expect_kern_round_trip(original))).to eq expected
+    end
+  end
+
   describe "the cantus firmus catalog" do
     HeadMusic::Content::CantusFirmus::Example.all.each do |example|
       it "round-trips #{example}" do

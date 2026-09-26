@@ -36,6 +36,10 @@ describe HeadMusic::Notation::Kern do
     expect(part.voices.map(&:first_gap)).to eq [nil, nil, nil]
   end
 
+  it "reads the dynamics spine, through its split and join, as the part's dynamics" do
+    expect(part.dynamic_events.map(&:to_s)).to eq ["p at 1:1:000", "f at 3:1:000", "p at 6:1:000"]
+  end
+
   it "reads back to itself from what it writes" do
     expect(described_class.parse(described_class.render(flow)).to_h).to eq flow.to_h
   end

@@ -5,8 +5,10 @@
 # Kern cannot say everything a flow can, so the comparison is of the music
 # alone. It leaves out what kern has no field for: voice roles, comments,
 # beam breaks, the source, any instrument without a kern code, and the work,
-# which has specs of its own. It compares a tied chain by its length rather
-# than its spelling, since a note crossing a barline comes back split there;
+# which has specs of its own. Dynamic events are left to
+# expect_same_markings, since kern gives a voice's dynamics to its part. It
+# compares a tied chain by its length rather than its spelling, since a note
+# crossing a barline, or holding a dynamic in its middle, comes back split;
 # it drops the rests at either end of a voice and joins runs of rests, since
 # the writer pads every spine to the flow's length; it compares a tempo in
 # quarter notes per minute; and an unauthored clef counts as the one the
@@ -77,7 +79,8 @@ module KernRoundTripHelper
         "position" => voice_event.position.to_s,
         "pitches" => voice_event.pitches.map(&:to_s).sort,
         "length" => voice_event.rhythmic_value.tied_chain.sum { |link| HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link) },
-        "syllables" => voice_event.syllables.transform_values(&:to_h)
+        "syllables" => voice_event.syllables.transform_values(&:to_h),
+        "markings" => [voice_event.articulations, voice_event.ornaments, [voice_event.note_dynamic].compact].map { |markings| markings.map(&:name_key) }
       }
     end
     joined = entries.slice_when { |before, after| !(before["pitches"].empty? && after["pitches"].empty?) }.map do |run|

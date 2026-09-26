@@ -23,6 +23,7 @@ module HeadMusic::Notation::Kern
       def kind
         return :kern if exclusive == "**kern"
         return :lyric if LYRIC_EXCLUSIVES.include?(exclusive)
+        return :dynam if exclusive == "**dynam"
 
         :skipped
       end
@@ -33,6 +34,10 @@ module HeadMusic::Notation::Kern
 
       def lyric?
         kind == :lyric
+      end
+
+      def dynam?
+        kind == :dynam
       end
 
       def sprout

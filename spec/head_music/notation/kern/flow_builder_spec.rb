@@ -477,6 +477,45 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
   end
 
+  describe "dynamics" do
+    def levels(part)
+      part.dynamic_events.map(&:to_s)
+    end
+
+    def accents(voice)
+      voice.voice_events.map { |voice_event| voice_event.note_dynamic&.name_key }
+    end
+
+    it "places a level on the part of the kern spine on its left, even in the middle of a note" do
+      flow = parse("**kern  **dynam  **kern\n1c  p  2e\n.  f  2g\n*-  *-  *-")
+      expect([levels(flow.parts.first), levels(flow.parts.last)]).to eq [[], ["p at 1:1:000", "f at 1:3:000"]]
+    end
+
+    it "places a level in a pickup bar at its offset" do
+      flow = parse("**kern  **dynam\n*M3/4  *\n4c  p\n=1  =1\n2.d  f\n*-  *-")
+      expect(levels(flow.parts.first)).to eq ["p at 0:3:000", "f at 1:1:000"]
+    end
+
+    it "keeps the first of two levels a part's dynamics spines state at one position" do
+      flow = parse("**kern  **dynam  **kern  **dynam\n*part1  *  *part1  *\n1c  p  1e  f\n*-  *-  *-  *-")
+      expect(levels(flow.parts.first)).to eq ["p at 1:1:000"]
+    end
+
+    it "gives an accent to every note of its part attacked on the row, on both staves" do
+      flow = parse("**kern  **kern  **dynam\n*part1  *part1  *\n*staff2  *staff1  *\n2C  4c  .\n.  4d  sf\n2D  2e  fp\n*-  *-  *-")
+      expect(flow.voices.map { |voice| accents(voice) }).to eq [[nil, "sf", "fp"], [nil, "fp"]]
+    end
+
+    it "drops an accent where nothing of its part attacks" do
+      flow = parse("**kern  **dynam\n2c  .\n.  sfz\n2r  rfz\n*-  *-")
+      expect(accents(flow.voices.first)).to eq [nil, nil]
+    end
+
+    it "keeps a token's own sforzando over the spine's accent" do
+      expect(accents(parse("**kern  **dynam\n4cz  sf\n*-  *-").voices.first)).to eq ["sfz"]
+    end
+  end
+
   describe "time slices" do
     it "raises when a note begins before the note before it ends" do
       expect { parse("**kern  **kern\n2c  4e\n4d  4f\n*-  *-") }

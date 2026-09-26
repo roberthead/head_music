@@ -13,7 +13,7 @@ describe HeadMusic::Notation::Kern::Document do
     subject(:header) { document(lines("**kern\t**text\t**dynam\t**kern", "4c\tla\tp\t4e", "*-\t*-\t*-\t*-")) }
 
     it "keeps the header's tracks" do
-      expect(header.header_tracks.map(&:kind)).to eq %i[kern lyric skipped kern]
+      expect(header.header_tracks.map(&:kind)).to eq %i[kern lyric dynam kern]
     end
 
     it "selects the kern tracks" do

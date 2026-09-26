@@ -1,7 +1,8 @@
 # A namespace for **kern rendering helpers
 module HeadMusic::Notation::Kern
-  # Assembles a **kern document from a flow: one spine per voice, and a
-  # **text spine beside each sung voice for each verse.
+  # Assembles a **kern document from a flow: one spine per voice, a **text
+  # spine beside each sung voice for each verse, and a **dynam spine after
+  # the rightmost spine of each part with dynamics.
   #
   # Parts, and the staves within a part, run bottom to top from the left,
   # so the bass is the leftmost spine; within one staff the voices run left
@@ -10,9 +11,20 @@ module HeadMusic::Notation::Kern
   # end, with rests wherever it is silent. A pickup bar's leading silence is
   # left out, since kern starts a pickup at its first note.
   class Writer
-    Column = Data.define(:voice, :verse, :part_number, :staff) do
+    # A **dynam column's voice is the one whose spine it follows.
+    Column = Data.define(:voice, :verse, :part_number, :staff, :dynam) do
+      def initialize(dynam: false, **fields)
+        super
+      end
+
       def kern?
-        verse.nil?
+        verse.nil? && !dynam
+      end
+
+      def exclusive
+        return "**dynam" if dynam
+
+        kern? ? "**kern" : "**text"
       end
     end
 
@@ -27,7 +39,7 @@ module HeadMusic::Notation::Kern
 
     def to_s
       Preflight.check!(flow, transposed: @transposed)
-      lines = [*reference_records, row(columns.map { |column| column.kern? ? "**kern" : "**text" })]
+      lines = [*reference_records, row(columns.map(&:exclusive))]
       lines.concat(header_rows)
       lines.concat(body_rows)
       lines << row(fields_for_all("==#{final_style}"))
@@ -43,13 +55,19 @@ module HeadMusic::Notation::Kern
 
     def columns
       @columns ||= flow.parts.reverse.flat_map do |part|
-        part.staff_system.staves.reverse.flat_map do |staff|
+        part_columns = part.staff_system.staves.reverse.flat_map do |staff|
           part.voices.select { |voice| voice.staff_at(first_bar).equal?(staff) }.flat_map do |voice|
             kern = Column.new(voice: voice, verse: nil, part_number: flow.parts.index(part) + 1, staff: staff)
             [kern, *verses(voice).map { |verse| kern.with(verse: verse) }]
           end
         end
+        dynamic_fields(part).empty? ? part_columns : [*part_columns, part_columns.last.with(verse: nil, dynam: true)]
       end
+    end
+
+    def dynamic_fields(part)
+      @dynamic_fields ||= {}
+      @dynamic_fields[part] ||= DynamicFields.new(part, pickup_bar: PICKUP_BAR, pickup_start: pickup_start)
     end
 
     def verses(voice)
@@ -234,14 +252,34 @@ module HeadMusic::Notation::Kern
 
     def data_rows(bar_number)
       events = kern_events(bar_number)
-      offsets = events.values.flatten.map { |event| Rational(event.offset) }.uniq.sort
-      offsets.map do |offset|
-        row(columns.map { |column| field(column, events.fetch(column.voice), offset) })
+      attacks = events.values.flatten.map { |event| Rational(event.offset) }
+      dynamics = dynamic_offsets(bar_number)
+      cut_for_dynamics(events, dynamics, attacks)
+      (attacks + dynamics.values.flatten).uniq.sort.map do |offset|
+        row(columns.map { |column| field(column, events, bar_number, offset) })
       end
     end
 
-    def field(column, events, offset)
-      event = events.find { |candidate| candidate.offset == offset }
+    # A dynamic after the flow's last note has no row to go on.
+    def dynamic_offsets(bar_number)
+      flow.parts.to_h do |part|
+        offsets = dynamic_fields(part).in_bar(bar_number).keys.map { |offset| Rational(offset) }
+        [part, offsets.select { |offset| offset < bar_lengths.fetch(bar_number) }]
+      end
+    end
+
+    # A dynamic where nothing attacks splits its part's notes there.
+    def cut_for_dynamics(events, dynamics, attacks)
+      dynamics.each do |part, offsets|
+        cuts = offsets - attacks
+        part.voices.each { |voice| events[voice] = SpineTokens.cut(events.fetch(voice), cuts) } if cuts.any?
+      end
+    end
+
+    def field(column, all_events, bar_number, offset)
+      return dynamic_fields(column.voice.part).in_bar(bar_number).fetch(offset, ".") if column.dynam
+
+      event = all_events.fetch(column.voice).find { |candidate| candidate.offset == offset }
       return "." unless event
 
       column.kern? ? event.token : syllable_field(column, event)

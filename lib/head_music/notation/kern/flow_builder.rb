@@ -34,6 +34,7 @@ module HeadMusic::Notation::Kern
       @opening = {}
       @cursors = {}
       @layers = []
+      @levels = []
       @flow = nil
       @clock = BarClock.new { |bar_number| @flow.meter_at(bar_number) }
       document.rows.each { |row| read(row) }
@@ -42,6 +43,7 @@ module HeadMusic::Notation::Kern
       clock.finish(current_time, document.rows.last.record.line)
       finish_time = @layers.filter_map(&:end_time).max
       @layers.each { |layer| layer.place(clock, finish_time) }
+      place_levels
       mark_repeats
       order_voices_by_staff
       @flow
@@ -376,6 +378,7 @@ module HeadMusic::Notation::Kern
       time = current_time
       events = attacked ? tokens.to_h { |track, token, column| [track, read_token(track, token, time, column, line)] } : {}
       sing(row, events)
+      read_dynamics(row, events, time)
     end
 
     # Answers the event the token attacked, if any.
@@ -401,6 +404,39 @@ module HeadMusic::Notation::Kern
           )
         end
         event.syllables << syllable
+      end
+    end
+
+    # A level waits for the bars to be final; an accent goes to every note
+    # of its part attacked on the row, or to none.
+    def read_dynamics(row, events, time)
+      DynamicReader.new(row).dynamics.each do |reading|
+        part = @cursors.fetch(reading.track).layer.voice.part
+        if reading.dynamic.level?
+          @levels << [time, part, reading.dynamic]
+        else
+          accent(events, part, reading.dynamic)
+        end
+      end
+    end
+
+    # A note's own sforzando, written in its token, outranks the spine's.
+    def accent(events, part, dynamic)
+      events.each do |track, event|
+        next if event.nil? || event.pitches.empty? || !@cursors.fetch(track).layer.voice.part.equal?(part)
+
+        event.note_dynamic ||= dynamic.name_key
+      end
+    end
+
+    # A part with a **dynam spine beside each staff often states one level
+    # in both, so the first at a position is kept.
+    def place_levels
+      placed = Set.new
+      @levels.each do |time, part, level|
+        bar = clock.bar_containing(time)
+        position = HeadMusic::Notation::BarSplitter.position_at(@flow, bar.number, time - bar.start)
+        part.place_dynamic(position, level) if placed.add?([part, position])
       end
     end
 

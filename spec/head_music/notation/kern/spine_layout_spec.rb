@@ -10,14 +10,14 @@ describe HeadMusic::Notation::Kern::SpineLayout do
   end
 
   describe "tracks" do
-    subject(:tracks) { layout("**kern", "**text", "**silbe", "**dynam").tracks }
+    subject(:tracks) { layout("**kern", "**text", "**silbe", "**dynam", "**recip").tracks }
 
     it "classifies each spine" do
-      expect(tracks.map(&:kind)).to eq %i[kern lyric lyric skipped]
+      expect(tracks.map(&:kind)).to eq %i[kern lyric lyric dynam skipped]
     end
 
     it "remembers the header column each track came from" do
-      expect(tracks.map(&:origin)).to eq [0, 1, 2, 3]
+      expect(tracks.map(&:origin)).to eq [0, 1, 2, 3, 4]
     end
   end
 
@@ -62,10 +62,10 @@ describe HeadMusic::Notation::Kern::SpineLayout do
       expect([spines.tracks, manipulations.map(&:type)]).to eq [[kept], [:end]]
     end
 
-    it "tracks manipulators in skipped spines" do
+    it "tracks manipulators in spines other than kern" do
       spines = layout("**kern", "**dynam")
       spines.apply(record(%w[* *^]))
-      expect(spines.tracks.map(&:kind)).to eq %i[kern skipped skipped]
+      expect(spines.tracks.map(&:kind)).to eq %i[kern dynam dynam]
     end
 
     it "raises for a lone *v" do

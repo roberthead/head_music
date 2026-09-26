@@ -206,6 +206,80 @@ describe HeadMusic::Notation::Kern::Writer do
     end
   end
 
+  describe "dynamics" do
+    let(:flow) { HeadMusic::Content::Flow.new(meter: "4/4") }
+    let(:voice) { flow.add_voice }
+    let(:part) { voice.part }
+
+    def data(flow)
+      render(flow).lines.map(&:chomp).grep(/\A[^*!=]/)
+    end
+
+    it "writes a **dynam spine after the part's rightmost spine" do
+      voice.place("1:1", :whole, "C4")
+      part.place_dynamic("1:1", :p)
+      expect(render(flow).lines.map(&:chomp).grep(/\A\*\*/)).to eq ["**kern\t**dynam"]
+    end
+
+    it "writes no **dynam spine for a part with only sfz, which its tokens carry" do
+      voice.place("1:1", :whole, "C4").note_dynamic = :sfz
+      expect(render(flow)).not_to include "**dynam"
+    end
+
+    it "writes sf, rfz, and fp in the **dynam spine, and sfz in the token" do
+      %i[sf rfz fp sfz].each_with_index { |accent, index| voice.place("1:#{index + 1}", :quarter, "C4").note_dynamic = accent }
+      expect(data(flow)).to eq ["4c\tsf", "4c\trfz", "4c\tfp", "4cz\t."]
+    end
+
+    it "writes the part's level over a voice's level, and a voice's level over an accent" do
+      voice.place("1:1", :half, "C4").note_dynamic = :sf
+      voice.place("1:3", :half, "D4").note_dynamic = :sf
+      [part, voice].each { |owner| owner.place_dynamic("1:1", (owner == part) ? :f : :p) }
+      voice.place_dynamic("1:3", :mp)
+      expect(data(flow)).to eq ["2c\tf", "2d\tmp"]
+    end
+
+    it "ties the part's notes where a dynamic falls in the middle of them" do
+      voice.place("1:1", :whole, "C4")
+      part.place_dynamic("1:3", :mf)
+      expect(data(flow)).to eq ["[2c\t.", "2c]\tmf"]
+    end
+
+    it "ties a note through each dynamic in it, and splits a rest into rests" do
+      voice.place("1:1", :whole, "C4")
+      voice.place("2:1", :whole)
+      {"1:2" => :p, "1:3" => :f, "2:3" => :pp}.each { |position, level| part.place_dynamic(position, level) }
+      expect(data(flow)).to eq ["[4c\t.", "4c_\tp", "2c]\tf", "2r\t.", "2r\tpp"]
+    end
+
+    it "leaves a note whole where another part attacks at its dynamic" do
+      voice.place("1:1", :whole, "C4")
+      flow.add_voice.tap { |upper| (1..4).each { |count| upper.place("1:#{count}", :quarter, "E5") } }
+      part.place_dynamic("1:3", :mf)
+      expect(data(flow)).to eq ["4ee\t1c\t.", "4ee\t.\t.", "4ee\t.\tmf", "4ee\t.\t."]
+    end
+
+    it "leaves out a dynamic after the last note" do
+      voice.place("1:1", :whole, "C4")
+      part.place_dynamic("2:1", :f)
+      expect(data(flow)).to eq ["1c\t."]
+    end
+
+    it "moves a dynamic before a pickup's first note to that note" do
+      voice.place("0:1", :half)
+      voice.place("0:3", :half, "C4")
+      voice.place("1:1", :whole, "D4")
+      part.place_dynamic("0:1", :p)
+      expect(data(flow)).to eq ["2c\tp", "1d\t."]
+    end
+
+    it "refuses a dynamic that splits a note into values no binary note spans" do
+      voice.place("1:1", :whole, "C4")
+      part.place_dynamic("1:1:320", :f)
+      expect { render(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /binary note values/)
+    end
+  end
+
   describe "a pickup" do
     subject(:flow) do
       parse(<<~KERN)
