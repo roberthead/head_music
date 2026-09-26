@@ -22,12 +22,20 @@ module HeadMusic::Notation::ABC
     REST_PATTERN = %r{z([\d/]*)}
     VOLTA_DIGITS_PATTERN = /\d[\d,-]*/
 
+    # A decoration: "!trill!", its ABC 2.0 spelling "+trill+", or a one-character
+    # shorthand. A dot decorates only a note, chord, rest, or another
+    # decoration, since ".|" is a dotted bar line.
+    DECORATION_PATTERNS = [
+      /![^!\s]+!/, /\+[^+\s]+\+/, /[~HLMOPSTuv]/, /\.(?=[\^_=A-Ga-gz\[!+.~HLMOPSTuv])/
+    ].freeze
+
     # Recognizable ABC we deliberately don't handle: grace notes ({..}),
-    # decorations (!..!), tuplets, slurs, and special rests (Z, x). Ordered
-    # so a closed form is tried before its unterminated fallback.
+    # tuplets, slurs, special rests (Z, x), dotted bar lines, and malformed
+    # decorations. Ordered so a closed form is tried before its unterminated
+    # fallback.
     UNSUPPORTED_PATTERNS = [
       /\{[^}]*\}/, /\{[^}]*/, /![^!]*!/, /![^!]*/,
-      /\(\d/, /[()~.]/, /Z\d*/, %r{x[\d/]*}
+      /\(\d/, /[().]/, /Z\d*/, %r{x[\d/]*}
     ].freeze
 
     # Music tokens whose whitespace successor breaks a beam group; other
@@ -134,6 +142,7 @@ module HeadMusic::Notation::ABC
       return if scan_rest(scanner, line_number, column, tokens)
       return if scan_tie(scanner, line_number, column, tokens)
       return if scan_broken_rhythm(scanner, line_number, column, tokens)
+      return if scan_decoration(scanner, line_number, column, tokens)
       return if scan_unsupported(scanner, line_number, column, tokens)
 
       raise_unexpected_character(scanner, line_number, column)
@@ -246,6 +255,14 @@ module HeadMusic::Notation::ABC
       return false unless scanner.scan("-")
 
       tokens << Token.new(type: :tie, line: line_number, column: column)
+      true
+    end
+
+    def scan_decoration(scanner, line_number, column, tokens)
+      lexeme = scan_first(scanner, DECORATION_PATTERNS)
+      return false unless lexeme
+
+      tokens << Token.new(type: :decoration, line: line_number, column: column, lexeme: lexeme)
       true
     end
 

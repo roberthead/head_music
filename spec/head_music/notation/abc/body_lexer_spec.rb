@@ -374,6 +374,44 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
   end
 
+  describe "decorations" do
+    {
+      "a staccato dot" => [".A", "."],
+      "a roll mark" => ["~A", "~"],
+      "a shorthand letter" => ["TA", "T"],
+      "a lowercase shorthand letter" => ["uA", "u"],
+      "a bang decoration" => ["!trill!A", "!trill!"],
+      "a legacy plus decoration" => ["+trill+A", "+trill+"],
+      "a decoration with punctuation" => ["!D.C.!A", "!D.C.!"],
+      "an unrecognized bang decoration" => ["!bogus!A", "!bogus!"]
+    }.each do |description, (body, lexeme)|
+      it "lexes #{description} as a decoration" do
+        expect(tokens_for(body).first.to_h).to include(type: :decoration, lexeme: lexeme)
+      end
+    end
+
+    it "lexes a dot before a rest, a chord, and another decoration as decorations" do
+      tokens = music_tokens_for(".z .[CE] ..A")
+      expect(tokens.map(&:type)).to eq([:decoration, :rest, :decoration, :chord, :decoration, :decoration, :note])
+    end
+
+    it "lexes stacked decorations before their note" do
+      expect(tokens_for("!p!.C").map(&:type)).to eq([:decoration, :decoration, :note])
+    end
+
+    it "does not break a beam between a decoration and its note" do
+      expect(tokens_for("C .D").map(&:type)).to eq([:note, :beam_break, :decoration, :note])
+    end
+
+    it "lexes an inline field as a field, not a decoration" do
+      expect(tokens_for("[T:Second]A").first.to_h).to include(type: :unsupported, lexeme: "[T:Second]")
+    end
+
+    it "lexes a field line of a shorthand letter as a field, not a decoration" do
+      expect(tokens_for("T:Second").first.type).to eq(:unsupported)
+    end
+  end
+
   describe "unsupported features" do
     it "lexes a quoted chord symbol as unsupported" do
       expect(tokens_for("\"G7\"").first.lexeme).to eq("\"G7\"")
@@ -393,16 +431,12 @@ describe HeadMusic::Notation::ABC::BodyLexer do
       expect(tokens.first.to_h).to include(type: :unsupported, lexeme: "(3")
     end
 
-    it "lexes a turn mark as unsupported" do
-      expect(tokens_for("~A").first.lexeme).to eq("~")
+    it "lexes a dotted bar line as unsupported" do
+      expect(tokens_for("A.|").map(&:type)).to eq([:note, :unsupported, :bar_line])
     end
 
-    it "lexes a staccato dot as unsupported" do
-      expect(tokens_for(".A").first.lexeme).to eq(".")
-    end
-
-    it "lexes a bang decoration as unsupported" do
-      expect(tokens_for("!trill!A").first.lexeme).to eq("!trill!")
+    it "lexes an unterminated bang decoration as unsupported" do
+      expect(tokens_for("!trill A").first.to_h).to include(type: :unsupported, lexeme: "!trill A")
     end
 
     it "lexes a multi-measure rest as unsupported" do

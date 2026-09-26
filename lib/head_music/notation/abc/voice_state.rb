@@ -15,8 +15,8 @@ module HeadMusic::Notation::ABC
     # bar-line accidental resets cannot corrupt them. `tied_prefix`, when
     # present, is the already-built rhythmic value of everything tied ahead of
     # this note; its own value is appended at flush time.
-    PendingNote = Data.define(:pitches, :length, :scale, :tied_prefix, :beam_break) do
-      def initialize(pitches:, length:, scale:, tied_prefix: nil, beam_break: nil)
+    PendingNote = Data.define(:pitches, :length, :scale, :tied_prefix, :beam_break, :decorations) do
+      def initialize(pitches:, length:, scale:, tied_prefix: nil, beam_break: nil, decorations: [])
         super
       end
     end
@@ -32,6 +32,24 @@ module HeadMusic::Notation::ABC
       @beam_break_pending = false
       @beam_last_was_note = false
       @tie_open = false
+      @decorations = []
+    end
+
+    def decorate(decoration)
+      @decorations << decoration
+    end
+
+    # A marking before a bar line, tie, or the end of the tune has nothing to
+    # mark. One the reader drops anyway, such as a !fine! before a bar line,
+    # is let go.
+    def reject_dangling_decorations
+      dangling = take_decorations.reject(&:dropped?).first
+      return unless dangling
+
+      raise ParseError.new(
+        "A decoration must be followed by a note, chord, or rest",
+        line_number: dangling.line, snippet: dangling.lexeme
+      )
     end
 
     # Counted from where the last note ends rather than where it starts: a
@@ -96,11 +114,13 @@ module HeadMusic::Notation::ABC
     def defer_voice_event(pitches, length, inner_scale = ONE)
       scale = (awaiting_scale || ONE) * inner_scale
       self.awaiting_scale = nil
-      return tie_onto_pending(pitches, length, scale) if tie_open?
+      decorations = take_decorations
+      return tie_onto_pending(pitches, length, scale, decorations) if tie_open?
 
       flush_pending_note
       self.pending_note = PendingNote.new(
-        pitches: pitches, length: length, scale: scale, beam_break: next_beam_break
+        pitches: pitches, length: length, scale: scale, beam_break: next_beam_break,
+        decorations: decorations
       )
     end
 
@@ -111,16 +131,58 @@ module HeadMusic::Notation::ABC
       return unless pending
 
       self.pending_note = nil
-      place_next(pending_rhythmic_value(pending), pending.pitches).beam_break_before = pending.beam_break
+      voice_event = place_next(pending_rhythmic_value(pending), pending.pitches)
+      voice_event.beam_break_before = pending.beam_break
+      apply_decorations(voice_event, pending.decorations)
     end
 
     # Places a note, chord, or rest (nil pitches) directly onto the voice,
-    # bypassing the pending-note buffer.
+    # bypassing the pending-note buffer, with the decorations waiting for it.
     def place(length, pitches, scale: ONE)
-      place_next(@duration_resolver.rhythmic_value(length, scale: scale), pitches)
+      voice_event = place_next(@duration_resolver.rhythmic_value(length, scale: scale), pitches)
+      apply_decorations(voice_event, take_decorations)
+      voice_event
     end
 
     private
+
+    def take_decorations
+      decorations = @decorations
+      @decorations = []
+      decorations
+    end
+
+    # A rest keeps only a level, which becomes a dynamic event at the rest.
+    def apply_decorations(voice_event, decorations)
+      decorations = decorations.select(&:level?) if voice_event.rest?
+      decorations.each { |decoration| apply_decoration(voice_event, decoration) }
+    end
+
+    def apply_decoration(voice_event, decoration)
+      key = decoration.key
+      case decoration.kind
+      when :articulation then voice_event.articulate(key)
+      when :ornament then voice_event.embellish(key)
+      when :note_dynamic then assign_note_dynamic(voice_event, decoration)
+      when :level then place_level(voice_event.position, decoration)
+      end
+    end
+
+    def assign_note_dynamic(voice_event, decoration)
+      if voice_event.note_dynamic
+        raise ParseError.new(
+          "A note may carry only one of sf, sfz, rfz, and fp",
+          line_number: decoration.line, snippet: decoration.lexeme
+        )
+      end
+      voice_event.note_dynamic = decoration.key
+    end
+
+    def place_level(position, decoration)
+      voice.place_dynamic(position, decoration.key)
+    rescue ArgumentError => error
+      raise ParseError.new(error.message, line_number: decoration.line, snippet: decoration.lexeme)
+    end
 
     def place_next(rhythmic_value, pitches)
       voice.place(voice.next_position, rhythmic_value, pitches)
@@ -129,13 +191,18 @@ module HeadMusic::Notation::ABC
     # Closes an open tie: the pending note becomes the new note's tied prefix,
     # so the pair (and any longer chain) resolves to a single voice event whose
     # rhythmic value carries the author's chosen split.
-    def tie_onto_pending(pitches, length, scale)
+    #
+    # The tied note's markings join the whole event's, but a level written on
+    # it takes effect where it is written, partway through the event.
+    def tie_onto_pending(pitches, length, scale, decorations)
       pending = pending_note
       prefix = pending_rhythmic_value(pending)
+      levels, markings = decorations.partition(&:level?)
+      levels.each { |decoration| place_level(voice.next_position + prefix, decoration) }
       close_tie
       self.pending_note = PendingNote.new(
         pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
-        beam_break: pending.beam_break
+        beam_break: pending.beam_break, decorations: pending.decorations + markings
       )
     end
 

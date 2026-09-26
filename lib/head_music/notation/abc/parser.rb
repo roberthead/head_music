@@ -37,6 +37,7 @@ module HeadMusic::Notation::ABC
       Preflight.reject_content_after_tune(header)
       tokens = BodyLexer.new(header.body, start_line: header.body_start_line).tokens
       Preflight.reject_unsupported_tokens(tokens)
+      Preflight.reject_unrecognized_decorations(tokens)
       @duration_resolver = DurationResolver.new(header.unit_note_length)
       interpret(tokens)
     end
@@ -76,7 +77,13 @@ module HeadMusic::Notation::ABC
       when :volta then handle_volta(token)
       when :voice_change then handle_voice_change(token)
       when :beam_break then handle_beam_break(token)
+      when :decoration then handle_decoration(token)
       end
+    end
+
+    # A decoration waits for the note, chord, or rest after it.
+    def handle_decoration(token)
+      current_state.decorate(Decoration.from_token(token))
     end
 
     def handle_note(token)
@@ -106,6 +113,7 @@ module HeadMusic::Notation::ABC
       if state.awaiting_scale || state.pending_note.nil?
         raise ParseError.new("A tie must follow a note", line_number: line, snippet: "-")
       end
+      state.reject_dangling_decorations
       state.open_tie(line)
     end
 
@@ -132,6 +140,7 @@ module HeadMusic::Notation::ABC
       line = token.line
       direction = token.direction
       reject_open_tie(state, line, "A tie must be followed by a note")
+      state.reject_dangling_decorations
       pending = state.pending_note
       if state.awaiting_scale || pending.nil?
         raise ParseError.new(
@@ -153,6 +162,7 @@ module HeadMusic::Notation::ABC
       ensure_not_awaiting_note(token)
       state = current_state
       style = token.style
+      state.reject_dangling_decorations
       state.flush_pending_note unless state.tie_open?
       state.reset_beam_adjacency
       repeat_tagger.bar_line(state, style)
@@ -166,6 +176,7 @@ module HeadMusic::Notation::ABC
       raise ParseError.new("Volta has no passes", line_number: line) if passes.empty?
 
       state = current_state
+      state.reject_dangling_decorations
       state.flush_pending_note unless state.tie_open?
       state.reset_beam_adjacency
       repeat_tagger.open_volta(state, passes)
@@ -177,6 +188,7 @@ module HeadMusic::Notation::ABC
         state = current_state
         ensure_not_awaiting_note(token, state: state)
         reject_open_tie(state, token.line, "A tie must be followed by a note")
+        state.reject_dangling_decorations
         state.flush_pending_note
         state.reset_beam_adjacency
       end
@@ -187,6 +199,7 @@ module HeadMusic::Notation::ABC
       @voices.each do |state|
         ensure_not_awaiting_note(nil, state: state)
         reject_open_tie(state, nil, "A tie must be followed by a note")
+        state.reject_dangling_decorations
         state.flush_pending_note
         repeat_tagger.tag_completed_bar(state)
       end

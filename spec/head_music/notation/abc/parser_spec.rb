@@ -477,7 +477,7 @@ describe HeadMusic::Notation::ABC::Parser do
       "a grace note" => ["{g}A|", "{g}"],
       "a slur" => ["(AB)|", "("],
       "a tuplet" => ["(3ABC|", "(3"],
-      "a decoration" => ["!trill!A|", "!trill!"],
+      "an unrecognized decoration" => ["!bogus!A|", "!bogus!"],
       "a double broken rhythm" => ["A>>B|", ">>"],
       "a multi-bar rest" => ["Z4|", "Z4"],
       "an invisible rest" => ["x2|", "x2"],
@@ -503,6 +503,139 @@ describe HeadMusic::Notation::ABC::Parser do
     it "raises before any interpretation when an unsupported token appears late in the body" do
       expect { parse_body("CDEF|GABc|{g}A|") }
         .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\{g\}/)
+    end
+  end
+
+  describe "decorations" do
+    def voice_for(body)
+      parse_body(body).voices.first
+    end
+
+    def first_event(body)
+      voice_for(body).voice_events.first
+    end
+
+    it "reads the staccato shorthand and its bang form as articulations" do
+      voice = voice_for(".C !staccato!D !wedge!E F|")
+      expect(voice.voice_events.map { |event| event.articulations.map(&:name_key) })
+        .to eq [["staccato"], ["staccato"], ["staccatissimo"], []]
+    end
+
+    it "reads T as a trill" do
+      expect(first_event("TC4|").ornaments.map(&:name_key)).to eq ["trill"]
+    end
+
+    it "reads M as the lower mordent" do
+      expect(first_event("MC4|").ornaments.map(&:name_key)).to eq ["mordent"]
+    end
+
+    it "reads P as the inverted mordent" do
+      expect(first_event("PC4|").ornaments.map(&:name_key)).to eq ["inverted_mordent"]
+    end
+
+    it "reads a legacy plus decoration" do
+      expect(first_event("+turn+C4|").ornaments.map(&:name_key)).to eq ["turn"]
+    end
+
+    it "gathers several markings on one note" do
+      event = first_event("!accent!!tenuto!T!sfz!C4|")
+      expect([event.articulations.map(&:name_key), event.ornaments.map(&:name_key), event.note_dynamic.name_key])
+        .to eq [%w[accent tenuto], ["trill"], "sfz"]
+    end
+
+    it "marks a chord" do
+      expect(first_event("!marcato![CEG]4|").articulations.map(&:name_key)).to eq ["marcato"]
+    end
+
+    it "keeps a note's markings across a broken rhythm" do
+      voice = voice_for(".C>!accent!D C2|")
+      expect(voice.voice_events.first(2).map { |event| event.articulations.map(&:name_key) })
+        .to eq [["staccato"], ["accent"]]
+    end
+
+    it "reads a dynamic as a dynamic event on the voice at its note" do
+      voice = voice_for("C !p!D !f!E F|")
+      expect(voice.dynamic_events.map(&:to_h))
+        .to eq [{"position" => "1:2:000", "level" => "p"}, {"position" => "1:3:000", "level" => "f"}]
+    end
+
+    it "reads a dynamic on a rest as a dynamic event at the rest" do
+      expect(voice_for("C !p!z D2|").dynamic_at("1:2").name_key).to eq "p"
+    end
+
+    it "drops markings on a rest" do
+      expect { voice_for("!trill!Hz4|") }.not_to raise_error
+    end
+
+    it "keeps the rest a rest when its markings are dropped" do
+      expect(first_event(".z4|")).to be_rest
+    end
+
+    it "drops recognized decorations the catalogs do not hold" do
+      event = first_event("!fermata!~H!upbow!C4|")
+      expect([event.articulations, event.ornaments, event.note_dynamic]).to eq [[], [], nil]
+    end
+
+    it "lets a dropped decoration stand before a bar line" do
+      expect(voice_for("C4!D.C.!|]").voice_events.length).to eq 1
+    end
+
+    it "marks a tied note once, keeping markings from its tied note" do
+      event = first_event(".C2-!accent!C2|")
+      expect(event.articulations.map(&:name_key)).to eq %w[accent staccato]
+    end
+
+    it "places a dynamic on a tied note where it is written" do
+      voice = voice_for("C2-!p!C2|")
+      expect(voice.dynamic_events.map(&:to_h)).to eq [{"position" => "1:3:000", "level" => "p"}]
+    end
+
+    it "keeps dynamics for each voice" do
+      flow = parse("X:1\nL:1/4\nK:C\nV:1\n!p!C4|\nV:2\n!f!C,4|\n")
+      expect(flow.voices.map { |voice| voice.dynamic_at("1:1").name_key }).to eq %w[p f]
+    end
+
+    it "raises when a marking precedes a bar line" do
+      expect { parse_body("C4!p!|") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note, chord, or rest.*line/)
+    end
+
+    it "raises when a marking precedes a tie" do
+      expect { parse_body("C2T-C2|") }.to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
+
+    it "raises when a marking precedes a broken rhythm" do
+      expect { parse_body("CT>D C2|") }.to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
+
+    it "raises when a marking precedes a volta" do
+      expect { parse_body("C4|T[2 D4|]") }.to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
+
+    it "raises when a marking precedes a voice change" do
+      expect { parse("X:1\nL:1/4\nK:C\nV:1\nC4T\nV:2\nC,4|\n") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
+
+    it "raises when a marking ends the tune" do
+      expect { parse_body("C4!trill!") }.to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
+
+    it "raises for two dynamics at one position" do
+      expect { parse_body("!p!!f!C4|") }.to raise_error(HeadMusic::Notation::ABC::ParseError, /line 5/)
+    end
+
+    it "raises for two note dynamics on one note" do
+      expect { parse_body("!sfz!!fp!C4|") }.to raise_error(HeadMusic::Notation::ABC::ParseError, /only one/)
+    end
+
+    it "keeps a dotted bar line unsupported" do
+      expect { parse_body("C4.|") }.to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"\."/)
+    end
+
+    it "refuses a U: field that would redefine a shorthand" do
+      expect { parse("X:1\nU:T=!fermata!\nK:C\nTC|\n") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"U"/)
     end
   end
 

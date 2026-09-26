@@ -49,4 +49,20 @@ describe HeadMusic::Notation::ABC::Preflight do
         .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\{g\}/)
     end
   end
+
+  describe ".reject_unrecognized_decorations" do
+    def tokens_for(body)
+      HeadMusic::Notation::ABC::BodyLexer.new(body, start_line: 1).tokens
+    end
+
+    it "passes decorations it maps or drops" do
+      expect { described_class.reject_unrecognized_decorations(tokens_for(".C !trill!D !fermata!E HF|")) }
+        .not_to raise_error
+    end
+
+    it "raises on an unrecognized decoration with its lexeme and line" do
+      expect { described_class.reject_unrecognized_decorations(tokens_for("C\n!bogus!D|")) }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"!bogus!".*line 2/)
+    end
+  end
 end

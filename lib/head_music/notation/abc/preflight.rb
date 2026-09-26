@@ -44,5 +44,18 @@ module HeadMusic::Notation::ABC
         line_number: token.line, snippet: lexeme
       )
     end
+
+    def self.reject_unrecognized_decorations(tokens)
+      token = tokens.find do |candidate|
+        candidate.type == :decoration && DecorationMapper.classify(candidate.lexeme).nil?
+      end
+      return unless token
+
+      lexeme = token.lexeme
+      raise UnsupportedFeatureError.new(
+        "Unsupported ABC decoration #{lexeme.inspect}",
+        line_number: token.line, snippet: lexeme
+      )
+    end
   end
 end
