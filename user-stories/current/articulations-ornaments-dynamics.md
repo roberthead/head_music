@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-25T17:40:58-07:00
   planned_at:   2026-09-26T15:57:06-07:00
   finished_at:
-  updated_at:   2026-09-26T16:05:20-07:00
+  updated_at:   2026-09-26T16:44:29-07:00
 -->
 
 # Story: Articulations, Ornaments, Dynamics
