@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-HeadMusic is a Ruby gem for Western music theory. It provides a comprehensive toolkit for working with pitches, scales, intervals, chords, and musical analysis. The gem supports internationalization with translations in 7 languages.
+HeadMusic is a Ruby gem for Western music theory. It provides a comprehensive toolkit for working with pitches, scales, intervals, chords, and musical analysis. The gem supports internationalization with translations in 6 languages, plus British English.
 
 ## Development Commands
 
@@ -53,6 +53,7 @@ The codebase follows a domain-driven design with clear module boundaries:
   - Abstract concepts: pitch, interval, scale, chord, key
   - Duration concepts (without visual representation)
   - Factory methods: `.get()` for most rudiments
+  - Future: catalogs of articulations, ornaments, and dynamics
 
 2. **HeadMusic::Notation** - Visual music notation and representation
   - Staff positions, lines, spaces, ledger lines
@@ -60,7 +61,7 @@ The codebase follows a domain-driven design with clear module boundaries:
   - Clef placement and rendering
   - Notehead shapes, stems, flags, beams
   - Accidental placement rules
-  - Future: ties, slurs, articulations, dynamics
+  - Future: ties, slurs
 
 3. **HeadMusic::Instruments** - Instrument definitions
   - Instrument families and classification
@@ -70,7 +71,7 @@ The codebase follows a domain-driven design with clear module boundaries:
 
 4. **HeadMusic::Content** - Musical composition representation
   - Compositions, voices, bars, positions
-  - Notes in context (pitch + duration + placement)
+  - Voice events in context: note events and rest events (sounds + rhythmic value + position)
   - Uses HeadMusic::Time for temporal positioning
 
 5. **HeadMusic::Time** - Temporal infrastructure
@@ -116,7 +117,7 @@ Module loading order matters and is defined in `lib/head_music.rb`.
 
 The gem supports multiple languages through the HeadMusic::Named mixin:
 - Translations in `lib/head_music/locales/`
-- Languages: en, de, es, fr, it, ja, nl
+- Languages: en, de, es, fr, it, ru, and en_GB for British spellings
 - Use `I18n.locale = :de` to change language
 
 ### Testing Patterns

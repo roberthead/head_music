@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-25T17:40:58-07:00
   planned_at:   2026-09-26T15:57:06-07:00
   finished_at:
-  updated_at:   2026-09-26T16:04:11-07:00
+  updated_at:   2026-09-26T16:05:20-07:00
 -->
 
 # Story: Articulations, Ornaments, Dynamics
@@ -68,7 +68,7 @@ voice.dynamic_at("5:2").name_key # => "f"
 ### Articulations and ornaments
 
 - [ ] `Articulation` and `Ornament` are catalogs loaded from YAML, as playing techniques are: articulations are staccato, staccatissimo, accent, tenuto, and marcato; ornaments are trill, mordent, inverted mordent, and turn
-- [ ] Each articulation and ornament has a name through the `Named` mixin, with English names and fallbacks for the other locales
+- [ ] Each articulation, ornament, and dynamic has a name through the `Named` mixin, translated in every shipped locale: en, de, es, fr, it, and ru, with en_GB falling back to en
 - [ ] A `NoteEvent` can carry any number of articulations and ornaments, each at most once; articulating or embellishing it with a marking it already carries leaves it unchanged
 - [ ] When `Voice#place` merges a note event into an existing one at the same position, the existing event keeps its articulations, ornaments, and note dynamic
 - [ ] A `RestEvent` refuses an articulation, an ornament, or a note dynamic with `ArgumentError`
@@ -151,16 +151,16 @@ Planned by a story-planner with a product manager, a best-practices engineer, an
 
 1. **Catalog mixin, `Articulation`, and `Ornament`**
    - `HeadMusic::Rudiment::KeyedCatalog` gives all three catalogs one `.get(identifier)`: it snake-cases its input, resolves aliases, and returns a cached, frozen instance, or `nil` for an unknown key, as `Alteration.get` does. `.all` lists records in YAML order. Override the inherited `Named.get_by_name` (`lib/head_music/named.rb:8`) to go through `.get`.
-   - Names come through `Named` and `I18n.translate(name_key, scope:, default: name_key.tr("_", " "))`, as `PlayingTechnique#name` does. English names go under `head_music.articulations` and `head_music.ornaments` in `en.yml`; the other locales fall back through `HEAD_MUSIC_FALLBACKS`.
+   - Names come through `Named` and `I18n.translate(name_key, scope:, default: name_key.tr("_", " "))`, as `PlayingTechnique#name` does. Names go under `head_music.articulations` and `head_music.ornaments` in `en.yml`, `de.yml`, `es.yml`, `fr.yml`, `it.yml`, and `ru.yml`, using each language's usual term (for example *Triller*, *trino*, *trille*, *trillo*, *трель*); `en_GB` falls back to `en`.
    - Articulation keys: `staccato`, `staccatissimo`, `accent`, `tenuto`, `marcato`. Ornament keys: `trill`; `mordent` (aliases `lower_mordent`, `mordent_lower`); `inverted_mordent` (aliases `upper_mordent`, `pralltriller`); `turn`.
-   - Files: `lib/head_music/rudiment/keyed_catalog.rb`, `articulation.rb`, `articulations.yml`, `ornament.rb`, `ornaments.yml`, `lib/head_music/locales/en.yml`, `lib/head_music.rb` (require after `rudiment/tempo`).
-   - Specs: `spec/head_music/rudiment/articulation_spec.rb` and `ornament_spec.rb`, mirroring `playing_technique_spec.rb`: `.get` from a symbol, a string, `"inverted-mordent"`, and each alias; the same instance each time; `.get(:bogus)` is nil; `.all` matches the story's list; English names and a de/ru fallback.
+   - Files: `lib/head_music/rudiment/keyed_catalog.rb`, `articulation.rb`, `articulations.yml`, `ornament.rb`, `ornaments.yml`, the six locale files, `lib/head_music.rb` (require after `rudiment/tempo`).
+   - Specs: `spec/head_music/rudiment/articulation_spec.rb` and `ornament_spec.rb`, mirroring `playing_technique_spec.rb`: `.get` from a symbol, a string, `"inverted-mordent"`, and each alias; the same instance each time; `.get(:bogus)` is nil; `.all` matches the story's list; names in every locale, with a spec that fails when a key is missing from any locale file.
 
 2. **`HeadMusic::Rudiment::Dynamic`**
    - Records carry `kind: level | accent`; `fp` also carries `level_after: p`, so `dynamic_at` reads data rather than hardcoding *fp*, and *sfp* could be added later as data. Quote the YAML keys (`"p":`, `"f":`).
-   - `#level?`, `#accent?`, `#level_after`, `.levels` (ppp to fff, in order), `.accents`. `.get` downcases, so `"MF"` gives `mf`. English names under `head_music.dynamics`.
-   - Files: `lib/head_music/rudiment/dynamic.rb`, `dynamics.yml`, `en.yml`, `lib/head_music.rb`.
-   - Spec: `spec/head_music/rudiment/dynamic_spec.rb`: eight levels and four accents, `level?` and `accent?`, `get(:fp).level_after == get(:p)`, nil for `sfz`, names and fallback.
+   - `#level?`, `#accent?`, `#level_after`, `.levels` (ppp to fff, in order), `.accents`. `.get` downcases, so `"MF"` gives `mf`. Names under `head_music.dynamics` in all six locale files: the Italian terms (*pianissimo*, *sforzando*, *fortepiano*) are standard across languages, with local spellings where they differ, such as Cyrillic in ru.
+   - Files: `lib/head_music/rudiment/dynamic.rb`, `dynamics.yml`, the six locale files, `lib/head_music.rb`.
+   - Spec: `spec/head_music/rudiment/dynamic_spec.rb`: eight levels and four accents, `level?` and `accent?`, `get(:fp).level_after == get(:p)`, nil for `sfz`, names in every locale.
 
 3. **Note-event markings and rest refusal**
    - `VoiceEvent` gets empty defaults (`articulations` and `ornaments` return `[]`, `note_dynamic` returns `nil`), so readers and writers never check `is_a?`.
@@ -306,8 +306,3 @@ Planned by a story-planner with a product manager, a best-practices engineer, an
 - **Readers:** a closed-vocabulary table spec per format covering every recognized-and-dropped entry, so coverage doesn't depend on round trips; dangling or orphaned marks raise; unknown syntax still raises `UnsupportedFeatureError`.
 - **Round trips:** the shared fixtures and `expect_same_markings` hold ABC, LilyPond, and kern to one standard; MusicXML gets structural assertions.
 - Never assert console output. Build compositions with `HeadMusic::Notation::ABC.parse` where shorter. Run `bundle exec rake` and `bundle exec rubocop -a` for each step.
-
-### Open questions
-
-1. Should de, es, fr, it, and ru get real translations now, or English with fallbacks, as the criterion allows? The Italian dynamic names work in every language.
-2. CLAUDE.md lists locales ja and nl, which don't ship (ru and en_GB do), and names articulations and dynamics as future `Notation` concepts, where this plan puts them under `Rudiment`. Update it with this story?
