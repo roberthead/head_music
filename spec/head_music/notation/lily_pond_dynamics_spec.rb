@@ -64,6 +64,46 @@ describe HeadMusic::Notation::LilyPond do
     expect(part_levels(described_class.parse(piano("s1-.\\sfz\\p\\trill | s1 | s1")).parts.first)).to eq [%w[1:1:000 p]]
   end
 
+  it "ignores a \\key, \\time, or \\clef there, which only repeats the staves'" do
+    source = piano("\\key c \\major \\time 4/4 \\clef treble s1\\p | s1 | s1")
+    expect(part_levels(described_class.parse(source).parts.first)).to eq [%w[1:1:000 p]]
+  end
+
+  it "drops hairpins and text spans there" do
+    source = piano("s1\\p\\< | s1\\f\\> | s1\\!\\cresc")
+    expect(part_levels(described_class.parse(source).parts.first)).to eq [%w[1:1:000 p], %w[2:1:000 f]]
+  end
+
+  # The reader starts every stream at bar 1, so a pickup bar comes back as
+  # bar 1 and everything after it a bar later. The dynamics move with the
+  # notes, so each still governs the notes it governed.
+  describe "a pickup flow with dynamics" do
+    let(:original) do
+      LilyPondFixtures.pickup_and_short_final_bar.tap do |flow|
+        flow.parts.first.place_dynamic("0:3", :p)
+        flow.parts.first.place_dynamic("2:1", :f)
+        flow.voices.first.place_dynamic("1:1", :mf)
+      end
+    end
+    let(:round_tripped) { described_class.parse(original.to_lilypond) }
+
+    it "reads the part's dynamics back a bar later" do
+      expect(part_levels(round_tripped.parts.first)).to eq [%w[1:3:000 p], %w[3:1:000 f]]
+    end
+
+    it "reads the voice's dynamics back a bar later" do
+      expect(round_tripped.voices.first.dynamic_events.map(&:to_s)).to eq ["mf at 2:1:000"]
+    end
+
+    it "keeps the level in force at every note" do
+      levels = [original, round_tripped].map do |flow|
+        voice = flow.voices.first
+        voice.note_events.map { |note_event| voice.dynamic_at(note_event.position).name_key }
+      end
+      expect(levels.last).to eq levels.first
+    end
+  end
+
   describe "rejections" do
     {
       "a Dynamics context with no staff before it" => [
@@ -72,7 +112,8 @@ describe HeadMusic::Notation::LilyPond do
       "a Dynamics context alone" => [%(\\new Dynamics { s1\\p }), described_class::UnsupportedFeatureError, /must be inside/],
       "a note inside a Dynamics context" => [piano("c'1\\p"), described_class::UnsupportedFeatureError, /Notes inside \\new Dynamics/],
       "a chord inside a Dynamics context" => [piano("<c' e'>1"), described_class::UnsupportedFeatureError, /Notes inside \\new Dynamics/],
-      "a command inside a Dynamics context" => [piano("\\time 4/4 s1"), described_class::UnsupportedFeatureError, /"\\time"/],
+      "a command inside a Dynamics context" => [piano("\\tuplet 3/2 { s4 s4 s4 }"), described_class::UnsupportedFeatureError, /"\\tuplet"/],
+      "a malformed \\time inside a Dynamics context" => [piano("\\time x s1"), described_class::ParseError, /line 1/],
       "a tie inside a Dynamics context" => [piano("s1~ s1"), described_class::ParseError, /Unexpected token "~" inside \\new Dynamics/],
       "an unsupported mark inside a Dynamics context" => [piano("s1 ("), described_class::UnsupportedFeatureError, /"\("/],
       "a context inside a Dynamics context" => [

@@ -54,7 +54,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   end
 
   describe "marks the catalogs do not hold" do
-    %w[-_ -+ \\fermata \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff ^\\fermata].each do |source|
+    %w[-_ -+ \\fermata \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff ^\\fermata \\< \\> \\! -\\< \\cresc \\dim \\endcresc].each do |source|
       it "consumes and drops #{source}" do
         cursor = cursor_for("#{source} c'4")
         expect(described_class.new(cursor).read.to_h).to eq none

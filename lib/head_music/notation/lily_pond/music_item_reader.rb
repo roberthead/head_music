@@ -79,6 +79,17 @@ module HeadMusic::Notation::LilyPond
       context.stream.clef(token.lexeme)
     end
 
+    # Reads a \key, \time, or \clef for its syntax alone, where it has no
+    # stream to change.
+    def skip_setting
+      command = cursor.advance
+      case command.lexeme
+      when "key" then located(command) { KeyReader.key_signature(cursor.advance, cursor.advance) }
+      when "time" then located(command) { MeterReader.meter(cursor.advance) }
+      when "clef" then raise cursor.error("\\clef expects a clef name", command) unless clef_name?(cursor.advance)
+      end
+    end
+
     def read_staff_change(context)
       command = cursor.advance
       target = cursor.peek

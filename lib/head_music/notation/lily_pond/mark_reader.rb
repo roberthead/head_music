@@ -34,10 +34,15 @@ module HeadMusic::Notation::LilyPond
     ARTICULATION_COMMANDS = ARTICULATIONS_BY_SHORTHAND.values.freeze
     NOTE_DYNAMIC_COMMANDS = %w[sf sfz rfz fp].freeze
     LEVEL_COMMANDS = %w[ppp pp p mp mf f ff fff].freeze
-    DROPPED_COMMANDS = %w[fermata upbow downbow breathe portato stopped sfp spp sff fz pppp ffff].freeze
+    DROPPED_COMMANDS = %w[
+      fermata upbow downbow breathe portato stopped sfp spp sff fz pppp ffff
+      cresc decresc dim endcresc enddecresc enddim
+    ].freeze
     DIRECTIONS = %w[- ^ _].freeze
     # The portato (_) and stopped (+) shorthands are read and dropped.
     SHORTHAND_PATTERN = /\A[-^_][.!>\-^_+]\z/
+    # Hairpins are spans, which the model does not hold yet, so they are dropped.
+    HAIRPIN_PATTERN = /\A\\[<>!]\z/
     FIELD_NAMES = {note_dynamic: "sforzando", level: "dynamic level"}.freeze
 
     # Each command's [field, key], or nil for one that is dropped.
@@ -70,13 +75,18 @@ module HeadMusic::Notation::LilyPond
 
     def mark_token_count
       token = cursor.peek
-      return 1 if shorthand?(token) || command?(token)
+      return 1 if shorthand?(token) || hairpin?(token) || command?(token)
 
-      2 if direction?(token) && command?(cursor.peek(1))
+      following = cursor.peek(1)
+      2 if direction?(token) && (command?(following) || hairpin?(following))
     end
 
     def shorthand?(token)
       token&.type == :unsupported && token.lexeme.match?(SHORTHAND_PATTERN)
+    end
+
+    def hairpin?(token)
+      token&.type == :unsupported && token.lexeme.match?(HAIRPIN_PATTERN)
     end
 
     def command?(token)
@@ -98,6 +108,7 @@ module HeadMusic::Notation::LilyPond
 
     def meaning(token)
       return MEANINGS_BY_COMMAND[token.lexeme] if token.type == :command
+      return if hairpin?(token)
 
       articulation = ARTICULATIONS_BY_SHORTHAND[token.lexeme[1]]
       articulation && [:articulations, articulation]

@@ -126,10 +126,18 @@ module HeadMusic::Notation::LilyPond
       when :bar_check then items.read_bar_check(context)
       when :open_brace then read_sequential(context)
       when :note, :open_chord then raise cursor.unsupported("Notes inside \\new Dynamics are not supported", token)
-      when :command then raise cursor.unsupported_command(token)
+      when :command then read_dynamics_command(token)
       when :unsupported then raise cursor.unsupported_token(token)
       else raise cursor.error(%(Unexpected token "#{token.lexeme}" inside \\new Dynamics), token)
       end
+    end
+
+    # A \key, \time, or \clef in a Dynamics context only repeats the staves',
+    # so it is read and ignored.
+    def read_dynamics_command(token)
+      raise cursor.unsupported_command(token) unless %w[key time clef].include?(token.lexeme)
+
+      items.skip_setting
     end
 
     def read_item_command(context)

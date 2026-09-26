@@ -27,7 +27,8 @@ module HeadMusic::Notation::LilyPond
     # the model cannot hold, so they are named as unsupported rather than
     # falling through as stray words.
     QUARTER_TONE_PATTERN = /[a-g](?:isih|eseh|ih|eh)(?![A-Za-z])(?:'+|,+)?#{DURATION_PATTERN}?/o
-    MARK_PATTERN = /\\\\|#\S*|[\[\]()]|[-^_][.>^_+!-]?|[:!?]/
+    # \< \> \! are hairpins, written after a note like a mark.
+    MARK_PATTERN = /\\[<>!]|\\\\|#\S*|[\[\]()]|[-^_][.>^_+!-]?|[:!?]/
     UNSUPPORTED_PATTERN = Regexp.union(MARK_PATTERN, QUARTER_TONE_PATTERN)
 
     ALIAS_SUFFIXES = {"s" => "es", "ses" => "eses"}.freeze

@@ -191,7 +191,7 @@ describe HeadMusic::Notation::LilyPond::Lexer do
 
   describe "unsupported constructs" do
     {
-      "\\\\" => "\\\\", "#(display 1)" => "#(display", "##f" => "##f",
+      "\\\\" => "\\\\", "\\<" => "\\<", "\\>" => "\\>", "\\!" => "\\!", "#(display 1)" => "#(display", "##f" => "##f",
       "[" => "[", "]" => "]", "(" => "(", ")" => ")",
       "-." => "-.", "->" => "->", "--" => "--", "^" => "^", "_" => "_", ":" => ":", "!" => "!", "?" => "?"
     }.each do |source, lexeme|
