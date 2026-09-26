@@ -20,7 +20,7 @@ describe HeadMusic::Notation::Kern::DynamicReader do
     end
   end
 
-  %w[. < > ( ) [ ] <( >) pppp ffff fz sfp sffz].each do |field|
+  %w[. < > ( ) [ ] <( >) pppp ffff fz sfp sffz cresc. dim. 3].each do |field|
     it "skips #{field}" do
       expect(keys(field)).to eq []
     end
@@ -39,12 +39,7 @@ describe HeadMusic::Notation::Kern::DynamicReader do
     expect([reading.track.origin, reading.column]).to eq [1, 3]
   end
 
-  it "raises an unsupported-feature error for text it does not know" do
-    expect { keys("cresc.") }.to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /Unsupported dynamic "cresc\."/)
-  end
-
-  it "raises for a **dynam spine with no kern spine on its left" do
-    expect { described_class.new(row(%w[**dynam **kern], %w[p 4c])).dynamics }
-      .to raise_error(HeadMusic::Notation::Kern::ParseError, /must follow the \*\*kern spine/)
+  it "skips a **dynam spine with no kern spine on its left" do
+    expect(described_class.new(row(%w[**dynam **kern], %w[p 4c])).dynamics).to eq []
   end
 end
