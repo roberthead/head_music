@@ -2,7 +2,7 @@
 module HeadMusic::Content; end
 
 # Resolves the raw sound argument(s) passed to Placement.new into a frozen,
-# de-duplicated array of sound objects. Each value may be a Pitch, an
+# de-duplicated array of Soundables. Each value may be a Pitch, an
 # UnpitchedSound, an Instrument (resolved to its percussive hit), or a name
 # resolvable to one of those; an unresolvable name raises with guidance.
 class HeadMusic::Content::SoundResolver
@@ -20,7 +20,7 @@ class HeadMusic::Content::SoundResolver
   private
 
   def resolve_sound(value)
-    return value if value.is_a?(HeadMusic::Rudiment::UnpitchedSound)
+    return value if value.is_a?(HeadMusic::Rudiment::Soundable)
     return HeadMusic::Rudiment::UnpitchedSound.get(value) if value.is_a?(HeadMusic::Instruments::Instrument)
 
     pitch = HeadMusic::Rudiment::Pitch.get(value)

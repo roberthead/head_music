@@ -19,6 +19,11 @@ describe HeadMusic::Content::SoundResolver do
       expect(described_class.resolve("snare drum").map(&:name_key)).to eq [:snare_drum]
     end
 
+    it "passes an existing pitch through unchanged" do
+      pitch = HeadMusic::Rudiment::Pitch.get("C4")
+      expect(described_class.resolve(pitch).first).to be pitch
+    end
+
     it "passes an existing unpitched sound through unchanged" do
       sound = HeadMusic::Rudiment::UnpitchedSound.get("snare drum")
       expect(described_class.resolve(sound)).to eq [sound]

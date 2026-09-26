@@ -5,6 +5,8 @@ module HeadMusic::Rudiment; end
 # catalog, so this class references HeadMusic::Instruments::Instrument at
 # runtime only (inside methods), leaving require order unaffected.
 class HeadMusic::Rudiment::UnpitchedSound < HeadMusic::Rudiment::Base
+  include HeadMusic::Rudiment::Soundable
+
   GENERIC_NAME = "unpitched"
 
   attr_reader :instrument

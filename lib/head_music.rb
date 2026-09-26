@@ -71,6 +71,7 @@ require "head_music/value_equality"
 
 # rudiments
 require "head_music/rudiment/base"
+require "head_music/rudiment/soundable"
 require "head_music/rudiment/letter_name"
 require "head_music/rudiment/alteration"
 require "head_music/rudiment/enharmonic_equivalence"

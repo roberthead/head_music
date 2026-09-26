@@ -3,6 +3,7 @@ module HeadMusic::Rudiment; end
 # A pitch is a named frequency represented by a spelling and a register.
 class HeadMusic::Rudiment::Pitch < HeadMusic::Rudiment::Base
   include Comparable
+  include HeadMusic::Rudiment::Soundable
 
   SEMITONES_PER_OCTAVE = 12
   # MIDI note 0 is C-1, so the register numbering starts an octave below zero.
