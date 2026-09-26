@@ -8,7 +8,7 @@ module HeadMusic::Notation::Kern
   # placement: [ on the first link, _ between, ] on the last. A kern spine
   # must sound from its first row to its last, so every bar is filled with
   # rests wherever the voice is silent.
-  class VoiceEvents
+  class SpineTokens
     Event = Data.define(:offset, :link, :pitches, :tie, :syllables) do
       def fraction
         DurationWriter.fraction(link)

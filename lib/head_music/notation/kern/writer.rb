@@ -263,14 +263,14 @@ module HeadMusic::Notation::Kern
 
     def kern_events(bar_number)
       columns.select(&:kern?).to_h do |column|
-        events = voice_events(column.voice).fetch(bar_number)
+        events = spine_tokens(column.voice).fetch(bar_number)
         [column.voice, pickup?(bar_number) ? trimmed(events) : events]
       end
     end
 
     def trimmed(events)
       events.select { |event| event.finish > pickup_start }.flat_map do |event|
-        (event.offset < pickup_start) ? VoiceEvents.rests(pickup_start, event.finish) : [event]
+        (event.offset < pickup_start) ? SpineTokens.rests(pickup_start, event.finish) : [event]
       end
     end
 
@@ -283,13 +283,13 @@ module HeadMusic::Notation::Kern
       @pickup_start = first_bar.zero? ? onsets.min : nil
     end
 
-    def voice_events(voice)
-      @voice_events ||= {}
-      @voice_events[voice] ||= event_sources.fetch(voice).by_bar(bar_lengths)
+    def spine_tokens(voice)
+      @spine_tokens ||= {}
+      @spine_tokens[voice] ||= event_sources.fetch(voice).by_bar(bar_lengths)
     end
 
     def event_sources
-      @event_sources ||= flow.voices.to_h { |voice| [voice, VoiceEvents.new(voice)] }
+      @event_sources ||= flow.voices.to_h { |voice| [voice, SpineTokens.new(voice)] }
     end
 
     # Every bar's full length, except the last, which ends where the longest

@@ -7,7 +7,7 @@ module HeadMusic::Notation::Kern
   # whole piece here, so a change to either is refused rather than dropped.
   class Preflight
     include HeadMusic::Notation::PreflightChecks
-    include HeadMusic::Notation::PlacementValidation
+    include HeadMusic::Notation::VoiceEventValidation
 
     def self.check!(flow, transposed: false)
       new(flow, transposed).check!
