@@ -560,4 +560,53 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
   end
+
+  describe "markings" do
+    def body_of(flow)
+      described_class.new(flow).to_s.lines.drop(5).join
+    end
+
+    let(:flow) { HeadMusic::Content::Flow.new(name: "Marks", key_signature: "C major", meter: "4/4") }
+    let(:voice) { flow.add_voice }
+
+    it "writes every articulation, ornament, note dynamic, and level" do
+      expect(body_of(MarkingFixtures.marked_melody)).to eq <<~ABC
+        !p!.c2 .d2 .e2 .f2|!trill!g4 !sfz!a4|g8|!mf!!tenuto!e2 !fp!f6|
+        !f!!accent!!lowermordent!e4 !wedge!!uppermordent!d2 !marcato!!turn!c2|c4 !pp!z4|]
+      ABC
+    end
+
+    it "writes decorations the parser reads back in a new spelling" do
+      parsed = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nK:C\nLC M!pralltriller!D !rfz!E !ff!z|\n")
+      expect(body_of(parsed)).to eq "!accent!C2 !uppermordent!!lowermordent!D2 !rfz!E2 !ff!z2|]\n"
+    end
+
+    it "leaves out a dynamic with no note after it" do
+      voice.place("1:1", :whole, "C4")
+      voice.place_dynamic("2:1", :f)
+      expect(body_of(flow)).to eq "C8|]\n"
+    end
+
+    it "writes a dynamic in the middle of a note before the next note" do
+      voice.place("1:1", :half, "C4")
+      voice.place("1:3", :half, "D4")
+      voice.place_dynamic("1:2", :f)
+      expect(body_of(flow)).to eq "C4 !f!D4|]\n"
+    end
+
+    it "marks a note split across a bar line only where it starts" do
+      voice.place("1:1", :half)
+      voice.place("1:3", :whole, "C4").articulate(:staccato).embellish(:trill).note_dynamic = :sf
+      voice.place_dynamic("1:3", :p)
+      expect(body_of(flow)).to eq "z4 !p!.!trill!!sf!C4-|C4|]\n"
+    end
+
+    it "writes the part's dynamics on the voice, preferring the voice's own at one note" do
+      voice.place("1:1", :half, "C4")
+      voice.place("1:3", :half, "D4")
+      [["1:1", :p], ["1:3", :f]].each { |position, level| voice.part.place_dynamic(position, level) }
+      voice.place_dynamic("1:3", :mf)
+      expect(body_of(flow)).to eq "!p!C4 !mf!D4|]\n"
+    end
+  end
 end

@@ -66,6 +66,10 @@ module HeadMusic::Notation::ABC
       voice ? voice.voice_events : []
     end
 
+    def decoration_writer
+      @decoration_writer ||= DecorationWriter.new(flow.voices.first)
+    end
+
     # No %%transpose directive is emitted: the pitches are already written, and
     # abcm2ps would move them a second time.
     def written_key_signature
@@ -140,7 +144,16 @@ module HeadMusic::Notation::ABC
       end.join.lstrip
     end
 
+    # A voice event split across bar lines is marked only where it starts.
     def token(segment, pitch_writer, duration_writer)
+      voice_event = segment.voice_event
+      body = token_body(segment, pitch_writer, duration_writer)
+      return body unless segment.bar_number == voice_event.position.bar_number
+
+      decoration_writer.prefix(voice_event) + body
+    end
+
+    def token_body(segment, pitch_writer, duration_writer)
       voice_event = segment.voice_event
       ensure_pitched_sounds(voice_event)
 
