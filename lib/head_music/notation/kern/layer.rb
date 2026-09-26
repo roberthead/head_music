@@ -9,7 +9,7 @@ module HeadMusic::Notation::Kern
   # barlines. That is also how the writer lays each voice out, so a flow
   # read back from what it wrote is the flow it was.
   class Layer
-    Event = Struct.new(:time, :rhythmic_value, :fraction, :pitches, :syllables)
+    Event = Struct.new(:time, :rhythmic_value, :fraction, :pitches, :syllables, :articulations, :ornaments, :note_dynamic)
 
     attr_reader :voice, :events
     # The staff the layer is written on now, which can change mid-spine.
@@ -23,7 +23,9 @@ module HeadMusic::Notation::Kern
     end
 
     def add(time, token)
-      Event.new(time, token.rhythmic_value, token.fraction, token.pitches, []).tap { |event| @events << event }
+      Event.new(
+        time, token.rhythmic_value, token.fraction, token.pitches, [], token.articulations, token.ornaments, token.note_dynamic
+      ).tap { |event| @events << event }
     end
 
     def end_time
@@ -53,11 +55,17 @@ module HeadMusic::Notation::Kern
     def place_event(event, clock)
       rest_until(event.time, clock)
       voice_event = voice.place(@position, event.rhythmic_value, event.pitches)
+      mark(voice_event, event) unless voice_event.rest?
+      @position = voice_event.next_position
+      @time = event.time + event.fraction
+    end
+
+    def mark(voice_event, event)
       event.syllables.each do |syllable|
         voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
       end
-      @position = voice_event.next_position
-      @time = event.time + event.fraction
+      voice_event.articulate(*event.articulations).embellish(*event.ornaments)
+      voice_event.note_dynamic = event.note_dynamic
     end
 
     def rest_until(time, clock)

@@ -3,13 +3,21 @@ module HeadMusic::Notation::Kern
   # Reads one data field of a **kern spine: a null token, a note, a rest,
   # or a chord of space-separated notes.
   #
-  # Signifiers the gem does not model (beams, stems, slurs, articulations,
-  # ornaments, fermatas, editorial marks) are dropped, and grace notes are
-  # dropped whole. Anything else is rejected rather than guessed at.
+  # Articulations, ornaments, and the sforzando z are read as markings,
+  # which a rest drops and a chord gathers from all its notes. Signifiers
+  # the gem does not model (beams, stems, slurs, fermatas, bowings, other
+  # ornaments, editorial marks) are dropped, and grace notes are dropped
+  # whole. Anything else is rejected rather than guessed at.
   class TokenReader
     # A token's :type is :null, :grace, :rest, or :note (one or more
     # pitches). Its :tie is nil, :start ([), :middle (_), or :end (]).
-    Token = Data.define(:type, :pitches, :rhythmic_value, :fraction, :tie) do
+    # Its markings are catalog keys: sorted articulation and ornament
+    # keys, and a note dynamic or nil.
+    Token = Data.define(:type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic) do
+      def initialize(articulations: [], ornaments: [], note_dynamic: nil, **fields)
+        super
+      end
+
       def attack?
         %i[rest note].include?(type)
       end
@@ -19,10 +27,18 @@ module HeadMusic::Notation::Kern
     GRACE = Token.new(type: :grace, pitches: [], rhythmic_value: nil, fraction: nil, tie: nil)
     TIES = {"[" => :start, "_" => :middle, "]" => :end}.freeze
     GRACE_MARKS = %w[q Q].freeze
-    # Beams and partial beams, stems, fermatas, articulations, slurs and
-    # phrases, ornaments, bowings, breath and arpeggio marks, and editorial
-    # and visibility marks.
-    IGNORED = %W[L J K k / \\ ; ' ` ~ ^ " , : & ( ) { } < > ? x X y T t M m W w S $ O R u v].freeze
+    # The heavy accent ^^ is read before the accent ^ it contains.
+    MARCATO = "^^"
+    ARTICULATIONS = {"'" => :staccato, "`" => :staccatissimo, "^" => :accent, "~" => :tenuto}.freeze
+    ORNAMENTS = {
+      "t" => :trill, "T" => :trill, "m" => :mordent, "M" => :mordent,
+      "w" => :inverted_mordent, "W" => :inverted_mordent, "S" => :turn
+    }.freeze
+    SFORZANDO = "z"
+    # Beams and partial beams, stems, fermatas, slurs and phrases, the
+    # inverted turn and the ornament-ending turn, other ornaments, bowings,
+    # breath and arpeggio marks, and editorial and visibility marks.
+    IGNORED = %W[L J K k / \\ ; " , : & ( ) { } < > ? x X y $ O R u v].freeze
 
     RECIP = /(\d+(?:%\d+)?)(\.*)/
     PITCH = /([a-gA-G])\1*/
@@ -59,7 +75,12 @@ module HeadMusic::Notation::Kern
       end
       raise unsupported("A chord tied only in part is not supported") if subtokens.map(&:tie).uniq.length > 1
 
-      subtokens.first.with(pitches: subtokens.flat_map(&:pitches))
+      subtokens.first.with(
+        pitches: subtokens.flat_map(&:pitches),
+        articulations: subtokens.flat_map(&:articulations).uniq.sort,
+        ornaments: subtokens.flat_map(&:ornaments).uniq.sort,
+        note_dynamic: subtokens.filter_map(&:note_dynamic).first
+      )
     end
 
     def subtoken(text)
@@ -70,8 +91,21 @@ module HeadMusic::Notation::Kern
       pitches = read_pitches(remaining, text)
       rest = !remaining.delete!("r").nil?
       tie = read_tie(remaining, text)
+      markings = read_markings(remaining)
       ensure_consumed(remaining, text)
-      build(text, duration, pitches, rest, tie)
+      token = build(text, duration, pitches, rest, tie)
+      rest ? token : token.with(**markings)
+    end
+
+    def read_markings(remaining)
+      marcato = !remaining.gsub!(MARCATO, "").nil?
+      articulations = ARTICULATIONS.filter_map { |mark, key| key if remaining.delete!(mark) }
+      ornaments = ORNAMENTS.filter_map { |mark, key| key if remaining.delete!(mark) }
+      {
+        articulations: (articulations + (marcato ? [:marcato] : [])).uniq.sort,
+        ornaments: ornaments.uniq.sort,
+        note_dynamic: remaining.delete!(SFORZANDO) && :sfz
+      }
     end
 
     def read_duration(remaining, text)

@@ -9,7 +9,7 @@ module HeadMusic::Notation::Kern
   # must sound from its first row to its last, so every bar is filled with
   # rests wherever the voice is silent.
   class SpineTokens
-    Event = Data.define(:offset, :link, :pitches, :tie, :syllables) do
+    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks) do
       def fraction
         DurationWriter.fraction(link)
       end
@@ -26,19 +26,32 @@ module HeadMusic::Notation::Kern
         recip = DurationWriter.token(link)
         return "#{recip}r" if rest?
 
-        pitches.sort.map { |pitch| "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{TIE_CLOSING[tie]}" }.join(" ")
+        pitches.sort.map { |pitch| "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{marks}#{TIE_CLOSING[tie]}" }.join(" ")
       end
     end
 
     TIE_OPENING = {nil => "", :start => "[", :middle => "", :end => ""}.freeze
     TIE_CLOSING = {nil => "", :start => "", :middle => "_", :end => "]"}.freeze
 
+    ARTICULATION_MARKS = {"staccato" => "'", "staccatissimo" => "`", "accent" => "^", "tenuto" => "~", "marcato" => "^^"}.freeze
+    ORNAMENT_MARKS = {"trill" => "T", "mordent" => "M", "inverted_mordent" => "W", "turn" => "S"}.freeze
+    # The other note dynamics have no token signifier, so they go in **dynam.
+    NOTE_DYNAMIC_MARKS = {"sfz" => "z"}.freeze
+
+    def self.marks(voice_event)
+      [
+        *voice_event.articulations.map { |articulation| ARTICULATION_MARKS.fetch(articulation.name_key) },
+        *voice_event.ornaments.map { |ornament| ORNAMENT_MARKS.fetch(ornament.name_key) },
+        NOTE_DYNAMIC_MARKS[voice_event.note_dynamic&.name_key]
+      ].join
+    end
+
     def self.rests(from, to)
       return [] unless to > from
 
       offset = from
       HeadMusic::Notation::DottedDuration.rhythmic_value_for(to - from).tied_chain.map do |link|
-        Event.new(offset: offset, link: link, pitches: nil, tie: nil, syllables: {}).tap { offset += DurationWriter.fraction(link) }
+        Event.new(offset: offset, link: link, pitches: nil, tie: nil, syllables: {}, marks: "").tap { offset += DurationWriter.fraction(link) }
       end
     end
 
@@ -85,7 +98,8 @@ module HeadMusic::Notation::Kern
         offset: offset, link: link,
         pitches: voice_event.rest? ? nil : voice_event.pitches,
         tie: voice_event.rest? ? nil : tie,
-        syllables: index.zero? ? voice_event.syllables : {}
+        syllables: index.zero? ? voice_event.syllables : {},
+        marks: index.zero? ? self.class.marks(voice_event) : ""
       )
     end
 

@@ -456,6 +456,27 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
   end
 
+  describe "token markings" do
+    def markings(voice)
+      voice.voice_events.map do |voice_event|
+        [voice_event.articulations, voice_event.ornaments].map { |markings| markings.map(&:name_key) } << voice_event.note_dynamic&.name_key
+      end
+    end
+
+    it "marks each note event with its token's articulations, ornaments, and sforzando" do
+      expect(markings(parse("**kern\n4c'\n4dt^\n2ez\n*-").voices.first))
+        .to eq [[["staccato"], [], nil], [["accent"], ["trill"], nil], [[], [], "sfz"]]
+    end
+
+    it "keeps only the markings on a tie's first link" do
+      expect(markings(parse("**kern\n[2c'\n2c]^\n*-").voices.first)).to eq [[["staccato"], [], nil]]
+    end
+
+    it "drops markings written on a rest" do
+      expect(markings(parse("**kern\n4r'\n4cT\n*-").voices.first)).to eq [[[], [], nil], [[], ["trill"], nil]]
+    end
+  end
+
   describe "time slices" do
     it "raises when a note begins before the note before it ends" do
       expect { parse("**kern  **kern\n2c  4e\n4d  4f\n*-  *-") }

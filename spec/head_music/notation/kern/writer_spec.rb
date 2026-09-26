@@ -186,6 +186,26 @@ describe HeadMusic::Notation::Kern::Writer do
     end
   end
 
+  describe "token markings" do
+    subject(:flow) do
+      HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
+        voice = flow.add_voice
+        voice.place("1:1", :quarter, %w[C4 E4]).articulate(:staccato, :accent).embellish(:trill)
+        voice.place("1:2", :quarter, "D4").articulate(:tenuto, :staccatissimo, :marcato).note_dynamic = :sfz
+        voice.place("1:3", :half, "E4").embellish(:mordent, :inverted_mordent, :turn)
+        voice.place("2:1", HeadMusic::Rudiment::RhythmicValue.get("dotted whole"), "F4").articulate(:accent)
+      end
+    end
+
+    it "writes each marking after the pitch, on every note of a chord and only on a tie's first link" do
+      expect(body(flow).first(7)).to eq ["=1-", "4c^'T 4e^'T", "4d^^`~z", "2eWMS", "=2", "[1f^", "=3"]
+    end
+
+    it "reads the markings back" do
+      expect_same_markings(flow, HeadMusic::Notation::Kern.parse(render(flow)))
+    end
+  end
+
   describe "a pickup" do
     subject(:flow) do
       parse(<<~KERN)

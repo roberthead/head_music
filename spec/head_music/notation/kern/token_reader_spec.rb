@@ -60,6 +60,51 @@ describe HeadMusic::Notation::Kern::TokenReader do
     end
   end
 
+  describe "markings" do
+    def markings(field)
+      token = read(field)
+      [token.articulations, token.ornaments, token.note_dynamic]
+    end
+
+    {
+      "4c'" => [[:staccato], [], nil],
+      "4c`" => [[:staccatissimo], [], nil],
+      "4c^" => [[:accent], [], nil],
+      "4c~" => [[:tenuto], [], nil],
+      "4c^^" => [[:marcato], [], nil],
+      "4ct" => [[], [:trill], nil],
+      "4cT" => [[], [:trill], nil],
+      "4cm" => [[], [:mordent], nil],
+      "4cM" => [[], [:mordent], nil],
+      "4cw" => [[], [:inverted_mordent], nil],
+      "4cW" => [[], [:inverted_mordent], nil],
+      "4cS" => [[], [:turn], nil],
+      "4cz" => [[], [], :sfz],
+      "[4c'^tz" => [%i[accent staccato], [:trill], :sfz],
+      "4c$R" => [[], [], nil]
+    }.each do |field, expected|
+      it "reads the markings of #{field}" do
+        expect(markings(field)).to eq expected
+      end
+    end
+
+    it "reads a heavy accent and an accent together" do
+      expect(markings("4c^^^").first).to eq %i[accent marcato]
+    end
+
+    it "gathers the markings of every note of a chord" do
+      expect(markings("4c' 4eT 4gz")).to eq [[:staccato], [:trill], :sfz]
+    end
+
+    it "drops markings written on a rest" do
+      expect(markings("4r'Tz")).to eq [[], [], nil]
+    end
+
+    it "leaves a null token unmarked" do
+      expect(markings(".")).to eq [[], [], nil]
+    end
+  end
+
   describe "errors" do
     it "raises an unsupported-feature error naming an unrecognized signifier" do
       expect { read("4c@") }
