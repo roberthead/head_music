@@ -14,6 +14,8 @@ module LilyPondHelpers
   # carries no duration and so is stripped like the other commands.
   CHANGE_STAFF_COMMAND = /\\change Staff = "[^"]+"/
   CLEF_COMMAND = /\\clef [a-z]+/
+  # The marks written after a note or rest carry no duration of their own.
+  MARK = /\\(?:ppp|pp|p|mp|mf|f|ff|fff|sf|sfz|rfz|fp|trill|mordent|prall|turn)(?![a-z])|-[.!>^-]/
   CHORD = /<#{PITCH}(?: #{PITCH})*>#{DURATION}/
   SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|r#{DURATION}|R1\*\d+\/\d+)\z/
   WHOLE_BAR_REST = /R1\*(\d+)\/(\d+)/
@@ -63,7 +65,7 @@ module LilyPondHelpers
 
   def strip_commands(content)
     content.gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
-      .gsub(CHANGE_STAFF_COMMAND, "").gsub(CLEF_COMMAND, "")
+      .gsub(CHANGE_STAFF_COMMAND, "").gsub(CLEF_COMMAND, "").gsub(MARK, "")
   end
 
   def bar_duration(line)

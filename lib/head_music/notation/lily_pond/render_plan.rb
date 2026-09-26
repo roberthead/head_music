@@ -38,15 +38,38 @@ module HeadMusic::Notation::LilyPond
     # A tied chain within a voice event joins its links with the tie mark, and
     # so does a voice event split at a barline, whose piece before the bar check
     # ends in one; a chain of rests emits consecutive untied rests, and a tied
-    # chord repeats the whole chord.
+    # chord repeats the whole chord. Only the first link carries the marks.
     def token(segment)
       voice_event = segment.voice_event
-      links = segment.rhythmic_value!(RenderError).tied_chain
-      return links.map { |link| "r#{DurationWriter.token(link)}" }.join(" ") if voice_event.rest?
+      first, *later = segment.rhythmic_value!(RenderError).tied_chain.map do |link|
+        "#{body(voice_event)}#{DurationWriter.token(link)}"
+      end
+      words = ["#{first}#{marks(segment)}", *later]
+      return words.join(" ") if voice_event.rest?
 
-      body = voice_event.chord? ? chord_body(voice_event) : PitchWriter.token(voice_event.pitch)
-      tokens = links.map { |link| "#{body}#{DurationWriter.token(link)}" }.join("~ ")
+      tokens = words.join("~ ")
       segment.continues ? "#{tokens}~" : tokens
+    end
+
+    def body(voice_event)
+      return "r" if voice_event.rest?
+
+      voice_event.chord? ? chord_body(voice_event) : PitchWriter.token(voice_event.pitch)
+    end
+
+    # A voice event split at a barline is marked where it starts.
+    def marks(segment)
+      voice_event = segment.voice_event
+      return "" unless segment.bar_number == voice_event.position.bar_number
+
+      MarkWriter.token(voice_event, dynamic_placement(voice_event.voice).level_for(voice_event))
+    end
+
+    # A part's own dynamics are written in a \new Dynamics, so only the voice's
+    # are placed on its notes.
+    def dynamic_placement(voice)
+      @dynamic_placements ||= {}.compare_by_identity
+      @dynamic_placements[voice] ||= HeadMusic::Notation::DynamicPlacement.new(voice)
     end
 
     def chord_body(voice_event)

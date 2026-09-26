@@ -325,5 +325,66 @@ describe HeadMusic::Notation::LilyPond::Writer do
           .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /no voices/)
       end
     end
+
+    context "with articulations, ornaments, and dynamics" do
+      let(:flow) { MarkingFixtures.marked_melody }
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "is structurally valid" do
+        expect_structurally_valid_lilypond(rendered, bars: 6, voices: 1)
+      end
+
+      it "writes the level, then the articulations, ornaments, and sforzando after each note" do
+        expect(bar_check_lines(rendered).values_at(0, 1, 4)).to eq [
+          "c''4\\p-. d''4-. e''4-. f''4-. |", "g''2\\trill a''2\\sfz |", "e''2\\f->\\mordent d''4-!\\prall c''4-^\\turn |"
+        ]
+      end
+
+      it "moves a level under a held note to the next note" do
+        expect(bar_check_lines(rendered).values_at(2, 3)).to eq ["g''1 |", "e''4\\mf-- f''2.\\fp |"]
+      end
+
+      it "writes a level on a rest" do
+        expect(bar_check_lines(rendered).last).to eq "c''2 r2\\pp |"
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with a marked note split at a barline" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Split").tap do |flow|
+          voice = flow.add_voice
+          voice.place("1:1", :half, "C4")
+          voice.place("1:3", :whole, "D4").articulate(:accent).embellish(:trill).note_dynamic = :sf
+          voice.place("2:3", :half, "E4")
+          voice.place_dynamic("1:3", :mp)
+          voice.place_dynamic("3:1", :ff)
+        end
+      end
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "marks only the fragment where the note starts" do
+        expect(bar_check_lines(rendered)).to eq ["c'2 d'2\\mp->\\trill\\sf~ |", "d'2 e'2 |"]
+      end
+
+      it "leaves out a level with no note after it" do
+        expect(rendered).not_to include "\\ff"
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with a marked chord" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Chord").tap do |flow|
+          flow.add_voice.place("1:1", :whole, %w[C4 E4 G4]).articulate(:tenuto).note_dynamic = :rfz
+        end
+      end
+
+      it "writes the marks once, after the chord" do
+        expect(bar_check_lines(described_class.new(flow).to_s)).to eq ["<c' e' g'>1--\\rfz |"]
+      end
+    end
   end
 end
