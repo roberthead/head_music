@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-25T17:40:58-07:00
   planned_at:   2026-09-26T15:57:06-07:00
   finished_at:
-  updated_at:   2026-09-26T15:57:06-07:00
+  updated_at:   2026-09-26T16:04:11-07:00
 -->
 
 # Story: Articulations, Ornaments, Dynamics
@@ -121,6 +121,7 @@ voice.dynamic_at("5:2").name_key # => "f"
 - Bowings (up-bow, down-bow), fingering, breath marks, and tremolo are also written on a note. They are out of scope, but the design should be able to hold them later.
 - Hairpins are spans and belong to [Spans Across Notes](../backlog/spans-across-notes.md).
 - Free-text directions ("dolce", "pizz.", "div.") are out of scope. "pizz." and "arco" overlap with playing techniques, so text directions need a design of their own.
+- "marcato" is both an `Articulation` (the `^` sign on one note) and a `PlayingTechnique` (the word "marc." over a passage). They stay separate: a reader turns the sign into the articulation and, once text directions exist, the word into a playing technique.
 - Kern's `**dynam` spine cannot say which voice of a part a dynamic belongs to, so a part whose voices have different dynamics comes back with one set, the part's. It also holds one value per position, so a part with an *sf*, *rfz*, or *fp* at the same position as a dynamic event writes only the dynamic event.
 - MusicXML has no reader, so it is checked by asserting on the XML it writes. Reading these markings belongs to [MusicXML Import](../backlog/musicxml-import.md).
 - Dynamic events raise on a duplicate position rather than replacing, unlike meter, tempo, and instrument changes, because a second dynamic at one instant is almost always an error.
@@ -308,6 +309,5 @@ Planned by a story-planner with a product manager, a best-practices engineer, an
 
 ### Open questions
 
-1. `marcato` becomes a key in both `playing_techniques.yml` (the text direction "marc.") and the articulation catalog. The I18n scopes differ, so nothing breaks now, but the text-directions story will need to choose.
-2. Should de, es, fr, it, and ru get real translations now, or English with fallbacks, as the criterion allows? The Italian dynamic names work in every language.
-3. CLAUDE.md lists locales ja and nl, which don't ship (ru and en_GB do), and names articulations and dynamics as future `Notation` concepts, where this plan puts them under `Rudiment`. Update it with this story?
+1. Should de, es, fr, it, and ru get real translations now, or English with fallbacks, as the criterion allows? The Italian dynamic names work in every language.
+2. CLAUDE.md lists locales ja and nl, which don't ship (ru and en_GB do), and names articulations and dynamics as future `Notation` concepts, where this plan puts them under `Rudiment`. Update it with this story?
