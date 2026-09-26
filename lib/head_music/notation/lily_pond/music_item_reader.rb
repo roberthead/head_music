@@ -1,7 +1,7 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
-  # Reads the items a sequence of music is made of — notes, rests, chords,
-  # ties, bar checks, and the \key, \time, \clef, and \change Staff commands that appear
+  # Reads the items a sequence of music is made of — notes, rests, chords and
+  # the marks after them, ties, bar checks, and the \key, \time, \clef, and \change Staff commands that appear
   # among them — into the stream of the context that holds them. Everything
   # that opens a level of its own belongs to the MusicReader that calls this
   # one.
@@ -10,24 +10,25 @@ module HeadMusic::Notation::LilyPond
       @cursor = cursor
       @readers = readers
       @duration_reader = DurationReader.new
+      @mark_reader = MarkReader.new(cursor)
     end
 
     def read_note(context)
       token = cursor.advance
       reject_multiplier(token)
       pitch = readers.current.pitch(token)
-      context.stream.add_note([pitch], duration_reader.rhythmic_value(token), token.line)
+      add_note(context, [pitch], duration_reader.rhythmic_value(token), token.line)
     end
 
     def read_rest(context)
       token = cursor.advance
       reject_multiplier(token)
-      context.stream.add_rest(duration_reader.rhythmic_value(token), token.line)
+      context.stream.add_rest(duration_reader.rhythmic_value(token), token.line, mark_reader.read)
     end
 
     def read_whole_bar_rest(context)
       token = cursor.advance
-      context.stream.add_whole_bar_rest(duration_reader.whole_bar_fraction(token), token.line)
+      context.stream.add_whole_bar_rest(duration_reader.whole_bar_fraction(token), token.line, mark_reader.read)
     end
 
     def read_chord(context)
@@ -39,7 +40,7 @@ module HeadMusic::Notation::LilyPond
 
       reject_multiplier(closer)
       pitches = readers.current.chord_pitches(notes)
-      context.stream.add_note(pitches, duration_reader.rhythmic_value(closer), opener.line)
+      add_note(context, pitches, duration_reader.rhythmic_value(closer), opener.line)
     end
 
     def read_tie(context)
@@ -88,7 +89,17 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :cursor, :readers, :duration_reader
+    attr_reader :cursor, :readers, :duration_reader, :mark_reader
+
+    # A tie is a mark like the others, so marks may follow it as well as
+    # precede it: c4-.~\p is one note's staccato, tie, and dynamic.
+    def add_note(context, pitches, rhythmic_value, line)
+      marks = mark_reader.read
+      tie = (cursor.peek&.type == :tie) ? cursor.advance : nil
+      marks = mark_reader.read(marks) if tie
+      context.stream.add_note(pitches, rhythmic_value, line, marks)
+      context.stream.open_tie(tie.line) if tie
+    end
 
     def clef_name?(token)
       return false unless token

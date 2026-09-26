@@ -125,7 +125,7 @@ module HeadMusic::Notation::LilyPond
     def apply(event, voice)
       case event.kind
       when :note then place_note(event, voice)
-      when :rest then voice.place(voice.next_position, event.rhythmic_value)
+      when :rest then apply_marks(voice.place(voice.next_position, event.rhythmic_value), event)
       when :whole_bar_rest then place_whole_bar_rest(event, voice)
       else apply_marker(event, voice, voice.next_position)
       end
@@ -137,7 +137,26 @@ module HeadMusic::Notation::LilyPond
       when :key then apply_change(event, voice.flow, position, "\\key", :key_signature, :key_signature_at, :change_key_signature)
       when :time then apply_change(event, voice.flow, position, "\\time", :meter, :meter_at, :change_meter)
       when :staff_change then change_staff(event, voice, position)
+      when :level then place_level(voice, position, event)
       end
+    end
+
+    # Marks are applied where their event was placed, captured before the
+    # voice moves on. A rest keeps only a dynamic level.
+    def apply_marks(voice_event, event)
+      marks = event.marks
+      unless voice_event.rest?
+        voice_event.articulate(*marks.articulations).embellish(*marks.ornaments)
+        voice_event.note_dynamic = marks.note_dynamic if marks.note_dynamic
+      end
+      place_level(voice_event.voice, voice_event.position, event)
+    end
+
+    def place_level(target, position, event)
+      level = event.marks.level
+      target.place_dynamic(position, level) if level
+    rescue ArgumentError => error
+      raise ParseError.new(error.message, line_number: event.line)
     end
 
     # A crossing is a staff assignment from a bar onward, so it can only be
@@ -157,7 +176,7 @@ module HeadMusic::Notation::LilyPond
     def place_note(event, voice)
       position = voice.next_position
       event.inner_events.each { |inner| apply_marker(inner.event, voice, position + inner.elapsed) }
-      voice.place(position, event.rhythmic_value, event.pitches)
+      apply_marks(voice.place(position, event.rhythmic_value, event.pitches), event)
     end
 
     def check_bar(event, position)
@@ -185,7 +204,7 @@ module HeadMusic::Notation::LilyPond
         raise unsupported("Multi-bar rests are not yet supported (#{whole_notes(event.fraction)} whole notes in #{meter})", event)
       end
 
-      voice.place(position, rhythmic_value)
+      apply_marks(voice.place(position, rhythmic_value), event)
     end
 
     # A change already in force at its bar is a no-op (the writer repeats

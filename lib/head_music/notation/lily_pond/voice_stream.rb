@@ -11,11 +11,11 @@ module HeadMusic::Notation::LilyPond
     InnerEvent = Data.define(:elapsed, :event)
 
     Event = Data.define(
-      :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events
+      :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks
     ) do
       def initialize(
         kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil,
-        staff_name: nil, inner_events: []
+        staff_name: nil, inner_events: [], marks: MarkReader::NONE
       )
         super
       end
@@ -42,19 +42,19 @@ module HeadMusic::Notation::LilyPond
       events.any?(&:music?)
     end
 
-    def add_note(pitches, rhythmic_value, line)
-      return extend_tie(pitches, rhythmic_value, line) if @tie_open
+    def add_note(pitches, rhythmic_value, line, marks = MarkReader::NONE)
+      return extend_tie(pitches, rhythmic_value, line, marks) if @tie_open
 
       flush_pending_note
-      @pending_note = Event.new(kind: :note, line: line, pitches: pitches, rhythmic_value: rhythmic_value)
+      @pending_note = Event.new(kind: :note, line: line, pitches: pitches, rhythmic_value: rhythmic_value, marks: marks)
     end
 
-    def add_rest(rhythmic_value, line)
-      append(line, kind: :rest, rhythmic_value: rhythmic_value)
+    def add_rest(rhythmic_value, line, marks = MarkReader::NONE)
+      append(line, kind: :rest, rhythmic_value: rhythmic_value, marks: marks)
     end
 
-    def add_whole_bar_rest(fraction, line)
-      append(line, kind: :whole_bar_rest, fraction: fraction)
+    def add_whole_bar_rest(fraction, line, marks = MarkReader::NONE)
+      append(line, kind: :whole_bar_rest, fraction: fraction, marks: marks)
     end
 
     def open_tie(line)
@@ -130,15 +130,20 @@ module HeadMusic::Notation::LilyPond
 
     # Closes an open tie: the arriving note's value is appended at the deep
     # end of the pending note's chain, so the pair (and any longer chain)
-    # becomes a single note.
-    def extend_tie(pitches, rhythmic_value, line)
+    # becomes a single note. Its marks join the note's, except a dynamic
+    # level, which is held where the link starts.
+    def extend_tie(pitches, rhythmic_value, line, marks)
       pending = @pending_note
       unless pending.pitches.sort == pitches.sort
         raise error("A tie must connect two notes of the same pitch", line)
       end
 
       @tie_open = false
-      @pending_note = pending.with(rhythmic_value: pending.rhythmic_value.append_tied(rhythmic_value))
+      hold_inside_tie(Event.new(kind: :level, line: line, marks: marks)) if marks.level
+      @pending_note = @pending_note.with(
+        rhythmic_value: pending.rhythmic_value.append_tied(rhythmic_value),
+        marks: pending.marks.merge(marks.with(level: nil))
+      )
     end
 
     def hold_inside_tie(event)

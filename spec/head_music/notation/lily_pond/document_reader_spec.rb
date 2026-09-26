@@ -356,7 +356,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Unexpected \\score inside music/)
     end
 
-    %w[tuplet times chordmode lyricmode addlyrics partial bar tempo mark repeat transpose fixed language grace f p melody].each do |command|
+    %w[tuplet times chordmode lyricmode addlyrics partial bar tempo mark repeat transpose fixed language grace melody].each do |command|
       it "raises for \\#{command} as unsupported" do
         expect { read("{ c'4 \\#{command} }") }
           .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Unsupported LilyPond feature "\\#{command}"/)
@@ -398,6 +398,25 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
     it "raises for a time at the end of input with the command's line" do
       expect { read("{ c'1\n\\time") }
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Invalid \\time signature "" \(line 2\)/)
+    end
+  end
+
+  describe "marks" do
+    def first_marks(source)
+      read(source).streams.first.events.first.marks.to_h
+    end
+
+    it "carries a note's marks on its stream event" do
+      expect(first_marks("{ c'4-.\\trill\\sfz\\p }")).to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p")
+    end
+
+    it "carries a rest's marks on its stream event" do
+      expect(first_marks("{ r4\\mf }")[:level]).to eq "mf"
+    end
+
+    it "holds a level on a tied note's later link inside the tie" do
+      inner = read("{ c'2~ c'2\\f }").streams.first.events.first.inner_events.first
+      expect([inner.elapsed.to_s, inner.event.kind, inner.event.marks.level]).to eq ["half", :level, "f"]
     end
   end
 end

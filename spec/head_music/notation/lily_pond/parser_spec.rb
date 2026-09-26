@@ -170,7 +170,9 @@ describe HeadMusic::Notation::LilyPond::Parser do
       "{ <>4 }" => [HeadMusic::Notation::LilyPond::ParseError, /Empty chord/],
       "{ <c'4 e'>4 }" => [HeadMusic::Notation::LilyPond::ParseError, /cannot carry durations/],
       "{ c'4 \\tuplet 3/2 { d'8 e'8 f'8 } }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"\\tuplet"/],
-      "{ c'4-. }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"-\."/],
+      "{ c'4-1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"-"/],
+      "{ \\p c'4 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"\\p"/],
+      "{ c'4\\p\\f }" => [HeadMusic::Notation::LilyPond::ParseError, /only one dynamic level/],
       "{ c'4 s4 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"s4"/],
       "{ c'4*2 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Duration multipliers/],
       "{ <c'*2 e'>4 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Duration multipliers/],
@@ -209,6 +211,60 @@ describe HeadMusic::Notation::LilyPond::Parser do
 
     it "re-renders the note split at the barline and tied" do
       expect(parse("{ c'2 d'1 e'2 }").to_lilypond).to include("c'2 d'2~ |\n", "d'2 e'2 |\n")
+    end
+  end
+
+  describe "marks" do
+    def voice(source)
+      parse(source).voices.first
+    end
+
+    def markings(source)
+      voice(source).voice_events.map { |event| [event.articulations, event.ornaments].flatten.map(&:name_key) << event.note_dynamic&.name_key }
+    end
+
+    def levels(source)
+      voice(source).dynamic_events.map { |event| [event.position.to_s, event.level.name_key] }
+    end
+
+    it "reads articulations, ornaments, and a sforzando on notes and chords" do
+      expect(markings("{ c'4-. d'4->\\trill <e' g'>4\\sfz-- f'4\\prall }"))
+        .to eq [["staccato", nil], ["accent", "trill", nil], ["tenuto", "sfz"], ["inverted_mordent", nil]]
+    end
+
+    it "reads a level on a note as a dynamic event at the note, not after it" do
+      expect(levels("{ c'4\\p d'4 e'4\\f f'4 }")).to eq [%w[1:1:000 p], %w[1:3:000 f]]
+    end
+
+    it "reads a level on a rest as a dynamic event at the rest and drops its other marks" do
+      source = "{ r4\\pp-. c'4 r2 | R1*4/4\\f }"
+      expect([levels(source), markings(source).first]).to eq [[%w[1:1:000 pp], %w[2:1:000 f]], [nil]]
+    end
+
+    it "reads marks on either side of a tie" do
+      source = "{ c'4-.~\\p c'4 d'2 }"
+      expect([markings(source).first, levels(source)]).to eq [["staccato", nil], [%w[1:1:000 p]]]
+    end
+
+    it "joins the marks of a tied note's later links" do
+      expect(markings("{ c'2-.~ c'2-> }")).to eq [%w[accent staccato] << nil]
+    end
+
+    it "reads a level on a tied note's later link where that link starts" do
+      expect(levels("{ c'2~ c'4\\p~ c'4 | c'1\\f }")).to eq [%w[1:3:000 p], %w[2:1:000 f]]
+    end
+
+    it "drops a fermata, a bowing, and a breath mark" do
+      expect(markings("{ c'4\\fermata d'4\\upbow e'4^\\downbow f'4 \\breathe }")).to eq [[nil]] * 4
+    end
+
+    it "reads a marked note's pitch in relative mode as it would unmarked" do
+      expect(voice("\\relative c' { c4-. e4\\p g4-> c4 }").voice_events.map { |event| event.pitch.to_s }).to eq %w[C4 E4 G4 C5]
+    end
+
+    it "keeps the lyric hyphen out of note marks, since lyrics are unsupported" do
+      expect { parse("{ c'4 \\lyricmode { la -- la } }") }
+        .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"\\lyricmode"/)
     end
   end
 end
