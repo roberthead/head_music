@@ -17,7 +17,7 @@ class HeadMusic::Content::Note
   end
 
   def placement
-    @placement ||= HeadMusic::Content::Placement.new(voice, position, rhythmic_value, pitch)
+    @placement ||= HeadMusic::Content::VoiceEvent.new(voice, position, rhythmic_value, pitch)
   end
 
   def to_s

@@ -24,7 +24,7 @@ been collapsed into one:
 
 | Axis | Question it answers | Nouns |
 |---|---|---|
-| **Content** | What music exists, on what timeline? | `Project`, `Flow`, `Part`, `Voice`, `Placement` |
+| **Content** | What music exists, on what timeline? | `Project`, `Flow`, `Part`, `Voice`, `VoiceEvent` |
 | **Identity** | Whose piece is this, and who published it? | `Work`, `Person`, `Credit`, `Layout`, `Score` |
 | **Casting** | Who realizes it, on what occasion? | `Player`, `EnsembleSession` |
 

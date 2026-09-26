@@ -66,7 +66,7 @@ class HeadMusic::Content::Voice
   def place(position, rhythmic_value, sound_or_sounds = nil)
     # The melodic line is a snapshot of the notes, so any placement invalidates it.
     @melodic_line = nil
-    placement = HeadMusic::Content::Placement.new(self, position, rhythmic_value, sound_or_sounds)
+    placement = HeadMusic::Content::VoiceEvent.new(self, position, rhythmic_value, sound_or_sounds)
     existing = placement_at(placement.position)
     return existing.merge(placement) if existing
 

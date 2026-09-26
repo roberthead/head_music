@@ -34,7 +34,7 @@ Project ──owns──▶ Player[]            authored order; a chair, not a p
                 │            │                                       └─ map by bar ▶ Rudiment::Clef?
                 │            └──owns──▶ Voice[]
                 │                         ├─ map by bar ▶ Staff      (one of the part's staves; serialized by index)
-                │                         └──owns──▶ Placement[]     kept in position order
+                │                         └──owns──▶ VoiceEvent[]    kept in position order
                 │                                      ├──▶ Position          frozen value
                 │                                      ├──▶ sounds[]          Pitch | UnpitchedSound; [] is a rest
                 │                                      └──▶ syllables{verse}  Syllable
@@ -277,15 +277,15 @@ A key signature event holds a fifths `Integer` and an optional tonal context (`K
 |---|---|---|
 | `part` | *back-ref* `Part`, minted if absent | 1 |
 | `role` | String or nil | 0..1 |
-| `placements` | `Placement`, owned, position order, binary-search insert | 0..* |
+| `placements` | `VoiceEvent`, owned, position order, binary-search insert | 0..* |
 | `staff_assignment_map` | `Staff` by bar, no default | 0..* |
 | `melodic_line` | derived snapshot: pitches, range, leaps | 1 |
 
 `assign_staff(bar, staff)` raises unless the staff is in the part's system at that bar. `cross_to(staff, from:)` is the same call in spoken order. `place` merges into an existing placement at the same position.
 
-### Placement (`content/placement.rb`)
+### VoiceEvent (`content/voice_event.rb`)
 
-`Placement.new(voice, position, rhythmic_value, sound_or_sounds = nil)`
+`VoiceEvent.new(voice, position, rhythmic_value, sound_or_sounds = nil)`
 
 | Attribute | Type | Cardinality |
 |---|---|---|
@@ -488,7 +488,7 @@ Repeat structure only. Key and meter storage moved to the timeline in this relea
 | timeline | `meter`, `key_signature`, `tempo`, `meter_changes`, `key_signature_changes`, `tempo_changes` | |
 | Part | `voices` | `player` (never inside a project document), `instrument`, `instrument_changes`, `staff_system`, `staff_system_changes` |
 | Voice | `role` (nullable), `placements` | `staff_assignments` |
-| Placement | `position`, `rhythmic_value`, `sounds` | `beam_break_before`, `syllables` |
+| VoiceEvent | `position`, `rhythmic_value`, `sounds` | `beam_break_before`, `syllables` |
 | Syllable | `text` | `verse` when 1, `hyphen_after` when false |
 | StaffSystem | `bracket`, `staves` | |
 | Staff | `clef` (nullable) | `clef_changes` |

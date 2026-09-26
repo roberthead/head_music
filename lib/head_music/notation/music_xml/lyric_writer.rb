@@ -44,7 +44,7 @@ module HeadMusic::Notation::MusicXML
     # The syllable on the nearest earlier placement in the same voice carrying
     # text for this verse. Placements are position-sorted, and melisma gaps are
     # skipped because only sung placements are collected. Array#index compares
-    # with ==, which on Placement is position-only, but a voice holds at most
+    # with ==, which on VoiceEvent is position-only, but a voice holds at most
     # one placement per position (Voice#insert_into_placements), so that still
     # locates this exact placement.
     def previous_syllable(placement, verse)

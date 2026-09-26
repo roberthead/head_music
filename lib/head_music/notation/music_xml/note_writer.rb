@@ -9,7 +9,7 @@ module HeadMusic::Notation::MusicXML
   # split, and a chord renders as a lead note followed by its <chord/> members.
   class NoteWriter
     include XmlText
-    include HeadMusic::Notation::PlacementValidation
+    include HeadMusic::Notation::VoiceEventValidation
 
     def initialize(plan)
       @plan = plan

@@ -1,7 +1,7 @@
 # A module for musical content
 module HeadMusic::Content; end
 
-# A sung syllable attached to a Placement for one verse. Only the minimal
+# A sung syllable attached to a VoiceEvent for one verse. Only the minimal
 # linguistic fact is stored: the text, its verse number, and whether the word
 # continues onto the next sung note (hyphen_after). The MusicXML `syllabic`
 # value (single/begin/middle/end) is derived from these at render time rather

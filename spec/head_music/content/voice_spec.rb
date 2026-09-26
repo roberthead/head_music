@@ -351,7 +351,7 @@ describe HeadMusic::Content::Voice do
     subject(:notes_during) { voice.notes_during(placement) }
 
     let(:pitches) { %w[C E G F A G E D C] }
-    let(:placement) { HeadMusic::Content::Placement.new(flow, position, rhythmic_value) }
+    let(:placement) { HeadMusic::Content::VoiceEvent.new(flow, position, rhythmic_value) }
 
     before do
       pitches.each.with_index(1) do |pitch, bar|

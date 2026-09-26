@@ -1,7 +1,7 @@
 # A module for musical content
 module HeadMusic::Content; end
 
-# Resolves the raw sound argument(s) passed to Placement.new into a frozen,
+# Resolves the raw sound argument(s) passed to VoiceEvent.new into a frozen,
 # de-duplicated array of Soundables. Each value may be a Pitch, an
 # UnpitchedSound, an Instrument (resolved to its percussive hit), or a name
 # resolvable to one of those; an unresolvable name raises with guidance.

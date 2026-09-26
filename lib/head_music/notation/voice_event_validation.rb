@@ -1,10 +1,10 @@
 module HeadMusic
   module Notation
-    # Placement checks shared by the notation writers. Both the ABC and
+    # Voice event checks shared by the notation writers. Both the ABC and
     # MusicXML writers reject percussion (unpitched) sounds identically;
     # each includer supplies its own format-specific RenderError subclass
     # through #render_error_class.
-    module PlacementValidation
+    module VoiceEventValidation
       private
 
       def ensure_pitched_sounds(placement)

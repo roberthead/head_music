@@ -1,8 +1,9 @@
 # A module for musical content
 module HeadMusic::Content; end
 
-# A placement is a note, chord, or rest at a position within a voice in a flow
-class HeadMusic::Content::Placement
+# A voice event is a note, chord, or rest at a position within a voice in a
+# flow. Each one fills time, so a voice's events run end to end.
+class HeadMusic::Content::VoiceEvent
   include Comparable
 
   attr_reader :voice, :position, :rhythmic_value, :sounds

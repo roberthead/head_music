@@ -86,7 +86,7 @@ Motion:   (arrival)       (sustained)    step down
 
 - The preparation must be a consonance (not a dissonance, not a rest).
 - The preparation pitch and the suspended pitch are the same pitch -- this is the defining feature of a suspension (vs. an appoggiatura, which arrives unprepared).
-- In head_music terms: the `Placement` on the weak beat must produce a consonant `HarmonicInterval` with the cantus firmus at that position.
+- In head_music terms: the `VoiceEvent` on the weak beat must produce a consonant `HarmonicInterval` with the cantus firmus at that position.
 
 ### Resolution Requirements
 
@@ -107,7 +107,7 @@ The syncopated texture is sometimes interrupted -- the tie does not occur and th
 
 This is the only context in fourth species where a dissonance may appear without being a suspension. The break allows the voice to redirect melodically when a suspension would produce forbidden parallels or other violations.
 
-**Implementation note:** Detecting a second species break requires knowing whether a `Placement` at a weak beat position ties into the next downbeat. If `placement.next_position` falls on a downbeat and `voice.note_at(next_downbeat)` returns a different pitch (or no pitch), the tie has broken.
+**Implementation note:** Detecting a second species break requires knowing whether a `VoiceEvent` at a weak beat position ties into the next downbeat. If `placement.next_position` falls on a downbeat and `voice.note_at(next_downbeat)` returns a different pitch (or no pitch), the tie has broken.
 
 ---
 
@@ -124,8 +124,8 @@ These two notations are analytically identical in fourth species:
 
 In head_music, this principle is already encoded in the data model:
 
-- A `Placement` represents a single sounding event with a `position` (when it starts) and a `rhythmic_value` (how long it lasts).
-- `Placement#next_position` computes when the sound ends: `position + rhythmic_value`.
+- A `VoiceEvent` represents a single sounding event with a `position` (when it starts) and a `rhythmic_value` (how long it lasts).
+- `VoiceEvent#next_position` computes when the sound ends: `position + rhythmic_value`.
 - The display layer (ties, beaming, notation symbols) is a separate concern handled by the `HeadMusic::Notation` module.
 
 Analytical guidelines should never count note heads or detect ties in the notated score. Instead, they should query `voice.note_at(position)` for any given position to determine what is sounding.
@@ -134,17 +134,17 @@ Analytical guidelines should never count note heads or detect ties in the notate
 
 ## 7. Mapping to head_music Architecture
 
-### Voice and Placement Model
+### Voice and VoiceEvent Model
 
 ```
 Voice
-  #placements       -> [Placement, ...]   all sounding events (notes and rests)
-  #notes            -> [Placement, ...]   only pitched placements
-  #note_at(pos)     -> Placement | nil    what is sounding at a given Position
-  #note_preceding(pos) -> Placement | nil the note whose position is before pos
-  #note_following(pos) -> Placement | nil the note whose position is after pos
+  #placements       -> [VoiceEvent, ...]  all sounding events (notes and rests)
+  #notes            -> [VoiceEvent, ...]  only pitched placements
+  #note_at(pos)     -> VoiceEvent | nil   what is sounding at a given Position
+  #note_preceding(pos) -> VoiceEvent | nil the note whose position is before pos
+  #note_following(pos) -> VoiceEvent | nil the note whose position is after pos
 
-Placement
+VoiceEvent
   #position         -> Position           when the event begins
   #rhythmic_value   -> RhythmicValue      how long it lasts
   #next_position    -> Position           position + rhythmic_value (when it ends)

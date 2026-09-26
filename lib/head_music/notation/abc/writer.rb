@@ -10,7 +10,7 @@ module HeadMusic::Notation::ABC
     UNIT_NOTE_LENGTH = Rational(1, 8)
     BARS_PER_LINE = 4
 
-    include HeadMusic::Notation::PlacementValidation
+    include HeadMusic::Notation::VoiceEventValidation
     include HeadMusic::Notation::PreflightChecks
 
     attr_reader :flow, :reference_number, :transposed

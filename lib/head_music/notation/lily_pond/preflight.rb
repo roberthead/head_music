@@ -9,7 +9,7 @@ module HeadMusic::Notation::LilyPond
   # that assembly cannot fail on these grounds.
   class Preflight
     include HeadMusic::Notation::PreflightChecks
-    include HeadMusic::Notation::PlacementValidation
+    include HeadMusic::Notation::VoiceEventValidation
 
     def self.check!(flow)
       new(flow).check!
