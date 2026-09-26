@@ -136,6 +136,9 @@ class HeadMusic::Content::VoiceEvent
     }
     hash["beam_break_before"] = beam_break_before unless beam_break_before.nil?
     hash["syllables"] = syllables.keys.sort.map { |verse| syllables[verse].to_h } unless syllables.empty?
+    hash["articulations"] = articulations.map(&:name_key) unless articulations.empty?
+    hash["ornaments"] = ornaments.map(&:name_key) unless ornaments.empty?
+    hash["note_dynamic"] = note_dynamic.name_key if note_dynamic
     hash
   end
 

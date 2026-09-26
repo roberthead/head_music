@@ -127,4 +127,28 @@ describe HeadMusic::Content::Part do
       ]
     end
   end
+
+  describe "#place_dynamic" do
+    let(:staff_system) { HeadMusic::Content::StaffSystem.grand_staff }
+    let(:piano) { flow.add_part(instrument: "piano", staff_system: staff_system) }
+    let(:right_hand) { piano.add_voice(role: "right hand") }
+    let(:left_hand) { piano.add_voice(role: "left hand") }
+
+    before do
+      left_hand.cross_to(staff_system.staves.last, from: 1)
+      piano.place_dynamic("1:1", :p)
+    end
+
+    it "governs every voice of the part, on either staff" do
+      expect([right_hand, left_hand].map { |voice| voice.dynamic_at("2:1").name_key }).to eq %w[p p]
+    end
+
+    it "refuses a second dynamic at one position" do
+      expect { piano.place_dynamic("1:1", :f) }.to raise_error(ArgumentError, "a dynamic is already placed at 1:1:000")
+    end
+
+    it "lists its dynamic events" do
+      expect(piano.dynamic_events.map(&:to_s)).to eq ["p at 1:1:000"]
+    end
+  end
 end

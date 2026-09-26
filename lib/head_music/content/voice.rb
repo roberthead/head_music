@@ -21,6 +21,7 @@ class HeadMusic::Content::Voice
     @part = part || detached_part(flow)
     @role = role
     @voice_events = []
+    @dynamic_events = HeadMusic::Content::DynamicEvents.new(@part.flow)
     # No stored event for the opening staff: a voice sits on its part's first
     # staff until it says otherwise, and a single-staff part needs no
     # assignments at all.
@@ -72,6 +73,30 @@ class HeadMusic::Content::Voice
 
     insert_into_voice_events(voice_event)
     voice_event
+  end
+
+  # A dynamic level for this voice alone. It takes no time, so it is not a
+  # voice event, and it may fall under a held note or a rest.
+  def place_dynamic(position, level)
+    @dynamic_events.place(position, level)
+  end
+
+  def dynamic_events
+    @dynamic_events.to_a
+  end
+
+  # The dynamic level in force at a position: the latest of the voice's own
+  # dynamic events, its part's, and any accent that leaves a level behind it,
+  # as fp leaves p. At one position the accent wins, then the voice's own
+  # event, then the part's. Nil where nothing has been written.
+  def dynamic_at(position)
+    position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
+    candidates = [
+      [part.dynamic_event_at(position), 0],
+      [@dynamic_events.latest_at(position), 1]
+    ].filter_map { |event, rank| [event.position, rank, event.level] if event }
+    best = candidates.max_by { |candidate| candidate.first(2) }
+    accent_level_at(position, best&.first) || best&.last
   end
 
   # Voice events are kept in position order, so the notes and rests drawn from
@@ -137,6 +162,7 @@ class HeadMusic::Content::Voice
     hash = {"role" => role&.to_s, "voice_events" => voice_events.map(&:to_h)}
     assignments = staff_assignments_to_h
     hash["staff_assignments"] = assignments unless assignments.empty?
+    hash["dynamic_events"] = dynamic_events.map(&:to_h) unless @dynamic_events.empty?
     hash
   end
 
@@ -174,6 +200,21 @@ class HeadMusic::Content::Voice
 
   def bar_number_of(voice_event)
     voice_event ? voice_event.position.bar_number : 1
+  end
+
+  # The level left behind by the latest accent such as fp at or before the
+  # position, when no dynamic event comes after it. Walks back only as far as
+  # the best dynamic event, so a writer asking at every note stays linear.
+  def accent_level_at(position, floor)
+    index = voice_events.bsearch_index { |voice_event| voice_event.position > position } || voice_events.length
+    (index - 1).downto(0) do |candidate_index|
+      voice_event = voice_events[candidate_index]
+      break if floor && voice_event.position < floor
+
+      level = voice_event.note_dynamic&.level_after
+      return level if level
+    end
+    nil
   end
 
   def voice_event_at(position)

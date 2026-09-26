@@ -198,6 +198,115 @@ describe HeadMusic::Content::Voice do
     end
   end
 
+  describe "#dynamic_at" do
+    let(:part) { voice.part }
+
+    before do
+      voice.place("1:1", :whole, "C5")
+      voice.place("2:1", :half, "D5")
+      voice.place("2:3", :half)
+      voice.place("3:1", :whole, "E5")
+      voice.place("4:1", :whole, "F5")
+    end
+
+    def level_at(position)
+      voice.dynamic_at(position)&.name_key
+    end
+
+    it "is nil before anything is written" do
+      expect(level_at("1:1")).to be_nil
+    end
+
+    it "answers a voice event's level at and after its position" do
+      voice.place_dynamic("2:1", :mf)
+      expect(%w[1:4 2:1 4:1].map { |position| level_at(position) }).to eq [nil, "mf", "mf"]
+    end
+
+    it "takes a level under a held note" do
+      voice.place_dynamic("1:3", :p)
+      expect([level_at("1:1"), level_at("1:3")]).to eq [nil, "p"]
+    end
+
+    it "takes a level under a rest" do
+      voice.place_dynamic("2:4", :pp)
+      expect(level_at("3:1")).to eq "pp"
+    end
+
+    it "takes a part's level" do
+      part.place_dynamic("2:1", :f)
+      expect(level_at("3:1")).to eq "f"
+    end
+
+    it "prefers the later of the part's and the voice's levels" do
+      voice.place_dynamic("1:1", :p)
+      part.place_dynamic("3:1", :f)
+      expect([level_at("2:1"), level_at("3:1")]).to eq %w[p f]
+    end
+
+    it "prefers the voice's own level at the same position" do
+      part.place_dynamic("2:1", :f)
+      voice.place_dynamic("2:1", :pp)
+      expect(level_at("2:1")).to eq "pp"
+    end
+
+    it "accepts a Position" do
+      voice.place_dynamic("1:1", :mp)
+      expect(voice.dynamic_at(flow.position("1:1")).name_key).to eq "mp"
+    end
+
+    context "with an fp" do
+      before do
+        voice.place_dynamic("1:1", :f)
+        voice.voice_events[1].note_dynamic = :fp
+      end
+
+      it "puts p in force from the fp note" do
+        expect([level_at("1:4"), level_at("2:1"), level_at("3:1")]).to eq %w[f p p]
+      end
+
+      it "beats a level at the fp note's own position" do
+        voice.place_dynamic("2:1", :ff)
+        expect(level_at("2:2")).to eq "p"
+      end
+
+      it "gives way to a later level" do
+        voice.place_dynamic("3:1", :f)
+        expect(level_at("4:1")).to eq "f"
+      end
+
+      it "sets p only for its own voice" do
+        other = part.add_voice
+        other.place("1:1", :whole, "C4")
+        other.place("2:1", :whole, "D4")
+        part.place_dynamic("1:1", :mf)
+        expect(other.dynamic_at("2:1").name_key).to eq "mf"
+      end
+    end
+
+    it "leaves the level alone at an sfz" do
+      voice.place_dynamic("1:1", :mp)
+      voice.voice_events[1].note_dynamic = :sfz
+      expect(level_at("2:1")).to eq "mp"
+    end
+
+    it "refuses two levels at one position, however it is spelled" do
+      voice.place_dynamic("2:1", :p)
+      expect { voice.place_dynamic("2:1:000", :f) }
+        .to raise_error(ArgumentError, "a dynamic is already placed at 2:1:000")
+    end
+
+    it "lists the voice's dynamic events in position order" do
+      voice.place_dynamic("3:1", :f)
+      voice.place_dynamic("1:1", :p)
+      expect(voice.dynamic_events.map(&:to_s)).to eq ["p at 1:1:000", "f at 3:1:000"]
+    end
+
+    it "leaves the voice events and their continuity alone" do
+      voice.place_dynamic("1:3", :p)
+      expect([voice.voice_events.length, voice.first_gap]).to eq [5, nil]
+    end
+  end
+
   describe "#place with sounds" do
     it "accepts a bare unpitched instrument name" do
       voice_event = voice.place("1:1", :quarter, "snare drum")

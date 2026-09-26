@@ -287,4 +287,91 @@ describe HeadMusic::Content::Flow::SchemaValues do
         .to raise_error ArgumentError, /x\.staves\[0\]: unknown clef "bogus clef"/
     end
   end
+
+  describe "#catalog_keys" do
+    let(:catalog) { HeadMusic::Rudiment::Articulation }
+
+    it "answers an empty list for nil" do
+      expect(values.catalog_keys(nil, catalog, "articulations", "path")).to eq []
+    end
+
+    it "answers the catalog entries" do
+      expect(values.catalog_keys(%w[staccato], catalog, "articulations", "path")).to eq [catalog.get(:staccato)]
+    end
+
+    it "refuses a value that is not a list" do
+      expect { values.catalog_keys("staccato", catalog, "articulations", "path") }
+        .to raise_error(ArgumentError, 'path: articulations must be an Array, got "staccato"')
+    end
+
+    it "refuses an unknown key" do
+      expect { values.catalog_keys(%w[staccato bogus], catalog, "articulations", "path") }
+        .to raise_error(ArgumentError, 'path.articulations[1]: unknown articulation "bogus"')
+    end
+
+    it "refuses a key that is not a string" do
+      expect { values.catalog_keys([7], catalog, "articulations", "path") }
+        .to raise_error(ArgumentError, "path.articulations[0]: unknown articulation 7")
+    end
+
+    it "refuses a duplicate" do
+      expect { values.catalog_keys(%w[accent accent], catalog, "articulations", "path") }
+        .to raise_error(ArgumentError, 'path: duplicate articulations "accent"')
+    end
+  end
+
+  describe "#note_dynamic" do
+    it "answers nil for nil" do
+      expect(values.note_dynamic(nil, "path")).to be_nil
+    end
+
+    it "answers an accent" do
+      expect(values.note_dynamic("sfz", "path")).to be HeadMusic::Rudiment::Dynamic.get(:sfz)
+    end
+
+    it "refuses a level" do
+      expect { values.note_dynamic("f", "path") }
+        .to raise_error(ArgumentError, 'path: note_dynamic must be an accent, got "f"')
+    end
+
+    it "refuses an unknown dynamic" do
+      expect { values.note_dynamic("loud", "path") }.to raise_error(ArgumentError, 'path: unknown dynamic "loud"')
+    end
+  end
+
+  describe "#dynamic_events" do
+    it "answers an empty list for nil" do
+      expect(values.dynamic_events(nil, "path")).to eq []
+    end
+
+    it "answers position and level pairs" do
+      expect(values.dynamic_events([{"position" => "2:1", "level" => "p"}], "path"))
+        .to eq [["2:1", HeadMusic::Rudiment::Dynamic.get(:p)]]
+    end
+
+    it "refuses a value that is not a list" do
+      expect { values.dynamic_events({}, "path") }
+        .to raise_error(ArgumentError, "path: dynamic_events must be an Array, got {}")
+    end
+
+    it "refuses an entry that is not a hash" do
+      expect { values.dynamic_events(["p"], "path") }
+        .to raise_error(ArgumentError, 'path.dynamic_events[0]: dynamic event must be a Hash, got "p"')
+    end
+
+    it "refuses an entry without a position" do
+      expect { values.dynamic_events([{"level" => "p"}], "path") }
+        .to raise_error(ArgumentError, "path.dynamic_events[0]: a dynamic event needs a position")
+    end
+
+    it "refuses a malformed position" do
+      expect { values.dynamic_events([{"position" => "soon", "level" => "p"}], "path") }
+        .to raise_error(ArgumentError, 'path.dynamic_events[0]: unknown position "soon"')
+    end
+
+    it "refuses an accent" do
+      expect { values.dynamic_events([{"position" => "1:1", "level" => "fp"}], "path") }
+        .to raise_error(ArgumentError, 'path.dynamic_events[0]: level must be a dynamic level, got "fp"')
+    end
+  end
 end

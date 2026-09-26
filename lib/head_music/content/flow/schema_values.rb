@@ -99,6 +99,39 @@ class HeadMusic::Content::Flow
       end
     end
 
+    # An optional list of catalog keys, such as a voice event's articulations,
+    # each known and none repeated.
+    def catalog_keys(values, catalog, label, path)
+      return [] if values.nil?
+      raise ArgumentError, "#{path}: #{label} must be an Array, got #{values.inspect}" unless values.is_a?(Array)
+
+      values.each_with_index.map do |value, index|
+        raise ArgumentError, "#{path}: duplicate #{label} #{value.inspect}" if values.index(value) != index
+
+        catalog_value(value, catalog, "#{path}.#{label}[#{index}]")
+      end
+    end
+
+    def note_dynamic(value, path)
+      return nil if value.nil?
+
+      dynamic = catalog_value(value, HeadMusic::Rudiment::Dynamic, path)
+      raise ArgumentError, "#{path}: note_dynamic must be an accent, got #{value.inspect}" unless dynamic.accent?
+
+      dynamic
+    end
+
+    # An optional list of {"position" => ..., "level" => ...} hashes, answered
+    # as [position, level] pairs.
+    def dynamic_events(values, path)
+      return [] if values.nil?
+      raise ArgumentError, "#{path}: dynamic_events must be an Array, got #{values.inspect}" unless values.is_a?(Array)
+
+      values.each_with_index.map do |value, index|
+        dynamic_event(value, "#{path}.dynamic_events[#{index}]")
+      end
+    end
+
     def bar_number(bar_hash, index, path = "bars")
       number = bar_hash["number"]
       unless number.is_a?(Integer) && number >= 0
@@ -199,6 +232,25 @@ class HeadMusic::Content::Flow
       seen_verses << verse
 
       HeadMusic::Content::Syllable.from_h(value)
+    end
+
+    def catalog_value(value, catalog, path)
+      entry = catalog.get(value) if value.is_a?(String)
+      raise ArgumentError, "#{path}: unknown #{catalog.name.demodulize.downcase} #{value.inspect}" unless entry
+
+      entry
+    end
+
+    def dynamic_event(value, path)
+      raise ArgumentError, "#{path}: dynamic event must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
+
+      position = position(value["position"], path)
+      raise ArgumentError, "#{path}: a dynamic event needs a position" if position.nil?
+
+      level = catalog_value(value["level"], HeadMusic::Rudiment::Dynamic, path)
+      raise ArgumentError, "#{path}: level must be a dynamic level, got #{value["level"].inspect}" unless level.level?
+
+      [position, level]
     end
 
     def sound(value, path)

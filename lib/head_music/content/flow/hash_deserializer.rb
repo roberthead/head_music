@@ -79,6 +79,7 @@ class HeadMusic::Content::Flow
         )
         apply_instrument_changes(part, part_hash, path)
         apply_staff_system_changes(part, part_hash, path)
+        place_dynamic_events(part, part_hash, path)
         build_voices(part, part_hash, path)
       end
     end
@@ -101,7 +102,9 @@ class HeadMusic::Content::Flow
     def build_voices(part, part_hash, part_path)
       Array(part_hash["voices"]).each_with_index do |voice_hash, voice_index|
         voice = part.add_voice(role: voice_hash["role"])
-        build_voice_events(voice, voice_hash, "#{part_path}.voices[#{voice_index}]")
+        voice_path = "#{part_path}.voices[#{voice_index}]"
+        build_voice_events(voice, voice_hash, voice_path)
+        place_dynamic_events(voice, voice_hash, voice_path)
         apply_staff_assignments(voice, part, voice_hash)
       end
     end

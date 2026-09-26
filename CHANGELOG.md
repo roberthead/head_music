@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `HeadMusic::Rudiment::Soundable` names the role of anything a placement can sound. `Pitch` and `UnpitchedSound` include it, and `SoundResolver` passes any `Soundable` through unchanged.
 - `HeadMusic::Rudiment::Articulation` (staccato, staccatissimo, accent, tenuto, marcato), `Ornament` (trill, mordent, inverted mordent, turn), and `Dynamic` (the levels *ppp* to *fff* and the accents *sf*, *sfz*, *rfz*, *fp*) are catalogs read from YAML, found with `.get` by key or alias in any case, and named in every shipped locale. `mordent` is the lower mordent and `inverted_mordent` the upper.
 - A `NoteEvent` carries markings: `#articulate` and `#embellish` add articulations and ornaments by key, each at most once, and `#note_dynamic=` sets an accent such as *sfz* for that one note. A chord tone placed onto a marked note event joins it without disturbing its markings. A `RestEvent` refuses all three with `ArgumentError`.
+- `HeadMusic::Content::DynamicEvent` puts a dynamic level in force at a position. `Voice#place_dynamic` places one for a voice, even under a held note or a rest, and `Part#place_dynamic` one for every voice of a part on every staff; a second at the same position raises `ArgumentError`. `Voice#dynamic_at(position)` answers the level in force from the latest of the voice's and the part's events, or *p* from an *fp* note onward.
+- Flow JSON writes a voice event's `"articulations"`, `"ornaments"`, and `"note_dynamic"`, and a voice's and a part's `"dynamic_events"`, as optional keys within schema 5. A flow without markings serializes as before.
 
 ### Changed
 

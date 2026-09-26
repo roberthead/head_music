@@ -9,6 +9,13 @@ describe HeadMusic::Content::Layout do
   let(:written) { project.add_layout(kind: :part, concert_pitch: false) }
 
   describe "a B-flat clarinet part" do
+    it "keeps the markings through the transposition" do
+      project.flows.first.voices.first.tap { |voice| voice.place_dynamic("1:1", :pp) }.voice_events.first.articulate(:tenuto)
+      realized_voice = written.flows.first.voices.first
+      expect([realized_voice.voice_events.first.articulations.map(&:name_key), realized_voice.dynamic_at("1:1").name_key])
+        .to eq [%w[tenuto], "pp"]
+    end
+
     it "renders the sounding pitch in concert pitch" do
       expect(concert.to_lilypond).to include "c'1"
     end

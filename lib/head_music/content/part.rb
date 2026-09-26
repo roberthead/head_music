@@ -23,6 +23,22 @@ class HeadMusic::Content::Part
     # instrument at all. A staff system falls back to one staff instead.
     @instrument_map = HeadMusic::Time::EventMap.new(default: instrument && HeadMusic::Instruments::Instrument.get(instrument))
     @staff_system_map = HeadMusic::Time::EventMap.new(default: staff_system)
+    @dynamic_events = HeadMusic::Content::DynamicEvents.new(flow)
+  end
+
+  # A dynamic level for every voice of the part, on every staff, as a piano
+  # dynamic between the staves is.
+  def place_dynamic(position, level)
+    @dynamic_events.place(position, level)
+  end
+
+  def dynamic_events
+    @dynamic_events.to_a
+  end
+
+  # @api private the part's dynamic in force at a position, for Voice#dynamic_at
+  def dynamic_event_at(position)
+    @dynamic_events.latest_at(position)
   end
 
   # @return [HeadMusic::Instruments::Instrument, nil] nil for a part that was
@@ -94,6 +110,7 @@ class HeadMusic::Content::Part
     hash["staff_system"] = staff_system.to_h if authored_staff_system?
     system_changes = staff_system_changes.map { |bar_number, value| {"number" => bar_number, "staff_system" => value.to_h} }
     hash["staff_system_changes"] = system_changes unless system_changes.empty?
+    hash["dynamic_events"] = dynamic_events.map(&:to_h) unless @dynamic_events.empty?
     hash
   end
 

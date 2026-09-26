@@ -76,6 +76,28 @@ class HeadMusic::Content::Flow
         syllables.each do |syllable|
           voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
         end
+        apply_markings(voice_event, voice_event_hash, path)
+      end
+    end
+
+    def apply_markings(voice_event, voice_event_hash, path)
+      articulations = values.catalog_keys(voice_event_hash["articulations"], HeadMusic::Rudiment::Articulation, "articulations", path)
+      ornaments = values.catalog_keys(voice_event_hash["ornaments"], HeadMusic::Rudiment::Ornament, "ornaments", path)
+      note_dynamic = values.note_dynamic(voice_event_hash["note_dynamic"], "#{path}.note_dynamic")
+      return if articulations.empty? && ornaments.empty? && note_dynamic.nil?
+      raise ArgumentError, "#{path}: a rest cannot carry articulations, ornaments, or a note dynamic" if voice_event.rest?
+
+      voice_event.articulate(*articulations).embellish(*ornaments)
+      voice_event.note_dynamic = note_dynamic
+    end
+
+    # Each dynamic event is placed through the public API, so a duplicate
+    # position raises as it would for a caller, but with the document path.
+    def place_dynamic_events(target, container_hash, path)
+      values.dynamic_events(container_hash["dynamic_events"], path).each_with_index do |(position, level), index|
+        target.place_dynamic(position, level)
+      rescue ArgumentError => e
+        raise ArgumentError, "#{path}.dynamic_events[#{index}]: #{e.message}"
       end
     end
 

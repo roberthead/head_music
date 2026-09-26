@@ -243,6 +243,71 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "articulations, ornaments, and dynamics" do
+    let(:flow) do
+      described_class.new(name: "Marked").tap do |marked|
+        voice = marked.add_voice(role: "melody")
+        voice.place("1:1", :quarter, "C5").articulate(:staccato, :accent).embellish(:trill)
+        voice.place("1:2", :quarter, "D5").note_dynamic = :sfz
+        voice.place("1:3", :half)
+        voice.place_dynamic("1:3", :pp)
+        voice.part.place_dynamic("1:1", :mf)
+      end
+    end
+
+    let(:hash) { flow.to_h }
+    let(:voice_hash) { voices_in(hash).first }
+
+    it "round-trips through JSON" do
+      restored = described_class.from_json(flow.to_json)
+      expect(restored.to_h).to eq hash
+    end
+
+    it "writes articulations and ornaments as sorted keys" do
+      expect(voice_hash["voice_events"].first.slice("articulations", "ornaments"))
+        .to eq("articulations" => %w[accent staccato], "ornaments" => %w[trill])
+    end
+
+    it "writes a note dynamic as its key" do
+      expect(voice_hash["voice_events"][1]["note_dynamic"]).to eq "sfz"
+    end
+
+    it "writes a voice's dynamic events on the voice" do
+      expect(voice_hash["dynamic_events"]).to eq [{"position" => "1:3:000", "level" => "pp"}]
+    end
+
+    it "writes a part's dynamic events on the part" do
+      expect(hash["parts"].first["dynamic_events"]).to eq [{"position" => "1:1:000", "level" => "mf"}]
+    end
+
+    it "writes nothing new for an unmarked voice event" do
+      expect(voice_hash["voice_events"].last.keys).to eq %w[position rhythmic_value sounds]
+    end
+
+    it "writes no dynamic events where there are none" do
+      unmarked = described_class.new.tap { |bare| bare.add_voice.place("1:1", :whole, "C4") }.to_h
+      expect([unmarked["parts"].first, voices_in(unmarked).first]).to all(satisfy { |container| !container.key?("dynamic_events") })
+    end
+
+    it "reads a schema-5 document written without the new keys" do
+      voice_event = {"position" => "1:1:000", "rhythmic_value" => "whole", "sounds" => ["C4"]}
+      document = {"schema_version" => 5, "parts" => [{"voices" => [{"role" => nil, "voice_events" => [voice_event]}]}]}
+      expect(described_class.from_h(document).voices.first.voice_events.first.articulations).to eq []
+    end
+
+    it "refuses markings on a rest" do
+      hash["parts"].first["voices"].first["voice_events"].last["articulations"] = ["staccato"]
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "parts[0].voices[0].voice_events[2]: a rest cannot carry articulations, ornaments, or a note dynamic")
+    end
+
+    it "refuses a second dynamic at one position, naming its path" do
+      hash["parts"].first["dynamic_events"] << {"position" => "1:1", "level" => "f"}
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "parts[0].dynamic_events[1]: a dynamic is already placed at 1:1:000")
+    end
+  end
+
   describe "a chord voice event (multiple pitches in one voice event)" do
     let(:flow) do
       described_class.new(name: "Chord Voice Event").tap do |chordal|
