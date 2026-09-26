@@ -76,7 +76,7 @@ flow.meter.symbol     # => :common
 ## Open Questions
 
 1. Is a ramp's shape always linear in beats per minute, or should it allow a curve?
-2. Does tempo text also cover character words that are not tempos ("dolce", "maestoso"), or do those belong to text directions in [Marks on Notes](marks-on-notes.md)?
+2. Does tempo text also cover character words that are not tempos ("dolce", "maestoso"), or do those belong to text directions in [Marks on Notes](../current/marks-on-notes.md)?
 
 ## Implementation Plan
 

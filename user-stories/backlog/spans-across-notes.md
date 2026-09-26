@@ -30,7 +30,7 @@ Some markings belong to a stretch of music, not to one note. Every format has th
 
 The model has none of them. ABC and LilyPond raise on slurs and hairpins, and kern drops them. Slurs matter to this gem beyond display: in vocal music a slur marks a melisma, and a phrase mark states where a phrase ends, which a style guide could use.
 
-This story comes second, after [Marks on Notes](marks-on-notes.md). The two share the catalog and the JSON approach, so doing them in order lets the second reuse the first.
+This story comes second, after [Marks on Notes](../current/marks-on-notes.md). The two share the catalog and the JSON approach, so doing them in order lets the second reuse the first.
 
 ## Example
 

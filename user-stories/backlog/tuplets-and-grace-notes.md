@@ -26,7 +26,7 @@ Every notation format the gem reads expresses tuplets and grace notes, and each 
 | Tuplet | `(3CDE` | `\tuplet 3/2 { c8 d e }` | `<time-modification>`, `<tuplet>` | `12c 12d 12e` | `<tuplet>` |
 | Grace note | `{g}A` | `\grace`, `\acciaccatura`, `\appoggiatura` | `<grace>` | `q`, `Q` | `@grace` |
 
-The model has no place for either. `RhythmicValue` is a unit, dots, and a tied chain, with no tuplet ratio. Kern's reader raises on tuplet durations and drops grace notes, a decision the [kern story](../done/humdrum-kern-import-and-export.md) recorded as waiting on this change to the core duration model. After unsupported expressive markings (see [Marks on Notes](marks-on-notes.md)), tuplets are the most common reason a real file fails to import.
+The model has no place for either. `RhythmicValue` is a unit, dots, and a tied chain, with no tuplet ratio. Kern's reader raises on tuplet durations and drops grace notes, a decision the [kern story](../done/humdrum-kern-import-and-export.md) recorded as waiting on this change to the core duration model. After unsupported expressive markings (see [Marks on Notes](../current/marks-on-notes.md)), tuplets are the most common reason a real file fails to import.
 
 This is the deepest of the five model-gap stories: it changes rhythmic values and position arithmetic, which everything else depends on. It is last in priority because the other four are additive and lower risk.
 
