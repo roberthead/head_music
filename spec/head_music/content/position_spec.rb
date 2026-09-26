@@ -200,7 +200,7 @@ describe HeadMusic::Content::Position do
 
   describe "#within_placement?" do
     let!(:placement) do
-      HeadMusic::Content::VoiceEvent.new(flow.add_voice, "3:2:000", :quarter)
+      HeadMusic::Content::RestEvent.new(flow.add_voice, "3:2:000", :quarter)
     end
 
     context "when the position is before the start of the placement" do

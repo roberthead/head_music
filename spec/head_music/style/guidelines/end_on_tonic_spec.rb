@@ -40,20 +40,6 @@ describe HeadMusic::Style::Guidelines::EndOnTonic do
   end
 
   context "with edge cases for branch coverage" do
-    context "when last_note_spelling is nil but notes exist" do
-      subject(:guideline) { assess(described_class, voice) }
-
-      before do
-        # Create a note with nil pitch to test the nil branch in ends_on_tonic?
-        note_with_nil_pitch = HeadMusic::Content::Note.new(nil, :whole, voice, "1:1:000")
-        allow(voice).to receive(:notes).and_return([note_with_nil_pitch])
-      end
-
-      it "handles nil last_note_spelling gracefully" do
-        expect(guideline).not_to be_adherent # should create a mark when spelling is nil
-      end
-    end
-
     context "when tonic_spelling is nil" do
       subject(:guideline) { assess(described_class, voice) }
 

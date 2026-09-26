@@ -2,13 +2,27 @@ require "spec_helper"
 
 describe HeadMusic::Content::VoiceEvent do
   # rubocop:disable RSpec/MultipleMemoizedHelpers
-  subject(:placement) { described_class.new(voice, position, rhythmic_value, pitch) }
+  subject(:placement) { described_class.build(voice, position, rhythmic_value, pitch) }
 
   let(:flow) { HeadMusic::Content::Flow.new.tap(&:add_voice) }
   let(:voice) { flow.voices.first }
   let(:position) { "2:2:240" }
   let(:pitch) { HeadMusic::Rudiment::Pitch.get("F#4") }
   let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.new(:eighth) }
+
+  it "is abstract" do
+    expect { described_class.new(voice, position, rhythmic_value) }.to raise_error(NoMethodError, /private method/)
+  end
+
+  describe ".build" do
+    it "builds a note event for sounds" do
+      expect(placement).to be_a HeadMusic::Content::NoteEvent
+    end
+
+    it "builds a rest event for no sounds" do
+      expect(described_class.build(voice, position, rhythmic_value)).to be_a HeadMusic::Content::RestEvent
+    end
+  end
 
   its(:flow) { is_expected.to eq flow }
   its(:voice) { is_expected.to eq voice }
@@ -47,9 +61,9 @@ describe HeadMusic::Content::VoiceEvent do
   end
 
   describe "#during?" do
-    subject(:placement) { described_class.new(voice, position, rhythmic_value, pitch) }
+    subject(:placement) { described_class.build(voice, position, rhythmic_value, pitch) }
 
-    let(:other_placement) { described_class.new(voice, "2:2:000", :quarter) }
+    let(:other_placement) { described_class.build(voice, "2:2:000", :quarter) }
 
     context "when it starts before the other placement and ends at the start" do
       let(:position) { "2:1:000" }
@@ -251,7 +265,7 @@ describe HeadMusic::Content::VoiceEvent do
     context "when two placements at the same position are merged" do
       it "keeps the existing placement's syllables" do
         placement.sing("keep")
-        other = described_class.new(voice, position, rhythmic_value, HeadMusic::Rudiment::Pitch.get("A4"))
+        other = described_class.build(voice, position, rhythmic_value, HeadMusic::Rudiment::Pitch.get("A4"))
         other.sing("drop")
         placement.merge(other)
         expect(placement.syllable.text).to eq "keep"
@@ -312,7 +326,7 @@ describe HeadMusic::Content::VoiceEvent do
 
     context "when given a single-element array" do
       let(:pitch) { ["F#4"] }
-      let(:bare_placement) { described_class.new(voice, position, rhythmic_value, "F#4") }
+      let(:bare_placement) { described_class.build(voice, position, rhythmic_value, "F#4") }
 
       it { is_expected.not_to be_chord }
       it { is_expected.to be_note }
@@ -448,7 +462,7 @@ describe HeadMusic::Content::VoiceEvent do
     context "when the same unpitched sound arrives under an alias" do
       let(:pitch) { HeadMusic::Rudiment::UnpitchedSound.get("tabor") }
       let(:other) do
-        described_class.new(voice, position, rhythmic_value, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
+        described_class.build(voice, position, rhythmic_value, HeadMusic::Rudiment::UnpitchedSound.get("snare drum"))
       end
 
       it "deduplicates to one sound" do
@@ -457,7 +471,7 @@ describe HeadMusic::Content::VoiceEvent do
     end
 
     context "with an authored beam flag" do
-      let(:other) { described_class.new(voice, position, rhythmic_value, "A4") }
+      let(:other) { described_class.build(voice, position, rhythmic_value, "A4") }
 
       it "keeps the receiver's beam_break_before (chord members share one beam edge)" do
         placement.beam_break_before = true
@@ -478,7 +492,7 @@ describe HeadMusic::Content::VoiceEvent do
     end
   end
 
-  its(:inspect) { is_expected.to eq "#<HeadMusic::Content::VoiceEvent eighth F♯4 at 2:2:240>" }
+  its(:inspect) { is_expected.to eq "#<HeadMusic::Content::NoteEvent eighth F♯4 at 2:2:240>" }
 
   describe "#to_s" do
     context "with an unpitched sound alongside a pitch" do

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Breaking.** `HeadMusic::Content::Placement` is `HeadMusic::Content::VoiceEvent`, a name for the time-filling notes, chords, and rests of a voice, apart from the point events such as dynamics still to come. The constant is gone, not aliased. `Voice#place` and `Voice#placements` keep their names, and the Flow JSON is unchanged. `HeadMusic::Notation::PlacementValidation` is `VoiceEventValidation` to match.
+- **Breaking.** `VoiceEvent` is abstract, with two subclasses: `NoteEvent`, which holds one or more `Soundable`s and raises `ArgumentError` without one, and `RestEvent`, which is silent and cannot sing. `VoiceEvent.build` answers whichever the sounds call for, and `Voice#place` uses it. A note placed where a rest already stands now replaces the rest rather than turning it into a note, and keeps its beam flag; a rest placed on a note still leaves the note alone. Flow JSON that puts syllables on a rest raises `ArgumentError` naming its path.
 - `rexml` is now a runtime dependency, in preparation for reading MusicXML and MEI.
 - `Project#add_flow` adopts a player that a part already carries into the project's `players`, rather than leaving it out, and raises `ArgumentError` when that player belongs to another project.
 - The MusicXML and LilyPond writers render a note that crosses a barline as tied notes, one per bar, instead of raising `RenderError`. A chord ties each of its pitches, and a rest splits into consecutive rests. Fourth-species flows now render.

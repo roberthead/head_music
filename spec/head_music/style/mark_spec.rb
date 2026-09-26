@@ -17,8 +17,8 @@ describe HeadMusic::Style::Mark do
 
   describe ".for_all" do
     let(:voice) { HeadMusic::Content::Voice.new }
-    let(:note) { HeadMusic::Content::VoiceEvent.new(voice, "5:3", :quarter, "D5") }
-    let(:rest) { HeadMusic::Content::VoiceEvent.new(voice, "5:4", :quarter) }
+    let(:note) { HeadMusic::Content::NoteEvent.new(voice, "5:3", :quarter, "D5") }
+    let(:rest) { HeadMusic::Content::RestEvent.new(voice, "5:4", :quarter) }
 
     context "given a single note" do
       subject(:mark) { described_class.for_all(note) }

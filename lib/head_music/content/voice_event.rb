@@ -2,24 +2,41 @@
 module HeadMusic::Content; end
 
 # A voice event is a note, chord, or rest at a position within a voice in a
-# flow. Each one fills time, so a voice's events run end to end.
+# flow. Each one fills time, so a voice's events run end to end. It is
+# abstract: a NoteEvent sounds and a RestEvent is silent, and .build answers
+# whichever the sounds call for.
 class HeadMusic::Content::VoiceEvent
   include Comparable
 
-  attr_reader :voice, :position, :rhythmic_value, :sounds
+  attr_reader :voice, :position, :rhythmic_value
 
-  # Authored beam grouping relative to the previous placement, set after
+  # Authored beam grouping relative to the previous voice event, set after
   # construction (the Bar-style side-metadata pattern). Tri-state: nil = use
-  # the meter-derived default, true = force a beam break before this placement,
-  # false = force a beam join to the previous placement. Consumed by the
+  # the meter-derived default, true = force a beam break before this event,
+  # false = force a beam join to the previous event. Consumed by the
   # MusicXML writer, which prefers it over the default grouping.
   attr_accessor :beam_break_before
 
   delegate :flow, to: :voice
   delegate :spelling, to: :pitch, allow_nil: true
 
-  def initialize(voice, position, rhythmic_value, sound_or_sounds = nil)
-    ensure_attributes(voice, position, rhythmic_value, sound_or_sounds)
+  private_class_method :new
+
+  def self.build(voice, position, rhythmic_value, sound_or_sounds = nil)
+    sounds = HeadMusic::Content::SoundResolver.resolve(sound_or_sounds)
+    return HeadMusic::Content::RestEvent.new(voice, position, rhythmic_value) if sounds.empty?
+
+    HeadMusic::Content::NoteEvent.new(voice, position, rhythmic_value, sounds)
+  end
+
+  def initialize(voice, position, rhythmic_value)
+    @voice = voice
+    ensure_position(position)
+    @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
+  end
+
+  def sounds
+    []
   end
 
   def pitches
@@ -27,21 +44,9 @@ class HeadMusic::Content::VoiceEvent
   end
 
   # Authored sung text: at most one Syllable per verse, keyed by verse number.
-  # Empty for un-texted placements and rests. Set after construction, like
-  # beam_break_before. The MusicXML writer derives <syllabic> from these plus
-  # neighboring placements; melisma is the absence of a syllable here.
+  # Only a NoteEvent sings; the rest have none.
   def syllables
-    @syllables ||= {}
-  end
-
-  # Assigns the syllable for a verse (default verse 1). Returns self so calls
-  # chain across verses. Keys by the Syllable's coerced verse (not the raw
-  # argument) so syllable(2) finds what sing(verse: "2") stored and mixed-type
-  # keys never make syllables.keys.sort raise.
-  def sing(text, verse: 1, hyphen_after: false)
-    syllable = HeadMusic::Content::Syllable.new(text, verse: verse, hyphen_after: hyphen_after)
-    syllables[syllable.verse] = syllable
-    self
+    {}
   end
 
   def syllable(verse = 1)
@@ -54,7 +59,7 @@ class HeadMusic::Content::VoiceEvent
 
   # The top pitch of a chord (or the only pitch of a note), which melodic
   # analysis treats as the melody note. Returns nil for rests and
-  # unpitched-only placements; pitched? is the guard. Enharmonic ties
+  # unpitched-only events; pitched? is the guard. Enharmonic ties
   # resolve to the first-listed pitch (MRI's max keeps the earliest of
   # equals; a spec pins the behavior).
   def pitch
@@ -62,7 +67,7 @@ class HeadMusic::Content::VoiceEvent
   end
 
   def rest?
-    sounds.empty?
+    false
   end
 
   def sounded?
@@ -89,21 +94,6 @@ class HeadMusic::Content::VoiceEvent
     sounds.any?(&:pitched?)
   end
 
-  # Voice#place merges a same-position placement into the existing one, so a
-  # position holds at most one placement. The sound union keeps the chord free
-  # of duplicates, making repeated placement of a sound idempotent. Syllables
-  # are left untouched: a chord sings one syllable per verse, and the receiver
-  # (the placement already at this position) keeps its own.
-  def merge(other)
-    unless rhythmic_value == other.rhythmic_value
-      raise ArgumentError,
-        "cannot place a #{other.rhythmic_value} at #{position}: position occupied by a #{rhythmic_value}"
-    end
-
-    @sounds = (sounds + other.sounds).uniq.freeze
-    self
-  end
-
   def next_position
     @next_position ||= position + rhythmic_value
   end
@@ -112,8 +102,8 @@ class HeadMusic::Content::VoiceEvent
     position <=> other.position
   end
 
-  def during?(other_placement)
-    starts_during?(other_placement) || ends_during?(other_placement) || wraps?(other_placement)
+  def during?(other_event)
+    starts_during?(other_event) || ends_during?(other_event) || wraps?(other_event)
   end
 
   def to_s
@@ -147,23 +137,16 @@ class HeadMusic::Content::VoiceEvent
     sound.pitched? ? sound.to_s : {"unpitched" => sound.name_key&.to_s}
   end
 
-  def starts_during?(other_placement)
-    position >= other_placement.position && position < other_placement.next_position
+  def starts_during?(other_event)
+    position >= other_event.position && position < other_event.next_position
   end
 
-  def ends_during?(other_placement)
-    next_position > other_placement.position && next_position <= other_placement.next_position
+  def ends_during?(other_event)
+    next_position > other_event.position && next_position <= other_event.next_position
   end
 
-  def wraps?(other_placement)
-    position <= other_placement.position && next_position >= other_placement.next_position
-  end
-
-  def ensure_attributes(voice, position, rhythmic_value, sound_or_sounds)
-    @voice = voice
-    ensure_position(position)
-    @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
-    @sounds = HeadMusic::Content::SoundResolver.resolve(sound_or_sounds)
+  def wraps?(other_event)
+    position <= other_event.position && next_position >= other_event.next_position
   end
 
   def ensure_position(position)

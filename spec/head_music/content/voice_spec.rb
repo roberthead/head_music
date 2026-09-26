@@ -214,6 +214,40 @@ describe HeadMusic::Content::Voice do
       expect { voice.place("1:1", :quarter, "violin") }.to raise_error(ArgumentError, /pitched instrument/)
     end
 
+    it "places a note event for sounds and a rest event for none" do
+      expect([voice.place("1:1", :quarter, "C4"), voice.place("1:2", :quarter)].map(&:class))
+        .to eq [HeadMusic::Content::NoteEvent, HeadMusic::Content::RestEvent]
+    end
+
+    context "when a position already holds a rest" do
+      let!(:rest) { voice.place("1:1", :quarter).tap { |event| event.beam_break_before = true } }
+
+      it "replaces the rest with a note placed there" do
+        note = voice.place("1:1", :quarter, "C4")
+        expect(voice.placements).to eq [note]
+        expect(note).to be_a HeadMusic::Content::NoteEvent
+      end
+
+      it "keeps the rest's beam flag on the note that replaces it" do
+        expect(voice.place("1:1", :quarter, "C4").beam_break_before).to be true
+      end
+
+      it "leaves the rest alone when another rest is placed there" do
+        expect(voice.place("1:1", :quarter)).to be rest
+      end
+
+      it "raises for a note of another length" do
+        expect { voice.place("1:1", :half, "C4") }
+          .to raise_error(ArgumentError, "cannot place a half at 1:1:000: position occupied by a quarter")
+      end
+    end
+
+    it "leaves a note alone when a rest is placed at its position" do
+      note = voice.place("1:1", :quarter, "C4")
+      expect(voice.place("1:1", :quarter)).to be note
+      expect(note.pitches.map(&:to_s)).to eq ["C4"]
+    end
+
     it "merges a pitched placement into an unpitched one at the same position" do
       voice.place("1:1", :quarter, "snare drum")
       placement = voice.place("1:1", :quarter, "C4")
@@ -351,7 +385,7 @@ describe HeadMusic::Content::Voice do
     subject(:notes_during) { voice.notes_during(placement) }
 
     let(:pitches) { %w[C E G F A G E D C] }
-    let(:placement) { HeadMusic::Content::VoiceEvent.new(flow, position, rhythmic_value) }
+    let(:placement) { HeadMusic::Content::RestEvent.new(flow, position, rhythmic_value) }
 
     before do
       pitches.each.with_index(1) do |pitch, bar|

@@ -70,7 +70,10 @@ class HeadMusic::Content::Flow
           values.placement_sounds(placement_hash, path)
         )
         placement.beam_break_before = placement_hash["beam_break_before"] if placement_hash.key?("beam_break_before")
-        values.placement_syllables(placement_hash, path).each do |syllable|
+        syllables = values.placement_syllables(placement_hash, path)
+        raise ArgumentError, "#{path}: a rest cannot carry syllables" if placement.rest? && syllables.any?
+
+        syllables.each do |syllable|
           placement.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
         end
       end

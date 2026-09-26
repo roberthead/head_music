@@ -728,6 +728,14 @@ describe HeadMusic::Content::Flow do
         .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: sounds must be an Array, got nil/)
     end
 
+    it "raises ArgumentError with path context on a rest that carries syllables" do
+      hash = hash_with_placement(
+        "position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => [], "syllables" => [{"text" => "la", "verse" => 1}]
+      )
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: a rest cannot carry syllables/)
+    end
+
     it "raises ArgumentError when sounds is not an Array" do
       hash = hash_with_placement("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => "C4")
       expect { described_class.from_h(hash) }

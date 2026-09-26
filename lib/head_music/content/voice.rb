@@ -66,9 +66,9 @@ class HeadMusic::Content::Voice
   def place(position, rhythmic_value, sound_or_sounds = nil)
     # The melodic line is a snapshot of the notes, so any placement invalidates it.
     @melodic_line = nil
-    placement = HeadMusic::Content::VoiceEvent.new(self, position, rhythmic_value, sound_or_sounds)
+    placement = HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds)
     existing = placement_at(placement.position)
-    return existing.merge(placement) if existing
+    return merge_at(existing, placement) if existing
 
     insert_into_placements(placement)
     placement
@@ -184,6 +184,21 @@ class HeadMusic::Content::Voice
   # quadratic.
   def insertion_index(placement)
     placements.bsearch_index { |existing| existing > placement } || placements.length
+  end
+
+  # A position holds one event. Sounds placed where a note already sounds
+  # join it as a chord; a note placed on a rest takes the rest's place; a
+  # rest placed on anything leaves it as it was.
+  def merge_at(existing, placement)
+    unless existing.rhythmic_value == placement.rhythmic_value
+      raise ArgumentError,
+        "cannot place a #{placement.rhythmic_value} at #{existing.position}: position occupied by a #{existing.rhythmic_value}"
+    end
+    return existing if placement.rest?
+    return existing.merge(placement) unless existing.rest?
+
+    placement.beam_break_before = existing.beam_break_before
+    placements[placements.index(existing)] = placement
   end
 
   def insert_into_placements(placement)
