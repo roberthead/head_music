@@ -242,6 +242,30 @@ ru:
       drum_kit: барабанная установка
       hi_hat: хай-хет
       tom_tom: том-том
+    articulations:
+      staccato: стаккато
+      staccatissimo: стаккатиссимо
+      accent: акцент
+      tenuto: тенуто
+      marcato: маркато
+    dynamics:
+      "ppp": пианиссиссимо
+      "pp": пианиссимо
+      "p": пиано
+      "mp": меццо-пиано
+      "mf": меццо-форте
+      "f": форте
+      "ff": фортиссимо
+      "fff": фортиссиссимо
+      "sf": сфорцандо
+      "sfz": сфорцато
+      "rfz": ринфорцандо
+      "fp": фортепиано
+    ornaments:
+      trill: трель
+      mordent: перечёркнутый мордент
+      inverted_mordent: мордент
+      turn: группетто
     playing_techniques:
       bell: колокол
       bow: смычок

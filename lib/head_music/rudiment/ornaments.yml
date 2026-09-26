@@ -1,0 +1,13 @@
+# The mordent is the lower mordent (the main note, the note below, the main
+# note) and the inverted mordent the upper, as MusicXML and MEI name them.
+ornaments:
+  trill:
+  mordent:
+    aliases:
+      - lower_mordent
+      - mordent_lower
+  inverted_mordent:
+    aliases:
+      - upper_mordent
+      - pralltriller
+  turn:

@@ -418,6 +418,30 @@ en:
       drum_kit: drum kit
       hi_hat: hi-hat
       tom_tom: tom-tom
+    articulations:
+      staccato: staccato
+      staccatissimo: staccatissimo
+      accent: accent
+      tenuto: tenuto
+      marcato: marcato
+    dynamics:
+      "ppp": pianississimo
+      "pp": pianissimo
+      "p": piano
+      "mp": mezzo-piano
+      "mf": mezzo-forte
+      "f": forte
+      "ff": fortissimo
+      "fff": fortississimo
+      "sf": sforzando
+      "sfz": sforzato
+      "rfz": rinforzando
+      "fp": fortepiano
+    ornaments:
+      trill: trill
+      mordent: mordent
+      inverted_mordent: inverted mordent
+      turn: turn
     playing_techniques:
       aeolian: aeolian
       air: air

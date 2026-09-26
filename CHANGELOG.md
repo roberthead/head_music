@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A standalone flow's JSON keeps the players its parts carry, as a sparse `"part_players"` list with a `"player"` index on each such part, within schema 4. Project documents are unchanged: the project's own player indexes remain the record of which chair a part fills.
 - The LilyPond parser reads a `\new PianoStaff` or `\new StaffGroup` as one part: its named staves become the part's staff system, with clefs from each staff's opening `\clef`, and its voices are assigned to their staves, crossing with `\change Staff` at a barline, including between the halves of a tied note. A staff filled only with whole-bar rests keeps its place without a voice. The LilyPond writer names each voice of a staff group for its role (`\new Voice = "right hand"`), so grand-staff parts round-trip.
 - `HeadMusic::Rudiment::Soundable` names the role of anything a placement can sound. `Pitch` and `UnpitchedSound` include it, and `SoundResolver` passes any `Soundable` through unchanged.
+- `HeadMusic::Rudiment::Articulation` (staccato, staccatissimo, accent, tenuto, marcato), `Ornament` (trill, mordent, inverted mordent, turn), and `Dynamic` (the levels *ppp* to *fff* and the accents *sf*, *sfz*, *rfz*, *fp*) are catalogs read from YAML, found with `.get` by key or alias in any case, and named in every shipped locale. `mordent` is the lower mordent and `inverted_mordent` the upper.
 
 ### Changed
 

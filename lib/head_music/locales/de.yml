@@ -299,6 +299,30 @@ de:
       drum_kit: Schlagzeug
       hi_hat: Hi-Hat
       tom_tom: Tom-Tom
+    articulations:
+      staccato: Staccato
+      staccatissimo: Staccatissimo
+      accent: Akzent
+      tenuto: Tenuto
+      marcato: Marcato
+    dynamics:
+      "ppp": pianississimo
+      "pp": pianissimo
+      "p": piano
+      "mp": mezzo-piano
+      "mf": mezzo-forte
+      "f": forte
+      "ff": fortissimo
+      "fff": fortississimo
+      "sf": sforzando
+      "sfz": sforzato
+      "rfz": rinforzando
+      "fp": fortepiano
+    ornaments:
+      trill: Triller
+      mordent: Mordent
+      inverted_mordent: Pralltriller
+      turn: Doppelschlag
     playing_techniques:
       bell: Glocke
       bow: Bogen

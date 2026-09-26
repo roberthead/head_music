@@ -1,0 +1,27 @@
+# Levels are listed from softest to loudest.
+dynamics:
+  "ppp":
+    kind: level
+  "pp":
+    kind: level
+  "p":
+    kind: level
+  "mp":
+    kind: level
+  "mf":
+    kind: level
+  "f":
+    kind: level
+  "ff":
+    kind: level
+  "fff":
+    kind: level
+  "sf":
+    kind: accent
+  "sfz":
+    kind: accent
+  "rfz":
+    kind: accent
+  "fp":
+    kind: accent
+    level_after: "p"

@@ -295,6 +295,30 @@ it:
       drum_kit: batteria
       hi_hat: hi-hat
       tom_tom: tom-tom
+    articulations:
+      staccato: staccato
+      staccatissimo: staccatissimo
+      accent: accento
+      tenuto: tenuto
+      marcato: marcato
+    dynamics:
+      "ppp": pianississimo
+      "pp": pianissimo
+      "p": piano
+      "mp": mezzo-piano
+      "mf": mezzo-forte
+      "f": forte
+      "ff": fortissimo
+      "fff": fortississimo
+      "sf": sforzando
+      "sfz": sforzato
+      "rfz": rinforzando
+      "fp": fortepiano
+    ornaments:
+      trill: trillo
+      mordent: mordente
+      inverted_mordent: mordente superiore
+      turn: gruppetto
     playing_techniques:
       bell: campana
       bow: arco
