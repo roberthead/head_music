@@ -43,7 +43,7 @@ class HeadMusic::Content::Layout
     end
 
     def written_voice(voice_hash, part)
-      voice_hash.merge("placements" => voice_hash["placements"].map { |voice_event_hash| written_voice_event(voice_event_hash, part) })
+      voice_hash.merge("voice_events" => voice_hash["voice_events"].map { |voice_event_hash| written_voice_event(voice_event_hash, part) })
     end
 
     def written_voice_event(voice_event_hash, part)

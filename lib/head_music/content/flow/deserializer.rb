@@ -62,8 +62,8 @@ class HeadMusic::Content::Flow
     end
 
     def build_voice_events(voice, voice_hash, voice_path)
-      Array(voice_hash["placements"]).each_with_index do |voice_event_hash, voice_event_index|
-        path = "#{voice_path}.placements[#{voice_event_index}]"
+      Array(voice_hash["voice_events"]).each_with_index do |voice_event_hash, voice_event_index|
+        path = "#{voice_path}.voice_events[#{voice_event_index}]"
         voice_event = voice.place(
           values.position(voice_event_hash["position"], path),
           values.rhythmic_value(voice_event_hash["rhythmic_value"], path),

@@ -6,7 +6,7 @@ module HeadMusic::Content; end
 # stand alone; containment below is not: every voice is in a part, and every
 # part is in a flow.
 class HeadMusic::Content::Flow
-  SCHEMA_VERSION = 4
+  SCHEMA_VERSION = 5
   DEFAULT_NAME = "Composition"
 
   attr_reader :name, :parts, :origin, :comments, :timeline
@@ -26,6 +26,10 @@ class HeadMusic::Content::Flow
 
   def self.from_json(json)
     from_h(JSON.parse(json))
+  end
+
+  def self.from_v4_h(hash)
+    from_h(V4Upgrade.flow(hash))
   end
 
   def initialize(

@@ -135,17 +135,34 @@ describe HeadMusic::Content::Project do
   end
 
   describe "schema_version" do
-    it "carries version 4" do
-      expect(project.to_h["schema_version"]).to eq 4
+    it "carries version 5" do
+      expect(project.to_h["schema_version"]).to eq 5
     end
 
     it "refuses another version" do
       expect { described_class.from_h({"schema_version" => 3}) }
-        .to raise_error ArgumentError, /unsupported schema_version: 3 \(supported: 4\)/
+        .to raise_error ArgumentError, /unsupported schema_version: 3 \(supported: 5\)/
     end
 
     it "refuses non-Hash input" do
       expect { described_class.from_h("nope") }.to raise_error ArgumentError, /expected a Hash/
+    end
+
+    it "points a v4 document at the v4 reader" do
+      expect { described_class.from_h({"schema_version" => 4}) }
+        .to raise_error ArgumentError, /unsupported schema_version: 4 .*Project\.from_v4_h/
+    end
+
+    it "reads a v4 document with the v4 reader" do
+      project.add_flow(HeadMusic::Content::Flow.new(name: "Air").tap { |air| air.add_voice.place("1:1", :whole, "C4") })
+      v4 = project.to_h.merge("schema_version" => 4)
+      v4["flows"] = v4["flows"].map { |flow_hash| SchemaV4.flow_hash(flow_hash) }
+      expect(described_class.from_v4_h(v4).to_h).to eq project.to_h
+    end
+
+    it "leaves a flow of another version in a v4 document for the flow reader to refuse" do
+      v4 = {"schema_version" => 4, "flows" => [{"schema_version" => 3}]}
+      expect { described_class.from_v4_h(v4) }.to raise_error ArgumentError, /unsupported schema_version: 3/
     end
   end
 

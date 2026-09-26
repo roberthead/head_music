@@ -531,7 +531,7 @@ describe HeadMusic::Content::Voice do
       let(:expected_hash) do
         {
           "role" => nil,
-          "placements" => [
+          "voice_events" => [
             {"position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4"]},
             {"position" => "1:2:000", "rhythmic_value" => "quarter", "sounds" => []}
           ]

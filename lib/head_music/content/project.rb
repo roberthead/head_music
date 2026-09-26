@@ -15,7 +15,7 @@ class HeadMusic::Content::Project
 
     hash = hash.deep_transform_keys(&:to_s)
     version = hash["schema_version"]
-    raise ArgumentError, "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})" unless version == SCHEMA_VERSION
+    raise ArgumentError, unsupported_version_message(version) unless version == SCHEMA_VERSION
 
     new(name: hash["name"], credits: Array(hash["credits"])).tap do |project|
       Array(hash["players"]).each { |player_hash| project.add_player(name: player_hash["name"]) }
@@ -31,6 +31,17 @@ class HeadMusic::Content::Project
   def self.from_json(json)
     from_h(JSON.parse(json))
   end
+
+  def self.from_v4_h(hash)
+    from_h(HeadMusic::Content::Flow::V4Upgrade.project(hash))
+  end
+
+  def self.unsupported_version_message(version)
+    message = "unsupported schema_version: #{version.inspect} (supported: #{SCHEMA_VERSION})"
+    message += "; read it with Project.from_v4_h and save it again" if version == HeadMusic::Content::Flow::V4Upgrade::VERSION
+    message
+  end
+  private_class_method :unsupported_version_message
 
   def initialize(name: nil, credits: [])
     @name = name || "Project"

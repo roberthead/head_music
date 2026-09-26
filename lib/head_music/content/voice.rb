@@ -134,7 +134,7 @@ class HeadMusic::Content::Voice
   end
 
   def to_h
-    hash = {"role" => role&.to_s, "placements" => voice_events.map(&:to_h)}
+    hash = {"role" => role&.to_s, "voice_events" => voice_events.map(&:to_h)}
     assignments = staff_assignments_to_h
     hash["staff_assignments"] = assignments unless assignments.empty?
     hash

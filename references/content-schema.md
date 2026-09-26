@@ -1,4 +1,4 @@
-# Content Schema 4: Object Model and Serialized Document
+# Content Schema 5: Object Model and Serialized Document
 
 The `HeadMusic::Content` object model as of 21.1.0, and the document it serializes to. Intended as the reference for anyone reading or writing schema-4 JSON, extending the model, or deciding where a new attribute belongs. Constructor signatures and key names are quoted from source on `main` as of 21.1.0.
 
@@ -36,13 +36,13 @@ Project ──owns──▶ Player[]            authored order; a chair, not a p
                 │                         ├─ map by bar ▶ Staff      (one of the part's staves; serialized by index)
                 │                         └──owns──▶ VoiceEvent[]    kept in position order
                 │                                      ├──▶ Position          frozen value
-                │                                      ├──▶ sounds[]          Pitch | UnpitchedSound; [] is a rest
+                │                                      ├──▶ sounds[]          Soundable: Pitch | UnpitchedSound; [] is a rest
                 │                                      └──▶ syllables{verse}  Syllable
                 ├──owns──▶ Bar[]            sparse, by number; repeat state only
                 └──owns──▶ Comment[]
 ```
 
-"Map by bar" means a `HeadMusic::Time::EventMap` keyed by the bar's downbeat position. Notes and chords have no class of their own: a chord is a placement with more than one pitched sound, and a rest is one with none.
+"Map by bar" means a `HeadMusic::Time::EventMap` keyed by the bar's downbeat position. A voice event is a `NoteEvent` or a `RestEvent`: a chord is a note event with more than one pitched sound, and a rest event has none.
 
 ---
 
@@ -277,24 +277,24 @@ A key signature event holds a fifths `Integer` and an optional tonal context (`K
 |---|---|---|
 | `part` | *back-ref* `Part`, minted if absent | 1 |
 | `role` | String or nil | 0..1 |
-| `placements` | `VoiceEvent`, owned, position order, binary-search insert | 0..* |
+| `voice_events` | `NoteEvent` or `RestEvent`, owned, position order, binary-search insert | 0..* |
 | `staff_assignment_map` | `Staff` by bar, no default | 0..* |
 | `melodic_line` | derived snapshot: pitches, range, leaps | 1 |
 
-`assign_staff(bar, staff)` raises unless the staff is in the part's system at that bar. `cross_to(staff, from:)` is the same call in spoken order. `place` merges into an existing placement at the same position.
+`assign_staff(bar, staff)` raises unless the staff is in the part's system at that bar. `cross_to(staff, from:)` is the same call in spoken order. `place` merges into an existing voice event at the same position: sounds join a note event as a chord, a note replaces a rest, and a rest leaves either alone.
 
 ### VoiceEvent (`content/voice_event.rb`)
 
-`VoiceEvent.new(voice, position, rhythmic_value, sound_or_sounds = nil)`
+`VoiceEvent.build(voice, position, rhythmic_value, sound_or_sounds = nil)` answers a `NoteEvent` when there are sounds and a `RestEvent` when there are none. `VoiceEvent` itself is abstract.
 
 | Attribute | Type | Cardinality |
 |---|---|---|
 | `voice` | *back-ref* `Voice` | 1 |
 | `position` | `Position`, frozen | 1 |
 | `rhythmic_value` | `Rudiment::RhythmicValue` | 1 |
-| `sounds` | `Pitch` or `UnpitchedSound`, frozen, deduplicated; empty is a rest | 0..* |
+| `sounds` | `Soundable` (`Pitch` or `UnpitchedSound`), frozen, deduplicated; at least one on a `NoteEvent`, none on a `RestEvent` | 0..* |
 | `beam_break_before` | `true`, `false`, or `nil` for the meter default | 0..1 |
-| `syllables` | `Syllable` keyed by verse `Integer` | 0..* |
+| `syllables` | `Syllable` keyed by verse `Integer`; a `RestEvent` refuses one | 0..* |
 
 Comparable by position only. `pitch` is the top note. Predicates: `rest?`, `note?`, `chord?`, `pitched?`, `sung?`.
 
@@ -361,7 +361,7 @@ Repeat structure only. Key and meter storage moved to the timeline in this relea
 
 ```jsonc
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "name": "Suite",                                // Project name, defaults to "Project"
   "players": [ { "name": "piano" }, { "name": null } ],
   "credits": [                                    // this version's people: arranger, transcriber,
@@ -373,7 +373,7 @@ Repeat structure only. Key and meter storage moved to the timeline in this relea
     {                                             // Flow#to_h, plus one key the project adds:
       "players": [0, null],                       // parallel to "parts": index into project players; null = no player
 
-      "schema_version": 4,
+      "schema_version": 5,
       "name": "Allemande",
       "composer": "Johann Sebastian Bach",        // derived: the work's composer, else the authored string, else null
       "origin": null,
@@ -427,7 +427,7 @@ Repeat structure only. Key and meter storage moved to the timeline in this relea
           "voices": [
             {
               "role": "right hand",               // or null
-              "placements": [
+              "voice_events": [
                 {
                   "position": "1:1:000",          // bar:count:tick, ":subtick" only when non-zero
                   "rhythmic_value": "eighth",     // "half tied to eighth" for ties
@@ -487,7 +487,7 @@ Repeat structure only. Key and meter storage moved to the timeline in this relea
 | Person | `full_name`, `sort_name`, `birth_year` (nullable), `death_year` (nullable) | |
 | timeline | `meter`, `key_signature`, `tempo`, `meter_changes`, `key_signature_changes`, `tempo_changes` | |
 | Part | `voices` | `player` (never inside a project document), `instrument`, `instrument_changes`, `staff_system`, `staff_system_changes` |
-| Voice | `role` (nullable), `placements` | `staff_assignments` |
+| Voice | `role` (nullable), `voice_events` | `staff_assignments` |
 | VoiceEvent | `position`, `rhythmic_value`, `sounds` | `beam_break_before`, `syllables` |
 | Syllable | `text` | `verse` when 1, `hyphen_after` when false |
 | StaffSystem | `bracket`, `staves` | |
@@ -505,11 +505,17 @@ Written by `Position#code` as `"<bar>:<count>:<tick, three digits>"`, with `":<s
 
 ### Reading order
 
-`Project.from_h` reads players, then flows, then layouts, because a layout names flows and players by index. `HashDeserializer#build` reads the citations first — `"work"` through `Work.from_h` and `"source"` through `Publication.from_h`, each skipped when absent — then timeline changes, then parts (instrument changes, staff system changes, voices, placements, staff assignments), then repeat flags, then comments. The timeline must come first because a position string such as `"2:5:000"` only parses in a bar governed by a meter with five counts. Unknown top-level keys are ignored. `Project.from_h` and `Flow.from_h` both refuse any version but 4.
+`Project.from_h` reads players, then flows, then layouts, because a layout names flows and players by index. `HashDeserializer#build` reads the citations first — `"work"` through `Work.from_h` and `"source"` through `Publication.from_h`, each skipped when absent — then timeline changes, then parts (instrument changes, staff system changes, voices, voice events, staff assignments), then repeat flags, then comments. The timeline must come first because a position string such as `"2:5:000"` only parses in a bar governed by a meter with five counts. Unknown top-level keys are ignored. `Project.from_h` and `Flow.from_h` both refuse any version but 5, and name the v4 reader when handed a v4 document.
 
 ---
 
-## 5. What Moved from Schema 3
+## 5. What Changed from Schemas 3 and 4
+
+### From schema 4 (22.x)
+
+Schema 5 (23.0.0) renamed each voice's `"placements"` to `"voice_events"` and changed nothing else. `Flow.from_v4_h` and `Project.from_v4_h` read a v4 document by renaming the key, and are kept through 23.x so a persisted document can be read and saved again.
+
+### From schema 3 (20.x)
 
 `Flow.from_v3_h` read the 20.x document through 21.x and was removed in 22.0.0, so a v3 document is read with head_music 21.x and saved again. The difference is structural, not a renaming of keys.
 
@@ -540,7 +546,7 @@ Three known limits of the schema as shipped, each visible in the writer and read
 
 The rule the version number follows, stated once so that the next key does not have to relitigate it.
 
-- **A rename or a container restructure bumps the schema version.** Both bumps so far were earned that way: schema 3 renamed each placement's `pitches` to `sounds`, and schema 4 moved key, meter, and tempo off the bars and onto a timeline, and voices under parts. An old reader handed such a document reads it *wrongly*, so it must be told to refuse.
+- **A rename or a container restructure bumps the schema version.** Every bump so far was earned that way: schema 3 renamed each placement's `pitches` to `sounds`, schema 4 moved key, meter, and tempo off the bars and onto a timeline, and voices under parts, and schema 5 renamed each voice's `placements` to `voice_events`. An old reader handed such a document reads it *wrongly*, so it must be told to refuse.
 - **A new optional key does not.** `Flow#to_h` and `Project#to_h` are read by `HashDeserializer#build` and `Project.from_h`, which look up the keys they know and never enumerate the hash, so an unrecognized key costs nothing. A 21.0.0 reader accepts a 21.1.0 document and loses only the information it has no home for — and `"composer"` still carries the derived name, so even that loss does not reach the page.
 
 Schema 4 therefore covers 21.0.0 and 21.1.0 alike. `"work"`, `"source"`, `"credits"`, and `"layouts"` were added under it, and a document from either version reads in either direction. Bumping to 5 would have made 21.0.0 *reject* documents it can read perfectly well, and forced a second retained reader alongside `Flow.from_v3_h`, which was kept until 22.0.0.

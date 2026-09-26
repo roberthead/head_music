@@ -363,7 +363,7 @@ describe HeadMusic::Content::Flow do
       [
         {
           "role" => "melody",
-          "placements" => [
+          "voice_events" => [
             {"position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["D4"]},
             {"position" => "1:2:000", "rhythmic_value" => "quarter", "sounds" => []}
           ]
@@ -393,7 +393,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "carries schema version 4" do
-      expect(hash["schema_version"]).to eq 4
+      expect(hash["schema_version"]).to eq 5
     end
 
     it "includes all top-level keys" do
@@ -465,8 +465,8 @@ describe HeadMusic::Content::Flow do
 
     def single_voice_event_hash(voice_event_hash)
       {
-        "schema_version" => 4,
-        "parts" => [{"voices" => [{"role" => nil, "placements" => [voice_event_hash]}]}]
+        "schema_version" => 5,
+        "parts" => [{"voices" => [{"role" => nil, "voice_events" => [voice_event_hash]}]}]
       }
     end
 
@@ -475,7 +475,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "accepts a symbol-keyed hash" do
-      hash = {schema_version: 4, name: "Symbolic", parts: [], bars: [], comments: []}
+      hash = {schema_version: 5, name: "Symbolic", parts: [], bars: [], comments: []}
       expect(described_class.from_h(hash).name).to eq "Symbolic"
     end
 
@@ -498,41 +498,41 @@ describe HeadMusic::Content::Flow do
     end
 
     it "raises on an unsupported schema_version" do
-      expect { described_class.from_h("schema_version" => 5) }
-        .to raise_error(ArgumentError, /unsupported schema_version: 5/)
+      expect { described_class.from_h("schema_version" => 6) }
+        .to raise_error(ArgumentError, /unsupported schema_version: 6/)
     end
 
     it "raises with path context on an unknown pitch" do
       hash = single_voice_event_hash("position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["H#4"])
       expect { described_class.from_h(hash) }
-        .to raise_error(ArgumentError, 'parts[0].voices[0].placements[0].sounds[0]: unknown pitch "H#4"')
+        .to raise_error(ArgumentError, 'parts[0].voices[0].voice_events[0].sounds[0]: unknown pitch "H#4"')
     end
 
     it "raises with path context on an unknown rhythmic value" do
       hash = single_voice_event_hash("position" => "1:1:000", "rhythmic_value" => "flurble", "sounds" => ["C4"])
       expect { described_class.from_h(hash) }
-        .to raise_error(ArgumentError, /parts\[0\]\.voices\[0\]\.placements\[0\]: unknown rhythmic value "flurble"/)
+        .to raise_error(ArgumentError, /parts\[0\]\.voices\[0\]\.voice_events\[0\]: unknown rhythmic value "flurble"/)
     end
 
     it "raises with path context on a negative bar number" do
-      hash = {"schema_version" => 4, "bars" => [{"number" => -1}]}
+      hash = {"schema_version" => 5, "bars" => [{"number" => -1}]}
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /bars\[0\]: bar number must be an Integer of at least 0/)
     end
 
     it "raises with path context on a non-integer bar number" do
-      hash = {"schema_version" => 4, "bars" => [{"number" => "2"}]}
+      hash = {"schema_version" => 5, "bars" => [{"number" => "2"}]}
       expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /bars\[0\]: bar number/)
     end
 
     it "raises with path context on an unparseable meter" do
-      hash = {"schema_version" => 4, "timeline" => {"meter_changes" => [{"number" => 2, "meter" => "garbage"}]}}
+      hash = {"schema_version" => 5, "timeline" => {"meter_changes" => [{"number" => 2, "meter" => "garbage"}]}}
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /timeline\.meter_changes\[0\]: unknown meter "garbage"/)
     end
 
     it "raises with path context on an unparseable key signature" do
-      hash = {"schema_version" => 4, "timeline" => {"key_signature" => "garbage nonsense"}}
+      hash = {"schema_version" => 5, "timeline" => {"key_signature" => "garbage nonsense"}}
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /timeline\.key_signature: unknown key signature "garbage nonsense"/)
     end

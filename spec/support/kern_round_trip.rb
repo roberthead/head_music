@@ -67,7 +67,7 @@ module KernRoundTripHelper
   def kern_voice(voice, staves)
     {
       "staves" => voice.voice_events.reject(&:rest?).map { |voice_event| staves.index { |staff| staff.equal?(voice.staff_at(voice_event.position.bar_number)) } }.uniq,
-      "placements" => kern_voice_events(voice)
+      "voice_events" => kern_voice_events(voice)
     }
   end
 

@@ -109,8 +109,8 @@ describe HeadMusic::Content::Flow::SchemaValues do
     end
 
     it "raises with path context on an unknown rhythmic value" do
-      expect { values.rhythmic_value("sesquialtera", "voices[0].placements[0]") }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: unknown rhythmic value "sesquialtera"/)
+      expect { values.rhythmic_value("sesquialtera", "voices[0].voice_events[0]") }
+        .to raise_error(ArgumentError, /voices\[0\]\.voice_events\[0\]: unknown rhythmic value "sesquialtera"/)
     end
   end
 
@@ -125,13 +125,13 @@ describe HeadMusic::Content::Flow::SchemaValues do
     end
 
     it "raises when sounds is not an Array" do
-      expect { values.voice_event_sounds({"sounds" => nil}, "voices[0].placements[0]") }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: sounds must be an Array, got nil/)
+      expect { values.voice_event_sounds({"sounds" => nil}, "voices[0].voice_events[0]") }
+        .to raise_error(ArgumentError, /voices\[0\]\.voice_events\[0\]: sounds must be an Array, got nil/)
     end
 
     it "raises with element path context on an unknown pitch" do
-      expect { values.voice_event_sounds({"sounds" => ["C4", "H#4"]}, "voices[0].placements[0]") }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[1\]: unknown pitch "H#4"/)
+      expect { values.voice_event_sounds({"sounds" => ["C4", "H#4"]}, "voices[0].voice_events[0]") }
+        .to raise_error(ArgumentError, /voices\[0\]\.voice_events\[0\]\.sounds\[1\]: unknown pitch "H#4"/)
     end
 
     it "resolves a generic unpitched sound" do
@@ -140,8 +140,8 @@ describe HeadMusic::Content::Flow::SchemaValues do
     end
 
     it "raises on an unpitched hash with extra keys" do
-      expect { values.voice_event_sounds({"sounds" => [{"unpitched" => nil, "y" => 1}]}, "voices[0].placements[0]") }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.sounds\[0\]: unknown sound .*"y"/)
+      expect { values.voice_event_sounds({"sounds" => [{"unpitched" => nil, "y" => 1}]}, "voices[0].voice_events[0]") }
+        .to raise_error(ArgumentError, /voices\[0\]\.voice_events\[0\]\.sounds\[0\]: unknown sound .*"y"/)
     end
   end
 
@@ -157,28 +157,28 @@ describe HeadMusic::Content::Flow::SchemaValues do
     end
 
     it "raises when syllables is not an Array" do
-      expect { values.voice_event_syllables({"syllables" => "la"}, "voices[0].placements[0]") }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]: syllables must be an Array, got "la"/)
+      expect { values.voice_event_syllables({"syllables" => "la"}, "voices[0].voice_events[0]") }
+        .to raise_error(ArgumentError, /voices\[0\]\.voice_events\[0\]: syllables must be an Array, got "la"/)
     end
 
     it "raises with element path context when an entry is not a Hash" do
-      expect { values.voice_event_syllables({"syllables" => ["la"]}, "voices[0].placements[0]") }
-        .to raise_error(ArgumentError, /voices\[0\]\.placements\[0\]\.syllables\[0\]: syllable must be a Hash/)
+      expect { values.voice_event_syllables({"syllables" => ["la"]}, "voices[0].voice_events[0]") }
+        .to raise_error(ArgumentError, /voices\[0\]\.voice_events\[0\]\.syllables\[0\]: syllable must be a Hash/)
     end
 
     it "raises on empty text" do
-      expect { values.voice_event_syllables({"syllables" => [{"text" => ""}]}, "voices[0].placements[0]") }
+      expect { values.voice_event_syllables({"syllables" => [{"text" => ""}]}, "voices[0].voice_events[0]") }
         .to raise_error(ArgumentError, /syllables\[0\]: syllable text must be a non-empty String/)
     end
 
     it "raises on a non-positive verse" do
-      expect { values.voice_event_syllables({"syllables" => [{"text" => "la", "verse" => 0}]}, "voices[0].placements[0]") }
+      expect { values.voice_event_syllables({"syllables" => [{"text" => "la", "verse" => 0}]}, "voices[0].voice_events[0]") }
         .to raise_error(ArgumentError, /syllables\[0\]: verse must be a positive Integer, got 0/)
     end
 
     it "raises on a duplicate verse" do
       expect {
-        values.voice_event_syllables({"syllables" => [{"text" => "la"}, {"text" => "dee"}]}, "voices[0].placements[0]")
+        values.voice_event_syllables({"syllables" => [{"text" => "la"}, {"text" => "dee"}]}, "voices[0].voice_events[0]")
       }.to raise_error(ArgumentError, /syllables\[1\]: duplicate verse 1/)
     end
   end

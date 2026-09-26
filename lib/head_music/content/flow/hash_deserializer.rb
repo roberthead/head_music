@@ -1,5 +1,5 @@
 class HeadMusic::Content::Flow
-  # Rebuilds a flow from a schema v4 hash, in dependency order: the timeline
+  # Rebuilds a flow from a schema v5 hash, in dependency order: the timeline
   # first, because a position string rolls its counts and ticks over through the
   # meter map; then parts, because a voice's staff assignment names a staff of
   # its part's system; then voice events; then repeat flags, which need their bar
@@ -9,11 +9,11 @@ class HeadMusic::Content::Flow
 
     private
 
-    # No recipe migrates v3 in place, so a v3 document is told which release
-    # still reads it rather than merely rejected.
+    # An older document is told how to read it rather than merely rejected.
     def unsupported_version_message(version)
       message = super
       message += "; read it with Flow.from_v3_h in head_music 21.x and save it again" if version == 3
+      message += "; read it with Flow.from_v4_h and save it again" if version == V4Upgrade::VERSION
       message
     end
 

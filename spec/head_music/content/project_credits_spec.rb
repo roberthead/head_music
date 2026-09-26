@@ -70,7 +70,7 @@ describe HeadMusic::Content::Project do
 
   it "reads a 21.0.0-shaped document that names no credits and no works" do
     hash = {"schema_version" => 4, "name" => "Old", "players" => [], "flows" => []}
-    project = described_class.from_h(hash)
+    project = described_class.from_v4_h(hash)
     expect(project.credits).to be_empty
     expect(project.works).to eq []
   end
