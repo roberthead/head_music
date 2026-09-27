@@ -1,13 +1,8 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
-  # Replays a Document's voice streams onto a fresh flow.
-  #
-  # Every voice event lands at the voice's next position, so bar checks and
-  # key or meter commands are verified against where the music actually
-  # is, the way LilyPond verifies them at compile time.
+  # Replays a Document's voice streams onto a fresh flow, then the dynamics
+  # its \new Dynamics contexts hold for their parts.
   class FlowBuilder
-    TICKS_PER_WHOLE_NOTE = HeadMusic::Rudiment::Rhythm::PPQN * 4
-
     # One voice's place in the replay: the events it has left, and the
     # voice they are being placed on.
     class Cursor
@@ -57,244 +52,31 @@ module HeadMusic::Notation::LilyPond
         name: document.title, composer: document.composer,
         key_signature: document.first_key_signature, meter: document.first_meter
       )
-      replay(streams.filter_map { |stream| cursor_for(flow, stream) })
-      document.dynamics_streams.each { |stream| place_part_dynamics(flow, stream) }
+      layout = PartLayout.new(flow, document)
+      placer = EventPlacer.new(layout)
+      replay(streams.filter_map { |stream| cursor_for(layout, stream) }, placer)
+      part_dynamics = PartDynamics.new(flow, layout, placer)
+      document.dynamics_streams.each { |stream| part_dynamics.place(stream) }
       flow
     end
 
-    # A staff group is one part, whose staff system holds the group's staves
-    # in order. A silent staff keeps its place in the system without a voice,
-    # since that is how the writer renders a staff nobody is written on.
-    def cursor_for(flow, stream)
-      group_staff = stream.group_staff
-      unless group_staff
-        voices_by_stream[stream] = flow.add_voice(role: stream.role)
-        return Cursor.new(stream, voices_by_stream[stream])
-      end
-
-      part = part_for(flow, group_staff.group)
-      return if stream.silent? && stream.role.nil?
-
-      voice = part.add_voice(role: stream.role)
-      staff = staves_by_group_staff[group_staff]
-      voice.assign_staff(HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR, staff) unless staff.equal?(part.staff_system.first_staff)
-      Cursor.new(stream, voice)
-    end
-
-    # Placed once the voices are, so every meter change is in force. The
-    # context's own spacers say where each level falls, so it keeps its exact
-    # position, even in the middle of a note.
-    def place_part_dynamics(flow, stream)
-      parts = dynamics_parts(stream.dynamics_target)
-      position = HeadMusic::Content::Position.new(flow, 1, 1, 0)
-      stream.events.each do |event|
-        check_bar(event, position) if event.kind == :bar_check
-        next unless event.kind == :spacer
-
-        parts.each do |part|
-          place_level(part, position, event)
-          place_accent(part, position, event.marks.note_dynamic)
-        end
-        position = after_spacer(flow, position, event)
-      end
-    end
-
-    # A part holds no accents, so one between the staves goes on each note of
-    # the part that attacks there, as kern's **dynam does. A note's own wins.
-    def place_accent(part, position, note_dynamic)
-      return unless note_dynamic
-
-      part.voices.flat_map(&:note_events).each do |note_event|
-        note_event.note_dynamic ||= note_dynamic if note_event.position == position
-      end
-    end
-
-    # A staff outside a group may hold several voices, each read as a part of
-    # its own, so its dynamics go to each of them.
-    def dynamics_parts(target)
-      return [parts_by_group[target]].compact if target.is_a?(Document::Group)
-
-      target.filter_map { |stream| voices_by_stream[stream]&.part }
-    end
-
-    def after_spacer(flow, position, event)
-      ticks = event.fraction * TICKS_PER_WHOLE_NOTE
-      raise unsupported("A spacer of #{event.fraction} whole notes falls between ticks", event) unless ticks.denominator == 1
-
-      HeadMusic::Content::Position.new(flow, position.bar_number, position.count, position.tick + ticks.to_i)
-    end
-
-    def voices_by_stream
-      @voices_by_stream ||= {}.compare_by_identity
-    end
-
-    def part_for(flow, group)
-      parts_by_group[group] ||= begin
-        staves = group.staves.map { |group_staff| staves_by_group_staff[group_staff] = HeadMusic::Content::Staff.new(clef: clef_key(group_staff)) }
-        part = flow.add_part(staff_system: HeadMusic::Content::StaffSystem.new(staves: staves, bracket: group.bracket))
-        staves_by_name[part] = group.staves.zip(staves).reverse.to_h { |group_staff, staff| [group_staff.name, staff] }
-        part
-      end
-    end
-
-    # The clef a staff's first voice opens with, where the writer puts it.
-    def clef_key(group_staff)
-      name = document.streams.select { |stream| stream.group_staff.equal?(group_staff) }.filter_map(&:opening_clef).first
-      name && clef_keys[name]
-    end
-
-    def clef_keys
-      @clef_keys ||= VoiceWriter::CLEF_NAMES.to_h { |key, name| [name.delete('"'), key] }
-    end
-
-    def parts_by_group
-      @parts_by_group ||= {}.compare_by_identity
-    end
-
-    def staves_by_group_staff
-      @staves_by_group_staff ||= {}.compare_by_identity
-    end
-
-    def staves_by_name
-      @staves_by_name ||= {}.compare_by_identity
+    def cursor_for(layout, stream)
+      voice = layout.voice_for(stream)
+      voice && Cursor.new(stream, voice)
     end
 
     # The voices advance together rather than one after another, so a
     # \time or \key that one staff carries is in force before another
     # staff places the bar it governs. Replaying a whole voice at a time
     # would leave the earlier voices positioned under the old meter.
-    def replay(cursors)
+    def replay(cursors, placer)
       cursors = cursors.reject(&:done?)
       until cursors.empty?
         cursor = cursors.min_by(&:sort_key)
-        apply(cursor.event, cursor.voice)
+        placer.place(cursor.event, cursor.voice)
         cursor.advance
         cursors = cursors.reject(&:done?)
       end
-    end
-
-    def apply(event, voice)
-      case event.kind
-      when :note then place_note(event, voice)
-      when :rest then apply_marks(voice.place(voice.next_position, event.rhythmic_value), event)
-      when :whole_bar_rest then place_whole_bar_rest(event, voice)
-      else apply_marker(event, voice, voice.next_position)
-      end
-    end
-
-    def apply_marker(event, voice, position)
-      case event.kind
-      when :bar_check then check_bar(event, position)
-      when :key then apply_change(event, voice.flow, position, "\\key", :key_signature, :key_signature_at, :change_key_signature)
-      when :time then apply_change(event, voice.flow, position, "\\time", :meter, :meter_at, :change_meter)
-      when :staff_change then change_staff(event, voice, position)
-      when :level then place_level(voice, position, event)
-      end
-    end
-
-    # Marks are applied where their event was placed, captured before the
-    # voice moves on. A rest keeps only a dynamic level.
-    def apply_marks(voice_event, event)
-      marks = event.marks
-      unless voice_event.rest?
-        voice_event.articulate(*marks.articulations).embellish(*marks.ornaments)
-        voice_event.note_dynamic = marks.note_dynamic if marks.note_dynamic
-      end
-      place_level(voice_event.voice, voice_event.position, event)
-    end
-
-    def place_level(target, position, event)
-      level = event.marks.level
-      target.place_dynamic(position, level) if level
-    rescue ArgumentError => error
-      raise ParseError.new(error.message, line_number: event.line)
-    end
-
-    # A crossing is a staff assignment from a bar onward, so it can only be
-    # made at a bar's start, and only to a staff of the voice's own group.
-    def change_staff(event, voice, position)
-      staff = staves_by_name.fetch(voice.part, {})[event.staff_name]
-      unless staff
-        raise ParseError.new(%(No staff named "#{event.staff_name}" in this voice's staff group), line_number: event.line)
-      end
-
-      voice.cross_to(staff, from: change_bar_number(event, position, "\\change Staff"))
-    end
-
-    # What was written between the halves of a tied note takes effect where it
-    # was written, in order, so a meter change is in force before the position
-    # of anything after it is worked out.
-    def place_note(event, voice)
-      position = voice.next_position
-      event.inner_events.each { |inner| apply_marker(inner.event, voice, position + inner.elapsed) }
-      apply_marks(voice.place(position, event.rhythmic_value, event.pitches), event)
-    end
-
-    def check_bar(event, position)
-      return if bar_start?(position)
-
-      raise ParseError.new(
-        "Bar check failed at: #{elapsed_fraction(position)} in bar #{position.bar_number}",
-        line_number: event.line, snippet: "|"
-      )
-    end
-
-    # A whole-bar rest is one voice event filling the bar it starts; a
-    # longer span (R1*2 is two bars in LilyPond) has no single voice event
-    # representation yet.
-    def place_whole_bar_rest(event, voice)
-      position = voice.next_position
-      unless bar_start?(position)
-        raise unsupported("A whole-bar rest must start a bar", event)
-      end
-
-      meter = voice.flow.meter_at(position.bar_number)
-      bar_fraction = Rational(meter.top_number, meter.bottom_number)
-      rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(event.fraction)
-      unless event.fraction == bar_fraction && rhythmic_value
-        raise unsupported("Multi-bar rests are not yet supported (#{whole_notes(event.fraction)} whole notes in #{meter})", event)
-      end
-
-      apply_marks(voice.place(position, rhythmic_value), event)
-    end
-
-    # A change already in force at its bar is a no-op (the writer repeats
-    # each change in every voice); a different explicit value at that bar,
-    # or any disagreement with the seed at bar one, is a conflict.
-    def apply_change(event, flow, position, command, attribute, at_reader, changer)
-      value = event.public_send(attribute)
-      bar_number = change_bar_number(event, position, command)
-      return if flow.public_send(at_reader, bar_number) == value
-      if bar_number == 1 || flow.public_send(:"#{attribute}_change_at", bar_number)
-        raise ParseError.new("Conflicting #{command} at bar #{bar_number}", line_number: event.line)
-      end
-
-      flow.public_send(changer, bar_number, value)
-    end
-
-    # Key and meter live on bars, so a change is only representable at a
-    # bar's start.
-    def change_bar_number(event, position, command)
-      return position.bar_number if bar_start?(position)
-
-      raise unsupported("#{command} in the middle of a bar is not supported", event)
-    end
-
-    def bar_start?(position)
-      position.count == 1 && position.tick.zero?
-    end
-
-    def whole_notes(fraction)
-      (fraction.denominator == 1) ? fraction.numerator : fraction
-    end
-
-    def elapsed_fraction(position)
-      meter = position.meter
-      Rational(position.count - 1, meter.bottom_number) + Rational(position.tick, TICKS_PER_WHOLE_NOTE)
-    end
-
-    def unsupported(message, event)
-      UnsupportedFeatureError.new(message, line_number: event.line)
     end
   end
 end
