@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-26T15:10:41-07:00
+  updated_at:   2026-09-27T15:48:57-07:00
 -->
 
 # Story: Tuplets and Grace Notes
@@ -70,6 +70,7 @@ voice.place("1:3", :quarter, "G4").grace_notes << HeadMusic::Content::GraceNote.
 
 - The format sections are large. If planning finds them too big for one story, keep the model, JSON, and one reader and writer here, and move the rest into a follow-up story.
 - `BarSplitter` and `DottedDuration.rhythmic_value_for` assume binary fractions. Both need a rule for tuplet fractions.
+- Readers move a slur that starts on a dropped grace note to the next main note (see [Spans Across Notes](../current/spans-across-notes.md)). Once grace notes are kept, the slur should start on the grace note.
 - The Style guides are built on species counterpoint, which has no tuplets or grace notes, so no guideline needs to change. A later story could teach melodic guidelines about ornamental grace notes.
 - MIDI export (backlog) would sound grace notes by borrowing time from the note before or after them. That choice belongs to that story.
 
