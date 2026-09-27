@@ -31,11 +31,8 @@ module HeadMusic::Notation::ABC
       "uppermordent" => [:ornament, "inverted_mordent"],
       "pralltriller" => [:ornament, "inverted_mordent"],
       "turn" => [:ornament, "turn"],
-      "sf" => [:note_dynamic, "sf"],
-      "sfz" => [:note_dynamic, "sfz"],
-      "rfz" => [:note_dynamic, "rfz"],
-      "fp" => [:note_dynamic, "fp"],
-      **%w[ppp pp p mp mf f ff fff].to_h { |level| [level, [:level, level]] }
+      **HeadMusic::Rudiment::Dynamic.accents.to_h { |accent| [accent.name_key, [:note_dynamic, accent.name_key]] },
+      **HeadMusic::Rudiment::Dynamic.levels.to_h { |level| [level.name_key, [:level, level.name_key]] }
     }.freeze
 
     DROPPED_SHORTHANDS = %w[~ H O S u v].to_set.freeze

@@ -54,6 +54,10 @@ describe HeadMusic::Notation::ABC::DecorationMapper do
       end
     end
 
+    it "drops nothing the dynamics catalog holds" do
+      expect(described_class::DROPPED_NAMES & HeadMusic::Rudiment::Dynamic.all.map(&:name_key)).to be_empty
+    end
+
     it "does not recognize an unknown decoration" do
       expect(described_class.classify("!bogus!")).to be_nil
     end

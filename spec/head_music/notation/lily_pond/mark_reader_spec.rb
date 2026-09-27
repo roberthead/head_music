@@ -54,6 +54,10 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   end
 
   describe "marks the catalogs do not hold" do
+    it "drops nothing the dynamics catalog holds" do
+      expect(described_class::DROPPED_COMMANDS & HeadMusic::Rudiment::Dynamic.all.map(&:name_key)).to be_empty
+    end
+
     %w[-_ -+ \\fermata \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff ^\\fermata \\< \\> \\! -\\< \\cresc \\dim \\endcresc].each do |source|
       it "consumes and drops #{source}" do
         cursor = cursor_for("#{source} c'4")

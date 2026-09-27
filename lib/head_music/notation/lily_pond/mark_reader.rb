@@ -32,8 +32,8 @@ module HeadMusic::Notation::LilyPond
       "trill" => "trill", "mordent" => "mordent", "prall" => "inverted_mordent", "turn" => "turn"
     }.freeze
     ARTICULATION_COMMANDS = ARTICULATIONS_BY_SHORTHAND.values.freeze
-    NOTE_DYNAMIC_COMMANDS = %w[sf sfz rfz fp].freeze
-    LEVEL_COMMANDS = %w[ppp pp p mp mf f ff fff].freeze
+    NOTE_DYNAMIC_COMMANDS = HeadMusic::Rudiment::Dynamic.accents.map(&:name_key).freeze
+    LEVEL_COMMANDS = HeadMusic::Rudiment::Dynamic.levels.map(&:name_key).freeze
     DROPPED_COMMANDS = %w[
       fermata upbow downbow breathe portato stopped sfp spp sff fz pppp ffff
       cresc decresc dim endcresc enddecresc enddim
