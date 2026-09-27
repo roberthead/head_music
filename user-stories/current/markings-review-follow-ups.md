@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T11:01:54-07:00
   planned_at:   2026-09-27T11:54:27-07:00
   finished_at:
-  updated_at:   2026-09-27T11:54:27-07:00
+  updated_at:   2026-09-27T12:06:19-07:00
 -->
 
 # Story: Markings Review Follow-ups
@@ -34,35 +34,35 @@ The review also named a first-fragment check repeated in `abc/writer.rb` and `li
 
 ### MusicXML
 
-- [ ] A voice dynamic after the voice's last event in a bar is written as a `<direction>` after that bar's final note, at the dynamic's position, in both a single-staff part and a grand-staff part
-- [ ] In a part with two voices where voice 1 ends before voice 2, voice 1's trailing dynamic is written after its last note and before the `<backup>`, with voice 1's `<voice>` and staff, and no `<backup>` or `<forward>` duration changes
-- [ ] A dynamic under a note or rest writes as it does today
+- [x] A voice dynamic after the voice's last event in a bar is written as a `<direction>` after that bar's final note, at the dynamic's position, in both a single-staff part and a grand-staff part
+- [x] In a part with two voices where voice 1 ends before voice 2, voice 1's trailing dynamic is written after its last note and before the `<backup>`, with voice 1's `<voice>` and staff, and no `<backup>` or `<forward>` duration changes
+- [x] A dynamic under a note or rest writes as it does today
 
 ### Kern
 
-- [ ] Reading a file whose `**dynam` data sits on rows where every `**kern` field is `.` places each such row at an even split of the time between the timed rows around it, not at the next attack
-- [ ] A part or voice dynamic that falls while a note is held writes the note whole, with the dynamic on evenly spaced null rows, so that an even split of the time between the timed rows around them lands on the dynamic
-- [ ] Reading that file back gives the note's written rhythmic value, such as a dotted quarter rather than an eighth tied to a quarter, and the dynamic at its position
-- [ ] Given a whole note in 4/4 with a *p* at 1:2, writing and reading back gives one whole note and the *p* at 1:2
-- [ ] The same holds under a rest, and when several voices in the part hold notes across the dynamic
-- [ ] Dynamics in different parts that fall in the same span each read back at their own positions
-- [ ] A dynamic that coincides with an attack writes as it does today
+- [x] Reading a file whose `**dynam` data sits on rows where every `**kern` field is `.` places each such row at an even split of the time between the timed rows around it, not at the next attack
+- [x] A part or voice dynamic that falls while a note is held writes the note whole, with the dynamic on evenly spaced null rows, so that an even split of the time between the timed rows around them lands on the dynamic
+- [x] Reading that file back gives the note's written rhythmic value, such as a dotted quarter rather than an eighth tied to a quarter, and the dynamic at its position
+- [x] Given a whole note in 4/4 with a *p* at 1:2, writing and reading back gives one whole note and the *p* at 1:2
+- [x] The same holds under a rest, and when several voices in the part hold notes across the dynamic
+- [x] Dynamics in different parts that fall in the same span each read back at their own positions
+- [x] A dynamic that coincides with an attack writes as it does today
 
 ### Flow JSON
 
-- [ ] Articulations or ornaments that name one marking twice through different aliases or spellings, such as `["mordent", "lower_mordent"]` or `["accent", "Accent"]`, raise the same error, with the same path, as a repeated key
+- [x] Articulations or ornaments that name one marking twice through different aliases or spellings, such as `["mordent", "lower_mordent"]` or `["accent", "Accent"]`, raise the same error, with the same path, as a repeated key
 
 ### Style
 
-- [ ] Every guide in `Guide::ALL`, graded over a two-voice published example with articulations, ornaments, note dynamics, and voice and part levels (one under a held note), gives the same fitness and marks as over the same example without them
+- [x] Every guide in `Guide::ALL`, graded over a two-voice published example with articulations, ornaments, note dynamics, and voice and part levels (one under a held note), gives the same fitness and marks as over the same example without them
 
 ### Duplication
 
-- [ ] The ABC and LilyPond readers take their dynamic levels and accents from `Dynamic.levels` and `Dynamic.accents`, read exactly those, which are what they read today, and drop none of them
+- [x] The ABC and LilyPond readers take their dynamic levels and accents from `Dynamic.levels` and `Dynamic.accents`, read exactly those, which are what they read today, and drop none of them
 
 ### Changelog
 
-- [ ] **Breaking.** entries record that kern import re-times dynamics on null-only rows, and that Flow JSON refuses aliases or spelling variants that name one marking twice
+- [x] **Breaking.** entries record that kern import re-times dynamics on null-only rows, and that Flow JSON refuses aliases or spelling variants that name one marking twice
 
 ## Notes
 
