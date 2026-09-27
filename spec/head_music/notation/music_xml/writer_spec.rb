@@ -742,6 +742,15 @@ describe HeadMusic::Notation::MusicXML::Writer do
       it "adds no duration, leaving the measure's notes and rest unaffected" do
         expect(xpath_texts(document, "//note/duration")).to eq %w[1 2 1]
       end
+
+      context "when one falls between the notes' boundaries" do
+        before { flow.voices.first.place_dynamic("1:1:480", :pp) }
+
+        it "divides the quarter finely enough to offset it" do
+          expect(xpath_text(document, "//attributes/divisions")).to eq "2"
+          expect(xpath_text(document, "//direction[direction-type/dynamics/pp]/offset")).to eq "1"
+        end
+      end
     end
 
     context "with a part's dynamic events" do

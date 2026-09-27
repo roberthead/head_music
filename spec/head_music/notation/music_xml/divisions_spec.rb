@@ -67,5 +67,12 @@ describe HeadMusic::Notation::MusicXML::Divisions do
     it "picks up a mid-piece meter change from the bars" do
       expect(described_class.for(flow_with_mid_piece_meter_change)).to eq 2
     end
+
+    it "divides finely enough to place a dynamic between the notes' boundaries" do
+      flow = quarter_flow
+      flow.voices.first.place_dynamic("1:1:480", :p)
+      flow.parts.first.place_dynamic("1:2:320", :f)
+      expect(described_class.for(flow)).to eq 6
+    end
   end
 end
