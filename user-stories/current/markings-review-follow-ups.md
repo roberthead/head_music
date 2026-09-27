@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T11:01:54-07:00
   planned_at:   2026-09-27T11:54:27-07:00
   finished_at:
-  updated_at:   2026-09-27T12:13:49-07:00
+  updated_at:   2026-09-27T12:21:41-07:00
 -->
 
 # Story: Markings Review Follow-ups
@@ -68,7 +68,7 @@ The review also named a first-fragment check repeated in `abc/writer.rb` and `li
 
 - The level placement that wraps `ArgumentError` in `abc/voice_state.rb` and `lily_pond/event_placer.rb` stays duplicated. It is three lines in each, and each reader raises its own kind of error with different location details.
 - Dynamics in the middle of a note stay in the model. A dynamic under a held note is ordinary, as in a piano's left hand holding while the right hand gets a new level, and formats can write one without touching the note: kern's null token, MusicXML's `<offset>`, and LilyPond's spacer rests for part dynamics.
-- A voice dynamic under a held note in LilyPond or ABC still moves to the next note, and kern, ABC, and LilyPond still drop a voice dynamic after the voice's last note. Both belong to [Place Voice Dynamics Where No Note Starts](../backlog/place-voice-dynamics-where-no-note-starts.md).
+- A voice dynamic under a held note in LilyPond or ABC still moves to the next note, and kern, ABC, and LilyPond still drop a voice dynamic after the voice's last note. Both belong to [Place Dynamics Where No Note Starts](../backlog/place-dynamics-where-no-note-starts.md).
 - A dynamic after a voice's last event in an incomplete bar is written in MusicXML, not refused, because MusicXML can place a direction there without inventing a rest.
 - The even split is what the planner reports humlib's `analyzeNullLineRhythms` does. No Humdrum tool was run locally to confirm it.
 
@@ -161,6 +161,12 @@ Reviewed 2026-09-27 at `e5773334`, covering the six implementation commits (`2fd
 
 1. **A kern grace-note row is treated as a row with no time of its own (a regression, reproduced).** `FlowBuilder#read_data` counts only notes and rests as attacks, so a row holding only a grace token such as `8qd` joins the even split. `2c` / `.  p` / `8qd` / `2e` reads the *p* at 1:1:640 instead of 1:2, and `2c` / `8qd  p` / `2e` at 1:2 instead of 1:3, which `main` got right. A grace row sits at the next note's time, so it should close the buffer as a timed row there. The writer never writes grace notes, so round trips are unaffected; files from elsewhere are.
 2. **The kern writer's null-row count grows with tick resolution.** A whole note with a *p* at `1:1:001` writes 3,839 null rows. It reads back exactly and is fast, and it is bounded at one row per tick of the span. The `RenderError` that capped this came out with `SpineTokens.cut`. Decide whether to cap it and raise, or pin the behavior.
-3. **Kern still drops a part dynamic after the flow's last note in a bar** (`kern/data_rows.rb` `dynamic_offsets`; it was already the case on `main`). [Place Voice Dynamics Where No Note Starts](../backlog/place-voice-dynamics-where-no-note-starts.md) records only the voice case, so it should name part dynamics too.
+3. **Kern still drops a part dynamic after the flow's last note in a bar** (`kern/data_rows.rb` `dynamic_offsets`; it was already the case on `main`). [Place Dynamics Where No Note Starts](../backlog/place-dynamics-where-no-note-starts.md) records only the voice case, so it should name part dynamics too.
+
+### Resolution
+
+- Finding 1 is fixed in `cd807587`: a row holding only a grace note is timed at the note it leads to, and both inputs are pinned in `kern/flow_builder_spec.rb`.
+- Finding 2 is pinned rather than capped, in `b71a1796`: a dynamic one tick into a whole note writes 3,839 null rows. Positions resolve no finer than a tick, so the count is bounded, and it reads back exactly.
+- Finding 3 goes to the backlog story, renamed [Place Dynamics Where No Note Starts](../backlog/place-dynamics-where-no-note-starts.md) to cover part dynamics.
 
 Checked and correct: `rational_gcd` on reduced rationals; the round trips for pickups, short final bars, 6/8, and two parts attacking at different times; spine splits and joins between buffered rows; `trailing_lines` against `voice_lines` and `voice_rest_lines`; and the error message and ordering in `catalog_keys`.
