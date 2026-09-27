@@ -24,6 +24,7 @@ module HeadMusic::Notation::Kern
       ensure_pitched_voice_events
       ensure_concert_pitch
       ensure_steady_parts
+      ensure_dynamics_have_voices
     end
 
     private
@@ -56,6 +57,13 @@ module HeadMusic::Notation::Kern
         raise RenderError, "kern cannot write an instrument change within a part" if part.instrument_changes.any?
         raise RenderError, "kern cannot write a staff system change within a part" if part.staff_system_changes.any?
       end
+    end
+
+    # A **dynam spine belongs to the **kern spine on its left, so a part with
+    # no voices has none to hold its dynamics.
+    def ensure_dynamics_have_voices
+      voiceless = flow.parts.find { |part| part.voices.empty? && part.dynamic_events.any? }
+      raise RenderError, "kern cannot write the dynamics of a part with no voices" if voiceless
     end
 
     def render_error_class

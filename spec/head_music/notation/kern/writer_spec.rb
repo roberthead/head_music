@@ -550,5 +550,12 @@ describe HeadMusic::Notation::Kern::Writer do
       part.change_staff_system(2, HeadMusic::Content::StaffSystem.grand_staff)
       expect { render(flow) }.to raise_error HeadMusic::Notation::Kern::RenderError, /staff system change/
     end
+
+    it "refuses dynamics on a part with no voices" do
+      flow = HeadMusic::Content::Flow.new
+      flow.add_part.add_voice.place("1:1", :whole, "C5")
+      flow.add_part.place_dynamic("1:1", :p)
+      expect { render(flow) }.to raise_error HeadMusic::Notation::Kern::RenderError, /part with no voices/
+    end
   end
 end
