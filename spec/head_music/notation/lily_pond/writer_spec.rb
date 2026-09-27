@@ -375,6 +375,30 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it_behaves_like "a compilable document"
     end
 
+    # The fp puts p in force at its note over the level, so the level is left
+    # out: the level in force reads back the same, though the event does not.
+    context "with a level on a note that carries fp" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Forte-piano").tap do |flow|
+          voice = flow.add_voice
+          voice.place("1:1", :half, "C4").note_dynamic = :fp
+          voice.place("1:3", :half, "D4")
+          voice.place_dynamic("1:1", :f)
+        end
+      end
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "writes the fp and leaves out the level" do
+        expect(bar_check_lines(rendered)).to eq ["c'2\\fp d'2 |"]
+      end
+
+      it "reads back the same level in force at every note, without the level's event" do
+        restored = HeadMusic::Notation::LilyPond.parse(rendered).voices.first
+        expect(%w[1:1 1:3].map { |position| restored.dynamic_at(position).name_key }).to eq %w[p p]
+        expect(restored.dynamic_events).to be_empty
+      end
+    end
+
     context "with a marked chord" do
       let(:flow) do
         HeadMusic::Content::Flow.new(name: "Chord").tap do |flow|
