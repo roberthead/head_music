@@ -41,6 +41,15 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
+    # A voice's dynamic events landing after its last voice event, in the bar
+    # where it ends, so there is no segment to hold them.
+    def trailing_lines(voice, bar_number, voice_number: nil, staff_number: nil)
+      events_in_bar(voice.dynamic_events, bar_number).select { |event| event.position >= voice.next_position }.flat_map do |event|
+        direction_lines(event, offset_from(voice.next_position, event.position),
+          voice_number: voice_number, staff_number: staff_number)
+      end
+    end
+
     private
 
     attr_reader :plan

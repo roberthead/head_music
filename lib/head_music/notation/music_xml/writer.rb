@@ -169,12 +169,15 @@ module HeadMusic::Notation::MusicXML
       segments = voice && segments_by_bar(voice)[bar_number]
       return whole_measure_content_lines(voice, bar_number, voice_number, staff_number) unless segments
 
-      segments.flat_map do |segment|
-        [
-          *direction_writer.voice_lines(voice, bar_number, segment, voice_number: voice_number, staff_number: staff_number),
-          *note_writer.lines(segment, voice_number: voice_number, staff_number: staff_number)
-        ]
-      end
+      [
+        *segments.flat_map do |segment|
+          [
+            *direction_writer.voice_lines(voice, bar_number, segment, voice_number: voice_number, staff_number: staff_number),
+            *note_writer.lines(segment, voice_number: voice_number, staff_number: staff_number)
+          ]
+        end,
+        *direction_writer.trailing_lines(voice, bar_number, voice_number: voice_number, staff_number: staff_number)
+      ]
     end
 
     def whole_measure_content_lines(voice, bar_number, voice_number, staff_number)

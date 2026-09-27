@@ -753,6 +753,50 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with a dynamic after the voice's last note" do
+      let(:flow) do
+        flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\nC D E|\n")
+        flow.voices.first.place_dynamic("1:4", :f)
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "writes it as a direction after the bar's final note" do
+        expect(xpath_names(document, "//measure[@number='1']/*[self::note or self::direction]")).to eq %w[note note note direction]
+      end
+
+      it "writes no offset where it falls where the voice ends" do
+        expect(xpath_count(document, "//direction/offset")).to eq 0
+      end
+
+      it "adds no duration" do
+        expect(xpath_texts(document, "//note/duration")).to eq %w[1 1 1]
+      end
+    end
+
+    context "with a dynamic after the last note of a voice that ends before the other" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Two Voices", meter: "4/4")
+        part = flow.add_part(instrument: "piano")
+        upper = part.add_voice(role: "upper")
+        lower = part.add_voice(role: "lower")
+        upper.place("1:1", :dotted_half, "E5")
+        lower.place("1:1", :whole, "C4")
+        upper.place_dynamic("1:4", :pp)
+        flow
+      end
+      let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+      it "writes it after the voice's last note and before the backup, numbered for the voice" do
+        expect([xpath_names(document, "//measure[@number='1']/*[self::note or self::direction or self::backup]"),
+          xpath_text(document, "//direction/voice")]).to eq [%w[note direction backup note], "1"]
+      end
+
+      it "rewinds only as far as the voice wrote" do
+        expect(xpath_text(document, "//backup/duration")).to eq "3"
+      end
+    end
+
     context "with a part's dynamic events" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Part Dynamics", meter: "4/4")

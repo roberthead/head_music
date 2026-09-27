@@ -128,6 +128,26 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
     end
   end
 
+  describe "#trailing_lines" do
+    let(:flow) do
+      flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\nC D|\n")
+      flow.voices.first.place_dynamic("1:3", :f)
+      flow.voices.first.place_dynamic("1:4", :p)
+      flow
+    end
+
+    it "offsets each dynamic after the voice's last note from where the voice ends" do
+      lines = writer.trailing_lines(flow.voices.first, 1)
+      expect([dynamics_written(lines), offset_in(lines)]).to eq [%w[f p], [plan.divisions]]
+    end
+
+    it "writes nothing for a dynamic under the last note" do
+      flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\nC D2|\n")
+      flow.voices.first.place_dynamic("1:3", :f)
+      expect(described_class.new(HeadMusic::Notation::MusicXML::RenderPlan.new(flow)).trailing_lines(flow.voices.first, 1)).to eq []
+    end
+  end
+
   describe "#voice_rest_lines" do
     let(:flow) do
       flow = HeadMusic::Content::Flow.new(name: "Silent Bar", meter: "4/4")

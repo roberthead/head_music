@@ -79,6 +79,30 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
   end
 
+  describe "a grand staff whose right hand ends early" do
+    let(:flow) do
+      flow = HeadMusic::Content::Flow.new(name: "Early", key_signature: "C major", meter: "4/4")
+      piano = flow.add_part(instrument: "piano", staff_system: HeadMusic::Content::StaffSystem.grand_staff)
+      right_hand = piano.add_voice(role: "right hand")
+      left_hand = piano.add_voice(role: "left hand")
+      left_hand.cross_to(piano.staff_system_at(1).staves.last, from: 1)
+      right_hand.place("1:1", :half, "E5")
+      left_hand.place("1:1", :whole, "C3")
+      right_hand.place_dynamic("1:3", :pp)
+      flow
+    end
+
+    it "writes the right hand's dynamic after its last note, on its voice and staff, before the backup" do
+      expect([xpath_names(document, "//measure[@number='1']/*[self::note or self::direction or self::backup]"),
+        xpath_text(document, "//direction/voice"), xpath_text(document, "//direction/staff")])
+        .to eq [%w[note direction backup note], "1", "1"]
+    end
+
+    it "rewinds only as far as the right hand wrote" do
+      expect(xpath_text(document, "//backup/duration")).to eq "2"
+    end
+  end
+
   describe "a part on one staff" do
     let(:flow) { LilyPondFixtures.duo }
 
