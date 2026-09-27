@@ -491,6 +491,31 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       expect([levels(flow.parts.first), levels(flow.parts.last)]).to eq [[], ["p at 1:1:000", "f at 1:3:000"]]
     end
 
+    it "places a level on a row where nothing attacks midway between the timed rows around it" do
+      flow = parse("**kern  **dynam\n1c  .\n.  p\n*-  *-")
+      expect(levels(flow.parts.first)).to eq ["p at 1:3:000"]
+    end
+
+    it "splits the time evenly among several rows where nothing attacks" do
+      flow = parse("**kern  **dynam\n1c  .\n.  p\n.  f\n.  mf\n*-  *-")
+      expect(levels(flow.parts.first)).to eq ["p at 1:2:000", "f at 1:3:000", "mf at 1:4:000"]
+    end
+
+    it "counts a row that is null in every spine toward the split" do
+      flow = parse("**kern  **dynam\n1c  .\n.  .\n.  p\n.  .\n*-  *-")
+      expect(levels(flow.parts.first)).to eq ["p at 1:3:000"]
+    end
+
+    it "keeps the note held across such rows whole" do
+      flow = parse("**kern  **dynam\n1c  .\n.  p\n*-  *-")
+      expect(voice_events(flow.voices.first)).to eq ["whole C4 at 1:1:000"]
+    end
+
+    it "times a row after a barline from the barline" do
+      flow = parse("**kern  **dynam\n*M4/4  *\n=1  =1\n1c  .\n=2  =2\n.  f\n1d  .\n*-  *-")
+      expect(levels(flow.parts.first)).to eq ["f at 2:1:000"]
+    end
+
     it "places a level in a pickup bar at its offset" do
       flow = parse("**kern  **dynam\n*M3/4  *\n4c  p\n=1  =1\n2.d  f\n*-  *-")
       expect(levels(flow.parts.first)).to eq ["p at 0:3:000", "f at 1:1:000"]

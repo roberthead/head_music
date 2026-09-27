@@ -36,6 +36,7 @@ module HeadMusic::Notation::Kern
     end
 
     def finish
+      @dynamics.pass(@voices.current_time)
       clock.finish(@voices.current_time, document.rows.last.record.line)
       @voices.place(clock)
       @dynamics.place(@flow, clock)
@@ -107,11 +108,18 @@ module HeadMusic::Notation::Kern
       line = row.record.line
       tokens = kern_fields(row).map { |track, field, column| [track, TokenReader.read(field, line_number: line), column] }
       attacked = tokens.any? { |_track, token, _column| token.attack? }
-      clock.ensure_music_allowed if attacked
+      return read_untimed(row) unless attacked
+
+      clock.ensure_music_allowed
       time = @voices.current_time
-      events = attacked ? @voices.read(tokens, time, line) : {}
+      events = @voices.read(tokens, time, line)
       LyricReader.new(row).sing(events)
       @dynamics.read(row, events, time)
+    end
+
+    def read_untimed(row)
+      LyricReader.new(row).sing({})
+      @dynamics.read_untimed(row)
     end
 
     def read_barline(row)
@@ -120,7 +128,9 @@ module HeadMusic::Notation::Kern
 
       line = row.record.line
       barline = BarlineReader.read(fields.first[1], line_number: line)
-      clock.barline(barline, @voices.aligned_time(clock, line), line)
+      time = @voices.aligned_time(clock, line)
+      @dynamics.pass(time)
+      clock.barline(barline, time, line)
     end
   end
 end
