@@ -163,6 +163,87 @@ describe HeadMusic::Notation::Kern do
     end
   end
 
+  describe "dynamics where nothing attacks" do
+    # kern gives every level to its part, so each part's levels are compared
+    # together, wherever the original kept them.
+    def levels(flow)
+      flow.parts.flat_map { |part| [*part.dynamic_events, *part.voices.flat_map(&:dynamic_events)].map(&:to_s) }.sort
+    end
+
+    def values(voice)
+      voice.voice_events.map { |voice_event| "#{voice_event.rhythmic_value} at #{voice_event.position}" }
+    end
+
+    def whole_note_flow(level_position)
+      HeadMusic::Content::Flow.new(name: "Held", meter: "4/4").tap do |flow|
+        flow.add_voice.place("1:1", :whole, "C4")
+        flow.parts.first.place_dynamic(level_position, :p)
+      end
+    end
+
+    it "keeps a dotted quarter whole, and the level one eighth into it" do
+      original = HeadMusic::Notation::ABC.parse("X:1\nL:1/8\nM:4/4\nK:C\nC3 D E2 F2|\n")
+      original.voices.first.place_dynamic("1:1:480", :p)
+      restored = expect_kern_round_trip(original)
+      expect([values(restored.voices.first).first, levels(restored)]).to eq ["dotted quarter at 1:1:000", ["p at 1:1:480"]]
+    end
+
+    it "keeps a level a quarter into a whole note at its position" do
+      restored = expect_kern_round_trip(whole_note_flow("1:2"))
+      expect([values(restored.voices.first), levels(restored)]).to eq [["whole at 1:1:000"], ["p at 1:2:000"]]
+    end
+
+    def rest_flow
+      whole_note_flow("1:1").tap do |flow|
+        flow.voices.first.place("2:1", :whole)
+        flow.parts.first.place_dynamic("2:3", :pp)
+      end
+    end
+
+    def two_voice_flow
+      HeadMusic::Content::Flow.new(name: "Two Held", meter: "4/4").tap do |flow|
+        part = flow.add_part(instrument: "piano")
+        part.add_voice(role: "upper").place("1:1", :whole, "E5")
+        part.add_voice(role: "lower").place("1:1", :whole, "C4")
+        part.place_dynamic("1:3", :mf)
+      end
+    end
+
+    def two_part_flow
+      whole_note_flow("1:2").tap do |flow|
+        upper = flow.add_voice
+        upper.place("1:1", :whole, "E5")
+        upper.part.place_dynamic("1:3", :f)
+      end
+    end
+
+    it "keeps a rest whole under a level" do
+      restored = expect_kern_round_trip(rest_flow)
+      expect([values(restored.voices.first), levels(restored)])
+        .to eq [["whole at 1:1:000", "whole at 2:1:000"], ["p at 1:1:000", "pp at 2:3:000"]]
+    end
+
+    it "keeps two voices of a part holding across a level" do
+      restored = expect_kern_round_trip(two_voice_flow)
+      expect([restored.voices.map { |voice| values(voice) }, levels(restored)])
+        .to eq [[["whole at 1:1:000"], ["whole at 1:1:000"]], ["mf at 1:3:000"]]
+    end
+
+    it "keeps each part's level at its own position when they share a span" do
+      expect(levels(expect_kern_round_trip(two_part_flow))).to eq ["f at 1:3:000", "p at 1:2:000"]
+    end
+
+    it "keeps the marked melody's levels at their positions" do
+      original = MarkingFixtures.marked_melody
+      expect(levels(expect_kern_round_trip(original))).to eq levels(original)
+    end
+
+    it "keeps the grand-staff piano's levels at their positions" do
+      original = MarkingFixtures.grand_staff_piano_with_dynamics
+      expect(levels(expect_kern_round_trip(original))).to eq levels(original)
+    end
+  end
+
   describe "the cantus firmus catalog" do
     HeadMusic::Content::CantusFirmus::Example.all.each do |example|
       it "round-trips #{example}" do

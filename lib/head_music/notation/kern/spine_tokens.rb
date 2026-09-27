@@ -33,45 +33,6 @@ module HeadMusic::Notation::Kern
     TIE_OPENING = {nil => "", :start => "[", :middle => "", :end => ""}.freeze
     TIE_CLOSING = {nil => "", :start => "", :middle => "_", :end => "]"}.freeze
 
-    FIRST_PIECE_TIE = {nil => :start, :start => :start, :middle => :middle, :end => :middle}.freeze
-    LAST_PIECE_TIE = {nil => :end, :start => :middle, :middle => :middle, :end => :end}.freeze
-
-    # Splits every event sounding across one of the +cuts+ there, a note as
-    # tied links and a rest as rests. A row has a time in kern only where
-    # something attacks, so this is how a dynamic that falls in the middle
-    # of a note gets a row of its own.
-    def self.cut(events, cuts)
-      events.flat_map do |event|
-        inside = cuts.select { |cut| cut > event.offset && cut < event.finish }.sort
-        inside.empty? ? [event] : pieces(event, inside)
-      end
-    end
-
-    def self.pieces(event, cuts)
-      bounds = [event.offset, *cuts, event.finish]
-      links = bounds.each_cons(2).flat_map do |from, to|
-        rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(to - from)
-        raise RenderError, "cannot split a note at a dynamic into binary note values (a piece of #{to - from} of a whole note)" unless rhythmic_value
-
-        rhythmic_value.tied_chain
-      end
-      offset = event.offset
-      links.each_with_index.map do |link, index|
-        piece_tie = event.rest? ? nil : piece_tie(event.tie, index, links.length)
-        first = index.zero?
-        event.with(offset: offset, link: link, tie: piece_tie, syllables: first ? event.syllables : {}, marks: first ? event.marks : "")
-          .tap { offset += DurationWriter.fraction(link) }
-      end
-    end
-
-    def self.piece_tie(tie, index, count)
-      return FIRST_PIECE_TIE[tie] if index.zero?
-
-      (index == count - 1) ? LAST_PIECE_TIE[tie] : :middle
-    end
-
-    private_class_method :pieces, :piece_tie
-
     def self.rests(from, to)
       return [] unless to > from
 

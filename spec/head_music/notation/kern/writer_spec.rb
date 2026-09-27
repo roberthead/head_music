@@ -248,17 +248,17 @@ describe HeadMusic::Notation::Kern::Writer do
       expect(%w[1:1 1:3].map { |position| restored.dynamic_at(position).name_key }).to eq %w[p p]
     end
 
-    it "ties the part's notes where a dynamic falls in the middle of them" do
+    it "writes a dynamic in the middle of the part's notes on a null row, leaving the notes whole" do
       voice.place("1:1", :whole, "C4")
       part.place_dynamic("1:3", :mf)
-      expect(data(flow)).to eq ["[2c\t.", "2c]\tmf"]
+      expect(data(flow)).to eq ["1c\t.", ".\tmf"]
     end
 
-    it "ties a note through each dynamic in it, and splits a rest into rests" do
+    it "spaces null rows evenly to land on each dynamic in a note or rest" do
       voice.place("1:1", :whole, "C4")
       voice.place("2:1", :whole)
       {"1:2" => :p, "1:3" => :f, "2:3" => :pp}.each { |position, level| part.place_dynamic(position, level) }
-      expect(data(flow)).to eq ["[4c\t.", "4c_\tp", "2c]\tf", "2r\t.", "2r\tpp"]
+      expect(data(flow)).to eq ["1c\t.", ".\tp", ".\tf", ".\t.", "1r\t.", ".\tpp"]
     end
 
     it "leaves a note whole where another part attacks at its dynamic" do
@@ -282,10 +282,10 @@ describe HeadMusic::Notation::Kern::Writer do
       expect(data(flow)).to eq ["2c\tp", "1d\t."]
     end
 
-    it "refuses a dynamic that splits a note into values no binary note spans" do
+    it "writes the note whole under a dynamic at any offset" do
       voice.place("1:1", :whole, "C4")
       part.place_dynamic("1:1:320", :f)
-      expect { render(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /binary note values/)
+      expect(data(flow)).to eq ["1c\t.", ".\tf", *Array.new(10, ".\t.")]
     end
   end
 

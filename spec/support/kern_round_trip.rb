@@ -8,11 +8,10 @@
 # which has specs of its own. Dynamic events are left to
 # expect_same_markings, since kern gives a voice's dynamics to its part. It
 # compares a tied chain by its length rather than its spelling, since a note
-# crossing a barline, or holding a dynamic in its middle, comes back split;
-# it drops the rests at either end of a voice and joins runs of rests, since
-# the writer pads every spine to the flow's length; it compares a tempo in
-# quarter notes per minute; and an unauthored clef counts as the one the
-# writer falls back to.
+# crossing a barline comes back split; it drops the rests at either end of a
+# voice and joins runs of rests, since the writer pads every spine to the
+# flow's length; it compares a tempo in quarter notes per minute; and an
+# unauthored clef counts as the one the writer falls back to.
 module KernRoundTripHelper
   def expect_kern_round_trip(flow)
     reparsed = HeadMusic::Notation::Kern.parse(HeadMusic::Notation::Kern.render(flow))

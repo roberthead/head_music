@@ -2,6 +2,10 @@
 module HeadMusic::Notation::Kern
   # A bar's data rows: one wherever a voice attacks or a dynamic falls,
   # holding each column's token, syllable, or dynamic.
+  #
+  # A row has a time of its own only where something attacks. Rows between
+  # two such rows split the time between them evenly, so a dynamic where
+  # nothing attacks goes on one of a run of null rows spaced to land on it.
   class DataRows
     def initialize(columns, bars, dynamic_fields)
       @columns = columns
@@ -11,10 +15,8 @@ module HeadMusic::Notation::Kern
 
     def in_bar(bar_number)
       events = kern_events(bar_number)
-      attacks = events.values.flatten.map { |event| Rational(event.offset) }
-      dynamics = dynamic_offsets(bar_number)
-      cut_for_dynamics(events, dynamics, attacks)
-      (attacks + dynamics.values.flatten).uniq.sort.map do |offset|
+      attacks = events.values.flatten.map { |event| Rational(event.offset) }.uniq.sort
+      row_offsets(attacks, dynamic_offsets(bar_number), bars.length(bar_number)).map do |offset|
         columns.row { |column| field(column, events, bar_number, offset) }
       end
     end
@@ -29,18 +31,27 @@ module HeadMusic::Notation::Kern
 
     # A dynamic after the flow's last note has no row to go on.
     def dynamic_offsets(bar_number)
-      dynamic_fields.transform_values do |fields|
-        offsets = fields.in_bar(bar_number).keys.map { |offset| Rational(offset) }
-        offsets.select { |offset| offset < bars.length(bar_number) }
-      end
+      offsets = dynamic_fields.values.flat_map { |fields| fields.in_bar(bar_number).keys.map { |offset| Rational(offset) } }
+      offsets.uniq.select { |offset| offset < bars.length(bar_number) }
     end
 
-    # A dynamic where nothing attacks splits its part's notes there.
-    def cut_for_dynamics(events, dynamics, attacks)
-      dynamics.each do |part, offsets|
-        cuts = offsets - attacks
-        part.voices.each { |voice| events[voice] = SpineTokens.cut(events.fetch(voice), cuts) } if cuts.any?
-      end
+    def row_offsets(attacks, dynamics, length)
+      untimed = (attacks + [length]).each_cons(2).flat_map { |from, to| untimed_offsets(from, to, dynamics) }
+      (attacks + untimed).sort
+    end
+
+    # The null rows between two timed rows: the fewest evenly spaced ones
+    # that land on every dynamic between them.
+    def untimed_offsets(from, to, dynamics)
+      inside = dynamics.select { |offset| offset > from && offset < to }
+      return [] if inside.empty?
+
+      step = inside.map { |offset| offset - from }.reduce(to - from) { |gcd, span| rational_gcd(gcd, span) }
+      (1...((to - from) / step)).map { |index| from + step * index }
+    end
+
+    def rational_gcd(one, other)
+      Rational(one.numerator.gcd(other.numerator), one.denominator.lcm(other.denominator))
     end
 
     def field(column, all_events, bar_number, offset)
