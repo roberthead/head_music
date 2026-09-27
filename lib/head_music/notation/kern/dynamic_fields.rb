@@ -4,8 +4,8 @@ module HeadMusic::Notation::Kern
   # its voices' levels, and the accents a kern token cannot carry.
   #
   # The spine holds one value per row and cannot say which voice it means,
-  # so where several fall at one position it keeps the first of the part's
-  # level, each voice's level in voice order, and each voice's accent.
+  # so where several fall at one position it keeps the first of each voice's
+  # accent in voice order, the part's level, and each voice's level.
   class DynamicFields
     # sfz is written in the token, as z.
     SPINE_ACCENTS = %w[sf rfz fp].freeze
@@ -40,9 +40,9 @@ module HeadMusic::Notation::Kern
 
     def candidates
       [
+        *part.voices.flat_map { |voice| accent_positions(voice) },
         *level_positions(part),
-        *part.voices.flat_map { |voice| level_positions(voice) },
-        *part.voices.flat_map { |voice| accent_positions(voice) }
+        *part.voices.flat_map { |voice| level_positions(voice) }
       ]
     end
 

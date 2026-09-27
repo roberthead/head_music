@@ -231,12 +231,21 @@ describe HeadMusic::Notation::Kern::Writer do
       expect(data(flow)).to eq ["4c\tsf", "4c\trfz", "4c\tfp", "4cz\t."]
     end
 
-    it "writes the part's level over a voice's level, and a voice's level over an accent" do
+    # A level left out can often be told from the levels around it; an accent
+    # left out is gone.
+    it "writes an accent over a level, and the part's level over a voice's" do
       voice.place("1:1", :half, "C4").note_dynamic = :sf
-      voice.place("1:3", :half, "D4").note_dynamic = :sf
-      [part, voice].each { |owner| owner.place_dynamic("1:1", (owner == part) ? :f : :p) }
-      voice.place_dynamic("1:3", :mp)
-      expect(data(flow)).to eq ["2c\tf", "2d\tmp"]
+      voice.place("1:3", :half, "D4")
+      {part => %w[f mf], voice => %w[p mp]}.each { |owner, levels| %w[1:1 1:3].zip(levels) { |position, level| owner.place_dynamic(position, level) } }
+      expect(data(flow)).to eq ["2c\tsf", "2d\tmf"]
+    end
+
+    it "keeps an fp over a level at its note, so the level in force reads back the same" do
+      voice.place("1:1", :half, "C4").note_dynamic = :fp
+      voice.place("1:3", :half, "D4")
+      part.place_dynamic("1:1", :f)
+      restored = HeadMusic::Notation::Kern.parse(render(flow)).voices.first
+      expect(%w[1:1 1:3].map { |position| restored.dynamic_at(position).name_key }).to eq %w[p p]
     end
 
     it "ties the part's notes where a dynamic falls in the middle of them" do
