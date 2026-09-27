@@ -287,6 +287,14 @@ describe HeadMusic::Notation::Kern::Writer do
       part.place_dynamic("1:1:320", :f)
       expect(data(flow)).to eq ["1c\t.", ".\tf", *Array.new(10, ".\t.")]
     end
+
+    # One null row per tick of the span at most, since positions resolve no
+    # finer than a tick.
+    it "writes a null row per tick under a dynamic one tick into a whole note" do
+      voice.place("1:1", :whole, "C4")
+      part.place_dynamic("1:1:001", :f)
+      expect(data(flow).length).to eq 3840
+    end
   end
 
   describe "a pickup" do
