@@ -6,6 +6,8 @@ class HeadMusic::Content::Flow
   # deserializer stays responsible for *where* values come from and this class
   # for *what* a value is allowed to be.
   class SchemaValues
+    KIND_NAMES = {Array => "an Array", Hash => "a Hash"}.freeze
+
     delegate :staff_system, :staff, to: :staff_system_values
 
     # Position silently coerces garbage strings to "0:1:000", which would
@@ -21,16 +23,10 @@ class HeadMusic::Content::Flow
       value
     end
 
-    # KeySignature.get returns a hollow object (nil tonic_spelling) for
-    # garbage rather than nil, so presence of the tonic is the real check.
     def key_signature(value, path)
       return nil if value.nil?
 
-      key_signature = attempt { HeadMusic::Rudiment::KeySignature.get(value) }
-      unless key_signature&.tonic_spelling
-        raise ArgumentError, "#{path}: unknown key signature #{value.inspect}"
-      end
-      key_signature
+      known_key_signature(value, "key signature", path)
     end
 
     def meter(value, path)
@@ -56,8 +52,8 @@ class HeadMusic::Content::Flow
     # would turn 72.5 into 725.
     def tempo(value, path)
       return nil if value.nil?
-      raise ArgumentError, "#{path}: tempo must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
 
+      ensure_kind!(value, Hash, "tempo", path)
       beats_per_minute = value["beats_per_minute"]
       raise ArgumentError, "#{path}: beats_per_minute must be a positive number, got #{beats_per_minute.inspect}" unless positive_number?(beats_per_minute)
 
@@ -70,13 +66,8 @@ class HeadMusic::Content::Flow
     # {"unpitched" => name_key} hash. A nil element is never a rest, so it
     # fails like any other unknown sound.
     def voice_event_sounds(voice_event_hash, path)
-      values = voice_event_hash["sounds"]
-      unless values.is_a?(Array)
-        raise ArgumentError, "#{path}: sounds must be an Array, got #{values.inspect}"
-      end
-
-      values.each_with_index.map do |value, index|
-        sound(value, "#{path}.sounds[#{index}]")
+      each_element(voice_event_hash["sounds"], "sounds", path) do |value, element_path|
+        sound(value, element_path)
       end
     end
 
@@ -89,13 +80,9 @@ class HeadMusic::Content::Flow
       values = voice_event_hash["syllables"]
       return [] if values.nil?
 
-      unless values.is_a?(Array)
-        raise ArgumentError, "#{path}: syllables must be an Array, got #{values.inspect}"
-      end
-
       seen_verses = []
-      values.each_with_index.map do |value, index|
-        syllable(value, seen_verses, "#{path}.syllables[#{index}]")
+      each_element(values, "syllables", path) do |value, element_path|
+        syllable(value, seen_verses, element_path)
       end
     end
 
@@ -103,12 +90,11 @@ class HeadMusic::Content::Flow
     # each known and none repeated.
     def catalog_keys(values, catalog, label, path)
       return [] if values.nil?
-      raise ArgumentError, "#{path}: #{label} must be an Array, got #{values.inspect}" unless values.is_a?(Array)
 
-      values.each_with_index.map do |value, index|
+      each_element(values, label, path) do |value, element_path, index|
         raise ArgumentError, "#{path}: duplicate #{label} #{value.inspect}" if values.index(value) != index
 
-        catalog_value(value, catalog, "#{path}.#{label}[#{index}]")
+        catalog_value(value, catalog, element_path)
       end
     end
 
@@ -125,10 +111,9 @@ class HeadMusic::Content::Flow
     # as [position, level] pairs.
     def dynamic_events(values, path)
       return [] if values.nil?
-      raise ArgumentError, "#{path}: dynamic_events must be an Array, got #{values.inspect}" unless values.is_a?(Array)
 
-      values.each_with_index.map do |value, index|
-        dynamic_event(value, "#{path}.dynamic_events[#{index}]")
+      each_element(values, "dynamic_events", path) do |value, element_path|
+        dynamic_event(value, element_path)
       end
     end
 
@@ -153,10 +138,7 @@ class HeadMusic::Content::Flow
     def tonal_context(value, path)
       return nil if value.nil?
 
-      context = attempt { HeadMusic::Rudiment::KeySignature.get(value) }
-      raise ArgumentError, "#{path}: unknown tonal context #{value.inspect}" unless context&.tonic_spelling
-
-      HeadMusic::Content::Flow::Timeline.tonal_context_of(context)
+      HeadMusic::Content::Flow::Timeline.tonal_context_of(known_key_signature(value, "tonal context", path))
     end
 
     def instrument(value, path)
@@ -189,6 +171,31 @@ class HeadMusic::Content::Flow
       nil
     end
 
+    # Answers the validated elements, each yielded with its path and index.
+    def each_element(values, label, path)
+      ensure_kind!(values, Array, label, path)
+      values.each_with_index.map do |value, index|
+        yield value, "#{path}.#{label}[#{index}]", index
+      end
+    end
+
+    def ensure_kind!(value, kind, label, path)
+      raise ArgumentError, "#{path}: #{label} must be #{KIND_NAMES[kind]}, got #{value.inspect}" unless value.is_a?(kind)
+    end
+
+    # KeySignature.get returns a hollow object (nil tonic_spelling) for
+    # garbage rather than nil, so presence of the tonic is the real check.
+    def known_key_signature(value, label, path)
+      key_signature = attempt { HeadMusic::Rudiment::KeySignature.get(value) }
+      raise ArgumentError, "#{path}: unknown #{label} #{value.inspect}" unless key_signature&.tonic_spelling
+
+      key_signature
+    end
+
+    def non_empty_string?(value)
+      value.is_a?(String) && !value.empty?
+    end
+
     def positive_number?(value)
       value.is_a?(Numeric) && value.positive?
     end
@@ -214,12 +221,9 @@ class HeadMusic::Content::Flow
     end
 
     def syllable(value, seen_verses, path)
-      unless value.is_a?(Hash)
-        raise ArgumentError, "#{path}: syllable must be a Hash, got #{value.inspect}"
-      end
-
+      ensure_kind!(value, Hash, "syllable", path)
       text = value["text"]
-      unless text.is_a?(String) && !text.empty?
+      unless non_empty_string?(text)
         raise ArgumentError, "#{path}: syllable text must be a non-empty String, got #{text.inspect}"
       end
 
@@ -242,8 +246,7 @@ class HeadMusic::Content::Flow
     end
 
     def dynamic_event(value, path)
-      raise ArgumentError, "#{path}: dynamic event must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
-
+      ensure_kind!(value, Hash, "dynamic event", path)
       position = position(value["position"], path)
       raise ArgumentError, "#{path}: a dynamic event needs a position" if position.nil?
 
@@ -269,7 +272,7 @@ class HeadMusic::Content::Flow
       end
 
       name = value["unpitched"]
-      valid_name = name.nil? || (name.is_a?(String) && !name.empty?)
+      valid_name = name.nil? || non_empty_string?(name)
       sound = HeadMusic::Rudiment::UnpitchedSound.get(name) if valid_name
       raise ArgumentError, "#{path}: unknown instrument #{name.inspect}" unless sound
 
