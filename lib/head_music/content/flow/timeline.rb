@@ -164,6 +164,22 @@ class HeadMusic::Content::Flow
         .map { |event| event.position.bar }.uniq.sort
     end
 
+    # Both fields of a key signature event, always: the signature is what is
+    # printed at the clef, and the tonal context is the interpretation, and
+    # neither derives the other.
+    def to_h
+      {
+        "meter" => opening_meter.to_s,
+        "key_signature" => opening_key_signature_event.key_signature.name,
+        "tempo" => tempo_to_h(opening_tempo),
+        "meter_changes" => meter_changes.map { |bar_number, value| {"number" => bar_number, "meter" => value.to_s} },
+        "key_signature_changes" => key_signature_changes.map { |bar_number, event|
+          {"number" => bar_number, "signature" => event.signature, "tonal_context" => event.tonal_context&.name}
+        },
+        "tempo_changes" => tempo_changes.map { |bar_number, value| {"number" => bar_number, "tempo" => tempo_to_h(value)} }
+      }
+    end
+
     # A KeySignature already carries a tonic and a scale type -- there is no
     # signature-only diatonic context in the gem -- so the interpretation it was
     # built from is recovered rather than discarded.
@@ -221,6 +237,12 @@ class HeadMusic::Content::Flow
 
       raise ArgumentError,
         "a signature of #{signature} fifths at bar #{bar_number} has no conventional key; give it a tonal_context"
+    end
+
+    # Two fields rather than a "quarter = 72" string, so that a fractional
+    # tempo survives: Tempo.get reads the number by stripping non-digits.
+    def tempo_to_h(tempo)
+      {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}
     end
 
     def changes_by_bar(map)

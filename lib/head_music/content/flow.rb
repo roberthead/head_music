@@ -42,6 +42,7 @@ class HeadMusic::Content::Flow
     @work = ensure_work(work)
     @source = ensure_source(source)
     @parts = []
+    @bars = Bars.new(self)
     @comments = Array(comments).map { |text| HeadMusic::Content::Comment.new(self, text) }
   end
 
@@ -98,12 +99,7 @@ class HeadMusic::Content::Flow
   end
 
   def bars(last = latest_bar_number)
-    @bars ||= []
-    first = [earliest_bar_number, last].min
-    (first..last).each do |bar_number|
-      @bars[bar_number] ||= HeadMusic::Content::Bar.new(self, number: bar_number)
-    end
-    @bars[first..last]
+    @bars.span([earliest_bar_number, last].min, last)
   end
 
   # Allocating the bar as well as recording the change is what pulls the bar
@@ -127,12 +123,14 @@ class HeadMusic::Content::Flow
     timeline.change_tempo(bar_number, tempo)
   end
 
+  # Bars can be allocated below the voices' earliest bar (e.g. a key or meter
+  # change in a pickup bar), so the earliest bar reflects those allocations too.
   def earliest_bar_number
-    [voices.map(&:earliest_bar_number), first_allocated_bar_number, 1].flatten.compact.min
+    [*voices.map(&:earliest_bar_number), @bars.first_number, 1].compact.min
   end
 
   def latest_bar_number
-    [voices.map(&:latest_bar_number), 1].flatten.max
+    [*voices.map(&:latest_bar_number), 1].max
   end
 
   def cantus_firmus_voice
@@ -179,25 +177,13 @@ class HeadMusic::Content::Flow
       "source" => source&.to_h,
       "timeline" => timeline_to_h,
       "parts" => parts_to_h,
-      "bars" => bars_to_h,
+      "bars" => @bars.serialize,
       "comments" => comments.map(&:to_h)
     }.merge(part_players_to_h)
   end
 
-  # Both fields of a key signature event, always: the signature is what is
-  # printed at the clef, and the tonal context is the interpretation, and
-  # neither derives the other.
   def timeline_to_h
-    {
-      "meter" => meter.to_s,
-      "key_signature" => key_signature.name,
-      "tempo" => tempo_to_h(tempo),
-      "meter_changes" => timeline.meter_changes.map { |bar_number, value| {"number" => bar_number, "meter" => value.to_s} },
-      "key_signature_changes" => timeline.key_signature_changes.map { |bar_number, event|
-        {"number" => bar_number, "signature" => event.signature, "tonal_context" => event.tonal_context&.name}
-      },
-      "tempo_changes" => timeline.tempo_changes.map { |bar_number, value| {"number" => bar_number, "tempo" => tempo_to_h(value)} }
-    }
+    timeline.to_h
   end
 
   def to_json(*_args)
@@ -205,12 +191,6 @@ class HeadMusic::Content::Flow
   end
 
   private
-
-  # Bars can be allocated below the voices' earliest bar (e.g. a key or meter
-  # change in a pickup bar), so the earliest bar reflects those allocations too.
-  def first_allocated_bar_number
-    (@bars || []).index { |bar| !bar.nil? }
-  end
 
   def ensure_work(work)
     return HeadMusic::Content::Work.from_h(work) if work.is_a?(Hash)
@@ -227,12 +207,6 @@ class HeadMusic::Content::Flow
   def ensure_attributes(name, key_signature, meter, tempo)
     @name = name || DEFAULT_NAME
     @timeline = Timeline.new(key_signature: key_signature, meter: meter, tempo: tempo)
-  end
-
-  # Two fields rather than a "quarter = 72" string, so that a fractional
-  # tempo survives: Tempo.get reads the number by stripping non-digits.
-  def tempo_to_h(tempo)
-    {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}
   end
 
   # A player is written once and each part points at it by index, so two parts
@@ -255,20 +229,6 @@ class HeadMusic::Content::Flow
     parts.map do |part|
       index = part.player && players.index { |player| player.equal?(part.player) }
       index ? part.to_h.merge("player" => index) : part.to_h
-    end
-  end
-
-  # Iterates the raw sparse array rather than the public #bars slice, which
-  # loses the number offset. Key and meter changes are the timeline's, so a bar
-  # serializes its repeat structure and nothing else.
-  def bars_to_h
-    (@bars || []).each_with_index.filter_map do |bar, number|
-      next if bar.nil?
-
-      bar_hash = bar.to_h
-      next if bar_hash.empty?
-
-      {"number" => number}.merge(bar_hash)
     end
   end
 end

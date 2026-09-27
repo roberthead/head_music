@@ -162,6 +162,32 @@ describe HeadMusic::Content::Flow::Timeline do
     end
   end
 
+  describe "#to_h" do
+    subject(:timeline) { described_class.new(key_signature: "D dorian", meter: "6/8") }
+
+    before do
+      timeline.change_meter(5, "3/4")
+      timeline.change_key_signature(9, -3, tonal_context: HeadMusic::Rudiment::Mode.get("C dorian"))
+      timeline.change_tempo(3, HeadMusic::Rudiment::Tempo.new("quarter", 72.5))
+    end
+
+    it "writes the opening values" do
+      expect(timeline.to_h.slice("meter", "key_signature", "tempo")).to eq(
+        "meter" => "6/8",
+        "key_signature" => "D dorian",
+        "tempo" => {"beat_value" => "quarter", "beats_per_minute" => 120.0}
+      )
+    end
+
+    it "writes each change by bar number" do
+      expect(timeline.to_h.slice("meter_changes", "key_signature_changes", "tempo_changes")).to eq(
+        "meter_changes" => [{"number" => 5, "meter" => "3/4"}],
+        "key_signature_changes" => [{"number" => 9, "signature" => -3, "tonal_context" => "C dorian"}],
+        "tempo_changes" => [{"number" => 3, "tempo" => {"beat_value" => "quarter", "beats_per_minute" => 72.5}}]
+      )
+    end
+  end
+
   describe ".tonal_context_of" do
     it "narrows a major signature to a key" do
       expect(described_class.tonal_context_of(HeadMusic::Rudiment::KeySignature.get("D major")))
