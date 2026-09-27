@@ -60,8 +60,34 @@ describe HeadMusic::Notation::LilyPond do
     expect(part_levels(described_class.parse(piano("{ s1 | } { s1\\f | s1 }")).parts.first)).to eq [%w[2:1:000 f]]
   end
 
-  it "drops articulations and sforzandos there" do
-    expect(part_levels(described_class.parse(piano("s1-.\\sfz\\p\\trill | s1 | s1")).parts.first)).to eq [%w[1:1:000 p]]
+  it "drops articulations and ornaments there" do
+    flow = described_class.parse(piano("s1-.\\p\\trill | s1 | s1"))
+    expect(part_levels(flow.parts.first)).to eq [%w[1:1:000 p]]
+    expect(flow.voices.flat_map(&:note_events).flat_map { |note_event| note_event.articulations + note_event.ornaments }).to be_empty
+  end
+
+  describe "a sforzando there" do
+    def note_dynamics(flow)
+      flow.voices.map { |voice| voice.note_events.map { |note_event| note_event.note_dynamic&.name_key } }
+    end
+
+    it "goes on every note of the part that attacks at its position" do
+      expect(note_dynamics(described_class.parse(piano("s1 | s1\\sfz | s1")))).to eq [[nil, "sfz", nil], [nil, "sfz", nil]]
+    end
+
+    it "is dropped where no note attacks" do
+      expect(note_dynamics(described_class.parse(piano("s2 s2\\sfz | s1 | s1")))).to eq [[nil, nil, nil], [nil, nil, nil]]
+    end
+
+    it "yields to a note's own" do
+      source = %(\\new PianoStaff << \\new Staff { e''1\\sf } \\new Dynamics { s1\\sfz } \\new Staff { \\clef bass c1 } >>)
+      expect(note_dynamics(described_class.parse(source))).to eq [["sf"], ["sfz"]]
+    end
+
+    it "leaves the level in force alone" do
+      flow = described_class.parse(piano("s1\\p | s1\\sfz | s1"))
+      expect(flow.voices.map { |voice| voice.dynamic_at("2:1").name_key }).to eq %w[p p]
+    end
   end
 
   it "ignores a \\key, \\time, or \\clef there, which only repeats the staves'" do

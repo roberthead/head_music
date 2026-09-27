@@ -91,8 +91,21 @@ module HeadMusic::Notation::LilyPond
         check_bar(event, position) if event.kind == :bar_check
         next unless event.kind == :spacer
 
-        parts.each { |part| place_level(part, position, event) }
+        parts.each do |part|
+          place_level(part, position, event)
+          place_accent(part, position, event.marks.note_dynamic)
+        end
         position = after_spacer(flow, position, event)
+      end
+    end
+
+    # A part holds no accents, so one between the staves goes on each note of
+    # the part that attacks there, as kern's **dynam does. A note's own wins.
+    def place_accent(part, position, note_dynamic)
+      return unless note_dynamic
+
+      part.voices.flat_map(&:note_events).each do |note_event|
+        note_event.note_dynamic ||= note_dynamic if note_event.position == position
       end
     end
 
