@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-09-25T14:05:55-07:00
-  activated_at:
+  activated_at: 2026-09-27T13:53:22-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-26T15:10:44-07:00
+  updated_at:   2026-09-27T13:53:22-07:00
 -->
 
 # Story: Spans Across Notes: Slurs, Hairpins, and Melismas
@@ -30,7 +30,7 @@ Some markings belong to a stretch of music, not to one note. Every format has th
 
 The model has none of them. ABC and LilyPond raise on slurs and hairpins, and kern drops them. Slurs matter to this gem beyond display: in vocal music a slur marks a melisma, and a phrase mark states where a phrase ends, which a style guide could use.
 
-This story comes second, after [Articulations, Ornaments, Dynamics](../current/articulations-ornaments-dynamics.md). The two share the catalog and the JSON approach, so doing them in order lets the second reuse the first.
+This story comes second, after [Articulations, Ornaments, Dynamics](../done/articulations-ornaments-dynamics.md). The two share the catalog and the JSON approach, so doing them in order lets the second reuse the first.
 
 ## Example
 
