@@ -87,14 +87,17 @@ class HeadMusic::Content::Flow
     end
 
     # An optional list of catalog keys, such as a voice event's articulations,
-    # each known and none repeated.
+    # each known and none repeated, even through an alias or another spelling.
     def catalog_keys(values, catalog, label, path)
       return [] if values.nil?
 
-      each_element(values, label, path) do |value, element_path, index|
-        raise ArgumentError, "#{path}: duplicate #{label} #{value.inspect}" if values.index(value) != index
+      seen = []
+      each_element(values, label, path) do |value, element_path|
+        entry = catalog_value(value, catalog, element_path)
+        raise ArgumentError, "#{path}: duplicate #{label} #{value.inspect}" if seen.include?(entry)
 
-        catalog_value(value, catalog, element_path)
+        seen << entry
+        entry
       end
     end
 

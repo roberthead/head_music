@@ -301,6 +301,12 @@ describe HeadMusic::Content::Flow do
         .to raise_error(ArgumentError, "parts[0].voices[0].voice_events[2]: a rest cannot carry articulations, ornaments, or a note dynamic")
     end
 
+    it "refuses one ornament named twice through an alias, naming its path" do
+      hash["parts"].first["voices"].first["voice_events"].first["ornaments"] = %w[mordent lower_mordent]
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, 'parts[0].voices[0].voice_events[0]: duplicate ornaments "lower_mordent"')
+    end
+
     it "refuses a second dynamic at one position, naming its path" do
       hash["parts"].first["dynamic_events"] << {"position" => "1:1", "level" => "f"}
       expect { described_class.from_h(hash) }

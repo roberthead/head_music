@@ -318,6 +318,16 @@ describe HeadMusic::Content::Flow::SchemaValues do
       expect { values.catalog_keys(%w[accent accent], catalog, "articulations", "path") }
         .to raise_error(ArgumentError, 'path: duplicate articulations "accent"')
     end
+
+    it "refuses one ornament named twice through an alias" do
+      expect { values.catalog_keys(%w[mordent lower_mordent], HeadMusic::Rudiment::Ornament, "ornaments", "path") }
+        .to raise_error(ArgumentError, 'path: duplicate ornaments "lower_mordent"')
+    end
+
+    it "refuses one articulation named twice in different spellings" do
+      expect { values.catalog_keys(%w[accent Accent], catalog, "articulations", "path") }
+        .to raise_error(ArgumentError, 'path: duplicate articulations "Accent"')
+    end
   end
 
   describe "#note_dynamic" do
