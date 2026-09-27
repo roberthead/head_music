@@ -7,6 +7,15 @@ describe HeadMusic::Notation::Kern::BarClock do
     HeadMusic::Notation::Kern::BarlineReader.read(field)
   end
 
+  it "is in the first bar before any barline" do
+    expect(clock.in_force_number).to eq 1
+  end
+
+  it "is in the bar the last barline opened" do
+    clock.barline(barline("=3"), 0, 3)
+    expect(clock.in_force_number).to eq 3
+  end
+
   it "right-aligns a pickup in the bar before the first barline" do
     clock.barline(barline("=1"), Rational(1, 4), 3)
     expect(clock.bars.map(&:to_h)).to eq [{number: 0, start: Rational(-1, 2)}, {number: 1, start: Rational(1, 4)}]

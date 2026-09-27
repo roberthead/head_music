@@ -29,6 +29,11 @@ module HeadMusic::Notation::Kern
       @repeat_ends = []
     end
 
+    # Before the first barline, the music is in the flow's first bar.
+    def in_force_number
+      number || HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR
+    end
+
     def barline(barline, time, line)
       elapsed = time - @bar_start
       if @number.nil?

@@ -25,6 +25,19 @@ module HeadMusic::Notation::Kern
       end
     end
 
+    # Gives each syllable to the note its kern spine attacks on the row.
+    def sing(events)
+      syllables.each do |syllable|
+        event = events[syllable.track]
+        if event.nil? || event.pitches.empty?
+          raise ParseError.new(
+            %(The syllable "#{syllable.text}" in spine #{syllable.column} has no note under it), line_number: @row.record.line
+          )
+        end
+        event.syllables << syllable
+      end
+    end
+
     private
 
     def syllable(index, field)
