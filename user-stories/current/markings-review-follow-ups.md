@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T11:01:54-07:00
   planned_at:   2026-09-27T11:54:27-07:00
   finished_at:
-  updated_at:   2026-09-27T12:06:19-07:00
+  updated_at:   2026-09-27T12:13:49-07:00
 -->
 
 # Story: Markings Review Follow-ups
@@ -133,3 +133,34 @@ Four items are small and contained: alias-aware duplicate checking in Flow JSON,
 - A fine grid, such as a dotted value against a dynamic at a small offset, writes many null rows. It is legal Humdrum, and a cap can come later if it appears in practice.
 - MusicXML `<offset>` on the last element of a measure is valid but rarely produced, so some importers may ignore it. `<forward>` would claim time the voice doesn't hold.
 - Kern still drops a trailing voice dynamic at `data_rows.rb:31-32`; that is deferred with the other formats' trailing drops.
+
+## Review
+
+Reviewed 2026-09-27 at `e5773334`, covering the six implementation commits (`2fdcafef` through `c0338bd6`).
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| MusicXML trailing voice dynamic, single staff and grand staff | ✅ | `music_xml/direction_writer.rb` `trailing_lines`, `writer.rb`; `writer_spec.rb` and `writer_cross_staff_spec.rb` |
+| Two voices: direction before `<backup>`, voice and staff kept, durations unchanged | ✅ | `writer_spec.rb` (`note direction backup note`, backup 3); the cross-staff spec (backup 2) |
+| A dynamic under a note or rest writes as before | ✅ | `voice_lines` unchanged; "writes nothing for a dynamic under the last note" |
+| Kern reader times null-only rows by the even split | ⚠️ | `kern/dynamic_placer.rb` `pass`, and specs in `flow_builder_spec.rb`. A grace-note row is taken for a null-only row; see finding 1 |
+| Writer keeps notes whole, with dynamics on null rows | ✅ | `kern/data_rows.rb` `row_offsets`; `writer_spec.rb` |
+| Read-back gives the written value and position | ✅ | `kern_round_trip_spec.rb` (dotted quarter, *p* at 1:1:480) |
+| Whole note with *p* at 1:2 | ✅ | `kern_round_trip_spec.rb` |
+| Under a rest, and several voices holding | ✅ | `kern_round_trip_spec.rb` |
+| Different parts, same span | ✅ | `kern_round_trip_spec.rb` |
+| A dynamic at an attack writes as before | ✅ | the existing `writer_spec.rb` cases pass |
+| Flow JSON alias and spelling duplicates | ✅ | `schema_values.rb` `catalog_keys`; `schema_values_spec.rb`, `flow_serialization_spec.rb` |
+| Every guide grades a marked flow the same | ✅ | `style/guide_marked_flow_grading_spec.rb`; each side builds a fresh flow |
+| ABC and LilyPond read dynamics from the catalog | ✅ | `abc/decoration_mapper.rb`, `lily_pond/mark_reader.rb`; literal oracle lists and guard specs |
+| CHANGELOG **Breaking.** entries | ✅ | both entries under Changed |
+
+### Code review findings
+
+1. **A kern grace-note row is treated as a row with no time of its own (a regression, reproduced).** `FlowBuilder#read_data` counts only notes and rests as attacks, so a row holding only a grace token such as `8qd` joins the even split. `2c` / `.  p` / `8qd` / `2e` reads the *p* at 1:1:640 instead of 1:2, and `2c` / `8qd  p` / `2e` at 1:2 instead of 1:3, which `main` got right. A grace row sits at the next note's time, so it should close the buffer as a timed row there. The writer never writes grace notes, so round trips are unaffected; files from elsewhere are.
+2. **The kern writer's null-row count grows with tick resolution.** A whole note with a *p* at `1:1:001` writes 3,839 null rows. It reads back exactly and is fast, and it is bounded at one row per tick of the span. The `RenderError` that capped this came out with `SpineTokens.cut`. Decide whether to cap it and raise, or pin the behavior.
+3. **Kern still drops a part dynamic after the flow's last note in a bar** (`kern/data_rows.rb` `dynamic_offsets`; it was already the case on `main`). [Place Voice Dynamics Where No Note Starts](../backlog/place-voice-dynamics-where-no-note-starts.md) records only the voice case, so it should name part dynamics too.
+
+Checked and correct: `rational_gcd` on reduced rationals; the round trips for pickups, short final bars, 6/8, and two parts attacking at different times; spine splits and joins between buffered rows; `trailing_lines` against `voice_lines` and `voice_rest_lines`; and the error message and ordering in `catalog_keys`.
