@@ -2,10 +2,12 @@
 module HeadMusic::Notation::LilyPond
   # Reads one music expression by recursive descent: sequential braces,
   # << >> parallels, and \relative and \absolute wrappers. A ContextReader
-  # reads the \new Staff and \new Voice declarations inside, and a
-  # MusicItemReader the notes, rests, and commands. Every other command
-  # raises as unsupported rather than being skipped, because skipping a
-  # \transpose or a \tuplet would yield a plausible but wrong flow.
+  # reads the \new Staff and \new Voice declarations inside, a
+  # MusicItemReader the notes, rests, and \change Staff commands, a
+  # SettingReader the \key, \time, and \clef commands, and a
+  # DynamicsItemReader what a \new Dynamics holds. Every other command raises
+  # as unsupported rather than being skipped, because skipping a \transpose
+  # or a \tuplet would yield a plausible but wrong flow.
   class MusicReader
     # The reader recurses per brace level and per \relative, \absolute, or
     # \new wrapper; the lexer and balance check do not, so nesting must be
@@ -17,6 +19,8 @@ module HeadMusic::Notation::LilyPond
       @cursor = cursor
       @readers = PitchReaderStack.new
       @items = MusicItemReader.new(cursor, @readers)
+      @settings = SettingReader.new(cursor)
+      @dynamics_items = DynamicsItemReader.new(cursor, self, @items, @settings)
       @contexts = ContextReader.new(cursor, document, self)
       @depth = 0
     end
@@ -59,7 +63,7 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :cursor, :readers, :items, :contexts
+    attr_reader :cursor, :readers, :items, :settings, :dynamics_items, :contexts
 
     def read_expression_command(context)
       token = cursor.peek
@@ -99,7 +103,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_item(context)
-      return read_dynamics_item(context) if context.dynamics?
+      return dynamics_items.read(context) if context.dynamics?
 
       token = cursor.peek
       case token.type
@@ -117,41 +121,14 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    # A Dynamics context only marks time, so a rest there is a spacer and
-    # anything that sounds is refused.
-    def read_dynamics_item(context)
-      token = cursor.peek
-      case token.type
-      when :spacer, :rest, :whole_bar_rest then items.read_spacer(context)
-      when :bar_check then items.read_bar_check(context)
-      when :open_brace then read_sequential(context)
-      when :note, :open_chord then raise cursor.unsupported("Notes inside \\new Dynamics are not supported", token)
-      when :command then read_dynamics_command(token)
-      when :unsupported then raise cursor.unsupported_token(token)
-      else raise cursor.error(%(Unexpected token "#{token.lexeme}" inside \\new Dynamics), token)
-      end
-    end
-
-    # A \key, \time, or \clef in a Dynamics context only repeats the staves',
-    # so it is read and ignored.
-    def read_dynamics_command(token)
-      raise cursor.unsupported_command(token) unless %w[key time clef].include?(token.lexeme)
-
-      items.skip_setting
-    end
-
     def read_item_command(context)
       token = cursor.peek
       case token.lexeme
-      when "key" then items.read_key(context)
-      when "time" then items.read_time(context)
-      when "clef" then items.read_clef(context)
+      when *SettingReader::COMMANDS then settings.read(context.stream)
       when "change" then items.read_staff_change(context)
-      when "relative" then read_relative { read_expression(context) }
-      when "absolute" then read_absolute { read_expression(context) }
       when "new" then contexts.read_sequential_new(context)
       when *ENVELOPE_COMMANDS then raise cursor.error(%(Unexpected \\#{token.lexeme} inside music), token)
-      else raise cursor.unsupported_command(token)
+      else read_expression_command(context)
       end
     end
   end

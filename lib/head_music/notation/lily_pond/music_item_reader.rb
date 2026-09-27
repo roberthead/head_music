@@ -1,10 +1,10 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # Reads the items a sequence of music is made of — notes, rests, chords and
-  # the marks after them, ties, bar checks, and the \key, \time, \clef, and \change Staff commands that appear
-  # among them — into the stream of the context that holds them. Everything
-  # that opens a level of its own belongs to the MusicReader that calls this
-  # one.
+  # the marks after them, ties, bar checks, and \change Staff commands — into
+  # the stream of the context that holds them. A SettingReader reads the \key,
+  # \time, and \clef commands among them. Everything that opens a level of its
+  # own belongs to the MusicReader that calls this one.
   class MusicItemReader
     def initialize(cursor, readers)
       @cursor = cursor
@@ -56,40 +56,6 @@ module HeadMusic::Notation::LilyPond
       context.stream.bar_check(cursor.advance.line)
     end
 
-    def read_key(context)
-      command = cursor.advance
-      pitch_token = cursor.advance
-      mode_token = cursor.advance
-      located(command) do
-        context.stream.change_key_signature(KeyReader.key_signature(pitch_token, mode_token), command.line)
-      end
-    end
-
-    def read_time(context)
-      command = cursor.advance
-      meter_token = cursor.advance
-      located(command) { context.stream.change_meter(MeterReader.meter(meter_token), command.line) }
-    end
-
-    def read_clef(context)
-      command = cursor.advance
-      token = cursor.advance
-      raise cursor.error("\\clef expects a clef name", token || command) unless clef_name?(token)
-
-      context.stream.clef(token.lexeme)
-    end
-
-    # Reads a \key, \time, or \clef for its syntax alone, where it has no
-    # stream to change.
-    def skip_setting
-      command = cursor.advance
-      case command.lexeme
-      when "key" then located(command) { KeyReader.key_signature(cursor.advance, cursor.advance) }
-      when "time" then located(command) { MeterReader.meter(cursor.advance) }
-      when "clef" then raise cursor.error("\\clef expects a clef name", command) unless clef_name?(cursor.advance)
-      end
-    end
-
     def read_staff_change(context)
       command = cursor.advance
       target = cursor.peek
@@ -117,12 +83,6 @@ module HeadMusic::Notation::LilyPond
       context.stream.open_tie(tie.line) if tie
     end
 
-    def clef_name?(token)
-      return false unless token
-
-      %i[word string].include?(token.type) || (token.type == :note && token.duration.nil?)
-    end
-
     def chord_note
       token = cursor.advance
       raise cursor.unsupported_token(token) if token.type == :unsupported
@@ -137,17 +97,6 @@ module HeadMusic::Notation::LilyPond
       return unless token.multiplier
 
       raise cursor.unsupported("Duration multipliers on notes and rests are not supported", token)
-    end
-
-    # A key or meter reader rejects a token without knowing where in the
-    # document it came from, so an error that carries no line is given the
-    # line of the command that introduced it.
-    def located(command)
-      yield
-    rescue ParseError => parse_error
-      raise parse_error if parse_error.line_number
-
-      raise cursor.error(parse_error.message, command)
     end
   end
 end
