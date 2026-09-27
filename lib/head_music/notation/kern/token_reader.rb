@@ -27,14 +27,6 @@ module HeadMusic::Notation::Kern
     GRACE = Token.new(type: :grace, pitches: [], rhythmic_value: nil, fraction: nil, tie: nil)
     TIES = {"[" => :start, "_" => :middle, "]" => :end}.freeze
     GRACE_MARKS = %w[q Q].freeze
-    # The heavy accent ^^ is read before the accent ^ it contains.
-    MARCATO = "^^"
-    ARTICULATIONS = {"'" => :staccato, "`" => :staccatissimo, "^" => :accent, "~" => :tenuto}.freeze
-    ORNAMENTS = {
-      "t" => :trill, "T" => :trill, "m" => :mordent, "M" => :mordent,
-      "w" => :inverted_mordent, "W" => :inverted_mordent, "S" => :turn
-    }.freeze
-    SFORZANDO = "z"
     # Beams and partial beams, stems, fermatas, slurs and phrases, the
     # inverted turn and the ornament-ending turn, other ornaments, bowings,
     # breath and arpeggio marks, and editorial and visibility marks.
@@ -91,21 +83,10 @@ module HeadMusic::Notation::Kern
       pitches = read_pitches(remaining, text)
       rest = !remaining.delete!("r").nil?
       tie = read_tie(remaining, text)
-      markings = read_markings(remaining)
+      markings = MarkCodes.read!(remaining)
       ensure_consumed(remaining, text)
       token = build(text, duration, pitches, rest, tie)
       rest ? token : token.with(**markings)
-    end
-
-    def read_markings(remaining)
-      marcato = !remaining.gsub!(MARCATO, "").nil?
-      articulations = ARTICULATIONS.filter_map { |mark, key| key if remaining.delete!(mark) }
-      ornaments = ORNAMENTS.filter_map { |mark, key| key if remaining.delete!(mark) }
-      {
-        articulations: (articulations + (marcato ? [:marcato] : [])).uniq.sort,
-        ornaments: ornaments.uniq.sort,
-        note_dynamic: remaining.delete!(SFORZANDO) && :sfz
-      }
     end
 
     def read_duration(remaining, text)

@@ -33,19 +33,6 @@ module HeadMusic::Notation::Kern
     TIE_OPENING = {nil => "", :start => "[", :middle => "", :end => ""}.freeze
     TIE_CLOSING = {nil => "", :start => "", :middle => "_", :end => "]"}.freeze
 
-    ARTICULATION_MARKS = {"staccato" => "'", "staccatissimo" => "`", "accent" => "^", "tenuto" => "~", "marcato" => "^^"}.freeze
-    ORNAMENT_MARKS = {"trill" => "T", "mordent" => "M", "inverted_mordent" => "W", "turn" => "S"}.freeze
-    # The other note dynamics have no token signifier, so they go in **dynam.
-    NOTE_DYNAMIC_MARKS = {"sfz" => "z"}.freeze
-
-    def self.marks(voice_event)
-      [
-        *voice_event.articulations.map { |articulation| ARTICULATION_MARKS.fetch(articulation.name_key) },
-        *voice_event.ornaments.map { |ornament| ORNAMENT_MARKS.fetch(ornament.name_key) },
-        NOTE_DYNAMIC_MARKS[voice_event.note_dynamic&.name_key]
-      ].join
-    end
-
     FIRST_PIECE_TIE = {nil => :start, :start => :start, :middle => :middle, :end => :middle}.freeze
     LAST_PIECE_TIE = {nil => :end, :start => :middle, :middle => :middle, :end => :end}.freeze
 
@@ -138,7 +125,7 @@ module HeadMusic::Notation::Kern
         pitches: voice_event.rest? ? nil : voice_event.pitches,
         tie: voice_event.rest? ? nil : tie,
         syllables: index.zero? ? voice_event.syllables : {},
-        marks: index.zero? ? self.class.marks(voice_event) : ""
+        marks: index.zero? ? MarkCodes.marks(voice_event) : ""
       )
     end
 
