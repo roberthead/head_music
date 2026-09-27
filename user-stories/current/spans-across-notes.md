@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T13:53:22-07:00
   planned_at:   2026-09-27T15:48:57-07:00
   finished_at:
-  updated_at:   2026-09-27T15:48:57-07:00
+  updated_at:   2026-09-27T16:08:18-07:00
 -->
 
 # Story: Spans Across Notes: Slurs and Phrase Marks
@@ -68,21 +68,21 @@ voice.spans_at("1:2").map(&:kind) # => [:slur, :phrase]
 - [ ] A voice can hold spans, each with a kind (slur or phrase) and a start and end position, via `voice.add_span(kind, from:, to:)`
 - [ ] A span kind declares its rules as data: whether its ends sit on note events, on voice events, or at any position; whether a voice, a part, or both may hold it; and whether it covers its last note. Hairpins, octave lines, pedals, and glissandos can be added later without changing the span's shape
 - [ ] Span storage does not depend on its owner, so a part can hold spans in a later story
-- [ ] A slur or phrase whose start or end is not a note event of its voice raises `ArgumentError`, as does a span whose end does not come after its start, and an exact duplicate
+- [ ] A slur whose start or end is not a note event of its voice raises `ArgumentError`, and so does a phrase whose start or end is not a voice event of its voice (a phrase may begin or end on a rest), a span whose end does not come after its start, and an exact duplicate
 - [ ] Slurs may nest inside phrase marks and cross them. Two slurs, or two phrases, in one voice may nest or overlap, and both are kept
 - [ ] A span can cross barlines and staff crossings, and writers open it on the first fragment of its first note and close it on the last fragment of its last note
-- [ ] Merging a chord tone onto a slurred note, or placing a rest on it, leaves the slur unchanged
+- [ ] Merging a chord tone onto a slurred note, or placing a rest on it, leaves the slur unchanged; placing a note on a rest that a phrase starts or ends on leaves the phrase on the new note
 - [ ] `voice.spans_at(position)` answers each span with `from <= position` whose last note has not yet ended, innermost first
 
 ### Serialization and formats
 
 - [ ] Flow JSON writes `"spans"` on a voice only when it has spans, as an optional schema-5 key validated with path-tagged errors; existing schema-5 documents read unchanged
-- [ ] ABC reads `(`/`)` slurs, including nested and dotted `.(` ones, and writes slurs, and phrase marks as slurs; it raises `RenderError` for spans that cross without nesting; `(3` still raises `UnsupportedFeatureError`
+- [ ] ABC reads `(`/`)` slurs, including nested and dotted `.(` ones, and writes slurs, and phrase marks as slurs; it leaves out a phrase that would cross a slur, raises `RenderError` for two slurs that cross, and a spec pins both; `(3` still raises `UnsupportedFeatureError`
 - [ ] LilyPond reads `(`/`)`, `\(`/`\)`, `^(`/`_(`, and `\=id(` slurs, and writes slurs and phrasing slurs, numbering them as `\=n(` only where two of a kind are open at once
 - [ ] kern reads and writes `(`/`)` slurs and `{`/`}` phrases, including nested ones, and elided `&` ones as overlaps
 - [ ] MusicXML writes `<slur>` for slurs and phrases, numbering spans open at the same time so crossing slurs survive
 - [ ] Each format round-trips a flow with a slur nested in a phrase, a slur whose last note is tied across a barline, and a slur across a staff crossing, asserting where each span starts and ends; ABC's phrases come back as slurs, and a spec pins that
-- [ ] Readers drop unmatched, unterminated, rest-anchored, and zero-length slurs instead of raising, and every file that imports today still imports
+- [ ] Readers keep phrases that start or end on a rest, and drop unmatched, unterminated, and zero-length spans and rest-anchored slurs instead of raising; every file that imports today still imports
 - [ ] LilyPond's `\(`, `\)`, and `\=id(` no longer raise `ParseError`
 - [ ] Maintains 90%+ test coverage
 
@@ -90,10 +90,10 @@ voice.spans_at("1:2").map(&:kind) # => [:slur, :phrase]
 
 - Octave lines (8va), pedal marks, and glissandos are also spans. They are out of scope, but a span kind's rules are data, so each is a catalog row later rather than a change of shape.
 - Ties are not spans: the model already holds them in the tied chain of a rhythmic value.
-- Slurs and phrases must start and end on note events. Readers drop one anchored on a rest, which keeps imports working.
+- Slurs must start and end on note events, since legato needs sounding notes; readers drop one anchored on a rest, which keeps imports working. A phrase may start or end on any voice event, rests included, since a phrase often ends in one.
 - A slur starting on a grace note, which the readers drop, moves to the next main note. [Tuplets and Grace Notes](../backlog/tuplets-and-grace-notes.md) should revisit that.
 - `Voice#voice_events` answers its live array, so code outside the gem could move an event out from under a span. Nothing in the gem does; freezing or copying it is a later refactor.
-- Crossing slurs in kern are written with `&(`, the Humdrum elision mark. No Humdrum tool was run to confirm it reads as an overlap; if it does not, kern raises `RenderError` like ABC.
+- Crossing slurs in kern are written with `&(`, trusting the Humdrum elision convention. No Humdrum tool was run to confirm it reads as an overlap; if it proves not to, kern should raise `RenderError` for them like ABC.
 
 ## Resolved Questions
 
@@ -111,7 +111,7 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 1. **`SpanKind` catalog**
    - Built as `Rudiment::Dynamic` and `Articulation` are: `load_catalog`, frozen instances, aliases.
    - Records: `slur`; `phrase` (alias `phrasing_slur`); `crescendo` (alias `cresc`); and `diminuendo` (aliases `decrescendo`, `dim`, `decresc`).
-   - Each record states its rules: `anchor` (`note_events` for slur and phrase; hairpins decided in their story), `extent` (`through_note` for slur and phrase, `to_position` for hairpins), and `owners` (`[voice]` for slur and phrase, `[voice, part]` for hairpins).
+   - Each record states its rules: `anchor` (`note_events` for slur, `voice_events` for phrase; hairpins decided in their story), `extent` (`through_note` for slur and phrase, `to_position` for hairpins), and `owners` (`[voice]` for slur and phrase, `[voice, part]` for hairpins).
    - Names in all six locales and en_GB.
    - Files: `rudiment/span_kind.rb`, `rudiment/span_kinds.yml`, `locales/*.yml`, `lib/head_music.rb`.
    - Spec: `spec/head_music/rudiment/span_kind_spec.rb`, mirroring `dynamic_spec.rb`.
@@ -119,7 +119,7 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 2. **`Span`, `Spans`, and the Voice API**
    - `Content::Span` is a frozen value modeled on `DynamicEvent`: `flow`, `span_kind`, `kind`, `from`, and `to`. It coerces positions, raises on a foreign flow, requires `from < to`, answers `to_h` as `{"kind", "from", "to"}`, and compares on `[from, to, kind index]` so JSON is deterministic.
    - `Content::Spans` is a sorted collection like `DynamicEvents`. Its owner hands it the anchor check, so it never branches on owner type. It raises only on an exact duplicate, and answers `starting_at`, `ending_at`, and `covering(position)`.
-   - `Voice#add_span(kind, from:, to:)` checks each end against `voice_event_at`: a slur or phrase needs a `NoteEvent`. It also raises when the kind's `owners` leaves out a voice. `Voice#spans` answers them.
+   - `Voice#add_span(kind, from:, to:)` checks each end against `voice_event_at` by the kind's anchor: a slur needs a `NoteEvent`, a phrase any voice event. It also raises when the kind's `owners` leaves out a voice. `Voice#spans` answers them.
    - `Voice#spans_at(position)` is half-open, `from <= position < extent_end`, where a `through_note` span's `extent_end` is the `next_position` of the note at `to`. It answers the innermost first.
    - Files: `content/span.rb`, `content/spans.rb`, `content/voice.rb`, `lib/head_music.rb`.
    - Specs (`span_spec.rb`, `spans_spec.rb`, `voice_spec.rb`):
@@ -154,7 +154,7 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 5. **kern: read slurs and phrases**
    - `token_reader.rb`: `(`, `)`, `{`, `}`, and `&` leave the ignored set; a token counts its opens and closes, combined across a chord.
    - `voice_cursor.rb#continue_tie`: a mark on a tie's later link belongs to the tie's voice event.
-   - `layer.rb`: after the notes are placed, pair opens with closes per layer. `((` nests; `&(` elides into an overlap. Unmatched marks, marks on rests or grace notes, pairs that collapse to `from == to`, and unclosed spans are skipped.
+   - `layer.rb`: after the notes are placed, pair opens with closes per layer. `((` nests; `&(` elides into an overlap. Unmatched marks, slur marks on rests, marks on grace notes, pairs that collapse to `from == to`, and unclosed spans are skipped; a phrase mark on a rest is kept.
    - Specs: `token_reader_spec.rb`, `flow_builder_spec.rb`, `flow_builder_splits_spec.rb` (a slur in a sub-spine).
 
 6. **kern: write slurs and phrases**
@@ -168,13 +168,13 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 
 8. **ABC: write slurs, and phrases as slurs**
    - `(` goes before the decorations on the start event's first segment, `)` after the end event's last segment. Slurs and phrases write alike, nested as nested parentheses.
-   - Spans that cross without nesting raise `ABC::RenderError`.
+   - A phrase that would cross a slur is left out. Two slurs that cross raise `ABC::RenderError`.
    - Specs: `writer_spec.rb`; `abc_round_trip_spec.rb` with `expect_same_spans` on slurs, a spec pinning that phrases come back as slurs, and `crossing_slurs` raising.
 
 9. **LilyPond: read slurs and phrasing slurs**
    - `lexer.rb`: `\\[()]` joins `MARK_PATTERN`, `\=id(` and `\=id)` lex, and the direction prefixes `^(` and `_(` are accepted.
    - `mark_reader.rb`: `Marks` gains slur and phrase opens and closes.
-   - `event_placer.rb`: open spans are tracked per voice, keyed by id so `\=1(` and `\=2(` can overlap, and added when the end note is placed. A mark on a tie's later link goes to the start of the tied group. Marks on rests, unmatched marks, and unterminated spans are dropped.
+   - `event_placer.rb`: open spans are tracked per voice, keyed by id so `\=1(` and `\=2(` can overlap, and added when the end note is placed. A mark on a tie's later link goes to the start of the tied group. Slur marks on rests, unmatched marks, and unterminated spans are dropped; a phrasing slur on a rest is kept.
    - Specs: `lexer_spec.rb`, `mark_reader_spec.rb`, `document_reader_spec.rb` (`(` leaves the unsupported list). Edit these with the Edit tool; they are full of backslashes.
 
 10. **LilyPond: write slurs and phrasing slurs**
@@ -208,7 +208,7 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 
 - Every round trip calls `expect_same_spans` on `spanned_melody` and `spanned_piano`, comparing `[kind, from, to]`.
 - The fixture's traps: a slur ending on a note tied across a barline, one starting on a note split at a barline, and one crossing staves.
-- Losses are pinned: ABC phrases return as slurs, ABC raises on `crossing_slurs`, LilyPond numbers them, and MusicXML numbers them.
+- Losses are pinned: ABC phrases return as slurs, ABC leaves out a phrase that crosses a slur and raises on `crossing_slurs`, and LilyPond and MusicXML number them. `spanned_melody` gains a phrase ending on a rest, and one crossing a slur.
 - Each reader gets a table spec of what it keeps and drops: nested, crossing or elided, unmatched, on a rest, on a grace note, on a tie's later link, and unterminated. `(3` in ABC still raises; `\(` and `\=1(` no longer do; existing fixtures still import.
 - Each new reader and writer spec is run once against the code before its change, to see that it fails.
 - Coverage stays at 90% or more under `bundle exec rake`.
@@ -217,4 +217,5 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 
 - Kern's `&(` as an overlap is unconfirmed against a Humdrum tool.
 - Readers that drop rest-anchored slurs keep imports working, but lose the mark. That is the reader policy.
+- Implementation pauses after step 3, so the model and JSON can be checked before the formats build on them.
 - `spans_at` is half-open with a per-kind extent, so a slur covers the whole of its last note; hairpins will end at a position instead.
