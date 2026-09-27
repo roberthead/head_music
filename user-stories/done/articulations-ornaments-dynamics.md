@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-25T14:05:57-07:00
   activated_at: 2026-09-25T17:40:58-07:00
   planned_at:   2026-09-26T15:57:06-07:00
-  finished_at:
-  updated_at:   2026-09-26T17:52:10-07:00
+  finished_at:  2026-09-26T19:14:45-07:00
+  updated_at:   2026-09-26T19:14:45-07:00
 -->
 
 # Story: Articulations, Ornaments, Dynamics
@@ -374,3 +374,13 @@ Reviewed 2026-09-26 at commit `469fc444`, covering the story's commits `442167a4
 - Finding 3 is decided: accents now come ahead of levels in kern's `**dynam` precedence, and the kern writing criterion and the Notes say so. It is pinned in `kern/writer_spec.rb`.
 - Finding 5 is decided: LilyPond keeps leaving out a voice level on an *fp* note, pinned in `lily_pond/writer_spec.rb` ("with a level on a note that carries fp").
 - Still open: the style-guideline spec for the "unchanged" criterion, and the minor points and duplication above.
+
+## Learnings
+
+- **Settling the model first paid off.** Before planning, the branch renamed `Placement` to `VoiceEvent`, split out `NoteEvent` and `RestEvent`, added `Soundable`, and moved fermatas to their own story. The markings then had an obvious home, and the plan could name files and line numbers. Its eighteen steps became about eighteen commits, each able to stand alone.
+- **One shared fixture held four formats to one standard.** `marked_melody`, `grand_staff_piano_with_dynamics`, and `expect_same_markings` gave ABC, LilyPond, and kern the same round-trip test. Most format bugs showed up there instead of in format-by-format specs.
+- **The defects were where new data met old machinery.** None of the three bugs the review found was in the new model. Each was an existing helper that didn't yet account for dynamics: MusicXML `Divisions` ignored dynamic positions, the kern column builder assumed every part has a voice, and the LilyPond `\new Dynamics` reader assumed a part holds only levels. Next time, list the helpers that compute from a flow's timeline or its parts (divisions, column layout, spacer arithmetic) and check each against the new data before calling a format done.
+- **For a format that can't hold everything, keep what can't be recovered.** The story first gave levels priority over accents in kern's one-value-per-row `**dynam`. That was backwards: a dropped level can usually be told from the levels around it, and an *fp* overrides a level at its own position anyway, but a dropped accent is gone. The same question will come up for spans and timeline expressions.
+- **Some deviations from the plan were improvements.** Unreadable `**dynam` text is skipped instead of raising, which keeps "nothing that imports today starts failing". A LilyPond dynamic on a tie's later link keeps its written position instead of moving to the start of the tied group. Hairpins and repeated settings inside `\new Dynamics` turned up late and are dropped. A plan's "raises" deserves a second look against the story's own promises.
+- **Review agents need checking.** The acceptance reviewer said MusicXML had no spec for the grand-staff piano, but `writer_cross_staff_spec.rb` has one. Every finding from the code reviewer reproduced. Reproducing each claim before writing it into the review kept the review accurate.
+- **Scope the review to the story's commits.** The branch also carried the preparatory refactors, so the merge-base diff was 193 files. Reviewing `442167a4^..HEAD` kept the agents on the markings work.
