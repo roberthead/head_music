@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-27T11:01:33-07:00
   activated_at: 2026-09-27T11:01:54-07:00
   planned_at:   2026-09-27T11:54:27-07:00
-  finished_at:
-  updated_at:   2026-09-27T12:21:41-07:00
+  finished_at:  2026-09-27T12:25:24-07:00
+  updated_at:   2026-09-27T12:25:24-07:00
 -->
 
 # Story: Markings Review Follow-ups
@@ -170,3 +170,14 @@ Reviewed 2026-09-27 at `e5773334`, covering the six implementation commits (`2fd
 - Finding 3 goes to the backlog story, renamed [Place Dynamics Where No Note Starts](../backlog/place-dynamics-where-no-note-starts.md) to cover part dynamics.
 
 Checked and correct: `rational_gcd` on reduced rationals; the round trips for pickups, short final bars, 6/8, and two parts attacking at different times; spine splits and joins between buffered rows; `trailing_lines` against `voice_lines` and `voice_rest_lines`; and the error message and ordering in `catalog_keys`.
+
+## Learnings
+
+- **Reproducing every open item before writing the story changed two of them.** The review said kern splits a note on reading; it splits on writing. And the MusicXML drop was real, with no error. A story written from the review's words alone would have aimed at the wrong code.
+- **Checking the plan's premise saved the kern work.** Taking out the writer's split was not enough: the reader put a row with no attack at the next attack, so every mid-note dynamic would have moved and the suite would have stayed green. The shared fixture `expect_same_markings` compares the level in force at each note, not where each dynamic sits, so it could not see the move. A round trip that is meant to keep positions has to assert positions.
+- **Reader before writer kept each commit true.** Changing the reader first meant no commit wrote files that read back wrong.
+- **Where state lives follows what it needs.** Buffering untimed rows in `FlowBuilder` failed because the spines have ended by the time the file does, so a buffered row's part can no longer be looked up. `DynamicPlacer` resolves the part when it reads the row and fills in the time later.
+- **"Attack" was standing in for "timed row", and the two differ.** A grace-note row attacks nothing the model keeps, but in Humdrum it has a time. When adopting another system's convention, list every token type that convention classifies, instead of reusing the nearest existing predicate. The review caught this; the plan did not.
+- **Removing a refusal can remove a limit.** `SpineTokens.cut` raised on a split no binary value spans, which also capped how finely kern could place a dynamic. Without it, one tick into a whole note writes 3,839 null rows. It is bounded and correct, but it only came to light because the review went looking.
+- **Run a spec against the old code to see that it tests anything.** Stashing each fix showed that the new specs fail without it, and showed that three kern round-trip specs pass either way. Those three stay as position guards, and the implementation summary says so.
+- **Explain terms before asking for a decision.** The first round of questions used "null-token row", "kern split", and "offset" without explaining them, and the answers came back as questions. Laying out the mechanism first would have saved that round.

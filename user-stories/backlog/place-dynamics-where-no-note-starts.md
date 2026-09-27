@@ -19,7 +19,7 @@ SO THAT no writer moves or drops a dynamic without a word
 
 ## Background
 
-Found while planning [Markings Review Follow-ups](../current/markings-review-follow-ups.md), which fixed the same gaps in MusicXML and, for dynamics under held notes, kern.
+Found while planning [Markings Review Follow-ups](../done/markings-review-follow-ups.md), which fixed the same gaps in MusicXML and, for dynamics under held notes, kern.
 
 - **LilyPond and ABC move a voice dynamic under a held note to the next note.** A voice *p* at 1:2 under `c3 d` writes `c''2. d''4\p`. The previous story accepted this. LilyPond could write the dynamic as a part dynamic in `\new Dynamics`, changing its owner as kern already does; ABC has no timed spacer that leaves the note untouched.
 - **Kern, ABC, and LilyPond drop a voice dynamic after the voice's last note in a bar.** `C D E` in 4/4 with *f* at 1:4 writes no *f*. Kern filters out offsets at or past the bar's written length (`DataRows#dynamic_offsets`).
