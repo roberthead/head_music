@@ -516,6 +516,16 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       expect(levels(flow.parts.first)).to eq ["f at 2:1:000"]
     end
 
+    it "times a grace note's row at the note it leads to, bounding the rows before it" do
+      flow = parse("**kern  **dynam\n2c  .\n.  p\n8qd  .\n2e  .\n*-  *-")
+      expect(levels(flow.parts.first)).to eq ["p at 1:2:000"]
+    end
+
+    it "places a level on a grace note's row at the note it leads to" do
+      flow = parse("**kern  **dynam\n2c  .\n8qd  p\n2e  .\n*-  *-")
+      expect(levels(flow.parts.first)).to eq ["p at 1:3:000"]
+    end
+
     it "places a level in a pickup bar at its offset" do
       flow = parse("**kern  **dynam\n*M3/4  *\n4c  p\n=1  =1\n2.d  f\n*-  *-")
       expect(levels(flow.parts.first)).to eq ["p at 0:3:000", "f at 1:1:000"]

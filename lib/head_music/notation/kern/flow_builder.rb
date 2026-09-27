@@ -108,13 +108,19 @@ module HeadMusic::Notation::Kern
       line = row.record.line
       tokens = kern_fields(row).map { |track, field, column| [track, TokenReader.read(field, line_number: line), column] }
       attacked = tokens.any? { |_track, token, _column| token.attack? }
-      return read_untimed(row) unless attacked
+      return read_untimed(row) unless attacked || grace?(tokens)
 
-      clock.ensure_music_allowed
+      clock.ensure_music_allowed if attacked
       time = @voices.current_time
       events = @voices.read(tokens, time, line)
       LyricReader.new(row).sing(events)
       @dynamics.read(row, events, time)
+    end
+
+    # A grace note is dropped, but its row is timed: it sits at the time of
+    # the note it leads to, so it bounds the rows that split the time.
+    def grace?(tokens)
+      tokens.any? { |_track, token, _column| token.type == :grace }
     end
 
     def read_untimed(row)
