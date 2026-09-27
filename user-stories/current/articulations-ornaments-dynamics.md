@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-25T17:40:58-07:00
   planned_at:   2026-09-26T15:57:06-07:00
   finished_at:
-  updated_at:   2026-09-26T16:44:29-07:00
+  updated_at:   2026-09-26T17:52:10-07:00
 -->
 
 # Story: Articulations, Ornaments, Dynamics
@@ -108,7 +108,7 @@ voice.dynamic_at("5:2").name_key # => "f"
 - [ ] ABC writes a part's dynamic events on the voice; where a voice's dynamic event and its part's fall on the same note, it writes only the one `dynamic_at` answers
 - [ ] LilyPond writes a part's dynamic events in a `\new Dynamics` context for the part, at their exact positions, using spacer rests
 - [ ] MusicXML writes each dynamic event as a `<direction>` at its position, tied to its `<voice>` when it is on a voice and to none when it is on a part
-- [ ] kern writes one `**dynam` spine per part that has dynamic events or an *sf*, *rfz*, or *fp*, holding the part's and its voices'. Where several fall at the same position, it writes the first: the part's level, then each voice's level in voice order, then each voice's accent
+- [ ] kern writes one `**dynam` spine per part that has dynamic events or an *sf*, *rfz*, or *fp*, holding the part's and its voices'. Where several fall at the same position, it writes the first: each voice's accent in voice order, then the part's level, then each voice's level in voice order
 
 ### Round trips
 
@@ -122,7 +122,7 @@ voice.dynamic_at("5:2").name_key # => "f"
 - Hairpins are spans and belong to [Spans Across Notes](../backlog/spans-across-notes.md).
 - Free-text directions ("dolce", "pizz.", "div.") are out of scope. "pizz." and "arco" overlap with playing techniques, so text directions need a design of their own.
 - "marcato" is both an `Articulation` (the `^` sign on one note) and a `PlayingTechnique` (the word "marc." over a passage). They stay separate: a reader turns the sign into the articulation and, once text directions exist, the word into a playing technique.
-- Kern's `**dynam` spine cannot say which voice of a part a dynamic belongs to, so a part whose voices have different dynamics comes back with one set, the part's. It also holds one value per position, so a part with an *sf*, *rfz*, or *fp* at the same position as a dynamic event writes only the dynamic event.
+- Kern's `**dynam` spine cannot say which voice of a part a dynamic belongs to, so a part whose voices have different dynamics comes back with one set, the part's. It also holds one value per position, so a part with an *sf*, *rfz*, or *fp* at the same position as a dynamic event writes only the accent. A level left out can often be told from the levels around it, while an accent left out is gone; and an *fp* overrides a level at its own position anyway, so the level in force reads back the same.
 - MusicXML has no reader, so it is checked by asserting on the XML it writes. Reading these markings belongs to [MusicXML Import](../backlog/musicxml-import.md).
 - Dynamic events raise on a duplicate position rather than replacing, unlike meter, tempo, and instrument changes, because a second dynamic at one instant is almost always an error.
 - Kern tokens with `z` and ABC's `T` and `M` shorthand fail with an unsupported-signifier or unexpected-character error today; this story makes them import.
@@ -306,3 +306,71 @@ Planned by a story-planner with a product manager, a best-practices engineer, an
 - **Readers:** a closed-vocabulary table spec per format covering every recognized-and-dropped entry, so coverage doesn't depend on round trips; dangling or orphaned marks raise; unknown syntax still raises `UnsupportedFeatureError`.
 - **Round trips:** the shared fixtures and `expect_same_markings` hold ABC, LilyPond, and kern to one standard; MusicXML gets structural assertions.
 - Never assert console output. Build compositions with `HeadMusic::Notation::ABC.parse` where shorter. Run `bundle exec rake` and `bundle exec rubocop -a` for each step.
+
+## Review
+
+Reviewed 2026-09-26 at commit `469fc444`, covering the story's commits `442167a4^..HEAD`. A product manager checked the acceptance criteria and a code reviewer read the diff; each finding below was reproduced before it was recorded. The full suite passes: 9839 examples, 0 failures, with 99.75% line and 95.57% branch coverage, and rubocop is clean.
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| Articulation and Ornament catalogs from YAML | ✅ | `rudiment/keyed_catalog.rb`, `articulations.yml`, `ornaments.yml`; `articulation_spec.rb`, `ornament_spec.rb` |
+| Names in every locale, en_GB falls back | ✅ | `keyed_catalog_spec.rb` fails on any missing locale key |
+| Any number of markings, each once, repeats ignored | ✅ | `note_event.rb:82-90`; `note_event_spec.rb` |
+| Merge keeps the existing event's markings | ✅ | `voice.rb:237-247`; `voice_spec.rb:186-199` |
+| A rest refuses markings | ✅ | `rest_event.rb:16-26`; `rest_event_spec.rb` |
+| Voice events, continuity, analysis, and style unchanged | ⚠️ | True by construction, and `voice_events` and `Voice::Continuity` are pinned (`voice_spec.rb:304`). No spec runs a style guideline over a marked flow, which the plan called for |
+| Dynamic catalog of levels and accents | ✅ | `rudiment/dynamic.rb`, `dynamics.yml`; `dynamic_spec.rb` |
+| One note dynamic, and it must be an accent | ✅ | `note_event.rb:96-104`; `note_event_spec.rb:83` |
+| DynamicEvent holds a level on a voice or a part | ✅ | `dynamic_event.rb:32-44`; `dynamic_event_spec.rb` |
+| A voice dynamic can fall under a held note or a rest | ✅ | `voice_spec.rb:225,230` |
+| A part dynamic governs every voice on every staff | ✅ | `part_spec.rb:142`, including a voice that crosses staves |
+| `dynamic_at` takes the latest, the voice wins a tie, nil when none | ✅ | `voice.rb:92-100`; `voice_spec.rb:246` |
+| *sf*, *sfz*, *rfz* leave the level alone | ✅ | `voice_spec.rb:286` |
+| *fp* gives *p* from its own note, for its own voice only | ✅ | `voice.rb:208-218`; `voice_spec.rb:267,277` |
+| Duplicate positions raise | ✅ | `dynamic_events.rb:20-23`; `voice_spec.rb:292`, `part_spec.rb:146` |
+| Flow JSON uses optional schema-5 keys | ✅ | `schema_values.rb`, `deserializer.rb`; `flow_serialization_spec.rb`, `schema_values_spec.rb` |
+| ABC reading | ✅ | `abc/decoration_mapper.rb`, `body_lexer.rb`, `voice_state.rb`; `.\|` still raises |
+| LilyPond reads marks on notes | ✅ | `lily_pond/mark_reader.rb`, `music_item_reader.rb`, `flow_builder.rb`; `mark_reader_spec.rb` |
+| LilyPond reads `\new Dynamics` as part dynamics | ✅ | `context_reader.rb`, `flow_builder.rb`; `lily_pond_dynamics_spec.rb`. It drops accents in these contexts, though (finding 4) |
+| kern reads token marks and `**dynam` | ✅ | `kern/token_reader.rb`, `dynamic_reader.rb`, `flow_builder.rb` |
+| A `**dynam` accent goes on every attacking note, or is dropped | ✅ | `kern/flow_builder.rb`; flow builder specs cover two staves and the case where nothing attacks |
+| Markings on rests are dropped, and a level becomes an event | ✅ | Tested in all three readers |
+| Recognized-but-uncatalogued markings are dropped, and unknown syntax raises | ✅ | ABC and LilyPond `DROPPED_*` tables and preflight; `!bogus!`, `\foo`, `-1` raise |
+| Every writer writes every marking | ✅ | `abc/decoration_writer.rb`, `lily_pond/mark_writer.rb`, `music_xml/marking_writer.rb`, `kern/spine_tokens.rb` |
+| Split notes are marked on the first fragment only | ✅ | A spec in each of the four writers |
+| ABC and LilyPond write a voice dynamic before its note | ⚠️ | ABC does. LilyPond omits a voice level that falls on a note carrying *fp* (`render_plan.rb:107-111`), so that event does not survive a round trip, though `dynamic_at` answers the same everywhere |
+| ABC folds in part dynamics | ✅ | `DynamicPlacement` with `include_part: true`; `abc/writer_spec.rb:604` |
+| LilyPond writes part dynamics in `\new Dynamics` | ✅ | `render_plan.rb`, `writer.rb`; round-trip specs |
+| MusicXML `<direction>` with voice and staff rules | ✅ | `music_xml/direction_writer.rb`; `writer_cross_staff_spec.rb:59-79`. It raises on a dynamic between note boundaries (finding 1) |
+| kern `**dynam` precedence | ✅ | `kern/dynamic_fields.rb:41-47`; `kern/writer_spec.rb`. The order drops accents (finding 3) |
+| `marked_melody` round-trips through ABC, LilyPond, and kern | ✅ | `abc_round_trip_spec.rb`, `lily_pond_round_trip_spec.rb`, `kern_round_trip_spec.rb` |
+| Grand-staff piano round-trips through LilyPond and kern; MusicXML writes it | ✅ | Exact through LilyPond. Through kern the voice's *mf* comes back on the part, the loss the Notes predict, and a spec pins it. The MusicXML part is `writer_cross_staff_spec.rb:59-79` |
+| 90%+ coverage | ✅ | 99.75% line, 95.57% branch |
+
+### Code review findings
+
+1. **The MusicXML writer raises on a dynamic between note boundaries.** `Divisions.for` (`music_xml/divisions.rb`) never considers dynamic event positions. A voice of quarter notes with `place_dynamic("1:1:480", :p)` raises `RenderError: cannot express a dynamic's offset … in 1 divisions per quarter note`, and so does a LilyPond `\new Dynamics { s8 s8\p … }` read and then written as MusicXML. The fix is to add each dynamic event's offset to the denominators.
+2. **The kern writer crashes on a part with dynamics but no voices.** `kern/writer.rb:64` calls `part_columns.last.with(...)` on nil and raises `NoMethodError`. It should skip the `**dynam` column or raise `RenderError`.
+3. **The kern writer drops an *sf*, *rfz*, or *fp* that shares a row with a level.** `kern/dynamic_fields.rb:35-46` puts levels first and keeps only the first value. A lost level can be recovered from the context around it, but a lost accent is gone. Either put accents first or raise. The Notes accept the loss, so this is a judgment call, and no spec pins it.
+4. **The LilyPond reader silently drops accents in `\new Dynamics`.** `\new Dynamics { s4\sfz s4 s2\p }` between piano staves keeps the *p* and loses the *sfz* (`lily_pond/flow_builder.rb:84-96`). It should either attach the accent to the part's notes attacking there, as the kern `**dynam` reader does, or raise.
+5. **The LilyPond writer omits a voice level on an *fp* note.** See the ⚠️ above.
+6. **Minor points:**
+   - A mid-note kern dynamic splits the note into tied links, so a dotted quarter comes back as a quarter tied to an eighth. That is a format limit, but no spec pins it.
+   - The MusicXML writer drops a voice dynamic that falls after the voice's last event in a bar, and says nothing.
+   - The deserializer silently merges alias duplicates such as `["mordent", "lower_mordent"]`.
+7. **Duplication:**
+   - The kern reader and writer keep the mark tables by hand as inverses of each other (`token_reader.rb`, `spine_tokens.rb`).
+   - The level and accent lists are hard-coded in `abc/decoration_mapper.rb` and `lily_pond/mark_reader.rb`, where `Dynamic.levels` and `Dynamic.accents` would do.
+   - Placing a level and wrapping `ArgumentError` appears in both `abc/voice_state.rb` and `lily_pond/flow_builder.rb`.
+   - The first-fragment check is repeated in `abc/writer.rb` and `lily_pond/render_plan.rb`.
+
+### Resolution
+
+- Finding 1 is fixed in `33084ad1`: divisions now count each dynamic event's offset.
+- Finding 2 is fixed in `c4e36d3a`: kern Preflight refuses dynamics on a part with no voices, since a `**dynam` spine needs a `**kern` spine on its left.
+- Finding 4 is fixed in `fc0749de`: an accent in a `\new Dynamics` goes on every note of the part attacking at its position, as a kern `**dynam` accent does.
+- Finding 3 is decided: accents now come ahead of levels in kern's `**dynam` precedence, and the kern writing criterion and the Notes say so. It is pinned in `kern/writer_spec.rb`.
+- Finding 5 is decided: LilyPond keeps leaving out a voice level on an *fp* note, pinned in `lily_pond/writer_spec.rb` ("with a level on a note that carries fp").
+- Still open: the style-guideline spec for the "unchanged" criterion, and the minor points and duplication above.
