@@ -426,6 +426,10 @@ describe HeadMusic::Notation::ABC::BodyLexer do
       expect(tokens.map(&:type)).to eq([:slur_start, :note, :note, :slur_end])
     end
 
+    it "breaks the beam at a space after a slur's close" do
+      expect(tokens_for("(AB) c").map(&:type)).to eq([:slur_start, :note, :note, :slur_end, :beam_break, :note])
+    end
+
     it "lexes a dotted slur as a slur" do
       expect(tokens_for(".(AB)").map(&:type)).to eq([:slur_start, :note, :note, :slur_end])
     end

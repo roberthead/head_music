@@ -609,4 +609,56 @@ describe HeadMusic::Notation::ABC::Writer do
       expect(body_of(flow)).to eq "!p!C4 !mf!D4|]\n"
     end
   end
+
+  describe "slurs and phrases" do
+    def last_line(flow)
+      described_class.new(flow).to_s.lines.last.chomp
+    end
+
+    def four_quarters_with(*spans)
+      MarkingFixtures.four_quarters.tap do |flow|
+        spans.each { |kind, from, to| flow.voices.first.add_span(kind, from: from, to: to) }
+      end
+    end
+
+    it "opens a slur before its first note and closes it after its last" do
+      expect(last_line(four_quarters_with([:slur, "1:1", "1:3"]))).to eq "(C2 D2 E2) F2|G8|]"
+    end
+
+    it "opens a slur before the note's decorations, since .( is a dotted slur" do
+      flow = four_quarters_with([:slur, "1:1", "1:2"])
+      flow.voices.first.voice_events.first.articulate(:staccato)
+      expect(last_line(flow)).to start_with "(.C2 D2)"
+    end
+
+    it "closes a slur after the last part of a note tied across a barline" do
+      expect(last_line(MarkingFixtures.spanned_melody)).to include("c2-|c2)", "(f2-|f2 g2))")
+    end
+
+    it "nests slurs and writes a phrase as a slur drawn in from a rest to the last note" do
+      expect(last_line(MarkingFixtures.spanned_melody))
+        .to eq "((C2 D2 E2) F2|(G2 (A2 B2) c2-|c2) d2 e2 (f2-|f2 g2)) z4|]"
+    end
+
+    it "starts a slur that touches another on the note after" do
+      expect(last_line(MarkingFixtures.touching_slurs)).to eq "(C2 D2 E2) (F2|G8)|]"
+    end
+
+    it "leaves out a slur that touching would leave one note long" do
+      expect(last_line(four_quarters_with([:slur, "1:1", "1:3"], [:slur, "1:3", "1:4"]))).to eq "(C2 D2 E2) F2|G8|]"
+    end
+
+    it "leaves out a phrase that crosses a slur" do
+      expect(last_line(MarkingFixtures.crossing_spans(:phrase, :slur))).to eq "C2 (D2 E2 F2)|G8|]"
+    end
+
+    it "leaves out a phrase that covers the same notes as a slur" do
+      expect(last_line(four_quarters_with([:phrase, "1:1", "1:3"], [:slur, "1:1", "1:3"]))).to eq "(C2 D2 E2) F2|G8|]"
+    end
+
+    it "refuses slurs that cross" do
+      expect { described_class.new(MarkingFixtures.crossing_spans).to_s }
+        .to raise_error(HeadMusic::Notation::ABC::RenderError, "ABC cannot write slurs that cross, as from 1:1:000 and from 1:2:000")
+    end
+  end
 end

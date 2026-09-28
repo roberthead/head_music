@@ -33,6 +33,7 @@ module HeadMusic::Notation::ABC
       ensure_no_mid_piece_changes
       ensure_no_instrument_change
       ensure_contiguous_voices(flow)
+      slur_writer
     end
 
     def ensure_single_voice
@@ -68,6 +69,10 @@ module HeadMusic::Notation::ABC
 
     def decoration_writer
       @decoration_writer ||= DecorationWriter.new(flow.voices.first)
+    end
+
+    def slur_writer
+      @slur_writer ||= SlurWriter.new(flow.voices.first)
     end
 
     # No %%transpose directive is emitted: the pitches are already written, and
@@ -144,13 +149,16 @@ module HeadMusic::Notation::ABC
       end.join.lstrip
     end
 
-    # A voice event split across bar lines is marked only where it starts.
+    # A voice event split across bar lines is marked only where it starts,
+    # and a slur closes after its last part. A slur opens before the
+    # decorations, since ".(" would be a dotted slur.
     def token(segment, pitch_writer, duration_writer)
       voice_event = segment.voice_event
       body = token_body(segment, pitch_writer, duration_writer)
+      body += slur_writer.closes(voice_event) unless segment.continues
       return body unless segment.bar_number == voice_event.position.bar_number
 
-      decoration_writer.prefix(voice_event) + body
+      slur_writer.opens(voice_event) + decoration_writer.prefix(voice_event) + body
     end
 
     def token_body(segment, pitch_writer, duration_writer)

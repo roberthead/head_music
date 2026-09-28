@@ -120,15 +120,17 @@ module HeadMusic::Notation::ABC
         return true if scanner.skip(/\\[ \t]*\z/)
         break if scanner.eos?
 
-        tokens << beam_break_token(scanner, line_number) if spaced && beamable_predecessor?(tokens.last)
+        tokens << beam_break_token(scanner, line_number) if spaced && beamable_predecessor?(tokens)
         scan_token(scanner, line_number, tokens)
       end
       false
     end
 
     # A beam break only matters after a music token; whitespace elsewhere
-    # (leading, after a bar line) carries no beaming signal.
-    def beamable_predecessor?(token)
+    # (leading, after a bar line) carries no beaming signal. A slur's close
+    # sits between a note and the space after it, so it is looked past.
+    def beamable_predecessor?(tokens)
+      token = tokens.reverse_each.find { |candidate| candidate.type != :slur_end }
       !token.nil? && BEAMABLE_TOKEN_TYPES.include?(token.type)
     end
 
