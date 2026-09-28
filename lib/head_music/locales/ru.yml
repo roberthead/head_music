@@ -266,6 +266,9 @@ ru:
       mordent: перечёркнутый мордент
       inverted_mordent: мордент
       turn: группетто
+    span_kinds:
+      slur: лига
+      phrase: фразировочная лига
     playing_techniques:
       bell: колокол
       bow: смычок

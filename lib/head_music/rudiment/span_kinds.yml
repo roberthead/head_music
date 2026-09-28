@@ -1,0 +1,14 @@
+# anchor: what a span's start and end must sit on in its voice, note_events
+#   or any voice_events.
+# extent: through_note, where a span covers the whole of its last note.
+# owners: which containers may hold the kind.
+span_kinds:
+  slur:
+    anchor: note_events
+    extent: through_note
+    owners: [voice]
+  phrase:
+    aliases: [phrasing_slur, phrase_mark]
+    anchor: voice_events
+    extent: through_note
+    owners: [voice]

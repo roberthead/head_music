@@ -323,6 +323,9 @@ de:
       mordent: Mordent
       inverted_mordent: Pralltriller
       turn: Doppelschlag
+    span_kinds:
+      slur: Bindebogen
+      phrase: Phrasierungsbogen
     playing_techniques:
       bell: Glocke
       bow: Bogen

@@ -4,7 +4,8 @@ describe HeadMusic::Rudiment::KeyedCatalog do
   catalogs = [
     HeadMusic::Rudiment::Articulation,
     HeadMusic::Rudiment::Ornament,
-    HeadMusic::Rudiment::Dynamic
+    HeadMusic::Rudiment::Dynamic,
+    HeadMusic::Rudiment::SpanKind
   ]
   locale_codes = %w[en de es fr it ru]
 

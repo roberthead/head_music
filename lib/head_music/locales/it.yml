@@ -319,6 +319,9 @@ it:
       mordent: mordente
       inverted_mordent: mordente superiore
       turn: gruppetto
+    span_kinds:
+      slur: legatura di portamento
+      phrase: legatura di frase
     playing_techniques:
       bell: campana
       bow: arco

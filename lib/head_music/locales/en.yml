@@ -442,6 +442,9 @@ en:
       mordent: mordent
       inverted_mordent: inverted mordent
       turn: turn
+    span_kinds:
+      slur: slur
+      phrase: phrase mark
     playing_techniques:
       aeolian: aeolian
       air: air

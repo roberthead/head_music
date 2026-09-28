@@ -320,6 +320,9 @@ es:
       mordent: mordente
       inverted_mordent: mordente invertido
       turn: grupeto
+    span_kinds:
+      slur: ligadura de expresión
+      phrase: ligadura de fraseo
     playing_techniques:
       bell: campana
       bow: arco
