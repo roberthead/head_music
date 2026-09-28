@@ -78,6 +78,8 @@ module HeadMusic::Notation::ABC
       when :voice_change then handle_voice_change(token)
       when :beam_break then handle_beam_break(token)
       when :decoration then handle_decoration(token)
+      when :slur_start then current_state.open_slur
+      when :slur_end then current_state.close_slur
       end
     end
 

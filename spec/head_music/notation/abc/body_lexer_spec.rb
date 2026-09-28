@@ -421,9 +421,17 @@ describe HeadMusic::Notation::ABC::BodyLexer do
       expect(tokens_for("{ab}c").first.to_h).to include(type: :unsupported, lexeme: "{ab}")
     end
 
-    it "lexes slur marks as unsupported" do
+    it "lexes slur marks" do
       tokens = tokens_for("(AB)")
-      expect(tokens.map(&:type)).to eq([:unsupported, :note, :note, :unsupported])
+      expect(tokens.map(&:type)).to eq([:slur_start, :note, :note, :slur_end])
+    end
+
+    it "lexes a dotted slur as a slur" do
+      expect(tokens_for(".(AB)").map(&:type)).to eq([:slur_start, :note, :note, :slur_end])
+    end
+
+    it "lexes nested slurs" do
+      expect(tokens_for("((AB)c)").map(&:type)).to eq([:slur_start, :slur_start, :note, :note, :slur_end, :note, :slur_end])
     end
 
     it "lexes a tuplet marker with its digit" do

@@ -471,11 +471,54 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "slurs" do
+    def slurs(body)
+      parse_body(body).voices.first.spans.map(&:to_s)
+    end
+
+    it "reads a slur" do
+      expect(slurs("(CDE) F|")).to eq ["slur from 1:1:000 to 1:3:000"]
+    end
+
+    it "reads a slur nested in another" do
+      expect(slurs("((CD)E) F|")).to eq ["slur from 1:1:000 to 1:2:000", "slur from 1:1:000 to 1:3:000"]
+    end
+
+    it "pairs slurs by nesting, dropping one that spans a single note" do
+      expect(slurs("(CD(E)F|G4)|")).to eq ["slur from 1:1:000 to 2:1:000"]
+    end
+
+    it "reads a dotted slur as a slur" do
+      expect(slurs(".(CD) E F|")).to eq ["slur from 1:1:000 to 1:2:000"]
+    end
+
+    it "closes a slur on a note tied across a barline" do
+      expect(slurs("C (D E F-|F) G z2|")).to eq ["slur from 1:2:000 to 1:4:000"]
+    end
+
+    it "reads a slur over a chord" do
+      expect(slurs("([CE] D) E F|")).to eq ["slur from 1:1:000 to 1:2:000"]
+    end
+
+    it "keeps slurs in each voice apart" do
+      flow = parse("X:1\nL:1/4\nM:4/4\nV:1\nV:2\nK:C\nV:1\n(CD) E F|\nV:2\nC (D E) F|\n")
+      expect(flow.voices.map { |voice| voice.spans.map(&:to_s) })
+        .to eq [["slur from 1:1:000 to 1:2:000"], ["slur from 1:2:000 to 1:3:000"]]
+    end
+
+    it "drops a slur that ends on a rest" do
+      expect(slurs("(C D z) F|")).to eq []
+    end
+
+    it "drops an unmatched close and an unclosed open" do
+      expect(slurs("C D) (E F|")).to eq []
+    end
+  end
+
   describe "unsupported features" do
     {
       "a quoted chord symbol" => ['"Am" C|', '"Am"'],
       "a grace note" => ["{g}A|", "{g}"],
-      "a slur" => ["(AB)|", "("],
       "a tuplet" => ["(3ABC|", "(3"],
       "an unrecognized decoration" => ["!bogus!A|", "!bogus!"],
       "a double broken rhythm" => ["A>>B|", ">>"],

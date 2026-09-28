@@ -15,8 +15,11 @@ module HeadMusic::Notation::ABC
     # bar-line accidental resets cannot corrupt them. `tied_prefix`, when
     # present, is the already-built rhythmic value of everything tied ahead of
     # this note; its own value is appended at flush time.
-    PendingNote = Data.define(:pitches, :length, :scale, :tied_prefix, :beam_break, :decorations) do
-      def initialize(pitches:, length:, scale:, tied_prefix: nil, beam_break: nil, decorations: [])
+    #
+    # Its slur opens and closes wait with it, since its position is not known
+    # until it is placed.
+    PendingNote = Data.define(:pitches, :length, :scale, :tied_prefix, :beam_break, :decorations, :slur_opens, :slur_closes) do
+      def initialize(pitches:, length:, scale:, tied_prefix: nil, beam_break: nil, decorations: [], slur_opens: 0, slur_closes: 0)
         super
       end
     end
@@ -33,10 +36,28 @@ module HeadMusic::Notation::ABC
       @beam_last_was_note = false
       @tie_open = false
       @decorations = []
+      @slur_opens = 0
+      @open_slurs = []
     end
 
     def decorate(decoration)
       @decorations << decoration
+    end
+
+    # "(" opens a slur on the next note, chord, or rest.
+    def open_slur
+      @slur_opens += 1
+    end
+
+    # ")" closes the latest open slur on the note just written. Slurs pair by
+    # nesting, as ABC reads them, so "(CD(E)FG)" is one slur from C to G, and
+    # the slur on E alone, which spans nothing, is dropped.
+    def close_slur
+      if pending_note
+        self.pending_note = pending_note.with(slur_closes: pending_note.slur_closes + 1)
+      elsif voice.last_voice_event
+        close_slurs_at(voice.last_voice_event.position, 1)
+      end
     end
 
     # A marking before a bar line, tie, or the end of the tune has nothing to
@@ -120,7 +141,7 @@ module HeadMusic::Notation::ABC
       flush_pending_note
       self.pending_note = PendingNote.new(
         pitches: pitches, length: length, scale: scale, beam_break: next_beam_break,
-        decorations: decorations
+        decorations: decorations, slur_opens: take_slur_opens
       )
     end
 
@@ -134,6 +155,7 @@ module HeadMusic::Notation::ABC
       voice_event = place_next(pending_rhythmic_value(pending), pending.pitches)
       voice_event.beam_break_before = pending.beam_break
       apply_decorations(voice_event, pending.decorations)
+      apply_slurs(voice_event, pending.slur_opens, pending.slur_closes)
     end
 
     # Places a note, chord, or rest (nil pitches) directly onto the voice,
@@ -141,10 +163,32 @@ module HeadMusic::Notation::ABC
     def place(length, pitches, scale: ONE)
       voice_event = place_next(@duration_resolver.rhythmic_value(length, scale: scale), pitches)
       apply_decorations(voice_event, take_decorations)
+      apply_slurs(voice_event, take_slur_opens, 0)
       voice_event
     end
 
     private
+
+    def take_slur_opens
+      opens = @slur_opens
+      @slur_opens = 0
+      opens
+    end
+
+    def apply_slurs(voice_event, opens, closes)
+      opens.times { @open_slurs << voice_event.position }
+      close_slurs_at(voice_event.position, closes)
+    end
+
+    # A slur the voice refuses, such as one ending on a rest, is dropped.
+    def close_slurs_at(position, count)
+      count.times do
+        from = @open_slurs.pop
+        voice.add_span(:slur, from: from, to: position) if from && from < position
+      rescue ArgumentError
+        nil
+      end
+    end
 
     def take_decorations
       decorations = @decorations
@@ -202,7 +246,8 @@ module HeadMusic::Notation::ABC
       close_tie
       self.pending_note = PendingNote.new(
         pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
-        beam_break: pending.beam_break, decorations: pending.decorations + markings
+        beam_break: pending.beam_break, decorations: pending.decorations + markings,
+        slur_opens: pending.slur_opens + take_slur_opens, slur_closes: pending.slur_closes
       )
     end
 

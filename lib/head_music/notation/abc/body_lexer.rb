@@ -29,13 +29,17 @@ module HeadMusic::Notation::ABC
       /![^!\s]+!/, /\+[^+\s]+\+/, /[~HLMOPSTuv]/, /\.(?=[\^_=A-Ga-gz\[!+.~HLMOPSTuv])/
     ].freeze
 
+    # A slur opens with "(", or ".(" for a dotted slur, unless a digit
+    # follows, which makes a tuplet.
+    SLUR_START_PATTERN = /\.?\((?!\d)/
+
     # Recognizable ABC we deliberately don't handle: grace notes ({..}),
-    # tuplets, slurs, special rests (Z, x), dotted bar lines, and malformed
+    # tuplets, special rests (Z, x), dotted bar lines, and malformed
     # decorations. Ordered so a closed form is tried before its unterminated
     # fallback.
     UNSUPPORTED_PATTERNS = [
       /\{[^}]*\}/, /\{[^}]*/, /![^!]*!/, /![^!]*/,
-      /\(\d/, /[().]/, /Z\d*/, %r{x[\d/]*}
+      /\(\d/, /\./, /Z\d*/, %r{x[\d/]*}
     ].freeze
 
     # Music tokens whose whitespace successor breaks a beam group; other
@@ -142,6 +146,7 @@ module HeadMusic::Notation::ABC
       return if scan_rest(scanner, line_number, column, tokens)
       return if scan_tie(scanner, line_number, column, tokens)
       return if scan_broken_rhythm(scanner, line_number, column, tokens)
+      return if scan_slur(scanner, line_number, column, tokens)
       return if scan_decoration(scanner, line_number, column, tokens)
       return if scan_unsupported(scanner, line_number, column, tokens)
 
@@ -255,6 +260,18 @@ module HeadMusic::Notation::ABC
       return false unless scanner.scan("-")
 
       tokens << Token.new(type: :tie, line: line_number, column: column)
+      true
+    end
+
+    def scan_slur(scanner, line_number, column, tokens)
+      type = if scanner.scan(SLUR_START_PATTERN)
+        :slur_start
+      elsif scanner.scan(")")
+        :slur_end
+      end
+      return false unless type
+
+      tokens << Token.new(type: type, line: line_number, column: column)
       true
     end
 
