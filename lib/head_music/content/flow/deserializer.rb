@@ -101,6 +101,15 @@ class HeadMusic::Content::Flow
       end
     end
 
+    # Added after the voice events, whose positions a span's ends must find.
+    def add_spans(voice, voice_hash, path)
+      values.spans(voice_hash["spans"], path).each_with_index do |(kind, from, to), index|
+        voice.add_span(kind, from: from, to: to)
+      rescue ArgumentError => e
+        raise ArgumentError, "#{path}.spans[#{index}]: #{e.message}"
+      end
+    end
+
     def apply_repeat_flags(flow)
       each_change(bar_hashes, "bars") do |bar_number, bar_hash, _path|
         bar = flow.bars(bar_number).last

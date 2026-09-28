@@ -349,6 +349,38 @@ describe HeadMusic::Content::Flow::SchemaValues do
     end
   end
 
+  describe "#spans" do
+    let(:slur) { {"kind" => "slur", "from" => "1:1", "to" => "1:3"} }
+
+    it "answers an empty list for nil" do
+      expect(values.spans(nil, "path")).to eq []
+    end
+
+    it "answers kind and positions" do
+      expect(values.spans([slur], "path")).to eq [[HeadMusic::Rudiment::SpanKind.get(:slur), "1:1", "1:3"]]
+    end
+
+    it "refuses an entry that is not a hash" do
+      expect { values.spans(["slur"], "path") }
+        .to raise_error(ArgumentError, 'path.spans[0]: span must be a Hash, got "slur"')
+    end
+
+    it "refuses an unknown kind, naming its path" do
+      expect { values.spans([slur.merge("kind" => "tie")], "path") }
+        .to raise_error(ArgumentError, 'path.spans[0].kind: unknown span kind "tie"')
+    end
+
+    it "refuses a span without an end" do
+      expect { values.spans([slur.except("to")], "path") }
+        .to raise_error(ArgumentError, "path.spans[0]: a span needs a to position")
+    end
+
+    it "refuses a malformed position, naming its path" do
+      expect { values.spans([slur.merge("from" => "soon")], "path") }
+        .to raise_error(ArgumentError, 'path.spans[0].from: unknown position "soon"')
+    end
+  end
+
   describe "#dynamic_events" do
     it "answers an empty list for nil" do
       expect(values.dynamic_events(nil, "path")).to eq []

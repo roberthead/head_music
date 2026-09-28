@@ -243,6 +243,51 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "spans" do
+    let(:flow) do
+      HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\nC D E F|G A z2|\n").tap do |spanned|
+        voice = spanned.voices.first
+        voice.add_span(:phrase, from: "1:1", to: "2:3")
+        voice.add_span(:slur, from: "1:1", to: "1:3")
+        voice.add_span(:slur, from: "1:2", to: "1:4")
+      end
+    end
+
+    let(:hash) { flow.to_h }
+    let(:voice_hash) { voices_in(hash).first }
+
+    it "round-trips through JSON" do
+      restored = described_class.from_json(flow.to_json)
+      expect(restored.voices.first.spans.map(&:to_s)).to eq flow.voices.first.spans.map(&:to_s)
+    end
+
+    it "writes each span's kind and positions, in order" do
+      expect(voice_hash["spans"]).to eq [
+        {"kind" => "slur", "from" => "1:1:000", "to" => "1:3:000"},
+        {"kind" => "phrase", "from" => "1:1:000", "to" => "2:3:000"},
+        {"kind" => "slur", "from" => "1:2:000", "to" => "1:4:000"}
+      ]
+    end
+
+    it "reads a schema-5 document written without spans" do
+      voice_event = {"position" => "1:1:000", "rhythmic_value" => "whole", "sounds" => ["C4"]}
+      document = {"schema_version" => 5, "parts" => [{"voices" => [{"role" => nil, "voice_events" => [voice_event]}]}]}
+      expect(described_class.from_h(document).voices.first.spans).to eq []
+    end
+
+    it "refuses a slur ending on a rest, naming its path" do
+      voice_hash["spans"] << {"kind" => "slur", "from" => "1:1", "to" => "2:3"}
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /\Aparts\[0\]\.voices\[0\]\.spans\[3\]: a slur must start and end on a note of its voice/)
+    end
+
+    it "refuses an unknown kind, naming its path" do
+      voice_hash["spans"].first["kind"] = "tie"
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, 'parts[0].voices[0].spans[0].kind: unknown span kind "tie"')
+    end
+  end
+
   describe "articulations, ornaments, and dynamics" do
     let(:flow) do
       described_class.new(name: "Marked").tap do |marked|

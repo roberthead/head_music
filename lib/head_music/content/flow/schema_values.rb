@@ -120,6 +120,16 @@ class HeadMusic::Content::Flow
       end
     end
 
+    # An optional list of {"kind" => ..., "from" => ..., "to" => ...} hashes,
+    # answered as [kind, from, to].
+    def spans(values, path)
+      return [] if values.nil?
+
+      each_element(values, "spans", path) do |value, element_path|
+        span(value, element_path)
+      end
+    end
+
     def bar_number(bar_hash, index, path = "bars")
       number = bar_hash["number"]
       unless number.is_a?(Integer) && number >= 0
@@ -243,7 +253,7 @@ class HeadMusic::Content::Flow
 
     def catalog_value(value, catalog, path)
       entry = catalog.get(value) if value.is_a?(String)
-      raise ArgumentError, "#{path}: unknown #{catalog.name.demodulize.downcase} #{value.inspect}" unless entry
+      raise ArgumentError, "#{path}: unknown #{catalog.name.demodulize.underscore.tr("_", " ")} #{value.inspect}" unless entry
 
       entry
     end
@@ -257,6 +267,15 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "#{path}: level must be a dynamic level, got #{value["level"].inspect}" unless level.level?
 
       [position, level]
+    end
+
+    def span(value, path)
+      ensure_kind!(value, Hash, "span", path)
+      kind = catalog_value(value["kind"], HeadMusic::Rudiment::SpanKind, "#{path}.kind")
+      ends = %w[from to].map do |key|
+        position(value[key], "#{path}.#{key}") || raise(ArgumentError, "#{path}: a span needs a #{key} position")
+      end
+      [kind, *ends]
     end
 
     def sound(value, path)

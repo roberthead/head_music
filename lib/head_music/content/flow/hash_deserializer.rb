@@ -105,6 +105,7 @@ class HeadMusic::Content::Flow
         voice_path = "#{part_path}.voices[#{voice_index}]"
         build_voice_events(voice, voice_hash, voice_path)
         place_dynamic_events(voice, voice_hash, voice_path)
+        add_spans(voice, voice_hash, voice_path)
         apply_staff_assignments(voice, part, voice_hash)
       end
     end
