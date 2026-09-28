@@ -6,9 +6,14 @@ module HeadMusic::Notation::LilyPond
   # fermata or a bowing, is consumed and dropped, so it cannot fail a file
   # that imports today. Anything else ends the run of marks and is left for
   # the reader, so fingerings and stray signs still raise.
+  #
+  # Slur and phrasing-slur marks are kept in the order written, each with
+  # the name a \= gives it, for the placer to pair.
   class MarkReader
-    Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level) do
-      def initialize(articulations: [], ornaments: [], note_dynamic: nil, level: nil)
+    SpanMark = Data.define(:kind, :opening, :id)
+
+    Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks) do
+      def initialize(articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [])
         super
       end
 
@@ -18,7 +23,8 @@ module HeadMusic::Notation::LilyPond
           articulations: articulations | other.articulations,
           ornaments: ornaments | other.ornaments,
           note_dynamic: note_dynamic || other.note_dynamic,
-          level: level || other.level
+          level: level || other.level,
+          span_marks: span_marks + other.span_marks
         )
       end
     end
@@ -43,6 +49,7 @@ module HeadMusic::Notation::LilyPond
     SHORTHAND_PATTERN = /\A[-^_][.!>\-^_+]\z/
     # Hairpins are spans, which the model does not hold yet, so they are dropped.
     HAIRPIN_PATTERN = /\A\\[<>!]\z/
+    SPAN_PATTERN = /\A(?:\\=([A-Za-z0-9]+))?(\\)?([()])\z/
     FIELD_NAMES = {note_dynamic: "sforzando", level: "dynamic level"}.freeze
 
     # Each command's [field, key], or nil for one that is dropped.
@@ -75,10 +82,10 @@ module HeadMusic::Notation::LilyPond
 
     def mark_token_count
       token = cursor.peek
-      return 1 if shorthand?(token) || hairpin?(token) || command?(token)
+      return 1 if shorthand?(token) || hairpin?(token) || span?(token) || command?(token)
 
       following = cursor.peek(1)
-      2 if direction?(token) && (command?(following) || hairpin?(following))
+      2 if direction?(token) && (command?(following) || hairpin?(following) || span?(following))
     end
 
     def shorthand?(token)
@@ -87,6 +94,10 @@ module HeadMusic::Notation::LilyPond
 
     def hairpin?(token)
       token&.type == :unsupported && token.lexeme.match?(HAIRPIN_PATTERN)
+    end
+
+    def span?(token)
+      token&.type == :unsupported && token.lexeme.match?(SPAN_PATTERN)
     end
 
     def command?(token)
@@ -98,12 +109,19 @@ module HeadMusic::Notation::LilyPond
     end
 
     def add(marks, token)
+      return marks.with(span_marks: marks.span_marks + [span_mark(token)]) if span?(token)
+
       field, key = meaning(token)
       return marks unless field
       return marks.with(field => marks.public_send(field) | [key]) if %i[articulations ornaments].include?(field)
       raise cursor.error(%(A note can carry only one #{FIELD_NAMES.fetch(field)}), token) if marks.public_send(field)
 
       marks.with(field => key)
+    end
+
+    def span_mark(token)
+      id, phrasing, bracket = token.lexeme.match(SPAN_PATTERN).captures
+      SpanMark.new(kind: phrasing ? :phrase : :slur, opening: bracket == "(", id: id)
     end
 
     def meaning(token)

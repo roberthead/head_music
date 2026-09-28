@@ -224,4 +224,39 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
         .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /\\time in the middle of a bar/)
     end
   end
+
+  describe "slurs and phrasing slurs" do
+    def spans(music)
+      build("{ \\time 4/4 #{music} }").voices.map { |voice| voice.spans.map(&:to_s) }
+    end
+
+    {
+      "a slur" => ["c'4( d' e') f'", ["slur from 1:1:000 to 1:3:000"]],
+      "a slur nested in a phrasing slur" => ["c'4\\( d'( e') f'\\)", ["phrase from 1:1:000 to 1:4:000", "slur from 1:2:000 to 1:3:000"]],
+      "slurs named to overlap" => ["c'4\\=1( d'\\=2( e'\\=1) f'\\=2)", ["slur from 1:1:000 to 1:3:000", "slur from 1:2:000 to 1:4:000"]],
+      "a named phrasing slur" => ["c'4\\=a\\( d' e'\\=a\\) f'", ["phrase from 1:1:000 to 1:3:000"]],
+      "a slur with a direction" => ["c'4^( d' e'_) f'", ["slur from 1:1:000 to 1:3:000"]],
+      "one slur ending where the next begins" => ["c'4( d' e')( f')", ["slur from 1:1:000 to 1:3:000", "slur from 1:3:000 to 1:4:000"]],
+      "a slur closed on a tie's later link" => ["c'4( d' e'2~ | e'2) f'", ["slur from 1:1:000 to 1:3:000"]],
+      "a phrasing slur ending on a rest" => ["c'4\\( d' r\\) f'", ["phrase from 1:1:000 to 1:3:000"]],
+      "a slur on a chord" => ["<c' e'>4( d') e' f'", ["slur from 1:1:000 to 1:2:000"]]
+    }.each do |description, (music, expected)|
+      it "reads #{description}" do
+        expect(spans(music)).to eq [expected]
+      end
+    end
+
+    {
+      "a slur ending on a rest" => "c'4( d' r) f'",
+      "an unmatched close and an unclosed open" => "c'4 d') e'( f'"
+    }.each do |description, music|
+      it "drops #{description}" do
+        expect(spans(music)).to eq [[]]
+      end
+    end
+
+    it "ignores a second open while one is open, as LilyPond does" do
+      expect(spans("c'4( d'( e') f'")).to eq [["slur from 1:1:000 to 1:3:000"]]
+    end
+  end
 end

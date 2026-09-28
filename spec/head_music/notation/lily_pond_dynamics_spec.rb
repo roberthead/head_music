@@ -141,7 +141,7 @@ describe HeadMusic::Notation::LilyPond do
       "a command inside a Dynamics context" => [piano("\\tuplet 3/2 { s4 s4 s4 }"), described_class::UnsupportedFeatureError, /"\\tuplet"/],
       "a malformed \\time inside a Dynamics context" => [piano("\\time x s1"), described_class::ParseError, /line 1/],
       "a tie inside a Dynamics context" => [piano("s1~ s1"), described_class::ParseError, /Unexpected token "~" inside \\new Dynamics/],
-      "an unsupported mark inside a Dynamics context" => [piano("s1 ("), described_class::UnsupportedFeatureError, /"\("/],
+      "an unsupported mark inside a Dynamics context" => [piano("s1 ["), described_class::UnsupportedFeatureError, /"\["/],
       "a context inside a Dynamics context" => [
         %(<< \\new Staff { c'1 } \\new Dynamics << \\new Voice { c'1 } >> >>), described_class::UnsupportedFeatureError, /Contexts inside \\new Dynamics/
       ],

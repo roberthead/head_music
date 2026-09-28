@@ -10,7 +10,32 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   end
 
   def none
-    {articulations: [], ornaments: [], note_dynamic: nil, level: nil}
+    {articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: []}
+  end
+
+  describe "slur and phrasing-slur marks" do
+    def span_marks(source)
+      marks(source)[:span_marks].map { |mark| [mark.kind, mark.opening, mark.id] }
+    end
+
+    {
+      "(" => [:slur, true, nil], ")" => [:slur, false, nil],
+      "\\(" => [:phrase, true, nil], "\\)" => [:phrase, false, nil],
+      "\\=1(" => [:slur, true, "1"], "\\=b\\)" => [:phrase, false, "b"],
+      "^(" => [:slur, true, nil], "_\\(" => [:phrase, true, nil]
+    }.each do |source, mark|
+      it "reads #{source}" do
+        expect(span_marks(source)).to eq [mark]
+      end
+    end
+
+    it "keeps marks in the order written" do
+      expect(span_marks(")(").map { |kind, opening, _id| [kind, opening] }).to eq [[:slur, false], [:slur, true]]
+    end
+
+    it "reads marks among other marks" do
+      expect(marks("-.( \\p")).to include(articulations: ["staccato"], level: "p")
+    end
   end
 
   describe "articulation shorthands" do
@@ -70,7 +95,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   describe "a run of marks" do
     it "reads every mark in order until something else" do
       cursor = cursor_for("-.\\trill->\\sfz\\p c'4")
-      expect(described_class.new(cursor).read.to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "p")
+      expect(described_class.new(cursor).read.to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [])
       expect(cursor.peek.type).to eq :note
     end
 
@@ -93,7 +118,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   end
 
   describe "what is not a mark" do
-    ["-1", "!", "?", "-\\markup", "\\key", "( ", "~"].each do |source|
+    ["-1", "!", "?", "-\markup", "\key", "~"].each do |source|
       it "leaves #{source.strip} unread" do
         cursor = cursor_for(source)
         expect(described_class.new(cursor).read.to_h).to eq none
@@ -106,7 +131,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
     it "merges a tied note's marks, keeping the first dynamics" do
       first = described_class.new(articulations: ["staccato"], note_dynamic: "sf", level: "p")
       second = described_class.new(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "f")
-      expect(first.merge(second).to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sf", level: "p")
+      expect(first.merge(second).to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sf", level: "p", span_marks: [])
     end
   end
 end

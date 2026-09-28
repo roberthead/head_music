@@ -4,11 +4,17 @@ module HeadMusic::Notation::LilyPond
   # voice's next position, so bar checks and key or meter commands are
   # verified against where the music actually is, the way LilyPond verifies
   # them at compile time.
+  #
+  # Slur and phrase marks pair within a voice by kind and name. As in
+  # LilyPond, an open while one of the same kind and name is open is
+  # ignored, a close with none open is dropped, and so is a span the voice
+  # refuses, such as a slur ending on a rest.
   class EventPlacer
     TICKS_PER_WHOLE_NOTE = HeadMusic::Rudiment::Rhythm::PPQN * 4
 
     def initialize(layout)
       @layout = layout
+      @open_spans = Hash.new { |hash, voice| hash[voice] = {} }
     end
 
     def place(event, voice)
@@ -59,6 +65,24 @@ module HeadMusic::Notation::LilyPond
         voice_event.note_dynamic = marks.note_dynamic if marks.note_dynamic
       end
       place_level(voice_event.voice, voice_event.position, event)
+      apply_spans(voice_event, marks.span_marks)
+    end
+
+    def apply_spans(voice_event, span_marks)
+      open = @open_spans[voice_event.voice]
+      span_marks.each do |mark|
+        key = [mark.kind, mark.id]
+        next open[key] ||= voice_event.position if mark.opening
+
+        from = open.delete(key)
+        add_span(voice_event, mark.kind, from) if from
+      end
+    end
+
+    def add_span(voice_event, kind, from)
+      voice_event.voice.add_span(kind, from: from, to: voice_event.position) if from < voice_event.position
+    rescue ArgumentError
+      nil
     end
 
     # A crossing is a staff assignment from a bar onward, so it can only be

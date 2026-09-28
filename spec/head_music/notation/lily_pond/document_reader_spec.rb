@@ -407,7 +407,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
     end
 
     it "carries a note's marks on its stream event" do
-      expect(first_marks("{ c'4-.\\trill\\sfz\\p }")).to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p")
+      expect(first_marks("{ c'4-.\\trill\\sfz\\p }")).to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [])
     end
 
     it "carries a rest's marks on its stream event" do
