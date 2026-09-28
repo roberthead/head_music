@@ -64,6 +64,9 @@ module HeadMusic::Notation::Kern
           raise ParseError.new("A note in spine #{column} begins before the note before it ends", line_number: line)
         end
         cursor.read(token, time, line)
+      elsif token.type == :grace
+        cursor.defer_span_marks(token.span_marks)
+        nil
       elsif token.type == :null && cursor.busy_until <= time
         raise ParseError.new("A null token in spine #{column} falls where no note is sounding", line_number: line)
       end

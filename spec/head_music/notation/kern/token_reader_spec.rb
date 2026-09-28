@@ -45,7 +45,7 @@ describe HeadMusic::Notation::Kern::TokenReader do
   end
 
   describe "ignored signifiers" do
-    %w[8cL 8cJ 2d; 4c/ 4c\\ 4c' 4c~ 4c^ (4c 4c) {4c 4c} 4c#X 4cy 4cT 4cXX 4ek].each do |field|
+    %w[8cL 8cJ 2d; 4c/ 4c\\ 4c' 4c~ 4c^ 4c#X 4cy 4cT 4cXX 4ek].each do |field|
       it "drops the signifiers in #{field}" do
         expect(read(field).type).to eq :note
       end
@@ -145,6 +145,32 @@ describe HeadMusic::Notation::Kern::TokenReader do
 
     it "raises for conflicting tie marks" do
       expect { read("[4c]") }.to raise_error(HeadMusic::Notation::Kern::ParseError, /Conflicting tie marks/)
+    end
+  end
+
+  describe "span marks" do
+    it "reads slur and phrase marks in the order written" do
+      expect(read("{(4c").span_marks).to eq %w[{ (]
+    end
+
+    it "reads a close after a tie mark" do
+      expect(read("4g])").span_marks).to eq [")"]
+    end
+
+    it "reads an elided slur with its ampersands" do
+      expect(read("&&(4c").span_marks).to eq ["&&("]
+    end
+
+    it "keeps a rest's span marks" do
+      expect(read("4r}").span_marks).to eq ["}"]
+    end
+
+    it "counts a chord's slur once when every note repeats it" do
+      expect(read("(4c (4e (4g").span_marks).to eq ["("]
+    end
+
+    it "keeps a grace note's span marks" do
+      expect([read("(8qc").type, read("(8qc").span_marks]).to eq [:grace, ["("]]
     end
   end
 end

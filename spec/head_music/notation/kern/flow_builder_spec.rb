@@ -477,6 +477,57 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
   end
 
+  describe "slurs and phrases" do
+    def spans(flow)
+      flow.voices.map { |voice| voice.spans.map(&:to_s) }
+    end
+
+    it "reads a slur" do
+      expect(spans(parse("**kern\n=1\n(4c\n4d\n4e)\n4f\n*-"))).to eq [["slur from 1:1:000 to 1:3:000"]]
+    end
+
+    it "reads a phrase that ends on a rest" do
+      expect(spans(parse("**kern\n=1\n{4c\n4d\n4r}\n4f\n*-"))).to eq [["phrase from 1:1:000 to 1:3:000"]]
+    end
+
+    it "reads a slur nested in another" do
+      expect(spans(parse("**kern\n=1\n((4c\n4d)\n4e)\n4f\n*-")))
+        .to eq [["slur from 1:1:000 to 1:2:000", "slur from 1:1:000 to 1:3:000"]]
+    end
+
+    it "reads an elided slur as one that overlaps" do
+      expect(spans(parse("**kern\n=1\n(4c\n&(4d\n4e)\n4f&)\n*-")))
+        .to eq [["slur from 1:1:000 to 1:3:000", "slur from 1:2:000 to 1:4:000"]]
+    end
+
+    it "ends one slur and begins the next on one note" do
+      expect(spans(parse("**kern\n=1\n(4c\n4d\n(4e)\n4f)\n*-")))
+        .to eq [["slur from 1:1:000 to 1:3:000", "slur from 1:3:000 to 1:4:000"]]
+    end
+
+    it "gives a slur closed on a tie's later link to the tied note" do
+      expect(spans(parse("**kern\n*M2/4\n=1\n(4c\n[4d\n=2\n4d])\n4e\n*-")))
+        .to eq [["slur from 1:1:000 to 1:2:000"]]
+    end
+
+    it "moves a slur on a dropped grace note to the note it leads to" do
+      expect(spans(parse("**kern\n=1\n(8qc\n4d\n4e)\n2f\n*-"))).to eq [["slur from 1:1:000 to 1:2:000"]]
+    end
+
+    it "drops a slur that begins on a rest" do
+      expect(spans(parse("**kern\n=1\n(4r\n4d\n4e)\n4f\n*-"))).to eq [[]]
+    end
+
+    it "drops an unmatched close and an unclosed open" do
+      expect(spans(parse("**kern\n=1\n4c)\n4d\n(4e\n4f\n*-"))).to eq [[]]
+    end
+
+    it "gives each spine its own slurs" do
+      flow = parse("**kern  **kern\n=1  =1\n(4c  2e\n4d)  .\n2f  (4g\n.  4a)\n*-  *-")
+      expect(spans(flow)).to eq [["slur from 1:3:000 to 1:4:000"], ["slur from 1:1:000 to 1:2:000"]]
+    end
+  end
+
   describe "dynamics" do
     def levels(part)
       part.dynamic_events.map(&:to_s)

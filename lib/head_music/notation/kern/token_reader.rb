@@ -4,17 +4,20 @@ module HeadMusic::Notation::Kern
   # or a chord of space-separated notes.
   #
   # Articulations, ornaments, and the sforzando z are read as markings,
-  # which a rest drops and a chord gathers from all its notes. Signifiers
-  # the gem does not model (beams, stems, slurs, fermatas, bowings, other
-  # ornaments, editorial marks) are dropped, and grace notes are dropped
-  # whole. Anything else is rejected rather than guessed at.
+  # which a rest drops and a chord gathers from all its notes. Slur and
+  # phrase marks are kept as written, on notes and rests alike, and a grace
+  # note, which is otherwise dropped, keeps its own for the note after it.
+  # Signifiers the gem does not model (beams, stems, fermatas, bowings,
+  # other ornaments, editorial marks) are dropped. Anything else is
+  # rejected rather than guessed at.
   class TokenReader
     # A token's :type is :null, :grace, :rest, or :note (one or more
     # pitches). Its :tie is nil, :start ([), :middle (_), or :end (]).
     # Its markings are catalog keys: sorted articulation and ornament
-    # keys, and a note dynamic or nil.
-    Token = Data.define(:type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic) do
-      def initialize(articulations: [], ornaments: [], note_dynamic: nil, **fields)
+    # keys, and a note dynamic or nil. Its span marks are the slur and
+    # phrase signifiers, such as "(", "}", or the elided "&(".
+    Token = Data.define(:type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic, :span_marks) do
+      def initialize(articulations: [], ornaments: [], note_dynamic: nil, span_marks: [], **fields)
         super
       end
 
@@ -27,10 +30,11 @@ module HeadMusic::Notation::Kern
     GRACE = Token.new(type: :grace, pitches: [], rhythmic_value: nil, fraction: nil, tie: nil)
     TIES = {"[" => :start, "_" => :middle, "]" => :end}.freeze
     GRACE_MARKS = %w[q Q].freeze
-    # Beams and partial beams, stems, fermatas, slurs and phrases, the
-    # inverted turn and the ornament-ending turn, other ornaments, bowings,
-    # breath and arpeggio marks, and editorial and visibility marks.
-    IGNORED = %W[L J K k / \\ ; " , : & ( ) { } < > ? x X y $ O R u v].freeze
+    # Beams and partial beams, stems, fermatas, the inverted turn and the
+    # ornament-ending turn, other ornaments, bowings, breath and arpeggio
+    # marks, and editorial and visibility marks.
+    IGNORED = %W[L J K k / \\ ; " , : & < > ? x X y $ O R u v].freeze
+    SPAN_BRACKETS = "(){}"
 
     RECIP = /(\d+(?:%\d+)?)(\.*)/
     PITCH = /([a-gA-G])\1*/
@@ -48,8 +52,8 @@ module HeadMusic::Notation::Kern
     def token
       return NULL if @field == "."
 
-      subtokens = @field.split(" ").map { |text| subtoken(text) }.reject { |token| token.type == :grace }
-      return GRACE if subtokens.empty?
+      graces, subtokens = @field.split(" ").map { |text| subtoken(text) }.partition { |token| token.type == :grace }
+      return GRACE.with(span_marks: chord_span_marks(graces)) if subtokens.empty?
 
       combine(subtokens)
     end
@@ -71,22 +75,46 @@ module HeadMusic::Notation::Kern
         pitches: subtokens.flat_map(&:pitches),
         articulations: subtokens.flat_map(&:articulations).uniq.sort,
         ornaments: subtokens.flat_map(&:ornaments).uniq.sort,
-        note_dynamic: subtokens.filter_map(&:note_dynamic).first
+        note_dynamic: subtokens.filter_map(&:note_dynamic).first,
+        span_marks: chord_span_marks(subtokens)
       )
     end
 
-    def subtoken(text)
-      return GRACE if GRACE_MARKS.any? { |mark| text.include?(mark) }
+    # A chord's notes may each repeat its slur, so a mark counts as often as
+    # any one note has it.
+    def chord_span_marks(subtokens)
+      tallies = subtokens.map { |token| token.span_marks.tally }
+      tallies.flat_map(&:keys).uniq.flat_map { |mark| [mark] * tallies.map { |tally| tally.fetch(mark, 0) }.max }
+    end
 
-      remaining = text.dup
+    def subtoken(text)
+      span_marks = span_marks(text)
+      return GRACE.with(span_marks: span_marks) if GRACE_MARKS.any? { |mark| text.include?(mark) }
+
+      remaining = text.delete(SPAN_BRACKETS)
       duration = read_duration(remaining, text)
       pitches = read_pitches(remaining, text)
       rest = !remaining.delete!("r").nil?
       tie = read_tie(remaining, text)
       markings = MarkCodes.read!(remaining)
       ensure_consumed(remaining, text)
-      token = build(text, duration, pitches, rest, tie)
+      token = build(text, duration, pitches, rest, tie).with(span_marks: span_marks)
       rest ? token : token.with(**markings)
+    end
+
+    # Each slur or phrase mark with the & of each level of elision before it,
+    # as "&(". Scanned by hand: Ruby 3.3.0's regex engine misses the ")" in
+    # "4g])" for /&*[()]/.
+    def span_marks(text)
+      elision = +""
+      text.each_char.with_object([]) do |char, marks|
+        if char == "&"
+          elision << char
+        else
+          marks << "#{elision}#{char}" if SPAN_BRACKETS.include?(char)
+          elision = +""
+        end
+      end
     end
 
     def read_duration(remaining, text)

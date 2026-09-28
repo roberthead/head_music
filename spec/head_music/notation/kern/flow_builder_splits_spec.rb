@@ -103,6 +103,11 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     expect(flow.voices.map { |voice| voice.pitches.map(&:to_s) }).to eq [%w[C4 C4 D4 C4], %w[E4 G4]]
   end
 
+  it "reads a slur in a sub-spine" do
+    flow = parse("**kern\n=1\n*^\n(4c  2e\n4d)  .\n*v  *v\n2f\n*-")
+    expect(flow.voices.map { |voice| voice.spans.map(&:to_s) }).to eq [["slur from 1:1:000 to 1:2:000"], []]
+  end
+
   it "follows splits beside a lyric spine" do
     flow = parse("**kern  **text\n1c  la\n*^  *\n2c  2e  la\n2d  2g  .\n*v  *v  *\n*-  *-")
     expect(flow.voices.length).to eq 2

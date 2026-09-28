@@ -20,6 +20,7 @@ module HeadMusic::Notation::Kern
       @starts_at = starts_at
       @tie = nil
       @tie_line = nil
+      @deferred_span_marks = []
     end
 
     def attackable_at?(time)
@@ -30,12 +31,19 @@ module HeadMusic::Notation::Kern
     def read(token, time, line)
       @starts_at = nil
       @busy_until = time + token.fraction
+      token = token.with(span_marks: @deferred_span_marks + token.span_marks)
+      @deferred_span_marks = []
       return continue_tie(token, line) if %i[middle end].include?(token.tie)
 
       ensure_tie_closed
       event = layer.add(time, token)
       open_tie(event, line) if token.tie == :start
       event
+    end
+
+    # A dropped grace note's slur begins or ends on the note it leads to.
+    def defer_span_marks(span_marks)
+      @deferred_span_marks += span_marks
     end
 
     def ensure_tie_closed
@@ -60,6 +68,7 @@ module HeadMusic::Notation::Kern
 
       @tie.rhythmic_value = @tie.rhythmic_value.append_tied(token.rhythmic_value)
       @tie.fraction += token.fraction
+      @tie.span_marks += token.span_marks
       @tie = nil if token.tie == :end
       nil
     end
