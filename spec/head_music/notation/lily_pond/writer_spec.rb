@@ -469,5 +469,46 @@ describe HeadMusic::Notation::LilyPond::Writer do
           .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /part's dynamics in bar 1/)
       end
     end
+
+    context "with slurs and a phrasing slur" do
+      let(:flow) { MarkingFixtures.spanned_melody }
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "is structurally valid" do
+        expect_structurally_valid_lilypond(rendered, bars: 4, voices: 1)
+      end
+
+      it "opens a slur and a phrasing slur after their first note's marks" do
+        expect(rendered).to include "c'4(\\( d'4 e'4) f'4 |"
+      end
+
+      it "closes a slur after the last link of a note tied across a barline" do
+        expect(rendered).to include "c''4~ |\n", "c''4) d''4"
+      end
+
+      it "names a slur nested in another" do
+        expect(rendered).to include "g'4( a'4\\=1( b'4\\=1)"
+      end
+
+      it "closes a phrasing slur on a rest" do
+        expect(rendered).to include "r2\\)"
+      end
+    end
+
+    context "with slurs that cross" do
+      let(:flow) { MarkingFixtures.crossing_spans }
+
+      it "names the second" do
+        expect(described_class.new(flow).to_s).to include "c'4( d'4\\=1( e'4) f'4\\=1) |"
+      end
+    end
+
+    context "with one slur ending where the next begins" do
+      let(:flow) { MarkingFixtures.touching_slurs }
+
+      it "closes the first before opening the second" do
+        expect(described_class.new(flow).to_s).to include "e'4)( f'4"
+      end
+    end
   end
 end

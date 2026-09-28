@@ -47,6 +47,7 @@ module LilyPondRoundTripSources
   ].freeze
 
   MARKING_FIXTURE_NAMES = %i[marked_melody grand_staff_piano_with_dynamics].freeze
+  SPAN_FIXTURE_NAMES = %i[spanned_melody crossing_spans touching_slurs spanned_piano].freeze
 
   ALL_HAND_WRITTEN = RELATIVE_TWINS.flat_map { |name, twin| [["#{name} (relative)", twin[:relative]], ["#{name} (absolute)", twin[:absolute]]] }
     .concat(OTHER_SOURCES.to_a, [["a whole-bar rest in 5/4", FIVE_FOUR_REST]])
@@ -111,6 +112,13 @@ describe HeadMusic::Notation::LilyPond do
       end
     end
 
+    LilyPondRoundTripSources::SPAN_FIXTURE_NAMES.each do |name|
+      it "round-trips #{name}, keeping where each span starts and ends" do
+        original = MarkingFixtures.public_send(name)
+        expect_same_spans(original, expect_lily_pond_round_trip(original))
+      end
+    end
+
     it "brings a part's dynamics back on the part, not the voices" do
       reparsed = expect_lily_pond_round_trip(MarkingFixtures.grand_staff_piano_with_dynamics)
       expect(reparsed.voices.map { |voice| voice.dynamic_events.map(&:to_h) }).to eq [[{"position" => "3:1:000", "level" => "mf"}], []]
@@ -164,7 +172,7 @@ describe HeadMusic::Notation::LilyPond do
       end
     end
 
-    LilyPondRoundTripSources::MARKING_FIXTURE_NAMES.each do |name|
+    (LilyPondRoundTripSources::MARKING_FIXTURE_NAMES + LilyPondRoundTripSources::SPAN_FIXTURE_NAMES).each do |name|
       it "compiles the rendered #{name} marking fixture" do
         expect(compile_quietly(installed_lilypond, MarkingFixtures.public_send(name).to_lilypond)).to be true
       end

@@ -76,12 +76,16 @@ module HeadMusic::Notation::LilyPond
     # so does a voice event split at a barline, whose piece before the bar check
     # ends in one; a chain of rests emits consecutive untied rests, and a tied
     # chord repeats the whole chord. Only the first link carries the marks.
+    # A slur closes on the last link and opens on the first, closing first
+    # where they are one word, so one slur can end where the next begins.
     def token(segment)
       voice_event = segment.voice_event
       first, *later = segment.rhythmic_value!(RenderError).tied_chain.map do |link|
         "#{body(voice_event)}#{DurationWriter.token(link)}"
       end
       words = ["#{first}#{marks(segment)}", *later]
+      words[-1] += span_marks(voice_event).closes_at(voice_event.position) unless segment.continues
+      words[0] += span_marks(voice_event).opens_at(voice_event.position) if starts?(segment)
       return words.join(" ") if voice_event.rest?
 
       tokens = words.join("~ ")
@@ -96,10 +100,19 @@ module HeadMusic::Notation::LilyPond
 
     # A voice event split at a barline is marked where it starts.
     def marks(segment)
-      voice_event = segment.voice_event
-      return "" unless segment.bar_number == voice_event.position.bar_number
+      return "" unless starts?(segment)
 
+      voice_event = segment.voice_event
       MarkWriter.token(voice_event, voice_level(voice_event))
+    end
+
+    def starts?(segment)
+      segment.bar_number == segment.voice_event.position.bar_number
+    end
+
+    def span_marks(voice_event)
+      @span_marks ||= {}.compare_by_identity
+      @span_marks[voice_event.voice] ||= SpanMarks.new(voice_event.voice)
     end
 
     # A voice's level moved onto a later note is written only if it is still

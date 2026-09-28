@@ -15,7 +15,7 @@ module LilyPondHelpers
   CHANGE_STAFF_COMMAND = /\\change Staff = "[^"]+"/
   CLEF_COMMAND = /\\clef [a-z]+/
   # The marks written after a note or rest carry no duration of their own.
-  MARK = /\\(?:ppp|pp|p|mp|mf|f|ff|fff|sf|sfz|rfz|fp|trill|mordent|prall|turn)(?![a-z])|-[.!>^-]/
+  MARK = /\\(?:ppp|pp|p|mp|mf|f|ff|fff|sf|sfz|rfz|fp|trill|mordent|prall|turn)(?![a-z])|-[.!>^-]|(?:\\=\w+)?\\?[()]/
   CHORD = /<#{PITCH}(?: #{PITCH})*>#{DURATION}/
   SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|[rs]#{DURATION}|R1\*\d+\/\d+)\z/
   WHOLE_BAR_REST = /R1\*(\d+)\/(\d+)/
