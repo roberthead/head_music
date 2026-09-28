@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T13:53:22-07:00
   planned_at:   2026-09-27T15:48:57-07:00
   finished_at:
-  updated_at:   2026-09-27T16:08:18-07:00
+  updated_at:   2026-09-27T19:39:24-07:00
 -->
 
 # Story: Spans Across Notes: Slurs and Phrase Marks
@@ -110,7 +110,7 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 
 1. **`SpanKind` catalog**
    - Built as `Rudiment::Dynamic` and `Articulation` are: `load_catalog`, frozen instances, aliases.
-   - Records: `slur`; `phrase` (alias `phrasing_slur`); `crescendo` (alias `cresc`); and `diminuendo` (aliases `decrescendo`, `dim`, `decresc`).
+   - Records: `slur`, and `phrase` (aliases `phrasing_slur`, `phrase_mark`). As built, the hairpin records wait for [Hairpins](../backlog/hairpins.md), which decides what their ends sit on; a catalog row with an undecided anchor would let a voice hold a crescendo this story cannot write.
    - Each record states its rules: `anchor` (`note_events` for slur, `voice_events` for phrase; hairpins decided in their story), `extent` (`through_note` for slur and phrase, `to_position` for hairpins), and `owners` (`[voice]` for slur and phrase, `[voice, part]` for hairpins).
    - Names in all six locales and en_GB.
    - Files: `rudiment/span_kind.rb`, `rudiment/span_kinds.yml`, `locales/*.yml`, `lib/head_music.rb`.
