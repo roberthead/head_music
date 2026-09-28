@@ -38,6 +38,51 @@ module MarkingFixtures
     piano.voices.first.place_dynamic("3:1", :mf)
     flow
   end
+
+  # One voice with a phrase ending on a rest, a slur nested in it, a slur
+  # ending on a note tied across a barline with another slur nested inside
+  # it, and a slur starting on a note that crosses a barline. Every format
+  # can write these by nesting alone.
+  def spanned_melody
+    flow = HeadMusic::Notation::ABC.parse("X:1\nT:Spanned Melody\nL:1/4\nM:4/4\nK:C\nC D E F|G A B c-|c d e f-|f g z2|\n")
+    voice = flow.voices.first
+    voice.add_span(:phrase, from: "1:1", to: "4:3")
+    voice.add_span(:slur, from: "1:1", to: "1:3")
+    voice.add_span(:slur, from: "2:1", to: "2:4")
+    voice.add_span(:slur, from: "2:2", to: "2:3")
+    voice.add_span(:slur, from: "3:4", to: "4:2")
+    flow
+  end
+
+  # Two spans of the given kinds that overlap without nesting.
+  def crossing_spans(first_kind = :slur, second_kind = :slur)
+    four_quarters.tap do |flow|
+      flow.voices.first.add_span(first_kind, from: "1:1", to: "1:3")
+      flow.voices.first.add_span(second_kind, from: "1:2", to: "1:4")
+    end
+  end
+
+  # Two slurs where one ends on the note the next begins on.
+  def touching_slurs
+    four_quarters.tap do |flow|
+      flow.voices.first.add_span(:slur, from: "1:1", to: "1:3")
+      flow.voices.first.add_span(:slur, from: "1:3", to: "2:1")
+    end
+  end
+
+  # The grand-staff piano with a phrase over the right hand and a slur in the
+  # left hand from the bass staff up to the treble.
+  def spanned_piano
+    flow = LilyPondFixtures.cross_staff_piano
+    right_hand, left_hand = flow.voices
+    right_hand.add_span(:phrase, from: "1:1", to: "4:1")
+    left_hand.add_span(:slur, from: "1:1", to: "2:1")
+    flow
+  end
+
+  def four_quarters
+    HeadMusic::Notation::ABC.parse("X:1\nT:Four Quarters\nL:1/4\nM:4/4\nK:C\nC D E F|G4|\n")
+  end
 end
 
 module MarkingExpectations
@@ -45,6 +90,15 @@ module MarkingExpectations
   # in force at every note event, whichever events put it there.
   def expect_same_markings(original, round_tripped)
     expect(marking_summary(round_tripped)).to eq marking_summary(original)
+  end
+
+  # Every voice has the same spans, each starting and ending where it did.
+  def expect_same_spans(original, round_tripped)
+    expect(span_summary(round_tripped)).to eq span_summary(original)
+  end
+
+  def span_summary(flow)
+    flow.voices.map { |voice| voice.spans.map(&:to_s) }
   end
 
   def marking_summary(flow)
