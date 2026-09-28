@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T13:53:22-07:00
   planned_at:   2026-09-27T15:48:57-07:00
   finished_at:
-  updated_at:   2026-09-27T19:39:24-07:00
+  updated_at:   2026-09-28T09:16:33-07:00
 -->
 
 # Story: Spans Across Notes: Slurs and Phrase Marks
@@ -79,7 +79,7 @@ voice.spans_at("1:2").map(&:kind) # => [:slur, :phrase]
 - [ ] Flow JSON writes `"spans"` on a voice only when it has spans, as an optional schema-5 key validated with path-tagged errors; existing schema-5 documents read unchanged
 - [ ] ABC reads `(`/`)` slurs, including nested and dotted `.(` ones, and writes slurs, and phrase marks as slurs; it leaves out a phrase that would cross a slur, raises `RenderError` for two slurs that cross, and a spec pins both; `(3` still raises `UnsupportedFeatureError`
 - [ ] LilyPond reads `(`/`)`, `\(`/`\)`, `^(`/`_(`, and `\=id(` slurs, and writes slurs and phrasing slurs, numbering them as `\=n(` only where two of a kind are open at once
-- [ ] kern reads and writes `(`/`)` slurs and `{`/`}` phrases, including nested ones, and elided `&` ones as overlaps
+- [x] kern reads and writes `(`/`)` slurs and `{`/`}` phrases, including nested ones, and elided `&` ones as overlaps
 - [ ] MusicXML writes `<slur>` for slurs and phrases, numbering spans open at the same time so crossing slurs survive
 - [ ] Each format round-trips a flow with a slur nested in a phrase, a slur whose last note is tied across a barline, and a slur across a staff crossing, asserting where each span starts and ends; ABC's phrases come back as slurs, and a spec pins that
 - [ ] Readers keep phrases that start or end on a rest, and drop unmatched, unterminated, and zero-length spans and rest-anchored slurs instead of raising; every file that imports today still imports
@@ -93,6 +93,8 @@ voice.spans_at("1:2").map(&:kind) # => [:slur, :phrase]
 - Slurs must start and end on note events, since legato needs sounding notes; readers drop one anchored on a rest, which keeps imports working. A phrase may start or end on any voice event, rests included, since a phrase often ends in one.
 - A slur starting on a grace note, which the readers drop, moves to the next main note. [Tuplets and Grace Notes](../backlog/tuplets-and-grace-notes.md) should revisit that.
 - `Voice#voice_events` answers its live array, so code outside the gem could move an event out from under a span. Nothing in the gem does; freezing or copying it is a later refactor.
+- Two slurs that touch, one ending on the note the next begins on, are a fixture of their own (`touching_slurs`). kern reads and writes them by taking a note's closes before its opens, as `(4e)`. ABC's parentheses cannot say it unambiguously, so the ABC steps must decide.
+- kern writes a chord's slur and phrase marks on its lowest note, opens and closes alike; the reader takes them from any note of the chord.
 - Crossing slurs in kern are written with `&(`, trusting the Humdrum elision convention. No Humdrum tool was run to confirm it reads as an overlap; if it proves not to, kern should raise `RenderError` for them like ABC.
 
 ## Resolved Questions
