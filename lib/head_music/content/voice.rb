@@ -22,6 +22,7 @@ class HeadMusic::Content::Voice
     @role = role
     @voice_events = []
     @dynamic_events = HeadMusic::Content::DynamicEvents.new(@part.flow)
+    @spans = HeadMusic::Content::Spans.new
     # No stored event for the opening staff: a voice sits on its part's first
     # staff until it says otherwise, and a single-staff part needs no
     # assignments at all.
@@ -91,6 +92,29 @@ class HeadMusic::Content::Voice
     DynamicResolver.new(self, @dynamic_events).level_at(position)
   end
 
+  # A marking from one of this voice's events to a later one, such as a slur.
+  # Its kind says what its ends must sit on: a slur needs notes, while a
+  # phrase may begin or end on a rest.
+  def add_span(kind, from:, to:)
+    span = HeadMusic::Content::Span.new(flow, kind, from: from, to: to)
+    raise ArgumentError, "a voice cannot hold a #{span.name_key}" unless span.span_kind.held_by?(:voice)
+
+    [span.from, span.to].each { |position| ensure_span_anchor(span, position) }
+    @spans.add(span)
+  end
+
+  def spans
+    @spans.to_a
+  end
+
+  # The spans that have begun by a position and not yet run out, innermost
+  # first. A span that covers its last note runs until that note ends.
+  def spans_at(position)
+    position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
+    @spans.select { |span| span.from <= position && position < span_end(span) }
+      .sort { |one, other| [other.from, one.to] <=> [one.from, other.to] }
+  end
+
   # Voice events are kept in position order, so the notes and rests drawn from
   # them are already ordered.
   def notes
@@ -155,6 +179,7 @@ class HeadMusic::Content::Voice
     assignments = staff_assignments_to_h
     hash["staff_assignments"] = assignments unless assignments.empty?
     hash["dynamic_events"] = dynamic_events.map(&:to_h) unless @dynamic_events.empty?
+    hash["spans"] = spans.map(&:to_h) unless @spans.empty?
     hash
   end
 
@@ -192,6 +217,17 @@ class HeadMusic::Content::Voice
 
   def bar_number_of(voice_event)
     voice_event ? voice_event.position.bar_number : 1
+  end
+
+  def ensure_span_anchor(span, position)
+    return if span.span_kind.anchors_on?(voice_event_at(position))
+
+    needed = (span.span_kind.anchor == "note_events") ? "a note" : "a note or rest"
+    raise ArgumentError, "a #{span.name_key} must start and end on #{needed} of its voice, but #{position} has none"
+  end
+
+  def span_end(span)
+    span.span_kind.covers_last_note? ? voice_event_at(span.to).next_position : span.to
   end
 
   def voice_event_at(position)
