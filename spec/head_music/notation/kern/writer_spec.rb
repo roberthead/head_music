@@ -575,4 +575,37 @@ describe HeadMusic::Notation::Kern::Writer do
       expect { render(flow) }.to raise_error HeadMusic::Notation::Kern::RenderError, /part with no voices/
     end
   end
+
+  describe "slurs and phrases" do
+    def spanned_tokens(flow)
+      render(flow).lines.map(&:chomp).grep(/\A[^*!=]/).grep(/[(){}]/)
+    end
+
+    it "opens a slur on its first note and closes it on its last" do
+      flow = MarkingFixtures.four_quarters.tap { |four| four.voices.first.add_span(:slur, from: "1:1", to: "1:3") }
+      expect(spanned_tokens(flow)).to eq ["(4c", "4e)"]
+    end
+
+    it "closes a slur on the last link of a note tied across a barline" do
+      expect(spanned_tokens(MarkingFixtures.spanned_melody)).to include("4cc])", "([4ff")
+    end
+
+    it "writes a phrase ending on a rest" do
+      expect(spanned_tokens(MarkingFixtures.spanned_melody).last).to eq "2r}"
+    end
+
+    it "elides slurs that cross" do
+      expect(spanned_tokens(MarkingFixtures.crossing_spans)).to eq ["(4c", "&(4d", "4e)", "4f&)"]
+    end
+
+    it "ends one slur and begins the next on one note" do
+      expect(spanned_tokens(MarkingFixtures.touching_slurs)).to eq ["(4c", "(4e)", "1g)"]
+    end
+
+    it "marks a chord once" do
+      flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\n[CE] D [EG] F|\n")
+      flow.voices.first.add_span(:slur, from: "1:1", to: "1:3")
+      expect(spanned_tokens(flow)).to eq ["(4c 4e", "4e) 4g"]
+    end
+  end
 end

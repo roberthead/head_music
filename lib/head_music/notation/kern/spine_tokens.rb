@@ -7,9 +7,14 @@ module HeadMusic::Notation::Kern
   # written as one token per link, and the tie marks run across the whole
   # voice event: [ on the first link, _ between, ] on the last. A kern spine
   # must sound from its first row to its last, so every bar is filled with
-  # rests wherever the voice is silent.
+  # rests wherever the voice is silent. Slur and phrase marks open on a
+  # voice event's first link and close on its last, once per chord.
   class SpineTokens
-    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks) do
+    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes) do
+      def initialize(opens: "", closes: "", **fields)
+        super
+      end
+
       def fraction
         DurationWriter.fraction(link)
       end
@@ -24,9 +29,11 @@ module HeadMusic::Notation::Kern
 
       def token
         recip = DurationWriter.token(link)
-        return "#{recip}r" if rest?
+        return "#{opens}#{recip}r#{closes}" if rest?
 
-        pitches.sort.map { |pitch| "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{marks}#{TIE_CLOSING[tie]}" }.join(" ")
+        notes = pitches.sort.map { |pitch| "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{marks}#{TIE_CLOSING[tie]}" }
+        notes[0] = "#{opens}#{notes[0]}#{closes}"
+        notes.join(" ")
       end
     end
 
@@ -53,7 +60,7 @@ module HeadMusic::Notation::Kern
       @placed ||= voice.voice_events.each_with_object(Hash.new { |hash, key| hash[key] = [] }) do |voice_event, events|
         links = voice_event_links(voice_event)
         links.each_with_index do |(bar_number, link, offset), index|
-          events[bar_number] << event_for(voice_event, link, offset, tie_for(index, links.length), index)
+          events[bar_number] << event_for(voice_event, link, offset, tie_for(index, links.length), index, links.length)
         end
       end
     end
@@ -80,14 +87,20 @@ module HeadMusic::Notation::Kern
       end
     end
 
-    def event_for(voice_event, link, offset, tie, index)
+    def event_for(voice_event, link, offset, tie, index, count)
       Event.new(
         offset: offset, link: link,
         pitches: voice_event.rest? ? nil : voice_event.pitches,
         tie: voice_event.rest? ? nil : tie,
         syllables: index.zero? ? voice_event.syllables : {},
-        marks: index.zero? ? MarkCodes.marks(voice_event) : ""
+        marks: index.zero? ? MarkCodes.marks(voice_event) : "",
+        opens: index.zero? ? span_marks.opens_at(voice_event.position) : "",
+        closes: (index == count - 1) ? span_marks.closes_at(voice_event.position) : ""
       )
+    end
+
+    def span_marks
+      @span_marks ||= SpanMarks.new(voice)
     end
 
     def tie_for(index, count)
