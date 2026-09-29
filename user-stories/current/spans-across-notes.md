@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T13:53:22-07:00
   planned_at:   2026-09-27T15:48:57-07:00
   finished_at:
-  updated_at:   2026-09-28T18:45:08-07:00
+  updated_at:   2026-09-28T18:46:23-07:00
 -->
 
 # Story: Spans Across Notes: Slurs and Phrase Marks
@@ -65,26 +65,26 @@ voice.spans_at("1:2").map(&:kind) # => [:slur, :phrase]
 
 ### Model
 
-- [ ] A voice can hold spans, each with a kind (slur or phrase) and a start and end position, via `voice.add_span(kind, from:, to:)`
-- [ ] A span kind declares its rules as data: whether its ends sit on note events, on voice events, or at any position; whether a voice, a part, or both may hold it; and whether it covers its last note. Hairpins, octave lines, pedals, and glissandos can be added later without changing the span's shape
-- [ ] Span storage does not depend on its owner, so a part can hold spans in a later story
-- [ ] A slur whose start or end is not a note event of its voice raises `ArgumentError`, and so does a phrase whose start or end is not a voice event of its voice (a phrase may begin or end on a rest), a span whose end does not come after its start, and an exact duplicate
-- [ ] Slurs may nest inside phrase marks and cross them. Two slurs, or two phrases, in one voice may nest or overlap, and both are kept
-- [ ] A span can cross barlines and staff crossings, and writers open it on the first fragment of its first note and close it on the last fragment of its last note
-- [ ] Merging a chord tone onto a slurred note, or placing a rest on it, leaves the slur unchanged; placing a note on a rest that a phrase starts or ends on leaves the phrase on the new note
-- [ ] `voice.spans_at(position)` answers each span with `from <= position` whose last note has not yet ended, innermost first
+- [x] A voice can hold spans, each with a kind (slur or phrase) and a start and end position, via `voice.add_span(kind, from:, to:)`
+- [x] A span kind declares its rules as data: whether its ends sit on note events, on voice events, or at any position; whether a voice, a part, or both may hold it; and whether it covers its last note. Hairpins, octave lines, pedals, and glissandos can be added later without changing the span's shape
+- [x] Span storage does not depend on its owner, so a part can hold spans in a later story
+- [x] A slur whose start or end is not a note event of its voice raises `ArgumentError`, and so does a phrase whose start or end is not a voice event of its voice (a phrase may begin or end on a rest), a span whose end does not come after its start, and an exact duplicate
+- [x] Slurs may nest inside phrase marks and cross them. Two slurs, or two phrases, in one voice may nest or overlap, and both are kept
+- [x] A span can cross barlines and staff crossings, and writers open it on the first fragment of its first note and close it on the last fragment of its last note
+- [x] Merging a chord tone onto a slurred note, or placing a rest on it, leaves the slur unchanged; placing a note on a rest that a phrase starts or ends on leaves the phrase on the new note
+- [x] `voice.spans_at(position)` answers each span with `from <= position` whose last note has not yet ended, innermost first
 
 ### Serialization and formats
 
-- [ ] Flow JSON writes `"spans"` on a voice only when it has spans, as an optional schema-5 key validated with path-tagged errors; existing schema-5 documents read unchanged
+- [x] Flow JSON writes `"spans"` on a voice only when it has spans, as an optional schema-5 key validated with path-tagged errors; existing schema-5 documents read unchanged
 - [x] ABC reads `(`/`)` slurs, including nested and dotted `.(` ones, and writes slurs, and phrase marks as slurs; it leaves out a phrase that would cross a slur, raises `RenderError` for two slurs that cross, and a spec pins both; `(3` still raises `UnsupportedFeatureError`
 - [x] LilyPond reads `(`/`)`, `\(`/`\)`, `^(`/`_(`, and `\=id(` slurs, and writes slurs and phrasing slurs, numbering them as `\=n(` only where two of a kind are open at once
 - [x] kern reads and writes `(`/`)` slurs and `{`/`}` phrases, including nested ones, and elided `&` ones as overlaps
 - [x] MusicXML writes `<slur>` for slurs and phrases, numbering spans open at the same time so crossing slurs survive, across the voices of a part
-- [ ] Each format round-trips a flow with a slur nested in a phrase, a slur whose last note is tied across a barline, and a slur across a staff crossing, asserting where each span starts and ends; ABC's phrases come back as slurs, and a spec pins that
-- [ ] Readers keep phrases that start or end on a rest, and drop unmatched, unterminated, and zero-length spans and rest-anchored slurs instead of raising; every file that imports today still imports
+- [x] Each format round-trips a flow with a slur nested in a phrase, a slur whose last note is tied across a barline, and a slur across a staff crossing, asserting where each span starts and ends; ABC's phrases come back as slurs, and a spec pins that. MusicXML has no reader yet, so its specs assert on the XML written, and ABC, which writes one voice, cannot hold the grand-staff fixture
+- [x] Readers keep phrases that start or end on a rest, and drop unmatched, unterminated, and zero-length spans and rest-anchored slurs instead of raising; every file that imports today still imports
 - [x] LilyPond's `\(`, `\)`, and `\=id(` no longer raise `ParseError`
-- [ ] Maintains 90%+ test coverage
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
