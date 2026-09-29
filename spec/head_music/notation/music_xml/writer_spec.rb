@@ -1711,6 +1711,19 @@ describe HeadMusic::Notation::MusicXML::Writer do
         .to eq HeadMusic::Notation::MusicXML::Divisions.for(HeadMusic::Notation::ABC.parse(HeadMusic::Notation::ABC.render(flow)))
     end
 
+    context "with phrases touching on a rest that crosses a barline" do
+      let(:flow) { MarkingFixtures.phrases_on_split_rest }
+
+      it "stops the first phrase and starts the second on the rest's first piece" do
+        slurs = REXML::XPath.match(document, "//measure[@number='1']/note[rest]/notations/slur")
+        expect(slurs.map { |slur| slur.attributes["type"] }).to eq %w[stop start]
+      end
+
+      it "writes no slur on the rest's second piece" do
+        expect(xpath_count(document, "//measure[@number='2']/note[rest]/notations")).to eq 0
+      end
+    end
+
     context "with slurs that cross" do
       let(:flow) { MarkingFixtures.crossing_spans }
 

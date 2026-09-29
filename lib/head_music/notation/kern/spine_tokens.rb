@@ -8,7 +8,8 @@ module HeadMusic::Notation::Kern
   # voice event: [ on the first link, _ between, ] on the last. A kern spine
   # must sound from its first row to its last, so every bar is filled with
   # rests wherever the voice is silent. Slur and phrase marks open on a
-  # voice event's first link and close on its last, once per chord.
+  # voice event's first link and close on its last, once per chord. A rest
+  # reads back as one rest per link, so it carries both on its first.
   class SpineTokens
     Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes) do
       def initialize(opens: "", closes: "", **fields)
@@ -95,8 +96,12 @@ module HeadMusic::Notation::Kern
         syllables: index.zero? ? voice_event.syllables : {},
         marks: index.zero? ? MarkCodes.marks(voice_event) : "",
         opens: index.zero? ? span_marks.opens_at(voice_event.position) : "",
-        closes: (index == count - 1) ? span_marks.closes_at(voice_event.position) : ""
+        closes: closing_link?(voice_event, index, count) ? span_marks.closes_at(voice_event.position) : ""
       )
+    end
+
+    def closing_link?(voice_event, index, count)
+      voice_event.rest? ? index.zero? : index == count - 1
     end
 
     def span_marks

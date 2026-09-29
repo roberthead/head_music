@@ -70,6 +70,18 @@ module MarkingFixtures
     end
   end
 
+  # Two phrases touching on a whole rest that crosses a barline.
+  def phrases_on_split_rest
+    flow = HeadMusic::Content::Flow.new(name: "Split Rest", meter: "4/4")
+    voice = flow.add_voice
+    voice.place("1:1", :half, "C4")
+    voice.place("1:3", :whole)
+    voice.place("2:3", :half, "D4")
+    voice.add_span(:phrase, from: "1:1", to: "1:3")
+    voice.add_span(:phrase, from: "1:3", to: "2:3")
+    flow
+  end
+
   # The grand-staff piano with a phrase over the right hand and a slur in the
   # left hand from the bass staff up to the treble.
   def spanned_piano

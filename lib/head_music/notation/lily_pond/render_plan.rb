@@ -77,14 +77,15 @@ module HeadMusic::Notation::LilyPond
     # ends in one; a chain of rests emits consecutive untied rests, and a tied
     # chord repeats the whole chord. Only the first link carries the marks.
     # A slur closes on the last link and opens on the first, closing first
-    # where they are one word, so one slur can end where the next begins.
+    # where they are one word, so one slur can end where the next begins. A
+    # rest reads back as one rest per link, so it carries both on its first.
     def token(segment)
       voice_event = segment.voice_event
       first, *later = segment.rhythmic_value!(RenderError).tied_chain.map do |link|
         "#{body(voice_event)}#{DurationWriter.token(link)}"
       end
       words = ["#{first}#{marks(segment)}", *later]
-      words[-1] += span_marks(voice_event).closes_at(voice_event.position) unless segment.continues
+      words[closes_index(segment, words)] += span_marks(voice_event).closes_at(voice_event.position) if closes?(segment)
       words[0] += span_marks(voice_event).opens_at(voice_event.position) if starts?(segment)
       return words.join(" ") if voice_event.rest?
 
@@ -104,6 +105,14 @@ module HeadMusic::Notation::LilyPond
 
       voice_event = segment.voice_event
       MarkWriter.token(voice_event, voice_level(voice_event))
+    end
+
+    def closes?(segment)
+      segment.voice_event.rest? ? starts?(segment) : !segment.continues
+    end
+
+    def closes_index(segment, words)
+      segment.voice_event.rest? ? 0 : words.length - 1
     end
 
     def starts?(segment)

@@ -245,7 +245,7 @@ describe HeadMusic::Notation::Kern do
   end
 
   describe "the span fixtures" do
-    %i[spanned_melody crossing_spans touching_slurs spanned_piano].each do |name|
+    %i[spanned_melody crossing_spans touching_slurs spanned_piano phrases_on_split_rest].each do |name|
       it "keeps where each span of #{name} starts and ends" do
         original = MarkingFixtures.public_send(name)
         expect_same_spans(original, expect_kern_round_trip(original))

@@ -138,14 +138,19 @@ module HeadMusic::Notation::MusicXML
 
     # On the chord's first note: a stop on the voice event's last component,
     # a start on its first, the stop first where one slur ends and the next
-    # begins.
+    # begins. A rest's components are rests of their own, so it carries both
+    # on its first.
     def slur_lines(voice_event, component, chord:)
       return [] if chord
 
       numbers = plan.slur_numbers(voice_event.voice.part)
-      stops = component.tie_start ? [] : numbers.stops_at(voice_event)
+      stops = closing_component?(voice_event, component) ? numbers.stops_at(voice_event) : []
       starts = component.tie_stop ? [] : numbers.starts_at(voice_event)
       [*stops.map { |number| slur_line("stop", number) }, *starts.map { |number| slur_line("start", number) }]
+    end
+
+    def closing_component?(voice_event, component)
+      voice_event.rest? ? !component.tie_stop : !component.tie_start
     end
 
     def slur_line(type, number)
