@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T13:53:22-07:00
   planned_at:   2026-09-27T15:48:57-07:00
   finished_at:
-  updated_at:   2026-09-28T15:45:40-07:00
+  updated_at:   2026-09-28T18:45:08-07:00
 -->
 
 # Story: Spans Across Notes: Slurs and Phrase Marks
@@ -80,7 +80,7 @@ voice.spans_at("1:2").map(&:kind) # => [:slur, :phrase]
 - [x] ABC reads `(`/`)` slurs, including nested and dotted `.(` ones, and writes slurs, and phrase marks as slurs; it leaves out a phrase that would cross a slur, raises `RenderError` for two slurs that cross, and a spec pins both; `(3` still raises `UnsupportedFeatureError`
 - [x] LilyPond reads `(`/`)`, `\(`/`\)`, `^(`/`_(`, and `\=id(` slurs, and writes slurs and phrasing slurs, numbering them as `\=n(` only where two of a kind are open at once
 - [x] kern reads and writes `(`/`)` slurs and `{`/`}` phrases, including nested ones, and elided `&` ones as overlaps
-- [ ] MusicXML writes `<slur>` for slurs and phrases, numbering spans open at the same time so crossing slurs survive
+- [x] MusicXML writes `<slur>` for slurs and phrases, numbering spans open at the same time so crossing slurs survive, across the voices of a part
 - [ ] Each format round-trips a flow with a slur nested in a phrase, a slur whose last note is tied across a barline, and a slur across a staff crossing, asserting where each span starts and ends; ABC's phrases come back as slurs, and a spec pins that
 - [ ] Readers keep phrases that start or end on a rest, and drop unmatched, unterminated, and zero-length spans and rest-anchored slurs instead of raising; every file that imports today still imports
 - [x] LilyPond's `\(`, `\)`, and `\=id(` no longer raise `ParseError`

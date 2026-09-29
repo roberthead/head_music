@@ -53,6 +53,11 @@ module HeadMusic::Notation::MusicXML
       (Rational(4 * meter.top_number, meter.bottom_number) * divisions).numerator
     end
 
+    def slur_numbers(part)
+      @slur_numbers ||= {}.compare_by_identity
+      @slur_numbers[part] ||= SlurNumbers.new(part)
+    end
+
     # The divisions a voice's notes occupy in a bar: the sum of its components
     # there, or the whole-measure rest that stands in for an empty bar. Less
     # than a measure where the voice ended mid-bar.
@@ -69,6 +74,7 @@ module HeadMusic::Notation::MusicXML
       key_value(flow.timeline.opening_key_signature_event)
       super
       components_by_segment
+      flow.parts.each { |part| slur_numbers(part) }
     end
 
     # <fifths> is required and <mode> is optional, which is exactly the shape

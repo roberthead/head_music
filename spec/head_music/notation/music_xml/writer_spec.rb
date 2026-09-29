@@ -1680,4 +1680,52 @@ describe HeadMusic::Notation::MusicXML::Writer do
       expect(written.sort).to eq expected.sort
     end
   end
+
+  describe "slurs and phrases" do
+    let(:flow) { MarkingFixtures.spanned_melody }
+    let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+    it "starts and stops a slur for every span, phrases included" do
+      spans = flow.voices.first.spans.length
+      expect(%w[start stop].map { |type| xpath_count(document, "//notations/slur[@type='#{type}']") }).to eq [spans, spans]
+    end
+
+    it "stops a slur on the last note of a note tied across a barline" do
+      expect(xpath_count(document, "//note[tie/@type='stop' and pitch/step='C']/notations/slur[@type='stop']")).to eq 1
+    end
+
+    it "starts a slur on the first note of a note tied across a barline" do
+      expect(xpath_count(document, "//note[tie/@type='start' and not(tie/@type='stop') and pitch/step='F']/notations/slur[@type='start']")).to eq 1
+    end
+
+    it "stops a phrase on a rest" do
+      expect(xpath_count(document, "//note[rest]/notations/slur[@type='stop']")).to eq 1
+    end
+
+    it "writes a slur after the ties in <notations>" do
+      expect(xpath_names(document, "//note[tie/@type='stop' and pitch/step='C']/notations/*")).to eq %w[tied slur]
+    end
+
+    it "leaves the divisions as they are without spans" do
+      expect(HeadMusic::Notation::MusicXML::Divisions.for(flow))
+        .to eq HeadMusic::Notation::MusicXML::Divisions.for(HeadMusic::Notation::ABC.parse(HeadMusic::Notation::ABC.render(flow)))
+    end
+
+    context "with slurs that cross" do
+      let(:flow) { MarkingFixtures.crossing_spans }
+
+      it "numbers them apart" do
+        expect(REXML::XPath.match(document, "//notations/slur[@type='start']").map { |slur| slur.attributes["number"] }).to eq %w[1 2]
+      end
+    end
+
+    context "with one slur ending where the next begins" do
+      let(:flow) { MarkingFixtures.touching_slurs }
+
+      it "stops the first before starting the second, on one note" do
+        slurs = REXML::XPath.match(document, "//note[pitch/step='E']/notations/slur")
+        expect(slurs.map { |slur| [slur.attributes["type"], slur.attributes["number"]] }).to eq [%w[stop 1], %w[start 1]]
+      end
+    end
+  end
 end

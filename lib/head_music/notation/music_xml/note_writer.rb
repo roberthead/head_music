@@ -117,17 +117,39 @@ module HeadMusic::Notation::MusicXML
       ].compact
     end
 
+    # A rest carries no ties or markings, but a phrase may begin or end on one.
     def notation_lines(voice_event, component, chord:)
-      return [] if voice_event.rest?
-
       lines = [
-        component.tie_stop ? %(#{INDENT * 5}<tied type="stop"/>) : nil,
-        component.tie_start ? %(#{INDENT * 5}<tied type="start"/>) : nil,
-        *marking_lines(voice_event, component, chord: chord)
-      ].compact
+        *(voice_event.rest? ? [] : tied_lines(component)),
+        *slur_lines(voice_event, component, chord: chord),
+        *(voice_event.rest? ? [] : marking_lines(voice_event, component, chord: chord))
+      ]
       return [] if lines.empty?
 
       ["#{INDENT * 4}<notations>", *lines, "#{INDENT * 4}</notations>"]
+    end
+
+    def tied_lines(component)
+      [
+        component.tie_stop ? %(#{INDENT * 5}<tied type="stop"/>) : nil,
+        component.tie_start ? %(#{INDENT * 5}<tied type="start"/>) : nil
+      ].compact
+    end
+
+    # On the chord's first note: a stop on the voice event's last component,
+    # a start on its first, the stop first where one slur ends and the next
+    # begins.
+    def slur_lines(voice_event, component, chord:)
+      return [] if chord
+
+      numbers = plan.slur_numbers(voice_event.voice.part)
+      stops = component.tie_start ? [] : numbers.stops_at(voice_event)
+      starts = component.tie_stop ? [] : numbers.starts_at(voice_event)
+      [*stops.map { |number| slur_line("stop", number) }, *starts.map { |number| slur_line("start", number) }]
+    end
+
+    def slur_line(type, number)
+      %(#{INDENT * 5}<slur type="#{type}" number="#{number}"/>)
     end
 
     # Markings ride the chord's first note (the one without <chord/>) and

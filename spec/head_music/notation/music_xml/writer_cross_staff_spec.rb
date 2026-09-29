@@ -103,6 +103,19 @@ describe HeadMusic::Notation::MusicXML::Writer do
     end
   end
 
+  describe "a grand staff with a slur across the staves" do
+    let(:flow) { MarkingFixtures.spanned_piano }
+
+    it "starts the left hand's slur on the bass staff and stops it on the treble" do
+      staves = %w[start stop].map { |type| xpath_text(document, "//note[voice='2' and notations/slur/@type='#{type}']/staff") }
+      expect(staves).to eq %w[2 1]
+    end
+
+    it "numbers the hands' spans apart, since they are open at once in one part" do
+      expect(REXML::XPath.match(document, "//notations/slur[@type='start']").map { |slur| slur.attributes["number"] }).to eq %w[1 2]
+    end
+  end
+
   describe "a part on one staff" do
     let(:flow) { LilyPondFixtures.duo }
 
