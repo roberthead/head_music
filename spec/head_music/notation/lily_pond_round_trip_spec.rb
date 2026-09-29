@@ -47,7 +47,7 @@ module LilyPondRoundTripSources
   ].freeze
 
   MARKING_FIXTURE_NAMES = %i[marked_melody grand_staff_piano_with_dynamics].freeze
-  SPAN_FIXTURE_NAMES = %i[spanned_melody crossing_spans touching_slurs spanned_piano].freeze
+  SPAN_FIXTURE_NAMES = %i[spanned_melody crossing_spans touching_slurs touching_slurs_on_tied_note spanned_piano].freeze
   # A rest across a barline reads back as a rest per bar, which the music
   # comparison counts as a change, so this one is checked for its spans alone.
   SPLIT_REST_FIXTURE_NAMES = %i[phrases_on_split_rest].freeze

@@ -48,4 +48,9 @@ describe HeadMusic::Notation::LilyPond::SpanMarks do
     voice.add_span(:slur, from: "1:3", to: "2:1")
     expect(marks_at("1:3")).to eq [["(", ")"]]
   end
+
+  it "names a slur that begins on a tied note where another ends, since the open comes first" do
+    marks = described_class.new(MarkingFixtures.touching_slurs_on_tied_note.voices.first)
+    expect([marks.opens_at("1:4"), marks.closes_at("1:4")]).to eq ["\\=1(", ")"]
+  end
 end

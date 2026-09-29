@@ -70,6 +70,15 @@ module MarkingFixtures
     end
   end
 
+  # Two slurs where one ends on a note tied across a barline and the next
+  # begins on it, so the next opens before the first closes.
+  def touching_slurs_on_tied_note
+    HeadMusic::Notation::ABC.parse("X:1\nT:Touching on a Tie\nL:1/4\nM:4/4\nK:C\nC D E F-|F G A B|\n").tap do |flow|
+      flow.voices.first.add_span(:slur, from: "1:1", to: "1:4")
+      flow.voices.first.add_span(:slur, from: "1:4", to: "2:3")
+    end
+  end
+
   # Two phrases touching on a whole rest that crosses a barline.
   def phrases_on_split_rest
     flow = HeadMusic::Content::Flow.new(name: "Split Rest", meter: "4/4")
