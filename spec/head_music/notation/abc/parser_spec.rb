@@ -496,6 +496,10 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(slurs("C (D E F-|F) G z2|")).to eq ["slur from 1:2:000 to 1:4:000"]
     end
 
+    it "ends one slur and begins the next on a tied note" do
+      expect(slurs("(A B-)(B C) D|")).to eq ["slur from 1:1:000 to 1:2:000", "slur from 1:2:000 to 1:4:000"]
+    end
+
     it "reads a slur over a chord" do
       expect(slurs("([CE] D) E F|")).to eq ["slur from 1:1:000 to 1:2:000"]
     end
