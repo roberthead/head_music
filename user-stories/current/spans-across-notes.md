@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T13:53:22-07:00
   planned_at:   2026-09-27T15:48:57-07:00
   finished_at:
-  updated_at:   2026-09-28T18:46:23-07:00
+  updated_at:   2026-09-28T18:54:48-07:00
 -->
 
 # Story: Spans Across Notes: Slurs and Phrase Marks
@@ -222,3 +222,39 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 - Readers that drop rest-anchored slurs keep imports working, but lose the mark. That is the reader policy.
 - Implementation pauses after step 3, so the model and JSON can be checked before the formats build on them.
 - `spans_at` is half-open with a per-kind extent, so a slur covers the whole of its last note; hairpins will end at a position instead.
+
+## Review
+
+Reviewed 2026-09-28 at `bb0c9e94`, covering `15670ca0` through `bb0c9e94`. The suite passes (10,101 examples), line coverage is 99.77%, and LilyPond 2.26 compiles the span fixtures without a warning. Every finding below was reproduced.
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| `voice.add_span(kind, from:, to:)` | ✅ | `content/voice.rb`; `voice_spans_spec.rb` |
+| Span kind rules as data | ⚠️ | `rudiment/span_kind.rb` knows only `note_events` and `voice_events` anchors; "at any position", which hairpins need, is not expressible as data |
+| Span storage independent of its owner | ✅ | `content/spans.rb` never names a voice |
+| `ArgumentError` for bad ends, `to <= from`, and duplicates | ✅ | `voice_spans_spec.rb`, `span_spec.rb` |
+| Nesting and crossing kept | ✅ | `voice_spans_spec.rb` |
+| Spans cross barlines and staves; writers open on the first fragment and close on the last | ⚠️ | Holds for each span alone, but breaks touching spans whose shared event is written in pieces (finding 1) |
+| Chord merge, rest placement, and rest replacement keep spans | ✅ | `voice_spans_spec.rb` |
+| `spans_at` | ✅ | `voice_spans_spec.rb` |
+| Flow JSON | ✅ | `flow_serialization_spec.rb`, `schema_values_spec.rb` |
+| ABC | ⚠️ | Writing is met; reading touching slurs on a tied note gives one long slur (finding 4) |
+| LilyPond | ⚠️ | Reading is met; writing touching spans on a tied or split event loses the second (finding 1) |
+| kern | ⚠️ | Slurs are met; a phrase ending on a rest split at a barline reads back with the wrong ends (finding 3) |
+| MusicXML | ❌ | Numbers follow musical time rather than document order (findings 1 and 2) |
+| Round trips with span positions asserted | ✅ | kern, LilyPond, and ABC round-trip specs; the fixtures do not include the cases in the findings |
+| Readers keep phrases on rests and drop bad spans without raising | ✅ | Reader drop specs; unterminated, unmatched, and rest-anchored input tried in each reader |
+| `\(`, `\)`, `\=id(` no longer raise `ParseError` | ✅ | `lexer_spec.rb`, `flow_builder_spec.rb` |
+| Coverage | ✅ | 99.77% |
+
+### Code review findings
+
+1. **Touching spans break where the shared event is written in pieces (LilyPond, MusicXML).** `lily_pond/span_marks.rb` and `music_xml/slur_numbers.rb` let a span reuse a name or number where another ends, assuming the close is written first. On a tied note or a rest split at a barline, the open goes on the first piece and the close on the last, so the open comes first. `C D E F-|F G A B|` with slurs 1:1–1:4 and 1:4–2:3 writes `f'4(~ | f'4)` in LilyPond, which warns "already have slur" and reads back one slur, and `start 1, start 1, stop 1, stop 1` in MusicXML. A fuzz run of 400 span sets over tied notes failed 45 LilyPond round trips, all this case. kern survives, since its reader merges a tie's marks.
+2. **MusicXML numbers slurs by musical time, not document order.** A part writes voice 1's measure, then `<backup>`, then voice 2's. A left-hand slur 1:1–1:2 and a right-hand slur 1:3–2:1 do not overlap in time, so both take number 1, but the file reads start 1 (right), start 1 (left), stop 1 (left), stop 1 (right). MusicXML numbers must differ for spans that overlap in document order.
+3. **A phrase ending on a rest split at a barline comes back wrong (kern, LilyPond).** The writers close it on the rest's last piece, but the readers read each piece as its own rest. A half note at 1:1, a whole rest at 1:3, and a half note at 2:3, with phrases 1:1–1:3 and 1:3–2:3, reads back from kern as 1:1–2:3 and 1:3–2:1, and from LilyPond as 1:1–2:1.
+4. **ABC reads touching slurs on a tied note as one slur.** `(A B-)(B C) D` gives 1:1–1:4, not 1:1–1:2 and 1:2–1:4: the tie merges both marks into one pending note, and its opens are taken before its closes. The ABC writer never writes this, since it shifts the second slur, so only ABC from elsewhere is affected.
+5. **The plan's `Spans#starting_at`, `#ending_at`, and `#covering` were not built.** No criterion needs them.
+
+Checked and correct: `Span` ordering and duplicate detection; kern's elision levels, which invert exactly in a 400-case fuzz run including three mutually overlapping slurs; LilyPond round trips of untied spans in the same fuzz run; the ABC writer's `shorten_touching`, which always ends; the regex comment in `kern/token_reader.rb`; and the project's conventions.
