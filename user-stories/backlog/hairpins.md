@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-27T15:48:57-07:00
+  updated_at:   2026-09-28T19:24:38-07:00
 -->
 
 # Story: Hairpins
@@ -46,6 +46,7 @@ Split from [Spans Across Notes](../done/spans-across-notes.md), whose span model
 - Depends on [Place Dynamics Where No Note Starts](place-dynamics-where-no-note-starts.md) for ABC hairpin ends in the middle of a note.
 - Confirm with a Humdrum tool that kern accepts a level and a hairpin mark joined in one token.
 - Part hairpins must not add bars to `Flow#latest_bar_number` or a writer's bar numbering.
+- `SpanKind` already reads a `positions` anchor, so the hairpin kinds are catalog rows. Think in document order, not musical time, wherever a hairpin's ends share a tied or split note, or sit in different voices of a part: every bug the slurs review found was there. A random round-trip generator over tied notes found what the fixtures missed.
 
 ## Implementation Plan
 
