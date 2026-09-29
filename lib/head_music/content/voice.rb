@@ -227,7 +227,8 @@ class HeadMusic::Content::Voice
   end
 
   def span_end(span)
-    span.span_kind.covers_last_note? ? voice_event_at(span.to).next_position : span.to
+    last = span.span_kind.covers_last_note? && voice_event_at(span.to)
+    last ? last.next_position : span.to
   end
 
   def voice_event_at(position)

@@ -18,11 +18,15 @@ class HeadMusic::Rudiment::SpanKind
     @owners = record.fetch("owners").freeze
   end
 
-  # A slur needs sounding notes at its ends; a phrase may begin or end on a rest.
+  # A slur needs sounding notes at its ends; a phrase may begin or end on a
+  # rest; a kind anchored at positions, such as a hairpin will be, may end
+  # anywhere.
   def anchors_on?(voice_event)
-    return false if voice_event.nil?
-
-    anchor == "voice_events" || !voice_event.rest?
+    case anchor
+    when "positions" then true
+    when "voice_events" then !voice_event.nil?
+    else !voice_event.nil? && !voice_event.rest?
+    end
   end
 
   def covers_last_note?

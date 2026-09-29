@@ -33,6 +33,11 @@ describe HeadMusic::Rudiment::SpanKind do
     it "anchors nothing where there is no voice event" do
       expect(described_class.get(:phrase).anchors_on?(nil)).to be false
     end
+
+    it "anchors a kind at positions anywhere, as the catalog can say" do
+      kind = described_class.send(:new, "hairpin", {"anchor" => "positions", "extent" => "to_position", "owners" => %w[voice part]})
+      expect([kind.anchors_on?(nil), kind.anchors_on?(rest), kind.covers_last_note?]).to eq [true, true, false]
+    end
   end
 
   describe "#covers_last_note?" do

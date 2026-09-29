@@ -1,5 +1,5 @@
-# anchor: what a span's start and end must sit on in its voice, note_events
-#   or any voice_events.
+# anchor: what a span's start and end must sit on in its voice: note_events,
+#   any voice_events, or positions, where they may fall anywhere.
 # extent: through_note, where a span covers the whole of its last note.
 # owners: which containers may hold the kind.
 span_kinds:
