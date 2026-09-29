@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-27T13:53:22-07:00
   planned_at:   2026-09-27T15:48:57-07:00
   finished_at:
-  updated_at:   2026-09-28T18:54:48-07:00
+  updated_at:   2026-09-28T19:12:07-07:00
 -->
 
 # Story: Spans Across Notes: Slurs and Phrase Marks
@@ -258,3 +258,13 @@ Reviewed 2026-09-28 at `bb0c9e94`, covering `15670ca0` through `bb0c9e94`. The s
 5. **The plan's `Spans#starting_at`, `#ending_at`, and `#covering` were not built.** No criterion needs them.
 
 Checked and correct: `Span` ordering and duplicate detection; kern's elision levels, which invert exactly in a 400-case fuzz run including three mutually overlapping slurs; LilyPond round trips of untied spans in the same fuzz run; the ABC writer's `shorten_touching`, which always ends; the regex comment in `kern/token_reader.rb`; and the project's conventions.
+
+### Resolution
+
+- Finding 1 is fixed for LilyPond in `092c4495`, which holds a span open through an end note written in pieces, so a slur beginning on that tied note takes a `\=1` name; LilyPond 2.26 compiles it without a warning. For MusicXML it is fixed with finding 2.
+- Finding 2 is fixed in `64a45cea`: `SlurNumbers` walks the part in document order, bar by bar and voice by voice, so a stop frees its number and a start takes the lowest free one.
+- Finding 3 is fixed in `40d90f57`: kern, LilyPond, and MusicXML carry a rest's opens and closes on its first piece.
+- Finding 4 is fixed in `86f6bffa`: a pending ABC note keeps its slur marks in the order written, so a close on a tie's first link comes before an open on its next.
+- The anchor gap is closed in `cb5a2b2a`: `SpanKind` reads a `positions` anchor, so a hairpin can be a catalog row.
+- New fixtures pin each case: `touching_slurs_on_tied_note` and `phrases_on_split_rest` in the kern and LilyPond round trips and the LilyPond compile check, and document-order numbering in `slur_numbers_spec.rb`. The reviewer's fuzz runs, which had found 45 LilyPond failures over tied notes, now find none.
+- Finding 5 stands: `Spans#starting_at`, `#ending_at`, and `#covering` wait until a caller needs them.
