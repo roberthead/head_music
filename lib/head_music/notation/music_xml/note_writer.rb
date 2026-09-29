@@ -144,13 +144,9 @@ module HeadMusic::Notation::MusicXML
       return [] if chord
 
       numbers = plan.slur_numbers(voice_event.voice.part)
-      stops = closing_component?(voice_event, component) ? numbers.stops_at(voice_event) : []
+      stops = SlurNumbers.closing_component?(voice_event, component) ? numbers.stops_at(voice_event) : []
       starts = component.tie_stop ? [] : numbers.starts_at(voice_event)
       [*stops.map { |number| slur_line("stop", number) }, *starts.map { |number| slur_line("start", number) }]
-    end
-
-    def closing_component?(voice_event, component)
-      voice_event.rest? ? !component.tie_stop : !component.tie_start
     end
 
     def slur_line(type, number)

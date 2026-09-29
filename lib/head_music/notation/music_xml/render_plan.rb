@@ -55,7 +55,7 @@ module HeadMusic::Notation::MusicXML
 
     def slur_numbers(part)
       @slur_numbers ||= {}.compare_by_identity
-      @slur_numbers[part] ||= SlurNumbers.new(part)
+      @slur_numbers[part] ||= SlurNumbers.new(part, self)
     end
 
     # The divisions a voice's notes occupy in a bar: the sum of its components
