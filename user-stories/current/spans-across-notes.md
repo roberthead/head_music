@@ -198,14 +198,14 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 
 ### Timeline-helper checklist
 
-- [ ] `BarSplitter.segments_of`: opens go on the first fragment of the start event, slur and phrase closes on the last fragment of the end event
-- [ ] MusicXML `Divisions`: unchanged for voice spans; pinned
-- [ ] MusicXML `NoteWriter` tie components: start on `!tie_stop`, stop on the last `!tie_start`
-- [ ] kern `SpineTokens#event_for`: opens at the first link, closes on the last
-- [ ] kern `VoiceCursor#continue_tie`: marks on later links belong to the tie's event
-- [ ] LilyPond `RenderPlan#token` and `#marks`, and `VoiceStream#extend_tie`: closes on the last word of a tied group
-- [ ] ABC writer segment loop: `(` and `)` around the right segments
-- [ ] `Flow#latest_bar_number` and the writers' bar numbering count voice events only
+- [x] `BarSplitter.segments_of`: opens go on the first fragment of the start event, slur and phrase closes on the last fragment of the end event
+- [x] MusicXML `Divisions`: unchanged for voice spans; pinned
+- [x] MusicXML `NoteWriter` tie components: start on `!tie_stop`, stop on the last `!tie_start`
+- [x] kern `SpineTokens#event_for`: opens at the first link, closes on the last
+- [x] kern `VoiceCursor#continue_tie`: marks on later links belong to the tie's event
+- [x] LilyPond `RenderPlan#token` and `#marks`, and `VoiceStream#extend_tie`: closes on the last word of a tied group
+- [x] ABC writer segment loop: `(` and `)` around the right segments
+- [x] `Flow#latest_bar_number` and the writers' bar numbering count voice events only
 
 ### Testing strategy
 
