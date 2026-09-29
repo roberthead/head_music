@@ -17,7 +17,7 @@ I WANT a syllable sung over several notes to keep its extender
 
 SO THAT melismas survive import and can be written back
 
-Split from [Spans Across Notes](../current/spans-across-notes.md).
+Split from [Spans Across Notes](../done/spans-across-notes.md).
 
 ## Background
 

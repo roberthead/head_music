@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-25T14:05:55-07:00
   activated_at: 2026-09-27T13:53:22-07:00
   planned_at:   2026-09-27T15:48:57-07:00
-  finished_at:
-  updated_at:   2026-09-28T19:12:07-07:00
+  finished_at:  2026-09-28T19:24:28-07:00
+  updated_at:   2026-09-28T19:24:28-07:00
 -->
 
 # Story: Spans Across Notes: Slurs and Phrase Marks
@@ -268,3 +268,16 @@ Checked and correct: `Span` ordering and duplicate detection; kern's elision lev
 - The anchor gap is closed in `cb5a2b2a`: `SpanKind` reads a `positions` anchor, so a hairpin can be a catalog row.
 - New fixtures pin each case: `touching_slurs_on_tied_note` and `phrases_on_split_rest` in the kern and LilyPond round trips and the LilyPond compile check, and document-order numbering in `slur_numbers_spec.rb`. The reviewer's fuzz runs, which had found 45 LilyPond failures over tied notes, now find none.
 - Finding 5 stands: `Spans#starting_at`, `#ending_at`, and `#covering` wait until a caller needs them.
+
+## Learnings
+
+- **Bringing the story up to date before planning paid off.** The story was written before the markings work landed, and a review of 72 hours of commits found its Background wrong in four places: hairpins were dropped rather than raised on, `\(` raised a `ParseError`, the example's `syllable.extends_to` API did not exist, and a criterion named a voice operation (moving an event) that the gem has no way to do. Checking claims against the code first gave the planner a true starting point.
+- **Splitting in three kept each piece shippable.** Slurs and phrase marks alone touched a model, JSON, and four formats in about 30 commits. Hairpins and lyric extenders each raise their own design questions (part ownership, `**dynam` collisions, stored or derived extenders) that would have stalled this one.
+- **Positions over event references was right.** `Voice#merge_at` never changes what sits at a position, so a span checked when added cannot dangle, and every reader can add spans after its notes are placed. No format needed deferred validation.
+- **A pause after the model was worth it.** Stopping after the catalog, `Span`, and JSON let the API be checked before four formats built on it, and cost nothing.
+- **Explaining terms before asking kept the decisions quick.** Questions about ABC phrases, touching slurs, and phrase anchors each came with the notation spelled out first; the one time a question led with a term (ABC "phrases"), the answer came back as a question.
+- **The bugs were all where two spans meet on a note written in pieces.** Touching spans on a tied note, a phrase ending on a split rest, and MusicXML numbering across voices all came from one assumption: that a note's marks are written at one instant. They are not, once a note is tied, split at a barline, or written after another voice's `<backup>`. Every writer's "close before open" rule held for one word and failed for several. Next time, build fixtures for spans whose ends share a tied or split event, and think in document order, not musical time, from the start.
+- **Random round trips found what the fixtures missed.** The reviewer's fuzz run over tied notes turned up 45 LilyPond failures that every hand-built fixture passed. A small generator of random span sets is worth keeping beside the round-trip specs for the hairpins story.
+- **A real toolchain is the best oracle.** LilyPond 2.26 was installed, and compiling each fixture and grepping for warnings confirmed the `\=n` numbering and `)(` ordering in a way no parser of our own could.
+- **Tooling surprises cost time.** Ruby 3.3.0's regex engine misses the `)` in `"4g])"` for `/&*[()]/`, so kern's span marks are scanned by hand. And `git stash push …; git stash pop` popped an old stash of Rob's when the push failed; temporary reverts now copy files aside instead.
+- **Some specs described the old behavior.** A LilyPond Dynamics spec used `(` as its example of an unsupported mark; a kern spec listed `(` and `{` as ignored signifiers; mark-hash specs compared whole hashes. Each was right before and needed updating, not deleting. Running the full suite before each commit, not only the touched specs, would have caught the first before it was committed.

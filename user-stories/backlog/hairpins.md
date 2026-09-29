@@ -17,7 +17,7 @@ I WANT voices and parts to hold crescendo and diminuendo hairpins
 
 SO THAT dynamic shape survives import alongside the levels it runs between
 
-Split from [Spans Across Notes](../current/spans-across-notes.md), whose span model this story extends.
+Split from [Spans Across Notes](../done/spans-across-notes.md), whose span model this story extends.
 
 ## Background
 
