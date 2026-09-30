@@ -190,6 +190,9 @@ describe HeadMusic::Notation::MusicXML::Writer do
                   <duration>2</duration>
                   <type>half</type>
                 </note>
+                <barline location="right">
+                  <bar-style>light-heavy</bar-style>
+                </barline>
               </measure>
             </part>
           </score-partwise>
@@ -812,7 +815,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
 
       it "writes the part's directions before the note, not after it" do
-        expect(xpath_names(document, "//measure[@number='1']/*")).to eq %w[attributes direction direction note]
+        expect(xpath_names(document, "//measure[@number='1']/*")).to eq %w[attributes direction direction note barline]
       end
 
       it "writes neither a voice nor a staff number on a part's dynamic" do

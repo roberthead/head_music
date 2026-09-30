@@ -53,6 +53,11 @@ module HeadMusic::Notation::MusicXML
       (Rational(4 * meter.top_number, meter.bottom_number) * divisions).numerator
     end
 
+    def bar(bar_number)
+      @bars ||= flow.bars(bar_numbers.last).to_h { |bar| [bar.number, bar] }
+      @bars[bar_number]
+    end
+
     def slur_numbers(part)
       @slur_numbers ||= {}.compare_by_identity
       @slur_numbers[part] ||= SlurNumbers.new(part, self)

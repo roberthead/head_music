@@ -3,7 +3,7 @@ require_relative "xml_text"
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Serializes a part's <part> element, measure by measure: each measure's
-  # attributes, its directions, and every voice's notes.
+  # barlines, attributes, directions and navigation, and every voice's notes.
   class PartWriter
     include XmlText
 
@@ -37,12 +37,24 @@ module HeadMusic::Notation::MusicXML
       @attributes_writer ||= AttributesWriter.new(plan)
     end
 
+    def barline_writer
+      @barline_writer ||= BarlineWriter.new(plan)
+    end
+
+    def navigation_writer
+      @navigation_writer ||= NavigationWriter.new(plan)
+    end
+
     def measure_lines(part, bar_number)
       [
         measure_open_tag(bar_number),
+        *barline_writer.left_lines(bar_number),
         *attributes_writer.lines(part, bar_number),
         *direction_writer.part_lines(part, bar_number),
+        *navigation_writer.opening_lines(bar_number),
         *part_content_lines(part, bar_number),
+        *navigation_writer.closing_lines(bar_number),
+        *barline_writer.right_lines(bar_number),
         "#{INDENT * 2}</measure>"
       ]
     end
