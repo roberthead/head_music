@@ -111,29 +111,26 @@ module HeadMusic::Notation::MusicXML
     def tie_lines(voice_event, component)
       return [] if voice_event.rest?
 
-      [
-        component.tie_stop ? %(#{INDENT * 4}<tie type="stop"/>) : nil,
-        component.tie_start ? %(#{INDENT * 4}<tie type="start"/>) : nil
-      ].compact
+      tie_elements("tie", 4, component)
+    end
+
+    # A <tie> is heard and a <tied> is drawn; each stops before it starts.
+    def tie_elements(tag, depth, component)
+      {"stop" => component.tie_stop, "start" => component.tie_start}.filter_map do |type, present|
+        %(#{INDENT * depth}<#{tag} type="#{type}"/>) if present
+      end
     end
 
     # A rest carries no ties or markings, but a phrase may begin or end on one.
     def notation_lines(voice_event, component, chord:)
       lines = [
-        *(voice_event.rest? ? [] : tied_lines(component)),
+        *(voice_event.rest? ? [] : tie_elements("tied", 5, component)),
         *slur_lines(voice_event, component, chord: chord),
         *(voice_event.rest? ? [] : marking_lines(voice_event, component, chord: chord))
       ]
       return [] if lines.empty?
 
       ["#{INDENT * 4}<notations>", *lines, "#{INDENT * 4}</notations>"]
-    end
-
-    def tied_lines(component)
-      [
-        component.tie_stop ? %(#{INDENT * 5}<tied type="stop"/>) : nil,
-        component.tie_start ? %(#{INDENT * 5}<tied type="start"/>) : nil
-      ].compact
     end
 
     # On the chord's first note: a stop on the voice event's last component,
