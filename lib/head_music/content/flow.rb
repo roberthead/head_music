@@ -133,6 +133,16 @@ class HeadMusic::Content::Flow
     [*voices.map(&:latest_bar_number), 1].max
   end
 
+  # The last bar carrying repeat structure or a marking, which a flow with no
+  # voices past it still plays through.
+  def last_marked_bar_number
+    @bars.last_marked_number
+  end
+
+  def performance_order
+    PerformanceOrder.new(self).bars
+  end
+
   def cantus_firmus_voice
     voices.detect(&:cantus_firmus?)
   end

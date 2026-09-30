@@ -1,6 +1,6 @@
 class HeadMusic::Content::Flow
   # What every schema version's reader does the same way: check the version,
-  # build the base flow, and replay voice events, repeat flags, and comments
+  # build the base flow, and replay voice events, bar fields, and comments
   # through the public builder API. A subclass names its SCHEMA_VERSION, says
   # where the opening timeline values live, and walks its own containers.
   #
@@ -115,14 +115,14 @@ class HeadMusic::Content::Flow
       end
     end
 
-    def apply_repeat_flags(flow)
-      each_change(bar_hashes, "bars") do |bar_number, bar_hash, _path|
+    def apply_bar_fields(flow)
+      each_change(bar_hashes, "bars") do |bar_number, bar_hash, path|
         bar = flow.bars(bar_number).last
-        bar.starts_repeat = true if bar_hash["starts_repeat"]
-        ends_repeat = bar_hash["ends_repeat_after_num_plays"]
-        bar.ends_repeat_after_num_plays = ends_repeat if ends_repeat
-        plays_on_passes = bar_hash["plays_on_passes"]
-        bar.plays_on_passes = plays_on_passes if plays_on_passes
+        bar_hash.slice(*SchemaValues::BAR_FIELDS).each do |field, value|
+          bar.public_send(:"#{field}=", values.bar_field(field, value))
+        rescue ArgumentError => e
+          raise ArgumentError, "#{path}.#{field}: #{e.message}"
+        end
       end
     end
 

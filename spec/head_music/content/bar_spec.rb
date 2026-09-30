@@ -145,6 +145,98 @@ describe HeadMusic::Content::Bar do
     end
   end
 
+  describe "markings" do
+    its(:barline) { is_expected.to eq :regular }
+    its(:rehearsal_mark) { is_expected.to be_nil }
+    its(:jump) { is_expected.to be_nil }
+
+    %i[segno coda fine to_coda].each do |flag|
+      it "carries no #{flag} by default" do
+        expect(bar.public_send(:"#{flag}?")).to be false
+      end
+
+      it "can carry a #{flag}" do
+        bar.public_send(:"#{flag}=", true)
+        expect(bar.public_send(:"#{flag}?")).to be true
+      end
+
+      it "rejects a #{flag} that is not true or false" do
+        expect { bar.public_send(:"#{flag}=", "yes") }.to raise_error(ArgumentError)
+      end
+    end
+
+    describe "#barline=" do
+      %i[double final dashed dotted].each do |style|
+        it "accepts #{style}" do
+          bar.barline = style
+          expect(bar.barline).to eq style
+        end
+      end
+
+      it "accepts a string" do
+        bar.barline = "double"
+        expect(bar.barline).to eq :double
+      end
+
+      it "resets to regular on nil" do
+        bar.barline = :final
+        bar.barline = nil
+        expect(bar.barline).to eq :regular
+      end
+
+      it "rejects an unknown style" do
+        expect { bar.barline = :wavy }.to raise_error(ArgumentError)
+      end
+    end
+
+    describe "#rehearsal_mark=" do
+      it "accepts a letter" do
+        bar.rehearsal_mark = "B"
+        expect(bar.rehearsal_mark).to eq "B"
+      end
+
+      it "accepts free text, stripped" do
+        bar.rehearsal_mark = " Verse "
+        expect(bar.rehearsal_mark).to eq "Verse"
+      end
+
+      it "stores a number as a string" do
+        bar.rehearsal_mark = 12
+        expect(bar.rehearsal_mark).to eq "12"
+      end
+
+      it "rejects an empty mark" do
+        expect { bar.rehearsal_mark = " " }.to raise_error(ArgumentError)
+      end
+
+      it "rejects a number below one" do
+        expect { bar.rehearsal_mark = 0 }.to raise_error(ArgumentError)
+      end
+    end
+
+    describe "#jump=" do
+      it "accepts a Jump" do
+        bar.jump = HeadMusic::Content::Jump.new(:da_capo, to: :fine)
+        expect(bar.jump).to be_da_capo
+      end
+
+      it "rejects anything else" do
+        expect { bar.jump = :da_capo }.to raise_error(ArgumentError)
+      end
+    end
+
+    describe "#to_s" do
+      before do
+        bar.rehearsal_mark = "B"
+        bar.segno = true
+        bar.barline = :double
+        bar.jump = HeadMusic::Content::Jump.new(:dal_segno, to: :coda)
+      end
+
+      its(:to_s) { is_expected.to eq "Bar [B] segno D.S. al Coda double" }
+    end
+  end
+
   describe "#to_h" do
     it "returns an empty hash for a default bar" do
       expect(bar.to_h).to eq({})
@@ -176,6 +268,24 @@ describe HeadMusic::Content::Bar do
           "ends_repeat_after_num_plays" => 2,
           "plays_on_passes" => [1, 2]
         )
+      end
+    end
+
+    context "with markings" do
+      before do
+        bar.barline = :final
+        bar.rehearsal_mark = "Coda"
+        bar.coda = true
+        bar.fine = true
+        bar.jump = HeadMusic::Content::Jump.new(:da_capo)
+      end
+
+      let(:expected) do
+        {"barline" => "final", "rehearsal_mark" => "Coda", "coda" => true, "fine" => true, "jump" => {"kind" => "da_capo"}}
+      end
+
+      it "serializes the markings that are set" do
+        expect(bar.to_h).to eq expected
       end
     end
 

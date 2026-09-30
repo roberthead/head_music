@@ -38,7 +38,7 @@ Project ──owns──▶ Player[]            authored order; a chair, not a p
                 │                                      ├──▶ Position          frozen value
                 │                                      ├──▶ sounds[]          Soundable: Pitch | UnpitchedSound; [] is a rest
                 │                                      └──▶ syllables{verse}  Syllable
-                ├──owns──▶ Bar[]            sparse, by number; repeat state only
+                ├──owns──▶ Bar[]            sparse, by number; repeats and markings
                 └──owns──▶ Comment[]
 ```
 
@@ -343,9 +343,17 @@ No equality. A staff is known by identity, so a voice's assignment serializes as
 | `starts_repeat?` | Boolean | 1 |
 | `ends_repeat_after_num_plays` | `Integer` ≥ 2 or nil | 0..1 |
 | `plays_on_passes` | unique positive `Integer`s, or nil for every pass | 0..* |
+| `barline` | `:regular`, `:double`, `:final`, `:dashed`, or `:dotted`; `:regular` by default | 1 |
+| `rehearsal_mark` | non-empty `String`; an `Integer` is stored as a `String` | 0..1 |
+| `segno?`, `coda?`, `fine?`, `to_coda?` | Boolean | 1 each |
+| `jump` | `Jump` (`kind` `:da_capo` or `:dal_segno`, `to` `:fine`, `:coda`, or nil) | 0..1 |
 | `meter`, `key_signature` | derived: the change authored in this bar, else nil | 0..1 |
 
-Repeat structure only. Key and meter storage moved to the timeline in this release.
+Repeat structure and markings. Key and meter storage moved to the timeline in this release.
+
+A rehearsal mark, segno, coda sign, and repeat start mark the start of the bar; the barline, Fine, To Coda, jump, and repeat end mark its end. A final barline at the end of the flow is implied, and writers draw it.
+
+`Flow#performance_order` answers the bars as played: `PlayedBar`s of `bar`, `pass` (the repeat pass), and `playing` (the count of times that bar has sounded).
 
 ### Comment and Syllable (`content/comment.rb`, `content/syllable.rb`)
 
@@ -443,10 +451,14 @@ Repeat structure only. Key and meter storage moved to the timeline in this relea
         }
       ],
 
-      "bars": [                                   // sparse: a bar with no repeat state is not written
+      "bars": [                                   // sparse: a bar with no repeat state or marking is not written
         { "number": 1, "starts_repeat"?: true },
         { "number": 3, "plays_on_passes"?: [1, 2] },
-        { "number": 8, "ends_repeat_after_num_plays"?: 2 }
+        { "number": 8, "ends_repeat_after_num_plays"?: 2, "barline"?: "double" },
+        { "number": 9, "rehearsal_mark"?: "B", "segno"?: true },
+        { "number": 12, "fine"?: true, "to_coda"?: true },
+        { "number": 16, "jump"?: { "kind": "dal_segno", "to"?: "fine" } },
+        { "number": 17, "coda"?: true }
       ],
 
       "comments": [ { "text": "da capo", "position": "8:1:000" } ]   // position may be null

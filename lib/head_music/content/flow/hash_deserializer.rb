@@ -2,7 +2,7 @@ class HeadMusic::Content::Flow
   # Rebuilds a flow from a schema v5 hash, in dependency order: the timeline
   # first, because a position string rolls its counts and ticks over through the
   # meter map; then parts, because a voice's staff assignment names a staff of
-  # its part's system; then voice events; then repeat flags, which need their bar
+  # its part's system; then voice events; then bar fields, which need their bar
   # allocated.
   class HashDeserializer < Deserializer
     SCHEMA_VERSION = HeadMusic::Content::Flow::SCHEMA_VERSION
@@ -29,7 +29,7 @@ class HeadMusic::Content::Flow
       apply_citations(flow)
       apply_timeline_changes(flow)
       build_parts(flow)
-      apply_repeat_flags(flow)
+      apply_bar_fields(flow)
       add_comments(flow)
     end
 

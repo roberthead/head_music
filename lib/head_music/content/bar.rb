@@ -2,10 +2,17 @@
 module HeadMusic::Content; end
 
 # Representation of a bar in a flow
-# Encapsulates meter and key signature changes
-# and repeat structure (repeat barlines and volta brackets) as content semantics
+# Encapsulates meter and key signature changes, repeat structure (repeat
+# barlines and volta brackets), and the markings that shape how the bars are
+# played: barline style, rehearsal mark, and navigation.
+#
+# A rehearsal mark, segno, coda sign, and repeat start mark the start of the
+# bar; its barline, Fine, To Coda, jump, and repeat end mark its end.
 class HeadMusic::Content::Bar
-  attr_reader :flow, :number, :ends_repeat_after_num_plays, :plays_on_passes
+  BARLINES = %i[regular double final dashed dotted].freeze
+  FLAGS = %i[segno coda fine to_coda].freeze
+
+  attr_reader :flow, :number, :ends_repeat_after_num_plays, :plays_on_passes, :barline, :rehearsal_mark, :jump
   attr_writer :starts_repeat
 
   def initialize(flow, number: HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR)
@@ -14,6 +21,10 @@ class HeadMusic::Content::Bar
     @starts_repeat = false
     @ends_repeat_after_num_plays = nil
     @plays_on_passes = nil
+    @barline = :regular
+    @rehearsal_mark = nil
+    @jump = nil
+    FLAGS.each { |flag| instance_variable_set(:"@#{flag}", false) }
   end
 
   # The key signature and meter a bar reports are the changes authored here,
@@ -53,8 +64,35 @@ class HeadMusic::Content::Bar
     plays_on_passes.nil? || plays_on_passes.include?(pass_number)
   end
 
+  def barline=(value)
+    style = value.nil? ? :regular : value.to_s.to_sym
+    raise ArgumentError, "barline must be one of #{BARLINES.join(", ")}, got #{value.inspect}" unless BARLINES.include?(style)
+
+    @barline = style
+  end
+
+  def rehearsal_mark=(value)
+    @rehearsal_mark = ensure_rehearsal_mark(value)
+  end
+
+  def jump=(value)
+    raise ArgumentError, "jump must be nil or a Jump, got #{value.inspect}" unless value.nil? || value.is_a?(HeadMusic::Content::Jump)
+
+    @jump = value
+  end
+
+  FLAGS.each do |flag|
+    define_method(:"#{flag}?") { instance_variable_get(:"@#{flag}") }
+
+    define_method(:"#{flag}=") do |value|
+      raise ArgumentError, "#{flag} must be true or false, got #{value.inspect}" unless [true, false].include?(value)
+
+      instance_variable_set(:"@#{flag}", value)
+    end
+  end
+
   def to_s
-    ["Bar", key_signature, meter, repeat_summary].compact.join(" ")
+    ["Bar", key_signature, meter, *marking_summary].compact.join(" ")
   end
 
   # Sparse serialization: only non-default state, so a default bar is {}.
@@ -66,6 +104,10 @@ class HeadMusic::Content::Bar
     hash["starts_repeat"] = true if starts_repeat?
     hash["ends_repeat_after_num_plays"] = ends_repeat_after_num_plays if ends_repeat?
     hash["plays_on_passes"] = plays_on_passes.dup if plays_on_passes
+    hash["barline"] = barline.to_s unless barline == :regular
+    hash["rehearsal_mark"] = rehearsal_mark if rehearsal_mark
+    FLAGS.each { |flag| hash[flag.to_s] = true if public_send(:"#{flag}?") }
+    hash["jump"] = jump.to_h if jump
     hash
   end
 
@@ -85,11 +127,28 @@ class HeadMusic::Content::Bar
       value.uniq.length == value.length
   end
 
-  def repeat_summary
-    parts = []
-    parts << "|:" if starts_repeat?
-    parts << ":|x#{ends_repeat_after_num_plays}" if ends_repeat?
-    parts << "(passes #{plays_on_passes.join(",")})" if plays_on_passes
-    parts.join(" ") unless parts.empty?
+  def ensure_rehearsal_mark(value)
+    return if value.nil?
+    return value.to_s if value.is_a?(Integer) && value.positive?
+
+    mark = value.strip if value.is_a?(String)
+    raise ArgumentError, "rehearsal_mark must be a non-empty String or a positive Integer, got #{value.inspect}" if mark.nil? || mark.empty?
+
+    mark
+  end
+
+  def marking_summary
+    [
+      rehearsal_mark && "[#{rehearsal_mark}]",
+      ("segno" if segno?),
+      ("coda" if coda?),
+      ("|:" if starts_repeat?),
+      (":|x#{ends_repeat_after_num_plays}" if ends_repeat?),
+      plays_on_passes && "(passes #{plays_on_passes.join(",")})",
+      ("Fine" if fine?),
+      ("To Coda" if to_coda?),
+      jump&.to_s,
+      (barline.to_s unless barline == :regular)
+    ].compact
   end
 end

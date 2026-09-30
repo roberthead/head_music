@@ -8,6 +8,9 @@ class HeadMusic::Content::Flow
   class SchemaValues
     include SchemaValidation
 
+    BAR_FLAGS = %w[starts_repeat segno coda fine to_coda].freeze
+    BAR_FIELDS = [*BAR_FLAGS, "ends_repeat_after_num_plays", "plays_on_passes", "barline", "rehearsal_mark", "jump"].freeze
+
     delegate :staff_system, :staff, to: :staff_system_values
     delegate :voice_event_sounds, :voice_event_syllables, :catalog_keys, :note_dynamic, to: :voice_event_values
 
@@ -82,6 +85,17 @@ class HeadMusic::Content::Flow
       number
     end
 
+    # Answers the value a bar field's setter takes. The setters validate it,
+    # except that starts_repeat= takes anything, so the flags are checked here.
+    def bar_field(field, value)
+      return bar_jump(value) if field == "jump"
+      if BAR_FLAGS.include?(field) && ![true, false].include?(value)
+        raise ArgumentError, "must be true or false, got #{value.inspect}"
+      end
+
+      value
+    end
+
     # Sharps positive, flats negative, and unbounded: a theoretical key such as
     # G sharp major counts each double accidental twice and reaches eight.
     def fifths(value, path)
@@ -115,6 +129,13 @@ class HeadMusic::Content::Flow
     end
 
     private
+
+    def bar_jump(value)
+      return if value.nil?
+      raise ArgumentError, "must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
+
+      HeadMusic::Content::Jump.from_h(value)
+    end
 
     def staff_system_values
       @staff_system_values ||= StaffSystemValues.new(self)

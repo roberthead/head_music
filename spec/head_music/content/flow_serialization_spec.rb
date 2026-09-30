@@ -718,6 +718,69 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "bar markings" do
+    let(:flow) do
+      described_class.new(name: "Navigation").tap do |navigation|
+        voice = navigation.add_voice
+        1.upto(5) { |bar| voice.place("#{bar}:1:000", :whole, "C4") }
+        navigation.bars(1).last.rehearsal_mark = "A"
+        navigation.bars(2).last.segno = true
+        navigation.bars(3).last.to_coda = true
+        navigation.bars(3).last.barline = :dashed
+        navigation.bars(4).last.jump = HeadMusic::Content::Jump.new(:dal_segno, to: :coda)
+        navigation.bars(4).last.barline = :double
+        navigation.bars(5).last.coda = true
+      end
+    end
+
+    let(:expected_bars) do
+      [
+        {"number" => 1, "rehearsal_mark" => "A"},
+        {"number" => 2, "segno" => true},
+        {"number" => 3, "barline" => "dashed", "to_coda" => true},
+        {"number" => 4, "barline" => "double", "jump" => {"kind" => "dal_segno", "to" => "coda"}},
+        {"number" => 5, "coda" => true}
+      ]
+    end
+
+    it "writes only the markings that are set" do
+      expect(flow.to_h["bars"]).to eq expected_bars
+    end
+
+    it "stays within schema 5" do
+      expect(flow.to_h["schema_version"]).to eq 5
+    end
+
+    it "round-trips the markings" do
+      expect(described_class.from_json(flow.to_json).to_h).to eq flow.to_h
+    end
+
+    it "round-trips the performance order" do
+      restored = described_class.from_json(flow.to_json)
+      expect(restored.performance_order.map(&:number)).to eq [1, 2, 3, 4, 2, 3, 5]
+    end
+
+    it "rejects a flag that is not true or false, with its path" do
+      hash = flow.to_h.merge("bars" => [{"number" => 2, "segno" => "no"}])
+      expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /bars\[0\]\.segno: must be true or false/)
+    end
+
+    it "rejects an unknown jump, with its path" do
+      hash = flow.to_h.merge("bars" => [{"number" => 4, "jump" => {"kind" => "dal_signo"}}])
+      expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /bars\[0\]\.jump: unknown jump kind/)
+    end
+
+    it "rejects a jump that is not a hash, with its path" do
+      hash = flow.to_h.merge("bars" => [{"number" => 4, "jump" => "D.C."}])
+      expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /bars\[0\]\.jump: must be a Hash/)
+    end
+
+    it "rejects an unknown barline, with its path" do
+      hash = flow.to_h.merge("bars" => [{"number" => 4, "barline" => "wavy"}])
+      expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /bars\[0\]\.barline: barline must be one of/)
+    end
+  end
+
   describe "tied durations" do
     context "with an ABC note spanning five eighths" do
       let(:flow) do

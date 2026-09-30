@@ -27,6 +27,20 @@ describe HeadMusic::Content::Flow::Bars do
     end
   end
 
+  describe "#last_marked_number" do
+    it "is nil when no bar carries a marking" do
+      bars.span(1, 4)
+      expect(bars.last_marked_number).to be_nil
+    end
+
+    it "is the last bar with repeat structure or a marking" do
+      bars.span(1, 6)
+      bars.span(2, 2).first.fine = true
+      bars.span(4, 4).first.starts_repeat = true
+      expect(bars.last_marked_number).to eq 4
+    end
+  end
+
   describe "#serialize" do
     it "leaves out a bar with nothing to say" do
       bars.span(1, 3)
