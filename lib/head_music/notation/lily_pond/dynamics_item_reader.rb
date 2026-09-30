@@ -1,14 +1,16 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # Reads the items of a \new Dynamics. The context only marks time, so a rest
-  # there is a spacer and anything that sounds is refused. Its braces are read
-  # by the MusicReader that calls this one.
+  # there is a spacer and anything that sounds is refused. Bar marks repeat the
+  # staves' and are read for their syntax alone. Its braces are read by the
+  # MusicReader that calls this one.
   class DynamicsItemReader
-    def initialize(cursor, music, items, settings)
+    def initialize(cursor, music, items, settings:, bar_marks:)
       @cursor = cursor
       @music = music
       @items = items
       @settings = settings
+      @bar_marks = bar_marks
     end
 
     def read(context)
@@ -26,12 +28,14 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :cursor, :music, :items, :settings
+    attr_reader :cursor, :music, :items, :settings, :bar_marks
 
     def read_command(token)
-      raise cursor.unsupported_command(token) unless SettingReader::COMMANDS.include?(token.lexeme)
-
-      settings.read
+      case token.lexeme
+      when *SettingReader::COMMANDS then settings.read
+      when *BarMarkReader::COMMANDS then bar_marks.read
+      else raise cursor.unsupported_command(token)
+      end
     end
   end
 end

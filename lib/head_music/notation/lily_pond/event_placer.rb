@@ -15,15 +15,22 @@ module HeadMusic::Notation::LilyPond
     def initialize(layout)
       @layout = layout
       @open_spans = Hash.new { |hash, voice| hash[voice] = {} }
+      @bar_marks = BarMarkPlacer.new
     end
 
     def place(event, voice)
+      return apply_marker(event, voice, voice.next_position) unless event.music?
+
       case event.kind
       when :note then place_note(event, voice)
       when :rest then apply_marks(voice.place(voice.next_position, event.rhythmic_value), event)
       when :whole_bar_rest then place_whole_bar_rest(event, voice)
-      else apply_marker(event, voice, voice.next_position)
       end
+      bar_marks.music_placed(voice)
+    end
+
+    def finish(flow)
+      bar_marks.finish(flow)
     end
 
     def check_bar(event, position)
@@ -44,7 +51,7 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :layout
+    attr_reader :layout, :bar_marks
 
     def apply_marker(event, voice, position)
       case event.kind
@@ -53,6 +60,7 @@ module HeadMusic::Notation::LilyPond
       when :time then apply_change(event, voice.flow, position, "\\time", :meter, :meter_at, :change_meter)
       when :staff_change then change_staff(event, voice, position)
       when :level then place_level(voice, position, event)
+      when :bar_mark then bar_marks.hold(event, voice, position)
       end
     end
 

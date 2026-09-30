@@ -43,7 +43,7 @@ module LilyPondRoundTripSources
     speed_the_plough chromatic_air rests duo key_and_meter_change tacet song escaped_header anonymous air fourth_species
     tie_into_key_change tie_into_meter_change
     cross_staff_piano one_handed_piano tie_into_staff_crossing piano_and_melody choir_on_two_staves short_final_bar
-    melody_with_part_dynamics duet_with_part_dynamics
+    melody_with_part_dynamics duet_with_part_dynamics dal_segno_al_coda barline_styles
   ].freeze
 
   MARKING_FIXTURE_NAMES = %i[marked_melody grand_staff_piano_with_dynamics].freeze
@@ -127,6 +127,25 @@ describe HeadMusic::Notation::LilyPond do
         original = MarkingFixtures.public_send(name)
         expect_same_spans(original, described_class.parse(original.to_lilypond))
       end
+    end
+
+    %i[dal_segno_al_coda barline_styles].each do |name|
+      it "brings back every bar marking of #{name}" do
+        original = LilyPondFixtures.public_send(name)
+        expect(expect_lily_pond_round_trip(original).bars.map(&:to_h)).to eq original.bars.map(&:to_h)
+      end
+
+      it "renders #{name} the same after a parse" do
+        rendered = LilyPondFixtures.public_send(name).to_lilypond
+        expect(described_class.parse(rendered).to_lilypond).to eq rendered
+      end
+    end
+
+    it "plays a D.S. al Coda back in the same order" do
+      original = LilyPondFixtures.dal_segno_al_coda
+      played = described_class.parse(original.to_lilypond).performance_order.map { |bar| [bar.number, bar.pass] }
+      expect(played).to eq [[1, 1], [2, 1], [3, 1], [4, 1], [2, 1], [3, 1], [5, 1]]
+      expect(played).to eq(original.performance_order.map { |bar| [bar.number, bar.pass] })
     end
 
     it "brings a part's dynamics back on the part, not the voices" do

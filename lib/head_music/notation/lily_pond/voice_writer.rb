@@ -54,6 +54,10 @@ module HeadMusic::Notation::LilyPond
       plan.bar_numbers.first
     end
 
+    def lead_voice?(voice)
+      voice.equal?(plan.flow.voices.first)
+    end
+
     def opening_lines(clef_name, part)
       [
         "\\clef #{clef_name}",
@@ -91,11 +95,16 @@ module HeadMusic::Notation::LilyPond
       ["\\transposition #{PitchWriter.token(sounding)}"]
     end
 
+    # A bar's marks are written in every voice, as LilyPond expects of \bar
+    # and \mark, so each voice reads back with them.
     def bar_line(voice, bar_number, part_index)
+      bar = plan.bar(bar_number)
       tokens = [
+        *BarMarkWriter.opening_tokens(bar),
         *change_commands(voice.part, bar_number),
         staff_change_command(voice, bar_number, part_index),
-        *bar_tokens(voice, bar_number)
+        *bar_tokens(voice, bar_number),
+        *BarMarkWriter.closing_tokens(bar, last: bar_number == plan.bar_numbers.last, lead: lead_voice?(voice))
       ]
       bar_check_after(tokens.compact.join(" "), bar_number)
     end

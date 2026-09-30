@@ -259,4 +259,80 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
       expect(spans("c'4( d'( e') f'")).to eq [["slur from 1:1:000 to 1:3:000"]]
     end
   end
+
+  describe "bar marks" do
+    def bars(music)
+      build(music).bars.map(&:to_h)
+    end
+
+    it "puts a mark at a bar's start on that bar" do
+      expect(bars(%({ c'1 | \\mark "B" \\segnoMark 1 \\codaMark 1 d'1 | e'1 }))).to eq [
+        {}, {"rehearsal_mark" => "B", "segno" => true, "coda" => true}, {}
+      ]
+    end
+
+    it "puts a barline, Fine, To Coda, or jump at a bar's start on the bar before" do
+      expect(bars(%({ c'1 \\fine \\jump "To Coda" \\jump "D.C." \\section | d'1 }))).to eq [
+        {"barline" => "double", "fine" => true, "to_coda" => true, "jump" => {"kind" => "da_capo"}}, {}
+      ]
+    end
+
+    it "keeps a final barline before the last bar" do
+      expect(bars(%({ c'1 \\bar "|." d'1 }))).to eq [{"barline" => "final"}, {}]
+    end
+
+    it "leaves the final barline at the end implied" do
+      expect(bars(%({ c'1 d'1 \\bar "|." }))).to eq [{}, {}]
+    end
+
+    it "keeps a style other than final at the end" do
+      expect(bars(%({ c'1 d'1 \\bar "||" }))).to eq [{}, {"barline" => "double"}]
+    end
+
+    it "closes a short final bar with the marks after its music" do
+      expect(bars(%({ c'1 d'2 \\jump "D.C. al Fine" \\bar "|." }))).to eq [{}, {"jump" => {"kind" => "da_capo", "to" => "fine"}}]
+    end
+
+    it "drops marks in the middle of a bar, which have no bar to go on" do
+      expect(bars(%({ c'2 \\mark "B" \\fine \\bar "||" d'2 | e'1 }))).to eq [{}, {}]
+    end
+
+    it "drops a mark at the start of a bar that holds no music" do
+      flow = build(%({ c'1 | \\mark "B" \\segnoMark 1 }))
+      expect([flow.bars.map(&:to_h), flow.last_marked_bar_number]).to eq [[{}], nil]
+    end
+
+    it "reads marks between the halves of a note tied across the barline" do
+      expect(bars(%({ c'2 d'2~ | \\mark "B" \\bar "||" d'2 e'2 | f'1 }))).to eq [{"barline" => "double"}, {"rehearsal_mark" => "B"}, {}]
+    end
+
+    it "drops marks between the halves of a note tied within a bar" do
+      expect(bars(%({ c'4~ \\mark "B" \\bar "||" c'4 d'2 | e'1 }))).to eq [{}, {}]
+    end
+
+    it "reads the same marks from every voice once" do
+      source = %(<< \\new Staff { \\mark "A" c''1 \\bar "||" | d''1 } \\new Staff { \\mark "A" c1 \\bar "||" | d1 } >>)
+      expect(bars(source)).to eq [{"rehearsal_mark" => "A", "barline" => "double"}, {}]
+    end
+
+    it "letters default marks in each voice alike" do
+      source = %(<< \\new Staff { \\mark \\default c''1 | \\mark \\default d''1 } \\new Staff { \\mark \\default c1 | \\mark \\default d1 } >>)
+      expect(bars(source)).to eq [{"rehearsal_mark" => "A"}, {"rehearsal_mark" => "B"}]
+    end
+
+    it "reads a mark from one voice alone" do
+      source = %(<< \\new Staff { c''1 \\textEndMark "Fine" | d''1 } \\new Staff { c1 | d1 } >>)
+      expect(bars(source)).to eq [{"fine" => true}, {}]
+    end
+
+    it "raises for voices that disagree about a bar" do
+      source = %(<< \\new Staff { \\mark "A" c''1 } \\new Staff { \\mark "B" c1 } >>)
+      expect { build(source) }.to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Conflicting bar marks at bar 1/)
+    end
+
+    it "ignores the marks in a Dynamics context" do
+      source = %(<< \\new Staff { c''1 | d''1 } \\new Dynamics { \\mark "A" s1 \\bar "||" | s1 } >>)
+      expect(bars(source)).to eq [{}, {}]
+    end
+  end
 end

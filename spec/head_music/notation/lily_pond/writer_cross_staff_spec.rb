@@ -108,7 +108,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
     let(:flow) { LilyPondFixtures.tie_into_staff_crossing }
 
     it "writes the staff change between the halves of the tie" do
-      expect(rendered).to include(%(c2 c'2~ |\n), %(\\change Staff = "part1-staff1" c'2 d'2 |\n))
+      expect(rendered).to include(%(c2 c'2~ |\n), %(\\change Staff = "part1-staff1" c'2 d'2 \\bar "|." |\n))
     end
 
     it_behaves_like "a compilable document"

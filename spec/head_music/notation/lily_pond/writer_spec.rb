@@ -57,7 +57,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       end
 
       it "renders the rest between the notes" do
-        expect(bar_check_lines(rendered)).to eq ["c'4 r4 e'2 |"]
+        expect(bar_check_lines(rendered)).to eq [%(c'4 r4 e'2 \\bar "|." |)]
       end
     end
 
@@ -79,7 +79,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       end
 
       it "fills the short voice's missing bar with a whole-bar rest" do
-        expect(bar_check_lines(rendered).last).to eq "R1*4/4 |"
+        expect(bar_check_lines(rendered).last).to eq %(R1*4/4 \\bar "|." |)
       end
 
       it_behaves_like "a compilable document"
@@ -217,7 +217,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       let(:rendered) { described_class.new(flow).to_s }
 
       it "writes the key change between the halves of the tie" do
-        expect(bar_check_lines(rendered).first(2)).to eq ["c''2 d''2~ |", "\\key g \\major d''2 fis''2 |"]
+        expect(bar_check_lines(rendered).first(2)).to eq ["c''2 d''2~ |", %(\\key g \\major d''2 fis''2 \\bar "|." |)]
       end
 
       it_behaves_like "a compilable document"
@@ -239,7 +239,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
       let(:rendered) { described_class.new(flow).to_s }
 
       it "leaves the bar check off the short final bar only" do
-        expect(rendered.lines.map(&:strip).grep(/\A(r2 |c'?'?2\.|b'2|g2)/)).to eq ["r2 g'4 |", "c''2. |", "b'2", "r2 g4 |", "c2. |", "g2"]
+        expect(rendered.lines.map(&:strip).grep(/\A(r2 |c'?'?2\.|b'2|g2)/))
+          .to eq ["r2 g'4 |", "c''2. |", %(b'2 \\bar "|."), "r2 g4 |", "c2. |", %(g2 \\bar "|.")]
       end
 
       it_behaves_like "a compilable document"
@@ -250,7 +251,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       let(:rendered) { described_class.new(flow).to_s }
 
       it "rests the tacet voice only as long as the short final bar" do
-        expect(rendered.lines.map(&:strip).each_cons(3)).to include ["R1*3/4 |", "R1*3/4 |", "r2"]
+        expect(rendered.lines.map(&:strip).each_cons(3)).to include ["R1*3/4 |", "R1*3/4 |", %(r2 \\bar "|.")]
       end
 
       it_behaves_like "a compilable document"
@@ -261,7 +262,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       let(:rendered) { described_class.new(flow).to_s }
 
       it "renders a staff of whole-bar rests without raising" do
-        expect(bar_check_lines(rendered)).to eq ["R1*4/4 |"]
+        expect(bar_check_lines(rendered)).to eq [%(R1*4/4 \\bar "|." |)]
       end
 
       it "defaults the empty voice to the treble clef" do
@@ -345,7 +346,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       end
 
       it "writes a level on a rest" do
-        expect(bar_check_lines(rendered).last).to eq "c''2 r2\\pp |"
+        expect(bar_check_lines(rendered).last).to eq %(c''2 r2\\pp \\bar "|." |)
       end
 
       it_behaves_like "a compilable document"
@@ -365,7 +366,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       let(:rendered) { described_class.new(flow).to_s }
 
       it "marks only the fragment where the note starts" do
-        expect(bar_check_lines(rendered)).to eq ["c'2 d'2\\mp->\\trill\\sf~ |", "d'2 e'2 |"]
+        expect(bar_check_lines(rendered)).to eq ["c'2 d'2\\mp->\\trill\\sf~ |", %(d'2 e'2 \\bar "|." |)]
       end
 
       it "leaves out a level with no note after it" do
@@ -389,7 +390,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       let(:rendered) { described_class.new(flow).to_s }
 
       it "writes the fp and leaves out the level" do
-        expect(bar_check_lines(rendered)).to eq ["c'2\\fp d'2 |"]
+        expect(bar_check_lines(rendered)).to eq [%(c'2\\fp d'2 \\bar "|." |)]
       end
 
       it "reads back the same level in force at every note, without the level's event" do
@@ -407,7 +408,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
       end
 
       it "writes the marks once, after the chord" do
-        expect(bar_check_lines(described_class.new(flow).to_s)).to eq ["<c' e' g'>1--\\rfz |"]
+        expect(bar_check_lines(described_class.new(flow).to_s)).to eq [%(<c' e' g'>1--\\rfz \\bar "|." |)]
       end
     end
 
@@ -509,6 +510,77 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it "closes the first before opening the second" do
         expect(described_class.new(flow).to_s).to include "e'4)( f'4"
       end
+    end
+
+    context "with a D.S. al Coda" do
+      let(:flow) { LilyPondFixtures.dal_segno_al_coda }
+      let(:rendered) { described_class.new(flow).to_s }
+      let(:marked_lines) do
+        [
+          %(\\mark "A" c'4 d'4 e'4 f'4 |),
+          %(\\segnoMark 1 g'4 a'4 b'4 c''4 |),
+          %(\\mark "B" d''4 c''4 b'4 a'4 \\jump "To Coda" |),
+          %(g'4 f'4 e'4 d'4 \\jump "D.S. al Coda" \\bar "||" |),
+          %(\\codaMark 1 c'4 e'4 g'4 c''4 \\bar "|." |),
+          %(\\mark "A" c1 |),
+          %(\\segnoMark 1 c1 |),
+          %(\\mark "B" c1 \\jump "To Coda" |),
+          %(c1 \\jump "D.S. al Coda" \\bar "||" |),
+          %(\\codaMark 1 c1 \\bar "|." |)
+        ]
+      end
+
+      it "is structurally valid" do
+        expect_structurally_valid_lilypond(rendered, bars: 5, voices: 2)
+      end
+
+      it "opens each bar with its marks and closes it with its navigation and barline, in every voice" do
+        expect(bar_check_lines(rendered)).to eq marked_lines
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with every barline style and a Fine before the last bar" do
+      let(:flow) { LilyPondFixtures.barline_styles }
+      let(:rendered) { described_class.new(flow).to_s }
+      let(:marked_lines) do
+        [
+          %(\\mark "Verse" e''1 \\textEndMark "Fine" \\bar "|." |),
+          %(e''1 \\textEndMark "To Coda" \\jump "D.C." |),
+          %(\\mark "Verse" c1 \\bar "|." |),
+          %(c1 \\jump "D.C." |)
+        ]
+      end
+
+      it "is structurally valid" do
+        expect_structurally_valid_lilypond(rendered, bars: 5, voices: 2)
+      end
+
+      it "writes the text marks in the lead voice alone" do
+        expect(bar_check_lines(rendered).values_at(0, 3, 5, 8)).to eq marked_lines
+      end
+
+      it_behaves_like "a compilable document"
+    end
+
+    context "with bar marks on a staff nobody is written on and beside part dynamics" do
+      let(:flow) do
+        LilyPondFixtures.one_handed_piano.tap do |flow|
+          flow.parts.first.place_dynamic("1:1", :p)
+          flow.bars.first.rehearsal_mark = "A"
+          flow.bars.first.barline = :double
+        end
+      end
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "writes them in the voice alone" do
+        expect(rendered.scan(%(\\mark "A")).length).to eq 1
+        expect(rendered.scan(%(\\bar "||")).length).to eq 1
+        expect(rendered.scan(%(\\bar "|.")).length).to eq 1
+      end
+
+      it_behaves_like "a compilable document"
     end
   end
 end

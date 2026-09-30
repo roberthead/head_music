@@ -11,11 +11,12 @@ module HeadMusic::Notation::LilyPond
     InnerEvent = Data.define(:elapsed, :event)
 
     Event = Data.define(
-      :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks
+      :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks,
+      :bar_mark
     ) do
       def initialize(
         kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil,
-        staff_name: nil, inner_events: [], marks: MarkReader::NONE
+        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil
       )
         super
       end
@@ -82,6 +83,16 @@ module HeadMusic::Notation::LilyPond
 
     def change_staff(staff_name, line)
       mark(line, kind: :staff_change, staff_name: staff_name)
+    end
+
+    def bar_mark(bar_mark, line)
+      mark(line, kind: :bar_mark, bar_mark: bar_mark)
+    end
+
+    # LilyPond's rehearsal mark counter: a numbered \mark sets it, and
+    # \mark \default takes the next number.
+    def rehearsal_number(number = nil)
+      @rehearsal_number = number || (@rehearsal_number || 0) + 1
     end
 
     # Only the clef a voice opens with names its staff's clef; a later one is

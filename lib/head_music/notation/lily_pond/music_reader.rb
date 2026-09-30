@@ -4,8 +4,9 @@ module HeadMusic::Notation::LilyPond
   # << >> parallels, and \relative and \absolute wrappers. A ContextReader
   # reads the \new Staff and \new Voice declarations inside, a
   # MusicItemReader the notes, rests, and \change Staff commands, a
-  # SettingReader the \key, \time, and \clef commands, and a
-  # DynamicsItemReader what a \new Dynamics holds. Every other command raises
+  # SettingReader the \key, \time, and \clef commands, a BarMarkReader
+  # the \bar, \mark, and navigation commands, and a DynamicsItemReader what
+  # a \new Dynamics holds. Every other command raises
   # as unsupported rather than being skipped, because skipping a \transpose
   # or a \tuplet would yield a plausible but wrong flow.
   class MusicReader
@@ -20,7 +21,8 @@ module HeadMusic::Notation::LilyPond
       @readers = PitchReaderStack.new
       @items = MusicItemReader.new(cursor, @readers)
       @settings = SettingReader.new(cursor)
-      @dynamics_items = DynamicsItemReader.new(cursor, self, @items, @settings)
+      @bar_marks = BarMarkReader.new(cursor)
+      @dynamics_items = DynamicsItemReader.new(cursor, self, @items, settings: @settings, bar_marks: @bar_marks)
       @contexts = ContextReader.new(cursor, document, self)
       @depth = 0
     end
@@ -63,7 +65,7 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :cursor, :readers, :items, :settings, :dynamics_items, :contexts
+    attr_reader :cursor, :readers, :items, :settings, :bar_marks, :dynamics_items, :contexts
 
     def read_expression_command(context)
       token = cursor.peek
@@ -125,6 +127,7 @@ module HeadMusic::Notation::LilyPond
       token = cursor.peek
       case token.lexeme
       when *SettingReader::COMMANDS then settings.read(context.stream)
+      when *BarMarkReader::COMMANDS then bar_marks.read(context.stream)
       when "change" then items.read_staff_change(context)
       when "new" then contexts.read_sequential_new(context)
       when *ENVELOPE_COMMANDS then raise cursor.error(%(Unexpected \\#{token.lexeme} inside music), token)

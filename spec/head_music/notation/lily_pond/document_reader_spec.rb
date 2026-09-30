@@ -356,7 +356,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Unexpected \\score inside music/)
     end
 
-    %w[tuplet times chordmode lyricmode addlyrics partial bar tempo mark repeat transpose fixed language grace melody].each do |command|
+    %w[tuplet times chordmode lyricmode addlyrics partial tempo repeat transpose fixed language grace melody].each do |command|
       it "raises for \\#{command} as unsupported" do
         expect { read("{ c'4 \\#{command} }") }
           .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Unsupported LilyPond feature "\\#{command}"/)

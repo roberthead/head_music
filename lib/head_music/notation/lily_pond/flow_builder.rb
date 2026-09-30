@@ -55,6 +55,7 @@ module HeadMusic::Notation::LilyPond
       layout = PartLayout.new(flow, document)
       placer = EventPlacer.new(layout)
       replay(streams.filter_map { |stream| cursor_for(layout, stream) }, placer)
+      placer.finish(flow)
       part_dynamics = PartDynamics.new(flow, layout, placer)
       document.dynamics_streams.each { |stream| part_dynamics.place(stream) }
       flow

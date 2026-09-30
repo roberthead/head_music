@@ -22,6 +22,11 @@ module HeadMusic::Notation::LilyPond
       @short_final_bar_fraction = (offset && !offset.zero?) ? offset : nil
     end
 
+    def bar(bar_number)
+      @bars ||= flow.bars(bar_numbers.last).to_h { |bar| [bar.number, bar] }
+      @bars.fetch(bar_number)
+    end
+
     # What a part's \new Dynamics says in each bar: spacers that reach each of
     # its levels at the level's exact position. A level after the music ends
     # has nowhere to be written and is left out.

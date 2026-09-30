@@ -118,6 +118,47 @@ module LilyPondFixtures
     flow
   end
 
+  # A D.S. al Coda over five bars, played 1 2 3 4 2 3 5, with a rehearsal
+  # letter over each section and a double bar before the coda.
+  def dal_segno_al_coda
+    flow = HeadMusic::Content::Flow.new(name: "Navigation", key_signature: "C major", meter: "4/4")
+    melody = flow.add_voice(role: "Melody")
+    %w[C4 D4 E4 F4 G4 A4 B4 C5 D5 C5 B4 A4 G4 F4 E4 D4 C4 E4 G4 C5].each_with_index do |pitch, index|
+      melody.place("#{index / 4 + 1}:#{index % 4 + 1}", :quarter, pitch)
+    end
+    bass = flow.add_voice(role: "Bass")
+    (1..5).each { |bar| bass.place("#{bar}:1", :whole, "C3") }
+    first, segno, to_coda, jump, coda = flow.bars
+    first.rehearsal_mark = "A"
+    segno.segno = true
+    to_coda.rehearsal_mark = "B"
+    to_coda.to_coda = true
+    jump.jump = HeadMusic::Content::Jump.new(:dal_segno, to: :coda)
+    jump.barline = :double
+    coda.coda = true
+    flow
+  end
+
+  # Every barline style and a Fine before the last bar, as in a D.C. al Fine.
+  def barline_styles
+    flow = HeadMusic::Content::Flow.new(name: "Barlines", key_signature: "C major", meter: "4/4")
+    melody = flow.add_voice(role: "Melody")
+    bass = flow.add_voice(role: "Bass")
+    (1..5).each do |bar|
+      melody.place("#{bar}:1", :whole, "E5")
+      bass.place("#{bar}:1", :whole, "C3")
+    end
+    fine, dashed, dotted, jump, _last = flow.bars
+    fine.fine = true
+    fine.barline = :final
+    fine.rehearsal_mark = "Verse"
+    dashed.barline = :dashed
+    dotted.barline = :dotted
+    jump.to_coda = true
+    jump.jump = HeadMusic::Content::Jump.new(:da_capo)
+    flow
+  end
+
   def key_and_meter_change
     flow = HeadMusic::Content::Flow.new(name: "Turn", key_signature: "G major", meter: "4/4")
     %w[G4 G3].each do |pitch|
@@ -272,7 +313,7 @@ module LilyPondFixtures
             \\key g \\major
             \\time 4/4
             g'4 a'4 b'4 c''4 |
-            d''2 g'2 |
+            d''2 g'2 \\bar "|." |
           }
         }
       >>

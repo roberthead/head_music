@@ -210,7 +210,7 @@ describe HeadMusic::Notation::LilyPond::Parser do
     end
 
     it "re-renders the note split at the barline and tied" do
-      expect(parse("{ c'2 d'1 e'2 }").to_lilypond).to include("c'2 d'2~ |\n", "d'2 e'2 |\n")
+      expect(parse("{ c'2 d'1 e'2 }").to_lilypond).to include("c'2 d'2~ |\n", %(d'2 e'2 \\bar "|." |\n))
     end
   end
 
