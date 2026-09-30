@@ -193,6 +193,7 @@ require "head_music/content/voice/melodic_note_pair"
 require "head_music/content/voice/melodic_line"
 require "head_music/content/voice/continuity"
 require "head_music/content/voice/dynamic_resolver"
+require "head_music/content/voice/staff_assignments"
 
 # notation
 require "head_music/notation/voice_event_validation"

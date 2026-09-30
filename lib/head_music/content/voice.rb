@@ -23,36 +23,17 @@ class HeadMusic::Content::Voice
     @voice_events = []
     @dynamic_events = HeadMusic::Content::DynamicEvents.new(@part.flow)
     @spans = HeadMusic::Content::Spans.new
-    # No stored event for the opening staff: a voice sits on its part's first
-    # staff until it says otherwise, and a single-staff part needs no
-    # assignments at all.
-    @staff_assignment_map = HeadMusic::Time::EventMap.new
+    @staff_assignments = StaffAssignments.new(@part)
     @part.attach(self)
   end
 
-  # @return [HeadMusic::Content::Staff] the staff this voice is written on at
-  #   a bar; never nil, because a voice always has its part's first staff
-  def staff_at(bar_number)
-    @staff_assignment_map.at(downbeat_of(bar_number)) || part.staff_system_at(bar_number).first_staff
-  end
+  # Write this voice onto a staff of its own part from a bar onward with
+  # assign_staff(bar_number, staff), and ask which staff it is on at a bar with
+  # staff_at(bar_number).
+  delegate :staff_at, :assign_staff, to: :@staff_assignments
 
   def staff
     staff_at(HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR)
-  end
-
-  # Write this voice onto a staff of its own part from a bar onward.
-  #
-  # A crossing is one event, not a span: a left hand that rises into the
-  # treble staff at bar 5 and comes back down at bar 9 is two crossings, each
-  # authored where it happens. A single cross-staff note is a crossing and, a
-  # bar later, another. There is no note-level special case, and nothing to
-  # overlap.
-  #
-  # @param staff [HeadMusic::Content::Staff] a staff of this part's system
-  # @param bar_number [Integer] the first bar on that staff
-  def assign_staff(bar_number, staff)
-    ensure_staff_in_system!(staff, bar_number)
-    @staff_assignment_map.add(downbeat_of(bar_number), staff).value
   end
 
   # #assign_staff in the order the sentence is spoken: cross to the treble
@@ -62,7 +43,7 @@ class HeadMusic::Content::Voice
   end
 
   def staff_assignments
-    @staff_assignment_map.events.to_h { |event| [event.position.bar, event.value] }
+    @staff_assignments.to_h
   end
 
   def place(position, rhythmic_value, sound_or_sounds = nil)
@@ -107,12 +88,10 @@ class HeadMusic::Content::Voice
     @spans.to_a
   end
 
-  # The spans that have begun by a position and not yet run out, innermost
-  # first. A span that covers its last note runs until that note ends.
+  # A span that covers its last note runs until that note ends.
   def spans_at(position)
     position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
-    @spans.select { |span| span.from <= position && position < span_end(span) }
-      .sort { |one, other| [other.from, one.to] <=> [one.from, other.to] }
+    @spans.covering(position) { |span| span_end(span) }
   end
 
   # Voice events are kept in position order, so the notes and rests drawn from
@@ -176,7 +155,7 @@ class HeadMusic::Content::Voice
 
   def to_h
     hash = {"role" => role&.to_s, "voice_events" => voice_events.map(&:to_h)}
-    assignments = staff_assignments_to_h
+    assignments = @staff_assignments.to_a
     hash["staff_assignments"] = assignments unless assignments.empty?
     hash["dynamic_events"] = dynamic_events.map(&:to_h) unless @dynamic_events.empty?
     hash["spans"] = spans.map(&:to_h) unless @spans.empty?
@@ -184,28 +163,6 @@ class HeadMusic::Content::Voice
   end
 
   private
-
-  # Serialized by index within the part's system at that bar, because a staff
-  # has no identity of its own -- two five-line treble staves are the same
-  # description of different staves.
-  def staff_assignments_to_h
-    staff_assignments.filter_map do |bar_number, staff|
-      index = part.staff_system_at(bar_number).staves.index { |candidate| candidate.equal?(staff) }
-      {"number" => bar_number, "staff" => index} if index
-    end
-  end
-
-  # A voice may only be written on a staff its part actually has. Crossing to
-  # someone else's staff is a cue, which is a layout concern, not this.
-  def ensure_staff_in_system!(staff, bar_number)
-    return if part.staff_system_at(bar_number).include?(staff)
-
-    raise ArgumentError, "the staff is not in the part's staff system at bar #{bar_number}"
-  end
-
-  def downbeat_of(bar_number)
-    HeadMusic::Time::MusicalPosition.new(bar_number, HeadMusic::Time::MusicalPosition::FIRST_COUNT, 0, 0)
-  end
 
   # A part in the given flow, or in a flow of its own. Not registered with the
   # flow: a voice constructed directly has never appeared in its flow's
@@ -222,8 +179,8 @@ class HeadMusic::Content::Voice
   def ensure_span_anchor(span, position)
     return if span.span_kind.anchors_on?(voice_event_at(position))
 
-    needed = (span.span_kind.anchor == "note_events") ? "a note" : "a note or rest"
-    raise ArgumentError, "a #{span.name_key} must start and end on #{needed} of its voice, but #{position} has none"
+    raise ArgumentError,
+      "a #{span.name_key} must start and end on #{span.span_kind.anchor_description} of its voice, but #{position} has none"
   end
 
   def span_end(span)

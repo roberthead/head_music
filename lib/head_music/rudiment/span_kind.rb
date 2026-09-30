@@ -29,6 +29,10 @@ class HeadMusic::Rudiment::SpanKind
     end
   end
 
+  def anchor_description
+    (anchor == "note_events") ? "a note" : "a note or rest"
+  end
+
   def covers_last_note?
     extent == "through_note"
   end

@@ -21,6 +21,13 @@ class HeadMusic::Content::Spans
     span
   end
 
+  # The spans that have begun by a position and not yet run out, innermost
+  # first. Where a span runs out is its owner's to say.
+  def covering(position)
+    @spans.select { |span| span.from <= position && position < yield(span) }
+      .sort { |one, other| [other.from, one.to] <=> [one.from, other.to] }
+  end
+
   def to_a
     @spans.dup
   end
