@@ -97,41 +97,7 @@ class HeadMusic::Content::Layout
     single_flow? ? (title_override || flow.name) : flow.name
   end
 
-  # ABC has no book-title field, so a multi-tune layout's title is not
-  # rendered; each tune carries its own T:.
-  def to_abc
-    ensure_something_to_render!
-    rendered_flows.map.with_index(1) do |flow, number|
-      HeadMusic::Notation::ABC.render(realize(flow), reference_number: number, transposed: transposed?)
-    end.join("\n")
-  end
-
-  # A single flow renders exactly as the flow would on its own; several render
-  # as successive \score blocks under one \header.
-  def to_lilypond
-    ensure_something_to_render!
-    realized = rendered_flows.map { |flow| realize(flow) }
-    return HeadMusic::Notation::LilyPond.render(realized.first, **rendering_options) if realized.one?
-
-    HeadMusic::Notation::LilyPond::BookWriter.new(realized, title: title, **rendering_options).to_s
-  end
-
-  def to_musicxml
-    count = rendered_flows.length
-    if count > 1
-      raise HeadMusic::Notation::RenderError,
-        "MusicXML holds one flow per document and this layout renders #{count}; use #to_musicxml_documents"
-    end
-
-    to_musicxml_documents.first
-  end
-
-  def to_musicxml_documents
-    ensure_something_to_render!
-    rendered_flows.map.with_index(1) do |flow, number|
-      HeadMusic::Notation::MusicXML.render(realize(flow), **musicxml_options(number))
-    end
-  end
+  delegate :to_abc, :to_lilypond, :to_musicxml, :to_musicxml_documents, to: :rendering
 
   def to_h
     {
@@ -172,29 +138,8 @@ class HeadMusic::Content::Layout
     rendered_flows.one?
   end
 
-  # A document standing alone names only itself, which is what keeps a one-flow
-  # layout byte-identical to the flow's own output.
-  def musicxml_options(movement_number)
-    return rendering_options if single_flow?
-
-    rendering_options.merge(work_title: title, movement_number: movement_number)
-  end
-
-  def rendering_options
-    {transposed: transposed?, arranger: arranger}
-  end
-
-  # The project's arrangers, joined as the composer is: this version's credit,
-  # which is why a flow rendering on its own has none to print.
-  def arranger
-    names = project.credits.names(:arranger)
-    names.join(", ") unless names.empty?
-  end
-
-  def ensure_something_to_render!
-    return unless rendered_flows.empty?
-
-    raise HeadMusic::Notation::RenderError, "the layout selects no flow that any selected player has a part in"
+  def rendering
+    HeadMusic::Content::Layout::Rendering.new(self)
   end
 
   def shared_work_title
