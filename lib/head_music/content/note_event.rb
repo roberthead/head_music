@@ -54,16 +54,16 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
     @note_dynamic = identifier.nil? ? nil : accent_for(identifier)
   end
 
-  # Voice#place merges a same-position note event into the existing one, so a
-  # position holds at most one event. The sound union keeps the chord free
-  # of duplicates, making placing a sound again idempotent. Syllables
-  # and markings are left untouched: a chord sings one syllable per verse, and
-  # the receiver (the event already at this position) keeps its own.
+  # Voice#place merges a same-position event into the existing one, so a
+  # position holds at most one event, and answers whichever event holds it
+  # afterward. A rest placed on a note leaves it as it was. The sound union
+  # keeps the chord free of duplicates, making placing a sound again
+  # idempotent. Syllables and markings are left untouched: a chord sings one
+  # syllable per verse, and the receiver (the event already at this position)
+  # keeps its own.
   def merge(other)
-    unless rhythmic_value == other.rhythmic_value
-      raise ArgumentError,
-        "cannot place a #{other.rhythmic_value} at #{position}: position occupied by a #{rhythmic_value}"
-    end
+    ensure_same_rhythmic_value!(other)
+    return self if other.rest?
 
     @sounds = (sounds + other.sounds).uniq.freeze
     self

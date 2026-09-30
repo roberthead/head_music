@@ -202,19 +202,10 @@ class HeadMusic::Content::Voice
     voice_events.bsearch_index { |existing| existing > voice_event } || voice_events.length
   end
 
-  # A position holds one event. Sounds placed where a note already sounds
-  # join it as a chord; a note placed on a rest takes the rest's place; a
-  # rest placed on anything leaves it as it was.
+  # A position holds one event, so the one already there decides what
+  # placing another on it makes.
   def merge_at(existing, voice_event)
-    unless existing.rhythmic_value == voice_event.rhythmic_value
-      raise ArgumentError,
-        "cannot place a #{voice_event.rhythmic_value} at #{existing.position}: position occupied by a #{existing.rhythmic_value}"
-    end
-    return existing if voice_event.rest?
-    return existing.merge(voice_event) unless existing.rest?
-
-    voice_event.beam_break_before = existing.beam_break_before
-    voice_events[voice_events.index(existing)] = voice_event
+    voice_events[voice_events.index(existing)] = existing.merge(voice_event)
   end
 
   def insert_into_voice_events(voice_event)

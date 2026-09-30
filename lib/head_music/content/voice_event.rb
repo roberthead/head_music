@@ -144,6 +144,13 @@ class HeadMusic::Content::VoiceEvent
 
   private
 
+  def ensure_same_rhythmic_value!(other)
+    return if rhythmic_value == other.rhythmic_value
+
+    raise ArgumentError,
+      "cannot place a #{other.rhythmic_value} at #{position}: position occupied by a #{rhythmic_value}"
+  end
+
   # Unpitched names may be multi-word, so they are bracketed to keep the
   # space-delimited sound list unambiguous.
   def sound_label(sound)
