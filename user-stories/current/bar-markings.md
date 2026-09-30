@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-30T11:08:10-07:00
   planned_at:   2026-09-30T11:50:54-07:00
   finished_at:
-  updated_at:   2026-09-30T12:26:37-07:00
+  updated_at:   2026-09-30T12:34:49-07:00
 -->
 
 # Story: Bar Markings: Barline Styles, Rehearsal Marks, and Navigation
@@ -222,3 +222,50 @@ Repeat and ending writing, by format:
 - `!D.S.alcoda!` and its family are abcm2ps/abc2svg extensions, not ABC 2.1.
 - MusicXML has no reader, so it is checked element by element.
 - A double barline does not mark an implied repeat start; barline styles stay visual.
+
+## Review
+
+Reviewed 2026-09-30 at commit `7122532a` (all changes committed). Reviewers: product-manager (acceptance verification) and code-reviewer. The code findings below were reproduced by hand before being recorded.
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| Barline regular, double, final, dashed, or dotted; regular not serialized | ✅ | `Bar::BARLINES`, sparse `Bar#to_h`; `bar_spec.rb` |
+| Rehearsal mark as letter, number, or text; stored as a string | ✅ | `Bar#ensure_rehearsal_mark`; `12` reads as `"12"` |
+| Segno, coda, Fine, To Coda, and a jump | ✅ | `Bar::FLAGS`, `content/jump.rb`; `jump_spec.rb` |
+| Start-of-bar and end-of-bar marks; final barline implied, drawn by writers | ✅ | Writers draw `\|]`, `\bar "\|."`, `light-heavy`, `==`. The ABC reader misses one tied-final case (finding 1) |
+| `performance_order` unfolds repeats, endings, and jumps | ✅ | The story's example gives `[1..16, 9, 10, 11, 12]`; `performance_order_spec.rb` |
+| `PlayedBar` with `bar`, `pass`, `playing` | ✅ | Last playing is bar 12, pass 1, playing 2 |
+| No repeats after a jump; last ending plays | ✅ | D.C. al Fine over `\|: [1 :\|[2` spec |
+| Fine and To Coda act only after the jump | ✅ | `stops_at?` and `goes_to_coda?` check the jump state |
+| Plain D.C. or D.S. stops at the first Fine or To Coda | ✅ | "with a plain D.C." and "plain D.S. that reaches a To Coda first" specs |
+| Play count is the larger of the count and the highest ending | ✅ | "ending that names a third pass" spec |
+| `:\|` with no `\|:` goes back after the previous `:\|` | ✅ | `A :\| B :\|` gives `1,2,1,2,3,4,3,4` |
+| `ArgumentError` for navigation it cannot follow | ✅ | One spec per raise, each naming the bars |
+| Flow JSON sparse within schema 5; old documents read unchanged | ✅ | `flow_serialization_spec.rb` "bar markings"; strict flags |
+| ABC barlines, `P:` sections, navigation decorations | ✅ | Parser and round-trip specs. A trailing `!segno!` or `P:` misplaces (finding 2) |
+| ABC ignores a `P:` header | ✅ | `P:AAB` header parses |
+| ABC play count from the highest ending | ✅ | `[1,2 … :\|[3` gives a count of 3 and writes back the same |
+| ABC reads the abcm2ps al Fine and al Coda forms | ✅ | Each maps to its `Jump` |
+| ABC and MusicXML write repeats and endings | ✅ | ABC `\|:`, `[1`, `:\|[2`; MusicXML forward and backward `<repeat>`, `<ending>` start, stop, and discontinue |
+| LilyPond reads and writes the listed commands; compiles on 2.26 without warnings | ⚠️ | Both fixtures and 7 of 8 combinations compile clean. A segno and a coda sign on the same bar still warn (`conflict with event: segno-mark-event`) |
+| MusicXML writes bar styles, rehearsal, segno, coda, and `<sound>` | ✅ | `writer_bar_markings_spec.rb`; the writer agent validated a sample against the 4.0 XSD, but no XSD check runs in the suite |
+| kern reads and writes `\|\|` and `*>A`; `==` only at the end | ✅ | Round-trip specs; the Bach corpus (371) stays green |
+| D.S. al Coda round-trips through JSON, ABC, and LilyPond; MusicXML checked by element | ✅ | `flow_navigation_round_trip_spec.rb`, `music_xml/writer_bar_markings_spec.rb` |
+| 90%+ coverage | ✅ | 99.78% line, 95.37% branch; `rake validate` passes |
+
+### Code review findings
+
+1. **ABC keeps `barline: :final` on the last bar when the last note is tied into it.** `abc/parser.rb` resets the implied final barline on `flow.bars.last`, which ends at the bar where the last note starts. `C D E F | G4- | G4 |]` serializes `{"number" => 3, "barline" => "final"}`, while LilyPond and kern compute the last bar from where the music ends. One shared "last sounding bar" helper would settle it across the readers.
+2. **An ABC segno, coda sign, or `P:` label at the very end of a tune lands on an empty bar after the music.** `C D E F | G A B c !segno!|]` marks bar 3, and `performance_order` answers `[1, 2, 3]`. The ABC writer then drops it. The LilyPond reader already holds opening marks until music follows and drops a trailing one; ABC should do the same.
+3. **The ABC "two `!coda!` means To Coda" rule rewrites a flow the ABC writer wrote.** A flow with coda signs on bars 2 and 4 and no To Coda reads back as `to_coda` on bar 1 and `coda` on bar 4. LilyPond does not apply the rule, so the same idiom read from LilyPond raises in `performance_order` for an al Coda. Either apply the rule in one shared place or make the ABC writer avoid producing the idiom.
+4. **One bar lookup, written five times.** `flow.bars(last).to_h { |bar| [bar.number, bar] }` appears in the LilyPond and MusicXML render plans, kern `WrittenBars` and `InterpretationRows`, and the ABC writer, with different handling of a missing bar (`fetch` in one, `[]` in the others). A single `Flow#bar(number)` would replace them.
+5. **LilyPond warns on a segno and a coda sign on the same bar.** This is the only gap against the no-warnings criterion.
+6. **Markings on a bar after the last note are dropped by the ABC, LilyPond, and MusicXML writers**, though `performance_order` and Flow JSON keep them (for example, a D.C. on bar 3 of a two-bar tune).
+
+Minor, and within the criteria: ABC has no dashed barline and writes `|`; a `]` in an ABC `P:` label breaks the output; MusicXML segno and coda ids are fixed (`segno1`, `coda1`), which is enough for one jump; closing MusicXML directions sit where the last voice stops; kern drops mid-bar and trailing labels, moves a pickup-bar label to bar 1, and writes brackets in labels as parentheses; `PlayedBar#inspect` prints the whole bar rather than `bar=Bar 12`.
+
+### Blocking `finish`
+
+Nothing fails a criterion outright. The LilyPond ⚠️ (finding 5) and ABC findings 1–3 are correctness gaps in round trips that the story promises. They are small and worth fixing before `finish`.
