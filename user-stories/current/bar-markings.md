@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-09-25T14:05:54-07:00
-  activated_at:
+  activated_at: 2026-09-30T11:08:10-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-09-26T15:10:43-07:00
+  updated_at:   2026-09-30T11:08:10-07:00
 -->
 
 # Story: Bar Markings: Barline Styles, Rehearsal Marks, and Navigation
@@ -67,10 +67,15 @@ flow.performance_order # => [1, 2, ..., 16, 9, 10, 11, 12]
 - `performance_order` gives MIDI export (backlog) and the `Conductor` a way to play a flow as written, not as printed.
 - Kern expansion lists (`*>[A,A,B]`) describe a performance order directly. Reading them could check `performance_order`.
 
-## Open Questions
+## Answered Questions
 
 1. Are rehearsal marks per flow (one row of letters over the score) or per part? MusicXML repeats them in every part, but they mean one thing.
+
+Answer: Stored per flow, written to parts when that is the convention of the format.
+
 2. Should `performance_order` answer bar numbers, or bar objects with the pass number, so a caller can tell the first and second playing apart?
+
+Answer: Bar objects with the pass number
 
 ## Implementation Plan
 
