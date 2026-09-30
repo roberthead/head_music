@@ -35,14 +35,12 @@ module HeadMusic::Notation::ABC
       @beam_break_pending = false
       @beam_last_was_note = false
       @tie_open = false
-      @decorations = []
+      @decorations = PendingDecorations.new(voice)
       @slur_opens = 0
       @open_slurs = []
     end
 
-    def decorate(decoration)
-      @decorations << decoration
-    end
+    delegate :decorate, :reject_dangling_decorations, to: :@decorations
 
     # "(" opens a slur on the next note, chord, or rest.
     def open_slur
@@ -60,19 +58,6 @@ module HeadMusic::Notation::ABC
       elsif voice.last_voice_event
         apply_slurs(voice.last_voice_event, [:close])
       end
-    end
-
-    # A marking before a bar line, tie, or the end of the tune has nothing to
-    # mark. One the reader drops anyway, such as a !fine! before a bar line,
-    # is let go.
-    def reject_dangling_decorations
-      dangling = take_decorations.reject(&:dropped?).first
-      return unless dangling
-
-      raise ParseError.new(
-        "A decoration must be followed by a note, chord, or rest",
-        line_number: dangling.line, snippet: dangling.lexeme
-      )
     end
 
     # Counted from where the last note ends rather than where it starts: a
@@ -137,7 +122,7 @@ module HeadMusic::Notation::ABC
     def defer_voice_event(pitches, length, inner_scale = ONE)
       scale = (awaiting_scale || ONE) * inner_scale
       self.awaiting_scale = nil
-      decorations = take_decorations
+      decorations = @decorations.take
       return tie_onto_pending(pitches, length, scale, decorations) if tie_open?
 
       flush_pending_note
@@ -156,7 +141,7 @@ module HeadMusic::Notation::ABC
       self.pending_note = nil
       voice_event = place_next(pending_rhythmic_value(pending), pending.pitches)
       voice_event.beam_break_before = pending.beam_break
-      apply_decorations(voice_event, pending.decorations)
+      @decorations.apply(voice_event, pending.decorations)
       apply_slurs(voice_event, pending.slur_marks)
     end
 
@@ -164,7 +149,7 @@ module HeadMusic::Notation::ABC
     # bypassing the pending-note buffer, with the decorations waiting for it.
     def place(length, pitches, scale: ONE)
       voice_event = place_next(@duration_resolver.rhythmic_value(length, scale: scale), pitches)
-      apply_decorations(voice_event, take_decorations)
+      @decorations.apply(voice_event, @decorations.take)
       apply_slurs(voice_event, take_slur_opens)
       voice_event
     end
@@ -190,44 +175,6 @@ module HeadMusic::Notation::ABC
       nil
     end
 
-    def take_decorations
-      decorations = @decorations
-      @decorations = []
-      decorations
-    end
-
-    # A rest keeps only a level, which becomes a dynamic event at the rest.
-    def apply_decorations(voice_event, decorations)
-      decorations = decorations.select(&:level?) if voice_event.rest?
-      decorations.each { |decoration| apply_decoration(voice_event, decoration) }
-    end
-
-    def apply_decoration(voice_event, decoration)
-      key = decoration.key
-      case decoration.kind
-      when :articulation then voice_event.articulate(key)
-      when :ornament then voice_event.embellish(key)
-      when :note_dynamic then assign_note_dynamic(voice_event, decoration)
-      when :level then place_level(voice_event.position, decoration)
-      end
-    end
-
-    def assign_note_dynamic(voice_event, decoration)
-      if voice_event.note_dynamic
-        raise ParseError.new(
-          "A note may carry only one of sf, sfz, rfz, and fp",
-          line_number: decoration.line, snippet: decoration.lexeme
-        )
-      end
-      voice_event.note_dynamic = decoration.key
-    end
-
-    def place_level(position, decoration)
-      voice.place_dynamic(position, decoration.key)
-    rescue ArgumentError => error
-      raise ParseError.new(error.message, line_number: decoration.line, snippet: decoration.lexeme)
-    end
-
     def place_next(rhythmic_value, pitches)
       voice.place(voice.next_position, rhythmic_value, pitches)
     end
@@ -242,7 +189,7 @@ module HeadMusic::Notation::ABC
       pending = pending_note
       prefix = pending_rhythmic_value(pending)
       levels, markings = decorations.partition(&:level?)
-      levels.each { |decoration| place_level(voice.next_position + prefix, decoration) }
+      levels.each { |decoration| @decorations.place_level(voice.next_position + prefix, decoration) }
       close_tie
       self.pending_note = PendingNote.new(
         pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
