@@ -52,7 +52,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def in_pieces?(position)
-      voice_event = @voice.voice_events.find { |candidate| candidate.position == position }
+      voice_event = @voice.voice_event_at(position)
       !voice_event.rest? && HeadMusic::Notation::BarSplitter.segments_of(voice_event).sum { |segment| segment.rhythmic_value&.tied_chain&.length || 1 } > 1
     end
   end

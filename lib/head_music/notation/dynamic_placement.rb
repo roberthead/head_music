@@ -46,7 +46,7 @@ module HeadMusic
       end
 
       def target_for(position)
-        voice.voice_events.bsearch { |voice_event| voice_event.position >= position }
+        voice.voice_event_starting_from(position)
       end
     end
   end

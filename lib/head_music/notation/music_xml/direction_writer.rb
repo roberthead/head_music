@@ -70,7 +70,7 @@ module HeadMusic::Notation::MusicXML
     # event is sounding at that position -- a held note or a rest, as a
     # voice's dynamic may fall under either.
     def holding_segment(voice, position)
-      voice_event = voice.voice_events.bsearch { |candidate| candidate.next_position > position }
+      voice_event = voice.voice_event_sounding_at(position)
       return nil unless voice_event
 
       HeadMusic::Notation::BarSplitter.segments_of(voice_event).find { |segment| segment.bar_number == position.bar_number }
