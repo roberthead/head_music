@@ -91,22 +91,27 @@ class HeadMusic::Content::Flow
       voice_event.note_dynamic = note_dynamic
     end
 
-    # Each dynamic event is placed through the public API, so a duplicate
-    # position raises as it would for a caller, but with the document path.
     def place_dynamic_events(target, container_hash, path)
-      values.dynamic_events(container_hash["dynamic_events"], path).each_with_index do |(position, level), index|
+      each_placed(values.dynamic_events(container_hash["dynamic_events"], path), "dynamic_events", path) do |position, level|
         target.place_dynamic(position, level)
-      rescue ArgumentError => e
-        raise ArgumentError, "#{path}.dynamic_events[#{index}]: #{e.message}"
       end
     end
 
     # Added after the voice events, whose positions a span's ends must find.
     def add_spans(voice, voice_hash, path)
-      values.spans(voice_hash["spans"], path).each_with_index do |(kind, from, to), index|
+      each_placed(values.spans(voice_hash["spans"], path), "spans", path) do |kind, from, to|
         voice.add_span(kind, from: from, to: to)
+      end
+    end
+
+    # Each item is placed through the public API, so a mistake such as a
+    # duplicate position raises as it would for a caller, but with the
+    # document path.
+    def each_placed(items, label, path)
+      items.each_with_index do |item, index|
+        yield(*item)
       rescue ArgumentError => e
-        raise ArgumentError, "#{path}.spans[#{index}]: #{e.message}"
+        raise ArgumentError, "#{path}.#{label}[#{index}]: #{e.message}"
       end
     end
 
