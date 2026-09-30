@@ -45,7 +45,7 @@ module HeadMusic::Notation::MusicXML
     # text for this verse. Voice events are position-sorted, and melisma gaps are
     # skipped because only sung voice events are collected. Array#index compares
     # with ==, which on VoiceEvent is position-only, but a voice holds at most
-    # one voice event per position (Voice#insert_into_voice_events), so that still
+    # one voice event per position (VoiceEvents#place), so that still
     # locates this exact voice event.
     def previous_syllable(voice_event, verse)
       @sung_voice_events ||= {}

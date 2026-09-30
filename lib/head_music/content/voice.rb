@@ -4,7 +4,7 @@ module HeadMusic::Content; end
 # A Voice is a stream of music with some indepedence that is conceptually one part or for one performer.
 # The melodic lines in counterpoint are each a voice.
 class HeadMusic::Content::Voice
-  attr_reader :part, :voice_events, :role
+  attr_reader :part, :role
 
   delegate :flow, to: :part
   delegate :key_signature, to: :flow
@@ -14,13 +14,17 @@ class HeadMusic::Content::Voice
     :melodic_note_pairs, :melodic_intervals, :leaps, :large_leaps,
     to: :melodic_line
 
+  # The voice event at a position, the first at or after it, and the one
+  # sounding at it.
+  delegate :at, :starting_from, :sounding_at, to: :@voice_events, prefix: :voice_event
+
   # A voice is always in a part, always in a flow. Given neither, it mints the
   # chain rather than raising, so that a voice remains the smallest thing a
   # caller can construct and reason about on its own.
   def initialize(part: nil, flow: nil, role: nil)
     @part = part || detached_part(flow)
     @role = role
-    @voice_events = []
+    @voice_events = HeadMusic::Content::VoiceEvents.new
     @dynamic_events = HeadMusic::Content::DynamicEvents.new(@part.flow)
     @spans = HeadMusic::Content::Spans.new
     @staff_assignments = StaffAssignments.new(@part)
@@ -49,12 +53,12 @@ class HeadMusic::Content::Voice
   def place(position, rhythmic_value, sound_or_sounds = nil)
     # The melodic line is a snapshot of the notes, so placing anything invalidates it.
     @melodic_line = nil
-    voice_event = HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds)
-    existing = voice_event_at(voice_event.position)
-    return merge_at(existing, voice_event) if existing
+    @voice_events.place(HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds))
+  end
 
-    insert_into_voice_events(voice_event)
-    voice_event
+  # In position order, with at most one at a position.
+  def voice_events
+    @voice_events.to_a
   end
 
   # A dynamic level for this voice alone. It takes no time, so it is not a
@@ -186,30 +190,6 @@ class HeadMusic::Content::Voice
   def span_end(span)
     last = span.span_kind.covers_last_note? && voice_event_at(span.to)
     last ? last.next_position : span.to
-  end
-
-  def voice_event_at(position)
-    candidate = voice_events.bsearch { |voice_event| voice_event.position >= position }
-    candidate if candidate&.position == position
-  end
-
-  # Positions are unique within a voice (place merges same-position
-  # voice events), so insertion order is simply position order. Both the
-  # lookup and the insertion point are binary searches over that order,
-  # which keeps placing a long voice linear in its length rather than
-  # quadratic.
-  def insertion_index(voice_event)
-    voice_events.bsearch_index { |existing| existing > voice_event } || voice_events.length
-  end
-
-  # A position holds one event, so the one already there decides what
-  # placing another on it makes.
-  def merge_at(existing, voice_event)
-    voice_events[voice_events.index(existing)] = existing.merge(voice_event)
-  end
-
-  def insert_into_voice_events(voice_event)
-    voice_events.insert(insertion_index(voice_event), voice_event)
   end
 
   def pitches_string
