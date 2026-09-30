@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-30T11:08:10-07:00
   planned_at:   2026-09-30T11:50:54-07:00
   finished_at:
-  updated_at:   2026-09-30T11:58:03-07:00
+  updated_at:   2026-09-30T12:26:37-07:00
 -->
 
 # Story: Bar Markings: Barline Styles, Rehearsal Marks, and Navigation
