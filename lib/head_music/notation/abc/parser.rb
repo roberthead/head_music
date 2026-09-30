@@ -14,6 +14,13 @@ module HeadMusic::Notation::ABC
       :< => [Rational(1, 2), Rational(3, 2)]
     }.freeze
 
+    HANDLERS = {
+      note: :handle_note, chord: :handle_chord, rest: :handle_rest, tie: :handle_tie,
+      broken_rhythm: :handle_broken_rhythm, bar_line: :handle_bar_line, volta: :handle_volta,
+      voice_change: :handle_voice_change, beam_break: :handle_beam_break, decoration: :handle_decoration,
+      slur_start: :handle_slur_start, slur_end: :handle_slur_end
+    }.freeze
+
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
     def initialize(abc_string, start_line: 1)
@@ -43,14 +50,7 @@ module HeadMusic::Notation::ABC
     end
 
     def interpret(tokens)
-      @building = HeadMusic::Content::Flow.new(
-        name: header.title,
-        key_signature: header.key_signature,
-        meter: header.meter,
-        composer: header.composer,
-        origin: header.origin,
-        comments: header.annotations
-      )
+      @building = HeadMusic::Content::Flow.new(**header.flow_attributes)
       setup_voices(tokens)
       tokens.each { |token| handle(token) }
       finish
@@ -67,20 +67,16 @@ module HeadMusic::Notation::ABC
     end
 
     def handle(token)
-      case token.type
-      when :note then handle_note(token)
-      when :chord then handle_chord(token)
-      when :rest then handle_rest(token)
-      when :tie then handle_tie(token)
-      when :broken_rhythm then handle_broken_rhythm(token)
-      when :bar_line then handle_bar_line(token)
-      when :volta then handle_volta(token)
-      when :voice_change then handle_voice_change(token)
-      when :beam_break then handle_beam_break(token)
-      when :decoration then handle_decoration(token)
-      when :slur_start then current_state.open_slur
-      when :slur_end then current_state.close_slur
-      end
+      handler = HANDLERS[token.type]
+      send(handler, token) if handler
+    end
+
+    def handle_slur_start(_token)
+      current_state.open_slur
+    end
+
+    def handle_slur_end(_token)
+      current_state.close_slur
     end
 
     # A decoration waits for the note, chord, or rest after it.
@@ -119,29 +115,50 @@ module HeadMusic::Notation::ABC
       state.open_tie(line)
     end
 
+    # The waiting decorations are the rest's own, so they are not dangling.
     def handle_rest(token)
-      ensure_not_awaiting_note(token)
       state = current_state
-      reject_open_tie(state, token.line, "A tie must be followed by a note")
-      state.flush_pending_note
-      state.reset_beam_adjacency
+      end_notes(state, token.line)
       state.place(token.length, nil)
     end
 
-    # A tie left open by a non-note terminator can never close, so each
-    # terminator rejects it. A bar line or volta is not a terminator: the
-    # tied note stays pending across it and closes on the next note.
-    def reject_open_tie(state, line, message)
-      return unless state&.tie_open?
+    # A rest, a voice change, or the end of the tune ends a run of notes:
+    # nothing after it can complete a broken rhythm or close a tie.
+    def end_notes(state, line)
+      ensure_not_awaiting_note(line, state)
+      reject_open_tie(state, line)
+      state.flush_pending_note
+      state.reset_beam_adjacency
+    end
 
-      raise ParseError.new(message, line_number: line || state.tie_line, snippet: "-")
+    # Nothing further in the voice can take a decoration either.
+    def end_voice(state, line)
+      end_notes(state, line)
+      state.reject_dangling_decorations
+    end
+
+    # A bar line or volta is not a terminator: a tied note stays pending
+    # across it and closes on the next note.
+    def cross_bar_line(state, line)
+      ensure_not_awaiting_note(line, state)
+      state.reject_dangling_decorations
+      state.flush_pending_note unless state.tie_open?
+      state.reset_beam_adjacency
+    end
+
+    # A tie left open by a non-note terminator can never close, so each
+    # terminator rejects it.
+    def reject_open_tie(state, line)
+      return unless state.tie_open?
+
+      raise ParseError.new("A tie must be followed by a note", line_number: line || state.tie_line, snippet: "-")
     end
 
     def handle_broken_rhythm(token)
       state = current_state
       line = token.line
       direction = token.direction
-      reject_open_tie(state, line, "A tie must be followed by a note")
+      reject_open_tie(state, line)
       state.reject_dangling_decorations
       pending = state.pending_note
       if state.awaiting_scale || pending.nil?
@@ -161,59 +178,40 @@ module HeadMusic::Notation::ABC
     # keeping the pending note's pitch: the bar's accidental reset below
     # would otherwise strip the sharp or flat the tie carries.
     def handle_bar_line(token)
-      ensure_not_awaiting_note(token)
       state = current_state
-      style = token.style
-      state.reject_dangling_decorations
-      state.flush_pending_note unless state.tie_open?
-      state.reset_beam_adjacency
-      repeat_tagger.bar_line(state, style)
+      cross_bar_line(state, token.line)
+      repeat_tagger.bar_line(state, token.style)
       state.pitch_builder.start_new_bar
     end
 
     def handle_volta(token)
-      ensure_not_awaiting_note(token)
-      passes = token.passes
+      state = current_state
       line = token.line
+      ensure_not_awaiting_note(line, state)
+      passes = token.passes
       raise ParseError.new("Volta has no passes", line_number: line) if passes.empty?
 
-      state = current_state
-      state.reject_dangling_decorations
-      state.flush_pending_note unless state.tie_open?
-      state.reset_beam_adjacency
+      cross_bar_line(state, line)
       repeat_tagger.open_volta(state, passes)
     end
 
+    # Guarded so a leading V: line doesn't force a default voice into existence.
     def handle_voice_change(token)
-      # Guarded so a leading V: line doesn't force a default voice into existence.
-      if @voices.any?
-        state = current_state
-        ensure_not_awaiting_note(token, state: state)
-        reject_open_tie(state, token.line, "A tie must be followed by a note")
-        state.reject_dangling_decorations
-        state.flush_pending_note
-        state.reset_beam_adjacency
-      end
+      end_voice(current_state, token.line) if @voices.any?
       @voices.switch_to(token.voice_id)
     end
 
     def finish
       @voices.each do |state|
-        ensure_not_awaiting_note(nil, state: state)
-        reject_open_tie(state, nil, "A tie must be followed by a note")
-        state.reject_dangling_decorations
-        state.flush_pending_note
+        end_voice(state, nil)
         repeat_tagger.tag_completed_bar(state)
       end
     end
 
-    def ensure_not_awaiting_note(token, state: current_state)
+    def ensure_not_awaiting_note(line, state)
       return unless state.awaiting_scale
 
-      raise ParseError.new(
-        "Broken rhythm must be followed by a note",
-        line_number: token&.line || state.broken_line
-      )
+      raise ParseError.new("Broken rhythm must be followed by a note", line_number: line || state.broken_line)
     end
 
     def chord_reader

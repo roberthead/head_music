@@ -20,6 +20,10 @@ class HeadMusic::Notation::ABC::Header
     parse(abc_string)
   end
 
+  def flow_attributes
+    {name: title, key_signature: key_signature, meter: meter, composer: composer, origin: origin, comments: annotations}
+  end
+
   def unit_note_length
     @unit_note_length || default_unit_note_length
   end
