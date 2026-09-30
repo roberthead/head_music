@@ -535,6 +535,10 @@ describe HeadMusic::Notation::ABC::Parser do
     it "implies the final barline on the last bar" do
       expect(barlines("C4|D4|]")).to eq %i[regular regular]
     end
+
+    it "implies the final barline on a last bar the last note is tied into" do
+      expect(parse_body("C4|D4-|D4|]").to_h["bars"]).to eq []
+    end
   end
 
   describe "repeat play counts" do
@@ -574,6 +578,11 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(parse_body("[P:]C4|]").bars(1).last.rehearsal_mark).to be_nil
     end
 
+    it "drops a label after the music, which opens no bar" do
+      flow = parse_body("C4|D4|\nP:B\n")
+      expect(flow.to_h["bars"]).to eq []
+    end
+
     it "reads a P: header, the playing order, and ignores it" do
       flow = parse("X:1\nP:AABA\nL:1/4\nK:C\nC4|]\n")
       expect(flow.bars.map(&:to_h)).to eq [{}]
@@ -610,6 +619,11 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(marked_bars("C4|D4!segno!")).to eq [{}, {}]
     end
 
+    it "drops a segno or coda sign before the final bar line, which opens no bar" do
+      flow = parse_body("C4|D4!segno!!coda!|]")
+      expect(flow.performance_order.map(&:number)).to eq [1, 2]
+    end
+
     {
       "!dacapo!" => {"kind" => "da_capo"},
       "!D.C.alfine!" => {"kind" => "da_capo", "to" => "fine"},
@@ -625,6 +639,10 @@ describe HeadMusic::Notation::ABC::Parser do
     it "reads the first of two coda signs as the To Coda when there is no !dacoda!" do
       expect(marked_bars("!segno!C4!coda!|D4!D.S.alcoda!|!coda!E4|]"))
         .to eq [{"segno" => true, "to_coda" => true}, {"jump" => {"kind" => "dal_segno", "to" => "coda"}}, {"coda" => true}]
+    end
+
+    it "keeps two coda signs when no al Coda jump needs a To Coda" do
+      expect(marked_bars("C4!coda!|D4|!coda!E4|]")).to eq [{}, {"coda" => true}, {"coda" => true}]
     end
 
     it "keeps two coda signs when a !dacoda! marks the To Coda" do

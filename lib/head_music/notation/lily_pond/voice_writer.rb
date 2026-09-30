@@ -100,7 +100,7 @@ module HeadMusic::Notation::LilyPond
     def bar_line(voice, bar_number, part_index)
       bar = plan.bar(bar_number)
       tokens = [
-        *BarMarkWriter.opening_tokens(bar),
+        *BarMarkWriter.opening_tokens(bar, lead: lead_voice?(voice)),
         *change_commands(voice.part, bar_number),
         staff_change_command(voice, bar_number, part_index),
         *bar_tokens(voice, bar_number),

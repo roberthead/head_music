@@ -60,4 +60,46 @@ describe HeadMusic::Content::Flow do
       it_behaves_like "a round trip that keeps the navigation"
     end
   end
+
+  context "with two coda signs and no jump" do
+    let(:flow) do
+      described_class.new.tap do |two_codas|
+        voice = two_codas.add_voice
+        1.upto(4) { |bar| voice.place("#{bar}:1:000", :whole, "C4") }
+        two_codas.bar(2).coda = true
+        two_codas.bar(4).coda = true
+      end
+    end
+
+    context "when round-tripped through ABC" do
+      let(:restored) { HeadMusic::Notation::ABC.parse(flow.to_abc) }
+
+      it_behaves_like "a round trip that keeps the navigation"
+    end
+
+    context "when round-tripped through LilyPond" do
+      let(:restored) { HeadMusic::Notation::LilyPond.parse(flow.to_lilypond) }
+
+      it_behaves_like "a round trip that keeps the navigation"
+    end
+  end
+
+  context "with a segno and a coda sign on one bar, in two voices" do
+    let(:flow) do
+      described_class.new.tap do |shared_bar|
+        2.times do
+          voice = shared_bar.add_voice
+          1.upto(3) { |bar| voice.place("#{bar}:1:000", :whole, "C4") }
+        end
+        shared_bar.bar(2).segno = true
+        shared_bar.bar(2).coda = true
+      end
+    end
+
+    context "when round-tripped through LilyPond" do
+      let(:restored) { HeadMusic::Notation::LilyPond.parse(flow.to_lilypond) }
+
+      it_behaves_like "a round trip that keeps the navigation"
+    end
+  end
 end

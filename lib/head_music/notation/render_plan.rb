@@ -20,7 +20,13 @@ class HeadMusic::Notation::RenderPlan
   end
 
   def bar_numbers
-    @bar_numbers ||= flow.earliest_bar_number..last_sounding_bar_number
+    @bar_numbers ||= flow.earliest_bar_number..flow.last_sounding_bar_number
+  end
+
+  # A bar of the score, or nil outside it, where no bar is allocated for
+  # asking.
+  def bar(bar_number)
+    flow.bar(bar_number) if bar_numbers.cover?(bar_number)
   end
 
   # The key changes to print in this part, by bar. A nil part answers the
@@ -54,16 +60,6 @@ class HeadMusic::Notation::RenderPlan
   end
 
   private
-
-  # The flow's latest bar is where its last voice event starts, but a voice event
-  # crossing a barline also sounds in the bars after that.
-  def last_sounding_bar_number
-    last_bars = flow.voices.filter_map do |voice|
-      voice_event = voice.last_voice_event
-      voice_event && HeadMusic::Notation::BarSplitter.segments_of(voice_event).last.bar_number
-    end
-    [flow.latest_bar_number, *last_bars].max
-  end
 
   # A subclass computes here whatever else must raise at construction, and
   # calls super for the signatures every format needs.

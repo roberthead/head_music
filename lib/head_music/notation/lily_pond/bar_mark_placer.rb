@@ -32,12 +32,28 @@ module HeadMusic::Notation::LilyPond
       @closings.each_value { |marks| marks.each { |event, bar_number| apply(event, flow, bar_number) } }
       @closings.clear
       @openings.clear
-      bar_number = last_bar_number(flow)
-      bar = bar_number && flow.bars(bar_number).last
-      bar.barline = :regular if bar&.barline == :final
+      return if flow.voices.none?(&:last_voice_event)
+
+      bars = flow.bars(flow.last_sounding_bar_number)
+      bars.last.barline = :regular if bars.last.barline == :final
+      read_to_coda(bars)
     end
 
     private
+
+    # A D.S. or D.C. al Coda with no To Coda marks it with a second coda sign,
+    # which LilyPond also uses at the To Coda. The first sign, at the start of a
+    # bar, marks the end of the bar before.
+    def read_to_coda(bars)
+      return unless bars.any? { |bar| bar.jump&.to == :coda } && bars.none?(&:to_coda?)
+
+      codas = bars.select(&:coda?)
+      return if codas.length < 2
+
+      sign = codas.first
+      sign.coda = false
+      (bars.find { |bar| bar.number == sign.number - 1 } || sign).to_coda = true
+    end
 
     # A mark that agrees with the bar is a no-op, since the writer repeats
     # each mark in every voice; one that contradicts it is a conflict.
@@ -57,13 +73,6 @@ module HeadMusic::Notation::LilyPond
 
     def current_value(bar, attribute)
       bar.public_send(HeadMusic::Content::Bar::FLAGS.include?(attribute) ? :"#{attribute}?" : attribute)
-    end
-
-    def last_bar_number(flow)
-      finish = flow.voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
-      return unless finish
-
-      bar_start?(finish) ? finish.bar_number - 1 : finish.bar_number
     end
 
     def bar_start?(position)

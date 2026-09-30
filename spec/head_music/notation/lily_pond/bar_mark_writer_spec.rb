@@ -8,11 +8,26 @@ describe HeadMusic::Notation::LilyPond::BarMarkWriter do
       expect(described_class.opening_tokens(bar)).to eq []
     end
 
-    it "writes the rehearsal mark, segno, and coda sign" do
+    it "writes the rehearsal mark and coda sign" do
       bar.rehearsal_mark = %(The "B" Section)
-      bar.segno = true
       bar.coda = true
-      expect(described_class.opening_tokens(bar)).to eq [%(\\mark "The \\"B\\" Section"), "\\segnoMark 1", "\\codaMark 1"]
+      expect(described_class.opening_tokens(bar)).to eq [%(\\mark "The \\"B\\" Section"), "\\codaMark 1"]
+    end
+
+    context "with a segno and a coda sign on one bar" do
+      before do
+        bar.segno = true
+        bar.coda = true
+      end
+
+      it "writes the coda sign as a text mark of its glyph, which LilyPond lets share the bar" do
+        expect(described_class.opening_tokens(bar))
+          .to eq ["\\segnoMark 1", %(\\textMark \\markup \\musicglyph "scripts.coda")]
+      end
+
+      it "writes the text mark in the lead voice only" do
+        expect(described_class.opening_tokens(bar, lead: false)).to eq ["\\segnoMark 1"]
+      end
     end
   end
 

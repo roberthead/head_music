@@ -48,7 +48,7 @@ module HeadMusic::Notation::Kern
     # The final barline at the end is implied, and a label after the last
     # note marks no bar.
     def mark_bars
-      last = @flow.latest_bar_number
+      last = @flow.last_sounding_bar_number
       clock.repeat_starts.each { |number| @flow.bars(number).last.starts_repeat = true }
       clock.repeat_ends.each { |number| @flow.bars(number).last.ends_repeat_after_num_plays = 2 }
       clock.barline_styles.each do |number, style|

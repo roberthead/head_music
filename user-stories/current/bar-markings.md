@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-09-30T11:08:10-07:00
   planned_at:   2026-09-30T11:50:54-07:00
   finished_at:
-  updated_at:   2026-09-30T12:34:49-07:00
+  updated_at:   2026-09-30T13:34:44-07:00
 -->
 
 # Story: Bar Markings: Barline Styles, Rehearsal Marks, and Navigation
@@ -70,6 +70,7 @@ flow.performance_order.last          # => #<data PlayedBar bar=Bar 12, pass=1, p
 - [ ] LilyPond reads and writes `\bar` styles, `\mark`, `\sectionLabel`, `\segnoMark`, `\codaMark`, `\fine`, and `\jump`; its output compiles with lilypond 2.26 without warnings
 - [ ] MusicXML writes `<bar-style>`, `<rehearsal>`, `<segno>`, `<coda>`, and the `<sound>` attributes for jumps
 - [ ] kern reads and writes `||` and section labels (`*>A`), and writes `==` only at the end
+- [ ] Writers raise `RenderError` for repeat structure or a marking on a bar after the music ends, rather than dropping it
 - [ ] A D.S. al Coda flow round-trips through Flow JSON, ABC, and LilyPond. MusicXML output is checked element by element. kern is excluded, because it has no standard navigation token
 - [ ] Maintains 90%+ test coverage
 
@@ -249,7 +250,7 @@ Reviewed 2026-09-30 at commit `7122532a` (all changes committed). Reviewers: pro
 | ABC play count from the highest ending | ✅ | `[1,2 … :\|[3` gives a count of 3 and writes back the same |
 | ABC reads the abcm2ps al Fine and al Coda forms | ✅ | Each maps to its `Jump` |
 | ABC and MusicXML write repeats and endings | ✅ | ABC `\|:`, `[1`, `:\|[2`; MusicXML forward and backward `<repeat>`, `<ending>` start, stop, and discontinue |
-| LilyPond reads and writes the listed commands; compiles on 2.26 without warnings | ⚠️ | Both fixtures and 7 of 8 combinations compile clean. A segno and a coda sign on the same bar still warn (`conflict with event: segno-mark-event`) |
+| LilyPond reads and writes the listed commands; compiles on 2.26 without warnings | ✅ | Both fixtures and every combination tried compile clean, including a segno and a coda sign on one bar after fix 5 below |
 | MusicXML writes bar styles, rehearsal, segno, coda, and `<sound>` | ✅ | `writer_bar_markings_spec.rb`; the writer agent validated a sample against the 4.0 XSD, but no XSD check runs in the suite |
 | kern reads and writes `\|\|` and `*>A`; `==` only at the end | ✅ | Round-trip specs; the Bach corpus (371) stays green |
 | D.S. al Coda round-trips through JSON, ABC, and LilyPond; MusicXML checked by element | ✅ | `flow_navigation_round_trip_spec.rb`, `music_xml/writer_bar_markings_spec.rb` |
@@ -266,6 +267,19 @@ Reviewed 2026-09-30 at commit `7122532a` (all changes committed). Reviewers: pro
 
 Minor, and within the criteria: ABC has no dashed barline and writes `|`; a `]` in an ABC `P:` label breaks the output; MusicXML segno and coda ids are fixed (`segno1`, `coda1`), which is enough for one jump; closing MusicXML directions sit where the last voice stops; kern drops mid-bar and trailing labels, moves a pickup-bar label to bar 1, and writes brackets in labels as parentheses; `PlayedBar#inspect` prints the whole bar rather than `bar=Bar 12`.
 
+### Fixes after review
+
+All six findings are fixed, with specs for each:
+
+1. `Flow#last_sounding_bar_number` answers the bar the music ends in, and the ABC, LilyPond, and kern readers and the shared `RenderPlan` all use it, so a last note tied into the final bar leaves its final barline implied.
+2. The ABC reader holds part labels, segno, and coda signs with its other navigation and drops those that open a bar after the music, as the LilyPond reader does.
+3. The two-coda-sign idiom is read only when an al Coda jump needs a To Coda and none is marked, so a flow with two coda signs round-trips through ABC and LilyPond as written. The LilyPond reader now reads the idiom too, putting the To Coda at the end of the bar before the first `\codaMark`.
+4. `RenderPlan#bar` (nil outside the score) replaces the four writer lookups, and the ABC writer uses `Flow#bar`, which allocates only the bar asked for.
+5. Beside a segno, LilyPond writes the coda sign as `\textMark \markup \musicglyph "scripts.coda"` in the lead voice, and the reader reads the segno and coda glyphs back.
+6. The writers raise `RenderError` for a marking past the music instead of dropping it. This adds a criterion rather than writing empty bars, which would add rests to the voices.
+
+`rake validate` passes: 10495 examples, 99.78% line coverage.
+
 ### Blocking `finish`
 
-Nothing fails a criterion outright. The LilyPond ⚠️ (finding 5) and ABC findings 1–3 are correctness gaps in round trips that the story promises. They are small and worth fixing before `finish`.
+Nothing.

@@ -267,6 +267,34 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "#last_sounding_bar_number" do
+    let(:voice) { flow.add_voice }
+
+    it "is the latest bar when the music ends at its barline" do
+      voice.place("2:1:000", :whole, "C4")
+      expect(flow.last_sounding_bar_number).to eq 2
+    end
+
+    it "is the bar a note tied across the barline ends in" do
+      voice.place("2:3:000", :whole, "C4")
+      expect(flow.last_sounding_bar_number).to eq 3
+    end
+
+    it "is the latest bar when there is no music" do
+      expect(flow.last_sounding_bar_number).to eq 1
+    end
+  end
+
+  describe "#bar" do
+    it "answers the bar with that number" do
+      expect(flow.bar(4).number).to eq 4
+    end
+
+    it "answers the same bar each time" do
+      expect(flow.bar(4)).to equal flow.bars(4).last
+    end
+  end
+
   describe "#to_abc" do
     it "renders an ABC tune string" do
       expect(flow.to_abc).to start_with "X:1\nT:Fruit Salad\n"

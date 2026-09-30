@@ -22,6 +22,7 @@ module HeadMusic::Notation::LilyPond
     def check!
       ensure_voices
       ensure_contiguous_voices(flow)
+      ensure_markings_within_music(flow)
       ensure_filled_final_bars
       ensure_pitched_voice_events
     end

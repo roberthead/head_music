@@ -281,6 +281,16 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
       expect(bars(%({ c'1 \\bar "|." d'1 }))).to eq [{"barline" => "final"}, {}]
     end
 
+    it "reads the first of two coda marks as the To Coda of an al Coda jump" do
+      expect(bars(%({ \\segnoMark 1 c'1 | \\codaMark 1 d'1 \\jump "D.S. al Coda" | \\codaMark 1 e'1 }))).to eq [
+        {"segno" => true, "to_coda" => true}, {"jump" => {"kind" => "dal_segno", "to" => "coda"}}, {"coda" => true}
+      ]
+    end
+
+    it "keeps two coda marks with no al Coda jump" do
+      expect(bars(%({ c'1 | \\codaMark 1 d'1 | \\codaMark 1 e'1 }))).to eq [{}, {"coda" => true}, {"coda" => true}]
+    end
+
     it "leaves the final barline at the end implied" do
       expect(bars(%({ c'1 d'1 \\bar "|." }))).to eq [{}, {}]
     end

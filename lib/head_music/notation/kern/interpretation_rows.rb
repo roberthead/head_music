@@ -43,12 +43,8 @@ module HeadMusic::Notation::Kern
     # split the row becomes a space, and brackets, which would make it an
     # expansion list, become parentheses.
     def section_row(bar_number)
-      mark = rehearsal_marks[bar_number]
+      mark = plan.bar(bar_number)&.rehearsal_mark
       mark && columns.uniform_row("*>#{mark.gsub(/\s+/, " ").tr("[]", "()")}")
-    end
-
-    def rehearsal_marks
-      @rehearsal_marks ||= flow.bars(plan.bar_numbers.last).to_h { |bar| [bar.number, bar.rehearsal_mark] }
     end
 
     def context_rows(key, meter, tempo)

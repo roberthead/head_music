@@ -21,6 +21,7 @@ module HeadMusic::Notation::Kern
     def check!
       ensure_voices
       ensure_contiguous_voices(flow)
+      ensure_markings_within_music(flow)
       ensure_pitched_voice_events
       ensure_concert_pitch
       ensure_steady_parts

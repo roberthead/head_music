@@ -35,7 +35,9 @@ describe HeadMusic::Notation::LilyPond::BarMarkReader do
     %(\\jump "D.S. al Coda") => [:jump, HeadMusic::Content::Jump.new(:dal_segno, to: :coda)],
     %(\\jump "D.C. al Fine") => [:jump, HeadMusic::Content::Jump.new(:da_capo, to: :fine)],
     %(\\textEndMark "Fine") => [:fine, true],
-    %(\\textEndMark "To Coda") => [:to_coda, true]
+    %(\\textEndMark "To Coda") => [:to_coda, true],
+    %(\\textMark \\markup \\musicglyph "scripts.coda") => [:coda, true],
+    %(\\textMark \\markup \\musicglyph "scripts.segno") => [:segno, true]
   }.each do |text, mark|
     context "with #{text}" do
       let(:source) { "#{text} c4" }
@@ -84,6 +86,15 @@ describe HeadMusic::Notation::LilyPond::BarMarkReader do
 
     it "reads it and drops it" do
       expect(marks(2)).to be_empty
+    end
+  end
+
+  context "with a text mark other than a sign" do
+    let(:source) { %(\\textMark "rit." \\textMark \\markup \\musicglyph "scripts.ufermata" c4) }
+
+    it "reads it and drops it" do
+      expect(marks(2)).to be_empty
+      expect(cursor.peek.lexeme).to eq "c4"
     end
   end
 

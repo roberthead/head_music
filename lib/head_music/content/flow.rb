@@ -133,6 +133,21 @@ class HeadMusic::Content::Flow
     [*voices.map(&:latest_bar_number), 1].max
   end
 
+  # The bar the music ends in, past the latest bar when the last note is tied
+  # across a barline.
+  def last_sounding_bar_number
+    finish = voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
+    return latest_bar_number unless finish
+
+    ending_bar = (finish.to_a.drop(1) == [1, 0, 0]) ? finish.bar_number - 1 : finish.bar_number
+    [latest_bar_number, ending_bar].max
+  end
+
+  # Allocates only this bar, unlike #bars, which fills in every bar before it.
+  def bar(number)
+    @bars.span(number, number).first
+  end
+
   # The last bar carrying repeat structure or a marking, which a flow with no
   # voices past it still plays through.
   def last_marked_bar_number

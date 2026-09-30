@@ -48,13 +48,13 @@ module HeadMusic::Notation::Kern
     # repeat; a pickup has no barline before it at all.
     def barline(bar_number)
       return if pickup?(bar_number)
-      return "=#{bar_number}#{bar_at(bar_number).starts_repeat? ? "!|:" : "-"}" if bar_number == numbers.first
+      return "=#{bar_number}#{plan.bar(bar_number).starts_repeat? ? "!|:" : "-"}" if bar_number == numbers.first
 
-      "=#{bar_number}#{barline_style(bar_at(bar_number - 1), bar_at(bar_number))}"
+      "=#{bar_number}#{barline_style(plan.bar(bar_number - 1), plan.bar(bar_number))}"
     end
 
     def final_barline
-      "==#{":|!" if bar_at(numbers.last).ends_repeat?}"
+      "==#{":|!" if plan.bar(numbers.last).ends_repeat?}"
     end
 
     private
@@ -71,11 +71,6 @@ module HeadMusic::Notation::Kern
       return "!|:" if starts
 
       STYLES.fetch(completed.barline, "")
-    end
-
-    def bar_at(bar_number)
-      @bars ||= flow.bars(plan.bar_numbers.last).to_h { |bar| [bar.number, bar] }
-      @bars.fetch(bar_number)
     end
 
     def trimmed(events)

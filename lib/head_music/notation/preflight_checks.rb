@@ -15,6 +15,16 @@ module HeadMusic
         end
       end
 
+      # Writers write the bars the music reaches, so a marking on a later bar
+      # would be lost.
+      def ensure_markings_within_music(flow)
+        marked = flow.last_marked_bar_number
+        last = flow.last_sounding_bar_number
+        return unless marked && marked > last
+
+        raise render_error_class, "bar #{marked} carries repeat structure or markings, but the music ends in bar #{last}"
+      end
+
       def raise_gap_error(voice, expected_position, found_voice_event)
         if found_voice_event.equal?(voice.voice_events.first)
           raise render_error_class, "the first voice event must start its bar " \

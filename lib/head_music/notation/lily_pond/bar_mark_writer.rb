@@ -9,15 +9,24 @@ module HeadMusic::Notation::LilyPond
   # as in a D.C. al Fine, is written as a \textEndMark. It also keeps only one
   # \jump per bar, so a To Coda beside a jump is one too. LilyPond prints a
   # \textEndMark once per voice that has it, so only the lead voice does.
+  # A segno and a coda sign cannot share a bar as marks either, so beside a
+  # segno the coda sign is a \textMark of its glyph, in the lead voice.
   module BarMarkWriter
     module_function
 
-    def opening_tokens(bar)
+    def opening_tokens(bar, lead: true)
       [
         bar.rehearsal_mark && %(\\mark "#{StringText.escape(bar.rehearsal_mark)}"),
         ("\\segnoMark 1" if bar.segno?),
-        ("\\codaMark 1" if bar.coda?)
+        coda_token(bar, lead)
       ].compact
+    end
+
+    def coda_token(bar, lead)
+      return unless bar.coda?
+      return "\\codaMark 1" unless bar.segno?
+
+      lead ? %(\\textMark \\markup \\musicglyph "#{BarMarkReader::SIGN_GLYPHS.key(:coda)}") : nil
     end
 
     def closing_tokens(bar, last: false, lead: true)

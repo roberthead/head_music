@@ -13,7 +13,8 @@ module HeadMusic::Notation::LilyPond
     end
 
     OPENING_ATTRIBUTES = %i[rehearsal_mark segno coda].freeze
-    COMMANDS = %w[bar mark segnoMark codaMark jump textEndMark fine section sectionLabel].freeze
+    COMMANDS = %w[bar mark segnoMark codaMark textMark jump textEndMark fine section sectionLabel].freeze
+    SIGN_GLYPHS = {"scripts.segno" => :segno, "scripts.coda" => :coda}.freeze
     BARLINES_BY_TYPE = {"||" => :double, "|." => :final, "!" => :dashed, ";" => :dotted}.freeze
     TO_CODA = "To Coda"
     FINE = "Fine"
@@ -45,6 +46,7 @@ module HeadMusic::Notation::LilyPond
       when "mark" then read_mark(command, stream)
       when "segnoMark" then read_sign(command, :segno)
       when "codaMark" then read_sign(command, :coda)
+      when "textMark" then read_text_mark(command)
       when "jump", "textEndMark" then read_closing_text(command)
       when "fine" then BarMark.new(:fine, true)
       when "section" then BarMark.new(:barline, :double)
@@ -110,6 +112,27 @@ module HeadMusic::Notation::LilyPond
       return BarMark.new(attribute, true) if token&.type == :command && token.lexeme == "default"
 
       raise cursor.error("\\#{command.lexeme} expects \\default or a number", token || command)
+    end
+
+    # A \textMark of the segno or coda glyph is how the writer puts both signs
+    # on one bar; other text is dropped.
+    def read_text_mark(command)
+      sign = sign_glyph
+      if sign
+        3.times { cursor.advance }
+        return BarMark.new(sign, true)
+      end
+      return skip_markup if markup?(cursor.peek)
+
+      cursor.expect(:string, "\\#{command.lexeme} expects a string or a markup")
+      nil
+    end
+
+    def sign_glyph
+      glyph = cursor.peek(2)
+      return unless markup?(cursor.peek) && cursor.peek(1)&.lexeme == "musicglyph" && glyph&.type == :string
+
+      SIGN_GLYPHS[glyph.lexeme]
     end
 
     def markup?(token)

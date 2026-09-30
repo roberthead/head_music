@@ -216,8 +216,9 @@ module HeadMusic::Notation::ABC
       label = token.lexeme
       return if label.empty?
 
-      bar_number = @voices.any? ? current_state.entered_bar_number : HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR
-      @building.bars(bar_number).last.rehearsal_mark = label
+      state = current_state if @voices.any?
+      bar_number = state ? state.entered_bar_number : HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR
+      navigation_tagger.record_part_label(state, label, bar_number)
     end
 
     def mark_navigation_at_note(state)
@@ -248,7 +249,7 @@ module HeadMusic::Notation::ABC
 
     # The last bar's final barline is implied, and writers draw it.
     def imply_final_barline
-      last_bar = @building.bars.last
+      last_bar = @building.bar(@building.last_sounding_bar_number)
       last_bar.barline = :regular if last_bar.barline == :final
     end
 

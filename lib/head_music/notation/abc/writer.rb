@@ -32,6 +32,7 @@ module HeadMusic::Notation::ABC
       ensure_no_mid_piece_changes
       ensure_no_instrument_change
       ensure_contiguous_voices(flow)
+      ensure_markings_within_music(flow)
       slur_writer
     end
 
@@ -125,9 +126,7 @@ module HeadMusic::Notation::ABC
       segments = segments_by_bar.to_a
       return [] if segments.empty?
 
-      # A note held past the voice's last attack sounds into bars beyond it.
-      flow_bars = flow.bars(segments.last.first.bar_number).to_h { |bar| [bar.number, bar] }
-      segments.map { |bar_segments| [flow_bars.fetch(bar_segments.first.bar_number), bar_writer.bar(bar_segments)] }
+      segments.map { |bar_segments| [flow.bar(bar_segments.first.bar_number), bar_writer.bar(bar_segments)] }
     end
 
     # A voice event sounding across a bar line is written as one note per bar,

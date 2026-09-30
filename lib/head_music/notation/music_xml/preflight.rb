@@ -26,6 +26,7 @@ module HeadMusic::Notation::MusicXML
       ensure_voices
       ensure_renderable_text
       ensure_contiguous_voices(flow)
+      ensure_markings_within_music(flow)
     end
 
     private
