@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-25T14:05:54-07:00
   activated_at: 2026-09-30T11:08:10-07:00
   planned_at:   2026-09-30T11:50:54-07:00
-  finished_at:
-  updated_at:   2026-09-30T13:34:44-07:00
+  finished_at:  2026-09-30T15:33:59-07:00
+  updated_at:   2026-09-30T15:33:59-07:00
 -->
 
 # Story: Bar Markings: Barline Styles, Rehearsal Marks, and Navigation
@@ -46,33 +46,33 @@ flow.performance_order.last          # => #<data PlayedBar bar=Bar 12, pass=1, p
 
 ### Model
 
-- [ ] A bar's closing barline can be regular, double, final, dashed, or dotted; regular is the default and is not serialized
-- [ ] A bar can carry a rehearsal mark: a letter, a number, or free text such as "Verse"; it is stored as a string, so `12` and `"12"` are the same mark
-- [ ] A bar can carry a segno or coda sign, a Fine, a "To Coda", and a jump (D.C. or D.S., al Fine or al Coda)
-- [ ] A rehearsal mark, segno, and coda sign mark the start of their bar; a barline, Fine, To Coda, and jump mark its end. A final barline at the end of the flow is implied, and writers draw it
-- [ ] `Flow#performance_order` lists the bars in the order they are played, unfolding repeats, 1st and 2nd endings, and jumps
-- [ ] `performance_order` answers `PlayedBar`s with `bar`, `pass` (the repeat pass that endings and verses key on), and `playing` (the running count of times that bar has sounded)
-- [ ] After a D.C. or D.S., repeats are not taken again, and each repeated section plays its last ending
-- [ ] Fine and To Coda act only after the jump
-- [ ] A plain D.C. or D.S. stops at whichever comes first after its target, a Fine or a To Coda
-- [ ] A repeat plays as many times as the larger of its play count and the highest pass its endings name
-- [ ] A closing repeat with no opening repeat goes back to the bar after the previous closing repeat, or to the first bar
-- [ ] `performance_order` raises `ArgumentError` for navigation it cannot follow: more than one jump; a D.S. with no segno before it; an al Fine with no Fine after the target; an al Coda with no To Coda between the target and the jump, or no coda sign after it
+- [x] A bar's closing barline can be regular, double, final, dashed, or dotted; regular is the default and is not serialized
+- [x] A bar can carry a rehearsal mark: a letter, a number, or free text such as "Verse"; it is stored as a string, so `12` and `"12"` are the same mark
+- [x] A bar can carry a segno or coda sign, a Fine, a "To Coda", and a jump (D.C. or D.S., al Fine or al Coda)
+- [x] A rehearsal mark, segno, and coda sign mark the start of their bar; a barline, Fine, To Coda, and jump mark its end. A final barline at the end of the flow is implied, and writers draw it
+- [x] `Flow#performance_order` lists the bars in the order they are played, unfolding repeats, 1st and 2nd endings, and jumps
+- [x] `performance_order` answers `PlayedBar`s with `bar`, `pass` (the repeat pass that endings and verses key on), and `playing` (the running count of times that bar has sounded)
+- [x] After a D.C. or D.S., repeats are not taken again, and each repeated section plays its last ending
+- [x] Fine and To Coda act only after the jump
+- [x] A plain D.C. or D.S. stops at whichever comes first after its target, a Fine or a To Coda
+- [x] A repeat plays as many times as the larger of its play count and the highest pass its endings name
+- [x] A closing repeat with no opening repeat goes back to the bar after the previous closing repeat, or to the first bar
+- [x] `performance_order` raises `ArgumentError` for navigation it cannot follow: more than one jump; a D.S. with no segno before it; an al Fine with no Fine after the target; an al Coda with no To Coda between the target and the jump, or no coda sign after it
 
 ### Serialization and formats
 
-- [ ] Flow JSON writes the new bar fields sparsely, within schema 5; existing schema-5 documents read unchanged
-- [ ] ABC reads and writes double, final, and dotted barlines, `P:` sections, and the navigation decorations
-- [ ] ABC reads a `P:` header (playing order) without raising, and ignores it
-- [ ] ABC sets a repeat's play count from its highest ending number
-- [ ] ABC reads the abcm2ps `!D.C.alfine!`, `!D.C.alcoda!`, `!D.S.alfine!`, and `!D.S.alcoda!`
-- [ ] ABC and MusicXML write repeats and 1st and 2nd endings
-- [ ] LilyPond reads and writes `\bar` styles, `\mark`, `\sectionLabel`, `\segnoMark`, `\codaMark`, `\fine`, and `\jump`; its output compiles with lilypond 2.26 without warnings
-- [ ] MusicXML writes `<bar-style>`, `<rehearsal>`, `<segno>`, `<coda>`, and the `<sound>` attributes for jumps
-- [ ] kern reads and writes `||` and section labels (`*>A`), and writes `==` only at the end
-- [ ] Writers raise `RenderError` for repeat structure or a marking on a bar after the music ends, rather than dropping it
-- [ ] A D.S. al Coda flow round-trips through Flow JSON, ABC, and LilyPond. MusicXML output is checked element by element. kern is excluded, because it has no standard navigation token
-- [ ] Maintains 90%+ test coverage
+- [x] Flow JSON writes the new bar fields sparsely, within schema 5; existing schema-5 documents read unchanged
+- [x] ABC reads and writes double, final, and dotted barlines, `P:` sections, and the navigation decorations
+- [x] ABC reads a `P:` header (playing order) without raising, and ignores it
+- [x] ABC sets a repeat's play count from its highest ending number
+- [x] ABC reads the abcm2ps `!D.C.alfine!`, `!D.C.alcoda!`, `!D.S.alfine!`, and `!D.S.alcoda!`
+- [x] ABC and MusicXML write repeats and 1st and 2nd endings
+- [x] LilyPond reads and writes `\bar` styles, `\mark`, `\sectionLabel`, `\segnoMark`, `\codaMark`, `\fine`, and `\jump`; its output compiles with lilypond 2.26 without warnings
+- [x] MusicXML writes `<bar-style>`, `<rehearsal>`, `<segno>`, `<coda>`, and the `<sound>` attributes for jumps
+- [x] kern reads and writes `||` and section labels (`*>A`), and writes `==` only at the end
+- [x] Writers raise `RenderError` for repeat structure or a marking on a bar after the music ends, rather than dropping it
+- [x] A D.S. al Coda flow round-trips through Flow JSON, ABC, and LilyPond. MusicXML output is checked element by element. kern is excluded, because it has no standard navigation token
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
@@ -283,3 +283,14 @@ All six findings are fixed, with specs for each:
 ### Blocking `finish`
 
 Nothing.
+
+## Learnings
+
+- **Build the model first, then fan out by format.** `Bar`, `Jump`, Flow JSON, and `performance_order` went in first as one commit. Four developer agents then each took one format in its own worktree. Their files barely overlapped, so their commits cherry-picked cleanly, and the whole implementation took about 15 minutes of wall time.
+- **Parallel agents reinvent the shared helpers.** Each format agent wrote its own bar lookup and its own idea of "the last bar". The review found five copies of the lookup, and the ABC version of "the last bar" was wrong for a last note tied into the final bar. Next time, put cross-format helpers (`Flow#last_sounding_bar_number`, `Flow#bar`) into the model step before fanning out.
+- **A convention across formats needs one owner in the plan.** The ABC agent read two `!coda!` signs as a To Coda and the LilyPond agent didn't, so the same idiom read two ways. It also rewrote flows the ABC writer itself had written. Restricting it to where an al Coda jump needs a To Coda made it safe in both readers.
+- **Worktree agents started at `main`, not the story branch.** Each one had to fast-forward itself before its work made sense. Name the base commit in the prompt.
+- **LilyPond as the oracle paid off again.** Several problems showed up only as compiler warnings with exit code 0: `\fine` before more music, two `\jump`s on one bar, and a segno and coda mark on one bar. The fixes (`\textEndMark`, and a `\textMark` of the coda glyph) came from compiling candidates by hand.
+- **Proposed story changes need explaining one by one.** Grouping a dozen of the planner's proposals into four multi-select questions didn't give enough to decide on. Rob asked for an explanation and options for each, and the answers then took one round.
+- **Writers raise rather than pad.** A marking on a bar after the music has no bar to be written in. Raising `RenderError` keeps the voices unchanged, where padding with rests would have added content. This became an acceptance criterion.
+- **Edit tool, not shell heredocs, for anything with backslashes or apostrophes.** Shell-wrapped Ruby edits mangled LilyPond specs, broke on an apostrophe in the CHANGELOG (leaving a stray file), and a leftover `cat >> /dev/null` hung a test run.
