@@ -44,6 +44,33 @@ describe HeadMusic::Notation::Kern::BarClock do
     expect([clock.number, clock.repeat_ends, clock.repeat_starts]).to eq [2, [1], [2]]
   end
 
+  it "records the style of the bar a barline completes" do
+    clock.barline(barline("=1"), 0, 3)
+    clock.barline(barline("=2||"), Rational(3, 4), 5)
+    expect(clock.barline_styles).to eq(1 => :double)
+  end
+
+  it "labels the bar at whose downbeat a section label is read" do
+    clock.barline(barline("=1"), 0, 3)
+    clock.section_label("A", 0)
+    expect(clock.section_labels).to eq(1 => "A")
+  end
+
+  it "gives a section label read before the first barline to the bar that barline opens" do
+    clock.section_label("A", 0)
+    clock.ensure_music_allowed
+    clock.barline(barline("=1"), Rational(1, 4), 3)
+    expect(clock.section_labels).to eq(1 => "A")
+  end
+
+  it "drops a section label read in the middle of a bar" do
+    clock.barline(barline("=1"), 0, 3)
+    clock.section_label("B", Rational(1, 4))
+    clock.ensure_music_allowed
+    clock.barline(barline("=2"), Rational(3, 4), 5)
+    expect(clock.section_labels).to be_empty
+  end
+
   it "applies a change waiting for the next downbeat to the bar it opens" do
     changed = []
     clock.barline(barline("=1"), 0, 3)

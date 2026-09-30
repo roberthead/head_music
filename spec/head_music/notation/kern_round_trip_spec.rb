@@ -86,6 +86,58 @@ describe HeadMusic::Notation::Kern do
       it("round-trips") { expect_kern_round_trip(flow) }
     end
 
+    context "with double and final barlines and section labels" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "2/4").tap do |marked|
+          place_bars(marked.add_voice, %w[C4 D4 E4 F4 G4], :half)
+          marked.bars(1).last.rehearsal_mark = "A"
+          marked.bars(2).last.barline = :double
+          marked.bars(3).last.rehearsal_mark = "Verse 2"
+          marked.bars(3).last.barline = :final
+          marked.bars(4).last.rehearsal_mark = "B"
+          marked.bars(4).last.barline = :dashed
+        end
+      end
+
+      it "round-trips" do
+        reparsed = expect_kern_round_trip(flow)
+        expect(reparsed.bars(5).map { |bar| [bar.barline, bar.rehearsal_mark] })
+          .to eq [[:regular, "A"], [:double, nil], [:final, "Verse 2"], [:regular, "B"], [:regular, nil]]
+      end
+    end
+
+    context "with a section label on the bar after a pickup" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "3/4").tap do |upbeat|
+          voice = upbeat.add_voice
+          voice.place("0:1", :half)
+          voice.place("0:3", :quarter, "G4")
+          voice.place("1:1", rhythmic_value("dotted half"), "C5")
+          upbeat.bars(1).last.rehearsal_mark = "A"
+          upbeat.bars(0).last.barline = :double
+        end
+      end
+
+      it("round-trips") { expect_kern_round_trip(flow) }
+    end
+
+    context "with a double barline where a repeat ends" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "2/4").tap do |repeated|
+          place_bars(repeated.add_voice, %w[C4 D4 E4], :half)
+          repeated.bars(1).last.ends_repeat_after_num_plays = 2
+          repeated.bars(1).last.barline = :double
+          repeated.bars(2).last.barline = :final
+          repeated.bars(3).last.starts_repeat = true
+        end
+      end
+
+      it "keeps the repeats in place of the barline styles" do
+        reparsed = expect_kern_round_trip(flow)
+        expect(reparsed.bars(3).map(&:barline)).to eq %i[regular regular regular]
+      end
+    end
+
     context "with soprano and alto sharing one staff" do
       let(:flow) do
         HeadMusic::Content::Flow.new(meter: "4/4").tap do |choral|
@@ -129,6 +181,20 @@ describe HeadMusic::Notation::Kern do
           melody.place("1:1", :half, "C5").sing("Aus", verse: 1).sing("Fear", verse: 2)
           melody.place("1:3", :half, "D5").sing("mei", verse: 1, hyphen_after: true).sing("not", verse: 2)
           melody.place("2:1", :whole, "E5").sing("nes", verse: 1)
+        end
+      end
+
+      it("round-trips") { expect_kern_round_trip(flow) }
+    end
+
+    context "with a section label beside lyrics and dynamics" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "4/4").tap do |sung|
+          melody = sung.add_voice
+          melody.place("1:1", :whole, "C5").sing("Aus", verse: 1)
+          melody.place("2:1", :whole, "D5").sing("mei", verse: 1)
+          sung.parts.first.place_dynamic("1:1", :p)
+          sung.bars(2).last.rehearsal_mark = "B"
         end
       end
 

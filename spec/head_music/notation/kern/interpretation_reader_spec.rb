@@ -7,17 +7,22 @@ describe HeadMusic::Notation::Kern::InterpretationReader do
 
   {
     "*MM100" => :tempo, "*M3/4" => :meter, "*k[f#]" => :signature, "*G:" => :designation,
-    "*clefG2" => :clef, '*I"Alto' => :name, "*Ialto" => :code, "*part2" => :part, "*staff1" => :staff
+    "*clefG2" => :clef, '*I"Alto' => :name, "*Ialto" => :code, "*part2" => :part, "*staff1" => :staff,
+    "*>A" => :section
   }.each do |field, expected|
     it "reads #{field} as #{expected}" do
       expect(kind(field)).to eq expected
     end
   end
 
-  %w[* *>A *>[A,A,B] *met(c) *ICvox *stem *^ *-].each do |field|
+  ["*", "*>[A,A,B]", "*>norep[A,B]", "*>", "*> ", "*met(c)", "*ICvox", "*stem", "*^", "*-"].each do |field|
     it "ignores #{field}" do
       expect(kind(field)).to be_nil
     end
+  end
+
+  it "reads a section label with its spaces" do
+    expect(described_class.read("*>Verse 2").value).to eq "Verse 2"
   end
 
   it "reads the number of a part tag" do

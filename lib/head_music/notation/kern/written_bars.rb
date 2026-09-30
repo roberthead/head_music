@@ -7,6 +7,7 @@ module HeadMusic::Notation::Kern
   # at its first note.
   class WrittenBars
     PICKUP_BAR = 0
+    STYLES = {double: "||", final: "|!"}.freeze
 
     def initialize(flow, plan)
       @flow = flow
@@ -49,7 +50,7 @@ module HeadMusic::Notation::Kern
       return if pickup?(bar_number)
       return "=#{bar_number}#{bar_at(bar_number).starts_repeat? ? "!|:" : "-"}" if bar_number == numbers.first
 
-      "=#{bar_number}#{barline_style(bar_at(bar_number - 1).ends_repeat?, bar_at(bar_number).starts_repeat?)}"
+      "=#{bar_number}#{barline_style(bar_at(bar_number - 1), bar_at(bar_number))}"
     end
 
     def final_barline
@@ -60,11 +61,16 @@ module HeadMusic::Notation::Kern
 
     attr_reader :flow, :plan
 
-    def barline_style(ends, starts)
+    # A repeat sign has lines of its own, so it takes the place of a double
+    # or final barline. Kern has no dashed or dotted barline.
+    def barline_style(completed, entered)
+      ends = completed.ends_repeat?
+      starts = entered.starts_repeat?
       return ":|!|:" if ends && starts
       return ":|!" if ends
+      return "!|:" if starts
 
-      starts ? "!|:" : ""
+      STYLES.fetch(completed.barline, "")
     end
 
     def bar_at(bar_number)

@@ -2,7 +2,7 @@
 module HeadMusic::Notation::Kern
   # Classifies one tandem interpretation of a **kern spine as the kind of
   # thing it sets and its value. Interpretations the gem does not model
-  # (expansion labels, stem and beam directions, *met, and the rest) read
+  # (expansion lists, stem and beam directions, *met, and the rest) read
   # as nil and are ignored.
   module InterpretationReader
     Interpretation = Data.define(:kind, :value, :field)
@@ -10,6 +10,7 @@ module HeadMusic::Notation::Kern
     PART = /\A\*part(\d+)\z/
     STAFF = /\A\*staff(\d+)\z/
     CROSS_STAFF = %r{\A\*staff\d+/}
+    SECTION = /\A\*>([^\[\]]*\S[^\[\]]*)\z/
 
     module_function
 
@@ -34,6 +35,7 @@ module HeadMusic::Notation::Kern
       elsif InstrumentCodes.code?(field) then [:code, InstrumentCodes.code(field)]
       elsif PART.match?(field) then [:part, PART.match(field)[1].to_i]
       elsif STAFF.match?(field) then [:staff, STAFF.match(field)[1].to_i]
+      elsif SECTION.match?(field) then [:section, SECTION.match(field)[1].strip]
       end
     end
   end

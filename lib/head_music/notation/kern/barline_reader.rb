@@ -1,11 +1,13 @@
 # A namespace for **kern parsing helpers
 module HeadMusic::Notation::Kern
   # Reads a barline token: its bar number, if any, whether it is the final
-  # barline (==), and the repeats its style marks. A colon before the
-  # lines ends a repeat (:|!) and one after them starts one (!|:); the
-  # other style marks are presentational.
+  # barline (==), the repeats its style marks, and the style of the bar it
+  # closes. A colon before the lines ends a repeat (:|!) and one after them
+  # starts one (!|:). A repeat sign is drawn as a repeat whatever its lines,
+  # so only a barline without colons is double (||) or final (|! or ==);
+  # the other style marks are presentational.
   module BarlineReader
-    Barline = Data.define(:number, :final, :ends_repeat, :starts_repeat)
+    Barline = Data.define(:number, :final, :ends_repeat, :starts_repeat, :style)
     PATTERN = /\A=(=)?(\d+)?([a-z])?(.*)\z/
 
     module_function
@@ -20,8 +22,16 @@ module HeadMusic::Notation::Kern
 
       Barline.new(
         number: number&.to_i, final: !final.nil?,
-        ends_repeat: style.start_with?(":"), starts_repeat: style.length > 1 && style.end_with?(":")
+        ends_repeat: style.start_with?(":"), starts_repeat: style.length > 1 && style.end_with?(":"),
+        style: barline_style(final, style)
       )
+    end
+
+    def barline_style(final, style)
+      return :regular if style.include?(":")
+      return :final if final || style.include?("|!")
+
+      style.include?("||") ? :double : :regular
     end
   end
 end

@@ -341,6 +341,58 @@ describe HeadMusic::Notation::Kern::Writer do
     it "writes repeat barlines" do
       expect(body(flow)).to eq ["=1!|:", "2c", "=2", "2d", "=3:|!|:", "2e", "==:|!", "*-"]
     end
+
+    it "writes a repeat sign in place of a double or final barline" do
+      flow.bars(2).last.barline = :double
+      flow.bars(3).last.barline = :final
+      expect(body(flow)).to eq ["=1!|:", "2c", "=2", "2d", "=3:|!|:", "2e", "==:|!", "*-"]
+    end
+  end
+
+  describe "bar markings" do
+    subject(:flow) do
+      HeadMusic::Content::Flow.new(meter: "2/4").tap do |marked|
+        voice = marked.add_voice
+        %w[C4 D4 E4 F4 G4].each_with_index { |pitch, index| voice.place("#{index + 1}:1", :half, pitch) }
+        marked.add_voice.place("1:1", :half, "C3").sing("la", verse: 1)
+      end
+    end
+
+    def bar(number)
+      flow.bars(number).last
+    end
+
+    it "writes a double barline and a final barline in the middle of the flow" do
+      bar(1).barline = :double
+      bar(2).barline = :final
+      expect(body(flow).grep(/\A=/)).to eq ["=1-\t=1-\t=1-", "=2||\t=2||\t=2||", "=3|!\t=3|!\t=3|!", "=4\t=4\t=4", "=5\t=5\t=5", "==\t==\t=="]
+    end
+
+    it "writes a dashed or dotted barline as a regular one" do
+      bar(1).barline = :dashed
+      bar(2).barline = :dotted
+      expect(body(flow).grep(/\A=[23]/)).to eq ["=2\t=2\t=2", "=3\t=3\t=3"]
+    end
+
+    it "writes == at the end whatever the last bar's style" do
+      bar(5).barline = :double
+      expect(body(flow).grep(/\A==/)).to eq ["==\t==\t=="]
+    end
+
+    it "writes a rehearsal mark as a section label across every spine after its barline" do
+      bar(3).rehearsal_mark = "B"
+      expect(body(flow).each_cons(2).find { |_barline, row| row.start_with?("*>") }).to eq ["=3\t=3\t=3", "*>B\t*>B\t*>B"]
+    end
+
+    it "writes the first bar's rehearsal mark among the opening interpretations" do
+      bar(1).rehearsal_mark = "A"
+      expect(render(flow).lines.map(&:chomp).take_while { |line| !line.start_with?("=") }).to include("*>A\t*>A\t*>A")
+    end
+
+    it "keeps a mark's spaces, and writes its brackets as parentheses so it is not an expansion list" do
+      bar(2).rehearsal_mark = "Verse [2]\tagain"
+      expect(body(flow)).to include("*>Verse (2) again\t*>Verse (2) again\t*>Verse (2) again")
+    end
   end
 
   describe "changes in the middle of the flow" do

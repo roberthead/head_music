@@ -14,6 +14,7 @@ module HeadMusic::Notation::Kern
         *grouping_rows,
         columns.kern_row_unless_null { |column| InstrumentCodes.code_field(column.voice.part.instrument) },
         columns.kern_row_unless_null { |column| player_name(column) },
+        section_row(first_bar),
         columns.kern_row_unless_null { |column| ClefCodes.clef_field(opening_clef(column.staff)) },
         *context_rows(plan.first_measure_key, plan.first_measure_meter, flow.tempo_at(first_bar))
       ].compact
@@ -23,6 +24,7 @@ module HeadMusic::Notation::Kern
       return [] unless bar_number > first_bar
 
       [
+        section_row(bar_number),
         columns.kern_row_unless_null { |column| staff_change(column, bar_number) },
         columns.kern_row_unless_null { |column| clef_change(column, bar_number) },
         *context_rows(plan.measure_key_changes[bar_number], plan.measure_time_changes[bar_number], flow.tempo_changes[bar_number])
@@ -35,6 +37,18 @@ module HeadMusic::Notation::Kern
 
     def first_bar
       plan.bar_numbers.first
+    end
+
+    # A section label runs to the end of its field, so whitespace that would
+    # split the row becomes a space, and brackets, which would make it an
+    # expansion list, become parentheses.
+    def section_row(bar_number)
+      mark = rehearsal_marks[bar_number]
+      mark && columns.uniform_row("*>#{mark.gsub(/\s+/, " ").tr("[]", "()")}")
+    end
+
+    def rehearsal_marks
+      @rehearsal_marks ||= flow.bars(plan.bar_numbers.last).to_h { |bar| [bar.number, bar.rehearsal_mark] }
     end
 
     def context_rows(key, meter, tempo)

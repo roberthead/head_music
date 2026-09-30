@@ -5,7 +5,8 @@
 # Kern cannot say everything a flow can, so the comparison is of the music
 # alone. It leaves out what kern has no field for: voice roles, comments,
 # beam breaks, the source, any instrument without a kern code, and the work,
-# which has specs of its own. Dynamic events are left to
+# which has specs of its own, and the barline styles kern cannot draw.
+# Dynamic events are left to
 # expect_same_markings, since kern gives a voice's dynamics to its part. It
 # compares a tied chain by its length rather than its spelling, since a note
 # crossing a barline comes back split; it drops the rests at either end of a
@@ -28,6 +29,7 @@ module KernRoundTripHelper
       "composer" => flow.composer&.to_s,
       "timeline" => kern_timeline(flow),
       "repeats" => kern_repeats(flow),
+      "bar_markings" => kern_bar_markings(flow),
       "parts" => flow.parts.map { |part| kern_part(part, flow.earliest_bar_number) }
     }
   end
@@ -47,6 +49,22 @@ module KernRoundTripHelper
   def kern_repeats(flow)
     flow.to_h["bars"].map { |bar| [bar["number"], !!bar["starts_repeat"], !!bar["ends_repeat_after_num_plays"]] }
       .reject { |_number, starts, ends| !starts && !ends }
+  end
+
+  # A repeat sign takes the place of a double or final barline, kern has no
+  # dashed or dotted barline, and the final barline at the end is implied.
+  def kern_bar_markings(flow)
+    bars = flow.to_h["bars"].to_h { |bar| [bar["number"], bar] }
+    bars.filter_map do |number, bar|
+      barline = kern_barline(bar, bars[number + 1], number == flow.latest_bar_number)
+      [number, barline, bar["rehearsal_mark"]] if barline || bar["rehearsal_mark"]
+    end
+  end
+
+  def kern_barline(bar, following, last)
+    return if last || bar["ends_repeat_after_num_plays"] || following&.dig("starts_repeat")
+
+    bar["barline"] if %w[double final].include?(bar["barline"])
   end
 
   def kern_part(part, first_bar)

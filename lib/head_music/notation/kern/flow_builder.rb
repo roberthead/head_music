@@ -40,14 +40,21 @@ module HeadMusic::Notation::Kern
       clock.finish(@voices.current_time, document.rows.last.record.line)
       @voices.place(clock)
       @dynamics.place(@flow, clock)
-      mark_repeats
+      mark_bars
       @parts.order_voices_by_staff
       @flow
     end
 
-    def mark_repeats
+    # The final barline at the end is implied, and a label after the last
+    # note marks no bar.
+    def mark_bars
+      last = @flow.latest_bar_number
       clock.repeat_starts.each { |number| @flow.bars(number).last.starts_repeat = true }
       clock.repeat_ends.each { |number| @flow.bars(number).last.ends_repeat_after_num_plays = 2 }
+      clock.barline_styles.each do |number, style|
+        @flow.bars(number).last.barline = style unless style == :final && number >= last
+      end
+      clock.section_labels.each { |number, label| @flow.bars(number).last.rehearsal_mark = label if number <= last }
     end
 
     def read(row)
@@ -73,6 +80,8 @@ module HeadMusic::Notation::Kern
         interpretation = InterpretationReader.read(field, line_number: line)
         [track, interpretation] if interpretation
       end
+      sections, interpretations = interpretations.partition { |_track, interpretation| interpretation.kind == :section }
+      clock.section_label(sections.first.last.value, @voices.current_time) if sections.any?
       timeline, spine = interpretations.partition { |_track, interpretation| TimelineReader.timeline?(interpretation) }
       @timeline.read(timeline.map(&:last), @voices.current_time, line)
       @flow ? @spine_changes.read(spine, @voices.current_time, line) : @tags.read(spine, line)

@@ -12,6 +12,15 @@ describe HeadMusic::Notation::Kern::BarlineReader do
     end
   end
 
+  {
+    "=3" => :regular, "=3||" => :double, "=||" => :double, "=3|!" => :final, "==" => :final,
+    "=3:|!" => :regular, "=3!|:" => :regular, "==:|!" => :regular, "=3-" => :regular, "=3!|" => :regular
+  }.each do |field, expected|
+    it "reads the style of #{field} as #{expected}" do
+      expect(read(field).style).to eq expected
+    end
+  end
+
   it "raises an unsupported-feature error for a bar number variant" do
     expect { read("=3b") }.to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /variants are not supported \(=3b\) \(line 8\)/)
   end

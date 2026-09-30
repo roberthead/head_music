@@ -309,6 +309,83 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       end
     end
 
+    describe "barline styles" do
+      subject(:flow) do
+        parse(<<~KERN)
+          **kern
+          *M2/4
+          =1
+          2c
+          =2||
+          2d
+          =3|!
+          2e
+          =4:||
+          2f
+          =5
+          2g
+          ==
+          *-
+        KERN
+      end
+
+      it "reads a double barline, a final barline in the middle, and the implied final barline at the end" do
+        expect(flow.bars(5).map(&:barline)).to eq %i[double final regular regular regular]
+      end
+
+      it "reads a repeat sign in place of a double barline" do
+        expect([flow.bars(3).last.ends_repeat?, flow.bars(3).last.barline]).to eq [true, :regular]
+      end
+    end
+
+    it "reads == in the middle of a flow as a final barline" do
+      flow = parse("**kern\n*M2/4\n=1\n2c\n==\n2d\n==\n*-")
+      expect(flow.bars(2).map(&:barline)).to eq %i[final regular]
+    end
+
+    describe "section labels" do
+      def marks(text)
+        flow = parse(text)
+        flow.bars(flow.latest_bar_number).to_h { |bar| [bar.number, bar.rehearsal_mark] }.compact
+      end
+
+      it "gives a label before the first barline to bar 1, even after a pickup" do
+        expect(marks("**kern\n*>A\n*M3/4\n4c\n=1\n2.d\n*-")).to eq(1 => "A")
+      end
+
+      it "gives a label in a flow with no barlines to bar 1" do
+        expect(marks("**kern\n*>A\n*M4/4\n1c\n*-")).to eq(1 => "A")
+      end
+
+      it "gives a label after a barline to the bar it opens" do
+        expect(marks("**kern\n*M2/4\n=1\n2c\n=2\n*>B\n2d\n*-")).to eq(2 => "B")
+      end
+
+      it "gives a label after a bar's last note to the next bar" do
+        expect(marks("**kern\n*M2/4\n=1\n2c\n*>B\n=2\n2d\n*-")).to eq(2 => "B")
+      end
+
+      it "drops a label in the middle of a bar without raising" do
+        expect(marks("**kern\n*M2/4\n=1\n4c\n*>B\n4d\n=2\n2e\n*-")).to eq({})
+      end
+
+      it "drops a label after a repeat sign in the middle of a bar" do
+        expect(marks("**kern\n*M2/4\n=1\n4c\n=:|!\n*>B\n4d\n=2\n2e\n*-")).to eq({})
+      end
+
+      it "drops a label after the last note" do
+        expect(marks("**kern\n*M2/4\n=1\n2c\n*>B\n==\n*-")).to eq({})
+      end
+
+      it "ignores expansion lists" do
+        expect(marks("**kern\n*>[A,A,B]\n*>norep[A,B]\n*M2/4\n=1\n2c\n*-")).to eq({})
+      end
+
+      it "takes the label from the first kern spine" do
+        expect(marks("**kern\t**kern\n*>A\t*>B\n=1\t=1\n1c\t1e\n*-\t*-")).to eq(1 => "A")
+      end
+    end
+
     it "ignores a repeat end at the first barline when nothing precedes it" do
       flow = parse("**kern\n=1:|!\n1c\n*-")
       expect(flow.bars(1).map(&:ends_repeat?)).to eq [false]
