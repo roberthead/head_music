@@ -44,11 +44,16 @@ module HeadMusic::Notation::ABC
       LineScanner.new(line_text, line_number, tokens).scan
     end
 
-    # Handles lines that are fields rather than music: V: switches voices;
-    # any other letter-colon line is a field we don't interpret in the body.
+    # Handles lines that are fields rather than music: V: switches voices, P:
+    # labels a part; any other letter-colon line is a field we don't interpret
+    # in the body.
     def line_start_token(line_text, line_number, tokens)
       if line_text.start_with?("V:")
         tokens << voice_change_token(line_text, line_number)
+        return true
+      end
+      if line_text.start_with?("P:")
+        tokens << part_label_token(line_text, line_number)
         return true
       end
       if header_field_line?(line_text)
@@ -70,6 +75,11 @@ module HeadMusic::Notation::ABC
     def voice_change_token(line_text, line_number)
       voice_id = line_text.delete_prefix("V:").split("%", 2).first.to_s.strip
       Token.new(type: :voice_change, line: line_number, column: 1, voice_id: voice_id)
+    end
+
+    def part_label_token(line_text, line_number)
+      label = line_text.delete_prefix("P:").split("%", 2).first.to_s.strip
+      Token.new(type: :part_label, line: line_number, column: 1, lexeme: label)
     end
   end
 end

@@ -41,12 +41,36 @@ describe HeadMusic::Notation::ABC::DecorationMapper do
       end
     end
 
+    {
+      "S" => "segno",
+      "!segno!" => "segno",
+      "O" => "coda",
+      "!coda!" => "coda",
+      "!fine!" => "fine",
+      "!dacoda!" => "to_coda",
+      "!D.C.!" => "D.C.",
+      "!dacapo!" => "D.C.",
+      "!D.S.!" => "D.S.",
+      "!D.C.alfine!" => "D.C. al Fine",
+      "!D.C.alcoda!" => "D.C. al Coda",
+      "!D.S.alfine!" => "D.S. al Fine",
+      "!D.S.alcoda!" => "D.S. al Coda"
+    }.each do |lexeme, key|
+      it "reads #{lexeme} as the navigation #{key}" do
+        expect(described_class.classify(lexeme)).to eq(kind: :navigation, key: key)
+      end
+    end
+
+    it "names every jump in text a Jump reads" do
+      jumps = described_class::NAVIGATION.values - %w[segno coda fine to_coda]
+      expect(jumps.map { |text| HeadMusic::Content::Jump.get(text) }).to all(be_a(HeadMusic::Content::Jump))
+    end
+
     %w[
-      ~ H O S u v !roll! !turnx! !invertedturn! !invertedturnx! !arpeggio! !trill(! !trill)!
+      ~ H u v !roll! !turnx! !invertedturn! !invertedturnx! !arpeggio! !trill(! !trill)!
       !fermata! !invertedfermata! !breath! !upbow! !downbow! !open! !thumb! !snap! !slide! !+! !plus!
       !0! !1! !2! !3! !4! !5! !trem1! !trem2! !trem3! !trem4! !pppp! !ffff!
       !crescendo(! !crescendo)! !diminuendo(! !diminuendo)! !<(! !<)! !>(! !>)!
-      !segno! !coda! !D.S.! !D.C.! !dacoda! !dacapo! !fine!
       !shortphrase! !mediumphrase! !longphrase! !editorial! !courtesy! +fermata+
     ].each do |lexeme|
       it "recognizes #{lexeme} and drops it" do

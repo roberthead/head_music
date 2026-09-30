@@ -40,7 +40,7 @@ module HeadMusic::Notation::ABC
       @open_slurs = []
     end
 
-    delegate :decorate, :reject_dangling_decorations, to: :@decorations
+    delegate :decorate, :reject_dangling_decorations, :take_navigation, to: :@decorations
 
     # "(" opens a slur on the next note, chord, or rest.
     def open_slur

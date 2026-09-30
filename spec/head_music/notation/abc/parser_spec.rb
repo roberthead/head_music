@@ -519,6 +519,134 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "barline styles" do
+    def barlines(body)
+      parse_body(body).bars.map(&:barline)
+    end
+
+    it "reads double, final, and dotted barlines on the bars they close" do
+      expect(barlines("C4||D4|]E4.|F4|G4|")).to eq %i[double final dotted regular regular]
+    end
+
+    it "leaves a thick-thin barline regular" do
+      expect(barlines("C4[|D4|")).to eq %i[regular regular]
+    end
+
+    it "implies the final barline on the last bar" do
+      expect(barlines("C4|D4|]")).to eq %i[regular regular]
+    end
+  end
+
+  describe "repeat play counts" do
+    it "plays a repeat as many times as its highest ending names" do
+      flow = parse_body("|:C4|1,2 D4:|3 E4|]")
+      expect(flow.bars(2).last.ends_repeat_after_num_plays).to eq 3
+    end
+
+    it "raises every closing repeat of the section" do
+      flow = parse_body("|:C4|1 D4:|2 E4:|3 F4|]")
+      expect(flow.bars(3).map(&:ends_repeat_after_num_plays)).to eq [nil, 3, 3]
+    end
+
+    it "keeps each section's count its own" do
+      flow = parse_body("|:C4|1,2 D4:|3 E4||F4:|G4|]")
+      expect(flow.bars(5).map(&:ends_repeat_after_num_plays)).to eq [nil, 3, nil, 2, nil]
+    end
+  end
+
+  describe "part labels" do
+    it "marks the bar a P: line opens" do
+      flow = parse_body("P:A\nC4|D4|\nP:B\nE4|F4|]")
+      expect(flow.bars.map(&:rehearsal_mark)).to eq ["A", nil, "B", nil]
+    end
+
+    it "marks the bar an inline [P:] field opens" do
+      flow = parse_body("C4|[P:Verse]D4|]")
+      expect(flow.bars.map(&:rehearsal_mark)).to eq [nil, "Verse"]
+    end
+
+    it "marks the first bar with a label before any voice" do
+      flow = parse("X:1\nL:1/4\nK:C\nP:A\nV:1\nC4|D4|]\n")
+      expect(flow.bars(1).last.rehearsal_mark).to eq "A"
+    end
+
+    it "ignores an empty label" do
+      expect(parse_body("[P:]C4|]").bars(1).last.rehearsal_mark).to be_nil
+    end
+
+    it "reads a P: header, the playing order, and ignores it" do
+      flow = parse("X:1\nP:AABA\nL:1/4\nK:C\nC4|]\n")
+      expect(flow.bars.map(&:to_h)).to eq [{}]
+    end
+  end
+
+  describe "navigation" do
+    def marked_bars(body)
+      parse_body(body).bars.map(&:to_h).map { |hash| hash.except("barline") }
+    end
+
+    it "marks a segno and coda sign before a note on that note's bar" do
+      expect(marked_bars("C4|!segno!D4|!coda!E4|]")).to eq [{}, {"segno" => true}, {"coda" => true}]
+    end
+
+    it "marks a segno and coda sign before a bar line on the bar it opens" do
+      expect(marked_bars("C4!segno!|D4!coda!|E4|]")).to eq [{}, {"segno" => true}, {"coda" => true}]
+    end
+
+    it "reads the S and O shorthands as segno and coda" do
+      expect(marked_bars("SC4|OD4|]")).to eq [{"segno" => true}, {"coda" => true}]
+    end
+
+    it "marks a Fine, To Coda, and jump before a bar line on the bar it closes" do
+      expect(marked_bars("C4!fine!|D4!dacoda!|E4!D.C.!|F4|]"))
+        .to eq [{"fine" => true}, {"to_coda" => true}, {"jump" => {"kind" => "da_capo"}}, {}]
+    end
+
+    it "marks a jump at the end of the tune on the last bar" do
+      expect(marked_bars("C4|D4!D.S.!")).to eq [{}, {"jump" => {"kind" => "dal_segno"}}]
+    end
+
+    it "drops a segno at the end of the tune, which opens no bar" do
+      expect(marked_bars("C4|D4!segno!")).to eq [{}, {}]
+    end
+
+    {
+      "!dacapo!" => {"kind" => "da_capo"},
+      "!D.C.alfine!" => {"kind" => "da_capo", "to" => "fine"},
+      "!D.C.alcoda!" => {"kind" => "da_capo", "to" => "coda"},
+      "!D.S.alfine!" => {"kind" => "dal_segno", "to" => "fine"},
+      "!D.S.alcoda!" => {"kind" => "dal_segno", "to" => "coda"}
+    }.each do |lexeme, jump|
+      it "reads #{lexeme} as a jump" do
+        expect(marked_bars("C4#{lexeme}|]")).to eq [{"jump" => jump}]
+      end
+    end
+
+    it "reads the first of two coda signs as the To Coda when there is no !dacoda!" do
+      expect(marked_bars("!segno!C4!coda!|D4!D.S.alcoda!|!coda!E4|]"))
+        .to eq [{"segno" => true, "to_coda" => true}, {"jump" => {"kind" => "dal_segno", "to" => "coda"}}, {"coda" => true}]
+    end
+
+    it "keeps two coda signs when a !dacoda! marks the To Coda" do
+      expect(marked_bars("!coda!C4!dacoda!|!coda!D4|]")).to eq [{"coda" => true, "to_coda" => true}, {"coda" => true}]
+    end
+
+    it "marks navigation before a volta like navigation before a bar line" do
+      expect(marked_bars("C4|1 D4:|!fine!!coda![2 E4|]").map { |hash| hash.slice("fine", "coda") })
+        .to eq [{}, {"fine" => true}, {"coda" => true}]
+    end
+
+    it "marks navigation before a voice change on the bar it closes" do
+      flow = parse("X:1\nL:1/4\nK:C\nV:1\nC4!fine!\nV:2\nC,4|]\n")
+      expect(flow.bars(1).last.fine?).to be true
+    end
+
+    it "plays the marked bars in order" do
+      flow = parse_body("C4|!segno!D4|E4!dacoda!|F4!D.S.alcoda!||!coda!G4|]")
+      expect(flow.performance_order.map(&:number)).to eq [1, 2, 3, 4, 2, 3, 5]
+    end
+  end
+
   describe "unsupported features" do
     {
       "a quoted chord symbol" => ['"Am" C|', '"Am"'],
@@ -624,7 +752,7 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "lets a dropped decoration stand before a bar line" do
-      expect(voice_for("C4!D.C.!|]").voice_events.length).to eq 1
+      expect(voice_for("C4!fermata!|]").voice_events.length).to eq 1
     end
 
     it "marks a tied note once, keeping markings from its tied note" do
@@ -676,8 +804,8 @@ describe HeadMusic::Notation::ABC::Parser do
       expect { parse_body("!sfz!!fp!C4|") }.to raise_error(HeadMusic::Notation::ABC::ParseError, /only one/)
     end
 
-    it "keeps a dotted bar line unsupported" do
-      expect { parse_body("C4.|") }.to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"\."/)
+    it "keeps a stray dot unsupported" do
+      expect { parse_body("C4. D4|") }.to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"\."/)
     end
 
     it "refuses a U: field that would redefine a shorthand" do

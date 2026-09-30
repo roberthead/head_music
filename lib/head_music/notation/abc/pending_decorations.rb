@@ -18,8 +18,15 @@ module HeadMusic::Notation::ABC
       decorations
     end
 
+    # A navigation sign or instruction marks a bar, not a voice event, so the
+    # parser takes it wherever it can tell which bar is meant.
+    def take_navigation
+      navigation, @waiting = @waiting.partition(&:navigation?)
+      navigation
+    end
+
     # A marking before a bar line, tie, or the end of the tune has nothing to
-    # mark. One the reader drops anyway, such as a !fine! before a bar line,
+    # mark. One the reader drops anyway, such as a !fermata! before a bar line,
     # is let go.
     def reject_dangling_decorations
       dangling = take.reject(&:dropped?).first

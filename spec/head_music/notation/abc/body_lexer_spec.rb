@@ -89,6 +89,24 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     it "prefers the longest match" do
       expect(tokens_for("|]").map(&:style)).to eq(["|]"])
     end
+
+    it "lexes a dotted bar line" do
+      expect(tokens_for("A.|").map { |token| [token.type, token.style] }).to eq([[:note, nil], [:bar_line, ".|"]])
+    end
+  end
+
+  describe "part labels" do
+    it "lexes a P: line as a part label" do
+      expect(tokens_for("P:B").first.to_h).to include(type: :part_label, lexeme: "B")
+    end
+
+    it "drops a comment and spaces from a P: line" do
+      expect(tokens_for("P: Verse % second time").first.lexeme).to eq "Verse"
+    end
+
+    it "lexes an inline [P:] field as a part label" do
+      expect(tokens_for("[P:A]C").map { |token| [token.type, token.lexeme] }).to eq([[:part_label, "A"], [:note, nil]])
+    end
   end
 
   describe "voltas" do
@@ -441,10 +459,6 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     it "lexes a tuplet marker with its digit" do
       tokens = tokens_for("(3ABC")
       expect(tokens.first.to_h).to include(type: :unsupported, lexeme: "(3")
-    end
-
-    it "lexes a dotted bar line as unsupported" do
-      expect(tokens_for("A.|").map(&:type)).to eq([:note, :unsupported, :bar_line])
     end
 
     it "lexes an unterminated bang decoration as unsupported" do

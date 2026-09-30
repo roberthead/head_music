@@ -1,9 +1,9 @@
 # Parses and renders ABC notation as HeadMusic::Content flows
 module HeadMusic::Notation::ABC
   # Renders a flow as an ABC tune string. Whole-flow problems raise before any
-  # string assembly, so callers never receive a truncated tune. Repeat barlines
-  # and voltas are deliberately not rendered; bars carrying repeat flags degrade
-  # to plain bar lines.
+  # string assembly, so callers never receive a truncated tune. A repeat played
+  # more than twice is written as a plain ":|", which ABC reads back as two
+  # plays unless its endings name more passes.
   class Writer
     # A fixed unit note length keeps the L: field and the duration
     # multiplier arithmetic in sync.
@@ -107,18 +107,27 @@ module HeadMusic::Notation::ABC
     end
 
     def body_lines
-      lines = bar_strings.each_slice(BARS_PER_LINE).map { |line_bars| "#{line_bars.join("|")}|" }
-      lines.last&.concat("]")
-      lines
+      bar_strings.each_slice(BARS_PER_LINE).map(&:join)
     end
 
     def bar_strings
-      @bar_strings ||= build_bar_strings
+      bars = written_bars
+      bars.each_with_index.map do |(bar, music), index|
+        previous = bars[index - 1]&.first if index.positive?
+        following = bars[index + 1]&.first
+        BarLineWriter.opening(bar, previous) + music + BarLineWriter.closing(bar, following)
+      end
     end
 
-    def build_bar_strings
+    # Each bar the voice sounds in, with its music.
+    def written_bars
       bar_writer = BarWriter.new(flow.voices.first, written_key_signature, UNIT_NOTE_LENGTH, slur_writer)
-      segments_by_bar.map { |bar_segments| bar_writer.bar(bar_segments) }
+      segments = segments_by_bar.to_a
+      return [] if segments.empty?
+
+      # A note held past the voice's last attack sounds into bars beyond it.
+      flow_bars = flow.bars(segments.last.first.bar_number).to_h { |bar| [bar.number, bar] }
+      segments.map { |bar_segments| [flow_bars.fetch(bar_segments.first.bar_number), bar_writer.bar(bar_segments)] }
     end
 
     # A voice event sounding across a bar line is written as one note per bar,

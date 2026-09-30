@@ -14,12 +14,12 @@ describe HeadMusic::Notation::ABC::Writer do
           M:4/4
           L:1/8
           K:G
-          GABc dedB|dedB dedB|c2ec B2dB|c2A2 A2BA|
-          GABc dedB|dedB dedB|c2ec B2dB|A2F2 G4|]
+          |:GABc dedB|dedB dedB|c2ec B2dB|c2A2 A2BA|
+          GABc dedB|dedB dedB|c2ec B2dB|A2F2 G4:|
         ABC
       end
 
-      it "renders the full tune, degrading repeat barlines to plain bar lines" do
+      it "renders the full tune with its repeat" do
         expect(rendered).to eq expected
       end
     end
@@ -659,6 +659,99 @@ describe HeadMusic::Notation::ABC::Writer do
     it "refuses slurs that cross" do
       expect { described_class.new(MarkingFixtures.crossing_spans).to_s }
         .to raise_error(HeadMusic::Notation::ABC::RenderError, "ABC cannot write slurs that cross, as from 1:1:000 and from 1:2:000")
+    end
+  end
+
+  describe "bar markings" do
+    def body_of(flow)
+      described_class.new(flow).to_s.lines.drop(5).join
+    end
+
+    def bar(number)
+      flow.bars(number).last
+    end
+
+    let(:flow) do
+      HeadMusic::Content::Flow.new(name: "Marks", key_signature: "C major", meter: "4/4").tap do |flow|
+        voice = flow.add_voice
+        %w[C4 D4 E4 F4].each_with_index { |pitch, index| voice.place("#{index + 1}:1", :whole, pitch) }
+      end
+    end
+
+    it "writes double, final, and dotted barlines, and a dashed one as plain" do
+      bar(1).barline = :double
+      bar(2).barline = :final
+      bar(3).barline = :dashed
+      expect(body_of(flow)).to eq "C8||D8|]E8|F8|]\n"
+    end
+
+    it "writes a dotted barline" do
+      bar(1).barline = :dotted
+      expect(body_of(flow)).to eq "C8.|D8|E8|F8|]\n"
+    end
+
+    it "writes a styled last barline in place of the implied final one" do
+      bar(4).barline = :double
+      expect(body_of(flow)).to end_with "F8||\n"
+    end
+
+    it "writes repeats, a double repeat, and a repeat opening the tune" do
+      [1, 2].each { |number| bar(number).starts_repeat = true }
+      [1, 3, 4].each { |number| bar(number).ends_repeat_after_num_plays = 2 }
+      expect(body_of(flow)).to eq "|:C8::D8|E8:|F8:|\n"
+    end
+
+    it "writes a repeat played three times as a plain closing repeat" do
+      bar(2).ends_repeat_after_num_plays = 3
+      expect(body_of(flow)).to eq "C8|D8:|E8|F8|]\n"
+    end
+
+    it "writes first and second endings" do
+      bar(1).starts_repeat = true
+      bar(2).plays_on_passes = [1, 2]
+      bar(2).ends_repeat_after_num_plays = 3
+      bar(3).plays_on_passes = [3]
+      expect(body_of(flow)).to eq "|:C8|[1,2 D8:|[3 E8[|F8|]\n"
+    end
+
+    it "carries a volta across the bars it spans" do
+      bar(2).plays_on_passes = [1]
+      bar(3).plays_on_passes = [1]
+      bar(3).ends_repeat_after_num_plays = 2
+      bar(4).plays_on_passes = [2]
+      expect(body_of(flow)).to eq "C8|[1 D8|E8:|[2 F8|]\n"
+    end
+
+    it "writes a part label after the bar line that opens its bar" do
+      bar(1).rehearsal_mark = "A"
+      bar(3).rehearsal_mark = "Verse"
+      expect(body_of(flow)).to eq "[P:A]C8|D8|[P:Verse]E8|F8|]\n"
+    end
+
+    it "writes segno and coda signs before the bar line that opens their bar" do
+      bar(1).segno = true
+      bar(3).coda = true
+      expect(body_of(flow)).to eq "!segno!C8|D8!coda!|E8|F8|]\n"
+    end
+
+    it "writes Fine, To Coda, and a jump before the bar line that closes their bar" do
+      bar(1).fine = true
+      bar(2).to_coda = true
+      bar(4).jump = HeadMusic::Content::Jump.new(:da_capo, to: :fine)
+      expect(body_of(flow)).to eq "C8!fine!|D8!dacoda!|E8|F8!D.C.alfine!|]\n"
+    end
+
+    {
+      HeadMusic::Content::Jump.new(:da_capo) => "!D.C.!",
+      HeadMusic::Content::Jump.new(:da_capo, to: :coda) => "!D.C.alcoda!",
+      HeadMusic::Content::Jump.new(:dal_segno) => "!D.S.!",
+      HeadMusic::Content::Jump.new(:dal_segno, to: :fine) => "!D.S.alfine!",
+      HeadMusic::Content::Jump.new(:dal_segno, to: :coda) => "!D.S.alcoda!"
+    }.each do |jump, decoration|
+      it "writes #{jump} as #{decoration}" do
+        bar(2).jump = jump
+        expect(body_of(flow)).to eq "C8|D8#{decoration}|E8|F8|]\n"
+      end
     end
   end
 end

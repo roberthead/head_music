@@ -18,7 +18,7 @@ module HeadMusic::Notation::ABC
       note: :handle_note, chord: :handle_chord, rest: :handle_rest, tie: :handle_tie,
       broken_rhythm: :handle_broken_rhythm, bar_line: :handle_bar_line, volta: :handle_volta,
       voice_change: :handle_voice_change, beam_break: :handle_beam_break, decoration: :handle_decoration,
-      slur_start: :handle_slur_start, slur_end: :handle_slur_end
+      slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label
     }.freeze
 
     # start_line offsets reported line numbers, so a tune parsed out of a
@@ -86,12 +86,14 @@ module HeadMusic::Notation::ABC
 
     def handle_note(token)
       state = current_state
+      mark_navigation_at_note(state)
       pitch = state.pitch_builder.pitch(token.letter, token.octave_marks, token.accidental)
       state.defer_voice_event([pitch], token.length)
     end
 
     def handle_chord(token)
       state = current_state
+      mark_navigation_at_note(state)
       pitches, inner_length = chord_reader.read(token, state.pitch_builder)
       state.defer_voice_event(pitches, token.length, inner_length)
     end
@@ -118,6 +120,7 @@ module HeadMusic::Notation::ABC
     # The waiting decorations are the rest's own, so they are not dangling.
     def handle_rest(token)
       state = current_state
+      mark_navigation_at_note(state)
       end_notes(state, token.line)
       state.place(token.length, nil)
     end
@@ -179,6 +182,7 @@ module HeadMusic::Notation::ABC
     # would otherwise strip the sharp or flat the tie carries.
     def handle_bar_line(token)
       state = current_state
+      mark_navigation_at_bar_line(state)
       cross_bar_line(state, token.line)
       repeat_tagger.bar_line(state, token.style)
       state.pitch_builder.start_new_bar
@@ -191,21 +195,61 @@ module HeadMusic::Notation::ABC
       passes = token.passes
       raise ParseError.new("Volta has no passes", line_number: line) if passes.empty?
 
+      mark_navigation_at_bar_line(state)
       cross_bar_line(state, line)
       repeat_tagger.open_volta(state, passes)
     end
 
     # Guarded so a leading V: line doesn't force a default voice into existence.
     def handle_voice_change(token)
-      end_voice(current_state, token.line) if @voices.any?
+      if @voices.any?
+        state = current_state
+        mark_navigation_at_bar_line(state, entering: false)
+        end_voice(state, token.line)
+      end
       @voices.switch_to(token.voice_id)
+    end
+
+    # A part label marks the bar it opens. One before any voice has music
+    # opens the first bar.
+    def handle_part_label(token)
+      label = token.lexeme
+      return if label.empty?
+
+      bar_number = @voices.any? ? current_state.entered_bar_number : HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR
+      @building.bars(bar_number).last.rehearsal_mark = label
+    end
+
+    def mark_navigation_at_note(state)
+      decorations = state.take_navigation
+      return if decorations.empty?
+
+      bar_number = state.entered_bar_number
+      navigation_tagger.record(state, decorations, opening_bar: bar_number, closing_bar: bar_number)
+    end
+
+    def mark_navigation_at_bar_line(state, entering: true)
+      decorations = state.take_navigation
+      return if decorations.empty?
+
+      opening_bar = state.entered_bar_number if entering
+      navigation_tagger.record(state, decorations, opening_bar: opening_bar, closing_bar: state.completed_bar_number)
     end
 
     def finish
       @voices.each do |state|
+        mark_navigation_at_bar_line(state, entering: false)
         end_voice(state, nil)
         repeat_tagger.tag_completed_bar(state)
       end
+      navigation_tagger.apply
+      imply_final_barline
+    end
+
+    # The last bar's final barline is implied, and writers draw it.
+    def imply_final_barline
+      last_bar = @building.bars.last
+      last_bar.barline = :regular if last_bar.barline == :final
     end
 
     def ensure_not_awaiting_note(line, state)
@@ -220,6 +264,10 @@ module HeadMusic::Notation::ABC
 
     def repeat_tagger
       @repeat_tagger ||= RepeatTagger.new(@building)
+    end
+
+    def navigation_tagger
+      @navigation_tagger ||= NavigationTagger.new(@building)
     end
   end
 end

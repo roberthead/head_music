@@ -81,6 +81,7 @@ class HeadMusic::Notation::ABC::Header
     when "M" then @meter = resolve_meter(value, line_number)
     when "L" then @unit_note_length = resolve_unit_note_length(value, line_number)
     when "V" then @voice_ids << value.split.first
+    when "P" then nil # a playing order, which the flow's own repeats and jumps already spell out
     else
       raise HeadMusic::Notation::ABC::UnsupportedFeatureError.new(
         "Unsupported header field #{letter.inspect}", line_number: line_number, snippet: stripped_line

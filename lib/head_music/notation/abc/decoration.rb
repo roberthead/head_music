@@ -15,5 +15,9 @@ module HeadMusic::Notation::ABC
     def dropped?
       kind == :dropped
     end
+
+    def navigation?
+      kind == :navigation
+    end
   end
 end

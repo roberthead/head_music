@@ -8,12 +8,13 @@ module HeadMusic::Notation::ABC
   class LineScanner
     # Alternatives are ordered longest-first so the scanner never takes a
     # short match when a longer bar line is present (e.g. "|]" before "|").
-    BAR_LINE_PATTERN = /:\|\|:|:\|:|::|:\||\|:|\|\||\|\]|\[\||\|/
+    BAR_LINE_PATTERN = /:\|\|:|:\|:|::|:\||\|:|\|\||\|\]|\[\||\.\||\|/
 
     # ":||:" and ":|:" are alternate spellings of the double repeat "::".
     NORMALIZED_BAR_STYLES = {":||:" => "::", ":|:" => "::"}.freeze
 
     NOTE_PATTERN = %r{(\^\^|\^|__|_|=)?([A-Ga-g])([',]*)([\d/]*)}
+    PART_LABEL_PATTERN = /\[P:([^\]]*)\]/
     # An inline field ("[K:...]"), tried closed before its unterminated fallback.
     INLINE_FIELD_PATTERNS = [/\[[A-Za-z]:[^\]]*\]/, /\[[A-Za-z]:[^\]]*/].freeze
     REST_PATTERN = %r{z([\d/]*)}
@@ -31,9 +32,8 @@ module HeadMusic::Notation::ABC
     SLUR_START_PATTERN = /\.?\((?!\d)/
 
     # Recognizable ABC we deliberately don't handle: grace notes ({..}),
-    # tuplets, special rests (Z, x), dotted bar lines, and malformed
-    # decorations. Ordered so a closed form is tried before its unterminated
-    # fallback.
+    # tuplets, special rests (Z, x), stray dots, and malformed decorations.
+    # Ordered so a closed form is tried before its unterminated fallback.
     UNSUPPORTED_PATTERNS = [
       /\{[^}]*\}/, /\{[^}]*/, /![^!]*!/, /![^!]*/,
       /\(\d/, /\./, /Z\d*/, %r{x[\d/]*}
@@ -119,6 +119,7 @@ module HeadMusic::Notation::ABC
     def scan_bracket(column)
       return false unless @scanner.check(/\[/)
       return add_volta(@scanner[1], column) if @scanner.scan(/\[(\d[\d,-]*)/)
+      return add(:part_label, column: column, lexeme: @scanner[1].strip) if @scanner.scan(PART_LABEL_PATTERN)
 
       inline_field = scan_first(INLINE_FIELD_PATTERNS)
       return add_unsupported(inline_field, column) if inline_field
