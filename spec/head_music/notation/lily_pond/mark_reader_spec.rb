@@ -83,7 +83,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
       expect(described_class::DROPPED_COMMANDS & HeadMusic::Rudiment::Dynamic.all.map(&:name_key)).to be_empty
     end
 
-    %w[-_ -+ \\fermata \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff ^\\fermata \\< \\> \\! -\\< \\cresc \\dim \\endcresc].each do |source|
+    %w[-_ -+ \\fermata \\arpeggio \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff ^\\fermata \\< \\> \\! -\\< \\cresc \\dim \\endcresc].each do |source|
       it "consumes and drops #{source}" do
         cursor = cursor_for("#{source} c'4")
         expect(described_class.new(cursor).read.to_h).to eq none

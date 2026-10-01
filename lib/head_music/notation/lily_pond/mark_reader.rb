@@ -41,7 +41,7 @@ module HeadMusic::Notation::LilyPond
     NOTE_DYNAMIC_COMMANDS = HeadMusic::Rudiment::Dynamic.accents.map(&:name_key).freeze
     LEVEL_COMMANDS = HeadMusic::Rudiment::Dynamic.levels.map(&:name_key).freeze
     DROPPED_COMMANDS = %w[
-      fermata upbow downbow breathe portato stopped sfp spp sff fz pppp ffff
+      fermata arpeggio upbow downbow breathe portato stopped sfp spp sff fz pppp ffff
       cresc decresc dim endcresc enddecresc enddim
     ].freeze
     DIRECTIONS = %w[- ^ _].freeze
