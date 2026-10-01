@@ -19,8 +19,20 @@ module HeadMusic::Notation::ABC
       @marks = Hash.new { |marks, state| marks[state] = [] }
     end
 
-    def record(state, decorations, opening_bar:, closing_bar:)
-      decorations.each { |decoration| @marks[state] << Mark.new(decoration.key, opening_bar, closing_bar, nil) }
+    def record_at_note(state)
+      decorations = state.take_navigation
+      return if decorations.empty?
+
+      bar_number = state.entered_bar_number
+      record(state, decorations, opening_bar: bar_number, closing_bar: bar_number)
+    end
+
+    def record_at_bar_line(state, entering: true)
+      decorations = state.take_navigation
+      return if decorations.empty?
+
+      opening_bar = state.entered_bar_number if entering
+      record(state, decorations, opening_bar: opening_bar, closing_bar: state.completed_bar_number)
     end
 
     def record_part_label(state, label, bar_number)
@@ -36,6 +48,10 @@ module HeadMusic::Notation::ABC
     end
 
     private
+
+    def record(state, decorations, opening_bar:, closing_bar:)
+      decorations.each { |decoration| @marks[state] << Mark.new(decoration.key, opening_bar, closing_bar, nil) }
+    end
 
     # Tunes written without !dacoda! mark the To Coda of a D.S. or D.C. al
     # Coda with a second coda sign. Read only where the jump needs it, so a

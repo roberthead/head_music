@@ -86,14 +86,14 @@ module HeadMusic::Notation::ABC
 
     def handle_note(token)
       state = current_state
-      mark_navigation_at_note(state)
+      navigation_tagger.record_at_note(state)
       pitch = state.pitch_builder.pitch(token.letter, token.octave_marks, token.accidental)
       state.defer_voice_event([pitch], token.length)
     end
 
     def handle_chord(token)
       state = current_state
-      mark_navigation_at_note(state)
+      navigation_tagger.record_at_note(state)
       pitches, inner_length = chord_reader.read(token, state.pitch_builder)
       state.defer_voice_event(pitches, token.length, inner_length)
     end
@@ -110,9 +110,8 @@ module HeadMusic::Notation::ABC
     def handle_tie(token)
       state = current_state
       line = token.line
-      if state.awaiting_scale || state.pending_note.nil?
-        raise ParseError.new("A tie must follow a note", line_number: line, snippet: "-")
-      end
+      raise ParseError.new("A tie must follow a note", line_number: line, snippet: "-") unless state.after_note?
+
       state.reject_dangling_decorations
       state.open_tie(line)
     end
@@ -120,7 +119,7 @@ module HeadMusic::Notation::ABC
     # The waiting decorations are the rest's own, so they are not dangling.
     def handle_rest(token)
       state = current_state
-      mark_navigation_at_note(state)
+      navigation_tagger.record_at_note(state)
       end_notes(state, token.line)
       state.place(token.length, nil)
     end
@@ -128,8 +127,8 @@ module HeadMusic::Notation::ABC
     # A rest, a voice change, or the end of the tune ends a run of notes:
     # nothing after it can complete a broken rhythm or close a tie.
     def end_notes(state, line)
-      ensure_not_awaiting_note(line, state)
-      reject_open_tie(state, line)
+      state.ensure_not_awaiting_note(line)
+      state.reject_open_tie(line)
       state.flush_pending_note
       state.reset_beam_adjacency
     end
@@ -143,37 +142,23 @@ module HeadMusic::Notation::ABC
     # A bar line or volta is not a terminator: a tied note stays pending
     # across it and closes on the next note.
     def cross_bar_line(state, line)
-      ensure_not_awaiting_note(line, state)
+      state.ensure_not_awaiting_note(line)
       state.reject_dangling_decorations
       state.flush_pending_note unless state.tie_open?
       state.reset_beam_adjacency
-    end
-
-    # A tie left open by a non-note terminator can never close, so each
-    # terminator rejects it.
-    def reject_open_tie(state, line)
-      return unless state.tie_open?
-
-      raise ParseError.new("A tie must be followed by a note", line_number: line || state.tie_line, snippet: "-")
     end
 
     def handle_broken_rhythm(token)
       state = current_state
       line = token.line
       direction = token.direction
-      reject_open_tie(state, line)
+      state.reject_open_tie(line)
       state.reject_dangling_decorations
-      pending = state.pending_note
-      if state.awaiting_scale || pending.nil?
-        raise ParseError.new(
-          "Broken rhythm must appear between two notes",
-          line_number: line, snippet: direction.to_s
-        )
+      unless state.after_note?
+        raise ParseError.new("Broken rhythm must appear between two notes", line_number: line, snippet: direction.to_s)
       end
-      left_scale, right_scale = BROKEN_RHYTHM_SCALES.fetch(direction)
-      state.pending_note = pending.with(scale: pending.scale * left_scale)
-      state.awaiting_scale = right_scale
-      state.broken_line = line
+
+      state.break_rhythm(*BROKEN_RHYTHM_SCALES.fetch(direction), line)
     end
 
     # A note tied across the bar line is left pending rather than flushed, so
@@ -182,7 +167,7 @@ module HeadMusic::Notation::ABC
     # would otherwise strip the sharp or flat the tie carries.
     def handle_bar_line(token)
       state = current_state
-      mark_navigation_at_bar_line(state)
+      navigation_tagger.record_at_bar_line(state)
       cross_bar_line(state, token.line)
       repeat_tagger.bar_line(state, token.style)
       state.pitch_builder.start_new_bar
@@ -191,11 +176,11 @@ module HeadMusic::Notation::ABC
     def handle_volta(token)
       state = current_state
       line = token.line
-      ensure_not_awaiting_note(line, state)
+      state.ensure_not_awaiting_note(line)
       passes = token.passes
       raise ParseError.new("Volta has no passes", line_number: line) if passes.empty?
 
-      mark_navigation_at_bar_line(state)
+      navigation_tagger.record_at_bar_line(state)
       cross_bar_line(state, line)
       repeat_tagger.open_volta(state, passes)
     end
@@ -204,7 +189,7 @@ module HeadMusic::Notation::ABC
     def handle_voice_change(token)
       if @voices.any?
         state = current_state
-        mark_navigation_at_bar_line(state, entering: false)
+        navigation_tagger.record_at_bar_line(state, entering: false)
         end_voice(state, token.line)
       end
       @voices.switch_to(token.voice_id)
@@ -221,25 +206,9 @@ module HeadMusic::Notation::ABC
       navigation_tagger.record_part_label(state, label, bar_number)
     end
 
-    def mark_navigation_at_note(state)
-      decorations = state.take_navigation
-      return if decorations.empty?
-
-      bar_number = state.entered_bar_number
-      navigation_tagger.record(state, decorations, opening_bar: bar_number, closing_bar: bar_number)
-    end
-
-    def mark_navigation_at_bar_line(state, entering: true)
-      decorations = state.take_navigation
-      return if decorations.empty?
-
-      opening_bar = state.entered_bar_number if entering
-      navigation_tagger.record(state, decorations, opening_bar: opening_bar, closing_bar: state.completed_bar_number)
-    end
-
     def finish
       @voices.each do |state|
-        mark_navigation_at_bar_line(state, entering: false)
+        navigation_tagger.record_at_bar_line(state, entering: false)
         end_voice(state, nil)
         repeat_tagger.tag_completed_bar(state)
       end
@@ -251,12 +220,6 @@ module HeadMusic::Notation::ABC
     def imply_final_barline
       last_bar = @building.bar(@building.last_sounding_bar_number)
       last_bar.barline = :regular if last_bar.barline == :final
-    end
-
-    def ensure_not_awaiting_note(line, state)
-      return unless state.awaiting_scale
-
-      raise ParseError.new("Broken rhythm must be followed by a note", line_number: line || state.broken_line)
     end
 
     def chord_reader

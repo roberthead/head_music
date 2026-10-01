@@ -115,6 +115,32 @@ module HeadMusic::Notation::ABC
       @tie_line = nil
     end
 
+    # A tie left open by a non-note terminator can never close, so each
+    # terminator rejects it.
+    def reject_open_tie(line)
+      return unless tie_open?
+
+      raise ParseError.new("A tie must be followed by a note", line_number: line || tie_line, snippet: "-")
+    end
+
+    # A tie or broken rhythm needs a note before it that is not itself
+    # waiting on a broken rhythm's right side.
+    def after_note?
+      pending_note && !awaiting_scale
+    end
+
+    def break_rhythm(left_scale, right_scale, line)
+      self.pending_note = pending_note.with(scale: pending_note.scale * left_scale)
+      self.awaiting_scale = right_scale
+      self.broken_line = line
+    end
+
+    def ensure_not_awaiting_note(line)
+      return unless awaiting_scale
+
+      raise ParseError.new("Broken rhythm must be followed by a note", line_number: line || broken_line)
+    end
+
     # Buffers a note or chord as the pending note, flushing whatever was
     # pending first. A broken-rhythm scale awaiting its right note, and any
     # per-chord inner scale, fold into the buffered length. When a tie is
