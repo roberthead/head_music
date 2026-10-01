@@ -15,12 +15,14 @@ class HeadMusic::Content::Flow
 
     attr_reader :flow
 
+    delegate :jump, :jump_index, :target_index, :coda_index_after, to: :navigation, private: true
+
     def initialize(flow)
       @flow = flow
     end
 
     def bars
-      validate_navigation
+      navigation.validate
       walk
     end
 
@@ -28,6 +30,10 @@ class HeadMusic::Content::Flow
 
     def score_bars
       @score_bars ||= flow.bars(last_number)
+    end
+
+    def navigation
+      @navigation ||= Navigation.new(score_bars)
     end
 
     def last_number
@@ -64,69 +70,6 @@ class HeadMusic::Content::Flow
     def final_pass_from(start)
       members = score_bars.select.with_index { |_bar, index| region_starts[index] == start }
       [1, *members.filter_map(&:ends_repeat_after_num_plays), *members.flat_map { |bar| bar.plays_on_passes || [] }].max
-    end
-
-    def jump_indexes
-      @jump_indexes ||= score_bars.each_index.select { |index| score_bars[index].jump }
-    end
-
-    def jump_index
-      jump_indexes.first
-    end
-
-    def jump
-      jump_index && score_bars[jump_index].jump
-    end
-
-    def validate_navigation
-      if jump_indexes.length > 1
-        raise ArgumentError, "only one D.C. or D.S. can be followed, found them in bars #{numbers(jump_indexes)}"
-      end
-      return unless jump
-
-      validate_fine if jump.to == :fine
-      validate_coda if jump.to == :coda
-    end
-
-    def target_index
-      @target_index ||= jump.da_capo? ? 0 : segno_index
-    end
-
-    def segno_index
-      index = (0..jump_index).to_a.reverse.find { |candidate| score_bars[candidate].segno? }
-      raise ArgumentError, "the #{jump} in bar #{jump_bar_number} has no segno at or before it" unless index
-
-      index
-    end
-
-    def validate_fine
-      return if (target_index...score_bars.length).any? { |index| score_bars[index].fine? }
-
-      raise ArgumentError, "the #{jump} in bar #{jump_bar_number} has no Fine after bar #{score_bars[target_index].number}"
-    end
-
-    def validate_coda
-      to_coda_index = (target_index..jump_index).find { |index| score_bars[index].to_coda? }
-      unless to_coda_index
-        raise ArgumentError, "the #{jump} in bar #{jump_bar_number} has no To Coda between bar #{score_bars[target_index].number} and the jump"
-      end
-
-      coda_index_after(to_coda_index)
-    end
-
-    def coda_index_after(index)
-      coda_index = ((index + 1)...score_bars.length).find { |candidate| score_bars[candidate].coda? }
-      raise ArgumentError, "the To Coda in bar #{score_bars[index].number} has no coda sign after it" unless coda_index
-
-      coda_index
-    end
-
-    def jump_bar_number
-      score_bars[jump_index].number
-    end
-
-    def numbers(indexes)
-      indexes.map { |index| score_bars[index].number }.join(", ")
     end
 
     def walk
