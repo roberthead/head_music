@@ -5,7 +5,9 @@ module HeadMusic::Notation::Kern
   # around, so whatever is written reads back as itself.
   module MarkCodes
     ARTICULATIONS = {"staccato" => "'", "staccatissimo" => "`", "accent" => "^", "tenuto" => "~", "marcato" => "^^"}.freeze
-    ORNAMENTS = {"trill" => "T", "mordent" => "M", "inverted_mordent" => "W", "turn" => "S"}.freeze
+    # Humdrum keeps the older names: its mordent (M) is the upper Pralltriller
+    # and its inverted mordent (W) the lower one, the reverse of the catalog.
+    ORNAMENTS = {"trill" => "T", "mordent" => "W", "inverted_mordent" => "M", "turn" => "S"}.freeze
     # The other note dynamics have no token signifier, so they go in **dynam.
     NOTE_DYNAMICS = {"sfz" => "z"}.freeze
     # Kern's half-step forms, in lower case, read as the same ornament,

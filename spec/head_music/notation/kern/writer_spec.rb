@@ -198,7 +198,7 @@ describe HeadMusic::Notation::Kern::Writer do
     end
 
     it "writes each marking after the pitch, on every note of a chord and only on a tie's first link" do
-      expect(body(flow).first(7)).to eq ["=1-", "4c^'T 4e^'T", "4d^^`~z", "2eWMS", "=2", "[1f^", "=3"]
+      expect(body(flow).first(7)).to eq ["=1-", "4c^'T 4e^'T", "4d^^`~z", "2eMWS", "=2", "[1f^", "=3"]
     end
 
     it "reads the markings back" do
