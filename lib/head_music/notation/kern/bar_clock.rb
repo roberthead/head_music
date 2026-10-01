@@ -100,6 +100,18 @@ module HeadMusic::Notation::Kern
       ensure_not_too_long(time - @bar_start, line)
     end
 
+    # The final barline at the end is implied, and a label after the last
+    # note marks no bar.
+    def mark(flow)
+      last = flow.last_sounding_bar_number
+      repeat_starts.each { |number| flow.bars(number).last.starts_repeat = true }
+      repeat_ends.each { |number| flow.bars(number).last.ends_repeat_after_num_plays = 2 }
+      barline_styles.each do |number, style|
+        flow.bars(number).last.barline = style unless style == :final && number >= last
+      end
+      section_labels.each { |number, label| flow.bars(number).last.rehearsal_mark = label if number <= last }
+    end
+
     def bar_containing(time)
       bars.reverse.find { |bar| bar.start <= time }
     end

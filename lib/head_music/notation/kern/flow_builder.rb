@@ -37,24 +37,12 @@ module HeadMusic::Notation::Kern
 
     def finish
       @dynamics.pass(@voices.current_time)
-      clock.finish(@voices.current_time, document.rows.last.record.line)
+      clock.finish(@voices.current_time, document.rows.last.line)
       @voices.place(clock)
       @dynamics.place(@flow, clock)
-      mark_bars
+      clock.mark(@flow)
       @parts.order_voices_by_staff
       @flow
-    end
-
-    # The final barline at the end is implied, and a label after the last
-    # note marks no bar.
-    def mark_bars
-      last = @flow.last_sounding_bar_number
-      clock.repeat_starts.each { |number| @flow.bars(number).last.starts_repeat = true }
-      clock.repeat_ends.each { |number| @flow.bars(number).last.ends_repeat_after_num_plays = 2 }
-      clock.barline_styles.each do |number, style|
-        @flow.bars(number).last.barline = style unless style == :final && number >= last
-      end
-      clock.section_labels.each { |number, label| @flow.bars(number).last.rehearsal_mark = label if number <= last }
     end
 
     def read(row)
@@ -65,18 +53,11 @@ module HeadMusic::Notation::Kern
       end
     end
 
-    # The kern fields of a row, each with its track and its 1-based column.
-    def kern_fields(row)
-      row.tracks.each_with_index.filter_map do |track, index|
-        [track, row.record.fields[index], index + 1] if track.kern?
-      end
-    end
-
     # Interpretations
 
     def read_interpretations(row)
-      line = row.record.line
-      interpretations = kern_fields(row).filter_map do |track, field, _column|
+      line = row.line
+      interpretations = row.kern_fields.filter_map do |track, field, _column|
         interpretation = InterpretationReader.read(field, line_number: line)
         [track, interpretation] if interpretation
       end
@@ -93,7 +74,7 @@ module HeadMusic::Notation::Kern
         next unless manipulation.tracks.first.kern?
 
         @tags.split(*manipulation.tracks) if manipulation.type == :split
-        @voices.manipulate(manipulation, row.record.line) if @flow
+        @voices.manipulate(manipulation, row.line) if @flow
       end
     end
 
@@ -114,8 +95,8 @@ module HeadMusic::Notation::Kern
 
     def read_data(row)
       start_flow(row) unless @flow
-      line = row.record.line
-      tokens = kern_fields(row).map { |track, field, column| [track, TokenReader.read(field, line_number: line), column] }
+      line = row.line
+      tokens = row.kern_fields.map { |track, field, column| [track, TokenReader.read(field, line_number: line), column] }
       attacked = tokens.any? { |_track, token, _column| token.attack? }
       return read_untimed(row) unless attacked || grace?(tokens)
 
@@ -138,10 +119,10 @@ module HeadMusic::Notation::Kern
     end
 
     def read_barline(row)
-      fields = kern_fields(row)
+      fields = row.kern_fields
       return if fields.empty?
 
-      line = row.record.line
+      line = row.line
       barline = BarlineReader.read(fields.first[1], line_number: line)
       time = @voices.aligned_time(clock, line)
       @dynamics.pass(time)

@@ -10,7 +10,18 @@ module HeadMusic::Notation::Kern
   class Document
     # A spine record and the tracks live when it was read, one per field.
     # A manipulator row also carries what it changed.
-    Row = Data.define(:record, :tracks, :manipulations)
+    Row = Data.define(:record, :tracks, :manipulations) do
+      def line
+        record.line
+      end
+
+      # The kern fields, each with its track and its 1-based column.
+      def kern_fields
+        tracks.each_with_index.filter_map do |track, index|
+          [track, record.fields[index], index + 1] if track.kern?
+        end
+      end
+    end
 
     attr_reader :header_tracks, :rows
 
