@@ -73,7 +73,7 @@ module HeadMusic::Notation::LilyPond
     # A \textEndMark is how the writer puts a Fine before the last bar, and
     # the words of any other navigation read the same as a \jump's.
     def read_closing_text(command)
-      return skip_markup if markup?(cursor.peek)
+      return cursor.skip_markup if cursor.markup?
 
       text = cursor.expect(:string, "\\#{command.lexeme} expects a quoted instruction").lexeme.strip
       return BarMark.new(:to_coda, true) if text.casecmp?(TO_CODA)
@@ -84,14 +84,15 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_section_label
-      return skip_markup if markup?(cursor.peek)
+      return cursor.skip_markup if cursor.markup?
 
       BarMark.new(:rehearsal_mark, cursor.expect(:string, "\\sectionLabel expects a quoted label").lexeme)
     end
 
     def read_mark_command(stream)
+      return cursor.skip_markup if cursor.markup?
+
       token = cursor.peek
-      return skip_markup if markup?(token)
       raise cursor.error("\\mark expects \\default, a number, or a string", token) unless token.lexeme == "default"
 
       cursor.advance
@@ -122,7 +123,7 @@ module HeadMusic::Notation::LilyPond
         3.times { cursor.advance }
         return BarMark.new(sign, true)
       end
-      return skip_markup if markup?(cursor.peek)
+      return cursor.skip_markup if cursor.markup?
 
       cursor.expect(:string, "\\#{command.lexeme} expects a string or a markup")
       nil
@@ -130,37 +131,9 @@ module HeadMusic::Notation::LilyPond
 
     def sign_glyph
       glyph = cursor.peek(2)
-      return unless markup?(cursor.peek) && cursor.peek(1)&.lexeme == "musicglyph" && glyph&.type == :string
+      return unless cursor.markup? && cursor.peek(1)&.lexeme == "musicglyph" && glyph&.type == :string
 
       SIGN_GLYPHS[glyph.lexeme]
-    end
-
-    def markup?(token)
-      token&.type == :command && token.lexeme == "markup"
-    end
-
-    # A markup is free text the model cannot hold as a rehearsal mark or
-    # jump: its function commands, then a string, a word, or a block.
-    def skip_markup
-      cursor.advance
-      cursor.advance while cursor.peek&.type == :command
-      token = cursor.peek
-      case token&.type
-      when :open_brace then skip_braces
-      when :string, :word then cursor.advance
-      else raise cursor.error("\\markup expects a string or a block", token || cursor.peek(-1))
-      end
-      nil
-    end
-
-    def skip_braces
-      cursor.advance
-      depth = 1
-      while depth.positive?
-        token = cursor.advance
-        depth += 1 if token.type == :open_brace
-        depth -= 1 if token.type == :close_brace
-      end
     end
   end
 end

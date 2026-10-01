@@ -34,7 +34,28 @@ module HeadMusic::Notation::LilyPond
     # Consumes a command and the balanced block that follows it.
     def skip_block
       advance
-      expect(:open_brace, "Expected a block")
+      skip_braces("Expected a block")
+    end
+
+    def markup?
+      peek&.type == :command && peek.lexeme == "markup"
+    end
+
+    # A markup is free text the model cannot hold: its function commands,
+    # then a string, a word, or a block.
+    def skip_markup
+      advance
+      advance while peek&.type == :command
+      case peek&.type
+      when :open_brace then skip_braces("\\markup expects a string or a block")
+      when :string, :word then advance
+      else raise error("\\markup expects a string or a block", peek || peek(-1))
+      end
+      nil
+    end
+
+    def skip_braces(message)
+      expect(:open_brace, message)
       depth = 1
       while depth.positive?
         token = advance
