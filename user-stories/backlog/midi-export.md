@@ -45,7 +45,7 @@ File.binwrite("exercise.mid", bytes)
 - [ ] Track 0 is the conductor track. It holds the sequence name (from the flow's name), and the tempo, time-signature, and key-signature meta events
 - [ ] Each part gets one track and one channel, with its voices merged into that track; the track name comes from the part's player name, or else its instrument's name
 - [ ] Pitched parts take channels 1–9 and 11–16 in score order. A flow with more than fifteen pitched parts raises `MIDI::RenderError` naming the count
-- [ ] Ticks per quarter note are the smallest number at which every onset and duration the flow uses, tuplets included, lands on a whole tick. A flow that needs more than 32767 raises `RenderError`
+- [ ] Ticks per quarter note are the smallest number at which every onset and duration the flow uses, tuplets included, lands on a whole tick. This is computed from written values and ratios, so a septuplet is exact in MIDI though the model rounds it. When no number up to 32767 fits, the writer uses 960 and rounds each note to the nearest tick
 - [ ] The writer raises `RenderError` for an empty flow, before writing any bytes
 
 ### Notes
