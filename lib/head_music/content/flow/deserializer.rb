@@ -98,9 +98,9 @@ class HeadMusic::Content::Flow
     end
 
     # Added after the voice events, whose positions a span's ends must find.
-    def add_spans(voice, voice_hash, path)
-      each_placed(values.spans(voice_hash["spans"], path), "spans", path) do |kind, from, to|
-        voice.add_span(kind, from: from, to: to)
+    def add_spans(target, container_hash, path)
+      each_placed(values.spans(container_hash["spans"], path), "spans", path) do |kind, from, to|
+        target.add_span(kind, from: from, to: to)
       end
     end
 

@@ -130,6 +130,7 @@ class HeadMusic::Content::Part
     system_changes = staff_system_changes.map { |bar_number, value| {"number" => bar_number, "staff_system" => value.to_h} }
     hash["staff_system_changes"] = system_changes unless system_changes.empty?
     hash["dynamic_events"] = dynamic_events.map(&:to_h) unless @dynamic_events.empty?
+    hash["spans"] = spans.map(&:to_h) unless @spans.empty?
     hash
   end
 

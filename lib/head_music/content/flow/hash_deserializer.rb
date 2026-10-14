@@ -80,6 +80,7 @@ class HeadMusic::Content::Flow
         apply_instrument_changes(part, part_hash, path)
         apply_staff_system_changes(part, part_hash, path)
         place_dynamic_events(part, part_hash, path)
+        add_spans(part, part_hash, path)
         build_voices(part, part_hash, path)
       end
     end

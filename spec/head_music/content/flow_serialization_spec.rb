@@ -286,6 +286,37 @@ describe HeadMusic::Content::Flow do
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, 'parts[0].voices[0].spans[0].kind: unknown span kind "tie"')
     end
+
+    context "with hairpins on the voice and its part" do
+      before do
+        flow.voices.first.add_span(:crescendo, from: "1:1:240", to: "1:3")
+        flow.parts.first.add_span(:diminuendo, from: "2:1", to: "3:1")
+      end
+
+      let(:part_hash) { hash["parts"].first }
+
+      it "writes the part's spans after its dynamic events" do
+        flow.parts.first.place_dynamic("1:1", :p)
+        expect([part_hash.keys.last(2), part_hash["spans"]])
+          .to eq [%w[dynamic_events spans], [{"kind" => "diminuendo", "from" => "2:1:000", "to" => "3:1:000"}]]
+      end
+
+      it "round-trips both owners' hairpins through JSON" do
+        restored = described_class.from_json(flow.to_json)
+        expect([restored.voices.first.spans, restored.parts.first.spans].map { |spans| spans.map(&:to_s) })
+          .to eq [flow.voices.first.spans, flow.parts.first.spans].map { |spans| spans.map(&:to_s) }
+      end
+
+      it "refuses a slur on a part, naming its path" do
+        part_hash["spans"] << {"kind" => "slur", "from" => "1:1", "to" => "1:3"}
+        expect { described_class.from_h(hash) }.to raise_error(ArgumentError, "parts[0].spans[1]: a part cannot hold a slur")
+      end
+
+      it "refuses hairpins of the part that overlap, naming the path" do
+        part_hash["spans"] << {"kind" => "crescendo", "from" => "2:3", "to" => "3:1"}
+        expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /\Aparts\[0\]\.spans\[1\]: the crescendo .* overlaps the diminuendo/)
+      end
+    end
   end
 
   describe "articulations, ornaments, and dynamics" do
