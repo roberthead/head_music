@@ -74,7 +74,7 @@ describe HeadMusic::Rudiment::SpanKind do
       end
 
       {
-        to_abc: ->(output) { output.lines.last.count("(") },
+        to_abc: ->(output) { output.lines.last.gsub(/![<>]\(!/, "").count("(") },
         to_lilypond: ->(output) { output.scan(/(?<!\\)\((?!\))/).length },
         to_kern: ->(output) { output.lines.grep_v(/^[*!]/).join.count("(") },
         to_musicxml: ->(output) { output.scan('<slur type="start"').length }

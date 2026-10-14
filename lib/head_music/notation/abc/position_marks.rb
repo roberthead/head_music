@@ -1,12 +1,21 @@
 # A namespace for ABC-notation parsing helpers
 module HeadMusic::Notation::ABC
   # The marks a voice places at a position rather than on a note: its own and
-  # its part's dynamics. In each bar, a mark goes on the note or rest that
-  # attacks at its position, on an invisible rest in an overlay of the bar
-  # when it falls inside one, or on an invisible rest after the music when it
-  # follows the last note.
+  # its part's dynamics and hairpin starts and ends. In each bar, a mark goes
+  # on the note or rest that attacks at its position, on an invisible rest in
+  # an overlay of the bar when it falls inside one, or on an invisible rest
+  # after the music when it follows the last note. A hairpin end on the final
+  # barline closes the last bar, on a spacer.
+  #
+  # At one position, hairpin ends come first, then levels, then starts, so a
+  # hairpin is closed before the next one opens.
   class PositionMarks
-    Mark = Data.define(:position, :decoration, :label) do
+    HAIRPIN_SIGNS = {crescendo: "<", diminuendo: ">"}.freeze
+    END_RANK = 0
+    LEVEL_RANK = 1
+    START_RANK = 2
+
+    Mark = Data.define(:position, :decoration, :label, :rank) do
       def offset
         PositionMarks.offset(position)
       end
@@ -20,7 +29,7 @@ module HeadMusic::Notation::ABC
 
     # One bar's marks by how each is written, with where its music ends and
     # its written length, as fractions of a whole note.
-    BarMarks = Data.define(:attacks, :overlay, :trailing, :music_end, :length) do
+    BarMarks = Data.define(:attacks, :overlay, :trailing, :closing, :music_end, :length) do
       def decorations_at(position)
         attacks.fetch(position, []).map(&:decoration).join
       end
@@ -39,7 +48,7 @@ module HeadMusic::Notation::ABC
 
     def initialize(voice)
       @flow = voice&.flow
-      @marks = voice ? dynamic_marks(voice) : []
+      @marks = voice ? (dynamic_marks(voice) + hairpin_marks(voice)).sort_by { |mark| [mark.position, mark.rank] } : []
     end
 
     def bar_marks(bar_segments)
@@ -51,7 +60,7 @@ module HeadMusic::Notation::ABC
       overlay, trailing = others.partition { |mark| mark.position < music_end }
       length = bar_length(bar_number)
       music_end_offset = (music_end.bar_number > bar_number) ? length : self.class.offset(music_end)
-      BarMarks.new(attacks.group_by(&:position), overlay, trailing, music_end_offset, length)
+      BarMarks.new(attacks.group_by(&:position), overlay, trailing, closing_marks(bar_number), music_end_offset, length)
     end
 
     private
@@ -59,9 +68,26 @@ module HeadMusic::Notation::ABC
     # A voice and its part with the same level at one position write it once.
     def dynamic_marks(voice)
       (voice.dynamic_events + voice.part.dynamic_events)
-        .map { |event| Mark.new(event.position, "!#{event.name_key}!", "dynamic #{event.name_key}") }
+        .map { |event| Mark.new(event.position, "!#{event.name_key}!", "dynamic #{event.name_key}", LEVEL_RANK) }
         .uniq { |mark| [mark.position, mark.decoration] }
-        .sort_by(&:position)
+    end
+
+    # The same hairpin from the voice and its part is written once.
+    def hairpin_marks(voice)
+      (voice.spans + voice.part.spans).select(&:hairpin?).uniq(&:to_h).flat_map do |hairpin|
+        sign = HAIRPIN_SIGNS.fetch(hairpin.kind)
+        [
+          Mark.new(hairpin.from, "!#{sign}(!", "#{hairpin.name_key} start", START_RANK),
+          Mark.new(hairpin.to, "!#{sign})!", "#{hairpin.name_key} end", END_RANK)
+        ]
+      end
+    end
+
+    def closing_marks(bar_number)
+      final_barline = @flow.final_barline_position
+      return [] unless bar_number == final_barline.bar_number - 1
+
+      @marks.select { |mark| mark.position == final_barline }
     end
 
     def segment_start(segment)

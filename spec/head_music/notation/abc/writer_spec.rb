@@ -678,6 +678,89 @@ describe HeadMusic::Notation::ABC::Writer do
     end
   end
 
+  describe "hairpins" do
+    def body_of(flow)
+      described_class.new(flow).to_s.lines.drop(5).join
+    end
+
+    def four_quarters(hairpins = [])
+      MarkingFixtures.four_quarters.tap do |flow|
+        hairpins.each { |kind, from, to| flow.voices.first.add_span(kind, from: from, to: to) }
+      end
+    end
+
+    let(:flow) { HeadMusic::Content::Flow.new(name: "Hairpins", key_signature: "C major", meter: "4/4") }
+    let(:voice) { flow.add_voice }
+
+    it "writes a crescendo and a diminuendo on the notes where they start and end" do
+      expect(body_of(four_quarters([[:crescendo, "1:1", "1:3"], [:diminuendo, "1:4", "2:1"]])))
+        .to eq "!<(!C2 D2 !<)!E2 !>(!F2|!>)!G8|]\n"
+    end
+
+    it "writes an end, then a level, then a start where they meet" do
+      flow = four_quarters([[:diminuendo, "1:3", "2:1"], [:crescendo, "1:1", "1:3"]])
+      flow.voices.first.place_dynamic("1:3", :mf)
+      expect(body_of(flow)).to eq "!<(!C2 D2 !<)!!mf!!>(!E2 F2|!>)!G8|]\n"
+    end
+
+    it "writes a level inside a hairpin without cutting it" do
+      flow = four_quarters([[:crescendo, "1:1", "2:1"]])
+      flow.voices.first.place_dynamic("1:3", :mf)
+      expect(body_of(flow)).to eq "!<(!C2 D2 !mf!E2 F2|!<)!G8|]\n"
+    end
+
+    it "writes an end on a tied note's later link before that link" do
+      expect(body_of(HairpinFixtures.hairpin_ending_on_tied_note)).to eq "!<(!C2 D2 E2 F2-|!<)!F2 G2 A2 B2|]\n"
+    end
+
+    it "writes marks inside held notes on each bar's overlay" do
+      expect(body_of(HairpinFixtures.hairpin_under_held_note)).to eq "C8 & x2 !<(!x6|D4 E4 & x2 !<)!x6|]\n"
+    end
+
+    it "writes an end on the final barline after a full bar on a spacer" do
+      voice.place("1:1", :whole, "C4")
+      voice.add_span(:crescendo, from: "1:1", to: "2:1")
+      expect(body_of(flow)).to eq "!<(!C8 !<)!y|]\n"
+    end
+
+    it "fills a short final bar before an end on the final barline" do
+      %w[C4 D4 E4].each_with_index { |pitch, index| voice.place("1:#{index + 1}", :quarter, pitch) }
+      voice.add_span(:diminuendo, from: "1:2", to: "2:1")
+      expect(body_of(flow)).to eq "C2 !>(!D2 E2 x2 !>)!y|]\n"
+    end
+
+    it "writes an end at a short final bar's music end and a hairpin from there to the final barline" do
+      expect(body_of(HairpinFixtures.hairpins_after_short_final_bar)).to eq "C8|!<(!C2 D2 E2 !<)!!>(!x2 !>)!y|]\n"
+    end
+
+    it "writes the final barline's spacer before the overlay" do
+      voice.place("1:1", :whole, "C4")
+      voice.add_span(:crescendo, from: "1:2", to: "2:1")
+      expect(body_of(flow)).to eq "C8 !<)!y & x2 !<(!x6|]\n"
+    end
+
+    it "writes the part's hairpins on the voice, once where the voice has the same hairpin" do
+      flow = four_quarters([[:crescendo, "1:1", "1:3"]])
+      flow.parts.first.add_span(:crescendo, from: "1:1", to: "1:3")
+      flow.parts.first.add_span(:diminuendo, from: "1:3", to: "2:1")
+      expect(body_of(flow)).to eq "!<(!C2 D2 !<)!!>(!E2 F2|!>)!G8|]\n"
+    end
+
+    it "refuses a part's hairpin that overlaps the voice's, naming both" do
+      flow = four_quarters([[:crescendo, "1:1", "1:3"]])
+      flow.parts.first.add_span(:diminuendo, from: "1:2", to: "2:1")
+      expect { body_of(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError,
+        /an ABC voice holds one hairpin at a time, so the crescendo from 1:1:000 to 1:3:000 and the diminuendo from 1:2:000 to 2:1:000/)
+    end
+
+    it "refuses a hairpin mark no binary note value reaches, naming it" do
+      voice.place("1:1", :whole, "C4")
+      voice.add_span(:crescendo, from: flow.position(1, 1, 1), to: "2:1")
+      expect { body_of(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError,
+        "cannot place the crescendo start at 1:1:001 in ABC output: no binary note value reaches it")
+    end
+  end
+
   describe "slurs and phrases" do
     def last_line(flow)
       described_class.new(flow).to_s.lines.last.chomp

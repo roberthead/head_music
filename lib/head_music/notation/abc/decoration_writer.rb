@@ -3,7 +3,7 @@ module HeadMusic::Notation::ABC
   # Writes the decorations a voice event carries: its articulations,
   # ornaments, and note dynamic. Staccato takes its shorthand dot; the rest are
   # spelled out, since the shorthand letters can be redefined by a U: field.
-  # Levels are placed by PositionMarks.
+  # Levels and hairpins are placed by PositionMarks.
   class DecorationWriter
     NAMES = {
       "staccatissimo" => "wedge",

@@ -45,10 +45,20 @@ module HeadMusic::Notation::ABC
       @slur_writer.opens(voice_event) + bar_marks.decorations_at(position) + @decoration_writer.prefix(voice_event) + body
     end
 
+    # A hairpin ending on the final barline goes on a spacer there, after
+    # invisible rests that fill a short bar.
     def trailing(bar_marks)
-      return "" if bar_marks.trailing.empty?
-
-      " " + invisible_rests(bar_marks.music_end, bar_marks.length, bar_marks.trailing)
+      music_end = bar_marks.music_end
+      length = bar_marks.length
+      closing = bar_marks.closing
+      written = []
+      if bar_marks.trailing.any?
+        written << invisible_rests(music_end, length, bar_marks.trailing)
+      elsif closing.any? && music_end < length
+        written << "x#{invisible_multiplier(length - music_end)}"
+      end
+      written << "#{closing.map(&:decoration).join}y" if closing.any?
+      written.map { |text| " #{text}" }.join
     end
 
     def overlay(bar_marks)
