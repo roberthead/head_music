@@ -58,7 +58,15 @@ module HeadMusic::Notation::LilyPond
     # are placed among its links. A nil voice is a staff nobody is written on.
     def timed_marks(voice)
       @timed_marks ||= {}.compare_by_identity
-      @timed_marks[voice] ||= voice ? TimedMarks.levels(voice) : TimedMarks.new([])
+      @timed_marks[voice] ||= voice ? TimedMarks.voice(voice) : TimedMarks.new([])
+    end
+
+    # What ends a hairpin on the final barline, after the owner's last link or
+    # spacer: \after there prints "no broken bound" for a level, and a marker
+    # with no duration reaches it cleanly.
+    def final_barline_marks(owner)
+      final_barline = flow.final_barline_position
+      "<>\\!" if owner&.spans&.any? { |span| span.hairpin? && span.to == final_barline }
     end
 
     private
@@ -125,15 +133,15 @@ module HeadMusic::Notation::LilyPond
     # A tied chain within a voice event joins its links with the tie mark, and
     # so does a voice event split at a barline, whose piece before the bar check
     # ends in one; a chain of rests emits consecutive untied rests, and a tied
-    # chord repeats the whole chord. Each link carries the voice's levels that
-    # fall in it, and only the first the voice event's own marks.
+    # chord repeats the whole chord. Each link carries the voice's levels and
+    # hairpin marks that fall in it, and only the first the voice event's own
+    # marks, after any hairpin ending there and before any starting.
     # A slur closes on the last link and opens on the first, closing first
     # where they are one word, so one slur can end where the next begins. A
     # rest reads back as one rest per link, so it carries both on its first.
     def token(segment)
       voice_event = segment.voice_event
       words = link_words(segment)
-      words[0] += MarkWriter.token(voice_event) if starts?(segment)
       words[closes_index(segment, words)] += span_marks(voice_event).closes_at(voice_event.position) if closes?(segment)
       words[0] += span_marks(voice_event).opens_at(voice_event.position) if starts?(segment)
       return words.join(" ") if voice_event.rest?
@@ -147,10 +155,12 @@ module HeadMusic::Notation::LilyPond
       marks = timed_marks(voice_event.voice)
       bar_number = segment.bar_number
       from = starts?(segment) ? HeadMusic::Notation::BarSplitter.offset_in_bar(voice_event.position) : 0r
+      own = starts?(segment) ? MarkWriter.token(voice_event) : ""
       segment.rhythmic_value!(RenderError).tied_chain.map do |link|
         to = from + HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link)
-        word = marks.around(bar_number, from, to, "#{body(voice_event)}#{DurationWriter.token(link)}")
+        word = marks.around(bar_number, from, to, "#{body(voice_event)}#{DurationWriter.token(link)}", own)
         from = to
+        own = ""
         word
       end
     end

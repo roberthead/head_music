@@ -611,6 +611,129 @@ describe HeadMusic::Notation::LilyPond::Writer do
       end
     end
 
+    describe "voice hairpins" do
+      def lines_of(fixture)
+        bar_check_lines(described_class.new(HairpinFixtures.public_send(fixture)).to_s)
+      end
+
+      it "ends a hairpin on the later link of a tied note" do
+        expect(lines_of(:hairpin_ending_on_tied_note)).to eq ["c'4\\< d'4 e'4 f'4~ |", %(f'4\\! g'4 a'4 b'4 \\bar "|." |)]
+      end
+
+      it "starts a hairpin on the later link of a tied note" do
+        expect(lines_of(:hairpin_starting_on_split_note)).to eq ["c'4\\< d'4 e'4 f'4\\!~ |", %(f'4\\> g'4 a'4\\! b'4 \\bar "|." |)]
+      end
+
+      it "ends one hairpin before starting the next where they touch" do
+        expect(lines_of(:touching_hairpins_on_tied_note).last).to eq %(f'4\\!\\> g'4 a'4 b'4\\! \\bar "|." |)
+      end
+
+      it "ends a hairpin on the later piece of a rest split at a barline" do
+        expect(lines_of(:hairpin_on_split_rest)).to eq ["c'2\\< r2\\!\\> |", %(r2\\! d'2 \\bar "|." |)]
+      end
+
+      it "places ends inside held notes with \\after" do
+        expect(lines_of(:hairpin_under_held_note)).to eq ["\\after 4 \\< c'1 |", %(\\after 4 \\! d'2 e'2 \\bar "|." |)]
+      end
+
+      it "places each voice's hairpins in its own voice" do
+        expect(lines_of(:hairpins_in_two_voices).values_at(2, 3, 6))
+          .to eq ["\\after 2 \\< e''1 |", %(\\after 2 \\! e''1 \\bar "|." |), "\\after 4 \\! c1 |"]
+      end
+
+      it "cuts a hairpin at a level and an accent inside it, ending before the level or accent and starting after" do
+        expect(lines_of(:level_inside_hairpin)).to eq ["c'4\\< d'4 e'4\\!\\mf\\< f'4\\!\\sf\\< |", %(g'1\\! \\bar "|." |)]
+      end
+
+      {
+        hairpin_on_split_rest: [2, 1], level_inside_hairpin: [2, 1], hairpins_in_two_voices: [4, 2],
+        hairpin_to_music_end: [2, 1], hairpins_after_short_final_bar: [2, 1], hairpin_in_voice_that_ends_early: [2, 2]
+      }.each do |fixture, (bars, voices)|
+        it "writes #{fixture.to_s.tr("_", " ")} as structurally valid LilyPond" do
+          expect_structurally_valid_lilypond(described_class.new(HairpinFixtures.public_send(fixture)).to_s, bars: bars, voices: voices)
+        end
+      end
+
+      it "ends a hairpin on the final barline with a marker after the last note" do
+        expect(lines_of(:hairpin_to_music_end).last).to eq %(d'1\\< <>\\! \\bar "|." |)
+      end
+
+      it "starts a hairpin after a short final bar's music on a spacer, ending it on the final barline" do
+        expect(lines_of(:hairpins_after_short_final_bar).last).to eq %(c'4\\< d'4 e'4 s4\\!\\> <>\\! \\bar "|." |)
+      end
+
+      it "places a hairpin under a pickup's leading rest" do
+        expect(lines_of(:hairpin_in_pickup).first).to eq "\\after 4 \\< r2 c'2 |"
+      end
+
+      it "places a hairpin's end and a level in a bar of whole-bar rest" do
+        expect(lines_of(:hairpin_in_voice_that_ends_early)[1]).to eq %(\\after 4 \\! \\after 2 \\f R1*4/4 \\bar "|." |)
+      end
+
+      context "when a hairpin ends on the final barline after a short final bar" do
+        let(:flow) do
+          HeadMusic::Notation::ABC.parse("X:1\nT:Short\nL:1/4\nM:4/4\nK:C\nC4|C D E|\n").tap do |flow|
+            flow.voices.first.add_span(:crescendo, from: "2:1", to: "3:1")
+          end
+        end
+
+        it "leaves the bar short, ending the hairpin after the last note" do
+          expect(bar_check_lines(described_class.new(flow).to_s).last).to eq "c'1 |"
+          expect(described_class.new(flow).to_s).to include %(c'4\\< d'4 e'4 <>\\! \\bar "|.")
+        end
+      end
+
+      context "when a hairpin ends where a short final bar's music ends" do
+        let(:flow) do
+          HeadMusic::Notation::ABC.parse("X:1\nT:Short\nL:1/4\nM:4/4\nK:C\nC4|C D E|\n").tap do |flow|
+            flow.voices.first.add_span(:crescendo, from: "2:1", to: "2:4")
+          end
+        end
+
+        it "fills the bar with a spacer that ends it" do
+          expect(bar_check_lines(described_class.new(flow).to_s).last).to eq %(c'4\\< d'4 e'4 s4\\! \\bar "|." |)
+        end
+      end
+    end
+
+    describe "hairpin fixtures" do
+      expected_hairpins = {
+        hairpin_ending_on_tied_note: 1, hairpin_starting_on_split_note: 2, touching_hairpins_on_tied_note: 2,
+        hairpin_on_split_rest: 2, hairpins_in_two_voices: 3, hairpin_under_held_note: 1,
+        hairpin_to_music_end: 1, hairpins_after_short_final_bar: 2, hairpin_in_pickup: 1,
+        hairpin_in_voice_that_ends_early: 1, level_inside_hairpin: 3
+      }
+
+      expected_hairpins.each do |fixture, count|
+        context "with #{fixture.to_s.tr("_", " ")}" do
+          let(:rendered) { described_class.new(HairpinFixtures.public_send(fixture)).to_s }
+
+          it "compiles without warnings, drawing #{count} hairpins" do
+            skip "lilypond is not installed" unless installed_lilypond
+
+            expect(compile_hairpins(rendered)).to eq(warnings: [], hairpins: count)
+          end
+        end
+      end
+    end
+
+    describe "hairpin generator flows" do
+      def expect_book_to_compile(seeds)
+        book = seeds.map { |seed| HairpinGenerator.flow(seed) }
+        count = book.sum { |flow| flow.voices.sum { |voice| voice.spans.count(&:hairpin?) } }
+        rendered = HeadMusic::Notation::LilyPond::BookWriter.new(book).to_s
+        expect(compile_hairpins(rendered)).to eq(warnings: [], hairpins: count), "in the book of seeds #{seeds.first}..#{seeds.last}"
+      end
+
+      # A book of a hundred at a time, since a far longer one warns that
+      # LilyPond compressed a page.
+      it "compile in books without warnings, drawing every voice's hairpins" do
+        skip "lilypond is not installed" unless installed_lilypond
+
+        HairpinGenerator::SEEDS.each_slice(100) { |seeds| expect_book_to_compile(seeds) }
+      end
+    end
+
     context "with a D.S. al Coda" do
       let(:flow) { LilyPondFixtures.dal_segno_al_coda }
       let(:rendered) { described_class.new(flow).to_s }

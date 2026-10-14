@@ -22,6 +22,12 @@ describe HeadMusic::Notation::LilyPond::TimedMarks do
       expect(marks(["1:4", "\\f"], ["1:1", "\\p"]).attacks(1, Rational(3, 4))).to eq "\\f"
     end
 
+    it "writes ends, then levels and the link's own marks, then starts" do
+      ranked = {"\\<" => described_class::START_RANK, "\\p" => described_class::LEVEL_RANK, "\\!" => described_class::END_RANK}
+      timed_marks = described_class.new(ranked.map { |token, rank| described_class.mark(flow.position("1:2"), token, "mark", rank: rank) })
+      expect(timed_marks.attacks(1, Rational(1, 4), "-.")).to eq "\\!\\p-.\\<"
+    end
+
     it "answers nothing in another bar" do
       expect(marks(["1:1", "\\p"]).attacks(2, 0r)).to eq ""
     end
@@ -46,6 +52,22 @@ describe HeadMusic::Notation::LilyPond::TimedMarks do
   describe "#trailing" do
     it "answers the marks at or after the end of the music in the bar" do
       expect(marks(["1:2", "\\p"], ["1:4", "\\f"]).trailing(1, Rational(3, 4)).map(&:token)).to eq ["\\f"]
+    end
+  end
+
+  describe ".voice" do
+    it "takes the voice's hairpins, cut where a level falls inside one" do
+      voice.place_dynamic("1:2", :p)
+      voice.add_span(:crescendo, from: "1:1", to: "2:1")
+      timed_marks = described_class.voice(voice)
+      expect([timed_marks.attacks(1, 0r), timed_marks.afters(1, 0r, Rational(3, 4)), timed_marks.attacks(2, 0r)])
+        .to eq ["\\<", "\\after 4 \\! \\after 4 \\p \\after 4 \\< ", "\\!"]
+    end
+
+    it "cuts a hairpin where an accent falls inside it" do
+      voice.voice_events[1].note_dynamic = :sf
+      voice.add_span(:diminuendo, from: "1:1", to: "2:3")
+      expect(described_class.voice(voice).attacks(1, Rational(3, 4), "\\sf")).to eq "\\!\\sf\\>"
     end
   end
 

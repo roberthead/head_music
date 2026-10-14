@@ -100,6 +100,50 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
       plan = described_class.new(flow)
       expect([plan.short_final_bar_fraction, plan.music_end_fraction, plan.filled_final_bar?(1)]).to eq [nil, Rational(1, 2), true]
     end
+
+    it "is nil where a voice hairpin ends after the music but before the final barline" do
+      flow = build_flow(meter: "3/4")
+      flow.add_voice.place("1:1", :half, "C4")
+      flow.voices.first.add_span(:crescendo, from: "1:1", to: "1:3")
+      expect(described_class.new(flow).short_final_bar_fraction).to be_nil
+    end
+
+    it "stays short where a voice hairpin ends only on the final barline" do
+      flow = build_flow(meter: "3/4")
+      flow.add_voice.place("1:1", :half, "C4")
+      flow.voices.first.add_span(:crescendo, from: "1:1", to: "2:1")
+      expect(described_class.new(flow).short_final_bar_fraction).to eq Rational(1, 2)
+    end
+  end
+
+  describe "#final_barline_marks" do
+    it "ends an owner's hairpin on the final barline with a marker" do
+      flow = build_flow
+      flow.add_voice.place("1:1", :whole, "C4")
+      flow.voices.first.add_span(:diminuendo, from: "1:2", to: "2:1")
+      expect(described_class.new(flow).final_barline_marks(flow.voices.first)).to eq "<>\\!"
+    end
+
+    it "is nil for an owner whose hairpins end before it, and for a staff nobody is written on" do
+      flow = build_flow
+      flow.add_voice.place("1:1", :whole, "C4")
+      flow.voices.first.add_span(:diminuendo, from: "1:2", to: "1:4")
+      plan = described_class.new(flow)
+      expect([plan.final_barline_marks(flow.voices.first), plan.final_barline_marks(nil)]).to eq [nil, nil]
+    end
+  end
+
+  describe "#tokens_by_segment with hairpins" do
+    let(:flow) do
+      HeadMusic::Notation::ABC.parse("X:1\nT:Plan\nL:1/4\nM:4/4\nK:C\nC2 !p!!sf!D2|\n").tap do |flow|
+        flow.voices.first.add_span(:crescendo, from: "1:1", to: "1:3")
+        flow.voices.first.add_span(:diminuendo, from: "1:3", to: "2:1")
+      end
+    end
+
+    it "writes a hairpin's end, then a level and an accent, then the next start, on one note" do
+      expect(tokens_for(flow, flow.voices.first.voice_events.last)).to eq "d'2\\!\\p\\sf\\>"
+    end
   end
 
   describe "signature tracking" do

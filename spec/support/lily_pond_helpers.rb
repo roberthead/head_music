@@ -21,9 +21,10 @@ module LilyPondHelpers
   # duration is an offset, not time.
   AFTER_COMMAND = %r{\\after #{DURATION}(?:\*\d+(?:/\d+)?)? }
   # The marks written after a note or rest carry no duration of their own.
-  MARK = /\\(?:ppp|pp|p|mp|mf|f|ff|fff|sf|sfz|rfz|fp|trill|mordent|prall|turn)(?![a-z])|-[.!>^-]|(?:\\=\w+)?\\?[()]/
+  MARK = /\\(?:ppp|pp|p|mp|mf|f|ff|fff|sf|sfz|rfz|fp|trill|mordent|prall|turn)(?![a-z])|\\[<>!]|-[.!>^-]|(?:\\=\w+)?\\?[()]/
   CHORD = /<#{PITCH}(?: #{PITCH})*>#{DURATION}/
-  SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|[rs]#{DURATION}|R1\*\d+\/\d+)\z/
+  # <> is a chord of no notes, which carries a mark at a moment without time.
+  SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|[rs]#{DURATION}|R1\*\d+\/\d+|<>)\z/
   WHOLE_BAR_REST = /R1\*(\d+)\/(\d+)/
   NAMED_DURATION_VALUES = {"\\breve" => 2r, "\\longa" => 4r, "\\maxima" => 8r}.freeze
 
@@ -125,6 +126,36 @@ module LilyPondToolchain
       File.write(source_path, source)
       _output, log, _status = Open3.capture3(installed_lilypond, "-l", "WARNING", "-dno-print-pages", "--output", dir, source_path)
       log.lines.grep(/warning|error|programming error/i)
+    end
+  end
+
+  # Logs a line for each hairpin LilyPond draws, counting one broken across
+  # systems once, so a spec can count them. The wider spacing gives a short
+  # hairpin between two dynamics room to draw: at the default spacing, a
+  # quarter-note hairpin after an sf warns "crescendo too small", which is
+  # about the page's width, not the music.
+  HAIRPIN_PROBE = <<~'LILYPOND'
+    \layout {
+      \context {
+        \Score
+        \override SpacingSpanner.common-shortest-duration = #(ly:make-moment 1/64)
+        \override Hairpin.after-line-breaking = #(lambda (grob)
+          (let* ((original (ly:grob-original grob))
+                 (pieces (if (ly:grob? original) (ly:spanner-broken-into original) '())))
+            (if (or (null? pieces) (eq? grob (car pieces)))
+                (ly:message "drawn hairpin"))))
+      }
+    }
+  LILYPOND
+
+  # The warnings and the number of hairpins drawn, from one compile.
+  def compile_hairpins(source)
+    probed = source.sub(/^\\version .*\n/) { |version| version + HAIRPIN_PROBE }
+    Dir.mktmpdir do |dir|
+      source_path = File.join(dir, "golden.ly")
+      File.write(source_path, probed)
+      _output, log, _status = Open3.capture3(installed_lilypond, "-dno-print-pages", "--output", dir, source_path)
+      {warnings: log.lines.grep(/warning|error|programming error/i), hairpins: log.lines.grep(/\Adrawn hairpin/).length}
     end
   end
 end

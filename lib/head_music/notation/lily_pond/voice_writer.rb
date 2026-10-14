@@ -105,6 +105,7 @@ module HeadMusic::Notation::LilyPond
         staff_change_command(voice, bar_number, part_index),
         *bar_tokens(voice, bar_number),
         *trailing_spacers(voice, bar_number),
+        (bar_number == plan.bar_numbers.last) ? plan.final_barline_marks(voice) : nil,
         *BarMarkWriter.closing_tokens(bar, last: bar_number == plan.bar_numbers.last, lead: lead_voice?(voice))
       ]
       bar_check_after(tokens.compact.join(" "), bar_number)

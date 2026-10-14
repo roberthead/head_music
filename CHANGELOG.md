@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MusicXML writes crescendo and diminuendo hairpins of parts and voices as <wedge> directions, numbered in document order, including ends inside notes and on the final barline.
 - The kern reader reads crescendo and diminuendo hairpins in **dynam spines as part hairpins, pairing their marks as Verovio does.
 - The kern writer writes crescendo and diminuendo hairpins in **dynam spines, cut into touching pieces at levels inside them, with a doubled close for one ending on the final barline.
+- LilyPond writes a voice's crescendo and diminuendo hairpins as \<, \>, and \!, cut where a level or accent falls inside one.
 
 ### Changed
 
