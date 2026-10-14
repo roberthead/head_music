@@ -32,6 +32,8 @@ describe HeadMusic::Style::Guide do
         counterpoint.add_span(:phrase, from: "1:1", to: "5:1")
         counterpoint.add_span(:slur, from: "2:1", to: "4:1")
         cantus_firmus.add_span(:slur, from: "1:1", to: "3:1")
+        counterpoint.add_span(:crescendo, from: "1:1", to: "3:3")
+        cantus_firmus.part.add_span(:diminuendo, from: "3:3", to: "5:2")
       end
     end
 
@@ -39,7 +41,7 @@ describe HeadMusic::Style::Guide do
       expect(grades(plain).flat_map(&:last).flat_map(&:last)).not_to be_empty
     end
 
-    it "gives the same fitness and marks as without them, spans included" do
+    it "gives the same fitness and marks as without them, spans and hairpins included" do
       expect(grades(marked)).to eq grades(plain)
     end
   end
