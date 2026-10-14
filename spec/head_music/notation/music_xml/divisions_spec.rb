@@ -74,5 +74,17 @@ describe HeadMusic::Notation::MusicXML::Divisions do
       flow.parts.first.place_dynamic("1:2:320", :f)
       expect(described_class.for(flow)).to eq 6
     end
+
+    it "divides finely enough to place a hairpin end inside a note" do
+      flow = quarter_flow
+      flow.voices.first.add_span(:crescendo, from: "1:1", to: "1:2:320")
+      expect(described_class.for(flow)).to eq 3
+    end
+
+    it "divides finely enough to place a part hairpin start inside a note" do
+      flow = quarter_flow
+      flow.parts.first.add_span(:diminuendo, from: "1:3:480", to: "1:4")
+      expect(described_class.for(flow)).to eq 2
+    end
   end
 end

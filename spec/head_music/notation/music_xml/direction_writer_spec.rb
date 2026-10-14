@@ -95,6 +95,22 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
       end
     end
 
+    context "with too few divisions for the dynamic's offset" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Coarse", meter: "4/4")
+        voice = flow.add_voice
+        voice.place("1:1", :whole, "C4")
+        voice.place_dynamic("1:1:480", :p)
+        flow
+      end
+
+      it "raises naming the mark" do
+        allow(plan).to receive(:divisions).and_return(1)
+        expect { writer.voice_lines(voice, 1, segment) }
+          .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /offset of the dynamic p at 1:1:480/)
+      end
+    end
+
     context "with voice and staff numbers" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Numbered", meter: "4/4")

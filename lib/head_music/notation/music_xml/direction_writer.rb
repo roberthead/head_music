@@ -18,7 +18,7 @@ module HeadMusic::Notation::MusicXML
     # neither <voice> nor <staff>: other software defaults it to staff 1.
     def part_lines(part, bar_number)
       events_in_bar(part.dynamic_events, bar_number).flat_map do |event|
-        direction_lines(event, offset_from(bar_start(bar_number), event.position))
+        direction_lines(event, dynamic_offset(bar_start(bar_number), event))
       end
     end
 
@@ -27,7 +27,7 @@ module HeadMusic::Notation::MusicXML
     # rest holds each event's position.
     def voice_lines(voice, bar_number, segment, voice_number: nil, staff_number: nil)
       events_for_segment(voice, bar_number, segment).flat_map do |event|
-        direction_lines(event, offset_from(segment_start(segment), event.position),
+        direction_lines(event, dynamic_offset(segment_start(segment), event),
           voice_number: voice_number, staff_number: staff_number)
       end
     end
@@ -36,7 +36,7 @@ module HeadMusic::Notation::MusicXML
     # whole-measure rest, so there is no segment to interleave them among.
     def voice_rest_lines(voice, bar_number, voice_number: nil, staff_number: nil)
       events_in_bar(voice.dynamic_events, bar_number).flat_map do |event|
-        direction_lines(event, offset_from(bar_start(bar_number), event.position),
+        direction_lines(event, dynamic_offset(bar_start(bar_number), event),
           voice_number: voice_number, staff_number: staff_number)
       end
     end
@@ -45,7 +45,7 @@ module HeadMusic::Notation::MusicXML
     # where it ends, so there is no segment to hold them.
     def trailing_lines(voice, bar_number, voice_number: nil, staff_number: nil)
       events_in_bar(voice.dynamic_events, bar_number).select { |event| event.position >= voice.next_position }.flat_map do |event|
-        direction_lines(event, offset_from(voice.next_position, event.position),
+        direction_lines(event, dynamic_offset(voice.next_position, event),
           voice_number: voice_number, staff_number: staff_number)
       end
     end
@@ -90,11 +90,15 @@ module HeadMusic::Notation::MusicXML
       HeadMusic::Content::Position.new(flow, bar_number, 1, 0)
     end
 
-    def offset_from(start_position, position)
+    def dynamic_offset(start_position, event)
+      offset_from(start_position, event.position, "dynamic #{event.name_key}")
+    end
+
+    def offset_from(start_position, position, label)
       fraction = (offset_in_bar(position) - offset_in_bar(start_position)) * 4 * divisions
       unless fraction.denominator == 1
         raise RenderError,
-          "cannot express a dynamic's offset from #{start_position} to #{position} in #{divisions} divisions per quarter note"
+          "cannot express the offset of the #{label} at #{position} from #{start_position} in #{divisions} divisions per quarter note"
       end
       fraction.numerator
     end

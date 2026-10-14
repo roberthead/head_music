@@ -9,7 +9,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def self.denominators(flow)
-      meter_denominators(flow) + note_denominators(flow) + dynamic_denominators(flow)
+      meter_denominators(flow) + note_denominators(flow) + timed_mark_denominators(flow)
     end
     private_class_method :denominators
 
@@ -29,14 +29,15 @@ module HeadMusic::Notation::MusicXML
     end
     private_class_method :note_denominators
 
-    # A dynamic can fall mid-note, where its <offset> must be a whole number.
-    def self.dynamic_denominators(flow)
+    # A dynamic or a hairpin end can fall mid-note, where its <offset> must be
+    # a whole number.
+    def self.timed_mark_denominators(flow)
       owners = flow.parts + flow.voices
-      owners.flat_map(&:dynamic_events).map do |dynamic_event|
-        (HeadMusic::Notation::BarSplitter.offset_in_bar(dynamic_event.position) * 4).denominator
-      end
+      positions = owners.flat_map(&:dynamic_events).map(&:position) +
+        owners.flat_map(&:spans).select(&:hairpin?).flat_map { |span| [span.from, span.to] }
+      positions.map { |position| (HeadMusic::Notation::BarSplitter.offset_in_bar(position) * 4).denominator }
     end
-    private_class_method :dynamic_denominators
+    private_class_method :timed_mark_denominators
 
     def self.chain_denominators(rhythmic_value)
       denominators = [DurationWriter.single_quarter_fraction(rhythmic_value).denominator]
