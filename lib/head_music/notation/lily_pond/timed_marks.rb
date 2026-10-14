@@ -34,6 +34,12 @@ module HeadMusic::Notation::LilyPond
       @marks_by_bar = marks.sort_by(&:offset).group_by(&:bar_number)
     end
 
+    # A link's word with the marks inside it before and those where it
+    # attacks after.
+    def around(bar_number, from, to, word)
+      "#{afters(bar_number, from, to)}#{word}#{attacks(bar_number, from)}"
+    end
+
     # What follows the link that starts at the offset.
     def attacks(bar_number, offset)
       marks_in(bar_number).select { |mark| mark.offset == offset }.map(&:token).join

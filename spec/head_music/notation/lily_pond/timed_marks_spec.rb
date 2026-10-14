@@ -37,6 +37,12 @@ describe HeadMusic::Notation::LilyPond::TimedMarks do
     end
   end
 
+  describe "#around" do
+    it "puts the marks inside the link before its word and those where it attacks after" do
+      expect(marks(["1:1", "\\p"], ["1:3", "\\f"]).around(1, 0r, 1r, "R1*4/4")).to eq "\\after 2 \\f R1*4/4\\p"
+    end
+  end
+
   describe "#trailing" do
     it "answers the marks at or after the end of the music in the bar" do
       expect(marks(["1:2", "\\p"], ["1:4", "\\f"]).trailing(1, Rational(3, 4)).map(&:token)).to eq ["\\f"]

@@ -73,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ABC tunes with a staccato dot, `T` or `M` shorthand, or `!…!` decorations, and LilyPond files with articulations or dynamics, import instead of raising. kern tokens with a `z` sforzando no longer raise `UnsupportedFeatureError`.
 - The MusicXML writer writes a voice's dynamic that falls after its last note in a bar, as a `<direction>` after that note, instead of leaving it out.
 - The ABC writer no longer writes a zero-length note (`C8-|C0`) for a note that crosses a barline and ends on a later one.
+- LilyPond writes a voice's dynamics in a bar where the voice has only a whole-bar rest, instead of dropping them.
 
 ## [22.0.0] - 2026-09-24
 

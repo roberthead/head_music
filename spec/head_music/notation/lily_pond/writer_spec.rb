@@ -299,6 +299,55 @@ describe HeadMusic::Notation::LilyPond::Writer do
       end
     end
 
+    context "with a voice's levels in a bar after its music ends" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Ends Early", meter: "4/4").tap do |flow|
+          early = flow.add_voice(role: "upper")
+          early.place("1:1", :whole, "E5")
+          late = flow.add_voice(role: "lower")
+          late.place("1:1", :whole, "C4")
+          late.place("2:1", :whole, "D4")
+          early.place_dynamic("2:1", :p)
+          early.place_dynamic("2:3", :f)
+        end
+      end
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "writes them on the voice's whole-bar rest" do
+        expect(bar_check_lines(rendered).first(2)).to eq ["e''1 |", %(\\after 2 \\f R1*4/4\\p \\bar "|." |)]
+      end
+
+      it "is structurally valid" do
+        expect_structurally_valid_lilypond(rendered, bars: 2, voices: 2)
+      end
+
+      it "compiles without warnings" do
+        skip "lilypond is not installed" unless installed_lilypond
+
+        expect(compile_warnings(rendered)).to be_empty
+      end
+    end
+
+    context "with levels in a voice that rests through a pickup and a short final bar" do
+      let(:flow) do
+        LilyPondFixtures.pickup_and_short_final_bar.tap do |flow|
+          flow.voices.last.place_dynamic("1:1", :mf)
+          flow.voices.last.place_dynamic("2:2", :p)
+        end
+      end
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "writes them on the rests that fill its bars" do
+        expect(rendered.lines.map(&:strip).each_cons(3)).to include ["R1*3/4\\mf |", "\\after 4 \\p r2 \\bar \"|.\"", "}"]
+      end
+
+      it "compiles without warnings" do
+        skip "lilypond is not installed" unless installed_lilypond
+
+        expect(compile_warnings(rendered)).to be_empty
+      end
+    end
+
     context "with an empty voice" do
       let(:flow) { LilyPondFixtures.tacet }
       let(:rendered) { described_class.new(flow).to_s }

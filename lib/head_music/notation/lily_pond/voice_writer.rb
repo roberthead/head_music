@@ -38,7 +38,7 @@ module HeadMusic::Notation::LilyPond
     # key and time print and the bars line up.
     def silent_lines(staff, part: nil)
       opening_lines(clef_name(nil, staff), part) +
-        plan.bar_numbers.map { |bar_number| bar_check_after([whole_bar_rest(bar_number), *trailing_spacers(nil, bar_number)].join(" "), bar_number) }
+        plan.bar_numbers.map { |bar_number| bar_check_after([whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)].join(" "), bar_number) }
     end
 
     # The lines inside a part's \new Dynamics, bar-checked like a voice's.
@@ -142,7 +142,7 @@ module HeadMusic::Notation::LilyPond
 
     def bar_tokens(voice, bar_number)
       segments = plan.segments_by_bar(voice)[bar_number]
-      return [whole_bar_rest(bar_number)] unless segments
+      return [whole_bar_rest(voice, bar_number)] unless segments
 
       segments.map { |segment| plan.tokens_by_segment[segment] }
     end
@@ -153,16 +153,24 @@ module HeadMusic::Notation::LilyPond
     end
 
     # A voice with nothing in a short final bar rests only as long as the music.
-    def whole_bar_rest(bar_number)
-      return short_bar_rest if short_final_bar?(bar_number) || plan.filled_final_bar?(bar_number)
+    # The voice's marks in the bar go on its rest, so it keeps them.
+    def whole_bar_rest(voice, bar_number)
+      marks = plan.timed_marks(voice)
+      return short_bar_rest(marks, bar_number) if short_final_bar?(bar_number) || plan.filled_final_bar?(bar_number)
 
       meter = plan.effective_meter(bar_number)
-      "R1*#{meter.top_number}/#{meter.bottom_number}"
+      length = Rational(meter.top_number, meter.bottom_number)
+      marks.around(bar_number, 0r, length, "R1*#{meter.top_number}/#{meter.bottom_number}")
     end
 
-    def short_bar_rest
-      HeadMusic::Notation::DottedDuration.rhythmic_value_for(plan.music_end_fraction)
-        .tied_chain.map { |link| "r#{DurationWriter.token(link)}" }.join(" ")
+    def short_bar_rest(marks, bar_number)
+      from = 0r
+      HeadMusic::Notation::DottedDuration.rhythmic_value_for(plan.music_end_fraction).tied_chain.map { |link|
+        to = from + HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link)
+        word = marks.around(bar_number, from, to, "r#{DurationWriter.token(link)}")
+        from = to
+        word
+      }.join(" ")
     end
   end
 end

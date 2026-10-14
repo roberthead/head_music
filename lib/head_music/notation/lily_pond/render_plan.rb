@@ -40,8 +40,7 @@ module HeadMusic::Notation::LilyPond
       @trailing_spacers ||= {}.compare_by_identity
       @trailing_spacers[voice] ||= begin
         bar_number = bar_numbers.last
-        marks = voice ? timed_marks(voice).trailing(bar_number, music_end_fraction) : []
-        spacer_run(bar_number, music_end_fraction, bar_length(bar_number), marks)
+        spacer_run(bar_number, music_end_fraction, bar_length(bar_number), timed_marks(voice).trailing(bar_number, music_end_fraction))
       end
     end
 
@@ -53,6 +52,13 @@ module HeadMusic::Notation::LilyPond
         events_by_bar = part.dynamic_events.group_by { |event| event.position.bar_number }
         bar_numbers.to_h { |bar_number| [bar_number, dynamics_bar(bar_number, events_by_bar.fetch(bar_number, []))] }
       end
+    end
+
+    # A part's own dynamics are written in a \new Dynamics, so only the voice's
+    # are placed among its links. A nil voice is a staff nobody is written on.
+    def timed_marks(voice)
+      @timed_marks ||= {}.compare_by_identity
+      @timed_marks[voice] ||= voice ? TimedMarks.levels(voice) : TimedMarks.new([])
     end
 
     private
@@ -143,7 +149,7 @@ module HeadMusic::Notation::LilyPond
       from = starts?(segment) ? HeadMusic::Notation::BarSplitter.offset_in_bar(voice_event.position) : 0r
       segment.rhythmic_value!(RenderError).tied_chain.map do |link|
         to = from + HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link)
-        word = "#{marks.afters(bar_number, from, to)}#{body(voice_event)}#{DurationWriter.token(link)}#{marks.attacks(bar_number, from)}"
+        word = marks.around(bar_number, from, to, "#{body(voice_event)}#{DurationWriter.token(link)}")
         from = to
         word
       end
@@ -170,13 +176,6 @@ module HeadMusic::Notation::LilyPond
     def span_marks(voice_event)
       @span_marks ||= {}.compare_by_identity
       @span_marks[voice_event.voice] ||= SpanMarks.new(voice_event.voice)
-    end
-
-    # A part's own dynamics are written in a \new Dynamics, so only the voice's
-    # are placed among its links.
-    def timed_marks(voice)
-      @timed_marks ||= {}.compare_by_identity
-      @timed_marks[voice] ||= TimedMarks.levels(voice)
     end
 
     def chord_body(voice_event)
