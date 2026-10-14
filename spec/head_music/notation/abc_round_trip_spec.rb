@@ -20,6 +20,46 @@ describe HeadMusic::Notation::ABC do
     end
   end
 
+  describe "a round trip of dynamics where no note starts" do
+    def tune(body)
+      described_class.parse("X:1\nT:Placed Dynamics\nM:4/4\nL:1/4\nK:C\n#{body}\n")
+    end
+
+    {
+      "a voice p under a dotted half" => ["c3 d|", [[:voice, "1:2", :p]]],
+      "a part p under a dotted half" => ["c3 d|", [[:part, "1:2", :p]]],
+      "a p and an f in one note" => ["C4|", [[:voice, "1:2", :p], [:part, "1:3:480", :f]]],
+      "a p one sixteenth into a whole note" => ["C4|", [[:voice, "1:1:240", :p]]],
+      "a p in the second bar of a tied note" => ["z2 C2-|C4|", [[:voice, "2:2", :p]]],
+      "a p under a chord" => ["[CEG]4|", [[:voice, "1:3", :p]]],
+      "a p under a rest" => ["C2 z2|", [[:voice, "1:4", :p]]],
+      "an f after the last note" => ["C D E|", [[:voice, "1:4", :f]]]
+    }.each do |description, (body, dynamics)|
+      context "with #{description}" do
+        let(:original) do
+          tune(body).tap do |flow|
+            voice = flow.voices.first
+            dynamics.each { |owner, position, level| ((owner == :part) ? voice.part : voice).place_dynamic(position, level) }
+          end
+        end
+        let(:rendered) { described_class.render(original) }
+        let(:round_tripped) { described_class.parse(rendered) }
+
+        it "keeps each dynamic at its position, on the voice" do
+          expect_same_dynamic_positions(original, round_tripped, merged_into: "voice 0")
+        end
+
+        it "keeps every voice event whole" do
+          expect_same_voice_events(original, round_tripped)
+        end
+
+        it "reads back what it wrote" do
+          expect(described_class.render(round_tripped)).to eq rendered
+        end
+      end
+    end
+  end
+
   describe "a round trip of slurs and phrases" do
     def round_trip(flow)
       described_class.parse(described_class.render(flow))

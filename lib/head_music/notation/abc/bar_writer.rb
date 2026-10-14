@@ -5,37 +5,79 @@ module HeadMusic::Notation::ABC
   class BarWriter
     include HeadMusic::Notation::VoiceEventValidation
 
-    def initialize(voice, key_signature, unit_note_length, slur_writer)
+    def initialize(key_signature, unit_note_length, slur_writer, position_marks)
       @pitch_writer = PitchWriter.new(key_signature)
       @duration_writer = DurationWriter.new(unit_note_length)
-      @decoration_writer = DecorationWriter.new(voice)
+      @decoration_writer = DecorationWriter.new
       @slur_writer = slur_writer
+      @position_marks = position_marks
     end
 
     # The inter-token space is dropped only where the voice event was authored as
     # beamed to its predecessor; a true or nil beam_break_before keeps it, so
     # programmatic flows render with every-token spacing. Every bar token
     # re-lexes unambiguously with no separator, so dropping it is safe.
+    #
+    # Marks after the music follow it on invisible rests, and marks inside a
+    # note or rest go on an overlay of invisible rests, which reads back as
+    # the bar's own time.
     def bar(bar_segments)
       @pitch_writer.start_new_bar
-      bar_segments.map do |segment|
-        token = token(segment)
+      bar_marks = @position_marks.bar_marks(bar_segments)
+      music = bar_segments.map do |segment|
+        token = token(segment, bar_marks)
         (segment.voice_event.beam_break_before == false) ? token : " #{token}"
       end.join.lstrip
+      music + trailing(bar_marks) + overlay(bar_marks)
     end
 
     private
 
     # A voice event split across bar lines is marked only where it starts,
     # and a slur closes after its last part. A slur opens before the
-    # decorations, since ".(" would be a dotted slur.
-    def token(segment)
+    # decorations, since ".(" would be a dotted slur. A mark at the start of
+    # a later part goes on that part.
+    def token(segment, bar_marks)
       voice_event = segment.voice_event
       body = token_body(segment)
       body += @slur_writer.closes(voice_event) unless segment.continues
-      return body unless segment.bar_number == voice_event.position.bar_number
+      position = voice_event.position
+      unless segment.bar_number == position.bar_number
+        return bar_marks.decorations_at(voice_event.flow.position(segment.bar_number, 1, 0)) + body
+      end
 
-      @slur_writer.opens(voice_event) + @decoration_writer.prefix(voice_event) + body
+      @slur_writer.opens(voice_event) + bar_marks.decorations_at(position) + @decoration_writer.prefix(voice_event) + body
+    end
+
+    def trailing(bar_marks)
+      return "" if bar_marks.trailing.empty?
+
+      " " + invisible_rests(bar_marks.music_end, bar_marks.length, bar_marks.trailing)
+    end
+
+    def overlay(bar_marks)
+      return "" if bar_marks.overlay.empty?
+
+      written_length = bar_marks.trailing.empty? ? bar_marks.music_end : bar_marks.length
+      " & " + invisible_rests(0, written_length, bar_marks.overlay)
+    end
+
+    # From one offset to another, each mark on the invisible rest starting
+    # at its offset.
+    def invisible_rests(from, to, marks)
+      rests = []
+      decorations = ""
+      marks.group_by(&:offset).each do |offset, marks_at_offset|
+        rests << [offset - from, decorations] if offset > from
+        decorations = marks_at_offset.map(&:decoration).join
+        from = offset
+      end
+      rests << [to - from, decorations]
+      rests.map { |length, rest_decorations| "#{rest_decorations}x#{invisible_multiplier(length)}" }.join(" ")
+    end
+
+    def invisible_multiplier(fraction)
+      @duration_writer.multiplier_string_for_fraction(fraction, HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction))
     end
 
     def token_body(segment)

@@ -35,7 +35,24 @@ module HeadMusic::Notation::ABC
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
       ensure_one_level_per_position(flow.parts + flow.voices, line: "an ABC voice")
+      ensure_marks_reachable
       slur_writer
+    end
+
+    # A mark inside a note or after the music is reached by invisible rests,
+    # which need a binary note value to span its offset.
+    def ensure_marks_reachable
+      segments_by_bar.each do |bar_segments|
+        mark = position_marks.bar_marks(bar_segments).unreachable
+        next unless mark
+
+        raise RenderError, "cannot place the #{mark.label} at #{mark.position} in ABC output: " \
+          "no binary note value reaches it"
+      end
+    end
+
+    def position_marks
+      @position_marks ||= PositionMarks.new(flow.voices.first)
     end
 
     def ensure_single_voice
@@ -124,7 +141,7 @@ module HeadMusic::Notation::ABC
 
     # Each bar the voice sounds in, with its music.
     def written_bars
-      bar_writer = BarWriter.new(flow.voices.first, written_key_signature, UNIT_NOTE_LENGTH, slur_writer)
+      bar_writer = BarWriter.new(written_key_signature, UNIT_NOTE_LENGTH, slur_writer, position_marks)
       segments = segments_by_bar.to_a
       return [] if segments.empty?
 

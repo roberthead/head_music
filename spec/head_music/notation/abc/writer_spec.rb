@@ -571,7 +571,7 @@ describe HeadMusic::Notation::ABC::Writer do
 
     it "writes every articulation, ornament, note dynamic, and level" do
       expect(body_of(MarkingFixtures.marked_melody)).to eq <<~ABC
-        !p!.c2 .d2 .e2 .f2|!trill!g4 !sfz!a4|g8|!mf!!tenuto!e2 !fp!f6|
+        !p!.c2 .d2 .e2 .f2|!trill!g4 !sfz!a4|g8 & x4 !mf!x4|!tenuto!e2 !fp!f6|
         !f!!accent!!lowermordent!e4 !wedge!!uppermordent!d2 !marcato!!turn!c2|c4 !pp!z4|]
       ABC
     end
@@ -587,11 +587,71 @@ describe HeadMusic::Notation::ABC::Writer do
       expect { body_of(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /dynamic f at 2:1:000 falls after/)
     end
 
-    it "writes a dynamic in the middle of a note before the next note" do
+    it "writes a dynamic in the middle of a note on an overlay of invisible rests" do
       voice.place("1:1", :half, "C4")
       voice.place("1:3", :half, "D4")
       voice.place_dynamic("1:2", :f)
-      expect(body_of(flow)).to eq "C4 !f!D4|]\n"
+      expect(body_of(flow)).to eq "C4 D4 & x2 !f!x6|]\n"
+    end
+
+    it "writes every dynamic inside the bar's notes on one overlay" do
+      voice.place("1:1", :whole, "C4")
+      voice.place_dynamic("1:2", :p)
+      voice.place_dynamic("1:3", :f)
+      expect(body_of(flow)).to eq "C8 & x2 !p!x2 !f!x4|]\n"
+    end
+
+    it "fills the overlay to the end of a short final bar" do
+      voice.place("1:1", :dotted_half, "C4")
+      voice.place_dynamic("1:2", :p)
+      expect(body_of(flow)).to eq "C6 & x2 !p!x4|]\n"
+    end
+
+    it "writes a dynamic under a rest on the overlay" do
+      voice.place("1:1", :half, "C4")
+      voice.place("1:3", :half)
+      voice.place_dynamic("1:4", :p)
+      expect(body_of(flow)).to eq "C4 z4 & x6 !p!x2|]\n"
+    end
+
+    it "writes a dynamic after the music on a trailing invisible rest" do
+      %w[C4 D4 E4].each_with_index { |pitch, index| voice.place("1:#{index + 1}", :quarter, pitch) }
+      voice.place_dynamic("1:4", :f)
+      expect(body_of(flow)).to eq "C2 D2 E2 !f!x2|]\n"
+    end
+
+    it "writes a dynamic after the music past a gap of invisible rest" do
+      voice.place("1:1", :half, "C4")
+      voice.place_dynamic("1:4", :f)
+      expect(body_of(flow)).to eq "C4 x2 !f!x2|]\n"
+    end
+
+    it "writes the trailing invisible rests before the overlay" do
+      voice.place("1:1", :half, "C4")
+      voice.place_dynamic("1:2", :p)
+      voice.place_dynamic("1:3", :f)
+      expect(body_of(flow)).to eq "C4 !f!x4 & x2 !p!x6|]\n"
+    end
+
+    it "writes a dynamic at a bar line inside a tied note on the note's later part" do
+      voice.place("1:3", :whole, "C4")
+      voice.place("1:1", :half)
+      voice.place_dynamic("2:1", :p)
+      expect(body_of(flow)).to eq "z4 C4-|!p!C4|]\n"
+    end
+
+    it "writes a dynamic inside a tied note's later part on that bar's overlay" do
+      voice.place("1:1", :half)
+      voice.place("1:3", :whole, "C4")
+      voice.place_dynamic("2:2", :p)
+      expect(body_of(flow)).to eq "z4 C4-|C4 & x2 !p!x2|]\n"
+    end
+
+    it "refuses a dynamic no binary note value reaches, before writing anything" do
+      voice.place("1:1", :whole, "C4")
+      voice.place_dynamic(flow.position(1, 1, 1), :p)
+      message = "cannot place the dynamic p at 1:1:001 in ABC output: no binary note value reaches it"
+      expect { body_of(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, message)
     end
 
     it "marks a note split across a bar line only where it starts" do
