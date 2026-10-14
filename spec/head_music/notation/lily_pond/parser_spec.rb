@@ -167,7 +167,6 @@ describe HeadMusic::Notation::LilyPond::Parser do
       "{ c'2~ \\time 3/4 c'2 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /\\time in the middle of a bar/],
       "{ c'2 | }" => [HeadMusic::Notation::LilyPond::ParseError, /Bar check failed/],
       "<< \\new Staff { \\key g \\major c'1 } \\new Staff { \\key d \\major c1 } >>" => [HeadMusic::Notation::LilyPond::ParseError, /Conflicting \\key/],
-      "{ <>4 }" => [HeadMusic::Notation::LilyPond::ParseError, /Empty chord/],
       "{ <c'4 e'>4 }" => [HeadMusic::Notation::LilyPond::ParseError, /cannot carry durations/],
       "{ c'4 \\tuplet 3/2 { d'8 e'8 f'8 } }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"\\tuplet"/],
       "{ c'4-1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"-"/],

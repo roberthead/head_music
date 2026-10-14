@@ -66,6 +66,11 @@ module HeadMusic::Notation::LilyPond
       append(line, kind: :spacer, fraction: fraction, marks: marks)
     end
 
+    # The dynamics a <> carries, held like a bar check inside a tied note.
+    def add_marker(line, marks)
+      mark(line, kind: :dynamics, marks: marks)
+    end
+
     # A mark \after places part way into the music that follows it, held
     # like a bar check where it falls between the halves of a tied note.
     def add_after(fraction, line, marks)

@@ -296,8 +296,10 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
       expect { read("{ \\clef }") }.to raise_error(HeadMusic::Notation::LilyPond::ParseError, /\\clef expects a clef name/)
     end
 
-    it "raises for an empty chord" do
-      expect { read("{ <>4 }") }.to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Empty chord/)
+    it "reads an empty chord as a marker that carries marks and takes no time" do
+      events = read("{ c'1\\< <>4\\! d' }").streams.first.events
+      expect(events.map { |event| [event.kind, event.marks.hairpin_marks, event.rhythmic_value&.to_s] })
+        .to eq [[:note, [:crescendo], "whole"], [:dynamics, [:end], nil], [:note, [], "quarter"]]
     end
 
     it "raises for a chord note with a duration" do

@@ -100,9 +100,49 @@ describe HeadMusic::Notation::LilyPond do
     expect(part_levels(described_class.parse(source).parts.first)).to eq [%w[1:1:000 p], %w[2:1:000 f]]
   end
 
-  it "drops hairpins and text spans there" do
-    source = piano("s1\\p\\< | s1\\f\\> | s1\\!\\cresc")
-    expect(part_levels(described_class.parse(source).parts.first)).to eq [%w[1:1:000 p], %w[2:1:000 f]]
+  describe "hairpins there" do
+    def part_hairpins(source)
+      described_class.parse(source).parts.map { |part| part.spans.map(&:to_s) }
+    end
+
+    it "reads them on the part, keeping the levels that end them" do
+      flow = described_class.parse(piano("s1\\p\\< | s1\\f\\> | s1\\!\\cresc"))
+      expect(part_levels(flow.parts.first)).to eq [%w[1:1:000 p], %w[2:1:000 f]]
+      expect(flow.parts.first.spans.map(&:to_s)).to eq ["crescendo from 1:1:000 to 2:1:000", "diminuendo from 2:1:000 to 3:1:000"]
+    end
+
+    it "ends one at a part level in the middle of a bar" do
+      expect(part_hairpins(piano("s1\\< | s2 s2\\f | s1"))).to eq [["crescendo from 1:1:000 to 2:3:000"]]
+    end
+
+    it "ends one with <> where the music ends" do
+      source = %(\\new PianoStaff << \\new Staff { c''1 } \\new Dynamics { s2\\< s2 <>\\! } \\new Staff { \\clef bass c1 } >>)
+      expect(part_hairpins(source)).to eq [["crescendo from 1:1:000 to 2:1:000"]]
+    end
+
+    it "places a level on <> where the spacers have reached" do
+      flow = described_class.parse(piano("s2\\> <>\\p s2 | s1 | s1"))
+      expect([part_levels(flow.parts.first), flow.parts.first.spans.map(&:to_s)]).to eq [[%w[1:3:000 p]], ["diminuendo from 1:1:000 to 1:3:000"]]
+    end
+
+    it "carries a duration written on <>" do
+      expect(part_hairpins(piano("<>2\\< s s | s1\\! | s1"))).to eq [["crescendo from 1:1:000 to 2:1:000"]]
+    end
+
+    it "leaves them to the part, not ended by a voice's level" do
+      source = %(\\new PianoStaff << \\new Staff { e''2 e''2\\f | e''1 } \\new Dynamics { s1\\< | s1\\! } \\new Staff { \\clef bass c1 | c1 } >>)
+      flow = described_class.parse(source)
+      expect([flow.parts.first.spans.map(&:to_s), flow.voices.flat_map(&:spans)]).to eq [["crescendo from 1:1:000 to 2:1:000"], []]
+    end
+
+    it "pairs them within each Dynamics context, dropping one the part refuses" do
+      source = %(\\new PianoStaff << \\new Staff { c''1 | c''1 } \\new Dynamics { s1\\< | s1\\! } \\new Dynamics { s2\\> s2 | s1\\! } >>)
+      expect(part_hairpins(source)).to eq [["crescendo from 1:1:000 to 2:1:000"]]
+    end
+
+    it "drops an unterminated one and a stray end" do
+      expect(part_hairpins(piano("s1\\! | s1\\< | s1"))).to eq [[]]
+    end
   end
 
   # The reader starts every stream at bar 1, so a pickup bar comes back as

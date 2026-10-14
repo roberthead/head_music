@@ -1,9 +1,11 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
-  # Places the levels and accents of a \new Dynamics on the parts it governs.
-  # It runs once the voices are placed, so every meter change is in force. The
-  # context's own spacers say where each level falls, so it keeps its exact
-  # position, even in the middle of a note.
+  # Places the levels, accents, and hairpins of a \new Dynamics on the parts
+  # it governs. It runs once the voices are placed, so every meter change is
+  # in force. The context's own spacers say where each mark falls, so it
+  # keeps its exact position, even in the middle of a note, and a <> carries
+  # marks to where the spacers have reached. Hairpins pair within the one
+  # context, as a voice's do.
   class PartDynamics
     def initialize(flow, layout, placer)
       @flow = flow
@@ -13,22 +15,29 @@ module HeadMusic::Notation::LilyPond
 
     def place(stream)
       parts = layout.dynamics_parts(stream.dynamics_target)
+      hairpin_marks = EventPlacer::HairpinMarks.new
       position = HeadMusic::Content::Position.new(flow, 1, 1, 0)
       stream.events.each do |event|
         placer.check_bar(event, position) if event.kind == :bar_check
-        next unless event.kind == :spacer
+        next unless %i[spacer dynamics].include?(event.kind)
 
-        parts.each do |part|
-          placer.place_level(part, position, event)
-          place_accent(part, position, event.marks.note_dynamic)
-        end
-        position = placer.after_spacer(position, event)
+        place_dynamics(parts, position, event)
+        hairpin_marks.add(position, event.marks)
+        position = placer.after_spacer(position, event) if event.kind == :spacer
       end
+      hairpin_marks.pair(parts)
     end
 
     private
 
     attr_reader :flow, :layout, :placer
+
+    def place_dynamics(parts, position, event)
+      parts.each do |part|
+        placer.place_level(part, position, event)
+        place_accent(part, position, event.marks.note_dynamic)
+      end
+    end
 
     # A part holds no accents, so one between the staves goes on each note of
     # the part that attacks there, as kern's **dynam does. A note's own wins.

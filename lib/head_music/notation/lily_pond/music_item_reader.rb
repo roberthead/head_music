@@ -37,15 +37,30 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_chord(context)
+      return read_marker(context) if marker?
+
       opener = cursor.advance
       notes = []
       notes << chord_note until cursor.peek.type == :close_chord
       closer = cursor.advance
-      raise cursor.error("Empty chord", opener) if notes.empty?
-
       reject_multiplier(closer)
       pitches = readers.current.chord_pitches(notes)
       add_note(context, pitches, duration_reader.rhythmic_value(closer), opener.line)
+    end
+
+    def marker?
+      cursor.peek(1)&.type == :close_chord
+    end
+
+    # <> is a chord of no notes, so it takes no time and carries its marks to
+    # where the music has reached: c'1\< <>\! ends a crescendo where the c'1
+    # ends. A duration on it is carried forward, as on any chord.
+    def read_marker(context)
+      cursor.advance
+      closer = cursor.advance
+      reject_multiplier(closer)
+      duration_reader.rhythmic_value(closer)
+      context.stream.add_marker(closer.line, mark_reader.read)
     end
 
     # The mark \after places into the music that follows, which the caller

@@ -394,6 +394,28 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
       end
     end
 
+    describe "on <>" do
+      {
+        "an end where the music ends" => ["c'1\\< <>\\!", ["crescendo from 1:1:000 to 2:1:000"]],
+        "an end between notes" => ["c'2\\< <>\\! c'2", ["crescendo from 1:1:000 to 1:3:000"]],
+        "an end after spacers" => ["c'2\\< s4 <>\\! c'4", ["crescendo from 1:1:000 to 1:4:000"]],
+        "a start inside a tied note" => ["c'2~ <>\\< c'2 | d'1\\!", ["crescendo from 1:3:000 to 2:1:000"]],
+        "a start whose duration is carried" => ["<>2\\< c' c' | d'1\\!", ["crescendo from 1:1:000 to 2:1:000"]]
+      }.each do |description, (music, expected)|
+        it "reads #{description}" do
+          expect(hairpins(music)).to eq expected
+        end
+      end
+
+      it "adds no voice event" do
+        expect(voice_events("{ <>2\\< c' c' <>\\! }")).to eq ["half C4 at 1:1:000", "half C4 at 1:3:000"]
+      end
+
+      it "places a level it carries" do
+        expect(build("{ c'2 <>\\p c'2 }").voices.first.dynamic_events.map(&:to_s)).to eq ["p at 1:3:000"]
+      end
+    end
+
     it "keeps each voice's hairpins to itself" do
       flow = build(%(\\new Staff << \\new Voice { c''4\\< d'' e'' f''\\! } \\new Voice { c'4 d'\\f e'2 } >>))
       expect(flow.voices.map { |voice| voice.spans.map(&:to_s) }).to eq [["crescendo from 1:1:000 to 1:4:000"], []]
