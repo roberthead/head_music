@@ -52,7 +52,7 @@ Found while planning [Markings Review Follow-ups](../done/markings-review-follow
 - **LilyPond** places a voice dynamic inside a note with `\after`, which leaves the note whole and keeps the voice as owner. It places one after the last note on spacer rests in every voice, with a part dynamic in `\new Dynamics`. `\after` is not used at the very end of the music, where LilyPond 2.26 prints "programming error: no broken bound".
 - **Invisible time reads the same way in every reader.** An `x`, `s`, or `ryy` that ends a voice adds no event; one followed by music is a rest, since the model has no invisible rest and a gap could not be written back.
 - **A short final bar is written full** when a dynamic falls after the music in it. The added time is invisible, and the music reads back ending where it did.
-- [Hairpins](../current/hairpins.md) reuses this story's mechanisms for hairpin starts and ends: the shared preflight, `ABC::PositionMarks`, `LilyPond::TimedMarks`, and kern's row grid with `ryy`.
+- [Hairpins](hairpins.md) reuses this story's mechanisms for hairpin starts and ends: the shared preflight, `ABC::PositionMarks`, `LilyPond::TimedMarks`, and kern's row grid with `ryy`.
 
 ## Implementation Plan
 

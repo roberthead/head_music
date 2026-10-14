@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-27T15:48:57-07:00
   activated_at: 2026-10-13T20:31:33-07:00
   planned_at:   2026-10-14T07:39:58-07:00
-  finished_at:
-  updated_at:   2026-10-14T08:51:17-07:00
+  finished_at:  2026-10-14T08:51:32-07:00
+  updated_at:   2026-10-14T08:51:32-07:00
 -->
 
 # Story: Hairpins
@@ -217,3 +217,13 @@ Reviewed 2026-10-14 at `21db7bf0`, covering `2521f2c5` through `21db7bf0`, with 
 - Findings 2 (in part), 3, and 4 are fixed in `3c4e0579`. The four `DirectionWriter` methods stay as thin wrappers over `slot_lines`, since their specs pin direction placement directly.
 - Finding 5 stands, pinned by `music_xml/writer_spec.rb`; it is the form that keeps the stop on the final barline.
 - The integrated LilyPond round trips found one bug neither LilyPond worktree could: after a short final bar, `<>\!` read back where the music stops rather than on the final barline. Fixed in `629633a9`.
+
+## Learnings
+
+- **Doing the prerequisite first paid off.** Every hairpin start and end went through the position mechanisms Place Dynamics Where No Note Starts had just built (`PositionMarks`, `TimedMarks`, the timed-marks preflight, kern's row grid), so no format had to invent a way to put a mark inside a note. The one new idea per format was an end on the final barline.
+- **A shared base, then five worktrees, scaled well.** The model, JSON, preflight, splitting helper, fixtures, and generator landed first; then ABC, MusicXML, the LilyPond reader, the LilyPond writer, and kern were built at once from one named commit, and cherry-picked with their CHANGELOG lines held back. Nothing conflicted.
+- **Splitting a format's reader and writer across agents hid the bug between them.** The LilyPond writer ended a hairpin on the final barline with `<>\!`, and the reader, built in parallel, read it where the music stopped. Only the coordinator's integrated round trip could see that, and it did on its first run. Keep the integration step whenever one format's halves are built apart.
+- **The generator earned its place again.** Seeded flows with ties across barlines, short final bars, and touching hairpins ran 2,000 seeds per format before landing; a reviewer's variant with levels inside hairpins and real pickups found nothing more. Spans in the next story should get one from the start.
+- **Renderers are the spec for readers.** LilyPond ends a hairpin at a level; Verovio drops a kern hairpin a level interrupts and reads `[[` as ending where its row ends. Following each tool, and splitting on write where they cut, kept every format reading what it draws.
+- **Criteria written before the build overstated what formats can hold.** "Ends, then levels and accents, then starts" and "every LilyPond output compiles with no warnings" were both a little wrong for real formats: ABC and MusicXML keep an accent on its note, and LilyPond warns about page room for very short hairpins. Reviewing against the criteria surfaced both, and rewording them honestly was better than bending the writers.
+- **A marker that takes no time still carries marks.** Making `<>` read as a marker silently dropped the slurs and accents LilyPond draws on it, turning a refused file into a quietly wrong one. When a reader starts accepting syntax it used to refuse, check every kind of mark that syntax can carry.
