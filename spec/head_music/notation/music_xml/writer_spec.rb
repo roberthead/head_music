@@ -823,6 +823,58 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with dynamics where no note starts" do
+      def placed(abc)
+        HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\n#{abc}\n").tap { |flow| yield flow }
+      end
+
+      def measure_items(flow, number)
+        document = parse_musicxml(described_class.new(flow).to_s)
+        REXML::XPath.match(document, "//measure[@number='#{number}']/*[self::note or self::direction]").map do |element|
+          next "note #{element.elements["duration"].text}" if element.name == "note"
+
+          "#{element.elements["direction-type/dynamics/*"].name} +#{element.elements["offset"]&.text || 0}"
+        end
+      end
+
+      it "offsets a voice dynamic under a held note from that note's start" do
+        flow = placed("C3 D|") { |f| f.voices.first.place_dynamic("1:2", :p) }
+        expect(measure_items(flow, 1)).to eq ["p +1", "note 3", "note 1"]
+      end
+
+      it "offsets a part dynamic after the music's last note from the bar's start" do
+        flow = placed("C D E|") { |f| f.parts.first.place_dynamic("1:4", :f) }
+        expect(measure_items(flow, 1)).to eq ["f +3", "note 1", "note 1", "note 1"]
+      end
+
+      it "offsets a part dynamic under a held note from the bar's start" do
+        flow = placed("C4|") { |f| f.parts.first.place_dynamic("1:3", :p) }
+        expect(measure_items(flow, 1)).to eq ["p +2", "note 4"]
+      end
+
+      it "offsets a voice dynamic in a bar reached by a tie from the tied note's later part" do
+        flow = placed("C2 D2-|D2 E2|") { |f| f.voices.first.place_dynamic("2:2", :mf) }
+        expect(measure_items(flow, 2)).to eq ["mf +1", "note 2", "note 2"]
+      end
+
+      context "with a pickup written out with a leading rest" do
+        let(:flow) do
+          HeadMusic::Content::Flow.new.tap do |pickup|
+            voice = pickup.add_voice
+            voice.place("0:1", :half)
+            voice.place("0:3", :half, "C4")
+            voice.place("1:1", :whole, "D4")
+            pickup.parts.first.place_dynamic("0:2", :p)
+            voice.place_dynamic("0:4", :f)
+          end
+        end
+
+        it "places its dynamics under the rest and under the first note" do
+          expect(measure_items(flow, 0)).to eq ["p +1", "note 2", "f +1", "note 2"]
+        end
+      end
+    end
+
     context "with a pickup bar written out in full with leading rests" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Pickup Study")
