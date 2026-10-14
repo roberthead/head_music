@@ -17,7 +17,7 @@ I WANT a voice to hold markings that run from one note to another, starting with
 
 SO THAT phrasing survives import, and the gem can reason about phrases and slurred groups
 
-This story adds the span model and its Flow JSON, and slurs and phrase marks in ABC, LilyPond, and kern (read and write) and MusicXML (write). Hairpins and lyric extenders follow in [Hairpins](../backlog/hairpins.md) and [Lyric Extenders](../backlog/lyric-extenders.md), on the same model.
+This story adds the span model and its Flow JSON, and slurs and phrase marks in ABC, LilyPond, and kern (read and write) and MusicXML (write). Hairpins and lyric extenders follow in [Hairpins](hairpins.md) and [Lyric Extenders](../backlog/lyric-extenders.md), on the same model.
 
 ## Background
 
@@ -113,7 +113,7 @@ A voice gets spans: each a kind, a start position, and an end position. Kinds co
 
 1. **`SpanKind` catalog**
    - Built as `Rudiment::Dynamic` and `Articulation` are: `load_catalog`, frozen instances, aliases.
-   - Records: `slur`, and `phrase` (aliases `phrasing_slur`, `phrase_mark`). As built, the hairpin records wait for [Hairpins](../backlog/hairpins.md), which decides what their ends sit on; a catalog row with an undecided anchor would let a voice hold a crescendo this story cannot write.
+   - Records: `slur`, and `phrase` (aliases `phrasing_slur`, `phrase_mark`). As built, the hairpin records wait for [Hairpins](hairpins.md), which decides what their ends sit on; a catalog row with an undecided anchor would let a voice hold a crescendo this story cannot write.
    - Each record states its rules: `anchor` (`note_events` for slur, `voice_events` for phrase; hairpins decided in their story), `extent` (`through_note` for slur and phrase, `to_position` for hairpins), and `owners` (`[voice]` for slur and phrase, `[voice, part]` for hairpins).
    - Names in all six locales and en_GB.
    - Files: `rudiment/span_kind.rb`, `rudiment/span_kinds.yml`, `locales/*.yml`, `lib/head_music.rb`.
