@@ -118,6 +118,31 @@ module MarkingExpectations
     expect(span_summary(round_tripped)).to eq span_summary(original)
   end
 
+  # Every dynamic event comes back at its exact position, owned as before.
+  # A format with one dynamics line names that line's owner as `merged_into`,
+  # such as "part" for kern or "voice 0" for ABC.
+  def expect_same_dynamic_positions(original, round_tripped, merged_into: nil)
+    expect(dynamic_positions(round_tripped)).to eq dynamic_positions(original, merged_into: merged_into)
+  end
+
+  # Every voice event comes back whole, so a held note split in two fails.
+  def expect_same_voice_events(original, round_tripped)
+    expect(voice_event_summary(round_tripped)).to eq voice_event_summary(original)
+  end
+
+  def dynamic_positions(flow, merged_into: nil)
+    flow.parts.each_with_index.flat_map do |part, part_index|
+      owners = [["part", part], *part.voices.each_with_index.map { |voice, index| ["voice #{index}", voice] }]
+      owners.flat_map do |label, owner|
+        owner.dynamic_events.map { |event| [part_index, merged_into || label, event.position.to_s, event.name_key] }
+      end
+    end.uniq.sort
+  end
+
+  def voice_event_summary(flow)
+    flow.voices.map { |voice| voice.voice_events.map(&:to_s) }
+  end
+
   def span_summary(flow)
     flow.voices.map { |voice| voice.spans.map(&:to_s) }
   end
