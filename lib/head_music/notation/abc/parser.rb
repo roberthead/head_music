@@ -176,6 +176,7 @@ module HeadMusic::Notation::ABC
     # Nothing further in the voice can take a decoration either.
     def end_voice(state, line)
       end_notes(state, line)
+      state.settle_hairpins
       state.reject_dangling_decorations
       state.end_overlay(line)
       state.end_invisible_rests
@@ -190,6 +191,7 @@ module HeadMusic::Notation::ABC
 
     def pause_notes(state, line)
       state.ensure_not_awaiting_note(line)
+      state.settle_hairpins
       state.reject_dangling_decorations
       state.flush_pending_note unless state.tie_open?
       state.reset_beam_adjacency
@@ -258,6 +260,7 @@ module HeadMusic::Notation::ABC
         navigation_tagger.record_at_bar_line(state, entering: false)
         end_voice(state, nil)
         repeat_tagger.tag_completed_bar(state)
+        state.add_hairpins
       end
       navigation_tagger.apply
       imply_final_barline

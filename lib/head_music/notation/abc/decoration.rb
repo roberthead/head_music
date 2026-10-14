@@ -12,10 +12,14 @@ module HeadMusic::Notation::ABC
       kind == :level
     end
 
+    def hairpin?
+      %i[hairpin_start hairpin_end].include?(kind)
+    end
+
     # Marks a moment rather than a note, so it can stand on an invisible rest
     # or a spacer.
     def positional?
-      level?
+      level? || hairpin?
     end
 
     def dropped?

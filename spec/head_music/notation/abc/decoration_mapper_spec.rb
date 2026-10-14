@@ -34,11 +34,24 @@ describe HeadMusic::Notation::ABC::DecorationMapper do
       "!mf!" => [:level, "mf"],
       "!f!" => [:level, "f"],
       "!ff!" => [:level, "ff"],
-      "!fff!" => [:level, "fff"]
+      "!fff!" => [:level, "fff"],
+      "!<(!" => [:hairpin_start, "crescendo"],
+      "!<)!" => [:hairpin_end, "crescendo"],
+      "!>(!" => [:hairpin_start, "diminuendo"],
+      "!>)!" => [:hairpin_end, "diminuendo"],
+      "!crescendo(!" => [:hairpin_start, "crescendo"],
+      "!crescendo)!" => [:hairpin_end, "crescendo"],
+      "!diminuendo(!" => [:hairpin_start, "diminuendo"],
+      "!diminuendo)!" => [:hairpin_end, "diminuendo"]
     }.each do |lexeme, (kind, key)|
       it "reads #{lexeme} as the #{kind} #{key}" do
         expect(described_class.classify(lexeme)).to eq(kind: kind, key: key)
       end
+    end
+
+    it "names every hairpin by a span kind" do
+      keys = described_class::NAMED.values.select { |kind, _| kind.to_s.start_with?("hairpin") }.map(&:last).uniq
+      expect(keys.map { |key| HeadMusic::Rudiment::SpanKind.get(key) }).to all(be_hairpin)
     end
 
     {
@@ -70,7 +83,6 @@ describe HeadMusic::Notation::ABC::DecorationMapper do
       ~ H u v !roll! !turnx! !invertedturn! !invertedturnx! !arpeggio! !trill(! !trill)!
       !fermata! !invertedfermata! !breath! !upbow! !downbow! !open! !thumb! !snap! !slide! !+! !plus!
       !0! !1! !2! !3! !4! !5! !trem1! !trem2! !trem3! !trem4! !pppp! !ffff!
-      !crescendo(! !crescendo)! !diminuendo(! !diminuendo)! !<(! !<)! !>(! !>)!
       !shortphrase! !mediumphrase! !longphrase! !editorial! !courtesy! +fermata+
     ].each do |lexeme|
       it "recognizes #{lexeme} and drops it" do

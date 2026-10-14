@@ -6,6 +6,7 @@ module HeadMusic::Notation::ABC
     def initialize(voice)
       @voice = voice
       @waiting = []
+      @hairpin_marks = HairpinMarks.new(voice)
     end
 
     def decorate(decoration)
@@ -27,9 +28,12 @@ module HeadMusic::Notation::ABC
 
     # A marking before a bar line, tie, or the end of the tune has nothing to
     # mark. One the reader drops anyway, such as a !fermata! before a bar line,
-    # is let go.
+    # is let go. A hairpin mark waits for the next note: before a tie, that is
+    # the tie's later link, where the mark stands.
     def reject_dangling_decorations
-      dangling = take.reject(&:dropped?).first
+      hairpins, others = take.partition(&:hairpin?)
+      @waiting = hairpins
+      dangling = others.reject(&:dropped?).first
       return unless dangling
 
       raise ParseError.new(
@@ -38,18 +42,32 @@ module HeadMusic::Notation::ABC
       )
     end
 
-    # A rest keeps only a level, which becomes a dynamic event at the rest.
+    # A hairpin mark before a bar line or the end of the voice marks where
+    # the music has reached, as one ending with the music does.
+    def settle_hairpins(position)
+      hairpins, @waiting = @waiting.partition(&:hairpin?)
+      hairpins.each { |decoration| place_mark(position, decoration) }
+    end
+
+    def add_hairpins
+      @hairpin_marks.add_spans
+    end
+
+    # A rest keeps only what marks a moment: a level, which becomes a dynamic
+    # event at the rest, and a hairpin mark.
     def apply(voice_event, decorations)
-      decorations = decorations.select(&:level?) if voice_event.rest?
+      decorations = decorations.select(&:positional?) if voice_event.rest?
       decorations.each { |decoration| apply_decoration(voice_event, decoration) }
     end
 
     # An invisible rest or spacer holds only what marks a moment.
     def place_at(position)
-      take.select(&:positional?).each { |decoration| place_level(position, decoration) }
+      take.select(&:positional?).each { |decoration| place_mark(position, decoration) }
     end
 
-    def place_level(position, decoration)
+    def place_mark(position, decoration)
+      return @hairpin_marks.record(position, decoration) if decoration.hairpin?
+
       @voice.place_dynamic(position, decoration.key)
     rescue ArgumentError => error
       raise ParseError.new(error.message, line_number: decoration.line, snippet: decoration.lexeme)
@@ -63,7 +81,7 @@ module HeadMusic::Notation::ABC
       when :articulation then voice_event.articulate(key)
       when :ornament then voice_event.embellish(key)
       when :note_dynamic then assign_note_dynamic(voice_event, decoration)
-      when :level then place_level(voice_event.position, decoration)
+      when :level, :hairpin_start, :hairpin_end then place_mark(voice_event.position, decoration)
       end
     end
 

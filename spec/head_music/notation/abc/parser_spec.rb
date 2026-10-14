@@ -949,6 +949,64 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "hairpins" do
+    def hairpins(abc_string)
+      parse(abc_string).voices.map { |voice| voice.spans.map(&:to_s) }
+    end
+
+    {
+      "a crescendo ending on a tie's later link" => ["!<(!C D E F-|!<)!F G A B|", ["crescendo from 1:1:000 to 2:1:000"]],
+      "a start on a tied note and its end on the tie's later link" => ["!<(!C2-!<)!C2|", ["crescendo from 1:1:000 to 1:3:000"]],
+      "an end before a tie, on the tie's later link" => ["!<(!C2!<)!-C2|", ["crescendo from 1:1:000 to 1:3:000"]],
+      "a diminuendo inside a note, on an overlay" => ["C4 & x !>(!x !>)!x2|", ["diminuendo from 1:2:000 to 1:3:000"]],
+      "an overlay end before its bar's start" => ["C2 !<)!D2 & !<(!x4|", ["crescendo from 1:1:000 to 1:3:000"]],
+      "an end on a spacer at the final barline" => ["!<(!C D E F|G4 !<)!y|]", ["crescendo from 1:1:000 to 3:1:000"]],
+      "an end on a spacer after a short bar's fill" => ["!<(!C D E x !<)!y|]", ["crescendo from 1:1:000 to 2:1:000"]],
+      "an end before a bar line" => ["!<(!C D E F !<)!|", ["crescendo from 1:1:000 to 2:1:000"]],
+      "an end before an overlay, where the bar's music ends" => ["!<(!C4 !<)!& x2 !p!x2|", ["crescendo from 1:1:000 to 2:1:000"]],
+      "an end at the end of the tune" => ["!<(!C D E F!<)!", ["crescendo from 1:1:000 to 2:1:000"]],
+      "a start and an end on rests" => ["!<(!z2 !<)!z2|", ["crescendo from 1:1:000 to 1:3:000"]],
+      "an end on the note after a broken rhythm" => ["!<(!C!<)!>D C2|", ["crescendo from 1:1:000 to 1:2:480"]],
+      "a level inside a hairpin" => ["!<(!C !f!D E !<)!F|", ["crescendo from 1:1:000 to 1:4:000"]],
+      "a !crescendo(! closed by !<)!" => ["!crescendo(!C D !<)!E F|", ["crescendo from 1:1:000 to 1:3:000"]],
+      "touching hairpins, the end written after the start" => ["!<(!C D !>(!!<)!E !>)!F|", [
+        "crescendo from 1:1:000 to 1:3:000", "diminuendo from 1:3:000 to 1:4:000"
+      ]],
+      "touching crescendos, the start written before the end" => ["!<(!C D !<(!!<)!E F !<)!|", [
+        "crescendo from 1:1:000 to 1:3:000", "crescendo from 1:3:000 to 2:1:000"
+      ]],
+      "an unterminated hairpin" => ["!<(!C D E F|", []],
+      "a stray end" => ["C D !<)!E F|", []],
+      "a mismatched end" => ["!<(!C D !>)!E F|", []],
+      "a zero-length hairpin" => ["!<(!!<)!C D E F|", []],
+      "a second start of a kind, which pairs with the end" => ["!<(!C !<(!D !<)!E F|", ["crescendo from 1:2:000 to 1:3:000"]],
+      "a hairpin overlapping another" => ["!<(!C !>(!D !<)!E !>)!F|", ["crescendo from 1:1:000 to 1:3:000"]]
+    }.each do |description, (body, expected)|
+      it "reads #{description}" do
+        expect(hairpins("X:1\nM:4/4\nL:1/4\nK:C\n#{body}\n")).to eq [expected]
+      end
+    end
+
+    it "keeps a voice's hairpin open across another voice's music" do
+      abc_string = "X:1\nL:1/4\nM:4/4\nV:1\nV:2\nK:C\nV:1\n!<(!C D E F|\nV:2\nC, D, E, F,|\nV:1\nG4 !<)!|\nV:2\nG,4|\n"
+      expect(hairpins(abc_string)).to eq [["crescendo from 1:1:000 to 3:1:000"], []]
+    end
+
+    it "does not pair a mark with another voice's" do
+      abc_string = "X:1\nL:1/4\nM:4/4\nV:1\nV:2\nK:C\nV:1\n!<(!C D E F|\nV:2\nC, D, E, !<)!F,|\n"
+      expect(hairpins(abc_string)).to eq [[], []]
+    end
+
+    it "settles a mark before a voice change where its voice's time has reached" do
+      abc_string = "X:1\nL:1/4\nM:4/4\nV:1\nV:2\nK:C\nV:1\n!>(!C D E F!>)!\nV:2\nC,4|\n"
+      expect(hairpins(abc_string)).to eq [["diminuendo from 1:1:000 to 2:1:000"], []]
+    end
+
+    it "still reads !>! as an accent" do
+      expect(parse_body("!>!C4|").voices.first.voice_events.first.articulations.map(&:name_key)).to eq ["accent"]
+    end
+  end
+
   describe "chords" do
     subject(:flow) { parse(<<~ABC) }
       X:1

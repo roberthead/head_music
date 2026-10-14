@@ -109,4 +109,49 @@ describe HeadMusic::Notation::ABC::VoiceState do
       expect(voice.dynamic_events.map(&:to_h)).to eq [{"position" => "1:2:000", "level" => "f"}]
     end
   end
+
+  describe "hairpin marks" do
+    subject(:state) { described_class.new(voice, nil, duration_resolver) }
+
+    let(:voice) { HeadMusic::Content::Flow.new.add_voice(role: nil) }
+    let(:duration_resolver) { HeadMusic::Notation::ABC::DurationResolver.new("1/4") }
+    let(:pitch) { HeadMusic::Rudiment::Pitch.get("C4") }
+
+    def mark(lexeme)
+      HeadMusic::Notation::ABC::Decoration.new(**HeadMusic::Notation::ABC::DecorationMapper.classify(lexeme), line: 1, lexeme: lexeme)
+    end
+
+    def defer(lexeme, length)
+      state.decorate(mark(lexeme))
+      state.defer_voice_event([pitch], length)
+    end
+
+    def hairpins
+      state.flush_pending_note
+      state.add_hairpins
+      voice.spans.map(&:to_s)
+    end
+
+    it "places a mark on a tie's later link where that link starts" do
+      defer("!<(!", "2")
+      state.open_tie(1)
+      defer("!<)!", "2")
+      expect([hairpins, voice.voice_events.map(&:to_s)])
+        .to eq [["crescendo from 1:1:000 to 1:3:000"], ["half tied to half C4 at 1:1:000"]]
+    end
+
+    it "keeps a mark on a rest" do
+      state.decorate(mark("!>(!"))
+      state.place("2", nil)
+      defer("!>)!", "2")
+      expect(hairpins).to eq ["diminuendo from 1:1:000 to 1:3:000"]
+    end
+
+    it "settles a waiting mark where the voice's time has reached" do
+      defer("!<(!", "4")
+      state.decorate(mark("!<)!"))
+      state.settle_hairpins
+      expect(hairpins).to eq ["crescendo from 1:1:000 to 2:1:000"]
+    end
+  end
 end

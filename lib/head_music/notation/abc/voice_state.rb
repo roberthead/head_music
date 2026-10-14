@@ -41,7 +41,7 @@ module HeadMusic::Notation::ABC
       @invisible_rests = []
     end
 
-    delegate :decorate, :reject_dangling_decorations, :take_navigation, to: :@decorations
+    delegate :decorate, :reject_dangling_decorations, :take_navigation, :add_hairpins, to: :@decorations
 
     # "(" opens a slur on the next note, chord, or rest.
     def open_slur
@@ -97,6 +97,10 @@ module HeadMusic::Notation::ABC
     # A spacer takes no time, and holds a level where it stands.
     def space
       @decorations.place_at(mark_position)
+    end
+
+    def settle_hairpins
+      @decorations.settle_hairpins(mark_position)
     end
 
     # The bar a voice overlay starts over is the one the last bar line opened.
@@ -280,13 +284,14 @@ module HeadMusic::Notation::ABC
     # so the pair (and any longer chain) resolves to a single voice event whose
     # rhythmic value carries the author's chosen split.
     #
-    # The tied note's markings join the whole event's, but a level written on
-    # it takes effect where it is written, partway through the event.
+    # The tied note's markings join the whole event's, but a level or hairpin
+    # mark written on it takes effect where it is written, partway through the
+    # event.
     def tie_onto_pending(pitches, length, scale, decorations)
       pending = pending_note
       prefix = pending_rhythmic_value(pending)
-      levels, markings = decorations.partition(&:level?)
-      levels.each { |decoration| @decorations.place_level(music_end + prefix, decoration) }
+      marks, markings = decorations.partition(&:positional?)
+      marks.each { |decoration| @decorations.place_mark(music_end + prefix, decoration) }
       close_tie
       self.pending_note = PendingNote.new(
         pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
