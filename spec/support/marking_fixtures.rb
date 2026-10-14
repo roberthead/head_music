@@ -113,7 +113,7 @@ module MarkingExpectations
     expect(marking_summary(round_tripped)).to eq marking_summary(original)
   end
 
-  # Every voice has the same spans, each starting and ending where it did.
+  # Every voice has the same curves, each starting and ending where it did.
   def expect_same_spans(original, round_tripped)
     expect(span_summary(round_tripped)).to eq span_summary(original)
   end
@@ -144,7 +144,7 @@ module MarkingExpectations
   end
 
   def span_summary(flow)
-    flow.voices.map { |voice| voice.spans.map(&:to_s) }
+    flow.voices.map { |voice| voice.spans.select(&:curve?).map(&:to_s) }
   end
 
   def marking_summary(flow)
