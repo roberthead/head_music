@@ -7,7 +7,8 @@ module HeadMusic::Notation::LilyPond
   #
   # A spacer moves the voice's position without placing an event. One that
   # music follows becomes a rest, since a voice holds no gaps; one that ends
-  # the voice leaves nothing behind but the level it carries.
+  # the voice leaves nothing behind but the level it carries. An \after
+  # places its level that far past where the music it wraps starts.
   #
   # Slur and phrase marks pair within a voice by kind and name. As in
   # LilyPond, an open while one of the same kind and name is open is
@@ -47,12 +48,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def after_spacer(position, event)
-      ticks = event.fraction * TICKS_PER_WHOLE_NOTE
-      unless ticks.denominator == 1
-        raise UnsupportedFeatureError.new("A spacer of #{event.fraction} whole notes falls between ticks", line_number: event.line)
-      end
-
-      HeadMusic::Content::Position.new(position.flow, position.bar_number, position.count, position.tick + ticks.to_i)
+      shifted(position, event, "A spacer")
     end
 
     def check_bar(event, position)
@@ -74,6 +70,15 @@ module HeadMusic::Notation::LilyPond
     private
 
     attr_reader :layout, :bar_marks
+
+    def shifted(position, event, name)
+      ticks = event.fraction * TICKS_PER_WHOLE_NOTE
+      unless ticks.denominator == 1
+        raise UnsupportedFeatureError.new("#{name} of #{event.fraction} whole notes falls between ticks", line_number: event.line)
+      end
+
+      HeadMusic::Content::Position.new(position.flow, position.bar_number, position.count, position.tick + ticks.to_i)
+    end
 
     def place_spacer(event, voice)
       position = position(voice)
@@ -99,6 +104,7 @@ module HeadMusic::Notation::LilyPond
       when :time then apply_change(event, voice.flow, position, "\\time", :meter, :meter_at, :change_meter)
       when :staff_change then change_staff(event, voice, position)
       when :level then place_level(voice, position, event)
+      when :after then place_level(voice, shifted(position, event, "An \\after"), event)
       when :bar_mark then bar_marks.hold(event, voice, position)
       end
     end

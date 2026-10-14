@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ABC reads `x` invisible rests and `y` spacers, placing a level written on either at its position; an `x` that ends the voice adds no event, and one followed by music is read as a rest.
 - ABC reads a voice overlay `&` of invisible rests and spacers, placing its levels at their positions in the bar, and raises `UnsupportedFeatureError` for an overlay holding notes or rests and for the multi-bar `(&` … `&)`.
 - LilyPond import reads a spacer `s` in a voice: one that ends the voice adds no event and keeps its dynamic level at its position, and one followed by music reads as a rest.
+- LilyPond import reads `\after D mark music`, placing a dynamic level part way into a note, rest, or sequence at its exact position.
 
 ### Changed
 

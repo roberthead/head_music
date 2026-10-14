@@ -111,4 +111,25 @@ describe HeadMusic::Notation::LilyPond::DurationReader do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /positive duration/)
     end
   end
+
+  describe "#offset_fraction" do
+    it "spans a dotted duration" do
+      expect(reader.offset_fraction(token("\\after 4."))).to eq Rational(3, 8)
+    end
+
+    it "spans a multiplied duration" do
+      expect(reader.offset_fraction(token("\\after 4*3/5"))).to eq Rational(3, 20)
+    end
+
+    it "leaves the carried duration alone" do
+      reader.rhythmic_value(token("c8"))
+      reader.offset_fraction(token("\\after 2"))
+      expect(reader.rhythmic_value(token("c")).to_s).to eq "eighth"
+    end
+
+    it "raises without a duration" do
+      expect { reader.offset_fraction(token("\\after \\p")) }
+        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /\\after expects a duration/)
+    end
+  end
 end

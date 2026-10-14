@@ -48,6 +48,14 @@ module HeadMusic::Notation::LilyPond
       add_note(context, pitches, duration_reader.rhythmic_value(closer), opener.line)
     end
 
+    # The mark \after places into the music that follows, which the caller
+    # reads.
+    def read_after(context)
+      token = cursor.advance
+      offset = duration_reader.offset_fraction(token)
+      context.stream.add_after(offset, token.line, mark_reader.read_one("\\after"))
+    end
+
     def read_tie(context)
       context.stream.open_tie(cursor.advance.line)
     end

@@ -1,8 +1,8 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # The ordered events of one voice as read from the document, before any
-  # flow exists: notes, rests, whole-bar rests, bar checks, and key
-  # or meter commands. Ties fold here, so a tied pair reaches the builder
+  # flow exists: notes, rests, whole-bar rests, spacers, bar checks, \after
+  # marks, and key or meter commands. Ties fold here, so a tied pair reaches the builder
   # as one note whose rhythmic value carries the author's split.
   class VoiceStream
     # A bar check, \key, \time, or \change Staff between the halves of a
@@ -64,6 +64,12 @@ module HeadMusic::Notation::LilyPond
 
     def add_spacer(fraction, line, marks = MarkReader::NONE)
       append(line, kind: :spacer, fraction: fraction, marks: marks)
+    end
+
+    # A mark \after places part way into the music that follows it, held
+    # like a bar check where it falls between the halves of a tied note.
+    def add_after(fraction, line, marks)
+      mark(line, kind: :after, fraction: fraction, marks: marks)
     end
 
     def open_tie(line)

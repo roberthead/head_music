@@ -21,6 +21,8 @@ module HeadMusic::Notation::LilyPond
     CLOSE_CHORD_PATTERN = />(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     STRING_PATTERN = /"((?:[^"\\]|\\.)*)"/m
     COMMAND_PATTERN = /\\([A-Za-z]+)/
+    AFTER_PATTERN = /\\after(?![A-Za-z])/
+    AFTER_DURATION_PATTERN = /(#{DURATION_PATTERN})(?:#{MULTIPLIER_PATTERN})?/o
     WORD_PATTERN = /[A-Za-z_][A-Za-z0-9_]*/
     NUMBER_PATTERN = %r{\d+(?:/\d+)?}
     # Quarter-tone names (cih, ceh, cisih, ceseh) are real LilyPond pitches
@@ -76,7 +78,7 @@ module HeadMusic::Notation::LilyPond
 
     def read_token
       string_token || simple_token || close_chord_token ||
-        lexeme_token(UNSUPPORTED_PATTERN, :unsupported) || command_token ||
+        lexeme_token(UNSUPPORTED_PATTERN, :unsupported) || after_token || command_token ||
         note_token || rest_token || spacer_token ||
         lexeme_token(WORD_PATTERN, :word) || lexeme_token(NUMBER_PATTERN, :number)
     end
@@ -100,6 +102,16 @@ module HeadMusic::Notation::LilyPond
 
     def command_token
       consume(COMMAND_PATTERN) && token(:command, lexeme: scanner[1])
+    end
+
+    # \after takes a duration, which may be dotted or multiplied, so it is
+    # read with the command rather than left to the number pattern.
+    def after_token
+      return unless consume(AFTER_PATTERN)
+
+      nil while scanner.skip_insignificant
+      duration = consume(AFTER_DURATION_PATTERN) && scanner.captures
+      token(:after, lexeme: "\\after", duration: duration&.first, multiplier: duration&.last)
     end
 
     def note_token

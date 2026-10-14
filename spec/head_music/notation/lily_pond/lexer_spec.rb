@@ -88,6 +88,24 @@ describe HeadMusic::Notation::LilyPond::Lexer do
       expect([token.type, token.duration, token.multiplier]).to eq [:spacer, "1", "16"]
     end
 
+    it "lexes \\after with a dotted duration" do
+      token = first_token("\\after 4. \\p")
+      expect([token.type, token.lexeme, token.duration, token.multiplier]).to eq [:after, "\\after", "4.", nil]
+    end
+
+    it "lexes \\after with a multiplied duration" do
+      token = first_token("\\after 4*3/5 \\p")
+      expect([token.type, token.duration, token.multiplier]).to eq [:after, "4", "3/5"]
+    end
+
+    it "lexes \\after with no duration for the reader to refuse" do
+      expect(tokens("\\after \\p").map { |token| [token.type, token.duration] }).to eq [[:after, nil], [:command, nil]]
+    end
+
+    it "does not mistake a longer command for \\after" do
+      expect(first_token("\\afterGrace").type).to eq :command
+    end
+
     it "does not mistake a word for a spacer" do
       expect(first_token("staff").type).to eq :word
     end

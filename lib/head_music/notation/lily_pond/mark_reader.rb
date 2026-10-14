@@ -76,6 +76,21 @@ module HeadMusic::Notation::LilyPond
       marks
     end
 
+    # Consumes the one mark a command such as \after takes.
+    def read_one(command)
+      count = mark_token_count
+      unless count
+        token = cursor.peek
+        raise cursor.unsupported_command(token) if token&.type == :command
+        raise cursor.unsupported_token(token) if token&.type == :unsupported
+
+        raise cursor.error("#{command} expects a mark", token || cursor.peek(-1))
+      end
+
+      tokens = Array.new(count) { cursor.advance }
+      add(NONE, tokens.last)
+    end
+
     private
 
     attr_reader :cursor

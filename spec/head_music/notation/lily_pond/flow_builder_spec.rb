@@ -194,6 +194,67 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     end
   end
 
+  describe "\\after" do
+    def levels(source)
+      build(source).voices.first.dynamic_events.map(&:to_s)
+    end
+
+    it "places a level part way into a note, leaving the note whole" do
+      flow = build("{ \\after 4 \\p c'2. d'4 | }")
+      expect([voice_events_of(flow), flow.voices.first.dynamic_events.map(&:to_s)])
+        .to eq [["dotted half C4 at 1:1:000", "quarter D4 at 1:4:000"], ["p at 1:2:000"]]
+    end
+
+    it "reads a dotted offset" do
+      expect(levels("{ c'4 \\after 4. \\p c'2. | }")).to eq ["p at 1:3:480"]
+    end
+
+    it "reads a multiplied offset" do
+      expect(levels("{ \\after 4*3/5 \\p c'1 | }")).to eq ["p at 1:1:576"]
+    end
+
+    it "measures nested offsets from the same note" do
+      expect(levels("{ \\after 4 \\p \\after 2 \\f c'1 | }")).to eq ["p at 1:2:000", "f at 1:3:000"]
+    end
+
+    it "places a level on the second link of a tie from where the link starts" do
+      flow = build("{ c'2~ \\after 4 \\p c'2 | }")
+      expect([voice_events_of(flow), flow.voices.first.dynamic_events.map(&:to_s)])
+        .to eq [["half tied to half C4 at 1:1:000"], ["p at 1:4:000"]]
+    end
+
+    it "places a level on a link after a barline" do
+      expect(levels("{ c'1~ | \\after 4 \\p c'2 d'2 | }")).to eq ["p at 2:2:000"]
+    end
+
+    it "measures from the start of a sequence" do
+      expect(levels("{ \\after 2 \\mf { c'4 d'4 e'2 } | }")).to eq ["mf at 1:3:000"]
+    end
+
+    it "keeps the carried duration of the music it wraps" do
+      expect(voice_events("{ c'8 \\after 4 \\p c' d'4 }")).to eq ["eighth C4 at 1:1:000", "eighth C4 at 1:1:480", "quarter D4 at 1:2:000"]
+    end
+
+    it "drops a mark that is not a level" do
+      flow = build("{ \\after 8 -. c'4 \\after 8 \\sfz d'4 \\after 8 \\< e'2 }")
+      expect([flow.voices.first.dynamic_events, flow.voices.first.note_events.flat_map(&:articulations)]).to eq [[], []]
+      expect(flow.voices.first.note_events.map(&:note_dynamic)).to eq [nil, nil, nil]
+    end
+
+    {
+      "{ \\after \\p c'1 }" => [HeadMusic::Notation::LilyPond::ParseError, /\\after expects a duration/],
+      "{ \\after 4 c'1 }" => [HeadMusic::Notation::LilyPond::ParseError, /\\after expects a mark/],
+      "{ \\after 4 \\p | c'1 }" => [HeadMusic::Notation::LilyPond::ParseError, /\\after expects music/],
+      "{ \\after 4 \\startTextSpan c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"\\startTextSpan"/],
+      "{ \\after 4 -1 c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"-"/],
+      "{ \\after 4*1/7 \\p c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /An \\after of 1\/28 whole notes falls between ticks/]
+    }.each do |source, (error_class, message)|
+      it "raises for #{source}" do
+        expect { build(source) }.to raise_error(error_class, message)
+      end
+    end
+  end
+
   describe "key and meter changes" do
     it "applies a mid-piece key change to the bar" do
       flow = build("{ c'1 | \\key d \\major d'1 | }")

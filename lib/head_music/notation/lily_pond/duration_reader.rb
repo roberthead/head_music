@@ -35,9 +35,18 @@ module HeadMusic::Notation::LilyPond
       spanned_fraction(token, "A whole-bar rest")
     end
 
-    # Spacers mark time in a \new Dynamics, where s1*16 is sixteen bars.
+    # Spacers mark time, as s1*16 marks sixteen bars.
     def spacer_fraction(token)
       spanned_fraction(token, "A spacer")
+    end
+
+    # How far into its music an \after places its mark. The duration is
+    # \after's own, so it neither uses nor sets the carried one.
+    def offset_fraction(token)
+      raise error("\\after expects a duration", token) unless token.duration
+
+      fraction = HeadMusic::Notation::DottedDuration.dotted_unit_fraction(build(token.duration, token))
+      token.multiplier ? fraction * multiplier(token) : fraction
     end
 
     private

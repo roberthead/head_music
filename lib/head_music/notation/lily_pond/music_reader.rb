@@ -14,6 +14,7 @@ module HeadMusic::Notation::LilyPond
     # \new wrapper; the lexer and balance check do not, so nesting must be
     # bounded here to stay inside ParseError.
     MAX_NESTING_DEPTH = 1000
+    AFTER_MUSIC = %i[note rest whole_bar_rest spacer open_chord open_brace after].freeze
     DEFAULT_RELATIVE_REFERENCE = "F3"
 
     def initialize(cursor, document)
@@ -113,6 +114,7 @@ module HeadMusic::Notation::LilyPond
       when :rest then items.read_rest(context)
       when :whole_bar_rest then items.read_whole_bar_rest(context)
       when :spacer then items.read_spacer(context)
+      when :after then read_after(context)
       when :open_chord then items.read_chord(context)
       when :tie then items.read_tie(context)
       when :bar_check then items.read_bar_check(context)
@@ -122,6 +124,14 @@ module HeadMusic::Notation::LilyPond
       when :unsupported then raise cursor.unsupported_token(token)
       else raise cursor.error(%(Unexpected token "#{token.lexeme}"), token)
       end
+    end
+
+    def read_after(context)
+      token = cursor.peek
+      items.read_after(context)
+      raise cursor.error("\\after expects music", cursor.peek || token) unless AFTER_MUSIC.include?(cursor.peek&.type)
+
+      nested(token) { read_item(context) }
     end
 
     def read_item_command(context)
