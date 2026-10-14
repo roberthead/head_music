@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-13T20:31:33-07:00
   planned_at:   2026-10-14T07:39:58-07:00
   finished_at:
-  updated_at:   2026-10-14T08:31:29-07:00
+  updated_at:   2026-10-14T08:51:17-07:00
 -->
 
 # Story: Hairpins
@@ -36,38 +36,38 @@ Split from [Spans Across Notes](../done/spans-across-notes.md), whose span model
 
 ### Model and JSON
 
-- [ ] `crescendo` (aliases `cresc`, `hairpin_crescendo`) and `diminuendo` (aliases `decrescendo`, `decresc`, `dim`) are `SpanKind` rows named in every locale, and no writer prints a hairpin as a slur or raises `KeyError`
-- [ ] `Part#add_span` holds hairpins; a part hairpin may start and end at any position, as a `DynamicEvent` may
-- [ ] A voice hairpin's ends may sit at any position, including inside a note, on a tied note's later link, or where the music ends
-- [ ] `spans_at` includes the part's hairpins; a hairpin ends at a position rather than covering a note, so where a crescendo ends and a diminuendo begins, only the diminuendo is in force
-- [ ] `add_span` raises `ArgumentError` naming both hairpins when two hairpins of one owner overlap; touching hairpins are kept; a voice hairpin may overlap its part's, and different voices' hairpins may overlap
-- [ ] A part crescendo from 3:1 to 5:1 in four bars of 4/4 leaves `latest_bar_number` and `last_sounding_bar_number` at 4
-- [ ] Flow JSON writes a part's `"spans"` after `"dynamic_events"` within schema 5; a bad part span raises naming its path, such as `parts[0].spans[1]`
+- [x] `crescendo` (aliases `cresc`, `hairpin_crescendo`) and `diminuendo` (aliases `decrescendo`, `decresc`, `dim`) are `SpanKind` rows named in every locale, and no writer prints a hairpin as a slur or raises `KeyError`
+- [x] `Part#add_span` holds hairpins; a part hairpin may start and end at any position, as a `DynamicEvent` may
+- [x] A voice hairpin's ends may sit at any position, including inside a note, on a tied note's later link, or where the music ends
+- [x] `spans_at` includes the part's hairpins; a hairpin ends at a position rather than covering a note, so where a crescendo ends and a diminuendo begins, only the diminuendo is in force
+- [x] `add_span` raises `ArgumentError` naming both hairpins when two hairpins of one owner overlap; touching hairpins are kept; a voice hairpin may overlap its part's, and different voices' hairpins may overlap
+- [x] A part crescendo from 3:1 to 5:1 in four bars of 4/4 leaves `latest_bar_number` and `last_sounding_bar_number` at 4
+- [x] Flow JSON writes a part's `"spans"` after `"dynamic_events"` within schema 5; a bad part span raises naming its path, such as `parts[0].spans[1]`
 
 ### Writers
 
-- [ ] A hairpin ending where the last written bar ends is written in every format (ABC `!<)!y`, LilyPond `<>\!`, kern `[[`/`]]`, MusicXML a wedge stop after the last note); a level or hairpin start there is refused
-- [ ] A hairpin start or end outside the written bars raises a `RenderError` naming the mark and position, such as "the crescendo end at 6:1:000 falls after the music ends in bar 4"
-- [ ] At one position, every writer writes hairpin ends, then levels and accents, then starts
-- [ ] LilyPond and kern write a hairpin with a level or accent strictly inside it as touching pieces that meet there; ABC and MusicXML write it whole
-- [ ] ABC and kern raise a `RenderError` naming both hairpins when hairpins from different owners of one written line overlap; the same hairpin from several owners is written once
-- [ ] ABC writes hairpin start and end marks through `PositionMarks`
-- [ ] LilyPond writes `\<`, `\>`, and `\!` in voices (through `TimedMarks`) and in `\new Dynamics` (the spacer grid in `RenderPlan#dynamics_bar`)
-- [ ] kern writes hairpin marks in `**dynam`, joined with a level on one row (`]p<`) so no mark is lost, on `DataRows`' null-row grid; accents still outrank levels
-- [ ] MusicXML writes `<wedge>` through `DirectionWriter`, numbered in document order, and `Divisions` counts hairpin starts and ends
-- [ ] LilyPond writes a voice's marks in a bar where it has only a whole-bar rest
+- [x] A hairpin ending where the last written bar ends is written in every format (ABC `!<)!y`, LilyPond `<>\!`, kern `[[`/`]]`, MusicXML a wedge stop after the last note); a level or hairpin start there is refused
+- [x] A hairpin start or end outside the written bars raises a `RenderError` naming the mark and position, such as "the crescendo end at 6:1:000 falls after the music ends in bar 4"
+- [x] At one position, every writer writes hairpin ends, then levels, then starts, within each owner's line; LilyPond and kern, where an accent shares the dynamics line, put it with the levels, while ABC and MusicXML keep an accent on its note
+- [x] LilyPond and kern write a hairpin with a level or accent strictly inside it as touching pieces that meet there; ABC and MusicXML write it whole
+- [x] ABC and kern raise a `RenderError` naming both hairpins when hairpins from different owners of one written line overlap; the same hairpin from several owners is written once
+- [x] ABC writes hairpin start and end marks through `PositionMarks`
+- [x] LilyPond writes `\<`, `\>`, and `\!` in voices (through `TimedMarks`) and in `\new Dynamics` (the spacer grid in `RenderPlan#dynamics_bar`)
+- [x] kern writes hairpin marks in `**dynam`, joined with a level on one row (`]p<`) so no mark is lost, on `DataRows`' null-row grid; accents still outrank levels
+- [x] MusicXML writes `<wedge>` through `DirectionWriter`, numbered in document order, and `Divisions` counts hairpin starts and ends
+- [x] LilyPond writes a voice's marks in a bar where it has only a whole-bar rest
 
 ### Readers
 
-- [ ] ABC reads hairpin start and end marks through `DecorationMapper`, pairing them by kind
-- [ ] LilyPond reads `\<`, `\>`, and `\!` in voices and in `\new Dynamics` (`PartDynamics`), ending an open hairpin at a level, accent, or new hairpin in its context; it reads `\cresc`, `\dim`, and `\decresc` as hairpins, and skips `\crescTextCresc`-style commands instead of raising
-- [ ] kern reads hairpin marks in `**dynam`, timed with `DynamicPlacer`'s even split, pairing them as Verovio does
-- [ ] Readers drop unterminated, mismatched, stray, and zero-length hairpins without raising, and every file that imports today still imports
+- [x] ABC reads hairpin start and end marks through `DecorationMapper`, pairing them by kind
+- [x] LilyPond reads `\<`, `\>`, and `\!` in voices and in `\new Dynamics` (`PartDynamics`), ending an open hairpin at a level, accent, or new hairpin in its context; it reads `\cresc`, `\dim`, and `\decresc` as hairpins, and skips `\crescTextCresc`-style commands instead of raising
+- [x] kern reads hairpin marks in `**dynam`, timed with `DynamicPlacer`'s even split, pairing them as Verovio does
+- [x] Readers drop unterminated, mismatched, stray, and zero-length hairpins without raising, and every file that imports today still imports
 
 ### Tests
 
-- [ ] Round trips assert where each hairpin starts and ends, covering ends on a tied note's later link, on a rest split at a barline, touching on a tied note, in two voices of a grand staff, in a pickup, and at the final barline after full and short bars
-- [ ] A seeded random generator in `spec/support/hairpin_generator.rb` round-trips 100 seeds per format, naming the seed on failure, and every LilyPond output compiles under 2.26 with no warnings
+- [x] Round trips assert where each hairpin starts and ends, covering ends on a tied note's later link, on a rest split at a barline, touching on a tied note, in two voices of a grand staff (all but ABC, which writes one voice), in a pickup (kern; ABC and LilyPond renumber a pickup bar, as noted below), and at the final barline after full and short bars
+- [x] A seeded random generator in `spec/support/hairpin_generator.rb` round-trips 100 seeds per format, naming the seed on failure, and every LilyPond output compiles under 2.26 with no warnings but LilyPond's "crescendo too small" page-room warning
 
 ## Notes
 
@@ -98,7 +98,8 @@ Split from [Spans Across Notes](../done/spans-across-notes.md), whose span model
   - MusicXML reading: the gem has no MusicXML reader.
   - Style use of hairpins: nothing under `lib/head_music/style` reads dynamics.
   - `\after` inside `\new Dynamics`: the writer never needs it, since the spacer grid and `<>\!` reach every binary offset.
-  - ABC pickups: the ABC reader reads no pickup, for notes either.
+  - ABC and LilyPond pickups: both write a full-length bar 0 as an ordinary first bar, which reads back as bar 1, notes included; that predates this story.
+  - Grand staves in ABC: the ABC writer writes one voice.
 
 ## Implementation Plan
 
@@ -180,3 +181,39 @@ Each step is one commit. Run the touched specs, then `bundle exec rake` and `bun
 - Between step 1 and each writer step, writers omit hairpins; acceptable only because nothing is released in between.
 - Step 10 touches every MusicXML dynamic path, with only the existing direction specs as its net.
 - The ABC reader pairs hairpins at `finish`, so spans appear only after the whole tune is parsed.
+
+## Review
+
+Reviewed 2026-10-14 at `21db7bf0`, covering `2521f2c5` through `21db7bf0`, with fixes through `3c4e0579`. The suite passes (11,513 examples, 1 pending for the kern corpus, which passes on its own over all 371 Bach chorales), line coverage is 99.80%, and rubocop is clean. A product-manager verified each criterion against every format, through each reader and with LilyPond 2.26 and Verovio 6.3.0; a code reviewer ran the seeded round trips at 2,000 seeds, a wider generator of its own (levels and accents inside hairpins, real partial pickups, voices ending early, and meters from 3/8 to 5/4 with changes), old-against-new imports of 1,696 kern files and hand-written ABC and LilyPond, and byte-for-byte MusicXML output over 800 flows.
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| Span kinds, aliases, locale names; no slur or `KeyError` | ✅ | `span_kinds.yml`; `span_kind_spec.rb` writes one slur beside a crescendo in every format |
+| `Part#add_span`, voice ends anywhere, `spans_at`, overlap | ✅ | `part_spans_spec.rb`, `voice_spans_spec.rb`, `spans_spec.rb` |
+| No bars added | ✅ | `part_spans_spec.rb` (crescendo 3:1 to 5:1 leaves both at 4) |
+| Flow JSON | ✅ | `flow_serialization_spec.rb`, with path errors |
+| End on the final barline in every format; outside the bars refused | ✅ | `preflight_checks_spec.rb`; ABC `!<)!y`, LilyPond `<>\!`, kern `[[`, MusicXML stop |
+| Order at one position | ✅ | Reworded: ABC and MusicXML keep an accent on its note, after a hairpin start written before that note; MusicXML writes a part's start before a voice's stop, with different numbers |
+| Split at inner levels in LilyPond and kern, whole in ABC and MusicXML | ✅ | `level_inside_hairpin` fixture in each format; Verovio reads kern's three pieces |
+| ABC and kern refuse cross-owner overlap | ✅ | `abc/writer_spec.rb`, `kern/preflight` specs |
+| Each format's writer and reader | ✅ | Round trips over the fixtures and 100 seeds per format; MusicXML wedges numbered in document order (`wedge_numbers_spec.rb`) |
+| Readers drop bad hairpins; old files import | ✅ | Keep and drop tables per reader; corpus and hand-written sweeps |
+| Round-trip coverage | ✅ | Reworded for the pre-existing limits: ABC writes one voice, and ABC and LilyPond renumber a pickup bar |
+| Generator and LilyPond compile check | ✅ | Reworded: LilyPond's "crescendo too small" warning on very short pieces is page room, not notation |
+
+### Code review findings
+
+1. **A LilyPond `<>` marker lost its slur and accent.** `c'4 <>( d' e' f')` read no slur, and `<>\sfz` before a note gave the note no accent, though LilyPond draws both on the note that starts there. Before this story the file raised "Empty chord".
+2. **Code left with only specs calling it:** `TimedMarks.levels`, and `DirectionWriter#part_lines`, `#voice_lines`, `#voice_rest_lines`, and `#trailing_lines`.
+3. **`ensure_one_hairpin_at_a_time` took owners**, so kern wrapped its pieces in a one-field `Data` to fit it.
+4. **A comment in `dynamics_item_reader.rb` was broken mid-sentence.**
+5. **MusicXML writes a stop after a short final bar's last note with an `<offset>` past the measure's notes**, matching LilyPond's filled bar; a reader that takes the measure as its notes' length may clamp it. Unchecked against MuseScore.
+
+### Resolution
+
+- Finding 1 is fixed in `88356d2a`: a marker's slur and accent go to the note starting where it stands, and are dropped where none does.
+- Findings 2 (in part), 3, and 4 are fixed in `3c4e0579`. The four `DirectionWriter` methods stay as thin wrappers over `slot_lines`, since their specs pin direction placement directly.
+- Finding 5 stands, pinned by `music_xml/writer_spec.rb`; it is the form that keeps the stop on the final barline.
+- The integrated LilyPond round trips found one bug neither LilyPond worktree could: after a short final bar, `<>\!` read back where the music stops rather than on the final barline. Fixed in `629633a9`.
