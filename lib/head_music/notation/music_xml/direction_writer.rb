@@ -2,7 +2,8 @@ require_relative "xml_text"
 
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
-  # Serializes a flow's dynamic events as <direction> elements. Directions add
+  # Serializes a flow's dynamic events and hairpin ends as <direction>
+  # elements, a hairpin as a <wedge> start and stop. Directions add
   # no duration, so placing them changes no <backup> or <forward> a Writer
   # computes; each carries its own exact position instead, as an <offset> in
   # divisions from wherever in the measure it is written. Which slot of the
@@ -19,8 +20,8 @@ module HeadMusic::Notation::MusicXML
     def slot_lines(slot, voice_number: nil, staff_number: nil)
       direction_plan = plan.direction_plan(slot.part)
       direction_plan.marks(slot).flat_map do |mark|
-        offset = offset_from(direction_plan.start(slot), mark)
-        direction_lines(mark.item, offset, voice_number: voice_number, staff_number: staff_number)
+        offset = offset_from(direction_plan.start(slot), slot.bar_number, mark)
+        direction_lines(direction_type(slot.part, mark), offset, voice_number: voice_number, staff_number: staff_number)
       end
     end
 
@@ -59,7 +60,10 @@ module HeadMusic::Notation::MusicXML
       DirectionPlan::Slot.new(kind, voice.part, voice, bar_number, segment)
     end
 
-    def offset_from(start, mark)
+    # A mark on the final barline is written in the last bar, at its end.
+    def offset_from(start, bar_number, mark)
+      return plan.whole_measure_duration(bar_number) - start unless mark.position.bar_number == bar_number
+
       fraction = HeadMusic::Notation::BarSplitter.offset_in_bar(mark.position) * 4 * divisions
       unless fraction.denominator == 1
         raise RenderError,
@@ -69,13 +73,24 @@ module HeadMusic::Notation::MusicXML
     end
 
     def label(mark)
-      "dynamic #{mark.item.name_key}"
+      case mark.type
+      when :dynamic then "dynamic #{mark.item.name_key}"
+      when :start then "#{mark.item.name_key} start"
+      else "#{mark.item.name_key} end"
+      end
     end
 
-    def direction_lines(event, offset, voice_number: nil, staff_number: nil)
+    def direction_type(part, mark)
+      return "<dynamics><#{mark.item.name_key}/></dynamics>" if mark.type == :dynamic
+
+      type = (mark.type == :start) ? mark.item.name_key : "stop"
+      %(<wedge type="#{type}" number="#{plan.wedge_numbers(part).number(mark.item)}"/>)
+    end
+
+    def direction_lines(direction_type, offset, voice_number: nil, staff_number: nil)
       [
         %(#{INDENT * 3}<direction placement="below">),
-        "#{INDENT * 4}<direction-type><dynamics><#{event.name_key}/></dynamics></direction-type>",
+        "#{INDENT * 4}<direction-type>#{direction_type}</direction-type>",
         offset.positive? ? "#{INDENT * 4}<offset>#{offset}</offset>" : nil,
         voice_number && "#{INDENT * 4}<voice>#{voice_number}</voice>",
         staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>",

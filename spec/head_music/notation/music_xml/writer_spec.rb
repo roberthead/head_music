@@ -1796,4 +1796,121 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
   end
+
+  describe "hairpins" do
+    let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+    def measure_items(number)
+      REXML::XPath.match(document, "//measure[@number='#{number}']/*[self::note or self::direction or self::backup]").map do |element|
+        next element.name unless element.name == "direction"
+
+        mark = element.elements["direction-type/*/*"] || element.elements["direction-type/wedge"]
+        label = (mark.name == "wedge") ? "#{mark.attributes["type"]} #{mark.attributes["number"]}" : mark.name
+        "#{label} +#{element.elements["offset"]&.text || 0}"
+      end
+    end
+
+    context "with both ends inside held notes" do
+      let(:flow) { HairpinFixtures.hairpin_under_held_note }
+
+      it "writes each end as its own wedge direction below the staff, offset into the note" do
+        expect([measure_items(1), measure_items(2)]).to eq [["crescendo 1 +1", "note"], ["stop 1 +1", "note", "note"]]
+      end
+
+      it "writes the wedge below the staff" do
+        expect(xpath_count(document, "//direction[@placement='below']/direction-type/wedge")).to eq 2
+      end
+    end
+
+    context "with a hairpin ending where another begins, at a dynamic" do
+      let(:flow) do
+        HairpinFixtures.abc("Turn", "C D E F|G4|").tap do |flow|
+          voice = flow.voices.first
+          voice.add_span(:crescendo, from: "1:1", to: "1:3")
+          voice.add_span(:diminuendo, from: "1:3", to: "2:1")
+          voice.place_dynamic("1:3", :f)
+        end
+      end
+
+      it "writes the stop, then the dynamic, then the start, on one number" do
+        expect(measure_items(1)).to eq ["crescendo 1 +0", "note", "note", "stop 1 +0", "f +0", "diminuendo 1 +0", "note", "note"]
+      end
+    end
+
+    context "with a part's hairpins in a grand staff" do
+      let(:flow) { HairpinFixtures.part_hairpin }
+
+      it "writes neither a voice nor a staff on a part's wedge" do
+        expect(xpath_count(document, "//direction[direction-type/wedge][not(voice) and not(staff)]")).to eq 4
+      end
+
+      it "writes a voice's wedge with its voice and staff, as its dynamics carry them" do
+        directions = REXML::XPath.match(document, "//direction[direction-type/wedge][voice]")
+        expect(directions.map { |direction| [direction.elements["voice"].text, direction.elements["staff"].text] }).to eq [%w[1 1], %w[1 1]]
+      end
+
+      it "writes the part's stop on the final barline after every voice" do
+        expect(measure_items(4)).to eq ["note", "backup", "note", "stop 2 +0"]
+      end
+    end
+
+    context "with a hairpin ending on the final barline after a full bar" do
+      let(:flow) { HairpinFixtures.hairpin_to_music_end }
+
+      it "writes the stop after the voice's last note with no offset" do
+        expect(measure_items(2)).to eq ["crescendo 1 +0", "note", "stop 1 +0"]
+      end
+    end
+
+    context "with a hairpin ending on the final barline after a short bar" do
+      let(:flow) { HairpinFixtures.hairpins_after_short_final_bar }
+
+      it "writes the stop after the voice's last note, offset by the rest of the bar" do
+        expect(measure_items(2)).to eq ["crescendo 1 +0", "note", "note", "note", "stop 1 +0", "diminuendo 1 +0", "stop 1 +1"]
+      end
+    end
+
+    context "with a hairpin ending on the final barline in a voice that rests in the last bar" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Resting", meter: "4/4").tap do |flow|
+          piano = flow.add_part(instrument: "piano")
+          upper = piano.add_voice(role: "upper")
+          lower = piano.add_voice(role: "lower")
+          upper.place("1:1", :whole, "E5")
+          lower.place("1:1", :whole, "C4")
+          lower.place("2:1", :whole, "D4")
+          upper.add_span(:diminuendo, from: "1:3", to: "3:1")
+        end
+      end
+
+      it "writes the stop after the voice's whole-measure rest" do
+        expect(measure_items(2)).to eq ["note", "stop 1 +0", "backup", "note"]
+      end
+    end
+
+    context "with hairpins in two voices" do
+      let(:flow) { HairpinFixtures.hairpins_in_two_voices }
+
+      it "numbers them in document order, where the right hand's crescendo starts first" do
+        expect(measure_items(3)).to eq ["crescendo 2 +2", "note", "backup", "stop 1 +1", "note"]
+      end
+    end
+
+    describe "wedges paired as a reader pairs them" do
+      def expect_wedges_to_match(flow, name)
+        summary = wedge_summary(described_class.new(flow).to_s)
+        expect([summary[:problems], summary[:wedges]]).to eq([[], expected_wedges(flow)]), name
+      end
+
+      it "writes every fixture's hairpins" do
+        HairpinFixtures.all.each { |name| expect_wedges_to_match(HairpinFixtures.public_send(name), name.to_s) }
+      end
+
+      it "writes every generated flow's hairpins" do
+        HairpinGenerator::SEEDS.each do |seed|
+          expect_wedges_to_match(HairpinGenerator.flow(seed, voices: 2, pickup: true), "seed #{seed}")
+        end
+      end
+    end
+  end
 end

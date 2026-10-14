@@ -58,6 +58,11 @@ module HeadMusic::Notation::MusicXML
       @direction_plans[part] ||= DirectionPlan.new(part, self)
     end
 
+    def wedge_numbers(part)
+      @wedge_numbers ||= {}.compare_by_identity
+      @wedge_numbers[part] ||= WedgeNumbers.new(part, self)
+    end
+
     def slur_numbers(part)
       @slur_numbers ||= {}.compare_by_identity
       @slur_numbers[part] ||= SlurNumbers.new(part, self)
@@ -79,7 +84,10 @@ module HeadMusic::Notation::MusicXML
       key_value(flow.timeline.opening_key_signature_event)
       super
       components_by_segment
-      flow.parts.each { |part| slur_numbers(part) }
+      flow.parts.each do |part|
+        slur_numbers(part)
+        wedge_numbers(part)
+      end
     end
 
     # <fifths> is required and <mode> is optional, which is exactly the shape

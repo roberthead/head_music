@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The LilyPond reader reads <> as a zero-length marker carrying dynamics, and reads hairpins in \new Dynamics onto the part, ended by a part level, accent, new hairpin, or \!.
 - The ABC reader reads hairpin decorations (!<(!, !<)!, !>(!, !>)!, and !crescendo(!/!diminuendo(! with their closes) as crescendo and diminuendo spans on the voice, pairing them by kind and dropping any it cannot pair.
 - The ABC writer writes a voice's and its part's crescendo and diminuendo hairpins as !<(!...!<)! and !>(!...!>)!, at any position, including on the final barline as !<)!y, and refuses overlapping hairpins from the part and the voice.
+- MusicXML writes crescendo and diminuendo hairpins of parts and voices as <wedge> directions, numbered in document order, including ends inside notes and on the final barline.
 
 ### Changed
 

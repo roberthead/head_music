@@ -111,6 +111,38 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
       end
     end
 
+    context "with too few divisions for a hairpin start's offset" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Coarse Hairpins", meter: "4/4")
+        voice = flow.add_voice
+        voice.place("1:1", :whole, "C4")
+        voice.add_span(:crescendo, from: "1:1:480", to: "1:3")
+        flow
+      end
+
+      it "raises naming the start" do
+        allow(plan).to receive(:divisions).and_return(1)
+        expect { writer.voice_lines(voice, 1, segment) }
+          .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /offset of the crescendo start at 1:1:480/)
+      end
+    end
+
+    context "with too few divisions for a hairpin end's offset" do
+      let(:flow) do
+        flow = HeadMusic::Content::Flow.new(name: "Coarse End", meter: "4/4")
+        voice = flow.add_voice
+        voice.place("1:1", :whole, "C4")
+        voice.add_span(:diminuendo, from: "1:3", to: "1:3:480")
+        flow
+      end
+
+      it "raises naming the end" do
+        allow(plan).to receive(:divisions).and_return(1)
+        expect { writer.voice_lines(voice, 1, segment) }
+          .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /offset of the diminuendo end at 1:3:480 in 1 divisions/)
+      end
+    end
+
     context "with voice and staff numbers" do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Numbered", meter: "4/4")

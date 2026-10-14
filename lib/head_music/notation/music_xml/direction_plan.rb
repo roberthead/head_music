@@ -8,7 +8,8 @@ module HeadMusic::Notation::MusicXML
   # Per bar: the part's slot; for each voice, a slot before each of its
   # segments, or one before the whole-measure rest that fills an empty bar,
   # and a trailing slot after its last content; and, in the last bar, a
-  # closing slot after every voice.
+  # closing slot after every voice. Within a slot, marks at one position go
+  # hairpin stops first, then dynamics, then hairpin starts.
   class DirectionPlan
     Slot = Data.define(:kind, :part, :voice, :bar_number, :segment)
     Mark = Data.define(:type, :position, :item)
@@ -18,7 +19,7 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
-    MARK_ORDER = %i[dynamic].freeze
+    MARK_ORDER = %i[stop dynamic start].freeze
 
     attr_reader :part
 
@@ -84,22 +85,37 @@ module HeadMusic::Notation::MusicXML
     end
 
     def marks_by_slot
-      @marks_by_slot ||= begin
-        marks = Hash.new { |hash, slot| hash[slot] = [] }
-        part.dynamic_events.each { |event| marks[part_slot_at(event.position)] << Mark.new(:dynamic, event.position, event) }
-        part.voices.each do |voice|
-          voice.dynamic_events.each { |event| marks[voice_slot_at(voice, event.position)] << Mark.new(:dynamic, event.position, event) }
-        end
-        marks.transform_values { |list| in_writing_order(list) }
-      end
+      @marks_by_slot ||= [part, *part.voices]
+        .flat_map { |owner| marks_of(owner).map { |mark| [slot_at(owner, mark.position), mark] } }
+        .group_by(&:first)
+        .transform_values { |pairs| in_writing_order(pairs.map(&:last)) }
+    end
+
+    def marks_of(owner)
+      hairpins = owner.spans.select(&:hairpin?)
+      owner.dynamic_events.map { |event| Mark.new(:dynamic, event.position, event) } +
+        hairpins.map { |span| Mark.new(:stop, span.to, span) } +
+        hairpins.map { |span| Mark.new(:start, span.from, span) }
     end
 
     def in_writing_order(marks)
       marks.each_with_index.sort_by { |mark, index| [mark.position, MARK_ORDER.index(mark.type), index] }.map(&:first)
     end
 
-    def part_slot_at(position)
-      Slot.new(:part, part, nil, position.bar_number, nil)
+    def slot_at(owner, position)
+      return final_barline_slot(owner) if position == plan.flow.final_barline_position
+      return Slot.new(:part, part, nil, position.bar_number, nil) if owner.equal?(part)
+
+      voice_slot_at(owner, position)
+    end
+
+    # A hairpin ending where the music ends is written in the last bar, after
+    # all its owner has written there.
+    def final_barline_slot(owner)
+      bar_number = plan.bar_numbers.last
+      return Slot.new(:closing, part, nil, bar_number, nil) if owner.equal?(part)
+
+      Slot.new(:trailing, part, owner, bar_number, nil)
     end
 
     # The voice event sounding at the position holds it, whether a held note
