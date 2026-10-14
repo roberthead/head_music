@@ -146,6 +146,14 @@ class HeadMusic::Rudiment::RhythmicValue
     to_s == other.to_s
   end
 
+  def eql?(other)
+    other.is_a?(self.class) && self == other
+  end
+
+  def hash
+    to_s.hash
+  end
+
   def to_s
     name.tr("_", "-")
   end

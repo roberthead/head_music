@@ -345,4 +345,26 @@ describe HeadMusic::Rudiment::RhythmicValue do
       expect(value.tied_chain.map(&:unit_name)).to eq %w[half eighth sixteenth]
     end
   end
+
+  describe "value equality" do
+    it "collapses equal values in uniq" do
+      values = [described_class.get(:quarter), described_class.get("quarter"), described_class.get("dotted quarter")]
+      expect(values.uniq.map(&:to_s)).to eq ["quarter", "dotted quarter"]
+    end
+
+    it "counts equal values together in tally" do
+      values = [described_class.get(:half), described_class.get(:half), described_class.get(:whole)]
+      expect(values.tally.transform_keys(&:to_s)).to eq("half" => 2, "whole" => 1)
+    end
+
+    it "is eql to an equal value with the same hash" do
+      one = described_class.get("half tied to eighth")
+      other = described_class.get("half tied to eighth")
+      expect([one.eql?(other), one.hash == other.hash]).to eq [true, true]
+    end
+
+    it "is not eql to a string of the same name" do
+      expect(described_class.get(:quarter)).not_to eql "quarter"
+    end
+  end
 end

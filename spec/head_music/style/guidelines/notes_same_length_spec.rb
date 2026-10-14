@@ -73,4 +73,22 @@ describe HeadMusic::Style::Guidelines::NotesSameLength do
     its(:marks_count) { is_expected.to eq 2 }
     its(:first_mark_code) { is_expected.to eq "2:1:000 to 2:3:000" }
   end
+
+  context "when the first note is not of the most common rhythmic value" do
+    before do
+      voice.place("1:1", :half, "D4")
+      voice.place("1:3", :whole, "E4")
+      voice.place("2:3", :whole, "F4")
+      voice.place("3:3", :whole, "E4")
+      voice.place("4:3", :whole, "D4")
+    end
+
+    it "finds the most common rhythmic value" do
+      analyzer = described_class.send(:new, voice)
+      expect(analyzer.first_most_common_rhythmic_value).to eq HeadMusic::Rudiment::RhythmicValue.get(:whole)
+    end
+
+    its(:marks_count) { is_expected.to eq 1 }
+    its(:first_mark_code) { is_expected.to eq "1:1:000 to 1:3:000" }
+  end
 end
