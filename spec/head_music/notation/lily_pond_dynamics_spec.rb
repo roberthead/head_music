@@ -149,8 +149,7 @@ describe HeadMusic::Notation::LilyPond do
       "a spacer that falls between ticks" => [piano("s1*1/7\\p"), described_class::UnsupportedFeatureError, /falls between ticks/],
       "two levels for one part at one position" => [
         %(\\new PianoStaff << \\new Staff { c''1 } \\new Dynamics { s1\\p } \\new Dynamics { s1\\f } >>), described_class::ParseError, /already placed/
-      ],
-      "a spacer outside a Dynamics context" => [%({ c'4 s4 }), described_class::UnsupportedFeatureError, /"s4"/]
+      ]
     }.each do |description, (source, error_class, message)|
       it "raises for #{description}" do
         expect { described_class.parse(source) }.to raise_error(error_class, message)

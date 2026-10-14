@@ -1,9 +1,13 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # Places a voice stream's events on its voice. Every event lands at the
-  # voice's next position, so bar checks and key or meter commands are
-  # verified against where the music actually is, the way LilyPond verifies
-  # them at compile time.
+  # voice's position, so bar checks and key or meter commands are verified
+  # against where the music actually is, the way LilyPond verifies them at
+  # compile time.
+  #
+  # A spacer moves the voice's position without placing an event. One that
+  # music follows becomes a rest, since a voice holds no gaps; one that ends
+  # the voice leaves nothing behind but the level it carries.
   #
   # Slur and phrase marks pair within a voice by kind and name. As in
   # LilyPond, an open while one of the same kind and name is open is
@@ -16,11 +20,15 @@ module HeadMusic::Notation::LilyPond
       @layout = layout
       @open_spans = Hash.new { |hash, voice| hash[voice] = {} }
       @bar_marks = BarMarkPlacer.new
+      @spacers = Hash.new { |hash, voice| hash[voice] = [] }.compare_by_identity
+      @spacer_ends = {}.compare_by_identity
     end
 
     def place(event, voice)
-      return apply_marker(event, voice, voice.next_position) unless event.music?
+      return place_spacer(event, voice) if event.kind == :spacer
+      return apply_marker(event, voice, position(voice)) unless event.music?
 
+      rest_spacers(voice)
       case event.kind
       when :note then place_note(event, voice)
       when :rest then apply_marks(voice.place(voice.next_position, event.rhythmic_value), event)
@@ -31,6 +39,20 @@ module HeadMusic::Notation::LilyPond
 
     def finish(flow)
       bar_marks.finish(flow)
+    end
+
+    # Where the voice's next item goes, past any spacers it has read.
+    def position(voice)
+      @spacer_ends.fetch(voice) { voice.next_position }
+    end
+
+    def after_spacer(position, event)
+      ticks = event.fraction * TICKS_PER_WHOLE_NOTE
+      unless ticks.denominator == 1
+        raise UnsupportedFeatureError.new("A spacer of #{event.fraction} whole notes falls between ticks", line_number: event.line)
+      end
+
+      HeadMusic::Content::Position.new(position.flow, position.bar_number, position.count, position.tick + ticks.to_i)
     end
 
     def check_bar(event, position)
@@ -52,6 +74,23 @@ module HeadMusic::Notation::LilyPond
     private
 
     attr_reader :layout, :bar_marks
+
+    def place_spacer(event, voice)
+      position = position(voice)
+      place_level(voice, position, event)
+      @spacer_ends[voice] = after_spacer(position, event)
+      @spacers[voice] << event
+    end
+
+    def rest_spacers(voice)
+      @spacer_ends.delete(voice)
+      @spacers.delete(voice)&.each do |spacer|
+        rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(spacer.fraction)
+        raise unsupported("A spacer of #{spacer.fraction} whole notes has no rest to stand for it", spacer) unless rhythmic_value
+
+        voice.place(voice.next_position, rhythmic_value)
+      end
+    end
 
     def apply_marker(event, voice, position)
       case event.kind

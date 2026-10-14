@@ -112,13 +112,14 @@ module HeadMusic::Notation::LilyPond
       when :note then items.read_note(context)
       when :rest then items.read_rest(context)
       when :whole_bar_rest then items.read_whole_bar_rest(context)
+      when :spacer then items.read_spacer(context)
       when :open_chord then items.read_chord(context)
       when :tie then items.read_tie(context)
       when :bar_check then items.read_bar_check(context)
       when :open_brace then read_sequential(context)
       when :open_parallel then read_parallel(context)
       when :command then read_item_command(context)
-      when :unsupported, :spacer then raise cursor.unsupported_token(token)
+      when :unsupported then raise cursor.unsupported_token(token)
       else raise cursor.error(%(Unexpected token "#{token.lexeme}"), token)
       end
     end

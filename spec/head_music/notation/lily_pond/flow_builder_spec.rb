@@ -160,6 +160,40 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     end
   end
 
+  describe "spacers" do
+    it "adds no event for a spacer that ends the voice" do
+      expect(voice_events("{ c'4 d'4 e'4 s4 | }")).to eq ["quarter C4 at 1:1:000", "quarter D4 at 1:2:000", "quarter E4 at 1:3:000"]
+    end
+
+    it "places a level on a spacer that ends the voice at the spacer's position" do
+      expect(build("{ c'4 d'4 e'4 s4\\f | }").voices.first.dynamic_events.map(&:to_s)).to eq ["f at 1:4:000"]
+    end
+
+    it "reads a spacer that music follows as a rest" do
+      expect(voice_events("{ s4\\p c'4 s4*2 | d'1 }")).to eq [
+        "quarter rest at 1:1:000", "quarter C4 at 1:2:000", "half rest at 1:3:000", "whole D4 at 2:1:000"
+      ]
+    end
+
+    it "keeps the level on a spacer that music follows" do
+      expect(build("{ c'4 s4\\p e'2 }").voices.first.dynamic_events.map(&:to_s)).to eq ["p at 1:2:000"]
+    end
+
+    it "checks a bar after a spacer that ends the voice" do
+      expect { build("{ c'4 s2 | }") }.to raise_error(HeadMusic::Notation::LilyPond::ParseError, /failed at: 3\/4 in bar 1/)
+    end
+
+    it "measures a spacer under a meter another staff changes" do
+      source = %(<< \\new Staff { c'2 s2 s2 | d'4 } \\new Staff { c'1 | \\time 2/4 e'2 } >>)
+      expect(build(source).voices.first.voice_events.map(&:to_s).last).to eq "quarter D4 at 3:1:000"
+    end
+
+    it "raises for a spacer that music follows when no rest can stand for it" do
+      expect { build("{ s4*5/3 c'4 }") }
+        .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /spacer of 5\/12 whole notes has no rest/)
+    end
+  end
+
   describe "key and meter changes" do
     it "applies a mid-piece key change to the bar" do
       flow = build("{ c'1 | \\key d \\major d'1 | }")

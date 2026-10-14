@@ -27,8 +27,8 @@ module HeadMusic::Notation::LilyPond
 
       # Key and meter changes are answered before the notes of the same
       # position, so a bar is placed under the meter that governs it.
-      def sort_key
-        [voice.next_position, event.music? ? 1 : 0]
+      def sort_key(placer)
+        [placer.position(voice), event.timed? ? 1 : 0]
       end
     end
 
@@ -73,7 +73,7 @@ module HeadMusic::Notation::LilyPond
     def replay(cursors, placer)
       cursors = cursors.reject(&:done?)
       until cursors.empty?
-        cursor = cursors.min_by(&:sort_key)
+        cursor = cursors.min_by { |candidate| candidate.sort_key(placer) }
         placer.place(cursor.event, cursor.voice)
         cursor.advance
         cursors = cursors.reject(&:done?)

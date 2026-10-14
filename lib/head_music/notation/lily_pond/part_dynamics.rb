@@ -22,7 +22,7 @@ module HeadMusic::Notation::LilyPond
           placer.place_level(part, position, event)
           place_accent(part, position, event.marks.note_dynamic)
         end
-        position = after_spacer(position, event)
+        position = placer.after_spacer(position, event)
       end
     end
 
@@ -38,15 +38,6 @@ module HeadMusic::Notation::LilyPond
       part.voices.flat_map(&:note_events).each do |note_event|
         note_event.note_dynamic ||= note_dynamic if note_event.position == position
       end
-    end
-
-    def after_spacer(position, event)
-      ticks = event.fraction * EventPlacer::TICKS_PER_WHOLE_NOTE
-      unless ticks.denominator == 1
-        raise UnsupportedFeatureError.new("A spacer of #{event.fraction} whole notes falls between ticks", line_number: event.line)
-      end
-
-      HeadMusic::Content::Position.new(flow, position.bar_number, position.count, position.tick + ticks.to_i)
     end
   end
 end

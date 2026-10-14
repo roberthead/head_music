@@ -24,6 +24,10 @@ module HeadMusic::Notation::LilyPond
       def music?
         %i[note rest whole_bar_rest].include?(kind)
       end
+
+      def timed?
+        music? || kind == :spacer
+      end
     end
 
     UNFOLLOWED_TIE = "A tie must be followed by a note"
