@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-09-25T14:05:52-07:00
-  activated_at:
+  activated_at: 2026-10-14T16:39:35-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-14T15:16:39-07:00
+  updated_at:   2026-10-14T16:39:35-07:00
 -->
 
 # Story: Tuplets and Grace Notes
