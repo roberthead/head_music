@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The MusicXML writer writes a voice's dynamic that falls after its last note in a bar, as a `<direction>` after that note, instead of leaving it out.
 - The ABC writer no longer writes a zero-length note (`C8-|C0`) for a note that crosses a barline and ends on a later one.
 - The kern writer writes a voice or part dynamic after the last note of a short final bar, filling the bar to its meter's length with invisible rests (`ryy`) in every spine, instead of leaving it out.
+- The kern writer writes a dynamic before a pickup's first note at its position, writing the pickup's leading rest to hold it, instead of moving it onto that note.
 
 ## [22.0.0] - 2026-09-24
 

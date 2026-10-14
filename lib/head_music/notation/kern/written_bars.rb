@@ -4,7 +4,7 @@ module HeadMusic::Notation::Kern
   # barline before each, and every voice's tokens in each.
   #
   # A pickup bar's leading silence is left out, since kern starts a pickup
-  # at its first note.
+  # at its first note, unless a dynamic falls in it.
   class WrittenBars
     PICKUP_BAR = 0
     STYLES = {double: "||", final: "|!"}.freeze
@@ -30,13 +30,13 @@ module HeadMusic::Notation::Kern
       bar_number == PICKUP_BAR && first == PICKUP_BAR
     end
 
-    # Where the pickup's first note sounds, or nil when the pickup bar
-    # holds nothing but silence.
+    # Where the pickup's first note sounds, or its downbeat when a dynamic
+    # comes before that note, or nil when the pickup bar holds nothing but
+    # silence.
     def pickup_start
       return @pickup_start if defined?(@pickup_start)
 
-      onsets = event_sources.values.flat_map { |source| source.placed.fetch(PICKUP_BAR, []) }.reject(&:rest?).map(&:offset)
-      @pickup_start = first.zero? ? onsets.min : nil
+      @pickup_start = first.zero? ? pickup_onset : nil
     end
 
     def events(voice, bar_number)
@@ -106,11 +106,23 @@ module HeadMusic::Notation::Kern
       @music_end ||= event_sources.values.filter_map(&:finish).max || [first, full_length(first)]
     end
 
+    def pickup_onset
+      onsets = event_sources.values.flat_map { |source| source.placed.fetch(PICKUP_BAR, []) }.reject(&:rest?).map(&:offset)
+      note_start = onsets.min
+      dynamic_start = dynamic_offsets(PICKUP_BAR).min
+      return note_start if dynamic_start.nil? || (note_start && note_start <= dynamic_start)
+
+      0
+    end
+
     def dynamic_after_music?
       last_bar, last_offset = music_end
-      (flow.parts + flow.voices).flat_map(&:dynamic_events).any? do |dynamic_event|
-        position = dynamic_event.position
-        position.bar_number == last_bar && HeadMusic::Notation::BarSplitter.offset_in_bar(position) >= last_offset
+      dynamic_offsets(last_bar).any? { |offset| offset >= last_offset }
+    end
+
+    def dynamic_offsets(bar_number)
+      (flow.parts + flow.voices).flat_map(&:dynamic_events).map(&:position).filter_map do |position|
+        HeadMusic::Notation::BarSplitter.offset_in_bar(position) if position.bar_number == bar_number
       end
     end
 

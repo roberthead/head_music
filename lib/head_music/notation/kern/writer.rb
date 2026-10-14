@@ -49,9 +49,7 @@ module HeadMusic::Notation::Kern
     end
 
     def dynamic_fields
-      @dynamic_fields ||= flow.parts.to_h do |part|
-        [part, DynamicFields.new(part, pickup_bar: WrittenBars::PICKUP_BAR, pickup_start: bars.pickup_start)]
-      end
+      @dynamic_fields ||= flow.parts.to_h { |part| [part, DynamicFields.new(part)] }
     end
 
     def columns

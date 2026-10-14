@@ -347,6 +347,20 @@ describe HeadMusic::Notation::Kern do
       original.parts.last.place_dynamic("1:4", :f)
       expect_round_trip_positions(original, 1)
     end
+
+    def pickup_flow
+      HeadMusic::Content::Flow.new(name: "Pickup", meter: "4/4").tap do |flow|
+        voice = flow.add_voice
+        voice.place("0:1", :dotted_half)
+        voice.place("0:4", :quarter, "C4")
+        voice.place("1:1", :whole, "D4")
+      end
+    end
+
+    it "keeps a part dynamic before a pickup's first note" do
+      original = pickup_flow.tap { |flow| flow.parts.first.place_dynamic("0:2", :p) }
+      expect_round_trip_positions(original, 1)
+    end
   end
 
   describe "the span fixtures" do

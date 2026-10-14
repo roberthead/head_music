@@ -10,12 +10,8 @@ module HeadMusic::Notation::Kern
     # sfz is written in the token, as z.
     SPINE_ACCENTS = %w[sf rfz fp].freeze
 
-    # A dynamic before a pickup's first note moves to that note, since kern
-    # starts the pickup there.
-    def initialize(part, pickup_bar:, pickup_start:)
+    def initialize(part)
       @part = part
-      @pickup_bar = pickup_bar
-      @pickup_start = pickup_start
     end
 
     def empty?
@@ -34,7 +30,7 @@ module HeadMusic::Notation::Kern
     def by_bar
       @by_bar ||= candidates.each_with_object({}) do |(position, dynamic), fields|
         bar_fields = fields[position.bar_number] ||= {}
-        bar_fields[offset(position)] ||= dynamic.name_key
+        bar_fields[HeadMusic::Notation::BarSplitter.offset_in_bar(position)] ||= dynamic.name_key
       end
     end
 
@@ -54,13 +50,6 @@ module HeadMusic::Notation::Kern
       voice.note_events.filter_map do |note_event|
         [note_event.position, note_event.note_dynamic] if SPINE_ACCENTS.include?(note_event.note_dynamic&.name_key)
       end
-    end
-
-    def offset(position)
-      offset = HeadMusic::Notation::BarSplitter.offset_in_bar(position)
-      return offset unless position.bar_number == @pickup_bar && @pickup_start
-
-      Rational([offset, @pickup_start].max)
     end
   end
 end

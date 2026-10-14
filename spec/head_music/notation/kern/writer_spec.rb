@@ -307,11 +307,26 @@ describe HeadMusic::Notation::Kern::Writer do
       expect(data(flow)).to eq ["4ee\t2c\t.", "4r\t.\t.", "2ryy\t2ryy\tf"]
     end
 
-    it "moves a dynamic before a pickup's first note to that note" do
+    it "writes a pickup's leading rest to hold a dynamic before the pickup's first note" do
       voice.place("0:1", :half)
       voice.place("0:3", :half, "C4")
       voice.place("1:1", :whole, "D4")
-      part.place_dynamic("0:1", :p)
+      part.place_dynamic("0:2", :p)
+      expect(data(flow)).to eq ["2r\t.", ".\tp", "2c\t.", "1d\t."]
+    end
+
+    it "writes a pickup bar of rest to hold a dynamic in it" do
+      voice.place("0:1", :whole)
+      voice.place("1:1", :whole, "D4")
+      part.place_dynamic("0:3", :p)
+      expect(data(flow)).to eq ["1r\t.", ".\tp", "1d\t."]
+    end
+
+    it "starts a pickup at its first note when the dynamic falls on that note" do
+      voice.place("0:1", :half)
+      voice.place("0:3", :half, "C4")
+      voice.place("1:1", :whole, "D4")
+      part.place_dynamic("0:3", :p)
       expect(data(flow)).to eq ["2c\tp", "1d\t."]
     end
 
