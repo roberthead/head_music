@@ -38,10 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - kern reads and writes `||` and `|!` barlines and `*>A` section labels as rehearsal marks, and writes `==` only at the end. Expansion lists are still ignored.
 - The ABC, LilyPond, MusicXML, and kern writers raise `RenderError` for repeat structure or a marking on a bar after the music ends, rather than dropping it. `Flow#last_sounding_bar_number` answers the bar the music ends in, which the readers and writers share, and `Flow#bar(number)` answers one bar, allocating only that one.
 - `HeadMusic::Notation::BarSplitter.position_at(flow, bar_number, offset)` turns an offset in a bar into a position, the inverse of `offset_in_bar`.
-- ABC reads `x` invisible rests and `y` spacers, placing a level written on either at its position; an `x` that ends the voice adds no event, and one followed by music is read as a rest.
-- ABC reads a voice overlay `&` of invisible rests and spacers, placing its levels at their positions in the bar, and raises `UnsupportedFeatureError` for an overlay holding notes or rests and for the multi-bar `(&` … `&)`.
-- LilyPond import reads a spacer `s` in a voice: one that ends the voice adds no event and keeps its dynamic level at its position, and one followed by music reads as a rest.
+- ABC reads `x` invisible rests and `y` spacers, placing a level written on either at its position; an `x` that ends the voice in the bar where its music ends adds no event, and any other is read as a rest.
+- ABC reads a voice overlay `&` of invisible rests and spacers, placing its levels at their positions in the bar, and raises `UnsupportedFeatureError` for an overlay holding notes or rests and for the multi-bar `(&` … `&)`, and `ParseError` for one that runs past its bar's music.
+- LilyPond import reads a spacer `s` in a voice: one that ends the voice in the bar where its music ends adds no event and keeps its dynamic level at its position, and any other reads as a rest.
 - LilyPond import reads `\after D mark music`, placing a dynamic level part way into a note, rest, or sequence at its exact position.
+- kern import leaves out invisible rests (`ryy`) after a spine's last visible event in the bar where its music ends, so a `**dynam` level beside them keeps its position; any other invisible rest is read as a rest.
+- Every writer places a voice or part dynamic at its exact position where no note starts. ABC writes one inside a note or rest on a voice overlay of invisible rests (`C4 D4 & x2 !f!x6|]`) and one after the last note of a short final bar on a trailing invisible rest (`C2 D2 E2 !f!x2|]`). LilyPond writes one inside a note with `\after` and one after the music on spacers. kern writes them on null rows and invisible rests (`ryy`), and one before a pickup's first note beside the pickup's leading rest. MusicXML writes each with an `<offset>`. ABC and LilyPond raise `RenderError` naming the position for a dynamic no binary note value reaches.
 
 ### Changed
 
@@ -57,9 +59,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The MusicXML and LilyPond writers render a note that crosses a barline as tied notes, one per bar, instead of raising `RenderError`. A chord ties each of its pitches, and a rest splits into consecutive rests. Fourth-species flows now render.
 - The LilyPond parser reads a tie across a bar check, such as `c'1~ | c'2`, as one placement instead of raising `ParseError`. A `\key` or `\time` written between the halves of such a tie takes effect at that barline; one in the middle of a bar still raises.
 - The LilyPond writer renders a short final bar, such as one that balances a pickup, when every voice ends there together: it leaves the bar check off that bar, and a tacet voice rests only as long as the music, followed by spacers where a dynamic comes after the music in that bar. Voices that end at different points short of the final bar still raise `RenderError`.
-- kern import leaves out invisible rests (`ryy`) after a spine's last visible event, so a voice ends where its music does and a `**dynam` level beside them keeps its position; an invisible rest followed by music is still read as a rest.
-- ABC writes a voice's or part's dynamic inside a note or rest on a voice overlay of invisible rests (`C4 D4 & x2 !f!x6|]`) and one after the last note on a trailing invisible rest (`C2 D2 E2 !f!x2|]`), rather than moving it to the next note or leaving it out, and raises `RenderError` naming the position for a dynamic no binary note value reaches.
-- LilyPond export writes a voice dynamic inside a note or rest with `\after` at its exact position, instead of moving it to the next note.
 
 ### Fixed
 
@@ -67,9 +66,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ABC tunes with a staccato dot, `T` or `M` shorthand, or `!…!` decorations, and LilyPond files with articulations or dynamics, import instead of raising. kern tokens with a `z` sforzando no longer raise `UnsupportedFeatureError`.
 - The MusicXML writer writes a voice's dynamic that falls after its last note in a bar, as a `<direction>` after that note, instead of leaving it out.
 - The ABC writer no longer writes a zero-length note (`C8-|C0`) for a note that crosses a barline and ends on a later one.
-- The kern writer writes a voice or part dynamic after the last note of a short final bar, filling the bar to its meter's length with invisible rests (`ryy`) in every spine, instead of leaving it out.
-- The kern writer writes a dynamic before a pickup's first note at its position, writing the pickup's leading rest to hold it, instead of moving it onto that note.
-- LilyPond export writes a voice or part dynamic after the music's end in a short final bar on spacer rests at its position, instead of dropping it.
 
 ## [22.0.0] - 2026-09-24
 
