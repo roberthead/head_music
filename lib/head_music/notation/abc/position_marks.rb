@@ -11,8 +11,8 @@ module HeadMusic::Notation::ABC
         PositionMarks.offset(position)
       end
 
-      # An invisible rest reaches the mark only if a binary note value spans
-      # its offset.
+      # Invisible rests can reach any offset in binary note values, but none
+      # inside a tuplet.
       def reachable?
         !HeadMusic::Notation::DottedDuration.rhythmic_value_for(offset).nil?
       end

@@ -175,6 +175,12 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
       ]
     end
 
+    it "reads spacers that reach a bar after the music's last as rests, so their level stays in written bars" do
+      flow = build("{ c'2. s4 | s1\\f | }")
+      expect([voice_events("{ c'2. s4 | s1\\f | }"), flow.voices.first.dynamic_events.map(&:to_s)])
+        .to eq [["dotted half C4 at 1:1:000", "quarter rest at 1:4:000", "whole rest at 2:1:000"], ["f at 2:1:000"]]
+    end
+
     it "keeps the level on a spacer that music follows" do
       expect(build("{ c'4 s4\\p e'2 }").voices.first.dynamic_events.map(&:to_s)).to eq ["p at 1:2:000"]
     end

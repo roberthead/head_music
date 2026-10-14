@@ -17,10 +17,6 @@ module HeadMusic::Notation::ABC
     # beamed to its predecessor; a true or nil beam_break_before keeps it, so
     # programmatic flows render with every-token spacing. Every bar token
     # re-lexes unambiguously with no separator, so dropping it is safe.
-    #
-    # Marks after the music follow it on invisible rests, and marks inside a
-    # note or rest go on an overlay of invisible rests, which reads back as
-    # the bar's own time.
     def bar(bar_segments)
       @pitch_writer.start_new_bar
       bar_marks = @position_marks.bar_marks(bar_segments)

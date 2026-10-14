@@ -7,7 +7,8 @@ module HeadMusic::Notation::LilyPond
   #
   # A spacer moves the voice's position without placing an event. One that
   # music follows becomes a rest, since a voice holds no gaps; one that ends
-  # the voice leaves nothing behind but the level it carries. An \after
+  # the voice in the bar where its music ends leaves nothing behind but the
+  # level it carries. An \after
   # places its level that far past where the music it wraps starts.
   #
   # Slur and phrase marks pair within a voice by kind and name. As in
@@ -39,6 +40,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def finish(flow)
+      @spacers.keys.each { |voice| rest_spacers(voice) if spacers_past_music_bar?(voice) }
       bar_marks.finish(flow)
     end
 
@@ -85,6 +87,14 @@ module HeadMusic::Notation::LilyPond
       place_level(voice, position, event)
       @spacer_ends[voice] = after_spacer(position, event)
       @spacers[voice] << event
+    end
+
+    # Spacers left in the bar where the music ends hold only time for a level
+    # there. Once they reach a later bar, that bar is part of the music.
+    def spacers_past_music_bar?(voice)
+      music_stop = voice.next_position
+      barline = bar_start?(music_stop) ? music_stop : HeadMusic::Content::Position.new(voice.flow, music_stop.bar_number + 1, 1, 0)
+      position(voice) > barline
     end
 
     def rest_spacers(voice)
