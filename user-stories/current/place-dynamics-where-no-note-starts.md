@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-13T20:34:36-07:00
   planned_at:   2026-10-13T21:08:28-07:00
   finished_at:
-  updated_at:   2026-10-13T21:39:33-07:00
+  updated_at:   2026-10-13T21:54:15-07:00
 -->
 
 # Story: Place Dynamics Where No Note Starts
@@ -31,17 +31,17 @@ Found while planning [Markings Review Follow-ups](../done/markings-review-follow
 
 ## Acceptance Criteria
 
-- [ ] Each writer either places such a dynamic at its position or raises a render error naming the position
-- [ ] The choice for each format is recorded in the Notes, with the reason
-- [ ] Every writer raises a `RenderError` naming the level and position for a voice or part dynamic in a bar before or after the written music, including exactly at the flow's end, before writing anything
-- [ ] A voice or part dynamic inside a note or rest reads back at its exact position, with every voice event unchanged, in ABC (overlay of invisible rests), LilyPond (`\after`, voice dynamics staying voice dynamics), and kern (unchanged)
-- [ ] A voice or part dynamic after the last note of a short final bar reads back at its exact position in ABC, LilyPond, and kern, with no rest added to any voice; MusicXML writes it after the last note
-- [ ] Kern writes a dynamic before a pickup's first note at its position
-- [ ] ABC and kern raise a `RenderError` naming the position when a part and its voices hold different levels at one position; the same level from several owners is written once
-- [ ] ABC raises a `RenderError` naming the position for a dynamic no binary length reaches
-- [ ] Every LilyPond output in the new specs compiles under LilyPond 2.26 with no warnings or programming errors
-- [ ] Round trips assert each dynamic's owner and exact position, not the level in force at each note
-- [ ] CHANGELOG has **Breaking.** entries for the new refusals, for ABC and LilyPond moving off the next note, and for kern import dropping trailing `ryy`
+- [x] Each writer either places such a dynamic at its position or raises a render error naming the position
+- [x] The choice for each format is recorded in the Notes, with the reason
+- [x] Every writer raises a `RenderError` naming the level and position for a voice or part dynamic in a bar before or after the written music, including exactly at the flow's end, before writing anything
+- [x] A voice or part dynamic inside a note or rest reads back at its exact position, with every voice event unchanged, in ABC (overlay of invisible rests), LilyPond (`\after`, voice dynamics staying voice dynamics), and kern (unchanged)
+- [x] A voice or part dynamic after the last note of a short final bar reads back at its exact position in ABC, LilyPond, and kern, with no rest added to any voice; MusicXML writes it after the last note
+- [x] Kern writes a dynamic before a pickup's first note at its position
+- [x] ABC and kern raise a `RenderError` naming the position when a part and its voices hold different levels at one position; the same level from several owners is written once
+- [x] ABC raises a `RenderError` naming the position for a dynamic no binary length reaches
+- [x] Every LilyPond output in the new specs compiles under LilyPond 2.26 with no warnings or programming errors
+- [x] Round trips assert each dynamic's owner and exact position, not the level in force at each note
+- [x] CHANGELOG records the new refusals, the exact placements, and kern import dropping trailing `ryy`, as additions without a **Breaking.** prefix, since every dynamics reader and writer they change is unreleased (22.0.0 had none)
 
 ## Notes
 
@@ -97,3 +97,40 @@ Each step is one commit. Run the touched specs, then `bundle exec rake` and `bun
 - The new readers turn mid-voice `x`, `s`, or `ryy` into visible rests: positions are right, invisibility is lost.
 - Overlay rendering and odd lengths such as `x5/2` are unverified in abcm2ps and abcjs.
 - Very fine offsets make long `\after` multipliers and many kern null rows; both are bounded and read back exactly.
+
+## Review
+
+Reviewed 2026-10-13 at `5c2d308f`, covering `03887bf1` through `5c2d308f`. The suite passes (10,683 examples, 1 pending for the kern corpus), line coverage is 99.78%, and rubocop is clean. A product-manager verified each criterion against a four-format matrix, with every LilyPond output compiled under 2.26, and a code reviewer reproduced each finding below against `main`.
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| Each writer places such a dynamic or raises naming the position | ✅ | Every case in the matrix round-trips exactly or raises. LilyPond's spacer error named only the bar until `f50edff9` |
+| Each format's choice recorded in the Notes | ✅ | Notes cover all four formats and the shared reading rule |
+| Writers raise for a dynamic outside the written bars | ✅ | `preflight_checks.rb#ensure_timed_marks_within_music`; four-format table in `preflight_checks_spec.rb` |
+| Inside a note or rest, exact in ABC, LilyPond, kern | ✅ | ABC overlay, LilyPond `\after`, kern null rows; round-trip specs assert positions and whole voice events |
+| After the last note of a short final bar | ✅ | ABC trailing `x`, LilyPond spacers, kern `ryy`; MusicXML direction after the last note |
+| Kern pickup dynamic | ✅ | `kern/written_bars.rb#pickup_onset`; round trip at 0:2:000 |
+| ABC and kern refuse different levels at one position | ✅ | `ensure_one_level_per_position`; criterion narrowed to different levels, since the same level loses only its owner |
+| ABC refuses an offset no binary length reaches | ✅ | `abc/writer.rb#ensure_marks_reachable`; tuplet offsets |
+| New LilyPond outputs compile without warnings | ✅ | `compile_warnings` in the round-trip and writer specs |
+| Round trips assert owner and exact position | ✅ | `expect_same_dynamic_positions`, `expect_same_voice_events` in `spec/support/marking_fixtures.rb` |
+| CHANGELOG | ✅ | Additions, without **Breaking.**, since 22.0.0 had no dynamics in any reader or writer |
+
+### Code review findings
+
+1. **A kern file whose last bar is all invisible rest with a dynamic became unwritable.** The reader dropped every trailing `ryy`, so `1c | 1ryy f` read the *f* at 2:1 with the music ending in bar 1, and every writer refused it; on `main` it read as a whole rest and wrote. ABC (`C4|!f!x4|`) and LilyPond (`{ c'1 | s1\f | }`) accepted the same shape, which they had refused on `main`.
+2. **The ABC reader did not bound an overlay to its bar.** `C4 & x6 !p!x2|D4|` put the *p* at 2:3.
+3. **LilyPond's spacer error named no position.** A trailing *p* at 1:3:320 raised "cannot reach the voice's dynamics in bar 1", though `\after` places the same offset inside a note.
+4. **Two ABC comments overstated or restated the code** (`PositionMarks::Mark#reachable?`, `BarWriter#bar`).
+5. **`ABC::PositionMarks` has no spec of its own**; it is covered through the writer and round-trip specs.
+
+### Resolution
+
+- Finding 1 is fixed in `dec14159` (kern), `a24a084e` (ABC), and `e4bf0983` (LilyPond): invisible time after a voice's music is dropped only within the bar where that music ends, and reaching a later bar reads as rests.
+- Finding 2 is fixed in `a24a084e`: an overlay running past its bar's music raises `ParseError`.
+- Finding 3 is fixed in `f50edff9`: the error names the dynamic's level and position. A trailing dynamic at a tuplet offset still raises in LilyPond, where spacers can reach only binary offsets.
+- Finding 4 is fixed in `e4bf0983`.
+- Finding 5 stands: its edge cases are pinned through the writer specs.
+- Still open, and recorded for later: kern writes visible `r` filler for a voice that ends early; `\after` inside `\new Dynamics` raises `ParseError`, as it did on `main`; ABC overlay rendering is unverified in abcm2ps and abcjs.
