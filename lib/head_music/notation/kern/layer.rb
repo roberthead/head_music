@@ -15,9 +15,10 @@ module HeadMusic::Notation::Kern
   # left unpaired, or a span its voice refuses, such as a slur ending on a
   # rest, is dropped.
   #
-  # Invisible rests after a voice's last visible event add nothing, as they
-  # hold only time for dynamics after the music ends. One followed by music
-  # is a rest, since the voice cannot hold a gap.
+  # Invisible rests after a voice's last visible event, in the bar where its
+  # music ends, add nothing, as they hold only time for dynamics after the
+  # music. Ones that reach a later bar, or are followed by music, are rests,
+  # since that bar is written and the voice cannot hold a gap.
   class Layer
     Event = Struct.new(
       :time, :rhythmic_value, :fraction, :pitches, :syllables, :articulations, :ornaments, :note_dynamic, :span_marks,
@@ -48,8 +49,8 @@ module HeadMusic::Notation::Kern
       finish_of(events.last)
     end
 
-    def sounding_end_time
-      finish_of(sounding_events.last)
+    def sounding_end_time(clock)
+      finish_of(sounding_events(clock).last)
     end
 
     def place(clock, finish_time)
@@ -58,7 +59,7 @@ module HeadMusic::Notation::Kern
       @position = voice.flow.position(first_bar.number, 1, 0)
       @time = first_bar.start
       @span_marks = []
-      sounding_events.each { |event| place_event(event, clock) }
+      sounding_events(clock).each { |event| place_event(event, clock) }
       rest_until(finish_time, clock) if finish_time
       add_spans
     end
@@ -69,9 +70,15 @@ module HeadMusic::Notation::Kern
       event && (event.time + event.fraction)
     end
 
-    def sounding_events
+    def sounding_events(clock)
       last_visible = events.rindex { |event| !event.invisible }
-      last_visible ? events[..last_visible] : []
+      return [] unless last_visible
+
+      music_end = finish_of(events[last_visible])
+      barline = clock.bars.map(&:start).find { |start| start >= music_end }
+      return events if barline && finish_of(events.last) > barline
+
+      events[..last_visible]
     end
 
     # A voice sits on its part's first staff unless it says otherwise, and

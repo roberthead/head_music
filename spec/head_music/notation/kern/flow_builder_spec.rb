@@ -698,6 +698,12 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
         .to eq [["quarter C4 at 1:1:000", "quarter D4 at 1:2:000"], ["f at 1:4:000"]]
     end
 
+    it "keeps invisible rests that reach a bar after the music's last, so their dynamic stays in written bars" do
+      flow = parse("**kern  **dynam\n*M4/4  *\n=1  =1\n1c  p\n=2  =2\n1ryy  f\n==  ==\n*-  *-")
+      expect([voice_events(flow.voices.first), flow.parts.first.dynamic_events.map(&:to_s)])
+        .to eq [["whole C4 at 1:1:000", "whole rest at 2:1:000"], ["p at 1:1:000", "f at 2:1:000"]]
+    end
+
     it "pads a voice whose invisible rests end before another voice's music with visible rests" do
       flow = parse("**kern  **kern\n*M4/4  *M4/4\n=1  =1\n4c  2e\n4ryy  .\n2ryy  2f\n==  ==\n*-  *-")
       expect(voice_events(flow.voices.last)).to eq ["quarter C4 at 1:1:000", "dotted half rest at 1:2:000"]
