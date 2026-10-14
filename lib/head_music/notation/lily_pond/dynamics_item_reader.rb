@@ -34,6 +34,7 @@ module HeadMusic::Notation::LilyPond
       case token.lexeme
       when *SettingReader::COMMANDS then settings.read
       when *BarMarkReader::COMMANDS then bar_marks.read
+      when *MarkReader::HAIRPIN_STYLE_COMMANDS then cursor.advance
       else raise cursor.unsupported_command(token)
       end
     end

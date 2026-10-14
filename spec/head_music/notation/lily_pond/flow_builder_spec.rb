@@ -361,6 +361,49 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     end
   end
 
+  describe "hairpins" do
+    def hairpins(music)
+      build("{ #{music} }").voices.first.spans.map(&:to_s)
+    end
+
+    {
+      "a hairpin ended by \\!" => ["c'4\\< d' e' f'\\!", ["crescendo from 1:1:000 to 1:4:000"]],
+      "a hairpin ended by a level" => ["c'4\\< d' e' f'\\f", ["crescendo from 1:1:000 to 1:4:000"]],
+      "a hairpin ended by an accent" => ["c'4\\> d' e' f'\\sfz", ["diminuendo from 1:1:000 to 1:4:000"]],
+      "a hairpin ended by the next" => ["c'4\\< d' e'\\> f' | g'1\\!", ["crescendo from 1:1:000 to 1:3:000", "diminuendo from 1:3:000 to 2:1:000"]],
+      "an end before a start written after it" => ["c'4\\< d' e'\\mf\\> f' | g'1\\!", ["crescendo from 1:1:000 to 1:3:000", "diminuendo from 1:3:000 to 2:1:000"]],
+      "an end before a start written before it" => ["c'4\\< d' e'\\>\\mf f' | g'1\\!", ["crescendo from 1:1:000 to 1:3:000", "diminuendo from 1:3:000 to 2:1:000"]],
+      "an end on a tied note's later link" => ["c'4\\< d'2~ d'4\\! | e'1", ["crescendo from 1:1:000 to 1:4:000"]],
+      "a start on a tied note's later link" => ["c'2~ c'4\\< d'4 | e'1\\!", ["crescendo from 1:3:000 to 2:1:000"]],
+      "an end on a rest" => ["c'4\\< d' r\\! f'", ["crescendo from 1:1:000 to 1:3:000"]],
+      "an end on a whole-bar rest" => ["c'1\\< | R1*4/4\\! | c'1", ["crescendo from 1:1:000 to 2:1:000"]],
+      "an end on a spacer" => ["c'2\\< s4\\! c'4", ["crescendo from 1:1:000 to 1:3:000"]],
+      "\\<\\! on one note, ended end first and so left open until a level" => ["c'4\\<\\! d'\\p e' f'", ["crescendo from 1:1:000 to 1:2:000"]],
+      "\\cresc ended by a level" => ["c'4\\cresc d' e' f'\\f", ["crescendo from 1:1:000 to 1:4:000"]],
+      "\\cresc ended by \\endcresc" => ["c'4\\cresc d' e'\\endcresc f'", ["crescendo from 1:1:000 to 1:3:000"]],
+      "\\dim ended by \\enddim" => ["c'4\\dim d' e'\\enddim f'", ["diminuendo from 1:1:000 to 1:3:000"]],
+      "\\decresc ended by \\enddecresc" => ["c'4\\decresc d' e'\\enddecresc f'", ["diminuendo from 1:1:000 to 1:3:000"]],
+      "an end placed with \\after" => ["\\after 2 \\! c'1\\<", ["crescendo from 1:1:000 to 1:3:000"]],
+      "a hairpin among styling commands" => ["\\crescTextCresc c'4\\< d' \\dimTextDim e' \\crescHairpin f'\\! \\dimHairpin", ["crescendo from 1:1:000 to 1:4:000"]],
+      "an unterminated hairpin" => ["c'4\\< d' e' f'", []],
+      "a stray \\!" => ["c'4 d'\\! e' f'", []],
+      "\\<\\! on one note with nothing after" => ["c'4\\<\\! d' e' f'", []]
+    }.each do |description, (music, expected)|
+      it "reads #{description}" do
+        expect(hairpins(music)).to eq expected
+      end
+    end
+
+    it "keeps each voice's hairpins to itself" do
+      flow = build(%(\\new Staff << \\new Voice { c''4\\< d'' e'' f''\\! } \\new Voice { c'4 d'\\f e'2 } >>))
+      expect(flow.voices.map { |voice| voice.spans.map(&:to_s) }).to eq [["crescendo from 1:1:000 to 1:4:000"], []]
+    end
+
+    it "still places the levels that end hairpins" do
+      expect(build("{ c'4\\< d' e'\\f\\> f' | g'1\\p }").voices.first.dynamic_events.map(&:to_s)).to eq ["f at 1:3:000", "p at 2:1:000"]
+    end
+  end
+
   describe "bar marks" do
     def bars(music)
       build(music).bars.map(&:to_h)

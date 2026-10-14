@@ -140,6 +140,7 @@ module HeadMusic::Notation::LilyPond
       when *SettingReader::COMMANDS then settings.read(context.stream)
       when *BarMarkReader::COMMANDS then bar_marks.read(context.stream)
       when "change" then items.read_staff_change(context)
+      when *MarkReader::HAIRPIN_STYLE_COMMANDS then cursor.advance
       when "new" then contexts.read_sequential_new(context)
       when *ENVELOPE_COMMANDS then raise cursor.error(%(Unexpected \\#{token.lexeme} inside music), token)
       else read_expression_command(context)

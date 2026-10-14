@@ -407,7 +407,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
     end
 
     it "carries a note's marks on its stream event" do
-      expect(first_marks("{ c'4-.\\trill\\sfz\\p }")).to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [])
+      expect(first_marks("{ c'4-.\\trill\\sfz\\p }")).to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [], hairpin_marks: [])
     end
 
     it "carries a rest's marks on its stream event" do
@@ -416,7 +416,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
 
     it "holds a level on a tied note's later link inside the tie" do
       inner = read("{ c'2~ c'2\\f }").streams.first.events.first.inner_events.first
-      expect([inner.elapsed.to_s, inner.event.kind, inner.event.marks.level]).to eq ["half", :level, "f"]
+      expect([inner.elapsed.to_s, inner.event.kind, inner.event.marks.level]).to eq ["half", :dynamics, "f"]
     end
   end
 end

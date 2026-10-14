@@ -95,6 +95,11 @@ describe HeadMusic::Notation::LilyPond do
     expect(part_levels(described_class.parse(source).parts.first)).to eq [%w[1:1:000 p]]
   end
 
+  it "skips the commands that style hairpins there" do
+    source = piano("\\crescTextCresc s1\\p | \\dimHairpin s1\\f | s1")
+    expect(part_levels(described_class.parse(source).parts.first)).to eq [%w[1:1:000 p], %w[2:1:000 f]]
+  end
+
   it "drops hairpins and text spans there" do
     source = piano("s1\\p\\< | s1\\f\\> | s1\\!\\cresc")
     expect(part_levels(described_class.parse(source).parts.first)).to eq [%w[1:1:000 p], %w[2:1:000 f]]

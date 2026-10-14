@@ -8,12 +8,13 @@ module HeadMusic::Notation::LilyPond
   # the reader, so fingerings and stray signs still raise.
   #
   # Slur and phrasing-slur marks are kept in the order written, each with
-  # the name a \= gives it, for the placer to pair.
+  # the name a \= gives it, for the placer to pair. So are hairpin marks:
+  # :crescendo, :diminuendo, or :end, whether written \<, \cresc, or \!.
   class MarkReader
     SpanMark = Data.define(:kind, :opening, :id)
 
-    Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks) do
-      def initialize(articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [])
+    Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks, :hairpin_marks) do
+      def initialize(articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [])
         super
       end
 
@@ -24,7 +25,8 @@ module HeadMusic::Notation::LilyPond
           ornaments: ornaments | other.ornaments,
           note_dynamic: note_dynamic || other.note_dynamic,
           level: level || other.level,
-          span_marks: span_marks + other.span_marks
+          span_marks: span_marks + other.span_marks,
+          hairpin_marks: hairpin_marks + other.hairpin_marks
         )
       end
     end
@@ -40,14 +42,18 @@ module HeadMusic::Notation::LilyPond
     ARTICULATION_COMMANDS = ARTICULATIONS_BY_SHORTHAND.values.freeze
     NOTE_DYNAMIC_COMMANDS = HeadMusic::Rudiment::Dynamic.accents.map(&:name_key).freeze
     LEVEL_COMMANDS = HeadMusic::Rudiment::Dynamic.levels.map(&:name_key).freeze
-    DROPPED_COMMANDS = %w[
-      fermata arpeggio upbow downbow breathe portato stopped sfp spp sff fz pppp ffff
-      cresc decresc dim endcresc enddecresc enddim
-    ].freeze
+    DROPPED_COMMANDS = %w[fermata arpeggio upbow downbow breathe portato stopped sfp spp sff fz pppp ffff].freeze
+    HAIRPINS_BY_LEXEME = {"\\<" => :crescendo, "\\>" => :diminuendo, "\\!" => :end}.freeze
+    # The text forms draw "cresc." and "dim." where a hairpin would be.
+    HAIRPINS_BY_COMMAND = {
+      "cresc" => :crescendo, "dim" => :diminuendo, "decresc" => :diminuendo,
+      "endcresc" => :end, "enddim" => :end, "enddecresc" => :end
+    }.freeze
+    # Commands that only choose how later hairpins are drawn.
+    HAIRPIN_STYLE_COMMANDS = %w[crescTextCresc dimTextDim dimTextDecresc dimTextDecr crescHairpin dimHairpin].freeze
     DIRECTIONS = %w[- ^ _].freeze
     # The portato (_) and stopped (+) shorthands are read and dropped.
     SHORTHAND_PATTERN = /\A[-^_][.!>\-^_+]\z/
-    # Hairpins are spans, which the model does not hold yet, so they are dropped.
     HAIRPIN_PATTERN = /\A\\[<>!]\z/
     SPAN_PATTERN = /\A(?:\\=([A-Za-z0-9]+))?(\\)?([()])\z/
     FIELD_NAMES = {note_dynamic: "sforzando", level: "dynamic level"}.freeze
@@ -58,6 +64,7 @@ module HeadMusic::Notation::LilyPond
       **ORNAMENTS_BY_COMMAND.transform_values { |key| [:ornaments, key] },
       **NOTE_DYNAMIC_COMMANDS.to_h { |key| [key, [:note_dynamic, key]] },
       **LEVEL_COMMANDS.to_h { |key| [key, [:level, key]] },
+      **HAIRPINS_BY_COMMAND.transform_values { |mark| [:hairpin_marks, mark] },
       **DROPPED_COMMANDS.to_h { |command| [command, nil] }
     }.freeze
 
@@ -129,6 +136,7 @@ module HeadMusic::Notation::LilyPond
       field, key = meaning(token)
       return marks unless field
       return marks.with(field => marks.public_send(field) | [key]) if %i[articulations ornaments].include?(field)
+      return marks.with(hairpin_marks: marks.hairpin_marks + [key]) if field == :hairpin_marks
       raise cursor.error(%(A note can carry only one #{FIELD_NAMES.fetch(field)}), token) if marks.public_send(field)
 
       marks.with(field => key)
@@ -141,7 +149,7 @@ module HeadMusic::Notation::LilyPond
 
     def meaning(token)
       return MEANINGS_BY_COMMAND[token.lexeme] if token.type == :command
-      return if hairpin?(token)
+      return [:hairpin_marks, HAIRPINS_BY_LEXEME.fetch(token.lexeme)] if hairpin?(token)
 
       articulation = ARTICULATIONS_BY_SHORTHAND[token.lexeme[1]]
       articulation && [:articulations, articulation]

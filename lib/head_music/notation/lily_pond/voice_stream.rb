@@ -156,7 +156,7 @@ module HeadMusic::Notation::LilyPond
     # Closes an open tie: the arriving note's value is appended at the deep
     # end of the pending note's chain, so the pair (and any longer chain)
     # becomes a single note. Its marks join the note's, except a dynamic
-    # level, which is held where the link starts.
+    # level and hairpin marks, which are held where the link starts.
     def extend_tie(pitches, rhythmic_value, line, marks)
       pending = @pending_note
       unless pending.pitches.sort == pitches.sort
@@ -164,11 +164,18 @@ module HeadMusic::Notation::LilyPond
       end
 
       @tie_open = false
-      hold_inside_tie(Event.new(kind: :level, line: line, marks: marks)) if marks.level
+      hold_link_dynamics(marks, line)
       @pending_note = @pending_note.with(
         rhythmic_value: pending.rhythmic_value.append_tied(rhythmic_value),
-        marks: pending.marks.merge(marks.with(level: nil))
+        marks: pending.marks.merge(marks.with(level: nil, hairpin_marks: []))
       )
+    end
+
+    def hold_link_dynamics(marks, line)
+      return unless marks.level || marks.hairpin_marks.any?
+
+      link_marks = MarkReader::Marks.new(level: marks.level, hairpin_marks: marks.hairpin_marks)
+      hold_inside_tie(Event.new(kind: :dynamics, line: line, marks: link_marks))
     end
 
     def hold_inside_tie(event)

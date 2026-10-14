@@ -10,7 +10,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   end
 
   def none
-    {articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: []}
+    {articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: []}
   end
 
   describe "slur and phrasing-slur marks" do
@@ -83,7 +83,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
       expect(described_class::DROPPED_COMMANDS & HeadMusic::Rudiment::Dynamic.all.map(&:name_key)).to be_empty
     end
 
-    %w[-_ -+ \\fermata \\arpeggio \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff ^\\fermata \\< \\> \\! -\\< \\cresc \\dim \\endcresc].each do |source|
+    %w[-_ -+ \\fermata \\arpeggio \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff ^\\fermata].each do |source|
       it "consumes and drops #{source}" do
         cursor = cursor_for("#{source} c'4")
         expect(described_class.new(cursor).read.to_h).to eq none
@@ -92,10 +92,39 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
     end
   end
 
+  describe "hairpin marks" do
+    {
+      "\\<" => :crescendo, "\\>" => :diminuendo, "\\!" => :end, "-\\<" => :crescendo, "_\\>" => :diminuendo,
+      "\\cresc" => :crescendo, "\\dim" => :diminuendo, "\\decresc" => :diminuendo,
+      "\\endcresc" => :end, "\\enddim" => :end, "\\enddecresc" => :end
+    }.each do |source, mark|
+      it "reads #{source} as #{mark}" do
+        cursor = cursor_for("#{source} c'4")
+        expect(described_class.new(cursor).read.hairpin_marks).to eq [mark]
+        expect(cursor.peek.type).to eq :note
+      end
+    end
+
+    it "keeps them in the order written, beside a level" do
+      expect(marks("\\! \\mf \\<")).to include(level: "mf", hairpin_marks: %i[end crescendo])
+    end
+
+    it "joins a tied note's hairpin marks in order" do
+      first = described_class::Marks.new(hairpin_marks: [:crescendo])
+      expect(first.merge(described_class::Marks.new(hairpin_marks: [:end])).hairpin_marks).to eq %i[crescendo end]
+    end
+
+    it "leaves the commands that style later hairpins to the music reader" do
+      cursor = cursor_for("\\crescTextCresc c'4")
+      expect(described_class.new(cursor).read.to_h).to eq none
+      expect(cursor.peek.lexeme).to eq "crescTextCresc"
+    end
+  end
+
   describe "a run of marks" do
     it "reads every mark in order until something else" do
       cursor = cursor_for("-.\\trill->\\sfz\\p c'4")
-      expect(described_class.new(cursor).read.to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [])
+      expect(described_class.new(cursor).read.to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [], hairpin_marks: [])
       expect(cursor.peek.type).to eq :note
     end
 
@@ -131,7 +160,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
     it "merges a tied note's marks, keeping the first dynamics" do
       first = described_class.new(articulations: ["staccato"], note_dynamic: "sf", level: "p")
       second = described_class.new(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "f")
-      expect(first.merge(second).to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sf", level: "p", span_marks: [])
+      expect(first.merge(second).to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sf", level: "p", span_marks: [], hairpin_marks: [])
     end
   end
 end

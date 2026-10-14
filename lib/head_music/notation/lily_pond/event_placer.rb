@@ -15,12 +15,51 @@ module HeadMusic::Notation::LilyPond
   # LilyPond, an open while one of the same kind and name is open is
   # ignored, a close with none open is dropped, and so is a span the voice
   # refuses, such as a slur ending on a rest.
+  #
+  # Hairpin marks are gathered wherever a voice's marks are read and paired
+  # once the voice is placed, by time rather than written order, since the
+  # later links of a tied note are placed before the note's own marks.
   class EventPlacer
     TICKS_PER_WHOLE_NOTE = HeadMusic::Rudiment::Rhythm::PPQN * 4
+
+    # The hairpin marks of one context, paired as LilyPond's dynamic
+    # engraver pairs them: at each moment, any dynamic (a level, an accent,
+    # a hairpin start, or \!) ends the open hairpin, and only then does the
+    # last start written there open a new one, so \mf\< and \<\mf read alike.
+    # An unterminated hairpin, a stray end, and a hairpin its owner refuses
+    # are dropped.
+    class HairpinMarks
+      def initialize
+        @marks = []
+      end
+
+      def add(position, marks)
+        ends = (marks.level || marks.note_dynamic) ? [:end] : []
+        (ends + marks.hairpin_marks).each { |mark| @marks << [position, mark] }
+      end
+
+      def pair(owners)
+        open = nil
+        @marks.group_by(&:first).sort_by(&:first).each do |position, group|
+          owners.each { |owner| add_span(owner, *open, position) } if open
+          start = group.map(&:last).reverse.find { |mark| mark != :end }
+          open = start && [start, position]
+        end
+      end
+
+      private
+
+      def add_span(owner, kind, from, to)
+        owner.add_span(kind, from: from, to: to)
+      rescue ArgumentError
+        nil
+      end
+    end
 
     def initialize(layout)
       @layout = layout
       @open_spans = Hash.new { |hash, voice| hash[voice] = {} }
+      @hairpin_marks = Hash.new { |hash, voice| hash[voice] = HairpinMarks.new }.compare_by_identity
       @bar_marks = BarMarkPlacer.new
       @spacers = Hash.new { |hash, voice| hash[voice] = [] }.compare_by_identity
       @spacer_ends = {}.compare_by_identity
@@ -41,6 +80,7 @@ module HeadMusic::Notation::LilyPond
 
     def finish(flow)
       @spacers.keys.each { |voice| rest_spacers(voice) if spacers_past_music_bar?(voice) }
+      @hairpin_marks.each { |voice, hairpin_marks| hairpin_marks.pair([voice]) }
       bar_marks.finish(flow)
     end
 
@@ -82,9 +122,14 @@ module HeadMusic::Notation::LilyPond
       HeadMusic::Content::Position.new(position.flow, position.bar_number, position.count, position.tick + ticks.to_i)
     end
 
+    def place_dynamics(voice, position, event)
+      place_level(voice, position, event)
+      @hairpin_marks[voice].add(position, event.marks)
+    end
+
     def place_spacer(event, voice)
       position = position(voice)
-      place_level(voice, position, event)
+      place_dynamics(voice, position, event)
       @spacer_ends[voice] = after_spacer(position, event)
       @spacers[voice] << event
     end
@@ -113,21 +158,21 @@ module HeadMusic::Notation::LilyPond
       when :key then apply_change(event, voice.flow, position, "\\key", :key_signature, :key_signature_at, :change_key_signature)
       when :time then apply_change(event, voice.flow, position, "\\time", :meter, :meter_at, :change_meter)
       when :staff_change then change_staff(event, voice, position)
-      when :level then place_level(voice, position, event)
-      when :after then place_level(voice, shifted(position, event, "An \\after"), event)
+      when :dynamics then place_dynamics(voice, position, event)
+      when :after then place_dynamics(voice, shifted(position, event, "An \\after"), event)
       when :bar_mark then bar_marks.hold(event, voice, position)
       end
     end
 
     # Marks are applied where their event was placed, captured before the
-    # voice moves on. A rest keeps only a dynamic level.
+    # voice moves on. A rest keeps only its dynamics.
     def apply_marks(voice_event, event)
       marks = event.marks
       unless voice_event.rest?
         voice_event.articulate(*marks.articulations).embellish(*marks.ornaments)
         voice_event.note_dynamic = marks.note_dynamic if marks.note_dynamic
       end
-      place_level(voice_event.voice, voice_event.position, event)
+      place_dynamics(voice_event.voice, voice_event.position, event)
       apply_spans(voice_event, marks.span_marks)
     end
 

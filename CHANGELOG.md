@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LilyPond import reads `\after D mark music`, placing a dynamic level part way into a note, rest, or sequence at its exact position.
 - kern import leaves out invisible rests (`ryy`) after a spine's last visible event in the bar where its music ends, so a `**dynam` level beside them keeps its position; any other invisible rest is read as a rest.
 - Every writer places a voice or part dynamic at its exact position where no note starts. ABC writes one inside a note or rest on a voice overlay of invisible rests (`C4 D4 & x2 !f!x6|]`) and one after the last note of a short final bar on a trailing invisible rest (`C2 D2 E2 !f!x2|]`). LilyPond writes one inside a note with `\after` and one after the music on spacers. kern writes them on null rows and invisible rests (`ryy`), and one before a pickup's first note beside the pickup's leading rest. MusicXML writes each with an `<offset>`. ABC and LilyPond raise `RenderError` naming the position for a dynamic no binary note value reaches.
+- The LilyPond reader reads voice hairpins (\<, \>, \!, \cresc, \dim, \decresc, and their \end forms), ending an open hairpin at a level, accent, or new hairpin, and skips hairpin styling commands such as \crescTextCresc.
 
 ### Changed
 
