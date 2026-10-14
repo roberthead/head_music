@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The kern reader reads crescendo and diminuendo hairpins in **dynam spines as part hairpins, pairing their marks as Verovio does.
 - The kern writer writes crescendo and diminuendo hairpins in **dynam spines, cut into touching pieces at levels inside them, with a doubled close for one ending on the final barline.
 - LilyPond writes a voice's crescendo and diminuendo hairpins as \<, \>, and \!, cut where a level or accent falls inside one.
+- LilyPond writes a part's crescendo and diminuendo hairpins in its \new Dynamics context.
 
 ### Changed
 

@@ -35,6 +35,11 @@ module HeadMusic::Notation::LilyPond
       new(level_marks(voice) + hairpin_marks(voice.spans, voice.dynamic_events.map(&:position) + accents))
     end
 
+    # A part's levels and hairpins, the hairpins cut at its own levels.
+    def self.part(part)
+      new(part.dynamic_events.map { |event| level_mark(event) } + hairpin_marks(part.spans, part.dynamic_events.map(&:position)))
+    end
+
     def self.level_marks(voice)
       events = voice.dynamic_events.select { |event| voice.dynamic_at(event.position) == event.level }
       events.map { |event| level_mark(event) }

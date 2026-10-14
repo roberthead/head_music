@@ -45,13 +45,18 @@ module HeadMusic::Notation::LilyPond
     end
 
     # What a part's \new Dynamics says in each bar: spacers that reach each of
-    # its levels at the level's exact position.
+    # its levels and hairpin marks at their exact positions.
     def dynamics_bars(part)
       @dynamics_bars ||= {}.compare_by_identity
-      @dynamics_bars[part] ||= begin
-        events_by_bar = part.dynamic_events.group_by { |event| event.position.bar_number }
-        bar_numbers.to_h { |bar_number| [bar_number, dynamics_bar(bar_number, events_by_bar.fetch(bar_number, []))] }
+      @dynamics_bars[part] ||= bar_numbers.to_h do |bar_number|
+        text = spacer_run(bar_number, 0r, bar_length(bar_number), part_marks(part).trailing(bar_number, 0r))
+        [bar_number, [text, (bar_number == bar_numbers.last) ? final_barline_marks(part) : nil].compact.join(" ")]
       end
+    end
+
+    # Whether a part has a \new Dynamics to write.
+    def dynamics?(part)
+      !part.dynamic_events.empty? || part.spans.any?(&:hairpin?)
     end
 
     # A part's own dynamics are written in a \new Dynamics, so only the voice's
@@ -74,8 +79,15 @@ module HeadMusic::Notation::LilyPond
     def precompute_eager_data
       super
       tokens_by_segment
-      flow.parts.each { |part| dynamics_bars(part) unless part.dynamic_events.empty? }
+      flow.parts.each { |part| dynamics_bars(part) if dynamics?(part) }
       [nil, *flow.voices].each { |voice| trailing_spacers(voice) } if trailing_marks?
+    end
+
+    # A part's levels and hairpins, which its \new Dynamics holds apart from
+    # its voices, so a voice's level does not cut a part's hairpin.
+    def part_marks(part)
+      @part_marks ||= {}.compare_by_identity
+      @part_marks[part] ||= TimedMarks.part(part)
     end
 
     def music_end
@@ -87,15 +99,8 @@ module HeadMusic::Notation::LilyPond
     def trailing_marks?
       return @trailing_marks if defined?(@trailing_marks)
 
-      @trailing_marks = !music_end_fraction.nil? && (
-        flow.parts.any? { |part| part.dynamic_events.any? { |event| event.position >= music_end } } ||
-        flow.voices.any? { |voice| timed_marks(voice).trailing(bar_numbers.last, music_end_fraction).any? }
-      )
-    end
-
-    def dynamics_bar(bar_number, events)
-      marks = events.map { |event| TimedMarks.mark(event.position, "\\#{event.level.name_key}", "dynamic #{event.name_key}") }
-      spacer_run(bar_number, 0r, bar_length(bar_number), marks)
+      owners_marks = flow.parts.map { |part| part_marks(part) } + flow.voices.map { |voice| timed_marks(voice) }
+      @trailing_marks = !music_end_fraction.nil? && owners_marks.any? { |marks| marks.trailing(bar_numbers.last, music_end_fraction).any? }
     end
 
     # Spacers from one offset in the bar to another, each mark on the first

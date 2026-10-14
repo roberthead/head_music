@@ -109,7 +109,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def dynamics_lines(part)
-      return [] if part.dynamic_events.empty?
+      return [] unless plan.dynamics?(part)
 
       staff_block("\\new Dynamics {", [voice_writer.dynamics_lines(part)], "}")
     end

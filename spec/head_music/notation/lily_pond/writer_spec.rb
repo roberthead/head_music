@@ -696,11 +696,80 @@ describe HeadMusic::Notation::LilyPond::Writer do
       end
     end
 
+    describe "part hairpins" do
+      it "writes a part with hairpins and no levels a Dynamics context, ending on the final barline after the last spacer" do
+        expect(described_class.new(HairpinFixtures.single_voice_part_hairpin).to_s)
+          .to include "\\new Dynamics {\n      s2\\< s2\\!\\> |\n      s1 <>\\! |\n    }"
+      end
+
+      it "writes the part's hairpins between the staves, apart from the voice's" do
+        rendered = described_class.new(HairpinFixtures.part_hairpin).to_s
+        expect(rendered).to include "\\new Dynamics {\n", "  s1\\< |\n", "  s2 s2\\! |\n", "  s1\\> |\n", "  s1 <>\\! |\n"
+      end
+
+      it "is structurally valid" do
+        expect_structurally_valid_lilypond(described_class.new(HairpinFixtures.part_hairpin).to_s, bars: 4, voices: 2, streams: 3)
+      end
+
+      context "with a level inside a part hairpin" do
+        let(:flow) do
+          HairpinFixtures.abc("Part Level", "C D E F|G4|").tap do |flow|
+            flow.parts.first.add_span(:crescendo, from: "1:1", to: "2:1")
+            flow.parts.first.place_dynamic("1:2", :p)
+            flow.voices.first.place_dynamic("1:3", :f)
+          end
+        end
+        let(:rendered) { described_class.new(flow).to_s }
+
+        it "cuts the hairpin at the part's level but not the voice's" do
+          expect(rendered).to include "  s4\\< s2.\\!\\p\\< |\n", "  s1\\! |\n"
+          expect(bar_check_lines(rendered).first).to eq "c'4 d'4 e'4\\f f'4 |"
+        end
+
+        it "compiles without warnings, drawing both pieces" do
+          skip "lilypond is not installed" unless installed_lilypond
+
+          expect(compile_hairpins(rendered)).to eq(warnings: [], hairpins: 2)
+        end
+      end
+
+      context "with a part hairpin after the music of a short final bar" do
+        let(:flow) do
+          HairpinFixtures.abc("Short Part", "C4|C D E|").tap do |flow|
+            flow.parts.first.add_span(:diminuendo, from: "2:4", to: "3:1")
+          end
+        end
+        let(:rendered) { described_class.new(flow).to_s }
+
+        it "fills the final bar so the hairpin starts on a spacer" do
+          expect(rendered).to include "  s2. s4\\> <>\\! |\n", %(c'4 d'4 e'4 s4 \\bar "|." |)
+        end
+
+        it "compiles without warnings, drawing the hairpin" do
+          skip "lilypond is not installed" unless installed_lilypond
+
+          expect(compile_hairpins(rendered)).to eq(warnings: [], hairpins: 1)
+        end
+      end
+
+      context "with a part hairpin ending on the final barline after a short final bar" do
+        let(:flow) do
+          HairpinFixtures.abc("Short Part", "C4|C D E|").tap do |flow|
+            flow.parts.first.add_span(:crescendo, from: "2:1", to: "3:1")
+          end
+        end
+
+        it "leaves the bar short, ending the hairpin after the last spacer" do
+          expect(described_class.new(flow).to_s).to include "  s1 |\n      s2.\\< <>\\!\n"
+        end
+      end
+    end
+
     describe "hairpin fixtures" do
       expected_hairpins = {
         hairpin_ending_on_tied_note: 1, hairpin_starting_on_split_note: 2, touching_hairpins_on_tied_note: 2,
         hairpin_on_split_rest: 2, hairpins_in_two_voices: 3, hairpin_under_held_note: 1,
-        hairpin_to_music_end: 1, hairpins_after_short_final_bar: 2, hairpin_in_pickup: 1,
+        part_hairpin: 3, single_voice_part_hairpin: 2, hairpin_to_music_end: 1, hairpins_after_short_final_bar: 2, hairpin_in_pickup: 1,
         hairpin_in_voice_that_ends_early: 1, level_inside_hairpin: 3
       }
 
@@ -720,14 +789,14 @@ describe HeadMusic::Notation::LilyPond::Writer do
     describe "hairpin generator flows" do
       def expect_book_to_compile(seeds)
         book = seeds.map { |seed| HairpinGenerator.flow(seed) }
-        count = book.sum { |flow| flow.voices.sum { |voice| voice.spans.count(&:hairpin?) } }
+        count = book.sum { |flow| (flow.parts + flow.voices).sum { |owner| owner.spans.count(&:hairpin?) } }
         rendered = HeadMusic::Notation::LilyPond::BookWriter.new(book).to_s
         expect(compile_hairpins(rendered)).to eq(warnings: [], hairpins: count), "in the book of seeds #{seeds.first}..#{seeds.last}"
       end
 
       # A book of a hundred at a time, since a far longer one warns that
       # LilyPond compressed a page.
-      it "compile in books without warnings, drawing every voice's hairpins" do
+      it "compile in books without warnings, drawing every part's and voice's hairpins" do
         skip "lilypond is not installed" unless installed_lilypond
 
         HairpinGenerator::SEEDS.each_slice(100) { |seeds| expect_book_to_compile(seeds) }

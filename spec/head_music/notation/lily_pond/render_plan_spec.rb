@@ -116,6 +116,24 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
     end
   end
 
+  describe "#dynamics_bars" do
+    let(:flow) do
+      HeadMusic::Notation::ABC.parse("X:1\nT:Plan\nL:1/4\nM:4/4\nK:C\nC4|D4|\n").tap do |flow|
+        flow.parts.first.add_span(:crescendo, from: "1:2", to: "2:3")
+        flow.parts.first.add_span(:diminuendo, from: "2:3", to: "3:1")
+      end
+    end
+    let(:plan) { described_class.new(flow) }
+
+    it "reaches each hairpin mark with spacers, ending the last on the final barline" do
+      expect(plan.dynamics_bars(flow.parts.first)).to eq(1 => "s4 s2.\\<", 2 => "s2 s2\\!\\> <>\\!")
+    end
+
+    it "counts a part with hairpins and no levels as having dynamics" do
+      expect(plan.dynamics?(flow.parts.first)).to be true
+    end
+  end
+
   describe "#final_barline_marks" do
     it "ends an owner's hairpin on the final barline with a marker" do
       flow = build_flow
