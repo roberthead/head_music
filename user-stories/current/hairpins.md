@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-09-27T15:48:57-07:00
-  activated_at:
+  activated_at: 2026-10-13T20:31:33-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-13T21:39:33-07:00
+  updated_at:   2026-10-13T21:54:40-07:00
 -->
 
 # Story: Hairpins
