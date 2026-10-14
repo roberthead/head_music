@@ -8,17 +8,17 @@ module HeadMusic::Notation::LilyPond
   #
   # Offsets are fractions of a whole note into a bar, as the links' are.
   class TimedMarks
-    Mark = Data.define(:bar_number, :offset, :token)
+    Mark = Data.define(:bar_number, :offset, :token, :label)
 
     # The voice's levels that are in force where they fall, since an accent
     # such as fp on the same note overrides its level there.
     def self.levels(voice)
       events = voice.dynamic_events.select { |event| voice.dynamic_at(event.position) == event.level }
-      new(events.map { |event| mark(event.position, "\\#{event.level.name_key}") })
+      new(events.map { |event| mark(event.position, "\\#{event.level.name_key}", "dynamic #{event.name_key}") })
     end
 
-    def self.mark(position, token)
-      Mark.new(position.bar_number, HeadMusic::Notation::BarSplitter.offset_in_bar(position), token)
+    def self.mark(position, token, label)
+      Mark.new(position.bar_number, HeadMusic::Notation::BarSplitter.offset_in_bar(position), token, "#{label} at #{position}")
     end
 
     # How far into a link an \after reaches: a duration where one note value

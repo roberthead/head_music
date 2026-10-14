@@ -5,7 +5,7 @@ describe HeadMusic::Notation::LilyPond::TimedMarks do
   let(:voice) { flow.voices.first }
 
   def marks(*positions_and_tokens)
-    described_class.new(positions_and_tokens.map { |position, token| described_class.mark(flow.position(position), token) })
+    described_class.new(positions_and_tokens.map { |position, token| described_class.mark(flow.position(position), token, "mark") })
   end
 
   describe ".duration" do

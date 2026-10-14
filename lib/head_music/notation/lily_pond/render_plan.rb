@@ -41,8 +41,7 @@ module HeadMusic::Notation::LilyPond
       @trailing_spacers[voice] ||= begin
         bar_number = bar_numbers.last
         marks = voice ? timed_marks(voice).trailing(bar_number, music_end_fraction) : []
-        tokens_by_offset = marks.group_by(&:offset).transform_values { |group| group.map(&:token).join }
-        spacer_run(bar_number, music_end_fraction, bar_length(bar_number), tokens_by_offset, "voice's")
+        spacer_run(bar_number, music_end_fraction, bar_length(bar_number), marks)
       end
     end
 
@@ -81,19 +80,23 @@ module HeadMusic::Notation::LilyPond
     end
 
     def dynamics_bar(bar_number, events)
-      tokens_by_offset = events.to_h do |event|
-        [HeadMusic::Notation::BarSplitter.offset_in_bar(event.position), "\\#{event.level.name_key}"]
-      end
-      spacer_run(bar_number, 0r, bar_length(bar_number), tokens_by_offset, "part's")
+      marks = events.map { |event| TimedMarks.mark(event.position, "\\#{event.level.name_key}", "dynamic #{event.name_key}") }
+      spacer_run(bar_number, 0r, bar_length(bar_number), marks)
     end
 
     # Spacers from one offset in the bar to another, each mark on the first
     # spacer where it falls.
-    def spacer_run(bar_number, from, to, tokens_by_offset, owner)
-      [from, *tokens_by_offset.keys.sort, to].uniq.each_cons(2).flat_map { |start, finish|
-        first, *later = spacers(finish - start, bar_number, owner)
-        ["#{first}#{tokens_by_offset[start]}", *later]
+    def spacer_run(bar_number, from, to, marks)
+      marks_by_offset = marks.group_by(&:offset)
+      [from, *marks_by_offset.keys.sort, to].uniq.each_cons(2).flat_map { |start, finish|
+        first, *later = spacers(finish - start) || raise_unreachable(bar_number, marks_by_offset[finish] || marks_by_offset[start])
+        ["#{first}#{marks_by_offset.fetch(start, []).map(&:token).join}", *later]
       }.join(" ")
+    end
+
+    def raise_unreachable(bar_number, marks)
+      subject = marks ? "the #{marks.first.label}" : "the dynamics in bar #{bar_number}"
+      raise RenderError, "cannot place #{subject} in LilyPond output: no binary note value reaches it"
     end
 
     def bar_length(bar_number)
@@ -103,11 +106,8 @@ module HeadMusic::Notation::LilyPond
       Rational(meter.top_number, meter.bottom_number)
     end
 
-    def spacers(fraction, bar_number, owner)
-      value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
-      raise RenderError, "cannot reach the #{owner} dynamics in bar #{bar_number} in binary note values" unless value
-
-      value.tied_chain.map { |link| "s#{DurationWriter.token(link)}" }
+    def spacers(fraction)
+      HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)&.tied_chain&.map { |link| "s#{DurationWriter.token(link)}" }
     end
 
     # LilyPond has no way to say "three flats read as dorian", so it renders

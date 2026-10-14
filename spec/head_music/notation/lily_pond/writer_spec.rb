@@ -504,7 +504,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
 
       it "raises a render error before any assembly" do
         expect { described_class.new(flow).to_s }
-          .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /part's dynamics in bar 1/)
+          .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /cannot place the dynamic f at 1:1:320 in LilyPond output: no binary note value reaches it/)
       end
     end
 
@@ -517,7 +517,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
 
       it "raises a render error before any assembly" do
         expect { described_class.new(flow).to_s }
-          .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /voice's dynamics in bar 1/)
+          .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /cannot place the dynamic f at 1:4:320 in LilyPond output/)
       end
     end
 
