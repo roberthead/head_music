@@ -322,6 +322,8 @@ it:
     span_kinds:
       slur: legatura di portamento
       phrase: legatura di frase
+      crescendo: crescendo
+      diminuendo: diminuendo
     playing_techniques:
       bell: campana
       bow: arco

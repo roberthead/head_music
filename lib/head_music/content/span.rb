@@ -10,7 +10,7 @@ class HeadMusic::Content::Span
 
   attr_reader :flow, :span_kind, :from, :to
 
-  delegate :name_key, to: :span_kind
+  delegate :name_key, :curve?, :hairpin?, to: :span_kind
 
   def initialize(flow, kind, from:, to:)
     @flow = flow

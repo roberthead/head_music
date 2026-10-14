@@ -51,9 +51,10 @@ module HeadMusic::Notation::MusicXML
     end
 
     def spans_by_end(voice)
+      curves = voice.spans.select(&:curve?)
       {
-        from: voice.spans.group_by { |span| span.from.to_s },
-        to: voice.spans.group_by { |span| span.to.to_s }
+        from: curves.group_by { |span| span.from.to_s },
+        to: curves.group_by { |span| span.to.to_s }
       }
     end
 

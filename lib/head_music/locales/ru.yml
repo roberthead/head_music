@@ -269,6 +269,8 @@ ru:
     span_kinds:
       slur: лига
       phrase: фразировочная лига
+      crescendo: крещендо
+      diminuendo: диминуэндо
     playing_techniques:
       bell: колокол
       bow: смычок

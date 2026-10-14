@@ -1,14 +1,31 @@
+# family: curve for slurs and phrase marks, drawn over the notes; hairpin for
+#   crescendos and diminuendos, drawn in a dynamics line.
 # anchor: what a span's start and end must sit on in its voice: note_events,
 #   any voice_events, or positions, where they may fall anywhere.
-# extent: through_note, where a span covers the whole of its last note.
+# extent: through_note, where a span covers the whole of its last note, or
+#   to_position, where it ends at its end position.
 # owners: which containers may hold the kind.
 span_kinds:
   slur:
+    family: curve
     anchor: note_events
     extent: through_note
     owners: [voice]
   phrase:
     aliases: [phrasing_slur, phrase_mark]
+    family: curve
     anchor: voice_events
     extent: through_note
     owners: [voice]
+  crescendo:
+    aliases: [cresc, hairpin_crescendo]
+    family: hairpin
+    anchor: positions
+    extent: to_position
+    owners: [voice, part]
+  diminuendo:
+    aliases: [decrescendo, decresc, dim]
+    family: hairpin
+    anchor: positions
+    extent: to_position
+    owners: [voice, part]

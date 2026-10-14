@@ -9,17 +9,18 @@ class HeadMusic::Rudiment::SpanKind
 
   load_catalog(File.expand_path("span_kinds.yml", __dir__), "span_kinds")
 
-  attr_reader :anchor, :extent, :owners
+  attr_reader :family, :anchor, :extent, :owners
 
   def initialize(name_key, record)
     super
+    @family = record.fetch("family")
     @anchor = record.fetch("anchor")
     @extent = record.fetch("extent")
     @owners = record.fetch("owners").freeze
   end
 
   # A slur needs sounding notes at its ends; a phrase may begin or end on a
-  # rest; a kind anchored at positions, such as a hairpin will be, may end
+  # rest; a kind anchored at positions, such as a hairpin, may end
   # anywhere.
   def anchors_on?(voice_event)
     case anchor
@@ -31,6 +32,14 @@ class HeadMusic::Rudiment::SpanKind
 
   def anchor_description
     (anchor == "note_events") ? "a note" : "a note or rest"
+  end
+
+  def curve?
+    family == "curve"
+  end
+
+  def hairpin?
+    family == "hairpin"
   end
 
   def covers_last_note?

@@ -17,7 +17,7 @@ module HeadMusic::Notation::LilyPond
       @flow = voice.flow
       @opens = Hash.new { |hash, key| hash[key] = [] }
       @closes = Hash.new { |hash, key| hash[key] = [] }
-      named(voice.spans).each do |span, id|
+      named(voice.spans.select(&:curve?)).each do |span, id|
         opening, closing = BRACKETS.fetch(span.kind)
         name = id && "\\=#{id}"
         @opens[span.from.to_s] << "#{name}#{opening}"

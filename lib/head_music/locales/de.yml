@@ -326,6 +326,8 @@ de:
     span_kinds:
       slur: Bindebogen
       phrase: Phrasierungsbogen
+      crescendo: Crescendo
+      diminuendo: Diminuendo
     playing_techniques:
       bell: Glocke
       bow: Bogen

@@ -445,6 +445,8 @@ en:
     span_kinds:
       slur: slur
       phrase: phrase mark
+      crescendo: crescendo
+      diminuendo: diminuendo
     playing_techniques:
       aeolian: aeolian
       air: air

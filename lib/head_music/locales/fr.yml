@@ -329,6 +329,8 @@ fr:
     span_kinds:
       slur: liaison
       phrase: liaison de phrasé
+      crescendo: crescendo
+      diminuendo: diminuendo
     playing_techniques:
       bell: cloche
       bow: archet

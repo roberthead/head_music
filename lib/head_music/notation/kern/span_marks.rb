@@ -14,7 +14,7 @@ module HeadMusic::Notation::Kern
       @flow = voice.flow
       @opens = Hash.new { |hash, key| hash[key] = [] }
       @closes = Hash.new { |hash, key| hash[key] = [] }
-      levels(voice.spans).each do |span, level|
+      levels(voice.spans.select(&:curve?)).each do |span, level|
         opening, closing = BRACKETS.fetch(span.kind)
         @opens[span.from.to_s] << "#{"&" * level}#{opening}"
         @closes[span.to.to_s] << "#{"&" * level}#{closing}"

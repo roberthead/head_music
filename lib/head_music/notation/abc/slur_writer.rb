@@ -13,7 +13,7 @@ module HeadMusic::Notation::ABC
 
     def initialize(voice)
       @voice = voice
-      curves = voice ? plan(voice.spans) : []
+      curves = voice ? plan(voice.spans.select(&:curve?)) : []
       @opens = curves.map { |curve| curve.from.to_s }.tally
       @closes = curves.map { |curve| curve.to.to_s }.tally
     end

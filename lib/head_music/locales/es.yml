@@ -323,6 +323,8 @@ es:
     span_kinds:
       slur: ligadura de expresión
       phrase: ligadura de fraseo
+      crescendo: crescendo
+      diminuendo: diminuendo
     playing_techniques:
       bell: campana
       bow: arco
