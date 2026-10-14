@@ -428,6 +428,10 @@ describe HeadMusic::Notation::Kern do
           expect_hairpin_round_trip(HairpinGenerator.flow(seed, voices: 2, one_line: false, pickup: true))
         end
       end
+
+      it "keeps where each hairpin of seed #{seed} starts and ends, on one line across two voices" do
+        expect_hairpin_round_trip(HairpinGenerator.flow(seed, voices: 2, one_line: true, pickup: true))
+      end
     end
   end
 
