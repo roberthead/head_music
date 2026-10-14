@@ -22,6 +22,7 @@ module HeadMusic::Notation::Kern
       ensure_voices
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
+      ensure_timed_marks_within_music(flow)
       ensure_pitched_voice_events
       ensure_concert_pitch
       ensure_steady_parts

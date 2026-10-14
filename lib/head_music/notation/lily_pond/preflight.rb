@@ -23,6 +23,7 @@ module HeadMusic::Notation::LilyPond
       ensure_voices
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
+      ensure_timed_marks_within_music(flow)
       ensure_filled_final_bars
       ensure_pitched_voice_events
     end

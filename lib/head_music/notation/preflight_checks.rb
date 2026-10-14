@@ -25,6 +25,26 @@ module HeadMusic
         raise render_error_class, "bar #{marked} carries repeat structure or markings, but the music ends in bar #{last}"
       end
 
+      # A mark that takes no time can sit anywhere in the written bars, but a
+      # writer would have to invent empty bars to reach one outside them.
+      def ensure_timed_marks_within_music(flow)
+        first = flow.earliest_bar_number
+        last = flow.last_sounding_bar_number
+        timed_marks(flow).sort_by(&:last).each do |label, position|
+          if position.bar_number < first
+            raise render_error_class, "the #{label} at #{position} falls before the music starts in bar #{first}"
+          elsif position.bar_number > last
+            raise render_error_class, "the #{label} at #{position} falls after the music ends in bar #{last}"
+          end
+        end
+      end
+
+      def timed_marks(flow)
+        (flow.parts + flow.voices).flat_map(&:dynamic_events).map do |dynamic_event|
+          ["dynamic #{dynamic_event.name_key}", dynamic_event.position]
+        end
+      end
+
       def raise_gap_error(voice, expected_position, found_voice_event)
         if found_voice_event.equal?(voice.voice_events.first)
           raise render_error_class, "the first voice event must start its bar " \

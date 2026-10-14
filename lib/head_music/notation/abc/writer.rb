@@ -33,6 +33,7 @@ module HeadMusic::Notation::ABC
       ensure_no_instrument_change
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
+      ensure_timed_marks_within_music(flow)
       slur_writer
     end
 

@@ -268,10 +268,10 @@ describe HeadMusic::Notation::Kern::Writer do
       expect(data(flow)).to eq ["4ee\t1c\t.", "4ee\t.\t.", "4ee\t.\tmf", "4ee\t.\t."]
     end
 
-    it "leaves out a dynamic after the last note" do
+    it "refuses a dynamic after the music ends" do
       voice.place("1:1", :whole, "C4")
       part.place_dynamic("2:1", :f)
-      expect(data(flow)).to eq ["1c\t."]
+      expect { data(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /dynamic f at 2:1:000 falls after/)
     end
 
     it "moves a dynamic before a pickup's first note to that note" do

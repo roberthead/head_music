@@ -581,10 +581,10 @@ describe HeadMusic::Notation::ABC::Writer do
       expect(body_of(parsed)).to eq "!accent!C2 !uppermordent!!lowermordent!D2 !rfz!E2 !ff!z2|]\n"
     end
 
-    it "leaves out a dynamic with no note after it" do
+    it "refuses a dynamic after the music ends" do
       voice.place("1:1", :whole, "C4")
       voice.place_dynamic("2:1", :f)
-      expect(body_of(flow)).to eq "C8|]\n"
+      expect { body_of(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /dynamic f at 2:1:000 falls after/)
     end
 
     it "writes a dynamic in the middle of a note before the next note" do

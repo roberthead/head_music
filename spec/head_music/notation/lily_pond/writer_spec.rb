@@ -360,17 +360,12 @@ describe HeadMusic::Notation::LilyPond::Writer do
           voice.place("1:3", :whole, "D4").articulate(:accent).embellish(:trill).note_dynamic = :sf
           voice.place("2:3", :half, "E4")
           voice.place_dynamic("1:3", :mp)
-          voice.place_dynamic("3:1", :ff)
         end
       end
       let(:rendered) { described_class.new(flow).to_s }
 
       it "marks only the fragment where the note starts" do
         expect(bar_check_lines(rendered)).to eq ["c'2 d'2\\mp->\\trill\\sf~ |", %(d'2 e'2 \\bar "|." |)]
-      end
-
-      it "leaves out a level with no note after it" do
-        expect(rendered).not_to include "\\ff"
       end
 
       it_behaves_like "a compilable document"
