@@ -10,9 +10,12 @@ module HeadMusic::Notation::Kern
   # rests wherever the voice is silent. Slur and phrase marks open on a
   # voice event's first link and close on its last, once per chord. A rest
   # reads back as one rest per link, so it carries both on its first.
+  #
+  # Time written past the music's end, to hold a dynamic there, is filled
+  # with invisible rests, which the reader leaves out.
   class SpineTokens
-    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes) do
-      def initialize(opens: "", closes: "", **fields)
+    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes, :invisible) do
+      def initialize(opens: "", closes: "", invisible: false, **fields)
         super
       end
 
@@ -30,7 +33,7 @@ module HeadMusic::Notation::Kern
 
       def token
         recip = DurationWriter.token(link)
-        return "#{opens}#{recip}r#{closes}" if rest?
+        return "#{opens}#{recip}r#{"yy" if invisible}#{closes}" if rest?
 
         notes = pitches.sort.map { |pitch| "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{marks}#{TIE_CLOSING[tie]}" }
         notes[0] = "#{opens}#{notes[0]}#{closes}"
@@ -41,12 +44,13 @@ module HeadMusic::Notation::Kern
     TIE_OPENING = {nil => "", :start => "[", :middle => "", :end => ""}.freeze
     TIE_CLOSING = {nil => "", :start => "", :middle => "_", :end => "]"}.freeze
 
-    def self.rests(from, to)
+    def self.rests(from, to, invisible: false)
       return [] unless to > from
 
       offset = from
       HeadMusic::Notation::DottedDuration.rhythmic_value_for(to - from).tied_chain.map do |link|
-        Event.new(offset: offset, link: link, pitches: nil, tie: nil, syllables: {}, marks: "").tap { offset += DurationWriter.fraction(link) }
+        Event.new(offset: offset, link: link, pitches: nil, tie: nil, syllables: {}, marks: "", invisible: invisible)
+          .tap { offset += DurationWriter.fraction(link) }
       end
     end
 
@@ -72,9 +76,16 @@ module HeadMusic::Notation::Kern
       bar_number && [bar_number, placed[bar_number].last.finish]
     end
 
-    # Every bar of +bar_lengths+ filled from its start to its length.
-    def by_bar(bar_lengths)
-      bar_lengths.to_h { |bar_number, length| [bar_number, filled(placed.fetch(bar_number, []), length)] }
+    # Every bar of +bar_lengths+ filled from its start to its length, with
+    # invisible rests after +music_end+, given as [bar number, offset].
+    def by_bar(bar_lengths, music_end)
+      end_bar, end_offset = music_end
+      bar_lengths.to_h do |bar_number, length|
+        events = placed.fetch(bar_number, [])
+        next [bar_number, filled(events, length)] unless bar_number == end_bar
+
+        [bar_number, filled(events, end_offset) + self.class.rests(end_offset, length, invisible: true)]
+      end
     end
 
     private

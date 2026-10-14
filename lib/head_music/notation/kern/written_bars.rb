@@ -81,7 +81,7 @@ module HeadMusic::Notation::Kern
 
     def spine_tokens(voice)
       @spine_tokens ||= {}
-      @spine_tokens[voice] ||= event_sources.fetch(voice).by_bar(lengths)
+      @spine_tokens[voice] ||= event_sources.fetch(voice).by_bar(lengths, music_end)
     end
 
     def event_sources
@@ -89,13 +89,28 @@ module HeadMusic::Notation::Kern
     end
 
     # Every bar's full length, except the last, which ends where the longest
-    # voice does. A flow whose voices hold nothing is one bar of rest.
+    # voice does unless a dynamic follows the music in it.
     def lengths
       @lengths ||= begin
-        last_bar, last_offset = event_sources.values.filter_map(&:finish).max || [first, full_length(first)]
+        last_bar, last_offset = music_end
         (first..last_bar).to_h do |bar_number|
-          [bar_number, (bar_number == last_bar) ? last_offset : full_length(bar_number)]
+          short = bar_number == last_bar && !dynamic_after_music?
+          [bar_number, short ? last_offset : full_length(bar_number)]
         end
+      end
+    end
+
+    # Where the longest voice stops, as [bar number, offset in that bar]. A
+    # flow whose voices hold nothing is one bar of rest.
+    def music_end
+      @music_end ||= event_sources.values.filter_map(&:finish).max || [first, full_length(first)]
+    end
+
+    def dynamic_after_music?
+      last_bar, last_offset = music_end
+      (flow.parts + flow.voices).flat_map(&:dynamic_events).any? do |dynamic_event|
+        position = dynamic_event.position
+        position.bar_number == last_bar && HeadMusic::Notation::BarSplitter.offset_in_bar(position) >= last_offset
       end
     end
 

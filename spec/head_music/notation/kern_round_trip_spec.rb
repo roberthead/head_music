@@ -310,6 +310,45 @@ describe HeadMusic::Notation::Kern do
     end
   end
 
+  describe "dynamics where no note starts" do
+    def abc(body)
+      HeadMusic::Notation::ABC.parse("X:1\nT:Trailing\nL:1/4\nM:4/4\nK:C\n#{body}\n")
+    end
+
+    def expect_round_trip_positions(original, latest_bar_number)
+      restored = expect_kern_round_trip(original)
+      expect_same_dynamic_positions(original, restored, merged_into: "part")
+      expect_same_voice_events(original, restored)
+      expect(restored.latest_bar_number).to eq latest_bar_number
+    end
+
+    it "keeps a voice dynamic after the last note of a short final bar" do
+      original = abc("C D E|").tap { |flow| flow.voices.first.place_dynamic("1:4", :f) }
+      expect_round_trip_positions(original, 1)
+    end
+
+    it "keeps a part dynamic after the last note of a short final bar" do
+      original = abc("C D E|").tap { |flow| flow.parts.first.place_dynamic("1:4", :f) }
+      expect_round_trip_positions(original, 1)
+    end
+
+    it "keeps a dynamic a half after the last note of a short final bar" do
+      original = abc("C D E F|G A|").tap { |flow| flow.voices.first.place_dynamic("2:3", :f) }
+      expect_round_trip_positions(original, 2)
+    end
+
+    it "keeps a dynamic between the timed rows after the music's end" do
+      original = abc("C D E F|G A|").tap { |flow| flow.parts.first.place_dynamic("2:4", :f) }
+      expect_round_trip_positions(original, 2)
+    end
+
+    it "keeps one part's trailing dynamic, adding no rest to either part" do
+      original = HeadMusic::Notation::ABC.parse("X:1\nT:Two\nL:1/4\nM:4/4\nK:C\nV:1\nc d e|\nV:2 clef=bass\nC, D, E,|\n")
+      original.parts.last.place_dynamic("1:4", :f)
+      expect_round_trip_positions(original, 1)
+    end
+  end
+
   describe "the span fixtures" do
     %i[spanned_melody crossing_spans touching_slurs touching_slurs_on_tied_note spanned_piano phrases_on_split_rest].each do |name|
       it "keeps where each span of #{name} starts and ends" do

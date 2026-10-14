@@ -288,6 +288,25 @@ describe HeadMusic::Notation::Kern::Writer do
       expect { data(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /dynamic f at 2:1:000 falls after/)
     end
 
+    it "writes a dynamic after the music's end on an invisible rest that fills the final bar" do
+      %w[C4 D4 E4].each_with_index { |pitch, index| voice.place("1:#{index + 1}", :quarter, pitch) }
+      voice.place_dynamic("1:4", :f)
+      expect(data(flow)).to eq ["4c\t.", "4d\t.", "4e\t.", "4ryy\tf"]
+    end
+
+    it "writes a dynamic between the timed rows after the music's end on a null row" do
+      voice.place("1:1", :half, "C4")
+      part.place_dynamic("1:4", :f)
+      expect(data(flow)).to eq ["2c\t.", "2ryy\t.", ".\tf"]
+    end
+
+    it "fills every kern spine of every part past the music's end with invisible rests" do
+      voice.place("1:1", :half, "C4")
+      flow.add_voice.place("1:1", :quarter, "E5")
+      part.place_dynamic("1:3", :f)
+      expect(data(flow)).to eq ["4ee\t2c\t.", "4r\t.\t.", "2ryy\t2ryy\tf"]
+    end
+
     it "moves a dynamic before a pickup's first note to that note" do
       voice.place("0:1", :half)
       voice.place("0:3", :half, "C4")

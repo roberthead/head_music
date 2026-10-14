@@ -29,10 +29,8 @@ module HeadMusic::Notation::Kern
       columns.select(&:kern?).to_h { |column| [column.voice, bars.events(column.voice, bar_number)] }
     end
 
-    # A dynamic after the flow's last note has no row to go on.
     def dynamic_offsets(bar_number)
-      offsets = dynamic_fields.values.flat_map { |fields| fields.in_bar(bar_number).keys.map { |offset| Rational(offset) } }
-      offsets.uniq.select { |offset| offset < bars.length(bar_number) }
+      dynamic_fields.values.flat_map { |fields| fields.in_bar(bar_number).keys.map { |offset| Rational(offset) } }.uniq
     end
 
     def row_offsets(attacks, dynamics, length)
