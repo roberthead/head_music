@@ -601,12 +601,20 @@ describe HeadMusic::Notation::ABC::Writer do
       expect(body_of(flow)).to eq "z4 !p!.!trill!!sf!C4-|C4|]\n"
     end
 
-    it "writes the part's dynamics on the voice, preferring the voice's own at one note" do
+    it "writes the part's dynamics on the voice, once where the voice has the same level" do
       voice.place("1:1", :half, "C4")
       voice.place("1:3", :half, "D4")
       [["1:1", :p], ["1:3", :f]].each { |position, level| voice.part.place_dynamic(position, level) }
+      voice.place_dynamic("1:3", :f)
+      expect(body_of(flow)).to eq "!p!C4 !f!D4|]\n"
+    end
+
+    it "refuses a part's and the voice's different levels at one position" do
+      voice.place("1:1", :half, "C4")
+      voice.place("1:3", :half, "D4")
+      voice.part.place_dynamic("1:3", :f)
       voice.place_dynamic("1:3", :mf)
-      expect(body_of(flow)).to eq "!p!C4 !mf!D4|]\n"
+      expect { body_of(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /the f and the mf at 1:3:000 cannot both be written/)
     end
   end
 

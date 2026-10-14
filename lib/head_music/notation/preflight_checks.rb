@@ -39,6 +39,19 @@ module HeadMusic
         end
       end
 
+      # For a format with one line of dynamics for several owners, such as a
+      # part and its voices. The same level twice loses only its owner.
+      def ensure_one_level_per_position(owners, line:)
+        dynamic_events = owners.flat_map(&:dynamic_events)
+        dynamic_events.group_by(&:position).sort_by(&:first).each do |position, events|
+          levels = events.map(&:name_key).uniq
+          next if levels.one?
+
+          raise render_error_class, "#{line} holds one dynamic at a time, " \
+            "so the #{levels.join(" and the ")} at #{position} cannot both be written"
+        end
+      end
+
       def timed_marks(flow)
         (flow.parts + flow.voices).flat_map(&:dynamic_events).map do |dynamic_event|
           ["dynamic #{dynamic_event.name_key}", dynamic_event.position]

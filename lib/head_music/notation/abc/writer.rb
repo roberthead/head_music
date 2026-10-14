@@ -34,6 +34,7 @@ module HeadMusic::Notation::ABC
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
+      ensure_one_level_per_position(flow.parts + flow.voices, line: "an ABC voice")
       slur_writer
     end
 

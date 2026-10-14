@@ -27,6 +27,7 @@ module HeadMusic::Notation::Kern
       ensure_concert_pitch
       ensure_steady_parts
       ensure_dynamics_have_voices
+      ensure_one_level_per_dynamics_spine
     end
 
     private
@@ -66,6 +67,10 @@ module HeadMusic::Notation::Kern
     def ensure_dynamics_have_voices
       voiceless = flow.parts.find { |part| part.voices.empty? && part.dynamic_events.any? }
       raise RenderError, "kern cannot write the dynamics of a part with no voices" if voiceless
+    end
+
+    def ensure_one_level_per_dynamics_spine
+      flow.parts.each { |part| ensure_one_level_per_position([part, *part.voices], line: "a part's **dynam spine") }
     end
 
     def render_error_class

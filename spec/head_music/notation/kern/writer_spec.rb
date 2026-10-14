@@ -233,11 +233,25 @@ describe HeadMusic::Notation::Kern::Writer do
 
     # A level left out can often be told from the levels around it; an accent
     # left out is gone.
-    it "writes an accent over a level, and the part's level over a voice's" do
+    it "writes an accent over a level, and the part's and a voice's same level once" do
       voice.place("1:1", :half, "C4").note_dynamic = :sf
       voice.place("1:3", :half, "D4")
-      {part => %w[f mf], voice => %w[p mp]}.each { |owner, levels| %w[1:1 1:3].zip(levels) { |position, level| owner.place_dynamic(position, level) } }
+      [part, voice].each { |owner| %w[1:1 1:3].zip(%w[f mf]) { |position, level| owner.place_dynamic(position, level) } }
       expect(data(flow)).to eq ["2c\tsf", "2d\tmf"]
+    end
+
+    it "refuses the part's and a voice's different levels at one position" do
+      voice.place("1:1", :whole, "C4")
+      part.place_dynamic("1:3", :f)
+      voice.place_dynamic("1:3", :p)
+      expect { data(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /\*\*dynam spine holds one dynamic at a time, so the f and the p at 1:3:000/)
+    end
+
+    it "refuses two voices' different levels at one position" do
+      voice.place("1:1", :whole, "C4")
+      part.add_voice.tap { |lower| lower.place("1:1", :whole, "C3") }.place_dynamic("1:1", :pp)
+      voice.place_dynamic("1:1", :ff)
+      expect { data(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /the ff and the pp at 1:1:000/)
     end
 
     it "keeps an fp over a level at its note, so the level in force reads back the same" do

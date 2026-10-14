@@ -3,9 +3,9 @@ module HeadMusic::Notation::Kern
   # What a part's **dynam spine holds, by bar and offset: its own levels,
   # its voices' levels, and the accents a kern token cannot carry.
   #
-  # The spine holds one value per row and cannot say which voice it means,
-  # so where several fall at one position it keeps the first of each voice's
-  # accent in voice order, the part's level, and each voice's level.
+  # The spine holds one value per row and cannot say which voice it means.
+  # An accent outranks a level at its row; the preflight refuses different
+  # levels at one position, so the levels that meet there are all the same.
   class DynamicFields
     # sfz is written in the token, as z.
     SPINE_ACCENTS = %w[sf rfz fp].freeze
