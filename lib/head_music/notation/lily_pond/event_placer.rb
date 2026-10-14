@@ -67,6 +67,7 @@ module HeadMusic::Notation::LilyPond
       @bar_marks = BarMarkPlacer.new
       @spacers = Hash.new { |hash, voice| hash[voice] = [] }.compare_by_identity
       @spacer_ends = {}.compare_by_identity
+      @marker_marks = {}.compare_by_identity
     end
 
     def place(event, voice)
@@ -169,15 +170,23 @@ module HeadMusic::Notation::LilyPond
       when :key then apply_change(event, voice.flow, position, "\\key", :key_signature, :key_signature_at, :change_key_signature)
       when :time then apply_change(event, voice.flow, position, "\\time", :meter, :meter_at, :change_meter)
       when :staff_change then change_staff(event, voice, position)
-      when :dynamics then place_dynamics(voice, position, event)
+      when :dynamics then place_marker(voice, position, event)
       when :after then place_dynamics(voice, shifted(position, event, "An \\after"), event)
       when :bar_mark then bar_marks.hold(event, voice, position)
       end
     end
 
+    # A <> takes no time, so its slur marks and accent belong to the note
+    # that starts where it stands, and are dropped where none does.
+    def place_marker(voice, position, event)
+      place_dynamics(voice, position, event)
+      @marker_marks[voice] = [position, event.marks]
+    end
+
     # Marks are applied where their event was placed, captured before the
     # voice moves on. A rest keeps only its dynamics.
     def apply_marks(voice_event, event)
+      apply_marker_marks(voice_event)
       marks = event.marks
       unless voice_event.rest?
         voice_event.articulate(*marks.articulations).embellish(*marks.ornaments)
@@ -218,6 +227,14 @@ module HeadMusic::Notation::LilyPond
     # What was written between the halves of a tied note takes effect where it
     # was written, in order, so a meter change is in force before the position
     # of anything after it is worked out.
+    def apply_marker_marks(voice_event)
+      position, marks = @marker_marks.delete(voice_event.voice)
+      return unless position == voice_event.position
+
+      voice_event.note_dynamic ||= marks.note_dynamic unless voice_event.rest?
+      apply_spans(voice_event, marks.span_marks)
+    end
+
     def place_note(event, voice)
       position = voice.next_position
       event.inner_events.each { |inner| apply_marker(inner.event, voice, position + inner.elapsed) }

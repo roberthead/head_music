@@ -361,6 +361,22 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
     end
   end
 
+  describe "a <> marker" do
+    it "gives its slur to the note that starts where it stands" do
+      expect(build("{ c'4 <>( d' e' f') }").voices.first.spans.map(&:to_s)).to eq ["slur from 1:2:000 to 1:4:000"]
+    end
+
+    it "gives its accent to the note that starts where it stands, ending a hairpin there" do
+      voice = build("{ c'4\\< <>\\sfz d' e' f' }").voices.first
+      expect([voice.voice_events[1].note_dynamic.name_key, voice.spans.map(&:to_s)])
+        .to eq ["sfz", ["crescendo from 1:1:000 to 1:2:000"]]
+    end
+
+    it "drops its slur where no note starts" do
+      expect(build("{ c'2~ <>( c'2 d'1) }").voices.first.spans).to be_empty
+    end
+  end
+
   describe "hairpins" do
     def hairpins(music)
       build("{ #{music} }").voices.first.spans.map(&:to_s)
