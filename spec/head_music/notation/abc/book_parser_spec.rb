@@ -75,9 +75,9 @@ describe HeadMusic::Notation::ABC::BookParser do
   end
 
   it "reports book-relative line numbers for an error inside a later tune" do
-    book = "X:1\nK:C\nCDEF|\n\nX:2\nK:C\nGA&B|\n"
+    book = "X:1\nK:C\nCDEF|\n\nX:2\nK:C\nGA@B|\n"
     expect { flows_for(book) }
-      .to raise_error(HeadMusic::Notation::ABC::ParseError, /"&".*line 7/)
+      .to raise_error(HeadMusic::Notation::ABC::ParseError, /"@".*line 7/)
   end
 
   it "reports book-relative line numbers for a header error inside a later tune" do

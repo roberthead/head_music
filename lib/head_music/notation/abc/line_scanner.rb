@@ -31,15 +31,19 @@ module HeadMusic::Notation::ABC
     ].freeze
 
     # A slur opens with "(", or ".(" for a dotted slur, unless a digit
-    # follows, which makes a tuplet.
-    SLUR_START_PATTERN = /\.?\((?!\d)/
+    # follows, which makes a tuplet, or "&", which opens a multi-bar overlay.
+    SLUR_START_PATTERN = /\.?\((?![\d&])/
+
+    # "&" overlays the bar's music; "&)" closes a multi-bar overlay.
+    OVERLAY_PATTERN = /&(?!\))/
 
     # Recognizable ABC we deliberately don't handle: grace notes ({..}),
-    # tuplets, multi-bar rests (Z), stray dots, and malformed decorations.
+    # tuplets, multi-bar rests (Z), multi-bar overlays, stray dots, and
+    # malformed decorations.
     # Ordered so a closed form is tried before its unterminated fallback.
     UNSUPPORTED_PATTERNS = [
       /\{[^}]*\}/, /\{[^}]*/, /![^!]*!/, /![^!]*/,
-      /\(\d/, /\./, /Z\d*/
+      /\(\d/, /\(&/, /&\)/, /\./, /Z\d*/
     ].freeze
 
     # Music tokens whose whitespace successor breaks a beam group; other
@@ -49,7 +53,8 @@ module HeadMusic::Notation::ABC
     # Tried in order; the first to consume input wins.
     TOKEN_SCANS = %i[
       scan_quoted_string scan_bar_line scan_bracket scan_note scan_rest
-      scan_invisible_rest scan_spacer scan_tie scan_broken_rhythm scan_slur scan_decoration scan_unsupported
+      scan_invisible_rest scan_spacer scan_tie scan_broken_rhythm scan_slur
+      scan_overlay scan_decoration scan_unsupported
     ].freeze
 
     def initialize(line_text, line_number, tokens)
@@ -181,6 +186,10 @@ module HeadMusic::Notation::ABC
       return add(:slur_start, column: column) if @scanner.scan(SLUR_START_PATTERN)
 
       @scanner.scan(")") && add(:slur_end, column: column)
+    end
+
+    def scan_overlay(column)
+      @scanner.scan(OVERLAY_PATTERN) && add(:overlay, column: column)
     end
 
     def scan_decoration(column)

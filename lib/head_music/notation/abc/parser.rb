@@ -16,11 +16,14 @@ module HeadMusic::Notation::ABC
 
     HANDLERS = {
       note: :handle_note, chord: :handle_chord, rest: :handle_rest, tie: :handle_tie,
-      invisible_rest: :handle_invisible_rest, spacer: :handle_spacer,
+      invisible_rest: :handle_invisible_rest, spacer: :handle_spacer, overlay: :handle_overlay,
       broken_rhythm: :handle_broken_rhythm, bar_line: :handle_bar_line, volta: :handle_volta,
       voice_change: :handle_voice_change, beam_break: :handle_beam_break, decoration: :handle_decoration,
       slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label
     }.freeze
+
+    # A voice overlay is read only for the levels its invisible rests place.
+    OVERLAY_MUSIC = %i[note chord rest tie broken_rhythm slur_start slur_end].freeze
 
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
@@ -68,6 +71,7 @@ module HeadMusic::Notation::ABC
     end
 
     def handle(token)
+      reject_overlay_music(token)
       handler = HANDLERS[token.type]
       send(handler, token) if handler
     end
@@ -126,12 +130,32 @@ module HeadMusic::Notation::ABC
     end
 
     # An invisible rest ends a run of notes as a rest does, and holds only a
-    # level.
+    # level. One in an overlay leaves the bar's music alone.
     def handle_invisible_rest(token)
       state = current_state
-      navigation_tagger.record_at_note(state)
-      end_notes(state, token.line)
+      unless state.overlay?
+        navigation_tagger.record_at_note(state)
+        end_notes(state, token.line)
+      end
       state.skip(token.length)
+    end
+
+    # "&" starts the bar over, so the overlay's invisible rests can place
+    # levels where no note of the bar starts. A note tied across the bar line
+    # stays pending.
+    def handle_overlay(token)
+      state = current_state
+      pause_notes(state, token.line)
+      state.start_overlay
+    end
+
+    def reject_overlay_music(token)
+      return unless OVERLAY_MUSIC.include?(token.type) && @voices.any? && current_state.overlay?
+
+      raise UnsupportedFeatureError.new(
+        "Unsupported ABC feature: a voice overlay holding notes or rests, which would be a second voice",
+        line_number: token.line, snippet: "&"
+      )
     end
 
     def handle_spacer(token)
@@ -153,11 +177,17 @@ module HeadMusic::Notation::ABC
     def end_voice(state, line)
       end_notes(state, line)
       state.reject_dangling_decorations
+      state.end_overlay
     end
 
     # A bar line or volta is not a terminator: a tied note stays pending
     # across it and closes on the next note.
     def cross_bar_line(state, line)
+      pause_notes(state, line)
+      state.cross_bar_line
+    end
+
+    def pause_notes(state, line)
       state.ensure_not_awaiting_note(line)
       state.reject_dangling_decorations
       state.flush_pending_note unless state.tie_open?

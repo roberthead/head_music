@@ -82,16 +82,39 @@ module HeadMusic::Notation::ABC
     end
 
     # An invisible rest becomes a rest only once music follows it, so one
-    # that ends the voice adds no event.
+    # that ends the voice adds no event. In an overlay it only moves the
+    # overlay's cursor.
     def skip(length)
       rhythmic_value = @duration_resolver.rhythmic_value(length)
-      @decorations.place_at(cursor)
-      @invisible_rests << rhythmic_value
+      @decorations.place_at(mark_position)
+      if overlay?
+        @overlay_cursor += rhythmic_value
+      else
+        @invisible_rests << rhythmic_value
+      end
     end
 
     # A spacer takes no time, and holds a level where it stands.
     def space
-      @decorations.place_at(cursor)
+      @decorations.place_at(mark_position)
+    end
+
+    # The bar a voice overlay starts over is the one the last bar line opened.
+    def cross_bar_line
+      end_overlay
+      @bar_start = cursor
+    end
+
+    def start_overlay
+      @overlay_cursor = @bar_start || HeadMusic::Content::Position.new(voice.flow, 1, 1, 0)
+    end
+
+    def end_overlay
+      @overlay_cursor = nil
+    end
+
+    def overlay?
+      !@overlay_cursor.nil?
     end
 
     # Records an explicit beam break; the next note consumes it.
@@ -225,6 +248,10 @@ module HeadMusic::Notation::ABC
       @invisible_rests.each { |rest_value| voice.place(voice.next_position, rest_value) }
       @invisible_rests.clear
       voice.place(voice.next_position, rhythmic_value, pitches)
+    end
+
+    def mark_position
+      @overlay_cursor || cursor
     end
 
     def music_end

@@ -882,6 +882,64 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "voice overlays" do
+    def voice_for(body)
+      parse_body(body).voices.first
+    end
+
+    def dynamics(voice)
+      voice.dynamic_events.map(&:to_h)
+    end
+
+    it "places a level inside a note, leaving the note whole" do
+      voice = voice_for("c3 d & x !p!x3|")
+      expect([voice.voice_events.map(&:to_s), dynamics(voice)])
+        .to eq [["dotted half C5 at 1:1:000", "quarter D5 at 1:4:000"], [{"position" => "1:2:000", "level" => "p"}]]
+    end
+
+    it "places a level under a rest" do
+      voice = voice_for("z4 & x2 !p!x2|")
+      expect([voice.voice_events.map(&:to_s), dynamics(voice)])
+        .to eq [["whole rest at 1:1:000"], [{"position" => "1:3:000", "level" => "p"}]]
+    end
+
+    it "places two levels in one note" do
+      expect(dynamics(voice_for("C4 & x !p!x !f!x2|")))
+        .to eq [{"position" => "1:2:000", "level" => "p"}, {"position" => "1:3:000", "level" => "f"}]
+    end
+
+    it "places a level on a spacer where the overlay stands" do
+      expect(dynamics(voice_for("C4 & x2 !p!y x2|"))).to eq [{"position" => "1:3:000", "level" => "p"}]
+    end
+
+    it "starts the overlay at the start of its bar" do
+      expect(dynamics(voice_for("C4| D4 & x !p!x3|"))).to eq [{"position" => "2:2:000", "level" => "p"}]
+    end
+
+    it "returns time to the music at the bar line" do
+      expect(voice_for("C4 & x2 !p!x2| D4|").voice_events.map(&:to_s)).to eq ["whole C4 at 1:1:000", "whole D4 at 2:1:000"]
+    end
+
+    it "keeps a note tied across the bar line whole" do
+      voice = voice_for("C4- & x2 !p!x2|C4 & x !f!x3|")
+      expect([voice.voice_events.map(&:to_s), dynamics(voice)]).to eq [
+        ["whole tied to whole C4 at 1:1:000"],
+        [{"position" => "1:3:000", "level" => "p"}, {"position" => "2:2:000", "level" => "f"}]
+      ]
+    end
+
+    {"a note" => "C4 & C4|", "a rest" => "C4 & z4|"}.each do |music, body|
+      it "refuses an overlay holding #{music}, which would be a second voice" do
+        expect { parse_body(body) }
+          .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /overlay holding notes or rests.*line 5/)
+      end
+    end
+
+    it "refuses a multi-bar overlay" do
+      expect { parse_body("(&C4&)|") }.to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"\(&"/)
+    end
+  end
+
   describe "chords" do
     subject(:flow) { parse(<<~ABC) }
       X:1

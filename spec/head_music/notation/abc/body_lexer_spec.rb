@@ -75,6 +75,16 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
   end
 
+  describe "voice overlays" do
+    it "lexes & as an overlay" do
+      expect(tokens_for("C4&x4|").map(&:type)).to eq([:note, :overlay, :invisible_rest, :bar_line])
+    end
+
+    it "lexes a multi-bar overlay's marks as unsupported" do
+      expect(tokens_for("(&C4&)").values_at(0, 2).map(&:to_h)).to all(include(type: :unsupported))
+    end
+  end
+
   describe "bar lines" do
     it "lexes every style" do
       tokens = tokens_for("A | B || C |] D |: E :| F ::")
@@ -498,8 +508,8 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
 
     it "reports the line number of the offending character" do
-      expect { tokens_for("GA\nB&", start_line: 3) }
-        .to raise_error(HeadMusic::Notation::ABC::ParseError, /"&".*line 4/)
+      expect { tokens_for("GA\nB@", start_line: 3) }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /"@".*line 4/)
     end
 
     it "raises ParseError for invalid encoding" do
