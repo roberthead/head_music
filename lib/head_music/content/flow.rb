@@ -143,6 +143,12 @@ class HeadMusic::Content::Flow
     [latest_bar_number, ending_bar].max
   end
 
+  # Where the last written bar ends, which a hairpin may end on though no
+  # bar is written after it.
+  def final_barline_position
+    position(last_sounding_bar_number + 1, 1, 0)
+  end
+
   # Allocates only this bar, unlike #bars, which fills in every bar before it.
   def bar(number)
     @bars.span(number, number).first

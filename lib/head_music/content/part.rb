@@ -24,6 +24,7 @@ class HeadMusic::Content::Part
     @instrument_map = HeadMusic::Time::EventMap.new(default: instrument && HeadMusic::Instruments::Instrument.get(instrument))
     @staff_system_map = HeadMusic::Time::EventMap.new(default: staff_system)
     @dynamic_events = HeadMusic::Content::DynamicEvents.new(flow)
+    @spans = HeadMusic::Content::Spans.new
   end
 
   # A dynamic level for every voice of the part, on every staff, as a piano
@@ -39,6 +40,24 @@ class HeadMusic::Content::Part
   # @api private the part's dynamic in force at a position, for Voice#dynamic_at
   def dynamic_event_at(position)
     @dynamic_events.latest_at(position)
+  end
+
+  # A hairpin for every voice of the part, as one drawn between a piano's
+  # staves is. Its ends may fall anywhere.
+  def add_span(kind, from:, to:)
+    span = HeadMusic::Content::Span.new(flow, kind, from: from, to: to)
+    raise ArgumentError, "a part cannot hold a #{span.name_key}" unless span.span_kind.held_by?(:part)
+
+    @spans.add(span)
+  end
+
+  def spans
+    @spans.to_a
+  end
+
+  def spans_at(position)
+    position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
+    @spans.covering(position, &:to)
   end
 
   # @return [HeadMusic::Instruments::Instrument, nil] nil for a part that was

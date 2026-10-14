@@ -77,9 +77,9 @@ class HeadMusic::Content::Voice
     DynamicResolver.new(self, @dynamic_events).level_at(position)
   end
 
-  # A marking from one of this voice's events to a later one, such as a slur.
-  # Its kind says what its ends must sit on: a slur needs notes, while a
-  # phrase may begin or end on a rest.
+  # A marking from one point in this voice to a later one, such as a slur or
+  # a crescendo. Its kind says what its ends must sit on: a slur needs notes,
+  # a phrase may begin or end on a rest, and a hairpin may end anywhere.
   def add_span(kind, from:, to:)
     span = HeadMusic::Content::Span.new(flow, kind, from: from, to: to)
     raise ArgumentError, "a voice cannot hold a #{span.name_key}" unless span.span_kind.held_by?(:voice)
@@ -92,10 +92,12 @@ class HeadMusic::Content::Voice
     @spans.to_a
   end
 
-  # A span that covers its last note runs until that note ends.
+  # The voice's spans in force at a position, with its part's, innermost
+  # first. A span that covers its last note runs until that note ends.
   def spans_at(position)
     position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
-    @spans.covering(position) { |span| span_end(span) }
+    own = @spans.covering(position) { |span| span_end(span) }
+    HeadMusic::Content::Spans.innermost_first(own + part.spans_at(position))
   end
 
   # Voice events are kept in position order, so the notes and rests drawn from

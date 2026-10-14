@@ -113,6 +113,51 @@ describe HeadMusic::Content::Voice do
     end
   end
 
+  describe "hairpins" do
+    it "ends a hairpin anywhere, even inside a note or where the music ends" do
+      voice.add_span(:crescendo, from: "1:1:240", to: "3:2")
+      voice.add_span(:diminuendo, from: "4:3", to: "5:1")
+      expect(summary(voice.spans)).to eq ["crescendo from 1:1:240 to 3:2:000", "diminuendo from 4:3:000 to 5:1:000"]
+    end
+
+    it "refuses a hairpin overlapping another of the voice's" do
+      voice.add_span(:crescendo, from: "1:1", to: "2:1")
+      expect { voice.add_span(:diminuendo, from: "1:3", to: "2:3") }.to raise_error(ArgumentError, /overlaps the crescendo/)
+    end
+
+    it "keeps a hairpin overlapping its part's" do
+      voice.part.add_span(:crescendo, from: "1:1", to: "2:1")
+      voice.add_span(:diminuendo, from: "1:3", to: "2:3")
+      expect(voice.spans_at("1:4").map(&:kind)).to eq %i[diminuendo crescendo]
+    end
+
+    context "with a crescendo touching a diminuendo" do
+      before do
+        voice.add_span(:crescendo, from: "1:1", to: "1:3")
+        voice.add_span(:diminuendo, from: "1:3", to: "2:1")
+      end
+
+      it "has only the diminuendo in force where they meet" do
+        expect(voice.spans_at("1:3").map(&:kind)).to eq [:diminuendo]
+      end
+
+      it "ends the diminuendo at its end, not at the end of a note there" do
+        expect(voice.spans_at("2:1")).to be_empty
+      end
+    end
+
+    it "answers its part's hairpins with its own spans, innermost first" do
+      voice.add_span(:phrase, from: "1:1", to: "2:2")
+      voice.part.add_span(:crescendo, from: "1:2", to: "1:4")
+      expect(voice.spans_at("1:3").map(&:kind)).to eq %i[crescendo phrase]
+    end
+
+    it "answers only its own spans from #spans" do
+      voice.part.add_span(:crescendo, from: "1:2", to: "1:4")
+      expect(voice.spans).to be_empty
+    end
+  end
+
   describe "across a staff crossing" do
     let(:flow) { LilyPondFixtures.cross_staff_piano }
 
