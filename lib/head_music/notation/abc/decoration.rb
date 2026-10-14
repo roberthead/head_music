@@ -12,6 +12,12 @@ module HeadMusic::Notation::ABC
       kind == :level
     end
 
+    # Marks a moment rather than a note, so it can stand on an invisible rest
+    # or a spacer.
+    def positional?
+      level?
+    end
+
     def dropped?
       kind == :dropped
     end

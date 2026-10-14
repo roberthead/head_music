@@ -38,6 +38,7 @@ module HeadMusic::Notation::ABC
       @decorations = PendingDecorations.new(voice)
       @slur_opens = 0
       @open_slurs = []
+      @invisible_rests = []
     end
 
     delegate :decorate, :reject_dangling_decorations, :take_navigation, to: :@decorations
@@ -64,14 +65,33 @@ module HeadMusic::Notation::ABC
     # note tied across a bar line is still pending when the repeat tagger
     # asks, and a note longer than its bar has crossed one already.
     def completed_bar_number
-      finish = pending_note ? pending_end_position : voice.last_voice_event&.next_position
-      return unless finish
+      return unless pending_note || voice.last_voice_event || @invisible_rests.any?
 
+      finish = cursor
       bar_start?(finish) ? finish.bar_number - 1 : finish.bar_number
     end
 
     def entered_bar_number
-      (pending_note ? pending_end_position : voice.next_position).bar_number
+      cursor.bar_number
+    end
+
+    # Where the voice's time has reached, which runs ahead of its voice
+    # events while invisible rests wait for music to follow them.
+    def cursor
+      pending_note ? pending_end_position : music_end
+    end
+
+    # An invisible rest becomes a rest only once music follows it, so one
+    # that ends the voice adds no event.
+    def skip(length)
+      rhythmic_value = @duration_resolver.rhythmic_value(length)
+      @decorations.place_at(cursor)
+      @invisible_rests << rhythmic_value
+    end
+
+    # A spacer takes no time, and holds a level where it stands.
+    def space
+      @decorations.place_at(cursor)
     end
 
     # Records an explicit beam break; the next note consumes it.
@@ -202,7 +222,13 @@ module HeadMusic::Notation::ABC
     end
 
     def place_next(rhythmic_value, pitches)
+      @invisible_rests.each { |rest_value| voice.place(voice.next_position, rest_value) }
+      @invisible_rests.clear
       voice.place(voice.next_position, rhythmic_value, pitches)
+    end
+
+    def music_end
+      @invisible_rests.reduce(voice.next_position) { |position, rest_value| position + rest_value }
     end
 
     # Closes an open tie: the pending note becomes the new note's tied prefix,
@@ -215,7 +241,7 @@ module HeadMusic::Notation::ABC
       pending = pending_note
       prefix = pending_rhythmic_value(pending)
       levels, markings = decorations.partition(&:level?)
-      levels.each { |decoration| @decorations.place_level(voice.next_position + prefix, decoration) }
+      levels.each { |decoration| @decorations.place_level(music_end + prefix, decoration) }
       close_tie
       self.pending_note = PendingNote.new(
         pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
@@ -245,7 +271,7 @@ module HeadMusic::Notation::ABC
     end
 
     def pending_end_position
-      voice.next_position + pending_rhythmic_value(pending_note)
+      music_end + pending_rhythmic_value(pending_note)
     end
 
     def bar_start?(position)

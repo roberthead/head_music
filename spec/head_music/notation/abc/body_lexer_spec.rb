@@ -65,6 +65,14 @@ describe HeadMusic::Notation::ABC::BodyLexer do
       tokens = music_tokens_for("z2 z/ z/2")
       expect(tokens.map(&:length)).to eq(["2", "/", "/2"])
     end
+
+    it "lexes x as an invisible rest with its length" do
+      expect(tokens_for("x3/2").first.to_h).to include(type: :invisible_rest, length: "3/2")
+    end
+
+    it "lexes y as a spacer, taking a width after it" do
+      expect(tokens_for("y2C").map(&:type)).to eq([:spacer, :note])
+    end
   end
 
   describe "bar lines" do
@@ -467,10 +475,6 @@ describe HeadMusic::Notation::ABC::BodyLexer do
 
     it "lexes a multi-measure rest as unsupported" do
       expect(tokens_for("Z").first.to_h).to include(type: :unsupported, lexeme: "Z")
-    end
-
-    it "lexes an invisible rest as unsupported" do
-      expect(tokens_for("x").first.to_h).to include(type: :unsupported, lexeme: "x")
     end
 
     it "lexes an inline field as unsupported" do

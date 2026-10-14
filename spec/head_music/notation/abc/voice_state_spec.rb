@@ -77,4 +77,36 @@ describe HeadMusic::Notation::ABC::VoiceState do
       expect { state.flush_pending_note }.not_to change(voice, :voice_events)
     end
   end
+
+  describe "invisible rests" do
+    subject(:state) { described_class.new(voice, nil, duration_resolver) }
+
+    let(:voice) { HeadMusic::Content::Flow.new.add_voice(role: nil) }
+    let(:duration_resolver) { HeadMusic::Notation::ABC::DurationResolver.new("1/4") }
+    let(:pitch) { HeadMusic::Rudiment::Pitch.get("C4") }
+
+    it "runs the cursor ahead of the voice events" do
+      state.place("1", [pitch])
+      state.skip("2")
+      expect([voice.voice_events.length, state.cursor.to_s]).to eq [1, "1:4:000"]
+    end
+
+    it "numbers the bar entered by the cursor" do
+      state.skip("4")
+      expect([state.completed_bar_number, state.entered_bar_number]).to eq [1, 2]
+    end
+
+    it "places the waiting invisible rests as rests before the next voice event" do
+      state.skip("2")
+      state.place("1", [pitch])
+      expect(voice.voice_events.map(&:to_s)).to eq ["half rest at 1:1:000", "quarter C4 at 1:3:000"]
+    end
+
+    it "places a level on an invisible rest where it starts" do
+      state.place("1", [pitch])
+      state.decorate(HeadMusic::Notation::ABC::Decoration.new(kind: :level, key: "f", line: 1, lexeme: "!f!"))
+      state.skip("1")
+      expect(voice.dynamic_events.map(&:to_h)).to eq [{"position" => "1:2:000", "level" => "f"}]
+    end
+  end
 end

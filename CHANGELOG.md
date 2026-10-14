@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - kern reads and writes `||` and `|!` barlines and `*>A` section labels as rehearsal marks, and writes `==` only at the end. Expansion lists are still ignored.
 - The ABC, LilyPond, MusicXML, and kern writers raise `RenderError` for repeat structure or a marking on a bar after the music ends, rather than dropping it. `Flow#last_sounding_bar_number` answers the bar the music ends in, which the readers and writers share, and `Flow#bar(number)` answers one bar, allocating only that one.
 - `HeadMusic::Notation::BarSplitter.position_at(flow, bar_number, offset)` turns an offset in a bar into a position, the inverse of `offset_in_bar`.
+- ABC reads `x` invisible rests and `y` spacers, placing a level written on either at its position; an `x` that ends the voice adds no event, and one followed by music is read as a rest.
 
 ### Changed
 

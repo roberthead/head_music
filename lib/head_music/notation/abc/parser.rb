@@ -16,6 +16,7 @@ module HeadMusic::Notation::ABC
 
     HANDLERS = {
       note: :handle_note, chord: :handle_chord, rest: :handle_rest, tie: :handle_tie,
+      invisible_rest: :handle_invisible_rest, spacer: :handle_spacer,
       broken_rhythm: :handle_broken_rhythm, bar_line: :handle_bar_line, volta: :handle_volta,
       voice_change: :handle_voice_change, beam_break: :handle_beam_break, decoration: :handle_decoration,
       slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label
@@ -124,6 +125,21 @@ module HeadMusic::Notation::ABC
       state.place(token.length, nil)
     end
 
+    # An invisible rest ends a run of notes as a rest does, and holds only a
+    # level.
+    def handle_invisible_rest(token)
+      state = current_state
+      navigation_tagger.record_at_note(state)
+      end_notes(state, token.line)
+      state.skip(token.length)
+    end
+
+    def handle_spacer(token)
+      state = current_state
+      state.ensure_not_awaiting_note(token.line)
+      state.space
+    end
+
     # A rest, a voice change, or the end of the tune ends a run of notes:
     # nothing after it can complete a broken rhythm or close a tie.
     def end_notes(state, line)
@@ -216,9 +232,11 @@ module HeadMusic::Notation::ABC
       imply_final_barline
     end
 
-    # The last bar's final barline is implied, and writers draw it.
+    # The last bar's final barline is implied, and writers draw it. A bar
+    # holding only invisible rests counts, though it adds no voice event.
     def imply_final_barline
-      last_bar = @building.bar(@building.last_sounding_bar_number)
+      last_bar_number = [@building.last_sounding_bar_number, *@voices.filter_map(&:completed_bar_number)].max
+      last_bar = @building.bar(last_bar_number)
       last_bar.barline = :regular if last_bar.barline == :final
     end
 

@@ -18,6 +18,9 @@ module HeadMusic::Notation::ABC
     # An inline field ("[K:...]"), tried closed before its unterminated fallback.
     INLINE_FIELD_PATTERNS = [/\[[A-Za-z]:[^\]]*\]/, /\[[A-Za-z]:[^\]]*/].freeze
     REST_PATTERN = %r{z([\d/]*)}
+    INVISIBLE_REST_PATTERN = %r{x([\d/]*)}
+    # A spacer takes no time; a number after it only widens the gap.
+    SPACER_PATTERN = %r{y[\d/]*}
     VOLTA_DIGITS_PATTERN = /\d[\d,-]*/
 
     # A decoration: "!trill!", its ABC 2.0 spelling "+trill+", or a one-character
@@ -32,11 +35,11 @@ module HeadMusic::Notation::ABC
     SLUR_START_PATTERN = /\.?\((?!\d)/
 
     # Recognizable ABC we deliberately don't handle: grace notes ({..}),
-    # tuplets, special rests (Z, x), stray dots, and malformed decorations.
+    # tuplets, multi-bar rests (Z), stray dots, and malformed decorations.
     # Ordered so a closed form is tried before its unterminated fallback.
     UNSUPPORTED_PATTERNS = [
       /\{[^}]*\}/, /\{[^}]*/, /![^!]*!/, /![^!]*/,
-      /\(\d/, /\./, /Z\d*/, %r{x[\d/]*}
+      /\(\d/, /\./, /Z\d*/
     ].freeze
 
     # Music tokens whose whitespace successor breaks a beam group; other
@@ -46,7 +49,7 @@ module HeadMusic::Notation::ABC
     # Tried in order; the first to consume input wins.
     TOKEN_SCANS = %i[
       scan_quoted_string scan_bar_line scan_bracket scan_note scan_rest
-      scan_tie scan_broken_rhythm scan_slur scan_decoration scan_unsupported
+      scan_invisible_rest scan_spacer scan_tie scan_broken_rhythm scan_slur scan_decoration scan_unsupported
     ].freeze
 
     def initialize(line_text, line_number, tokens)
@@ -145,6 +148,14 @@ module HeadMusic::Notation::ABC
 
     def scan_rest(column)
       @scanner.scan(REST_PATTERN) && add(:rest, column: column, length: @scanner[1])
+    end
+
+    def scan_invisible_rest(column)
+      @scanner.scan(INVISIBLE_REST_PATTERN) && add(:invisible_rest, column: column, length: @scanner[1])
+    end
+
+    def scan_spacer(column)
+      @scanner.scan(SPACER_PATTERN) && add(:spacer, column: column)
     end
 
     # Doubled marks (">>", "<<") are valid ABC (double-dotted broken rhythm)

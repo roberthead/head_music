@@ -673,7 +673,6 @@ describe HeadMusic::Notation::ABC::Parser do
       "an unrecognized decoration" => ["!bogus!A|", "!bogus!"],
       "a double broken rhythm" => ["A>>B|", ">>"],
       "a multi-bar rest" => ["Z4|", "Z4"],
-      "an invisible rest" => ["x2|", "x2"],
       "an inline field" => ["[K:G]A|", "[K:G]"],
       "a lyrics line" => ["CDEF|\nw:la la la", "w:la la la"]
     }.each do |feature, (body, lexeme)|
@@ -829,6 +828,57 @@ describe HeadMusic::Notation::ABC::Parser do
     it "refuses a U: field that would redefine a shorthand" do
       expect { parse("X:1\nU:T=!fermata!\nK:C\nTC|\n") }
         .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"U"/)
+    end
+  end
+
+  describe "invisible rests and spacers" do
+    def voice_for(body)
+      parse_body(body).voices.first
+    end
+
+    def dynamics(voice)
+      voice.dynamic_events.map(&:to_h)
+    end
+
+    it "places a level on an invisible rest after the last note, adding no event" do
+      voice = voice_for("C D E !f!x|")
+      expect([voice.voice_events.length, dynamics(voice)]).to eq [3, [{"position" => "1:4:000", "level" => "f"}]]
+    end
+
+    it "reads an invisible rest followed by a note as a rest" do
+      voice = voice_for("!p!x C3|")
+      expect(voice.voice_events.map(&:to_s)).to eq ["quarter rest at 1:1:000", "dotted half C4 at 1:2:000"]
+    end
+
+    it "keeps a level on an invisible rest followed by a note where the rest starts" do
+      expect(dynamics(voice_for("C !p!x2 C|"))).to eq [{"position" => "1:2:000", "level" => "p"}]
+    end
+
+    it "places a level on a spacer where it stands" do
+      voice = voice_for("C2 !f!y C2|")
+      expect([voice.voice_events.length, dynamics(voice)]).to eq [2, [{"position" => "1:3:000", "level" => "f"}]]
+    end
+
+    it "places a level on a spacer between tied notes partway through the note" do
+      voice = voice_for("C2-!p!y C2|")
+      expect([voice.voice_events.map(&:to_s), dynamics(voice)])
+        .to eq [["half tied to half C4 at 1:1:000"], [{"position" => "1:3:000", "level" => "p"}]]
+    end
+
+    it "places a tied note's level after the invisible rests before it" do
+      expect(dynamics(voice_for("x2 C-!p!C|"))).to eq [{"position" => "1:4:000", "level" => "p"}]
+    end
+
+    it "drops markings on an invisible rest" do
+      expect(voice_for("C2 !trill!x2|").voice_events.length).to eq 1
+    end
+
+    it "numbers the bars by the time the invisible rests reach" do
+      expect(voice_for("C4|!p!x4|").dynamic_events.map(&:to_h)).to eq [{"position" => "2:1:000", "level" => "p"}]
+    end
+
+    it "draws no final barline on a bar holding only invisible rests" do
+      expect(parse_body("C4|x4|]").last_marked_bar_number).to be_nil
     end
   end
 

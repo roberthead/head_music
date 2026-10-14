@@ -44,6 +44,11 @@ module HeadMusic::Notation::ABC
       decorations.each { |decoration| apply_decoration(voice_event, decoration) }
     end
 
+    # An invisible rest or spacer holds only what marks a moment.
+    def place_at(position)
+      take.select(&:positional?).each { |decoration| place_level(position, decoration) }
+    end
+
     def place_level(position, decoration)
       @voice.place_dynamic(position, decoration.key)
     rescue ArgumentError => error
