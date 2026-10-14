@@ -26,16 +26,30 @@ module HeadMusic
       end
 
       # A mark that takes no time can sit anywhere in the written bars, but a
-      # writer would have to invent empty bars to reach one outside them.
+      # writer would have to invent empty bars to reach one outside them. A
+      # hairpin may also end on the final barline, as one ending with the
+      # music does.
       def ensure_timed_marks_within_music(flow)
         first = flow.earliest_bar_number
         last = flow.last_sounding_bar_number
-        timed_marks(flow).sort_by(&:last).each do |label, position|
+        final_barline = flow.final_barline_position
+        timed_marks(flow).sort_by { |_, position| position }.each do |label, position, ending|
           if position.bar_number < first
             raise render_error_class, "the #{label} at #{position} falls before the music starts in bar #{first}"
-          elsif position.bar_number > last
+          elsif ending ? position > final_barline : position.bar_number > last
             raise render_error_class, "the #{label} at #{position} falls after the music ends in bar #{last}"
           end
+        end
+      end
+
+      # For a format with one line of hairpins for several owners, such as a
+      # part and its voices. The same hairpin twice loses only its owner.
+      def ensure_one_hairpin_at_a_time(owners, line:)
+        hairpins = owners.flat_map(&:spans).select(&:hairpin?).uniq(&:to_h).sort
+        hairpins.combination(2).each do |one, other|
+          next unless one.from < other.to && other.from < one.to
+
+          raise render_error_class, "#{line} holds one hairpin at a time, so the #{one} and the #{other} cannot both be written"
         end
       end
 
@@ -52,10 +66,14 @@ module HeadMusic
         end
       end
 
+      # Each as [label, position, whether it is a hairpin's end].
       def timed_marks(flow)
-        (flow.parts + flow.voices).flat_map(&:dynamic_events).map do |dynamic_event|
-          ["dynamic #{dynamic_event.name_key}", dynamic_event.position]
-        end
+        owners = flow.parts + flow.voices
+        levels = owners.flat_map(&:dynamic_events).map { |event| ["dynamic #{event.name_key}", event.position, false] }
+        hairpins = owners.flat_map(&:spans).select(&:hairpin?)
+        levels +
+          hairpins.map { |span| ["#{span.name_key} start", span.from, false] } +
+          hairpins.map { |span| ["#{span.name_key} end", span.to, true] }
       end
 
       def raise_gap_error(voice, expected_position, found_voice_event)
