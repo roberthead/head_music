@@ -7,7 +7,7 @@ module HeadMusic::Notation::MusicXML
   class PartWriter
     include XmlText
 
-    delegate :bar_numbers, :segments_by_bar, :written_duration, to: :plan
+    delegate :bar_numbers, :written_duration, to: :plan
 
     def initialize(plan)
       @plan = plan
@@ -46,13 +46,15 @@ module HeadMusic::Notation::MusicXML
     end
 
     def measure_lines(part, bar_number)
+      bar = plan.direction_plan(part).bar(bar_number)
       [
         measure_open_tag(bar_number),
         *barline_writer.left_lines(bar_number),
         *attributes_writer.lines(part, bar_number),
-        *direction_writer.part_lines(part, bar_number),
+        *direction_writer.slot_lines(bar.part_slot),
         *navigation_writer.opening_lines(bar_number),
-        *part_content_lines(part, bar_number),
+        *part_content_lines(part, bar),
+        *(bar.closing_slot ? direction_writer.slot_lines(bar.closing_slot) : []),
         *navigation_writer.closing_lines(bar_number),
         *barline_writer.right_lines(bar_number),
         "#{INDENT * 2}</measure>"
@@ -62,13 +64,11 @@ module HeadMusic::Notation::MusicXML
     # A <backup> before each voice after the first is how MusicXML writes
     # simultaneous voices in one part. It rewinds by what the previous voice
     # actually wrote, which is less than a measure when it ended mid-bar.
-    def part_content_lines(part, bar_number)
-      return measure_content_lines(part, part.voices.first, bar_number) if part.voices.length <= 1
-
-      part.voices.each_with_index.flat_map do |voice, index|
+    def part_content_lines(part, bar)
+      bar.voice_slots.each_with_index.flat_map do |(voice, slots), index|
         [
-          *(index.positive? ? backup_lines(written_duration(part.voices[index - 1], bar_number)) : []),
-          *measure_content_lines(part, voice, bar_number)
+          *(index.positive? ? backup_lines(written_duration(part.voices[index - 1], bar.bar_number)) : []),
+          *voice_content_lines(part, voice, slots)
         ]
       end
     end
@@ -90,28 +90,22 @@ module HeadMusic::Notation::MusicXML
 
     # A voice of nil is a part nobody plays in, which renders as whole-measure
     # rests on its first staff so the chair keeps its line in the score.
-    def measure_content_lines(part, voice, bar_number)
-      voice_number = (part.voices.length > 1) ? part.voices.index(voice) + 1 : nil
-      staff_number = staff_number(part, voice, bar_number)
-      segments = voice && segments_by_bar(voice)[bar_number]
-      return whole_measure_content_lines(voice, bar_number, voice_number, staff_number) unless segments
-
-      [
-        *segments.flat_map do |segment|
-          [
-            *direction_writer.voice_lines(voice, bar_number, segment, voice_number: voice_number, staff_number: staff_number),
-            *note_writer.lines(segment, voice_number: voice_number, staff_number: staff_number)
-          ]
-        end,
-        *direction_writer.trailing_lines(voice, bar_number, voice_number: voice_number, staff_number: staff_number)
-      ]
+    def voice_content_lines(part, voice, slots)
+      numbers = {
+        voice_number: (part.voices.length > 1) ? part.voices.index(voice) + 1 : nil,
+        staff_number: staff_number(part, voice, slots.first.bar_number)
+      }
+      slots.flat_map do |slot|
+        [*direction_writer.slot_lines(slot, **numbers), *slot_content_lines(slot, numbers)]
+      end
     end
 
-    def whole_measure_content_lines(voice, bar_number, voice_number, staff_number)
-      [
-        *(voice && direction_writer.voice_rest_lines(voice, bar_number, voice_number: voice_number, staff_number: staff_number)),
-        *note_writer.whole_measure_rest_lines(bar_number, voice_number: voice_number, staff_number: staff_number)
-      ]
+    def slot_content_lines(slot, numbers)
+      case slot.kind
+      when :segment then note_writer.lines(slot.segment, **numbers)
+      when :whole_measure_rest then note_writer.whole_measure_rest_lines(slot.bar_number, **numbers)
+      else []
+      end
     end
 
     # Where a crossing shows up: the same voice reports a different staff on

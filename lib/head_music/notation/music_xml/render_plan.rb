@@ -53,6 +53,11 @@ module HeadMusic::Notation::MusicXML
       (Rational(4 * meter.top_number, meter.bottom_number) * divisions).numerator
     end
 
+    def direction_plan(part)
+      @direction_plans ||= {}.compare_by_identity
+      @direction_plans[part] ||= DirectionPlan.new(part, self)
+    end
+
     def slur_numbers(part)
       @slur_numbers ||= {}.compare_by_identity
       @slur_numbers[part] ||= SlurNumbers.new(part, self)
