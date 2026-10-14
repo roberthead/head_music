@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-27T11:54:27-07:00
   activated_at: 2026-10-13T20:34:36-07:00
   planned_at:   2026-10-13T21:08:28-07:00
-  finished_at:
-  updated_at:   2026-10-13T21:54:15-07:00
+  finished_at:  2026-10-13T21:54:28-07:00
+  updated_at:   2026-10-13T21:54:28-07:00
 -->
 
 # Story: Place Dynamics Where No Note Starts
@@ -134,3 +134,12 @@ Reviewed 2026-10-13 at `5c2d308f`, covering `03887bf1` through `5c2d308f`. The s
 - Finding 4 is fixed in `e4bf0983`.
 - Finding 5 stands: its edge cases are pinned through the writer specs.
 - Still open, and recorded for later: kern writes visible `r` filler for a voice that ends early; `\after` inside `\new Dynamics` raises `ParseError`, as it did on `main`; ABC overlay rendering is unverified in abcm2ps and abcjs.
+
+## Learnings
+
+- **Parallel worktree agents worked for a story split by format.** The shared preflight and test helpers went in first; then kern, ABC, and LilyPond were built at once in three worktrees branched from that commit, and each agent's commits were cherry-picked with its CHANGELOG line folded in. Nothing conflicted, because each format's files were its own and CHANGELOG edits were held back for the coordinator.
+- **A reader rule has to match what the writers accept, not only what they emit.** "Invisible time that ends a voice adds no event" was right for the `ryy`, `x`, and `s` the writers produce, but wrong for a whole bar of it, which then put a dynamic outside the written bars. The review caught it by reading a file the old code wrote; checking each reader change against the preflight it feeds would have caught it sooner.
+- **Hairpin research paid off early.** Oracle work done for the hairpins story (Verovio for kern, `\after` in LilyPond, the "no broken bound" error at the end of the music) shaped this plan, and the mechanisms built here (`PositionMarks`, `TimedMarks`, the timed-marks preflight) are what hairpins will reuse.
+- **"Breaking." needs a released baseline.** The plan called the refusals and placements breaking, but every dynamics reader and writer was itself unreleased. Checking the last release tag settled it: a 22.0.0 user sees additions.
+- **Name what cannot be placed.** Both reviews flagged errors that named a bar or an owner rather than the mark. Every refusal now names the dynamic's level and position, which hairpin ends should follow.
+- **Tooling.** Heredocs strip indentation from Ruby source and quoting breaks on apostrophes; edits to Ruby with backslashes or apostrophes go through the Edit tool.
