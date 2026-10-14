@@ -4,7 +4,7 @@ module HeadMusic::Notation::Kern
   # barline before each, and every voice's tokens in each.
   #
   # A pickup bar's leading silence is left out, since kern starts a pickup
-  # at its first note, unless a dynamic falls in it.
+  # at its first note, unless a dynamic or hairpin mark falls in it.
   class WrittenBars
     PICKUP_BAR = 0
     STYLES = {double: "||", final: "|!"}.freeze
@@ -121,9 +121,18 @@ module HeadMusic::Notation::Kern
     end
 
     def dynamic_offsets(bar_number)
-      (flow.parts + flow.voices).flat_map(&:dynamic_events).map(&:position).filter_map do |position|
+      mark_positions.filter_map do |position|
         HeadMusic::Notation::BarSplitter.offset_in_bar(position) if position.bar_number == bar_number
       end
+    end
+
+    # A hairpin ending on the final barline is closed on the last row, so it
+    # needs no time of its own after the music.
+    def mark_positions
+      owners = flow.parts + flow.voices
+      hairpins = owners.flat_map(&:spans).select(&:hairpin?)
+      ends = hairpins.map(&:to).reject { |position| position == flow.final_barline_position }
+      [*owners.flat_map(&:dynamic_events).map(&:position), *hairpins.map(&:from), *ends]
     end
 
     def full_length(bar_number)

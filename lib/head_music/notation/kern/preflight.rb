@@ -9,6 +9,8 @@ module HeadMusic::Notation::Kern
     include HeadMusic::Notation::PreflightChecks
     include HeadMusic::Notation::VoiceEventValidation
 
+    SpineHairpins = Data.define(:spans)
+
     def self.check!(flow, transposed: false)
       new(flow, transposed).check!
     end
@@ -28,6 +30,7 @@ module HeadMusic::Notation::Kern
       ensure_steady_parts
       ensure_dynamics_have_voices
       ensure_one_level_per_dynamics_spine
+      ensure_one_hairpin_per_dynamics_spine
     end
 
     private
@@ -65,12 +68,21 @@ module HeadMusic::Notation::Kern
     # A **dynam spine belongs to the **kern spine on its left, so a part with
     # no voices has none to hold its dynamics.
     def ensure_dynamics_have_voices
-      voiceless = flow.parts.find { |part| part.voices.empty? && part.dynamic_events.any? }
+      voiceless = flow.parts.find { |part| part.voices.empty? && (part.dynamic_events.any? || part.spans.any?(&:hairpin?)) }
       raise RenderError, "kern cannot write the dynamics of a part with no voices" if voiceless
     end
 
     def ensure_one_level_per_dynamics_spine
       flow.parts.each { |part| ensure_one_level_per_position([part, *part.voices], line: "a part's **dynam spine") }
+    end
+
+    # Pieces, since a level inside a hairpin cuts it, and pieces that touch
+    # can both be written, as `]p<`.
+    def ensure_one_hairpin_per_dynamics_spine
+      flow.parts.each do |part|
+        pieces = SpineHairpins.new(DynamicFields.new(part).hairpins)
+        ensure_one_hairpin_at_a_time([pieces], line: "a part's **dynam spine")
+      end
     end
 
     def render_error_class

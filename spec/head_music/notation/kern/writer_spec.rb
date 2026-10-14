@@ -676,6 +676,164 @@ describe HeadMusic::Notation::Kern::Writer do
     end
   end
 
+  describe "hairpins" do
+    let(:flow) { HeadMusic::Content::Flow.new(meter: "4/4") }
+    let(:voice) { flow.add_voice }
+    let(:part) { voice.part }
+
+    def data(flow)
+      render(flow).lines.map(&:chomp).grep(/\A[^*!=]/)
+    end
+
+    def quarters(*pitches)
+      pitches.each_with_index { |pitch, index| voice.place("1:#{index + 1}", :quarter, pitch) }
+    end
+
+    it "writes a part's hairpins in a **dynam spine of their own, opening at the start and closing at the end" do
+      quarters("C4", "D4", "E4", "F4")
+      part.add_span(:crescendo, from: "1:1", to: "1:2")
+      part.add_span(:diminuendo, from: "1:3", to: "1:4")
+      expect(data(flow)).to eq ["4c\t<", "4d\t[", "4e\t>", "4f\t]"]
+    end
+
+    it "writes a voice's hairpin in its part's spine" do
+      quarters("C4", "D4")
+      voice.add_span(:crescendo, from: "1:1", to: "1:2")
+      expect(data(flow)).to eq ["4c\t<", "4d\t["]
+    end
+
+    it "writes closes, then the level, then opens in one field" do
+      quarters("C4", "D4", "E4", "F4")
+      part.place_dynamic("1:2", :p)
+      [%w[diminuendo 1:1 1:2], %w[crescendo 1:2 1:3], %w[diminuendo 1:3 1:4]].each { |kind, from, to| part.add_span(kind, from: from, to: to) }
+      expect(data(flow)).to eq ["4c\t>", "4d\t]p<", "4e\t[>", "4f\t]"]
+    end
+
+    it "cuts a hairpin into touching pieces at a level or spine accent inside it" do
+      quarters("C4", "D4", "E4", "F4")
+      voice.add_span(:crescendo, from: "1:1", to: "1:4")
+      voice.place_dynamic("1:2", :mf)
+      voice.voice_event_at(flow.position("1:3")).note_dynamic = :sf
+      expect(data(flow)).to eq ["4c\t<", "4d\t[mf<", "4e\t[sf<", "4f\t["]
+    end
+
+    it "does not cut a hairpin at sfz, which the token carries" do
+      quarters("C4", "D4", "E4")
+      voice.add_span(:crescendo, from: "1:1", to: "1:3")
+      voice.voice_event_at(flow.position("1:2")).note_dynamic = :sfz
+      expect(data(flow)).to eq ["4c\t<", "4dz\t.", "4e\t["]
+    end
+
+    it "cuts a voice's hairpin at a level of its part" do
+      quarters("C4", "D4", "E4")
+      voice.add_span(:crescendo, from: "1:1", to: "1:3")
+      part.place_dynamic("1:2", :p)
+      expect(data(flow)).to eq ["4c\t<", "4d\t[p<", "4e\t["]
+    end
+
+    it "places marks inside a held note on null rows, leaving the note whole" do
+      voice.place("1:1", :whole, "C4")
+      voice.place("2:1", :whole, "D4")
+      part.add_span(:crescendo, from: "1:2", to: "1:4")
+      expect(data(flow)).to eq ["1c\t.", ".\t<", ".\t.", ".\t[", "1d\t."]
+    end
+
+    it "closes a hairpin ending on the final barline with a doubled close on the last row" do
+      quarters("C4", "D4", "E4", "F4")
+      part.add_span(:diminuendo, from: "1:2", to: "2:1")
+      expect(data(flow)).to eq ["4c\t.", "4d\t>", "4e\t.", "4f\t]]"]
+    end
+
+    it "closes such a hairpin on one more null row when the last row opens it" do
+      voice.place("1:1", :whole, "C4")
+      part.add_span(:crescendo, from: "1:1", to: "2:1")
+      expect(data(flow)).to eq ["1c\t<", ".\t[["]
+    end
+
+    it "keeps the null rows evenly spaced when it adds that row" do
+      voice.place("1:1", :whole, "C4")
+      part.place_dynamic("1:2", :p)
+      part.add_span(:crescendo, from: "1:3", to: "2:1")
+      expect(data(flow)).to eq ["1c\t.", ".\tp", ".\t<", ".\t[["]
+    end
+
+    it "keeps a short final bar short for a hairpin ending on the final barline" do
+      quarters("C4", "D4", "E4")
+      voice.add_span(:crescendo, from: "1:1", to: "2:1")
+      expect(data(flow)).to eq ["4c\t<", "4d\t.", "4e\t[["]
+    end
+
+    it "fills a short final bar with invisible rest for a hairpin starting after the music" do
+      quarters("C4", "D4", "E4")
+      voice.add_span(:diminuendo, from: "1:4", to: "2:1")
+      expect(data(flow)).to eq ["4c\t.", "4d\t.", "4e\t.", "4ryy\t>", ".\t]]"]
+    end
+
+    it "fills a short final bar for a hairpin ending where its music ends" do
+      quarters("C4", "D4", "E4")
+      voice.add_span(:crescendo, from: "1:1", to: "1:4")
+      expect(data(flow)).to eq ["4c\t<", "4d\t.", "4e\t.", "4ryy\t["]
+    end
+
+    it "writes a pickup's leading rest to hold a hairpin starting before the pickup's first note" do
+      voice.place("0:1", :half)
+      voice.place("0:3", :half, "C4")
+      voice.place("1:1", :whole, "D4")
+      part.add_span(:crescendo, from: "0:2", to: "1:1")
+      expect(data(flow)).to eq ["2r\t.", ".\t<", "2c\t.", "1d\t["]
+    end
+
+    it "writes the same hairpin from the part and a voice once" do
+      quarters("C4", "D4")
+      [part, voice].each { |owner| owner.add_span(:crescendo, from: "1:1", to: "1:2") }
+      expect(data(flow)).to eq ["4c\t<", "4d\t["]
+    end
+
+    it "writes touching hairpins from different owners" do
+      quarters("C4", "D4", "E4")
+      part.add_span(:crescendo, from: "1:1", to: "1:2")
+      voice.add_span(:diminuendo, from: "1:2", to: "1:3")
+      expect(data(flow)).to eq ["4c\t<", "4d\t[>", "4e\t]"]
+    end
+
+    it "writes overlapping hairpins from different owners whose pieces a level makes the same" do
+      quarters("C4", "D4", "E4")
+      part.add_span(:crescendo, from: "1:1", to: "1:2")
+      voice.add_span(:crescendo, from: "1:1", to: "1:3")
+      voice.place_dynamic("1:2", :mf)
+      expect(data(flow)).to eq ["4c\t<", "4d\t[mf<", "4e\t["]
+    end
+
+    it "refuses overlapping hairpins from different owners of one part, naming both" do
+      %w[1:1 2:1].each { |position| voice.place(position, :whole, "C4") }
+      part.add_span(:crescendo, from: "1:1", to: "2:1")
+      voice.add_span(:diminuendo, from: "1:3", to: "2:3")
+      expect { data(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, "a part's **dynam spine holds one hairpin " \
+        "at a time, so the crescendo from 1:1:000 to 2:1:000 and the diminuendo from 1:3:000 to 2:3:000 cannot both be written")
+    end
+
+    it "refuses overlapping hairpins from two voices of one part" do
+      voice.place("1:1", :whole, "C4")
+      part.add_voice.tap { |lower| lower.place("1:1", :whole, "C3") }.add_span(:crescendo, from: "1:1", to: "1:3")
+      voice.add_span(:diminuendo, from: "1:2", to: "1:4")
+      expect { data(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /one hairpin at a time/)
+    end
+
+    it "writes overlapping hairpins of different parts in their own spines" do
+      voice.place("1:1", :whole, "C4")
+      other = flow.add_voice.tap { |upper| upper.place("1:1", :whole, "E5") }
+      part.add_span(:crescendo, from: "1:1", to: "1:3")
+      other.add_span(:diminuendo, from: "1:2", to: "1:4")
+      expect(data(flow)).to eq ["1ee\t.\t1c\t<", ".\t>\t.\t.", ".\t.\t.\t[", ".\t]\t.\t."]
+    end
+
+    it "refuses a hairpin of a part with no voices" do
+      voice.place("1:1", :whole, "C4")
+      flow.add_part.add_span(:crescendo, from: "1:1", to: "1:3")
+      expect { data(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /dynamics of a part with no voices/)
+    end
+  end
+
   describe "slurs and phrases" do
     def spanned_tokens(flow)
       render(flow).lines.map(&:chomp).grep(/\A[^*!=]/).grep(/[(){}]/)

@@ -16,14 +16,48 @@ module HeadMusic::Notation::Kern
     def in_bar(bar_number)
       events = kern_events(bar_number)
       attacks = events.values.flatten.map { |event| Rational(event.offset) }.uniq.sort
-      row_offsets(attacks, dynamic_offsets(bar_number), bars.length(bar_number)).map do |offset|
-        columns.row { |column| field(column, events, bar_number, offset) }
+      offsets = row_offsets(attacks, dynamic_offsets(bar_number), bars.length(bar_number))
+      offsets = with_final_close_row(bar_number, attacks, offsets) if final_closes?(bar_number)
+      offsets.map do |offset|
+        columns.row do |column|
+          text = field(column, events, bar_number, offset)
+          (column.dynam && final_closes?(bar_number) && offset == offsets.last) ? final_field(column, text) : text
+        end
       end
     end
 
     private
 
     attr_reader :columns, :bars, :dynamic_fields
+
+    def final_closes?(bar_number)
+      bar_number == bars.numbers.last && dynamic_fields.values.any?(&:final_close)
+    end
+
+    # A doubled close ends where its row ends, so one on the bar's last row
+    # ends on the final barline. A row that opens that same hairpin would
+    # read as a hairpin to the next row with the close beside it, so the
+    # close goes on one more null row after it.
+    def with_final_close_row(bar_number, attacks, offsets)
+      last = offsets.last
+      return offsets unless opens_final_hairpin?(bar_number, last)
+
+      length = bars.length(bar_number)
+      row_offsets(attacks, dynamic_offsets(bar_number) + [(last + length) / 2], length)
+    end
+
+    def opens_final_hairpin?(bar_number, offset)
+      dynamic_fields.values.filter_map(&:final_hairpin).any? do |hairpin|
+        hairpin.from.bar_number == bar_number && HeadMusic::Notation::BarSplitter.offset_in_bar(hairpin.from) == offset
+      end
+    end
+
+    def final_field(column, text)
+      close = dynamic_fields.fetch(column.voice.part).final_close
+      return text unless close
+
+      (text == ".") ? close : "#{text}#{close}"
+    end
 
     def kern_events(bar_number)
       columns.select(&:kern?).to_h { |column| [column.voice, bars.events(column.voice, bar_number)] }
