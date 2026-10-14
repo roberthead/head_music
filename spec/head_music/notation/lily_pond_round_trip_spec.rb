@@ -154,6 +154,43 @@ describe HeadMusic::Notation::LilyPond do
     end
   end
 
+  describe "dynamics where no note starts" do
+    def abc_flow(music, dynamics)
+      HeadMusic::Notation::ABC.parse("X:1\nT:Held\nL:1/4\nM:4/4\nK:C\n#{music}\n").tap do |flow|
+        dynamics.each { |position, level| flow.voices.first.place_dynamic(position, level) }
+      end
+    end
+
+    {
+      "a level under a dotted half" => ["C3 D|", {"1:2" => :p}, "\\after 4 \\p c'2. d'4"],
+      "two levels in one note" => ["C4|", {"1:2" => :p, "1:4" => :f}, "\\after 4 \\p \\after 2. \\f c'1"],
+      "a level on the link after a barline split" => ["C2 D2-|D2 E2|", {"2:2" => :p}, "\\after 4 \\p d'2 e'2"],
+      "a level on the later link of a tie within a bar" => ["C2- C/2 D3/2|", {"1:3:240" => :p}, "c'2~ \\after 16 \\p c'8"],
+      "a level one tick into a whole note" => ["C4|", {"1:1:001" => :p}, "\\after 1*1/3840 \\p c'1"]
+    }.each do |description, (music, dynamics, written)|
+      context "with #{description}" do
+        let(:original) { abc_flow(music, dynamics) }
+        let(:rendered) { original.to_lilypond }
+        let(:round_tripped) { described_class.parse(rendered) }
+
+        it "writes it with \\after" do
+          expect(rendered).to include written
+        end
+
+        it "reads it back at its position, owned by the voice, with every voice event whole" do
+          expect_same_dynamic_positions(original, round_tripped)
+          expect_same_voice_events(original, round_tripped)
+        end
+
+        it "compiles without warnings" do
+          skip "lilypond is not installed" unless installed_lilypond
+
+          expect(compile_warnings(rendered)).to be_empty
+        end
+      end
+    end
+  end
+
   describe "hand-written inputs" do
     LilyPondRoundTripSources::RELATIVE_TWINS.each do |name, twin|
       it "resolves #{name} to the expected pitches" do

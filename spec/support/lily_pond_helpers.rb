@@ -1,3 +1,4 @@
+require "open3"
 require "tmpdir"
 
 # Structural checks every rendered LilyPond document should pass: balanced
@@ -16,6 +17,9 @@ module LilyPondHelpers
   CLEF_COMMAND = /\\clef [a-z]+/
   # A bar's marks and barline carry no duration either.
   BAR_MARK_COMMAND = /\\(?:bar|mark|jump|textEndMark) "(?:[^"\\]|\\.)*"|\\(?:segnoMark|codaMark) \d+|\\fine(?![A-Za-z])/
+  # \after places a mark part way into the music that follows, so its
+  # duration is an offset, not time.
+  AFTER_COMMAND = %r{\\after #{DURATION}(?:\*\d+(?:/\d+)?)? }
   # The marks written after a note or rest carry no duration of their own.
   MARK = /\\(?:ppp|pp|p|mp|mf|f|ff|fff|sf|sfz|rfz|fp|trill|mordent|prall|turn)(?![a-z])|-[.!>^-]|(?:\\=\w+)?\\?[()]/
   CHORD = /<#{PITCH}(?: #{PITCH})*>#{DURATION}/
@@ -76,7 +80,7 @@ module LilyPondHelpers
   end
 
   def strip_commands(content)
-    content.gsub(BAR_MARK_COMMAND, "").gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
+    content.gsub(AFTER_COMMAND, "").gsub(BAR_MARK_COMMAND, "").gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
       .gsub(CHANGE_STAFF_COMMAND, "").gsub(CLEF_COMMAND, "").gsub(MARK, "")
   end
 
@@ -110,6 +114,17 @@ module LilyPondToolchain
       source_path = File.join(dir, "golden.ly")
       File.write(source_path, source)
       system(lilypond, "-dno-print-pages", "--output", dir, source_path, out: File::NULL, err: File::NULL)
+    end
+  end
+
+  # LilyPond exits zero through most warnings, so this reads its log for them.
+  # This is the external tool's log, not the gem's console output.
+  def compile_warnings(source)
+    Dir.mktmpdir do |dir|
+      source_path = File.join(dir, "golden.ly")
+      File.write(source_path, source)
+      _output, log, _status = Open3.capture3(installed_lilypond, "-l", "WARNING", "-dno-print-pages", "--output", dir, source_path)
+      log.lines.grep(/warning|error|programming error/i)
     end
   end
 end

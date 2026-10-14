@@ -59,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The LilyPond writer renders a short final bar, such as one that balances a pickup, when every voice ends there together: it leaves the bar check off that bar, and a tacet voice rests only as long as the bar. Voices that end at different points short of the final bar still raise `RenderError`.
 - kern import leaves out invisible rests (`ryy`) after a spine's last visible event, so a voice ends where its music does and a `**dynam` level beside them keeps its position; an invisible rest followed by music is still read as a rest.
 - ABC writes a voice's or part's dynamic inside a note or rest on a voice overlay of invisible rests (`C4 D4 & x2 !f!x6|]`) and one after the last note on a trailing invisible rest (`C2 D2 E2 !f!x2|]`), rather than moving it to the next note or leaving it out, and raises `RenderError` naming the position for a dynamic no binary note value reaches.
+- LilyPond export writes a voice dynamic inside a note or rest with `\after` at its exact position, instead of moving it to the next note.
 
 ### Fixed
 

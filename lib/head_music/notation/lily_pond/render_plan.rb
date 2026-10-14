@@ -75,16 +75,15 @@ module HeadMusic::Notation::LilyPond
     # A tied chain within a voice event joins its links with the tie mark, and
     # so does a voice event split at a barline, whose piece before the bar check
     # ends in one; a chain of rests emits consecutive untied rests, and a tied
-    # chord repeats the whole chord. Only the first link carries the marks.
+    # chord repeats the whole chord. Each link carries the voice's levels that
+    # fall in it, and only the first the voice event's own marks.
     # A slur closes on the last link and opens on the first, closing first
     # where they are one word, so one slur can end where the next begins. A
     # rest reads back as one rest per link, so it carries both on its first.
     def token(segment)
       voice_event = segment.voice_event
-      first, *later = segment.rhythmic_value!(RenderError).tied_chain.map do |link|
-        "#{body(voice_event)}#{DurationWriter.token(link)}"
-      end
-      words = ["#{first}#{marks(segment)}", *later]
+      words = link_words(segment)
+      words[0] += MarkWriter.token(voice_event) if starts?(segment)
       words[closes_index(segment, words)] += span_marks(voice_event).closes_at(voice_event.position) if closes?(segment)
       words[0] += span_marks(voice_event).opens_at(voice_event.position) if starts?(segment)
       return words.join(" ") if voice_event.rest?
@@ -93,18 +92,23 @@ module HeadMusic::Notation::LilyPond
       segment.continues ? "#{tokens}~" : tokens
     end
 
+    def link_words(segment)
+      voice_event = segment.voice_event
+      marks = timed_marks(voice_event.voice)
+      bar_number = segment.bar_number
+      from = starts?(segment) ? HeadMusic::Notation::BarSplitter.offset_in_bar(voice_event.position) : 0r
+      segment.rhythmic_value!(RenderError).tied_chain.map do |link|
+        to = from + HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link)
+        word = "#{marks.afters(bar_number, from, to)}#{body(voice_event)}#{DurationWriter.token(link)}#{marks.attacks(bar_number, from)}"
+        from = to
+        word
+      end
+    end
+
     def body(voice_event)
       return "r" if voice_event.rest?
 
       voice_event.chord? ? chord_body(voice_event) : PitchWriter.token(voice_event.pitch)
-    end
-
-    # A voice event split at a barline is marked where it starts.
-    def marks(segment)
-      return "" unless starts?(segment)
-
-      voice_event = segment.voice_event
-      MarkWriter.token(voice_event, voice_level(voice_event))
     end
 
     def closes?(segment)
@@ -124,19 +128,11 @@ module HeadMusic::Notation::LilyPond
       @span_marks[voice_event.voice] ||= SpanMarks.new(voice_event.voice)
     end
 
-    # A voice's level moved onto a later note is written only if it is still
-    # in force there, so it cannot override a part's level that came between.
-    def voice_level(voice_event)
-      voice = voice_event.voice
-      level = dynamic_placement(voice).level_for(voice_event)
-      level if level && voice.dynamic_at(voice_event.position) == level
-    end
-
     # A part's own dynamics are written in a \new Dynamics, so only the voice's
-    # are placed on its notes.
-    def dynamic_placement(voice)
-      @dynamic_placements ||= {}.compare_by_identity
-      @dynamic_placements[voice] ||= HeadMusic::Notation::DynamicPlacement.new(voice)
+    # are placed among its links.
+    def timed_marks(voice)
+      @timed_marks ||= {}.compare_by_identity
+      @timed_marks[voice] ||= TimedMarks.levels(voice)
     end
 
     def chord_body(voice_event)

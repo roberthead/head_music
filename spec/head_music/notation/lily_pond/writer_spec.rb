@@ -341,8 +341,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
         ]
       end
 
-      it "moves a level under a held note to the next note" do
-        expect(bar_check_lines(rendered).values_at(2, 3)).to eq ["g''1 |", "e''4\\mf-- f''2.\\fp |"]
+      it "writes a level under a held note with \\after, leaving the note whole" do
+        expect(bar_check_lines(rendered).values_at(2, 3)).to eq ["\\after 2 \\mf g''1 |", "e''4-- f''2.\\fp |"]
       end
 
       it "writes a level on a rest" do
@@ -450,8 +450,8 @@ describe HeadMusic::Notation::LilyPond::Writer do
         expect(rendered).to include("    }\n    \\new Dynamics {\n", "s2\\p s2\\mf |\n", "s2. s4\\f |\n", "s4 s2\\ff |\n")
       end
 
-      it "leaves out the voice's level where the part's has overtaken it" do
-        expect(rendered).not_to include "\\pp"
+      it "writes the voice's own level at its position between the part's" do
+        expect(bar_check_lines(rendered).first).to eq "\\after 4 \\pp g'1 |"
       end
 
       it_behaves_like "a compilable document"

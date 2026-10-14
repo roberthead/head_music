@@ -4,9 +4,9 @@
 # The writer pads a voice's missing bars with whole-bar rests, so the
 # reparsed flow may hold rests the original did not; every original
 # voice event must come back at its position with its pitches, duration, and
-# markings, and every extra reparsed voice event must be such a rest. A part's
-# dynamic events come back exactly; a voice's may move to the next note, so
-# they are held to the dynamic in force at every note instead.
+# markings, and every extra reparsed voice event must be such a rest. Every
+# voice's dynamic events come back at their exact positions, as do those of the
+# part each voice reads back in.
 module LilyPondRoundTripHelper
   def expect_lily_pond_round_trip(flow)
     rendered = HeadMusic::Notation::LilyPond.render(flow)
@@ -23,6 +23,7 @@ module LilyPondRoundTripHelper
       expect_equivalent_voice_voice_events(actual, expected)
       expect_equivalent_staves(actual, expected) if expected.part.staff_system.length > 1
       expect(part_dynamics(actual.part)).to eq part_dynamics(expected.part)
+      expect(actual.dynamic_events.map(&:to_s)).to eq expected.dynamic_events.map(&:to_s)
     end
     expect_same_markings(flow, reparsed)
     reparsed
