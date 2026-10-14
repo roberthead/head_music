@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-13T20:31:33-07:00
   planned_at:   2026-10-14T07:39:58-07:00
   finished_at:
-  updated_at:   2026-10-14T07:39:58-07:00
+  updated_at:   2026-10-14T08:31:29-07:00
 -->
 
 # Story: Hairpins
@@ -85,6 +85,13 @@ Split from [Spans Across Notes](../done/spans-across-notes.md), whose span model
   - kern ends a hairpin at the final barline with a doubled close (`[[`, `]]`), and its reader pairs as Verovio does: `<` only with `[`, `>` only with `]`, and a level, accent, or new opener before the close drops the open hairpin.
   - A voice hairpin may overlap its part's in the model; ABC and kern, with one line each, refuse it when writing.
   - LilyPond's `\cresc`, `\dim`, and `\decresc` read as hairpins and write back as `\<` and `\>`, losing the text look. `diminuendo` is the catalog's primary key.
+- **Settled while building:**
+  - LilyPond reads a hairpin end after all the written time, spacers included, as the final barline, since `<>\!` after a short final bar's last note is how the writer ends one there and how LilyPond draws it. An end where a short bar's music stops is written on a spacer that fills the bar (`e'4 s4\!`), so the two never meet.
+  - MusicXML writes a measure's part directions before its voices, so where a part hairpin starts as a voice hairpin stops, the part's start comes first in the file. They take different numbers, so readers pair them correctly; moving part directions after the voices would have changed where every part dynamic is written.
+  - LilyPond warns "crescendo too small" for a quarter-note hairpin starting at an accent at default spacing. That is page room, not notation, so the hairpin compile check widens spacing (`common-shortest-duration` 1/64); the writer and `compile_warnings` are unchanged.
+  - ABC and LilyPond round trips leave out pickups: both write a full-length bar 0 as an ordinary first bar, which reads back as bar 1 and moves every position, notes included. That predates this story.
+  - kern refuses three seeds in four of the two-voice generator, whose voices and part overlap; every seed also round-trips with its hairpins on one line across two voices.
+  - ABC reads a second start of the same kind before an end as replacing the first, which is dropped as unterminated.
 - **Deferred**, each for a reason in the code:
   - kern textual "cresc.": a `**dynam` text token has no end mark, so reading it as a span would invent its end.
   - Niente (`o<`): `Span` holds only kind, from, and to, and ABC cannot spell it; `o<` reads as a crescendo.
