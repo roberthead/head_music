@@ -120,6 +120,11 @@ describe HeadMusic::Notation::LilyPond do
       expect(part_hairpins(source)).to eq [["crescendo from 1:1:000 to 2:1:000"]]
     end
 
+    it "ends one with <> after a short final bar on the final barline" do
+      source = %(\\new PianoStaff << \\new Staff { c''1 | c''2. } \\new Dynamics { s1 | s2.\\< <>\\! } \\new Staff { \\clef bass c1 | c2. } >>)
+      expect(part_hairpins(source)).to eq [["crescendo from 2:1:000 to 3:1:000"]]
+    end
+
     it "places a level on <> where the spacers have reached" do
       flow = described_class.parse(piano("s2\\> <>\\p s2 | s1 | s1"))
       expect([part_levels(flow.parts.first), flow.parts.first.spans.map(&:to_s)]).to eq [[%w[1:3:000 p]], ["diminuendo from 1:1:000 to 1:3:000"]]

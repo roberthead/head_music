@@ -256,6 +256,38 @@ describe HeadMusic::Notation::LilyPond do
     end
   end
 
+  describe "hairpins" do
+    # LilyPond ends a hairpin at a level or accent in its context, so the
+    # writer cuts it there: a voice's at its levels and accented notes, a
+    # part's at its own levels.
+    pieces = lambda do |owner, hairpins|
+      cuts = owner.dynamic_events.map(&:position)
+      cuts += owner.voice_events.select(&:note_dynamic).map(&:position) if owner.is_a?(HeadMusic::Content::Voice)
+      HeadMusic::Notation::HairpinSegments.split(hairpins, cuts)
+    end
+
+    define_method(:expect_hairpin_round_trip) do |flow|
+      back = described_class.parse(described_class.render(flow))
+      expect_same_hairpins(flow, back, segmented_by: pieces)
+      expect_same_hairpin_in_force(flow, back)
+    end
+
+    # The writer writes a pickup bar of full length, rest included, as an
+    # ordinary first bar, so it reads back as bar 1 and every position moves
+    # a bar, notes as well as hairpins.
+    (HairpinFixtures.all - [:hairpin_in_pickup]).each do |fixture|
+      it "keeps where each hairpin of #{fixture} starts and ends" do
+        expect_hairpin_round_trip(HairpinFixtures.public_send(fixture))
+      end
+    end
+
+    HairpinGenerator::SEEDS.each do |seed|
+      it "keeps where each hairpin of seed #{seed} starts and ends" do
+        expect_hairpin_round_trip(HairpinGenerator.flow(seed, pickup: false))
+      end
+    end
+  end
+
   describe "with the lilypond binary as an oracle" do
     before do
       skip "lilypond is not installed" unless installed_lilypond

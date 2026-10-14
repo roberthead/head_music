@@ -38,10 +38,14 @@ module HeadMusic::Notation::LilyPond
         (ends + marks.hairpin_marks).each { |mark| @marks << [position, mark] }
       end
 
-      def pair(owners)
+      # LilyPond draws a hairpin ending after all the written time, spacers
+      # included, to the final barline, which follows a short final bar where
+      # its time stops.
+      def pair(owners, written_end:, final_barline:)
         open = nil
         @marks.group_by(&:first).sort_by(&:first).each do |position, group|
-          owners.each { |owner| add_span(owner, *open, position) } if open
+          to = (position == written_end) ? final_barline : position
+          owners.each { |owner| add_span(owner, *open, to) } if open
           start = group.map(&:last).reverse.find { |mark| mark != :end }
           open = start && [start, position]
         end
@@ -80,9 +84,16 @@ module HeadMusic::Notation::LilyPond
 
     def finish(flow)
       @spacers.keys.each { |voice| rest_spacers(voice) if spacers_past_music_bar?(voice) }
-      @hairpin_marks.each { |voice, hairpin_marks| hairpin_marks.pair([voice]) }
+      @written_end = flow.voices.map { |voice| position(voice) }.max
+      @hairpin_marks.each do |voice, hairpin_marks|
+        hairpin_marks.pair([voice], written_end: @written_end, final_barline: flow.final_barline_position)
+      end
       bar_marks.finish(flow)
     end
+
+    # Where the voices' written time ends, trailing spacers included, once
+    # they are all placed.
+    attr_reader :written_end
 
     # Where the voice's next item goes, past any spacers it has read.
     def position(voice)

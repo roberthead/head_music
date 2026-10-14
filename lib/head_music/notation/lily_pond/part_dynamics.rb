@@ -25,7 +25,7 @@ module HeadMusic::Notation::LilyPond
         hairpin_marks.add(position, event.marks)
         position = placer.after_spacer(position, event) if event.kind == :spacer
       end
-      hairpin_marks.pair(parts)
+      hairpin_marks.pair(parts, written_end: placer.written_end, final_barline: flow.final_barline_position)
     end
 
     private

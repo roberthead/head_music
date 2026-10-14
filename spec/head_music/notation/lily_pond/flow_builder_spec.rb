@@ -378,6 +378,8 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
       "an end on a rest" => ["c'4\\< d' r\\! f'", ["crescendo from 1:1:000 to 1:3:000"]],
       "an end on a whole-bar rest" => ["c'1\\< | R1*4/4\\! | c'1", ["crescendo from 1:1:000 to 2:1:000"]],
       "an end on a spacer" => ["c'2\\< s4\\! c'4", ["crescendo from 1:1:000 to 1:3:000"]],
+      "an end after a short final bar's music, on the final barline" => ["c'1 | c'4\\< d' e' <>\\!", ["crescendo from 2:1:000 to 3:1:000"]],
+      "an end on a spacer filling a short final bar, where the music ends" => ["c'1 | c'4\\< d' e' s4\\!", ["crescendo from 2:1:000 to 2:4:000"]],
       "\\<\\! on one note, ended end first and so left open until a level" => ["c'4\\<\\! d'\\p e' f'", ["crescendo from 1:1:000 to 1:2:000"]],
       "\\cresc ended by a level" => ["c'4\\cresc d' e' f'\\f", ["crescendo from 1:1:000 to 1:4:000"]],
       "\\cresc ended by \\endcresc" => ["c'4\\cresc d' e'\\endcresc f'", ["crescendo from 1:1:000 to 1:3:000"]],
