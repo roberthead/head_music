@@ -679,6 +679,31 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
   end
 
+  describe "invisible rests" do
+    it "adds no event for an invisible rest that ends a spine, keeping the dynamic beside it" do
+      flow = parse("**kern  **dynam\n*M4/4  *\n=1  =1\n4c  .\n4d  .\n4e  .\n4ryy  f\n==  ==\n*-  *-")
+      expect([voice_events(flow.voices.first), flow.parts.first.dynamic_events.map(&:to_s), flow.latest_bar_number])
+        .to eq [["quarter C4 at 1:1:000", "quarter D4 at 1:2:000", "quarter E4 at 1:3:000"], ["f at 1:4:000"], 1]
+    end
+
+    it "reads an invisible rest followed by music, and a rest marked y, as rests" do
+      flow = parse("**kern\n*M4/4\n=1\n4c\n4ryy\n4e\n4ry\n==\n*-")
+      expect(voice_events(flow.voices.first))
+        .to eq ["quarter C4 at 1:1:000", "quarter rest at 1:2:000", "quarter E4 at 1:3:000", "quarter rest at 1:4:000"]
+    end
+
+    it "times a null row inside a trailing invisible rest by the even split" do
+      flow = parse("**kern  **dynam\n*M4/4  *\n=1  =1\n4c  .\n4d  .\n2ryy  .\n.  f\n==  ==\n*-  *-")
+      expect([voice_events(flow.voices.first), flow.parts.first.dynamic_events.map(&:to_s)])
+        .to eq [["quarter C4 at 1:1:000", "quarter D4 at 1:2:000"], ["f at 1:4:000"]]
+    end
+
+    it "pads a voice whose invisible rests end before another voice's music with visible rests" do
+      flow = parse("**kern  **kern\n*M4/4  *M4/4\n=1  =1\n4c  2e\n4ryy  .\n2ryy  2f\n==  ==\n*-  *-")
+      expect(voice_events(flow.voices.last)).to eq ["quarter C4 at 1:1:000", "dotted half rest at 1:2:000"]
+    end
+  end
+
   describe "time slices" do
     it "raises when a note begins before the note before it ends" do
       expect { parse("**kern  **kern\n2c  4e\n4d  4f\n*-  *-") }

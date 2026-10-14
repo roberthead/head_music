@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The MusicXML and LilyPond writers render a note that crosses a barline as tied notes, one per bar, instead of raising `RenderError`. A chord ties each of its pitches, and a rest splits into consecutive rests. Fourth-species flows now render.
 - The LilyPond parser reads a tie across a bar check, such as `c'1~ | c'2`, as one placement instead of raising `ParseError`. A `\key` or `\time` written between the halves of such a tie takes effect at that barline; one in the middle of a bar still raises.
 - The LilyPond writer renders a short final bar, such as one that balances a pickup, when every voice ends there together: it leaves the bar check off that bar, and a tacet voice rests only as long as the bar. Voices that end at different points short of the final bar still raise `RenderError`.
+- kern import leaves out invisible rests (`ryy`) after a spine's last visible event, so a voice ends where its music does and a `**dynam` level beside them keeps its position; an invisible rest followed by music is still read as a rest.
 
 ### Fixed
 

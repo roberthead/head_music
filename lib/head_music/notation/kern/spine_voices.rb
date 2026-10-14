@@ -51,7 +51,7 @@ module HeadMusic::Notation::Kern
     end
 
     def place(clock)
-      finish_time = @layers.filter_map(&:end_time).max
+      finish_time = @layers.filter_map(&:sounding_end_time).max
       @layers.each { |layer| layer.place(clock, finish_time) }
     end
 

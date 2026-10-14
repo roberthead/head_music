@@ -14,9 +14,14 @@ module HeadMusic::Notation::Kern
   # before its opens, so one slur can end where the next begins. A mark
   # left unpaired, or a span its voice refuses, such as a slur ending on a
   # rest, is dropped.
+  #
+  # Invisible rests after a voice's last visible event add nothing, as they
+  # hold only time for dynamics after the music ends. One followed by music
+  # is a rest, since the voice cannot hold a gap.
   class Layer
     Event = Struct.new(
-      :time, :rhythmic_value, :fraction, :pitches, :syllables, :articulations, :ornaments, :note_dynamic, :span_marks
+      :time, :rhythmic_value, :fraction, :pitches, :syllables, :articulations, :ornaments, :note_dynamic, :span_marks,
+      :invisible
     )
     SPAN_KINDS = {"(" => :slur, ")" => :slur, "{" => :phrase, "}" => :phrase}.freeze
     CLOSES = %w[) }].freeze
@@ -35,13 +40,16 @@ module HeadMusic::Notation::Kern
     def add(time, token)
       Event.new(
         time, token.rhythmic_value, token.fraction, token.pitches, [],
-        token.articulations, token.ornaments, token.note_dynamic, token.span_marks
+        token.articulations, token.ornaments, token.note_dynamic, token.span_marks, token.invisible
       ).tap { |event| @events << event }
     end
 
     def end_time
-      last = events.last
-      last && (last.time + last.fraction)
+      finish_of(events.last)
+    end
+
+    def sounding_end_time
+      finish_of(sounding_events.last)
     end
 
     def place(clock, finish_time)
@@ -50,12 +58,21 @@ module HeadMusic::Notation::Kern
       @position = voice.flow.position(first_bar.number, 1, 0)
       @time = first_bar.start
       @span_marks = []
-      events.each { |event| place_event(event, clock) }
-      rest_until(finish_time, clock)
+      sounding_events.each { |event| place_event(event, clock) }
+      rest_until(finish_time, clock) if finish_time
       add_spans
     end
 
     private
+
+    def finish_of(event)
+      event && (event.time + event.fraction)
+    end
+
+    def sounding_events
+      last_visible = events.rindex { |event| !event.invisible }
+      last_visible ? events[..last_visible] : []
+    end
 
     # A voice sits on its part's first staff unless it says otherwise, and
     # it says so from the flow's first bar, pickup included.

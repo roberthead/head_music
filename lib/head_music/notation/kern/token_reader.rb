@@ -15,9 +15,12 @@ module HeadMusic::Notation::Kern
     # pitches). Its :tie is nil, :start ([), :middle (_), or :end (]).
     # Its markings are catalog keys: sorted articulation and ornament
     # keys, and a note dynamic or nil. Its span marks are the slur and
-    # phrase signifiers, such as "(", "}", or the elided "&(".
-    Token = Data.define(:type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic, :span_marks) do
-      def initialize(articulations: [], ornaments: [], note_dynamic: nil, span_marks: [], **fields)
+    # phrase signifiers, such as "(", "}", or the elided "&(". A rest
+    # marked yy is invisible.
+    Token = Data.define(
+      :type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic, :span_marks, :invisible
+    ) do
+      def initialize(articulations: [], ornaments: [], note_dynamic: nil, span_marks: [], invisible: false, **fields)
         super
       end
 
@@ -95,10 +98,11 @@ module HeadMusic::Notation::Kern
       duration = read_duration(remaining, text)
       pitches = read_pitches(remaining, text)
       rest = !remaining.delete!("r").nil?
+      invisible = rest && remaining.include?("yy")
       tie = read_tie(remaining, text)
       markings = MarkCodes.read!(remaining)
       ensure_consumed(remaining, text)
-      token = build(text, duration, pitches, rest, tie).with(span_marks: span_marks)
+      token = build(text, duration, pitches, rest, tie).with(span_marks: span_marks, invisible: invisible)
       rest ? token : token.with(**markings)
     end
 

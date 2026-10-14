@@ -26,6 +26,10 @@ describe HeadMusic::Notation::Kern::TokenReader do
     expect(summary("1rr")).to eq [:rest, [], "whole", nil]
   end
 
+  it "reads a rest marked yy as invisible, and one marked y as visible" do
+    expect(%w[4ryy 4ry 4r 4cyy].map { |field| read(field).invisible }).to eq [true, false, false, false]
+  end
+
   it "reads a chord" do
     expect(summary("4C 4E 4G")).to eq [:note, %w[C3 E3 G3], "quarter", nil]
   end
