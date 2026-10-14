@@ -13,18 +13,41 @@ module HeadMusic::Notation::LilyPond
     end
 
     # The length, as a fraction of a whole note, of a final bar that every
-    # voice ends short of together, or nil where the final bar is full.
+    # voice ends short of together, or nil where the final bar is written
+    # full: where the music fills it, or where a mark follows the music in it.
     def short_final_bar_fraction
-      return @short_final_bar_fraction if defined?(@short_final_bar_fraction)
+      music_end_fraction unless trailing_marks?
+    end
 
-      finish = flow.voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
-      offset = finish && HeadMusic::Notation::BarSplitter.offset_in_bar(finish)
-      @short_final_bar_fraction = (offset && !offset.zero?) ? offset : nil
+    # Where in the final bar every voice's music ends together, or nil where
+    # it ends at the barline.
+    def music_end_fraction
+      return @music_end_fraction if defined?(@music_end_fraction)
+
+      offset = music_end && HeadMusic::Notation::BarSplitter.offset_in_bar(music_end)
+      @music_end_fraction = (offset && !offset.zero?) ? offset : nil
+    end
+
+    # Whether a short final bar is written full, so marks after the music have
+    # spacers to go on.
+    def filled_final_bar?(bar_number)
+      bar_number == bar_numbers.last && trailing_marks?
+    end
+
+    # The spacers that fill a short final bar after the voice's music, carrying
+    # its marks there. A nil voice is a staff nobody is written on.
+    def trailing_spacers(voice)
+      @trailing_spacers ||= {}.compare_by_identity
+      @trailing_spacers[voice] ||= begin
+        bar_number = bar_numbers.last
+        marks = voice ? timed_marks(voice).trailing(bar_number, music_end_fraction) : []
+        tokens_by_offset = marks.group_by(&:offset).transform_values { |group| group.map(&:token).join }
+        spacer_run(bar_number, music_end_fraction, bar_length(bar_number), tokens_by_offset, "voice's")
+      end
     end
 
     # What a part's \new Dynamics says in each bar: spacers that reach each of
-    # its levels at the level's exact position. A level after the music ends
-    # has nowhere to be written and is left out.
+    # its levels at the level's exact position.
     def dynamics_bars(part)
       @dynamics_bars ||= {}.compare_by_identity
       @dynamics_bars[part] ||= begin
@@ -39,16 +62,37 @@ module HeadMusic::Notation::LilyPond
       super
       tokens_by_segment
       flow.parts.each { |part| dynamics_bars(part) unless part.dynamic_events.empty? }
+      [nil, *flow.voices].each { |voice| trailing_spacers(voice) } if trailing_marks?
+    end
+
+    def music_end
+      return @music_end if defined?(@music_end)
+
+      @music_end = flow.voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
+    end
+
+    def trailing_marks?
+      return @trailing_marks if defined?(@trailing_marks)
+
+      @trailing_marks = !music_end_fraction.nil? && (
+        flow.parts.any? { |part| part.dynamic_events.any? { |event| event.position >= music_end } } ||
+        flow.voices.any? { |voice| timed_marks(voice).trailing(bar_numbers.last, music_end_fraction).any? }
+      )
     end
 
     def dynamics_bar(bar_number, events)
-      length = bar_length(bar_number)
-      levels = events.to_h { |event| [HeadMusic::Notation::BarSplitter.offset_in_bar(event.position), event.level] }
-        .select { |offset, _level| offset < length }
-      [0r, *levels.keys, length].uniq.each_cons(2).flat_map { |from, to|
-        first, *later = spacers(to - from, bar_number)
-        level = levels[from]
-        [level ? "#{first}\\#{level.name_key}" : first, *later]
+      tokens_by_offset = events.to_h do |event|
+        [HeadMusic::Notation::BarSplitter.offset_in_bar(event.position), "\\#{event.level.name_key}"]
+      end
+      spacer_run(bar_number, 0r, bar_length(bar_number), tokens_by_offset, "part's")
+    end
+
+    # Spacers from one offset in the bar to another, each mark on the first
+    # spacer where it falls.
+    def spacer_run(bar_number, from, to, tokens_by_offset, owner)
+      [from, *tokens_by_offset.keys.sort, to].uniq.each_cons(2).flat_map { |start, finish|
+        first, *later = spacers(finish - start, bar_number, owner)
+        ["#{first}#{tokens_by_offset[start]}", *later]
       }.join(" ")
     end
 
@@ -59,9 +103,9 @@ module HeadMusic::Notation::LilyPond
       Rational(meter.top_number, meter.bottom_number)
     end
 
-    def spacers(fraction, bar_number)
+    def spacers(fraction, bar_number, owner)
       value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
-      raise RenderError, "cannot reach the part's dynamics in bar #{bar_number} in binary note values" unless value
+      raise RenderError, "cannot reach the #{owner} dynamics in bar #{bar_number} in binary note values" unless value
 
       value.tied_chain.map { |link| "s#{DurationWriter.token(link)}" }
     end

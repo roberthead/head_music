@@ -191,6 +191,45 @@ describe HeadMusic::Notation::LilyPond do
     end
   end
 
+  describe "dynamics after the music's end in a short final bar" do
+    def abc_flow(music, voices: 1)
+      header = "X:1\nT:Trailing\nL:1/4\nM:4/4\nK:C\n"
+      body = (voices == 1) ? "#{music}\n" : "V:1\n#{music}\nV:2\n#{music.downcase}\n"
+      HeadMusic::Notation::ABC.parse(header + body)
+    end
+
+    {
+      "a voice f after one voice" => [1, "C D E|", ->(flow) { flow.voices.first.place_dynamic("1:4", :f) }, "e'4 s4\\f \\bar"],
+      "a part f after one voice" => [1, "C D E|", ->(flow) { flow.parts.first.place_dynamic("1:4", :f) }, "s2. s4\\f |"],
+      "a voice f after two voices" => [2, "C D E|", ->(flow) { flow.voices.last.place_dynamic("1:4", :f) }, "e''4 s4\\f \\bar"],
+      "a part f after two voices" => [2, "C D E|", ->(flow) { flow.parts.last.place_dynamic("1:4", :f) }, "s2. s4\\f |"],
+      "a part f at the music's end after a full bar" => [1, "C D E F|G A|", ->(flow) { flow.parts.first.place_dynamic("2:3", :f) }, "s2 s2\\f |"]
+    }.each do |description, (voices, music, place, written)|
+      context "with #{description}" do
+        let(:original) { abc_flow(music, voices: voices).tap(&place) }
+        let(:rendered) { original.to_lilypond }
+        let(:round_tripped) { described_class.parse(rendered) }
+
+        it "writes the final bar full, with spacers in every voice before the final barline" do
+          expect(rendered).to include written
+          expect(bar_check_lines(rendered).select { |line| line.include?("\\bar") }).to all(match(/ s\d.* \\bar "\|\." \|\z/))
+        end
+
+        it "reads it back at its position and owner, with the music ending where it did" do
+          expect_same_dynamic_positions(original, round_tripped)
+          expect_same_voice_events(original, round_tripped)
+          expect(round_tripped.last_sounding_bar_number).to eq original.last_sounding_bar_number
+        end
+
+        it "compiles without warnings" do
+          skip "lilypond is not installed" unless installed_lilypond
+
+          expect(compile_warnings(rendered)).to be_empty
+        end
+      end
+    end
+  end
+
   describe "hand-written inputs" do
     LilyPondRoundTripSources::RELATIVE_TWINS.each do |name, twin|
       it "resolves #{name} to the expected pitches" do

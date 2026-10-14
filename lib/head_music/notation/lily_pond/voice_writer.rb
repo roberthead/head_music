@@ -38,7 +38,7 @@ module HeadMusic::Notation::LilyPond
     # key and time print and the bars line up.
     def silent_lines(staff, part: nil)
       opening_lines(clef_name(nil, staff), part) +
-        plan.bar_numbers.map { |bar_number| bar_check_after(whole_bar_rest(bar_number), bar_number) }
+        plan.bar_numbers.map { |bar_number| bar_check_after([whole_bar_rest(bar_number), *trailing_spacers(nil, bar_number)].join(" "), bar_number) }
     end
 
     # The lines inside a part's \new Dynamics, bar-checked like a voice's.
@@ -104,6 +104,7 @@ module HeadMusic::Notation::LilyPond
         *change_commands(voice.part, bar_number),
         staff_change_command(voice, bar_number, part_index),
         *bar_tokens(voice, bar_number),
+        *trailing_spacers(voice, bar_number),
         *BarMarkWriter.closing_tokens(bar, last: bar_number == plan.bar_numbers.last, lead: lead_voice?(voice))
       ]
       bar_check_after(tokens.compact.join(" "), bar_number)
@@ -146,16 +147,21 @@ module HeadMusic::Notation::LilyPond
       segments.map { |segment| plan.tokens_by_segment[segment] }
     end
 
-    # A voice with nothing in a short final bar rests only as long as the bar.
+    # Spacers in every voice, so the final barline follows the marks on them.
+    def trailing_spacers(voice, bar_number)
+      plan.filled_final_bar?(bar_number) ? [plan.trailing_spacers(voice)] : []
+    end
+
+    # A voice with nothing in a short final bar rests only as long as the music.
     def whole_bar_rest(bar_number)
-      return short_bar_rest if short_final_bar?(bar_number)
+      return short_bar_rest if short_final_bar?(bar_number) || plan.filled_final_bar?(bar_number)
 
       meter = plan.effective_meter(bar_number)
       "R1*#{meter.top_number}/#{meter.bottom_number}"
     end
 
     def short_bar_rest
-      HeadMusic::Notation::DottedDuration.rhythmic_value_for(plan.short_final_bar_fraction)
+      HeadMusic::Notation::DottedDuration.rhythmic_value_for(plan.music_end_fraction)
         .tied_chain.map { |link| "r#{DurationWriter.token(link)}" }.join(" ")
     end
   end

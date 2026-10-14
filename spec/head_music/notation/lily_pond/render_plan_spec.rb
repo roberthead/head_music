@@ -92,6 +92,14 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
       flow.add_voice.place("1:1", :half, "C4")
       expect(described_class.new(flow).short_final_bar_fraction).to eq Rational(1, 2)
     end
+
+    it "is nil where a dynamic follows the music, so the bar is written full" do
+      flow = build_flow(meter: "3/4")
+      flow.add_voice.place("1:1", :half, "C4")
+      flow.parts.first.place_dynamic("1:3", :f)
+      plan = described_class.new(flow)
+      expect([plan.short_final_bar_fraction, plan.music_end_fraction, plan.filled_final_bar?(1)]).to eq [nil, Rational(1, 2), true]
+    end
   end
 
   describe "signature tracking" do

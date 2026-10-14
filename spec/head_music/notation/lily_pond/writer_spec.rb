@@ -257,6 +257,48 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it_behaves_like "a compilable document"
     end
 
+    context "with a pickup, a tacet voice, and a voice dynamic after the music" do
+      let(:flow) { LilyPondFixtures.pickup_and_short_final_bar.tap { |flow| flow.voices.first.place_dynamic("2:3", :f) } }
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "fills the final bar of every voice with spacers, the tacet voice's after its rest" do
+        expect(bar_check_lines(rendered).grep(/\\bar/)).to eq [%(b'2 s4\\f \\bar "|." |), %(r2 s4 \\bar "|." |)]
+      end
+
+      it "compiles without warnings" do
+        skip "lilypond is not installed" unless installed_lilypond
+
+        expect(compile_warnings(rendered)).to be_empty
+      end
+    end
+
+    context "with a staff nobody is written on and a part dynamic after the music" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Short Hand", meter: "4/4").tap do |flow|
+          piano = flow.add_part(instrument: "piano", staff_system: HeadMusic::Content::StaffSystem.grand_staff)
+          right_hand = piano.add_voice(role: "right hand")
+          right_hand.place("1:1", :whole, "E5")
+          right_hand.place("2:1", :half, "E5")
+          piano.place_dynamic("2:3", :f)
+        end
+      end
+      let(:rendered) { described_class.new(flow).to_s }
+
+      it "writes the final bar full on every staff and in the Dynamics context" do
+        expect(bar_check_lines(rendered).values_at(1, 3, 5)).to eq [%(e''2 s2 \\bar "|." |), "s2 s2\\f |", "r2 s2 |"]
+      end
+
+      it "is structurally valid" do
+        expect_structurally_valid_lilypond(rendered, bars: 2, voices: 1, streams: 3)
+      end
+
+      it "compiles without warnings" do
+        skip "lilypond is not installed" unless installed_lilypond
+
+        expect(compile_warnings(rendered)).to be_empty
+      end
+    end
+
     context "with an empty voice" do
       let(:flow) { LilyPondFixtures.tacet }
       let(:rendered) { described_class.new(flow).to_s }
@@ -463,6 +505,19 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it "raises a render error before any assembly" do
         expect { described_class.new(flow).to_s }
           .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /part's dynamics in bar 1/)
+      end
+    end
+
+    context "with a voice dynamic after the music between the ticks of binary note values" do
+      let(:flow) do
+        HeadMusic::Notation::ABC.parse("X:1\nT:Late\nL:1/4\nM:4/4\nK:C\nC D E|\n").tap do |flow|
+          flow.voices.first.place_dynamic("1:4:320", :f)
+        end
+      end
+
+      it "raises a render error before any assembly" do
+        expect { described_class.new(flow).to_s }
+          .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /voice's dynamics in bar 1/)
       end
     end
 
