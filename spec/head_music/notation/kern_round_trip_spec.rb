@@ -372,6 +372,65 @@ describe HeadMusic::Notation::Kern do
     end
   end
 
+  describe "hairpins" do
+    # The **dynam spine holds the hairpins of a part and its voices, and
+    # Verovio drops a hairpin that a level or spine accent interrupts, so each
+    # comes back as the part's, cut into touching pieces wherever one falls.
+    def self.pieces(part)
+      owners = [part, *part.voices]
+      HeadMusic::Notation::HairpinSegments.split(owners.flat_map(&:spans).select(&:hairpin?), cuts(part)).uniq(&:to_h)
+    end
+
+    def self.cuts(part)
+      accented = part.voices.flat_map(&:note_events).select { |note_event| %w[sf rfz fp].include?(note_event.note_dynamic&.name_key) }
+      [part, *part.voices].flat_map(&:dynamic_events).map(&:position) + accented.map(&:position)
+    end
+
+    # A part's pieces from different owners that overlap cannot share one line.
+    def self.overlapping?(flow)
+      flow.parts.any? { |part| pieces(part).combination(2).any? { |one, other| one.from < other.to && other.from < one.to } }
+    end
+
+    def segmented_by
+      lambda do |owner, hairpins|
+        part = owner.is_a?(HeadMusic::Content::Part) ? owner : owner.part
+        HeadMusic::Notation::HairpinSegments.split(hairpins, self.class.cuts(part))
+      end
+    end
+
+    # expect_kern_round_trip compares the voice events, by length, since kern
+    # writes a value crossing a barline as tied links and splits rests there.
+    def expect_hairpin_round_trip(original)
+      restored = expect_kern_round_trip(original)
+      expect_same_hairpins(original, restored, merged_into: "part", segmented_by: segmented_by)
+      expect_same_hairpin_in_force(original, restored, per: :part)
+    end
+
+    HairpinFixtures.all.each do |name|
+      it "keeps where each hairpin of #{name} starts and ends" do
+        expect_hairpin_round_trip(HairpinFixtures.public_send(name))
+      end
+    end
+
+    it "reads the hairpins fixture back to itself from what it writes" do
+      flow = described_class.parse(File.read(File.expand_path("../../fixtures/notation/kern/hairpins.krn", __dir__)))
+      expect(described_class.parse(described_class.render(flow)).to_h).to eq flow.to_h
+    end
+
+    HairpinGenerator::SEEDS.each do |seed|
+      if overlapping?(HairpinGenerator.flow(seed, voices: 2, one_line: false, pickup: true))
+        it "refuses the overlapping hairpins of seed #{seed}" do
+          expect { described_class.render(HairpinGenerator.flow(seed, voices: 2, one_line: false, pickup: true)) }
+            .to raise_error(HeadMusic::Notation::Kern::RenderError, /\*\*dynam spine holds one hairpin at a time/)
+        end
+      else
+        it "keeps where each hairpin of seed #{seed} starts and ends" do
+          expect_hairpin_round_trip(HairpinGenerator.flow(seed, voices: 2, one_line: false, pickup: true))
+        end
+      end
+    end
+  end
+
   describe "the cantus firmus catalog" do
     HeadMusic::Content::CantusFirmus::Example.all.each do |example|
       it "round-trips #{example}" do
