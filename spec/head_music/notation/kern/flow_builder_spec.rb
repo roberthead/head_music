@@ -679,6 +679,115 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
   end
 
+  describe "hairpins" do
+    def hairpins(part)
+      part.spans.map(&:to_s)
+    end
+
+    def levels(part)
+      part.dynamic_events.map(&:to_s)
+    end
+
+    def read(rows)
+      parse("**kern  **dynam\n*M4/4  *\n=1  =1\n#{rows}\n==  ==\n*-  *-")
+    end
+
+    it "pairs a crescendo's < with [ and a diminuendo's > with ], on the part of the kern spine on its left" do
+      flow = parse("**kern  **kern  **dynam\n4c  4e  <\n4d  4f  [\n4e  4g  >\n4f  4a  ]\n*-  *-  *-")
+      expect([hairpins(flow.parts.first), hairpins(flow.parts.last)])
+        .to eq [["crescendo from 1:1:000 to 1:2:000", "diminuendo from 1:3:000 to 1:4:000"], []]
+    end
+
+    it "reads o< as a crescendo" do
+      expect(hairpins(read("2c  o<\n2d  [").parts.first)).to eq ["crescendo from 1:1:000 to 1:3:000"]
+    end
+
+    it "times a mark on a row where nothing attacks by the even split" do
+      expect(hairpins(read("1c  .\n.  <\n.  [\n.  .").parts.first)).to eq ["crescendo from 1:2:000 to 1:3:000"]
+    end
+
+    it "ends a doubled close where its row ends, at the next row's time" do
+      expect(hairpins(read("4c  <\n4d  ]]\n4e  [[\n4f  .").parts.first)).to eq ["crescendo from 1:1:000 to 1:4:000"]
+    end
+
+    it "ends a doubled close on a row where nothing attacks at the next row's time" do
+      expect(hairpins(read("2c  <\n.  [[\n2d  .").parts.first)).to eq ["crescendo from 1:1:000 to 1:3:000"]
+    end
+
+    it "ends a doubled close on the last row on the final barline" do
+      flow = read("4c  .\n4d  .\n4e  >\n4f  ]]")
+      expect([hairpins(flow.parts.first), flow.latest_bar_number]).to eq [["diminuendo from 1:3:000 to 2:1:000"], 1]
+    end
+
+    it "ends a doubled close after a short final bar on the final barline" do
+      flow = read("4c  <\n4d  .\n4e  [[")
+      expect([hairpins(flow.parts.first), flow.latest_bar_number]).to eq [["crescendo from 1:1:000 to 2:1:000"], 1]
+    end
+
+    it "ends a doubled close on the null row after the last note on the final barline" do
+      expect(hairpins(read("2c  .\n2d  <\n.  [[").parts.first)).to eq ["crescendo from 1:3:000 to 2:1:000"]
+    end
+
+    it "reads a close written after an open in one token as a hairpin to the next row" do
+      expect(hairpins(read("4c  <[\n4d  .\n2e  .").parts.first)).to eq ["crescendo from 1:1:000 to 1:2:000"]
+    end
+
+    it "reads touching hairpins and the level where they meet" do
+      flow = read("2c  >\n2d  ]p<\n=2  =2\n1e  [")
+      expect([hairpins(flow.parts.first), levels(flow.parts.first)])
+        .to eq [["diminuendo from 1:1:000 to 1:3:000", "crescendo from 1:3:000 to 2:1:000"], ["p at 1:3:000"]]
+    end
+
+    it "reads a level written before the close on its row" do
+      flow = read("2c  <\n2d  f[")
+      expect([hairpins(flow.parts.first), levels(flow.parts.first)]).to eq [["crescendo from 1:1:000 to 1:3:000"], ["f at 1:3:000"]]
+    end
+
+    it "places a hairpin in a pickup bar" do
+      flow = parse("**kern  **dynam\n*M3/4  *\n4c  <\n=1  =1\n2.d  [\n*-  *-")
+      expect(hairpins(flow.parts.first)).to eq ["crescendo from 0:3:000 to 1:1:000"]
+    end
+
+    {
+      "a level" => "4c  <\n4d  p\n4e  [\n4f  .",
+      "an accent" => "4c  <\n4d  sf\n4e  [\n4f  .",
+      "text" => "4c  <\n4d  cresc.\n4e  [\n4f  .",
+      "a level on a row where nothing attacks" => "2c  <\n.  p\n2d  [",
+      "an unterminated open" => "4c  <\n4d  .\n2e  .",
+      "a stray close" => "4c  [\n4d  ]\n2e  ]]",
+      "a mismatched close" => "4c  <\n4d  ]\n2e  .",
+      "a zero-length hairpin" => "2c  .\n8qd  <\n2e  ["
+    }.each do |description, rows|
+      it "drops a hairpin for #{description}, reading the rest of the file" do
+        expect(hairpins(read(rows).parts.first)).to eq []
+      end
+    end
+
+    it "keeps the open hairpin past a close of the other kind" do
+      expect(hairpins(read("4c  <\n4d  ]\n4e  [\n4f  .").parts.first)).to eq ["crescendo from 1:1:000 to 1:3:000"]
+    end
+
+    it "drops an open hairpin at a new open, pairing the new one" do
+      expect(hairpins(read("4c  <\n4d  <\n4e  [\n4f  .").parts.first)).to eq ["crescendo from 1:2:000 to 1:3:000"]
+    end
+
+    it "pairs each **dynam spine's marks on their own" do
+      flow = parse("**kern  **dynam  **kern  **dynam\n2c  <  4e  .\n.  .  4f  >\n2d  [  2g  ]\n*-  *-  *-  *-")
+      expect(flow.parts.map { |part| hairpins(part) })
+        .to eq [["diminuendo from 1:2:000 to 1:3:000"], ["crescendo from 1:1:000 to 1:3:000"]]
+    end
+
+    it "keeps once the same hairpin a part's dynamics spines both state" do
+      flow = parse("**kern  **dynam  **kern  **dynam\n*part1  *  *part1  *\n2c  <  2e  <\n2d  [  2f  [\n*-  *-  *-  *-")
+      expect(hairpins(flow.parts.first)).to eq ["crescendo from 1:1:000 to 1:3:000"]
+    end
+
+    it "keeps the first of two overlapping hairpins a part's dynamics spines state, without raising" do
+      flow = parse("**kern  **dynam  **kern  **dynam\n*part1  *  *part1  *\n2c  <  2e  >\n2d  [  2f  ]\n*-  *-  *-  *-")
+      expect(hairpins(flow.parts.first)).to eq ["crescendo from 1:1:000 to 1:3:000"]
+    end
+  end
+
   describe "invisible rests" do
     it "adds no event for an invisible rest that ends a spine, keeping the dynamic beside it" do
       flow = parse("**kern  **dynam\n*M4/4  *\n=1  =1\n4c  .\n4d  .\n4e  .\n4ryy  f\n==  ==\n*-  *-")

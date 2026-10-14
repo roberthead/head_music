@@ -34,6 +34,10 @@ describe HeadMusic::Notation::Kern do
       .to eq [["mp at 1:1:000", "f at 2:3:000", "p at 5:1:000", "pp at 6:1:000"], ["p at 1:1:000", "mf at 4:1:000", "pp at 6:1:000"]]
   end
 
+  it "reads no hairpin, since the flute's f comes before its crescendo closes and its diminuendo never closes" do
+    expect(flow.parts.flat_map(&:spans) + flow.voices.flat_map(&:spans)).to eq []
+  end
+
   it "puts p in force from the cello's fp" do
     expect(cello.dynamic_at("5:1").name_key).to eq "p"
   end
