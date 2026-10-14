@@ -2,9 +2,8 @@
 module HeadMusic::Notation::LilyPond
   # Reads the items of a \new Dynamics. The context only marks time, so a rest
   # there is a spacer, a <> carries marks, and anything that sounds is
-  # refused. Bar marks repeat the
-  # staves' and are read for their syntax alone. Its braces are read by the
-  # MusicReader that calls this one.
+  # refused. Bar marks repeat the staves' and are read for their syntax
+  # alone. Its braces are read by the MusicReader that calls this one.
   class DynamicsItemReader
     def initialize(cursor, music, items, settings:, bar_marks:)
       @cursor = cursor

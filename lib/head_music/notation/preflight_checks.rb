@@ -44,8 +44,8 @@ module HeadMusic
 
       # For a format with one line of hairpins for several owners, such as a
       # part and its voices. The same hairpin twice loses only its owner.
-      def ensure_one_hairpin_at_a_time(owners, line:)
-        hairpins = owners.flat_map(&:spans).select(&:hairpin?).uniq(&:to_h).sort
+      def ensure_one_hairpin_at_a_time(spans, line:)
+        hairpins = spans.select(&:hairpin?).uniq(&:to_h).sort
         hairpins.combination(2).each do |one, other|
           next unless one.from < other.to && other.from < one.to
 

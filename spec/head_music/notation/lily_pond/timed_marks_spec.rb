@@ -74,13 +74,13 @@ describe HeadMusic::Notation::LilyPond::TimedMarks do
   describe ".levels" do
     it "takes the voice's levels" do
       voice.place_dynamic("1:2", :p)
-      expect(described_class.levels(voice).afters(1, 0r, Rational(3, 4))).to eq "\\after 4 \\p "
+      expect(described_class.voice(voice).afters(1, 0r, Rational(3, 4))).to eq "\\after 4 \\p "
     end
 
     it "leaves out a level an accent on its note overrides" do
       voice.voice_events.first.note_dynamic = :fp
       voice.place_dynamic("1:1", :f)
-      expect(described_class.levels(voice).attacks(1, 0r)).to eq ""
+      expect(described_class.voice(voice).attacks(1, 0r)).to eq ""
     end
   end
 end

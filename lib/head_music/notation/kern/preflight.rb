@@ -9,8 +9,6 @@ module HeadMusic::Notation::Kern
     include HeadMusic::Notation::PreflightChecks
     include HeadMusic::Notation::VoiceEventValidation
 
-    SpineHairpins = Data.define(:spans)
-
     def self.check!(flow, transposed: false)
       new(flow, transposed).check!
     end
@@ -80,8 +78,7 @@ module HeadMusic::Notation::Kern
     # can both be written, as `]p<`.
     def ensure_one_hairpin_per_dynamics_spine
       flow.parts.each do |part|
-        pieces = SpineHairpins.new(DynamicFields.new(part).hairpins)
-        ensure_one_hairpin_at_a_time([pieces], line: "a part's **dynam spine")
+        ensure_one_hairpin_at_a_time(DynamicFields.new(part).hairpins, line: "a part's **dynam spine")
       end
     end
 

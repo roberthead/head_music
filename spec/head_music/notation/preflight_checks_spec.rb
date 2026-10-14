@@ -93,7 +93,7 @@ describe HeadMusic::Notation::PreflightChecks do
       Class.new do
         include HeadMusic::Notation::PreflightChecks
 
-        def check(owners) = ensure_one_hairpin_at_a_time(owners, line: "the line")
+        def check(owners) = ensure_one_hairpin_at_a_time(owners.flat_map(&:spans), line: "the line")
 
         def render_error_class = HeadMusic::Notation::ABC::RenderError
       end.new

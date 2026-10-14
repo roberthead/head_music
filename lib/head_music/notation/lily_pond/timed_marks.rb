@@ -22,12 +22,6 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    # The voice's levels that are in force where they fall, since an accent
-    # such as fp on the same note overrides its level there.
-    def self.levels(voice)
-      new(level_marks(voice))
-    end
-
     # The voice's levels and hairpins. LilyPond ends a hairpin at a level or
     # accent in its voice, so a hairpin is written in pieces that meet there.
     def self.voice(voice)
@@ -40,6 +34,8 @@ module HeadMusic::Notation::LilyPond
       new(part.dynamic_events.map { |event| level_mark(event) } + hairpin_marks(part.spans, part.dynamic_events.map(&:position)))
     end
 
+    # The voice's levels that are in force where they fall, since an accent
+    # such as fp on the same note overrides its level there.
     def self.level_marks(voice)
       events = voice.dynamic_events.select { |event| voice.dynamic_at(event.position) == event.level }
       events.map { |event| level_mark(event) }
