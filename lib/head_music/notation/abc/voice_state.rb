@@ -100,16 +100,34 @@ module HeadMusic::Notation::ABC
     end
 
     # The bar a voice overlay starts over is the one the last bar line opened.
-    def cross_bar_line
-      end_overlay
+    def cross_bar_line(line = nil)
+      end_overlay(line)
       @bar_start = cursor
+    end
+
+    # Invisible rests left in the bar where the music ends hold only time for
+    # a level there. Once they reach a later bar, that bar is part of the
+    # music, and they are rests.
+    def end_invisible_rests
+      return if @invisible_rests.empty?
+
+      music_stop = voice.next_position
+      barline = bar_start?(music_stop) ? music_stop : HeadMusic::Content::Position.new(voice.flow, music_stop.bar_number + 1, 1, 0)
+      return unless music_end > barline
+
+      @invisible_rests.each { |rest_value| voice.place(voice.next_position, rest_value) }
+      @invisible_rests.clear
     end
 
     def start_overlay
       @overlay_cursor = @bar_start || HeadMusic::Content::Position.new(voice.flow, 1, 1, 0)
     end
 
-    def end_overlay
+    def end_overlay(line = nil)
+      if @overlay_cursor && @overlay_cursor > cursor
+        raise ParseError.new("A voice overlay must not run past its bar's music", line_number: line, snippet: "&")
+      end
+
       @overlay_cursor = nil
     end
 

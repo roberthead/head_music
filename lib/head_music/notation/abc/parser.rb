@@ -177,14 +177,15 @@ module HeadMusic::Notation::ABC
     def end_voice(state, line)
       end_notes(state, line)
       state.reject_dangling_decorations
-      state.end_overlay
+      state.end_overlay(line)
+      state.end_invisible_rests
     end
 
     # A bar line or volta is not a terminator: a tied note stays pending
     # across it and closes on the next note.
     def cross_bar_line(state, line)
       pause_notes(state, line)
-      state.cross_bar_line
+      state.cross_bar_line(line)
     end
 
     def pause_notes(state, line)

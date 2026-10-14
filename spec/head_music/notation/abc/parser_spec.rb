@@ -873,8 +873,12 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(voice_for("C2 !trill!x2|").voice_events.length).to eq 1
     end
 
-    it "numbers the bars by the time the invisible rests reach" do
-      expect(voice_for("C4|!p!x4|").dynamic_events.map(&:to_h)).to eq [{"position" => "2:1:000", "level" => "p"}]
+    it "keeps invisible rests that reach a bar after the music's last as rests, so their level stays in written bars" do
+      voice = voice_for("C3 x|!p!x4|")
+      expect([voice.voice_events.map(&:to_s), dynamics(voice)]).to eq [
+        ["dotted half C4 at 1:1:000", "quarter rest at 1:4:000", "whole rest at 2:1:000"],
+        [{"position" => "2:1:000", "level" => "p"}]
+      ]
     end
 
     it "draws no final barline on a bar holding only invisible rests" do
@@ -933,6 +937,11 @@ describe HeadMusic::Notation::ABC::Parser do
         expect { parse_body(body) }
           .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /overlay holding notes or rests.*line 5/)
       end
+    end
+
+    it "refuses an overlay that runs past its bar's music" do
+      expect { parse_body("C4 & x6 !p!x2|D4|") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /overlay must not run past its bar's music.*line 5/)
     end
 
     it "refuses a multi-bar overlay" do
