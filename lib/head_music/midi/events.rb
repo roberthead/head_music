@@ -39,6 +39,11 @@ module HeadMusic::MIDI
   end
 
   Tempo = Data.define(:tick, :microseconds_per_quarter) do
+    # A dotted quarter at 60 is 666,667.
+    def self.microseconds_per_quarter(tempo)
+      (Rational(60_000_000) / (tempo.beats_per_minute.to_r * tempo.beat_value.fraction * 4)).round
+    end
+
     def payload
       Meta.bytes(0x51, [microseconds_per_quarter].pack("N").byteslice(1, 3))
     end
@@ -49,6 +54,11 @@ module HeadMusic::MIDI
   end
 
   TimeSignature = Data.define(:tick, :numerator, :denominator, :clocks_per_click) do
+    # 24 MIDI clocks to the quarter, so 6/8's dotted quarter is 36.
+    def self.clocks_per_click(meter)
+      (meter.beat_value.fraction * 96).round
+    end
+
     def payload
       Meta.bytes(0x58, [numerator, denominator.bit_length - 1, clocks_per_click, 8].pack("C4"))
     end
