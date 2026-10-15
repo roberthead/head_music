@@ -819,6 +819,58 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
     end
   end
 
+  describe "tuplets" do
+    def groups(flow)
+      flow.voices.map { |voice| voice.tuplets.map { |group| "#{group} in #{group.unit}s" } }
+    end
+
+    it "places triplet eighths and groups them" do
+      flow = parse("**kern\n*M2/4\n=1\n12c\n12d\n12e\n4f\n*-")
+      expect([voice_events(flow.voices.first), groups(flow)]).to eq [
+        ["triplet eighth C4 at 1:1:000", "triplet eighth D4 at 1:1:320", "triplet eighth E4 at 1:1:640", "quarter F4 at 1:2:000"],
+        [["3:2 tuplet from 1:1:000 to 1:2:000 in eighths"]]
+      ]
+    end
+
+    it "rounds a septuplet's onsets from its start, keeping its end exact" do
+      flow = parse("**kern\n*M2/4\n=1\n28c\n28d\n28e\n28f\n28g\n28a\n28b\n4cc\n*-")
+      positions = flow.voices.first.voice_events.map { |voice_event| voice_event.position.to_s }
+      expect(positions).to eq %w[1:1:000 1:1:137:034 1:1:274:069 1:1:411:103 1:1:548:137 1:1:685:171 1:1:822:206 1:2:000]
+    end
+
+    it "groups a triplet whose middle note is tied across the barline" do
+      flow = parse("**kern\n*M2/4\n=1\n4c\n6d\n[12e\n=2\n12e]\n6f\n4g\n*-")
+      expect(groups(flow)).to eq [["3:2 tuplet from 1:2:000 to 2:2:000 in quarters"]]
+    end
+
+    describe "the tuplets fixture" do
+      subject(:flow) { HeadMusic::Notation::Kern.parse(File.read(File.expand_path("../../../fixtures/notation/kern/tuplets.krn", __dir__))) }
+
+      let(:violin_groups) do
+        [
+          "3:2 tuplet from 1:1:000 to 1:2:000 in eighths", "3:2 tuplet from 1:2:000 to 1:3:000 in eighths",
+          "3:2 tuplet from 1:3:000 to 1:3:480 in sixteenths", "3:2 tuplet from 1:3:480 to 1:4:000 in sixteenths",
+          "5:4 tuplet from 2:1:000 to 2:2:000 in sixteenths", "7:4 tuplet from 2:2:000 to 2:3:000 in sixteenths",
+          "3:2 tuplet from 2:3:000 to 2:4:000 in eighths", "3:2 tuplet from 2:4:000 to 3:1:000 in eighths",
+          "3:2 tuplet from 3:4:000 to 4:2:000 in quarters"
+        ]
+      end
+
+      it "infers each group, reading a sextuplet as two triplets and leaving a lone value ungrouped" do
+        expect(groups(flow)).to eq [violin_groups, ["3:2 tuplet from 5:1:000 to 5:3:000 in quarters"]]
+      end
+
+      it "reads a rest and a chord inside a group" do
+        expect(voice_events(flow.voices.first).values_at(24, 27)).to eq ["triplet eighth rest at 2:3:000", "triplet eighth C4 E4 at 2:4:000"]
+      end
+
+      it "keeps the dotted triplet quarter that never fills a group" do
+        expect(flow.voices.first.voice_events.find { |voice_event| voice_event.position.to_s == "5:1:000" }.rhythmic_value.to_s)
+          .to eq "triplet dotted quarter"
+      end
+    end
+  end
+
   describe "time slices" do
     it "raises when a note begins before the note before it ends" do
       expect { parse("**kern  **kern\n2c  4e\n4d  4f\n*-  *-") }

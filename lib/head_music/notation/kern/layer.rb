@@ -13,7 +13,8 @@ module HeadMusic::Notation::Kern
   # ends the latest open of its kind and elision level. A note's closes come
   # before its opens, so one slur can end where the next begins. A mark
   # left unpaired, or a span its voice refuses, such as a slur ending on a
-  # rest, is dropped.
+  # rest, is dropped. Tuplet groups, which kern does not write, are inferred
+  # then too; see TupletGroups.
   #
   # Invisible rests after a voice's last visible event, in the bar where its
   # music ends, add nothing, as they hold only time for dynamics after the
@@ -61,6 +62,7 @@ module HeadMusic::Notation::Kern
       @span_marks = []
       sounding_events(clock).each { |event| place_event(event, clock) }
       rest_until(finish_time, clock) if finish_time
+      TupletGroups.apply(voice)
       add_spans
     end
 
