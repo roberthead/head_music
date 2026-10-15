@@ -36,6 +36,7 @@ module HeadMusic::Notation::MusicXML
       elsif gap <= -event.tolerance
         raise ParseError.new("Voice #{@track.label} overlaps itself", **where(event))
       end
+      event.time = @time
       voice_event = event.voice_event = @voice.place(@position, event.rhythmic_value, event.sounds)
       add_grace_notes(voice_event, event.graces)
       @position = voice_event.next_position

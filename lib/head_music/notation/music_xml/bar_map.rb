@@ -42,6 +42,11 @@ module HeadMusic::Notation::MusicXML
       @bars.last
     end
 
+    # Whether a measure is the second half of a bar split at a repeat.
+    def split_before?(measure_index)
+      measure_index.positive? && measure_index < @bars.length && @bars[measure_index] == @bars[measure_index - 1]
+    end
+
     def start(bar_number)
       @starts.fetch(bar_number - first_bar)
     end

@@ -14,7 +14,7 @@ module HeadMusic::Notation::MusicXML
     # its notes and forwards reach; and one division where it ends, the
     # rounding its extent may carry.
     Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tempo, :tolerance, :clefs)
-    Reading = Struct.new(:document_part, :measures, :tracks, :staves) do
+    Reading = Struct.new(:document_part, :measures, :tracks, :staves, :records) do
       def id
         document_part.id
       end
@@ -29,11 +29,12 @@ module HeadMusic::Notation::MusicXML
       @staves = 1
       @most_staves = 1
       @transposition = ConcertTransposition.new
+      @records = []
     end
 
     def read
       measures = @document_part.measures.each_with_index.map { |measure, index| read_measure(measure, index) }
-      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.values, staves: @most_staves)
+      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.values, staves: @most_staves, records: @records)
     end
 
     private
@@ -55,8 +56,13 @@ module HeadMusic::Notation::MusicXML
       when "backup" then move(-duration_of(text(element, "duration", **@where)))
       when "forward" then reach(move(duration_of(text(element, "duration", **@where))))
       when "direction" then read_direction(element)
-      when "sound" then read_sound(element)
+      when "sound" then read_measure_sound(element)
+      when "barline" then note_record(:barline, element)
       end
+    end
+
+    def note_record(kind, element, **attributes)
+      @records << MarkRecords::Pending.new(kind: kind, element: element, measure_index: @measure.index, **attributes)
     end
 
     # The timeline changes only at a downbeat, so a key or time in the
@@ -77,9 +83,15 @@ module HeadMusic::Notation::MusicXML
     end
 
     def read_direction(element)
+      note_record(:direction, element, cursor: @cursor, divisions: @divisions)
       sound = first_child(element, "sound")
       offset = text(element, "offset", **@where)
       read_sound(sound) if sound && (offset.nil? || rational(offset, "<offset>", **@where).zero?)
+    end
+
+    def read_measure_sound(element)
+      note_record(:direction, element, cursor: @cursor, divisions: @divisions)
+      read_sound(element)
     end
 
     def read_sound(element)
@@ -102,6 +114,7 @@ module HeadMusic::Notation::MusicXML
         sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue, tie_starts: [], tie_stops: [],
         staff: staff(note)
       )
+      note_record(:note, element, event: @lead, chord: false)
       add_ties(@lead, note)
       add_tuplet_marks(track_for(note.voice), @lead, note)
       move(duration)
@@ -126,16 +139,18 @@ module HeadMusic::Notation::MusicXML
       else
         []
       end
-      last = track.queued_graces.last
-      if note.chord && last
-        last.sounds |= [sound(note)]
-        last.tie_starts |= tie_starts
+      grace = track.queued_graces.last
+      chord = (note.chord && grace) ? true : false
+      if chord
+        grace.sounds |= [sound(note)]
+        grace.tie_starts |= tie_starts
       else
-        track.queue_grace(
+        grace = track.queue_grace(
           sounds: [sound(note)], rhythmic_value: grace_value(note), slashed: note.slashed,
           articulations: note.articulations.filter_map { |element| MarkingElements.articulation(element) }, tie_starts: tie_starts
         )
       end
+      note_record(:note, note.element, grace: grace, chord: chord)
     end
 
     def grace_value(note)
@@ -150,6 +165,8 @@ module HeadMusic::Notation::MusicXML
     def add_to_chord(note)
       raise ParseError.new("A <chord/> rest is not supported", **@where) if note.rest
       raise ParseError.new("A <chord/> has no note before it", **@where) if @lead.nil? || (@lead.rest? && !@lead.cue)
+
+      note_record(:note, note.element, event: @lead, chord: true)
       return if @lead.cue || note.cue
 
       duration = duration_of(note.duration)

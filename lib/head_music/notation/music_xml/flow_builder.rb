@@ -3,7 +3,8 @@ module HeadMusic::Notation::MusicXML
   # Builds a flow from a Document in two phases. First each part is walked
   # into exact records; then the bars are aligned across every part, the
   # timeline is applied, and only then are the voices placed, so that every
-  # position is built from a known bar.
+  # position is built from a known bar. The mark readers run last, once
+  # every voice is final.
   class FlowBuilder
     def initialize(document)
       @document = document
@@ -32,11 +33,19 @@ module HeadMusic::Notation::MusicXML
       flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
       timeline.apply(flow)
       roster = PartRoster.new(flow, identity, bar_map)
-      readings.each do |reading|
-        part = roster.add(reading)
-        reading.tracks.each { |track| VoicePlacer.new(part.add_voice, track, bar_map, reading).place }
-      end
+      records = readings.flat_map { |reading| place(roster.add(reading), reading, bar_map) }
+      MarkReaders.run(records, flow)
       flow
+    end
+
+    # Answers the part's mark records, once its voices are final.
+    def place(part, reading, bar_map)
+      voices = reading.tracks.to_h do |track|
+        voice = part.add_voice
+        VoicePlacer.new(voice, track, bar_map, reading).place
+        [track.label, voice]
+      end
+      MarkRecords.new(part, reading, bar_map, voices).records
     end
   end
 end

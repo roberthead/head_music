@@ -12,7 +12,7 @@ module HeadMusic::Notation::MusicXML
     # event is the one placed for its chain.
     Event = Struct.new(
       :measure_index, :cursor, :tolerance, :rhythmic_value, :duration, :sounds, :fills_bar, :cue,
-      :tie_starts, :tie_stops, :continuation, :link_offset, :link_count, :voice_event, :graces, :staff
+      :tie_starts, :tie_stops, :continuation, :link_offset, :link_count, :voice_event, :graces, :staff, :label, :time
     ) do
       def head
         continuation || self
@@ -42,7 +42,7 @@ module HeadMusic::Notation::MusicXML
 
     # A grace note waiting for the main note it leads to, and whether it is
     # tied to whatever follows it.
-    Grace = Struct.new(:sounds, :rhythmic_value, :slashed, :articulations, :tie_starts, :tied)
+    Grace = Struct.new(:sounds, :rhythmic_value, :slashed, :articulations, :tie_starts, :tied, :label, :event)
 
     # A <tuplet> start or stop on an event, in document order, with the
     # <normal-type> and dots of its <time-modification>.
@@ -61,14 +61,16 @@ module HeadMusic::Notation::MusicXML
     def add(**attributes)
       Event.new(**attributes).tap do |event|
         event.link_count = event.rhythmic_value&.tied_chain&.length || 1
+        event.label = @label
         event.graces = @queued_graces
+        @queued_graces.each { |grace| grace.event = event }
         @queued_graces = []
         @events << event
       end
     end
 
     def queue_grace(**attributes)
-      Grace.new(**attributes, tied: false).tap { |grace| @queued_graces << grace }
+      Grace.new(**attributes, tied: false, label: @label).tap { |grace| @queued_graces << grace }
     end
 
     # A grace note is tied to each pitch it starts a tie on that what
