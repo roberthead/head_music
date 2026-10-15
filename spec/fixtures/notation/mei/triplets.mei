@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-CMN.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title>Triplets</title>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application version="22.0.0">
+          <name>head_music</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="m1" label="Triplets">
+        <score xml:id="m1-score">
+          <scoreDef xml:id="m1-scoredef" keysig="0" meter.count="4" meter.unit="4" midi.bpm="120">
+            <staffGrp xml:id="m1-staffgrp">
+              <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
+                <clef xml:id="m1-clef-s1" shape="G" line="2"/>
+              </staffDef>
+            </staffGrp>
+          </scoreDef>
+          <section xml:id="m1-section">
+            <measure xml:id="m1-measure-b1" n="1">
+              <staff xml:id="m1-staff-b1s1" n="1">
+                <layer xml:id="m1-layer-b1s1l1" n="1">
+                  <tuplet xml:id="m1-tuplet-p1v1-b1c1" num="3" numbase="2">
+                    <beam xml:id="m1-beam-p1v1-b1c1">
+                      <note xml:id="m1-p1v1-b1c1" pname="c" oct="4" dur="8"/>
+                      <note xml:id="m1-p1v1-b1c1t320" pname="d" oct="4" dur="8"/>
+                      <note xml:id="m1-p1v1-b1c1t640" pname="e" oct="4" dur="8"/>
+                    </beam>
+                  </tuplet>
+                  <tuplet xml:id="m1-tuplet-p1v1-b1c2" num="3" numbase="2">
+                    <beam xml:id="m1-beam-p1v1-b1c2">
+                      <note xml:id="m1-p1v1-b1c2" pname="f" oct="4" dur="8"/>
+                      <note xml:id="m1-p1v1-b1c2t320" pname="g" oct="4" dur="8"/>
+                      <note xml:id="m1-p1v1-b1c2t640" pname="a" oct="4" dur="8"/>
+                    </beam>
+                  </tuplet>
+                  <tuplet xml:id="m1-tuplet-p1v1-b1c3" num="3" numbase="2">
+                    <note xml:id="m1-p1v1-b1c3" pname="b" oct="4" dur="4"/>
+                    <note xml:id="m1-p1v1-b1c3t640" pname="c" oct="5" dur="4"/>
+                    <note xml:id="m1-p1v1-b1c4t320" pname="d" oct="5" dur="4"/>
+                  </tuplet>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b2" n="2" right="end">
+              <staff xml:id="m1-staff-b2s1" n="1">
+                <layer xml:id="m1-layer-b2s1l1" n="1">
+                  <note xml:id="m1-p1v1-b2c1" pname="c" oct="5" dur="1"/>
+                </layer>
+              </staff>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

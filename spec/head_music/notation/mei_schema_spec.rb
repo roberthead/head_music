@@ -14,23 +14,23 @@ describe HeadMusic::Notation::MEI do
 
   before { skip "set MEI_SCHEMA to a local copy of mei-CMN.rng" unless schema }
 
-  MEIHelpers.sample_flows.each do |name, build|
+  MEIFixtures.every_fixture.each do |name, build|
     next if MEIHelpers::REFUSED_SAMPLES.key?(name)
 
     it "renders #{name} as a valid MEI 5.1 document" do
-      expect(schema_errors(described_class.render(instance_exec(&build)), schema)).to eq []
+      expect(schema_errors(instance_exec(&build).to_mei, schema)).to eq []
+    end
+  end
+
+  MEIFixtures.names.each do |name|
+    it "commits the #{name} golden document as valid MEI 5.1" do
+      expect(schema_errors(File.read(MEIFixtures.path(name)), schema)).to eq []
     end
   end
 
   MEILayerFixtures.all.each do |name|
     it "renders the beams, tuplets, spans, and grace notes of MEILayerFixtures.#{name} as valid MEI" do
       expect(schema_errors(described_class.render(MEILayerFixtures.public_send(name)), schema)).to eq []
-    end
-  end
-
-  Dir[File.join(__dir__, "..", "..", "fixtures", "notation", "lily_pond", "*.ly")].sort.each do |path|
-    it "renders lily_pond/#{File.basename(path)} as valid MEI" do
-      expect(schema_errors(described_class.render(HeadMusic::Notation::LilyPond.parse(File.read(path))), schema)).to eq []
     end
   end
 

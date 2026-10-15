@@ -77,6 +77,20 @@ namespace :music_xml do
   end
 end
 
+namespace :mei do
+  desc "Regenerate the MEI golden documents (spec/fixtures/notation/mei/)"
+  task :golden_fixtures do
+    $LOAD_PATH.unshift File.expand_path("lib", __dir__), File.expand_path("spec", __dir__)
+    require "rspec/core"
+    require "spec_helper"
+
+    MEIFixtures.names.each do |name|
+      File.write(MEIFixtures.path(name), MEIFixtures.mei(name))
+      puts "Wrote #{name}"
+    end
+  end
+end
+
 namespace :style do
   desc "Regenerate the pinned English guide strings (spec/fixtures/style/english_strings.yml)"
   task :snapshot_english do

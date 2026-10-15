@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-CMN.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title>Grace Notes</title>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application version="22.0.0">
+          <name>head_music</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="m1" label="Grace Notes">
+        <score xml:id="m1-score">
+          <scoreDef xml:id="m1-scoredef" keysig="0" meter.count="4" meter.unit="4" midi.bpm="120">
+            <staffGrp xml:id="m1-staffgrp">
+              <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
+                <clef xml:id="m1-clef-s1" shape="G" line="2"/>
+              </staffDef>
+            </staffGrp>
+          </scoreDef>
+          <section xml:id="m1-section">
+            <measure xml:id="m1-measure-b1" n="1">
+              <staff xml:id="m1-staff-b1s1" n="1">
+                <layer xml:id="m1-layer-b1s1l1" n="1">
+                  <note xml:id="m1-p1v1-b1c1" pname="c" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b1c2" pname="e" oct="4" dur="4"/>
+                  <chord xml:id="m1-p1v1-b1c3-g1" dur="16" grace="unacc">
+                    <note xml:id="m1-p1v1-b1c3-g1-h1" pname="a" oct="4"/>
+                    <note xml:id="m1-p1v1-b1c3-g1-h2" pname="c" oct="5"/>
+                  </chord>
+                  <note xml:id="m1-p1v1-b1c3" pname="g" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b1c4-g1" pname="g" oct="4" dur="16" grace="unacc" artic="stacc"/>
+                  <note xml:id="m1-p1v1-b1c4" pname="f" oct="4" dur="4"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b2" n="2">
+              <staff xml:id="m1-staff-b2s1" n="1">
+                <layer xml:id="m1-layer-b2s1l1" n="1">
+                  <note xml:id="m1-p1v1-b2c1-g1" pname="f" oct="4" dur="8" grace="acc"/>
+                  <note xml:id="m1-p1v1-b2c1" pname="e" oct="4" dur="1"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b3" n="3" right="end">
+              <staff xml:id="m1-staff-b3s1" n="1">
+                <layer xml:id="m1-layer-b3s1l1" n="1">
+                  <note xml:id="m1-p1v1-b3c1-g1" pname="d" oct="4" dur="16" grace="unacc"/>
+                  <note xml:id="m1-p1v1-b3c1-g2" pname="c" oct="4" dur="16" grace="unacc" tie="i"/>
+                  <note xml:id="m1-p1v1-b3c1" pname="c" oct="4" dur="1" tie="t"/>
+                </layer>
+              </staff>
+              <slur xml:id="m1-slur-p1v1-b3c1g-b3c1" startid="#m1-p1v1-b3c1-g1" endid="#m1-p1v1-b3c1"/>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

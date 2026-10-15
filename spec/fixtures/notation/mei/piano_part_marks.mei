@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-CMN.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title>Cross Staff</title>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application version="22.0.0">
+          <name>head_music</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="m1" label="Cross Staff">
+        <score xml:id="m1-score">
+          <scoreDef xml:id="m1-scoredef" keysig="0" meter.count="4" meter.unit="4" midi.bpm="120">
+            <staffGrp xml:id="m1-staffgrp">
+              <staffGrp xml:id="m1-staffgrp-p1" symbol="brace">
+                <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
+                  <clef xml:id="m1-clef-s1" shape="G" line="2"/>
+                  <instrDef xml:id="m1-instrdef-s1" midi.instrnum="0"/>
+                  <layerDef xml:id="m1-layerdef-p1v1" n="1">
+                    <label xml:id="m1-label-p1v1">right hand</label>
+                  </layerDef>
+                </staffDef>
+                <staffDef xml:id="m1-staffdef-s2" n="2" lines="5">
+                  <clef xml:id="m1-clef-s2" shape="F" line="4"/>
+                  <instrDef xml:id="m1-instrdef-s2" midi.instrnum="0"/>
+                  <layerDef xml:id="m1-layerdef-p1v2" n="2">
+                    <label xml:id="m1-label-p1v2">left hand</label>
+                  </layerDef>
+                </staffDef>
+              </staffGrp>
+            </staffGrp>
+          </scoreDef>
+          <section xml:id="m1-section">
+            <measure xml:id="m1-measure-b1" n="1">
+              <staff xml:id="m1-staff-b1s1" n="1">
+                <layer xml:id="m1-layer-b1s1l1" n="1">
+                  <note xml:id="m1-p1v1-b1c1" pname="e" oct="5" dur="1"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b1s2" n="2">
+                <layer xml:id="m1-layer-b1s2l2" n="2">
+                  <note xml:id="m1-p1v2-b1c1" pname="c" oct="3" dur="1"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1-b1c1" tstamp="1" staff="1">p</dynam>
+              <hairpin xml:id="m1-hairpin-p1-b1c1" form="cres" tstamp="1" staff="1" tstamp2="1m+3"/>
+            </measure>
+            <measure xml:id="m1-measure-b2" n="2">
+              <staff xml:id="m1-staff-b2s1" n="1">
+                <layer xml:id="m1-layer-b2s1l1" n="1">
+                  <note xml:id="m1-p1v1-b2c1" pname="e" oct="5" dur="1"/>
+                </layer>
+                <layer xml:id="m1-layer-b2s1l2" n="2">
+                  <note xml:id="m1-p1v2-b2c1" pname="c" oct="3" dur="1"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b2s2" n="2"/>
+              <dynam xml:id="m1-dynam-p1-b2c3" tstamp="3" staff="1">f</dynam>
+              <hairpin xml:id="m1-hairpin-p1v1-b2c3" form="cres" tstamp="3" staff="1" layer="1" tstamp2="1m+1"/>
+            </measure>
+            <measure xml:id="m1-measure-b3" n="3">
+              <staff xml:id="m1-staff-b3s1" n="1">
+                <layer xml:id="m1-layer-b3s1l1" n="1">
+                  <note xml:id="m1-p1v1-b3c1" pname="e" oct="5" dur="1"/>
+                </layer>
+                <layer xml:id="m1-layer-b3s1l2" n="2">
+                  <note xml:id="m1-p1v2-b3c1" pname="c" oct="3" dur="1"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b3s2" n="2"/>
+              <hairpin xml:id="m1-hairpin-p1-b3c1" form="dim" tstamp="1" staff="1" tstamp2="1m+5"/>
+              <dynam xml:id="m1-dynam-p1v1-b3c1" tstamp="1" staff="1" layer="1">mf</dynam>
+            </measure>
+            <measure xml:id="m1-measure-b4" n="4" right="end">
+              <staff xml:id="m1-staff-b4s1" n="1">
+                <layer xml:id="m1-layer-b4s1l1" n="1">
+                  <note xml:id="m1-p1v1-b4c1" pname="e" oct="5" dur="1"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b4s2" n="2">
+                <layer xml:id="m1-layer-b4s2l2" n="2">
+                  <note xml:id="m1-p1v2-b4c1" pname="c" oct="3" dur="1"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1-b4c1" tstamp="1" staff="1">mp</dynam>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

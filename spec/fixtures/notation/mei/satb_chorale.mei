@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-CMN.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title>Wake the Morning</title>
+        <respStmt>
+          <persName role="composer">Jane Doe</persName>
+        </respStmt>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application version="22.0.0">
+          <name>head_music</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="m1" label="Wake the Morning">
+        <score xml:id="m1-score">
+          <scoreDef xml:id="m1-scoredef" keysig="1s" meter.count="3" meter.unit="4" midi.bpm="100">
+            <staffGrp xml:id="m1-staffgrp">
+              <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
+                <label xml:id="m1-label-p1">Soprano</label>
+                <clef xml:id="m1-clef-s1" shape="G" line="2"/>
+                <instrDef xml:id="m1-instrdef-s1" midi.instrnum="52"/>
+              </staffDef>
+              <staffDef xml:id="m1-staffdef-s2" n="2" lines="5">
+                <label xml:id="m1-label-p2">Alto</label>
+                <clef xml:id="m1-clef-s2" shape="G" line="2"/>
+                <instrDef xml:id="m1-instrdef-s2" midi.instrnum="52"/>
+              </staffDef>
+              <staffDef xml:id="m1-staffdef-s3" n="3" lines="5">
+                <label xml:id="m1-label-p3">Tenor</label>
+                <clef xml:id="m1-clef-s3" shape="G" line="2" dis="8" dis.place="below"/>
+                <instrDef xml:id="m1-instrdef-s3" midi.instrnum="52"/>
+              </staffDef>
+              <staffDef xml:id="m1-staffdef-s4" n="4" lines="5">
+                <label xml:id="m1-label-p4">Bass</label>
+                <clef xml:id="m1-clef-s4" shape="F" line="4"/>
+                <instrDef xml:id="m1-instrdef-s4" midi.instrnum="52"/>
+              </staffDef>
+            </staffGrp>
+          </scoreDef>
+          <section xml:id="m1-section">
+            <measure xml:id="m1-measure-b0" n="0" type="upbeat">
+              <staff xml:id="m1-staff-b0s1" n="1">
+                <layer xml:id="m1-layer-b0s1l1" n="1">
+                  <rest xml:id="m1-p1v1-b0c1" dur="2"/>
+                  <note xml:id="m1-p1v1-b0c3" pname="g" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b0c3-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b0c3-verse1-syl">Wake</syl>
+                    </verse>
+                  </note>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b0s2" n="2">
+                <layer xml:id="m1-layer-b0s2l1" n="1">
+                  <rest xml:id="m1-p2v1-b0c1" dur="2"/>
+                  <note xml:id="m1-p2v1-b0c3" pname="d" oct="4" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b0s3" n="3">
+                <layer xml:id="m1-layer-b0s3l1" n="1">
+                  <rest xml:id="m1-p3v1-b0c1" dur="2"/>
+                  <note xml:id="m1-p3v1-b0c3" pname="b" oct="3" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b0s4" n="4">
+                <layer xml:id="m1-layer-b0s4l1" n="1">
+                  <rest xml:id="m1-p4v1-b0c1" dur="2"/>
+                  <note xml:id="m1-p4v1-b0c3" pname="g" oct="3" dur="4"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b1" n="1">
+              <staff xml:id="m1-staff-b1s1" n="1">
+                <layer xml:id="m1-layer-b1s1l1" n="1">
+                  <note xml:id="m1-p1v1-b1c1" pname="g" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b1c1-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b1c1-verse1-syl">the</syl>
+                    </verse>
+                  </note>
+                  <note xml:id="m1-p1v1-b1c2" pname="a" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b1c2-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b1c2-verse1-syl" wordpos="i" con="d">morn</syl>
+                    </verse>
+                  </note>
+                  <note xml:id="m1-p1v1-b1c3" pname="d" oct="5" dur="4">
+                    <verse xml:id="m1-p1v1-b1c3-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b1c3-verse1-syl" wordpos="t">ing</syl>
+                    </verse>
+                  </note>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b1s2" n="2">
+                <layer xml:id="m1-layer-b1s2l1" n="1">
+                  <note xml:id="m1-p2v1-b1c1" pname="e" oct="4" dur="4"/>
+                  <note xml:id="m1-p2v1-b1c2" pname="e" oct="4" dur="4"/>
+                  <note xml:id="m1-p2v1-b1c3" pname="f" oct="4" dur="4" tie="i" accid.ges="s"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b1s3" n="3">
+                <layer xml:id="m1-layer-b1s3l1" n="1">
+                  <note xml:id="m1-p3v1-b1c1" pname="b" oct="3" dur="4"/>
+                  <note xml:id="m1-p3v1-b1c2" pname="c" oct="4" dur="4"/>
+                  <note xml:id="m1-p3v1-b1c3" pname="a" oct="3" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b1s4" n="4">
+                <layer xml:id="m1-layer-b1s4l1" n="1">
+                  <note xml:id="m1-p4v1-b1c1" pname="e" oct="3" dur="4"/>
+                  <note xml:id="m1-p4v1-b1c2" pname="c" oct="3" dur="4"/>
+                  <note xml:id="m1-p4v1-b1c3" pname="d" oct="3" dur="4"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b2" n="2" right="rptend">
+              <staff xml:id="m1-staff-b2s1" n="1">
+                <layer xml:id="m1-layer-b2s1l1" n="1">
+                  <note xml:id="m1-p1v1-b2c1" pname="g" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b2c1-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b2c1-verse1-syl">light</syl>
+                    </verse>
+                  </note>
+                  <note xml:id="m1-p1v1-b2c2" pname="a" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b2c3" pname="b" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b2c3-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b2c3-verse1-syl">now</syl>
+                    </verse>
+                  </note>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b2s2" n="2">
+                <layer xml:id="m1-layer-b2s2l1" n="1">
+                  <beam xml:id="m1-beam-p2v1-b2c1">
+                    <note xml:id="m1-p2v1-b2c1" pname="f" oct="4" dur="8" tie="t" accid.ges="s"/>
+                    <note xml:id="m1-p2v1-b2c1t480" pname="g" oct="4" dur="8"/>
+                  </beam>
+                  <note xml:id="m1-p2v1-b2c2" pname="f" oct="4" dur="4" accid.ges="s"/>
+                  <note xml:id="m1-p2v1-b2c3" pname="d" oct="4" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b2s3" n="3">
+                <layer xml:id="m1-layer-b2s3l1" n="1">
+                  <note xml:id="m1-p3v1-b2c1" pname="b" oct="3" dur="4"/>
+                  <note xml:id="m1-p3v1-b2c2" pname="a" oct="3" dur="4"/>
+                  <note xml:id="m1-p3v1-b2c3" pname="b" oct="3" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b2s4" n="4">
+                <layer xml:id="m1-layer-b2s4l1" n="1">
+                  <note xml:id="m1-p4v1-b2c1" pname="g" oct="3" dur="4"/>
+                  <note xml:id="m1-p4v1-b2c2" pname="d" oct="3" dur="4"/>
+                  <note xml:id="m1-p4v1-b2c3" pname="g" oct="3" dur="4"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b3" n="3">
+              <staff xml:id="m1-staff-b3s1" n="1">
+                <layer xml:id="m1-layer-b3s1l1" n="1">
+                  <note xml:id="m1-p1v1-b3c1" pname="c" oct="5" dur="4">
+                    <verse xml:id="m1-p1v1-b3c1-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b3c1-verse1-syl">the</syl>
+                    </verse>
+                  </note>
+                  <note xml:id="m1-p1v1-b3c2" pname="a" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b3c2-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b3c2-verse1-syl">day</syl>
+                    </verse>
+                  </note>
+                  <note xml:id="m1-p1v1-b3c3" pname="g" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b3c3-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b3c3-verse1-syl">is</syl>
+                    </verse>
+                  </note>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b3s2" n="2">
+                <layer xml:id="m1-layer-b3s2l1" n="1">
+                  <note xml:id="m1-p2v1-b3c1" pname="e" oct="4" dur="4"/>
+                  <note xml:id="m1-p2v1-b3c2" pname="f" oct="4" dur="4" accid.ges="s"/>
+                  <note xml:id="m1-p2v1-b3c3" pname="e" oct="4" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b3s3" n="3">
+                <layer xml:id="m1-layer-b3s3l1" n="1">
+                  <note xml:id="m1-p3v1-b3c1" pname="c" oct="4" dur="4"/>
+                  <note xml:id="m1-p3v1-b3c2" pname="a" oct="3" dur="4"/>
+                  <note xml:id="m1-p3v1-b3c3" pname="b" oct="3" dur="4" tie="i"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b3s4" n="4">
+                <layer xml:id="m1-layer-b3s4l1" n="1">
+                  <note xml:id="m1-p4v1-b3c1" pname="c" oct="3" dur="4"/>
+                  <note xml:id="m1-p4v1-b3c2" pname="d" oct="3" dur="4"/>
+                  <note xml:id="m1-p4v1-b3c3" pname="e" oct="3" dur="4"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b4" n="4" metcon="false" right="end">
+              <staff xml:id="m1-staff-b4s1" n="1">
+                <layer xml:id="m1-layer-b4s1l1" n="1">
+                  <note xml:id="m1-p1v1-b4c1" pname="a" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b4c1-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b4c1-verse1-syl" wordpos="i" con="d">be</syl>
+                    </verse>
+                  </note>
+                  <note xml:id="m1-p1v1-b4c2" pname="g" oct="4" dur="4">
+                    <verse xml:id="m1-p1v1-b4c2-verse1" n="1">
+                      <syl xml:id="m1-p1v1-b4c2-verse1-syl" wordpos="t">gun</syl>
+                    </verse>
+                  </note>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b4s2" n="2">
+                <layer xml:id="m1-layer-b4s2l1" n="1">
+                  <note xml:id="m1-p2v1-b4c1" pname="f" oct="4" dur="4" accid.ges="s"/>
+                  <note xml:id="m1-p2v1-b4c2" pname="d" oct="4" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b4s3" n="3">
+                <layer xml:id="m1-layer-b4s3l1" n="1">
+                  <beam xml:id="m1-beam-p3v1-b4c1">
+                    <note xml:id="m1-p3v1-b4c1" pname="b" oct="3" dur="8" tie="t"/>
+                    <note xml:id="m1-p3v1-b4c1t480" pname="a" oct="3" dur="8"/>
+                  </beam>
+                  <note xml:id="m1-p3v1-b4c2" pname="g" oct="3" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b4s4" n="4">
+                <layer xml:id="m1-layer-b4s4l1" n="1">
+                  <note xml:id="m1-p4v1-b4c1" pname="d" oct="3" dur="4"/>
+                  <note xml:id="m1-p4v1-b4c2" pname="g" oct="2" dur="4"/>
+                </layer>
+              </staff>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

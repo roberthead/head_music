@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-CMN.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title>Hairpins</title>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application version="22.0.0">
+          <name>head_music</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="m1" label="Hairpins">
+        <score xml:id="m1-score">
+          <scoreDef xml:id="m1-scoredef" keysig="0" meter.count="4" meter.unit="4" midi.bpm="120">
+            <staffGrp xml:id="m1-staffgrp">
+              <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
+                <label xml:id="m1-label-p1">Violin</label>
+                <clef xml:id="m1-clef-s1" shape="G" line="2"/>
+              </staffDef>
+              <staffDef xml:id="m1-staffdef-s2" n="2" lines="5">
+                <label xml:id="m1-label-p2">Cello</label>
+                <clef xml:id="m1-clef-s2" shape="F" line="4"/>
+              </staffDef>
+            </staffGrp>
+          </scoreDef>
+          <section xml:id="m1-section">
+            <measure xml:id="m1-measure-b1" n="1">
+              <staff xml:id="m1-staff-b1s1" n="1">
+                <layer xml:id="m1-layer-b1s1l1" n="1">
+                  <note xml:id="m1-p1v1-b1c1" pname="c" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b1c2" pname="d" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b1c3" pname="e" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b1c4" pname="f" oct="4" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b1s2" n="2">
+                <layer xml:id="m1-layer-b1s2l1" n="1">
+                  <note xml:id="m1-p2v1-b1c1" pname="c" oct="3" dur="2"/>
+                  <note xml:id="m1-p2v1-b1c3" pname="g" oct="3" dur="2"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1-b1c1" tstamp="1" staff="1">mf</dynam>
+              <dynam xml:id="m1-dynam-p2-b1c1" tstamp="1" staff="2">p</dynam>
+              <hairpin xml:id="m1-hairpin-p2-b1c1" form="cres" tstamp="1" staff="2" tstamp2="1m+1"/>
+              <hairpin xml:id="m1-hairpin-p1-b1c2" form="dim" tstamp="2" staff="1" tstamp2="0m+4"/>
+            </measure>
+            <measure xml:id="m1-measure-b2" n="2">
+              <staff xml:id="m1-staff-b2s1" n="1">
+                <layer xml:id="m1-layer-b2s1l1" n="1">
+                  <note xml:id="m1-p1v1-b2c1" pname="g" oct="4" dur="2"/>
+                  <note xml:id="m1-p1v1-b2c3" pname="a" oct="4" dur="2"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b2s2" n="2">
+                <layer xml:id="m1-layer-b2s2l1" n="1">
+                  <note xml:id="m1-p2v1-b2c1" pname="c" oct="4" dur="1"/>
+                </layer>
+              </staff>
+              <hairpin xml:id="m1-hairpin-p1-b2c1" form="cres" tstamp="1" staff="1" tstamp2="0m+3"/>
+              <dynam xml:id="m1-dynam-p2-b2c1" tstamp="1" staff="2">f</dynam>
+              <hairpin xml:id="m1-hairpin-p2-b2c2" form="dim" tstamp="2" staff="2" tstamp2="0m+4"/>
+              <dynam xml:id="m1-dynam-p2-b2c4" tstamp="4" staff="2">p</dynam>
+              <hairpin xml:id="m1-hairpin-p2-b2c4" form="cres" tstamp="4" staff="2" tstamp2="1m+1"/>
+            </measure>
+            <measure xml:id="m1-measure-b3" n="3">
+              <staff xml:id="m1-staff-b3s1" n="1">
+                <layer xml:id="m1-layer-b3s1l1" n="1">
+                  <note xml:id="m1-p1v1-b3c1" pname="b" oct="4" dur="2" dots="1"/>
+                  <note xml:id="m1-p1v1-b3c4" pname="c" oct="5" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b3s2" n="2">
+                <layer xml:id="m1-layer-b3s2l1" n="1">
+                  <note xml:id="m1-p2v1-b3c1" pname="f" oct="3" dur="2"/>
+                  <note xml:id="m1-p2v1-b3c3" pname="e" oct="3" dur="2"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p2-b3c1" tstamp="1" staff="2">mf</dynam>
+              <hairpin xml:id="m1-hairpin-p2-b3c1" form="dim" tstamp="1" staff="2" tstamp2="1m+1"/>
+              <dynam xml:id="m1-dynam-p1v1-b3c4-note" startid="#m1-p1v1-b3c4">sf</dynam>
+            </measure>
+            <measure xml:id="m1-measure-b4" n="4" right="end">
+              <staff xml:id="m1-staff-b4s1" n="1">
+                <layer xml:id="m1-layer-b4s1l1" n="1">
+                  <note xml:id="m1-p1v1-b4c1" pname="d" oct="5" dur="2"/>
+                  <note xml:id="m1-p1v1-b4c3" pname="e" oct="5" dur="2"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b4s2" n="2">
+                <layer xml:id="m1-layer-b4s2l1" n="1">
+                  <note xml:id="m1-p2v1-b4c1" pname="d" oct="3" dur="1"/>
+                </layer>
+              </staff>
+              <hairpin xml:id="m1-hairpin-p1-b4c1" form="cres" tstamp="1" staff="1" tstamp2="0m+5"/>
+              <hairpin xml:id="m1-hairpin-p2-b4c1" form="cres" tstamp="1" staff="2" tstamp2="0m+3"/>
+              <hairpin xml:id="m1-hairpin-p2-b4c3" form="dim" tstamp="3" staff="2" tstamp2="0m+5"/>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

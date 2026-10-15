@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-CMN.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title>Study</title>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application version="22.0.0">
+          <name>head_music</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="m1" label="Study">
+        <score xml:id="m1-score">
+          <scoreDef xml:id="m1-scoredef" keysig="0" meter.count="4" meter.unit="4" midi.bpm="120">
+            <staffGrp xml:id="m1-staffgrp">
+              <staffDef xml:id="m1-staffdef-s1" n="1" lines="5" keysig="2s" trans.diat="-1" trans.semi="-2">
+                <label xml:id="m1-label-p1">Clarinet</label>
+                <clef xml:id="m1-clef-s1" shape="G" line="2"/>
+                <instrDef xml:id="m1-instrdef-s1" midi.instrnum="71"/>
+                <layerDef xml:id="m1-layerdef-p1v1" n="1">
+                  <label xml:id="m1-label-p1v1">clarinet</label>
+                </layerDef>
+              </staffDef>
+            </staffGrp>
+          </scoreDef>
+          <section xml:id="m1-section">
+            <measure xml:id="m1-measure-b1" n="1">
+              <staff xml:id="m1-staff-b1s1" n="1">
+                <layer xml:id="m1-layer-b1s1l1" n="1">
+                  <note xml:id="m1-p1v1-b1c1" pname="d" oct="4" dur="1"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b2" n="2">
+              <staff xml:id="m1-staff-b2s1" n="1">
+                <layer xml:id="m1-layer-b2s1l1" n="1">
+                  <note xml:id="m1-p1v1-b2c1" pname="e" oct="4" dur="1"/>
+                </layer>
+              </staff>
+            </measure>
+            <staffDef xml:id="m1-staffdef-b3s1" n="1" keysig="3f" trans.diat="-2" trans.semi="-3">
+              <instrDef xml:id="m1-instrdef-b3s1" midi.instrnum="71"/>
+            </staffDef>
+            <measure xml:id="m1-measure-b3" n="3">
+              <staff xml:id="m1-staff-b3s1" n="1">
+                <layer xml:id="m1-layer-b3s1l1" n="1">
+                  <note xml:id="m1-p1v1-b3c1" pname="g" oct="4" dur="1"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b4" n="4">
+              <staff xml:id="m1-staff-b4s1" n="1">
+                <layer xml:id="m1-layer-b4s1l1" n="1">
+                  <note xml:id="m1-p1v1-b4c1" pname="a" oct="4" dur="1" accid.ges="f"/>
+                </layer>
+              </staff>
+            </measure>
+            <staffDef xml:id="m1-staffdef-b5s1" n="1" keysig="0" trans.diat="0" trans.semi="0">
+              <instrDef xml:id="m1-instrdef-b5s1" midi.instrnum="73"/>
+            </staffDef>
+            <measure xml:id="m1-measure-b5" n="5">
+              <staff xml:id="m1-staff-b5s1" n="1">
+                <layer xml:id="m1-layer-b5s1l1" n="1">
+                  <note xml:id="m1-p1v1-b5c1" pname="g" oct="4" dur="1"/>
+                </layer>
+              </staff>
+            </measure>
+            <measure xml:id="m1-measure-b6" n="6" right="end">
+              <staff xml:id="m1-staff-b6s1" n="1">
+                <layer xml:id="m1-layer-b6s1l1" n="1">
+                  <note xml:id="m1-p1v1-b6c1" pname="a" oct="4" dur="1"/>
+                </layer>
+              </staff>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

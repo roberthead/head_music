@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-CMN.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title>Dal Segno al Coda</title>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application version="22.0.0">
+          <name>head_music</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="m1" label="Dal Segno al Coda">
+        <score xml:id="m1-score">
+          <scoreDef xml:id="m1-scoredef" keysig="0" meter.count="4" meter.unit="4" midi.bpm="120">
+            <staffGrp xml:id="m1-staffgrp">
+              <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
+                <clef xml:id="m1-clef-s1" shape="G" line="2"/>
+              </staffDef>
+            </staffGrp>
+          </scoreDef>
+          <section xml:id="m1-section">
+            <measure xml:id="m1-measure-b1" n="1">
+              <staff xml:id="m1-staff-b1s1" n="1">
+                <layer xml:id="m1-layer-b1s1l1" n="1">
+                  <note xml:id="m1-p1v1-b1c1" pname="c" oct="4" dur="4" artic="stacc"/>
+                  <note xml:id="m1-p1v1-b1c2" pname="d" oct="4" dur="4" artic="stacc"/>
+                  <note xml:id="m1-p1v1-b1c3" pname="e" oct="4" dur="4" artic="stacc"/>
+                  <note xml:id="m1-p1v1-b1c4" pname="f" oct="4" dur="4" artic="ten"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1v1-b1c1" tstamp="1" staff="1" layer="1">p</dynam>
+              <slur xml:id="m1-slur-p1v1-b1c1-b1c3" startid="#m1-p1v1-b1c1" endid="#m1-p1v1-b1c3"/>
+              <hairpin xml:id="m1-hairpin-p1v1-b1c2" form="cres" tstamp="2" staff="1" layer="1" tstamp2="1m+1"/>
+              <reh xml:id="m1-reh-b1" tstamp="0" staff="1">A</reh>
+            </measure>
+            <measure xml:id="m1-measure-b2" n="2">
+              <staff xml:id="m1-staff-b2s1" n="1">
+                <layer xml:id="m1-layer-b2s1l1" n="1">
+                  <note xml:id="m1-p1v1-b2c1" pname="g" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b2c2" pname="a" oct="4" dur="4" artic="acc"/>
+                  <note xml:id="m1-p1v1-b2c3" pname="b" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b2c4" pname="c" oct="5" dur="4"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1v1-b2c1" tstamp="1" staff="1" layer="1">mf</dynam>
+              <phrase xml:id="m1-phrase-p1v1-b2c1-b2c4" startid="#m1-p1v1-b2c1" endid="#m1-p1v1-b2c4"/>
+              <trill xml:id="m1-trill-p1v1-b2c4" startid="#m1-p1v1-b2c4"/>
+              <repeatMark xml:id="m1-repeatmark-b2-segno" func="segno" tstamp="0" staff="1"/>
+            </measure>
+            <measure xml:id="m1-measure-b3" n="3">
+              <staff xml:id="m1-staff-b3s1" n="1">
+                <layer xml:id="m1-layer-b3s1l1" n="1">
+                  <note xml:id="m1-p1v1-b3c1" pname="d" oct="5" dur="4"/>
+                  <note xml:id="m1-p1v1-b3c2" pname="c" oct="5" dur="4"/>
+                  <note xml:id="m1-p1v1-b3c3" pname="b" oct="4" dur="4" artic="stacciss"/>
+                  <note xml:id="m1-p1v1-b3c4" pname="a" oct="4" dur="4" artic="marc"/>
+                </layer>
+              </staff>
+              <mordent xml:id="m1-mordent-p1v1-b3c1-lower" startid="#m1-p1v1-b3c1" form="lower"/>
+              <dynam xml:id="m1-dynam-p1v1-b3c1-note" startid="#m1-p1v1-b3c1">sfz</dynam>
+              <mordent xml:id="m1-mordent-p1v1-b3c3-upper" startid="#m1-p1v1-b3c3" form="upper"/>
+              <reh xml:id="m1-reh-b3" tstamp="0" staff="1">B</reh>
+              <repeatMark xml:id="m1-repeatmark-b3-tocoda" func="coda" tstamp="5" staff="1">To Coda</repeatMark>
+            </measure>
+            <measure xml:id="m1-measure-b4" n="4" right="dbl">
+              <staff xml:id="m1-staff-b4s1" n="1">
+                <layer xml:id="m1-layer-b4s1l1" n="1">
+                  <note xml:id="m1-p1v1-b4c1" pname="g" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b4c2" pname="f" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b4c3" pname="e" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b4c4" pname="d" oct="4" dur="4"/>
+                </layer>
+              </staff>
+              <hairpin xml:id="m1-hairpin-p1v1-b4c1" form="dim" tstamp="1" staff="1" layer="1" tstamp2="0m+4"/>
+              <turn xml:id="m1-turn-p1v1-b4c1" startid="#m1-p1v1-b4c1"/>
+              <dynam xml:id="m1-dynam-p1v1-b4c1-note" startid="#m1-p1v1-b4c1">fp</dynam>
+              <repeatMark xml:id="m1-repeatmark-b4-dalsegno" func="dalSegno" tstamp="5" staff="1">D.S. al Coda</repeatMark>
+            </measure>
+            <measure xml:id="m1-measure-b5" n="5" right="end">
+              <staff xml:id="m1-staff-b5s1" n="1">
+                <layer xml:id="m1-layer-b5s1l1" n="1">
+                  <note xml:id="m1-p1v1-b5c1" pname="c" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b5c2" pname="e" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b5c3" pname="g" oct="4" dur="4"/>
+                  <note xml:id="m1-p1v1-b5c4" pname="c" oct="5" dur="4"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1v1-b5c1" tstamp="1" staff="1" layer="1">pp</dynam>
+              <hairpin xml:id="m1-hairpin-p1v1-b5c1" form="cres" tstamp="1" staff="1" layer="1" tstamp2="0m+5"/>
+              <repeatMark xml:id="m1-repeatmark-b5-coda" func="coda" tstamp="0" staff="1"/>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>

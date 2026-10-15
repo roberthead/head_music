@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-CMN.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1">
+  <meiHead>
+    <fileDesc>
+      <titleStmt>
+        <title>Marks and Dynamics</title>
+      </titleStmt>
+      <pubStmt/>
+    </fileDesc>
+    <encodingDesc>
+      <appInfo>
+        <application version="22.0.0">
+          <name>head_music</name>
+        </application>
+      </appInfo>
+    </encodingDesc>
+  </meiHead>
+  <music>
+    <body>
+      <mdiv xml:id="m1" label="Marks and Dynamics">
+        <score xml:id="m1-score">
+          <scoreDef xml:id="m1-scoredef" keysig="1f" meter.count="3" meter.unit="4" midi.bpm="96">
+            <staffGrp xml:id="m1-staffgrp">
+              <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
+                <label xml:id="m1-label-p1">Flute</label>
+                <clef xml:id="m1-clef-s1" shape="G" line="2"/>
+              </staffDef>
+              <staffDef xml:id="m1-staffdef-s2" n="2" lines="5">
+                <label xml:id="m1-label-p2">Cello</label>
+                <clef xml:id="m1-clef-s2" shape="F" line="4"/>
+              </staffDef>
+            </staffGrp>
+          </scoreDef>
+          <section xml:id="m1-section">
+            <measure xml:id="m1-measure-b1" n="1">
+              <staff xml:id="m1-staff-b1s1" n="1">
+                <layer xml:id="m1-layer-b1s1l1" n="1">
+                  <note xml:id="m1-p1v1-b1c1" pname="c" oct="5" dur="4" artic="stacc"/>
+                  <note xml:id="m1-p1v1-b1c2" pname="d" oct="5" dur="4" artic="stacc"/>
+                  <note xml:id="m1-p1v1-b1c3" pname="e" oct="5" dur="4" artic="stacc"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b1s2" n="2">
+                <layer xml:id="m1-layer-b1s2l1" n="1">
+                  <note xml:id="m1-p2v1-b1c1" pname="f" oct="3" dur="2" artic="ten"/>
+                  <note xml:id="m1-p2v1-b1c3" pname="c" oct="3" dur="4"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1-b1c1" tstamp="1" staff="1">mp</dynam>
+              <dynam xml:id="m1-dynam-p2-b1c1" tstamp="1" staff="2">p</dynam>
+            </measure>
+            <measure xml:id="m1-measure-b2" n="2">
+              <staff xml:id="m1-staff-b2s1" n="1">
+                <layer xml:id="m1-layer-b2s1l1" n="1">
+                  <note xml:id="m1-p1v1-b2c1" pname="f" oct="5" dur="4" artic="acc"/>
+                  <note xml:id="m1-p1v1-b2c2" pname="g" oct="5" dur="4"/>
+                  <note xml:id="m1-p1v1-b2c3" pname="a" oct="5" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b2s2" n="2">
+                <layer xml:id="m1-layer-b2s2l1" n="1">
+                  <note xml:id="m1-p2v1-b2c1" pname="d" oct="3" dur="2" dots="1"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1-b2c3" tstamp="3" staff="1">f</dynam>
+            </measure>
+            <measure xml:id="m1-measure-b3" n="3">
+              <staff xml:id="m1-staff-b3s1" n="1">
+                <layer xml:id="m1-layer-b3s1l1" n="1">
+                  <note xml:id="m1-p1v1-b3c1" pname="b" oct="5" dur="2" accid.ges="f"/>
+                  <note xml:id="m1-p1v1-b3c3" pname="c" oct="6" dur="4" artic="marc"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b3s2" n="2">
+                <layer xml:id="m1-layer-b3s2l1" n="1">
+                  <note xml:id="m1-p2v1-b3c1" pname="b" oct="3" dur="4" accid.ges="f"/>
+                  <note xml:id="m1-p2v1-b3c2" pname="a" oct="3" dur="4"/>
+                  <note xml:id="m1-p2v1-b3c3" pname="g" oct="3" dur="4"/>
+                </layer>
+              </staff>
+              <trill xml:id="m1-trill-p1v1-b3c1" startid="#m1-p1v1-b3c1"/>
+              <dynam xml:id="m1-dynam-p2v1-b3c1-note" startid="#m1-p2v1-b3c1">sf</dynam>
+              <dynam xml:id="m1-dynam-p1v1-b3c3-note" startid="#m1-p1v1-b3c3">sfz</dynam>
+            </measure>
+            <measure xml:id="m1-measure-b4" n="4">
+              <staff xml:id="m1-staff-b4s1" n="1">
+                <layer xml:id="m1-layer-b4s1l1" n="1">
+                  <note xml:id="m1-p1v1-b4c1" pname="a" oct="5" dur="4" artic="stacciss"/>
+                  <note xml:id="m1-p1v1-b4c2" pname="g" oct="5" dur="4"/>
+                  <note xml:id="m1-p1v1-b4c3" pname="f" oct="5" dur="4"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b4s2" n="2">
+                <layer xml:id="m1-layer-b4s2l1" n="1">
+                  <note xml:id="m1-p2v1-b4c1" pname="f" oct="3" dur="2" tie="i"/>
+                  <note xml:id="m1-p2v1-b4c1-k1" pname="f" oct="3" dur="4" tie="t"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p2-b4c1" tstamp="1" staff="2">mf</dynam>
+              <turn xml:id="m1-turn-p1v1-b4c3" startid="#m1-p1v1-b4c3"/>
+            </measure>
+            <measure xml:id="m1-measure-b5" n="5">
+              <staff xml:id="m1-staff-b5s1" n="1">
+                <layer xml:id="m1-layer-b5s1l1" n="1">
+                  <note xml:id="m1-p1v1-b5c1" pname="e" oct="5" dur="4" accid="f"/>
+                  <note xml:id="m1-p1v1-b5c2" pname="d" oct="5" dur="4"/>
+                  <note xml:id="m1-p1v1-b5c3" pname="c" oct="5" dur="4" accid="s"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b5s2" n="2">
+                <layer xml:id="m1-layer-b5s2l1" n="1">
+                  <note xml:id="m1-p2v1-b5c1" pname="c" oct="3" dur="2" dots="1"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1-b5c1" tstamp="1" staff="1">p</dynam>
+              <mordent xml:id="m1-mordent-p1v1-b5c1-upper" startid="#m1-p1v1-b5c1" form="upper"/>
+              <dynam xml:id="m1-dynam-p2v1-b5c1-note" startid="#m1-p2v1-b5c1">fp</dynam>
+              <mordent xml:id="m1-mordent-p1v1-b5c3-lower" startid="#m1-p1v1-b5c3" form="lower"/>
+            </measure>
+            <measure xml:id="m1-measure-b6" n="6" right="end">
+              <staff xml:id="m1-staff-b6s1" n="1">
+                <layer xml:id="m1-layer-b6s1l1" n="1">
+                  <note xml:id="m1-p1v1-b6c1" pname="f" oct="5" dur="2" dots="1"/>
+                </layer>
+              </staff>
+              <staff xml:id="m1-staff-b6s2" n="2">
+                <layer xml:id="m1-layer-b6s2l1" n="1">
+                  <note xml:id="m1-p2v1-b6c1" pname="f" oct="2" dur="2" dots="1"/>
+                </layer>
+              </staff>
+              <dynam xml:id="m1-dynam-p1-b6c1" tstamp="1" staff="1">pp</dynam>
+              <dynam xml:id="m1-dynam-p2-b6c1" tstamp="1" staff="2">pp</dynam>
+            </measure>
+          </section>
+        </score>
+      </mdiv>
+    </body>
+  </music>
+</mei>
