@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-24T18:58:30-07:00
   activated_at: 2026-10-15T12:24:49-07:00
   planned_at:   2026-10-15T12:44:52-07:00
-  finished_at:
-  updated_at:   2026-10-15T13:30:19-07:00
+  finished_at:  2026-10-15T14:17:15-07:00
+  updated_at:   2026-10-15T14:17:15-07:00
 -->
 
 # Story: MEI Export
@@ -48,57 +48,57 @@ mei # => String of a well-formed MEI 5 document with <meiHead> and <music>
 
 ### Document
 
-- [ ] `HeadMusic::Notation::MEI.render(flow, **options)` and `Flow#to_mei` return a well-formed MEI 5.1 document. `Flow#to_mei` takes `transposed:` and `arranger:`
-- [ ] With `MEI_SCHEMA` set to `mei-CMN.rng` from MEI 5.1, every golden and fixture output validates with `xmllint --relaxng`
-- [ ] `<mdiv label>` is the flow's name. `<titleStmt><title>` is the layout's title, else the Work's title, else the flow's name. Each work-level credit is its own `<persName role>`, one per person, falling back to the flow's composer string, and a layout's arrangers are `role="arranger"`
-- [ ] Every element from `<mdiv>` down carries an `xml:id` that is a valid NCName, unique in the document, and prefixed by its mdiv number. It is built from part, voice, bar, and onset, so rendering the same flow twice gives the same ids, and every `@startid` and `@endid` names one
-- [ ] `Layout#to_mei` renders the layout's realized flows as one document, with one `<mdiv>` per flow
-- [ ] The writer raises `MEI::RenderError` before writing anything for an empty flow, for unpitched note events (grace notes included), for text XML cannot hold, and for a part whose staff system changes, since a change renumbers the staves later control events name
+- [x] `HeadMusic::Notation::MEI.render(flow, **options)` and `Flow#to_mei` return a well-formed MEI 5.1 document. `Flow#to_mei` takes `transposed:` and `arranger:`
+- [x] With `MEI_SCHEMA` set to `mei-CMN.rng` from MEI 5.1, every golden and fixture output validates with `xmllint --relaxng`
+- [x] `<mdiv label>` is the flow's name. `<titleStmt><title>` is the layout's title, else the Work's title, else the flow's name. Each work-level credit is its own `<persName role>`, one per person, falling back to the flow's composer string, and a layout's arrangers are `role="arranger"`
+- [x] Every element from `<mdiv>` down carries an `xml:id` that is a valid NCName, unique in the document, and prefixed by its mdiv number. It is built from part, voice, bar, and onset, so rendering the same flow twice gives the same ids, and every `@startid` and `@endid` names one
+- [x] `Layout#to_mei` renders the layout's realized flows as one document, with one `<mdiv>` per flow
+- [x] The writer raises `MEI::RenderError` before writing anything for an empty flow, for unpitched note events (grace notes included), for text XML cannot hold, and for a part whose staff system changes, since a change renumbers the staves later control events name
 
 ### Parts, staves, and voices
 
-- [ ] `<scoreDef>` carries the starting key signature and meter, and a `<staffGrp>` with one `<staffDef>` per staff carrying its clef
-- [ ] A multi-staff part is a nested `<staffGrp symbol>` (from `StaffSystem#bracket`) carrying the player's `<label>`, and its `<staffDef>`s carry none. A single-staff part's `<staffDef>` carries it. Each staff definition carries `<instrDef midi.instrnum>` for its instrument, and each voice with a role a `<layerDef n><label>`
-- [ ] Each voice's `<layer n>` is its 1-based index among its part's voices, and keeps that number on every staff it is written on, so a voice crossing at a barline keeps its layer number
-- [ ] Each bar becomes a `<measure n>`, and a pickup a `<measure n="0" type="upbeat">`. An underfull final bar carries `metcon="false"`. A staff with no voice in a bar is a bare `<staff n/>`
+- [x] `<scoreDef>` carries the starting key signature and meter, and a `<staffGrp>` with one `<staffDef>` per staff carrying its clef
+- [x] A multi-staff part is a nested `<staffGrp symbol>` (from `StaffSystem#bracket`) carrying the player's `<label>`, and its `<staffDef>`s carry none. A single-staff part's `<staffDef>` carries it. Each staff definition carries `<instrDef midi.instrnum>` for its instrument, and each voice with a role a `<layerDef n><label>`
+- [x] Each voice's `<layer n>` is its 1-based index among its part's voices, and keeps that number on every staff it is written on, so a voice crossing at a barline keeps its layer number
+- [x] Each bar becomes a `<measure n>`, and a pickup a `<measure n="0" type="upbeat">`. An underfull final bar carries `metcon="false"`. A staff with no voice in a bar is a bare `<staff n/>`
 
 ### Notes and rhythms
 
-- [ ] Notes carry `@pname`, `@oct`, `@dur`, and `@dots`
-- [ ] `@accid` is written when the key and the earlier notes in the bar, on that staff across all its layers, at that letter and octave, do not already imply the pitch. Otherwise an altered pitch carries `@accid.ges`. A tied continuation shows none and does not change what later notes in the bar show
-- [ ] Rests are `<rest>`, and a rest event that fills its bar is `<mRest>` regardless of other layers. Chords are `<chord>`. Ties are `@tie` (`i`, `m`, `t`), including notes that cross a barline, split by `BarSplitter`
-- [ ] Tuplets are `<tuplet num numbase>`, and grace notes carry `@grace` (`acc` or `unacc`). A tuplet crossing a barline is written as a hidden `<tuplet>` in each bar plus a `<tupletSpan>`, and a beam that cannot nest with a tuplet is a `<beamSpan>`
-- [ ] Beams are `<beam>` groups, following the grouping the MusicXML writer uses, from code shared with it rather than a copy
+- [x] Notes carry `@pname`, `@oct`, `@dur`, and `@dots`
+- [x] `@accid` is written when the key and the earlier notes in the bar, on that staff across all its layers, at that letter and octave, do not already imply the pitch. Otherwise an altered pitch carries `@accid.ges`. A tied continuation shows none and does not change what later notes in the bar show
+- [x] Rests are `<rest>`, and a rest event that fills its bar is `<mRest>` regardless of other layers. Chords are `<chord>`. Ties are `@tie` (`i`, `m`, `t`), including notes that cross a barline, split by `BarSplitter`
+- [x] Tuplets are `<tuplet num numbase>`, and grace notes carry `@grace` (`acc` or `unacc`). A tuplet crossing a barline is written as a hidden `<tuplet>` in each bar plus a `<tupletSpan>`, and a beam that cannot nest with a tuplet is a `<beamSpan>`
+- [x] Beams are `<beam>` groups, following the grouping the MusicXML writer uses, from code shared with it rather than a copy
 
 ### Timeline
 
-- [ ] Keys are MEI 5 `@keysig`, on `<scoreDef>`, and on a transposing `<staffDef>` in a transposed render
-- [ ] A key, meter, or clef change at a later bar is written as a `<scoreDef>` or `<staffDef>` before that measure
-- [ ] The opening tempo is `scoreDef/@midi.bpm` and is not printed. A tempo change is a `<tempo>` control event with `@midi.bpm` in quarters per minute and `@mm`, `@mm.unit`, and `@mm.dots`
-- [ ] At an instrument change, a `<staffDef>` before that measure carries the new `<instrDef>` and, when transposed, the new `@trans.diat` and `@trans.semi`
-- [ ] With `transposed: true`, a transposing part's `<staffDef>` carries `@trans.diat` and `@trans.semi` and its notes are written pitch, as the `transposed:` option means for the other writers
+- [x] Keys are MEI 5 `@keysig`, on `<scoreDef>`, and on a transposing `<staffDef>` in a transposed render
+- [x] A key, meter, or clef change at a later bar is written as a `<scoreDef>` or `<staffDef>` before that measure
+- [x] The opening tempo is `scoreDef/@midi.bpm` and is not printed. A tempo change is a `<tempo>` control event with `@midi.bpm` in quarters per minute and `@mm`, `@mm.unit`, and `@mm.dots`
+- [x] At an instrument change, a `<staffDef>` before that measure carries the new `<instrDef>` and, when transposed, the new `@trans.diat` and `@trans.semi`
+- [x] With `transposed: true`, a transposing part's `<staffDef>` carries `@trans.diat` and `@trans.semi` and its notes are written pitch, as the `transposed:` option means for the other writers
 
 ### Markings and spans
 
-- [ ] Articulations are `@artic`, and note dynamics are `<dynam>` at the note
-- [ ] Trills, mordents, and turns are `<trill>`, `<mordent>` (with `@form` `lower` or `upper`), and `<turn>` control events at their note
-- [ ] Dynamic levels are `<dynam>` control events at their `@tstamp`. A voice's carries `@staff` and `@layer`; a part's carries `@staff` (the top staff) and no `@layer`
-- [ ] Hairpins are `<hairpin @form>` with `@tstamp` and `@tstamp2`, including one ending on the final barline, with `@staff` and `@layer` as for dynamics
-- [ ] Slurs are `<slur>` and phrase marks are `<phrase>`, both with `@startid` and `@endid`
-- [ ] Barline styles are `measure/@right`. Repeats are `rptstart` and `rptend`, endings are `<ending n="1-2" label="1., 2.">` around their measures, rehearsal marks are `<reh>`, and segno, coda, Fine, D.C., and D.S. are `<repeatMark @func>`. To Coda is `<repeatMark func="coda">To Coda</repeatMark>`, and D.C. and D.S. carry their full text
+- [x] Articulations are `@artic`, and note dynamics are `<dynam>` at the note
+- [x] Trills, mordents, and turns are `<trill>`, `<mordent>` (with `@form` `lower` or `upper`), and `<turn>` control events at their note
+- [x] Dynamic levels are `<dynam>` control events at their `@tstamp`. A voice's carries `@staff` and `@layer`; a part's carries `@staff` (the top staff) and no `@layer`
+- [x] Hairpins are `<hairpin @form>` with `@tstamp` and `@tstamp2`, including one ending on the final barline, with `@staff` and `@layer` as for dynamics
+- [x] Slurs are `<slur>` and phrase marks are `<phrase>`, both with `@startid` and `@endid`
+- [x] Barline styles are `measure/@right`. Repeats are `rptstart` and `rptend`, endings are `<ending n="1-2" label="1., 2.">` around their measures, rehearsal marks are `<reh>`, and segno, coda, Fine, D.C., and D.S. are `<repeatMark @func>`. To Coda is `<repeatMark func="coda">To Coda</repeatMark>`, and D.C. and D.S. carry their full text
 
 ### Lyrics
 
-- [ ] Each syllable is a `<verse n>/<syl>` in its note. A hyphen after it sets `@wordpos` and `@con="d"`
+- [x] Each syllable is a `<verse n>/<syl>` in its note. A hyphen after it sets `@wordpos` and `@con="d"`
 
 ### Verification
 
-- [ ] Golden documents are pinned for a two-voice species exercise, the SATB chorale fixture, the grand-staff piano fixture, and the markings and hairpin fixtures, and for the navigation, part-marks, cross-staff, triplet, grace-note, two-verse, and transposed clarinet fixtures
-- [ ] Every ABC, LilyPond, kern, tuplet, hairpin, and MuseScore-render fixture renders without error, or raises for a reason the spec names
-- [ ] A spec checks that every id is unique and every reference resolves
-- [ ] When MuseScore 4 is available, each golden converts through `mscore` (with `meiversion="5.1+basic"`), and its pitches and durations per measure match the flow
+- [x] Golden documents are pinned for a two-voice species exercise, the SATB chorale fixture, the grand-staff piano fixture, and the markings and hairpin fixtures, and for the navigation, part-marks, cross-staff, triplet, grace-note, two-verse, and transposed clarinet fixtures
+- [x] Every ABC, LilyPond, kern, tuplet, hairpin, and MuseScore-render fixture renders without error, or raises for a reason the spec names
+- [x] A spec checks that every id is unique and every reference resolves
+- [x] When MuseScore 4 is available, each golden converts through `mscore` (with `meiversion="5.1+basic"`), and its pitches and durations per measure match the flow. Where MuseScore misreads valid MEI, the golden is pending by name with the reason: `clarinet_changes_transposed`, since MuseScore ignores `@trans.*` on a `<staffDef>` after the first measure
 - [ ] A Verovio spec renders the goldens when `verovio` is installed and is skipped otherwise. One golden is checked by hand in editor.verovio.org and recorded here
-- [ ] Maintains 90%+ test coverage
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
@@ -109,6 +109,8 @@ mei # => String of a well-formed MEI 5 document with <meiHead> and <music>
 - **Deferred: `Flow#source` as `<sourceDesc>`.** Mapping a `Publication` takes its own bibliographic decisions, nothing reads it back yet, and it fits the `<annot>` follow-up, which already touches scholarly apparatus.
 - **Deferred: cautionary accidentals.** The model has no courtesy flag, so any rule would be an invented style choice.
 - **Verovio is not installed here** (Rob's choice), so MuseScore 4's MEI import stands in as the automated real-tool check. MuseScore reads only `meiversion="5.1+basic"` and hangs on any other value, so its spec rewrites the version and runs under a timeout.
+- **MuseScore's MEI import has limits the spec works around.** It reads only `meiversion="5.1+basic"` and hangs otherwise, crashes on a `<label>` inside `<layerDef>`, drops `@tie`, numbers an upbeat measure 1, splits an unlabeled braced group into one part per staff, and ignores `@trans.*` after the first measure. The spec rewrites the version, strips layer labels, compares by measure order, and pools a measure's notes across parts, so it would not catch a note written on the wrong staff.
+- **Open question: a chord holding F and F♯ at one octave** writes the F with no accidental, since each chord member is judged on its own against the key. Most engravers would print the natural; it waits with cautionary accidentals.
 - The round trip through MEI belongs to [MEI Import](mei-import.md), which lands after this story.
 
 ## Decisions
@@ -343,9 +345,9 @@ Steps 1–3 branch from `9b98280d`. Step 3 can run in its own worktree in parall
 - **RelaxNG, gated on `MEI_SCHEMA`.**
   - Fetch release **v5.1** (2025-01-22): asset `MEI_Schemata_v5.1.zip` from `https://github.com/music-encoding/music-encoding/releases/download/v5.1/MEI_Schemata_v5.1.zip` (sha256 `2586509c350d67b16bdeaae8e8e33e626dee615df88d49c87058484bb6334877`), and extract `mei-CMN.rng` (1.3 MB, sha256 `f6440d5eb59c3e903f2a7a64ea26518646186f8449b86096106846a269eb354b`).
   - Ignore `v6.0-0+featureFreeze`, which is a pre-release.
-  - It is already extracted at `/private/tmp/claude-501/-Users-roberthead-github-com-roberthead-head-music/6579b744-7cf1-410f-8f79-7acf007bb139/scratchpad/schema/mei-CMN.rng`.
-  - Run: `MEI_SCHEMA=/private/tmp/claude-501/-Users-roberthead-github-com-roberthead-head-music/6579b744-7cf1-410f-8f79-7acf007bb139/scratchpad/schema/mei-CMN.rng bundle exec rspec spec/head_music/notation/mei_schema_spec.rb`
-  - My probe `/private/tmp/claude-501/-Users-roberthead-github-com-roberthead-head-music/6579b744-7cf1-410f-8f79-7acf007bb139/scratchpad/mei/probe.mei` validates. It covers:
+  - Fetch it into any local folder and point `MEI_SCHEMA` at the extracted `mei-CMN.rng`; `spec/fixtures/notation/mei/README.md` repeats these steps.
+  - Run: `MEI_SCHEMA=path/to/mei-CMN.rng bundle exec rspec spec/head_music/notation/mei_schema_spec.rb`
+  - My probe a scratch probe document validates. It covers:
     - nested `staffGrp` with `<label>`, `<clef dis>`, `layerDef/label`, `staffDef keysig trans.* instrDef`;
     - `measure type="upbeat" metcon="false" left="rptstart"`, a bare `<staff n/>`, `mSpace`;
     - `<reh tstamp="0">`, all five `repeatMark/@func` values, an empty `<tempo midi.bpm mm mm.unit mm.dots>`;
@@ -395,3 +397,50 @@ Other risks:
   - add criteria for `mdiv/@label` as the flow name, `scoreDef/@midi.bpm`, `layerDef/label` roles, instrument changes, the passes in `ending/@n`, and a bare `<staff/>` meaning no voice;
   - its "padded with rests" criterion should not add rests to layers before the voice begins.
 - **Timeline Expressions** lists no MEI line, so MEI `<fermata>`, tempo text, and `@meter.sym` belong to no story yet. Add MEI to its Formats criteria.
+
+## Review
+
+Reviewed 2026-10-15 at commit `bc0f96f9`, by a product manager (acceptance verification) and a code reviewer, in parallel.
+
+### Acceptance criteria
+
+| Criteria | Verdict | Evidence |
+| --- | --- | --- |
+| Document (6) | ✅ 6 | `mei.rb`, `writer.rb`, `head_writer.rb`, `ids.rb`, `preflight.rb`, `content/layout/rendering.rb`. The schema spec passes 119 of 119 against `mei-CMN.rng` 5.1. A three-flow layout gives 117 unique, mdiv-prefixed ids, and a one-flow layout is byte-identical to `Flow#to_mei` |
+| Parts, staves, and voices (4) | ✅ 4 | `score_def_writer.rb`, `render_plan.rb`, `measure_writer.rb`. In the goldens, `piano_splits` shows the labeled brace, and `cross_staff_piano` keeps `layer n="2"` as the left hand crosses staves |
+| Notes and rhythms (5) | ✅ 5 | `accidental_plan.rb`, `event_writer.rb`, `layer_containers.rb`. Probes covered cross-layer accidental memory and tied continuations. `triplets` shows `<tuplet>` around `<beam>`. `mei_beams_spec` checks the beam groups against MusicXML's |
+| Timeline (5) | ✅ 5 | `timeline_changes.rb`. `clarinet_changes_transposed` shows `@keysig`, `@trans.*`, and the reset at the flute |
+| Markings and spans (6) | ✅ 6 | `artic_attributes.rb`, `marking_events.rb`, `bar_marks.rb`, `navigation_events.rb`. In the goldens, `piano_part_marks` has part and voice dynamics, and `hairpins` has `tstamp2="0m+5"` |
+| Lyrics (1) | ✅ 1 | `lyric_writer.rb`. `two_verses` shows `@wordpos` and `@con` |
+| Verification (6) | ✅ 4, ⚠️ 1, ❌ 1 | `mei_golden_spec`, `mei_fixtures_spec`, `mei_references_spec`, `mei_muse_score_spec`. MuseScore matched 12 of 13 goldens; it misreads the transposed clarinet. The manual Verovio check has not been done |
+
+Coverage of `lib/head_music/notation/mei/` from the MEI specs alone is 99.7%.
+
+### Code review findings
+
+1. **Important:** non-ASCII text in an encoding other than UTF-8 raised `Encoding::CompatibilityError` from the XML text check, in MEI and in MusicXML. MusicXML used to write such text mis-encoded under a UTF-8 declaration.
+2. **Low:** `FlatLayer` was dead code, always replaced by `LayerTree`.
+3. **Product review:** the CHANGELOG left out pickups, `metcon`, the opening tempo, "×N" repeats, empty-bar `<mRest>`s, and the `@trans.*` reset. The story did not record MuseScore's limits.
+
+The reviewer checked these and found them sound:
+
+- schema validity and reference integrity over a wide range of unusual flows;
+- escaping and accidentals;
+- byte-identical MusicXML output across 113 fixtures and 10 beam cases;
+- linear render time: 0.08, 0.16, and 0.33 s at 200, 400, and 800 bars.
+
+### Resolution
+
+- **Fixed.** `ensure_xml_text` refuses non-ASCII text that is not UTF-8 with the writer's `RenderError`, naming the encoding (`c63b9dd5`). `LayerTree` is now the default layer builder, and `FlatLayer` is removed (`d90e9efb`). The CHANGELOG is complete (`5f4e6a1a`).
+- **MuseScore criterion, reworded.** It now names the one golden pending on a MuseScore limitation. Notes list the limits the spec works around.
+- **Verovio criterion, left open.** Verovio is not installed, by Rob's choice, and the hand check in editor.verovio.org needs a browser. It should cover `cross_staff_piano.mei` (the lone layer 2 on the left-hand staff) and `grace_notes_before_downbeat.mei` (grace notes inside `<beam>`); `tuplet_crossing_barline` covers hidden tuplets with a `<tupletSpan>`. Rob is asked to do it, and the criterion stays unticked until it is recorded here.
+- **Open question:** a chord holding F and F♯ at one octave prints no natural on the F (see Notes).
+
+## Learnings
+
+- **Freezing hooks that return data, not text, paid off.** Seven features were built against the step-5 hooks in four parallel worktrees. Integration needed no shared-code rework beyond one moved helper (`SpanEnds`), because measure and section writers bucket each feature's elements by bar.
+- **Validate against the schema while you build.** The planner's probe found that MEI 5.1 rejects `@key.sig` and `ending n="1, 2"`. Gating every writer spec on `MEI_SCHEMA` caught shape errors at each step rather than at the goldens.
+- **Real tools disagree with the schema.** MuseScore imports only its own `5.1+basic` dialect, crashes on a valid `<layerDef><label>`, and ignores mid-score transpositions. A real-tool spec needs a named exclusion list and a timeout from the start, or a single bad input hangs the suite.
+- **Shared extractions need a byte-diff proof.** Moving the beam grouping, written links, and XML text out of MusicXML was safe because each move was checked with a before-and-after render of every fixture, plus a deliberate break showing the diff would catch a change.
+- **A broader text check raises new edge cases.** Adding U+FFFE and U+FFFF made the check's regexp UTF-8-only, which turned Latin-1 text into an encoding crash. An adversarial reviewer found it; the corpus never would.
+- **Watch for a second session on the same repo.** The session restarted mid-fan-out while the old session stayed open. It integrated the worktrees, removed them, and edited files beside the step-7 agent. Check `ListAgents` for peer sessions after a restart before resuming.
