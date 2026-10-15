@@ -64,6 +64,13 @@ describe HeadMusic::Notation::MEI::EventWriter do
       expect(written(flow).map { |element| element.attributes["tie"] }).to eq %w[i m t]
     end
 
+    it "ends a tie on a grace note that ties no further" do
+      note_event = voice.place("1:1", :whole, "D5")
+      note_event.add_grace_note("C5", :eighth, tied: true)
+      note_event.add_grace_note("C5", :eighth)
+      expect(written(flow).map { |element| element.attributes["tie"] }).to eq ["i", "t", nil]
+    end
+
     it "carries a tie from a grace note through a note split at the barline" do
       voice.place("1:1", :half)
       voice.place("1:3", :whole, "C5").add_grace_note("C5", :eighth, tied: true)
@@ -80,5 +87,38 @@ describe HeadMusic::Notation::MEI::EventWriter do
     voice.place("1:1", :whole, "C4")
     plan = HeadMusic::Notation::MEI::RenderPlan.new(flow)
     expect(described_class.new(plan).empty_bar_element(voice, 2)).to eq HeadMusic::Notation::MEI::Element.new("mRest", "m1-p1v1-b2c1")
+  end
+
+  describe "extensions" do
+    let(:hook) { MEIExtensionStubs::EveryHook }
+    let(:plan) { HeadMusic::Notation::MEI::RenderPlan.new(flow) }
+
+    before do
+      allow(described_class).to receive_messages(attribute_sources: [hook], child_sources: [hook])
+      voice.place("1:1", :half, %w[C4 E4]).add_grace_note("D4", :eighth)
+      voice.place("1:3", :half)
+    end
+
+    def written_elements
+      writer = described_class.new(plan)
+      plan.items(voice, 1).flat_map { |item| [*writer.grace_elements(item), writer.element(item)] }
+    end
+
+    it "offers every element to its sources as a node" do
+      written_elements
+      expect(plan.source(hook).nodes.map { |node| [node.kind, node.id, node.chord_member, node.grace?] }).to eq [
+        [:note, "m1-p1v1-b1c1-g1", false, true], [:note, "m1-p1v1-b1c1-h1", true, false],
+        [:note, "m1-p1v1-b1c1-h2", true, false], [:chord, "m1-p1v1-b1c1", false, false], [:rest, "m1-p1v1-b1c3", false, false]
+      ]
+    end
+
+    it "merges the attributes its sources answer" do
+      expect(written_elements.map { |element| element.attributes.slice("accid.ges", "label").values }).to eq [["n"], ["chord"], ["rest"]]
+    end
+
+    it "appends the children its sources answer" do
+      expect(written_elements[1].children.map { |note| note.children.map(&:id) })
+        .to eq [["m1-p1v1-b1c1-h1-verse1"], ["m1-p1v1-b1c1-h2-verse1"]]
+    end
   end
 end

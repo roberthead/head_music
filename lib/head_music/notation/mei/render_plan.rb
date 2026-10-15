@@ -44,6 +44,20 @@ module HeadMusic::Notation::MEI
       staff_entries.select { |entry| entry.part.equal?(part) }
     end
 
+    # The staff a voice is written on in a bar.
+    def staff_entry(voice, bar_number)
+      staff = voice.staff_at(bar_number)
+      staff_entries_of(voice.part).find { |entry| entry.staff.equal?(staff) }
+    end
+
+    def staff_number(voice, bar_number)
+      staff_entry(voice, bar_number).number
+    end
+
+    def top_staff_number(part)
+      staff_entries_of(part).first.number
+    end
+
     def part_number(part)
       part_numbers.fetch(part)
     end
@@ -52,14 +66,26 @@ module HeadMusic::Notation::MEI
       voice_numbers.fetch(voice)
     end
 
-    # The voices of the staff's part written on it in the bar, with their
-    # layer numbers.
+    # The voices of the staff's part written on it in the bar. Each is the
+    # layer numbered by its place in the part, on whichever staff it is.
     def layer_voices(entry, bar_number)
       entry.part.voices.select { |voice| voice.staff_at(bar_number).equal?(entry.staff) }
     end
 
     def items(voice, bar_number)
       items_by_voice[voice].fetch(bar_number, [])
+    end
+
+    # Every piece a voice event is written as, in order, across bars.
+    def items_of(voice_event)
+      items_by_voice_event.fetch(voice_event)
+    end
+
+    # The one instance of an extension class for this plan, so that a class
+    # registered with several hooks computes once.
+    def source(source_class)
+      @sources ||= {}.compare_by_identity
+      @sources[source_class] ||= source_class.new(self)
     end
 
     def event_id(voice, position)
@@ -97,6 +123,14 @@ module HeadMusic::Notation::MEI
       flow.voices.map { |voice| written_length(voice, bar_number) }.max < bar_length(bar_number)
     end
 
+    # The key signature event a part is written in at a bar: the sounding one,
+    # or in a transposed plan the part's instrument's written key.
+    def written_key_event(part, bar_number)
+      event = effective_key_event(bar_number)
+      transposition = transposition_at(part, bar_number)
+      transposition ? transposition.key_signature_event(event) : event
+    end
+
     def midi_bpm(tempo)
       Decimals.format(Rational(tempo.beats_per_minute.to_s) * tempo.beat_value.fraction * 4)
     end
@@ -110,6 +144,16 @@ module HeadMusic::Notation::MEI
     def precompute_eager_data
       super
       items_by_voice
+      extension_classes.each { |source_class| source(source_class) }
+    end
+
+    def extension_classes
+      [
+        *EventWriter.attribute_sources, *EventWriter.child_sources,
+        *MeasureWriter.attribute_sources, *MeasureWriter.control_sources,
+        *SectionWriter.pre_measure_sources, SectionWriter.bar_group,
+        *ScoreDefWriter.staff_def_attribute_sources
+      ].compact
     end
 
     def key_value(event)
@@ -133,6 +177,11 @@ module HeadMusic::Notation::MEI
       @items_by_voice ||= flow.voices.each_with_object({}.compare_by_identity) do |voice, items|
         items[voice] = build_items(voice).group_by { |item| item.segment.bar_number }
       end
+    end
+
+    def items_by_voice_event
+      @items_by_voice_event ||= items_by_voice.values.flat_map { |by_bar| by_bar.values.flatten(1) }
+        .group_by(&:voice_event).compare_by_identity
     end
 
     def build_items(voice)

@@ -51,4 +51,11 @@ describe HeadMusic::Notation::MEI::Preflight do
     voice.place("1:1", :half, "C4").add_grace_note(snare, :sixteenth)
     expect { described_class.check!(flow) }.to raise_error(error, /unpitched grace note .* before 1:1:000 as MEI/)
   end
+
+  it "raises for a part whose staff system changes" do
+    voice.place("1:1", :half, "C4")
+    voice.place("2:1", :half, "D4")
+    voice.part.change_staff_system(2, HeadMusic::Content::StaffSystem.grand_staff)
+    expect { described_class.check!(flow) }.to raise_error(error, /staff system change/)
+  end
 end

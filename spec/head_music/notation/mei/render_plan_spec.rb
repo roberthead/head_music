@@ -102,6 +102,24 @@ describe HeadMusic::Notation::MEI::RenderPlan do
     end
   end
 
+  describe "#written_key_event" do
+    let(:flow) do
+      HeadMusic::Content::Flow.new(key_signature: "F major").tap do |flow|
+        flow.add_part(instrument: "clarinet").add_voice.place("1:1", :whole, "C4")
+        flow.change_key_signature(2, "D major")
+      end
+    end
+
+    it "is the sounding key in force at the bar" do
+      expect([1, 2].map { |bar| plan.written_key_event(flow.parts.first, bar).signature }).to eq [-1, 2]
+    end
+
+    it "is the instrument's written key in a transposed plan" do
+      plan = described_class.new(flow, transposed: true)
+      expect([1, 2].map { |bar| plan.written_key_event(flow.parts.first, bar).signature }).to eq [1, 4]
+    end
+  end
+
   describe "#midi_bpm" do
     it "counts quarters per minute" do
       expect(plan.midi_bpm(HeadMusic::Rudiment::Tempo.new("dotted quarter", 60))).to eq "90"
@@ -113,6 +131,56 @@ describe HeadMusic::Notation::MEI::RenderPlan do
       flow = LilyPondFixtures.piano_and_melody
       entries = described_class.new(flow).staff_entries
       expect(entries.map { |entry| [entry.number, entry.part_number, entry.index_in_part] }).to eq [[1, 1, 0], [2, 1, 1], [3, 2, 0]]
+    end
+  end
+
+  describe "staves of voices" do
+    let(:flow) { LilyPondFixtures.cross_staff_piano }
+    let(:left_hand) { flow.voices.last }
+
+    it "numbers the staff a voice is written on in each bar" do
+      expect((1..4).map { |bar| plan.staff_number(left_hand, bar) }).to eq [2, 1, 1, 2]
+    end
+
+    it "names the top staff of a part" do
+      expect(plan.top_staff_number(left_hand.part)).to eq 1
+    end
+
+    it "lists the voices written on a staff in a bar" do
+      expect(plan.layer_voices(plan.staff_entries.first, 2)).to eq flow.voices
+    end
+  end
+
+  describe "#items_of" do
+    it "lists every piece of a voice event across bars" do
+      expect(plan.items_of(voice.voice_events[1]).map(&:id)).to eq %w[m1-p1v1-b1c3 m1-p1v1-b2c1]
+    end
+  end
+
+  describe "#source" do
+    let(:source_class) do
+      Class.new do
+        attr_reader :plan
+
+        def initialize(plan) = @plan = plan
+      end
+    end
+
+    it "builds one instance of a source class for the plan" do
+      expect(plan.source(source_class)).to equal plan.source(source_class)
+    end
+
+    it "builds every registered source while the plan is built" do
+      allow(HeadMusic::Notation::MEI::MeasureWriter).to receive(:control_sources).and_return([source_class])
+      allow(source_class).to receive(:new).and_call_original
+      plan
+      expect(source_class).to have_received(:new).with(plan)
+    end
+
+    it "raises while the plan is built for a source that cannot be built" do
+      failing = Class.new { def initialize(_plan) = raise(HeadMusic::Notation::MEI::RenderError, "no") }
+      allow(HeadMusic::Notation::MEI::SectionWriter).to receive(:bar_group).and_return(failing)
+      expect { plan }.to raise_error(HeadMusic::Notation::MEI::RenderError, "no")
     end
   end
 

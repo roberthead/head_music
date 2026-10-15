@@ -33,10 +33,70 @@ describe HeadMusic::Notation::MEI::ScoreDefWriter do
     expect(mei_attributes(score_def(low), "//mei:clef", "shape")).to eq ["F"]
   end
 
+  describe "parts" do
+    let(:flow) do
+      HeadMusic::Content::Flow.new.tap do |flow|
+        piano = flow.add_part(player: HeadMusic::Content::Player.new(name: "Pianist"), instrument: "piano",
+          staff_system: HeadMusic::Content::StaffSystem.grand_staff)
+        piano.add_voice(role: "right hand").place("1:1", :whole, "C5")
+        flow.add_part(player: HeadMusic::Content::Player.new(name: "Clarinetist"), instrument: "clarinet")
+          .add_voice.place("1:1", :whole, "D5")
+      end
+    end
+
+    let(:document) { score_def(flow) }
+
+    it "groups a part's staves under its bracket and label" do
+      group = mei_element(document, "//mei:staffGrp/mei:staffGrp")
+      expect([group.attributes["symbol"], group.elements["label"].text, group.get_elements("staffDef").length])
+        .to eq ["brace", "Pianist", 2]
+    end
+
+    it "labels a one-staff part's staff" do
+      expect(mei_element(document, "//mei:staffDef[@n='3']/mei:label").text).to eq "Clarinetist"
+    end
+
+    it "labels no staff of a part on several staves" do
+      expect(mei_elements(document, "//mei:staffGrp/mei:staffGrp/mei:staffDef/mei:label")).to eq []
+    end
+
+    it "numbers each staff's General MIDI instrument from 0" do
+      expect(mei_attributes(document, "//mei:staffDef/mei:instrDef", "midi.instrnum")).to eq %w[0 0 71]
+    end
+
+    it "names each voice's role on the staff it opens on" do
+      expect(mei_attributes(document, "//mei:staffDef[@n='1']/mei:layerDef", "n")).to eq ["1"]
+      expect(mei_element(document, "//mei:layerDef/mei:label").text).to eq "right hand"
+    end
+
+    it "leaves the symbol out of a group with no bracket" do
+      flow = HeadMusic::Content::Flow.new
+      staves = Array.new(2) { HeadMusic::Content::Staff.new }
+      flow.add_part(staff_system: HeadMusic::Content::StaffSystem.new(staves: staves)).add_voice.place("1:1", :whole, "C4")
+      expect(mei_attributes(score_def(flow), "//mei:staffGrp/mei:staffGrp", "symbol")).to eq [nil]
+    end
+  end
+
+  it "merges the attributes of its staff definition sources" do
+    allow(described_class).to receive(:staff_def_attribute_sources).and_return([MEIExtensionStubs::EveryHook])
+    expect(mei_attributes(score_def(flow), "//mei:staffDef", "trans.semi")).to eq ["-1"]
+  end
+
+  describe ".instr_def_attributes" do
+    it "is nil for no instrument" do
+      expect(described_class.instr_def_attributes(nil)).to be_nil
+    end
+  end
+
   describe ".clef_attributes" do
     it "writes an octave clef's displacement" do
       expect(described_class.clef_attributes(clef(:vocal_tenor_clef)))
         .to eq("shape" => "G", "line" => 2, "dis" => "8", "dis.place" => "below")
+    end
+
+    it "writes a clef an octave up as displaced above" do
+      clef = instance_double(HeadMusic::Rudiment::Clef, pitch: HeadMusic::Rudiment::Pitch.get("G5"), line: 2)
+      expect(described_class.clef_attributes(clef)).to include("dis" => "8", "dis.place" => "above")
     end
 
     it "writes a C clef on its line" do

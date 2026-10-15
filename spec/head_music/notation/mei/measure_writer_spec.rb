@@ -35,4 +35,64 @@ describe HeadMusic::Notation::MEI::MeasureWriter do
     flow = LilyPondFixtures.duo
     expect(mei_attributes(measure(flow, 2), "//mei:staff[@n='2']/mei:layer/*", "xml:id")).to eq ["m1-p2v1-b2c1"]
   end
+
+  describe "a voice crossing between staves" do
+    let(:flow) { LilyPondFixtures.cross_staff_piano }
+
+    def layers(bar_number)
+      mei_elements(measure(flow, bar_number), "//mei:staff").map do |staff|
+        [staff.attributes["n"], staff.get_elements("layer").map { |layer| layer.attributes["n"] }]
+      end
+    end
+
+    it "keeps the voice's layer number on the staff it crosses to" do
+      expect([1, 2, 4].map { |bar| layers(bar) }).to eq [
+        [["1", ["1"]], ["2", ["2"]]],
+        [["1", %w[1 2]], ["2", []]],
+        [["1", ["1"]], ["2", ["2"]]]
+      ]
+    end
+
+    it "leaves the staff it leaves bare" do
+      expect(mei_element(measure(flow, 2), "//mei:staff[@n='2']").children).to eq []
+    end
+  end
+
+  it "ties a note across the barline where its voice crosses" do
+    document = measure(LilyPondFixtures.tie_into_staff_crossing, 2)
+    expect(mei_attributes(document, "//mei:staff[@n='1']/mei:layer[@n='2']/mei:note", "tie")).to eq ["t", nil]
+  end
+
+  it "leaves bare the staff of a part with no voices" do
+    flow = LilyPondFixtures.rests.tap(&:add_part)
+    expect(mei_element(measure(flow, 1), "//mei:staff[@n='2']").children).to eq []
+  end
+
+  describe "extensions" do
+    let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nT:E\nM:2/4\nL:1/4\nK:C\nCD|EF|]\n") }
+    let(:hook) { MEIExtensionStubs::EveryHook }
+
+    it "merges the attributes of its measure sources" do
+      allow(described_class).to receive(:attribute_sources).and_return([hook])
+      expect([1, 2].map { |bar| measure_attributes(flow, bar)["right"] }).to eq [nil, "end"]
+    end
+
+    it "writes each control after the staves of its bar" do
+      allow(described_class).to receive(:control_sources).and_return([hook])
+      expect(mei_elements(measure(flow, 2), "//mei:measure/*").map(&:name)).to eq %w[staff dynam]
+    end
+
+    it "asks each control source once for every bar" do
+      allow(described_class).to receive(:control_sources).and_return([hook])
+      plan = HeadMusic::Notation::MEI::RenderPlan.new(flow)
+      allow(plan.source(hook)).to receive(:controls).and_call_original
+      described_class.new(plan).then { |writer| [1, 2].each { |bar| writer.element(bar) } }
+      expect(plan.source(hook)).to have_received(:controls).once
+    end
+
+    it "builds each layer's children with its layer builder" do
+      allow(described_class).to receive(:layer_builder).and_return(MEIExtensionStubs::BeamedLayer)
+      expect(mei_attributes(measure(flow, 1), "//mei:layer/mei:beam/mei:note", "pname")).to eq %w[c d]
+    end
+  end
 end

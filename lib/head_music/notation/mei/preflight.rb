@@ -23,6 +23,7 @@ module HeadMusic::Notation::MEI
       ensure_timed_marks_within_music(flow)
       ensure_no_marks_inside_rounded_notes(flow)
       ensure_pitched_voice_events
+      ensure_steady_staff_systems
     end
 
     private
@@ -58,6 +59,13 @@ module HeadMusic::Notation::MEI
       return unless unpitched
 
       raise RenderError, "cannot render the unpitched grace note \"#{unpitched}\" before #{note_event.position} as MEI"
+    end
+
+    # A change would renumber the staves that control events name.
+    def ensure_steady_staff_systems
+      return unless flow.parts.any? { |part| part.staff_system_changes.any? }
+
+      raise RenderError, "MEI cannot write a staff system change within a part"
     end
 
     def render_error_class

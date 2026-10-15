@@ -7,6 +7,9 @@ module HeadMusic::Notation::MEI
     end
   end
 
+  # An element an extension places in a bar.
+  BarElement = Data.define(:bar_number, :element)
+
   # Serializes elements as indented lines.
   module Markup
     extend HeadMusic::Notation::XmlText
