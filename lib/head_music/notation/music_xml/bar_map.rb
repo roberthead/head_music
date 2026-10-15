@@ -92,7 +92,8 @@ module HeadMusic::Notation::MusicXML
       length = length_of(index) || full
       @meters[bar] = meter
       @bars << bar
-      raise_unsupported("is longer than its #{meter} bar", index) if beyond?(length - full, index)
+      overfull = overfull_reading(index, full)
+      raise_unsupported("is longer than its #{meter} bar", index, overfull) if overfull
       return add_first_bar(full, length) if index.zero?
 
       short = beyond?(full - length, index)
@@ -143,8 +144,21 @@ module HeadMusic::Notation::MusicXML
 
     # Whether a difference is past rounding: a whole division or more.
     def beyond?(difference, index)
-      tolerance = tolerance(index)
+      past?(difference, tolerance(index))
+    end
+
+    def past?(difference, tolerance)
       tolerance.zero? ? difference.positive? : difference >= tolerance
+    end
+
+    # The first part whose measure overfills the bar by a division of its
+    # own, since another part's coarser divisions say nothing of its
+    # rounding.
+    def overfull_reading(index, full)
+      @readings.find do |reading|
+        measure = reading.measures[index]
+        measure&.extent && past?(measure.extent - full, measure.tolerance)
+      end
     end
 
     def tolerance(index)
@@ -155,8 +169,7 @@ module HeadMusic::Notation::MusicXML
       Rational(meter.top_number, meter.bottom_number)
     end
 
-    def raise_unsupported(problem, index)
-      reading = @readings.find { |candidate| candidate.measures[index] }
+    def raise_unsupported(problem, index, reading = @readings.find { |candidate| candidate.measures[index] })
       raise UnsupportedFeatureError.new("The measure #{problem}", measure: reading.measures[index].number, part: reading.id)
     end
   end

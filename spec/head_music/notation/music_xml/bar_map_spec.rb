@@ -79,6 +79,13 @@ describe HeadMusic::Notation::MusicXML::BarMap do
     expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /longer than its 4\/4 bar \(measure 2 of part P1\)/)
   end
 
+  it "refuses a measure overfull by less than another part's division, naming its part" do
+    fine = [note_xml("C4", 16, "whole") + note_xml("D4", 1, "16th"), note_xml("C4", 16, "whole")]
+    coarse = [note_xml("C3", 4, "whole"), note_xml("C3", 4, "whole")]
+    xml = musicxml_document(fine, coarse).sub("<divisions>1</divisions>", "<divisions>4</divisions>")
+    expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /longer than its 4\/4 bar \(measure 1 of part P1\)/)
+  end
+
   it "refuses a short measure in the middle of the piece, naming it" do
     xml = musicxml_measures(whole_c, note_xml("D4", 2, "half"), whole_c)
     expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /shorter than its 4\/4 bar.*\(measure 2 of part P1\)/)
