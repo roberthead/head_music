@@ -38,18 +38,34 @@ module MuseScore
     end
   end
 
-  # Writes MuseScore's MusicXML for one file to another and answers it.
-  def convert_file(source, target)
+  # Writes MuseScore's MusicXML for one file to another and answers it. A
+  # +timeout:+ in seconds kills a conversion that hangs, as MuseScore does on
+  # MEI it cannot read.
+  def convert_file(source, target, timeout: nil)
     raise ConversionError, "MuseScore not found; set MSCORE to its executable" unless available?
 
     FileUtils.rm_f(target)
-    system(executable, "-o", target, source, out: File::NULL, err: File::NULL)
+    run_mscore(source, target, timeout)
     raise ConversionError, "MuseScore wrote nothing for #{source}" unless File.exist?(target)
 
     converted = File.read(target)
     raise ConversionError, "MuseScore wrote malformed XML for #{source}" unless well_formed?(converted)
 
     converted
+  end
+
+  def run_mscore(source, target, timeout)
+    pid = Process.spawn(executable, "-o", target, source, out: File::NULL, err: File::NULL)
+    return Process.wait(pid) unless timeout
+
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
+    until Process.wait(pid, Process::WNOHANG)
+      next sleep(0.05) if Process.clock_gettime(Process::CLOCK_MONOTONIC) < deadline
+
+      Process.kill("KILL", pid)
+      Process.wait(pid)
+      raise ConversionError, "MuseScore did not finish #{source} within #{timeout} seconds"
+    end
   end
 
   def well_formed?(xml)
