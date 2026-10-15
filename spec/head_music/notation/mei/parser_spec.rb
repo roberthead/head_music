@@ -56,6 +56,15 @@ describe HeadMusic::Notation::MEI::Parser do
     end
   end
 
+  describe "#flows" do
+    it "reads back each flow of a several-flow render, in order" do
+      flows = %w[One Two].map do |name|
+        HeadMusic::Content::Flow.new(name: name).tap { |flow| flow.add_voice.place(flow.position(1, 1, 0), :whole, "C4") }
+      end
+      expect(described_class.new(HeadMusic::Notation::MEI::Writer.new(flows).to_s).flows.map(&:name)).to eq %w[One Two]
+    end
+  end
+
   describe "#flow" do
     it "names the count and points to parse_book where the body holds several scores" do
       two = xml.sub("</mdiv>", "</mdiv><mdiv><score/></mdiv>")
