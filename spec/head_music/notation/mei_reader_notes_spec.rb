@@ -80,6 +80,32 @@ describe HeadMusic::Notation::MEI do
         .to eq ["half rest at 1:1:000", "quarter rest at 1:3:000", "quarter C4 at 1:4:000"]
     end
 
+    describe "a <space> with no @dur" do
+      def voices(*items)
+        parse(*items, score_def: mei_score_def(clefs: [%w[G 2], %w[F 4]])).voices.map { |voice| voice.voice_events.map(&:to_s) }
+      end
+
+      it "takes the time its layer leaves of the longest other layer in the measure" do
+        expect(voices(mei_staff(1, mei_note("E5", "1")) + mei_staff(2, %(<space/>) + mei_note("C3", "2"))).last)
+          .to eq ["half rest at 1:1:000", "half C3 at 1:3:000"]
+      end
+
+      it "shares that time equally among several in the layer" do
+        expect(voices(mei_staff(1, mei_note("E5", "1")) + mei_staff(2, %(<space/>) + mei_note("C3") + %(<space/>))).last)
+          .to eq ["dotted quarter rest at 1:1:000", "quarter C3 at 1:2:480", "dotted quarter rest at 1:3:480"]
+      end
+
+      it "takes a whole-bar rest beside it as the bar's length" do
+        expect(voices(mei_staff(1, mei_note("E5", "1")), mei_staff(1, "<mRest/>") + mei_staff(2, mei_note("C3") + %(<space/>))).last)
+          .to eq ["quarter C3 at 2:1:000", "dotted half rest at 2:2:000"]
+      end
+
+      it "raises where no other layer in the measure gives a length" do
+        expect { parse(mei_staff(1, %(<space/>) + mei_note("C4"))) }
+          .to raise_error(described_class::ParseError, /A <space> with no @dur has no other layer in its measure to take its length from \(measure 1, <space>\)/)
+      end
+    end
+
     it "reads a @cue note as a rest" do
       expect(events(mei_staff(1, mei_note("C4", "2", cue: "true") + mei_note("D4", "2")))).to eq ["half rest at 1:1:000", "half D4 at 1:3:000"]
     end

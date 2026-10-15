@@ -104,6 +104,7 @@ module HeadMusic::Notation::MEI
       changes = @state.take_changes
       transpose(@readings, changes.transpositions)
       contents = @readings.to_h { |reading| [reading, read_contents(reading, staves, where)] }
+      OpenSpaces.resolve(contents.values.flatten, @state.meter, where)
       index = @measures.length
       bar_count(contents).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], where) }
       @readings.each do |reading|

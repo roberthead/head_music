@@ -8,10 +8,11 @@ module HeadMusic::Notation::MEI
   # A <note> or <chord> takes its @dur, else its chord's, else the
   # @dur.default in force; with none, it raises. A <tuplet>, or a
   # <tupletSpan> through TupletSpans, scales the entries in it, and each is
-  # a run to group. A grace note takes no time and no tuplet ratio,
-  # and one with no @dur is an eighth. A @cue note is a rest, and a cue
-  # grace note is dropped. <rest> and <space> are rests of their length, and
-  # <mRest>, <mSpace>, and <multiRest> fill their bars. A <clef> before the
+  # a run to group. A grace note takes no time and no tuplet ratio, and one
+  # with no @dur is an eighth. A @cue note is a rest, and a cue grace note
+  # is dropped. <rest> and <space> are rests of their length, a <space> of
+  # none taking what OpenSpaces gives it, and <mRest>, <mSpace>, and
+  # <multiRest> fill their bars. A <clef> before the
   # first entry is the layer's opening clef; one later in the layer is
   # skipped, as are <barLine> and every element the reader does not use.
   # Measure repeats raise, since what they repeat is no music of their own.
@@ -31,6 +32,11 @@ module HeadMusic::Notation::MEI
 
       def sounding?
         !grace && !cue && %i[note chord].include?(kind)
+      end
+
+      # A <space> whose length OpenSpaces decides.
+      def open_space?
+        kind == :space && rhythmic_value.nil?
       end
     end
 
@@ -145,9 +151,15 @@ module HeadMusic::Notation::MEI
     end
 
     def add_rest(element, context)
+      return add_open_space(element) if element.name == "space" && value(element, "dur").nil? && @duration_default.nil?
+
       span = @tuplets.enter(stream, [element], @where.merge(element: element))
       rhythmic = rhythmic_value(element, PLAIN, grace: false, ratio: ratio(context, span, element))
       advance(Entry.new(kind: element.name.to_sym, element: element, notes: [], cursor: @cursor, rhythmic_value: rhythmic, grace: false, cue: false), rhythmic, context, span)
+    end
+
+    def add_open_space(element)
+      @entries << Entry.new(kind: :space, element: element, notes: [], cursor: @cursor, grace: false, cue: false)
     end
 
     def stream
