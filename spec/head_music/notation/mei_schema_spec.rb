@@ -50,6 +50,18 @@ describe HeadMusic::Notation::MEI do
     expect(schema_errors(described_class.render(written, transposed: true), schema)).to eq []
   end
 
+  it "renders two verses as valid MEI" do
+    expect(schema_errors(described_class.render(MuseScoreFixtures.two_verses), schema)).to eq []
+  end
+
+  it "renders a syllable sung on a chord as valid MEI" do
+    flow = HeadMusic::Content::Flow.new(meter: "4/4")
+    voice = flow.add_voice
+    voice.place("1:1", :half, %w[C4 E4]).sing("Hal", hyphen_after: true)
+    voice.place("1:3", :half, %w[D4 F4]).sing("lo")
+    expect(schema_errors(described_class.render(flow), schema)).to eq []
+  end
+
   it "renders what every extension hook adds as valid MEI" do
     register_every_mei_hook
     flow = HeadMusic::Notation::ABC.parse("X:1\nT:Hooks\nM:2/4\nL:1/4\nK:C\n{B}CD|[EG]F|]\n")
