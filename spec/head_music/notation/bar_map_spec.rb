@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Notation::MusicXML::BarMap do
+describe HeadMusic::Notation::BarMap do
   def parse(xml)
     HeadMusic::Notation::MusicXML.parse(xml)
   end
@@ -125,5 +125,36 @@ describe HeadMusic::Notation::MusicXML::BarMap do
     later = "<attributes><divisions>2</divisions></attributes>" + note_xml("D4", 2, "quarter") + note_xml("E4", 6, "half", dots: 1)
     flow = parse(musicxml_measures(whole_c, later))
     expect(voice_event_strings(flow).first).to eq ["whole C4 at 1:1:000", "quarter D4 at 2:1:000", "dotted half E4 at 2:2:000"]
+  end
+
+  describe "readings of any format" do
+    let(:errors) do
+      Module.new.tap do |errors|
+        errors.const_set(:UnsupportedFeatureError, Class.new(HeadMusic::Notation::ParseError) {
+          def initialize(message, staff: nil)
+            super("#{message} (staff #{staff})")
+          end
+        })
+      end
+    end
+
+    let(:measure) { Struct.new(:implicit, :meter, :extent, :tolerance) }
+
+    let(:reading) do
+      Struct.new(:measures, :errors) { def where(index) = {staff: "s#{index}"} }
+    end
+
+    def bars(*extents)
+      reading.new(extents.map { |extent| measure.new(false, HeadMusic::Rudiment::Meter.get("4/4"), extent, 0) }, errors)
+    end
+
+    it "aligns bars from the measures alone" do
+      expect(described_class.new([bars(1, 1, Rational(1, 2))]).end_time).to eq Rational(5, 2)
+    end
+
+    it "raises through the reading's errors, where the reading says" do
+      expect { described_class.new([bars(1, Rational(5, 4))]) }
+        .to raise_error(errors::UnsupportedFeatureError, "The measure is longer than its 4/4 bar (staff s1)")
+    end
   end
 end

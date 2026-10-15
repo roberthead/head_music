@@ -1,5 +1,5 @@
-# A namespace for MusicXML-notation reading helpers
-module HeadMusic::Notation::MusicXML
+# A module for visual music notation
+module HeadMusic::Notation
   # Aligns every part's measures into the flow's bars before any position is
   # built. A measure is as long as the longest reach of any part's notes and
   # forwards in it, whole-measure rests aside, to within the rounding one
@@ -10,13 +10,15 @@ module HeadMusic::Notation::MusicXML
   # that the next one completes is one bar with it, as at a repeat in the
   # middle of a bar; many exports leave the second half unmarked, so it
   # need not be implicit unless it changes the meter. The last measure may
-  # be short. Any other short
-  # measure, or an overfull one, is valid MusicXML the bars cannot hold
-  # without changing the music, so it raises.
+  # be short. Any other short measure, or an overfull one, is valid notation
+  # the bars cannot hold without changing the music, so it raises.
   #
   # Each bar starts where the meters of the bars before it end, so a time
   # read in a measure is exact before a single position exists. Bars are
   # numbered in order; a measure's number attribute appears only in errors.
+  #
+  # Each reading answers its measures, the +errors+ module whose ParseError
+  # and UnsupportedFeatureError it raises, and +where+ a measure index is.
   class BarMap
     attr_reader :first_bar
 
@@ -170,7 +172,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def raise_unsupported(problem, index, reading = @readings.find { |candidate| candidate.measures[index] })
-      raise UnsupportedFeatureError.new("The measure #{problem}", measure: reading.measures[index].number, part: reading.id)
+      raise reading.errors::UnsupportedFeatureError.new("The measure #{problem}", **reading.where(index))
     end
   end
 end

@@ -18,6 +18,14 @@ module HeadMusic::Notation::MusicXML
       def id
         document_part.id
       end
+
+      def errors
+        HeadMusic::Notation::MusicXML
+      end
+
+      def where(measure_index)
+        {measure: measure_index && measures[measure_index]&.number, part: id}
+      end
     end
 
     def initialize(document_part, instrument: nil)
@@ -29,7 +37,7 @@ module HeadMusic::Notation::MusicXML
       @staves = 1
       @most_staves = 1
       @part_symbol = nil
-      @transposition = ConcertTransposition.new
+      @transposition = HeadMusic::Notation::ConcertTransposition.new(errors: HeadMusic::Notation::MusicXML)
       @records = []
     end
 
@@ -142,7 +150,7 @@ module HeadMusic::Notation::MusicXML
 
     def add_tuplet_marks(track, event, note)
       note.tuplets.each do |type, _number|
-        track.tuplet_marks << VoiceTrack::TupletMark.new(event, type, note.normal_type, note.normal_dots)
+        track.tuplet_marks << HeadMusic::Notation::VoiceTrack::TupletMark.new(event, type, note.normal_type, note.normal_dots)
       end
     end
 
@@ -292,7 +300,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def track_for(label)
-      @tracks[label] ||= VoiceTrack.new(label)
+      @tracks[label] ||= HeadMusic::Notation::VoiceTrack.new(label)
     end
   end
 end

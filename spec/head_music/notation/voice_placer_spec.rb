@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Notation::MusicXML::VoicePlacer do
+describe HeadMusic::Notation::VoicePlacer do
   def parse(xml)
     HeadMusic::Notation::MusicXML.parse(xml)
   end

@@ -56,7 +56,7 @@ module HeadMusic::Notation::MusicXML
       diatonic, chromatic, octaves = %w[diatonic chromatic octave-change].map do |name|
         integer(text(element, name, **where), "<#{name}>", **where).to_i
       end
-      ConcertTransposition::Step.new(diatonic, chromatic, octaves)
+      HeadMusic::Notation::ConcertTransposition::Step.new(diatonic, chromatic, octaves)
     end
 
     def staves(element)

@@ -1,11 +1,12 @@
-# A namespace for MusicXML-notation reading helpers
-module HeadMusic::Notation::MusicXML
-  # One <voice> of a part as the part reader collects it: its notes and
-  # rests in document order, each at the measure and cursor it was read at,
-  # placed on a voice only once every part's bars are known.
+# A module for visual music notation
+module HeadMusic::Notation
+  # One voice of a part as a reader collects it: its notes and rests in
+  # document order, each at the measure and cursor it was read at, placed on
+  # a voice only once every part's bars are known.
   #
-  # The cursor follows <duration>s, which exporters round, so each event
-  # also keeps the tolerance of one division in force where it was read.
+  # The cursor follows the durations read, which exporters may round, so
+  # each event also keeps the tolerance of one division in force where it
+  # was read.
   class VoiceTrack
     # A continuation is a later link of a tie, folded into the event its
     # chain began with, from link_offset on; it is not placed. The voice

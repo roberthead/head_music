@@ -1,7 +1,7 @@
 require "spec_helper"
 
-describe HeadMusic::Notation::MusicXML::ConcertTransposition do
-  subject(:transposition) { described_class.new }
+describe HeadMusic::Notation::ConcertTransposition do
+  subject(:transposition) { described_class.new(errors: HeadMusic::Notation::MusicXML) }
 
   def step(diatonic, chromatic, octaves = 0)
     described_class::Step.new(diatonic, chromatic, octaves)

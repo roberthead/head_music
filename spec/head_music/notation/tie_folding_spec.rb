@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Notation::MusicXML::TieFolding do
+describe HeadMusic::Notation::TieFolding do
   def parse(xml)
     HeadMusic::Notation::MusicXML.parse(xml)
   end

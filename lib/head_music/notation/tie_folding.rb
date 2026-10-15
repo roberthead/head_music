@@ -1,5 +1,5 @@
-# A namespace for MusicXML-notation reading helpers
-module HeadMusic::Notation::MusicXML
+# A module for visual music notation
+module HeadMusic::Notation
   # Folds tied notes into one event, in one pass over a track. An event
   # whose every pitch starts a tie takes in the next event whose every pitch
   # stops one, appending its value to the chain, across any number of
@@ -43,9 +43,8 @@ module HeadMusic::Notation::MusicXML
     private
 
     def raise_unrelated(head, event)
-      measure = @reading.measures[head.measure_index]
-      raise ParseError.new(
-        "A tie connects #{keys(head).join(" ")} to #{keys(event).join(" ")}", measure: measure.number, part: @reading.id
+      raise @reading.errors::ParseError.new(
+        "A tie connects #{keys(head).join(" ")} to #{keys(event).join(" ")}", **@reading.where(head.measure_index)
       )
     end
 

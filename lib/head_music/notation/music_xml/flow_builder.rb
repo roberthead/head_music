@@ -23,7 +23,7 @@ module HeadMusic::Notation::MusicXML
       end
       raise ParseError, "MusicXML input contains no music" if readings.empty?
 
-      bar_map = BarMap.new(readings)
+      bar_map = HeadMusic::Notation::BarMap.new(readings)
       fold_ties(readings, bar_map)
       timeline = TimelineReader.new(readings, bar_map)
       flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
@@ -38,7 +38,7 @@ module HeadMusic::Notation::MusicXML
       readings.each do |reading|
         reading.tracks.each do |track|
           track.tie_graces
-          TieFolding.apply(track, reading, bar_map)
+          HeadMusic::Notation::TieFolding.apply(track, reading, bar_map)
         end
       end
     end
@@ -47,7 +47,7 @@ module HeadMusic::Notation::MusicXML
     def place(part, reading, bar_map)
       voices = reading.tracks.to_h do |track|
         voice = part.add_voice
-        VoicePlacer.new(voice, track, bar_map, reading).place
+        HeadMusic::Notation::VoicePlacer.new(voice, track, bar_map, reading, tuplet_reader: TupletReader).place
         [track.label, voice]
       end
       MarkRecords.new(part, reading, bar_map, voices).records

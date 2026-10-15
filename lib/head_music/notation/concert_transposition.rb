@@ -1,13 +1,14 @@
-# A namespace for MusicXML-notation reading helpers
-module HeadMusic::Notation::MusicXML
-  # The <transpose> in force in a part, by staff: one with a number applies
-  # to its staff alone, and one without to every staff. A later <transpose>
-  # replaces the one before it, and a <transpose> of nothing returns a staff
-  # to concert pitch, as after a change to an instrument in C.
+# A module for visual music notation
+module HeadMusic::Notation
+  # The transposition in force in a part, by staff: one with a number
+  # applies to its staff alone, and one without to every staff. A later
+  # transposition replaces the one before it, and one of nothing returns a
+  # staff to concert pitch, as after a change to an instrument in C.
   #
-  # <transpose> states sounding = written + transpose, so a written pitch
-  # moves by its chromatic and diatonic steps, and its octaves, to sound,
-  # keeping a letter name the diatonic steps give. <double> is skipped.
+  # Sounding = written + transposition, so a written pitch moves by its
+  # chromatic and diatonic steps, and its octaves, to sound, keeping a
+  # letter name the diatonic steps give. Spelling errors raise the reader's
+  # +errors+ UnsupportedFeatureError.
   class ConcertTransposition
     Step = Data.define(:diatonic, :chromatic, :octaves) do
       def identity?
@@ -28,7 +29,8 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
-    def initialize
+    def initialize(errors:)
+      @errors = errors
       @steps = {}
     end
 
@@ -41,8 +43,8 @@ module HeadMusic::Notation::MusicXML
       step = step_for(staff)
       return pitch unless step && !step.identity?
 
-      letter = PitchReader::STEPS[(PitchReader::STEPS.index(pitch.letter_name.to_s) + step.steps) % 7]
-      PitchReader.from_number_and_letter(pitch.midi_note_number + step.semitones, letter, **where)
+      letter = PitchSpelling::STEPS[(PitchSpelling::STEPS.index(pitch.letter_name.to_s) + step.steps) % 7]
+      PitchSpelling.from_number_and_letter(pitch.midi_note_number + step.semitones, letter, errors: @errors, **where)
     end
 
     def concert_fifths(fifths, staff = 1)
