@@ -89,6 +89,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - With `transposed: true`, each pitch is read as written and sounds at its written pitch plus the sounding transposition of its part's instrument in force at its bar; the key signature stays concert.
   - Each sung syllable writes a UTF-8 lyric meta event at its note's onset, with "-" when the word continues. Pass *n* of a repeat sings verse *n* where the flow has one, else verse 1, and the first voice of a part with a syllable wins when two sing at once.
 
+- **MEI export.** `HeadMusic::Notation::MEI.render(flow, **options)`, `Flow#to_mei`, and `Layout#to_mei` write MEI 5.1 documents, generated as text with no new dependency, and valid against `mei-CMN.rng`. `MEI::RenderError` is raised before anything is written for an empty flow, unpitched sounds, text XML cannot hold, or a part whose staff system changes.
+  - The `<meiHead>` carries the title (the layout's, the Work's, or the flow's name) and one `<persName role>` per credited person; each flow is an `<mdiv label>`. Every element from `<mdiv>` down has an `xml:id` built from its part, voice, bar, and onset, so the same flow always gives the same ids.
+  - Multi-staff parts are nested `<staffGrp symbol>`s labeled with the player; each staff carries its clef and General MIDI `<instrDef>`, each voice with a role a `<layerDef>`, and a voice keeps its `<layer n>` when it crosses staves.
+  - Notes carry `@pname`, `@oct`, `@dur`, and `@dots`, with `@accid` where the key and earlier notes in the bar on that staff do not imply the pitch and `@accid.ges` otherwise. Rests, whole-bar `<mRest>`s, chords, and `@tie` follow. Beams are `<beam>` groups from the grouping MusicXML uses, tuplets `<tuplet>`s nesting with them, with `<beamSpan>` and `<tupletSpan>` where they cannot nest, and grace notes carry `@grace`.
+  - Key, meter, clef, and instrument changes are `<scoreDef>` and `<staffDef>` before their measure, and tempo changes are `<tempo>` with `@midi.bpm`. With `transposed: true`, transposing staves carry their written `@keysig` and `@trans.diat`/`@trans.semi`.
+  - Articulations are `@artic`; trills, mordents, turns, and note dynamics are control events at their note; dynamic levels and hairpins sit at their `@tstamp`, with `@layer` for a voice's; slurs and phrase marks point at their notes by `@startid` and `@endid`.
+  - Barline styles, repeats, and endings are `measure/@left`, `@right`, and `<ending n label>`; rehearsal marks are `<reh>`; segno, coda, Fine, To Coda, D.C., and D.S. are `<repeatMark @func>`; and lyrics are `<verse n><syl>` with `@wordpos` and `@con`.
+- `HeadMusic::Notation::BeamGroups` holds the beam grouping MusicXML and MEI share, and `HeadMusic::Notation::WrittenLinks` the written pieces of a voice's segments, which tuplet brackets and beams both read.
+
 ### Changed
 
 - ABC reads a `P:` header, the playing order, and ignores it rather than raising. A repeat read from ABC plays as many times as the highest pass its endings name, rather than twice.
@@ -108,6 +117,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The MusicXML writer raises `RenderError` for a character XML forbids in a syllable, player or instrument name, rehearsal mark, Work title, or a `work_title:` or `arranger:` option, and for U+FFFE, U+FFFF, or text that is not valid UTF-8, instead of writing ill-formed XML.
+- The MusicXML writer renders a meter whose beat is longer than any note value, such as 6/1 or 12/1, leaving its notes unbeamed, instead of raising `NoMethodError`.
+- `HeadMusic::Notation::ABC.parse` keeps the grace notes before a tied note, which it dropped when it folded the tie into one event.
 - A transposed layout writes grace notes at written pitch, as it does their main notes, in MusicXML, LilyPond, and ABC. They had kept their concert pitch.
 - **A `Content::Position` carried whole counts across a meter change in the origin bar's count unit.** A dotted half tied to a dotted half from `1:1` in 6/8, with 2/2 from bar 2, ended at `5:1:000`, its six leftover eighths spent as six halves, rather than at `2:2:960`. The carry now stops at the first bar with a different count unit and restates what is left there as ticks.
 - The kern reader no longer raises "A null token … falls where no note is sounding" on a row holding only grace notes.
