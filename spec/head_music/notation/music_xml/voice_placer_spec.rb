@@ -155,6 +155,11 @@ describe HeadMusic::Notation::MusicXML::VoicePlacer do
         .to raise_error(HeadMusic::Notation::MusicXML::ParseError, /no note before it \(measure 1 of part P1\)/)
     end
 
+    it "adds a <chord/> tone that names no voice to the note before it, as many exporters write one" do
+      measure = note_xml("C4", 4, "whole", voice: "1") + backup_xml(4) + note_xml("G4", 4, "whole", voice: "2") + note_xml("B4", 4, "whole", chord: true)
+      expect(parse(musicxml_measures(measure)).voices.map { |voice| voice.voice_events.first.pitches.map(&:to_s) }).to eq [%w[C4], %w[G4 B4]]
+    end
+
     it "refuses chord tones of different lengths" do
       expect { parse(musicxml_measures(note_xml("C4", 2, "half") + note_xml("E4", 1, "quarter", chord: true) + note_xml("D4", 2, "half"))) }
         .to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /different lengths are not supported \(measure 1 of part P1\)/)

@@ -179,13 +179,14 @@ module HeadMusic::Notation::MusicXML
       HeadMusic::Rudiment::RhythmicValue.new(written.unit, dots: written.dots)
     end
 
-    # A chord tone sounds with the note before it, which must be in its
-    # voice and as long. A cue chord's tones are dropped with it.
+    # A chord tone sounds with the note before it, which must be as long,
+    # and in its voice where it names one; many exporters name none on a
+    # chord tone. A cue chord's tones are dropped with it.
     def add_to_chord(note)
       return if @hidden_lead
 
       raise ParseError.new("A <chord/> rest is not supported", **@where) if note.rest
-      if @lead.nil? || @lead.label != note.voice || (@lead.rest? && !@lead.cue)
+      if @lead.nil? || (note.voice_stated && @lead.label != note.voice) || (@lead.rest? && !@lead.cue)
         raise ParseError.new("A <chord/> has no note before it", **@where)
       end
 

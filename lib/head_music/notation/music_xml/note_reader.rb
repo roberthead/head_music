@@ -13,7 +13,7 @@ module HeadMusic::Notation::MusicXML
 
     Note = Struct.new(
       :element, :grace, :slashed, :chord, :cue, :hidden, :rest, :measure_rest, :pitch, :unpitched, :duration,
-      :voice, :staff, :type, :dots, :ratio, :normal_type, :normal_dots, :ties, :tied, :tuplets, :articulations
+      :voice, :voice_stated, :staff, :type, :dots, :ratio, :normal_type, :normal_dots, :ties, :tied, :tuplets, :articulations
     )
 
     def self.read(element, **where)
@@ -65,7 +65,9 @@ module HeadMusic::Notation::MusicXML
       when "unpitched" then note.unpitched = true
       when "duration" then note.duration = text(child, **where)
       when "tie" then note.ties << attribute(child, "type", **where)
-      when "voice" then note.voice = text(child, **where).to_s.then { |label| label.empty? ? "1" : label }
+      when "voice"
+        note.voice = text(child, **where).to_s.then { |label| label.empty? ? "1" : label }
+        note.voice_stated = true
       when "type" then note.type = text(child, **where)
       when "dot" then note.dots += 1
       when "time-modification" then read_time_modification(note, child)
