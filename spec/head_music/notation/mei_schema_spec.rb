@@ -22,6 +22,18 @@ describe HeadMusic::Notation::MEI do
     end
   end
 
+  MEILayerFixtures.all.each do |name|
+    it "renders the beams, tuplets, spans, and grace notes of MEILayerFixtures.#{name} as valid MEI" do
+      expect(schema_errors(described_class.render(MEILayerFixtures.public_send(name)), schema)).to eq []
+    end
+  end
+
+  Dir[File.join(__dir__, "..", "..", "fixtures", "notation", "lily_pond", "*.ly")].sort.each do |path|
+    it "renders lily_pond/#{File.basename(path)} as valid MEI" do
+      expect(schema_errors(described_class.render(HeadMusic::Notation::LilyPond.parse(File.read(path))), schema)).to eq []
+    end
+  end
+
   it "renders a document of several flows as valid MEI" do
     xml = described_class::Writer.new([LilyPondFixtures.duo, LilyPondFixtures.rests], title: "Two").to_s
     expect(schema_errors(xml, schema)).to eq []
