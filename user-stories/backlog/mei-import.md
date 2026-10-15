@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-10-14T15:16:39-07:00
+  updated_at:   2026-10-15T12:44:52-07:00
 -->
 
 # Story: MEI Import
@@ -110,6 +110,16 @@ flow.voices.length # => one per staff layer
 - **Follow-up: a `reading:` option.** The editorial rule is fixed in v1. An option such as `parse(xml, reading: :sic)` is a natural follow-up once a caller needs it.
 - **Waits on Timeline Expressions:** fermatas, tempo words, and `@meter.sym` wait on [Timeline Expressions](timeline-expressions.md).
 - **Waits on Lyric Extenders:** `@con="u"` extenders wait on [Lyric Extenders](lyric-extenders.md).
+- **Shapes MEI Export writes** (decided in that story, 2026-10-15). This story's criteria should be revisited when it is planned:
+  - keys are `@keysig` (MEI 5.1 rejects `@key.sig`), so read it as well as `@key.sig`;
+  - a multi-staff part is a `<staffGrp>` carrying the player's `<label>`, rather than staves sharing one label;
+  - `mdiv/@label` is the flow's name, `scoreDef/@midi.bpm` the opening tempo, and `layerDef/label` a voice's role;
+  - instrument changes are `<staffDef>` changes with a new `<instrDef>`;
+  - an ending's passes are its `@n`, as `1-2`;
+  - a bare `<staff n/>` means no voice there, so a voice is not padded with rests before it begins;
+  - a layer's number is the voice's index within its part, kept across staff crossings;
+  - tstamps of triplet onsets are rounded to four decimal places, so snap them to the tick grid;
+  - `XmlReading` and `ParsePreflight` still live in `music_xml/`; move them to `Notation` with an `error_class:` parameter.
 
 ## Decisions
 
