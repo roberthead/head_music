@@ -1695,6 +1695,55 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with every beam of every notehead pinned" do
+      # Each note's beams as "number:type", a grace note prefixed "g", one list per measure.
+      def notehead_beams(flow)
+        REXML::XPath.match(parse_musicxml(described_class.new(flow).to_s), "//measure").map do |measure|
+          REXML::XPath.match(measure, "note").map do |note|
+            prefix = note.elements["grace"] ? "g" : ""
+            prefix + REXML::XPath.match(note, "beam").map { |beam| "#{beam.attributes["number"]}:#{beam.text}" }.join(",")
+          end
+        end
+      end
+
+      # ABC beams every adjacent pair by authority, so clearing the flags
+      # leaves the meter's default grouping to decide.
+      def default_beamed(abc)
+        HeadMusic::Notation::ABC.parse(abc).tap do |flow|
+          flow.voices.flat_map(&:voice_events).each { |voice_event| voice_event.beam_break_before = nil }
+        end
+      end
+
+      it "groups mixed values in 6/8 by the dotted quarter" do
+        flow = default_beamed("X:1\nM:6/8\nL:1/16\nK:C\nC2DEF2 GABcd2 |]\n")
+        expect(notehead_beams(flow)).to eq [[
+          "1:begin", "1:continue,2:begin", "1:continue,2:end", "1:end",
+          "1:begin,2:begin", "1:continue,2:continue", "1:continue,2:continue", "1:continue,2:end", "1:end"
+        ]]
+      end
+
+      it "beams the whole bar as one group in 3/8" do
+        flow = default_beamed("X:1\nM:3/8\nL:1/16\nK:C\nCDEFGA | C2DEF2 |]\n")
+        expect(notehead_beams(flow)).to eq [
+          ["1:begin,2:begin", "1:continue,2:continue", "1:continue,2:continue", "1:continue,2:continue", "1:continue,2:continue", "1:end,2:end"],
+          ["1:begin", "1:continue,2:begin", "1:continue,2:end", "1:end"]
+        ]
+      end
+
+      it "leaves grace notes unbeamed and out of the grouping of the notes they precede" do
+        flow = default_beamed("X:1\nM:2/4\nL:1/8\nK:C\nC{B,}D E{^F}G |]\n")
+        expect(notehead_beams(flow)).to eq [["1:begin", "g", "1:end", "1:begin", "g", "1:end"]]
+      end
+
+      it "honors an authored break inside a beat and an authored join across one" do
+        flow = HeadMusic::Notation::ABC.parse("X:1\nM:2/4\nL:1/16\nK:C\nCDE FGAB c |]\n")
+        expect(notehead_beams(flow)).to eq [[
+          "1:begin,2:begin", "1:continue,2:continue", "1:end,2:end",
+          "1:begin,2:begin", "1:continue,2:continue", "1:continue,2:continue", "1:end,2:end", ""
+        ]]
+      end
+    end
+
     context "when rendering the shared ABC fixtures" do
       {
         "SPEED_THE_PLOUGH" => ABCFixtures::SPEED_THE_PLOUGH,
