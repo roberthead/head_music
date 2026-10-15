@@ -1695,6 +1695,20 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
 
+    context "with eighths in a meter whose beat is longer than any note value" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "12/1").tap do |flow|
+          voice = flow.add_voice
+          2.times { voice.place(voice.next_position, :eighth, "C4") }
+        end
+      end
+
+      it "writes them unbeamed" do
+        document = parse_musicxml(described_class.new(flow).to_s)
+        expect(xpath_count(document, "//note/beam")).to eq 0
+      end
+    end
+
     context "with every beam of every notehead pinned" do
       # Each note's beams as "number:type", a grace note prefixed "g", one list per measure.
       def notehead_beams(flow)

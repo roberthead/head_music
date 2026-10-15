@@ -9,8 +9,7 @@ module HeadMusic::Notation::MusicXML
   #
   # Construction eagerly computes everything that can raise on unmappable keys or durations,
   # so a RenderPlan that builds successfully cannot fail assembly on those
-  # grounds; beam annotations stay lazy because their integer-duration check
-  # raises only when a bar is actually laid out.
+  # grounds. Beam annotations, which cannot raise, stay lazy.
   class RenderPlan < HeadMusic::Notation::RenderPlan
     # The number of beams a notehead of each MusicXML <type> carries alone.
     # Every other type (quarter and longer) and every rest carries none.
@@ -36,8 +35,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     # A Hash keyed by [segment, component_index] holding the Array<Beam>
-    # that BeamGrouper computed for that notehead. Built one bar at a time so
-    # a notehead's onset is its exact integer offset from the bar start.
+    # that BeamGrouper computed for that notehead, one bar at a time.
     def beam_annotations
       @beam_annotations ||= {}.tap do |annotations|
         flow.voices.each do |voice|
@@ -109,45 +107,24 @@ module HeadMusic::Notation::MusicXML
       segments = segments_by_bar(voice)[bar_number]
       return unless segments
 
-      keys = []
-      events = build_bar_events(segments, keys)
-      beams = BeamGrouper.annotate(events, group_unit_divisions(bar_number))
-      keys.each_with_index { |key, index| annotations[key] = beams[index] }
+      links = HeadMusic::Notation::WrittenLinks.for(segments, error_class: RenderError)
+      beams = BeamGrouper.annotate(links.map { |link| beam_event(link) }, effective_meter(bar_number))
+      links.each_with_index { |link, index| annotations[[link.segment, link.index]] = beams[index] }
     end
 
-    def build_bar_events(segments, keys)
-      onset = 0
-      segments.flat_map do |segment|
-        voice_event = segment.voice_event
-        components_by_segment[segment].each_with_index.map do |component, component_index|
-          event = BeamGrouper::Event.new(
-            levels: beam_levels(voice_event, component),
-            onset: onset,
-            beam_break_before: component_index.zero? ? voice_event.beam_break_before : nil
-          )
-          keys << [segment, component_index]
-          onset += component.duration
-          event
-        end
-      end
+    def beam_event(link)
+      voice_event = link.segment.voice_event
+      HeadMusic::Notation::BeamGroups::Event.new(
+        levels: beam_levels(voice_event, components_by_segment[link.segment][link.index]),
+        onset: link.offset,
+        beam_break_before: link.index.zero? ? voice_event.beam_break_before : nil
+      )
     end
 
     def beam_levels(voice_event, component)
       return 0 if voice_event.rest?
 
       BEAM_LEVELS_BY_TYPE.fetch(component.type, 0)
-    end
-
-    # The beam-group span in integer divisions for a bar's effective meter.
-    # DurationWriter.single_quarter_fraction returns an exact Rational, so the
-    # product with the integer divisions is integral for every supported meter.
-    def group_unit_divisions(bar_number)
-      fraction = DurationWriter.single_quarter_fraction(effective_meter(bar_number).beam_group_unit) * divisions
-      unless fraction.denominator == 1
-        raise RenderError,
-          "cannot express the beam group unit as an integer duration at #{divisions} divisions per quarter note"
-      end
-      fraction.to_i
     end
   end
 end

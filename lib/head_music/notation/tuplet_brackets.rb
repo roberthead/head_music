@@ -5,22 +5,6 @@ module HeadMusic
     # writer writes. A bracket holds written links, the tied pieces a writer
     # emits, so a group across a barline holds the pieces on both sides of it.
     module TupletBrackets
-      # One written link: the link at an index of a segment's rhythmic value,
-      # with its exact onset as [bar number, offset in the bar].
-      Link = Data.define(:segment, :index, :rhythmic_value, :onset) do
-        def ratio
-          rhythmic_value.tuplet_ratio
-        end
-
-        def bar_number
-          segment.bar_number
-        end
-
-        def written_fraction
-          rhythmic_value.written_fraction
-        end
-      end
-
       Bracket = Data.define(:ratio, :unit, :links, :group) do
         def first
           links.first
@@ -50,20 +34,11 @@ module HeadMusic
       # Over the segments a writer's plan holds for the voice, or the voice's
       # own when none are given.
       def for(voice, segments = BarSplitter.segments(voice.voice_events), error_class: RenderError)
-        links = written_links(segments, error_class)
+        links = WrittenLinks.for(segments, error_class: error_class)
         grouped = voice.tuplets.map { |group| group_bracket(group, links) }
         claimed = grouped.flat_map(&:links).to_set
         order = links.each_with_index.to_h
         (grouped + run_brackets(links, claimed)).sort_by { |bracket| order.fetch(bracket.first) }
-      end
-
-      def written_links(segments, error_class)
-        segments.flat_map do |segment|
-          onset = segment.offset || BarSplitter.onset_in_bar(segment.voice_event)
-          segment.rhythmic_value!(error_class).tied_chain.each_with_index.map do |link, index|
-            Link.new(segment, index, link, [segment.bar_number, onset]).tap { onset += link.link_fraction }
-          end
-        end
       end
 
       def group_bracket(group, links)

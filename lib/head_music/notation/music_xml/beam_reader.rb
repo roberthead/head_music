@@ -48,8 +48,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def group_start?(record)
-      unit = record.part.flow.meter_at(record.bar_number).beam_group_unit
-      (record.onset % HeadMusic::Notation::DottedDuration.dotted_unit_fraction(unit)).zero?
+      HeadMusic::Notation::BeamGroups.group_start?(record.onset, record.part.flow.meter_at(record.bar_number))
     end
   end
 end
