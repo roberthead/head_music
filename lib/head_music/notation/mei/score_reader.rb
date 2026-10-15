@@ -10,9 +10,11 @@ module HeadMusic::Notation::MEI
   class ScoreReader
     include XmlReading
 
-    # What a bar of the score states: its meter and key, and its control
-    # events, the children of the <measure> other than its staves.
-    Measure = Struct.new(:index, :element, :number, :meter, :key, :controls)
+    # What a bar of the score states: its meter and key, the tempo on its
+    # downbeat, and its control events, the children of the <measure> other
+    # than its staves. A <multiRest> of several bars makes a Measure of each,
+    # the controls in the first.
+    Measure = Struct.new(:index, :element, :number, :meter, :key, :tempo, :controls)
 
     # A note of what one element became, in document order: for a <note>,
     # its track's event or grace note and the sound it added; for a chord
@@ -24,20 +26,20 @@ module HeadMusic::Notation::MEI
 
     attr_reader :readings
 
-    def initialize(source, groups, opening)
+    def initialize(source, groups, opening, identity)
       @source = source
       @editorial = source.editorial
       @groups = groups
-      @opening = opening
       @readings = groups.parts.map { |definition| PartReading.new(definition) }
+      @state = StaffState.new(opening, groups, @editorial, identity)
+      @opening_score_def = opening.score_def
       @measures = []
       @pending = []
-      @meter = opening.meter
-      @key = opening.key
     end
 
     def read
       walk(@source.score, 1)
+      mark_pickup
       Score.new(@measures, @readings, @pending)
     end
 
@@ -50,20 +52,89 @@ module HeadMusic::Notation::MEI
         case child.name
         when "section", "ending" then walk(child, depth + 1)
         when "measure" then read_measure(child)
+        when "scoreDef" then @state.apply_score_def(child, measure: next_number) unless child.equal?(@opening_score_def)
+        when "staffDef" then @state.apply_staff_def(child, measure: next_number)
         end
       end
+    end
+
+    def next_number
+      @measures.last&.number
+    end
+
+    # A first measure is a pickup where it says it is an upbeat, or where
+    # every part's music in it is shorter than its meter.
+    def mark_pickup
+      first = @measures.first
+      return unless first
+
+      extent = @readings.filter_map { |reading| reading.measures.first.extent }.max
+      upbeat = attribute(first.element, "type", element: first.element) == "upbeat"
+      short = extent && extent < Rational(first.meter.top_number, first.meter.bottom_number)
+      @readings.each { |reading| reading.measures.first.implicit = upbeat || short || false }
     end
 
     def read_measure(element)
       where = {measure: attribute(element, "n", element: element)}
       staves, controls = staves_and_controls(element, where)
+      changes = @state.take_changes
+      contents = @readings.to_h { |reading| [reading, read_contents(reading, staves, where)] }
       index = @measures.length
-      @measures << Measure.new(index: index, element: element, number: where[:measure], meter: @meter, key: @key, controls: controls)
+      bar_count(contents).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], where) }
+      @readings.each do |reading|
+        reading.measures[index].extent = contents[reading].filter_map(&:extent).max
+        change_clefs(reading, index, changes, contents[reading]) if index.positive?
+        reading.instrument_changes[index] = changes.instruments[reading.definition.index] if changes.instruments.key?(reading.definition.index)
+        read_part(reading, contents[reading], index, where)
+      end
+    end
+
+    # The bars a measure stands for: one, or as many as a <multiRest> fills.
+    def bar_count(contents)
+      contents.values.flatten.flat_map(&:entries).select { |entry| entry.kind == :multi_rest }.map(&:bars).max || 1
+    end
+
+    def add_measure(element, index, controls, where)
+      meter = @state.meter
+      @measures << Measure.new(
+        index: index, element: element, number: where[:measure], meter: meter, key: @state.key,
+        tempo: tempo(controls, meter, where), controls: controls
+      )
+      implicit = index.positive? && AttributeValues.read(element, "metcon", **where, element: element) == false
       @readings.each do |reading|
         reading.measures << PartReading::Measure.new(
-          index: index, number: where[:measure], implicit: false, meter: @meter, tolerance: PartReading::TOLERANCE, clefs: {}
+          index: index, number: where[:measure], implicit: implicit, meter: meter, tolerance: PartReading::TOLERANCE, clefs: {}
         )
-        read_part(reading, staves, index, where)
+      end
+    end
+
+    # The tempo a <tempo> states on the downbeat by @mm, in its @mm.unit,
+    # or else by @midi.bpm, in quarter notes. One in the middle of the bar,
+    # or with text only, is skipped.
+    def tempo(controls, meter, where)
+      controls.each do |control|
+        next unless control.name == "tempo" && downbeat?(control, meter, where)
+
+        found = TempoReading.tempo(control, **where)
+        return found if found
+      end
+      nil
+    end
+
+    def downbeat?(control, meter, where)
+      tstamp = AttributeValues.read(control, "tstamp", **where, element: control, count: meter.top_number)
+      tstamp ? tstamp == 1 : attribute(control, "startid", element: control).nil?
+    end
+
+    # A clef change between measures, or a clef that opens a layer.
+    def change_clefs(reading, index, changes, contents)
+      clefs = reading.measures[index].clefs
+      contents.each do |content|
+        clefs[reading.definition.staff_index(content.staff_number)] ||= content.opening_clef if content.opening_clef
+      end
+      changes.clefs.each do |number, clef|
+        staff = reading.definition.staff_index(number)
+        clefs[staff] = clef if staff
       end
     end
 
@@ -81,18 +152,20 @@ module HeadMusic::Notation::MEI
       [staves, controls]
     end
 
-    def read_part(reading, staves, index, where)
-      contents = reading.definition.staff_numbers.flat_map do |number|
+    def read_contents(reading, staves, where)
+      reading.definition.staff_numbers.flat_map do |number|
         staves[number].flat_map { |staff| read_layers(staff, number, where.merge(staff: number)) }
       end
-      reading.measures[index].extent = contents.filter_map(&:extent).max
+    end
+
+    def read_part(reading, contents, index, where)
       pitches = spell(reading, contents, where)
       contents.each { |content| add_events(reading, content, index, pitches, where.merge(staff: content.staff_number)) }
     end
 
     def read_layers(staff, number, where)
       @editorial.children_named(staff, "layer").map do |layer|
-        LayerReader.new(layer, @editorial, staff_number: number, duration_default: @opening.duration_default(number), **where).read
+        LayerReader.new(layer, @editorial, staff_number: number, duration_default: @state.duration_default(number), **where).read
       end
     end
 
@@ -100,7 +173,7 @@ module HeadMusic::Notation::MEI
     # element, each staff's notes taken in onset order across its layers.
     def spell(reading, contents, where)
       contents.group_by(&:staff_number).each_with_object({}.compare_by_identity) do |(number, staff_contents), pitches|
-        accidentals = AccidentalReading.new(@key.fifths)
+        accidentals = AccidentalReading.new(@state.written_fifths(number))
         sorted_notes(staff_contents).each do |note|
           pitches[note] = pitch(reading, note, number, accidentals, where.merge(staff: number))
         end
@@ -146,12 +219,14 @@ module HeadMusic::Notation::MEI
     end
 
     def add_event(reading, track, entry, note_sounds, index, staff)
-      event = track.add(
-        measure_index: index, cursor: entry.cursor, tolerance: PartReading::TOLERANCE,
-        rhythmic_value: entry.fills_bar? ? nil : entry.rhythmic_value, duration: entry.duration || 0, sounds: note_sounds.uniq,
-        fills_bar: entry.fills_bar?, cue: entry.cue, tie_starts: [], tie_stops: [], staff: staff
-      )
-      note_pending(reading, track, entry, index, note_sounds, event: event)
+      (entry.bars || 1).times do |offset|
+        event = track.add(
+          measure_index: index + offset, cursor: entry.cursor, tolerance: PartReading::TOLERANCE,
+          rhythmic_value: entry.fills_bar? ? nil : entry.rhythmic_value, duration: entry.duration || 0, sounds: note_sounds.uniq,
+          fills_bar: entry.fills_bar?, cue: entry.cue, tie_starts: [], tie_stops: [], staff: staff
+        )
+        note_pending(reading, track, entry, index + offset, note_sounds, event: event) if offset.zero?
+      end
     end
 
     def note_pending(reading, track, entry, index, note_sounds, event: nil, grace: nil)

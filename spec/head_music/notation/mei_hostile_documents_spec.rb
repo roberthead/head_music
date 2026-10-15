@@ -61,14 +61,15 @@ describe HeadMusic::Notation::MEI do
 
   describe "documents" do
     # Attributes whose readers later steps put to use.
-    pending_attributes = %w[metcon mm mm.unit mm.dots numbase trans.diat trans.semi tstamp tstamp2]
+    pending_attributes = %w[numbase trans.diat trans.semi tstamp2]
 
     note_attributes = %w[pname pname.ges oct oct.ges dur dots accid accid.ges staff grace cue]
     score_def_attributes = %w[key.pname keysig key.sig key.mode meter.count meter.unit meter.sym midi.bpm]
     clef_attributes = %w[shape line dis dis.place]
     contexts = [
       *note_attributes, *score_def_attributes, *clef_attributes, *clef_attributes.map { |name| "clef.#{name}" },
-      "dur.default", "sig", "mode", "count", "unit", "sym", "n", "lines", "midi.instrnum", "num"
+      "dur.default", "sig", "mode", "count", "unit", "sym", "n", "lines", "midi.instrnum", "num",
+      "metcon", "tstamp", "mm", "mm.unit", "mm.dots"
     ]
 
     def attributes_xml(attributes)
@@ -99,6 +100,9 @@ describe HeadMusic::Notation::MEI do
       when "lines" then with_score_def(staff_def: mei_staff_def(1, attributes: %( lines="#{value}")).sub(%( lines="5"), ""), **meter_attributes)
       when "midi.instrnum" then with_score_def(staff_def: mei_staff_def(1, inside: %(<instrDef midi.instrnum="#{value}"/>)), **meter_attributes)
       when "num" then [mei_staff(1, %(<multiRest num="#{value}"/>))]
+      when "metcon" then [[whole_note, %(<measure n="2" metcon="#{value}">#{mei_staff(1, mei_note("C4", "2"))}</measure>)]]
+      when "tstamp", "mm", "mm.unit", "mm.dots"
+        [whole_note + "<tempo#{attributes_xml({"tstamp" => "1", "mm" => "60"}.merge(name => value))}/>"]
       when *note_attributes_list then [mei_staff(1, "<note#{attributes_xml({"pname" => "c", "oct" => "4", "dur" => "1"}.merge(name => value))}/>")]
       when /\Aclef\./ then with_score_def(staff_def: mei_staff_def(1, clef: nil, attributes: attributes_xml({"clef.shape" => "G", "clef.line" => "2"}.merge(name => value))), **meter_attributes)
       when "shape", "line", "dis", "dis.place"

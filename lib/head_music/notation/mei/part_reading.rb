@@ -11,12 +11,13 @@ module HeadMusic::Notation::MEI
     # by staff in the part.
     Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :tolerance, :clefs)
 
-    attr_reader :definition, :measures, :transposition
+    attr_reader :definition, :measures, :transposition, :instrument_changes
 
     def initialize(definition)
       @definition = definition
       @measures = []
       @tracks = {}
+      @instrument_changes = {}
       @transposition = HeadMusic::Notation::ConcertTransposition.new(errors: HeadMusic::Notation::MEI)
     end
 
