@@ -99,6 +99,24 @@ describe HeadMusic::Notation::MusicXML::TieFolding do
     expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::ParseError, /tie connects C4 to D4 \(measure 5 of part P1\)/)
   end
 
+  describe "ties between chords that share only some pitches" do
+    it "strikes a chord again when only one of its tied pitches goes on" do
+      flow = parse(musicxml_measures(
+        note_xml("G3", 2, "half", inside: tie("start")) + note_xml("D4", 2, "half", chord: true, inside: tie("start")) +
+          note_xml("G3", 2, "half", inside: tie("stop"))
+      ))
+      expect(voice_event_strings(flow).first).to eq ["half G3 D4 at 1:1:000", "half G3 at 1:3:000"]
+    end
+
+    it "strikes a note again that a chord takes up with another pitch" do
+      flow = parse(musicxml_measures(
+        note_xml("Ab4", 2, "half", inside: tie("start")) + note_xml("Ab4", 2, "half", inside: tie("stop")) +
+          note_xml("Bb3", 2, "half", chord: true, inside: tie("stop"))
+      ))
+      expect(voice_event_strings(flow).first).to eq ["half A♭4 at 1:1:000", "half A♭4 B♭3 at 1:3:000"]
+    end
+  end
+
   describe "reading back the writer's ties" do
     %i[fourth_species tie_into_key_change tie_into_meter_change].each do |fixture|
       it "keeps every note of #{fixture} as long as it was" do
