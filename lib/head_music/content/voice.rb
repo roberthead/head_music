@@ -33,6 +33,7 @@ class HeadMusic::Content::Voice
     @revision = 0
     @dynamic_events = HeadMusic::Content::DynamicEvents.new(@part.flow)
     @spans = HeadMusic::Content::Spans.new
+    @tuplets = HeadMusic::Content::TupletGroups.new
     @staff_assignments = StaffAssignments.new(@part)
     @part.attach(self)
   end
@@ -60,10 +61,35 @@ class HeadMusic::Content::Voice
     # The melodic line is a snapshot of the notes, so placing anything invalidates it.
     @melodic_line = nil
     voice_event = HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds)
+    ensure_outside_tuplets(voice_event)
     # An event's timing depends only on the events before it, so appending
     # leaves every memo good, and reading a voice in order stays linear.
     @revision += 1 if last_voice_event && voice_event.position < last_voice_event.position
     @voice_events.place(voice_event)
+  end
+
+  # Brackets the notes and rests from one position up to another as one
+  # tuplet. They must already carry its ratio, and fill the span exactly.
+  def group_tuplet(from:, to:, unit: nil)
+    group = @tuplets.add(HeadMusic::Content::TupletGroup.new(self, from: from, to: to, unit: unit))
+    @revision += 1
+    group
+  end
+
+  def tuplets
+    @tuplets.to_a
+  end
+
+  # The tuplet group covering a position, or nil.
+  def tuplet_at(position)
+    position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
+    @tuplets.at(position)
+  end
+
+  # @api private whether a tuplet group starts or ends at a position, which
+  # ends a run of a ratio there
+  def tuplet_boundary?(position)
+    !@tuplets.empty? && @tuplets.boundary?(position)
   end
 
   # In position order, with at most one at a position.
@@ -175,6 +201,7 @@ class HeadMusic::Content::Voice
     hash["staff_assignments"] = assignments unless assignments.empty?
     hash["dynamic_events"] = dynamic_events.map(&:to_h) unless @dynamic_events.empty?
     hash["spans"] = spans.map(&:to_h) unless @spans.empty?
+    hash["tuplets"] = tuplets.map(&:to_h) unless @tuplets.empty?
     hash
   end
 
@@ -190,6 +217,17 @@ class HeadMusic::Content::Voice
 
   def bar_number_of(voice_event)
     voice_event ? voice_event.position.bar_number : 1
+  end
+
+  # A note placed onto one already there merges with it, which keeps the
+  # group whole; any other placement inside a group would break it.
+  def ensure_outside_tuplets(voice_event)
+    return if @tuplets.empty? || voice_event_at(voice_event.position)
+
+    group = @tuplets.at(voice_event.position)
+    return unless group
+
+    raise ArgumentError, "cannot place a #{voice_event.rhythmic_value} at #{voice_event.position} inside the #{group}"
   end
 
   def ensure_span_anchor(span, position)

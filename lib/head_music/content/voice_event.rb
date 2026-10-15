@@ -118,7 +118,7 @@ class HeadMusic::Content::VoiceEvent
   # 7:4 do not land on whole subticks, so a run of them rounds each onset to
   # the nearest one, measured from the run's start. A run continues while
   # each event begins where the one before ends and the links that meet
-  # there share a ratio.
+  # there share a ratio, and no tuplet group starts or ends between them.
   def onset_remainder
     memoized[:onset_remainder] ||= Run.new(self).remainder
   end
@@ -204,6 +204,8 @@ class HeadMusic::Content::VoiceEvent
     def sharing_predecessor(current)
       ratio = current.rhythmic_value.tuplet_ratio
       return unless ratio
+
+      return if current.voice.tuplet_boundary?(current.position)
 
       previous = current.voice.voice_event_preceding(current.position)
       previous if previous && previous.rhythmic_value.tied_chain.last.tuplet_ratio == ratio

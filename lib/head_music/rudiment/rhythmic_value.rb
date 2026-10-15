@@ -134,6 +134,11 @@ class HeadMusic::Rudiment::RhythmicValue
     Rational(unit.numerator, unit.denominator) * Rational((2**(dots + 1)) - 1, 2**dots)
   end
 
+  # This link alone as an exact fraction of a whole note, under its ratio.
+  def link_fraction
+    tuplet_ratio ? written_fraction * tuplet_ratio.factor : written_fraction
+  end
+
   # The whole chain as an exact fraction of a whole note, ratios included.
   def fraction
     @fraction ||= link_fraction + (tied_value ? tied_value.fraction : 0)
@@ -240,10 +245,6 @@ class HeadMusic::Rudiment::RhythmicValue
   end
 
   private
-
-  def link_fraction
-    tuplet_ratio ? written_fraction * tuplet_ratio.factor : written_fraction
-  end
 
   def tuplet_ratio_for(tuplet)
     HeadMusic::Rudiment::TupletRatio.get(tuplet) || raise(ArgumentError, "unknown tuplet ratio: #{tuplet.inspect}")
