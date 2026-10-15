@@ -36,10 +36,10 @@ module HeadMusic::Notation::Kern
 
     # The ratio a non-binary undotted value sounds under, or nil.
     def tuplet_ratio(base)
-      actual = odd_factor(base.denominator)
+      actual = HeadMusic::Notation::DottedDuration.odd_factor(base.denominator)
       return if actual == 1
 
-      normal = odd_factor(base.numerator)
+      normal = HeadMusic::Notation::DottedDuration.odd_factor(base.numerator)
       normal = 1 if normal > actual
       normal *= 2 while normal * 2 < actual
       HeadMusic::Rudiment::TupletRatio.get([actual, normal])
@@ -92,11 +92,6 @@ module HeadMusic::Notation::Kern
     # A value with d dots spans (2^(d+1) - 1) / 2^d of its unit.
     def dotted_scale(dots)
       Rational((2**(dots + 1)) - 1, 2**dots)
-    end
-
-    def odd_factor(integer)
-      integer >>= 1 while integer.even?
-      integer
     end
   end
 end

@@ -95,11 +95,7 @@ module HeadMusic::Notation::Kern
     end
 
     def plain?(fraction)
-      power_of_two?(fraction.numerator) && power_of_two?(fraction.denominator)
-    end
-
-    def power_of_two?(integer)
-      (integer & (integer - 1)).zero?
+      [fraction.numerator, fraction.denominator].all? { |integer| HeadMusic::Notation::DottedDuration.power_of_two?(integer) }
     end
   end
 end

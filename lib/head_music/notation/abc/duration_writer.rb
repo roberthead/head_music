@@ -38,7 +38,7 @@ module HeadMusic::Notation::ABC
       if fraction > max_fraction
         raise_error("note length exceeds #{max_fraction.to_i} whole notes", rhythmic_value)
       end
-      return if power_of_two?(fraction.denominator)
+      return if HeadMusic::Notation::DottedDuration.power_of_two?(fraction.denominator)
 
       raise_error("note length #{fraction} is not expressible in binary note values", rhythmic_value)
     end
@@ -48,10 +48,6 @@ module HeadMusic::Notation::ABC
       return multiplier.numerator.to_s if multiplier.denominator == 1
 
       "#{multiplier.numerator}/#{multiplier.denominator}"
-    end
-
-    def power_of_two?(integer)
-      (integer & (integer - 1)).zero?
     end
 
     def raise_error(message, rhythmic_value)
