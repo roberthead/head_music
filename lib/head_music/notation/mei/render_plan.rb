@@ -19,6 +19,9 @@ module HeadMusic::Notation::MEI
     # A staff of the score, numbered through the score from 1.
     StaffEntry = Data.define(:number, :part, :part_number, :staff, :index_in_part)
 
+    # The scale types a tonal context can have that MEI's data.MODE names.
+    MODES = %w[major minor ionian dorian phrygian lydian mixolydian aeolian locrian].freeze
+
     attr_reader :mdiv_number
 
     def initialize(flow, transposed: false, mdiv_number: 1)
@@ -131,6 +134,18 @@ module HeadMusic::Notation::MEI
       transposition ? transposition.key_signature_event(event) : event
     end
 
+    # The @key.mode of the sounding key at the opening, or nil where its tonal
+    # context is unknown or not one MEI names.
+    def first_measure_key_mode
+      key_mode(effective_key_event(bar_numbers.first))
+    end
+
+    # The @key.mode of the sounding key change at a bar, if there is one.
+    def key_mode_change(bar_number)
+      event = flow.key_signature_changes[bar_number]
+      event && key_mode(event)
+    end
+
     def midi_bpm(tempo)
       Decimals.format(Rational(tempo.beats_per_minute.to_s) * tempo.beat_value.fraction * 4)
     end
@@ -161,6 +176,11 @@ module HeadMusic::Notation::MEI
       return "0" if signature.zero?
 
       signature.positive? ? "#{signature}s" : "#{-signature}f"
+    end
+
+    def key_mode(event)
+      mode = event.tonal_context&.scale_type&.name.to_s
+      mode if MODES.include?(mode)
     end
 
     def part_numbers

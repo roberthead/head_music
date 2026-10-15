@@ -57,7 +57,10 @@ module HeadMusic::Notation::MEI
       meter = plan.measure_time_changes[bar_number]
       return unless key || meter
 
-      attributes = {"keysig" => key, "meter.count" => meter&.top_number, "meter.unit" => meter&.bottom_number}
+      attributes = {
+        "keysig" => key, "key.mode" => key && plan.key_mode_change(bar_number),
+        "meter.count" => meter&.top_number, "meter.unit" => meter&.bottom_number
+      }
       Element.new("scoreDef", ids.container("scoredef", ids.bar_key(bar_number)), attributes)
     end
 

@@ -20,7 +20,7 @@
     <body>
       <mdiv xml:id="m1" label="Marks and Dynamics">
         <score xml:id="m1-score">
-          <scoreDef xml:id="m1-scoredef" keysig="1f" meter.count="3" meter.unit="4" midi.bpm="96">
+          <scoreDef xml:id="m1-scoredef" keysig="1f" key.mode="major" meter.count="3" meter.unit="4" midi.bpm="96">
             <staffGrp xml:id="m1-staffgrp">
               <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
                 <label xml:id="m1-label-p1">Flute</label>

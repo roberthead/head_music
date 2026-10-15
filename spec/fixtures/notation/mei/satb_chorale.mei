@@ -23,7 +23,7 @@
     <body>
       <mdiv xml:id="m1" label="Wake the Morning">
         <score xml:id="m1-score">
-          <scoreDef xml:id="m1-scoredef" keysig="1s" meter.count="3" meter.unit="4" midi.bpm="100">
+          <scoreDef xml:id="m1-scoredef" keysig="1s" key.mode="major" meter.count="3" meter.unit="4" midi.bpm="100">
             <staffGrp xml:id="m1-staffgrp">
               <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
                 <label xml:id="m1-label-p1">Soprano</label>

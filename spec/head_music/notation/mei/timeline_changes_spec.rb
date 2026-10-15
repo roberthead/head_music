@@ -21,6 +21,10 @@ describe HeadMusic::Notation::MEI::TimelineChanges do
         .to eq [%w[m1-scoredef-b3 2s 3 4]]
     end
 
+    it "writes the new key's mode" do
+      expect(mei_attributes(document, "//mei:section/mei:scoreDef", "key.mode")).to eq ["major"]
+    end
+
     it "places it just before that bar's measure" do
       expect(mei_element(document, "//mei:section/mei:scoreDef/following-sibling::mei:measure[1]").attributes["n"]).to eq "3"
     end
@@ -32,7 +36,21 @@ describe HeadMusic::Notation::MEI::TimelineChanges do
 
   it "writes a meter change alone without a key" do
     flow = whole_notes(2).tap { |meter_flow| meter_flow.change_meter(2, "2/4") }
-    expect(mei_attributes(parse_mei(flow.to_mei), "//mei:section/mei:scoreDef", "keysig", "meter.count")).to eq [[nil, "2"]]
+    expect(mei_attributes(parse_mei(flow.to_mei), "//mei:section/mei:scoreDef", "keysig", "key.mode", "meter.count"))
+      .to eq [[nil, nil, "2"]]
+  end
+
+  it "writes a modal key change's mode" do
+    flow = whole_notes(2).tap { |modal| modal.change_key_signature(2, "E phrygian") }
+    expect(mei_attributes(parse_mei(flow.to_mei), "//mei:section/mei:scoreDef", "keysig", "key.mode")).to eq [%w[0 phrygian]]
+  end
+
+  it "writes no mode for a key change to a scale type MEI has no mode for" do
+    flow = whole_notes(3, key_signature: "D dorian").tap do |minor|
+      minor.change_key_signature(2, "D harmonic_minor")
+      minor.change_key_signature(3, "D minor")
+    end
+    expect(mei_attributes(parse_mei(flow.to_mei), "//mei:section/mei:scoreDef", "key.mode")).to eq [nil, "minor"]
   end
 
   describe "clef changes" do

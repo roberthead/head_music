@@ -20,7 +20,7 @@
     <body>
       <mdiv xml:id="m1" label="Dal Segno al Coda">
         <score xml:id="m1-score">
-          <scoreDef xml:id="m1-scoredef" keysig="0" meter.count="4" meter.unit="4" midi.bpm="120">
+          <scoreDef xml:id="m1-scoredef" keysig="0" key.mode="major" meter.count="4" meter.unit="4" midi.bpm="120">
             <staffGrp xml:id="m1-staffgrp">
               <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
                 <clef xml:id="m1-clef-s1" shape="G" line="2"/>

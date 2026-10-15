@@ -22,6 +22,21 @@ describe HeadMusic::Notation::MEI::ScoreDefWriter do
       .to eq [%w[3f 6 8 90]]
   end
 
+  describe "the opening key's mode" do
+    def key_mode(key_signature)
+      flow = HeadMusic::Content::Flow.new(key_signature: key_signature).tap { |modal| modal.add_voice.place("1:1", :whole, "D4") }
+      mei_attributes(score_def(flow), "//mei:scoreDef", "keysig", "key.mode")
+    end
+
+    it "writes a key's quality" do
+      expect(key_mode("Eb major")).to eq [%w[3f major]]
+    end
+
+    it "writes a mode by name" do
+      expect(key_mode("D dorian")).to eq [%w[0 dorian]]
+    end
+  end
+
   it "writes a staff definition with its clef for each staff" do
     document = score_def(LilyPondFixtures.piano_and_melody)
     expect(mei_attributes(document, "//mei:staffDef", "n", "lines")).to eq [%w[1 5], %w[2 5], %w[3 5]]
