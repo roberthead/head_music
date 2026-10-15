@@ -113,7 +113,7 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
       let(:value) do
         instance_double(
           HeadMusic::Rudiment::RhythmicValue,
-          unit: unit, dots: 0, tied_value: nil, unit_name: "whatsit", to_s: "whatsit"
+          unit: unit, dots: 0, tied_value: nil, unit_name: "whatsit", to_s: "whatsit", written_fraction: Rational(1)
         )
       end
 

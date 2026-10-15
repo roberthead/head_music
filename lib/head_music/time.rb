@@ -21,7 +21,7 @@ module HeadMusic
     PPQN = PULSES_PER_QUARTER_NOTE = HeadMusic::Rudiment::Rhythm::PPQN
 
     # Subticks provide finer resolution than ticks for precise timing
-    SUBTICKS_PER_TICK = 240
+    SUBTICKS_PER_TICK = HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_TICK
   end
 end
 

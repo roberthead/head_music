@@ -367,4 +367,108 @@ describe HeadMusic::Rudiment::RhythmicValue do
       expect(described_class.get(:quarter)).not_to eql "quarter"
     end
   end
+
+  describe "tuplet ratios" do
+    let(:sixteenth_ratios) { %w[3:2 5:4 6:4 2:3 7:4 9:8] }
+
+    it "carries a ratio given to get on every link" do
+      value = described_class.get("quarter tied to eighth", tuplet: "3:2")
+      expect(value.tied_chain.map { |link| link.tuplet_ratio.to_s }).to eq %w[triplet triplet]
+    end
+
+    it "names the ratio before the dots" do
+      expect(described_class.get(:eighth, tuplet: "3:2").with_tuplet("3:2").to_s).to eq "triplet eighth"
+      expect(described_class.get("dotted eighth", tuplet: "3:2").to_s).to eq "triplet dotted eighth"
+      expect(described_class.get(:sixteenth, tuplet: "5:4").to_s).to eq "5:4 sixteenth"
+    end
+
+    it "reads 'triplet dotted eighth' as dotted once, not triple-dotted" do
+      value = described_class.get("triplet dotted eighth")
+      expect([value.dots, value.tuplet_ratio.to_s]).to eq [1, "triplet"]
+    end
+
+    it "reads a chain mixing ratios link by link" do
+      value = described_class.get("triplet eighth tied to quarter")
+      expect(value.tied_chain.map(&:tuplet_ratio)).to eq [HeadMusic::Rudiment::TupletRatio.get("3:2"), nil]
+    end
+
+    it "round-trips every ratio, dot count, and chain through its name" do
+      chains = %w[3:2 5:4 6:4 2:3 7:4].product([0, 1, 2, 3]).flat_map do |ratio, dots|
+        link = described_class.new(:eighth, dots: dots, tuplet: ratio)
+        [link, link.append_tied(described_class.get(:quarter)), described_class.get(:half).append_tied(link)]
+      end
+      expect(chains.reject { |value| described_class.get(value.to_s).eql?(value) }).to be_empty
+    end
+
+    it "is nil for a ratio word whose value does not parse" do
+      expect(["triplet blorp", "1:1 eighth", "triplet triplet eighth"].map { |name| described_class.get(name) }).to all(be_nil)
+    end
+
+    it "does not read an unnamed tuplet as a plain value" do
+      expect(described_class.get("quintuplet eighth")).to be_nil
+    end
+
+    it "raises for an unknown ratio given to get" do
+      expect { described_class.get(:eighth, tuplet: "quintuplet") }.to raise_error(ArgumentError, /unknown tuplet ratio/)
+    end
+
+    it "lands on whole subticks for ratios built from 2, 3, and 5" do
+      exact = sixteenth_ratios.first(4).map { |ratio| described_class.get(:sixteenth, tuplet: ratio).exact_subticks }
+      expect(exact.map(&:denominator)).to all(eq 1)
+    end
+
+    it "gives a 9:8 eighth 102,400 subticks" do
+      expect(described_class.get(:eighth, tuplet: "9:8").exact_subticks).to eq 102_400
+    end
+
+    it "gives a 7:4 sixteenth an exact fraction of a subtick, rounded once" do
+      value = described_class.get(:sixteenth, tuplet: "7:4")
+      expect([value.exact_subticks, value.subticks]).to eq [Rational(230_400, 7), 32_914]
+    end
+
+    it "rounds the chain once rather than each link" do
+      value = described_class.get("sixteenth tied to sixteenth", tuplet: "7:4")
+      expect(value.subticks).to eq 65_829
+    end
+
+    it "keeps the ratio out of the written fraction and in the fraction" do
+      value = described_class.get(:quarter, tuplet: "3:2")
+      expect([value.written_fraction, value.fraction]).to eq [Rational(1, 4), Rational(1, 6)]
+    end
+
+    it "keeps total value and ticks as Floats" do
+      value = described_class.get("dotted quarter")
+      expect([value.total_value, value.ticks]).to eq [0.375, 1440.0]
+    end
+
+    it "compares a triplet sixteenth and a 6:4 sixteenth as the same length but not equal" do
+      triplet = described_class.get(:sixteenth, tuplet: "3:2")
+      sextuplet = described_class.get(:sixteenth, tuplet: "6:4")
+      expect([triplet <=> sextuplet, triplet == sextuplet]).to eq [0, false]
+    end
+
+    describe "#uniform_tuplet_ratio" do
+      it "is the ratio every link carries" do
+        expect(described_class.get("triplet quarter tied to triplet eighth").uniform_tuplet_ratio.to_s).to eq "triplet"
+      end
+
+      it "is nil when the links differ" do
+        expect(described_class.get("triplet eighth tied to quarter").uniform_tuplet_ratio).to be_nil
+      end
+
+      it "is nil with no ratio" do
+        expect(described_class.get(:quarter).uniform_tuplet_ratio).to be_nil
+      end
+    end
+
+    describe "#tuplet?" do
+      it "is true when any link carries a ratio" do
+        expect(described_class.get("quarter tied to triplet eighth")).to be_tuplet
+      end
+
+      it "is false for a plain value" do
+        expect(described_class.get("quarter tied to eighth")).not_to be_tuplet
+      end
+    end
+  end
 end
