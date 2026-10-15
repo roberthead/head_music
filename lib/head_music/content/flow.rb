@@ -198,6 +198,10 @@ class HeadMusic::Content::Flow
     HeadMusic::Notation::Kern.render(self, **options)
   end
 
+  def to_mei(**options)
+    HeadMusic::Notation::MEI.render(self, **options)
+  end
+
   def to_midi(**options)
     HeadMusic::MIDI.render(self, **options)
   end

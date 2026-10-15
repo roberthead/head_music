@@ -365,6 +365,22 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "#to_mei" do
+    it "renders an MEI document string" do
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect(flow.to_mei).to include %(<mdiv xml:id="m1" label="Fruit Salad">)
+    end
+
+    it "propagates render errors" do
+      expect { flow.to_mei }.to raise_error(HeadMusic::Notation::MEI::RenderError)
+    end
+
+    it "passes its options to the renderer" do
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect(flow.to_mei(arranger: "Ann")).to include %(<persName role="arranger">Ann</persName>)
+    end
+  end
+
   describe "#to_kern" do
     it "renders a **kern document string" do
       flow.add_voice.place("1:1", :whole, "C4")
