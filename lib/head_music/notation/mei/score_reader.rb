@@ -33,6 +33,7 @@ module HeadMusic::Notation::MEI
       @editorial = source.editorial
       @groups = groups
       @readings = groups.parts.map { |definition| PartReading.new(definition) }
+      transpose(@readings, groups.staff_numbers.filter_map { |number| opening_transposition(groups, number) }.to_h)
       @state = StaffState.new(opening, groups, @editorial, identity)
       @opening_score_def = opening.score_def
       @ties = TieControls.new(source.index)
@@ -69,6 +70,20 @@ module HeadMusic::Notation::MEI
       @measures.last&.number
     end
 
+    def opening_transposition(groups, number)
+      staff_def = groups.staff_def(number)
+      step = staff_def && StaffState.transposition(staff_def, staff: number)
+      [number, step] if step
+    end
+
+    # Each staff's transposition from the next note read on it.
+    def transpose(readings, steps)
+      steps.each do |number, step|
+        reading = readings.find { |candidate| candidate.definition.staff_index(number) }
+        reading&.transposition&.change(reading.definition.staff_index(number), step)
+      end
+    end
+
     # A first measure is a pickup where it says it is an upbeat, or where
     # every part's music in it is shorter than its meter.
     def mark_pickup
@@ -87,6 +102,7 @@ module HeadMusic::Notation::MEI
       @ties.note_controls(controls, where)
       @tuplets.note_controls(controls, where)
       changes = @state.take_changes
+      transpose(@readings, changes.transpositions)
       contents = @readings.to_h { |reading| [reading, read_contents(reading, staves, where)] }
       index = @measures.length
       bar_count(contents).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], where) }

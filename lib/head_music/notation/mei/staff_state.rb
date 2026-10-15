@@ -2,7 +2,8 @@ module HeadMusic::Notation::MEI
   # What is in force as the walk reaches each measure: the meter and key,
   # each staff's written key and @dur.default, and the clefs and
   # instruments that a <scoreDef> or <staffDef> between measures changes
-  # from the next measure on.
+  # from the next measure on, and the transpositions, by @trans.diat and
+  # @trans.semi, that one replaces, 0/0 returning a staff to concert pitch.
   #
   # The key and meter change where a later <scoreDef> states them, or
   # where the first staff's <staffDef> does in a score that states them on
@@ -11,9 +12,9 @@ module HeadMusic::Notation::MEI
   class StaffState
     include XmlReading
 
-    # The clefs by staff number, and the instruments by part index, that
-    # change at the next measure.
-    Changes = Data.define(:clefs, :instruments)
+    # The clefs and transpositions by staff number, and the instruments by
+    # part index, that change at the next measure.
+    Changes = Data.define(:clefs, :instruments, :transpositions)
 
     attr_reader :meter, :key
 
@@ -43,7 +44,19 @@ module HeadMusic::Notation::MEI
 
     # The changes since the last measure, which then start afresh.
     def take_changes
-      Changes.new(@clefs, @instruments).tap { reset_changes }
+      Changes.new(@clefs, @instruments, @transpositions).tap { reset_changes }
+    end
+
+    # The transposition a staff definition states, sounding = written +
+    # trans, octaves included, or nil where it states none. A @trans.semi
+    # alone moves by the diatonic steps its interval usually spells.
+    def self.transposition(staff_def, **where)
+      semitones = AttributeValues.read(staff_def, "trans.semi", **where, element: staff_def)
+      return unless semitones
+
+      diatonic = AttributeValues.read(staff_def, "trans.diat", **where, element: staff_def) ||
+        HeadMusic::Content::Layout::Transposition.for_semitones(semitones).diatonic_steps
+      HeadMusic::Notation::ConcertTransposition::Step.new(diatonic, semitones, 0)
     end
 
     def apply_score_def(element, **where)
@@ -71,6 +84,8 @@ module HeadMusic::Notation::MEI
       read_staff_values(element, number, where)
       clef = ClefReading.staff_def_clef(element, @editorial, **where)
       @clefs[number] = clef if clef
+      transposition = self.class.transposition(element, **where.except(:element))
+      @transpositions[number] = transposition if transposition
       instr_def = @editorial.children_named(element, "instrDef").first
       instrument = instr_def && @identity.instrument_of(instr_def)
       @instruments[@groups.part_for(number).index] = instrument if instrument
@@ -81,6 +96,7 @@ module HeadMusic::Notation::MEI
     def reset_changes
       @clefs = {}
       @instruments = {}
+      @transpositions = {}
     end
 
     def read_staff_values(element, number, where)
