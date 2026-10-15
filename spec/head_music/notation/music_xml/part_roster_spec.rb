@@ -96,6 +96,13 @@ describe HeadMusic::Notation::MusicXML::PartRoster do
     expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::ParseError, /<staff> of 2 is beyond the part's 1 staves \(measure 2 of part P1\)/)
   end
 
+  [0, -1].each do |number|
+    it "raises on a staff of #{number}, naming the measure" do
+      xml = musicxml_measures(note_xml("C4", 4, "whole", staff: number), attributes: grand_staff_attributes)
+      expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::ParseError, /<staff> of #{number} is not positive \(measure 1 of part P1\)/)
+    end
+  end
+
   describe "clefs" do
     it "gives a one-staff part its clef" do
       expect(parse(musicxml_measures(note_xml("C4", 4, "whole"), attributes: opening_attributes(clef: %w[C 3]))).parts.first.staff_system.first_staff.clef.name_key)

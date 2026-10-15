@@ -211,6 +211,7 @@ module HeadMusic::Notation::MusicXML
 
     def staff(note)
       number = note.staff || 1
+      raise ParseError.new("A <staff> of #{number} is not positive", **@where) unless number.positive?
       raise ParseError.new("A <staff> of #{number} is beyond the part's #{@staves} staves", **@where) if number > @staves
 
       number
