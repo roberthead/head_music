@@ -10,6 +10,12 @@ class HeadMusic::Content::SoundResolver
     new.resolve(sound_or_sounds)
   end
 
+  # A sound as Flow JSON writes it: a pitch as its name, and an unpitched
+  # sound as {"unpitched" => name_key}.
+  def self.datum(sound)
+    sound.pitched? ? sound.to_s : {"unpitched" => sound.name_key&.to_s}
+  end
+
   def resolve(sound_or_sounds)
     return [].freeze if sound_or_sounds.nil?
 

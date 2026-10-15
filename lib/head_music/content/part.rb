@@ -43,10 +43,12 @@ class HeadMusic::Content::Part
   end
 
   # A hairpin for every voice of the part, as one drawn between a piano's
-  # staves is. Its ends may fall anywhere.
-  def add_span(kind, from:, to:)
-    span = HeadMusic::Content::Span.new(flow, kind, from: from, to: to)
+  # staves is. Its ends may fall anywhere. A part holds no grace notes, so
+  # no span of a part starts on them.
+  def add_span(kind, from:, to:, from_grace: false)
+    span = HeadMusic::Content::Span.new(flow, kind, from: from, to: to, from_grace: from_grace)
     raise ArgumentError, "a part cannot hold a #{span.name_key}" unless span.span_kind.held_by?(:part)
+    raise ArgumentError, "a part's #{span.name_key} cannot start on grace notes" if span.from_grace?
 
     @spans.add(span)
   end

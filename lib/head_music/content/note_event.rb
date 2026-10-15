@@ -43,6 +43,19 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
     add_markings(articulation_map, HeadMusic::Rudiment::Articulation, identifiers)
   end
 
+  def grace_notes
+    grace_note_list.dup.freeze
+  end
+
+  # Adds a grace note before this event, after any it already carries.
+  # Returns self so calls chain.
+  def add_grace_note(sound_or_sounds, rhythmic_value, slashed: false, tied: false, articulations: [])
+    grace_note_list << HeadMusic::Content::GraceNote.new(
+      sounds: sound_or_sounds, rhythmic_value: rhythmic_value, slashed: slashed, tied: tied, articulations: articulations
+    )
+    self
+  end
+
   # Adds ornaments by key, such as :trill.
   def embellish(*identifiers)
     add_markings(ornament_map, HeadMusic::Rudiment::Ornament, identifiers)
@@ -58,9 +71,9 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   # position holds at most one event, and answers whichever event holds it
   # afterward. A rest placed on a note leaves it as it was. The sound union
   # keeps the chord free of duplicates, making placing a sound again
-  # idempotent. Syllables and markings are left untouched: a chord sings one
-  # syllable per verse, and the receiver (the event already at this position)
-  # keeps its own.
+  # idempotent. Syllables, markings, and grace notes are left untouched: a
+  # chord sings one syllable per verse, and the receiver (the event already at
+  # this position) keeps its own.
   def merge(other)
     ensure_same_rhythmic_value!(other)
     return self if other.rest?
@@ -70,6 +83,10 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   end
 
   private
+
+  def grace_note_list
+    @grace_note_list ||= []
+  end
 
   def articulation_map
     @articulation_map ||= {}

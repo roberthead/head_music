@@ -94,4 +94,32 @@ describe HeadMusic::Content::NoteEvent do
       expect(note_event.to_s).to eq "quarter C5 at 1:1:000"
     end
   end
+
+  describe "grace notes" do
+    subject(:note_event) { described_class.new(voice, "1:3", :quarter, "G4") }
+
+    it "has none to begin with" do
+      expect(note_event.grace_notes).to eq []
+    end
+
+    it "adds grace notes in order, returning itself" do
+      note_event.add_grace_note("A4", :sixteenth, slashed: true).add_grace_note(%w[B4 D5], :sixteenth, tied: true)
+      expect(note_event.grace_notes.map(&:to_s)).to eq ["slashed grace sixteenth A4", "grace sixteenth B4 D5"]
+    end
+
+    it "answers a frozen list" do
+      expect(note_event.add_grace_note("A4", :eighth).grace_notes).to be_frozen
+    end
+
+    it "keeps its grace notes when another sound is merged into it" do
+      note_event.add_grace_note("A4", :eighth)
+      merged = note_event.merge(described_class.new(voice, "1:3", :quarter, "B4"))
+      expect([merged.pitches.map(&:to_s), merged.grace_notes.length]).to eq [%w[G4 B4], 1]
+    end
+
+    it "leaves the timing alone" do
+      note_event.add_grace_note("A4", :eighth)
+      expect(note_event.next_position.to_s).to eq "1:4:000"
+    end
+  end
 end

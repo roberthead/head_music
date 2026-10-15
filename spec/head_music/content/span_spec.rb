@@ -45,6 +45,37 @@ describe HeadMusic::Content::Span do
     expect(span).to eq same
   end
 
+  describe "from grace notes" do
+    def grace_span(kind = :slur, from: "1:1", to: "1:1")
+      described_class.new(flow, kind, from: from, to: to, from_grace: true)
+    end
+
+    it "may end on the note event it starts at" do
+      expect(grace_span.to_s).to eq "slur from the grace notes before 1:1:000 to 1:1:000"
+    end
+
+    it "writes from_grace" do
+      expect(grace_span(to: "1:2").to_h).to eq("kind" => "slur", "from" => "1:1:000", "to" => "1:2:000", "from_grace" => true)
+    end
+
+    it "sorts before a span from the main note" do
+      spans = [span(to: "1:2"), grace_span(to: "1:3")]
+      expect(spans.sort.map(&:from_grace?)).to eq [true, false]
+    end
+
+    it "differs from a span from the main note" do
+      expect(grace_span(to: "1:3")).not_to eq span(to: "1:3")
+    end
+
+    it "refuses a hairpin" do
+      expect { grace_span(:crescendo, to: "1:3") }.to raise_error(ArgumentError, "a crescendo cannot start on grace notes; only a slur or phrase can")
+    end
+
+    it "still refuses an end before its start" do
+      expect { grace_span(from: "1:3", to: "1:1") }.to raise_error(ArgumentError, /must end after it starts/)
+    end
+  end
+
   it "writes its kind and positions" do
     expect(span.to_h).to eq("kind" => "slur", "from" => "1:1:000", "to" => "1:3:000")
   end

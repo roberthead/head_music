@@ -33,6 +33,13 @@ describe HeadMusic::Content::RestEvent do
       .to raise_error(ArgumentError, "a rest cannot be ornamented; the ornament at 1:1:000 needs a note")
   end
 
+  its(:grace_notes) { is_expected.to eq [] }
+
+  it "refuses a grace note" do
+    expect { rest.add_grace_note("A4", :sixteenth, slashed: true) }
+      .to raise_error(ArgumentError, "a rest cannot carry grace notes; the grace note at 1:1:000 needs a note")
+  end
+
   it "refuses a note dynamic" do
     expect { rest.note_dynamic = :sfz }
       .to raise_error(ArgumentError, "a rest cannot be accented; the dynamic at 1:1:000 needs a note")

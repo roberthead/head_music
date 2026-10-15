@@ -71,6 +71,12 @@ class HeadMusic::Content::VoiceEvent
     nil
   end
 
+  # The grace notes sounding before the event, in order. Only a NoteEvent
+  # carries them.
+  def grace_notes
+    []
+  end
+
   # The top pitch of a chord (or the only pitch of a note), which melodic
   # analysis treats as the melody note. Returns nil for rests and
   # unpitched-only events; pitched? is the guard. Enharmonic ties
@@ -143,7 +149,7 @@ class HeadMusic::Content::VoiceEvent
     hash = {
       "position" => position.to_s,
       "rhythmic_value" => rhythmic_value.to_s,
-      "sounds" => sounds.map { |sound| sound_datum(sound) }
+      "sounds" => sounds.map { |sound| HeadMusic::Content::SoundResolver.datum(sound) }
     }
     hash["beam_break_before"] = beam_break_before unless beam_break_before.nil?
     hash["syllables"] = syllables.keys.sort.map { |verse| syllables[verse].to_h } unless syllables.empty?
@@ -225,10 +231,6 @@ class HeadMusic::Content::VoiceEvent
   # space-delimited sound list unambiguous.
   def sound_label(sound)
     sound.pitched? ? sound.to_s : "[#{sound}]"
-  end
-
-  def sound_datum(sound)
-    sound.pitched? ? sound.to_s : {"unpitched" => sound.name_key&.to_s}
   end
 
   def starts_during?(other_event)

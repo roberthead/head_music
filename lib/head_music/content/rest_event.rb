@@ -31,6 +31,10 @@ class HeadMusic::Content::RestEvent < HeadMusic::Content::VoiceEvent
     raise ArgumentError, "a rest cannot be ornamented; the ornament at #{position} needs a note"
   end
 
+  def add_grace_note(*, **)
+    raise ArgumentError, "a rest cannot carry grace notes; the grace note at #{position} needs a note"
+  end
+
   def note_dynamic=(_identifier)
     raise ArgumentError, "a rest cannot be accented; the dynamic at #{position} needs a note"
   end

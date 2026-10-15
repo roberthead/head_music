@@ -115,12 +115,14 @@ class HeadMusic::Content::Voice
 
   # A marking from one point in this voice to a later one, such as a slur or
   # a crescendo. Its kind says what its ends must sit on: a slur needs notes,
-  # a phrase may begin or end on a rest, and a hairpin may end anywhere.
-  def add_span(kind, from:, to:)
-    span = HeadMusic::Content::Span.new(flow, kind, from: from, to: to)
+  # a phrase may begin or end on a rest, and a hairpin may end anywhere. A
+  # curve from_grace starts on the first grace note of the note at from.
+  def add_span(kind, from:, to:, from_grace: false)
+    span = HeadMusic::Content::Span.new(flow, kind, from: from, to: to, from_grace: from_grace)
     raise ArgumentError, "a voice cannot hold a #{span.name_key}" unless span.span_kind.held_by?(:voice)
 
     [span.from, span.to].each { |position| ensure_span_anchor(span, position) }
+    ensure_grace_notes(span) if span.from_grace?
     @spans.add(span)
   end
 
@@ -228,6 +230,12 @@ class HeadMusic::Content::Voice
     return unless group
 
     raise ArgumentError, "cannot place a #{voice_event.rhythmic_value} at #{voice_event.position} inside the #{group}"
+  end
+
+  def ensure_grace_notes(span)
+    return if voice_event_at(span.from)&.grace_notes&.any?
+
+    raise ArgumentError, "a #{span.name_key} from grace notes needs a note with grace notes at #{span.from}"
   end
 
   def ensure_span_anchor(span, position)

@@ -444,6 +444,11 @@ describe HeadMusic::Content::Voice do
       voice.place("3:1", :whole, "G4")
       expect(voice.melodic_intervals.map(&:shorthand)).to eq %w[M3 m3]
     end
+
+    it "passes grace notes by" do
+      voice.voice_events.last.add_grace_note("F4", :sixteenth, slashed: true).add_grace_note("D4", :eighth, tied: true)
+      expect([voice.notes.length, voice.voice_events.length, voice.melodic_intervals.map(&:shorthand)]).to eq [2, 2, %w[M3]]
+    end
   end
 
   describe "#melodic_note_pairs" do

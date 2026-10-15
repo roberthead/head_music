@@ -34,6 +34,11 @@ describe HeadMusic::Style::Guide do
         cantus_firmus.add_span(:slur, from: "1:1", to: "3:1")
         counterpoint.add_span(:crescendo, from: "1:1", to: "3:3")
         cantus_firmus.part.add_span(:diminuendo, from: "3:3", to: "5:2")
+        notes[3].add_grace_note("C5", :sixteenth, slashed: true)
+        notes[4].add_grace_note(notes[4].pitch, :eighth, tied: true).add_grace_note(%w[D4 F4], :sixteenth, articulations: [:staccato])
+        cantus_firmus.note_events[1].add_grace_note("B2", :sixteenth)
+        counterpoint.add_span(:slur, from: notes[3].position, to: notes[3].position, from_grace: true)
+        cantus_firmus.add_span(:slur, from: cantus_firmus.note_events[1].position, to: "4:1", from_grace: true)
       end
     end
 
@@ -41,7 +46,7 @@ describe HeadMusic::Style::Guide do
       expect(grades(plain).flat_map(&:last).flat_map(&:last)).not_to be_empty
     end
 
-    it "gives the same fitness and marks as without them, spans and hairpins included" do
+    it "gives the same fitness and marks as without them, spans, hairpins, and grace notes included" do
       expect(grades(marked)).to eq grades(plain)
     end
   end

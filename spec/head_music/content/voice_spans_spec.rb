@@ -168,6 +168,46 @@ describe HeadMusic::Content::Voice do
     end
   end
 
+  describe "slurs from grace notes" do
+    before { voice.voice_event_at(flow.position("1:2")).add_grace_note("C4", :sixteenth) }
+
+    it "slurs from the grace notes to their own main note" do
+      voice.add_span(:slur, from: "1:2", to: "1:2", from_grace: true)
+      expect(summary(voice.spans)).to eq ["slur from the grace notes before 1:2:000 to 1:2:000"]
+    end
+
+    it "slurs from the grace notes to a later note" do
+      voice.add_span(:slur, from: "1:2", to: "1:4", from_grace: true)
+      expect(voice.spans_at("1:4").map(&:from_grace?)).to eq [true]
+    end
+
+    it "keeps a grace slur beside a slur from the main note" do
+      voice.add_span(:slur, from: "1:2", to: "1:3")
+      voice.add_span(:slur, from: "1:2", to: "1:3", from_grace: true)
+      expect(voice.spans.map(&:from_grace?)).to eq [true, false]
+    end
+
+    it "refuses a hairpin from grace notes" do
+      expect { voice.add_span(:crescendo, from: "1:2", to: "1:4", from_grace: true) }
+        .to raise_error(ArgumentError, /a crescendo cannot start on grace notes/)
+    end
+
+    it "refuses a slur from grace notes on a note without them" do
+      expect { voice.add_span(:slur, from: "1:3", to: "1:4", from_grace: true) }
+        .to raise_error(ArgumentError, "a slur from grace notes needs a note with grace notes at 1:3:000")
+    end
+
+    it "refuses a part's span from grace notes" do
+      expect { voice.part.add_span(:crescendo, from: "1:2", to: "1:4", from_grace: true) }
+        .to raise_error(ArgumentError, /cannot start on grace notes/)
+    end
+
+    it "writes from_grace" do
+      voice.add_span(:slur, from: "1:2", to: "1:2", from_grace: true)
+      expect(voice.to_h["spans"]).to eq [{"kind" => "slur", "from" => "1:2:000", "to" => "1:2:000", "from_grace" => true}]
+    end
+  end
+
   describe "#to_h" do
     it "writes its spans" do
       voice.add_span(:slur, from: "1:1", to: "1:3")
