@@ -54,8 +54,8 @@ module HeadMusic::Notation::MusicXML
       case element.name
       when "attributes" then read_attributes(element)
       when "note" then read_note(element)
-      when "backup" then move(-duration_of(text(element, "duration", **@where)))
-      when "forward" then reach(move(duration_of(text(element, "duration", **@where))))
+      when "backup" then move(-duration_of(text(element, "duration", **@where), moving: true))
+      when "forward" then reach(move(duration_of(text(element, "duration", **@where), moving: true)))
       when "direction" then read_direction(element)
       when "sound" then read_measure_sound(element)
       when "barline" then note_record(:barline, element)
@@ -242,12 +242,16 @@ module HeadMusic::Notation::MusicXML
       value || raise(UnsupportedFeatureError.new("No note value spans a <duration> of #{note.duration}", **@where))
     end
 
-    def duration_of(text)
+    # A <backup> or <forward> of nothing moves nothing, as music21 writes
+    # some, so only a note's duration must be positive.
+    def duration_of(text, moving: false)
       raise ParseError.new("A <duration> is missing", **@where) unless text
       raise ParseError.new("A <duration> has no <divisions> in force", **@where) unless @divisions
 
       duration = rational(text, "<duration>", **@where)
-      raise ParseError.new("A <duration> must be positive", **@where) unless duration.positive?
+      if duration.negative? || (duration.zero? && !moving)
+        raise ParseError.new("A <duration> must be positive", **@where)
+      end
 
       duration / (4 * @divisions)
     end

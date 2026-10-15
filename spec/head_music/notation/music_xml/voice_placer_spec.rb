@@ -41,6 +41,21 @@ describe HeadMusic::Notation::MusicXML::VoicePlacer do
     expect(voice_event_strings(flow).first).to eq ["quarter C4 at 1:1:000", "half rest at 1:2:000", "quarter D4 at 1:4:000"]
   end
 
+  it "moves nothing for a <forward> or <backup> of no duration" do
+    flow = parse(musicxml_measures(note_xml("C4", 2, "half") + forward_xml(0) + backup_xml(0) + note_xml("D4", 2, "half")))
+    expect(voice_event_strings(flow).first).to eq ["half C4 at 1:1:000", "half D4 at 1:3:000"]
+  end
+
+  it "refuses a note of no duration" do
+    expect { parse(musicxml_measures(note_xml("C4", 0, "half") + note_xml("D4", 4, "whole"))) }
+      .to raise_error(HeadMusic::Notation::MusicXML::ParseError, /A <duration> must be positive \(measure 1 of part P1\)/)
+  end
+
+  it "refuses a negative <forward>" do
+    expect { parse(musicxml_measures(note_xml("C4", 4, "whole") + forward_xml(-1))) }
+      .to raise_error(HeadMusic::Notation::MusicXML::ParseError, /A <duration> must be positive/)
+  end
+
   describe "a voice that begins late and ends early" do
     let(:flow) do
       parse(musicxml_measures(
