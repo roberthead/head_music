@@ -12,6 +12,7 @@ module HeadMusic::Notation::ABC
       @slur_writer = slur_writer
       @position_marks = position_marks
       @tuplet_writer = tuplet_writer
+      @grace_writer = GraceWriter.new(@pitch_writer, @duration_writer, @decoration_writer)
     end
 
     # The inter-token space is dropped only where the voice event was authored as
@@ -31,19 +32,23 @@ module HeadMusic::Notation::ABC
     private
 
     # A voice event split across bar lines is marked only where it starts,
-    # and a slur closes after its last part. A tuplet marker comes first, and
-    # a slur opens before the decorations, since ".(" would be a dotted slur.
-    # A mark at the start of a later part goes on that part.
+    # and a slur closes after its last part. A tuplet marker comes first, then
+    # a slur from the grace notes and the grace notes, then a slur from the
+    # note, before the decorations, since ".(" would be a dotted slur. A mark
+    # at the start of a later part goes on that part. Grace notes are written
+    # before the note, so the accidentals they write hold for it.
     def token(segment, bar_marks)
       voice_event = segment.voice_event
+      later_part = segment.bar_number != voice_event.position.bar_number
+      graces = later_part ? "" : @slur_writer.grace_opens(voice_event) + @grace_writer.prefix(voice_event)
       marker, body = token_body(segment)
       body += @slur_writer.closes(voice_event) unless segment.continues
-      position = voice_event.position
-      unless segment.bar_number == position.bar_number
+      if later_part
         return marker + bar_marks.decorations_at(voice_event.flow.position(segment.bar_number, 1, 0)) + body
       end
 
-      marker + @slur_writer.opens(voice_event) + bar_marks.decorations_at(position) + @decoration_writer.prefix(voice_event) + body
+      marker + graces + @slur_writer.opens(voice_event) + bar_marks.decorations_at(voice_event.position) +
+        @decoration_writer.prefix(voice_event) + body
     end
 
     # A hairpin ending on the final barline goes on a spacer there, after

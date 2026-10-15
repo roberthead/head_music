@@ -12,7 +12,10 @@ module HeadMusic::Notation::ABC
     }.freeze
 
     def prefix(voice_event)
-      markings = [*voice_event.articulations, *voice_event.ornaments, voice_event.note_dynamic]
+      decorations([*voice_event.articulations, *voice_event.ornaments, voice_event.note_dynamic])
+    end
+
+    def decorations(markings)
       markings.compact.map { |marking| decoration(marking.name_key) }.join
     end
 

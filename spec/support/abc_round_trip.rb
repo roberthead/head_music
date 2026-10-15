@@ -16,6 +16,13 @@ module ABCRoundTripHelper
     expect_equivalent_voice_events(reparsed, flow)
   end
 
+  # Each note's grace notes by the order of the note, for a flow whose
+  # positions ABC moves, as it does a pickup's.
+  def abc_graces_by_note(flow)
+    flow.voices.first.note_events.each_with_index.reject { |note_event, _| note_event.grace_notes.empty? }
+      .map { |note_event, index| [index, note_event.grace_notes.map { |grace| grace_datum(grace) }] }
+  end
+
   private
 
   def expect_equivalent_voice_events(reparsed, flow)

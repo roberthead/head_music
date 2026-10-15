@@ -863,6 +863,61 @@ describe HeadMusic::Notation::ABC::Writer do
     end
   end
 
+  describe "grace notes" do
+    def body_of(flow)
+      described_class.new(flow).to_s.lines.last.chomp
+    end
+
+    let(:flow) { MarkingFixtures.four_quarters }
+    let(:voice) { flow.voices.first }
+
+    def note(index)
+      voice.voice_events[index]
+    end
+
+    it "writes the grace_notes_before_downbeat fixture with its chord, articulation, slash, tie, and slur" do
+      expect(body_of(TupletFixtures.grace_notes_before_downbeat)).to eq "C2 E2 {[Ac]1/2}G2 {.G1/2}F2|{/F}E8|({D1/2C1/2-}C8)|]"
+    end
+
+    it "starts a new group where slashed and unslashed grace notes meet" do
+      note(1).add_grace_note("C4", :eighth, slashed: true).add_grace_note("E4", :eighth)
+      expect(body_of(flow)).to start_with "C2 {/C}{E}D2"
+    end
+
+    it "writes the grace notes before their note, which then cancels an accidental they write" do
+      note(1).add_grace_note("D#4", :eighth)
+      expect(body_of(flow)).to start_with "C2 {^D}=D2"
+    end
+
+    it "writes a tuplet marker before the grace notes" do
+      TupletFixtures.triplets.tap do |triplets|
+        triplets.voices.first.voice_events.first.add_grace_note("B3", :eighth)
+        expect(body_of(triplets)).to start_with "(3{B,}C D E"
+      end
+    end
+
+    it "closes a slur from grace notes and one from an earlier note after their shared last note" do
+      note(2).add_grace_note("C4", :eighth)
+      voice.add_span(:slur, from: "1:1", to: "1:3")
+      voice.add_span(:slur, from: "1:3", to: "1:3", from_grace: true)
+      expect(body_of(flow)).to start_with "(C2 D2 ({C}E2))"
+    end
+
+    it "starts a slur from the main note of a slur from its grace notes on the note after, as touching slurs do" do
+      note(2).add_grace_note("C4", :eighth)
+      voice.add_span(:slur, from: "1:3", to: "1:3", from_grace: true)
+      voice.add_span(:slur, from: "1:3", to: "2:1")
+      expect(body_of(flow)).to eq "C2 D2 ({C}E2) (F2|G8)|]"
+    end
+
+    it "refuses a slur from grace notes that crosses one from an earlier note" do
+      note(2).add_grace_note("C4", :eighth)
+      voice.add_span(:slur, from: "1:1", to: "1:4")
+      voice.add_span(:slur, from: "1:3", to: "2:1", from_grace: true)
+      expect { body_of(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /slurs that cross/)
+    end
+  end
+
   describe "bar markings" do
     def body_of(flow)
       described_class.new(flow).to_s.lines.drop(5).join

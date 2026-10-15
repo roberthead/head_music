@@ -211,4 +211,77 @@ describe HeadMusic::Notation::ABC do
       ABC
     end
   end
+
+  describe "a round trip of tuplets and grace notes" do
+    # ABC holds one voice, reads no pickup, and draws no tuplet across a
+    # barline, so those fixtures are checked on their own below.
+    single_bar_fixtures = TupletFixtures.all - TupletFixtures.crossing_barline - %i[tuplets_in_two_voices grace_notes_in_pickup]
+
+    single_bar_fixtures.each do |fixture|
+      context "with the #{fixture} fixture" do
+        let(:original) { TupletFixtures.public_send(fixture) }
+        let(:rendered) { described_class.render(original) }
+        let(:round_tripped) { described_class.parse(rendered) }
+
+        # A run with no group comes back as the groups it was bracketed in.
+        it "keeps every tuplet bracket" do
+          expect_same_tuplets(original, round_tripped, bracketed: true)
+        end
+
+        unless fixture == :ungrouped_tuplet_run
+          it "keeps every tuplet group" do
+            expect_same_tuplets(original, round_tripped)
+          end
+        end
+
+        it "keeps the grace notes and the slurs from them" do
+          expect_same_grace_notes(original, round_tripped)
+        end
+
+        it "keeps every voice event whole, with its written value and ratio" do
+          expect_same_voice_events(original, round_tripped)
+        end
+
+        it "reads back what it wrote" do
+          expect(described_class.render(round_tripped)).to eq rendered
+        end
+      end
+    end
+
+    TupletFixtures.crossing_barline.each do |fixture|
+      it "refuses the #{fixture} fixture, whose tuplet crosses a barline" do
+        expect { described_class.render(TupletFixtures.public_send(fixture)) }
+          .to raise_error(HeadMusic::Notation::ABC::RenderError, /across the barline into bar 2/)
+      end
+    end
+
+    it "refuses the tuplets_in_two_voices fixture, since ABC output holds one voice" do
+      expect { described_class.render(TupletFixtures.tuplets_in_two_voices) }
+        .to raise_error(HeadMusic::Notation::ABC::RenderError, /multi-voice/)
+    end
+
+    it "keeps the grace notes of the grace_notes_in_pickup fixture, a bar later, since ABC reads no pickup" do
+      original = TupletFixtures.grace_notes_in_pickup
+      round_tripped = described_class.parse(described_class.render(original))
+      expect(abc_graces_by_note(round_tripped)).to eq abc_graces_by_note(original)
+    end
+
+    describe "of generated flows" do
+      def round_trip(seed)
+        original = TupletGenerator.flow(seed, voices: 1, pickup: false, cross_barlines: false, meters: %w[4/4])
+        rendered = described_class.render(original)
+        [original, rendered, described_class.parse(rendered)]
+      end
+
+      TupletGenerator::SEEDS.each do |seed|
+        it "keeps the tuplets, grace notes, and sounding music of seed #{seed}, and reads back what it wrote" do
+          original, rendered, round_tripped = round_trip(seed)
+          expect_same_tuplets(original, round_tripped, bracketed: true)
+          expect_same_grace_notes(original, round_tripped)
+          expect(sounding_summary(round_tripped)).to eq sounding_summary(original)
+          expect(described_class.render(round_tripped)).to eq rendered
+        end
+      end
+    end
+  end
 end
