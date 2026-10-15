@@ -103,6 +103,7 @@ File.binwrite("exercise.mid", bytes)
 - A MIDI key signature holds only major or minor. A tonal context in another mode writes its signature as major.
 - **No `Layout#to_midi` in v1.** An SMF is one sequence, so several flows would have to be joined or written as several files. The caller can render each realized flow instead. Several flows would need format 2, which MIDI Import does not read, so the output could not round-trip.
 - **No pan, volume, bank select, or GM System On.** The model holds no data for them, so any value would be invented.
+- **Hand check** (2026-10-15). Speed the Plough, rendered at division 480 and converted with `mscore -o speed.musicxml speed.mid` by MuseScore 4, wrote its MusicXML without errors, and that file reads back with the render's 104 pitches in order. The gated `spec/head_music/midi/muse_score_spec.rb` repeats this for every fixture.
 
 ## Decisions
 
