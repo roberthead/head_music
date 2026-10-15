@@ -3,11 +3,39 @@
 # into the gem. It reads more than the writer writes: running status, a note
 # on at velocity 0 as a note off, and unknown chunks, as other tools write them.
 class HeadMusic::MIDI::Reader
-  Sequence = Data.define(:format, :division, :tracks)
-
   Note = Data.define(:channel, :key, :velocity, :on, :off) do
     def duration
       off - on
+    end
+  end
+
+  # Pairs each note on with the next note off of its channel and key.
+  def self.pair(events)
+    held = Hash.new { |hash, key| hash[key] = [] }
+    events.each_with_object([]) do |event, notes|
+      case event
+      when HeadMusic::MIDI::NoteOn
+        held[[event.channel, event.key]] << event
+      when HeadMusic::MIDI::NoteOff
+        on = held[[event.channel, event.key]].shift
+        notes << Note.new(on.channel, on.key, on.velocity, on.tick, event.tick) if on
+      end
+    end.sort_by { |note| [note.on, note.channel, note.key] }
+  end
+
+  Sequence = Data.define(:format, :division, :tracks) do
+    # Every track's events as a player merges them: by tick, then in track
+    # order, keeping each track's own order within a tick.
+    def merged_events
+      tracks.each_with_index.flat_map { |track, track_index|
+        track.events.each_with_index.map { |event, index| [event.tick, track_index, index, event] }
+      }.sort_by { |tick, track_index, index, _event| [tick, track_index, index] }.map(&:last)
+    end
+
+    # The notes of every track, paired across tracks, since a channel may be
+    # shared by several.
+    def notes
+      HeadMusic::MIDI::Reader.pair(merged_events)
     end
   end
 
@@ -22,18 +50,8 @@ class HeadMusic::MIDI::Reader
       events.grep(kind)
     end
 
-    # Each note on paired with the next note off of its channel and key.
     def notes
-      held = Hash.new { |hash, key| hash[key] = [] }
-      events.each_with_object([]) do |event, notes|
-        case event
-        when HeadMusic::MIDI::NoteOn
-          held[[event.channel, event.key]] << event
-        when HeadMusic::MIDI::NoteOff
-          on = held[[event.channel, event.key]].shift
-          notes << Note.new(on.channel, on.key, on.velocity, on.tick, event.tick) if on
-        end
-      end.sort_by { |note| [note.on, note.channel, note.key] }
+      HeadMusic::MIDI::Reader.pair(events)
     end
 
     def name
@@ -216,3 +234,54 @@ class HeadMusic::MIDI::Reader
     byte
   end
 end
+
+# What every rendered file must satisfy, as a player merging its tracks hears
+# it: each note on meets exactly one later note off, no key is struck while
+# it sounds, ticks never go back, and every track ends together with its
+# end-of-track last.
+module MIDIInvariants
+  def midi_invariant_violations(sequence)
+    track_violations(sequence) + key_violations(sequence.merged_events)
+  end
+
+  # Renders, decodes, and checks a flow, answering the decoded sequence.
+  def render_midi(flow, **options)
+    bytes = HeadMusic::MIDI.render(flow, **options)
+    sequence = HeadMusic::MIDI::Reader.new(bytes).read
+    expect(midi_invariant_violations(sequence)).to eq []
+    sequence
+  end
+
+  private
+
+  def track_violations(sequence)
+    finishes = sequence.tracks.map { |track| track.events.last }
+    violations = sequence.tracks.each_with_index.flat_map do |track, index|
+      ticks = track.events.map(&:tick)
+      [
+        ("track #{index} goes back in time" unless ticks.each_cons(2).all? { |earlier, later| earlier <= later }),
+        ("track #{index} does not end with its end-of-track" unless track.events.last.is_a?(HeadMusic::MIDI::EndOfTrack)),
+        ("track #{index} has more than one end-of-track" if track.of(HeadMusic::MIDI::EndOfTrack).length > 1)
+      ].compact
+    end
+    violations << "tracks end at different ticks" unless finishes.map(&:tick).uniq.length == 1
+    violations
+  end
+
+  def key_violations(events)
+    held = {}
+    violations = events.each_with_object([]) do |event, found|
+      key = [event.channel, event.key] if event.respond_to?(:key)
+      case event
+      when HeadMusic::MIDI::NoteOn
+        found << "key #{event.key} on channel #{event.channel} struck at #{event.tick} while it sounds" if held[key]
+        held[key] = event
+      when HeadMusic::MIDI::NoteOff
+        found << "key #{event.key} on channel #{event.channel} released at #{event.tick} while silent" unless held.delete(key)
+      end
+    end
+    violations + held.values.map { |on| "key #{on.key} on channel #{on.channel} struck at #{on.tick} is never released" }
+  end
+end
+
+RSpec.configure { |config| config.include MIDIInvariants }

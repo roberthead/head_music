@@ -18,6 +18,7 @@ module HeadMusic::MIDI
       check_meters
       check_tempos
       check_keys
+      channels
       played_bars
       self
     end
@@ -31,19 +32,16 @@ module HeadMusic::MIDI
       end
     end
 
-    def check_ticks(resolution, finish)
-      ticks = resolution.ticks(finish)
-      return if ticks <= SMF::MAX_VLQ
-
-      raise RenderError, "the performance lasts #{ticks} ticks at #{resolution.division} to the quarter, " \
-        "more than a MIDI file can count (#{SMF::MAX_VLQ})"
+    # Raises when the flow needs more pitched channels than MIDI has.
+    def channels
+      @channels ||= ChannelAllocator.new(flow)
     end
 
-    # The sounding key, or the written pitch plus the sounding transposition
-    # of the instrument in force at the bar when the flow is transposed.
-    def self.key_for(pitch, part, bar_number, transposed:)
-      transposition = transposed ? part.instrument_at(bar_number)&.sounding_transposition.to_i : 0
-      pitch.midi_note_number + transposition
+    def check_ticks(ticks, division)
+      return if ticks <= SMF::MAX_VLQ
+
+      raise RenderError, "the performance lasts #{ticks} ticks at #{division} to the quarter, " \
+        "more than a MIDI file can count (#{SMF::MAX_VLQ})"
     end
 
     private
@@ -86,7 +84,7 @@ module HeadMusic::MIDI
     end
 
     def check_key(pitch, part, voice_event)
-      key = self.class.key_for(pitch, part, voice_event.position.bar_number, transposed: transposed)
+      key = SoundKeys.key_for(pitch, part, voice_event.position.bar_number, transposed: transposed)
       return if key.between?(0, 127)
 
       raise RenderError, "#{pitch} at #{voice_event.position} sounds at MIDI key #{key}, outside 0..127"

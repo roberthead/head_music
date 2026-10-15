@@ -92,14 +92,12 @@ describe HeadMusic::MIDI::Preflight do
   end
 
   describe "#check_ticks" do
-    let(:resolution) { HeadMusic::MIDI::TickResolution.new([0]) }
-
     it "accepts a performance a MIDI file can count" do
-      expect { preflight.check_ticks(resolution, Rational(0x0FFFFFFF, 1920)) }.not_to raise_error
+      expect { preflight.check_ticks(0x0FFFFFFF, 480) }.not_to raise_error
     end
 
     it "refuses one longer than a MIDI file can count" do
-      expect { preflight.check_ticks(resolution, Rational(0x10000000, 1920)) }.to raise_error(HeadMusic::MIDI::RenderError, /more than a MIDI file can count/)
+      expect { preflight.check_ticks(0x10000000, 480) }.to raise_error(HeadMusic::MIDI::RenderError, /more than a MIDI file can count/)
     end
   end
 end
