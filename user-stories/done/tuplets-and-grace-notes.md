@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-25T14:05:52-07:00
   activated_at: 2026-10-14T16:39:35-07:00
   planned_at:   2026-10-14T16:55:47-07:00
-  finished_at:
-  updated_at:   2026-10-15T07:49:44-07:00
+  finished_at:  2026-10-15T07:49:57-07:00
+  updated_at:   2026-10-15T07:49:57-07:00
 -->
 
 # Story: Tuplets and Grace Notes
@@ -537,3 +537,13 @@ Reviewed 2026-10-15 at `7a51dbf6`, with fixes through `262d1fe1`. The coverage s
 - Findings 3–6 are fixed in `f7fd2a78`, `1578052b`, `d2782cd3`, and `262d1fe1`.
 - A mixed slashed and unslashed grace run slurred to its note writes `\slashedGrace f'16( \grace g'16 e'2)`, which compiles cleanly; no criterion covers it.
 - Integration found one bug the parallel builds could not: a leftover piece of an ungrouped run took a different bracket unit than the reader gives it (`107ba06e`).
+
+## Learnings
+
+- **Exact arithmetic first paid for everything after it.** Moving time from Float ticks to Rational fractions and integer subticks in the shared base fixed two old truncation bugs on the way, and let every format place septuplet notes and marks at exact onsets without inventing its own rounding.
+- **Whole-file timing needs a size test, not just a seed test.** The generator's short flows passed thousands of seeds while grouping was quadratic; only a reviewer reading 400 bars found it. A memo cleared by a mutation is a cost to measure at corpus size whenever a reader mutates after placing.
+- **A rule stated per group broke on input the readers had to accept.** "Each onset rounds from its group's start" made authored brackets inside a run unrepresentable, and the readers dropped them without a word. Rounding per run kept the decision's intent (exact spans, no accumulation) and held what was written. When a model rule refuses ordinary input in a format, check the rule before adding a rescue.
+- **The integration round trip earned its place again.** The LilyPond reader and writer, built apart, disagreed about the unit of a run's leftover bracket; only the coordinator's seed run could see it, on seed 26.
+- **Parallel agents need separate scratch space.** Five worktree agents shared one scratchpad; one deleted `aside/` while another had files there, and a third restored another's files by mistake. Name each agent's scratch folder in its prompt.
+- **A loaded machine hides behind wall-clock numbers.** Suite runs took 104 and 215 minutes while load averaged 15–28 from system daemons; per-seed timing (4–9 ms) and CPU time showed the code was fine. Measure CPU, not elapsed time, before chasing a slowdown.
+
