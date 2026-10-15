@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T11:05:36-07:00
   planned_at:   2026-10-15T11:19:33-07:00
   finished_at:
-  updated_at:   2026-10-15T11:19:33-07:00
+  updated_at:   2026-10-15T12:21:19-07:00
 -->
 
 # Story: MIDI Export
@@ -41,58 +41,58 @@ File.binwrite("exercise.mid", bytes)
 
 ### Entry point and file
 
-- [ ] `HeadMusic::MIDI.render(flow, **options)` and `Flow#to_midi` return a binary `String` (`Encoding::BINARY`) holding a format 1 SMF. Lyric and name texts are UTF-8 bytes with byte-length prefixes. The same flow gives the same bytes
-- [ ] Track 0 is the conductor track. It holds the sequence name (from the flow's name), and the tempo, time-signature, and key-signature meta events
-- [ ] Every part gets one track, in `flow.parts` order, including a part with no notes. The track name comes from the part's player name, else its instrument's name, else its first voice's role; with none, no name is written
-- [ ] A part takes a pitched channel when it holds a pitched sound, and pitched channels are 1–9 and 11–16 in part order. Its unpitched sounds go to channel 10 within its own track, and no program change is written on channel 10
-- [ ] Pitched parts that play the same instrument throughout share one channel, each keeping its own track. `MIDI::RenderError` is raised only when more than fifteen distinct pitched channels are needed, and it names the count
-- [ ] Ticks per quarter note are the least common multiple of 480 and the denominators of every onset and release the file writes, articulation shortening and grace notes included, computed exactly from written values and ratios, so a septuplet is exact in MIDI though the model rounds it. When that exceeds 32767, the writer uses 960 and rounds each onset and release to the nearest tick, keeping every note at least one tick long
-- [ ] A flow with no voice events raises `MIDI::RenderError` from a preflight, before any bytes are written. A flow of rests only renders a valid file with no notes
-- [ ] A sounding key outside 0..127 raises `RenderError`, naming the pitch and its position, before any output
-- [ ] Tempo is round(60,000,000 / (bpm × beat value in quarters)), so a dotted quarter at 60 writes 666,667. Time signatures write clocks per click as 24 × the beat value in quarters (6/8 → 36) and 8 thirty-seconds per quarter. A meter whose denominator is not a power of two, or a tempo of 0 bpm, raises `RenderError`. Key signatures beyond seven fifths are written enharmonically
-- [ ] A file begins at the pickup's first onset. When the pickup's length is a whole number of the meter's unit, it gets its own time signature, and the flow's meter follows at bar 1
+- [x] `HeadMusic::MIDI.render(flow, **options)` and `Flow#to_midi` return a binary `String` (`Encoding::BINARY`) holding a format 1 SMF. Lyric and name texts are UTF-8 bytes with byte-length prefixes. The same flow gives the same bytes
+- [x] Track 0 is the conductor track. It holds the sequence name (from the flow's name), and the tempo, time-signature, and key-signature meta events
+- [x] Every part gets one track, in `flow.parts` order, including a part with no notes. The track name comes from the part's player name, else its instrument's name, else its first voice's role; with none, no name is written
+- [x] A part takes a pitched channel when it holds a pitched sound, and pitched channels are 1–9 and 11–16 in part order. Its unpitched sounds go to channel 10 within its own track, and no program change is written on channel 10
+- [x] Pitched parts that play the same instrument throughout share one channel, each keeping its own track. `MIDI::RenderError` is raised only when more than fifteen distinct pitched channels are needed, and it names the count
+- [x] Ticks per quarter note are the least common multiple of 480 and the denominators of every onset and release the file writes, articulation shortening and grace notes included, computed exactly from written values and ratios, so a septuplet is exact in MIDI though the model rounds it. When that exceeds 32767, the writer uses 960 and rounds each onset and release to the nearest tick, keeping every note at least one tick long
+- [x] A flow with no voice events raises `MIDI::RenderError` from a preflight, before any bytes are written. A flow of rests only renders a valid file with no notes
+- [x] A sounding key outside 0..127 raises `RenderError`, naming the pitch and its position, before any output
+- [x] Tempo is round(60,000,000 / (bpm × beat value in quarters)), so a dotted quarter at 60 writes 666,667. Time signatures write clocks per click as 24 × the beat value in quarters (6/8 → 36) and 8 thirty-seconds per quarter. A meter whose denominator is not a power of two, or a tempo of 0 bpm, raises `RenderError`. Key signatures beyond seven fifths are written enharmonically
+- [x] A file begins at the pickup's first onset. When the pickup's length is a whole number of the meter's unit, it gets its own time signature, and the flow's meter follows at bar 1
 
 ### Notes
 
-- [ ] Each pitched note event writes note on and note off at its ticks, and a chord writes one per pitch; rests write nothing
-- [ ] Tied notes sound as one note, not re-struck. A note tied over a barline sounds into the next played bar only when that bar follows it in the score; otherwise it releases at the barline, and a tie arriving from a bar that was not just played strikes fresh
-- [ ] When a note on a channel's key begins while that key is held, the held note is released and the key struck again at the new onset, then sounds until the later of the two releases. This applies across percussion parts on channel 10
-- [ ] Grace notes sound on the beat, taking time from the main note. A lone acciaccatura sounds as a thirty-second. A lone appoggiatura takes half the first link of its main note. A group of two or more sounds a thirty-second each. A group never takes more than half the main note, and shares that half equally when it would. A grace note tied to its main note's key sounds through the main note and is not struck again. Grace notes take the main note's dynamic level, without its note dynamic or articulations, and add their own articulations; before an *fp*, that is the level in force before it
-- [ ] Staccato sounds for half the note's value, staccatissimo for a quarter, staccato with tenuto (portato) for three quarters, and tenuto for all of it; other notes sound for their full value. Staccatissimo wins over staccato, and shortening applies to the last link of a tied chain
-- [ ] Unpitched note events go to channel 10, at the GM percussion key their instrument names, or at `DEFAULT_PERCUSSION_KEY` when it names none
-- [ ] With `transposed: true`, each pitch is read as written and sounds at its written pitch plus the sounding transposition of the part's instrument in force at its bar. A part with no transposing instrument sounds as written. The key signature stays concert
+- [x] Each pitched note event writes note on and note off at its ticks, and a chord writes one per pitch; rests write nothing
+- [x] Tied notes sound as one note, not re-struck. A note tied over a barline sounds into the next played bar only when that bar follows it in the score; otherwise it releases at the barline, and a tie arriving from a bar that was not just played strikes fresh
+- [x] When a note on a channel's key begins while that key is held, the held note is released and the key struck again at the new onset, then sounds until the later of the two releases. This applies across percussion parts on channel 10
+- [x] Grace notes sound on the beat, taking time from the main note. A lone acciaccatura sounds as a thirty-second. A lone appoggiatura takes half the first link of its main note. A group of two or more sounds a thirty-second each. A group never takes more than half the main note, and shares that half equally when it would. A grace note tied to its main note's key sounds through the main note and is not struck again. Grace notes take the main note's dynamic level, without its note dynamic or articulations, and add their own articulations; before an *fp*, that is the level in force before it
+- [x] Staccato sounds for half the note's value, staccatissimo for a quarter, staccato with tenuto (portato) for three quarters, and tenuto for all of it; other notes sound for their full value. Staccatissimo wins over staccato, and shortening applies to the last link of a tied chain
+- [x] Unpitched note events go to channel 10, at the GM percussion key their instrument names, or at `DEFAULT_PERCUSSION_KEY` when it names none
+- [x] With `transposed: true`, each pitch is read as written and sounds at its written pitch plus the sounding transposition of the part's instrument in force at its bar. A part with no transposing instrument sounds as written. The key signature stays concert
 
 ### Order of play
 
-- [ ] Bars are written in `Flow#performance_order`, so repeats, endings, D.C., and D.S. are played out, including the tail bar of a final tied note
-- [ ] At each played bar, the writer writes the tempo, meter, and key signature in force whenever they differ from the last written, so a repeat or D.C. to before a change restores the earlier values. A part's program change follows the same rule
+- [x] Bars are written in `Flow#performance_order`, so repeats, endings, D.C., and D.S. are played out, including the tail bar of a final tied note
+- [x] At each played bar, the writer writes the tempo, meter, and key signature in force whenever they differ from the last written, so a repeat or D.C. to before a change restores the earlier values. A part's program change follows the same rule
 
 ### Loudness
 
-- [ ] `HeadMusic::MIDI` defines frozen constants, each pinned by a spec: velocities ppp 16, pp 32, p 48, mp 64, mf 80, f 96, ff 112, fff 127; a default level of *mf*; accent +16, marcato +24, *sf*/*sfz* +24, *rfz* +16, adding together. Velocities are clamped to 1..127
-- [ ] A note's velocity comes from the dynamic level in force at its onset, as `Voice#dynamic_at` answers it, or the default with none
-- [ ] A note dynamic of *sf*, *sfz*, or *rfz* raises that note's velocity by its documented amount. An *fp* note sounds at *f*'s velocity, though `Voice#dynamic_at` at its onset answers *p*; the notes after it sound at *p*
-- [ ] Accent and marcato raise a note's velocity by their documented amounts
-- [ ] Under a hairpin, a note's velocity is interpolated by its onset. The ramp runs from the level in force at the hairpin's start to the level placed at its end. When no level is placed at its end, the ramp runs to one level beyond the start, in the hairpin's direction, and that level stays in force after it until the next placed level. A level placed inside a hairpin ends the ramp there
-- [ ] A voice hairpin applies to its own voice, and a part hairpin to every voice of the part. The innermost hairpin governs, a voice's over its part's
+- [x] `HeadMusic::MIDI` defines frozen constants, each pinned by a spec: velocities ppp 16, pp 32, p 48, mp 64, mf 80, f 96, ff 112, fff 127; a default level of *mf*; accent +16, marcato +24, *sf*/*sfz* +24, *rfz* +16, adding together. Velocities are clamped to 1..127
+- [x] A note's velocity comes from the dynamic level in force at its onset, as `Voice#dynamic_at` answers it, or the default with none
+- [x] A note dynamic of *sf*, *sfz*, or *rfz* raises that note's velocity by its documented amount. An *fp* note sounds at *f*'s velocity, though `Voice#dynamic_at` at its onset answers *p*; the notes after it sound at *p*
+- [x] Accent and marcato raise a note's velocity by their documented amounts
+- [x] Under a hairpin, a note's velocity is interpolated by its onset. The ramp runs from the level in force at the hairpin's start to the level placed at its end. When no level is placed at its end, the ramp runs to one level beyond the start, in the hairpin's direction, and that level stays in force after it until the next placed level. A level placed inside a hairpin ends the ramp there
+- [x] A voice hairpin applies to its own voice, and a part hairpin to every voice of the part. The innermost hairpin governs, a voice's over its part's
 
 ### Instruments
 
-- [ ] Every instrument records a GM program, and every unpitched percussion instrument a GM percussion key, using the nearest GM sound, except those named in an explicit exclusion list in the specs. Programs are stored 1-based
-- [ ] Every pitched part writes a program at its start, and another at each instrument change: its instrument's GM program, or 1 (Acoustic Grand Piano) when it has none
+- [x] Every instrument records a GM program, and every unpitched percussion instrument a GM percussion key, using the nearest GM sound, except those named in an explicit exclusion list in the specs. Programs are stored 1-based
+- [x] Every pitched part writes a program at its start, and another at each instrument change: its instrument's GM program, or 1 (Acoustic Grand Piano) when it has none
 
 ### Lyrics
 
-- [ ] Each syllable writes a lyric meta event at its note's onset, with a hyphen after it when `hyphen_after` is set
-- [ ] On pass *n* of a repeat, a note sings verse *n* when the flow has a verse *n*, and verse 1 otherwise. When two voices of a part sing at one onset, the first voice's syllable is written
+- [x] Each syllable writes a lyric meta event at its note's onset, with a hyphen after it when `hyphen_after` is set
+- [x] On pass *n* of a repeat, a note sings verse *n* when the flow has a verse *n*, and verse 1 otherwise. When two voices of a part sing at one onset, the first voice's syllable is written
 
 ### Verification
 
-- [ ] Specs decode the bytes with a reader in `spec/support` and assert on events and ticks, not on raw byte strings alone. MIDI Import may promote that reader into the gem
-- [ ] The ABC, LilyPond, and kern fixtures, and the MusicXML fixtures `marked_da_capo_al_fine`, `marked_dal_segno_al_coda`, `clarinet_changes`, and `two_verses`, each render, and their decoded notes match the flow's key numbers and onsets
-- [ ] When MuseScore is available, a spec converts rendered fixtures through it and compares their pitches
-- [ ] A rendered fixture opens in at least one real MIDI tool (MuseScore, GarageBand, `timidity`, or `fluidsynth`) without errors, checked by hand and recorded in the story
-- [ ] Maintains 90%+ test coverage
+- [x] Specs decode the bytes with a reader in `spec/support` and assert on events and ticks, not on raw byte strings alone. MIDI Import may promote that reader into the gem
+- [x] The ABC, LilyPond, and kern fixtures, and the MusicXML fixtures `marked_da_capo_al_fine`, `marked_dal_segno_al_coda`, `clarinet_changes`, and `two_verses`, each render, and their decoded notes match the flow's key numbers and onsets
+- [x] When MuseScore is available, a spec converts rendered fixtures through it and compares their pitches
+- [x] A rendered fixture opens in at least one real MIDI tool (MuseScore, GarageBand, `timidity`, or `fluidsynth`) without errors, checked by hand and recorded in the story
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
@@ -398,3 +398,41 @@ All open choices are settled by a recommendation; the trade-offs are noted here.
 - **Timpani and crotales.** `notation_styles.yml` gives them a `neutral_clef`, so `Instrument#pitched?` is wrong for them. The MIDI plan works around it by choosing channels by sounds. Fixing the data would change `SoundResolver` for the bare name "timpani" (`sound_resolver.rb:42-50`), according to the developer. Defer it to its own small story, because it touches resolution behavior unrelated to MIDI.
 - **Channel 10 overlaps.** A merged note on channel 10 stays in the first part's track. This is harmless but unusual.
 - **Not verified by me:** the developer's GM program numbers per catalog key, and the `notation_styles.yml` line numbers. The step 1 catalog spec checks the ranges; check the numbers against a GM table while implementing.
+
+## Review
+
+Reviewed 2026-10-15 at commit `79ac7828` (step 6) and `70bf2f50`, by a product manager (acceptance verification) and a code reviewer, in parallel.
+
+### Acceptance criteria
+
+| Criteria | Verdict | Evidence |
+| --- | --- | --- |
+| Entry point and file (10) | ✅ 10 | `writer.rb`, `smf.rb`, `events.rb`, `channel_allocator.rb`, `tick_resolution.rb`, `preflight.rb`, `conductor_track.rb`; `writer_spec`, `conductor_track_spec`, `tick_resolution_spec`, `preflight_spec`, `midi_spec` |
+| Notes (7) | ✅ 5, ⚠️ 1, ❌ 1 | `part_track.rb`, `key_overlaps.rb`, `note_timing.rb`, `sound_keys.rb`; staccatissimo did not win over a portato marking, and grace-note velocity departed from the criterion's wording |
+| Order of play (2) | ✅ 2 | `performance_order.rb:40`, `conductor_track.rb`, `program_changes.rb`; probes of ties across repeats and a D.C. over changes |
+| Loudness (6) | ✅ 6 | `velocity_resolver.rb`; parity with `Voice#dynamic_at` at every event of the hairpin, marking, and piano fixtures |
+| Instruments (2) | ✅ 2 | `instruments.yml`, `instrument.rb`; 37 programs and 12 keys pinned and checked against GM Level 1 |
+| Lyrics (2) | ✅ 2 | `lyric_events.rb`; `writer_lyrics_spec` with Latin and Cyrillic text |
+| Verification (5) | ✅ 4, ⚠️ 1 | `fixtures_spec` (14 fixtures, expected values computed apart from the writer), `muse_score_spec` (14 passed with MuseScore 4), the hand check in Notes; coverage awaited `rake validate` |
+
+Every file under `lib/head_music/midi/` had 100% line coverage in a scoped measurement.
+
+### Code review findings
+
+1. **Important: compound meters over 1** (6/1, 9/1, 12/1) escaped `MIDI.render` as `NoMethodError`. A click over 255 would also have been packed silently into a byte.
+2. **Important: hairpin velocities were quadratic.** Every note scanned every ramp and summed bar lengths from the ramp's start. One crescendo over 800 bars of eighths took 6.8 s.
+3. **Product review:** a flow name or lyric that is not valid UTF-8 raised an encoding error. Tam-tam and tenor drum lacked GM stand-ins. The CHANGELOG did not describe `transposed:` or every `RenderError` cause.
+
+The reviewer found the SMF bytes, the event order at one tick, the tick resolution, repeats and ties, and 300 fuzzed dynamic combinations sound.
+
+### Resolution
+
+All findings are fixed, each with a spec that fails on the old code (`eb1e9ffc` through `b51cdcf2`):
+
+- **Meters.** Clocks per click are computed without `Meter#beat_value`, and a click that is not a whole number in 1..255 raises `RenderError`. So 6/1 and x/64 now raise, and 6/2 writes.
+- **Staccatissimo** wins over portato.
+- **Text.** Non-UTF-8 text raises `RenderError` naming its source, including track names and unsung verses.
+- **Percussion.** The tam-tam takes key 52 and the tenor drum key 45.
+- **Hairpins** resolve in linear time, pinned by a call-counting spec. Building the ramps had four more quadratic spots, also fixed. `Notation::HairpinSegments.pieces` now does the cutting, shared with the kern and LilyPond writers. One crescendo over 800 bars dropped from 6.86 s to 0.24 s. The MIDI bytes are identical across the fixtures and 816 generated flows.
+- **Grace-note velocity.** The criterion is reworded to what the writer does: a grace note takes the main note's level, without its note dynamic or articulations.
+- **CHANGELOG** completed.
