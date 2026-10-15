@@ -1913,4 +1913,60 @@ describe HeadMusic::Notation::MusicXML::Writer do
       end
     end
   end
+
+  describe "an instrument change back to concert pitch" do
+    let(:project) { LayoutFixtures.clarinet_project(pitches: %w[C4 C4 C4 C4]) }
+    let(:document) { parse_musicxml(project.add_layout(concert_pitch: false).to_musicxml) }
+
+    before { project.flows.first.parts.first.change_instrument(3, "flute") }
+
+    it "resets the transposition where the flute takes over" do
+      transpose = %w[diatonic chromatic].map { |element| xpath_text(document, "//measure[@number='3']/attributes/transpose/#{element}") }
+      expect(transpose).to eq %w[0 0]
+    end
+
+    it "writes no transposition for a change between instruments in C" do
+      project.flows.first.parts.first.change_instrument(4, "oboe")
+      expect(xpath_count(document, "//measure[@number='4']/attributes/transpose")).to eq 0
+    end
+  end
+
+  describe "clef changes" do
+    let(:flow) do
+      HeadMusic::Content::Flow.new(name: "Clefs", key_signature: "C major", meter: "4/4").tap do |flow|
+        part = flow.add_part(staff_system: HeadMusic::Content::StaffSystem.grand_staff)
+        part.add_voice.tap { |voice| (1..3).each { |bar| voice.place("#{bar}:1", :whole, "E4") } }
+        part.staff_system.staves.last.change_clef(3, :tenor_clef)
+      end
+    end
+    let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+    it "writes a clef change in the measure it falls in, numbered for its staff" do
+      clef = %w[sign line].map { |element| xpath_text(document, "//measure[@number='3']/attributes/clef[@number='2']/#{element}") }
+      expect(clef).to eq %w[C 4]
+    end
+
+    it "writes no clef in the measures without a change" do
+      expect(xpath_count(document, "//measure[@number='2']/attributes/clef")).to eq 0
+    end
+  end
+
+  describe "octave clefs" do
+    let(:flow) do
+      HeadMusic::Content::Flow.new(name: "Tenor", key_signature: "C major", meter: "4/4").tap do |flow|
+        flow.add_part(staff_system: HeadMusic::Content::StaffSystem.single_staff(clef: :vocal_tenor_clef))
+          .add_voice.place("1:1", :whole, "C4")
+      end
+    end
+    let(:document) { parse_musicxml(described_class.new(flow).to_s) }
+
+    it "writes clef-octave-change for the tenor's treble clef" do
+      expect(xpath_text(document, "//clef/clef-octave-change")).to eq "-1"
+    end
+
+    it "writes none for a treble clef" do
+      flow.parts.first.staff_system.first_staff.change_clef(1, :treble_clef)
+      expect(xpath_count(document, "//clef/clef-octave-change")).to eq 0
+    end
+  end
 end

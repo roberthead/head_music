@@ -7,6 +7,8 @@ module HeadMusic::Notation::MusicXML
   class AttributesWriter
     include XmlText
 
+    CLEF_REGISTERS = {"G" => 4, "F" => 3, "C" => 4}.freeze
+
     delegate(
       :divisions, :bar_numbers, :measure_key_changes, :measure_time_changes,
       :first_measure_key, :first_measure_meter, :transposed?,
@@ -22,13 +24,15 @@ module HeadMusic::Notation::MusicXML
 
       key = measure_key_changes(part)[bar_number]
       meter = measure_time_changes[bar_number]
+      clefs = clef_change_lines(part, bar_number)
       transpose = instrument_change_transpose_lines(part, bar_number)
-      return [] unless key || meter || transpose.any?
+      return [] unless key || meter || clefs.any? || transpose.any?
 
       [
         "#{INDENT * 3}<attributes>",
         *(key ? key_lines(key) : []),
         *(meter ? time_lines(meter) : []),
+        *clefs,
         *transpose,
         "#{INDENT * 3}</attributes>"
       ]
@@ -51,20 +55,23 @@ module HeadMusic::Notation::MusicXML
       ]
     end
 
+    # A change back to an instrument in C writes a <transpose> of nothing, since
+    # a <transpose> stays in force until another replaces it.
     def instrument_change_transpose_lines(part, bar_number)
       return [] unless part.instrument_changes.key?(bar_number)
 
-      transpose_lines(part.instrument_at(bar_number))
+      returns_to_concert = part.instrument_at(bar_number - 1)&.sounding_transposition.to_i.nonzero?
+      transpose_lines(part.instrument_at(bar_number), reset: returns_to_concert)
     end
 
     # <transpose> states sounding = written + transpose, the same convention the
     # instrument catalog states its sounding_transposition in. The octaves go in
     # <octave-change>, which is how publishers write a bass clarinet.
-    def transpose_lines(instrument)
+    def transpose_lines(instrument, reset: false)
       return [] unless transposed?
 
       semitones = instrument&.sounding_transposition.to_i
-      return [] if semitones.zero?
+      return [] if semitones.zero? && !reset
 
       sign = semitones.negative? ? -1 : 1
       octaves, chromatic = semitones.abs.divmod(12)
@@ -111,9 +118,20 @@ module HeadMusic::Notation::MusicXML
     def clef_lines(part)
       staves = part.staff_system.staves
       staves.each_with_index.flat_map do |staff, index|
-        number = (staves.length > 1) ? %( number="#{index + 1}") : ""
-        clef_element_lines(clef_for(part, staff), number)
+        clef_element_lines(clef_for(part, staff), clef_number(staves, index))
       end
+    end
+
+    def clef_change_lines(part, bar_number)
+      staves = part.staff_system_at(bar_number).staves
+      staves.each_with_index.flat_map do |staff, index|
+        clef = staff.clef_changes[bar_number]
+        clef ? clef_element_lines(clef, clef_number(staves, index)) : []
+      end
+    end
+
+    def clef_number(staves, index)
+      (staves.length > 1) ? %( number="#{index + 1}") : ""
     end
 
     def clef_for(part, staff)
@@ -121,12 +139,20 @@ module HeadMusic::Notation::MusicXML
     end
 
     def clef_element_lines(clef, number)
+      octave_change = clef_octave_change(clef)
       [
         "#{INDENT * 4}<clef#{number}>",
         "#{INDENT * 5}<sign>#{clef.pitch.letter_name}</sign>",
         "#{INDENT * 5}<line>#{clef.line}</line>",
+        octave_change.zero? ? nil : "#{INDENT * 5}<clef-octave-change>#{octave_change}</clef-octave-change>",
         "#{INDENT * 4}</clef>"
-      ]
+      ].compact
+    end
+
+    # How far the clef's pitch sits from its sign's usual register, as the
+    # tenor's treble clef sits an octave below G4.
+    def clef_octave_change(clef)
+      clef.pitch.register - CLEF_REGISTERS.fetch(clef.pitch.letter_name.to_s)
     end
   end
 end
