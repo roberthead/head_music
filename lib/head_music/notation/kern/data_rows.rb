@@ -48,7 +48,7 @@ module HeadMusic::Notation::Kern
 
     def opens_final_hairpin?(bar_number, offset)
       dynamic_fields.values.filter_map(&:final_hairpin).any? do |hairpin|
-        hairpin.from.bar_number == bar_number && HeadMusic::Notation::BarSplitter.offset_in_bar(hairpin.from) == offset
+        hairpin.from.bar_number == bar_number && MarkOffset.in_bar(hairpin.from) == offset
       end
     end
 

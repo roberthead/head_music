@@ -122,7 +122,7 @@ module HeadMusic::Notation::Kern
 
     def dynamic_offsets(bar_number)
       mark_positions.filter_map do |position|
-        HeadMusic::Notation::BarSplitter.offset_in_bar(position) if position.bar_number == bar_number
+        MarkOffset.in_bar(position) if position.bar_number == bar_number
       end
     end
 

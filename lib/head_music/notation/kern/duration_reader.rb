@@ -45,6 +45,13 @@ module HeadMusic::Notation::Kern
       HeadMusic::Rudiment::TupletRatio.get([actual, normal])
     end
 
+    # A rest filling a stretch, under the ratio kern reads its length as
+    # when no plain value spans it, as after a voice's last triplet.
+    def rest_value(fraction)
+      HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction) ||
+        HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction, tuplet: tuplet_ratio(fraction))
+    end
+
     def tuplet(fraction, ratio, context)
       rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction, tuplet: ratio)
       unless rhythmic_value

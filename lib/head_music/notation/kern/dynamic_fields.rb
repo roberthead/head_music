@@ -56,7 +56,7 @@ module HeadMusic::Notation::Kern
     def by_bar
       @by_bar ||= marks.each_with_object({}) do |(position, mark), fields|
         bar_fields = fields[position.bar_number] ||= {}
-        offset = HeadMusic::Notation::BarSplitter.offset_in_bar(position)
+        offset = MarkOffset.in_bar(position, part.voices)
         bar_fields[offset] ||= {}
         mark.each { |piece, text| bar_fields[offset][piece] ||= text }
       end.transform_values do |bar_fields|

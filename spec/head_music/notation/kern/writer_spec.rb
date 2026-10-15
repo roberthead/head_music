@@ -186,6 +186,36 @@ describe HeadMusic::Notation::Kern::Writer do
     end
   end
 
+  describe "tuplets" do
+    def value(name, tuplet)
+      HeadMusic::Rudiment::RhythmicValue.get(name, tuplet: tuplet)
+    end
+
+    def data(flow)
+      render(flow).lines.map(&:chomp).grep(/\A[^*!=]/)
+    end
+
+    it "writes a septuplet at its exact onsets, though its positions round, with a level at one of them" do
+      flow = HeadMusic::Content::Flow.new(meter: "2/4")
+      voice = TupletFixtures.fill(flow.add_voice, TupletFixtures.run("7:4", :sixteenth, %w[C4 D4 E4 F4 G4 A4 B4]) + [[:quarter, "C5"]])
+      voice.part.place_dynamic(voice.voice_events[3].position, :p)
+      expect(data(flow)).to eq ["28c\t.", "28d\t.", "28e\t.", "28f\tp", "28g\t.", "28a\t.", "28b\t.", "4cc\t."]
+    end
+
+    it "writes a triplet quarter crossing the barline as tied triplet eighths" do
+      flow = TupletFixtures.tuplet_crossing_barline
+      expect(body(flow).first(8)).to eq ["=1-", "2.c", "6d", "[12e", "=2", "12e]", "6f", "2.g"]
+    end
+
+    it "pads a voice that ends after a lone triplet with rests kern reads under its ratio" do
+      flow = HeadMusic::Content::Flow.new(meter: "2/4")
+      flow.add_voice.place("1:1", :half, "C4")
+      short = flow.add_voice
+      short.place("1:1", value(:eighth, "3:2"), "E4")
+      expect(data(flow)).to eq ["12e\t2c", "3r\t.", "12r\t."]
+    end
+  end
+
   describe "token markings" do
     subject(:flow) do
       HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|
