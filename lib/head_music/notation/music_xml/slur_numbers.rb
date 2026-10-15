@@ -8,7 +8,9 @@ module HeadMusic::Notation::MusicXML
   # bar's voices and each note's components as they are written, a stop
   # frees its number and a start takes the lowest free one. A start and a
   # stop on one note are written stop first, so one slur can end where the
-  # next begins on the same number. MusicXML numbers slurs from 1 to 16.
+  # next begins on the same number. A slur from grace notes starts before
+  # its main note, and so before any stop there. MusicXML numbers slurs from
+  # 1 to 16.
   class SlurNumbers
     LIMIT = 16
 
@@ -16,6 +18,7 @@ module HeadMusic::Notation::MusicXML
       @plan = plan
       @starts = Hash.new { |hash, key| hash[key] = [] }
       @stops = Hash.new { |hash, key| hash[key] = [] }
+      @grace_starts = Hash.new { |hash, key| hash[key] = [] }
       @in_use = {}
       walk(part)
     end
@@ -26,6 +29,11 @@ module HeadMusic::Notation::MusicXML
 
     def stops_at(voice_event)
       @stops.fetch(key(voice_event), [])
+    end
+
+    # Slurs starting on the first of the event's grace notes.
+    def grace_starts_at(voice_event)
+      @grace_starts.fetch(key(voice_event), [])
     end
 
     # A rest's components are rests of their own, so it stops on its first.
@@ -52,8 +60,10 @@ module HeadMusic::Notation::MusicXML
 
     def spans_by_end(voice)
       curves = voice.spans.select(&:curve?)
+      from_grace, from_note = curves.partition(&:from_grace?)
       {
-        from: curves.group_by { |span| span.from.to_s },
+        grace: from_grace.group_by { |span| span.from.to_s },
+        from: from_note.group_by { |span| span.from.to_s },
         to: curves.group_by { |span| span.to.to_s }
       }
     end
@@ -61,6 +71,9 @@ module HeadMusic::Notation::MusicXML
     def number_segment(segment, spans)
       voice_event = segment.voice_event
       position = voice_event.position.to_s
+      if segment.elapsed.zero?
+        spans[:grace].fetch(position, []).each { |span| start(span, voice_event, @grace_starts) }
+      end
       plan.components_by_segment[segment].each do |component|
         spans[:to].fetch(position, []).each { |span| stop(span, voice_event) } if self.class.closing_component?(voice_event, component)
         spans[:from].fetch(position, []).each { |span| start(span, voice_event) } unless component.tie_stop
@@ -75,12 +88,12 @@ module HeadMusic::Notation::MusicXML
       @stops[key(voice_event)] << number
     end
 
-    def start(span, voice_event)
+    def start(span, voice_event, starts = @starts)
       number = (1..LIMIT).find { |candidate| !@in_use.key?(candidate) }
       raise RenderError, "MusicXML cannot hold more than #{LIMIT} slurs open at once in a part, at #{span.from}" unless number
 
       @in_use[number] = span
-      @starts[key(voice_event)] << number
+      starts[key(voice_event)] << number
     end
   end
 end

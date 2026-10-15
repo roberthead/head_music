@@ -74,4 +74,25 @@ describe HeadMusic::Notation::MusicXML::SlurNumbers do
     notes.drop(1).first(17).each { |note| flow.voices.first.add_span(:slur, from: notes.first.position, to: note.position) }
     expect { HeadMusic::Notation::MusicXML::Writer.new(flow).to_s }.to raise_error(HeadMusic::Notation::MusicXML::RenderError, /more than 16 slurs/)
   end
+
+  describe "a slur from grace notes" do
+    before { event_at(voice, "1:3").add_grace_note("A4", :sixteenth) }
+
+    def grace_numbers_at(position)
+      numbers = slur_numbers(flow)
+      event = event_at(voice, position)
+      [numbers.grace_starts_at(event), numbers.starts_at(event), numbers.stops_at(event)]
+    end
+
+    it "starts on the grace notes and stops on their main note" do
+      voice.add_span(:slur, from: "1:3", to: "1:3", from_grace: true)
+      expect(grace_numbers_at("1:3")).to eq [[1], [], [1]]
+    end
+
+    it "takes a fresh number before a slur ending on the main note frees its own" do
+      voice.add_span(:slur, from: "1:1", to: "1:3")
+      voice.add_span(:slur, from: "1:3", to: "1:4", from_grace: true)
+      expect(grace_numbers_at("1:3")).to eq [[2], [], [1]]
+    end
+  end
 end

@@ -40,4 +40,11 @@ describe HeadMusic::Notation::MusicXML::PitchWriter do
       end
     end
   end
+
+  describe ".lines" do
+    it "writes a <pitch> element, with an <alter> only where the pitch is altered" do
+      expect(described_class.lines(pitch("F#4")).map(&:strip))
+        .to eq ["<pitch>", "<step>F</step>", "<alter>1</alter>", "<octave>4</octave>", "</pitch>"]
+    end
+  end
 end

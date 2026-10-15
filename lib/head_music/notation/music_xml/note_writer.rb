@@ -14,6 +14,7 @@ module HeadMusic::Notation::MusicXML
     def initialize(plan)
       @plan = plan
       @lyric_writer = LyricWriter.new
+      @grace_writer = GraceWriter.new(plan)
     end
 
     # @param voice_number [Integer, nil] the <voice> a part's notes belong to,
@@ -24,7 +25,8 @@ module HeadMusic::Notation::MusicXML
       voice_event = segment.voice_event
       ensure_pitched_sounds(voice_event)
 
-      components_by_segment[segment].each_with_index.flat_map do |component, component_index|
+      graces = segment.elapsed.zero? ? grace_writer.lines(voice_event, voice_number: voice_number, staff_number: staff_number) : []
+      graces + components_by_segment[segment].each_with_index.flat_map do |component, component_index|
         beams = beam_annotations[[segment, component_index]] || []
         tuplet_mark = tuplet_marks.at(segment, component_index)
         note_slots(voice_event).each_with_index.flat_map do |pitch, index|
@@ -52,7 +54,7 @@ module HeadMusic::Notation::MusicXML
 
     private
 
-    attr_reader :plan, :lyric_writer
+    attr_reader :plan, :lyric_writer, :grace_writer
 
     delegate :components_by_segment, :beam_annotations, :tuplet_marks, to: :plan
 
@@ -78,16 +80,16 @@ module HeadMusic::Notation::MusicXML
       [
         "#{INDENT * 3}<note>",
         *(chord ? ["#{INDENT * 4}<chord/>"] : []),
-        *(pitch ? pitch_lines(pitch) : ["#{INDENT * 4}<rest/>"]),
+        *(pitch ? PitchWriter.lines(pitch) : ["#{INDENT * 4}<rest/>"]),
         "#{INDENT * 4}<duration>#{component.duration}</duration>",
-        *tie_lines(voice_event, component),
+        *tie_lines(voice_event, component, pitch),
         voice_number && "#{INDENT * 4}<voice>#{voice_number}</voice>",
         "#{INDENT * 4}<type>#{component.type}</type>",
         *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
         *tuplet_marks.time_modification_lines(tuplet_mark),
         staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>",
         *beam_lines(beams),
-        *notation_lines(voice_event, component, chord: chord, tuplet_mark: tuplet_mark),
+        *notation_lines(voice_event, component, pitch: pitch, chord: chord, tuplet_mark: tuplet_mark),
         *lyric_writer.lines(voice_event, component, chord: chord),
         "#{INDENT * 3}</note>"
       ].compact
@@ -97,36 +99,30 @@ module HeadMusic::Notation::MusicXML
       beams.map { |beam| %(#{INDENT * 4}<beam number="#{beam.number}">#{beam.type}</beam>) }
     end
 
-    def pitch_lines(pitch)
-      attributes = PitchWriter.attributes(pitch)
-      [
-        "#{INDENT * 4}<pitch>",
-        "#{INDENT * 5}<step>#{attributes[:step]}</step>",
-        attributes[:alter] && "#{INDENT * 5}<alter>#{attributes[:alter]}</alter>",
-        "#{INDENT * 5}<octave>#{attributes[:octave]}</octave>",
-        "#{INDENT * 4}</pitch>"
-      ].compact
-    end
-
     # Rests take no tie elements; the links of a rest's tied chain render as
     # consecutive independent rests.
-    def tie_lines(voice_event, component)
+    def tie_lines(voice_event, component, pitch)
       return [] if voice_event.rest?
 
-      tie_elements("tie", 4, component)
+      tie_elements("tie", 4, component, tied_from_grace?(voice_event, component, pitch))
+    end
+
+    # Only the first component of a chain can be tied into from a grace note.
+    def tied_from_grace?(voice_event, component, pitch)
+      !component.tie_stop && GraceWriter.tied_into?(voice_event, pitch)
     end
 
     # A <tie> is heard and a <tied> is drawn; each stops before it starts.
-    def tie_elements(tag, depth, component)
-      {"stop" => component.tie_stop, "start" => component.tie_start}.filter_map do |type, present|
+    def tie_elements(tag, depth, component, tied_in = false)
+      {"stop" => component.tie_stop || tied_in, "start" => component.tie_start}.filter_map do |type, present|
         %(#{INDENT * depth}<#{tag} type="#{type}"/>) if present
       end
     end
 
     # A rest carries no ties or markings, but a phrase may begin or end on one.
-    def notation_lines(voice_event, component, chord:, tuplet_mark: nil)
+    def notation_lines(voice_event, component, chord:, pitch: nil, tuplet_mark: nil)
       lines = [
-        *(voice_event.rest? ? [] : tie_elements("tied", 5, component)),
+        *(voice_event.rest? ? [] : tie_elements("tied", 5, component, tied_from_grace?(voice_event, component, pitch))),
         *slur_lines(voice_event, component, chord: chord),
         *(chord ? [] : tuplet_marks.tuplet_lines(tuplet_mark)),
         *(voice_event.rest? ? [] : marking_lines(voice_event, component, chord: chord))
