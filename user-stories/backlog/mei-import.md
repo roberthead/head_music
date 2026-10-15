@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-10-15T12:44:52-07:00
+  updated_at:   2026-10-15T13:30:19-07:00
 -->
 
 # Story: MEI Import
@@ -116,7 +116,7 @@ flow.voices.length # => one per staff layer
   - `mdiv/@label` is the flow's name, `scoreDef/@midi.bpm` the opening tempo, and `layerDef/label` a voice's role;
   - instrument changes are `<staffDef>` changes with a new `<instrDef>`;
   - an ending's passes are its `@n`, as `1-2`;
-  - a bare `<staff n/>` means no voice there, so a voice is not padded with rests before it begins;
+  - a bare `<staff n/>` means no voice on that staff; a voice with nothing in a bar writes `<layer><mRest/></layer>`, as MusicXML writes a whole-measure rest;
   - a layer's number is the voice's index within its part, kept across staff crossings;
   - tstamps of triplet onsets are rounded to four decimal places, so snap them to the tick grid;
   - `XmlReading` and `ParsePreflight` still live in `music_xml/`; move them to `Notation` with an `error_class:` parameter.

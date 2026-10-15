@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T12:24:49-07:00
   planned_at:   2026-10-15T12:44:52-07:00
   finished_at:
-  updated_at:   2026-10-15T12:44:52-07:00
+  updated_at:   2026-10-15T13:30:19-07:00
 -->
 
 # Story: MEI Export
@@ -124,6 +124,12 @@ mei # => String of a well-formed MEI 5 document with <meiHead> and <music>
   - pickup rests stay `<rest>`, not `<space>`, matching what every other writer prints;
   - the schema is not vendored; the spec is gated on `MEI_SCHEMA`, as MusicXML's is on `MUSICXML_XSD`;
   - a repeat played more than twice is written as a `<dir>` "×N" at the end of its bar.
+
+- **Implementation choices made without stopping to ask** (2026-10-15; Rob may revise any):
+  - A voice with nothing in a bar, such as a tacet voice or the bars before a voice begins, writes `<layer><mRest/></layer>`, as MusicXML writes a whole-measure rest. A bare `<staff/>` is only for a staff with no voice on it.
+  - Feature hooks return elements rather than text, and the measure and section writers bucket them by bar, so no feature filters per measure.
+  - `<instrDef midi.instrnum>` is `Instrument#gm_program` minus one, since GM numbering is 1-based and MEI's is 0-based.
+  - The clef fallback for a staff uses the first voice on that staff.
 
 ## Implementation Plan
 
