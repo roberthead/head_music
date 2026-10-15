@@ -13,7 +13,7 @@ module HeadMusic::Notation::MEI
       attr_writer :layer_builder
 
       def layer_builder
-        @layer_builder ||= FlatLayer
+        @layer_builder ||= LayerTree
       end
 
       def attribute_sources

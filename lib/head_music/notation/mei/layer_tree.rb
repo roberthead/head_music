@@ -38,5 +38,3 @@ module HeadMusic::Notation::MEI
     end
   end
 end
-
-HeadMusic::Notation::MEI::MeasureWriter.layer_builder = HeadMusic::Notation::MEI::LayerTree
