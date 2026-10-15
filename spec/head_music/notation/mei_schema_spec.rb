@@ -39,6 +39,17 @@ describe HeadMusic::Notation::MEI do
     expect(schema_errors(described_class.render(flow), schema)).to eq []
   end
 
+  it "renders written and gestural accidentals as valid MEI" do
+    flow = HeadMusic::Notation::ABC.parse("X:1\nT:Accidentals\nM:4/4\nL:1/4\nK:D\n{^^f}F=F[^C=C]^^F-|F_B__B=c|]\n")
+    expect(schema_errors(described_class.render(flow), schema)).to eq []
+  end
+
+  it "renders a transposed part's accidentals as valid MEI" do
+    project = LayoutFixtures.clarinet_project(pitches: %w[E4 F#4 Bb4 C4])
+    written = project.add_layout(concert_pitch: false).realize(project.flows.first)
+    expect(schema_errors(described_class.render(written, transposed: true), schema)).to eq []
+  end
+
   it "renders what every extension hook adds as valid MEI" do
     register_every_mei_hook
     flow = HeadMusic::Notation::ABC.parse("X:1\nT:Hooks\nM:2/4\nL:1/4\nK:C\n{B}CD|[EG]F|]\n")

@@ -14,6 +14,8 @@ describe HeadMusic::Notation::MEI::EventWriter do
   let(:flow) { HeadMusic::Content::Flow.new(meter: "4/4") }
   let(:voice) { flow.add_voice }
 
+  before { allow(described_class).to receive_messages(attribute_sources: [], child_sources: []) }
+
   it "writes a note's pitch and duration" do
     voice.place("1:1", :dotted_half, "F#4")
     voice.place("1:4", :quarter)
