@@ -91,6 +91,71 @@ describe HeadMusic::Notation::BarSplitter do
     end
   end
 
+  describe "splitting tuplets" do
+    def place_in_turn(*values)
+      values.each { |value| voice.place(voice.next_position, value, "D4") }
+    end
+
+    def split(voice_event)
+      described_class.segments_of(voice_event).map { |segment| [segment.bar_number, segment.rhythmic_value.to_s] }
+    end
+
+    let(:error) { HeadMusic::Notation::RenderError }
+
+    before { voice.place("1:1", "dotted half", "C4") }
+
+    it "splits the middle of three 3:2 quarters from beat 4 into tied triplet eighths" do
+      place_in_turn(*Array.new(3, HeadMusic::Rudiment::RhythmicValue.get(:quarter, tuplet: "3:2")))
+      expect(voice.voice_events.drop(1).map { |voice_event| split(voice_event) }).to eq [
+        [[1, "triplet quarter"]], [[1, "triplet eighth"], [2, "triplet eighth"]], [[2, "triplet quarter"]]
+      ]
+    end
+
+    it "splits 7:4 eighths from beat 4 at the exact barline despite rounded positions" do
+      place_in_turn(*Array.new(7, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "7:4")))
+      crossing = voice.voice_events[4]
+      expect([crossing.position.to_s, summary(described_class.segments_of(crossing)), split(crossing)])
+        .to eq ["1:4:822:206", [[1, Rational(1, 28), true], [2, Rational(1, 28), false]], [[1, "7:4 sixteenth"], [2, "7:4 sixteenth"]]]
+    end
+
+    it "gives each piece its exact onset in its bar" do
+      place_in_turn(*Array.new(7, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "7:4")))
+      expect(described_class.segments_of(voice.voice_events[4]).map(&:offset)).to eq [Rational(27, 28), 0]
+    end
+
+    it "cuts a chain mixing ratios link by link" do
+      place_in_turn(*Array.new(2, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "3:2")),
+        HeadMusic::Rudiment::RhythmicValue.get("triplet eighth tied to half"))
+      expect(split(voice.voice_events.last)).to eq [[1, "triplet eighth"], [2, "half"]]
+    end
+
+    it "answers the onset of a rounded position exactly" do
+      place_in_turn(*Array.new(2, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "7:4")))
+      expect(described_class.onset_in_bar(voice.voice_events.last)).to eq Rational(3, 4) + Rational(1, 14)
+    end
+
+    context "with a 2:3 duplet crossing a barline in 6/8" do
+      let(:meter) { "6/8" }
+      let(:duplets) { flow.add_voice }
+
+      before do
+        duplets.place("1:1", :half, "C4")
+        2.times { duplets.place(duplets.next_position, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "2:3"), "D4") }
+      end
+
+      it "raises, naming the ratio" do
+        expect { described_class.segments_of(duplets.voice_events.last).first.rhythmic_value!(error) }
+          .to raise_error(error, /cannot express the part of the note at 1:6:240 in bar 1 in binary note values under its 2:3 ratio/)
+      end
+
+      it "raises, naming the group" do
+        duplets.group_tuplet(from: "1:5", to: "2:2")
+        expect { described_class.segments_of(duplets.voice_events.last).first.rhythmic_value!(error) }
+          .to raise_error(error, /under the 2:3 tuplet from 1:5:000 to 2:2:000/)
+      end
+    end
+  end
+
   describe ".position_at" do
     def position_at(bar_number, offset)
       described_class.position_at(flow, bar_number, offset).to_s

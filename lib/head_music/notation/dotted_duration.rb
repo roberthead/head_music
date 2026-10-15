@@ -4,6 +4,11 @@ module HeadMusic
     # fraction of a whole note, and the inverse: the rhythmic value a fraction
     # of a whole note denotes. Exact fractions keep downstream arithmetic (ABC
     # multipliers, MusicXML divisions, LilyPond bar sums) exact.
+    #
+    # A tuplet value has two lengths. Its written one, which leaves out the
+    # ratio, names the note a score shows: ABC lengths, LilyPond tokens, and
+    # MusicXML <type>. Its sounding one, which takes the ratio in, is the time
+    # it fills: kern reciprocals, MusicXML <duration>, and bar sums.
     module DottedDuration
       # Longest supported duration: a maxima (8 whole notes).
       MAX_FRACTION = Rational(8)
@@ -20,13 +25,22 @@ module HeadMusic
         rhythmic_value.written_fraction
       end
 
-      # The rhythmic value spanning a fraction of a whole note, or nil when no
-      # binary note value (or tied chain of them) can express it.
-      def rhythmic_value_for(fraction)
-        fraction = Rational(fraction)
-        return unless expressible?(fraction)
+      # One link's length under its tuplet ratio.
+      def sounding_fraction(link)
+        link.link_fraction
+      end
 
-        build_rhythmic_value(fraction)
+      # The rhythmic value spanning a fraction of a whole note, or nil when no
+      # binary note value (or tied chain of them) can express it. Under a
+      # tuplet ratio, the fraction is the sounding length, and every link of
+      # the answer carries the ratio.
+      def rhythmic_value_for(fraction, tuplet: nil)
+        ratio = tuplet && HeadMusic::Rudiment::TupletRatio.get(tuplet)
+        written = ratio ? Rational(fraction) / ratio.factor : Rational(fraction)
+        return unless expressible?(written)
+
+        value = build_rhythmic_value(written)
+        ratio ? value&.with_tuplet(ratio) : value
       end
 
       def expressible?(fraction)

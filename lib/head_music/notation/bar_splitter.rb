@@ -3,22 +3,52 @@ module HeadMusic
     # Splits a voice event into one segment per bar it sounds in, for writers
     # that must write a note crossing a bar line as tied notes, one per bar.
     module BarSplitter
-      # The fraction is of a whole note. It is nil when the voice event fits its
-      # bar, so a writer renders it from its own rhythmic value and keeps the
-      # tied chain as authored.
-      Segment = Data.define(:voice_event, :bar_number, :fraction, :continues) do
-        # Nil when no binary note value, or tied chain of them, spans the fraction.
+      # The fraction is of a whole note, and sounding: a tuplet piece's is
+      # under its ratio. It is nil when the voice event fits its bar, so a
+      # writer renders it from its own rhythmic value and keeps the tied chain
+      # as authored. The offset is the exact onset of the piece in its bar, and
+      # elapsed how much of the voice event comes before it.
+      Segment = Data.define(:voice_event, :bar_number, :fraction, :continues, :offset, :elapsed) do
+        def initialize(voice_event:, bar_number:, fraction:, continues:, offset: nil, elapsed: 0)
+          super
+        end
+
+        # Nil when no binary note value, or tied chain of them, spans the
+        # fraction under the value's ratio.
         def rhythmic_value
           return voice_event.rhythmic_value unless fraction
 
-          DottedDuration.rhythmic_value_for(fraction)
+          value = voice_event.rhythmic_value
+          return DottedDuration.rhythmic_value_for(fraction) unless value.tuplet?
+
+          ratio = value.uniform_tuplet_ratio
+          ratio ? DottedDuration.rhythmic_value_for(fraction, tuplet: ratio) : mixed_ratio_value
         end
 
         def rhythmic_value!(error_class)
-          rhythmic_value || raise(
-            error_class,
-            "cannot express the part of the note at #{voice_event.position} in bar #{bar_number} in binary note values"
-          )
+          rhythmic_value || raise(error_class, "cannot express the part of the note at #{voice_event.position} " \
+            "in bar #{bar_number} in binary note values#{under_ratio}")
+        end
+
+        private
+
+        # A chain mixing ratios is cut link by link, each piece under its own.
+        def mixed_ratio_value
+          finish = elapsed + fraction
+          pieces = BarSplitter.link_spans(voice_event).filter_map do |link, from, to|
+            piece = [to, finish].min - [from, elapsed].max
+            [piece, link.tuplet_ratio] if piece.positive?
+          end
+          values = pieces.map { |piece, ratio| DottedDuration.rhythmic_value_for(piece, tuplet: ratio) }
+          values.reverse.reduce { |tail, head| head&.append_tied(tail) if tail } unless values.include?(nil)
+        end
+
+        def under_ratio
+          ratio = voice_event.rhythmic_value.uniform_tuplet_ratio
+          return "" unless ratio
+
+          group = voice_event.voice.tuplet_at(voice_event.position)
+          group ? " under the #{group}" : " under its #{ratio.to_a.join(":")} ratio"
         end
       end
 
@@ -28,28 +58,55 @@ module HeadMusic
         voice_events.flat_map { |voice_event| segments_of(voice_event) }
       end
 
+      # Cut at the exact onset and length, so a rounded tuplet note splits
+      # where its exact time crosses the barline.
       def segments_of(voice_event)
-        start = voice_event.position
-        finish = voice_event.next_position
+        bar_number, offset = exact_start(voice_event)
+        length = voice_event.rhythmic_value.fraction
+        elapsed = 0
         segments = []
-        while finish > start.start_of_next_bar
-          segments << Segment.new(voice_event, start.bar_number, fraction_to_bar_end(start), true)
-          start = start.start_of_next_bar
+        loop do
+          room = bar_length(voice_event.flow, bar_number) - offset
+          break if length - elapsed <= room
+
+          segments << Segment.new(voice_event, bar_number, room, true, offset, elapsed)
+          elapsed += room
+          bar_number += 1
+          offset = 0
         end
-        fraction = segments.empty? ? nil : fraction_within_bar(start, finish)
-        segments << Segment.new(voice_event, start.bar_number, fraction, false)
+        segments << Segment.new(voice_event, bar_number, segments.empty? ? nil : length - elapsed, false, offset, elapsed)
       end
 
-      def fraction_to_bar_end(position)
-        meter = position.meter
-        Rational(meter.top_number, meter.bottom_number) - offset_in_bar(position)
+      # The exact onset of a voice event in the bar of its position, as a
+      # fraction of a whole note. A rounded position's onset may lie up to half
+      # a subtick from it.
+      def onset_in_bar(voice_event)
+        offset_in_bar(voice_event.position) +
+          voice_event.onset_remainder / HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
       end
 
-      # A voice event ending on a barline ends at offset zero of the next bar.
-      def fraction_within_bar(from, to)
-        return fraction_to_bar_end(from) if to == from.start_of_next_bar
+      # Each link of a voice event's chain with its exact start and end, as
+      # fractions of a whole note from the event's onset.
+      def link_spans(voice_event)
+        from = 0
+        voice_event.rhythmic_value.tied_chain.map do |link|
+          to = from + link.link_fraction
+          [link, from, to].tap { from = to }
+        end
+      end
 
-        offset_in_bar(to) - offset_in_bar(from)
+      def bar_length(flow, bar_number)
+        meter = flow.meter_at(bar_number)
+        Rational(meter.top_number, meter.bottom_number)
+      end
+
+      # A rounded onset just before a barline belongs to the bar before.
+      def exact_start(voice_event)
+        bar_number = voice_event.position.bar_number
+        offset = onset_in_bar(voice_event)
+        return [bar_number, offset] unless offset.negative?
+
+        [bar_number - 1, offset + bar_length(voice_event.flow, bar_number - 1)]
       end
 
       def offset_in_bar(position)
@@ -68,7 +125,7 @@ module HeadMusic
         flow.position(bar_number, counts.floor + 1, ticks.floor, subticks.round)
       end
 
-      private_class_method :fraction_to_bar_end, :fraction_within_bar
+      private_class_method :bar_length, :exact_start
     end
   end
 end

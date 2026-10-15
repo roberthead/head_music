@@ -61,4 +61,32 @@ describe HeadMusic::Notation::DottedDuration do
       end
     end
   end
+
+  describe "tuplet values" do
+    let(:triplet_quarter) { HeadMusic::Rudiment::RhythmicValue.get(:quarter, tuplet: "3:2") }
+
+    it "answers a tuplet value's written fraction, leaving out its ratio" do
+      expect(described_class.dotted_unit_fraction(triplet_quarter)).to eq Rational(1, 4)
+    end
+
+    it "answers a tuplet value's sounding fraction, under its ratio" do
+      expect(described_class.sounding_fraction(triplet_quarter)).to eq Rational(1, 6)
+    end
+
+    it "answers one link's sounding fraction, not its chain's" do
+      expect(described_class.sounding_fraction(HeadMusic::Rudiment::RhythmicValue.get("triplet quarter tied to half"))).to eq Rational(1, 6)
+    end
+
+    it "builds a value under a ratio from its sounding fraction" do
+      expect(described_class.rhythmic_value_for(Rational(1, 12), tuplet: "3:2").to_s).to eq "triplet eighth"
+    end
+
+    it "puts the ratio on every link of a chain it builds" do
+      expect(described_class.rhythmic_value_for(Rational(5, 28), tuplet: "7:4").to_s).to eq "7:4 quarter tied to 7:4 sixteenth"
+    end
+
+    it "answers nil where no value fits under the ratio" do
+      expect(described_class.rhythmic_value_for(Rational(1, 16), tuplet: "2:3")).to be_nil
+    end
+  end
 end
