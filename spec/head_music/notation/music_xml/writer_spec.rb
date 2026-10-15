@@ -202,6 +202,10 @@ describe HeadMusic::Notation::MusicXML::Writer do
       it "renders the exact golden document" do
         expect(described_class.new(flow).to_s).to eq expected
       end
+
+      it "renders the golden document again from the flow read from it" do
+        expect(described_class.new(HeadMusic::Notation::MusicXML.parse(expected)).to_s).to eq expected
+      end
     end
 
     context "with a chromatic tune" do
