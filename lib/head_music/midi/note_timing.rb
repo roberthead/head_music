@@ -27,6 +27,7 @@ module HeadMusic::MIDI
 
     def length_factor
       names = voice_event.articulations.map { |articulation| articulation.name_key.to_sym }
+      return LENGTH_FACTORS[:staccatissimo] if names.include?(:staccatissimo)
       return PORTATO if names.include?(:staccato) && names.include?(:tenuto)
 
       names.filter_map { |name| LENGTH_FACTORS[name] }.min || 1

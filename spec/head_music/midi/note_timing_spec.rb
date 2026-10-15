@@ -53,6 +53,15 @@ describe HeadMusic::MIDI::NoteTiming do
       expect(timing.length_factor).to eq r(1, 4)
     end
 
+    context "with staccatissimo, staccato and tenuto on a whole note" do
+      let(:voice_event) { voice.place("1:1", :whole, "C4") }
+
+      it "sounds staccatissimo, for a quarter, rather than portato" do
+        voice_event.articulate(:staccatissimo, :staccato, :tenuto)
+        expect(timing.pieces.first.to).to eq r(1, 4)
+      end
+    end
+
     it "lets staccatissimo win over tenuto" do
       voice_event.articulate(:staccatissimo, :tenuto)
       expect(timing.length_factor).to eq r(1, 4)
