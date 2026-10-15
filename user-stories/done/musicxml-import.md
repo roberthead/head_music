@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-24T18:58:30-07:00
   activated_at: 2026-10-15T07:55:48-07:00
   planned_at:   2026-10-15T08:22:45-07:00
-  finished_at:
-  updated_at:   2026-10-15T11:01:36-07:00
+  finished_at:  2026-10-15T11:01:48-07:00
+  updated_at:   2026-10-15T11:01:48-07:00
 -->
 
 # Story: MusicXML Import
@@ -599,3 +599,12 @@ No error outside `HeadMusic::Notation::ParseError` escaped in any round, and no 
 | Chord tones of different lengths, a rest past the bar, a gap with no rest, extreme keys, four dots, triple sharps | 7 | Lindenbaum, 13aa | `UnsupportedFeatureError` |
 
 The trecento Gloria `PMFC_12_9` (1.26 MB, UTF-16 with a byte order mark, three parts, 317 bars) reads in 0.76 s of CPU time. The full reader's call count grows by 3.97 times from 10 bars to 40, and 4.07 times from 40 to 160.
+
+## Learnings
+
+- **Real exports found what the plan didn't.** The MuseScore round trips turned up five reader and writer bugs, including a bracket read back as a brace and wedges stopped before they start. The corpus sweep found six more, among them `Position#normalize` carrying counts in the wrong unit, a bug outside MusicXML. The fixture specs alone passed throughout. Sweeping real corpora is worth planning in from the start, with a manifest so each refusal is a named decision.
+- **The record contract held.** Fixing `NoteRecord`, `DirectionRecord`, and `BarlineRecord` before fanning out let seven mark readers be built in parallel worktrees. None needed the core reworked.
+- **Isolated worktree agents were fragile here.** A sandbox hook intermittently refuses any command whose text contains "git", and the repository path contains "github.com". Worktrees made by hand, with agents pointed at them, worked better. Every parallel agent also needs its own scratch folder.
+- **Run an adversarial review on a reader.** The code reviewer's small hostile documents found five ways for a non-`ParseError` to escape, after 14,000 passing examples and a 1,067-file sweep. The corpus is all valid exports, so it never probes malformed numbers.
+- **"Valid" and "what exporters write" differ.** Finale writes `<voice>` on a chord's first note only. music21 writes zero-length `<forward>`s and splits measures at repeats without `implicit`. Several strict rules were loosened only after a real file failed them. Running the corpus before the stricter fixes landed would have caught the chord-voice regression earlier.
+- **Machine load distorted the timings.** Wall-clock times are meaningless when Spotlight saturates the CPU. The scaling specs count calls instead, and the performance notes report CPU time.
