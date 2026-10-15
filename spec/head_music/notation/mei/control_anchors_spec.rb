@@ -72,6 +72,11 @@ describe HeadMusic::Notation::MEI::ControlAnchors do
       expect(ends(control(%(<hairpin form="cres" staff="1" tstamp="1" tstamp2="1m+5"/>), second_bar)).last).to eq ["3:1:000", nil]
     end
 
+    it "reads a beat after the music ends in a short last bar as that beat, not the final barline" do
+      short_bar = %(<measure n="2" metcon="false">#{mei_staff(1, mei_note("F4", "2", dots: "1"))}</measure>)
+      expect(ends(control(%(<hairpin form="cres" staff="1" tstamp="1" tstamp2="1m+4"/>), short_bar)).last).to eq ["2:4:000", nil]
+    end
+
     it "counts the measures a @tstamp2 reaches" do
       expect(ends(control(%(<hairpin form="cres" staff="1" tstamp="1" tstamp2="1m+1"/>), second_bar)).last).to eq ["2:1:000", "whole F4 at 2:1:000"]
     end

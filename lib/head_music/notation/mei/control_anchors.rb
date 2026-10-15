@@ -8,9 +8,10 @@ module HeadMusic::Notation::MEI
   # beat of, in the layer its @staff and @layer name, else on that staff,
   # and otherwise the position rounded from the exact offset of
   # (tstamp - 1) / meter.unit into its measure. A @tstamp2 of "Nm+b" counts
-  # N measures on; one at or past the end of the music, as the beat after
-  # the last bar's count, is the final barline. A @tstamp2 with no measure
-  # part, and a span by beats that ends before it starts, have no finish.
+  # N measures on; one at or past the last bar's full length, as the beat
+  # after its count, is the final barline, even where a short last bar ends
+  # the music sooner. A @tstamp2 with no measure part, and a span by beats
+  # that ends before it starts, have no finish.
   #
   # A reference into another file, or into a reading the editorial rule
   # rejects, skips its control; one naming no element, or an xml:id used
@@ -179,7 +180,7 @@ module HeadMusic::Notation::MEI
     def at_beat(index, beat, staff, layer)
       meter = @score.measures[index].meter
       offset = Tstamp.offset(beat, meter)
-      return final_barline if @bar_map.time_of(index, offset) >= @bar_map.end_time
+      return final_barline if @bar_map.time_of(index, offset) >= @bar_map.start(@bar_map.last_bar + 1)
 
       record = staff && snapped(index, offset, meter, staff, layer)
       return anchor(record) if record
