@@ -102,7 +102,7 @@ module HeadMusic
       end
 
       def run_bracket(ratio, links)
-        Bracket.new(ratio, DottedDuration.rhythmic_value_for(links.map(&:written_fraction).min), links, nil)
+        Bracket.new(ratio, HeadMusic::Content::TupletGroup.default_unit(links.map(&:written_fraction), ratio), links, nil)
       end
 
       def exact_point(position)

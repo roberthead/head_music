@@ -61,6 +61,24 @@ class HeadMusic::Content::TupletGroup
     end
   end
 
+  # The written total over the ratio's actual count where that is one plain
+  # or dotted value, as three triplet eighths count in eighths; otherwise the
+  # largest value that divides every written fraction.
+  def self.default_unit(written_fractions, ratio)
+    single_value(written_fractions.sum / ratio.actual) ||
+      single_value(written_fractions.reduce { |gcd, fraction| fraction_gcd(gcd, fraction) })
+  end
+
+  def self.single_value(fraction)
+    value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
+    value unless value.nil? || value.tied_value
+  end
+
+  def self.fraction_gcd(one, other)
+    Rational(one.numerator.gcd(other.numerator), one.denominator.lcm(other.denominator))
+  end
+  private_class_method :single_value, :fraction_gcd
+
   def initialize(voice, from:, to:, unit: nil)
     @voice = voice
     @from = position_for(from)
@@ -155,21 +173,8 @@ class HeadMusic::Content::TupletGroup
     raise ArgumentError, "the #{label} must start and end where notes or rests do, since its ratio does not land on whole subticks"
   end
 
-  # The written total over the ratio's actual count where that is one plain
-  # or dotted value, as three triplet eighths count in eighths; otherwise the
-  # largest value that divides every written link.
   def default_unit(links)
-    written = links.map { |link| link.rhythmic_value.written_fraction }
-    single_value(written.sum / ratio.actual) || single_value(written.reduce { |gcd, fraction| fraction_gcd(gcd, fraction) })
-  end
-
-  def single_value(fraction)
-    value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
-    value unless value.nil? || value.tied_value
-  end
-
-  def fraction_gcd(one, other)
-    Rational(one.numerator.gcd(other.numerator), one.denominator.lcm(other.denominator))
+    self.class.default_unit(links.map { |link| link.rhythmic_value.written_fraction }, ratio)
   end
 
   def unit_for(identifier)
