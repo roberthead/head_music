@@ -15,6 +15,11 @@ module HeadMusic::Notation::LilyPond
       ].compact.join
     end
 
+    # A grace note keeps only its articulations.
+    def grace_token(grace_note)
+      grace_note.articulations.map { |articulation| articulation_token(articulation) }.join
+    end
+
     def articulation_token(articulation)
       "-#{MarkReader::ARTICULATIONS_BY_SHORTHAND.key(articulation.name_key)}"
     end

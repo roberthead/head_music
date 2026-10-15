@@ -121,5 +121,21 @@ describe HeadMusic::Notation::LilyPond::Preflight do
         )
       end
     end
+
+    context "with an unpitched grace note" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new.tap do |flow|
+          note = flow.add_voice.place("1:1", :whole, "C4")
+          note.add_grace_note(HeadMusic::Rudiment::UnpitchedSound.get("snare drum"), :sixteenth)
+        end
+      end
+
+      it "raises a render error naming the sound and the main note's position" do
+        expect { described_class.check!(flow) }.to raise_error(
+          render_error,
+          /cannot render unpitched sound "snare drum" in a grace note before 1:1/
+        )
+      end
+    end
   end
 end

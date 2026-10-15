@@ -31,6 +31,9 @@ module LilyPondHelpers
   # actual count, and may open in one bar and close in the next.
   TUPLET_OPEN = %r{\\tuplet (\d+)/(\d+) \{}
   TUPLET_CLOSE = /(?<!\S)\}(?!\S)/
+  # Grace notes take no time: a command and its one note, chord, or braced
+  # group of them.
+  GRACE = /\\(?:grace|acciaccatura|appoggiatura|slashedGrace) (\{ [^}]* \}|<[^>]*>\S*|\S+) /
   NAMED_DURATION_VALUES = {"\\breve" => 2r, "\\longa" => 4r, "\\maxima" => 8r}.freeze
 
   # `streams:` is how many bar-per-line music streams the document holds. It
@@ -56,6 +59,8 @@ module LilyPondHelpers
 
   def expect_valid_music_line(line)
     content = line.sub(/ \|\z/, "")
+    graces = content.scan(GRACE).map { |(music)| music.delete_prefix("{ ").delete_suffix(" }") }
+    expect(graces.join(" ").gsub(MARK, "").gsub(/#{CHORD}~?/o, "").split).to all(match(SIMPLE_TOKEN))
     content = strip_commands(content).gsub(TUPLET_OPEN, "").gsub(TUPLET_CLOSE, "")
     content = content.gsub(/#{CHORD}~?/o, "")
     expect(content.split).to all(match(SIMPLE_TOKEN))
@@ -89,7 +94,7 @@ module LilyPondHelpers
   end
 
   def strip_commands(content)
-    content.gsub(AFTER_COMMAND, "").gsub(BAR_MARK_COMMAND, "").gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
+    content.gsub(GRACE, "").gsub(AFTER_COMMAND, "").gsub(BAR_MARK_COMMAND, "").gsub(KEY_COMMAND, "").gsub(TIME_COMMAND, "")
       .gsub(CHANGE_STAFF_COMMAND, "").gsub(CLEF_COMMAND, "").gsub(MARK, "")
   end
 

@@ -49,6 +49,44 @@ describe HeadMusic::Notation::LilyPond::SpanMarks do
     expect(marks_at("1:3")).to eq [["(", ")"]]
   end
 
+  describe "slurs from grace notes" do
+    def grace(position, *slashes)
+      slashes.each { |slashed| voice.voice_event_at(position).add_grace_note("A4", :sixteenth, slashed: slashed) }
+    end
+
+    it "leaves a slur to the main note to the grace command that implies it" do
+      grace("1:2", true)
+      voice.add_span(:slur, from: "1:2", to: "1:2", from_grace: true)
+      expect([marks.implied_grace_slur?("1:2"), marks.grace_opens_at("1:2"), *marks_at("1:2").flatten]).to eq [true, "", "", ""]
+    end
+
+    it "opens a slur to a later note on the first grace note" do
+      grace("1:2", false)
+      voice.add_span(:slur, from: "1:2", to: "1:3", from_grace: true)
+      expect([marks.implied_grace_slur?("1:2"), marks.grace_opens_at("1:2"), marks.opens_at("1:2"), marks.closes_at("1:3")])
+        .to eq [false, "(", "", ")"]
+    end
+
+    it "names a slur from grace notes before the note where another ends" do
+      grace("1:3", false)
+      voice.add_span(:slur, from: "1:1", to: "1:3")
+      voice.add_span(:slur, from: "1:3", to: "1:3", from_grace: true)
+      expect([marks.grace_opens_at("1:3"), marks.closes_at("1:3")]).to eq ["\\=1(", ")\\=1)"]
+    end
+
+    it "opens a slur from grace notes of both slashes, since no one command implies it" do
+      grace("1:2", true, false)
+      voice.add_span(:slur, from: "1:2", to: "1:2", from_grace: true)
+      expect([marks.implied_grace_slur?("1:2"), marks.grace_opens_at("1:2"), marks.closes_at("1:2")]).to eq [false, "(", ")"]
+    end
+
+    it "opens a phrasing slur on the first grace note" do
+      grace("1:2", true)
+      voice.add_span(:phrase, from: "1:2", to: "1:2", from_grace: true)
+      expect([marks.implied_grace_slur?("1:2"), marks.grace_opens_at("1:2"), marks.closes_at("1:2")]).to eq [false, "\\(", "\\)"]
+    end
+  end
+
   it "names a slur that begins on a tied note where another ends, since the open comes first" do
     marks = described_class.new(MarkingFixtures.touching_slurs_on_tied_note.voices.first)
     expect([marks.opens_at("1:4"), marks.closes_at("1:4")]).to eq ["\\=1(", ")"]

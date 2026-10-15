@@ -874,14 +874,12 @@ describe HeadMusic::Notation::LilyPond::Writer do
       it_behaves_like "a compilable document"
     end
 
-    describe "tuplets" do
+    describe "tuplets and grace notes" do
       def rendered_lines(flow)
         bar_check_lines(described_class.new(flow).to_s)
       end
 
-      tuplet_fixtures = TupletFixtures.all - %i[grace_notes_before_downbeat grace_notes_in_pickup]
-
-      tuplet_fixtures.each do |fixture|
+      TupletFixtures.all.each do |fixture|
         context "with the #{fixture.to_s.tr("_", " ")} fixture" do
           let(:flow) { TupletFixtures.public_send(fixture) }
           let(:rendered) { described_class.new(flow).to_s }
@@ -985,7 +983,7 @@ describe HeadMusic::Notation::LilyPond::Writer do
 
       describe "generator flows" do
         def expect_book_to_compile(seeds)
-          book = seeds.map { |seed| TupletGenerator.flow(seed, voices: 2, pickup: true, graces: false) }
+          book = seeds.map { |seed| TupletGenerator.flow(seed, voices: 2, pickup: true) }
           rendered = on_one_page(HeadMusic::Notation::LilyPond::BookWriter.new(book).to_s)
           expect(compile_warnings(rendered)).to eq([]), "in the book of seeds #{seeds.first}..#{seeds.last}"
         end
@@ -998,10 +996,130 @@ describe HeadMusic::Notation::LilyPond::Writer do
 
         it "are structurally valid" do
           TupletGenerator::SEEDS.each do |seed|
-            flow = TupletGenerator.flow(seed, voices: 2, pickup: true, graces: false)
+            flow = TupletGenerator.flow(seed, voices: 2, pickup: true)
             bars = HeadMusic::Notation::LilyPond::RenderPlan.new(flow).bar_numbers.count
             expect_structurally_valid_lilypond(described_class.new(flow).to_s, bars: bars, voices: 2)
           end
+        end
+      end
+
+      describe "grace notes" do
+        def four_quarters
+          HeadMusic::Content::Flow.new(name: "Graced").tap do |flow|
+            voice = flow.add_voice
+            %w[C4 E4 G4 F4].each { |pitch| voice.place(voice.next_position, :quarter, pitch) }
+            voice.place(voice.next_position, :whole, "E4")
+          end
+        end
+
+        it "writes slashed grace notes with \\slashedGrace and others with \\grace, with their chords and articulations" do
+          expect(rendered_lines(TupletFixtures.grace_notes_before_downbeat).first(2))
+            .to eq ["c'4 e'4 \\grace <a' c''>16 g'4 \\grace g'16-. f'4 |", "\\slashedGrace f'8 e'1 |"]
+        end
+
+        it "writes grace notes slurred to their main note with \\appoggiatura, braced and tied in" do
+          expect(rendered_lines(TupletFixtures.grace_notes_before_downbeat).last).to eq "\\appoggiatura { d'16 c'16~ } c'1 \\bar \"|.\" |"
+        end
+
+        it "writes grace notes in a pickup" do
+          expect(rendered_lines(TupletFixtures.grace_notes_in_pickup).first).to eq "r2 \\grace a8 g4 b4 |"
+        end
+
+        context "with slurs from grace notes to their main note and to a later one" do
+          let(:flow) do
+            four_quarters.tap do |flow|
+              voice = flow.voices.first
+              voice.voice_events[1].add_grace_note("F4", :eighth, slashed: true)
+              voice.add_span(:slur, from: "1:2", to: "1:2", from_grace: true)
+              voice.voice_events[2].add_grace_note("A4", :eighth, slashed: true)
+              voice.add_span(:slur, from: "1:3", to: "1:4", from_grace: true)
+            end
+          end
+          let(:rendered) { described_class.new(flow).to_s }
+
+          it "writes \\acciaccatura for the one to the main note, and opens the later one on the grace note" do
+            expect(bar_check_lines(rendered).first).to eq "c'4 \\acciaccatura f'8 e'4 \\slashedGrace a'8( g'4 f'4) |"
+          end
+
+          it "is structurally valid" do
+            expect_structurally_valid_lilypond(rendered, bars: 2, voices: 1)
+          end
+
+          it_behaves_like "a document that compiles without warnings"
+        end
+
+        context "with slurs from grace notes inside another slur, and from grace notes of both slashes" do
+          let(:flow) do
+            four_quarters.tap do |flow|
+              voice = flow.voices.first
+              voice.add_span(:slur, from: "1:1", to: "1:4")
+              voice.voice_events[1].add_grace_note("D4", :sixteenth)
+              voice.add_span(:slur, from: "1:2", to: "1:2", from_grace: true)
+              voice.voice_events[3].add_grace_note("A4", :sixteenth, slashed: true).add_grace_note("B4", :sixteenth)
+              voice.add_span(:slur, from: "1:4", to: "1:4", from_grace: true)
+            end
+          end
+          let(:rendered) { described_class.new(flow).to_s }
+
+          it "names each, since the other is open across its grace notes, and writes a command for each slash" do
+            expect(bar_check_lines(rendered).first)
+              .to eq "c'4( \\grace d'16\\=1( e'4\\=1) g'4 \\slashedGrace a'16\\=1( \\grace b'16 f'4)\\=1) |"
+          end
+
+          it_behaves_like "a document that compiles without warnings"
+        end
+
+        context "with a phrasing slur from a grace note" do
+          let(:flow) do
+            four_quarters.tap do |flow|
+              flow.voices.first.voice_events[3].add_grace_note("D4", :sixteenth)
+              flow.voices.first.add_span(:phrase, from: "1:4", to: "2:1", from_grace: true)
+            end
+          end
+          let(:rendered) { described_class.new(flow).to_s }
+
+          it "opens it on the grace note, since no command implies one" do
+            expect(bar_check_lines(rendered)).to eq ["c'4 e'4 g'4 \\grace d'16\\( f'4 |", "e'1\\) \\bar \"|.\" |"]
+          end
+
+          it_behaves_like "a document that compiles without warnings"
+        end
+
+        context "with grace notes on a tuplet's first note, a level inside it" do
+          let(:flow) do
+            TupletFixtures.triplets.tap do |flow|
+              voice = flow.voices.first
+              main = voice.voice_events[6]
+              main.add_grace_note("A4", :eighth, slashed: true)
+              voice.add_span(:slur, from: main.position, to: main.position, from_grace: true)
+              voice.place_dynamic("1:3:480", :p)
+            end
+          end
+          let(:rendered) { described_class.new(flow).to_s }
+
+          it "writes the bracket, the grace notes, the \\after, then the note" do
+            expect(bar_check_lines(rendered).first).to end_with "\\tuplet 3/2 { \\acciaccatura a'8 \\after 8. \\p b'4 c''4 d''4 } |"
+          end
+
+          it_behaves_like "a document that compiles without warnings"
+        end
+
+        context "with grace notes before a note split at a barline" do
+          let(:flow) do
+            HeadMusic::Content::Flow.new(name: "Split").tap do |flow|
+              voice = flow.add_voice
+              voice.place("1:1", :dotted_half, "C4")
+              voice.place("1:4", :half, "D4").add_grace_note("E4", :sixteenth)
+              voice.place("2:2", :dotted_half, "C4")
+            end
+          end
+          let(:rendered) { described_class.new(flow).to_s }
+
+          it "writes them before its first piece alone" do
+            expect(bar_check_lines(rendered)).to eq ["c'2. \\grace e'16 d'4~ |", "d'4 c'2. \\bar \"|.\" |"]
+          end
+
+          it_behaves_like "a document that compiles without warnings"
         end
       end
     end

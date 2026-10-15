@@ -196,13 +196,22 @@ module HeadMusic::Notation::LilyPond
       bar_number = segment.bar_number
       from = segment.offset || HeadMusic::Notation::BarSplitter.onset_in_bar(voice_event)
       own = starts?(segment) ? MarkWriter.token(voice_event) : ""
+      graces = starts?(segment) ? grace_token(voice_event) : ""
       segment.rhythmic_value!(RenderError).tied_chain.map do |link|
         to = from + HeadMusic::Notation::DottedDuration.sounding_fraction(link)
-        word = marks.around(bar_number, from, to, "#{body(voice_event)}#{DurationWriter.token(link)}", own, factor: link.tuplet_ratio&.factor || 1)
+        word = graces + marks.around(bar_number, from, to, "#{body(voice_event)}#{DurationWriter.token(link)}", own, factor: link.tuplet_ratio&.factor || 1)
         from = to
-        own = ""
+        own = graces = ""
         word
       end
+    end
+
+    def grace_token(voice_event)
+      return "" if voice_event.grace_notes.empty?
+
+      marks = span_marks(voice_event)
+      position = voice_event.position
+      GraceWriter.token(voice_event, slur_opens: marks.grace_opens_at(position), implied_slur: marks.implied_grace_slur?(position))
     end
 
     def body(voice_event)
