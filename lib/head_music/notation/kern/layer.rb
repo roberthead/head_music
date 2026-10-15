@@ -13,7 +13,9 @@ module HeadMusic::Notation::Kern
   # ends the latest open of its kind and elision level. A note's closes come
   # before its opens, so one slur can end where the next begins. A mark
   # left unpaired, or a span its voice refuses, such as a slur ending on a
-  # rest, is dropped. Tuplet groups, which kern does not write, are inferred
+  # rest, is dropped. A slur or phrase opening on a note event's first
+  # grace note begins there, and its close may then come on that same note.
+  # Tuplet groups, which kern does not write, are inferred
   # then too; see TupletGroups.
   #
   # Invisible rests after a voice's last visible event, in the bar where its
@@ -23,7 +25,7 @@ module HeadMusic::Notation::Kern
   class Layer
     Event = Struct.new(
       :time, :rhythmic_value, :fraction, :pitches, :syllables, :articulations, :ornaments, :note_dynamic, :span_marks,
-      :invisible
+      :invisible, :graces, :grace_opens
     )
     SPAN_KINDS = {"(" => :slur, ")" => :slur, "{" => :phrase, "}" => :phrase}.freeze
     CLOSES = %w[) }].freeze
@@ -39,10 +41,12 @@ module HeadMusic::Notation::Kern
       @events = []
     end
 
-    def add(time, token)
+    # The graces are VoiceCursor::Grace values, and grace_opens the span
+    # marks that open on the first of them.
+    def add(time, token, graces = [], grace_opens = [])
       Event.new(
         time, token.rhythmic_value, token.fraction, token.pitches, [],
-        token.articulations, token.ornaments, token.note_dynamic, token.span_marks, token.invisible
+        token.articulations, token.ornaments, token.note_dynamic, token.span_marks, token.invisible, graces, grace_opens
       ).tap { |event| @events << event }
     end
 
@@ -94,8 +98,13 @@ module HeadMusic::Notation::Kern
     def place_event(event, clock)
       rest_until(event.time, clock)
       voice_event = voice.place(@position, event.rhythmic_value, event.pitches)
-      mark(voice_event, event) unless voice_event.rest?
-      @span_marks << [voice_event.position, event.span_marks] if event.span_marks.any?
+      unless voice_event.rest?
+        mark(voice_event, event)
+        add_grace_notes(voice_event, event.graces)
+      end
+      if event.span_marks.any? || event.grace_opens.any?
+        @span_marks << [voice_event.position, event.span_marks, voice_event.rest? ? [] : event.grace_opens]
+      end
       @position = voice_event.next_position
       @time = event.time + event.fraction
     end
@@ -108,17 +117,31 @@ module HeadMusic::Notation::Kern
       voice_event.note_dynamic = event.note_dynamic
     end
 
-    def add_spans
-      open = Hash.new { |hash, key| hash[key] = [] }
-      @span_marks.each do |position, marks|
-        closes, opens = marks.partition { |mark| CLOSES.include?(mark[-1]) }
-        closes.each { |mark| close_span(open[span_key(mark)].pop, position, mark) }
-        opens.each { |mark| open[span_key(mark)] << position }
+    def add_grace_notes(voice_event, graces)
+      graces.each do |grace|
+        token = grace.token
+        voice_event.add_grace_note(
+          token.pitches, token.rhythmic_value, slashed: token.slashed, tied: grace.tied, articulations: token.articulations
+        )
       end
     end
 
-    def close_span(from, to, mark)
-      voice.add_span(SPAN_KINDS.fetch(mark[-1]), from: from, to: to) if from && from < to
+    # Each open is [position, whether it opens on the grace notes there].
+    def add_spans
+      open = Hash.new { |hash, key| hash[key] = [] }
+      @span_marks.each do |position, marks, grace_opens|
+        grace_opens.each { |mark| open[span_key(mark)] << [position, true] }
+        closes, opens = marks.partition { |mark| CLOSES.include?(mark[-1]) }
+        closes.each { |mark| close_span(open[span_key(mark)].pop, position, mark) }
+        opens.each { |mark| open[span_key(mark)] << [position, false] }
+      end
+    end
+
+    def close_span(opening, to, mark)
+      from, from_grace = opening
+      return unless from && (from_grace ? from <= to : from < to)
+
+      voice.add_span(SPAN_KINDS.fetch(mark[-1]), from: from, to: to, from_grace: from_grace)
     rescue ArgumentError
       nil
     end

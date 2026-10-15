@@ -107,8 +107,8 @@ module HeadMusic::Notation::Kern
       @dynamics.read(row, events, time)
     end
 
-    # A grace note is dropped, but its row is timed: it sits at the time of
-    # the note it leads to, so it bounds the rows that split the time.
+    # A grace note takes no time, but its row is timed: it sits at the time
+    # of the note it leads to, so it bounds the rows that split the time.
     def grace?(tokens)
       tokens.any? { |_track, token, _column| token.type == :grace }
     end

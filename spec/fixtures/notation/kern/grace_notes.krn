@@ -1,0 +1,25 @@
+!!!OTL: Grace Notes
+!! An original duet written for the head_music specs; released under the repository's MIT license.
+**kern	**kern
+*I"Cello	*I"Violin
+*clefF4	*clefG2
+*k[]	*k[]
+*C:	*C:
+*M4/4	*M4/4
+=1-	=1-
+8QE	.
+2C	4c
+.	4e
+.	16Qa 16Qcc
+2G	4g
+.	16Qg'
+.	4f
+=2	=2
+8qD	8qf
+1r	1e
+=3	=3
+.	(16Qd
+.	16Qc[
+1C	1c])
+==	==
+*-	*-

@@ -55,12 +55,48 @@ describe HeadMusic::Notation::Kern::TokenReader do
       end
     end
 
-    it "drops a grace note" do
-      expect(read("8qc").type).to eq :grace
-    end
-
     it "drops a grace note from a chord" do
       expect(summary("4c 8qe")).to eq [:note, ["C4"], "quarter", nil]
+    end
+  end
+
+  describe "grace notes" do
+    def grace(field)
+      token = read(field)
+      [token.type, token.pitches.map(&:to_s), token.rhythmic_value.to_s, token.slashed, token.tie, token.fraction]
+    end
+
+    it "reads q as a slashed grace note that takes no time" do
+      expect(grace("16qc")).to eq [:grace, ["C4"], "sixteenth", true, nil, nil]
+    end
+
+    it "reads Q and qq as unslashed grace notes" do
+      expect([grace("16Qc"), grace("16qqc")].map { |summary| summary[3] }).to eq [false, false]
+    end
+
+    it "gives a grace note with no duration an eighth" do
+      expect(grace("aaq/")).to eq [:grace, ["A5"], "eighth", true, nil, nil]
+    end
+
+    it "writes a tuplet grace value as its written value" do
+      expect(grace("24qc")[2]).to eq "sixteenth"
+    end
+
+    it "reads a field of grace notes as one grace chord" do
+      expect(grace("16qc 16qe")).to eq [:grace, ["C4", "E4"], "sixteenth", true, nil, nil]
+    end
+
+    it "keeps a grace note's tie" do
+      expect(grace("8qc[")[4]).to eq :start
+    end
+
+    it "keeps a grace note's articulations and drops its ornaments and sforzando" do
+      token = read("8qc'Tz")
+      expect([token.articulations, token.ornaments, token.note_dynamic]).to eq [[:staccato], [], nil]
+    end
+
+    it "raises for a grace note with no pitch" do
+      expect { read("8q") }.to raise_error(HeadMusic::Notation::Kern::ParseError, /Grace note "8q" has no pitch \(line 9\)/)
     end
   end
 

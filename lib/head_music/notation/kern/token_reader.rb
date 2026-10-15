@@ -5,8 +5,13 @@ module HeadMusic::Notation::Kern
   #
   # Articulations, ornaments, and the sforzando z are read as markings,
   # which a rest drops and a chord gathers from all its notes. Slur and
-  # phrase marks are kept as written, on notes and rests alike, and a grace
-  # note, which is otherwise dropped, keeps its own for the note after it.
+  # phrase marks are kept as written, on notes and rests alike.
+  #
+  # A grace note is q, slashed, or Q or qq, unslashed. Its value is the
+  # written one, an eighth when none is given, and it keeps its pitches,
+  # articulations, tie, and span marks; its ornaments and sforzando are
+  # dropped. A field of grace notes alone is one grace note, a chord when it
+  # has several; one beside a note in a chord is dropped.
   # Signifiers the gem does not model (beams, stems, fermatas, bowings,
   # other ornaments, editorial marks) are dropped. Anything else is
   # rejected rather than guessed at.
@@ -16,11 +21,15 @@ module HeadMusic::Notation::Kern
     # Its markings are catalog keys: sorted articulation and ornament
     # keys, and a note dynamic or nil. Its span marks are the slur and
     # phrase signifiers, such as "(", "}", or the elided "&(". A rest
-    # marked yy is invisible.
+    # marked yy is invisible. A grace note has no fraction, since it takes
+    # no time, and may be slashed.
     Token = Data.define(
-      :type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic, :span_marks, :invisible
+      :type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic, :span_marks, :invisible,
+      :slashed
     ) do
-      def initialize(articulations: [], ornaments: [], note_dynamic: nil, span_marks: [], invisible: false, **fields)
+      def initialize(
+        articulations: [], ornaments: [], note_dynamic: nil, span_marks: [], invisible: false, slashed: false, **fields
+      )
         super
       end
 
@@ -30,9 +39,9 @@ module HeadMusic::Notation::Kern
     end
 
     NULL = Token.new(type: :null, pitches: [], rhythmic_value: nil, fraction: nil, tie: nil)
-    GRACE = Token.new(type: :grace, pitches: [], rhythmic_value: nil, fraction: nil, tie: nil)
     TIES = {"[" => :start, "_" => :middle, "]" => :end}.freeze
     GRACE_MARKS = %w[q Q].freeze
+    DEFAULT_GRACE_VALUE = HeadMusic::Rudiment::RhythmicValue.get(:eighth)
     # Beams and partial beams, stems, fermatas, the inverted turn and the
     # ornament-ending turn, other ornaments, bowings, breath and arpeggio
     # marks, and editorial and visibility marks.
@@ -56,7 +65,7 @@ module HeadMusic::Notation::Kern
       return NULL if @field == "."
 
       graces, subtokens = @field.split(" ").map { |text| subtoken(text) }.partition { |token| token.type == :grace }
-      return GRACE.with(span_marks: chord_span_marks(graces)) if subtokens.empty?
+      return combine_graces(graces) if subtokens.empty?
 
       combine(subtokens)
     end
@@ -83,6 +92,15 @@ module HeadMusic::Notation::Kern
       )
     end
 
+    def combine_graces(graces)
+      graces.first.with(
+        pitches: graces.flat_map(&:pitches),
+        articulations: graces.flat_map(&:articulations).uniq.sort,
+        tie: (graces.map(&:tie).uniq.length == 1) ? graces.first.tie : nil,
+        span_marks: chord_span_marks(graces)
+      )
+    end
+
     # A chord's notes may each repeat its slur, so a mark counts as often as
     # any one note has it.
     def chord_span_marks(subtokens)
@@ -92,9 +110,9 @@ module HeadMusic::Notation::Kern
 
     def subtoken(text)
       span_marks = span_marks(text)
-      return GRACE.with(span_marks: span_marks) if GRACE_MARKS.any? { |mark| text.include?(mark) }
-
       remaining = text.delete(SPAN_BRACKETS)
+      return grace(text, remaining, span_marks) if GRACE_MARKS.any? { |mark| remaining.include?(mark) }
+
       duration = read_duration(remaining, text)
       pitches = read_pitches(remaining, text)
       rest = !remaining.delete!("r").nil?
@@ -104,6 +122,33 @@ module HeadMusic::Notation::Kern
       ensure_consumed(remaining, text)
       token = build(text, duration, pitches, rest, tie).with(span_marks: span_marks, invisible: invisible)
       rest ? token : token.with(**markings)
+    end
+
+    def grace(text, remaining, span_marks)
+      slashed = !remaining.include?("Q") && !remaining.include?("qq")
+      remaining.delete!("qQ")
+      duration = read_duration(remaining, text)
+      pitches = read_pitches(remaining, text)
+      raise ParseError.new(%(Grace note "#{text}" has no pitch), line_number: @line_number, snippet: text) if pitches.empty?
+
+      tie = read_tie(remaining, text)
+      articulations = MarkCodes.read!(remaining)[:articulations]
+      ensure_consumed(remaining, text)
+      Token.new(
+        type: :grace, pitches: pitches, rhythmic_value: grace_value(duration), fraction: nil, tie: tie,
+        articulations: articulations, span_marks: span_marks, slashed: slashed
+      )
+    end
+
+    # A grace note takes no time, so a tuplet or tied value is written as its
+    # first link with no ratio.
+    def grace_value(duration)
+      return DEFAULT_GRACE_VALUE unless duration
+
+      value = duration.rhythmic_value
+      return value unless value.tuplet? || value.tied_value
+
+      HeadMusic::Rudiment::RhythmicValue.new(value.unit, dots: value.dots)
     end
 
     # Each slur or phrase mark with the & of each level of elision before it,

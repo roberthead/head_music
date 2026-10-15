@@ -30,8 +30,11 @@ module HeadMusic::Notation::Kern
     end
 
     # Answers the event each spine's token attacked, if any.
+    # A row of grace notes alone sits at the time of the notes they lead to,
+    # so its null tokens need not fall inside a sounding note.
     def read(tokens, time, line)
-      tokens.to_h { |track, token, column| [track, read_token(track, token, time, column, line)] }
+      grace_row = tokens.none? { |_track, token, _column| token.attack? }
+      tokens.to_h { |track, token, column| [track, read_token(track, token, time, column, line, grace_row)] }
     end
 
     def manipulate(manipulation, line)
@@ -57,7 +60,7 @@ module HeadMusic::Notation::Kern
 
     private
 
-    def read_token(track, token, time, column, line)
+    def read_token(track, token, time, column, line, grace_row)
       cursor = @cursors.fetch(track)
       if token.attack?
         unless cursor.attackable_at?(time)
@@ -65,9 +68,9 @@ module HeadMusic::Notation::Kern
         end
         cursor.read(token, time, line)
       elsif token.type == :grace
-        cursor.defer_span_marks(token.span_marks)
+        cursor.queue_grace(token)
         nil
-      elsif token.type == :null && cursor.busy_until <= time
+      elsif token.type == :null && !grace_row && cursor.busy_until <= time
         raise ParseError.new("A null token in spine #{column} falls where no note is sounding", line_number: line)
       end
     end

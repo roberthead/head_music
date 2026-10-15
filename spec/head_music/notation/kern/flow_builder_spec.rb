@@ -587,8 +587,16 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
         .to eq [["slur from 1:1:000 to 1:2:000"]]
     end
 
-    it "moves a slur on a dropped grace note to the note it leads to" do
-      expect(spans(parse("**kern\n=1\n(8qc\n4d\n4e)\n2f\n*-"))).to eq [["slur from 1:1:000 to 1:2:000"]]
+    it "keeps a slur that opens on a grace note there" do
+      expect(spans(parse("**kern\n=1\n(8qc\n4d\n4e)\n2f\n*-"))).to eq [["slur from the grace notes before 1:1:000 to 1:2:000"]]
+    end
+
+    it "ends a slur that closes on a grace note on the note it leads to" do
+      expect(spans(parse("**kern\n=1\n(8qc\n8qe)\n1d\n*-"))).to eq [["slur from the grace notes before 1:1:000 to 1:1:000"]]
+    end
+
+    it "moves a phrase mark on a grace note dropped before a rest to the rest" do
+      expect(spans(parse("**kern\n=1\n{4c\n8qd}\n4r\n2e\n*-"))).to eq [["phrase from 1:1:000 to 1:2:000"]]
     end
 
     it "drops a slur that begins on a rest" do
@@ -886,8 +894,79 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       expect(parse("**kern  **dynam\n2c  p\n.  <\n2d  .\n*-  *-").voices.first.voice_events.length).to eq 2
     end
 
-    it "drops grace notes" do
+    it "gives grace notes no time" do
       expect(voice_events(parse("**kern\n8qc\n1d\n*-").voices.first)).to eq ["whole D4 at 1:1:000"]
+    end
+
+    it "passes over the null tokens of a row of grace notes alone, where notes have just ended" do
+      expect(parse("**kern  **kern\n4c  4e\n8qd  .\n4e  4f\n*-  *-").voices.map { |voice| voice.voice_events.length }).to eq [2, 2]
+    end
+
+    it "still raises for a null token where nothing sounds on a row that attacks" do
+      expect { parse("**kern  **kern  **kern\n4c  4e  4g\n8qd  .  4a\n4e  4f  .\n*-  *-  *-") }
+        .to raise_error(HeadMusic::Notation::Kern::ParseError, /null token in spine 2 falls where no note is sounding \(line 3\)/)
+    end
+  end
+
+  describe "grace notes" do
+    def graces(flow)
+      flow.voices.map do |voice|
+        voice.note_events.flat_map { |note_event| note_event.grace_notes.map { |grace| "#{grace} before #{note_event.position}" } }
+      end
+    end
+
+    it "gives grace notes to the note they lead to" do
+      expect(graces(parse("**kern\n=1\n16qd\n16QBn\n1c\n*-"))).to eq [["slashed grace sixteenth D4 before 1:1:000", "grace sixteenth B3 before 1:1:000"]]
+    end
+
+    it "gives each spine of a row of grace notes its own" do
+      flow = parse("**kern  **kern\n=1  =1\n4c  4e\n8qd  8qf\n.  8qg\n2.e  2.a\n*-  *-")
+      expect(graces(flow)).to eq [["slashed grace eighth F4 before 1:2:000", "slashed grace eighth G4 before 1:2:000"], ["slashed grace eighth D4 before 1:2:000"]]
+    end
+
+    it "ties the last grace note to a note of its pitch, ending no chain at the note's ]" do
+      note_event = parse("**kern\n=1\n8Qc[\n1c]\n*-").voices.first.note_events.first
+      expect([note_event.rhythmic_value.to_s, note_event.grace_notes.map(&:tied?)]).to eq ["whole", [true]]
+    end
+
+    it "continues a chain from a tied grace note at the note's _" do
+      note_event = parse("**kern\n*M2/4\n=1\n8Qc[\n2c_\n=2\n2c]\n*-").voices.first.note_events.first
+      expect([note_event.rhythmic_value.to_s, note_event.grace_notes.map(&:tied?)]).to eq ["half tied to half", [true]]
+    end
+
+    it "keeps a grace note's articulations" do
+      expect(parse("**kern\n8qd'\n1c\n*-").voices.first.note_events.first.grace_notes.first.articulations.map(&:name_key)).to eq ["staccato"]
+    end
+
+    {
+      "a rest" => "**kern\n=1\n8qd\n4r\n2.c\n*-",
+      "a tie's later link" => "**kern\n*M2/4\n=1\n[2c\n=2\n8qd\n2c]\n*-",
+      "the end of a spine" => "**kern\n=1\n1c\n8qd\n*-"
+    }.each do |place, kern|
+      it "drops grace notes before #{place}" do
+        expect(graces(parse(kern))).to eq [[]]
+      end
+    end
+
+    describe "the grace notes fixture" do
+      subject(:flow) { HeadMusic::Notation::Kern.parse(File.read(File.expand_path("../../../fixtures/notation/kern/grace_notes.krn", __dir__))) }
+
+      let(:violin_graces) do
+        [
+          "grace sixteenth A4 C5 before 1:3:000", "grace sixteenth G4 before 1:4:000",
+          "slashed grace eighth F4 before 2:1:000", "grace sixteenth D4 before 3:1:000", "grace sixteenth C4 before 3:1:000"
+        ]
+      end
+
+      it "reads every kind of grace note, dropping the one before a rest" do
+        expect(graces(flow)).to eq [violin_graces, ["grace eighth E3 before 1:1:000"]]
+      end
+
+      it "keeps the grace slur, the tie into its main note, and the staccato" do
+        notes = flow.voices.first.note_events
+        expect([flow.voices.first.spans.map(&:to_s), notes.last.grace_notes.map(&:tied?), notes[3].grace_notes.first.articulations.map(&:name_key)])
+          .to eq [["slur from the grace notes before 3:1:000 to 3:1:000"], [false, true], ["staccato"]]
+      end
     end
   end
 
