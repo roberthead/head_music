@@ -8,16 +8,23 @@ module HeadMusic::Notation::MEI
   # other.mei#n1, points outside the document, and resolves to nil, as does
   # one into an element the walk never reached; the control naming it is
   # skipped. One that names no element raises.
+  #
+  # An xml:id used twice raises only where a control's reference names it,
+  # since some encoders reuse ids nothing refers to. A @copyof takes the
+  # first element with the id.
   class IdIndex
     def initialize
       @elements = {}
+      @duplicates = {}
       @reached = {}.compare_by_identity
     end
 
-    def register(id, element, **where)
-      raise ParseError.new(%(The xml:id "#{id[0, 64]}" is used twice), element: element, **where) if @elements.key?(id)
-
-      @elements[id] = element
+    def register(id, element, **_where)
+      if @elements.key?(id)
+        @duplicates[id] = true
+      else
+        @elements[id] = element
+      end
     end
 
     def element(id)
@@ -47,10 +54,19 @@ module HeadMusic::Notation::MEI
       end
     end
 
+    # The element a control's reference names, whether or not the walk
+    # reaches it. Nil for a reference into another file.
+    def named(reference, **where)
+      id = reference.to_s.strip.delete_prefix("#")
+      raise ParseError.new(%(The xml:id "#{id[0, 64]}" that a reference names is used twice), **where) if @duplicates.key?(id)
+
+      target(reference, **where)
+    end
+
     # The element a control's reference names, or nil where the control is
     # skipped.
     def resolve(reference, **where)
-      element = target(reference, **where)
+      element = named(reference, **where)
       element if element && reached?(element)
     end
   end

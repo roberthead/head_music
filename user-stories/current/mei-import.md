@@ -51,7 +51,7 @@ flow.voices.length # => one per layer, as the part numbers them
 - [ ] A `<parts>` encoding with one `<part>` reads as a score. Several `<part>`s raise `UnsupportedFeatureError`, since aligning them is new work no corpus file needs
 - [ ] `@meiversion` is not checked, so `5.1+basic` (MuseScore) and `4.0.1` read alike. MEI 4 forms such as `@key.sig` are read beside MEI 5's
 - [ ] The input guarantees of `MusicXML.parse` hold. UTF-8 with or without a BOM, UTF-16 with a BOM, and `File.binread` strings parse, and nothing is fetched. Declared entities, text past REXML's expansion limits, and nesting deeper than 256 elements raise `ParseError`
-- [ ] Malformed XML, a missing `<music>`, a body with no `<score>` or `<part>`, a duplicate `xml:id`, and a `@startid`, `@endid`, or `@plist` naming no element raise `MEI::ParseError` naming the element. A reference into another file, or into a reading the editorial rule rejects, skips its control event
+- [ ] Malformed XML, a missing `<music>`, a body with no `<score>` or `<part>`, and a `@startid`, `@endid`, or `@plist` naming no element or naming an `xml:id` used twice raise `MEI::ParseError` naming the element. A duplicate `xml:id` that nothing refers to is skipped, since music21's `test_file.mei` reuses ids. A reference into another file, or into a reading the editorial rule rejects, skips its control event
 - [ ] No error outside `HeadMusic::Notation::ParseError` escapes. A table-driven spec covers every attribute the reader parses with hostile values
 - [ ] These raise `MEI::UnsupportedFeatureError`:
   - mensural, neume, and tablature notation (`@notationtype`, `<mensur>`, `<ligature>`, `<neume>`, `<nc>`, `<tabGrp>`), for the whole document;

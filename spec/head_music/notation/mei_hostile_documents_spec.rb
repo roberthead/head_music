@@ -131,9 +131,12 @@ describe HeadMusic::Notation::MEI do
       described_class.parse(xml)
     end
 
-    it "refuses a duplicate xml:id" do
-      xml = mei_document(mei_staff(1, %(<note xml:id="n" pname="c" oct="4" dur="1"/>)), %(<measure xml:id="n" n="2"/>))
-      expect { parse(xml) }.to raise_error(described_class::ParseError, /"n" is used twice/)
+    describe "a duplicate xml:id" do
+      let(:bars) { [mei_staff(1, %(<note xml:id="n" pname="c" oct="4" dur="1"/>)), %(<measure xml:id="n" n="2">#{mei_staff(1, mei_note("D4", "1"))}</measure>)] }
+
+      it "reads where nothing refers to it, as music21's test file reuses ids" do
+        expect(parse(mei_document(*bars)).voices.first.voice_events.map(&:to_s)).to eq ["whole C4 at 1:1:000", "whole D4 at 2:1:000"]
+      end
     end
 
     it "refuses a @copyof cycle" do
