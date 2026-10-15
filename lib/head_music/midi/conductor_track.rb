@@ -32,7 +32,7 @@ module HeadMusic::MIDI
     def time_signature(span)
       meter = flow.meter_at(span.bar_number)
       meter = pickup_meter(span, meter) if span.pickup?
-      TimeSignature.new(span.start, meter.top_number, meter.bottom_number, TimeSignature.clocks_per_click(meter))
+      TimeSignature.new(span.start, meter.top_number, meter.bottom_number, TimeSignature.clocks_per_click(meter).to_i)
     end
 
     # A pickup a whole number of the meter's counts long is a bar of its own.

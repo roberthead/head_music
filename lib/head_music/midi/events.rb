@@ -54,9 +54,10 @@ module HeadMusic::MIDI
   end
 
   TimeSignature = Data.define(:tick, :numerator, :denominator, :clocks_per_click) do
-    # 24 MIDI clocks to the quarter, so 6/8's dotted quarter is 36.
+    # 24 MIDI clocks to the quarter, so 6/8's dotted quarter is 36. Exact, so
+    # preflight can refuse a click MIDI cannot count.
     def self.clocks_per_click(meter)
-      (meter.beat_value.fraction * 96).round
+      Rational(meter.compound? ? 288 : 96, meter.bottom_number)
     end
 
     def payload

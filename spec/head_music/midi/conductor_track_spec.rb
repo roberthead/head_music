@@ -47,6 +47,14 @@ describe HeadMusic::MIDI::ConductorTrack do
     end
   end
 
+  context "with 6/2" do
+    let(:meter) { "6/2" }
+
+    it "writes 144 clocks per dotted-whole click" do
+      expect(of(HeadMusic::MIDI::TimeSignature)).to eq [HeadMusic::MIDI::TimeSignature.new(0, 6, 2, 144)]
+    end
+  end
+
   context "with C minor" do
     let(:key) { "C minor" }
 

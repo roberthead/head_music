@@ -54,10 +54,17 @@ module HeadMusic::MIDI
 
     def check_meters
       in_force(flow.timeline.opening_meter, flow.meter_changes).each do |number, meter|
-        next if meter.bottom_number.to_s(2).count("1") == 1 && meter.top_number.between?(1, 255)
+        next if time_signature?(meter)
 
         raise RenderError, "a MIDI time signature cannot hold #{meter} in bar #{number}"
       end
+    end
+
+    def time_signature?(meter)
+      return false unless meter.bottom_number.to_s(2).count("1") == 1 && meter.top_number.between?(1, 255)
+
+      clocks = TimeSignature.clocks_per_click(meter)
+      clocks.denominator == 1 && clocks.between?(1, 255)
     end
 
     def check_tempos

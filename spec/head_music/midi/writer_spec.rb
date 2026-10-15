@@ -176,6 +176,14 @@ describe HeadMusic::MIDI::Writer do
     end
   end
 
+  describe "compound meters with a whole-note count" do
+    it "refuses 6/1 as a render error" do
+      flow.change_meter(1, "6/1")
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect { flow.to_midi }.to raise_error(HeadMusic::MIDI::RenderError, %r{cannot hold 6/1})
+    end
+  end
+
   describe "channels" do
     let(:instruments) do
       %w[violin viola cello double_bass flute oboe clarinet bassoon french_horn trumpet trombone tuba harp piano celesta glockenspiel]

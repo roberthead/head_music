@@ -62,6 +62,32 @@ describe HeadMusic::MIDI::Preflight do
     expect(failure).to include("cannot hold 256/4 in bar 3")
   end
 
+  %w[6/1 9/1 12/1].each do |meter|
+    it "refuses #{meter}, whose dotted-whole click is more than 255 MIDI clocks" do
+      voice.place("1:1", :quarter, "C4")
+      flow.change_meter(1, meter)
+      expect(failure).to include("cannot hold #{meter} in bar 1")
+    end
+  end
+
+  it "refuses a meter whose click is not a whole number of MIDI clocks" do
+    voice.place("1:1", :quarter, "C4")
+    flow.change_meter(1, "3/256")
+    expect(failure).to include("cannot hold 3/256 in bar 1")
+  end
+
+  it "refuses a meter whose bottom number is 0" do
+    voice.place("1:1", :quarter, "C4")
+    flow.change_meter(1, "3/0")
+    expect(failure).to include("cannot hold 3/0 in bar 1")
+  end
+
+  it "accepts 6/2, whose dotted-whole click is 144 MIDI clocks" do
+    voice.place("1:1", :quarter, "C4")
+    flow.change_meter(1, "6/2")
+    expect(failure).to be_nil
+  end
+
   it "refuses a tempo of 0 bpm" do
     voice.place("1:1", :quarter, "C4")
     flow.change_tempo(1, "quarter = 0")
