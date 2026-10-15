@@ -29,6 +29,7 @@ module HeadMusic::Notation::ABC
 
     def validate!
       ensure_single_voice
+      ensure_tuplets_within_bars(flow)
       ensure_no_mid_piece_changes
       ensure_no_instrument_change
       ensure_contiguous_voices(flow)
@@ -143,7 +144,7 @@ module HeadMusic::Notation::ABC
 
     # Each bar the voice sounds in, with its music.
     def written_bars
-      bar_writer = BarWriter.new(written_key_signature, UNIT_NOTE_LENGTH, slur_writer, position_marks)
+      bar_writer = BarWriter.new(written_key_signature, UNIT_NOTE_LENGTH, slur_writer, position_marks, tuplet_writer)
       segments = segments_by_bar.to_a
       return [] if segments.empty?
 
@@ -153,8 +154,15 @@ module HeadMusic::Notation::ABC
     # A voice event sounding across a bar line is written as one note per bar,
     # tied, since ABC has no other way to cross the line.
     def segments_by_bar
-      HeadMusic::Notation::BarSplitter.segments(voice_events)
-        .chunk_while { |previous, current| previous.bar_number == current.bar_number }
+      segments.chunk_while { |previous, current| previous.bar_number == current.bar_number }
+    end
+
+    def segments
+      @segments ||= HeadMusic::Notation::BarSplitter.segments(voice_events)
+    end
+
+    def tuplet_writer
+      TupletWriter.new(flow.voices.first, segments)
     end
 
     def render_error_class

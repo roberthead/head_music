@@ -813,6 +813,56 @@ describe HeadMusic::Notation::ABC::Writer do
     end
   end
 
+  describe "tuplets" do
+    def body_of(flow)
+      described_class.new(flow).to_s.lines.last.chomp
+    end
+
+    {
+      triplets: "(3C D E (3F G A (3B2 c2 d2|c8|]",
+      sextuplet: "(6:4:6C1/2 D1/2 E1/2 F1/2 G1/2 A1/2 G6|C8|]",
+      quintuplet: "(5:4:5C1/2 D1/2 E1/2 F1/2 G1/2 E6|C8|]",
+      septuplet: "(7:4:7C1/2 D1/2 E1/2 F1/2 G1/2 A1/2 B1/2 c6|C8|]",
+      mixed_value_tuplet: "(3:2:2C2 D (3:2:2z [EG]2 F4|E8|]",
+      duplet_in_six_eight: "(2C E G3|c6|]",
+      ungrouped_tuplet_run: "(3C D E (3F G A G4|C8|]",
+      triplet_tied_out: "(3C D E-E2 F4|C8|]"
+    }.each do |fixture, body|
+      it "writes the #{fixture} fixture as #{body}" do
+        expect(body_of(TupletFixtures.public_send(fixture))).to eq body
+      end
+    end
+
+    it "writes a group starting on the later link of a tied note after the tie" do
+      flow = TupletFixtures.flow("Tied In")
+      triplet_eighths = TupletFixtures.run("3:2", :eighth, %w[D4 E4])
+      voice = TupletFixtures.fill(flow.add_voice, [[TupletFixtures.value("quarter tied to triplet eighth"), "C4"], *triplet_eighths, [:half, "F4"]])
+      voice.group_tuplet(from: "1:2", to: "1:3")
+      expect(body_of(flow)).to eq "C2-(3C D E F4|]"
+    end
+
+    it "writes the marker before a slur and the decorations, and a level at a tuplet onset on its note" do
+      flow = TupletFixtures.triplets
+      voice = flow.voices.first.tap { |triplets| triplets.voice_events.first.articulate(:staccato) }
+      voice.add_span(:slur, from: "1:1", to: "1:1:640")
+      voice.place_dynamic("1:1:320", :p)
+      expect(body_of(flow)).to start_with "(3(.C !p!D E)"
+    end
+
+    it "writes a value with a ratio but no group in a bracket of its own" do
+      flow = TupletFixtures.flow("Lone")
+      TupletFixtures.fill(flow.add_voice, [[TupletFixtures.value(:quarter, "3:2"), "C4"], [:half, "D4"]])
+      expect(body_of(flow)).to start_with "(3:2:1C2 D4"
+    end
+
+    TupletFixtures.crossing_barline.each do |fixture|
+      it "refuses the #{fixture} fixture, naming the group" do
+        expect { described_class.new(TupletFixtures.public_send(fixture)).to_s }
+          .to raise_error(HeadMusic::Notation::ABC::RenderError, /\AABC cannot write the \d:\d tuplet from 1:4:000 to 2:2:000 across the barline into bar 2\z/)
+      end
+    end
+  end
+
   describe "bar markings" do
     def body_of(flow)
       described_class.new(flow).to_s.lines.drop(5).join

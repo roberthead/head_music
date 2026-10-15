@@ -5,12 +5,13 @@ module HeadMusic::Notation::ABC
   class BarWriter
     include HeadMusic::Notation::VoiceEventValidation
 
-    def initialize(key_signature, unit_note_length, slur_writer, position_marks)
+    def initialize(key_signature, unit_note_length, slur_writer, position_marks, tuplet_writer)
       @pitch_writer = PitchWriter.new(key_signature)
       @duration_writer = DurationWriter.new(unit_note_length)
       @decoration_writer = DecorationWriter.new
       @slur_writer = slur_writer
       @position_marks = position_marks
+      @tuplet_writer = tuplet_writer
     end
 
     # The inter-token space is dropped only where the voice event was authored as
@@ -30,19 +31,19 @@ module HeadMusic::Notation::ABC
     private
 
     # A voice event split across bar lines is marked only where it starts,
-    # and a slur closes after its last part. A slur opens before the
-    # decorations, since ".(" would be a dotted slur. A mark at the start of
-    # a later part goes on that part.
+    # and a slur closes after its last part. A tuplet marker comes first, and
+    # a slur opens before the decorations, since ".(" would be a dotted slur.
+    # A mark at the start of a later part goes on that part.
     def token(segment, bar_marks)
       voice_event = segment.voice_event
-      body = token_body(segment)
+      marker, body = token_body(segment)
       body += @slur_writer.closes(voice_event) unless segment.continues
       position = voice_event.position
       unless segment.bar_number == position.bar_number
-        return bar_marks.decorations_at(voice_event.flow.position(segment.bar_number, 1, 0)) + body
+        return marker + bar_marks.decorations_at(voice_event.flow.position(segment.bar_number, 1, 0)) + body
       end
 
-      @slur_writer.opens(voice_event) + bar_marks.decorations_at(position) + @decoration_writer.prefix(voice_event) + body
+      marker + @slur_writer.opens(voice_event) + bar_marks.decorations_at(position) + @decoration_writer.prefix(voice_event) + body
     end
 
     # A hairpin ending on the final barline goes on a spacer there, after
@@ -86,12 +87,29 @@ module HeadMusic::Notation::ABC
       @duration_writer.multiplier_string_for_fraction(fraction, HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction))
     end
 
+    # The tuplet marker that opens the segment, if any, and its music.
     def token_body(segment)
       voice_event = segment.voice_event
       ensure_pitched_sounds(voice_event)
 
-      multiplier = multiplier_for(segment)
-      tie = segment.continues ? "-" : ""
+      pieces = @tuplet_writer.pieces(segment)
+      return ["", sounding_token(voice_event, multiplier_for(segment), segment.continues)] unless pieces
+
+      last_index = pieces.length - 1
+      tokens = pieces.each_with_index.map do |piece, index|
+        (index.zero? ? "" : piece.marker) + piece_token(voice_event, piece, index < last_index || segment.continues)
+      end
+      [pieces.first.marker, tokens.join(voice_event.rest? ? " " : "")]
+    end
+
+    # A rest cannot be tied, so a rest's pieces are written as rests.
+    def piece_token(voice_event, piece, tied)
+      multiplier = @duration_writer.multiplier_string_for_fraction(piece.links.sum(&:written_fraction), voice_event.rhythmic_value)
+      sounding_token(voice_event, multiplier, tied)
+    end
+
+    def sounding_token(voice_event, multiplier, tied)
+      tie = tied ? "-" : ""
       return "z#{multiplier}" if voice_event.rest?
       return chord_token(voice_event, multiplier) + tie if voice_event.chord?
 
