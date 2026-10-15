@@ -25,7 +25,7 @@
               <staffDef xml:id="m1-staffdef-s1" n="1" lines="5" keysig="2s" trans.diat="-1" trans.semi="-2">
                 <label xml:id="m1-label-p1">Clarinet</label>
                 <clef xml:id="m1-clef-s1" shape="G" line="2"/>
-                <instrDef xml:id="m1-instrdef-s1" midi.instrnum="71"/>
+                <instrDef xml:id="m1-instrdef-s1" label="clarinet" midi.instrnum="71"/>
                 <layerDef xml:id="m1-layerdef-p1v1" n="1">
                   <label xml:id="m1-label-p1v1">clarinet</label>
                 </layerDef>
@@ -48,7 +48,7 @@
               </staff>
             </measure>
             <staffDef xml:id="m1-staffdef-b3s1" n="1" keysig="3f" trans.diat="-2" trans.semi="-3">
-              <instrDef xml:id="m1-instrdef-b3s1" midi.instrnum="71"/>
+              <instrDef xml:id="m1-instrdef-b3s1" label="clarinet_in_a" midi.instrnum="71"/>
             </staffDef>
             <measure xml:id="m1-measure-b3" n="3">
               <staff xml:id="m1-staff-b3s1" n="1">
@@ -65,7 +65,7 @@
               </staff>
             </measure>
             <staffDef xml:id="m1-staffdef-b5s1" n="1" keysig="0" trans.diat="0" trans.semi="0">
-              <instrDef xml:id="m1-instrdef-b5s1" midi.instrnum="73"/>
+              <instrDef xml:id="m1-instrdef-b5s1" label="flute" midi.instrnum="73"/>
             </staffDef>
             <measure xml:id="m1-measure-b5" n="5">
               <staff xml:id="m1-staff-b5s1" n="1">

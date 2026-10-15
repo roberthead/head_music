@@ -64,6 +64,10 @@ describe HeadMusic::Notation::MEI::ScoreDefWriter do
       expect(mei_attributes(document, "//mei:staffDef/mei:instrDef", "midi.instrnum")).to eq %w[0 0 71]
     end
 
+    it "labels each staff's instrument with its name key" do
+      expect(mei_attributes(document, "//mei:staffDef/mei:instrDef", "label")).to eq %w[piano piano clarinet]
+    end
+
     it "names each voice's role on the staff it opens on" do
       expect(mei_attributes(document, "//mei:staffDef[@n='1']/mei:layerDef", "n")).to eq ["1"]
       expect(mei_element(document, "//mei:layerDef/mei:label").text).to eq "right hand"
@@ -85,6 +89,11 @@ describe HeadMusic::Notation::MEI::ScoreDefWriter do
   describe ".instr_def_attributes" do
     it "is nil for no instrument" do
       expect(described_class.instr_def_attributes(nil)).to be_nil
+    end
+
+    it "labels an instrument with no General MIDI program, and gives it none" do
+      castanets = HeadMusic::Instruments::Instrument.get("castanets")
+      expect(described_class.instr_def_attributes(castanets)).to eq("label" => "castanets", "midi.instrnum" => nil)
     end
   end
 

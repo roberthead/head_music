@@ -78,6 +78,10 @@ describe HeadMusic::Notation::MEI::TimelineChanges do
           .to eq [%w[m1-instrdef-b3s1 71], %w[m1-instrdef-b5s1 73]]
       end
 
+      it "labels each new instrument, though the clarinets share a MIDI program" do
+        expect(mei_attributes(document, "//mei:section/mei:staffDef/mei:instrDef", "label")).to eq %w[clarinet_in_a flute]
+      end
+
       it "writes no transposition or staff key" do
         expect(mei_elements(document, "//mei:staffDef[@trans.semi or @trans.diat or @keysig]")).to eq []
       end
@@ -106,10 +110,10 @@ describe HeadMusic::Notation::MEI::TimelineChanges do
       expect(mei_attributes(document, "//mei:staffDef", "trans.diat", "trans.semi")).to eq [%w[-8 -14]]
     end
 
-    it "writes no staff definition for a concert change to an instrument with no MIDI program" do
-      flow = whole_notes(2).tap { |flutes| flutes.parts.first.change_instrument(2, "flute") }
-      allow(HeadMusic::Notation::MEI::ScoreDefWriter).to receive(:instr_def_attributes).and_return(nil)
-      expect(mei_elements(parse_mei(flow.to_mei), "//mei:section/mei:staffDef")).to eq []
+    it "labels a change to an instrument with no MIDI program, without a program" do
+      flow = whole_notes(2).tap { |castanets| castanets.parts.first.change_instrument(2, "castanets") }
+      expect(mei_attributes(parse_mei(flow.to_mei), "//mei:section/mei:staffDef/mei:instrDef", "label", "midi.instrnum"))
+        .to eq [["castanets", nil]]
     end
   end
 

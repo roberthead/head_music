@@ -25,14 +25,14 @@
               <staffGrp xml:id="m1-staffgrp-p1" symbol="brace">
                 <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
                   <clef xml:id="m1-clef-s1" shape="G" line="2"/>
-                  <instrDef xml:id="m1-instrdef-s1" midi.instrnum="0"/>
+                  <instrDef xml:id="m1-instrdef-s1" label="piano" midi.instrnum="0"/>
                   <layerDef xml:id="m1-layerdef-p1v1" n="1">
                     <label xml:id="m1-label-p1v1">right hand</label>
                   </layerDef>
                 </staffDef>
                 <staffDef xml:id="m1-staffdef-s2" n="2" lines="5">
                   <clef xml:id="m1-clef-s2" shape="F" line="4"/>
-                  <instrDef xml:id="m1-instrdef-s2" midi.instrnum="0"/>
+                  <instrDef xml:id="m1-instrdef-s2" label="piano" midi.instrnum="0"/>
                   <layerDef xml:id="m1-layerdef-p1v2" n="2">
                     <label xml:id="m1-label-p1v2">left hand</label>
                   </layerDef>

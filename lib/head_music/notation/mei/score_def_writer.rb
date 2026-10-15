@@ -32,11 +32,14 @@ module HeadMusic::Notation::MEI
       }
     end
 
-    # Nil for an instrument with no General MIDI program, which is numbered
-    # from 1 where MEI numbers from 0.
+    # Nil for no instrument. The label is the instrument's name key, since
+    # several instruments share a General MIDI program, which is numbered from
+    # 1 where MEI numbers from 0.
     def self.instr_def_attributes(instrument)
-      program = instrument&.gm_program
-      {"midi.instrnum" => program - 1} if program
+      return unless instrument
+
+      program = instrument.gm_program
+      {"label" => instrument.name_key.to_s, "midi.instrnum" => program && (program - 1)}
     end
 
     def initialize(plan)

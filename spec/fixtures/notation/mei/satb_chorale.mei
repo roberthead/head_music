@@ -28,22 +28,22 @@
               <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
                 <label xml:id="m1-label-p1">Soprano</label>
                 <clef xml:id="m1-clef-s1" shape="G" line="2"/>
-                <instrDef xml:id="m1-instrdef-s1" midi.instrnum="52"/>
+                <instrDef xml:id="m1-instrdef-s1" label="soprano_voice" midi.instrnum="52"/>
               </staffDef>
               <staffDef xml:id="m1-staffdef-s2" n="2" lines="5">
                 <label xml:id="m1-label-p2">Alto</label>
                 <clef xml:id="m1-clef-s2" shape="G" line="2"/>
-                <instrDef xml:id="m1-instrdef-s2" midi.instrnum="52"/>
+                <instrDef xml:id="m1-instrdef-s2" label="alto_voice" midi.instrnum="52"/>
               </staffDef>
               <staffDef xml:id="m1-staffdef-s3" n="3" lines="5">
                 <label xml:id="m1-label-p3">Tenor</label>
                 <clef xml:id="m1-clef-s3" shape="G" line="2" dis="8" dis.place="below"/>
-                <instrDef xml:id="m1-instrdef-s3" midi.instrnum="52"/>
+                <instrDef xml:id="m1-instrdef-s3" label="tenor_voice" midi.instrnum="52"/>
               </staffDef>
               <staffDef xml:id="m1-staffdef-s4" n="4" lines="5">
                 <label xml:id="m1-label-p4">Bass</label>
                 <clef xml:id="m1-clef-s4" shape="F" line="4"/>
-                <instrDef xml:id="m1-instrdef-s4" midi.instrnum="52"/>
+                <instrDef xml:id="m1-instrdef-s4" label="bass_voice" midi.instrnum="52"/>
               </staffDef>
             </staffGrp>
           </scoreDef>

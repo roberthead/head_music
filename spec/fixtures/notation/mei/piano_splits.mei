@@ -26,11 +26,11 @@
                 <label xml:id="m1-label-p1">Piano</label>
                 <staffDef xml:id="m1-staffdef-s1" n="1" lines="5">
                   <clef xml:id="m1-clef-s1" shape="G" line="2"/>
-                  <instrDef xml:id="m1-instrdef-s1" midi.instrnum="0"/>
+                  <instrDef xml:id="m1-instrdef-s1" label="piano" midi.instrnum="0"/>
                 </staffDef>
                 <staffDef xml:id="m1-staffdef-s2" n="2" lines="5">
                   <clef xml:id="m1-clef-s2" shape="F" line="4"/>
-                  <instrDef xml:id="m1-instrdef-s2" midi.instrnum="0"/>
+                  <instrDef xml:id="m1-instrdef-s2" label="piano" midi.instrnum="0"/>
                 </staffDef>
               </staffGrp>
             </staffGrp>
