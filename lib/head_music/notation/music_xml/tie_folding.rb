@@ -7,30 +7,35 @@ module HeadMusic::Notation::MusicXML
   #
   # A tie that nothing stops, as one opening in a first ending and closing
   # in the second, or one followed by a rest, is dropped, and its note keeps
-  # its written value. Within a chord, a tie on only some of its pitches is
-  # skipped, so those notes are struck again, as is a tie between chords
-  # that share only some of their pitches. A tie between pitches that share
-  # nothing raises, naming the measure it starts in.
+  # its written value, as is a tie whose stop does not start where the link
+  # before it ends, within a division. Within a chord, a tie on only some
+  # of its pitches is skipped, so those notes are struck again, as is a tie
+  # between chords that share only some of their pitches. A tie between
+  # pitches that share nothing raises, naming the measure it starts in.
   class TieFolding
-    def self.apply(track, reading)
-      new(track, reading).apply
+    def self.apply(track, reading, bar_map)
+      new(track, reading, bar_map).apply
     end
 
-    def initialize(track, reading)
+    def initialize(track, reading, bar_map)
       @track = track
       @reading = reading
+      @bar_map = bar_map
     end
 
     def apply
       open = nil
+      last = nil
       @track.events.each do |event|
-        if open && event.ties_in? && keys(open) == keys(event)
+        joined = open && event.ties_in? && follows?(last, event)
+        if joined && keys(open) == keys(event)
           fold(open, event)
+          last = event
           open = nil unless event.ties_out?
-        elsif open && event.ties_in? && !keys(open).intersect?(keys(event))
+        elsif joined && !keys(open).intersect?(keys(event))
           raise_unrelated(open, event)
         else
-          open = event.ties_out? ? event : nil
+          open = last = event.ties_out? ? event : nil
         end
       end
     end
@@ -48,6 +53,11 @@ module HeadMusic::Notation::MusicXML
       event.link_offset = head.rhythmic_value.tied_chain.length
       head.rhythmic_value = head.rhythmic_value.append_tied(event.rhythmic_value)
       event.continuation = head
+    end
+
+    def follows?(link, event)
+      link_end = @bar_map.time_of(link.measure_index, link.cursor + link.duration)
+      (@bar_map.time_of(event.measure_index, event.cursor) - link_end).abs < event.tolerance
     end
 
     def keys(event)

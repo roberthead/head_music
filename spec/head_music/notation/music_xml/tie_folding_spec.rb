@@ -94,6 +94,31 @@ describe HeadMusic::Notation::MusicXML::TieFolding do
     expect(voice_event_strings(flow).first).to eq ["half D4 at 1:1:000", "quarter rest at 1:3:000", "quarter D4 at 1:4:000"]
   end
 
+  describe "a tie whose stop comes after a <forward>" do
+    let(:flow) do
+      parse(musicxml_measures(note_xml("C4", 2, "half", inside: tie("start")) + forward_xml(1) + note_xml("C4", 1, "quarter", inside: tie("stop"))))
+    end
+
+    it "is dropped, each note keeping its own time" do
+      expect(voice_event_strings(flow).first).to eq ["half C4 at 1:1:000", "quarter rest at 1:3:000", "quarter C4 at 1:4:000"]
+    end
+
+    it "keeps the music whole" do
+      expect_music_whole(flow)
+    end
+  end
+
+  it "drops a tie between different pitches whose stop comes after a <forward>, rather than raising" do
+    xml = musicxml_measures(note_xml("C4", 2, "half", inside: tie("start")) + forward_xml(1) + note_xml("D4", 1, "quarter", inside: tie("stop")))
+    expect(voice_event_strings(parse(xml)).first).to eq ["half C4 at 1:1:000", "quarter rest at 1:3:000", "quarter D4 at 1:4:000"]
+  end
+
+  it "folds a stop within one division of where the link before it ends" do
+    rounded = "<attributes><divisions>100</divisions><time><beats>4</beats><beat-type>4</beat-type></time></attributes>"
+    xml = musicxml_measures(note_xml("C4", 199, "half", inside: tie("start")) + note_xml("C4", 201, "half", inside: tie("stop")), attributes: rounded)
+    expect(voice_event_strings(parse(xml)).first).to eq ["half tied to half C4 at 1:1:000"]
+  end
+
   it "raises on a tie between different pitches, naming the measure it starts in" do
     xml = musicxml_measures([note_xml("C4", 4, "whole", inside: tie("start")), {number: "5"}], [note_xml("D4", 4, "whole", inside: tie("stop")), {number: "6"}])
     expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::ParseError, /tie connects C4 to D4 \(measure 5 of part P1\)/)
