@@ -115,8 +115,8 @@ describe HeadMusic::Notation::Kern::TokenReader do
         .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /Unsupported signifier "@" in token "4c@" \(line 9\)/)
     end
 
-    it "raises an unsupported-feature error for a tuplet duration" do
-      expect { read("6c") }.to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /Tuplet.*6c/)
+    it "raises an unsupported-feature error for a tuplet value too short to name" do
+      expect { read("1536c") }.to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /3:2 tuplet value in 1536c/)
     end
 
     it "raises an unsupported-feature error for chord notes with different durations" do

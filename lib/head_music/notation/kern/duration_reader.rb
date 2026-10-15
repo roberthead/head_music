@@ -5,9 +5,15 @@ module HeadMusic::Notation::Kern
   # a whole note.
   #
   # A reciprocal names the note that many fit in a whole note, so 4 is a
-  # quarter; zeros name the long values (0 a breve, 00 a longa). A
-  # reciprocal that is not a power of two is a tuplet, which RhythmicValue
-  # cannot yet express.
+  # quarter; zeros name the long values (0 a breve, 00 a longa). N%M is M/N
+  # of a whole note.
+  #
+  # Kern writes what sounds, not a ratio, so a tuplet's ratio is worked out
+  # from the undotted value p/q. When q has an odd factor m, m notes take the
+  # time of the largest odd part of p times a power of two below m: 12 is a
+  # 3:2 eighth, 20 a 5:4 sixteenth, 10%3 a 5:3 half. Nested tuplets read as
+  # their one flattened ratio, and a duplet reads as a dotted value, since
+  # that is what it sounds.
   module DurationReader
     MAX_DOTS = 3
     LONG_VALUES = {"0" => 2, "00" => 4, "000" => 8}.freeze
@@ -19,33 +25,54 @@ module HeadMusic::Notation::Kern
       context = {line_number: line_number, snippet: snippet}
       raise ParseError.new("Too many dots in #{recip}#{dots}", **context) if dots.length > MAX_DOTS
 
-      recip.include?("%") ? rational(recip, dots.length, context) : reciprocal(recip, dots.length, context)
+      rational = recip.include?("%")
+      base = rational ? rational_base(recip, context) : LONG_VALUES.fetch(recip) { Rational(1, positive(recip, context)) }
+      fraction = base * dotted_scale(dots.length)
+      ratio = tuplet_ratio(base)
+      return tuplet(fraction, ratio, context) if ratio
+
+      Duration.new(rational ? rational_value(fraction, recip, context) : reciprocal_value(base, recip, dots.length, context), fraction)
     end
 
-    def reciprocal(recip, dots, context)
-      base = LONG_VALUES.fetch(recip) { Rational(1, positive(recip, context)) }
-      unless power_of_two?(base.denominator)
-        raise UnsupportedFeatureError.new("Tuplet durations are not supported (#{context[:snippet]})", **context)
+    # The ratio a non-binary undotted value sounds under, or nil.
+    def tuplet_ratio(base)
+      actual = odd_factor(base.denominator)
+      return if actual == 1
+
+      normal = odd_factor(base.numerator)
+      normal = 1 if normal > actual
+      normal *= 2 while normal * 2 < actual
+      HeadMusic::Rudiment::TupletRatio.get([actual, normal])
+    end
+
+    def tuplet(fraction, ratio, context)
+      rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction, tuplet: ratio)
+      unless rhythmic_value
+        raise UnsupportedFeatureError.new(
+          "The #{ratio.to_a.join(":")} tuplet value in #{context[:snippet]} is outside the maxima to 256th", **context
+        )
       end
 
+      Duration.new(rhythmic_value, fraction)
+    end
+
+    def reciprocal_value(base, recip, dots, context)
       unit = HeadMusic::Notation::DottedDuration.unit_for(base)
       raise ParseError.new(%(Unrecognized duration "#{recip}"), **context) unless unit
 
-      Duration.new(HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots), base * dotted_scale(dots))
+      HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots)
     end
 
-    # N%M is M/N of a whole note: 1%2 is two whole notes.
-    def rational(recip, dots, context)
+    def rational_base(recip, context)
       denominator, numerator = recip.split("%").map { |number| positive(number, context) }
-      fraction = Rational(numerator, denominator) * dotted_scale(dots)
-      unless power_of_two?(fraction.denominator)
-        raise UnsupportedFeatureError.new("Tuplet durations are not supported (#{context[:snippet]})", **context)
-      end
+      Rational(numerator, denominator)
+    end
 
+    def rational_value(fraction, recip, context)
       rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
       raise ParseError.new(%(Unrecognized duration "#{recip}"), **context) unless rhythmic_value
 
-      Duration.new(rhythmic_value, fraction)
+      rhythmic_value
     end
 
     def positive(number, context)
@@ -60,8 +87,9 @@ module HeadMusic::Notation::Kern
       Rational((2**(dots + 1)) - 1, 2**dots)
     end
 
-    def power_of_two?(integer)
-      (integer & (integer - 1)).zero?
+    def odd_factor(integer)
+      integer >>= 1 while integer.even?
+      integer
     end
   end
 end

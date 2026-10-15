@@ -19,15 +19,30 @@ describe HeadMusic::Notation::Kern::DurationReader do
     end
   end
 
-  %w[3 6 12 24].each do |recip|
-    it "raises an unsupported-feature error for the tuplet duration #{recip}" do
-      expect { duration(recip) }
-        .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /Tuplet durations.*\(#{recip}c\) \(line 2\)/)
+  describe "tuplet durations" do
+    {
+      ["3", ""] => ["triplet half", Rational(1, 3)], ["6", ""] => ["triplet quarter", Rational(1, 6)],
+      ["12", ""] => ["triplet eighth", Rational(1, 12)], ["24", ""] => ["triplet sixteenth", Rational(1, 24)],
+      ["20", ""] => ["5:4 sixteenth", Rational(1, 20)], ["28", ""] => ["7:4 sixteenth", Rational(1, 28)],
+      ["112", ""] => ["7:4 sixty-fourth", Rational(1, 112)], ["9", ""] => ["9:8 eighth", Rational(1, 9)],
+      ["3%2", ""] => ["triplet whole", Rational(2, 3)], ["10%3", ""] => ["5:3 half", Rational(3, 10)],
+      ["12", "."] => ["triplet dotted eighth", Rational(1, 8)], ["6", ".."] => ["triplet double-dotted quarter", Rational(7, 24)],
+      ["12%5", ""] => ["triplet half tied to triplet eighth", Rational(5, 12)]
+    }.each do |(recip, dots), (name, fraction)|
+      it "reads #{recip}#{dots} as a #{name}" do
+        result = duration(recip, dots)
+        expect([result.rhythmic_value.to_s, result.fraction, result.rhythmic_value.fraction]).to eq [name, fraction, fraction]
+      end
     end
-  end
 
-  it "raises an unsupported-feature error for a non-dyadic rational duration" do
-    expect { duration("3%2") }.to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /Tuplet/)
+    it "reads a duplet, which sounds as a dotted value, as that value" do
+      expect(duration("8", ".").rhythmic_value).not_to be_tuplet
+    end
+
+    it "raises an unsupported-feature error for a tuplet unit shorter than a 256th" do
+      expect { duration("1536") }
+        .to raise_error(HeadMusic::Notation::Kern::UnsupportedFeatureError, /3:2 tuplet value in 1536c is outside.*\(line 2\)/)
+    end
   end
 
   it "raises for too many dots" do
