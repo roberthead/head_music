@@ -36,9 +36,8 @@ module HeadMusic::Notation::MusicXML
       @grace_starts.fetch(key(voice_event), [])
     end
 
-    # A rest's components are rests of their own, so it stops on its first.
     def self.closing_component?(voice_event, component)
-      voice_event.rest? ? !component.tie_stop : !component.tie_start
+      HeadMusic::Notation::SpanEnds.closing_piece?(voice_event, first: !component.tie_stop, last: !component.tie_start)
     end
 
     private
