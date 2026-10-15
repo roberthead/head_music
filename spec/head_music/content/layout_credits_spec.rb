@@ -15,6 +15,13 @@ describe HeadMusic::Content::Layout do
       expect(project.add_layout.to_lilypond).to include(%(arranger = "Andrés Segovia"))
     end
 
+    it "credits each arranger in MEI as their own person" do
+      project.add_credit("Julian Bream", :arranger)
+      document = parse_mei(project.add_layout.to_mei)
+      expect(mei_attributes(document, "//mei:persName[@role='arranger']", "role").length).to eq 2
+      expect(mei_elements(document, "//mei:persName").map(&:text)).to eq ["Andrés Segovia", "Julian Bream"]
+    end
+
     it "credits the arranger in MusicXML" do
       expect(project.add_layout(flows: [flow]).to_musicxml).to include(%(<creator type="arranger">Andrés Segovia</creator>))
     end
@@ -34,6 +41,7 @@ describe HeadMusic::Content::Layout do
     it "prints no arranger line" do
       expect(project.add_layout(flows: [flow]).to_lilypond).not_to include("arranger")
       expect(project.add_layout(flows: [flow]).to_musicxml).not_to include("arranger")
+      expect(project.add_layout(flows: [flow]).to_mei).not_to include("arranger")
     end
   end
 

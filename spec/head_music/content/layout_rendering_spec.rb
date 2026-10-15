@@ -72,6 +72,19 @@ describe HeadMusic::Content::Layout do
       document = parse_musicxml(layout.to_musicxml_documents.last)
       expect(xpath_text(document, "//movement-title")).to eq "III"
     end
+
+    it "renders one MEI document with an mdiv per movement" do
+      document = parse_mei(layout.to_mei)
+      expect(mei_attributes(document, "//mei:mdiv", "xml:id", "label")).to eq [%w[m1 I], %w[m2 III]]
+    end
+
+    it "titles the MEI document by the layout" do
+      expect(mei_element(parse_mei(layout.to_mei), "//mei:titleStmt/mei:title").text).to eq "Suite"
+    end
+
+    it "keeps every MEI id unique across movements" do
+      expect(mei_reference_problems(parse_mei(layout.to_mei))).to eq []
+    end
   end
 
   describe "a layout that renders nothing" do
@@ -87,6 +100,10 @@ describe HeadMusic::Content::Layout do
 
     it "refuses to render MusicXML" do
       expect { layout.to_musicxml }.to raise_error HeadMusic::Notation::RenderError, /selects no flow/
+    end
+
+    it "refuses to render MEI" do
+      expect { layout.to_mei }.to raise_error HeadMusic::Notation::RenderError, /selects no flow/
     end
   end
 
@@ -107,6 +124,12 @@ describe HeadMusic::Content::Layout do
 
     it "renders the flow's own MusicXML" do
       expect(layout.to_musicxml).to eq flow.to_musicxml
+    end
+
+    # The head's title is the layout's, here the project's name, where the
+    # flow alone is titled by its own name.
+    it "renders the flow's own MEI but for the head's title" do
+      expect(layout.to_mei).to eq flow.to_mei.sub("<title>Speed the Plough</title>", "<title>Session Tunes</title>")
     end
   end
 end

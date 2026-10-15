@@ -40,6 +40,19 @@ describe HeadMusic::Content::Layout do
       expect(concert.to_lilypond).not_to include "\\transposition"
     end
 
+    it "writes the written key and transposition on the MEI staff" do
+      expect(mei_attributes(parse_mei(written.to_mei), "//mei:staffDef", "keysig", "trans.diat", "trans.semi"))
+        .to eq [%w[2s -1 -2]]
+    end
+
+    it "writes the written pitch in MEI" do
+      expect(mei_attributes(parse_mei(written.to_mei), "//mei:note", "pname", "oct").first).to eq %w[d 4]
+    end
+
+    it "writes no MEI transposition in concert pitch" do
+      expect(mei_attributes(parse_mei(concert.to_mei), "//mei:staffDef", "keysig", "trans.semi")).to eq [[nil, nil]]
+    end
+
     it "renders the sounding step in concert MusicXML" do
       expect(xpath_texts(parse_musicxml(concert.to_musicxml), "//note/pitch/step").first).to eq "C"
     end

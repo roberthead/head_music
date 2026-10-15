@@ -79,6 +79,15 @@ describe HeadMusic::Notation::MEI do
     expect(schema_errors(transposed_mei(trio), schema)).to eq []
   end
 
+  it "renders a layout of several flows, with arrangers, as valid MEI" do
+    project = LayoutFixtures.suite.tap { |suite| %w[Ann Bo].each { |name| suite.add_credit(name, :arranger) } }
+    expect(schema_errors(project.add_layout.to_mei, schema)).to eq []
+  end
+
+  it "renders a transposed layout as valid MEI" do
+    expect(schema_errors(LayoutFixtures.trio.add_layout(concert_pitch: false).to_mei, schema)).to eq []
+  end
+
   it "renders a tempo change as valid MEI" do
     flow = LilyPondFixtures.key_and_meter_change.tap { |changes| changes.change_tempo(2, "dotted quarter = 60") }
     expect(schema_errors(described_class.render(flow), schema)).to eq []

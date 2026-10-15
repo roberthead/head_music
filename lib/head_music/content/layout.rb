@@ -97,7 +97,7 @@ class HeadMusic::Content::Layout
     single_flow? ? (title_override || flow.name) : flow.name
   end
 
-  delegate :to_abc, :to_lilypond, :to_musicxml, :to_musicxml_documents, to: :rendering
+  delegate :to_abc, :to_lilypond, :to_musicxml, :to_musicxml_documents, :to_mei, to: :rendering
 
   def to_h
     {

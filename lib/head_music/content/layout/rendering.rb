@@ -42,6 +42,13 @@ class HeadMusic::Content::Layout
       end
     end
 
+    # One document, an <mdiv> for each flow, titled by the layout.
+    def to_mei
+      HeadMusic::Notation::MEI::Writer.new(
+        realized_flows, title: @layout.title, arranger: @layout.project.credits.names(:arranger), transposed: @layout.transposed?
+      ).to_s
+    end
+
     private
 
     def realized_flows
