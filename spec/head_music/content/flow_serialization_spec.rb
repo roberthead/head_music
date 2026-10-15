@@ -243,6 +243,106 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "tuplets and grace notes" do
+    let(:flow) do
+      described_class.new(name: "Tuplets").tap do |tupleted|
+        voice = tupleted.add_voice
+        [["3:2", :eighth, 6], ["7:4", :sixteenth, 7]].each do |ratio, unit, count|
+          count.times { |index| voice.place(voice.next_position, HeadMusic::Rudiment::RhythmicValue.get(unit, tuplet: ratio), index.even? ? "C4" : nil) }
+        end
+        voice.group_tuplet(from: "1:1", to: "1:2")
+        voice.group_tuplet(from: "1:2", to: "1:3", unit: :sixteenth)
+        voice.group_tuplet(from: "1:3", to: "1:4")
+        voice.place("1:4", :quarter, "G4").add_grace_note("A4", :sixteenth, slashed: true, articulations: [:staccato])
+          .add_grace_note(%w[B4 D5], :eighth, tied: true)
+        voice.add_span(:slur, from: "1:4", to: "1:4", from_grace: true)
+      end
+    end
+
+    let(:hash) { flow.to_h }
+    let(:voice_hash) { voices_in(hash).first }
+
+    it "round-trips through JSON" do
+      expect(described_class.from_json(flow.to_json).to_h).to eq hash
+    end
+
+    it "writes ratios inside each rhythmic value's name" do
+      expect(voice_hash["voice_events"].map { |event| event["rhythmic_value"] }.uniq).to eq ["triplet eighth", "7:4 sixteenth", "quarter"]
+    end
+
+    it "writes the voice's tuplets" do
+      expect(voice_hash["tuplets"]).to eq [
+        {"from" => "1:1:000", "to" => "1:2:000", "unit" => "eighth"},
+        {"from" => "1:2:000", "to" => "1:3:000", "unit" => "sixteenth"},
+        {"from" => "1:3:000", "to" => "1:4:000", "unit" => "sixteenth"}
+      ]
+    end
+
+    it "writes the grace notes" do
+      expect(voice_hash["voice_events"].last["grace_notes"]).to eq [
+        {"sounds" => ["A4"], "rhythmic_value" => "sixteenth", "slashed" => true, "articulations" => ["staccato"]},
+        {"sounds" => %w[B4 D5], "rhythmic_value" => "eighth", "tied" => true}
+      ]
+    end
+
+    it "writes the slur from the grace notes" do
+      expect(voice_hash["spans"]).to eq [{"kind" => "slur", "from" => "1:4:000", "to" => "1:4:000", "from_grace" => true}]
+    end
+
+    it "reads a group with no unit with its default unit" do
+      voice_hash["tuplets"][1].delete("unit")
+      expect(described_class.from_h(hash).voices.first.tuplets[1].unit.to_s).to eq "eighth"
+    end
+
+    it "reads a schema-5 document written without them" do
+      voice_event = {"position" => "1:1:000", "rhythmic_value" => "whole", "sounds" => ["C4"]}
+      document = {"schema_version" => 5, "parts" => [{"voices" => [{"role" => nil, "voice_events" => [voice_event]}]}]}
+      voice = described_class.from_h(document).voices.first
+      expect([voice.tuplets, voice.voice_events.first.grace_notes]).to eq [[], []]
+    end
+
+    it "refuses a group that does not fill its span, naming its path" do
+      voice_hash["tuplets"][2]["to"] = "1:3:822:206"
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /\Aparts\[0\]\.voices\[0\]\.tuplets\[2\]: the 7:4 tuplet from 1:3:000 to 1:3:822:206 must end/)
+    end
+
+    it "refuses a group without an end, naming its path" do
+      voice_hash["tuplets"][0].delete("to")
+      expect { described_class.from_h(hash) }.to raise_error(ArgumentError, "parts[0].voices[0].tuplets[0]: a tuplet needs a to position")
+    end
+
+    it "refuses an unknown grace note value, naming its path" do
+      voice_hash["voice_events"].last["grace_notes"][1]["rhythmic_value"] = "eighth tied to sixteenth"
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /\Aparts\[0\]\.voices\[0\]\.voice_events\[13\]\.grace_notes\[1\]: a grace note needs a plain or dotted value/)
+    end
+
+    it "refuses a grace note flag that is not a boolean, naming its path" do
+      voice_hash["voice_events"].last["grace_notes"][0]["slashed"] = "yes"
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, 'parts[0].voices[0].voice_events[13].grace_notes[0].slashed: must be true or false, got "yes"')
+    end
+
+    it "refuses grace notes on a rest, naming its path" do
+      voice_hash["voice_events"][1]["grace_notes"] = [{"sounds" => ["A4"], "rhythmic_value" => "sixteenth"}]
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "parts[0].voices[0].voice_events[1]: a rest cannot carry grace notes")
+    end
+
+    it "refuses a span from_grace that is not a boolean, naming its path" do
+      voice_hash["spans"][0]["from_grace"] = 1
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "parts[0].voices[0].spans[0].from_grace: must be true or false, got 1")
+    end
+
+    it "refuses an unknown ratio name as an unknown rhythmic value" do
+      voice_hash["voice_events"][0]["rhythmic_value"] = "quintuplet eighth"
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, 'parts[0].voices[0].voice_events[0]: unknown rhythmic value "quintuplet eighth"')
+    end
+  end
+
   describe "spans" do
     let(:flow) do
       HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\nC D E F|G A z2|\n").tap do |spanned|

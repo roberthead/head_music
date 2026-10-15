@@ -45,6 +45,15 @@ class HeadMusic::Content::Flow
       end
     end
 
+    # An optional list of {"sounds", "rhythmic_value", "slashed"?, "tied"?,
+    # "articulations"?} hashes, each answered as the arguments of
+    # NoteEvent#add_grace_note: [sounds, rhythmic_value, options].
+    def grace_notes(values, path)
+      return [] if values.nil?
+
+      each_element(values, "grace_notes", path) { |value, element_path| grace_note(value, element_path) }
+    end
+
     def note_dynamic(value, path)
       return nil if value.nil?
 
@@ -63,6 +72,31 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "#{path}: unknown pitch #{value.inspect}" unless pitch
 
       pitch
+    end
+
+    def grace_note(value, path)
+      ensure_kind!(value, Hash, "grace note", path)
+      sounds = each_element(value["sounds"], "sounds", path) { |sound_value, element_path| sound(sound_value, element_path) }
+      options = {
+        slashed: flag(value, "slashed", path),
+        tied: flag(value, "tied", path),
+        articulations: catalog_keys(value["articulations"], HeadMusic::Rudiment::Articulation, "articulations", path)
+      }
+      [sounds, grace_value(value["rhythmic_value"], path), options]
+    end
+
+    def grace_value(value, path)
+      rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(value) if value.is_a?(String)
+      raise ArgumentError, "#{path}: unknown rhythmic value #{value.inspect}" unless rhythmic_value&.unit
+
+      rhythmic_value
+    end
+
+    def flag(value, key, path)
+      flag = value.fetch(key, false)
+      raise ArgumentError, "#{path}.#{key}: must be true or false, got #{flag.inspect}" unless [true, false].include?(flag)
+
+      flag
     end
 
     def syllable(value, seen_verses, path)

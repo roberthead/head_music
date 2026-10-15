@@ -12,7 +12,7 @@ class HeadMusic::Content::Flow
     BAR_FIELDS = [*BAR_FLAGS, "ends_repeat_after_num_plays", "plays_on_passes", "barline", "rehearsal_mark", "jump"].freeze
 
     delegate :staff_system, :staff, to: :staff_system_values
-    delegate :voice_event_sounds, :voice_event_syllables, :catalog_keys, :note_dynamic, to: :voice_event_values
+    delegate :voice_event_sounds, :voice_event_syllables, :catalog_keys, :note_dynamic, :grace_notes, to: :voice_event_values
 
     # Position silently coerces garbage strings to "0:1:000", which would
     # mislocate content with no error, so the shape is validated up front.
@@ -72,9 +72,15 @@ class HeadMusic::Content::Flow
     end
 
     # An optional list of {"kind" => ..., "from" => ..., "to" => ...} hashes,
-    # answered as [kind, from, to].
+    # with an optional "from_grace", answered as [kind, from, to, from_grace].
     def spans(values, path)
       each_optional_element(values, "spans", path, &method(:span))
+    end
+
+    # An optional list of {"from" => ..., "to" => ..., "unit" => ...} hashes,
+    # answered as [from, to, unit]. A group's ratio is its values'.
+    def tuplets(values, path)
+      each_optional_element(values, "tuplets", path, &method(:tuplet))
     end
 
     def bar_number(bar_hash, index, path = "bars")
@@ -186,7 +192,19 @@ class HeadMusic::Content::Flow
       ends = %w[from to].map do |key|
         position(value[key], "#{path}.#{key}") || raise(ArgumentError, "#{path}: a span needs a #{key} position")
       end
-      [kind, *ends]
+      from_grace = value.fetch("from_grace", false)
+      raise ArgumentError, "#{path}.from_grace: must be true or false, got #{from_grace.inspect}" unless [true, false].include?(from_grace)
+
+      [kind, *ends, from_grace]
+    end
+
+    def tuplet(value, path)
+      ensure_kind!(value, Hash, "tuplet", path)
+      ends = %w[from to].map do |key|
+        position(value[key], "#{path}.#{key}") || raise(ArgumentError, "#{path}: a tuplet needs a #{key} position")
+      end
+      unit = value["unit"]
+      [*ends, unit && rhythmic_value(unit, "#{path}.unit")]
     end
   end
 end

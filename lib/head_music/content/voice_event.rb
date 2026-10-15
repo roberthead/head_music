@@ -156,6 +156,7 @@ class HeadMusic::Content::VoiceEvent
     hash["articulations"] = articulations.map(&:name_key) unless articulations.empty?
     hash["ornaments"] = ornaments.map(&:name_key) unless ornaments.empty?
     hash["note_dynamic"] = note_dynamic.name_key if note_dynamic
+    hash["grace_notes"] = grace_notes.map(&:to_h) unless grace_notes.empty?
     hash
   end
 

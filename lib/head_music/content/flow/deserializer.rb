@@ -77,6 +77,24 @@ class HeadMusic::Content::Flow
           voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
         end
         apply_markings(voice_event, voice_event_hash, path)
+        add_grace_notes(voice_event, voice_event_hash, path)
+      end
+    end
+
+    def add_grace_notes(voice_event, voice_event_hash, path)
+      grace_notes = values.grace_notes(voice_event_hash["grace_notes"], path)
+      return if grace_notes.empty?
+      raise ArgumentError, "#{path}: a rest cannot carry grace notes" if voice_event.rest?
+
+      each_placed(grace_notes, "grace_notes", path) do |sounds, rhythmic_value, options|
+        voice_event.add_grace_note(sounds, rhythmic_value, **options)
+      end
+    end
+
+    # Added after the voice events they bracket.
+    def add_tuplets(voice, voice_hash, path)
+      each_placed(values.tuplets(voice_hash["tuplets"], path), "tuplets", path) do |from, to, unit|
+        voice.group_tuplet(from: from, to: to, unit: unit)
       end
     end
 
@@ -99,8 +117,8 @@ class HeadMusic::Content::Flow
 
     # Added after the voice events, whose positions a span's ends must find.
     def add_spans(target, container_hash, path)
-      each_placed(values.spans(container_hash["spans"], path), "spans", path) do |kind, from, to|
-        target.add_span(kind, from: from, to: to)
+      each_placed(values.spans(container_hash["spans"], path), "spans", path) do |kind, from, to, from_grace|
+        target.add_span(kind, from: from, to: to, from_grace: from_grace)
       end
     end
 

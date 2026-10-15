@@ -349,6 +349,55 @@ describe HeadMusic::Content::Flow::SchemaValues do
     end
   end
 
+  describe "#tuplets" do
+    let(:tuplet) { {"from" => "1:1", "to" => "1:2", "unit" => "eighth"} }
+
+    it "answers an empty list for nil" do
+      expect(values.tuplets(nil, "path")).to eq []
+    end
+
+    it "answers positions and unit" do
+      expect(values.tuplets([tuplet], "path")).to eq [["1:1", "1:2", HeadMusic::Rudiment::RhythmicValue.get(:eighth)]]
+    end
+
+    it "answers no unit where none is written" do
+      expect(values.tuplets([tuplet.except("unit")], "path")).to eq [["1:1", "1:2", nil]]
+    end
+
+    it "refuses an entry that is not a hash" do
+      expect { values.tuplets(["3:2"], "path") }.to raise_error(ArgumentError, 'path.tuplets[0]: tuplet must be a Hash, got "3:2"')
+    end
+
+    it "refuses an unknown unit, naming its path" do
+      expect { values.tuplets([tuplet.merge("unit" => "blorp")], "path") }
+        .to raise_error(ArgumentError, 'path.tuplets[0].unit: unknown rhythmic value "blorp"')
+    end
+  end
+
+  describe "#grace_notes" do
+    let(:grace_note) { {"sounds" => ["A4"], "rhythmic_value" => "sixteenth"} }
+
+    it "answers an empty list for nil" do
+      expect(values.grace_notes(nil, "path")).to eq []
+    end
+
+    it "answers the arguments of add_grace_note" do
+      expect(values.grace_notes([grace_note.merge("slashed" => true)], "path")).to eq [
+        [[HeadMusic::Rudiment::Pitch.get("A4")], HeadMusic::Rudiment::RhythmicValue.get(:sixteenth), {slashed: true, tied: false, articulations: []}]
+      ]
+    end
+
+    it "refuses an unknown sound, naming its path" do
+      expect { values.grace_notes([grace_note.merge("sounds" => ["H9"])], "path") }
+        .to raise_error(ArgumentError, 'path.grace_notes[0].sounds[0]: unknown pitch "H9"')
+    end
+
+    it "refuses an unknown rhythmic value, naming its path" do
+      expect { values.grace_notes([grace_note.merge("rhythmic_value" => "blorp")], "path") }
+        .to raise_error(ArgumentError, 'path.grace_notes[0]: unknown rhythmic value "blorp"')
+    end
+  end
+
   describe "#spans" do
     let(:slur) { {"kind" => "slur", "from" => "1:1", "to" => "1:3"} }
 
@@ -356,8 +405,12 @@ describe HeadMusic::Content::Flow::SchemaValues do
       expect(values.spans(nil, "path")).to eq []
     end
 
-    it "answers kind and positions" do
-      expect(values.spans([slur], "path")).to eq [[HeadMusic::Rudiment::SpanKind.get(:slur), "1:1", "1:3"]]
+    it "answers kind, positions, and whether it starts on grace notes" do
+      expect(values.spans([slur], "path")).to eq [[HeadMusic::Rudiment::SpanKind.get(:slur), "1:1", "1:3", false]]
+    end
+
+    it "answers a span from grace notes" do
+      expect(values.spans([slur.merge("from_grace" => true)], "path").first.last).to be true
     end
 
     it "refuses an entry that is not a hash" do
