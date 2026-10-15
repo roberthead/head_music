@@ -19,7 +19,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def to_s
-      Preflight.check!(flow)
+      Preflight.check!(flow, [work_title, movement_number, arranger])
       plan
       document_lines.join("\n") + "\n"
     end

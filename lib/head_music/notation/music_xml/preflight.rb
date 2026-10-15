@@ -3,28 +3,26 @@ module HeadMusic::Notation::MusicXML
   # Rejects flows that cannot be expressed in the supported MusicXML
   # subset.
   #
-  # Whole-flow problems (no voices, positional gaps, forbidden control
-  # characters) raise RenderError here, before the
+  # Whole-flow problems (no voices, positional gaps, characters XML
+  # forbids) raise RenderError here, before the
   # Writer assembles any output — so a successful check! is the Writer's
   # guarantee that assembly cannot fail on these grounds.
   class Preflight
     include HeadMusic::Notation::PreflightChecks
 
-    # XML 1.0 forbids the C0 control characters other than tab, newline, and
-    # carriage return, even as character references.
-    FORBIDDEN_TEXT_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/
-
-    def self.check!(flow)
-      new(flow).check!
+    # +texts+ are those the writer is given rather than reads from the flow.
+    def self.check!(flow, texts = [])
+      new(flow, texts).check!
     end
 
-    def initialize(flow)
+    def initialize(flow, texts = [])
       @flow = flow
+      @texts = texts
     end
 
     def check!
       ensure_voices
-      ensure_renderable_text
+      ensure_xml_text(flow_texts + texts)
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
@@ -33,7 +31,7 @@ module HeadMusic::Notation::MusicXML
 
     private
 
-    attr_reader :flow
+    attr_reader :flow, :texts
 
     def ensure_voices
       return unless flow.voices.empty?
@@ -41,13 +39,14 @@ module HeadMusic::Notation::MusicXML
       raise RenderError, "cannot render a flow with no voices as MusicXML"
     end
 
-    def ensure_renderable_text
-      texts = [flow.name, flow.composer] + flow.voices.map(&:role)
-      texts.compact.each do |text|
-        next unless text.to_s.match?(FORBIDDEN_TEXT_CHARACTERS)
-
-        raise RenderError, "cannot render control characters in #{text.to_s.inspect} as XML text"
-      end
+    def flow_texts
+      [
+        flow.name, flow.composer, flow.work&.title,
+        *flow.parts.flat_map { |part| [part.player&.name, part.instrument&.name] },
+        *flow.voices.map(&:role),
+        *flow.bars(flow.last_sounding_bar_number).map(&:rehearsal_mark),
+        *flow.voices.flat_map { |voice| voice.voice_events.flat_map { |event| event.syllables.values.map(&:text) } }
+      ]
     end
 
     def render_error_class

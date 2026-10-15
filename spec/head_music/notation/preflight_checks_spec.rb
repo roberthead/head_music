@@ -9,6 +9,41 @@ describe HeadMusic::Notation::PreflightChecks do
     end
   end
 
+  describe "#ensure_xml_text" do
+    render_error = Class.new(HeadMusic::Notation::RenderError)
+
+    let(:checker) do
+      Class.new do
+        include HeadMusic::Notation::PreflightChecks
+
+        define_method(:render_error_class) { render_error }
+      end.new
+    end
+
+    def check(*texts)
+      checker.send(:ensure_xml_text, texts)
+    end
+
+    it "passes tab, newline, carriage return, markup characters, and non-ASCII text" do
+      expect { check("a\tb\nc\rd", "<Für> & 'Ελένη'", 3, nil) }.not_to raise_error
+    end
+
+    {
+      "a C0 control character" => "Bad\u0007Text",
+      "a vertical tab" => "Bad\u000BText",
+      "the noncharacter U+FFFE" => "Bad\uFFFEText",
+      "the noncharacter U+FFFF" => "Bad\uFFFFText"
+    }.each do |description, text|
+      it "raises the includer's render error for #{description}" do
+        expect { check("Fine", text) }.to raise_error(render_error, /characters XML forbids in #{Regexp.escape(text.inspect)}/)
+      end
+    end
+
+    it "raises the includer's render error for a byte sequence its encoding cannot hold" do
+      expect { check("Bad\xFFText") }.to raise_error(render_error, /invalid UTF-8 in "Bad\\xFFText"/)
+    end
+  end
+
   context "with a marking on a bar after the music" do
     before { flow.bar(3).jump = HeadMusic::Content::Jump.new(:da_capo) }
 

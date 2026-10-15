@@ -1400,7 +1400,21 @@ describe HeadMusic::Notation::MusicXML::Writer do
         flow = HeadMusic::Content::Flow.new(name: "Bad#{7.chr}Name")
         flow.add_voice
         expect { described_class.new(flow).to_s }
-          .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /control characters/)
+          .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /characters XML forbids/)
+      end
+    end
+
+    {
+      "an arranger" => {arranger: "Bad#{7.chr}Name"},
+      "a work title" => {work_title: "Bad#{7.chr}Name"}
+    }.each do |text, options|
+      context "with a control character in #{text} it is given" do
+        it "raises a render error" do
+          flow = HeadMusic::Content::Flow.new(name: "Tune")
+          flow.add_voice.place("1:1", :whole, "C4")
+          expect { described_class.new(flow, **options).to_s }
+            .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /characters XML forbids/)
+        end
       end
     end
 

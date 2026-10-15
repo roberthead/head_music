@@ -6,7 +6,23 @@ module HeadMusic
     # includer supplies its own format-specific RenderError subclass
     # through #render_error_class.
     module PreflightChecks
+      # XML 1.0 forbids the C0 control characters other than tab, newline, and
+      # carriage return, even as character references, and the noncharacters
+      # U+FFFE and U+FFFF.
+      FORBIDDEN_XML_CHARACTERS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/
+
       private
+
+      def ensure_xml_text(texts)
+        texts.compact.map(&:to_s).each do |text|
+          unless text.valid_encoding?
+            raise render_error_class, "cannot render the invalid #{text.encoding} in #{text.inspect} as XML"
+          end
+          next unless text.match?(FORBIDDEN_XML_CHARACTERS)
+
+          raise render_error_class, "cannot render the characters XML forbids in #{text.inspect}"
+        end
+      end
 
       def ensure_contiguous_voices(flow)
         flow.voices.each do |voice|
