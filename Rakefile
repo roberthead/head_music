@@ -89,6 +89,29 @@ namespace :mei do
       puts "Wrote #{name}"
     end
   end
+
+  desc "Regenerate the MuseScore 4 MEI exports (spec/fixtures/notation/mei/musescore/); MSCORE overrides the mscore path"
+  task :musescore_fixtures do
+    $LOAD_PATH.unshift File.expand_path("lib", __dir__)
+    require "head_music"
+    require "rspec/core"
+    require_relative "spec/support/musescore"
+
+    target_directory = File.expand_path("spec/fixtures/notation/mei/musescore", __dir__)
+    FileUtils.mkdir_p(target_directory)
+    sources = Dir[File.join(MuseScoreFixtures::DIRECTORY, "*.head_music.musicxml")].sort
+    failures = sources.filter_map do |source|
+      name = File.basename(source, ".head_music.musicxml")
+      target = File.join(target_directory, "#{name}.musescore4.mei")
+      MuseScore.convert_file(source, target, timeout: 120)
+      File.write(target, File.read(target).chomp + "\n")
+      puts "Wrote #{name}"
+      nil
+    rescue MuseScore::ConversionError => error
+      "#{name}: #{error.message}"
+    end
+    abort "MuseScore failed on:\n#{failures.join("\n")}" if failures.any?
+  end
 end
 
 namespace :style do

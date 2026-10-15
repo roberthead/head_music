@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-basic.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-basic.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1+basic">
+   <meiHead>
+      <fileDesc>
+         <titleStmt>
+            <title type="main">Grace Notes</title>
+         </titleStmt>
+         <pubStmt>
+            <date isodate="2026-10-15T16:44:26" />
+         </pubStmt>
+      </fileDesc>
+   </meiHead>
+   <music>
+      <body>
+         <mdiv>
+            <score>
+               <scoreDef>
+                  <pgHead func="first">
+                     <rend halign="center" valign="top">
+                        <rend type="title" fontsize="x-large">Grace Notes</rend>
+                     </rend>
+                  </pgHead>
+                  <staffGrp>
+                     <staffDef n="1" lines="5" meter.count="4" meter.unit="4">
+                        <label>Voice 1</label>
+                        <instrDef midi.instrnum="0" />
+                        <clef shape="G" line="2" />
+                     </staffDef>
+                  </staffGrp>
+               </scoreDef>
+               <section xml:id="s1">
+                  <pb />
+                  <measure xml:id="mpl4tzp" n="1">
+                     <staff xml:id="m1s1" n="1">
+                        <layer xml:id="m1s1l1" n="1">
+                           <note xml:id="n180fu10" dur="4" pname="c" oct="4" />
+                           <note xml:id="nrukfnd" dur="4" pname="e" oct="4" />
+                           <graceGrp grace="acc">
+                              <chord xml:id="c1cu9kdr" dur="16">
+                                 <note xml:id="n1w39z3d" pname="a" oct="4" />
+                                 <note xml:id="nqadc76" pname="c" oct="5" />
+                              </chord>
+                           </graceGrp>
+                           <note xml:id="n149m9qj" dur="4" pname="g" oct="4" />
+                           <graceGrp grace="acc">
+                              <note xml:id="n12rr4n4" dur="16" pname="g" oct="4">
+                                 <artic xml:id="ae60lez" artic="stacc" />
+                              </note>
+                           </graceGrp>
+                           <note xml:id="n1o1dwzb" dur="4" pname="f" oct="4" />
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="m1qx0ur2" n="2">
+                     <staff xml:id="m2s1" n="1">
+                        <layer xml:id="m2s1l1" n="1">
+                           <graceGrp grace="unacc">
+                              <note xml:id="n1e4hnyj" dur="8" pname="f" oct="4" />
+                           </graceGrp>
+                           <note xml:id="na3rfu9" dur="1" pname="e" oct="4" />
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="m1926dst" right="end" n="3">
+                     <staff xml:id="m3s1" n="1">
+                        <layer xml:id="m3s1l1" n="1">
+                           <graceGrp grace="acc">
+                              <beam>
+                                 <note xml:id="n1dcs310" dur="16" pname="d" oct="4" />
+                                 <note xml:id="nk1cy9o" dur="16" pname="c" oct="4" />
+                              </beam>
+                           </graceGrp>
+                           <note xml:id="n4lf7sb" dur="1" pname="c" oct="4" />
+                        </layer>
+                     </staff>
+                     <slur xml:id="sth4vee" startid="#n1dcs310" endid="#n4lf7sb" />
+                     <tie xml:id="t182lqj7" startid="#nk1cy9o" endid="#n4lf7sb" />
+                  </measure>
+               </section>
+            </score>
+         </mdiv>
+      </body>
+   </music>
+</mei>

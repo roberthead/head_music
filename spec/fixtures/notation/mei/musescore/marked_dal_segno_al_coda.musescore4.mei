@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-basic.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-basic.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1+basic">
+   <meiHead>
+      <fileDesc>
+         <titleStmt>
+            <title type="main">Dal Segno al Coda</title>
+         </titleStmt>
+         <pubStmt>
+            <date isodate="2026-10-15T16:44:30" />
+         </pubStmt>
+      </fileDesc>
+   </meiHead>
+   <music>
+      <body>
+         <mdiv>
+            <score>
+               <scoreDef>
+                  <pgHead func="first">
+                     <rend halign="center" valign="top">
+                        <rend type="title" fontsize="x-large">Dal Segno al Coda</rend>
+                     </rend>
+                  </pgHead>
+                  <staffGrp>
+                     <staffDef n="1" lines="5" meter.count="4" meter.unit="4">
+                        <label>Voice 1</label>
+                        <instrDef midi.instrnum="0" />
+                        <clef shape="G" line="2" />
+                     </staffDef>
+                  </staffGrp>
+               </scoreDef>
+               <section xml:id="s1">
+                  <pb />
+                  <measure xml:id="m1qr0n1y" n="1">
+                     <staff xml:id="m1s1" n="1">
+                        <layer xml:id="m1s1l1" n="1">
+                           <note xml:id="n1f8mzn7" dur="4" pname="c" oct="4">
+                              <artic xml:id="a9kqp0b" artic="stacc" />
+                           </note>
+                           <note xml:id="nq5n3iq" dur="4" pname="d" oct="4">
+                              <artic xml:id="a1vnta60" artic="stacc" />
+                           </note>
+                           <note xml:id="n133rusu" dur="4" pname="e" oct="4">
+                              <artic xml:id="a1nchoit" artic="stacc" />
+                           </note>
+                           <note xml:id="n1c9thif" dur="4" pname="f" oct="4">
+                              <artic xml:id="abiqvcf" artic="ten" />
+                           </note>
+                        </layer>
+                     </staff>
+                     <dynam xml:id="d285nwz" label="p" staff="1" startid="#n1f8mzn7" place="below">p</dynam>
+                     <reh xml:id="rvs8vxr" startid="#n1f8mzn7">A</reh>
+                     <slur xml:id="s1q98bq0" startid="#n1f8mzn7" endid="#n133rusu" />
+                     <hairpin xml:id="h1pp2wax" form="cres" staff="1" startid="#nq5n3iq" place="below" endid="#n5v4imh" />
+                  </measure>
+                  <measure xml:id="m5urmc6" n="2">
+                     <staff xml:id="m2s1" n="1">
+                        <layer xml:id="m2s1l1" n="1">
+                           <note xml:id="n5v4imh" dur="4" pname="g" oct="4" />
+                           <note xml:id="nm4iyym" dur="4" pname="a" oct="4">
+                              <artic xml:id="admsczh" artic="acc" />
+                           </note>
+                           <note xml:id="n1e153gb" dur="4" pname="b" oct="4" />
+                           <note xml:id="nehvhr6" dur="4" pname="c" oct="5" />
+                        </layer>
+                     </staff>
+                     <dir xml:id="dlelzfo" type="mscore-staff-text" startid="#n5v4imh" place="above"></dir>
+                     <dynam xml:id="d1ate5z7" label="mf" staff="1" startid="#n5v4imh" place="below">mf</dynam>
+                     <slur xml:id="sn6fw81" startid="#n5v4imh" endid="#nehvhr6" />
+                     <trill xml:id="tmqzwog" startid="#nehvhr6" />
+                  </measure>
+                  <measure xml:id="momtifk" n="3">
+                     <staff xml:id="m3s1" n="1">
+                        <layer xml:id="m3s1l1" n="1">
+                           <note xml:id="n1yn7swk" dur="4" pname="d" oct="5" />
+                           <note xml:id="nel7cw3" dur="4" pname="c" oct="5" />
+                           <note xml:id="n1afvtji" dur="4" pname="b" oct="4">
+                              <artic xml:id="a163bjz8" artic="stacciss" />
+                           </note>
+                           <note xml:id="nxcc6kq" dur="4" pname="a" oct="4">
+                              <artic xml:id="apsoav8" artic="marc" />
+                           </note>
+                        </layer>
+                     </staff>
+                     <dynam xml:id="dzmpang" label="sfz" staff="1" startid="#n1yn7swk">sfz</dynam>
+                     <reh xml:id="r8tkd27" startid="#n1yn7swk">B</reh>
+                     <mordent xml:id="m14bxn21" form="lower" startid="#n1yn7swk" />
+                     <mordent xml:id="m1l6yeno" form="upper" startid="#n1afvtji" />
+                  </measure>
+                  <measure xml:id="mctppx6" right="dbl" n="4">
+                     <staff xml:id="m4s1" n="1">
+                        <layer xml:id="m4s1l1" n="1">
+                           <note xml:id="n12i1jdp" dur="4" pname="g" oct="4" />
+                           <note xml:id="n1hzjhpt" dur="4" pname="f" oct="4" />
+                           <note xml:id="n1mn0hoc" dur="4" pname="e" oct="4" />
+                           <note xml:id="nj2xe1k" dur="4" pname="d" oct="4" />
+                        </layer>
+                     </staff>
+                     <dynam xml:id="dmm7pvx" label="fp" staff="1" startid="#n12i1jdp">fp</dynam>
+                     <hairpin xml:id="h1gn24ux" form="dim" staff="1" startid="#n12i1jdp" place="below" endid="#nj2xe1k" />
+                     <turn xml:id="t1aw6ddv" form="upper" startid="#n12i1jdp" />
+                  </measure>
+                  <measure xml:id="m1328dwu" right="end" n="5">
+                     <staff xml:id="m5s1" n="1">
+                        <layer xml:id="m5s1l1" n="1">
+                           <note xml:id="nbsscwi" dur="4" pname="c" oct="4" />
+                           <note xml:id="n1u9439l" dur="4" pname="e" oct="4" />
+                           <note xml:id="n3zs4t3" dur="4" pname="g" oct="4" />
+                           <note xml:id="n1y23w42" dur="4" pname="c" oct="5" />
+                        </layer>
+                     </staff>
+                     <dir xml:id="d1xf3goi" type="mscore-staff-text" startid="#nbsscwi" place="above"></dir>
+                     <dynam xml:id="davrcv0" label="pp" staff="1" startid="#nbsscwi" place="below">pp</dynam>
+                     <hairpin xml:id="h147of1k" form="cres" staff="1" startid="#nbsscwi" place="below" />
+                  </measure>
+               </section>
+            </score>
+         </mdiv>
+      </body>
+   </music>
+</mei>

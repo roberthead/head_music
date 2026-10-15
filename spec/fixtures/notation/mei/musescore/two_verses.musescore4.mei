@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-basic.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-basic.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1+basic">
+   <meiHead>
+      <fileDesc>
+         <titleStmt>
+            <title type="main">Amazing Grace</title>
+         </titleStmt>
+         <pubStmt>
+            <date isodate="2026-10-15T16:44:34" />
+         </pubStmt>
+      </fileDesc>
+   </meiHead>
+   <music>
+      <body>
+         <mdiv>
+            <score>
+               <scoreDef>
+                  <pgHead func="first">
+                     <rend halign="center" valign="top">
+                        <rend type="title" fontsize="x-large">Amazing Grace</rend>
+                     </rend>
+                  </pgHead>
+                  <staffGrp>
+                     <staffDef n="1" lines="5" keysig="1f" meter.count="3" meter.unit="4">
+                        <label>melody</label>
+                        <instrDef midi.instrnum="0" />
+                        <clef shape="G" line="2" />
+                     </staffDef>
+                  </staffGrp>
+               </scoreDef>
+               <section xml:id="s1">
+                  <pb />
+                  <measure xml:id="mbi5zbx">
+                     <staff xml:id="m1s1" n="1">
+                        <layer xml:id="m1s1l1" n="1">
+                           <rest xml:id="razwbti" dur="2" />
+                           <note xml:id="n10ktcja" dur="4" pname="c" oct="4">
+                              <verse xml:id="vhqko7q" place="below" n="1">
+                                 <syl con="d" wordpos="i">A</syl>
+                              </verse>
+                              <verse xml:id="vjn7ymw" place="below" n="2">
+                                 <syl>'Twas</syl>
+                              </verse>
+                           </note>
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="m1gwly9g" n="1">
+                     <staff xml:id="m2s1" n="1">
+                        <layer xml:id="m2s1l1" n="1">
+                           <note xml:id="ny3wr5t" dur="2" pname="f" oct="4">
+                              <verse xml:id="vffox94" place="below" n="1">
+                                 <syl con="d" wordpos="m">ma</syl>
+                              </verse>
+                              <verse xml:id="vzvnk7o" place="below" n="2">
+                                 <syl>grace</syl>
+                              </verse>
+                           </note>
+                           <beam>
+                              <note xml:id="n1f2pd7z" type="mscore-beam-begin" dur="8" pname="a" oct="4">
+                                 <verse xml:id="v1iask2g" place="below" n="1">
+                                    <syl wordpos="t">zing</syl>
+                                 </verse>
+                                 <verse xml:id="v1h9u5as" place="below" n="2">
+                                    <syl>that</syl>
+                                 </verse>
+                              </note>
+                              <note xml:id="n5pd75w" dur="8" pname="f" oct="4" />
+                           </beam>
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="m722odb" n="2">
+                     <staff xml:id="m3s1" n="1">
+                        <layer xml:id="m3s1l1" n="1">
+                           <note xml:id="n16wkxb4" dur="2" pname="a" oct="4">
+                              <verse xml:id="v1e03640" place="below" n="1">
+                                 <syl>grace</syl>
+                              </verse>
+                              <verse xml:id="v1ozro4d" place="below" n="2">
+                                 <syl>taught</syl>
+                              </verse>
+                           </note>
+                           <note xml:id="n16rwwz9" dur="4" pname="g" oct="4">
+                              <verse xml:id="v1vlsunh" place="below" n="1">
+                                 <syl>how</syl>
+                              </verse>
+                              <verse xml:id="v198le8m" place="below" n="2">
+                                 <syl>my</syl>
+                              </verse>
+                           </note>
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="m18cz03" n="3">
+                     <staff xml:id="m4s1" n="1">
+                        <layer xml:id="m4s1l1" n="1">
+                           <note xml:id="nq2ojsc" dur="2" pname="f" oct="4">
+                              <verse xml:id="vo7snxk" place="below" n="1">
+                                 <syl>sweet</syl>
+                              </verse>
+                              <verse xml:id="v1srz6l1" place="below" n="2">
+                                 <syl>heart</syl>
+                              </verse>
+                           </note>
+                           <note xml:id="n1azxv9g" dur="4" pname="d" oct="4">
+                              <verse xml:id="vddf70w" place="below" n="1">
+                                 <syl>the</syl>
+                              </verse>
+                              <verse xml:id="v1f82i1o" place="below" n="2">
+                                 <syl>to</syl>
+                              </verse>
+                           </note>
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="mut2qg6" n="4">
+                     <staff xml:id="m5s1" n="1">
+                        <layer xml:id="m5s1l1" n="1">
+                           <note xml:id="n1gq4gda" dur="2" pname="c" oct="4">
+                              <verse xml:id="vghhegm" place="below" n="1">
+                                 <syl>sound</syl>
+                              </verse>
+                              <verse xml:id="v150nhh6" place="below" n="2">
+                                 <syl>fear,</syl>
+                              </verse>
+                           </note>
+                           <note xml:id="nwehyqg" dur="4" pname="c" oct="4">
+                              <verse xml:id="v1bgcj3b" place="below" n="1">
+                                 <syl>that</syl>
+                              </verse>
+                              <verse xml:id="v1qbwvgi" place="below" n="2">
+                                 <syl>and</syl>
+                              </verse>
+                           </note>
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="m5ni9j4" n="5">
+                     <staff xml:id="m6s1" n="1">
+                        <layer xml:id="m6s1l1" n="1">
+                           <note xml:id="nrmpr0o" dur="2" pname="f" oct="4">
+                              <verse xml:id="v1crhuzq" place="below" n="1">
+                                 <syl>saved</syl>
+                              </verse>
+                              <verse xml:id="vn6b1nr" place="below" n="2">
+                                 <syl>grace</syl>
+                              </verse>
+                           </note>
+                           <beam>
+                              <note xml:id="n1o4cwue" type="mscore-beam-begin" dur="8" pname="a" oct="4">
+                                 <verse xml:id="v1vaptsu" place="below" n="1">
+                                    <syl>a</syl>
+                                 </verse>
+                                 <verse xml:id="v1qczbrr" place="below" n="2">
+                                    <syl>my</syl>
+                                 </verse>
+                              </note>
+                              <note xml:id="ng83qvy" dur="8" pname="f" oct="4" />
+                           </beam>
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="m1p34fbl" n="6">
+                     <staff xml:id="m7s1" n="1">
+                        <layer xml:id="m7s1l1" n="1">
+                           <note xml:id="ndx94j5" dur="2" pname="a" oct="4">
+                              <verse xml:id="v17ndafk" place="below" n="1">
+                                 <syl>wretch</syl>
+                              </verse>
+                              <verse xml:id="v6oda4a" place="below" n="2">
+                                 <syl>fears</syl>
+                              </verse>
+                           </note>
+                           <note xml:id="n1905j68" dur="4" pname="g" oct="4">
+                              <verse xml:id="v1b3zjki" place="below" n="1">
+                                 <syl>like</syl>
+                              </verse>
+                              <verse xml:id="v10l0urd" place="below" n="2">
+                                 <syl con="d" wordpos="i">re</syl>
+                              </verse>
+                           </note>
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="m8rw08u" right="end" n="7">
+                     <staff xml:id="m8s1" n="1">
+                        <layer xml:id="m8s1l1" n="1">
+                           <note xml:id="nltqpyg" dots="1" dur="2" pname="c" oct="5">
+                              <verse xml:id="v1vp5yjf" place="below" n="1">
+                                 <syl>me.</syl>
+                              </verse>
+                              <verse xml:id="valuekk" place="below" n="2">
+                                 <syl wordpos="t">lieved.</syl>
+                              </verse>
+                           </note>
+                        </layer>
+                     </staff>
+                  </measure>
+               </section>
+            </score>
+         </mdiv>
+      </body>
+   </music>
+</mei>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-basic.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="https://music-encoding.org/schema/5.1/mei-basic.rng" type="application/xml" schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.1+basic">
+   <meiHead>
+      <fileDesc>
+         <titleStmt>
+            <title type="main">Triplets</title>
+         </titleStmt>
+         <pubStmt>
+            <date isodate="2026-10-15T16:44:33" />
+         </pubStmt>
+      </fileDesc>
+   </meiHead>
+   <music>
+      <body>
+         <mdiv>
+            <score>
+               <scoreDef>
+                  <pgHead func="first">
+                     <rend halign="center" valign="top">
+                        <rend type="title" fontsize="x-large">Triplets</rend>
+                     </rend>
+                  </pgHead>
+                  <staffGrp>
+                     <staffDef n="1" lines="5" meter.count="4" meter.unit="4">
+                        <label>Voice 1</label>
+                        <instrDef midi.instrnum="0" />
+                        <clef shape="G" line="2" />
+                     </staffDef>
+                  </staffGrp>
+               </scoreDef>
+               <section xml:id="s1">
+                  <pb />
+                  <measure xml:id="m1wq57u2" n="1">
+                     <staff xml:id="m1s1" n="1">
+                        <layer xml:id="m1s1l1" n="1">
+                           <beam>
+                              <tuplet xml:id="t1jy3v1j" num="3" numbase="2">
+                                 <note xml:id="n1fhyi8m" type="mscore-beam-begin" dur="8" pname="c" oct="4" />
+                                 <note xml:id="n12vc5up" type="mscore-beam-mid" dur="8" pname="d" oct="4" />
+                                 <note xml:id="n1tx9443" dur="8" pname="e" oct="4" />
+                              </tuplet>
+                           </beam>
+                           <beam>
+                              <tuplet xml:id="trqoi49" num="3" numbase="2">
+                                 <note xml:id="n69ffkr" type="mscore-beam-begin" dur="8" pname="f" oct="4" />
+                                 <note xml:id="n1kep569" type="mscore-beam-mid" dur="8" pname="g" oct="4" />
+                                 <note xml:id="n1kio2xg" dur="8" pname="a" oct="4" />
+                              </tuplet>
+                           </beam>
+                           <tuplet xml:id="t6l8x41" num="3" numbase="2">
+                              <note xml:id="n1cjig1d" dur="4" pname="b" oct="4" />
+                              <note xml:id="n1nsz9km" dur="4" pname="c" oct="5" />
+                              <note xml:id="n1v6036p" dur="4" pname="d" oct="5" />
+                           </tuplet>
+                        </layer>
+                     </staff>
+                  </measure>
+                  <measure xml:id="mw9mpx" right="end" n="2">
+                     <staff xml:id="m2s1" n="1">
+                        <layer xml:id="m2s1l1" n="1">
+                           <note xml:id="n1f6ovjv" dur="1" pname="c" oct="5" />
+                        </layer>
+                     </staff>
+                  </measure>
+               </section>
+            </score>
+         </mdiv>
+      </body>
+   </music>
+</mei>
