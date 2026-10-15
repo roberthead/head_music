@@ -184,9 +184,8 @@ All paths are relative to `/Users/roberthead/github.com/roberthead/head_music`.
 - **Rounding (the run rule):**
   - `VoiceEvent#onset_remainder` is the exact onset minus `position`, as a Rational number of subticks. It is non-zero only when:
     - the event just before ends here,
-    - the adjacent links share a ratio,
-    - and both are in the same group, or neither is in one.
-  - A group's start always begins a fresh run, so every onset in a group is measured from the group's start. A run of ungrouped values rounds from the run's start, and a value alone is a run of one.
+    - and the adjacent links share a ratio.
+  - Tuplet groups do not break a run (revised 2026-10-15). A group that starts where a run starts has every onset measured from its start, as before; a group inside a longer run keeps the run's exact onsets, so back-to-back partial brackets such as 3 + 7 + 4 septuplet sixteenths stay exact. Grouping then moves no onset, so `group_tuplet` leaves memoized timing in place. A value alone is a run of one.
   - `next_position` = `position.advance(subticks: (onset_remainder + rhythmic_value.exact_subticks).round)`. Continuity's `previous.next_position == current.position` then holds with no change to `voice/continuity.rb`.
   - Readers already place each note at `voice.next_position`, so they land on the rule with no reader-side rounding. This also makes the story's place-then-group example work.
   - Ratios built from 2, 3 and 5 always have whole `exact_subticks`, so they never round.
@@ -194,7 +193,7 @@ All paths are relative to `/Users/roberthead/github.com/roberthead/head_music`.
   - Onsets: `1:1:000`, `1:1:137:034`, `1:1:274:069`, `1:1:411:103`, `1:1:548:137`, `1:1:685:171`, `1:1:822:206`. The group ends exactly at `1:2:000`.
   - Durations: 32914, 32915, 32914, 32914, 32914, 32915, 32914, which sum to 230,400. Rounding each value alone would give 230,398.
   - Remainders: 0, +2/7, −3/7, −1/7, +1/7, +3/7, −2/7.
-- **Memoizing `next_position`:** it is memoized behind a voice revision counter that `place` and `group_tuplet` bump. This replaces the current permanent `||=`, which goes stale when grouping changes a run.
+- **Memoizing `next_position`:** it is memoized behind a voice revision counter that `place` bumps when it inserts before the last event. This replaces the current permanent `||=`, which goes stale when grouping changes a run.
 - **`HeadMusic::Content::TupletGroup`** (new, `lib/head_music/content/tuplet_group.rb`):
   - A frozen value holding `voice`, `from`, `to` (an exclusive end, half-open like hairpins) and `unit`. `ratio` is derived from its links.
   - The group holds positions, not event objects, because `RestEvent#merge` returns a new object.

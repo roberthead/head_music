@@ -927,6 +927,12 @@ describe HeadMusic::Notation::LilyPond::Writer do
           .to eq ["c'2. \\tuplet 7/4 { d'8 e'8 f'8 g'16~ |", "g'16 a'8 b'8 c''8 } d''2. \\bar \"|.\" |"]
       end
 
+      it "keeps back-to-back brackets that each hold part of a septuplet beat" do
+        source = "{ \\tuplet 7/4 { c'16 d' e' } \\tuplet 7/4 { c'16 d' e' f' g' a' b' } \\tuplet 7/4 { c'16 d' e' f' } r2 }"
+        expect(rendered_lines(HeadMusic::Notation::LilyPond.parse(source)).first).to eq "\\tuplet 7/4 { c'16 d'16 e'16 } " \
+          "\\tuplet 7/4 { c'16 d'16 e'16 f'16 g'16 a'16 b'16 } \\tuplet 7/4 { c'16 d'16 e'16 f'16 } r2 \\bar \"|.\" |"
+      end
+
       context "with voice marks at and inside tuplet notes" do
         let(:flow) do
           TupletFixtures.triplets.tap do |flow|

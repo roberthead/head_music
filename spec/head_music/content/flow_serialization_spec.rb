@@ -302,9 +302,9 @@ describe HeadMusic::Content::Flow do
     end
 
     it "refuses a group that does not fill its span, naming its path" do
-      voice_hash["tuplets"][2]["to"] = "1:3:822:206"
+      voice_hash["tuplets"][2]["to"] = "1:3:800"
       expect { described_class.from_h(hash) }
-        .to raise_error(ArgumentError, /\Aparts\[0\]\.voices\[0\]\.tuplets\[2\]: the 7:4 tuplet from 1:3:000 to 1:3:822:206 must end/)
+        .to raise_error(ArgumentError, /\Aparts\[0\]\.voices\[0\]\.tuplets\[2\]: the 7:4 tuplet from 1:3:000 to 1:3:800 must end/)
     end
 
     it "refuses a group without an end, naming its path" do

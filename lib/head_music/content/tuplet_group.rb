@@ -20,12 +20,19 @@ class HeadMusic::Content::TupletGroup
       rhythmic_value.tuplet_ratio
     end
 
+    # A voice event's own start and end are its rounded positions, which is
+    # where a group inside a run of a rounding ratio begins and ends.
     def starts_at?(position)
-      lands_on?(onset, position)
+      first ? voice_event.position == position : lands_on?(onset, position)
     end
 
     def ends_at?(position)
-      lands_on?(finish, position)
+      last ? voice_event.next_position == position : lands_on?(finish, position)
+    end
+
+    def covers?(position)
+      voice_event.position.advance(subticks: onset.round) <= position &&
+        position < voice_event.position.advance(subticks: finish.round)
     end
 
     def rounds?
@@ -138,7 +145,7 @@ class HeadMusic::Content::TupletGroup
   def bracketed_links
     links = self.class.links_between(voice, from, to)
     first = links.index { |link| link.starts_at?(from) }
-    raise ArgumentError, "the #{label} must start where a note, rest, or tied link starts" unless first
+    ensure_start(links) unless first
 
     @ratio = links[first].ratio
     ensure_consecutive(links)
@@ -146,6 +153,17 @@ class HeadMusic::Content::TupletGroup
     raise ArgumentError, "the #{label} must end where a note, rest, or tied link ends, filling its span exactly" unless last
 
     links[first..last].tap { |inside| ensure_one_ratio(inside) }
+  end
+
+  def ensure_start(links)
+    sounding = links.find { |link| link.covers?(from) }
+    @ratio = sounding&.ratio
+    message = "the #{label} must start where a note, rest, or tied link starts"
+    if sounding&.rounds?
+      message += ", but it falls inside the #{sounding.rhythmic_value} at #{sounding.voice_event.position}, " \
+        "in a run of values rounded to the nearest subtick"
+    end
+    raise ArgumentError, message
   end
 
   def ensure_consecutive(links)

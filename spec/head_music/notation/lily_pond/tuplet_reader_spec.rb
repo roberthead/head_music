@@ -56,6 +56,13 @@ describe HeadMusic::Notation::LilyPond::TupletReader do
     expect(groups(source)).to eq [["1:1:000", "1:2:000", "7:4", "sixteenth"]]
   end
 
+  it "keeps back-to-back septuplet brackets that each hold part of a beat" do
+    source = "{ \\tuplet 7/4 { c'16 d' e' } \\tuplet 7/4 { c'16 d' e' f' g' a' b' } \\tuplet 7/4 { c'16 d' e' f' } r2 }"
+    expect([groups(source).map { |group| group.first(2) }, voice(source).first_gap]).to eq [
+      [%w[1:1:000 1:1:411:103], %w[1:1:411:103 1:2:411:103], %w[1:2:411:103 1:3:000]], nil
+    ]
+  end
+
   it "carries the written duration on outside the tuplet" do
     expect(events("{ \\tuplet 3/2 { c'8 d' e' } f' g'4. }")[3]).to eq ["1:2:000", "eighth"]
   end

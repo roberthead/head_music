@@ -106,9 +106,9 @@ describe HeadMusic::Content::Voice do
           .to raise_error(ArgumentError, "the tuplet from 1:2:000 to 1:1:000 must end after it starts")
       end
 
-      it "refuses a group that does not start on a link" do
+      it "refuses a group that does not start on a link, naming the ratio sounding there" do
         expect { voice.group_tuplet(from: "1:1:100", to: "1:2") }
-          .to raise_error(ArgumentError, /the tuplet from 1:1:100 to 1:2:000 must start where a note, rest, or tied link starts/)
+          .to raise_error(ArgumentError, "the 3:2 tuplet from 1:1:100 to 1:2:000 must start where a note, rest, or tied link starts")
       end
 
       it "refuses a group that does not fill its span" do
@@ -158,10 +158,26 @@ describe HeadMusic::Content::Voice do
         .to raise_error(ArgumentError, /the 7:4 tuplet from 1:1:000 to 1:2:000 must start and end where notes or rests do/)
     end
 
-    it "refuses a group of a rounding ratio after part of an ungrouped run" do
+    it "groups part of a run of a rounding ratio, keeping the run's exact onsets" do
       place_in_turn(*Array.new(9, septuplet_sixteenth))
-      expect { voice.group_tuplet(from: voice.voice_events[2].position, to: voice.voice_events[8].next_position) }
-        .to raise_error(ArgumentError, /must start where a note, rest, or tied link starts/)
+      remainders = voice.voice_events.map(&:onset_remainder)
+      group = voice.group_tuplet(from: voice.voice_events[2].position, to: voice.voice_events[8].next_position)
+      expect([group.to_s, voice.voice_events.map(&:onset_remainder), voice.first_gap])
+        .to eq ["7:4 tuplet from 1:1:274:069 to 1:2:274:069", remainders, nil]
+    end
+
+    it "groups back-to-back brackets that each hold part of a septuplet beat" do
+      place_in_turn(*Array.new(14, septuplet_sixteenth))
+      [0..2, 3..9, 10..13].each { |range| voice.group_tuplet(from: voice.voice_events[range.first].position, to: voice.voice_events[range.last].next_position) }
+      expect(voice.tuplets.map { |group| [group.from, group.to].join("-") })
+        .to eq %w[1:1:000-1:1:411:103 1:1:411:103-1:2:411:103 1:2:411:103-1:3:000]
+    end
+
+    it "refuses a group of a rounding ratio starting inside one of its notes" do
+      place_in_turn(*Array.new(7, septuplet_sixteenth))
+      expect { voice.group_tuplet(from: "1:1:100", to: "1:2") }
+        .to raise_error(ArgumentError, "the 7:4 tuplet from 1:1:100 to 1:2:000 must start where a note, rest, or tied link starts, " \
+          "but it falls inside the 7:4 sixteenth at 1:1:000, in a run of values rounded to the nearest subtick")
     end
   end
 

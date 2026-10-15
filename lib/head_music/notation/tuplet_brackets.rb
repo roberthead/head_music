@@ -67,8 +67,8 @@ module HeadMusic
       end
 
       def group_bracket(group, links)
-        from = exact_point(group.from)
-        to = exact_point(group.to)
+        from = exact_point(group.voice, group.from)
+        to = exact_point(group.voice, group.to)
         # Links are in time order, so a group's are consecutive.
         start = links.bsearch_index { |link| (link.onset <=> from) >= 0 } || links.length
         inside = links[start..].take_while { |link| (link.onset <=> to).negative? }
@@ -105,8 +105,11 @@ module HeadMusic
         Bracket.new(ratio, HeadMusic::Content::TupletGroup.default_unit(links.map(&:written_fraction), ratio), links, nil)
       end
 
-      def exact_point(position)
-        [position.bar_number, BarSplitter.offset_in_bar(position)]
+      # A group inside a run of a rounding ratio starts and ends at rounded
+      # positions, so it is found at the exact onsets of the events there.
+      def exact_point(voice, position)
+        voice_event = voice.voice_event_at(position)
+        voice_event ? BarSplitter.exact_start(voice_event) : [position.bar_number, BarSplitter.offset_in_bar(position)]
       end
     end
   end

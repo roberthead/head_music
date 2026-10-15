@@ -718,6 +718,14 @@ describe HeadMusic::Notation::ABC::Parser do
       ]
     end
 
+    it "keeps back-to-back septuplet brackets that each hold part of a beat" do
+      voice = tune("(7:4:3CDE (7:4:7CDEFGAB (7:4:4CDEF z8|", unit: "1/16")
+      expect([groups(voice).map(&:first), voice.first_gap]).to eq [
+        ["7:4 tuplet from 1:1:000 to 1:1:411:103", "7:4 tuplet from 1:1:411:103 to 1:2:411:103", "7:4 tuplet from 1:2:411:103 to 1:3:000"],
+        nil
+      ]
+    end
+
     it "counts a chord once, and a rest and an invisible rest, but not decorations, slurs, or spacers" do
       voice = tune("(5:4:5!p!(C y[CE]z x).D z6|", unit: "1/16")
       expect([events(voice).first(5).map { |event| event.split(" at ").first }, groups(voice).map(&:first)]).to eq [

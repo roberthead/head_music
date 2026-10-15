@@ -100,7 +100,8 @@ module HeadMusic
         Rational(meter.top_number, meter.bottom_number)
       end
 
-      # A rounded onset just before a barline belongs to the bar before.
+      # The bar and exact offset where a voice event begins. A rounded onset
+      # just before a barline belongs to the bar before.
       def exact_start(voice_event)
         bar_number = voice_event.position.bar_number
         offset = onset_in_bar(voice_event)
@@ -125,7 +126,7 @@ module HeadMusic
         flow.position(bar_number, counts.floor + 1, ticks.floor, subticks.round)
       end
 
-      private_class_method :bar_length, :exact_start
+      private_class_method :bar_length
     end
   end
 end

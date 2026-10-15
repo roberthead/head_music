@@ -81,6 +81,13 @@ describe HeadMusic::Notation::TupletBrackets do
     expect([brackets.map { |bracket| bracket.links.length }, brackets.map(&:crosses_barline?)]).to eq [[7, 7], [false, false]]
   end
 
+  it "finds a group inside a run of a rounding ratio at its first note's exact onset" do
+    place_in_turn(*Array.new(14, HeadMusic::Rudiment::RhythmicValue.get(:sixteenth, tuplet: "7:4")), :half)
+    events = voice.voice_events
+    [events[0..2], events[3..9], events[10..13]].each { |bracket| voice.group_tuplet(from: bracket.first.position, to: bracket.last.next_position) }
+    expect(brackets.map { |bracket| bracket.links.length }).to eq [3, 7, 4]
+  end
+
   it "does not cross a barline within a bar" do
     place_in_turn(*Array.new(3, triplet_eighth), "dotted half")
     expect(brackets.first.crosses_barline?).to be false
