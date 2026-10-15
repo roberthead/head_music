@@ -18,15 +18,30 @@ module HeadMusic::Notation::Kern
       attacks = events.values.flatten.map { |event| Rational(event.offset) }.uniq.sort
       offsets = row_offsets(attacks, dynamic_offsets(bar_number), bars.length(bar_number))
       offsets = with_final_close_row(bar_number, attacks, offsets) if final_closes?(bar_number)
-      offsets.map do |offset|
-        columns.row do |column|
+      offsets.flat_map do |offset|
+        main = columns.row do |column|
           text = field(column, events, bar_number, offset)
           (column.dynam && final_closes?(bar_number) && offset == offsets.last) ? final_field(column, text) : text
         end
+        [*grace_rows(events, offset), main]
       end
     end
 
     private
+
+    # The grace notes before the notes at an offset, on rows of their own
+    # just before them, each spine's last one on the last row.
+    def grace_rows(events, offset)
+      graces = events.transform_values { |voice_events| voice_events.find { |event| event.offset == offset }&.graces || [] }
+      count = graces.values.map(&:length).max || 0
+      (0...count).map do |row|
+        columns.row do |column|
+          tokens = column.kern? ? graces.fetch(column.voice) : []
+          index = row - (count - tokens.length)
+          index.negative? ? "." : tokens[index]
+        end
+      end
+    end
 
     attr_reader :columns, :bars, :dynamic_fields
 

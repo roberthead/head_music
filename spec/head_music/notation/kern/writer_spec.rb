@@ -216,6 +216,51 @@ describe HeadMusic::Notation::Kern::Writer do
     end
   end
 
+  describe "grace notes" do
+    def data(flow)
+      render(flow).lines.map(&:chomp).grep(/\A[^*!=]/)
+    end
+
+    it "writes each grace note as a token of its own, slashed as q and unslashed as Q, with a tie and a slur" do
+      expect(data(TupletFixtures.grace_notes_before_downbeat)).to eq [
+        "4c", "4e", "16aQ 16ccQ", "4g", "16g'Q", "4f", "8fq", "1e", "(16dQ", "16c[Q", "1c])"
+      ]
+    end
+
+    it "writes each spine's grace notes on the rows before its note, the last beside the note" do
+      flow = HeadMusic::Content::Flow.new(meter: "2/4")
+      flow.add_voice.place("1:1", :half, "E5").add_grace_note("F5", :sixteenth).add_grace_note("G5", :sixteenth)
+      flow.add_voice.place("1:1", :half, "C4").add_grace_note("D4", :eighth, slashed: true)
+      expect(data(flow)).to eq [".\t16ffQ", "8dq\t16ggQ", "2c\t2ee"]
+    end
+
+    it "continues a tie into a note that is itself tied onward" do
+      flow = HeadMusic::Content::Flow.new(meter: "2/4")
+      flow.add_voice.place("1:1", :whole, "C4").add_grace_note("C4", :sixteenth, tied: true)
+      expect(data(flow)).to eq ["16c[Q", "2c_", "2c]"]
+    end
+
+    {
+      "outlasts a slur ending on its note" => [["1:1", "1:3"], ["1:3", "1:4", true]],
+      "nests inside a slur ending on its note" => [["1:1", "1:3"], ["1:3", "1:3", true]],
+      "outlasts a slur starting on its note" => [["1:3", "1:4", true], ["1:3", "2:1"]]
+    }.each do |label, spans|
+      it "reads back a slur from grace notes that #{label}" do
+        flow = MarkingFixtures.four_quarters
+        voice = flow.voices.first
+        %w[1:3 1:4].each { |position| voice.voice_event_at(position).add_grace_note("B4", :sixteenth) }
+        spans.each { |from, to, from_grace| voice.add_span(:slur, from: from, to: to, from_grace: from_grace || false) }
+        expect_same_spans(flow, HeadMusic::Notation::Kern.parse(render(flow)))
+      end
+    end
+
+    it "raises for an unpitched grace note" do
+      flow = HeadMusic::Content::Flow.new(meter: "2/4")
+      flow.add_voice.place("1:1", :half, "C4").add_grace_note(HeadMusic::Rudiment::UnpitchedSound.get(:snare_drum), :sixteenth)
+      expect { render(flow) }.to raise_error(HeadMusic::Notation::Kern::RenderError, /unpitched grace note .* before 1:1:000/)
+    end
+  end
+
   describe "token markings" do
     subject(:flow) do
       HeadMusic::Content::Flow.new(meter: "4/4").tap do |flow|

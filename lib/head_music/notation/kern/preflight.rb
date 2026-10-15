@@ -43,7 +43,15 @@ module HeadMusic::Notation::Kern
     def ensure_pitched_voice_events
       flow.voices.each do |voice|
         voice.voice_events.each { |voice_event| ensure_pitched_sounds(voice_event) }
+        voice.note_events.each { |note_event| ensure_pitched_grace_notes(note_event) }
       end
+    end
+
+    def ensure_pitched_grace_notes(note_event)
+      unpitched = note_event.grace_notes.flat_map(&:sounds).find { |sound| !sound.pitched? }
+      return unless unpitched
+
+      raise RenderError, "cannot render the unpitched grace note \"#{unpitched}\" before #{note_event.position} as kern"
     end
 
     # A written-pitch kern spine would need *ITr, which the reader refuses,

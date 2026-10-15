@@ -14,11 +14,14 @@ module HeadMusic::Notation::Kern
   # Offsets are exact, so a rounded tuplet note sits at its exact onset, and
   # each link takes its sounding length.
   #
+  # A note event's grace notes go with its first link, as tokens of their
+  # own; see GraceTokens.
+  #
   # Time written past the music's end, to hold a dynamic there, is filled
   # with invisible rests, which the reader leaves out.
   class SpineTokens
-    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes, :invisible) do
-      def initialize(opens: "", closes: "", invisible: false, **fields)
+    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes, :invisible, :graces) do
+      def initialize(opens: "", closes: "", invisible: false, graces: [], **fields)
         super
       end
 
@@ -46,6 +49,8 @@ module HeadMusic::Notation::Kern
 
     TIE_OPENING = {nil => "", :start => "[", :middle => "", :end => ""}.freeze
     TIE_CLOSING = {nil => "", :start => "", :middle => "_", :end => "]"}.freeze
+    # A note a grace note is tied into continues the grace note's tie.
+    TIED_IN = {nil => :end, :start => :middle}.freeze
 
     def self.rests(from, to, invisible: false)
       return [] unless to > from
@@ -103,15 +108,21 @@ module HeadMusic::Notation::Kern
     end
 
     def event_for(voice_event, link, offset, tie, index, count)
+      graces = index.zero? ? GraceTokens.new(voice_event, span_marks) : nil
       Event.new(
         offset: offset, link: link,
         pitches: voice_event.rest? ? nil : voice_event.pitches,
-        tie: voice_event.rest? ? nil : tie,
+        tie: voice_event.rest? ? nil : link_tie(tie, graces),
+        graces: graces ? graces.tokens : [],
         syllables: index.zero? ? voice_event.syllables : {},
         marks: index.zero? ? MarkCodes.marks(voice_event) : "",
         opens: index.zero? ? span_marks.opens_at(voice_event.position) : "",
         closes: closing_link?(voice_event, index, count) ? span_marks.closes_at(voice_event.position) : ""
       )
+    end
+
+    def link_tie(tie, graces)
+      graces&.tied_in? ? TIED_IN.fetch(tie) : tie
     end
 
     def closing_link?(voice_event, index, count)
