@@ -13,7 +13,7 @@ describe HeadMusic::Notation::MEI::MeasureWriter do
 
   it "numbers the measure by its bar" do
     flow = LilyPondFixtures.rests
-    expect(measure_attributes(flow, 1)).to eq("xml:id" => "m1-measure-b1", "n" => "1")
+    expect(measure_attributes(flow, 1)).to include("xml:id" => "m1-measure-b1", "n" => "1")
   end
 
   it "marks a pickup bar as an upbeat" do

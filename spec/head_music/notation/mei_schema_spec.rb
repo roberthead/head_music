@@ -115,6 +115,18 @@ describe HeadMusic::Notation::MEI do
     expect(schema_errors(described_class.render(flow), schema)).to eq []
   end
 
+  %w[marked_dal_segno_al_coda marked_da_capo_al_fine].each do |name|
+    it "renders the navigation of #{name} as valid MEI" do
+      expect(schema_errors(described_class.render(MuseScoreFixtures.public_send(name)), schema)).to eq []
+    end
+  end
+
+  it "renders an ending of several passes and a repeat played thrice as valid MEI" do
+    flow = HeadMusic::Notation::ABC.parse("X:1\nT:Volta\nM:2/4\nL:1/4\nK:C\n|: C D |[1,2 EF :|[3 GA |]\n")
+    flow.bar(2).ends_repeat_after_num_plays = 3
+    expect(schema_errors(described_class.render(flow), schema)).to eq []
+  end
+
   it "renders what every extension hook adds as valid MEI" do
     register_every_mei_hook
     flow = HeadMusic::Notation::ABC.parse("X:1\nT:Hooks\nM:2/4\nL:1/4\nK:C\n{B}CD|[EG]F|]\n")
