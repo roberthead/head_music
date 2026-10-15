@@ -50,10 +50,16 @@ module HeadMusic::Notation::MusicXML
       [integer(fifths, "<fifths>", **where), text(element, "mode", **where)]
     end
 
+    # A meter of added beats, such as 3+2/8, would read as its first number
+    # alone, so it raises instead.
     def meter(element)
       beats = text(element, "beats", **where)
       beat_type = text(element, "beat-type", **where)
       return unless beats && beat_type
+
+      if beats.include?("+") || children(element, "beats").length > 1
+        raise UnsupportedFeatureError.new("Compound meters such as #{beats}/#{beat_type} are not supported", **where)
+      end
 
       HeadMusic::Rudiment::Meter.get("#{integer(beats, "<beats>", **where)}/#{integer(beat_type, "<beat-type>", **where)}")
     end

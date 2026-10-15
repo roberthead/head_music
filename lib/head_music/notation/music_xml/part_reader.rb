@@ -10,7 +10,10 @@ module HeadMusic::Notation::MusicXML
   class PartReader
     include XmlReading
 
-    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key)
+    # The key, meter, and tempo a measure states on its downbeat; the extent
+    # its notes and forwards reach; and one division where it ends, the
+    # rounding its extent may carry.
+    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tempo, :tolerance)
     Reading = Struct.new(:document_part, :measures, :tracks) do
       def id
         document_part.id
@@ -36,6 +39,7 @@ module HeadMusic::Notation::MusicXML
       @measure = Measure.new(index: index, number: measure.number, implicit: measure.implicit?, meter: @meter)
       @cursor = 0
       measure.element.each_element { |element| read_element(element) }
+      @measure.tolerance = @divisions ? division : 0
       @measure
     end
 
@@ -43,14 +47,33 @@ module HeadMusic::Notation::MusicXML
       case element.name
       when "attributes" then read_attributes(element)
       when "note" then read_note(element)
+      when "direction" then read_direction(element)
+      when "sound" then read_sound(element)
       end
     end
 
+    # The timeline changes only at a downbeat, so a key or time in the
+    # middle of a bar is skipped; its divisions still apply from there on.
     def read_attributes(element)
       attributes = AttributesReader.read(element, **@where)
       @divisions = attributes.divisions if attributes.divisions
+      return unless @cursor.zero?
+
       @measure.key = attributes.key if attributes.key
       @meter = @measure.meter = attributes.meter if attributes.meter
+    end
+
+    def read_direction(element)
+      sound = first_child(element, "sound")
+      offset = text(element, "offset", **@where)
+      read_sound(sound) if sound && (offset.nil? || rational(offset, "<offset>", **@where).zero?)
+    end
+
+    def read_sound(element)
+      tempo = rational(attribute(element, "tempo", **@where), "tempo", **@where)
+      return unless tempo&.positive? && @cursor.zero?
+
+      @measure.tempo ||= HeadMusic::Rudiment::Tempo.new("quarter", tempo)
     end
 
     def read_note(element)

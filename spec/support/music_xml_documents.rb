@@ -101,6 +101,21 @@ module MusicXMLDocuments
   def parse_musicxml_flow(xml)
     HeadMusic::Notation::MusicXML.parse(xml)
   end
+
+  # The music stays whole: every voice starts on the first downbeat, runs
+  # without a gap, and ends where every other voice does, so each bar's
+  # events sum to its length.
+  def expect_music_whole(flow)
+    voices = flow.voices
+    expect(voices.map(&:first_gap)).to all(be_nil)
+    expect(voices.map { |voice| voice.voice_events.first.position.to_s }.uniq).to eq ["#{flow.earliest_bar_number}:1:000"]
+    expect(voices.map { |voice| voice.last_voice_event.next_position.to_s }.uniq.length).to eq 1
+  end
+
+  # Each voice's events as "value sounds at position".
+  def voice_event_strings(flow)
+    flow.voices.map { |voice| voice.voice_events.map(&:to_s) }
+  end
 end
 
 RSpec.configure { |config| config.include MusicXMLDocuments }

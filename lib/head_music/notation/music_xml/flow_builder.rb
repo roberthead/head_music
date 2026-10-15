@@ -21,10 +21,9 @@ module HeadMusic::Notation::MusicXML
 
       bar_map = BarMap.new(readings)
       identity = IdentityReader.new(@document)
-      flow = HeadMusic::Content::Flow.new(
-        name: identity.name, work: identity.work, composer: identity.composer,
-        **TimelineReader.new(readings, bar_map).opening
-      )
+      timeline = TimelineReader.new(readings, bar_map)
+      flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
+      timeline.apply(flow)
       roster = PartRoster.new(flow, identity)
       readings.each do |reading|
         part = roster.add(reading)
