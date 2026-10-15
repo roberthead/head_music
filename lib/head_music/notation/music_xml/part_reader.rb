@@ -84,6 +84,7 @@ module HeadMusic::Notation::MusicXML
 
     def read_note(element)
       note = NoteReader.read(element, **@where)
+      return read_grace(note) if note.grace
       return add_to_chord(note) if note.chord
 
       duration = duration_of(note.duration)
@@ -103,6 +104,37 @@ module HeadMusic::Notation::MusicXML
       note.tuplets.each do |type, _number|
         track.tuplet_marks << VoiceTrack::TupletMark.new(event, type, note.normal_type, note.normal_dots)
       end
+    end
+
+    # A grace note takes no time. It waits for its voice's next main note,
+    # and a grace chord's tones join the grace note before them. One with no
+    # <type> is an eighth.
+    def read_grace(note)
+      return if note.rest || note.cue
+
+      track = track_for(note.voice)
+      tie_starts = if (note.ties.any? ? note.ties : note.tied).include?("start")
+        [sound(note).to_s]
+      else
+        []
+      end
+      last = track.queued_graces.last
+      if note.chord && last
+        last.sounds |= [sound(note)]
+        last.tie_starts |= tie_starts
+      else
+        track.queue_grace(
+          sounds: [sound(note)], rhythmic_value: grace_value(note), slashed: note.slashed,
+          articulations: note.articulations.filter_map { |element| MarkingElements.articulation(element) }, tie_starts: tie_starts
+        )
+      end
+    end
+
+    def grace_value(note)
+      return HeadMusic::Rudiment::RhythmicValue.get(:eighth) unless note.type
+
+      written = NoteReader.written_value(note, **@where)
+      HeadMusic::Rudiment::RhythmicValue.new(written.unit, dots: written.dots)
     end
 
     # A chord tone sounds with the note before it, which must be as long. A

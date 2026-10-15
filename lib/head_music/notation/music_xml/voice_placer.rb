@@ -36,8 +36,21 @@ module HeadMusic::Notation::MusicXML
         raise ParseError.new("Voice #{@track.label} overlaps itself", **where(event))
       end
       voice_event = event.voice_event = @voice.place(@position, event.rhythmic_value, event.sounds)
+      add_grace_notes(voice_event, event.graces)
       @position = voice_event.next_position
       @time += event.rhythmic_value.fraction
+    end
+
+    # Grace notes before a rest, or before a tie's later link, which is
+    # never placed, are dropped.
+    def add_grace_notes(voice_event, graces)
+      return if voice_event.rest?
+
+      graces.each do |grace|
+        voice_event.add_grace_note(
+          grace.sounds, grace.rhythmic_value, slashed: grace.slashed, tied: grace.tied, articulations: grace.articulations
+        )
+      end
     end
 
     def rest_until(time, event)

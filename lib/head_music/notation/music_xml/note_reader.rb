@@ -13,7 +13,7 @@ module HeadMusic::Notation::MusicXML
 
     Note = Struct.new(
       :element, :grace, :slashed, :chord, :cue, :rest, :measure_rest, :pitch, :unpitched, :duration,
-      :voice, :staff, :type, :dots, :ratio, :normal_type, :normal_dots, :ties, :tied, :tuplets
+      :voice, :staff, :type, :dots, :ratio, :normal_type, :normal_dots, :ties, :tied, :tuplets, :articulations
     )
 
     def self.read(element, **where)
@@ -26,7 +26,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def note
-      note = Note.new(element: @element, dots: 0, ties: [], tied: [], tuplets: [], voice: "1")
+      note = Note.new(element: @element, dots: 0, ties: [], tied: [], tuplets: [], articulations: [], voice: "1")
       @element.each_element { |child| read_child(note, child) }
       note
     end
@@ -86,6 +86,7 @@ module HeadMusic::Notation::MusicXML
         case child.name
         when "tied" then note.tied << attribute(child, "type", **where)
         when "tuplet" then note.tuplets << [attribute(child, "type", **where), attribute(child, "number", **where) || "1"]
+        when "articulations" then child.each_element { |articulation| note.articulations << articulation.name }
         end
       end
     end
