@@ -95,11 +95,6 @@ describe HeadMusic::MIDI::Writer do
       voice.place("2:3", :half, "D4")
       expect(notes).to eq [[60, 960, 2880], [62, 2880, 3840]]
     end
-
-    it "raises for an unpitched sound, for now" do
-      voice.place("1:1", :quarter, "snare drum")
-      expect { flow.to_midi }.to raise_error(HeadMusic::MIDI::RenderError, /unpitched/)
-    end
   end
 
   describe "two voices on one key" do

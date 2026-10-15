@@ -1,6 +1,10 @@
 # Renders flows as Standard MIDI Files. MIDI holds a performance, not its
 # notation: keys rather than spellings, and ticks rather than note values.
 module HeadMusic::MIDI
+  # Hi Wood Block: a neutral click for an unpitched sound whose instrument
+  # names no GM percussion key, rather than one posing as a drum kit.
+  DEFAULT_PERCUSSION_KEY = 76
+
   # +transposed:+ says the flow's pitches are written, so each sounds at its
   # written pitch plus its part's instrument's sounding transposition.
   def self.render(flow, transposed: false)

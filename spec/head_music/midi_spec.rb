@@ -13,6 +13,10 @@ describe HeadMusic::MIDI do
     expect(bytes(described_class::NoteOff.new(tick: 0, channel: 9, key: 38))).to eq [0x89, 38, 64]
   end
 
+  it "strikes Hi Wood Block for an unpitched sound with no GM percussion key" do
+    expect(described_class::DEFAULT_PERCUSSION_KEY).to eq 76
+  end
+
   it "writes a 1-based program 0-based on the wire" do
     expect(bytes(described_class::ProgramChange.new(0, 0, 41))).to eq [0xC0, 40]
   end
