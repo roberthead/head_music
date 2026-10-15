@@ -18,6 +18,11 @@ describe HeadMusic::Notation::MEI::IdentityReader do
       expect(flow(music_label: "Music").name).to eq "Music"
     end
 
+    it "leaves out a title's typed parts, as sample-encodings writes a subordinate title" do
+      title_stmt = %(<title>Herzliebster Jesu<titlePart type="subordinate">an electronic transcription</titlePart></title>)
+      expect(flow(head: head(title_stmt: title_stmt)).name).to eq "Herzliebster Jesu"
+    end
+
     it "is else the first untyped or main title, its editorial reading kept" do
       title_stmt = %(<title type="subordinate">Sub</title><title type="main">Main <choice><sic>Tilte</sic><corr>Title</corr></choice></title>)
       expect(flow(head: head(title_stmt: title_stmt)).name).to eq "Main Title"

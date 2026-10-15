@@ -65,8 +65,8 @@ module HeadMusic::Notation::MEI
     end
 
     # The text of the reading kept, its whitespace collapsed, with <lb/> as
-    # a space.
-    def text(element)
+    # a space, leaving out the elements +skip+ answers true for.
+    def text(element, skip: nil)
       parts = []
       stack = [nodes(element).reverse]
       until stack.empty?
@@ -76,7 +76,7 @@ module HeadMusic::Notation::MEI
         next unless node.is_a?(REXML::Element)
 
         expanded = effective(node)
-        next unless expanded
+        next if expanded.nil? || skip&.call(expanded)
         next parts << " " if expanded.name == "lb"
 
         stack << nodes(editorial?(expanded) ? chosen(expanded) : expanded).reverse

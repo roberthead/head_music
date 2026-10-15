@@ -103,14 +103,17 @@ module HeadMusic::Notation::MEI
       title_of(title_statement)
     end
 
-    # The first untyped or main title's text.
+    # The first untyped or main title's text, without the subordinate,
+    # uniform, or other typed <titlePart>s within it.
     def title_of(element)
       return unless element
 
-      title = @editorial.children_named(element, "title").find do |candidate|
-        [nil, "main"].include?(attribute(candidate, "type", element: candidate))
-      end
-      present(title && @editorial.text(title))
+      title = @editorial.children_named(element, "title").find { |candidate| main?(candidate) }
+      present(title && @editorial.text(title, skip: ->(part) { part.name == "titlePart" && !main?(part) }))
+    end
+
+    def main?(element)
+      [nil, "main"].include?(attribute(element, "type", element: element))
     end
 
     def build_work(element)
