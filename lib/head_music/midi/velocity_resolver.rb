@@ -36,8 +36,10 @@ module HeadMusic::MIDI
       clamp(base + NOTE_DYNAMIC_BOOSTS.fetch(note_dynamic, 0) + articulation_boost(voice_event.articulations))
     end
 
+    # A grace note sounds before its main note's note dynamic, so before the
+    # level an fp leaves in force.
     def grace_velocity(voice_event, grace_note)
-      clamp(base_velocity(voice_event) + articulation_boost(grace_note.articulations))
+      clamp(grace_base_velocity(voice_event) + articulation_boost(grace_note.articulations))
     end
 
     # The level the model puts in force at the event's position, as
@@ -50,6 +52,19 @@ module HeadMusic::MIDI
 
     def base_velocity(voice_event)
       base_velocities[voice_event] ||= ramp_velocity(voice_event) || velocity_of(levels_in_force[voice_event])
+    end
+
+    def grace_base_velocity(voice_event)
+      return base_velocity(voice_event) unless voice_event.note_dynamic&.level_after
+
+      ramp_velocity(voice_event) || velocity_of(level_before_note_dynamic(voice_event))
+    end
+
+    def level_before_note_dynamic(voice_event)
+      index = in_force_marks.bsearch_index { |mark| mark.position > voice_event.position } || in_force_marks.length
+      marks = in_force_marks.first(index)
+      marks.pop if marks.last&.rank == ACCENT_RANK && marks.last.position == voice_event.position
+      marks.last&.level
     end
 
     def base_velocities
@@ -73,7 +88,11 @@ module HeadMusic::MIDI
     end
 
     def levels_in_force
-      @levels_in_force ||= sweep(sorted(model_marks + ramps_and_follow_through.last))
+      @levels_in_force ||= sweep(in_force_marks)
+    end
+
+    def in_force_marks
+      @in_force_marks ||= sorted(model_marks + ramps_and_follow_through.last)
     end
 
     def sweep(marks)

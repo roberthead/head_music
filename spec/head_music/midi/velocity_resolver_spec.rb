@@ -236,5 +236,15 @@ describe HeadMusic::MIDI::VelocityResolver do
     it "adds the grace note's own articulations, and not fp's attack" do
       expect(resolver.grace_velocity(event_at("1:4"), event_at("1:4").grace_notes.first)).to eq 64
     end
+
+    context "with fp after a louder level" do
+      let(:flow) { abc("!mf!C !fp!D E F|") }
+
+      before { event_at("1:2").add_grace_note("C4", :eighth) }
+
+      it "sounds at the level before the fp, not the one it leaves" do
+        expect(resolver.grace_velocity(event_at("1:2"), event_at("1:2").grace_notes.first)).to eq 80
+      end
+    end
   end
 end
