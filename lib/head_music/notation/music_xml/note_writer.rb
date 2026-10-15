@@ -26,10 +26,11 @@ module HeadMusic::Notation::MusicXML
 
       components_by_segment[segment].each_with_index.flat_map do |component, component_index|
         beams = beam_annotations[[segment, component_index]] || []
+        tuplet_mark = tuplet_marks.at(segment, component_index)
         note_slots(voice_event).each_with_index.flat_map do |pitch, index|
           element_lines(
             voice_event, component, pitch: pitch, chord: index.positive?, beams: index.zero? ? beams : [],
-            voice_number: voice_number, staff_number: staff_number
+            tuplet_mark: tuplet_mark, voice_number: voice_number, staff_number: staff_number
           )
         end
       end
@@ -53,7 +54,7 @@ module HeadMusic::Notation::MusicXML
 
     attr_reader :plan, :lyric_writer
 
-    delegate :components_by_segment, :beam_annotations, to: :plan
+    delegate :components_by_segment, :beam_annotations, :tuplet_marks, to: :plan
 
     # A rest emits one empty slot; a sounded voice event emits its pitches low to
     # high, so the lowest note leads and the rest carry <chord/>. ensure_pitched_sounds
@@ -73,7 +74,7 @@ module HeadMusic::Notation::MusicXML
     # and precedes <type>, and <staff> follows the dots and precedes the beams.
     # Both are omitted entirely for the one-voice, one-staff part that every
     # existing document is made of, which is what keeps this byte-identical.
-    def element_lines(voice_event, component, pitch: nil, chord: false, beams: [], voice_number: nil, staff_number: nil)
+    def element_lines(voice_event, component, pitch: nil, chord: false, beams: [], tuplet_mark: nil, voice_number: nil, staff_number: nil)
       [
         "#{INDENT * 3}<note>",
         *(chord ? ["#{INDENT * 4}<chord/>"] : []),
@@ -83,9 +84,10 @@ module HeadMusic::Notation::MusicXML
         voice_number && "#{INDENT * 4}<voice>#{voice_number}</voice>",
         "#{INDENT * 4}<type>#{component.type}</type>",
         *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
+        *tuplet_marks.time_modification_lines(tuplet_mark),
         staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>",
         *beam_lines(beams),
-        *notation_lines(voice_event, component, chord: chord),
+        *notation_lines(voice_event, component, chord: chord, tuplet_mark: tuplet_mark),
         *lyric_writer.lines(voice_event, component, chord: chord),
         "#{INDENT * 3}</note>"
       ].compact
@@ -122,10 +124,11 @@ module HeadMusic::Notation::MusicXML
     end
 
     # A rest carries no ties or markings, but a phrase may begin or end on one.
-    def notation_lines(voice_event, component, chord:)
+    def notation_lines(voice_event, component, chord:, tuplet_mark: nil)
       lines = [
         *(voice_event.rest? ? [] : tie_elements("tied", 5, component)),
         *slur_lines(voice_event, component, chord: chord),
+        *(chord ? [] : tuplet_marks.tuplet_lines(tuplet_mark)),
         *(voice_event.rest? ? [] : marking_lines(voice_event, component, chord: chord))
       ]
       return [] if lines.empty?

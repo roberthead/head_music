@@ -53,6 +53,10 @@ module HeadMusic::Notation::MusicXML
       (Rational(4 * meter.top_number, meter.bottom_number) * divisions).numerator
     end
 
+    def tuplet_marks
+      @tuplet_marks ||= TupletMarks.new(self)
+    end
+
     def direction_plan(part)
       @direction_plans ||= {}.compare_by_identity
       @direction_plans[part] ||= DirectionPlan.new(part, self)
@@ -84,6 +88,7 @@ module HeadMusic::Notation::MusicXML
       key_value(flow.timeline.opening_key_signature_event)
       super
       components_by_segment
+      tuplet_marks
       flow.parts.each do |part|
         slur_numbers(part)
         wedge_numbers(part)
