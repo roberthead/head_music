@@ -62,9 +62,9 @@ module HeadMusic::MIDI
 
     def level_before_note_dynamic(voice_event)
       index = in_force_marks.bsearch_index { |mark| mark.position > voice_event.position } || in_force_marks.length
-      marks = in_force_marks.first(index)
-      marks.pop if marks.last&.rank == ACCENT_RANK && marks.last.position == voice_event.position
-      marks.last&.level
+      last = in_force_marks[index - 1] if index.positive?
+      index -= 1 if last&.rank == ACCENT_RANK && last.position == voice_event.position
+      in_force_marks[index - 1].level if index.positive?
     end
 
     def base_velocities
@@ -122,17 +122,16 @@ module HeadMusic::MIDI
       marks.each_with_index.sort_by { |mark, index| [mark.position, mark.rank, index] }.map(&:first)
     end
 
-    def level_at(marks, position)
+    def mark_at(marks, position)
       index = marks.bsearch_index { |mark| mark.position > position } || marks.length
-      marks[index - 1].level if index.positive?
+      marks[index - 1] if index.positive?
     end
 
-    def placed_level_at(position)
-      [voice.dynamic_events, part.dynamic_events].each do |events|
-        event = events.find { |candidate| candidate.position == position }
-        return event.level if event
+    # The first level placed at each position, the voice's over the part's.
+    def placed_levels
+      @placed_levels ||= (voice.dynamic_events + part.dynamic_events).each_with_object({}) do |event, levels|
+        levels[event.position] = event.level unless levels.key?(event.position)
       end
-      nil
     end
 
     def ramps
@@ -140,19 +139,23 @@ module HeadMusic::MIDI
     end
 
     # Pieces are taken in order of their starts, so a piece's start level
-    # sees the level an earlier piece left in force.
+    # sees the level an earlier piece left in force. A follow-through level
+    # arrives once the starts reach it, and ranks below a level placed there.
     def ramps_and_follow_through
       @ramps_and_follow_through ||= begin
-        marks = model_marks.dup
         follow_through = []
+        pending = []
+        arrived = nil
         built = hairpin_pieces.map do |hairpin, owner_rank, piece|
-          start = level_at(marks, piece.from) || default_level
-          target = placed_level_at(piece.to)
+          reached, pending = pending.partition { |mark| mark.position <= piece.from }
+          reached.each { |mark| arrived = mark if arrived.nil? || mark.position >= arrived.position }
+          start = start_level(piece.from, arrived)
+          target = placed_levels[piece.to]
           unless target
             target = beyond(start, piece.kind)
             mark = Mark.new(piece.to, FOLLOW_THROUGH_RANK, target)
             follow_through << mark
-            marks = sorted(marks + [mark])
+            pending << mark
           end
           Ramp.new(hairpin, owner_rank, piece.from, piece.to, start, target)
         end
@@ -160,10 +163,16 @@ module HeadMusic::MIDI
       end
     end
 
+    def start_level(position, arrived)
+      placed = mark_at(model_marks, position)
+      mark = (arrived && (placed.nil? || arrived.position > placed.position)) ? arrived : placed
+      mark&.level || default_level
+    end
+
     def hairpin_pieces
-      cuts = (voice.dynamic_events + part.dynamic_events).map(&:position)
+      cuts = (voice.dynamic_events + part.dynamic_events).map(&:position).uniq.sort
       pieces = owned_hairpins.flat_map do |hairpin, owner_rank|
-        HeadMusic::Notation::HairpinSegments.split([hairpin], cuts).map { |piece| [hairpin, owner_rank, piece] }
+        HeadMusic::Notation::HairpinSegments.pieces(hairpin, cuts).map { |piece| [hairpin, owner_rank, piece] }
       end
       pieces.each_with_index.sort_by { |(_, owner_rank, piece), index| [piece.from, piece.to, owner_rank, index] }.map(&:first)
     end
@@ -184,18 +193,36 @@ module HeadMusic::MIDI
     end
 
     def ramp_velocity(voice_event)
-      ramp = governing_ramp(voice_event.position)
+      ramp = governing_ramps[voice_event]
       return unless ramp
 
-      onset = HeadMusic::Notation::BarSplitter.exact_start(voice_event)
-      progress = (elapsed(ramp.from, onset) / elapsed(ramp.from, exact(ramp.to))).clamp(0, 1)
+      from = time_at(exact(ramp.from))
+      onset = time_at(HeadMusic::Notation::BarSplitter.exact_start(voice_event))
+      progress = ((onset - from) / (time_at(exact(ramp.to)) - from)).clamp(0, 1)
       from_velocity = velocity_of(ramp.start)
       (from_velocity + (velocity_of(ramp.target) - from_velocity) * progress).round
     end
 
+    # Ramps are in order of their starts, so one sweep beside the voice's
+    # events keeps only the ramps covering each.
+    def governing_ramps
+      @governing_ramps ||= begin
+        index = 0
+        covering = []
+        voice.voice_events.each_with_object({}.compare_by_identity) do |voice_event, governing|
+          position = voice_event.position
+          while index < ramps.length && ramps[index].from <= position
+            covering << ramps[index]
+            index += 1
+          end
+          covering.reject! { |ramp| ramp.to <= position }
+          governing[voice_event] = innermost(covering)
+        end
+      end
+    end
+
     # The innermost hairpin governs, a voice's over its part's.
-    def governing_ramp(position)
-      covering = ramps.select { |ramp| ramp.from <= position && position < ramp.to }
+    def innermost(covering)
       covering.min do |one, other|
         [other.hairpin.from, one.hairpin.to, other.owner_rank] <=> [one.hairpin.from, other.hairpin.to, one.owner_rank]
       end
@@ -205,10 +232,19 @@ module HeadMusic::MIDI
       [position.bar_number, HeadMusic::Notation::BarSplitter.offset_in_bar(position)]
     end
 
-    def elapsed(from, to)
-      from_bar, from_offset = exact(from)
-      to_bar, to_offset = to
-      (from_bar...to_bar).sum { |bar_number| PerformanceTimeline.bar_length(flow, bar_number) } + to_offset - from_offset
+    # A rounded onset can fall in the bar before the first ramp's.
+    def time_at((bar_number, offset))
+      bar_starts.fetch(bar_number) { -PerformanceTimeline.bar_length(flow, bar_number) } + offset
+    end
+
+    def bar_starts
+      @bar_starts ||= begin
+        time = 0
+        (ramps.first.from.bar_number..ramps.map { |ramp| ramp.to.bar_number }.max).each_with_object({}) do |bar_number, starts|
+          starts[bar_number] = time
+          time += PerformanceTimeline.bar_length(flow, bar_number)
+        end
+      end
     end
   end
 end

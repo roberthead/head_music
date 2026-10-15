@@ -8,11 +8,15 @@ module HeadMusic::Notation; end
 module HeadMusic::Notation::HairpinSegments
   def self.split(hairpins, cuts)
     cuts = cuts.uniq.sort
-    hairpins.flat_map do |hairpin|
-      inside = cuts.select { |cut| hairpin.from < cut && cut < hairpin.to }
-      [hairpin.from, *inside, hairpin.to].each_cons(2).map do |from, to|
-        HeadMusic::Content::Span.new(hairpin.flow, hairpin.kind, from: from, to: to)
-      end
+    hairpins.flat_map { |hairpin| pieces(hairpin, cuts) }
+  end
+
+  # +cuts+ sorted and without duplicates.
+  def self.pieces(hairpin, cuts)
+    first = cuts.bsearch_index { |cut| cut > hairpin.from } || cuts.length
+    inside = cuts[first..].take_while { |cut| cut < hairpin.to }
+    [hairpin.from, *inside, hairpin.to].each_cons(2).map do |from, to|
+      HeadMusic::Content::Span.new(hairpin.flow, hairpin.kind, from: from, to: to)
     end
   end
 end
