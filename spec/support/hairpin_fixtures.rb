@@ -182,7 +182,7 @@ module HairpinExpectations
   end
 
   def hairpins_in_force(flow, positions, per)
-    groups = (per == :part) ? flow.parts.map(&:voices) : flow.voices.map { |voice| [voice] }
+    groups = (per == :part) ? flow.parts.map(&:voices) : flow.voices.zip
     groups.map do |voices|
       positions.sort.map do |code|
         position = flow.position(code)

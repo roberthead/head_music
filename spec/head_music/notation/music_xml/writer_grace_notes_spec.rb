@@ -33,7 +33,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
   end
 
   it "keeps a grace note's articulation" do
-    grace = notes(1).select { |note| grace?(note) }.last
+    grace = notes(1).reverse.find { |note| grace?(note) }
     expect(xpath_names(grace, "notations/articulations/*")).to eq %w[staccato]
   end
 
