@@ -196,7 +196,6 @@ describe HeadMusic::Notation::LilyPond do
         %(<< \\new Staff { c'1 } \\new Dynamics << \\new Voice { c'1 } >> >>), described_class::UnsupportedFeatureError, /Contexts inside \\new Dynamics/
       ],
       "a failed bar check inside a Dynamics context" => [piano("s2 | s2"), described_class::ParseError, /Bar check failed at: 1\/2 in bar 1/],
-      "a spacer that falls between subticks" => [piano("s1*1/7\\p"), described_class::UnsupportedFeatureError, /falls between subticks/],
       "two levels for one part at one position" => [
         %(\\new PianoStaff << \\new Staff { c''1 } \\new Dynamics { s1\\p } \\new Dynamics { s1\\f } >>), described_class::ParseError, /already placed/
       ]

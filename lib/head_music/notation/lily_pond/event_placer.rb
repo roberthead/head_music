@@ -95,6 +95,7 @@ module HeadMusic::Notation::LilyPond
       @spacer_ends = {}.compare_by_identity
       @marker_marks = {}.compare_by_identity
       @open_tuplets = {}.compare_by_identity
+      @spacer_remainders = {}
       @tuplets = []
     end
 
@@ -130,8 +131,13 @@ module HeadMusic::Notation::LilyPond
       @spacer_ends.fetch(voice) { voice.next_position }
     end
 
+    # Spacers round to the nearest subtick, as the notes of a septuplet do,
+    # measured from where a run of them reached exactly, so s1*1/28 s1*3/28
+    # lands on the onsets of the septuplet sixteenths it stands beside.
     def after_spacer(position, event)
-      shifted(position, event, "A spacer")
+      exact = @spacer_remainders.fetch(position, 0) + (event.fraction * SUBTICKS_PER_WHOLE_NOTE)
+      step = exact.round
+      position.advance(subticks: step).tap { |reached| @spacer_remainders[reached] = exact - step }
     end
 
     def check_bar(event, position)

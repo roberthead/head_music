@@ -127,6 +127,24 @@ describe HeadMusic::Notation::LilyPond::TupletReader do
       .to raise_error(HeadMusic::Notation::LilyPond::ParseError, %r{Bar check failed at: 1/4 in bar 1})
   end
 
+  describe "spacers beside a septuplet" do
+    let(:notes) { "\\new Staff { c'4 \\tuplet 7/4 { c'16 d' e' f' g' a' b' } c'2 }" }
+
+    def part_levels(dynamics)
+      flow = HeadMusic::Notation::LilyPond.parse("\\new PianoStaff << #{notes} \\new Dynamics { #{dynamics} } >>")
+      flow.parts.first.dynamic_events.map { |event| [event.position.to_s, event.level.name_key] }
+    end
+
+    it "land on the septuplet's rounded onsets, measured from where the run of them reached" do
+      expect(part_levels("s4 s1*1/28 s1*3/28\\mf s1*3/28\\p s1*1/28\\f s2"))
+        .to eq [["1:2:137:034", "mf"], ["1:2:548:137", "p"], ["1:3:000", "f"]]
+    end
+
+    it "round a spacer that falls between subticks to the nearest" do
+      expect(part_levels("s1*1/7\\p s1*6/7")).to eq [["1:1:000", "p"]]
+    end
+  end
+
   it "names a failed bar check's place to the subtick" do
     expect { voice("{ \\tuplet 7/4 { c'16 d' | e' f' g' a' b' } c'2. }") }
       .to raise_error(HeadMusic::Notation::LilyPond::ParseError, %r{Bar check failed at: 21943/307200 in bar 1})
