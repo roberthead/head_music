@@ -18,6 +18,7 @@ module HeadMusic::MIDI
       check_meters
       check_tempos
       check_keys
+      check_texts
       channels
       played_bars
       self
@@ -88,6 +89,26 @@ module HeadMusic::MIDI
 
     def sounding_pitches(voice_event)
       voice_event.pitches + voice_event.grace_notes.flat_map(&:pitches)
+    end
+
+    def check_texts
+      check_text(flow.name, "the flow name")
+      flow.parts.each { |part| check_text(PartTrack.track_name(part), "a track name") }
+      flow.voices.flat_map(&:note_events).each do |voice_event|
+        voice_event.syllables.each_value { |syllable| check_text(syllable.text, "a lyric at #{voice_event.position}") }
+      end
+    end
+
+    def check_text(text, source)
+      return if text.nil? || utf8?(text.to_s)
+
+      raise RenderError, "cannot write #{text.inspect}, #{source}, as UTF-8 text"
+    end
+
+    def utf8?(text)
+      text.encode("UTF-8").valid_encoding?
+    rescue EncodingError
+      false
     end
 
     def check_key(pitch, part, voice_event)

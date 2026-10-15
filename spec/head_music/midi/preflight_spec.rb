@@ -106,6 +106,37 @@ describe HeadMusic::MIDI::Preflight do
     expect(failure).to include("cannot hold quarter")
   end
 
+  describe "text that cannot be written as UTF-8" do
+    let(:binary) { "caf\xE9".b }
+
+    it "refuses a binary flow name, naming it" do
+      flow = HeadMusic::Content::Flow.new(name: binary)
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect { described_class.new(flow).check }.to raise_error(HeadMusic::MIDI::RenderError, /"caf\\xE9", the flow name/)
+    end
+
+    it "refuses a binary lyric, naming it and its position" do
+      voice.place("1:1", :half, "C4")
+      voice.place("1:3", :half, "D4").sing(binary)
+      expect(failure).to include('"caf\xE9", a lyric at 1:3:000')
+    end
+
+    it "refuses a binary track name" do
+      flow.add_part.add_voice(role: binary).place("1:1", :whole, "C4")
+      expect(failure).to include('"caf\xE9", a track name')
+    end
+
+    it "refuses a lyric whose UTF-8 bytes are invalid" do
+      voice.place("1:1", :whole, "C4").sing((+"caf\xE9").force_encoding("UTF-8"))
+      expect(failure).to include("a lyric at 1:1:000")
+    end
+
+    it "accepts binary text that holds only ASCII" do
+      voice.place("1:1", :whole, "C4").sing("cafe".b)
+      expect(failure).to be_nil
+    end
+  end
+
   it "reports a malformed order as a render error" do
     voice.place("1:1", :whole, "C4")
     flow.bar(1).jump = HeadMusic::Content::Jump.new(:da_capo, to: :fine)

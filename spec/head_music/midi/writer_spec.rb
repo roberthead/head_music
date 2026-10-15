@@ -184,6 +184,14 @@ describe HeadMusic::MIDI::Writer do
     end
   end
 
+  describe "a flow name held as invalid binary" do
+    it "refuses it as a render error" do
+      flow = HeadMusic::Content::Flow.new(name: "caf\xE9".b)
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect { flow.to_midi }.to raise_error(HeadMusic::MIDI::RenderError, /the flow name/)
+    end
+  end
+
   describe "channels" do
     let(:instruments) do
       %w[violin viola cello double_bass flute oboe clarinet bassoon french_horn trumpet trombone tuba harp piano celesta glockenspiel]

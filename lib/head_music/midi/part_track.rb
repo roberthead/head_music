@@ -19,8 +19,12 @@ module HeadMusic::MIDI
       @lyric_events = lyric_events
     end
 
-    def name
+    def self.track_name(part)
       [part.player&.name, part.instrument&.name, part.voices.first&.role].map(&:to_s).find { |name| !name.empty? }
+    end
+
+    def name
+      self.class.track_name(part)
     end
 
     def meta_events
