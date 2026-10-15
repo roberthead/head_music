@@ -1,6 +1,6 @@
 module HeadMusic::Notation::MEI
-  # The <meiHead>: the title, a <persName> for each credited person, and the
-  # application that wrote the document.
+  # The <meiHead>: the title, a <persName> for each credited person, the
+  # application that wrote the document, and a <work> for each flow's Work.
   class HeadWriter
     def initialize(flows, title: nil, arranger: nil)
       @flows = flows
@@ -9,7 +9,7 @@ module HeadMusic::Notation::MEI
     end
 
     def element
-      Element.new("meiHead", nil, {}, [file_desc_element, encoding_desc_element])
+      Element.new("meiHead", nil, {}, [file_desc_element, encoding_desc_element, work_list_element].compact)
     end
 
     private
@@ -44,6 +44,18 @@ module HeadMusic::Notation::MEI
     def encoding_desc_element
       application = Element.new("application", nil, {"version" => HeadMusic::VERSION}, [Element.new("name", nil, {}, [], "head_music")])
       Element.new("encodingDesc", nil, {}, [Element.new("appInfo", nil, {}, [application])])
+    end
+
+    def work_list_element
+      works = flows.filter_map(&:work).uniq
+      works.any? ? Element.new("workList", nil, {}, works.map { |work| work_element(work) }) : nil
+    end
+
+    def work_element(work)
+      composers = work.credits.names(:composer).map do |name|
+        Element.new("composer", nil, {}, [Element.new("persName", nil, {}, [], name)])
+      end
+      Element.new("work", nil, {}, [Element.new("title", nil, {}, [], work.title), *composers])
     end
   end
 end

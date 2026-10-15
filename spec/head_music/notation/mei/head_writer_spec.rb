@@ -55,6 +55,35 @@ describe HeadMusic::Notation::MEI::HeadWriter do
     end
   end
 
+  describe "the work list" do
+    def works(document)
+      mei_elements(document, "//mei:workList/mei:work").map do |work|
+        [work.elements["title"].text, work.get_elements("composer/persName").map(&:text)]
+      end
+    end
+
+    it "names the flow's work and its composer" do
+      flow.work = HeadMusic::Content::Work.new(title: "Ein feste Burg").with_credit(bach, :composer).with_credit(luther, :lyricist)
+      expect(works(head([flow]))).to eq [["Ein feste Burg", ["Johann Sebastian Bach"]]]
+    end
+
+    it "names a work with no composer by its title alone" do
+      flow.work = HeadMusic::Content::Work.new(title: "Ein feste Burg")
+      expect(works(head([flow]))).to eq [["Ein feste Burg", []]]
+    end
+
+    it "names each work once across flows, in order" do
+      other = HeadMusic::Content::Flow.new(name: "Other", work: HeadMusic::Content::Work.new(title: "Wachet auf"))
+      flow.work = HeadMusic::Content::Work.new(title: "Ein feste Burg")
+      expect(works(head([flow, other, flow])).map(&:first)).to eq ["Ein feste Burg", "Wachet auf"]
+    end
+
+    it "names no work for a flow with none, though the flow has a composer" do
+      cited = HeadMusic::Content::Flow.new(name: "Other", work: HeadMusic::Content::Work.new(title: "Wachet auf"))
+      expect(works(head([flow, cited]))).to eq [["Wachet auf", []]]
+    end
+  end
+
   it "names the application and its version" do
     application = mei_element(head([flow]), "//mei:appInfo/mei:application")
     expect([application.attributes["version"], application.elements["name"].text]).to eq [HeadMusic::VERSION, "head_music"]

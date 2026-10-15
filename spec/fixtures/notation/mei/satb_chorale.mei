@@ -18,6 +18,14 @@
         </application>
       </appInfo>
     </encodingDesc>
+    <workList>
+      <work>
+        <title>Wake the Morning</title>
+        <composer>
+          <persName>Jane Doe</persName>
+        </composer>
+      </work>
+    </workList>
   </meiHead>
   <music>
     <body>
