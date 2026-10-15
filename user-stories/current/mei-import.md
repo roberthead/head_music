@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T14:21:10-07:00
   planned_at:   2026-10-15T14:45:59-07:00
   finished_at:
-  updated_at:   2026-10-15T14:45:59-07:00
+  updated_at:   2026-10-15T16:43:58-07:00
 -->
 
 # Story: MEI Import
@@ -165,6 +165,11 @@ flow.voices.length # => one per layer, as the part numbers them
   - **Duplicate `xml:id`.** It raises `ParseError` only where a `@startid`, `@endid`, or `@plist` names it, since music21's `test_file.mei` reuses ids nothing refers to. A `@copyof` takes the first element with the id.
   - **`<space>` with no `@dur`.** It takes the time its layer leaves of the longest other layer in the measure, shared equally among several such spaces, and raises only where no layer gives a length. A `@dur.default` in force still wins, as it does for every event.
   - **A later `<scoreDef>` that restates only some staves** stays refused, as one that adds or removes staves, for now.
+- **Decided by the coordinator, without stopping to ask** (2026-10-15; Rob may revise any):
+  - **Work catalog numbers, dates, and people's dates.** MEI Export writes the rest of a `Work` into `<workList>`, so the SATB golden round-trips rather than needing an exclusion. MEI has a place for each of these, and leaving them out would make MEI the lossy writer.
+  - **Grace-note articulations.** These are read when the grace note is queued, in `voice_assignment.rb`, because `GraceNote` is immutable. The markings reader owns that one-line edit.
+  - **A `<score>` directly in `<music>`**, as MEI 2013 allowed and music21's `test_file.mei` writes, is read as one `<mdiv>`.
+  - **A measure made only of `<space>`s with no `@dur`** fills the meter's length, since nothing else could be meant. `Chopin_Mazurka_Op6_No1` and `Ravel_Le_tombeau` write one.
 
 ## Implementation Plan
 
