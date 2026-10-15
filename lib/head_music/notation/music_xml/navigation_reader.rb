@@ -10,9 +10,14 @@ module HeadMusic::Notation::MusicXML
   # name a jump's target. With no such <sound>, the signs and words decide.
   # Every part is read: for each bar the first rehearsal mark and jump win,
   # and a flag set by any part is set.
+  #
+  # MuseScore 4 writes no navigation <sound>, and writes the segno and coda
+  # signs as words holding their SMuFL glyphs.
   class NavigationReader < MarkReader
     FINE = /\AFine\.?\z/i
     TO_CODA = /\ATo\s+Coda\z/i
+    SEGNO_GLYPH = "\u{E047}"
+    CODA_GLYPH = "\u{E048}"
 
     def initialize
       @marks = Hash.new { |marks, number| marks[number] = {} }
@@ -81,6 +86,8 @@ module HeadMusic::Notation::MusicXML
     end
 
     def word_mark(text)
+      return [:segno, true] if text == SEGNO_GLYPH
+      return [:coda, true] if text == CODA_GLYPH
       return [:fine, true] if FINE.match?(text)
       return [:to_coda, true] if TO_CODA.match?(text)
 

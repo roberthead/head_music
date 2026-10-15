@@ -86,6 +86,39 @@ describe HeadMusic::Notation::MusicXML::NavigationReader do
     end
   end
 
+  describe "as MuseScore 4 writes it, with signs as SMuFL glyphs in words" do
+    def glyph_xml(glyph)
+      %(<words font-family="Leland Text">#{glyph}</words>)
+    end
+
+    it "reads the segno glyph" do
+      expect(first_bar(direction_xml(glyph_xml("\u{E047}")))).to be_segno
+    end
+
+    it "reads the coda glyph" do
+      expect(first_bar(direction_xml(glyph_xml("\u{E048}")))).to be_coda
+    end
+
+    {
+      "Fine" => {"fine" => true},
+      "To Coda" => {"to_coda" => true},
+      "D.C." => {"jump" => {"kind" => "da_capo"}},
+      "D.C. al Fine" => {"jump" => {"kind" => "da_capo", "to" => "fine"}},
+      "D.S. al Coda" => {"jump" => {"kind" => "dal_segno", "to" => "coda"}}
+    }.each do |words, expected|
+      it "reads #{words}" do
+        expect(first_bar(direction_xml(words_xml(words))).to_h).to eq expected
+      end
+    end
+
+    %w[marked_dal_segno_al_coda marked_da_capo_al_fine barline_styles].each do |name|
+      it "reads the bar markings of #{name} as the render it converted" do
+        read = %w[head_music musescore4].map { |kind| bar_markings(parse_musicxml_flow(File.binread(MuseScoreFixtures.path(name, kind)))) }
+        expect(read.last).to eq read.first
+      end
+    end
+  end
+
   it "reads a rehearsal mark at its bar" do
     flow = parse([whole_note, direction_xml("<rehearsal>B</rehearsal>") + whole_note])
     expect(flow.bars.map(&:rehearsal_mark)).to eq [nil, "B"]
