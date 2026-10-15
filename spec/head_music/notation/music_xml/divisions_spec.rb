@@ -86,5 +86,40 @@ describe HeadMusic::Notation::MusicXML::Divisions do
       flow.parts.first.add_span(:diminuendo, from: "1:3:480", to: "1:4")
       expect(described_class.for(flow)).to eq 2
     end
+
+    it "counts a triplet by what it sounds, in thirds of a quarter" do
+      expect(described_class.for(TupletFixtures.triplets)).to eq 3
+    end
+
+    it "counts septuplet sixteenths in sevenths of a quarter, though their positions round" do
+      expect(described_class.for(TupletFixtures.septuplet)).to eq 7
+    end
+
+    it "counts a duplet in 6/8 in quarters of a quarter" do
+      expect(described_class.for(TupletFixtures.duplet_in_six_eight)).to eq 4
+    end
+
+    it "counts the pieces a crossing septuplet note splits into" do
+      expect(described_class.for(TupletFixtures.septuplet_crossing_barline)).to eq 7
+    end
+
+    it "places a dynamic at a septuplet note at its exact onset, needing no finer divisions" do
+      flow = TupletFixtures.septuplet
+      flow.voices.first.place_dynamic(flow.voices.first.voice_events[3].position, :p)
+      expect(described_class.for(flow)).to eq 7
+    end
+  end
+
+  describe ".mark_offset" do
+    let(:flow) { TupletFixtures.septuplet }
+    let(:fourth) { flow.voices.first.voice_events[3] }
+
+    it "answers the exact onset of a note starting at a rounded position" do
+      expect(described_class.mark_offset(flow, fourth.position)).to eq Rational(3, 28)
+    end
+
+    it "answers the position itself where no note starts" do
+      expect(described_class.mark_offset(flow, flow.position("1:3"))).to eq Rational(1, 2)
+    end
   end
 end

@@ -101,7 +101,15 @@ module MusicXMLHelpers
     last_bar = plan.bar_numbers.last
     return [last_bar, plan.whole_measure_duration(last_bar)] if position == plan.flow.final_barline_position
 
-    [position.bar_number, (HeadMusic::Notation::BarSplitter.offset_in_bar(position) * 4 * plan.divisions).to_i]
+    [position.bar_number, (exact_offset_in_bar(plan.flow, position) * 4 * plan.divisions).to_i]
+  end
+
+  # A note starting at a rounded position starts at its exact onset.
+  def exact_offset_in_bar(flow, position)
+    voice_event = flow.voices.filter_map { |voice| voice.voice_event_at(position) }.first
+    return HeadMusic::Notation::BarSplitter.offset_in_bar(position) unless voice_event
+
+    HeadMusic::Notation::BarSplitter.onset_in_bar(voice_event)
   end
 end
 

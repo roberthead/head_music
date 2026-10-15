@@ -20,7 +20,7 @@ module HeadMusic::Notation::MusicXML
     def slot_lines(slot, voice_number: nil, staff_number: nil)
       direction_plan = plan.direction_plan(slot.part)
       direction_plan.marks(slot).flat_map do |mark|
-        offset = offset_from(direction_plan.start(slot), slot.bar_number, mark)
+        offset = offset_from(direction_plan.start(slot), slot, mark)
         direction_lines(direction_type(slot.part, mark), offset, voice_number: voice_number, staff_number: staff_number)
       end
     end
@@ -61,15 +61,20 @@ module HeadMusic::Notation::MusicXML
     end
 
     # A mark on the final barline is written in the last bar, at its end.
-    def offset_from(start, bar_number, mark)
+    def offset_from(start, slot, mark)
+      bar_number = slot.bar_number
       return plan.whole_measure_duration(bar_number) - start unless mark.position.bar_number == bar_number
 
-      fraction = HeadMusic::Notation::BarSplitter.offset_in_bar(mark.position) * 4 * divisions
+      fraction = Divisions.mark_offset(plan.flow, mark.position, mark_voices(slot)) * 4 * divisions
       unless fraction.denominator == 1
         raise RenderError,
           "cannot express the offset of the #{label(mark)} at #{mark.position} in #{divisions} divisions per quarter note"
       end
       fraction.numerator - start
+    end
+
+    def mark_voices(slot)
+      slot.voice ? [slot.voice] : slot.part.voices
     end
 
     def label(mark)

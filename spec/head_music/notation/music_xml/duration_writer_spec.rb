@@ -113,7 +113,7 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
       let(:value) do
         instance_double(
           HeadMusic::Rudiment::RhythmicValue,
-          unit: unit, dots: 0, tied_value: nil, unit_name: "whatsit", to_s: "whatsit", written_fraction: Rational(1)
+          unit: unit, dots: 0, tied_value: nil, unit_name: "whatsit", to_s: "whatsit", written_fraction: Rational(1), link_fraction: Rational(1)
         )
       end
 
@@ -123,6 +123,32 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
         expect { writer.components(value) }
           .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /no MusicXML note type/)
       end
+    end
+  end
+
+  describe ".sounding_quarter_fraction" do
+    it "takes a triplet eighth as a third of a quarter" do
+      value = HeadMusic::Rudiment::RhythmicValue.get("triplet eighth")
+      expect(described_class.sounding_quarter_fraction(value)).to eq Rational(1, 3)
+    end
+
+    it "takes a 7:4 sixteenth as a seventh of a quarter" do
+      value = HeadMusic::Rudiment::RhythmicValue.get("7:4 sixteenth")
+      expect(described_class.sounding_quarter_fraction(value)).to eq Rational(1, 7)
+    end
+  end
+
+  describe "#components of a tuplet value" do
+    let(:divisions) { 6 }
+
+    it "writes its sounding duration under its written type" do
+      value = HeadMusic::Rudiment::RhythmicValue.get("triplet dotted eighth")
+      expect(writer.components(value).first).to have_attributes(duration: 3, type: "eighth", dots: 1)
+    end
+
+    it "writes each link of a chain mixing ratios under its own" do
+      value = HeadMusic::Rudiment::RhythmicValue.get("triplet eighth tied to quarter")
+      expect(writer.components(value).map(&:duration)).to eq [2, 6]
     end
   end
 

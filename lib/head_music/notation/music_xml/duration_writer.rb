@@ -36,6 +36,12 @@ module HeadMusic::Notation::MusicXML
       HeadMusic::Notation::DottedDuration.dotted_unit_fraction(rhythmic_value) * 4
     end
 
+    # One link's sounding duration in quarter notes, under its tuplet ratio,
+    # which is what its <duration> counts.
+    def self.sounding_quarter_fraction(link)
+      HeadMusic::Notation::DottedDuration.sounding_fraction(link) * 4
+    end
+
     def components(rhythmic_value)
       split_components([rhythmic_value]).first
     end
@@ -64,7 +70,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def integer_duration(link)
-      fraction = self.class.single_quarter_fraction(link) * divisions
+      fraction = self.class.sounding_quarter_fraction(link) * divisions
       unless fraction.denominator == 1
         raise HeadMusic::Notation::MusicXML::RenderError,
           "cannot express #{link} as an integer duration at #{divisions} divisions per quarter note"
