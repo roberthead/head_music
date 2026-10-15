@@ -104,6 +104,11 @@ describe HeadMusic::Notation::MusicXML::DirectionReader do
       expect(part_levels(quarters("C4", "D4", "E4", "F4") + dynamic_xml("p", offset: 4), whole_note)).to eq ["p at 2:1:000"]
     end
 
+    it "drops a level whose <offset> has an exponent too large for Rational" do
+      measure = dynamic_xml("p", offset: "1e999999999") + quarters("C4", "D4") + dynamic_xml("f") + quarters("E4", "F4")
+      expect(part_levels(measure)).to eq ["f at 1:3:000"]
+    end
+
     it "places a level at the end of a short final bar on its final barline" do
       expect(part_levels(whole_note, quarters("C4", "D4") + dynamic_xml("p", offset: 6))).to eq ["p at 3:1:000"]
     end

@@ -53,10 +53,10 @@ module HeadMusic::Notation::MusicXML
 
     def onset_of(record)
       text = XmlReading.text(record.element, "offset", measure: record.measure)
-      offset = (text && record.divisions) ? Rational(text) / (4 * record.divisions) : 0
+      offset = (text && record.divisions) ? XmlReading.rational(text, "<offset>", measure: record.measure) / (4 * record.divisions) : 0
       length = bar_length(record.part.flow, record.bar_number)
       (record.cursor + offset).clamp(0, length)
-    rescue ArgumentError, ZeroDivisionError
+    rescue ParseError
       nil
     end
 

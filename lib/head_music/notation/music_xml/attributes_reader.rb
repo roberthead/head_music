@@ -47,7 +47,7 @@ module HeadMusic::Notation::MusicXML
 
     def divisions(element)
       value = rational(text(element, **where), "<divisions>", **where)
-      raise ParseError.new("<divisions> must be positive", **where) unless value.positive?
+      raise ParseError.new("<divisions> must be positive", **where) unless value&.positive?
 
       value
     end
@@ -61,7 +61,7 @@ module HeadMusic::Notation::MusicXML
 
     def staves(element)
       value = integer(text(element, **where), "<staves>", **where)
-      raise ParseError.new("<staves> must be positive", **where) unless value.positive?
+      raise ParseError.new("<staves> must be positive", **where) unless value&.positive?
 
       value
     end
@@ -75,17 +75,30 @@ module HeadMusic::Notation::MusicXML
     end
 
     # A meter of added beats, such as 3+2/8, would read as its first number
-    # alone, so it raises instead.
+    # alone, so it raises instead, as does one such as 3/3, whose beat type
+    # names no note value. A <time> with neither number, as <senza-misura/>,
+    # states no meter.
     def meter(element)
+      return unless first_child(element, "beats") || first_child(element, "beat-type")
+
       beats = text(element, "beats", **where)
       beat_type = text(element, "beat-type", **where)
-      return unless beats && beat_type
-
-      if beats.include?("+") || children(element, "beats").length > 1
+      if beats&.include?("+") || children(element, "beats").length > 1
         raise UnsupportedFeatureError.new("Compound meters such as #{beats}/#{beat_type} are not supported", **where)
       end
 
-      HeadMusic::Rudiment::Meter.get("#{integer(beats, "<beats>", **where)}/#{integer(beat_type, "<beat-type>", **where)}")
+      top = meter_number(beats, "<beats>")
+      bottom = meter_number(beat_type, "<beat-type>")
+      raise UnsupportedFeatureError.new("The meter #{top}/#{bottom} is not supported", **where) unless HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom)
+
+      HeadMusic::Rudiment::Meter.get("#{top}/#{bottom}")
+    end
+
+    def meter_number(text, label)
+      value = integer(text, label, **where)
+      raise ParseError.new("#{label} must be positive", **where) unless value&.positive?
+
+      value
     end
   end
 end

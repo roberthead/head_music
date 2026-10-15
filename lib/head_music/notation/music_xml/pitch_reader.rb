@@ -20,12 +20,22 @@ module HeadMusic::Notation::MusicXML
       spelled(step, alter.to_i, octave, where)
     end
 
+    # The catalog spells octaves -1 through 9, altered by up to two semitones.
     def spelled(step, alter, octave, where)
-      number = (octave + 1) * 12 + SEMITONES_BY_STEP.fetch(step) + alter
-      pitch = HeadMusic::Rudiment::Pitch.from_number_and_letter(number, step)
-      return pitch if pitch && pitch.midi_note_number == number && pitch.letter_name.to_s == step
+      if octave.between?(-1, 9) && alter.abs <= 2
+        number = (octave + 1) * 12 + SEMITONES_BY_STEP.fetch(step) + alter
+        pitch = HeadMusic::Rudiment::Pitch.from_number_and_letter(number, step)
+        return pitch if pitch && pitch.midi_note_number == number && pitch.letter_name.to_s == step
+      end
 
       raise UnsupportedFeatureError.new("The pitch #{step} altered by #{alter} in octave #{octave} has no spelling", **where)
+    end
+
+    # The pitch of a number spelled with a letter, in the octave that puts
+    # its natural nearest.
+    def from_number_and_letter(number, step, **where)
+      octave = ((number - SEMITONES_BY_STEP.fetch(step)) / 12.0).round - 1
+      spelled(step, number - (octave + 1) * 12 - SEMITONES_BY_STEP.fetch(step), octave, where)
     end
   end
 end

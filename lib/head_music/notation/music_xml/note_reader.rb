@@ -29,6 +29,8 @@ module HeadMusic::Notation::MusicXML
       note = Note.new(element: @element, dots: 0, ties: [], tied: [], tuplets: [], articulations: [], voice: "1")
       note.hidden = attribute(@element, "print-object", **where) == "no"
       @element.each_element { |child| read_child(note, child) }
+      raise ParseError.new("A <note> has no <pitch>, <unpitched>, or <rest>", **where) unless note.pitch || note.unpitched || note.rest
+
       note
     end
 

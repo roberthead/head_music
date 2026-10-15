@@ -22,13 +22,21 @@ module HeadMusic::Notation::MusicXML
       raise_expansion(error, where)
     end
 
-    # MusicXML's numbers are xs:decimal, which Rational reads exactly.
+    MAX_NUMBER_LENGTH = 40
+
+    # MusicXML's numbers are xs:decimal, which Rational reads exactly. An
+    # exponent is no decimal, and a large one makes Rational warn and raise.
     def rational(text, label, **where)
       return if text.nil?
+      raise ParseError.new(%(Unreadable #{label} "#{text[0, MAX_NUMBER_LENGTH]}"), **where) unless decimal?(text)
 
       Rational(text)
     rescue ArgumentError, ZeroDivisionError
       raise ParseError.new(%(Unreadable #{label} "#{text}"), **where)
+    end
+
+    def decimal?(text)
+      text.length <= MAX_NUMBER_LENGTH && !text.match?(/e/i)
     end
 
     def integer(text, label, **where)
@@ -53,6 +61,6 @@ module HeadMusic::Notation::MusicXML
     def raise_expansion(error, where)
       raise ParseError.new("MusicXML text exceeds the entity expansion limits (#{error.message})", **where)
     end
-    private_class_method :raise_expansion
+    private_class_method :decimal?, :raise_expansion
   end
 end

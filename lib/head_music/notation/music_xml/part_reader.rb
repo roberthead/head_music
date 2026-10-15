@@ -226,7 +226,7 @@ module HeadMusic::Notation::MusicXML
     # note is a sound of the part's instrument, or an unpitched sound of
     # none.
     def sound(note)
-      return @transposition.concert(note.pitch, note.staff || 1) unless note.unpitched
+      return @transposition.concert(note.pitch, note.staff || 1, **@where) unless note.unpitched
 
       HeadMusic::Rudiment::UnpitchedSound.get(@instrument) || HeadMusic::Rudiment::UnpitchedSound.get(nil)
     end

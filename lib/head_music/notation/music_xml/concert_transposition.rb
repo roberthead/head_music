@@ -37,11 +37,12 @@ module HeadMusic::Notation::MusicXML
       @steps[number] = step
     end
 
-    def concert(pitch, staff)
+    def concert(pitch, staff, **where)
       step = step_for(staff)
       return pitch unless step && !step.identity?
 
-      HeadMusic::Rudiment::Pitch.from_number_and_letter(pitch.midi_note_number + step.semitones, pitch.natural_steps(step.steps).letter_name)
+      letter = PitchReader::STEPS[(PitchReader::STEPS.index(pitch.letter_name.to_s) + step.steps) % 7]
+      PitchReader.from_number_and_letter(pitch.midi_note_number + step.semitones, letter, **where)
     end
 
     def concert_fifths(fifths, staff = 1)
