@@ -57,7 +57,7 @@ File.binwrite("exercise.mid", bytes)
 - [ ] Each pitched note event writes note on and note off at its ticks, and a chord writes one per pitch; rests write nothing
 - [ ] Tied notes sound as one note, not re-struck. A note tied over a barline sounds into the next played bar only when that bar follows it in the score; otherwise it releases at the barline, and a tie arriving from a bar that was not just played strikes fresh
 - [ ] When a note on a channel's key begins while that key is held, the held note is released and the key struck again at the new onset, then sounds until the later of the two releases. This applies across percussion parts on channel 10
-- [ ] Grace notes sound on the beat, taking time from the main note. A lone acciaccatura sounds as a thirty-second. A lone appoggiatura takes half the first link of its main note. A group of two or more sounds a thirty-second each. A group never takes more than half the main note, and shares that half equally when it would. A grace note tied to its main note's key sounds through the main note and is not struck again. Grace notes take the main note's velocity, without its note dynamic
+- [ ] Grace notes sound on the beat, taking time from the main note. A lone acciaccatura sounds as a thirty-second. A lone appoggiatura takes half the first link of its main note. A group of two or more sounds a thirty-second each. A group never takes more than half the main note, and shares that half equally when it would. A grace note tied to its main note's key sounds through the main note and is not struck again. Grace notes take the main note's dynamic level, without its note dynamic or articulations, and add their own articulations; before an *fp*, that is the level in force before it
 - [ ] Staccato sounds for half the note's value, staccatissimo for a quarter, staccato with tenuto (portato) for three quarters, and tenuto for all of it; other notes sound for their full value. Staccatissimo wins over staccato, and shortening applies to the last link of a tied chain
 - [ ] Unpitched note events go to channel 10, at the GM percussion key their instrument names, or at `DEFAULT_PERCUSSION_KEY` when it names none
 - [ ] With `transposed: true`, each pitch is read as written and sounds at its written pitch plus the sounding transposition of the part's instrument in force at its bar. A part with no transposing instrument sounds as written. The key signature stays concert
@@ -122,6 +122,13 @@ File.binwrite("exercise.mid", bytes)
   - key signatures beyond seven fifths are written enharmonically rather than raised;
   - unpitched sounds in a pitched part go to channel 10 within the part's track;
   - the *fp*, hairpin follow-through, ties across a repeat, pickup trimming, verses by pass, and `transposed:` criteria are made exact, as the planner found the model's current answers differ from the story's wording.
+
+- **Implementation choices made without stopping to ask** (2026-10-15; Rob may revise any):
+  - A grace note takes its main note's level but not the main note's accent or marcato, which belong to the main note's own attack; before an *fp* it takes the level in force before the *fp*, not the *p* the *fp* leaves.
+  - When two voices sing at one onset, the first voice with a syllable for that pass's verse wins; a note with no syllable for verse *n* sings nothing on pass *n* when the flow has a verse *n*.
+  - On a shared channel, two parts striking one key at one onset sound once, in the first part's track, and a release that meets another track's strike is written in the striking track, so a player cannot reorder the two.
+  - Track names use the instrument's catalog name, lowercase, as the MusicXML and LilyPond writers do.
+  - GM stand-ins: euphonium and baritone horn take Tuba (59), mandolin 26, synthesizer 81, ukuleles 25, arpeggione 43, tam-tam the Chinese Cymbal key (52), and tenor drum the Low Tom key (45). Castanets have no GM Level 1 key.
 
 ## Implementation Plan
 
