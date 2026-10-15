@@ -56,7 +56,7 @@ module HeadMusic::Notation::Kern
       return [] unless to > from
 
       offset = from
-      DurationReader.rest_value(to - from).tied_chain.map do |link|
+      HeadMusic::Notation::DottedDuration.rest_value(to - from).tied_chain.map do |link|
         Event.new(offset: offset, link: link, pitches: nil, tie: nil, syllables: {}, marks: "", invisible: invisible)
           .tap { offset += DurationWriter.fraction(link) }
       end

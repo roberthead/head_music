@@ -43,6 +43,27 @@ module HeadMusic
         ratio ? value&.with_tuplet(ratio) : value
       end
 
+      # The ratio a non-binary undotted value sounds under, or nil. When the
+      # denominator has an odd factor m, m notes take the time of the largest
+      # odd part of the numerator times a power of two below m: 1/12 is a 3:2
+      # eighth, 1/20 a 5:4 sixteenth, 3/10 a 5:3 half.
+      def tuplet_ratio(fraction)
+        fraction = Rational(fraction)
+        actual = odd_factor(fraction.denominator)
+        return if actual == 1
+
+        normal = odd_factor(fraction.numerator)
+        normal = 1 if normal > actual
+        normal *= 2 while normal * 2 < actual
+        HeadMusic::Rudiment::TupletRatio.get([actual, normal])
+      end
+
+      # A rest filling a stretch, under the ratio its length implies when no
+      # plain value spans it, as after a voice's last triplet.
+      def rest_value(fraction)
+        rhythmic_value_for(fraction) || rhythmic_value_for(fraction, tuplet: tuplet_ratio(fraction))
+      end
+
       def expressible?(fraction)
         fraction.positive? && fraction <= MAX_FRACTION && power_of_two?(fraction.denominator)
       end

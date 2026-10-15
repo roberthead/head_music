@@ -153,7 +153,7 @@ module HeadMusic::Notation::Kern
     def rest_until(time, clock)
       while @time < time
         segment_end = [clock.next_bar_start(@time), time].compact.min
-        rest = voice.place(@position, DurationReader.rest_value(segment_end - @time))
+        rest = voice.place(@position, HeadMusic::Notation::DottedDuration.rest_value(segment_end - @time))
         @position = rest.next_position
         @time = segment_end
       end

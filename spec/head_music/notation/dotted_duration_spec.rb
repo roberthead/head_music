@@ -89,4 +89,31 @@ describe HeadMusic::Notation::DottedDuration do
       expect(described_class.rhythmic_value_for(Rational(1, 16), tuplet: "2:3")).to be_nil
     end
   end
+
+  describe ".tuplet_ratio" do
+    {
+      Rational(1, 12) => "3:2",
+      Rational(1, 20) => "5:4",
+      Rational(3, 10) => "5:3",
+      Rational(1, 28) => "7:4"
+    }.each do |fraction, ratio|
+      it "infers #{ratio} for #{fraction}" do
+        expect(described_class.tuplet_ratio(fraction).to_a.join(":")).to eq ratio
+      end
+    end
+
+    it "answers nil for a binary fraction" do
+      expect(described_class.tuplet_ratio(Rational(3, 8))).to be_nil
+    end
+  end
+
+  describe ".rest_value" do
+    it "answers a plain value where one spans the fraction" do
+      expect(described_class.rest_value(Rational(3, 4)).to_s).to eq "dotted half"
+    end
+
+    it "answers a value under the implied ratio where none does" do
+      expect(described_class.rest_value(Rational(1, 6)).to_s).to eq "triplet quarter"
+    end
+  end
 end

@@ -5,7 +5,7 @@ PATH
       activesupport (>= 7.0, < 10)
       humanize (>= 2, < 4)
       i18n (~> 1.8)
-      rexml (~> 3.4)
+      rexml (~> 3.4, >= 3.4.2)
 
 GEM
   remote: https://rubygems.org/

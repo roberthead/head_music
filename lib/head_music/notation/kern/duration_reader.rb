@@ -28,28 +28,10 @@ module HeadMusic::Notation::Kern
       rational = recip.include?("%")
       base = rational ? rational_base(recip, context) : LONG_VALUES.fetch(recip) { Rational(1, positive(recip, context)) }
       fraction = base * dotted_scale(dots.length)
-      ratio = tuplet_ratio(base)
+      ratio = HeadMusic::Notation::DottedDuration.tuplet_ratio(base)
       return tuplet(fraction, ratio, context) if ratio
 
       Duration.new(rational ? rational_value(fraction, recip, context) : reciprocal_value(base, recip, dots.length, context), fraction)
-    end
-
-    # The ratio a non-binary undotted value sounds under, or nil.
-    def tuplet_ratio(base)
-      actual = HeadMusic::Notation::DottedDuration.odd_factor(base.denominator)
-      return if actual == 1
-
-      normal = HeadMusic::Notation::DottedDuration.odd_factor(base.numerator)
-      normal = 1 if normal > actual
-      normal *= 2 while normal * 2 < actual
-      HeadMusic::Rudiment::TupletRatio.get([actual, normal])
-    end
-
-    # A rest filling a stretch, under the ratio kern reads its length as
-    # when no plain value spans it, as after a voice's last triplet.
-    def rest_value(fraction)
-      HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction) ||
-        HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction, tuplet: tuplet_ratio(fraction))
     end
 
     def tuplet(fraction, ratio, context)

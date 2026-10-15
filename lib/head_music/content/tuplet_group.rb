@@ -31,8 +31,17 @@ class HeadMusic::Content::TupletGroup
     end
 
     def covers?(position)
-      voice_event.position.advance(subticks: onset.round) <= position &&
-        position < voice_event.position.advance(subticks: finish.round)
+      start_position <= position && position < voice_event.position.advance(subticks: finish.round)
+    end
+
+    # Where the link starts and ends, rounded as positions are, so that a
+    # group may start or end on a later link of a tied chain.
+    def start_position
+      first ? voice_event.position : voice_event.position.advance(subticks: onset.round)
+    end
+
+    def end_position
+      last ? voice_event.next_position : voice_event.position.advance(subticks: finish.round)
     end
 
     def rounds?

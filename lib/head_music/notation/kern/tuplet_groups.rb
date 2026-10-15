@@ -22,7 +22,7 @@ module HeadMusic::Notation::Kern
       links = voice.voice_events.flat_map { |voice_event| HeadMusic::Content::TupletGroup.links_of(voice_event) }
       items = links.map { |link| Item.new(link.ratio, link.rhythmic_value.link_fraction, link.voice_event) }
       runs(items).each do |run|
-        voice.group_tuplet(from: link_start(links[run.first]), to: link_end(links[run.last]))
+        voice.group_tuplet(from: links[run.first].start_position, to: links[run.last].end_position)
       rescue ArgumentError
         nil
       end
@@ -84,14 +84,6 @@ module HeadMusic::Notation::Kern
 
     def rounds?(item)
       (item.fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE).denominator != 1
-    end
-
-    def link_start(link)
-      link.first ? link.voice_event.position : link.voice_event.position.advance(subticks: link.onset.round)
-    end
-
-    def link_end(link)
-      link.last ? link.voice_event.next_position : link.voice_event.position.advance(subticks: link.finish.round)
     end
 
     def plain?(fraction)

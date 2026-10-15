@@ -37,4 +37,24 @@ describe HeadMusic::Content::TupletGroup do
   it "has no links where no event sounds" do
     expect(described_class.links_between(voice, flow.position("5:1"), flow.position("6:1"))).to be_empty
   end
+
+  describe "a link's positions" do
+    let(:tied) { HeadMusic::Rudiment::RhythmicValue.get("triplet eighth tied to quarter") }
+    let(:links) do
+      voice.place(voice.next_position, tied, "D4")
+      described_class.links_of(voice.last_voice_event)
+    end
+
+    it "starts the first link where its voice event starts" do
+      expect(links.first.start_position.to_s).to eq "1:3:000"
+    end
+
+    it "starts a later link where the link before it ends" do
+      expect(links.last.start_position).to eq links.first.end_position
+    end
+
+    it "ends the last link where its voice event ends" do
+      expect(links.last.end_position).to eq voice.last_voice_event.next_position
+    end
+  end
 end
