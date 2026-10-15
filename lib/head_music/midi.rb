@@ -1,6 +1,19 @@
 # Renders flows as Standard MIDI Files. MIDI holds a performance, not its
 # notation: keys rather than spellings, and ticks rather than note values.
 module HeadMusic::MIDI
+  VELOCITIES = {"ppp" => 16, "pp" => 32, "p" => 48, "mp" => 64, "mf" => 80, "f" => 96, "ff" => 112, "fff" => 127}.freeze
+  DEFAULT_LEVEL = "mf".freeze
+  DEFAULT_VELOCITY = VELOCITIES.fetch(DEFAULT_LEVEL)
+  VELOCITY_RANGE = (1..127)
+
+  # Added to a note's velocity, together with any others it carries.
+  ARTICULATION_BOOSTS = {"accent" => 16, "marcato" => 24}.freeze
+  NOTE_DYNAMIC_BOOSTS = {"sf" => 24, "sfz" => 24, "rfz" => 16}.freeze
+
+  # A note dynamic that strikes its note at a level of its own, as fp strikes
+  # at f before leaving p in force.
+  ATTACK_LEVELS = {"fp" => "f"}.freeze
+
   # Hi Wood Block: a neutral click for an unpitched sound whose instrument
   # names no GM percussion key, rather than one posing as a drum kit.
   DEFAULT_PERCUSSION_KEY = 76

@@ -60,4 +60,41 @@ describe HeadMusic::MIDI do
   it "names the byte offset of a parse error" do
     expect(described_class::ParseError.new("bad", offset: 12)).to have_attributes(message: "bad (byte 12)", offset: 12)
   end
+
+  describe "velocities" do
+    it "gives each level a velocity" do
+      expect(described_class::VELOCITIES).to eq(
+        "ppp" => 16, "pp" => 32, "p" => 48, "mp" => 64, "mf" => 80, "f" => 96, "ff" => 112, "fff" => 127
+      )
+    end
+
+    it "covers every level in the dynamics catalog" do
+      expect(described_class::VELOCITIES.keys).to eq HeadMusic::Rudiment::Dynamic.levels.map(&:name_key)
+    end
+
+    it "defaults to mf" do
+      expect([described_class::DEFAULT_LEVEL, described_class::DEFAULT_VELOCITY]).to eq ["mf", 80]
+    end
+
+    it "boosts an accent by 16 and a marcato by 24" do
+      expect(described_class::ARTICULATION_BOOSTS).to eq("accent" => 16, "marcato" => 24)
+    end
+
+    it "boosts sf and sfz by 24 and rfz by 16" do
+      expect(described_class::NOTE_DYNAMIC_BOOSTS).to eq("sf" => 24, "sfz" => 24, "rfz" => 16)
+    end
+
+    it "strikes an fp note at f" do
+      expect(described_class::ATTACK_LEVELS).to eq("fp" => "f")
+    end
+
+    it "clamps to 1..127" do
+      expect(described_class::VELOCITY_RANGE).to eq 1..127
+    end
+
+    it "freezes every table" do
+      tables = %i[VELOCITIES DEFAULT_LEVEL ARTICULATION_BOOSTS NOTE_DYNAMIC_BOOSTS ATTACK_LEVELS VELOCITY_RANGE]
+      expect(tables.map { |name| described_class.const_get(name) }).to all(be_frozen)
+    end
+  end
 end
