@@ -291,34 +291,38 @@ describe HeadMusic::Notation::LilyPond do
   describe "tuplets and grace notes" do
     # The writer brackets an ungrouped run as it would a group, and the reader
     # reads each bracket as a group, so brackets are compared, not groups.
+    # The reader starts every stream at bar 1, so a flow opening with a
+    # pickup bar comes back a bar later, and its summaries are shifted to
+    # match.
     define_method(:expect_tuplet_round_trip) do |flow|
       rendered = described_class.render(flow)
       back = described_class.parse(rendered)
-      expect_same_tuplets(flow, back, bracketed: true)
-      expect_same_grace_notes(flow, back)
-      expect(sounding_summary(back).map { |voice| voice.reject { |event| event.last.empty? } })
-        .to eq(sounding_summary(flow).map { |voice| voice.reject { |event| event.last.empty? } })
+      shift = 1 - flow.voices.map(&:earliest_bar_number).min
+      sounded = ->(summary) { summary.map { |voice| voice.reject { |event| event.last.empty? } } }
+      expect(bracket_summary(back)).to eq shift_bars(bracket_summary(flow), shift)
+      expect(grace_summary(back)).to eq shift_bars(grace_summary(flow), shift)
+      expect(sounded.call(sounding_summary(back))).to eq shift_bars(sounded.call(sounding_summary(flow)), shift)
       expect(described_class.render(back)).to eq rendered
     end
 
-    (TupletFixtures.all - [:grace_notes_in_pickup]).each do |fixture|
+    # Moves the bar of every position ("0:3:000") and exact point ("0+3/8").
+    define_method(:shift_bars) do |summary, shift|
+      case summary
+      when Array then summary.map { |item| shift_bars(item, shift) }
+      when String then summary.gsub(/(?<![\d:+\/])\d+(?=:\d+:\d+|\+)/) { |bar| (Integer(bar) + shift).to_s }
+      else summary
+      end
+    end
+
+    TupletFixtures.all.each do |fixture|
       it "keeps the brackets, grace notes, and timing of #{fixture}" do
         expect_tuplet_round_trip(TupletFixtures.public_send(fixture))
       end
     end
 
-    # The reader starts every stream at bar 1, so the pickup's grace notes
-    # come back a bar later, unchanged.
-    it "keeps the grace notes of grace_notes_in_pickup, a bar later" do
-      flow = TupletFixtures.grace_notes_in_pickup
-      back = described_class.parse(described_class.render(flow))
-      graces = ->(summary) { summary.map { |graced, slurs| [graced.map(&:last), slurs.size] } }
-      expect(graces.call(grace_summary(back))).to eq graces.call(grace_summary(flow))
-    end
-
     TupletGenerator::SEEDS.each do |seed|
       it "keeps the brackets, grace notes, and timing of seed #{seed}" do
-        expect_tuplet_round_trip(TupletGenerator.flow(seed, pickup: false))
+        expect_tuplet_round_trip(TupletGenerator.flow(seed))
       end
     end
   end
