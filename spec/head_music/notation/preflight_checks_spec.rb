@@ -39,6 +39,18 @@ describe HeadMusic::Notation::PreflightChecks do
       end
     end
 
+    it "raises the includer's render error for non-ASCII text in another encoding" do
+      expect { check("Café".encode("ISO-8859-1")) }.to raise_error(render_error, /encode it as UTF-8, not ISO-8859-1/)
+    end
+
+    it "raises the includer's render error for non-ASCII binary text" do
+      expect { check("Café".b) }.to raise_error(render_error, /not ASCII-8BIT/)
+    end
+
+    it "accepts ASCII text in any encoding" do
+      expect { check("Fine".encode("ISO-8859-1"), "Fine".b) }.not_to raise_error
+    end
+
     it "raises the includer's render error for a byte sequence its encoding cannot hold" do
       expect { check("Bad\xFFText") }.to raise_error(render_error, /invalid UTF-8 in "Bad\\xFFText"/)
     end

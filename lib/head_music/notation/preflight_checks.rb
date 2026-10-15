@@ -18,6 +18,10 @@ module HeadMusic
           unless text.valid_encoding?
             raise render_error_class, "cannot render the invalid #{text.encoding} in #{text.inspect} as XML"
           end
+          # The writers interpolate text into UTF-8 documents.
+          unless text.ascii_only? || text.encoding == Encoding::UTF_8
+            raise render_error_class, "cannot render #{text.inspect} as XML; encode it as UTF-8, not #{text.encoding}"
+          end
           next unless text.match?(FORBIDDEN_XML_CHARACTERS)
 
           raise render_error_class, "cannot render the characters XML forbids in #{text.inspect}"
