@@ -28,10 +28,23 @@ module HeadMusic::Notation::MusicXML
     # base meter and every meter change's quarter-note-equivalent duration
     # contributes a denominator too (e.g. 3/8 needs divisions divisible by 2).
     def self.meter_denominators(flow)
-      ([flow.meter] + flow.meter_changes.values)
-        .map { |meter| Rational(4 * meter.top_number, meter.bottom_number).denominator }
+      ([flow.meter] + flow.meter_changes.values).flat_map do |meter|
+        [
+          Rational(4 * meter.top_number, meter.bottom_number).denominator,
+          beam_group_denominator(meter)
+        ]
+      end
     end
     private_class_method :meter_denominators
+
+    # Beams group by the meter's beat, which must be whole divisions too: a
+    # 6/8 bar of triplets alone has no eighth to make its dotted quarter so.
+    # A beat longer than any note value, as in 12/1, beams nothing.
+    def self.beam_group_denominator(meter)
+      unit = meter.beam_group_unit
+      unit&.unit ? DurationWriter.single_quarter_fraction(unit).denominator : 1
+    end
+    private_class_method :beam_group_denominator
 
     # The pieces a note splits into at barlines are written too, and under a
     # ratio they may need finer divisions than the note they come from.

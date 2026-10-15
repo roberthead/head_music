@@ -99,6 +99,13 @@ describe HeadMusic::Notation::MusicXML::Divisions do
       expect(described_class.for(TupletFixtures.duplet_in_six_eight)).to eq 4
     end
 
+    it "counts the dotted-quarter beat of a 6/8 bar holding no eighth" do
+      flow = HeadMusic::Content::Flow.new(meter: "6/8")
+      voice = TupletFixtures.fill(flow.add_voice, TupletFixtures.run("3:2", :quarter, %w[C4 D4 E4]) + [[:quarter, "F4"]])
+      TupletFixtures.group(voice, 0, 2)
+      expect(described_class.for(flow)).to eq 6
+    end
+
     it "counts the pieces a crossing septuplet note splits into" do
       expect(described_class.for(TupletFixtures.septuplet_crossing_barline)).to eq 7
     end
