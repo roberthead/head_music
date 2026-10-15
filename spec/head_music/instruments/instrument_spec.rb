@@ -322,6 +322,30 @@ describe HeadMusic::Instruments::Instrument do
     end
   end
 
+  describe "#gm_program" do
+    it "answers the 1-based General MIDI program" do
+      expect(described_class.get("violin").gm_program).to eq 41
+    end
+
+    it "is inherited by a variant" do
+      expect(described_class.get("clarinet_in_a").gm_program).to eq 72
+    end
+
+    it "is nil for unpitched percussion" do
+      expect(described_class.get("snare_drum").gm_program).to be_nil
+    end
+  end
+
+  describe "#gm_percussion_key" do
+    it "answers the General MIDI percussion key" do
+      expect(described_class.get("snare_drum").gm_percussion_key).to eq 38
+    end
+
+    it "is nil for a pitched instrument" do
+      expect(described_class.get("violin").gm_percussion_key).to be_nil
+    end
+  end
+
   describe "#family_key resolution" do
     context "for an instrument with its own family_key" do
       subject(:instrument) { described_class.get("trumpet") }

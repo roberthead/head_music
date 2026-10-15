@@ -1,16 +1,19 @@
 ---
 accordion:
   family_key: accordion
+  gm_program: 22
 alto_clarinet:
   family_key: clarinet
   range_categories:
   - alto
   pitch_key: e_flat
+  gm_program: 72
 alto_flute:
   family_key: flute
   range_categories:
   - alto
   pitch_key: g
+  gm_program: 74
 alto_recorder:
   family_key: recorder
   alias_name_keys:
@@ -18,11 +21,13 @@ alto_recorder:
   range_categories:
   - alto
   pitch_key: f
+  gm_program: 75
 alto_saxophone:
   family_key: saxophone
   range_categories:
   - alto
   pitch_key: e_flat
+  gm_program: 66
 alto_voice:
   family_key: voice
   alias_name_keys:
@@ -30,45 +35,55 @@ alto_voice:
   - alto
   range_categories:
   - alto
+  gm_program: 53
 arpeggione:
   family_key: arpeggione
+  gm_program: 43
 banjo:
   family_key: banjo
+  gm_program: 106
 baritone_horn:
   family_key: saxhorn
   range_categories:
   - baritone
   pitch_key: b_flat
+  gm_program: 59
 baritone_saxophone:
   family_key: saxophone
   range_categories:
   - baritone
   pitch_key: e_flat
+  gm_program: 68
 baritone_ukulele:
   family_key: ukulele
   range_categories:
   - alto
   - tenor
   - baritone
+  gm_program: 25
 baritone_voice:
   family_key: voice
   range_categories:
   - baritone
+  gm_program: 53
 bass_clarinet:
   family_key: clarinet
   range_categories:
   - bass
   pitch_key: b_flat
+  gm_program: 72
 bass_drum:
   family_key: bass_drum
   alias_name_keys:
   - kick_drum
   range_categories:
   - bass
+  gm_percussion_key: 35
 bass_guitar:
   family_key: guitar
   range_categories:
   - bass
+  gm_program: 34
 bass_oboe:
   family_key: oboe
   alias_name_keys:
@@ -76,6 +91,7 @@ bass_oboe:
   range_categories:
   - baritone
   - bass
+  gm_program: 69
 bass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -84,22 +100,26 @@ bass_recorder:
   - baritone
   - bass
   pitch_key: f
+  gm_program: 75
 bass_saxophone:
   family_key: saxophone
   range_categories:
   - bass
   pitch_key: b_flat
+  gm_program: 68
 bass_trombone:
   family_key: trombone
   range_categories:
   - bass
   pitch_key: b_flat
+  gm_program: 58
 bass_trumpet:
   family_key: trumpet
   range_categories:
   - baritone
   - bass
   pitch_key: b_flat
+  gm_program: 57
 bass_trumpet_in_c:
   parent_key: bass_trumpet
   pitch_key: c
@@ -111,6 +131,7 @@ bass_tuba:
   range_categories:
   - bass
   pitch_key: f
+  gm_program: 59
 bass_tuba_in_e_flat:
   parent_key: bass_tuba
   pitch_key: e_flat
@@ -119,24 +140,29 @@ bass_ukulele:
   range_categories:
   - contrabass
   - bass
+  gm_program: 33
 bass_voice:
   family_key: voice
   range_categories:
   - bass
+  gm_program: 53
 basset_horn:
   family_key: clarinet
   pitch_key: f
+  gm_program: 72
 bassoon:
   family_key: bassoon
   range_categories:
   - bass
   pitch_key: f
+  gm_program: 71
 bugle:
   family_key: trumpet
   range_categories:
   - soprano
   - alto
   pitch_key: g
+  gm_program: 57
 bugle_in_b_flat:
   parent_key: bugle
   pitch_key: b_flat
@@ -147,19 +173,23 @@ castanets:
   family_key: castanets
 celesta:
   family_key: celesta
+  gm_program: 9
 cello:
   family_key: violin
   alias_name_keys:
   - violoncello
   range_categories:
   - tenor
+  gm_program: 43
 chimes:
   family_key: chimes
   alias_name_keys:
   - tubular_bells
   - orchestral_chimes
+  gm_program: 15
 cimbalom:
   family_key: hammered_dulcimer
+  gm_program: 16
 clarinet:
   family_key: clarinet
   alias_name_keys:
@@ -168,6 +198,7 @@ clarinet:
   - soprano
   - sopranino
   pitch_key: b_flat
+  gm_program: 72
 clarinet_in_a:
   parent_key: clarinet
   pitch_key: a
@@ -189,8 +220,10 @@ clash_cymbals:
   alias_name_keys:
   - concert_cymbals
   - orchestral_cymbals
+  gm_percussion_key: 49
 clavichord:
   family_key: clavichord
+  gm_program: 8
 concert_ukulele:
   family_key: ukulele
   alias_name_keys:
@@ -198,11 +231,13 @@ concert_ukulele:
   range_categories:
   - soprano
   - alto
+  gm_program: 25
 contrabass_clarinet:
   family_key: clarinet
   range_categories:
   - contrabass
   pitch_key: b_flat
+  gm_program: 72
 contrabass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -212,38 +247,48 @@ contrabass_recorder:
   - bass
   - contrabass
   pitch_key: f
+  gm_program: 75
 contrabass_saxophone:
   family_key: saxophone
   range_categories:
   - contrabass
   pitch_key: e_flat
+  gm_program: 68
 contrabassoon:
   family_key: bassoon
   range_categories:
   - contrabass
+  gm_program: 71
 cor_anglais:
   family_key: oboe
   alias_name_keys:
   - english_horn
   range_categories:
   - alto
+  gm_program: 70
 cornet:
   family_key: cornet
   range_categories:
   - soprano
   pitch_key: b_flat
+  gm_program: 57
 countertenor_voice:
   family_key: voice
   range_categories:
   - countertenor
+  gm_program: 53
 cowbell:
   family_key: cowbell
+  gm_percussion_key: 56
 crash_cymbal:
   family_key: cymbal
+  gm_percussion_key: 49
 crotales:
   family_key: crotales
+  gm_program: 10
 cymbal:
   family_key: cymbal
+  gm_percussion_key: 49
 didgeridoo:
   family_key: didgeridoo
 double_bass:
@@ -254,6 +299,7 @@ double_bass:
   range_categories:
   - bass
   - contrabass
+  gm_program: 44
 drum_kit:
   family_key: drum_kit
   alias_name_keys:
@@ -264,21 +310,25 @@ euphonium:
   - tenor_tuba
   range_categories:
   - baritone
+  gm_program: 59
 floor_tom:
   family_key: tom_tom
   alias_name_keys:
   - large_tom
   - low_tom
+  gm_percussion_key: 41
 flugelhorn:
   family_key: saxhorn
   range_categories:
   - soprano
   - alto
   pitch_key: b_flat
+  gm_program: 57
 flute:
   family_key: flute
   range_categories:
   - soprano
+  gm_program: 74
 french_horn:
   family_key: horn
   alias_name_keys:
@@ -287,6 +337,7 @@ french_horn:
   - alto
   - tenor
   pitch_key: f
+  gm_program: 61
 garklein_recorder:
   family_key: recorder
   alias_name_keys:
@@ -295,12 +346,14 @@ garklein_recorder:
   range_categories:
   - piccolo
   pitch_key: c
+  gm_program: 75
 glockenspiel:
   family_key: glockenspiel
   alias_name_keys:
   - concert_bells
   - bells
   - carillon
+  gm_program: 10
 great_bass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -308,90 +361,114 @@ great_bass_recorder:
   range_categories:
   - bass
   pitch_key: c
+  gm_program: 75
 great_highland_bagpipe:
   family_key: bagpipe
   alias_name_keys:
   - bagpipe
+  gm_program: 110
 guitar:
   family_key: guitar
+  gm_program: 25
 hackbrett:
   family_key: hammered_dulcimer
+  gm_program: 16
 hammered_dulcimer:
   family_key: hammered_dulcimer
+  gm_program: 16
 harmonica:
   family_key: harmonica
   alias_name_keys:
   - mouth_organ
+  gm_program: 23
 harp:
   family_key: harp
+  gm_program: 47
 harpsichord:
   family_key: harpsichord
+  gm_program: 7
 hi_hat:
   family_key: hi_hat
+  gm_percussion_key: 42
 high_tom:
   family_key: tom_tom
   alias_name_keys:
   - small_tom
   - rack_tom_1
+  gm_percussion_key: 50
 lute:
   family_key: lute
+  gm_program: 25
 mandolin:
   family_key: mandolin
+  gm_program: 26
 maracas:
   family_key: maracas
+  gm_percussion_key: 70
 marimba:
   family_key: marimba
+  gm_program: 13
 mezzo_soprano_voice:
   family_key: voice
   alias_name_keys:
   - mezzo_soprano
   range_categories:
   - mezzo_soprano
+  gm_program: 53
 mid_tom:
   family_key: tom_tom
   alias_name_keys:
   - middle_tom
   - rack_tom_2
+  gm_percussion_key: 47
 natural_horn:
   family_key: horn
   range_categories:
   - alto
   - tenor
+  gm_program: 61
 oboe:
   family_key: oboe
   range_categories:
   - soprano
+  gm_program: 69
 oboe_d_amore:
   family_key: oboe
   alias_name_keys:
   - hautbois_d_amour
   range_categories:
   - alto
+  gm_program: 69
 organ:
   family_key: organ
   alias_name_keys:
   - pipe_organ
+  gm_program: 20
 piano:
   family_key: piano
   alias_name_keys:
   - pianoforte
   - fortepiano
+  gm_program: 1
 piccolo_clarinet:
   family_key: clarinet
   range_categories:
   - piccolo
   pitch_key: a_flat
+  gm_program: 72
 piccolo_flute:
   family_key: flute
   alias_name_keys:
   - piccolo
   range_categories:
   - piccolo
+  gm_program: 73
 piccolo_trumpet:
   family_key: trumpet
   range_categories:
   - piccolo
   pitch_key: b_flat
+  gm_program: 57
 pocket_ukulele:
   family_key: ukulele
   alias_name_keys:
@@ -400,6 +477,7 @@ pocket_ukulele:
   range_categories:
   - sopranino
   - soprano
+  gm_program: 25
 recorder:
   family_key: recorder
   alias_name_keys:
@@ -408,14 +486,18 @@ recorder:
   range_categories:
   - soprano
   pitch_key: c
+  gm_program: 75
 ride_cymbal:
   family_key: cymbal
+  gm_percussion_key: 51
 santur:
   family_key: hammered_dulcimer
   alias_name_keys:
   - santoor
+  gm_program: 16
 sitar:
   family_key: sitar
+  gm_program: 105
 snare_drum:
   family_key: snare_drum
   alias_name_keys:
@@ -423,27 +505,32 @@ snare_drum:
   - tabor
   - military_drum
   - field_drum
+  gm_percussion_key: 38
 sopranino_recorder:
   family_key: recorder
   range_categories:
   - sopranino
   pitch_key: f
+  gm_program: 75
 sopranino_saxophone:
   family_key: saxophone
   range_categories:
   - sopranino
   pitch_key: e_flat
+  gm_program: 65
 soprano_saxophone:
   family_key: saxophone
   range_categories:
   - soprano
   pitch_key: b_flat
+  gm_program: 65
 soprano_voice:
   family_key: voice
   alias_name_keys:
   - soprano
   range_categories:
   - soprano
+  gm_program: 53
 soprillo:
   family_key: saxophone
   alias_name_keys:
@@ -452,15 +539,18 @@ soprillo:
   range_categories:
   - piccolo
   pitch_key: b_flat
+  gm_program: 65
 sousaphone:
   family_key: tuba
   range_categories:
   - bass
   pitch_key: b_flat
+  gm_program: 59
 steelpan:
   family_key: steelpan
   alias_name_keys:
   - steel_drum
+  gm_program: 115
 sub_contrabass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -470,6 +560,7 @@ sub_contrabass_recorder:
   - contrabass
   - subcontrabass
   pitch_key: f
+  gm_program: 75
 sub_great_bass_recorder:
   family_key: recorder
   alias_name_keys:
@@ -478,17 +569,21 @@ sub_great_bass_recorder:
   range_categories:
   - contrabass
   pitch_key: c
+  gm_program: 75
 subcontrabass_saxophone:
   family_key: saxophone
   range_categories:
   - subcontrabass
   pitch_key: b_flat
+  gm_program: 68
 suspended_cymbal:
   family_key: cymbal
+  gm_percussion_key: 49
 synthesizer:
   family_key: synthesizer
   alias_name_keys:
   - electronic_keyboard
+  gm_program: 81
 tabla:
   family_key: tabla
 tam_tam:
@@ -497,8 +592,10 @@ tam_tam:
   - gong
 tambourine:
   family_key: tambourine
+  gm_percussion_key: 54
 temple_blocks:
   family_key: woodblock
+  gm_percussion_key: 76
 tenor_drum:
   family_key: tenor_drum
 tenor_recorder:
@@ -506,19 +603,23 @@ tenor_recorder:
   range_categories:
   - tenor
   pitch_key: c
+  gm_program: 75
 tenor_saxophone:
   family_key: saxophone
   range_categories:
   - tenor
   pitch_key: b_flat
+  gm_program: 67
 tenor_ukulele:
   family_key: ukulele
   range_categories:
   - tenor
+  gm_program: 25
 tenor_voice:
   family_key: voice
   range_categories:
   - tenor
+  gm_program: 53
 theremin:
   family_key: theremin
 timpani:
@@ -528,16 +629,20 @@ timpani:
   - timpanum
   range_categories:
   - bass
+  gm_program: 48
 triangle:
   family_key: triangle
+  gm_percussion_key: 81
 trombone:
   family_key: trombone
   alias_name_keys:
   - tenor_trombone
   pitch_key: b_flat
+  gm_program: 58
 trumpet:
   family_key: trumpet
   pitch_key: b_flat
+  gm_program: 57
 trumpet_in_c:
   parent_key: trumpet
   pitch_key: c
@@ -552,6 +657,7 @@ tuba:
   alias_name_keys:
   - contrabass_tuba
   pitch_key: b_flat
+  gm_program: 59
 tuba_in_c:
   parent_key: tuba
   pitch_key: c
@@ -562,19 +668,26 @@ ukulele:
   range_categories:
   - soprano
   - alto
+  gm_program: 25
 vibraphone:
   family_key: vibraphone
   alias_name_keys:
   - vibes
+  gm_program: 12
 viola:
   family_key: violin
+  gm_program: 42
 violin:
   family_key: violin
   alias_name_keys:
   - fiddle
+  gm_program: 41
 woodblock:
   family_key: woodblock
+  gm_percussion_key: 76
 xylophone:
   family_key: xylophone
+  gm_program: 14
 yangqin:
   family_key: hammered_dulcimer
+  gm_program: 16

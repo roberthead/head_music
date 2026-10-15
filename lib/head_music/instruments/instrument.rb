@@ -21,6 +21,8 @@ module HeadMusic::Instruments; end
 #   pitch_key: the pitch designation (e.g., "b_flat", "a", "c")
 #   alias_name_keys: alternative names for the instrument
 #   range_categories: size/range classifications
+#   gm_program: the nearest General MIDI program, 1-based
+#   gm_percussion_key: the nearest General MIDI percussion key
 class HeadMusic::Instruments::Instrument
   include HeadMusic::Named
 
@@ -81,6 +83,14 @@ class HeadMusic::Instruments::Instrument
 
   def pitch_key
     @pitch_key || parent&.pitch_key
+  end
+
+  def gm_program
+    @gm_program || parent&.gm_program
+  end
+
+  def gm_percussion_key
+    @gm_percussion_key || parent&.gm_percussion_key
   end
 
   def family
@@ -189,6 +199,8 @@ class HeadMusic::Instruments::Instrument
     @parent_key = record["parent_key"]&.to_sym
     @family_key = record["family_key"]
     @pitch_key = record["pitch_key"]
+    @gm_program = record["gm_program"]
+    @gm_percussion_key = record["gm_percussion_key"]
     @alias_name_keys = record["alias_name_keys"] || []
     @range_categories = record["range_categories"] || []
 
