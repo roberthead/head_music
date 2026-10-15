@@ -156,8 +156,8 @@ module HeadMusic::Notation::MusicXML
       return [] if chord || component.tie_stop
 
       [
-        *marking_group_lines("ornaments", voice_event.ornaments, MarkingWriter.method(:ornament_element)),
-        *marking_group_lines("articulations", voice_event.articulations, MarkingWriter.method(:articulation_element)),
+        *marking_group_lines("ornaments", voice_event.ornaments, MarkingElements.method(:ornament_element)),
+        *marking_group_lines("articulations", voice_event.articulations, MarkingElements.method(:articulation_element)),
         *dynamic_notation_lines(voice_event.note_dynamic)
       ]
     end
@@ -177,7 +177,7 @@ module HeadMusic::Notation::MusicXML
 
       [
         "#{INDENT * 5}<dynamics>",
-        "#{INDENT * 6}<#{MarkingWriter.dynamic_element(note_dynamic)}/>",
+        "#{INDENT * 6}<#{MarkingElements.dynamic_element(note_dynamic)}/>",
         "#{INDENT * 5}</dynamics>"
       ]
     end

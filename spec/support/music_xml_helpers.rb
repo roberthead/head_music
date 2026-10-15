@@ -309,7 +309,7 @@ module MusicXMLTupletHelpers
       [
         labels, HeadMusic::Notation::MusicXML::DurationWriter::TYPES_BY_UNIT_NAME.fetch(grace.rhythmic_value.unit_name),
         grace.rhythmic_value.dots, grace.slashed?, grace.tied? ? labels & follower : [],
-        grace.articulations.map { |articulation| HeadMusic::Notation::MusicXML::MarkingWriter.articulation_element(articulation) }, slur
+        grace.articulations.map { |articulation| HeadMusic::Notation::MusicXML::MarkingElements.articulation_element(articulation) }, slur
       ]
     end
   end

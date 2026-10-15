@@ -51,4 +51,38 @@ describe HeadMusic::Notation::MusicXML::KeyMapper do
         .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /scale type/i)
     end
   end
+
+  describe ".tonal_context" do
+    {
+      [0, "major"] => "C major",
+      [0, "minor"] => "A minor",
+      [-3, "minor"] => "C minor",
+      [0, "dorian"] => "D dorian",
+      [1, "mixolydian"] => "D mixolydian",
+      [-1, "lydian"] => "B♭ lydian",
+      [7, "major"] => "C♯ major",
+      [7, "minor"] => "A♯ minor",
+      [-7, "minor"] => "A♭ minor"
+    }.each do |(fifths, mode), name|
+      it "reads #{fifths} fifths in #{mode} as #{name}" do
+        expect(described_class.tonal_context(fifths, mode).name).to eq name
+      end
+    end
+
+    it "answers nil for a mode it has no tonal context for" do
+      expect(described_class.tonal_context(0, "none")).to be_nil
+    end
+
+    it "reads back every mode the writer writes as that mode" do
+      modes = described_class::MODE_NAMES_BY_SCALE_TYPE.values.uniq
+      expect(modes.map { |mode| described_class.mode(described_class.tonal_context(2, mode)) }).to eq modes
+    end
+
+    it "reads back the signature's fifths for every mode" do
+      fifths = described_class::SCALE_TYPES_BY_MODE_NAME.keys.map do |mode|
+        described_class.fifths(HeadMusic::Rudiment::KeySignature.get(described_class.tonal_context(-2, mode).name))
+      end
+      expect(fifths.uniq).to eq [-2]
+    end
+  end
 end

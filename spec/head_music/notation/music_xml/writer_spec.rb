@@ -1969,4 +1969,41 @@ describe HeadMusic::Notation::MusicXML::Writer do
       expect(xpath_count(document, "//clef/clef-octave-change")).to eq 0
     end
   end
+
+  describe "the work title" do
+    let(:work) { HeadMusic::Content::Work.new(title: "Suite") }
+    let(:flow) do
+      HeadMusic::Content::Flow.new(name: "Gigue", work: work).tap { |flow| flow.add_voice.place("1:1", :whole, "C4") }
+    end
+
+    it "defaults to the cited work's title" do
+      expect(xpath_text(parse_musicxml(described_class.new(flow).to_s), "//work/work-title")).to eq "Suite"
+    end
+
+    it "titles the movement with the flow's name beside it" do
+      expect(xpath_text(parse_musicxml(described_class.new(flow).to_s), "//movement-title")).to eq "Gigue"
+    end
+
+    it "gives way to the work title it is given" do
+      expect(xpath_text(parse_musicxml(described_class.new(flow, work_title: "Partita").to_s), "//work/work-title")).to eq "Partita"
+    end
+  end
+
+  describe "the score instrument" do
+    let(:project) { LayoutFixtures.clarinet_project }
+    let(:document) { parse_musicxml(described_class.new(project.flows.first).to_s) }
+
+    it "writes the instrument's standard sound" do
+      expect(xpath_text(document, "//score-part/score-instrument/instrument-sound")).to eq "wind.reed.clarinet.bflat"
+    end
+
+    it "names the instrument" do
+      expect(xpath_text(document, "//score-part/score-instrument/instrument-name")).to eq "clarinet"
+    end
+
+    it "writes none for a part with no instrument" do
+      flow = HeadMusic::Content::Flow.new.tap { |unscored| unscored.add_voice.place("1:1", :whole, "C4") }
+      expect(xpath_count(parse_musicxml(described_class.new(flow).to_s), "//score-instrument")).to eq 0
+    end
+  end
 end

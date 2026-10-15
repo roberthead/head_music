@@ -89,7 +89,7 @@ module HeadMusic::Notation::MusicXML
 
       [
         "#{INDENT * 5}<articulations>",
-        *articulations.map { |articulation| "#{INDENT * 6}<#{MarkingWriter.articulation_element(articulation)}/>" },
+        *articulations.map { |articulation| "#{INDENT * 6}<#{MarkingElements.articulation_element(articulation)}/>" },
         "#{INDENT * 5}</articulations>"
       ]
     end

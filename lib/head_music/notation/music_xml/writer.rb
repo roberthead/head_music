@@ -10,9 +10,11 @@ module HeadMusic::Notation::MusicXML
 
     attr_reader :flow, :work_title, :movement_number, :transposed, :arranger
 
+    # The work title defaults to the cited work's, so that a flow read with a
+    # Work writes it back.
     def initialize(flow, work_title: nil, movement_number: nil, transposed: false, arranger: nil)
       @flow = flow
-      @work_title = work_title
+      @work_title = work_title || flow.work&.title
       @movement_number = movement_number
       @transposed = transposed
       @arranger = arranger
@@ -86,10 +88,25 @@ module HeadMusic::Notation::MusicXML
         [
           %(#{INDENT * 2}<score-part id="P#{index + 1}">),
           "#{INDENT * 3}<part-name>#{escape(part_name(part, index))}</part-name>",
+          *score_instrument_lines(part, index),
           "#{INDENT * 2}</score-part>"
         ]
       end
       ["#{INDENT}<part-list>", *score_part_lines, "#{INDENT}</part-list>"]
+    end
+
+    # Only an instrument with a standard sound id is written, since a reader
+    # can name no other.
+    def score_instrument_lines(part, index)
+      sound = InstrumentSounds.sound(part.instrument)
+      return [] unless sound
+
+      [
+        %(#{INDENT * 3}<score-instrument id="P#{index + 1}-I1">),
+        "#{INDENT * 4}<instrument-name>#{escape(part.instrument.name)}</instrument-name>",
+        "#{INDENT * 4}<instrument-sound>#{sound}</instrument-sound>",
+        "#{INDENT * 3}</score-instrument>"
+      ]
     end
 
     # A voice's role names the part only where the part holds a single voice, so
