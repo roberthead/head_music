@@ -47,6 +47,33 @@ describe HeadMusic::Notation::MusicXML::BarMap do
     end
   end
 
+  describe "a measure split at a repeat, its second half not marked implicit, as music21 and others export one" do
+    let(:flow) do
+      repeat = %(<barline location="right"><bar-style>light-heavy</bar-style><repeat direction="backward"/></barline>)
+      parse(musicxml_measures(whole_c, note_xml("D4", 3, "half", dots: 1) + repeat, note_xml("E4", 1, "quarter"), whole_c))
+    end
+
+    it "joins the two halves into one bar" do
+      expect(voice_event_strings(flow).first).to eq ["whole C4 at 1:1:000", "dotted half D4 at 2:1:000", "quarter E4 at 2:4:000", "whole C4 at 3:1:000"]
+    end
+
+    it "ends the repeat inside the bar it closes" do
+      expect(flow.bars(3).map(&:ends_repeat_after_num_plays)).to eq [nil, 2, nil]
+    end
+  end
+
+  it "joins halves that restate the meter" do
+    restated = "<attributes><time><beats>4</beats><beat-type>4</beat-type></time></attributes>" + note_xml("E4", 2, "half")
+    flow = parse(musicxml_measures(whole_c, note_xml("D4", 2, "half"), restated, whole_c))
+    expect(voice_event_strings(flow).first[2]).to eq "half E4 at 2:3:000"
+  end
+
+  it "refuses a short measure whose follower changes the meter, unless the follower is implicit" do
+    three_four = "<attributes><time><beats>3</beats><beat-type>4</beat-type></time></attributes>" + note_xml("E4", 1, "quarter")
+    xml = musicxml_measures(whole_c, note_xml("D4", 3, "half", dots: 1), three_four, note_xml("F4", 3, "half", dots: 1))
+    expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /shorter than its 4\/4 bar.*\(measure 2 of part P1\)/)
+  end
+
   it "refuses an overfull measure, naming it" do
     xml = musicxml_measures(whole_c, [whole_c + note_xml("D4", 1, "quarter"), {number: "2"}])
     expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /longer than its 4\/4 bar \(measure 2 of part P1\)/)

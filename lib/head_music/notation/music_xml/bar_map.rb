@@ -7,8 +7,10 @@ module HeadMusic::Notation::MusicXML
   #
   # The first measure is bar 0 when it is implicit and bar 1 otherwise, and
   # is right-aligned in its bar when short, as a pickup is. A short measure
-  # that an implicit one completes is one bar with it, as at a repeat in the
-  # middle of a bar, and the last measure may be short. Any other short
+  # that the next one completes is one bar with it, as at a repeat in the
+  # middle of a bar; many exports leave the second half unmarked, so it
+  # need not be implicit unless it changes the meter. The last measure may
+  # be short. Any other short
   # measure, or an overfull one, is valid MusicXML the bars cannot hold
   # without changing the music, so it raises.
   #
@@ -97,7 +99,7 @@ module HeadMusic::Notation::MusicXML
       if short && index < @count - 1
         return add_split_bar(index, bar, full, length) if completes?(index, full, length)
 
-        raise_unsupported("is shorter than its #{meter} bar, and no implicit measure completes it", index)
+        raise_unsupported("is shorter than its #{meter} bar, and no measure after it completes it", index)
       end
       @shifts << 0
       @lengths[bar] = short ? length : full
@@ -119,7 +121,9 @@ module HeadMusic::Notation::MusicXML
 
     def completes?(index, full, length)
       following = measure(index + 1)
-      following.implicit && !beyond?(((length + (length_of(index + 1) || 0)) - full).abs, index)
+      return false unless following.implicit || following.meter.to_s == measure(index).meter.to_s
+
+      !beyond?(((length + (length_of(index + 1) || 0)) - full).abs, index)
     end
 
     def start_times
