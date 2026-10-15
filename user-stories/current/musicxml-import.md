@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T07:55:48-07:00
   planned_at:   2026-10-15T08:22:45-07:00
   finished_at:
-  updated_at:   2026-10-15T10:28:53-07:00
+  updated_at:   2026-10-15T11:01:36-07:00
 -->
 
 # Story: MusicXML Import
@@ -56,7 +56,7 @@ flow.voices.length # => 4
 - [x] Malformed XML, a root that is neither, and a `<duration>` with no `<divisions>` in force raise `MusicXML::ParseError` naming the line or measure
 - [x] UTF-8 with or without a BOM, UTF-16 with a BOM, and binary strings from `File.binread` parse. The DOCTYPE is never fetched; a document that declares entities, or whose text exceeds REXML's expansion limits, raises `ParseError`. A compressed `.mxl` raises `UnsupportedFeatureError` naming the follow-up
 - [x] A `<divisions>` change applies from its point onward, within its part. A `<backup>` before the start of its measure, a `<chord/>` with no note before it, or a `<staff>` number beyond `<staves>` raises `ParseError` naming the measure
-- [x] `<multiple-rest>` is skipped; `<measure-repeat>`, overfull measures, short measures in mid-piece that the next measure does not complete (a short measure the next one completes is one bar with it, `implicit` or not, unless the next changes the meter), and compound meters such as 3+2/8 raise `UnsupportedFeatureError` naming the measure. Key, time, and clef changes in the middle of a bar are skipped
+- [x] `<multiple-rest>` is skipped; `<measure-repeat>`, overfull measures, short measures in mid-piece that the next measure does not complete (a short measure the next one completes is one bar with it, `implicit` or not, unless an unmarked next measure changes the meter; an `implicit` one that changes it joins, and its meter starts at the next downbeat), and compound meters such as 3+2/8 raise `UnsupportedFeatureError` naming the measure. Key, time, and clef changes in the middle of a bar are skipped
 - [x] Elements the reader does not use are skipped, not rejected, so that every real export imports. These include `<print>`, `<defaults>`, `<credit>`, `<identification>` beyond the creators, stems, noteheads, fingerings, bowings, `<technical>`, `<harmony>`, `<figured-bass>`, `<part-group>`, and MIDI instrument data. A note or rest with `print-object="no"` takes its time as a `<forward>` does
 - [x] `MusicXML::UnsupportedFeatureError` is raised only for valid content where skipping would corrupt the music. Examples are nested tuplets, as the prerequisite rules, and chord tones with different durations. Each names its measure
 
@@ -72,7 +72,7 @@ flow.voices.length # => 4
 
 ### Parts, staves, and voices
 
-- [x] Each `<part>` becomes a part, in document order
+- [x] Each `<part>` that holds notes becomes a part, in document order; a part with no notes is left out
 - [x] Within a part, each `<voice>` value becomes a voice, in order of first appearance; values are labels, not numbers, and a note with no `<voice>` is voice 1
 - [x] Parts with fewer measures than the first are padded with rests
 - [x] `<backup>` and `<forward>` move the voice cursor. A `<forward>` gap in a voice becomes a rest, and a voice that begins late or ends early is padded with rests, so every voice satisfies `Voice::Continuity`
@@ -114,10 +114,10 @@ flow.voices.length # => 4
 
 ### Round trip and real files
 
-- [x] The Speed the Plough golden document, and every flow in the shared fixture modules (`ABCFixtures`, `LilyPondFixtures`, `MarkingFixtures`, `LayoutFixtures`, `NavigationFixtures`, `HairpinFixtures`, `TupletFixtures`), round-trip: rendered, parsed, and rendered again with the same writer options, they yield the same document. Where the reader moves a one-voice part's dynamics onto the part, reading is idempotent instead
+- [x] The Speed the Plough golden document, and every flow in the shared fixture modules (`ABCFixtures`, `LilyPondFixtures`, `MarkingFixtures`, `LayoutFixtures`, `NavigationFixtures`, `HairpinFixtures`, `TupletFixtures`), round-trip: rendered, parsed, and rendered again with the same writer options, they yield the same document. Where the reader moves a one-voice part's dynamics onto the part, or joins rests and drops trailing ones (four padded flows, named in the spec), reading is idempotent instead. `LayoutFixtures` are byte-checked through a transposed layout
 - [x] The ABC, LilyPond, and kern fixtures, rendered to MusicXML and parsed back, give flows equal to the ones that were rendered, compared field by field with any exclusions named
 - [x] The seeded generators in `spec/support` round-trip 100 seeds each through MusicXML, naming the seed on failure
-- [x] The gem's own public-domain fixtures, converted by MuseScore 4 (`mscore -o`), parse to the music that was rendered, with MuseScore's changes listed per file, and are committed under `spec/fixtures/notation/music_xml/`; with `MSCORE` or `MUSESCORE_FIXTURES=1` set and MuseScore installed, a spec reconverts them and reports drift. Exports from another scorewriter, the MIT-licensed Sibelius and other files of the LilyPond MusicXML test suite, are committed beside them and parse end to end
+- [x] The gem's own public-domain fixtures, converted by MuseScore 4 (`mscore -o`), parse to the music that was rendered, with MuseScore's changes listed per file, and are committed under `spec/fixtures/notation/music_xml/`; with `MSCORE` or `MUSESCORE_FIXTURES=1` set and MuseScore installed, a spec reconverts them and reports drift. Exports from another scorewriter, the MIT-licensed Sibelius and other files of the LilyPond MusicXML test suite, are committed beside them and parse end to end, except `41g-PartNoId`, committed as a pinned `ParseError` since it has no `<divisions>`. Of these, only `99a` is a real scorewriter export (Sibelius 5); the rest are hand-written test files
 - [x] With `MUSICXML_CORPUS` naming one or more local folders of MusicXML files, separated by `:`, every `.xml` and `.musicxml` file parses (unzipped `.mxl` folders included), or raises the error the spec names for it, and no error outside `HeadMusic::Notation::ParseError` escapes. The story records sweeps of the music21 corpus, the LilyPond MusicXML test suite, and OpenSheetMusicDisplay's test data
 - [x] A generated 500-bar, two-part, two-voice document with tuplets, ties, and grace notes reads in linear time; the spec counts calls rather than timing them, and every voice ends unrevised
 - [x] Maintains 90%+ test coverage
@@ -523,6 +523,55 @@ Record that commit's hash in each prompt, because worktree agents branch from `m
 - **Out of scope:** the follow-on stories, once this lands.
   - Timeline Expressions should add MusicXML tempo reading and writing.
   - MEI Import should reuse `xml_reading.rb` and the security preflight rather than copying them.
+
+## Review
+
+Reviewed 2026-10-15 at commit `9f1bcdb2`, by a product manager (acceptance verification) and a code reviewer, in parallel.
+
+### Acceptance criteria
+
+| Criteria | Verdict | Evidence |
+| --- | --- | --- |
+| Entry point and structure (8) | ✅ 6, ⚠️ 2 | `parser.rb`, `parse_preflight.rb`, `bar_map.rb`, `part_reader.rb`; `parser_spec`, `parse_preflight_spec`, `bar_map_spec`. The short-measure wording was broader than the code, and the skip list had no committed spec |
+| Identity (7) | ✅ 7 | `identity_reader.rb`, `instrument_sounds.rb`, `attributes_writer.rb`, `writer.rb:17`; `identity_reader_spec`, `writer_spec` |
+| Parts, staves, and voices (7) | ✅ 6, ⚠️ 1 | `voice_placer.rb`, `part_roster.rb`; `voice_placer_spec`, `part_roster_spec`. A part with no notes is left out, which the criterion did not say |
+| Notes and rhythms (8) | ✅ 8 | `part_reader.rb`, `tie_folding.rb`, `tuplet_reader.rb`; `parser_notes_spec`, `tie_folding_spec`, `tuplet_reader_spec`, `parser_grace_notes_spec` |
+| Timeline (5) | ✅ 5 | `timeline_reader.rb`, `concert_transposition.rb`; `timeline_reader_spec`, `concert_transposition_spec` |
+| Markings and spans (6) | ✅ 6 | the six mark readers and their specs |
+| Lyrics (1) | ✅ 1 | `lyric_reader.rb`; `lyric_reader_spec` |
+| Round trip and real files (7) | ✅ 4, ⚠️ 3 | `music_xml_round_trip_spec`, `music_xml_real_files_spec`, `music_xml_corpus_spec`, `flow_builder_size_spec`. Padded fixtures fall back to idempotence, `41g` is refused, and coverage was not yet run |
+
+The MuseScore drift check and three of the five corpus sweeps were re-run by the reviewer and passed.
+
+### Code review findings
+
+1. **Critical: non-`ParseError` errors escaped `MusicXML.parse`.**
+   - an empty `<divisions/>` or `<staves/>` (NoMethodError);
+   - a zero or non-binary `<beat-type>` (ZeroDivisionError, NoMethodError);
+   - a huge exponent (FloatDomainError, with a warning on stderr);
+   - a pitch outside the catalog, written or after transposition (NoMethodError);
+   - a `<note>` with no pitch, unpitched, or rest (ArgumentError).
+2. **Important: a tuplet start that nothing stopped,** followed by a later tuplet, raised "Nested tuplets".
+3. **Important: tie folding ignored time,** so a tied note across a `<forward>` moved earlier without error.
+4. **Important: `<staff>0</staff>` landed on the last staff.**
+5. **Product review: a `<chord/>` in another voice joined the previous voice's note.**
+6. **Product review: CHANGELOG gaps.** The grace-note transposition fix had no entry, the `MarkingWriter` rename was not marked **Breaking.**, and `work_title: nil` still falls back to the `Work`.
+
+The reviewer found the XML security handling, encodings, linear scaling, the mark readers on odd input, and the writer's element order sound.
+
+### Resolution
+
+**Code fixes:** all fixed, each with a spec that fails on the old code (`b3f8e096` through `7e16b8d5`). The full suite passes with 14,122 examples, and the corpus sweep still passes all 1,068 examples. Three of these fixes made choices worth noting:
+
+- **Tuplets.** A start is abandoned when its ratio run ends, not at the barline, since the writer's tuplets cross barlines. A real nested start, whose `<time-modification>` multiplies the outer ratio, still raises.
+- **Ties.** Tie folding now runs after the bars are aligned. A stop must start within one division of where its head ends, or the tie is dropped.
+- **Chords.** A chord tone must match its lead's voice only when it names one. Finale writes `<voice>` on a chord's first note alone, and the strict check refused two music21 files.
+
+**CHANGELOG:** all three gaps are fixed.
+
+**Criteria:** the four broad criteria are reworded to say what the code does. Some cases are deliberate and pinned: an `implicit` second half that changes the meter joins its bar, a part with no notes is left out, padded fixtures fall back to idempotence, and `41g` is refused.
+
+**Coverage** is checked by `rake validate` before the merge.
 
 ## Corpus Sweep
 
