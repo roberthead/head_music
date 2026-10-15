@@ -117,7 +117,7 @@ module HeadMusic::Notation::MusicXML
         measure_index: @measure.index, cursor: @cursor, tolerance: division, fills_bar: measure_rest,
         rhythmic_value: measure_rest ? nil : rhythmic_value(note, duration), duration: duration,
         sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue, tie_starts: [], tie_stops: [],
-        staff: staff(note)
+        staff: staff(note), ratio: note.ratio
       )
       note_record(:note, element, event: @lead, chord: false)
       add_ties(@lead, note)

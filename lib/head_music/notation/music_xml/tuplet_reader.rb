@@ -7,8 +7,10 @@ module HeadMusic::Notation::MusicXML
   # piece of a tied note groups by link. Its unit is the <normal-type> of
   # its first note, or failing that that note's own written value.
   #
-  # A start while a bracket is open in the same voice is a nested tuplet,
-  # which raises. A start or stop with no partner, and a bracket the voice
+  # A start whose <time-modification> run has ended, at an event of no
+  # ratio or one no multiple of its own, has no stop, and is abandoned. A start while a
+  # bracket's run goes on in the same voice is a nested tuplet, which
+  # raises. A start or stop with no partner, and a bracket the voice
   # refuses, leave the run ungrouped, its values keeping their ratio, as a
   # <time-modification> with no <tuplet> does.
   class TupletReader
@@ -21,6 +23,7 @@ module HeadMusic::Notation::MusicXML
     def group
       open = nil
       @track.tuplet_marks.each do |mark|
+        open = nil if open && run_ended?(open, mark)
         if mark.type == "start"
           raise_nested(mark) if open
           open = mark
@@ -32,6 +35,26 @@ module HeadMusic::Notation::MusicXML
     end
 
     private
+
+    # A nested tuplet's <time-modification> is the product of its own ratio
+    # and its outer one's, so a run goes on into a start whose ratio is a
+    # multiple of the run's.
+    def run_ended?(start, mark)
+      ratio = start.event.ratio
+      @track.events[index(start.event)...index(mark.event)].any? { |event| event.ratio != ratio } ||
+        !within?(mark.event.ratio, ratio)
+    end
+
+    def within?(inner, outer)
+      return inner == outer unless inner && outer
+
+      (inner.actual % outer.actual).zero? && (inner.normal % outer.normal).zero?
+    end
+
+    def index(event)
+      @indexes ||= @track.events.each_with_index.with_object({}.compare_by_identity) { |(track_event, at), indexes| indexes[track_event] = at }
+      @indexes.fetch(event)
+    end
 
     def add_group(start, stop)
       first = link(start.event, start.event.first_link)

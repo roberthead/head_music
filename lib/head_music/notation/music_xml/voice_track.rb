@@ -12,7 +12,8 @@ module HeadMusic::Notation::MusicXML
     # event is the one placed for its chain.
     Event = Struct.new(
       :measure_index, :cursor, :tolerance, :rhythmic_value, :duration, :sounds, :fills_bar, :cue,
-      :tie_starts, :tie_stops, :continuation, :link_offset, :link_count, :voice_event, :graces, :staff, :label, :time
+      :tie_starts, :tie_stops, :continuation, :link_offset, :link_count, :voice_event, :graces, :staff, :label, :time,
+      :ratio
     ) do
       def head
         continuation || self
