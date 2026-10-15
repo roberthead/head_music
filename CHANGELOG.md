@@ -112,6 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Position#+` adds a rhythmic value's subticks, so a length finer than a tick carries instead of being dropped: a dotted 256th from the downbeat ends at `1:1:022:120`, not `1:1:022`. `Position#advance(subticks:)` moves a position by subticks, and `BarSplitter.offset_in_bar` counts a position's subticks.
 - `RhythmicValue` defines `eql?` and `hash` to match `==`, so `uniq` and `tally` count equal values together. `NotesSameLength` now finds the most common value in a line, rather than taking the first note's, and marks fewer notes in lines of mixed values.
 - The MusicXML writer resets `<transpose>` to nothing where a transposed part changes back to an instrument in C, rather than leaving the old transposition in force; writes a clef change (`Staff#change_clef`) as a `<clef>` in the measure it falls in, numbered for its staff; and writes `<clef-octave-change>` for octave clefs such as the tenor's treble clef.
+- `Flow#performance_order` plays the bar a final tied note reaches, rather than stopping at the bar it starts in.
 
 ### Security
 

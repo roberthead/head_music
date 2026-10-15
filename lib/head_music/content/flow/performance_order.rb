@@ -37,7 +37,7 @@ class HeadMusic::Content::Flow
     end
 
     def last_number
-      [flow.latest_bar_number, flow.last_marked_bar_number].compact.max
+      [flow.last_sounding_bar_number, flow.last_marked_bar_number].compact.max
     end
 
     # A region opens at the first bar and at each repeat start. Once a repeat

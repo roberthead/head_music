@@ -33,6 +33,14 @@ describe HeadMusic::Content::Flow::PerformanceOrder do
     end
   end
 
+  context "with a final note tied over the barline" do
+    before { flow.add_voice.place("3:3:000", :whole, "C4") }
+
+    it "plays the bar the tie reaches" do
+      expect(numbers).to eq [1, 2, 3, 4]
+    end
+  end
+
   context "with the D.S. al Fine of the story's example" do
     before do
       bar(8).barline = :double
