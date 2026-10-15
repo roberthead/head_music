@@ -90,7 +90,7 @@ flow.voices.length # => one per layer, as the part numbers them
 
 - [ ] `<note>` `@pname`, `@oct`, `@dur`, and `@dots` map to pitches and rhythmic values, with `@pname.ges` and `@oct.ges` winning. `@dur` falls back to the enclosing `<chord>`, then `@dur.default`, and a note with none raises `ParseError`
 - [ ] The sounding accidental is `@accid.ges` when present, and `@accid` otherwise, with child `<accid>` elements read as either. When neither is written, the key signature and earlier accidentals at that letter and octave in the bar on that staff, across its layers, decide it
-- [ ] `<rest>`, `<space>`, `<mRest>`, and `<multiRest>` become rests of their length, and a `@cue` note is a rest. `<chord>` becomes a note event with several pitches
+- [ ] `<rest>`, `<space>`, `<mRest>`, and `<multiRest>` become rests of their length, and a `@cue` note is a rest. A `<space>` with no `@dur` takes the time its layer leaves of the longest other layer in its measure, shared equally among several such spaces in the layer, and raises `ParseError` only where no other layer gives a length. `<chord>` becomes a note event with several pitches
 - [ ] Ties (`@tie`, or `<tie>` control events by ids or tstamps) fold across barlines when both ends are in one voice. An unclosed tie, `<lv>`, or a tie across voices is dropped, and the note keeps its written value. A tie on some pitches of a chord is skipped. A tie between pitches that share nothing raises `ParseError`
 - [ ] `<tuplet>`, `<tupletSpan>` (by ids or `@plist`), and `@tuplet` `i`/`m`/`t` map to tuplet values and groups. A span over MEI Export's hidden per-bar tuplets is one group across the barline. `@grace` and `<graceGrp>` become grace notes
 - [ ] `<beam>`, `<beamSpan>`, and `@beam` `i`/`m`/`t` read back as beam breaks where they differ from the default grouping
@@ -134,6 +134,13 @@ flow.voices.length # => one per layer, as the part numbers them
 - **Follow-up: a `reading:` option.** The editorial rule is fixed in v1. An option such as `parse(xml, reading: :sic)` is a natural follow-up once a caller needs it.
 - **Waits on Timeline Expressions:** fermatas, tempo words, and `@meter.sym` wait on [Timeline Expressions](timeline-expressions.md).
 - **Waits on Lyric Extenders:** `@con="u"` extenders wait on [Lyric Extenders](lyric-extenders.md).
+- **Corpus findings from steps 8–11** (2026-10-15, sample-encodings MEI_5.1: 84 of 167 files read, up from 56; nothing outside `ParseError` escapes in MEI_5.1, MEI_5.0, MEI_4.0, or music21's files):
+  - Three files raise for a later `<scoreDef>` that restates only some staves, which is refused as one that adds or removes staves (decision above).
+  - `Chopin_Mazurka_Op6_No1.mei` (measure 17) and `Ravel_Le_tombeau.mei` (measure 71) raise for a measure whose only layers are `<space>`s with no `@dur`.
+  - Slurs and hairpins in `Debussy_Mandoline.mei`, `part_element.mei`, and the lyrics examples name beats past their measure, such as `tstamp="4"` in 2/4, or measures past the music, such as `3m+1` in an excerpt's last bars. Such an end is dropped rather than refusing the score; a value no measure could hold, such as `99999m+1`, raises.
+  - `fturn.mei` ties a D5 natural to a D5 whose `@accid.ges="f"` comes from the key alone, so a tie's later note takes its chain's alteration whatever it writes.
+  - Brahms Op. 51 writes `@tuplet` runs with no `<tupletSpan>` past its first bars, so those bars are overfull. `@tuplet` names no ratio, so it groups only what a container or span scales.
+  - music21's `test_file.mei` now gets past its reused ids, but raises because its `<score>` sits straight in `<music>`, with no `<body>` or `<mdiv>`, as MEI 2013 allowed.
 - **Corpus:** clone `https://github.com/music-encoding/sample-encodings` (ECL-2.0) for the sweep. It holds 842 `.mei` files, 167 of them MEI 5.1. music21's three MEI test files are at `music21/mei/test/`.
 
 ## Decisions
@@ -154,6 +161,10 @@ flow.voices.length # => one per layer, as the part numbers them
   - **Tstamp snapping.** The tolerance is 1/1000 beat, since the corpus writes three decimals.
   - **Error handling.** There is no top-level `rescue StandardError`, since it would hide reader bugs.
   - **Writer additions.** MEI Export gains `instrDef@label`, `@key.mode`, and `<workList>`, because the golden round trip cannot pass without them: four SATB voices share GM program 52, and D dorian otherwise reads back as C major.
+- **Decided during steps 8–11** (2026-10-15):
+  - **Duplicate `xml:id`.** It raises `ParseError` only where a `@startid`, `@endid`, or `@plist` names it, since music21's `test_file.mei` reuses ids nothing refers to. A `@copyof` takes the first element with the id.
+  - **`<space>` with no `@dur`.** It takes the time its layer leaves of the longest other layer in the measure, shared equally among several such spaces, and raises only where no layer gives a length. A `@dur.default` in force still wins, as it does for every event.
+  - **A later `<scoreDef>` that restates only some staves** stays refused, as one that adds or removes staves, for now.
 
 ## Implementation Plan
 
