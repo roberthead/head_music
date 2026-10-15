@@ -33,9 +33,8 @@ module HeadMusic::Notation::MEI
       flow
     end
 
-    # Tie starts and stops are set on the tracks' events and grace notes
-    # before this, from the Pending records of the notes that carry them.
     def fold_ties(score, bar_map)
+      score.ties.apply(score)
       score.readings.each do |reading|
         reading.tracks.each do |track|
           track.tie_graces

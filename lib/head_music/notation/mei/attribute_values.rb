@@ -20,13 +20,13 @@ module HeadMusic::Notation::MEI
       "meter.unit" => :meter_unit, "unit" => :meter_unit,
       "meter.sym" => :meter_symbol, "sym" => :meter_symbol,
       "midi.bpm" => :rate, "mm" => :rate,
-      "n" => :number, "staff" => :staff_list, "lines" => :line_count,
+      "n" => :number, "layer" => :number, "staff" => :staff_list, "lines" => :line_count,
       "shape" => :clef_shape, "clef.shape" => :clef_shape,
       "line" => :clef_line, "clef.line" => :clef_line,
       "dis" => :displacement, "clef.dis" => :displacement,
       "dis.place" => :displacement_place, "clef.dis.place" => :displacement_place,
       "midi.instrnum" => :midi_program,
-      "grace" => :grace, "metcon" => :boolean, "cue" => :boolean,
+      "grace" => :grace, "metcon" => :boolean, "cue" => :boolean, "tie" => :tie,
       "num" => :count_of, "numbase" => :count_of,
       "trans.diat" => :steps, "trans.semi" => :steps,
       "tstamp" => :tstamp, "tstamp2" => :tstamp2
@@ -197,6 +197,11 @@ module HeadMusic::Notation::MEI
 
     def midi_program(name, value, where)
       bounded_integer(name, value, 0..127, where)
+    end
+
+    # Where a note is in its tie: i starts one, m continues it, t ends it.
+    def tie(name, value, where)
+      match!(name, value, /\A[imt]\z/, where)
     end
 
     # Whether a grace note is slashed.

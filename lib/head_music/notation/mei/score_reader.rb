@@ -21,9 +21,10 @@ module HeadMusic::Notation::MEI
     # tone, chord_member. Kind is :note, :chord, :rest, :m_rest, :space, or
     # :m_space. One in a layer no voice reads, as MuseScore's whole-bar
     # rests beside another staff's layer of the same number, has no track.
-    Pending = Struct.new(:kind, :element, :measure_index, :reading, :track, :event, :grace, :chord_member, :sound, :staff)
+    # +tie+ is a note's @tie, or its chord's.
+    Pending = Struct.new(:kind, :element, :measure_index, :reading, :track, :event, :grace, :chord_member, :sound, :staff, :tie)
 
-    Score = Data.define(:measures, :readings, :pending)
+    Score = Data.define(:measures, :readings, :pending, :ties)
 
     attr_reader :readings
 
@@ -34,6 +35,7 @@ module HeadMusic::Notation::MEI
       @readings = groups.parts.map { |definition| PartReading.new(definition) }
       @state = StaffState.new(opening, groups, @editorial, identity)
       @opening_score_def = opening.score_def
+      @ties = TieControls.new(source.index)
       @measures = []
       @pending = []
     end
@@ -42,7 +44,7 @@ module HeadMusic::Notation::MEI
       walk(@source.score, 1)
       mark_pickup
       @readings.each { |reading| VoiceAssignment.new(reading, @editorial).assign }
-      Score.new(@measures, @readings, @pending)
+      Score.new(@measures, @readings, @pending, @ties)
     end
 
     private
@@ -79,6 +81,7 @@ module HeadMusic::Notation::MEI
     def read_measure(element)
       where = {measure: attribute(element, "n", element: element)}
       staves, controls = staves_and_controls(element, where)
+      @ties.note_controls(controls, where)
       changes = @state.take_changes
       contents = @readings.to_h { |reading| [reading, read_contents(reading, staves, where)] }
       index = @measures.length
@@ -180,7 +183,7 @@ module HeadMusic::Notation::MEI
       contents.each do |content|
         entries = content.entries.map do |entry|
           sounds = entry.cue ? [] : entry.notes.map { |note| pitches.fetch(note) }
-          [entry, sounds, note_pending(reading, entry, index, sounds)]
+          [entry, sounds, note_pending(reading, entry, index, sounds, where.merge(staff: content.staff_number))]
         end
         reading.layers << PartReading::Layer.new(index, content, staves[content], entries)
       end
@@ -204,8 +207,9 @@ module HeadMusic::Notation::MEI
     def spell(reading, contents, staves, where)
       contents.group_by { |content| staves[content] }.each_with_object({}.compare_by_identity) do |(number, staff_contents), pitches|
         accidentals = AccidentalReading.new(@state.written_fifths(number))
-        sorted_notes(staff_contents).each do |note|
-          pitches[note] = pitch(reading, note, number, accidentals, where.merge(staff: number))
+        sorted_notes(staff_contents).each do |note, entry, content|
+          stream = [reading.definition.index, number, content.number]
+          pitches[note] = pitch(reading, note, entry, stream, accidentals, where.merge(staff: number))
         end
       end
     end
@@ -214,29 +218,33 @@ module HeadMusic::Notation::MEI
       sequence = 0
       keyed = contents.flat_map do |content|
         content.entries.reject(&:cue).flat_map do |entry|
-          entry.notes.map { |note| [[entry.cursor, entry.grace ? 0 : 1, sequence += 1], note] }
+          entry.notes.map { |note| [[entry.cursor, entry.grace ? 0 : 1, sequence += 1], [note, entry, content]] }
         end
       end
       keyed.sort_by(&:first).map(&:last)
     end
 
-    def pitch(reading, note, number, accidentals, where)
+    def pitch(reading, note, entry, stream, accidentals, where)
       spelling = PitchReading.spelling(note, @editorial, **where)
+      marker = TieControls.marker(note, entry, **where)
+      alteration = accidentals.alteration(spelling, carried: @ties.carried(note, spelling, marker, stream))
+      @ties.remember(note, spelling, marker, stream, alteration)
       written = HeadMusic::Notation::PitchSpelling.spelled(
-        spelling.letter, accidentals.alteration(spelling), spelling.octave, errors: HeadMusic::Notation::MEI, **where, element: note
+        spelling.letter, alteration, spelling.octave, errors: HeadMusic::Notation::MEI, **where, element: note
       )
-      reading.transposition.concert(written, reading.definition.staff_index(number), **where, element: note)
+      reading.transposition.concert(written, reading.definition.staff_index(stream[1]), **where, element: note)
     end
 
-    def note_pending(reading, entry, index, sounds)
+    def note_pending(reading, entry, index, sounds, where)
       kind = (entry.kind == :multi_rest) ? :m_rest : entry.kind
       base = {measure_index: index, reading: reading, staff: entry.staff}
-      pending = [Pending.new(kind: kind, element: entry.element, chord_member: false, sound: (kind == :note) ? sounds.first : nil, **base)]
+      tie = (kind == :note) ? TieControls.marker(entry.element, entry, **where) : nil
+      pending = [Pending.new(kind: kind, element: entry.element, chord_member: false, sound: (kind == :note) ? sounds.first : nil, tie: tie, **base)]
       @pending.concat(pending)
       return pending unless entry.kind == :chord
 
       members = entry.notes.zip(sounds).map do |note, sound|
-        Pending.new(kind: :note, element: note, chord_member: true, sound: sound, **base)
+        Pending.new(kind: :note, element: note, chord_member: true, sound: sound, tie: TieControls.marker(note, entry, **where), **base)
       end
       @pending.concat(members)
       pending + members

@@ -61,15 +61,15 @@ describe HeadMusic::Notation::MEI do
 
   describe "documents" do
     # Attributes whose readers later steps put to use.
-    pending_attributes = %w[numbase trans.diat trans.semi tstamp2]
+    pending_attributes = %w[numbase trans.diat trans.semi]
 
-    note_attributes = %w[pname pname.ges oct oct.ges dur dots accid accid.ges staff grace cue]
+    note_attributes = %w[pname pname.ges oct oct.ges dur dots accid accid.ges staff grace cue tie]
     score_def_attributes = %w[key.pname keysig key.sig key.mode meter.count meter.unit meter.sym midi.bpm]
     clef_attributes = %w[shape line dis dis.place]
     contexts = [
       *note_attributes, *score_def_attributes, *clef_attributes, *clef_attributes.map { |name| "clef.#{name}" },
       "dur.default", "sig", "mode", "count", "unit", "sym", "n", "lines", "midi.instrnum", "num",
-      "metcon", "tstamp", "mm", "mm.unit", "mm.dots"
+      "metcon", "tstamp", "mm", "mm.unit", "mm.dots", "layer", "tstamp2"
     ]
 
     def attributes_xml(attributes)
@@ -101,6 +101,8 @@ describe HeadMusic::Notation::MEI do
       when "midi.instrnum" then with_score_def(staff_def: mei_staff_def(1, inside: %(<instrDef midi.instrnum="#{value}"/>)), **meter_attributes)
       when "num" then [mei_staff(1, %(<multiRest num="#{value}"/>))]
       when "metcon" then [[whole_note, %(<measure n="2" metcon="#{value}">#{mei_staff(1, mei_note("C4", "2"))}</measure>)]]
+      when "layer", "tstamp2"
+        [[whole_note + "<tie#{attributes_xml({"staff" => "1", "tstamp" => "1", "tstamp2" => "1m+1"}.merge(name => value))}/>", whole_note]]
       when "tstamp", "mm", "mm.unit", "mm.dots"
         [whole_note + "<tempo#{attributes_xml({"tstamp" => "1", "mm" => "60"}.merge(name => value))}/>"]
       when *note_attributes_list then [mei_staff(1, "<note#{attributes_xml({"pname" => "c", "oct" => "4", "dur" => "1"}.merge(name => value))}/>")]
@@ -129,6 +131,11 @@ describe HeadMusic::Notation::MEI do
 
     def parse(xml)
       described_class.parse(xml)
+    end
+
+    it "refuses a <tie> whose @tstamp2 reaches past the last measure" do
+      tie = %(<tie staff="1" tstamp="1" tstamp2="99999999m+1"/>)
+      expect { parse(mei_document(whole_note + tie, whole_note)) }.to raise_error(described_class::ParseError, /Unreadable @tstamp2/)
     end
 
     describe "a duplicate xml:id" do
