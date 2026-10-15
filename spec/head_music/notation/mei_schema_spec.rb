@@ -105,6 +105,16 @@ describe HeadMusic::Notation::MEI do
     expect(schema_errors(described_class.render(flow), schema)).to eq []
   end
 
+  it "renders the part marks of the grand-staff piano as valid MEI" do
+    expect(schema_errors(described_class.render(MuseScoreFixtures.piano_part_marks), schema)).to eq []
+  end
+
+  it "renders a chord's articulation, ornament, and note dynamic as valid MEI" do
+    flow = HeadMusic::Notation::ABC.parse("X:1\nT:Marks\nM:2/4\nL:1/4\nK:C\n!tenuto![CE] D|]\n")
+    flow.voices.first.voice_events.first.embellish(:trill).note_dynamic = :sf
+    expect(schema_errors(described_class.render(flow), schema)).to eq []
+  end
+
   it "renders what every extension hook adds as valid MEI" do
     register_every_mei_hook
     flow = HeadMusic::Notation::ABC.parse("X:1\nT:Hooks\nM:2/4\nL:1/4\nK:C\n{B}CD|[EG]F|]\n")
