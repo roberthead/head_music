@@ -4,7 +4,7 @@ describe HeadMusic::Instruments::Instrument do
   # Tuned, though their default notation has a neutral clef, so #pitched? is false.
   let(:pitched_with_neutral_clef) { %w[timpani crotales didgeridoo tabla] }
   let(:no_gm_program) { %w[didgeridoo theremin tabla] }
-  let(:no_gm_percussion_key) { %w[drum_kit castanets tam_tam tenor_drum] }
+  let(:no_gm_percussion_key) { %w[drum_kit castanets] }
 
   let(:instruments) { described_class::INSTRUMENTS.keys.map { |key| described_class.get(key) } }
   let(:unpitched_percussion) do
@@ -60,8 +60,8 @@ describe HeadMusic::Instruments::Instrument do
   end
 
   {
-    "bass_drum" => 35, "snare_drum" => 38, "floor_tom" => 41, "hi_hat" => 42, "crash_cymbal" => 49,
-    "high_tom" => 50, "ride_cymbal" => 51, "tambourine" => 54, "cowbell" => 56, "maracas" => 70,
+    "bass_drum" => 35, "snare_drum" => 38, "floor_tom" => 41, "tenor_drum" => 45, "hi_hat" => 42, "crash_cymbal" => 49,
+    "high_tom" => 50, "ride_cymbal" => 51, "tam_tam" => 52, "tambourine" => 54, "cowbell" => 56, "maracas" => 70,
     "woodblock" => 76, "triangle" => 81
   }.each do |key, percussion_key|
     it "gives #{key} GM percussion key #{percussion_key}" do

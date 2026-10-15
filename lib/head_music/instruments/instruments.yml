@@ -590,6 +590,7 @@ tam_tam:
   family_key: gong
   alias_name_keys:
   - gong
+  gm_percussion_key: 52
 tambourine:
   family_key: tambourine
   gm_percussion_key: 54
@@ -598,6 +599,7 @@ temple_blocks:
   gm_percussion_key: 76
 tenor_drum:
   family_key: tenor_drum
+  gm_percussion_key: 45
 tenor_recorder:
   family_key: recorder
   range_categories:
