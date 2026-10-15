@@ -85,6 +85,16 @@ module HeadMusic
           voice_event.onset_remainder / HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
       end
 
+      # The exact offset of a mark from its bar's start, as a fraction of a
+      # whole note. Where a note starts at a rounded position, the mark is at
+      # that note's exact onset, looked for first among the given voices.
+      def mark_offset(flow, position, voices = [])
+        voice_event = (voices + flow.voices).lazy.filter_map { |voice| voice.voice_event_at(position) }.first
+        return offset_in_bar(position) unless voice_event
+
+        onset_in_bar(voice_event)
+      end
+
       # Each link of a voice event's chain with its exact start and end, as
       # fractions of a whole note from the event's onset.
       def link_spans(voice_event)

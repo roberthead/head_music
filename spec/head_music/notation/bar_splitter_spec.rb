@@ -205,4 +205,17 @@ describe HeadMusic::Notation::BarSplitter do
       ]
     end
   end
+
+  describe ".mark_offset" do
+    let(:flow) { TupletFixtures.septuplet }
+    let(:fourth) { flow.voices.first.voice_events[3] }
+
+    it "answers the exact onset of a note starting at a rounded position" do
+      expect(described_class.mark_offset(flow, fourth.position)).to eq Rational(3, 28)
+    end
+
+    it "answers the position itself where no note starts" do
+      expect(described_class.mark_offset(flow, flow.position("1:3"))).to eq Rational(1, 2)
+    end
+  end
 end

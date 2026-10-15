@@ -9,16 +9,6 @@ module HeadMusic::Notation::MusicXML
       denominators(flow).reduce(1) { |lcm, denominator| lcm.lcm(denominator) }
     end
 
-    # The exact offset of a mark from its bar's start, as a fraction of a
-    # whole note. Where a note starts at a rounded position, the mark is at
-    # that note's exact onset, looked for first among the given voices.
-    def self.mark_offset(flow, position, voices = [])
-      voice_event = (voices + flow.voices).lazy.filter_map { |voice| voice.voice_event_at(position) }.first
-      return HeadMusic::Notation::BarSplitter.offset_in_bar(position) unless voice_event
-
-      HeadMusic::Notation::BarSplitter.onset_in_bar(voice_event)
-    end
-
     def self.denominators(flow)
       meter_denominators(flow) + note_denominators(flow) + timed_mark_denominators(flow)
     end
@@ -65,7 +55,7 @@ module HeadMusic::Notation::MusicXML
       owners.flat_map do |owner, voices|
         positions = owner.dynamic_events.map(&:position) +
           owner.spans.select(&:hairpin?).flat_map { |span| [span.from, span.to] }
-        positions.map { |position| (mark_offset(flow, position, voices) * 4).denominator }
+        positions.map { |position| (HeadMusic::Notation::BarSplitter.mark_offset(flow, position, voices) * 4).denominator }
       end
     end
     private_class_method :timed_mark_denominators

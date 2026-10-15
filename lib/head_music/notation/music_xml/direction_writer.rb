@@ -63,7 +63,7 @@ module HeadMusic::Notation::MusicXML
       bar_number = slot.bar_number
       return plan.whole_measure_duration(bar_number) - start unless mark.position.bar_number == bar_number
 
-      fraction = Divisions.mark_offset(plan.flow, mark.position, mark_voices(slot)) * 4 * divisions
+      fraction = HeadMusic::Notation::BarSplitter.mark_offset(plan.flow, mark.position, mark_voices(slot)) * 4 * divisions
       unless fraction.denominator == 1
         raise RenderError,
           "cannot express the offset of the #{label(mark)} at #{mark.position} in #{divisions} divisions per quarter note"
