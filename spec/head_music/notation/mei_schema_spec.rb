@@ -62,6 +62,28 @@ describe HeadMusic::Notation::MEI do
     expect(schema_errors(described_class.render(flow), schema)).to eq []
   end
 
+  it "renders instrument changes in concert pitch as valid MEI" do
+    expect(schema_errors(MuseScoreFixtures.clarinet_changes.flows.first.to_mei, schema)).to eq []
+  end
+
+  def transposed_mei(project)
+    described_class.render(project.add_layout(concert_pitch: false).realize(project.flows.first), transposed: true)
+  end
+
+  it "renders transposed instrument changes as valid MEI" do
+    expect(schema_errors(transposed_mei(MuseScoreFixtures.clarinet_changes), schema)).to eq []
+  end
+
+  it "renders a key change in a transposed trio as valid MEI" do
+    trio = LayoutFixtures.trio.tap { |project| project.flows.first.change_key_signature(2, "G major") }
+    expect(schema_errors(transposed_mei(trio), schema)).to eq []
+  end
+
+  it "renders a tempo change as valid MEI" do
+    flow = LilyPondFixtures.key_and_meter_change.tap { |changes| changes.change_tempo(2, "dotted quarter = 60") }
+    expect(schema_errors(described_class.render(flow), schema)).to eq []
+  end
+
   it "renders what every extension hook adds as valid MEI" do
     register_every_mei_hook
     flow = HeadMusic::Notation::ABC.parse("X:1\nT:Hooks\nM:2/4\nL:1/4\nK:C\n{B}CD|[EG]F|]\n")
