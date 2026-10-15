@@ -28,6 +28,7 @@ module HeadMusic::Notation::MusicXML
       @meter = HeadMusic::Rudiment::Meter.default
       @staves = 1
       @most_staves = 1
+      @transposition = ConcertTransposition.new
     end
 
     def read
@@ -67,10 +68,11 @@ module HeadMusic::Notation::MusicXML
       @divisions = attributes.divisions if attributes.divisions
       @staves = attributes.staves if attributes.staves
       @most_staves = [@most_staves, @staves].max
+      attributes.transpositions.each { |number, step| @transposition.change(number, step) }
       return unless @cursor.zero?
 
       @measure.clefs.merge!(attributes.clefs)
-      @measure.key = attributes.key if attributes.key
+      @measure.key = concert_key(attributes.key) if attributes.key
       @meter = @measure.meter = attributes.meter if attributes.meter
     end
 
@@ -176,10 +178,17 @@ module HeadMusic::Notation::MusicXML
       number
     end
 
-    # An unpitched note is a sound of the part's instrument, or an unpitched
-    # sound of none.
+    # A transposing part's key lands in concert pitch, as its notes do.
+    def concert_key(key)
+      fifths, mode = key
+      [@transposition.concert_fifths(fifths), mode]
+    end
+
+    # A pitch sounds where its staff's transposition puts it. An unpitched
+    # note is a sound of the part's instrument, or an unpitched sound of
+    # none.
     def sound(note)
-      return note.pitch unless note.unpitched
+      return @transposition.concert(note.pitch, note.staff || 1) unless note.unpitched
 
       HeadMusic::Rudiment::UnpitchedSound.get(@instrument) || HeadMusic::Rudiment::UnpitchedSound.get(nil)
     end

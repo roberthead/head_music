@@ -11,7 +11,9 @@ module HeadMusic::Notation::MusicXML
     include XmlReading
 
     # The clefs by staff number, a nil clef being one the catalog lacks.
-    Attributes = Struct.new(:divisions, :key, :meter, :measure_repeat, :staves, :clefs)
+    # The transpositions by staff number, nil for one that applies to every
+    # staff.
+    Attributes = Struct.new(:divisions, :key, :meter, :measure_repeat, :staves, :clefs, :transpositions)
 
     def self.read(element, **where)
       new(element, where).attributes
@@ -23,7 +25,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def attributes
-      Attributes.new(clefs: {}).tap do |attributes|
+      Attributes.new(clefs: {}, transpositions: {}).tap do |attributes|
         @element.each_element do |child|
           case child.name
           when "divisions" then attributes.divisions = divisions(child)
@@ -31,6 +33,7 @@ module HeadMusic::Notation::MusicXML
           when "time" then attributes.meter ||= meter(child)
           when "measure-style" then attributes.measure_repeat ||= !first_child(child, "measure-repeat").nil?
           when "staves" then attributes.staves = staves(child)
+          when "transpose" then attributes.transpositions[integer(attribute(child, "number", **where), "transpose number", **where)] = transposition(child)
           when "clef" then attributes.clefs[(integer(attribute(child, "number", **where), "clef number", **where) || 1)] = ClefReader.clef(child, **where)
           end
         end
@@ -46,6 +49,13 @@ module HeadMusic::Notation::MusicXML
       raise ParseError.new("<divisions> must be positive", **where) unless value.positive?
 
       value
+    end
+
+    def transposition(element)
+      diatonic, chromatic, octaves = %w[diatonic chromatic octave-change].map do |name|
+        integer(text(element, name, **where), "<#{name}>", **where).to_i
+      end
+      ConcertTransposition::Step.new(diatonic, chromatic, octaves)
     end
 
     def staves(element)
