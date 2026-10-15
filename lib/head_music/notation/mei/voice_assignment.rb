@@ -59,7 +59,7 @@ module HeadMusic::Notation::MEI
       staff = @definition.staff_index(layer.staff)
       layer.entries.each do |entry, sounds, pending|
         if entry.grace
-          grace = track.queue_grace(sounds: sounds.uniq, rhythmic_value: entry.rhythmic_value, slashed: entry.slashed, articulations: [], tie_starts: [])
+          grace = track.queue_grace(sounds: sounds.uniq, rhythmic_value: entry.rhythmic_value, slashed: entry.slashed, articulations: ArticReader.articulations([entry.element, *entry.notes].uniq, @editorial), tie_starts: [])
           fill(pending, track, grace: grace)
         else
           entry.track = track
