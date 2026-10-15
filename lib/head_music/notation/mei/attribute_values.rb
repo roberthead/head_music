@@ -53,7 +53,8 @@ module HeadMusic::Notation::MEI
     MAX_RATE = 10_000
     MAX_COUNT = 9999
     MAX_STEPS = 96
-    DECIMAL = /\A\d{1,9}(\.\d{1,12})?\z/
+    # Twenty places, as encoders write a float's full expansion.
+    DECIMAL = /\A\d{1,9}(\.\d{1,20})?\z/
 
     module_function
 
@@ -227,6 +228,32 @@ module HeadMusic::Notation::MEI
 
     def steps(name, value, where)
       bounded_integer(name, value, -MAX_STEPS..MAX_STEPS, where)
+    end
+
+    MAX_PASS = 99
+
+    # Passes listed as "1", "1, 2", or "1 2", or nil for text that is no
+    # such list.
+    def pass_list(text, where)
+      return unless text.to_s.match?(/\A\s*\d{1,9}(\s*[,\s]\s*\d{1,9})*\s*\z/)
+
+      passes(text.scan(/\d+/), text, where)
+    end
+
+    # The passes of a range such as "1-3", bounded without listing it first.
+    def pass_range(text, where)
+      match = text.to_s.match(/\A\s*(\d{1,9})\s*-\s*(\d{1,9})\s*\z/)
+      unreadable("n", text, where) unless match
+      first, last = match.captures.map { |number| Integer(number, 10) }
+      unreadable("n", text, where) unless first.between?(1, last) && last <= MAX_PASS
+
+      (first..last).to_a
+    end
+
+    def passes(numbers, text, where)
+      passes = numbers.map { |number| Integer(number, 10) }.uniq
+      unreadable("n", text, where) unless passes.all? { |pass| pass.between?(1, MAX_PASS) }
+      passes
     end
 
     # The exact beat, from 0 to one past the meter's count.

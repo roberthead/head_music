@@ -60,9 +60,9 @@ module HeadMusic::Notation::MEI
   class RenderError < HeadMusic::Notation::RenderError; end
 end
 
-# The writers that own the extension hooks load first, so that a feature file
-# can register with them as it loads.
-%w[markup event_writer measure_writer score_def_writer section_writer xml_reading].each do |name|
+# The writers and the reader registry that own the extension hooks load
+# first, so that a feature file can register with them as it loads.
+%w[markup event_writer measure_writer score_def_writer section_writer xml_reading mark_records mark_reader mark_readers].each do |name|
   require_relative "mei/#{name}"
 end
 Dir[File.join(__dir__, "mei", "*.rb")].sort.each { |file| require file }

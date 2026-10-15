@@ -48,6 +48,12 @@ module HeadMusic::Notation::MEI
       @tracks[key] ||= HeadMusic::Notation::VoiceTrack.new(label)
     end
 
+    # The track of a layer on a staff, by whichever key the part's voices
+    # take, or nil.
+    def layer_track(staff_number, layer_number)
+      @tracks[[definition.staff_index(staff_number), layer_number]] || @tracks[layer_number]
+    end
+
     # The tracks in voice-key order.
     def tracks
       @tracks.sort_by { |key, _| Array(key) }.map(&:last)

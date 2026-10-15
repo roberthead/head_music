@@ -11,18 +11,20 @@ module HeadMusic::Notation::MEI
     include XmlReading
 
     # What a bar of the score states: its meter and key, the tempo on its
-    # downbeat, and its control events, the children of the <measure> other
-    # than its staves. A <multiRest> of several bars makes a Measure of each,
-    # the controls in the first.
-    Measure = Struct.new(:index, :element, :number, :meter, :key, :tempo, :controls)
+    # downbeat, its control events, the children of the <measure> other
+    # than its staves, and the passes of the <ending> it is in. A
+    # <multiRest> of several bars makes a Measure of each, the controls in
+    # the first.
+    Measure = Struct.new(:index, :element, :number, :meter, :key, :tempo, :controls, :ending_passes)
 
     # A note of what one element became, in document order: for a <note>,
     # its track's event or grace note and the sound it added; for a chord
     # tone, chord_member. Kind is :note, :chord, :rest, :m_rest, :space, or
     # :m_space. One in a layer no voice reads, as MuseScore's whole-bar
     # rests beside another staff's layer of the same number, has no track.
-    # +tie+ is a note's @tie, or its chord's.
-    Pending = Struct.new(:kind, :element, :measure_index, :reading, :track, :event, :grace, :chord_member, :sound, :staff, :tie)
+    # +tie+ is a note's @tie, or its chord's, and +content+ the layer it is
+    # read in.
+    Pending = Struct.new(:kind, :element, :measure_index, :reading, :track, :event, :grace, :chord_member, :sound, :staff, :tie, :content)
 
     Score = Data.define(:measures, :readings, :pending, :ties)
 
@@ -53,13 +55,15 @@ module HeadMusic::Notation::MEI
 
     private
 
-    def walk(container, depth)
+    def walk(container, depth, passes = nil)
       raise ParseError.new("<section>s nest deeper than #{Editorial::MAX_DEPTH}", element: container) if depth > Editorial::MAX_DEPTH
 
+      endings = 0
       @editorial.children(container).each do |child|
         case child.name
-        when "section", "ending" then walk(child, depth + 1)
-        when "measure" then read_measure(child)
+        when "section" then walk(child, depth + 1, passes)
+        when "ending" then walk(child, depth + 1, EndingPasses.passes(child, endings += 1, measure: next_number))
+        when "measure" then read_measure(child, passes)
         when "scoreDef" then @state.apply_score_def(child, measure: next_number) unless child.equal?(@opening_score_def)
         when "staffDef" then @state.apply_staff_def(child, measure: next_number)
         end
@@ -96,7 +100,7 @@ module HeadMusic::Notation::MEI
       @readings.each { |reading| reading.measures.first.implicit = upbeat || short || false }
     end
 
-    def read_measure(element)
+    def read_measure(element, passes)
       where = {measure: attribute(element, "n", element: element)}
       staves, controls = staves_and_controls(element, where)
       @ties.note_controls(controls, where)
@@ -106,7 +110,7 @@ module HeadMusic::Notation::MEI
       contents = @readings.to_h { |reading| [reading, read_contents(reading, staves, where)] }
       OpenSpaces.resolve(contents.values.flatten, @state.meter, where)
       index = @measures.length
-      bar_count(contents).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], where) }
+      bar_count(contents).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], passes, where) }
       @readings.each do |reading|
         reading.measures[index].extent = extent(contents[reading], index)
         change_clefs(reading, index, changes, contents[reading]) if index.positive?
@@ -131,11 +135,11 @@ module HeadMusic::Notation::MEI
       contents.values.flatten.flat_map(&:entries).select { |entry| entry.kind == :multi_rest }.map(&:bars).max || 1
     end
 
-    def add_measure(element, index, controls, where)
+    def add_measure(element, index, controls, passes, where)
       meter = @state.meter
       @measures << Measure.new(
         index: index, element: element, number: where[:measure], meter: meter, key: @state.key,
-        tempo: tempo(controls, meter, where), controls: controls
+        tempo: tempo(controls, meter, where), controls: controls, ending_passes: passes
       )
       implicit = index.positive? && AttributeValues.read(element, "metcon", **where, element: element) == false
       @readings.each do |reading|
@@ -204,7 +208,7 @@ module HeadMusic::Notation::MEI
       contents.each do |content|
         entries = content.entries.map do |entry|
           sounds = entry.cue ? [] : entry.notes.map { |note| pitches.fetch(note) }
-          [entry, sounds, note_pending(reading, entry, index, sounds, where.merge(staff: content.staff_number))]
+          [entry, sounds, note_pending(reading, entry, content, index, sounds, where.merge(staff: content.staff_number))]
         end
         reading.layers << PartReading::Layer.new(index, content, staves[content], entries)
       end
@@ -256,9 +260,9 @@ module HeadMusic::Notation::MEI
       reading.transposition.concert(written, reading.definition.staff_index(stream[1]), **where, element: note)
     end
 
-    def note_pending(reading, entry, index, sounds, where)
+    def note_pending(reading, entry, content, index, sounds, where)
       kind = (entry.kind == :multi_rest) ? :m_rest : entry.kind
-      base = {measure_index: index, reading: reading, staff: entry.staff}
+      base = {measure_index: index, reading: reading, staff: entry.staff, content: content}
       tie = (kind == :note) ? TieControls.marker(entry.element, entry, **where) : nil
       pending = [Pending.new(kind: kind, element: entry.element, chord_member: false, sound: (kind == :note) ? sounds.first : nil, tie: tie, **base)]
       @pending.concat(pending)

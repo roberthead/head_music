@@ -123,6 +123,11 @@ describe HeadMusic::Notation::MEI do
       expect(events(*sharp_tied("i", "t")).drop(1)).to eq ["half tied to half F♯4 at 1:3:000", "half F4 at 2:3:000"]
     end
 
+    it "takes its chain's alteration over one it writes, as encoders derive a tied note's @accid.ges from the key" do
+      bar = mei_note("D5", "2", accid: "n", tie: "i") + mei_note("D5", "2", accid: nil, accid_ges: "f", tie: "t")
+      expect(events(mei_staff(1, bar), score_def: mei_score_def(keysig: "5f"))).to eq ["half tied to half D5 at 1:1:000"]
+    end
+
     it "takes its chain's alteration where it writes none, by <tie>" do
       expect(events(*sharp_tied(nil, nil, controls: %(<tie startid="#f1" endid="#f2"/>))).drop(1))
         .to eq ["half tied to half F♯4 at 1:3:000", "half F4 at 2:3:000"]

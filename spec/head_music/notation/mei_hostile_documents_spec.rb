@@ -134,6 +134,11 @@ describe HeadMusic::Notation::MEI do
       described_class.parse(xml)
     end
 
+    it "refuses an <ending> whose @n spans more passes than a repeat plays" do
+      ending = %(<ending n="1-1000000000"><measure n="2">#{whole_note}</measure></ending>)
+      expect { parse(mei_document(whole_note, ending)) }.to raise_error(described_class::ParseError, /Unreadable @n "1-1000000000"/)
+    end
+
     it "refuses a <tie> whose @tstamp2 reaches past the last measure" do
       tie = %(<tie staff="1" tstamp="1" tstamp2="99999999m+1"/>)
       expect { parse(mei_document(whole_note + tie, whole_note)) }.to raise_error(described_class::ParseError, /Unreadable @tstamp2/)
@@ -144,6 +149,13 @@ describe HeadMusic::Notation::MEI do
 
       it "reads where nothing refers to it, as music21's test file reuses ids" do
         expect(parse(mei_document(*bars)).voices.first.voice_events.map(&:to_s)).to eq ["whole C4 at 1:1:000", "whole D4 at 2:1:000"]
+      end
+
+      %w[startid endid plist].each do |name|
+        it "refuses one a @#{name} names" do
+          bars[0] += %(<slur #{name}="#n" staff="1"/>)
+          expect { parse(mei_document(*bars)) }.to raise_error(described_class::ParseError, /"n" that a reference names is used twice/)
+        end
       end
     end
 

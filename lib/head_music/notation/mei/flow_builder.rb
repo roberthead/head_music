@@ -3,7 +3,8 @@ module HeadMusic::Notation::MEI
   # MusicXML reader does. First the score is walked once into exact records:
   # each part's measures and voice tracks. Then the bars are aligned across
   # every part, the timeline is applied, and only then are the voices
-  # placed, so that every position is built from a known bar.
+  # placed, so that every position is built from a known bar. The mark
+  # readers run last, once every voice is final.
   class FlowBuilder
     def initialize(source)
       @source = source
@@ -29,7 +30,11 @@ module HeadMusic::Notation::MEI
       flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
       timeline.apply(flow)
       roster = PartRoster.new(flow, identity, groups, bar_map, @source.editorial)
-      score.readings.each { |reading| place(roster.add(reading), reading, bar_map) }
+      parts = {}.compare_by_identity
+      voices = {}.compare_by_identity
+      score.readings.each { |reading| voices.merge!(place(parts[reading] = roster.add(reading), reading, bar_map)) }
+      anchors = ControlAnchors.new(flow, score, bar_map, @source, parts, voices)
+      MarkReaders.run(MarkRecords.new(score, bar_map, anchors).records, flow, anchors)
       flow
     end
 
@@ -44,11 +49,12 @@ module HeadMusic::Notation::MEI
     end
 
     # A voice's leading and trailing bars of only whole-bar rests are not
-    # placed, as the writer writes a voice tacet there.
+    # placed, as the writer writes a voice tacet there. Answers each track's
+    # voice.
     def place(part, reading, bar_map)
-      reading.keyed_tracks.each do |key, track|
-        voice = part.add_voice(role: reading.roles[key])
-        HeadMusic::Notation::VoicePlacer.new(voice, track, bar_map, reading, tuplet_reader: TupletReader, trim_edges: true).place
+      reading.keyed_tracks.each_with_object({}.compare_by_identity) do |(key, track), voices|
+        voices[track] = part.add_voice(role: reading.roles[key])
+        HeadMusic::Notation::VoicePlacer.new(voices[track], track, bar_map, reading, tuplet_reader: TupletReader, trim_edges: true).place
       end
     end
   end

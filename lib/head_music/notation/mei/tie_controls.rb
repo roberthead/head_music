@@ -7,9 +7,9 @@ module HeadMusic::Notation::MEI
   # A tie whose ends are in different voices, or one that nothing ends, is
   # dropped, and its notes keep their written values; <lv> is never read.
   #
-  # A tie's later note takes its chain's alteration where it writes none,
-  # as a tie carries an accidental across the barline, so each note's tie
-  # is known as the measure is spelled.
+  # A tie's later note at its chain's letter and octave takes the chain's
+  # alteration, as a tie carries an accidental across the barline, so each
+  # note's tie is known as the measure is spelled.
   class TieControls
     include XmlReading
 
@@ -161,7 +161,7 @@ module HeadMusic::Notation::MEI
     end
 
     def pending_by_element
-      @pending_by_element ||= @score.pending.to_h { |pending| [pending.element, pending] }.compare_by_identity
+      @pending_by_element ||= @score.pending.each_with_object({}.compare_by_identity) { |pending, by_element| by_element[pending.element] = pending }
     end
 
     def chord_tones
