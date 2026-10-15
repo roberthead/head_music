@@ -44,11 +44,12 @@ class HeadMusic::Content::TupletGroup
   delegate :flow, to: :voice
 
   # The links of the voice events that sound from one position up to another.
+  # Searched by where events start, so that only the event before from is
+  # asked where it ends.
   def self.links_between(voice, from, to)
     events = voice.voice_events
-    start = events.bsearch_index { |voice_event| voice_event.next_position > from }
-    return [] unless start
-
+    start = events.bsearch_index { |voice_event| voice_event.position > from } || events.length
+    start -= 1 if start.positive? && events[start - 1].next_position > from
     events[start..].take_while { |voice_event| voice_event.position < to }.flat_map { |voice_event| links_of(voice_event) }
   end
 

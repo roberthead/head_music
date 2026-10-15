@@ -125,6 +125,13 @@ describe HeadMusic::Content::VoiceEvent do
       expect(voice.next_position).to eq "251:1:000"
     end
 
+    it "groups a long run in order without walking it again for each group" do
+      events = place_run(900, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "3:2"))
+      allow(voice).to receive(:voice_event_preceding).and_call_original
+      events.each_slice(3) { |first, _, last| voice.group_tuplet(from: first.position, to: last.next_position) }
+      expect(voice).to have_received(:voice_event_preceding).at_most(900).times
+    end
+
     it "keeps exact values exact" do
       expect(place_run(3, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "3:2")).map(&:onset_remainder)).to eq [0, 0, 0]
     end

@@ -70,10 +70,9 @@ class HeadMusic::Content::Voice
 
   # Brackets the notes and rests from one position up to another as one
   # tuplet. They must already carry its ratio, and fill the span exactly.
+  # A bracket moves no onset, so grouping leaves every memoized timing good.
   def group_tuplet(from:, to:, unit: nil)
-    group = @tuplets.add(HeadMusic::Content::TupletGroup.new(self, from: from, to: to, unit: unit))
-    @revision += 1
-    group
+    @tuplets.add(HeadMusic::Content::TupletGroup.new(self, from: from, to: to, unit: unit))
   end
 
   def tuplets
@@ -84,12 +83,6 @@ class HeadMusic::Content::Voice
   def tuplet_at(position)
     position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
     @tuplets.at(position)
-  end
-
-  # @api private whether a tuplet group starts or ends at a position, which
-  # ends a run of a ratio there
-  def tuplet_boundary?(position)
-    !@tuplets.empty? && @tuplets.boundary?(position)
   end
 
   # In position order, with at most one at a position.

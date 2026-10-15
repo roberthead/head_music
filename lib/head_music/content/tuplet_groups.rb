@@ -30,13 +30,6 @@ class HeadMusic::Content::TupletGroups
     group if group&.covers?(position)
   end
 
-  # Whether a group starts or ends at a position, which ends a run of a
-  # ratio there.
-  def boundary?(position)
-    group = @groups.bsearch { |existing| existing.to >= position }
-    !group.nil? && (group.to == position || group.from == position)
-  end
-
   def to_a
     @groups.dup
   end
