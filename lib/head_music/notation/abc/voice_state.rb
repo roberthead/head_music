@@ -409,7 +409,7 @@ module HeadMusic::Notation::ABC
         pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
         beam_break: pending.beam_break, decorations: pending.decorations + markings,
         slur_marks: pending.slur_marks + take_slur_opens,
-        ratio: ratio, tuplet_ends: fixed_tuplet_ends(pending, prefix) + tuplet_ends
+        ratio: ratio, tuplet_ends: fixed_tuplet_ends(pending, prefix) + tuplet_ends, graces: pending.graces
       )
     end
 

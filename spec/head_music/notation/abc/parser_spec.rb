@@ -848,6 +848,15 @@ describe HeadMusic::Notation::ABC::Parser do
       end
     end
 
+    {
+      "within a bar" => ["z2 {B}C2-C4 z2|", "1:2:000"],
+      "across a bar line" => ["z6 {B}C2-|C4 z4|", "1:4:000"]
+    }.each do |where, (body, position)|
+      it "keeps grace notes on a note tied #{where}" do
+        expect(graces(tune(body))).to eq [[position, ["grace eighth B4"]]]
+      end
+    end
+
     it "starts a slur on the note after grace notes it drops" do
       expect(tune("({g}|A2 B2) c4|").spans.map(&:to_s)).to eq ["slur from 1:1:000 to 1:2:000"]
     end

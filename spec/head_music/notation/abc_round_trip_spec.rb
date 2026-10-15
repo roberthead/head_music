@@ -266,6 +266,11 @@ describe HeadMusic::Notation::ABC do
       expect(abc_graces_by_note(round_tripped)).to eq abc_graces_by_note(original)
     end
 
+    it "writes back the grace notes of a note tied across a bar line" do
+      original = described_class.parse("X:1\nM:4/4\nL:1/8\nK:C\nz6 {B}C2-|C4 z4|\n")
+      expect(described_class.render(original).lines.last).to eq "z6 {B}C2-|C4 z4|]\n"
+    end
+
     describe "of generated flows" do
       def round_trip(seed)
         original = TupletGenerator.flow(seed, voices: 1, pickup: false, cross_barlines: false, meters: %w[4/4])
