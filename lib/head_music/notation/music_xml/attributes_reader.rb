@@ -13,7 +13,7 @@ module HeadMusic::Notation::MusicXML
     # The clefs by staff number, a nil clef being one the catalog lacks.
     # The transpositions by staff number, nil for one that applies to every
     # staff.
-    Attributes = Struct.new(:divisions, :key, :meter, :measure_repeat, :staves, :clefs, :transpositions)
+    Attributes = Struct.new(:divisions, :key, :meter, :measure_repeat, :staves, :part_symbol, :clefs, :transpositions)
 
     def self.read(element, **where)
       new(element, where).attributes
@@ -33,6 +33,7 @@ module HeadMusic::Notation::MusicXML
           when "time" then attributes.meter ||= meter(child)
           when "measure-style" then attributes.measure_repeat ||= !first_child(child, "measure-repeat").nil?
           when "staves" then attributes.staves = staves(child)
+          when "part-symbol" then attributes.part_symbol = text(child, **where)
           when "transpose" then attributes.transpositions[integer(attribute(child, "number", **where), "transpose number", **where)] = transposition(child)
           when "clef" then attributes.clefs[(integer(attribute(child, "number", **where), "clef number", **where) || 1)] = ClefReader.clef(child, **where)
           end

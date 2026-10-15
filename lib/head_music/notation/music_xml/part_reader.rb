@@ -14,7 +14,7 @@ module HeadMusic::Notation::MusicXML
     # its notes and forwards reach; and one division where it ends, the
     # rounding its extent may carry.
     Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tempo, :tolerance, :clefs)
-    Reading = Struct.new(:document_part, :measures, :tracks, :staves, :records) do
+    Reading = Struct.new(:document_part, :measures, :tracks, :staves, :part_symbol, :records) do
       def id
         document_part.id
       end
@@ -28,13 +28,14 @@ module HeadMusic::Notation::MusicXML
       @meter = HeadMusic::Rudiment::Meter.default
       @staves = 1
       @most_staves = 1
+      @part_symbol = nil
       @transposition = ConcertTransposition.new
       @records = []
     end
 
     def read
       measures = @document_part.measures.each_with_index.map { |measure, index| read_measure(measure, index) }
-      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.values, staves: @most_staves, records: @records)
+      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.values, staves: @most_staves, part_symbol: @part_symbol, records: @records)
     end
 
     private
@@ -74,6 +75,7 @@ module HeadMusic::Notation::MusicXML
       @divisions = attributes.divisions if attributes.divisions
       @staves = attributes.staves if attributes.staves
       @most_staves = [@most_staves, @staves].max
+      @part_symbol ||= attributes.part_symbol
       attributes.transpositions.each { |number, step| @transposition.change(number, step) }
       return unless @cursor.zero?
 

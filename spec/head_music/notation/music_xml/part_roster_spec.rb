@@ -35,6 +35,26 @@ describe HeadMusic::Notation::MusicXML::PartRoster do
     end
   end
 
+  describe "<part-symbol>" do
+    def bracket_for(symbol)
+      extra = symbol ? "<part-symbol>#{symbol}</part-symbol>" : ""
+      attributes = "<attributes><divisions>1</divisions><staves>2</staves>#{extra}</attributes>"
+      flow = parse(musicxml_measures(note_xml("C4", 4, "whole", staff: 1), attributes: attributes))
+      flow.parts.first.staff_system.bracket
+    end
+
+    {"bracket" => :bracket, "square" => :bracket, "none" => :none, "brace" => :brace, "line" => :brace, nil => :brace}.each do |symbol, bracket|
+      it "joins the staves with a #{bracket} for #{symbol.inspect}" do
+        expect(bracket_for(symbol)).to eq bracket
+      end
+    end
+  end
+
+  it "brackets a choir's staves as the writer wrote them" do
+    original = LilyPondFixtures.choir_on_two_staves
+    expect(round_trip(original).parts.first.staff_system.to_h).to eq original.parts.first.staff_system.to_h
+  end
+
   it "assigns each voice of a choir to its staff" do
     original = LilyPondFixtures.choir_on_two_staves
     expect(assignments(round_trip(original))).to eq assignments(original)

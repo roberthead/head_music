@@ -88,10 +88,14 @@ module HeadMusic::Notation::MusicXML
       HeadMusic::Content::Layout::Transposition.for_semitones(semitones).diatonic_steps
     end
 
-    # <staves> is omitted for the single-staff part, where it would be noise.
+    # <staves> is omitted for the single-staff part, where it would be noise,
+    # and <part-symbol> for a brace, which is what it defaults to.
     def staves_lines(part)
-      count = part.staff_system.length
-      (count > 1) ? ["#{INDENT * 4}<staves>#{count}</staves>"] : []
+      system = part.staff_system
+      return [] unless system.length > 1
+
+      symbol = (system.bracket == :brace) ? nil : "#{INDENT * 4}<part-symbol>#{system.bracket}</part-symbol>"
+      ["#{INDENT * 4}<staves>#{system.length}</staves>", symbol].compact
     end
 
     def key_lines(key)

@@ -21,6 +21,22 @@ describe HeadMusic::Notation::MusicXML::Writer do
     expect(xpath_texts(document, "//attributes/staves")).to eq %w[2]
   end
 
+  it "leaves the brace to <part-symbol>'s default" do
+    expect(xpath_count(document, "//attributes/part-symbol")).to eq 0
+  end
+
+  context "with a choir's two staves bracketed" do
+    let(:flow) { LilyPondFixtures.choir_on_two_staves }
+
+    it "writes the bracket as the <part-symbol> after <staves>" do
+      expect(xpath_names(document, "//attributes/staves | //attributes/part-symbol")).to eq %w[staves part-symbol]
+    end
+
+    it "names it a bracket" do
+      expect(xpath_texts(document, "//attributes/part-symbol")).to eq %w[bracket]
+    end
+  end
+
   it "gives each staff its own numbered clef" do
     expect([xpath_count(document, "//attributes/clef[@number='1']"), xpath_count(document, "//attributes/clef[@number='2']")])
       .to eq [1, 1]
