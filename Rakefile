@@ -47,6 +47,36 @@ task :coverage do
   sh "open coverage/index.html" if File.exist?("coverage/index.html")
 end
 
+namespace :music_xml do
+  desc "Regenerate the MuseScore 4 and timewise fixtures (spec/fixtures/notation/music_xml/); MSCORE overrides the mscore path"
+  task :musescore_fixtures do
+    $LOAD_PATH.unshift File.expand_path("lib", __dir__)
+    require "head_music"
+    require "rspec/core"
+    require "shellwords"
+    require_relative "spec/support/musescore"
+
+    with_final_newline = ->(path) { File.write(path, File.read(path).chomp + "\n") }
+    MuseScoreFixtures.names.each do |name|
+      rendered = MuseScoreFixtures.path(name, "head_music")
+      File.write(rendered, MuseScoreFixtures.musicxml(name))
+      MuseScore.convert_file(rendered, MuseScoreFixtures.path(name, "musescore4"))
+      with_final_newline.call(MuseScoreFixtures.path(name, "musescore4"))
+      puts "Wrote #{name}"
+    end
+
+    stylesheet = "/Applications/Dorico 6.app/Contents/Resources/musicxml/parttime.xsl"
+    next puts("Skipped the timewise fixtures: #{stylesheet} not found") unless File.exist?(stylesheet)
+
+    MuseScoreFixtures::TIMEWISE.each do |name|
+      timewise = MuseScoreFixtures.path(name, "timewise")
+      sh "xsltproc --nonet --novalid #{stylesheet.shellescape} #{MuseScoreFixtures.path(name, "head_music").shellescape} > #{timewise.shellescape}"
+      with_final_newline.call(timewise)
+      puts "Wrote #{name} timewise"
+    end
+  end
+end
+
 namespace :style do
   desc "Regenerate the pinned English guide strings (spec/fixtures/style/english_strings.yml)"
   task :snapshot_english do
