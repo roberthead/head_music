@@ -18,6 +18,8 @@ module HeadMusic::Notation::MEI
   class ControlAnchors
     include XmlReading
 
+    CONTAINERS = %w[beam tuplet graceGrp bTrem fTrem].freeze
+
     def initialize(flow, score, bar_map, source, parts, voices)
       @flow = flow
       @score = score
@@ -79,6 +81,19 @@ module HeadMusic::Notation::MEI
     # a span by beats asks that exactly one does.
     def notes_starting_at(anchor)
       starts.fetch(anchor.position.to_a, [])
+    end
+
+    # The <beam>, <tuplet>, <graceGrp>, <bTrem>, and <fTrem> an event is
+    # inside in its layer, outermost first, through any editorial markup
+    # between them.
+    def containers(record)
+      found = []
+      element = record.element.parent
+      while element.is_a?(REXML::Element) && element.name != "layer"
+        found.unshift(element) if CONTAINERS.include?(element.name)
+        element = element.parent
+      end
+      found
     end
 
     # An element's children and text as the editorial rule reads them.

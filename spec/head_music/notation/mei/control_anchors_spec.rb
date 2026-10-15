@@ -117,6 +117,13 @@ describe HeadMusic::Notation::MEI::ControlAnchors do
       expect(recorder.anchors.notes_starting_at(start).map { |record| record.voice_event.to_s }).to eq ["whole C4 at 1:1:000"]
     end
 
+    it "names the containers an event is inside, outermost first, through editorial markup" do
+      layer = %(<beam xml:id="b"><app><lem><tuplet xml:id="t" num="3" numbase="2">#{mei_note("C4", "8") * 3}</tuplet></lem></app></beam>) + mei_note("D4", "2", dots: "1")
+      recorder = recorded(mei_staff(1, layer))
+      records = recorder.of(HeadMusic::Notation::MEI::EventRecord)
+      expect(records.map { |record| recorder.anchors.containers(record).map { |element| element.attributes["xml:id"] } }).to eq [%w[b t], %w[b t], %w[b t], []]
+    end
+
     it "reads an element's children through the editorial rule" do
       note = REXML::Document.new(%(<note><app><lem><artic artic="stacc"/></lem><rdg><artic artic="acc"/></rdg></app></note>)).root
       expect(recorder.anchors.children(note).map { |child| child.attributes["artic"] }).to eq ["stacc"]
