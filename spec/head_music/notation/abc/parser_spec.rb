@@ -780,10 +780,88 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "grace notes" do
+    def tune(body)
+      parse("X:1\nM:4/4\nL:1/8\nK:C\n#{body}\n").voices.first
+    end
+
+    def graces(voice)
+      voice.voice_events.reject { |voice_event| voice_event.grace_notes.empty? }.map do |voice_event|
+        [voice_event.position.to_s, voice_event.grace_notes.map(&:to_s)]
+      end
+    end
+
+    it "reads grace notes before the next note, their lengths relative to L:" do
+      expect(graces(tune("{g}A2 {fe/}d2 c4|"))).to eq [
+        ["1:1:000", ["grace eighth G5"]], ["1:2:000", ["grace eighth F5", "grace sixteenth E5"]]
+      ]
+    end
+
+    it "reads {/...} as slashed grace notes" do
+      expect(graces(tune("C2 {/a}B2 c4|"))).to eq [["1:2:000", ["slashed grace eighth A5"]]]
+    end
+
+    it "reads a grace chord" do
+      expect(graces(tune("{[ce]2}c4 C4|"))).to eq [["1:1:000", ["grace quarter C5 E5"]]]
+    end
+
+    it "takes no time" do
+      expect(tune("C2 {gab}c2 d4|").voice_events.map(&:to_s)).to eq ["quarter C4 at 1:1:000", "quarter C5 at 1:2:000", "half D5 at 1:3:000"]
+    end
+
+    it "keeps a grace note's articulation and tie, and puts a level on it at its main note" do
+      voice = tune("C2 {.!p!!trill!B,-}B,2 C4|")
+      grace = voice.voice_events[1].grace_notes.first
+      expect([grace.articulations.map(&:name_key), grace.tied?, voice.dynamic_events.map(&:to_h)])
+        .to eq [["staccato"], true, [{"position" => "1:2:000", "level" => "p"}]]
+    end
+
+    it "starts a slur opened before them on the first grace note" do
+      expect(tune("({g}A2) ({/a}B2 c2) z2|").spans.map(&:to_s))
+        .to eq ["slur from the grace notes before 1:1:000 to 1:1:000", "slur from the grace notes before 1:2:000 to 1:3:000"]
+    end
+
+    it "starts a slur opened after them on the main note" do
+      expect(tune("{g}(A2 B2) c4|").spans.map(&:to_s)).to eq ["slur from 1:1:000 to 1:2:000"]
+    end
+
+    it "lets their accidentals hold for the rest of the bar" do
+      expect(tune("{^f}f2 f2 z4|").voice_events.first(2).map(&:to_s)).to eq ["quarter F♯5 at 1:1:000", "quarter F♯5 at 1:2:000"]
+    end
+
+    {
+      "a rest" => "{g}z2 A2 B4|",
+      "a bar line" => "C6 {g}|A2 B6|",
+      "an open tie's later link" => "A2-{g}A2 B4|",
+      "the end of the tune" => "A8|{g}"
+    }.each do |where, body|
+      it "drops grace notes before #{where}" do
+        expect(graces(tune(body))).to eq []
+      end
+    end
+
+    it "starts a slur on the note after grace notes it drops" do
+      expect(tune("({g}|A2 B2) c4|").spans.map(&:to_s)).to eq ["slur from 1:1:000 to 1:2:000"]
+    end
+
+    it "skips a grace note written as a tied value, which a grace note cannot hold" do
+      expect(graces(tune("{g5a}A2 C6|"))).to eq [["1:1:000", ["grace eighth A5"]]]
+    end
+
+    it "does not count grace notes toward a tuplet" do
+      expect(tune("(3{g}CDE F6|").tuplets.map(&:to_s)).to eq ["3:2 tuplet from 1:1:000 to 1:2:000"]
+    end
+
+    it "refuses grace notes in a voice overlay" do
+      expect { tune("C8 & {g}x8|") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /overlay holding notes or rests/)
+    end
+  end
+
   describe "unsupported features" do
     {
       "a quoted chord symbol" => ['"Am" C|', '"Am"'],
-      "a grace note" => ["{g}A|", "{g}"],
+      "grace notes holding a slur" => ["{(gf)}A|", "{(gf)}"],
       "an unrecognized decoration" => ["!bogus!A|", "!bogus!"],
       "a double broken rhythm" => ["A>>B|", ">>"],
       "a multi-bar rest" => ["Z4|", "Z4"],
@@ -802,13 +880,13 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "reports the line number of the unsupported token" do
-      expect { parse("X:1\nK:C\nCDEF|\n{g}A|\n") }
-        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\{g\}.*line 4/)
+      expect { parse("X:1\nK:C\nCDEF|\nZ4|\n") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /Z4.*line 4/)
     end
 
     it "raises before any interpretation when an unsupported token appears late in the body" do
-      expect { parse_body("CDEF|GABc|{g}A|") }
-        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\{g\}/)
+      expect { parse_body("CDEF|GABc|Z4|") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /Z4/)
     end
   end
 

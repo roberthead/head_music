@@ -40,13 +40,11 @@ module HeadMusic::Notation::ABC
     # "(p:q:r", with q and r optional: "(3", "(3:2", "(3::2", "(5:4:5".
     TUPLET_PATTERN = /\((\d+)(?::(\d*))?(?::(\d*))?/
 
-    # Recognizable ABC we deliberately don't handle: grace notes ({..}),
-    # multi-bar rests (Z), multi-bar overlays, stray dots, and malformed
-    # decorations.
+    # Recognizable ABC we deliberately don't handle: multi-bar rests (Z),
+    # multi-bar overlays, stray dots, and malformed decorations.
     # Ordered so a closed form is tried before its unterminated fallback.
     UNSUPPORTED_PATTERNS = [
-      /\{[^}]*\}/, /\{[^}]*/, /![^!]*!/, /![^!]*/,
-      /\(&/, /&\)/, /\./, /Z\d*/
+      /![^!]*!/, /![^!]*/, /\(&/, /&\)/, /\./, /Z\d*/
     ].freeze
 
     # Music tokens whose whitespace successor breaks a beam group; other
@@ -57,7 +55,7 @@ module HeadMusic::Notation::ABC
     TOKEN_SCANS = %i[
       scan_quoted_string scan_bar_line scan_bracket scan_note scan_rest
       scan_invisible_rest scan_spacer scan_tie scan_broken_rhythm scan_tuplet scan_slur
-      scan_overlay scan_decoration scan_unsupported
+      scan_overlay scan_grace scan_decoration scan_unsupported
     ].freeze
 
     def initialize(line_text, line_number, tokens)
@@ -137,6 +135,13 @@ module HeadMusic::Notation::ABC
       return scan_chord(column) if @scanner.check(ChordScanner::START_PATTERN)
 
       raise_unexpected_character(column)
+    end
+
+    def scan_grace(column)
+      return false unless @scanner.check(/\{/)
+
+      @tokens << GraceScanner.new(@scanner, @line_number, column).token
+      true
     end
 
     def scan_chord(column)

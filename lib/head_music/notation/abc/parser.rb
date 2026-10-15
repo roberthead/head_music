@@ -20,11 +20,11 @@ module HeadMusic::Notation::ABC
       broken_rhythm: :handle_broken_rhythm, bar_line: :handle_bar_line, volta: :handle_volta,
       voice_change: :handle_voice_change, beam_break: :handle_beam_break, decoration: :handle_decoration,
       slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label,
-      tuplet: :handle_tuplet
+      tuplet: :handle_tuplet, grace: :handle_grace
     }.freeze
 
     # A voice overlay is read only for the levels its invisible rests place.
-    OVERLAY_MUSIC = %i[note chord rest tie broken_rhythm slur_start slur_end tuplet].freeze
+    OVERLAY_MUSIC = %i[note chord rest tie broken_rhythm slur_start slur_end tuplet grace].freeze
 
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
@@ -83,6 +83,14 @@ module HeadMusic::Notation::ABC
 
     def handle_slur_end(_token)
       current_state.close_slur
+    end
+
+    # A level or hairpin mark on a grace note waits for its main note.
+    def handle_grace(token)
+      state = current_state
+      graces, decorations = grace_reader.read(token, state.pitch_builder)
+      decorations.each { |decoration| state.decorate(decoration) }
+      state.add_graces(graces)
     end
 
     def handle_tuplet(token)
@@ -174,6 +182,7 @@ module HeadMusic::Notation::ABC
     # A rest, a voice change, or the end of the tune ends a run of notes:
     # nothing after it can complete a broken rhythm or close a tie.
     def end_notes(state, line)
+      state.drop_graces
       state.ensure_not_awaiting_note(line)
       state.reject_open_tie(line)
       state.flush_pending_note
@@ -198,6 +207,7 @@ module HeadMusic::Notation::ABC
     end
 
     def pause_notes(state, line)
+      state.drop_graces
       state.ensure_not_awaiting_note(line)
       state.settle_hairpins
       state.reject_dangling_decorations
@@ -284,6 +294,10 @@ module HeadMusic::Notation::ABC
 
     def chord_reader
       @chord_reader ||= ChordReader.new(duration_resolver)
+    end
+
+    def grace_reader
+      @grace_reader ||= GraceReader.new(duration_resolver)
     end
 
     def repeat_tagger

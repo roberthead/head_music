@@ -45,8 +45,8 @@ describe HeadMusic::Notation::ABC::Preflight do
     end
 
     it "raises on an unsupported token with its lexeme and line" do
-      expect { described_class.reject_unsupported_tokens(tokens_for("C{g}D|")) }
-        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\{g\}/)
+      expect { described_class.reject_unsupported_tokens(tokens_for("CZ4|")) }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /Z4/)
     end
   end
 

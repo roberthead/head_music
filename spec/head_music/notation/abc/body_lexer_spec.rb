@@ -453,8 +453,12 @@ describe HeadMusic::Notation::ABC::BodyLexer do
       expect(tokens_for("\"G7\"").first.lexeme).to eq("\"G7\"")
     end
 
-    it "lexes grace notes as unsupported" do
-      expect(tokens_for("{ab}c").first.to_h).to include(type: :unsupported, lexeme: "{ab}")
+    it "lexes grace notes holding something else as unsupported" do
+      expect(tokens_for("{a(b)}c").first.to_h).to include(type: :unsupported, lexeme: "{a(b)}")
+    end
+
+    it "lexes grace notes with an unrecognized decoration as unsupported" do
+      expect(tokens_for("{!bogus!a}c").first.to_h).to include(type: :unsupported, lexeme: "{!bogus!a}")
     end
 
     it "lexes slur marks" do
@@ -484,6 +488,20 @@ describe HeadMusic::Notation::ABC::BodyLexer do
       it "lexes the tuplet marker in #{body} with its numbers" do
         expect(tokens_for(body).first.to_h).to include(type: :tuplet, tuplet: numbers)
       end
+    end
+
+    it "lexes grace notes with their lengths, decorations, and ties" do
+      token = tokens_for("{.g/2[ce]2-}A").first
+      expect([token.type, token.style, token.notes.map { |item| [item.notes.map(&:letter), item.length, item.tied, item.decorations] }])
+        .to eq [:grace, nil, [[%w[g], "/2", false, ["."]], [%w[c e], "2", true, []]]]
+    end
+
+    it "lexes slashed grace notes" do
+      expect(tokens_for("{/g}A").first.style).to eq :slashed
+    end
+
+    it "raises for grace notes that never close" do
+      expect { tokens_for("{ga A") }.to raise_error(HeadMusic::Notation::ABC::ParseError, /Unterminated grace notes/)
     end
 
     it "lexes a slur before a tuplet marker" do
