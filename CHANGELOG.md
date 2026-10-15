@@ -93,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **A `Content::Position` carried whole counts across a meter change in the origin bar's count unit.** A dotted half tied to a dotted half from `1:1` in 6/8, with 2/2 from bar 2, ended at `5:1:000`, its six leftover eighths spent as six halves, rather than at `2:2:960`. The carry now stops at the first bar with a different count unit and restates what is left there as ticks.
 - The kern reader no longer raises "A null token … falls where no note is sounding" on a row holding only grace notes.
 - MusicXML no longer raises beaming a compound-meter piece whose tuplets leave its beat without whole divisions.
 - ABC tunes with slurs, and LilyPond files with slurs, phrasing slurs, or named slurs, import instead of raising `UnsupportedFeatureError` or, for `\(` and `\=1(`, `ParseError`.

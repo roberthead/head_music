@@ -120,20 +120,26 @@ class HeadMusic::Content::Position
   # crosses has the same number of counts. So the bar carry is walked here one
   # bar at a time, asking the flow for each bar's meter as it goes.
   #
-  # And the radix carry was done under the *origin* bar's meter, so a position
-  # that lands in a bar with a different count unit is carried again under
-  # that bar's, until it lands in a bar it was carried under. One instant then
-  # has one spelling, which is what equality and hashing depend on.
+  # And the counts are the *origin* bar's, so the walk stops at the first bar
+  # with a different count unit and restates what is left there as ticks,
+  # which every meter shares, to be carried again under that bar's meter,
+  # until it lands in a bar it was carried under. One instant then has one
+  # spelling, which is what equality and hashing depend on.
   def normalize
     loop do
       origin_bar = value.bar
       counts, tick, subtick = carried_counts
       bar = origin_bar
-      while counts > flow.meter_at(bar).counts_per_bar
+      unit = flow.meter_at(bar).ticks_per_count
+      while counts > flow.meter_at(bar).counts_per_bar && flow.meter_at(bar).ticks_per_count == unit
         counts -= flow.meter_at(bar).counts_per_bar
         bar += 1
       end
-      @value = HeadMusic::Time::MusicalPosition.new(bar, counts, tick, subtick)
+      @value = if flow.meter_at(bar).ticks_per_count == unit
+        HeadMusic::Time::MusicalPosition.new(bar, counts, tick, subtick)
+      else
+        HeadMusic::Time::MusicalPosition.new(bar, 1, (counts - 1) * unit + tick, subtick)
+      end
       break if bar == origin_bar
     end
   end

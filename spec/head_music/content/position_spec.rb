@@ -354,5 +354,28 @@ describe HeadMusic::Content::Position do
     it "leaves a position within the opening bar alone" do
       expect(flow.position(1, 1, 960 * 2).code).to eq "1:3:000"
     end
+
+    # Whole counts carried past the origin bar are its counts, not the next
+    # bar's: six eighths of 6/8 are a dotted half, and the three quarters
+    # left over are a half and a quarter of 2/2.
+    context "when whole counts cross into a bar with a different count unit" do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(meter: "6/8").tap { |flow| flow.change_meter(2, "2/2") }
+      end
+
+      it "spends the leftover counts as time in the destination bar" do
+        expect((flow.position("1:1") + HeadMusic::Rudiment::RhythmicValue.get("dotted half tied to dotted half")).code).to eq "2:2:960"
+      end
+
+      it "ends a note held across the change where the time says" do
+        voice_event = flow.add_voice.place("1:1", "dotted half tied to dotted half", "C4")
+        expect(voice_event.next_position.code).to eq "2:2:960"
+      end
+
+      it "carries the other way, from halves into eighths" do
+        halves = HeadMusic::Content::Flow.new(meter: "2/2").tap { |flow| flow.change_meter(2, "6/8") }
+        expect((halves.position("1:2") + :whole).code).to eq "2:5:000"
+      end
+    end
   end
 end
