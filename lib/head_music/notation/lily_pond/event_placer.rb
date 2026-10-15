@@ -14,7 +14,8 @@ module HeadMusic::Notation::LilyPond
   # Slur and phrase marks pair within a voice by kind and name. As in
   # LilyPond, an open while one of the same kind and name is open is
   # ignored, a close with none open is dropped, and so is a span the voice
-  # refuses, such as a slur ending on a rest.
+  # refuses, such as a slur ending on a rest. One opened on a note's first
+  # grace note starts from_grace, and may end on that same note.
   #
   # Hairpin marks are gathered wherever a voice's marks are read and paired
   # once the voice is placed, by time rather than written order, since the
@@ -235,15 +236,18 @@ module HeadMusic::Notation::LilyPond
       open = @open_spans[voice_event.voice]
       span_marks.each do |mark|
         key = [mark.kind, mark.id]
-        next open[key] ||= voice_event.position if mark.opening
+        next open[key] ||= [voice_event.position, mark.from_grace] if mark.opening
 
-        from = open.delete(key)
-        add_span(voice_event, mark.kind, from) if from
+        from, from_grace = open.delete(key)
+        add_span(voice_event, mark.kind, from, from_grace) if from
       end
     end
 
-    def add_span(voice_event, kind, from)
-      voice_event.voice.add_span(kind, from: from, to: voice_event.position) if from < voice_event.position
+    def add_span(voice_event, kind, from, from_grace)
+      to = voice_event.position
+      return if from > to || (from == to && !from_grace)
+
+      voice_event.voice.add_span(kind, from: from, to: to, from_grace: from_grace)
     rescue ArgumentError
       nil
     end
@@ -273,7 +277,17 @@ module HeadMusic::Notation::LilyPond
     def place_note(event, voice)
       position = voice.next_position
       event.inner_events.each { |inner| apply_marker(inner.event, voice, position + inner.elapsed) }
-      apply_marks(voice.place(position, event.rhythmic_value, event.pitches), event)
+      voice_event = voice.place(position, event.rhythmic_value, event.pitches)
+      add_graces(voice_event, event.graces)
+      apply_marks(voice_event, event)
+    end
+
+    def add_graces(voice_event, graces)
+      graces.each do |grace|
+        voice_event.add_grace_note(
+          grace.pitches, grace.rhythmic_value, slashed: grace.slashed, tied: grace.tied, articulations: grace.marks.articulations
+        )
+      end
     end
 
     # A whole-bar rest is one voice event filling the bar it starts; a

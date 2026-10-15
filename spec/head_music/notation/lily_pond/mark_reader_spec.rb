@@ -29,6 +29,10 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
       end
     end
 
+    it "reads none as starting on grace notes, which only the grace reader knows" do
+      expect(marks("(")[:span_marks].map(&:from_grace)).to eq [false]
+    end
+
     it "keeps marks in the order written" do
       expect(span_marks(")(").map { |kind, opening, _id| [kind, opening] }).to eq [[:slur, false], [:slur, true]]
     end

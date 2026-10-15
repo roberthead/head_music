@@ -155,6 +155,16 @@ module HeadMusic::Notation::LilyPond
       nested(token) { read_item(context) }
     end
 
+    # \afterGrace [fraction] main { graces } reads its main note as any other.
+    def read_after_grace(context)
+      token = cursor.advance
+      cursor.advance if cursor.peek&.type == :number
+      raise cursor.error("\\afterGrace expects music", cursor.peek || token) unless AFTER_MUSIC.include?(cursor.peek&.type)
+
+      nested(token) { read_item(context) }
+      items.skip_grace(token)
+    end
+
     def read_item_command(context)
       token = cursor.peek
       case token.lexeme
@@ -162,6 +172,8 @@ module HeadMusic::Notation::LilyPond
       when *BarMarkReader::COMMANDS then bar_marks.read(context.stream)
       when "change" then items.read_staff_change(context)
       when *MarkReader::HAIRPIN_STYLE_COMMANDS then cursor.advance
+      when *GraceReader::COMMANDS then items.read_grace(context)
+      when "afterGrace" then read_after_grace(context)
       when "new" then contexts.read_sequential_new(context)
       when *ENVELOPE_COMMANDS then raise cursor.error(%(Unexpected \\#{token.lexeme} inside music), token)
       else read_expression_command(context)

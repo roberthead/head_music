@@ -12,11 +12,11 @@ module HeadMusic::Notation::LilyPond
 
     Event = Data.define(
       :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks,
-      :bar_mark, :tuplet
+      :bar_mark, :tuplet, :graces
     ) do
       def initialize(
         kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil,
-        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil
+        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil, graces: []
       )
         super
       end
@@ -49,24 +49,38 @@ module HeadMusic::Notation::LilyPond
 
     def add_note(pitches, rhythmic_value, line, marks = MarkReader::NONE)
       rhythmic_value = under_tuplet(rhythmic_value)
+      graces = @pending_graces
+      @pending_graces = nil
       return extend_tie(pitches, rhythmic_value, line, marks) if @tie_open
 
       flush_pending_note
-      @pending_note = Event.new(kind: :note, line: line, pitches: pitches, rhythmic_value: rhythmic_value, marks: marks)
+      @pending_note = Event.new(
+        kind: :note, line: line, pitches: pitches, rhythmic_value: rhythmic_value,
+        marks: graces ? graces.main_marks(marks) : marks, graces: graces ? graces.before(pitches) : []
+      )
+    end
+
+    # Grace notes wait for the note they come before, and are dropped before
+    # a rest, a spacer, the later link of a tied note, or the end of the voice,
+    # since the model holds them only on a note they lead to.
+    def add_graces(graces)
+      return if graces.graces.empty?
+
+      @pending_graces = @pending_graces ? @pending_graces + graces : graces
     end
 
     def add_rest(rhythmic_value, line, marks = MarkReader::NONE)
-      append(line, kind: :rest, rhythmic_value: under_tuplet(rhythmic_value), marks: marks)
+      silent(line, kind: :rest, rhythmic_value: under_tuplet(rhythmic_value), marks: marks)
     end
 
     def add_whole_bar_rest(fraction, line, marks = MarkReader::NONE)
-      append(line, kind: :whole_bar_rest, fraction: fraction, marks: marks)
+      silent(line, kind: :whole_bar_rest, fraction: fraction, marks: marks)
     end
 
     # A spacer inside a tuplet is written time, so it sounds scaled, and the
     # rest that may come to stand for it carries the ratio.
     def add_spacer(fraction, line, marks = MarkReader::NONE)
-      append(line, kind: :spacer, fraction: sounding(fraction), marks: marks, tuplet: @tuplet)
+      silent(line, kind: :spacer, fraction: sounding(fraction), marks: marks, tuplet: @tuplet)
     end
 
     # The dynamics a <> carries, held like a bar check inside a tied note.
@@ -146,10 +160,16 @@ module HeadMusic::Notation::LilyPond
 
     def finish
       terminate(nil)
+      @pending_graces = nil
       self
     end
 
     private
+
+    def silent(line, **attributes)
+      @pending_graces = nil
+      append(line, **attributes)
+    end
 
     def under_tuplet(rhythmic_value)
       @tuplet ? rhythmic_value.with_tuplet(@tuplet) : rhythmic_value

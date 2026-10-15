@@ -226,6 +226,33 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
     end
   end
 
+  describe "#add_graces" do
+    let(:grace) do
+      HeadMusic::Notation::LilyPond::GraceReader::Grace.new(
+        pitches: [d4], rhythmic_value: HeadMusic::Rudiment::RhythmicValue.get(:sixteenth), slashed: true, tied: false,
+        marks: HeadMusic::Notation::LilyPond::MarkReader::NONE
+      )
+    end
+    let(:graces) { HeadMusic::Notation::LilyPond::GraceReader::Graces.new(graces: [grace], implied_slur: false) }
+
+    it "gives the grace notes to the next note" do
+      stream.add_graces(graces)
+      stream.bar_check(1)
+      stream.add_note([c4], quarter, 1)
+      expect(stream.finish.events.map { |event| event.graces.length }).to eq [0, 1]
+    end
+
+    it "drops them before a rest" do
+      [stream.add_graces(graces), stream.add_rest(quarter, 1), stream.add_note([c4], quarter, 1)]
+      expect(stream.finish.events.map { |event| event.graces.length }).to eq [0, 0]
+    end
+
+    it "ignores an empty run" do
+      [stream.add_graces(graces.with(graces: [])), stream.add_note([c4], quarter, 1)]
+      expect(stream.finish.events.first.graces).to eq []
+    end
+  end
+
   describe "#change_staff" do
     it "holds a staff change inside a tied note" do
       stream.add_note([c4], half, 1)

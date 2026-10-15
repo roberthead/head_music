@@ -10,8 +10,13 @@ module HeadMusic::Notation::LilyPond
   # Slur and phrasing-slur marks are kept in the order written, each with
   # the name a \= gives it, for the placer to pair. So are hairpin marks:
   # :crescendo, :diminuendo, or :end, whether written \<, \cresc, or \!.
+  # A span opened on a note's first grace note starts from_grace.
   class MarkReader
-    SpanMark = Data.define(:kind, :opening, :id)
+    SpanMark = Data.define(:kind, :opening, :id, :from_grace) do
+      def initialize(kind:, opening:, id:, from_grace: false)
+        super
+      end
+    end
 
     Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks, :hairpin_marks) do
       def initialize(articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [])

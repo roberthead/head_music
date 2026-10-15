@@ -3,21 +3,46 @@ module HeadMusic::Notation::LilyPond
   # Reads the items a sequence of music is made of — notes, rests, chords and
   # the marks after them, ties, bar checks, and \change Staff commands — into
   # the stream of the context that holds them. A SettingReader reads the \key,
-  # \time, and \clef commands among them. Everything that opens a level of its
-  # own belongs to the MusicReader that calls this one.
+  # \time, and \clef commands among them, and a GraceReader the grace notes
+  # before a note. Everything that opens a level of its own belongs to the
+  # MusicReader that calls this one.
   class MusicItemReader
     def initialize(cursor, readers)
       @cursor = cursor
       @readers = readers
       @duration_reader = DurationReader.new
       @mark_reader = MarkReader.new(cursor)
+      @grace_reader = GraceReader.new(cursor, self)
     end
 
     def read_note(context)
+      add_note(context, *read_sounds)
+    end
+
+    # The pitches, value, and line of the note or chord at the cursor, read
+    # through the pitch and duration readers so they carry on to what follows.
+    def read_sounds
+      return read_chord_sounds if cursor.peek.type == :open_chord
+
       token = cursor.advance
       reject_multiplier(token)
-      pitch = readers.current.pitch(token)
-      add_note(context, [pitch], duration_reader.rhythmic_value(token), token.line)
+      [[readers.current.pitch(token)], duration_reader.rhythmic_value(token), token.line]
+    end
+
+    # A rest or spacer's duration carries on, even where it is dropped.
+    def carry_duration(token)
+      duration_reader.rhythmic_value(token)
+    end
+
+    # Grace notes wait in the stream for the note they come before.
+    def read_grace(context)
+      context.stream.add_graces(grace_reader.read)
+    end
+
+    # \afterGrace's grace notes come after a note, which the model cannot
+    # hold, so they are read and dropped.
+    def skip_grace(command)
+      grace_reader.read(command)
     end
 
     def read_rest(context)
@@ -39,13 +64,7 @@ module HeadMusic::Notation::LilyPond
     def read_chord(context)
       return read_marker(context) if marker?
 
-      opener = cursor.advance
-      notes = []
-      notes << chord_note until cursor.peek.type == :close_chord
-      closer = cursor.advance
-      reject_multiplier(closer)
-      pitches = readers.current.chord_pitches(notes)
-      add_note(context, pitches, duration_reader.rhythmic_value(closer), opener.line)
+      add_note(context, *read_chord_sounds)
     end
 
     def marker?
@@ -94,7 +113,16 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :cursor, :readers, :duration_reader, :mark_reader
+    attr_reader :cursor, :readers, :duration_reader, :mark_reader, :grace_reader
+
+    def read_chord_sounds
+      opener = cursor.advance
+      notes = []
+      notes << chord_note until cursor.peek.type == :close_chord
+      closer = cursor.advance
+      reject_multiplier(closer)
+      [readers.current.chord_pitches(notes), duration_reader.rhythmic_value(closer), opener.line]
+    end
 
     # A tie is a mark like the others, so marks may follow it as well as
     # precede it: c4-.~\p is one note's staccato, tie, and dynamic.
