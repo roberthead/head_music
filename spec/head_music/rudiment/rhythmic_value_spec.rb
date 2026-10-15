@@ -408,6 +408,11 @@ describe HeadMusic::Rudiment::RhythmicValue do
       expect(described_class.get("quintuplet eighth")).to be_nil
     end
 
+    it "does not read a tuplet word after the leading ratio word as a plain value" do
+      names = ["eighth triplet", "dotted triplet eighth", "quarter tied to eighth triplets", :triplet_eighth, :eighth_triplet]
+      expect(names.map { |name| described_class.get(name) }).to all(be_nil)
+    end
+
     it "raises for an unknown ratio given to get" do
       expect { described_class.get(:eighth, tuplet: "quintuplet") }.to raise_error(ArgumentError, /unknown tuplet ratio/)
     end

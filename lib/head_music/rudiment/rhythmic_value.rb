@@ -12,9 +12,10 @@ class HeadMusic::Rudiment::RhythmicValue
   # A leading "triplet" or "5:4" word on one link of a name.
   TUPLET_PREFIX = /\A(triplet|\d+\s*:\s*\d+)\s+(.+)\z/i
 
-  # A leading word naming a tuplet without its ratio, such as "quintuplet",
-  # which the unanchored word parsers would otherwise read as a plain value.
-  UNNAMED_TUPLET_PREFIX = /\A\w*(?<!tri)plets?\b/i
+  # A word naming a tuplet anywhere but the leading ratio word, such as
+  # "quintuplet eighth" or "eighth triplet", which the unanchored word parsers
+  # would otherwise read as a plain value.
+  TUPLET_WORD = /plets?(?![a-z])/i
 
   attr_reader :unit, :dots, :tied_value, :tuplet_ratio
 
@@ -61,7 +62,7 @@ class HeadMusic::Rudiment::RhythmicValue
   end
 
   def self.from_plain_name(name)
-    return if name.match?(TUPLET_PREFIX) || name.match?(UNNAMED_TUPLET_PREFIX)
+    return if name.match?(TUPLET_PREFIX) || name.match?(TUPLET_WORD)
 
     # Then try the new parser which handles all formats
     parsed = Parser.parse(name)
