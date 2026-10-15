@@ -66,14 +66,67 @@ module HeadMusic
         end
       end
 
+      # For a format whose tuplet brackets stop at a barline.
+      def ensure_tuplets_within_bars(flow)
+        flow.voices.each do |voice|
+          bracket = HeadMusic::Notation::TupletBrackets.for(voice, error_class: render_error_class).find(&:crosses_barline?)
+          next unless bracket
+
+          raise render_error_class, "#{format_name} cannot write the #{bracket.label} " \
+            "across the barline into bar #{bracket.bar_numbers[1]}"
+        end
+      end
+
+      # A ratio such as 7:4 rounds its notes onto the subtick grid, so a mark
+      # strictly inside one of them, where no note starts, lies at no exact
+      # time a writer can say.
+      def ensure_no_marks_inside_rounded_notes(flow)
+        owned_timed_marks(flow).each do |voices, label, position|
+          note = voices.lazy.filter_map { |voice| rounded_note_holding(voice, position) }.first
+          next if note.nil? || exact_onset?(flow, position)
+
+          raise render_error_class, "the #{label} at #{position} falls inside the #{note.rhythmic_value} at #{note.position}, " \
+            "whose ratio does not land on whole subticks, where no note starts"
+        end
+      end
+
       # Each as [label, position, whether it is a hairpin's end].
       def timed_marks(flow)
-        owners = flow.parts + flow.voices
-        levels = owners.flat_map(&:dynamic_events).map { |event| ["dynamic #{event.name_key}", event.position, false] }
-        hairpins = owners.flat_map(&:spans).select(&:hairpin?)
+        owned_timed_marks(flow).map { |_, *mark| mark }
+      end
+
+      # Each as [the voices it marks, label, position, whether it is a
+      # hairpin's end].
+      def owned_timed_marks(flow)
+        [*flow.parts.map { |part| [part, part.voices] }, *flow.voices.map { |voice| [voice, [voice]] }]
+          .flat_map { |owner, voices| owner_timed_marks(owner).map { |mark| [voices, *mark] } }
+      end
+
+      def owner_timed_marks(owner)
+        levels = owner.dynamic_events.map { |event| ["dynamic #{event.name_key}", event.position, false] }
+        hairpins = owner.spans.select(&:hairpin?)
         levels +
           hairpins.map { |span| ["#{span.name_key} start", span.from, false] } +
           hairpins.map { |span| ["#{span.name_key} end", span.to, true] }
+      end
+
+      def rounded_note_holding(voice, position)
+        voice_event = voice.voice_event_sounding_at(position)
+        return unless voice_event && voice_event.position < position
+
+        voice_event if voice_event.rhythmic_value.tied_chain.any? { |link| link_rounds?(link) }
+      end
+
+      def exact_onset?(flow, position)
+        flow.voices.any? { |voice| voice.voice_event_at(position)&.onset_remainder&.zero? }
+      end
+
+      def link_rounds?(link)
+        (link.link_fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE).denominator != 1
+      end
+
+      def format_name
+        render_error_class.name.split("::")[-2]
       end
 
       def raise_gap_error(voice, expected_position, found_voice_event)

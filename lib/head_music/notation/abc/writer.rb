@@ -34,6 +34,7 @@ module HeadMusic::Notation::ABC
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
+      ensure_no_marks_inside_rounded_notes(flow)
       ensure_one_level_per_position(flow.parts + flow.voices, line: "an ABC voice")
       ensure_one_hairpin_at_a_time((flow.parts + flow.voices).flat_map(&:spans), line: "an ABC voice")
       ensure_marks_reachable

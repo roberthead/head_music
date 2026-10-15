@@ -88,6 +88,98 @@ describe HeadMusic::Notation::PreflightChecks do
     end
   end
 
+  context "with a tuplet note of a ratio that rounds" do
+    let(:flow) do
+      HeadMusic::Content::Flow.new.tap do |septuplets|
+        voice = septuplets.add_voice
+        7.times { voice.place(voice.next_position, HeadMusic::Rudiment::RhythmicValue.get(:sixteenth, tuplet: "7:4"), "C4") }
+        voice.place(voice.next_position, "dotted half", "D4")
+        voice.group_tuplet(from: "1:1", to: "1:2")
+      end
+    end
+
+    {
+      "a voice dynamic" => ->(flow) { flow.voices.first.place_dynamic("1:1:200", :f) },
+      "a part dynamic" => ->(flow) { flow.parts.first.place_dynamic("1:1:200", :f) },
+      "a hairpin start" => ->(flow) { flow.voices.first.add_span(:crescendo, from: "1:1:200", to: "1:3") }
+    }.each do |description, placement|
+      context "with #{description} strictly inside the note" do
+        before { placement.call(flow) }
+
+        render_errors.each do |method, error|
+          it "refuses to write it with #{method}" do
+            expect { flow.public_send(method) }
+              .to raise_error(error, /at 1:1:200 falls inside the 7:4 sixteenth at 1:1:137:034, whose ratio does not land on whole subticks/)
+          end
+        end
+      end
+    end
+
+    describe "#ensure_no_marks_inside_rounded_notes" do
+      let(:checker) do
+        Class.new do
+          include HeadMusic::Notation::PreflightChecks
+
+          def check(flow) = ensure_no_marks_inside_rounded_notes(flow)
+
+          def render_error_class = HeadMusic::Notation::MusicXML::RenderError
+        end.new
+      end
+
+      it "lets a mark at a rounded note's onset through" do
+        flow.voices.first.place_dynamic("1:1:137:034", :f)
+        expect { checker.check(flow) }.not_to raise_error
+      end
+
+      it "lets a mark through where another voice's note starts" do
+        other = flow.add_voice
+        [:eighth, "dotted half", :eighth].each { |value| other.place(other.next_position, value, "E4") }
+        flow.voices.first.place_dynamic("1:1:480", :f)
+        expect { checker.check(flow) }.not_to raise_error
+      end
+
+      it "lets a mark through inside a note of a ratio that lands on whole subticks" do
+        voice = HeadMusic::Content::Flow.new.add_voice
+        3.times { voice.place(voice.next_position, HeadMusic::Rudiment::RhythmicValue.get(:quarter, tuplet: "3:2"), "C4") }
+        voice.place_dynamic("1:1:100", :f)
+        expect { checker.check(voice.flow) }.not_to raise_error
+      end
+    end
+  end
+
+  describe "#ensure_tuplets_within_bars" do
+    let(:checker) do
+      Class.new do
+        include HeadMusic::Notation::PreflightChecks
+
+        def check(flow) = ensure_tuplets_within_bars(flow)
+
+        def render_error_class = HeadMusic::Notation::ABC::RenderError
+      end.new
+    end
+
+    def tupleted_flow(opening)
+      HeadMusic::Content::Flow.new.tap do |tupleted|
+        voice = tupleted.add_voice
+        voice.place("1:1", opening, "C4")
+        3.times { voice.place(voice.next_position, HeadMusic::Rudiment::RhythmicValue.get(:quarter, tuplet: "3:2"), "D4") }
+        voice.place(voice.next_position, opening, "E4")
+        voice.group_tuplet(from: voice.voice_events[1].position, to: voice.voice_events.last.position)
+      end
+    end
+
+    it "lets a group within its bar through" do
+      expect { checker.check(tupleted_flow(:half)) }.not_to raise_error
+    end
+
+    it "refuses a group across a barline, naming it" do
+      expect { checker.check(tupleted_flow("dotted half")) }.to raise_error(
+        HeadMusic::Notation::ABC::RenderError,
+        "ABC cannot write the 3:2 tuplet from 1:4:000 to 2:2:000 across the barline into bar 2"
+      )
+    end
+  end
+
   describe "#ensure_one_hairpin_at_a_time" do
     let(:checker) do
       Class.new do
