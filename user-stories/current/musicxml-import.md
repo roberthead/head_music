@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T07:55:48-07:00
   planned_at:   2026-10-15T08:22:45-07:00
   finished_at:
-  updated_at:   2026-10-15T08:22:45-07:00
+  updated_at:   2026-10-15T10:28:53-07:00
 -->
 
 # Story: MusicXML Import
@@ -51,76 +51,76 @@ flow.voices.length # => 4
 
 ### Entry point and structure
 
-- [ ] `HeadMusic::Notation::MusicXML.parse(string)` returns a `HeadMusic::Content::Flow`
-- [ ] `<score-partwise>` documents are read, and `<score-timewise>` documents are read by regrouping their measures into parts
-- [ ] Malformed XML, a root that is neither, and a `<duration>` with no `<divisions>` in force raise `MusicXML::ParseError` naming the line or measure
-- [ ] UTF-8 with or without a BOM, UTF-16 with a BOM, and binary strings from `File.binread` parse. The DOCTYPE is never fetched; a document that declares entities, or whose text exceeds REXML's expansion limits, raises `ParseError`. A compressed `.mxl` raises `UnsupportedFeatureError` naming the follow-up
-- [ ] A `<divisions>` change applies from its point onward, within its part. A `<backup>` before the start of its measure, a `<chord/>` with no note before it, or a `<staff>` number beyond `<staves>` raises `ParseError` naming the measure
-- [ ] `<multiple-rest>` is skipped; `<measure-repeat>`, overfull measures, short measures in mid-piece that do not pair with an `implicit` neighbor, and compound meters such as 3+2/8 raise `UnsupportedFeatureError` naming the measure. Key, time, and clef changes in the middle of a bar are skipped
-- [ ] Elements the reader does not use are skipped, not rejected, so that every real export imports. These include `<print>`, `<defaults>`, `<credit>`, `<identification>` beyond the creators, stems, noteheads, fingerings, bowings, `<technical>`, `<harmony>`, `<figured-bass>`, `<part-group>`, and MIDI instrument data
-- [ ] `MusicXML::UnsupportedFeatureError` is raised only for valid content where skipping would corrupt the music. Examples are nested tuplets, as the prerequisite rules, and chord tones with different durations. Each names its measure
+- [x] `HeadMusic::Notation::MusicXML.parse(string)` returns a `HeadMusic::Content::Flow`
+- [x] `<score-partwise>` documents are read, and `<score-timewise>` documents are read by regrouping their measures into parts
+- [x] Malformed XML, a root that is neither, and a `<duration>` with no `<divisions>` in force raise `MusicXML::ParseError` naming the line or measure
+- [x] UTF-8 with or without a BOM, UTF-16 with a BOM, and binary strings from `File.binread` parse. The DOCTYPE is never fetched; a document that declares entities, or whose text exceeds REXML's expansion limits, raises `ParseError`. A compressed `.mxl` raises `UnsupportedFeatureError` naming the follow-up
+- [x] A `<divisions>` change applies from its point onward, within its part. A `<backup>` before the start of its measure, a `<chord/>` with no note before it, or a `<staff>` number beyond `<staves>` raises `ParseError` naming the measure
+- [x] `<multiple-rest>` is skipped; `<measure-repeat>`, overfull measures, short measures in mid-piece that the next measure does not complete (a short measure the next one completes is one bar with it, `implicit` or not, unless the next changes the meter), and compound meters such as 3+2/8 raise `UnsupportedFeatureError` naming the measure. Key, time, and clef changes in the middle of a bar are skipped
+- [x] Elements the reader does not use are skipped, not rejected, so that every real export imports. These include `<print>`, `<defaults>`, `<credit>`, `<identification>` beyond the creators, stems, noteheads, fingerings, bowings, `<technical>`, `<harmony>`, `<figured-bass>`, `<part-group>`, and MIDI instrument data. A note or rest with `print-object="no"` takes its time as a `<forward>` does
+- [x] `MusicXML::UnsupportedFeatureError` is raised only for valid content where skipping would corrupt the music. Examples are nested tuplets, as the prerequisite rules, and chord tones with different durations. Each names its measure
 
 ### Identity
 
-- [ ] Reading inverts the writer: `<movement-title>` names the flow when present, and `<work-title>` otherwise; with both, the work title becomes the flow's `Work`
-- [ ] With no `<work-title>` or `<movement-title>`, a `<credit>` whose `<credit-type>` is title names the flow, as many Sibelius exports carry the title only there
-- [ ] `<creator type="composer">` becomes the flow's composer, as a composer `Credit` when the flow has a `Work`. Other creator types, including the arranger that the writer takes as an option, are skipped
-- [ ] `<part-name>` becomes the name of the part's player, a `Player` with no project, as the kern reader does
-- [ ] `<instrument-sound>` ids map to catalog instruments through a table the writer shares, and the writer writes `<score-instrument><instrument-sound>` from it; an unmapped id gives a nil instrument
-- [ ] The writer resets `<transpose>` when an instrument change returns to concert pitch, writes clef changes after the first measure, and writes `clef-octave-change`
-- [ ] **Breaking.** The writer's work title defaults to `flow.work.title`, so a flow read with a `Work` writes it back
+- [x] Reading inverts the writer: `<movement-title>` names the flow when present, and `<work-title>` otherwise; with both, the work title becomes the flow's `Work`
+- [x] With no `<work-title>` or `<movement-title>`, a `<credit>` whose `<credit-type>` is title names the flow, as many Sibelius exports carry the title only there
+- [x] `<creator type="composer">` becomes the flow's composer, as a composer `Credit` when the flow has a `Work`. Other creator types, including the arranger that the writer takes as an option, are skipped
+- [x] `<part-name>` becomes the name of the part's player, a `Player` with no project, as the kern reader does
+- [x] `<instrument-sound>` ids map to catalog instruments through a table the writer shares, and the writer writes `<score-instrument><instrument-sound>` from it; an unmapped id gives a nil instrument
+- [x] The writer resets `<transpose>` when an instrument change returns to concert pitch, writes clef changes after the first measure, and writes `clef-octave-change`
+- [x] **Breaking.** The writer's work title defaults to `flow.work.title`, so a flow read with a `Work` writes it back
 
 ### Parts, staves, and voices
 
-- [ ] Each `<part>` becomes a part, in document order
-- [ ] Within a part, each `<voice>` value becomes a voice, in order of first appearance; values are labels, not numbers, and a note with no `<voice>` is voice 1
-- [ ] Parts with fewer measures than the first are padded with rests
-- [ ] `<backup>` and `<forward>` move the voice cursor. A `<forward>` gap in a voice becomes a rest, and a voice that begins late or ends early is padded with rests, so every voice satisfies `Voice::Continuity`
-- [ ] `<staves>` builds the part's staff system, braced as `StaffSystem.grand_staff` does, and `<staff>` assigns each voice to its staff
-- [ ] A voice whose `<staff>` changes at a barline becomes a staff crossing (`Voice#assign_staff`). A change in the middle of a bar is skipped, and the voice stays on its staff, since the model crosses only at barlines
-- [ ] `<clef>` sets each staff's clef, and a later clef at a barline becomes a clef change (`Staff#change_clef`)
+- [x] Each `<part>` becomes a part, in document order
+- [x] Within a part, each `<voice>` value becomes a voice, in order of first appearance; values are labels, not numbers, and a note with no `<voice>` is voice 1
+- [x] Parts with fewer measures than the first are padded with rests
+- [x] `<backup>` and `<forward>` move the voice cursor. A `<forward>` gap in a voice becomes a rest, and a voice that begins late or ends early is padded with rests, so every voice satisfies `Voice::Continuity`
+- [x] `<staves>` builds the part's staff system, braced as `StaffSystem.grand_staff` does, and `<staff>` assigns each voice to its staff
+- [x] A voice whose `<staff>` changes at a barline becomes a staff crossing (`Voice#assign_staff`). A change in the middle of a bar is skipped, and the voice stays on its staff, since the model crosses only at barlines
+- [x] `<clef>` sets each staff's clef, and a later clef at a barline becomes a clef change (`Staff#change_clef`)
 
 ### Notes and rhythms
 
-- [ ] `<pitch>` (step, alter, octave) maps to pitches, and `<unpitched>` to an unpitched note event of the part's instrument, or an unpitched sound with no instrument when the part has none
-- [ ] `<rest>` maps to rest events, and `<rest measure="yes">` to a rest filling its bar
-- [ ] `<chord/>` adds a pitch to the note event before it
-- [ ] `<type>`, `<dot>`, and `<time-modification>` give the written value and place the note. A `<duration>` within one division of it is exporter rounding and is ignored; a larger disagreement raises `ParseError` naming the measure. A note with no `<type>` takes its value from `<duration>` and `<divisions>`
-- [ ] `<time-modification>` and `<tuplet>` map to tuplet values and groups, and `<grace>` to grace notes, as the prerequisite models them; a grace chord reads as one grace note with several pitches
-- [ ] `<tie>`, falling back to `<tied>`, folds tied notes into one placement, including across barlines; where they disagree, `<tie>` wins, and `let-ring` and `continue` are skipped. A tie start with no matching stop is dropped and its note keeps its written value. A tie between different pitches raises `ParseError`
-- [ ] Cue notes (`<cue/>`) read as rests of their length
-- [ ] A first measure marked `implicit="yes"` is a pickup (bar 0), and a short final bar reads without error
+- [x] `<pitch>` (step, alter, octave) maps to pitches, and `<unpitched>` to an unpitched note event of the part's instrument, or an unpitched sound with no instrument when the part has none
+- [x] `<rest>` maps to rest events, and `<rest measure="yes">` to a rest filling its bar
+- [x] `<chord/>` adds a pitch to the note event before it
+- [x] `<type>`, `<dot>`, and `<time-modification>` give the written value and place the note. A `<duration>` within one division of it is exporter rounding and is ignored; a larger disagreement raises `ParseError` naming the measure. A note with no `<type>` takes its value from `<duration>` and `<divisions>`
+- [x] `<time-modification>` and `<tuplet>` map to tuplet values and groups, and `<grace>` to grace notes, as the prerequisite models them; a grace chord reads as one grace note with several pitches
+- [x] `<tie>`, falling back to `<tied>`, folds tied notes into one placement, including across barlines; where they disagree, `<tie>` wins, and `let-ring` and `continue` are skipped. A tie start with no matching stop is dropped and its note keeps its written value. A tie on some pitches of a chord, or between chords that share only some pitches, is skipped; a tie between pitches that share nothing raises `ParseError`
+- [x] Cue notes (`<cue/>`) read as rests of their length
+- [x] A first measure marked `implicit="yes"` is a pickup (bar 0), and a short final bar reads without error
 
 ### Timeline
 
-- [ ] `<key>` `fifths` maps to the key signature and `mode` to its tonal context, including changes at later barlines
-- [ ] `<time>` maps to the meter, including changes at later barlines
-- [ ] `<sound tempo>` maps to a tempo change at its bar; a tempo in the middle of a bar is skipped, since the timeline changes only at downbeats
-- [ ] Parts that disagree on the key at concert pitch keep the first part's, since the timeline holds one key
-- [ ] `<transpose>` (`diatonic`, `chromatic`, `octave-change`) is honored, so a transposing part's pitches and key land in concert pitch, including after an instrument change. A numbered `<transpose>` applies to its staff only
+- [x] `<key>` `fifths` maps to the key signature and `mode` to its tonal context, including changes at later barlines
+- [x] `<time>` maps to the meter, including changes at later barlines
+- [x] `<sound tempo>` maps to a tempo change at its bar; a tempo in the middle of a bar is skipped, since the timeline changes only at downbeats
+- [x] Parts that disagree on the key at concert pitch keep the first part's, since the timeline holds one key
+- [x] `<transpose>` (`diatonic`, `chromatic`, `octave-change`) is honored, so a transposing part's pitches and key land in concert pitch, including after an instrument change. A numbered `<transpose>` applies to its staff only
 
 ### Markings and spans
 
-- [ ] Articulations, ornaments, and note dynamics read back from `<notations>` as the writer writes them; others, such as fermatas, are skipped
-- [ ] `<direction>` dynamics become dynamic events at their position, `<offset>` included: on the voice when `<voice>` is given, and on the part otherwise
-- [ ] `<wedge>`s become hairpins, paired by number; an unterminated or mismatched wedge is dropped, as the other readers drop hairpins
-- [ ] `<slur>`s become slurs, paired by number. A slur that starts or stops on a rest reads as a phrase mark, since a slur cannot sit on one, so the writer's phrase marks come back. An unmatched slur is dropped
-- [ ] `<barline>` styles, repeats, and endings, `<rehearsal>`, `<segno>`, `<coda>`, and the Fine, To Coda, D.C., and D.S. words with their `<sound>` attributes become bar markings
-- [ ] `<beam>`s read back as beam breaks where they differ from the default grouping, so the writer's beams round-trip
+- [x] Articulations, ornaments, and note dynamics read back from `<notations>` as the writer writes them; others, such as fermatas, are skipped
+- [x] `<direction>` dynamics become dynamic events at their position, `<offset>` included: on the voice when `<voice>` is given, and on the part otherwise
+- [x] `<wedge>`s become hairpins, paired by number; an unterminated or mismatched wedge is dropped, as the other readers drop hairpins
+- [x] `<slur>`s become slurs, paired by number. A slur that starts or stops on a rest reads as a phrase mark, since a slur cannot sit on one, so the writer's phrase marks come back. An unmatched slur is dropped
+- [x] `<barline>` styles, repeats, and endings, `<rehearsal>`, `<segno>`, `<coda>`, and the Fine, To Coda, D.C., and D.S. words with their `<sound>` attributes become bar markings
+- [x] `<beam>`s read back as beam breaks where they differ from the default grouping, so the writer's beams round-trip
 
 ### Lyrics
 
-- [ ] `<lyric number="N">` attaches a syllable to its note event as verse N, and `<syllabic>` `begin` and `middle` set `hyphen_after`. A `<lyric>` with no `number` is verse 1, and non-integer lyric numbers are ranked in order of first appearance
+- [x] `<lyric number="N">` attaches a syllable to its note event as verse N, and `<syllabic>` `begin` and `middle` set `hyphen_after`. A `<lyric>` with no `number` is verse 1, and non-integer lyric numbers are ranked in order of first appearance
 
 ### Round trip and real files
 
-- [ ] The Speed the Plough golden document, and every flow in the shared fixture modules (`ABCFixtures`, `LilyPondFixtures`, `MarkingFixtures`, `LayoutFixtures`, `NavigationFixtures`, `HairpinFixtures`, `TupletFixtures`), round-trip: rendered, parsed, and rendered again with the same writer options, they yield the same document. Where the reader moves a one-voice part's dynamics onto the part, reading is idempotent instead
-- [ ] The ABC, LilyPond, and kern fixtures, rendered to MusicXML and parsed back, give flows equal to the ones that were rendered, compared field by field with any exclusions named
-- [ ] The seeded generators in `spec/support` round-trip 100 seeds each through MusicXML, naming the seed on failure
-- [ ] The gem's own public-domain fixtures, converted by MuseScore 4 (`mscore -o`), parse to the music that was rendered, with MuseScore's changes listed per file, and are committed under `spec/fixtures/notation/music_xml/`; with `MSCORE` set, a spec reconverts them and reports drift. Exports from another scorewriter, the MIT-licensed Sibelius and other files of the LilyPond MusicXML test suite, are committed beside them and parse end to end
-- [ ] With `MUSICXML_CORPUS` pointing at a local folder of MusicXML files, every `.xml` and `.musicxml` file parses, or raises the error the spec names for it, and no error outside `HeadMusic::Notation::ParseError` escapes. The story records sweeps of the music21 corpus, the LilyPond MusicXML test suite, and OpenSheetMusicDisplay's test data
-- [ ] A generated 500-bar, two-part, two-voice document with tuplets, ties, and grace notes reads in linear time; the spec counts calls rather than timing them, and every voice ends unrevised
-- [ ] Maintains 90%+ test coverage
+- [x] The Speed the Plough golden document, and every flow in the shared fixture modules (`ABCFixtures`, `LilyPondFixtures`, `MarkingFixtures`, `LayoutFixtures`, `NavigationFixtures`, `HairpinFixtures`, `TupletFixtures`), round-trip: rendered, parsed, and rendered again with the same writer options, they yield the same document. Where the reader moves a one-voice part's dynamics onto the part, reading is idempotent instead
+- [x] The ABC, LilyPond, and kern fixtures, rendered to MusicXML and parsed back, give flows equal to the ones that were rendered, compared field by field with any exclusions named
+- [x] The seeded generators in `spec/support` round-trip 100 seeds each through MusicXML, naming the seed on failure
+- [x] The gem's own public-domain fixtures, converted by MuseScore 4 (`mscore -o`), parse to the music that was rendered, with MuseScore's changes listed per file, and are committed under `spec/fixtures/notation/music_xml/`; with `MSCORE` or `MUSESCORE_FIXTURES=1` set and MuseScore installed, a spec reconverts them and reports drift. Exports from another scorewriter, the MIT-licensed Sibelius and other files of the LilyPond MusicXML test suite, are committed beside them and parse end to end
+- [x] With `MUSICXML_CORPUS` naming one or more local folders of MusicXML files, separated by `:`, every `.xml` and `.musicxml` file parses (unzipped `.mxl` folders included), or raises the error the spec names for it, and no error outside `HeadMusic::Notation::ParseError` escapes. The story records sweeps of the music21 corpus, the LilyPond MusicXML test suite, and OpenSheetMusicDisplay's test data
+- [x] A generated 500-bar, two-part, two-voice document with tuplets, ties, and grace notes reads in linear time; the spec counts calls rather than timing them, and every voice ends unrevised
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
@@ -128,6 +128,8 @@ flow.voices.length # => 4
 - **Waits on other stories:**
   - Fermatas, tempo words, and the common- and cut-time symbols wait on [Timeline Expressions](timeline-expressions.md).
   - `<extend>` waits on [Lyric Extenders](lyric-extenders.md).
+- **Follow-up: `<instrument-change>`.** The writer writes only an instrument change's `<transpose>`, so a change of instrument reads back as a change of transposition. Writing and reading the MusicXML 4.0 `<instrument-change>` and its `<instrument-sound>` is a feature on both sides, with its own fixtures, and nothing in this story's round trips depends on it beyond one named exclusion.
+- **Not changed: `<voice>` on a one-voice part's directions.** The reader puts a direction with no `<voice>` on the part, so a one-voice part's dynamics come back on the part, and ten fixture flows are checked for idempotence rather than bytes. Writing `<voice>` there would close that, but for one voice the two placements sound and print alike, and MuseScore drops `<voice>` from directions anyway, so the reader could not rely on it.
 - **Skipped for model reasons:** `<part-group>` brackets have no model across parts. A `<staff>` change in the middle of a bar has no model either. Each criterion above says so.
 
 ## Decisions
@@ -143,6 +145,12 @@ flow.voices.length # => 4
   - A `<credit>` title names a flow with no other title.
   - The other-scorewriter fixtures come from the MIT-licensed LilyPond MusicXML test suite (a Sibelius export among them) rather than a Dorico GUI export, which needs Rob; a Dorico export can be added later beside them.
   - The plan's two review pauses (the title default, and the record contract before the fan-out) are not taken.
+- **Implementation choices made without stopping to ask** (2026-10-15; Rob may revise any):
+  - Three criteria were widened by what the corpus sweep found: a short measure the next completes is one bar whether or not it is marked `implicit` (14 music21 files split measures at repeats this way); a tie between chords that share only some pitches is skipped rather than raised; and a note with `print-object="no"` (hidden trill realizations, MuseScore's hidden rests) reads as a `<forward>`.
+  - Wedges pair by number in document order, with a time fallback for a stop that comes before its start, as MuseScore writes them. Pairing purely by time broke the gem's own writer, which reuses a number once its stop is written even where another voice's wedge overlaps; MusicXML defines the number by document order, so that output is valid.
+  - A repeat with no `times` plays as often as its section's highest ending.
+  - Rounding drift is left refused: in three files (Beethoven op. 59 no. 2 i and iii, OSMD's function test) `<duration>`s creep past the bar by more than a division while the written values fit. Reading them means letting the one-division tolerance accumulate across a measure, and three files written at divisions that cannot express their notes are thin evidence for loosening it.
+  - A slur from a dropped grace note starts on the note it led to, and a phrase mark between two notes reads back as a slur, since MusicXML has no phrase mark.
 
 ## Implementation Plan
 
@@ -515,3 +523,30 @@ Record that commit's hash in each prompt, because worktree agents branch from `m
 - **Out of scope:** the follow-on stories, once this lands.
   - Timeline Expressions should add MusicXML tempo reading and writing.
   - MEI Import should reuse `xml_reading.rb` and the security preflight rather than copying them.
+
+## Corpus Sweep
+
+Swept 2026-10-15 with `MUSICXML_CORPUS` naming each folder. `spec/head_music/notation/music_xml_corpus_spec.rb` ran 1,068 examples with 0 failures. The manifest in that spec names each refused file and its error.
+
+| Corpus | Files | Before the sweep's fixes | Final |
+| --- | --- | --- | --- |
+| music21 corpus, `.xml` and `.musicxml` | 123 | 112 read, 10 refused, 1 read but not whole | 114 read, 9 refused |
+| music21 `.mxl`, unzipped | 526 | 481 read, 45 refused | 495 read, 31 refused |
+| LilyPond MusicXML test suite | 141 | 120 read, 21 refused | 120 read, 21 refused |
+| OSMD test/data, `.xml` and `.musicxml` | 261 | 247 read, 14 refused | 251 read, 10 refused |
+| OSMD `.mxl`, unzipped | 16 | 16 read | 16 read |
+| Total | 1,067 | 976 read, 90 refused, 1 not whole | 996 read, 71 refused |
+
+No error outside `HeadMusic::Notation::ParseError` escaped in any round, and no file that read before regressed. Six reader bugs were fixed, each in its own commit with a spec: split measures at repeats, zero-length `<forward>`s, hidden notes, partial chord ties, an overfull measure judged by another part's divisions, and `Position#normalize` carrying counts across a change of count unit.
+
+| What the remaining refusals hold | Files | Example | Decision |
+| --- | --- | --- | --- |
+| Short measure mid-piece | 19 | music21 Bach bwv372, m. 3 | `UnsupportedFeatureError`: the bars cannot hold it |
+| Overfull measure | 19 | 32d-Arpeggio | 16 genuinely overfull, refused; 3 rounding drift, left refused (see Decisions) |
+| No `<divisions>` in force | 6 | 41g-PartNoId | `ParseError`, per the criteria |
+| `<duration>` disagrees with its type by more than a division | 6 | 32b-Articulations-Texts | `ParseError`, per the criteria |
+| `<backup>` before its measure, or a voice overlapping itself | 4 | Schumann op. 41 no. 1 iv | `ParseError`: drift or invalid encoding |
+| Compound meters, nested tuplets, microtones | 10 | 11c, nested_tuplet_finale_test, 01d | `UnsupportedFeatureError` |
+| Chord tones of different lengths, a rest past the bar, a gap with no rest, extreme keys, four dots, triple sharps | 7 | Lindenbaum, 13aa | `UnsupportedFeatureError` |
+
+The trecento Gloria `PMFC_12_9` (1.26 MB, UTF-16 with a byte order mark, three parts, 317 bars) reads in 0.76 s of CPU time. The full reader's call count grows by 3.97 times from 10 bars to 40, and 4.07 times from 40 to 160.
