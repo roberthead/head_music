@@ -14,12 +14,14 @@ module HeadMusic::Notation::ABC
     end
 
     # scale: an extra multiplier applied outside the note's own length
-    # string, used for broken-rhythm pairs (3/2 and 1/2).
-    def rhythmic_value(multiplier_string, scale: Rational(1))
+    # string, used for broken-rhythm pairs (3/2 and 1/2). The length is
+    # written, so a tuplet ratio goes on every link without changing it.
+    def rhythmic_value(multiplier_string, scale: Rational(1), tuplet: nil)
       fraction = unit_note_length * multiplier(multiplier_string) * scale
       validate_fraction!(fraction, multiplier_string)
-      HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction) ||
+      value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction) ||
         raise_error("no rhythmic unit for a note length of #{fraction}", multiplier_string)
+      tuplet ? value.with_tuplet(tuplet) : value
     end
 
     # The bare fraction a length string denotes (e.g. "2" -> 2, "/2" -> 1/2,

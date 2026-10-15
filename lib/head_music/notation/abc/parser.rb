@@ -19,11 +19,12 @@ module HeadMusic::Notation::ABC
       invisible_rest: :handle_invisible_rest, spacer: :handle_spacer, overlay: :handle_overlay,
       broken_rhythm: :handle_broken_rhythm, bar_line: :handle_bar_line, volta: :handle_volta,
       voice_change: :handle_voice_change, beam_break: :handle_beam_break, decoration: :handle_decoration,
-      slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label
+      slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label,
+      tuplet: :handle_tuplet
     }.freeze
 
     # A voice overlay is read only for the levels its invisible rests place.
-    OVERLAY_MUSIC = %i[note chord rest tie broken_rhythm slur_start slur_end].freeze
+    OVERLAY_MUSIC = %i[note chord rest tie broken_rhythm slur_start slur_end tuplet].freeze
 
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
@@ -82,6 +83,12 @@ module HeadMusic::Notation::ABC
 
     def handle_slur_end(_token)
       current_state.close_slur
+    end
+
+    def handle_tuplet(token)
+      line = token.line
+      marker = TupletMarker.for(token.tuplet, compound: header.meter.compound?, line: line)
+      current_state.open_tuplet(marker, line)
     end
 
     # A decoration waits for the note, chord, or rest after it.
@@ -180,6 +187,7 @@ module HeadMusic::Notation::ABC
       state.reject_dangling_decorations
       state.end_overlay(line)
       state.end_invisible_rests
+      state.end_tuplets
     end
 
     # A bar line or volta is not a terminator: a tied note stays pending

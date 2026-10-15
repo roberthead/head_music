@@ -37,13 +37,16 @@ module HeadMusic::Notation::ABC
     # "&" overlays the bar's music; "&)" closes a multi-bar overlay.
     OVERLAY_PATTERN = /&(?!\))/
 
+    # "(p:q:r", with q and r optional: "(3", "(3:2", "(3::2", "(5:4:5".
+    TUPLET_PATTERN = /\((\d+)(?::(\d*))?(?::(\d*))?/
+
     # Recognizable ABC we deliberately don't handle: grace notes ({..}),
-    # tuplets, multi-bar rests (Z), multi-bar overlays, stray dots, and
-    # malformed decorations.
+    # multi-bar rests (Z), multi-bar overlays, stray dots, and malformed
+    # decorations.
     # Ordered so a closed form is tried before its unterminated fallback.
     UNSUPPORTED_PATTERNS = [
       /\{[^}]*\}/, /\{[^}]*/, /![^!]*!/, /![^!]*/,
-      /\(\d/, /\(&/, /&\)/, /\./, /Z\d*/
+      /\(&/, /&\)/, /\./, /Z\d*/
     ].freeze
 
     # Music tokens whose whitespace successor breaks a beam group; other
@@ -53,7 +56,7 @@ module HeadMusic::Notation::ABC
     # Tried in order; the first to consume input wins.
     TOKEN_SCANS = %i[
       scan_quoted_string scan_bar_line scan_bracket scan_note scan_rest
-      scan_invisible_rest scan_spacer scan_tie scan_broken_rhythm scan_slur
+      scan_invisible_rest scan_spacer scan_tie scan_broken_rhythm scan_tuplet scan_slur
       scan_overlay scan_decoration scan_unsupported
     ].freeze
 
@@ -180,6 +183,13 @@ module HeadMusic::Notation::ABC
     # the chord fallback.
     def scan_tie(column)
       @scanner.scan("-") && add(:tie, column: column)
+    end
+
+    def scan_tuplet(column)
+      return false unless @scanner.scan(TUPLET_PATTERN)
+
+      numbers = [@scanner[1], @scanner[2], @scanner[3]].map { |digits| digits.to_s.empty? ? nil : digits.to_i }
+      add(:tuplet, column: column, tuplet: numbers)
     end
 
     def scan_slur(column)

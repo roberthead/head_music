@@ -474,9 +474,20 @@ describe HeadMusic::Notation::ABC::BodyLexer do
       expect(tokens_for("((AB)c)").map(&:type)).to eq([:slur_start, :slur_start, :note, :note, :slur_end, :note, :slur_end])
     end
 
-    it "lexes a tuplet marker with its digit" do
-      tokens = tokens_for("(3ABC")
-      expect(tokens.first.to_h).to include(type: :unsupported, lexeme: "(3")
+    {
+      "(3ABC" => [3, nil, nil],
+      "(3:2ABC" => [3, 2, nil],
+      "(3::2AB" => [3, nil, 2],
+      "(5:4:5ABCDE" => [5, 4, 5],
+      "(3:ABC" => [3, nil, nil]
+    }.each do |body, numbers|
+      it "lexes the tuplet marker in #{body} with its numbers" do
+        expect(tokens_for(body).first.to_h).to include(type: :tuplet, tuplet: numbers)
+      end
+    end
+
+    it "lexes a slur before a tuplet marker" do
+      expect(tokens_for("((3ABC)").map(&:type)).to eq([:slur_start, :tuplet, :note, :note, :note, :slur_end])
     end
 
     it "lexes an unterminated bang decoration as unsupported" do

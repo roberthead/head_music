@@ -7,13 +7,13 @@ module HeadMusic::Notation::ABC
   Token = Data.define(
     :type, :line, :column,
     :letter, :accidental, :octave_marks, :length,
-    :style, :passes, :direction, :voice_id, :lexeme, :notes
+    :style, :passes, :direction, :voice_id, :lexeme, :notes, :tuplet
   ) do
     def initialize(
       type:, line:, column:,
       letter: nil, accidental: nil, octave_marks: nil, length: nil,
       style: nil, passes: nil, direction: nil, voice_id: nil, lexeme: nil,
-      notes: nil
+      notes: nil, tuplet: nil
     )
       super
     end

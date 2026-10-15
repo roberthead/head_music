@@ -665,11 +665,125 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "tuplets" do
+    def tune(body, meter: "4/4", unit: "1/8")
+      parse("X:1\nM:#{meter}\nL:#{unit}\nK:C\n#{body}\n").voices.first
+    end
+
+    def events(voice)
+      voice.voice_events.map(&:to_s)
+    end
+
+    def groups(voice)
+      voice.tuplets.map { |group| [group.to_s, group.unit.to_s] }
+    end
+
+    it "reads (3 as three notes in the time of two, and groups them" do
+      voice = tune("(3CDE F2 G2 A2|")
+      expect([events(voice).first(4), groups(voice)]).to eq [
+        ["triplet eighth C4 at 1:1:000", "triplet eighth D4 at 1:1:320", "triplet eighth E4 at 1:1:640", "quarter F4 at 1:2:000"],
+        [["3:2 tuplet from 1:1:000 to 1:2:000", "eighth"]]
+      ]
+    end
+
+    it "reads triplet quarters over a half" do
+      expect(groups(tune("(3C2D2E2 F4|"))).to eq [["3:2 tuplet from 1:1:000 to 1:3:000", "quarter"]]
+    end
+
+    it "reads an r fewer than p, as a quarter and an eighth under 3:2" do
+      voice = tune("(3:2:2C2D (3:2:2zE2 F4|")
+      expect([events(voice).first(4), groups(voice)]).to eq [
+        ["triplet quarter C4 at 1:1:000", "triplet eighth D4 at 1:1:640", "triplet eighth rest at 1:2:000", "triplet quarter E4 at 1:2:320"],
+        [["3:2 tuplet from 1:1:000 to 1:2:000", "eighth"], ["3:2 tuplet from 1:2:000 to 1:3:000", "eighth"]]
+      ]
+    end
+
+    {"4/4" => "5:2 tuplet from 1:1:000 to 1:2:000", "6/8" => "5:3 tuplet from 1:1:000 to 1:4:000"}.each do |meter, group|
+      it "reads (5 in #{meter} by the meter's default q" do
+        rest = (meter == "4/4") ? "z6" : "z3"
+        expect(groups(tune("(5CDEFG #{rest}|", meter: meter)).map(&:first)).to eq [group]
+      end
+    end
+
+    it "reads (6 as 6:2, as ABC 2.1 does, and (6:4 as a sextuplet" do
+      expect(groups(tune("(6CDEFGA z6|(6:4C/D/E/F/G/A/ z6|")).map(&:first))
+        .to eq ["6:2 tuplet from 1:1:000 to 1:2:000", "6:4 tuplet from 2:1:000 to 2:2:000"]
+    end
+
+    it "rounds a septuplet's onsets from its start, and ends it exactly" do
+      voice = tune("(7:4CDEFGAB z6|", unit: "1/16")
+      expect([voice.voice_events.map { |voice_event| voice_event.position.to_s }, groups(voice), voice.first_gap]).to eq [
+        %w[1:1:000 1:1:137:034 1:1:274:069 1:1:411:103 1:1:548:137 1:1:685:171 1:1:822:206 1:2:000],
+        [["7:4 tuplet from 1:1:000 to 1:2:000", "sixteenth"]], nil
+      ]
+    end
+
+    it "counts a chord once, and a rest and an invisible rest, but not decorations, slurs, or spacers" do
+      voice = tune("(5:4:5!p!(C y[CE]z x).D z6|", unit: "1/16")
+      expect([events(voice).first(5).map { |event| event.split(" at ").first }, groups(voice).map(&:first)]).to eq [
+        ["5:4 sixteenth C4", "5:4 sixteenth C4 E4", "5:4 sixteenth rest", "5:4 sixteenth rest", "5:4 sixteenth D4"],
+        ["5:4 tuplet from 1:1:000 to 1:2:000"]
+      ]
+    end
+
+    it "keeps the ratio apart from a broken rhythm's dot" do
+      expect(events(tune("(3C>DE F2 G2 A2|")).first(3))
+        .to eq ["triplet dotted eighth C4 at 1:1:000", "triplet sixteenth D4 at 1:1:480", "triplet eighth E4 at 1:1:640"]
+    end
+
+    it "continues the count across a bar line" do
+      expect(groups(tune("C6 (3c2d2|e2 C6|"))).to eq [["3:2 tuplet from 1:4:000 to 2:2:000", "quarter"]]
+    end
+
+    it "ends a group on the first link of a note tied out of it" do
+      voice = tune("(3CDE-E2 F4|")
+      expect([events(voice)[2], groups(voice).map(&:first)])
+        .to eq ["triplet eighth tied to quarter E4 at 1:1:640", ["3:2 tuplet from 1:1:000 to 1:2:000"]]
+    end
+
+    it "starts a group on the later link of a note tied into it" do
+      voice = tune("C2-(3CDE F4|")
+      expect([events(voice).first, groups(voice).map(&:first)])
+        .to eq ["quarter tied to triplet eighth C4 at 1:1:000", ["3:2 tuplet from 1:2:000 to 1:3:000"]]
+    end
+
+    it "keeps the ratios but drops the group of a tuplet the tune ends inside" do
+      voice = tune("C6 (3cd|")
+      expect([events(voice).last, groups(voice)]).to eq ["triplet eighth D5 at 1:4:320", []]
+    end
+
+    it "drops the group of a tuplet a voice change ends inside" do
+      flow = parse("X:1\nM:4/4\nL:1/8\nK:C\nV:1\nC6 (3cd\nV:2\nC8|\nV:1\ne z2|\n")
+      expect([flow.voices.first.voice_events.last(3).first(2).map(&:to_s), flow.voices.first.tuplets])
+        .to eq [["triplet eighth D5 at 1:4:320", "eighth E5 at 1:4:640"], []]
+    end
+
+    it "reads a marker that changes no length, as (3:3, as plain notes" do
+      voice = tune("(3:3CDE F2 G2 z|")
+      expect([events(voice).first, groups(voice)]).to eq ["eighth C4 at 1:1:000", []]
+    end
+
+    it "refuses a tuplet inside a tuplet" do
+      expect { tune("(3C(3DEF G4|") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /nested tuplets.*line 5/)
+    end
+
+    it "refuses a tuplet in a voice overlay" do
+      expect { tune("C8 & (3xxx x6|") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /overlay holding notes or rests/)
+    end
+
+    {"(10" => "(10CDEFGABcde|", "(0:2" => "(0:2CD|"}.each do |lexeme, body|
+      it "raises for #{lexeme}, which names no tuplet" do
+        expect { tune(body) }.to raise_error(HeadMusic::Notation::ABC::ParseError) { |error| expect(error.snippet).to eq lexeme }
+      end
+    end
+  end
+
   describe "unsupported features" do
     {
       "a quoted chord symbol" => ['"Am" C|', '"Am"'],
       "a grace note" => ["{g}A|", "{g}"],
-      "a tuplet" => ["(3ABC|", "(3"],
       "an unrecognized decoration" => ["!bogus!A|", "!bogus!"],
       "a double broken rhythm" => ["A>>B|", ">>"],
       "a multi-bar rest" => ["Z4|", "Z4"],
