@@ -225,6 +225,55 @@ describe HeadMusic::Notation::MusicXML::DirectionReader do
       end
     end
 
+    context "with a stop written before its own start, as MuseScore writes one" do
+      let(:measures) do
+        [
+          wedge_xml("crescendo") + note_xml("C4", 8, "whole"),
+          note_xml("D4", 8, "whole") + wedge_xml("stop", number: 2) + wedge_xml("crescendo", number: 2, offset: -4) + wedge_xml("stop", offset: -4),
+          note_xml("E4", 8, "whole")
+        ]
+      end
+
+      it "pairs it with the start that sounds before it" do
+        expect(hairpins(part)).to contain_exactly("crescendo 1:1:000-2:3:000", "crescendo 2:3:000-3:1:000")
+      end
+    end
+
+    context "with a stop on a downbeat written after the last note of the bar before" do
+      let(:measures) do
+        [
+          wedge_xml("crescendo") + note_xml("C4", 8, "whole") + wedge_xml("stop"),
+          wedge_xml("diminuendo") + note_xml("D4", 8, "whole") + wedge_xml("stop"),
+          note_xml("E4", 8, "whole")
+        ]
+      end
+
+      it "ends one hairpin where the next begins" do
+        expect(hairpins(part)).to eq ["crescendo 1:1:000-2:1:000", "diminuendo 2:1:000-3:1:000"]
+      end
+    end
+
+    context "with a stop that sounds before the next start of its number" do
+      let(:measures) do
+        [wedge_xml("stop", number: 2) + quarters("C4", "D4") + wedge_xml("crescendo", number: 2) + quarters("E4", "F4"), whole_note]
+      end
+
+      it "drops the stop and leaves the start open" do
+        expect(hairpins(part)).to eq []
+      end
+    end
+
+    context "with piano_part_marks as MuseScore 4 converted it" do
+      def hairpins_by_time(flow)
+        flow.parts.flat_map { |owner_part| [owner_part, *owner_part.voices] }.flat_map { |owner| hairpins(owner) }.sort
+      end
+
+      it "reads every hairpin at the moments of the render it converted" do
+        read = %w[head_music musescore4].map { |kind| hairpins_by_time(parse(File.binread(MuseScoreFixtures.path("piano_part_marks", kind)))) }
+        expect(read.last).to eq read.first
+      end
+    end
+
     context "with a stop where its wedge starts" do
       let(:measures) { [wedge_xml("crescendo") + wedge_xml("stop") + quarters("C4", "D4", "E4", "F4")] }
 

@@ -8,10 +8,12 @@ module HeadMusic::Notation::MusicXML
   # the first at a position winning; an accent goes to the notes its owner
   # attacks there, or to none.
   #
-  # Wedges pair per part by number in document order: a stop with nothing
-  # open is dropped, a start on an open number replaces the one before, and
-  # a wedge still open at the end is dropped, as is a hairpin its owner
-  # refuses.
+  # Wedges pair per part by number in document order, as MusicXML numbers
+  # them: a start on an open number replaces the one before, and a wedge
+  # still open at the end is dropped, as is a hairpin its owner refuses. A
+  # stop with nothing open waits for a later start of its number that sounds
+  # before it, since MuseScore can write a stop ahead of its own start; one
+  # that finds none is dropped.
   class DirectionReader < MarkReader
     Mark = Data.define(:owner, :bar_number, :onset, :type, :key) do
       def part
@@ -104,18 +106,21 @@ module HeadMusic::Notation::MusicXML
 
     def pair(flow, wedges)
       open = {}
+      waiting = {}
       wedges.each do |mark|
+        position = position_of(flow, mark)
         if mark.type == :stop
-          start = open.delete(mark.key)
-          add_hairpin(flow, start, mark) if start
+          start, from = open.delete(mark.key)
+          start ? add_hairpin(start, from, position) : waiting[mark.key] = position
         else
-          open[mark.key] = mark
+          to = waiting.delete(mark.key)
+          (to && position < to) ? add_hairpin(mark, position, to) : open[mark.key] = [mark, position]
         end
       end
     end
 
-    def add_hairpin(flow, start, stop)
-      start.owner.add_span(start.type, from: position_of(flow, start), to: position_of(flow, stop))
+    def add_hairpin(start, from, to)
+      start.owner.add_span(start.type, from: from, to: to)
     rescue ArgumentError
       nil
     end
