@@ -160,7 +160,7 @@ describe HeadMusic::MIDI::Writer do
     let(:flow) { TupletFixtures.grace_notes_in_pickup }
 
     it "begins the file at the pickup's first note" do
-      expect(notes.map { |key, on, _off| [key, on] }).to eq [[55, 0], [59, 480], [60, 960]]
+      expect(notes.map { |key, on, _off| [key, on] }).to eq [[57, 0], [55, 240], [59, 480], [59, 960], [60, 1020]]
     end
   end
 
