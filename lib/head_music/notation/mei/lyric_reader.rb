@@ -5,15 +5,19 @@ module HeadMusic::Notation::MEI
   # parts them. Its last syllable's @wordpos "i" or "m", or @con "d", sets
   # hyphen_after; the other @con values, as extenders, set nothing.
   #
+  # A Syllable's verse is an integer, so a part's verse @n values that are
+  # not, as MEI's NMTOKEN allows, are ranked after its highest numbered verse
+  # in order of first appearance.
+  #
   # Lyrics on rests, grace notes, and a tie's later links are skipped, as is
-  # a verse whose @n is no number, an empty one, and a second syllable for
-  # a verse, the first one winning. A chord tone's syllable is its chord's.
+  # an empty one and a second syllable for a verse, the first one winning. A
+  # chord tone's syllable is its chord's.
   class LyricReader < MarkReader
     ELISION = "‿"
     HYPHEN_WORD_POSITIONS = %w[i m].freeze
     VERSE_NUMBER = /\A[1-9]\d{0,8}\z/
 
-    Sung = Data.define(:voice_event, :verse, :text, :hyphen_after)
+    Sung = Data.define(:part, :voice_event, :label, :text, :hyphen_after)
 
     def initialize(anchors)
       super
@@ -25,27 +29,33 @@ module HeadMusic::Notation::MEI
       return unless record.note? && !record.grace? && !record.continuation? && voice_event && !voice_event.rest?
 
       element = record.element
-      anchors.children_named(element, "verse").each { |verse| sing(voice_event, verse_number(verse), syllables_of(verse)) }
+      anchors.children_named(element, "verse").each do |verse|
+        sing(record.part, voice_event, XmlReading.attribute(verse, "n", element: verse) || "1", syllables_of(verse))
+      end
       bare = anchors.children_named(element, "syl")
-      sing(voice_event, 1, bare) if bare.any?
-      sing_attribute(voice_event, element)
+      sing(record.part, voice_event, "1", bare) if bare.any?
+      sing_attribute(record.part, voice_event, element)
     end
 
     def apply(_flow)
-      @sung.each do |sung|
-        next if sung.voice_event.syllable(sung.verse)
+      @sung.group_by(&:part).each_value do |sung|
+        verses = verse_numbers(sung.map(&:label).uniq)
+        sung.each do |syllable|
+          verse = verses.fetch(syllable.label)
+          next if syllable.voice_event.syllable(verse)
 
-        sung.voice_event.sing(sung.text, verse: sung.verse, hyphen_after: sung.hyphen_after)
+          syllable.voice_event.sing(syllable.text, verse: verse, hyphen_after: syllable.hyphen_after)
+        end
       end
     end
 
     private
 
-    def verse_number(verse)
-      value = XmlReading.attribute(verse, "n", element: verse)
-      return 1 if value.nil?
-
-      Integer(value, 10) if value.match?(VERSE_NUMBER)
+    def verse_numbers(labels)
+      numbered, named = labels.partition { |label| label.match?(VERSE_NUMBER) }
+      numbers = numbered.to_h { |label| [label, Integer(label, 10)] }
+      highest = numbers.values.max || 0
+      numbers.merge(named.each_with_index.to_h { |label, index| [label, highest + index + 1] })
     end
 
     # The <syl>s of a verse, with :line_break where an <lb/> stands.
@@ -58,12 +68,12 @@ module HeadMusic::Notation::MEI
       end
     end
 
-    def sing(voice_event, verse, pieces)
+    def sing(part, voice_event, label, pieces)
       syls = pieces.grep(REXML::Element)
-      return if verse.nil? || syls.empty?
+      return if syls.empty?
 
       text = joined(pieces)
-      @sung << Sung.new(voice_event, verse, text, hyphen_after?(syls.last)) unless text.empty?
+      @sung << Sung.new(part, voice_event, label, text, hyphen_after?(syls.last)) unless text.empty?
     end
 
     def joined(pieces)
@@ -87,9 +97,9 @@ module HeadMusic::Notation::MEI
         XmlReading.attribute(syl, "con", element: syl) == "d"
     end
 
-    def sing_attribute(voice_event, element)
+    def sing_attribute(part, voice_event, element)
       text = XmlReading.attribute(element, "syl", element: element).to_s.gsub(/\s+/, " ")
-      @sung << Sung.new(voice_event, 1, text, false) unless text.empty?
+      @sung << Sung.new(part, voice_event, "1", text, false) unless text.empty?
     end
   end
 end

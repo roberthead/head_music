@@ -24,6 +24,17 @@ describe HeadMusic::Notation::MEI::LyricReader do
     expect(syllables(flow)).to eq [{1 => {"text" => "Ky"}}, {1 => {"text" => "ri"}}]
   end
 
+  it "ranks the verse @n values that are no number after the highest numbered verse, in order of first appearance" do
+    verses = ->(*labels) { note(labels.map { |label| %(<verse n="#{label}"><syl>#{label}</syl></verse>) }.join, "2") }
+    flow = read(verses.call("refrain", "2") + verses.call("1", "chorus", "refrain"))
+    expect(syllables(flow).map { |sung| sung.transform_values { |syllable| syllable["text"] } }).to eq [{3 => "refrain", 2 => "2"}, {1 => "1", 4 => "chorus", 3 => "refrain"}]
+  end
+
+  it "ranks a part's verses from 1 where none has a number" do
+    flow = read(note(%(<verse n="a"><syl>one</syl></verse><verse n="b"><syl>two</syl></verse>), "1"))
+    expect(syllables(flow).first.keys).to eq [1, 2]
+  end
+
   it "sets hyphen_after from @wordpos i or m, or @con d, and nothing from the other @con values" do
     syls = [%(wordpos="i"), %(wordpos="m"), %(con="d"), %(wordpos="t" con="u")]
     flow = read(syls.map { |attributes| note(%(<verse n="1"><syl #{attributes}>la</syl></verse>)) }.join)
@@ -43,11 +54,11 @@ describe HeadMusic::Notation::MEI::LyricReader do
   describe "the lyrics it skips" do
     let(:content) do
       note(%(<verse><syl>grace</syl></verse>), "8", grace: "unacc") +
-        note(%(<verse n="x"><syl>x</syl></verse><verse n="2"><syl> </syl></verse><verse n="3"><syl>sung</syl></verse>), "2", tie: "i") +
+        note(%(<verse n="2"><syl> </syl></verse><verse n="3"><syl>sung</syl></verse>), "2", tie: "i") +
         note(%(<verse><syl>tied</syl></verse>), "4", tie: "t") + %(<rest dur="4"><verse><syl>rest</syl></verse></rest>)
     end
 
-    it "skips lyrics on rests, grace notes, and a tie's later link, empty ones, and a verse @n that is no number" do
+    it "skips lyrics on rests, grace notes, and a tie's later link, and empty ones" do
       expect(syllables(read(content))).to eq [{3 => {"text" => "sung", "verse" => 3}}, {}]
     end
 
