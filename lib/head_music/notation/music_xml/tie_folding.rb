@@ -41,6 +41,7 @@ module HeadMusic::Notation::MusicXML
           "A tie connects #{keys(head).join(" ")} to #{keys(event).join(" ")}", measure: measure.number, part: @reading.id
         )
       end
+      event.link_offset = head.rhythmic_value.tied_chain.length
       head.rhythmic_value = head.rhythmic_value.append_tied(event.rhythmic_value)
       event.continuation = head
     end

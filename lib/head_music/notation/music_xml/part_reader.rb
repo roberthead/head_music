@@ -94,8 +94,15 @@ module HeadMusic::Notation::MusicXML
         sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue, tie_starts: [], tie_stops: []
       )
       add_ties(@lead, note)
+      add_tuplet_marks(track_for(note.voice), @lead, note)
       move(duration)
       reach(@cursor) unless measure_rest
+    end
+
+    def add_tuplet_marks(track, event, note)
+      note.tuplets.each do |type, _number|
+        track.tuplet_marks << VoiceTrack::TupletMark.new(event, type, note.normal_type, note.normal_dots)
+      end
     end
 
     # A chord tone sounds with the note before it, which must be as long. A

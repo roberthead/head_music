@@ -22,6 +22,7 @@ module HeadMusic::Notation::MusicXML
       @position = @voice.flow.position(@bar_map.first_bar, 1, 0)
       @track.events.each { |event| place_event(event) unless event.fills_bar || event.continuation }
       rest_until(@bar_map.end_time, nil)
+      TupletReader.new(@voice, @track, @reading).group
     end
 
     private
@@ -34,7 +35,7 @@ module HeadMusic::Notation::MusicXML
       elsif gap <= -event.tolerance
         raise ParseError.new("Voice #{@track.label} overlaps itself", **where(event))
       end
-      voice_event = @voice.place(@position, event.rhythmic_value, event.sounds)
+      voice_event = event.voice_event = @voice.place(@position, event.rhythmic_value, event.sounds)
       @position = voice_event.next_position
       @time += event.rhythmic_value.fraction
     end
