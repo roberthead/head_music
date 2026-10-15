@@ -7,7 +7,7 @@ module HeadMusic::Notation::MusicXML
   # The cursor follows <duration>s, which exporters round, so each event
   # also keeps the tolerance of one division in force where it was read.
   class VoiceTrack
-    Event = Struct.new(:measure_index, :cursor, :tolerance, :rhythmic_value, :sounds, :fills_bar) do
+    Event = Struct.new(:measure_index, :cursor, :tolerance, :rhythmic_value, :duration, :sounds, :fills_bar, :cue) do
       def rest?
         sounds.empty?
       end

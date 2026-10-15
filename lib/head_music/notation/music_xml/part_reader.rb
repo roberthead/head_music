@@ -20,8 +20,9 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
-    def initialize(document_part)
+    def initialize(document_part, instrument: nil)
       @document_part = document_part
+      @instrument = instrument
       @tracks = {}
       @divisions = nil
       @meter = HeadMusic::Rudiment::Meter.default
@@ -38,6 +39,7 @@ module HeadMusic::Notation::MusicXML
       @where = {measure: measure.number, part: @document_part.id}
       @measure = Measure.new(index: index, number: measure.number, implicit: measure.implicit?, meter: @meter)
       @cursor = 0
+      @lead = nil
       measure.element.each_element { |element| read_element(element) }
       @measure.tolerance = @divisions ? division : 0
       @measure
@@ -47,6 +49,8 @@ module HeadMusic::Notation::MusicXML
       case element.name
       when "attributes" then read_attributes(element)
       when "note" then read_note(element)
+      when "backup" then move(-duration_of(text(element, "duration", **@where)))
+      when "forward" then reach(move(duration_of(text(element, "duration", **@where))))
       when "direction" then read_direction(element)
       when "sound" then read_sound(element)
       end
@@ -56,6 +60,8 @@ module HeadMusic::Notation::MusicXML
     # middle of a bar is skipped; its divisions still apply from there on.
     def read_attributes(element)
       attributes = AttributesReader.read(element, **@where)
+      raise UnsupportedFeatureError.new("A <measure-repeat> is not supported", **@where) if attributes.measure_repeat
+
       @divisions = attributes.divisions if attributes.divisions
       return unless @cursor.zero?
 
@@ -78,16 +84,46 @@ module HeadMusic::Notation::MusicXML
 
     def read_note(element)
       note = NoteReader.read(element, **@where)
+      return add_to_chord(note) if note.chord
+
       duration = duration_of(note.duration)
-      track = track_for(note.voice)
       measure_rest = note.rest && (note.measure_rest || duration == bar_length)
-      track.add(
+      @lead = track_for(note.voice).add(
         measure_index: @measure.index, cursor: @cursor, tolerance: division, fills_bar: measure_rest,
-        rhythmic_value: measure_rest ? nil : rhythmic_value(note, duration),
-        sounds: note.rest ? [] : [note.pitch]
+        rhythmic_value: measure_rest ? nil : rhythmic_value(note, duration), duration: duration,
+        sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue
       )
-      @cursor += duration
+      move(duration)
       reach(@cursor) unless measure_rest
+    end
+
+    # A chord tone sounds with the note before it, which must be as long. A
+    # cue chord's tones are dropped with it.
+    def add_to_chord(note)
+      raise ParseError.new("A <chord/> rest is not supported", **@where) if note.rest
+      raise ParseError.new("A <chord/> has no note before it", **@where) if @lead.nil? || (@lead.rest? && !@lead.cue)
+      return if @lead.cue || note.cue
+
+      duration = duration_of(note.duration)
+      unless duration == @lead.duration && rhythmic_value(note, duration) == @lead.rhythmic_value
+        raise UnsupportedFeatureError.new("Chord tones of different lengths are not supported", **@where)
+      end
+      @lead.sounds |= [sound(note)]
+    end
+
+    # An unpitched note is a sound of the part's instrument, or an unpitched
+    # sound of none.
+    def sound(note)
+      return note.pitch unless note.unpitched
+
+      HeadMusic::Rudiment::UnpitchedSound.get(@instrument) || HeadMusic::Rudiment::UnpitchedSound.get(nil)
+    end
+
+    def move(duration)
+      @cursor += duration
+      raise ParseError.new("A <backup> reaches before the start of its measure", **@where) if @cursor.negative?
+
+      @cursor
     end
 
     def rhythmic_value(note, duration)
@@ -114,7 +150,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def duration_of(text)
-      raise ParseError.new("A note has no <duration>", **@where) unless text
+      raise ParseError.new("A <duration> is missing", **@where) unless text
       raise ParseError.new("A <duration> has no <divisions> in force", **@where) unless @divisions
 
       duration = rational(text, "<duration>", **@where)

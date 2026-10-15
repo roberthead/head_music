@@ -16,11 +16,13 @@ module HeadMusic::Notation::MusicXML
     private
 
     def build
-      readings = @document.parts.map { |document_part| PartReader.new(document_part).read }
+      identity = IdentityReader.new(@document)
+      readings = @document.parts.map do |document_part|
+        PartReader.new(document_part, instrument: identity.instrument(document_part)).read
+      end
       raise ParseError, "MusicXML input contains no music" if readings.empty?
 
       bar_map = BarMap.new(readings)
-      identity = IdentityReader.new(@document)
       timeline = TimelineReader.new(readings, bar_map)
       flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
       timeline.apply(flow)

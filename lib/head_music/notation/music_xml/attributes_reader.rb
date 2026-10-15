@@ -4,11 +4,13 @@ require_relative "xml_reading"
 module HeadMusic::Notation::MusicXML
   # Reads an <attributes> element: the divisions, and the key and time it
   # states. A <key> for one staff alone is skipped, since the timeline holds
-  # one key for every staff.
+  # one key for every staff. A <multiple-rest> only changes how rests are
+  # drawn, so it is skipped, but reading a <measure-repeat> as rests would
+  # change the music, so it is noted for the part reader to refuse.
   class AttributesReader
     include XmlReading
 
-    Attributes = Struct.new(:divisions, :key, :meter)
+    Attributes = Struct.new(:divisions, :key, :meter, :measure_repeat)
 
     def self.read(element, **where)
       new(element, where).attributes
@@ -26,6 +28,7 @@ module HeadMusic::Notation::MusicXML
           when "divisions" then attributes.divisions = divisions(child)
           when "key" then attributes.key ||= key(child)
           when "time" then attributes.meter ||= meter(child)
+          when "measure-style" then attributes.measure_repeat ||= !first_child(child, "measure-repeat").nil?
           end
         end
       end
