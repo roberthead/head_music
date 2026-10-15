@@ -368,7 +368,7 @@ Each step is one commit. Run the touched specs, then `bundle exec rake` and `bun
    - New `instrument_sounds.{rb,yml}`; the writer writes `<score-instrument><instrument-sound>` from it.
    - New `marking_elements.rb`, extracted from `marking_writer.rb`.
    - Explicit inverse tables in `key_mapper.rb`, with a spec that every mode the writer writes maps back to the same mode.
-   - If Rob agrees, `work_title` defaults to `flow.work&.title`. That is **Breaking.**, because kern-imported flows render differently.
+   - `work_title` defaults to `flow.work&.title`. That is **Breaking.**, because kern-imported flows render differently.
    - The golden document must stay unchanged.
    - The work title defaults to `flow.work&.title` (**Breaking.**), as decided below.
 4. **Errors, Parser, Document, ParsePreflight.**
@@ -496,7 +496,7 @@ Record that commit's hash in each prompt, because worktree agents branch from `m
 - **Round trips.**
   - Byte-identical render, parse, render for every fixture flow and 100 seeds per generator, with the seed in the example name.
   - A field-by-field comparison with named exclusions, plus idempotence.
-- **Real files.** Committed MuseScore Studio 4.7.5 exports of the gem's own public-domain fixtures; a Dorico export from Rob; the MIT LilyPond-suite files; timewise conversions; and a gated MuseScore regeneration check.
+- **Real files.** Committed MuseScore Studio 4.7.5 exports of the gem's own public-domain fixtures; the MIT LilyPond-suite files; timewise conversions; and a gated MuseScore regeneration check.
 - **Corpus.** The gated `MUSICXML_CORPUS` spec with a manifest, swept over music21, the LilyPond suite and OSMD.
 - **Scale.** Count operations at two sizes (step 13 for the core, step 24 for the full reader), plus the `revision.zero?` guard. Never assert wall-clock time.
 - **Security.** Every billion-laughs variant raises `ParseError` quickly. No `RuntimeError` escapes.
@@ -504,7 +504,7 @@ Record that commit's hash in each prompt, because worktree agents branch from `m
 ### Risks & Open Questions
 
 - **Unclosed ties and the skip policy.** The story's tie criterion raises on unclosed ties, but Finale writes ties that start in a first ending and close in the second. The corpus may refuse real files on this. The product manager recommends dropping the tie instead (see Proposed story changes). The plan raises, as the story says, and switching is one branch in `tie_folding.rb`.
-- **Writer changes in steps 2–3.** The transposition reset is a correctness fix, so it is required. Clef changes, octave clefs and `<instrument-sound>` are additions that leave the golden document unchanged. Defaulting `work_title` to `flow.work.title` is **Breaking.**, and needs Rob's decision. Without it, `Work` reads but cannot be written back, and becomes a named exclusion.
+- **Writer changes in steps 2–3.** The transposition reset is a correctness fix, so it is required. Clef changes, octave clefs and `<instrument-sound>` are additions that leave the golden document unchanged. Defaulting `work_title` to `flow.work.title` is **Breaking.**; it was chosen so that a read `Work` writes back.
 - **MuseScore's exit status is unreliable** (0 or 134). Its output also changes between versions, so the committed fixture is the reference, and the gated regeneration only reports drift.
 - **Exporter rounding beyond one division** still raises `ParseError`. The corpus sweep will show whether old Finale files with small divisions trip on it.
 - **Short measures in the middle of a piece** that don't pair with an `implicit` neighbor raise `UnsupportedFeatureError`, and so do overfull ones. kern uses `ParseError` for overfull bars; the plan uses `UnsupportedFeatureError` because the input is valid MusicXML.
