@@ -98,4 +98,25 @@ describe HeadMusic::Notation::MusicXML::Parser do
       expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::ParseError, /no music/)
     end
   end
+
+  describe "elements the reader skips" do
+    let(:flow) do
+      measure = "<harmony><root><root-step>C</root-step></root><kind>major</kind></harmony>" +
+        note_xml("C4", 2, "half", after: "<notehead>diamond</notehead>", notations: "<technical><fingering>1</fingering><up-bow/></technical>") +
+        "<figured-bass><figure><figure-number>6</figure-number></figure><duration>2</duration></figured-bass>" +
+        note_xml("E4", 2, "half", notations: "<technical><down-bow/><fingering>3</fingering></technical>")
+      xml = musicxml_measures(measure)
+        .sub("<part-list>", %(<part-list><part-group type="start" number="1"><group-symbol>bracket</group-symbol></part-group>))
+        .sub("</part-list>", %(<part-group type="stop" number="1"/></part-list>))
+      parse(xml)
+    end
+
+    it "reads the notes around them" do
+      expect(events(flow)).to eq ["half C4 at 1:1:000", "half E4 at 1:3:000"]
+    end
+
+    it "keeps the music whole, a <figured-bass> <duration> moving nothing" do
+      expect_music_whole(flow)
+    end
+  end
 end

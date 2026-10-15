@@ -74,6 +74,21 @@ describe HeadMusic::Notation::MusicXML::BarMap do
     expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /shorter than its 4\/4 bar.*\(measure 2 of part P1\)/)
   end
 
+  describe "an implicit second half that changes the meter" do
+    let(:flow) do
+      three_four = "<attributes><time><beats>3</beats><beat-type>4</beat-type></time></attributes>" + note_xml("E4", 2, "half")
+      parse(musicxml_measures(whole_c, note_xml("D4", 2, "half"), [three_four, {number: "X1", implicit: true}], note_xml("F4", 3, "half", dots: 1)))
+    end
+
+    it "joins the two halves into one bar of the meter before" do
+      expect(voice_event_strings(flow).first).to eq ["whole C4 at 1:1:000", "half D4 at 2:1:000", "half E4 at 2:3:000", "dotted half F4 at 3:1:000"]
+    end
+
+    it "changes the meter at the next downbeat" do
+      expect((1..3).map { |bar| flow.meter_at(bar).to_s }).to eq %w[4/4 4/4 3/4]
+    end
+  end
+
   it "refuses an overfull measure, naming it" do
     xml = musicxml_measures(whole_c, [whole_c + note_xml("D4", 1, "quarter"), {number: "2"}])
     expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /longer than its 4\/4 bar \(measure 2 of part P1\)/)
