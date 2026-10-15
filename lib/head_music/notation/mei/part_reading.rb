@@ -18,6 +18,13 @@ module HeadMusic::Notation::MEI
 
     attr_reader :definition, :measures, :transposition, :instrument_changes, :layers, :roles
 
+    # By track, the first and last events of each tuplet group.
+    attr_writer :tuplet_groups
+
+    def tuplet_groups
+      @tuplet_groups || {}
+    end
+
     def initialize(definition)
       @definition = definition
       @measures = []

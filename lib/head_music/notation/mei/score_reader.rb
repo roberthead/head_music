@@ -36,6 +36,7 @@ module HeadMusic::Notation::MEI
       @state = StaffState.new(opening, groups, @editorial, identity)
       @opening_score_def = opening.score_def
       @ties = TieControls.new(source.index)
+      @tuplets = TupletSpans.new(source.index)
       @measures = []
       @pending = []
     end
@@ -44,6 +45,8 @@ module HeadMusic::Notation::MEI
       walk(@source.score, 1)
       mark_pickup
       @readings.each { |reading| VoiceAssignment.new(reading, @editorial).assign }
+      groups = @tuplets.groups
+      @readings.each { |reading| reading.tuplet_groups = groups }
       Score.new(@measures, @readings, @pending, @ties)
     end
 
@@ -82,6 +85,7 @@ module HeadMusic::Notation::MEI
       where = {measure: attribute(element, "n", element: element)}
       staves, controls = staves_and_controls(element, where)
       @ties.note_controls(controls, where)
+      @tuplets.note_controls(controls, where)
       changes = @state.take_changes
       contents = @readings.to_h { |reading| [reading, read_contents(reading, staves, where)] }
       index = @measures.length
@@ -198,7 +202,7 @@ module HeadMusic::Notation::MEI
 
     def read_layers(staff, number, where)
       @editorial.children_named(staff, "layer").map do |layer|
-        LayerReader.new(layer, @editorial, staff_number: number, duration_default: @state.duration_default(number), **where).read
+        LayerReader.new(layer, @editorial, staff_number: number, tuplets: @tuplets, duration_default: @state.duration_default(number), **where).read
       end
     end
 

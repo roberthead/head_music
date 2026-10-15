@@ -62,7 +62,9 @@ module HeadMusic::Notation::MEI
           grace = track.queue_grace(sounds: sounds.uniq, rhythmic_value: entry.rhythmic_value, slashed: entry.slashed, articulations: [], tie_starts: [])
           fill(pending, track, grace: grace)
         else
-          fill(pending, track, event: add_event(track, entry, sounds, layer.measure_index, staff))
+          entry.track = track
+          entry.event = add_event(track, entry, sounds, layer.measure_index, staff)
+          fill(pending, track, event: entry.event)
         end
       end
     end

@@ -26,7 +26,7 @@ module HeadMusic::Notation::MEI
       "dis" => :displacement, "clef.dis" => :displacement,
       "dis.place" => :displacement_place, "clef.dis.place" => :displacement_place,
       "midi.instrnum" => :midi_program,
-      "grace" => :grace, "metcon" => :boolean, "cue" => :boolean, "tie" => :tie,
+      "grace" => :grace, "metcon" => :boolean, "cue" => :boolean, "tie" => :tie, "tuplet" => :tuplet,
       "num" => :count_of, "numbase" => :count_of,
       "trans.diat" => :steps, "trans.semi" => :steps,
       "tstamp" => :tstamp, "tstamp2" => :tstamp2
@@ -202,6 +202,14 @@ module HeadMusic::Notation::MEI
     # Where a note is in its tie: i starts one, m continues it, t ends it.
     def tie(name, value, where)
       match!(name, value, /\A[imt]\z/, where)
+    end
+
+    # Where a note is in its tuplet, i, m, or t; a level past the first is a
+    # nested tuplet.
+    def tuplet(name, value, where)
+      match!(name, value, /\A[imt][1-6]?\z/, where)
+      unsupported("Nested tuplets are not supported", where) if value[1].to_i > 1
+      value[0]
     end
 
     # Whether a grace note is slashed.

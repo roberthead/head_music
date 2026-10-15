@@ -6,7 +6,9 @@ module HeadMusic::Notation::MEI
   # read in sequence at their own @dur. The tremolo itself is skipped.
   #
   # A <note> or <chord> takes its @dur, else its chord's, else the
-  # @dur.default in force; with none, it raises. A grace note takes no time,
+  # @dur.default in force; with none, it raises. A <tuplet>, or a
+  # <tupletSpan> through TupletSpans, scales the entries in it, and each is
+  # a run to group. A grace note takes no time and no tuplet ratio,
   # and one with no @dur is an eighth. A @cue note is a rest, and a cue
   # grace note is dropped. <rest> and <space> are rests of their length, and
   # <mRest>, <mSpace>, and <multiRest> fill their bars. A <clef> before the
@@ -19,8 +21,9 @@ module HeadMusic::Notation::MEI
     # +kind+ is :note, :chord, :rest, :space, :m_rest, :m_space, or
     # :multi_rest; +notes+ the <note>s it sounds; +bars+ how many bars a
     # <multiRest> fills.
+    # +event+ and +track+ are where VoiceAssignment adds it.
     Entry = Struct.new(
-      :kind, :element, :notes, :cursor, :rhythmic_value, :duration, :grace, :slashed, :cue, :staff, :bars
+      :kind, :element, :notes, :cursor, :rhythmic_value, :duration, :grace, :slashed, :cue, :staff, :bars, :event, :track
     ) do
       def fills_bar?
         %i[m_rest m_space multi_rest].include?(kind)
@@ -49,18 +52,22 @@ module HeadMusic::Notation::MEI
       end
     end
 
-    Context = Data.define(:grace, :slashed, :chord, :ratio)
+    # +run+ is the <tuplet> run its entries join.
+    Context = Data.define(:grace, :slashed, :chord, :ratio, :run)
+    PLAIN = Context.new(grace: false, slashed: false, chord: nil, ratio: nil, run: nil)
 
     REPEATS = %w[mRpt mRpt2 beatRpt halfmRpt multiRpt].freeze
     CONTAINERS = %w[beam tuplet bTrem fTrem].freeze
     MAX_DEPTH = 2 * Editorial::MAX_DEPTH
 
-    def initialize(layer, editorial, staff_number:, duration_default: nil, **where)
+    def initialize(layer, editorial, staff_number:, tuplets:, duration_default: nil, **where)
       @layer = layer
       @editorial = editorial
       @staff_number = staff_number
+      @tuplets = tuplets
       @duration_default = duration_default
       @where = where
+      @number = AttributeValues.read(layer, "n", **where, element: layer) || 1
       @cursor = 0
       @extent = nil
       @entries = []
@@ -68,9 +75,9 @@ module HeadMusic::Notation::MEI
     end
 
     def read
-      walk(@layer, Context.new(grace: false, slashed: false, chord: nil, ratio: nil), 1)
+      walk(@layer, PLAIN, 1)
       Content.new(
-        number: AttributeValues.read(@layer, "n", **@where, element: @layer) || 1, element: @layer,
+        number: @number, element: @layer,
         staff_number: @staff_number, entries: @entries, extent: @extent, opening_clef: @opening_clef
       )
     end
@@ -87,7 +94,7 @@ module HeadMusic::Notation::MEI
       case child.name
       when "note" then add_sounding(:note, child, [child], context)
       when "chord" then add_sounding(:chord, child, chord_notes(child), context.with(chord: child))
-      when "rest", "space" then add_rest(child)
+      when "rest", "space" then add_rest(child, context)
       when "mRest" then add_fill(:m_rest, child)
       when "mSpace" then add_fill(:m_space, child)
       when "multiRest" then add_fill(:multi_rest, child, bars: value(child, "num") || 1)
@@ -98,11 +105,18 @@ module HeadMusic::Notation::MEI
       end
     end
 
-    # The context a container's members read in. A <tuplet>'s ratio is
-    # where tuplet reading plugs in; until then its members keep their
-    # written values.
-    def container_context(_element, context)
-      context
+    # The context a container's members read in: a <tuplet> scales them by
+    # its ratio, and one inside another raises.
+    def container_context(element, context)
+      return context unless element.name == "tuplet"
+
+      ratio = TupletSpans.ratio(element, **@where)
+      return context unless ratio
+
+      TupletSpans.nested(**@where, element: element) if context.ratio
+      run = TupletSpans::Run.new(ratio, [])
+      @tuplets.add_run(run)
+      context.with(ratio: ratio, run: run)
     end
 
     def grace_context(element, context)
@@ -114,29 +128,50 @@ module HeadMusic::Notation::MEI
       cue = value(element, "cue") || false
       return if grace && cue
 
-      rhythmic = rhythmic_value(element, context, grace: grace)
-      slashed = value(element, "grace")
-      entry = Entry.new(
-        kind: kind, element: element, notes: notes, cursor: @cursor, rhythmic_value: rhythmic, grace: grace,
-        slashed: grace && (slashed.nil? ? context.slashed : slashed), cue: cue, staff: staff_of(element, notes)
-      )
-      grace ? @entries << entry : advance(entry, rhythmic)
+      return add_grace(kind, element, notes, context) if grace
+
+      span = @tuplets.enter(stream, [element, *notes], @where.merge(element: element))
+      rhythmic = rhythmic_value(element, context, grace: false, ratio: ratio(context, span, element))
+      entry = Entry.new(kind: kind, element: element, notes: notes, cursor: @cursor, rhythmic_value: rhythmic, grace: false, cue: cue, staff: staff_of(element, notes))
+      advance(entry, rhythmic, context, span)
     end
 
-    def add_rest(element)
-      rhythmic = rhythmic_value(element, Context.new(grace: false, slashed: false, chord: nil, ratio: nil), grace: false)
-      advance(Entry.new(kind: element.name.to_sym, element: element, notes: [], cursor: @cursor, rhythmic_value: rhythmic, grace: false, cue: false), rhythmic)
+    def add_grace(kind, element, notes, context)
+      slashed = value(element, "grace")
+      @entries << Entry.new(
+        kind: kind, element: element, notes: notes, cursor: @cursor, rhythmic_value: rhythmic_value(element, context, grace: true, ratio: nil),
+        grace: true, slashed: slashed.nil? ? context.slashed : slashed, cue: false, staff: staff_of(element, notes)
+      )
+    end
+
+    def add_rest(element, context)
+      span = @tuplets.enter(stream, [element], @where.merge(element: element))
+      rhythmic = rhythmic_value(element, PLAIN, grace: false, ratio: ratio(context, span, element))
+      advance(Entry.new(kind: element.name.to_sym, element: element, notes: [], cursor: @cursor, rhythmic_value: rhythmic, grace: false, cue: false), rhythmic, context, span)
+    end
+
+    def stream
+      [@staff_number, @number]
+    end
+
+    # A container inside a span of its ratio is absorbed into it.
+    def ratio(context, span, element)
+      TupletSpans.nested(**@where, element: element) if span && context.ratio && span.ratio != context.ratio
+      context.ratio || span&.ratio
     end
 
     def add_fill(kind, element, bars: 1)
       @entries << Entry.new(kind: kind, element: element, notes: [], cursor: @cursor, grace: false, cue: false, bars: bars)
     end
 
-    def advance(entry, value)
-      entry.duration = value.fraction
+    def advance(entry, rhythmic, context, span)
+      entry.duration = rhythmic.fraction
       @entries << entry
       @cursor += entry.duration
       @extent = @cursor
+      context.run&.entries&.push(entry)
+      span&.run&.entries&.push(entry)
+      @tuplets.mark(stream, value(entry.element, "tuplet"), entry)
     end
 
     def chord_notes(chord)
@@ -146,13 +181,13 @@ module HeadMusic::Notation::MEI
       notes
     end
 
-    def rhythmic_value(element, context, grace:)
+    def rhythmic_value(element, context, grace:, ratio:)
       unit = value(element, "dur") || (context.chord && value(context.chord, "dur")) || @duration_default
       unit ||= "eighth" if grace
       raise ParseError.new("A <#{element.name}> has no @dur, and no @dur.default is in force", **@where, element: element) unless unit
 
       dots = value(element, "dots") || (context.chord && value(context.chord, "dots")) || 0
-      HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots, tuplet: context.ratio)
+      HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots, tuplet: ratio)
     end
 
     # A chord's @staff, else the one its notes share.
