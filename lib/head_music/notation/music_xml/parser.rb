@@ -19,6 +19,10 @@ module HeadMusic::Notation::MusicXML
       @document ||= build_document
     end
 
+    def flow
+      @flow ||= FlowBuilder.new(document).flow
+    end
+
     private
 
     def build_document

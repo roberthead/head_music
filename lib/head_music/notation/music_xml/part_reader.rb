@@ -1,0 +1,119 @@
+require_relative "xml_reading"
+
+# A namespace for MusicXML-notation reading helpers
+module HeadMusic::Notation::MusicXML
+  # Walks one part's measures in document order into exact Rational records:
+  # each voice's events at the measure and cursor they were read at, and what
+  # each measure states and how far its music reaches. Every time is a
+  # fraction of a whole note, a <duration> being Rational(duration, 4 *
+  # divisions), with the divisions in force within this part.
+  class PartReader
+    include XmlReading
+
+    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key)
+    Reading = Struct.new(:document_part, :measures, :tracks) do
+      def id
+        document_part.id
+      end
+    end
+
+    def initialize(document_part)
+      @document_part = document_part
+      @tracks = {}
+      @divisions = nil
+      @meter = HeadMusic::Rudiment::Meter.default
+    end
+
+    def read
+      measures = @document_part.measures.each_with_index.map { |measure, index| read_measure(measure, index) }
+      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.values)
+    end
+
+    private
+
+    def read_measure(measure, index)
+      @where = {measure: measure.number, part: @document_part.id}
+      @measure = Measure.new(index: index, number: measure.number, implicit: measure.implicit?, meter: @meter)
+      @cursor = 0
+      measure.element.each_element { |element| read_element(element) }
+      @measure
+    end
+
+    def read_element(element)
+      case element.name
+      when "attributes" then read_attributes(element)
+      when "note" then read_note(element)
+      end
+    end
+
+    def read_attributes(element)
+      attributes = AttributesReader.read(element, **@where)
+      @divisions = attributes.divisions if attributes.divisions
+      @measure.key = attributes.key if attributes.key
+      @meter = @measure.meter = attributes.meter if attributes.meter
+    end
+
+    def read_note(element)
+      note = NoteReader.read(element, **@where)
+      duration = duration_of(note.duration)
+      track = track_for(note.voice)
+      measure_rest = note.rest && (note.measure_rest || duration == bar_length)
+      track.add(
+        measure_index: @measure.index, cursor: @cursor, tolerance: division, fills_bar: measure_rest,
+        rhythmic_value: measure_rest ? nil : rhythmic_value(note, duration),
+        sounds: note.rest ? [] : [note.pitch]
+      )
+      @cursor += duration
+      reach(@cursor) unless measure_rest
+    end
+
+    def rhythmic_value(note, duration)
+      written = NoteReader.written_value(note, **@where)
+      return value_from_duration(note, duration) unless written
+
+      if (written.link_fraction - duration).abs > division
+        raise ParseError.new(
+          "A <duration> of #{note.duration} disagrees with its #{written} at #{@divisions} divisions", **@where
+        )
+      end
+      written
+    end
+
+    # A note with no <type> takes its value from its <duration>, under its
+    # <time-modification> or, failing that, the ratio its length implies.
+    def value_from_duration(note, duration)
+      value = if note.ratio
+        HeadMusic::Notation::DottedDuration.rhythmic_value_for(duration, tuplet: note.ratio)
+      else
+        HeadMusic::Notation::DottedDuration.rest_value(duration)
+      end
+      value || raise(UnsupportedFeatureError.new("No note value spans a <duration> of #{note.duration}", **@where))
+    end
+
+    def duration_of(text)
+      raise ParseError.new("A note has no <duration>", **@where) unless text
+      raise ParseError.new("A <duration> has no <divisions> in force", **@where) unless @divisions
+
+      duration = rational(text, "<duration>", **@where)
+      raise ParseError.new("A <duration> must be positive", **@where) unless duration.positive?
+
+      duration / (4 * @divisions)
+    end
+
+    def division
+      1 / (4 * @divisions)
+    end
+
+    def bar_length
+      Rational(@meter.top_number, @meter.bottom_number)
+    end
+
+    def reach(cursor)
+      @measure.extent = [@measure.extent, cursor].compact.max
+    end
+
+    def track_for(label)
+      @tracks[label] ||= VoiceTrack.new(label)
+    end
+  end
+end

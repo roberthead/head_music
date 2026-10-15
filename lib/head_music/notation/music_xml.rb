@@ -1,5 +1,11 @@
 # Reads and renders MusicXML documents as HeadMusic::Content flows
 module HeadMusic::Notation::MusicXML
+  # Interprets a MusicXML document as a flow. Raises before building on
+  # anything it cannot read, so callers never receive a partial flow.
+  def self.parse(string)
+    Parser.new(string).flow
+  end
+
   # +work_title:+ names the whole this flow is a movement of and
   # +movement_number:+ its place in it; alone, a flow names only itself.
   #
