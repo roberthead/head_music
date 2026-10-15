@@ -41,6 +41,43 @@ describe HeadMusic::Notation::MusicXML::VoicePlacer do
     expect(voice_event_strings(flow).first).to eq ["quarter C4 at 1:1:000", "half rest at 1:2:000", "quarter D4 at 1:4:000"]
   end
 
+  describe "notes and rests that do not print" do
+    def hidden(xml)
+      xml.sub("<note>", %(<note print-object="no">))
+    end
+
+    it "takes their time as a <forward> does, as a rest of the voice" do
+      flow = parse(musicxml_measures(note_xml("C4", 1, "quarter") + hidden(note_xml("E4", 2, "half")) + note_xml("D4", 1, "quarter")))
+      expect(voice_event_strings(flow).first).to eq ["quarter C4 at 1:1:000", "half rest at 1:2:000", "quarter D4 at 1:4:000"]
+    end
+
+    # music21 realizes a trill as a hidden voice, its first note fitting no
+    # value; MuseScore hides rests beside a crossing hand in a voice 5.
+    it "makes no voice of hidden notes and rests alone" do
+      trill = [hidden(note_xml("G5", 230, voice: "2")), *Array.new(6) { hidden(note_xml("A5", 128, "32nd", voice: "2")) }].join
+      first = note_xml("C4", 4096, "whole") + backup_xml(4096) + trill + forward_xml(3098, voice: "2")
+      second = note_xml("D4", 4096, "whole") + backup_xml(4096) + hidden(measure_rest_xml(4096, voice: "5"))
+      flow = parse(musicxml_measures(first, second, attributes: opening_attributes(divisions: 1024)))
+      expect(voice_event_strings(flow)).to eq [["whole C4 at 1:1:000", "whole D4 at 2:1:000"]]
+    end
+
+    it "drops their chord tones, and a hidden chord tone of a printed note" do
+      flow = parse(musicxml_measures(
+        hidden(note_xml("C4", 2, "half")) + note_xml("E4", 2, "half", chord: true) + note_xml("D4", 2, "half") + hidden(note_xml("F4", 2, "half", chord: true))
+      ))
+      expect(voice_event_strings(flow).first).to eq ["half rest at 1:1:000", "half D4 at 1:3:000"]
+    end
+
+    it "drops a hidden grace note" do
+      flow = parse(musicxml_measures(%(<note print-object="no"><grace/>#{pitch_xml("B3")}<type>eighth</type></note>) + note_xml("C4", 4, "whole")))
+      expect(flow.voices.first.voice_events.first.grace_notes).to eq []
+    end
+
+    it "keeps the music whole" do
+      expect_music_whole(parse(musicxml_measures(whole_c + backup_xml(4) + hidden(note_xml("E4", 2, "half", voice: "2")) + note_xml("F4", 2, "half", voice: "2"))))
+    end
+  end
+
   it "moves nothing for a <forward> or <backup> of no duration" do
     flow = parse(musicxml_measures(note_xml("C4", 2, "half") + forward_xml(0) + backup_xml(0) + note_xml("D4", 2, "half")))
     expect(voice_event_strings(flow).first).to eq ["half C4 at 1:1:000", "half D4 at 1:3:000"]

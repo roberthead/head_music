@@ -5,7 +5,7 @@ module HeadMusic::Notation::MusicXML
   # padded, tied, grouped, and on its staves. Each carries its REXML element
   # and the measure's number attribute, for messages.
   #
-  # NoteRecord, one per <note>. Its voice event is the note or rest it was
+  # NoteRecord, one per <note> that prints. Its voice event is the note or rest it was
   # placed as: for a chord tone, the chord; for a tie's later link (a
   # continuation), the event its chain began with; for a whole-measure rest,
   # the rest its bar was filled with; for a grace note, the main note it led

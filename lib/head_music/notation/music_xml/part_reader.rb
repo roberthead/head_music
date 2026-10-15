@@ -45,6 +45,7 @@ module HeadMusic::Notation::MusicXML
       @measure = Measure.new(index: index, number: measure.number, implicit: measure.implicit?, meter: @meter, clefs: {})
       @cursor = 0
       @lead = nil
+      @hidden_lead = false
       measure.element.each_element { |element| read_element(element) }
       @measure.tolerance = @divisions ? division : 0
       @measure
@@ -105,9 +106,11 @@ module HeadMusic::Notation::MusicXML
 
     def read_note(element)
       note = NoteReader.read(element, **@where)
+      return read_hidden(note) if note.hidden
       return read_grace(note) if note.grace
       return add_to_chord(note) if note.chord
 
+      @hidden_lead = false
       duration = duration_of(note.duration)
       measure_rest = note.rest && (note.measure_rest || duration == bar_length)
       @lead = track_for(note.voice).add(
@@ -121,6 +124,20 @@ module HeadMusic::Notation::MusicXML
       add_tuplet_marks(track_for(note.voice), @lead, note)
       move(duration)
       reach(@cursor) unless measure_rest
+    end
+
+    # A note or rest that does not print is no part of the notation, as the
+    # trills music21 realizes in a hidden voice and the rests MuseScore
+    # hides beside a crossing hand are not, so it takes its time as a
+    # <forward> does, and its chord tones and grace notes go with it.
+    def read_hidden(note)
+      return if note.grace || note.chord
+
+      @hidden_lead = true
+      duration = duration_of(note.duration)
+      move(duration)
+      fills_bar = note.rest && (note.measure_rest || duration == bar_length)
+      reach(@cursor) unless fills_bar
     end
 
     def add_tuplet_marks(track, event, note)
@@ -165,6 +182,8 @@ module HeadMusic::Notation::MusicXML
     # A chord tone sounds with the note before it, which must be as long. A
     # cue chord's tones are dropped with it.
     def add_to_chord(note)
+      return if @hidden_lead
+
       raise ParseError.new("A <chord/> rest is not supported", **@where) if note.rest
       raise ParseError.new("A <chord/> has no note before it", **@where) if @lead.nil? || (@lead.rest? && !@lead.cue)
 

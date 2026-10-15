@@ -12,7 +12,7 @@ module HeadMusic::Notation::MusicXML
     MAX_DOTS = 3
 
     Note = Struct.new(
-      :element, :grace, :slashed, :chord, :cue, :rest, :measure_rest, :pitch, :unpitched, :duration,
+      :element, :grace, :slashed, :chord, :cue, :hidden, :rest, :measure_rest, :pitch, :unpitched, :duration,
       :voice, :staff, :type, :dots, :ratio, :normal_type, :normal_dots, :ties, :tied, :tuplets, :articulations
     )
 
@@ -27,6 +27,7 @@ module HeadMusic::Notation::MusicXML
 
     def note
       note = Note.new(element: @element, dots: 0, ties: [], tied: [], tuplets: [], articulations: [], voice: "1")
+      note.hidden = attribute(@element, "print-object", **where) == "no"
       @element.each_element { |child| read_child(note, child) }
       note
     end

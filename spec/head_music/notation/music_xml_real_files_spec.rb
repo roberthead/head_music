@@ -17,19 +17,18 @@ describe HeadMusic::Notation::MusicXML do
     # rest of what the README lists reads back the same: the dropped
     # <mode>major of C, note dynamics moved into directions, the navigation
     # signs written as glyph words, hairpin stops moved to the end of the
-    # bar before, a left hand renumbered voice 5, and instrument changes,
-    # which neither rendering writes.
+    # bar before, a left hand renumbered voice 5, the hidden rests of a voice
+    # 5 beside a crossing left hand, which do not print and so read as
+    # nothing, and instrument changes, which neither rendering writes.
     #
     # - added_piano_sound: an instrumentless part gets keyboard.piano.grand.
-    # - hidden_rest_voice: a crossing left hand alone on the bass staff gets
-    #   a voice 5 of hidden whole-measure rests there.
     # - directions_on_staff: every direction loses its <voice>, so a voice's
     #   levels and hairpins read back as its part's, at the same moments.
     changes = {
       "speed_the_plough" => %i[added_piano_sound],
       "bach_invention_01" => %i[added_piano_sound],
-      "cross_staff_piano" => %i[hidden_rest_voice],
-      "piano_part_marks" => %i[hidden_rest_voice directions_on_staff],
+      "cross_staff_piano" => [],
+      "piano_part_marks" => %i[directions_on_staff],
       "marked_dal_segno_al_coda" => %i[added_piano_sound],
       "marked_da_capo_al_fine" => %i[added_piano_sound],
       "barline_styles" => %i[added_piano_sound],
@@ -49,7 +48,6 @@ describe HeadMusic::Notation::MusicXML do
     # ownership, compares both readings by part.
     def comparable(ours, theirs, changes)
       theirs = added_piano_sound(ours, theirs) if changes.include?(:added_piano_sound)
-      theirs = hidden_rest_voice(theirs) if changes.include?(:hidden_rest_voice)
       return [ours, theirs] unless changes.include?(:directions_on_staff)
 
       [directions_by_part(ours), directions_by_part(theirs)]
@@ -60,10 +58,6 @@ describe HeadMusic::Notation::MusicXML do
         (part["instrument"] == "piano" && !our_part.key?("instrument")) ? part.except("instrument") : part
       end
       theirs.merge("parts" => parts)
-    end
-
-    def hidden_rest_voice(theirs)
-      theirs.merge("parts" => theirs["parts"].map { |part| part.merge("voices" => part["voices"].reject { |voice| voice["voice_events"].empty? }) })
     end
 
     # Every level and hairpin of a part and its voices, as its part's.
