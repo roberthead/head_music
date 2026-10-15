@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-09-27T15:48:57-07:00
+  updated_at:   2026-10-15T14:45:59-07:00
 -->
 
 # Story: Lyric Extenders
@@ -21,9 +21,9 @@ Split from [Spans Across Notes](../done/spans-across-notes.md).
 
 ## Background
 
-| Concept | ABC | LilyPond | MusicXML | kern |
-|---|---|---|---|---|
-| Lyric extender (melisma) | `_` in `w:` | `__` | `<extend>` | `_` and `\|` in `**text` |
+| Concept | ABC | LilyPond | MusicXML | kern | MEI |
+|---|---|---|---|---|---|
+| Lyric extender (melisma) | `_` in `w:` | `__` | `<extend>` | `_` and `\|` in `**text` | `@con="u"` |
 
 - kern's `LyricReader` skips `_` and `|` as melisma marks today, so a melisma reads as notes with no syllable.
 - A `Syllable` holds `text`, `verse`, and `hyphen_after`, and nothing about extension.
@@ -35,6 +35,7 @@ Split from [Spans Across Notes](../done/spans-across-notes.md).
 - [ ] Flow JSON keeps extenders, reading syllables in an order that is safe for them
 - [ ] MusicXML writes `<extend>`
 - [ ] kern reads and writes `_` and `|` in `**text`
+- [ ] MEI writes and reads `@con="u"`
 - [ ] Round trips assert where each melisma ends
 
 ## Notes

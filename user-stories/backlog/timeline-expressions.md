@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-10-15T12:44:52-07:00
+  updated_at:   2026-10-15T14:45:59-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -77,6 +77,7 @@ flow.meter.symbol     # => :common
 - [ ] MusicXML writes `<metronome>`, `<sound tempo>`, `<words>` for tempo text and ramps, and the time `symbol` attribute
 - [ ] kern reads and writes `*met(c)` and `*met(c|)`, and tempo text through `!!!OMD` for the opening tempo
 - [ ] ABC (`H`, `!fermata!`), LilyPond (`\fermata`), and kern (`;`) read fermatas written on voice events in any voice into timeline fermatas, and ABC, LilyPond, MusicXML, and kern write each timeline fermata on every voice event sounding when it begins
+- [ ] MEI reads `<fermata>` and `@fermata` into timeline fermatas, `<tempo>` text, and `@meter.sym` / `<meterSig @sym>`, and the Herzliebster fixture keeps its fermatas
 - [ ] MEI writes `<fermata>`, tempo text in `<tempo>`, and `@meter.sym` for the common- and cut-time symbols
 - [ ] MIDI export writes tempo events through fermatas and gradual tempo changes, following the `Conductor`
 - [ ] The hand-encoded chorale fixture keeps its fermatas on import, as timeline fermatas at the ends of its phrases
