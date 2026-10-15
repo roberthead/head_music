@@ -1,5 +1,3 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Renders a bar's rehearsal mark and navigation as <direction> elements: the
@@ -7,7 +5,7 @@ module HeadMusic::Notation::MusicXML
   # To Coda, and a D.C. or D.S. where it closes. Each sign carries the <sound>
   # that makes playback follow it.
   class NavigationWriter
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     SEGNO = "segno1"
     CODA = "coda1"

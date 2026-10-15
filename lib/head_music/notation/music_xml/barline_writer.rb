@@ -1,12 +1,10 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Renders a measure's <barline> elements: a left barline where a repeat or an
   # ending starts, and a right barline for a styled barline, the end of a
   # repeat or an ending, or the implied final barline of the last measure.
   class BarlineWriter
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     BAR_STYLES = {
       regular: nil,

@@ -1,5 +1,3 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Serializes the <note> elements a voice event occupies.
@@ -8,7 +6,7 @@ module HeadMusic::Notation::MusicXML
   # each bar it sounds in: the components come from the render plan's duration
   # split, and a chord renders as a lead note followed by its <chord/> members.
   class NoteWriter
-    include XmlText
+    include HeadMusic::Notation::XmlText
     include HeadMusic::Notation::VoiceEventValidation
 
     def initialize(plan)

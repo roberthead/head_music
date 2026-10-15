@@ -1,11 +1,9 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Serializes a part's <part> element, measure by measure: each measure's
   # barlines, attributes, directions and navigation, and every voice's notes.
   class PartWriter
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     delegate :bar_numbers, :written_duration, to: :plan
 

@@ -1,5 +1,3 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Serializes the grace notes before a note event as <note> elements that
@@ -9,7 +7,7 @@ module HeadMusic::Notation::MusicXML
   # note or the main note, and a slur from the grace notes starts on the
   # first of them.
   class GraceWriter
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     def initialize(plan)
       @plan = plan

@@ -1,5 +1,3 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Converts pitches into the trio of values MusicXML's <pitch> element needs.
@@ -8,7 +6,7 @@ module HeadMusic::Notation::MusicXML
   # no oracle or mutable state is required: each pitch maps to its attributes
   # independent of any other pitch that came before it.
   class PitchWriter
-    INDENT = XmlText::INDENT
+    INDENT = HeadMusic::Notation::XmlText::INDENT
 
     # Returns a Hash of the step, alter, and octave for the pitch's
     # <pitch> element. Alter is nil when the pitch is natural, in which

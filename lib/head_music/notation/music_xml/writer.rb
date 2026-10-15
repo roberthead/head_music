@@ -1,12 +1,10 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Renders a flow as a score-partwise MusicXML 4.0 document: its header and
   # part list here, and each part's measures in PartWriter. Whole-flow problems
   # raise before any assembly, so #to_s only ever returns a complete document.
   class Writer
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     attr_reader :flow, :work_title, :movement_number, :transposed, :arranger
 

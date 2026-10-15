@@ -1,11 +1,9 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Renders a measure's <attributes> element: everything in the first measure,
   # and thereafter only the changes that fall on the measure.
   class AttributesWriter
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     CLEF_REGISTERS = {"G" => 4, "F" => 3, "C" => 4}.freeze
 

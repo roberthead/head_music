@@ -1,5 +1,3 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Serializes the <lyric> children of a note.
@@ -8,7 +6,7 @@ module HeadMusic::Notation::MusicXML
   # note — which decides whether a syllable begins, continues, or ends a word —
   # is memoized per voice and verse.
   class LyricWriter
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     # <lyric> is the last child of <note>. Sung text rides only the lead note
     # of a chord and only the attack of a tied chain (a tie_stop component is a

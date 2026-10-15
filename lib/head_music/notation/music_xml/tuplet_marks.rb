@@ -1,5 +1,3 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # The <time-modification> and <tuplet> marks of every written component
@@ -9,7 +7,7 @@ module HeadMusic::Notation::MusicXML
   # in the part, since a voice's brackets never overlap but two voices'
   # may, and a bracket may cross measures.
   class TupletMarks
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     Mark = Data.define(:ratio, :normal_type, :normal_dots, :starts, :stops)
 

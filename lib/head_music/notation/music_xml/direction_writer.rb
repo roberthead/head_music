@@ -1,5 +1,3 @@
-require_relative "xml_text"
-
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Serializes a flow's dynamic events and hairpin ends as <direction>
@@ -9,7 +7,7 @@ module HeadMusic::Notation::MusicXML
   # divisions from wherever in the measure it is written. Which slot of the
   # DirectionPlan a mark is written in is the plan's to say.
   class DirectionWriter
-    include XmlText
+    include HeadMusic::Notation::XmlText
 
     def initialize(plan)
       @plan = plan
