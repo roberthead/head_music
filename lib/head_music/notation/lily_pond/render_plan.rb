@@ -12,6 +12,19 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
+    # What opens and closes each tuplet bracket of the voice, by the
+    # [segment, link index] it opens before or closes after. A bracket
+    # crossing a barline opens in one bar and closes in the next.
+    def tuplet_edges(voice)
+      @tuplet_edges ||= {}.compare_by_identity
+      @tuplet_edges[voice] ||= begin
+        brackets = HeadMusic::Notation::TupletBrackets.for(voice, segments_by_bar(voice).values.flatten, error_class: RenderError)
+        opens = brackets.to_h { |bracket| [link_key(bracket.first), "\\tuplet #{bracket.ratio.to_a.join("/")} { "] }
+        closes = brackets.to_h { |bracket| [link_key(bracket.last), " }"] }
+        {opens: opens, closes: closes}
+      end
+    end
+
     # The length, as a fraction of a whole note, of a final bar that every
     # voice ends short of together, or nil where the final bar is written
     # full: where the music fills it, or where a mark follows the music in it.
@@ -104,11 +117,13 @@ module HeadMusic::Notation::LilyPond
     end
 
     # Spacers from one offset in the bar to another, each mark on the first
-    # spacer where it falls.
+    # spacer where it falls. Between marks where notes start, such as at
+    # tuplet onsets, a multiplied spacer reaches what no note value does.
     def spacer_run(bar_number, from, to, marks)
       marks_by_offset = marks.group_by(&:offset)
       [from, *marks_by_offset.keys.sort, to].uniq.each_cons(2).flat_map { |start, finish|
-        first, *later = spacers(finish - start) || raise_unreachable(bar_number, marks_by_offset[finish] || marks_by_offset[start])
+        at_onsets = [start, finish].all? { |offset| marks_by_offset.fetch(offset, []).all?(&:onset) }
+        first, *later = spacers(finish - start, at_onsets) || raise_unreachable(bar_number, marks_by_offset[finish] || marks_by_offset[start])
         ["#{first}#{marks_by_offset.fetch(start, []).map(&:token).join}", *later]
       }.join(" ")
     end
@@ -125,8 +140,9 @@ module HeadMusic::Notation::LilyPond
       Rational(meter.top_number, meter.bottom_number)
     end
 
-    def spacers(fraction)
-      HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)&.tied_chain&.map { |link| "s#{DurationWriter.token(link)}" }
+    def spacers(fraction, multiplied)
+      chain = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)&.tied_chain&.map { |link| "s#{DurationWriter.token(link)}" }
+      chain || (multiplied ? ["s1*#{fraction.numerator}/#{fraction.denominator}"] : nil)
     end
 
     # LilyPond has no way to say "three flats read as dorian", so it renders
@@ -144,26 +160,45 @@ module HeadMusic::Notation::LilyPond
     # A slur closes on the last link and opens on the first, closing first
     # where they are one word, so one slur can end where the next begins. A
     # rest reads back as one rest per link, so it carries both on its first.
+    #
+    # Each tuplet bracket opens before its first link and closes after its
+    # last, outside the link's marks and tie.
     def token(segment)
       voice_event = segment.voice_event
       words = link_words(segment)
       words[closes_index(segment, words)] += span_marks(voice_event).closes_at(voice_event.position) if closes?(segment)
       words[0] += span_marks(voice_event).opens_at(voice_event.position) if starts?(segment)
-      return words.join(" ") if voice_event.rest?
-
-      tokens = words.join("~ ")
-      segment.continues ? "#{tokens}~" : tokens
+      words = tied(segment, words) unless voice_event.rest?
+      bracketed(segment, words).join(" ")
     end
 
+    def tied(segment, words)
+      words.each_with_index.map { |word, index| (index < words.length - 1 || segment.continues) ? "#{word}~" : word }
+    end
+
+    def bracketed(segment, words)
+      edges = tuplet_edges(segment.voice_event.voice)
+      words.each_with_index.map do |word, index|
+        key = [segment, index]
+        "#{edges[:opens][key]}#{word}#{edges[:closes][key]}"
+      end
+    end
+
+    def link_key(link)
+      [link.segment, link.index]
+    end
+
+    # A link's offsets are exact and sounding, so marks fall where they
+    # sound, though the link is written under its ratio.
     def link_words(segment)
       voice_event = segment.voice_event
       marks = timed_marks(voice_event.voice)
       bar_number = segment.bar_number
-      from = starts?(segment) ? HeadMusic::Notation::BarSplitter.offset_in_bar(voice_event.position) : 0r
+      from = segment.offset || HeadMusic::Notation::BarSplitter.onset_in_bar(voice_event)
       own = starts?(segment) ? MarkWriter.token(voice_event) : ""
       segment.rhythmic_value!(RenderError).tied_chain.map do |link|
-        to = from + HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link)
-        word = marks.around(bar_number, from, to, "#{body(voice_event)}#{DurationWriter.token(link)}", own)
+        to = from + HeadMusic::Notation::DottedDuration.sounding_fraction(link)
+        word = marks.around(bar_number, from, to, "#{body(voice_event)}#{DurationWriter.token(link)}", own, factor: link.tuplet_ratio&.factor || 1)
         from = to
         own = ""
         word
@@ -184,8 +219,10 @@ module HeadMusic::Notation::LilyPond
       segment.voice_event.rest? ? 0 : words.length - 1
     end
 
+    # A rounded onset just before a barline starts in the bar before its
+    # position's.
     def starts?(segment)
-      segment.bar_number == segment.voice_event.position.bar_number
+      segment.elapsed.zero?
     end
 
     def span_marks(voice_event)

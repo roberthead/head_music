@@ -873,5 +873,137 @@ describe HeadMusic::Notation::LilyPond::Writer do
 
       it_behaves_like "a compilable document"
     end
+
+    describe "tuplets" do
+      def rendered_lines(flow)
+        bar_check_lines(described_class.new(flow).to_s)
+      end
+
+      tuplet_fixtures = TupletFixtures.all - %i[grace_notes_before_downbeat grace_notes_in_pickup]
+
+      tuplet_fixtures.each do |fixture|
+        context "with the #{fixture.to_s.tr("_", " ")} fixture" do
+          let(:flow) { TupletFixtures.public_send(fixture) }
+          let(:rendered) { described_class.new(flow).to_s }
+
+          it "is structurally valid, its bars full under their brackets" do
+            bars = HeadMusic::Notation::LilyPond::RenderPlan.new(flow).bar_numbers.count
+            expect_structurally_valid_lilypond(rendered, bars: bars, voices: flow.voices.length)
+          end
+
+          it_behaves_like "a document that compiles without warnings"
+        end
+      end
+
+      it "brackets each group with its ratio" do
+        expect(rendered_lines(TupletFixtures.triplets).first)
+          .to eq "\\tuplet 3/2 { c'8 d'8 e'8 } \\tuplet 3/2 { f'8 g'8 a'8 } \\tuplet 3/2 { b'4 c''4 d''4 } |"
+      end
+
+      it "writes a ratio as held, unreduced" do
+        expect(rendered_lines(TupletFixtures.sextuplet).first).to eq "\\tuplet 6/4 { c'16 d'16 e'16 f'16 g'16 a'16 } g'2. |"
+      end
+
+      it "writes a duplet as a ratio below one" do
+        expect(rendered_lines(TupletFixtures.duplet_in_six_eight).first).to eq "\\tuplet 2/3 { c'8 e'8 } g'4. |"
+      end
+
+      it "brackets a group of mixed values, rests, and chords" do
+        expect(rendered_lines(TupletFixtures.mixed_value_tuplet).first).to eq "\\tuplet 3/2 { c'4 d'8 } \\tuplet 3/2 { r8 <e' g'>4 } f'2 |"
+      end
+
+      it "brackets an ungrouped run as a writer counts it" do
+        expect(rendered_lines(TupletFixtures.ungrouped_tuplet_run).first).to eq "\\tuplet 3/2 { c'8 d'8 e'8 } \\tuplet 3/2 { f'8 g'8 a'8 } g'2 |"
+      end
+
+      it "closes a group partway through a chain, after the tie" do
+        expect(rendered_lines(TupletFixtures.triplet_tied_out).first).to eq "\\tuplet 3/2 { c'8 d'8 e'8~ } e'4 f'2 |"
+      end
+
+      it "carries a group across a barline, the split note tied under the ratio" do
+        expect(rendered_lines(TupletFixtures.tuplet_crossing_barline)).to eq ["c'2. \\tuplet 3/2 { d'4 e'8~ |", "e'8 f'4 } g'2. \\bar \"|.\" |"]
+      end
+
+      it "splits a rounded note at its exact barline" do
+        expect(rendered_lines(TupletFixtures.septuplet_crossing_barline))
+          .to eq ["c'2. \\tuplet 7/4 { d'8 e'8 f'8 g'16~ |", "g'16 a'8 b'8 c''8 } d''2. \\bar \"|.\" |"]
+      end
+
+      context "with voice marks at and inside tuplet notes" do
+        let(:flow) do
+          TupletFixtures.triplets.tap do |flow|
+            voice = flow.voices.first
+            voice.place_dynamic(voice.voice_events[1].position, :p)
+            voice.place_dynamic("1:4", :f)
+            voice.add_span(:crescendo, from: voice.voice_events[4].position, to: voice.voice_events[7].position)
+          end
+        end
+        let(:rendered) { described_class.new(flow).to_s }
+
+        it "writes a mark at a tuplet onset on its note, and one inside a note after the written time it reaches" do
+          expect(bar_check_lines(rendered).first)
+            .to eq "\\tuplet 3/2 { c'8 d'8\\p e'8 } \\tuplet 3/2 { f'8 g'8\\< a'8 } \\tuplet 3/2 { b'4 \\after 8 \\f c''4\\! d''4 } |"
+        end
+
+        it_behaves_like "a document that compiles without warnings"
+      end
+
+      context "with part levels at the onsets of rounded notes" do
+        let(:flow) do
+          TupletFixtures.septuplet.tap do |flow|
+            onsets = flow.voices.first.voice_events.map(&:position)
+            flow.parts.first.place_dynamic(onsets[1], :mf)
+            flow.parts.first.place_dynamic(onsets[4], :p)
+          end
+        end
+        let(:rendered) { described_class.new(flow).to_s }
+
+        it "reaches each exact onset with multiplied spacers" do
+          expect(rendered).to include "s1*1/28 s1*3/28\\mf s1*6/7\\p |"
+        end
+
+        it "is structurally valid" do
+          expect_structurally_valid_lilypond(rendered, bars: 2, voices: 1, streams: 2)
+        end
+
+        it_behaves_like "a document that compiles without warnings"
+      end
+
+      context "with a short final bar no note value rests through" do
+        let(:flow) do
+          HeadMusic::Content::Flow.new(name: "Short").tap do |flow|
+            flow.add_voice.place("1:1", HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "3:2"), "C4")
+            flow.add_part(instrument: "oboe")
+          end
+        end
+
+        it "raises a render error naming the bar" do
+          expect { described_class.new(flow).to_s }
+            .to raise_error(HeadMusic::Notation::LilyPond::RenderError, /cannot rest through the short final bar 1/)
+        end
+      end
+
+      describe "generator flows" do
+        def expect_book_to_compile(seeds)
+          book = seeds.map { |seed| TupletGenerator.flow(seed, voices: 2, pickup: true, graces: false) }
+          rendered = on_one_page(HeadMusic::Notation::LilyPond::BookWriter.new(book).to_s)
+          expect(compile_warnings(rendered)).to eq([]), "in the book of seeds #{seeds.first}..#{seeds.last}"
+        end
+
+        it "compile in books without warnings" do
+          skip "lilypond is not installed" unless installed_lilypond
+
+          TupletGenerator::SEEDS.each_slice(100) { |seeds| expect_book_to_compile(seeds) }
+        end
+
+        it "are structurally valid" do
+          TupletGenerator::SEEDS.each do |seed|
+            flow = TupletGenerator.flow(seed, voices: 2, pickup: true, graces: false)
+            bars = HeadMusic::Notation::LilyPond::RenderPlan.new(flow).bar_numbers.count
+            expect_structurally_valid_lilypond(described_class.new(flow).to_s, bars: bars, voices: 2)
+          end
+        end
+      end
+    end
   end
 end

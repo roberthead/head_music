@@ -24,8 +24,13 @@ module LilyPondHelpers
   MARK = /\\(?:ppp|pp|p|mp|mf|f|ff|fff|sf|sfz|rfz|fp|trill|mordent|prall|turn)(?![a-z])|\\[<>!]|-[.!>^-]|(?:\\=\w+)?\\?[()]/
   CHORD = /<#{PITCH}(?: #{PITCH})*>#{DURATION}/
   # <> is a chord of no notes, which carries a mark at a moment without time.
-  SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|[rs]#{DURATION}|R1\*\d+\/\d+|<>)\z/
-  WHOLE_BAR_REST = /R1\*(\d+)\/(\d+)/
+  SIMPLE_TOKEN = /\A(?:#{PITCH}#{DURATION}~?|[rs]#{DURATION}|[Rs]1\*\d+\/\d+|<>)\z/
+  # A multiplied whole rest or spacer, which spans what its multiplier says.
+  MULTIPLIED = /[Rs]1\*(\d+)\/(\d+)/
+  # A tuplet bracket scales the durations inside it by its normal over its
+  # actual count, and may open in one bar and close in the next.
+  TUPLET_OPEN = %r{\\tuplet (\d+)/(\d+) \{}
+  TUPLET_CLOSE = /(?<!\S)\}(?!\S)/
   NAMED_DURATION_VALUES = {"\\breve" => 2r, "\\longa" => 4r, "\\maxima" => 8r}.freeze
 
   # `streams:` is how many bar-per-line music streams the document holds. It
@@ -51,7 +56,7 @@ module LilyPondHelpers
 
   def expect_valid_music_line(line)
     content = line.sub(/ \|\z/, "")
-    content = strip_commands(content)
+    content = strip_commands(content).gsub(TUPLET_OPEN, "").gsub(TUPLET_CLOSE, "")
     content = content.gsub(/#{CHORD}~?/o, "")
     expect(content.split).to all(match(SIMPLE_TOKEN))
   end
@@ -59,23 +64,26 @@ module LilyPondHelpers
   # Walks the document in order, tracking the meter in force (each voice's
   # stream re-declares it, and an inline \time applies to its own bar), and
   # asserts every bar's durations sum to it. A \new Dynamics carries no \time,
-  # so its bars are held to the meters the first stream's bars had.
+  # so its bars are held to the meters the first stream's bars had. A tuplet
+  # bracket open at a bar check scales the next bar's durations too.
   def expect_full_bars(source)
     meter = nil
     meters_by_bar = []
     bar_index = 0
     dynamics = false
+    tuplets = []
     source.lines.map(&:strip).each do |line|
       if line.start_with?("\\new Dynamics", "\\new Voice")
         dynamics = line.start_with?("\\new Dynamics")
         bar_index = 0
+        expect(tuplets).to be_empty
       end
       time_match = line.match(TIME_COMMAND)
       meter = Rational(time_match[1].to_i, time_match[2].to_i) if time_match
       next unless line.end_with?(" |")
 
       meters_by_bar[bar_index] ||= meter unless dynamics
-      expect(bar_duration(line)).to eq(dynamics ? meters_by_bar[bar_index] : meter)
+      expect(bar_duration(line, tuplets)).to eq(dynamics ? meters_by_bar[bar_index] : meter)
       bar_index += 1
     end
   end
@@ -85,12 +93,32 @@ module LilyPondHelpers
       .gsub(CHANGE_STAFF_COMMAND, "").gsub(CLEF_COMMAND, "").gsub(MARK, "")
   end
 
-  def bar_duration(line)
+  # The sounding length of a bar's line. `tuplets` holds the factors of the
+  # brackets open at its start, and is left holding those open at its end.
+  def bar_duration(line, tuplets = [])
     content = strip_commands(line.sub(/ \|\z/, ""))
-    whole_bar_rests = content.scan(WHOLE_BAR_REST)
-    content = content.gsub(WHOLE_BAR_REST, "")
-    rest_sum = whole_bar_rests.sum { |top, bottom| Rational(top.to_i, bottom.to_i) }
-    rest_sum + content.scan(DURATION).sum { |token| duration_fraction(token) }
+    words = []
+    content.scan(/#{TUPLET_OPEN}|#{TUPLET_CLOSE}|#{MULTIPLIED}|#{DURATION}/o) { words << Regexp.last_match.to_s }
+    words.sum(0r) { |word| scaled_fraction(word, tuplets, line) }
+  end
+
+  def scaled_fraction(word, tuplets, line)
+    if word.start_with?("\\tuplet")
+      actual, normal = word.match(TUPLET_OPEN).captures.map(&:to_i)
+      tuplets.push(Rational(normal, actual))
+      0r
+    elsif word == "}"
+      expect(tuplets).not_to be_empty, "a } closes no tuplet in: #{line}"
+      tuplets.pop
+      0r
+    else
+      tuplets.inject(1r, :*) * word_fraction(word)
+    end
+  end
+
+  def word_fraction(word)
+    multiplied = word.match(MULTIPLIED)
+    multiplied ? Rational(multiplied[1].to_i, multiplied[2].to_i) : duration_fraction(word)
   end
 
   def duration_fraction(token)
@@ -148,6 +176,12 @@ module LilyPondToolchain
     }
   LILYPOND
 
+  # A book set on one page as tall as it needs, so a long one does not warn
+  # that LilyPond compressed a page, which is about paper, not the music.
+  def on_one_page(source)
+    source.sub(/^\\version .*\n/) { |version| version + "\\paper { page-breaking = #ly:one-page-breaking }\n" }
+  end
+
   # The warnings and the number of hairpins drawn, from one compile.
   def compile_hairpins(source)
     probed = source.sub(/^\\version .*\n/) { |version| version + HAIRPIN_PROBE }
@@ -166,6 +200,14 @@ RSpec.shared_examples "a compilable document" do
     skip "lilypond is not installed" unless lilypond
 
     expect(compile_quietly(lilypond, rendered)).to be true
+  end
+end
+
+RSpec.shared_examples "a document that compiles without warnings" do
+  it "compiles with the lilypond binary without warnings when one is installed" do
+    skip "lilypond is not installed" unless installed_lilypond
+
+    expect(compile_warnings(rendered)).to eq []
   end
 end
 

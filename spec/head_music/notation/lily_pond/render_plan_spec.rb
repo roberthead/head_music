@@ -164,6 +164,35 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
     end
   end
 
+  describe "#tokens_by_segment with tuplets" do
+    it "opens a bracket before a group's first note and closes it after its last" do
+      flow = TupletFixtures.triplets
+      first, _, third = flow.voices.first.voice_events
+      expect([tokens_for(flow, first), tokens_for(flow, third)]).to eq ["\\tuplet 3/2 { c'8", "e'8 }"]
+    end
+
+    it "closes a bracket after a split note's tie, in the bar after the one it opens in" do
+      flow = TupletFixtures.tuplet_crossing_barline
+      expect(tokens_for(flow, flow.voices.first.voice_events[2])).to eq "e'8~ | e'8"
+    end
+
+    it "closes a bracket partway through a chain, after the tie, and a slur on the chain's last link" do
+      flow = TupletFixtures.triplet_tied_out
+      flow.voices.first.add_span(:slur, from: "1:1", to: flow.voices.first.voice_events[2].position)
+      expect(tokens_for(flow, flow.voices.first.voice_events[2])).to eq "e'8~ } e'4)"
+    end
+  end
+
+  describe "#tuplet_edges" do
+    it "keys each bracket's opening and closing by the segment and link it starts and ends on" do
+      flow = TupletFixtures.tuplet_crossing_barline
+      plan = described_class.new(flow)
+      edges = plan.tuplet_edges(flow.voices.first)
+      expect([edges[:opens].values, edges[:closes].values]).to eq [["\\tuplet 3/2 { "], [" }"]]
+      expect(edges[:closes].keys.first.first.bar_number).to eq 2
+    end
+  end
+
   describe "signature tracking" do
     let(:flow) do
       flow = build_flow(key_signature: "G major")

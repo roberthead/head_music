@@ -41,6 +41,25 @@ describe HeadMusic::Notation::LilyPond::TimedMarks do
     it "leaves out a mark where the link starts or ends" do
       expect(marks(["1:1", "\\p"], ["1:4", "\\f"]).afters(1, 0r, Rational(3, 4))).to eq ""
     end
+
+    it "reaches a mark inside a tuplet link in the written time of its bracket" do
+      expect(marks(["1:2", "\\p"]).afters(1, Rational(1, 6), Rational(1, 3), factor: Rational(2, 3))).to eq "\\after 8 \\p "
+    end
+  end
+
+  describe ".mark" do
+    let(:septuplet) { TupletFixtures.septuplet }
+    let(:second_note) { septuplet.voices.first.voice_events[1] }
+
+    it "sits at the exact onset of a rounded note that starts at its position" do
+      mark = described_class.mark(second_note.position, "\\p", "mark", voices: septuplet.voices)
+      expect([mark.bar_number, mark.offset, mark.onset]).to eq [1, Rational(1, 28), true]
+    end
+
+    it "sits at its position where none of its voices' notes starts" do
+      mark = described_class.mark(septuplet.position("1:3"), "\\p", "mark", voices: septuplet.voices)
+      expect([mark.bar_number, mark.offset, mark.onset]).to eq [1, Rational(1, 2), false]
+    end
   end
 
   describe "#around" do
