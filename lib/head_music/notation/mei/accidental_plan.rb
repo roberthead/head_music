@@ -10,6 +10,14 @@ module HeadMusic::Notation::MEI
 
     Note = Data.define(:id, :pitch, :continuation)
 
+    # Each letter's alteration in a key of +fifths+; fifths past seven double
+    # the letters from the start of the order again.
+    def self.key_alterations(fifths)
+      order = fifths.negative? ? SHARP_ORDER.reverse : SHARP_ORDER
+      direction = fifths.negative? ? -1 : 1
+      order.each_with_index.to_h { |letter, index| [letter, direction * [(fifths.abs - index + 6) / 7, 0].max] }
+    end
+
     def initialize(plan)
       @plan = plan
       @attributes_by_id = {}
@@ -29,7 +37,7 @@ module HeadMusic::Notation::MEI
     attr_reader :plan, :attributes_by_id
 
     def walk(entry, bar_number)
-      key = key_alterations(plan.written_key_event(entry.part, bar_number).signature)
+      key = self.class.key_alterations(plan.written_key_event(entry.part, bar_number).signature)
       memory = {}
       notes(entry, bar_number).each do |note|
         attributes_by_id[note.id] = attributes(note, key, memory)
@@ -48,13 +56,6 @@ module HeadMusic::Notation::MEI
       return {} if semitones.zero? && implied.zero?
 
       {"accid.ges" => GESTURAL.fetch(semitones)}
-    end
-
-    # Fifths past seven double the letters from the start of the order again.
-    def key_alterations(fifths)
-      order = fifths.negative? ? SHARP_ORDER.reverse : SHARP_ORDER
-      direction = fifths.negative? ? -1 : 1
-      order.each_with_index.to_h { |letter, index| [letter, direction * [(fifths.abs - index + 6) / 7, 0].max] }
     end
 
     def notes(entry, bar_number)

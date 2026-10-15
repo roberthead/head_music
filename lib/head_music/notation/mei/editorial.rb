@@ -50,7 +50,7 @@ module HeadMusic::Notation::MEI
         next unless expanded
 
         if editorial?(expanded)
-          stack << chosen(expanded).reverse
+          stack << element_children(chosen(expanded)).reverse
         else
           @index.reach(expanded)
           result << expanded
@@ -64,31 +64,64 @@ module HeadMusic::Notation::MEI
       children(element).select { |child| child.name == name }
     end
 
+    # The text of the reading kept, its whitespace collapsed, with <lb/> as
+    # a space.
+    def text(element)
+      parts = []
+      stack = [nodes(element).reverse]
+      until stack.empty?
+        node = stack.last.pop
+        next stack.pop if node.nil?
+        next parts << text_value(node, element) if node.is_a?(REXML::Text)
+        next unless node.is_a?(REXML::Element)
+
+        expanded = effective(node)
+        next unless expanded
+        next parts << " " if expanded.name == "lb"
+
+        stack << nodes(editorial?(expanded) ? chosen(expanded) : expanded).reverse
+      end
+      parts.join.gsub(/\s+/, " ").strip
+    end
+
     private
 
     def editorial?(element)
       %w[app choice subst del].include?(element.name) || CONTENTS.include?(element.name)
     end
 
+    # The element whose contents stand for an editorial one, or nil.
     def chosen(element)
       case element.name
-      when "app" then contents(first_named(element, %w[lem]) || first_named(element, %w[rdg]))
-      when "choice" then contents(first_named(element, CHOSEN_IN_CHOICE) || element_children(element).first)
-      when "subst" then contents(first_named(element, %w[add]))
-      when "del" then []
-      else element_children(element)
+      when "app" then first_named(element, %w[lem]) || first_named(element, %w[rdg])
+      when "choice" then first_named(element, CHOSEN_IN_CHOICE) || element_children(element).first
+      when "subst" then first_named(element, %w[add])
+      when "del" then nil
+      else element
       end
-    end
-
-    def contents(element)
-      element ? [element] : []
     end
 
     def first_named(element, names)
       element_children(element).find { |child| names.include?(child.name) }
     end
 
+    def nodes(element)
+      return [] unless element
+
+      result = []
+      element.each { |node| result << node }
+      result
+    end
+
+    def text_value(node, element)
+      node.value
+    rescue RuntimeError => error
+      raise ParseError.new("MEI text exceeds the entity expansion limits (#{error.message})", element: element)
+    end
+
     def element_children(element)
+      return [] unless element
+
       result = []
       element.each { |child| result << child if child.is_a?(REXML::Element) }
       result

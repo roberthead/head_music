@@ -60,6 +60,69 @@ describe HeadMusic::Notation::MEI do
   end
 
   describe "documents" do
+    # Attributes whose readers later steps put to use.
+    pending_attributes = %w[metcon mm mm.unit mm.dots numbase trans.diat trans.semi tstamp tstamp2]
+
+    note_attributes = %w[pname pname.ges oct oct.ges dur dots accid accid.ges staff grace cue]
+    score_def_attributes = %w[key.pname keysig key.sig key.mode meter.count meter.unit meter.sym midi.bpm]
+    clef_attributes = %w[shape line dis dis.place]
+    contexts = [
+      *note_attributes, *score_def_attributes, *clef_attributes, *clef_attributes.map { |name| "clef.#{name}" },
+      "dur.default", "sig", "mode", "count", "unit", "sym", "n", "lines", "midi.instrnum", "num"
+    ]
+
+    def attributes_xml(attributes)
+      attributes.map { |key, text| %( #{key}="#{text}") }.join
+    end
+
+    def whole_note
+      mei_staff(1, mei_note("C4", "1"))
+    end
+
+    def with_score_def(inside: "", staff_def: mei_staff_def(1), **attributes)
+      [whole_note, {score_def: %(<scoreDef#{attributes_xml(attributes.transform_keys(&:to_s))}>#{inside}<staffGrp>#{staff_def}</staffGrp></scoreDef>)}]
+    end
+
+    def meter_attributes
+      {"keysig" => "0", "meter.count" => "4", "meter.unit" => "4"}
+    end
+
+    # A document whose one hostile value is an attribute of that name.
+    def document_with(name, value)
+      case name
+      when "dur.default" then [mei_staff(1, %(<note pname="c" oct="4"/>)), {score_def: mei_score_def(extra: %( dur.default="#{value}"))}]
+      when "sig" then with_score_def(:inside => %(<keySig sig="#{value}"/>), "meter.count" => "4", "meter.unit" => "4")
+      when "mode" then with_score_def(:inside => %(<keySig sig="1s" mode="#{value}"/>), "meter.count" => "4", "meter.unit" => "4")
+      when "count", "unit" then with_score_def(inside: "<meterSig#{attributes_xml({"count" => "4", "unit" => "4"}.merge(name => value))}/>")
+      when "sym" then with_score_def(inside: %(<meterSig sym="#{value}"/>))
+      when "n" then [%(<staff n="#{value}"><layer n="#{value}">#{mei_note("C4", "1")}</layer></staff>)]
+      when "lines" then with_score_def(staff_def: mei_staff_def(1, attributes: %( lines="#{value}")).sub(%( lines="5"), ""), **meter_attributes)
+      when "midi.instrnum" then with_score_def(staff_def: mei_staff_def(1, inside: %(<instrDef midi.instrnum="#{value}"/>)), **meter_attributes)
+      when "num" then [mei_staff(1, %(<multiRest num="#{value}"/>))]
+      when *note_attributes_list then [mei_staff(1, "<note#{attributes_xml({"pname" => "c", "oct" => "4", "dur" => "1"}.merge(name => value))}/>")]
+      when /\Aclef\./ then with_score_def(staff_def: mei_staff_def(1, clef: nil, attributes: attributes_xml({"clef.shape" => "G", "clef.line" => "2"}.merge(name => value))), **meter_attributes)
+      when "shape", "line", "dis", "dis.place"
+        with_score_def(staff_def: mei_staff_def(1, clef: nil, inside: "<clef#{attributes_xml({"shape" => "G", "line" => "2"}.merge(name => value))}/>"), **meter_attributes)
+      else with_score_def(**meter_attributes, name => value)
+      end
+    end
+
+    define_method(:note_attributes_list) { note_attributes }
+
+    it "has a document for every attribute the reader reads" do
+      expect(contexts + pending_attributes).to match_array(HeadMusic::Notation::MEI::AttributeValues::READERS.keys)
+    end
+
+    contexts.each do |name|
+      it "parses or raises a ParseError for every hostile @#{name}" do
+        outcomes = hostile_values.map do |value|
+          items, options = document_with(name, value)
+          outcome { described_class.parse(mei_document(*Array(items), **options.to_h)) }
+        end
+        expect(outcomes - [:read]).to all(be <= HeadMusic::Notation::MEI::ParseError)
+      end
+    end
+
     def parse(xml)
       described_class.parse(xml)
     end
@@ -86,6 +149,11 @@ describe HeadMusic::Notation::MEI do
         xml = mei_document(mei_staff(1, mei_note("C4", "1")), head: mei_head(title: title)).sub("<mei xmlns", "#{laughs}\n<mei xmlns")
         expect { parse(xml) }.to raise_error(described_class::ParseError, /declares entities/)
       end
+    end
+
+    it "raises a ParseError on text past REXML's expansion limits" do
+      expect { parse(mei_document(whole_note, head: mei_head(title: "&amp;" * 20_000))) }
+        .to raise_error(described_class::ParseError, /expansion limits/)
     end
 
     it "keeps an <xi:include> and an <?xml-model?> inert" do
