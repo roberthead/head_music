@@ -84,6 +84,30 @@ describe HeadMusic::Content::Layout do
     end
   end
 
+  describe "a B-flat clarinet's grace notes" do
+    before do
+      project.flows.first.voices.first.voice_events.first.add_grace_note(%w[B3 D4], :eighth, slashed: true)
+    end
+
+    it "keeps the sounding grace pitches in the source flow" do
+      written.to_musicxml
+      expect(project.flows.first.voices.first.voice_events.first.grace_notes.first.pitches.map(&:to_s)).to eq %w[B3 D4]
+    end
+
+    it "writes them at written pitch in transposed MusicXML" do
+      grace = REXML::XPath.match(parse_musicxml(written.to_musicxml), "//note[grace]/pitch")
+      expect(grace.map { |pitch| xpath_texts(pitch, "step|alter|octave").join }).to eq %w[C14 E4]
+    end
+
+    it "writes them at written pitch in transposed LilyPond" do
+      expect(written.to_lilypond).to include "\\slashedGrace <cis' e'>8"
+    end
+
+    it "writes them at written pitch in transposed ABC" do
+      expect(written.to_abc.lines.last).to start_with "{/[CE]}D8|"
+    end
+  end
+
   describe "an octave transposer" do
     let(:project) { LayoutFixtures.clarinet_project(instrument: "piccolo", pitches: %w[C5]) }
 

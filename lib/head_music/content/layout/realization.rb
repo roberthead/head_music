@@ -53,7 +53,14 @@ class HeadMusic::Content::Layout
       transposition = HeadMusic::Content::Layout::Transposition.for(part.instrument_at(bar_number_of(voice_event_hash)))
       return voice_event_hash if transposition.identity?
 
-      voice_event_hash.merge("sounds" => sounds.map { |sound| transposition.written_sound(sound) })
+      written = voice_event_hash.merge("sounds" => sounds.map { |sound| transposition.written_sound(sound) })
+      return written unless voice_event_hash["grace_notes"]
+
+      written.merge("grace_notes" => voice_event_hash["grace_notes"].map { |grace_hash| written_grace_note(grace_hash, transposition) })
+    end
+
+    def written_grace_note(grace_hash, transposition)
+      grace_hash.merge("sounds" => grace_hash["sounds"].map { |sound| transposition.written_sound(sound) })
     end
 
     # A position serializes as "bar:count:tick:subtick".
