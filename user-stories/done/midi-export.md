@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-24T18:58:30-07:00
   activated_at: 2026-10-15T11:05:36-07:00
   planned_at:   2026-10-15T11:19:33-07:00
-  finished_at:
-  updated_at:   2026-10-15T12:21:19-07:00
+  finished_at:  2026-10-15T12:21:20-07:00
+  updated_at:   2026-10-15T12:21:20-07:00
 -->
 
 # Story: MIDI Export
@@ -436,3 +436,13 @@ All findings are fixed, each with a spec that fails on the old code (`eb1e9ffc` 
 - **Hairpins** resolve in linear time, pinned by a call-counting spec. Building the ramps had four more quadratic spots, also fixed. `Notation::HairpinSegments.pieces` now does the cutting, shared with the kern and LilyPond writers. One crescendo over 800 bars dropped from 6.86 s to 0.24 s. The MIDI bytes are identical across the fixtures and 816 generated flows.
 - **Grace-note velocity.** The criterion is reworded to what the writer does: a grace note takes the main note's level, without its note dynamic or articulations.
 - **CHANGELOG** completed.
+
+## Learnings
+
+- **A frozen contract made the fan-out cheap.** Step 4 shipped stubs for timing, velocity, programs, and lyrics with exact signatures. Four worktree agents filled them in parallel, and integration cost one constants conflict in `midi.rb`. Integration specs written afterwards, across the pieces, found one real interaction bug: a grace note before an *fp*.
+- **The planner's code checks paid off.** It found that `performance_order` dropped a final tie's tail bar, and that `dynamic_at` answers *p* on an *fp* note. It also found `dynamic_at` was quadratic, and that `Instrument#pitched?` is false for timpani. Each would have surfaced as a wrong render much later.
+- **Building the timing in exact time, and converting to ticks once,** kept tuplets, staccato, and grace notes exact. It also made the 960 fallback a single rounding step.
+- **"Linear" needs a counting spec.** The velocity sweep was described as linear, yet hairpin lookup was quadratic in four places. Only the reviewer's timing found it. A call-counting spec in step 5a would have caught it.
+- **Hand-made worktrees outside a path containing "git"** worked without any hook trouble this time.
+- **MuseScore is a good MIDI oracle.** Its headless MIDI-to-MusicXML conversion, read back by the gem's own MusicXML reader, checks pitches end to end with no extra tools.
+- **Watch for unquoted heredocs in the shell.** A `<<EOF` that should have been `<<'EOF'` silently ran the story's backticked names as commands.
