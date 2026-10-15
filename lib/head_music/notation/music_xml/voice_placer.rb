@@ -23,6 +23,7 @@ module HeadMusic::Notation::MusicXML
       @track.events.each { |event| place_event(event) unless event.fills_bar || event.continuation }
       rest_until(@bar_map.end_time, nil)
       TupletReader.new(@voice, @track, @reading).group
+      assign_staves
     end
 
     private
@@ -62,6 +63,27 @@ module HeadMusic::Notation::MusicXML
         @position = @voice.place(@position, value).next_position
         @time = segment_end
       end
+    end
+
+    # A voice is on the staff of its first event in each bar, crossing at
+    # the barlines where that changes; a change in the middle of a bar is
+    # skipped, since the model crosses only at barlines.
+    def assign_staves
+      staves = @voice.part.staff_system.staves
+      return if staves.length < 2
+
+      current = staves.first
+      @track.events.chunk_while { |before, after| bar_of(before) == bar_of(after) }.each_with_index do |events, index|
+        staff = staves[events.first.staff - 1]
+        next if staff.equal?(current)
+
+        @voice.assign_staff(index.zero? ? @bar_map.first_bar : bar_of(events.first), staff)
+        current = staff
+      end
+    end
+
+    def bar_of(event)
+      @bar_map.bar_number(event.measure_index)
     end
 
     def where(event)

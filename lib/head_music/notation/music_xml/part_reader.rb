@@ -13,8 +13,8 @@ module HeadMusic::Notation::MusicXML
     # The key, meter, and tempo a measure states on its downbeat; the extent
     # its notes and forwards reach; and one division where it ends, the
     # rounding its extent may carry.
-    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tempo, :tolerance)
-    Reading = Struct.new(:document_part, :measures, :tracks) do
+    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tempo, :tolerance, :clefs)
+    Reading = Struct.new(:document_part, :measures, :tracks, :staves) do
       def id
         document_part.id
       end
@@ -26,18 +26,20 @@ module HeadMusic::Notation::MusicXML
       @tracks = {}
       @divisions = nil
       @meter = HeadMusic::Rudiment::Meter.default
+      @staves = 1
+      @most_staves = 1
     end
 
     def read
       measures = @document_part.measures.each_with_index.map { |measure, index| read_measure(measure, index) }
-      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.values)
+      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.values, staves: @most_staves)
     end
 
     private
 
     def read_measure(measure, index)
       @where = {measure: measure.number, part: @document_part.id}
-      @measure = Measure.new(index: index, number: measure.number, implicit: measure.implicit?, meter: @meter)
+      @measure = Measure.new(index: index, number: measure.number, implicit: measure.implicit?, meter: @meter, clefs: {})
       @cursor = 0
       @lead = nil
       measure.element.each_element { |element| read_element(element) }
@@ -63,8 +65,11 @@ module HeadMusic::Notation::MusicXML
       raise UnsupportedFeatureError.new("A <measure-repeat> is not supported", **@where) if attributes.measure_repeat
 
       @divisions = attributes.divisions if attributes.divisions
+      @staves = attributes.staves if attributes.staves
+      @most_staves = [@most_staves, @staves].max
       return unless @cursor.zero?
 
+      @measure.clefs.merge!(attributes.clefs)
       @measure.key = attributes.key if attributes.key
       @meter = @measure.meter = attributes.meter if attributes.meter
     end
@@ -92,7 +97,8 @@ module HeadMusic::Notation::MusicXML
       @lead = track_for(note.voice).add(
         measure_index: @measure.index, cursor: @cursor, tolerance: division, fills_bar: measure_rest,
         rhythmic_value: measure_rest ? nil : rhythmic_value(note, duration), duration: duration,
-        sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue, tie_starts: [], tie_stops: []
+        sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue, tie_starts: [], tie_stops: [],
+        staff: staff(note)
       )
       add_ties(@lead, note)
       add_tuplet_marks(track_for(note.voice), @lead, note)
@@ -161,6 +167,13 @@ module HeadMusic::Notation::MusicXML
       key = sound(note).to_s
       event.tie_starts << key if types.include?("start")
       event.tie_stops << key if types.include?("stop")
+    end
+
+    def staff(note)
+      number = note.staff || 1
+      raise ParseError.new("A <staff> of #{number} is beyond the part's #{@staves} staves", **@where) if number > @staves
+
+      number
     end
 
     # An unpitched note is a sound of the part's instrument, or an unpitched

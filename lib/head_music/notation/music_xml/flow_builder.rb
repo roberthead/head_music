@@ -31,7 +31,7 @@ module HeadMusic::Notation::MusicXML
       timeline = TimelineReader.new(readings, bar_map)
       flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
       timeline.apply(flow)
-      roster = PartRoster.new(flow, identity)
+      roster = PartRoster.new(flow, identity, bar_map)
       readings.each do |reading|
         part = roster.add(reading)
         reading.tracks.each { |track| VoicePlacer.new(part.add_voice, track, bar_map, reading).place }
