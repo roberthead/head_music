@@ -149,6 +149,12 @@ describe HeadMusic::Notation::MusicXML::VoicePlacer do
         .to raise_error(HeadMusic::Notation::MusicXML::ParseError, /no note before it/)
     end
 
+    it "raises on a <chord/> whose note before it is in another voice" do
+      measure = note_xml("C4", 4, "whole", voice: "1") + backup_xml(4) + note_xml("E4", 4, "whole", voice: "2", chord: true)
+      expect { parse(musicxml_measures(measure)) }
+        .to raise_error(HeadMusic::Notation::MusicXML::ParseError, /no note before it \(measure 1 of part P1\)/)
+    end
+
     it "refuses chord tones of different lengths" do
       expect { parse(musicxml_measures(note_xml("C4", 2, "half") + note_xml("E4", 1, "quarter", chord: true) + note_xml("D4", 2, "half"))) }
         .to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, /different lengths are not supported \(measure 1 of part P1\)/)
