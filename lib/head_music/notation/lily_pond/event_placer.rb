@@ -19,8 +19,33 @@ module HeadMusic::Notation::LilyPond
   # Hairpin marks are gathered wherever a voice's marks are read and paired
   # once the voice is placed, by time rather than written order, since the
   # later links of a tied note are placed before the note's own marks.
+  #
+  # Tuplets are bracketed once every voice is placed, since a voice refuses a
+  # note inside a bracket. One that names a span is cut into a bracket each
+  # span of its time, as LilyPond draws it, and one the voice refuses, such as
+  # a cut inside a note, leaves its values unbracketed.
   class EventPlacer
-    TICKS_PER_WHOLE_NOTE = HeadMusic::Rudiment::Rhythm::PPQN * 4
+    SUBTICKS_PER_WHOLE_NOTE = HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
+
+    # The time a \tuplet holds in one voice.
+    Tuplet = Data.define(:voice, :from, :to, :span) do
+      def groups
+        return [[from, to]] unless span
+
+        starts = [from]
+        step = (span * SUBTICKS_PER_WHOLE_NOTE).to_i
+        starts << starts.last.advance(subticks: step) while starts.last.advance(subticks: step) < to
+        starts.zip(starts.drop(1) + [to])
+      end
+
+      def bracket
+        groups.each do |group_from, group_to|
+          voice.group_tuplet(from: group_from, to: group_to)
+        rescue ArgumentError
+          nil
+        end
+      end
+    end
 
     # The hairpin marks of one context, paired as LilyPond's dynamic
     # engraver pairs them: at each moment, any dynamic (a level, an accent,
@@ -68,6 +93,8 @@ module HeadMusic::Notation::LilyPond
       @spacers = Hash.new { |hash, voice| hash[voice] = [] }.compare_by_identity
       @spacer_ends = {}.compare_by_identity
       @marker_marks = {}.compare_by_identity
+      @open_tuplets = {}.compare_by_identity
+      @tuplets = []
     end
 
     def place(event, voice)
@@ -85,6 +112,7 @@ module HeadMusic::Notation::LilyPond
 
     def finish(flow)
       @spacers.keys.each { |voice| rest_spacers(voice) if spacers_past_music_bar?(voice) }
+      @tuplets.each(&:bracket)
       @written_end = flow.voices.map { |voice| position(voice) }.max
       @hairpin_marks.each do |voice, hairpin_marks|
         hairpin_marks.pair([voice], written_end: @written_end, final_barline: flow.final_barline_position)
@@ -126,12 +154,12 @@ module HeadMusic::Notation::LilyPond
     attr_reader :layout, :bar_marks
 
     def shifted(position, event, name)
-      ticks = event.fraction * TICKS_PER_WHOLE_NOTE
-      unless ticks.denominator == 1
-        raise UnsupportedFeatureError.new("#{name} of #{event.fraction} whole notes falls between ticks", line_number: event.line)
+      subticks = event.fraction * SUBTICKS_PER_WHOLE_NOTE
+      unless subticks.denominator == 1
+        raise UnsupportedFeatureError.new("#{name} of #{event.fraction} whole notes falls between subticks", line_number: event.line)
       end
 
-      HeadMusic::Content::Position.new(position.flow, position.bar_number, position.count, position.tick + ticks.to_i)
+      position.advance(subticks: subticks.to_i)
     end
 
     def place_dynamics(voice, position, event)
@@ -157,7 +185,7 @@ module HeadMusic::Notation::LilyPond
     def rest_spacers(voice)
       @spacer_ends.delete(voice)
       @spacers.delete(voice)&.each do |spacer|
-        rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(spacer.fraction)
+        rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(spacer.fraction, tuplet: spacer.tuplet)
         raise unsupported("A spacer of #{spacer.fraction} whole notes has no rest to stand for it", spacer) unless rhythmic_value
 
         voice.place(voice.next_position, rhythmic_value)
@@ -173,7 +201,14 @@ module HeadMusic::Notation::LilyPond
       when :dynamics then place_marker(voice, position, event)
       when :after then place_dynamics(voice, shifted(position, event, "An \\after"), event)
       when :bar_mark then bar_marks.hold(event, voice, position)
+      when :tuplet_start then @open_tuplets[voice] = [position, event.fraction]
+      when :tuplet_end then close_tuplet(voice, position)
       end
+    end
+
+    def close_tuplet(voice, position)
+      from, span = @open_tuplets.delete(voice)
+      @tuplets << Tuplet.new(voice, from, position, span) if from && from < position
     end
 
     # A <> takes no time, so its slur marks and accent belong to the note
@@ -283,7 +318,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def bar_start?(position)
-      position.count == 1 && position.tick.zero?
+      position.count == 1 && position.tick.zero? && position.subtick.zero?
     end
 
     def whole_notes(fraction)
@@ -292,7 +327,8 @@ module HeadMusic::Notation::LilyPond
 
     def elapsed_fraction(position)
       meter = position.meter
-      Rational(position.count - 1, meter.bottom_number) + Rational(position.tick, TICKS_PER_WHOLE_NOTE)
+      Rational(position.count - 1, meter.bottom_number) +
+        Rational((position.tick * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_TICK) + position.subtick, SUBTICKS_PER_WHOLE_NOTE)
     end
 
     def unsupported(message, event)

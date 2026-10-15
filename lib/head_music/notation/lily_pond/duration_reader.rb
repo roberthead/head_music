@@ -45,11 +45,26 @@ module HeadMusic::Notation::LilyPond
     def offset_fraction(token)
       raise error("\\after expects a duration", token) unless token.duration
 
-      fraction = HeadMusic::Notation::DottedDuration.dotted_unit_fraction(build(token.duration, token))
-      token.multiplier ? fraction * multiplier(token) : fraction
+      own_fraction(token)
+    end
+
+    # The sounding time after which a \tuplet or \tupletSpan starts a new
+    # bracket, or nil when none is written. Like \after's, it is its own.
+    def tuplet_span_fraction(token)
+      return unless token.duration
+
+      fraction = own_fraction(token)
+      raise error("#{token.lexeme} must span a positive duration", token) unless fraction.positive?
+
+      fraction
     end
 
     private
+
+    def own_fraction(token)
+      fraction = HeadMusic::Notation::DottedDuration.dotted_unit_fraction(build(token.duration, token))
+      token.multiplier ? fraction * multiplier(token) : fraction
+    end
 
     def spanned_fraction(token, name)
       fraction = HeadMusic::Notation::DottedDuration.dotted_unit_fraction(rhythmic_value(token))

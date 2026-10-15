@@ -132,4 +132,26 @@ describe HeadMusic::Notation::LilyPond::DurationReader do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /\\after expects a duration/)
     end
   end
+
+  describe "#tuplet_span_fraction" do
+    it "spans a dotted or multiplied duration" do
+      expect([reader.tuplet_span_fraction(token("\\tuplet 3/2 4.")), reader.tuplet_span_fraction(token("\\tupletSpan 8*3"))])
+        .to eq [Rational(3, 8), Rational(3, 8)]
+    end
+
+    it "is nil without a duration" do
+      expect(reader.tuplet_span_fraction(token("\\tuplet 3/2 { c8 }"))).to be_nil
+    end
+
+    it "leaves the carried duration alone" do
+      reader.rhythmic_value(token("c8"))
+      reader.tuplet_span_fraction(token("\\tuplet 3/2 2"))
+      expect(reader.rhythmic_value(token("c")).to_s).to eq "eighth"
+    end
+
+    it "raises for a span of no time" do
+      expect { reader.tuplet_span_fraction(token("\\tupletSpan 4*0")) }
+        .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /\\tupletSpan must span a positive duration/)
+    end
+  end
 end

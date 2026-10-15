@@ -6,16 +6,18 @@ module HeadMusic::Notation::LilyPond
   # MusicItemReader the notes, rests, and \change Staff commands, a
   # SettingReader the \key, \time, and \clef commands, a BarMarkReader
   # the \bar, \mark, and navigation commands, and a DynamicsItemReader what
-  # a \new Dynamics holds. Every other command raises
+  # a \new Dynamics holds, and a TupletReader the \tuplet and \times
+  # around the music they hold. Every other command raises
   # as unsupported rather than being skipped, because skipping a \transpose
-  # or a \tuplet would yield a plausible but wrong flow.
+  # would yield a plausible but wrong flow.
   class MusicReader
     # The reader recurses per brace level and per \relative, \absolute, or
     # \new wrapper; the lexer and balance check do not, so nesting must be
     # bounded here to stay inside ParseError.
     MAX_NESTING_DEPTH = 1000
-    AFTER_MUSIC = %i[note rest whole_bar_rest spacer open_chord open_brace after].freeze
+    AFTER_MUSIC = %i[note rest whole_bar_rest spacer open_chord open_brace after tuplet].freeze
     DEFAULT_RELATIVE_REFERENCE = "F3"
+    TUPLET_TOKENS = %i[tuplet tuplet_span].freeze
 
     def initialize(cursor, document)
       @cursor = cursor
@@ -25,6 +27,7 @@ module HeadMusic::Notation::LilyPond
       @bar_marks = BarMarkReader.new(cursor)
       @dynamics_items = DynamicsItemReader.new(cursor, self, @items, settings: @settings, bar_marks: @bar_marks)
       @contexts = ContextReader.new(cursor, document, self)
+      @tuplets = TupletReader.new(cursor)
       @depth = 0
     end
 
@@ -66,7 +69,7 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :cursor, :readers, :items, :settings, :bar_marks, :dynamics_items, :contexts
+    attr_reader :cursor, :readers, :items, :settings, :bar_marks, :dynamics_items, :contexts, :tuplets
 
     def read_expression_command(context)
       token = cursor.peek
@@ -87,6 +90,7 @@ module HeadMusic::Notation::LilyPond
 
     def read_parallel(context)
       token = cursor.advance
+      reject_inside_tuplet(context, "Simultaneous music", token)
       raise cursor.unsupported("Simultaneous music inside \\relative is not supported", token) if relative?
 
       context.preceding_staff = nil
@@ -106,15 +110,18 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_item(context)
+      token = cursor.peek
+      raise cursor.unsupported_token(token) if context.dynamics? && TUPLET_TOKENS.include?(token.type)
       return dynamics_items.read(context) if context.dynamics?
 
-      token = cursor.peek
       case token.type
       when :note then items.read_note(context)
       when :rest then items.read_rest(context)
-      when :whole_bar_rest then items.read_whole_bar_rest(context)
+      when :whole_bar_rest then read_whole_bar_rest(context)
       when :spacer then items.read_spacer(context)
       when :after then read_after(context)
+      when :tuplet then read_tuplet(context)
+      when :tuplet_span then tuplets.read_span(context)
       when :open_chord then items.read_chord(context)
       when :tie then items.read_tie(context)
       when :bar_check then items.read_bar_check(context)
@@ -124,6 +131,20 @@ module HeadMusic::Notation::LilyPond
       when :unsupported then raise cursor.unsupported_token(token)
       else raise cursor.error(%(Unexpected token "#{token.lexeme}"), token)
       end
+    end
+
+    def read_tuplet(context)
+      token = cursor.peek
+      tuplets.read(context) { nested(token) { read_item(context) } }
+    end
+
+    def read_whole_bar_rest(context)
+      reject_inside_tuplet(context, "A whole-bar rest", cursor.peek)
+      items.read_whole_bar_rest(context)
+    end
+
+    def reject_inside_tuplet(context, name, token)
+      raise cursor.unsupported("#{name} inside a tuplet is not supported", token) if context.stream.tuplet?
     end
 
     def read_after(context)

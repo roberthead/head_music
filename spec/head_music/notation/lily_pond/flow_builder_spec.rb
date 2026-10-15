@@ -253,7 +253,7 @@ describe HeadMusic::Notation::LilyPond::FlowBuilder do
       "{ \\after 4 \\p | c'1 }" => [HeadMusic::Notation::LilyPond::ParseError, /\\after expects music/],
       "{ \\after 4 \\startTextSpan c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"\\startTextSpan"/],
       "{ \\after 4 -1 c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /"-"/],
-      "{ \\after 4*1/7 \\p c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /An \\after of 1\/28 whole notes falls between ticks/]
+      "{ \\after 4*1/7 \\p c'1 }" => [HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /An \\after of 1\/28 whole notes falls between subticks/]
     }.each do |source, (error_class, message)|
       it "raises for #{source}" do
         expect { build(source) }.to raise_error(error_class, message)

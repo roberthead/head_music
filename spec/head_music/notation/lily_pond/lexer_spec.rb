@@ -106,6 +106,33 @@ describe HeadMusic::Notation::LilyPond::Lexer do
       expect(first_token("\\afterGrace").type).to eq :command
     end
 
+    it "lexes \\tuplet with its fraction" do
+      token = first_token("\\tuplet 3/2 { c8 }")
+      expect([token.type, token.lexeme, token.fraction, token.duration]).to eq [:tuplet, "\\tuplet", "3/2", nil]
+    end
+
+    it "lexes \\tuplet with a dotted span" do
+      expect(tokens("\\tuplet 4/3 4. { c8 }").map(&:type)).to eq %i[tuplet open_brace note close_brace]
+      expect(first_token("\\tuplet 4/3 4. { c8 }").duration).to eq "4."
+    end
+
+    it "leaves a note after \\tuplet's fraction to the note" do
+      expect(tokens("\\tuplet 3/2 c4").map { |token| [token.type, token.duration] }).to eq [[:tuplet, nil], [:note, "4"]]
+    end
+
+    it "lexes \\times with its fraction and no span" do
+      expect(tokens("\\times 2/3 4").map { |token| [token.type, token.fraction] }).to eq [[:tuplet, "2/3"], [:number, nil]]
+    end
+
+    it "lexes \\tuplet with no fraction for the reader to refuse" do
+      expect(first_token("\\tuplet { c8 }").fraction).to be_nil
+    end
+
+    it "lexes \\tupletSpan with its duration, leaving \\default to the reader" do
+      expect(tokens("\\tupletSpan 8*3 \\tupletSpan \\default").map { |token| [token.type, token.duration, token.multiplier] })
+        .to eq [[:tuplet_span, "8", "3"], [:tuplet_span, nil, nil], [:command, nil, nil]]
+    end
+
     it "does not mistake a word for a spacer" do
       expect(first_token("staff").type).to eq :word
     end

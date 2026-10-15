@@ -8,11 +8,11 @@ module HeadMusic::Notation::LilyPond
   # and the unescaped body for strings.
   Token = Data.define(
     :type, :line, :column,
-    :lexeme, :letter, :suffix, :octave_marks, :duration, :multiplier
+    :lexeme, :letter, :suffix, :octave_marks, :duration, :multiplier, :fraction
   ) do
     def initialize(
       type:, line:, column:,
-      lexeme: nil, letter: nil, suffix: nil, octave_marks: nil, duration: nil, multiplier: nil
+      lexeme: nil, letter: nil, suffix: nil, octave_marks: nil, duration: nil, multiplier: nil, fraction: nil
     )
       super
     end

@@ -195,6 +195,37 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
     end
   end
 
+  describe "tuplets" do
+    let(:triplet) { HeadMusic::Rudiment::TupletRatio.get("3:2") }
+
+    before { stream.open_tuplet(triplet, nil, 1) }
+
+    it "gives notes and rests inside one the ratio, and none after it closes" do
+      [stream.add_note([c4], quarter, 1), stream.add_rest(quarter, 1), stream.close_tuplet(1)]
+      stream.add_note([d4], quarter, 1)
+      expect(stream.finish.events.map { |event| [event.kind, event.rhythmic_value&.to_s] }).to eq [
+        [:tuplet_start, nil], [:note, "triplet quarter"], [:rest, "triplet quarter"], [:tuplet_end, nil], [:note, "quarter"]
+      ]
+    end
+
+    it "keeps the span on the opening event" do
+      spanned = described_class.new.tap { |other| other.open_tuplet(triplet, Rational(1, 4), 1) }
+      expect(spanned.finish.events.first.then { |event| [event.tuplet, event.fraction] }).to eq [triplet, Rational(1, 4)]
+    end
+
+    it "scales a spacer inside one and gives it the ratio" do
+      stream.add_spacer(Rational(1, 8), 1)
+      spacer = stream.finish.events.last
+      expect([spacer.fraction, spacer.tuplet]).to eq [Rational(1, 12), triplet]
+    end
+
+    it "holds the close inside a note tied out of it" do
+      [stream.add_note([c4], quarter, 1), stream.open_tie(1), stream.close_tuplet(1)]
+      inner_events = tie_through(quarter).last.inner_events
+      expect(inner_events.map { |inner| [inner.elapsed.to_s, inner.event.kind] }).to eq [["triplet quarter", :tuplet_end]]
+    end
+  end
+
   describe "#change_staff" do
     it "holds a staff change inside a tied note" do
       stream.add_note([c4], half, 1)

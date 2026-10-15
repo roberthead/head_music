@@ -23,6 +23,9 @@ module HeadMusic::Notation::LilyPond
     COMMAND_PATTERN = /\\([A-Za-z]+)/
     AFTER_PATTERN = /\\after(?![A-Za-z])/
     AFTER_DURATION_PATTERN = /(#{DURATION_PATTERN})(?:#{MULTIPLIER_PATTERN})?/o
+    TUPLET_PATTERN = /\\(tuplet|times)(?![A-Za-z])/
+    TUPLET_SPAN_PATTERN = /\\tupletSpan(?![A-Za-z])/
+    FRACTION_PATTERN = %r{\d+/\d+}
     WORD_PATTERN = /[A-Za-z_][A-Za-z0-9_]*/
     NUMBER_PATTERN = %r{\d+(?:/\d+)?}
     # Quarter-tone names (cih, ceh, cisih, ceseh) are real LilyPond pitches
@@ -78,7 +81,7 @@ module HeadMusic::Notation::LilyPond
 
     def read_token
       string_token || simple_token || close_chord_token ||
-        lexeme_token(UNSUPPORTED_PATTERN, :unsupported) || after_token || command_token ||
+        lexeme_token(UNSUPPORTED_PATTERN, :unsupported) || after_token || tuplet_token || tuplet_span_token || command_token ||
         note_token || rest_token || spacer_token ||
         lexeme_token(WORD_PATTERN, :word) || lexeme_token(NUMBER_PATTERN, :number)
     end
@@ -112,6 +115,31 @@ module HeadMusic::Notation::LilyPond
       nil while scanner.skip_insignificant
       duration = consume(AFTER_DURATION_PATTERN) && scanner.captures
       token(:after, lexeme: "\\after", duration: duration&.first, multiplier: duration&.last)
+    end
+
+    # \tuplet n/d and \times d/n both lex with the fraction as written; only
+    # \tuplet takes the optional span duration that follows it.
+    def tuplet_token
+      return unless consume(TUPLET_PATTERN)
+
+      command = scanner[1]
+      nil while scanner.skip_insignificant
+      fraction = consume(FRACTION_PATTERN)
+      duration = nil
+      if command == "tuplet" && fraction
+        nil while scanner.skip_insignificant
+        duration = consume(AFTER_DURATION_PATTERN) && scanner.captures
+      end
+      token(:tuplet, lexeme: "\\#{command}", fraction: fraction, duration: duration&.first, multiplier: duration&.last)
+    end
+
+    # \tupletSpan's \default is left to the reader, as a command token.
+    def tuplet_span_token
+      return unless consume(TUPLET_SPAN_PATTERN)
+
+      nil while scanner.skip_insignificant
+      duration = consume(AFTER_DURATION_PATTERN) && scanner.captures
+      token(:tuplet_span, lexeme: "\\tupletSpan", duration: duration&.first, multiplier: duration&.last)
     end
 
     def note_token

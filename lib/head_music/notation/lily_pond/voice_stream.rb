@@ -12,11 +12,11 @@ module HeadMusic::Notation::LilyPond
 
     Event = Data.define(
       :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks,
-      :bar_mark
+      :bar_mark, :tuplet
     ) do
       def initialize(
         kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil,
-        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil
+        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil
       )
         super
       end
@@ -33,7 +33,7 @@ module HeadMusic::Notation::LilyPond
     UNFOLLOWED_TIE = "A tie must be followed by a note"
 
     attr_reader :role, :events, :opening_clef
-    attr_accessor :group_staff, :dynamics_target
+    attr_accessor :group_staff, :dynamics_target, :tuplet_span
 
     def initialize(role = nil)
       @role = role
@@ -48,6 +48,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def add_note(pitches, rhythmic_value, line, marks = MarkReader::NONE)
+      rhythmic_value = under_tuplet(rhythmic_value)
       return extend_tie(pitches, rhythmic_value, line, marks) if @tie_open
 
       flush_pending_note
@@ -55,15 +56,17 @@ module HeadMusic::Notation::LilyPond
     end
 
     def add_rest(rhythmic_value, line, marks = MarkReader::NONE)
-      append(line, kind: :rest, rhythmic_value: rhythmic_value, marks: marks)
+      append(line, kind: :rest, rhythmic_value: under_tuplet(rhythmic_value), marks: marks)
     end
 
     def add_whole_bar_rest(fraction, line, marks = MarkReader::NONE)
       append(line, kind: :whole_bar_rest, fraction: fraction, marks: marks)
     end
 
+    # A spacer inside a tuplet is written time, so it sounds scaled, and the
+    # rest that may come to stand for it carries the ratio.
     def add_spacer(fraction, line, marks = MarkReader::NONE)
-      append(line, kind: :spacer, fraction: fraction, marks: marks)
+      append(line, kind: :spacer, fraction: sounding(fraction), marks: marks, tuplet: @tuplet)
     end
 
     # The dynamics a <> carries, held like a bar check inside a tied note.
@@ -74,7 +77,23 @@ module HeadMusic::Notation::LilyPond
     # A mark \after places part way into the music that follows it, held
     # like a bar check where it falls between the halves of a tied note.
     def add_after(fraction, line, marks)
-      mark(line, kind: :after, fraction: fraction, marks: marks)
+      mark(line, kind: :after, fraction: sounding(fraction), marks: marks)
+    end
+
+    def tuplet?
+      !@tuplet.nil?
+    end
+
+    # The notes and rests until the tuplet closes carry its ratio. A span is
+    # the sounding time after which LilyPond starts a new bracket.
+    def open_tuplet(ratio, span, line)
+      mark(line, kind: :tuplet_start, tuplet: ratio, fraction: span)
+      @tuplet = ratio
+    end
+
+    def close_tuplet(line)
+      @tuplet = nil
+      mark(line, kind: :tuplet_end)
     end
 
     def open_tie(line)
@@ -131,6 +150,14 @@ module HeadMusic::Notation::LilyPond
     end
 
     private
+
+    def under_tuplet(rhythmic_value)
+      @tuplet ? rhythmic_value.with_tuplet(@tuplet) : rhythmic_value
+    end
+
+    def sounding(fraction)
+      @tuplet ? fraction * @tuplet.factor : fraction
+    end
 
     def append(line, **attributes)
       terminate(line)
