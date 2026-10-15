@@ -82,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MusicXML import reads rehearsal marks, segno and coda signs, Fine, To Coda, D.C., and D.S., letting their `<sound>` attributes decide over the words, and reads MuseScore's segno and coda glyph words (U+E047, U+E048) as the signs.
 - MusicXML import reads `<direction>` dynamics as dynamic events at their `<offset>`, on the voice `<voice>` names or the part, and pairs `<wedge>`s by number into hairpins in document order; a stop with no open wedge waits for a later start of its number that sounds before it, as MuseScore writes them, and unmatched wedges are dropped.
 - `Instrument#gm_program` answers the nearest General MIDI program, 1-based as GM tables print it, and `Instrument#gm_percussion_key` the nearest GM percussion key (35–81) for unpitched percussion. A variant such as `clarinet_in_a` inherits its parent's. Didgeridoo, theremin, and tabla have no program, and the drum kit, castanets, tam-tam, and tenor drum no percussion key.
+- **MIDI export (in progress).** `HeadMusic::MIDI` holds `RenderError`, a subclass of `Notation::RenderError` so one rescue covers every writer, and `ParseError`, naming a byte offset. `MIDI::SMF` encodes timed events (note on and off, program change, tempo, time and key signature, names, lyrics, end of track) as a format 1 Standard MIDI File without running status.
 
 ### Changed
 

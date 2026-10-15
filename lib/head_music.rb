@@ -211,6 +211,7 @@ require "head_music/notation/voice_event_validation"
 require "head_music/notation/preflight_checks"
 require "head_music/notation/dotted_duration"
 require "head_music/notation"
+require "head_music/midi"
 
 # analysis
 require "head_music/analysis/circle"
