@@ -64,6 +64,12 @@ module HeadMusic::Notation
       @starts.bsearch { |start| start > time }
     end
 
+    # Where the bar a time falls in, or ends, ends: the time itself at a
+    # barline, and never past the end of the music.
+    def bar_end_at_or_after(time)
+      [@starts.bsearch { |start| start >= time } || end_time, end_time].min
+    end
+
     # Where the music ends: the last bar's start plus its own length, which
     # is short in a short final bar.
     def end_time

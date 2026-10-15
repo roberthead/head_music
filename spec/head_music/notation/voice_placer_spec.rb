@@ -226,4 +226,33 @@ describe HeadMusic::Notation::VoicePlacer do
       expect(voice_event_strings(HeadMusic::Notation::MusicXML.parse(HeadMusic::Notation::MusicXML.render(original)))).to eq voice_event_strings(original)
     end
   end
+
+  describe "with trim_edges" do
+    let(:reading) do
+      Struct.new(:measures, :errors) { def where(index) = {measure: index} }
+        .new(Array.new(4) { Struct.new(:implicit, :meter, :extent, :tolerance).new(false, HeadMusic::Rudiment::Meter.get("4/4"), nil, 0) }, HeadMusic::Notation::MusicXML)
+    end
+
+    def placed(*events)
+      flow = HeadMusic::Content::Flow.new(meter: "4/4")
+      voice = flow.add_voice
+      track = HeadMusic::Notation::VoiceTrack.new("1")
+      events.each do |index, cursor, value, fills|
+        rhythmic_value = value && HeadMusic::Rudiment::RhythmicValue.get(value)
+        track.add(measure_index: index, cursor: cursor, tolerance: Rational(1, 1000), rhythmic_value: rhythmic_value, duration: rhythmic_value&.fraction || 0,
+          sounds: value ? [HeadMusic::Rudiment::Pitch.get("C4")] : [], fills_bar: fills, tie_starts: [], tie_stops: [], staff: 1)
+      end
+      described_class.new(voice, track, HeadMusic::Notation::BarMap.new([reading]), reading, tuplet_reader: HeadMusic::Notation::MusicXML::TupletReader, trim_edges: true).place
+      voice.voice_events.map(&:to_s)
+    end
+
+    it "places nothing for bars that whole-bar rests fill at the edges, and pads the last bar" do
+      expect(placed([0, 0, nil, true], [1, 0, :half, false], [2, 0, nil, true], [3, 0, :quarter, false], [3, Rational(1, 4), nil, true]))
+        .to eq ["half C4 at 2:1:000", "half rest at 2:3:000", "whole rest at 3:1:000", "quarter C4 at 4:1:000", "dotted half rest at 4:2:000"]
+    end
+
+    it "places nothing for a track of whole-bar rests alone" do
+      expect(placed([0, 0, nil, true], [1, 0, nil, true])).to be_empty
+    end
+  end
 end

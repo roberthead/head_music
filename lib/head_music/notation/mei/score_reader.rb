@@ -19,7 +19,8 @@ module HeadMusic::Notation::MEI
     # A note of what one element became, in document order: for a <note>,
     # its track's event or grace note and the sound it added; for a chord
     # tone, chord_member. Kind is :note, :chord, :rest, :m_rest, :space, or
-    # :m_space.
+    # :m_space. One in a layer no voice reads, as MuseScore's whole-bar
+    # rests beside another staff's layer of the same number, has no track.
     Pending = Struct.new(:kind, :element, :measure_index, :reading, :track, :event, :grace, :chord_member, :sound, :staff)
 
     Score = Data.define(:measures, :readings, :pending)
@@ -40,6 +41,7 @@ module HeadMusic::Notation::MEI
     def read
       walk(@source.score, 1)
       mark_pickup
+      @readings.each { |reading| VoiceAssignment.new(reading, @editorial).assign }
       Score.new(@measures, @readings, @pending)
     end
 
@@ -82,11 +84,22 @@ module HeadMusic::Notation::MEI
       index = @measures.length
       bar_count(contents).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], where) }
       @readings.each do |reading|
-        reading.measures[index].extent = contents[reading].filter_map(&:extent).max
+        reading.measures[index].extent = extent(contents[reading], index)
         change_clefs(reading, index, changes, contents[reading]) if index.positive?
         reading.instrument_changes[index] = changes.instruments[reading.definition.index] if changes.instruments.key?(reading.definition.index)
         read_part(reading, contents[reading], index, where)
       end
+    end
+
+    # How far a part's music reaches in a measure. After the first, a
+    # whole-bar rest fills its bar, so a layer beside it that ends short is
+    # padded rather than making the bar short.
+    def extent(contents, index)
+      reach = contents.filter_map(&:extent).max
+      return reach if index.zero? || contents.none? { |content| content.entries.any?(&:fills_bar?) }
+
+      meter = @measures[index].meter
+      [reach, Rational(meter.top_number, meter.bottom_number)].compact.max
     end
 
     # The bars a measure stands for: one, or as many as a <multiRest> fills.
@@ -158,9 +171,26 @@ module HeadMusic::Notation::MEI
       end
     end
 
+    # Each layer's notes are spelled on the staff it sits on, and its
+    # events wait in a PartReading::Layer, with their Pending records, until
+    # the part's voice keys are known.
     def read_part(reading, contents, index, where)
-      pitches = spell(reading, contents, where)
-      contents.each { |content| add_events(reading, content, index, pitches, where.merge(staff: content.staff_number)) }
+      staves = contents.to_h { |content| [content, sitting_staff(reading, content)] }.compare_by_identity
+      pitches = spell(reading, contents, staves, where)
+      contents.each do |content|
+        entries = content.entries.map do |entry|
+          sounds = entry.cue ? [] : entry.notes.map { |note| pitches.fetch(note) }
+          [entry, sounds, note_pending(reading, entry, index, sounds)]
+        end
+        reading.layers << PartReading::Layer.new(index, content, staves[content], entries)
+      end
+    end
+
+    # The enclosing staff, unless every note and chord names the same other
+    # staff of the part by @staff, as MuseScore writes a crossing hand.
+    def sitting_staff(reading, content)
+      crossing = content.crossing_staff
+      reading.definition.staff_index(crossing) ? crossing : content.staff_number
     end
 
     def read_layers(staff, number, where)
@@ -171,8 +201,8 @@ module HeadMusic::Notation::MEI
 
     # The sounding pitch of every note of the part in the measure, by
     # element, each staff's notes taken in onset order across its layers.
-    def spell(reading, contents, where)
-      contents.group_by(&:staff_number).each_with_object({}.compare_by_identity) do |(number, staff_contents), pitches|
+    def spell(reading, contents, staves, where)
+      contents.group_by { |content| staves[content] }.each_with_object({}.compare_by_identity) do |(number, staff_contents), pitches|
         accidentals = AccidentalReading.new(@state.written_fifths(number))
         sorted_notes(staff_contents).each do |note|
           pitches[note] = pitch(reading, note, number, accidentals, where.merge(staff: number))
@@ -198,46 +228,18 @@ module HeadMusic::Notation::MEI
       reading.transposition.concert(written, reading.definition.staff_index(number), **where, element: note)
     end
 
-    def add_events(reading, content, index, pitches, where)
-      track = reading.track(content.number)
-      staff = reading.definition.staff_index(content.staff_number)
-      content.entries.each do |entry|
-        note_sounds = entry.cue ? [] : entry.notes.map { |note| pitches.fetch(note) }
-        if entry.grace
-          add_grace(reading, track, entry, note_sounds, index)
-        else
-          add_event(reading, track, entry, note_sounds, index, staff)
-        end
-      end
-    end
-
-    def add_grace(reading, track, entry, note_sounds, index)
-      grace = track.queue_grace(
-        sounds: note_sounds.uniq, rhythmic_value: entry.rhythmic_value, slashed: entry.slashed, articulations: [], tie_starts: []
-      )
-      note_pending(reading, track, entry, index, note_sounds, grace: grace)
-    end
-
-    def add_event(reading, track, entry, note_sounds, index, staff)
-      (entry.bars || 1).times do |offset|
-        event = track.add(
-          measure_index: index + offset, cursor: entry.cursor, tolerance: PartReading::TOLERANCE,
-          rhythmic_value: entry.fills_bar? ? nil : entry.rhythmic_value, duration: entry.duration || 0, sounds: note_sounds.uniq,
-          fills_bar: entry.fills_bar?, cue: entry.cue, tie_starts: [], tie_stops: [], staff: staff
-        )
-        note_pending(reading, track, entry, index + offset, note_sounds, event: event) if offset.zero?
-      end
-    end
-
-    def note_pending(reading, track, entry, index, note_sounds, event: nil, grace: nil)
+    def note_pending(reading, entry, index, sounds)
       kind = (entry.kind == :multi_rest) ? :m_rest : entry.kind
-      base = {measure_index: index, reading: reading, track: track, event: event, grace: grace, staff: entry.staff}
-      @pending << Pending.new(kind: kind, element: entry.element, chord_member: false, sound: (kind == :note) ? note_sounds.first : nil, **base)
-      return unless entry.kind == :chord
+      base = {measure_index: index, reading: reading, staff: entry.staff}
+      pending = [Pending.new(kind: kind, element: entry.element, chord_member: false, sound: (kind == :note) ? sounds.first : nil, **base)]
+      @pending.concat(pending)
+      return pending unless entry.kind == :chord
 
-      entry.notes.zip(note_sounds).each do |note, sound|
-        @pending << Pending.new(kind: :note, element: note, chord_member: true, sound: sound, **base)
+      members = entry.notes.zip(sounds).map do |note, sound|
+        Pending.new(kind: :note, element: note, chord_member: true, sound: sound, **base)
       end
+      @pending.concat(members)
+      pending + members
     end
   end
 end

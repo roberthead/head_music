@@ -45,7 +45,7 @@ module HeadMusic::Notation::MEI
       # The one @staff every note and chord names, or nil.
       def crossing_staff
         staves = entries.select(&:sounding?).map(&:staff).uniq
-        staves.first if staves.one?
+        staves.first if staves.length == 1
       end
     end
 
@@ -161,7 +161,7 @@ module HeadMusic::Notation::MEI
       return staff if staff
 
       staves = notes.map { |note| value(note, "staff") }.uniq
-      staves.first if staves.one?
+      staves.first if staves.length == 1
     end
 
     def read_clef(element)

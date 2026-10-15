@@ -11,13 +11,20 @@ module HeadMusic::Notation::MEI
     # by staff in the part.
     Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :tolerance, :clefs)
 
-    attr_reader :definition, :measures, :transposition, :instrument_changes
+    # A layer as read in a measure, waiting for its voice: the staff it
+    # sits on, and each entry with the sounds of its notes and its Pending
+    # records.
+    Layer = Struct.new(:measure_index, :content, :staff, :entries)
+
+    attr_reader :definition, :measures, :transposition, :instrument_changes, :layers, :roles
 
     def initialize(definition)
       @definition = definition
       @measures = []
       @tracks = {}
       @instrument_changes = {}
+      @layers = []
+      @roles = {}
       @transposition = HeadMusic::Notation::ConcertTransposition.new(errors: HeadMusic::Notation::MEI)
     end
 
@@ -30,8 +37,8 @@ module HeadMusic::Notation::MEI
     end
 
     # The track of a voice key, made on first use.
-    def track(key)
-      @tracks[key] ||= HeadMusic::Notation::VoiceTrack.new(key.to_s)
+    def track(key, label = key.to_s)
+      @tracks[key] ||= HeadMusic::Notation::VoiceTrack.new(label)
     end
 
     # The tracks in voice-key order.

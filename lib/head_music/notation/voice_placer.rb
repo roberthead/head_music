@@ -2,7 +2,10 @@
 module HeadMusic::Notation
   # Places one track's events on its voice in order, each at the position
   # the one before it ends, with rests split at barlines across any gap and
-  # out to the end of the music, so every voice spans the whole flow.
+  # out to the end of the music, so every voice spans the whole flow. With
+  # +trim_edges:+, a voice instead spans the bars from its first placed
+  # event's to its last's, padded to the end of that bar, so that the
+  # whole-bar rests at its edges are absence, as MEI writes a tacet voice.
   #
   # Two clocks meet here: the exact time each event was read at, from the
   # durations before it, and the exact time the voice's written values
@@ -10,24 +13,32 @@ module HeadMusic::Notation
   # exporter rounding; beyond it, a later event leaves a rest and an earlier
   # one overlaps the voice.
   class VoicePlacer
-    def initialize(voice, track, bar_map, reading, tuplet_reader:)
+    def initialize(voice, track, bar_map, reading, tuplet_reader:, trim_edges: false)
       @voice = voice
       @track = track
       @bar_map = bar_map
       @reading = reading
       @tuplet_reader = tuplet_reader
+      @trim_edges = trim_edges
     end
 
     def place
-      @time = @bar_map.start(@bar_map.first_bar)
-      @position = @voice.flow.position(@bar_map.first_bar, 1, 0)
-      @track.events.each { |event| place_event(event) unless event.fills_bar || event.continuation }
-      rest_until(@bar_map.end_time, nil)
+      placed = @track.events.reject { |event| event.fills_bar || event.continuation }
+      return if @trim_edges && placed.empty?
+
+      start_at(@trim_edges ? bar_of(placed.first) : @bar_map.first_bar)
+      placed.each { |event| place_event(event) }
+      rest_until(@trim_edges ? @bar_map.bar_end_at_or_after(@time) : @bar_map.end_time, nil)
       @tuplet_reader.new(@voice, @track, @reading).group
-      assign_staves
+      assign_staves(@trim_edges ? @track.events[@track.events.index(placed.first)..@track.events.index(placed.last)] : @track.events)
     end
 
     private
+
+    def start_at(bar)
+      @time = @bar_map.start(bar)
+      @position = @voice.flow.position(bar, 1, 0)
+    end
 
     def place_event(event)
       time = @bar_map.time_of(event.measure_index, event.cursor)
@@ -70,18 +81,22 @@ module HeadMusic::Notation
     # A voice is on the staff of its first event in each bar, crossing at
     # the barlines where that changes; a change in the middle of a bar is
     # skipped, since the model crosses only at barlines.
-    def assign_staves
+    def assign_staves(events)
       staves = @voice.part.staff_system.staves
       return if staves.length < 2
 
       current = staves.first
-      @track.events.chunk_while { |before, after| bar_of(before) == bar_of(after) }.each_with_index do |events, index|
+      events.chunk_while { |before, after| bar_of(before) == bar_of(after) }.each_with_index do |events, index|
         staff = staves[events.first.staff - 1]
         next if staff.equal?(current)
 
-        @voice.assign_staff(index.zero? ? @bar_map.first_bar : bar_of(events.first), staff)
+        @voice.assign_staff(index.zero? ? first_staff_bar : bar_of(events.first), staff)
         current = staff
       end
+    end
+
+    def first_staff_bar
+      @trim_edges ? @voice.voice_events.first.position.bar_number : @bar_map.first_bar
     end
 
     def bar_of(event)

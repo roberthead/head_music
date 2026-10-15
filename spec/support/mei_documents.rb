@@ -70,6 +70,16 @@ module MEIDocuments
     all = {dur: dur}.merge(attributes).compact
     "<rest #{all.map { |name, value| %(#{name.to_s.tr("_", ".")}="#{value}") }.join(" ")}/>"
   end
+
+  # That every voice satisfies Voice::Continuity and ends on a barline or
+  # where the music ends. A voice may start and end in any bar, as a tacet
+  # voice does.
+  def expect_mei_music_whole(flow)
+    voices = flow.voices.reject { |voice| voice.voice_events.empty? }
+    expect(voices.map(&:first_gap)).to all(be_nil)
+    ends = voices.map { |voice| voice.last_voice_event.next_position }
+    expect(ends.reject { |position| position == ends.max || position.to_a.drop(1) == [1, 0, 0] }).to be_empty
+  end
 end
 
 RSpec.configure { |config| config.include MEIDocuments }

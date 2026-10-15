@@ -152,6 +152,11 @@ describe HeadMusic::Notation::BarMap do
       expect(described_class.new([bars(1, 1, Rational(1, 2))]).end_time).to eq Rational(5, 2)
     end
 
+    it "ends the bar a time falls in at the next barline, at a barline itself, and never past the music" do
+      bar_map = described_class.new([bars(1, 1, Rational(1, 2))])
+      expect([Rational(1, 2), 1, Rational(9, 4)].map { |time| bar_map.bar_end_at_or_after(time) }).to eq [1, 1, Rational(5, 2)]
+    end
+
     it "raises through the reading's errors, where the reading says" do
       expect { described_class.new([bars(1, Rational(5, 4))]) }
         .to raise_error(errors::UnsupportedFeatureError, "The measure is longer than its 4/4 bar (staff s1)")

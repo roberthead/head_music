@@ -24,7 +24,7 @@ module HeadMusic::Notation::MEI
       raise ParseError, "MEI input contains no music" if score.measures.empty? || score.readings.empty?
 
       bar_map = HeadMusic::Notation::BarMap.new(score.readings)
-      fold_ties(score.readings, bar_map)
+      fold_ties(score, bar_map)
       timeline = TimelineReader.new(score, bar_map, opening)
       flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
       timeline.apply(flow)
@@ -33,8 +33,10 @@ module HeadMusic::Notation::MEI
       flow
     end
 
-    def fold_ties(readings, bar_map)
-      readings.each do |reading|
+    # Tie starts and stops are set on the tracks' events and grace notes
+    # before this, from the Pending records of the notes that carry them.
+    def fold_ties(score, bar_map)
+      score.readings.each do |reading|
         reading.tracks.each do |track|
           track.tie_graces
           HeadMusic::Notation::TieFolding.apply(track, reading, bar_map)
@@ -42,10 +44,12 @@ module HeadMusic::Notation::MEI
       end
     end
 
+    # A voice's leading and trailing bars of only whole-bar rests are not
+    # placed, as the writer writes a voice tacet there.
     def place(part, reading, bar_map)
-      reading.tracks.each do |track|
-        voice = part.add_voice
-        HeadMusic::Notation::VoicePlacer.new(voice, track, bar_map, reading, tuplet_reader: TupletReader).place
+      reading.keyed_tracks.each do |key, track|
+        voice = part.add_voice(role: reading.roles[key])
+        HeadMusic::Notation::VoicePlacer.new(voice, track, bar_map, reading, tuplet_reader: TupletReader, trim_edges: true).place
       end
     end
   end
