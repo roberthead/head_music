@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-14T16:39:35-07:00
   planned_at:   2026-10-14T16:55:47-07:00
   finished_at:
-  updated_at:   2026-10-14T16:55:47-07:00
+  updated_at:   2026-10-15T00:07:44-07:00
 -->
 
 # Story: Tuplets and Grace Notes
@@ -91,7 +91,7 @@ note.add_grace_note("A4", :sixteenth, slashed: true)
 - [ ] LilyPond reads `\tuplet n/d { … }` as tuplet groups, including the span form `\tuplet 3/2 4 { … }`, which starts a new group each quarter, and the older `\times d/n { … }`. It reads `\grace`, `\acciaccatura`, `\appoggiatura`, and `\slashedGrace` as grace notes
 - [ ] kern reads a duration whose undotted value has a non-power-of-two denominator as a tuplet value, with actual the odd factor of the denominator and normal the largest such count below it (`12` a triplet eighth, `24` a triplet sixteenth, `20` a 5:4 sixteenth, `28` a 7:4 sixteenth). It infers a group from the first run of at least two consecutive values of one ratio whose exact length is a plain note value; runs that never fill stay ungrouped. Duplets read as dotted values. It reads `q` as slashed grace notes, and `Q` or `qq` as unslashed ones
 - [ ] LilyPond `\afterGrace` is skipped, as the model holds grace notes only before a note. Every reader skips grace notes before a rest, before a tie's later link, and at the end of a voice. Readers keep a grace note's articulations, tie, and slur start; a level on one reads at its main note; its ornaments and accents are dropped
-- [ ] Every file that imports today still imports. New committed fixtures with tuplets and grace notes import in ABC, LilyPond, and kern, and the music21 kern corpus files that refused tuplets or grace rows now import
+- [ ] Every file that imports today still imports. New committed fixtures with tuplets and grace notes import in ABC, LilyPond, and kern, and the music21 kern corpus files that refused tuplets or grace rows now read past them. The Chopin mazurka and the three Palestrina files import; the four Beethoven Op. 18 No. 1 movements stop later, on problems this story does not touch (reworded 2026-10-15, see Notes)
 
 ### Writers
 
@@ -117,6 +117,8 @@ note.add_grace_note("A4", :sixteenth, slashed: true)
 - [MIDI Export](midi-export.md) sounds grace notes by taking time from the note they precede, and its tick resolution allows for tuplets.
 - **Follow-up: nested tuplets.** They are rare outside twentieth-century repertoire, and holding them would mean groups within groups in every bracket writer. They raise because skipping one would leave its bar short.
 - **Follow-up: grace notes after a note.** LilyPond's `\afterGrace` and trill terminations would need grace notes held after a note. They are skipped until a caller needs them.
+- **The Beethoven movements stop on other problems** (found 2026-10-15). With tuplets and grace rows read, `movement1.krn` ties A♭ to A♮ (line 290) and `movement4.krn` leaves `[4F` unclosed (line 257), both errors in the files. `movement2.krn` changes clef mid-bar (line 1486) and `movement3.krn` ties a chord only in part (line 452). Both of those are valid kern the model cannot hold, so under the skip policy they are candidates for a reader follow-up rather than this story.
+- **Follow-up: voice directions in LilyPond output.** The writer never sets `\voiceOne` or `\voiceTwo`, so two voices on one staff whose notes collide warn "this Voice needs a \voiceXx or \shiftXx setting". The Chopin mazurka shows it at a tuplet, but the cause predates tuplets.
 - **Follow-up: grace notes in analysis.** No guide needs them. A later story could teach melodic guidelines about ornamental grace notes, and add an option to include them then.
 
 ## Decisions
