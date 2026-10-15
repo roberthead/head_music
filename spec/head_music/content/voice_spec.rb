@@ -515,7 +515,7 @@ describe HeadMusic::Content::Voice do
     subject(:notes_during) { voice.notes_during(voice_event) }
 
     let(:pitches) { %w[C E G F A G E D C] }
-    let(:voice_event) { HeadMusic::Content::RestEvent.new(flow, position, rhythmic_value) }
+    let(:voice_event) { HeadMusic::Content::RestEvent.new(described_class.new(flow: flow), position, rhythmic_value) }
 
     before do
       pitches.each.with_index(1) do |pitch, bar|

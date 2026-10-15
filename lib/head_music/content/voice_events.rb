@@ -34,6 +34,12 @@ class HeadMusic::Content::VoiceEvents
     @events[index_from(position)]
   end
 
+  # The voice event that starts last before a position.
+  def preceding(position)
+    index = index_from(position)
+    @events[index - 1] if index.positive?
+  end
+
   # The note or rest that holds a position, whether it starts there or is
   # still sounding.
   def sounding_at(position)

@@ -60,6 +60,76 @@ describe HeadMusic::Content::VoiceEvent do
     end
   end
 
+  describe "the run rule for ratios that round" do
+    let(:septuplet_sixteenth) { HeadMusic::Rudiment::RhythmicValue.get(:sixteenth, tuplet: "7:4") }
+
+    def place_run(count, value = septuplet_sixteenth)
+      count.times { voice.place(voice.next_position, value, "C4") }
+      voice.voice_events
+    end
+
+    it "rounds each onset of a septuplet from the run's start" do
+      expect(place_run(7).map { |event| event.position.to_s }).to eq %w[
+        1:1:000 1:1:137:034 1:1:274:069 1:1:411:103 1:1:548:137 1:1:685:171 1:1:822:206
+      ]
+    end
+
+    it "ends the septuplet exactly on the beat" do
+      expect(place_run(7).last.next_position).to eq "1:2:000"
+    end
+
+    it "spreads the rounding so that the durations sum exactly" do
+      events = place_run(7)
+      durations = events.map { |event| event.next_position.to_a.last(2).then { |tick, subtick| tick * 240 + subtick } }
+      starts = events.map { |event| event.position.to_a.last(2).then { |tick, subtick| tick * 240 + subtick } }
+      expect(durations.zip(starts).map { |finish, start| (finish.zero? ? 230_400 : finish) - start })
+        .to eq [32_914, 32_915, 32_914, 32_914, 32_914, 32_915, 32_914]
+    end
+
+    it "carries each onset's exact remainder" do
+      expect(place_run(7).map(&:onset_remainder)).to eq [0, 2r / 7, -3r / 7, -1r / 7, 1r / 7, 3r / 7, -2r / 7]
+    end
+
+    it "rounds a lone value's duration" do
+      voice.place("1:1", septuplet_sixteenth, "C4")
+      expect(voice.voice_events.first.next_position).to eq "1:1:137:034"
+    end
+
+    it "starts a fresh run after a value of another ratio" do
+      voice.place("1:1", :quarter, "C4")
+      expect(place_run(1).last.onset_remainder).to eq 0
+    end
+
+    it "starts a fresh run where the event before does not end" do
+      voice.place("1:1", septuplet_sixteenth, "C4")
+      voice.place("1:2", septuplet_sixteenth, "D4")
+      expect(voice.voice_events.last.onset_remainder).to eq 0
+    end
+
+    it "continues a run through a chain ending in the ratio" do
+      voice.place("1:1", HeadMusic::Rudiment::RhythmicValue.get("eighth tied to 7:4 sixteenth"), "C4")
+      expect(place_run(1).last.onset_remainder).to eq 2r / 7
+    end
+
+    it "recomputes when an earlier event joins the run" do
+      voice.place("1:1:137:034", septuplet_sixteenth, "D4")
+      before = voice.voice_events.first.next_position
+      voice.place("1:1", septuplet_sixteenth, "C4")
+      expect([before.to_s, voice.voice_events.last.next_position.to_s]).to eq %w[1:1:274:068 1:1:274:069]
+    end
+
+    it "walks a long ungrouped run without exhausting the stack" do
+      7000.times do |index|
+        voice.place(flow.position("1:1").advance(subticks: (index * 230_400r / 7).round), septuplet_sixteenth, "C4")
+      end
+      expect(voice.next_position).to eq "251:1:000"
+    end
+
+    it "keeps exact values exact" do
+      expect(place_run(3, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "3:2")).map(&:onset_remainder)).to eq [0, 0, 0]
+    end
+  end
+
   describe "#during?" do
     subject(:voice_event) { described_class.build(voice, position, rhythmic_value, pitch) }
 

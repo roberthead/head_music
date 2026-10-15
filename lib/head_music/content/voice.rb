@@ -6,6 +6,10 @@ module HeadMusic::Content; end
 class HeadMusic::Content::Voice
   attr_reader :part, :role
 
+  # @api private bumped whenever a change may move where a voice event ends,
+  # so voice events know when their memoized timing is stale
+  attr_reader :revision
+
   delegate :flow, to: :part
   delegate :key_signature, to: :flow
 
@@ -16,7 +20,8 @@ class HeadMusic::Content::Voice
 
   # The voice event at a position, the first at or after it, and the one
   # sounding at it.
-  delegate :at, :starting_from, :sounding_at, to: :@voice_events, prefix: :voice_event
+  # The one starting last before a position, too.
+  delegate :at, :starting_from, :sounding_at, :preceding, to: :@voice_events, prefix: :voice_event
 
   # A voice is always in a part, always in a flow. Given neither, it mints the
   # chain rather than raising, so that a voice remains the smallest thing a
@@ -25,6 +30,7 @@ class HeadMusic::Content::Voice
     @part = part || detached_part(flow)
     @role = role
     @voice_events = HeadMusic::Content::VoiceEvents.new
+    @revision = 0
     @dynamic_events = HeadMusic::Content::DynamicEvents.new(@part.flow)
     @spans = HeadMusic::Content::Spans.new
     @staff_assignments = StaffAssignments.new(@part)
@@ -53,7 +59,11 @@ class HeadMusic::Content::Voice
   def place(position, rhythmic_value, sound_or_sounds = nil)
     # The melodic line is a snapshot of the notes, so placing anything invalidates it.
     @melodic_line = nil
-    @voice_events.place(HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds))
+    voice_event = HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds)
+    # An event's timing depends only on the events before it, so appending
+    # leaves every memo good, and reading a voice in order stays linear.
+    @revision += 1 if last_voice_event && voice_event.position < last_voice_event.position
+    @voice_events.place(voice_event)
   end
 
   # In position order, with at most one at a position.

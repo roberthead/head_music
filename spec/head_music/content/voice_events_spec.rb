@@ -45,4 +45,13 @@ describe HeadMusic::Content::VoiceEvents do
   it "answers nothing after its last event ends" do
     expect(voice_events.sounding_at(position("3:1"))).to be_nil
   end
+
+  it "answers the event starting last before a position" do
+    expect([voice_events.preceding(position("1:3")), voice_events.preceding(position("1:4"))].map { |voice_event| voice_event.position.to_s })
+      .to eq %w[1:1:000 1:3:000]
+  end
+
+  it "answers nothing before its first event" do
+    expect(voice_events.preceding(position("1:1"))).to be_nil
+  end
 end
