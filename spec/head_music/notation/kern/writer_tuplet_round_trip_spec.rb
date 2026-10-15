@@ -14,8 +14,8 @@ describe HeadMusic::Notation::Kern::Writer do
       end
     end
 
-    it "keeps a quintuplet, a septuplet, and a triplet across a barline as groups" do
-      flows = %i[quintuplet septuplet_crossing_barline tuplet_crossing_barline].map { |name| TupletFixtures.public_send(name) }
+    it "keeps a quintuplet, a septuplet, a triplet across a barline, and a triplet ending in a mixed chain as groups" do
+      flows = %i[quintuplet septuplet_crossing_barline tuplet_crossing_barline triplet_tied_out].map { |name| TupletFixtures.public_send(name) }
       expect(flows.map { |flow| tuplet_summary(round_trip(flow)) }).to eq flows.map { |flow| tuplet_summary(flow) }
     end
 

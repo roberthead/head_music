@@ -65,15 +65,28 @@ module KernRoundTripHelper
   def kern_groups(flow)
     flow.voices.map do |voice|
       voice.tuplets.map do |group|
-        events = group.voice_events
-        start = exact_point(events.first.position.bar_number, HeadMusic::Notation::BarSplitter.onset_in_bar(events.first))
-        [start, group.ratio.to_s, events.sum { |voice_event| voice_event.rhythmic_value.fraction }]
+        [kern_group_start(group.links.first), group.ratio.to_s, group.links.sum { |link| link.rhythmic_value.link_fraction }]
       end
     end
   end
 
+  # A group may start on a later link of a chain, in a bar after the chain's.
+  def kern_group_start(link)
+    bar_number, offset = HeadMusic::Notation::BarSplitter.exact_start(link.voice_event)
+    offset += (link.onset - link.voice_event.onset_remainder) / HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
+    loop do
+      meter = link.voice_event.flow.meter_at(bar_number)
+      length = Rational(meter.top_number, meter.bottom_number)
+      break if offset < length
+
+      offset -= length
+      bar_number += 1
+    end
+    exact_point(bar_number, offset)
+  end
+
   # The groups the reader infers from what the writer writes: a rest as one
-  # rest per written link, and each value under its canonical ratio.
+  # rest per written link, and each link under its canonical ratio.
   def inferred_kern_groups(flow)
     flow.voices.map do |voice|
       items = kern_reader_items(voice)
@@ -84,11 +97,10 @@ module KernRoundTripHelper
   end
 
   def kern_reader_items(voice)
-    kern_link_entries(voice).slice_when { |before, after| after[2].rest? || before[2].rest? || !after[2].equal?(before[2]) }.map do |entries|
-      values = entries.map { |_, link, _| canonical_kern_value(link) }
-      ratios = values.map(&:tuplet_ratio).uniq
-      fraction = values.sum(&:fraction)
-      [entries.first.first, HeadMusic::Notation::Kern::TupletGroups::Item.new((ratios.length == 1) ? ratios.first : nil, fraction)]
+    kern_link_entries(voice).each_with_index.map do |(onset, link, voice_event), index|
+      value = canonical_kern_value(link)
+      event = voice_event.rest? ? index : voice_event
+      [onset, HeadMusic::Notation::Kern::TupletGroups::Item.new(value.tuplet_ratio, value.fraction, event)]
     end
   end
 
