@@ -89,9 +89,15 @@ class HeadMusic::Content::Position
     !strong?
   end
 
+  # Adds a rhythmic value's subticks, so a length finer than a tick, such as
+  # a dotted 256th's, carries rather than being dropped.
   def +(other)
     other = HeadMusic::Rudiment::RhythmicValue.new(other) if [HeadMusic::Rudiment::RhythmicUnit, Symbol, String].include?(other.class)
-    self.class.new(flow, bar_number, count, tick + other.ticks, subtick)
+    advance(subticks: other.subticks)
+  end
+
+  def advance(subticks:)
+    self.class.new(flow, bar_number, count, tick, subtick + subticks)
   end
 
   def start_of_next_bar

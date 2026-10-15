@@ -161,6 +161,33 @@ describe HeadMusic::Content::Position do
 
       specify { expect(position + HeadMusic::Rudiment::RhythmicValue.new(:half, dots: 1)).to eq expected_position }
     end
+
+    context "when adding a value finer than a tick" do
+      let(:downbeat) { described_class.new(flow, 1, 1, 0) }
+
+      it "carries a dotted 256th's half tick into subticks" do
+        expect((downbeat + HeadMusic::Rudiment::RhythmicValue.get("dotted two hundred fifty-sixth")).to_s).to eq "1:1:022:120"
+      end
+
+      it "keeps every subtick of a 9:8 eighth" do
+        expect((downbeat + HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "9:8")).to_s).to eq "1:1:426:160"
+      end
+    end
+
+    context "when the subticks carry across a bar in 6/8" do
+      let(:flow) { HeadMusic::Content::Flow.new(meter: "6/8") }
+
+      it "carries subticks into ticks, counts, and the bar" do
+        position = described_class.new(flow, 1, 6, 470)
+        expect((position + HeadMusic::Rudiment::RhythmicValue.get("dotted two hundred fifty-sixth")).to_s).to eq "2:1:012:120"
+      end
+    end
+  end
+
+  describe "#advance" do
+    it "moves a number of subticks, carrying them" do
+      expect(position.advance(subticks: 240 * 480 + 7).to_s).to eq "3:3:000:007"
+    end
   end
 
   describe "comparison" do

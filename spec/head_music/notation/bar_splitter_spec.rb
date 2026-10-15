@@ -120,5 +120,24 @@ describe HeadMusic::Notation::BarSplitter do
       position = flow.position("4:3:240")
       expect(described_class.position_at(flow, 4, described_class.offset_in_bar(position))).to eq position
     end
+
+    it "inverts offset_in_bar with subticks" do
+      position = flow.position("4:3:240:007")
+      expect(described_class.position_at(flow, 4, described_class.offset_in_bar(position))).to eq position
+    end
+  end
+
+  describe ".offset_in_bar" do
+    it "counts subticks" do
+      expect(described_class.offset_in_bar(flow.position("1:1:000:120"))).to eq Rational(1, 7680)
+    end
+
+    it "splits a note starting on a subtick at its exact place" do
+      voice.place("1:1", "dotted two hundred fifty-sixth", "C4")
+      voice.place(voice.next_position, :whole, "D4")
+      expect(summary(described_class.segments_of(voice.voice_events.last))).to eq [
+        [1, Rational(509, 512), true], [2, Rational(3, 512), false]
+      ]
+    end
   end
 end

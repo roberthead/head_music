@@ -54,7 +54,8 @@ module HeadMusic
 
       def offset_in_bar(position)
         meter = position.meter
-        (position.count - 1 + Rational(position.tick, meter.ticks_per_count)) / meter.bottom_number
+        ticks = position.tick + Rational(position.subtick, HeadMusic::Time::SUBTICKS_PER_TICK)
+        (position.count - 1 + ticks / meter.ticks_per_count) / meter.bottom_number
       end
 
       # The inverse of offset_in_bar: the position +offset+ of a whole note

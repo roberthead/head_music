@@ -72,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ABC tunes with a staccato dot, `T` or `M` shorthand, or `!…!` decorations, and LilyPond files with articulations or dynamics, import instead of raising. kern tokens with a `z` sforzando no longer raise `UnsupportedFeatureError`.
 - The MusicXML writer writes a voice's dynamic that falls after its last note in a bar, as a `<direction>` after that note, instead of leaving it out.
 - The ABC writer no longer writes a zero-length note (`C8-|C0`) for a note that crosses a barline and ends on a later one.
+- `Position#+` adds a rhythmic value's subticks, so a length finer than a tick carries instead of being dropped: a dotted 256th from the downbeat ends at `1:1:022:120`, not `1:1:022`. `Position#advance(subticks:)` moves a position by subticks, and `BarSplitter.offset_in_bar` counts a position's subticks.
 - `RhythmicValue` defines `eql?` and `hash` to match `==`, so `uniq` and `tally` count equal values together. `NotesSameLength` now finds the most common value in a line, rather than taking the first note's, and marks fewer notes in lines of mixed values.
 
 ## [22.0.0] - 2026-09-24
