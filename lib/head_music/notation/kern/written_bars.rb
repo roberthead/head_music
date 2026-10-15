@@ -106,13 +106,16 @@ module HeadMusic::Notation::Kern
       @music_end ||= event_sources.values.filter_map(&:finish).max || [first, full_length(first)]
     end
 
+    # Silence holding a tuplet rest is kept, since leaving it out would cut
+    # a tuplet short.
     def pickup_onset
-      onsets = event_sources.values.flat_map { |source| source.placed.fetch(PICKUP_BAR, []) }.reject(&:rest?).map(&:offset)
-      note_start = onsets.min
+      events = event_sources.values.flat_map { |source| source.placed.fetch(PICKUP_BAR, []) }
+      note_start = events.reject(&:rest?).map(&:offset).min
       dynamic_start = dynamic_offsets(PICKUP_BAR).min
-      return note_start if dynamic_start.nil? || (note_start && note_start <= dynamic_start)
+      start = (dynamic_start.nil? || (note_start && note_start <= dynamic_start)) ? note_start : 0
+      return 0 if start && events.any? { |event| event.offset < start && event.link.tuplet? }
 
-      0
+      start
     end
 
     def dynamic_after_music?

@@ -443,6 +443,14 @@ describe HeadMusic::Notation::Kern::Writer do
     it "reads back as the same flow" do
       expect(music_of(HeadMusic::Notation::Kern.parse(render(flow)))).to eq music_of(flow)
     end
+
+    it "keeps a leading tuplet rest, which leaving out would cut its tuplet short" do
+      pickup = HeadMusic::Content::Flow.new(meter: "2/4")
+      voice = pickup.add_voice
+      voice.place("0:1", :quarter)
+      TupletFixtures.fill(voice, [[TupletFixtures.value(:eighth, "3:2"), nil], *TupletFixtures.run("3:2", :eighth, %w[D4 E4]), [:half, "F4"]])
+      expect(render(pickup).lines.map(&:chomp).grep(/\A[^*!]/).first(6)).to eq ["4r", "12r", "12d", "12e", "=1", "2f"]
+    end
   end
 
   describe "repeats" do
