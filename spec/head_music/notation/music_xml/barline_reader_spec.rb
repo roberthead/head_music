@@ -98,6 +98,34 @@ describe HeadMusic::Notation::MusicXML::BarlineReader do
     end
   end
 
+  describe "a third ending after repeats with no times" do
+    let(:flow) do
+      parse([
+        barline_xml("left", repeat_xml("forward")) + whole_note,
+        barline_xml("left", ending_xml("1", "start")) + whole_note + barline_xml("right", ending_xml("1", "stop") + repeat_xml("backward")),
+        barline_xml("left", ending_xml("2", "start")) + whole_note + barline_xml("right", ending_xml("2", "stop") + repeat_xml("backward")),
+        barline_xml("left", ending_xml("3", "start")) + whole_note + barline_xml("right", ending_xml("3", "discontinue")),
+        whole_note + barline_xml("right", repeat_xml("backward")),
+        barline_xml("left", ending_xml("1", "start")) + whole_note + barline_xml("right", ending_xml("1", "stop"))
+      ])
+    end
+
+    it "plays each repeat of the section as often as its highest ending names" do
+      expect(flow.bars.map(&:ends_repeat_after_num_plays)).to eq [nil, 3, 3, nil, 2, nil]
+    end
+
+    it "reaches the third ending in performance" do
+      expect(flow.performance_order.first(7).map(&:number)).to eq [1, 2, 1, 3, 1, 4, 5]
+    end
+  end
+
+  it "keeps a repeat's times when an ending names a higher pass" do
+    first = ending_xml("1", "stop") + repeat_xml("backward", times: 2)
+    third = barline_xml("left", ending_xml("3", "start")) + whole_note + barline_xml("right", ending_xml("3", "discontinue"))
+    flow = parse([whole_note, barline_xml("left", ending_xml("1", "start")) + whole_note + barline_xml("right", first), third])
+    expect(flow.bars.map(&:ends_repeat_after_num_plays)).to eq [nil, 2, nil]
+  end
+
   it "drops an ending stop with no start and an ending with an unreadable number" do
     flow = parse([
       whole_note + barline_xml("right", ending_xml("1", "stop")),

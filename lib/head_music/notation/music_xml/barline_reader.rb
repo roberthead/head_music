@@ -11,6 +11,10 @@ module HeadMusic::Notation::MusicXML
   #
   # Every part is read, and for each bar the first value found wins, but a
   # repeat start from any part counts.
+  #
+  # A repeat with no times plays as often as the highest ending of its
+  # section names, as ABC's RepeatTagger reads it, so that a third ending
+  # is reached.
   class BarlineReader < MarkReader
     BAR_STYLES = BarlineWriter::BAR_STYLES.filter_map { |style, text| [text, style] if text }.to_h.merge("regular" => :regular).freeze
 
@@ -18,6 +22,7 @@ module HeadMusic::Notation::MusicXML
       @styles = {}
       @starts = []
       @plays = {}
+      @counted = []
       @passes = {}
       @open_endings = {}.compare_by_identity
     end
@@ -35,6 +40,7 @@ module HeadMusic::Notation::MusicXML
       first = flow.earliest_bar_number
       last = flow.latest_bar_number
       @starts.uniq.each { |number| bar(flow, number, first, last)&.starts_repeat = true }
+      raise_plays_to_endings(first, last)
       @plays.each { |number, plays| bar(flow, number, first, last)&.ends_repeat_after_num_plays = plays }
       @passes.each { |number, passes| bar(flow, number, first, last)&.plays_on_passes = passes }
       @styles.each do |number, (style, last_bar)|
@@ -79,13 +85,34 @@ module HeadMusic::Notation::MusicXML
     def read_repeat(repeat, closing, opening)
       case repeat_direction(repeat)
       when "forward" then @starts << opening
-      when "backward" then @plays[closing] ||= plays(repeat)
+      when "backward"
+        @counted << closing if !@plays.key?(closing) && times(repeat)
+        @plays[closing] ||= plays(repeat)
+      end
+    end
+
+    def raise_plays_to_endings(first, last)
+      section = []
+      highest = 0
+      (first..last).each do |number|
+        passes = @passes[number]
+        if passes.nil? || @starts.include?(number)
+          section = []
+          highest = 0
+        end
+        highest = [highest, *passes].max if passes
+        section << number if @plays.key?(number) && !@counted.include?(number)
+        section.each { |end_number| @plays[end_number] = [@plays[end_number], highest].max }
       end
     end
 
     def plays(repeat)
+      times(repeat) || 2
+    end
+
+    def times(repeat)
       times = Integer(XmlReading.attribute(repeat, "times").to_s, 10, exception: false)
-      (times && times >= 2) ? times : 2
+      times if times && times >= 2
     end
 
     def read_ending(record, element, closing, opening)
