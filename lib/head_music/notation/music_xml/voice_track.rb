@@ -7,9 +7,22 @@ module HeadMusic::Notation::MusicXML
   # The cursor follows <duration>s, which exporters round, so each event
   # also keeps the tolerance of one division in force where it was read.
   class VoiceTrack
-    Event = Struct.new(:measure_index, :cursor, :tolerance, :rhythmic_value, :duration, :sounds, :fills_bar, :cue) do
+    # A continuation is a later link of a tie, folded into the event its
+    # chain began with; it is not placed.
+    Event = Struct.new(
+      :measure_index, :cursor, :tolerance, :rhythmic_value, :duration, :sounds, :fills_bar, :cue,
+      :tie_starts, :tie_stops, :continuation
+    ) do
       def rest?
         sounds.empty?
+      end
+
+      def ties_out?
+        !rest? && sounds.all? { |sound| tie_starts.include?(sound.to_s) }
+      end
+
+      def ties_in?
+        !rest? && sounds.all? { |sound| tie_stops.include?(sound.to_s) }
       end
     end
 

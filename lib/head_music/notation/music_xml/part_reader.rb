@@ -91,8 +91,9 @@ module HeadMusic::Notation::MusicXML
       @lead = track_for(note.voice).add(
         measure_index: @measure.index, cursor: @cursor, tolerance: division, fills_bar: measure_rest,
         rhythmic_value: measure_rest ? nil : rhythmic_value(note, duration), duration: duration,
-        sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue
+        sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue, tie_starts: [], tie_stops: []
       )
+      add_ties(@lead, note)
       move(duration)
       reach(@cursor) unless measure_rest
     end
@@ -109,6 +110,18 @@ module HeadMusic::Notation::MusicXML
         raise UnsupportedFeatureError.new("Chord tones of different lengths are not supported", **@where)
       end
       @lead.sounds |= [sound(note)]
+      add_ties(@lead, note)
+    end
+
+    # <tie> is what sounds, so it wins over <tied>, which is what is drawn.
+    # A let-ring or continue says nothing about where a tie ends.
+    def add_ties(event, note)
+      return if event.rest?
+
+      types = note.ties.any? ? note.ties : note.tied
+      key = sound(note).to_s
+      event.tie_starts << key if types.include?("start")
+      event.tie_stops << key if types.include?("stop")
     end
 
     # An unpitched note is a sound of the part's instrument, or an unpitched

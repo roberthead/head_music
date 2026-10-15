@@ -20,7 +20,7 @@ module HeadMusic::Notation::MusicXML
     def place
       @time = @bar_map.start(@bar_map.first_bar)
       @position = @voice.flow.position(@bar_map.first_bar, 1, 0)
-      @track.events.each { |event| place_event(event) unless event.fills_bar }
+      @track.events.each { |event| place_event(event) unless event.fills_bar || event.continuation }
       rest_until(@bar_map.end_time, nil)
     end
 

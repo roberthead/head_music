@@ -18,7 +18,9 @@ module HeadMusic::Notation::MusicXML
     def build
       identity = IdentityReader.new(@document)
       readings = @document.parts.map do |document_part|
-        PartReader.new(document_part, instrument: identity.instrument(document_part)).read
+        PartReader.new(document_part, instrument: identity.instrument(document_part)).read.tap do |reading|
+          reading.tracks.each { |track| TieFolding.apply(track, reading) }
+        end
       end
       raise ParseError, "MusicXML input contains no music" if readings.empty?
 
