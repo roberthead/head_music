@@ -97,7 +97,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 ### Parts and voices
 
 - [ ] In format 1, each track that holds notes becomes a part; a track that holds notes on several channels becomes one part per channel. Format 0 is split by channel. A track after the first with a name or program change but no notes becomes a part of rests
-- [ ] A track name meta event becomes the part's player name, unless it equals the part's instrument name, ignoring case. The sequence name is the flow's name. In format 1, track 0's name is the flow's name only when track 0 holds no notes
+- [ ] A track name meta event becomes the part's player name, unless it equals the part's instrument name exactly, case included, so "Soprano" names the player of a part whose instrument is "soprano". The sequence name is the flow's name. In format 1, track 0's name is the flow's name only when track 0 holds no notes
 - [ ] A program change sets the part's instrument through the GM program data. A later program change becomes an instrument change at the bar of its channel's next note on
   - A channel with no program change has no instrument.
   - A program with no catalog instrument gives no instrument.
@@ -496,7 +496,7 @@ Each step is one commit with its specs, and keeps `bundle exec rake validate` gr
   - A later change takes effect at the bar of the channel's next note on.
   - The hint (instrument-name meta, then track name) wins when `Instrument.get(hint)&.gm_program == program`. Otherwise the pinned table, or the sole instrument for that program, or nil.
   - A channel with no program has no instrument; GM's piano default would claim an instrument the file never named. This is why step 1 stops export writing 1 for such parts.
-  - A track name equal to the resolved instrument's name, ignoring case, sets no player, because export writes the instrument name when a part has no player.
+  - A track name equal to the resolved instrument's name, case included, sets no player, because export writes the instrument name when a part has no player. A name differing only in case is a player's, such as "Soprano" for the singer of a soprano part (decided 2026-10-16).
 - **Lyrics.**
   - A lyric is snapped like an onset and attaches to the first voice in its part with a note starting there.
   - A trailing `-` is stripped and sets `hyphen_after`. Whitespace is stripped.

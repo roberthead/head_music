@@ -39,7 +39,7 @@ describe HeadMusic::MIDI::Parser do
     end
 
     context "with a track name that names an unpitched instrument" do
-      subject(:part) { parse([track_name("Tambourine"), *drum(0, 54), *drum(96, 36)]).parts.first }
+      subject(:part) { parse([track_name("tambourine"), *drum(0, 54), *drum(96, 36)]).parts.first }
 
       it "gives the part that instrument, and no player" do
         expect([part.instrument.name_key, part.player]).to eq [:tambourine, nil]

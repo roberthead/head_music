@@ -25,10 +25,11 @@ module HeadMusic::MIDI
       end
 
       # A track name that only repeats the instrument's name, as MIDI
-      # Export writes one for a part with no player, names no player.
+      # Export writes one for a part with no player, names no player. Case
+      # counts, so "Soprano" still names the singer of a soprano part.
       def player
         name = track_name
-        return if name.nil? || name.strip.empty? || name.casecmp?(instrument&.name.to_s)
+        return if name.nil? || name.strip.empty? || name == instrument&.name.to_s
 
         HeadMusic::Content::Player.new(name: name)
       end

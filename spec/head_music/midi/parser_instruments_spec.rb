@@ -53,10 +53,18 @@ describe HeadMusic::MIDI::Parser do
     end
 
     context "with a track name that is the instrument's name" do
+      subject(:part) { parse([track_name("violin"), program(0, 41), *midi_line([67], bar)]).parts.first }
+
+      it "names no player" do
+        expect([part.instrument.name_key, part.player]).to eq [:violin, nil]
+      end
+    end
+
+    context "with a track name that is the instrument's name in other case" do
       subject(:part) { parse([track_name("Violin"), program(0, 41), *midi_line([67], bar)]).parts.first }
 
-      it "names no player, ignoring case" do
-        expect([part.instrument.name_key, part.player]).to eq [:violin, nil]
+      it "names the player" do
+        expect([part.instrument.name_key, part.player&.name]).to eq [:violin, "Violin"]
       end
     end
 
