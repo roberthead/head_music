@@ -174,6 +174,20 @@ describe HeadMusic::Notation::MEI do
         .to raise_error(described_class::ParseError, /copies itself/)
     end
 
+    describe "<multiRest>s" do
+      let(:rests) { ->(count, num) { Array.new(count) { mei_staff(1, %(<multiRest num="#{num}"/>)) } } }
+
+      it "fill as many bars as 16 for each measure, or 10,000 in all" do
+        expect { [parse(mei_document(*rests.call(1, 9999))), parse(mei_document(*rests.call(700, 16)))] }.not_to raise_error
+      end
+
+      it "refuse to fill more bars than that, naming the measure" do
+        expect { parse(mei_document(*rests.call(20, 9999))) }
+          .to raise_error(described_class::ParseError, /<multiRest>s fill more than 10000 bars \(measure 2, <multiRest>\)/)
+        expect { parse(mei_document(*rests.call(700, 17))) }.to raise_error(described_class::ParseError, /more than 11200 bars/)
+      end
+    end
+
     it "refuses nesting deeper than 256 elements without overflowing the stack" do
       deep = "<beam>" * 50_000 + "</beam>" * 50_000
       expect { parse(mei_document(mei_staff(1, deep))) }.to raise_error(described_class::ParseError, /deeper than 256/)

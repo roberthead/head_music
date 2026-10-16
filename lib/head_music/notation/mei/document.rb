@@ -8,11 +8,16 @@ module HeadMusic::Notation::MEI
   #
   # Each <music> is scanned once before anything is read: its ids are
   # indexed, and mensural, neume, and tablature notation raise for the whole
-  # document, since skipping them would leave no music to read.
+  # document, since skipping them would leave no music to read. Its
+  # measures set the bars a score may read, as <multiRest>s fill them:
+  # BARS_PER_MEASURE for each, and at least MIN_BARS.
   class Document
     include XmlReading
 
-    Source = Data.define(:mdiv, :score, :labels, :head, :index, :editorial)
+    Source = Data.define(:mdiv, :score, :labels, :head, :index, :editorial, :bar_budget)
+
+    BARS_PER_MEASURE = 16
+    MIN_BARS = 10_000
 
     NOTATION_ELEMENTS = %w[mensur ligature neume nc tabGrp].freeze
     NOTATION_TYPES = /\A(mensural|neume|tab)/
@@ -38,6 +43,7 @@ module HeadMusic::Notation::MEI
 
         index = scan(music)
         editorial = Editorial.new(index, budget: 4 * @count)
+        @bar_budget = [BARS_PER_MEASURE * @measures, MIN_BARS].max
         music_sources(music, [], head, index, editorial)
       end
     end
@@ -60,7 +66,7 @@ module HeadMusic::Notation::MEI
         case child.name
         when "body" then editorial.children_named(child, "mdiv").flat_map { |mdiv| mdiv_sources(mdiv, labels, head, index, editorial) }
         when "group" then editorial.children_named(child, "music").flat_map { |inner| music_sources(inner, labels, head, index, editorial) }
-        when "score" then [Source.new(music, child, labels, head, index, editorial)]
+        when "score" then [Source.new(music, child, labels, head, index, editorial, @bar_budget)]
         else []
         end
       end
@@ -69,8 +75,8 @@ module HeadMusic::Notation::MEI
     def mdiv_sources(mdiv, labels, head, index, editorial)
       editorial.children(mdiv).flat_map do |child|
         case child.name
-        when "score" then [Source.new(mdiv, child, labels, head, index, editorial)]
-        when "parts" then [Source.new(mdiv, single_part(child, editorial), labels, head, index, editorial)]
+        when "score" then [Source.new(mdiv, child, labels, head, index, editorial, @bar_budget)]
+        when "parts" then [Source.new(mdiv, single_part(child, editorial), labels, head, index, editorial, @bar_budget)]
         when "mdiv" then mdiv_sources(child, labels, head, index, editorial)
         else []
         end
@@ -91,10 +97,12 @@ module HeadMusic::Notation::MEI
     def scan(music)
       index = IdIndex.new
       @count = 0
+      @measures = 0
       stack = [[music, nil]]
       until stack.empty?
         element, measure = stack.pop
         @count += 1
+        @measures += 1 if element.name == "measure"
         measure = attribute(element, "n", element: element) || measure if element.name == "measure"
         check_notation(element, measure)
         id = attribute(element, "xml:id", element: element, measure: measure)

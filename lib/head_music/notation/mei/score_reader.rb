@@ -112,7 +112,7 @@ module HeadMusic::Notation::MEI
       contents.values.flatten.each { |content| @state.change_key(content.staff_number, content.opening_key) if content.opening_key }
       OpenSpaces.resolve(contents.values.flatten, @state.meter)
       index = @measures.length
-      bar_count(contents).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], passes, where) }
+      bar_count(contents, where).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], passes, where) }
       @readings.each do |reading|
         reading.measures[index].extent = extent(contents[reading], index)
         change_clefs(reading, index, changes, contents[reading]) if index.positive?
@@ -135,9 +135,16 @@ module HeadMusic::Notation::MEI
       [reach, Rational(meter.top_number, meter.bottom_number)].compact.max
     end
 
-    # The bars a measure stands for: one, or as many as a <multiRest> fills.
-    def bar_count(contents)
-      contents.values.flatten.flat_map(&:entries).select { |entry| entry.kind == :multi_rest }.map(&:bars).max || 1
+    # The bars a measure stands for: one, or as many as a <multiRest> fills,
+    # within the bars the document's measures allow.
+    def bar_count(contents, where)
+      rests = contents.values.flatten.flat_map(&:entries).select { |entry| entry.kind == :multi_rest }
+      bars = rests.map(&:bars).max || 1
+      if @measures.length + bars > @source.bar_budget
+        raise ParseError.new("<multiRest>s fill more than #{@source.bar_budget} bars", **where, element: rests.max_by(&:bars)&.element)
+      end
+
+      bars
     end
 
     def add_measure(element, index, controls, passes, where)
