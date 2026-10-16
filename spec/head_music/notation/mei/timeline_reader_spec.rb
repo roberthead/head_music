@@ -16,6 +16,10 @@ describe HeadMusic::Notation::MEI::TimelineReader do
     expect(tempos(flow)).to eq(2 => ["dotted quarter", 60.0])
   end
 
+  it "takes a <tempo> at a beat before the first, as 0, as on the downbeat" do
+    expect(tempos(parse(bar, %(#{bar}<tempo tstamp="0" midi.bpm="88"/>)))).to eq(2 => ["quarter", 88.0])
+  end
+
   it "reads @midi.bpm in quarters where there is no @mm" do
     expect(tempos(parse(bar, %(#{bar}<tempo tstamp="1" midi.bpm="88"/>)))).to eq(2 => ["quarter", 88.0])
   end

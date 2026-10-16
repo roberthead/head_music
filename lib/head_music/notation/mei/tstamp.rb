@@ -11,10 +11,10 @@ module HeadMusic::Notation::MEI
 
     # A control's @tstamp in its measure, or nil where it has none or names
     # a beat past the one after the measure's last. A value no beat could be
-    # raises.
+    # raises. A beat before the first, as 0 is, is the downbeat.
     def start(control, measure, **where)
       beat = AttributeValues.read(control, "tstamp", **where, element: control, count: AttributeValues::MAX_COUNT)
-      beat if beat && beat <= measure.meter.top_number + 1
+      [beat, 1].max if beat && beat <= measure.meter.top_number + 1
     end
 
     # A control's @tstamp2 as the index of the measure it reaches and the
@@ -27,7 +27,7 @@ module HeadMusic::Notation::MEI
       bounds = {bars_left: AttributeValues::MAX_COUNT, count: AttributeValues::MAX_COUNT}
       bars, beat = AttributeValues.parse("tstamp2", value, **where, element: control, **bounds)
       target = measures[index + bars]
-      [index + bars, beat] if target && beat <= target.meter.top_number + 1
+      [index + bars, [beat, 1].max] if target && beat <= target.meter.top_number + 1
     end
 
     # A mark where a note starts takes that note's exact onset, looked for

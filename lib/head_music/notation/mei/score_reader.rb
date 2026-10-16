@@ -168,7 +168,7 @@ module HeadMusic::Notation::MEI
 
     def downbeat?(control, meter, where)
       tstamp = AttributeValues.read(control, "tstamp", **where, element: control, count: meter.top_number)
-      tstamp ? tstamp == 1 : attribute(control, "startid", element: control).nil?
+      tstamp ? tstamp <= 1 : attribute(control, "startid", element: control).nil?
     end
 
     # A clef change between measures, a clef that opens a layer, or one

@@ -72,6 +72,11 @@ describe HeadMusic::Notation::MEI::ControlAnchors do
       expect(ends(control(%(<dynam staff="1" tstamp="1.6667">p</dynam>))).first).to eq ["1:1:640", nil]
     end
 
+    it "takes a beat before the first, as 0 or 0.5, as the downbeat" do
+      expect([ends(control(%(<slur staff="1" tstamp="0" tstamp2="1m+0.5"/>), second_bar)), ends(control(%(<dynam staff="1" tstamp="0.5">p</dynam>))).first])
+        .to eq [[["1:1:000", "quarter C4 at 1:1:000"], ["2:1:000", "whole F4 at 2:1:000"]], ["1:1:000", "quarter C4 at 1:1:000"]]
+    end
+
     it "reads a @tstamp2 one past the last bar's count as the final barline" do
       expect(ends(control(%(<hairpin form="cres" staff="1" tstamp="1" tstamp2="1m+5"/>), second_bar)).last).to eq ["3:1:000", nil]
     end
