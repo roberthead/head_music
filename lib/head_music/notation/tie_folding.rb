@@ -24,20 +24,23 @@ module HeadMusic::Notation
     end
 
     def apply
-      open = nil
-      last = nil
+      chain = nil
       @track.events.each do |event|
-        joined = open && event.ties_in? && follows?(last, event)
-        if joined && keys(open) == keys(event)
-          fold(open, event)
-          last = event
-          open = nil unless event.ties_out?
-        elsif joined && !keys(open).intersect?(keys(event))
-          raise_unrelated(open, event)
+        head = chain&.first
+        joined = head && event.ties_in? && follows?(chain.last, event)
+        if joined && keys(head) == keys(event)
+          link(chain, event)
+          next if event.ties_out?
+
+          chain = finish(chain)
+        elsif joined && !keys(head).intersect?(keys(event))
+          raise_unrelated(head, event)
         else
-          open = last = event.ties_out? ? event : nil
+          finish(chain)
+          chain = event.ties_out? ? [event] : nil
         end
       end
+      finish(chain)
     end
 
     private
@@ -48,10 +51,22 @@ module HeadMusic::Notation
       )
     end
 
-    def fold(head, event)
-      event.link_offset = head.rhythmic_value.tied_chain.length
-      head.rhythmic_value = head.rhythmic_value.append_tied(event.rhythmic_value)
+    def link(chain, event)
+      head = chain.first
+      @links = head.rhythmic_value.tied_chain.length if chain.one?
+      event.link_offset = @links
+      @links += event.rhythmic_value.tied_chain.length
       event.continuation = head
+      chain << event
+    end
+
+    # The head takes its chain's values once every link is known, since
+    # appending each link in turn rebuilds the chain so far.
+    def finish(chain)
+      return if chain.nil? || chain.one?
+
+      chain.first.rhythmic_value = chain.map(&:rhythmic_value).reverse.reduce { |tail, value| value.append_tied(tail) }
+      nil
     end
 
     def follows?(link, event)

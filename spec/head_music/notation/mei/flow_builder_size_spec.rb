@@ -97,6 +97,35 @@ describe HeadMusic::Notation::MEI::FlowBuilder do
     expect(calls_to_read(100).fdiv(calls_to_read(25))).to be < 4.5
   end
 
+  # A whole note tied through every bar, by @tie in the first part and by
+  # <tie> in the second, under a slur from the first bar to the last.
+  def tied_document(bars)
+    measures = (1..bars).map do |bar|
+      marker = if bar == 1
+        "i"
+      else
+        ((bar == bars) ? "t" : "m")
+      end
+      tie = (bar < bars) ? %(<tie staff="2" startid="#b#{bar}" endid="#b#{bar + 1}"/>) : ""
+      slur = (bar == 1) ? %(<slur staff="1" startid="#a1" endid="#a#{bars}"/>) : ""
+      %(<measure n="#{bar}">#{mei_staff(1, mei_note("C4", "1", tie: marker, "xml:id": "a#{bar}"))}#{mei_staff(2, mei_note("E4", "1", "xml:id": "b#{bar}"))}#{tie}#{slur}</measure>)
+    end
+    mei_document(*measures, score_def: mei_score_def(clefs: [%w[G 2], %w[G 2]]))
+  end
+
+  def calls_to_read_tied(bars)
+    xml = tied_document(bars)
+    count = 0
+    flow = TracePoint.new(:call) { count += 1 }.enable { HeadMusic::Notation::MEI.parse(xml) }
+    [count, flow]
+  end
+
+  it "folds a tie chain through four times the bars in at most 4.5 times the calls" do
+    (small, _), (large, flow) = calls_to_read_tied(100), calls_to_read_tied(400)
+    expect(large.fdiv(small)).to be < 4.5
+    expect(flow.voices.map { |voice| voice.voice_events.map { |event| event.rhythmic_value.tied_chain.length } }).to eq [[400], [400]]
+  end
+
   # Each bar's nine events in each part, and its controls but the <dir>
   # naming a rejected reading: in each part a slur, a dynamic, and a
   # beamSpan by @plist, and in the second a tupletSpan and a <tie> to the

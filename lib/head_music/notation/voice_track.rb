@@ -29,6 +29,16 @@ module HeadMusic::Notation
         first_link + link_count - 1
       end
 
+      # How far into its chain, from the head's start, this event's first
+      # link sounds.
+      def link_start
+        head.link_starts[first_link]
+      end
+
+      def link_starts
+        @link_starts ||= rhythmic_value.tied_chain.each_with_object([0]) { |link, starts| starts << starts.last + link.link_fraction }
+      end
+
       def rest?
         sounds.empty?
       end

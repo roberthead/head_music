@@ -83,7 +83,7 @@ module HeadMusic::Notation::MusicXML
       return [voice_for(event).voice_event_at(@part.flow.position(bar, 1, 0)), 0] if event.fills_bar
 
       head = event.head
-      time = head.time + head.rhythmic_value.tied_chain.take(event.first_link).sum(&:link_fraction)
+      time = head.time + event.link_start
       [head.voice_event, time - @bar_map.start(bar)]
     end
 

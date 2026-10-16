@@ -138,7 +138,7 @@ module HeadMusic::Notation::MEI
       head = event.head
       return [nil, nil] unless head.time
 
-      time = head.time + head.rhythmic_value.tied_chain.take(event.first_link).sum(&:link_fraction)
+      time = head.time + event.link_start
       [head.voice_event, time - @bar_map.start(bar)]
     end
 

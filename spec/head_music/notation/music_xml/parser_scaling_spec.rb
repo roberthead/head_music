@@ -33,6 +33,28 @@ describe HeadMusic::Notation::MusicXML::Parser do
     [calls, flow]
   end
 
+  # One note tied through every bar.
+  def tied_flow(bars)
+    HeadMusic::Content::Flow.new(name: "Tied", key_signature: "C major", meter: "4/4").tap do |flow|
+      voice = flow.add_voice
+      value = Array.new(bars) { HeadMusic::Rudiment::RhythmicValue.new(:whole) }.reduce { |tail, head| head.append_tied(tail) }
+      voice.place(flow.position(1, 1, 0), value, "C4")
+    end
+  end
+
+  def calls_to_read_tied(bars)
+    xml = HeadMusic::Notation::MusicXML.render(tied_flow(bars))
+    calls = 0
+    flow = TracePoint.new(:call) { calls += 1 }.enable { HeadMusic::Notation::MusicXML.parse(xml) }
+    [calls, flow]
+  end
+
+  it "folds a tie chain through four times the bars in under 4.5 times the calls" do
+    (small, _), (large, flow) = calls_to_read_tied(100), calls_to_read_tied(400)
+    expect(large.fdiv(small)).to be < 4.5
+    expect(flow.voices.first.voice_events.map { |event| event.rhythmic_value.tied_chain.length }).to eq [400]
+  end
+
   it "reads every mark of four times the bars in under 4.5 times the calls, leaving the voice unrevised" do
     (small, _), (large, flow) = measure(10), measure(40)
     expect(large.fdiv(small)).to be < 4.5
