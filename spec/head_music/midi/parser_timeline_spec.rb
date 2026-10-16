@@ -46,6 +46,27 @@ describe HeadMusic::MIDI::Parser do
       end
     end
 
+    context "with a note struck on the final barline" do
+      final_notes = {
+        "of no length" => [HeadMusic::MIDI::NoteOn.new(384, 0, 62, 80), HeadMusic::MIDI::NoteOff.new(tick: 384, channel: 0, key: 62)],
+        "never released" => [HeadMusic::MIDI::NoteOn.new(384, 0, 62, 80)],
+        "of no length, a tick early" => [HeadMusic::MIDI::NoteOn.new(383, 0, 62, 80), HeadMusic::MIDI::NoteOff.new(tick: 383, channel: 0, key: 62)],
+        "never released, a tick early" => [HeadMusic::MIDI::NoteOn.new(383, 0, 62, 80)]
+      }
+
+      final_notes.each do |description, events|
+        context description do
+          subject(:flow) { parse([*midi_note(0, 60, 383), *events]) }
+
+          it "lays out a bar for it, filled with rests" do
+            expect([flow.latest_bar_number, bar_events(flow.voices.first)]).to eq [2, [
+              ["1:1:000", "whole", "C4"], ["2:1:000", "sixteenth", "D4"], ["2:1:240", "dotted eighth", "rest"], ["2:2:000", "quarter", "rest"], ["2:3:000", "half", "rest"]
+            ]]
+          end
+        end
+      end
+    end
+
     context "with a meter change within a bar" do
       it "raises an UnsupportedFeatureError" do
         expect { parse([time_signature(0, 4, 4), time_signature(480, 3, 4), *midi_line([60] * 8, 96)]) }

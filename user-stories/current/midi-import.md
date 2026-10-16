@@ -87,7 +87,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 ### Notes and rhythms
 
 - [ ] Note on and note off pairs become note events, and a note on with velocity 0 counts as a note off. Notes pair per channel and key across every track, in merged order, first in, first out. A note belongs to the track holding its note on, and a note off that matches no sounding note is skipped
-- [ ] A note still sounding at the end of its track ends there
+- [ ] A note still sounding at the end of its track ends there. The bars end after the latest onset as well as the latest release, so a note of no length or never released on the final barline, or snapped to it, gets a bar of its own
 - [ ] Every note is spelled by the speller from the prerequisite, using the key in force, with notes labeled by voice so melodic direction applies
 - [ ] By default the grid is the coarsest, among sixteenths, thirty-seconds, sixty-fourths and their triplet divisions, that places every onset within one tick. When none does, it is the coarsest grid that places at least 99% as many onsets as the best grid does. `grid:` takes one of these values or any Rational
 - [ ] A release less than one grid step before the next onset in its part extends to that onset. Other releases snap to the nearest grid point, and no note is shorter than one step

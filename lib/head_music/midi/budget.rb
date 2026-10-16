@@ -16,6 +16,12 @@ module HeadMusic::MIDI
       raise UnsupportedFeatureError, "#{part_key} needs more than #{MAX_VOICES_PER_PART} voices"
     end
 
+    def self.check_bars!(count)
+      return if count <= MAX_BARS
+
+      raise ParseError, "the file needs #{count} bars, more than #{MAX_BARS}"
+    end
+
     def self.check_voice_bars!(voices, bars)
       return if voices * bars <= MAX_VOICE_BARS
 
@@ -31,7 +37,7 @@ module HeadMusic::MIDI
     def check!
       check(note_count, MAX_NOTES, "notes")
       check(part_count, MAX_PARTS, "parts")
-      check(bar_count, MAX_BARS, "bars")
+      self.class.check_bars!(bar_count)
       self
     end
 

@@ -29,14 +29,30 @@ module HeadMusic::MIDI
 
     def read
       notes = sequence.notes
-      @layout = BarLayout.new(budget.time_signatures, division: sequence.division, end_tick: budget.end_tick)
-      @quantizer = Quantizer.new(@layout, notes, division: sequence.division, grid: grid)
+      @layout, @quantizer = quantize(notes)
       @parts = PartSource.new(sequence, notes, @quantizer).parts.map { |part| [part, separate(part)] }
       Budget.check_voice_bars!(@parts.sum { |_part, voices| voices.length }, @layout.bars.length)
       @timeline = TimelineReader.new(sequence.merged_events, @layout, @quantizer, @quantizer.notes.map(&:onset).uniq.sort)
       @spelling = Spelling.new(@parts, @layout, @timeline.key_regions, key: key)
       @pitches = @spelling.pitches
       @keys = @spelling.keys
+    end
+
+    # The layout ends after the latest onset as well as the latest release,
+    # so a note struck on the final barline, or snapped to it, has a bar.
+    def quantize(notes)
+      layout = lay_out(budget.end_tick)
+      quantizer = Quantizer.new(layout, notes, division: sequence.division, grid: grid)
+      latest = quantizer.notes.map(&:onset).max
+      return [layout, quantizer] if latest < layout.end_time
+
+      layout = lay_out(((latest + quantizer.grid) * sequence.division * 4).ceil)
+      Budget.check_bars!(layout.bars.length)
+      [layout, Quantizer.new(layout, notes, division: sequence.division, grid: quantizer.grid)]
+    end
+
+    def lay_out(end_tick)
+      BarLayout.new(budget.time_signatures, division: sequence.division, end_tick: end_tick)
     end
 
     # A part of rests has one voice.

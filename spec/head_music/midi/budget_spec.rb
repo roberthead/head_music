@@ -53,6 +53,13 @@ describe HeadMusic::MIDI::Budget do
     it_behaves_like "a budget refusal", HeadMusic::MIDI::ParseError, "the file needs 10001 bars, more than 10000"
   end
 
+  context "with MAX_BARS bars and a note struck on the final barline" do
+    let(:last_barline) { described_class::MAX_BARS * division }
+    let(:bytes) { smf([HeadMusic::MIDI::TimeSignature.new(0, 1, 4, 24), *note(0, last_barline), *note(last_barline, last_barline, key: 62)]) }
+
+    it_behaves_like "a budget refusal", HeadMusic::MIDI::ParseError, "the file needs 10001 bars, more than 10000"
+  end
+
   context "with more than MAX_VOICES_PER_PART voices in a part" do
     let(:bytes) { smf(note(0, division), stacked(described_class::MAX_VOICES_PER_PART + 1, channel: 2)) }
 
