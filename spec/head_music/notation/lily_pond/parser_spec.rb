@@ -131,6 +131,13 @@ describe HeadMusic::Notation::LilyPond::Parser do
     end
   end
 
+  describe "forced and cautionary accidentals" do
+    it "reads the pitches and durations, dropping the signs" do
+      voice = parse("{ <fis'! f'!>2 f'?2 }").voices.first
+      expect(voice.voice_events.map(&:to_s)).to eq ["half F♯4 F4 at 1:1:000", "half F4 at 1:3:000"]
+    end
+  end
+
   describe "multiple voices" do
     it "produces one voice per staff" do
       source = "<< \\new Staff { c'1 } \\new Staff { e1 } \\new Staff { g,1 } >>"

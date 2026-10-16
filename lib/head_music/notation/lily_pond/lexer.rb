@@ -14,8 +14,10 @@ module HeadMusic::Notation::LilyPond
     MULTIPLIER_PATTERN = %r{\*(\d+(?:/\d+)?)}
     # The Dutch contractions as/es/ases/eses come first so "es" is E-flat
     # rather than the letter e followed by a stray s; the lookahead keeps
-    # words that start with a note letter (bass, alto, composer) whole.
-    NOTE_PATTERN = /(?:(a|e)(ses|s)|([a-g])(isis|eses|is|es)?)(?![A-Za-z])('+|,+)?(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
+    # words that start with a note letter (bass, alto, composer) whole. A
+    # forced (!) or cautionary (?) accidental only chooses what is printed,
+    # so it is read and dropped.
+    NOTE_PATTERN = /(?:(a|e)(ses|s)|([a-g])(isis|eses|is|es)?)(?![A-Za-z])('+|,+)?[!?]?(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     REST_PATTERN = /([rR])(?![A-Za-z])(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     SPACER_PATTERN = /s(?![A-Za-z])(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     CLOSE_CHORD_PATTERN = />(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o

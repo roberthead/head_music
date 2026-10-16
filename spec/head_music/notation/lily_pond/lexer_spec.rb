@@ -56,6 +56,12 @@ describe HeadMusic::Notation::LilyPond::Lexer do
       expect(first_token("c4*3/2").multiplier).to eq "3/2"
     end
 
+    %w[! ?].each do |sign|
+      it "reads the #{sign} accidental sign as part of the note" do
+        expect(tokens("fis'#{sign}4 f'").map { |token| [token.type, token.octave_marks, token.duration] }).to eq [[:note, "'", "4"], [:note, "'", nil]]
+      end
+    end
+
     it "keeps the source lexeme" do
       expect(first_token("cis'8").lexeme).to eq "cis'8"
     end
