@@ -268,14 +268,22 @@ module HeadMusic::Notation::MEI
 
     # The sounding pitch of every note of the part in the measure, by
     # element, each staff's notes taken in onset order across its layers.
+    # A note is on the staff its @staff, or its chord's, names in the part,
+    # else on its layer's.
     def spell(reading, contents, staves, where)
-      contents.group_by { |content| staves[content] }.each_with_object({}.compare_by_identity) do |(number, staff_contents), pitches|
+      by_staff = sorted_notes(contents).group_by { |note, entry, content| spelling_staff(reading, note, entry, staves[content], where) }
+      by_staff.each_with_object({}.compare_by_identity) do |(number, notes), pitches|
         accidentals = AccidentalReading.new(@state.written_fifths(number))
-        sorted_notes(staff_contents).each do |note, entry, content|
-          stream = [reading.definition.index, number, content.number, content.occurrence]
+        notes.each do |note, entry, content|
+          stream = [reading.definition.index, staves[content], content.number, content.occurrence]
           pitches[note] = pitch(reading, note, entry, stream, accidentals, where.merge(staff: number))
         end
       end
+    end
+
+    def spelling_staff(reading, note, entry, sitting, where)
+      named = [note, entry.element].uniq.lazy.filter_map { |element| AttributeValues.read(element, "staff", **where, element: element) }.first
+      reading.definition.staff_index(named) ? named : sitting
     end
 
     def sorted_notes(contents)
@@ -296,7 +304,7 @@ module HeadMusic::Notation::MEI
       written = HeadMusic::Notation::PitchSpelling.spelled(
         spelling.letter, alteration, spelling.octave, errors: HeadMusic::Notation::MEI, **where, element: note
       )
-      reading.transposition.concert(written, reading.definition.staff_index(stream[1]), **where, element: note)
+      reading.transposition.concert(written, reading.definition.staff_index(where[:staff]), **where, element: note)
     end
 
     def note_pending(reading, entry, content, index, sounds, where)

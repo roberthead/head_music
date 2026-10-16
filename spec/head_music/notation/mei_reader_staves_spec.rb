@@ -64,6 +64,14 @@ describe HeadMusic::Notation::MEI do
     expect(staves(flow)).to eq [{}, {1 => 2}]
   end
 
+  it "spells a single note's @staff on the staff it names, after that staff's accidentals" do
+    upper = mei_note("C5", "2") + mei_note("F3", "2", accid: nil, staff: "2")
+    chord = %(<chord dur="2" staff="2">#{mei_note("A3", nil, accid: nil)}#{mei_note("E4", nil, accid: nil)}</chord>)
+    lower = mei_note("F#3", "4") + mei_note("Bb2", "4") + mei_note("C3", "2")
+    flow = piano(mei_staff(1, upper) + mei_staff(2, lower), mei_staff(1, mei_note("C5", "2") + chord) + mei_staff(2, mei_note("A#3", "4") + mei_note("C3", "2", dots: "1")))
+    expect(flow.voices.first.voice_events.map(&:to_s)).to eq ["half C5 at 1:1:000", "half F♯3 at 1:3:000", "half C5 at 2:1:000", "half A♯3 E4 at 2:3:000"]
+  end
+
   it "skips a @staff naming a staff outside the part" do
     flow = piano(mei_staff(1, mei_note("E4", "1", staff: "9")) + mei_staff(2, mei_note("C3", "1")))
     expect(staves(flow).first).to eq({})
