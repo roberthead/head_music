@@ -1,0 +1,2 @@
+- [Bach chorale corpus](reference_bach_chorale_corpus.md) — local KERN_CORPUS path, 46 s parse, mode tally of designations
+- [Key/spelling baselines](project_key_spelling_baselines.md) — 2026-10-15 prototype: KK 80.6% vs Aarden 92.5% key agreement; spelling 99.93%

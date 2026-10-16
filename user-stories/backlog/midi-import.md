@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-10-15T11:19:33-07:00
+  updated_at:   2026-10-15T21:24:00-07:00
 -->
 
 # Story: MIDI Import
@@ -97,6 +97,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   Round-trip specs use flows without these, or compare against `Flow#performance_order`.
 - **Follow-up: dynamics from velocity.** Accents and hairpins move velocities off the export's level table, so a reader would invent level changes. A useful version needs its own rules for runs, thresholds, and ramps.
 - **Follow-up: live performances.** Human-performed MIDI, unquantized, with rubato and no tempo map, needs beat tracking before quantizing. v1 is scoped to sequenced files.
+- **From Key and Spelling Inference** (2026-10-15): voices are separated before spelling, so melodic direction applies; the spelling floor should cite that story's inferred-key chorale figure.
 - **Shapes MIDI Export writes** (decided in that story, 2026-10-15): a first bar shorter than the meter that follows is a pickup, which export trims to its first onset, and a tempo should be restated in the meter's beat, since export writes microseconds per quarter.
 - The voice separation above is a first fit. Contour- and range-aware separation, which would let the counterpoint guides grade imported polyphony, is a follow-up.
 
