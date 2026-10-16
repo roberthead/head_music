@@ -133,4 +133,101 @@ describe HeadMusic::Analysis::PitchSpeller do
         .to eq [["C-1", :fallback]]
     end
   end
+
+  describe "melodic direction" do
+    it "raises C major's 61 rising a semitone to 62" do
+      expect(spell([60, 61, 62], key: "C major").spelled_notes.map { |spelled| [spelled.pitch.to_s, spelled.rule] }[1]).to eq ["C♯4", :direction]
+    end
+
+    it "lowers C major's 61 falling a semitone to 60" do
+      expect(names([62, 61, 60], key: "C major")).to eq %w[D4 D♭4 C4]
+    end
+
+    it "answers the direction rule" do
+      expect(rules([62, 61, 60], key: "C major")).to eq %i[diatonic direction diatonic]
+    end
+
+    it "decides C major's 63 both ways" do
+      expect([names([62, 63, 64], key: "C major"), names([64, 63, 62], key: "C major")]).to eq [%w[D4 D♯4 E4], %w[E4 E♭4 D4]]
+    end
+
+    it "keeps F♯ falling from G to F, since F♯ and G♭ are no near tie" do
+      expect(names([67, 66, 65], key: "C major")).to eq %w[G4 F♯4 F4]
+    end
+
+    it "keeps B♭ rising from A to B" do
+      expect(names([69, 70, 71], key: "C major")).to eq %w[A4 B♭4 B4]
+    end
+
+    it "ignores a semitone into another voice" do
+      notes = [[61, 0, Rational(1, 4), :upper], [60, Rational(1, 4), Rational(1, 4), :lower]]
+      expect(described_class.new(notes, key: "C major").pitches.map(&:to_s)).to eq %w[C♯4 C4]
+    end
+
+    it "does not apply to notes with no voice" do
+      expect(names([62, 61, 60], key: "C major").zip(spell([62, 61, 60], key: "C major", voice: nil).pitches.map(&:to_s)))
+        .to eq [%w[D4 D4], %w[D♭4 C♯4], %w[C4 C4]]
+    end
+  end
+
+  describe "the sonority" do
+    def chord(numbers, key:, also: [])
+      notes = numbers.map { |number| [number, 0, 1] } + also
+      described_class.new(notes, key: key).spelled_notes
+    end
+
+    it "spells F minor's 61–65–68 as D♭–F–A♭ from the key alone" do
+      expect(chord([61, 65, 68], key: "F minor").map { |spelled| [spelled.pitch.to_s, spelled.rule] })
+        .to eq [["D♭4", :diatonic], ["F4", :diatonic], ["A♭4", :diatonic]]
+    end
+
+    it "spells C major's 61–65–68 sounding alone as D♭–F–A♭" do
+      expect(chord([61, 65, 68], key: "C major").map { |spelled| [spelled.pitch.to_s, spelled.rule] })
+        .to eq [["D♭4", :sonority], ["F4", :diatonic], ["A♭4", :sonority]]
+    end
+
+    it "spells A–C♯–E–G in C major with C♯" do
+      expect(chord([57, 61, 64, 67], key: "C major").map { |spelled| [spelled.pitch.to_s, spelled.rule] }[1]).to eq ["C♯4", :sonority]
+    end
+
+    it "holds a note already sounding fixed" do
+      spelled = chord([], key: "C major", also: [[65, 0, 1], [61, Rational(1, 2), Rational(1, 2)], [68, Rational(1, 2), Rational(1, 2)]])
+      expect(spelled.map { |note| note.pitch.to_s }).to eq %w[F4 D♭4 A♭4]
+    end
+
+    it "ignores a note that has stopped sounding" do
+      spelled = chord([64], key: "C major", also: [[65, 0, Rational(1, 2)], [61, Rational(1, 2), Rational(1, 2)], [68, Rational(1, 2), Rational(1, 2)]])
+      expect(spelled.map { |note| [note.pitch.to_s, note.rule] }.last(2)).to eq [["C♯4", :sonority], ["G♯4", :sonority]]
+    end
+
+    it "yields to melodic direction" do
+      notes = [[65, 0, 1, :alto], [61, 0, Rational(1, 2), :soprano], [62, Rational(1, 2), Rational(1, 2), :soprano]]
+      expect(described_class.new(notes, key: "C major").spelled_notes.map(&:rule)).to eq %i[diatonic direction diatonic]
+    end
+
+    it "settles up to 4,096 combinations" do
+      numbers = [1, 13, 25, 37, 49, 61, 73, 85, 97, 109, 8, 20]
+      expect(chord(numbers + [65], key: "C major").map(&:rule).tally).to eq(sonority: 12, diatonic: 1)
+    end
+
+    it "spells from the center past 4,096 combinations" do
+      numbers = [1, 13, 25, 37, 49, 61, 73, 85, 97, 109, 8, 20, 32]
+      expect(chord(numbers + [65], key: "C major").map { |spelled| [spelled.pitch.spelling.to_s, spelled.rule] }.uniq)
+        .to eq [["C♯", :center], ["G♯", :center], ["F", :diatonic]]
+    end
+  end
+
+  describe "the center" do
+    it "takes the sharper of an exact tie" do
+      expect(spell([68], key: "C major").spelled_notes.map { |spelled| [spelled.pitch.to_s, spelled.rule] }).to eq [["G♯4", :center]]
+    end
+  end
+
+  it "answers every rule" do
+    notes = [[60, 0, 1, :a], [61, 1, 1, :a], [62, 2, 1, :a], [65, 3, 1, :b], [68, 3, 1, :c], [66, 4, 1, :a]]
+    rules = described_class.new(notes, key: "C major").spelled_notes.map(&:rule) +
+      described_class.new([[68, 0, 1]], key: "A minor").spelled_notes.map(&:rule) +
+      described_class.new([[0, 0, 1]], key: "C♯ major").spelled_notes.map(&:rule)
+    expect(rules.uniq.sort).to eq %i[center diatonic direction fallback raised sonority]
+  end
 end

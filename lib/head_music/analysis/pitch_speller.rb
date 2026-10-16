@@ -63,14 +63,17 @@ class HeadMusic::Analysis::PitchSpeller
   def spell
     @indices = Array.new(notes.length)
     @rules = Array.new(notes.length)
+    @pending = {}
     notes.each_with_index { |note, position| classify(note, position) }
+    apply_direction
+    apply_sonority
     notes.each_with_index.map { |note, position| spelled_note(note, position) }
   end
 
   def classify(note, position)
     rule, choice = key_center_at(note.onset).choice(note.number % 12)
     if rule == :near
-      decide(position, choice.first, :center)
+      @pending[position] = choice
     else
       decide(position, choice, rule)
     end
@@ -87,10 +90,74 @@ class HeadMusic::Analysis::PitchSpeller
     @key_centers[region.key] ||= KeyCenter.for(region.key)
   end
 
+  def apply_direction
+    following = next_numbers
+    @pending.keys.each do |position|
+      step = following[position]&.map { |number| number - notes[position].number }&.find { |difference| difference.abs == 1 }
+      next unless step
+
+      pair = @pending.delete(position)
+      decide(position, step.positive? ? pair.max : pair.min, :direction)
+    end
+  end
+
+  def next_numbers
+    following = {}
+    voiced = notes.each_index.reject { |position| notes[position].voice.nil? }
+    voiced.group_by { |position| notes[position].voice }.each_value do |positions|
+      chords = positions.sort_by { |position| [notes[position].onset, position] }
+        .chunk_while { |a, b| notes[a].onset == notes[b].onset }
+      chords.each_cons(2) do |chord, after|
+        numbers = after.map { |position| notes[position].number }
+        chord.each { |position| following[position] = numbers }
+      end
+    end
+    following
+  end
+
+  def apply_sonority
+    return if @pending.empty?
+
+    sounding = Sounding.new(notes)
+    @pending.keys.group_by { |position| notes[position].onset }.sort_by(&:first).each do |onset, group|
+      fixed = sounding.at(onset).reject { |position| @pending.key?(position) }.map { |position| @indices[position] }
+      settle(group, fixed)
+    end
+  end
+
+  def settle(group, fixed)
+    centers = group.map { |position| key_center_at(notes[position].onset).center }
+    choices = Compactness.new(group.map { |position| @pending.fetch(position) }, centers, fixed).choices
+    group.zip(choices).each do |position, (index, rule)|
+      @pending.delete(position)
+      decide(position, index, rule)
+    end
+  end
+
   def spelled_note(note, position)
     pitch = LineOfFifths.pitch_at(note.number, @indices[position])
     return SpelledNote.new(note: note, pitch: pitch, rule: @rules[position]) if pitch
 
     SpelledNote.new(note: note, pitch: HeadMusic::Rudiment::Pitch.from_number(note.number), rule: :fallback)
+  end
+
+  # Sweeps the notes in onset order, answering those sounding at each onset
+  # asked for in turn.
+  class Sounding
+    def initialize(notes)
+      @notes = notes
+      @order = notes.each_index.sort_by { |position| [notes[position].onset, position] }
+      @cursor = 0
+      @active = []
+    end
+
+    def at(onset)
+      while @cursor < @order.length && @notes[@order[@cursor]].onset <= onset
+        @active << @order[@cursor]
+        @cursor += 1
+      end
+      @active.select! { |position| @notes[position].onset + @notes[position].duration > onset }
+      @active
+    end
   end
 end
