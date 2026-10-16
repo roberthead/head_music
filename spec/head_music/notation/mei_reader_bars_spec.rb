@@ -27,6 +27,13 @@ describe HeadMusic::Notation::MEI do
       expect(flow.voices.first.voice_events.map(&:to_s)).to eq ["whole C4 at 1:1:000", "half D4 at 2:1:000"]
     end
 
+    it "keeps a final measure with metcon false short beside another staff's whole-bar rest" do
+      two_staves = {score_def: mei_score_def(clefs: [%w[G 2], %w[F 4]])}
+      last = %(<measure n="2" metcon="false">#{mei_staff(1, mei_note("D4", "2"))}#{mei_staff(2, "<mRest/>")}</measure>)
+      flow = parse(mei_staff(1, mei_note("C4", "1")) + mei_staff(2, mei_note("C3", "1")), last, **two_staves)
+      expect(flow.voices.first.voice_events.map(&:to_s)).to eq ["whole C4 at 1:1:000", "half D4 at 2:1:000"]
+    end
+
     it "joins a short measure to the one that completes it, as at a repeat in the middle of a bar" do
       halves = [%(<measure n="1" metcon="false">#{mei_staff(1, mei_note("C4", "2"))}</measure>), %(<measure n="1b" metcon="false">#{mei_staff(1, mei_note("D4", "2"))}</measure>)]
       expect(parse(mei_staff(1, mei_note("B3", "1")), *halves).voices.first.voice_events.map(&:to_s))

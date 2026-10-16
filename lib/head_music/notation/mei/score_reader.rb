@@ -121,10 +121,12 @@ module HeadMusic::Notation::MEI
 
     # How far a part's music reaches in a measure. After the first, a
     # whole-bar rest fills its bar, so a layer beside it that ends short is
-    # padded rather than making the bar short.
+    # padded rather than making the bar short, unless the bar says with
+    # metcon="false" that it is short.
     def extent(contents, index)
       reach = contents.filter_map(&:extent).max
-      return reach if index.zero? || contents.none? { |content| content.entries.any?(&:fills_bar?) }
+      return reach if index.zero? || @readings.first.measures[index].implicit
+      return reach if contents.none? { |content| content.entries.any?(&:fills_bar?) }
 
       meter = @measures[index].meter
       [reach, Rational(meter.top_number, meter.bottom_number)].compact.max
