@@ -12,11 +12,15 @@ module HeadMusic::Notation::MEI
   # An xml:id used twice raises only where a control's reference names it,
   # since some encoders reuse ids nothing refers to. A @copyof takes the
   # first element with the id.
+  #
+  # Ids are registered in document order, so the index tells which of two
+  # elements comes first.
   class IdIndex
     def initialize
       @elements = {}
       @duplicates = {}
       @reached = {}.compare_by_identity
+      @order = {}.compare_by_identity
     end
 
     def register(id, element)
@@ -24,7 +28,13 @@ module HeadMusic::Notation::MEI
         @duplicates[id] = true
       else
         @elements[id] = element
+        @order[element] = @order.length
       end
+    end
+
+    # Whether a registered element comes before another in the document.
+    def before?(earlier, later)
+      @order.fetch(earlier, @order.length) < @order.fetch(later, -1)
     end
 
     def reach(element)

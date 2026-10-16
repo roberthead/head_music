@@ -25,6 +25,12 @@ describe HeadMusic::Notation::MEI::IdIndex do
     end
   end
 
+  it "tells which of two elements was registered first" do
+    later = REXML::Element.new("note")
+    index.register("n2", later)
+    expect([index.before?(note, later), index.before?(later, note), index.before?(note, REXML::Element.new("note"))]).to eq [true, false, false]
+  end
+
   it "resolves a reached element with or without its #" do
     index.reach(note)
     expect([index.resolve("#n1"), index.resolve("n1")]).to all(equal(note))

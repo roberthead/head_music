@@ -72,6 +72,27 @@ describe HeadMusic::Notation::MEI do
       expect { triplet_flow(eighths("C4", "D4", "E4"), span.call("")) }.to raise_error(described_class::UnsupportedFeatureError, /longer than its 4\/4 bar/)
     end
 
+    describe "whose @endid is not later in the layer it starts in" do
+      def quarters(staff, bar)
+        %w[C4 D4 E4 F4].each_with_index.map { |pitch, index| mei_note(pitch, "4", "xml:id": "s#{staff}b#{bar}n#{index + 1}") }.join
+      end
+
+      def values(flow)
+        flow.voices.flat_map(&:voice_events).map { |event| event.rhythmic_value.to_s }.uniq
+      end
+
+      it "scales nothing when the end comes before the start" do
+        span = %(<tupletSpan num="3" numbase="2" staff="1" startid="#s1b1n4" endid="#s1b1n1"/>)
+        expect(values(parse(mei_staff(1, quarters(1, 1)) + span, mei_staff(1, quarters(1, 2))))).to eq ["quarter"]
+      end
+
+      it "scales nothing when the end is on another staff" do
+        span = %(<tupletSpan num="3" numbase="2" staff="1" startid="#s1b1n2" endid="#s2b1n4"/>)
+        bars = [1, 2].map { |bar| mei_staff(1, quarters(1, bar)) + mei_staff(2, quarters(2, bar)) + ((bar == 1) ? span : "") }
+        expect(values(parse(*bars, score_def: mei_score_def(clefs: [%w[G 2], %w[G 2]])))).to eq ["quarter"]
+      end
+    end
+
     it "absorbs MEI Export's hidden tuplet in each bar into one group across the barline" do
       source = TupletFixtures.tuplet_crossing_barline
       expect(tuplet_summary(described_class.parse(source.to_mei))).to eq [[["1:4:000", "2:2:000", "triplet", "quarter"]]]

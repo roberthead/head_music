@@ -5,7 +5,8 @@ module HeadMusic::Notation::MEI
   #
   # A span by @plist scales its members; one by @startid and @endid scales
   # every entry from its start to its end in the layer it starts in, across
-  # barlines. One placed only by beats scales nothing. A container inside a
+  # barlines. One placed only by beats scales nothing, nor does one whose
+  # end is not at or after its start in that layer, on that staff. A container inside a
   # span of its ratio is absorbed into it, as MEI Export hides a bracket's
   # portion in each bar, and one of another ratio is a nested tuplet, which
   # raises. @tuplet names no ratio, so its run groups only entries that a
@@ -103,7 +104,7 @@ module HeadMusic::Notation::MEI
         end
       else
         start = named(control, "startid", where)
-        @starts[start] = span if start && span.last
+        @starts[start] = span if start && span.last && closes?(start, span.last, where)
       end
       add_run(span.run)
     end
@@ -111,6 +112,24 @@ module HeadMusic::Notation::MEI
     def named(control, name, where)
       reference = attribute(control, name, **where)
       reference && @index.named(reference, **where)
+    end
+
+    def closes?(start, last, where)
+      return false unless stream_of(start, where) == stream_of(last, where)
+
+      start.equal?(last) || @index.before?(start, last)
+    end
+
+    # The staff and layer numbers an element is read in, or nil.
+    def stream_of(element, where)
+      layer = ancestor(element, "layer")
+      staff = layer && ancestor(layer, "staff")
+      staff && [staff, layer].map { |found| AttributeValues.read(found, "n", **where, element: found) || 1 }
+    end
+
+    def ancestor(element, name)
+      element = element.parent while element.is_a?(REXML::Element) && element.name != name
+      element if element.is_a?(REXML::Element)
     end
 
     def open_span(stream, elements, where)
