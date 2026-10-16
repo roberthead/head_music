@@ -42,7 +42,7 @@ File by file:
 - **`clef_changes`:** the octave treble clef is `dis="8" dis.place="below"`. A clef change is written inside the layer after the last note of the bar before it, at the same moment.
 - **`key_and_meter_change`:** the change is a `<scoreDef keysig="2s" meter.count="3" meter.unit="4"/>` between measures.
 - **`cross_staff_piano` and `piano_part_marks`:** the left hand is layer 2 of staff 1, with `@staff="2"` on its notes in bars 1 and 4 only, and staff 2 holds an `<mRest/>` in every bar (MuseScore's hidden voice 5 in its MusicXML).
-- **`piano_part_marks`:** every `<dynam>` and `<hairpin>` names `staff="1"` and no layer, so the right hand's own marks cannot be told from the piano's. The right hand's crescendo from 2:3 is gone, and the two part hairpins have no `@endid` and no `@tstamp2`.
+- **`piano_part_marks`:** every `<dynam>` and `<hairpin>` names `staff="1"` and no layer, so the right hand's own marks cannot be told from the piano's. The right hand's crescendo from 2:3 is gone, and the two part hairpins have no `@endid` and no `@tstamp2`. The *f* at 2:3, in the middle of bar 2's whole notes, is gone too.
 - **`bach_invention_01`:** the left hand is layer 1 of staff 2. The ornaments are `<mordent form="upper">` for the inverted mordent and `<mordent form="lower">` for the mordent.
 - **`marked_dal_segno_al_coda`:**
   - the segno and coda signs become `<dir type="mscore-staff-text">` holding the SMuFL glyphs U+E047 and U+E048;
