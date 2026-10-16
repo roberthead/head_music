@@ -48,6 +48,25 @@ describe HeadMusic::MIDI::BarLayout do
       expect { layout(events).bars }.to raise_error(HeadMusic::MIDI::UnsupportedFeatureError, "a time signature changes the meter within bar 2")
     end
 
+    it "snaps to the sixty-fourth-note point within a tick of it, counted from the one before" do
+      bars = layout([meter(0, 4, 4), meter(4 * division + 1, 3, 4), meter(7 * division - 1, 2, 4), *note(0, 10 * division)])
+      expect(shape(bars)).to eq [[1, 0r, 1r, "4/4"], [2, 1r, 3/4r, "3/4"], [3, 7/4r, 1/2r, "2/4"], [4, 9/4r, 1/2r, "2/4"]]
+    end
+
+    it "snaps to the triplet sixty-fourth-note point within a tick of it" do
+      bars = layout([meter(0, 3, 4), meter(division / 3 + 1, 3, 4), *note(0, 4 * division)])
+      expect(shape(bars).first).to eq [0, 0r, 1/12r, "3/4"]
+    end
+
+    context "with 480 ticks to the quarter" do
+      let(:division) { 480 }
+
+      it "raises UnsupportedFeatureError naming the tick of one between grid points" do
+        events = [meter(0, 4, 4), meter(4 * division + 10, 3, 4), *note(0, 10 * division)]
+        expect { layout(events).bars }.to raise_error(HeadMusic::MIDI::UnsupportedFeatureError, /\Athe time signature at tick 1930 falls between grid points/)
+      end
+    end
+
     it "takes the last of several at one tick" do
       bars = layout([meter(0, 2, 4), meter(0, 3, 4), meter(3 * division, 2, 4), meter(3 * division, 3, 8), *note(0, 6 * division)])
       expect(shape(bars)).to eq [[1, 0r, 3/4r, "3/4"], [2, 3/4r, 3/8r, "3/8"], [3, 9/8r, 3/8r, "3/8"]]

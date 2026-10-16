@@ -10,6 +10,9 @@ module HeadMusic::MIDI
     end
 
     DEFAULT_METER = "4/4"
+    # The finest automatic grids, sixty-fourths and their triplet division,
+    # since export writes a triplet pickup's barline on a triplet point.
+    SIGNATURE_STEPS = [Rational(1, 64), Rational(1, 96)].freeze
 
     # The meter's beat. Meter gives a compound meter of whole notes, such as
     # 6/1, a beat with no unit, since writers beam nothing under it; a MIDI
@@ -64,14 +67,20 @@ module HeadMusic::MIDI
     end
 
     # [time, meter] at time 0 and wherever a later time signature takes
-    # effect before the end, the last at a tick winning.
+    # effect before the end, the last at a tick winning. Each snaps to the
+    # grid point within a tick of it, counted from the one before, since
+    # writers that count in ticks round a short bar.
     def meter_changes
       @meter_changes ||= begin
         latest = @time_signatures.chunk_while { |before, after| before.tick == after.tick }.map(&:last)
-        changes = latest.filter_map do |event|
-          [time(event.tick), HeadMusic::Rudiment::Meter.get("#{event.numerator}/#{event.denominator}")] if event.tick < @end_tick || event.tick.zero?
+        changes = [[0r, HeadMusic::Rudiment::Meter.get(DEFAULT_METER)]]
+        latest.each do |event|
+          next unless event.tick < @end_tick || event.tick.zero?
+
+          at = event.tick.zero? ? 0r : snap(event.tick, changes.last.first)
+          changes.pop if changes.last.first == at
+          changes << [at, HeadMusic::Rudiment::Meter.get("#{event.numerator}/#{event.denominator}")]
         end
-        changes.unshift([0r, HeadMusic::Rudiment::Meter.get(DEFAULT_METER)]) unless changes.first&.first&.zero?
         changes.freeze
       end
     end
@@ -97,6 +106,15 @@ module HeadMusic::MIDI
       fill(bars, start, [time(@end_tick), start].max, meter, partial: true)
       bars << bar(bars, start, meter) if bars.empty?
       bars
+    end
+
+    def snap(tick, from)
+      offset = time(tick) - from
+      point = SIGNATURE_STEPS.map { |step| (offset / step).round * step }.min_by { |candidate| (offset - candidate).abs }
+      return from + point if ((offset - point) * division * 4).abs <= 1
+
+      raise UnsupportedFeatureError, "the time signature at tick #{tick} falls between grid points, " \
+        "more than a tick from any sixty-fourth or triplet sixty-fourth after the one before"
     end
 
     # The second time signature arrives within the first bar and before a

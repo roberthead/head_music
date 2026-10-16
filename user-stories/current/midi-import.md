@@ -77,7 +77,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 ### Timeline
 
 - [ ] Meta events are read from every track and merged by tick. At one tick, the last in merged order wins, and a restatement that changes nothing is ignored
-- [ ] Time-signature meta events set the meter and lay out the bars, including changes. With none, the meter is 4/4. A change that does not fall on a barline raises `UnsupportedFeatureError`, since the model would need a short bar in the middle of the piece
+- [ ] Time-signature meta events set the meter and lay out the bars, including changes. With none, the meter is 4/4. A change that does not fall on a barline raises `UnsupportedFeatureError`, since the model would need a short bar in the middle of the piece. A time signature within one tick of a sixty-fourth or triplet-sixty-fourth point, counted from the one before, snaps to it; any other raises `UnsupportedFeatureError` naming its tick and saying it falls between grid points
 - [ ] Tempo meta events become tempo changes, taking the tempo in force at each bar's downbeat, restated in the meter's beat with the fewest decimals that write back the same microseconds. With none, the tempo is 120 quarter notes per minute. Changes within a bar are skipped until [Timeline Expressions](timeline-expressions.md) can hold gradual ones
 - [ ] Key-signature meta events set the key signature and tonal context, including changes. One within a bar takes effect at that downbeat when no note starts before it in the bar, and otherwise at the next downbeat
 - [ ] When the file has no key signature, or the caller passes `key: :infer`, the key regions come from key finding. `key:` also takes a key, a key name, or key regions

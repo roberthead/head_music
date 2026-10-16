@@ -118,6 +118,24 @@ describe HeadMusic::MIDI::Parser do
       end
     end
 
+    context "with a pickup's time signature a tick short of a quarter" do
+      subject(:flow) { parse([time_signature(0, 4, 4), *midi_note(0, 60, 95), time_signature(95, 4, 4), *midi_note(95, 62, bar + 1)]) }
+
+      let(:quarter_pickup) { parse([time_signature(0, 4, 4), *midi_note(0, 60, 96), time_signature(96, 4, 4), *midi_note(96, 62, bar)]) }
+
+      it "reads a quarter pickup" do
+        expect([flow.bars.first.number, bar_events(flow.voices.first)]).to eq [0, bar_events(quarter_pickup.voices.first)]
+      end
+    end
+
+    context "with a pickup's time signature between grid points" do
+      subject(:bytes) { smf([time_signature(0, 4, 4), *midi_note(0, 60, 470), time_signature(470, 4, 4), *midi_line([62] * 4, 480, tick: 470)], division: 480) }
+
+      it "raises UnsupportedFeatureError naming its tick" do
+        expect { HeadMusic::MIDI.parse(bytes) }.to raise_error(HeadMusic::MIDI::UnsupportedFeatureError, /time signature at tick 470 falls between grid points/)
+      end
+    end
+
     context "with a meter change at the same speed" do
       subject(:flow) { parse([time_signature(0, 3, 4), time_signature(288, 6, 8), *midi_line([60] * 4, 144)]) }
 
