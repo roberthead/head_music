@@ -15,6 +15,30 @@ describe HeadMusic::Content::Flow::Bars do
     end
   end
 
+  describe "cost" do
+    def lookups(bars, count)
+      calls = 0
+      allow(bars.instance_variable_get(:@bars)).to receive(:[]).and_wrap_original do |original, *args|
+        calls += 1
+        original.call(*args)
+      end
+      (1..count).each { |last| bars.span(1, last) }
+      calls
+    end
+
+    it "constructs each bar once as the span grows a bar at a time" do
+      allow(HeadMusic::Content::Bar).to receive(:new).and_call_original
+      (1..100).each { |last| bars.span(1, last) }
+      expect(HeadMusic::Content::Bar).to have_received(:new).exactly(100).times
+    end
+
+    it "grows linearly as the span grows a bar at a time" do
+      single = lookups(described_class.new(flow), 500)
+      double = lookups(described_class.new(flow), 1_000)
+      expect(double).to be <= single * 2.2
+    end
+  end
+
   describe "#first_number" do
     it "is nil before any bar is allocated" do
       expect(bars.first_number).to be_nil
