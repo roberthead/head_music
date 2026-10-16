@@ -230,6 +230,34 @@ describe HeadMusic::Notation::LilyPond do
     end
   end
 
+  describe "a chord holding one letter and octave under two alterations" do
+    def chord_then(key, chord, after)
+      HeadMusic::Content::Flow.new(meter: "4/4", key_signature: key).tap do |flow|
+        flow.add_voice.place("1:1", :half, chord).voice.place("1:3", :half, after)
+      end
+    end
+
+    {
+      "C major" => [%w[F4 F#4], "F4", "<fis'! f'!>2", %w[sharp natural natural]],
+      "F major" => [%w[Bb4 B4], "Bb4", "<b'! bes'!>2", %w[natural flat flat]]
+    }.each do |key, (chord, after, written, printed)|
+      context "with #{key}" do
+        let(:original) { chord_then(key, chord, after) }
+
+        it "writes #{written} and reads #{chord.join(" and ")} back" do
+          expect(original.to_lilypond).to include written
+          expect_lily_pond_round_trip(original)
+        end
+
+        it "prints each member's accidental, and the bar remembers the highest" do
+          skip "lilypond is not installed" unless installed_lilypond
+
+          expect(compile_accidentals(original.to_lilypond)).to eq printed
+        end
+      end
+    end
+  end
+
   describe "hand-written inputs" do
     LilyPondRoundTripSources::RELATIVE_TWINS.each do |name, twin|
       it "resolves #{name} to the expected pitches" do

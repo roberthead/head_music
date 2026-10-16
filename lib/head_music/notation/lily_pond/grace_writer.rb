@@ -27,8 +27,8 @@ module HeadMusic::Notation::LilyPond
     end
 
     def word(grace_note)
-      pitches = grace_note.pitches.sort.map { |pitch| PitchWriter.token(pitch) }
-      body = (pitches.length == 1) ? pitches.first : "<#{pitches.join(" ")}>"
+      pitches = grace_note.pitches
+      body = (pitches.length == 1) ? PitchWriter.token(pitches.first) : PitchWriter.chord(pitches)
       "#{body}#{DurationWriter.token(grace_note.rhythmic_value)}#{MarkWriter.grace_token(grace_note)}"
     end
   end

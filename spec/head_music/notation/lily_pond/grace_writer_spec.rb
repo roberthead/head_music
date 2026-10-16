@@ -38,6 +38,11 @@ describe HeadMusic::Notation::LilyPond::GraceWriter do
       expect(described_class.token(note)).to eq "\\slashedGrace d'16 \\grace { e'16 f'16 } "
     end
 
+    it "forces the accidentals of a grace chord's members at one letter and octave" do
+      note.add_grace_note(%w[F4 F#4], :sixteenth)
+      expect(described_class.token(note)).to eq "\\grace <fis'! f'!>16 "
+    end
+
     it "writes a grace chord low to high, with its articulations" do
       note.add_grace_note(%w[C5 A4], :sixteenth, articulations: [:staccato])
       expect(described_class.token(note)).to eq "\\grace <a' c''>16-. "

@@ -187,6 +187,28 @@ module LilyPondToolchain
     source.sub(/^\\version .*\n/) { |version| version + "\\paper { page-breaking = #ly:one-page-breaking }\n" }
   end
 
+  # Logs the glyph of each accidental LilyPond prints, in the order it
+  # finishes them.
+  ACCIDENTAL_PROBE = <<~'LILYPOND'
+    \layout {
+      \context {
+        \Voice
+        \override Accidental.after-line-breaking = #(lambda (grob)
+          (ly:message "printed ~a" (ly:grob-property grob 'glyph-name)))
+      }
+    }
+  LILYPOND
+
+  def compile_accidentals(source)
+    probed = source.sub(/^\\version .*\n/) { |version| version + ACCIDENTAL_PROBE }
+    Dir.mktmpdir do |dir|
+      source_path = File.join(dir, "golden.ly")
+      File.write(source_path, probed)
+      _output, log, _status = Open3.capture3(installed_lilypond, "-dno-print-pages", "--output", dir, source_path)
+      log.lines.grep(/\Aprinted accidentals\./).map { |line| line.split(".").last.strip }
+    end
+  end
+
   # The warnings and the number of hairpins drawn, from one compile.
   def compile_hairpins(source)
     probed = source.sub(/^\\version .*\n/) { |version| version + HAIRPIN_PROBE }

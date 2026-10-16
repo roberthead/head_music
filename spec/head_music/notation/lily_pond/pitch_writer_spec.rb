@@ -21,6 +21,24 @@ describe HeadMusic::Notation::LilyPond::PitchWriter do
     end
   end
 
+  describe ".chord" do
+    def chord(names, **options)
+      described_class.chord(names.map { |name| HeadMusic::Rudiment::Pitch.get(name) }, **options)
+    end
+
+    it "writes the members low to high" do
+      expect(chord(%w[G4 C4 F#4])).to eq "<c' fis' g'>"
+    end
+
+    it "forces the accidentals of members at one letter and octave, highest first" do
+      expect(chord(%w[F4 A4 F#4 F5])).to eq "<fis'! f'! a' f''>"
+    end
+
+    it "keeps the order but drops the signs when not forced" do
+      expect(chord(%w[Bb4 B4], forced: false)).to eq "<b' bes'>"
+    end
+  end
+
   describe ".alteration_suffix" do
     it "treats nil as natural" do
       expect(described_class.alteration_suffix(nil)).to eq ""

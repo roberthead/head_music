@@ -197,11 +197,13 @@ module HeadMusic::Notation::LilyPond
       from = segment.offset || HeadMusic::Notation::BarSplitter.onset_in_bar(voice_event)
       own = starts?(segment) ? MarkWriter.token(voice_event) : ""
       graces = starts?(segment) ? grace_token(voice_event) : ""
+      forced = starts?(segment)
       segment.rhythmic_value!(RenderError).tied_chain.map do |link|
         to = from + HeadMusic::Notation::DottedDuration.sounding_fraction(link)
-        word = graces + marks.around(bar_number, from, to, "#{body(voice_event)}#{DurationWriter.token(link)}", own, factor: link.tuplet_ratio&.factor || 1)
+        word = graces + marks.around(bar_number, from, to, "#{body(voice_event, forced)}#{DurationWriter.token(link)}", own, factor: link.tuplet_ratio&.factor || 1)
         from = to
         own = graces = ""
+        forced = false
         word
       end
     end
@@ -214,10 +216,10 @@ module HeadMusic::Notation::LilyPond
       GraceWriter.token(voice_event, slur_opens: marks.grace_opens_at(position), implied_slur: marks.implied_grace_slur?(position))
     end
 
-    def body(voice_event)
+    def body(voice_event, forced)
       return "r" if voice_event.rest?
 
-      voice_event.chord? ? chord_body(voice_event) : PitchWriter.token(voice_event.pitch)
+      voice_event.chord? ? PitchWriter.chord(voice_event.pitches, forced: forced) : PitchWriter.token(voice_event.pitch)
     end
 
     def closes?(segment)
@@ -237,10 +239,6 @@ module HeadMusic::Notation::LilyPond
     def span_marks(voice_event)
       @span_marks ||= {}.compare_by_identity
       @span_marks[voice_event.voice] ||= SpanMarks.new(voice_event.voice)
-    end
-
-    def chord_body(voice_event)
-      "<#{voice_event.pitches.sort.map { |pitch| PitchWriter.token(pitch) }.join(" ")}>"
     end
   end
 end

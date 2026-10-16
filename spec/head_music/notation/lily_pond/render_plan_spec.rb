@@ -51,6 +51,13 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
       expect(tokens_for(flow, voice_event)).to eq "<c' e'>2~ <c' e'>8"
     end
 
+    it "forces a clashing chord's accidentals on its first link alone" do
+      flow = build_flow
+      flow.add_voice.place("1:1", :dotted_half, "C4")
+      voice_event = flow.voices.first.place("1:4", "half tied to quarter", %w[F4 F#4])
+      expect(tokens_for(flow, voice_event)).to eq "<fis'! f'!>4~ | <fis' f'>2"
+    end
+
     it "ends the piece before a barline with a tie mark" do
       flow = build_flow
       flow.add_voice.place("1:1", :dotted_half, "C4")
