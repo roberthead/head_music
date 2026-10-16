@@ -110,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Breaking.** `MusicXML::BarMap`, `MusicXML::VoiceTrack`, `MusicXML::TieFolding`, `MusicXML::VoicePlacer`, and `MusicXML::ConcertTransposition` move to `HeadMusic::Notation`, shared with MEI import, and `MusicXML::PitchReader`'s spelling helpers move to `Notation::PitchSpelling`. `MusicXML::XmlReading` and `MusicXML::ParsePreflight` remain.
+- **Breaking.** `MusicXML::BarMap`, `MusicXML::VoiceTrack`, `MusicXML::TieFolding`, `MusicXML::VoicePlacer`, and `MusicXML::ConcertTransposition` move to `HeadMusic::Notation`, shared with MEI import, and `MusicXML::PitchReader`'s spelling helpers move to `Notation::PitchSpelling`. `MusicXML::XmlReading` and `MusicXML::ParsePreflight` remain. With the move, `VoicePlacer.new` requires `tuplet_reader:` (and takes `trim_edges:`), `ConcertTransposition.new` takes `errors:`, and the readings `BarMap` and `TieFolding` take must answer `errors` and `where`.
 - `MusicXML.parse` raises `ParseError` on a document nesting elements deeper than 256.
 - ABC reads a `P:` header, the playing order, and ignores it rather than raising. A repeat read from ABC plays as many times as the highest pass its endings name, rather than twice.
 - **Breaking.** `HeadMusic::Content::Placement` is `HeadMusic::Content::VoiceEvent`, a name for the time-filling notes, chords, and rests of a voice, apart from the point events such as dynamics still to come. The constant is gone, not aliased. `Voice#place` and `Voice#placements` keep their names, and the Flow JSON is unchanged. `HeadMusic::Notation::PlacementValidation` is `VoiceEventValidation` to match.
