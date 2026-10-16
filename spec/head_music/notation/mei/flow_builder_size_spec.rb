@@ -83,6 +83,20 @@ describe HeadMusic::Notation::MEI::FlowBuilder do
     expect(recorder.flow.voices.map(&:revision)).to all(be_zero)
   end
 
+  # Every Ruby method the whole reader calls, from the XML parse to the mark
+  # readers, so that a quadratic step anywhere, not only in the methods
+  # counted above, shows.
+  def calls_to_read(bars)
+    xml = document(bars)
+    count = 0
+    TracePoint.new(:call) { count += 1 }.enable { HeadMusic::Notation::MEI.parse(xml) }
+    count
+  end
+
+  it "makes at most 4.5 times the calls to read four times the bars" do
+    expect(calls_to_read(100).fdiv(calls_to_read(25))).to be < 4.5
+  end
+
   # Each bar's nine events in each part, and its controls but the <dir>
   # naming a rejected reading: in each part a slur, a dynamic, and a
   # beamSpan by @plist, and in the second a tupletSpan and a <tie> to the
