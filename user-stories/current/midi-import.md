@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-16T08:30:49-07:00
   planned_at:   2026-10-16T08:54:50-07:00
   finished_at:
-  updated_at:   2026-10-16T09:40:41-07:00
+  updated_at:   2026-10-16T11:04:54-07:00
 -->
 
 # Story: MIDI Import
@@ -154,6 +154,48 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - **Markers as rehearsal marks.** Their text follows no convention.
   - **MuseScore's no-trailing-space hyphen convention.** Only one file shows it, and reading it needs a per-file detector.
 - The voice separation above is a first fit. Contour- and range-aware separation, which would let the counterpoint guides grade imported polyphony, is a follow-up.
+- **Spelling with `key: nil` and the modes** (measured 2026-10-16). The chorales spell at 99.939% with `key: nil`, 51 misses against the 46 Key and Spelling Inference measured on the kern flows with the key given. The five extra all come from modes. Seven of the 47 modal chorales spell differently through MIDI: chor025, chor113 (F Dorian), chor155, chor218, chor237 (G Dorian), and chor034, chor205 (E Phrygian). A MIDI key signature holds only major or minor, so export writes each mode as the major key of its signature, and import spells F Dorian as E♭ major. That loses 7 notes the mode spelled, such as F♯4 in G Dorian read as G♭4, and gains 2 the mode missed, such as chor113's F♭4. No signature is applied late and no reader step drops anything, so this is the format's limit, the "modes" exclusion below, not a reader bug.
+- **Round trips** (step 8, 2026-10-16). `spec/head_music/midi/round_trip_spec.rb` round-trips nine fixtures. Each reads back its notes, bars and lyrics, writes the same events again, and spells every note as written:
+  - ABC SPEED_THE_PLOUGH, with its repeat taken out, and ABC CHROMATIC_AIR;
+  - LilyPond bach_invention_01;
+  - kern satb_chorale, with its repeat taken out, and kern piano_splits, with its dynamics taken out;
+  - `MuseScoreFixtures.two_verses`, sung once, since it has no repeat and export sings verse n only on pass n;
+  - `clarinet_changes`, a drum kit, and an eighth pickup in 3/4.
+
+  Excluded by name, each pinned as still differing:
+  - tuplets_and_grace_notes.ly and tuplets.krn, for grace notes, quintuplets and septuplets;
+  - articulations_ornaments_dynamics.krn, for staccato;
+  - grace_notes.krn, for grace notes;
+  - hairpins.krn, for hairpins;
+  - the D.C. and D.S. MusicXML fixtures, for jumps, accents, staccato and hairpins.
+
+  `generated_round_trip_spec.rb` passes 97 of `TupletGenerator`'s first 100 seeds, and 994 of 1,000 with `TUPLET_SEEDS=1..1000`. It uses one voice. Two piano hands drawn from one range come back otherwise in 94 of 100 seeds, because one hand strikes a key while the other holds it, which is the "same-key overlaps" exclusion. Its bars are compared without numbers, because a pickup a full bar long reads as bar 1. The six excluded seeds show two losses, both kept rather than fixed:
+  - Seeds 53, 82 and 266 hold a lone triplet note before triplet rests. Only its release is off the sixteenth grid its onsets fit, and the grid is chosen from onsets only (Settled choices).
+  - Seeds 87, 287 and 954 end in a bar of rests. Export writes it only as the end of track's tick, and import ends the bars at the latest note.
+- **An export bug the round trips found** (fixed 2026-10-16). `ConductorTrack#pickup_meter` counted a pickup in the larger of the meter's denominator and the pickup's, where it needed their least common multiple. A pickup of two-thirds of a whole note in 6/8 was therefore written as a truncated 5/8, and import raised for a meter change within bar 2. Seeds 5 and 34 found it.
+- **The chorale corpus** (step 9, 2026-10-16, 38 seconds). All 366 readable chorales go through kern import, MIDI export with their repeats taken out, and MIDI import. Every chorale reads back its 83,196 notes and its bars under both keys, and re-exports the same events. None is refused.
+
+  | Key | Spelled | Misses by rule |
+  | --- | --- | --- |
+  | `key: nil` | 99.939% (83,145) | direction 41, center 5, raised 4, sonority 1 |
+  | `key: :infer` | 99.947% (83,152) | direction 34, center 5, raised 4, sonority 1 |
+
+  The inferred figure equals Key and Spelling Inference's. With `key: :infer`, 315 chorales open on the signature they were written in.
+- **MuseScore's MIDI** (step 9, 2026-10-16, MuseScore 4). Nine of the 14 MusicXML fixtures come back with the same spelled pitches per part, in the order they sound, once the tracks MuseScore writes per staff are taken together. Its losses are pinned:
+  - two_verses' padded pickup reads as a full first bar;
+  - Chromatic Air's A minor is written as a C major signature and reads as C major, at no cost in spelling;
+  - clarinet_changes_transposed keeps the first clarinet's transposition through the instrument changes.
+
+  Excluded by name:
+  - the invention and the D.S. fixture, whose ornaments MuseScore plays as notes;
+  - grace_notes_before_downbeat, whose grace notes it plays as notes;
+  - the D.C. fixture, whose D.C. al Fine it does not play;
+  - clarinet_changes_transposed, as pinned above.
+
+  The cost of trusting MuseScore's major signatures for minor keys measured zero on Chromatic Air. That is one tune, too few to decide mode inference on.
+- **Real files** (step 9, 2026-10-16):
+  - Mutopia's Polonaise in F major, BWV Anh. 117a, which is Public Domain, reads as two parts of two voices each, in 3/4 and F major, on a sixteenth grid, with 235 notes in 16 bars.
+  - music21's test01, which has no key signature, reads as one piano voice of 18 repeated C4s on a sixteenth grid, and infers F major.
 
 ## Decisions
 
@@ -178,6 +220,11 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - **Export programs.** A part that loses its instrument after having one writes program 1, so a D.C. back to a bar before the instrument arrived cannot replay a stale program. A part with no instrument from the start writes none.
   - **`grid:` bounds.** A grid finer than 1/1024 of a whole note raises `ArgumentError`, so the grid cannot make the bar layout unbounded.
   - **Error translation.** It rescues model constructors' `ArgumentError` and the like only in the flow-building phase, so a bug in the reader or quantizer surfaces as itself rather than as a `ParseError`.
+
+- **Decided before steps 8 and 9** (2026-10-16):
+  - **Track names.** A track name sets no player only when it equals the instrument's name exactly, case included, so "Soprano" names the singer of a soprano part.
+  - **Notes on the final barline.** The bars end after the latest onset as well as the latest release, so a note of no length or never released on the final barline gets a bar of its own.
+  - **Spelling with `key: nil`.** The five misses beyond Key and Spelling Inference's were to be traced, and fixed if they came from a reader bug. They come from modes, which SMF cannot hold, as the Notes record.
 
 ## Implementation Plan
 
