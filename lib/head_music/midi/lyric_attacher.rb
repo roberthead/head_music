@@ -34,17 +34,25 @@ module HeadMusic::MIDI
     end
 
     def event_at(part_key, time)
-      candidate_voices(part_key).each do |onsets|
-        return onsets[time] if onsets.key?(time)
-      end
-      nil
+      onsets_by_track.fetch(part_key.track, all_onsets)[time]
     end
 
     # A lyric's track names its part; a track with no notes names none, so
-    # its lyrics may land on any part.
-    def candidate_voices(part_key)
-      own = @events_by_part.select { |key, _voices| key.track == part_key.track }
-      (own.empty? ? @events_by_part : own).values.flatten(1)
+    # its lyrics may land on any part. The first voice with a note at a
+    # time wins.
+    def onsets_by_track
+      @onsets_by_track ||= @events_by_part.each_with_object({}) do |(key, voices), by_track|
+        by_track[key.track] = index(by_track.fetch(key.track, {}), voices)
+      end
+    end
+
+    def all_onsets
+      @all_onsets ||= index({}, @events_by_part.values.flatten(1))
+    end
+
+    def index(onsets, voices)
+      voices.each { |voice| voice.each { |time, event| onsets[time] = event unless onsets.key?(time) } }
+      onsets
     end
   end
 end

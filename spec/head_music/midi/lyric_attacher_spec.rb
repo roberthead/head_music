@@ -68,6 +68,38 @@ describe HeadMusic::MIDI::LyricAttacher do
     expect([sung(upper_events[0r]), sung(lower_events[1/4r]), sung(alto_events[0r])]).to eq [[[1, "Ky", false]], [[1, "ri", false]], []]
   end
 
+  context "with many lyrics" do
+    counting_hash = Class.new(Hash) do
+      def reads
+        @reads ||= 0
+      end
+
+      %i[[] key? fetch each each_pair].each do |name|
+        define_method(name) do |*args, &block|
+          @reads = reads + 1
+          super(*args, &block)
+        end
+      end
+    end
+
+    let(:events_by_part) do
+      {soprano_key => [upper_events, lower_events], alto_key => [alto_events]}.transform_values do |voices|
+        voices.map { |events| counting_hash.new.update(events) }
+      end
+    end
+
+    def reads_for(count)
+      voices = events_by_part.values.flatten(1)
+      voices.each { |voice| voice.instance_variable_set(:@reads, 0) }
+      attach(*Array.new(count) { lyric(3, 1/4r, "ri") })
+      voices.sum(&:reads)
+    end
+
+    it "reads the voices as often for forty lyrics as for one" do
+      expect(reads_for(40)).to eq reads_for(1)
+    end
+  end
+
   it "keeps Latin accented and Cyrillic text exactly" do
     attach(lyric(1, 0r, "Glò-"), lyric(2, 0r, "Слава"))
     expect([sung(upper_events[0r]), sung(alto_events[0r])]).to eq [[[1, "Glò", true]], [[1, "Слава", false]]]
