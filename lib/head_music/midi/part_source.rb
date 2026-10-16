@@ -119,6 +119,14 @@ module HeadMusic::MIDI
       end
     end
 
+    # [track, index] for each track of format 1 after the first that names
+    # a part or sets a program but plays nothing.
+    def self.silent_tracks(sequence)
+      return [] unless sequence.format == 1
+
+      sequence.tracks.each_with_index.drop(1).select { |track, _index| track.notes.empty? && (track.name || track.program_changes.any?) }
+    end
+
     attr_reader :sequence, :quantizer
 
     # +notes+ are the reader's notes the quantizer was given, in its order.
@@ -141,18 +149,10 @@ module HeadMusic::MIDI
     end
 
     def silent_parts
-      return [] unless sequence.format == 1
-
-      sequence.tracks.each_with_index.drop(1).filter_map do |track, index|
-        next unless silent?(track)
-
+      self.class.silent_tracks(sequence).map do |track, index|
         programs = track.program_changes
         part(PartKey.new(track: index, channel: programs.first&.channel), [], [], programs)
       end
-    end
-
-    def silent?(track)
-      track.notes.empty? && (track.name || track.program_changes.any?)
     end
 
     # A part with no notes takes its own track's programs; any other, its

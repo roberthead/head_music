@@ -67,9 +67,15 @@ class HeadMusic::MIDI::Reader
       }.sort_by { |tick, track_index, index, _event| [tick, track_index, index] }.map { |_tick, track_index, _index, event| [track_index, event] }
     end
 
+    # Each track's notes, in its own order, then by track.
     def notes
-      tracks.flat_map(&:notes).each_with_index.sort_by { |note, index| [note.on, note.channel, note.key, note.track, index] }.map(&:first)
+      HeadMusic::MIDI::Reader.sorted(tracks.flat_map(&:notes))
     end
+  end
+
+  # By onset, channel and key, keeping the given order among equals.
+  def self.sorted(notes)
+    notes.each_with_index.sort_by { |note, index| [note.on, note.channel, note.key, index] }.map(&:first)
   end
 
   def initialize(bytes)
@@ -333,7 +339,7 @@ class HeadMusic::MIDI::Reader
       end
     end
     held.each_value { |queue| queue.each { |sounding| release(sounding, end_ticks[sounding.first], notes) } }
-    tracks = sequence.tracks.zip(notes).map { |track, track_notes| Track.new(track.events, track.terminated, sorted(track_notes)) }
+    tracks = sequence.tracks.zip(notes).map { |track, track_notes| Track.new(track.events, track.terminated, self.class.sorted(track_notes)) }
     Sequence.new(sequence.format, sequence.division, tracks)
   end
 
@@ -342,9 +348,5 @@ class HeadMusic::MIDI::Reader
 
     track_index, on = sounding
     notes[track_index] << Note.new(on.channel, on.key, on.velocity, on.tick, tick, track_index)
-  end
-
-  def sorted(notes)
-    notes.each_with_index.sort_by { |note, index| [note.on, note.channel, note.key, index] }.map(&:first)
   end
 end

@@ -50,7 +50,7 @@ module HeadMusic::MIDI
     def part_count
       @part_count ||= begin
         keys = sequence.tracks.flat_map { |track| track.notes.map { |note| PartKey.for(note) } }.uniq.length
-        keys + sequence.tracks.drop(1).count { |track| silent_part?(track) }
+        keys + PartSource.silent_tracks(sequence).length
       end
     end
 
@@ -91,10 +91,6 @@ module HeadMusic::MIDI
 
     def last_tick(track)
       track.events.reverse_each.find { |event| !event.is_a?(EndOfTrack) }&.tick
-    end
-
-    def silent_part?(track)
-      sequence.format == 1 && track.notes.empty? && (track.name || track.program_changes.any?)
     end
 
     def bars_between(from, to, meter)
