@@ -82,7 +82,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 - [ ] Key-signature meta events set the key signature and tonal context, including changes. One within a bar takes effect at that downbeat when no note starts before it in the bar, and otherwise at the next downbeat
 - [ ] When the file has no key signature, or the caller passes `key: :infer`, the key regions come from key finding. `key:` also takes a key, a key name, or key regions
 - [ ] When the second time signature arrives before a full bar of the meter that follows it, the first bar is a pickup of that length. Leading silence in a full first bar stays as rests and is never a pickup
-- [ ] MIDI Export writes a pickup's time signature with the smallest power-of-two denominator that holds it, and restates the meter at bar 1 when none does. A part with no instrument writes no program change
+- [ ] MIDI Export writes a pickup's time signature with the smallest power-of-two denominator, never below the flow's own, that holds it, and restates the meter at bar 1 when none does. A part with no instrument writes no program change
 
 ### Notes and rhythms
 
@@ -153,6 +153,9 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - **Karaoke `.kar` text.** It needs its own rules to tell lyrics from text.
   - **Markers as rehearsal marks.** Their text follows no convention.
   - **MuseScore's no-trailing-space hyphen convention.** Only one file shows it, and reading it needs a per-file detector.
+- **Known losses** (found in review, 2026-10-16):
+  - **Drum keys that share a sound.** Keys that map to one unpitched sound, such as 42 and 44 to the hi-hat or two keys with no catalog instrument to the generic sound, collapse into one sound in a chord, because a note event holds each sound once. Export then writes that sound's one key.
+  - **Timing jitter.** When no grid places every onset, the 99% fallback favours fine grids, so a jittered line of eighths reads as triplet sixty-fourths and tied chains. This belongs to the live-performance follow-up, since sequenced files do not jitter.
 - The voice separation above is a first fit. Contour- and range-aware separation, which would let the counterpoint guides grade imported polyphony, is a follow-up.
 - **Spelling with `key: nil` and the modes** (measured 2026-10-16). The chorales spell at 99.939% with `key: nil`, 51 misses against the 46 Key and Spelling Inference measured on the kern flows with the key given. The five extra all come from modes. Seven of the 47 modal chorales spell differently through MIDI: chor025, chor113 (F Dorian), chor155, chor218, chor237 (G Dorian), and chor034, chor205 (E Phrygian). A MIDI key signature holds only major or minor, so export writes each mode as the major key of its signature, and import spells F Dorian as E♭ major. That loses 7 notes the mode spelled, such as F♯4 in G Dorian read as G♭4, and gains 2 the mode missed, such as chor113's F♭4. No signature is applied late and no reader step drops anything, so this is the format's limit, the "modes" exclusion below, not a reader bug.
 - **Round trips** (step 8, 2026-10-16). `spec/head_music/midi/round_trip_spec.rb` round-trips nine fixtures. Each reads back its notes, bars and lyrics, writes the same events again, and spells every note as written:
@@ -203,7 +206,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 - **The module is `HeadMusic::MIDI`** (decided 2026-10-14), shared with MIDI Export.
 - **Key finding and spelling are a separate prerequisite story** (decided 2026-10-14), in `HeadMusic::Analysis`.
 - **One part per track and channel, voices separated by first fit, chords for notes that start and end together** (decided 2026-10-14). This settles the earlier questions about voice separation and the default grid.
-- **Valid content the model cannot hold is skipped, not raised** (decided 2026-09-26, as policy for every reader). Format 2, SMPTE time division, and a time-signature change within a bar raise, because each leaves no honest flow to build.
+- **Valid content the model cannot hold is skipped, not raised** (decided 2026-09-26, as policy for every reader). Format 2, SMPTE time division, and a time-signature change within a bar or between grid points raise, because each leaves no honest flow to build.
 
 - **Planning choices adopted without stopping to ask** (2026-10-16, while running the seven-story goal; Rob may revise any). All of the planner's proposed story changes were adopted:
   - **Grid.** The grid is chosen from onsets only, within one tick, because MuseScore ends nearly every note a tick early. Releases extend to the next onset when within a step, or else snap.
@@ -226,6 +229,12 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - **Track names.** A track name sets no player only when it equals the instrument's name exactly, case included, so "Soprano" names the singer of a soprano part.
   - **Notes on the final barline.** The bars end after the latest onset as well as the latest release, so a note of no length or never released on the final barline gets a bar of its own.
   - **Spelling with `key: nil`.** The five misses beyond Key and Spelling Inference's were to be traced, and fixed if they came from a reader bug. They come from modes, which SMF cannot hold, as the Notes record.
+
+- **Decided during review** (2026-10-16; Rob may revise any):
+  - **A short real opening bar reads as a pickup.** A file whose first bar is shorter than the meter that follows cannot be told apart from export's pickups, so it reads as bar 0.
+  - **A key given in `key:` spells without replacing the file's signatures,** as `respell` does. Pass `:infer` to replace them.
+  - **Time signatures snap to triplet sixty-fourths as well as sixty-fourths.** Export writes a triplet pickup's barline on a triplet point, so a lattice of sixty-fourths alone would refuse export's own triplet pickups.
+  - **End of track.** The bars end at the latest end of track when it lands exactly on a barline past the last note, so a last bar of rests survives and the bar budget counts it.
 
 ## Implementation Plan
 
