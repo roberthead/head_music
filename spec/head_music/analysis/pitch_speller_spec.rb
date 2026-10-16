@@ -278,15 +278,10 @@ describe HeadMusic::Analysis::PitchSpeller do
       expect(described_class.new(notes, key: "C major").spelled_notes.map(&:rule)).to eq %i[diatonic direction diatonic]
     end
 
-    it "settles up to 4,096 combinations" do
-      numbers = [1, 13, 25, 37, 49, 61, 73, 85, 97, 109, 8, 20]
-      expect(chord(numbers + [65], key: "C major").map(&:rule).tally).to eq(sonority: 12, diatonic: 1)
-    end
-
-    it "spells from the center past 4,096 combinations" do
+    it "settles octave doublings however many there are" do
       numbers = [1, 13, 25, 37, 49, 61, 73, 85, 97, 109, 8, 20, 32]
       expect(chord(numbers + [65], key: "C major").map { |spelled| [spelled.pitch.spelling.to_s, spelled.rule] }.uniq)
-        .to eq [["C♯", :center], ["G♯", :center], ["F", :diatonic]]
+        .to eq [["D♭", :sonority], ["A♭", :sonority], ["F", :diatonic]]
     end
   end
 
