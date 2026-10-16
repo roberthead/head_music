@@ -20,10 +20,17 @@
     </encodingDesc>
     <workList>
       <work>
+        <identifier type="catalog">HM 1</identifier>
         <title>Wake the Morning</title>
         <composer>
-          <persName>Jane Doe</persName>
+          <persName startdate="1901" enddate="1977">
+            <foreName>Jane</foreName>
+            <famName>Doe</famName>
+          </persName>
         </composer>
+        <creation>
+          <date isodate="1950">1950</date>
+        </creation>
       </work>
     </workList>
   </meiHead>

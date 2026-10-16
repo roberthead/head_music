@@ -29,7 +29,8 @@ module HeadMusic::Notation::MEI
       "grace" => :grace, "metcon" => :boolean, "cue" => :boolean, "tie" => :tie, "tuplet" => :tuplet,
       "num" => :count_of, "numbase" => :count_of,
       "trans.diat" => :steps, "trans.semi" => :steps,
-      "tstamp" => :tstamp, "tstamp2" => :tstamp2
+      "tstamp" => :tstamp, "tstamp2" => :tstamp2,
+      "isodate" => :year, "startdate" => :year, "enddate" => :year
     }.freeze
 
     UNIT_NAMES_BY_DUR = Durations::BY_UNIT_NAME.invert.freeze
@@ -216,6 +217,13 @@ module HeadMusic::Notation::MEI
     # Whether a grace note is slashed.
     def grace(name, value, where)
       {"unacc" => true, "acc" => false, "unknown" => false}.fetch(value) { unreadable(name, value, where) }
+    end
+
+    # The year an ISO date such as "1685" or "1685-03-21" names, or nil,
+    # since a date the head states loosely is no reason to refuse a score.
+    def year(_name, value, _where)
+      match = value.match(/\A(-?\d{1,4})(-\d\d){0,2}\z/)
+      match && Integer(match[1], 10)
     end
 
     def boolean(name, value, where)

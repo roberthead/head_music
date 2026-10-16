@@ -51,11 +51,35 @@ module HeadMusic::Notation::MEI
       works.any? ? Element.new("workList", nil, {}, works.map { |work| work_element(work) }) : nil
     end
 
+    # The catalog number as an <identifier> before the title, the year in
+    # <creation>, and each composer's life as the dates of their <persName>.
     def work_element(work)
-      composers = work.credits.names(:composer).map do |name|
-        Element.new("composer", nil, {}, [Element.new("persName", nil, {}, [], name)])
-      end
-      Element.new("work", nil, {}, [Element.new("title", nil, {}, [], work.title), *composers])
+      identifier = work.catalog_number && Element.new("identifier", nil, {"type" => "catalog"}, [], work.catalog_number)
+      composers = work.credits.for(:composer).map { |credit| Element.new("composer", nil, {}, [person_element(credit.person)]) }
+      Element.new("work", nil, {}, [identifier, Element.new("title", nil, {}, [], work.title), *composers, creation_element(work.year)].compact)
+    end
+
+    def creation_element(year)
+      year && Element.new("creation", nil, {}, [Element.new("date", nil, {"isodate" => iso_year(year)}, [], year.to_s)])
+    end
+
+    # A sort name that inverts the full name is written as its parts.
+    def person_element(person)
+      dates = {"startdate" => iso_year(person.birth_year), "enddate" => iso_year(person.death_year)}
+      parts = name_parts(person)
+      return Element.new("persName", nil, dates, [], person.full_name) unless parts
+
+      family, given = parts
+      Element.new("persName", nil, dates, [Element.new("foreName", nil, {}, [], given), Element.new("famName", nil, {}, [], family)])
+    end
+
+    def name_parts(person)
+      family, given = person.sort_name.split(", ", 2)
+      [family, given] if given && "#{given} #{family}" == person.full_name
+    end
+
+    def iso_year(year)
+      year && format((year.negative? ? "-%04d" : "%04d"), year.abs)
     end
   end
 end

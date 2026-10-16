@@ -78,6 +78,37 @@ describe HeadMusic::Notation::MEI::HeadWriter do
       expect(works(head([flow, other, flow])).map(&:first)).to eq ["Ein feste Burg", "Wachet auf"]
     end
 
+    describe "the rest of a work" do
+      let(:doe) { HeadMusic::Content::Person.new(full_name: "Jane Doe", sort_name: "Doe, Jane", birth_year: 1901, death_year: 1977) }
+      let(:work) { HeadMusic::Content::Work.new(title: "Wake", catalog_number: "HM 1", year: 950).with_credit(doe, :composer) }
+      let(:document) do
+        flow.work = work
+        head([flow])
+      end
+
+      it "writes the catalog number as an identifier before the title" do
+        expect(mei_element(document, "//mei:work").elements.map(&:name).first(2)).to eq %w[identifier title]
+        expect(mei_attributes(document, "//mei:work/mei:identifier", "type")).to eq ["catalog"]
+      end
+
+      it "writes the year as the date of the work's creation, in ISO form" do
+        date = mei_element(document, "//mei:work/mei:creation/mei:date")
+        expect([date.attributes["isodate"], date.text]).to eq %w[0950 950]
+      end
+
+      it "writes a composer's life as the dates of their name" do
+        expect(mei_attributes(document, "//mei:work/mei:composer/mei:persName", "startdate", "enddate")).to eq [%w[1901 1977]]
+      end
+
+      it "writes a sort name that inverts the full name as the name's parts, and any other name as its text" do
+        flow.work = work.with_credit(bach, :composer)
+        names = mei_elements(head([flow]), "//mei:work/mei:composer/mei:persName").map do |name|
+          name.elements.map { |part| [part.name, part.text] }.then { |parts| parts.empty? ? name.text : parts }
+        end
+        expect(names).to eq [[%w[foreName Jane], %w[famName Doe]], "Johann Sebastian Bach"]
+      end
+    end
+
     it "names no work for a flow with none, though the flow has a composer" do
       cited = HeadMusic::Content::Flow.new(name: "Other", work: HeadMusic::Content::Work.new(title: "Wachet auf"))
       expect(works(head([flow, cited]))).to eq [["Wachet auf", []]]

@@ -66,7 +66,8 @@ describe HeadMusic::Notation::MEI do
     contexts = [
       *note_attributes, *score_def_attributes, *clef_attributes, *clef_attributes.map { |name| "clef.#{name}" },
       "dur.default", "sig", "mode", "count", "unit", "sym", "n", "lines", "midi.instrnum", "num",
-      "metcon", "tstamp", "mm", "mm.unit", "mm.dots", "layer", "tstamp2", "numbase", "trans.diat", "trans.semi"
+      "metcon", "tstamp", "mm", "mm.unit", "mm.dots", "layer", "tstamp2", "numbase", "trans.diat", "trans.semi",
+      "isodate", "startdate", "enddate"
     ]
 
     def attributes_xml(attributes)
@@ -97,6 +98,7 @@ describe HeadMusic::Notation::MEI do
       when "lines" then with_score_def(staff_def: mei_staff_def(1, attributes: %( lines="#{value}")).sub(%( lines="5"), ""), **meter_attributes)
       when "midi.instrnum" then with_score_def(staff_def: mei_staff_def(1, inside: %(<instrDef midi.instrnum="#{value}"/>)), **meter_attributes)
       when "num" then [mei_staff(1, %(<multiRest num="#{value}"/>))]
+      when "isodate", "startdate", "enddate" then [whole_note, {head: work_list_head(name, value)}]
       when "metcon" then [[whole_note, %(<measure n="2" metcon="#{value}">#{mei_staff(1, mei_note("C4", "2"))}</measure>)]]
       when "trans.diat", "trans.semi"
         transposition = attributes_xml({"trans.diat" => "-1", "trans.semi" => "-2"}.merge(name => value))
@@ -112,6 +114,13 @@ describe HeadMusic::Notation::MEI do
         with_score_def(staff_def: mei_staff_def(1, clef: nil, inside: "<clef#{attributes_xml({"shape" => "G", "line" => "2"}.merge(name => value))}/>"), **meter_attributes)
       else with_score_def(**meter_attributes, name => value)
       end
+    end
+
+    def work_list_head(name, value)
+      person = %(<persName #{%(#{name}="#{value}") unless name == "isodate"}>Ann Lee</persName>)
+      date = %(<date #{%(isodate="#{value}") if name == "isodate"}>#{value}</date>)
+      work = %(<work><title>Song</title><composer>#{person}</composer><creation>#{date}</creation></work>)
+      mei_head.sub("</meiHead>", "<workList>#{work}</workList></meiHead>")
     end
 
     define_method(:note_attributes_list) { note_attributes }

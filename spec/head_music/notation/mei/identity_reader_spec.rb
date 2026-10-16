@@ -44,6 +44,29 @@ describe HeadMusic::Notation::MEI::IdentityReader do
       expect(flow(head: head(work_list: work_list(inside))).composer).to eq "Ann, Bea"
     end
 
+    it "takes its catalog number from an <identifier> and its year from the date of its <creation>" do
+      inside = %(<identifier type="opus">Op. 89</identifier><identifier type="work">D. 911</identifier><creation><date isodate="1827-02">1827</date></creation>)
+      work = flow(head: head(work_list: work_list(inside))).work
+      expect([work.catalog_number, work.year]).to eq ["D. 911", 1827]
+    end
+
+    it "reads a year from the text of a date with no @isodate, and none from loose text" do
+      years = ["1950", "about 1950"].map { |text| flow(head: head(work_list: work_list("<creation><date>#{text}</date></creation>"))).work.year }
+      expect(years).to eq [1950, nil]
+    end
+
+    it "takes a composer's life from the dates of their name, and their sort name from its parts" do
+      name = %(<persName startdate="1901" enddate="1977-05-06"><foreName>Jane</foreName> <famName>Doe</famName></persName>)
+      person = flow(head: head(work_list: work_list("<composer>#{name}</composer>"))).work.credits.first.person
+      expect(person.to_h).to eq("full_name" => "Jane Doe", "sort_name" => "Doe, Jane", "birth_year" => 1901, "death_year" => 1977)
+    end
+
+    it "leaves out a life that ends before it begins, keeping the others" do
+      names = %w[1901-1977 1977-1901].map { |life| %(<persName role="composer" startdate="#{life[0, 4]}" enddate="#{life[5, 4]}">#{life}</persName>) }
+      work = flow(head: head(work_list: work_list("<respStmt>#{names.join}</respStmt>"))).work
+      expect(work.credits.map { |credit| [credit.person.birth_year, credit.person.death_year] }).to eq [[1901, 1977], [nil, nil]]
+    end
+
     it "is nil without a work list, whose composers become the flow's" do
       parsed = flow(head: head(title_stmt: %(<title>T</title><respStmt><persName role="composer">Dee</persName></respStmt>)))
       expect([parsed.work, parsed.composer]).to eq [nil, "Dee"]

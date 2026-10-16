@@ -5,7 +5,9 @@ module HeadMusic::Notation::MEI
   #
   # A Work comes only from the head's <workList>, credited with each
   # composer its first <work> names by a <composer>, or that composer's
-  # <persName> whatever its @role, or by a <persName role="composer">.
+  # <persName> whatever its @role, or by a <persName role="composer">. Its
+  # catalog number is an <identifier>, and its year the date of its
+  # <creation>.
   # Without a <workList>, the <titleStmt>'s composers are joined into the
   # flow's composer.
   #
@@ -31,6 +33,8 @@ module HeadMusic::Notation::MEI
     }.freeze
 
     NAME_KEY = /\A[A-Za-z0-9_ .-]{1,64}\z/
+    # The <identifier> types a catalog number is taken from, in preference.
+    CATALOG_TYPES = ["catalog", "work", nil, "opus"].freeze
 
     def initialize(source, groups)
       @source = source
@@ -120,27 +124,68 @@ module HeadMusic::Notation::MEI
       title = title_of(element)
       return unless title
 
-      composers(element).reduce(HeadMusic::Content::Work.new(title: title)) do |work, name|
-        work.with_credit(HeadMusic::Content::Person.new(full_name: name), :composer)
-      end
+      work = HeadMusic::Content::Work.new(title: title, catalog_number: catalog_number(element), year: creation_year(element))
+      people(element).reduce(work) { |credited, person| credited.with_credit(person, :composer) }
     end
 
     def composers(element)
+      composer_names(element).filter_map { |name| present(@editorial.text(name)) }.uniq
+    end
+
+    def people(element)
+      composer_names(element).filter_map { |name| person(name) }.uniq(&:full_name)
+    end
+
+    # The elements that name a composer: a <composer>'s <persName>, else the
+    # <composer> itself, and each <persName role="composer">.
+    def composer_names(element)
       return [] unless element
 
       @editorial.children(element).flat_map do |child|
         case child.name
-        when "composer" then [composer_name(child)]
-        when "respStmt" then @editorial.children_named(child, "persName").select { |person| composer_role?(person) }.map { |person| @editorial.text(person) }
-        when "persName" then composer_role?(child) ? [@editorial.text(child)] : []
+        when "composer" then [@editorial.children_named(child, "persName").first || child]
+        when "respStmt" then @editorial.children_named(child, "persName").select { |person| composer_role?(person) }
+        when "persName" then composer_role?(child) ? [child] : []
         else []
         end
-      end.filter_map { |name| present(name) }.uniq
+      end
     end
 
-    def composer_name(composer)
-      person = @editorial.children_named(composer, "persName").first
-      @editorial.text(person || composer)
+    # A person's life is the dates of their name, and their sort name its
+    # family name and forenames, where it has both.
+    def person(element)
+      full_name = present(@editorial.text(element))
+      return unless full_name
+
+      birth, death = %w[startdate enddate].map { |name| AttributeValues.read(element, name, element: element) }
+      birth = death = nil if birth && death && death < birth
+      HeadMusic::Content::Person.new(full_name: full_name, sort_name: sort_name(element), birth_year: birth, death_year: death)
+    end
+
+    def sort_name(element)
+      family, given = %w[famName foreName].map do |name|
+        part = @editorial.children_named(element, name).first
+        part && present(@editorial.text(part))
+      end
+      "#{family}, #{given}" if family && given
+    end
+
+    def catalog_number(element)
+      identifiers = @editorial.children_named(element, "identifier")
+      CATALOG_TYPES.each do |type|
+        found = identifiers.find { |identifier| attribute(identifier, "type", element: identifier) == type }
+        text = found && present(@editorial.text(found))
+        return text if text
+      end
+      nil
+    end
+
+    def creation_year(element)
+      creation = @editorial.children_named(element, "creation").first
+      date = creation && @editorial.children_named(creation, "date").first
+      return unless date
+
+      AttributeValues.read(date, "isodate", element: date) || AttributeValues.parse("isodate", @editorial.text(date))
     end
 
     def composer_role?(person)
