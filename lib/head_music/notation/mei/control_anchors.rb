@@ -20,6 +20,7 @@ module HeadMusic::Notation::MEI
     include XmlReading
 
     CONTAINERS = %w[beam tuplet graceGrp bTrem fTrem].freeze
+    TICKS_PER_WHOLE = HeadMusic::Rudiment::Rhythm::PPQN * 4
 
     def initialize(flow, score, bar_map, source, parts, voices)
       @flow = flow
@@ -185,13 +186,17 @@ module HeadMusic::Notation::MEI
       record = staff && snapped(index, offset, meter, staff, layer)
       return anchor(record) if record
 
-      position = position_in(@bar_map.bar_number(index), @bar_map.shift(index) + offset)
+      position = position_in(@bar_map.bar_number(index), @bar_map.shift(index) + to_tick(offset))
       Anchor.new(position: position, voice: voice_for(staff, layer), voice_event: nil, grace_index: nil, record: nil)
     end
 
     def snapped(index, offset, meter, staff, layer)
       @onsets.at(index, offset, meter.bottom_number, staff: staff, layer: layer)
         .lazy.filter_map { |onset| onset.pending.first.track && event_record(onset.pending.first) }.first
+    end
+
+    def to_tick(offset)
+      Rational((offset * TICKS_PER_WHOLE).round, TICKS_PER_WHOLE)
     end
 
     def final_barline
