@@ -37,6 +37,11 @@ describe "HeadMusic::Analysis::PitchSpeller" do
     Rational(figures[[measure, :count]] - missed, figures[[measure, :count]])
   end
 
+  # The misses of each rule past its ceiling; a rule with no ceiling has none to spare.
+  def beyond(misses, ceilings)
+    misses.select { |rule, count| count > ceilings.fetch(rule, 0) }
+  end
+
   it "spells and finds keys at least as well as measured" do # rubocop:disable RSpec/ExampleLength
     figures, misses_by_rule = tally(KernCorpus.readable_paths.map { |path| HeadMusic::Notation::Kern.parse(File.read(path)) })
 
@@ -46,8 +51,8 @@ describe "HeadMusic::Analysis::PitchSpeller" do
 
       expect(accuracy(figures, misses_by_rule, :given)).to be >= Rational(83_196 - 46, 83_196)
       expect(accuracy(figures, misses_by_rule, :inferred)).to be >= Rational(83_196 - 44, 83_196)
-      expect(misses_by_rule[:given]).to eq({[:note, :direction] => 34, [:note, :raised] => 7, [:note, :center] => 4, [:note, :sonority] => 1})
-      expect(misses_by_rule[:inferred]).to eq({[:note, :direction] => 34, [:note, :center] => 5, [:note, :raised] => 4, [:note, :sonority] => 1})
+      expect(beyond(misses_by_rule[:given], {[:note, :direction] => 34, [:note, :raised] => 7, [:note, :center] => 4, [:note, :sonority] => 1})).to be_empty
+      expect(beyond(misses_by_rule[:inferred], {[:note, :direction] => 34, [:note, :center] => 5, [:note, :raised] => 4, [:note, :sonority] => 1})).to be_empty
 
       expect(figures[[:major_or_minor, :whole_piece]]).to be >= 295
       expect(figures[[:modal, :whole_piece]]).to be >= 37
