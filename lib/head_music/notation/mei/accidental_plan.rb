@@ -3,12 +3,14 @@ module HeadMusic::Notation::MEI
   # onset order across all their layers, grace notes before their note, from
   # the part's written key: a note shows its accidental unless the key or an
   # earlier note in the bar at that letter and octave already implies it.
+  # Chord members at one letter and octave under different alterations each
+  # show theirs, and the bar remembers the highest.
   class AccidentalPlan
     WRITTEN = {-2 => "ff", -1 => "f", 0 => "n", 1 => "s", 2 => "x"}.freeze
     GESTURAL = {-2 => "ff", -1 => "f", 0 => "n", 1 => "s", 2 => "ss"}.freeze
     SHARP_ORDER = %w[F C G D A E B].freeze
 
-    Note = Data.define(:id, :pitch, :continuation)
+    Note = Data.define(:id, :pitch, :continuation, :clashing)
 
     # Each letter's alteration in a key of +fifths+; fifths past seven double
     # the letters from the start of the order again.
@@ -49,7 +51,7 @@ module HeadMusic::Notation::MEI
       letter = pitch.letter_name.to_s
       semitones = pitch.alteration_semitones.to_i
       implied = memory.fetch([letter, pitch.register]) { key.fetch(letter, 0) }
-      if !note.continuation && implied != semitones
+      if !note.continuation && (note.clashing || implied != semitones)
         memory[[letter, pitch.register]] = semitones
         return {"accid" => WRITTEN.fetch(semitones)}
       end
@@ -67,8 +69,10 @@ module HeadMusic::Notation::MEI
 
     def item_notes(item)
       onset = item.link.offset
-      [*grace_notes(item, onset), *plan.note_ids(item).map { |pitch, id|
-        [[onset, 1, 0], Note.new(id, pitch, continued?(item, pitch))]
+      members = plan.note_ids(item)
+      clashes = clashing(members.map(&:first))
+      [*grace_notes(item, onset), *members.map { |pitch, id|
+        [[onset, 1, 0], Note.new(id, pitch, continued?(item, pitch), clashes.include?(pitch))]
       }]
     end
 
@@ -76,10 +80,18 @@ module HeadMusic::Notation::MEI
       graces = item.graces
       graces.each_with_index.flat_map do |grace, index|
         tied_in = (index.positive? && graces[index - 1].tied?) ? graces[index - 1].pitches : []
-        plan.grace_note_ids(grace, plan.grace_id(item, index)).map do |pitch, id|
-          [[onset, 0, index], Note.new(id, pitch, tied_in.include?(pitch))]
+        members = plan.grace_note_ids(grace, plan.grace_id(item, index))
+        clashes = clashing(members.map(&:first))
+        members.map do |pitch, id|
+          [[onset, 0, index], Note.new(id, pitch, tied_in.include?(pitch), clashes.include?(pitch))]
         end
       end
+    end
+
+    def clashing(pitches)
+      pitches.group_by { |pitch| [pitch.letter_name.to_s, pitch.register] }.values
+        .select { |same_place| same_place.map { |pitch| pitch.alteration_semitones.to_i }.uniq.size > 1 }
+        .flatten
     end
 
     def continued?(item, pitch)

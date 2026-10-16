@@ -110,6 +110,22 @@ describe HeadMusic::Notation::MEI do
     end
   end
 
+  describe "a chord holding one letter and octave under two alterations" do
+    def chord_then(key, chord, after)
+      HeadMusic::Content::Flow.new(meter: "4/4", key_signature: key).tap do |flow|
+        flow.add_voice.place("1:1", :half, chord).voice.place("1:3", :half, after)
+      end
+    end
+
+    [["C major", %w[F4 F#4], "F4", %w[n s]], ["F major", %w[Bb4 B4], "Bb4", %w[f n]]].each do |key, chord, after, shown|
+      it "shows #{shown.join(" and ")} in #{key} and reads #{chord.join(" and ")} back" do
+        flow = chord_then(key, chord, after)
+        expect(render(flow).scan(/oct="4" accid="(\w+)"/).flatten.first(2)).to eq shown
+        expect_mei_round_trip(flow)
+      end
+    end
+  end
+
   describe "TupletGenerator" do
     TupletGenerator::SEEDS.each do |seed|
       it "round-trips seed #{seed}" do

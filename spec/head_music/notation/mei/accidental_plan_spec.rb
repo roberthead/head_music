@@ -63,12 +63,32 @@ describe HeadMusic::Notation::MEI::AccidentalPlan do
     end
   end
 
-  it "judges the members of a chord one by one, low to high" do
-    flow = HeadMusic::Content::Flow.new(meter: "4/4")
-    voice = flow.add_voice
-    voice.place("1:1", :half, %w[F4 F#4])
-    voice.place("1:3", :half, "F4")
-    expect(accidentals(flow)).to eq ["f4", "f4 accid=s", "f4 accid=n"]
+  describe "a chord" do
+    def chord_then(chord, after, key: nil)
+      flow = HeadMusic::Content::Flow.new(meter: "4/4", key_signature: key)
+      voice = flow.add_voice
+      voice.place("1:1", :half, chord)
+      voice.place("1:3", :half, after)
+      accidentals(flow)
+    end
+
+    it "shows a natural beside a sharp at the same letter and octave, remembering the sharp" do
+      expect(chord_then(%w[F4 F#4], "F#4")).to eq ["f4 accid=n", "f4 accid=s", "f4 accid.ges=s"]
+    end
+
+    it "shows a flat the key implies beside a natural, remembering the natural" do
+      expect(chord_then(%w[Bb4 B4], "B4", key: "F major")).to eq ["b4 accid=f", "b4 accid=n", "b4"]
+    end
+
+    it "judges members without such a clash one by one, low to high" do
+      expect(chord_then(%w[F4 A4 F#5], "F5")).to eq ["f4", "a4", "f5 accid=s", "f5 accid=n"]
+    end
+
+    it "shows the clash on a grace chord" do
+      flow = HeadMusic::Content::Flow.new(meter: "4/4")
+      flow.add_voice.place("1:1", :whole, "G4").add_grace_note(%w[F4 F#4], :eighth)
+      expect(accidentals(flow)).to eq ["f4 accid=n", "f4 accid=s", "g4"]
+    end
   end
 
   # Each layer is a list of [position, duration, pitch].
