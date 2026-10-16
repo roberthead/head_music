@@ -33,10 +33,13 @@ module HeadMusic::Notation::MEI
       key_sig = editorial.children_named(element, "keySig").first
       fifths = signature(element, %w[keysig key.sig], **where)
       return Key.new(fifths, value(element, "key.mode", **where), value(element, "key.pname", **where)) if fifths
-      return unless key_sig
+      key_sig && key_sig(key_sig, value(element, "key.mode", **where), **where)
+    end
 
+    # The key a <keySig> states, its @mode else the one given.
+    def key_sig(key_sig, mode = nil, **where)
       fifths = signature(key_sig, %w[sig], **where)
-      fifths && Key.new(fifths, value(key_sig, "mode", **where) || value(element, "key.mode", **where), value(key_sig, "pname", **where))
+      fifths && Key.new(fifths, value(key_sig, "mode", **where) || mode, value(key_sig, "pname", **where))
     end
 
     def meter(element, editorial, **where)

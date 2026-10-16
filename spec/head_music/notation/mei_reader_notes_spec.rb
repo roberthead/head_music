@@ -48,6 +48,26 @@ describe HeadMusic::Notation::MEI do
       expect(events(mei_staff(1, *layers)).last).to eq "half F♯4 at 1:3:000"
     end
 
+    describe "a <keySig> in a layer" do
+      let(:key_bar) { mei_staff(1, %(<keySig sig="2s"/>) + mei_note("F4", "2", accid: nil) + mei_note("C4", "2", accid: nil)) }
+      let(:f_bar) { mei_staff(1, mei_note("F4", "1", accid: nil)) }
+
+      it "changes the staff's key from its bar where it opens the layer" do
+        expect(events(f_bar, key_bar, f_bar)).to eq ["whole F4 at 1:1:000", "half F♯4 at 2:1:000", "half C♯4 at 2:3:000", "whole F♯4 at 3:1:000"]
+      end
+
+      it "changes the score's key there where the staves state it, as a <staffDef> does" do
+        group = "<staffGrp>#{mei_staff_def(1, attributes: %( keysig="0" meter.count="4" meter.unit="4"))}</staffGrp>"
+        flow = parse(f_bar, key_bar, score_def: mei_score_def(keysig: nil, meter: nil, staff_grp: group))
+        expect(flow.key_signature_changes.transform_values { |event| event.key_signature.name }).to eq(2 => "D major")
+      end
+
+      it "refuses one after the layer's first event, naming the measure" do
+        layer = mei_note("C4", "2") + %(<keySig sig="2s"/>) + mei_note("F4", "2", accid: nil)
+        expect { parse(f_bar, mei_staff(1, layer)) }.to raise_error(described_class::UnsupportedFeatureError, /<keySig> after the first event of a <layer> is not supported \(measure 2, staff 1, <keySig>\)/)
+      end
+    end
+
     it "refuses a microtonal accidental" do
       expect { parse(mei_staff(1, mei_note("C4", "1", accid: "1qs"))) }.to raise_error(described_class::UnsupportedFeatureError, /microtonal/)
     end

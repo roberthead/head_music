@@ -99,6 +99,13 @@ module HeadMusic::Notation::MEI
       @instruments[@groups.part_for(number).index] = instrument if instrument
     end
 
+    # A staff's key from this measure on, as its <staffDef> or a <keySig>
+    # opening its layer states it.
+    def change_key(number, key)
+      @key = key if @staff_sourced && number == @first_staff
+      @written_fifths[number] = key.fifths
+    end
+
     private
 
     def reset_changes
@@ -110,11 +117,9 @@ module HeadMusic::Notation::MEI
     def read_staff_values(element, number, where)
       default = AttributeValues.read(element, "dur.default", **where)
       @duration_defaults[number] = default if default
-      if @staff_sourced && number == @first_staff
-        @key = ScoreDefValues.key(element, @editorial, **where) || @key
-        @meter = ScoreDefValues.meter(element, @editorial, **where) || @meter
-      end
-      read_written_key(element, number)
+      @meter = ScoreDefValues.meter(element, @editorial, **where) || @meter if @staff_sourced && number == @first_staff
+      key = ScoreDefValues.key(element, @editorial, **where)
+      change_key(number, key) if key
     end
 
     def read_written_key(staff_def, number)

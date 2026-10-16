@@ -17,7 +17,8 @@ module HeadMusic::Notation::MEI
   # layer's opening clef, and one after the last is its closing clef, as
   # MuseScore writes a change at the end of the bar before it. One in
   # between is skipped, as are <barLine> and every element the reader does
-  # not use.
+  # not use. A <keySig> before the first entry is the layer's opening key;
+  # one after it raises, since skipping it would misspell what follows.
   # Measure repeats raise, since what they repeat is no music of their own.
   class LayerReader
     include XmlReading
@@ -44,10 +45,11 @@ module HeadMusic::Notation::MEI
     end
 
     # A layer as read: its @n, its entries, how far its timed entries reach,
-    # and the clefs it opens and closes with, if any. +occurrence+ counts
+    # the clefs it opens and closes with, if any, and the key it opens
+    # with, as a ScoreDefValues::Key. +occurrence+ counts
     # the layers with notes before it in the bar that share its staff and
     # @n.
-    Content = Struct.new(:number, :element, :staff_number, :entries, :extent, :opening_clef, :closing_clef, :occurrence) do
+    Content = Struct.new(:number, :element, :staff_number, :entries, :extent, :opening_clef, :closing_clef, :occurrence, :opening_key) do
       def notes?
         entries.any?(&:sounding?)
       end
@@ -84,13 +86,14 @@ module HeadMusic::Notation::MEI
       @entries = []
       @opening_clef = nil
       @last_clef = nil
+      @opening_key = nil
     end
 
     def read
       walk(@layer, PLAIN, 1)
       Content.new(
         number: @number, element: @layer, staff_number: @staff_number, entries: @entries, extent: @extent,
-        opening_clef: @opening_clef, closing_clef: closing_clef, occurrence: 0
+        opening_clef: @opening_clef, closing_clef: closing_clef, occurrence: 0, opening_key: @opening_key
       )
     end
 
@@ -113,6 +116,7 @@ module HeadMusic::Notation::MEI
       when "graceGrp" then walk(child, grace_context(child, context), depth + 1)
       when *CONTAINERS then walk(child, container_context(child, context), depth + 1)
       when "clef" then read_clef(child)
+      when "keySig" then read_key_sig(child)
       when *REPEATS then raise UnsupportedFeatureError.new("A <#{child.name}> is not supported", **@where, element: child)
       end
     end
@@ -228,6 +232,12 @@ module HeadMusic::Notation::MEI
       return @last_clef = [element, @entries.length] unless @entries.empty?
 
       @opening_clef ||= ClefReading.clef(element, **@where, element: element)
+    end
+
+    def read_key_sig(element)
+      raise UnsupportedFeatureError.new("A <keySig> after the first event of a <layer> is not supported", **@where, element: element) unless @entries.empty?
+
+      @opening_key ||= ScoreDefValues.key_sig(element, **@where)
     end
 
     def closing_clef
