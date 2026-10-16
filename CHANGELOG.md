@@ -106,7 +106,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Every MEI Export golden, fixture, and generated seed round-trips, MuseScore 4's MEI exports and two Bach editions from the music-encoding sample encodings read, and the sample encodings sweep reads 84 of 167 files in each MEI version against a manifest of refusals. A new `mei:musescore_fixtures` rake task regenerates the MuseScore exports.
 - MEI export writes `<instrDef label>` with the instrument's name key, `@key.mode` on key signatures, and a `<workList>` with each flow's `Work`, its catalog number, year, and composers, so MEI import reads them back.
 - `HeadMusic::Notation::XmlReading` and `HeadMusic::Notation::ParsePreflight` are shared by the MusicXML and MEI readers.
-- MusicXML import folds tied chains in linear time; a long chain of tied notes had taken quadratic time.
 - `HeadMusic::Notation::BeamGroups` holds the beam grouping MusicXML and MEI share, and `HeadMusic::Notation::WrittenLinks` the written pieces of a voice's segments, which tuplet brackets and beams both read.
 
 ### Changed
@@ -130,6 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- MusicXML import folds tied chains in linear time; a long chain of tied notes had taken quadratic time.
 - The MusicXML writer raises `RenderError` for a character XML forbids in a syllable, player or instrument name, rehearsal mark, Work title, or a `work_title:` or `arranger:` option, and for U+FFFE, U+FFFF, or text that is not valid UTF-8 or is non-ASCII text in another encoding, instead of writing ill-formed XML.
 - The MusicXML writer renders a meter whose beat is longer than any note value, such as 6/1 or 12/1, leaving its notes unbeamed, instead of raising `NoMethodError`.
 - `HeadMusic::Notation::ABC.parse` keeps the grace notes before a tied note, which it dropped when it folded the tie into one event.
