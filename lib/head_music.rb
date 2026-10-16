@@ -245,6 +245,7 @@ require "head_music/analysis/line_of_fifths"
 require "head_music/analysis/pitch_speller"
 require "head_music/analysis/pitch_speller/key_center"
 require "head_music/analysis/pitch_speller/compactness"
+require "head_music/analysis/pitch_speller/respelling"
 
 # style analysis
 require "head_music/style/tradition"

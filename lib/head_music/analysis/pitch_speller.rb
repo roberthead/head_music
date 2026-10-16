@@ -4,15 +4,27 @@ module HeadMusic::Analysis; end
 # Spells key numbers on the line of fifths around a key's center, after
 # Temperley, The Cognition of Basic Musical Structures (2001), and Meredith,
 # "The ps13 pitch spelling algorithm," Journal of New Music Research 35 (2006).
+#
+# With key: :infer, the default, the key regions are KeyFinder#regions, which
+# take the key finder's options.
 class HeadMusic::Analysis::PitchSpeller
   SpelledNote = Data.define(:note, :pitch, :rule)
   LineOfFifths = HeadMusic::Analysis::LineOfFifths
+  FINDER_OPTIONS = %i[profile change_penalty window].freeze
 
-  attr_reader :input
+  attr_reader :input, :regions
 
-  def initialize(input, key: :infer, **note_input_options)
-    @input = HeadMusic::Analysis::NoteInput.for(input, **note_input_options)
-    @regions = regions_for(key).sort_by(&:onset)
+  # A copy of the flow with its pitches respelled. See Respelling.
+  def self.respell(flow, key: nil, **finder_options)
+    Respelling.new(flow, key: key, **finder_options).flow
+  end
+
+  def initialize(input, key: :infer, **options)
+    @finder_options = options.slice(*FINDER_OPTIONS)
+    raise ArgumentError, "#{@finder_options.keys.join(", ")} apply only to key: :infer" if @finder_options.any? && key != :infer
+
+    @input = HeadMusic::Analysis::NoteInput.for(input, **options.except(*FINDER_OPTIONS))
+    @regions = regions_for(key).sort_by(&:onset).freeze
     @key_centers = {}
   end
 
@@ -40,9 +52,8 @@ class HeadMusic::Analysis::PitchSpeller
     end
   end
 
-  # The seam for KeyFinder#regions.
   def inferred_regions
-    raise NotImplementedError, "key inference is not yet available; pass key:"
+    HeadMusic::Analysis::KeyFinder.new(input, **@finder_options).regions
   end
 
   def tonal_context(key)

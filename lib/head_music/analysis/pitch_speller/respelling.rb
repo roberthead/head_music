@@ -1,0 +1,58 @@
+class HeadMusic::Analysis::PitchSpeller
+  # Respells a flow's pitched sounds, grace notes included, into a new flow
+  # built through to_h and Flow.from_h, so the flow given is left alone and the
+  # copy has no project.
+  #
+  # With key: nil, each bar is spelled by the tonal context in force there and
+  # the timeline is kept. Any other key the speller takes spells the notes and
+  # keeps the timeline too, except key: :infer, whose regions replace the key
+  # signatures. A region with the signature of the one before, such as its
+  # relative key, writes no change, since every change is printed.
+  class Respelling
+    def initialize(flow, key: nil, **finder_options)
+      @source = flow
+      @input = HeadMusic::Analysis::NoteInput.for(flow)
+      @key = key
+      @finder_options = finder_options
+    end
+
+    def flow
+      hash = @source.to_h
+      speller.spelled_notes.zip(@input.addresses) do |spelled_note, address|
+        hash.dig(*address[0...-1])[address.last] = spelled_note.pitch.to_s
+      end
+      write_key_signatures(hash["timeline"]) if @key == :infer && speller.regions.any?
+      HeadMusic::Content::Flow.from_h(hash)
+    end
+
+    private
+
+    def speller
+      @speller ||= HeadMusic::Analysis::PitchSpeller.new(@input, key: @key.nil? ? timeline_regions : @key, **@finder_options)
+    end
+
+    def timeline_regions
+      timeline = @source.timeline
+      @input.bar_starts.map do |bar_number, onset|
+        key = timeline.tonal_context_at(bar_number) || timeline.key_signature_at(bar_number)
+        HeadMusic::Analysis::KeyRegion.new(bar_number: bar_number, onset: onset, key: key)
+      end
+    end
+
+    def write_key_signatures(timeline_hash)
+      first, *later = speller.regions
+      timeline_hash["key_signature"] = first.key.name
+      signature = fifths(first.key)
+      timeline_hash["key_signature_changes"] = later.filter_map do |region|
+        next if fifths(region.key) == signature
+
+        signature = fifths(region.key)
+        {"number" => region.bar_number, "signature" => signature, "tonal_context" => region.key.name}
+      end
+    end
+
+    def fifths(key)
+      HeadMusic::Content::Flow::Timeline.fifths_of(key.key_signature)
+    end
+  end
+end

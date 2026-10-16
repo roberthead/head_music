@@ -10,7 +10,10 @@ module HeadMusic::Analysis; end
 # bar is scored by the histogram of the time sounding in it, summed with
 # +window+ bars on either side. The regions maximize the summed correlation of
 # each bar with its key, less +change_penalty+ for every change of key, so a
-# region is worth starting only where it gains more than the penalty.
+# region is worth starting only where it gains more than the penalty. The
+# first region's tonic is spelled as KEYS spells it, and each later one by the
+# enharmonic nearer the previous region's on the line of fifths, so a piece in
+# B major moves to F♯ major rather than to G♭ major.
 class HeadMusic::Analysis::KeyFinder
   # The 24 keys a key finder chooses among, fixed by name rather than built
   # through Key#relative. Of each enharmonic pair the tonic with fewer
@@ -64,12 +67,27 @@ class HeadMusic::Analysis::KeyFinder
       []
     else
       bar_starts = input.bar_starts.to_a
+      previous = nil
       key_path.each_with_index.chunk_while { |(a, _), (b, _)| a == b }.map do |run|
         key_index, bar_index = run.first
         bar_number, onset = bar_starts[bar_index]
-        HeadMusic::Analysis::KeyRegion.new(bar_number: bar_number, onset: onset, key: KEYS[key_index])
+        previous = previous ? self.class.enharmonic_nearer(KEYS[key_index], previous) : KEYS[key_index]
+        HeadMusic::Analysis::KeyRegion.new(bar_number: bar_number, onset: onset, key: previous)
       end.freeze
     end
+  end
+
+  # The spelling of a key whose tonic is nearer another key's on the line of
+  # fifths, within seven accidentals, keeping the key as spelled on a tie.
+  def self.enharmonic_nearer(key, other)
+    line_of_fifths = HeadMusic::Analysis::LineOfFifths
+    tonic = line_of_fifths.index_of(key.tonic_spelling)
+    target = line_of_fifths.index_of(other.tonic_spelling)
+    offset = key.major? ? 0 : -3
+    nearest = [tonic, tonic - 12, tonic + 12].select { |index| (index + offset).abs <= 7 }.min_by { |index| (index - target).abs }
+    return key if nearest == tonic
+
+    HeadMusic::Rudiment::Key.get("#{line_of_fifths.spelling_at(nearest)} #{key.quality}")
   end
 
   private

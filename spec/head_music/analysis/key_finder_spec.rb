@@ -188,6 +188,21 @@ describe HeadMusic::Analysis::KeyFinder do
       expect(summary(finder)).to eq [[1, 0, "C major"]]
     end
 
+    describe "the spelling of each region's tonic" do
+      def tonics(*tonics)
+        finder = described_class.new(bars_in(*tonics.flat_map { |tonic| [tonic] * 4 }), meter: "4/4", change_penalty: 0.5)
+        finder.regions.map { |region| region.key.name }
+      end
+
+      it "spells a later region's tonic by the enharmonic nearer the previous region's" do
+        expect([tonics(71, 66, 73), tonics(61, 66)]).to eq [["B major", "F♯ major", "C♯ major"], ["D♭ major", "G♭ major"]]
+      end
+
+      it "spells no key past seven accidentals" do
+        expect(tonics(64, 71, 66, 73, 68).last(2)).to eq ["C♯ major", "A♭ major"]
+      end
+    end
+
     it "answers the same regions for the same input" do
       first = described_class.new(c_g_c, meter: "4/4", change_penalty: 0.5).regions
       expect(described_class.new(c_g_c, meter: "4/4", change_penalty: 0.5).regions).to eq first

@@ -110,8 +110,55 @@ describe HeadMusic::Analysis::PitchSpeller do
       expect(described_class.new(notes, key: regions, meter: "4/4").pitches.map(&:to_s)).to eq %w[G♯4 A♭4]
     end
 
+    it "answers the regions it spells by, in order" do
+      expect(described_class.new([[68, 0, 1]], key: regions, meter: "4/4").regions.map(&:bar_number)).to eq [1, 2]
+    end
+
     it "refuses anything else" do
       expect { described_class.new([[60, 0, 1]], key: 3) }.to raise_error(ArgumentError)
+    end
+  end
+
+  describe "the key inferred" do
+    let(:notes) { [[60, "1:1", :quarter], [62, "1:2", :quarter], [63, "1:3", :quarter], [65, "1:4", :quarter], [67, "2:1", :half]] }
+
+    it "infers the key by default" do
+      expect(described_class.new(notes, meter: "4/4").pitches.map(&:to_s)).to eq %w[C4 D4 E♭4 F4 G4]
+    end
+
+    it "spells by the key finder's regions" do
+      speller = described_class.new(notes, key: :infer, meter: "4/4")
+      expect(speller.regions).to eq HeadMusic::Analysis::KeyFinder.new(notes, meter: "4/4").regions
+    end
+
+    # Four bars on each tonic: its triad and leading tone, the tonic longest.
+    def bars_on(*tonics)
+      tonics.flat_map { |tonic| [tonic] * 4 }.each_with_index.flat_map do |tonic, bar|
+        onset = Rational(bar)
+        [[0, Rational(3, 8)], [4, Rational(1, 4)], [7, Rational(1, 4)], [-1, Rational(1, 8)]].map do |offset, duration|
+          [tonic + offset, onset, duration].tap { onset += duration }
+        end
+      end
+    end
+
+    it "passes the key finder its options" do
+      regions = ->(**options) { described_class.new(bars_on(60, 67, 60), meter: "4/4", **options).regions.map { |region| region.key.name } }
+      expect([regions.call, regions.call(change_penalty: 0.5)]).to eq [["C major"], ["C major", "G major", "C major"]]
+    end
+
+    it "spells a later region's tonic by the enharmonic nearer the one before" do
+      speller = described_class.new(bars_on(71, 66), meter: "4/4", change_penalty: 0.5)
+      expect([speller.regions.map { |region| region.key.name }, speller.pitches.last(4).map(&:to_s)])
+        .to eq [["B major", "F♯ major"], %w[F♯4 A♯4 C♯5 E♯4]]
+    end
+
+    it "refuses key finder options with a key given" do
+      expect { described_class.new(notes, key: "C minor", meter: "4/4", profile: :temperley) }.to raise_error(ArgumentError, /apply only to key: :infer/)
+    end
+
+    it "answers no notes and no regions for empty input" do
+      speller = described_class.new([])
+      expect([speller.pitches, speller.regions]).to eq [[], []]
     end
   end
 
