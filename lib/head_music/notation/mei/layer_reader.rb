@@ -5,13 +5,14 @@ module HeadMusic::Notation::MEI
   # <bTrem>, whose note or chord reads alone, and <fTrem>, whose members
   # read in sequence at their own @dur. The tremolo itself is skipped.
   #
-  # A <note> or <chord> takes its @dur, else its chord's, else the
-  # @dur.default in force; with none, it raises. A <tuplet>, or a
+  # A <note> or <chord> takes its @dur, else its chord's, else for a chord
+  # the @dur its notes all share, else the @dur.default in force; with
+  # none, it raises. A <tuplet>, or a
   # <tupletSpan> through TupletSpans, scales the entries in it, and each is
   # a run to group. A grace note takes no time and no tuplet ratio, and one
   # with no @dur is an eighth. A @cue note is a rest, and a cue grace note
-  # is dropped. <rest> and <space> are rests of their length, a <space> of
-  # none taking what OpenSpaces gives it, and <mRest>, <mSpace>, and
+  # is dropped. <rest> and <space> are rests of their length, one of none
+  # taking what OpenSpaces gives it, and <mRest>, <mSpace>, and
   # <multiRest> fill their bars. A <clef> before the first entry is the
   # layer's opening clef, and one after the last is its closing clef, as
   # MuseScore writes a change at the end of the bar before it. One in
@@ -36,9 +37,9 @@ module HeadMusic::Notation::MEI
         !grace && !cue && %i[note chord].include?(kind)
       end
 
-      # A <space> whose length OpenSpaces decides.
+      # A <space> or <rest> whose length OpenSpaces decides.
       def open_space?
-        kind == :space && rhythmic_value.nil?
+        %i[space rest].include?(kind) && rhythmic_value.nil?
       end
     end
 
@@ -154,7 +155,7 @@ module HeadMusic::Notation::MEI
     end
 
     def add_rest(element, context)
-      return add_open_space(element) if element.name == "space" && value(element, "dur").nil? && @duration_default.nil?
+      return add_open_space(element) if value(element, "dur").nil? && @duration_default.nil?
 
       span = @tuplets.enter(stream, [element], @where.merge(element: element))
       rhythmic = rhythmic_value(element, PLAIN, grace: false, ratio: ratio(context, span, element))
@@ -162,7 +163,7 @@ module HeadMusic::Notation::MEI
     end
 
     def add_open_space(element)
-      @entries << Entry.new(kind: :space, element: element, notes: [], cursor: @cursor, grace: false, cue: false)
+      @entries << Entry.new(kind: element.name.to_sym, element: element, notes: [], cursor: @cursor, grace: false, cue: false)
     end
 
     def stream
@@ -197,12 +198,19 @@ module HeadMusic::Notation::MEI
     end
 
     def rhythmic_value(element, context, grace:, ratio:)
-      unit = value(element, "dur") || (context.chord && value(context.chord, "dur")) || @duration_default
+      shared = (element.name == "chord" && value(element, "dur").nil?) ? shared_duration(element) : nil
+      unit = value(element, "dur") || (context.chord && value(context.chord, "dur")) || shared&.first || @duration_default
       unit ||= "eighth" if grace
       raise ParseError.new("A <#{element.name}> has no @dur, and no @dur.default is in force", **@where, element: element) unless unit
 
-      dots = value(element, "dots") || (context.chord && value(context.chord, "dots")) || 0
+      dots = value(element, "dots") || (context.chord && value(context.chord, "dots")) || shared&.last || 0
       HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots, tuplet: ratio)
+    end
+
+    # The @dur and @dots every note of a chord states alike, or nil.
+    def shared_duration(chord)
+      durations = chord_notes(chord).map { |note| [value(note, "dur"), value(note, "dots")] }.uniq
+      durations.first if durations.one? && durations.first.first
     end
 
     # A chord's @staff, else the one its notes share.

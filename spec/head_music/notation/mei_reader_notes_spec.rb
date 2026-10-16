@@ -100,6 +100,11 @@ describe HeadMusic::Notation::MEI do
           .to eq ["quarter C3 at 2:1:000", "dotted half rest at 2:2:000"]
       end
 
+      it "reads a <rest> with no @dur as such a space, filling its bar alone in its layer, as Schumann's Op. 41 writes one" do
+        expect(voices(mei_staff(1, mei_note("E5", "1")) + mei_staff(2, "<rest/>"), mei_staff(1, "<rest/>")).map(&:first))
+          .to eq ["whole E5 at 1:1:000", "whole rest at 1:1:000"]
+      end
+
       it "fills the meter's length in a measure of nothing but such spaces" do
         expect(voices(mei_staff(1, mei_note("E5", "1")), mei_staff(1, %(<space/>)) + mei_staff(2, %(<space/><space/>)), mei_staff(1, mei_note("D5", "1"))).first)
           .to eq ["whole E5 at 1:1:000", "whole rest at 2:1:000", "whole D5 at 3:1:000"]
@@ -125,6 +130,13 @@ describe HeadMusic::Notation::MEI do
   describe "chords" do
     it "reads a <chord> as one event of several pitches" do
       expect(events(mei_staff(1, %(<chord dur="1"><note pname="c" oct="4"/><note pname="g" oct="4"/></chord>)))).to eq ["whole C4 G4 at 1:1:000"]
+    end
+
+    it "reads a <chord> with no @dur at the @dur and @dots its notes share, as Schubert's Erlkönig writes one, and raises where they differ" do
+      shared = %(<chord><note pname="c" oct="4" dur="2" dots="1"/><note pname="e" oct="4" dur="2" dots="1"/></chord>)
+      differing = %(<chord><note pname="c" oct="4" dur="2"/><note pname="e" oct="4" dur="4"/></chord>)
+      expect(events(mei_staff(1, shared + mei_note("G4")))).to eq ["dotted half C4 E4 at 1:1:000", "quarter G4 at 1:4:000"]
+      expect { parse(mei_staff(1, differing + mei_note("G4", "2"))) }.to raise_error(described_class::ParseError, /<chord> has no @dur/)
     end
 
     it "raises on a chord of no notes" do
