@@ -19,9 +19,9 @@ require "spec_helper"
 #   into a new section or meter, endings that each balance an opening
 #   pickup, or a meter change left unwritten. The bars cannot hold them.
 # - An overfull measure: a meter left unwritten, parts in different meters,
-#   a deliberately wrong file, or <duration>s rounded at divisions that
-#   cannot express the notes (op. 59 no. 2, OSMD_function_test_all), whose
-#   drift passes a division within the bar.
+#   or a deliberately wrong file. Rounded <duration>s that pass the bar
+#   while the written values fill it, as in op. 59 no. 2 and
+#   OSMD_function_test_all, read by their written values.
 # - <duration>s that disagree with their <type>, a <backup> before its
 #   measure, a voice overlapping itself, a note or rest past its bar, and
 #   rests that fill no gap: inconsistent encodings, and the same drift.
@@ -42,12 +42,10 @@ describe HeadMusic::Notation::MusicXML do
     "corpus/trecento/PMFC_13_09-Gloria Anglicana.xml" => [unsupported, /\AThe measure is shorter than its 9\/8 bar, and no measure after it completes it/],
     "corpus/trecento/PMFC_13_12-Gloria.xml" => [unsupported, /\AThe measure is longer than its 3\/4 bar/],
     "corpus/trecento/PMFC_13_18-Gloria Spiritus et Alme.xml" => [unsupported, /\AThe measure is shorter than its 9\/8 bar, and no measure after it completes it/],
-    "corpus/trecento/PMFC_24_17-Doctorum principem-Melodia suavissima-Vir mitis.xml" => [unsupported, /\AThe measure is longer than its 6\/8 bar/],
     "corpus/trecento/PMFC_24_9-Gloria Ciconia 9.xml" => [unsupported, /\ANo rest fills the gap in voice 1/],
     # data
     "data/OSMD_Function_Test_Tablature_Alleffects.musicxml" => [unsupported, /\AThe measure is longer than its 4\/4 bar/],
     "data/OSMD_function_test_accidentals.musicxml" => [unsupported, /\AThe pitch G altered by 3 in octave 4 has no spelling/],
-    "data/OSMD_function_test_all.xml" => [unsupported, /\AThe measure is longer than its 4\/4 bar/],
     "data/test_clef_change_on_invisible_note_norma_fantasy_1605.musicxml" => [parse_error, /\AA <duration> of 353 disagrees with its 2:1 half at 480\/1 divisions/],
     "data/test_divisions_after_first_note_JingleBellRock_extract.musicxml" => [parse_error, /\AA <duration> has no <divisions> in force/],
     "data/test_quarter_accidentals.musicxml" => [unsupported, /\AMicrotonal <alter> 0\.5 is not supported/],
@@ -94,10 +92,7 @@ describe HeadMusic::Notation::MusicXML do
     "music21_mxl/beethoven/opus18no3/opus18no3.xml" => [unsupported, /\AThe measure is shorter than its 3\/4 bar, and no measure after it completes it/],
     "music21_mxl/beethoven/opus18no4/opus18no4.xml" => [unsupported, /\AThe measure is shorter than its 4\/4 bar, and no measure after it completes it/],
     "music21_mxl/beethoven/opus18no5/opus18no5.xml" => [unsupported, /\AThe measure is shorter than its 3\/4 bar, and no measure after it completes it/],
-    "music21_mxl/beethoven/opus59no1/movement3/movement3.xml" => [unsupported, /\AThe measure is longer than its 2\/4 bar/],
     "music21_mxl/beethoven/opus59no1/movement4/movement4.xml" => [parse_error, /\AA <backup> reaches before the start of its measure/],
-    "music21_mxl/beethoven/opus59no2/movement1/movement1.xml" => [unsupported, /\AThe measure is longer than its 6\/8 bar/],
-    "music21_mxl/beethoven/opus59no2/movement3/movement3.xml" => [unsupported, /\AThe measure is longer than its 3\/4 bar/],
     "music21_mxl/beethoven/opus59no3/movement1/movement1.xml" => [unsupported, /\AThe measure is shorter than its 3\/4 bar, and no measure after it completes it/],
     "music21_mxl/beethoven/opus59no3/movement2/movement2.xml" => [unsupported, /\AThe measure is longer than its 6\/8 bar/],
     "music21_mxl/beethoven/opus59no3/movement4/movement4.xml" => [unsupported, /\AThe measure is shorter than its 3\/4 bar, and no measure after it completes it/],

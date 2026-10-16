@@ -54,25 +54,41 @@ module HeadMusic::Notation::MusicXML
       @cursor = 0
       @lead = nil
       @hidden_lead = false
+      @timing = WrittenTiming.new
       measure.element.each_element { |element| read_element(element) }
       @measure.tolerance = @divisions ? division : 0
+      @measure.extent = @timing.extent if overfull? && @timing.retime(bar_length)
       @measure
+    end
+
+    def overfull?
+      @divisions && @measure.extent && @measure.extent - bar_length >= division
     end
 
     def read_element(element)
       case element.name
       when "attributes" then read_attributes(element)
       when "note" then read_note(element)
-      when "backup" then move(-duration_of(text(element, "duration", **@where), moving: true))
-      when "forward" then reach(move(duration_of(text(element, "duration", **@where), moving: true)))
+      when "backup" then read_move(element, -1)
+      when "forward" then read_move(element, 1)
       when "direction" then read_direction(element)
       when "sound" then read_measure_sound(element)
       when "barline" then note_record(:barline, element)
       end
     end
 
+    def read_move(element, sign)
+      delta = sign * duration_of(text(element, "duration", **@where), moving: true)
+      forward = sign.positive?
+      move(delta)
+      reach(@cursor) if forward
+      @timing.move(delta, reaches: forward)
+    end
+
     def note_record(kind, element, **attributes)
-      @records << MarkRecords::Pending.new(kind: kind, element: element, measure_index: @measure.index, **attributes)
+      MarkRecords::Pending.new(kind: kind, element: element, measure_index: @measure.index, **attributes).tap do |pending|
+        @records << pending
+      end
     end
 
     # The timeline changes only at a downbeat, so a key or time in the
@@ -94,14 +110,14 @@ module HeadMusic::Notation::MusicXML
     end
 
     def read_direction(element)
-      note_record(:direction, element, cursor: @cursor, divisions: @divisions)
+      @timing.direction(note_record(:direction, element, cursor: @cursor, divisions: @divisions))
       sound = first_child(element, "sound")
       offset = text(element, "offset", **@where)
       read_sound(sound) if sound && (offset.nil? || rational(offset, "<offset>", **@where).zero?)
     end
 
     def read_measure_sound(element)
-      note_record(:direction, element, cursor: @cursor, divisions: @divisions)
+      @timing.direction(note_record(:direction, element, cursor: @cursor, divisions: @divisions))
       read_sound(element)
     end
 
@@ -120,7 +136,7 @@ module HeadMusic::Notation::MusicXML
 
       @hidden_lead = false
       duration = duration_of(note.duration)
-      measure_rest = note.rest && (note.measure_rest || duration == bar_length)
+      measure_rest = note.rest && (note.measure_rest || duration == bar_length || rounded_measure_rest?(note, duration))
       @lead = track_for(note.voice).add(
         measure_index: @measure.index, cursor: @cursor, tolerance: division, fills_bar: measure_rest,
         rhythmic_value: measure_rest ? nil : rhythmic_value(note, duration), duration: duration,
@@ -130,8 +146,17 @@ module HeadMusic::Notation::MusicXML
       note_record(:note, element, event: @lead, chord: false)
       add_ties(@lead, note)
       add_tuplet_marks(track_for(note.voice), @lead, note)
+      value = measure_rest ? bar_length : note.type && @lead.rhythmic_value.fraction
       move(duration)
       reach(@cursor) unless measure_rest
+      @timing.note(note.voice, value, @lead, reaches: !measure_rest)
+    end
+
+    # A rest with no <type> over the bar by no more than a division is the
+    # whole-measure rest music21 writes, its <duration> the sum of the
+    # rounded ones the bar's notes would have.
+    def rounded_measure_rest?(note, duration)
+      !note.type && duration > bar_length && duration - bar_length <= division
     end
 
     # A note or rest that does not print is no part of the notation, as the
@@ -146,6 +171,7 @@ module HeadMusic::Notation::MusicXML
       move(duration)
       fills_bar = note.rest && (note.measure_rest || duration == bar_length)
       reach(@cursor) unless fills_bar
+      @timing.move(duration, reaches: !fills_bar)
     end
 
     def add_tuplet_marks(track, event, note)

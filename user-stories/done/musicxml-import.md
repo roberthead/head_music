@@ -149,8 +149,9 @@ flow.voices.length # => 4
   - Three criteria were widened by what the corpus sweep found: a short measure the next completes is one bar whether or not it is marked `implicit` (14 music21 files split measures at repeats this way); a tie between chords that share only some pitches is skipped rather than raised; and a note with `print-object="no"` (hidden trill realizations, MuseScore's hidden rests) reads as a `<forward>`.
   - Wedges pair by number in document order, with a time fallback for a stop that comes before its start, as MuseScore writes them. Pairing purely by time broke the gem's own writer, which reuses a number once its stop is written even where another voice's wedge overlaps; MusicXML defines the number by document order, so that output is valid.
   - A repeat with no `times` plays as often as its section's highest ending.
-  - Rounding drift is left refused: in three files (Beethoven op. 59 no. 2 i and iii, OSMD's function test) `<duration>`s creep past the bar by more than a division while the written values fit. Reading them means letting the one-division tolerance accumulate across a measure, and three files written at divisions that cannot express their notes are thin evidence for loosening it.
+  - Rounding drift was first left refused: in three files (Beethoven op. 59 no. 2 i and iii, OSMD's function test) `<duration>`s creep past the bar by more than a division while the written values fit. Reading them means letting the one-division tolerance accumulate across a measure, and three files written at divisions that cannot express their notes seemed thin evidence for loosening it.
   - A slur from a dropped grace note starts on the note it led to, and a phrase mark between two notes reads back as a slur, since MusicXML has no phrase mark.
+- **Rounding drift reads by the written values** (Rob, 2026-10-16, option B), reversing the rounding-drift choice above. A measure judged overfull is timed by its `<type>`s, dots, and `<time-modification>`s instead of its `<duration>`s, but only where every voice's written values sum exactly to the bar. Each `<backup>` and `<forward>` then moves the written cursor by its own `<duration>` and lands on the nearest written onset, so voices realign; a direction keeps its place in the sequence. A voice that does not fill the bar, or a note with no `<type>`, leaves today's refusal. Hidden notes stay `<forward>`s, outside the sums. A rest with no `<type>` over the bar by at most a division is the whole-measure rest music21 writes (op. 59 no. 2 iii, m. 47). The re-sweep found two more files of the same kind, which now read too: the trecento `PMFC_24_17`, whose lower parts write dotted quarters at one division, and op. 59 no. 1 iii, whose hidden trill realization overflows a bar its visible half note fills.
 
 ## Implementation Plan
 
@@ -577,21 +578,23 @@ The reviewer found the XML security handling, encodings, linear scaling, the mar
 
 Swept 2026-10-15 with `MUSICXML_CORPUS` naming each folder. `spec/head_music/notation/music_xml_corpus_spec.rb` ran 1,068 examples with 0 failures. The manifest in that spec names each refused file and its error.
 
-| Corpus | Files | Before the sweep's fixes | Final |
-| --- | --- | --- | --- |
-| music21 corpus, `.xml` and `.musicxml` | 123 | 112 read, 10 refused, 1 read but not whole | 114 read, 9 refused |
-| music21 `.mxl`, unzipped | 526 | 481 read, 45 refused | 495 read, 31 refused |
-| LilyPond MusicXML test suite | 141 | 120 read, 21 refused | 120 read, 21 refused |
-| OSMD test/data, `.xml` and `.musicxml` | 261 | 247 read, 14 refused | 251 read, 10 refused |
-| OSMD `.mxl`, unzipped | 16 | 16 read | 16 read |
-| Total | 1,067 | 976 read, 90 refused, 1 not whole | 996 read, 71 refused |
+| Corpus | Files | Before the sweep's fixes | Final | Reading drift (2026-10-16) |
+| --- | --- | --- | --- | --- |
+| music21 corpus, `.xml` and `.musicxml` | 123 | 112 read, 10 refused, 1 read but not whole | 114 read, 9 refused | 115 read, 8 refused |
+| music21 `.mxl`, unzipped | 526 | 481 read, 45 refused | 495 read, 31 refused | 498 read, 28 refused |
+| LilyPond MusicXML test suite | 141 | 120 read, 21 refused | 120 read, 21 refused | 120 read, 21 refused |
+| OSMD test/data, `.xml` and `.musicxml` | 261 | 247 read, 14 refused | 251 read, 10 refused | 252 read, 9 refused |
+| OSMD `.mxl`, unzipped | 16 | 16 read | 16 read | 16 read |
+| Total | 1,067 | 976 read, 90 refused, 1 not whole | 996 read, 71 refused | 1,001 read, 66 refused |
+
+The re-sweep after reading rounding drift (see Decisions) also ran 1,068 examples with 0 failures, and no file that read before regressed.
 
 No error outside `HeadMusic::Notation::ParseError` escaped in any round, and no file that read before regressed. Six reader bugs were fixed, each in its own commit with a spec: split measures at repeats, zero-length `<forward>`s, hidden notes, partial chord ties, an overfull measure judged by another part's divisions, and `Position#normalize` carrying counts across a change of count unit.
 
 | What the remaining refusals hold | Files | Example | Decision |
 | --- | --- | --- | --- |
 | Short measure mid-piece | 19 | music21 Bach bwv372, m. 3 | `UnsupportedFeatureError`: the bars cannot hold it |
-| Overfull measure | 19 | 32d-Arpeggio | 16 genuinely overfull, refused; 3 rounding drift, left refused (see Decisions) |
+| Overfull measure | 14 | 32d-Arpeggio | Genuinely overfull, refused; the 5 that only drifted now read by their written values (see Decisions) |
 | No `<divisions>` in force | 6 | 41g-PartNoId | `ParseError`, per the criteria |
 | `<duration>` disagrees with its type by more than a division | 6 | 32b-Articulations-Texts | `ParseError`, per the criteria |
 | `<backup>` before its measure, or a voice overlapping itself | 4 | Schumann op. 41 no. 1 iv | `ParseError`: drift or invalid encoding |
