@@ -38,15 +38,17 @@ module MuseScore
     end
   end
 
-  # Writes MuseScore's MusicXML for one file to another and answers it. A
-  # +timeout:+ in seconds kills a conversion that hangs, as MuseScore does on
-  # MEI it cannot read.
+  # Writes MuseScore's conversion of one file to another, in the format the
+  # target's extension names, and answers it: bytes for a MIDI file, and
+  # otherwise well-formed MusicXML. A +timeout:+ in seconds kills a
+  # conversion that hangs, as MuseScore does on MEI it cannot read.
   def convert_file(source, target, timeout: nil)
     raise ConversionError, "MuseScore not found; set MSCORE to its executable" unless available?
 
     FileUtils.rm_f(target)
     run_mscore(source, target, timeout)
     raise ConversionError, "MuseScore wrote nothing for #{source}" unless File.exist?(target)
+    return File.binread(target) if File.extname(target) == ".mid"
 
     converted = File.read(target)
     raise ConversionError, "MuseScore wrote malformed XML for #{source}" unless well_formed?(converted)
