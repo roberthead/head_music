@@ -73,6 +73,29 @@ describe HeadMusic::Notation::MEI do
       expect(flow.key_signature_changes.transform_values { |event| event.key_signature.name }).to eq(2 => "C minor")
     end
 
+    describe "a key stated only on the first staff's definition between measures" do
+      let(:note) { mei_staff(1, mei_note("C4", "1")) + mei_staff(2, mei_note("C3", "1")) }
+      let(:two_staves) { mei_score_def(clefs: [%w[G 2], %w[F 4]]) }
+
+      def keys(flow)
+        flow.key_signature_changes.transform_values { |event| event.key_signature.name }
+      end
+
+      it "changes the key" do
+        flow = parse(note, %(<staffDef n="1" keysig="2s"/>), note, score_def: two_staves)
+        expect(keys(flow)).to eq(2 => "D major")
+      end
+
+      it "makes no change where that staff is transposed, since its key is the written one" do
+        transposed = two_staves.sub(%(<staffDef n="1" lines="5">), %(<staffDef n="1" lines="5" trans.diat="-1" trans.semi="-2">))
+        expect(keys(parse(note, %(<staffDef n="1" keysig="2s"/>), note, score_def: transposed))).to be_empty
+      end
+
+      it "makes no change where only a later staff states it" do
+        expect(keys(parse(note, %(<staffDef n="2" keysig="2s"/>), note, score_def: two_staves))).to be_empty
+      end
+    end
+
     it "changes a staff's clef by a staff definition between measures" do
       flow = parse(mei_staff(1, mei_note("C4", "1")), %(<staffDef n="1"><clef shape="F" line="4"/></staffDef>), mei_staff(1, mei_note("C3", "1")))
       expect(flow.parts.first.staff_system.staves.first.clef_changes.transform_values { |clef| clef.name_key.to_s }).to eq(2 => "bass_clef")

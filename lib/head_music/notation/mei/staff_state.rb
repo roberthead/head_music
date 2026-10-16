@@ -7,8 +7,10 @@ module HeadMusic::Notation::MEI
   #
   # The key and meter change where a later <scoreDef> states them, or
   # where the first staff's <staffDef> does in a score that states them on
-  # its staves alone, as MuseScore does. A score-wide key resets every
-  # staff's own. A later <scoreDef> that adds or removes staves raises. A
+  # its staves alone, as MuseScore does. The key changes, too, where the
+  # first staff's <staffDef> states one and the staff is not transposed,
+  # so that its written key is the sounding one. A score-wide key resets
+  # every staff's own. A later <scoreDef> that adds or removes staves raises. A
   # later <staffDef> for a staff the score has not is skipped and noted,
   # since a measure that then uses that staff raises.
   class StaffState
@@ -30,6 +32,7 @@ module HeadMusic::Notation::MEI
         (ScoreDefValues.key(opening.score_def, editorial).nil? && ScoreDefValues.meter(opening.score_def, editorial).nil?)
       @first_staff = groups.staff_numbers.first
       @written_fifths = {}
+      @transposed = groups.staff_numbers.to_h { |number| [number, transposing?(opening_transposition(number))] }
       @duration_defaults = {}
       @opening = opening
       @added_staves = Set.new
@@ -89,11 +92,14 @@ module HeadMusic::Notation::MEI
       return @added_staves << number unless @groups.part_for(number)
 
       where = where.merge(staff: number, element: element)
+      transposition = self.class.transposition(element, **where.except(:element))
+      if transposition
+        @transpositions[number] = transposition
+        @transposed[number] = transposing?(transposition)
+      end
       read_staff_values(element, number, where)
       clef = ClefReading.staff_def_clef(element, @editorial, **where)
       @clefs[number] = clef if clef
-      transposition = self.class.transposition(element, **where.except(:element))
-      @transpositions[number] = transposition if transposition
       instr_def = @editorial.children_named(element, "instrDef").first
       instrument = instr_def && @identity.instrument_of(instr_def)
       @instruments[@groups.part_for(number).index] = instrument if instrument
@@ -102,11 +108,20 @@ module HeadMusic::Notation::MEI
     # A staff's key from this measure on, as its <staffDef> or a <keySig>
     # opening its layer states it.
     def change_key(number, key)
-      @key = key if @staff_sourced && number == @first_staff
+      @key = key if number == @first_staff && (@staff_sourced || !@transposed[number])
       @written_fifths[number] = key.fifths
     end
 
     private
+
+    def opening_transposition(number)
+      staff_def = @groups.staff_def(number)
+      staff_def && self.class.transposition(staff_def, staff: number)
+    end
+
+    def transposing?(step)
+      !step.nil? && !(step.diatonic.zero? && step.chromatic.zero?)
+    end
 
     def reset_changes
       @clefs = {}
