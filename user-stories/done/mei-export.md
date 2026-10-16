@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T12:24:49-07:00
   planned_at:   2026-10-15T12:44:52-07:00
   finished_at:  2026-10-15T14:17:15-07:00
-  updated_at:   2026-10-15T14:17:15-07:00
+  updated_at:   2026-10-16T14:35:55-07:00
 -->
 
 # Story: MEI Export
@@ -97,7 +97,7 @@ mei # => String of a well-formed MEI 5 document with <meiHead> and <music>
 - [x] Every ABC, LilyPond, kern, tuplet, hairpin, and MuseScore-render fixture renders without error, or raises for a reason the spec names
 - [x] A spec checks that every id is unique and every reference resolves
 - [x] When MuseScore 4 is available, each golden converts through `mscore` (with `meiversion="5.1+basic"`), and its pitches and durations per measure match the flow. Where MuseScore misreads valid MEI, the golden is pending by name with the reason: `clarinet_changes_transposed`, since MuseScore ignores `@trans.*` on a `<staffDef>` after the first measure
-- [ ] A Verovio spec renders the goldens when `verovio` is installed and is skipped otherwise. One golden is checked by hand in editor.verovio.org and recorded here
+- [x] A Verovio spec renders the goldens when `verovio` is installed and is skipped otherwise. One golden is checked by hand in editor.verovio.org and recorded here
 - [x] Maintains 90%+ test coverage
 
 ## Notes
@@ -433,7 +433,7 @@ The reviewer checked these and found them sound:
 
 - **Fixed.** `ensure_xml_text` refuses non-ASCII text that is not UTF-8 with the writer's `RenderError`, naming the encoding (`c63b9dd5`). `LayerTree` is now the default layer builder, and `FlatLayer` is removed (`d90e9efb`). The CHANGELOG is complete (`5f4e6a1a`).
 - **MuseScore criterion, reworded.** It now names the one golden pending on a MuseScore limitation. Notes list the limits the spec works around.
-- **Verovio criterion, left open.** Verovio is not installed, by Rob's choice, and the hand check in editor.verovio.org needs a browser. It should cover `cross_staff_piano.mei` (the lone layer 2 on the left-hand staff) and `grace_notes_before_downbeat.mei` (grace notes inside `<beam>`); `tuplet_crossing_barline` covers hidden tuplets with a `<tupletSpan>`. Rob is asked to do it, and the criterion stays unticked until it is recorded here.
+- **Verovio criterion, checked by hand** (2026-10-16). Rob rendered `cross_staff_piano.mei` and `grace_notes_before_downbeat.mei` in editor.verovio.org (Verovio 6.3.0). Both render without errors. The editor's only notice is that it validates against `mei-all.rng` rather than the declared `mei-CMN.rng`, which is expected, since CMN is a subset of the full schema. The cross-staff piano shows its labeled brace, the left hand crossing to the treble staff in bars 2–3 with the bass staff empty, and a final barline. The grace notes render inside a beam before an inner note, alone before a whole note, and slurred and tied into a main note. These were the shapes the plan flagged as untested in Verovio.
 - **Open question:** a chord holding F and F♯ at one octave prints no natural on the F (see Notes).
 
 ## Learnings
