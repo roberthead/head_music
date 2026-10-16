@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-24T18:58:30-07:00
   activated_at: 2026-10-16T08:30:49-07:00
   planned_at:   2026-10-16T08:54:50-07:00
-  finished_at:
-  updated_at:   2026-10-16T11:04:54-07:00
+  finished_at:  2026-10-16T12:05:53-07:00
+  updated_at:   2026-10-16T12:05:53-07:00
 -->
 
 # Story: MIDI Import
@@ -43,9 +43,9 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 
 ### Entry point and file
 
-- [ ] `HeadMusic::MIDI.parse(bytes, key: nil, grid: :auto)` returns a `HeadMusic::Content::Flow` from an SMF of format 0 or 1. Unknown options or values raise `ArgumentError`
-- [ ] `MIDI::UnsupportedFeatureError` subclasses `MIDI::ParseError`. `HeadMusic::MIDI::Reader` moves from `spec/support` into the gem, and MIDI Export's specs use it
-- [ ] A truncated or malformed file raises `MIDI::ParseError` naming the byte offset. Examples:
+- [x] `HeadMusic::MIDI.parse(bytes, key: nil, grid: :auto)` returns a `HeadMusic::Content::Flow` from an SMF of format 0 or 1. Unknown options or values raise `ArgumentError`
+- [x] `MIDI::UnsupportedFeatureError` subclasses `MIDI::ParseError`. `HeadMusic::MIDI::Reader` moves from `spec/support` into the gem, and MIDI Export's specs use it
+- [x] A truncated or malformed file raises `MIDI::ParseError` naming the byte offset. Examples:
   - a missing `MThd`;
   - fewer tracks than declared;
   - a chunk that runs past the end;
@@ -55,7 +55,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - a meta event shorter than its type;
   - a key signature outside −7..7 fifths, or with a mode other than 0 or 1;
   - a time-signature numerator of 0.
-- [ ] The reader accepts:
+- [x] The reader accepts:
   - an `MThd` longer than 6 bytes;
   - more `MTrk` chunks than declared;
   - trailing bytes after the declared tracks;
@@ -63,48 +63,48 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - running status, including after a meta event.
 
   Unknown chunk types are skipped, as the SMF specification asks
-- [ ] SysEx, controller, pitch-bend, aftertouch, and unrecognized meta events are skipped. Text is read as UTF-8 when valid and otherwise as Windows-1252, without raising
-- [ ] These raise `MIDI::UnsupportedFeatureError`:
+- [x] SysEx, controller, pitch-bend, aftertouch, and unrecognized meta events are skipped. Text is read as UTF-8 when valid and otherwise as Windows-1252, without raising
+- [x] These raise `MIDI::UnsupportedFeatureError`:
   - a format 2 file, which holds independent sequences rather than one piece;
   - a file with an SMPTE time division, which has no beat to quantize to;
   - a time-signature denominator above 64.
-- [ ] Limits:
+- [x] Limits:
   - A file that would need more than 10,000 bars, 200,000 notes, 128 parts, or 1,000,000 voice-bars raises `ParseError` before any flow is built.
   - A part needing more than 64 voices raises `UnsupportedFeatureError`.
   - Call-counting specs pin parsing as linear.
-- [ ] No error outside `MIDI::ParseError` escapes. A fuzz spec truncates and flips the bytes of a rendered file to check this
+- [x] No error outside `MIDI::ParseError` escapes. A fuzz spec truncates and flips the bytes of a rendered file to check this
 
 ### Timeline
 
-- [ ] Meta events are read from every track and merged by tick. At one tick, the last in merged order wins, and a restatement that changes nothing is ignored
-- [ ] Time-signature meta events set the meter and lay out the bars, including changes. With none, the meter is 4/4. A change that does not fall on a barline raises `UnsupportedFeatureError`, since the model would need a short bar in the middle of the piece. The bars end at the latest release or event, or at a later end of track that lands on a barline, as export ends a last bar of rests. A time signature within one tick of a sixty-fourth or triplet-sixty-fourth point, counted from the one before, snaps to it; any other raises `UnsupportedFeatureError` naming its tick and saying it falls between grid points
-- [ ] Tempo meta events become tempo changes, taking the tempo in force at each bar's downbeat, restated in the meter's beat with the fewest decimals that write back the same microseconds. With none, the tempo is 120 quarter notes per minute. Changes within a bar are skipped until [Timeline Expressions](timeline-expressions.md) can hold gradual ones
-- [ ] Key-signature meta events set the key signature and tonal context, including changes. One within a bar takes effect at that downbeat when no note starts before it in the bar, and otherwise at the next downbeat
-- [ ] When the file has no key signature, or the caller passes `key: :infer`, the key regions come from key finding. `key:` also takes a key, a key name, or key regions
-- [ ] When the second time signature arrives before a full bar of the meter that follows it, the first bar is a pickup of that length. Leading silence in a full first bar stays as rests and is never a pickup
-- [ ] MIDI Export writes a pickup's time signature with the smallest power-of-two denominator, never below the flow's own, that holds it, and restates the meter at bar 1 when none does. A part with no instrument writes no program change
+- [x] Meta events are read from every track and merged by tick. At one tick, the last in merged order wins, and a restatement that changes nothing is ignored
+- [x] Time-signature meta events set the meter and lay out the bars, including changes. With none, the meter is 4/4. A change that does not fall on a barline raises `UnsupportedFeatureError`, since the model would need a short bar in the middle of the piece. The bars end at the latest release or event, or at a later end of track that lands on a barline, as export ends a last bar of rests. A time signature within one tick of a sixty-fourth or triplet-sixty-fourth point, counted from the one before, snaps to it; any other raises `UnsupportedFeatureError` naming its tick and saying it falls between grid points
+- [x] Tempo meta events become tempo changes, taking the tempo in force at each bar's downbeat, restated in the meter's beat with the fewest decimals that write back the same microseconds. With none, the tempo is 120 quarter notes per minute. Changes within a bar are skipped until [Timeline Expressions](timeline-expressions.md) can hold gradual ones
+- [x] Key-signature meta events set the key signature and tonal context, including changes. One within a bar takes effect at that downbeat when no note starts before it in the bar, and otherwise at the next downbeat
+- [x] When the file has no key signature, or the caller passes `key: :infer`, the key regions come from key finding. `key:` also takes a key, a key name, or key regions
+- [x] When the second time signature arrives before a full bar of the meter that follows it, the first bar is a pickup of that length. Leading silence in a full first bar stays as rests and is never a pickup
+- [x] MIDI Export writes a pickup's time signature with the smallest power-of-two denominator, never below the flow's own, that holds it, and restates the meter at bar 1 when none does. A part with no instrument writes no program change
 
 ### Notes and rhythms
 
-- [ ] Note on and note off pairs become note events, and a note on with velocity 0 counts as a note off. Notes pair per channel and key across every track, in merged order, first in, first out. A note belongs to the track holding its note on, and a note off that matches no sounding note is skipped
-- [ ] A note still sounding at the end of its track ends there. The bars end after the latest onset as well as the latest release, so a note of no length or never released on the final barline, or snapped to it, gets a bar of its own
-- [ ] Every note is spelled by the speller from the prerequisite, using the key in force, with notes labeled by voice so melodic direction applies
-- [ ] By default the grid is the coarsest, among sixteenths, thirty-seconds, sixty-fourths and their triplet divisions, that places every onset within one tick. When none does, it is the coarsest grid that places at least 99% as many onsets as the best grid does. `grid:` takes one of these values or any Rational down to 1/256, a 256th note, the shortest rhythmic unit a flow can hold, and raises `ArgumentError` for one finer
-- [ ] A release less than one grid step before the next onset in its part extends to that onset. Other releases snap to the nearest grid point, and no note is shorter than one step
-- [ ] Notes and rests are written as single values where one fits, and as tied chains otherwise. A note that crosses a barline is split and tied. Triplet values are written as 3:2 tuplets, cut at beats where they cross one. Quintuplets and septuplets need an explicit `grid:`
-- [ ] Time between notes in a voice becomes rests, and a voice that starts late or ends early is padded, so every voice satisfies `Voice::Continuity`
+- [x] Note on and note off pairs become note events, and a note on with velocity 0 counts as a note off. Notes pair per channel and key across every track, in merged order, first in, first out. A note belongs to the track holding its note on, and a note off that matches no sounding note is skipped
+- [x] A note still sounding at the end of its track ends there. The bars end after the latest onset as well as the latest release, so a note of no length or never released on the final barline, or snapped to it, gets a bar of its own
+- [x] Every note is spelled by the speller from the prerequisite, using the key in force, with notes labeled by voice so melodic direction applies
+- [x] By default the grid is the coarsest, among sixteenths, thirty-seconds, sixty-fourths and their triplet divisions, that places every onset within one tick. When none does, it is the coarsest grid that places at least 99% as many onsets as the best grid does. `grid:` takes one of these values or any Rational down to 1/256, a 256th note, the shortest rhythmic unit a flow can hold, and raises `ArgumentError` for one finer
+- [x] A release less than one grid step before the next onset in its part extends to that onset. Other releases snap to the nearest grid point, and no note is shorter than one step
+- [x] Notes and rests are written as single values where one fits, and as tied chains otherwise. A note that crosses a barline is split and tied. Triplet values are written as 3:2 tuplets, cut at beats where they cross one. Quintuplets and septuplets need an explicit `grid:`
+- [x] Time between notes in a voice becomes rests, and a voice that starts late or ends early is padded, so every voice satisfies `Voice::Continuity`
 
 ### Parts and voices
 
-- [ ] In format 1, each track that holds notes becomes a part; a track that holds notes on several channels becomes one part per channel. Format 0 is split by channel. A track after the first with a name or program change but no notes becomes a part of rests
-- [ ] A track name meta event becomes the part's player name, unless it equals the part's instrument name exactly, case included, so "Soprano" names the player of a part whose instrument is "soprano". The sequence name is the flow's name. In format 1, track 0's name is the flow's name only when track 0 holds no notes
-- [ ] A program change sets the part's instrument through the GM program data. A later program change becomes an instrument change at the bar of its channel's next note on
+- [x] In format 1, each track that holds notes becomes a part; a track that holds notes on several channels becomes one part per channel. Format 0 is split by channel. A track after the first with a name or program change but no notes becomes a part of rests
+- [x] A track name meta event becomes the part's player name, unless it equals the part's instrument name exactly, case included, so "Soprano" names the player of a part whose instrument is "soprano". The sequence name is the flow's name. In format 1, track 0's name is the flow's name only when track 0 holds no notes
+- [x] A program change sets the part's instrument through the GM program data. A later program change becomes an instrument change at the bar of its channel's next note on
   - A channel with no program change has no instrument, and a part with no program in force at its first note has none until a change. A part of rests takes its track's first program.
   - A program with no catalog instrument gives no instrument, and a later change to one keeps the instrument in force.
   - An ambiguous program resolves through the track or instrument name, and otherwise through a pinned table covering every such program.
-- [ ] Channel 10 becomes an unpitched part, its key numbers mapped to unpitched sounds through the GM percussion data. Keys with no catalog instrument of their own map through aliases (36 → bass drum, 40 → snare, 44 and 46 → hi-hat, 57 → crash, 59 → ride), and otherwise to the generic unpitched sound. Percussion chords group by onset alone
-- [ ] Notes in one part that start and end together, after quantizing, become one chord
-- [ ] Notes that overlap without forming a chord go to separate voices, deterministically:
+- [x] Channel 10 becomes an unpitched part, its key numbers mapped to unpitched sounds through the GM percussion data. Keys with no catalog instrument of their own map through aliases (36 → bass drum, 40 → snare, 44 and 46 → hi-hat, 57 → crash, 59 → ride), and otherwise to the generic unpitched sound. Percussion chords group by onset alone
+- [x] Notes in one part that start and end together, after quantizing, become one chord
+- [x] Notes that overlap without forming a chord go to separate voices, deterministically:
   - Chords are taken in onset order, top first.
   - A voice is free when its last release is at or before the onset.
   - A chord joins the free voice nearest by mean key number, with ties going to the lower voice.
@@ -112,11 +112,11 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 
 ### Lyrics
 
-- [ ] Lyric meta events are quantized like onsets and attach syllables to the note they fall on, and a trailing hyphen sets `hyphen_after`. Several lyrics at one onset become successive verses. A standalone `-` and lyrics on no onset are skipped
+- [x] Lyric meta events are quantized like onsets and attach syllables to the note they fall on, and a trailing hyphen sets `hyphen_after`. Several lyrics at one onset become successive verses. A standalone `-` and lyrics on no onset are skipped
 
 ### Round trip and real files
 
-- [ ] For fixtures that fit the export's grid, the first parse matches the written flow per part in onsets, rhythmic values, key numbers, meter, key signature, tempo, programs, and lyrics, and exporting it again gives the same events. Spelling is compared separately: the spec pins every note spelled differently from the written flow. Fixtures exclude what export cannot write back:
+- [x] For fixtures that fit the export's grid, the first parse matches the written flow per part in onsets, rhythmic values, key numbers, meter, key signature, tempo, programs, and lyrics, and exporting it again gives the same events. Spelling is compared separately: the spec pins every note spelled differently from the written flow. Fixtures exclude what export cannot write back:
   - same-key overlaps on one channel;
   - unisons between parts that share a channel;
   - unpitched sounds in a pitched part;
@@ -124,11 +124,11 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - GM stand-ins and percussion with no GM key;
   - verses beyond the number of passes;
   - repeats, dynamics, staccato, grace notes, and tuplets other than triplets.
-- [ ] With `KERN_CORPUS` pointing at the Bach chorales, every chorale goes through kern import, MIDI export (with navigation removed), and MIDI import. It is parsed with the key from its signatures and with `key: :infer`. Both spelling rates are pinned as floors beside the 99.945% and 99.947% figures from Key and Spelling Inference
-- [ ] When MuseScore is available, its MIDI exports of the MusicXML fixtures parse to the same pitches per part, with its known losses pinned
-- [ ] A public-domain sequenced file from Mutopia parses end to end and is committed as a fixture, with its license noted in `spec/fixtures/midi/README.md`
-- [ ] The Aarden tonic-heavy fixture from Key and Spelling Inference is parsed with no key signature, and its inferred key is pinned
-- [ ] Maintains 90%+ test coverage
+- [x] With `KERN_CORPUS` pointing at the Bach chorales, every chorale goes through kern import, MIDI export (with navigation removed), and MIDI import. It is parsed with the key from its signatures and with `key: :infer`. Both spelling rates are pinned as floors beside the 99.945% and 99.947% figures from Key and Spelling Inference
+- [x] When MuseScore is available, its MIDI exports of the MusicXML fixtures parse to the same pitches per part, with its known losses pinned
+- [x] A public-domain sequenced file from Mutopia parses end to end and is committed as a fixture, with its license noted in `spec/fixtures/midi/README.md`
+- [x] The Aarden tonic-heavy fixture from Key and Spelling Inference is parsed with no key signature, and its inferred key is pinned
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
@@ -603,3 +603,62 @@ Each step is one commit with its specs, and keeps `bundle exec rake validate` gr
 - **The ABC reader ignores an anacrusis.** `G | c2 d2 e2 f2 |` puts C5 at 1:1:480. Pickup fixtures must therefore come from kern, MusicXML or the API, despite the memory note that prefers ABC. It is worth a separate fix.
 
 Probe scripts and outputs are in `/private/tmp/claude-501/-Users-roberthead-github-com-roberthead-head-music/32cd5f96-66f9-4ba4-aa1b-0a3786f3fdb9/scratchpad/midiimp-plan/` (`probes/`, `bpe/`, `developer/`).
+
+## Review
+
+Reviewed 2026-10-16 at commit `70ecbb5a`, by a product manager (acceptance verification) and an adversarial code reviewer, in parallel. The adversarial review was the plan's step 10.
+
+### Acceptance criteria
+
+| Criteria | Verdict | Evidence |
+| --- | --- | --- |
+| Entry point and file (8) | ✅ 7, ⚠️ 1 | `reader.rb`, `parser.rb`, `budget.rb`; `reader_spec`, `reader_fuzz_spec`, `parser_options_spec`, `budget_spec`. The fuzz spec covered the decoder but not `MIDI.parse`; the reviewer's 7,176 variants through `MIDI.parse` all parsed or raised `ParseError` |
+| Timeline (7) | ✅ 6, ⚠️ 1 | `bar_layout.rb`, `timeline_reader.rb`, `spelling.rb`, `conductor_track.rb`; `parser_timeline_spec`. The export pickup criterion still said "smallest" where the decision says "never below the flow's own" |
+| Notes and rhythms (7) | ✅ 7 | `reader.rb` pairing, `quantizer.rb`, `note_values.rb`, `part_reading.rb` |
+| Parts and voices (6) | ✅ 5, ⚠️ 1 | `part_source.rb`, `instrument_map.rb`, `voice_separator.rb`. A program first given after a part's first note applied from bar 1 |
+| Lyrics (1) | ✅ 1 | `lyric_attacher.rb`; `parser_lyrics_spec` |
+| Round trip and real files (6) | ✅ 5, ⚠️ 1 | `round_trip_spec`, `generated_round_trip_spec`, `kern_corpus_import_spec`, `muse_score_import_spec`, `archive_files_spec`. Coverage awaited `rake validate` |
+
+### Code review findings
+
+The adversarial reviewer built hostile SMF bytes by hand: lying lengths, extreme divisions and deltas, running status after SysEx, every channel at once, and 10,000 unreleased notes. It also ran about 3,200 random files and 750 round-trip checks. Nothing hung or printed, and no voice broke `Voice::Continuity`. It found:
+
+1. **Important.** A change to one of the 84 GM programs the catalog does not map recorded a nil instrument change, and `Flow#to_h` then raised `NoMethodError`. Ordinary files hit this, such as program 41 then 49.
+2. **Important.** Lyric lookup cost lyrics × voices: 64,000 lyrics took 81 s.
+3. **Low.** A very slow tempo in 6/1 rounded to 0 bpm and was refused.
+4. **Low.** `grid:` accepted 1/512 and 1/1024, which the model cannot write.
+5. **Low.** A time signature a tick off the grid failed with a misleading message.
+6. **Low.** A lyric of only non-breaking spaces became a syllable.
+7. **Low.** Drum keys that map to one sound collapsed in a chord, without saying so.
+8. **Housekeeping.** Dead and duplicated helpers.
+
+### Resolution
+
+All fixed, each with a spec (`cfc1dd07` through `065baee7`):
+
+- A part's instrument starts at the program in force at its first note, and an unmapped program records no change.
+- Lyrics are looked up in one index.
+- Tempo candidates that round to zero are skipped.
+- The grid floor is 1/256.
+- Time signatures snap to the sixty-fourth or triplet-sixty-fourth lattice within a tick, and otherwise raise naming the tick. The triplet lattice keeps MIDI Export's own triplet pickups readable.
+- Lyrics are stripped of Unicode whitespace.
+- An end-of-track on a barline past the last note keeps a trailing bar of rests, so three more generated seeds pass: 98 of 100, and 997 of 1,000.
+- `MIDI.parse` is fuzzed through the whole pipeline.
+- The duplicated helpers are merged.
+- The export pickup criterion is reworded.
+- Collapsed drum keys and grid jitter are recorded as known losses.
+
+The full suite passes 17,242 examples, and the chorale and MuseScore specs pass with their gates set.
+
+## Learnings
+
+- **Reading what export writes is the best first test.** Round trips through MIDI Export found two export bugs: a short pickup's barlines landed early, and a two-thirds pickup in 6/8 was written as a truncated 5/8. They also showed why pairing must cross tracks, since export writes some releases in another track. Fixing export first made the import's targets exact.
+- **Real files settled what the plan could only guess.** The planner measured 413 files:
+  - MuseScore ends nearly every note a tick early, so the grid is chosen from onsets only;
+  - sequencers gate notes at 60–75%, so short releases extend to the next onset;
+  - six exported chorales open with rests, so pickups come from the meter events.
+- **Even "within a tolerance" rules need a measured tie-break.** The plan's fallback, "the grid that places the most onsets", always picked the finest grid, because 1/96 contains every coarser grid's points. Measuring test07 exposed it, and the 99% rule replaced it.
+- **Shared helpers set the speed limit.** `EventMap#add` and `Bars#span` were quadratic for every reader. Nothing showed it until MIDI files with a tempo or key change in every bar made it matter. Fixing it made 10,000 bars of tempo changes 65× faster for all formats.
+- **The adversarial review earned its place a third time.** After 17,000 passing examples and a 366-chorale sweep, it found a common program change that produced a flow which crashed when saved, and a quadratic lyric lookup. Corpora don't hold those shapes.
+- **Laptop sleep stalls agents.** While the Mac was on battery overnight, agents advanced only in brief dark wakes. Keep long multi-agent runs on power.
+- **Unquoted heredocs bite twice.** Story text written through a shell heredoc lost its backticked names again. Write story edits with a quoted heredoc or the Edit tool.
