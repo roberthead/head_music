@@ -112,7 +112,8 @@ module HeadMusic::Notation::MEI
       contents.values.flatten.each { |content| @state.change_key(content.staff_number, content.opening_key) if content.opening_key }
       OpenSpaces.resolve(contents.values.flatten, @state.meter)
       index = @measures.length
-      bar_count(contents, where).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], passes, where) }
+      firsts = first_onsets(contents)
+      bar_count(contents, where).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], passes, where, firsts) }
       @readings.each do |reading|
         reading.measures[index].extent = extent(contents[reading], index)
         change_clefs(reading, index, changes, contents[reading]) if index.positive?
@@ -147,11 +148,20 @@ module HeadMusic::Notation::MEI
       bars
     end
 
-    def add_measure(element, index, controls, passes, where)
+    # The elements of the entries that start a measure, and their notes.
+    def first_onsets(contents)
+      contents.values.flatten.flat_map(&:entries).each_with_object({}.compare_by_identity) do |entry, firsts|
+        next unless entry.cursor.zero? && !entry.grace
+
+        [entry.element, *entry.notes].each { |element| firsts[element] = true }
+      end
+    end
+
+    def add_measure(element, index, controls, passes, where, firsts)
       meter = @state.meter
       @measures << Measure.new(
         index: index, element: element, number: where[:measure], meter: meter, key: @state.key,
-        tempo: tempo(controls, meter, where), controls: controls, ending_passes: passes
+        tempo: tempo(controls, meter, where, firsts), controls: controls, ending_passes: passes
       )
       implicit = index.positive? && AttributeValues.read(element, "metcon", **where, element: element) == false
       @readings.each do |reading|
@@ -161,12 +171,13 @@ module HeadMusic::Notation::MEI
       end
     end
 
-    # The tempo a <tempo> states on the downbeat by @mm, in its @mm.unit,
-    # or else by @midi.bpm, in quarter notes. One in the middle of the bar,
-    # or with text only, is skipped.
-    def tempo(controls, meter, where)
+    # The tempo a <tempo> states on the downbeat, by @tstamp or at a
+    # @startid that starts the measure, by @mm, in its @mm.unit, or else by
+    # @midi.bpm, in quarter notes. One in the middle of the bar, or with
+    # text only, is skipped.
+    def tempo(controls, meter, where, firsts)
       controls.each do |control|
-        next unless control.name == "tempo" && downbeat?(control, meter, where)
+        next unless control.name == "tempo" && downbeat?(control, meter, where, firsts)
 
         found = TempoReading.tempo(control, **where)
         return found if found
@@ -174,9 +185,12 @@ module HeadMusic::Notation::MEI
       nil
     end
 
-    def downbeat?(control, meter, where)
+    def downbeat?(control, meter, where, firsts)
       tstamp = AttributeValues.read(control, "tstamp", **where, element: control, count: meter.top_number)
-      tstamp ? tstamp <= 1 : attribute(control, "startid", element: control).nil?
+      return tstamp <= 1 if tstamp
+
+      reference = attribute(control, "startid", element: control)
+      reference.nil? || firsts.key?(@source.index.resolve(reference, **where, element: control))
     end
 
     # A clef change between measures, a clef that opens a layer, or one

@@ -20,6 +20,12 @@ describe HeadMusic::Notation::MEI::TimelineReader do
     expect(tempos(parse(bar, %(#{bar}<tempo tstamp="0" midi.bpm="88"/>)))).to eq(2 => ["quarter", 88.0])
   end
 
+  it "changes the tempo at a <tempo> whose @startid names a note at the measure's first onset, and not one later" do
+    notes = mei_staff(1, mei_note("C4", "2", "xml:id": "first") + %(<chord dur="2"><note xml:id="later" pname="e" oct="4"/></chord>))
+    flow = parse(bar, notes + %(<tempo startid="#first" midi.bpm="88"/>), notes.gsub(/first|later/) { "#{_1}2" } + %(<tempo startid="#later2" midi.bpm="66"/>))
+    expect(tempos(flow)).to eq(2 => ["quarter", 88.0])
+  end
+
   it "reads @midi.bpm in quarters where there is no @mm" do
     expect(tempos(parse(bar, %(#{bar}<tempo tstamp="1" midi.bpm="88"/>)))).to eq(2 => ["quarter", 88.0])
   end
