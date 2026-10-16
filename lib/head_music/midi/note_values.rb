@@ -27,8 +27,7 @@ module HeadMusic::MIDI
     # bar is one rest, and a gap within a bar is cut at beats.
     def rests(from, to)
       bar_segments(from, to).flat_map do |bar, start, finish|
-        pieces = (start == bar.start && finish == bar.end_time) ? [[start, finish]] : beat_pieces(bar, start, finish)
-        pieces.map { |piece_start, piece_end| [piece_start, piece_value(bar, piece_start, piece_end)] }
+        rest_pieces(bar, start, finish).map { |piece_start, piece_end| [piece_start, piece_value(bar, piece_start, piece_end)] }
       end
     end
 
@@ -54,13 +53,46 @@ module HeadMusic::MIDI
       bar.with(number: bar.number + skipped + 1, start: bar.end_time + (skipped * bar.length))
     end
 
-    # The partial beat before the first beat inside the span, the whole beats,
-    # and the partial beat after them. A short bar is the end of a full one,
-    # so its beats count back from its end.
-    def beat_pieces(bar, from, to)
-      beat = bar.meter.beat_value.fraction
+    def rest_pieces(bar, from, to)
+      return [[from, to]] if from == bar.start && to == bar.end_time
+
+      anchor, beat = beat_grid(bar)
+      beat_pieces(bar, from, to).flat_map do |start, finish|
+        on_beats = [start, finish].all? { |time| ((time - anchor) / beat).denominator == 1 }
+        on_beats ? aligned_beats(start, finish, anchor, beat) : [[start, finish]]
+      end
+    end
+
+    # Whole beats as the longest single values that each start at a multiple
+    # of their own length from the downbeat.
+    def aligned_beats(from, to, anchor, beat)
+      pieces = []
+      while from < to
+        offset = (from - anchor) / beat
+        count = ((to - from) / beat).to_i.downto(1).find { |beats| (offset % beats).zero? && single?(beats * beat) }
+        pieces << [from, from + (count * beat)]
+        from += count * beat
+      end
+      pieces
+    end
+
+    def single?(duration)
+      value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(duration)
+      value && !value.tied_value
+    end
+
+    # The beat and the downbeat its bar counts from. A short bar is the end of
+    # a full one, so its downbeat lies before its start.
+    def beat_grid(bar)
       nominal = Rational(bar.meter.top_number, bar.meter.bottom_number)
       anchor = (bar.length < nominal) ? bar.end_time - nominal : bar.start
+      [anchor, bar.meter.beat_value.fraction]
+    end
+
+    # The partial beat before the first beat inside the span, the whole beats,
+    # and the partial beat after them.
+    def beat_pieces(bar, from, to)
+      anchor, beat = beat_grid(bar)
       first_beat = anchor + (((from - anchor) / beat).ceil * beat)
       last_beat = anchor + (((to - anchor) / beat).floor * beat)
       return [[from, to]] if first_beat >= to

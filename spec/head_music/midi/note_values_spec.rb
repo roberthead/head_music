@@ -98,7 +98,16 @@ describe HeadMusic::MIDI::NoteValues do
     end
 
     it "cuts a gap at beats within its bar and fills the empty bar after it with one rest" do
-      expect(rest_list(Rational(1, 8), 2)).to eq [[Rational(1, 8), "eighth"], [Rational(1, 4), "dotted half"], [1r, "whole"]]
+      expect(rest_list(Rational(1, 8), 2)).to eq [[Rational(1, 8), "eighth"], [Rational(1, 4), "quarter"], [Rational(1, 2), "half"], [1r, "whole"]]
+    end
+
+    it "writes beat 2 to the barline as a quarter and a half, and beat 3 to the barline as one half" do
+      expect([rest_list(Rational(1, 4), 1), rest_list(Rational(1, 2), 1)])
+        .to eq [[[Rational(1, 4), "quarter"], [Rational(1, 2), "half"]], [[Rational(1, 2), "half"]]]
+    end
+
+    it "writes beat 2 to beat 4 as two quarters" do
+      expect(rest_list(Rational(1, 4), Rational(3, 4))).to eq [[Rational(1, 4), "quarter"], [Rational(1, 2), "quarter"]]
     end
 
     context "with a pickup bar" do
@@ -114,6 +123,14 @@ describe HeadMusic::MIDI::NoteValues do
 
       it "cuts at the beats of each bar's own meter" do
         expect(rest_list(Rational(9, 8), Rational(7, 4))).to eq [[Rational(9, 8), "quarter"], [Rational(11, 8), "dotted quarter"]]
+      end
+    end
+
+    context "with compound beats" do
+      let(:bar_meters) { %w[12/8] }
+
+      it "aligns whole dotted-quarter beats from the downbeat" do
+        expect(rest_list(Rational(3, 8), Rational(3, 2))).to eq [[Rational(3, 8), "dotted quarter"], [Rational(3, 4), "dotted half"]]
       end
     end
   end
