@@ -465,6 +465,28 @@ describe HeadMusic::Notation::ABC::Writer do
       expect_abc_round_trip(HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR))
     end
 
+    context "with chord members at one letter and octave under two alterations" do
+      def body_of(key, chord, after)
+        flow = HeadMusic::Content::Flow.new(meter: "4/4", key_signature: key)
+        flow.add_voice.place("1:1", :half, chord).voice.place("1:3", :half, after)
+        described_class.new(flow).to_s.lines.last.chomp
+      end
+
+      it "writes the natural beside the sharp, and the bar follows the sharp" do
+        expect(body_of("C major", %w[F4 F#4], "F4")).to eq "[=F^F]4 =F4|]"
+      end
+
+      it "writes the flat the key implies beside the natural" do
+        expect(body_of("F major", %w[Bb4 B4], "Bb4")).to eq "[_B=B]4 _B4|]"
+      end
+
+      it "forces them on the chord's first part alone when it crosses a barline" do
+        flow = HeadMusic::Content::Flow.new(meter: "4/4")
+        flow.add_voice.place("1:1", :half, "C4").voice.place("1:3", :whole, %w[F4 F#4])
+        expect(described_class.new(flow).to_s.lines.last.chomp).to eq "C4 [=F^F]4-|[F^F]4|]"
+      end
+    end
+
     context "with the chorale chord example" do
       let(:flow) { HeadMusic::Notation::ABC.parse(<<~ABC) }
         X:1
@@ -882,6 +904,11 @@ describe HeadMusic::Notation::ABC::Writer do
     it "starts a new group where slashed and unslashed grace notes meet" do
       note(1).add_grace_note("C4", :eighth, slashed: true).add_grace_note("E4", :eighth)
       expect(body_of(flow)).to start_with "C2 {/C}{E}D2"
+    end
+
+    it "writes the accidentals of a grace chord's members at one letter and octave" do
+      note(1).add_grace_note(%w[D4 D#4], :eighth)
+      expect(body_of(flow)).to start_with "C2 {[=D^D]}=D2"
     end
 
     it "writes the grace notes before their note, which then cancels an accidental they write" do

@@ -98,25 +98,27 @@ module HeadMusic::Notation::ABC
       ensure_pitched_sounds(voice_event)
 
       pieces = @tuplet_writer.pieces(segment)
-      return ["", sounding_token(voice_event, multiplier_for(segment), segment.continues)] unless pieces
+      forced = segment.bar_number == voice_event.position.bar_number
+      return ["", sounding_token(voice_event, multiplier_for(segment), segment.continues, forced)] unless pieces
 
       last_index = pieces.length - 1
       tokens = pieces.each_with_index.map do |piece, index|
-        (index.zero? ? "" : piece.marker) + piece_token(voice_event, piece, index < last_index || segment.continues)
+        (index.zero? ? "" : piece.marker) + piece_token(voice_event, piece, index < last_index || segment.continues, forced && index.zero?)
       end
       [pieces.first.marker, tokens.join(voice_event.rest? ? " " : "")]
     end
 
     # A rest cannot be tied, so a rest's pieces are written as rests.
-    def piece_token(voice_event, piece, tied)
+    def piece_token(voice_event, piece, tied, forced)
       multiplier = @duration_writer.multiplier_string_for_fraction(piece.links.sum(&:written_fraction), voice_event.rhythmic_value)
-      sounding_token(voice_event, multiplier, tied)
+      sounding_token(voice_event, multiplier, tied, forced)
     end
 
-    def sounding_token(voice_event, multiplier, tied)
+    # Only a chord's first piece forces its clashing members' accidentals.
+    def sounding_token(voice_event, multiplier, tied, forced)
       tie = tied ? "-" : ""
       return "z#{multiplier}" if voice_event.rest?
-      return chord_token(voice_event, multiplier) + tie if voice_event.chord?
+      return chord_token(voice_event, multiplier, forced) + tie if voice_event.chord?
 
       "#{@pitch_writer.token(voice_event.pitch)}#{multiplier}#{tie}"
     end
@@ -128,11 +130,8 @@ module HeadMusic::Notation::ABC
       @duration_writer.multiplier_string_for_fraction(segment.fraction, rhythmic_value)
     end
 
-    # Pitches are emitted low-to-high so the writer's bar-accidental state
-    # cannot diverge from what a re-parse of the brackets accumulates.
-    def chord_token(voice_event, multiplier)
-      pitch_tokens = voice_event.pitches.sort.map { |pitch| @pitch_writer.token(pitch) }
-      "[#{pitch_tokens.join}]#{multiplier}"
+    def chord_token(voice_event, multiplier, forced)
+      "[#{@pitch_writer.chord_tokens(voice_event.pitches, forced: forced).join}]#{multiplier}"
     end
 
     def render_error_class

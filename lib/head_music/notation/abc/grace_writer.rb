@@ -30,9 +30,8 @@ module HeadMusic::Notation::ABC
         @duration_writer.multiplier_string(grace.rhythmic_value) + (grace.tied? ? "-" : "")
     end
 
-    # Low to high, as a chord is written.
     def notes(pitches)
-      tokens = pitches.sort.map { |pitch| @pitch_writer.token(pitch) }
+      tokens = @pitch_writer.chord_tokens(pitches)
       (tokens.length == 1) ? tokens.first : "[#{tokens.join}]"
     end
   end

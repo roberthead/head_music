@@ -15,16 +15,25 @@ module HeadMusic::Notation::ABC
       @oracle = PitchBuilder.new(@key_signature)
     end
 
-    # Returns the ABC note token for the pitch, without any duration multiplier.
-    def token(pitch)
+    # Returns the ABC note token for the pitch, without any duration
+    # multiplier. A forced token writes its accidental whatever is implied.
+    def token(pitch, forced: false)
       pitch = HeadMusic::Rudiment::Pitch.get(pitch)
       letter = letter_token(pitch)
       octave_marks = octave_marks(pitch)
-      return "#{letter}#{octave_marks}" if oracle.pitch(letter, octave_marks) == pitch
+      return "#{letter}#{octave_marks}" if !forced && oracle.pitch(letter, octave_marks) == pitch
 
       marks = accidental_marks(pitch)
       commit_and_verify(pitch, letter, octave_marks, marks)
       "#{marks}#{letter}#{octave_marks}"
+    end
+
+    # Low to high, so the bar's accidental state follows the highest member,
+    # as a re-parse of the brackets does. Members that clash (see
+    # ChordClashes) force their accidentals.
+    def chord_tokens(pitches, forced: true)
+      clashing = forced ? HeadMusic::Notation::ChordClashes.among(pitches) : []
+      pitches.sort.map { |pitch| token(pitch, forced: clashing.include?(pitch)) }
     end
 
     # In ABC, accidentals persist only to the end of the bar.
