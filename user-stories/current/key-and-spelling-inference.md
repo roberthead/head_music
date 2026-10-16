@@ -65,7 +65,7 @@ The class names and input shape above are a sketch, to be settled in planning.
 - [ ] Given a key, the speller spells every key number. When the key is not given, it uses the key finder's regions
 - [ ] Every key number in the key's diatonic collection is spelled diatonically. In E♭ major, 63 is E♭ and 68 is A♭
 - [ ] The raised leading tone of a minor key is spelled as raised: in A minor, 68 is G♯, and in G♯ minor, 67 is F𝄪
-- [ ] A chromatic note follows melodic direction when its two nearest spellings are within 2 fifths of each other and the next note in its voice is a semitone away. In C major, 60–61–62 spells C♯ and 62–61–60 spells D♭, 61 and 63 follow direction, and 66 is always F♯ and 70 always B♭
+- [ ] A chromatic note follows melodic direction when its two nearest spellings are within 2 fifths of each other and the next note in its voice is a semitone away. Notes given without voices count as one voice when none of them overlaps another; otherwise a note with no voice takes no direction. In C major, 60–61–62 spells C♯ and 62–61–60 spells D♭, 61 and 63 follow direction, and 66 is always F♯ and 70 always B♭
 - [ ] Notes sounding together are spelled to keep the sonority in thirds where one spelling does. In F minor, 61–65–68 is D♭–F–A♭, not C♯–F–G♯, and in C major, 61–65–68 sounding alone is D♭–F–A♭
 - [ ] For every key from −6 to +6 fifths, each pitch class spelled alone takes at most one accidental, except a minor key's raised 7th (G♯ minor: 67 is F𝄪)
 - [ ] Given a Mode, the speller uses the mode's own collection
@@ -312,7 +312,7 @@ Every step:
    - **Direction** (`:direction`):
      - when the next note in the same voice is exactly one semitone away, rising takes the sharper candidate and falling the flatter;
      - only a semitone counts. Counting whole steps, and letting the rule touch a minor key's leading tone, lowered the probe to 99.79%;
-     - with no voice given, each note has no successor and the rule does not apply.
+     - notes given without voices are one voice when none of them overlaps another; otherwise a note with no voice has no successor and the rule does not apply.
    - **Sonority** (`:sonority`):
      - over the notes that start together and are still undecided, enumerate their near-tie candidates jointly, holding already-sounding notes fixed;
      - minimize the span on the line of fifths (max − min), then the summed distance from the center;

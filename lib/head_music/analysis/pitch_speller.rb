@@ -132,8 +132,7 @@ class HeadMusic::Analysis::PitchSpeller
 
   def next_numbers
     following = {}
-    voiced = notes.each_index.reject { |position| notes[position].voice.nil? }
-    voiced.group_by { |position| notes[position].voice }.each_value do |positions|
+    voices.each_value do |positions|
       chords = positions.sort_by { |position| [notes[position].onset, position] }
         .chunk_while { |a, b| notes[a].onset == notes[b].onset }
       chords.each_cons(2) do |chord, after|
@@ -142,6 +141,23 @@ class HeadMusic::Analysis::PitchSpeller
       end
     end
     following
+  end
+
+  # Notes given without voices are one voice where none overlaps another.
+  def voices
+    voiced = notes.each_index.reject { |position| notes[position].voice.nil? }
+    return {nil => notes.each_index.to_a} if voiced.empty? && !overlapping?
+
+    voiced.group_by { |position| notes[position].voice }
+  end
+
+  def overlapping?
+    finish = nil
+    notes.sort_by(&:onset).any? do |note|
+      overlaps = finish && note.onset < finish
+      finish = [finish, note.onset + note.duration].compact.max
+      overlaps
+    end
   end
 
   def apply_sonority

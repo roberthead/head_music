@@ -237,9 +237,19 @@ describe HeadMusic::Analysis::PitchSpeller do
       expect(described_class.new(notes, key: "C major").pitches.map(&:to_s)).to eq %w[C♯4 C4]
     end
 
-    it "does not apply to notes with no voice" do
-      expect(names([62, 61, 60], key: "C major").zip(spell([62, 61, 60], key: "C major", voice: nil).pitches.map(&:to_s)))
-        .to eq [%w[D4 D4], %w[D♭4 C♯4], %w[C4 C4]]
+    it "treats notes with no voice as one voice when none overlaps another" do
+      expect(spell([62, 61, 60], key: "C major", voice: nil).spelled_notes.map { |spelled| [spelled.pitch.to_s, spelled.rule] })
+        .to eq [["D4", :diatonic], ["D♭4", :direction], ["C4", :diatonic]]
+    end
+
+    it "does not apply to notes with no voice that overlap" do
+      notes = [62, 61, 60].each_with_index.map { |number, index| [number, Rational(index, 4), Rational(1, 2)] }
+      expect(described_class.new(notes, key: "C major").spelled_notes.map(&:rule)).not_to include :direction
+    end
+
+    it "does not apply to notes with no voice among notes with voices" do
+      notes = [[62, 0, Rational(1, 4)], [61, Rational(1, 4), Rational(1, 4)], [60, Rational(1, 2), Rational(1, 4)], [64, 1, 1, :alto]]
+      expect(described_class.new(notes, key: "C major").spelled_notes.map(&:rule)).not_to include :direction
     end
   end
 
