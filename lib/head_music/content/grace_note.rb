@@ -23,6 +23,11 @@ HeadMusic::Content::GraceNote = Data.define(:sounds, :rhythmic_value, :slashed, 
     sounds.select(&:pitched?)
   end
 
+  # The pitches it ties into whatever follows it.
+  def tied_pitches
+    tied? ? pitches : []
+  end
+
   def to_s
     [slashed? ? "slashed" : nil, "grace #{rhythmic_value}", sounds.join(" ")].compact.join(" ")
   end

@@ -48,6 +48,11 @@ describe HeadMusic::Content::GraceNote do
       .to raise_error(ArgumentError, /a grace note needs a plain or dotted value/)
   end
 
+  it "ties its pitches into what follows only when tied" do
+    tied = described_class.new(sounds: %w[A4 C5], rhythmic_value: :eighth, tied: true)
+    expect([tied.tied_pitches.map(&:to_s), grace_note.tied_pitches]).to eq [%w[A4 C5], []]
+  end
+
   it "refuses a tuplet value" do
     expect { described_class.new(sounds: "A4", rhythmic_value: "triplet eighth") }
       .to raise_error(ArgumentError, /a grace note needs a plain or dotted value/)

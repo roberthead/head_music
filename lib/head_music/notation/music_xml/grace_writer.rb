@@ -18,7 +18,7 @@ module HeadMusic::Notation::MusicXML
       graces.each_with_index.flat_map do |grace, index|
         ensure_pitched(grace, voice_event)
         follower = graces[index + 1]&.pitches || voice_event.pitches
-        tied_in = (index.positive? && graces[index - 1].tied?) ? graces[index - 1].pitches : []
+        tied_in = index.zero? ? [] : graces[index - 1].tied_pitches
         grace.pitches.sort.each_with_index.flat_map do |pitch, pitch_index|
           ties = {stop: tied_in.include?(pitch), start: grace.tied? && follower.include?(pitch)}
           lead = pitch_index.zero?
@@ -31,8 +31,7 @@ module HeadMusic::Notation::MusicXML
 
     # Whether the last grace note before the event ties into this pitch of it.
     def self.tied_into?(voice_event, pitch)
-      last = voice_event.grace_notes.last
-      last&.tied? && last.pitches.include?(pitch)
+      !!voice_event.grace_notes.last&.tied_pitches&.include?(pitch)
     end
 
     private

@@ -52,7 +52,7 @@ module HeadMusic::Notation::MEI
     def grace_elements(item)
       graces = item.graces
       graces.each_with_index.map do |grace, index|
-        tied_in = (index.positive? && graces[index - 1].tied?) ? graces[index - 1].pitches : []
+        tied_in = index.zero? ? [] : graces[index - 1].tied_pitches
         follower = graces[index + 1]&.pitches || item.voice_event.pitches
         id = plan.grace_id(item, index)
         node = Node.new(kind: :note, id: id, item: item, grace: grace, grace_index: index)

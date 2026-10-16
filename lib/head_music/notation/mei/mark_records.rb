@@ -27,6 +27,12 @@ module HeadMusic::Notation::MEI
     def note?
       %i[note chord].include?(kind)
     end
+
+    # The note or chord a mark attaches to, nil for a rest, a grace note, or
+    # a tie's later link.
+    def markable_event
+      voice_event if note? && !grace? && !continuation? && voice_event && !voice_event.rest?
+    end
   end
 
   # Where a control event's end is: a position, and the voice, voice event,

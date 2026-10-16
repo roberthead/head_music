@@ -25,8 +25,8 @@ module HeadMusic::Notation::MEI
     end
 
     def event(record)
-      voice_event = record.voice_event
-      return unless record.note? && !record.grace? && !record.continuation? && voice_event && !voice_event.rest?
+      voice_event = record.markable_event
+      return unless voice_event
 
       element = record.element
       anchors.children_named(element, "verse").each do |verse|

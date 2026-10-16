@@ -24,8 +24,8 @@ module HeadMusic::Notation::MEI
     end
 
     def event(record)
-      voice_event = record.voice_event
-      return unless record.note? && !record.grace? && !record.continuation? && voice_event && !voice_event.rest?
+      voice_event = record.markable_event
+      return unless voice_event
 
       letters = XmlReading.attribute(record.element, "ornam", element: record.element).to_s.split
       letters.filter_map { |letter| ORNAMENTS_BY_LETTER[letter] }.each { |key| @ornamented << [voice_event, key] }
@@ -34,22 +34,12 @@ module HeadMusic::Notation::MEI
     def control(record)
       element = record.element
       key = ORNAMENTS_BY_ELEMENT[[element.name, XmlReading.attribute(element, "form", element: element)]]
-      voice_event = key && note_event_at(record.start)
+      voice_event = key && record.start&.record&.markable_event
       @ornamented << [voice_event, key] if voice_event
     end
 
     def apply(_flow)
       @ornamented.each { |voice_event, key| voice_event.embellish(key) }
-    end
-
-    private
-
-    def note_event_at(anchor)
-      event_record = anchor&.record
-      return unless event_record&.note? && !event_record.grace? && !event_record.continuation?
-
-      voice_event = anchor.voice_event
-      voice_event unless voice_event.nil? || voice_event.rest?
     end
   end
 end

@@ -23,7 +23,7 @@ module HeadMusic::Notation::MusicXML
         instrument: @identity.instrument(document_part),
         staff_system: staff_system(reading)
       )
-      change_clefs(part, reading)
+      HeadMusic::Notation::ClefChanges.apply(part, reading.measures, @bar_map)
       part
     end
 
@@ -39,18 +39,6 @@ module HeadMusic::Notation::MusicXML
         staves: (1..reading.staves).map { |number| HeadMusic::Content::Staff.new(clef: clefs[number]) },
         bracket: (reading.staves > 1) ? BRACKETS_BY_PART_SYMBOL.fetch(reading.part_symbol.to_s.strip, :brace) : :none
       )
-    end
-
-    def change_clefs(part, reading)
-      reading.measures.drop(1).each do |measure|
-        next unless @bar_map.shift(measure.index).zero?
-
-        bar = @bar_map.bar_number(measure.index)
-        measure.clefs.each do |number, clef|
-          staff = part.staff_system_at(bar).staves[number - 1]
-          staff.change_clef(bar, clef) if clef && staff && staff.clef_at(bar) != clef
-        end
-      end
     end
   end
 end

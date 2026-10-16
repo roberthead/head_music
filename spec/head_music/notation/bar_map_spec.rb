@@ -157,6 +157,11 @@ describe HeadMusic::Notation::BarMap do
       expect([Rational(1, 2), 1, Rational(9, 4)].map { |time| bar_map.bar_end_at_or_after(time) }).to eq [1, 1, Rational(5, 2)]
     end
 
+    it "answers the downbeat bar of each measure after the first, nil for a split bar's second half" do
+      bar_map = described_class.new([bars(1, Rational(1, 2), Rational(1, 2), 1)])
+      expect((0..3).map { |index| bar_map.downbeat_bar(index) }).to eq [nil, 2, nil, 3]
+    end
+
     it "raises through the reading's errors, where the reading says" do
       expect { described_class.new([bars(1, Rational(5, 4))]) }
         .to raise_error(errors::UnsupportedFeatureError, "The measure is longer than its 4/4 bar (staff s1)")

@@ -42,6 +42,12 @@ module HeadMusic::Notation
       @shifts.fetch(measure_index)
     end
 
+    # The bar a measure after the first starts on its downbeat, nil where it
+    # starts in the middle of one.
+    def downbeat_bar(measure_index)
+      bar_number(measure_index) if measure_index.positive? && shift(measure_index).zero?
+    end
+
     def last_bar
       @bars.last
     end

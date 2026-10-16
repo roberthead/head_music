@@ -79,7 +79,7 @@ module HeadMusic::Notation::MEI
     def grace_notes(item, onset)
       graces = item.graces
       graces.each_with_index.flat_map do |grace, index|
-        tied_in = (index.positive? && graces[index - 1].tied?) ? graces[index - 1].pitches : []
+        tied_in = index.zero? ? [] : graces[index - 1].tied_pitches
         members = plan.grace_note_ids(grace, plan.grace_id(item, index))
         clashes = HeadMusic::Notation::ChordClashes.among(members.map(&:first))
         members.map do |pitch, id|
@@ -91,8 +91,7 @@ module HeadMusic::Notation::MEI
     def continued?(item, pitch)
       return true if %w[m t].include?(item.tie)
 
-      last = item.graces.last
-      !!(last&.tied? && last.pitches.include?(pitch))
+      !!item.graces.last&.tied_pitches&.include?(pitch)
     end
   end
 
