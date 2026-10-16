@@ -490,7 +490,7 @@ CHANGELOG lines stay in the commit bodies until step 31.
 ### Risks & Open Questions
 
 - **Groups bracket links, not whole events.** This extends the criterion so that a triplet whose last note is tied over the beat can be one group. The product manager and both format developers raised it; it is the most common real figure. If Rob rejects it, step 5 validates whole events instead, readers rescue the `ArgumentError` and leave those values ungrouped, and writers bracket them as a run. It still renders, but straddled pairs merge into one bracket.
-- **Schema 5 vs. 6.** The criterion keeps schema 5. A 22.x gem reading a new document silently turns "triplet eighth" into a plain eighth and its bars run short. 23.0.0 is major, so moving to schema 6 is cheap; Rob should decide.
+- **Schema 5 vs. 6** (settled by Rob, 2026-10-16: keep schema 5). An earlier version of this note said a 22.x gem would read a triplet as a plain value. That was wrong: 22.0.0 reads and writes only schema 4 and refuses schema 5, which first ships in 23.0.0. Tuplets and grace notes therefore join schema 5 before its first release, and no released gem can misread them.
 - **Marks inside rounded notes** are refused here. Snapping them to the nearest onset is the alternative, but it moves the mark on a round trip.
 - **Unverified renderer behavior:**
   - abcm2ps is not installed, so whether it draws a tuplet across a bar line and the `{g}(A` slur order are unchecked. `abc2ly` closes tuplets at bar lines, which supports raising. Installing it (`brew install abcm2ps`) before step 13 needs Rob's go-ahead.
