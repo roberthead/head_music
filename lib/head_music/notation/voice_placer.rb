@@ -30,7 +30,7 @@ module HeadMusic::Notation
       placed.each { |event| place_event(event) }
       rest_until(@trim_edges ? @bar_map.bar_end_at_or_after(@time) : @bar_map.end_time, nil)
       @tuplet_reader.new(@voice, @track, @reading).group
-      assign_staves(@trim_edges ? @track.events[@track.events.index(placed.first)..@track.events.index(placed.last)] : @track.events)
+      assign_staves(@trim_edges ? @track.events[..@track.events.index(placed.last)] : @track.events)
     end
 
     private
@@ -80,7 +80,8 @@ module HeadMusic::Notation
 
     # A voice is on the staff of its first event in each bar, crossing at
     # the barlines where that changes; a change in the middle of a bar is
-    # skipped, since the model crosses only at barlines.
+    # skipped, since the model crosses only at barlines. The whole-bar rests
+    # of a voice's trimmed opening still say which staff it opens on.
     def assign_staves(events)
       staves = @voice.part.staff_system.staves
       return if staves.length < 2
@@ -90,13 +91,9 @@ module HeadMusic::Notation
         staff = staves[events.first.staff - 1]
         next if staff.equal?(current)
 
-        @voice.assign_staff(index.zero? ? first_staff_bar : bar_of(events.first), staff)
+        @voice.assign_staff(index.zero? ? @bar_map.first_bar : bar_of(events.first), staff)
         current = staff
       end
-    end
-
-    def first_staff_bar
-      @trim_edges ? @voice.voice_events.first.position.bar_number : @bar_map.first_bar
     end
 
     def bar_of(event)

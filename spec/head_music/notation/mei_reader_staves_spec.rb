@@ -40,6 +40,12 @@ describe HeadMusic::Notation::MEI do
     end
   end
 
+  it "opens a voice tacet in its first bars on the staff of its whole-bar rests" do
+    rests = mei_staff(1, [1, mei_note("E5", "1")]) + mei_staff(2, [2, "<mRest/>"])
+    notes = mei_staff(1, [1, mei_note("D5", "1")]) + mei_staff(2, [2, mei_note("C3", "1")])
+    expect(staves(piano(rests, notes))).to eq [{}, {1 => 2}]
+  end
+
   it "skips a single note's @staff" do
     flow = piano(mei_staff(1, mei_note("E4", "2", staff: "2") + mei_note("F4", "2")) + mei_staff(2, mei_note("C3", "1")), mei_staff(1, mei_note("E5", "1")) + mei_staff(2, mei_note("C3", "1")))
     expect(staves(flow)).to eq [{}, {1 => 2}]
