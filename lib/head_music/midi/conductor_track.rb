@@ -40,7 +40,7 @@ module HeadMusic::MIDI
     # A pickup is a bar of its own wherever a MIDI denominator can count it.
     # Otherwise it takes the flow's meter, which is restated at bar 1.
     def pickup_meter(span, meter)
-      denominator = [meter.bottom_number, span.length.denominator].max
+      denominator = meter.bottom_number.lcm(span.length.denominator)
       return meter unless denominator <= MAX_PICKUP_DENOMINATOR && denominator.to_s(2).count("1") == 1
 
       HeadMusic::Rudiment::Meter.get("#{(span.length * denominator).to_i}/#{denominator}")

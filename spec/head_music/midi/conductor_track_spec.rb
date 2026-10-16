@@ -194,4 +194,20 @@ describe HeadMusic::MIDI::ConductorTrack do
       expect(signatures).to eq [[0, "3/4"], [Rational(1, 12), "3/4"]]
     end
   end
+
+  context "with a pickup of two triplet eighths and a half in 6/8" do
+    let(:flow) do
+      HeadMusic::Content::Flow.new(name: "Triplet", meter: "6/8").tap do |triplet|
+        voice = triplet.add_voice
+        voice.place("0:1:320", "triplet eighth", "C4")
+        voice.place("0:2:160", "triplet eighth", "C5")
+        voice.place("0:3", :half, "G4")
+        voice.place("1:1", "dotted half", "C5")
+      end
+    end
+
+    it "writes the flow's meter from the start and restates it at bar 1, since no eighths count two-thirds" do
+      expect(signatures).to eq [[0, "6/8"], [Rational(2, 3), "6/8"]]
+    end
+  end
 end
