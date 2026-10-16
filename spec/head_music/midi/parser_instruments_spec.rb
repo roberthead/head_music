@@ -88,6 +88,26 @@ describe HeadMusic::MIDI::Parser do
       end
     end
 
+    context "with a first program after the part's first note" do
+      subject(:part) { parse([*midi_note(0, 67, 96), program(bar, 41), *midi_note(bar, 69, 96)]).parts.first }
+
+      it "gives the part no instrument until the change" do
+        expect([part.instrument, part.instrument_changes.transform_values(&:name_key)]).to eq [nil, {2 => :violin}]
+      end
+    end
+
+    context "with a change to a program no catalog instrument has" do
+      subject(:flow) { parse([program(0, 1), *midi_note(0, 60, 96), program(bar, 128), *midi_note(bar, 62, 96)]) }
+
+      it "keeps the instrument in force" do
+        expect([flow.parts.first.instrument.name_key, flow.parts.first.instrument_changes]).to eq [:piano, {}]
+      end
+
+      it "describes the flow" do
+        expect { flow.to_h }.not_to raise_error
+      end
+    end
+
     context "with a program set again to the program in force" do
       subject(:part) { parse([program(0, 41), *midi_note(0, 67, 96), program(bar, 41), *midi_note(bar, 69, 96)]).parts.first }
 

@@ -39,14 +39,15 @@ module HeadMusic::MIDI
       end
 
       # {bar number => instrument} for each later program change, from the
-      # bar of the part's next note on.
+      # bar of the part's next note on. A program no catalog instrument has
+      # keeps the instrument in force.
       def instrument_changes
         return {} if percussion?
 
         current = instrument
         programs_by_bar.drop(1).each_with_object({}) do |(bar_number, program), changes|
           following = instrument_for(program)
-          next if following == current
+          next if following.nil? || following == current
 
           changes[bar_number] = following
           current = following
@@ -83,8 +84,10 @@ module HeadMusic::MIDI
         InstrumentMap.instrument(program, hint: matching || names.first)
       end
 
+      # A part of rests takes its first program; any other, the program in
+      # force at its first note.
       def opening_program
-        programs_by_bar.first&.last || @programs.first&.program
+        notes.empty? ? @programs.first&.program : programs_by_bar.first.last
       end
 
       # The hint when it names an unpitched instrument, else the one

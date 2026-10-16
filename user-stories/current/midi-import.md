@@ -99,8 +99,8 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 - [ ] In format 1, each track that holds notes becomes a part; a track that holds notes on several channels becomes one part per channel. Format 0 is split by channel. A track after the first with a name or program change but no notes becomes a part of rests
 - [ ] A track name meta event becomes the part's player name, unless it equals the part's instrument name exactly, case included, so "Soprano" names the player of a part whose instrument is "soprano". The sequence name is the flow's name. In format 1, track 0's name is the flow's name only when track 0 holds no notes
 - [ ] A program change sets the part's instrument through the GM program data. A later program change becomes an instrument change at the bar of its channel's next note on
-  - A channel with no program change has no instrument.
-  - A program with no catalog instrument gives no instrument.
+  - A channel with no program change has no instrument, and a part with no program in force at its first note has none until a change. A part of rests takes its track's first program.
+  - A program with no catalog instrument gives no instrument, and a later change to one keeps the instrument in force.
   - An ambiguous program resolves through the track or instrument name, and otherwise through a pinned table covering every such program.
 - [ ] Channel 10 becomes an unpitched part, its key numbers mapped to unpitched sounds through the GM percussion data. Keys with no catalog instrument of their own map through aliases (36 → bass drum, 40 → snare, 44 and 46 → hi-hat, 57 → crash, 59 → ride), and otherwise to the generic unpitched sound. Percussion chords group by onset alone
 - [ ] Notes in one part that start and end together, after quantizing, become one chord
