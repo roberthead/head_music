@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-16T08:30:49-07:00
   planned_at:   2026-10-16T08:54:50-07:00
   finished_at:
-  updated_at:   2026-10-16T08:54:50-07:00
+  updated_at:   2026-10-16T09:40:41-07:00
 -->
 
 # Story: MIDI Import
@@ -172,6 +172,12 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - **Tuplets.** Triplets come through the default grid; quintuplets and septuplets need an explicit `grid:`.
   - **Round trip.** The round trip is judged on the first parse plus a byte-level re-export.
   - **Shared helpers.** `EventMap#add` and `Bars#span` are made linear, since MIDI files can change tempo or key in every bar.
+
+- **Decided during implementation, without stopping to ask** (2026-10-16; Rob may revise any):
+  - **Export pickups.** A pickup's time signature never goes below the flow's own denominator. A half-note pickup in 3/4 writes 2/4, as before, so pickups that already exported correctly write the same bytes.
+  - **Export programs.** A part that loses its instrument after having one writes program 1, so a D.C. back to a bar before the instrument arrived cannot replay a stale program. A part with no instrument from the start writes none.
+  - **`grid:` bounds.** A grid finer than 1/1024 of a whole note raises `ArgumentError`, so the grid cannot make the bar layout unbounded.
+  - **Error translation.** It rescues model constructors' `ArgumentError` and the like only in the flow-building phase, so a bug in the reader or quantizer surfaces as itself rather than as a `ParseError`.
 
 ## Implementation Plan
 
