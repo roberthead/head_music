@@ -235,6 +235,11 @@ require "head_music/analysis/chord_analysis"
 require "head_music/analysis/pitch_class_set"
 require "head_music/analysis/pitch_collection"
 require "head_music/analysis/sonority"
+require "head_music/analysis/unspelled_note"
+require "head_music/analysis/key_region"
+require "head_music/analysis/note_input"
+require "head_music/analysis/note_input/flow_reader"
+require "head_music/analysis/key_finder"
 
 # style analysis
 require "head_music/style/tradition"
