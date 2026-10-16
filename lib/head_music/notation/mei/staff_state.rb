@@ -8,7 +8,9 @@ module HeadMusic::Notation::MEI
   # The key and meter change where a later <scoreDef> states them, or
   # where the first staff's <staffDef> does in a score that states them on
   # its staves alone, as MuseScore does. A score-wide key resets every
-  # staff's own. A later <scoreDef> that adds or removes staves raises.
+  # staff's own. A later <scoreDef> that adds or removes staves raises. A
+  # later <staffDef> for a staff the score has not is skipped and noted,
+  # since a measure that then uses that staff raises.
   class StaffState
     include XmlReading
 
@@ -30,8 +32,14 @@ module HeadMusic::Notation::MEI
       @written_fifths = {}
       @duration_defaults = {}
       @opening = opening
+      @added_staves = Set.new
       reset_changes
       groups.staff_numbers.each { |number| read_written_key(groups.staff_def(number), number) }
+    end
+
+    # Whether a later <staffDef> named a staff the score does not have.
+    def added_staff?(number)
+      @added_staves.include?(number)
     end
 
     def written_fifths(staff_number)
@@ -78,7 +86,7 @@ module HeadMusic::Notation::MEI
     def apply_staff_def(element, **where)
       number = AttributeValues.read(element, "n", **where, element: element)
       raise ParseError.new("A <staffDef> has no @n", **where, element: element) unless number
-      raise ParseError.new("A <staffDef> numbered #{number} adds a staff, which is not supported", **where, element: element) unless @groups.part_for(number)
+      return @added_staves << number unless @groups.part_for(number)
 
       where = where.merge(staff: number, element: element)
       read_staff_values(element, number, where)

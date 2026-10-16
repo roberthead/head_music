@@ -204,11 +204,19 @@ module HeadMusic::Notation::MEI
         next controls << child unless child.name == "staff"
 
         number = AttributeValues.read(child, "n", **where, element: child) || 1
-        raise ParseError.new("A <staff> numbered #{number} has no <staffDef>", **where, element: child) unless @groups.part_for(number)
+        unknown_staff(number, child, where) unless @groups.part_for(number)
 
         staves[number] << child
       end
       [staves, controls]
+    end
+
+    def unknown_staff(number, element, where)
+      if @state.added_staff?(number)
+        raise UnsupportedFeatureError.new("A <staff> numbered #{number} is added by a later <staffDef>, which is not supported", **where, element: element)
+      end
+
+      raise ParseError.new("A <staff> numbered #{number} has no <staffDef>", **where, element: element)
     end
 
     def read_contents(reading, staves, where)

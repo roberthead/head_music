@@ -104,6 +104,17 @@ describe HeadMusic::Notation::MEI do
       expect(flow.parts.first.instrument_changes.transform_values(&:name_key)).to eq(2 => :flute)
     end
 
+    it "skips a later staff definition for a staff the score never uses, as Brahms's Op. 51 No. 1 writes one" do
+      flow = parse(mei_staff(1, mei_note("C4", "1")), %(<staffDef n="6"><clef shape="F" line="4"/></staffDef>), mei_staff(1, mei_note("D4", "1")))
+      expect([flow.parts.length, flow.voices.first.voice_events.map(&:to_s)]).to eq [1, ["whole C4 at 1:1:000", "whole D4 at 2:1:000"]]
+    end
+
+    it "refuses a staff that a later staff definition adds" do
+      later = [%(<staffDef n="2"><clef shape="F" line="4"/></staffDef>), mei_staff(1, mei_note("D4", "1")) + mei_staff(2, mei_note("C3", "1"))]
+      expect { parse(mei_staff(1, mei_note("C4", "1")), *later) }
+        .to raise_error(described_class::UnsupportedFeatureError, /<staff> numbered 2 is added by a later <staffDef>, which is not supported \(measure 2, <staff>\)/)
+    end
+
     it "refuses a later scoreDef that adds or removes staves" do
       later = %(<scoreDef><staffGrp>#{mei_staff_def(1)}#{mei_staff_def(2)}</staffGrp></scoreDef>)
       expect { parse(mei_staff(1, mei_note("C4", "1")), later, mei_staff(1, mei_note("C4", "1"))) }
