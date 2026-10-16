@@ -25,12 +25,7 @@ module HeadMusic::MIDI
     end
 
     def bars
-      @bars ||= begin
-        meter = HeadMusic::Rudiment::Meter.get(DEFAULT_METER)
-        length = Rational(meter.top_number, meter.bottom_number)
-        count = [(time(@end_tick) / length).ceil, 1].max
-        Array.new(count) { |index| Bar.new(number: index + 1, start: index * length, length: length, meter: meter) }.freeze
-      end
+      @bars ||= lay_out.freeze
     end
 
     def first_number
@@ -52,6 +47,71 @@ module HeadMusic::MIDI
 
     def end_time
       bars.last.end_time
+    end
+
+    private
+
+    def lay_out
+      changes = meter_changes
+      bars = []
+      start = 0r
+      if pickup?(changes)
+        bars << Bar.new(number: 0, start: start, length: changes[1].first, meter: changes[1].last)
+        start = changes[1].first
+        changes = changes.drop(1)
+      end
+      meter = changes.first.last
+      changes.drop(1).each do |at, following|
+        next if following == meter
+
+        start = fill(bars, start, at, meter, partial: false)
+        meter = following
+      end
+      fill(bars, start, [time(@end_tick), start].max, meter, partial: true)
+      bars << bar(bars, start, meter) if bars.empty?
+      bars
+    end
+
+    # [time, meter] at time 0 and wherever a later time signature takes
+    # effect before the end, the last at a tick winning.
+    def meter_changes
+      latest = @time_signatures.chunk_while { |before, after| before.tick == after.tick }.map(&:last)
+      changes = latest.filter_map do |event|
+        [time(event.tick), HeadMusic::Rudiment::Meter.get("#{event.numerator}/#{event.denominator}")] if event.tick < @end_tick || event.tick.zero?
+      end
+      changes.unshift([0r, HeadMusic::Rudiment::Meter.get(DEFAULT_METER)]) unless changes.first&.first&.zero?
+      changes
+    end
+
+    # The second time signature arrives within the first bar and before a
+    # full bar of its own meter, so the bar it closes is a pickup.
+    def pickup?(changes)
+      return false if changes.length < 2
+
+      at, following = changes[1]
+      at <= length_of(changes.first.last) && at < length_of(following)
+    end
+
+    # Appends the bars of one meter from +start+ to +to+, which must be a
+    # barline unless it is the end, and returns where they end.
+    def fill(bars, start, to, meter, partial:)
+      count = (to - start) / length_of(meter)
+      raise UnsupportedFeatureError, "a time signature changes the meter within bar #{next_number(bars) + count.floor}" unless partial || count.denominator == 1
+
+      count.ceil.times { |index| bars << bar(bars, start + index * length_of(meter), meter) }
+      start + count.ceil * length_of(meter)
+    end
+
+    def bar(bars, start, meter)
+      Bar.new(number: next_number(bars), start: start, length: length_of(meter), meter: meter)
+    end
+
+    def next_number(bars)
+      bars.empty? ? 1 : bars.last.number + 1
+    end
+
+    def length_of(meter)
+      Rational(meter.top_number, meter.bottom_number)
     end
   end
 end
