@@ -8,7 +8,8 @@ module HeadMusic::Notation::MEI
   # number together are the voice, as MuseScore and most encoders write a
   # piano, and a key with no notes anywhere is a placeholder that is not
   # read. Where several layers of one voice share a measure, the one with
-  # notes is read, or else one with any timed event.
+  # notes is read, or else one with any timed event. A further layer with
+  # notes of the same staff and @n is a voice of its own, keyed after it.
   #
   # A voice's role is the <label> of its <layerDef>.
   class VoiceAssignment
@@ -22,11 +23,11 @@ module HeadMusic::Notation::MEI
 
     def assign
       by_measure = @reading.layers.chunk_while { |before, after| before.measure_index == after.measure_index }
-      by_staff = by_staff?(by_measure)
-      noted = @reading.layers.select { |layer| layer.content.notes? }.map { |layer| key(layer, by_staff) }.uniq
+      @by_staff = @reading.by_staff = by_staff?(by_measure)
+      noted = @reading.layers.select { |layer| layer.content.notes? }.map { |layer| key(layer) }.uniq
       by_measure.each do |layers|
-        layers.group_by { |layer| key(layer, by_staff) }.each do |key, candidates|
-          next if by_staff && !noted.include?(key)
+        layers.group_by { |layer| key(layer) }.each do |key, candidates|
+          next if @by_staff && !noted.include?(key)
 
           add(@reading.track(key, label(key)), chosen(candidates))
           @reading.roles[key] ||= role(key)
@@ -43,12 +44,14 @@ module HeadMusic::Notation::MEI
       end
     end
 
-    def key(layer, by_staff)
-      by_staff ? [@definition.staff_index(layer.content.staff_number), layer.content.number] : layer.content.number
+    def key(layer)
+      content = layer.content
+      base = @by_staff ? [@definition.staff_index(content.staff_number), content.number] : content.number
+      content.occurrence.zero? ? base : [*Array(base), content.occurrence]
     end
 
     def label(key)
-      key.is_a?(Array) ? "#{key.first}.#{key.last}" : key.to_s
+      Array(key).join(".")
     end
 
     def chosen(candidates)
@@ -90,8 +93,8 @@ module HeadMusic::Notation::MEI
     end
 
     def role(key)
-      number = key.is_a?(Array) ? key.last : key
-      staff_defs = key.is_a?(Array) ? [@definition.staff_defs.values[key.first - 1]] : @definition.staff_defs.values
+      number = Array(key)[@by_staff ? 1 : 0]
+      staff_defs = @by_staff ? [@definition.staff_defs.values[key.first - 1]] : @definition.staff_defs.values
       staff_defs.each do |staff_def|
         layer_def = @editorial.children_named(staff_def, "layerDef").find do |candidate|
           (AttributeValues.read(candidate, "n", element: candidate) || 1) == number

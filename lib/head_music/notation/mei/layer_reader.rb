@@ -44,8 +44,10 @@ module HeadMusic::Notation::MEI
     end
 
     # A layer as read: its @n, its entries, how far its timed entries reach,
-    # and the clefs it opens and closes with, if any.
-    Content = Struct.new(:number, :element, :staff_number, :entries, :extent, :opening_clef, :closing_clef) do
+    # and the clefs it opens and closes with, if any. +occurrence+ counts
+    # the layers with notes before it in the bar that share its staff and
+    # @n.
+    Content = Struct.new(:number, :element, :staff_number, :entries, :extent, :opening_clef, :closing_clef, :occurrence) do
       def notes?
         entries.any?(&:sounding?)
       end
@@ -88,7 +90,7 @@ module HeadMusic::Notation::MEI
       walk(@layer, PLAIN, 1)
       Content.new(
         number: @number, element: @layer, staff_number: @staff_number, entries: @entries, extent: @extent,
-        opening_clef: @opening_clef, closing_clef: closing_clef
+        opening_clef: @opening_clef, closing_clef: closing_clef, occurrence: 0
       )
     end
 

@@ -21,6 +21,9 @@ module HeadMusic::Notation::MEI
     # By track, the first and last events of each tuplet group.
     attr_writer :tuplet_groups
 
+    # Whether the voices are keyed by staff and layer, not layer alone.
+    attr_accessor :by_staff
+
     def tuplet_groups
       @tuplet_groups || {}
     end
@@ -51,7 +54,7 @@ module HeadMusic::Notation::MEI
     # The track of a layer on a staff, by whichever key the part's voices
     # take, or nil.
     def layer_track(staff_number, layer_number)
-      @tracks[[definition.staff_index(staff_number), layer_number]] || @tracks[layer_number]
+      by_staff ? @tracks[[definition.staff_index(staff_number), layer_number]] : @tracks[layer_number]
     end
 
     # The tracks in voice-key order.

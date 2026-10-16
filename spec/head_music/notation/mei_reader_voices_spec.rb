@@ -35,6 +35,36 @@ describe HeadMusic::Notation::MEI do
       expect(voice_event_strings(parse(%(<staff n="1"><layer>#{mei_note("C4", "1")}</layer></staff>)))).to eq [["whole C4 at 1:1:000"]]
     end
 
+    describe "a layer with notes whose staff and @n another layer with notes shares" do
+      let(:upper) { ["whole E5 at 1:1:000", "whole F5 at 2:1:000"] }
+      let(:lower) { ["whole C4 at 1:1:000", "whole D4 at 2:1:000"] }
+
+      it "is a voice of its own, after the first" do
+        flow = parse(mei_staff(1, [1, mei_note("E5", "1")], [1, mei_note("C4", "1")]), mei_staff(1, [1, mei_note("F5", "1")], [1, mei_note("D4", "1")]))
+        expect(voice_event_strings(flow)).to eq [upper, lower]
+      end
+
+      it "is a voice of its own where neither layer has an @n" do
+        bar = ->(high, low) { %(<staff n="1"><layer>#{mei_note(high, "1")}</layer><layer>#{mei_note(low, "1")}</layer></staff>) }
+        expect(voice_event_strings(parse(bar.call("E5", "C4"), bar.call("F5", "D4")))).to eq [upper, lower]
+      end
+
+      it "is a voice of its own in a second <staff> of the same number" do
+        flow = parse(mei_staff(1, mei_note("E5", "1")) + mei_staff(1, mei_note("C4", "1")), mei_staff(1, mei_note("F5", "1")) + mei_staff(1, mei_note("D4", "1")))
+        expect(voice_event_strings(flow)).to eq [upper, lower]
+      end
+
+      it "is a voice of its own on a staff of a part keyed by staff and layer" do
+        flow = piano(mei_staff(1, [1, mei_note("E5", "1")], [1, mei_note("C5", "1")]) + mei_staff(2, mei_note("C3", "1")))
+        expect(voice_event_strings(flow)).to eq [["whole E5 at 1:1:000"], ["whole C5 at 1:1:000"], ["whole C3 at 1:1:000"]]
+      end
+
+      it "is not one where the other layer holds no notes" do
+        flow = parse(mei_staff(1, [1, mei_note("E5", "1")], [1, "<mSpace/>"]), mei_staff(1, [1, %(<space dur="1"/>)], [1, mei_note("F5", "1")]))
+        expect(voice_event_strings(flow)).to eq [upper]
+      end
+    end
+
     it "takes each voice's role from its layerDef's label" do
       staff_def = mei_staff_def(1, inside: %(<layerDef n="1"><label>upper</label></layerDef><layerDef n="2" label="lower"/>))
       flow = parse(mei_staff(1, [1, mei_note("E5", "1")], [2, mei_note("C4", "1")]), score_def: mei_score_def(staff_grp: "<staffGrp>#{staff_def}</staffGrp>"))

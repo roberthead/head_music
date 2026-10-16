@@ -220,9 +220,22 @@ module HeadMusic::Notation::MEI
     end
 
     def read_contents(reading, staves, where)
-      reading.definition.staff_numbers.flat_map do |number|
+      contents = reading.definition.staff_numbers.flat_map do |number|
         staves[number].flat_map { |staff| read_layers(staff, number, where.merge(staff: number)) }
       end
+      count_repeats(contents)
+    end
+
+    # A layer with notes whose staff and @n an earlier layer with notes in
+    # the bar shares is a voice of its own, since @n is optional.
+    def count_repeats(contents)
+      seen = Hash.new(0)
+      contents.select(&:notes?).each do |content|
+        key = [content.staff_number, content.number]
+        content.occurrence = seen[key]
+        seen[key] += 1
+      end
+      contents
     end
 
     # Each layer's notes are spelled on the staff it sits on, and its
@@ -259,7 +272,7 @@ module HeadMusic::Notation::MEI
       contents.group_by { |content| staves[content] }.each_with_object({}.compare_by_identity) do |(number, staff_contents), pitches|
         accidentals = AccidentalReading.new(@state.written_fifths(number))
         sorted_notes(staff_contents).each do |note, entry, content|
-          stream = [reading.definition.index, number, content.number]
+          stream = [reading.definition.index, number, content.number, content.occurrence]
           pitches[note] = pitch(reading, note, entry, stream, accidentals, where.merge(staff: number))
         end
       end
