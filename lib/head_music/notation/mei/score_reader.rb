@@ -42,6 +42,7 @@ module HeadMusic::Notation::MEI
       @tuplets = TupletSpans.new(source.index)
       @measures = []
       @pending = []
+      @closing_clefs = {}.compare_by_identity
     end
 
     def read
@@ -116,6 +117,7 @@ module HeadMusic::Notation::MEI
         change_clefs(reading, index, changes, contents[reading]) if index.positive?
         reading.instrument_changes[index] = changes.instruments[reading.definition.index] if changes.instruments.key?(reading.definition.index)
         read_part(reading, contents[reading], index, where)
+        note_closing_clefs(reading, index, contents[reading])
       end
     end
 
@@ -169,15 +171,29 @@ module HeadMusic::Notation::MEI
       tstamp ? tstamp == 1 : attribute(control, "startid", element: control).nil?
     end
 
-    # A clef change between measures, or a clef that opens a layer.
+    # A clef change between measures, a clef that opens a layer, or one
+    # that closes a layer of the bar before, each later one winning.
     def change_clefs(reading, index, changes, contents)
-      clefs = reading.measures[index].clefs
+      openings = {}
       contents.each do |content|
-        clefs[reading.definition.staff_index(content.staff_number)] ||= content.opening_clef if content.opening_clef
+        openings[reading.definition.staff_index(content.staff_number)] ||= content.opening_clef if content.opening_clef
       end
+      clefs = reading.measures[index].clefs
+      clefs.merge!(@closing_clefs.fetch(reading, {}), openings)
       changes.clefs.each do |number, clef|
         staff = reading.definition.staff_index(number)
         clefs[staff] = clef if staff
+      end
+    end
+
+    # The clefs after the last entry of a layer that reaches as far as its
+    # part's music in the bar, which sit at the barline after it.
+    def note_closing_clefs(reading, index, contents)
+      reach = reading.measures[index].extent
+      @closing_clefs[reading] = contents.each_with_object({}) do |content, clefs|
+        next unless content.closing_clef && content.extent == reach
+
+        clefs[reading.definition.staff_index(content.staff_number)] ||= content.closing_clef
       end
     end
 

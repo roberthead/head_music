@@ -86,6 +86,11 @@ describe HeadMusic::Notation::MEI do
       expect(flow.parts.first.staff_system.staves.first.clef_changes.transform_values { |clef| clef.name_key.to_s }).to eq(2 => "bass_clef")
     end
 
+    it "changes a staff's clef at the next barline by a clef after a layer's last note, as MuseScore writes one" do
+      flow = parse(mei_staff(1, mei_note("C4", "1") + %(<clef shape="F" line="4"/>)), mei_staff(1, mei_note("C3", "1")))
+      expect(flow.parts.first.staff_system.staves.first.clef_changes.transform_values { |clef| clef.name_key.to_s }).to eq(2 => "bass_clef")
+    end
+
     it "reads a clef change on the staff definitions of a later scoreDef" do
       later = %(<scoreDef><staffGrp><staffDef n="1" clef.shape="C" clef.line="3"/></staffGrp></scoreDef>)
       flow = parse(mei_staff(1, mei_note("C4", "1")), later, mei_staff(1, mei_note("C4", "1")))

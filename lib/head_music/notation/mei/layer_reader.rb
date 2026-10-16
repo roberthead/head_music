@@ -12,9 +12,11 @@ module HeadMusic::Notation::MEI
   # with no @dur is an eighth. A @cue note is a rest, and a cue grace note
   # is dropped. <rest> and <space> are rests of their length, a <space> of
   # none taking what OpenSpaces gives it, and <mRest>, <mSpace>, and
-  # <multiRest> fill their bars. A <clef> before the
-  # first entry is the layer's opening clef; one later in the layer is
-  # skipped, as are <barLine> and every element the reader does not use.
+  # <multiRest> fill their bars. A <clef> before the first entry is the
+  # layer's opening clef, and one after the last is its closing clef, as
+  # MuseScore writes a change at the end of the bar before it. One in
+  # between is skipped, as are <barLine> and every element the reader does
+  # not use.
   # Measure repeats raise, since what they repeat is no music of their own.
   class LayerReader
     include XmlReading
@@ -41,8 +43,8 @@ module HeadMusic::Notation::MEI
     end
 
     # A layer as read: its @n, its entries, how far its timed entries reach,
-    # and the clef it opens with, if any.
-    Content = Struct.new(:number, :element, :staff_number, :entries, :extent, :opening_clef) do
+    # and the clefs it opens and closes with, if any.
+    Content = Struct.new(:number, :element, :staff_number, :entries, :extent, :opening_clef, :closing_clef) do
       def notes?
         entries.any?(&:sounding?)
       end
@@ -78,13 +80,14 @@ module HeadMusic::Notation::MEI
       @extent = nil
       @entries = []
       @opening_clef = nil
+      @last_clef = nil
     end
 
     def read
       walk(@layer, PLAIN, 1)
       Content.new(
-        number: @number, element: @layer,
-        staff_number: @staff_number, entries: @entries, extent: @extent, opening_clef: @opening_clef
+        number: @number, element: @layer, staff_number: @staff_number, entries: @entries, extent: @extent,
+        opening_clef: @opening_clef, closing_clef: closing_clef
       )
     end
 
@@ -212,7 +215,14 @@ module HeadMusic::Notation::MEI
     end
 
     def read_clef(element)
-      @opening_clef = ClefReading.clef(element, **@where, element: element) if @entries.empty? && @opening_clef.nil?
+      return @last_clef = [element, @entries.length] unless @entries.empty?
+
+      @opening_clef ||= ClefReading.clef(element, **@where, element: element)
+    end
+
+    def closing_clef
+      element, count = @last_clef
+      ClefReading.clef(element, **@where, element: element) if element && count == @entries.length
     end
 
     def value(element, name)
