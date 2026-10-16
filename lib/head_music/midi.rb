@@ -25,6 +25,13 @@ module HeadMusic::MIDI
     Writer.new(flow, transposed: transposed).to_s
   end
 
+  # Reads a Standard MIDI File of format 0 or 1 as a flow. +key:+ is nil to
+  # trust the file's signatures, :infer, a key, a key name, or key regions.
+  # +grid:+ is :auto or the Rational whole-note step onsets snap to.
+  def self.parse(bytes, key: nil, grid: :auto)
+    Parser.new(bytes, key: key, grid: grid).flow
+  end
+
   # Raised when bytes cannot be read as a Standard MIDI File, naming the byte
   # offset where reading failed.
   class ParseError < HeadMusic::Notation::ParseError
