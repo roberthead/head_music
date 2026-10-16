@@ -24,7 +24,7 @@ module HeadMusic::Notation
 
     def place
       placed = @track.events.reject { |event| event.fills_bar || event.continuation }
-      return if @trim_edges && placed.empty?
+      return assign_staves(@track.events) if @trim_edges && placed.empty?
 
       start_at(@trim_edges ? bar_of(placed.first) : @bar_map.first_bar)
       placed.each { |event| place_event(event) }
