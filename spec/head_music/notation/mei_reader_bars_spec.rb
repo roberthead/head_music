@@ -91,6 +91,13 @@ describe HeadMusic::Notation::MEI do
         expect(keys(parse(note, %(<staffDef n="1" keysig="2s"/>), note, score_def: transposed))).to be_empty
       end
 
+      it "changes to the concert key where the staves state the key and the first staff is transposed" do
+        clarinet = mei_staff_def(1, attributes: %( keysig="0" meter.count="4" meter.unit="4" trans.diat="-1" trans.semi="-2"))
+        staves = mei_score_def(keysig: nil, meter: nil, staff_grp: "<staffGrp>#{clarinet}#{mei_staff_def(2, clef: %w[F 4], attributes: %( keysig="2f" meter.count="4" meter.unit="4"))}</staffGrp>")
+        flow = parse(note, %(<staffDef n="1" keysig="2s"/>), note, score_def: staves)
+        expect([flow.key_signature.name, keys(flow)]).to eq ["B♭ major", {2 => "C major"}]
+      end
+
       it "makes no change where only a later staff states it" do
         expect(keys(parse(note, %(<staffDef n="2" keysig="2s"/>), note, score_def: two_staves))).to be_empty
       end

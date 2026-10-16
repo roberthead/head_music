@@ -27,14 +27,10 @@ module HeadMusic::Notation::MEI
 
     private
 
-    # An interval moves a key along the circle of fifths by seven fifths a
-    # semitone less twelve a diatonic step, whatever its octaves.
     def concert_key(element)
       key = ScoreDefValues.key(element, @editorial)
       step = key && element.name == "staffDef" && StaffState.transposition(element)
-      return key unless step
-
-      ScoreDefValues::Key.new(key.fifths + (7 * step.chromatic) - (12 * step.diatonic), key.mode, nil)
+      step ? StaffState.concert_key(key, step) : key
     end
 
     def first_stated

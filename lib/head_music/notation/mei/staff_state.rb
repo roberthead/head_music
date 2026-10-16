@@ -37,7 +37,7 @@ module HeadMusic::Notation::MEI
         (ScoreDefValues.key(opening.score_def, editorial).nil? && ScoreDefValues.meter(opening.score_def, editorial).nil?)
       @first_staff = groups.staff_numbers.first
       @written_fifths = {}
-      @transposed = groups.staff_numbers.to_h { |number| [number, transposing?(opening_transposition(number))] }
+      @steps = groups.staff_numbers.to_h { |number| [number, opening_transposition(number)] }
       @score_duration_default = opening.score_def && AttributeValues.read(opening.score_def, "dur.default", element: opening.score_def)
       @duration_defaults = {}
       @layer_duration_defaults = {}
@@ -71,6 +71,14 @@ module HeadMusic::Notation::MEI
     # The transposition a staff definition states, sounding = written +
     # trans, octaves included, or nil where it states none. A @trans.semi
     # alone moves by the diatonic steps its interval usually spells.
+    # An interval moves a key along the circle of fifths by seven fifths a
+    # semitone less twelve a diatonic step, whatever its octaves.
+    def self.concert_key(key, step)
+      return key unless step
+
+      ScoreDefValues::Key.new(key.fifths + (7 * step.chromatic) - (12 * step.diatonic), key.mode, nil)
+    end
+
     def self.transposition(staff_def, **where)
       semitones = AttributeValues.read(staff_def, "trans.semi", **where, element: staff_def)
       return unless semitones
@@ -106,7 +114,7 @@ module HeadMusic::Notation::MEI
       transposition = self.class.transposition(element, **where.except(:element))
       if transposition
         @transpositions[number] = transposition
-        @transposed[number] = transposing?(transposition)
+        @steps[number] = transposition
       end
       read_staff_values(element, number, where)
       clef = ClefReading.staff_def_clef(element, @editorial, **where)
@@ -119,7 +127,13 @@ module HeadMusic::Notation::MEI
     # A staff's key from this measure on, as its <staffDef> or a <keySig>
     # opening its layer states it.
     def change_key(number, key)
-      @key = key if number == @first_staff && (@staff_sourced || !@transposed[number])
+      if number == @first_staff
+        if @staff_sourced
+          @key = self.class.concert_key(key, @steps[number])
+        elsif !transposing?(@steps[number])
+          @key = key
+        end
+      end
       @written_fifths[number] = key.fifths
     end
 
