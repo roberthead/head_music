@@ -3,12 +3,8 @@ module HeadMusic::Style::Guides; end
 
 # Rules for third species melodies
 class HeadMusic::Style::Guides::ThirdSpeciesMelody < HeadMusic::Style::Guides::SpeciesMelody
-  gate_items(*MELODIC_GATES)
-
-  primary_items(
+  moving_melody(
     HeadMusic::Style::Guidelines::FirstBarQuarterNotes,
     HeadMusic::Style::Guidelines::FourPerBar
   )
-
-  secondary_items(*MOVING_MELODIC_CRAFT)
 end

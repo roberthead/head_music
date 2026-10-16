@@ -29,6 +29,21 @@ describe HeadMusic::Content::Position do
     its(:code) { is_expected.to eq "3:2:000" }
   end
 
+  describe ".for_flow" do
+    it "builds a position in the flow from a code" do
+      expect(described_class.for_flow(flow, "3:2:000").to_s).to eq "3:2:000"
+    end
+
+    it "keeps a position of the flow" do
+      expect(described_class.for_flow(flow, position)).to be position
+    end
+
+    it "refuses a position of another flow" do
+      expect { described_class.for_flow(HeadMusic::Content::Flow.new, position) }
+        .to raise_error(ArgumentError, "position belongs to a different flow")
+    end
+  end
+
   describe "#strength" do
     context "for the downbeat" do
       let(:count) { 1 }

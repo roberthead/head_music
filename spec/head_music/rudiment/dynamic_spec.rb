@@ -19,6 +19,17 @@ describe HeadMusic::Rudiment::Dynamic do
     end
   end
 
+  describe ".fetch" do
+    it "answers a dynamic of the kind asked for" do
+      expect(described_class.fetch(:sfz, kind: "accent", hint: "elsewhere")).to eq described_class.get(:sfz)
+    end
+
+    it "refuses one of the other kind, with the hint" do
+      expect { described_class.fetch(:p, kind: "accent", hint: "place it elsewhere") }
+        .to raise_error(ArgumentError, "p is a level, not an accent; place it elsewhere")
+    end
+  end
+
   describe "#level? and #accent?" do
     it "knows a level" do
       expect(described_class.get(:p)).to have_attributes(level?: true, accent?: false)

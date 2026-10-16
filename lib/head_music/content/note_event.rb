@@ -111,12 +111,6 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   end
 
   def accent_for(identifier)
-    dynamic = HeadMusic::Rudiment::Dynamic.get(identifier)
-    raise ArgumentError, "unknown dynamic: #{identifier.inspect}" unless dynamic
-    unless dynamic.accent?
-      raise ArgumentError, "#{dynamic.name_key} is a level, not an accent; place it on the voice with place_dynamic"
-    end
-
-    dynamic
+    HeadMusic::Rudiment::Dynamic.fetch(identifier, kind: "accent", hint: "place it on the voice with place_dynamic")
   end
 end

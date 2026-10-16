@@ -53,4 +53,12 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
   def self.category
     :melody
   end
+
+  # Declares a moving species: the melodic gates, what it teaches, and the
+  # moving craft plus any background of its own.
+  def self.moving_melody(*primaries, background: [])
+    gate_items(*MELODIC_GATES)
+    primary_items(*primaries)
+    secondary_items(*MOVING_MELODIC_CRAFT, *background)
+  end
 end

@@ -18,6 +18,19 @@ class HeadMusic::Rudiment::Dynamic
     all.select(&:accent?)
   end
 
+  KINDS_WITH_ARTICLES = {"level" => "a level", "accent" => "an accent"}.freeze
+
+  # The dynamic of a kind an identifier names, raising for any other, with a
+  # hint at where a dynamic of the other kind goes.
+  def self.fetch(identifier, kind:, hint:)
+    dynamic = get(identifier)
+    raise ArgumentError, "unknown dynamic: #{identifier.inspect}" unless dynamic
+    return dynamic if dynamic.kind == kind
+
+    raise ArgumentError, "#{dynamic.name_key} is #{KINDS_WITH_ARTICLES.fetch(dynamic.kind)}, " \
+      "not #{KINDS_WITH_ARTICLES.fetch(kind)}; #{hint}"
+  end
+
   def initialize(name_key, record)
     super
     @kind = record.fetch("kind")

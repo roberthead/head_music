@@ -12,7 +12,7 @@ class HeadMusic::Content::DynamicEvent
   def initialize(flow, position, level)
     @flow = flow
     @level = level_for(level)
-    ensure_position(position)
+    @position = HeadMusic::Content::Position.for_flow(flow, position)
   end
 
   def to_s
@@ -30,22 +30,6 @@ class HeadMusic::Content::DynamicEvent
   private
 
   def level_for(identifier)
-    dynamic = HeadMusic::Rudiment::Dynamic.get(identifier)
-    raise ArgumentError, "unknown dynamic: #{identifier.inspect}" unless dynamic
-    unless dynamic.level?
-      raise ArgumentError, "#{dynamic.name_key} is an accent, not a level; set it as a note event's note_dynamic"
-    end
-
-    dynamic
-  end
-
-  def ensure_position(position)
-    @position = if position.is_a?(HeadMusic::Content::Position)
-      raise ArgumentError, "position belongs to a different flow" unless position.flow.equal?(flow)
-
-      position
-    else
-      HeadMusic::Content::Position.new(flow, position)
-    end
+    HeadMusic::Rudiment::Dynamic.fetch(identifier, kind: "level", hint: "set it as a note event's note_dynamic")
   end
 end

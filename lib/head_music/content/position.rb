@@ -27,6 +27,14 @@ class HeadMusic::Content::Position
     freeze
   end
 
+  # A position in the flow, from one of its positions or a code for one.
+  def self.for_flow(flow, position)
+    return new(flow, position) unless position.is_a?(self)
+    raise ArgumentError, "position belongs to a different flow" unless position.flow.equal?(flow)
+
+    position
+  end
+
   # @return [HeadMusic::Time::MusicalPosition] the coordinate, unbound
   def self.value_for(code_or_bar, count, tick, subtick)
     if code_or_bar.is_a?(String) && code_or_bar =~ /\D/

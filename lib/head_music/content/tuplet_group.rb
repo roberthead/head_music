@@ -215,9 +215,6 @@ class HeadMusic::Content::TupletGroup
   end
 
   def position_for(position)
-    return HeadMusic::Content::Position.new(voice.flow, position) unless position.is_a?(HeadMusic::Content::Position)
-    raise ArgumentError, "position belongs to a different flow" unless position.flow.equal?(voice.flow)
-
-    position
+    HeadMusic::Content::Position.for_flow(voice.flow, position)
   end
 end

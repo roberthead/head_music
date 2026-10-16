@@ -8,7 +8,7 @@ class HeadMusic::Content::Comment
   def initialize(flow, text, position = nil)
     @flow = flow
     @text = text
-    ensure_position(position)
+    @position = position && HeadMusic::Content::Position.for_flow(flow, position)
   end
 
   def to_s
@@ -17,20 +17,5 @@ class HeadMusic::Content::Comment
 
   def to_h
     {"text" => text, "position" => position&.to_s}
-  end
-
-  private
-
-  def ensure_position(position)
-    return if position.nil?
-
-    @position = if position.is_a?(HeadMusic::Content::Position)
-      unless position.flow.equal?(flow)
-        raise ArgumentError, "position belongs to a different flow"
-      end
-      position
-    else
-      HeadMusic::Content::Position.new(flow, position)
-    end
   end
 end
