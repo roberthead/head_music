@@ -158,6 +158,50 @@ describe HeadMusic::Time::EventMap do
     end
   end
 
+  describe "cost" do
+    let(:counter) { {comparisons: 0, counting: false} }
+
+    before do
+      allow(described_class::Event).to receive(:new).and_wrap_original do |original, *args|
+        original.call(*args).tap { |event| count_comparisons(event) }
+      end
+    end
+
+    def count_comparisons(event)
+      %i[at? after?].each do |comparison|
+        allow(event).to receive(comparison).and_wrap_original do |original, *args|
+          counter[:comparisons] += 1 if counter[:counting]
+          original.call(*args)
+        end
+      end
+    end
+
+    def comparisons
+      counter.merge!(comparisons: 0, counting: true)
+      yield
+      counter[:counting] = false
+      counter[:comparisons]
+    end
+
+    def fill(map, bars)
+      (1..bars).each { |bar| map.add(position(bar), bar) }
+    end
+
+    it "grows linearly when adding one event per bar" do
+      single = comparisons { fill(described_class.new, 500) }
+      double = comparisons { fill(described_class.new, 1_000) }
+      expect(double).to be <= single * 2.2
+    end
+
+    it "grows linearly when removing one event per bar" do
+      costs = [500, 1_000].map do |bars|
+        map = described_class.new.tap { |filled| fill(filled, bars) }
+        comparisons { bars.downto(1) { |bar| map.remove(position(bar)) } }
+      end
+      expect(costs.last).to be <= costs.first * 2.2
+    end
+  end
+
   describe "an event" do
     it "describes itself by position and value" do
       expect(map.add(position(5), "3/4").to_s).to eq "5:1:0:0=3/4"

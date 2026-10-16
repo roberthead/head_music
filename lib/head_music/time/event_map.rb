@@ -69,12 +69,12 @@ module HeadMusic
       # @return [Event] the event now at that position
       def add(position, value)
         tuple = self.class.tuple_for(position)
-        index = events.index { |event| event.at?(tuple) }
+        index = insertion_index(tuple)
         event = Event.new(position, value, tuple)
-        if index
-          events[index] = event
+        if preceding_event_at?(index, tuple)
+          events[index - 1] = event
         else
-          events.insert(insertion_index(tuple), event)
+          events.insert(index, event)
         end
         event
       end
@@ -84,11 +84,11 @@ module HeadMusic
       # @return [Event, nil] the removed event
       def remove(position)
         tuple = self.class.tuple_for(position)
-        index = events.index { |event| event.at?(tuple) }
-        return if index.nil?
-        return if index.zero? && !@removable_first_event
+        index = insertion_index(tuple)
+        return unless preceding_event_at?(index, tuple)
+        return if index == 1 && !@removable_first_event
 
-        events.delete_at(index)
+        events.delete_at(index - 1)
       end
 
       # Remove every event, except the first when the map protects it.
@@ -164,8 +164,15 @@ module HeadMusic
 
       private
 
+      # Appending in position order is the common case, so it skips the search.
       def insertion_index(tuple)
-        events.bsearch_index { |event| event.after?(tuple) } || events.length
+        return events.length unless events.last&.after?(tuple)
+
+        events.bsearch_index { |event| event.after?(tuple) }
+      end
+
+      def preceding_event_at?(index, tuple)
+        index.positive? && events[index - 1].at?(tuple)
       end
     end
   end
