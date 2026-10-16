@@ -138,10 +138,15 @@ describe HeadMusic::Notation::MEI do
         .to raise_error(described_class::UnsupportedFeatureError, /<staff> numbered 2 is added by a later <staffDef>, which is not supported \(measure 2, <staff>\)/)
     end
 
-    it "refuses a later scoreDef that adds or removes staves" do
+    it "refuses a later scoreDef that adds or removes staves, naming the measure it comes before" do
       later = %(<scoreDef><staffGrp>#{mei_staff_def(1)}#{mei_staff_def(2)}</staffGrp></scoreDef>)
       expect { parse(mei_staff(1, mei_note("C4", "1")), later, mei_staff(1, mei_note("C4", "1"))) }
-        .to raise_error(described_class::UnsupportedFeatureError, /adds or removes staves/)
+        .to raise_error(described_class::UnsupportedFeatureError, /adds or removes staves is not supported \(measure 2, <scoreDef>\)/)
+    end
+
+    it "names the measure a later staff definition comes before in its errors" do
+      expect { parse(mei_staff(1, mei_note("C4", "1")), %(<staffDef/>), mei_staff(1, mei_note("C4", "1"))) }
+        .to raise_error(described_class::ParseError, /<staffDef> has no @n \(measure 2, <staffDef>\)/)
     end
   end
 end

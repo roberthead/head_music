@@ -43,6 +43,7 @@ module HeadMusic::Notation::MEI
       @measures = []
       @pending = []
       @closing_clefs = {}.compare_by_identity
+      @definitions = []
     end
 
     def read
@@ -65,8 +66,8 @@ module HeadMusic::Notation::MEI
         when "section" then walk(child, depth + 1, passes)
         when "ending" then walk(child, depth + 1, EndingPasses.passes(child, endings += 1, measure: next_number))
         when "measure" then read_measure(child, passes)
-        when "scoreDef" then @state.apply_score_def(child, measure: next_number) unless child.equal?(@opening_score_def)
-        when "staffDef" then @state.apply_staff_def(child, measure: next_number) unless @groups.opening?(child)
+        when "scoreDef" then @definitions << child unless child.equal?(@opening_score_def)
+        when "staffDef" then @definitions << child unless @groups.opening?(child)
         end
       end
     end
@@ -103,6 +104,7 @@ module HeadMusic::Notation::MEI
 
     def read_measure(element, passes)
       where = {measure: attribute(element, "n", element: element)}
+      apply_definitions(where)
       staves, controls = staves_and_controls(element, where)
       @ties.note_controls(controls, where)
       @tuplets.note_controls(controls, where)
@@ -121,6 +123,19 @@ module HeadMusic::Notation::MEI
         read_part(reading, contents[reading], index, where)
         note_closing_clefs(reading, index, contents[reading])
       end
+    end
+
+    # The <scoreDef>s and <staffDef>s since the last measure, which take
+    # effect at this one and name it in their errors.
+    def apply_definitions(where)
+      @definitions.each do |definition|
+        if definition.name == "scoreDef"
+          @state.apply_score_def(definition, **where)
+        else
+          @state.apply_staff_def(definition, **where)
+        end
+      end
+      @definitions.clear
     end
 
     # How far a part's music reaches in a measure. After the first, a
