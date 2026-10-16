@@ -3,7 +3,8 @@ module HeadMusic::Notation::MEI
   # children here, and gets the one reading of them this reader keeps.
   #
   # - <app> takes its <lem>, or else its first <rdg>.
-  # - <choice> takes its <corr>, <reg>, or <expan>, or else its first child.
+  # - <choice> takes its <corr>, else its <reg>, else its <expan>, wherever
+  #   each stands among its children, or else its first child.
   # - <subst> takes its <add>.
   # - <supplied>, <add>, <unclear>, <restore>, <damage>, and the other
   #   members of a choice give their contents.
@@ -94,7 +95,7 @@ module HeadMusic::Notation::MEI
     def chosen(element)
       case element.name
       when "app" then first_named(element, %w[lem]) || first_named(element, %w[rdg])
-      when "choice" then first_named(element, CHOSEN_IN_CHOICE) || element_children(element).first
+      when "choice" then CHOSEN_IN_CHOICE.lazy.filter_map { |name| first_named(element, [name]) }.first || element_children(element).first
       when "subst" then first_named(element, %w[add])
       when "del" then nil
       else element

@@ -29,6 +29,11 @@ describe HeadMusic::Notation::MEI::Editorial do
     end
   end
 
+  it "takes a choice's <corr> over its <reg>, and its <reg> over its <expan>, in any order" do
+    choice = %(<choice><expan><note n="expan"/></expan><reg><note n="reg"/></reg><corr><note n="corr"/></corr></choice>)
+    expect([names(choice), names(choice.sub(%r{<corr>.*</corr>}, ""))]).to eq [["corr"], ["reg"]]
+  end
+
   it "takes a choice's first child where it names none of them" do
     expect(names(%(<choice><unclear><note n="1"/></unclear><unclear><note n="2"/></unclear></choice>))).to eq ["1"]
   end
