@@ -81,8 +81,8 @@ describe HeadMusic::Notation::MEI do
     end
 
     describe "a <space> with no @dur" do
-      def voices(*items)
-        parse(*items, score_def: mei_score_def(clefs: [%w[G 2], %w[F 4]])).voices.map { |voice| voice.voice_events.map(&:to_s) }
+      def voices(*items, score_def: mei_score_def(clefs: [%w[G 2], %w[F 4]]))
+        parse(*items, score_def: score_def).voices.map { |voice| voice.voice_events.map(&:to_s) }
       end
 
       it "takes the time its layer leaves of the longest other layer in the measure" do
@@ -100,9 +100,15 @@ describe HeadMusic::Notation::MEI do
           .to eq ["quarter C3 at 2:1:000", "dotted half rest at 2:2:000"]
       end
 
-      it "raises where no other layer in the measure gives a length" do
-        expect { parse(mei_staff(1, %(<space/>) + mei_note("C4"))) }
-          .to raise_error(described_class::ParseError, /A <space> with no @dur has no other layer in its measure to take its length from \(measure 1, <space>\)/)
+      it "fills the meter's length in a measure of nothing but such spaces" do
+        expect(voices(mei_staff(1, mei_note("E5", "1")), mei_staff(1, %(<space/>)) + mei_staff(2, %(<space/><space/>)), mei_staff(1, mei_note("D5", "1"))).first)
+          .to eq ["whole E5 at 1:1:000", "whole rest at 2:1:000", "whole D5 at 3:1:000"]
+      end
+
+      it "takes the meter's length where every layer holds such a space, as Ravel's Le tombeau writes its bar 71" do
+        layer = %(<space/>) * 2 + mei_note("C4", "8") * 2
+        expect(voices(mei_staff(1, layer) + mei_staff(2, mei_note("C3", "8") + %(<space/>)), score_def: mei_score_def(meter: [2, 4], clefs: [%w[G 2], %w[F 4]])))
+          .to eq [["eighth rest at 1:1:000", "eighth rest at 1:1:480", "eighth C4 at 1:2:000", "eighth C4 at 1:2:480"], ["eighth C3 at 1:1:000", "dotted quarter rest at 1:1:480"]]
       end
     end
 

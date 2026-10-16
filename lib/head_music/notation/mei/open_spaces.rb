@@ -4,20 +4,16 @@ module HeadMusic::Notation::MEI
   # equally among such spaces in the layer, the entries after each moving
   # later by its share. A layer of whole-bar rests is as long as its bar.
   # A share no single rest fills is left as a gap, which placing the voice
-  # fills with rests. Where no other layer gives a length, it raises.
+  # fills with rests. Where no other layer gives a length, as where every
+  # layer holds such a space, the measure is as long as its meter.
   module OpenSpaces
     module_function
 
-    def resolve(contents, meter, where)
+    def resolve(contents, meter)
       open, closed = contents.partition { |content| content.entries.any?(&:open_space?) }
       return if open.empty?
 
-      length = closed.filter_map { |content| length_of(content, meter) }.max
-      unless length
-        space = open.first.entries.find(&:open_space?).element
-        raise ParseError.new("A <space> with no @dur has no other layer in its measure to take its length from", **where, element: space)
-      end
-
+      length = closed.filter_map { |content| length_of(content, meter) }.max || Rational(meter.top_number, meter.bottom_number)
       open.each { |content| fill(content, length) }
     end
 
