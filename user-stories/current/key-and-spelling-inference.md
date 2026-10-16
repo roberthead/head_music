@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T21:03:39-07:00
   planned_at:   2026-10-15T21:24:00-07:00
   finished_at:
-  updated_at:   2026-10-16T07:59:16-07:00
+  updated_at:   2026-10-16T08:22:19-07:00
 -->
 
 # Story: Key and Spelling Inference
@@ -110,6 +110,7 @@ The class names and input shape above are a sketch, to be settled in planning.
   | Total | 46 | 44 |
 
   Direction dominates: each of its misses is a chromatic note written against the semitone that follows it, such as a D♯ falling to D. The inferred key misses two fewer, mostly in modal chorales, where a minor-like mode's raised 6th and 7th misspell a lowered note: chor034 (E Phrygian) writes E♭ and chor113 (F Dorian) F♭. Two chorales trade a miss: chor216 misses only with the key given, chor314 only inferred. The default penalty finds 388 regions in 366 chorales, 0.06 changes per piece. The corpus measures in about 4.5 s of CPU time on top of 5.6 s of parsing.
+- **Risk: a tonic-heavy melody reads as the subdominant under Aarden.** Aarden's major profile weights the fifth above the tonic most, so a melody that dwells on its tonic matches the key a fifth below. The C major scale in eighths, then two bars of a held C (ABC `C2 D2 E2 F2 | G2 A2 B2 c2 | c8 | c8 |` in 4/4, `L:1/8`), finds F major at 0.587, ahead of A minor at 0.491 and C major at 0.481. It is one F major region, and `respell(key: :infer)` writes an F major signature, so every B needs a natural. Krumhansl–Kessler and Temperley both answer C major. The chorales do not show it, so MIDI Import should measure it on its own corpus before relying on `:infer` for signatures.
 - `Pitch.get(number)` keeps its sharp spelling. Callers that know their context use the speller.
 - Sources to cite in the code: Krumhansl, *Cognitive Foundations of Musical Pitch* (1990); Temperley, *The Cognition of Basic Musical Structures* (2001); Meredith, "The ps13 pitch spelling algorithm," *Journal of New Music Research* 35 (2006).
 
