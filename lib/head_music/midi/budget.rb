@@ -57,10 +57,10 @@ module HeadMusic::MIDI
     # Each run of one meter needs as many bars as its ticks fill, or begin.
     def bar_count
       @bar_count ||= begin
-        changes = meter_changes
-        bars = changes.each_cons(2).sum { |(from, numerator, denominator), (to, *)| bars_between(from, to, numerator, denominator) }
-        from, numerator, denominator = changes.last
-        [bars + bars_between(from, end_tick, numerator, denominator), 1].max
+        changes = BarLayout.new(time_signatures, division: sequence.division, end_tick: end_tick).meter_changes
+        bars = changes.each_cons(2).sum { |(from, meter), (to, _following)| bars_between(from, to, meter) }
+        from, meter = changes.last
+        [bars + bars_between(from, Rational(end_tick, sequence.division * 4), meter), 1].max
       end
     end
 
@@ -87,20 +87,10 @@ module HeadMusic::MIDI
       sequence.format == 1 && track.notes.empty? && (track.name || track.program_changes.any?)
     end
 
-    # [tick, numerator, denominator] at tick 0 and at each later tick a time
-    # signature takes effect, the last at a tick winning.
-    def meter_changes
-      changes = time_signatures.chunk_while { |before, after| before.tick == after.tick }.map(&:last).filter_map do |event|
-        [event.tick, event.numerator, event.denominator] if event.tick < end_tick || event.tick.zero?
-      end
-      changes.unshift([0, 4, 4]) unless changes.first&.first&.zero?
-      changes
-    end
-
-    def bars_between(from, to, numerator, denominator)
+    def bars_between(from, to, meter)
       return 0 unless to > from
 
-      Rational((to - from) * denominator, sequence.division * 4 * numerator).ceil
+      ((to - from) / BarLayout.length(meter)).ceil
     end
   end
 end

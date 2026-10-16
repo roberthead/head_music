@@ -21,6 +21,10 @@ module HeadMusic::MIDI
       HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.get("double whole"), dots: 1)
     end
 
+    def self.length(meter)
+      Rational(meter.top_number, meter.bottom_number)
+    end
+
     attr_reader :division
 
     # +time_signatures+ are the reader's TimeSignature events in merged order.
@@ -59,6 +63,19 @@ module HeadMusic::MIDI
       bars.last.end_time
     end
 
+    # [time, meter] at time 0 and wherever a later time signature takes
+    # effect before the end, the last at a tick winning.
+    def meter_changes
+      @meter_changes ||= begin
+        latest = @time_signatures.chunk_while { |before, after| before.tick == after.tick }.map(&:last)
+        changes = latest.filter_map do |event|
+          [time(event.tick), HeadMusic::Rudiment::Meter.get("#{event.numerator}/#{event.denominator}")] if event.tick < @end_tick || event.tick.zero?
+        end
+        changes.unshift([0r, HeadMusic::Rudiment::Meter.get(DEFAULT_METER)]) unless changes.first&.first&.zero?
+        changes.freeze
+      end
+    end
+
     private
 
     def lay_out
@@ -80,17 +97,6 @@ module HeadMusic::MIDI
       fill(bars, start, [time(@end_tick), start].max, meter, partial: true)
       bars << bar(bars, start, meter) if bars.empty?
       bars
-    end
-
-    # [time, meter] at time 0 and wherever a later time signature takes
-    # effect before the end, the last at a tick winning.
-    def meter_changes
-      latest = @time_signatures.chunk_while { |before, after| before.tick == after.tick }.map(&:last)
-      changes = latest.filter_map do |event|
-        [time(event.tick), HeadMusic::Rudiment::Meter.get("#{event.numerator}/#{event.denominator}")] if event.tick < @end_tick || event.tick.zero?
-      end
-      changes.unshift([0r, HeadMusic::Rudiment::Meter.get(DEFAULT_METER)]) unless changes.first&.first&.zero?
-      changes
     end
 
     # The second time signature arrives within the first bar and before a
@@ -121,7 +127,7 @@ module HeadMusic::MIDI
     end
 
     def length_of(meter)
-      Rational(meter.top_number, meter.bottom_number)
+      self.class.length(meter)
     end
   end
 end
