@@ -85,6 +85,15 @@ describe HeadMusic::MIDI::Parser do
       end
     end
 
+    context "when a stage before the flow is built raises one of the errors model constructors raise" do
+      HeadMusic::MIDI::Parser::TRANSLATED.each do |error_class|
+        it "lets the #{error_class} escape as itself" do
+          allow(HeadMusic::MIDI::Quantizer).to receive(:new).and_raise(error_class, "a bug")
+          expect { HeadMusic::MIDI.parse(bytes) }.to raise_error(error_class, "a bug")
+        end
+      end
+    end
+
     context "when the import has a bug" do
       [NoMethodError, TypeError, StandardError].each do |error_class|
         it "lets the #{error_class} escape as itself" do

@@ -145,6 +145,21 @@ describe HeadMusic::Analysis::PitchSpeller::Respelling do
     end
   end
 
+  describe ".signature_changes" do
+    def region(bar_number, key)
+      HeadMusic::Analysis::KeyRegion.new(bar_number: bar_number, onset: bar_number - 1, key: HeadMusic::Rudiment::Key.get(key))
+    end
+
+    it "keeps the first region and each that changes the signature, skipping a relative key" do
+      regions = [region(1, "C major"), region(3, "A minor"), region(5, "G major"), region(7, "G major"), region(9, "F major")]
+      expect(described_class.signature_changes(regions).map(&:bar_number)).to eq [1, 5, 9]
+    end
+
+    it "answers none for no regions" do
+      expect(described_class.signature_changes([])).to eq []
+    end
+  end
+
   describe "#spelled_notes" do
     it "answers each spelled note with the address of its sound" do
       flow = HeadMusic::Notation::ABC.parse("X:1\nT:Respelled\nM:4/4\nL:1/4\nK:Eb\n^D ^G ^A2 |\n")

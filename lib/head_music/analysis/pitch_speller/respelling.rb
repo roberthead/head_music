@@ -9,6 +9,18 @@ class HeadMusic::Analysis::PitchSpeller
   # signatures. A region with the signature of the one before, such as its
   # relative key, writes no change, since every change is printed.
   class Respelling
+    # The regions whose signature differs from the one before, the first
+    # always: those a flow's timeline writes.
+    def self.signature_changes(regions)
+      signature = nil
+      regions.select do |region|
+        fifths = HeadMusic::Content::Flow::Timeline.fifths_of(region.key.key_signature)
+        changed = fifths != signature
+        signature = fifths
+        changed
+      end
+    end
+
     def initialize(flow, key: nil, **finder_options)
       @source = flow
       @input = HeadMusic::Analysis::NoteInput.for(flow)
@@ -49,14 +61,10 @@ class HeadMusic::Analysis::PitchSpeller
     end
 
     def write_key_signatures(timeline_hash)
-      first, *later = speller.regions
+      first, *later = self.class.signature_changes(speller.regions)
       timeline_hash["key_signature"] = first.key.name
-      signature = fifths(first.key)
-      timeline_hash["key_signature_changes"] = later.filter_map do |region|
-        next if fifths(region.key) == signature
-
-        signature = fifths(region.key)
-        {"number" => region.bar_number, "signature" => signature, "tonal_context" => region.key.name}
+      timeline_hash["key_signature_changes"] = later.map do |region|
+        {"number" => region.bar_number, "signature" => fifths(region.key), "tonal_context" => region.key.name}
       end
     end
 

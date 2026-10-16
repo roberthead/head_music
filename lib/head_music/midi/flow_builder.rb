@@ -1,7 +1,13 @@
 module HeadMusic::MIDI
-  # The walking skeleton of the import, which runs every stage in order:
-  # bars, quantizing, voices, spelling, values, instruments, and lyrics.
-  # It applies no timeline beyond the opening meter.
+  # Builds a flow from a decoded sequence in two phases, as the MusicXML and
+  # MEI readers do. First the notes become exact records: bars, quantized
+  # notes, parts, voices of chords, spellings, and the timeline. Then the
+  # flow is built through the shared notation core: the bars aligned in a
+  # BarMap, the timeline applied, and each voice placed by VoicePlacer.
+  #
+  # Model constructors report a value they cannot hold with one of
+  # Parser::TRANSLATED, which become ParseErrors in the second phase only,
+  # so that a bug in the first escapes as itself.
   class FlowBuilder
     attr_reader :sequence, :budget, :key, :grid
 
@@ -15,90 +21,70 @@ module HeadMusic::MIDI
     def flow
       raise ParseError, "MIDI file contains no notes" if budget.note_count.zero?
 
-      @layout = BarLayout.new(budget.time_signatures, division: sequence.division, end_tick: budget.end_tick)
-      @quantizer = Quantizer.new(@layout, sequence.notes, division: sequence.division, grid: grid)
-      voices = separate
-      Budget.check_voice_bars!(voices.sum { |_part_key, part_voices| part_voices.length }, @layout.bars.length)
-      build(voices, spell(voices))
+      read
+      build
     end
 
     private
 
-    # Parts by track, then channel.
-    def separate
-      @quantizer.notes.group_by(&:part_key).sort_by { |part_key, _notes| [part_key.track, part_key.channel] }.map do |part_key, notes|
-        [part_key, VoiceSeparator.new(notes, percussion: part_key.percussion?).voices]
-      end
+    def read
+      notes = sequence.notes
+      @layout = BarLayout.new(budget.time_signatures, division: sequence.division, end_tick: budget.end_tick)
+      @quantizer = Quantizer.new(@layout, notes, division: sequence.division, grid: grid)
+      @parts = PartSource.new(sequence, notes, @quantizer).parts.map { |part| [part, separate(part)] }
+      Budget.check_voice_bars!(@parts.sum { |_part, voices| voices.length }, @layout.bars.length)
+      @timeline = TimelineReader.new(sequence.merged_events, @layout, @quantizer, @quantizer.notes.map(&:onset).uniq.sort)
+      @spelling = Spelling.new(@parts, @layout, @timeline.key_regions, key: key)
+      @pitches = @spelling.pitches
+      @keys = @spelling.keys
     end
 
-    # Pitches for each pitched chord's keys, labeled by part and voice.
-    def spell(voices)
-      chords = []
-      unspelled = []
-      voices.each_with_index do |(part_key, part_voices), part_index|
-        next if part_key.percussion?
+    # A part of rests has one voice.
+    def separate(part)
+      return [[]] if part.notes.empty?
 
-        part_voices.each_with_index do |chords_of_voice, voice_index|
-          chords_of_voice.each do |chord|
-            chords << chord
-            chord.keys.each do |number|
-              unspelled << HeadMusic::Analysis::UnspelledNote.new(number: number, onset: chord.onset, duration: chord.duration, voice: [part_index, voice_index])
-            end
-          end
-        end
-      end
-      pitches = HeadMusic::Analysis::PitchSpeller.new(HeadMusic::Analysis::NoteInput.new(unspelled, @layout.bar_starts), key: key || :infer).pitches
-      chords.each_with_object({}.compare_by_identity) { |chord, spelled| spelled[chord] = pitches.shift(chord.keys.length) }
+      VoiceSeparator.new(part.notes, percussion: part.percussion?).voices
     end
 
-    def build(voices, pitches)
-      flow = HeadMusic::Content::Flow.new(name: sequence.name, meter: @layout.bars.first.meter)
+    def build
+      measures = PartReading.measures(@layout)
+      bar_map = HeadMusic::Notation::BarMap.new([PartReading.new(measures)])
+      flow = HeadMusic::Content::Flow.new(name: sequence.name, **@timeline.opening(@keys))
+      @timeline.apply(flow, @keys)
       values = NoteValues.new(@layout)
-      events_by_part = voices.to_h do |part_key, part_voices|
-        part = flow.add_part(instrument: instrument(part_key))
-        [part_key, part_voices.map { |chords| place(part.add_voice, chords, values) { |chord| sounds(part_key, chord, pitches) } }]
+      events_by_part = @parts.to_h do |part, voices|
+        reading = PartReading.new(measures, layout: @layout, values: values, voices: voices.map { |chords| notes(part, chords) }, label: part.key.to_s)
+        [part.key, place(add_part(flow, part), reading, bar_map)]
       end
       LyricAttacher.new(lyrics, events_by_part).attach
       flow
+    rescue *Parser::TRANSLATED => error
+      raise ParseError, error.message
     end
 
-    def place(voice, chords, values)
-      position = voice.flow.position(@layout.first_number, 1, 0)
-      time = @layout.bars.first.start
-      onsets = {}
-      chords.each do |chord|
-        position = place_rests(voice, position, values.rests(time, chord.onset))
-        onsets[chord.onset] = voice.place(position, values.value(chord.onset, chord.release), yield(chord))
-        position = onsets[chord.onset].next_position
-        time = chord.release
+    def add_part(flow, part)
+      flow.add_part(player: part.player, instrument: part.instrument).tap do |flow_part|
+        part.instrument_changes.each { |bar_number, instrument| flow_part.change_instrument(bar_number, instrument) }
       end
-      place_rests(voice, position, values.rests(time, @layout.end_time))
-      onsets
     end
 
-    def place_rests(voice, position, rests)
-      rests.reduce(position) { |at, (_time, value)| voice.place(at, value).next_position }
+    def notes(part, chords)
+      chords.map { |chord| [chord.onset, chord.release, sounds(part, chord)] }
     end
 
-    def sounds(part_key, chord, pitches)
-      return pitches.fetch(chord) unless part_key.percussion?
+    def sounds(part, chord)
+      return @pitches.fetch(chord) unless part.percussion?
 
-      chord.keys.map { |key| InstrumentMap.sound(key) }
+      chord.keys.map { |key| part.sound(key) }
     end
 
-    # The program in force on the part's channel at its first note.
-    def instrument(part_key)
-      return if part_key.percussion?
-
-      first_on = sequence.tracks[part_key.track].notes.find { |note| note.channel == part_key.channel }.on
-      change = program_changes.fetch(part_key.channel, []).take_while { |event| event.tick <= first_on }.last
-      return unless change
-
-      InstrumentMap.instrument(change.program, hint: sequence.tracks[part_key.track].name)
-    end
-
-    def program_changes
-      @program_changes ||= sequence.merged_events.grep(ProgramChange).group_by(&:channel)
+    # The first voice spans the flow; later ones leave out their whole bars
+    # of rest at either edge. Answers each voice's note events by onset.
+    def place(part, reading, bar_map)
+      reading.tracks.each_with_index.map do |track, index|
+        HeadMusic::Notation::VoicePlacer.new(part.add_voice, track, bar_map, reading, tuplet_reader: PartReading::NoTuplets, trim_edges: index.positive?).place
+        track.events.reject(&:rest?).to_h { |event| [@layout.bars[event.measure_index].start + event.cursor, event.voice_event] }
+      end
     end
 
     def lyrics

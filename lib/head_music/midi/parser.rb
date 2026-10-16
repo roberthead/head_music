@@ -1,8 +1,9 @@
 module HeadMusic::MIDI
   # Checks the options, decodes the bytes, and holds the file to its budget
   # before the flow builder runs. Model constructors report a value they
-  # cannot hold with one of TRANSLATED, which become ParseErrors here; every
-  # other error is a bug, and escapes as itself.
+  # cannot hold with one of TRANSLATED, which the flow builder raises as
+  # ParseErrors while it builds the flow; every other error is a bug, and
+  # escapes as itself.
   class Parser
     TRANSLATED = [ArgumentError, ZeroDivisionError, FloatDomainError, RangeError, EncodingError].freeze
 
@@ -17,8 +18,6 @@ module HeadMusic::MIDI
     def flow
       sequence = Reader.new(@bytes).read
       FlowBuilder.new(sequence, Budget.new(sequence).check!, key: @key, grid: @grid).flow
-    rescue *TRANSLATED => error
-      raise ParseError, error.message
     end
 
     private
