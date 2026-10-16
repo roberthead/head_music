@@ -132,13 +132,22 @@ describe HeadMusic::Rudiment::Mode do
       end
     end
 
+    {
+      "E♭ dorian" => "D♭ major", "B♭ phrygian" => "G♭ major", "D♭ lydian" => "A♭ major",
+      "F mixolydian" => "B♭ major", "A♭ aeolian" => "C♭ major", "F locrian" => "G♭ major"
+    }.each do |mode_name, relative_major|
+      it "spells #{mode_name}'s relative major on the flat side, as #{relative_major}" do
+        expect(described_class.get(mode_name).relative_major.name).to eq relative_major
+      end
+    end
+
     context "when the mode name is unrecognized" do
       let(:mode) { described_class.get("C ionian") }
 
       before { allow(mode).to receive(:mode_name).and_return(:unknown) }
 
       it "does not resolve to a relative major key" do
-        expect { mode.relative_major }.to raise_error(NoMethodError)
+        expect { mode.relative_major }.to raise_error(KeyError)
       end
     end
   end

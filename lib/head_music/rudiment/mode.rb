@@ -26,6 +26,12 @@ class HeadMusic::Rudiment::Mode < HeadMusic::Rudiment::QualifiedDiatonicContext
     mixolydian: -7, aeolian: -9, locrian: -11
   }.freeze
 
+  # How many letters below the tonic each mode's relative major lies.
+  RELATIVE_MAJOR_STEPS_BELOW_TONIC = {
+    dorian: 1, phrygian: 2, lydian: 3,
+    mixolydian: 4, aeolian: 5, locrian: 6
+  }.freeze
+
   # The major or minor quality of each mode's parallel key.
   PARALLEL_QUALITIES = {
     ionian: :major, dorian: :minor, phrygian: :minor, lydian: :major,
@@ -52,9 +58,8 @@ class HeadMusic::Rudiment::Mode < HeadMusic::Rudiment::QualifiedDiatonicContext
   def relative_major_tonic_spelling
     return tonic_spelling if mode_name == :ionian
 
-    offset = RELATIVE_MAJOR_SEMITONES_BELOW_TONIC[mode_name]
-    relative_pitch = tonic_pitch + offset if offset
-    # An unrecognized mode leaves relative_pitch nil, raising NoMethodError (preserved behavior).
-    relative_pitch.spelling
+    offset = RELATIVE_MAJOR_SEMITONES_BELOW_TONIC.fetch(mode_name)
+    letter_name = tonic_spelling.letter_name.steps_down(RELATIVE_MAJOR_STEPS_BELOW_TONIC.fetch(mode_name))
+    HeadMusic::Rudiment::Spelling.from_number_and_letter(tonic_spelling.pitch_class.to_i + offset, letter_name)
   end
 end
