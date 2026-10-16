@@ -111,4 +111,115 @@ describe HeadMusic::Analysis::KeyFinder do
       end
     end
   end
+
+  describe "#regions" do
+    # Each bar sounds its key's tonic triad and leading tone, the tonic longest.
+    def bar_in(tonic, bar_index)
+      onset = Rational(bar_index)
+      [[0, Rational(3, 8)], [4, Rational(1, 4)], [7, Rational(1, 4)], [-1, Rational(1, 8)]].map do |offset, duration|
+        [tonic + offset, onset, duration].tap { onset += duration }
+      end
+    end
+
+    def bars_in(*tonics)
+      tonics.each_with_index.flat_map { |tonic, bar_index| tonic ? bar_in(tonic, bar_index) : [] }
+    end
+
+    def summary(finder)
+      finder.regions.map { |region| [region.bar_number, region.onset, region.key.name] }
+    end
+
+    let(:c_g_c) { bars_in(*[60] * 4, *[67] * 4, *[60] * 4) }
+
+    it "finds a modulation and the return, starting each region at a downbeat" do
+      finder = described_class.new(c_g_c, meter: "4/4", change_penalty: 0.5)
+      expect(summary(finder)).to eq [[1, 0, "C major"], [5, 4, "G major"], [9, 8, "C major"]]
+    end
+
+    it "holds the key through four bars of the dominant at the default penalty" do
+      expect(summary(described_class.new(c_g_c, meter: "4/4"))).to eq [[1, 0, "C major"]]
+    end
+
+    it "uses a change penalty of 1.0 and scores each bar alone by default" do
+      finder = described_class.new(c_g_c, meter: "4/4")
+      expect([finder.change_penalty, finder.window]).to eq [1.0, 0]
+    end
+
+    it "does not switch key for one chromatic bar at the default penalty" do
+      notes = bars_in(60, 60, 60, 62, 60, 60) + [[66, 3, Rational(1, 8)], [61, Rational(25, 8), Rational(1, 8)]]
+      expect(summary(described_class.new(notes, meter: "4/4"))).to eq [[1, 0, "C major"]]
+    end
+
+    it "lets a wider window smooth a short excursion away" do
+      notes = bars_in(60, 60, 67, 67, 60, 60)
+      narrow = described_class.new(notes, meter: "4/4", change_penalty: 0.3)
+      wide = described_class.new(notes, meter: "4/4", change_penalty: 0.3, window: 2)
+      expect([summary(narrow).length, summary(wide).length]).to eq [3, 1]
+    end
+
+    it "carries the key through empty bars" do
+      notes = bars_in(60, 60, nil, nil, 67, 67, 67, 67)
+      finder = described_class.new(notes, meter: "4/4", change_penalty: 0.5)
+      expect(summary(finder)).to eq [[1, 0, "C major"], [5, 4, "G major"]]
+    end
+
+    it "starts the first region at the first bar, even when it is silent" do
+      notes = bars_in(nil, 67, 67)
+      expect(summary(described_class.new(notes, meter: "4/4"))).to eq [[1, 0, "G major"]]
+    end
+
+    it "begins a pickup's region at bar 0" do
+      notes = [[67, 0, Rational(1, 4)], *bars_in(60, 60).map { |number, onset, duration| [number, onset + Rational(1, 4), duration] }]
+      finder = described_class.new(notes, bars: [0, Rational(1, 4), Rational(5, 4)], first_bar: 0)
+      expect(summary(finder)).to eq [[0, 0, "C major"]]
+    end
+
+    it "credits a note held across a barline to each bar it sounds in" do
+      first_bar = [[60, 0, Rational(1, 4)], [64, Rational(1, 4), Rational(1, 4)]]
+      second_bar = [[62, 1, Rational(1, 8)], [66, Rational(9, 8), Rational(1, 8)], [69, Rational(5, 4), Rational(1, 8)], [62, Rational(11, 8), Rational(1, 8)]]
+      short_g = described_class.new(first_bar + [[67, Rational(1, 2), Rational(1, 2)]] + second_bar, meter: "4/4", change_penalty: 0)
+      held_g = described_class.new(first_bar + [[67, Rational(1, 2), Rational(3, 2)]] + second_bar, meter: "4/4", change_penalty: 0)
+      expect([summary(short_g).last, summary(held_g).last]).to eq [[2, 1, "D major"], [1, 0, "C major"]]
+    end
+
+    it "keeps the key in force on a tie" do
+      notes = bars_in(60) + [[60, 1, 1], [67, 1, 1]] + [[48, 2, 1], [55, 2, 1]]
+      finder = described_class.new(notes, meter: "4/4", change_penalty: 0)
+      expect(summary(finder)).to eq [[1, 0, "C major"]]
+    end
+
+    it "answers the same regions for the same input" do
+      first = described_class.new(c_g_c, meter: "4/4", change_penalty: 0.5).regions
+      expect(described_class.new(c_g_c, meter: "4/4", change_penalty: 0.5).regions).to eq first
+    end
+
+    it "answers no regions when nothing sounds" do
+      expect(described_class.new([], meter: "4/4").regions).to eq []
+    end
+
+    it "raises on a negative change penalty" do
+      expect { described_class.new(c_g_c, change_penalty: -0.1) }.to raise_error(ArgumentError, /change_penalty: must not be negative/)
+    end
+
+    it "raises on a window that is not a non-negative Integer" do
+      expect { described_class.new(c_g_c, window: -1) }.to raise_error(ArgumentError, /window: must be a non-negative Integer/)
+      expect { described_class.new(c_g_c, window: 1.5) }.to raise_error(ArgumentError, /window: must be a non-negative Integer/)
+    end
+
+    context "with Bach's Invention No. 1" do
+      let(:flow) { HeadMusic::Notation::LilyPond.parse(File.read(File.expand_path("../../fixtures/notation/lily_pond/bach_invention_01.ly", __dir__))) }
+      let(:input) { HeadMusic::Analysis::NoteInput.for(flow) }
+
+      it "reads one C major region at the default penalty, as the signature is written" do
+        expect(summary(described_class.new(input))).to eq [[1, 0, "C major"]]
+      end
+
+      it "follows the modulations at a lower penalty" do
+        regions = described_class.new(input, change_penalty: 0.4).regions
+        expect(regions.map { |region| [region.bar_number, region.key.name] }).to eq [
+          [1, "C major"], [4, "G major"], [9, "D minor"], [12, "A minor"], [15, "C major"]
+        ]
+      end
+    end
+  end
 end
