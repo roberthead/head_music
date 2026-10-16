@@ -93,6 +93,32 @@ describe HeadMusic::MIDI::Budget do
     end
   end
 
+  describe "#end_tick" do
+    let(:bar) { 4 * division }
+
+    def end_of_track(tick)
+      HeadMusic::MIDI::EndOfTrack.new(tick)
+    end
+
+    it "takes an end of track on a barline past the last note" do
+      expect(budget(smf([*note(0, division), end_of_track(2 * bar)])).end_tick).to eq 2 * bar
+    end
+
+    it "counts barlines from a pickup" do
+      meters = [HeadMusic::MIDI::TimeSignature.new(0, 1, 4, 24), HeadMusic::MIDI::TimeSignature.new(division, 4, 4, 24)]
+      expect(budget(smf([*meters, *note(0, division), end_of_track(division + bar)])).end_tick).to eq division + bar
+    end
+
+    it "ignores an end of track off a barline" do
+      expect(budget(smf([*note(0, division), end_of_track(bar + division)])).end_tick).to eq division
+    end
+
+    it "keeps a last bar of rests in the flow" do
+      flow = parse(smf([*note(0, bar), end_of_track(2 * bar)]))
+      expect(bar_events(flow.voices.first)).to eq [["1:1:000", "whole", "C4"], ["2:1:000", "whole", "rest"]]
+    end
+  end
+
   describe "#bar_count" do
     it "counts 4/4 bars when the file has no time signature" do
       expect(budget(smf(note(0, 9 * division))).bar_count).to eq 3

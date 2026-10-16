@@ -68,15 +68,25 @@ module HeadMusic::MIDI
       @time_signatures ||= sequence.merged_events.grep(TimeSignature).freeze
     end
 
-    # The latest release, or the latest event but an end of track.
+    # The latest release, or the latest event but an end of track, unless
+    # the latest end of track falls on a later barline, as MIDI Export ends
+    # a last bar of rests.
     def end_tick
-      @end_tick ||= sequence.tracks.flat_map { |track| [track.notes.map(&:off).max, last_tick(track)] }.compact.max || 0
+      @end_tick ||= begin
+        latest = sequence.tracks.flat_map { |track| [track.notes.map(&:off).max, last_tick(track)] }.compact.max || 0
+        ending = sequence.tracks.filter_map { |track| track.events.last.tick if track.events.last.is_a?(EndOfTrack) }.max
+        (ending && ending > latest && barline?(ending)) ? ending : latest
+      end
     end
 
     private
 
     def check(count, limit, things)
       raise ParseError, "the file needs #{count} #{things}, more than #{limit}" if count > limit
+    end
+
+    def barline?(tick)
+      BarLayout.new(time_signatures, division: sequence.division, end_tick: tick).barline?(Rational(tick, sequence.division * 4))
     end
 
     def last_tick(track)

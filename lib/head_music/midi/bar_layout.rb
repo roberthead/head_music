@@ -85,6 +85,14 @@ module HeadMusic::MIDI
       end
     end
 
+    # Worked out from the meter changes, without laying out the bars.
+    def barline?(time)
+      changes = meter_changes
+      changes = changes.drop(1) if pickup?(changes)
+      from, meter = changes.chunk_while { |before, after| before.last == after.last }.map(&:first).reverse.find { |at, _meter| at <= time }
+      !from.nil? && ((time - from) / length_of(meter)).denominator == 1
+    end
+
     private
 
     def lay_out

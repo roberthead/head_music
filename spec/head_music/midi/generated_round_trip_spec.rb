@@ -9,8 +9,7 @@ require "spec_helper"
 # pinned as still differing. Run more with TUPLET_SEEDS=1..1000.
 describe "HeadMusic::MIDI" do
   release_off_grid = "a lone triplet note before triplet rests puts only its release off the sixteenth grid its onsets fit"
-  trailing_rests = "a last bar of rests is written only as the end of track's tick, which import does not read as music"
-  excluded = {53 => release_off_grid, 82 => release_off_grid, 266 => release_off_grid, 87 => trailing_rests, 287 => trailing_rests, 954 => trailing_rests}
+  excluded = {53 => release_off_grid, 82 => release_off_grid, 266 => release_off_grid}
 
   def generated(seed)
     TupletGenerator.flow(seed, voices: 1, ratios: %w[3:2 6:4], graces: false, pickup: true)
