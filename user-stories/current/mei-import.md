@@ -81,7 +81,7 @@ flow.voices.length # => one per layer, as the part numbers them
 ### Parts, staves, and voices
 
 - [ ] Each `<staffDef>` becomes a staff. A `<staffGrp>` that carries its own `<label>` and holds several `<staffDef>`s is one multi-staff part, and so is one with `symbol="brace"` whose staves are unlabeled or share one label. Its `@symbol` sets the bracket. Every other staff is its own part
-- [ ] Voice keys are decided per part. If no measure has one `layer/@n` holding notes on two of the part's staves, the layer number alone is the voice, as MEI Export numbers it. Otherwise the staff and layer number together are the voice, and a key with no notes anywhere is a placeholder that is not read. `layerDef/label` is the voice's role
+- [ ] Voice keys are decided per part. If no measure has one `layer/@n` holding notes on two of the part's staves, the layer number alone is the voice, as MEI Export numbers it. Otherwise the staff and layer number together are the voice, and a key with no notes anywhere is a placeholder that is not read. A layer with notes that shares its staff and `@n`, or the lack of one, with an earlier layer with notes in the measure, including one in a second `<staff>` of the same number, is a voice of its own. Where only one such layer has notes, it is the one read. `layerDef/label` is the voice's role
 - [ ] A layer whose notes all carry the same `@staff` sits on that staff for the bar, and a change at a barline is a staff crossing. Otherwise a single note's `@staff` is skipped
 - [ ] A voice's leading and trailing bars of only `<mRest>` or `<mSpace>` are not placed. Such bars between its events, and missing layers, become bar-filling rests, and a short layer is padded. A bare `<staff n/>` places nothing. Every voice satisfies `Voice::Continuity`
 - [ ] `<clef>`, or `staffDef@clef.*` with `@dis` and `@dis.place`, in a `<staffDef>` or at a barline sets the staff's clef or a clef change. A clef in the middle of a layer is skipped
@@ -90,7 +90,7 @@ flow.voices.length # => one per layer, as the part numbers them
 
 - [ ] `<note>` `@pname`, `@oct`, `@dur`, and `@dots` map to pitches and rhythmic values, with `@pname.ges` and `@oct.ges` winning. `@dur` falls back to the enclosing `<chord>`, then `@dur.default`, and a note with none raises `ParseError`
 - [ ] The sounding accidental is `@accid.ges` when present, and `@accid` otherwise, with child `<accid>` elements read as either. When neither is written, the key signature and earlier accidentals at that letter and octave in the bar on that staff, across its layers, decide it
-- [ ] `<rest>`, `<space>`, `<mRest>`, and `<multiRest>` become rests of their length, and a `@cue` note is a rest. A `<space>` with no `@dur` takes the time its layer leaves of the longest other layer in its measure, shared equally among several such spaces in the layer, and raises `ParseError` only where no other layer gives a length. `<chord>` becomes a note event with several pitches
+- [ ] `<rest>`, `<space>`, `<mRest>`, and `<multiRest>` become rests of their length, and a `@cue` note is a rest. A `<space>` with no `@dur` takes the time its layer leaves of the longest other layer in its measure, shared equally among several such spaces in the layer. Wherever no other layer gives a length, the meter's length applies. `<chord>` becomes a note event with several pitches
 - [ ] Ties (`@tie`, or `<tie>` control events by ids or tstamps) fold across barlines when both ends are in one voice. An unclosed tie, `<lv>`, or a tie across voices is dropped, and the note keeps its written value. A tie on some pitches of a chord is skipped. A tie between pitches that share nothing raises `ParseError`
 - [ ] `<tuplet>`, `<tupletSpan>` (by ids or `@plist`), and `@tuplet` `i`/`m`/`t` map to tuplet values and groups. A span over MEI Export's hidden per-bar tuplets is one group across the barline. `@grace` and `<graceGrp>` become grace notes
 - [ ] `<beam>`, `<beamSpan>`, and `@beam` `i`/`m`/`t` read back as beam breaks where they differ from the default grouping
@@ -99,7 +99,7 @@ flow.voices.length # => one per layer, as the part numbers them
 
 ### Timeline
 
-- [ ] The key comes from `@keysig`, `@key.sig`, or `<keySig @sig>`, with `@key.mode`, `<keySig @mode>`, or `@key.pname` as tonal context. The meter comes from `@meter.count` and `@meter.unit`, or `<meterSig>`. Both are read on `<scoreDef>`, else on the first `<staffDef>`, at the opening and at later measures. `@meter.sym` with no count reads as 4/4 or 2/2, and a restatement makes no change. MEI Export writes `@key.mode`
+- [ ] The key comes from `@keysig`, `@key.sig`, or `<keySig @sig>`, with `@key.mode`, `<keySig @mode>`, or `@key.pname` as tonal context. A `<keySig>` that opens a `<layer>`, before any event, is that staff's key change from its bar, as a `<staffDef>` key change is; one later in the layer raises `UnsupportedFeatureError` naming the measure. The meter comes from `@meter.count` and `@meter.unit`, or `<meterSig>`. Both are read on `<scoreDef>`, else on the first `<staffDef>`, at the opening and at later measures. `@meter.sym` with no count reads as 4/4 or 2/2, and a restatement makes no change. MEI Export writes `@key.mode`
 - [ ] `scoreDef/@midi.bpm` is the opening tempo. A `<tempo>` with `@mm` (`@mm.unit`, `@mm.dots`) or `@midi.bpm` at a measure's start is a tempo change
 - [ ] A `@tstamp` within 1/1000 beat of an onset in its layer, or else on its staff, takes that onset, and otherwise rounds to the tick. A `@tstamp2` beat one past the last bar's count is the final barline. Ids win when both are given, and a `@tstamp2` with no measure part is dropped when there are no ids
 - [ ] `@trans.diat` and `@trans.semi` on a staff definition are honored from that bar onward, with 0/0 resetting, so transposing parts land in concert pitch
@@ -163,13 +163,18 @@ flow.voices.length # => one per layer, as the part numbers them
   - **Writer additions.** MEI Export gains `instrDef@label`, `@key.mode`, and `<workList>`, because the golden round trip cannot pass without them: four SATB voices share GM program 52, and D dorian otherwise reads back as C major.
 - **Decided during steps 8–11** (2026-10-15):
   - **Duplicate `xml:id`.** It raises `ParseError` only where a `@startid`, `@endid`, or `@plist` names it, since music21's `test_file.mei` reuses ids nothing refers to. A `@copyof` takes the first element with the id.
-  - **`<space>` with no `@dur`.** It takes the time its layer leaves of the longest other layer in the measure, shared equally among several such spaces, and raises only where no layer gives a length. A `@dur.default` in force still wins, as it does for every event.
+  - **`<space>` with no `@dur`.** It takes the time its layer leaves of the longest other layer in the measure, shared equally among several such spaces. Wherever no other layer gives a length, the meter's length applies. A `@dur.default` in force still wins, as it does for every event.
   - **A later `<scoreDef>` that restates only some staves** stays refused, as one that adds or removes staves, for now.
 - **Decided by the coordinator, without stopping to ask** (2026-10-15; Rob may revise any):
   - **Work catalog numbers, dates, and people's dates.** MEI Export writes the rest of a `Work` into `<workList>`, so the SATB golden round-trips rather than needing an exclusion. MEI has a place for each of these, and leaving them out would make MEI the lossy writer.
   - **Grace-note articulations.** These are read when the grace note is queued, in `voice_assignment.rb`, because `GraceNote` is immutable. The markings reader owns that one-line edit.
   - **A `<score>` directly in `<music>`**, as MEI 2013 allowed and music21's `test_file.mei` writes, is read as one `<mdiv>`.
   - **A measure made only of `<space>`s with no `@dur`** fills the meter's length, since nothing else could be meant. `Chopin_Mazurka_Op6_No1` and `Ravel_Le_tombeau` write one.
+- **Decided during review** (2026-10-15; Rob may revise any):
+  - **Repeated layer numbers.** A second layer with notes that shares its staff and `@n` with another in the measure, including two with no `@n` and two `<staff>`s of one number, takes a voice key of its own rather than being dropped, since `@n` is optional in MEI. A layer with no notes beside one with notes is still a placeholder.
+  - **`<keySig>` in a layer.** One before the layer's first event is that staff's key change from its bar, as a `<staffDef>` change is. One after it raises `UnsupportedFeatureError` naming the measure, since skipping it would misspell what follows, and the model has no key change within a bar.
+  - **A `<multiRest>` budget.** `<multiRest>`s may fill 16 bars for each `<measure>` in the document, or 10,000 bars if that is more, as `@copyof` expansion is bounded by the document's size. Past it, `ParseError` names the measure.
+  - **Empty scores in a book.** `parse_book` skips a `<score>` with no music rather than refusing the book, and raises only where no score has music. `parse` still raises for a document whose one score is empty.
 
 ## Implementation Plan
 
