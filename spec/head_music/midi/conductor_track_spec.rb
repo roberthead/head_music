@@ -137,18 +137,61 @@ describe HeadMusic::MIDI::ConductorTrack do
     end
   end
 
-  context "with a pickup of part of a count" do
-    let(:meter) { "3/4" }
+  def pickup_flow(meter, pickup_position, pickup_value)
+    HeadMusic::Content::Flow.new(name: "Pickup", meter: meter).tap do |pickup|
+      voice = pickup.add_voice
+      voice.place(pickup_position, pickup_value, "G4")
+      voice.place("1:1", :whole, "C5")
+    end
+  end
 
-    before do
-      voice = flow.add_voice
-      voice.place("0:3", :eighth)
-      voice.place("0:3:480", :eighth, "G4")
-      voice.place("1:1", "dotted half", "C5")
+  def signatures
+    of(HeadMusic::MIDI::TimeSignature).map { |event| [event.tick, "#{event.numerator}/#{event.denominator}"] }
+  end
+
+  context "with an eighth pickup in 3/4" do
+    let(:flow) { pickup_flow("3/4", "0:3:480", :eighth) }
+
+    it "writes the pickup as 1/8, then 3/4 at bar 1" do
+      expect(signatures).to eq [[0, "1/8"], [Rational(1, 8), "3/4"]]
+    end
+  end
+
+  context "with a dotted-quarter pickup in 6/8" do
+    let(:flow) { pickup_flow("6/8", "0:4", "dotted quarter") }
+
+    it "writes the pickup as 3/8, then 6/8 at bar 1" do
+      expect(signatures).to eq [[0, "3/8"], [Rational(3, 8), "6/8"]]
+    end
+  end
+
+  context "with a half-note pickup in 3/4" do
+    let(:flow) { pickup_flow("3/4", "0:2", :half) }
+
+    it "counts the pickup in the flow's denominator" do
+      expect(signatures).to eq [[0, "2/4"], [Rational(1, 2), "3/4"]]
+    end
+  end
+
+  context "with a 64th pickup in 4/4" do
+    let(:flow) { pickup_flow("4/4", "0:4:900", :sixty_fourth) }
+
+    it "writes the pickup as 1/64, then 4/4 at bar 1" do
+      expect(signatures).to eq [[0, "1/64"], [Rational(1, 64), "4/4"]]
+    end
+  end
+
+  context "with a triplet-eighth pickup in 3/4" do
+    let(:flow) do
+      HeadMusic::Content::Flow.new(name: "Triplet", meter: "3/4").tap do |triplet|
+        voice = triplet.add_voice
+        voice.place("0:3:640", "triplet eighth", "G4")
+        voice.place("1:1", "dotted half", "C5")
+      end
     end
 
-    it "writes the flow's meter from the start" do
-      expect(of(HeadMusic::MIDI::TimeSignature)).to eq [HeadMusic::MIDI::TimeSignature.new(0, 3, 4, 24)]
+    it "writes the flow's meter from the start and restates it at bar 1" do
+      expect(signatures).to eq [[0, "3/4"], [Rational(1, 12), "3/4"]]
     end
   end
 end

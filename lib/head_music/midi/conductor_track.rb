@@ -4,6 +4,7 @@ module HeadMusic::MIDI
   # a change restores what was in force there. Times are exact whole notes.
   class ConductorTrack
     MINOR_QUALIFIERS = %i[minor aeolian].freeze
+    MAX_PICKUP_DENOMINATOR = 64
 
     attr_reader :flow, :timeline
 
@@ -23,6 +24,7 @@ module HeadMusic::MIDI
           written[kind] = event.with(tick: 0)
           events << event
         end
+        written.delete(TimeSignature) if span.pickup?
       end
       events
     end
@@ -35,12 +37,13 @@ module HeadMusic::MIDI
       TimeSignature.new(span.start, meter.top_number, meter.bottom_number, TimeSignature.clocks_per_click(meter).to_i)
     end
 
-    # A pickup a whole number of the meter's counts long is a bar of its own.
+    # A pickup is a bar of its own wherever a MIDI denominator can count it.
+    # Otherwise it takes the flow's meter, which is restated at bar 1.
     def pickup_meter(span, meter)
-      counts = span.length * meter.bottom_number
-      return meter unless counts.denominator == 1 && counts.positive?
+      denominator = [meter.bottom_number, span.length.denominator].max
+      return meter unless denominator <= MAX_PICKUP_DENOMINATOR && denominator.to_s(2).count("1") == 1
 
-      HeadMusic::Rudiment::Meter.get("#{counts.to_i}/#{meter.bottom_number}")
+      HeadMusic::Rudiment::Meter.get("#{(span.length * denominator).to_i}/#{denominator}")
     end
 
     def tempo(span)
