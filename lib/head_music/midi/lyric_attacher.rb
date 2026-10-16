@@ -1,6 +1,8 @@
 module HeadMusic::MIDI
   # Sings lyric meta events on the note events they fall on.
   class LyricAttacher
+    WHITESPACE = /\A[[:space:]]+|[[:space:]]+\z/
+
     # +lyrics+ are [PartKey, time, text] triples in merged order, each
     # PartKey naming the lyric's track with a nil channel and each time
     # snapped by the quantizer. +events_by_part+ maps each part's key, in
@@ -29,8 +31,8 @@ module HeadMusic::MIDI
     private
 
     def parse(text)
-      stripped = text.to_s.strip
-      [stripped.delete_suffix("-").strip, stripped.end_with?("-")]
+      stripped = text.to_s.gsub(WHITESPACE, "")
+      [stripped.delete_suffix("-").gsub(WHITESPACE, ""), stripped.end_with?("-")]
     end
 
     def event_at(part_key, time)

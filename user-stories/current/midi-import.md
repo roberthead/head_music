@@ -546,7 +546,7 @@ Each step is one commit with its specs, and keeps `bundle exec rake validate` gr
   - A track name equal to the resolved instrument's name, case included, sets no player, because export writes the instrument name when a part has no player. A name differing only in case is a player's, such as "Soprano" for the singer of a soprano part (decided 2026-10-16).
 - **Lyrics.**
   - A lyric is snapped like an onset and attaches to the first voice in its part with a note starting there.
-  - A trailing `-` is stripped and sets `hyphen_after`. Whitespace is stripped.
+  - A trailing `-` is stripped and sets `hyphen_after`. Whitespace, Unicode whitespace such as non-breaking spaces included, is stripped.
   - Empty text, a standalone `-` (music21's melisma marker) and lyrics on no onset are skipped.
   - Several lyrics at one onset become verses 1, 2 and so on, in order, which is MuseScore's shape.
   - A lyric in a track with no notes goes to the first part with an onset there.

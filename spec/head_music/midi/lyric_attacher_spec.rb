@@ -42,6 +42,11 @@ describe HeadMusic::MIDI::LyricAttacher do
     expect([sung(upper_events[0r]), sung(upper_events[1/2r])]).to eq [[[1, "Glo", true]], [[1, "ri", false]]]
   end
 
+  it "strips non-breaking spaces as whitespace" do
+    attach(lyric(1, 1/2r, "\u00A0\u00A0"), lyric(1, 0r, "\u00A0Glo-\u00A0"))
+    expect([sung(upper_events[1/2r]), sung(upper_events[0r])]).to eq [[], [[1, "Glo", true]]]
+  end
+
   it "makes several lyrics at one onset successive verses, in order" do
     attach(lyric(1, 0r, "Ky-"), lyric(1, 0r, "Glo-"))
     expect(sung(upper_events[0r])).to eq [[1, "Ky", true], [2, "Glo", true]]
