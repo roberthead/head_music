@@ -98,7 +98,7 @@ module HeadMusic::Notation::MEI
         measure = attribute(element, "n", element: element) || measure if element.name == "measure"
         check_notation(element, measure)
         id = attribute(element, "xml:id", element: element, measure: measure)
-        index.register(id, element, measure: measure) if id
+        index.register(id, element) if id
         pending = []
         element.each { |child| pending << [child, measure] if child.is_a?(REXML::Element) }
         stack.concat(pending.reverse)

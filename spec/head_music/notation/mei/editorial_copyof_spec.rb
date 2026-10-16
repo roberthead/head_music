@@ -22,7 +22,7 @@ describe HeadMusic::Notation::MEI::Editorial do
     source = document(xml).sources.first
     layer = source.score.elements.to_a.find { |element| element.name == "layer" }
     copy = source.editorial.children(layer).first
-    expect(source.index.element("b")).not_to equal copy
+    expect(source.index.target("#b")).not_to equal copy
   end
 
   it "expands a copy once, however often it is walked" do

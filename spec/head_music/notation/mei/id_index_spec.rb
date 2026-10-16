@@ -11,7 +11,7 @@ describe HeadMusic::Notation::MEI::IdIndex do
     let(:rest) { REXML::Element.new("rest") }
 
     before do
-      index.register("n1", rest, measure: "3")
+      index.register("n1", rest)
       index.reach(note)
     end
 

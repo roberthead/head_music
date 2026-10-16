@@ -19,16 +19,12 @@ module HeadMusic::Notation::MEI
       @reached = {}.compare_by_identity
     end
 
-    def register(id, element, **_where)
+    def register(id, element)
       if @elements.key?(id)
         @duplicates[id] = true
       else
         @elements[id] = element
       end
-    end
-
-    def element(id)
-      @elements[id]
     end
 
     def reach(element)
