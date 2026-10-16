@@ -84,9 +84,26 @@ describe HeadMusic::MIDI::Writer do
       expect(programs).to eq [[0, 0, 1]]
     end
 
-    it "writes 1 for a part with no instrument" do
+    it "writes no program for a part with no instrument" do
       flow.add_voice.place("1:1", :whole, "C5")
-      expect(programs).to eq [[0, 0, 1]]
+      expect(programs).to eq []
+    end
+
+    context "with a part that gets its instrument in bar 2, before a D.C." do
+      let(:flow) do
+        HeadMusic::Content::Flow.new(name: "Late").tap do |late|
+          part = late.add_part
+          voice = part.add_voice
+          voice.place("1:1", :whole, "C5")
+          voice.place("2:1", :whole, "D5")
+          part.change_instrument(2, "flute")
+          late.bar(2).jump = HeadMusic::Content::Jump.new(:da_capo)
+        end
+      end
+
+      it "writes the program where the instrument arrives, and 1 where the D.C. returns before it" do
+        expect(programs).to eq [[1920, 0, 74], [3840, 0, 1], [5760, 0, 74]]
+      end
     end
 
     context "with the clarinet changing to clarinet in A and then to flute" do
