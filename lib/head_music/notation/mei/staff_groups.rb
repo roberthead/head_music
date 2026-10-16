@@ -7,7 +7,8 @@ module HeadMusic::Notation::MEI
   # its staves are labeled and no measure has one layer number on two of
   # its staves, as the writer numbers a part's layers across its staves.
   # Every other staff is its own part. A part's @symbol sets its bracket,
-  # and its <label> names its player.
+  # and its <label> names its player. A <part> that opens with a <staffDef>
+  # rather than a <scoreDef> is that one staff.
   class StaffGroups
     include XmlReading
 
@@ -29,13 +30,14 @@ module HeadMusic::Notation::MEI
 
     attr_reader :parts
 
-    def initialize(score_def, editorial, score: nil)
+    def initialize(score_def, editorial, score: nil, staff_def: nil)
       @editorial = editorial
       @score = score
       @definitions = []
       @staff_defs = {}
       group = score_def && editorial.children_named(score_def, "staffGrp").first
       collect(group, 1) if group
+      add_part([staff_def], nil) if staff_def
       @parts = @definitions.each_with_index.map do |(numbers, staff_defs, part_group), index|
         PartDefinition.new(index, numbers, staff_defs, part_group)
       end
@@ -52,6 +54,10 @@ module HeadMusic::Notation::MEI
 
     def staff_def(number)
       @staff_defs[number]
+    end
+
+    def opening?(staff_def)
+      @staff_defs.value?(staff_def)
     end
 
     def label(element)

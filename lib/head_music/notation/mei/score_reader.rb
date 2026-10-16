@@ -66,7 +66,7 @@ module HeadMusic::Notation::MEI
         when "ending" then walk(child, depth + 1, EndingPasses.passes(child, endings += 1, measure: next_number))
         when "measure" then read_measure(child, passes)
         when "scoreDef" then @state.apply_score_def(child, measure: next_number) unless child.equal?(@opening_score_def)
-        when "staffDef" then @state.apply_staff_def(child, measure: next_number)
+        when "staffDef" then @state.apply_staff_def(child, measure: next_number) unless @groups.opening?(child)
         end
       end
     end

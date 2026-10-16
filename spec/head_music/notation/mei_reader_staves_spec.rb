@@ -51,6 +51,14 @@ describe HeadMusic::Notation::MEI do
     expect(staves(piano(rests, rests))).to eq [{}, {1 => 2}]
   end
 
+  it "reads a single part that opens with a staff definition rather than a scoreDef, as McFerrin's Don't Worry writes one" do
+    staff_def = %(<staffDef n="1" lines="5" clef.shape="F" clef.line="4" meter.count="3" meter.unit="4" keysig="1s"/>)
+    measure = %(<measure n="1">#{mei_staff(1, mei_note("G2", "2", dots: "1"))}</measure>)
+    flow = described_class.parse(%(<mei xmlns="http://www.music-encoding.org/ns/mei">#{mei_head}<music><body><mdiv><parts><part>#{staff_def}<section>#{measure}</section></part></parts></mdiv></body></music></mei>))
+    expect([flow.meter.to_s, flow.key_signature.name, flow.parts.first.staff_system.staves.first.clef.name_key.to_s, voice_event_strings(flow)])
+      .to eq ["3/4", "G major", "bass_clef", [["dotted half G2 at 1:1:000"]]]
+  end
+
   it "skips a single note's @staff" do
     flow = piano(mei_staff(1, mei_note("E4", "2", staff: "2") + mei_note("F4", "2")) + mei_staff(2, mei_note("C3", "1")), mei_staff(1, mei_note("E5", "1")) + mei_staff(2, mei_note("C3", "1")))
     expect(staves(flow)).to eq [{}, {1 => 2}]

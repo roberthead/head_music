@@ -18,7 +18,8 @@ module HeadMusic::Notation::MEI
 
     def build
       score_def = @source.editorial.children_named(@source.score, "scoreDef").first
-      groups = StaffGroups.new(score_def, @source.editorial, score: @source.score)
+      staff_def = score_def ? nil : @source.editorial.children_named(@source.score, "staffDef").first
+      groups = StaffGroups.new(score_def, @source.editorial, score: @source.score, staff_def: staff_def)
       opening = OpeningValues.new(score_def, groups, @source.editorial)
       identity = IdentityReader.new(@source, groups)
       score = ScoreReader.new(@source, groups, opening, identity).read
