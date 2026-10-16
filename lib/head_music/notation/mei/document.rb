@@ -3,7 +3,8 @@ module HeadMusic::Notation::MEI
   # <mdiv> holding a <score>, or a <parts> of one <part>, which reads as a
   # score. Only <music>/<body> is searched, so an incipit's <score> in the
   # <meiHead> is never read. Nested <mdiv>s, the <music> of a <group>, and
-  # each <mei> of a <meiCorpus> are descended in document order.
+  # each <mei> of a <meiCorpus> are descended in document order. A <score>
+  # straight in <music>, as MEI 2013 allowed, reads as one <mdiv>.
   #
   # Each <music> is scanned once before anything is read: its ids are
   # indexed, and mensural, neume, and tablature notation raise for the whole
@@ -59,6 +60,7 @@ module HeadMusic::Notation::MEI
         case child.name
         when "body" then editorial.children_named(child, "mdiv").flat_map { |mdiv| mdiv_sources(mdiv, labels, head, index, editorial) }
         when "group" then editorial.children_named(child, "music").flat_map { |inner| music_sources(inner, labels, head, index, editorial) }
+        when "score" then [Source.new(music, child, labels, head, index, editorial)]
         else []
         end
       end

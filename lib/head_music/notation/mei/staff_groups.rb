@@ -103,15 +103,18 @@ module HeadMusic::Notation::MEI
           raise ParseError.new("<section>s nest deeper than #{Editorial::MAX_DEPTH}", element: element) if depth > Editorial::MAX_DEPTH
 
           children = @editorial.children(element)
-          found << children.select { |child| child.name == "staff" }.flat_map { |staff| staff_layers(staff) } if element.name == "measure"
+          found << measure_layers_of(element, children) if element.name == "measure"
           children.reverse_each { |child| stack << [child, depth + 1] if %w[section ending measure].include?(child.name) }
         end
       end
     end
 
-    def staff_layers(staff)
-      number = AttributeValues.read(staff, "n", element: staff)
-      @editorial.children_named(staff, "layer").map { |layer| [number, AttributeValues.read(layer, "n", element: layer) || 1] }
+    def measure_layers_of(measure, children)
+      where = {measure: attribute(measure, "n", element: measure)}
+      children.select { |child| child.name == "staff" }.flat_map do |staff|
+        number = AttributeValues.read(staff, "n", **where, element: staff)
+        @editorial.children_named(staff, "layer").map { |layer| [number, AttributeValues.read(layer, "n", **where, staff: number, element: layer) || 1] }
+      end
     end
 
     def add_part(staff_defs, group)

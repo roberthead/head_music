@@ -37,6 +37,10 @@ describe HeadMusic::Notation::MEI::Document do
     expect(sources_of(%(<music><body>#{score("a")}</body></music>)).length).to eq 1
   end
 
+  it "reads a score straight in <music>, as MEI 2013 allowed and music21's test file writes, as one division" do
+    expect(sources_of(%(<mei><music label="Old"><score><scoreDef/></score></music></mei>)).map { |source| source.score.name }).to eq ["score"]
+  end
+
   it "reads a single part as a score" do
     sources = sources_of(mei(%(<mdiv><parts><part><scoreDef/></part></parts></mdiv>)))
     expect(sources.map { |source| source.score.name }).to eq ["part"]
