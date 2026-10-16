@@ -1,5 +1,6 @@
-# Renders flows as Standard MIDI Files. MIDI holds a performance, not its
-# notation: keys rather than spellings, and ticks rather than note values.
+# Renders flows as Standard MIDI Files, and decodes them. MIDI holds a
+# performance, not its notation: keys rather than spellings, and ticks rather
+# than note values.
 module HeadMusic::MIDI
   VELOCITIES = {"ppp" => 16, "pp" => 32, "p" => 48, "mp" => 64, "mf" => 80, "f" => 96, "ff" => 112, "fff" => 127}.freeze
   DEFAULT_LEVEL = "mf".freeze
@@ -34,6 +35,9 @@ module HeadMusic::MIDI
       super(offset ? "#{message} (byte #{offset})" : message)
     end
   end
+
+  # Raised for a valid Standard MIDI File that holds no one piece to read.
+  class UnsupportedFeatureError < ParseError; end
 
   # A subclass of the notation writers' error, so one rescue covers every writer.
   class RenderError < HeadMusic::Notation::RenderError; end
