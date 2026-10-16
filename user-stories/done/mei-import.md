@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-24T18:58:30-07:00
   activated_at: 2026-10-15T14:21:10-07:00
   planned_at:   2026-10-15T14:45:59-07:00
-  finished_at:
-  updated_at:   2026-10-15T19:30:57-07:00
+  finished_at:  2026-10-15T20:57:19-07:00
+  updated_at:   2026-10-15T20:57:19-07:00
 -->
 
 # Story: MEI Import
@@ -46,14 +46,14 @@ flow.voices.length # => one per layer, as the part numbers them
 
 ### Entry points and structure
 
-- [ ] `HeadMusic::Notation::MEI.parse(string)` reads the one leaf `<mdiv>` in `mei/music/body` that holds a `<score>` or a single `<part>`. With several, it raises `MEI::ParseError` naming how many and pointing to `parse_book`. A `<score>` in `<meiHead>` (an `<incip>`) is never read
-- [ ] `MEI.parse_book(string)` returns one flow per such `<mdiv>` in document order, descending nested `<mdiv>`s, `<music><group><music>`, and a `<meiCorpus>` root's `<mei>` documents. `Layout#to_mei` output reads back through `parse_book` as its flows, in order
-- [ ] A `<parts>` encoding with one `<part>` reads as a score. Several `<part>`s raise `UnsupportedFeatureError`, since aligning them is new work no corpus file needs
-- [ ] `@meiversion` is not checked, so `5.1+basic` (MuseScore) and `4.0.1` read alike. MEI 4 forms such as `@key.sig` are read beside MEI 5's
-- [ ] The input guarantees of `MusicXML.parse` hold. UTF-8 with or without a BOM, UTF-16 with a BOM, and `File.binread` strings parse, and nothing is fetched. Declared entities, text past REXML's expansion limits, and nesting deeper than 256 elements raise `ParseError`
-- [ ] Malformed XML, a missing `<music>`, a body with no `<score>` or `<part>`, and a `@startid`, `@endid`, or `@plist` naming no element or naming an `xml:id` used twice raise `MEI::ParseError` naming the element. A duplicate `xml:id` that nothing refers to is skipped, since music21's `test_file.mei` reuses ids. A reference into another file, or into a reading the editorial rule rejects, skips its control event
-- [ ] No error outside `HeadMusic::Notation::ParseError` escapes. A table-driven spec covers every attribute the reader parses with hostile values
-- [ ] These raise `MEI::UnsupportedFeatureError`:
+- [x] `HeadMusic::Notation::MEI.parse(string)` reads the one leaf `<mdiv>` in `mei/music/body` that holds a `<score>` or a single `<part>`. With several, it raises `MEI::ParseError` naming how many and pointing to `parse_book`. A `<score>` in `<meiHead>` (an `<incip>`) is never read
+- [x] `MEI.parse_book(string)` returns one flow per such `<mdiv>` in document order, descending nested `<mdiv>`s, `<music><group><music>`, and a `<meiCorpus>` root's `<mei>` documents. `Layout#to_mei` output reads back through `parse_book` as its flows, in order
+- [x] A `<parts>` encoding with one `<part>` reads as a score. Several `<part>`s raise `UnsupportedFeatureError`, since aligning them is new work no corpus file needs
+- [x] `@meiversion` is not checked, so `5.1+basic` (MuseScore) and `4.0.1` read alike. MEI 4 forms such as `@key.sig` are read beside MEI 5's
+- [x] The input guarantees of `MusicXML.parse` hold. UTF-8 with or without a BOM, UTF-16 with a BOM, and `File.binread` strings parse, and nothing is fetched. Declared entities, text past REXML's expansion limits, and nesting deeper than 256 elements raise `ParseError`
+- [x] Malformed XML, a missing `<music>`, a body with no `<score>` or `<part>`, and a `@startid`, `@endid`, or `@plist` naming no element or naming an `xml:id` used twice raise `MEI::ParseError` naming the element. A duplicate `xml:id` that nothing refers to is skipped, since music21's `test_file.mei` reuses ids. A reference into another file, or into a reading the editorial rule rejects, skips its control event
+- [x] No error outside `HeadMusic::Notation::ParseError` escapes. A table-driven spec covers every attribute the reader parses with hostile values
+- [x] These raise `MEI::UnsupportedFeatureError`:
   - mensural, neume, and tablature notation (`@notationtype`, `<mensur>`, `<ligature>`, `<neume>`, `<nc>`, `<tabGrp>`), for the whole document;
   - `<mRpt>`, `<mRpt2>`, `<beatRpt>`, `<halfmRpt>`, and `<multiRpt>`;
   - microtonal accidentals and `@keysig="mixed"`;
@@ -63,69 +63,69 @@ flow.voices.length # => one per layer, as the part numbers them
   - a later `<scoreDef>` that adds or removes staves.
 
   Each names its measure
-- [ ] Elements the reader does not use are skipped, not rejected:
+- [x] Elements the reader does not use are skipped, not rejected:
   - page and system layout: `<pgHead>`, `<pgFoot>`, `<sb>`, `<pb>`, facsimile and surface data;
   - markings the model does not hold: `<fing>`, `<harm>`, `<fb>`/`<f>`, `<pedal>`, `<octave>`, `<breath>`, `<bend>`, `<arpeg>`, `<gliss>`, `<lv>`;
   - text and annotation: `<anchoredText>`, `<annot>`, `<dir>` other than a repeat count, and `<tempo>` with text only;
   - `<expansion>`, and a `<barLine>` element inside a layer;
   - the visual attributes `@stem.*`, `@curvedir`, `@place`, and `@dur.ges`
-- [ ] `XmlReading` and `ParsePreflight` move to `HeadMusic::Notation`, taking `error_class:`, a format name, and, for the preflight, `roots:`. `MusicXML::XmlReading` and `MusicXML::ParsePreflight` remain, and MusicXML's messages and specs are unchanged. **Breaking:** `BarMap`, `VoiceTrack`, `TieFolding`, `VoicePlacer`, and `ConcertTransposition` move from `MusicXML` to `Notation`
+- [x] `XmlReading` and `ParsePreflight` move to `HeadMusic::Notation`, taking `error_class:`, a format name, and, for the preflight, `roots:`. `MusicXML::XmlReading` and `MusicXML::ParsePreflight` remain, and MusicXML's messages and specs are unchanged. **Breaking:** `BarMap`, `VoiceTrack`, `TieFolding`, `VoicePlacer`, and `ConcertTransposition` move from `MusicXML` to `Notation`
 
 ### Identity
 
-- [ ] A flow is named by its `mdiv/@label`, else an enclosing `<music @label>`, else the first untyped or `type="main"` `titleStmt/title`
-- [ ] A `Work` is built only from `workList/work`. Its composer `Credit` comes from `<composer>` (or its `<persName>`, whatever its `@role`) or from `persName[@role=composer]`. Without a `workList`, the composer becomes `flow.composer`. MEI Export writes `<workList>` for a flow with a `Work`
-- [ ] A part's player is named by the `<label>` of a single-staff `<staffDef>` or of a multi-staff `<staffGrp>`. A group of single-staff parts labels none of them. The player is a `Player` with no project
-- [ ] `<instrDef @label>` names the catalog instrument, falling back to a fixed table from `@midi.instrnum` (0-based) to `gm_program`. A `<staffDef>` change with a new `<instrDef>` is an instrument change at that bar. MEI Export writes `instrDef@label`
+- [x] A flow is named by its `mdiv/@label`, else an enclosing `<music @label>`, else the first untyped or `type="main"` `titleStmt/title`
+- [x] A `Work` is built only from `workList/work`. Its composer `Credit` comes from `<composer>` (or its `<persName>`, whatever its `@role`) or from `persName[@role=composer]`. Without a `workList`, the composer becomes `flow.composer`. MEI Export writes `<workList>` for a flow with a `Work`
+- [x] A part's player is named by the `<label>` of a single-staff `<staffDef>` or of a multi-staff `<staffGrp>`. A group of single-staff parts labels none of them. The player is a `Player` with no project
+- [x] `<instrDef @label>` names the catalog instrument, falling back to a fixed table from `@midi.instrnum` (0-based) to `gm_program`. A `<staffDef>` change with a new `<instrDef>` is an instrument change at that bar. MEI Export writes `instrDef@label`
 
 ### Parts, staves, and voices
 
-- [ ] Each `<staffDef>` becomes a staff. A `<staffGrp>` that carries its own `<label>` and holds several `<staffDef>`s is one multi-staff part, and so is one with `symbol="brace"` whose staves are unlabeled or share one label. Its `@symbol` sets the bracket. Every other staff is its own part
-- [ ] Voice keys are decided per part. If no measure has one `layer/@n` holding notes on two of the part's staves, the layer number alone is the voice, as MEI Export numbers it. Otherwise the staff and layer number together are the voice, and a key with no notes anywhere is a placeholder that is not read. A layer with notes that shares its staff and `@n`, or the lack of one, with an earlier layer with notes in the measure, including one in a second `<staff>` of the same number, is a voice of its own. Where only one such layer has notes, it is the one read. `layerDef/label` is the voice's role
-- [ ] A layer whose notes all carry the same `@staff` sits on that staff for the bar, and a change at a barline is a staff crossing. Otherwise a single note's `@staff` is skipped
-- [ ] A voice's leading and trailing bars of only `<mRest>` or `<mSpace>` are not placed. Such bars between its events, and missing layers, become bar-filling rests, and a short layer is padded. A bare `<staff n/>` places nothing. Every voice satisfies `Voice::Continuity`
-- [ ] `<clef>`, or `staffDef@clef.*` with `@dis` and `@dis.place`, in a `<staffDef>` or at a barline sets the staff's clef or a clef change. A clef in the middle of a layer is skipped
+- [x] Each `<staffDef>` becomes a staff. A `<staffGrp>` that carries its own `<label>` and holds several `<staffDef>`s is one multi-staff part, and so is one with `symbol="brace"` whose staves are unlabeled or share one label, which then names the part's player. So is an unlabeled group whose staves never reuse a layer number, as a choir on two staves is written. Its `@symbol` sets the bracket. Every other staff is its own part
+- [x] Voice keys are decided per part. If no measure has one `layer/@n` holding notes on two of the part's staves, the layer number alone is the voice, as MEI Export numbers it. Otherwise the staff and layer number together are the voice, and a key with no notes anywhere is a placeholder that is not read. A layer with notes that shares its staff and `@n`, or the lack of one, with an earlier layer with notes in the measure, including one in a second `<staff>` of the same number, is a voice of its own. Where only one such layer has notes, it is the one read. `layerDef/label` is the voice's role
+- [x] A layer whose notes all carry the same `@staff` sits on that staff for the bar, and a change at a barline is a staff crossing. Otherwise a single note's `@staff` is skipped
+- [x] A voice's leading and trailing bars of only `<mRest>` or `<mSpace>` are not placed. Such bars between its events, and missing layers, become bar-filling rests, and a short layer is padded. A bare `<staff n/>` places nothing. Every voice satisfies `Voice::Continuity`
+- [x] `<clef>`, or `staffDef@clef.*` with `@dis` and `@dis.place`, in a `<staffDef>` or at a barline sets the staff's clef or a clef change. A clef in the middle of a layer is skipped
 
 ### Notes and rhythms
 
-- [ ] `<note>` `@pname`, `@oct`, `@dur`, and `@dots` map to pitches and rhythmic values, with `@pname.ges` and `@oct.ges` winning. `@dur` falls back to the enclosing `<chord>`, then `@dur.default`, and a note with none raises `ParseError`
-- [ ] The sounding accidental is `@accid.ges` when present, and `@accid` otherwise, with child `<accid>` elements read as either. When neither is written, the key signature and earlier accidentals at that letter and octave in the bar on that staff, across its layers, decide it
-- [ ] `<rest>`, `<space>`, `<mRest>`, and `<multiRest>` become rests of their length, and a `@cue` note is a rest. A `<space>` with no `@dur` takes the time its layer leaves of the longest other layer in its measure, shared equally among several such spaces in the layer. Wherever no other layer gives a length, the meter's length applies. `<chord>` becomes a note event with several pitches
-- [ ] Ties (`@tie`, or `<tie>` control events by ids or tstamps) fold across barlines when both ends are in one voice. An unclosed tie, `<lv>`, or a tie across voices is dropped, and the note keeps its written value. A tie on some pitches of a chord is skipped. A tie between pitches that share nothing raises `ParseError`
-- [ ] `<tuplet>`, `<tupletSpan>` (by ids or `@plist`), and `@tuplet` `i`/`m`/`t` map to tuplet values and groups. A span over MEI Export's hidden per-bar tuplets is one group across the barline. `@grace` and `<graceGrp>` become grace notes
-- [ ] `<beam>`, `<beamSpan>`, and `@beam` `i`/`m`/`t` read back as beam breaks where they differ from the default grouping
-- [ ] `<bTrem>` reads as its note or chord, and `<fTrem>` reads its members in sequence at their own `@dur`. The tremolo itself is skipped
-- [ ] A first measure with `type="upbeat"`, or one shorter than its meter at the start (`n="0"` without `@type` counts), is a pickup. A final measure with `metcon="false"` is a short final bar
+- [x] `<note>` `@pname`, `@oct`, `@dur`, and `@dots` map to pitches and rhythmic values, with `@pname.ges` and `@oct.ges` winning. `@dur` falls back to the enclosing `<chord>`, then `@dur.default`, and a note with none raises `ParseError`
+- [x] The sounding accidental is `@accid.ges` when present, and `@accid` otherwise, with child `<accid>` elements read as either. When neither is written, the key signature and earlier accidentals at that letter and octave in the bar on that staff, across its layers, decide it
+- [x] `<rest>`, `<space>`, `<mRest>`, and `<multiRest>` become rests of their length, and a `@cue` note is a rest. A `<space>` with no `@dur` takes the time its layer leaves of the longest other layer in its measure, shared equally among several such spaces in the layer. Wherever no other layer gives a length, the meter's length applies. `<chord>` becomes a note event with several pitches
+- [x] Ties (`@tie`, or `<tie>` control events by ids or tstamps) fold across barlines when both ends are in one voice. An unclosed tie, `<lv>`, or a tie across voices is dropped, and the note keeps its written value. A tie on some pitches of a chord is skipped. A tie between pitches that share nothing raises `ParseError`
+- [x] `<tuplet>`, `<tupletSpan>` (by ids or `@plist`), and `@tuplet` `i`/`m`/`t` map to tuplet values and groups. A span over MEI Export's hidden per-bar tuplets is one group across the barline. `@grace` and `<graceGrp>` become grace notes
+- [x] `<beam>`, `<beamSpan>`, and `@beam` `i`/`m`/`t` read back as beam breaks where they differ from the default grouping
+- [x] `<bTrem>` reads as its note or chord, and `<fTrem>` reads its members in sequence at their own `@dur`. The tremolo itself is skipped
+- [x] A first measure with `type="upbeat"`, or one shorter than its meter at the start (`n="0"` without `@type` counts), is a pickup. A final measure with `metcon="false"` is a short final bar
 
 ### Timeline
 
-- [ ] The key comes from `@keysig`, `@key.sig`, or `<keySig @sig>`, with `@key.mode`, `<keySig @mode>`, or `@key.pname` as tonal context. A `<keySig>` that opens a `<layer>`, before any event, is that staff's key change from its bar, as a `<staffDef>` key change is; one later in the layer raises `UnsupportedFeatureError` naming the measure. The meter comes from `@meter.count` and `@meter.unit`, or `<meterSig>`. Both are read on `<scoreDef>`, else on the first `<staffDef>`, at the opening and at later measures. `@meter.sym` with no count reads as 4/4 or 2/2, and a restatement makes no change. MEI Export writes `@key.mode`
-- [ ] `scoreDef/@midi.bpm` is the opening tempo. A `<tempo>` with `@mm` (`@mm.unit`, `@mm.dots`) or `@midi.bpm` at a measure's start is a tempo change
-- [ ] A `@tstamp` within 1/1000 beat of an onset in its layer, or else on its staff, takes that onset, and otherwise rounds to the tick. A `@tstamp2` beat one past the last bar's count is the final barline. Ids win when both are given, and a `@tstamp2` with no measure part is dropped when there are no ids
-- [ ] `@trans.diat` and `@trans.semi` on a staff definition are honored from that bar onward, with 0/0 resetting, so transposing parts land in concert pitch
+- [x] The key comes from `@keysig`, `@key.sig`, or `<keySig @sig>`, with `@key.mode`, `<keySig @mode>`, or `@key.pname` as tonal context. A `<keySig>` that opens a `<layer>`, before any event, is that staff's key change from its bar, as a `<staffDef>` key change is; one later in the layer raises `UnsupportedFeatureError` naming the measure. The meter comes from `@meter.count` and `@meter.unit`, or `<meterSig>`. Both are read on `<scoreDef>`, else on the first `<staffDef>`, at the opening and at later measures. `@meter.sym` with no count reads as 4/4 or 2/2, and a restatement makes no change. MEI Export writes `@key.mode`
+- [x] `scoreDef/@midi.bpm` is the opening tempo. A `<tempo>` with `@mm` (`@mm.unit`, `@mm.dots`) or `@midi.bpm` at a measure's start is a tempo change
+- [x] A `@tstamp` within 1/1000 beat of an onset in its layer, or else on its staff, takes that onset, and otherwise rounds to the tick. A `@tstamp2` beat one past the last bar's count is the final barline. Ids win when both are given, and a `@tstamp2` with no measure part is dropped when there are no ids
+- [x] `@trans.diat` and `@trans.semi` on a staff definition are honored from that bar onward, with 0/0 resetting, so transposing parts land in concert pitch
 
 ### Markings and spans
 
-- [ ] `@artic` and `<artic>` become articulations, and `<trill>`, `<mordent>`, and `<turn>` become ornaments on their note
-- [ ] `<dynam>` with a level becomes a dynamic event at its `@startid` or `@tstamp`, on the voice when it names a layer and on the part otherwise. A note dynamic such as *sfz* at a note becomes that note's dynamic. Text such as "cresc." is skipped
-- [ ] `<hairpin>` becomes a hairpin from its start to its end, by id or by `@tstamp` and `@tstamp2`. A hairpin with no end is dropped
-- [ ] `<slur>` and `@slur` `i`/`t` become slurs, and `<phrase>` a phrase mark. A tstamp-only slur resolves only when exactly one note starts at each end. One the voice refuses, such as a slur on a rest, is dropped
-- [ ] Barline styles (`@left`, `@right`) and repeats become bar markings. So do `<ending>`, with passes from `@n` as `1`, `1-2`, or `1, 2`, else from `@label`; `<reh>`; a `<dir>` reading "×N", which sets a repeat's count; and `<repeatMark @func>` for coda, segno, D.C., and D.S. with al Fine and al Coda
+- [x] `@artic` and `<artic>` become articulations, and `<trill>`, `<mordent>`, and `<turn>` become ornaments on their note
+- [x] `<dynam>` with a level becomes a dynamic event at its `@startid` or `@tstamp`, on the voice when it names a layer and on the part otherwise. A note dynamic such as *sfz* at a note becomes that note's dynamic. Text such as "cresc." is skipped
+- [x] `<hairpin>` becomes a hairpin from its start to its end, by id or by `@tstamp` and `@tstamp2`. A hairpin with no end is dropped
+- [x] `<slur>` and `@slur` `i`/`t` become slurs, and `<phrase>` a phrase mark. A tstamp-only slur resolves only when exactly one note starts at each end. One the voice refuses, such as a slur on a rest, is dropped
+- [x] Barline styles (`@left`, `@right`) and repeats become bar markings. So do `<ending>`, with passes from `@n` as `1`, `1-2`, or `1, 2`, else from `@label`; `<reh>`; a `<dir>` reading "×N", which sets a repeat's count; and `<repeatMark @func>` for coda, segno, D.C., and D.S. with al Fine and al Coda
 
 ### Lyrics and editorial markup
 
-- [ ] `<verse n>/<syl>`, a bare `note/syl`, and `@syl` attach syllables to their notes as verse n, with a verse with no `@n` as verse 1. `@wordpos` `i` or `m`, or `@con="d"`, sets `hyphen_after`. Several `<syl>`s join with "‿", `<lb/>` is a space, and other `@con` values set nothing
-- [ ] Editorial markup has a fixed rule, documented in the module. `<app>` takes `<lem>`, or else its first `<rdg>`. `<choice>` takes `<corr>`, `<reg>`, or `<expan>`, and `<subst>` takes its `<add>`. The contents of `<supplied>`, `<add>`, `<unclear>`, and `<restore>` are kept, and `<del>` is skipped. `@copyof` copies are expanded, and a cycle or runaway expansion raises `ParseError`
+- [x] `<verse n>/<syl>`, a bare `note/syl`, and `@syl` attach syllables to their notes as verse n, with a verse with no `@n` as verse 1. `@wordpos` `i` or `m`, or `@con="d"`, sets `hyphen_after`. Several `<syl>`s join with "‿", `<lb/>` is a space, and other `@con` values set nothing
+- [x] Editorial markup has a fixed rule, documented in the module. `<app>` takes `<lem>`, or else its first `<rdg>`. `<choice>` takes `<corr>`, `<reg>`, or `<expan>`, and `<subst>` takes its `<add>`. The contents of `<supplied>`, `<add>`, `<unclear>`, and `<restore>` are kept, and `<del>` is skipped. `@copyof` copies are expanded, and a cycle or runaway expansion raises `ParseError`
 
 ### Round trip and real files
 
-- [ ] Every MEI Export golden parses back field by field to the flow that was rendered, with the exclusions named in the spec: tempo as quarter bpm, an authored whole-bar rest at a voice's edge, and tie spellings at barlines. Render, parse, and render again yields the same bytes
-- [ ] The seeded generators in `spec/support` round-trip 100 seeds each through MEI, naming the seed on failure
-- [ ] `Bach-JS_Herzliebster_Jesu_BWV244-46.mei` and `Bach-JS_Ein_feste_Burg.mei`, from music-encoding/sample-encodings MEI_5.1, are committed with the ECL-2.0 license and parse end to end. The spec checks bars, staves, key, and opening pitches
-- [ ] MuseScore 4's MEI exports of the MusicXML fixtures are committed as `*.musescore4.mei` and parse to the music that was rendered, with MuseScore's changes listed per file. With `MSCORE` set, a spec reconverts them under a timeout
-- [ ] With `MEI_CORPUS` naming local folders of MEI files, separated by `:`, every CMN file parses or raises the error the spec names for it. The story records sweeps of sample-encodings MEI_5.1, MEI_5.0, and MEI_4.0
-- [ ] A generated 500-bar document reads in linear time, counted in calls rather than timed, with no XPath
-- [ ] Maintains 90%+ test coverage
+- [x] Every MEI Export golden parses back field by field to the flow that was rendered, with the exclusions named in the spec: tempo as quarter bpm, an authored whole-bar rest at a voice's edge, tie spellings and runs of rests compared by length, unauthored clefs and staff systems compared as the writer's fallbacks, and beams and tuplets compared as rendered. Render, parse, and render again yields the same bytes
+- [x] The seeded generators in `spec/support` round-trip 100 seeds each through MEI, naming the seed on failure
+- [x] `Bach-JS_Herzliebster_Jesu_BWV244-46.mei` and `Bach-JS_Ein_feste_Burg.mei`, from music-encoding/sample-encodings MEI_5.1, are committed with the ECL-2.0 license and parse end to end. The spec checks bars, staves, key, and opening pitches
+- [x] MuseScore 4's MEI exports of the MusicXML fixtures are committed as `*.musescore4.mei` and parse to the music that was rendered, with MuseScore's changes listed per file. With `MSCORE` set, a spec reconverts them under a timeout
+- [x] With `MEI_CORPUS` naming local folders of MEI files, separated by `:`, every CMN file parses or raises the error the spec names for it. The story records sweeps of sample-encodings MEI_5.1, MEI_5.0, and MEI_4.0
+- [x] A generated 500-bar document reads in linear time, counted in calls rather than timed, with no XPath
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
@@ -141,6 +141,7 @@ flow.voices.length # => one per layer, as the part numbers them
   - `fturn.mei` ties a D5 natural to a D5 whose `@accid.ges="f"` comes from the key alone, so a tie's later note takes its chain's alteration whatever it writes.
   - Brahms Op. 51 writes `@tuplet` runs with no `<tupletSpan>` past its first bars, so those bars are overfull. `@tuplet` names no ratio, so it groups only what a container or span scales.
   - music21's `test_file.mei` now gets past its reused ids, but raises because its `<score>` sits straight in `<music>`, with no `<body>` or `<mdiv>`, as MEI 2013 allowed.
+- **Follow-up: `@ornam` letters `T` and `S`.** The reader maps `t`, `m`, `M`, and `s` to trill, mordent, inverted mordent, and turn. The schema's pattern allows `T`, `S`, and combined tokens such as `Tm`, but gives no meaning for them, and guessing would invent ornaments.
 - **Corpus:** clone `https://github.com/music-encoding/sample-encodings` (ECL-2.0) for the sweep. It holds 842 `.mei` files, 167 of them MEI 5.1. music21's three MEI test files are at `music21/mei/test/`.
 
 ## Decisions
@@ -515,6 +516,59 @@ All settled with a recommendation:
 - **A second session on the same repo** caused trouble in MEI Export. Check for peer sessions before resuming a fan-out.
 - **Dependent stories** need MEI read lines; see the last two items below.
 
+## Review
+
+Reviewed 2026-10-15 at commit `29ba4fcc`, by a product manager (acceptance verification) and an adversarial code reviewer, run in parallel. The adversarial review was step 17 of the plan.
+
+### Acceptance criteria
+
+| Criteria | Verdict | Evidence |
+| --- | --- | --- |
+| Entry points and structure (10) | ✅ 7, ⚠️ 2, ❌ 1 | `parser.rb`, `document.rb`, `parse_preflight.rb`, `attribute_values.rb`; `parser_spec`, `document_spec`, `mei_hostile_documents_spec`. Two fuzz runs of 2,000 mutated fixtures raised nothing outside `ParseError`. Gaps: `parse_book` still refused a book with an empty score; a later `<scoreDef>`'s error named the measure before it; no spec pinned the skip list |
+| Identity (4) | ✅ 4 | `identity_reader.rb`, `head_writer.rb`; `identity_reader_spec`, `head_writer_spec` |
+| Parts, staves, and voices (5) | ✅ 4, ⚠️ 1 | `staff_groups.rb`, `part_reading.rb`, `voice_placer.rb`. The staff-group criterion no longer described the layers-apart rule |
+| Notes and rhythms (8) | ✅ 7, ⚠️ 1 | `@dur.default` was not read on `<layerDef>` or a later `<scoreDef>` |
+| Timeline (4) | ✅ 2, ⚠️ 2 | A later key stated only on `<staffDef>` was lost from the timeline; a `<tempo>` placed by `@startid` on the downbeat was skipped |
+| Markings and spans (5) | ✅ 5 | the mark readers and their specs |
+| Lyrics and editorial markup (2) | ✅ 2 | `lyric_reader.rb`, `editorial.rb` |
+| Round trip and real files (7) | ✅ 5, ⚠️ 2 | `mei_round_trip_spec`, `mei_real_files_spec`, `mei_corpus_spec`, `flow_builder_size_spec`. The round-trip criterion listed fewer exclusions than the spec names. Coverage awaited `rake validate` |
+
+### Code review findings
+
+The adversarial reviewer ran about 900 hostile documents through `MEI.parse` and `parse_book`, each in its own process with a timeout. None raised outside `ParseError`, hung, or printed. It found seven problems:
+
+1. **High: a `<tupletSpan>` whose `@endid` never came later in its layer** scaled the rest of the layer to the end of the piece.
+2. **High: two layers sharing an `@n` on one staff** lost one layer's notes.
+3. **Medium: a `@tstamp` below 1** made an unnormalized position such as `2:0:000`, which the ABC writer then refused.
+4. **Medium: a note crossing staves alone** was spelled against its layer's staff, not the staff it names.
+5. **Medium: a `<keySig>` inside a layer** (valid MEI 5.1, checked against the schema) was skipped, so the notes after it were spelled in the old key.
+6. **Medium: tie chains folded in quadratic time.** 2,000 tied bars took 12.5 s. This is shared with MusicXML Import.
+7. **Medium: `<multiRest num>` had no total cap.** 40 measures of `num="9999"` took 12 s.
+
+It also found dead code in the id index, and no MusicXML regressions from the moves.
+
+### Resolution
+
+Every finding is fixed, each with a spec that fails on the old code (`a42a2a34` through `0177a827`, plus `4a1a0e3a`):
+
+- **Tuplet spans:** a span whose end does not follow its start in its layer is skipped.
+- **Repeated layer numbers:** the repeated layer reads as a voice of its own.
+- **Timestamps:** a tstamp before the first beat reads as the downbeat.
+- **Crossing notes:** a note is spelled on the staff it names.
+- **`<keySig>` in a layer:** one opening a layer is a key change from that bar; one elsewhere raises `UnsupportedFeatureError`.
+- **Tie chains** fold in linear time, in MEI and MusicXML alike. 2,000 bars now take 0.48 s, and call-counting specs pin both readers.
+- **`<multiRest>`** bars are capped at 16 per measure, with a floor of 10,000.
+- **Books:** `parse_book` skips scores with no music.
+- **Later definitions:**
+  - a key on the first staff's `<staffDef>` changes the key, at concert pitch when that staff transposes;
+  - a downbeat `<tempo>` placed by `@startid` is a change;
+  - later definitions' errors name the measure they precede;
+  - `@dur.default` is read on `<layerDef>` and later `<scoreDef>`s.
+- **Smaller fixes:** a spec pins the skip list; a part takes the label its staves share; `<choice>` takes `<corr>`, then `<reg>`, then `<expan>`, in any order; and `@ornam` is read.
+- **Criteria:** the staff-group and round-trip criteria are reworded to what the code does. The `<space>` and `<keySig>` criteria were reworded in `3c0505ac`.
+
+The full suite passes 16,522 examples. The MEI corpus sweep reads 85 of 167 files in each version, and the MusicXML corpus sweep still passes all 526 examples.
+
 ## Corpus Sweep
 
 Swept on 2026-10-15 through `spec/head_music/notation/mei_corpus_spec.rb`, with `MEI_CORPUS` naming sample-encodings' `MEI_5.1`, `MEI_5.0`, and `MEI_4.0` (`~/github.com/music-encoding/sample-encodings`) and music21's `music21/mei/test`.
@@ -581,3 +635,13 @@ The short bars:
   - The largest file, Hummel's trumpet concerto (4.1 MB, 665 measures), takes 1.12 s to parse in REXML and 4.26 s in `MEI.parse_book`, as far as its refusal near the end.
   - Beethoven's Op. 18 No. 1 (2.7 MB) takes 0.76 s and 1.94 s, as far as its refusal in the second movement.
   - The largest file that reads, Bach's Brandenburg Concerto No. 4, first movement (1.8 MB, 427 measures, 10 voices, 13,197 voice events), takes 0.50 s and 2.58 s.
+
+## Learnings
+
+- **Moving shared code first, behind a byte-diff proof, made the MEI reader cheap.** , , , , , and  moved out of MusicXML with a JSON dump of every MusicXML parse kept identical and the 1,068-file corpus re-run. The MEI reader then reused all of them.
+- **The writer's goldens set the reader's target, and the round trip found what the writer lacked.** Four SATB voices shared one GM program and D dorian read back as C major, so MEI Export gained , , and . A real file from MuseScore also exposed that the writer had   and  backwards.
+- **Freezing the mark-record contract let five readers be built in parallel worktrees.** Each self-registered on its own last line, and integration had no conflicts. Two readers still needed one shared-file edit each (a beat-past-the-music rule, and grace-note articulations at queue time); naming those up front would have saved a round.
+- **The adversarial review earned its place again.** It found a span that silently scaled a whole layer, silent loss of a layer's notes, and two denial-of-service shapes. That was after 16,000 passing examples and a corpus sweep, because real corpora don't hold hostile structure.
+- **Quadratic code hides in shared helpers.**  rebuilt a tied chain on every link, in MusicXML Import too, and no corpus file had a chain long enough to show it. Call-counting specs now pin both readers.
+- **A corpus sweep measures how far files get, not only whether they read.** The count of files read stayed at 84 through several fixes, because each fixed file then stopped on a later, genuine refusal. The refusal table, with a decision for each class, is the useful record.
+- **A second session on the same repo** made  and its worktrees disappear mid-fan-out. After a restart, check for peer sessions before resuming.
