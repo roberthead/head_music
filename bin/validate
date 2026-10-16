@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Runs the full validation: specs with coverage, Standard, the audit, and RubyCritic.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+exec bundle exec rake validate "$@"
