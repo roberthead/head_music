@@ -31,9 +31,7 @@ module HeadMusic::MIDI
     end
 
     def check_grid(grid)
-      return grid if grid == :auto || (grid.is_a?(Rational) && grid.positive?)
-
-      raise ArgumentError, "grid: takes :auto or a positive Rational, not #{grid.inspect}"
+      Quantizer.check_grid(grid)
     end
   end
 end
