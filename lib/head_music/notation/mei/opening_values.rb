@@ -2,7 +2,8 @@ module HeadMusic::Notation::MEI
   # What the opening <scoreDef> states: the key and meter, each read on the
   # <scoreDef>, else on the first <staffDef> that states one, as MuseScore
   # puts its meter only on staff definitions; the tempo of its @midi.bpm;
-  # and the @dur.default in force on each staff.
+  # and the @dur.default in force on each staff. A transposing staff's key
+  # is the written one, so the score's sounds its @trans.* away.
   class OpeningValues
     attr_reader :score_def
 
@@ -13,7 +14,7 @@ module HeadMusic::Notation::MEI
     end
 
     def key
-      @key ||= first_stated { |element| ScoreDefValues.key(element, @editorial) } || ScoreDefValues::Key.new(0, nil, nil)
+      @key ||= first_stated { |element| concert_key(element) } || ScoreDefValues::Key.new(0, nil, nil)
     end
 
     def meter
@@ -34,6 +35,16 @@ module HeadMusic::Notation::MEI
     end
 
     private
+
+    # An interval moves a key along the circle of fifths by seven fifths a
+    # semitone less twelve a diatonic step, whatever its octaves.
+    def concert_key(element)
+      key = ScoreDefValues.key(element, @editorial)
+      step = key && element.name == "staffDef" && StaffState.transposition(element)
+      return key unless step
+
+      ScoreDefValues::Key.new(key.fifths + (7 * step.chromatic) - (12 * step.diatonic), key.mode, nil)
+    end
 
     def first_stated
       [score_def, *@groups.staff_numbers.map { |number| @groups.staff_def(number) }].compact.each do |element|

@@ -35,6 +35,12 @@ describe HeadMusic::Notation::MEI do
     expect(events(whole("D4"), score_def: clarinet(%( trans.diat="-1" trans.semi="-2")))).to eq ["whole C4 at 1:1:000"]
   end
 
+  it "reads a key stated only on a transposing staff as written, so the score's sounds a tone lower" do
+    score_def = %(<scoreDef meter.count="4" meter.unit="4"><staffGrp>#{mei_staff_def(1, attributes: %( keysig="2s" trans.diat="-1" trans.semi="-2"))}</staffGrp></scoreDef>)
+    flow = described_class.parse(mei_document(whole("D4"), score_def: score_def))
+    expect([flow.key_signature.name, flow.voices.first.voice_events.map(&:to_s)]).to eq ["C major", ["whole C4 at 1:1:000"]]
+  end
+
   it "replaces it at a later staff definition, and returns to concert pitch at 0/0" do
     items = [whole("D4"), staff_def_change(%( trans.diat="-2" trans.semi="-3")), whole("Eb4"), staff_def_change(%( trans.diat="0" trans.semi="0")), whole("C4")]
     expect(events(*items, score_def: clarinet(%( trans.diat="-1" trans.semi="-2"))))
