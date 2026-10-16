@@ -102,6 +102,19 @@ describe HeadMusic::Rudiment::Key do
         expect(minor_key.relative.name).to eq "C major"
       end
     end
+
+    {
+      "E♭ minor" => "G♭ major",
+      "B♭ minor" => "D♭ major",
+      "A♭ minor" => "C♭ major",
+      "D♯ minor" => "F♯ major",
+      "G♯ minor" => "B major"
+    }.each do |minor_name, major_name|
+      it "pairs #{minor_name} with #{major_name}" do
+        expect(described_class.get(minor_name).relative.name).to eq major_name
+        expect(described_class.get(major_name).relative.name).to eq minor_name
+      end
+    end
   end
 
   describe "#parallel" do

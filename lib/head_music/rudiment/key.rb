@@ -57,13 +57,9 @@ class HeadMusic::Rudiment::Key < HeadMusic::Rudiment::QualifiedDiatonicContext
 
   def relative
     if major?
-      # Major to relative minor: down a minor third (3 semitones)
-      relative_pitch = tonic_pitch + -3
-      self.class.get("#{relative_pitch.spelling} minor")
+      relative_key(-3, tonic_spelling.letter_name.steps_down(2), :minor)
     else
-      # Minor to relative major: up a minor third (3 semitones)
-      relative_pitch = tonic_pitch + 3
-      self.class.get("#{relative_pitch.spelling} major")
+      relative_key(3, tonic_spelling.letter_name.steps_up(2), :major)
     end
   end
 
@@ -73,5 +69,13 @@ class HeadMusic::Rudiment::Key < HeadMusic::Rudiment::QualifiedDiatonicContext
     else
       self.class.get("#{tonic_spelling} major")
     end
+  end
+
+  private
+
+  def relative_key(semitones, letter_name, quality)
+    number = tonic_spelling.pitch_class.to_i + semitones
+    spelling = HeadMusic::Rudiment::Spelling.from_number_and_letter(number, letter_name)
+    self.class.get("#{spelling} #{quality}")
   end
 end
