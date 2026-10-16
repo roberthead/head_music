@@ -21,6 +21,16 @@ describe HeadMusic::Notation::MEI::OrnamentReader do
     expect(ornaments(read(notes, controls))).to eq [%w[mordent], %w[mordent], %w[inverted_mordent], %w[turn]]
   end
 
+  it "reads @ornam's t, m, M, and s as the trill, mordent, inverted mordent, and turn, beside the elements" do
+    notes = %w[t m M s].map { |letter| mei_note("C4", "4", ornam: letter) }.join
+    expect(ornaments(read(notes))).to eq [%w[trill], %w[mordent], %w[inverted_mordent], %w[turn]]
+  end
+
+  it "reads a chord's @ornam onto it and skips the letters it has no ornament for" do
+    chord = %(<chord dur="2" ornam="b t">#{mei_note("C4", nil)}#{mei_note("E4", nil)}</chord>)
+    expect(ornaments(read(chord + mei_note("G4", "2", ornam: "O")))).to eq [%w[trill], []]
+  end
+
   it "reads an ornament at a beat that a note starts on" do
     expect(ornaments(read(notes, %(<trill staff="1" tstamp="2"/>)))).to eq [[], %w[trill], [], []]
   end
