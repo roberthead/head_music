@@ -49,7 +49,7 @@ describe HeadMusic::Notation::MEI::Preflight do
 
   it "raises for an unpitched grace note" do
     voice.place("1:1", :half, "C4").add_grace_note(snare, :sixteenth)
-    expect { described_class.check!(flow) }.to raise_error(error, /unpitched grace note .* before 1:1:000 as MEI/)
+    expect { described_class.check!(flow) }.to raise_error(error, /unpitched grace note .* before 1:1:000/)
   end
 
   it "raises for a part whose staff system changes" do

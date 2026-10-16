@@ -18,15 +18,12 @@ module HeadMusic::Notation::LilyPond
   end
 
   # Raised when a LilyPond string cannot be interpreted
-  class ParseError < HeadMusic::Notation::ParseError
-    attr_reader :line_number, :column, :snippet
+  class ParseError < HeadMusic::Notation::LineParseError
+    attr_reader :column
 
-    def initialize(message, line_number: nil, column: nil, snippet: nil)
-      @line_number = line_number
+    def initialize(message, column: nil, **location)
       @column = column
-      @snippet = snippet
-      message = "#{message} (line #{line_number})" if line_number
-      super(message)
+      super(message, **location)
     end
   end
 

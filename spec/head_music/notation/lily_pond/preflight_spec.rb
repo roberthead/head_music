@@ -133,7 +133,7 @@ describe HeadMusic::Notation::LilyPond::Preflight do
       it "raises a render error naming the sound and the main note's position" do
         expect { described_class.check!(flow) }.to raise_error(
           render_error,
-          /cannot render unpitched sound "snare drum" in a grace note before 1:1/
+          /cannot render the unpitched grace note "snare drum" before 1:1/
         )
       end
     end

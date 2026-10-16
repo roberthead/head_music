@@ -5,17 +5,8 @@ module HeadMusic::Notation::LilyPond
     # LilyPond's \key command names these nine modes, so scale types
     # outside this set (harmonic minor, whole tone, etc.) cannot be
     # rendered as a \key command and must raise instead.
-    MODE_COMMANDS_BY_SCALE_TYPE = {
-      "major" => "\\major",
-      "ionian" => "\\ionian",
-      "minor" => "\\minor",
-      "aeolian" => "\\aeolian",
-      "dorian" => "\\dorian",
-      "phrygian" => "\\phrygian",
-      "lydian" => "\\lydian",
-      "mixolydian" => "\\mixolydian",
-      "locrian" => "\\locrian"
-    }.freeze
+    MODE_COMMANDS_BY_SCALE_TYPE = ["major", "minor", *HeadMusic::Rudiment::Mode::MODES.map(&:to_s)]
+      .to_h { |scale_type| [scale_type, "\\#{scale_type}"] }.freeze
 
     def self.token(key_signature)
       key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature)

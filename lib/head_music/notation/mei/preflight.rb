@@ -22,7 +22,7 @@ module HeadMusic::Notation::MEI
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
       ensure_no_marks_inside_rounded_notes(flow)
-      ensure_pitched_voice_events
+      ensure_pitched_voice_events(flow)
       ensure_steady_staff_systems
     end
 
@@ -45,20 +45,6 @@ module HeadMusic::Notation::MEI
         *flow.bars(flow.last_sounding_bar_number).map(&:rehearsal_mark),
         *flow.voices.flat_map { |voice| voice.voice_events.flat_map { |event| event.syllables.values.map(&:text) } }
       ]
-    end
-
-    def ensure_pitched_voice_events
-      flow.voices.each do |voice|
-        voice.voice_events.each { |voice_event| ensure_pitched_sounds(voice_event) }
-        voice.note_events.each { |note_event| ensure_pitched_grace_notes(note_event) }
-      end
-    end
-
-    def ensure_pitched_grace_notes(note_event)
-      unpitched = note_event.grace_notes.flat_map(&:sounds).find { |sound| !sound.pitched? }
-      return unless unpitched
-
-      raise RenderError, "cannot render the unpitched grace note \"#{unpitched}\" before #{note_event.position} as MEI"
     end
 
     # A change would renumber the staves that control events name.

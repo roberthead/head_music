@@ -31,14 +31,7 @@ module HeadMusic::Notation::MEI
     end
 
     def apply(flow)
-      first = flow.earliest_bar_number
-      last = flow.latest_bar_number
-      @marks.each do |number, marks|
-        next unless number.between?(first, last)
-
-        current = flow.bar(number)
-        marks.each { |field, value| current.public_send(:"#{field}=", value) }
-      end
+      HeadMusic::Notation::BarMarks.apply(flow, @marks)
     end
 
     private

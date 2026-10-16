@@ -39,23 +39,7 @@ module HeadMusic::Notation::MEI
     private
 
     def build_document
-      ensure_input_present
-      xml = parse_xml
-      HeadMusic::Notation::ParsePreflight.check!(xml, roots: ROOTS, format: "MEI", error_class: ParseError)
-      Document.new(xml)
-    end
-
-    # Checked on the raw bytes, since String#strip raises on invalid UTF-8.
-    def ensure_input_present
-      raise ParseError, "MEI input is blank" if @string.b.strip.empty?
-    end
-
-    def parse_xml
-      REXML::Document.new(@string)
-    rescue REXML::ParseException => error
-      raise ParseError.new("Malformed MEI: #{error.message.lines.first.strip}", line_number: error.line)
-    rescue Encoding::CompatibilityError, Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError, ArgumentError => error
-      raise ParseError, "Unreadable MEI: #{error.message}"
+      Document.new(HeadMusic::Notation::ParsePreflight.read!(@string, roots: ROOTS, format: "MEI", error_class: ParseError))
     end
   end
 end

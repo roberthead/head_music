@@ -26,7 +26,7 @@ module HeadMusic::Notation::LilyPond
       ensure_timed_marks_within_music(flow)
       ensure_no_marks_inside_rounded_notes(flow)
       ensure_filled_final_bars
-      ensure_pitched_voice_events
+      ensure_pitched_voice_events(flow)
     end
 
     private
@@ -37,23 +37,6 @@ module HeadMusic::Notation::LilyPond
       return unless flow.voices.empty?
 
       raise RenderError, "cannot render a flow with no voices as LilyPond"
-    end
-
-    def ensure_pitched_voice_events
-      flow.voices.each do |voice|
-        voice.voice_events.each do |voice_event|
-          ensure_pitched_sounds(voice_event)
-          ensure_pitched_grace_notes(voice_event)
-        end
-      end
-    end
-
-    def ensure_pitched_grace_notes(voice_event)
-      unpitched = voice_event.grace_notes.flat_map(&:sounds).find { |sound| !sound.pitched? }
-      return unless unpitched
-
-      raise RenderError, "cannot render unpitched sound \"#{unpitched}\" in a grace note before #{voice_event.position}: " \
-        "percussion rendering is not yet supported"
     end
 
     # A short final bar, such as one that balances a pickup, is written

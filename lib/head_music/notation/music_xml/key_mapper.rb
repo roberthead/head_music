@@ -18,20 +18,6 @@ module HeadMusic::Notation::MusicXML
       "locrian" => "locrian"
     }.freeze
 
-    # The reader's inverse, written out rather than inverted, since the
-    # writer's table maps two scale types to each of major and minor.
-    SCALE_TYPES_BY_MODE_NAME = {
-      "major" => "major",
-      "minor" => "minor",
-      "ionian" => "ionian",
-      "dorian" => "dorian",
-      "phrygian" => "phrygian",
-      "lydian" => "lydian",
-      "mixolydian" => "mixolydian",
-      "aeolian" => "aeolian",
-      "locrian" => "locrian"
-    }.freeze
-
     # How far round the circle of fifths each mode's tonic sits from the
     # major tonic of the same signature: D dorian has C major's.
     TONIC_FIFTHS_BY_SCALE_TYPE = {
@@ -66,8 +52,8 @@ module HeadMusic::Notation::MusicXML
     # The Key or Mode a <fifths> and <mode> name, or nil for a mode MusicXML
     # names that the gem has no tonal context for, such as "none".
     def self.tonal_context(fifths, mode_name)
-      scale_type = SCALE_TYPES_BY_MODE_NAME[mode_name.to_s.strip.downcase]
-      return unless scale_type
+      scale_type = mode_name.to_s.strip.downcase
+      return unless TONIC_FIFTHS_BY_SCALE_TYPE.key?(scale_type)
 
       tonic = tonic_name(fifths + TONIC_FIFTHS_BY_SCALE_TYPE.fetch(scale_type))
       klass = %w[major minor].include?(scale_type) ? HeadMusic::Rudiment::Key : HeadMusic::Rudiment::Mode

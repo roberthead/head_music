@@ -14,16 +14,7 @@ module HeadMusic::Notation::Kern
   end
 
   # Raised when a **kern string cannot be interpreted
-  class ParseError < HeadMusic::Notation::ParseError
-    attr_reader :line_number, :snippet
-
-    def initialize(message, line_number: nil, snippet: nil)
-      @line_number = line_number
-      @snippet = snippet
-      message = "#{message} (line #{line_number})" if line_number
-      super(message)
-    end
-  end
+  class ParseError < HeadMusic::Notation::LineParseError; end
 
   # Raised for valid **kern constructs that this parser does not support
   class UnsupportedFeatureError < ParseError; end

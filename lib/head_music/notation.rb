@@ -4,6 +4,18 @@ module HeadMusic::Notation; end
 # Base error for notation-format parsing (ABC, LilyPond, ...)
 class HeadMusic::Notation::ParseError < StandardError; end
 
+# A parse error in a line-based text format, at a line and its text
+class HeadMusic::Notation::LineParseError < HeadMusic::Notation::ParseError
+  attr_reader :line_number, :snippet
+
+  def initialize(message, line_number: nil, snippet: nil)
+    @line_number = line_number
+    @snippet = snippet
+    message = "#{message} (line #{line_number})" if line_number
+    super(message)
+  end
+end
+
 # Base error for notation-format rendering (ABC, MusicXML, ...)
 class HeadMusic::Notation::RenderError < StandardError; end
 
@@ -23,6 +35,7 @@ require "head_music/notation/concert_transposition"
 require "head_music/notation/voice_track"
 require "head_music/notation/bar_map"
 require "head_music/notation/clef_changes"
+require "head_music/notation/bar_marks"
 require "head_music/notation/timeline_reading"
 require "head_music/notation/tie_folding"
 require "head_music/notation/voice_placer"

@@ -79,7 +79,7 @@ describe HeadMusic::Notation::MusicXML::KeyMapper do
     end
 
     it "reads back the signature's fifths for every mode" do
-      fifths = described_class::SCALE_TYPES_BY_MODE_NAME.keys.map do |mode|
+      fifths = described_class::TONIC_FIFTHS_BY_SCALE_TYPE.keys.map do |mode|
         described_class.fifths(HeadMusic::Rudiment::KeySignature.get(described_class.tonal_context(-2, mode).name))
       end
       expect(fifths.uniq).to eq [-2]

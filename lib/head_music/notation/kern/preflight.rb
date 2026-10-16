@@ -24,7 +24,7 @@ module HeadMusic::Notation::Kern
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
       ensure_no_marks_inside_rounded_notes(flow)
-      ensure_pitched_voice_events
+      ensure_pitched_voice_events(flow)
       ensure_concert_pitch
       ensure_steady_parts
       ensure_dynamics_have_voices
@@ -38,20 +38,6 @@ module HeadMusic::Notation::Kern
 
     def ensure_voices
       raise RenderError, "cannot render a flow with no voices as kern" if flow.voices.empty?
-    end
-
-    def ensure_pitched_voice_events
-      flow.voices.each do |voice|
-        voice.voice_events.each { |voice_event| ensure_pitched_sounds(voice_event) }
-        voice.note_events.each { |note_event| ensure_pitched_grace_notes(note_event) }
-      end
-    end
-
-    def ensure_pitched_grace_notes(note_event)
-      unpitched = note_event.grace_notes.flat_map(&:sounds).find { |sound| !sound.pitched? }
-      return unless unpitched
-
-      raise RenderError, "cannot render the unpitched grace note \"#{unpitched}\" before #{note_event.position} as kern"
     end
 
     # A written-pitch kern spine would need *ITr, which the reader refuses,

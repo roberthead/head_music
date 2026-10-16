@@ -13,6 +13,25 @@ module HeadMusic::Notation
       new(xml, roots: roots, format: format, error_class: error_class, max_depth: max_depth).check!
     end
 
+    # Parses an XML string and checks it. Blankness is checked on the raw
+    # bytes, since String#strip raises on invalid UTF-8.
+    def self.read!(string, roots:, format:, error_class:)
+      raise error_class, "#{format} input is blank" if string.b.strip.empty?
+
+      xml = parse(string, format, error_class)
+      check!(xml, roots: roots, format: format, error_class: error_class)
+      xml
+    end
+
+    def self.parse(string, format, error_class)
+      REXML::Document.new(string)
+    rescue REXML::ParseException => error
+      raise error_class.new("Malformed #{format}: #{error.message.lines.first.strip}", line_number: error.line)
+    rescue Encoding::CompatibilityError, Encoding::UndefinedConversionError, Encoding::InvalidByteSequenceError, ArgumentError => error
+      raise error_class, "Unreadable #{format}: #{error.message}"
+    end
+    private_class_method :parse
+
     def initialize(xml, roots:, format:, error_class:, max_depth: 256)
       @xml = xml
       @roots = roots
