@@ -11,6 +11,16 @@ module HeadMusic::MIDI
 
     DEFAULT_METER = "4/4"
 
+    # The meter's beat. Meter gives a compound meter of whole notes, such as
+    # 6/1, a beat with no unit, since writers beam nothing under it; a MIDI
+    # file may carry one, and it beats in dotted double wholes.
+    def self.beat(meter)
+      beat = meter.beat_value
+      return beat if beat.unit
+
+      HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.get("double whole"), dots: 1)
+    end
+
     attr_reader :division
 
     # +time_signatures+ are the reader's TimeSignature events in merged order.

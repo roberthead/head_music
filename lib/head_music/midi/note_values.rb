@@ -86,7 +86,7 @@ module HeadMusic::MIDI
     def beat_grid(bar)
       nominal = Rational(bar.meter.top_number, bar.meter.bottom_number)
       anchor = (bar.length < nominal) ? bar.end_time - nominal : bar.start
-      [anchor, bar.meter.beat_value.fraction]
+      [anchor, BarLayout.beat(bar.meter).fraction]
     end
 
     # The partial beat before the first beat inside the span, the whole beats,

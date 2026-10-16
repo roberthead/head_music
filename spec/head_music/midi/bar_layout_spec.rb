@@ -116,6 +116,16 @@ describe HeadMusic::MIDI::BarLayout do
     end
   end
 
+  describe ".beat" do
+    it "is the meter's beat" do
+      expect(%w[4/4 6/8 3/2].map { |meter| described_class.beat(HeadMusic::Rudiment::Meter.get(meter)).to_s }).to eq ["quarter", "dotted quarter", "half"]
+    end
+
+    it "is a dotted double whole in a compound meter of whole notes" do
+      expect(described_class.beat(HeadMusic::Rudiment::Meter.get("6/1")).fraction).to eq 3
+    end
+  end
+
   describe "#bar_at" do
     subject(:bars) { layout([meter(0, 1, 4), meter(division, 4, 4), *note(0, 9 * division)]) }
 

@@ -14,7 +14,7 @@ module HeadMusic::MIDI
     # A tempo of so many microseconds a quarter, in the meter's beat, with
     # the fewest decimals that write back the same microseconds.
     def self.tempo(microseconds, meter)
-      beat = meter.beat_value
+      beat = BarLayout.beat(meter)
       exact = Rational(60_000_000) / (microseconds * beat.fraction * 4)
       tempos = (0..MAX_DECIMALS).lazy.map { |digits| HeadMusic::Rudiment::Tempo.new(beat, exact.round(digits)) }
       tempos.find { |tempo| Tempo.microseconds_per_quarter(tempo) == microseconds } || tempos.to_a.last

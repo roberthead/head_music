@@ -79,6 +79,16 @@ describe HeadMusic::MIDI::Parser do
       end
     end
 
+    context "with a compound meter of whole notes" do
+      subject(:flow) { parse([time_signature(0, 6, 1), *midi_note(0, 60, bar * 6), *midi_note(bar * 6, 62, bar * 3)]) }
+
+      it "beats in dotted double wholes" do
+        expect([tempos(flow), bar_events(flow.voices.first)]).to eq [
+          [[1, "dotted double whole", 10.0]], [["1:1:000", "dotted longa", "C4"], ["2:1:000", "dotted double whole", "D4"], ["2:4:000", "dotted double whole", "rest"]]
+        ]
+      end
+    end
+
     context "with a meter change at the same speed" do
       subject(:flow) { parse([time_signature(0, 3, 4), time_signature(288, 6, 8), *midi_line([60] * 4, 144)]) }
 
