@@ -237,6 +237,12 @@ describe HeadMusic::Analysis::PitchSpeller do
       expect(described_class.new(notes, key: "C major").pitches.map(&:to_s)).to eq %w[C♯4 C4]
     end
 
+    it "leads a grace note to its main note, not to the note after" do
+      notes = [[60, 0, Rational(1, 4), :v], [61, Rational(1, 4), 0, :v], [62, Rational(1, 4), Rational(1, 4), :v], [60, Rational(1, 2), Rational(1, 4), :v]]
+      expect(described_class.new(notes, key: "C major").spelled_notes[1].then { |spelled| [spelled.pitch.to_s, spelled.rule] })
+        .to eq ["C♯4", :direction]
+    end
+
     it "treats notes with no voice as one voice when none overlaps another" do
       expect(spell([62, 61, 60], key: "C major", voice: nil).spelled_notes.map { |spelled| [spelled.pitch.to_s, spelled.rule] })
         .to eq [["D4", :diatonic], ["D♭4", :direction], ["C4", :diatonic]]

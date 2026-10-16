@@ -134,13 +134,23 @@ class HeadMusic::Analysis::PitchSpeller
     following = {}
     voices.each_value do |positions|
       chords = positions.sort_by { |position| [notes[position].onset, position] }
-        .chunk_while { |a, b| notes[a].onset == notes[b].onset }
+        .chunk_while { |a, b| notes[a].onset == notes[b].onset }.to_a
       chords.each_cons(2) do |chord, after|
         numbers = after.map { |position| notes[position].number }
         chord.each { |position| following[position] = numbers }
       end
+      chords.each { |chord| lead_grace_notes_to_main_notes(chord, following) }
     end
     following
+  end
+
+  # A grace note has no duration, at its main note's onset.
+  def lead_grace_notes_to_main_notes(chord, following)
+    grace_notes, main_notes = chord.partition { |position| notes[position].duration.zero? }
+    return if grace_notes.empty? || main_notes.empty?
+
+    numbers = main_notes.map { |position| notes[position].number }
+    grace_notes.each { |position| following[position] = numbers }
   end
 
   # Notes given without voices are one voice where none overlaps another.

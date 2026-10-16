@@ -121,6 +121,11 @@ describe HeadMusic::Analysis::PitchSpeller::Respelling do
       expect(grace_note.sounds.map(&:to_s)).to eq %w[A♭4]
     end
 
+    it "spells a grace note by the direction to its main note" do
+      grace_note = respell(abc("C2 {^C}D2 =C2 E2 G4 |")).voices.first.voice_events[1].grace_notes.first
+      expect(grace_note.sounds.map(&:to_s)).to eq %w[C♯4]
+    end
+
     it "leaves unpitched sounds alone" do
       snare = HeadMusic::Rudiment::UnpitchedSound.get("snare drum")
       flow = flow_in("E♭ major", [[snare, "D#4"]])
