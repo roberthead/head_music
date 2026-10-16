@@ -131,13 +131,13 @@ describe HeadMusic::Notation::MEI do
       parse(*items).voices.first.voice_events.flat_map { |event| event.grace_notes.map(&:to_s) }
     end
 
-    it "reads @grace, slashed where it is acc" do
-      expect(graces(mei_staff(1, mei_note("D4", "8", grace: "acc") + mei_note("E4", "16", grace: "unacc") + mei_note("C4", "1"))))
+    it "reads @grace, slashed where it is unacc, taking time from the note before" do
+      expect(graces(mei_staff(1, mei_note("D4", "8", grace: "unacc") + mei_note("E4", "16", grace: "acc") + mei_note("C4", "1"))))
         .to eq ["slashed grace eighth D4", "grace sixteenth E4"]
     end
 
     it "reads a <graceGrp>, an eighth where no @dur is given" do
-      expect(graces(mei_staff(1, %(<graceGrp grace="acc"><note pname="d" oct="4"/></graceGrp>) + mei_note("C4", "1"))))
+      expect(graces(mei_staff(1, %(<graceGrp grace="unacc"><note pname="d" oct="4"/></graceGrp>) + mei_note("C4", "1"))))
         .to eq ["slashed grace eighth D4"]
     end
   end

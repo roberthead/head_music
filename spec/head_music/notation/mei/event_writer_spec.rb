@@ -49,14 +49,14 @@ describe HeadMusic::Notation::MEI::EventWriter do
       note_event.add_grace_note("D5", :eighth, slashed: true)
       note_event.add_grace_note("E5", :sixteenth)
       expect(written(flow).first(2).map { |grace| [grace.attributes["dur"], grace.attributes["grace"]] })
-        .to eq [%w[8 acc], %w[16 unacc]]
+        .to eq [%w[8 unacc], %w[16 acc]]
     end
 
     it "writes a grace chord with the grace on the chord" do
       voice.place("1:1", :whole, "C5").add_grace_note(%w[E5 D5], :eighth)
       grace = written(flow).first
       expect([grace.name, grace.attributes["grace"], grace.children.map(&:id)])
-        .to eq ["chord", "unacc", %w[m1-p1v1-b1c1-g1-h1 m1-p1v1-b1c1-g1-h2]]
+        .to eq ["chord", "acc", %w[m1-p1v1-b1c1-g1-h1 m1-p1v1-b1c1-g1-h2]]
     end
 
     it "ties grace notes into one another and into the note" do

@@ -215,7 +215,7 @@ module HeadMusic::Notation::MEI
 
     # Whether a grace note is slashed.
     def grace(name, value, where)
-      {"acc" => true, "unacc" => false, "unknown" => false}.fetch(value) { unreadable(name, value, where) }
+      {"unacc" => true, "acc" => false, "unknown" => false}.fetch(value) { unreadable(name, value, where) }
     end
 
     def boolean(name, value, where)

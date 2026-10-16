@@ -56,7 +56,7 @@ module HeadMusic::Notation::MEI
         follower = graces[index + 1]&.pitches || item.voice_event.pitches
         id = plan.grace_id(item, index)
         node = Node.new(kind: :note, id: id, item: item, grace: grace, grace_index: index)
-        sounding_element(grace.rhythmic_value, node, plan.grace_note_ids(grace, id), "grace" => grace.slashed? ? "acc" : "unacc") do |pitch|
+        sounding_element(grace.rhythmic_value, node, plan.grace_note_ids(grace, id), "grace" => grace.slashed? ? "unacc" : "acc") do |pitch|
           tie_value(tied_in.include?(pitch), grace.tied? && follower.include?(pitch))
         end
       end

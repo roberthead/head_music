@@ -33,12 +33,12 @@
                 <layer xml:id="m1-layer-b1s1l1" n="1">
                   <note xml:id="m1-p1v1-b1c1" pname="c" oct="4" dur="4"/>
                   <note xml:id="m1-p1v1-b1c2" pname="e" oct="4" dur="4"/>
-                  <chord xml:id="m1-p1v1-b1c3-g1" dur="16" grace="unacc">
+                  <chord xml:id="m1-p1v1-b1c3-g1" dur="16" grace="acc">
                     <note xml:id="m1-p1v1-b1c3-g1-h1" pname="a" oct="4"/>
                     <note xml:id="m1-p1v1-b1c3-g1-h2" pname="c" oct="5"/>
                   </chord>
                   <note xml:id="m1-p1v1-b1c3" pname="g" oct="4" dur="4"/>
-                  <note xml:id="m1-p1v1-b1c4-g1" pname="g" oct="4" dur="16" grace="unacc" artic="stacc"/>
+                  <note xml:id="m1-p1v1-b1c4-g1" pname="g" oct="4" dur="16" grace="acc" artic="stacc"/>
                   <note xml:id="m1-p1v1-b1c4" pname="f" oct="4" dur="4"/>
                 </layer>
               </staff>
@@ -46,7 +46,7 @@
             <measure xml:id="m1-measure-b2" n="2">
               <staff xml:id="m1-staff-b2s1" n="1">
                 <layer xml:id="m1-layer-b2s1l1" n="1">
-                  <note xml:id="m1-p1v1-b2c1-g1" pname="f" oct="4" dur="8" grace="acc"/>
+                  <note xml:id="m1-p1v1-b2c1-g1" pname="f" oct="4" dur="8" grace="unacc"/>
                   <note xml:id="m1-p1v1-b2c1" pname="e" oct="4" dur="1"/>
                 </layer>
               </staff>
@@ -54,8 +54,8 @@
             <measure xml:id="m1-measure-b3" n="3" right="end">
               <staff xml:id="m1-staff-b3s1" n="1">
                 <layer xml:id="m1-layer-b3s1l1" n="1">
-                  <note xml:id="m1-p1v1-b3c1-g1" pname="d" oct="4" dur="16" grace="unacc"/>
-                  <note xml:id="m1-p1v1-b3c1-g2" pname="c" oct="4" dur="16" grace="unacc" tie="i"/>
+                  <note xml:id="m1-p1v1-b3c1-g1" pname="d" oct="4" dur="16" grace="acc"/>
+                  <note xml:id="m1-p1v1-b3c1-g2" pname="c" oct="4" dur="16" grace="acc" tie="i"/>
                   <note xml:id="m1-p1v1-b3c1" pname="c" oct="4" dur="1" tie="t"/>
                 </layer>
               </staff>

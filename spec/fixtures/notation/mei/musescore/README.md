@@ -38,7 +38,7 @@ File by file:
 - **`triplets`:** each `<beam>` holds its `<tuplet>`, the reverse of the gem's nesting.
 - **`speed_the_plough`:** the backward repeat's measure carries `type="mscore-repeat-2"`.
 - **`two_verses`:** the pickup `<measure>` has no `@n` and no `type="upbeat"`, and bar 1 is `n="1"`. Every `<verse>` has `place="below"`.
-- **`grace_notes_before_downbeat`:** grace notes sit in `<graceGrp>`, which carries `@grace` while the notes carry none. The grace values are the reverse of the gem's: MuseScore writes an unslashed grace as `grace="acc"` and the slashed one as `grace="unacc"`, where the gem writes `unacc` and `acc`. The tie from the last grace note is a `<tie>` control event.
+- **`grace_notes_before_downbeat`:** grace notes sit in `<graceGrp>`, which carries `@grace` while the notes carry none. MuseScore writes an unslashed grace as `grace="acc"` and the slashed one as `grace="unacc"`, as the gem does. The tie from the last grace note is a `<tie>` control event.
 - **`clef_changes`:** the octave treble clef is `dis="8" dis.place="below"`. A clef change is written inside the layer after the last note of the bar before it, at the same moment.
 - **`key_and_meter_change`:** the change is a `<scoreDef keysig="2s" meter.count="3" meter.unit="4"/>` between measures.
 - **`cross_staff_piano` and `piano_part_marks`:** the left hand is layer 2 of staff 1, with `@staff="2"` on its notes in bars 1 and 4 only, and staff 2 holds an `<mRest/>` in every bar (MuseScore's hidden voice 5 in its MusicXML).
