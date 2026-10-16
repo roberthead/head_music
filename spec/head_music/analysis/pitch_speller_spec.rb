@@ -117,6 +117,27 @@ describe HeadMusic::Analysis::PitchSpeller do
     it "refuses anything else" do
       expect { described_class.new([[60, 0, 1]], key: 3) }.to raise_error(ArgumentError)
     end
+
+    it "takes key regions whose keys are names or modes" do
+      keys = ["E major", "F dorian", HeadMusic::Rudiment::Mode.get("A♭ ionian")]
+      regions = keys.each_with_index.map { |key, bar| HeadMusic::Analysis::KeyRegion.new(bar_number: bar + 1, onset: bar, key: key) }
+      notes = [[68, 0, 1], [68, 1, 1], [68, 2, 1]]
+      expect(described_class.new(notes, key: regions, meter: "4/4").pitches.map(&:to_s)).to eq %w[G♯4 A♭4 A♭4]
+    end
+
+    it "refuses no key regions" do
+      expect { described_class.new([[60, 0, 1]], key: []) }.to raise_error(ArgumentError, /at least one key region/)
+    end
+
+    it "refuses key regions that are not KeyRegions" do
+      expect { described_class.new([[60, 0, 1]], key: ["C major"]) }.to raise_error(ArgumentError, /expected a KeyRegion/)
+    end
+
+    it "refuses an unknown key name when built, before any pitch is read" do
+      ["foo", "H major", "", "H dorian"].each do |name|
+        expect { described_class.new([[60, 0, 1]], key: name) }.to raise_error(ArgumentError, /unknown key/)
+      end
+    end
   end
 
   describe "the key inferred" do
@@ -154,6 +175,11 @@ describe HeadMusic::Analysis::PitchSpeller do
 
     it "refuses key finder options with a key given" do
       expect { described_class.new(notes, key: "C minor", meter: "4/4", profile: :temperley) }.to raise_error(ArgumentError, /apply only to key: :infer/)
+    end
+
+    it "spells in C major where the key finder finds no region, as when no note lasts" do
+      speller = described_class.new([[70, 0, 0], [63, 0, 0], [66, 0, 0]])
+      expect([speller.regions, speller.pitches.map(&:to_s)]).to eq [[], %w[B♭4 E♭4 F♯4]]
     end
 
     it "answers no notes and no regions for empty input" do

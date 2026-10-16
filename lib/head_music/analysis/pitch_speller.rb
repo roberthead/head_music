@@ -6,11 +6,13 @@ module HeadMusic::Analysis; end
 # "The ps13 pitch spelling algorithm," Journal of New Music Research 35 (2006).
 #
 # With key: :infer, the default, the key regions are KeyFinder#regions, which
-# take the key finder's options.
+# take the key finder's options. Where the key finder finds none, as when no
+# note lasts, the notes are spelled in C major.
 class HeadMusic::Analysis::PitchSpeller
   SpelledNote = Data.define(:note, :pitch, :rule)
   LineOfFifths = HeadMusic::Analysis::LineOfFifths
   FINDER_OPTIONS = %i[profile change_penalty window].freeze
+  DEFAULT_KEY = HeadMusic::Rudiment::Key.get("C major")
 
   attr_reader :input, :regions
 
@@ -25,6 +27,7 @@ class HeadMusic::Analysis::PitchSpeller
 
     @input = HeadMusic::Analysis::NoteInput.for(input, **options.except(*FINDER_OPTIONS))
     @regions = regions_for(key).sort_by(&:onset).freeze
+    @spelling_regions = @regions.empty? ? [region_at_first_bar(DEFAULT_KEY)] : @regions
     @key_centers = {}
   end
 
@@ -45,11 +48,24 @@ class HeadMusic::Analysis::PitchSpeller
   def regions_for(key)
     case key
     when :infer then inferred_regions
-    when Array then key
-    else
-      first_bar, onset = input.bar_starts.first
-      [HeadMusic::Analysis::KeyRegion.new(bar_number: first_bar, onset: onset, key: tonal_context(key))]
+    when Array then key_regions(key)
+    else [region_at_first_bar(tonal_context(key))]
     end
+  end
+
+  def key_regions(regions)
+    raise ArgumentError, "key: needs at least one key region" if regions.empty?
+
+    regions.map do |region|
+      raise ArgumentError, "expected a KeyRegion, got #{region.inspect}" unless region.is_a?(HeadMusic::Analysis::KeyRegion)
+
+      region.with(key: tonal_context(region.key))
+    end
+  end
+
+  def region_at_first_bar(key)
+    first_bar, onset = input.bar_starts.first
+    HeadMusic::Analysis::KeyRegion.new(bar_number: first_bar, onset: onset, key: key)
   end
 
   def inferred_regions
@@ -66,9 +82,11 @@ class HeadMusic::Analysis::PitchSpeller
 
   def named_tonal_context(name)
     qualifier = name.split.last.to_s.downcase.to_sym
-    return HeadMusic::Rudiment::Mode.get(name) if HeadMusic::Rudiment::Mode::MODES.include?(qualifier)
+    context_class = HeadMusic::Rudiment::Mode::MODES.include?(qualifier) ? HeadMusic::Rudiment::Mode : HeadMusic::Rudiment::Key
+    context = context_class.get(name)
+    raise ArgumentError, "unknown key #{name.inspect}" unless context.tonic_spelling
 
-    HeadMusic::Rudiment::Key.get(name)
+    context
   end
 
   def spell
@@ -96,8 +114,8 @@ class HeadMusic::Analysis::PitchSpeller
   end
 
   def key_center_at(onset)
-    following = @regions.bsearch_index { |region| region.onset > onset }
-    region = @regions[[(following || @regions.length) - 1, 0].max]
+    following = @spelling_regions.bsearch_index { |region| region.onset > onset }
+    region = @spelling_regions[[(following || @spelling_regions.length) - 1, 0].max]
     @key_centers[region.key] ||= KeyCenter.for(region.key)
   end
 

@@ -131,6 +131,10 @@ describe HeadMusic::Analysis::PitchSpeller::Respelling do
       expect(HeadMusic::Analysis::PitchSpeller.respell(sharp_spelled, key: :infer).to_h).to eq respell(sharp_spelled, key: :infer).to_h
     end
 
+    it "refuses an unknown key name when built, before any pitch is read" do
+      expect { described_class.new(sharp_spelled, key: "H major") }.to raise_error(ArgumentError, /unknown key "H major"/)
+    end
+
     it "refuses key finder options without key: :infer" do
       expect { respell(sharp_spelled, change_penalty: 0.5) }.to raise_error(ArgumentError, /change_penalty apply only to key: :infer/)
     end

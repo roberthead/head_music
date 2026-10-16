@@ -14,6 +14,7 @@ class HeadMusic::Analysis::PitchSpeller
       @input = HeadMusic::Analysis::NoteInput.for(flow)
       @key = key
       @finder_options = finder_options
+      @speller = HeadMusic::Analysis::PitchSpeller.new(@input, key: @key.nil? ? timeline_regions : @key, **@finder_options)
     end
 
     def flow
@@ -37,9 +38,7 @@ class HeadMusic::Analysis::PitchSpeller
 
     private
 
-    def speller
-      @speller ||= HeadMusic::Analysis::PitchSpeller.new(@input, key: @key.nil? ? timeline_regions : @key, **@finder_options)
-    end
+    attr_reader :speller
 
     def timeline_regions
       timeline = @source.timeline
