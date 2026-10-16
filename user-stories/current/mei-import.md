@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T14:21:10-07:00
   planned_at:   2026-10-15T14:45:59-07:00
   finished_at:
-  updated_at:   2026-10-15T16:43:58-07:00
+  updated_at:   2026-10-15T19:30:57-07:00
 -->
 
 # Story: MEI Import
@@ -509,3 +509,70 @@ All settled with a recommendation:
 - **MuseScore's exit code is 134 on most runs, and it may hang.** Check that the output exists, and keep the 90 s alarm.
 - **A second session on the same repo** caused trouble in MEI Export. Check for peer sessions before resuming a fan-out.
 - **Dependent stories** need MEI read lines; see the last two items below.
+
+## Corpus Sweep
+
+Swept on 2026-10-15 through `spec/head_music/notation/mei_corpus_spec.rb`, with `MEI_CORPUS` naming sample-encodings' `MEI_5.1`, `MEI_5.0`, and `MEI_4.0` (`~/github.com/music-encoding/sample-encodings`) and music21's `music21/mei/test`.
+
+| Corpus | Files | Read | Refused |
+|---|---|---|---|
+| `MEI_5.1` | 167 | 84 | 83 |
+| `MEI_5.0` | 167 | 84 | 83 |
+| `MEI_4.0` | 167 | 84 | 83 |
+| music21 | 3 | 2 | 1 |
+
+- **No escapes.** Nothing outside `HeadMusic::Notation::ParseError` escapes from any of the 504 files.
+- **The three versions agree.** They hold the same files, and each file reads or refuses the same way in all three, so each count in the table below is for one version.
+- **Every flow read keeps its music whole.**
+- **Steps 14 to 16 added no new reads.** At `a4f89abd` the same 84 files read in each version, with the same parts, voices, and event counts. Each reader fix below moved a file past its first refusal, but every such file then stops on another.
+
+### Reader fixes made during the sweep
+
+Each has a spec:
+
+- **A measure where no layer gives a length.** A measure where every layer holds a `<space>` with no `@dur` now takes its meter's length (Ravel's *Le tombeau*, bar 71).
+  - This widens the decision that a measure of only `<space>`s fills its meter.
+  - Neither Chopin's Op. 6 No. 1 nor Ravel's *Le tombeau* has a measure of only spaces. Each writes notes beside `@dur`-less spaces in every layer, so the narrower rule would have read neither.
+- **A `<rest>` with no `@dur`** takes its length as such a `<space>` does (Schumann's Op. 41 No. 1, Haydn's Op. 1 No. 1, `grace_Notes.mei`).
+- **A `<chord>` with no `@dur`** takes the `@dur` and `@dots` its notes all share (Schubert's *Erlkönig*, Ives's *The Cage*, Parker and Gillespie's *Shaw 'Nuff*).
+- **A stray later `<staffDef>`.** One for a staff the score does not have is skipped (Brahms's Op. 51 No. 1 and Beethoven's Op. 18 No. 1 name a staff 6). A `<staff>` it would add raises `UnsupportedFeatureError`.
+- **A `<part>` that opens with a `<staffDef>`** in place of a `<scoreDef>` reads that staff (McFerrin's *Don't Worry*, `lyrics.mei`).
+- **A `<score>` straight in `<music>`** reads as one `<mdiv>` (music21's `test_file.mei`).
+
+### Refusal classes
+
+| Refusal | Files | Where | Decision |
+|---|---|---|---|
+| A `<perfMedium>`, `<watermark>`, or `<meiHead>` root | 34 | `Header/PerfMedium`, `Header/Watermark`, `docStarts` | Stays refused. These are fragments that hold no music. |
+| No `<score>` or `<part>` in the body | 7 | `Header/FRBR`, `Header/Authority_data`, `Header/Minimal_header`, `Doc_starts_with_meiCorpus` | Stays refused. These are header examples. |
+| The measure is longer than its bar | 21 | Pachelbel, Lindenbaum, Brahms Op. 51, Tschaikovsky's fourth movement, `attribute_copyof`, `grace_Notes`, … | Stays refused: each bar is overfull as encoded (see below). Reading on would misplace every later note. |
+| The measure is shorter than its bar, in the middle of the piece | 4 | Haydn Op. 1 No. 1, Scarlatti, Ravel, Hummel's trumpet concerto | Stays refused, as the criteria say (see below). The bars hold a short bar only first, last, or completed by the next. |
+| A `<note>` with no `@dur` and no `@dur.default` | 6 | Rimsky-Korsakov, *Erlkönig* bar 29, Schumann Op. 41 bar 10, `lyrics.mei` bar 3, `Figured_Bass`, `Doc_starts_with_music` | Stays refused. MEI carries no length over from the note before, so nothing says what was meant. |
+| A `<chord>` with no `@dur` whose notes differ in length | 2 | Ives, `bidur.mei` | Stays refused. One event cannot hold two lengths. |
+| A later `<scoreDef>` that restates only some staves | 3 | Weber Op. 73, `beamSpans`, `slur_element` | Stays refused as one that adds or removes staves, as decided in steps 8–11. |
+| A `<note>` with no `@oct` | 2 | Gluck, `secondary.mei` | Stays refused. A pitch needs its octave, and no `@oct.default` is written. |
+| A `<note>` with no `@pname` | 1 | Chopin Op. 6 No. 1, a grace note at bar 43 | Stays refused. Dropping the pitchless grace note alone would not read the file, which then stops on a short bar 18. |
+| No music in a score of a book | 2 | `group_element`, `opera` | Stays refused, since `parse_book` answers one flow per score. Skipping the empty scores would not read `opera.mei`, whose aria stops on a note with no `@oct`. |
+| Nested tuplets | 1 | Beethoven Op. 18 No. 1, movement 2, bar 96 | Stays refused. A `<tupletSpan>` in bar 92 names an `@endid` inside the 7:4 span of bar 96, so the two overlap. |
+| An unreadable `@n` | 1 | music21's `test_file.mei` | Stays refused, since no MEI version allows `<layer n="">`. Past it, the file writes upper-case `@pname`s and nested tuplets. |
+
+The overfull bars:
+
+- two voices written one after the other in one layer (Pachelbel);
+- a beat too many, which `@dur.ppq` agrees with (*Lindenbaum* bar 15, Tschaikovsky's fourth movement);
+- a hidden spacer layer longer than its bar (`grace_Notes` bar 7);
+- `@tuplet` runs whose `<tupletSpan>` is missing, names no ratio, or names the wrong one (`attribute_copyof` bar 9 writes `numbase="8"`, `multiple_verses` bar 8, Brahms, Hummel's preludes).
+
+The short bars:
+
+- the end of a repeat, which an upbeat elsewhere completes (Haydn bar 63, Scarlatti bar 21);
+- a closed layer shorter than the open layers beside it (Ravel bar 42);
+- an unnumbered `metcon="false"` bar (Hummel's concerto).
+
+### Scale
+
+- **Calls.** Every Ruby method `MEI.parse` calls was counted with a `TracePoint` on the step 11 generated document. It is 505,122 calls at 25 bars and 2,022,736 at 100, a ratio of 4.00; 50 and 200 bars give 4.03. The spec bounds the ratio below 4.5. An injected scan of every earlier event per event raised it to 10.6.
+- **CPU time.** Each figure is the best of three runs:
+  - The largest file, Hummel's trumpet concerto (4.1 MB, 665 measures), takes 1.12 s to parse in REXML and 4.26 s in `MEI.parse_book`, as far as its refusal near the end.
+  - Beethoven's Op. 18 No. 1 (2.7 MB) takes 0.76 s and 1.94 s, as far as its refusal in the second movement.
+  - The largest file that reads, Bach's Brandenburg Concerto No. 4, first movement (1.8 MB, 427 measures, 10 voices, 13,197 voice events), takes 0.50 s and 2.58 s.
