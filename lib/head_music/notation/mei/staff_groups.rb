@@ -3,9 +3,11 @@ module HeadMusic::Notation::MEI
   # A group whose children are several <staffDef>s is one part on several
   # staves when it carries its own <label> and none of its staves does, as
   # the writer and MuseScore write a piano, or when it is braced and its
-  # staves' labels are all absent or all the same. Every other staff is its
-  # own part. A part's @symbol sets its bracket, and its <label> names its
-  # player.
+  # staves' labels are all absent or all the same, or when neither it nor
+  # its staves are labeled and no measure has one layer number on two of
+  # its staves, as the writer numbers a part's layers across its staves.
+  # Every other staff is its own part. A part's @symbol sets its bracket,
+  # and its <label> names its player.
   class StaffGroups
     include XmlReading
 
@@ -27,8 +29,9 @@ module HeadMusic::Notation::MEI
 
     attr_reader :parts
 
-    def initialize(score_def, editorial)
+    def initialize(score_def, editorial, score: nil)
       @editorial = editorial
+      @score = score
       @definitions = []
       @staff_defs = {}
       group = score_def && editorial.children_named(score_def, "staffGrp").first
@@ -79,8 +82,36 @@ module HeadMusic::Notation::MEI
 
       labels = children.map { |staff_def| label(staff_def) }
       return true if label(group) && labels.none?
+      return true if attribute(group, "symbol", element: group) == "brace" && labels.uniq.length == 1
 
-      attribute(group, "symbol", element: group) == "brace" && labels.uniq.length == 1
+      !label(group) && labels.none? && layers_apart?(children)
+    end
+
+    def layers_apart?(staff_defs)
+      numbers = staff_defs.map { |staff_def| AttributeValues.read(staff_def, "n", element: staff_def) }
+      measure_layers.none? do |layers|
+        layers.select { |pair| numbers.include?(pair.first) }.uniq.group_by(&:last).any? { |_, staves| staves.length > 1 }
+      end
+    end
+
+    # For each measure, the [staff, layer] numbers of its layers.
+    def measure_layers
+      @measure_layers ||= [].tap do |found|
+        stack = @score ? [[@score, 0]] : []
+        until stack.empty?
+          element, depth = stack.pop
+          raise ParseError.new("<section>s nest deeper than #{Editorial::MAX_DEPTH}", element: element) if depth > Editorial::MAX_DEPTH
+
+          children = @editorial.children(element)
+          found << children.select { |child| child.name == "staff" }.flat_map { |staff| staff_layers(staff) } if element.name == "measure"
+          children.reverse_each { |child| stack << [child, depth + 1] if %w[section ending measure].include?(child.name) }
+        end
+      end
+    end
+
+    def staff_layers(staff)
+      number = AttributeValues.read(staff, "n", element: staff)
+      @editorial.children_named(staff, "layer").map { |layer| [number, AttributeValues.read(layer, "n", element: layer) || 1] }
     end
 
     def add_part(staff_defs, group)

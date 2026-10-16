@@ -34,6 +34,23 @@ describe HeadMusic::Notation::MEI::StaffGroups do
     expect(parts_of(group)).to eq [["S", 1, :none], ["A", 1, :none]]
   end
 
+  describe "an unlabeled group of unlabeled staves, not braced" do
+    def parts_with(*layer_numbers)
+      group = %(<staffGrp><staffGrp symbol="bracket">#{staff_def(1)}#{staff_def(2)}</staffGrp></staffGrp>)
+      measure = layer_numbers.each_with_index.map { |number, index| mei_staff(index + 1, [number, mei_note("C4", "1")]) }.join
+      flow = HeadMusic::Notation::MEI.parse(mei_document(measure, score_def: %(<scoreDef keysig="0" meter.count="4" meter.unit="4">#{group}</scoreDef>)))
+      flow.parts.map { |part| [part.staff_system.staves.length, part.voices.length] }
+    end
+
+    it "is one part where no measure has one layer number on two of its staves, as the writer numbers a choir's layers" do
+      expect(parts_with(1, 2)).to eq [[2, 2]]
+    end
+
+    it "is a part of each staff where a measure has one layer number on two of them, as a group of instruments does" do
+      expect(parts_with(1, 1)).to eq [[1, 1], [1, 1]]
+    end
+  end
+
   it "sets a multi-staff part's bracket from its @symbol" do
     group = %(<staffGrp><staffGrp symbol="bracket"><label>Organ</label>#{staff_def(1)}#{staff_def(2)}</staffGrp></staffGrp>)
     expect(parts_of(group)).to eq [["Organ", 2, :bracket]]
