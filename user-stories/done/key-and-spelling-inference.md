@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-10-14T15:16:39-07:00
   activated_at: 2026-10-15T21:03:39-07:00
   planned_at:   2026-10-15T21:24:00-07:00
-  finished_at:
-  updated_at:   2026-10-16T08:22:19-07:00
+  finished_at:  2026-10-16T08:26:21-07:00
+  updated_at:   2026-10-16T08:26:21-07:00
 -->
 
 # Story: Key and Spelling Inference
@@ -47,38 +47,38 @@ The class names and input shape above are a sketch, to be settled in planning.
 
 ### Input
 
-- [ ] Both inferences take the same input: key numbers with onsets and durations, optionally grouped by voice, so MIDI Import can call them before a flow exists
-- [ ] Both also take a flow, reading its pitches as key numbers, so a flow with poor spelling can be respelled
-- [ ] Both are deterministic: the same input gives the same answer
+- [x] Both inferences take the same input: key numbers with onsets and durations, optionally grouped by voice, so MIDI Import can call them before a flow exists
+- [x] Both also take a flow, reading its pitches as key numbers, so a flow with poor spelling can be respelled
+- [x] Both are deterministic: the same input gives the same answer
 
 ### Key finding
 
-- [ ] The key finder answers the major or minor key whose profile correlates best with the duration-weighted pitch-class profile of the input
-- [ ] It also answers every candidate key ranked with its correlation, so a caller can see an ambiguous result
-- [ ] The key profiles are named and selectable (Aarden–Essen by default, plus Krumhansl–Kessler and Temperley (2007)), and each is documented with its source
-- [ ] Inferred keys take the tonic with the fewer accidentals (G♭ major and E♭ minor at six). A later region takes the spelling nearer the previous region's tonic
-- [ ] Over a whole piece, the key finder answers key regions, each beginning at a bar's downbeat, since the timeline changes keys only there. A documented penalty for changing key keeps it from switching key every bar
-- [ ] Input with no notes answers no key, rather than raising
+- [x] The key finder answers the major or minor key whose profile correlates best with the duration-weighted pitch-class profile of the input
+- [x] It also answers every candidate key ranked with its correlation, so a caller can see an ambiguous result
+- [x] The key profiles are named and selectable (Aarden–Essen by default, plus Krumhansl–Kessler and Temperley (2007)), and each is documented with its source
+- [x] Inferred keys take the tonic with the fewer accidentals (G♭ major and E♭ minor at six). A later region takes the spelling nearer the previous region's tonic
+- [x] Over a whole piece, the key finder answers key regions, each beginning at a bar's downbeat, since the timeline changes keys only there. A documented penalty for changing key keeps it from switching key every bar
+- [x] Input with no notes answers no key, rather than raising
 
 ### Spelling
 
-- [ ] Given a key, the speller spells every key number. When the key is not given, it uses the key finder's regions
-- [ ] Every key number in the key's diatonic collection is spelled diatonically. In E♭ major, 63 is E♭ and 68 is A♭
-- [ ] The raised leading tone of a minor key is spelled as raised: in A minor, 68 is G♯, and in G♯ minor, 67 is F𝄪
-- [ ] A chromatic note follows melodic direction when its two nearest spellings are within 2 fifths of each other and the next note in its voice is a semitone away. Notes given without voices count as one voice when none of them overlaps another; otherwise a note with no voice takes no direction. In C major, 60–61–62 spells C♯ and 62–61–60 spells D♭, 61 and 63 follow direction, and 66 is always F♯ and 70 always B♭
-- [ ] Notes sounding together are spelled to keep the sonority in thirds where one spelling does. In F minor, 61–65–68 is D♭–F–A♭, not C♯–F–G♯, and in C major, 61–65–68 sounding alone is D♭–F–A♭
-- [ ] For every key from −6 to +6 fifths, each pitch class spelled alone takes at most one accidental, except a minor key's raised 7th (G♯ minor: 67 is F𝄪)
-- [ ] Given a Mode, the speller uses the mode's own collection
-- [ ] The speller answers, for each note, the rule that decided it (`:diatonic`, `:raised`, `:direction`, `:sonority`, `:center`, `:fallback`), and the chorale spec reports misses by rule
-- [ ] Respelling a flow returns a new flow with the same key numbers and timing, and the flow passed in is unchanged. It takes `key:`. By default each bar is spelled by the tonal context in force and the timeline is unchanged. With `key: :infer`, its key signature changes are replaced by ones from the key regions, and a region in the relative key of the one before writes no signature change
+- [x] Given a key, the speller spells every key number. When the key is not given, it uses the key finder's regions
+- [x] Every key number in the key's diatonic collection is spelled diatonically. In E♭ major, 63 is E♭ and 68 is A♭
+- [x] The raised leading tone of a minor key is spelled as raised: in A minor, 68 is G♯, and in G♯ minor, 67 is F𝄪
+- [x] A chromatic note follows melodic direction when its two nearest spellings are within 2 fifths of each other and the next note in its voice is a semitone away. Notes given without voices count as one voice when none of them overlaps another; otherwise a note with no voice takes no direction. In C major, 60–61–62 spells C♯ and 62–61–60 spells D♭, 61 and 63 follow direction, and 66 is always F♯ and 70 always B♭
+- [x] Notes sounding together are spelled to keep the sonority in thirds where one spelling does. In F minor, 61–65–68 is D♭–F–A♭, not C♯–F–G♯, and in C major, 61–65–68 sounding alone is D♭–F–A♭
+- [x] For every key from −6 to +6 fifths, each pitch class spelled alone takes at most one accidental, except a minor key's raised 7th (G♯ minor: 67 is F𝄪)
+- [x] Given a Mode, the speller uses the mode's own collection
+- [x] The speller answers, for each note, the rule that decided it (`:diatonic`, `:raised`, `:direction`, `:sonority`, `:center`, `:fallback`), and the chorale spec reports misses by rule
+- [x] Respelling a flow returns a new flow with the same key numbers and timing, and the flow passed in is unchanged. It takes `key:`. By default each bar is spelled by the tonal context in force and the timeline is unchanged. With `key: :infer`, its key signature changes are replaced by ones from the key regions, and a region in the relative key of the one before writes no signature change
 
 ### Evaluation
 
-- [ ] The ABC, LilyPond, and kern fixtures, stripped to key numbers, are respelled. Their accuracy against the written spelling is pinned in specs: the note count and every note that differs
-- [ ] With `KERN_CORPUS` pointing at the Bach chorales, a spec measures and records spelling accuracy twice: with the key from the file's key signature and designation, and with the key inferred. It also measures how often the inferred key of each chorale agrees with its `*G:`-style designation. The measured figures are recorded in this story and pinned as floors
-- [ ] Spelling reaches at least 99.5% of notes on the chorales, with the key given and with the key inferred. In key agreement, a modal designation agrees with its parallel key
-- [ ] Accuracy is counted per sounding pitch: each pitch of a chord once, a tied chain once. A spelling is correct when the pitch equals the written one, register included. Grace notes are respelled, take no weight in key finding, and are counted separately. Unpitched sounds are neither weighted nor spelled
-- [ ] Maintains 90%+ test coverage
+- [x] The ABC, LilyPond, and kern fixtures, stripped to key numbers, are respelled. Their accuracy against the written spelling is pinned in specs: the note count and every note that differs
+- [x] With `KERN_CORPUS` pointing at the Bach chorales, a spec measures and records spelling accuracy twice: with the key from the file's key signature and designation, and with the key inferred. It also measures how often the inferred key of each chorale agrees with its `*G:`-style designation. The measured figures are recorded in this story and pinned as floors
+- [x] Spelling reaches at least 99.5% of notes on the chorales, with the key given and with the key inferred. In key agreement, a modal designation agrees with its parallel key
+- [x] Accuracy is counted per sounding pitch: each pitch of a chord once, a tied chain once. A spelling is correct when the pitch equals the written one, register included. Grace notes are respelled, take no weight in key finding, and are counted separately. Unpitched sounds are neither weighted nor spelled
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
@@ -416,3 +416,65 @@ Every step:
 - **Probe numbers differ between specialists** (the developer's 99.855%, the best-practices engineer's 99.93%, my 99.94%), because each used a different rule set. They agree that the 98% target is far from binding.
 - **Corrections to specialist claims.** The PM's G Dorian tie claim was wrong (see step 6). The developer's tie-break by the lowest note of the first onset is dropped as unnecessary under Aarden, in favor of the fixed sort.
 - **The center of gravity is deferred on chorale evidence alone.** Music with long chromatic runs, which MIDI may bring, could want it; the miss-by-rule report will show it.
+
+## Review
+
+Reviewed 2026-10-16 at commit `6cd83b5e`, by a product manager (acceptance verification) and a code reviewer, in parallel.
+
+### Acceptance criteria
+
+| Criteria | Verdict | Evidence |
+| --- | --- | --- |
+| Input (3) | ✅ 3 | `note_input.rb`, `note_input/flow_reader.rb`; `note_input_spec`, determinism specs in `key_finder_spec` and `pitch_speller_spec` |
+| Key finding (6) | ✅ 6 | `key_profile.rb` (three tables, each with its source), `key_finder.rb` (Pearson correlation, a Viterbi search over bars, the `KEYS` table, the nearer enharmonic); `key_finder_spec` (the story example, the Krumhansl–Kessler tie, regions in Invention 1 at two penalties) |
+| Spelling (9) | ✅ 9 | `line_of_fifths.rb`, `pitch_speller.rb`, `pitch_speller/key_center.rb`, `compactness.rb`, `respelling.rb`; every example in the criteria, a sweep of keys from −6 to +6, modes, and `respell` leaving its input unchanged |
+| Evaluation (4) | ✅ 3, ⚠️ 1 | `fixture_spelling_spec` (one miss across the fixtures), `spelling_corpus_spec`: 99.945% with the key given and 99.947% inferred, against a 99.5% floor. Coverage awaited `rake validate` |
+
+### Code review findings
+
+The reviewer confirmed the correlation math against a float reference. It also matched the Viterbi search against an independent dynamic program in 300 random trials, and found linear scaling to 50,000 notes. It found:
+
+1. **Errors escaping on odd input:**
+   - all zero-length notes under `:infer`, or `key: []`, crashed the speller;
+   - an unknown key name raised `NoMethodError`, and only when pitches were read;
+   - a non-numeric `change_penalty:` raised `NoMethodError`;
+   - a `0/4` meter divided by zero.
+2. **Silently wrong results:** key numbers outside 0..127 gave nil pitches, and negative durations inverted the histogram.
+3. **A performance cliff:** the sonority rule enumerated every combination up to its cap, so twelve tied notes cost about 100× thirteen.
+4. **Dead code:** `LineOfFifths.pitch_for` duplicated the speller's fallback.
+
+The product review added four gaps:
+
+- melodic direction never applied to notes with no voice, as a MIDI melody arrives;
+- a grace note took its main note's chord as its successor;
+- per-rule miss counts were pinned exactly, so an improvement would fail the spec;
+- agent memory files had been committed.
+
+It also noted that Aarden reads a tonic-heavy melody as the subdominant.
+
+### Resolution
+
+All fixed, each with a spec that fails on the old code where behaviour changed (`c54382f8` through `e85db027`):
+
+- Bad input raises `ArgumentError` at construction. Under `:infer` with no regions, notes spell in C major.
+- The sonority rule settles each distinct near tie once, which also removes the cap, since notes that start together share one center.
+- A single unvoiced line that never overlaps is one voice. A grace note leads to its own main note.
+- Misses by rule are ceilings.
+- The agent memory files are untracked and ignored.
+- The Aarden risk is recorded in Notes for MIDI Import to measure.
+
+The corpus figures did not move, and the full suite passes 16,767 examples.
+
+## Learnings
+
+- **Measure before choosing.** The planner's probe on 83,196 chorale notes settled four open choices with data:
+  - Aarden over Krumhansl–Kessler (92.5% against 80.6% key agreement);
+  - direction before sonority (47 misses against 65);
+  - no running center of gravity (+10 notes);
+  - a 99.5% floor rather than 98%.
+  
+  It also showed the story's own example ties under Krumhansl–Kessler.
+- **Wrong rudiments surface in new callers.** Building a 24-key table exposed that `Key#relative` and `Mode#relative_major` spelled flat-side keys with sharps. Both were fixed here.
+- **A laptop on battery stalls agents.** Two agents seemed stuck for hours overnight. The Mac was in maintenance sleep, and they advanced only in short dark wakes. Check `pmset -g log` before killing an agent that looks idle. Replacing the speller agent worked, but it may not have been needed.
+- **Keep spec pins honest about direction.** Exact pins on miss counts turn an improvement into a failure; ceilings and floors say what the spec really protects.
+- **The consumer's input shape matters early.** MIDI melodies arrive without voice labels, so a rule that needs voices silently never ran. A review asking "how will MIDI Import call this?" found it.
