@@ -6,6 +6,7 @@ module HeadMusic::MIDI
     GRIDS = [Rational(1, 16), Rational(1, 24), Rational(1, 32), Rational(1, 48), Rational(1, 64), Rational(1, 96)].freeze
     FINEST_GRID = Rational(1, 1024)
     TOLERANCE = 1
+    FALLBACK_SHARE = Rational(99, 100)
 
     def self.check_grid(grid)
       return grid if grid == :auto
@@ -57,11 +58,13 @@ module HeadMusic::MIDI
       grid * ticks_per_whole
     end
 
-    # The grid that places the most onsets within a tick, the coarser winning
-    # a tie, so the coarsest that places them all when one does.
+    # The coarsest grid that places every onset within a tick, or else the
+    # coarsest that places nearly as many as the best grid does.
     def automatic_grid
       placements = @source_notes.map { |note| placement(note.on) }
-      GRIDS.each_with_index.max_by { |candidate, index| [placements.count { |bar, offset| fits?(bar, offset, candidate) }, -index] }.first
+      counts = GRIDS.map { |candidate| placements.count { |bar, offset| fits?(bar, offset, candidate) } }
+      enough = (counts.max == placements.length) ? placements.length : FALLBACK_SHARE * counts.max
+      GRIDS[counts.index { |count| count >= enough }]
     end
 
     def fits?(bar, offset, candidate)

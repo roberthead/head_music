@@ -50,6 +50,11 @@ describe HeadMusic::MIDI::Quantizer do
     it "breaks a tie in the fallback toward the coarser grid" do
       expect(quantizer([*note(0, 1), *note(2, 3), *note(16, 17), *note(32, 33)]).grid).to eq 1/24r
     end
+
+    it "falls back to a coarser grid that places at least 99% as many onsets as the best" do
+      onsets = Array.new(200) { |index| index * 8 } + [1604, 1610]
+      expect(quantizer(onsets.flat_map { |on| note(on, on + 1) }).grid).to eq 1/48r
+    end
   end
 
   describe "snapping" do

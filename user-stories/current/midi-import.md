@@ -89,7 +89,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 - [ ] Note on and note off pairs become note events, and a note on with velocity 0 counts as a note off. Notes pair per channel and key across every track, in merged order, first in, first out. A note belongs to the track holding its note on, and a note off that matches no sounding note is skipped
 - [ ] A note still sounding at the end of its track ends there
 - [ ] Every note is spelled by the speller from the prerequisite, using the key in force, with notes labeled by voice so melodic direction applies
-- [ ] By default the grid is the coarsest, among sixteenths, thirty-seconds, sixty-fourths and their triplet divisions, that places every onset within one tick. When none does, it is the grid that places the most onsets that way. `grid:` takes one of these values or any Rational
+- [ ] By default the grid is the coarsest, among sixteenths, thirty-seconds, sixty-fourths and their triplet divisions, that places every onset within one tick. When none does, it is the coarsest grid that places at least 99% as many onsets as the best grid does. `grid:` takes one of these values or any Rational
 - [ ] A release less than one grid step before the next onset in its part extends to that onset. Other releases snap to the nearest grid point, and no note is shorter than one step
 - [ ] Notes and rests are written as single values where one fits, and as tied chains otherwise. A note that crosses a barline is split and tied. Triplet values are written as 3:2 tuplets, cut at beats where they cross one. Quintuplets and septuplets need an explicit `grid:`
 - [ ] Time between notes in a voice becomes rests, and a voice that starts late or ends early is padded, so every voice satisfies `Voice::Continuity`
