@@ -125,6 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The MusicXML reader trusts the written values of a measure whose rounded `<duration>`s overflow the bar while its `<type>`s, dots, and `<time-modification>`s fill it exactly in every voice, instead of refusing it as overfull. `<backup>` and `<forward>` land on the nearest written onset. Files written at divisions that cannot express their notes, such as music21's Beethoven op. 59 no. 2, now read; the corpus sweep reads 1,001 of 1,067 files.
 - **Breaking.** `MusicXML::BarMap`, `MusicXML::VoiceTrack`, `MusicXML::TieFolding`, `MusicXML::VoicePlacer`, and `MusicXML::ConcertTransposition` move to `HeadMusic::Notation`, shared with MEI import, and `MusicXML::PitchReader`'s spelling helpers move to `Notation::PitchSpelling`. `MusicXML::XmlReading` and `MusicXML::ParsePreflight` remain. With the move, `VoicePlacer.new` requires `tuplet_reader:` (and takes `trim_edges:`), `ConcertTransposition.new` takes `errors:`, and the readings `BarMap` and `TieFolding` take must answer `errors` and `where`.
 - `MusicXML.parse` raises `ParseError` on a document nesting elements deeper than 256.
 - ABC reads a `P:` header, the playing order, and ignores it rather than raising. A repeat read from ABC plays as many times as the highest pass its endings name, rather than twice.
@@ -144,6 +145,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The MEI, LilyPond, and ABC writers print an accidental on each chord member that shares a letter and octave with another under a different alteration, so F4 with F♯4 in C major shows its natural; LilyPond writes them as `<fis'! f'!>` so a later F in the bar prints correctly too.
+- The LilyPond reader reads notes carrying a forced (`!`) or cautionary (`?`) accidental sign, such as `fis'!4`, rather than refusing them.
 - Adding a tempo, meter, or key change to a flow, and growing its bars, no longer revisit every earlier change or bar, so a long flow with a change in each bar builds in linear time: 10,000 bars of tempo changes took 7.9 s and now take 0.12 s.
 - `Key#relative` spells flat-side keys with flats: E♭ minor's relative is G♭ major, not F♯ major, and G♭ major's is E♭ minor, not D♯ minor.
 - `Mode#relative_major` spells flat-side modes with flats, so E♭ Dorian's relative major is D♭ major, not C♯ major.
