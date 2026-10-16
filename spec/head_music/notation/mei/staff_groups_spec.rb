@@ -24,9 +24,9 @@ describe HeadMusic::Notation::MEI::StaffGroups do
     expect(parts_of(%(<staffGrp><staffGrp symbol="brace">#{staff_def(1)}#{staff_def(2)}</staffGrp></staffGrp>))).to eq [[nil, 2, :brace]]
   end
 
-  it "reads a braced group whose staves share one label as one part" do
+  it "reads a braced group whose staves share one label as one part, its player named by that label" do
     group = %(<staffGrp symbol="brace">#{staff_def(1, "Harp")}#{staff_def(2, "Harp")}</staffGrp>)
-    expect(parts_of(group).map { |part| part.take(2) }).to eq [[nil, 2]]
+    expect(parts_of(group).map { |part| part.take(2) }).to eq [["Harp", 2]]
   end
 
   it "reads a group of labeled staves as separate parts, labeling none from the group" do

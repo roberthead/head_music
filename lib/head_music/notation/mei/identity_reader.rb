@@ -11,8 +11,8 @@ module HeadMusic::Notation::MEI
   # Without a <workList>, the <titleStmt>'s composers are joined into the
   # flow's composer.
   #
-  # A part's player is the <label> of its group or its one <staffDef>, a
-  # Player with no project. Its instrument is the catalog's that its
+  # A part's player is the <label> of its group, else the one its staves
+  # all share, a Player with no project. Its instrument is the catalog's that its
   # <instrDef @label> names, else the one GM_PROGRAMS gives for its
   # @midi.instrnum, numbered from 0.
   class IdentityReader
@@ -60,8 +60,8 @@ module HeadMusic::Notation::MEI
     end
 
     def player(definition)
-      element = definition.group || (definition.staff_defs.values.first if definition.staff_defs.one?)
-      name = element && @groups.label(element)
+      labels = definition.staff_defs.values.map { |staff_def| @groups.label(staff_def) }.uniq
+      name = (definition.group && @groups.label(definition.group)) || (labels.first if labels.one?)
       name && HeadMusic::Content::Player.new(name: name)
     end
 

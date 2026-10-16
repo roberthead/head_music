@@ -7,7 +7,7 @@ module HeadMusic::Notation::MEI
   # its staves are labeled and no measure has one layer number on two of
   # its staves, as the writer numbers a part's layers across its staves.
   # Every other staff is its own part. A part's @symbol sets its bracket,
-  # and its <label> names its player. A <part> that opens with a <staffDef>
+  # and its <label>, else the one its staves share, names its player. A <part> that opens with a <staffDef>
   # rather than a <scoreDef> is that one staff.
   class StaffGroups
     include XmlReading
