@@ -94,6 +94,10 @@ describe HeadMusic::Analysis::NoteInput do
       end
     end
 
+    it "refuses a meter whose bars have no length" do
+      expect { described_class.for([[60, 0, :quarter]], meter: "0/4") }.to raise_error(ArgumentError, /no length/)
+    end
+
     it "refuses a bar:count onset without a meter" do
       expect { described_class.for([[60, "1:1", :quarter]]) }.to raise_error(ArgumentError, /meter/)
     end

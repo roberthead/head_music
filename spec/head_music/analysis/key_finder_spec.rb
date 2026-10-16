@@ -213,7 +213,13 @@ describe HeadMusic::Analysis::KeyFinder do
     end
 
     it "raises on a negative change penalty" do
-      expect { described_class.new(c_g_c, change_penalty: -0.1) }.to raise_error(ArgumentError, /change_penalty: must not be negative/)
+      expect { described_class.new(c_g_c, change_penalty: -0.1) }.to raise_error(ArgumentError, /change_penalty: must be a non-negative Numeric/)
+    end
+
+    it "raises on a change penalty that is not a number" do
+      [nil, "1", Complex(1, 1), Float::NAN].each do |penalty|
+        expect { described_class.new(c_g_c, change_penalty: penalty) }.to raise_error(ArgumentError, /change_penalty: must be a non-negative Numeric/)
+      end
     end
 
     it "raises on a window that is not a non-negative Integer" do

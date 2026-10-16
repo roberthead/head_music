@@ -34,7 +34,9 @@ class HeadMusic::Analysis::KeyFinder
   attr_reader :input, :profile, :change_penalty, :window
 
   def initialize(input, profile: :aarden_essen, change_penalty: 1.0, window: 0, **note_input_options)
-    raise ArgumentError, "change_penalty: must not be negative" if change_penalty.negative?
+    unless change_penalty.is_a?(Numeric) && change_penalty.real? && change_penalty >= 0
+      raise ArgumentError, "change_penalty: must be a non-negative Numeric"
+    end
     raise ArgumentError, "window: must be a non-negative Integer" unless window.is_a?(Integer) && !window.negative?
 
     @input = HeadMusic::Analysis::NoteInput.for(input, **note_input_options)

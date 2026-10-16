@@ -6,6 +6,11 @@ module HeadMusic::Analysis; end
 # export lays them out. The voice is any hashable label, or nil.
 HeadMusic::Analysis::UnspelledNote = Data.define(:number, :onset, :duration, :voice) do
   def initialize(number:, onset:, duration:, voice: nil)
-    super(number: Integer(number), onset: onset.to_r, duration: duration.to_r, voice: voice)
+    number = Integer(number)
+    duration = duration.to_r
+    raise ArgumentError, "key number #{number} is outside 0..127" unless (0..127).cover?(number)
+    raise ArgumentError, "duration #{duration} is negative" if duration.negative?
+
+    super(number: number, onset: onset.to_r, duration: duration, voice: voice)
   end
 end

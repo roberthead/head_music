@@ -32,6 +32,7 @@ class HeadMusic::Analysis::NoteInput
 
   def self.from_list(input, meter:, bars:, first_bar:)
     meter = HeadMusic::Rudiment::Meter.get(meter) if meter
+    raise ArgumentError, "meter: #{meter} has bars of no length" if meter && !bar_length(meter).positive?
     listed_starts = bars && listed_bar_starts(bars, first_bar)
     notes = Array(input).map { |element| note_from(element, meter, listed_starts, first_bar) }
     new(notes, listed_starts || computed_bar_starts(notes, meter, first_bar))
