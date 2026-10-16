@@ -1,6 +1,7 @@
 module HeadMusic::Notation::MEI
   # What is in force as the walk reaches each measure: the meter and key,
-  # each staff's written key and @dur.default, and the clefs and
+  # each staff's written key, the @dur.default of each layer, and the
+  # clefs and
   # instruments that a <scoreDef> or <staffDef> between measures changes
   # from the next measure on, and the transpositions, by @trans.diat and
   # @trans.semi, that one replaces, 0/0 returning a staff to concert pitch.
@@ -13,6 +14,10 @@ module HeadMusic::Notation::MEI
   # every staff's own. A later <scoreDef> that adds or removes staves raises. A
   # later <staffDef> for a staff the score has not is skipped and noted,
   # since a measure that then uses that staff raises.
+  #
+  # A layer's @dur.default is its <layerDef>'s, else its <staffDef>'s, else
+  # the <scoreDef>'s. A later definition that states one resets those
+  # within it, as a score-wide key does.
   class StaffState
     include XmlReading
 
@@ -33,11 +38,16 @@ module HeadMusic::Notation::MEI
       @first_staff = groups.staff_numbers.first
       @written_fifths = {}
       @transposed = groups.staff_numbers.to_h { |number| [number, transposing?(opening_transposition(number))] }
+      @score_duration_default = opening.score_def && AttributeValues.read(opening.score_def, "dur.default", element: opening.score_def)
       @duration_defaults = {}
-      @opening = opening
+      @layer_duration_defaults = {}
       @added_staves = Set.new
       reset_changes
-      groups.staff_numbers.each { |number| read_written_key(groups.staff_def(number), number) }
+      groups.staff_numbers.each do |number|
+        staff_def = groups.staff_def(number)
+        read_written_key(staff_def, number)
+        read_duration_defaults(staff_def, number, staff: number) if staff_def
+      end
     end
 
     # Whether a later <staffDef> named a staff the score does not have.
@@ -49,8 +59,8 @@ module HeadMusic::Notation::MEI
       @written_fifths.fetch(staff_number) { @key.fifths }
     end
 
-    def duration_default(staff_number)
-      @duration_defaults.fetch(staff_number) { @opening.duration_default(staff_number) }
+    def duration_default(staff_number, layer_number)
+      @layer_duration_defaults.fetch([staff_number, layer_number]) { @duration_defaults.fetch(staff_number) { @score_duration_default } }
     end
 
     # The changes since the last measure, which then start afresh.
@@ -78,6 +88,7 @@ module HeadMusic::Notation::MEI
         @written_fifths.clear
       end
       @meter = ScoreDefValues.meter(element, @editorial, **where) || @meter
+      read_score_duration_default(element, where)
       group = @editorial.children_named(element, "staffGrp").first
       return unless group
 
@@ -130,11 +141,32 @@ module HeadMusic::Notation::MEI
     end
 
     def read_staff_values(element, number, where)
-      default = AttributeValues.read(element, "dur.default", **where)
-      @duration_defaults[number] = default if default
+      read_duration_defaults(element, number, where)
       @meter = ScoreDefValues.meter(element, @editorial, **where) || @meter if @staff_sourced && number == @first_staff
       key = ScoreDefValues.key(element, @editorial, **where)
       change_key(number, key) if key
+    end
+
+    def read_score_duration_default(score_def, where)
+      default = AttributeValues.read(score_def, "dur.default", **where)
+      return unless default
+
+      @score_duration_default = default
+      @duration_defaults.clear
+      @layer_duration_defaults.clear
+    end
+
+    def read_duration_defaults(staff_def, number, where)
+      default = AttributeValues.read(staff_def, "dur.default", **where, element: staff_def)
+      if default
+        @duration_defaults[number] = default
+        @layer_duration_defaults.reject! { |(staff, _), _| staff == number }
+      end
+      @editorial.children_named(staff_def, "layerDef").each do |layer_def|
+        layer_default = AttributeValues.read(layer_def, "dur.default", **where, element: layer_def)
+        layer = AttributeValues.read(layer_def, "n", **where, element: layer_def) || 1
+        @layer_duration_defaults[[number, layer]] = layer_default if layer_default
+      end
     end
 
     def read_written_key(staff_def, number)

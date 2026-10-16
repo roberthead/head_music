@@ -85,6 +85,28 @@ describe HeadMusic::Notation::MEI do
         .to eq ["half C4 E4 at 1:1:000", "half G4 at 1:3:000"]
     end
 
+    describe "@dur.default" do
+      let(:bare) { %(<note pname="g" oct="4"/>) }
+
+      it "takes a <layerDef>'s for its layer over its staff's" do
+        staff_def = mei_staff_def(1, attributes: %( dur.default="1"), inside: %(<layerDef n="2" dur.default="2"/>))
+        flow = parse(mei_staff(1, [1, bare], [2, bare * 2]), score_def: mei_score_def(staff_grp: "<staffGrp>#{staff_def}</staffGrp>"))
+        expect(flow.voices.map { |voice| voice.voice_events.map(&:to_s) }).to eq [["whole G4 at 1:1:000"], ["half G4 at 1:1:000", "half G4 at 1:3:000"]]
+      end
+
+      it "takes a later <scoreDef>'s from its measure on, over the staff's before it" do
+        score_def = mei_score_def(staff_grp: "<staffGrp>#{mei_staff_def(1, attributes: %( dur.default="1"))}</staffGrp>")
+        expect(events(mei_staff(1, bare), %(<scoreDef dur.default="2"/>), mei_staff(1, bare * 2), score_def: score_def))
+          .to eq ["whole G4 at 1:1:000", "half G4 at 2:1:000", "half G4 at 2:3:000"]
+      end
+
+      it "takes a later <layerDef>'s from its measure on" do
+        later = %(<staffDef n="1"><layerDef n="1" dur.default="2"/></staffDef>)
+        expect(events(mei_staff(1, bare), later, mei_staff(1, bare * 2), score_def: mei_score_def(extra: %( dur.default="1"))))
+          .to eq ["whole G4 at 1:1:000", "half G4 at 2:1:000", "half G4 at 2:3:000"]
+      end
+    end
+
     it "raises on a note with no @dur and none in force" do
       expect { parse(mei_staff(1, %(<note pname="c" oct="4"/>))) }.to raise_error(described_class::ParseError, /no @dur/)
     end

@@ -1,9 +1,9 @@
 module HeadMusic::Notation::MEI
   # What the opening <scoreDef> states: the key and meter, each read on the
   # <scoreDef>, else on the first <staffDef> that states one, as MuseScore
-  # puts its meter only on staff definitions; the tempo of its @midi.bpm;
-  # and the @dur.default in force on each staff. A transposing staff's key
-  # is the written one, so the score's sounds its @trans.* away.
+  # puts its meter only on staff definitions; and the tempo of its
+  # @midi.bpm. A transposing staff's key is the written one, so the score's
+  # sounds its @trans.* away.
   class OpeningValues
     attr_reader :score_def
 
@@ -23,15 +23,6 @@ module HeadMusic::Notation::MEI
 
     def tempo
       @tempo ||= score_def && ScoreDefValues.tempo(score_def, element: score_def)
-    end
-
-    def duration_default(staff_number)
-      @duration_defaults ||= {}
-      @duration_defaults.fetch(staff_number) do
-        staff_def = @groups.staff_def(staff_number)
-        @duration_defaults[staff_number] = [staff_def, score_def].compact.lazy
-          .filter_map { |element| AttributeValues.read(element, "dur.default", element: element) }.first
-      end
     end
 
     private

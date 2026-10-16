@@ -299,7 +299,8 @@ module HeadMusic::Notation::MEI
 
     def read_layers(staff, number, where)
       @editorial.children_named(staff, "layer").map do |layer|
-        LayerReader.new(layer, @editorial, staff_number: number, tuplets: @tuplets, duration_default: @state.duration_default(number), **where).read
+        default = @state.duration_default(number, AttributeValues.read(layer, "n", **where, element: layer) || 1)
+        LayerReader.new(layer, @editorial, staff_number: number, tuplets: @tuplets, duration_default: default, **where).read
       end
     end
 
