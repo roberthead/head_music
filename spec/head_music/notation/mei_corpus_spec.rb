@@ -28,8 +28,8 @@ require "spec_helper"
 #   the model could hold.
 # - A later <scoreDef> that restates only some staves, refused as one that
 #   adds or removes staves.
-# - Empty <score>s, which make no flow; opera.mei's scores that do hold
-#   music then stop on a note with no @oct.
+# - A <note> with no @oct in opera.mei, whose empty <score>s parse_book
+#   skips.
 # - music21's test_file.mei, whose <layer n=""> no MEI version allows.
 describe HeadMusic::Notation::MEI do
   corpora = ENV["MEI_CORPUS"].to_s.split(File::PATH_SEPARATOR).reject(&:empty?).map { |folder| File.expand_path(folder) }
@@ -69,7 +69,7 @@ describe HeadMusic::Notation::MEI do
     "MEI_*/Music/Layout_information/Layout_information.mei" => longer.call("6/8"),
     "MEI_*/Music/Lyrics/lyrics.mei" => no_dur.call("note"),
     "MEI_*/Music/Lyrics/multiple_verses.mei" => longer.call("3/4"),
-    "MEI_*/Music/Music_structure/{group_element,opera}.mei" => [parse_error, /\AMEI input contains no music/],
+    "MEI_*/Music/Music_structure/opera.mei" => [parse_error, /\AA <note> has no @oct \(measure 3, staff 5/],
     "MEI_*/Music/Music_structure/multiple_sections{I,II}.mei" => longer.call("2/4"),
     "MEI_*/Music/Music_structure/mdivs_Tschaikovsky/Tschaikovsky_Symphony_No5_Op64_mulitple_mdivs.mei" => longer.call("4/4"),
     "MEI_*/Musical-features/snippets/Figured_Bass.mei" => no_dur.call("note"),

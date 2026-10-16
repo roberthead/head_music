@@ -11,7 +11,13 @@ module HeadMusic::Notation::MEI
     end
 
     def flow
-      @flow ||= build
+      music || raise(ParseError, "MEI input contains no music")
+    end
+
+    # The flow, or nil for a score with no music.
+    def music
+      @music = build unless defined?(@music)
+      @music
     end
 
     private
@@ -23,7 +29,7 @@ module HeadMusic::Notation::MEI
       opening = OpeningValues.new(score_def, groups, @source.editorial)
       identity = IdentityReader.new(@source, groups)
       score = ScoreReader.new(@source, groups, opening, identity).read
-      raise ParseError, "MEI input contains no music" if score.measures.empty? || score.readings.empty?
+      return if score.measures.empty? || score.readings.empty?
 
       bar_map = HeadMusic::Notation::BarMap.new(score.readings)
       fold_ties(score, bar_map)

@@ -65,6 +65,22 @@ describe HeadMusic::Notation::MEI::Parser do
     end
   end
 
+  describe "a score with no music" do
+    let(:empty) { %(<mdiv><score><scoreDef><staffGrp><staffDef n="1" lines="5"/></staffGrp></scoreDef><section/></score></mdiv>) }
+
+    it "makes no flow of a book" do
+      expect(described_class.new(xml.sub("<mdiv>", "#{empty}<mdiv>")).flows.map(&:name)).to eq ["Café"]
+    end
+
+    it "raises where no score of a book has music" do
+      expect { described_class.new(xml.sub(/<mdiv>.*<\/mdiv>/m, empty)).flows }.to raise_error(HeadMusic::Notation::MEI::ParseError, /contains no music/)
+    end
+
+    it "raises as the one score" do
+      expect { described_class.new(xml.sub(/<mdiv>.*<\/mdiv>/m, empty)).flow }.to raise_error(HeadMusic::Notation::MEI::ParseError, /contains no music/)
+    end
+  end
+
   describe "#flow" do
     it "names the count and points to parse_book where the body holds several scores" do
       two = xml.sub("</mdiv>", "</mdiv><mdiv><score/></mdiv>")

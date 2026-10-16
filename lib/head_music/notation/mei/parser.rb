@@ -19,8 +19,12 @@ module HeadMusic::Notation::MEI
       @document ||= build_document
     end
 
+    # A score with no music makes no flow, unless no score has music.
     def flows
-      document.sources.map { |source| FlowBuilder.new(source).flow }
+      found = document.sources.filter_map { |source| FlowBuilder.new(source).music }
+      raise ParseError, "MEI input contains no music" if found.empty?
+
+      found
     end
 
     def flow

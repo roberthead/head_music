@@ -7,7 +7,8 @@ module HeadMusic::Notation::MEI
   end
 
   # One flow for each score in the body, in document order: nested <mdiv>s,
-  # <group>s of <music>, and each <mei> of a <meiCorpus>.
+  # <group>s of <music>, and each <mei> of a <meiCorpus>. A score with no
+  # music is skipped.
   def self.parse_book(string)
     Parser.new(string).flows
   end

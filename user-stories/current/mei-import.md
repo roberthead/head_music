@@ -516,9 +516,9 @@ Swept on 2026-10-15 through `spec/head_music/notation/mei_corpus_spec.rb`, with 
 
 | Corpus | Files | Read | Refused |
 |---|---|---|---|
-| `MEI_5.1` | 167 | 84 | 83 |
-| `MEI_5.0` | 167 | 84 | 83 |
-| `MEI_4.0` | 167 | 84 | 83 |
+| `MEI_5.1` | 167 | 85 | 82 |
+| `MEI_5.0` | 167 | 85 | 82 |
+| `MEI_4.0` | 167 | 85 | 82 |
 | music21 | 3 | 2 | 1 |
 
 - **No escapes.** Nothing outside `HeadMusic::Notation::ParseError` escapes from any of the 504 files.
@@ -550,9 +550,9 @@ Each has a spec:
 | A `<note>` with no `@dur` and no `@dur.default` | 6 | Rimsky-Korsakov, *Erlkönig* bar 29, Schumann Op. 41 bar 10, `lyrics.mei` bar 3, `Figured_Bass`, `Doc_starts_with_music` | Stays refused. MEI carries no length over from the note before, so nothing says what was meant. |
 | A `<chord>` with no `@dur` whose notes differ in length | 2 | Ives, `bidur.mei` | Stays refused. One event cannot hold two lengths. |
 | A later `<scoreDef>` that restates only some staves | 3 | Weber Op. 73, `beamSpans`, `slur_element` | Stays refused as one that adds or removes staves, as decided in steps 8–11. |
-| A `<note>` with no `@oct` | 2 | Gluck, `secondary.mei` | Stays refused. A pitch needs its octave, and no `@oct.default` is written. |
+| A `<note>` with no `@oct` | 3 | Gluck, `secondary.mei`, `opera.mei` | Stays refused. A pitch needs its octave, and no `@oct.default` is written. |
 | A `<note>` with no `@pname` | 1 | Chopin Op. 6 No. 1, a grace note at bar 43 | Stays refused. Dropping the pitchless grace note alone would not read the file, which then stops on a short bar 18. |
-| No music in a score of a book | 2 | `group_element`, `opera` | Stays refused, since `parse_book` answers one flow per score. Skipping the empty scores would not read `opera.mei`, whose aria stops on a note with no `@oct`. |
+| No music in a score of a book | 0 | `group_element`, `opera` | No longer refused: `parse_book` skips a score with no music, as decided in review, so `group_element` reads. `opera.mei`'s aria then stops on a note with no `@oct`, counted in that row. |
 | Nested tuplets | 1 | Beethoven Op. 18 No. 1, movement 2, bar 96 | Stays refused. A `<tupletSpan>` in bar 92 names an `@endid` inside the 7:4 span of bar 96, so the two overlap. |
 | An unreadable `@n` | 1 | music21's `test_file.mei` | Stays refused, since no MEI version allows `<layer n="">`. Past it, the file writes upper-case `@pname`s and nested tuplets. |
 
