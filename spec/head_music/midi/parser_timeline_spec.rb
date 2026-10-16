@@ -110,6 +110,14 @@ describe HeadMusic::MIDI::Parser do
       end
     end
 
+    context "with a tempo so slow in a meter of whole notes that a whole number of beats a minute is 0" do
+      subject(:flow) { parse([time_signature(0, 6, 1), tempo(0, 10_000_001), *midi_note(0, 60, bar * 6)]) }
+
+      it "restates it with the fewest decimals that are not 0" do
+        expect(tempos(flow)).to eq [[1, "dotted double whole", 0.5]]
+      end
+    end
+
     context "with a meter change at the same speed" do
       subject(:flow) { parse([time_signature(0, 3, 4), time_signature(288, 6, 8), *midi_line([60] * 4, 144)]) }
 

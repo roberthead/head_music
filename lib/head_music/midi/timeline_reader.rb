@@ -12,11 +12,12 @@ module HeadMusic::MIDI
     MAX_DECIMALS = 3
 
     # A tempo of so many microseconds a quarter, in the meter's beat, with
-    # the fewest decimals that write back the same microseconds.
+    # the fewest decimals that write back the same microseconds. A very slow
+    # tempo rounds to 0 at too few decimals, which writes back nothing.
     def self.tempo(microseconds, meter)
       beat = BarLayout.beat(meter)
       exact = Rational(60_000_000) / (microseconds * beat.fraction * 4)
-      tempos = (0..MAX_DECIMALS).lazy.map { |digits| HeadMusic::Rudiment::Tempo.new(beat, exact.round(digits)) }
+      tempos = (0..MAX_DECIMALS).lazy.map { |digits| exact.round(digits) }.select(&:positive?).map { |bpm| HeadMusic::Rudiment::Tempo.new(beat, bpm) }
       tempos.find { |tempo| Tempo.microseconds_per_quarter(tempo) == microseconds } || tempos.to_a.last
     end
 
