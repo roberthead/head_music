@@ -110,7 +110,7 @@ mei # => String of a well-formed MEI 5 document with <meiHead> and <music>
 - **Deferred: cautionary accidentals.** The model has no courtesy flag, so any rule would be an invented style choice.
 - **Verovio is not installed here** (Rob's choice), so MuseScore 4's MEI import stands in as the automated real-tool check. MuseScore reads only `meiversion="5.1+basic"` and hangs on any other value, so its spec rewrites the version and runs under a timeout.
 - **MuseScore's MEI import has limits the spec works around.** It reads only `meiversion="5.1+basic"` and hangs otherwise, crashes on a `<label>` inside `<layerDef>`, drops `@tie`, numbers an upbeat measure 1, splits an unlabeled braced group into one part per staff, and ignores `@trans.*` after the first measure. The spec rewrites the version, strips layer labels, compares by measure order, and pools a measure's notes across parts, so it would not catch a note written on the wrong staff.
-- **Open question: a chord holding F and F♯ at one octave** writes the F with no accidental, since each chord member is judged on its own against the key. Most engravers would print the natural; it waits with cautionary accidentals.
+- **A chord holding F and F♯ at one octave** once wrote the F with no accidental, since each chord member was judged on its own against the key. See Decisions.
 - The round trip through MEI belongs to [MEI Import](mei-import.md), which lands after this story.
 
 ## Decisions
@@ -126,6 +126,10 @@ mei # => String of a well-formed MEI 5 document with <meiHead> and <music>
   - pickup rests stay `<rest>`, not `<space>`, matching what every other writer prints;
   - the schema is not vendored; the spec is gated on `MEI_SCHEMA`, as MusicXML's is on `MUSICXML_XSD`;
   - a repeat played more than twice is written as a `<dir>` "×N" at the end of its bar.
+
+- **A chord's clashing members each show their accidental** (decided by Rob, 2026-10-16). Where a chord holds one letter at one octave under two alterations, each of those members prints its accidental, so in C major F4 and F♯4 together give F4 a natural (`@accid="n"`) and F♯4 a sharp. The bar's memory then follows the highest member, the last one written, as engravers read it.
+  - The ABC and LilyPond writers had the same gap and were fixed alongside: ABC writes `[=F^F]`, and LilyPond writes `<fis'! f'!>`, highest first, since LilyPond's bar memory keeps the first-written member.
+  - MusicXML and kern need no change. They write the pitch alone and leave the display to the reader; MuseScore 4 prints the natural from MusicXML's `<alter>`.
 
 - **Implementation choices made without stopping to ask** (2026-10-15; Rob may revise any):
   - A voice with nothing in a bar, such as a tacet voice or the bars before a voice begins, writes `<layer><mRest/></layer>`, as MusicXML writes a whole-measure rest. A bare `<staff/>` is only for a staff with no voice on it.
@@ -434,7 +438,7 @@ The reviewer checked these and found them sound:
 - **Fixed.** `ensure_xml_text` refuses non-ASCII text that is not UTF-8 with the writer's `RenderError`, naming the encoding (`c63b9dd5`). `LayerTree` is now the default layer builder, and `FlatLayer` is removed (`d90e9efb`). The CHANGELOG is complete (`5f4e6a1a`).
 - **MuseScore criterion, reworded.** It now names the one golden pending on a MuseScore limitation. Notes list the limits the spec works around.
 - **Verovio criterion, checked by hand** (2026-10-16). Rob rendered `cross_staff_piano.mei` and `grace_notes_before_downbeat.mei` in editor.verovio.org (Verovio 6.3.0). Both render without errors. The editor's only notice is that it validates against `mei-all.rng` rather than the declared `mei-CMN.rng`, which is expected, since CMN is a subset of the full schema. The cross-staff piano shows its labeled brace, the left hand crossing to the treble staff in bars 2–3 with the bass staff empty, and a final barline. The grace notes render inside a beam before an inner note, alone before a whole note, and slurred and tied into a main note. These were the shapes the plan flagged as untested in Verovio.
-- **Open question:** a chord holding F and F♯ at one octave prints no natural on the F (see Notes).
+- **Decided:** a chord holding F and F♯ at one octave prints a natural on the F (see Decisions).
 
 ## Learnings
 
