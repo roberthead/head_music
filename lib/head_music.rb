@@ -241,6 +241,7 @@ require "head_music/analysis/note_input"
 require "head_music/analysis/note_input/flow_reader"
 require "head_music/analysis/key_profile"
 require "head_music/analysis/key_finder"
+require "head_music/analysis/line_of_fifths"
 
 # style analysis
 require "head_music/style/tradition"
