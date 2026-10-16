@@ -233,4 +233,30 @@ describe HeadMusic::Notation::MEI do
       expect(events(mei_staff(1, layer))).to eq ["half C4 at 1:1:000", "half F4 at 1:3:000"]
     end
   end
+
+  describe "what the reader skips" do
+    let(:notes) do
+      attributes = %( stem.dir="up" stem.len="7" stem.mod="1slash" place="above" curvedir="above" dur.ges="1")
+      mei_note("C4", "2", "xml:id": "n1") + %(<barLine form="dbl"/>) + mei_note("E4", "2", "xml:id": "n2").sub("/>", "#{attributes}/>")
+    end
+
+    let(:controls) do
+      spans = %w[fing harm pedal octave breath bend arpeg gliss lv anchoredText annot dir].map do |name|
+        %(<#{name} staff="1" tstamp="1" startid="#n1" endid="#n2">x</#{name}>)
+      end
+      [*spans, %(<harm staff="1" tstamp="1"><fb><f>6</f></fb></harm>), %(<tempo staff="1" tstamp="1">Andante</tempo>)].join
+    end
+
+    let(:flow) do
+      xml = mei_document(%(<pb/>), mei_staff(1, notes) + controls, %(<sb/>), %(<expansion plist="#s1 #s1"/>), mei_staff(1, mei_note("G4", "1")))
+      described_class.parse(xml.sub("<music>", %(<facsimile><surface><zone/></surface></facsimile><music>)).sub("<section>", %(<section><pgHead><rend>Head</rend></pgHead><pgFoot/>)))
+    end
+
+    it "keeps the music whole, as written, with none of the elements and attributes it has no place for" do
+      part = flow.parts.first
+      expect([flow.voices.first.voice_events.map(&:to_s), flow.tempo_changes, part.spans + flow.voices.first.spans, part.dynamic_events])
+        .to eq [["half C4 at 1:1:000", "half E4 at 1:3:000", "whole G4 at 2:1:000"], {}, [], []]
+      expect_mei_music_whole(flow)
+    end
+  end
 end
