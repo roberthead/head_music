@@ -117,6 +117,10 @@ describe HeadMusic::Analysis::NoteInput do
         expect(input.notes.first.onset).to eq Rational(3, 2)
       end
 
+      it "refuses a bar:count onset in a bar the list does not hold" do
+        expect { described_class.for([[60, "7:1", :quarter]], meter: "4/4", bars: [0, 1]) }.to raise_error(ArgumentError, /bar 7/)
+      end
+
       it "refuses downbeats out of order" do
         expect { described_class.for([], bars: [0, 1, 1]) }.to raise_error(ArgumentError, /increasing/)
       end

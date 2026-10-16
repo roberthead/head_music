@@ -58,7 +58,11 @@ class HeadMusic::Analysis::NoteInput
     raise ArgumentError, "a \"bar:count\" onset needs meter:" unless meter
 
     bar_number = match[1].to_i
-    downbeat = listed_starts ? listed_starts.fetch(bar_number) : (bar_number - first_bar) * bar_length(meter)
+    if listed_starts && !listed_starts.key?(bar_number)
+      raise ArgumentError, "the onset #{onset.inspect} names bar #{bar_number}, which bars: does not list"
+    end
+
+    downbeat = listed_starts ? listed_starts[bar_number] : (bar_number - first_bar) * bar_length(meter)
     downbeat + Rational(match[2].to_i - 1, meter.bottom_number)
   end
 
