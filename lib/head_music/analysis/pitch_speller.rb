@@ -164,10 +164,10 @@ class HeadMusic::Analysis::PitchSpeller
   end
 
   def spelled_note(note, position)
-    pitch = LineOfFifths.pitch_at(note.number, @indices[position])
-    return SpelledNote.new(note: note, pitch: pitch, rule: @rules[position]) if pitch
-
-    SpelledNote.new(note: note, pitch: HeadMusic::Rudiment::Pitch.from_number(note.number), rule: :fallback)
+    index = @indices[position]
+    pitch = LineOfFifths.pitch_for(note.number, index)
+    rule = (pitch.spelling == LineOfFifths.spelling_at(index)) ? @rules[position] : :fallback
+    SpelledNote.new(note: note, pitch: pitch, rule: rule)
   end
 
   # Sweeps the notes in onset order, answering those sounding at each onset
