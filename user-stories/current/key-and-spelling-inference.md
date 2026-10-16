@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-15T21:03:39-07:00
   planned_at:   2026-10-15T21:24:00-07:00
   finished_at:
-  updated_at:   2026-10-15T21:24:00-07:00
+  updated_at:   2026-10-16T07:59:16-07:00
 -->
 
 # Story: Key and Spelling Inference
@@ -86,6 +86,30 @@ The class names and input shape above are a sketch, to be settled in planning.
 - **No atonal spelling.** Atonal and twelve-tone music is spelled by different conventions, such as sharps rising and flats falling regardless of key. The melodic-direction rule above is a start, but a key-free speller is a follow-up.
 - **Deferred: a running center of gravity.** Measured on the chorales at +10 notes of 83,196, which does not justify a tuning parameter. Direction and sonority cover "the spellings around it". The per-rule miss report will show whether non-chorale music wants one.
 - **Deferred: a smaller penalty between closely related keys.** No corpus gives the key regions within a piece, so there is nothing to tune it against, and spelling barely moves with the penalty.
+- **Measured on the chorales** (2026-10-16, `spec/head_music/analysis/spelling_corpus_spec.rb`, pinned as floors). The 366 readable chorales hold 83,196 sounding pitches and no grace notes.
+
+  | Measure | Correct | Figure |
+  |---|---|---|
+  | (a) Spelling, key from the signature and designation | 83,150 of 83,196 | 99.945% |
+  | (b) Spelling, key inferred | 83,152 of 83,196 | 99.947% |
+  | (c) Whole-piece key, major/minor designations | 295 of 319 | 92.5% |
+  | (c) Whole-piece key, modal designations (parallel key) | 37 of 47 | 78.7% |
+  | (c) Whole-piece key, all | 332 of 366 | 90.7% |
+  | (c) First region, major/minor designations | 300 of 319 | 94.0% |
+  | (c) First region, modal designations | 39 of 47 | 83.0% |
+  | (c) First region, all | 339 of 366 | 92.6% |
+
+  Misses by rule:
+
+  | Rule | (a) Key given | (b) Inferred |
+  |---|---|---|
+  | `:direction` | 34 | 34 |
+  | `:raised` | 7 | 4 |
+  | `:center` | 4 | 5 |
+  | `:sonority` | 1 | 1 |
+  | Total | 46 | 44 |
+
+  Direction dominates: each of its misses is a chromatic note written against the semitone that follows it, such as a D♯ falling to D. The inferred key misses two fewer, mostly in modal chorales, where a minor-like mode's raised 6th and 7th misspell a lowered note: chor034 (E Phrygian) writes E♭ and chor113 (F Dorian) F♭. Two chorales trade a miss: chor216 misses only with the key given, chor314 only inferred. The default penalty finds 388 regions in 366 chorales, 0.06 changes per piece. The corpus measures in about 4.5 s of CPU time on top of 5.6 s of parsing.
 - `Pitch.get(number)` keeps its sharp spelling. Callers that know their context use the speller.
 - Sources to cite in the code: Krumhansl, *Cognitive Foundations of Musical Pitch* (1990); Temperley, *The Cognition of Basic Musical Structures* (2001); Meredith, "The ps13 pitch spelling algorithm," *Journal of New Music Research* 35 (2006).
 

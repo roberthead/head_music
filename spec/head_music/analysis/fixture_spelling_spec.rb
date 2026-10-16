@@ -2,7 +2,7 @@ require "spec_helper"
 
 # The written fixtures, stripped to key numbers and respelled, against their
 # written spelling: by the key signatures in force, and under inferred keys.
-describe "Spelling the notation fixtures" do
+describe "HeadMusic::Analysis::PitchSpeller" do
   fixtures = File.expand_path("../../fixtures/notation", __dir__)
   sharp_for_flat = ["5:3:000 voice 1.1 C♯5 → D♭5"]
 
@@ -28,5 +28,11 @@ describe "Spelling the notation fixtures" do
         expect(SpellingEvaluation.differences(flow, key: :infer)).to eq(count: count, grace_count: grace_count, differences: inferred)
       end
     end
+  end
+
+  it "spells the marks duet's one miss by the sonority rule" do
+    flow = HeadMusic::Notation::Kern.parse(File.read(File.join(fixtures, "kern", "articulations_ornaments_dynamics.krn")))
+    expect(SpellingEvaluation.misses(flow, key: nil)[:misses].map { |miss| [miss.written, miss.spelled, miss.rule, miss.grace?] })
+      .to eq [["C♯5", "D♭5", :sonority, false]]
   end
 end

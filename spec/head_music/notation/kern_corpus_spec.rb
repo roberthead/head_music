@@ -1,24 +1,14 @@
 require "spec_helper"
 
-# A sweep of a real kern corpus, run only when KERN_CORPUS names a local
-# clone of https://github.com/craigsapp/bach-370-chorales. The corpus is
-# CC BY-NC-SA 4.0, so none of it is committed here.
-#
-# Four chorales hold a bar the model cannot: two a short bar in the middle
-# of the piece, one a 3/4 bar in 4/4 with a meter change inside the merged
-# bar, and one an eight-beat bar.
+# A sweep of the Bach chorales, run only when KERN_CORPUS names a local clone
+# of them (see KernCorpus).
 describe HeadMusic::Notation::Kern do
-  corpus = ENV["KERN_CORPUS"]
-  unreadable = {
-    "chor011.krn" => HeadMusic::Notation::Kern::UnsupportedFeatureError,
-    "chor130.krn" => HeadMusic::Notation::Kern::ParseError,
-    "chor197.krn" => HeadMusic::Notation::Kern::UnsupportedFeatureError,
-    "chor280.krn" => HeadMusic::Notation::Kern::UnsupportedFeatureError
-  }
+  corpus = KernCorpus.directory
+  unreadable = KernCorpus::UNREADABLE
 
   before { skip "set KERN_CORPUS to a local clone of the Bach chorales" unless corpus }
 
-  (corpus ? Dir[File.join(corpus, "kern", "*.krn")].sort : []).each do |path|
+  KernCorpus.paths.each do |path|
     name = File.basename(path)
 
     if unreadable.key?(name)

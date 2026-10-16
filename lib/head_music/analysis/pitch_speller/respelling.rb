@@ -25,6 +25,16 @@ class HeadMusic::Analysis::PitchSpeller
       HeadMusic::Content::Flow.from_h(hash)
     end
 
+    # The spelled notes and the addresses of their sounds in the flow's to_h,
+    # in the order the flow's NoteInput reads them.
+    def spelled_notes
+      speller.spelled_notes
+    end
+
+    def addresses
+      @input.addresses
+    end
+
     private
 
     def speller

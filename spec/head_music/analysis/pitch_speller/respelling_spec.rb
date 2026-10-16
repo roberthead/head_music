@@ -135,4 +135,13 @@ describe HeadMusic::Analysis::PitchSpeller::Respelling do
       expect { respell(sharp_spelled, change_penalty: 0.5) }.to raise_error(ArgumentError, /change_penalty apply only to key: :infer/)
     end
   end
+
+  describe "#spelled_notes" do
+    it "answers each spelled note with the address of its sound" do
+      flow = HeadMusic::Notation::ABC.parse("X:1\nT:Respelled\nM:4/4\nL:1/4\nK:Eb\n^D ^G ^A2 |\n")
+      respelling = described_class.new(flow)
+      expect(respelling.addresses.zip(respelling.spelled_notes).map { |address, spelled| [address[5], spelled.pitch.to_s, spelled.rule] })
+        .to eq [[0, "E♭4", :diatonic], [1, "A♭4", :diatonic], [2, "B♭4", :diatonic]]
+    end
+  end
 end
