@@ -148,9 +148,9 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 - **Follow-ups found by the planning probes, each in another format's story:** MusicXML Export writes no tempo and pads an implicit pickup measure with a leading rest, and the ABC reader ignores an anacrusis.
 - **Deferred, with reasons:**
   - **Inferring repeats.** SMF has no repeat events, and bars may be identical on purpose.
-  - ** on import.** Program 57 covers both the B♭ and C trumpet, so the written pitch would be a guess.
+  - **`transposed:` on import.** Program 57 covers both the B♭ and C trumpet, so the written pitch would be a guess.
   - **Sustain pedal.** It lengthens sound, not notation.
-  - **Karaoke  text.** It needs its own rules to tell lyrics from text.
+  - **Karaoke `.kar` text.** It needs its own rules to tell lyrics from text.
   - **Markers as rehearsal marks.** Their text follows no convention.
   - **MuseScore's no-trailing-space hyphen convention.** Only one file shows it, and reading it needs a per-file detector.
 - The voice separation above is a first fit. Contour- and range-aware separation, which would let the counterpoint guides grade imported polyphony, is a follow-up.
@@ -169,9 +169,9 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
   - **Voices.** First-fit voices are taken top first, by mean key number. The voice cap is 64.
   - **Instruments.** A channel with no program gets no instrument, so MIDI Export stops writing program 1 for a part with no instrument. Export also writes a short pickup's time signature exactly.
   - **Keys.** Signatures are trusted by default.
-  - **Tuplets.** Triplets come through the default grid; quintuplets and septuplets need an explicit .
+  - **Tuplets.** Triplets come through the default grid; quintuplets and septuplets need an explicit `grid:`.
   - **Round trip.** The round trip is judged on the first parse plus a byte-level re-export.
-  - **Shared helpers.**  and  are made linear, since MIDI files can change tempo or key in every bar.
+  - **Shared helpers.** `EventMap#add` and `Bars#span` are made linear, since MIDI files can change tempo or key in every bar.
 
 ## Implementation Plan
 
