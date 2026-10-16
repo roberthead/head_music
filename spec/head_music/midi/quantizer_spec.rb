@@ -120,18 +120,18 @@ describe HeadMusic::MIDI::Quantizer do
   end
 
   describe "grid:" do
-    it "takes any Rational down to 1/1024 and refuses one finer" do
-      expect(quantizer(note(0, 96), grid: 1/1024r).grid).to eq 1/1024r
-      expect { quantizer(note(0, 96), grid: 1/2048r) }.to raise_error(ArgumentError, "grid: 1/2048 is finer than 1/1024")
+    it "takes any Rational down to 1/256 and refuses one finer" do
+      expect(quantizer(note(0, 96), grid: 1/256r).grid).to eq 1/256r
+      expect { quantizer(note(0, 96), grid: 1/512r) }.to raise_error(ArgumentError, "grid: 1/512 is finer than 1/256, a 256th note, the shortest rhythmic unit a flow can hold")
     end
 
     it "refuses a grid that is not positive" do
       expect { quantizer(note(0, 96), grid: 0r) }.to raise_error(ArgumentError, "grid: takes :auto or a positive Rational, not (0/1)")
     end
 
-    it "refuses a grid finer than 1/1024 from MIDI.parse" do
-      expect { HeadMusic::MIDI.parse(HeadMusic::MIDI::SMF.file(division: division, tracks: [note(0, 96)]), grid: 1/2048r) }
-        .to raise_error(ArgumentError, "grid: 1/2048 is finer than 1/1024")
+    it "refuses a grid finer than 1/256 from MIDI.parse" do
+      expect { HeadMusic::MIDI.parse(HeadMusic::MIDI::SMF.file(division: division, tracks: [note(0, 96)]), grid: 1/512r) }
+        .to raise_error(ArgumentError, /\Agrid: 1\/512 is finer than 1\/256/)
     end
   end
 end

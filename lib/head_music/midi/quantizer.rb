@@ -4,14 +4,15 @@ module HeadMusic::MIDI
   # onset within a tick, since releases are often a tick or more early.
   class Quantizer
     GRIDS = [Rational(1, 16), Rational(1, 24), Rational(1, 32), Rational(1, 48), Rational(1, 64), Rational(1, 96)].freeze
-    FINEST_GRID = Rational(1, 1024)
+    # A 256th note, the shortest rhythmic unit a flow can hold.
+    FINEST_GRID = Rational(1, 256)
     TOLERANCE = 1
     FALLBACK_SHARE = Rational(99, 100)
 
     def self.check_grid(grid)
       return grid if grid == :auto
       raise ArgumentError, "grid: takes :auto or a positive Rational, not #{grid.inspect}" unless grid.is_a?(Rational) && grid.positive?
-      raise ArgumentError, "grid: #{grid} is finer than #{FINEST_GRID}" if grid < FINEST_GRID
+      raise ArgumentError, "grid: #{grid} is finer than #{FINEST_GRID}, a 256th note, the shortest rhythmic unit a flow can hold" if grid < FINEST_GRID
 
       grid
     end

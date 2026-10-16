@@ -89,7 +89,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 - [ ] Note on and note off pairs become note events, and a note on with velocity 0 counts as a note off. Notes pair per channel and key across every track, in merged order, first in, first out. A note belongs to the track holding its note on, and a note off that matches no sounding note is skipped
 - [ ] A note still sounding at the end of its track ends there. The bars end after the latest onset as well as the latest release, so a note of no length or never released on the final barline, or snapped to it, gets a bar of its own
 - [ ] Every note is spelled by the speller from the prerequisite, using the key in force, with notes labeled by voice so melodic direction applies
-- [ ] By default the grid is the coarsest, among sixteenths, thirty-seconds, sixty-fourths and their triplet divisions, that places every onset within one tick. When none does, it is the coarsest grid that places at least 99% as many onsets as the best grid does. `grid:` takes one of these values or any Rational
+- [ ] By default the grid is the coarsest, among sixteenths, thirty-seconds, sixty-fourths and their triplet divisions, that places every onset within one tick. When none does, it is the coarsest grid that places at least 99% as many onsets as the best grid does. `grid:` takes one of these values or any Rational down to 1/256, a 256th note, the shortest rhythmic unit a flow can hold, and raises `ArgumentError` for one finer
 - [ ] A release less than one grid step before the next onset in its part extends to that onset. Other releases snap to the nearest grid point, and no note is shorter than one step
 - [ ] Notes and rests are written as single values where one fits, and as tied chains otherwise. A note that crosses a barline is split and tied. Triplet values are written as 3:2 tuplets, cut at beats where they cross one. Quintuplets and septuplets need an explicit `grid:`
 - [ ] Time between notes in a voice becomes rests, and a voice that starts late or ends early is padded, so every voice satisfies `Voice::Continuity`
@@ -218,7 +218,7 @@ flow.voices.first.voice_events.first.pitch.to_s # => "C4"
 - **Decided during implementation, without stopping to ask** (2026-10-16; Rob may revise any):
   - **Export pickups.** A pickup's time signature never goes below the flow's own denominator. A half-note pickup in 3/4 writes 2/4, as before, so pickups that already exported correctly write the same bytes.
   - **Export programs.** A part that loses its instrument after having one writes program 1, so a D.C. back to a bar before the instrument arrived cannot replay a stale program. A part with no instrument from the start writes none.
-  - **`grid:` bounds.** A grid finer than 1/1024 of a whole note raises `ArgumentError`, so the grid cannot make the bar layout unbounded.
+  - **`grid:` bounds.** A grid finer than 1/256 of a whole note, a 256th note, raises `ArgumentError`, so the grid cannot make the bar layout unbounded and asks for no value finer than the model can write.
   - **Error translation.** It rescues model constructors' `ArgumentError` and the like only in the flow-building phase, so a bug in the reader or quantizer surfaces as itself rather than as a `ParseError`.
 
 - **Decided before steps 8 and 9** (2026-10-16):
