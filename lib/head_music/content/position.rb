@@ -138,12 +138,14 @@ class HeadMusic::Content::Position
       origin_bar = value.bar
       counts, tick, subtick = carried_counts
       bar = origin_bar
-      unit = flow.meter_at(bar).ticks_per_count
-      while counts > flow.meter_at(bar).counts_per_bar && flow.meter_at(bar).ticks_per_count == unit
-        counts -= flow.meter_at(bar).counts_per_bar
+      meter = flow.meter_at(bar)
+      unit = meter.ticks_per_count
+      while counts > meter.counts_per_bar && meter.ticks_per_count == unit
+        counts -= meter.counts_per_bar
         bar += 1
+        meter = flow.meter_at(bar)
       end
-      @value = if flow.meter_at(bar).ticks_per_count == unit
+      @value = if meter.ticks_per_count == unit
         HeadMusic::Time::MusicalPosition.new(bar, counts, tick, subtick)
       else
         HeadMusic::Time::MusicalPosition.new(bar, 1, (counts - 1) * unit + tick, subtick)

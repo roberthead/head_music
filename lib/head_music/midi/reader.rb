@@ -7,10 +7,8 @@ class HeadMusic::MIDI::Reader
   MAX_EVENTS = 1_000_000
   MAX_WHOLE_NOTES = 10_000
 
-  TEXT_KINDS = {
-    0x01 => :text, 0x02 => :copyright, 0x03 => :track_name, 0x04 => :instrument_name,
-    0x05 => :lyric, 0x06 => :marker, 0x07 => :cue_point
-  }.freeze
+  # A sequence name and a track name share a type, read as the track name.
+  TEXT_KINDS = HeadMusic::MIDI::Meta::TEXT_TYPES.invert.freeze
 
   # Meta data shorter than these is malformed; longer, only the prefix is read.
   META_LENGTHS = {0x51 => 3, 0x58 => 4, 0x59 => 2}.freeze

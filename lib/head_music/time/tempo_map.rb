@@ -22,19 +22,12 @@ module HeadMusic
     #   tempo_map.each_segment(from, to) do |start_pos, end_pos, tempo|
     #     # Calculate clock time for this segment
     #   end
-    class TempoMap
+    class TempoMap < ChangeMap
       def initialize(starting_tempo: nil, starting_position: nil)
         starting_tempo ||= HeadMusic::Rudiment::Tempo.new("quarter", 120)
         starting_position ||= MusicalPosition.new
-        # The opening tempo is not removable: converting a position to clock
-        # time needs a tempo in force from the beginning.
-        @map = EventMap.new(removable_first_event: false)
-        @map.add(starting_position, TempoEvent.new(starting_position, starting_tempo.beat_value.to_s, starting_tempo.beats_per_minute))
-      end
-
-      # @return [Array<TempoEvent>] all tempo events in chronological order
-      def events
-        @map.values
+        # Converting a position to clock time needs a tempo from the beginning.
+        super(TempoEvent.new(starting_position, starting_tempo.beat_value.to_s, starting_tempo.beats_per_minute))
       end
 
       def add_change(position, beat_value_or_tempo, beats_per_minute = nil)
@@ -49,27 +42,14 @@ module HeadMusic
         event
       end
 
-      def remove_change(position)
-        @map.remove(position)
-      end
-
-      def clear_changes
-        @map.clear
-      end
-
       def tempo_at(position)
-        @map.at(position)&.tempo || events.first.tempo
+        value_at(position)
       end
 
-      # @return [TempoEvent, nil] the tempo change starting exactly here
-      def change_at(position)
-        @map.change_at(position)&.value
-      end
+      private
 
-      def each_segment(from_position, to_position, &block)
-        @map.each_segment(from_position, to_position) do |start_position, end_position, event|
-          block.call(start_position, end_position, event&.tempo || events.first.tempo)
-        end
+      def value_of(event)
+        event.tempo
       end
     end
   end
