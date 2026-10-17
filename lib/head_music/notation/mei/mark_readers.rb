@@ -12,12 +12,7 @@ module HeadMusic::Notation::MEI
     module_function
 
     def run(records, flow, anchors, readers: MARK_READERS)
-      instances = readers.map { |reader| reader.new(anchors) }
-      records.each do |record|
-        hook = HOOKS_BY_RECORD.fetch(record.class)
-        instances.each { |reader| reader.public_send(hook, record) }
-      end
-      instances.each { |reader| reader.apply(flow) }
+      HeadMusic::Notation::MarkReading.run(records, flow, readers.map { |reader| reader.new(anchors) }, HOOKS_BY_RECORD)
     end
   end
 end

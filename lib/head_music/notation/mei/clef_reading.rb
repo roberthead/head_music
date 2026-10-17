@@ -28,10 +28,7 @@ module HeadMusic::Notation::MEI
       line = AttributeValues.read(element, "#{prefix}line", **where)
       octaves = AttributeValues.read(element, "#{prefix}dis", **where).to_i *
         (AttributeValues.read(element, "#{prefix}dis.place", **where) || 0)
-      record = HeadMusic::Rudiment::Clef::RECORDS.find do |candidate|
-        candidate[:line] == line && candidate[:pitch] == "#{shape}#{register + octaves}"
-      end
-      record && HeadMusic::Rudiment::Clef.get(record[:name_key])
+      HeadMusic::Rudiment::Clef.placing("#{shape}#{register + octaves}", line)
     end
   end
 end

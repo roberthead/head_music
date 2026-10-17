@@ -3,6 +3,16 @@ require "spec_helper"
 describe HeadMusic::Rudiment::Clef do
   subject(:clef) { described_class.get(name) }
 
+  describe ".placing" do
+    it "finds the clef that puts a pitch on a line" do
+      expect(described_class.placing("C4", 3)).to eq described_class.get(:alto_clef)
+    end
+
+    it "answers nil where no clef does" do
+      expect(described_class.placing("C4", 9)).to be_nil
+    end
+  end
+
   context "when treble clef" do
     let(:name) { :treble_clef }
 

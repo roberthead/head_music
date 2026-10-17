@@ -8,6 +8,8 @@ module HeadMusic::Notation::MusicXML
   # beam_break_before only where its beam number 1 breaks or joins against
   # that; secondary beams are left to the default.
   class BeamReader < MarkReader
+    include HeadMusic::Notation::BeamReading
+
     JOINED = %w[continue end].freeze
 
     def initialize
@@ -32,12 +34,6 @@ module HeadMusic::Notation::MusicXML
 
     private
 
-    def beamed_pair?(previous, record)
-      previous && previous.bar_number == record.bar_number &&
-        previous.voice_event.next_position == record.voice_event.position &&
-        beamable?(previous) && beamable?(record)
-    end
-
     def beamable?(record)
       !record.voice_event.rest? && RenderPlan::BEAM_LEVELS_BY_TYPE.key?(XmlReading.text(record.element, "type"))
     end
@@ -45,10 +41,6 @@ module HeadMusic::Notation::MusicXML
     def primary_beam(record)
       beam = XmlReading.children(record.element, "beam").find { |element| (XmlReading.attribute(element, "number") || "1") == "1" }
       XmlReading.text(beam)
-    end
-
-    def group_start?(record)
-      HeadMusic::Notation::BeamGroups.group_start?(record.onset, record.part.flow.meter_at(record.bar_number))
     end
   end
 end

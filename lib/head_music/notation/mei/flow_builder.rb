@@ -34,8 +34,7 @@ module HeadMusic::Notation::MEI
       bar_map = HeadMusic::Notation::BarMap.new(score.readings)
       fold_ties(score, bar_map)
       timeline = TimelineReader.new(score, bar_map, opening)
-      flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
-      timeline.apply(flow)
+      flow = timeline.flow(identity)
       roster = PartRoster.new(flow, identity, groups, bar_map, @source.editorial)
       parts = {}.compare_by_identity
       voices = {}.compare_by_identity
@@ -47,12 +46,7 @@ module HeadMusic::Notation::MEI
 
     def fold_ties(score, bar_map)
       score.ties.apply(score)
-      score.readings.each do |reading|
-        reading.tracks.each do |track|
-          track.tie_graces
-          HeadMusic::Notation::TieFolding.apply(track, reading, bar_map)
-        end
-      end
+      HeadMusic::Notation::TieFolding.apply_to_readings(score.readings, bar_map)
     end
 
     # A voice's leading and trailing bars of only whole-bar rests are not

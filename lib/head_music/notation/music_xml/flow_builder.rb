@@ -24,23 +24,13 @@ module HeadMusic::Notation::MusicXML
       raise ParseError, "MusicXML input contains no music" if readings.empty?
 
       bar_map = HeadMusic::Notation::BarMap.new(readings)
-      fold_ties(readings, bar_map)
+      HeadMusic::Notation::TieFolding.apply_to_readings(readings, bar_map)
       timeline = TimelineReader.new(readings, bar_map)
-      flow = HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **timeline.opening)
-      timeline.apply(flow)
+      flow = timeline.flow(identity)
       roster = PartRoster.new(flow, identity, bar_map)
       records = readings.flat_map { |reading| place(roster.add(reading), reading, bar_map) }
       MarkReaders.run(records, flow)
       flow
-    end
-
-    def fold_ties(readings, bar_map)
-      readings.each do |reading|
-        reading.tracks.each do |track|
-          track.tie_graces
-          HeadMusic::Notation::TieFolding.apply(track, reading, bar_map)
-        end
-      end
     end
 
     # Answers the part's mark records, once its voices are final.

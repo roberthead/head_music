@@ -14,6 +14,14 @@ module HeadMusic::Notation
       {key_signature: keys[first], meter: @bar_map.meter_at(first), tempo: tempos[first]}
     end
 
+    # A new flow opened and changed as the timeline reads, with the score's
+    # identity.
+    def flow(identity)
+      HeadMusic::Content::Flow.new(name: identity.name, work: identity.work, composer: identity.composer, **opening).tap do |flow|
+        apply(flow)
+      end
+    end
+
     def apply(flow)
       @bar_map.bar_numbers.drop(1).each do |bar|
         meter = @bar_map.meter_at(bar)

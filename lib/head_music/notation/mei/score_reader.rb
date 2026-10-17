@@ -26,7 +26,12 @@ module HeadMusic::Notation::MEI
     # read in.
     Pending = Struct.new(:kind, :element, :measure_index, :reading, :track, :event, :grace, :chord_member, :sound, :staff, :tie, :content)
 
-    Score = Data.define(:measures, :readings, :pending, :ties)
+    Score = Data.define(:measures, :readings, :pending, :ties) do
+      # Each element's Pending, by identity.
+      def pending_by_element
+        pending.each_with_object({}.compare_by_identity) { |pending, by_element| by_element[pending.element] = pending }
+      end
+    end
 
     attr_reader :readings
 

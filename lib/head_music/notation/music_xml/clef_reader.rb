@@ -14,10 +14,7 @@ module HeadMusic::Notation::MusicXML
 
       line = XmlReading.integer(XmlReading.text(element, "line", **where), "<line>", **where)
       octave_change = XmlReading.integer(XmlReading.text(element, "clef-octave-change", **where), "<clef-octave-change>", **where).to_i
-      record = HeadMusic::Rudiment::Clef::RECORDS.find do |candidate|
-        candidate[:line] == line && candidate[:pitch] == "#{sign}#{register + octave_change}"
-      end
-      record && HeadMusic::Rudiment::Clef.get(record[:name_key])
+      HeadMusic::Rudiment::Clef.placing("#{sign}#{register + octave_change}", line)
     end
   end
 end

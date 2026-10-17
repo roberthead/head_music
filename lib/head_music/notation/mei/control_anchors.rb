@@ -219,7 +219,7 @@ module HeadMusic::Notation::MEI
     end
 
     def pending_by_element
-      @pending_by_element ||= @score.pending.each_with_object({}.compare_by_identity) { |pending, by_element| by_element[pending.element] = pending }
+      @pending_by_element ||= @score.pending_by_element
     end
 
     def starts

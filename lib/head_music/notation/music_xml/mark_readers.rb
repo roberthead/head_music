@@ -19,12 +19,7 @@ module HeadMusic::Notation::MusicXML
     module_function
 
     def run(records, flow, readers: MARK_READERS)
-      instances = readers.map(&:new)
-      records.each do |record|
-        hook = HOOKS_BY_RECORD.fetch(record.class)
-        instances.each { |reader| reader.public_send(hook, record) }
-      end
-      instances.each { |reader| reader.apply(flow) }
+      HeadMusic::Notation::MarkReading.run(records, flow, readers.map(&:new), HOOKS_BY_RECORD)
     end
   end
 end

@@ -17,6 +17,16 @@ module HeadMusic::Notation
       new(track, reading, bar_map).apply
     end
 
+    # Ties each track's grace notes, then folds its ties.
+    def self.apply_to_readings(readings, bar_map)
+      readings.each do |reading|
+        reading.tracks.each do |track|
+          track.tie_graces
+          apply(track, reading, bar_map)
+        end
+      end
+    end
+
     def initialize(track, reading, bar_map)
       @track = track
       @reading = reading

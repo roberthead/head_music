@@ -7,6 +7,8 @@ module HeadMusic::Notation::MEI
   # against that, or shares none along it. A beam's secondary levels are
   # left to the default.
   class BeamReader < MarkReader
+    include HeadMusic::Notation::BeamReading
+
     TOKEN = /\A([imt])([1-6]?)\z/
 
     Pair = Data.define(:previous, :record)
@@ -74,19 +76,9 @@ module HeadMusic::Notation::MEI
       @beams.fetch(previous.element, []).any? { |beam| later.any? { |other| other.equal?(beam) } }
     end
 
-    def beamed_pair?(previous, record)
-      previous && previous.bar_number == record.bar_number &&
-        previous.voice_event.next_position == record.voice_event.position &&
-        beamable?(previous) && beamable?(record)
-    end
-
     def beamable?(record)
       dur = XmlReading.attribute(record.element, "dur", measure: record.measure, element: record.element)
       !record.voice_event.rest? && LayerContainers::BEAM_LEVELS_BY_DUR.key?(dur)
-    end
-
-    def group_start?(record)
-      HeadMusic::Notation::BeamGroups.group_start?(record.onset, record.part.flow.meter_at(record.bar_number))
     end
   end
 end

@@ -13,6 +13,12 @@ class HeadMusic::Rudiment::Clef < HeadMusic::Rudiment::Base
     get_by_name(name)
   end
 
+  # The clef that puts a pitch on a line, as "C4" on line 3 is the alto clef.
+  def self.placing(pitch_name, line)
+    record = RECORDS.find { |candidate| candidate[:line] == line && candidate[:pitch] == pitch_name }
+    record && get(record[:name_key])
+  end
+
   attr_reader :pitch, :line, :musical_symbols
 
   delegate :ascii, :html_entity, :unicode, to: :musical_symbol
