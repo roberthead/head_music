@@ -9,8 +9,6 @@ module HeadMusic::Notation::MEI
   class BeamReader < MarkReader
     include HeadMusic::Notation::BeamReading
 
-    TOKEN = /\A([imt])([1-6]?)\z/
-
     Pair = Data.define(:previous, :record)
 
     def initialize(anchors)
@@ -49,16 +47,11 @@ module HeadMusic::Notation::MEI
       beam = anchors.containers(record).find { |container| container.name == "beam" }
       beams_of(record.element) << beam if beam
       chains = (@chains[record.voice] ||= {})
-      tokens(record).each do |type, number|
+      link_tokens(record, "beam").each do |type, number|
         chains[number] = Object.new if type == "i" || !chains.key?(number)
         beams_of(record.element) << chains[number]
         chains.delete(number) if type == "t"
       end
-    end
-
-    def tokens(record)
-      value = XmlReading.attribute(record.element, "beam", measure: record.measure, element: record.element)
-      value.to_s.split.filter_map { |token| token.match(TOKEN)&.captures }
     end
 
     # A chord tone that a @plist names stands for its chord.
@@ -77,7 +70,7 @@ module HeadMusic::Notation::MEI
     end
 
     def beamable?(record)
-      dur = XmlReading.attribute(record.element, "dur", measure: record.measure, element: record.element)
+      dur = attribute_of(record, "dur")
       !record.voice_event.rest? && LayerContainers::BEAM_LEVELS_BY_DUR.key?(dur)
     end
   end

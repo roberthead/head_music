@@ -33,8 +33,20 @@ module HeadMusic::Notation::MEI
     def apply(flow)
     end
 
+    # The i, m, and t of @beam and @slur, each with its optional number.
+    LINK_TOKEN = /\A([imt])([1-6]?)\z/
+
     private
 
     attr_reader :anchors
+
+    def attribute_of(record, name)
+      XmlReading.attribute(record.element, name, measure: record.measure, element: record.element)
+    end
+
+    # Each of the record's @beam or @slur tokens as its letter and number.
+    def link_tokens(record, name)
+      attribute_of(record, name).to_s.split.filter_map { |token| token.match(LINK_TOKEN)&.captures }
+    end
   end
 end

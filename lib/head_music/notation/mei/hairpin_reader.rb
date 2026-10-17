@@ -16,7 +16,7 @@ module HeadMusic::Notation::MEI
     def control(record)
       return unless record.element.name == "hairpin" && record.span?
 
-      kind = KINDS[XmlReading.attribute(record.element, "form", measure: record.measure, element: record.element)&.strip]
+      kind = KINDS[attribute_of(record, "form")&.strip]
       owner = record.voice || record.part
       @hairpins << Hairpin.new(owner, kind, record.start.position, record.finish.position) if kind && owner
     end

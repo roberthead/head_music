@@ -17,7 +17,7 @@ module HeadMusic::Notation::MEI
 
     def check!
       ensure_voice_events
-      ensure_xml_text(flow_texts + texts)
+      ensure_xml_text(flow_texts(flow) + part_texts + texts)
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
@@ -36,14 +36,10 @@ module HeadMusic::Notation::MEI
       raise RenderError, "cannot render a flow with no voice events as MEI"
     end
 
-    def flow_texts
+    def part_texts
       [
-        flow.name, flow.composer, flow.work&.title,
         *flow.work&.credits&.map { |credit| credit.person.full_name },
-        *flow.parts.flat_map { |part| [part.player&.name, *part.instruments.map(&:name)] },
-        *flow.voices.map(&:role),
-        *flow.bars(flow.last_sounding_bar_number).map(&:rehearsal_mark),
-        *flow.voices.flat_map { |voice| voice.voice_events.flat_map { |event| event.syllables.values.map(&:text) } }
+        *flow.parts.flat_map { |part| [part.player&.name, *part.instruments.map(&:name)] }
       ]
     end
 

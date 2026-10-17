@@ -41,7 +41,7 @@ module HeadMusic::Notation::MEI
     end
 
     def repeat_mark(record, text)
-      func = XmlReading.attribute(record.element, "func", measure: record.measure, element: record.element)
+      func = attribute_of(record, "func")
       case func
       when "segno" then [:segno, true]
       when "coda" then [TO_CODA.match?(text) ? :to_coda : :coda, true]

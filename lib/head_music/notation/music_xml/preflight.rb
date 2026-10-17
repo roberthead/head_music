@@ -22,7 +22,7 @@ module HeadMusic::Notation::MusicXML
 
     def check!
       ensure_voices
-      ensure_xml_text(flow_texts + texts)
+      ensure_xml_text(flow_texts(flow) + part_texts + texts)
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
@@ -39,14 +39,8 @@ module HeadMusic::Notation::MusicXML
       raise RenderError, "cannot render a flow with no voices as MusicXML"
     end
 
-    def flow_texts
-      [
-        flow.name, flow.composer, flow.work&.title,
-        *flow.parts.flat_map { |part| [part.player&.name, part.instrument&.name] },
-        *flow.voices.map(&:role),
-        *flow.bars(flow.last_sounding_bar_number).map(&:rehearsal_mark),
-        *flow.voices.flat_map { |voice| voice.voice_events.flat_map { |event| event.syllables.values.map(&:text) } }
-      ]
+    def part_texts
+      flow.parts.flat_map { |part| [part.player&.name, part.instrument&.name] }
     end
 
     def render_error_class

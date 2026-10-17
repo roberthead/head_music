@@ -28,6 +28,17 @@ module HeadMusic
         end
       end
 
+      # The text every XML writer takes from a flow, beside what only some
+      # write.
+      def flow_texts(flow)
+        [
+          flow.name, flow.composer, flow.work&.title,
+          *flow.voices.map(&:role),
+          *flow.bars(flow.last_sounding_bar_number).map(&:rehearsal_mark),
+          *flow.voices.flat_map { |voice| voice.voice_events.flat_map { |event| event.syllables.values.map(&:text) } }
+        ]
+      end
+
       def ensure_contiguous_voices(flow)
         flow.voices.each do |voice|
           gap = voice.first_gap

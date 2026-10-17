@@ -8,7 +8,6 @@ module HeadMusic::Notation::MEI
   # as a slur on a rest.
   class SlurReader < MarkReader
     CURVES = %w[slur phrase].freeze
-    TOKEN = /\A([imt])([1-6]?)\z/
 
     End = Data.define(:voice, :voice_event, :from_grace)
     Curve = Data.define(:kind, :from, :to)
@@ -23,7 +22,7 @@ module HeadMusic::Notation::MEI
       return unless record.voice
 
       open = (@open[record.voice] ||= {})
-      tokens(record).sort_by { |type, _| (type == "t") ? 0 : 1 }.each do |type, number|
+      link_tokens(record, "slur").sort_by { |type, _| (type == "t") ? 0 : 1 }.each do |type, number|
         case type
         when "i" then open[number] = end_of(record)
         when "t" then close(:slur, open.delete(number), end_of(record))
@@ -47,11 +46,6 @@ module HeadMusic::Notation::MEI
     end
 
     private
-
-    def tokens(record)
-      value = XmlReading.attribute(record.element, "slur", measure: record.measure, element: record.element)
-      value.to_s.split.filter_map { |token| token.match(TOKEN)&.captures }
-    end
 
     # A grace note dropped before a rest has no voice event, so no end.
     def end_of(record)
