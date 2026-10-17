@@ -14,13 +14,7 @@ class HeadMusic::Style::Guides::FirstSpeciesMelody < HeadMusic::Style::Guides::S
   # are omitted rather than failed: both ask what happens within a bar, and a
   # first species bar is one whole note.
   secondary_items(
-    *MELODIC_CORE,
-    HeadMusic::Style::Guidelines::EndOnTonic,
-    HeadMusic::Style::Guidelines::FrequentDirectionChanges,
-    HeadMusic::Style::Guidelines::NoteFillsFinalBar,
-    HeadMusic::Style::Guidelines::PrepareOctaveLeaps,
-    HeadMusic::Style::Guidelines::StartOnPerfectConsonance,
-    HeadMusic::Style::Guidelines::StepOutOfUnison,
-    HeadMusic::Style::Guidelines::StepUpToFinalNote
+    *MOVING_MELODIC_CRAFT,
+    except: [HeadMusic::Style::Guidelines::AlwaysMove, HeadMusic::Style::Guidelines::NoRestsAfterNote]
   )
 end

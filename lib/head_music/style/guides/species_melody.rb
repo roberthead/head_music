@@ -46,8 +46,8 @@ class HeadMusic::Style::Guides::SpeciesMelody < HeadMusic::Style::Guides::Base
 
   # What a moving species inherits: both cores, splatted into one
   # secondary_items call. The two guides that hold a whole note per bar --
-  # FirstSpeciesMelody and FirstThreeSpeciesMelody -- name their background by
-  # hand instead, because each wants a different subset of MOVING_MELODIC_CORE.
+  # FirstSpeciesMelody and FirstThreeSpeciesMelody -- each take it with the
+  # exceptions it names.
   MOVING_MELODIC_CRAFT = [*MELODIC_CORE, *MOVING_MELODIC_CORE].freeze
 
   def self.category
