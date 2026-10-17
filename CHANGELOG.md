@@ -122,6 +122,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MEI export writes `<instrDef label>` with the instrument's name key, `@key.mode` on key signatures, and a `<workList>` with each flow's `Work`, its catalog number, year, and composers, so MEI import reads them back.
 - `HeadMusic::Notation::XmlReading` and `HeadMusic::Notation::ParsePreflight` are shared by the MusicXML and MEI readers.
 - `HeadMusic::Notation::BeamGroups` holds the beam grouping MusicXML and MEI share, and `HeadMusic::Notation::WrittenLinks` the written pieces of a voice's segments, which tuplet brackets and beams both read.
+- `Position.for_flow` builds a position in a flow from a code or keeps one of that flow's, raising for another flow's. `Dynamic.fetch` answers a dynamic of the kind asked for, `Clef.placing` the clef that puts a pitch on a line, `GraceNote#tied_pitches` the pitches a grace note ties into, and `Notation::BarMap#downbeat_bar` the bar a measure starts on its downbeat.
+- `HeadMusic::Notation::LineParseError` carries the line number and snippet that the ABC, kern, and LilyPond `ParseError`s report, and each now subclasses it. `HeadMusic::Notation::TimelineReading` holds the timeline reading the MusicXML and MEI readers share, and `HeadMusic::Time::ChangeMap` the change bookkeeping of `MeterMap` and `TempoMap`.
 
 ### Changed
 
@@ -135,6 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking.** The serialization schema goes to 5: each voice's `"placements"` is now `"voice_events"`, and nothing else changes. `Flow.from_h` and `Project.from_h` refuse a v4 document and name the reader for it: `Flow.from_v4_h` and `Project.from_v4_h` read one by renaming the key, and are kept through 23.x so persisted documents can be read and saved again.
 - **Breaking.** kern import times a `**dynam` level on a row where no `**kern` spine attacks by the Humdrum convention: such rows split the time between the timed rows around them evenly. A level written beside a held note, which had been placed at the next attack, now falls in the middle of the note.
 - **Breaking.** Flow JSON refuses a voice event's articulations or ornaments that name one marking twice through an alias or another spelling, such as `["mordent", "lower_mordent"]` or `["accent", "Accent"]`, with the error a repeated key raises. It had read them as one.
+- The kern, MEI, and LilyPond writers refuse an unpitched grace note with one message: `cannot render the unpitched grace note "snare drum" before 1:1:000: percussion rendering is not yet supported`.
 - `rexml` is now a runtime dependency, in preparation for reading MusicXML and MEI.
 - `Project#add_flow` adopts a player that a part already carries into the project's `players`, rather than leaving it out, and raises `ArgumentError` when that player belongs to another project.
 - The MusicXML and LilyPond writers render a note that crosses a barline as tied notes, one per bar, instead of raising `RenderError`. A chord ties each of its pitches, and a rest splits into consecutive rests. Fourth-species flows now render.
