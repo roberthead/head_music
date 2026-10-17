@@ -85,8 +85,8 @@ module HeadMusic::Notation::MEI
 
     def tie_control(control, measure)
       where = {measure: measure.number, element: control}
-      starts = end_notes(control, "startid", measure, where) { tstamp_notes(control, measure, where) }
-      stops = end_notes(control, "endid", measure, where) { tstamp2_notes(control, measure, where) }
+      starts = end_notes(control, "startid", measure, where) { notes_at(control, Tstamp.start_at(control, measure, **where), where) }
+      stops = end_notes(control, "endid", measure, where) { notes_at(control, Tstamp.finish(control, @score.measures, measure.index, **where), where) }
       pairs(starts, stops).each do |from, to|
         next unless from.track&.equal?(to.track)
 
@@ -118,20 +118,14 @@ module HeadMusic::Notation::MEI
       element && notes_of(element)
     end
 
-    def tstamp_notes(control, measure, where)
-      beat = Tstamp.start(control, measure, **where)
-      beat && notes_at(control, measure.index, beat, where)
-    end
+    # +measure_beat+ is a measure's index and a beat there, as Tstamp answers.
+    def notes_at(control, measure_beat, where)
+      return unless measure_beat
 
-    def tstamp2_notes(control, measure, where)
-      index, beat = Tstamp.finish(control, @score.measures, measure.index, **where)
-      index && notes_at(control, index, beat, where)
-    end
-
-    def notes_at(control, index, beat, where)
       staff = AttributeValues.read(control, "staff", **where)
       return unless staff
 
+      index, beat = measure_beat
       meter = @score.measures[index].meter
       onsets = onset_index.at(index, Tstamp.offset(beat, meter), meter.bottom_number, staff: staff, layer: AttributeValues.read(control, "layer", **where))
       onsets.flat_map(&:pending).select { |pending| pending.kind == :note && pending.sound }

@@ -55,8 +55,8 @@ module HeadMusic::Notation::MEI
 
       staff = AttributeValues.read(control, "staff", **where)
       layer = AttributeValues.read(control, "layer", **where)
-      start = end_anchor(references["startid"]) { start_by_beat(control, measure, staff, layer, where) }
-      finish = end_anchor(references["endid"]) { finish_by_beat(control, measure, staff, layer, where) }
+      start = end_anchor(references["startid"]) { at_beat(Tstamp.start_at(control, measure, **where), staff, layer) }
+      finish = end_anchor(references["endid"]) { at_beat(Tstamp.finish(control, @score.measures, measure.index, **where), staff, layer) }
       finish = nil if finish && start && references.values.none? && finish.position < start.position
       ControlRecord.new(
         part: part_for(staff) || start&.record&.part, voice: voice_for(staff, layer), bar_number: @bar_map.bar_number(measure.index),
@@ -168,17 +168,11 @@ module HeadMusic::Notation::MEI
       pending&.track && event_record(pending)
     end
 
-    def start_by_beat(control, measure, staff, layer, where)
-      beat = Tstamp.start(control, measure, **where)
-      beat && at_beat(measure.index, beat, staff, layer)
-    end
+    # +measure_beat+ is a measure's index and a beat there, as Tstamp answers.
+    def at_beat(measure_beat, staff, layer)
+      return unless measure_beat
 
-    def finish_by_beat(control, measure, staff, layer, where)
-      index, beat = Tstamp.finish(control, @score.measures, measure.index, **where)
-      index && at_beat(index, beat, staff, layer)
-    end
-
-    def at_beat(index, beat, staff, layer)
+      index, beat = measure_beat
       meter = @score.measures[index].meter
       offset = Tstamp.offset(beat, meter)
       return final_barline if @bar_map.time_of(index, offset) >= @bar_map.start(@bar_map.last_bar + 1)

@@ -17,6 +17,13 @@ module HeadMusic::Notation::MEI
       [beat, 1].max if beat && beat <= measure.meter.top_number + 1
     end
 
+    # A control's @tstamp as its measure's index and the beat, as #finish
+    # answers.
+    def start_at(control, measure, **where)
+      beat = start(control, measure, **where)
+      beat && [measure.index, beat]
+    end
+
     # A control's @tstamp2 as the index of the measure it reaches and the
     # beat there, or nil where it has none, no measure part, or reaches past
     # the music.
