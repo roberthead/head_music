@@ -39,16 +39,21 @@ module HeadMusic::Notation::ABC
     # before the note, so the accidentals they write hold for it.
     def token(segment, bar_marks)
       voice_event = segment.voice_event
-      later_part = segment.bar_number != voice_event.position.bar_number
-      graces = later_part ? "" : @slur_writer.grace_opens(voice_event) + @grace_writer.prefix(voice_event)
-      marker, body = token_body(segment)
-      body += @slur_writer.closes(voice_event) unless segment.continues
-      if later_part
-        return marker + bar_marks.decorations_at(voice_event.flow.position(segment.bar_number, 1, 0)) + body
-      end
+      bar_number = segment.bar_number
+      position = voice_event.position
+      first_part = bar_number == position.bar_number
+      graces, opens, decorations = first_part ? lead_in(voice_event) : ["", "", ""]
+      marker, body = token_body(segment, first_part)
+      start = first_part ? position : voice_event.flow.position(bar_number, 1, 0)
+      "#{marker}#{graces}#{opens}#{bar_marks.decorations_at(start)}#{decorations}#{body}" \
+        "#{@slur_writer.closes(voice_event) unless segment.continues}"
+    end
 
-      marker + graces + @slur_writer.opens(voice_event) + bar_marks.decorations_at(voice_event.position) +
-        @decoration_writer.prefix(voice_event) + body
+    def lead_in(voice_event)
+      [
+        @slur_writer.grace_opens(voice_event) + @grace_writer.prefix(voice_event),
+        @slur_writer.opens(voice_event), @decoration_writer.prefix(voice_event)
+      ]
     end
 
     # A hairpin ending on the final barline goes on a spacer there, after
@@ -56,82 +61,71 @@ module HeadMusic::Notation::ABC
     def trailing(bar_marks)
       music_end = bar_marks.music_end
       length = bar_marks.length
-      closing = bar_marks.closing
-      written = []
-      if bar_marks.trailing.any?
-        written << invisible_rests(music_end, length, bar_marks.trailing)
-      elsif closing.any? && music_end < length
-        written << "x#{invisible_multiplier(length - music_end)}"
-      end
-      written << "#{closing.map(&:decoration).join}y" if closing.any?
-      written.map { |text| " #{text}" }.join
+      marks = bar_marks.trailing
+      closing = bar_marks.closing.map(&:decoration).join
+      rests = invisible_rests(music_end, length, marks) if marks.any? || (!closing.empty? && music_end < length)
+      [rests, ("#{closing}y" unless closing.empty?)].compact.map { |text| " #{text}" }.join
     end
 
     def overlay(bar_marks)
-      return "" if bar_marks.overlay.empty?
+      marks = bar_marks.overlay
+      return "" if marks.empty?
 
-      written_length = bar_marks.trailing.empty? ? bar_marks.music_end : bar_marks.length
-      " & " + invisible_rests(0, written_length, bar_marks.overlay)
+      " & " + invisible_rests(0, bar_marks.trailing.empty? ? bar_marks.music_end : bar_marks.length, marks)
     end
 
     # From one offset to another, each mark on the invisible rest starting
     # at its offset.
     def invisible_rests(from, to, marks)
-      rests = []
-      decorations = ""
-      marks.group_by(&:offset).each do |offset, marks_at_offset|
-        rests << [offset - from, decorations] if offset > from
-        decorations = marks_at_offset.map(&:decoration).join
-        from = offset
-      end
-      rests << [to - from, decorations]
-      rests.map { |length, rest_decorations| "#{rest_decorations}x#{invisible_multiplier(length)}" }.join(" ")
+      by_offset = marks.group_by(&:offset)
+      starts = [from, *by_offset.keys].uniq
+      starts.zip([*starts.drop(1), to]).map do |start, finish|
+        "#{by_offset.fetch(start, []).map(&:decoration).join}x#{invisible_multiplier(finish - start)}"
+      end.join(" ")
     end
 
     def invisible_multiplier(fraction)
       @duration_writer.multiplier_string_for_fraction(fraction, HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction))
     end
 
-    # The tuplet marker that opens the segment, if any, and its music.
-    def token_body(segment)
+    # The tuplet marker that opens the segment, if any, and its music: one
+    # token per piece, each but the first after its own marker. A rest
+    # cannot be tied, so a rest's pieces are written as rests. Only a
+    # chord's first piece forces its clashing members' accidentals.
+    def token_body(segment, first_part)
       voice_event = segment.voice_event
       ensure_pitched_sounds(voice_event)
-
-      pieces = @tuplet_writer.pieces(segment)
-      forced = segment.bar_number == voice_event.position.bar_number
-      return ["", sounding_token(voice_event, multiplier_for(segment), segment.continues, forced)] unless pieces
-
-      last_index = pieces.length - 1
-      tokens = pieces.each_with_index.map do |piece, index|
-        (index.zero? ? "" : piece.marker) + piece_token(voice_event, piece, index < last_index || segment.continues, forced && index.zero?)
+      parts = written_parts(segment)
+      last_index = parts.length - 1
+      tokens = parts.each_with_index.map do |(marker, multiplier), index|
+        first = index.zero?
+        tie = "-" if (index < last_index || segment.continues) && !voice_event.rest?
+        "#{marker unless first}#{sounding_token(voice_event, multiplier, first_part && first)}#{tie}"
       end
-      [pieces.first.marker, tokens.join(voice_event.rest? ? " " : "")]
+      [parts.first.first, tokens.join(voice_event.rest? ? " " : "")]
     end
 
-    # A rest cannot be tied, so a rest's pieces are written as rests.
-    def piece_token(voice_event, piece, tied, forced)
-      multiplier = @duration_writer.multiplier_string_for_fraction(piece.links.sum(&:written_fraction), voice_event.rhythmic_value)
-      sounding_token(voice_event, multiplier, tied, forced)
+    # Each piece as [its tuplet marker, its multiplier].
+    def written_parts(segment)
+      voice_event = segment.voice_event
+      rhythmic_value = voice_event.rhythmic_value
+      pieces = @tuplet_writer.pieces(segment)
+      return [["", multiplier_for(segment.fraction, rhythmic_value)]] unless pieces
+
+      pieces.map { |piece| [piece.marker, multiplier_for(piece.links.sum(&:written_fraction), rhythmic_value)] }
     end
 
-    # Only a chord's first piece forces its clashing members' accidentals.
-    def sounding_token(voice_event, multiplier, tied, forced)
-      tie = tied ? "-" : ""
+    def sounding_token(voice_event, multiplier, forced)
       return "z#{multiplier}" if voice_event.rest?
-      return chord_token(voice_event, multiplier, forced) + tie if voice_event.chord?
+      return "[#{@pitch_writer.chord_tokens(voice_event.pitches, forced: forced).join}]#{multiplier}" if voice_event.chord?
 
-      "#{@pitch_writer.token(voice_event.pitch)}#{multiplier}#{tie}"
+      "#{@pitch_writer.token(voice_event.pitch)}#{multiplier}"
     end
 
-    def multiplier_for(segment)
-      rhythmic_value = segment.voice_event.rhythmic_value
-      return @duration_writer.multiplier_string(rhythmic_value) unless segment.fraction
+    def multiplier_for(fraction, rhythmic_value)
+      return @duration_writer.multiplier_string(rhythmic_value) unless fraction
 
-      @duration_writer.multiplier_string_for_fraction(segment.fraction, rhythmic_value)
-    end
-
-    def chord_token(voice_event, multiplier, forced)
-      "[#{@pitch_writer.chord_tokens(voice_event.pitches, forced: forced).join}]#{multiplier}"
+      @duration_writer.multiplier_string_for_fraction(fraction, rhythmic_value)
     end
 
     def render_error_class

@@ -21,73 +21,86 @@ module HeadMusic::Notation::ABC
       def end_key
         [to, 2]
       end
+
+      def crosses?(other)
+        first, second = [self, other].sort_by(&:start_key)
+        second_start = second.start_key
+        first_end = first.end_key
+        (first.start_key <=> second_start).negative? && (second_start <=> first_end).negative? &&
+          (first_end <=> second.end_key).negative?
+      end
+
+      # A phrase gives way to a slur it crosses or that covers the same notes.
+      def outdone_by?(other)
+        kind == :phrase && other.kind == :slur && (crosses?(other) || [other.from, other.to] == [from, to])
+      end
     end
 
     def initialize(voice)
       @voice = voice
       curves = voice ? plan(voice.spans.select(&:curve?)) : []
       grace_curves, note_curves = curves.partition(&:grace)
-      @opens = note_curves.map { |curve| curve.from.to_s }.tally
-      @grace_opens = grace_curves.map { |curve| curve.from.to_s }.tally
-      @closes = curves.map { |curve| curve.to.to_s }.tally
+      @opens = tally(note_curves.map(&:from))
+      @grace_opens = tally(grace_curves.map(&:from))
+      @closes = tally(curves.map(&:to))
     end
 
     def opens(voice_event)
-      "(" * @opens.fetch(voice_event.position.to_s, 0)
+      "(" * @opens[voice_event.position.to_s]
     end
 
     def grace_opens(voice_event)
-      "(" * @grace_opens.fetch(voice_event.position.to_s, 0)
+      "(" * @grace_opens[voice_event.position.to_s]
     end
 
     def closes(voice_event)
-      ")" * @closes.fetch(voice_event.position.to_s, 0)
+      ")" * @closes[voice_event.position.to_s]
     end
 
     private
 
+    def tally(positions)
+      Hash.new(0).merge(positions.map(&:to_s).tally)
+    end
+
     def plan(spans)
       curves = spans.filter_map { |span| curve_for(span) }
-      curves = curves.reject { |curve| outdone_phrase?(curve, curves) }
-      curves = shorten_touching(curves)
-      crossing = curves.combination(2).find { |one, other| crossing?(one, other) }
+      curves = shorten_touching(curves.reject { |curve| curves.any? { |other| curve.outdone_by?(other) } })
+      crossing = curves.combination(2).find { |one, other| one.crosses?(other) }
       raise RenderError, "ABC cannot write slurs that cross, as from #{crossing[0].from} and from #{crossing[1].from}" if crossing
 
       curves
     end
 
     def curve_for(span)
+      kind = span.kind
+      from = span.from
+      to = span.to
       grace = span.from_grace?
-      return Curve.new(span.kind, span.from, span.to, grace) unless span.kind == :phrase
+      return Curve.new(kind, from, to, grace) unless kind == :phrase
 
-      notes = @voice.note_events.select { |note_event| note_event.position.between?(span.from, span.to) }
-      Curve.new(:phrase, notes.first.position, notes.last.position, grace) if notes.length > (grace ? 0 : 1)
+      notes = note_positions.select { |position| position.between?(from, to) }
+      Curve.new(:phrase, notes.first, notes.last, grace) if notes.length > (grace ? 0 : 1)
     end
 
-    def outdone_phrase?(curve, curves)
-      curve.kind == :phrase && curves.any? do |other|
-        other.kind == :slur && (crossing?(curve, other) || (other.from == curve.from && other.to == curve.to))
-      end
-    end
-
-    def crossing?(one, other)
-      first, second = [one, other].sort_by(&:start_key)
-      (first.start_key <=> second.start_key).negative? && (second.start_key <=> first.end_key).negative? &&
-        (first.end_key <=> second.end_key).negative?
-    end
-
+    # A slur that begins where another ends starts on the note after, or is
+    # left out when no note follows inside it.
     def shorten_touching(curves)
-      loop do
-        touching = curves.find { |curve| !curve.grace && curves.any? { |other| other.to == curve.from } }
-        return curves unless touching
+      ends = curves.map(&:to)
+      touching = curves.find { |curve| !curve.grace && ends.include?(curve.from) }
+      return curves unless touching
 
-        later = @voice.note_events.find { |note_event| note_event.position > touching.from }
-        if later && later.position < touching.to
-          touching.from = later.position
-        else
-          curves = curves.reject { |curve| curve.equal?(touching) }
-        end
+      later = note_positions.find { |position| position > touching.from }
+      if later && later < touching.to
+        touching.from = later
+      else
+        curves = curves.reject { |curve| curve.equal?(touching) }
       end
+      shorten_touching(curves)
+    end
+
+    def note_positions
+      @note_positions ||= @voice.note_events.map(&:position)
     end
   end
 end
