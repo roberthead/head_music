@@ -10,7 +10,7 @@ module HeadMusic::Notation::ABC
     # The identity length scale, used wherever no stretching applies.
     ONE = Rational(1)
 
-    attr_reader :voice, :pitch_builder, :tie_line
+    attr_reader :voice, :pitch_builder, :tie_line, :beams
     attr_accessor :pending_note, :awaiting_scale, :broken_line,
       :active_passes, :volta_start_bar
 
@@ -18,16 +18,16 @@ module HeadMusic::Notation::ABC
       @voice = voice
       @pitch_builder = pitch_builder
       @duration_resolver = duration_resolver
-      @beam_break_pending = false
-      @beam_last_was_note = false
+      @beams = BeamAdjacency.new
       @tie_open = false
       @decorations = PendingDecorations.new(voice)
       @slurs = PendingSlurs.new(voice)
       @graces = []
-      @invisible_rests = []
+      @invisible_rests = InvisibleRests.new(voice)
       @tuplets = TupletGrouping.new(voice)
     end
 
+    delegate :music_end, to: :@invisible_rests
     delegate :decorate, :reject_dangling_decorations, :take_navigation, :add_hairpins, to: :@decorations
 
     # "(" opens a slur on the next note, chord, or rest.
@@ -78,10 +78,7 @@ module HeadMusic::Notation::ABC
     # note tied across a bar line is still pending when the repeat tagger
     # asks, and a note longer than its bar has crossed one already.
     def completed_bar_number
-      return unless pending_note || voice.last_voice_event || @invisible_rests.any?
-
-      finish = cursor
-      bar_start?(finish) ? finish.bar_number - 1 : finish.bar_number
+      ending_bar_number(cursor) if pending_note || voice.last_voice_event || @invisible_rests.any?
     end
 
     def entered_bar_number
@@ -104,7 +101,7 @@ module HeadMusic::Notation::ABC
       else
         ratio, ends = @tuplets.count
         from = music_end
-        @invisible_rests << @duration_resolver.rhythmic_value(length, tuplet: ratio)
+        @invisible_rests.add @duration_resolver.rhythmic_value(length, tuplet: ratio)
         @tuplets.mark_ends(ends, from, music_end)
       end
     end
@@ -128,14 +125,9 @@ module HeadMusic::Notation::ABC
     # a level there. Once they reach a later bar, that bar is part of the
     # music, and they are rests.
     def end_invisible_rests
-      return if @invisible_rests.empty?
+      return unless ending_bar_number(music_end) > ending_bar_number(voice.next_position)
 
-      music_stop = voice.next_position
-      barline = bar_start?(music_stop) ? music_stop : HeadMusic::Content::Position.new(voice.flow, music_stop.bar_number + 1, 1, 0)
-      return unless music_end > barline
-
-      @invisible_rests.each { |rest_value| voice.place(voice.next_position, rest_value) }
-      @invisible_rests.clear
+      @invisible_rests.place
       @tuplets.group_closed
     end
 
@@ -153,33 +145,6 @@ module HeadMusic::Notation::ABC
 
     def overlay?
       !@overlay_cursor.nil?
-    end
-
-    # Records an explicit beam break; the next note consumes it.
-    def mark_beam_break
-      @beam_break_pending = true
-    end
-
-    # The beam-break flag for the note now beginning: true if a break was
-    # marked, false if the previous token was also a note (so they beam
-    # together), or nil when there is no prior note to beam against.
-    # Consumes the pending break and records that a note is now current.
-    def next_beam_break
-      flag = if @beam_break_pending
-        true
-      elsif @beam_last_was_note
-        false
-      end
-      @beam_break_pending = false
-      @beam_last_was_note = true
-      flag
-    end
-
-    # After a rest, bar line, volta, or voice change, the next note must
-    # not beam to whatever preceded the boundary.
-    def reset_beam_adjacency
-      @beam_last_was_note = false
-      @beam_break_pending = false
     end
 
     def tie_open?
@@ -229,7 +194,7 @@ module HeadMusic::Notation::ABC
     def defer_voice_event(pitches, length, inner_scale = ONE)
       tied = tie_open?
       drop_graces if tied
-      note = arriving_note(pitches, length, inner_scale, beam_break: tied ? nil : next_beam_break)
+      note = arriving_note(pitches, length, inner_scale, beam_break: tied ? nil : @beams.next_break)
       return tie_onto_pending(note) if tied
 
       flush_pending_note
@@ -265,17 +230,12 @@ module HeadMusic::Notation::ABC
     private
 
     def place_next(rhythmic_value, pitches)
-      @invisible_rests.each { |rest_value| voice.place(voice.next_position, rest_value) }
-      @invisible_rests.clear
+      @invisible_rests.place
       voice.place(voice.next_position, rhythmic_value, pitches)
     end
 
     def mark_position
       @overlay_cursor || cursor
-    end
-
-    def music_end
-      @invisible_rests.reduce(voice.next_position) { |position, rest_value| position + rest_value }
     end
 
     def arriving_note(pitches, length, inner_scale, beam_break:)
@@ -316,8 +276,11 @@ module HeadMusic::Notation::ABC
       music_end + pending_note.rhythmic_value(@duration_resolver)
     end
 
-    def bar_start?(position)
-      position.to_a.drop(1) == [1, 0, 0]
+    # The bar where music ending at the position ends: the one before, at a
+    # bar line.
+    def ending_bar_number(position)
+      bar_number = position.bar_number
+      (position.to_a.drop(1) == [1, 0, 0]) ? bar_number - 1 : bar_number
     end
   end
 end

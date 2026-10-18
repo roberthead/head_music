@@ -121,7 +121,7 @@ module HeadMusic::Notation::ABC
     # The lexer only emits :beam_break after a music token, so a voice
     # state already exists; the flag is consumed by the next deferred note.
     def handle_beam_break(_token)
-      current_state.mark_beam_break
+      current_state.beams.mark_break
     end
 
     # A tie (`-`) after a note or chord fuses it to the next note of the
@@ -186,7 +186,7 @@ module HeadMusic::Notation::ABC
       state.ensure_not_awaiting_note(line)
       state.reject_open_tie(line)
       state.flush_pending_note
-      state.reset_beam_adjacency
+      state.beams.reset
     end
 
     # Nothing further in the voice can take a decoration either.
@@ -212,7 +212,7 @@ module HeadMusic::Notation::ABC
       state.settle_hairpins
       state.reject_dangling_decorations
       state.flush_pending_note unless state.tie_open?
-      state.reset_beam_adjacency
+      state.beams.reset
     end
 
     def handle_broken_rhythm(token)

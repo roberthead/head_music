@@ -1,31 +1,8 @@
 require "spec_helper"
 
 describe HeadMusic::Notation::ABC::VoiceState do
-  # Beam and tie bookkeeping do not touch the voice or pitch builder.
+  # Tie bookkeeping does not touch the voice or pitch builder.
   subject(:state) { described_class.new(nil, nil) }
-
-  describe "beam adjacency" do
-    it "reports no beam break for the first note" do
-      expect(state.next_beam_break).to be_nil
-    end
-
-    it "beams a note to the previous one (false) after the first" do
-      state.next_beam_break
-      expect(state.next_beam_break).to be false
-    end
-
-    it "forces a break when one was explicitly marked" do
-      state.next_beam_break
-      state.mark_beam_break
-      expect(state.next_beam_break).to be true
-    end
-
-    it "treats the next note as un-beamed after a reset" do
-      state.next_beam_break
-      state.reset_beam_adjacency
-      expect(state.next_beam_break).to be_nil
-    end
-  end
 
   describe "ties" do
     it "is not open initially" do
@@ -67,7 +44,7 @@ describe HeadMusic::Notation::ABC::VoiceState do
 
     it "carries the beam break onto the flushed voice event" do
       state.defer_voice_event([pitch], "1")
-      state.mark_beam_break
+      state.beams.mark_break
       state.defer_voice_event([pitch], "1")
       state.flush_pending_note
       expect(voice.voice_events.last.beam_break_before).to be true
