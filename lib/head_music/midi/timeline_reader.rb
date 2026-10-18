@@ -55,19 +55,23 @@ module HeadMusic::MIDI
     # opening it.
     def opening(keys)
       first = layout.bars.first
-      {meter: first.meter, tempo: self.class.tempo(tempos.fetch(first.number), first.meter), key_signature: keys.first&.key&.name}
+      {meter: first.meter, tempo: tempo_at(first), key_signature: keys.first&.key&.name}
     end
 
     def apply(flow, keys)
       key_changes = keys.drop(1).to_h { |region| [region.bar_number, region.key] }
       layout.bars.each_cons(2) do |before, bar|
         flow.change_meter(bar.number, bar.meter) unless bar.meter == before.meter
-        flow.change_tempo(bar.number, self.class.tempo(tempos[bar.number], bar.meter)) if tempos.key?(bar.number)
+        flow.change_tempo(bar.number, tempo_at(bar)) if tempos.key?(bar.number)
         flow.change_key_signature(bar.number, key_changes[bar.number].name) if key_changes.key?(bar.number)
       end
     end
 
     private
+
+    def tempo_at(bar)
+      self.class.tempo(tempos.fetch(bar.number), bar.meter)
+    end
 
     def region(bar, fifths, minor)
       key = HeadMusic::Notation::MusicXML::KeyMapper.tonal_context(fifths, minor ? "minor" : "major")
