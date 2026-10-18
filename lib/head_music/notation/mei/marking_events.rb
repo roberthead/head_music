@@ -1,16 +1,9 @@
 module HeadMusic::Notation::MEI
-  # The control events of dynamics, ornaments, and spans. Ornaments and note
-  # dynamics point at their note; slurs and phrases at the notes they join.
+  # The control events of dynamics, ornaments, and spans, in bar order.
   # Dynamic levels and hairpins sit at a beat, on the staff and layer of
-  # their voice, or a part's on its top staff and no layer.
+  # their voice, or a part's on its top staff and no layer; AttachedMarks
+  # gives those that point at notes.
   class MarkingEvents
-    ORNAMENTS = {
-      "trill" => ["trill", nil],
-      "mordent" => ["mordent", "lower"],
-      "inverted_mordent" => ["mordent", "upper"],
-      "turn" => ["turn", nil]
-    }.freeze
-
     HAIRPIN_FORMS = {crescendo: "cres", diminuendo: "dim"}.freeze
 
     # The part or voice a level or hairpin belongs to.
@@ -24,6 +17,7 @@ module HeadMusic::Notation::MEI
 
     def initialize(plan)
       @plan = plan
+      @attached = AttachedMarks.new(plan)
       @controls = placed.each_with_index.sort_by { |(position, element), index| [element.bar_number, position, index] }
         .map { |(_, element), _| element }
     end
@@ -46,13 +40,14 @@ module HeadMusic::Notation::MEI
         part_owner = Owner.new(ids.owner_key(plan.part_number(part)), part, nil)
         [
           *timed(part, part_owner),
-          *part.voices.flat_map { |voice| timed(voice, Owner.new(voice_key(voice), part, voice)) + attached(voice) }
+          *part.voices.flat_map { |voice| voice_marks(voice, part) }
         ]
       end
     end
 
-    def voice_key(voice)
-      ids.owner_key(plan.part_number(voice.part), plan.voice_number(voice))
+    def voice_marks(voice, part)
+      key = ids.owner_key(plan.part_number(part), plan.voice_number(voice))
+      timed(voice, Owner.new(key, part, voice)) + @attached.placed(voice, key)
     end
 
     def timed(owner, mark_owner)
@@ -87,48 +82,6 @@ module HeadMusic::Notation::MEI
         "staff" => owner.voice ? plan.staff_number(owner.voice, position.bar_number) : plan.top_staff_number(owner.part),
         "layer" => owner.voice && plan.voice_number(owner.voice)
       }
-    end
-
-    def attached(voice)
-      key = voice_key(voice)
-      events = voice.note_events.flat_map { |note_event| note_marks(note_event, key) }
-      events + voice.spans.select(&:curve?).map { |span| curve(voice, span, key) }
-    end
-
-    def note_marks(note_event, owner_key)
-      first = plan.items_of(note_event).first
-      event_key = "#{owner_key}-#{ids.position_key(note_event.position)}"
-      elements = note_event.ornaments.map { |ornament| ornament_element(ornament, event_key, first) }
-      dynamic = note_event.note_dynamic
-      if dynamic
-        elements << Element.new("dynam", ids.container("dynam", "#{event_key}-note"), {"startid" => reference(first.id)}, [], dynamic.name_key)
-      end
-      elements.map { |element| [note_event.position, BarElement.new(first.segment.bar_number, element)] }
-    end
-
-    def ornament_element(ornament, event_key, first)
-      name, form = ORNAMENTS.fetch(ornament.name_key)
-      id = ids.container(name, [event_key, form].compact.join("-"))
-      Element.new(name, id, {"startid" => reference(first.id), "form" => form})
-    end
-
-    def curve(voice, span, owner_key)
-      first = plan.items_of(voice.voice_event_at(span.from)).first
-      start_id = span.from_grace? ? plan.grace_id(first, 0) : first.id
-      key = "#{owner_key}-#{ids.position_key(span.from)}#{"g" if span.from_grace?}-#{ids.position_key(span.to)}"
-      attributes = {"startid" => reference(start_id), "endid" => reference(closing_item(voice.voice_event_at(span.to)).id)}
-      [span.from, BarElement.new(first.segment.bar_number, Element.new(span.name_key, ids.container(span.name_key, key), attributes))]
-    end
-
-    def closing_item(voice_event)
-      items = plan.items_of(voice_event)
-      items.each_with_index.find do |_, index|
-        HeadMusic::Notation::SpanEnds.closing_piece?(voice_event, first: index.zero?, last: index == items.length - 1)
-      end.first
-    end
-
-    def reference(id)
-      "##{id}"
     end
   end
 

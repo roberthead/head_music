@@ -11,7 +11,7 @@ module HeadMusic::Notation::MEI
   # letters: t the trill, m the mordent, M the inverted mordent, and s the
   # turn. Its other letters are skipped.
   class OrnamentReader < MarkReader
-    ORNAMENTS_BY_ELEMENT = MarkingEvents::ORNAMENTS.to_h { |key, (name, form)| [[name, form], key] }.merge(
+    ORNAMENTS_BY_ELEMENT = AttachedMarks::ORNAMENTS.to_h { |key, (name, form)| [[name, form], key] }.merge(
       ["mordent", nil] => "mordent", ["mordent", "norm"] => "mordent", ["mordent", "inv"] => "inverted_mordent",
       ["turn", "upper"] => "turn", ["turn", "norm"] => "turn"
     ).freeze
