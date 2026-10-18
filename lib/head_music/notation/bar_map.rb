@@ -102,43 +102,35 @@ module HeadMusic::Notation
     # Answers the index of the measure after the bar.
     def add_bar(index, bar)
       meter = measure(index).meter
-      full = bar_length(meter)
-      length = length_of(index) || full
       @meters[bar] = meter
-      @bars << bar
+      full = bar_length(meter)
       overfull = overfull_reading(index, full)
       raise_unsupported("is longer than its #{meter} bar", index, overfull) if overfull
-      return add_first_bar(full, length) if index.zero?
 
-      short = beyond?(full - length, index)
-      if short && index < @count - 1
-        return add_split_bar(index, bar, full, length) if completes?(index, full, length)
-
-        raise_unsupported("is shorter than its #{meter} bar, and no measure after it completes it", index)
-      end
-      @shifts << 0
-      @lengths[bar] = short ? length : full
-      index + 1
+      extent, *shifts = layout(index, full)
+      @lengths[bar] = extent
+      @shifts.concat(shifts)
+      @bars.concat([bar] * shifts.length)
+      index + shifts.length
     end
 
-    def add_first_bar(full, length)
-      @shifts << [full - length, 0].max
-      @lengths[@first_bar] = [full, length].max
-      1
-    end
+    # The bar's own length, then the shift of each measure it holds.
+    def layout(index, full)
+      length = length_of(index) || full
+      return [[full, length].max, [full - length, 0].max] if index.zero?
+      return [full, 0] unless beyond?(full - length, index)
+      return [length, 0] if index == @count - 1
+      return [full, 0, length] if completes?(index, full, length)
 
-    def add_split_bar(index, bar, full, length)
-      @bars << bar
-      @shifts.push(0, length)
-      @lengths[bar] = full
-      index + 2
+      raise_unsupported("is shorter than its #{measure(index).meter} bar, and no measure after it completes it", index)
     end
 
     def completes?(index, full, length)
-      following = measure(index + 1)
-      return false unless following.implicit || following.meter.to_s == measure(index).meter.to_s
+      following_index = index + 1
+      following = measure(following_index)
+      return false unless following.implicit || following.meter == measure(index).meter
 
-      !beyond?(((length + (length_of(index + 1) || 0)) - full).abs, index)
+      !beyond?((length + (length_of(following_index) || 0) - full).abs, index)
     end
 
     def start_times
@@ -147,13 +139,17 @@ module HeadMusic::Notation
       end
     end
 
+    def measures_at(index)
+      @readings.filter_map { |reading| reading.measures[index] }
+    end
+
     # The first part's measure, or the first that has one at this index.
     def measure(index)
-      @readings.lazy.filter_map { |reading| reading.measures[index] }.first
+      measures_at(index).first
     end
 
     def length_of(index)
-      @readings.filter_map { |reading| reading.measures[index]&.extent }.max
+      measures_at(index).filter_map(&:extent).max
     end
 
     # Whether a difference is past rounding: a whole division or more.
@@ -176,7 +172,7 @@ module HeadMusic::Notation
     end
 
     def tolerance(index)
-      @readings.filter_map { |reading| reading.measures[index]&.tolerance }.max || 0
+      measures_at(index).filter_map(&:tolerance).max || 0
     end
 
     def bar_length(meter)
