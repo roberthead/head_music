@@ -68,11 +68,9 @@ module HeadMusic::Notation::LilyPond
 
     attr_reader :bar_commands, :spacers, :spans, :tuplets, :bar_marks
 
-    def shifted(position, event, name)
+    def shifted(position, event)
       subticks = event.fraction * SUBTICKS_PER_WHOLE_NOTE
-      unless subticks.denominator == 1
-        raise UnsupportedFeatureError.new("#{name} of #{event.fraction} whole notes falls between subticks", line_number: event.line)
-      end
+      raise unsupported("An \\after of #{event.fraction} whole notes falls between subticks", event) unless subticks.denominator == 1
 
       position.advance(subticks: subticks.to_i)
     end
@@ -91,7 +89,7 @@ module HeadMusic::Notation::LilyPond
       case event.kind
       when *BarCommands::KINDS then bar_commands.apply(event, voice, position)
       when :dynamics then place_marker(voice, position, event)
-      when :after then place_dynamics(voice, shifted(position, event, "An \\after"), event)
+      when :after then place_dynamics(voice, shifted(position, event), event)
       when :bar_mark then bar_marks.hold(event, voice, position)
       when :tuplet_start then tuplets.start(voice, position, event.fraction)
       when :tuplet_end then tuplets.stop(voice, position)
@@ -133,16 +131,8 @@ module HeadMusic::Notation::LilyPond
       position = voice.next_position
       event.inner_events.each { |inner| apply_marker(inner.event, voice, position + inner.elapsed) }
       voice_event = voice.place(position, event.rhythmic_value, event.pitches)
-      add_graces(voice_event, event.graces)
+      voice_event.add_grace_notes(*event.graces.map(&:grace_note))
       apply_marks(voice_event, event)
-    end
-
-    def add_graces(voice_event, graces)
-      graces.each do |grace|
-        voice_event.add_grace_note(
-          grace.pitches, grace.rhythmic_value, slashed: grace.slashed, tied: grace.tied, articulations: grace.marks.articulations
-        )
-      end
     end
 
     # A whole-bar rest is one voice event filling the bar it starts; a
@@ -154,7 +144,7 @@ module HeadMusic::Notation::LilyPond
         raise unsupported("A whole-bar rest must start a bar", event)
       end
 
-      meter = voice.flow.meter_at(position.bar_number)
+      meter = position.meter
       bar_fraction = Rational(meter.top_number, meter.bottom_number)
       rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(event.fraction)
       unless event.fraction == bar_fraction && rhythmic_value

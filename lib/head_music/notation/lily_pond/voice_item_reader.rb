@@ -72,7 +72,7 @@ module HeadMusic::Notation::LilyPond
     # \afterGrace [fraction] main { graces } reads its main note as any other.
     def read_after_grace(context)
       token = cursor.advance
-      cursor.advance if cursor.peek&.type == :number
+      cursor.accept(:number)
       read_wrapped(context, token, "\\afterGrace")
       items.skip_grace(token)
     end

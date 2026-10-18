@@ -262,4 +262,23 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
       expect(inner_events.map { |inner| [inner.event.kind, inner.event.staff_name] }).to eq [[:staff_change, "upper"]]
     end
   end
+
+  describe described_class::Event do
+    subject(:note) do
+      described_class.new(
+        kind: :note, line: 1, pitches: [c4], rhythmic_value: quarter,
+        marks: HeadMusic::Notation::LilyPond::MarkReader::Marks.new(articulations: ["staccato"])
+      )
+    end
+
+    it "takes a tied link's value and marks" do
+      tied = note.tied_to(half, HeadMusic::Notation::LilyPond::MarkReader::Marks.new(articulations: ["accent"]))
+      expect([tied.rhythmic_value.to_s, tied.marks.articulations]).to eq ["quarter tied to half", %w[staccato accent]]
+    end
+
+    it "holds an event where its value so far ends" do
+      held = note.holding(described_class.new(kind: :bar_check, line: 2))
+      expect(held.inner_events.map { |inner| [inner.elapsed.to_s, inner.event.kind] }).to eq [["quarter", :bar_check]]
+    end
+  end
 end

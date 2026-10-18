@@ -15,8 +15,20 @@ module HeadMusic::Notation::LilyPond
     }.freeze
     COMMANDS = COMMANDS_BY_NAME.keys.freeze
     IMPLIED_SLUR_ID = :grace
+    MUSIC_TYPES = %i[open_brace note open_chord].freeze
 
-    Grace = Data.define(:pitches, :rhythmic_value, :slashed, :tied, :marks)
+    Grace = Data.define(:pitches, :rhythmic_value, :slashed, :tied, :marks) do
+      # A tie holds only into a note of the same pitches.
+      def before(follower)
+        with(tied: tied && pitches.sort == follower.sort)
+      end
+
+      def grace_note
+        HeadMusic::Content::GraceNote.new(
+          sounds: pitches, rhythmic_value: rhythmic_value, slashed: slashed, tied: tied, articulations: marks.articulations
+        )
+      end
+    end
 
     # The grace notes waiting for their main note.
     Graces = Data.define(:graces, :implied_slur) do
@@ -24,33 +36,34 @@ module HeadMusic::Notation::LilyPond
         with(graces: graces + other.graces, implied_slur: implied_slur || other.implied_slur)
       end
 
-      # Each tie holds only into a note of the same pitches.
       def before(pitches)
-        followers = graces.drop(1).map(&:pitches) + [pitches]
-        graces.zip(followers).map { |grace, follower| grace.with(tied: grace.tied && grace.pitches.sort == follower.sort) }
+        graces.zip(graces.drop(1).map(&:pitches) + [pitches]).map { |grace, follower| grace.before(follower) }
       end
 
       # The main note takes its grace notes' levels and hairpins, and the
       # slurs they end. A slur opened on the first grace note starts there.
       def main_marks(marks)
+        grace_marks = graces.map(&:marks)
         MarkReader::Marks.new(
-          level: marks.level || graces.filter_map { |grace| grace.marks.level }.last,
-          hairpin_marks: graces.flat_map { |grace| grace.marks.hairpin_marks },
+          level: marks.level || grace_marks.filter_map(&:level).last,
+          hairpin_marks: grace_marks.flat_map(&:hairpin_marks),
           span_marks: implied_slur_marks + grace_span_marks
         ).merge(marks.with(level: nil))
       end
 
       private
 
+      def first_span_marks
+        graces.first&.marks&.span_marks || []
+      end
+
       def grace_span_marks
-        first, *others = graces
-        first.marks.span_marks.map { |mark| mark.opening ? mark.with(from_grace: true) : mark } +
-          others.flat_map { |grace| grace.marks.span_marks }
+        first_span_marks.map(&:on_grace) + graces.drop(1).flat_map { |grace| grace.marks.span_marks }
       end
 
       def implied_slur_marks
         return [] unless implied_slur
-        return [] if graces.first.marks.span_marks.any? { |mark| mark.opening && mark.kind == :slur }
+        return [] if first_span_marks.any? { |mark| mark.opens?(:slur) }
 
         [
           MarkReader::SpanMark.new(kind: :slur, opening: true, id: IMPLIED_SLUR_ID, from_grace: true),
@@ -58,6 +71,8 @@ module HeadMusic::Notation::LilyPond
         ]
       end
     end
+
+    NONE = Graces.new(graces: [], implied_slur: false)
 
     def initialize(cursor, items)
       @cursor = cursor
@@ -79,11 +94,10 @@ module HeadMusic::Notation::LilyPond
     attr_reader :cursor, :items, :mark_reader
 
     def read_music(command)
-      case cursor.peek&.type
-      when :open_brace then read_braces
-      when :note, :open_chord then read_grace
-      else raise cursor.error("\\#{command.lexeme} expects music", cursor.peek || command)
-      end
+      token = cursor.peek
+      raise cursor.error("\\#{command.lexeme} expects music", token || command) unless MUSIC_TYPES.include?(token&.type)
+
+      read_item
     end
 
     def read_braces
@@ -95,27 +109,19 @@ module HeadMusic::Notation::LilyPond
     def read_item
       token = cursor.peek
       case token.type
-      when :note, :open_chord then read_grace
+      when :note then read_grace
+      when :open_chord then items.marker? ? raise(cursor.unsupported("A <> inside grace music is not supported", token)) : read_grace
       when :rest, :spacer then skip_silence
       when :open_brace then read_braces
       when :bar_check then cursor.advance
       when :tuplet then raise cursor.unsupported("Tuplets inside grace music are not supported", token)
-      when :command then raise cursor.unsupported_command(token)
-      when :unsupported then raise cursor.unsupported_token(token)
-      else raise cursor.error(%(Unexpected token "#{token.lexeme}" inside grace music), token)
+      else raise cursor.unexpected(token, %(Unexpected token "#{token.lexeme}" inside grace music))
       end
     end
 
     def read_grace
-      token = cursor.peek
-      raise cursor.unsupported("A <> inside grace music is not supported", token) if token.type == :open_chord && items.marker?
-
-      pitches, rhythmic_value, = items.read_sounds
-      marks = mark_reader.read
-      tied = cursor.peek&.type == :tie
-      cursor.advance if tied
-      marks = mark_reader.read(marks) if tied
-      @graces << Grace.new(pitches: pitches, rhythmic_value: rhythmic_value, slashed: @slashed, tied: tied, marks: marks)
+      pitches, rhythmic_value, _line, marks, tie = items.read_marked_sounds
+      @graces << Grace.new(pitches: pitches, rhythmic_value: rhythmic_value, slashed: @slashed, tied: !tie.nil?, marks: marks)
     end
 
     def skip_silence

@@ -17,16 +17,19 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_note(context)
-      add_note(context, *read_sounds)
+      pitches, rhythmic_value, line, marks, tie = read_marked_sounds
+      context.stream.add_note(pitches, rhythmic_value, line, marks)
+      context.stream.open_tie(tie.line) if tie
     end
 
-    # The pitches, value, and line of the note or chord at the cursor, read
-    # through the pitch and duration readers so they carry on to what follows.
-    def read_sounds
-      return chord_reader.read if cursor.peek.type == :open_chord
-
-      token = cursor.advance
-      [[readers.current.pitch(token)], rhythmic_value(token), token.line]
+    # The pitches, value, line, marks, and any tie of the note or chord at the
+    # cursor. A tie is a mark like the others, so marks may follow it as well
+    # as precede it: c4-.~\p is one note's staccato, tie, and dynamic.
+    def read_marked_sounds
+      pitches, rhythmic_value, line = read_sounds
+      marks = mark_reader.read
+      tie = cursor.accept(:tie)
+      [pitches, rhythmic_value, line, tie ? mark_reader.read(marks) : marks, tie]
     end
 
     # A rest or spacer's duration carries on, even where it is dropped.
@@ -61,9 +64,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_chord(context)
-      return read_marker(context) if marker?
-
-      add_note(context, *chord_reader.read)
+      marker? ? read_marker(context) : read_note(context)
     end
 
     def marker?
@@ -125,14 +126,13 @@ module HeadMusic::Notation::LilyPond
 
     attr_reader :cursor, :readers, :duration_reader, :mark_reader, :grace_reader, :chord_reader
 
-    # A tie is a mark like the others, so marks may follow it as well as
-    # precede it: c4-.~\p is one note's staccato, tie, and dynamic.
-    def add_note(context, pitches, rhythmic_value, line)
-      marks = mark_reader.read
-      tie = (cursor.peek&.type == :tie) ? cursor.advance : nil
-      marks = mark_reader.read(marks) if tie
-      context.stream.add_note(pitches, rhythmic_value, line, marks)
-      context.stream.open_tie(tie.line) if tie
+    # The pitches, value, and line of the note or chord at the cursor, read
+    # through the pitch and duration readers so they carry on to what follows.
+    def read_sounds
+      return chord_reader.read if cursor.peek.type == :open_chord
+
+      token = cursor.advance
+      [[readers.current.pitch(token)], rhythmic_value(token), token.line]
     end
   end
 end

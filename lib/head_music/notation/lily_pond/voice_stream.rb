@@ -28,6 +28,14 @@ module HeadMusic::Notation::LilyPond
       def timed?
         music? || kind == :spacer
       end
+
+      def tied_to(link_value, link_marks)
+        with(rhythmic_value: rhythmic_value.append_tied(link_value), marks: marks.merge(link_marks))
+      end
+
+      def holding(event)
+        with(inner_events: inner_events + [InnerEvent.new(elapsed: rhythmic_value, event: event)])
+      end
     end
 
     UNFOLLOWED_TIE = "A tie must be followed by a note"
@@ -39,6 +47,7 @@ module HeadMusic::Notation::LilyPond
       @role = role
       @events = []
       @pending_note = nil
+      @pending_graces = GraceReader::NONE
       @tie_open = false
     end
 
@@ -50,13 +59,13 @@ module HeadMusic::Notation::LilyPond
     def add_note(pitches, rhythmic_value, line, marks = MarkReader::NONE)
       rhythmic_value = under_tuplet(rhythmic_value)
       graces = @pending_graces
-      @pending_graces = nil
+      @pending_graces = GraceReader::NONE
       return extend_tie(pitches, rhythmic_value, line, marks) if @tie_open
 
       flush_pending_note
       @pending_note = Event.new(
         kind: :note, line: line, pitches: pitches, rhythmic_value: rhythmic_value,
-        marks: graces ? graces.main_marks(marks) : marks, graces: graces ? graces.before(pitches) : []
+        marks: graces.main_marks(marks), graces: graces.before(pitches)
       )
     end
 
@@ -66,7 +75,7 @@ module HeadMusic::Notation::LilyPond
     def add_graces(graces)
       return if graces.graces.empty?
 
-      @pending_graces = @pending_graces ? @pending_graces + graces : graces
+      @pending_graces += graces
     end
 
     def add_rest(rhythmic_value, line, marks = MarkReader::NONE)
@@ -155,19 +164,19 @@ module HeadMusic::Notation::LilyPond
     # nothing else, whole-bar ones except in a short final bar.
     def silent?
       finish
-      events.select(&:music?).none? { |event| event.kind == :note }
+      events.none? { |event| event.kind == :note }
     end
 
     def finish
       terminate(nil)
-      @pending_graces = nil
+      @pending_graces = GraceReader::NONE
       self
     end
 
     private
 
     def silent(line, **attributes)
-      @pending_graces = nil
+      @pending_graces = GraceReader::NONE
       append(line, **attributes)
     end
 
@@ -210,30 +219,20 @@ module HeadMusic::Notation::LilyPond
     # becomes a single note. Its marks join the note's, except a dynamic
     # level and hairpin marks, which are held where the link starts.
     def extend_tie(pitches, rhythmic_value, line, marks)
-      pending = @pending_note
-      unless pending.pitches.sort == pitches.sort
-        raise error("A tie must connect two notes of the same pitch", line)
-      end
+      raise error("A tie must connect two notes of the same pitch", line) unless @pending_note.pitches.sort == pitches.sort
 
       @tie_open = false
       hold_link_dynamics(marks, line)
-      @pending_note = @pending_note.with(
-        rhythmic_value: pending.rhythmic_value.append_tied(rhythmic_value),
-        marks: pending.marks.merge(marks.with(level: nil, hairpin_marks: []))
-      )
+      @pending_note = @pending_note.tied_to(rhythmic_value, marks.with(level: nil, hairpin_marks: []))
     end
 
     def hold_link_dynamics(marks, line)
-      return unless marks.level || marks.hairpin_marks.any?
-
       link_marks = MarkReader::Marks.new(level: marks.level, hairpin_marks: marks.hairpin_marks)
-      hold_inside_tie(Event.new(kind: :dynamics, line: line, marks: link_marks))
+      hold_inside_tie(Event.new(kind: :dynamics, line: line, marks: link_marks)) unless link_marks == MarkReader::NONE
     end
 
     def hold_inside_tie(event)
-      pending = @pending_note
-      inner_event = InnerEvent.new(elapsed: pending.rhythmic_value, event: event)
-      @pending_note = pending.with(inner_events: pending.inner_events + [inner_event])
+      @pending_note = @pending_note.holding(event)
     end
 
     def error(message, line)
