@@ -125,6 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Position.for_flow` builds a position in a flow from a code or keeps one of that flow's, raising for another flow's. `Dynamic.fetch` answers a dynamic of the kind asked for, `Clef.placing` the clef that puts a pitch on a line, `GraceNote#tied_pitches` the pitches a grace note ties into, and `Notation::BarMap#downbeat_bar` the bar a measure starts on its downbeat.
 - `HeadMusic::Notation::LineParseError` carries the line number and snippet that the ABC, kern, and LilyPond `ParseError`s report, and each now subclasses it. `HeadMusic::Notation::TimelineReading` holds the timeline reading the MusicXML and MEI readers share, and `HeadMusic::Time::ChangeMap` the change bookkeeping of `MeterMap` and `TempoMap`.
 - `HeadMusic::Content::ChainLink` is one link of a voice event's tied chain, found with `ChainLink.of(voice_event)` and `ChainLink.between(voice, from, to)`; `TupletGroup.links_of` and `.links_between` delegate to it. `NoteEvent#add_grace_notes` adds `GraceNote`s already built.
+- `Position.get(flow, position)` keeps a position or builds one from a code, `Position#ending_bar_number` answers the bar music ending there ends in, `VoiceEvent#bar_number` the bar an event starts in, `DottedDuration.tied` ties a list of rhythmic values in order, and a guideline's `count_values` builds the count and number-word values its templates take.
 
 ### Changed
 
@@ -147,10 +148,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The LilyPond writer renders a short final bar, such as one that balances a pickup, when every voice ends there together: it leaves the bar check off that bar, and a tacet voice rests only as long as the music, followed by spacers where a dynamic comes after the music in that bar. Voices that end at different points short of the final bar still raise `RenderError`.
 - **Breaking.** The MusicXML writer's work title defaults to the title of the flow's `Work`, with the flow's name as the `<movement-title>`, so a flow that cites a work, such as one read from kern, writes it back. Pass `work_title:` to choose another; `work_title: nil` still falls back to the `Work`'s title.
 - **Breaking.** `MusicXML::MarkingWriter` is `MusicXML::MarkingElements`, since the reader uses it too. The old constant is gone, not aliased.
+- `MinimumNotes` with no minimum configured raises `KeyError`, as `MinimumMelodicIntervals` does, rather than `NameError`.
 
 ### Fixed
 
 - The ABC parser names the line of a tie between notes of different pitches; it gave none.
+- An MEI `@tuplet` run whose entries are not all scaled alike is left ungrouped, as when they are scaled by different ratios. A run of triplet and unscaled entries was grouped as a triplet when a triplet entry came first.
 - The MEI, LilyPond, and ABC writers print an accidental on each chord member that shares a letter and octave with another under a different alteration, so F4 with F♯4 in C major shows its natural; LilyPond writes them as `<fis'! f'!>` so a later F in the bar prints correctly too.
 - The LilyPond reader reads notes carrying a forced (`!`) or cautionary (`?`) accidental sign, such as `fis'!4`, rather than refusing them.
 - Adding a tempo, meter, or key change to a flow, and growing its bars, no longer revisit every earlier change or bar, so a long flow with a change in each bar builds in linear time: 10,000 bars of tempo changes took 7.9 s and now take 0.12 s.
