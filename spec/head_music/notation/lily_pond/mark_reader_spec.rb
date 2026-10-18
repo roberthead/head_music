@@ -166,6 +166,18 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
       second = described_class.new(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "f")
       expect(first.merge(second).to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sf", level: "p", span_marks: [], hairpin_marks: [])
     end
+
+    it "keeps only its level and hairpin marks as its dynamics" do
+      marks = described_class.new(articulations: ["staccato"], note_dynamic: "sfz", level: "p", hairpin_marks: [:crescendo])
+      expect(marks.dynamics).to eq described_class.new(level: "p", hairpin_marks: [:crescendo])
+    end
+
+    it "marks a note event with its articulations, ornaments, and accent" do
+      note_event = HeadMusic::Content::Flow.new.add_voice.place("1:1", :quarter, "C4")
+      described_class.new(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p").mark(note_event)
+      expect([note_event.articulations.map(&:name_key), note_event.ornaments.map(&:name_key), note_event.note_dynamic.name_key])
+        .to eq [["staccato"], ["trill"], "sfz"]
+    end
   end
 
   describe described_class::SpanMark do

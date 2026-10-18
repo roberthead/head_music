@@ -58,10 +58,6 @@ module HeadMusic::Notation::LilyPond
       bar_number == plan.bar_numbers.last
     end
 
-    def lead_voice?(voice)
-      voice.equal?(plan.flow.voices.first)
-    end
-
     def opening_lines(clef_name, part)
       [
         "\\clef #{clef_name}",
@@ -99,7 +95,7 @@ module HeadMusic::Notation::LilyPond
     # and \mark, so each voice reads back with them.
     def bar_line(voice, bar_number, part_index)
       bar = plan.bar(bar_number)
-      lead = lead_voice?(voice)
+      lead = voice.equal?(plan.flow.voices.first)
       last = last_bar?(bar_number)
       bar_check_after([
         *BarMarkWriter.opening_tokens(bar, lead: lead),

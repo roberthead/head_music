@@ -99,12 +99,9 @@ module HeadMusic::Notation::LilyPond
 
     def read_staff_change(context)
       command = cursor.advance
-      target = cursor.peek
-      unless target&.type == :word && target.lexeme == "Staff"
-        raise cursor.unsupported("\\change is supported only for a Staff", target || command)
-      end
+      target = cursor.advance
+      raise cursor.unsupported("\\change is supported only for a Staff", target || command) unless target&.is?(:word, "Staff")
 
-      cursor.advance
       cursor.expect(:equals, "\\change Staff expects = and a staff name")
       name = cursor.expect(:string, "\\change Staff expects a quoted staff name")
       context.stream.change_staff(name.lexeme, command.line)

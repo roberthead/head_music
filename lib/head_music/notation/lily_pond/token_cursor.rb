@@ -33,7 +33,8 @@ module HeadMusic::Notation::LilyPond
       token = advance
       return token if token&.type == type
 
-      raise(unsupported ? unsupported(message, token || peek(-1)) : error(message, token || peek(-1)))
+      at = token || peek(-1)
+      raise(unsupported ? unsupported(message, at) : error(message, at))
     end
 
     # Consumes a command and the balanced block that follows it.

@@ -42,6 +42,16 @@ module HeadMusic::Notation::LilyPond
           hairpin_marks: hairpin_marks + other.hairpin_marks
         )
       end
+
+      def dynamics
+        Marks.new(level: level, hairpin_marks: hairpin_marks)
+      end
+
+      # Levels, hairpins, and spans are placed on the voice instead.
+      def mark(note_event)
+        note_event.articulate(*articulations).embellish(*ornaments)
+        note_event.note_dynamic = note_dynamic if note_dynamic
+      end
     end
 
     NONE = Marks.new
@@ -73,13 +83,13 @@ module HeadMusic::Notation::LilyPond
     DIRECTABLE_PATTERN = Regexp.union(HAIRPIN_PATTERN, SPAN_PATTERN)
     FIELD_NAMES = {note_dynamic: "sforzando", level: "dynamic level"}.freeze
 
-    # Each command's [field, key], or nil for one that is dropped.
+    # Each command's [field, value], or nil for one that is dropped.
     MEANINGS_BY_COMMAND = {
-      **ARTICULATION_COMMANDS.to_h { |key| [key, [:articulations, key]] },
-      **ORNAMENTS_BY_COMMAND.transform_values { |key| [:ornaments, key] },
+      **ARTICULATION_COMMANDS.to_h { |key| [key, [:articulations, [key]]] },
+      **ORNAMENTS_BY_COMMAND.transform_values { |key| [:ornaments, [key]] },
       **NOTE_DYNAMIC_COMMANDS.to_h { |key| [key, [:note_dynamic, key]] },
       **LEVEL_COMMANDS.to_h { |key| [key, [:level, key]] },
-      **HAIRPINS_BY_COMMAND.transform_values { |mark| [:hairpin_marks, mark] },
+      **HAIRPINS_BY_COMMAND.transform_values { |mark| [:hairpin_marks, [mark]] },
       **DROPPED_COMMANDS.to_h { |command| [command, nil] }
     }.freeze
 
@@ -124,26 +134,22 @@ module HeadMusic::Notation::LilyPond
 
     def add(marks, token)
       field, value = meaning(token)
-      current = field && marks.public_send(field)
-      case field
-      when nil then marks
-      when :articulations, :ornaments then marks.with(field => current | [value])
-      when :span_marks, :hairpin_marks then marks.with(field => current + [value])
-      else
-        raise cursor.error(%(A note can carry only one #{FIELD_NAMES.fetch(field)}), token) if current
+      return marks unless field
 
-        marks.with(field => value)
-      end
+      name = FIELD_NAMES[field]
+      raise cursor.error(%(A note can carry only one #{name}), token) if name && marks.public_send(field)
+
+      marks.merge(Marks.new(field => value))
     end
 
     def meaning(token)
       lexeme = token.lexeme
       return MEANINGS_BY_COMMAND[lexeme] if token.type == :command
-      return [:hairpin_marks, HAIRPINS_BY_LEXEME.fetch(lexeme)] if lexeme.match?(HAIRPIN_PATTERN)
-      return [:span_marks, span_mark(lexeme)] if lexeme.match?(SPAN_PATTERN)
+      return [:hairpin_marks, [HAIRPINS_BY_LEXEME.fetch(lexeme)]] if lexeme.match?(HAIRPIN_PATTERN)
+      return [:span_marks, [span_mark(lexeme)]] if lexeme.match?(SPAN_PATTERN)
 
       articulation = ARTICULATIONS_BY_SHORTHAND[lexeme[1]]
-      articulation && [:articulations, articulation]
+      articulation && [:articulations, [articulation]]
     end
 
     def span_mark(lexeme)

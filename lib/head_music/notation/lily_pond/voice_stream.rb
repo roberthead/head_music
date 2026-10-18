@@ -227,8 +227,8 @@ module HeadMusic::Notation::LilyPond
     end
 
     def hold_link_dynamics(marks, line)
-      link_marks = MarkReader::Marks.new(level: marks.level, hairpin_marks: marks.hairpin_marks)
-      hold_inside_tie(Event.new(kind: :dynamics, line: line, marks: link_marks)) unless link_marks == MarkReader::NONE
+      dynamics = marks.dynamics
+      hold_inside_tie(Event.new(kind: :dynamics, line: line, marks: dynamics)) unless dynamics == MarkReader::NONE
     end
 
     def hold_inside_tie(event)

@@ -108,10 +108,7 @@ module HeadMusic::Notation::LilyPond
     def apply_marks(voice_event, event)
       apply_marker_marks(voice_event)
       marks = event.marks
-      unless voice_event.rest?
-        voice_event.articulate(*marks.articulations).embellish(*marks.ornaments)
-        voice_event.note_dynamic = marks.note_dynamic if marks.note_dynamic
-      end
+      marks.mark(voice_event) unless voice_event.rest?
       place_dynamics(voice_event.voice, voice_event.position, event)
       spans.apply(voice_event, marks.span_marks)
     end
