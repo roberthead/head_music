@@ -16,13 +16,13 @@ module HeadMusic
         # Nil when no binary note value, or tied chain of them, spans the
         # fraction under the value's ratio.
         def rhythmic_value
-          return voice_event.rhythmic_value unless fraction
-
           value = voice_event.rhythmic_value
-          return DottedDuration.rhythmic_value_for(fraction) unless value.tuplet?
+          return value unless fraction
 
           ratio = value.uniform_tuplet_ratio
-          ratio ? DottedDuration.rhythmic_value_for(fraction, tuplet: ratio) : mixed_ratio_value
+          return mixed_ratio_value if !ratio && value.tuplet?
+
+          DottedDuration.rhythmic_value_for(fraction, tuplet: ratio)
         end
 
         def rhythmic_value!(error_class)
@@ -40,7 +40,7 @@ module HeadMusic
             [piece, link.tuplet_ratio] if piece.positive?
           end
           values = pieces.map { |piece, ratio| DottedDuration.rhythmic_value_for(piece, tuplet: ratio) }
-          values.reverse.reduce { |tail, head| head&.append_tied(tail) if tail } unless values.include?(nil)
+          DottedDuration.tied(values) unless values.include?(nil)
         end
 
         def under_ratio
@@ -90,9 +90,7 @@ module HeadMusic
       # that note's exact onset, looked for first among the given voices.
       def mark_offset(flow, position, voices = [])
         voice_event = (voices + flow.voices).lazy.filter_map { |voice| voice.voice_event_at(position) }.first
-        return offset_in_bar(position) unless voice_event
-
-        onset_in_bar(voice_event)
+        voice_event ? onset_in_bar(voice_event) : offset_in_bar(position)
       end
 
       # Each link of a voice event's chain with its exact start and end, as
@@ -117,7 +115,8 @@ module HeadMusic
         offset = onset_in_bar(voice_event)
         return [bar_number, offset] unless offset.negative?
 
-        [bar_number - 1, offset + bar_length(voice_event.flow, bar_number - 1)]
+        previous = bar_number - 1
+        [previous, offset + bar_length(voice_event.flow, previous)]
       end
 
       def offset_in_bar(position)
@@ -130,10 +129,9 @@ module HeadMusic
       # into bar +bar_number+.
       def position_at(flow, bar_number, offset)
         meter = flow.meter_at(bar_number)
-        counts = offset * meter.bottom_number
-        ticks = (counts - counts.floor) * meter.ticks_per_count
-        subticks = (ticks - ticks.floor) * HeadMusic::Time::SUBTICKS_PER_TICK
-        flow.position(bar_number, counts.floor + 1, ticks.floor, subticks.round)
+        count, count_part = (offset * meter.bottom_number).divmod(1)
+        tick, tick_part = (count_part * meter.ticks_per_count).divmod(1)
+        flow.position(bar_number, count + 1, tick, (tick_part * HeadMusic::Time::SUBTICKS_PER_TICK).round)
       end
 
       private_class_method :bar_length

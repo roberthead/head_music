@@ -36,37 +36,41 @@ module HeadMusic::Notation
     def apply
       chain = nil
       @track.events.each do |event|
-        head = chain&.first
-        joined = head && event.ties_in? && follows?(chain.last, event)
-        if joined && keys(head) == keys(event)
+        if joins?(chain, event)
           link(chain, event)
-          next if event.ties_out?
-
-          chain = finish(chain)
-        elsif joined && !keys(head).intersect?(keys(event))
-          raise_unrelated(head, event)
         else
           finish(chain)
-          chain = event.ties_out? ? [event] : nil
+          chain = [event]
         end
+        next if event.ties_out?
+
+        chain = finish(chain)
       end
       finish(chain)
     end
 
     private
 
+    # Whether an event continues the chain, raising where the tie into it
+    # connects pitches the chain's head shares nothing with.
+    def joins?(chain, event)
+      return false unless chain && event.ties_in? && follows?(chain.last, event)
+
+      head_keys = chain.first.keys
+      keys = event.keys
+      raise_unrelated(chain.first, event) unless head_keys.intersect?(keys)
+      head_keys == keys
+    end
+
     def raise_unrelated(head, event)
       raise @reading.errors::ParseError.new(
-        "A tie connects #{keys(head).join(" ")} to #{keys(event).join(" ")}", **@reading.where(head.measure_index)
+        "A tie connects #{head.keys.join(" ")} to #{event.keys.join(" ")}", **@reading.where(head.measure_index)
       )
     end
 
     def link(chain, event)
-      head = chain.first
-      @links = head.rhythmic_value.tied_chain.length if chain.one?
-      event.link_offset = @links
-      @links += event.rhythmic_value.tied_chain.length
-      event.continuation = head
+      event.link_offset = chain.sum(&:link_count)
+      event.continuation = chain.first
       chain << event
     end
 
@@ -75,17 +79,13 @@ module HeadMusic::Notation
     def finish(chain)
       return if chain.nil? || chain.one?
 
-      chain.first.rhythmic_value = chain.map(&:rhythmic_value).reverse.reduce { |tail, value| value.append_tied(tail) }
+      chain.first.rhythmic_value = DottedDuration.tied(chain.map(&:rhythmic_value))
       nil
     end
 
     def follows?(link, event)
       link_end = @bar_map.time_of(link.measure_index, link.cursor + link.duration)
       (@bar_map.time_of(event.measure_index, event.cursor) - link_end).abs < event.tolerance
-    end
-
-    def keys(event)
-      event.sounds.map(&:to_s).sort
     end
   end
 end

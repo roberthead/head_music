@@ -23,14 +23,15 @@ module HeadMusic::Notation
     end
 
     def place
-      placed = @track.events.reject { |event| event.fills_bar || event.continuation }
-      return assign_staves(@track.events) if @trim_edges && placed.empty?
+      events = @track.events
+      placed = events.reject { |event| event.fills_bar || event.continuation }
+      return assign_staves(events) if @trim_edges && placed.empty?
 
       start_at(@trim_edges ? bar_of(placed.first) : @bar_map.first_bar)
       placed.each { |event| place_event(event) }
       rest_until(@trim_edges ? @bar_map.bar_end_at_or_after(@time) : @bar_map.end_time, nil)
       @tuplet_reader.new(@voice, @track, @reading).group
-      assign_staves(@trim_edges ? @track.events[..@track.events.index(placed.last)] : @track.events)
+      assign_staves(@trim_edges ? events[..events.index(placed.last)] : events)
     end
 
     private
@@ -49,16 +50,8 @@ module HeadMusic::Notation
         raise @reading.errors::ParseError.new("Voice #{@track.label} overlaps itself", **where(event))
       end
       event.time = @time
-      voice_event = event.voice_event = @voice.place(@position, event.rhythmic_value, event.sounds)
-      add_grace_notes(voice_event, event.graces)
-      @position = voice_event.next_position
+      @position = event.place_on(@voice, @position).next_position
       @time += event.rhythmic_value.fraction
-    end
-
-    # Grace notes before a rest, or before a tie's later link, which is
-    # never placed, are dropped.
-    def add_grace_notes(voice_event, graces)
-      voice_event.add_grace_notes(*graces.map(&:grace_note)) unless voice_event.rest?
     end
 
     def rest_until(time, event)
@@ -81,11 +74,11 @@ module HeadMusic::Notation
       return if staves.length < 2
 
       current = staves.first
-      events.chunk_while { |before, after| bar_of(before) == bar_of(after) }.each_with_index do |events, index|
-        staff = staves[events.first.staff - 1]
+      events.chunk { |event| bar_of(event) }.each_with_index do |(bar, bar_events), index|
+        staff = staves[bar_events.first.staff - 1]
         next if staff.equal?(current)
 
-        @voice.assign_staff(index.zero? ? @bar_map.first_bar : bar_of(events.first), staff)
+        @voice.assign_staff(index.zero? ? @bar_map.first_bar : bar, staff)
         current = staff
       end
     end

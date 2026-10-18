@@ -43,6 +43,11 @@ module HeadMusic
         ratio ? value&.with_tuplet(ratio) : value
       end
 
+      # One value tying the given values together in order.
+      def tied(values)
+        values.reverse.reduce { |tail, head| head.append_tied(tail) }
+      end
+
       # The ratio a non-binary undotted value sounds under, or nil. When the
       # denominator has an odd factor m, m notes take the time of the largest
       # odd part of the numerator times a power of two below m: 1/12 is a 3:2

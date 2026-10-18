@@ -17,6 +17,25 @@ describe HeadMusic::Notation::DottedDuration do
     end
   end
 
+  describe ".tied" do
+    def value(name)
+      HeadMusic::Rudiment::RhythmicValue.get(name)
+    end
+
+    it "ties the values together in order" do
+      expect(described_class.tied([value("half"), value("quarter"), value("eighth")]).to_s).to eq "half tied to quarter tied to eighth"
+    end
+
+    it "keeps a value's own tied chain inside the whole" do
+      head = described_class.rhythmic_value_for(Rational(5, 4))
+      expect(described_class.tied([head, value("half")]).to_s).to eq "whole tied to quarter tied to half"
+    end
+
+    it "answers a lone value as it is" do
+      expect(described_class.tied([value("quarter")]).to_s).to eq "quarter"
+    end
+  end
+
   describe ".rhythmic_value_for" do
     {
       1 => "whole",
