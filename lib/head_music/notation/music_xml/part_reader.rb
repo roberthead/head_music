@@ -68,10 +68,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def read_move(element, sign)
-      delta = sign * @durations.of(text(element, "duration", **@where), moving: true, **@where)
-      forward = sign.positive?
-      advance(delta, reaches: forward)
-      @timing.move(delta, reaches: forward)
+      skip(sign * @durations.of(text(element, "duration", **@where), moving: true, **@where), reaches: sign.positive?)
     end
 
     def note_record(kind, element, **attributes)
@@ -151,9 +148,7 @@ module HeadMusic::Notation::MusicXML
 
       @tracks.hide_lead
       duration = @durations.of(note.duration, **@where)
-      fills_bar = @durations.whole_bar_rest?(note, duration)
-      advance(duration, reaches: !fills_bar)
-      @timing.move(duration, reaches: !fills_bar)
+      skip(duration, reaches: !@durations.whole_bar_rest?(note, duration))
     end
 
     def read_grace(note)
@@ -161,20 +156,17 @@ module HeadMusic::Notation::MusicXML
       note_record(:note, note.element, grace: grace, chord: chord) if grace
     end
 
-    def advance(duration, reaches:)
-      move(duration)
-      reach(@cursor) if reaches
+    # Moves the cursor by a time no note is written in.
+    def skip(duration, reaches:)
+      advance(duration, reaches: reaches)
+      @timing.move(duration, reaches: reaches)
     end
 
-    def move(duration)
+    def advance(duration, reaches:)
       @cursor += duration
       raise ParseError.new("A <backup> reaches before the start of its measure", **@where) if @cursor.negative?
 
-      @cursor
-    end
-
-    def reach(cursor)
-      @measure.extent = [@measure.extent, cursor].compact.max
+      @measure.extent = [@measure.extent, @cursor].compact.max if reaches
     end
   end
 end

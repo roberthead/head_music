@@ -34,7 +34,7 @@ module HeadMusic::MIDI
       # counts, so "Soprano" still names the singer of a soprano part.
       def player
         name = track_name
-        return if name.nil? || name.strip.empty? || name == instrument&.name.to_s
+        return if name.to_s.strip.empty? || name == instrument&.name.to_s
 
         HeadMusic::Content::Player.new(name: name)
       end
