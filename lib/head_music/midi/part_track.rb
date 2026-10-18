@@ -105,11 +105,10 @@ module HeadMusic::MIDI
     end
 
     def onsets_in(bar_number)
-      @onsets_by_bar ||= part.voices.flat_map(&:note_events).group_by { |voice_event|
-        HeadMusic::Notation::BarSplitter.exact_start(voice_event).first
-      }.transform_values { |voice_events|
-        voice_events.map { |voice_event| [voice_event, HeadMusic::Notation::BarSplitter.exact_start(voice_event).last] }
-      }
+      @onsets_by_bar ||= part.voices.flat_map(&:note_events).each_with_object({}) do |voice_event, by_bar|
+        start_bar, offset = HeadMusic::Notation::BarSplitter.exact_start(voice_event)
+        (by_bar[start_bar] ||= []) << [voice_event, offset]
+      end
       @onsets_by_bar.fetch(bar_number, [])
     end
   end
