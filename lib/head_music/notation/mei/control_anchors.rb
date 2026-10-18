@@ -30,13 +30,13 @@ module HeadMusic::Notation::MEI
       @editorial = source.editorial
       @parts = parts
       @voices = voices
-      @event_records = {}.compare_by_identity
+      @event_records = EventRecords.new(flow, score, bar_map, parts, voices)
       @onsets = OnsetIndex.new(score.readings)
     end
 
     # The record of a Pending, made once.
     def event_record(pending)
-      @event_records[pending] ||= build_event_record(pending)
+      @event_records[pending]
     end
 
     # The anchor at an event's record: where it sounds, its own link's
@@ -82,7 +82,7 @@ module HeadMusic::Notation::MEI
     # The records of the notes and chords that start where an anchor is, as
     # a span by beats asks that exactly one does.
     def notes_starting_at(anchor)
-      starts.fetch(anchor.position.to_a, [])
+      @event_records.starting_at(anchor.position)
     end
 
     # The <beam>, <tuplet>, <graceGrp>, <bTrem>, and <fTrem> an event is
@@ -112,35 +112,6 @@ module HeadMusic::Notation::MEI
     end
 
     private
-
-    def build_event_record(pending)
-      grace = pending.grace
-      event = grace ? grace.event : pending.event
-      voice = @voices[pending.track]
-      voice_event, onset = event ? placed(event, voice) : [nil, nil]
-      dropped = grace && (voice_event.nil? || voice_event.rest? || event.continuation)
-      EventRecord.new(
-        part: @parts[pending.reading], voice: voice, voice_event: dropped ? nil : voice_event, kind: pending.kind,
-        chord_member: pending.chord_member, grace: !grace.nil?,
-        grace_index: (grace && !dropped) ? event.graces.index { |candidate| candidate.equal?(grace) } : nil,
-        continuation: !grace && !event&.continuation.nil?, bar_number: @bar_map.bar_number(event&.measure_index || pending.measure_index),
-        onset: onset, measure: @score.measures[pending.measure_index].number, staff: pending.content.staff_number, element: pending.element
-      )
-    end
-
-    # The voice event an event was placed as, and the exact offset into its
-    # bar where it sounds. A whole-bar rest is the rest at the start of its
-    # bar, if the voice is placed there.
-    def placed(event, voice)
-      bar = @bar_map.bar_number(event.measure_index)
-      return [voice.voice_event_at(@flow.position(bar, 1, 0)), 0] if event.fills_bar
-
-      head = event.head
-      return [nil, nil] unless head.time
-
-      time = head.time + event.link_start
-      [head.voice_event, time - @bar_map.start(bar)]
-    end
 
     def record_position(record)
       return record.voice_event.position if record.voice_event && !record.continuation?
@@ -214,14 +185,6 @@ module HeadMusic::Notation::MEI
 
     def pending_by_element
       @pending_by_element ||= @score.pending_by_element
-    end
-
-    def starts
-      @starts ||= @event_records.each_value.with_object({}) do |record, starts|
-        next unless record.note? && record.voice_event && !record.grace? && !record.continuation? && !record.chord_member?
-
-        (starts[record.voice_event.position.to_a] ||= []) << record
-      end
     end
   end
 end
