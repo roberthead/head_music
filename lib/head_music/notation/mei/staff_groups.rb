@@ -60,12 +60,6 @@ module HeadMusic::Notation::MEI
       @staff_defs.value?(staff_def)
     end
 
-    def label(element)
-      label = @editorial.children_named(element, "label").first
-      text = label ? @editorial.text(label) : attribute(element, "label", element: element)
-      text unless text.to_s.empty?
-    end
-
     def bracket(part)
       return :none unless part.group
 
@@ -86,11 +80,11 @@ module HeadMusic::Notation::MEI
     def one_part?(group, children)
       return false unless children.length > 1 && children.all? { |child| child.name == "staffDef" }
 
-      labels = children.map { |staff_def| label(staff_def) }
-      return true if label(group) && labels.none?
+      labels = children.map { |staff_def| @editorial.label(staff_def) }
+      return true if @editorial.label(group) && labels.none?
       return true if attribute(group, "symbol", element: group) == "brace" && labels.uniq.length == 1
 
-      !label(group) && labels.none? && layers_apart?(children)
+      !@editorial.label(group) && labels.none? && layers_apart?(children)
     end
 
     def layers_apart?(staff_defs)

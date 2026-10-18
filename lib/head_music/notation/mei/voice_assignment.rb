@@ -93,22 +93,17 @@ module HeadMusic::Notation::MEI
     end
 
     def role(key)
-      number = Array(key)[@by_staff ? 1 : 0]
-      staff_defs = @by_staff ? [@definition.staff_defs.values[key.first - 1]] : @definition.staff_defs.values
-      staff_defs.each do |staff_def|
-        layer_def = @editorial.children_named(staff_def, "layerDef").find do |candidate|
-          (AttributeValues.read(candidate, "n", element: candidate) || 1) == number
-        end
-        text = layer_def && layer_label(layer_def)
-        return text if text
-      end
-      nil
+      staff_defs = @definition.staff_defs.values
+      return layer_role(staff_defs[key.first - 1], key[1]) if @by_staff
+
+      staff_defs.lazy.filter_map { |staff_def| layer_role(staff_def, Array(key).first) }.first
     end
 
-    def layer_label(layer_def)
-      label = @editorial.children_named(layer_def, "label").first
-      text = label ? @editorial.text(label) : attribute(layer_def, "label", element: layer_def)
-      text unless text.to_s.strip.empty?
+    def layer_role(staff_def, number)
+      layer_def = @editorial.children_named(staff_def, "layerDef").find do |candidate|
+        (AttributeValues.read(candidate, "n", element: candidate) || 1) == number
+      end
+      layer_def && @editorial.label(layer_def)
     end
   end
 end

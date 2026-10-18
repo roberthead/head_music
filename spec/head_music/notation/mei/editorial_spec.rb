@@ -56,6 +56,24 @@ describe HeadMusic::Notation::MEI::Editorial do
     expect(names(%(<app><lem><supplied><choice><sic/><corr><note n="deep"/></corr></choice></supplied></lem></app>))).to eq ["deep"]
   end
 
+  describe "#label" do
+    def label(xml)
+      editorial.label(REXML::Document.new(xml).root)
+    end
+
+    it "reads a <label> child before a @label" do
+      expect(label(%(<staffDef label="Attribute"><label>Child</label></staffDef>))).to eq "Child"
+    end
+
+    it "falls back to the @label" do
+      expect(label(%(<staffDef label="Flute"/>))).to eq "Flute"
+    end
+
+    it "is nil for a blank label" do
+      expect(label(%(<staffDef><label>  </label></staffDef>))).to be_nil
+    end
+  end
+
   it "marks what it keeps as reached and what it rejects as not" do
     root = REXML::Document.new(%(<layer><app><lem><note n="l"/></lem><rdg><note n="r"/></rdg></app></layer>)).root
     kept = editorial.children(root).first

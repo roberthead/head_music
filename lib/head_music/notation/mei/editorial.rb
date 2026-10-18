@@ -48,6 +48,13 @@ module HeadMusic::Notation::MEI
       children(element).select { |child| child.name == name }
     end
 
+    # The text of an element's <label>, else its @label, or nil for none.
+    def label(element)
+      label = children_named(element, "label").first
+      text = label ? text(label) : XmlReading.attribute(element, "label", element: element)
+      text unless text.to_s.empty?
+    end
+
     # The text of the reading kept, its whitespace collapsed, with <lb/> as
     # a space, leaving out the elements +skip+ answers true for.
     def text(element, skip: nil)

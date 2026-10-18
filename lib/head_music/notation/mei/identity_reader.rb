@@ -60,8 +60,8 @@ module HeadMusic::Notation::MEI
     end
 
     def player(definition)
-      labels = definition.staff_defs.values.map { |staff_def| @groups.label(staff_def) }.uniq
-      name = (definition.group && @groups.label(definition.group)) || (labels.first if labels.one?)
+      labels = definition.staff_defs.values.map { |staff_def| @editorial.label(staff_def) }.uniq
+      name = (definition.group && @editorial.label(definition.group)) || (labels.first if labels.one?)
       name && HeadMusic::Content::Player.new(name: name)
     end
 
