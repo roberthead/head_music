@@ -7,22 +7,11 @@ module HeadMusic::Notation::LilyPond
   # cannot fail assembly on those grounds.
   class RenderPlan < HeadMusic::Notation::RenderPlan
     def tokens_by_segment
-      @tokens_by_segment ||= flow.voices.flat_map { |voice| segments_by_bar(voice).values.flatten }.to_h do |segment|
-        [segment, token(segment)]
-      end
+      @tokens_by_segment ||= flow.voices.each_with_object({}) { |voice, tokens| tokens.merge!(segment_tokens(voice).to_h) }
     end
 
-    # What opens and closes each tuplet bracket of the voice, by the
-    # [segment, link index] it opens before or closes after. A bracket
-    # crossing a barline opens in one bar and closes in the next.
     def tuplet_edges(voice)
-      @tuplet_edges ||= {}.compare_by_identity
-      @tuplet_edges[voice] ||= begin
-        brackets = HeadMusic::Notation::TupletBrackets.for(voice, segments_by_bar(voice).values.flatten, error_class: RenderError)
-        opens = brackets.to_h { |bracket| [link_key(bracket.first), "\\tuplet #{bracket.ratio.to_a.join("/")} { "] }
-        closes = brackets.to_h { |bracket| [link_key(bracket.last), " }"] }
-        {opens: opens, closes: closes}
-      end
+      segment_tokens(voice).tuplet_edges
     end
 
     # The length, as a fraction of a whole note, of a final bar that every
@@ -53,7 +42,7 @@ module HeadMusic::Notation::LilyPond
       @trailing_spacers ||= {}.compare_by_identity
       @trailing_spacers[voice] ||= begin
         bar_number = bar_numbers.last
-        spacer_run(bar_number, music_end_fraction, bar_length(bar_number), timed_marks(voice).trailing(bar_number, music_end_fraction))
+        SpacerRun.new(bar_number, music_end_fraction, bar_length(bar_number), timed_marks(voice).trailing(bar_number, music_end_fraction)).to_s
       end
     end
 
@@ -62,7 +51,7 @@ module HeadMusic::Notation::LilyPond
     def dynamics_bars(part)
       @dynamics_bars ||= {}.compare_by_identity
       @dynamics_bars[part] ||= bar_numbers.to_h do |bar_number|
-        text = spacer_run(bar_number, 0r, bar_length(bar_number), part_marks(part).trailing(bar_number, 0r))
+        text = SpacerRun.new(bar_number, 0r, bar_length(bar_number), part_marks(part).trailing(bar_number, 0r)).to_s
         [bar_number, [text, (bar_number == bar_numbers.last) ? final_barline_marks(part) : nil].compact.join(" ")]
       end
     end
@@ -116,33 +105,11 @@ module HeadMusic::Notation::LilyPond
       @trailing_marks = !music_end_fraction.nil? && owners_marks.any? { |marks| marks.trailing(bar_numbers.last, music_end_fraction).any? }
     end
 
-    # Spacers from one offset in the bar to another, each mark on the first
-    # spacer where it falls. Between marks where notes start, such as at
-    # tuplet onsets, a multiplied spacer reaches what no note value does.
-    def spacer_run(bar_number, from, to, marks)
-      marks_by_offset = marks.group_by(&:offset)
-      [from, *marks_by_offset.keys.sort, to].uniq.each_cons(2).flat_map { |start, finish|
-        at_onsets = [start, finish].all? { |offset| marks_by_offset.fetch(offset, []).all?(&:onset) }
-        first, *later = spacers(finish - start, at_onsets) || raise_unreachable(bar_number, marks_by_offset[finish] || marks_by_offset[start])
-        ["#{first}#{marks_by_offset.fetch(start, []).map(&:token).join}", *later]
-      }.join(" ")
-    end
-
-    def raise_unreachable(bar_number, marks)
-      subject = marks ? "the #{marks.first.label}" : "the dynamics in bar #{bar_number}"
-      raise RenderError, "cannot place #{subject} in LilyPond output: no binary note value reaches it"
-    end
-
     def bar_length(bar_number)
       return short_final_bar_fraction if bar_number == bar_numbers.last && short_final_bar_fraction
 
       meter = effective_meter(bar_number)
       Rational(meter.top_number, meter.bottom_number)
-    end
-
-    def spacers(fraction, multiplied)
-      chain = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)&.tied_chain&.map { |link| "s#{DurationWriter.token(link)}" }
-      chain || (multiplied ? ["s1*#{fraction.numerator}/#{fraction.denominator}"] : nil)
     end
 
     # LilyPond has no way to say "three flats read as dorian", so it renders
@@ -151,94 +118,9 @@ module HeadMusic::Notation::LilyPond
       KeyMapper.token(event.printed_key_signature)
     end
 
-    # A tied chain within a voice event joins its links with the tie mark, and
-    # so does a voice event split at a barline, whose piece before the bar check
-    # ends in one; a chain of rests emits consecutive untied rests, and a tied
-    # chord repeats the whole chord. Each link carries the voice's levels and
-    # hairpin marks that fall in it, and only the first the voice event's own
-    # marks, after any hairpin ending there and before any starting.
-    # A slur closes on the last link and opens on the first, closing first
-    # where they are one word, so one slur can end where the next begins. A
-    # rest reads back as one rest per link, so it carries both on its first.
-    #
-    # Each tuplet bracket opens before its first link and closes after its
-    # last, outside the link's marks and tie.
-    def token(segment)
-      voice_event = segment.voice_event
-      words = link_words(segment)
-      words[closes_index(segment, words)] += span_marks(voice_event).closes_at(voice_event.position) if closes?(segment)
-      words[0] += span_marks(voice_event).opens_at(voice_event.position) if starts?(segment)
-      words = tied(segment, words) unless voice_event.rest?
-      bracketed(segment, words).join(" ")
-    end
-
-    def tied(segment, words)
-      words.each_with_index.map { |word, index| (index < words.length - 1 || segment.continues) ? "#{word}~" : word }
-    end
-
-    def bracketed(segment, words)
-      edges = tuplet_edges(segment.voice_event.voice)
-      words.each_with_index.map do |word, index|
-        key = [segment, index]
-        "#{edges[:opens][key]}#{word}#{edges[:closes][key]}"
-      end
-    end
-
-    def link_key(link)
-      [link.segment, link.index]
-    end
-
-    # A link's offsets are exact and sounding, so marks fall where they
-    # sound, though the link is written under its ratio.
-    def link_words(segment)
-      voice_event = segment.voice_event
-      marks = timed_marks(voice_event.voice)
-      bar_number = segment.bar_number
-      from = segment.offset || HeadMusic::Notation::BarSplitter.onset_in_bar(voice_event)
-      own = starts?(segment) ? MarkWriter.token(voice_event) : ""
-      graces = starts?(segment) ? grace_token(voice_event) : ""
-      forced = starts?(segment)
-      segment.rhythmic_value!(RenderError).tied_chain.map do |link|
-        to = from + HeadMusic::Notation::DottedDuration.sounding_fraction(link)
-        word = graces + marks.around(bar_number, from, to, "#{body(voice_event, forced)}#{DurationWriter.token(link)}", own, factor: link.tuplet_ratio&.factor || 1)
-        from = to
-        own = graces = ""
-        forced = false
-        word
-      end
-    end
-
-    def grace_token(voice_event)
-      return "" if voice_event.grace_notes.empty?
-
-      marks = span_marks(voice_event)
-      position = voice_event.position
-      GraceWriter.token(voice_event, slur_opens: marks.grace_opens_at(position), implied_slur: marks.implied_grace_slur?(position))
-    end
-
-    def body(voice_event, forced)
-      return "r" if voice_event.rest?
-
-      voice_event.chord? ? PitchWriter.chord(voice_event.pitches, forced: forced) : PitchWriter.token(voice_event.pitch)
-    end
-
-    def closes?(segment)
-      segment.voice_event.rest? ? starts?(segment) : !segment.continues
-    end
-
-    def closes_index(segment, words)
-      segment.voice_event.rest? ? 0 : words.length - 1
-    end
-
-    # A rounded onset just before a barline starts in the bar before its
-    # position's.
-    def starts?(segment)
-      segment.elapsed.zero?
-    end
-
-    def span_marks(voice_event)
-      @span_marks ||= {}.compare_by_identity
-      @span_marks[voice_event.voice] ||= SpanMarks.new(voice_event.voice)
+    def segment_tokens(voice)
+      @segment_tokens ||= {}.compare_by_identity
+      @segment_tokens[voice] ||= SegmentTokens.new(voice, segments_by_bar(voice).values.flatten, timed_marks(voice))
     end
   end
 end
