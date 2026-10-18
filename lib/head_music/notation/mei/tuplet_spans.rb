@@ -22,7 +22,7 @@ module HeadMusic::Notation::MEI
         return ratio if ratio
 
         ratios = entries.map { |entry| entry.rhythmic_value&.tuplet_ratio }.uniq
-        ratios.first if ratios.one?
+        ratios.first if ratios.length == 1
       end
 
       def track

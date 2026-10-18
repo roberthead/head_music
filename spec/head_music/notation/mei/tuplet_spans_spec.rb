@@ -24,6 +24,10 @@ describe HeadMusic::Notation::MEI::TupletSpans do
       it "is nil for entries scaled differently, or for none" do
         expect([described_class.new(nil, [entry, entry(quintuplet)]).scaling, described_class.new(triplet, []).scaling]).to eq [nil, nil]
       end
+
+      it "is nil where only some entries are scaled, in either order" do
+        expect([[entry, entry(nil)], [entry(nil), entry]].map { |entries| described_class.new(nil, entries).scaling }).to eq [nil, nil]
+      end
     end
 
     describe "#placed?" do
