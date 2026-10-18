@@ -33,26 +33,27 @@ module HeadMusic::Notation::MEI
       @identity = identity
       @meter = opening.meter
       @key = opening.key
-      @staff_sourced = opening.score_def.nil? ||
-        (ScoreDefValues.key(opening.score_def, editorial).nil? && ScoreDefValues.meter(opening.score_def, editorial).nil?)
+      score_def = opening.score_def
+      @staff_sourced = score_def.nil? || (ScoreDefValues.key(score_def, editorial).nil? && ScoreDefValues.meter(score_def, editorial).nil?)
       @first_staff = groups.staff_numbers.first
       @written_fifths = {}
-      @steps = groups.staff_numbers.to_h { |number| [number, opening_transposition(number)] }
-      @score_duration_default = opening.score_def && AttributeValues.read(opening.score_def, "dur.default", element: opening.score_def)
+      @steps = {}
+      @score_duration_default = score_def && AttributeValues.read(score_def, "dur.default", element: score_def)
       @duration_defaults = {}
       @layer_duration_defaults = {}
       @added_staves = Set.new
       reset_changes
-      groups.staff_numbers.each do |number|
-        staff_def = groups.staff_def(number)
-        read_written_key(staff_def, number)
-        read_duration_defaults(staff_def, number, staff: number) if staff_def
-      end
+      groups.staff_numbers.each { |number| read_opening_staff_def(groups.staff_def(number), number) }
     end
 
     # Whether a later <staffDef> named a staff the score does not have.
     def added_staff?(number)
       @added_staves.include?(number)
+    end
+
+    # The transposition each staff is written in, where it is in one.
+    def steps
+      @steps.compact
     end
 
     def written_fifths(staff_number)
@@ -76,7 +77,7 @@ module HeadMusic::Notation::MEI
     def self.concert_key(key, step)
       return key unless step
 
-      ScoreDefValues::Key.new(key.fifths + (7 * step.chromatic) - (12 * step.diatonic), key.mode, nil)
+      ScoreDefValues::Key.new(key.fifths + step.fifths, key.mode, nil)
     end
 
     def self.transposition(staff_def, **where)
@@ -108,7 +109,9 @@ module HeadMusic::Notation::MEI
     def apply_staff_def(element, **where)
       number = AttributeValues.read(element, "n", **where, element: element)
       raise ParseError.new("A <staffDef> has no @n", **where, element: element) unless number
-      return @added_staves << number unless @groups.part_for(number)
+
+      part = @groups.part_for(number)
+      return @added_staves << number unless part
 
       where = where.merge(staff: number, element: element)
       transposition = self.class.transposition(element, **where.except(:element))
@@ -121,16 +124,17 @@ module HeadMusic::Notation::MEI
       @clefs[number] = clef if clef
       instr_def = @editorial.children_named(element, "instrDef").first
       instrument = instr_def && @identity.instrument_of(instr_def)
-      @instruments[@groups.part_for(number).index] = instrument if instrument
+      @instruments[part.index] = instrument if instrument
     end
 
     # A staff's key from this measure on, as its <staffDef> or a <keySig>
     # opening its layer states it.
     def change_key(number, key)
       if number == @first_staff
+        step = @steps[number]
         if @staff_sourced
-          @key = self.class.concert_key(key, @steps[number])
-        elsif !transposing?(@steps[number])
+          @key = self.class.concert_key(key, step)
+        elsif !step || step.identity?
           @key = key
         end
       end
@@ -139,13 +143,11 @@ module HeadMusic::Notation::MEI
 
     private
 
-    def opening_transposition(number)
-      staff_def = @groups.staff_def(number)
-      staff_def && self.class.transposition(staff_def, staff: number)
-    end
-
-    def transposing?(step)
-      !step.nil? && !(step.diatonic.zero? && step.chromatic.zero?)
+    def read_opening_staff_def(staff_def, number)
+      @steps[number] = self.class.transposition(staff_def, staff: number)
+      key = ScoreDefValues.key(staff_def, @editorial, staff: number)
+      @written_fifths[number] = key.fifths if key
+      read_duration_defaults(staff_def, number, staff: number)
     end
 
     def reset_changes
@@ -181,11 +183,6 @@ module HeadMusic::Notation::MEI
         layer = AttributeValues.read(layer_def, "n", **where, element: layer_def) || 1
         @layer_duration_defaults[[number, layer]] = layer_default if layer_default
       end
-    end
-
-    def read_written_key(staff_def, number)
-      key = staff_def && ScoreDefValues.key(staff_def, @editorial, staff: number)
-      @written_fifths[number] = key.fifths if key
     end
 
     def staff_defs_in(group, depth)

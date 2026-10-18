@@ -40,8 +40,8 @@ module HeadMusic::Notation::MEI
       @editorial = source.editorial
       @groups = groups
       @readings = groups.parts.map { |definition| PartReading.new(definition) }
-      transpose(@readings, groups.staff_numbers.filter_map { |number| opening_transposition(groups, number) }.to_h)
       @state = StaffState.new(opening, groups, @editorial, identity)
+      transpose(@state.steps)
       @opening_score_def = opening.score_def
       @ties = TieControls.new(source.index)
       @tuplets = TupletSpans.new(source.index)
@@ -82,17 +82,11 @@ module HeadMusic::Notation::MEI
       @measures.last&.number
     end
 
-    def opening_transposition(groups, number)
-      staff_def = groups.staff_def(number)
-      step = staff_def && StaffState.transposition(staff_def, staff: number)
-      [number, step] if step
-    end
-
     # Each staff's transposition from the next note read on it.
-    def transpose(readings, steps)
+    def transpose(steps)
       steps.each do |number, step|
-        reading = readings.find { |candidate| candidate.definition.staff_index(number) }
-        reading&.transposition&.change(reading.definition.staff_index(number), step)
+        definition = @groups.part_for(number)
+        @readings[definition.index].transposition.change(definition.staff_index(number), step)
       end
     end
 
@@ -112,7 +106,7 @@ module HeadMusic::Notation::MEI
       @ties.note_controls(contents.controls, where)
       @tuplets.note_controls(contents.controls, where)
       changes = @state.take_changes
-      transpose(@readings, changes.transpositions)
+      transpose(changes.transpositions)
       contents.read(@readings)
       contents.all.each { |content| @state.change_key(content.staff_number, content.opening_key) if content.opening_key }
       index = @measures.length
@@ -155,26 +149,31 @@ module HeadMusic::Notation::MEI
       bars
     end
 
+    # The later bars of a <multiRest> repeat its first without its tempo
+    # and controls.
     def add_measures(element, contents, passes, where)
-      index = @measures.length
       bars = bar_count(contents, where)
-      tempo = DownbeatTempo.tempo(contents.controls, contents.entries, @state.meter, @source.index, **where)
+      controls = contents.controls
+      meter = @state.meter
+      tempo = DownbeatTempo.tempo(controls, contents.entries, meter, @source.index, **where)
+      index = @measures.length
       bars.times do |offset|
-        first = offset.zero?
-        add_measure(element, index + offset, first ? contents.controls : [], first ? tempo : nil, passes, where)
+        measure = Measure.new(
+          index: index + offset, element: element, number: where[:measure], meter: meter, key: @state.key,
+          tempo: tempo, controls: controls, ending_passes: passes
+        )
+        add_measure(measure, where)
+        tempo, controls = nil, []
       end
     end
 
-    def add_measure(element, index, controls, tempo, passes, where)
-      meter = @state.meter
-      @measures << Measure.new(
-        index: index, element: element, number: where[:measure], meter: meter, key: @state.key,
-        tempo: tempo, controls: controls, ending_passes: passes
-      )
-      implicit = MeasureLength.short?(element, index, **where)
+    def add_measure(measure, where)
+      @measures << measure
+      index = measure.index
+      implicit = MeasureLength.short?(measure.element, index, **where)
       @readings.each do |reading|
         reading.measures << PartReading::Measure.new(
-          index: index, number: where[:measure], implicit: implicit, meter: meter, tolerance: PartReading::TOLERANCE, clefs: {}
+          index: index, number: measure.number, implicit: implicit, meter: measure.meter, tolerance: PartReading::TOLERANCE, clefs: {}
         )
       end
     end
