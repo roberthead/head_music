@@ -372,4 +372,19 @@ describe HeadMusic::Notation::MusicXML::DirectionReader do
       end
     end
   end
+
+  describe "Mark" do
+    let(:flow) { HeadMusic::Content::Flow.new(name: "Owners", meter: "4/4") }
+    let(:part) { flow.add_part }
+
+    def mark(owner)
+      described_class::Mark.new(owner, 1, 0, :dynamic, nil)
+    end
+
+    it "belongs to its owner's part and falls on its owner's voices" do
+      soprano = part.add_voice
+      alto = part.add_voice
+      expect([mark(part).part, mark(part).voices, mark(alto).part, mark(alto).voices]).to eq [part, [soprano, alto], part, [alto]]
+    end
+  end
 end
