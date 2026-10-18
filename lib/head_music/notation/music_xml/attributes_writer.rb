@@ -18,22 +18,10 @@ module HeadMusic::Notation::MusicXML
     end
 
     def lines(part, bar_number)
-      return first_measure_lines(part) if bar_number == bar_numbers.first
+      inner = (bar_number == bar_numbers.first) ? first_measure_lines(part) : change_lines(part, bar_number)
+      return [] if inner.empty?
 
-      key = measure_key_changes(part)[bar_number]
-      meter = measure_time_changes[bar_number]
-      clefs = clef_change_lines(part, bar_number)
-      transpose = instrument_change_transpose_lines(part, bar_number)
-      return [] unless key || meter || clefs.any? || transpose.any?
-
-      [
-        "#{INDENT * 3}<attributes>",
-        *(key ? key_lines(key) : []),
-        *(meter ? time_lines(meter) : []),
-        *clefs,
-        *transpose,
-        "#{INDENT * 3}</attributes>"
-      ]
+      ["#{INDENT * 3}<attributes>", *inner, "#{INDENT * 3}</attributes>"]
     end
 
     private
@@ -42,14 +30,21 @@ module HeadMusic::Notation::MusicXML
 
     def first_measure_lines(part)
       [
-        "#{INDENT * 3}<attributes>",
         "#{INDENT * 4}<divisions>#{divisions}</divisions>",
         *key_lines(first_measure_key(part)),
         *time_lines(first_measure_meter),
         *staves_lines(part),
-        *clef_lines(part),
-        *transpose_lines(part.instrument_at(bar_numbers.first)),
-        "#{INDENT * 3}</attributes>"
+        *clef_lines(part.staff_system.staves) { |staff| clef_for(part, staff) },
+        *transpose_lines(part.instrument_at(bar_numbers.first))
+      ]
+    end
+
+    def change_lines(part, bar_number)
+      [
+        *key_lines(measure_key_changes(part)[bar_number]),
+        *time_lines(measure_time_changes[bar_number]),
+        *clef_lines(part.staff_system_at(bar_number).staves) { |staff| staff.clef_changes[bar_number] },
+        *instrument_change_transpose_lines(part, bar_number)
       ]
     end
 
@@ -58,28 +53,31 @@ module HeadMusic::Notation::MusicXML
     def instrument_change_transpose_lines(part, bar_number)
       return [] unless part.instrument_changes.key?(bar_number)
 
-      returns_to_concert = part.instrument_at(bar_number - 1)&.sounding_transposition.to_i.nonzero?
-      transpose_lines(part.instrument_at(bar_number), reset: returns_to_concert)
+      transpose_lines(part.instrument_at(bar_number), part.instrument_at(bar_number - 1))
     end
 
     # <transpose> states sounding = written + transpose, the same convention the
     # instrument catalog states its sounding_transposition in. The octaves go in
     # <octave-change>, which is how publishers write a bass clarinet.
-    def transpose_lines(instrument, reset: false)
+    def transpose_lines(instrument, previous = nil)
       return [] unless transposed?
 
-      semitones = instrument&.sounding_transposition.to_i
-      return [] if semitones.zero? && !reset
+      semitones = semitones(instrument)
+      return [] if semitones.zero? && semitones(previous).zero?
 
-      sign = semitones.negative? ? -1 : 1
-      octaves, chromatic = semitones.abs.divmod(12)
+      chromatic = semitones.remainder(12)
+      octaves = (semitones - chromatic) / 12
       [
         "#{INDENT * 4}<transpose>",
-        "#{INDENT * 5}<diatonic>#{diatonic_steps(sign * chromatic)}</diatonic>",
-        "#{INDENT * 5}<chromatic>#{sign * chromatic}</chromatic>",
-        (octaves.zero? ? nil : "#{INDENT * 5}<octave-change>#{sign * octaves}</octave-change>"),
+        "#{INDENT * 5}<diatonic>#{diatonic_steps(chromatic)}</diatonic>",
+        "#{INDENT * 5}<chromatic>#{chromatic}</chromatic>",
+        (octaves.zero? ? nil : "#{INDENT * 5}<octave-change>#{octaves}</octave-change>"),
         "#{INDENT * 4}</transpose>"
       ].compact
+    end
+
+    def semitones(instrument)
+      instrument&.sounding_transposition.to_i
     end
 
     def diatonic_steps(semitones)
@@ -97,6 +95,8 @@ module HeadMusic::Notation::MusicXML
     end
 
     def key_lines(key)
+      return [] unless key
+
       [
         "#{INDENT * 4}<key>",
         "#{INDENT * 5}<fifths>#{key[:fifths]}</fifths>",
@@ -106,6 +106,8 @@ module HeadMusic::Notation::MusicXML
     end
 
     def time_lines(meter)
+      return [] unless meter
+
       [
         "#{INDENT * 4}<time>",
         "#{INDENT * 5}<beats>#{meter.top_number}</beats>",
@@ -117,17 +119,13 @@ module HeadMusic::Notation::MusicXML
     # An authored clef wins; the selector is the fallback for a part whose staves
     # were never authored. It reads a *voice's* pitch range, which is why the
     # fallback lives here, where a voice is in scope, rather than on the staff.
-    def clef_lines(part)
-      staves = part.staff_system.staves
-      staves.each_with_index.flat_map do |staff, index|
-        clef_element_lines(clef_for(part, staff), clef_number(staves, index))
-      end
+    def clef_for(part, staff)
+      staff.clef_at(bar_numbers.first) || HeadMusic::Notation::ClefSelector.for(part.voices.first)
     end
 
-    def clef_change_lines(part, bar_number)
-      staves = part.staff_system_at(bar_number).staves
+    def clef_lines(staves)
       staves.each_with_index.flat_map do |staff, index|
-        clef = staff.clef_changes[bar_number]
+        clef = yield(staff)
         clef ? clef_element_lines(clef, clef_number(staves, index)) : []
       end
     end
@@ -136,25 +134,19 @@ module HeadMusic::Notation::MusicXML
       (staves.length > 1) ? %( number="#{index + 1}") : ""
     end
 
-    def clef_for(part, staff)
-      staff.clef_at(bar_numbers.first) || HeadMusic::Notation::ClefSelector.for(part.voices.first)
-    end
-
+    # The octave change is how far the clef's pitch sits from its sign's usual
+    # register, as the tenor's treble clef sits an octave below G4.
     def clef_element_lines(clef, number)
-      octave_change = clef_octave_change(clef)
+      pitch = clef.pitch
+      sign = pitch.letter_name
+      octave_change = pitch.register - CLEF_REGISTERS.fetch(sign.to_s)
       [
         "#{INDENT * 4}<clef#{number}>",
-        "#{INDENT * 5}<sign>#{clef.pitch.letter_name}</sign>",
+        "#{INDENT * 5}<sign>#{sign}</sign>",
         "#{INDENT * 5}<line>#{clef.line}</line>",
         octave_change.zero? ? nil : "#{INDENT * 5}<clef-octave-change>#{octave_change}</clef-octave-change>",
         "#{INDENT * 4}</clef>"
       ].compact
-    end
-
-    # How far the clef's pitch sits from its sign's usual register, as the
-    # tenor's treble clef sits an octave below G4.
-    def clef_octave_change(clef)
-      clef.pitch.register - CLEF_REGISTERS.fetch(clef.pitch.letter_name.to_s)
     end
   end
 end

@@ -28,14 +28,14 @@ module HeadMusic::Notation::MusicXML
       Attributes.new(clefs: {}, transpositions: {}).tap do |attributes|
         @element.each_element do |child|
           case child.name
-          when "divisions" then attributes.divisions = divisions(child)
+          when "divisions" then attributes.divisions = positive(rational(text(child, **where), "<divisions>", **where), "<divisions>")
           when "key" then attributes.key ||= key(child)
           when "time" then attributes.meter ||= meter(child)
           when "measure-style" then attributes.measure_repeat ||= !first_child(child, "measure-repeat").nil?
-          when "staves" then attributes.staves = staves(child)
+          when "staves" then attributes.staves = positive_integer(text(child, **where), "<staves>")
           when "part-symbol" then attributes.part_symbol = text(child, **where)
-          when "transpose" then attributes.transpositions[integer(attribute(child, "number", **where), "transpose number", **where)] = transposition(child)
-          when "clef" then attributes.clefs[(integer(attribute(child, "number", **where), "clef number", **where) || 1)] = ClefReader.clef(child, **where)
+          when "transpose" then attributes.transpositions[number(child, "transpose")] = transposition(child)
+          when "clef" then attributes.clefs[number(child, "clef") || 1] = ClefReader.clef(child, **where)
           end
         end
       end
@@ -45,13 +45,6 @@ module HeadMusic::Notation::MusicXML
 
     attr_reader :where
 
-    def divisions(element)
-      value = rational(text(element, **where), "<divisions>", **where)
-      raise ParseError.new("<divisions> must be positive", **where) unless value&.positive?
-
-      value
-    end
-
     def transposition(element)
       diatonic, chromatic, octaves = %w[diatonic chromatic octave-change].map do |name|
         integer(text(element, name, **where), "<#{name}>", **where).to_i
@@ -59,11 +52,8 @@ module HeadMusic::Notation::MusicXML
       HeadMusic::Notation::ConcertTransposition::Step.new(diatonic, chromatic, octaves)
     end
 
-    def staves(element)
-      value = integer(text(element, **where), "<staves>", **where)
-      raise ParseError.new("<staves> must be positive", **where) unless value&.positive?
-
-      value
+    def number(element, label)
+      integer(attribute(element, "number", **where), "#{label} number", **where)
     end
 
     # [fifths, mode], the mode nil where none is written.
@@ -87,15 +77,18 @@ module HeadMusic::Notation::MusicXML
         raise UnsupportedFeatureError.new("Compound meters such as #{beats}/#{beat_type} are not supported", **where)
       end
 
-      top = meter_number(beats, "<beats>")
-      bottom = meter_number(beat_type, "<beat-type>")
+      top = positive_integer(beats, "<beats>")
+      bottom = positive_integer(beat_type, "<beat-type>")
       raise UnsupportedFeatureError.new("The meter #{top}/#{bottom} is not supported", **where) unless HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom)
 
       HeadMusic::Rudiment::Meter.get("#{top}/#{bottom}")
     end
 
-    def meter_number(text, label)
-      value = integer(text, label, **where)
+    def positive_integer(text, label)
+      positive(integer(text, label, **where), label)
+    end
+
+    def positive(value, label)
       raise ParseError.new("#{label} must be positive", **where) unless value&.positive?
 
       value

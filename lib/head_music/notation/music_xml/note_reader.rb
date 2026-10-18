@@ -10,6 +10,7 @@ module HeadMusic::Notation::MusicXML
 
     UNIT_NAMES_BY_TYPE = DurationWriter::TYPES_BY_UNIT_NAME.invert.freeze
     MAX_DOTS = 3
+    FLAG_ATTRIBUTES = {"grace" => ["slash", :slashed], "rest" => ["measure", :measure_rest]}.freeze
 
     Note = Struct.new(
       :element, :grace, :slashed, :chord, :cue, :hidden, :rest, :measure_rest, :pitch, :unpitched, :duration,
@@ -53,16 +54,9 @@ module HeadMusic::Notation::MusicXML
 
     def read_child(note, child)
       case child.name
-      when "grace"
-        note.grace = true
-        note.slashed = attribute(child, "slash", **where) == "yes"
-      when "chord" then note.chord = true
-      when "cue" then note.cue = true
-      when "rest"
-        note.rest = true
-        note.measure_rest = attribute(child, "measure", **where) == "yes"
+      when "chord", "cue", "unpitched" then note[child.name] = true
+      when "grace", "rest" then read_flag(note, child)
       when "pitch" then note.pitch = PitchReader.pitch(child, **where)
-      when "unpitched" then note.unpitched = true
       when "duration" then note.duration = text(child, **where)
       when "tie" then note.ties << attribute(child, "type", **where)
       when "voice"
@@ -74,6 +68,13 @@ module HeadMusic::Notation::MusicXML
       when "staff" then note.staff = integer(text(child, **where), "<staff>", **where)
       when "notations" then read_notations(note, child)
       end
+    end
+
+    # A <grace slash="yes"/> is slashed, and a <rest measure="yes"/> fills its measure.
+    def read_flag(note, child)
+      note[child.name] = true
+      attribute_name, field = FLAG_ATTRIBUTES.fetch(child.name)
+      note[field] = attribute(child, attribute_name, **where) == "yes"
     end
 
     def read_time_modification(note, element)
