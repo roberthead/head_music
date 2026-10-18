@@ -130,7 +130,7 @@ module HeadMusic::Notation::ABC
     def handle_rest(token)
       state = current_state
       navigation_tagger.record_at_note(state)
-      end_notes(state, token.line)
+      state.end_notes(token.line)
       state.place(token.length, nil)
     end
 
@@ -140,7 +140,7 @@ module HeadMusic::Notation::ABC
       state = current_state
       unless state.overlay?
         navigation_tagger.record_at_note(state)
-        end_notes(state, token.line)
+        state.end_notes(token.line)
       end
       state.skip(token.length)
     end
@@ -150,7 +150,7 @@ module HeadMusic::Notation::ABC
     # stays pending.
     def handle_overlay(token)
       state = current_state
-      pause_notes(state, token.line)
+      state.pause_notes(token.line)
       state.start_overlay
     end
 
@@ -158,42 +158,6 @@ module HeadMusic::Notation::ABC
       state = current_state
       state.ensure_not_awaiting_note(token.line)
       state.space
-    end
-
-    # A rest, a voice change, or the end of the tune ends a run of notes:
-    # nothing after it can complete a broken rhythm or close a tie.
-    def end_notes(state, line)
-      state.drop_graces
-      state.ensure_not_awaiting_note(line)
-      state.reject_open_tie(line)
-      state.flush_pending_note
-      state.beams.reset
-    end
-
-    # Nothing further in the voice can take a decoration either.
-    def end_voice(state, line)
-      end_notes(state, line)
-      state.settle_hairpins
-      state.reject_dangling_decorations
-      state.end_overlay(line)
-      state.end_invisible_rests
-      state.end_tuplets
-    end
-
-    # A bar line or volta is not a terminator: a tied note stays pending
-    # across it and closes on the next note.
-    def cross_bar_line(state, line)
-      pause_notes(state, line)
-      state.cross_bar_line(line)
-    end
-
-    def pause_notes(state, line)
-      state.drop_graces
-      state.ensure_not_awaiting_note(line)
-      state.settle_hairpins
-      state.reject_dangling_decorations
-      state.flush_pending_note unless state.tie_open?
-      state.beams.reset
     end
 
     def handle_broken_rhythm(token)
@@ -211,7 +175,7 @@ module HeadMusic::Notation::ABC
     def handle_bar_line(token)
       state = current_state
       navigation_tagger.record_at_bar_line(state)
-      cross_bar_line(state, token.line)
+      state.cross_bar_line(token.line)
       repeat_tagger.bar_line(state, token.style)
       state.pitch_builder.start_new_bar
     end
@@ -224,7 +188,7 @@ module HeadMusic::Notation::ABC
       raise ParseError.new("Volta has no passes", line_number: line) if passes.empty?
 
       navigation_tagger.record_at_bar_line(state)
-      cross_bar_line(state, line)
+      state.cross_bar_line(line)
       repeat_tagger.open_volta(state, passes)
     end
 
@@ -233,7 +197,7 @@ module HeadMusic::Notation::ABC
       if @voices.any?
         state = current_state
         navigation_tagger.record_at_bar_line(state, entering: false)
-        end_voice(state, token.line)
+        state.end_voice(token.line)
       end
       @voices.switch_to(token.voice_id)
     end
@@ -252,7 +216,7 @@ module HeadMusic::Notation::ABC
     def finish
       @voices.each do |state|
         navigation_tagger.record_at_bar_line(state, entering: false)
-        end_voice(state, nil)
+        state.end_voice(nil)
         repeat_tagger.tag_completed_bar(state)
         state.add_hairpins
       end

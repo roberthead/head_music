@@ -17,6 +17,21 @@ describe HeadMusic::Notation::ABC::PendingNote do
     expect([note.ties_to?([pitch("C4")]), note.ties_to?([pitch("C5")])]).to eq [true, false]
   end
 
+  it "closes a slur after its own marks" do
+    expect(note.closing_slur.slur_marks).to eq %i[open close]
+  end
+
+  it "scales its length" do
+    expect(note.scaled(Rational(3, 2)).rhythmic_value(duration_resolver).to_s).to eq "dotted quarter"
+  end
+
+  it "carries its beam break and grace notes onto its voice event" do
+    grace_note = HeadMusic::Content::GraceNote.new(sounds: pitch("D4"), rhythmic_value: :eighth)
+    voice_event = HeadMusic::Content::Flow.new.add_voice(role: nil).place("1:1", :quarter, "C4")
+    note.with(graces: [grace_note]).carry_onto(voice_event)
+    expect([voice_event.beam_break_before, voice_event.grace_notes.length]).to eq [true, 1]
+  end
+
   describe "#tied_to" do
     subject(:tied) { note.tied_to(link, prefix, [:fixed]) }
 

@@ -55,6 +55,39 @@ describe HeadMusic::Notation::ABC::VoiceState do
     end
   end
 
+  describe "runs of notes" do
+    subject(:state) { described_class.new(voice, nil, duration_resolver) }
+
+    let(:voice) { HeadMusic::Content::Flow.new.add_voice(role: nil) }
+    let(:duration_resolver) { HeadMusic::Notation::ABC::DurationResolver.new("1/4") }
+    let(:pitch) { HeadMusic::Rudiment::Pitch.get("C4") }
+
+    it "keeps a tied note pending across a bar line" do
+      state.defer_voice_event([pitch], "1")
+      state.open_tie(1)
+      state.cross_bar_line(1)
+      expect([voice.voice_events, state]).to match [[], be_tie_open]
+    end
+
+    it "flushes an untied note at a bar line" do
+      state.defer_voice_event([pitch], "1")
+      state.cross_bar_line(1)
+      expect(voice.voice_events.length).to eq 1
+    end
+
+    it "refuses to end a run with a tie open" do
+      state.defer_voice_event([pitch], "1")
+      state.open_tie(1)
+      expect { state.end_notes(2) }.to raise_error(HeadMusic::Notation::ABC::ParseError, /followed by a note/)
+    end
+
+    it "places the pending note when the voice ends" do
+      state.defer_voice_event([pitch], "1")
+      state.end_voice(nil)
+      expect([voice.voice_events.length, voice.tuplets]).to eq [1, []]
+    end
+  end
+
   describe "invisible rests" do
     subject(:state) { described_class.new(voice, nil, duration_resolver) }
 

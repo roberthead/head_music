@@ -13,8 +13,11 @@ module HeadMusic::Notation::ABC
       @values.any?
     end
 
+    # Where the rest starts and ends.
     def add(rhythmic_value)
+      from = music_end
       @values << rhythmic_value
+      [from, music_end]
     end
 
     def music_end

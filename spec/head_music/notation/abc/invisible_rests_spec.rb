@@ -10,6 +10,12 @@ describe HeadMusic::Notation::ABC::InvisibleRests do
     expect([rests.music_end.to_s, voice.voice_events]).to eq ["1:3:000", []]
   end
 
+  it "says where each one starts and ends" do
+    rests.add(HeadMusic::Rudiment::RhythmicValue.new(:half))
+    span = rests.add(HeadMusic::Rudiment::RhythmicValue.new(:quarter))
+    expect(span.map(&:to_s)).to eq ["1:3:000", "1:4:000"]
+  end
+
   it "places them as rests" do
     rests.add(HeadMusic::Rudiment::RhythmicValue.new(:half))
     rests.place

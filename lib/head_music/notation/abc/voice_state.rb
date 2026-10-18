@@ -2,10 +2,9 @@
 module HeadMusic::Notation::ABC
   # Per-voice interpretation state and the note-assembly it drives. Accidentals,
   # the deferred note, ties, and volta tracking are all independent between
-  # voices, so each voice owns one of these. Beam adjacency and tie bookkeeping
-  # are exposed as transitions rather than raw setters, and the parser hands
-  # notes and chords here to be buffered, tied, and flushed onto the voice — the
-  # behavior that reads and mutates this state lives with the state itself.
+  # voices, so each voice owns one of these. The parser hands notes and chords
+  # here to be buffered, tied, and flushed onto the voice, and says where a run
+  # of notes ends or pauses.
   class VoiceState
     # The identity length scale, used wherever no stretching applies.
     ONE = Rational(1)
@@ -22,7 +21,7 @@ module HeadMusic::Notation::ABC
       @tie = PendingTie.new
       @decorations = PendingDecorations.new(voice)
       @slurs = PendingSlurs.new(voice)
-      @graces = []
+      @graces = PendingGraces.new(@slurs)
       @invisible_rests = InvisibleRests.new(voice)
       @tuplets = TupletGrouping.new(voice)
       @overlay = VoiceOverlay.new(voice)
@@ -42,17 +41,7 @@ module HeadMusic::Notation::ABC
     # them starts on the first of them. Inside an open tie, where the next
     # note is a later link, they are dropped.
     def add_graces(graces)
-      return if tie_open? || graces.empty?
-
-      @graces.concat(graces)
-      @slurs.start_on_graces
-    end
-
-    # A rest, bar line, or the end of the voice drops the grace notes waiting
-    # for a note, and a slur opened before them starts on what comes next.
-    def drop_graces
-      @graces = []
-      @slurs.start_after_graces
+      @graces.add(graces) unless tie_open?
     end
 
     # ")" closes the latest open slur on the note just written. Slurs pair by
@@ -62,7 +51,7 @@ module HeadMusic::Notation::ABC
     # two slurs.
     def close_slur
       if pending_note
-        self.pending_note = pending_note.with(slur_marks: pending_note.slur_marks + [:close])
+        self.pending_note = pending_note.closing_slur
       elsif voice.last_voice_event
         @slurs.apply(voice.last_voice_event, [:close])
       end
@@ -71,10 +60,6 @@ module HeadMusic::Notation::ABC
     # "(p:q:r" puts the ratio on the next r notes, chords, and rests.
     def open_tuplet(marker, line)
       @tuplets.open(marker, line)
-    end
-
-    def end_tuplets
-      @tuplets.close
     end
 
     # Counted from where the last note ends rather than where it starts: a
@@ -103,9 +88,7 @@ module HeadMusic::Notation::ABC
         @overlay.advance(@duration_resolver.rhythmic_value(length))
       else
         ratio, ends = @tuplets.count
-        from = music_end
-        @invisible_rests.add @duration_resolver.rhythmic_value(length, tuplet: ratio)
-        @tuplets.mark_ends(ends, from, music_end)
+        @tuplets.mark_ends(ends, *@invisible_rests.add(@duration_resolver.rhythmic_value(length, tuplet: ratio)))
       end
     end
 
@@ -118,19 +101,35 @@ module HeadMusic::Notation::ABC
       @decorations.settle_hairpins(mark_position)
     end
 
+    # A rest, a voice change, or the end of the tune ends a run of notes:
+    # nothing after it can complete a broken rhythm or close a tie.
+    def end_notes(line)
+      interrupt_notes(line)
+      reject_open_tie(line)
+      flush_pending_note
+    end
+
+    # A bar line, volta, or overlay only pauses one: a tied note stays
+    # pending across it and closes on the next note.
+    def pause_notes(line)
+      interrupt_notes(line)
+      settle_and_reject_decorations
+      flush_pending_note unless tie_open?
+    end
+
     def cross_bar_line(line = nil)
+      pause_notes(line)
       end_overlay(line)
       @overlay.bar_line(cursor)
     end
 
-    # Invisible rests left in the bar where the music ends hold only time for
-    # a level there. Once they reach a later bar, that bar is part of the
-    # music, and they are rests.
-    def end_invisible_rests
-      return unless ending_bar_number(music_end) > ending_bar_number(voice.next_position)
-
-      @invisible_rests.place
-      @tuplets.group_closed
+    # Nothing further in the voice can take a decoration either.
+    def end_voice(line)
+      end_notes(line)
+      settle_and_reject_decorations
+      end_overlay(line)
+      end_invisible_rests
+      @tuplets.close
     end
 
     def start_overlay
@@ -172,7 +171,7 @@ module HeadMusic::Notation::ABC
         raise ParseError.new("Broken rhythm must appear between two notes", line_number: line, snippet: direction.to_s)
       end
 
-      self.pending_note = pending_note.with(scale: pending_note.scale * @broken_rhythm.break(direction, line))
+      self.pending_note = pending_note.scaled(@broken_rhythm.break(direction, line))
     end
 
     # Buffers a note or chord as the pending note, flushing whatever was
@@ -181,7 +180,7 @@ module HeadMusic::Notation::ABC
     # open the arriving note instead extends the pending tie chain.
     def defer_voice_event(pitches, length, inner_scale = ONE)
       tied = tie_open?
-      drop_graces if tied
+      @graces.drop if tied
       note = arriving_note(pitches, length, inner_scale, beam_break: tied ? nil : @beams.next_break)
       return tie_onto_pending(note) if tied
 
@@ -197,8 +196,7 @@ module HeadMusic::Notation::ABC
 
       self.pending_note = nil
       voice_event = place_next(pending.rhythmic_value(@duration_resolver), pending.pitches)
-      voice_event.beam_break_before = pending.beam_break
-      pending.add_graces_to(voice_event)
+      pending.carry_onto(voice_event)
       @decorations.apply(voice_event, pending.decorations)
       @slurs.apply(voice_event, pending.slur_marks)
       @tuplets.place_ends(voice_event, pending.tuplet_ends, pending.tied_prefix)
@@ -217,6 +215,29 @@ module HeadMusic::Notation::ABC
 
     private
 
+    # A rest, bar line, or the end of the voice drops the grace notes waiting
+    # for a note.
+    def interrupt_notes(line)
+      @graces.drop
+      ensure_not_awaiting_note(line)
+      @beams.reset
+    end
+
+    def settle_and_reject_decorations
+      settle_hairpins
+      reject_dangling_decorations
+    end
+
+    # Invisible rests left in the bar where the music ends hold only time for
+    # a level there. Once they reach a later bar, that bar is part of the
+    # music, and they are rests.
+    def end_invisible_rests
+      return unless ending_bar_number(music_end) > ending_bar_number(voice.next_position)
+
+      @invisible_rests.place
+      @tuplets.group_closed
+    end
+
     def place_next(rhythmic_value, pitches)
       @invisible_rests.place
       voice.place(voice.next_position, rhythmic_value, pitches)
@@ -230,8 +251,7 @@ module HeadMusic::Notation::ABC
       scale = @broken_rhythm.take_scale * inner_scale
       decorations = @decorations.take
       ratio, ends = @tuplets.count
-      graces = @graces
-      @graces = []
+      graces = @graces.take
       PendingNote.new(
         pitches: pitches, length: length, scale: scale, beam_break: beam_break, decorations: decorations,
         slur_marks: @slurs.take, ratio: ratio, tuplet_ends: ends, graces: graces

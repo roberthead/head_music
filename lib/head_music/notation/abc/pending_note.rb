@@ -20,6 +20,14 @@ module HeadMusic::Notation::ABC
       tied_prefix ? tied_prefix.append_tied(own) : own
     end
 
+    def closing_slur
+      with(slur_marks: slur_marks + [:close])
+    end
+
+    def scaled(factor)
+      with(scale: scale * factor)
+    end
+
     # A tie carries its accidental across the bar line, where the key
     # signature would otherwise respell the note, so the same letters in the
     # same octaves are the same pitches.
@@ -37,7 +45,9 @@ module HeadMusic::Notation::ABC
       )
     end
 
-    def add_graces_to(voice_event)
+    # Its authored beam break and its grace notes.
+    def carry_onto(voice_event)
+      voice_event.beam_break_before = beam_break
       graces.each do |grace|
         voice_event.add_grace_note(
           grace.sounds, grace.rhythmic_value, slashed: grace.slashed?, tied: grace.tied?, articulations: grace.articulations
