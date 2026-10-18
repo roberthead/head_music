@@ -147,18 +147,11 @@ class HeadMusic::Content::VoiceEvent
   end
 
   def to_h
-    hash = {
+    {
       "position" => position.to_s,
       "rhythmic_value" => rhythmic_value.to_s,
       "sounds" => sounds.map { |sound| HeadMusic::Content::SoundResolver.datum(sound) }
-    }
-    hash["beam_break_before"] = beam_break_before unless beam_break_before.nil?
-    hash["syllables"] = syllables.keys.sort.map { |verse| syllables[verse].to_h } unless syllables.empty?
-    hash["articulations"] = articulations.map(&:name_key) unless articulations.empty?
-    hash["ornaments"] = ornaments.map(&:name_key) unless ornaments.empty?
-    hash["note_dynamic"] = note_dynamic.name_key if note_dynamic
-    hash["grace_notes"] = grace_notes.map(&:to_h) unless grace_notes.empty?
-    hash
+    }.merge(markings_to_h)
   end
 
   # @api private for Run, which walks back to the start of a run
@@ -169,56 +162,20 @@ class HeadMusic::Content::VoiceEvent
     @memoized
   end
 
-  # Walks back from a voice event to where its run of one ratio starts, or to
-  # one whose remainder is already known, then forward adding exact lengths.
-  # Iterative, so that a long run cannot exhaust the stack.
-  class Run
-    def initialize(voice_event)
-      @voice_event = voice_event
-    end
-
-    def remainder
-      events = candidates
-      remainder = events.first.memoized[:onset_remainder] || 0
-      events.each_cons(2) do |previous, current|
-        remainder = current.memoized[:onset_remainder] = following_remainder(previous, remainder, current)
-      end
-      remainder
-    end
-
-    private
-
-    attr_reader :voice_event
-
-    def candidates
-      events = [voice_event]
-      loop do
-        previous = sharing_predecessor(events.first)
-        break unless previous
-
-        events.unshift(previous)
-        break if previous.memoized.key?(:onset_remainder)
-      end
-      events
-    end
-
-    def following_remainder(previous, remainder, current)
-      carried = remainder + previous.rhythmic_value.exact_subticks
-      return 0 unless previous.position.advance(subticks: carried.round) == current.position
-
-      carried - carried.round
-    end
-
-    def sharing_predecessor(current)
-      ratio = current.rhythmic_value.tuplet_ratio
-      return unless ratio
-
-      previous = current.voice.voice_event_preceding(current.position)
-      previous if previous && previous.rhythmic_value.tied_chain.last.tuplet_ratio == ratio
-    end
-  end
-
   private
+
+  # Each is written only when the event has it, though an authored false
+  # beam break is written as false.
+  def markings_to_h
+    {
+      "beam_break_before" => beam_break_before,
+      "syllables" => syllables.keys.sort.map { |verse| syllables[verse].to_h },
+      "articulations" => articulations.map(&:name_key),
+      "ornaments" => ornaments.map(&:name_key),
+      "note_dynamic" => note_dynamic&.name_key,
+      "grace_notes" => grace_notes.map(&:to_h)
+    }.reject { |_key, value| value.nil? || value == [] }
+  end
 
   def ensure_same_rhythmic_value!(other)
     return if rhythmic_value == other.rhythmic_value
