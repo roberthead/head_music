@@ -17,6 +17,12 @@ module HeadMusic::Notation::MEI
     CONTENTS = Set.new(%w[supplied add unclear restore damage sic corr orig reg abbr expan lem rdg]).freeze
     MAX_DEPTH = 256
 
+    # Raises where a walk is +depth+ deep past +limit+; +nesting+ says
+    # what nests, as "<section>s nest".
+    def self.check_depth(depth, nesting, limit: MAX_DEPTH, **where)
+      raise ParseError.new("#{nesting} deeper than #{limit}", **where) if depth > limit
+    end
+
     def initialize(index, budget:)
       @index = index
       @copies = CopyExpansion.new(index, budget: budget)

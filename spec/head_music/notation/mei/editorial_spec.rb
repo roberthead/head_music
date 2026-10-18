@@ -56,6 +56,17 @@ describe HeadMusic::Notation::MEI::Editorial do
     expect(names(%(<app><lem><supplied><choice><sic/><corr><note n="deep"/></corr></choice></supplied></lem></app>))).to eq ["deep"]
   end
 
+  describe ".check_depth" do
+    it "lets a walk reach the limit" do
+      expect { described_class.check_depth(described_class::MAX_DEPTH, "<section>s nest") }.not_to raise_error
+    end
+
+    it "raises past the limit, naming what nests" do
+      expect { described_class.check_depth(4, "A <layer> nests", limit: 3, measure: "2") }
+        .to raise_error(HeadMusic::Notation::MEI::ParseError, "A <layer> nests deeper than 3 (measure 2)")
+    end
+  end
+
   describe "#label" do
     def label(xml)
       editorial.label(REXML::Document.new(xml).root)

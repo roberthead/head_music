@@ -186,7 +186,7 @@ module HeadMusic::Notation::MEI
     end
 
     def staff_defs_in(group, depth)
-      raise ParseError.new("<staffGrp>s nest deeper than #{Editorial::MAX_DEPTH}", element: group) if depth > Editorial::MAX_DEPTH
+      Editorial.check_depth(depth, "<staffGrp>s nest", element: group)
 
       @editorial.children(group).flat_map do |child|
         case child.name

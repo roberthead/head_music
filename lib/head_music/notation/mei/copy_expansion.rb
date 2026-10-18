@@ -51,7 +51,7 @@ module HeadMusic::Notation::MEI
       stack = [[root, chain, 1]]
       until stack.empty?
         node, node_chain, depth = stack.pop
-        raise ParseError.new("A @copyof nests its copy deeper than #{Editorial::MAX_DEPTH}", element: element) if depth > Editorial::MAX_DEPTH
+        Editorial.check_depth(depth, "A @copyof nests its copy", element: element)
 
         element_children(node).each do |child|
           entry = expand_child(node, child, node_chain, depth)

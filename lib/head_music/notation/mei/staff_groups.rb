@@ -69,7 +69,7 @@ module HeadMusic::Notation::MEI
     private
 
     def collect(group, depth)
-      raise ParseError.new("<staffGrp>s nest deeper than #{Editorial::MAX_DEPTH}", element: group) if depth > Editorial::MAX_DEPTH
+      Editorial.check_depth(depth, "<staffGrp>s nest", element: group)
 
       children = @editorial.children(group).select { |child| %w[staffDef staffGrp].include?(child.name) }
       return add_part(children, group) if one_part?(group, children)
@@ -100,7 +100,7 @@ module HeadMusic::Notation::MEI
         stack = @score ? [[@score, 0]] : []
         until stack.empty?
           element, depth = stack.pop
-          raise ParseError.new("<section>s nest deeper than #{Editorial::MAX_DEPTH}", element: element) if depth > Editorial::MAX_DEPTH
+          Editorial.check_depth(depth, "<section>s nest", element: element)
 
           children = @editorial.children(element)
           found << measure_layers_of(element, children) if element.name == "measure"
