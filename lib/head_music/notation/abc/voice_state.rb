@@ -41,10 +41,8 @@ module HeadMusic::Notation::ABC
       @beam_last_was_note = false
       @tie_open = false
       @decorations = PendingDecorations.new(voice)
-      @slur_opens = 0
-      @grace_slur_opens = 0
+      @slurs = PendingSlurs.new(voice)
       @graces = []
-      @open_slurs = []
       @invisible_rests = []
       @tuplets = TupletGrouping.new(voice)
     end
@@ -53,7 +51,7 @@ module HeadMusic::Notation::ABC
 
     # "(" opens a slur on the next note, chord, or rest.
     def open_slur
-      @slur_opens += 1
+      @slurs.open
     end
 
     # Grace notes wait for the next note or chord, and a slur opened before
@@ -63,16 +61,14 @@ module HeadMusic::Notation::ABC
       return if tie_open? || graces.empty?
 
       @graces.concat(graces)
-      @grace_slur_opens += @slur_opens
-      @slur_opens = 0
+      @slurs.start_on_graces
     end
 
     # A rest, bar line, or the end of the voice drops the grace notes waiting
     # for a note, and a slur opened before them starts on what comes next.
     def drop_graces
       @graces = []
-      @slur_opens += @grace_slur_opens
-      @grace_slur_opens = 0
+      @slurs.start_after_graces
     end
 
     # ")" closes the latest open slur on the note just written. Slurs pair by
@@ -84,7 +80,7 @@ module HeadMusic::Notation::ABC
       if pending_note
         self.pending_note = pending_note.with(slur_marks: pending_note.slur_marks + [:close])
       elsif voice.last_voice_event
-        apply_slurs(voice.last_voice_event, [:close])
+        @slurs.apply(voice.last_voice_event, [:close])
       end
     end
 
@@ -259,7 +255,7 @@ module HeadMusic::Notation::ABC
       flush_pending_note
       self.pending_note = PendingNote.new(
         pitches: pitches, length: length, scale: scale, beam_break: next_beam_break,
-        decorations: decorations, slur_marks: take_grace_slur_opens + take_slur_opens, ratio: ratio, tuplet_ends: ends,
+        decorations: decorations, slur_marks: @slurs.take, ratio: ratio, tuplet_ends: ends,
         graces: take_graces
       )
     end
@@ -275,7 +271,7 @@ module HeadMusic::Notation::ABC
       voice_event.beam_break_before = pending.beam_break
       add_grace_notes(voice_event, pending.graces)
       @decorations.apply(voice_event, pending.decorations)
-      apply_slurs(voice_event, pending.slur_marks)
+      @slurs.apply(voice_event, pending.slur_marks)
       @tuplets.place_ends(voice_event, pending.tuplet_ends, pending.tied_prefix)
     end
 
@@ -285,24 +281,12 @@ module HeadMusic::Notation::ABC
       ratio, ends = @tuplets.count
       voice_event = place_next(@duration_resolver.rhythmic_value(length, scale: scale, tuplet: ratio), pitches)
       @decorations.apply(voice_event, @decorations.take)
-      apply_slurs(voice_event, take_slur_opens)
+      @slurs.apply(voice_event, @slurs.take)
       @tuplets.place_ends(voice_event, ends)
       voice_event
     end
 
     private
-
-    def take_slur_opens
-      opens = [:open] * @slur_opens
-      @slur_opens = 0
-      opens
-    end
-
-    def take_grace_slur_opens
-      opens = [:grace_open] * @grace_slur_opens
-      @grace_slur_opens = 0
-      opens
-    end
 
     def take_graces
       graces = @graces
@@ -316,32 +300,6 @@ module HeadMusic::Notation::ABC
           grace.sounds, grace.rhythmic_value, slashed: grace.slashed?, tied: grace.tied?, articulations: grace.articulations
         )
       end
-    end
-
-    def apply_slurs(voice_event, slur_marks)
-      position = voice_event.position
-      slur_marks.each do |mark|
-        if mark == :close
-          close_slur_at(position)
-        else
-          @open_slurs << [position, mark == :grace_open]
-        end
-      end
-    end
-
-    # A slur the voice refuses, such as one ending on a rest, is dropped.
-    def close_slur_at(position)
-      from, from_grace = @open_slurs.pop
-      voice.add_span(:slur, from: from, to: position, from_grace: from_grace) if spans?(from, position, from_grace)
-    rescue ArgumentError
-      nil
-    end
-
-    # A slur from grace notes may end on their own main note.
-    def spans?(from, to, from_grace)
-      return false unless from
-
-      from < to || (from_grace && from == to)
     end
 
     def place_next(rhythmic_value, pitches)
@@ -375,7 +333,7 @@ module HeadMusic::Notation::ABC
       self.pending_note = PendingNote.new(
         pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
         beam_break: pending.beam_break, decorations: pending.decorations + markings,
-        slur_marks: pending.slur_marks + take_slur_opens,
+        slur_marks: pending.slur_marks + @slurs.take,
         ratio: ratio, tuplet_ends: @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix) + tuplet_ends, graces: pending.graces
       )
     end
