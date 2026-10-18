@@ -13,69 +13,20 @@ module HeadMusic::Content; end
 class HeadMusic::Content::TupletGroup
   include Comparable
 
-  # One link of a voice event's tied chain, with its exact onset and end in
-  # subticks from the event's position.
-  Link = Data.define(:voice_event, :rhythmic_value, :onset, :finish, :first, :last) do
-    def ratio
-      rhythmic_value.tuplet_ratio
-    end
-
-    # A voice event's own start and end are its rounded positions, which is
-    # where a group inside a run of a rounding ratio begins and ends.
-    def starts_at?(position)
-      first ? voice_event.position == position : lands_on?(onset, position)
-    end
-
-    def ends_at?(position)
-      last ? voice_event.next_position == position : lands_on?(finish, position)
-    end
-
-    def covers?(position)
-      start_position <= position && position < voice_event.position.advance(subticks: finish.round)
-    end
-
-    # Where the link starts and ends, rounded as positions are, so that a
-    # group may start or end on a later link of a tied chain.
-    def start_position
-      first ? voice_event.position : voice_event.position.advance(subticks: onset.round)
-    end
-
-    def end_position
-      last ? voice_event.next_position : voice_event.position.advance(subticks: finish.round)
-    end
-
-    def rounds?
-      (finish - onset).denominator != 1
-    end
-
-    private
-
-    def lands_on?(offset, position)
-      offset.denominator == 1 && voice_event.position.advance(subticks: offset.to_i) == position
-    end
-  end
-
   attr_reader :voice, :from, :to, :unit, :ratio
 
   delegate :flow, to: :voice
 
-  # The links of the voice events that sound from one position up to another.
-  # Searched by where events start, so that only the event before from is
-  # asked where it ends.
+  def self.label(ratio, from, to)
+    [ratio&.to_a&.join(":"), "tuplet from #{from} to #{to}"].compact.join(" ")
+  end
+
   def self.links_between(voice, from, to)
-    events = voice.voice_events
-    start = events.bsearch_index { |voice_event| voice_event.position > from } || events.length
-    start -= 1 if start.positive? && events[start - 1].next_position > from
-    events[start..].take_while { |voice_event| voice_event.position < to }.flat_map { |voice_event| links_of(voice_event) }
+    HeadMusic::Content::ChainLink.between(voice, from, to)
   end
 
   def self.links_of(voice_event)
-    chain = voice_event.rhythmic_value.tied_chain
-    onset = voice_event.onset_remainder
-    chain.each_with_index.map do |link, index|
-      finish = onset + link.link_fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
-      Link.new(voice_event, link, onset, finish, index.zero?, index == chain.length - 1).tap { onset = finish }
-    end
+    HeadMusic::Content::ChainLink.of(voice_event)
   end
 
   # The written total over the ratio's actual count where that is one plain
@@ -102,8 +53,9 @@ class HeadMusic::Content::TupletGroup
     @to = position_for(to)
     raise ArgumentError, "the #{label} must end after it starts" unless @from < @to
 
-    links = bracketed_links
-    @unit = unit ? unit_for(unit) : default_unit(links)
+    bracketing = Bracketing.new(voice, @from, @to)
+    @ratio = bracketing.ratio
+    @unit = unit ? unit_for(unit) : default_unit(bracketing.links)
     freeze
   end
 
@@ -114,8 +66,7 @@ class HeadMusic::Content::TupletGroup
 
   # The links inside the group, in order.
   def links
-    self.class.links_between(voice, from, to).drop_while { |link| !link.starts_at?(from) }
-      .take_while { |link| link.voice_event.position < to && !link.starts_at?(to) }
+    Bracketing.links_inside(voice, from, to)
   end
 
   def covers?(position)
@@ -148,57 +99,7 @@ class HeadMusic::Content::TupletGroup
   private
 
   def label
-    [ratio&.to_a&.join(":"), "tuplet from #{from} to #{to}"].compact.join(" ")
-  end
-
-  def bracketed_links
-    links = self.class.links_between(voice, from, to)
-    first = links.index { |link| link.starts_at?(from) }
-    ensure_start(links) unless first
-
-    @ratio = links[first].ratio
-    ensure_consecutive(links)
-    last = links.index { |link| link.ends_at?(to) }
-    raise ArgumentError, "the #{label} must end where a note, rest, or tied link ends, filling its span exactly" unless last
-
-    links[first..last].tap { |inside| ensure_one_ratio(inside) }
-  end
-
-  def ensure_start(links)
-    sounding = links.find { |link| link.covers?(from) }
-    @ratio = sounding&.ratio
-    message = "the #{label} must start where a note, rest, or tied link starts"
-    if sounding&.rounds?
-      message += ", but it falls inside the #{sounding.rhythmic_value} at #{sounding.voice_event.position}, " \
-        "in a run of values rounded to the nearest subtick"
-    end
-    raise ArgumentError, message
-  end
-
-  def ensure_consecutive(links)
-    links.map(&:voice_event).uniq.each_cons(2) do |previous, current|
-      next if previous.next_position == current.position
-
-      raise ArgumentError, "the #{label} must hold consecutive notes and rests, but none starts at #{previous.next_position}"
-    end
-  end
-
-  def ensure_one_ratio(links)
-    ratio = links.first.ratio
-    stray = links.find { |link| link.ratio.nil? || link.ratio != ratio }
-    if stray
-      raise ArgumentError, "the #{label} must hold values of one tuplet ratio, " \
-        "but the #{stray.rhythmic_value} at #{stray.voice_event.position} #{stray.ratio ? "is not #{ratio.to_a.join(":")}" : "has none"}"
-    end
-    ensure_event_boundaries(links) if links.any?(&:rounds?)
-  end
-
-  # A ratio that rounds has its onsets measured from where its group starts,
-  # so the group must start and end where voice events do.
-  def ensure_event_boundaries(links)
-    return if links.first.first && links.last.last
-
-    raise ArgumentError, "the #{label} must start and end where notes or rests do, since its ratio does not land on whole subticks"
+    self.class.label(ratio, from, to)
   end
 
   def default_unit(links)
