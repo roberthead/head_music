@@ -39,11 +39,12 @@ module HeadMusic::Notation::Kern
 
       def token
         recip = DurationWriter.token(link)
-        return "#{opens}#{recip}r#{"yy" if invisible}#{closes}" if rest?
-
-        notes = pitches.sort.map { |pitch| "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{marks}#{TIE_CLOSING[tie]}" }
-        notes[0] = "#{opens}#{notes[0]}#{closes}"
-        notes.join(" ")
+        first, *others = if rest?
+          ["#{recip}r#{"yy" if invisible}"]
+        else
+          pitches.sort.map { |pitch| "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{marks}#{TIE_CLOSING[tie]}" }
+        end
+        ["#{opens}#{first}#{closes}", *others].join(" ")
       end
     end
 
@@ -52,12 +53,12 @@ module HeadMusic::Notation::Kern
     # A note a grace note is tied into continues the grace note's tie.
     TIED_IN = {nil => :end, :start => :middle}.freeze
 
-    def self.rests(from, to, invisible: false)
+    def self.rests(from, to)
       return [] unless to > from
 
       offset = from
       HeadMusic::Notation::DottedDuration.rest_value(to - from).tied_chain.map do |link|
-        Event.new(offset: offset, link: link, pitches: nil, tie: nil, syllables: {}, marks: "", invisible: invisible)
+        Event.new(offset: offset, link: link, pitches: nil, tie: nil, syllables: {}, marks: "")
           .tap { offset += DurationWriter.fraction(link) }
       end
     end
@@ -70,18 +71,14 @@ module HeadMusic::Notation::Kern
 
     # The voice's own events by bar number, before any padding.
     def placed
-      @placed ||= voice.voice_events.each_with_object(Hash.new { |hash, key| hash[key] = [] }) do |voice_event, events|
-        links = voice_event_links(voice_event)
-        links.each_with_index do |(bar_number, link, offset), index|
-          events[bar_number] << event_for(voice_event, link, offset, tie_for(index, links.length), index, links.length)
-        end
-      end
+      @placed ||= voice.voice_events.flat_map { |voice_event| events_of(voice_event) }
+        .group_by(&:first).transform_values { |pairs| pairs.map(&:last) }
     end
 
     # Where the voice stops, as [bar number, offset in that bar].
     def finish
-      bar_number = placed.keys.max
-      bar_number && [bar_number, placed[bar_number].last.finish]
+      bar_number, events = placed.max_by(&:first)
+      [bar_number, events.last.finish] if bar_number
     end
 
     # Every bar of +bar_lengths+ filled from its start to its length, with
@@ -92,7 +89,8 @@ module HeadMusic::Notation::Kern
         events = placed.fetch(bar_number, [])
         next [bar_number, filled(events, length)] unless bar_number == end_bar
 
-        [bar_number, filled(events, end_offset) + self.class.rests(end_offset, length, invisible: true)]
+        invisible = self.class.rests(end_offset, length).map { |rest| rest.with(invisible: true) }
+        [bar_number, filled(events, end_offset) + invisible]
       end
     end
 
@@ -107,37 +105,43 @@ module HeadMusic::Notation::Kern
       end
     end
 
-    def event_for(voice_event, link, offset, tie, index, count)
-      graces = index.zero? ? GraceTokens.new(voice_event, span_marks) : nil
-      Event.new(
-        offset: offset, link: link,
-        pitches: voice_event.rest? ? nil : voice_event.pitches,
-        tie: voice_event.rest? ? nil : link_tie(tie, graces),
-        graces: graces ? graces.tokens : [],
-        syllables: index.zero? ? voice_event.syllables : {},
-        marks: index.zero? ? MarkCodes.marks(voice_event) : "",
-        opens: index.zero? ? span_marks.opens_at(voice_event.position) : "",
-        closes: closing_link?(voice_event, index, count) ? span_marks.closes_at(voice_event.position) : ""
+    # Each link as [its bar number, its event]. The first link carries the
+    # voice event's grace notes, syllables, marks, and opens, and its closing
+    # link its closes.
+    def events_of(voice_event)
+      links = voice_event_links(voice_event)
+      last = links.length - 1
+      rest = voice_event.rest?
+      closing = rest ? 0 : last
+      links.each_with_index.map do |(bar_number, link, offset), index|
+        event = Event.new(
+          offset: offset, link: link, pitches: (voice_event.pitches unless rest), tie: (tie_for(index, last) unless rest),
+          syllables: {}, marks: ""
+        )
+        event = first_link(event, voice_event) if index.zero?
+        event = event.with(closes: span_marks.closes_at(voice_event.position)) if index == closing
+        [bar_number, event]
+      end
+    end
+
+    def first_link(event, voice_event)
+      graces = GraceTokens.new(voice_event, span_marks)
+      tie = event.tie
+      event.with(
+        tie: graces.tied_in? ? TIED_IN.fetch(tie) : tie, graces: graces.tokens, syllables: voice_event.syllables,
+        marks: MarkCodes.marks(voice_event), opens: span_marks.opens_at(voice_event.position)
       )
-    end
-
-    def link_tie(tie, graces)
-      graces&.tied_in? ? TIED_IN.fetch(tie) : tie
-    end
-
-    def closing_link?(voice_event, index, count)
-      voice_event.rest? ? index.zero? : index == count - 1
     end
 
     def span_marks
       @span_marks ||= SpanMarks.new(voice)
     end
 
-    def tie_for(index, count)
-      return if count == 1
+    def tie_for(index, last)
+      return if last.zero?
       return :start if index.zero?
 
-      (index == count - 1) ? :end : :middle
+      (index == last) ? :end : :middle
     end
 
     def filled(events, length)
