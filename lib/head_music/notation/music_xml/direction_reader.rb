@@ -17,7 +17,15 @@ module HeadMusic::Notation::MusicXML
   class DirectionReader < MarkReader
     Mark = Data.define(:owner, :bar_number, :onset, :type, :key) do
       def part
-        owner.is_a?(HeadMusic::Content::Part) ? owner : owner.part
+        part? ? owner : owner.part
+      end
+
+      def voices
+        part? ? owner.voices : [owner]
+      end
+
+      def part?
+        owner.is_a?(HeadMusic::Content::Part)
       end
     end
 
@@ -28,34 +36,37 @@ module HeadMusic::Notation::MusicXML
     end
 
     def direction(record)
-      return unless record.element.name == "direction"
+      element = record.element
+      return unless element.name == "direction"
 
       onset = onset_of(record)
       return unless onset
 
-      owner = owner_of(record)
-      XmlReading.children(record.element, "direction-type").each do |direction_type|
+      mark = Mark.new(owner_of(record), record.bar_number, onset, nil, nil)
+      XmlReading.children(element, "direction-type").each do |direction_type|
         direction_type.each_element do |child|
           case child.name
-          when "dynamics" then read_dynamics(child, record, owner, onset)
-          when "wedge" then read_wedge(child, record, owner, onset)
+          when "dynamics" then read_dynamics(child, mark)
+          when "wedge" then read_wedge(child, mark, record.measure)
           end
         end
       end
     end
 
     def apply(flow)
-      @marks.each { |mark| apply_dynamic(flow, mark) if mark.type == :dynamic }
-      @marks.reject { |mark| mark.type == :dynamic }.group_by(&:part).each_value { |wedges| pair(flow, wedges) }
+      dynamics, wedges = @marks.partition { |mark| mark.type == :dynamic }
+      dynamics.each { |mark| apply_dynamic(flow, mark) }
+      wedges.group_by(&:part).each_value { |part_wedges| pair(flow, part_wedges) }
     end
 
     private
 
     def onset_of(record)
-      text = XmlReading.text(record.element, "offset", measure: record.measure)
-      offset = (text && record.divisions) ? XmlReading.rational(text, "<offset>", measure: record.measure) / (4 * record.divisions) : 0
-      length = bar_length(record.part.flow, record.bar_number)
-      (record.cursor + offset).clamp(0, length)
+      measure = record.measure
+      divisions = record.divisions
+      text = XmlReading.text(record.element, "offset", measure: measure)
+      offset = (text && divisions) ? XmlReading.rational(text, "<offset>", measure: measure) / (4 * divisions) : 0
+      (record.cursor + offset).clamp(0, bar_length(record.part.flow, record.bar_number))
     rescue ParseError
       nil
     end
@@ -65,42 +76,30 @@ module HeadMusic::Notation::MusicXML
       (label && record.voice_for(label)) || record.part
     end
 
-    def read_dynamics(dynamics, record, owner, onset)
+    def read_dynamics(dynamics, mark)
       dynamics.each_element do |child|
         dynamic = HeadMusic::Rudiment::Dynamic.get(child.name)
-        next unless dynamic
-
-        @marks << Mark.new(owner, record.bar_number, onset, :dynamic, dynamic)
+        @marks << mark.with(type: :dynamic, key: dynamic) if dynamic
       end
     end
 
-    def read_wedge(wedge, record, owner, onset)
-      type = XmlReading.attribute(wedge, "type", measure: record.measure)
+    def read_wedge(wedge, mark, measure)
+      type = XmlReading.attribute(wedge, "type", measure: measure)
       kind = (type == "stop") ? :stop : WEDGE_KINDS[type]
-      return unless kind
-
-      number = XmlReading.attribute(wedge, "number", measure: record.measure) || "1"
-      @marks << Mark.new(owner, record.bar_number, onset, kind, number)
+      @marks << mark.with(type: kind, key: XmlReading.attribute(wedge, "number", measure: measure) || "1") if kind
     end
 
     def apply_dynamic(flow, mark)
       position = position_of(flow, mark)
-      if mark.key.level?
-        mark.owner.place_dynamic(position, mark.key)
-      else
-        accent(mark.owner, position, mark.key)
-      end
+      dynamic = mark.key
+      dynamic.level? ? mark.owner.place_dynamic(position, dynamic) : accent(mark, position)
     rescue ArgumentError
       nil
     end
 
-    def accent(owner, position, dynamic)
-      voices = owner.is_a?(HeadMusic::Content::Part) ? owner.voices : [owner]
-      voices.each do |voice|
-        voice_event = voice.voice_event_at(position)
-        next if voice_event.nil? || voice_event.rest?
-
-        voice_event.note_dynamic ||= dynamic.name_key
+    def accent(mark, position)
+      mark.voices.filter_map { |voice| voice.voice_event_at(position) }.reject(&:rest?).each do |voice_event|
+        voice_event.note_dynamic ||= mark.key.name_key
       end
     end
 
@@ -109,12 +108,13 @@ module HeadMusic::Notation::MusicXML
       waiting = {}
       wedges.each do |mark|
         position = position_of(flow, mark)
+        number = mark.key
         if mark.type == :stop
-          start, from = open.delete(mark.key)
-          start ? add_hairpin(start, from, position) : waiting[mark.key] = position
+          start, from = open.delete(number)
+          start ? add_hairpin(start, from, position) : waiting[number] = position
         else
-          to = waiting.delete(mark.key)
-          (to && position < to) ? add_hairpin(mark, position, to) : open[mark.key] = [mark, position]
+          to = waiting.delete(number)
+          (to && position < to) ? add_hairpin(mark, position, to) : open[number] = [mark, position]
         end
       end
     end

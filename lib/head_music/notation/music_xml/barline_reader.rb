@@ -20,7 +20,7 @@ module HeadMusic::Notation::MusicXML
 
     def initialize
       @styles = {}
-      @starts = []
+      @starts = {}
       @plays = {}
       @counted = []
       @passes = {}
@@ -30,24 +30,21 @@ module HeadMusic::Notation::MusicXML
     def barline(record)
       element = record.element
       closing, opening = bars_around(record)
-      repeat = repeat_of(element)
-      read_style(record, element, closing, repeat)
-      read_repeat(repeat, closing, opening)
-      read_ending(record, element, closing, opening)
+      repeat = XmlReading.first_child(element, "repeat")
+      direction = XmlReading.attribute(repeat, "direction")
+      read_style(record, closing, direction)
+      read_repeat(repeat, direction, closing, opening)
+      read_ending(record, closing, opening)
     end
 
     def apply(flow)
-      first = flow.earliest_bar_number
-      last = flow.latest_bar_number
-      @starts.uniq.each { |number| bar(flow, number, first, last)&.starts_repeat = true }
-      raise_plays_to_endings(first, last)
-      @plays.each { |number, plays| bar(flow, number, first, last)&.ends_repeat_after_num_plays = plays }
-      @passes.each { |number, passes| bar(flow, number, first, last)&.plays_on_passes = passes }
-      @styles.each do |number, (style, last_bar)|
-        current = bar(flow, number, first, last)
-        next unless current
-
-        current.barline = (style == :final && (last_bar || current.ends_repeat?)) ? :regular : style
+      numbers = flow.earliest_bar_number..flow.latest_bar_number
+      raise_plays_to_endings(numbers)
+      each_bar(flow, numbers, @starts) { |bar, _| bar.starts_repeat = true }
+      each_bar(flow, numbers, @plays) { |bar, plays| bar.ends_repeat_after_num_plays = plays }
+      each_bar(flow, numbers, @passes) { |bar, passes| bar.plays_on_passes = passes }
+      each_bar(flow, numbers, @styles) do |bar, (style, last_bar)|
+        bar.barline = (style == :final && (last_bar || bar.ends_repeat?)) ? :regular : style
       end
     end
 
@@ -55,59 +52,36 @@ module HeadMusic::Notation::MusicXML
 
     def bars_around(record)
       number = record.bar_number
-      inside = record.mid_bar? || location(record.element) == "middle"
-      return [number, number + 1] if inside || location(record.element) == "right"
+      location = XmlReading.attribute(record.element, "location") || "right"
+      return [number, number + 1] if record.mid_bar? || %w[middle right].include?(location)
 
       [number - 1, number]
     end
 
-    def location(element)
-      XmlReading.attribute(element, "location") || "right"
-    end
-
-    def repeat_of(element)
-      XmlReading.first_child(element, "repeat")
-    end
-
-    def repeat_direction(repeat)
-      XmlReading.attribute(repeat, "direction")
-    end
-
-    def read_style(record, element, closing, repeat)
-      style = BAR_STYLES[XmlReading.text(element, "bar-style")]
-      return unless style
-      return if repeat && repeat_direction(repeat) == "forward"
+    def read_style(record, closing, direction)
+      style = BAR_STYLES[XmlReading.text(record.element, "bar-style")]
+      return if style.nil? || direction == "forward"
 
       last_bar = record.last? && closing == record.bar_number
-      @styles[closing] ||= [style, last_bar || (repeat && repeat_direction(repeat) == "backward")]
+      @styles[closing] ||= [style, last_bar || direction == "backward"]
     end
 
-    def read_repeat(repeat, closing, opening)
-      case repeat_direction(repeat)
-      when "forward" then @starts << opening
+    def read_repeat(repeat, direction, closing, opening)
+      case direction
+      when "forward" then @starts[opening] = true
       when "backward"
         @counted << closing if !@plays.key?(closing) && times(repeat)
-        @plays[closing] ||= plays(repeat)
+        @plays[closing] ||= times(repeat) || 2
       end
     end
 
-    def raise_plays_to_endings(first, last)
-      section = []
-      highest = 0
-      (first..last).each do |number|
-        passes = @passes[number]
-        if passes.nil? || @starts.include?(number)
-          section = []
-          highest = 0
-        end
-        highest = [highest, *passes].max if passes
-        section << number if @plays.key?(number) && !@counted.include?(number)
-        section.each { |end_number| @plays[end_number] = [@plays[end_number], highest].max }
+    # A section runs from a repeat start or a bar outside any ending, and
+    # each repeat end in it without times plays as often as its highest pass.
+    def raise_plays_to_endings(numbers)
+      numbers.slice_before { |number| !@passes.key?(number) || @starts.key?(number) }.each do |section|
+        highest = section.flat_map { |number| @passes.fetch(number, []) }.max || 0
+        section.each { |number| @plays[number] = [@plays[number], highest].max if @plays.key?(number) && !@counted.include?(number) }
       end
-    end
-
-    def plays(repeat)
-      times(repeat) || 2
     end
 
     def times(repeat)
@@ -115,10 +89,8 @@ module HeadMusic::Notation::MusicXML
       times if times && times >= 2
     end
 
-    def read_ending(record, element, closing, opening)
-      ending = XmlReading.first_child(element, "ending")
-      return unless ending
-
+    def read_ending(record, closing, opening)
+      ending = XmlReading.first_child(record.element, "ending")
       case XmlReading.attribute(ending, "type")
       when "start" then start_ending(record, ending, opening)
       when "stop", "discontinue" then stop_ending(record, closing)
@@ -139,13 +111,11 @@ module HeadMusic::Notation::MusicXML
 
     def passes(numbers)
       passes = numbers.to_s.split(/[,\s]+/).reject(&:empty?).map { |number| Integer(number, 10, exception: false) }
-      return if passes.empty? || passes.any? { |pass| pass.nil? || !pass.positive? } || passes.uniq.length < passes.length
-
-      passes
+      passes if passes.any? && passes.all? { |pass| pass&.positive? } && passes.uniq == passes
     end
 
-    def bar(flow, number, first, last)
-      flow.bar(number) if number.between?(first, last)
+    def each_bar(flow, numbers, values)
+      values.each { |number, value| yield flow.bar(number), value if numbers.cover?(number) }
     end
   end
 end
