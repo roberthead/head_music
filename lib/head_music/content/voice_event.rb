@@ -18,6 +18,7 @@ class HeadMusic::Content::VoiceEvent
   attr_accessor :beam_break_before
 
   delegate :flow, to: :voice
+  delegate :bar_number, to: :position
   delegate :spelling, to: :pitch, allow_nil: true
 
   private_class_method :new
@@ -31,7 +32,7 @@ class HeadMusic::Content::VoiceEvent
 
   def initialize(voice, position, rhythmic_value)
     @voice = voice
-    ensure_position(position)
+    @position = HeadMusic::Content::Position.get(flow, position)
     @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
   end
 
@@ -169,7 +170,7 @@ class HeadMusic::Content::VoiceEvent
   def markings_to_h
     {
       "beam_break_before" => beam_break_before,
-      "syllables" => syllables.keys.sort.map { |verse| syllables[verse].to_h },
+      "syllables" => syllables.sort.map { |_verse, syllable| syllable.to_h },
       "articulations" => articulations.map(&:name_key),
       "ornaments" => ornaments.map(&:name_key),
       "note_dynamic" => note_dynamic&.name_key,
@@ -178,10 +179,10 @@ class HeadMusic::Content::VoiceEvent
   end
 
   def ensure_same_rhythmic_value!(other)
-    return if rhythmic_value == other.rhythmic_value
+    other_value = other.rhythmic_value
+    return if rhythmic_value == other_value
 
-    raise ArgumentError,
-      "cannot place a #{other.rhythmic_value} at #{position}: position occupied by a #{rhythmic_value}"
+    raise ArgumentError, "cannot place a #{other_value} at #{position}: position occupied by a #{rhythmic_value}"
   end
 
   # Unpitched names may be multi-word, so they are bracketed to keep the
@@ -200,13 +201,5 @@ class HeadMusic::Content::VoiceEvent
 
   def wraps?(other_event)
     position <= other_event.position && next_position >= other_event.next_position
-  end
-
-  def ensure_position(position)
-    @position = if position.is_a?(HeadMusic::Content::Position)
-      position
-    else
-      HeadMusic::Content::Position.new(flow, position)
-    end
   end
 end

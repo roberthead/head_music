@@ -139,8 +139,7 @@ class HeadMusic::Content::Flow
     finish = voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
     return latest_bar_number unless finish
 
-    ending_bar = (finish.to_a.drop(1) == [1, 0, 0]) ? finish.bar_number - 1 : finish.bar_number
-    [latest_bar_number, ending_bar].max
+    [latest_bar_number, finish.ending_bar_number].max
   end
 
   # Where the last written bar ends, which a hairpin may end on though no

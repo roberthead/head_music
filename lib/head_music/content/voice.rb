@@ -82,8 +82,7 @@ class HeadMusic::Content::Voice
 
   # The tuplet group covering a position, or nil.
   def tuplet_at(position)
-    position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
-    @tuplets.at(position)
+    @tuplets.at(HeadMusic::Content::Position.get(flow, position))
   end
 
   # In position order, with at most one at a position.
@@ -124,7 +123,7 @@ class HeadMusic::Content::Voice
   # The voice's spans in force at a position, with its part's, innermost
   # first. A span that covers its last note runs until that note ends.
   def spans_at(position)
-    position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
+    position = HeadMusic::Content::Position.get(flow, position)
     own = @spans.covering(position) { |span| @span_anchors.end_of(span) }
     HeadMusic::Content::Spans.innermost_first(own + part.spans_at(position))
   end
@@ -157,11 +156,11 @@ class HeadMusic::Content::Voice
   end
 
   def earliest_bar_number
-    bar_number_of(voice_events.first)
+    voice_events.first&.bar_number || 1
   end
 
   def latest_bar_number
-    bar_number_of(voice_events.last)
+    last_voice_event&.bar_number || 1
   end
 
   def last_voice_event
@@ -179,9 +178,7 @@ class HeadMusic::Content::Voice
   end
 
   def to_s
-    return pitches_string if role.to_s.strip == ""
-
-    [role, pitches_string].join(": ")
+    role.to_s.strip.empty? ? pitches_string : "#{role}: #{pitches_string}"
   end
 
   def inspect
@@ -189,13 +186,13 @@ class HeadMusic::Content::Voice
   end
 
   def to_h
-    hash = {"role" => role&.to_s, "voice_events" => voice_events.map(&:to_h)}
-    assignments = @staff_assignments.to_a
-    hash["staff_assignments"] = assignments unless assignments.empty?
-    hash["dynamic_events"] = dynamic_events.map(&:to_h) unless @dynamic_events.empty?
-    hash["spans"] = spans.map(&:to_h) unless @spans.empty?
-    hash["tuplets"] = tuplets.map(&:to_h) unless @tuplets.empty?
-    hash
+    optional = {
+      "staff_assignments" => @staff_assignments.to_a,
+      "dynamic_events" => dynamic_events.map(&:to_h),
+      "spans" => spans.map(&:to_h),
+      "tuplets" => tuplets.map(&:to_h)
+    }
+    {"role" => role&.to_s, "voice_events" => voice_events.map(&:to_h)}.merge(optional.reject { |_key, value| value.empty? })
   end
 
   private
@@ -208,19 +205,16 @@ class HeadMusic::Content::Voice
     HeadMusic::Content::Part.new(flow: flow || HeadMusic::Content::Flow.new)
   end
 
-  def bar_number_of(voice_event)
-    voice_event ? voice_event.position.bar_number : 1
-  end
-
   # A note placed onto one already there merges with it, which keeps the
   # group whole; any other placement inside a group would break it.
   def ensure_outside_tuplets(voice_event)
-    return if @tuplets.empty? || voice_event_at(voice_event.position)
+    position = voice_event.position
+    return if @tuplets.empty? || voice_event_at(position)
 
-    group = @tuplets.at(voice_event.position)
+    group = @tuplets.at(position)
     return unless group
 
-    raise ArgumentError, "cannot place a #{voice_event.rhythmic_value} at #{voice_event.position} inside the #{group}"
+    raise ArgumentError, "cannot place a #{voice_event.rhythmic_value} at #{position} inside the #{group}"
   end
 
   def pitches_string

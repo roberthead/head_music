@@ -27,6 +27,7 @@ describe HeadMusic::Content::VoiceEvent do
   its(:flow) { is_expected.to eq flow }
   its(:voice) { is_expected.to eq voice }
   its(:position) { is_expected.to eq HeadMusic::Content::Position.new(flow, "2:2:240") }
+  its(:bar_number) { is_expected.to eq 2 }
   its(:pitch) { is_expected.to eq "F#4" }
 
   context "when pitch is omitted" do

@@ -29,6 +29,16 @@ describe HeadMusic::Content::Position do
     its(:code) { is_expected.to eq "3:2:000" }
   end
 
+  describe ".get" do
+    it "builds a position in the flow from a code" do
+      expect(described_class.get(flow, "3:2:000")).to have_attributes(flow: flow, to_s: "3:2:000")
+    end
+
+    it "keeps a position as given, even of another flow" do
+      expect(described_class.get(HeadMusic::Content::Flow.new, position)).to be position
+    end
+  end
+
   describe ".for_flow" do
     it "builds a position in the flow from a code" do
       expect(described_class.for_flow(flow, "3:2:000").to_s).to eq "3:2:000"
@@ -202,6 +212,20 @@ describe HeadMusic::Content::Position do
   describe "#advance" do
     it "moves a number of subticks, carrying them" do
       expect(position.advance(subticks: 240 * 480 + 7).to_s).to eq "3:3:000:007"
+    end
+  end
+
+  describe "#ending_bar_number" do
+    it "is the position's own bar within the bar" do
+      expect(described_class.new(flow, 3, 2, 0).ending_bar_number).to eq 3
+    end
+
+    it "is the bar before at a barline" do
+      expect(described_class.new(flow, 3, 1, 0).ending_bar_number).to eq 2
+    end
+
+    it "is the position's own bar a subtick past the barline" do
+      expect(described_class.new(flow, 3, 1, 0, 1).ending_bar_number).to eq 3
     end
   end
 
