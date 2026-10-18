@@ -33,6 +33,7 @@ class HeadMusic::Content::Voice
     @revision = 0
     @dynamic_events = HeadMusic::Content::DynamicEvents.new(@part.flow)
     @spans = HeadMusic::Content::Spans.new
+    @span_anchors = SpanAnchors.new(self)
     @tuplets = HeadMusic::Content::TupletGroups.new
     @staff_assignments = StaffAssignments.new(@part)
     @part.attach(self)
@@ -112,10 +113,7 @@ class HeadMusic::Content::Voice
   # curve from_grace starts on the first grace note of the note at from.
   def add_span(kind, from:, to:, from_grace: false)
     span = HeadMusic::Content::Span.new(flow, kind, from: from, to: to, from_grace: from_grace)
-    raise ArgumentError, "a voice cannot hold a #{span.name_key}" unless span.span_kind.held_by?(:voice)
-
-    [span.from, span.to].each { |position| ensure_span_anchor(span, position) }
-    ensure_grace_notes(span) if span.from_grace?
+    @span_anchors.ensure_anchored(span)
     @spans.add(span)
   end
 
@@ -127,7 +125,7 @@ class HeadMusic::Content::Voice
   # first. A span that covers its last note runs until that note ends.
   def spans_at(position)
     position = HeadMusic::Content::Position.new(flow, position) unless position.is_a?(HeadMusic::Content::Position)
-    own = @spans.covering(position) { |span| span_end(span) }
+    own = @spans.covering(position) { |span| @span_anchors.end_of(span) }
     HeadMusic::Content::Spans.innermost_first(own + part.spans_at(position))
   end
 
@@ -223,24 +221,6 @@ class HeadMusic::Content::Voice
     return unless group
 
     raise ArgumentError, "cannot place a #{voice_event.rhythmic_value} at #{voice_event.position} inside the #{group}"
-  end
-
-  def ensure_grace_notes(span)
-    return if voice_event_at(span.from)&.grace_notes&.any?
-
-    raise ArgumentError, "a #{span.name_key} from grace notes needs a note with grace notes at #{span.from}"
-  end
-
-  def ensure_span_anchor(span, position)
-    return if span.span_kind.anchors_on?(voice_event_at(position))
-
-    raise ArgumentError,
-      "a #{span.name_key} must start and end on #{span.span_kind.anchor_description} of its voice, but #{position} has none"
-  end
-
-  def span_end(span)
-    last = span.span_kind.covers_last_note? && voice_event_at(span.to)
-    last ? last.next_position : span.to
   end
 
   def pitches_string

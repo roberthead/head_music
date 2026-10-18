@@ -209,6 +209,7 @@ require "head_music/content/voice/melodic_line"
 require "head_music/content/voice/continuity"
 require "head_music/content/voice/dynamic_resolver"
 require "head_music/content/voice/staff_assignments"
+require "head_music/content/voice/span_anchors"
 
 # notation
 require "head_music/notation/voice_event_validation"
