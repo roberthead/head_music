@@ -10,7 +10,7 @@ module HeadMusic::Notation::ABC
     # The identity length scale, used wherever no stretching applies.
     ONE = Rational(1)
 
-    attr_reader :voice, :pitch_builder, :tie_line, :beams
+    attr_reader :voice, :pitch_builder, :beams
     attr_accessor :pending_note, :active_passes, :volta_start_bar
 
     def initialize(voice, pitch_builder, duration_resolver = nil)
@@ -19,7 +19,7 @@ module HeadMusic::Notation::ABC
       @duration_resolver = duration_resolver
       @beams = BeamAdjacency.new
       @broken_rhythm = BrokenRhythm.new
-      @tie_open = false
+      @tie = PendingTie.new
       @decorations = PendingDecorations.new(voice)
       @slurs = PendingSlurs.new(voice)
       @graces = []
@@ -29,6 +29,7 @@ module HeadMusic::Notation::ABC
     end
 
     delegate :music_end, to: :@invisible_rests
+    delegate :open?, :line, to: :@tie, prefix: :tie
     delegate :ensure_not_awaiting_note, to: :@broken_rhythm
     delegate :decorate, :reject_dangling_decorations, :take_navigation, :add_hairpins, to: :@decorations
 
@@ -148,26 +149,16 @@ module HeadMusic::Notation::ABC
       @overlay.reject_music(token)
     end
 
-    def tie_open?
-      @tie_open
-    end
-
     def open_tie(line)
-      @tie_open = true
-      @tie_line = line
+      @tie.open(line)
     end
 
     def close_tie
-      @tie_open = false
-      @tie_line = nil
+      @tie.close
     end
 
-    # A tie left open by a non-note terminator can never close, so each
-    # terminator rejects it.
     def reject_open_tie(line)
-      return unless tie_open?
-
-      raise ParseError.new("A tie must be followed by a note", line_number: line || tie_line, snippet: "-")
+      @tie.reject(line)
     end
 
     # A tie or broken rhythm needs a note before it that is not itself
@@ -256,14 +247,11 @@ module HeadMusic::Notation::ABC
     # event.
     def tie_onto_pending(link)
       pending = pending_note
+      @tie.ensure_ties(pending, link.pitches)
       prefix = pending.rhythmic_value(@duration_resolver)
       marks, markings = link.decorations.partition(&:positional?)
       marks.each { |decoration| @decorations.place_mark(music_end + prefix, decoration) }
       close_tie
-      unless pending.ties_to?(link.pitches)
-        raise ParseError.new("A tie must connect two notes of the same pitch", line_number: tie_line, snippet: "-")
-      end
-
       fixed_ends = @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix)
       self.pending_note = pending.tied_to(link.with(decorations: markings), prefix, fixed_ends)
     end

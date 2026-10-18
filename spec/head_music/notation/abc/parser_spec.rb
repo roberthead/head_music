@@ -297,6 +297,11 @@ describe HeadMusic::Notation::ABC::Parser do
         .to raise_error(HeadMusic::Notation::ABC::ParseError, /same pitch/)
     end
 
+    it "reports the line of a tie onto a different pitch" do
+      expect { parse_compound("E3-D2 |]") }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError) { |error| expect(error.line_number).to eq 5 }
+    end
+
     it "ties a note across a barline into one voice event" do
       voice_events = parse_compound("E3-|E3 |]").voices.first.voice_events
       expect(voice_events.length).to eq 1
