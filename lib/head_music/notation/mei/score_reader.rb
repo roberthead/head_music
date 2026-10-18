@@ -48,7 +48,7 @@ module HeadMusic::Notation::MEI
       @measures = []
       @pending = []
       @layers = PartLayers.new(@state, @editorial, @ties, @pending)
-      @closing_clefs = {}.compare_by_identity
+      @clefs = MeasureClefs.new
       @definitions = []
     end
 
@@ -96,16 +96,13 @@ module HeadMusic::Notation::MEI
       end
     end
 
-    # A first measure is a pickup where it says it is an upbeat, or where
-    # every part's music in it is shorter than its meter.
     def mark_pickup
       first = @measures.first
       return unless first
 
-      extent = @readings.filter_map { |reading| reading.measures.first.extent }.max
-      upbeat = attribute(first.element, "type", element: first.element) == "upbeat"
-      short = extent && extent < Rational(first.meter.top_number, first.meter.bottom_number)
-      @readings.each { |reading| reading.measures.first.implicit = upbeat || short || false }
+      measures = @readings.map { |reading| reading.measures.first }
+      pickup = MeasureLength.pickup?(first.element, first.meter, measures.map(&:extent))
+      measures.each { |measure| measure.implicit = pickup }
     end
 
     def read_measure(element, passes)
@@ -124,12 +121,13 @@ module HeadMusic::Notation::MEI
     end
 
     def file_part(reading, contents, index, changes, where)
-      reading.measures[index].extent = extent(contents, index)
-      change_clefs(reading, index, changes, contents) if index.positive?
+      measure = reading.measures[index]
+      measure.extent = MeasureLength.extent(contents, measure)
+      @clefs.open(reading, measure, changes, contents)
       instrument = changes.instruments[reading.definition.index]
       reading.instrument_changes[index] = instrument if instrument
       @layers.read(reading, contents, index, where)
-      note_closing_clefs(reading, index, contents)
+      @clefs.close(reading, measure, contents)
     end
 
     # The <scoreDef>s and <staffDef>s since the last measure, which take
@@ -143,19 +141,6 @@ module HeadMusic::Notation::MEI
         end
       end
       @definitions.clear
-    end
-
-    # How far a part's music reaches in a measure. After the first, a
-    # whole-bar rest fills its bar, so a layer beside it that ends short is
-    # padded rather than making the bar short, unless the bar says with
-    # metcon="false" that it is short.
-    def extent(contents, index)
-      reach = contents.filter_map(&:extent).max
-      return reach if index.zero? || @readings.first.measures[index].implicit
-      return reach if contents.none? { |content| content.entries.any?(&:fills_bar?) }
-
-      meter = @measures[index].meter
-      [reach, Rational(meter.top_number, meter.bottom_number)].compact.max
     end
 
     # The bars a measure stands for: one, or as many as a <multiRest> fills,
@@ -186,37 +171,11 @@ module HeadMusic::Notation::MEI
         index: index, element: element, number: where[:measure], meter: meter, key: @state.key,
         tempo: tempo, controls: controls, ending_passes: passes
       )
-      implicit = index.positive? && AttributeValues.read(element, "metcon", **where, element: element) == false
+      implicit = MeasureLength.short?(element, index, **where)
       @readings.each do |reading|
         reading.measures << PartReading::Measure.new(
           index: index, number: where[:measure], implicit: implicit, meter: meter, tolerance: PartReading::TOLERANCE, clefs: {}
         )
-      end
-    end
-
-    # A clef change between measures, a clef that opens a layer, or one
-    # that closes a layer of the bar before, each later one winning.
-    def change_clefs(reading, index, changes, contents)
-      openings = {}
-      contents.each do |content|
-        openings[reading.definition.staff_index(content.staff_number)] ||= content.opening_clef if content.opening_clef
-      end
-      clefs = reading.measures[index].clefs
-      clefs.merge!(@closing_clefs.fetch(reading, {}), openings)
-      changes.clefs.each do |number, clef|
-        staff = reading.definition.staff_index(number)
-        clefs[staff] = clef if staff
-      end
-    end
-
-    # The clefs after the last entry of a layer that reaches as far as its
-    # part's music in the bar, which sit at the barline after it.
-    def note_closing_clefs(reading, index, contents)
-      reach = reading.measures[index].extent
-      @closing_clefs[reading] = contents.each_with_object({}) do |content, clefs|
-        next unless content.closing_clef && content.extent == reach
-
-        clefs[reading.definition.staff_index(content.staff_number)] ||= content.closing_clef
       end
     end
   end
