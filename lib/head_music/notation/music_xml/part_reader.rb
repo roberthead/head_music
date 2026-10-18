@@ -30,39 +30,29 @@ module HeadMusic::Notation::MusicXML
 
     def initialize(document_part, instrument: nil)
       @document_part = document_part
-      @instrument = instrument
-      @tracks = {}
-      @divisions = nil
-      @meter = HeadMusic::Rudiment::Meter.default
-      @staves = 1
-      @most_staves = 1
-      @part_symbol = nil
-      @transposition = HeadMusic::Notation::ConcertTransposition.new(errors: HeadMusic::Notation::MusicXML)
+      @durations = PartDurations.new
+      @staves = PartStaves.new(instrument: instrument)
+      @tracks = VoiceTracks.new(@staves)
       @records = []
     end
 
     def read
       measures = @document_part.measures.each_with_index.map { |measure, index| read_measure(measure, index) }
-      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.values, staves: @most_staves, part_symbol: @part_symbol, records: @records)
+      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.to_a, staves: @staves.most, part_symbol: @staves.part_symbol, records: @records)
     end
 
     private
 
     def read_measure(measure, index)
       @where = {measure: measure.number, part: @document_part.id}
-      @measure = Measure.new(index: index, number: measure.number, implicit: measure.implicit?, meter: @meter, clefs: {})
+      @measure = Measure.new(index: index, number: measure.number, implicit: measure.implicit?, meter: @durations.meter, clefs: {})
       @cursor = 0
-      @lead = nil
-      @hidden_lead = false
+      @tracks.start_measure(@where)
       @timing = WrittenTiming.new
       measure.element.each_element { |element| read_element(element) }
-      @measure.tolerance = @divisions ? division : 0
-      @measure.extent = @timing.extent if overfull? && @timing.retime(bar_length)
+      @measure.tolerance = @durations.tolerance
+      @measure.extent = @timing.extent if @durations.overfull?(@measure.extent) && @timing.retime(@durations.bar_length)
       @measure
-    end
-
-    def overfull?
-      @divisions && @measure.extent && @measure.extent - bar_length >= division
     end
 
     def read_element(element)
@@ -78,10 +68,9 @@ module HeadMusic::Notation::MusicXML
     end
 
     def read_move(element, sign)
-      delta = sign * duration_of(text(element, "duration", **@where), moving: true)
+      delta = sign * @durations.of(text(element, "duration", **@where), moving: true, **@where)
       forward = sign.positive?
-      move(delta)
-      reach(@cursor) if forward
+      advance(delta, reaches: forward)
       @timing.move(delta, reaches: forward)
     end
 
@@ -97,28 +86,29 @@ module HeadMusic::Notation::MusicXML
       attributes = AttributesReader.read(element, **@where)
       raise UnsupportedFeatureError.new("A <measure-repeat> is not supported", **@where) if attributes.measure_repeat
 
-      @divisions = attributes.divisions if attributes.divisions
-      @staves = attributes.staves if attributes.staves
-      @most_staves = [@most_staves, @staves].max
-      @part_symbol ||= attributes.part_symbol
-      attributes.transpositions.each { |number, step| @transposition.change(number, step) }
+      @durations = @durations.with(divisions: attributes.divisions) if attributes.divisions
+      @staves.change(attributes)
       return unless @cursor.zero?
 
       @measure.clefs.merge!(attributes.clefs)
-      @measure.key = concert_key(attributes.key) if attributes.key
-      @meter = @measure.meter = attributes.meter if attributes.meter
+      @measure.key = @staves.concert_key(attributes.key) if attributes.key
+      @durations = @durations.with(meter: @measure.meter = attributes.meter) if attributes.meter
     end
 
     def read_direction(element)
-      @timing.direction(note_record(:direction, element, cursor: @cursor, divisions: @divisions))
+      record_direction(element)
       sound = first_child(element, "sound")
       offset = text(element, "offset", **@where)
       read_sound(sound) if sound && (offset.nil? || rational(offset, "<offset>", **@where).zero?)
     end
 
     def read_measure_sound(element)
-      @timing.direction(note_record(:direction, element, cursor: @cursor, divisions: @divisions))
+      record_direction(element)
       read_sound(element)
+    end
+
+    def record_direction(element)
+      @timing.direction(note_record(:direction, element, cursor: @cursor, divisions: @durations.divisions))
     end
 
     def read_sound(element)
@@ -130,33 +120,26 @@ module HeadMusic::Notation::MusicXML
 
     def read_note(element)
       note = NoteReader.read(element, **@where)
-      return read_hidden(note) if note.hidden
-      return read_grace(note) if note.grace
-      return add_to_chord(note) if note.chord
-
-      @hidden_lead = false
-      duration = duration_of(note.duration)
-      measure_rest = note.rest && (note.measure_rest || duration == bar_length || rounded_measure_rest?(note, duration))
-      @lead = track_for(note.voice).add(
-        measure_index: @measure.index, cursor: @cursor, tolerance: division, fills_bar: measure_rest,
-        rhythmic_value: measure_rest ? nil : rhythmic_value(note, duration), duration: duration,
-        sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue, tie_starts: [], tie_stops: [],
-        staff: staff(note), ratio: note.ratio
-      )
-      note_record(:note, element, event: @lead, chord: false)
-      add_ties(@lead, note)
-      add_tuplet_marks(track_for(note.voice), @lead, note)
-      value = measure_rest ? bar_length : note.type && @lead.rhythmic_value.fraction
-      move(duration)
-      reach(@cursor) unless measure_rest
-      @timing.note(note.voice, value, @lead, reaches: !measure_rest)
+      if note.hidden
+        read_hidden(note)
+      elsif note.grace
+        read_grace(note)
+      elsif note.chord
+        lead = @tracks.add_chord_tone(note, @durations)
+        note_record(:note, element, event: lead, chord: true) if lead
+      else
+        read_main(note)
+      end
     end
 
-    # A rest with no <type> over the bar by no more than a division is the
-    # whole-measure rest music21 writes, its <duration> the sum of the
-    # rounded ones the bar's notes would have.
-    def rounded_measure_rest?(note, duration)
-      !note.type && duration > bar_length && duration - bar_length <= division
+    def read_main(note)
+      duration = @durations.of(note.duration, **@where)
+      measure_rest = @durations.measure_rest?(note, duration)
+      event = @tracks.add(note, @durations, measure_index: @measure.index, cursor: @cursor, duration: duration, fills_bar: measure_rest)
+      note_record(:note, note.element, event: event, chord: false)
+      value = measure_rest ? @durations.bar_length : note.type && event.rhythmic_value.fraction
+      advance(duration, reaches: !measure_rest)
+      @timing.note(note.voice, value, event, reaches: !measure_rest)
     end
 
     # A note or rest that does not print is no part of the notation, as the
@@ -166,107 +149,21 @@ module HeadMusic::Notation::MusicXML
     def read_hidden(note)
       return if note.grace || note.chord
 
-      @hidden_lead = true
-      duration = duration_of(note.duration)
-      move(duration)
-      fills_bar = note.rest && (note.measure_rest || duration == bar_length)
-      reach(@cursor) unless fills_bar
+      @tracks.hide_lead
+      duration = @durations.of(note.duration, **@where)
+      fills_bar = @durations.whole_bar_rest?(note, duration)
+      advance(duration, reaches: !fills_bar)
       @timing.move(duration, reaches: !fills_bar)
     end
 
-    def add_tuplet_marks(track, event, note)
-      note.tuplets.each do |type, _number|
-        track.tuplet_marks << HeadMusic::Notation::VoiceTrack::TupletMark.new(event, type, note.normal_type, note.normal_dots)
-      end
-    end
-
-    # A grace note takes no time. It waits for its voice's next main note,
-    # and a grace chord's tones join the grace note before them. One with no
-    # <type> is an eighth.
     def read_grace(note)
-      return if note.rest || note.cue
-
-      track = track_for(note.voice)
-      tie_starts = if (note.ties.any? ? note.ties : note.tied).include?("start")
-        [sound(note).to_s]
-      else
-        []
-      end
-      grace = track.queued_graces.last
-      chord = (note.chord && grace) ? true : false
-      if chord
-        grace.sounds |= [sound(note)]
-        grace.tie_starts |= tie_starts
-      else
-        grace = track.queue_grace(
-          sounds: [sound(note)], rhythmic_value: grace_value(note), slashed: note.slashed,
-          articulations: note.articulations.filter_map { |element| MarkingElements.articulation(element) }, tie_starts: tie_starts
-        )
-      end
-      note_record(:note, note.element, grace: grace, chord: chord)
+      grace, chord = @tracks.add_grace(note)
+      note_record(:note, note.element, grace: grace, chord: chord) if grace
     end
 
-    def grace_value(note)
-      return HeadMusic::Rudiment::RhythmicValue.get(:eighth) unless note.type
-
-      written = NoteReader.written_value(note, **@where)
-      HeadMusic::Rudiment::RhythmicValue.new(written.unit, dots: written.dots)
-    end
-
-    # A chord tone sounds with the note before it, which must be as long,
-    # and in its voice where it names one; many exporters name none on a
-    # chord tone. A cue chord's tones are dropped with it.
-    def add_to_chord(note)
-      return if @hidden_lead
-
-      raise ParseError.new("A <chord/> rest is not supported", **@where) if note.rest
-      if @lead.nil? || (note.voice_stated && @lead.label != note.voice) || (@lead.rest? && !@lead.cue)
-        raise ParseError.new("A <chord/> has no note before it", **@where)
-      end
-
-      note_record(:note, note.element, event: @lead, chord: true)
-      return if @lead.cue || note.cue
-
-      duration = duration_of(note.duration)
-      unless duration == @lead.duration && rhythmic_value(note, duration) == @lead.rhythmic_value
-        raise UnsupportedFeatureError.new("Chord tones of different lengths are not supported", **@where)
-      end
-      @lead.sounds |= [sound(note)]
-      add_ties(@lead, note)
-    end
-
-    # <tie> is what sounds, so it wins over <tied>, which is what is drawn.
-    # A let-ring or continue says nothing about where a tie ends.
-    def add_ties(event, note)
-      return if event.rest?
-
-      types = note.ties.any? ? note.ties : note.tied
-      key = sound(note).to_s
-      event.tie_starts << key if types.include?("start")
-      event.tie_stops << key if types.include?("stop")
-    end
-
-    def staff(note)
-      number = note.staff || 1
-      raise ParseError.new("A <staff> of #{number} is not positive", **@where) unless number.positive?
-      raise ParseError.new("A <staff> of #{number} is beyond the part's #{@staves} staves", **@where) if number > @staves
-
-      number
-    end
-
-    # A transposing part's key lands in concert pitch, as its notes do.
-    def concert_key(key)
-      fifths, mode = key
-      [@transposition.concert_fifths(fifths), mode]
-    end
-
-    # A pitch sounds where its staff's transposition puts it. An unpitched
-    # note is a sound of the part's instrument, or an unpitched sound of
-    # none.
-    def sound(note)
-      return @transposition.concert(note.pitch, note.staff || 1, **@where) unless note.unpitched
-
-      HeadMusic::Rudiment::UnpitchedSound.get(@instrument) || HeadMusic::Rudiment::UnpitchedSound.get(nil)
+    def advance(duration, reaches:)
+      move(duration)
+      reach(@cursor) if reaches
     end
 
     def move(duration)
@@ -276,57 +173,8 @@ module HeadMusic::Notation::MusicXML
       @cursor
     end
 
-    def rhythmic_value(note, duration)
-      written = NoteReader.written_value(note, **@where)
-      return value_from_duration(note, duration) unless written
-
-      if (written.link_fraction - duration).abs > division
-        raise ParseError.new(
-          "A <duration> of #{note.duration} disagrees with its #{written} at #{@divisions} divisions", **@where
-        )
-      end
-      written
-    end
-
-    # A note with no <type> takes its value from its <duration>, under its
-    # <time-modification> or, failing that, the ratio its length implies.
-    def value_from_duration(note, duration)
-      value = if note.ratio
-        HeadMusic::Notation::DottedDuration.rhythmic_value_for(duration, tuplet: note.ratio)
-      else
-        HeadMusic::Notation::DottedDuration.rest_value(duration)
-      end
-      value || raise(UnsupportedFeatureError.new("No note value spans a <duration> of #{note.duration}", **@where))
-    end
-
-    # A <backup> or <forward> of nothing moves nothing, as music21 writes
-    # some, so only a note's duration must be positive.
-    def duration_of(text, moving: false)
-      raise ParseError.new("A <duration> is missing", **@where) unless text
-      raise ParseError.new("A <duration> has no <divisions> in force", **@where) unless @divisions
-
-      duration = rational(text, "<duration>", **@where)
-      if duration.negative? || (duration.zero? && !moving)
-        raise ParseError.new("A <duration> must be positive", **@where)
-      end
-
-      duration / (4 * @divisions)
-    end
-
-    def division
-      1 / (4 * @divisions)
-    end
-
-    def bar_length
-      Rational(@meter.top_number, @meter.bottom_number)
-    end
-
     def reach(cursor)
       @measure.extent = [@measure.extent, cursor].compact.max
-    end
-
-    def track_for(label)
-      @tracks[label] ||= HeadMusic::Notation::VoiceTrack.new(label)
     end
   end
 end
