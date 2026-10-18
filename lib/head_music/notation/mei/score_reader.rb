@@ -47,6 +47,7 @@ module HeadMusic::Notation::MEI
       @tuplets = TupletSpans.new(source.index)
       @measures = []
       @pending = []
+      @layers = PartLayers.new(@state, @editorial, @ties, @pending)
       @closing_clefs = {}.compare_by_identity
       @definitions = []
     end
@@ -125,7 +126,7 @@ module HeadMusic::Notation::MEI
         reading.measures[index].extent = extent(contents[reading], index)
         change_clefs(reading, index, changes, contents[reading]) if index.positive?
         reading.instrument_changes[index] = changes.instruments[reading.definition.index] if changes.instruments.key?(reading.definition.index)
-        read_part(reading, contents[reading], index, where)
+        @layers.read(reading, contents[reading], index, where)
         note_closing_clefs(reading, index, contents[reading])
       end
     end
@@ -280,89 +281,11 @@ module HeadMusic::Notation::MEI
       contents
     end
 
-    # Each layer's notes are spelled on the staff it sits on, and its
-    # events wait in a PartReading::Layer, with their Pending records, until
-    # the part's voice keys are known.
-    def read_part(reading, contents, index, where)
-      staves = contents.to_h { |content| [content, sitting_staff(reading, content)] }.compare_by_identity
-      pitches = spell(reading, contents, staves, where)
-      contents.each do |content|
-        entries = content.entries.map do |entry|
-          sounds = entry.cue ? [] : entry.notes.map { |note| pitches.fetch(note) }
-          [entry, sounds, note_pending(reading, entry, content, index, sounds, where.merge(staff: content.staff_number))]
-        end
-        reading.layers << PartReading::Layer.new(index, content, staves[content], entries)
-      end
-    end
-
-    # The enclosing staff, unless every note and chord names the same other
-    # staff of the part by @staff, as MuseScore writes a crossing hand.
-    def sitting_staff(reading, content)
-      crossing = content.crossing_staff
-      reading.definition.staff_index(crossing) ? crossing : content.staff_number
-    end
-
     def read_layers(staff, number, where)
       @editorial.children_named(staff, "layer").map do |layer|
         default = @state.duration_default(number, AttributeValues.read(layer, "n", **where, element: layer) || 1)
         LayerReader.new(layer, @editorial, staff_number: number, tuplets: @tuplets, duration_default: default, **where).read
       end
-    end
-
-    # The sounding pitch of every note of the part in the measure, by
-    # element, each staff's notes taken in onset order across its layers.
-    # A note is on the staff its @staff, or its chord's, names in the part,
-    # else on its layer's.
-    def spell(reading, contents, staves, where)
-      by_staff = sorted_notes(contents).group_by { |note, entry, content| spelling_staff(reading, note, entry, staves[content], where) }
-      by_staff.each_with_object({}.compare_by_identity) do |(number, notes), pitches|
-        accidentals = AccidentalReading.new(@state.written_fifths(number))
-        notes.each do |note, entry, content|
-          stream = [reading.definition.index, staves[content], content.number, content.occurrence]
-          pitches[note] = pitch(reading, note, entry, stream, accidentals, where.merge(staff: number))
-        end
-      end
-    end
-
-    def spelling_staff(reading, note, entry, sitting, where)
-      named = [note, entry.element].uniq.lazy.filter_map { |element| AttributeValues.read(element, "staff", **where, element: element) }.first
-      reading.definition.staff_index(named) ? named : sitting
-    end
-
-    def sorted_notes(contents)
-      sequence = 0
-      keyed = contents.flat_map do |content|
-        content.entries.reject(&:cue).flat_map do |entry|
-          entry.notes.map { |note| [[entry.cursor, entry.grace ? 0 : 1, sequence += 1], [note, entry, content]] }
-        end
-      end
-      keyed.sort_by(&:first).map(&:last)
-    end
-
-    def pitch(reading, note, entry, stream, accidentals, where)
-      spelling = PitchReading.spelling(note, @editorial, **where)
-      marker = TieControls.marker(note, entry, **where)
-      alteration = accidentals.alteration(spelling, carried: @ties.carried(note, spelling, marker, stream))
-      @ties.remember(note, spelling, marker, stream, alteration)
-      written = HeadMusic::Notation::PitchSpelling.spelled(
-        spelling.letter, alteration, spelling.octave, errors: HeadMusic::Notation::MEI, **where, element: note
-      )
-      reading.transposition.concert(written, reading.definition.staff_index(where[:staff]), **where, element: note)
-    end
-
-    def note_pending(reading, entry, content, index, sounds, where)
-      kind = (entry.kind == :multi_rest) ? :m_rest : entry.kind
-      base = {measure_index: index, reading: reading, staff: entry.staff, content: content}
-      tie = (kind == :note) ? TieControls.marker(entry.element, entry, **where) : nil
-      pending = [Pending.new(kind: kind, element: entry.element, chord_member: false, sound: (kind == :note) ? sounds.first : nil, tie: tie, **base)]
-      @pending.concat(pending)
-      return pending unless entry.kind == :chord
-
-      members = entry.notes.zip(sounds).map do |note, sound|
-        Pending.new(kind: :note, element: note, chord_member: true, sound: sound, tie: TieControls.marker(note, entry, **where), **base)
-      end
-      @pending.concat(members)
-      pending + members
     end
   end
 end
