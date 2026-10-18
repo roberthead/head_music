@@ -36,8 +36,9 @@ module HeadMusic::Notation::Kern
     end
 
     def finish
-      @dynamics.pass(@voices.current_time)
-      clock.finish(@voices.current_time, document.rows.last.line)
+      time = @voices.current_time
+      @dynamics.pass(time)
+      clock.finish(time, document.rows.last.line)
       @voices.place(clock)
       @dynamics.place(@flow, clock)
       clock.mark(@flow)
@@ -57,23 +58,25 @@ module HeadMusic::Notation::Kern
 
     def read_interpretations(row)
       line = row.line
+      time = @voices.current_time
       interpretations = row.kern_fields.filter_map do |track, field, _column|
         interpretation = InterpretationReader.read(field, line_number: line)
         [track, interpretation] if interpretation
       end
       sections, interpretations = interpretations.partition { |_track, interpretation| interpretation.kind == :section }
-      clock.section_label(sections.first.last.value, @voices.current_time) if sections.any?
+      clock.section_label(sections.first.last.value, time) if sections.any?
       timeline, spine = interpretations.partition { |_track, interpretation| TimelineReader.timeline?(interpretation) }
-      @timeline.read(timeline.map(&:last), @voices.current_time, line)
-      @flow ? @spine_changes.read(spine, @voices.current_time, line) : @tags.read(spine, line)
+      @timeline.read(timeline.map(&:last), time, line)
+      @flow ? @spine_changes.read(spine, time, line) : @tags.read(spine, line)
       apply_manipulations(row)
     end
 
     def apply_manipulations(row)
       row.manipulations.each do |manipulation|
-        next unless manipulation.tracks.first.kern?
+        tracks = manipulation.tracks
+        next unless tracks.first.kern?
 
-        @tags.split(*manipulation.tracks) if manipulation.type == :split
+        @tags.split(*tracks) if manipulation.type == :split
         @voices.manipulate(manipulation, row.line) if @flow
       end
     end
@@ -93,24 +96,21 @@ module HeadMusic::Notation::Kern
 
     # Data and barlines
 
+    # A grace note takes no time, but its row is timed: it sits at the time
+    # of the note it leads to, so it bounds the rows that split the time.
     def read_data(row)
       start_flow(row) unless @flow
       line = row.line
       tokens = row.kern_fields.map { |track, field, column| [track, TokenReader.read(field, line_number: line), column] }
-      attacked = tokens.any? { |_track, token, _column| token.attack? }
-      return read_untimed(row) unless attacked || grace?(tokens)
+      row_tokens = tokens.map { |_track, token, _column| token }
+      attacked = row_tokens.any?(&:attack?)
+      return read_untimed(row) unless attacked || row_tokens.any? { |token| token.type == :grace }
 
       clock.ensure_music_allowed if attacked
       time = @voices.current_time
       events = @voices.read(tokens, time, line)
       LyricReader.new(row).sing(events)
       @dynamics.read(row, events, time)
-    end
-
-    # A grace note takes no time, but its row is timed: it sits at the time
-    # of the note it leads to, so it bounds the rows that split the time.
-    def grace?(tokens)
-      tokens.any? { |_track, token, _column| token.type == :grace }
     end
 
     def read_untimed(row)
