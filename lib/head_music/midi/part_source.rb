@@ -64,12 +64,13 @@ module HeadMusic::MIDI
         @track.text(:track_name)
       end
 
-      def instrument_name
-        @track.text(:instrument_name)
+      # The names that may say what the part plays, the instrument's first.
+      def names
+        @names ||= [@track.text(:instrument_name), track_name].compact
       end
 
       def hint
-        [instrument_name, track_name].compact.first
+        names.first
       end
 
       def sounds
@@ -79,7 +80,6 @@ module HeadMusic::MIDI
       def instrument_for(program)
         return unless program
 
-        names = [instrument_name, track_name].compact
         matching = names.find { |name| HeadMusic::Instruments::Instrument.get(name)&.gm_program == program }
         InstrumentMap.instrument(program, hint: matching || names.first)
       end
@@ -157,7 +157,6 @@ module HeadMusic::MIDI
     # A part with no notes takes its own track's programs; any other, its
     # channel's, from whichever track sets them.
     def part(key, notes, sources, programs = programs_by_channel.fetch(key.channel, []))
-      programs = [] if key.percussion?
       Part.new(key, notes, sources, sequence.tracks[key.track], programs, quantizer.layout)
     end
 
