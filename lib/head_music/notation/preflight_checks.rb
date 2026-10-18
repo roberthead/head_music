@@ -14,28 +14,33 @@ module HeadMusic
       private
 
       def ensure_xml_text(texts)
-        texts.compact.map(&:to_s).each do |text|
-          unless text.valid_encoding?
-            raise render_error_class, "cannot render the invalid #{text.encoding} in #{text.inspect} as XML"
-          end
-          # The writers interpolate text into UTF-8 documents.
-          unless text.ascii_only? || text.encoding == Encoding::UTF_8
-            raise render_error_class, "cannot render #{text.inspect} as XML; encode it as UTF-8, not #{text.encoding}"
-          end
-          next unless text.match?(FORBIDDEN_XML_CHARACTERS)
+        texts.compact.each do |text|
+          problem = xml_text_problem(text.to_s)
+          raise render_error_class, problem if problem
+        end
+      end
 
-          raise render_error_class, "cannot render the characters XML forbids in #{text.inspect}"
+      # The writers interpolate text into UTF-8 documents.
+      def xml_text_problem(text)
+        encoding = text.encoding
+        if !text.valid_encoding?
+          "cannot render the invalid #{encoding} in #{text.inspect} as XML"
+        elsif !(text.ascii_only? || encoding == Encoding::UTF_8)
+          "cannot render #{text.inspect} as XML; encode it as UTF-8, not #{encoding}"
+        elsif text.match?(FORBIDDEN_XML_CHARACTERS)
+          "cannot render the characters XML forbids in #{text.inspect}"
         end
       end
 
       # The text every XML writer takes from a flow, beside what only some
       # write.
       def flow_texts(flow)
+        voices = flow.voices
         [
           flow.name, flow.composer, flow.work&.title,
-          *flow.voices.map(&:role),
+          *voices.map(&:role),
           *flow.bars(flow.last_sounding_bar_number).map(&:rehearsal_mark),
-          *flow.voices.flat_map { |voice| voice.voice_events.flat_map { |event| event.syllables.values.map(&:text) } }
+          *voices.flat_map(&:voice_events).flat_map { |event| event.syllables.values }.map(&:text)
         ]
       end
 
@@ -75,11 +80,8 @@ module HeadMusic
       # part and its voices. The same hairpin twice loses only its owner.
       def ensure_one_hairpin_at_a_time(spans, line:)
         hairpins = spans.select(&:hairpin?).uniq(&:to_h).sort
-        hairpins.combination(2).each do |one, other|
-          next unless one.from < other.to && other.from < one.to
-
-          raise render_error_class, "#{line} holds one hairpin at a time, so the #{one} and the #{other} cannot both be written"
-        end
+        one, other = hairpins.combination(2).find { |earlier, later| earlier.from < later.to && later.from < earlier.to }
+        raise_crowded(line, "hairpin", "#{one} and the #{other}") if one
       end
 
       # For a format with one line of dynamics for several owners, such as a
@@ -88,11 +90,12 @@ module HeadMusic
         dynamic_events = owners.flat_map(&:dynamic_events)
         dynamic_events.group_by(&:position).sort_by(&:first).each do |position, events|
           levels = events.map(&:name_key).uniq
-          next if levels.one?
-
-          raise render_error_class, "#{line} holds one dynamic at a time, " \
-            "so the #{levels.join(" and the ")} at #{position} cannot both be written"
+          raise_crowded(line, "dynamic", "#{levels.join(" and the ")} at #{position}") unless levels.one?
         end
+      end
+
+      def raise_crowded(line, kind, clash)
+        raise render_error_class, "#{line} holds one #{kind} at a time, so the #{clash} cannot both be written"
       end
 
       # For a format whose tuplet brackets stop at a barline.
@@ -128,13 +131,14 @@ module HeadMusic
       end
 
       def raise_gap_error(voice, expected_position, found_voice_event)
-        if found_voice_event.equal?(voice.voice_events.first)
-          raise render_error_class, "the first voice event must start its bar " \
-            "(found #{found_voice_event.position}); insert explicit rests to fill the gap"
-        end
-
-        raise render_error_class, "expected a voice event at #{expected_position}, " \
-          "found one at #{found_voice_event.position}; insert explicit rests to fill gaps"
+        found = found_voice_event.position
+        message =
+          if found_voice_event.equal?(voice.voice_events.first)
+            "the first voice event must start its bar (found #{found}); insert explicit rests to fill the gap"
+          else
+            "expected a voice event at #{expected_position}, found one at #{found}; insert explicit rests to fill gaps"
+          end
+        raise render_error_class, message
       end
     end
   end

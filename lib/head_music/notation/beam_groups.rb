@@ -28,8 +28,8 @@ module HeadMusic
       def break_before?(events, index, meter)
         event = events[index]
         return true if event.levels.zero? || events[index - 1].levels.zero?
-        return true if event.beam_break_before == true
-        return false if event.beam_break_before == false
+        override = event.beam_break_before
+        return override if [true, false].include?(override)
 
         group_start?(event.onset, meter)
       end
