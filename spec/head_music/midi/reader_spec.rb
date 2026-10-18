@@ -85,6 +85,14 @@ describe HeadMusic::MIDI::Reader do
       expect(sequence.name).to eq "Air"
     end
 
+    it "finds a track's first text of any given kind" do
+      expect(sequence.tracks.last.text(:instrument_name, :lyric, :track_name)).to eq "Voice"
+    end
+
+    it "finds no text of a kind a track lacks" do
+      expect(sequence.tracks.last.text(:instrument_name)).to be_nil
+    end
+
     it "pairs notes, naming the track of each note on" do
       expect(sequence.tracks.last.notes).to eq [described_class::Note.new(3, 64, 80, 0, 480, 1)]
     end

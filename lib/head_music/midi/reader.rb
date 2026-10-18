@@ -31,7 +31,12 @@ class HeadMusic::MIDI::Reader
     end
 
     def name
-      events.find { |event| event.is_a?(HeadMusic::MIDI::Text) && %i[sequence_name track_name].include?(event.kind) }&.text
+      text(:sequence_name, :track_name)
+    end
+
+    # The first text of any of the kinds.
+    def text(*kinds)
+      events.find { |event| event.is_a?(HeadMusic::MIDI::Text) && kinds.include?(event.kind) }&.text
     end
 
     def lyrics
@@ -49,7 +54,7 @@ class HeadMusic::MIDI::Reader
     end
 
     def name
-      tracks.first&.events&.find { |event| event.is_a?(HeadMusic::MIDI::Text) && event.kind == :sequence_name }&.text
+      tracks.first&.text(:sequence_name)
     end
 
     # Every track's events as a player merges them: by tick, then in track

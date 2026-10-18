@@ -61,11 +61,11 @@ module HeadMusic::MIDI
       private
 
       def track_name
-        @track.events.find { |event| event.is_a?(Text) && event.kind == :track_name }&.text
+        @track.text(:track_name)
       end
 
       def instrument_name
-        @track.events.find { |event| event.is_a?(Text) && event.kind == :instrument_name }&.text
+        @track.text(:instrument_name)
       end
 
       def hint
