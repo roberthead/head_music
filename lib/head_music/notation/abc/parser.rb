@@ -96,14 +96,14 @@ module HeadMusic::Notation::ABC
 
     def handle_note(token)
       state = current_state
-      navigation_tagger.record_at_note(state)
+      bar_marks.at_note(state)
       pitch = state.pitch_builder.pitch(token.letter, token.octave_marks, token.accidental)
       state.defer_voice_event([pitch], token.length)
     end
 
     def handle_chord(token)
       state = current_state
-      navigation_tagger.record_at_note(state)
+      bar_marks.at_note(state)
       pitches, inner_length = chord_reader.read(token, state.pitch_builder)
       state.defer_voice_event(pitches, token.length, inner_length)
     end
@@ -129,7 +129,7 @@ module HeadMusic::Notation::ABC
     # The waiting decorations are the rest's own, so they are not dangling.
     def handle_rest(token)
       state = current_state
-      navigation_tagger.record_at_note(state)
+      bar_marks.at_note(state)
       state.end_notes(token.line)
       state.place(token.length, nil)
     end
@@ -139,7 +139,7 @@ module HeadMusic::Notation::ABC
     def handle_invisible_rest(token)
       state = current_state
       unless state.overlay?
-        navigation_tagger.record_at_note(state)
+        bar_marks.at_note(state)
         state.end_notes(token.line)
       end
       state.skip(token.length)
@@ -168,68 +168,36 @@ module HeadMusic::Notation::ABC
       state.break_rhythm(token.direction, line)
     end
 
-    # A note tied across the bar line is left pending rather than flushed, so
-    # the note after the bar line fuses onto it the way an in-bar tie does,
-    # keeping the pending note's pitch: the bar's accidental reset below
-    # would otherwise strip the sharp or flat the tie carries.
     def handle_bar_line(token)
-      state = current_state
-      navigation_tagger.record_at_bar_line(state)
-      state.cross_bar_line(token.line)
-      repeat_tagger.bar_line(state, token.style)
-      state.pitch_builder.start_new_bar
+      bar_marks.bar_line(current_state, token)
     end
 
     def handle_volta(token)
-      state = current_state
-      line = token.line
-      state.ensure_not_awaiting_note(line)
-      passes = token.passes
-      raise ParseError.new("Volta has no passes", line_number: line) if passes.empty?
-
-      navigation_tagger.record_at_bar_line(state)
-      state.cross_bar_line(line)
-      repeat_tagger.open_volta(state, passes)
+      bar_marks.volta(current_state, token)
     end
 
     # Guarded so a leading V: line doesn't force a default voice into existence.
     def handle_voice_change(token)
       if @voices.any?
         state = current_state
-        navigation_tagger.record_at_bar_line(state, entering: false)
+        bar_marks.leave(state)
         state.end_voice(token.line)
       end
       @voices.switch_to(token.voice_id)
     end
 
-    # A part label marks the bar it opens. One before any voice has music
-    # opens the first bar.
     def handle_part_label(token)
-      label = token.lexeme
-      return if label.empty?
-
-      state = current_state if @voices.any?
-      bar_number = state ? state.entered_bar_number : HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR
-      navigation_tagger.record_part_label(state, label, bar_number)
+      bar_marks.part_label((current_state if @voices.any?), token)
     end
 
     def finish
       @voices.each do |state|
-        navigation_tagger.record_at_bar_line(state, entering: false)
+        bar_marks.leave(state)
         state.end_voice(nil)
-        repeat_tagger.tag_completed_bar(state)
+        bar_marks.close(state)
         state.add_hairpins
       end
-      navigation_tagger.apply
-      imply_final_barline
-    end
-
-    # The last bar's final barline is implied, and writers draw it. A bar
-    # holding only invisible rests counts, though it adds no voice event.
-    def imply_final_barline
-      last_bar_number = [@building.last_sounding_bar_number, *@voices.filter_map(&:completed_bar_number)].max
-      last_bar = @building.bar(last_bar_number)
-      last_bar.barline = :regular if last_bar.barline == :final
+      bar_marks.finish(@voices)
     end
 
     def chord_reader
@@ -240,12 +208,8 @@ module HeadMusic::Notation::ABC
       @grace_reader ||= GraceReader.new(duration_resolver)
     end
 
-    def repeat_tagger
-      @repeat_tagger ||= RepeatTagger.new(@building)
-    end
-
-    def navigation_tagger
-      @navigation_tagger ||= NavigationTagger.new(@building)
+    def bar_marks
+      @bar_marks ||= BarMarkReader.new(@building)
     end
   end
 end
