@@ -123,6 +123,21 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
     end
   end
 
+  describe "#bar_length" do
+    it "is the meter's length of a full bar" do
+      flow = build_flow(meter: "3/4")
+      flow.add_voice.place("1:1", :half, "C4")
+      flow.voices.first.place("2:1", :half, "D4")
+      expect(described_class.new(flow).bar_length(1)).to eq Rational(3, 4)
+    end
+
+    it "is the length the voices fill of a short final bar" do
+      flow = build_flow(meter: "3/4")
+      flow.add_voice.place("1:1", :half, "C4")
+      expect(described_class.new(flow).bar_length(1)).to eq Rational(1, 2)
+    end
+  end
+
   describe "#dynamics_bars" do
     let(:flow) do
       HeadMusic::Notation::ABC.parse("X:1\nT:Plan\nL:1/4\nM:4/4\nK:C\nC4|D4|\n").tap do |flow|

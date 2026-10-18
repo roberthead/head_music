@@ -76,6 +76,13 @@ module HeadMusic::Notation::LilyPond
       "<>\\!" if owner&.spans&.any? { |span| span.hairpin? && span.to == final_barline }
     end
 
+    def bar_length(bar_number)
+      return short_final_bar_fraction if bar_number == bar_numbers.last && short_final_bar_fraction
+
+      meter = effective_meter(bar_number)
+      Rational(meter.top_number, meter.bottom_number)
+    end
+
     private
 
     def precompute_eager_data
@@ -103,13 +110,6 @@ module HeadMusic::Notation::LilyPond
 
       owners_marks = flow.parts.map { |part| part_marks(part) } + flow.voices.map { |voice| timed_marks(voice) }
       @trailing_marks = !music_end_fraction.nil? && owners_marks.any? { |marks| marks.trailing(bar_numbers.last, music_end_fraction).any? }
-    end
-
-    def bar_length(bar_number)
-      return short_final_bar_fraction if bar_number == bar_numbers.last && short_final_bar_fraction
-
-      meter = effective_meter(bar_number)
-      Rational(meter.top_number, meter.bottom_number)
     end
 
     # LilyPond has no way to say "three flats read as dorian", so it renders

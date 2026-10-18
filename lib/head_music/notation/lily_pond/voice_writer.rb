@@ -38,12 +38,12 @@ module HeadMusic::Notation::LilyPond
     # key and time print and the bars line up.
     def silent_lines(staff, part: nil)
       opening_lines(clef_name(nil, staff), part) +
-        plan.bar_numbers.map { |bar_number| bar_check_after([whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)].join(" "), bar_number) }
+        plan.bar_numbers.map { |bar_number| bar_check_after([whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)], bar_number) }
     end
 
     # The lines inside a part's \new Dynamics, bar-checked like a voice's.
     def dynamics_lines(part)
-      plan.bar_numbers.map { |bar_number| bar_check_after(plan.dynamics_bars(part).fetch(bar_number), bar_number) }
+      plan.bar_numbers.map { |bar_number| bar_check_after([plan.dynamics_bars(part).fetch(bar_number)], bar_number) }
     end
 
     private
@@ -52,6 +52,10 @@ module HeadMusic::Notation::LilyPond
 
     def first_bar_number
       plan.bar_numbers.first
+    end
+
+    def last_bar?(bar_number)
+      bar_number == plan.bar_numbers.last
     end
 
     def lead_voice?(voice)
@@ -72,15 +76,11 @@ module HeadMusic::Notation::LilyPond
     # rather than on the staff.
     def clef_name(voice, staff)
       clef = staff&.clef_at(first_bar_number) || HeadMusic::Notation::ClefSelector.for(voice)
-      clef_word(clef)
-    end
-
-    def clef_word(clef)
       CLEF_NAMES.fetch(clef.name_key.to_sym)
     end
 
     def time_command(meter)
-      "\\time #{meter.top_number}/#{meter.bottom_number}"
+      "\\time #{meter}"
     end
 
     # What the written pitches sound like. A part carries this rather than a
@@ -99,26 +99,28 @@ module HeadMusic::Notation::LilyPond
     # and \mark, so each voice reads back with them.
     def bar_line(voice, bar_number, part_index)
       bar = plan.bar(bar_number)
-      tokens = [
-        *BarMarkWriter.opening_tokens(bar, lead: lead_voice?(voice)),
+      lead = lead_voice?(voice)
+      last = last_bar?(bar_number)
+      bar_check_after([
+        *BarMarkWriter.opening_tokens(bar, lead: lead),
         *change_commands(voice.part, bar_number),
         staff_change_command(voice, bar_number, part_index),
         *bar_tokens(voice, bar_number),
         *trailing_spacers(voice, bar_number),
-        (bar_number == plan.bar_numbers.last) ? plan.final_barline_marks(voice) : nil,
-        *BarMarkWriter.closing_tokens(bar, last: bar_number == plan.bar_numbers.last, lead: lead_voice?(voice))
-      ]
-      bar_check_after(tokens.compact.join(" "), bar_number)
+        last ? plan.final_barline_marks(voice) : nil,
+        *BarMarkWriter.closing_tokens(bar, last: last, lead: lead)
+      ], bar_number)
     end
 
     # A short final bar has no bar check after it, so LilyPond does not
     # expect the bar to be full.
-    def bar_check_after(text, bar_number)
-      short_final_bar?(bar_number) ? text : "#{text} |"
+    def bar_check_after(tokens, bar_number)
+      tokens << "|" unless short_final_bar?(bar_number)
+      tokens.compact.join(" ")
     end
 
     def short_final_bar?(bar_number)
-      bar_number == plan.bar_numbers.last && plan.short_final_bar_fraction
+      last_bar?(bar_number) && plan.short_final_bar_fraction
     end
 
     # \key is per-staff inside << >>, so a mid-piece change is emitted in
@@ -159,9 +161,7 @@ module HeadMusic::Notation::LilyPond
       marks = plan.timed_marks(voice)
       return short_bar_rest(marks, bar_number) if short_final_bar?(bar_number) || plan.filled_final_bar?(bar_number)
 
-      meter = plan.effective_meter(bar_number)
-      length = Rational(meter.top_number, meter.bottom_number)
-      marks.around(bar_number, 0r, length, "R1*#{meter.top_number}/#{meter.bottom_number}")
+      marks.around(bar_number, 0r, plan.bar_length(bar_number), "R1*#{plan.effective_meter(bar_number)}")
     end
 
     def short_bar_rest(marks, bar_number)
