@@ -10,25 +10,6 @@ module HeadMusic::Notation::ABC
     # The identity length scale, used wherever no stretching applies.
     ONE = Rational(1)
 
-    # A note or chord whose placing is deferred until we know whether a
-    # broken-rhythm mark follows it. The pitches are computed eagerly so
-    # bar-line accidental resets cannot corrupt them. `tied_prefix`, when
-    # present, is the already-built rhythmic value of everything tied ahead of
-    # this note; its own value is appended at flush time.
-    #
-    # Its slur marks wait with it, in the order written, since its position
-    # is not known until it is placed. So do the ends of any tuplet it begins
-    # or ends, each at the count of links before it in the tie chain, or nil
-    # for the end of the chain so far.
-    #
-    # Grace notes wait with it too, and a slur opened before them, marked
-    # :grace_open, starts on the first of them.
-    PendingNote = Data.define(:pitches, :length, :scale, :tied_prefix, :beam_break, :decorations, :slur_marks, :ratio, :tuplet_ends, :graces) do
-      def initialize(pitches:, length:, scale:, tied_prefix: nil, beam_break: nil, decorations: [], slur_marks: [], ratio: nil, tuplet_ends: [], graces: [])
-        super
-      end
-    end
-
     attr_reader :voice, :pitch_builder, :tie_line
     attr_accessor :pending_note, :awaiting_scale, :broken_line,
       :active_passes, :volta_start_bar
@@ -246,18 +227,13 @@ module HeadMusic::Notation::ABC
     # per-chord inner scale, fold into the buffered length. When a tie is
     # open the arriving note instead extends the pending tie chain.
     def defer_voice_event(pitches, length, inner_scale = ONE)
-      scale = (awaiting_scale || ONE) * inner_scale
-      self.awaiting_scale = nil
-      decorations = @decorations.take
-      ratio, ends = @tuplets.count
-      return tie_onto_pending(pitches, length, scale, decorations, ratio, ends) if tie_open?
+      tied = tie_open?
+      drop_graces if tied
+      note = arriving_note(pitches, length, inner_scale, beam_break: tied ? nil : next_beam_break)
+      return tie_onto_pending(note) if tied
 
       flush_pending_note
-      self.pending_note = PendingNote.new(
-        pitches: pitches, length: length, scale: scale, beam_break: next_beam_break,
-        decorations: decorations, slur_marks: @slurs.take, ratio: ratio, tuplet_ends: ends,
-        graces: take_graces
-      )
+      self.pending_note = note
     end
 
     # Places the pending note onto the voice, if any, carrying its authored
@@ -267,9 +243,9 @@ module HeadMusic::Notation::ABC
       return unless pending
 
       self.pending_note = nil
-      voice_event = place_next(pending_rhythmic_value(pending), pending.pitches)
+      voice_event = place_next(pending.rhythmic_value(@duration_resolver), pending.pitches)
       voice_event.beam_break_before = pending.beam_break
-      add_grace_notes(voice_event, pending.graces)
+      pending.add_graces_to(voice_event)
       @decorations.apply(voice_event, pending.decorations)
       @slurs.apply(voice_event, pending.slur_marks)
       @tuplets.place_ends(voice_event, pending.tuplet_ends, pending.tied_prefix)
@@ -288,20 +264,6 @@ module HeadMusic::Notation::ABC
 
     private
 
-    def take_graces
-      graces = @graces
-      @graces = []
-      graces
-    end
-
-    def add_grace_notes(voice_event, graces)
-      graces.each do |grace|
-        voice_event.add_grace_note(
-          grace.sounds, grace.rhythmic_value, slashed: grace.slashed?, tied: grace.tied?, articulations: grace.articulations
-        )
-      end
-    end
-
     def place_next(rhythmic_value, pitches)
       @invisible_rests.each { |rest_value| voice.place(voice.next_position, rest_value) }
       @invisible_rests.clear
@@ -316,62 +278,46 @@ module HeadMusic::Notation::ABC
       @invisible_rests.reduce(voice.next_position) { |position, rest_value| position + rest_value }
     end
 
-    # Closes an open tie: the pending note becomes the new note's tied prefix,
+    def arriving_note(pitches, length, inner_scale, beam_break:)
+      scale = (awaiting_scale || ONE) * inner_scale
+      self.awaiting_scale = nil
+      decorations = @decorations.take
+      ratio, ends = @tuplets.count
+      graces = @graces
+      @graces = []
+      PendingNote.new(
+        pitches: pitches, length: length, scale: scale, beam_break: beam_break, decorations: decorations,
+        slur_marks: @slurs.take, ratio: ratio, tuplet_ends: ends, graces: graces
+      )
+    end
+
+    # Closes an open tie: the pending note becomes the new link's tied prefix,
     # so the pair (and any longer chain) resolves to a single voice event whose
     # rhythmic value carries the author's chosen split.
     #
-    # The tied note's markings join the whole event's, but a level or hairpin
+    # The tied link's markings join the whole event's, but a level or hairpin
     # mark written on it takes effect where it is written, partway through the
     # event.
-    def tie_onto_pending(pitches, length, scale, decorations, ratio, tuplet_ends)
+    def tie_onto_pending(link)
       pending = pending_note
-      prefix = pending_rhythmic_value(pending)
-      marks, markings = decorations.partition(&:positional?)
+      prefix = pending.rhythmic_value(@duration_resolver)
+      marks, markings = link.decorations.partition(&:positional?)
       marks.each { |decoration| @decorations.place_mark(music_end + prefix, decoration) }
       close_tie
-      drop_graces
-      self.pending_note = PendingNote.new(
-        pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
-        beam_break: pending.beam_break, decorations: pending.decorations + markings,
-        slur_marks: pending.slur_marks + @slurs.take,
-        ratio: ratio, tuplet_ends: @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix) + tuplet_ends, graces: pending.graces
-      )
-    end
+      unless pending.ties_to?(link.pitches)
+        raise ParseError.new("A tie must connect two notes of the same pitch", line_number: tie_line, snippet: "-")
+      end
 
-    # A tie carries its accidental across the bar line, where the key
-    # signature would otherwise respell the note, so the same letters in the
-    # same octaves are the same pitches.
-    def tied_pitches(pending, pitches)
-      return pending.pitches if same_letters?(pending.pitches, pitches)
-
-      raise ParseError.new(
-        "A tie must connect two notes of the same pitch",
-        line_number: tie_line, snippet: "-"
-      )
-    end
-
-    def same_letters?(pitches, other_pitches)
-      letters_and_registers(pitches) == letters_and_registers(other_pitches)
-    end
-
-    def letters_and_registers(pitches)
-      pitches.map { |pitch| [pitch.letter_name.to_s, pitch.register] }.sort
+      fixed_ends = @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix)
+      self.pending_note = pending.tied_to(link.with(decorations: markings), prefix, fixed_ends)
     end
 
     def pending_end_position
-      music_end + pending_rhythmic_value(pending_note)
+      music_end + pending_note.rhythmic_value(@duration_resolver)
     end
 
     def bar_start?(position)
       position.to_a.drop(1) == [1, 0, 0]
-    end
-
-    # A pending note's own value, with any tied prefix appended ahead of
-    # it so the whole tie chain renders as one sounding note.
-    def pending_rhythmic_value(pending)
-      own = @duration_resolver.rhythmic_value(pending.length, scale: pending.scale, tuplet: pending.ratio)
-      prefix = pending.tied_prefix
-      prefix ? prefix.append_tied(own) : own
     end
   end
 end
