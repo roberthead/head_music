@@ -29,10 +29,6 @@ module HeadMusic::Notation::ABC
       end
     end
 
-    # A tuplet being read: its ratio, the notes it still owes, and its ends
-    # once the notes there are placed.
-    OpenTuplet = Struct.new(:ratio, :owed, :from, :to, :started)
-
     attr_reader :voice, :pitch_builder, :tie_line
     attr_accessor :pending_note, :awaiting_scale, :broken_line,
       :active_passes, :volta_start_bar
@@ -50,7 +46,7 @@ module HeadMusic::Notation::ABC
       @graces = []
       @open_slurs = []
       @invisible_rests = []
-      @closed_tuplets = []
+      @tuplets = TupletGrouping.new(voice)
     end
 
     delegate :decorate, :reject_dangling_decorations, :take_navigation, :add_hairpins, to: :@decorations
@@ -94,22 +90,11 @@ module HeadMusic::Notation::ABC
 
     # "(p:q:r" puts the ratio on the next r notes, chords, and rests.
     def open_tuplet(marker, line)
-      if @tuplet
-        raise UnsupportedFeatureError.new(
-          "Unsupported ABC feature: nested tuplets", line_number: line, snippet: "(#{marker.actual}"
-        )
-      end
-
-      ratio = marker.ratio
-      @tuplet = OpenTuplet.new(ratio, marker.count) if ratio
+      @tuplets.open(marker, line)
     end
 
-    # A tuplet still owed notes when its voice ends is left ungrouped, its
-    # notes keeping their ratio.
     def end_tuplets
-      @tuplet = nil
-      group_closed_tuplets
-      @closed_tuplets.clear
+      @tuplets.close
     end
 
     # Counted from where the last note ends rather than where it starts: a
@@ -140,10 +125,10 @@ module HeadMusic::Notation::ABC
       if overlay?
         @overlay_cursor += @duration_resolver.rhythmic_value(length)
       else
-        ratio, ends = count_tuplet
+        ratio, ends = @tuplets.count
         from = music_end
         @invisible_rests << @duration_resolver.rhythmic_value(length, tuplet: ratio)
-        ends.each { |tuplet, edge, _| tuplet[edge] = (edge == :from) ? from : music_end }
+        @tuplets.mark_ends(ends, from, music_end)
       end
     end
 
@@ -174,7 +159,7 @@ module HeadMusic::Notation::ABC
 
       @invisible_rests.each { |rest_value| voice.place(voice.next_position, rest_value) }
       @invisible_rests.clear
-      group_closed_tuplets
+      @tuplets.group_closed
     end
 
     def start_overlay
@@ -268,7 +253,7 @@ module HeadMusic::Notation::ABC
       scale = (awaiting_scale || ONE) * inner_scale
       self.awaiting_scale = nil
       decorations = @decorations.take
-      ratio, ends = count_tuplet
+      ratio, ends = @tuplets.count
       return tie_onto_pending(pitches, length, scale, decorations, ratio, ends) if tie_open?
 
       flush_pending_note
@@ -291,39 +276,21 @@ module HeadMusic::Notation::ABC
       add_grace_notes(voice_event, pending.graces)
       @decorations.apply(voice_event, pending.decorations)
       apply_slurs(voice_event, pending.slur_marks)
-      place_tuplet_ends(voice_event, pending.tuplet_ends, pending.tied_prefix)
+      @tuplets.place_ends(voice_event, pending.tuplet_ends, pending.tied_prefix)
     end
 
     # Places a note, chord, or rest (nil pitches) directly onto the voice,
     # bypassing the pending-note buffer, with the decorations waiting for it.
     def place(length, pitches, scale: ONE)
-      ratio, ends = count_tuplet
+      ratio, ends = @tuplets.count
       voice_event = place_next(@duration_resolver.rhythmic_value(length, scale: scale, tuplet: ratio), pitches)
       @decorations.apply(voice_event, @decorations.take)
       apply_slurs(voice_event, take_slur_opens)
-      place_tuplet_ends(voice_event, ends)
+      @tuplets.place_ends(voice_event, ends)
       voice_event
     end
 
     private
-
-    # The ratio for the next note, chord, or rest, and the ends of the open
-    # tuplet it begins or ends.
-    def count_tuplet
-      tuplet = @tuplet
-      return [nil, []] unless tuplet
-
-      ends = []
-      ends << [tuplet, :from, nil] unless tuplet.started
-      tuplet.started = true
-      tuplet.owed -= 1
-      if tuplet.owed.zero?
-        ends << [tuplet, :to, nil]
-        @closed_tuplets << tuplet
-        @tuplet = nil
-      end
-      [tuplet.ratio, ends]
-    end
 
     def take_slur_opens
       opens = [:open] * @slur_opens
@@ -409,58 +376,8 @@ module HeadMusic::Notation::ABC
         pitches: tied_pitches(pending, pitches), length: length, scale: scale, tied_prefix: prefix,
         beam_break: pending.beam_break, decorations: pending.decorations + markings,
         slur_marks: pending.slur_marks + take_slur_opens,
-        ratio: ratio, tuplet_ends: fixed_tuplet_ends(pending, prefix) + tuplet_ends, graces: pending.graces
+        ratio: ratio, tuplet_ends: @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix) + tuplet_ends, graces: pending.graces
       )
-    end
-
-    # The pending note's own links join the tied prefix, so its tuplet ends
-    # are counted in links before they move.
-    def fixed_tuplet_ends(pending, prefix)
-      pending.tuplet_ends.map do |tuplet, edge, links|
-        [tuplet, edge, links || tuplet_end_links(edge, pending.tied_prefix, prefix)]
-      end
-    end
-
-    def tuplet_end_links(edge, prefix, chain)
-      (edge == :from) ? (prefix&.tied_chain&.length || 0) : chain.tied_chain.length
-    end
-
-    def place_tuplet_ends(voice_event, tuplet_ends, prefix = nil)
-      tuplet_ends.each do |tuplet, edge, links|
-        tuplet[edge] = link_position(voice_event, links || tuplet_end_links(edge, prefix, voice_event.rhythmic_value))
-      end
-      group_closed_tuplets
-    end
-
-    # Where the link at an index of a voice event's chain begins, exactly
-    # where it lands on the grid.
-    def link_position(voice_event, index)
-      chain = voice_event.rhythmic_value.tied_chain
-      return voice_event.position if index.zero?
-      return voice_event.next_position if index == chain.length
-
-      elapsed = chain.first(index).sum(&:link_fraction) * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
-      voice_event.position.advance(subticks: (voice_event.onset_remainder + elapsed).round)
-    end
-
-    # A tuplet is grouped once the voice has placed all its notes. One the
-    # voice refuses, such as one whose notes do not fill a plain value, is
-    # left ungrouped, its notes keeping their ratio.
-    def group_closed_tuplets
-      @closed_tuplets.reject! do |tuplet|
-        from = tuplet.from
-        to = tuplet.to
-        next false unless from && to && voice.next_position >= to
-
-        group_tuplet(from, to)
-        true
-      end
-    end
-
-    def group_tuplet(from, to)
-      voice.group_tuplet(from: from, to: to)
-    rescue ArgumentError
-      nil
     end
 
     # A tie carries its accidental across the bar line, where the key
