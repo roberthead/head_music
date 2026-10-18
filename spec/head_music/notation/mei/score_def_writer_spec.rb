@@ -112,6 +112,24 @@ describe HeadMusic::Notation::MEI::ScoreDefWriter do
     end
   end
 
+  describe ".clef_element and .instr_def_element" do
+    let(:ids) { HeadMusic::Notation::MEI::Ids.new(1) }
+
+    it "keys a staff definition's clef as the definition is keyed" do
+      element = described_class.clef_element(ids, "s2", clef(:bass_clef))
+      expect([element.name, element.id, element.attributes["shape"]]).to eq ["clef", "m1-clef-s2", "F"]
+    end
+
+    it "keys a staff definition's instrument as the definition is keyed" do
+      element = described_class.instr_def_element(ids, "s1", HeadMusic::Instruments::Instrument.get("violin"))
+      expect([element.name, element.id, element.attributes["label"]]).to eq ["instrDef", "m1-instrdef-s1", "violin"]
+    end
+
+    it "makes nothing for no clef or no instrument" do
+      expect([described_class.clef_element(ids, "s1", nil), described_class.instr_def_element(ids, "s1", nil)]).to eq [nil, nil]
+    end
+  end
+
   describe ".clef_attributes" do
     it "writes an octave clef's displacement" do
       expect(described_class.clef_attributes(clef(:vocal_tenor_clef)))

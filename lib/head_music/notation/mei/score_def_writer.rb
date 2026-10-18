@@ -9,6 +9,7 @@ module HeadMusic::Notation::MEI
   class ScoreDefWriter
     CLEF_REGISTERS = {"G" => 4, "F" => 3, "C" => 4}.freeze
     DISPLACEMENTS = {1 => "8", 2 => "15", 3 => "22"}.freeze
+    PLACES = {1 => "above", -1 => "below"}.freeze
 
     def self.staff_def_attribute_sources
       @staff_def_attribute_sources ||= []
@@ -18,18 +19,10 @@ module HeadMusic::Notation::MEI
     def self.clef_attributes(clef)
       return {"shape" => "perc"} unless clef.pitch
 
-      letter = clef.pitch.letter_name.to_s
-      octaves = clef.pitch.register - CLEF_REGISTERS.fetch(letter)
-      {
-        "shape" => letter,
-        "line" => clef.line,
-        "dis" => DISPLACEMENTS[octaves.abs],
-        "dis.place" => if octaves.zero?
-                         nil
-                       else
-                         (octaves.positive? ? "above" : "below")
-                       end
-      }
+      pitch = clef.pitch
+      letter = pitch.letter_name.to_s
+      octaves = pitch.register - CLEF_REGISTERS.fetch(letter)
+      {"shape" => letter, "line" => clef.line, "dis" => DISPLACEMENTS[octaves.abs], "dis.place" => PLACES[octaves <=> 0]}
     end
 
     # Nil for no instrument. The label is the instrument's name key, since
@@ -40,6 +33,18 @@ module HeadMusic::Notation::MEI
 
       program = instrument.gm_program
       {"label" => instrument.name_key.to_s, "midi.instrnum" => program && (program - 1)}
+    end
+
+    # A staff definition's <clef>, keyed as it is, or nil for no clef.
+    def self.clef_element(ids, key, clef)
+      clef && Element.new("clef", ids.container("clef", key), clef_attributes(clef))
+    end
+
+    # A staff definition's <instrDef>, keyed as it is, or nil for no
+    # instrument.
+    def self.instr_def_element(ids, key, instrument)
+      attributes = instr_def_attributes(instrument)
+      attributes && Element.new("instrDef", ids.container("instrdef", key), attributes)
     end
 
     def initialize(plan)
@@ -81,7 +86,8 @@ module HeadMusic::Notation::MEI
     # The label is the player's alone, since a reader turns it back into one.
     def part_element(part)
       entries = plan.staff_entries_of(part)
-      label = part.player && Element.new("label", ids.container("label", part_key(part)), {}, [], part.player.name)
+      player = part.player
+      label = player && label_element(part_key(part), player.name)
       return staff_def_element(entries.first, label) if entries.one?
 
       symbol = part.staff_system.bracket
@@ -96,12 +102,11 @@ module HeadMusic::Notation::MEI
       attributes = attribute_sources.reduce({"n" => entry.number, "lines" => entry.staff.line_count}) do |merged, source|
         merged.merge(source.staff_def_attributes(entry))
       end
-      children = [label, clef_element(entry, key), instr_def_element(entry, key), *layer_def_elements(entry)].compact
+      children = [
+        label, self.class.clef_element(ids, key, clef(entry)),
+        self.class.instr_def_element(ids, key, entry.part.instrument_at(first_bar)), *layer_def_elements(entry)
+      ].compact
       Element.new("staffDef", ids.container("staffdef", key), attributes, children)
-    end
-
-    def clef_element(entry, key)
-      Element.new("clef", ids.container("clef", key), self.class.clef_attributes(clef(entry)))
     end
 
     def clef(entry)
@@ -109,18 +114,20 @@ module HeadMusic::Notation::MEI
       entry.staff.clef_at(first_bar) || HeadMusic::Notation::ClefSelector.for(voice)
     end
 
-    def instr_def_element(entry, key)
-      attributes = self.class.instr_def_attributes(entry.part.instrument_at(first_bar))
-      attributes && Element.new("instrDef", ids.container("instrdef", key), attributes)
-    end
-
     # On the staff each voice opens on, for each voice with a role.
     def layer_def_elements(entry)
-      plan.layer_voices(entry, first_bar).select { |voice| voice.role.to_s.strip != "" }.map do |voice|
-        key = ids.owner_key(entry.part_number, plan.voice_number(voice))
-        label = Element.new("label", ids.container("label", key), {}, [], voice.role.to_s)
-        Element.new("layerDef", ids.container("layerdef", key), {"n" => plan.voice_number(voice)}, [label])
+      plan.layer_voices(entry, first_bar).filter_map do |voice|
+        role = voice.role.to_s
+        next if role.strip.empty?
+
+        number = plan.voice_number(voice)
+        key = ids.owner_key(entry.part_number, number)
+        Element.new("layerDef", ids.container("layerdef", key), {"n" => number}, [label_element(key, role)])
       end
+    end
+
+    def label_element(key, text)
+      Element.new("label", ids.container("label", key), {}, [], text)
     end
 
     def part_key(part)

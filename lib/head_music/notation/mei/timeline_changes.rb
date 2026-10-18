@@ -5,6 +5,9 @@ module HeadMusic::Notation::MEI
   # transposed render a staff states its own written key wherever it differs
   # from the score's, and its trans.* from the opening on.
   class TimelineChanges
+    # A tempo's beat unit is a note value written as @mm.unit and @mm.dots.
+    BEAT_UNIT_KEYS = {"dur" => "mm.unit", "dots" => "mm.dots"}.freeze
+
     def initialize(plan)
       @plan = plan
     end
@@ -71,7 +74,10 @@ module HeadMusic::Notation::MEI
         "keysig" => staff_key_signature(entry.part, bar_number),
         **(changes_instrument ? changed_transposition_attributes(entry.part, bar_number) : {})
       }.compact
-      children = [clef_element(entry, bar_number, key), (instr_def_element(entry, bar_number, key) if changes_instrument)].compact
+      children = [
+        ScoreDefWriter.clef_element(ids, key, clef_changes(entry.staff)[bar_number]),
+        (ScoreDefWriter.instr_def_element(ids, key, entry.part.instrument_at(bar_number)) if changes_instrument)
+      ].compact
       return if attributes.empty? && children.empty?
 
       Element.new("staffDef", ids.container("staffdef", key), {"n" => entry.number, **attributes}, children)
@@ -85,16 +91,6 @@ module HeadMusic::Notation::MEI
       key = plan.measure_key_changes(part)[bar_number]
       score_key = plan.measure_key_changes[bar_number]
       key if key && key != score_key
-    end
-
-    def clef_element(entry, bar_number, key)
-      clef = clef_changes(entry.staff)[bar_number]
-      clef && Element.new("clef", ids.container("clef", key), ScoreDefWriter.clef_attributes(clef))
-    end
-
-    def instr_def_element(entry, bar_number, key)
-      attributes = ScoreDefWriter.instr_def_attributes(entry.part.instrument_at(bar_number))
-      attributes && Element.new("instrDef", ids.container("instrdef", key), attributes)
     end
 
     # A change back to an instrument in C states 0/0, since trans.* stays in
@@ -118,17 +114,14 @@ module HeadMusic::Notation::MEI
 
     def tempo_element(bar_number, tempo)
       flow = plan.flow
-      Element.new(
-        "tempo", ids.container("tempo", ids.bar_key(bar_number)),
-        {
-          "tstamp" => Tstamp.beat(flow, flow.position(bar_number, 1, 0, 0)),
-          "staff" => plan.staff_entries.first.number,
-          "midi.bpm" => plan.midi_bpm(tempo),
-          "mm" => Decimals.format(Rational(tempo.beats_per_minute.to_s)),
-          "mm.unit" => Durations.dur(tempo.beat_value),
-          "mm.dots" => tempo.beat_value.dots.positive? ? tempo.beat_value.dots : nil
-        }
-      )
+      attributes = {
+        "tstamp" => Tstamp.beat(flow, flow.position(bar_number, 1, 0, 0)),
+        "staff" => plan.staff_entries.first.number,
+        "midi.bpm" => plan.midi_bpm(tempo),
+        "mm" => Decimals.format(Rational(tempo.beats_per_minute.to_s)),
+        **Durations.attributes(tempo.beat_value).transform_keys(BEAT_UNIT_KEYS)
+      }
+      Element.new("tempo", ids.container("tempo", ids.bar_key(bar_number)), attributes)
     end
 
     def clef_changes(staff)
