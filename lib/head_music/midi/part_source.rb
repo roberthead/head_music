@@ -44,14 +44,8 @@ module HeadMusic::MIDI
       def instrument_changes
         return {} if percussion?
 
-        current = instrument
-        programs_by_bar.drop(1).each_with_object({}) do |(bar_number, program), changes|
-          following = instrument_for(program)
-          next if following.nil? || following == current
-
-          changes[bar_number] = following
-          current = following
-        end
+        following = programs_by_bar.drop(1).map { |bar_number, program| [bar_number, instrument_for(program)] }.select(&:last)
+        ChangeCursor.changes([[nil, instrument], *following]).drop(1).to_h
       end
 
       def sound(key)
@@ -106,14 +100,8 @@ module HeadMusic::MIDI
       def programs_by_bar
         @programs_by_bar ||= begin
           programs = ChangeCursor.new(@programs, &:tick)
-          previous = :none
-          @sources.zip(notes).each_with_object({}) do |(source, note), by_bar|
-            program = programs.at(source.on)&.program
-            next if program == previous
-
-            by_bar[@layout.bar_at(note.onset).number] = program
-            previous = program
-          end.to_a
+          in_force = @sources.zip(notes).map { |source, note| [note.onset, programs.at(source.on)&.program] }
+          ChangeCursor.changes(in_force).to_h { |onset, program| [@layout.bar_at(onset).number, program] }.to_a
         end
       end
     end
@@ -143,7 +131,8 @@ module HeadMusic::MIDI
 
     def sounding_parts
       @source_notes.zip(quantizer.notes).group_by { |source, _note| PartKey.for(source) }.map do |key, pairs|
-        part(key, pairs.map(&:last), pairs.map(&:first))
+        sources, notes = pairs.transpose
+        part(key, notes, sources)
       end
     end
 

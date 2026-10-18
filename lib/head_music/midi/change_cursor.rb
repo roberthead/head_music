@@ -2,6 +2,11 @@ module HeadMusic::MIDI
   # Walks sorted changes forward beside a sweep of ascending points, so a
   # whole sweep passes each change once.
   class ChangeCursor
+    # The [point, value] pairs whose value differs from the one before.
+    def self.changes(pairs)
+      pairs.chunk_while { |one, other| one.last == other.last }.map(&:first)
+    end
+
     # The block answers a change's point.
     def initialize(changes, &point)
       @changes = changes

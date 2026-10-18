@@ -37,17 +37,10 @@ module HeadMusic::MIDI
     # key is C major, as the SMF specification says.
     def key_regions
       @key_regions ||= begin
-        previous = nil
-        keys_by_bar.each_with_object([]) do |(bar, event), regions|
-          if regions.empty? && bar.number != layout.first_number
-            regions << region(layout.bars.first, 0, false)
-            previous = [0, false]
-          end
-          next if previous == [event.fifths, event.minor]
-
-          regions << region(bar, event.fifths, event.minor)
-          previous = [event.fifths, event.minor]
-        end
+        keys = keys_by_bar
+        first = layout.bars.first
+        keys = {first => [0, false]}.merge(keys) unless keys.empty? || keys.key?(first)
+        ChangeCursor.changes(keys).map { |bar, key| region(bar, *key) }
       end
     end
 
@@ -59,12 +52,11 @@ module HeadMusic::MIDI
     end
 
     def apply(flow, keys)
-      key_changes = keys.drop(1).to_h { |region| [region.bar_number, region.key] }
       layout.bars.each_cons(2) do |before, bar|
         flow.change_meter(bar.number, bar.meter) unless bar.meter == before.meter
         flow.change_tempo(bar.number, tempo_at(bar)) if tempos.key?(bar.number)
-        flow.change_key_signature(bar.number, key_changes[bar.number].name) if key_changes.key?(bar.number)
       end
+      keys.drop(1).each { |region| flow.change_key_signature(region.bar_number, region.key.name) }
     end
 
     private
@@ -82,20 +74,16 @@ module HeadMusic::MIDI
     def tempos
       @tempos ||= begin
         changes = ChangeCursor.new(timed(Tempo), &:first)
-        previous = nil
-        layout.bars.each_with_object({}) do |bar, by_bar|
-          microseconds = changes.at(bar.start)&.last&.microseconds_per_quarter || DEFAULT_MICROSECONDS
-          by_bar[bar.number] = microseconds unless microseconds == previous
-          previous = microseconds
-        end
+        microseconds = layout.bars.map { |bar| [bar.number, changes.at(bar.start)&.last&.microseconds_per_quarter || DEFAULT_MICROSECONDS] }
+        ChangeCursor.changes(microseconds).to_h
       end
     end
 
-    # [Bar, KeySignature] in bar order, the last at a bar winning.
+    # {Bar => [fifths, minor]} in bar order, the last at a bar winning.
     def keys_by_bar
       timed(KeySignature).each_with_object({}) do |(time, event), by_bar|
         bar = downbeat_for(time)
-        by_bar[bar] = event if bar
+        by_bar[bar] = [event.fifths, event.minor] if bar
       end
     end
 

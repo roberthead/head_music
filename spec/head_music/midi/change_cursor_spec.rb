@@ -19,6 +19,16 @@ describe HeadMusic::MIDI::ChangeCursor do
     end
   end
 
+  describe ".changes" do
+    it "keeps each pair whose value differs from the one before" do
+      expect(described_class.changes([[1, :a], [2, :a], [3, :b], [4, :a], [5, :a]])).to eq [[1, :a], [3, :b], [4, :a]]
+    end
+
+    it "answers nothing for no pairs" do
+      expect(described_class.changes([])).to eq []
+    end
+  end
+
   describe "#advance" do
     it "answers only the changes reached since the last call" do
       expect([3, 4, 4, 10].map { |point| cursor.advance(point).map(&:last) }).to eq [%i[a], %i[b c], [], %i[d]]
