@@ -208,6 +208,7 @@ require "head_music/content/voice/staff_assignments"
 
 # notation
 require "head_music/notation/voice_event_validation"
+require "head_music/notation/flow_timed_marks"
 require "head_music/notation/preflight_checks"
 require "head_music/notation/dotted_duration"
 require "head_music/notation"

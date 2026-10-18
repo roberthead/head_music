@@ -57,18 +57,16 @@ module HeadMusic
       end
 
       # A mark that takes no time can sit anywhere in the written bars, but a
-      # writer would have to invent empty bars to reach one outside them. A
-      # hairpin may also end on the final barline, as one ending with the
-      # music does.
+      # writer would have to invent empty bars to reach one outside them.
       def ensure_timed_marks_within_music(flow)
         first = flow.earliest_bar_number
         last = flow.last_sounding_bar_number
         final_barline = flow.final_barline_position
-        timed_marks(flow).sort_by { |_, position| position }.each do |label, position, ending|
-          if position.bar_number < first
-            raise render_error_class, "the #{label} at #{position} falls before the music starts in bar #{first}"
-          elsif ending ? position > final_barline : position.bar_number > last
-            raise render_error_class, "the #{label} at #{position} falls after the music ends in bar #{last}"
+        FlowTimedMarks.new(flow).sort_by(&:position).each do |mark|
+          if mark.position.bar_number < first
+            raise render_error_class, "the #{mark} falls before the music starts in bar #{first}"
+          elsif mark.after?(last, final_barline)
+            raise render_error_class, "the #{mark} falls after the music ends in bar #{last}"
           end
         end
       end
@@ -112,48 +110,17 @@ module HeadMusic
       # strictly inside one of them, where no note starts, lies at no exact
       # time a writer can say.
       def ensure_no_marks_inside_rounded_notes(flow)
-        owned_timed_marks(flow).each do |voices, label, position|
-          note = voices.lazy.filter_map { |voice| rounded_note_holding(voice, position) }.first
-          next if note.nil? || exact_onset?(flow, position)
+        FlowTimedMarks.new(flow).each do |mark|
+          note = mark.rounded_note
+          next if note.nil? || exact_onset?(flow, mark.position)
 
-          raise render_error_class, "the #{label} at #{position} falls inside the #{note.rhythmic_value} at #{note.position}, " \
+          raise render_error_class, "the #{mark} falls inside the #{note.rhythmic_value} at #{note.position}, " \
             "whose ratio does not land on whole subticks, where no note starts"
         end
       end
 
-      # Each as [label, position, whether it is a hairpin's end].
-      def timed_marks(flow)
-        owned_timed_marks(flow).map { |_, *mark| mark }
-      end
-
-      # Each as [the voices it marks, label, position, whether it is a
-      # hairpin's end].
-      def owned_timed_marks(flow)
-        [*flow.parts.map { |part| [part, part.voices] }, *flow.voices.map { |voice| [voice, [voice]] }]
-          .flat_map { |owner, voices| owner_timed_marks(owner).map { |mark| [voices, *mark] } }
-      end
-
-      def owner_timed_marks(owner)
-        levels = owner.dynamic_events.map { |event| ["dynamic #{event.name_key}", event.position, false] }
-        hairpins = owner.spans.select(&:hairpin?)
-        levels +
-          hairpins.map { |span| ["#{span.name_key} start", span.from, false] } +
-          hairpins.map { |span| ["#{span.name_key} end", span.to, true] }
-      end
-
-      def rounded_note_holding(voice, position)
-        voice_event = voice.voice_event_sounding_at(position)
-        return unless voice_event && voice_event.position < position
-
-        voice_event if voice_event.rhythmic_value.tied_chain.any? { |link| link_rounds?(link) }
-      end
-
       def exact_onset?(flow, position)
         flow.voices.any? { |voice| voice.voice_event_at(position)&.onset_remainder&.zero? }
-      end
-
-      def link_rounds?(link)
-        (link.link_fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE).denominator != 1
       end
 
       def format_name
