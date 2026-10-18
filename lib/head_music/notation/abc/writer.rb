@@ -10,8 +10,6 @@ module HeadMusic::Notation::ABC
     UNIT_NOTE_LENGTH = Rational(1, 8)
     BARS_PER_LINE = 4
 
-    include HeadMusic::Notation::PreflightChecks
-
     attr_reader :flow, :reference_number, :transposed
 
     def initialize(flow, reference_number: 1, transposed: false)
@@ -28,16 +26,7 @@ module HeadMusic::Notation::ABC
     private
 
     def validate!
-      ensure_single_voice
-      ensure_tuplets_within_bars(flow)
-      ensure_no_mid_piece_changes
-      ensure_no_instrument_change
-      ensure_contiguous_voices(flow)
-      ensure_markings_within_music(flow)
-      ensure_timed_marks_within_music(flow)
-      ensure_no_marks_inside_rounded_notes(flow)
-      ensure_one_level_per_position(flow.parts + flow.voices, line: "an ABC voice")
-      ensure_one_hairpin_at_a_time((flow.parts + flow.voices).flat_map(&:spans), line: "an ABC voice")
+      RenderPreflight.check!(flow, transposed: transposed)
       ensure_marks_reachable
       slur_writer
     end
@@ -56,32 +45,6 @@ module HeadMusic::Notation::ABC
 
     def position_marks
       @position_marks ||= PositionMarks.new(flow.voices.first)
-    end
-
-    def ensure_single_voice
-      return if flow.voices.length <= 1
-
-      raise RenderError, "multi-voice ABC output is not supported"
-    end
-
-    def ensure_no_mid_piece_changes
-      refuse_change("meter", flow.meter_changes.keys)
-      refuse_change("key signature", flow.key_signature_changes.keys)
-    end
-
-    # A tune has one K: field, so a part that picks up an instrument reading in
-    # another key cannot be written -- the same limit as a mid-piece key change.
-    def ensure_no_instrument_change
-      return unless transposed
-
-      refuse_change("instrument", flow.parts.flat_map { |part| part.instrument_changes.keys })
-    end
-
-    def refuse_change(subject, bar_numbers)
-      bar_number = bar_numbers.min
-      return unless bar_number
-
-      raise RenderError, "cannot render the #{subject} change at bar #{bar_number} in ABC output"
     end
 
     def voice_events
@@ -163,10 +126,6 @@ module HeadMusic::Notation::ABC
 
     def tuplet_writer
       TupletWriter.new(flow.voices.first, segments)
-    end
-
-    def render_error_class
-      RenderError
     end
   end
 end
