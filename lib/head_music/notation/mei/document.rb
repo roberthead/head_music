@@ -42,9 +42,11 @@ module HeadMusic::Notation::MEI
         raise ParseError, "MEI input has no <music>" unless music
 
         index = scan(music)
-        editorial = Editorial.new(index, budget: 4 * @count)
-        @bar_budget = [BARS_PER_MEASURE * @measures, MIN_BARS].max
-        music_sources(music, [], head, index, editorial)
+        source = Source.new(
+          mdiv: nil, score: nil, labels: [], head: head, index: index,
+          editorial: Editorial.new(index, budget: 4 * @count), bar_budget: [BARS_PER_MEASURE * @measures, MIN_BARS].max
+        )
+        music_sources(music, source)
       end
     end
 
@@ -60,24 +62,28 @@ module HeadMusic::Notation::MEI
       end
     end
 
-    def music_sources(music, labels, head, index, editorial)
-      labels = [present(attribute(music, "label")), *labels].compact
+    # +source+ holds what every score of the document shares, and the
+    # labels of the <music>s around this one.
+    def music_sources(music, source)
+      source = source.with(labels: [present(attribute(music, "label")), *source.labels].compact)
+      editorial = source.editorial
       editorial.children(music).flat_map do |child|
         case child.name
-        when "body" then editorial.children_named(child, "mdiv").flat_map { |mdiv| mdiv_sources(mdiv, labels, head, index, editorial) }
-        when "group" then editorial.children_named(child, "music").flat_map { |inner| music_sources(inner, labels, head, index, editorial) }
-        when "score" then [Source.new(music, child, labels, head, index, editorial, @bar_budget)]
+        when "body" then editorial.children_named(child, "mdiv").flat_map { |mdiv| mdiv_sources(mdiv, source) }
+        when "group" then editorial.children_named(child, "music").flat_map { |inner| music_sources(inner, source) }
+        when "score" then [source.with(mdiv: music, score: child)]
         else []
         end
       end
     end
 
-    def mdiv_sources(mdiv, labels, head, index, editorial)
+    def mdiv_sources(mdiv, source)
+      editorial = source.editorial
       editorial.children(mdiv).flat_map do |child|
         case child.name
-        when "score" then [Source.new(mdiv, child, labels, head, index, editorial, @bar_budget)]
-        when "parts" then [Source.new(mdiv, single_part(child, editorial), labels, head, index, editorial, @bar_budget)]
-        when "mdiv" then mdiv_sources(child, labels, head, index, editorial)
+        when "score" then [source.with(mdiv: mdiv, score: child)]
+        when "parts" then [source.with(mdiv: mdiv, score: single_part(child, editorial))]
+        when "mdiv" then mdiv_sources(child, source)
         else []
         end
       end
@@ -102,14 +108,14 @@ module HeadMusic::Notation::MEI
       until stack.empty?
         element, measure = stack.pop
         @count += 1
-        @measures += 1 if element.name == "measure"
-        measure = attribute(element, "n", element: element) || measure if element.name == "measure"
+        if element.name == "measure"
+          @measures += 1
+          measure = attribute(element, "n", element: element) || measure
+        end
         check_notation(element, measure)
         id = attribute(element, "xml:id", element: element, measure: measure)
         index.register(id, element) if id
-        pending = []
-        element.each { |child| pending << [child, measure] if child.is_a?(REXML::Element) }
-        stack.concat(pending.reverse)
+        stack.concat(element.children.grep(REXML::Element).reverse.map { |child| [child, measure] })
       end
       index
     end
