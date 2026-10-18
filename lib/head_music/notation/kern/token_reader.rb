@@ -65,48 +65,12 @@ module HeadMusic::Notation::Kern
       return NULL if @field == "."
 
       graces, subtokens = @field.split(" ").map { |text| subtoken(text) }.partition { |token| token.type == :grace }
-      return combine_graces(graces) if subtokens.empty?
+      return ChordToken.of_graces(graces, field: @field, line_number: @line_number) if subtokens.empty?
 
-      combine(subtokens)
+      ChordToken.of_notes(subtokens, field: @field, line_number: @line_number)
     end
 
     private
-
-    def combine(subtokens)
-      return subtokens.first if subtokens.length == 1
-
-      if subtokens.any? { |token| token.type == :rest }
-        raise unsupported("A chord cannot hold a rest")
-      end
-      if subtokens.map(&:fraction).uniq.length > 1
-        raise unsupported("Chord notes with different durations are not supported")
-      end
-      raise unsupported("A chord tied only in part is not supported") if subtokens.map(&:tie).uniq.length > 1
-
-      subtokens.first.with(
-        pitches: subtokens.flat_map(&:pitches),
-        articulations: subtokens.flat_map(&:articulations).uniq.sort,
-        ornaments: subtokens.flat_map(&:ornaments).uniq.sort,
-        note_dynamic: subtokens.filter_map(&:note_dynamic).first,
-        span_marks: chord_span_marks(subtokens)
-      )
-    end
-
-    def combine_graces(graces)
-      graces.first.with(
-        pitches: graces.flat_map(&:pitches),
-        articulations: graces.flat_map(&:articulations).uniq.sort,
-        tie: (graces.map(&:tie).uniq.length == 1) ? graces.first.tie : nil,
-        span_marks: chord_span_marks(graces)
-      )
-    end
-
-    # A chord's notes may each repeat its slur, so a mark counts as often as
-    # any one note has it.
-    def chord_span_marks(subtokens)
-      tallies = subtokens.map { |token| token.span_marks.tally }
-      tallies.flat_map(&:keys).uniq.flat_map { |mark| [mark] * tallies.map { |tally| tally.fetch(mark, 0) }.max }
-    end
 
     def subtoken(text)
       span_marks = span_marks(text)
@@ -129,7 +93,7 @@ module HeadMusic::Notation::Kern
       remaining.delete!("qQ")
       duration = read_duration(remaining, text)
       pitches = read_pitches(remaining, text)
-      raise ParseError.new(%(Grace note "#{text}" has no pitch), line_number: @line_number, snippet: text) if pitches.empty?
+      raise parse_error(%(Grace note "#{text}" has no pitch), text) if pitches.empty?
 
       tie = read_tie(remaining, text)
       articulations = MarkCodes.read!(remaining)[:articulations]
@@ -183,7 +147,7 @@ module HeadMusic::Notation::Kern
       accidental = after[ACCIDENTAL].to_s
       remaining[match.begin(0), letters.length + accidental.length] = ""
       if remaining.match?(/[a-gA-G]/) || accidental.length > 2
-        raise ParseError.new(%(Unrecognized pitch in "#{text}"), line_number: @line_number, snippet: text)
+        raise parse_error(%(Unrecognized pitch in "#{text}"), text)
       end
 
       [PitchReader.pitch(letters, accidental, line_number: @line_number, snippet: text)]
@@ -192,7 +156,7 @@ module HeadMusic::Notation::Kern
     def read_tie(remaining, text)
       marks = TIES.keys.select { |mark| remaining.include?(mark) }
       remaining.delete!("[_]")
-      raise ParseError.new(%(Conflicting tie marks in "#{text}"), line_number: @line_number, snippet: text) if marks.length > 1
+      raise parse_error(%(Conflicting tie marks in "#{text}"), text) if marks.length > 1
 
       TIES[marks.first]
     end
@@ -208,10 +172,10 @@ module HeadMusic::Notation::Kern
 
     def build(text, duration, pitches, rest, tie)
       if pitches.empty? && !rest
-        raise ParseError.new(%(Token "#{text}" has no pitch or rest), line_number: @line_number, snippet: text)
+        raise parse_error(%(Token "#{text}" has no pitch or rest), text)
       end
-      raise ParseError.new(%(Token "#{text}" has no duration), line_number: @line_number, snippet: text) unless duration
-      raise ParseError.new(%(A rest cannot be tied: "#{text}"), line_number: @line_number, snippet: text) if rest && tie
+      raise parse_error(%(Token "#{text}" has no duration), text) unless duration
+      raise parse_error(%(A rest cannot be tied: "#{text}"), text) if rest && tie
 
       Token.new(
         type: rest ? :rest : :note, pitches: rest ? [] : pitches,
@@ -219,8 +183,8 @@ module HeadMusic::Notation::Kern
       )
     end
 
-    def unsupported(message)
-      UnsupportedFeatureError.new(%(#{message}: "#{@field}"), line_number: @line_number, snippet: @field)
+    def parse_error(message, text)
+      ParseError.new(message, line_number: @line_number, snippet: text)
     end
   end
 end
