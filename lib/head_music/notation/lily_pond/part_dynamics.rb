@@ -15,7 +15,7 @@ module HeadMusic::Notation::LilyPond
 
     def place(stream)
       parts = layout.dynamics_parts(stream.dynamics_target)
-      hairpin_marks = EventPlacer::HairpinMarks.new
+      hairpin_marks = HairpinMarks.new
       position = HeadMusic::Content::Position.new(flow, 1, 1, 0)
       stream.events.each do |event|
         placer.check_bar(event, position) if event.kind == :bar_check
