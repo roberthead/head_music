@@ -2,10 +2,6 @@
 module HeadMusic::Notation::Kern
   # A bar's data rows: one wherever a voice attacks or a dynamic falls,
   # holding each column's token, syllable, or dynamic.
-  #
-  # A row has a time of its own only where something attacks. Rows between
-  # two such rows split the time between them evenly, so a dynamic where
-  # nothing attacks goes on one of a run of null rows spaced to land on it.
   class DataRows
     def initialize(columns, bars, dynamic_fields)
       @columns = columns
@@ -16,7 +12,7 @@ module HeadMusic::Notation::Kern
     def in_bar(bar_number)
       events = kern_events(bar_number)
       attacks = events.values.flatten.map { |event| Rational(event.offset) }.uniq.sort
-      offsets = row_offsets(attacks, dynamic_offsets(bar_number), bars.length(bar_number))
+      offsets = RowOffsets.for(attacks, dynamic_offsets(bar_number), bars.length(bar_number))
       offsets = with_final_close_row(bar_number, attacks, offsets) if final_closes?(bar_number)
       offsets.flat_map do |offset|
         main = columns.row do |column|
@@ -58,7 +54,7 @@ module HeadMusic::Notation::Kern
       return offsets unless opens_final_hairpin?(bar_number, last)
 
       length = bars.length(bar_number)
-      row_offsets(attacks, dynamic_offsets(bar_number) + [(last + length) / 2], length)
+      RowOffsets.for(attacks, dynamic_offsets(bar_number) + [(last + length) / 2], length)
     end
 
     def opens_final_hairpin?(bar_number, offset)
@@ -80,25 +76,6 @@ module HeadMusic::Notation::Kern
 
     def dynamic_offsets(bar_number)
       dynamic_fields.values.flat_map { |fields| fields.in_bar(bar_number).keys.map { |offset| Rational(offset) } }.uniq
-    end
-
-    def row_offsets(attacks, dynamics, length)
-      untimed = (attacks + [length]).each_cons(2).flat_map { |from, to| untimed_offsets(from, to, dynamics) }
-      (attacks + untimed).sort
-    end
-
-    # The null rows between two timed rows: the fewest evenly spaced ones
-    # that land on every dynamic between them.
-    def untimed_offsets(from, to, dynamics)
-      inside = dynamics.select { |offset| offset > from && offset < to }
-      return [] if inside.empty?
-
-      step = inside.map { |offset| offset - from }.reduce(to - from) { |gcd, span| rational_gcd(gcd, span) }
-      (1...((to - from) / step)).map { |index| from + step * index }
-    end
-
-    def rational_gcd(one, other)
-      Rational(one.numerator.gcd(other.numerator), one.denominator.lcm(other.denominator))
     end
 
     def field(column, all_events, bar_number, offset)
