@@ -70,8 +70,8 @@ module HeadMusic::Notation::MEI
 
     def tie_by_attribute(pending)
       tie = pending.tie
-      start(pending) if %w[i m].include?(tie)
-      stop(pending) if %w[m t].include?(tie)
+      pending.start_tie if %w[i m].include?(tie)
+      pending.stop_tie if %w[m t].include?(tie)
     end
 
     def tie_control(control, measure)
@@ -81,8 +81,8 @@ module HeadMusic::Notation::MEI
       pairs(starts, stops).each do |from, to|
         next unless from.track&.equal?(to.track)
 
-        start(from)
-        stop(to)
+        from.start_tie
+        to.stop_tie
       end
     end
 
@@ -127,16 +127,6 @@ module HeadMusic::Notation::MEI
       return [] unless pending
 
       (pending.kind == :chord) ? chord_tones[pending] : [pending].select(&:sound)
-    end
-
-    def start(pending)
-      tied = pending.grace || pending.event
-      tied.tie_starts |= [pending.sound.to_s] if tied
-    end
-
-    def stop(pending)
-      event = pending.event
-      event.tie_stops |= [pending.sound.to_s] if event && !pending.grace
     end
 
     def onset_index

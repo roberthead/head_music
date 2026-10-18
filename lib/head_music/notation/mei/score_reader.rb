@@ -24,7 +24,18 @@ module HeadMusic::Notation::MEI
     # rests beside another staff's layer of the same number, has no track.
     # +tie+ is a note's @tie, or its chord's, and +content+ the layer it is
     # read in.
-    Pending = Struct.new(:kind, :element, :measure_index, :reading, :track, :event, :grace, :chord_member, :sound, :staff, :tie, :content)
+    Pending = Struct.new(:kind, :element, :measure_index, :reading, :track, :event, :grace, :chord_member, :sound, :staff, :tie, :content) do
+      # Starts a tie on its sound, from its grace note or else its event.
+      def start_tie
+        tied = grace || event
+        tied.tie_starts |= [sound.to_s] if tied
+      end
+
+      # Stops a tie on its sound, which a grace note never does.
+      def stop_tie
+        event.tie_stops |= [sound.to_s] if event && !grace
+      end
+    end
 
     Score = Data.define(:measures, :readings, :pending, :ties) do
       # Each element's Pending, by identity.
@@ -64,7 +75,7 @@ module HeadMusic::Notation::MEI
     private
 
     def walk(container, depth, passes = nil)
-      raise ParseError.new("<section>s nest deeper than #{Editorial::MAX_DEPTH}", element: container) if depth > Editorial::MAX_DEPTH
+      Editorial.check_depth(depth, "<section>s nest", element: container)
 
       endings = 0
       @editorial.children(container).each do |child|
@@ -72,8 +83,7 @@ module HeadMusic::Notation::MEI
         when "section" then walk(child, depth + 1, passes)
         when "ending" then walk(child, depth + 1, EndingPasses.passes(child, endings += 1, measure: next_number))
         when "measure" then read_measure(child, passes)
-        when "scoreDef" then @definitions << child unless child.equal?(@opening_score_def)
-        when "staffDef" then @definitions << child unless @groups.opening?(child)
+        when "scoreDef", "staffDef" then @definitions << child unless child.equal?(@opening_score_def) || @groups.opening?(child)
         end
       end
     end
