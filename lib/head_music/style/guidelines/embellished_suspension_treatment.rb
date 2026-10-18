@@ -17,7 +17,7 @@ class HeadMusic::Style::Guidelines::EmbellishedSuspensionTreatment < HeadMusic::
     return false unless resolution
 
     melodic = HeadMusic::Analysis::MelodicInterval.new(cp_note, resolution)
-    melodic.step? && melodic.descending? && consonant_at?(position)
+    melodic.step? && melodic.descending? && consonant_with_cantus_at?(position)
   end
 
   # The slot presupposes a suspension over a downbeat that lasts to the bar's

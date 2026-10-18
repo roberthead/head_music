@@ -20,10 +20,21 @@ class HeadMusic::Style::Guideline
     end
 
     def harmonic_intervals
-      @harmonic_intervals ||=
-        sounding_together(
-          positions.map { |position| HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, position) }
-        )
+      @harmonic_intervals ||= positions.filter_map { |position| interval_with_cantus(position) }
+    end
+
+    # Nil where the voice or the cantus firmus is silent.
+    def interval_with_cantus(position)
+      interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, position)
+      interval if interval.notes.length == 2
+    end
+
+    def dissonant_with_cantus_at?(position)
+      interval_with_cantus(position)&.dissonance?(:two_part_harmony) || false
+    end
+
+    def consonant_with_cantus_at?(position)
+      interval_with_cantus(position)&.consonance?(:two_part_harmony) || false
     end
 
     # Fewer than two notes means one voice is silent, so nothing sounds together.

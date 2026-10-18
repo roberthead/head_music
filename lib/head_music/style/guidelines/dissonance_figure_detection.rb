@@ -3,13 +3,12 @@ module HeadMusic::Style::Guidelines; end
 
 # Shared detection of ornamental dissonance figures (nota cambiata, double
 # neighbor). Expects the including class to provide #notes, #melodic_intervals,
-# #cantus_firmus, #voice.
+# and #dissonant_with_cantus_at?, as every Guideline does.
 module HeadMusic::Style::Guidelines::DissonanceFigureDetection
   private
 
   def dissonant_with_cantus?(note)
-    interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, note.position)
-    interval.notes.length == 2 && interval.dissonance?(:two_part_harmony)
+    dissonant_with_cantus_at?(note.position)
   end
 
   def passing_tone?(note)

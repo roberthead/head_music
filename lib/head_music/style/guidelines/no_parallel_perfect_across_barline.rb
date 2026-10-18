@@ -2,24 +2,11 @@
 module HeadMusic::Style::Guidelines; end
 
 # A counterpoint guideline
-class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::Style::Guideline
-  def marks
-    parallel_perfect_across_barline_pairs.map do |pair|
-      HeadMusic::Style::Mark.for_all(pair.flat_map(&:notes))
-    end
-  end
-
+class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::Style::Guidelines::NoParallelPerfect
   private
 
-  def parallel_perfect_across_barline_pairs
-    weak_strong_interval_pairs.select do |weak, strong|
-      weak.perfect_consonance?(:two_part_harmony) &&
-        strong.perfect_consonance?(:two_part_harmony) &&
-        same_simple_type?(weak, strong)
-    end
-  end
-
-  def weak_strong_interval_pairs
+  # Each weak-beat interval with the downbeat interval after it.
+  def interval_pairs
     weak_beat_harmonic_intervals.filter_map do |weak_interval|
       next_downbeat = next_downbeat_interval(weak_interval)
       [weak_interval, next_downbeat] if next_downbeat
@@ -27,10 +14,7 @@ class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::
   end
 
   def weak_beat_harmonic_intervals
-    weak_beat_positions.filter_map do |position|
-      interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, position)
-      interval if interval.notes.length == 2
-    end
+    weak_beat_positions.filter_map { |position| interval_with_cantus(position) }
   end
 
   def weak_beat_positions
@@ -39,13 +23,6 @@ class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::
 
   def next_downbeat_interval(weak_interval)
     next_cf_note = cantus_firmus.notes.detect { |n| n.position > weak_interval.position }
-    return unless next_cf_note
-
-    interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, next_cf_note.position)
-    interval if interval.notes.length == 2
-  end
-
-  def same_simple_type?(first, second)
-    first.simple_number == second.simple_number
+    interval_with_cantus(next_cf_note.position) if next_cf_note
   end
 end
