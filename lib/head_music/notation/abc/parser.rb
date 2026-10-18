@@ -7,13 +7,6 @@ module HeadMusic::Notation::ABC
   # flow is constructed, so callers never receive a reference to
   # a partially built flow.
   class Parser
-    # Broken-rhythm scales: the mark's side gets the dot (x 3/2) and the
-    # other side is halved.
-    BROKEN_RHYTHM_SCALES = {
-      :> => [Rational(3, 2), Rational(1, 2)],
-      :< => [Rational(1, 2), Rational(3, 2)]
-    }.freeze
-
     HANDLERS = {
       note: :handle_note, chord: :handle_chord, rest: :handle_rest, tie: :handle_tie,
       invisible_rest: :handle_invisible_rest, spacer: :handle_spacer, overlay: :handle_overlay,
@@ -218,14 +211,9 @@ module HeadMusic::Notation::ABC
     def handle_broken_rhythm(token)
       state = current_state
       line = token.line
-      direction = token.direction
       state.reject_open_tie(line)
       state.reject_dangling_decorations
-      unless state.after_note?
-        raise ParseError.new("Broken rhythm must appear between two notes", line_number: line, snippet: direction.to_s)
-      end
-
-      state.break_rhythm(*BROKEN_RHYTHM_SCALES.fetch(direction), line)
+      state.break_rhythm(token.direction, line)
     end
 
     # A note tied across the bar line is left pending rather than flushed, so

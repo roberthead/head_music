@@ -11,14 +11,14 @@ module HeadMusic::Notation::ABC
     ONE = Rational(1)
 
     attr_reader :voice, :pitch_builder, :tie_line, :beams
-    attr_accessor :pending_note, :awaiting_scale, :broken_line,
-      :active_passes, :volta_start_bar
+    attr_accessor :pending_note, :active_passes, :volta_start_bar
 
     def initialize(voice, pitch_builder, duration_resolver = nil)
       @voice = voice
       @pitch_builder = pitch_builder
       @duration_resolver = duration_resolver
       @beams = BeamAdjacency.new
+      @broken_rhythm = BrokenRhythm.new
       @tie_open = false
       @decorations = PendingDecorations.new(voice)
       @slurs = PendingSlurs.new(voice)
@@ -28,6 +28,7 @@ module HeadMusic::Notation::ABC
     end
 
     delegate :music_end, to: :@invisible_rests
+    delegate :ensure_not_awaiting_note, to: :@broken_rhythm
     delegate :decorate, :reject_dangling_decorations, :take_navigation, :add_hairpins, to: :@decorations
 
     # "(" opens a slur on the next note, chord, or rest.
@@ -172,19 +173,15 @@ module HeadMusic::Notation::ABC
     # A tie or broken rhythm needs a note before it that is not itself
     # waiting on a broken rhythm's right side.
     def after_note?
-      pending_note && !awaiting_scale
+      pending_note && !@broken_rhythm.awaiting_note?
     end
 
-    def break_rhythm(left_scale, right_scale, line)
-      self.pending_note = pending_note.with(scale: pending_note.scale * left_scale)
-      self.awaiting_scale = right_scale
-      self.broken_line = line
-    end
+    def break_rhythm(direction, line)
+      unless after_note?
+        raise ParseError.new("Broken rhythm must appear between two notes", line_number: line, snippet: direction.to_s)
+      end
 
-    def ensure_not_awaiting_note(line)
-      return unless awaiting_scale
-
-      raise ParseError.new("Broken rhythm must be followed by a note", line_number: line || broken_line)
+      self.pending_note = pending_note.with(scale: pending_note.scale * @broken_rhythm.break(direction, line))
     end
 
     # Buffers a note or chord as the pending note, flushing whatever was
@@ -239,8 +236,7 @@ module HeadMusic::Notation::ABC
     end
 
     def arriving_note(pitches, length, inner_scale, beam_break:)
-      scale = (awaiting_scale || ONE) * inner_scale
-      self.awaiting_scale = nil
+      scale = @broken_rhythm.take_scale * inner_scale
       decorations = @decorations.take
       ratio, ends = @tuplets.count
       graces = @graces
