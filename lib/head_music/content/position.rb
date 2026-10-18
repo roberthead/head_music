@@ -138,29 +138,38 @@ class HeadMusic::Content::Position
   # crosses has the same number of counts. So the bar carry is walked here one
   # bar at a time, asking the flow for each bar's meter as it goes.
   #
-  # And the counts are the bar's own, so what spills past a bar is restated in
-  # the next as ticks, which every meter shares, to be carried again under
-  # that bar's meter. One instant then has one spelling, which is what
-  # equality and hashing depend on.
+  # And the counts are the *origin* bar's, so the walk stops at the first bar
+  # with a different count unit and restates what is left there as ticks,
+  # which every meter shares, to be carried again under that bar's meter,
+  # until it lands in a bar it was carried under. One instant then has one
+  # spelling, which is what equality and hashing depend on.
   def normalize
     loop do
-      bar_meter = meter
-      counts, tick, subtick = carried_counts(bar_meter)
-      overflow = counts - bar_meter.counts_per_bar
-      unless overflow.positive?
-        @value = HeadMusic::Time::MusicalPosition.new(bar_number, counts, tick, subtick)
-        break
+      origin_bar = value.bar
+      counts, tick, subtick = carried_counts
+      bar = origin_bar
+      meter = flow.meter_at(bar)
+      unit = meter.ticks_per_count
+      while counts > meter.counts_per_bar && meter.ticks_per_count == unit
+        counts -= meter.counts_per_bar
+        bar += 1
+        meter = flow.meter_at(bar)
       end
-      @value = HeadMusic::Time::MusicalPosition.new(bar_number + 1, 1, (overflow - 1) * bar_meter.ticks_per_count + tick, subtick)
+      @value = if meter.ticks_per_count == unit
+        HeadMusic::Time::MusicalPosition.new(bar, counts, tick, subtick)
+      else
+        HeadMusic::Time::MusicalPosition.new(bar, 1, (counts - 1) * unit + tick, subtick)
+      end
+      break if bar == origin_bar
     end
   end
 
   # The count the subticks and ticks carry up to, which may be more than a bar
   # holds. Any bars normalize! carried into are folded back into the count, so
   # that the walk above -- not the divmod -- decides which bar this lands in.
-  def carried_counts(bar_meter)
-    carried = HeadMusic::Time::MusicalPosition.new(1, count, tick, subtick).normalize!(bar_meter)
-    [(carried.bar - 1) * bar_meter.counts_per_bar + carried.count, carried.tick, carried.subtick]
+  def carried_counts
+    carried = HeadMusic::Time::MusicalPosition.new(1, value.count, value.tick, value.subtick).normalize!(meter)
+    [(carried.bar - 1) * meter.counts_per_bar + carried.count, carried.tick, carried.subtick]
   end
 end
 
