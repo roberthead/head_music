@@ -6,24 +6,24 @@ module HeadMusic::MIDI::SMF
   module_function
 
   def vlq(number)
-    raise ArgumentError, "#{number.inspect} is not a variable-length quantity (0..#{MAX_VLQ})" unless number.is_a?(Integer) && number.between?(0, MAX_VLQ)
+    check(number, 0..MAX_VLQ, "a variable-length quantity")
 
-    bytes = [number & 0x7F]
-    number >>= 7
-    while number.positive?
-      bytes.unshift((number & 0x7F) | 0x80)
-      number >>= 7
-    end
-    bytes.pack("C*")
+    *leading, last = number.digits(128).reverse
+    [*leading.map { |digit| digit | 0x80 }, last].pack("C*")
   end
 
   # +tracks+ is a list of event lists, each in any order.
   def file(division:, tracks:)
-    raise ArgumentError, "#{division.inspect} is not a division (1..#{MAX_DIVISION})" unless division.is_a?(Integer) && division.between?(1, MAX_DIVISION)
+    check(division, 1..MAX_DIVISION, "a division")
 
     header = ["MThd".b, 6, 1, tracks.length, division].pack("a4Nnnn")
     tracks.each_with_object(header) { |events, bytes| bytes << chunk(track_body(events)) }
   end
+
+  def check(number, range, name)
+    raise ArgumentError, "#{number.inspect} is not #{name} (#{range})" unless number.is_a?(Integer) && range.cover?(number)
+  end
+  private_class_method :check
 
   def chunk(body)
     ["MTrk".b, body.bytesize].pack("a4N") + body
