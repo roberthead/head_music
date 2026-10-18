@@ -71,8 +71,7 @@ module HeadMusic::Notation::MEI
   # measure that the next one completes, whose record has the same
   # bar_number.
   MeasureRecord = Data.define(:bar_number, :measure, :element, :last, :ending_passes, :mid_bar) do
-    alias_method :last?, :last
-    alias_method :mid_bar?, :mid_bar
+    include HeadMusic::Notation::BarlinePlacement
   end
 
   # Builds every record of a score once its voices are placed.

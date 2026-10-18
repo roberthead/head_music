@@ -37,8 +37,7 @@ module HeadMusic::Notation::MusicXML
   end
 
   BarlineRecord = Data.define(:part, :bar_number, :last, :mid_bar, :measure, :element) do
-    alias_method :last?, :last
-    alias_method :mid_bar?, :mid_bar
+    include HeadMusic::Notation::BarlinePlacement
   end
 
   # Builds a part's records from what its reader noted as it walked.
