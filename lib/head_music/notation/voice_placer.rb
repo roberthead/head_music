@@ -58,13 +58,7 @@ module HeadMusic::Notation
     # Grace notes before a rest, or before a tie's later link, which is
     # never placed, are dropped.
     def add_grace_notes(voice_event, graces)
-      return if voice_event.rest?
-
-      graces.each do |grace|
-        voice_event.add_grace_note(
-          grace.sounds, grace.rhythmic_value, slashed: grace.slashed, tied: grace.tied, articulations: grace.articulations
-        )
-      end
+      voice_event.add_grace_notes(*graces.map(&:grace_note)) unless voice_event.rest?
     end
 
     def rest_until(time, event)

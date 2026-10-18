@@ -54,7 +54,11 @@ module HeadMusic::Notation
 
     # A grace note waiting for the main note it leads to, and whether it is
     # tied to whatever follows it.
-    Grace = Struct.new(:sounds, :rhythmic_value, :slashed, :articulations, :tie_starts, :tied, :label, :event)
+    Grace = Struct.new(:sounds, :rhythmic_value, :slashed, :articulations, :tie_starts, :tied, :label, :event) do
+      def grace_note
+        HeadMusic::Content::GraceNote.new(sounds: sounds, rhythmic_value: rhythmic_value, slashed: slashed, tied: tied, articulations: articulations)
+      end
+    end
 
     # A <tuplet> start or stop on an event, in document order, with the
     # <normal-type> and dots of its <time-modification>.

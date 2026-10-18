@@ -118,12 +118,7 @@ module HeadMusic::Notation::Kern
     end
 
     def add_grace_notes(voice_event, graces)
-      graces.each do |grace|
-        token = grace.token
-        voice_event.add_grace_note(
-          token.pitches, token.rhythmic_value, slashed: token.slashed, tied: grace.tied, articulations: token.articulations
-        )
-      end
+      voice_event.add_grace_notes(*graces.map(&:grace_note))
     end
 
     # Each open is [position, whether it opens on the grace notes there].

@@ -16,7 +16,13 @@ module HeadMusic::Notation::Kern
   # takes the place of the tie's start, so the note's ] ends no chain.
   class VoiceCursor
     # A queued grace token, and whether it is tied to the note after it.
-    Grace = Data.define(:token, :tied)
+    Grace = Data.define(:token, :tied) do
+      def grace_note
+        HeadMusic::Content::GraceNote.new(
+          sounds: token.pitches, rhythmic_value: token.rhythmic_value, slashed: token.slashed, tied: tied, articulations: token.articulations
+        )
+      end
+    end
     TIED_IN = {nil => nil, :start => :start, :middle => :start, :end => nil}.freeze
 
     attr_reader :layer

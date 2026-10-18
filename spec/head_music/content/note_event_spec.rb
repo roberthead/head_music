@@ -107,6 +107,12 @@ describe HeadMusic::Content::NoteEvent do
       expect(note_event.grace_notes.map(&:to_s)).to eq ["slashed grace sixteenth A4", "grace sixteenth B4 D5"]
     end
 
+    it "adds grace notes already built, after any it carries" do
+      grace_notes = %w[B4 C5].map { |pitch| HeadMusic::Content::GraceNote.new(sounds: pitch, rhythmic_value: :sixteenth) }
+      note_event.add_grace_note("A4", :sixteenth).add_grace_notes(*grace_notes)
+      expect(note_event.grace_notes.map(&:to_s)).to eq ["grace sixteenth A4", "grace sixteenth B4", "grace sixteenth C5"]
+    end
+
     it "answers a frozen list" do
       expect(note_event.add_grace_note("A4", :eighth).grace_notes).to be_frozen
     end

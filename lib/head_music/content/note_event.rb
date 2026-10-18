@@ -50,9 +50,13 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   # Adds a grace note before this event, after any it already carries.
   # Returns self so calls chain.
   def add_grace_note(sound_or_sounds, rhythmic_value, slashed: false, tied: false, articulations: [])
-    grace_note_list << HeadMusic::Content::GraceNote.new(
+    add_grace_notes(HeadMusic::Content::GraceNote.new(
       sounds: sound_or_sounds, rhythmic_value: rhythmic_value, slashed: slashed, tied: tied, articulations: articulations
-    )
+    ))
+  end
+
+  def add_grace_notes(*grace_notes)
+    grace_note_list.concat(grace_notes)
     self
   end
 

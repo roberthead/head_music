@@ -48,11 +48,7 @@ module HeadMusic::Notation::ABC
     # Its authored beam break and its grace notes.
     def carry_onto(voice_event)
       voice_event.beam_break_before = beam_break
-      graces.each do |grace|
-        voice_event.add_grace_note(
-          grace.sounds, grace.rhythmic_value, slashed: grace.slashed?, tied: grace.tied?, articulations: grace.articulations
-        )
-      end
+      voice_event.add_grace_notes(*graces)
     end
 
     private
