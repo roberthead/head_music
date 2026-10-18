@@ -125,6 +125,43 @@ jobs:
     - name: Run tests
       run: bundle exec rspec spec/head_music/notation/lily_pond_round_trip_spec.rb spec/head_music/notation/lily_pond
 
+  # The schema specs skip unless a local schema is named, and the schemas are
+  # not committed, so without this job nothing proves the MEI and MusicXML
+  # documents are valid. Both are pinned; the MusicXML imports are pointed at
+  # their local copies because the specs validate with --nonet.
+  test-schemas:
+    name: test (against the MEI and MusicXML schemas)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      MEI_SCHEMA: ${{ github.workspace }}/schemas/mei-CMN.rng
+      MUSICXML_XSD: ${{ github.workspace }}/schemas/musicxml.xsd
+    steps:
+    - uses: actions/checkout@v7
+
+    - name: Install xmllint
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libxml2-utils
+
+    - name: Fetch the schemas
+      run: |
+        mkdir -p schemas
+        curl -sSfL -o schemas/mei-CMN.rng https://raw.githubusercontent.com/music-encoding/schema/bb4fed011f52088f8c2b9bdd4ff9674e75469aa4/5.1/mei-CMN.rng
+        for file in musicxml.xsd xlink.xsd xml.xsd; do
+          curl -sSfL -o "schemas/$file" "https://raw.githubusercontent.com/w3c/musicxml/799e2defb2ece0ae7bafe08dcbcac25b2c631d53/schema/$file"
+        done
+        sed -i 's#http://www.musicxml.org/xsd/##' schemas/musicxml.xsd
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: .ruby-version
+        bundler-cache: true
+
+    - name: Run tests
+      run: bundle exec rspec spec/head_music/notation/mei_schema_spec.rb spec/head_music/notation/music_xml_schema_spec.rb
+
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
