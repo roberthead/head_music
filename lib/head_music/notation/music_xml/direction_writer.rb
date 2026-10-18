@@ -9,8 +9,6 @@ module HeadMusic::Notation::MusicXML
   class DirectionWriter
     include HeadMusic::Notation::XmlText
 
-    LABELS = {dynamic: "dynamic %s", start: "%s start", stop: "%s end"}.freeze
-
     def initialize(plan)
       @plan = plan
     end
@@ -36,29 +34,24 @@ module HeadMusic::Notation::MusicXML
     # A mark on the final barline is written in the last bar, at its end.
     def offset_from(start, slot, mark)
       bar_number = slot.bar_number
-      return plan.whole_measure_duration(bar_number) - start unless mark.position.bar_number == bar_number
+      position = mark.position
+      return plan.whole_measure_duration(bar_number) - start unless position.bar_number == bar_number
 
-      fraction = HeadMusic::Notation::BarSplitter.mark_offset(plan.flow, mark.position, mark_voices(slot)) * 4 * divisions
+      fraction = HeadMusic::Notation::BarSplitter.mark_offset(plan.flow, position, slot.voices) * 4 * divisions
       unless fraction.denominator == 1
         raise RenderError,
-          "cannot express the offset of the #{label(mark)} at #{mark.position} in #{divisions} divisions per quarter note"
+          "cannot express the offset of the #{mark.label} at #{position} in #{divisions} divisions per quarter note"
       end
       fraction.numerator - start
     end
 
-    def mark_voices(slot)
-      slot.voice ? [slot.voice] : slot.part.voices
-    end
-
-    def label(mark)
-      format(LABELS.fetch(mark.type), mark.item.name_key)
-    end
-
     def direction_type(part, mark)
-      return "<dynamics><#{mark.item.name_key}/></dynamics>" if mark.type == :dynamic
+      item = mark.item
+      name_key = item.name_key
+      type = mark.type
+      return "<dynamics><#{name_key}/></dynamics>" if type == :dynamic
 
-      type = (mark.type == :start) ? mark.item.name_key : "stop"
-      %(<wedge type="#{type}" number="#{plan.wedge_numbers(part).number(mark.item)}"/>)
+      %(<wedge type="#{(type == :start) ? name_key : "stop"}" number="#{plan.wedge_numbers(part).number(item)}"/>)
     end
 
     def direction_lines(direction_type, offset, numbers)

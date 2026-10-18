@@ -11,8 +11,18 @@ module HeadMusic::Notation::MusicXML
   # closing slot after every voice. Within a slot, marks at one position go
   # hairpin stops first, then dynamics, then hairpin starts.
   class DirectionPlan
-    Slot = Data.define(:kind, :part, :voice, :bar_number, :segment)
-    Mark = Data.define(:type, :position, :item)
+    Slot = Data.define(:kind, :part, :voice, :bar_number, :segment) do
+      # The voices whose events the slot's marks are placed among.
+      def voices
+        voice ? [voice] : part.voices
+      end
+    end
+
+    Mark = Data.define(:type, :position, :item) do
+      def label
+        format(MARK_LABELS.fetch(type), item.name_key)
+      end
+    end
     Bar = Data.define(:bar_number, :part_slot, :voice_slots, :closing_slot) do
       def slots
         [part_slot, *voice_slots.flat_map(&:last), closing_slot].compact
@@ -20,6 +30,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     MARK_ORDER = %i[stop dynamic start].freeze
+    MARK_LABELS = {dynamic: "dynamic %s", start: "%s start", stop: "%s end"}.freeze
 
     attr_reader :part
 
