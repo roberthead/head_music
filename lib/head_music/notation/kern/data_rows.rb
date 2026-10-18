@@ -13,13 +13,16 @@ module HeadMusic::Notation::Kern
       events = kern_events(bar_number)
       attacks = events.values.flatten.map { |event| Rational(event.offset) }.uniq.sort
       offsets = RowOffsets.for(attacks, dynamic_offsets(bar_number), bars.length(bar_number))
-      offsets = with_final_close_row(bar_number, attacks, offsets) if final_closes?(bar_number)
+      final = final_closes?(bar_number)
+      offsets = with_final_close_row(bar_number, attacks, offsets) if final
+      last = offsets.last
       offsets.flat_map do |offset|
+        at = events.transform_values { |voice_events| voice_events.find { |event| event.offset == offset } }
+        closing = final && offset == last
         main = columns.row do |column|
-          text = field(column, events, bar_number, offset)
-          (column.dynam && final_closes?(bar_number) && offset == offsets.last) ? final_field(column, text) : text
+          column.dynam ? dynamic_field(column, bar_number, offset, closing) : field(column, at.fetch(column.voice))
         end
-        [*grace_rows(events, offset), main]
+        [*grace_rows(at), main]
       end
     end
 
@@ -27,16 +30,11 @@ module HeadMusic::Notation::Kern
 
     # The grace notes before the notes at an offset, on rows of their own
     # just before them, each spine's last one on the last row.
-    def grace_rows(events, offset)
-      graces = events.transform_values { |voice_events| voice_events.find { |event| event.offset == offset }&.graces || [] }
+    def grace_rows(at)
+      graces = at.transform_values { |event| event&.graces || [] }
       count = graces.values.map(&:length).max || 0
-      (0...count).map do |row|
-        columns.row do |column|
-          tokens = column.kern? ? graces.fetch(column.voice) : []
-          index = row - (count - tokens.length)
-          index.negative? ? "." : tokens[index]
-        end
-      end
+      padded = graces.transform_values { |tokens| Array.new(count - tokens.length, ".") + tokens }
+      (0...count).map { |row| columns.row { |column| column.kern? ? padded.fetch(column.voice)[row] : "." } }
     end
 
     attr_reader :columns, :bars, :dynamic_fields
@@ -63,8 +61,10 @@ module HeadMusic::Notation::Kern
       end
     end
 
-    def final_field(column, text)
-      close = dynamic_fields.fetch(column.voice.part).final_close
+    def dynamic_field(column, bar_number, offset, closing)
+      fields = dynamic_fields.fetch(column.voice.part)
+      text = fields.in_bar(bar_number).fetch(offset, ".")
+      close = fields.final_close if closing
       return text unless close
 
       (text == ".") ? close : "#{text}#{close}"
@@ -75,13 +75,10 @@ module HeadMusic::Notation::Kern
     end
 
     def dynamic_offsets(bar_number)
-      dynamic_fields.values.flat_map { |fields| fields.in_bar(bar_number).keys.map { |offset| Rational(offset) } }.uniq
+      dynamic_fields.values.flat_map { |fields| fields.in_bar(bar_number).keys }.map { |offset| Rational(offset) }.uniq
     end
 
-    def field(column, all_events, bar_number, offset)
-      return dynamic_fields.fetch(column.voice.part).in_bar(bar_number).fetch(offset, ".") if column.dynam
-
-      event = all_events.fetch(column.voice).find { |candidate| candidate.offset == offset }
+    def field(column, event)
       return "." unless event
 
       column.kern? ? event.token : syllable_field(column, event)
