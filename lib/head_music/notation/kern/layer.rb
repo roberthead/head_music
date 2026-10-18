@@ -23,10 +23,20 @@ module HeadMusic::Notation::Kern
   # music. Ones that reach a later bar, or are followed by music, are rests,
   # since that bar is written and the voice cannot hold a gap.
   class Layer
-    Event = Struct.new(
-      :time, :rhythmic_value, :fraction, :pitches, :syllables, :articulations, :ornaments, :note_dynamic, :span_marks,
-      :invisible, :graces, :grace_opens
-    )
+    TOKEN_FIELDS = %i[rhythmic_value fraction pitches articulations ornaments note_dynamic span_marks invisible].freeze
+    Event = Struct.new(:time, *TOKEN_FIELDS, :syllables, :graces, :grace_opens) do
+      def finish
+        time + fraction
+      end
+
+      def mark(note_event)
+        syllables.each do |syllable|
+          note_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
+        end
+        note_event.articulate(*articulations).embellish(*ornaments).add_grace_notes(*graces.map(&:grace_note))
+        note_event.note_dynamic = note_dynamic
+      end
+    end
     SPAN_KINDS = {"(" => :slur, ")" => :slur, "{" => :phrase, "}" => :phrase}.freeze
     CLOSES = %w[) }].freeze
 
@@ -44,24 +54,23 @@ module HeadMusic::Notation::Kern
     # The graces are VoiceCursor::Grace values, and grace_opens the span
     # marks that open on the first of them.
     def add(time, token, graces = [], grace_opens = [])
-      Event.new(
-        time, token.rhythmic_value, token.fraction, token.pitches, [],
-        token.articulations, token.ornaments, token.note_dynamic, token.span_marks, token.invisible, graces, grace_opens
-      ).tap { |event| @events << event }
+      Event.new(time: time, **token.to_h.slice(*TOKEN_FIELDS), syllables: [], graces: graces, grace_opens: grace_opens)
+        .tap { |event| @events << event }
     end
 
     def end_time
-      finish_of(events.last)
+      events.last&.finish
     end
 
     def sounding_end_time(clock)
-      finish_of(sounding_events(clock).last)
+      sounding_events(clock).last&.finish
     end
 
     def place(clock, finish_time)
       first_bar = clock.bars.first
-      assign_opening_staff(first_bar.number)
-      @position = voice.flow.position(first_bar.number, 1, 0)
+      number = first_bar.number
+      assign_opening_staff(number)
+      @position = voice.flow.position(number, 1, 0)
       @time = first_bar.start
       @span_marks = []
       sounding_events(clock).each { |event| place_event(event, clock) }
@@ -72,19 +81,13 @@ module HeadMusic::Notation::Kern
 
     private
 
-    def finish_of(event)
-      event && (event.time + event.fraction)
-    end
-
     def sounding_events(clock)
       last_visible = events.rindex { |event| !event.invisible }
       return [] unless last_visible
 
-      music_end = finish_of(events[last_visible])
+      music_end = events[last_visible].finish
       barline = clock.bars.map(&:start).find { |start| start >= music_end }
-      return events if barline && finish_of(events.last) > barline
-
-      events[..last_visible]
+      (barline && end_time > barline) ? events : events[..last_visible]
     end
 
     # A voice sits on its part's first staff unless it says otherwise, and
@@ -98,37 +101,22 @@ module HeadMusic::Notation::Kern
     def place_event(event, clock)
       rest_until(event.time, clock)
       voice_event = voice.place(@position, event.rhythmic_value, event.pitches)
-      unless voice_event.rest?
-        mark(voice_event, event)
-        add_grace_notes(voice_event, event.graces)
-      end
-      if event.span_marks.any? || event.grace_opens.any?
-        @span_marks << [voice_event.position, event.span_marks, voice_event.rest? ? [] : event.grace_opens]
-      end
+      rest = voice_event.rest?
+      event.mark(voice_event) unless rest
+      @span_marks << [voice_event.position, event.span_marks, rest ? [] : event.grace_opens]
       @position = voice_event.next_position
-      @time = event.time + event.fraction
+      @time = event.finish
     end
 
-    def mark(voice_event, event)
-      event.syllables.each do |syllable|
-        voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
-      end
-      voice_event.articulate(*event.articulations).embellish(*event.ornaments)
-      voice_event.note_dynamic = event.note_dynamic
-    end
-
-    def add_grace_notes(voice_event, graces)
-      voice_event.add_grace_notes(*graces.map(&:grace_note))
-    end
-
-    # Each open is [position, whether it opens on the grace notes there].
+    # Each open is [position, whether it opens on the grace notes there],
+    # kept under its mark, where a close finds it under its opening mark.
     def add_spans
       open = Hash.new { |hash, key| hash[key] = [] }
       @span_marks.each do |position, marks, grace_opens|
-        grace_opens.each { |mark| open[span_key(mark)] << [position, true] }
+        grace_opens.each { |mark| open[mark] << [position, true] }
         closes, opens = marks.partition { |mark| CLOSES.include?(mark[-1]) }
-        closes.each { |mark| close_span(open[span_key(mark)].pop, position, mark) }
-        opens.each { |mark| open[span_key(mark)] << [position, false] }
+        closes.each { |mark| close_span(open[mark.tr(")}", "({")].pop, position, mark) }
+        opens.each { |mark| open[mark] << [position, false] }
       end
     end
 
@@ -139,10 +127,6 @@ module HeadMusic::Notation::Kern
       voice.add_span(SPAN_KINDS.fetch(mark[-1]), from: from, to: to, from_grace: from_grace)
     rescue ArgumentError
       nil
-    end
-
-    def span_key(mark)
-      [SPAN_KINDS.fetch(mark[-1]), mark.length - 1]
     end
 
     def rest_until(time, clock)
