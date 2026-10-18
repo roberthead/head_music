@@ -111,24 +111,25 @@ module HeadMusic::Notation::MEI
     def read_measure(element, passes)
       where = {measure: attribute(element, "n", element: element)}
       apply_definitions(where)
-      staves, controls = staves_and_controls(element, where)
-      @ties.note_controls(controls, where)
-      @tuplets.note_controls(controls, where)
+      contents = MeasureContents.new(element, where, groups: @groups, state: @state, editorial: @editorial, tuplets: @tuplets)
+      @ties.note_controls(contents.controls, where)
+      @tuplets.note_controls(contents.controls, where)
       changes = @state.take_changes
       transpose(@readings, changes.transpositions)
-      contents = @readings.to_h { |reading| [reading, read_contents(reading, staves, where)] }
-      contents.values.flatten.each { |content| @state.change_key(content.staff_number, content.opening_key) if content.opening_key }
-      OpenSpaces.resolve(contents.values.flatten, @state.meter)
+      contents.read(@readings)
+      contents.all.each { |content| @state.change_key(content.staff_number, content.opening_key) if content.opening_key }
       index = @measures.length
-      firsts = first_onsets(contents)
-      bar_count(contents, where).times { |offset| add_measure(element, index + offset, offset.zero? ? controls : [], passes, where, firsts) }
-      @readings.each do |reading|
-        reading.measures[index].extent = extent(contents[reading], index)
-        change_clefs(reading, index, changes, contents[reading]) if index.positive?
-        reading.instrument_changes[index] = changes.instruments[reading.definition.index] if changes.instruments.key?(reading.definition.index)
-        @layers.read(reading, contents[reading], index, where)
-        note_closing_clefs(reading, index, contents[reading])
-      end
+      add_measures(element, contents, passes, where)
+      @readings.each { |reading| file_part(reading, contents[reading], index, changes, where) }
+    end
+
+    def file_part(reading, contents, index, changes, where)
+      reading.measures[index].extent = extent(contents, index)
+      change_clefs(reading, index, changes, contents) if index.positive?
+      instrument = changes.instruments[reading.definition.index]
+      reading.instrument_changes[index] = instrument if instrument
+      @layers.read(reading, contents, index, where)
+      note_closing_clefs(reading, index, contents)
     end
 
     # The <scoreDef>s and <staffDef>s since the last measure, which take
@@ -160,29 +161,30 @@ module HeadMusic::Notation::MEI
     # The bars a measure stands for: one, or as many as a <multiRest> fills,
     # within the bars the document's measures allow.
     def bar_count(contents, where)
-      rests = contents.values.flatten.flat_map(&:entries).select { |entry| entry.kind == :multi_rest }
-      bars = rests.map(&:bars).max || 1
+      rest = contents.longest_multi_rest
+      bars = rest&.bars || 1
       if @measures.length + bars > @source.bar_budget
-        raise ParseError.new("<multiRest>s fill more than #{@source.bar_budget} bars", **where, element: rests.max_by(&:bars)&.element)
+        raise ParseError.new("<multiRest>s fill more than #{@source.bar_budget} bars", **where, element: rest&.element)
       end
 
       bars
     end
 
-    # The elements of the entries that start a measure, and their notes.
-    def first_onsets(contents)
-      contents.values.flatten.flat_map(&:entries).each_with_object({}.compare_by_identity) do |entry, firsts|
-        next unless entry.cursor.zero? && !entry.grace
-
-        [entry.element, *entry.notes].each { |element| firsts[element] = true }
+    def add_measures(element, contents, passes, where)
+      index = @measures.length
+      bars = bar_count(contents, where)
+      tempo = DownbeatTempo.tempo(contents.controls, contents.entries, @state.meter, @source.index, **where)
+      bars.times do |offset|
+        first = offset.zero?
+        add_measure(element, index + offset, first ? contents.controls : [], first ? tempo : nil, passes, where)
       end
     end
 
-    def add_measure(element, index, controls, passes, where, firsts)
+    def add_measure(element, index, controls, tempo, passes, where)
       meter = @state.meter
       @measures << Measure.new(
         index: index, element: element, number: where[:measure], meter: meter, key: @state.key,
-        tempo: tempo(controls, meter, where, firsts), controls: controls, ending_passes: passes
+        tempo: tempo, controls: controls, ending_passes: passes
       )
       implicit = index.positive? && AttributeValues.read(element, "metcon", **where, element: element) == false
       @readings.each do |reading|
@@ -190,28 +192,6 @@ module HeadMusic::Notation::MEI
           index: index, number: where[:measure], implicit: implicit, meter: meter, tolerance: PartReading::TOLERANCE, clefs: {}
         )
       end
-    end
-
-    # The tempo a <tempo> states on the downbeat, by @tstamp or at a
-    # @startid that starts the measure, by @mm, in its @mm.unit, or else by
-    # @midi.bpm, in quarter notes. One in the middle of the bar, or with
-    # text only, is skipped.
-    def tempo(controls, meter, where, firsts)
-      controls.each do |control|
-        next unless control.name == "tempo" && downbeat?(control, meter, where, firsts)
-
-        found = TempoReading.tempo(control, **where)
-        return found if found
-      end
-      nil
-    end
-
-    def downbeat?(control, meter, where, firsts)
-      tstamp = AttributeValues.read(control, "tstamp", **where, element: control, count: meter.top_number)
-      return tstamp <= 1 if tstamp
-
-      reference = attribute(control, "startid", element: control)
-      reference.nil? || firsts.key?(@source.index.resolve(reference, **where, element: control))
     end
 
     # A clef change between measures, a clef that opens a layer, or one
@@ -237,54 +217,6 @@ module HeadMusic::Notation::MEI
         next unless content.closing_clef && content.extent == reach
 
         clefs[reading.definition.staff_index(content.staff_number)] ||= content.closing_clef
-      end
-    end
-
-    def staves_and_controls(element, where)
-      staves = Hash.new { |hash, number| hash[number] = [] }
-      controls = []
-      @editorial.children(element).each do |child|
-        next controls << child unless child.name == "staff"
-
-        number = AttributeValues.read(child, "n", **where, element: child) || 1
-        unknown_staff(number, child, where) unless @groups.part_for(number)
-
-        staves[number] << child
-      end
-      [staves, controls]
-    end
-
-    def unknown_staff(number, element, where)
-      if @state.added_staff?(number)
-        raise UnsupportedFeatureError.new("A <staff> numbered #{number} is added by a later <staffDef>, which is not supported", **where, element: element)
-      end
-
-      raise ParseError.new("A <staff> numbered #{number} has no <staffDef>", **where, element: element)
-    end
-
-    def read_contents(reading, staves, where)
-      contents = reading.definition.staff_numbers.flat_map do |number|
-        staves[number].flat_map { |staff| read_layers(staff, number, where.merge(staff: number)) }
-      end
-      count_repeats(contents)
-    end
-
-    # A layer with notes whose staff and @n an earlier layer with notes in
-    # the bar shares is a voice of its own, since @n is optional.
-    def count_repeats(contents)
-      seen = Hash.new(0)
-      contents.select(&:notes?).each do |content|
-        key = [content.staff_number, content.number]
-        content.occurrence = seen[key]
-        seen[key] += 1
-      end
-      contents
-    end
-
-    def read_layers(staff, number, where)
-      @editorial.children_named(staff, "layer").map do |layer|
-        default = @state.duration_default(number, AttributeValues.read(layer, "n", **where, element: layer) || 1)
-        LayerReader.new(layer, @editorial, staff_number: number, tuplets: @tuplets, duration_default: default, **where).read
       end
     end
   end
