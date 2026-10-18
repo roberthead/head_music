@@ -124,6 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `HeadMusic::Notation::BeamGroups` holds the beam grouping MusicXML and MEI share, and `HeadMusic::Notation::WrittenLinks` the written pieces of a voice's segments, which tuplet brackets and beams both read.
 - `Position.for_flow` builds a position in a flow from a code or keeps one of that flow's, raising for another flow's. `Dynamic.fetch` answers a dynamic of the kind asked for, `Clef.placing` the clef that puts a pitch on a line, `GraceNote#tied_pitches` the pitches a grace note ties into, and `Notation::BarMap#downbeat_bar` the bar a measure starts on its downbeat.
 - `HeadMusic::Notation::LineParseError` carries the line number and snippet that the ABC, kern, and LilyPond `ParseError`s report, and each now subclasses it. `HeadMusic::Notation::TimelineReading` holds the timeline reading the MusicXML and MEI readers share, and `HeadMusic::Time::ChangeMap` the change bookkeeping of `MeterMap` and `TempoMap`.
+- `HeadMusic::Content::ChainLink` is one link of a voice event's tied chain, found with `ChainLink.of(voice_event)` and `ChainLink.between(voice, from, to)`; `TupletGroup.links_of` and `.links_between` delegate to it. `NoteEvent#add_grace_notes` adds `GraceNote`s already built.
 
 ### Changed
 
@@ -138,6 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking.** kern import times a `**dynam` level on a row where no `**kern` spine attacks by the Humdrum convention: such rows split the time between the timed rows around them evenly. A level written beside a held note, which had been placed at the next attack, now falls in the middle of the note.
 - **Breaking.** Flow JSON refuses a voice event's articulations or ornaments that name one marking twice through an alias or another spelling, such as `["mordent", "lower_mordent"]` or `["accent", "Accent"]`, with the error a repeated key raises. It had read them as one.
 - The kern, MEI, and LilyPond writers refuse an unpitched grace note with one message: `cannot render the unpitched grace note "snare drum" before 1:1:000: percussion rendering is not yet supported`.
+- `MEI::RenderPlan::StaffEntry` is `MEI::StaffNumbering::Entry`, `MEI::RenderPlan::Item` is `MEI::WrittenItems::Item`, `MEI::LayerContainers::BEAM_LEVELS_BY_DUR` is `MEI::BeamContainers::LEVELS_BY_DUR`, and `MEI::MarkingEvents::ORNAMENTS` is `MEI::AttachedMarks::ORNAMENTS`.
 - `rexml` is now a runtime dependency, in preparation for reading MusicXML and MEI.
 - `Project#add_flow` adopts a player that a part already carries into the project's `players`, rather than leaving it out, and raises `ArgumentError` when that player belongs to another project.
 - The MusicXML and LilyPond writers render a note that crosses a barline as tied notes, one per bar, instead of raising `RenderError`. A chord ties each of its pitches, and a rest splits into consecutive rests. Fourth-species flows now render.
@@ -148,6 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The ABC parser names the line of a tie between notes of different pitches; it gave none.
 - The MEI, LilyPond, and ABC writers print an accidental on each chord member that shares a letter and octave with another under a different alteration, so F4 with F♯4 in C major shows its natural; LilyPond writes them as `<fis'! f'!>` so a later F in the bar prints correctly too.
 - The LilyPond reader reads notes carrying a forced (`!`) or cautionary (`?`) accidental sign, such as `fis'!4`, rather than refusing them.
 - Adding a tempo, meter, or key change to a flow, and growing its bars, no longer revisit every earlier change or bar, so a long flow with a change in each bar builds in linear time: 10,000 bars of tempo changes took 7.9 s and now take 0.12 s.
