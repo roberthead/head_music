@@ -42,21 +42,21 @@ module HeadMusic::MIDI
     # so a note struck on the final barline, or snapped to it, has a bar.
     def quantize(notes)
       layout = lay_out(budget.end_tick)
-      quantizer = quantizer(layout, notes, grid)
+      quantizer = quantizer_on(layout, notes, grid)
       latest = quantizer.notes.map(&:onset).max
       return [layout, quantizer] if latest < layout.end_time
 
-      grid = quantizer.grid
-      layout = lay_out(((latest + grid) * division * 4).ceil)
+      chosen_grid = quantizer.grid
+      layout = lay_out(((latest + chosen_grid) * division * 4).ceil)
       Budget.check_bars!(layout.bars.length)
-      [layout, quantizer(layout, notes, grid)]
+      [layout, quantizer_on(layout, notes, chosen_grid)]
     end
 
     def lay_out(end_tick)
       BarLayout.new(budget.time_signatures, division: division, end_tick: end_tick)
     end
 
-    def quantizer(layout, notes, grid)
+    def quantizer_on(layout, notes, grid)
       Quantizer.new(layout, notes, division: division, grid: grid)
     end
 
