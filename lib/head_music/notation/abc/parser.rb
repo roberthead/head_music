@@ -75,12 +75,9 @@ module HeadMusic::Notation::ABC
       current_state.close_slur
     end
 
-    # A level or hairpin mark on a grace note waits for its main note.
     def handle_grace(token)
       state = current_state
-      graces, decorations = grace_reader.read(token, state.pitch_builder)
-      decorations.each { |decoration| state.decorate(decoration) }
-      state.add_graces(graces)
+      state.add_graces(*grace_reader.read(token, state.pitch_builder))
     end
 
     def handle_tuplet(token)
@@ -114,16 +111,8 @@ module HeadMusic::Notation::ABC
       current_state.beams.mark_break
     end
 
-    # A tie (`-`) after a note or chord fuses it to the next note of the
-    # same pitch. The left note stays pending; the tie is only closed once
-    # its right note arrives.
     def handle_tie(token)
-      state = current_state
-      line = token.line
-      raise ParseError.new("A tie must follow a note", line_number: line, snippet: "-") unless state.after_note?
-
-      state.reject_dangling_decorations
-      state.open_tie(line)
+      current_state.open_tie(token.line)
     end
 
     # The waiting decorations are the rest's own, so they are not dangling.
@@ -145,27 +134,16 @@ module HeadMusic::Notation::ABC
       state.skip(token.length)
     end
 
-    # "&" starts the bar over, so the overlay's invisible rests can place
-    # levels where no note of the bar starts. A note tied across the bar line
-    # stays pending.
     def handle_overlay(token)
-      state = current_state
-      state.pause_notes(token.line)
-      state.start_overlay
+      current_state.start_overlay(token.line)
     end
 
     def handle_spacer(token)
-      state = current_state
-      state.ensure_not_awaiting_note(token.line)
-      state.space
+      current_state.space(token.line)
     end
 
     def handle_broken_rhythm(token)
-      state = current_state
-      line = token.line
-      state.reject_open_tie(line)
-      state.reject_dangling_decorations
-      state.break_rhythm(token.direction, line)
+      current_state.break_rhythm(token.direction, token.line)
     end
 
     def handle_bar_line(token)

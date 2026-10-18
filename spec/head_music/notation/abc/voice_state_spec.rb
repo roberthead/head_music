@@ -5,21 +5,31 @@ describe HeadMusic::Notation::ABC::VoiceState do
   subject(:state) { described_class.new(nil, nil) }
 
   describe "ties" do
+    def follow_a_note
+      state.pending_note = HeadMusic::Notation::ABC::PendingNote.new(pitches: [], length: "", scale: 1)
+    end
+
     it "is not open initially" do
       expect(state).not_to be_tie_open
     end
 
     it "opens on the line it was seen" do
+      follow_a_note
       state.open_tie(7)
       expect(state).to be_tie_open
       expect(state.tie_line).to eq 7
     end
 
     it "clears on close" do
+      follow_a_note
       state.open_tie(7)
       state.close_tie
       expect(state).not_to be_tie_open
       expect(state.tie_line).to be_nil
+    end
+
+    it "must follow a note" do
+      expect { state.open_tie(7) }.to raise_error(HeadMusic::Notation::ABC::ParseError, /must follow a note/)
     end
   end
 

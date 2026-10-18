@@ -39,8 +39,10 @@ module HeadMusic::Notation::ABC
 
     # Grace notes wait for the next note or chord, and a slur opened before
     # them starts on the first of them. Inside an open tie, where the next
-    # note is a later link, they are dropped.
-    def add_graces(graces)
+    # note is a later link, they are dropped. A level or hairpin mark on a
+    # grace note waits for its main note.
+    def add_graces(graces, decorations)
+      decorations.each { |decoration| decorate(decoration) }
       @graces.add(graces) unless tie_open?
     end
 
@@ -50,11 +52,10 @@ module HeadMusic::Notation::ABC
     # note's first link comes before an open on its next, so "(AB-)(BC)" is
     # two slurs.
     def close_slur
-      if pending_note
-        self.pending_note = pending_note.closing_slur
-      elsif voice.last_voice_event
-        @slurs.apply(voice.last_voice_event, [:close])
-      end
+      return self.pending_note = pending_note.closing_slur if pending_note
+
+      last_voice_event = voice.last_voice_event
+      @slurs.apply(last_voice_event, [:close]) if last_voice_event
     end
 
     # "(p:q:r" puts the ratio on the next r notes, chords, and rests.
@@ -93,7 +94,8 @@ module HeadMusic::Notation::ABC
     end
 
     # A spacer takes no time, and holds a level where it stands.
-    def space
+    def space(line)
+      ensure_not_awaiting_note(line)
       @decorations.place_at(mark_position)
     end
 
@@ -132,7 +134,11 @@ module HeadMusic::Notation::ABC
       @tuplets.close
     end
 
-    def start_overlay
+    # "&" starts the bar over, so the overlay's invisible rests can place
+    # levels where no note of the bar starts. A note tied across the bar line
+    # stays pending.
+    def start_overlay(line)
+      pause_notes(line)
       @overlay.start
     end
 
@@ -148,7 +154,13 @@ module HeadMusic::Notation::ABC
       @overlay.reject_music(token)
     end
 
+    # A tie (`-`) after a note or chord fuses it to the next note of the
+    # same pitch. The left note stays pending; the tie is only closed once
+    # its right note arrives.
     def open_tie(line)
+      raise ParseError.new("A tie must follow a note", line_number: line, snippet: "-") unless after_note?
+
+      reject_dangling_decorations
       @tie.open(line)
     end
 
@@ -167,6 +179,8 @@ module HeadMusic::Notation::ABC
     end
 
     def break_rhythm(direction, line)
+      reject_open_tie(line)
+      reject_dangling_decorations
       unless after_note?
         raise ParseError.new("Broken rhythm must appear between two notes", line_number: line, snippet: direction.to_s)
       end
@@ -181,11 +195,11 @@ module HeadMusic::Notation::ABC
     def defer_voice_event(pitches, length, inner_scale = ONE)
       tied = tie_open?
       @graces.drop if tied
-      note = arriving_note(pitches, length, inner_scale, beam_break: tied ? nil : @beams.next_break)
+      note = arriving_note(pitches, length, inner_scale)
       return tie_onto_pending(note) if tied
 
       flush_pending_note
-      self.pending_note = note
+      self.pending_note = note.with(beam_break: @beams.next_break)
     end
 
     # Places the pending note onto the voice, if any, carrying its authored
@@ -195,22 +209,20 @@ module HeadMusic::Notation::ABC
       return unless pending
 
       self.pending_note = nil
-      voice_event = place_next(pending.rhythmic_value(@duration_resolver), pending.pitches)
+      voice_event = place_next(pending)
       pending.carry_onto(voice_event)
-      @decorations.apply(voice_event, pending.decorations)
-      @slurs.apply(voice_event, pending.slur_marks)
-      @tuplets.place_ends(voice_event, pending.tuplet_ends, pending.tied_prefix)
+      apply_marks(voice_event, pending)
     end
 
     # Places a note, chord, or rest (nil pitches) directly onto the voice,
     # bypassing the pending-note buffer, with the decorations waiting for it.
     def place(length, pitches, scale: ONE)
       ratio, ends = @tuplets.count
-      voice_event = place_next(@duration_resolver.rhythmic_value(length, scale: scale, tuplet: ratio), pitches)
-      @decorations.apply(voice_event, @decorations.take)
-      @slurs.apply(voice_event, @slurs.take)
-      @tuplets.place_ends(voice_event, ends)
-      voice_event
+      note = PendingNote.new(
+        pitches: pitches, length: length, scale: scale, ratio: ratio, tuplet_ends: ends,
+        decorations: @decorations.take, slur_marks: @slurs.take
+      )
+      place_next(note).tap { |voice_event| apply_marks(voice_event, note) }
     end
 
     private
@@ -238,23 +250,26 @@ module HeadMusic::Notation::ABC
       @tuplets.group_closed
     end
 
-    def place_next(rhythmic_value, pitches)
+    def place_next(note)
       @invisible_rests.place
-      voice.place(voice.next_position, rhythmic_value, pitches)
+      voice.place(voice.next_position, note.rhythmic_value(@duration_resolver), note.pitches)
+    end
+
+    def apply_marks(voice_event, note)
+      @decorations.apply(voice_event, note.decorations)
+      @slurs.apply(voice_event, note.slur_marks)
+      @tuplets.place_ends(voice_event, note.tuplet_ends, note.tied_prefix)
     end
 
     def mark_position
       @overlay.cursor || cursor
     end
 
-    def arriving_note(pitches, length, inner_scale, beam_break:)
-      scale = @broken_rhythm.take_scale * inner_scale
-      decorations = @decorations.take
+    def arriving_note(pitches, length, inner_scale)
       ratio, ends = @tuplets.count
-      graces = @graces.take
       PendingNote.new(
-        pitches: pitches, length: length, scale: scale, beam_break: beam_break, decorations: decorations,
-        slur_marks: @slurs.take, ratio: ratio, tuplet_ends: ends, graces: graces
+        pitches: pitches, length: length, scale: @broken_rhythm.take_scale * inner_scale, decorations: @decorations.take,
+        slur_marks: @slurs.take, ratio: ratio, tuplet_ends: ends, graces: @graces.take
       )
     end
 
@@ -270,7 +285,8 @@ module HeadMusic::Notation::ABC
       @tie.ensure_ties(pending, link.pitches)
       prefix = pending.rhythmic_value(@duration_resolver)
       marks, markings = link.decorations.partition(&:positional?)
-      marks.each { |decoration| @decorations.place_mark(music_end + prefix, decoration) }
+      link_start = pending_end_position
+      marks.each { |decoration| @decorations.place_mark(link_start, decoration) }
       close_tie
       fixed_ends = @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix)
       self.pending_note = pending.tied_to(link.with(decorations: markings), prefix, fixed_ends)
