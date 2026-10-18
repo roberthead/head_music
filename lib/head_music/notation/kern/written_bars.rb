@@ -48,9 +48,11 @@ module HeadMusic::Notation::Kern
     # repeat; a pickup has no barline before it at all.
     def barline(bar_number)
       return if pickup?(bar_number)
-      return "=#{bar_number}#{plan.bar(bar_number).starts_repeat? ? "!|:" : "-"}" if bar_number == numbers.first
 
-      "=#{bar_number}#{barline_style(plan.bar(bar_number - 1), plan.bar(bar_number))}"
+      entered = plan.bar(bar_number)
+      return "=#{bar_number}#{entered.starts_repeat? ? "!|:" : "-"}" if bar_number == numbers.first
+
+      "=#{bar_number}#{barline_style(plan.bar(bar_number - 1), entered)}"
     end
 
     def final_barline
@@ -74,8 +76,12 @@ module HeadMusic::Notation::Kern
     end
 
     def trimmed(events)
-      events.select { |event| event.finish > pickup_start }.flat_map do |event|
-        (event.offset < pickup_start) ? SpineTokens.rests(pickup_start, event.finish) : [event]
+      start = pickup_start
+      events.flat_map do |event|
+        finish = event.finish
+        next [] unless finish > start
+
+        (event.offset < start) ? SpineTokens.rests(start, finish) : [event]
       end
     end
 
@@ -124,9 +130,7 @@ module HeadMusic::Notation::Kern
     end
 
     def dynamic_offsets(bar_number)
-      mark_positions.filter_map do |position|
-        MarkOffset.in_bar(position) if position.bar_number == bar_number
-      end
+      mark_positions.select { |position| position.bar_number == bar_number }.map { |position| MarkOffset.in_bar(position) }
     end
 
     # A hairpin ending on the final barline is closed on the last row, so it
@@ -134,7 +138,8 @@ module HeadMusic::Notation::Kern
     def mark_positions
       owners = flow.parts + flow.voices
       hairpins = owners.flat_map(&:spans).select(&:hairpin?)
-      ends = hairpins.map(&:to).reject { |position| position == flow.final_barline_position }
+      final_barline = flow.final_barline_position
+      ends = hairpins.map(&:to).reject { |position| position == final_barline }
       [*owners.flat_map(&:dynamic_events).map(&:position), *hairpins.map(&:from), *ends]
     end
 

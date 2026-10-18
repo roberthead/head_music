@@ -48,12 +48,8 @@ module HeadMusic::Notation::Kern
     end
 
     def context_rows(key, meter, tempo)
-      [
-        key && columns.kern_row { key.signature },
-        key && columns.kern_row_unless_null { key.designation },
-        meter && columns.kern_row { MeterReader.meter_field(meter) },
-        tempo && columns.kern_row { TempoReader.tempo_field(tempo) }
-      ]
+      [key&.signature, key&.designation, meter && MeterReader.meter_field(meter), tempo && TempoReader.tempo_field(tempo)]
+        .map { |field| columns.kern_row_unless_null { field } }
     end
 
     def player_name(column)
@@ -76,10 +72,8 @@ module HeadMusic::Notation::Kern
 
     # Numbered down the whole score, as Humdrum numbers staves.
     def staff_number(staff)
-      @staff_numbers ||= flow.parts.flat_map { |part| part.staff_system.staves }.each_with_index.to_h do |each_staff, index|
-        [each_staff.object_id, index + 1]
-      end
-      @staff_numbers.fetch(staff.object_id)
+      @staves ||= flow.parts.flat_map { |part| part.staff_system.staves }
+      @staves.index { |each_staff| each_staff.equal?(staff) } + 1
     end
 
     # An unauthored clef falls back to the one the other writers infer,
