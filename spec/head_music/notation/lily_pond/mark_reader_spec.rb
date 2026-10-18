@@ -167,4 +167,17 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
       expect(first.merge(second).to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sf", level: "p", span_marks: [], hairpin_marks: [])
     end
   end
+
+  describe described_class::SpanMark do
+    let(:opening) { described_class.new(kind: :slur, opening: true, id: nil) }
+    let(:closing) { described_class.new(kind: :slur, opening: false, id: nil) }
+
+    it "opens a span of its own kind only" do
+      expect([opening.opens?(:slur), opening.opens?(:phrase), closing.opens?(:slur)]).to eq [true, false, false]
+    end
+
+    it "starts from a grace note when it opens there" do
+      expect([opening.on_grace.from_grace, closing.on_grace.from_grace]).to eq [true, false]
+    end
+  end
 end

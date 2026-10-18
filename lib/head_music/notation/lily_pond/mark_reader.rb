@@ -16,6 +16,14 @@ module HeadMusic::Notation::LilyPond
       def initialize(kind:, opening:, id:, from_grace: false)
         super
       end
+
+      def opens?(kind)
+        opening && self.kind == kind
+      end
+
+      def on_grace
+        opening ? with(from_grace: true) : self
+      end
     end
 
     Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks, :hairpin_marks) do
@@ -56,11 +64,13 @@ module HeadMusic::Notation::LilyPond
     }.freeze
     # Commands that only choose how later hairpins are drawn.
     HAIRPIN_STYLE_COMMANDS = %w[crescTextCresc dimTextDim dimTextDecresc dimTextDecr crescHairpin dimHairpin].freeze
-    DIRECTIONS = %w[- ^ _].freeze
+    DIRECTION_PATTERN = /\A[-^_]\z/
     # The portato (_) and stopped (+) shorthands are read and dropped.
     SHORTHAND_PATTERN = /\A[-^_][.!>\-^_+]\z/
     HAIRPIN_PATTERN = /\A\\[<>!]\z/
     SPAN_PATTERN = /\A(?:\\=([A-Za-z0-9]+))?(\\)?([()])\z/
+    # The marks a direction sign may come before.
+    DIRECTABLE_PATTERN = Regexp.union(HAIRPIN_PATTERN, SPAN_PATTERN)
     FIELD_NAMES = {note_dynamic: "sforzando", level: "dynamic level"}.freeze
 
     # Each command's [field, key], or nil for one that is dropped.
@@ -79,85 +89,66 @@ module HeadMusic::Notation::LilyPond
 
     # Consumes every mark that follows, adding them to the marks given.
     def read(marks = NONE)
-      count = mark_token_count
-      while count
-        tokens = Array.new(count) { cursor.advance }
-        marks = add(marks, tokens.last)
-        count = mark_token_count
-      end
+      marks = read_mark(marks) while mark_token_count
       marks
     end
 
     # Consumes the one mark a command such as \after takes.
     def read_one(command)
-      count = mark_token_count
-      unless count
-        token = cursor.peek
-        raise cursor.unsupported_command(token) if token&.type == :command
-        raise cursor.unsupported_token(token) if token&.type == :unsupported
+      raise cursor.unexpected(cursor.peek, "#{command} expects a mark") unless mark_token_count
 
-        raise cursor.error("#{command} expects a mark", token || cursor.peek(-1))
-      end
-
-      tokens = Array.new(count) { cursor.advance }
-      add(NONE, tokens.last)
+      read_mark(NONE)
     end
 
     private
 
     attr_reader :cursor
 
+    def read_mark(marks)
+      cursor.advance if mark_token_count == 2
+      add(marks, cursor.advance)
+    end
+
     def mark_token_count
       token = cursor.peek
-      return 1 if shorthand?(token) || hairpin?(token) || span?(token) || command?(token)
+      return 1 if token&.is?(:unsupported, SHORTHAND_PATTERN) || directable?(token)
 
-      following = cursor.peek(1)
-      2 if direction?(token) && (command?(following) || hairpin?(following) || span?(following))
+      2 if token&.is?(:unsupported, DIRECTION_PATTERN) && directable?(cursor.peek(1))
     end
 
-    def shorthand?(token)
-      token&.type == :unsupported && token.lexeme.match?(SHORTHAND_PATTERN)
-    end
+    def directable?(token)
+      return false unless token
 
-    def hairpin?(token)
-      token&.type == :unsupported && token.lexeme.match?(HAIRPIN_PATTERN)
-    end
-
-    def span?(token)
-      token&.type == :unsupported && token.lexeme.match?(SPAN_PATTERN)
-    end
-
-    def command?(token)
-      token&.type == :command && MEANINGS_BY_COMMAND.key?(token.lexeme)
-    end
-
-    def direction?(token)
-      token&.type == :unsupported && DIRECTIONS.include?(token.lexeme)
+      token.is?(:unsupported, DIRECTABLE_PATTERN) || (token.type == :command && MEANINGS_BY_COMMAND.key?(token.lexeme))
     end
 
     def add(marks, token)
-      return marks.with(span_marks: marks.span_marks + [span_mark(token)]) if span?(token)
+      field, value = meaning(token)
+      current = field && marks.public_send(field)
+      case field
+      when nil then marks
+      when :articulations, :ornaments then marks.with(field => current | [value])
+      when :span_marks, :hairpin_marks then marks.with(field => current + [value])
+      else
+        raise cursor.error(%(A note can carry only one #{FIELD_NAMES.fetch(field)}), token) if current
 
-      field, key = meaning(token)
-      return marks unless field
-      return marks.with(field => marks.public_send(field) | [key]) if %i[articulations ornaments].include?(field)
-      return marks.with(hairpin_marks: marks.hairpin_marks + [key]) if field == :hairpin_marks
-      raise cursor.error(%(A note can carry only one #{FIELD_NAMES.fetch(field)}), token) if marks.public_send(field)
-
-      marks.with(field => key)
-    end
-
-    def span_mark(token)
-      id, phrasing, bracket = token.lexeme.match(SPAN_PATTERN).captures
-      SpanMark.new(kind: phrasing ? :phrase : :slur, opening: bracket == "(", id: id)
+        marks.with(field => value)
+      end
     end
 
     def meaning(token)
-      return MEANINGS_BY_COMMAND[token.lexeme] if token.type == :command
-      return [:hairpin_marks, HAIRPINS_BY_LEXEME.fetch(token.lexeme)] if hairpin?(token)
+      lexeme = token.lexeme
+      return MEANINGS_BY_COMMAND[lexeme] if token.type == :command
+      return [:hairpin_marks, HAIRPINS_BY_LEXEME.fetch(lexeme)] if lexeme.match?(HAIRPIN_PATTERN)
+      return [:span_marks, span_mark(lexeme)] if lexeme.match?(SPAN_PATTERN)
 
-      articulation = ARTICULATIONS_BY_SHORTHAND[token.lexeme[1]]
+      articulation = ARTICULATIONS_BY_SHORTHAND[lexeme[1]]
       articulation && [:articulations, articulation]
+    end
+
+    def span_mark(lexeme)
+      id, phrasing, bracket = lexeme.match(SPAN_PATTERN).captures
+      SpanMark.new(kind: phrasing ? :phrase : :slur, opening: bracket == "(", id: id)
     end
   end
 end

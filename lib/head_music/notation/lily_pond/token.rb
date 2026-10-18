@@ -16,5 +16,11 @@ module HeadMusic::Notation::LilyPond
     )
       super
     end
+
+    # A lexeme pattern is anything that answers ===, such as a string or a
+    # regexp.
+    def is?(type, lexeme_pattern)
+      self.type == type && lexeme_pattern === lexeme
+    end
   end
 end

@@ -20,6 +20,11 @@ module HeadMusic::Notation::LilyPond
       token
     end
 
+    # Consumes the next token if it is of the type given.
+    def accept(type)
+      advance if peek&.type == type
+    end
+
     def eos?
       @index >= @tokens.length
     end
@@ -38,7 +43,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def markup?
-      peek&.type == :command && peek.lexeme == "markup"
+      peek&.is?(:command, "markup")
     end
 
     # A markup is free text the model cannot hold: its function commands,
@@ -70,6 +75,16 @@ module HeadMusic::Notation::LilyPond
 
     def unsupported(message, token)
       UnsupportedFeatureError.new(message, line_number: token&.line, column: token&.column, snippet: token&.lexeme)
+    end
+
+    # The error for a token nothing reads where it stands: an unsupported
+    # command or construct, else the message given.
+    def unexpected(token, message)
+      case token&.type
+      when :command then unsupported_command(token)
+      when :unsupported then unsupported_token(token)
+      else error(message, token || peek(-1))
+      end
     end
 
     def unsupported_command(token)
