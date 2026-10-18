@@ -24,6 +24,11 @@ module HeadMusic::MIDI
         key.percussion?
       end
 
+      # The notes as voices of chords; a part of rests has one voice.
+      def voices
+        @voices ||= notes.empty? ? [[]] : VoiceSeparator.new(notes, percussion: percussion?).voices
+      end
+
       # A track name that only repeats the instrument's name, as MIDI
       # Export writes one for a part with no player, names no player. Case
       # counts, so "Soprano" still names the singer of a soprano part.
