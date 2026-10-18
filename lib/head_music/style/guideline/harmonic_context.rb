@@ -13,17 +13,15 @@ class HeadMusic::Style::Guideline
     end
 
     def downbeat_harmonic_intervals
-      @downbeat_harmonic_intervals ||=
-        sounding_together(
-          cantus_firmus.notes.map { |note| HeadMusic::Analysis::HarmonicInterval.new(note.voice, voice, note.position) }
-        )
+      @downbeat_harmonic_intervals ||= cantus_firmus.notes.filter_map { |note| interval_with_cantus(note.position) }
     end
 
     def harmonic_intervals
       @harmonic_intervals ||= positions.filter_map { |position| interval_with_cantus(position) }
     end
 
-    # Nil where the voice or the cantus firmus is silent.
+    # Nil where the voice or the cantus firmus is silent, so nothing sounds
+    # together.
     def interval_with_cantus(position)
       interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, position)
       interval if interval.notes.length == 2
@@ -35,11 +33,6 @@ class HeadMusic::Style::Guideline
 
     def consonant_with_cantus_at?(position)
       interval_with_cantus(position)&.consonance?(:two_part_harmony) || false
-    end
-
-    # Fewer than two notes means one voice is silent, so nothing sounds together.
-    def sounding_together(intervals)
-      intervals.reject { |interval| interval.notes.length < 2 }
     end
 
     # Every moment any voice attacks, so an interval is measured wherever one
