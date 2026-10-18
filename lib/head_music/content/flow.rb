@@ -207,18 +207,7 @@ class HeadMusic::Content::Flow
   end
 
   def to_h
-    {
-      "schema_version" => SCHEMA_VERSION,
-      "name" => name,
-      "composer" => composer&.to_s,
-      "origin" => origin&.to_s,
-      "work" => work&.to_h,
-      "source" => source&.to_h,
-      "timeline" => timeline_to_h,
-      "parts" => parts_to_h,
-      "bars" => @bars.serialize,
-      "comments" => comments.map(&:to_h)
-    }.merge(part_players_to_h)
+    HashSerializer.new(self, @bars).to_h
   end
 
   def timeline_to_h
@@ -246,28 +235,5 @@ class HeadMusic::Content::Flow
   def ensure_attributes(name, key_signature, meter, tempo)
     @name = name || DEFAULT_NAME
     @timeline = Timeline.new(key_signature: key_signature, meter: meter, tempo: tempo)
-  end
-
-  # A player is written once and each part points at it by index, so two parts
-  # sharing one chair still share it when read back, and two chairs that happen
-  # to share a name stay two. The key is not "players" because a project
-  # document already uses that name for its own indexes.
-  def part_players
-    parts.filter_map(&:player).uniq(&:object_id)
-  end
-
-  def part_players_to_h
-    players = part_players
-    return {} if players.empty?
-
-    {"part_players" => players.map { |player| {"name" => player.name} }}
-  end
-
-  def parts_to_h
-    players = part_players
-    parts.map do |part|
-      index = part.player && players.index { |player| player.equal?(part.player) }
-      index ? part.to_h.merge("player" => index) : part.to_h
-    end
   end
 end
