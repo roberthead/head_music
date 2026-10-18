@@ -13,6 +13,10 @@ describe HeadMusic::Style::Guidelines::DissonanceFigureDetection do
         @notes = notes
       end
 
+      def melodic_intervals
+        notes.each_cons(2).map { |pair| HeadMusic::Analysis::MelodicInterval.new(*pair) }
+      end
+
       def dissonant_with_cantus?(_note)
         false
       end

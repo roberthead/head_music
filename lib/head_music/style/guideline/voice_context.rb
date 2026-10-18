@@ -26,6 +26,14 @@ class HeadMusic::Style::Guideline
       @lower_voices ||= unsorted_lower_voices.sort_by(&:lowest_pitch).reverse
     end
 
+    def downbeat_position?(position)
+      cantus_firmus_positions.include?(position.to_s)
+    end
+
+    def cantus_firmus_positions
+      @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |note| note.position.to_s })
+    end
+
     def bass_voice?
       lower_voices.empty?
     end

@@ -23,13 +23,9 @@ class HeadMusic::Style::Guidelines::FloridDissonanceTreatment < HeadMusic::Style
   end
 
   def properly_treated?(note)
-    return false if on_strong_beat?(note)
+    return false if downbeat_position?(note.position)
 
     passing_tone?(note) || neighbor_tone?(note) ||
       cambiata_dissonance?(note) || double_neighbor_member?(note)
-  end
-
-  def on_strong_beat?(note)
-    cantus_firmus_positions.include?(note.position.to_s)
   end
 end

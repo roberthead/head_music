@@ -2,17 +2,14 @@
 module HeadMusic::Style::Guidelines; end
 
 # Shared detection of ornamental dissonance figures (nota cambiata, double
-# neighbor). Expects the including class to provide #notes, #cantus_firmus, #voice.
+# neighbor). Expects the including class to provide #notes, #melodic_intervals,
+# #cantus_firmus, #voice.
 module HeadMusic::Style::Guidelines::DissonanceFigureDetection
   private
 
   def dissonant_with_cantus?(note)
     interval = HeadMusic::Analysis::HarmonicInterval.new(cantus_firmus, voice, note.position)
     interval.notes.length == 2 && interval.dissonance?(:two_part_harmony)
-  end
-
-  def cantus_firmus_positions
-    @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |note| note.position.to_s })
   end
 
   def passing_tone?(note)
@@ -24,12 +21,9 @@ module HeadMusic::Style::Guidelines::DissonanceFigureDetection
   end
 
   def stepwise_figure?(note, same_direction:)
-    prev_note = preceding_note(note)
-    next_note = following_note(note)
-    return false unless prev_note && next_note
+    approach, departure = figure_intervals(figure_start(note, 1), 2)
+    return false unless approach
 
-    approach = melodic_interval_between(prev_note, note)
-    departure = melodic_interval_between(note, next_note)
     approach.step? && departure.step? && (approach.direction == departure.direction) == same_direction
   end
 
@@ -38,68 +32,52 @@ module HeadMusic::Style::Guidelines::DissonanceFigureDetection
   # then notes 3-4-5 proceed stepwise in the opposite direction.
   # Notes 1, 3, and 5 must be consonant with the CF.
   def cambiata_dissonance?(note)
-    index = notes.index(note)
-    return false unless index
+    start = figure_start(note, 1)
+    cambiata_shape?(start) &&
+      all_consonant_with_cantus?(*notes.values_at(start, start + 2, start + 4))
+  end
 
-    cambiata_as_note_2?(index)
+  def cambiata_shape?(start)
+    approach, leap, *steps_back = figure_intervals(start, 4)
+    return false unless approach&.step? && leap.number == 3
+
+    leap_direction = leap.direction
+    approach.direction == leap_direction &&
+      steps_back.all? { |step| step.step? && step.direction != leap_direction }
   end
 
   def double_neighbor_member?(note)
-    index = notes.index(note)
-    return false unless index
-
-    double_neighbor_figure?(index, offset: 1) || double_neighbor_figure?(index, offset: 2)
-  end
-
-  def cambiata_as_note_2?(index)
-    return false if index < 1 || index + 3 > notes.length - 1
-
-    n1, n2, n3, n4, n5 = notes[index - 1, 5]
-    cambiata_shape?(n1, n2, n3, n4, n5) && all_consonant_with_cantus?(n1, n3, n5)
-  end
-
-  def cambiata_shape?(n1, n2, n3, n4, n5)
-    approach = melodic_interval_between(n1, n2)
-    leap = melodic_interval_between(n2, n3)
-    return false unless approach.step? && leap.number == 3 && approach.direction == leap.direction
-
-    steps_back_from?(leap, melodic_interval_between(n3, n4), melodic_interval_between(n4, n5))
-  end
-
-  def steps_back_from?(leap, step_back_1, step_back_2)
-    step_back_1.step? && step_back_2.step? &&
-      step_back_1.direction != leap.direction &&
-      step_back_2.direction != leap.direction
+    [1, 2].any? { |before| double_neighbor_figure?(figure_start(note, before)) }
   end
 
   # Double neighbor: a four-note figure within one bar.
   # Beats 1 and 4 are the same pitch (consonant), beats 2 and 3 are
   # upper and lower neighbors connected by a leap of a third.
-  def double_neighbor_figure?(index, offset:)
-    start = index - offset
-    return false if start < 0 || start + 3 > notes.length - 1
+  def double_neighbor_figure?(start)
+    first_step, leap, last_step = figure_intervals(start, 3)
+    return false unless first_step&.step? && leap.number == 3 && last_step.step?
 
-    n1, n2, n3, n4 = notes[start, 4]
-    double_neighbor_shape?(n1, n2, n3, n4) &&
-      n1.pitch == n4.pitch &&
-      all_consonant_with_cantus?(n1, n4)
+    opening, closing = notes.values_at(start, start + 3)
+    opening.pitch == closing.pitch && all_consonant_with_cantus?(opening, closing)
   end
 
-  def double_neighbor_shape?(n1, n2, n3, n4)
-    melodic_interval_between(n1, n2).step? &&
-      melodic_interval_between(n2, n3).number == 3 &&
-      melodic_interval_between(n3, n4).step?
+  # The index of the note +before+ notes ahead of +note+, nil where that
+  # runs off the start of the line.
+  def figure_start(note, before)
+    index = notes.index(note)
+    index - before if index && index >= before
+  end
+
+  # The melodic intervals of a figure beginning at note +start+, or none
+  # where the figure would run off either end of the line.
+  def figure_intervals(start, count)
+    return [] unless start
+
+    intervals = melodic_intervals[start, count]
+    (intervals.length == count) ? intervals : []
   end
 
   def all_consonant_with_cantus?(*checked_notes)
-    checked_notes.all? { |note| consonant_with_cantus?(note) }
-  end
-
-  def consonant_with_cantus?(note)
-    !dissonant_with_cantus?(note)
-  end
-
-  def melodic_interval_between(note1, note2)
-    HeadMusic::Analysis::MelodicInterval.new(note1, note2)
+    checked_notes.none? { |note| dissonant_with_cantus?(note) }
   end
 end

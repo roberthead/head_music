@@ -37,14 +37,6 @@ class HeadMusic::Style::Guidelines::NoParallelPerfectAcrossBarline < HeadMusic::
     notes.map(&:position).reject { |pos| downbeat_position?(pos) }
   end
 
-  def downbeat_position?(position)
-    cantus_firmus_positions.include?(position.to_s)
-  end
-
-  def cantus_firmus_positions
-    @cantus_firmus_positions ||= Set.new(cantus_firmus.notes.map { |n| n.position.to_s })
-  end
-
   def next_downbeat_interval(weak_interval)
     next_cf_note = cantus_firmus.notes.detect { |n| n.position > weak_interval.position }
     return unless next_cf_note

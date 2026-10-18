@@ -24,8 +24,4 @@ class HeadMusic::Style::Guidelines::WeakBeatDissonanceTreatment < HeadMusic::Sty
   def weak_beat_notes
     notes.reject { |note| downbeat_position?(note.position) }
   end
-
-  def downbeat_position?(position)
-    cantus_firmus_positions.include?(position.to_s)
-  end
 end
