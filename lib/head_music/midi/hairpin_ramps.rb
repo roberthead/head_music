@@ -77,13 +77,11 @@ module HeadMusic::MIDI
 
     # The first level placed at each position, the voice's over the part's.
     def placed_levels
-      @placed_levels ||= (@voice.dynamic_events + part.dynamic_events).each_with_object({}) do |event, levels|
-        levels[event.position] = event.level unless levels.key?(event.position)
-      end
+      @placed_levels ||= (@voice.dynamic_events + part.dynamic_events).uniq(&:position).to_h { |event| [event.position, event.level] }
     end
 
     def hairpin_pieces
-      cuts = (@voice.dynamic_events + part.dynamic_events).map(&:position).uniq.sort
+      cuts = placed_levels.keys.sort
       pieces = owned_hairpins.flat_map do |hairpin, owner_rank|
         HeadMusic::Notation::HairpinSegments.pieces(hairpin, cuts).map { |piece| [hairpin, owner_rank, piece] }
       end
@@ -91,8 +89,9 @@ module HeadMusic::MIDI
     end
 
     def owned_hairpins
-      @voice.spans.select(&:hairpin?).map { |hairpin| [hairpin, LevelMarks::VOICE_RANK] } +
-        part.spans.select(&:hairpin?).map { |hairpin| [hairpin, LevelMarks::PART_RANK] }
+      [[@voice, LevelMarks::VOICE_RANK], [part, LevelMarks::PART_RANK]].flat_map do |owner, rank|
+        owner.spans.select(&:hairpin?).map { |hairpin| [hairpin, rank] }
+      end
     end
 
     def beyond(level, kind)
