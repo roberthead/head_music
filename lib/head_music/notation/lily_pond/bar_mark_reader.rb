@@ -22,8 +22,8 @@ module HeadMusic::Notation::LilyPond
     LETTERS = (("A".."Z").to_a - ["I"]).freeze
 
     def self.letters(number)
-      prefix = (number > LETTERS.length) ? letters((number - 1) / LETTERS.length) : ""
-      prefix + LETTERS[(number - 1) % LETTERS.length]
+      quotient, remainder = (number - 1).divmod(LETTERS.length)
+      (quotient.positive? ? letters(quotient) : "") + LETTERS[remainder]
     end
 
     def initialize(cursor)
@@ -61,21 +61,24 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_mark(command, stream)
-      token = cursor.peek
-      case token&.type
-      when :string then BarMark.new(:rehearsal_mark, cursor.advance.lexeme)
-      when :number then numbered_mark(stream, cursor.advance.lexeme.to_i)
-      when :command then read_mark_command(stream)
-      else raise cursor.error("\\mark expects \\default, a number, or a string", token || command)
-      end
+      return cursor.skip_markup if cursor.markup?
+
+      token = cursor.advance
+      return BarMark.new(:rehearsal_mark, token.lexeme) if token&.type == :string
+      return numbered_mark(stream, token.lexeme.to_i) if token&.type == :number
+      return numbered_mark(stream, nil) if token&.is?(:command, "default")
+
+      raise cursor.error("\\mark expects \\default, a number, or a string", token || command)
     end
 
     # A \textEndMark is how the writer puts a Fine before the last bar, and
     # the words of any other navigation read the same as a \jump's.
     def read_closing_text(command)
-      return cursor.skip_markup if cursor.markup?
+      text = quoted_text("\\#{command.lexeme} expects a quoted instruction")&.strip
+      text && closing_mark(text)
+    end
 
-      text = cursor.expect(:string, "\\#{command.lexeme} expects a quoted instruction").lexeme.strip
+    def closing_mark(text)
       return BarMark.new(:to_coda, true) if text.casecmp?(TO_CODA)
       return BarMark.new(:fine, true) if text.casecmp?(FINE)
 
@@ -84,19 +87,13 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_section_label
-      return cursor.skip_markup if cursor.markup?
-
-      BarMark.new(:rehearsal_mark, cursor.expect(:string, "\\sectionLabel expects a quoted label").lexeme)
+      label = quoted_text("\\sectionLabel expects a quoted label")
+      label && BarMark.new(:rehearsal_mark, label)
     end
 
-    def read_mark_command(stream)
-      return cursor.skip_markup if cursor.markup?
-
-      token = cursor.peek
-      raise cursor.error("\\mark expects \\default, a number, or a string", token) unless token.lexeme == "default"
-
-      cursor.advance
-      numbered_mark(stream, nil)
+    # The words of a string, or nil for a markup, which is dropped.
+    def quoted_text(message)
+      cursor.markup? ? cursor.skip_markup : cursor.expect(:string, message).lexeme
     end
 
     # The letter a \mark \default or a numbered \mark prints, counted per
@@ -109,8 +106,7 @@ module HeadMusic::Notation::LilyPond
 
     def read_sign(command, attribute)
       token = cursor.advance
-      return BarMark.new(attribute, true) if token&.type == :number && token.lexeme.to_i.positive?
-      return BarMark.new(attribute, true) if token&.type == :command && token.lexeme == "default"
+      return BarMark.new(attribute, true) if (token&.type == :number && token.lexeme.to_i.positive?) || token&.is?(:command, "default")
 
       raise cursor.error("\\#{command.lexeme} expects \\default or a number", token || command)
     end
@@ -121,12 +117,11 @@ module HeadMusic::Notation::LilyPond
       sign = sign_glyph
       if sign
         3.times { cursor.advance }
-        return BarMark.new(sign, true)
+        BarMark.new(sign, true)
+      else
+        quoted_text("\\#{command.lexeme} expects a string or a markup")
+        nil
       end
-      return cursor.skip_markup if cursor.markup?
-
-      cursor.expect(:string, "\\#{command.lexeme} expects a string or a markup")
-      nil
     end
 
     def sign_glyph
