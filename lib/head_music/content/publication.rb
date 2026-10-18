@@ -12,15 +12,7 @@ class HeadMusic::Content::Publication
 
   def self.from_h(hash)
     values = hash.transform_keys(&:to_s)
-    new(
-      title: values["title"],
-      edition: values["edition"],
-      year: values["year"],
-      publisher: values["publisher"],
-      abbreviation: values["abbreviation"],
-      notes: values["notes"],
-      credits: HeadMusic::Content::Credits.from_h(values["credits"], level: :publication)
-    )
+    new(**FIELDS.to_h { |field| [field, values[field.to_s]] }, credits: values["credits"])
   end
 
   def initialize(title:, edition: nil, year: nil, publisher: nil, abbreviation: nil, notes: nil, credits: [])
@@ -30,7 +22,7 @@ class HeadMusic::Content::Publication
     @publisher = publisher
     @abbreviation = abbreviation
     @notes = notes
-    @credits = ensure_credits(credits)
+    @credits = HeadMusic::Content::Credits.new(:publication, credits)
     freeze
   end
 
@@ -43,15 +35,7 @@ class HeadMusic::Content::Publication
   end
 
   def to_h
-    {
-      "title" => title,
-      "edition" => edition,
-      "year" => year,
-      "publisher" => publisher,
-      "abbreviation" => abbreviation,
-      "notes" => notes,
-      "credits" => credits.to_h
-    }
+    FIELDS.to_h { |field| [field.to_s, public_send(field)] }.merge("credits" => credits.to_h)
   end
 
   # Compared on the publication's own fields, so that a source restored from a
@@ -69,13 +53,5 @@ class HeadMusic::Content::Publication
 
   def values
     FIELDS.map { |field| public_send(field) } + [credits]
-  end
-
-  private
-
-  def ensure_credits(credits)
-    return credits if credits.is_a?(HeadMusic::Content::Credits) && credits.level == :publication
-
-    HeadMusic::Content::Credits.new(:publication, credits)
   end
 end

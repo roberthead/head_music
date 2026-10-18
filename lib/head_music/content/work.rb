@@ -5,16 +5,11 @@ module HeadMusic::Content; end
 # of it. A Flow may cite a Work, or cite none.
 HeadMusic::Content::Work = Data.define(:title, :catalog_number, :year, :credits) do
   def self.from_h(hash)
-    new(
-      title: hash["title"],
-      catalog_number: hash["catalog_number"],
-      year: hash["year"],
-      credits: HeadMusic::Content::Credits.from_h(hash["credits"], level: :work)
-    )
+    new(**members.to_h { |member| [member, hash[member.to_s]] })
   end
 
   def initialize(title:, catalog_number: nil, year: nil, credits: [])
-    super(title: title, catalog_number: catalog_number, year: year, credits: ensure_credits(credits))
+    super(title: title, catalog_number: catalog_number, year: year, credits: HeadMusic::Content::Credits.new(:work, credits))
   end
 
   # Joined with a comma rather than translated: the string lands in ABC,
@@ -33,19 +28,6 @@ HeadMusic::Content::Work = Data.define(:title, :catalog_number, :year, :credits)
   end
 
   def to_h
-    {
-      "title" => title,
-      "catalog_number" => catalog_number,
-      "year" => year,
-      "credits" => credits.to_h
-    }
-  end
-
-  private
-
-  def ensure_credits(credits)
-    return credits if credits.is_a?(HeadMusic::Content::Credits) && credits.level == :work
-
-    HeadMusic::Content::Credits.new(:work, credits)
+    super.transform_keys(&:to_s).merge("credits" => credits.to_h)
   end
 end
