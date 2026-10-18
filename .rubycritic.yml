@@ -1,0 +1,7 @@
+paths:
+  - lib
+formats:
+  - html
+  - json
+minimum_score: 83
+no_browser: true

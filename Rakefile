@@ -30,9 +30,16 @@ end
 desc "Run only the specs checked against outside tools and files, each missing one skipping with how to set it up"
 RSpec::Core::RakeTask.new(:oracles) { ENV["ORACLES"] = "1" }
 
-desc "Run RubyCritic code quality analysis"
+desc "Run RubyCritic code quality analysis, failing below .rubycritic.yml's minimum score or on any file graded D or F"
 task :rubycritic do
-  sh "rubycritic lib"
+  require "json"
+  sh "rubycritic"
+  report = JSON.parse(File.read("tmp/rubycritic/report.json"))
+  failing = report["analysed_modules"].select { |file| %w[D F].include?(file["rating"]) }
+  next if failing.empty?
+
+  failing.each { |file| warn format("%s %5.2f %s", file["rating"], file["cost"], file["path"]) }
+  abort "RubyCritic graded #{failing.length} file(s) below C"
 end
 
 task default: :spec
