@@ -95,9 +95,7 @@ class HeadMusic::Content::Flow
     # except that starts_repeat= takes anything, so the flags are checked here.
     def bar_field(field, value)
       return bar_jump(value) if field == "jump"
-      if BAR_FLAGS.include?(field) && ![true, false].include?(value)
-        raise ArgumentError, "must be true or false, got #{value.inspect}"
-      end
+      return boolean_value(value) if BAR_FLAGS.include?(field)
 
       value
     end
@@ -129,9 +127,11 @@ class HeadMusic::Content::Flow
 
     def player(value, players, path)
       return nil if value.nil?
-      return players[value] if value.is_a?(Integer) && value.between?(0, players.length - 1)
 
-      raise ArgumentError, "#{path}: unknown player index #{value.inspect} (#{players.length} part players)"
+      count = players.length
+      return players[value] if value.is_a?(Integer) && value.between?(0, count - 1)
+
+      raise ArgumentError, "#{path}: unknown player index #{value.inspect} (#{count} part players)"
     end
 
     private
@@ -177,11 +177,10 @@ class HeadMusic::Content::Flow
 
     def dynamic_event(value, path)
       ensure_kind!(value, Hash, "dynamic event", path)
-      position = position(value["position"], path)
-      raise ArgumentError, "#{path}: a dynamic event needs a position" if position.nil?
-
-      level = catalog_value(value["level"], HeadMusic::Rudiment::Dynamic, path)
-      raise ArgumentError, "#{path}: level must be a dynamic level, got #{value["level"].inspect}" unless level.level?
+      position = position(value["position"], path) || raise(ArgumentError, "#{path}: a dynamic event needs a position")
+      raw_level = value["level"]
+      level = catalog_value(raw_level, HeadMusic::Rudiment::Dynamic, path)
+      raise ArgumentError, "#{path}: level must be a dynamic level, got #{raw_level.inspect}" unless level.level?
 
       [position, level]
     end
@@ -189,22 +188,27 @@ class HeadMusic::Content::Flow
     def span(value, path)
       ensure_kind!(value, Hash, "span", path)
       kind = catalog_value(value["kind"], HeadMusic::Rudiment::SpanKind, "#{path}.kind")
-      ends = %w[from to].map do |key|
-        position(value[key], "#{path}.#{key}") || raise(ArgumentError, "#{path}: a span needs a #{key} position")
-      end
-      from_grace = value.fetch("from_grace", false)
-      raise ArgumentError, "#{path}.from_grace: must be true or false, got #{from_grace.inspect}" unless [true, false].include?(from_grace)
+      from_grace = boolean_value(value.fetch("from_grace", false), "#{path}.from_grace: ")
 
-      [kind, *ends, from_grace]
+      [kind, *ends(value, "span", path), from_grace]
     end
 
     def tuplet(value, path)
       ensure_kind!(value, Hash, "tuplet", path)
-      ends = %w[from to].map do |key|
-        position(value[key], "#{path}.#{key}") || raise(ArgumentError, "#{path}: a tuplet needs a #{key} position")
-      end
       unit = value["unit"]
-      [*ends, unit && rhythmic_value(unit, "#{path}.unit")]
+      [*ends(value, "tuplet", path), unit && rhythmic_value(unit, "#{path}.unit")]
+    end
+
+    def ends(value, label, path)
+      %w[from to].map do |key|
+        position(value[key], "#{path}.#{key}") || raise(ArgumentError, "#{path}: a #{label} needs a #{key} position")
+      end
+    end
+
+    def boolean_value(value, prefix = "")
+      raise ArgumentError, "#{prefix}must be true or false, got #{value.inspect}" unless [true, false].include?(value)
+
+      value
     end
   end
 end

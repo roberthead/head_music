@@ -8,10 +8,15 @@ class HeadMusic::Content::Flow
   # input raises ArgumentError with path context instead of silently
   # deserializing wrong.
   class Deserializer
-    def initialize(hash)
+    # A document's keys are read as strings, however it was written.
+    def self.document(hash)
       raise ArgumentError, "expected a Hash, got #{hash.class}" unless hash.is_a?(Hash)
 
-      @hash = hash.deep_transform_keys(&:to_s)
+      hash.deep_transform_keys(&:to_s)
+    end
+
+    def initialize(hash)
+      @hash = Deserializer.document(hash)
       validate_schema_version
     end
 
@@ -41,12 +46,18 @@ class HeadMusic::Content::Flow
     def build_base_flow
       HeadMusic::Content::Flow.new(
         name: hash["name"],
-        key_signature: values.key_signature(timeline_hash["key_signature"], timeline_path("key_signature")),
-        meter: values.meter(timeline_hash["meter"], timeline_path("meter")),
-        tempo: values.tempo(timeline_hash["tempo"], timeline_path("tempo")),
+        key_signature: opening_value(:key_signature),
+        meter: opening_value(:meter),
+        tempo: opening_value(:tempo),
         composer: hash["composer"],
         origin: hash["origin"]
       )
+    end
+
+    # Each opening timeline value is validated by the SchemaValues method of
+    # the same name.
+    def opening_value(key)
+      values.public_send(key, timeline_hash[key.to_s], timeline_path(key))
     end
 
     def bar_hashes
@@ -62,29 +73,43 @@ class HeadMusic::Content::Flow
     end
 
     def build_voice_events(voice, voice_hash, voice_path)
-      Array(voice_hash["voice_events"]).each_with_index do |voice_event_hash, voice_event_index|
-        path = "#{voice_path}.voice_events[#{voice_event_index}]"
-        voice_event = voice.place(
-          values.position(voice_event_hash["position"], path),
-          values.rhythmic_value(voice_event_hash["rhythmic_value"], path),
-          values.voice_event_sounds(voice_event_hash, path)
-        )
-        voice_event.beam_break_before = voice_event_hash["beam_break_before"] if voice_event_hash.key?("beam_break_before")
-        syllables = values.voice_event_syllables(voice_event_hash, path)
-        raise ArgumentError, "#{path}: a rest cannot carry syllables" if voice_event.rest? && syllables.any?
-
-        syllables.each do |syllable|
-          voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
-        end
-        apply_markings(voice_event, voice_event_hash, path)
-        add_grace_notes(voice_event, voice_event_hash, path)
+      Array(voice_hash["voice_events"]).each_with_index do |voice_event_hash, index|
+        build_voice_event(voice, voice_event_hash, "#{voice_path}.voice_events[#{index}]")
       end
+    end
+
+    def build_voice_event(voice, voice_event_hash, path)
+      voice_event = voice.place(
+        values.position(voice_event_hash["position"], path),
+        values.rhythmic_value(voice_event_hash["rhythmic_value"], path),
+        values.voice_event_sounds(voice_event_hash, path)
+      )
+      voice_event.beam_break_before = voice_event_hash["beam_break_before"] if voice_event_hash.key?("beam_break_before")
+      sing_syllables(voice_event, voice_event_hash, path)
+      apply_markings(voice_event, voice_event_hash, path)
+      add_grace_notes(voice_event, voice_event_hash, path)
+    end
+
+    def sing_syllables(voice_event, voice_event_hash, path)
+      syllables = values.voice_event_syllables(voice_event_hash, path)
+      return if syllables.empty?
+
+      reject_rest(voice_event, "syllables", path)
+      syllables.each do |syllable|
+        voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
+      end
+    end
+
+    # A rest would refuse these itself, but without the document path.
+    def reject_rest(voice_event, carried, path)
+      raise ArgumentError, "#{path}: a rest cannot carry #{carried}" if voice_event.rest?
     end
 
     def add_grace_notes(voice_event, voice_event_hash, path)
       grace_notes = values.grace_notes(voice_event_hash["grace_notes"], path)
       return if grace_notes.empty?
-      raise ArgumentError, "#{path}: a rest cannot carry grace notes" if voice_event.rest?
+
+      reject_rest(voice_event, "grace notes", path)
 
       each_placed(grace_notes, "grace_notes", path) do |sounds, rhythmic_value, options|
         voice_event.add_grace_note(sounds, rhythmic_value, **options)
@@ -103,7 +128,7 @@ class HeadMusic::Content::Flow
       ornaments = values.catalog_keys(voice_event_hash["ornaments"], HeadMusic::Rudiment::Ornament, "ornaments", path)
       note_dynamic = values.note_dynamic(voice_event_hash["note_dynamic"], "#{path}.note_dynamic")
       return if articulations.empty? && ornaments.empty? && note_dynamic.nil?
-      raise ArgumentError, "#{path}: a rest cannot carry articulations, ornaments, or a note dynamic" if voice_event.rest?
+      reject_rest(voice_event, "articulations, ornaments, or a note dynamic", path)
 
       voice_event.articulate(*articulations).embellish(*ornaments)
       voice_event.note_dynamic = note_dynamic
@@ -128,8 +153,8 @@ class HeadMusic::Content::Flow
     def each_placed(items, label, path)
       items.each_with_index do |item, index|
         yield(*item)
-      rescue ArgumentError => e
-        raise ArgumentError, "#{path}.#{label}[#{index}]: #{e.message}"
+      rescue ArgumentError => error
+        raise ArgumentError, "#{path}.#{label}[#{index}]: #{error.message}"
       end
     end
 
@@ -138,8 +163,8 @@ class HeadMusic::Content::Flow
         bar = flow.bars(bar_number).last
         bar_hash.slice(*SchemaValues::BAR_FIELDS).each do |field, value|
           bar.public_send(:"#{field}=", values.bar_field(field, value))
-        rescue ArgumentError => e
-          raise ArgumentError, "#{path}.#{field}: #{e.message}"
+        rescue ArgumentError => error
+          raise ArgumentError, "#{path}.#{field}: #{error.message}"
         end
       end
     end
