@@ -1,3 +1,5 @@
+require_relative "note_lines"
+
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Serializes the grace notes before a note event as <note> elements that
@@ -7,7 +9,7 @@ module HeadMusic::Notation::MusicXML
   # note or the main note, and a slur from the grace notes starts on the
   # first of them.
   class GraceWriter
-    include HeadMusic::Notation::XmlText
+    include NoteLines
 
     def initialize(plan)
       @plan = plan
@@ -57,38 +59,21 @@ module HeadMusic::Notation::MusicXML
         *(chord ? ["#{INDENT * 4}<chord/>"] : []),
         *PitchWriter.lines(pitch),
         *tie_lines("tie", 4, ties),
-        voice_number && "#{INDENT * 4}<voice>#{voice_number}</voice>",
+        number_line("voice", voice_number),
         "#{INDENT * 4}<type>#{type_for(rhythmic_value)}</type>",
         *Array.new(rhythmic_value.dots) { "#{INDENT * 4}<dot/>" },
-        staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>",
+        number_line("staff", staff_number),
         *notation_lines(grace, ties, chord: chord, slurs: slurs),
         "#{INDENT * 3}</note>"
       ].compact
     end
 
-    def tie_lines(tag, depth, ties)
-      %i[stop start].filter_map { |type| %(#{INDENT * depth}<#{tag} type="#{type}"/>) if ties[type] }
-    end
-
     def notation_lines(grace, ties, chord:, slurs:)
-      lines = [
+      notations_lines([
         *tie_lines("tied", 5, ties),
-        *slurs.map { |number| %(#{INDENT * 5}<slur type="start" number="#{number}"/>) },
-        *(chord ? [] : articulation_lines(grace.articulations))
-      ]
-      return [] if lines.empty?
-
-      ["#{INDENT * 4}<notations>", *lines, "#{INDENT * 4}</notations>"]
-    end
-
-    def articulation_lines(articulations)
-      return [] if articulations.empty?
-
-      [
-        "#{INDENT * 5}<articulations>",
-        *articulations.map { |articulation| "#{INDENT * 6}<#{MarkingElements.articulation_element(articulation)}/>" },
-        "#{INDENT * 5}</articulations>"
-      ]
+        *slurs.map { |number| slur_line("start", number) },
+        *(chord ? [] : marking_group_lines("articulations", grace.articulations, MarkingElements.method(:articulation_element)))
+      ])
     end
 
     def type_for(rhythmic_value)
