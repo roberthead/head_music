@@ -5,20 +5,13 @@ module HeadMusic::Notation::MEI
   # <bTrem>, whose note or chord reads alone, and <fTrem>, whose members
   # read in sequence at their own @dur. The tremolo itself is skipped.
   #
-  # A <note> or <chord> takes its @dur, else its chord's, else for a chord
-  # the @dur its notes all share, else the @dur.default in force; with
-  # none, it raises. A <tuplet>, or a
-  # <tupletSpan> through TupletSpans, scales the entries in it, and each is
-  # a run to group. A grace note takes no time and no tuplet ratio, and one
-  # with no @dur is an eighth. A @cue note is a rest, and a cue grace note
-  # is dropped. <rest> and <space> are rests of their length, one of none
+  # A <note> or <chord> takes its duration as DurationReading reads it. A
+  # <tuplet>, or a <tupletSpan> through TupletSpans, scales the entries in
+  # it, and each is a run to group. A grace note takes no time and no
+  # tuplet ratio. A @cue note is a rest, and a cue grace note is dropped. <rest> and <space> are rests of their length, one of none
   # taking what OpenSpaces gives it, and <mRest>, <mSpace>, and
-  # <multiRest> fill their bars. A <clef> before the first entry is the
-  # layer's opening clef, and one after the last is its closing clef, as
-  # MuseScore writes a change at the end of the bar before it. One in
-  # between is skipped, as are <barLine> and every element the reader does
-  # not use. A <keySig> before the first entry is the layer's opening key;
-  # one after it raises, since skipping it would misspell what follows.
+  # <multiRest> fill their bars. LayerSigns reads its <clef>s and <keySig>.
+  # <barLine> and every element the reader does not use are skipped.
   # Measure repeats raise, since what they repeat is no music of their own.
   class LayerReader
     include XmlReading
@@ -66,8 +59,8 @@ module HeadMusic::Notation::MEI
     end
 
     # +run+ is the <tuplet> run its entries join.
-    Context = Data.define(:grace, :slashed, :chord, :ratio, :run)
-    PLAIN = Context.new(grace: false, slashed: false, chord: nil, ratio: nil, run: nil)
+    Context = Data.define(:grace, :slashed, :ratio, :run)
+    PLAIN = Context.new(grace: false, slashed: false, ratio: nil, run: nil)
 
     REPEATS = %w[mRpt mRpt2 beatRpt halfmRpt multiRpt].freeze
     CONTAINERS = %w[beam tuplet bTrem fTrem].freeze
@@ -78,22 +71,20 @@ module HeadMusic::Notation::MEI
       @editorial = editorial
       @staff_number = staff_number
       @tuplets = tuplets
-      @duration_default = duration_default
       @where = where
+      @durations = DurationReading.new(editorial, duration_default, **where)
       @number = AttributeValues.read(layer, "n", **where, element: layer) || 1
       @cursor = 0
       @extent = nil
       @entries = []
-      @opening_clef = nil
-      @last_clef = nil
-      @opening_key = nil
+      @signs = LayerSigns.new(**where)
     end
 
     def read
       walk(@layer, PLAIN, 1)
       Content.new(
         number: @number, element: @layer, staff_number: @staff_number, entries: @entries, extent: @extent,
-        opening_clef: @opening_clef, closing_clef: closing_clef, occurrence: 0, opening_key: @opening_key
+        opening_clef: @signs.opening_clef, closing_clef: @signs.closing_clef(@entries.length), occurrence: 0, opening_key: @signs.opening_key
       )
     end
 
@@ -108,15 +99,15 @@ module HeadMusic::Notation::MEI
     def read_child(child, context, depth)
       case child.name
       when "note" then add_sounding(:note, child, [child], context)
-      when "chord" then add_sounding(:chord, child, chord_notes(child), context.with(chord: child))
+      when "chord" then add_sounding(:chord, child, chord_notes(child), context)
       when "rest", "space" then add_rest(child, context)
       when "mRest" then add_fill(:m_rest, child)
       when "mSpace" then add_fill(:m_space, child)
       when "multiRest" then add_fill(:multi_rest, child, bars: value(child, "num") || 1)
       when "graceGrp" then walk(child, grace_context(child, context), depth + 1)
       when *CONTAINERS then walk(child, container_context(child, context), depth + 1)
-      when "clef" then read_clef(child)
-      when "keySig" then read_key_sig(child)
+      when "clef" then @signs.clef(child, @entries.length)
+      when "keySig" then @signs.key_sig(child, @entries.length)
       when *REPEATS then raise UnsupportedFeatureError.new("A <#{child.name}> is not supported", **@where, element: child)
       end
     end
@@ -143,33 +134,38 @@ module HeadMusic::Notation::MEI
       grace = context.grace || !attribute(element, "grace", **@where, element: element).nil?
       cue = value(element, "cue") || false
       return if grace && cue
-
       return add_grace(kind, element, notes, context) if grace
 
-      span = @tuplets.enter(stream, [element, *notes], @where.merge(element: element))
-      rhythmic = rhythmic_value(element, context, grace: false, ratio: ratio(context, span, element))
-      entry = Entry.new(kind: kind, element: element, notes: notes, cursor: @cursor, rhythmic_value: rhythmic, grace: false, cue: cue, staff: staff_of(element, notes))
-      advance(entry, rhythmic, context, span)
+      add_timed(element, notes, context, kind: kind, notes: notes, cue: cue, staff: staff_of(element, notes))
     end
 
     def add_grace(kind, element, notes, context)
       slashed = value(element, "grace")
-      @entries << Entry.new(
-        kind: kind, element: element, notes: notes, cursor: @cursor, rhythmic_value: rhythmic_value(element, context, grace: true, ratio: nil),
-        grace: true, slashed: slashed.nil? ? context.slashed : slashed, cue: false, staff: staff_of(element, notes)
+      @entries << entry(
+        element, kind: kind, notes: notes, rhythmic_value: @durations.rhythmic_value(element, grace: true),
+        grace: true, slashed: slashed.nil? ? context.slashed : slashed, staff: staff_of(element, notes)
       )
     end
 
     def add_rest(element, context)
-      return add_open_space(element) if value(element, "dur").nil? && @duration_default.nil?
+      return @entries << entry(element) if @durations.open?(element)
 
-      span = @tuplets.enter(stream, [element], @where.merge(element: element))
-      rhythmic = rhythmic_value(element, PLAIN, grace: false, ratio: ratio(context, span, element))
-      advance(Entry.new(kind: element.name.to_sym, element: element, notes: [], cursor: @cursor, rhythmic_value: rhythmic, grace: false, cue: false), rhythmic, context, span)
+      add_timed(element, [], context)
     end
 
-    def add_open_space(element)
-      @entries << Entry.new(kind: element.name.to_sym, element: element, notes: [], cursor: @cursor, grace: false, cue: false)
+    def add_fill(kind, element, bars: 1)
+      @entries << entry(element, kind: kind, bars: bars)
+    end
+
+    # A note, chord, or rest that takes time, joining the tuplets around it.
+    def add_timed(element, notes, context, **fields)
+      span = @tuplets.enter(stream, [element, *notes], @where.merge(element: element))
+      rhythmic = @durations.rhythmic_value(element, ratio: ratio(context, span, element))
+      advance(entry(element, rhythmic_value: rhythmic, duration: rhythmic.fraction, **fields), context, span)
+    end
+
+    def entry(element, **fields)
+      Entry.new(kind: element.name.to_sym, element: element, notes: [], cursor: @cursor, grace: false, cue: false, **fields)
     end
 
     def stream
@@ -182,12 +178,7 @@ module HeadMusic::Notation::MEI
       context.ratio || span&.ratio
     end
 
-    def add_fill(kind, element, bars: 1)
-      @entries << Entry.new(kind: kind, element: element, notes: [], cursor: @cursor, grace: false, cue: false, bars: bars)
-    end
-
-    def advance(entry, rhythmic, context, span)
-      entry.duration = rhythmic.fraction
+    def advance(entry, context, span)
       @entries << entry
       @cursor += entry.duration
       @extent = @cursor
@@ -203,22 +194,6 @@ module HeadMusic::Notation::MEI
       notes
     end
 
-    def rhythmic_value(element, context, grace:, ratio:)
-      shared = (element.name == "chord" && value(element, "dur").nil?) ? shared_duration(element) : nil
-      unit = value(element, "dur") || (context.chord && value(context.chord, "dur")) || shared&.first || @duration_default
-      unit ||= "eighth" if grace
-      raise ParseError.new("A <#{element.name}> has no @dur, and no @dur.default is in force", **@where, element: element) unless unit
-
-      dots = value(element, "dots") || (context.chord && value(context.chord, "dots")) || shared&.last || 0
-      HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots, tuplet: ratio)
-    end
-
-    # The @dur and @dots every note of a chord states alike, or nil.
-    def shared_duration(chord)
-      durations = chord_notes(chord).map { |note| [value(note, "dur"), value(note, "dots")] }.uniq
-      durations.first if durations.one? && durations.first.first
-    end
-
     # A chord's @staff, else the one its notes share.
     def staff_of(element, notes)
       staff = value(element, "staff")
@@ -226,23 +201,6 @@ module HeadMusic::Notation::MEI
 
       staves = notes.map { |note| value(note, "staff") }.uniq
       staves.first if staves.length == 1
-    end
-
-    def read_clef(element)
-      return @last_clef = [element, @entries.length] unless @entries.empty?
-
-      @opening_clef ||= ClefReading.clef(element, **@where, element: element)
-    end
-
-    def read_key_sig(element)
-      raise UnsupportedFeatureError.new("A <keySig> after the first event of a <layer> is not supported", **@where, element: element) unless @entries.empty?
-
-      @opening_key ||= ScoreDefValues.key_sig(element, **@where)
-    end
-
-    def closing_clef
-      element, count = @last_clef
-      ClefReading.clef(element, **@where, element: element) if element && count == @entries.length
     end
 
     def value(element, name)
