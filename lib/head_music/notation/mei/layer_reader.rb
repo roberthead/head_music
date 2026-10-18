@@ -43,6 +43,12 @@ module HeadMusic::Notation::MEI
     # the layers with notes before it in the bar that share its staff and
     # @n.
     Content = Struct.new(:number, :element, :staff_number, :entries, :extent, :opening_clef, :closing_clef, :occurrence, :opening_key) do
+      # The one staff that every one of +staves+ is, or nil.
+      def self.sole(staves)
+        distinct = staves.uniq
+        distinct.first if distinct.length == 1
+      end
+
       def notes?
         entries.any?(&:sounding?)
       end
@@ -53,8 +59,7 @@ module HeadMusic::Notation::MEI
 
       # The one @staff every note and chord names, or nil.
       def crossing_staff
-        staves = entries.select(&:sounding?).map(&:staff).uniq
-        staves.first if staves.length == 1
+        self.class.sole(entries.select(&:sounding?).map(&:staff))
       end
     end
 
@@ -91,7 +96,7 @@ module HeadMusic::Notation::MEI
     private
 
     def walk(element, context, depth)
-      raise ParseError.new("A <layer> nests deeper than #{MAX_DEPTH}", **@where, element: element) if depth > MAX_DEPTH
+      Editorial.check_depth(depth, "A <layer> nests", limit: MAX_DEPTH, **@where, element: element)
 
       @editorial.children(element).each { |child| read_child(child, context, depth) }
     end
@@ -131,7 +136,7 @@ module HeadMusic::Notation::MEI
     end
 
     def add_sounding(kind, element, notes, context)
-      grace = context.grace || !attribute(element, "grace", **@where, element: element).nil?
+      grace = context.grace || attribute(element, "grace", **@where, element: element)
       cue = value(element, "cue") || false
       return if grace && cue
       return add_grace(kind, element, notes, context) if grace
@@ -196,11 +201,7 @@ module HeadMusic::Notation::MEI
 
     # A chord's @staff, else the one its notes share.
     def staff_of(element, notes)
-      staff = value(element, "staff")
-      return staff if staff
-
-      staves = notes.map { |note| value(note, "staff") }.uniq
-      staves.first if staves.length == 1
+      value(element, "staff") || Content.sole(notes.map { |note| value(note, "staff") })
     end
 
     def value(element, name)
