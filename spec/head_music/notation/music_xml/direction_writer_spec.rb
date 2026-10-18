@@ -13,7 +13,15 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
     lines.grep(/<offset>/).map { |line| line[/<offset>(\d+)</, 1].to_i }
   end
 
-  describe "#part_lines" do
+  def slot(kind, voice, bar_number, segment = nil)
+    HeadMusic::Notation::MusicXML::DirectionPlan::Slot.new(kind, voice.part, voice, bar_number, segment)
+  end
+
+  def part_slot(part, bar_number)
+    plan.direction_plan(part).bar(bar_number).part_slot
+  end
+
+  describe "#slot_lines for a part slot" do
     let(:flow) do
       flow = HeadMusic::Content::Flow.new(name: "Part Dynamics", meter: "4/4")
       flow.add_voice.place("1:1", :whole, "C4")
@@ -23,31 +31,31 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
     end
 
     it "writes a direction for each dynamic event in the bar" do
-      expect(dynamics_written(writer.part_lines(flow.parts.first, 1))).to eq %w[p f]
+      expect(dynamics_written(writer.slot_lines(part_slot(flow.parts.first, 1)))).to eq %w[p f]
     end
 
     it "omits the offset for a dynamic at the bar's own start" do
-      lines = writer.part_lines(flow.parts.first, 1)
+      lines = writer.slot_lines(part_slot(flow.parts.first, 1))
       expect(offset_in(lines)).to eq [2 * plan.divisions]
     end
 
     it "gives a mid-bar dynamic an offset from the bar's own start" do
-      lines = writer.part_lines(flow.parts.first, 1)
+      lines = writer.slot_lines(part_slot(flow.parts.first, 1))
       expect(lines.grep(/<offset>/).length).to eq 1
     end
 
     it "writes neither a voice nor a staff on a part event" do
-      lines = writer.part_lines(flow.parts.first, 1)
+      lines = writer.slot_lines(part_slot(flow.parts.first, 1))
       expect(lines.grep(%r{<voice>|<staff>})).to be_empty
     end
 
     it "writes nothing for a bar with no part dynamic" do
       flow.add_voice.place("2:1", :whole, "D4")
-      expect(writer.part_lines(flow.parts.first, 2)).to eq []
+      expect(writer.slot_lines(part_slot(flow.parts.first, 2))).to eq []
     end
   end
 
-  describe "#voice_lines" do
+  describe "#slot_lines for a segment slot" do
     let(:voice) { flow.voices.first }
     let(:segment) { plan.segments_by_bar(voice)[1].first }
 
@@ -61,7 +69,7 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
       end
 
       it "writes the dynamic with no offset" do
-        lines = writer.voice_lines(voice, 1, segment)
+        lines = writer.slot_lines(slot(:segment, voice, 1, segment))
         expect([dynamics_written(lines), offset_in(lines)]).to eq [%w[p], []]
       end
     end
@@ -76,7 +84,7 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
       end
 
       it "offsets the dynamic from the note's own start" do
-        lines = writer.voice_lines(voice, 1, segment)
+        lines = writer.slot_lines(slot(:segment, voice, 1, segment))
         expect(offset_in(lines)).to eq [2 * plan.divisions]
       end
     end
@@ -91,7 +99,7 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
       end
 
       it "still writes the dynamic on the rest's segment" do
-        expect(dynamics_written(writer.voice_lines(voice, 1, segment))).to eq %w[mf]
+        expect(dynamics_written(writer.slot_lines(slot(:segment, voice, 1, segment)))).to eq %w[mf]
       end
     end
 
@@ -106,7 +114,7 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
 
       it "raises naming the mark" do
         allow(plan).to receive(:divisions).and_return(1)
-        expect { writer.voice_lines(voice, 1, segment) }
+        expect { writer.slot_lines(slot(:segment, voice, 1, segment)) }
           .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /offset of the dynamic p at 1:1:480/)
       end
     end
@@ -122,7 +130,7 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
 
       it "raises naming the start" do
         allow(plan).to receive(:divisions).and_return(1)
-        expect { writer.voice_lines(voice, 1, segment) }
+        expect { writer.slot_lines(slot(:segment, voice, 1, segment)) }
           .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /offset of the crescendo start at 1:1:480/)
       end
     end
@@ -138,7 +146,7 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
 
       it "raises naming the end" do
         allow(plan).to receive(:divisions).and_return(1)
-        expect { writer.voice_lines(voice, 1, segment) }
+        expect { writer.slot_lines(slot(:segment, voice, 1, segment)) }
           .to raise_error(HeadMusic::Notation::MusicXML::RenderError, /offset of the diminuendo end at 1:3:480 in 1 divisions/)
       end
     end
@@ -153,7 +161,7 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
       end
 
       it "writes the given voice and staff numbers" do
-        lines = writer.voice_lines(voice, 1, segment, voice_number: 2, staff_number: 1)
+        lines = writer.slot_lines(slot(:segment, voice, 1, segment), voice_number: 2, staff_number: 1)
         expect(lines.map(&:strip)).to include("<voice>2</voice>", "<staff>1</staff>")
       end
     end
@@ -170,13 +178,13 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
       it "puts the second bar's dynamic on the second bar's segment, not the first's" do
         first_segment = plan.segments_by_bar(voice)[1].first
         second_segment = plan.segments_by_bar(voice)[2].first
-        expect([writer.voice_lines(voice, 1, first_segment), dynamics_written(writer.voice_lines(voice, 2, second_segment))])
+        expect([writer.slot_lines(slot(:segment, voice, 1, first_segment)), dynamics_written(writer.slot_lines(slot(:segment, voice, 2, second_segment)))])
           .to eq [[], %w[f]]
       end
     end
   end
 
-  describe "#trailing_lines" do
+  describe "#slot_lines for a trailing slot" do
     let(:flow) do
       flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\nC D|\n")
       flow.voices.first.place_dynamic("1:3", :f)
@@ -185,18 +193,18 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
     end
 
     it "offsets each dynamic after the voice's last note from where the voice ends" do
-      lines = writer.trailing_lines(flow.voices.first, 1)
+      lines = writer.slot_lines(slot(:trailing, flow.voices.first, 1))
       expect([dynamics_written(lines), offset_in(lines)]).to eq [%w[f p], [plan.divisions]]
     end
 
     it "writes nothing for a dynamic under the last note" do
       flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nM:4/4\nK:C\nC D2|\n")
       flow.voices.first.place_dynamic("1:3", :f)
-      expect(described_class.new(HeadMusic::Notation::MusicXML::RenderPlan.new(flow)).trailing_lines(flow.voices.first, 1)).to eq []
+      expect(described_class.new(HeadMusic::Notation::MusicXML::RenderPlan.new(flow)).slot_lines(slot(:trailing, flow.voices.first, 1))).to eq []
     end
   end
 
-  describe "#voice_rest_lines" do
+  describe "#slot_lines for a whole-measure rest slot" do
     let(:flow) do
       flow = HeadMusic::Content::Flow.new(name: "Silent Bar", meter: "4/4")
       soprano = flow.add_voice(role: "Soprano")
@@ -210,7 +218,7 @@ describe HeadMusic::Notation::MusicXML::DirectionWriter do
 
     it "offsets a dynamic in a bar the voice has no notes in from the bar's own start" do
       bass = flow.voices.last
-      expect(offset_in(writer.voice_rest_lines(bass, 2))).to eq [2 * plan.divisions]
+      expect(offset_in(writer.slot_lines(slot(:whole_measure_rest, bass, 2)))).to eq [2 * plan.divisions]
     end
   end
 end

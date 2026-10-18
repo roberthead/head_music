@@ -32,9 +32,9 @@ module HeadMusic::Notation::MusicXML
     def bar(bar_number)
       @bars[bar_number] ||= Bar.new(
         bar_number: bar_number,
-        part_slot: Slot.new(:part, part, nil, bar_number, nil),
+        part_slot: slot(:part, bar_number),
         voice_slots: voices.map { |voice| [voice, voice_slots(voice, bar_number)] },
-        closing_slot: (bar_number == plan.bar_numbers.last) ? Slot.new(:closing, part, nil, bar_number, nil) : nil
+        closing_slot: (bar_number == last_bar_number) ? slot(:closing, bar_number) : nil
       )
     end
 
@@ -65,12 +65,20 @@ module HeadMusic::Notation::MusicXML
       part.voices.empty? ? [nil] : part.voices
     end
 
+    def last_bar_number
+      plan.bar_numbers.last
+    end
+
+    def slot(kind, bar_number, voice = nil, segment = nil)
+      Slot.new(kind, part, voice, bar_number, segment)
+    end
+
     def voice_slots(voice, bar_number)
-      return [Slot.new(:whole_measure_rest, part, nil, bar_number, nil)] unless voice
+      return [slot(:whole_measure_rest, bar_number)] unless voice
 
       segments = plan.segments_by_bar(voice)[bar_number]
-      leading = segments ? segments.map { |segment| Slot.new(:segment, part, voice, bar_number, segment) } : [Slot.new(:whole_measure_rest, part, voice, bar_number, nil)]
-      [*leading, Slot.new(:trailing, part, voice, bar_number, nil)]
+      leading = segments ? segments.map { |segment| slot(:segment, bar_number, voice, segment) } : [slot(:whole_measure_rest, bar_number, voice)]
+      [*leading, slot(:trailing, bar_number, voice)]
     end
 
     def segment_start(slot)
@@ -92,10 +100,8 @@ module HeadMusic::Notation::MusicXML
     end
 
     def marks_of(owner)
-      hairpins = owner.spans.select(&:hairpin?)
       owner.dynamic_events.map { |event| Mark.new(:dynamic, event.position, event) } +
-        hairpins.map { |span| Mark.new(:stop, span.to, span) } +
-        hairpins.map { |span| Mark.new(:start, span.from, span) }
+        owner.spans.select(&:hairpin?).flat_map { |span| [Mark.new(:stop, span.to, span), Mark.new(:start, span.from, span)] }
     end
 
     def in_writing_order(marks)
@@ -104,7 +110,7 @@ module HeadMusic::Notation::MusicXML
 
     def slot_at(owner, position)
       return final_barline_slot(owner) if position == plan.flow.final_barline_position
-      return Slot.new(:part, part, nil, position.bar_number, nil) if owner.equal?(part)
+      return slot(:part, position.bar_number) if owner.equal?(part)
 
       voice_slot_at(owner, position)
     end
@@ -112,29 +118,22 @@ module HeadMusic::Notation::MusicXML
     # A hairpin ending where the music ends is written in the last bar, after
     # all its owner has written there.
     def final_barline_slot(owner)
-      bar_number = plan.bar_numbers.last
-      return Slot.new(:closing, part, nil, bar_number, nil) if owner.equal?(part)
-
-      Slot.new(:trailing, part, owner, bar_number, nil)
+      owner.equal?(part) ? slot(:closing, last_bar_number) : slot(:trailing, last_bar_number, owner)
     end
 
     # The voice event sounding at the position holds it, whether a held note
     # or a rest; past the voice's last event, its trailing slot does.
     def voice_slot_at(voice, position)
       bar_number = position.bar_number
-      return Slot.new(:whole_measure_rest, part, voice, bar_number, nil) unless plan.segments_by_bar(voice)[bar_number]
+      return slot(:whole_measure_rest, bar_number, voice) unless plan.segments_by_bar(voice)[bar_number]
 
       segment = holding_segment(voice, position)
-      return Slot.new(:trailing, part, voice, bar_number, nil) unless segment
-
-      Slot.new(:segment, part, voice, bar_number, segment)
+      segment ? slot(:segment, bar_number, voice, segment) : slot(:trailing, bar_number, voice)
     end
 
     def holding_segment(voice, position)
       voice_event = voice.voice_event_sounding_at(position)
-      return nil unless voice_event
-
-      HeadMusic::Notation::BarSplitter.segments_of(voice_event).find { |segment| segment.bar_number == position.bar_number }
+      voice_event && HeadMusic::Notation::BarSplitter.segments_of(voice_event).find { |segment| segment.bar_number == position.bar_number }
     end
   end
 end
