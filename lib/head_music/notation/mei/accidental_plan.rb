@@ -10,7 +10,18 @@ module HeadMusic::Notation::MEI
     GESTURAL = {-2 => "ff", -1 => "f", 0 => "n", 1 => "s", 2 => "ss"}.freeze
     SHARP_ORDER = HeadMusic::Rudiment::KeySignature::ORDERED_LETTER_NAMES_OF_SHARPS
 
-    Note = Data.define(:id, :pitch, :continuation, :clashing) do
+    # +order+ sorts it among the staff's notes in the bar.
+    Note = Data.define(:id, :pitch, :continuation, :clashing, :order) do
+      # The notes of piece +index+ of an item, its grace notes coming before
+      # the item itself. Grace notes sound before every voice's note at
+      # their onset.
+      def self.of_piece(item, index, note_ids)
+        onset = item.link.offset
+        order = (index < item.graces.length) ? [onset, 0, index] : [onset, 1, 0]
+        clashes = HeadMusic::Notation::ChordClashes.among(note_ids.map(&:first))
+        note_ids.map { |pitch, id| new(id, pitch, item.tied_into?(index, pitch), clashes.include?(pitch), order) }
+      end
+
       def place
         HeadMusic::Notation::ChordClashes.place(pitch)
       end
@@ -32,6 +43,7 @@ module HeadMusic::Notation::MEI
         {"accid.ges" => GESTURAL.fetch(semitones)}
       end
     end
+    private_constant :Note
 
     # Each letter's alteration in a key of +fifths+; fifths past seven double
     # the letters from the start of the order again.
@@ -68,22 +80,13 @@ module HeadMusic::Notation::MEI
 
     def notes(entry, bar_number)
       items = plan.layer_voices(entry, bar_number).flat_map { |voice| plan.items(voice, bar_number) }.reject(&:rest?)
-      keyed = items.flat_map { |item| item_notes(item) }
-      keyed.sort_by.with_index { |(sort_key, _), index| [*sort_key, index] }.map(&:last)
+      items.flat_map { |item| item_notes(item) }.sort_by.with_index { |note, index| [*note.order, index] }
     end
 
     # The notes of each grace note of an item, and then of the item itself.
     def item_notes(item)
       pieces = item.graces.each_with_index.map { |grace, index| plan.grace_note_ids(grace, plan.grace_id(item, index)) }
-      [*pieces, plan.note_ids(item)].each_with_index.flat_map { |note_ids, index| piece_notes(item, index, note_ids) }
-    end
-
-    # Grace notes sound before every voice's note at their onset.
-    def piece_notes(item, index, note_ids)
-      onset = item.link.offset
-      sort_key = (index < item.graces.length) ? [onset, 0, index] : [onset, 1, 0]
-      clashes = HeadMusic::Notation::ChordClashes.among(note_ids.map(&:first))
-      note_ids.map { |pitch, id| [sort_key, Note.new(id, pitch, item.tied_into?(index, pitch), clashes.include?(pitch))] }
+      [*pieces, plan.note_ids(item)].each_with_index.flat_map { |note_ids, index| Note.of_piece(item, index, note_ids) }
     end
   end
 
