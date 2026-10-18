@@ -39,8 +39,8 @@ module HeadMusic::Notation::MEI
 
     def by_staff?(by_measure)
       by_measure.any? do |layers|
-        layers.select { |layer| layer.content.notes? }.group_by { |layer| layer.content.number }
-          .any? { |_, same| same.map { |layer| layer.content.staff_number }.uniq.length > 1 }
+        contents = layers.map(&:content).select(&:notes?)
+        contents.group_by(&:number).each_value.any? { |same| same.map(&:staff_number).uniq.length > 1 }
       end
     end
 

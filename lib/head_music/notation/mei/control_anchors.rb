@@ -135,7 +135,11 @@ module HeadMusic::Notation::MEI
     end
 
     def record_for(element)
-      pending = pending_by_element[element]
+      read_record(pending_by_element[element])
+    end
+
+    # The record of a Pending that a voice reads, or nil.
+    def read_record(pending)
       pending&.track && event_record(pending)
     end
 
@@ -157,7 +161,7 @@ module HeadMusic::Notation::MEI
 
     def snapped(index, offset, meter, staff, layer)
       @onsets.at(index, offset, meter.bottom_number, staff: staff, layer: layer)
-        .lazy.filter_map { |onset| onset.pending.first.track && event_record(onset.pending.first) }.first
+        .lazy.filter_map { |onset| read_record(onset.pending.first) }.first
     end
 
     def to_tick(offset)

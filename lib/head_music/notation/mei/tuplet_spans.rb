@@ -14,7 +14,32 @@ module HeadMusic::Notation::MEI
   class TupletSpans
     include XmlReading
 
-    Run = Struct.new(:ratio, :entries)
+    # A run of a @tuplet has no ratio of its own.
+    Run = Struct.new(:ratio, :entries) do
+      # Its ratio, else the one every entry is scaled by, or nil.
+      def scaling
+        return if entries.empty?
+        return ratio if ratio
+
+        ratios = entries.map { |entry| entry.rhythmic_value&.tuplet_ratio }.uniq
+        ratios.first if ratios.one?
+      end
+
+      def track
+        entries.first.track
+      end
+
+      # Whether one voice reads every entry.
+      def placed?
+        first_track = track
+        first_track && entries.all? { |entry| entry.event && entry.track.equal?(first_track) }
+      end
+
+      # Its first and last events.
+      def ends
+        [entries.first.event, entries.last.event]
+      end
+    end
     Span = Struct.new(:ratio, :last, :run)
 
     # The ratio of a <tuplet> or <tupletSpan>, from @num and @numbase. An
@@ -80,11 +105,11 @@ module HeadMusic::Notation::MEI
       owners = {}.compare_by_identity
       by_track = {}.compare_by_identity
       largest_first.each do |run|
-        ratio = run_ratio(run)
-        next unless ratio && placed?(run) && !absorbed?(run, ratio, owners)
+        ratio = run.scaling
+        next unless ratio && run.placed? && !absorbed?(run, ratio, owners)
 
         run.entries.each { |entry| owners[entry] ||= [run, ratio] }
-        (by_track[run.entries.first.track] ||= []) << [run.entries.first.event, run.entries.last.event]
+        (by_track[run.track] ||= []) << run.ends
       end
       by_track
     end
@@ -137,20 +162,7 @@ module HeadMusic::Notation::MEI
     end
 
     def largest_first
-      @runs.each_with_index.sort_by { |run, index| [-run.entries.length, index] }.map(&:first)
-    end
-
-    def run_ratio(run)
-      return if run.entries.empty?
-      return run.ratio if run.ratio
-
-      ratios = run.entries.map { |entry| entry.rhythmic_value&.tuplet_ratio }.uniq
-      ratios.first if ratios.one?
-    end
-
-    def placed?(run)
-      track = run.entries.first.track
-      track && run.entries.all? { |entry| entry.event && entry.track.equal?(track) }
+      @runs.sort_by.with_index { |run, index| [-run.entries.length, index] }
     end
 
     def absorbed?(run, ratio, owners)
