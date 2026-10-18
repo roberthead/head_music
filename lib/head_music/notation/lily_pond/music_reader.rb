@@ -3,31 +3,29 @@ module HeadMusic::Notation::LilyPond
   # Reads one music expression by recursive descent: sequential braces,
   # << >> parallels, and \relative and \absolute wrappers. A ContextReader
   # reads the \new Staff and \new Voice declarations inside, a
-  # MusicItemReader the notes, rests, and \change Staff commands, a
-  # SettingReader the \key, \time, and \clef commands, a BarMarkReader
-  # the \bar, \mark, and navigation commands, and a DynamicsItemReader what
-  # a \new Dynamics holds, and a TupletReader the \tuplet and \times
-  # around the music they hold. Every other command raises
-  # as unsupported rather than being skipped, because skipping a \transpose
-  # would yield a plausible but wrong flow.
+  # VoiceItemReader each item of a voice, and a DynamicsItemReader what a
+  # \new Dynamics holds. Every other command raises as unsupported rather
+  # than being skipped, because skipping a \transpose would yield a
+  # plausible but wrong flow.
   class MusicReader
     # The reader recurses per brace level and per \relative, \absolute, or
     # \new wrapper; the lexer and balance check do not, so nesting must be
     # bounded here to stay inside ParseError.
     MAX_NESTING_DEPTH = 1000
-    AFTER_MUSIC = %i[note rest whole_bar_rest spacer open_chord open_brace after tuplet].freeze
     DEFAULT_RELATIVE_REFERENCE = "F3"
     TUPLET_TOKENS = %i[tuplet tuplet_span].freeze
 
     def initialize(cursor, document)
       @cursor = cursor
       @readers = PitchReaderStack.new
-      @items = MusicItemReader.new(cursor, @readers)
-      @settings = SettingReader.new(cursor)
-      @bar_marks = BarMarkReader.new(cursor)
-      @dynamics_items = DynamicsItemReader.new(cursor, self, @items, settings: @settings, bar_marks: @bar_marks)
       @contexts = ContextReader.new(cursor, document, self)
-      @tuplets = TupletReader.new(cursor)
+      items = MusicItemReader.new(cursor, @readers)
+      settings = SettingReader.new(cursor)
+      bar_marks = BarMarkReader.new(cursor)
+      @voice_items = VoiceItemReader.new(
+        cursor, self, items: items, settings: settings, bar_marks: bar_marks, contexts: @contexts, tuplets: TupletReader.new(cursor)
+      )
+      @dynamics_items = DynamicsItemReader.new(cursor, self, items, settings: settings, bar_marks: bar_marks)
       @depth = 0
     end
 
@@ -67,9 +65,13 @@ module HeadMusic::Notation::LilyPond
       @depth -= 1
     end
 
+    def reject_inside_tuplet(context, name, token)
+      raise cursor.unsupported("#{name} inside a tuplet is not supported", token) if context.stream.tuplet?
+    end
+
     private
 
-    attr_reader :cursor, :readers, :items, :settings, :bar_marks, :dynamics_items, :contexts, :tuplets
+    attr_reader :cursor, :readers, :voice_items, :dynamics_items, :contexts
 
     def read_expression_command(context)
       token = cursor.peek
@@ -110,74 +112,12 @@ module HeadMusic::Notation::LilyPond
     end
 
     def read_item(context)
+      return voice_items.read(context) unless context.dynamics?
+
       token = cursor.peek
-      raise cursor.unsupported_token(token) if context.dynamics? && TUPLET_TOKENS.include?(token.type)
-      return dynamics_items.read(context) if context.dynamics?
+      raise cursor.unsupported_token(token) if TUPLET_TOKENS.include?(token.type)
 
-      case token.type
-      when :note then items.read_note(context)
-      when :rest then items.read_rest(context)
-      when :whole_bar_rest then read_whole_bar_rest(context)
-      when :spacer then items.read_spacer(context)
-      when :after then read_after(context)
-      when :tuplet then read_tuplet(context)
-      when :tuplet_span then tuplets.read_span(context)
-      when :open_chord then items.read_chord(context)
-      when :tie then items.read_tie(context)
-      when :bar_check then items.read_bar_check(context)
-      when :open_brace then read_sequential(context)
-      when :open_parallel then read_parallel(context)
-      when :command then read_item_command(context)
-      when :unsupported then raise cursor.unsupported_token(token)
-      else raise cursor.error(%(Unexpected token "#{token.lexeme}"), token)
-      end
-    end
-
-    def read_tuplet(context)
-      token = cursor.peek
-      tuplets.read(context) { nested(token) { read_item(context) } }
-    end
-
-    def read_whole_bar_rest(context)
-      reject_inside_tuplet(context, "A whole-bar rest", cursor.peek)
-      items.read_whole_bar_rest(context)
-    end
-
-    def reject_inside_tuplet(context, name, token)
-      raise cursor.unsupported("#{name} inside a tuplet is not supported", token) if context.stream.tuplet?
-    end
-
-    def read_after(context)
-      token = cursor.peek
-      items.read_after(context)
-      raise cursor.error("\\after expects music", cursor.peek || token) unless AFTER_MUSIC.include?(cursor.peek&.type)
-
-      nested(token) { read_item(context) }
-    end
-
-    # \afterGrace [fraction] main { graces } reads its main note as any other.
-    def read_after_grace(context)
-      token = cursor.advance
-      cursor.advance if cursor.peek&.type == :number
-      raise cursor.error("\\afterGrace expects music", cursor.peek || token) unless AFTER_MUSIC.include?(cursor.peek&.type)
-
-      nested(token) { read_item(context) }
-      items.skip_grace(token)
-    end
-
-    def read_item_command(context)
-      token = cursor.peek
-      case token.lexeme
-      when *SettingReader::COMMANDS then settings.read(context.stream)
-      when *BarMarkReader::COMMANDS then bar_marks.read(context.stream)
-      when "change" then items.read_staff_change(context)
-      when *MarkReader::HAIRPIN_STYLE_COMMANDS then cursor.advance
-      when *GraceReader::COMMANDS then items.read_grace(context)
-      when "afterGrace" then read_after_grace(context)
-      when "new" then contexts.read_sequential_new(context)
-      when *ENVELOPE_COMMANDS then raise cursor.error(%(Unexpected \\#{token.lexeme} inside music), token)
-      else read_expression_command(context)
-      end
+      dynamics_items.read(context)
     end
   end
 end
