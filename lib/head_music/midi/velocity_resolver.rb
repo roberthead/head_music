@@ -96,14 +96,9 @@ module HeadMusic::MIDI
     end
 
     def sweep(marks)
-      index = 0
-      level = nil
+      cursor = ChangeCursor.new(marks, &:position)
       voice.voice_events.each_with_object({}.compare_by_identity) do |voice_event, levels|
-        while index < marks.length && marks[index].position <= voice_event.position
-          level = marks[index].level
-          index += 1
-        end
-        levels[voice_event] = level
+        levels[voice_event] = cursor.at(voice_event.position)&.level
       end
     end
 
@@ -207,14 +202,11 @@ module HeadMusic::MIDI
     # events keeps only the ramps covering each.
     def governing_ramps
       @governing_ramps ||= begin
-        index = 0
+        starts = ChangeCursor.new(ramps, &:from)
         covering = []
         voice.voice_events.each_with_object({}.compare_by_identity) do |voice_event, governing|
           position = voice_event.position
-          while index < ramps.length && ramps[index].from <= position
-            covering << ramps[index]
-            index += 1
-          end
+          covering.concat(starts.advance(position))
           covering.reject! { |ramp| ramp.to <= position }
           governing[voice_event] = innermost(covering)
         end

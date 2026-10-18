@@ -77,12 +77,10 @@ module HeadMusic::MIDI
     # {bar number => microseconds} at the first bar and wherever it changes.
     def tempos
       @tempos ||= begin
-        changes = timed(Tempo)
-        index = -1
+        changes = ChangeCursor.new(timed(Tempo), &:first)
         previous = nil
         layout.bars.each_with_object({}) do |bar, by_bar|
-          index += 1 while index + 1 < changes.length && changes[index + 1].first <= bar.start
-          microseconds = (index >= 0) ? changes[index].last.microseconds_per_quarter : DEFAULT_MICROSECONDS
+          microseconds = changes.at(bar.start)&.last&.microseconds_per_quarter || DEFAULT_MICROSECONDS
           by_bar[bar.number] = microseconds unless microseconds == previous
           previous = microseconds
         end

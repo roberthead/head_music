@@ -105,11 +105,10 @@ module HeadMusic::MIDI
       # bar winning.
       def programs_by_bar
         @programs_by_bar ||= begin
-          index = -1
+          programs = ChangeCursor.new(@programs, &:tick)
           previous = :none
           @sources.zip(notes).each_with_object({}) do |(source, note), by_bar|
-            index += 1 while index + 1 < @programs.length && @programs[index + 1].tick <= source.on
-            program = @programs[index]&.program if index >= 0
+            program = programs.at(source.on)&.program
             next if program == previous
 
             by_bar[@layout.bar_at(note.onset).number] = program
