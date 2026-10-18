@@ -67,7 +67,7 @@ module HeadMusic::Notation::ABC
     # note tied across a bar line is still pending when the repeat tagger
     # asks, and a note longer than its bar has crossed one already.
     def completed_bar_number
-      ending_bar_number(cursor) if pending_note || voice.last_voice_event || @invisible_rests.any?
+      cursor.ending_bar_number if pending_note || voice.last_voice_event || @invisible_rests.any?
     end
 
     def entered_bar_number
@@ -244,7 +244,7 @@ module HeadMusic::Notation::ABC
     # a level there. Once they reach a later bar, that bar is part of the
     # music, and they are rests.
     def end_invisible_rests
-      return unless ending_bar_number(music_end) > ending_bar_number(voice.next_position)
+      return unless music_end.ending_bar_number > voice.next_position.ending_bar_number
 
       @invisible_rests.place
       @tuplets.group_closed
@@ -294,13 +294,6 @@ module HeadMusic::Notation::ABC
 
     def pending_end_position
       music_end + pending_note.rhythmic_value(@duration_resolver)
-    end
-
-    # The bar where music ending at the position ends: the one before, at a
-    # bar line.
-    def ending_bar_number(position)
-      bar_number = position.bar_number
-      (position.to_a.drop(1) == [1, 0, 0]) ? bar_number - 1 : bar_number
     end
   end
 end
