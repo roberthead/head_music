@@ -69,6 +69,13 @@ module HeadMusic::Notation::MEI
       target(reference, **where)
     end
 
+    # The element a control's reference attribute names, as #named finds it,
+    # or nil where it has no such attribute.
+    def named_by(control, name, **where)
+      reference = XmlReading.attribute(control, name, **where)
+      reference && named(reference, **where)
+    end
+
     # The element a control's reference names, or nil where the control is
     # skipped.
     def resolve(reference, **where)

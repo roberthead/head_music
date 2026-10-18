@@ -44,6 +44,20 @@ describe HeadMusic::Notation::MEI::IdIndex do
     expect(index.resolve("other.mei#n1")).to be_nil
   end
 
+  describe "#named_by" do
+    def control(attributes)
+      REXML::Document.new("<tie #{attributes}/>").root
+    end
+
+    it "finds the element a control's reference attribute names, reached or not" do
+      expect(index.named_by(control(%(startid="#n1")), "startid")).to equal note
+    end
+
+    it "is nil for a control without that attribute" do
+      expect(index.named_by(control(%(endid="#n1")), "startid")).to be_nil
+    end
+  end
+
   it "raises on a reference that names nothing, naming the control" do
     expect { index.resolve("#n9", element: REXML::Element.new("slur")) }
       .to raise_error(HeadMusic::Notation::MEI::ParseError, /"n9" names no element \(<slur>\)/)

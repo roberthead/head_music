@@ -32,7 +32,7 @@ module HeadMusic::Notation::MEI
       controls.each do |control|
         next unless control.name == "tie"
 
-        start, finish = %w[startid endid].map { |name| named(control, name, where) }
+        start, finish = %w[startid endid].map { |name| @index.named_by(control, name, **where, element: control) }
         next unless start && finish
 
         @starts_by_end[finish] = start
@@ -68,30 +68,21 @@ module HeadMusic::Notation::MEI
 
     private
 
-    def named(control, name, where)
-      reference = attribute(control, name, **where, element: control)
-      reference && @index.named(reference, **where, element: control)
-    end
-
     def tie_by_attribute(pending)
-      case pending.tie
-      when "i" then start(pending, pending.sound)
-      when "m"
-        start(pending, pending.sound)
-        stop(pending, pending.sound)
-      when "t" then stop(pending, pending.sound)
-      end
+      tie = pending.tie
+      start(pending) if %w[i m].include?(tie)
+      stop(pending) if %w[m t].include?(tie)
     end
 
     def tie_control(control, measure)
       where = {measure: measure.number, element: control}
-      starts = end_notes(control, "startid", measure, where) { notes_at(control, Tstamp.start_at(control, measure, **where), where) }
-      stops = end_notes(control, "endid", measure, where) { notes_at(control, Tstamp.finish(control, @score.measures, measure.index, **where), where) }
+      starts = end_notes(control, "startid", where) { notes_at(control, Tstamp.start_at(control, measure, **where), where) }
+      stops = end_notes(control, "endid", where) { notes_at(control, Tstamp.finish(control, @score.measures, measure.index, **where), where) }
       pairs(starts, stops).each do |from, to|
         next unless from.track&.equal?(to.track)
 
-        start(from, from.sound)
-        stop(to, to.sound)
+        start(from)
+        stop(to)
       end
     end
 
@@ -110,7 +101,7 @@ module HeadMusic::Notation::MEI
 
     # The notes an end names by id, nil where it is skipped, or else those
     # its beat finds.
-    def end_notes(control, name, measure, where)
+    def end_notes(control, name, where)
       reference = attribute(control, name, **where)
       return yield unless reference
 
@@ -138,16 +129,14 @@ module HeadMusic::Notation::MEI
       (pending.kind == :chord) ? chord_tones[pending] : [pending].select(&:sound)
     end
 
-    def start(pending, sound)
-      if pending.grace
-        pending.grace.tie_starts |= [sound.to_s]
-      elsif pending.event
-        pending.event.tie_starts |= [sound.to_s]
-      end
+    def start(pending)
+      tied = pending.grace || pending.event
+      tied.tie_starts |= [pending.sound.to_s] if tied
     end
 
-    def stop(pending, sound)
-      pending.event.tie_stops |= [sound.to_s] if pending.event && !pending.grace
+    def stop(pending)
+      event = pending.event
+      event.tie_stops |= [pending.sound.to_s] if event && !pending.grace
     end
 
     def onset_index
@@ -159,16 +148,8 @@ module HeadMusic::Notation::MEI
     end
 
     def chord_tones
-      @chord_tones ||= begin
-        chord = nil
-        @score.pending.each_with_object({}.compare_by_identity) do |pending, tones|
-          if pending.kind == :chord
-            chord = tones[pending] = []
-          elsif pending.chord_member
-            chord << pending
-          end
-        end
-      end
+      @chord_tones ||= @score.pending.chunk_while { |_, following| following.chord_member }
+        .each_with_object({}.compare_by_identity) { |(first, *tones), by_chord| by_chord[first] = tones if first.kind == :chord }
     end
   end
 end

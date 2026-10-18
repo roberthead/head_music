@@ -95,7 +95,7 @@ module HeadMusic::Notation::MEI
       ratio = self.class.ratio(control, **where)
       return unless ratio
 
-      span = Span.new(ratio, named(control, "endid", where), Run.new(ratio, []))
+      span = Span.new(ratio, @index.named_by(control, "endid", **where), Run.new(ratio, []))
       plist = attribute(control, "plist", **where)
       if plist
         plist.split.each do |reference|
@@ -103,15 +103,10 @@ module HeadMusic::Notation::MEI
           @members[member] = span if member
         end
       else
-        start = named(control, "startid", where)
+        start = @index.named_by(control, "startid", **where)
         @starts[start] = span if start && span.last && closes?(start, span.last, where)
       end
       add_run(span.run)
-    end
-
-    def named(control, name, where)
-      reference = attribute(control, name, **where)
-      reference && @index.named(reference, **where)
     end
 
     def closes?(start, last, where)
