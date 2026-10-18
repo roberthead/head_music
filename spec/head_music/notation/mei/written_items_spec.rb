@@ -39,6 +39,34 @@ describe HeadMusic::Notation::MEI::WrittenItems do
     end
   end
 
+  describe "an item's ties through its grace notes" do
+    let(:flow) { HeadMusic::Content::Flow.new(meter: "4/4") }
+    let(:pitch) { HeadMusic::Rudiment::Pitch.get("C5") }
+    let(:item) { written_items.items(voice, 1).first }
+
+    before do
+      note_event = flow.add_voice.place("1:1", :whole, "C5")
+      note_event.add_grace_note("C5", :eighth, tied: true)
+      note_event.add_grace_note("C5", :eighth, tied: true)
+    end
+
+    it "ties a pitch into a grace note from the grace note before it" do
+      expect([0, 1].map { |index| item.tied_from_grace?(index, pitch) }).to eq [false, true]
+    end
+
+    it "counts the item itself as the piece after its grace notes" do
+      expect(item.tied_into?(2, pitch)).to be true
+    end
+
+    it "stops on the item a tie its last grace note starts" do
+      expect(item.note_tie(pitch)).to eq "t"
+    end
+
+    it "leaves an untied pitch's tie as the item's own" do
+      expect(item.note_tie(HeadMusic::Rudiment::Pitch.get("D5"))).to be_nil
+    end
+  end
+
   describe ".segment_length" do
     it "is the part of the voice event's length in the segment's bar" do
       segment = HeadMusic::Notation::MEI::RenderPlan.new(flow).segments_by_bar(voice)[2].first

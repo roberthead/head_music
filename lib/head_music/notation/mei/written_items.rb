@@ -14,6 +14,26 @@ module HeadMusic::Notation::MEI
       def rest?
         voice_event.rest?
       end
+
+      # Whether the grace note before piece +index+ ties a pitch into it. The
+      # graces are pieces 0 on, and the item itself is the piece after them.
+      def tied_from_grace?(index, pitch)
+        index.positive? && graces[index - 1].tied_pitches.include?(pitch)
+      end
+
+      # Whether a pitch of piece +index+ continues a tie, from a grace note
+      # or, for the item itself, from the link before it.
+      def tied_into?(index, pitch)
+        (index == graces.length) ? %w[m t].include?(note_tie(pitch)) : tied_from_grace?(index, pitch)
+      end
+
+      # The @tie of a pitch of the item itself, which a tie from its last
+      # grace note continues into.
+      def note_tie(pitch)
+        return tie unless tied_from_grace?(graces.length, pitch)
+
+        {nil => "t", "i" => "m"}.fetch(tie, tie)
+      end
     end
 
     def self.segment_length(segment)

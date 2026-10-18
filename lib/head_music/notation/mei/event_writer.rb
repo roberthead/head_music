@@ -20,6 +20,9 @@ module HeadMusic::Notation::MEI
       end
     end
 
+    # The @tie of a grace note's pitch, by whether a tie stops and starts there.
+    GRACE_TIES = {[true, true] => "m", [true, false] => "t", [false, true] => "i"}.freeze
+
     class << self
       def attribute_sources
         @attribute_sources ||= []
@@ -32,34 +35,22 @@ module HeadMusic::Notation::MEI
 
     def initialize(plan)
       @plan = plan
-      @attribute_sources = self.class.attribute_sources.map { |source_class| plan.source(source_class) }
-      @child_sources = self.class.child_sources.map { |source_class| plan.source(source_class) }
+      @attribute_sources = sources(self.class.attribute_sources)
+      @child_sources = sources(self.class.child_sources)
     end
 
     def element(item)
-      if item.measure_rest
-        decorated(Element.new("mRest", item.id), Node.new(kind: :m_rest, id: item.id, item: item))
-      elsif item.rest?
-        rest = Element.new("rest", item.id, Durations.attributes(item.link.rhythmic_value))
-        decorated(rest, Node.new(kind: :rest, id: item.id, item: item))
-      else
-        sounding_element(item.link.rhythmic_value, Node.new(kind: :note, id: item.id, item: item), plan.note_ids(item)) do |pitch|
-          tie(item, pitch)
-        end
-      end
+      id = item.id
+      node = Node.new(kind: :note, id: id, item: item)
+      duration = Durations.attributes(item.link.rhythmic_value)
+      return decorated(Element.new("mRest", id), node.with(kind: :m_rest)) if item.measure_rest
+      return decorated(Element.new("rest", id, duration), node.with(kind: :rest)) if item.rest?
+
+      sounding_element(duration, node, plan.note_ids(item)) { |pitch| item.note_tie(pitch) }
     end
 
     def grace_elements(item)
-      graces = item.graces
-      graces.each_with_index.map do |grace, index|
-        tied_in = index.zero? ? [] : graces[index - 1].tied_pitches
-        follower = graces[index + 1]&.pitches || item.voice_event.pitches
-        id = plan.grace_id(item, index)
-        node = Node.new(kind: :note, id: id, item: item, grace: grace, grace_index: index)
-        sounding_element(grace.rhythmic_value, node, plan.grace_note_ids(grace, id), "grace" => grace.slashed? ? "unacc" : "acc") do |pitch|
-          tie_value(tied_in.include?(pitch), grace.tied? && follower.include?(pitch))
-        end
-      end
+      item.graces.each_with_index.map { |grace, index| grace_element(item, grace, index) }
     end
 
     # What stands in a layer for a bar the voice places nothing in. It is no
@@ -72,17 +63,28 @@ module HeadMusic::Notation::MEI
 
     attr_reader :plan, :attribute_sources, :child_sources
 
-    def sounding_element(rhythmic_value, node, note_ids, extra = {}, &tie)
-      duration = Durations.attributes(rhythmic_value).merge(extra)
-      if note_ids.one?
-        pitch, = note_ids.first
-        return note_element(node.with(pitch: pitch), duration.merge("tie" => tie.call(pitch)))
-      end
+    def sources(source_classes)
+      source_classes.map { |source_class| plan.source(source_class) }
+    end
 
-      notes = note_ids.map do |pitch, id|
-        note_element(node.with(id: id, pitch: pitch, chord_member: true), {"tie" => tie.call(pitch)})
+    def grace_element(item, grace, index)
+      follower = item.graces[index + 1]&.pitches || item.voice_event.pitches
+      id = plan.grace_id(item, index)
+      node = Node.new(kind: :note, id: id, item: item, grace: grace, grace_index: index)
+      duration = Durations.attributes(grace.rhythmic_value).merge("grace" => grace.slashed? ? "unacc" : "acc")
+      sounding_element(duration, node, plan.grace_note_ids(grace, id)) do |pitch|
+        GRACE_TIES[[item.tied_from_grace?(index, pitch), grace.tied? && follower.include?(pitch)]]
       end
-      decorated(Element.new("chord", node.id, duration, notes), node.with(kind: :chord))
+    end
+
+    # A lone note carries the duration itself; a chord's notes carry only
+    # their ties.
+    def sounding_element(duration, node, note_ids)
+      chord = !note_ids.one?
+      notes = note_ids.map do |pitch, id|
+        note_element(node.with(id: id, pitch: pitch, chord_member: chord), (chord ? {} : duration).merge("tie" => yield(pitch)))
+      end
+      chord ? decorated(Element.new("chord", node.id, duration, notes), node.with(kind: :chord)) : notes.first
     end
 
     def note_element(node, attributes)
@@ -95,24 +97,6 @@ module HeadMusic::Notation::MEI
       attributes = attribute_sources.reduce(element.attributes) { |merged, source| merged.merge(source.event_attributes(node)) }
       children = element.children + child_sources.flat_map { |source| source.event_children(node) }
       element.with(attributes: attributes, children: children)
-    end
-
-    def tie(item, pitch)
-      return item.tie unless tied_from_grace?(item, pitch)
-
-      {nil => "t", "i" => "m"}.fetch(item.tie, item.tie)
-    end
-
-    def tied_from_grace?(item, pitch)
-      last = item.graces.last
-      last&.tied? && last.pitches.include?(pitch)
-    end
-
-    def tie_value(stop, start)
-      return "m" if stop && start
-      return "t" if stop
-
-      "i" if start
     end
   end
 end

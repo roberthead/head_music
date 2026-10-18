@@ -8,29 +8,46 @@ module HeadMusic::Notation::MEI
   class AccidentalPlan
     WRITTEN = {-2 => "ff", -1 => "f", 0 => "n", 1 => "s", 2 => "x"}.freeze
     GESTURAL = {-2 => "ff", -1 => "f", 0 => "n", 1 => "s", 2 => "ss"}.freeze
-    SHARP_ORDER = %w[F C G D A E B].freeze
+    SHARP_ORDER = HeadMusic::Rudiment::KeySignature::ORDERED_LETTER_NAMES_OF_SHARPS
 
-    Note = Data.define(:id, :pitch, :continuation, :clashing)
+    Note = Data.define(:id, :pitch, :continuation, :clashing) do
+      def place
+        HeadMusic::Notation::ChordClashes.place(pitch)
+      end
+
+      def semitones
+        pitch.alteration_semitones.to_i
+      end
+
+      # Whether it shows its accidental where the key and the bar imply the
+      # alteration +implied+.
+      def shown?(implied)
+        !continuation && (clashing || implied != semitones)
+      end
+
+      def attributes(implied)
+        return {"accid" => WRITTEN.fetch(semitones)} if shown?(implied)
+        return {} if semitones.zero? && implied.zero?
+
+        {"accid.ges" => GESTURAL.fetch(semitones)}
+      end
+    end
 
     # Each letter's alteration in a key of +fifths+; fifths past seven double
     # the letters from the start of the order again.
     def self.key_alterations(fifths)
-      order = fifths.negative? ? SHARP_ORDER.reverse : SHARP_ORDER
-      direction = fifths.negative? ? -1 : 1
+      direction = fifths <=> 0
+      order = direction.negative? ? SHARP_ORDER.reverse : SHARP_ORDER
       order.each_with_index.to_h { |letter, index| [letter, direction * [(fifths.abs - index + 6) / 7, 0].max] }
     end
 
     def initialize(plan)
       @plan = plan
       @attributes_by_id = {}
-      plan.staff_entries.each do |entry|
-        plan.bar_numbers.each { |bar_number| walk(entry, bar_number) }
-      end
+      plan.staff_entries.product(plan.bar_numbers.to_a).each { |entry, bar_number| walk(entry, bar_number) }
     end
 
     def event_attributes(node)
-      return {} unless node.kind == :note
-
       attributes_by_id.fetch(node.id, {})
     end
 
@@ -40,58 +57,33 @@ module HeadMusic::Notation::MEI
 
     def walk(entry, bar_number)
       key = self.class.key_alterations(plan.written_key_event(entry.part, bar_number).signature)
-      memory = {}
+      memory = Hash.new { |_, (letter, _)| key.fetch(letter, 0) }
       notes(entry, bar_number).each do |note|
-        attributes_by_id[note.id] = attributes(note, key, memory)
+        place = note.place
+        implied = memory[place]
+        memory[place] = note.semitones if note.shown?(implied)
+        attributes_by_id[note.id] = note.attributes(implied)
       end
-    end
-
-    def attributes(note, key, memory)
-      pitch = note.pitch
-      letter = pitch.letter_name.to_s
-      semitones = pitch.alteration_semitones.to_i
-      implied = memory.fetch([letter, pitch.register]) { key.fetch(letter, 0) }
-      if !note.continuation && (note.clashing || implied != semitones)
-        memory[[letter, pitch.register]] = semitones
-        return {"accid" => WRITTEN.fetch(semitones)}
-      end
-      return {} if semitones.zero? && implied.zero?
-
-      {"accid.ges" => GESTURAL.fetch(semitones)}
     end
 
     def notes(entry, bar_number)
-      keyed = plan.layer_voices(entry, bar_number).flat_map do |voice|
-        plan.items(voice, bar_number).reject(&:rest?).flat_map { |item| item_notes(item) }
-      end
-      keyed.each_with_index.sort_by { |(sort_key, _), index| [*sort_key, index] }.map { |(_, note), _| note }
+      items = plan.layer_voices(entry, bar_number).flat_map { |voice| plan.items(voice, bar_number) }.reject(&:rest?)
+      keyed = items.flat_map { |item| item_notes(item) }
+      keyed.sort_by.with_index { |(sort_key, _), index| [*sort_key, index] }.map(&:last)
     end
 
+    # The notes of each grace note of an item, and then of the item itself.
     def item_notes(item)
+      pieces = item.graces.each_with_index.map { |grace, index| plan.grace_note_ids(grace, plan.grace_id(item, index)) }
+      [*pieces, plan.note_ids(item)].each_with_index.flat_map { |note_ids, index| piece_notes(item, index, note_ids) }
+    end
+
+    # Grace notes sound before every voice's note at their onset.
+    def piece_notes(item, index, note_ids)
       onset = item.link.offset
-      members = plan.note_ids(item)
-      clashes = HeadMusic::Notation::ChordClashes.among(members.map(&:first))
-      [*grace_notes(item, onset), *members.map { |pitch, id|
-        [[onset, 1, 0], Note.new(id, pitch, continued?(item, pitch), clashes.include?(pitch))]
-      }]
-    end
-
-    def grace_notes(item, onset)
-      graces = item.graces
-      graces.each_with_index.flat_map do |grace, index|
-        tied_in = index.zero? ? [] : graces[index - 1].tied_pitches
-        members = plan.grace_note_ids(grace, plan.grace_id(item, index))
-        clashes = HeadMusic::Notation::ChordClashes.among(members.map(&:first))
-        members.map do |pitch, id|
-          [[onset, 0, index], Note.new(id, pitch, tied_in.include?(pitch), clashes.include?(pitch))]
-        end
-      end
-    end
-
-    def continued?(item, pitch)
-      return true if %w[m t].include?(item.tie)
-
-      !!item.graces.last&.tied_pitches&.include?(pitch)
+      sort_key = (index < item.graces.length) ? [onset, 0, index] : [onset, 1, 0]
+      clashes = HeadMusic::Notation::ChordClashes.among(note_ids.map(&:first))
+      note_ids.map { |pitch, id| [sort_key, Note.new(id, pitch, item.tied_into?(index, pitch), clashes.include?(pitch))] }
     end
   end
 
