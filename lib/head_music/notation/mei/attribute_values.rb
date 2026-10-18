@@ -8,27 +8,50 @@ module HeadMusic::Notation::MEI
   # MEI allows that the model has no place for raises UnsupportedFeatureError.
   # This is the only place that calls Integer() or Rational() on a value.
   module AttributeValues
+    MAX_DOTS = 3
+    MAX_RATE = 10_000
+    MAX_COUNT = 9999
+    MAX_STEPS = 96
+    # Twenty places, as encoders write a float's full expansion.
+    DECIMAL = /\A\d{1,9}(\.\d{1,20})?\z/
+
+    COUNT = 1..MAX_COUNT
+    STEPS = -MAX_STEPS..MAX_STEPS
+    LINES = 1..10
+    MODE = /\A[a-z.]{1,20}\z/
+    CLEF_SHAPE = /\A(G|GG|F|C|perc|TAB)\z/
+    # Octaves of displacement.
+    OCTAVES_BY_DISPLACEMENT = {"8" => 1, "15" => 2, "22" => 3}.freeze
+    # +1 above, -1 below.
+    DISPLACEMENT_PLACES = {"above" => 1, "below" => -1}.freeze
+    BOOLEANS = {"true" => true, "false" => false}.freeze
+
+    # Each name's reader: a method, the Range of an integer, the Hash of a
+    # choice, or the pattern a value is taken as it is by. A @grace's choice
+    # is whether it is slashed, and a @tie says a note starts, continues, or
+    # ends one.
     READERS = {
       "pname" => :letter, "pname.ges" => :letter, "key.pname" => :letter,
-      "oct" => :octave, "oct.ges" => :octave,
+      "oct" => 0..9, "oct.ges" => 0..9,
       "dur" => :duration, "dur.default" => :duration, "mm.unit" => :duration,
       "dots" => :dots, "mm.dots" => :dots,
       "accid" => :accidental, "accid.ges" => :accidental,
       "keysig" => :key_signature, "key.sig" => :key_signature, "sig" => :key_signature,
-      "key.mode" => :mode, "mode" => :mode,
+      "key.mode" => MODE, "mode" => MODE,
       "meter.count" => :meter_count, "count" => :meter_count,
       "meter.unit" => :meter_unit, "unit" => :meter_unit,
       "meter.sym" => :meter_symbol, "sym" => :meter_symbol,
       "midi.bpm" => :rate, "mm" => :rate,
-      "n" => :number, "layer" => :number, "staff" => :staff_list, "lines" => :line_count,
-      "shape" => :clef_shape, "clef.shape" => :clef_shape,
-      "line" => :clef_line, "clef.line" => :clef_line,
-      "dis" => :displacement, "clef.dis" => :displacement,
-      "dis.place" => :displacement_place, "clef.dis.place" => :displacement_place,
-      "midi.instrnum" => :midi_program,
-      "grace" => :grace, "metcon" => :boolean, "cue" => :boolean, "tie" => :tie, "tuplet" => :tuplet,
-      "num" => :count_of, "numbase" => :count_of,
-      "trans.diat" => :steps, "trans.semi" => :steps,
+      "n" => COUNT, "layer" => COUNT, "staff" => :staff_list, "lines" => LINES,
+      "shape" => CLEF_SHAPE, "clef.shape" => CLEF_SHAPE,
+      "line" => LINES, "clef.line" => LINES,
+      "dis" => OCTAVES_BY_DISPLACEMENT, "clef.dis" => OCTAVES_BY_DISPLACEMENT,
+      "dis.place" => DISPLACEMENT_PLACES, "clef.dis.place" => DISPLACEMENT_PLACES,
+      "midi.instrnum" => 0..127,
+      "grace" => {"unacc" => true, "acc" => false, "unknown" => false}.freeze,
+      "metcon" => BOOLEANS, "cue" => BOOLEANS, "tie" => /\A[imt]\z/, "tuplet" => :tuplet,
+      "num" => COUNT, "numbase" => COUNT,
+      "trans.diat" => STEPS, "trans.semi" => STEPS,
       "tstamp" => :tstamp, "tstamp2" => :tstamp2,
       "isodate" => :year, "startdate" => :year, "enddate" => :year
     }.freeze
@@ -47,15 +70,6 @@ module HeadMusic::Notation::MEI
 
     METERS_BY_SYMBOL = {"common" => "4/4", "cut" => "2/2"}.freeze
     METER_SYMBOLS = %w[common cut open norm].freeze
-    CLEF_SHAPES = %w[G GG F C perc TAB].freeze
-    OCTAVES_BY_DISPLACEMENT = {"8" => 1, "15" => 2, "22" => 3}.freeze
-
-    MAX_DOTS = 3
-    MAX_RATE = 10_000
-    MAX_COUNT = 9999
-    MAX_STEPS = 96
-    # Twenty places, as encoders write a float's full expansion.
-    DECIMAL = /\A\d{1,9}(\.\d{1,20})?\z/
 
     module_function
 
@@ -69,7 +83,13 @@ module HeadMusic::Notation::MEI
 
     def parse(name, value, **options)
       where, bounds = split(options)
-      send(READERS.fetch(name), name, value, where, **bounds)
+      reader = READERS.fetch(name)
+      case reader
+      when Range then bounded_integer(name, value, reader, where)
+      when Hash then reader.fetch(value) { unreadable(name, value, where) }
+      when Regexp then match!(name, value, reader, where)
+      else send(reader, name, value, where, **bounds)
+      end
     end
 
     def split(options)
@@ -98,10 +118,6 @@ module HeadMusic::Notation::MEI
     # An uppercase letter name.
     def letter(name, value, where)
       match!(name, value, /\A[a-g]\z/, where).upcase
-    end
-
-    def octave(name, value, where)
-      bounded_integer(name, value, 0..9, where)
     end
 
     # The name of the unit a @dur is a link of.
@@ -135,19 +151,15 @@ module HeadMusic::Notation::MEI
       value.end_with?("s") ? value.to_i : -value.to_i
     end
 
-    def mode(name, value, where)
-      match!(name, value, /\A[a-z.]{1,20}\z/, where)
-    end
-
     # A meter of added beats, such as 3+2, would read as its first number
     # alone, so it raises.
     def meter_count(name, value, where)
       unsupported(%(An additive @#{name} of "#{value[0, 40]}" is not supported), where) if value.match?(/\A\d+(\+\d+)+\z/)
-      bounded_integer(name, value, 1..MAX_COUNT, where)
+      bounded_integer(name, value, COUNT, where)
     end
 
     def meter_unit(name, value, where)
-      unit = bounded_integer(name, value, 1..MAX_COUNT, where)
+      unit = bounded_integer(name, value, COUNT, where)
       unsupported("A @#{name} of #{unit} names no note value", where) unless HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(unit)
       unit
     end
@@ -164,46 +176,10 @@ module HeadMusic::Notation::MEI
       rational
     end
 
-    def number(name, value, where)
-      bounded_integer(name, value, 1..MAX_COUNT, where)
-    end
-
     # The first staff of a list such as "1 2".
     def staff_list(name, value, where)
       match!(name, value, /\A\d{1,4}( \d{1,4})*\z/, where)
-      bounded_integer(name, value.split.first, 1..MAX_COUNT, where)
-    end
-
-    def line_count(name, value, where)
-      bounded_integer(name, value, 1..10, where)
-    end
-
-    def clef_shape(name, value, where)
-      unreadable(name, value, where) unless CLEF_SHAPES.include?(value)
-      value
-    end
-
-    def clef_line(name, value, where)
-      bounded_integer(name, value, 1..10, where)
-    end
-
-    # Octaves of displacement.
-    def displacement(name, value, where)
-      OCTAVES_BY_DISPLACEMENT.fetch(value) { unreadable(name, value, where) }
-    end
-
-    # +1 above, -1 below.
-    def displacement_place(name, value, where)
-      {"above" => 1, "below" => -1}.fetch(value) { unreadable(name, value, where) }
-    end
-
-    def midi_program(name, value, where)
-      bounded_integer(name, value, 0..127, where)
-    end
-
-    # Where a note is in its tie: i starts one, m continues it, t ends it.
-    def tie(name, value, where)
-      match!(name, value, /\A[imt]\z/, where)
+      bounded_integer(name, value.split.first, COUNT, where)
     end
 
     # Where a note is in its tuplet, i, m, or t; a level past the first is a
@@ -214,28 +190,11 @@ module HeadMusic::Notation::MEI
       value[0]
     end
 
-    # Whether a grace note is slashed.
-    def grace(name, value, where)
-      {"unacc" => true, "acc" => false, "unknown" => false}.fetch(value) { unreadable(name, value, where) }
-    end
-
     # The year an ISO date such as "1685" or "1685-03-21" names, or nil,
     # since a date the head states loosely is no reason to refuse a score.
     def year(_name, value, _where)
       match = value.match(/\A(-?\d{1,4})(-\d\d){0,2}\z/)
       match && Integer(match[1], 10)
-    end
-
-    def boolean(name, value, where)
-      {"true" => true, "false" => false}.fetch(value) { unreadable(name, value, where) }
-    end
-
-    def count_of(name, value, where)
-      bounded_integer(name, value, 1..MAX_COUNT, where)
-    end
-
-    def steps(name, value, where)
-      bounded_integer(name, value, -MAX_STEPS..MAX_STEPS, where)
     end
 
     MAX_PASS = 99
