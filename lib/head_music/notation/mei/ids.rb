@@ -58,6 +58,11 @@ module HeadMusic::Notation::MEI
       id
     end
 
+    # A container keyed by the item it opens with.
+    def item_container(kind, item_id)
+      container(kind, item_id.delete_prefix("#{mdiv}-"))
+    end
+
     def child(parent_id, kind, number = nil)
       "#{parent_id}-#{kind}#{number}"
     end

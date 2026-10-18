@@ -43,6 +43,10 @@ describe HeadMusic::Notation::MEI::Ids do
     expect(ids.container("layer", "#{ids.staff_key(3, 2)}l1")).to eq "m2-layer-b3s2l1"
   end
 
+  it "keys a container by the item it opens with" do
+    expect(ids.item_container("beam", "m2-p1v1-b1c1")).to eq "m2-beam-p1v1-b1c1"
+  end
+
   it "names a one-off element by its kind" do
     expect(ids.container("section")).to eq "m2-section"
   end

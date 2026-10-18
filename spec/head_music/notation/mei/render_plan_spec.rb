@@ -142,6 +142,10 @@ describe HeadMusic::Notation::MEI::RenderPlan do
       expect((1..4).map { |bar| plan.staff_number(left_hand, bar) }).to eq [2, 1, 1, 2]
     end
 
+    it "names the staff and layer a voice is written in" do
+      expect(plan.staff_and_layer(left_hand, 2)).to eq("staff" => 1, "layer" => 2)
+    end
+
     it "names the top staff of a part" do
       expect(plan.top_staff_number(left_hand.part)).to eq 1
     end

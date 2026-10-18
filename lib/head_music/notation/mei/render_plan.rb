@@ -35,6 +35,10 @@ module HeadMusic::Notation::MEI
       staff_entry(voice, bar_number).number
     end
 
+    def staff_and_layer(voice, bar_number)
+      {"staff" => staff_number(voice, bar_number), "layer" => voice_number(voice)}
+    end
+
     def top_staff_number(part)
       staff_entries_of(part).first.number
     end

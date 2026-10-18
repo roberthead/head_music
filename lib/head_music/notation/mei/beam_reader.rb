@@ -71,7 +71,7 @@ module HeadMusic::Notation::MEI
 
     def beamable?(record)
       dur = attribute_of(record, "dur")
-      !record.voice_event.rest? && LayerContainers::BEAM_LEVELS_BY_DUR.key?(dur)
+      !record.voice_event.rest? && BeamContainers::LEVELS_BY_DUR.key?(dur)
     end
   end
 end
