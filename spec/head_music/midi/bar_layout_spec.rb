@@ -156,4 +156,29 @@ describe HeadMusic::MIDI::BarLayout do
       expect([bars.bar_starts, bars.end_time]).to eq [{0 => 0r, 1 => 1/4r, 2 => 5/4r}, 9/4r]
     end
   end
+
+  describe HeadMusic::MIDI::BarLayout::Bar do
+    def bar(start, length, meter)
+      described_class.new(number: 1, start: start, length: length, meter: HeadMusic::Rudiment::Meter.get(meter))
+    end
+
+    it "is the bar of its length and meter so many bars on" do
+      later = bar(1r, 1r, "4/4").later(2)
+      expect([later.number, later.start, later.length]).to eq [3, 3r, 1r]
+    end
+
+    it "beats in the meter's beat" do
+      expect([bar(0r, 1r, "4/4").beat, bar(0r, 3/4r, "6/8").beat]).to eq [1/4r, 3/8r]
+    end
+
+    it "counts beats from its own start" do
+      full = bar(1r, 1r, "4/4")
+      expect([full.beat_count(3/2r), full.beat_time(2)]).to eq [2r, 3/2r]
+    end
+
+    it "counts the beats of a short bar from the downbeat of the full bar it ends" do
+      short = bar(0r, 1/4r, "3/4")
+      expect([short.beat_count(0r), short.beat_time(0)]).to eq [2r, -1/2r]
+    end
+  end
 end

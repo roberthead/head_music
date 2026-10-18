@@ -47,31 +47,26 @@ module HeadMusic::MIDI
     # Past the last bar, bars of its length and meter go on.
     def bar_containing(time)
       bar = layout.bar_at(time)
-      return bar if time < bar.end_time
-
-      skipped = ((time - bar.end_time) / bar.length).floor
-      bar.with(number: bar.number + skipped + 1, start: bar.end_time + (skipped * bar.length))
+      (time < bar.end_time) ? bar : bar.later(((time - bar.start) / bar.length).floor)
     end
 
     def rest_pieces(bar, from, to)
       return [[from, to]] if from == bar.start && to == bar.end_time
 
-      anchor, beat = beat_grid(bar)
       beat_pieces(bar, from, to).flat_map do |start, finish|
-        on_beats = [start, finish].all? { |time| ((time - anchor) / beat).denominator == 1 }
-        on_beats ? aligned_beats(start, finish, anchor, beat) : [[start, finish]]
+        first, last = [start, finish].map { |time| bar.beat_count(time) }
+        ([first, last].all? { |count| count.denominator == 1 }) ? aligned_beats(bar, first, last) : [[start, finish]]
       end
     end
 
     # Whole beats as the longest single values that each start at a multiple
     # of their own length from the downbeat.
-    def aligned_beats(from, to, anchor, beat)
+    def aligned_beats(bar, first, last)
       pieces = []
-      while from < to
-        offset = (from - anchor) / beat
-        count = ((to - from) / beat).to_i.downto(1).find { |beats| (offset % beats).zero? && single?(beats * beat) }
-        pieces << [from, from + (count * beat)]
-        from += count * beat
+      while first < last
+        count = (last - first).to_i.downto(1).find { |beats| (first % beats).zero? && single?(beats * bar.beat) }
+        pieces << [bar.beat_time(first), bar.beat_time(first + count)]
+        first += count
       end
       pieces
     end
@@ -81,20 +76,11 @@ module HeadMusic::MIDI
       value && !value.tied_value
     end
 
-    # The beat and the downbeat its bar counts from. A short bar is the end of
-    # a full one, so its downbeat lies before its start.
-    def beat_grid(bar)
-      nominal = Rational(bar.meter.top_number, bar.meter.bottom_number)
-      anchor = (bar.length < nominal) ? bar.end_time - nominal : bar.start
-      [anchor, BarLayout.beat(bar.meter).fraction]
-    end
-
     # The partial beat before the first beat inside the span, the whole beats,
     # and the partial beat after them.
     def beat_pieces(bar, from, to)
-      anchor, beat = beat_grid(bar)
-      first_beat = anchor + (((from - anchor) / beat).ceil * beat)
-      last_beat = anchor + (((to - anchor) / beat).floor * beat)
+      first_beat = bar.beat_time(bar.beat_count(from).ceil)
+      last_beat = bar.beat_time(bar.beat_count(to).floor)
       return [[from, to]] if first_beat >= to
 
       [[from, first_beat], [first_beat, last_beat], [last_beat, to]].select { |start, finish| finish > start }

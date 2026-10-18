@@ -7,6 +7,32 @@ module HeadMusic::MIDI
       def end_time
         start + length
       end
+
+      # The bar of the same length and meter so many bars on.
+      def later(count)
+        with(number: number + count, start: start + (count * length))
+      end
+
+      # The beats from the downbeat the bar counts from to a time. A short
+      # bar is the end of a full one, so its downbeat lies before its start.
+      def beat_count(time)
+        (time - downbeat) / beat
+      end
+
+      def beat_time(count)
+        downbeat + (count * beat)
+      end
+
+      def beat
+        BarLayout.beat(meter).fraction
+      end
+
+      private
+
+      def downbeat
+        nominal = BarLayout.length(meter)
+        (length < nominal) ? end_time - nominal : start
+      end
     end
 
     # The meter's beat. Meter gives a compound meter of whole notes, such as
