@@ -16,9 +16,6 @@ module HeadMusic::Notation::ABC
       tuplet: :handle_tuplet, grace: :handle_grace
     }.freeze
 
-    # A voice overlay is read only for the levels its invisible rests place.
-    OVERLAY_MUSIC = %i[note chord rest tie broken_rhythm slur_start slur_end tuplet grace].freeze
-
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
     def initialize(abc_string, start_line: 1)
@@ -65,7 +62,7 @@ module HeadMusic::Notation::ABC
     end
 
     def handle(token)
-      reject_overlay_music(token)
+      current_state.reject_overlay_music(token) if @voices.any?
       handler = HANDLERS[token.type]
       send(handler, token) if handler
     end
@@ -155,15 +152,6 @@ module HeadMusic::Notation::ABC
       state = current_state
       pause_notes(state, token.line)
       state.start_overlay
-    end
-
-    def reject_overlay_music(token)
-      return unless OVERLAY_MUSIC.include?(token.type) && @voices.any? && current_state.overlay?
-
-      raise UnsupportedFeatureError.new(
-        "Unsupported ABC feature: a voice overlay holding notes or rests, which would be a second voice",
-        line_number: token.line, snippet: "&"
-      )
     end
 
     def handle_spacer(token)

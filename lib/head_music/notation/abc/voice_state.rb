@@ -25,6 +25,7 @@ module HeadMusic::Notation::ABC
       @graces = []
       @invisible_rests = InvisibleRests.new(voice)
       @tuplets = TupletGrouping.new(voice)
+      @overlay = VoiceOverlay.new(voice)
     end
 
     delegate :music_end, to: :@invisible_rests
@@ -98,7 +99,7 @@ module HeadMusic::Notation::ABC
     def skip(length)
       @decorations.place_at(mark_position)
       if overlay?
-        @overlay_cursor += @duration_resolver.rhythmic_value(length)
+        @overlay.advance(@duration_resolver.rhythmic_value(length))
       else
         ratio, ends = @tuplets.count
         from = music_end
@@ -116,10 +117,9 @@ module HeadMusic::Notation::ABC
       @decorations.settle_hairpins(mark_position)
     end
 
-    # The bar a voice overlay starts over is the one the last bar line opened.
     def cross_bar_line(line = nil)
       end_overlay(line)
-      @bar_start = cursor
+      @overlay.bar_line(cursor)
     end
 
     # Invisible rests left in the bar where the music ends hold only time for
@@ -133,19 +133,19 @@ module HeadMusic::Notation::ABC
     end
 
     def start_overlay
-      @overlay_cursor = @bar_start || HeadMusic::Content::Position.new(voice.flow, 1, 1, 0)
+      @overlay.start
     end
 
     def end_overlay(line = nil)
-      if @overlay_cursor && @overlay_cursor > cursor
-        raise ParseError.new("A voice overlay must not run past its bar's music", line_number: line, snippet: "&")
-      end
-
-      @overlay_cursor = nil
+      @overlay.finish(cursor, line)
     end
 
     def overlay?
-      !@overlay_cursor.nil?
+      @overlay.active?
+    end
+
+    def reject_overlay_music(token)
+      @overlay.reject_music(token)
     end
 
     def tie_open?
@@ -232,7 +232,7 @@ module HeadMusic::Notation::ABC
     end
 
     def mark_position
-      @overlay_cursor || cursor
+      @overlay.cursor || cursor
     end
 
     def arriving_note(pitches, length, inner_scale, beam_break:)
