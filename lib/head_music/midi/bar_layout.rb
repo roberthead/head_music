@@ -9,11 +9,6 @@ module HeadMusic::MIDI
       end
     end
 
-    DEFAULT_METER = "4/4"
-    # The finest automatic grids, sixty-fourths and their triplet division,
-    # since export writes a triplet pickup's barline on a triplet point.
-    SIGNATURE_STEPS = [Rational(1, 64), Rational(1, 96)].freeze
-
     # The meter's beat. Meter gives a compound meter of whole notes, such as
     # 6/1, a beat with no unit, since writers beam nothing under it; a MIDI
     # file may carry one, and it beats in dotted double wholes.
@@ -32,7 +27,7 @@ module HeadMusic::MIDI
 
     # +time_signatures+ are the reader's TimeSignature events in merged order.
     def initialize(time_signatures, division:, end_tick:)
-      @time_signatures = time_signatures
+      @meters = MeterChanges.new(time_signatures, division: division, end_tick: end_tick)
       @division = division
       @end_tick = end_tick
     end
@@ -67,71 +62,31 @@ module HeadMusic::MIDI
     end
 
     # [time, meter] at time 0 and wherever a later time signature takes
-    # effect before the end, the last at a tick winning. Each snaps to the
-    # grid point within a tick of it, counted from the one before, since
-    # writers that count in ticks round a short bar.
+    # effect before the end.
     def meter_changes
-      @meter_changes ||= begin
-        latest = @time_signatures.chunk_while { |before, after| before.tick == after.tick }.map(&:last)
-        changes = [[0r, HeadMusic::Rudiment::Meter.get(DEFAULT_METER)]]
-        latest.each do |event|
-          next unless event.tick < @end_tick || event.tick.zero?
-
-          at = event.tick.zero? ? 0r : snap(event.tick, changes.last.first)
-          changes.pop if changes.last.first == at
-          changes << [at, HeadMusic::Rudiment::Meter.get("#{event.numerator}/#{event.denominator}")]
-        end
-        changes.freeze
-      end
+      @meters.to_a
     end
 
     # Worked out from the meter changes, without laying out the bars.
     def barline?(time)
-      changes = meter_changes
-      changes = changes.drop(1) if pickup?(changes)
-      from, meter = changes.chunk_while { |before, after| before.last == after.last }.map(&:first).reverse.find { |at, _meter| at <= time }
-      !from.nil? && ((time - from) / length_of(meter)).denominator == 1
+      @meters.barline?(time)
     end
 
     private
 
     def lay_out
-      changes = meter_changes
       bars = []
       start = 0r
-      if pickup?(changes)
-        bars << Bar.new(number: 0, start: start, length: changes[1].first, meter: changes[1].last)
-        start = changes[1].first
-        changes = changes.drop(1)
+      if @meters.pickup?
+        start, meter = meter_changes[1]
+        bars << Bar.new(number: 0, start: 0r, length: start, meter: meter)
       end
-      meter = changes.first.last
-      changes.drop(1).each do |at, following|
-        next if following == meter
-
-        start = fill(bars, start, at, meter, partial: false)
-        meter = following
-      end
+      sections = @meters.sections
+      sections.each_cons(2) { |(_, meter), (at, _)| start = fill(bars, start, at, meter, partial: false) }
+      meter = sections.last.last
       fill(bars, start, [time(@end_tick), start].max, meter, partial: true)
       bars << bar(bars, start, meter) if bars.empty?
       bars
-    end
-
-    def snap(tick, from)
-      offset = time(tick) - from
-      point = SIGNATURE_STEPS.map { |step| (offset / step).round * step }.min_by { |candidate| (offset - candidate).abs }
-      return from + point if ((offset - point) * division * 4).abs <= 1
-
-      raise UnsupportedFeatureError, "the time signature at tick #{tick} falls between grid points, " \
-        "more than a tick from any sixty-fourth or triplet sixty-fourth after the one before"
-    end
-
-    # The second time signature arrives within the first bar and before a
-    # full bar of its own meter, so the bar it closes is a pickup.
-    def pickup?(changes)
-      return false if changes.length < 2
-
-      at, following = changes[1]
-      at <= length_of(changes.first.last) && at < length_of(following)
     end
 
     # Appends the bars of one meter from +start+ to +to+, which must be a
