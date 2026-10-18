@@ -45,36 +45,30 @@ module HeadMusic::Notation::Kern
     private
 
     def readings
-      @readings ||= @tracks.each_index.filter_map do |index|
-        next unless @tracks[index].dynam?
-
-        read(index, @row.record.fields[index])
-      end
+      @readings ||= @row.fields_on(:dynam).filter_map { |field, index| read(index, field) }
     end
 
     def read(index, field)
-      kern_index = (index - 1).downto(0).find { |candidate| @tracks[candidate].kern? }
+      kern_index = @row.kern_index_before(index)
       return unless kern_index
 
       track = @tracks[kern_index]
-      dynamics = []
-      roles = []
-      field.split(" ").each do |text|
-        residue = text.gsub(MARKS, "")
-        dynamic = catalog_dynamic(residue)
-        dynamics << Dynamic.new(track: track, dynamic: dynamic, column: index + 1) if dynamic
-        roles << [:interrupt, nil] if residue.match?(/[a-z]/i)
-        roles.concat(mark_roles(text))
-      end
-      marks = ROLES.flat_map { |role| roles.select { |candidate, _kind| candidate == role } }.map do |role, kind|
-        HairpinMark.new(spine: @tracks[index], track: track, role: role, kind: kind)
-      end
-      [dynamics, marks]
+      texts = field.split(" ").map { |text| [text, text.gsub(MARKS, "")] }
+      dynamics = texts.filter_map { |_text, residue| catalog_dynamic(residue) }
+      by_role = texts.flat_map { |text, residue| mark_roles(text, residue) }.group_by(&:first)
+      [
+        dynamics.map { |dynamic| Dynamic.new(track: track, dynamic: dynamic, column: index + 1) },
+        ROLES.flat_map { |role| by_role.fetch(role, []) }.map do |role, kind|
+          HairpinMark.new(spine: @tracks[index], track: track, role: role, kind: kind)
+        end
+      ]
     end
 
-    def mark_roles(text)
+    # Letters left after the marks are an interrupt.
+    def mark_roles(text, residue)
       opened = false
-      text.scan(MARKS).filter_map do |mark|
+      interrupt = residue.match?(/[a-z]/i) ? [[:interrupt, nil]] : []
+      interrupt + text.scan(MARKS).filter_map do |mark|
         kind = KINDS[mark]
         next unless kind
 

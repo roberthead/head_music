@@ -18,18 +18,14 @@ module HeadMusic::Notation::Kern
     end
 
     def syllables
-      @tracks.each_index.filter_map do |index|
-        next unless @tracks[index].lyric?
-
-        syllable(index, @row.record.fields[index])
-      end
+      @row.fields_on(:lyric).filter_map { |field, index| syllable(index, field) }
     end
 
     # Gives each syllable to the note its kern spine attacks on the row.
     def sing(events)
       syllables.each do |syllable|
         event = events[syllable.track]
-        if event.nil? || event.pitches.empty?
+        unless event&.pitches&.any?
           raise ParseError.new(
             %(The syllable "#{syllable.text}" in spine #{syllable.column} has no note under it), line_number: @row.record.line
           )
@@ -55,7 +51,7 @@ module HeadMusic::Notation::Kern
     end
 
     def nearest_kern_index(index)
-      kern_index = (index - 1).downto(0).find { |candidate| @tracks[candidate].kern? }
+      kern_index = @row.kern_index_before(index)
       return kern_index if kern_index
 
       raise ParseError.new(

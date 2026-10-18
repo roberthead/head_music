@@ -23,6 +23,19 @@ describe HeadMusic::Notation::Kern::Document do
     it "pairs each row after the header with its tracks" do
       expect(header.rows.map { |row| row.tracks.length }).to eq [4, 4]
     end
+
+    it "finds a row's fields on one kind of track, with their indexes" do
+      expect(header.rows.first.fields_on(:lyric)).to eq [["la", 1]]
+    end
+
+    it "gives the kern fields with their tracks and 1-based columns" do
+      expect(header.rows.first.kern_fields.map { |track, field, column| [track.origin, field, column] })
+        .to eq [[0, "4c", 1], [3, "4e", 4]]
+    end
+
+    it "finds the nearest kern track on a field's left" do
+      expect([0, 2, 3].map { |index| header.rows.first.kern_index_before(index) }).to eq [nil, 0, 0]
+    end
   end
 
   describe "spine manipulation" do

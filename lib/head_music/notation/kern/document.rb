@@ -17,9 +17,16 @@ module HeadMusic::Notation::Kern
 
       # The kern fields, each with its track and its 1-based column.
       def kern_fields
-        tracks.each_with_index.filter_map do |track, index|
-          [track, record.fields[index], index + 1] if track.kern?
-        end
+        fields_on(:kern).map { |field, index| [tracks[index], field, index + 1] }
+      end
+
+      # The fields on tracks of one kind, each with its index.
+      def fields_on(kind)
+        tracks.each_with_index.filter_map { |track, index| [record.fields[index], index] if track.kind == kind }
+      end
+
+      def kern_index_before(index)
+        (index - 1).downto(0).find { |candidate| tracks[candidate].kern? }
       end
     end
 
