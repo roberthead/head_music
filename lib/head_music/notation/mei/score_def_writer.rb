@@ -5,7 +5,7 @@ module HeadMusic::Notation::MEI
   #
   # Extension classes registered in staff_def_attribute_sources are built
   # once per plan with .new(plan) and answer #staff_def_attributes(entry), a
-  # Hash merged into the opening staffDef of that RenderPlan::StaffEntry.
+  # Hash merged into the opening staffDef of that StaffNumbering::Entry.
   class ScoreDefWriter
     CLEF_REGISTERS = {"G" => 4, "F" => 3, "C" => 4}.freeze
     DISPLACEMENTS = {1 => "8", 2 => "15", 3 => "22"}.freeze
