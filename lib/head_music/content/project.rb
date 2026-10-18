@@ -11,13 +11,11 @@ class HeadMusic::Content::Project
   attr_accessor :name
 
   def self.from_h(hash)
-    raise ArgumentError, "expected a Hash, got #{hash.class}" unless hash.is_a?(Hash)
-
-    hash = hash.deep_transform_keys(&:to_s)
+    hash = HeadMusic::Content::Flow::Deserializer.document(hash)
     version = hash["schema_version"]
     raise ArgumentError, unsupported_version_message(version) unless version == SCHEMA_VERSION
 
-    new(name: hash["name"], credits: Array(hash["credits"])).tap do |project|
+    new(name: hash["name"], credits: hash["credits"]).tap do |project|
       Array(hash["players"]).each { |player_hash| project.add_player(name: player_hash["name"]) }
       Array(hash["flows"]).each do |flow_hash|
         project.adopt_flow_at(HeadMusic::Content::Flow.from_h(flow_hash), flow_hash["players"])
@@ -72,16 +70,14 @@ class HeadMusic::Content::Project
   # A part's own player becomes one of this project's, so its name survives
   # into the project's chairs; adopting twice changes nothing.
   def add_flow(flow)
-    return flow if flows.any? { |owned| owned.equal?(flow) }
-    raise ArgumentError, "the flow belongs to another project" if flow.project && !flow.project.equal?(self)
-    raise ArgumentError, "a part's player belongs to another project" if foreign_player?(flow)
+    return flow if flows.include?(flow)
+    raise ArgumentError, "the flow belongs to another project" if foreign?(flow)
+    raise ArgumentError, "a part's player belongs to another project" if flow.parts.any? { |part| foreign?(part.player) }
 
-    @flows << flow
-    flow.project = self
-    flow.parts.each_with_index do |part, index|
-      part.player ? adopt_player(part.player) : part.player = add_player(name: player_name_for(part, index))
+    hold_flow(flow) do |part, index|
+      player = part.player
+      player ? adopt_player(player) : part.player = add_player(name: player_name_for(part, index))
     end
-    flow
   end
 
   # The project holds its layouts but renders nothing itself -- rendering is a
@@ -108,13 +104,11 @@ class HeadMusic::Content::Project
   #
   # @api private for Project.from_h
   def adopt_flow_at(flow, player_indexes)
-    @flows << flow
-    flow.project = self
-    flow.parts.each_with_index do |part, index|
-      player_index = Array(player_indexes)[index]
+    player_indexes = Array(player_indexes)
+    hold_flow(flow) do |part, index|
+      player_index = player_indexes[index]
       part.player = player_index && players[player_index]
     end
-    flow
   end
 
   def to_h
@@ -133,10 +127,18 @@ class HeadMusic::Content::Project
   end
 
   def to_s
-    "#{name} — #{flows.length} #{"flow".pluralize(flows.length)}"
+    count = flows.length
+    "#{name} — #{count} #{"flow".pluralize(count)}"
   end
 
   private
+
+  def hold_flow(flow, &)
+    @flows << flow
+    flow.project = self
+    flow.parts.each_with_index(&)
+    flow
+  end
 
   def hold_layout(layout)
     @layouts << layout
@@ -154,16 +156,18 @@ class HeadMusic::Content::Project
   # Which chair each part fills, by index into the project's players. Null for
   # a part with no player, which stays a plain staff of music.
   def player_indexes_for(flow)
-    flow.parts.map { |part| part.player && players.index { |player| player.equal?(part.player) } }
+    flow.parts.map { |part| players.index(part.player) }
   end
 
-  def foreign_player?(flow)
-    flow.parts.any? { |part| part.player&.project && !part.player.project.equal?(self) }
+  # Whether a flow or player already belongs to another project.
+  def foreign?(member)
+    owner = member&.project
+    owner && !owner.equal?(self)
   end
 
   def adopt_player(player)
     player.project = self
-    @players << player unless players.any? { |owned| owned.equal?(player) }
+    @players << player unless players.include?(player)
   end
 
   # Named for what the part plays, falling back to its position, because a
