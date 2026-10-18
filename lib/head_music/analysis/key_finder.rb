@@ -53,7 +53,7 @@ class HeadMusic::Analysis::KeyFinder
   # All 24 keys, best first, or none when nothing sounds.
   def candidates
     @candidates ||= begin
-      histogram = histogram_of(input.notes)
+      histogram = Histograms.new(input).whole
       if histogram.sum.zero?
         []
       else
@@ -94,65 +94,9 @@ class HeadMusic::Analysis::KeyFinder
 
   private
 
-  # Viterbi over bars and keys; a tie keeps the key in force. A bar that
-  # scores nothing changes no key, so a change waits for the music.
   def key_path
-    scores = local_scores
-    totals = scores.first.dup
-    back_pointers = scores.drop(1).map do |bar_scores|
-      next totals.each_index.to_a if bar_scores.all?(&:zero?)
-
-      leader = best_index(totals)
-      moved = totals[leader] - change_penalty
-      pointers = totals.each_index.map { |index| (totals[index] >= moved) ? index : leader }
-      totals = pointers.each_with_index.map { |from, index| totals[from] - ((from == index) ? 0 : change_penalty) + bar_scores[index] }
-      pointers
-    end
-    path = [best_index(totals)]
-    back_pointers.reverse_each { |pointers| path.unshift(pointers[path.first]) }
-    path
-  end
-
-  def best_index(totals)
-    totals.each_index.min_by { |index| [-totals[index], *PREFERENCE[index]] }
-  end
-
-  def local_scores
-    histograms = bar_histograms
-    prefix = histograms.each_with_object([Array.new(12, 0r)]) do |histogram, sums|
-      sums << sums.last.zip(histogram).map(&:sum)
-    end
-    histograms.each_index.map do |index|
-      low = [index - window, 0].max
-      high = [index + window, histograms.length - 1].min
-      profile.correlations(prefix[high + 1].zip(prefix[low]).map { |upper, lower| upper - lower })
-    end
-  end
-
-  # Each note's duration is credited to the bars it sounds in.
-  def bar_histograms
-    starts = input.bar_starts.values
-    index_of_bar = input.bar_starts.keys.each_with_index.to_h
-    histograms = Array.new(starts.length) { Array.new(12, 0r) }
-    input.notes.each do |note|
-      bar_index = index_of_bar.fetch(input.bar_at(note.onset))
-      from = note.onset
-      finish = note.onset + note.duration
-      while from < finish
-        bar_end = starts[bar_index + 1]
-        to = (bar_end.nil? || finish < bar_end) ? finish : bar_end
-        histograms[bar_index][note.number % 12] += to - from
-        from = to
-        bar_index += 1
-      end
-    end
-    histograms
-  end
-
-  def histogram_of(notes)
-    notes.each_with_object(Array.new(12, 0r)) do |note, histogram|
-      histogram[note.number % 12] += note.duration
-    end
+    scores = Histograms.new(input).windowed(window).map { |histogram| profile.correlations(histogram) }
+    KeyPath.new(scores, change_penalty: change_penalty, preference: PREFERENCE).to_a
   end
 
   def ranked(correlations)
