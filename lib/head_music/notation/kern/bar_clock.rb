@@ -44,7 +44,7 @@ module HeadMusic::Notation::Kern
     def barline(barline, time, line)
       elapsed = time - @bar_start
       if @number.nil?
-        first_barline(barline, time, elapsed, line)
+        first_barline(barline, time, line)
       elsif elapsed.zero?
         mark_bars(barline, @number - 1, @number)
       elsif within_bar?(barline, elapsed)
@@ -60,7 +60,7 @@ module HeadMusic::Notation::Kern
     # Yields the bar a change takes effect in: this one when the reader is
     # at its downbeat, or else the next, once its barline arrives.
     def at_downbeat(time, description, line, &change)
-      if @number && time == @bar_start
+      if downbeat?(time)
         change.call(@number)
       else
         @pending << Pending.new(description: description, line: line, change: change)
@@ -68,7 +68,7 @@ module HeadMusic::Notation::Kern
     end
 
     def section_label(label, time)
-      if @number && time == @bar_start
+      if downbeat?(time)
         @section_labels[@number] = label
       else
         @waiting_label = label
@@ -104,12 +104,11 @@ module HeadMusic::Notation::Kern
     # note marks no bar.
     def mark(flow)
       last = flow.last_sounding_bar_number
-      repeat_starts.each { |number| flow.bars(number).last.starts_repeat = true }
-      repeat_ends.each { |number| flow.bars(number).last.ends_repeat_after_num_plays = 2 }
-      barline_styles.each do |number, style|
-        flow.bars(number).last.barline = style unless style == :final && number >= last
-      end
-      section_labels.each { |number, label| flow.bars(number).last.rehearsal_mark = label if number <= last }
+      bar = ->(number) { flow.bars(number).last }
+      repeat_starts.each { |number| bar[number].starts_repeat = true }
+      repeat_ends.each { |number| bar[number].ends_repeat_after_num_plays = 2 }
+      barline_styles.each { |number, style| bar[number].barline = style unless style == :final && number >= last }
+      section_labels.each { |number, label| bar[number].rehearsal_mark = label if number <= last }
     end
 
     def bar_containing(time)
@@ -122,18 +121,25 @@ module HeadMusic::Notation::Kern
 
     private
 
-    def first_barline(barline, time, elapsed, line)
-      number = barline.number || HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR
-      open_pickup(number - 1, time, elapsed, line) if elapsed.positive?
-      open_bar(number, time)
-      mark_bars(barline, number - 1, number)
+    def downbeat?(time)
+      @number && time == @bar_start
     end
 
-    def open_pickup(number, time, elapsed, line)
+    # Before the first barline the clock has not moved, so the time is all
+    # the pickup's music.
+    def first_barline(barline, time, line)
+      number = barline.number || HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR
+      pickup = number - 1
+      open_pickup(pickup, time, line) if time.positive?
+      open_bar(number, time)
+      mark_bars(barline, pickup, number)
+    end
+
+    def open_pickup(number, time, line)
       raise UnsupportedFeatureError.new("A pickup before bar 0 is not supported", line_number: line) if number.negative?
 
       length = bar_length(number)
-      raise ParseError.new("The pickup bar is longer than bar #{number}'s meter", line_number: line) if elapsed > length
+      raise ParseError.new("The pickup bar is longer than bar #{number}'s meter", line_number: line) if time > length
 
       @bars << Bar.new(number: number, start: time - length)
     end

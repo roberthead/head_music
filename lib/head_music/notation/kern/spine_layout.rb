@@ -7,7 +7,7 @@ module HeadMusic::Notation::Kern
   # per-spine state across the rows that rearrange the columns. A split
   # keeps the left half as the original track; a join keeps the leftmost.
   class SpineLayout
-    LYRIC_EXCLUSIVES = %w[**text **silbe].freeze
+    KINDS = {"**kern" => :kern, "**text" => :lyric, "**silbe" => :lyric, "**dynam" => :dynam}.freeze
     MANIPULATORS = %w[*^ *v *x *- *+].freeze
 
     # One column through the file. Compared by identity: two tracks of the
@@ -21,11 +21,7 @@ module HeadMusic::Notation::Kern
       end
 
       def kind
-        return :kern if exclusive == "**kern"
-        return :lyric if LYRIC_EXCLUSIVES.include?(exclusive)
-        return :dynam if exclusive == "**dynam"
-
-        :skipped
+        KINDS.fetch(exclusive, :skipped)
       end
 
       def kern?
@@ -65,12 +61,14 @@ module HeadMusic::Notation::Kern
     end
 
     def ensure_width(record)
-      return if record.fields.length == tracks.length
+      fields = record.fields
+      width = fields.length
+      live = tracks.length
+      return if width == live
 
       raise ParseError.new(
-        "Row has #{record.fields.length} #{"field".pluralize(record.fields.length)} " \
-        "but #{tracks.length} #{"spine".pluralize(tracks.length)} #{(tracks.length == 1) ? "is" : "are"} live",
-        line_number: record.line, snippet: record.fields.join("\t")
+        "Row has #{width} #{"field".pluralize(width)} but #{live} #{"spine".pluralize(live)} #{(live == 1) ? "is" : "are"} live",
+        line_number: record.line, snippet: fields.join("\t")
       )
     end
 
@@ -106,36 +104,39 @@ module HeadMusic::Notation::Kern
       track = tracks[index]
       raise error(UnsupportedFeatureError, "Splitting a #{track.exclusive} spine is not supported", "*^") if track.lyric?
 
-      right = track.sprout
-      @next_tracks.push(track, right)
-      @manipulations << Manipulation.new(:split, [track, right])
+      halves = [track, track.sprout]
+      change(:split, halves, halves)
       index + 1
     end
 
     def join(index)
       run = run_of("*v", index)
-      raise error(ParseError, "*v must join two or more adjacent spines", "*v") if run.length < 2
-      if run.map(&:exclusive).uniq.length > 1
-        raise error(ParseError, "*v cannot join spines of different kinds (#{run.map(&:exclusive).uniq.join(", ")})", "*v")
-      end
+      length = run.length
+      raise error(ParseError, "*v must join two or more adjacent spines", "*v") if length < 2
 
-      @next_tracks << run.first
-      @manipulations << Manipulation.new(:join, run)
-      index + run.length
+      exclusives = run.map(&:exclusive).uniq
+      raise error(ParseError, "*v cannot join spines of different kinds (#{exclusives.join(", ")})", "*v") unless exclusives.one?
+
+      change(:join, run, [run.first])
+      index + length
     end
 
     def exchange(index)
       run = run_of("*x", index)
       raise error(ParseError, "*x must exchange exactly two adjacent spines", "*x") unless run.length == 2
 
-      @next_tracks.push(run.last, run.first)
-      @manipulations << Manipulation.new(:exchange, run)
+      change(:exchange, run, run.reverse)
       index + 2
     end
 
     def terminate(index)
-      @manipulations << Manipulation.new(:end, [tracks[index]])
+      change(:end, [tracks[index]], [])
       index + 1
+    end
+
+    def change(type, changed, survivors)
+      @next_tracks.concat(survivors)
+      @manipulations << Manipulation.new(type, changed)
     end
 
     def run_of(manipulator, index)
