@@ -11,13 +11,6 @@ class HeadMusic::Style::Guidelines::MinimumMelodicIntervals < HeadMusic::Style::
     deficiency_mark
   end
 
-  # The count comes from the configuration or the class default -- never from
-  # config alone, which is empty for the unconfigured case.
-  def self.template_values(config)
-    count = config.fetch(:minimum)
-    {count: count, number: HeadMusic::Style::Template.number_word(count)}
-  end
-
   private
 
   def moving_intervals

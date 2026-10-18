@@ -75,5 +75,10 @@ class HeadMusic::Style::Guideline
     def template_values(config)
       config.except(:violation_key)
     end
+
+    # For the templates that pluralize on a count and spell it out.
+    def count_values(count)
+      {count: count, number: HeadMusic::Style::Template.number_word(count)}
+    end
   end
 end

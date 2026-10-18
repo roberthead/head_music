@@ -22,16 +22,14 @@ class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guidelin
   def self.template_values(config)
     count = config.fetch(:count) { self::COUNT }
     unit = config.fetch(:rhythmic_value) { self::RHYTHMIC_VALUE }
-    {
-      count: count,
-      number: HeadMusic::Style::Template.number_word(count),
+    count_values(count).merge(
       # Pluralized because British names the value with a noun and drops the
       # "note" the American sentence carries: four crotchets, not four crotchet
       # notes. English's entries stay scalar, which I18n reads past the count.
       rhythmic_unit: HeadMusic::Style::Template.pluralize(
         "rhythmic_units.#{unit}", count: count, scope: HeadMusic::Style::Template::RUDIMENT_SCOPE
       )
-    }
+    )
   end
 
   private

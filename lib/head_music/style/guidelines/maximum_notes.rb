@@ -12,12 +12,7 @@ class HeadMusic::Style::Guidelines::MaximumNotes < HeadMusic::Style::Guideline
     HeadMusic::Style::Mark.for_each(notes[maximum..]) if overage.positive?
   end
 
-  # The count comes from the configuration or the class default -- never from
-  # config alone, which is empty for the unconfigured case.
-  def self.template_values(config)
-    count = config.fetch(:maximum)
-    {count: count, number: HeadMusic::Style::Template.number_word(count)}
-  end
+  def self.template_values(config) = count_values(config.fetch(:maximum))
 
   protected
 

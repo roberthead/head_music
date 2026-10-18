@@ -8,13 +8,6 @@ class HeadMusic::Style::Guidelines::MinimumNotes < HeadMusic::Style::Guidelines:
     voice_events.empty? ? no_voice_events_mark : deficiency_mark
   end
 
-  # The count comes from the configuration or the class default -- never from
-  # config alone, which is empty for the unconfigured case.
-  def self.template_values(config)
-    count = config.fetch(:minimum) { MINIMUM }
-    {count: count, number: HeadMusic::Style::Template.number_word(count)}
-  end
-
   private
 
   def actual_count

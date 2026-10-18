@@ -8,6 +8,8 @@ class HeadMusic::Style::Guidelines::MinimumThreshold < HeadMusic::Style::Guideli
     super(minimum: minimum, **options)
   end
 
+  def self.template_values(config) = count_values(config.fetch(:minimum))
+
   private
 
   def minimum
