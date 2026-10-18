@@ -112,11 +112,7 @@ module HeadMusic::Notation::LilyPond
     # \after takes a duration, which may be dotted or multiplied, so it is
     # read with the command rather than left to the number pattern.
     def after_token
-      return unless consume(AFTER_PATTERN)
-
-      nil while scanner.skip_insignificant
-      duration = consume(AFTER_DURATION_PATTERN) && scanner.captures
-      token(:after, lexeme: "\\after", duration: duration&.first, multiplier: duration&.last)
+      consume(AFTER_PATTERN) && token(:after, lexeme: "\\after", **argument_duration)
     end
 
     # \tuplet n/d and \times d/n both lex with the fraction as written; only
@@ -125,23 +121,25 @@ module HeadMusic::Notation::LilyPond
       return unless consume(TUPLET_PATTERN)
 
       command = scanner[1]
-      nil while scanner.skip_insignificant
+      skip_insignificant_run
       fraction = consume(FRACTION_PATTERN)
-      duration = nil
-      if command == "tuplet" && fraction
-        nil while scanner.skip_insignificant
-        duration = consume(AFTER_DURATION_PATTERN) && scanner.captures
-      end
-      token(:tuplet, lexeme: "\\#{command}", fraction: fraction, duration: duration&.first, multiplier: duration&.last)
+      span = (command == "tuplet" && fraction) ? argument_duration : {}
+      token(:tuplet, lexeme: "\\#{command}", fraction: fraction, **span)
     end
 
     # \tupletSpan's \default is left to the reader, as a command token.
     def tuplet_span_token
-      return unless consume(TUPLET_SPAN_PATTERN)
+      consume(TUPLET_SPAN_PATTERN) && token(:tuplet_span, lexeme: "\\tupletSpan", **argument_duration)
+    end
 
+    def argument_duration
+      skip_insignificant_run
+      duration, multiplier = consume(AFTER_DURATION_PATTERN) && scanner.captures
+      {duration: duration, multiplier: multiplier}
+    end
+
+    def skip_insignificant_run
       nil while scanner.skip_insignificant
-      duration = consume(AFTER_DURATION_PATTERN) && scanner.captures
-      token(:tuplet_span, lexeme: "\\tupletSpan", duration: duration&.first, multiplier: duration&.last)
     end
 
     def note_token
