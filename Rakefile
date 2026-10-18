@@ -27,6 +27,9 @@ rescue LoadError
   # bundler-audit not available
 end
 
+desc "Run only the specs checked against outside tools and files, each missing one skipping with how to set it up"
+RSpec::Core::RakeTask.new(:oracles) { ENV["ORACLES"] = "1" }
+
 desc "Run RubyCritic code quality analysis"
 task :rubycritic do
   sh "rubycritic lib"

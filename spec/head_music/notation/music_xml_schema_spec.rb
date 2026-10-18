@@ -6,7 +6,7 @@ require "open3"
 # MUSICXML_XSD names a local copy of musicxml.xsd whose imports of xml.xsd
 # and xlink.xsd resolve without the network. The schema is not committed
 # here.
-describe HeadMusic::Notation::MusicXML do
+describe HeadMusic::Notation::MusicXML, oracle: :musicxml_xsd do
   schema = ENV["MUSICXML_XSD"]
 
   def schema_errors(xml, schema)
@@ -77,8 +77,6 @@ describe HeadMusic::Notation::MusicXML do
   # out the part id it was written to test.
   files = Dir[File.join(MuseScoreFixtures::DIRECTORY, "**", "*.{xml,musicxml}")].sort
   invalid = %w[41g-PartNoId.xml]
-
-  before { skip "set MUSICXML_XSD to a local copy of musicxml.xsd" unless schema }
 
   documents.each do |name, build|
     it "builds #{name} as a valid MusicXML 4.0 document" do

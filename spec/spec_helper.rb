@@ -61,6 +61,16 @@ RSpec.configure do |config|
   config.example_status_persistence_file_path = "spec/examples.txt"
   config.include ConfiguredGuidelineHelper
   config.include ConfiguredGuideHelper
+
+  if ENV["ORACLES"] == "1"
+    config.filter_run_including :oracle
+  else
+    config.filter_run_excluding oracle: ->(name) { !Oracles.ready?(name) }
+  end
+  config.before(:example, :oracle) do |example|
+    name = example.metadata[:oracle]
+    skip Oracles.setup(name) unless Oracles.ready?(name)
+  end
 end
 
 class HeadMusic::Style::Guideline

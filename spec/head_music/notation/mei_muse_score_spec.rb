@@ -11,15 +11,11 @@ require "spec_helper"
 # - meiversion="5.1+basic", the only version it reads; it hangs on any other;
 # - a <layer> holding <mRest/> in a bare <staff/>, which it rejects;
 # - no <label> inside <layerDef>, on which it crashes.
-describe HeadMusic::Notation::MEI do
-  converting = MuseScore.available? && (!ENV["MSCORE"].to_s.empty? || ENV["MUSESCORE_FIXTURES"] == "1")
-
+describe HeadMusic::Notation::MEI, oracle: :musescore do
   misreads = {
     "clarinet_changes_transposed" => "MuseScore ignores @trans.diat and @trans.semi on a <staffDef> after the " \
       "opening, so it hears the A clarinet and the flute through the B-flat clarinet's transposition"
   }
-
-  before { skip "set MSCORE, or MUSESCORE_FIXTURES=1 with MuseScore 4 installed, to convert the goldens through it" unless converting }
 
   def for_muse_score(mei)
     mei.sub('meiversion="5.1"', 'meiversion="5.1+basic"')

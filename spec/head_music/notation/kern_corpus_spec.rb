@@ -2,11 +2,9 @@ require "spec_helper"
 
 # A sweep of the Bach chorales, run only when KERN_CORPUS names a local clone
 # of them (see KernCorpus).
-describe HeadMusic::Notation::Kern do
+describe HeadMusic::Notation::Kern, oracle: :kern_corpus do
   corpus = KernCorpus.directory
   unreadable = KernCorpus::UNREADABLE
-
-  before { skip "set KERN_CORPUS to a local clone of the Bach chorales" unless corpus }
 
   KernCorpus.paths.each do |path|
     name = File.basename(path)

@@ -29,8 +29,8 @@ require "spec_helper"
 # - Compound meters, nested tuplets, microtones, chord tones of different
 #   lengths, keys beyond seven accidentals, four dots, and triple sharps,
 #   which the model cannot hold.
-describe HeadMusic::Notation::MusicXML do
-  corpora = ENV["MUSICXML_CORPUS"].to_s.split(File::PATH_SEPARATOR).reject(&:empty?).map { |folder| File.expand_path(folder) }
+describe HeadMusic::Notation::MusicXML, oracle: :musicxml_corpus do
+  corpora = Oracles.folders("MUSICXML_CORPUS")
   parse_error = described_class::ParseError
   unsupported = described_class::UnsupportedFeatureError
   unreadable = {
@@ -105,8 +105,6 @@ describe HeadMusic::Notation::MusicXML do
     "music21_mxl/schumann/opus41no1/movement1/movement1.xml" => [parse_error, /\AVoice 1 overlaps itself/],
     "music21_mxl/weber/concertino_clarinet/concertino_clarinet.xml" => [unsupported, /\AThe measure is longer than its 6\/8 bar/]
   }
-
-  before { skip "set MUSICXML_CORPUS to local folders of MusicXML files" if corpora.empty? }
 
   files = corpora.flat_map do |folder|
     label = File.basename(folder)

@@ -6,9 +6,7 @@ require "spec_helper"
 # imported parts that share a name are taken together. Its known losses are
 # pinned, and fixtures it plays otherwise than written are excluded by name,
 # each pinned as still differing.
-describe "HeadMusic::MIDI" do
-  converting = MuseScore.available? && (!ENV["MSCORE"].to_s.empty? || ENV["MUSESCORE_FIXTURES"] == "1")
-
+describe "HeadMusic::MIDI", oracle: :musescore do
   excluded = {
     "bach_invention_01" => "MuseScore plays each mordent as the notes it stands for",
     "marked_dal_segno_al_coda" => "MuseScore plays each ornament as the notes it stands for",
@@ -16,8 +14,6 @@ describe "HeadMusic::MIDI" do
     "grace_notes_before_downbeat" => "MuseScore plays the grace notes as notes",
     "clarinet_changes_transposed" => "MuseScore keeps the first clarinet's transposition through the instrument changes"
   }
-
-  before { skip "set MSCORE, or MUSESCORE_FIXTURES=1 with MuseScore 4 installed, to convert renders through it" unless converting }
 
   def import(source)
     Dir.mktmpdir("midi") do |directory|

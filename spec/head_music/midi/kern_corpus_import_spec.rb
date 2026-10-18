@@ -6,11 +6,9 @@ require "spec_helper"
 # The figures are recorded in user-stories/current/midi-import.md, beside
 # Key and Spelling Inference's 99.945% with the key given and 99.947%
 # inferred.
-describe "HeadMusic::MIDI" do
+describe "HeadMusic::MIDI", oracle: :kern_corpus do
   # Chorales that MIDI import refuses, by name; none is expected.
   refusals = {}.freeze
-
-  before { skip "set KERN_CORPUS to a local clone of the Bach chorales" unless KernCorpus.directory }
 
   # {[part, onset, key number] => written pitches}
   def written_pitches(flow)

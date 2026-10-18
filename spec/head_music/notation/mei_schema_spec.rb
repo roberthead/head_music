@@ -4,15 +4,13 @@ require "open3"
 # Validates rendered MEI against the MEI 5.1 CMN schema, run only when
 # MEI_SCHEMA names a local copy of mei-CMN.rng. The schema is not committed
 # here.
-describe HeadMusic::Notation::MEI do
+describe HeadMusic::Notation::MEI, oracle: :mei_schema do
   schema = ENV["MEI_SCHEMA"]
 
   def schema_errors(xml, schema)
     output, status = Open3.capture2e("xmllint", "--noout", "--nonet", "--relaxng", schema, "-", stdin_data: xml)
     status.success? ? [] : output.lines.reject { |line| line.include?("validates") }.map(&:strip)
   end
-
-  before { skip "set MEI_SCHEMA to a local copy of mei-CMN.rng" unless schema }
 
   MEIFixtures.every_fixture.each do |name, build|
     next if MEIHelpers::REFUSED_SAMPLES.key?(name)

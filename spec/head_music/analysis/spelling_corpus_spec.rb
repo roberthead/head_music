@@ -5,9 +5,7 @@ require "spec_helper"
 # each against its designation, a mode's being its parallel key. Run only when
 # KERN_CORPUS names a local clone (see KernCorpus). The figures are recorded in
 # user-stories/current/key-and-spelling-inference.md.
-describe "HeadMusic::Analysis::PitchSpeller" do
-  before { skip "set KERN_CORPUS to a local clone of the Bach chorales" unless KernCorpus.directory }
-
+describe "HeadMusic::Analysis::PitchSpeller", oracle: :kern_corpus do
   def designation(flow)
     tonal_context = flow.timeline.tonal_context_at(flow.earliest_bar_number)
     tonal_context.is_a?(HeadMusic::Rudiment::Mode) ? [:modal, tonal_context.parallel] : [:major_or_minor, tonal_context]

@@ -2,8 +2,7 @@ require "spec_helper"
 
 # MuseScore reads each rendered fixture back as notation. It quantizes what
 # it hears, so a tuplet fixture's order is not relied on, only its pitches.
-describe "HeadMusic::MIDI" do
-  converting = MuseScore.available? && (!ENV["MSCORE"].to_s.empty? || ENV["MUSESCORE_FIXTURES"] == "1")
+describe "HeadMusic::MIDI", oracle: :musescore do
   fixture_directory = File.expand_path("../../fixtures/notation", __dir__)
   lily_pond = ->(name) { HeadMusic::Notation::LilyPond.parse(File.read(File.join(fixture_directory, "lily_pond", "#{name}.ly"))) }
 
@@ -21,8 +20,6 @@ describe "HeadMusic::MIDI" do
     "LilyPond tuplets_and_grace_notes" => -> { lily_pond.call("tuplets_and_grace_notes") },
     "kern tuplets" => fixtures.delete("kern tuplets")
   }
-
-  before { skip "set MSCORE, or MUSESCORE_FIXTURES=1 with MuseScore 4 installed, to convert renders through it" unless converting }
 
   def convert(bytes)
     Dir.mktmpdir("midi") do |directory|

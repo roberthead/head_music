@@ -182,11 +182,7 @@ describe HeadMusic::Notation::MEI do
       end
     end
 
-    describe "re-exported by the MuseScore installed here" do
-      regenerating = MuseScore.available? && (!ENV["MSCORE"].to_s.empty? || ENV["MUSESCORE_FIXTURES"] == "1")
-
-      before { skip "set MSCORE, or MUSESCORE_FIXTURES=1 with MuseScore 4 installed, to check for drift" unless regenerating }
-
+    describe "re-exported by the MuseScore installed here", oracle: :musescore do
       # Compared as flows rather than bytes, since MuseScore gives every
       # export new ids and the moment of the conversion.
       MuseScoreFixtures.names.each do |name|

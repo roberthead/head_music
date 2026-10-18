@@ -117,11 +117,7 @@ describe HeadMusic::Notation::MusicXML do
       end
     end
 
-    describe "reconverted by the MuseScore installed here" do
-      regenerating = MuseScore.available? && (!ENV["MSCORE"].to_s.empty? || ENV["MUSESCORE_FIXTURES"] == "1")
-
-      before { skip "set MSCORE, or MUSESCORE_FIXTURES=1 with MuseScore 4 installed, to check for drift" unless regenerating }
-
+    describe "reconverted by the MuseScore installed here", oracle: :musescore do
       # Compared as flows rather than bytes, since MuseScore stamps the day
       # of the conversion in <encoding-date>.
       MuseScoreFixtures.names.each do |name|

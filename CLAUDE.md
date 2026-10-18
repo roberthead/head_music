@@ -17,6 +17,7 @@ bundle exec rake validate  # tests with coverage, linting, security audit, code 
 bundle exec rake           # tests WITH coverage (the default task, same as `rake spec`)
 bundle exec rspec          # tests WITHOUT coverage, so a single file can run on its own
 bundle exec rake coverage  # opens the last coverage report
+bundle exec rake oracles   # only the specs checked against outside tools and files, each missing one saying how to set it up
 ```
 
 ### Git Etiquette

@@ -31,8 +31,8 @@ require "spec_helper"
 # - A <note> with no @oct in opera.mei, whose empty <score>s parse_book
 #   skips.
 # - music21's test_file.mei, whose <layer n=""> no MEI version allows.
-describe HeadMusic::Notation::MEI do
-  corpora = ENV["MEI_CORPUS"].to_s.split(File::PATH_SEPARATOR).reject(&:empty?).map { |folder| File.expand_path(folder) }
+describe HeadMusic::Notation::MEI, oracle: :mei_corpus do
+  corpora = Oracles.folders("MEI_CORPUS")
   parse_error = described_class::ParseError
   unsupported = described_class::UnsupportedFeatureError
   shorter = ->(meter) { [unsupported, /\AThe measure is shorter than its #{Regexp.escape(meter)} bar, and no measure after it completes it/] }
@@ -88,8 +88,6 @@ describe HeadMusic::Notation::MEI do
   }
 
   matching = ->(pattern, name) { File.fnmatch?(pattern, name, File::FNM_PATHNAME | File::FNM_EXTGLOB) }
-
-  before { skip "set MEI_CORPUS to local folders of MEI files" if corpora.empty? }
 
   files = corpora.flat_map do |folder|
     label = File.basename(folder)
