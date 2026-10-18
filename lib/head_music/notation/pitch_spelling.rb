@@ -3,8 +3,8 @@ module HeadMusic::Notation
   # Spells a pitch from a letter, an alteration, and an octave, raising the
   # reader's +errors+ UnsupportedFeatureError where the catalog has none.
   module PitchSpelling
-    STEPS = %w[C D E F G A B].freeze
-    SEMITONES_BY_STEP = {"C" => 0, "D" => 2, "E" => 4, "F" => 5, "G" => 7, "A" => 9, "B" => 11}.freeze
+    STEPS = HeadMusic::Rudiment::LetterName::NAMES
+    SEMITONES_BY_STEP = HeadMusic::Rudiment::LetterName::NATURAL_PITCH_CLASS_NUMBERS
 
     module_function
 
@@ -22,8 +22,9 @@ module HeadMusic::Notation
     # The pitch of a number spelled with a letter, in the octave that puts
     # its natural nearest.
     def from_number_and_letter(number, step, errors:, **where)
-      octave = ((number - SEMITONES_BY_STEP.fetch(step)) / 12.0).round - 1
-      spelled(step, number - (octave + 1) * 12 - SEMITONES_BY_STEP.fetch(step), octave, errors: errors, **where)
+      from_natural = number - SEMITONES_BY_STEP.fetch(step)
+      octave = (from_natural / 12.0).round - 1
+      spelled(step, from_natural - (octave + 1) * 12, octave, errors: errors, **where)
     end
   end
 end
