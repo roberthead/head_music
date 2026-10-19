@@ -150,6 +150,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking.** `MusicXML::MarkingWriter` is `MusicXML::MarkingElements`, since the reader uses it too. The old constant is gone, not aliased.
 - `MinimumNotes` with no minimum configured raises `KeyError`, as `MinimumMelodicIntervals` does, rather than `NameError`.
 
+### Removed
+
+- **Breaking.** `Credits.from_h`, which nothing in the gem called. `Credits.new(level, array)` reads the same array of credit hashes, `nil` included.
+
 ### Fixed
 
 - The ABC parser names the line of a tie between notes of different pitches; it gave none.

@@ -9,10 +9,6 @@ class HeadMusic::Content::Credits
 
   LEVELS = HeadMusic::Content::Role::LEVELS
 
-  def self.from_h(array, level:)
-    new(level, Array(array))
-  end
-
   attr_reader :level, :credits
 
   value_equality :level, :credits

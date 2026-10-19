@@ -110,17 +110,17 @@ describe HeadMusic::Content::Credits do
     end
 
     it "round trips" do
-      expect(described_class.from_h(credits.to_h, level: :work)).to eq credits
+      expect(described_class.new(:work, credits.to_h)).to eq credits
     end
 
     it "reads nil as empty" do
-      expect(described_class.from_h(nil, level: :work)).to be_empty
+      expect(described_class.new(:work, nil)).to be_empty
     end
 
     it "enforces the level when reading" do
       hash = [HeadMusic::Content::Credit.new(person: segovia, role: :arranger).to_h]
 
-      expect { described_class.from_h(hash, level: :work) }.to raise_error(ArgumentError)
+      expect { described_class.new(:work, hash) }.to raise_error(ArgumentError)
     end
 
     it "accepts hashes directly" do
