@@ -31,9 +31,14 @@ class HeadMusic::Rudiment::Quality < HeadMusic::Rudiment::Base
   }.freeze
 
   def self.get(identifier)
-    identifier = identifier.to_s.to_sym
+    identifier = key(identifier)
     fetch_or_register(identifier) if NAMES.include?(identifier)
   end
+
+  def self.key(identifier)
+    identifier.to_s.tr(" ", "_").to_sym
+  end
+  private_class_method :key
 
   def self.from(starting_quality, delta)
     case starting_quality
@@ -46,14 +51,16 @@ class HeadMusic::Rudiment::Quality < HeadMusic::Rudiment::Base
 
   attr_reader :name
 
-  delegate :to_s, to: :name
-
   def initialize(name)
     @name = name
   end
 
+  def to_s
+    name.to_s.tr("_", " ")
+  end
+
   def ==(other)
-    to_s == other.to_s
+    to_s == other.to_s.tr("_", " ")
   end
 
   def shorthand

@@ -258,6 +258,13 @@ I18n.describe HeadMusic::Analysis::DiatonicInterval do
     specify { expect(described_class.new("Eb4", "A#4").name).to eq "doubly augmented fourth" }
     specify { expect(described_class.new("Cb4", "F#4").name).to eq "doubly augmented fourth" }
 
+    context "when doubly altered" do
+      specify { expect(described_class.new("C#4", "Fb4")).to be_doubly_diminished }
+      specify { expect(described_class.new("Eb4", "A#4")).to be_doubly_augmented }
+      specify { expect(described_class.new("C#4", "Fb4").shorthand).to eq "dd4" }
+      specify { expect(described_class.new("Eb4", "A#4").shorthand).to eq "AA4" }
+    end
+
     specify { expect(described_class.new("C4", "Cb5").name).to eq "diminished octave" }
   end
 

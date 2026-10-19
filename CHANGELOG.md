@@ -157,6 +157,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Quality.get` reads `"doubly augmented"` and `"doubly diminished"` as written, so a doubly altered `DiatonicInterval` answers `doubly_augmented?`, `doubly_diminished?`, and `shorthand` (`"AA4"`) instead of raising `NoMethodError`. A quality's `to_s` is its name as written, and it equals either spelling.
 - A diatonic interval altered past the next octave is named for it. An augmented fourteenth was named `" fourteenth"`, and an augmented compound seventh, or any doubly altered interval past the seventeenth, raised `NoMethodError`. An augmented compound octave counts one more octave and an augmented unison, so C3 to C♯6 is "three octaves and an augmented unison", not "three octaves and an augmented octave".
 - The ABC parser names the line of a tie between notes of different pitches; it gave none.
 - An MEI `@tuplet` run whose entries are not all scaled alike is left ungrouped, as when they are scaled by different ratios. A run of triplet and unscaled entries was grouped as a triplet when a triplet entry came first.
