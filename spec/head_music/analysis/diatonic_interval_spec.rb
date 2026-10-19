@@ -243,6 +243,16 @@ I18n.describe HeadMusic::Analysis::DiatonicInterval do
     specify { expect(described_class.new("B2", "B5").name).to eq "three octaves" }
     specify { expect(described_class.new("B2", "C6").name).to eq "three octaves and a minor second" }
     specify { expect(described_class.new("C3", "D#6").name).to eq "three octaves and an augmented second" }
+    specify { expect(described_class.new("B2", "C#5").name).to eq "major sixteenth" }
+    specify { expect(described_class.new("B2", "D#5").name).to eq "major seventeenth" }
+    specify { expect(described_class.new("C3", "F##5").name).to eq "two octaves and a doubly augmented fourth" }
+
+    context "when the interval is a seventh or octave altered past the next octave" do
+      specify { expect(described_class.new("C3", "B#4").name).to eq "augmented fourteenth" }
+      specify { expect(described_class.new("C3", "B#5").name).to eq "two octaves and an augmented seventh" }
+      specify { expect(described_class.new("C3", "C#6").name).to eq "three octaves and an augmented unison" }
+      specify { expect(described_class.new("C3", "Cb6").name).to eq "two octaves and a diminished octave" }
+    end
 
     specify { expect(described_class.new("C#4", "Fb4").name).to eq "doubly diminished fourth" }
     specify { expect(described_class.new("Eb4", "A#4").name).to eq "doubly augmented fourth" }

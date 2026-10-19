@@ -20,10 +20,8 @@ class HeadMusic::Analysis::DiatonicInterval::Naming
   end
 
   def quality_name
-    starting_quality = QUALITY_SEMITONES[simple_number_name.to_sym].keys.first
-    delta = simple_semitones - (QUALITY_SEMITONES[simple_number_name.to_sym][starting_quality] % 12)
-    delta -= 12 while delta >= 6
-    HeadMusic::Rudiment::Quality.from(starting_quality, delta)
+    starting_quality, starting_semitones = QUALITY_SEMITONES[simple_number_name.to_sym].first
+    HeadMusic::Rudiment::Quality.from(starting_quality, semitones - starting_semitones - 12 * compound_octaves)
   end
 
   def simple_number_name
@@ -34,14 +32,15 @@ class HeadMusic::Analysis::DiatonicInterval::Naming
     NUMBER_NAMES[number - 1] || (number.to_s + NAME_SUFFIXES[number % 10])
   end
 
+  # Past the named numbers, an interval is so many octaves and a simple
+  # interval. An octave altered upward adds an octave and alters the unison.
   def name
-    if named_number?
-      [quality_name, number_name].join(" ")
-    elsif simple_name == "perfect octave"
-      "#{octaves.humanize} octaves"
-    else
-      "#{octaves.humanize} octaves and #{quality.article} #{simple_name}"
-    end
+    return [quality_name, number_name].join(" ") if named_number?
+
+    octaves, remainder = octaves_and_remainder
+    return "#{octaves.humanize} octaves" unless remainder
+
+    "#{octaves.humanize} octaves and #{remainder.start_with?(/[aeiou]/) ? "an" : "a"} #{remainder}"
   end
 
   def shorthand
@@ -50,20 +49,23 @@ class HeadMusic::Analysis::DiatonicInterval::Naming
 
   private
 
-  def simple_semitones
-    @simple_semitones ||= semitones % 12
+  def named_number?
+    number <= NUMBER_NAMES.length
   end
 
-  def named_number?
-    number < NUMBER_NAMES.length
+  # The octaves added to the simple interval.
+  def compound_octaves
+    (number - simple_number) / 7
   end
 
   def quality
     @quality ||= HeadMusic::Rudiment::Quality.get(quality_name)
   end
 
-  def octaves
-    @octaves ||= semitones / 12
+  def octaves_and_remainder
+    return [compound_octaves, simple_name] unless simple_number == 8 && !quality_name.include?("diminished")
+
+    [compound_octaves + 1, ("#{quality_name} unison" unless quality_name == "perfect")]
   end
 
   def octave_equivalent?

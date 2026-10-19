@@ -149,6 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking.** The MusicXML writer's work title defaults to the title of the flow's `Work`, with the flow's name as the `<movement-title>`, so a flow that cites a work, such as one read from kern, writes it back. Pass `work_title:` to choose another; `work_title: nil` still falls back to the `Work`'s title.
 - **Breaking.** `MusicXML::MarkingWriter` is `MusicXML::MarkingElements`, since the reader uses it too. The old constant is gone, not aliased.
 - `MinimumNotes` with no minimum configured raises `KeyError`, as `MinimumMelodicIntervals` does, rather than `NameError`.
+- **Breaking.** A diatonic interval is named by its number through the seventeenth, as every locale translates it: `"major seventeenth"` rather than `"two octaves and a major third"`.
 
 ### Removed
 
@@ -156,6 +157,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A diatonic interval altered past the next octave is named for it. An augmented fourteenth was named `" fourteenth"`, and an augmented compound seventh, or any doubly altered interval past the seventeenth, raised `NoMethodError`. An augmented compound octave counts one more octave and an augmented unison, so C3 to C♯6 is "three octaves and an augmented unison", not "three octaves and an augmented octave".
 - The ABC parser names the line of a tie between notes of different pitches; it gave none.
 - An MEI `@tuplet` run whose entries are not all scaled alike is left ungrouped, as when they are scaled by different ratios. A run of triplet and unscaled entries was grouped as a triplet when a triplet entry came first.
 - The MEI, LilyPond, and ABC writers print an accidental on each chord member that shares a letter and octave with another under a different alteration, so F4 with F♯4 in C major shows its natural; LilyPond writes them as `<fis'! f'!>` so a later F in the bar prints correctly too.
