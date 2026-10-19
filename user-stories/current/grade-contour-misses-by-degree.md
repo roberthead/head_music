@@ -4,10 +4,10 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-19T13:15:09-07:00
+  updated_at:   2026-10-19T13:17:07-07:00
 -->
 
-# Lower the Contour Floor
+# Grade Contour Misses by Degree
 
 AS a student submitting a melody to a contour guide
 
@@ -105,11 +105,14 @@ Today an ascending melody starts on its lowest pitch and ends on its highest,
 and a descending one the reverse. That reading has enduring value, so it
 survives alongside the legs:
 
-- A single rise (or fall) is a full match.
-- A melody that passes the endpoint test with more than one leg is a minor miss,
-  marked at φ⁻¹ (half a degree, a guide grade of about 0.764) however many legs
-  it has. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five legs (rise, fall, rise,
-  fall, rise) and a minor miss.
+- A single rise (or fall) is a full match, whether or not it passes the
+  endpoint test. D4 C4 E4 G4 A4 G4 dips below its first note and ends below its
+  peak, but neither turn reaches the reversal threshold, so it is one rise.
+- A melody that passes the endpoint test with any other number of legs is a
+  minor miss, marked at φ⁻¹ (half a degree, a guide grade of about 0.764)
+  however many legs it has. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five legs
+  (rise, fall, rise, fall, rise) and a minor miss. C4 D4 C4 D4 has no legs and
+  is a minor miss too.
 - A melody that fails the endpoint test is graded by its degree of miss.
 
 ## Static is unchanged
@@ -136,9 +139,11 @@ is unassessable and its rubric is never computed.
 - With every secondary adherent, a valley submitted to `arch_contour_melody`
   marks at φ⁻⁴ and grades about 0.472, and a melody one degree from an arch
   marks at φ⁻² and grades about 0.618.
-- C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 marks at φ⁻¹ against ascending, as does any
-  melody passing the ascending or descending endpoint test with more than one
-  leg.
+- C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 and C4 D4 C4 D4 mark at φ⁻¹ against
+  ascending, as does any melody passing the ascending or descending endpoint
+  test with other than one leg.
+- D4 C4 E4 G4 A4 G4 is a full ascending match, as is any single rise against
+  ascending or single fall against descending.
 - Static grades as it does today.
 - A failure message names the extra or missing legs, not only the mismatch.
 - `Contoured`'s comment states the leg-sequence rule and why the endpoint

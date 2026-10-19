@@ -95,7 +95,7 @@ first species -- when the entire lesson of fourth species is syncopation.
   guidelines with nothing to judge. The composite already answers the question
   those were meant to answer.
 - The `Contoured` floor, which is a separate problem with its own story:
-  [Lower the Contour Floor](../backlog/lower-the-contour-floor.md).
+  [Grade Contour Misses by Degree](../current/grade-contour-misses-by-degree.md).
 
 ## Acceptance Criteria
 
