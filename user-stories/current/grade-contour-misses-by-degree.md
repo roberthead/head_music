@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
   finished_at:
-  updated_at:   2026-10-20T07:10:23-07:00
+  updated_at:   2026-10-20T09:25:53-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -54,7 +54,8 @@ Four terms, used only in these senses:
 - A **contour** is any of the six things a contour guide asks for: the
   `Contoured::CONTOURS` keys.
 - A **shape** is what a melody does between its endpoints: arch, valley, and
-  wave, read from the legs.
+  wave. An arch and a valley are read as a direction to the turn and another
+  back from it; a wave is read from the legs.
 - A **direction** is where a melody ends up compared with where it began:
   ascending, descending, and level. Ascending and descending are read from the
   endpoints; static is the level direction, read from the range.
@@ -62,40 +63,47 @@ Four terms, used only in these senses:
   only once the melody retraces `TREND_REVERSAL_SEMITONES` from its running
   extreme. `Contoured#trend_directions` finds the legs today.
 
-Each shape requires a leg sequence:
+An arch splits at its climax into two halves. The **rise** runs from the first
+note to the first climax, and is graded as ascending. The **fall** runs from
+the last climax to the last note, and is graded as descending. A valley is the
+mirror, split at its nadir.
 
-| Contour | Required legs |
-| --- | --- |
-| arch | rise, fall |
-| valley | fall, rise |
-| wave | three or more alternating legs, starting with either |
+Each half is held to a stricter retrace than a direction: it fails once it
+turns back half its net change, not all of it. A turn back that large makes a
+second hump, and a second hump makes a wave. So Fux's D F E D G F A G F E D is
+an arch, because its opening dip of a third is less than half its climb of a
+fifth. C E G E C D E F D C is a wave, because its second hump of a fourth is
+more than half its fall of a fifth.
 
-Where the climax falls is not tested. An off-center climax is a full arch, as
-it is today.
+A repeated climax is one turn only when the line stays within a whole step of
+it in between. Where the climax falls is not tested, so an off-center climax is
+a full arch, as before.
+
+A wave needs three or more alternating legs, starting with either. It must also
+not read as a single arch or valley, which keeps the three shapes mutually
+exclusive.
 
 ## Degree of miss
 
-Align the required sequence with the actual legs wherever it fits best. Each
-extra leg before or after the alignment is one degree of miss, and so is each
-required leg that is missing. Against an arch:
+Against an arch, the degree is the sum of the two halves' direction degrees,
+plus one for a dip between repeated climaxes. A climax on an endpoint leaves
+that half a single note, which misses by one degree on its own:
 
-| Actual legs | Extra | Missing | Degree |
-| --- | --- | --- | --- |
-| rise, fall | 0 | 0 | 0 |
-| rise, fall, rise (C4 E4 G4 A4 G4 D4 B3 D4) | 1 | 0 | 1 |
-| fall, rise, fall | 1 | 0 | 1 |
-| rise (an ascending scale) | 0 | 1 | 1 |
-| fall (a descending scale) | 0 | 1 | 1 |
-| rise, fall, rise, fall (a wave) | 2 | 0 | 2 |
-| fall, rise (a valley) | 1 | 1 | 2 |
-| no legs | 0 | 2 | 2 |
+| Melody against an arch | Rise | Fall | Dip between climaxes | Degree |
+| --- | --- | --- | --- | --- |
+| C4 D4 E4 G4 E4 D4 C4 | 0 | 0 | — | 0 |
+| C4 E4 G4 A4 G4 D4 B3 D4 | 0 | 1 | — | 1 |
+| C4 D4 E4 D4 C4 D4 E4 F4 E4 D4 C4 | 1 | 0 | — | 1 |
+| an ascending scale | 0 | 1 | — | 1 |
+| a descending scale | 1 | 0 | — | 1 |
+| C4 D4 G4 E4 G4 E4 D4 C4 | 0 | 0 | 1 | 1 |
+| G4 E4 C4 D4 E4 G4 F4 D4 | 1 | 0 | 1 | 2 |
+| C4 D4 C4 D4 C4 | 1 | 1 | — | 2 |
+| G4 F4 E4 D4 C4 D4 E4 F4 (a valley) | 1 | 2 | — | 3 |
 
-Extra and missing legs weigh the same, so against an arch a valley ties a
-four-leg wave. That is accepted, because one count is easy to explain to a
-student.
-
-Against a wave, a melody never has extra legs. Two legs is one degree, one leg
-two, and none three.
+Against a wave, each missing leg is one degree: two legs is one degree, one leg
+two, and none three. A melody with legs enough that reads as a single arch or
+valley misses by one degree.
 
 The mark is φ⁻² per degree, φ⁻²ᵈ, so one degree costs what every mismatch costs
 today. The mark never reaches 0, because the gem discounts a grade rather than
@@ -174,16 +182,20 @@ is unassessable and its rubric is never computed.
 
 ## Acceptance Criteria
 
-- Arch, valley, and wave mark at φ⁻²ᵈ by degree of miss from their required
-  legs.
+- Arch and valley mark at φ⁻²ᵈ, where the degree is the sum of their two
+  halves' direction degrees, each half at half the retrace, plus one for a dip
+  between repeated climaxes. Wave marks at φ⁻²ᵈ by its missing legs, or at φ⁻²
+  when it reads as a single arch or valley. D4 F4 E4 D4 G4 F4 A4 G4 F4 E4 D4
+  is an arch, and C4 E4 G4 E4 C4 D4 E4 F4 D4 C4 is a wave.
 - With every secondary adherent, a valley submitted to `arch_contour_melody`
-  marks at φ⁻⁴ and grades about 0.472, and a melody one degree from an arch
+  marks at φ⁻⁶ and grades about 0.416, and a melody one degree from an arch
   marks at φ⁻² and grades about 0.618.
 - Ascending and descending mark at φ⁻²ᵈ by the number of conditions failed
   (start near its extreme, end near its extreme, net change of at least a
   leg, and, given that net change, a retrace short of it), ignoring the
-  legs' sequence. C4 E4 G4 E4 C4 D4 E4 F4 marks at φ⁻² against ascending. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4
-  and D4 C4 E4 G4 A4 G4 are full ascending matches.
+  legs' sequence. C4 E4 G4 E4 C4 D4 E4 F4 marks at φ⁻² against ascending.
+  C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 and D4 C4 E4 G4 A4 G4 are full ascending
+  matches.
   E4 D4 E4 F4 E4 F4 E4 D4 E4 and C4 D4 C4 D4 mark at φ⁻² against both
   ascending and descending, and a descending scale marks at φ⁻⁶ against
   ascending.
@@ -194,13 +206,16 @@ is unassessable and its rubric is never computed.
 - `Contoured` picks its violation from a closed set of keys, each rendered
   from the contour alone, and declares every key a contour can produce in
   `violation_keys(config)`:
-  - A shape missing only its fall says to add a fall, and one missing only
-    its rise says to add a rise.
-  - An arch or valley with no legs says to rise and fall.
+  - An arch or valley with its climax (or nadir) on the last note says to add
+    a fall (or rise), and on the first note to add a rise (or fall).
+  - An arch or valley whose rise or fall turns back says to rise or fall
+    steadily.
+  - An arch or valley whose rise and fall both miss says to rise and fall.
   - A wave with too few legs says to rise or fall by more than a step at
     least three times.
-  - A shape with extra legs and none missing says to rise and fall fewer
-    times.
+  - An arch or valley that dips between repeated climaxes says to rise and
+    fall fewer times.
+  - A wave that reads as a single arch or valley says to turn more than once.
   - A mirror shape (a valley against an arch) says to reverse the rise and
     fall.
   - A direction that fails to rise (or fall) a leg says so, and so does one
@@ -209,9 +224,10 @@ is unassessable and its rubric is never computed.
   - Static keeps today's sentence.
 - `trend_directions` and `TrendWalk#direction` are renamed to legs, returning
   `:rise` and `:fall`.
-- `Contoured`'s comment states that arch, valley, and wave are shapes graded by
-  legs, ascending and descending are directions graded by endpoints, and
-  static is the level direction graded by range.
+- `Contoured`'s comment states that arch and valley are shapes graded as a
+  direction to the turn and back, wave is a shape graded by legs, ascending
+  and descending are directions graded by endpoints and headway, and static is
+  the level direction graded by range.
 - The pinned corpus grades (`spec/fixtures/style/corpus_fitness.json`) are
   regenerated with `rake style:snapshot_corpus_fitness`, and every changed row
   is reviewed as intended. 79 `arch_contour_melody` rows sit at exactly 0.618
@@ -222,8 +238,9 @@ is unassessable and its rubric is never computed.
   regenerated with `rake style:snapshot_english`, and the new contour
   sentences are reviewed.
 - The sawtooth in `contour_melody_spec.rb` is re-pinned at its new grade,
-  about 0.28: a three-degree miss whose broken secondaries take it below the
-  contour floor.
+  about 0.48. Its sevenths are small beside its climb of nearly two octaves,
+  so it reads as an arch missing its fall, one degree off, and its broken
+  secondaries take it below a near-miss arch.
 - `contoured_spec.rb`'s descending example against `CDED|EFG2|` moves from
   φ⁻² to φ⁻⁶, since it fails all three conditions.
 
@@ -514,3 +531,28 @@ keys.
   (about 258). `Contoured::ShapeReading` and `Contoured::DirectionReading` now
   hold the two readings, about 120 and 70 flog. They were extracted in their own
   commit with grades unchanged, before the retrace was added.
+
+### Follow-up: arch and valley as climax halves
+
+Legs counted a third the same as an octave, so a small dip turned an arch into
+a wave. Only 11 of 37 cantus firmi read as arches. Arch and valley are now
+split at the turn, each half graded as a direction whose retrace may reach only
+half its net change. `Contoured::TurnReading` reads them, and
+`Contoured::WaveReading` (formerly `ShapeReading`) keeps the leg walk for waves.
+A wave that reads as a single arch or valley now misses by one degree, which
+keeps the three shapes mutually exclusive.
+
+- **Retrace share:** half was chosen over the full net change, under which
+  C E G E C D E F D C read as an arch, and over half for directions too, which
+  would have failed the E3 A3 D3 … E4 line.
+- **Corpus:** 214 rows changed, all arch, valley, or wave.
+  - 29 melodies now pass arch and fail wave: the Fux and Clendinning cantus
+    firmi and the cantus voices of the species examples.
+  - `fux_fifth_species_examples-5-v1` moved from wave to valley.
+  - 84 valley rows fell, mostly arches, which now miss a valley by three
+    degrees rather than two.
+- **Grades:**
+  - A valley against an arch marks φ⁻⁶ and grades about 0.416.
+  - The sawtooth reads as an arch missing its fall and grades 0.483.
+- **New keys:** `unsteady_rise`, `unsteady_fall`, and `single_turn`.
+  `extra_legs` now means a dip between repeated climaxes.
