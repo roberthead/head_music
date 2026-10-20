@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
   finished_at:
-  updated_at:   2026-10-20T09:25:53-07:00
+  updated_at:   2026-10-20T14:30:00-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -556,3 +556,21 @@ keeps the three shapes mutually exclusive.
   - The sawtooth reads as an arch missing its fall and grades 0.483.
 - **New keys:** `unsteady_rise`, `unsteady_fall`, and `single_turn`.
   `extra_legs` now means a dip between repeated climaxes.
+
+### Follow-up: naming each half's flaw
+
+A corpus check found the `missing_legs` message misleading. It told 36 arch and
+valley rows to "rise and fall by at least a minor third", though most were
+fifth-species lines that rise and fall an octave or more. The key fired whenever
+both halves failed, whatever their flaws. A half that fails is now "missing" its
+leg when its net change is under a minor third, and "unsteady" otherwise, and
+two failing halves are named by both flaws.
+
+- **New keys:** `unsteady_legs`, `missing_rise_and_unsteady_fall`, and
+  `unsteady_rise_and_missing_fall`, making 22 miss keys in all. A 3000-melody
+  random sweep showed the declared and producible arch and valley keys match
+  exactly.
+- **Single-half rows:** a rise or fall of under a minor third is now "missing",
+  not "unsteady". D4 F4 E4 against an arch, for example, is told to add a fall
+  rather than to fall steadily.
+- **Corpus:** 41 arch and valley rows changed key, and no grade moved.
