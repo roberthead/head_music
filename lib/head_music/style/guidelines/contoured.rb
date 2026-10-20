@@ -6,10 +6,10 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   CONTOURS = %i[ascending descending arch valley wave static].freeze
 
-  TREND_REVERSAL_SEMITONES = 3 # a trend reversal must exceed a whole step
+  TREND_REVERSAL_SEMITONES = 3 # a leg must exceed a whole step
 
-  # Running state for the zigzag walk in #trend_directions.
-  TrendWalk = Struct.new(:directions, :direction, :high, :low, :extreme)
+  # Running state for the zigzag walk in #legs.
+  TrendWalk = Struct.new(:legs, :leg, :high, :low, :extreme)
 
   def self.with(contour_key, **options)
     super(contour: normalized_contour(contour_key), **options)
@@ -54,15 +54,15 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   end
 
   def arch?
-    trend_directions == %i[ascending descending]
+    legs == %i[rise fall]
   end
 
   def valley?
-    trend_directions == %i[descending ascending]
+    legs == %i[fall rise]
   end
 
   def wave?
-    trend_directions.length >= 3
+    legs.length >= 3
   end
 
   def static?
@@ -80,52 +80,52 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   end
 
   # A reversal counts only once the melody retraces TREND_REVERSAL_SEMITONES
-  # from the running extreme, so neighbor-note undulation is not a trend change.
-  def trend_directions
-    @trend_directions ||= begin
+  # from the running extreme, so neighbor-note undulation is not a new leg.
+  def legs
+    @legs ||= begin
       first = pitch_numbers.first
       walk = TrendWalk.new([], nil, first, first, nil)
-      pitch_numbers.drop(1).each { |number| advance_trend(walk, number) }
-      walk.directions
+      pitch_numbers.drop(1).each { |number| advance_leg(walk, number) }
+      walk.legs
     end
   end
 
-  def advance_trend(walk, number)
-    if walk.direction.nil?
-      seek_trend(walk, number)
+  def advance_leg(walk, number)
+    if walk.leg.nil?
+      seek_leg(walk, number)
     else
-      continue_trend(walk, number)
+      continue_leg(walk, number)
     end
   end
 
-  def seek_trend(walk, number)
+  def seek_leg(walk, number)
     if number - walk.low >= TREND_REVERSAL_SEMITONES
-      start_trend(walk, :ascending, number)
+      start_leg(walk, :rise, number)
     elsif walk.high - number >= TREND_REVERSAL_SEMITONES
-      start_trend(walk, :descending, number)
+      start_leg(walk, :fall, number)
     else
       walk.high = [walk.high, number].max
       walk.low = [walk.low, number].min
     end
   end
 
-  def continue_trend(walk, number)
-    sign = (walk.direction == :ascending) ? 1 : -1
+  def continue_leg(walk, number)
+    sign = (walk.leg == :rise) ? 1 : -1
     delta = number - walk.extreme
     if sign * delta > 0
       walk.extreme = number
     elsif -sign * delta >= TREND_REVERSAL_SEMITONES
-      start_trend(walk, opposite_direction(walk.direction), number)
+      start_leg(walk, opposite_leg(walk.leg), number)
     end
   end
 
-  def start_trend(walk, direction, number)
-    walk.direction = direction
+  def start_leg(walk, leg, number)
+    walk.leg = leg
     walk.extreme = number
-    walk.directions << direction
+    walk.legs << leg
   end
 
-  def opposite_direction(direction)
-    (direction == :ascending) ? :descending : :ascending
+  def opposite_leg(leg)
+    (leg == :rise) ? :fall : :rise
   end
 end

@@ -431,7 +431,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
       let(:guide_key) { "wave_contour_melody" }
       let(:contour_message) { "Write a melody with the wave contour." }
 
-      context "with three trend legs" do
+      context "with three legs" do
         let(:melody) { "CDED|CDE2|" }
 
         it "does not object to the contour" do
@@ -439,7 +439,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
         end
       end
 
-      context "with four trend legs and a single peak" do
+      context "with four legs and a single peak" do
         let(:melody) { "CDED|CDEF|EDC2|" }
 
         it "grades a perfect submission at one" do

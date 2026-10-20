@@ -193,7 +193,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
   context "when configured for a wave contour" do
     let(:contour) { :wave }
 
-    context "with three trend legs" do
+    context "with three legs" do
       let(:melody) { "CDED|CDE2|" }
 
       it { is_expected.to be_adherent }
@@ -205,13 +205,13 @@ describe HeadMusic::Style::Guidelines::Contoured do
       it { is_expected.to be_adherent }
     end
 
-    context "with a rest in the middle of three trend legs" do
+    context "with a rest in the middle of three legs" do
       let(:melody) { "CDED|zCDE|" }
 
       it { is_expected.to be_adherent }
     end
 
-    context "with trend legs of exactly a minor third" do
+    context "with legs of exactly a minor third" do
       let(:melody) { "DFDF|D4|" }
 
       it { is_expected.to be_adherent }
@@ -225,7 +225,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       its(:marks_count) { is_expected.to eq 1 }
     end
 
-    context "with whole-step undulation below the trend threshold" do
+    context "with whole-step undulation below the leg threshold" do
       let(:melody) { "CDCD|C4|" }
 
       it { is_expected.not_to be_adherent }
@@ -289,7 +289,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       "a wave of minor thirds" => ["DFDF|D4|", :wave],
       "a four-leg wave with a single peak" => ["CDED|CDEF|EDC2|", :wave],
       "a repeated climax a third apart" => ["CDGE|GEDC|", :wave],
-      "undulation below the trend threshold" => ["CDCD|C4|", nil],
+      "undulation below the leg threshold" => ["CDCD|C4|", nil],
       "a line climaxing on its last note" => ["CDEF|G4|", nil]
     }
 
