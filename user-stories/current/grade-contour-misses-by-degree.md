@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-19T13:17:07-07:00
+  updated_at:   2026-10-19T20:59:00-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -47,16 +47,18 @@ Graded against `arch_contour_melody` as of 2026-10-19:
 A valley is not a near-miss arch, yet it marks the same as an arch missing a
 leg.
 
-## Contours as leg sequences
+## Shapes and directions
 
 A leg is one entry of `Contoured#trend_directions`: a rise or a fall, which
 reverses only once the melody retraces `TREND_REVERSAL_SEMITONES` from its
-running extreme. Each contour but static requires a leg sequence:
+running extreme.
+
+A contour describes either a shape or a direction. Arch, valley, and wave are
+shapes, read from the legs. Ascending, descending, and static are directions,
+read from the endpoints (see below). Each shape requires a leg sequence:
 
 | Contour | Required legs |
 | --- | --- |
-| ascending | rise (see below for the endpoint reading) |
-| descending | fall (likewise) |
 | arch | rise, fall |
 | valley | fall, rise |
 | wave | three or more alternating legs, starting with either |
@@ -99,21 +101,30 @@ disqualifying it. With every secondary guideline adherent:
 | 2 | 0.146 | 0.472 |
 | 3 | 0.056 | 0.416 |
 
-## Ascending and descending keep their endpoint reading
+## Ascending and descending are directions
 
-Today an ascending melody starts on its lowest pitch and ends on its highest,
-and a descending one the reverse. That reading has enduring value, so it
-survives alongside the legs:
+An ascending melody starts on its lowest pitch and ends on its highest, and a
+descending one the reverse, as today. Legs play no part: what happens between
+the endpoints is shape, not direction. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five
+legs (rise, fall, rise, fall, rise) and a full ascending match.
 
-- A single rise (or fall) is a full match, whether or not it passes the
-  endpoint test. D4 C4 E4 G4 A4 G4 dips below its first note and ends below its
-  peak, but neither turn reaches the reversal threshold, so it is one rise.
-- A melody that passes the endpoint test with any other number of legs is a
-  minor miss, marked at φ⁻¹ (half a degree, a guide grade of about 0.764)
-  however many legs it has. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five legs
-  (rise, fall, rise, fall, rise) and a minor miss. C4 D4 C4 D4 has no legs and
-  is a minor miss too.
-- A melody that fails the endpoint test is graded by its degree of miss.
+The one-leg shape a scale has is taught by its own guide, in
+[Straight Contour](../backlog/straight-contour.md).
+
+A melody that fails the endpoint test misses by one degree for each endpoint
+condition it fails, marked at φ⁻²ᵈ like the shapes:
+
+| Melody against ascending | First is lowest | Last is highest | Degree |
+| --- | --- | --- | --- |
+| C4 up to C5 | ✓ | ✓ | 0 |
+| C4 up to C5, ending on B4 | ✓ | ✗ | 1 |
+| an arch from C4 back to C4 | ✓ | ✗ | 1 |
+| C5 down to C4 | ✗ | ✗ | 2 |
+
+A strict endpoint test fails on wobbles the legs ignore. D4 C4 E4 G4 A4 G4 dips
+two semitones below its first note and ends two below its peak. That is one
+rise by the legs, yet it fails both conditions and would mark like a
+descending scale. See the first question below.
 
 ## Static is unchanged
 
@@ -132,22 +143,29 @@ changing the rubric's shape is a separate decision.
 The contour cannot be a gate. A gate is a precondition: a voice that fails one
 is unassessable and its rubric is never computed.
 
+## Questions to settle
+
+- Should the endpoint test allow the same tolerance as the legs, so the first
+  note may sit less than `TREND_REVERSAL_SEMITONES` above the lowest and the
+  last less than that below the highest? D4 C4 E4 G4 A4 G4 would then be a full
+  ascending match, and so would a scale ending a step short of its top.
+
 ## Acceptance Criteria
 
-- Arch, valley, ascending, descending, and wave mark at φ⁻²ᵈ by degree of miss
-  from their required legs.
+- Arch, valley, and wave mark at φ⁻²ᵈ by degree of miss from their required
+  legs.
 - With every secondary adherent, a valley submitted to `arch_contour_melody`
   marks at φ⁻⁴ and grades about 0.472, and a melody one degree from an arch
   marks at φ⁻² and grades about 0.618.
-- C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 and C4 D4 C4 D4 mark at φ⁻¹ against
-  ascending, as does any melody passing the ascending or descending endpoint
-  test with other than one leg.
-- D4 C4 E4 G4 A4 G4 is a full ascending match, as is any single rise against
-  ascending or single fall against descending.
+- Ascending and descending mark at φ⁻²ᵈ by the number of endpoint conditions
+  failed, ignoring legs. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is a full ascending
+  match, and a descending scale marks at φ⁻⁴ against ascending.
 - Static grades as it does today.
-- A failure message names the extra or missing legs, not only the mismatch.
-- `Contoured`'s comment states the leg-sequence rule and why the endpoint
-  reading survives for ascending and descending.
+- A failure message names how the melody missed: the extra or missing legs for
+  a shape, the failed endpoint for a direction.
+- `Contoured`'s comment states that arch, valley, and wave are shapes graded by
+  legs, and ascending, descending, and static are directions graded by
+  endpoints.
 - The pinned corpus grades (`spec/fixtures/style/corpus_fitness.json`) are
   regenerated with `rake style:snapshot_corpus_fitness`, and every changed row
   is reviewed as intended. 79 `arch_contour_melody` rows sit at exactly 0.618
