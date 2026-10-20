@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
   finished_at:
-  updated_at:   2026-10-19T21:23:40-07:00
+  updated_at:   2026-10-19T21:27:20-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -124,17 +124,25 @@ less than `TREND_REVERSAL_SEMITONES` above the lowest pitch, and the last less
 than that below the highest. A wobble too small to make a leg is too small to
 spoil a direction.
 
-A melody that fails the test misses by one degree for each endpoint condition
-it fails, marked at φ⁻²ᵈ like the shapes. Descending mirrors this:
+The endpoints alone cannot tell a direction from a level melody: E4 D4 E4 F4
+E4 F4 E4 D4 E4 starts near its lowest pitch and ends near its highest. So a
+direction has a third condition, by the same rule as the tolerance: the
+melody must end at least `TREND_REVERSAL_SEMITONES` higher than it began. A
+change too small to make a leg is too small to make a direction.
 
-| Melody against ascending | First near lowest | Last near highest | Degree |
-| --- | --- | --- | --- |
-| C4 up to C5 | ✓ | ✓ | 0 |
-| C4 up to C5, ending on B4 | ✓ | ✓ | 0 |
-| D4 C4 E4 G4 A4 G4 | ✓ | ✓ | 0 |
-| C4 up to C5, ending on A4 | ✓ | ✗ | 1 |
-| an arch from C4 back to C4 | ✓ | ✗ | 1 |
-| C5 down to C4 | ✗ | ✗ | 2 |
+A melody misses by one degree for each of the three conditions it fails,
+marked at φ⁻²ᵈ like the shapes. Descending mirrors this:
+
+| Melody against ascending | First near lowest | Last near highest | Rises a leg | Degree |
+| --- | --- | --- | --- | --- |
+| C4 up to C5 | ✓ | ✓ | ✓ | 0 |
+| C4 up to C5, ending on B4 | ✓ | ✓ | ✓ | 0 |
+| D4 C4 E4 G4 A4 G4 | ✓ | ✓ | ✓ | 0 |
+| C4 up to C5, ending on A4 | ✓ | ✗ | ✓ | 1 |
+| E4 D4 E4 F4 E4 F4 E4 D4 E4 | ✓ | ✓ | ✗ | 1 |
+| C4 D4 C4 D4 | ✓ | ✓ | ✗ | 1 |
+| an arch from C4 back to C4 | ✓ | ✗ | ✗ | 2 |
+| C5 down to C4 | ✗ | ✗ | ✗ | 3 |
 
 ## Static is unchanged
 
@@ -162,13 +170,32 @@ is unassessable and its rubric is never computed.
 - With every secondary adherent, a valley submitted to `arch_contour_melody`
   marks at φ⁻⁴ and grades about 0.472, and a melody one degree from an arch
   marks at φ⁻² and grades about 0.618.
-- Ascending and descending mark at φ⁻²ᵈ by the number of endpoint conditions
-  failed, within the legs' tolerance and ignoring the legs themselves.
-  C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 and D4 C4 E4 G4 A4 G4 are full ascending
-  matches, and a descending scale marks at φ⁻⁴ against ascending.
-- Static grades as it does today.
-- A failure message names how the melody missed: the extra or missing legs for
-  a shape, the failed endpoint for a direction.
+- Ascending and descending mark at φ⁻²ᵈ by the number of the three conditions
+  failed (start near its extreme, end near its extreme, net change of at
+  least a leg), ignoring the legs themselves. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4
+  and D4 C4 E4 G4 A4 G4 are full ascending matches.
+  E4 D4 E4 F4 E4 F4 E4 D4 E4 and C4 D4 C4 D4 mark at φ⁻² against both
+  ascending and descending, and a descending scale marks at φ⁻⁶ against
+  ascending.
+- A contour miss is one mark spanning the melody, at φ⁻²ᵈ.
+- Static grades as it does today. It reads a strict endpoint test separate
+  from the tolerant one, so C4 D4 E4 D4 and E4 D4 E4 F4 E4 F4 E4 D4 E4 stay
+  static.
+- `Contoured` picks its violation from a closed set of keys, each rendered
+  from the contour alone, and declares every key a contour can produce in
+  `violation_keys(config)`:
+  - A shape missing only its fall says to add a fall, and one missing only
+    its rise says to add a rise.
+  - A melody with no legs, or a wave with too few, says to rise and fall.
+  - A shape with extra legs and none missing says to rise and fall fewer
+    times.
+  - A mirror shape (a valley against an arch) says to reverse the rise and
+    fall.
+  - A direction that fails to rise (or fall) a leg says so. Otherwise it
+    names the endpoint or endpoints that failed.
+  - Static keeps today's sentence.
+- `trend_directions` and `TrendWalk#direction` are renamed to legs, returning
+  `:rise` and `:fall`.
 - `Contoured`'s comment states that arch, valley, and wave are shapes graded by
   legs, ascending and descending are directions graded by endpoints, and
   static is the level direction graded by range.
@@ -176,20 +203,26 @@ is unassessable and its rubric is never computed.
   regenerated with `rake style:snapshot_corpus_fitness`, and every changed row
   is reviewed as intended. 79 `arch_contour_melody` rows sit at exactly 0.618
   today. Arch, valley, wave, ascending, and descending rows may move; static
-  rows must not.
+  rows must not. Some ascending and descending rows rise, where an endpoint
+  sits within a whole step of its extreme, and each one is reviewed.
+- The pinned English strings (`spec/fixtures/style/english_strings.yml`) are
+  regenerated with `rake style:snapshot_english`, and the new contour
+  sentences are reviewed.
+- The sawtooth in `contour_melody_spec.rb` is re-pinned at its new grade,
+  about 0.28: a three-degree miss whose broken secondaries take it below the
+  contour floor.
+- `contoured_spec.rb`'s descending example against `CDED|EFG2|` moves from
+  φ⁻² to φ⁻⁶, since it fails all three conditions.
 
 ## Notes
 
 [Improve Melodic Contour Guidelines](../done/improve-melodic-contour-guidelines.md)
 is the most recent work on `Contoured` and explains today's matcher.
 
-`spec/head_music/style/guides/contour_melody_spec.rb` pins a wrong-contour
-sawtooth "into the soft floor" at 0.3 to 0.55, which may need revisiting.
-
 The code uses "direction" for legs: `Contoured#trend_directions` returns
 `:ascending` and `:descending` per leg, and `TrendWalk` has a `direction`
-field. Rename them to `legs`, returning `:rise` and `:fall`, so that direction
-means only what this story means by it. Both are private to `Contoured`.
+field. The rename criterion above fixes that, so that direction means only
+what this story means by it. Both are private to `Contoured`.
 
 ## Implementation Plan
 
@@ -245,7 +278,9 @@ row of `static_contour_melody` or of any non-contour guide changed.
      - The extremes are `[low, high]` for ascending and `[high, low]` for
        descending, from `pitch_numbers.minmax`.
      - The result lists `:start` unless the first note is near the start
-       extreme, and `:end` unless the last note is near the end extreme.
+       extreme, `:end` unless the last note is near the end extreme, and
+       `:rise` (or `:fall`) unless the last note is at least
+       `TREND_REVERSAL_SEMITONES` beyond the first in the contour's direction.
      - `near?(number, extreme)` is
        `(number - extreme).abs < TREND_REVERSAL_SEMITONES`.
    - The degree for a direction is `failed_endpoints.length`.
@@ -264,8 +299,10 @@ row of `static_contour_melody` or of any non-contour guide changed.
      `notes.empty? || degree.zero? || contour == :static`, because `.assess`
      calls it on adherent voices too.
    - Keys:
-     - Directions: `ascending_start`, `ascending_end`,
-       `ascending_start_and_end`, and the matching `descending_*` keys.
+     - Directions: `ascending_rise` when the net rise fails, since that is
+       the direction itself. Otherwise `ascending_start`, `ascending_end`, or
+       `ascending_start_and_end`. The `descending_*` keys mirror these, with
+       `descending_fall`.
      - Shapes:
        - `reversed_legs`: both extra and missing legs, as for a valley against
          an arch.
@@ -321,11 +358,13 @@ mark, and the chosen violation key. The melodies are ABC:
   | `DCEG\|AG2\|` | 0 | adherent |
   | `CDEC\|DEFD\|EGA2\|` | 0 | adherent |
   | `CDEF\|GABc\|A4\|` | 1 | ascending_end |
-  | `CDEG\|EDC2\|` | 1 | ascending_end |
-  | `cBAG\|FEDC\|` | 2 | ascending_start_and_end |
+  | `EDEF\|EFED\|E4\|` | 1 | ascending_rise |
+  | `CDCD\|C4\|` | 1 | ascending_rise |
+  | `CDEG\|EDC2\|` | 2 | ascending_rise |
+  | `cBAG\|FEDC\|` | 3 | ascending_rise |
 
-- **Descending:** mirrors ascending. The existing `CDED|EFG2|` example moves
-  from φ⁻² to φ⁻⁴.
+- **Descending:** mirrors ascending. `EDEF|EFED|E4|` is degree 1 there too.
+  The existing `CDED|EFG2|` example moves from φ⁻² to φ⁻⁶.
 - **Static:**
   - `EEEE|E4|` and `CDED|C4|` stay static. The second pins why static's
     endpoint test stays strict.
@@ -342,7 +381,7 @@ mark, and the chosen violation key. The melodies are ABC:
   comment to say this holds for a one-degree miss.
 - **Full ascending matches:** `CDEC|DEFD|EGA2|` and `DCEG|AG2|` grade 1.0
   against `ascending_contour_melody`.
-- **Descending scale against ascending:** Contoured marks `eq` φ⁻⁴. Don't pin
+- **Descending scale against ascending:** Contoured marks `eq` φ⁻⁶. Don't pin
   the grade, because ModerateDirectionChanges also fails there.
 - **Sawtooth:** it is a three-degree miss, so it falls to about 0.281. Re-pin it
   `be_between(0.25, φ⁻²)`, with a one-line comment that its broken secondaries
@@ -369,5 +408,5 @@ Finish with `bundle exec rubocop -a` and `bundle exec rake validate`.
 - Downstream consumers that match `"Write a melody with the arch contour."`
   stop matching for misses. That is why the CHANGELOG entry is marked
   **Breaking.**
-- The prototype's corpus counts are estimates. Recheck them during
-  implementation.
+- The prototype's corpus counts are estimates made before the net-rise
+  condition was added. Recheck them during implementation.
