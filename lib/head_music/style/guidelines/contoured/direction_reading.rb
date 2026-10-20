@@ -14,29 +14,43 @@ class HeadMusic::Style::Guidelines::Contoured
       failed_conditions.length
     end
 
-    # Failing to rise (or fall) is failing the direction itself, so it outranks
-    # the endpoints.
+    # Failing to rise (or fall), or retracing as far, is failing the direction
+    # itself, so it outranks the endpoints. The two never fail together.
     def miss
-      leg = DIRECTION_LEGS.fetch(contour)
-      failed = failed_conditions.include?(leg) ? [leg] : failed_conditions
+      outranking = failed_conditions & [DIRECTION_LEGS.fetch(contour), :retrace]
+      failed = outranking.any? ? outranking : failed_conditions
       "#{contour}_#{failed.join("_and_")}"
     end
 
     private
 
     # A wobble too small to make a leg is too small to spoil a direction, and a
-    # net change too small to make a leg is too small to make a direction.
+    # net change too small to make a leg is too small to make a direction. A line
+    # that turns back as far as it moves overall wanders rather than heads
+    # anywhere.
     def failed_conditions
       @failed_conditions ||= [
         (:start unless near?(directed.first, directed.min)),
         (:end unless near?(directed.last, directed.max)),
-        (DIRECTION_LEGS.fetch(contour) if directed.last - directed.first < TREND_REVERSAL_SEMITONES)
+        net_change_miss
       ].compact
+    end
+
+    def net_change_miss
+      net = directed.last - directed.first
+      return DIRECTION_LEGS.fetch(contour) if net < TREND_REVERSAL_SEMITONES
+
+      :retrace if retrace >= net
     end
 
     # Negated for descending, so both directions read as ascending.
     def directed
       @directed ||= (contour == :ascending) ? pitch_numbers : pitch_numbers.map(&:-@)
+    end
+
+    # The farthest the line falls back from its running high.
+    def retrace
+      directed.each_index.map { |index| directed[..index].max - directed[index] }.max
     end
 
     def near?(number, extreme)

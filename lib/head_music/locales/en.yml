@@ -678,10 +678,12 @@ en:
           violations:
             default: "Write a melody with the %{contour} contour."
             ascending_rise: "Write the %{contour} contour: end at least a minor third higher than you begin."
+            ascending_retrace: "Write the %{contour} contour: never fall back as far as you rise from first note to last."
             ascending_start: "Write the %{contour} contour: begin within a whole step of the lowest note."
             ascending_end: "Write the %{contour} contour: end within a whole step of the highest note."
             ascending_start_and_end: "Write the %{contour} contour: begin within a whole step of the lowest note and end within a whole step of the highest."
             descending_fall: "Write the %{contour} contour: end at least a minor third lower than you begin."
+            descending_retrace: "Write the %{contour} contour: never climb back as far as you fall from first note to last."
             descending_start: "Write the %{contour} contour: begin within a whole step of the highest note."
             descending_end: "Write the %{contour} contour: end within a whole step of the lowest note."
             descending_start_and_end: "Write the %{contour} contour: begin within a whole step of the highest note and end within a whole step of the lowest."

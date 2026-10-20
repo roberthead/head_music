@@ -5,8 +5,8 @@ module HeadMusic::Style::Guidelines; end
 # Configure the contour with the factory, e.g. Contoured.with(:arch).
 #
 # Arch, valley, and wave are shapes, graded by the legs between the endpoints.
-# Ascending and descending are directions, graded by the endpoints alone. Static
-# is the level direction, graded by range. Each degree of miss costs φ⁻².
+# Ascending and descending are directions, graded by the endpoints and the
+# headway between them. Static is the level direction, graded by range. Each degree of miss costs φ⁻².
 class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   CONTOURS = %i[ascending descending arch valley wave static].freeze
 
@@ -14,8 +14,8 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
 
   SHAPE_MISSES = %w[reversed_legs extra_legs missing_rise missing_fall missing_legs].freeze
   MISSES = {
-    ascending: %w[ascending_rise ascending_start ascending_end ascending_start_and_end],
-    descending: %w[descending_fall descending_start descending_end descending_start_and_end],
+    ascending: %w[ascending_rise ascending_retrace ascending_start ascending_end ascending_start_and_end],
+    descending: %w[descending_fall descending_retrace descending_start descending_end descending_start_and_end],
     arch: SHAPE_MISSES,
     valley: SHAPE_MISSES,
     wave: %w[too_few_legs],
