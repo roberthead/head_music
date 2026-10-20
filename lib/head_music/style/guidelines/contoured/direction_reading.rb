@@ -23,6 +23,10 @@ class HeadMusic::Style::Guidelines::Contoured
       "#{contour}_#{failed.join("_and_")}"
     end
 
+    def short?
+      failed_conditions.include?(DIRECTION_LEGS.fetch(contour))
+    end
+
     private
 
     # A wobble too small to make a leg is too small to spoil a direction, and a

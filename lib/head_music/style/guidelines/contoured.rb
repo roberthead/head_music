@@ -14,7 +14,10 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
 
   TREND_REVERSAL_SEMITONES = 3 # a leg must exceed a whole step
 
-  TURN_MISSES = %w[reversed_legs extra_legs missing_rise missing_fall unsteady_rise unsteady_fall missing_legs].freeze
+  TURN_MISSES = %w[
+    reversed_legs extra_legs missing_rise missing_fall unsteady_rise unsteady_fall
+    missing_legs unsteady_legs missing_rise_and_unsteady_fall unsteady_rise_and_missing_fall
+  ].freeze
   MISSES = {
     ascending: %w[ascending_rise ascending_retrace ascending_start ascending_end ascending_start_and_end],
     descending: %w[descending_fall descending_retrace descending_start descending_end descending_start_and_end],

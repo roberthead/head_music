@@ -24,16 +24,22 @@ class HeadMusic::Style::Guidelines::Contoured
     def miss
       return "reversed_legs" if TurnReading.new(MIRRORS.fetch(contour), pitch_numbers).degree.zero?
 
-      failed = [0, 1].reject { |index| halves[index].degree.zero? }
-      return "extra_legs" if failed.empty?
-      return "missing_legs" if failed.length == 2
+      flaws = half_flaws
+      return "extra_legs" if flaws.empty?
+      return "#{flaws.values.first}_legs" if flaws.length == 2 && flaws.values.uniq.one?
 
-      index = failed.first
-      flaw = halves[index].pitch_numbers.one? ? "missing" : "unsteady"
-      "#{flaw}_#{HALF_LEGS.fetch(contour)[index]}"
+      %i[rise fall].filter_map { |leg| "#{flaws[leg]}_#{leg}" if flaws.key?(leg) }.join("_and_")
     end
 
     private
+
+    # A half too short to make a leg is missing it; a longer one turned back.
+    def half_flaws
+      HALF_LEGS.fetch(contour).each_with_index.filter_map do |leg, index|
+        half = halves[index]
+        [leg, half.short? ? "missing" : "unsteady"] unless half.degree.zero?
+      end.to_h
+    end
 
     # Negated for a valley, so both shapes read as an arch.
     def numbers

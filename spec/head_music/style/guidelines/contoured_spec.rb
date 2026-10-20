@@ -182,8 +182,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
       "a dip back of most of the climb" => ["CDED|CDEF|EDC2|", 1, :unsteady_rise],
       "the climax at the last note" => ["CDEF|G4|", 1, :missing_fall],
       "a descending line" => ["GFED|C4|", 1, :missing_rise],
+      "a rise of only a step" => ["DEDC|B,A,G,2|", 1, :missing_rise],
       "a valley" => ["GFED|CDEF|", 3, :reversed_legs],
-      "undulation below the leg threshold" => ["CDCD|C4|", 2, :missing_legs]
+      "undulation below the leg threshold" => ["CDCD|C4|", 2, :missing_legs],
+      "a rise and fall that each turn back" => ["CGCF|AcGC|GFC2|", 2, :unsteady_legs],
+      "an opening climax and a fall that turns back" => ["cGAB|EFGA|D4|", 2, :missing_rise_and_unsteady_fall],
+      "a rise that turns back to a closing climax" => ["CGCF|Ac3|", 2, :unsteady_rise_and_missing_fall]
     )
   end
 

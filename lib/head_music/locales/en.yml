@@ -694,6 +694,9 @@ en:
             missing_legs: "Write the %{contour} contour: rise and fall by at least a minor third."
             unsteady_rise: "Write the %{contour} contour: rise steadily, without turning back on the way."
             unsteady_fall: "Write the %{contour} contour: fall steadily, without turning back on the way."
+            unsteady_legs: "Write the %{contour} contour: rise and fall steadily, without turning back on the way."
+            missing_rise_and_unsteady_fall: "Write the %{contour} contour: add a rise of at least a minor third, and fall without turning back on the way."
+            unsteady_rise_and_missing_fall: "Write the %{contour} contour: rise without turning back on the way, and add a fall of at least a minor third."
             too_few_legs: "Write the %{contour} contour: rise or fall by more than a step at least three times."
             single_turn: "Write the %{contour} contour: turn more than once, not in a single arch or valley."
         note_count_per_bar:
