@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-19T21:05:47-07:00
+  updated_at:   2026-10-19T21:11:10-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -49,13 +49,20 @@ leg.
 
 ## Shapes and directions
 
-A leg is one entry of `Contoured#trend_directions`: a rise or a fall, which
-reverses only once the melody retraces `TREND_REVERSAL_SEMITONES` from its
-running extreme.
+Four terms, used only in these senses:
 
-A contour describes a shape or a direction. Arch, valley, and wave are shapes,
-read from the legs. Ascending and descending are directions, read from the
-endpoints. Static stays a range test. Each shape requires a leg sequence:
+- A **contour** is any of the six things a contour guide asks for: the
+  `Contoured::CONTOURS` keys.
+- A **shape** is what a melody does between its endpoints: arch, valley, and
+  wave, read from the legs.
+- A **direction** is where a melody ends up compared with where it began:
+  ascending, descending, and level. Ascending and descending are read from the
+  endpoints; static is the level direction, read from the range.
+- A **leg** is one rise or one fall, the unit a shape is made of. It reverses
+  only once the melody retraces `TREND_REVERSAL_SEMITONES` from its running
+  extreme. `Contoured#trend_directions` finds the legs today.
+
+Each shape requires a leg sequence:
 
 | Contour | Required legs |
 | --- | --- |
@@ -131,8 +138,8 @@ it fails, marked at φ⁻²ᵈ like the shapes. Descending mirrors this:
 
 ## Static is unchanged
 
-Static stays a range test (within a major third, without directional
-endpoints), and a static mismatch keeps today's φ⁻² mark. Its directional
+Static, the level direction, stays a range test (within a major third, without
+directional endpoints), and a static mismatch keeps today's φ⁻² mark. Its directional
 endpoints check stays strict: within a major third, the tolerance would call
 nearly every melody directional, and C4 D4 E4 D4 would stop being static.
 
@@ -164,7 +171,7 @@ is unassessable and its rubric is never computed.
   a shape, the failed endpoint for a direction.
 - `Contoured`'s comment states that arch, valley, and wave are shapes graded by
   legs, ascending and descending are directions graded by endpoints, and
-  static is a range test.
+  static is the level direction graded by range.
 - The pinned corpus grades (`spec/fixtures/style/corpus_fitness.json`) are
   regenerated with `rake style:snapshot_corpus_fitness`, and every changed row
   is reviewed as intended. 79 `arch_contour_melody` rows sit at exactly 0.618
@@ -178,6 +185,11 @@ is the most recent work on `Contoured` and explains today's matcher.
 
 `spec/head_music/style/guides/contour_melody_spec.rb` pins a wrong-contour
 sawtooth "into the soft floor" at 0.3 to 0.55, which may need revisiting.
+
+The code uses "direction" for legs: `Contoured#trend_directions` returns
+`:ascending` and `:descending` per leg, and `TrendWalk` has a `direction`
+field. Rename them to `legs`, returning `:rise` and `:fall`, so that direction
+means only what this story means by it. Both are private to `Contoured`.
 
 ## Implementation Plan
 

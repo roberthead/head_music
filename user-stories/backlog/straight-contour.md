@@ -4,7 +4,7 @@ metadata:
   activated_at:
   planned_at:
   finished_at:
-  updated_at:   2026-10-19T20:59:00-07:00
+  updated_at:   2026-10-19T21:11:10-07:00
 -->
 
 # Straight Contour
@@ -25,8 +25,9 @@ stood for both a direction (the endpoints) and a shape (a single rise).
 
 A melody's contour has two separate descriptions:
 
-- **Direction**, from the endpoints: ascending, descending, or level.
-- **Shape**, from the legs of `Contoured#trend_directions`: no legs, one leg
+- **Direction**: ascending or descending, from the endpoints, or level (static),
+  from the range.
+- **Shape**, from the legs (rises and falls): no legs, one leg
   (straight), two (arch or valley), or three or more (wave).
 
 Arch, valley, and wave are shapes. Straight is the missing one-leg shape. It is
