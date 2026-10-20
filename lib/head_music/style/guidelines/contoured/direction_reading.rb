@@ -3,9 +3,12 @@ class HeadMusic::Style::Guidelines::Contoured
   class DirectionReading
     DIRECTION_LEGS = {ascending: :rise, descending: :fall}.freeze
 
+    # Giving back three quarters of the headway makes a second climb, not one.
+    RETRACE_SHARE = 3/4r
+
     attr_reader :contour, :pitch_numbers, :retrace_share
 
-    def initialize(contour, pitch_numbers, retrace_share: 1)
+    def initialize(contour, pitch_numbers, retrace_share: RETRACE_SHARE)
       @contour = contour
       @pitch_numbers = pitch_numbers
       @retrace_share = retrace_share
@@ -31,8 +34,7 @@ class HeadMusic::Style::Guidelines::Contoured
 
     # A wobble too small to make a leg is too small to spoil a direction, and a
     # net change too small to make a leg is too small to make a direction. A line
-    # that turns back as far as it moves overall wanders rather than heads
-    # anywhere.
+    # that gives back most of its net change wanders rather than heads anywhere.
     def failed_conditions
       @failed_conditions ||= [
         (:start unless near?(directed.first, directed.min)),

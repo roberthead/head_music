@@ -87,7 +87,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       "a scale ending a half step below its climax" => "CDEF|GABc|B4|",
       "a start a whole step above the floor and an end a whole step below the ceiling" => "DCEG|AG2|",
       "five legs from floor to ceiling" => "CDEC|DEFD|EGA2|",
-      "a fall back just short of the net rise" => "CEGE|DEFA|"
+      "a fall back just short of three quarters of the net rise" => "CEGc|EFGA|Bc3|"
     }.each do |description, shape|
       context "with #{description}" do
         let(:melody) { shape }
@@ -98,10 +98,10 @@ describe HeadMusic::Style::Guidelines::Contoured do
 
     misses_by_degree(
       "a scale ending a minor third below its climax" => ["CDEF|GABc|A4|", 1, :ascending_end],
-      "a start a major third above the floor" => ["EDCD|EFGA|", 1, :ascending_start],
-      "both endpoints a minor third or more from the extremes" => ["EDCE|GABc|A4|", 2, :ascending_start_and_end],
+      "a start a major third above the floor" => ["EDCD|EFGA|Bc2|", 1, :ascending_start],
+      "both endpoints a minor third or more from the extremes" => ["EDCE|GABc|de|c2|", 2, :ascending_start_and_end],
       "a fall back farther than the net rise" => ["CEGE|CDEF|", 1, :ascending_retrace],
-      "a fall back exactly as far as the net rise" => ["CDEF|C2D2|F4|", 1, :ascending_retrace],
+      "a fall back of three quarters of the net rise" => ["CDEF|D2E2|", 1, :ascending_retrace],
       "a level line whose endpoints sit near its extremes" => ["EDEF|EFED|E4|", 1, :ascending_rise],
       "whole-step undulation" => ["CDCD|C4|", 1, :ascending_rise],
       "an arching melody" => ["CDEG|EDC2|", 2, :ascending_rise],
@@ -130,6 +130,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
       "a start a fourth below the ceiling" => ["GAcB|AGFE|DC2|", 1, :descending_start],
       "both endpoints a minor third or more from the extremes" => ["GAcB|AGFE|DCB,A,|C2|", 2, :descending_start_and_end],
       "a climb back farther than the net fall" => ["GECE|GFED|", 1, :descending_retrace],
+      "a climb back of three quarters of the net fall" => ["AGFE|G2F2|", 1, :descending_retrace],
       "a level line whose endpoints sit near its extremes" => ["EDEF|EFED|E4|", 1, :descending_fall],
       "whole-step undulation" => ["CDCD|C4|", 1, :descending_fall],
       "a valley" => ["GFED|CDEF|G4|", 2, :descending_fall],
