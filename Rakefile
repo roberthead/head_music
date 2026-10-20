@@ -1,6 +1,8 @@
 require "bundler/gem_tasks"
 require "rspec/core/rake_task"
-require "standard/rake"
+require "rubocop/rake_task"
+
+RuboCop::RakeTask.new
 
 # The block runs when the task does, just before rspec is launched.
 RSpec::Core::RakeTask.new(:spec) { ENV["COVERAGE"] = "true" }
@@ -45,7 +47,7 @@ end
 task default: :spec
 
 desc "Run all validation checks (tests, linting, security audit, code quality)"
-task validate: [:spec, :standard, "bundle:audit:check", :rubycritic]
+task validate: [:spec, :rubocop, "bundle:audit:check", :rubycritic]
 
 desc "Open an irb session preloaded with this library"
 task :console do
