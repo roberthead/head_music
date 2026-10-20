@@ -1,10 +1,7 @@
 class HeadMusic::Style::Guidelines::Contoured
-  # Reads a melody's legs against an arch, valley, or wave.
-  class ShapeReading
-    REQUIRED_LEGS = {arch: %i[rise fall], valley: %i[fall rise]}.freeze
+  # Reads a melody's legs against a wave, which turns more than once.
+  class WaveReading
     WAVE_LEGS = 3
-
-    LegMiss = Data.define(:extra, :missing)
 
     # Running state for the zigzag walk in #legs.
     TrendWalk = Struct.new(:legs, :leg, :high, :low, :extreme)
@@ -17,35 +14,24 @@ class HeadMusic::Style::Guidelines::Contoured
     end
 
     def degree
-      leg_miss.extra + leg_miss.missing
+      return missing_legs if missing_legs.positive?
+
+      single_turn? ? 1 : 0
     end
 
-    # Extra and missing legs together happen only for the mirror shape.
     def miss
-      return "too_few_legs" if contour == :wave
-
-      if leg_miss.extra.positive?
-        leg_miss.missing.positive? ? "reversed_legs" : "extra_legs"
-      elsif leg_miss.missing == 1
-        "missing_#{(REQUIRED_LEGS.fetch(contour) - legs).first}"
-      else
-        "missing_legs"
-      end
+      missing_legs.positive? ? "too_few_legs" : "single_turn"
     end
 
     private
 
-    # Legs alternate, so a lone leg always matches one end of a required pair,
-    # and three or more always contain the pair.
-    def leg_miss
-      @leg_miss ||=
-        if contour == :wave
-          LegMiss.new(extra: 0, missing: [WAVE_LEGS - legs.length, 0].max)
-        else
-          required = REQUIRED_LEGS.fetch(contour)
-          matched = legs.each_cons(required.length).include?(required) ? required.length : [legs.length, 1].min
-          LegMiss.new(extra: legs.length - matched, missing: required.length - matched)
-        end
+    def missing_legs
+      [WAVE_LEGS - legs.length, 0].max
+    end
+
+    # Legs enough for a wave may still be ornaments on one arch or valley.
+    def single_turn?
+      TurnReading::MIRRORS.each_key.any? { |shape| TurnReading.new(shape, pitch_numbers).degree.zero? }
     end
 
     # A reversal counts only once the melody retraces TREND_REVERSAL_SEMITONES

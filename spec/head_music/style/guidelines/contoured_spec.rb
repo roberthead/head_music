@@ -53,10 +53,11 @@ describe HeadMusic::Style::Guidelines::Contoured do
       expect(described_class.violation_keys(contour: :static)).to eq ["guidelines.contoured.violations.default"]
     end
 
-    it "declares only the default and too few legs for a wave" do
+    it "declares only the default and the wave misses for a wave" do
       expect(described_class.violation_keys(contour: :wave)).to eq %w[
         guidelines.contoured.violations.default
         guidelines.contoured.violations.too_few_legs
+        guidelines.contoured.violations.single_turn
       ]
     end
   end
@@ -174,13 +175,14 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     misses_by_degree(
-      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 1, :extra_legs],
-      "a rise, fall, and rise" => ["CEGA|GDB,D|", 1, :extra_legs],
-      "a fall, rise, and fall" => ["GECD|EGFD|", 1, :extra_legs],
+      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 2, :unsteady_fall],
+      "a rise, fall, and rise" => ["CEGA|GDB,D|", 1, :unsteady_fall],
+      "a fall, rise, and fall" => ["GECD|EGFD|", 2, :missing_rise],
+      "a dip between repeated climaxes" => ["CDGE|GEDC|", 1, :extra_legs],
+      "a dip back of most of the climb" => ["CDED|CDEF|EDC2|", 1, :unsteady_rise],
       "the climax at the last note" => ["CDEF|G4|", 1, :missing_fall],
       "a descending line" => ["GFED|C4|", 1, :missing_rise],
-      "a four-leg wave" => ["CDED|CDEF|EDC2|", 2, :extra_legs],
-      "a valley" => ["GFED|CDEF|", 2, :reversed_legs],
+      "a valley" => ["GFED|CDEF|", 3, :reversed_legs],
       "undulation below the leg threshold" => ["CDCD|C4|", 2, :missing_legs]
     )
   end
@@ -211,11 +213,11 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     misses_by_degree(
-      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 1, :extra_legs],
+      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 2, :unsteady_fall],
       "the nadir at the last note" => ["GFED|C4|", 1, :missing_rise],
       "an ascending line" => ["CDEF|G4|", 1, :missing_fall],
-      "an arch" => ["CDEG|EDC2|", 2, :reversed_legs],
-      "an arch whose close dips below its opening" => ["CEGF|EDCB,|C4|", 2, :reversed_legs]
+      "an arch" => ["CDEG|EDC2|", 3, :reversed_legs],
+      "an arch whose close dips below its opening" => ["CEGF|EDCB,|C4|", 3, :reversed_legs]
     )
   end
 
@@ -315,6 +317,8 @@ describe HeadMusic::Style::Guidelines::Contoured do
       "a three-leg wave" => ["CDED|CDE2|", :wave],
       "a wave of minor thirds" => ["DFDF|D4|", :wave],
       "a four-leg wave with a single peak" => ["CDED|CDEF|EDC2|", :wave],
+      "a wave whose second hump is lower" => ["CEGE|CDEF|DC2|", :wave],
+      "an octave arch with a dip of a third on the way up" => ["CDEF|DEFG|ABc2|BAGF|EDC2|", :arch],
       "a repeated climax a third apart" => ["CDGE|GEDC|", :wave],
       "undulation below the leg threshold" => ["CDCD|C4|", nil],
       "a line climaxing on its last note" => ["CDEF|G4|", nil]

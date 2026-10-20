@@ -216,8 +216,8 @@ describe HeadMusic::Style::Guides::ContourMelody do
       context "with a valley that satisfies everything but the contour" do
         let(:melody) { "GFED|CDEF|" }
 
-        it "marks the contour two degrees off" do
-          expect(contoured.fitness).to eq HeadMusic::GOLDEN_RATIO_INVERSE**4
+        it "marks the contour three degrees off" do
+          expect(contoured.fitness).to eq HeadMusic::GOLDEN_RATIO_INVERSE**6
         end
 
         it "says to reverse the rise and fall" do
@@ -226,7 +226,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
         it "grades below a near-miss arch" do
           expect(analysis.fitness).to be_within(1e-6).of(
-            HeadMusic::GOLDEN_RATIO_INVERSE**5 + HeadMusic::GOLDEN_RATIO_INVERSE**2
+            HeadMusic::GOLDEN_RATIO_INVERSE**7 + HeadMusic::GOLDEN_RATIO_INVERSE**2
           )
         end
       end
@@ -251,9 +251,11 @@ describe HeadMusic::Style::Guides::ContourMelody do
           # Rate-normalized rules bottom out near phi^-1 and the weighted
           # arithmetic mean averages them, so broken-but-real work lands
           # substantially below perfect without collapsing toward the gated
-          # zero of a non-attempt. The sawtooth has three legs too many for an
-          # arch, and its broken secondaries take it below the contour floor.
-          expect(analysis.fitness).to be_between(0.25, HeadMusic::GOLDEN_RATIO_INVERSE**2)
+          # zero of a non-attempt. Its sevenths are small beside its climb of
+          # nearly two octaves, so it reads as an arch missing its fall, one
+          # degree off, and its broken secondaries take it below a near-miss arch.
+          expect(contoured.fitness).to eq HeadMusic::GOLDEN_RATIO_INVERSE**2
+          expect(analysis.fitness).to be_between(HeadMusic::GOLDEN_RATIO_INVERSE**2, 0.5)
         end
       end
 

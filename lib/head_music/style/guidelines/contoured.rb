@@ -4,21 +4,23 @@ module HeadMusic::Style::Guidelines; end
 # Flags a melody without the configured contour
 # Configure the contour with the factory, e.g. Contoured.with(:arch).
 #
-# Arch, valley, and wave are shapes, graded by the legs between the endpoints.
-# Ascending and descending are directions, graded by the endpoints and the
-# headway between them. Static is the level direction, graded by range. Each degree of miss costs φ⁻².
+# Arch and valley are shapes, graded as a direction to the turn and another back
+# from it. A wave is a shape graded by its legs, the rises and falls between the
+# endpoints. Ascending and descending are directions, graded by the endpoints
+# and the headway between them. Static is the level direction, graded by range.
+# Each degree of miss costs φ⁻².
 class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   CONTOURS = %i[ascending descending arch valley wave static].freeze
 
   TREND_REVERSAL_SEMITONES = 3 # a leg must exceed a whole step
 
-  SHAPE_MISSES = %w[reversed_legs extra_legs missing_rise missing_fall missing_legs].freeze
+  TURN_MISSES = %w[reversed_legs extra_legs missing_rise missing_fall unsteady_rise unsteady_fall missing_legs].freeze
   MISSES = {
     ascending: %w[ascending_rise ascending_retrace ascending_start ascending_end ascending_start_and_end],
     descending: %w[descending_fall descending_retrace descending_start descending_end descending_start_and_end],
-    arch: SHAPE_MISSES,
-    valley: SHAPE_MISSES,
-    wave: %w[too_few_legs],
+    arch: TURN_MISSES,
+    valley: TURN_MISSES,
+    wave: %w[too_few_legs single_turn],
     static: []
   }.freeze
 
@@ -79,7 +81,11 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   end
 
   def reading_class
-    DirectionReading::DIRECTION_LEGS.key?(contour) ? DirectionReading : ShapeReading
+    case contour
+    when :arch, :valley then TurnReading
+    when :wave then WaveReading
+    else DirectionReading
+    end
   end
 
   def static?

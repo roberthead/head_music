@@ -288,6 +288,8 @@ en:
 - 'Write the arch contour: rise and fall fewer times.'
 - 'Write the arch contour: add a rise of at least a minor third.'
 - 'Write the arch contour: add a fall of at least a minor third.'
+- 'Write the arch contour: rise steadily, without turning back on the way.'
+- 'Write the arch contour: fall steadily, without turning back on the way.'
 - 'Write the arch contour: rise and fall by at least a minor third.'
 - Minimum of one melodic interval
 - Include at least one melodic interval.
@@ -322,11 +324,14 @@ en:
 - 'Write the valley contour: rise and fall fewer times.'
 - 'Write the valley contour: add a rise of at least a minor third.'
 - 'Write the valley contour: add a fall of at least a minor third.'
+- 'Write the valley contour: rise steadily, without turning back on the way.'
+- 'Write the valley contour: fall steadily, without turning back on the way.'
 - 'Write the valley contour: rise and fall by at least a minor third.'
 - Wave contour
 - Shape the line into the wave contour.
 - Write a melody with the wave contour.
 - 'Write the wave contour: rise or fall by more than a step at least three times.'
+- 'Write the wave contour: turn more than once, not in a single arch or valley.'
 en_GB:
 - Fux Cantus Firmus
 - 'Write a cantus firmus: a singable line of eight to fourteen semibreves that begins
@@ -616,6 +621,8 @@ en_GB:
 - 'Write the arch contour: rise and fall fewer times.'
 - 'Write the arch contour: add a rise of at least a minor third.'
 - 'Write the arch contour: add a fall of at least a minor third.'
+- 'Write the arch contour: rise steadily, without turning back on the way.'
+- 'Write the arch contour: fall steadily, without turning back on the way.'
 - 'Write the arch contour: rise and fall by at least a minor third.'
 - Minimum of one melodic interval
 - Include at least one melodic interval.
@@ -650,8 +657,11 @@ en_GB:
 - 'Write the valley contour: rise and fall fewer times.'
 - 'Write the valley contour: add a rise of at least a minor third.'
 - 'Write the valley contour: add a fall of at least a minor third.'
+- 'Write the valley contour: rise steadily, without turning back on the way.'
+- 'Write the valley contour: fall steadily, without turning back on the way.'
 - 'Write the valley contour: rise and fall by at least a minor third.'
 - Wave contour
 - Shape the line into the wave contour.
 - Write a melody with the wave contour.
 - 'Write the wave contour: rise or fall by more than a step at least three times.'
+- 'Write the wave contour: turn more than once, not in a single arch or valley.'

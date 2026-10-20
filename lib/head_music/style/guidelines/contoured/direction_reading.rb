@@ -3,11 +3,12 @@ class HeadMusic::Style::Guidelines::Contoured
   class DirectionReading
     DIRECTION_LEGS = {ascending: :rise, descending: :fall}.freeze
 
-    attr_reader :contour, :pitch_numbers
+    attr_reader :contour, :pitch_numbers, :retrace_share
 
-    def initialize(contour, pitch_numbers)
+    def initialize(contour, pitch_numbers, retrace_share: 1)
       @contour = contour
       @pitch_numbers = pitch_numbers
+      @retrace_share = retrace_share
     end
 
     def degree
@@ -40,7 +41,7 @@ class HeadMusic::Style::Guidelines::Contoured
       net = directed.last - directed.first
       return DIRECTION_LEGS.fetch(contour) if net < TREND_REVERSAL_SEMITONES
 
-      :retrace if retrace >= net
+      :retrace if retrace >= retrace_share * net
     end
 
     # Negated for descending, so both directions read as ascending.
