@@ -56,7 +56,7 @@ describe HeadMusic::Style::Guidelines::Contoured do
     it "declares only the default and too few legs for a wave" do
       expect(described_class.violation_keys(contour: :wave)).to eq %w[
         guidelines.contoured.violations.default
-        guidelines.contoured.violations.missing_legs
+        guidelines.contoured.violations.too_few_legs
       ]
     end
   end
@@ -243,9 +243,9 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     misses_by_degree(
-      "a single-turn arch" => ["CDEG|EDC2|", 1, :missing_legs],
-      "an ascending line" => ["CDEF|G4|", 2, :missing_legs],
-      "whole-step undulation below the leg threshold" => ["CDCD|C4|", 3, :missing_legs]
+      "a single-turn arch" => ["CDEG|EDC2|", 1, :too_few_legs],
+      "an ascending line" => ["CDEF|G4|", 2, :too_few_legs],
+      "whole-step undulation below the leg threshold" => ["CDCD|C4|", 3, :too_few_legs]
     )
   end
 
@@ -357,11 +357,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
       end
     end
 
-    %i[arch valley wave].each do |contour_key|
+    {arch: [2, :missing_legs], valley: [2, :missing_legs], wave: [3, :too_few_legs]}.each do |contour_key, (degree, miss)|
       context "with the #{contour_key} contour" do
         let(:contour) { contour_key }
 
-        it { is_expected.not_to be_adherent }
+        its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**(2 * degree) }
+        its(:violation_key) { is_expected.to eq "guidelines.contoured.violations.#{miss}" }
       end
     end
   end
@@ -369,11 +370,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
   context "with two notes" do
     let(:melody) { "C2D2|" }
 
-    %i[arch valley wave].each do |contour_key|
+    {arch: [2, :missing_legs], valley: [2, :missing_legs], wave: [3, :too_few_legs]}.each do |contour_key, (degree, miss)|
       context "with the #{contour_key} contour" do
         let(:contour) { contour_key }
 
-        it { is_expected.not_to be_adherent }
+        its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**(2 * degree) }
+        its(:violation_key) { is_expected.to eq "guidelines.contoured.violations.#{miss}" }
       end
     end
   end

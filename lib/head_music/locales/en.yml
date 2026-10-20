@@ -690,6 +690,7 @@ en:
             missing_rise: "Write the %{contour} contour: add a rise of at least a minor third."
             missing_fall: "Write the %{contour} contour: add a fall of at least a minor third."
             missing_legs: "Write the %{contour} contour: rise and fall by at least a minor third."
+            too_few_legs: "Write the %{contour} contour: rise or fall by more than a step at least three times."
         note_count_per_bar:
           name:
             one: "%{number} %{rhythmic_unit} note per bar"

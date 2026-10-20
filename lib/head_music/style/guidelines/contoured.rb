@@ -24,7 +24,7 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     descending: %w[descending_fall descending_start descending_end descending_start_and_end],
     arch: SHAPE_MISSES,
     valley: SHAPE_MISSES,
-    wave: %w[missing_legs],
+    wave: %w[too_few_legs],
     static: []
   }.freeze
 
@@ -86,7 +86,7 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   end
 
   # A wobble too small to make a leg is too small to spoil a direction, and a
-  # net change too small to make a leg is too small to make one.
+  # net change too small to make a leg is too small to make a direction.
   def failed_endpoints
     @failed_endpoints ||= begin
       low, high = pitch_numbers.minmax
@@ -110,9 +110,11 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
 
   # Extra and missing legs together happen only for the mirror shape.
   def shape_miss
+    return "too_few_legs" if contour == :wave
+
     if leg_miss.extra.positive?
       leg_miss.missing.positive? ? "reversed_legs" : "extra_legs"
-    elsif leg_miss.missing == 1 && REQUIRED_LEGS.key?(contour)
+    elsif leg_miss.missing == 1
       "missing_#{(REQUIRED_LEGS.fetch(contour) - legs).first}"
     else
       "missing_legs"

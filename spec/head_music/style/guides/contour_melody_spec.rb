@@ -251,8 +251,8 @@ describe HeadMusic::Style::Guides::ContourMelody do
           # Rate-normalized rules bottom out near phi^-1 and the weighted
           # arithmetic mean averages them, so broken-but-real work lands
           # substantially below perfect without collapsing toward the gated
-          # zero of a non-attempt. Three legs too many, its broken secondaries
-          # take it below the contour floor.
+          # zero of a non-attempt. The sawtooth has three legs too many for an
+          # arch, and its broken secondaries take it below the contour floor.
           expect(analysis.fitness).to be_between(0.25, HeadMusic::GOLDEN_RATIO_INVERSE**2)
         end
       end
