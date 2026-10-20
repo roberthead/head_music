@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
   finished_at:
-  updated_at:   2026-10-19T21:40:56-07:00
+  updated_at:   2026-10-19T21:47:26-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -410,3 +410,61 @@ Finish with `bundle exec rubocop -a` and `bundle exec rake validate`.
   **Breaking.**
 - The prototype's corpus counts are estimates made before the net-rise
   condition was added. Recheck them during implementation.
+
+## Review
+
+Reviewed 2026-10-19 at commit `c8dab07b`, with a clean working tree.
+
+### Acceptance criteria
+
+- ✅ **Shapes by degree.** Arch, valley, and wave mark at φ⁻²ᵈ
+  (`contoured.rb:77-86, 128-137`). Every row of the arch table and the wave
+  rule was reproduced.
+- ✅ **Valley and one-degree grades.** A valley against an arch marks φ⁻⁴ and
+  grades 0.4721 (`contour_melody_spec.rb:216-232`). A one-degree miss marks φ⁻²
+  and grades 0.618.
+- ✅ **Directions by three conditions.** All the named melodies grade as stated,
+  and a descending scale against ascending marks φ⁻⁶ (`contoured.rb:90-101`).
+- ✅ **One mark per miss.** A single `Mark.for_all` (`contoured.rb:63`), asserted
+  for every miss in the spec helper.
+- ✅ **Static unchanged.** The strict test stays in `directional_endpoints?`.
+  C4 D4 E4 D4 and E4 D4 E4 F4 E4 F4 E4 D4 E4 stay static, and no
+  `static_contour_melody` corpus row moved.
+- ✅ **Closed key set.** 13 keys, each rendering from `%{contour}` alone. A
+  2000-melody random sweep showed the declared and producible keys match
+  exactly.
+- ✅ **Legs rename.** No `trend_directions` remains.
+- ✅ **Class comment.** States the shape, direction, and level split
+  (`contoured.rb:7-9`).
+- ⚠️ **Corpus regenerated and reviewed.** 387 rows changed (arch 70, valley 89,
+  wave 8, ascending 104, descending 116), all in the five non-static contour
+  guides. Of the 79 arch rows at 0.618, 20 stay, 47 drop to 0.472, 5 to 0.416,
+  and 7 drop lower, none below the 0.382 floor. Nine rows rose, eight ascending
+  and one descending, each from the endpoint tolerance. Confirming those nine
+  are intended needs a human. The plan's estimate of about 269 changed rows was
+  made before the net-rise condition was added.
+- ✅ **English strings regenerated.** The snapshot only adds lines.
+- ✅ **Sawtooth re-pinned.** It grades 0.281.
+- ✅ **`CDED|EFG2|` against descending.** It moves to φ⁻⁶.
+
+### Code review findings
+
+1. **The `missing_legs` message misleads for a wave (important).** "Rise and
+   fall by at least a minor third" is told to an arch submitted to
+   `wave_contour_melody`, which already rises and falls a fifth. What it lacks
+   is one more leg. Suggested wording: "rise and fall more times, each by at
+   least a minor third." Then re-snapshot the English strings.
+2. **Ambiguous "one" in a comment (minor).** In `contoured.rb:89`, "too small
+   to make one" reads as a leg. Say "a direction".
+3. **Dangling phrase in a spec comment (minor).** In
+   `contour_melody_spec.rb:254`, "Three legs too many, its broken
+   secondaries…" does not attach grammatically.
+4. **Zero-leg degree not pinned (test gap).** The single-note and two-note
+   examples for arch, valley, and wave only assert `not_to be_adherent`. Pin
+   φ⁻⁴ and φ⁻⁶.
+5. **Single notes fail directions (not in the story).** A single note now marks
+   φ⁻² against ascending and descending, where it used to be adherent. This
+   follows from the net-rise rule, and it is pinned.
+
+No correctness bugs were found. `spec/head_music/style` passes (2027 examples),
+and rubocop is clean.
