@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
   finished_at:
-  updated_at:   2026-10-19T21:58:02-07:00
+  updated_at:   2026-10-20T07:10:23-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -111,8 +111,8 @@ disqualifying it. With every secondary guideline adherent:
 ## Ascending and descending are directions
 
 An ascending melody starts at its lowest pitch and ends at its highest, and a
-descending one the reverse, as today but with a tolerance. Legs play no part:
-what happens between the endpoints is shape, not direction.
+descending one the reverse, as today but with a tolerance. The legs' sequence
+plays no part: what happens between the endpoints is shape, not direction.
 C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five legs (rise, fall, rise, fall, rise) and
 a full ascending match.
 
@@ -130,19 +130,28 @@ direction has a third condition, by the same rule as the tolerance: the
 melody must end at least `TREND_REVERSAL_SEMITONES` higher than it began. A
 change too small to make a leg is too small to make a direction.
 
-A melody misses by one degree for each of the three conditions it fails,
-marked at φ⁻²ᵈ like the shapes. Descending mirrors this:
+A melody can also start and end near its extremes and still only wander
+between them. A fourth condition, the retrace, catches it: the farthest the
+melody falls back from its running high must be less than its net rise.
+A4 D5 A4 B4 C5 G4 A4 D5 B4 C5 D5 A4 C5 D5 E5 B4 D5 A4 B4 C♯5 D5 falls back
+seven semitones within a net rise of five. A retrace is measured only when the
+melody rises a leg, since there is no net rise to compare it with otherwise.
 
-| Melody against ascending | First near lowest | Last near highest | Rises a leg | Degree |
-| --- | --- | --- | --- | --- |
-| C4 up to C5 | ✓ | ✓ | ✓ | 0 |
-| C4 up to C5, ending on B4 | ✓ | ✓ | ✓ | 0 |
-| D4 C4 E4 G4 A4 G4 | ✓ | ✓ | ✓ | 0 |
-| C4 up to C5, ending on A4 | ✓ | ✗ | ✓ | 1 |
-| E4 D4 E4 F4 E4 F4 E4 D4 E4 | ✓ | ✓ | ✗ | 1 |
-| C4 D4 C4 D4 | ✓ | ✓ | ✗ | 1 |
-| an arch from C4 back to C4 | ✓ | ✗ | ✗ | 2 |
-| C5 down to C4 | ✗ | ✗ | ✗ | 3 |
+A melody misses by one degree for each condition it fails, marked at φ⁻²ᵈ
+like the shapes. Rising a leg and the retrace never both fail, so a direction
+misses by at most three degrees. Descending mirrors this:
+
+| Melody against ascending | First near lowest | Last near highest | Rises a leg | Retrace short of the rise | Degree |
+| --- | --- | --- | --- | --- | --- |
+| C4 up to C5 | ✓ | ✓ | ✓ | ✓ | 0 |
+| C4 up to C5, ending on B4 | ✓ | ✓ | ✓ | ✓ | 0 |
+| D4 C4 E4 G4 A4 G4 | ✓ | ✓ | ✓ | ✓ | 0 |
+| C4 up to C5, ending on A4 | ✓ | ✗ | ✓ | ✓ | 1 |
+| C4 E4 G4 E4 C4 D4 E4 F4 | ✓ | ✓ | ✓ | ✗ | 1 |
+| E4 D4 E4 F4 E4 F4 E4 D4 E4 | ✓ | ✓ | ✗ | — | 1 |
+| C4 D4 C4 D4 | ✓ | ✓ | ✗ | — | 1 |
+| an arch from C4 back to C4 | ✓ | ✗ | ✗ | — | 2 |
+| C5 down to C4 | ✗ | ✗ | ✗ | — | 3 |
 
 ## Static is unchanged
 
@@ -170,9 +179,10 @@ is unassessable and its rubric is never computed.
 - With every secondary adherent, a valley submitted to `arch_contour_melody`
   marks at φ⁻⁴ and grades about 0.472, and a melody one degree from an arch
   marks at φ⁻² and grades about 0.618.
-- Ascending and descending mark at φ⁻²ᵈ by the number of the three conditions
-  failed (start near its extreme, end near its extreme, net change of at
-  least a leg), ignoring the legs themselves. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4
+- Ascending and descending mark at φ⁻²ᵈ by the number of conditions failed
+  (start near its extreme, end near its extreme, net change of at least a
+  leg, and, given that net change, a retrace short of it), ignoring the
+  legs' sequence. C4 E4 G4 E4 C4 D4 E4 F4 marks at φ⁻² against ascending. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4
   and D4 C4 E4 G4 A4 G4 are full ascending matches.
   E4 D4 E4 F4 E4 F4 E4 D4 E4 and C4 D4 C4 D4 mark at φ⁻² against both
   ascending and descending, and a descending scale marks at φ⁻⁶ against
@@ -193,8 +203,9 @@ is unassessable and its rubric is never computed.
     times.
   - A mirror shape (a valley against an arch) says to reverse the rise and
     fall.
-  - A direction that fails to rise (or fall) a leg says so. Otherwise it
-    names the endpoint or endpoints that failed.
+  - A direction that fails to rise (or fall) a leg says so, and so does one
+    that turns back as far as it moves. Otherwise it names the endpoint or
+    endpoints that failed.
   - Static keeps today's sentence.
 - `trend_directions` and `TrendWalk#direction` are renamed to legs, returning
   `:rise` and `:fall`.
@@ -433,9 +444,9 @@ Reviewed 2026-10-19 at commit `c8dab07b`, with a clean working tree.
 - ✅ **Static unchanged.** The strict test stays in `directional_endpoints?`.
   C4 D4 E4 D4 and E4 D4 E4 F4 E4 F4 E4 D4 E4 stay static, and no
   `static_contour_melody` corpus row moved.
-- ✅ **Closed key set.** 14 keys (13 at review, plus `too_few_legs`), each
-  rendering from `%{contour}` alone. A 2000-melody random sweep at review
-  showed the declared and producible keys match exactly.
+- ✅ **Closed key set.** 16 keys (13 at review, plus `too_few_legs` and the two
+  retrace keys), each rendering from `%{contour}` alone. A 2000-melody random
+  sweep at review showed the declared and producible keys match exactly.
 - ✅ **Legs rename.** No `trend_directions` remains.
 - ✅ **Class comment.** States the shape, direction, and level split
   (`contoured.rb:7-9`).
@@ -476,3 +487,30 @@ Reviewed 2026-10-19 at commit `c8dab07b`, with a clean working tree.
 
 No correctness bugs were found. After the fixes, `spec/head_music/style` passes
 (2033 examples) and rubocop is clean.
+
+### Follow-up: the retrace condition
+
+After the review, two rising rows read as waves rather than ascents.
+`fux_second_species_examples-0-v1` and
+`third_species_triple_meter_examples-0-v1` each fall back seven semitones within
+a net rise of five. A fourth direction condition, the retrace, now costs a
+degree when the melody turns back from its running extreme as far as its net
+change. It is measured only when the net change is at least a leg. It adds the
+`ascending_retrace` and `descending_retrace` keys, which outrank the endpoint
+keys.
+
+- **Corpus:** 12 more rows changed, 11 ascending and 1 descending, and none
+  rose. The two wave-like rows fell back to 0.601 and 0.567. The other ten were
+  already misses and lost one more degree: each plunges below its start or ends
+  by falling back.
+- **Borderline rows:** both still match.
+  `fux_cantus_firmus_examples_with_errors-13-v0` turns back 6 within a net fall
+  of 7, and `fux_fifth_species_examples-3-v1` 10 within a net rise of 12.
+- **Rising rows:** seven of the nine rows that rose at review stand.
+- **Spec change:** the descending `start_and_end` example became
+  `GAcB|AGFE|DCB,A,|C2|`, because the old one, `GAcB|AGFE|DCE2|`, also retraces.
+- **RubyCritic:** the review missed that `rake validate` was failing. The
+  degree grading had pushed `contoured.rb` from a C (about 139 flog) to a D
+  (about 258). `Contoured::ShapeReading` and `Contoured::DirectionReading` now
+  hold the two readings, about 120 and 70 flog. They were extracted in their own
+  commit with grades unchanged, before the retrace was added.
