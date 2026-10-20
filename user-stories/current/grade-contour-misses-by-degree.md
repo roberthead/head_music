@@ -4,15 +4,15 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-19T21:02:13-07:00
+  updated_at:   2026-10-19T21:05:47-07:00
 -->
 
 # Grade Contour Misses by Degree
 
 AS a student submitting a melody to a contour guide
 
-I WANT a melody with the wrong shape to score worse than one that nearly has
-the right shape
+I WANT a melody with the wrong contour to score worse than one that nearly has
+the right contour
 
 SO THAT a valley handed to `arch_contour_melody` is not graded as a near-miss
 arch
@@ -53,9 +53,9 @@ A leg is one entry of `Contoured#trend_directions`: a rise or a fall, which
 reverses only once the melody retraces `TREND_REVERSAL_SEMITONES` from its
 running extreme.
 
-A contour describes either a shape or a direction. Arch, valley, and wave are
-shapes, read from the legs. Ascending, descending, and static are directions,
-read from the endpoints (see below). Each shape requires a leg sequence:
+A contour describes a shape or a direction. Arch, valley, and wave are shapes,
+read from the legs. Ascending and descending are directions, read from the
+endpoints. Static stays a range test. Each shape requires a leg sequence:
 
 | Contour | Required legs |
 | --- | --- |
@@ -109,7 +109,7 @@ what happens between the endpoints is shape, not direction.
 C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five legs (rise, fall, rise, fall, rise) and
 a full ascending match.
 
-The one-leg shape a scale has is taught by its own guide, in
+The one-leg shape a scale has is left to its own guide, in
 [Straight Contour](../backlog/straight-contour.md).
 
 The endpoint test allows the same tolerance as the legs: the first note may sit
@@ -118,7 +118,7 @@ than that below the highest. A wobble too small to make a leg is too small to
 spoil a direction.
 
 A melody that fails the test misses by one degree for each endpoint condition
-it fails, marked at φ⁻²ᵈ like the shapes:
+it fails, marked at φ⁻²ᵈ like the shapes. Descending mirrors this:
 
 | Melody against ascending | First near lowest | Last near highest | Degree |
 | --- | --- | --- | --- |
@@ -163,12 +163,13 @@ is unassessable and its rubric is never computed.
 - A failure message names how the melody missed: the extra or missing legs for
   a shape, the failed endpoint for a direction.
 - `Contoured`'s comment states that arch, valley, and wave are shapes graded by
-  legs, and ascending, descending, and static are directions graded by
-  endpoints.
+  legs, ascending and descending are directions graded by endpoints, and
+  static is a range test.
 - The pinned corpus grades (`spec/fixtures/style/corpus_fitness.json`) are
   regenerated with `rake style:snapshot_corpus_fitness`, and every changed row
   is reviewed as intended. 79 `arch_contour_melody` rows sit at exactly 0.618
-  today, and the other five contour guides move too.
+  today. Arch, valley, wave, ascending, and descending rows may move; static
+  rows must not.
 
 ## Notes
 
