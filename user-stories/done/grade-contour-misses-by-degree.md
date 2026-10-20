@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-18T15:24:10-07:00
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
-  finished_at:
-  updated_at:   2026-10-20T15:10:00-07:00
+  finished_at:  2026-10-20T14:33:42-07:00
+  updated_at:   2026-10-20T14:33:42-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -441,6 +441,41 @@ Finish with `bundle exec rubocop -a` and `bundle exec rake validate`.
   **Breaking.**
 - The prototype's corpus counts are estimates made before the net-rise
   condition was added. Recheck them during implementation.
+
+## Learnings
+
+- **Read the corpus rows as melodies, not as numbers.** Most of what
+  changed after the review came from looking at the notes behind a moved
+  row: the cantus firmi reading as waves, the two lines that rose twice and
+  passed ascending, the fifth-species arches told to "rise and fall by a
+  minor third". A count of rows by guide hid all of these. Next time,
+  include a melody-and-reading table in the review itself.
+- **Run `rake validate`, not just the specs.** The review reported the work
+  as clean while RubyCritic was failing it. Splitting the readings into
+  `DirectionReading`, `TurnReading`, and `WaveReading` fixed the grade and
+  made the later follow-ups small, one-class changes.
+- **Test a threshold against the whole corpus before choosing it.** Ranking
+  every passing row by its share of turn back, then trying each variant
+  against the corpus in a throwaway script, showed that two thirds failed a
+  whole-step wobble and that three quarters touched exactly the flagged
+  rows. It took minutes and settled the choice with evidence.
+- **A combined key hides distinct flaws.** `missing_legs` covered every way
+  both halves could fail, so its message was wrong more often than right.
+  Naming each half's flaw, and joining two, gave a correct message for every
+  case with only three new keys.
+- **Spec melodies that isolate one condition need margin.** Tightening the
+  retrace broke two endpoint examples whose small net rise let their opening
+  dip count as turning back. Give single-condition examples enough headway
+  that the other conditions are not close.
+- **The story grew by follow-ups after its review.** The retrace, the climax
+  halves, the flaw naming, and the three-quarter share each changed grades
+  after the acceptance review. Each was recorded with its corpus effect, but
+  none was re-reviewed by agents. When follow-ups change grades, a short
+  re-review before finishing would be cheap insurance.
+- **Open thread.** Arch and valley halves allow half their net change, but a
+  turn back below a minor third can still fail a short half. A floor at one
+  leg would match the "a wobble too small to make a leg" principle; it
+  changes two corpus readings and was left out of this story.
 
 ## Review
 
