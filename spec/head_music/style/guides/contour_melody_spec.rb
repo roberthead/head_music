@@ -200,14 +200,32 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "G4|F4|E4|D4|C4|" }
 
         # The golden identity phi^-1 + phi^-2 = 1: rubric peers share phi^-2
-        # of weight and Contoured carries phi^-1, so a wrong contour on an
-        # otherwise perfect line grades exactly phi^-1.
+        # of weight and Contoured carries phi^-1, so a contour one degree off
+        # on an otherwise perfect line grades exactly phi^-1.
         it "grades exactly the inverse golden ratio" do
           expect(analysis.fitness).to be_within(1e-6).of(HeadMusic::GOLDEN_RATIO_INVERSE)
         end
 
         it "grades below a C" do
           expect(analysis.fitness).to be < 0.70
+        end
+      end
+
+      context "with a valley that satisfies everything but the contour" do
+        let(:melody) { "GFED|CDEF|" }
+
+        let(:contoured) do
+          analysis.guide_item_assessments.detect { |assessment| assessment.guideline == guidelines::Contoured }
+        end
+
+        it "marks the contour two degrees off" do
+          expect(contoured.fitness).to eq HeadMusic::GOLDEN_RATIO_INVERSE**4
+        end
+
+        it "grades below a near-miss arch" do
+          expect(analysis.fitness).to be_within(1e-6).of(
+            HeadMusic::GOLDEN_RATIO_INVERSE**5 + HeadMusic::GOLDEN_RATIO_INVERSE**2
+          )
         end
       end
 
@@ -231,8 +249,9 @@ describe HeadMusic::Style::Guides::ContourMelody do
           # Rate-normalized rules bottom out near phi^-1 and the weighted
           # arithmetic mean averages them, so broken-but-real work lands
           # substantially below perfect without collapsing toward the gated
-          # zero of a non-attempt.
-          expect(analysis.fitness).to be_between(0.3, 0.55)
+          # zero of a non-attempt. Three legs too many, its broken secondaries
+          # take it below the contour floor.
+          expect(analysis.fitness).to be_between(0.25, HeadMusic::GOLDEN_RATIO_INVERSE**2)
         end
       end
 

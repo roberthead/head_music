@@ -16,6 +16,17 @@ describe HeadMusic::Style::Guidelines::Contoured do
     ABC
   end
 
+  def self.misses_by_degree(examples)
+    examples.each do |description, (shape, degree)|
+      context "with #{description}" do
+        let(:melody) { shape }
+
+        its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**(2 * degree) }
+        its(:marks_count) { is_expected.to eq 1 }
+      end
+    end
+  end
+
   describe ".with" do
     subject(:configured) { described_class.with(:arch) }
 
@@ -127,21 +138,16 @@ describe HeadMusic::Style::Guidelines::Contoured do
       it { is_expected.to be_adherent }
     end
 
-    context "with a rise, a plunge, and a climb back" do
-      let(:melody) { "CDED|B,A,G,B,|C4|" }
-
-      it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
-      its(:marks_count) { is_expected.to eq 1 }
-    end
-
-    context "with the climax at the last note" do
-      let(:melody) { "CDEF|G4|" }
-
-      it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
-      its(:marks_count) { is_expected.to eq 1 }
-    end
+    misses_by_degree(
+      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 1],
+      "a rise, fall, and rise" => ["CEGA|GDB,D|", 1],
+      "a fall, rise, and fall" => ["GECD|EGFD|", 1],
+      "the climax at the last note" => ["CDEF|G4|", 1],
+      "a descending line" => ["GFED|C4|", 1],
+      "a four-leg wave" => ["CDED|CDEF|EDC2|", 2],
+      "a valley" => ["GFED|CDEF|", 2],
+      "undulation below the leg threshold" => ["CDCD|C4|", 2]
+    )
   end
 
   context "when configured for a valley contour" do
@@ -169,25 +175,13 @@ describe HeadMusic::Style::Guidelines::Contoured do
       it { is_expected.to be_adherent }
     end
 
-    context "with a rise, a plunge, and a climb back" do
-      let(:melody) { "CDED|B,A,G,B,|C4|" }
-
-      it { is_expected.not_to be_adherent }
-    end
-
-    context "with an arch whose close dips below its opening" do
-      let(:melody) { "CEGF|EDCB,|C4|" }
-
-      it { is_expected.not_to be_adherent }
-    end
-
-    context "with the nadir at the last note" do
-      let(:melody) { "GFED|C4|" }
-
-      it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
-      its(:marks_count) { is_expected.to eq 1 }
-    end
+    misses_by_degree(
+      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 1],
+      "the nadir at the last note" => ["GFED|C4|", 1],
+      "an ascending line" => ["CDEF|G4|", 1],
+      "an arch" => ["CDEG|EDC2|", 2],
+      "an arch whose close dips below its opening" => ["CEGF|EDCB,|C4|", 2]
+    )
   end
 
   context "when configured for a wave contour" do
@@ -217,19 +211,11 @@ describe HeadMusic::Style::Guidelines::Contoured do
       it { is_expected.to be_adherent }
     end
 
-    context "with a single-turn arch" do
-      let(:melody) { "CDEG|EDC2|" }
-
-      it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
-      its(:marks_count) { is_expected.to eq 1 }
-    end
-
-    context "with whole-step undulation below the leg threshold" do
-      let(:melody) { "CDCD|C4|" }
-
-      it { is_expected.not_to be_adherent }
-    end
+    misses_by_degree(
+      "a single-turn arch" => ["CDEG|EDC2|", 1],
+      "an ascending line" => ["CDEF|G4|", 2],
+      "whole-step undulation below the leg threshold" => ["CDCD|C4|", 3]
+    )
   end
 
   context "when configured for a static contour" do

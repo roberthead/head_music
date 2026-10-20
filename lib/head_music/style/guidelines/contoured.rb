@@ -8,6 +8,11 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
 
   TREND_REVERSAL_SEMITONES = 3 # a leg must exceed a whole step
 
+  REQUIRED_LEGS = {arch: %i[rise fall], valley: %i[fall rise]}.freeze
+  WAVE_LEGS = 3
+
+  LegMiss = Data.define(:extra, :missing)
+
   # Running state for the zigzag walk in #legs.
   TrendWalk = Struct.new(:legs, :leg, :high, :low, :extreme)
 
@@ -25,9 +30,9 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   end
 
   def marks
-    return if notes.empty? || matches_contour?
+    return if notes.empty? || degree.zero?
 
-    HeadMusic::Style::Mark.for_all(notes, fitness: HeadMusic::GOLDEN_RATIO_INVERSE**2)
+    HeadMusic::Style::Mark.for_all(notes, fitness: HeadMusic::GOLDEN_RATIO_INVERSE**(2 * degree))
   end
 
   def self.template_values(config)
@@ -41,8 +46,26 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     @contour ||= self.class.normalized_contour(options.fetch(:contour))
   end
 
-  def matches_contour?
-    send("#{contour}?")
+  def degree
+    @degree ||=
+      if REQUIRED_LEGS.key?(contour) || contour == :wave
+        leg_miss.extra + leg_miss.missing
+      else
+        send("#{contour}?") ? 0 : 1
+      end
+  end
+
+  # Legs alternate, so a lone leg always matches one end of a required pair,
+  # and three or more always contain the pair.
+  def leg_miss
+    @leg_miss ||=
+      if contour == :wave
+        LegMiss.new(extra: 0, missing: [WAVE_LEGS - legs.length, 0].max)
+      else
+        required = REQUIRED_LEGS.fetch(contour)
+        matched = legs.each_cons(required.length).include?(required) ? required.length : [legs.length, 1].min
+        LegMiss.new(extra: legs.length - matched, missing: required.length - matched)
+      end
   end
 
   def ascending?
@@ -51,18 +74,6 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
 
   def descending?
     first_note.pitch == highest_pitch && last_note.pitch == lowest_pitch
-  end
-
-  def arch?
-    legs == %i[rise fall]
-  end
-
-  def valley?
-    legs == %i[fall rise]
-  end
-
-  def wave?
-    legs.length >= 3
   end
 
   def static?
