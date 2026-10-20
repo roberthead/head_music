@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-19T20:59:00-07:00
+  updated_at:   2026-10-19T21:02:13-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -103,33 +103,38 @@ disqualifying it. With every secondary guideline adherent:
 
 ## Ascending and descending are directions
 
-An ascending melody starts on its lowest pitch and ends on its highest, and a
-descending one the reverse, as today. Legs play no part: what happens between
-the endpoints is shape, not direction. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five
-legs (rise, fall, rise, fall, rise) and a full ascending match.
+An ascending melody starts at its lowest pitch and ends at its highest, and a
+descending one the reverse, as today but with a tolerance. Legs play no part:
+what happens between the endpoints is shape, not direction.
+C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five legs (rise, fall, rise, fall, rise) and
+a full ascending match.
 
 The one-leg shape a scale has is taught by its own guide, in
 [Straight Contour](../backlog/straight-contour.md).
 
-A melody that fails the endpoint test misses by one degree for each endpoint
-condition it fails, marked at φ⁻²ᵈ like the shapes:
+The endpoint test allows the same tolerance as the legs: the first note may sit
+less than `TREND_REVERSAL_SEMITONES` above the lowest pitch, and the last less
+than that below the highest. A wobble too small to make a leg is too small to
+spoil a direction.
 
-| Melody against ascending | First is lowest | Last is highest | Degree |
+A melody that fails the test misses by one degree for each endpoint condition
+it fails, marked at φ⁻²ᵈ like the shapes:
+
+| Melody against ascending | First near lowest | Last near highest | Degree |
 | --- | --- | --- | --- |
 | C4 up to C5 | ✓ | ✓ | 0 |
-| C4 up to C5, ending on B4 | ✓ | ✗ | 1 |
+| C4 up to C5, ending on B4 | ✓ | ✓ | 0 |
+| D4 C4 E4 G4 A4 G4 | ✓ | ✓ | 0 |
+| C4 up to C5, ending on A4 | ✓ | ✗ | 1 |
 | an arch from C4 back to C4 | ✓ | ✗ | 1 |
 | C5 down to C4 | ✗ | ✗ | 2 |
-
-A strict endpoint test fails on wobbles the legs ignore. D4 C4 E4 G4 A4 G4 dips
-two semitones below its first note and ends two below its peak. That is one
-rise by the legs, yet it fails both conditions and would mark like a
-descending scale. See the first question below.
 
 ## Static is unchanged
 
 Static stays a range test (within a major third, without directional
-endpoints), and a static mismatch keeps today's φ⁻² mark.
+endpoints), and a static mismatch keeps today's φ⁻² mark. Its directional
+endpoints check stays strict: within a major third, the tolerance would call
+nearly every melody directional, and C4 D4 E4 D4 would stop being static.
 
 ## The floor
 
@@ -143,13 +148,6 @@ changing the rubric's shape is a separate decision.
 The contour cannot be a gate. A gate is a precondition: a voice that fails one
 is unassessable and its rubric is never computed.
 
-## Questions to settle
-
-- Should the endpoint test allow the same tolerance as the legs, so the first
-  note may sit less than `TREND_REVERSAL_SEMITONES` above the lowest and the
-  last less than that below the highest? D4 C4 E4 G4 A4 G4 would then be a full
-  ascending match, and so would a scale ending a step short of its top.
-
 ## Acceptance Criteria
 
 - Arch, valley, and wave mark at φ⁻²ᵈ by degree of miss from their required
@@ -158,8 +156,9 @@ is unassessable and its rubric is never computed.
   marks at φ⁻⁴ and grades about 0.472, and a melody one degree from an arch
   marks at φ⁻² and grades about 0.618.
 - Ascending and descending mark at φ⁻²ᵈ by the number of endpoint conditions
-  failed, ignoring legs. C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is a full ascending
-  match, and a descending scale marks at φ⁻⁴ against ascending.
+  failed, within the legs' tolerance and ignoring the legs themselves.
+  C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 and D4 C4 E4 G4 A4 G4 are full ascending
+  matches, and a descending scale marks at φ⁻⁴ against ascending.
 - Static grades as it does today.
 - A failure message names how the melody missed: the extra or missing legs for
   a shape, the failed endpoint for a direction.
