@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
   finished_at:
-  updated_at:   2026-10-20T14:30:00-07:00
+  updated_at:   2026-10-20T15:10:00-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -574,3 +574,24 @@ two failing halves are named by both flaws.
   not "unsteady". D4 F4 E4 against an arch, for example, is told to add a fall
   rather than to fall steadily.
 - **Corpus:** 41 arch and valley rows changed key, and no grade moved.
+
+### Follow-up: three quarters of the net change
+
+The corpus check flagged two rows that passed a direction while reading as two
+climbs. A direction now misses when it turns back three quarters of its net
+change, down from all of it.
+
+- **Choice of share:** two thirds also fixed the flagged rows, but it failed
+  `solo-ascending-5`, D4 F4 E4 G4 F4, whose turn back of a whole step is below
+  a leg. Absolute sizes cannot separate the rows: the E3 A3 D3 line that should
+  pass turns back 7 semitones, and `fux_cantus_firmus_examples_with_errors-13-v0`,
+  which should fail, turns back 6. A share of headway so far fails that same
+  E3 A3 D3 line on its opening leap.
+- **Corpus:** 3 rows fell from 1.0 to 0.618.
+  - `fux_fifth_species_examples-3-v1` turns back 10 of a net rise of 12.
+  - `fux_cantus_firmus_examples_with_errors-13-v0` turns back 6 of a net fall
+    of 7.
+  - `davis_and_lybbert_first_species_examples-1-v1` leaps an octave and falls
+    back 9, exactly three quarters.
+- **Spec change:** two ascending endpoint examples gained a longer climb,
+  because their dip below the start now also trips the retrace.
