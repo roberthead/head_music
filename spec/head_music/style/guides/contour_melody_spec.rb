@@ -337,11 +337,33 @@ describe HeadMusic::Style::Guides::ContourMelody do
         end
       end
 
+      %w[CDEC|DEFD|EGA2| DCEG|AG2|].each do |direction_match|
+        context "with #{direction_match}" do
+          let(:melody) { direction_match }
+
+          it "grades a perfect submission at one" do
+            expect(analysis.fitness).to eq 1.0
+          end
+        end
+      end
+
       context "with an arching melody" do
         let(:melody) { "CDEG|EDC2|" }
 
         it "objects to the contour" do
           expect(analysis.messages).to include(contour_message)
+        end
+      end
+
+      context "with a descending scale" do
+        let(:melody) { "cBAG|FEDC|" }
+
+        let(:contoured) do
+          analysis.guide_item_assessments.detect { |assessment| assessment.guideline == guidelines::Contoured }
+        end
+
+        it "marks the contour three degrees off" do
+          expect(contoured.fitness).to eq HeadMusic::GOLDEN_RATIO_INVERSE**6
         end
       end
     end

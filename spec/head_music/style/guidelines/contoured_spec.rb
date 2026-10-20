@@ -61,44 +61,53 @@ describe HeadMusic::Style::Guidelines::Contoured do
   context "when configured for an ascending contour" do
     let(:contour) { :ascending }
 
-    context "with an undulating melody from floor to ceiling" do
-      let(:melody) { "CDED|EFEF|G4|" }
+    {
+      "an undulating melody from floor to ceiling" => "CDED|EFEF|G4|",
+      "a melody that revisits its opening floor pitch" => "CDCE|FGA2|",
+      "a scale" => "CDEF|GABc|",
+      "a scale ending a half step below its climax" => "CDEF|GABc|B4|",
+      "a start a whole step above the floor and an end a whole step below the ceiling" => "DCEG|AG2|",
+      "five legs from floor to ceiling" => "CDEC|DEFD|EGA2|"
+    }.each do |description, shape|
+      context "with #{description}" do
+        let(:melody) { shape }
 
-      it { is_expected.to be_adherent }
+        it { is_expected.to be_adherent }
+      end
     end
 
-    context "with a melody that revisits its opening floor pitch" do
-      let(:melody) { "CDCE|FGA2|" }
-
-      it { is_expected.to be_adherent }
-    end
-
-    context "with an arching melody" do
-      let(:melody) { "CDEG|EDC2|" }
-
-      it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
-      its(:marks_count) { is_expected.to eq 1 }
-      its(:message) { is_expected.to eq "Write a melody with the ascending contour." }
-    end
+    misses_by_degree(
+      "a scale ending a minor third below its climax" => ["CDEF|GABc|A4|", 1],
+      "a level line whose endpoints sit near its extremes" => ["EDEF|EFED|E4|", 1],
+      "whole-step undulation" => ["CDCD|C4|", 1],
+      "an arching melody" => ["CDEG|EDC2|", 2],
+      "a descending scale" => ["cBAG|FEDC|", 3]
+    )
   end
 
   context "when configured for a descending contour" do
     let(:contour) { :descending }
 
-    context "with an undulating melody from ceiling to floor" do
-      let(:melody) { "GFEF|EDED|C4|" }
+    {
+      "an undulating melody from ceiling to floor" => "GFEF|EDED|C4|",
+      "a scale" => "cBAG|FEDC|",
+      "a scale ending a half step above its nadir" => "cBAG|FEDC|D4|",
+      "a start a whole step below the ceiling and an end a whole step above the floor" => "GAFD|CD2|"
+    }.each do |description, shape|
+      context "with #{description}" do
+        let(:melody) { shape }
 
-      it { is_expected.to be_adherent }
+        it { is_expected.to be_adherent }
+      end
     end
 
-    context "with an ascending melody" do
-      let(:melody) { "CDED|EFG2|" }
-
-      it { is_expected.not_to be_adherent }
-      its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
-      its(:marks_count) { is_expected.to eq 1 }
-    end
+    misses_by_degree(
+      "a scale ending a minor third above its nadir" => ["cBAG|FEDC|E4|", 1],
+      "a level line whose endpoints sit near its extremes" => ["EDEF|EFED|E4|", 1],
+      "whole-step undulation" => ["CDCD|C4|", 1],
+      "a valley" => ["GFED|CDEF|G4|", 2],
+      "an ascending melody" => ["CDED|EFG2|", 3]
+    )
   end
 
   context "when configured for an arch contour" do
@@ -258,6 +267,12 @@ describe HeadMusic::Style::Guidelines::Contoured do
 
       it { is_expected.not_to be_adherent }
     end
+
+    context "with an end a whole step from the ceiling" do
+      let(:melody) { "CDED|" }
+
+      it { is_expected.to be_adherent }
+    end
   end
 
   describe "arch, valley, and wave" do
@@ -306,11 +321,17 @@ describe HeadMusic::Style::Guidelines::Contoured do
   context "with a single note" do
     let(:melody) { "C4|" }
 
-    %i[ascending descending static].each do |contour_key|
+    context "with the static contour" do
+      let(:contour) { :static }
+
+      it { is_expected.to be_adherent }
+    end
+
+    %i[ascending descending].each do |contour_key|
       context "with the #{contour_key} contour" do
         let(:contour) { contour_key }
 
-        it { is_expected.to be_adherent }
+        its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**2 }
       end
     end
 

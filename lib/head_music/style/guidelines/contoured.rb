@@ -3,12 +3,17 @@ module HeadMusic::Style::Guidelines; end
 
 # Flags a melody without the configured contour
 # Configure the contour with the factory, e.g. Contoured.with(:arch).
+#
+# Arch, valley, and wave are shapes, graded by the legs between the endpoints.
+# Ascending and descending are directions, graded by the endpoints alone. Static
+# is the level direction, graded by range. Each degree of miss costs φ⁻².
 class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
   CONTOURS = %i[ascending descending arch valley wave static].freeze
 
   TREND_REVERSAL_SEMITONES = 3 # a leg must exceed a whole step
 
   REQUIRED_LEGS = {arch: %i[rise fall], valley: %i[fall rise]}.freeze
+  DIRECTION_LEGS = {ascending: :rise, descending: :fall}.freeze
   WAVE_LEGS = 3
 
   LegMiss = Data.define(:extra, :missing)
@@ -48,11 +53,32 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
 
   def degree
     @degree ||=
-      if REQUIRED_LEGS.key?(contour) || contour == :wave
-        leg_miss.extra + leg_miss.missing
+      if contour == :static
+        static? ? 0 : 1
+      elsif DIRECTION_LEGS.key?(contour)
+        failed_endpoints.length
       else
-        send("#{contour}?") ? 0 : 1
+        leg_miss.extra + leg_miss.missing
       end
+  end
+
+  # A wobble too small to make a leg is too small to spoil a direction, and a
+  # net change too small to make a leg is too small to make one.
+  def failed_endpoints
+    @failed_endpoints ||= begin
+      low, high = pitch_numbers.minmax
+      sign, start, finish = (contour == :ascending) ? [1, low, high] : [-1, high, low]
+      first, last = pitch_numbers.values_at(0, -1)
+      [
+        (:start unless near?(first, start)),
+        (:end unless near?(last, finish)),
+        (DIRECTION_LEGS.fetch(contour) if sign * (last - first) < TREND_REVERSAL_SEMITONES)
+      ].compact
+    end
+  end
+
+  def near?(number, extreme)
+    (number - extreme).abs < TREND_REVERSAL_SEMITONES
   end
 
   # Legs alternate, so a lone leg always matches one end of a required pair,
@@ -68,22 +94,17 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
       end
   end
 
-  def ascending?
-    first_note.pitch == lowest_pitch && last_note.pitch == highest_pitch
-  end
-
-  def descending?
-    first_note.pitch == highest_pitch && last_note.pitch == lowest_pitch
-  end
-
   def static?
     range <= HeadMusic::Analysis::DiatonicInterval.get(:major_third) && !directional_endpoints?
   end
 
-  # The range guard is load-bearing: an all-same-pitch melody is simultaneously
-  # ascending and descending, and would otherwise fail static.
+  # Strict, unlike the directions: within a major third, their tolerance would
+  # call nearly every melody directional. The range guard is load-bearing: an
+  # all-same-pitch melody has the lowest and highest pitch at both ends, and
+  # would otherwise fail static.
   def directional_endpoints?
-    highest_pitch > lowest_pitch && (ascending? || descending?)
+    highest_pitch > lowest_pitch &&
+      [first_note.pitch, last_note.pitch].minmax == [lowest_pitch, highest_pitch]
   end
 
   def pitch_numbers
