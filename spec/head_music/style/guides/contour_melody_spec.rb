@@ -155,6 +155,9 @@ describe HeadMusic::Style::Guides::ContourMelody do
     subject(:analysis) { HeadMusic::Style::GuideAssessment.new(guide, voice) }
 
     let(:guide) { HeadMusic::Style::Guide.get(guide_key) }
+    let(:contoured) do
+      analysis.guide_item_assessments.detect { |assessment| assessment.guideline == guidelines::Contoured }
+    end
     let(:flow) { HeadMusic::Notation::ABC.parse(abc) }
     let(:voice) { flow.voices.first }
 
@@ -170,13 +173,12 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
     context "with the arch contour guide" do
       let(:guide_key) { "arch_contour_melody" }
-      let(:contour_message) { "Write a melody with the arch contour." }
 
       context "with an arching melody that satisfies every rule" do
         let(:melody) { "CDEG|EDC2|" }
 
         it "does not object to the contour" do
-          expect(analysis.messages).not_to include(contour_message)
+          expect(contoured).to be_adherent
         end
 
         it "grades a perfect submission at one" do
@@ -192,7 +194,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "CDEF|G4|" }
 
         it "objects to the contour" do
-          expect(analysis.messages).to include(contour_message)
+          expect(analysis.messages).to include(contoured.message)
         end
       end
 
@@ -214,12 +216,12 @@ describe HeadMusic::Style::Guides::ContourMelody do
       context "with a valley that satisfies everything but the contour" do
         let(:melody) { "GFED|CDEF|" }
 
-        let(:contoured) do
-          analysis.guide_item_assessments.detect { |assessment| assessment.guideline == guidelines::Contoured }
-        end
-
         it "marks the contour two degrees off" do
           expect(contoured.fitness).to eq HeadMusic::GOLDEN_RATIO_INVERSE**4
+        end
+
+        it "says to reverse the rise and fall" do
+          expect(analysis.messages).to include "Write the arch contour: reverse the rise and fall."
         end
 
         it "grades below a near-miss arch" do
@@ -242,7 +244,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
         end
 
         it "objects to the contour" do
-          expect(analysis.messages).to include(contour_message)
+          expect(analysis.messages).to include(contoured.message)
         end
 
         it "grades into the soft floor rather than near zero" do
@@ -319,13 +321,12 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
     context "with the ascending contour guide" do
       let(:guide_key) { "ascending_contour_melody" }
-      let(:contour_message) { "Write a melody with the ascending contour." }
 
       context "with an undulating-yet-ascending melody" do
         let(:melody) { "CDED|EFEF|G4|" }
 
         it "does not object to the contour" do
-          expect(analysis.messages).not_to include(contour_message)
+          expect(contoured).to be_adherent
         end
 
         it "does not object to the direction changes either" do
@@ -351,16 +352,12 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "CDEG|EDC2|" }
 
         it "objects to the contour" do
-          expect(analysis.messages).to include(contour_message)
+          expect(analysis.messages).to include(contoured.message)
         end
       end
 
       context "with a descending scale" do
         let(:melody) { "cBAG|FEDC|" }
-
-        let(:contoured) do
-          analysis.guide_item_assessments.detect { |assessment| assessment.guideline == guidelines::Contoured }
-        end
 
         it "marks the contour three degrees off" do
           expect(contoured.fitness).to eq HeadMusic::GOLDEN_RATIO_INVERSE**6
@@ -370,13 +367,12 @@ describe HeadMusic::Style::Guides::ContourMelody do
 
     context "with the descending contour guide" do
       let(:guide_key) { "descending_contour_melody" }
-      let(:contour_message) { "Write a melody with the descending contour." }
 
       context "with an undulating melody from ceiling to floor" do
         let(:melody) { "GFEF|EDED|C4|" }
 
         it "does not object to the contour" do
-          expect(analysis.messages).not_to include(contour_message)
+          expect(contoured).to be_adherent
         end
 
         it "grades a perfect submission at one" do
@@ -388,20 +384,19 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "CDED|EFG2|" }
 
         it "objects to the contour" do
-          expect(analysis.messages).to include(contour_message)
+          expect(analysis.messages).to include(contoured.message)
         end
       end
     end
 
     context "with the static contour guide" do
       let(:guide_key) { "static_contour_melody" }
-      let(:contour_message) { "Write a melody with the static contour." }
 
       context "with a narrow-range melody with neutral endpoints" do
         let(:melody) { "EDEF|EFED|E4|" }
 
         it "does not object to the contour" do
-          expect(analysis.messages).not_to include(contour_message)
+          expect(contoured).to be_adherent
         end
 
         it "grades a perfect submission at one" do
@@ -413,7 +408,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "E4|E4|E4|E4|E4|" }
 
         it "does not object to the contour" do
-          expect(analysis.messages).not_to include(contour_message)
+          expect(contoured).to be_adherent
         end
 
         it "does not gate the grade to zero" do
@@ -430,20 +425,19 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "CDEF|G4|" }
 
         it "objects to the contour" do
-          expect(analysis.messages).to include(contour_message)
+          expect(analysis.messages).to include(contoured.message)
         end
       end
     end
 
     context "with the valley contour guide" do
       let(:guide_key) { "valley_contour_melody" }
-      let(:contour_message) { "Write a melody with the valley contour." }
 
       context "with an interior nadir" do
         let(:melody) { "GFEC|DEFG|" }
 
         it "does not object to the contour" do
-          expect(analysis.messages).not_to include(contour_message)
+          expect(contoured).to be_adherent
         end
       end
 
@@ -463,20 +457,19 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "GFED|C4|" }
 
         it "objects to the contour" do
-          expect(analysis.messages).to include(contour_message)
+          expect(analysis.messages).to include(contoured.message)
         end
       end
     end
 
     context "with the wave contour guide" do
       let(:guide_key) { "wave_contour_melody" }
-      let(:contour_message) { "Write a melody with the wave contour." }
 
       context "with three legs" do
         let(:melody) { "CDED|CDE2|" }
 
         it "does not object to the contour" do
-          expect(analysis.messages).not_to include(contour_message)
+          expect(contoured).to be_adherent
         end
       end
 
@@ -496,7 +489,7 @@ describe HeadMusic::Style::Guides::ContourMelody do
         let(:melody) { "CDEG|EDC2|" }
 
         it "objects to the contour" do
-          expect(analysis.messages).to include(contour_message)
+          expect(analysis.messages).to include(contoured.message)
         end
       end
     end

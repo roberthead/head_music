@@ -284,24 +284,45 @@ en:
 - Arch contour
 - Shape the line into the arch contour.
 - Write a melody with the arch contour.
+- 'Write the arch contour: reverse the rise and fall.'
+- 'Write the arch contour: rise and fall fewer times.'
+- 'Write the arch contour: add a rise of at least a minor third.'
+- 'Write the arch contour: add a fall of at least a minor third.'
+- 'Write the arch contour: rise and fall by at least a minor third.'
 - Minimum of one melodic interval
 - Include at least one melodic interval.
 - Write at least one melodic interval.
 - Ascending contour
 - Shape the line into the ascending contour.
 - Write a melody with the ascending contour.
+- 'Write the ascending contour: end at least a minor third higher than you begin.'
+- 'Write the ascending contour: begin within a whole step of the lowest note.'
+- 'Write the ascending contour: end within a whole step of the highest note.'
+- 'Write the ascending contour: begin within a whole step of the lowest note and end
+  within a whole step of the highest.'
 - Descending contour
 - Shape the line into the descending contour.
 - Write a melody with the descending contour.
+- 'Write the descending contour: end at least a minor third lower than you begin.'
+- 'Write the descending contour: begin within a whole step of the highest note.'
+- 'Write the descending contour: end within a whole step of the lowest note.'
+- 'Write the descending contour: begin within a whole step of the highest note and
+  end within a whole step of the lowest.'
 - Static contour
 - Shape the line into the static contour.
 - Write a melody with the static contour.
 - Valley contour
 - Shape the line into the valley contour.
 - Write a melody with the valley contour.
+- 'Write the valley contour: reverse the rise and fall.'
+- 'Write the valley contour: rise and fall fewer times.'
+- 'Write the valley contour: add a rise of at least a minor third.'
+- 'Write the valley contour: add a fall of at least a minor third.'
+- 'Write the valley contour: rise and fall by at least a minor third.'
 - Wave contour
 - Shape the line into the wave contour.
 - Write a melody with the wave contour.
+- 'Write the wave contour: rise and fall by at least a minor third.'
 en_GB:
 - Fux Cantus Firmus
 - 'Write a cantus firmus: a singable line of eight to fourteen semibreves that begins
@@ -587,21 +608,42 @@ en_GB:
 - Arch contour
 - Shape the line into the arch contour.
 - Write a melody with the arch contour.
+- 'Write the arch contour: reverse the rise and fall.'
+- 'Write the arch contour: rise and fall fewer times.'
+- 'Write the arch contour: add a rise of at least a minor third.'
+- 'Write the arch contour: add a fall of at least a minor third.'
+- 'Write the arch contour: rise and fall by at least a minor third.'
 - Minimum of one melodic interval
 - Include at least one melodic interval.
 - Write at least one melodic interval.
 - Ascending contour
 - Shape the line into the ascending contour.
 - Write a melody with the ascending contour.
+- 'Write the ascending contour: end at least a minor third higher than you begin.'
+- 'Write the ascending contour: begin within a whole step of the lowest note.'
+- 'Write the ascending contour: end within a whole step of the highest note.'
+- 'Write the ascending contour: begin within a whole step of the lowest note and end
+  within a whole step of the highest.'
 - Descending contour
 - Shape the line into the descending contour.
 - Write a melody with the descending contour.
+- 'Write the descending contour: end at least a minor third lower than you begin.'
+- 'Write the descending contour: begin within a whole step of the highest note.'
+- 'Write the descending contour: end within a whole step of the lowest note.'
+- 'Write the descending contour: begin within a whole step of the highest note and
+  end within a whole step of the lowest.'
 - Static contour
 - Shape the line into the static contour.
 - Write a melody with the static contour.
 - Valley contour
 - Shape the line into the valley contour.
 - Write a melody with the valley contour.
+- 'Write the valley contour: reverse the rise and fall.'
+- 'Write the valley contour: rise and fall fewer times.'
+- 'Write the valley contour: add a rise of at least a minor third.'
+- 'Write the valley contour: add a fall of at least a minor third.'
+- 'Write the valley contour: rise and fall by at least a minor third.'
 - Wave contour
 - Shape the line into the wave contour.
 - Write a melody with the wave contour.
+- 'Write the wave contour: rise and fall by at least a minor third.'

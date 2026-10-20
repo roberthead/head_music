@@ -17,12 +17,17 @@ describe HeadMusic::Style::Guidelines::Contoured do
   end
 
   def self.misses_by_degree(examples)
-    examples.each do |description, (shape, degree)|
+    examples.each do |description, (shape, degree, miss)|
       context "with #{description}" do
         let(:melody) { shape }
 
         its(:fitness) { is_expected.to eq HeadMusic::GOLDEN_RATIO_INVERSE**(2 * degree) }
         its(:marks_count) { is_expected.to eq 1 }
+        its(:violation_key) { is_expected.to eq "guidelines.contoured.violations.#{miss}" }
+
+        it "declares the key it chose" do
+          expect(described_class.violation_keys(contour: contour)).to include("guidelines.contoured.violations.#{miss}")
+        end
       end
     end
   end
@@ -43,11 +48,24 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
   end
 
+  describe ".violation_keys" do
+    it "declares only the default for static" do
+      expect(described_class.violation_keys(contour: :static)).to eq ["guidelines.contoured.violations.default"]
+    end
+
+    it "declares only the default and too few legs for a wave" do
+      expect(described_class.violation_keys(contour: :wave)).to eq %w[
+        guidelines.contoured.violations.default
+        guidelines.contoured.violations.missing_legs
+      ]
+    end
+  end
+
   describe "#message" do
     let(:contour) { :arch }
     let(:melody) { "CDEF|G4|" }
 
-    its(:message) { is_expected.to eq "Write a melody with the arch contour." }
+    its(:message) { is_expected.to eq "Write the arch contour: add a fall of at least a minor third." }
   end
 
   context "when constructed directly with an unknown contour" do
@@ -77,11 +95,13 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     misses_by_degree(
-      "a scale ending a minor third below its climax" => ["CDEF|GABc|A4|", 1],
-      "a level line whose endpoints sit near its extremes" => ["EDEF|EFED|E4|", 1],
-      "whole-step undulation" => ["CDCD|C4|", 1],
-      "an arching melody" => ["CDEG|EDC2|", 2],
-      "a descending scale" => ["cBAG|FEDC|", 3]
+      "a scale ending a minor third below its climax" => ["CDEF|GABc|A4|", 1, :ascending_end],
+      "a start a major third above the floor" => ["EDCD|EFGA|", 1, :ascending_start],
+      "both endpoints a minor third or more from the extremes" => ["EDCE|GABc|A4|", 2, :ascending_start_and_end],
+      "a level line whose endpoints sit near its extremes" => ["EDEF|EFED|E4|", 1, :ascending_rise],
+      "whole-step undulation" => ["CDCD|C4|", 1, :ascending_rise],
+      "an arching melody" => ["CDEG|EDC2|", 2, :ascending_rise],
+      "a descending scale" => ["cBAG|FEDC|", 3, :ascending_rise]
     )
   end
 
@@ -102,11 +122,13 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     misses_by_degree(
-      "a scale ending a minor third above its nadir" => ["cBAG|FEDC|E4|", 1],
-      "a level line whose endpoints sit near its extremes" => ["EDEF|EFED|E4|", 1],
-      "whole-step undulation" => ["CDCD|C4|", 1],
-      "a valley" => ["GFED|CDEF|G4|", 2],
-      "an ascending melody" => ["CDED|EFG2|", 3]
+      "a scale ending a minor third above its nadir" => ["cBAG|FEDC|E4|", 1, :descending_end],
+      "a start a fourth below the ceiling" => ["GAcB|AGFE|DC2|", 1, :descending_start],
+      "both endpoints a minor third or more from the extremes" => ["GAcB|AGFE|DCE2|", 2, :descending_start_and_end],
+      "a level line whose endpoints sit near its extremes" => ["EDEF|EFED|E4|", 1, :descending_fall],
+      "whole-step undulation" => ["CDCD|C4|", 1, :descending_fall],
+      "a valley" => ["GFED|CDEF|G4|", 2, :descending_fall],
+      "an ascending melody" => ["CDED|EFG2|", 3, :descending_fall]
     )
   end
 
@@ -148,14 +170,14 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     misses_by_degree(
-      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 1],
-      "a rise, fall, and rise" => ["CEGA|GDB,D|", 1],
-      "a fall, rise, and fall" => ["GECD|EGFD|", 1],
-      "the climax at the last note" => ["CDEF|G4|", 1],
-      "a descending line" => ["GFED|C4|", 1],
-      "a four-leg wave" => ["CDED|CDEF|EDC2|", 2],
-      "a valley" => ["GFED|CDEF|", 2],
-      "undulation below the leg threshold" => ["CDCD|C4|", 2]
+      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 1, :extra_legs],
+      "a rise, fall, and rise" => ["CEGA|GDB,D|", 1, :extra_legs],
+      "a fall, rise, and fall" => ["GECD|EGFD|", 1, :extra_legs],
+      "the climax at the last note" => ["CDEF|G4|", 1, :missing_fall],
+      "a descending line" => ["GFED|C4|", 1, :missing_rise],
+      "a four-leg wave" => ["CDED|CDEF|EDC2|", 2, :extra_legs],
+      "a valley" => ["GFED|CDEF|", 2, :reversed_legs],
+      "undulation below the leg threshold" => ["CDCD|C4|", 2, :missing_legs]
     )
   end
 
@@ -185,11 +207,11 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     misses_by_degree(
-      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 1],
-      "the nadir at the last note" => ["GFED|C4|", 1],
-      "an ascending line" => ["CDEF|G4|", 1],
-      "an arch" => ["CDEG|EDC2|", 2],
-      "an arch whose close dips below its opening" => ["CEGF|EDCB,|C4|", 2]
+      "a rise, a plunge, and a climb back" => ["CDED|B,A,G,B,|C4|", 1, :extra_legs],
+      "the nadir at the last note" => ["GFED|C4|", 1, :missing_rise],
+      "an ascending line" => ["CDEF|G4|", 1, :missing_fall],
+      "an arch" => ["CDEG|EDC2|", 2, :reversed_legs],
+      "an arch whose close dips below its opening" => ["CEGF|EDCB,|C4|", 2, :reversed_legs]
     )
   end
 
@@ -221,9 +243,9 @@ describe HeadMusic::Style::Guidelines::Contoured do
     end
 
     misses_by_degree(
-      "a single-turn arch" => ["CDEG|EDC2|", 1],
-      "an ascending line" => ["CDEF|G4|", 2],
-      "whole-step undulation below the leg threshold" => ["CDCD|C4|", 3]
+      "a single-turn arch" => ["CDEG|EDC2|", 1, :missing_legs],
+      "an ascending line" => ["CDEF|G4|", 2, :missing_legs],
+      "whole-step undulation below the leg threshold" => ["CDCD|C4|", 3, :missing_legs]
     )
   end
 

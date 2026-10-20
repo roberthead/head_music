@@ -18,6 +18,16 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
 
   LegMiss = Data.define(:extra, :missing)
 
+  SHAPE_MISSES = %w[reversed_legs extra_legs missing_rise missing_fall missing_legs].freeze
+  MISSES = {
+    ascending: %w[ascending_rise ascending_start ascending_end ascending_start_and_end],
+    descending: %w[descending_fall descending_start descending_end descending_start_and_end],
+    arch: SHAPE_MISSES,
+    valley: SHAPE_MISSES,
+    wave: %w[missing_legs],
+    static: []
+  }.freeze
+
   # Running state for the zigzag walk in #legs.
   TrendWalk = Struct.new(:legs, :leg, :high, :low, :extreme)
 
@@ -32,6 +42,19 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
     end
 
     contour
+  end
+
+  def self.violation_keys(config = {})
+    super + MISSES.fetch(normalized_contour(config.fetch(:contour))).map { |miss| miss_key(miss) }
+  end
+
+  def self.miss_key(miss) = "guidelines.#{template_key}.violations.#{miss}"
+
+  # .assess asks adherent voices too, and static has one way to miss.
+  def violation_key
+    return super if notes.empty? || degree.zero? || contour == :static
+
+    self.class.miss_key(DIRECTION_LEGS.key?(contour) ? direction_miss : shape_miss)
   end
 
   def marks
@@ -74,6 +97,25 @@ class HeadMusic::Style::Guidelines::Contoured < HeadMusic::Style::Guideline
         (:end unless near?(last, finish)),
         (DIRECTION_LEGS.fetch(contour) if sign * (last - first) < TREND_REVERSAL_SEMITONES)
       ].compact
+    end
+  end
+
+  # Failing to rise (or fall) is failing the direction itself, so it outranks
+  # the endpoints.
+  def direction_miss
+    leg = DIRECTION_LEGS.fetch(contour)
+    failed = failed_endpoints.include?(leg) ? [leg] : failed_endpoints
+    "#{contour}_#{failed.join("_and_")}"
+  end
+
+  # Extra and missing legs together happen only for the mirror shape.
+  def shape_miss
+    if leg_miss.extra.positive?
+      leg_miss.missing.positive? ? "reversed_legs" : "extra_legs"
+    elsif leg_miss.missing == 1 && REQUIRED_LEGS.key?(contour)
+      "missing_#{(REQUIRED_LEGS.fetch(contour) - legs).first}"
+    else
+      "missing_legs"
     end
   end
 
