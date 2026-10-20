@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
   finished_at:
-  updated_at:   2026-10-19T21:47:26-07:00
+  updated_at:   2026-10-19T21:58:02-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -186,7 +186,9 @@ is unassessable and its rubric is never computed.
   `violation_keys(config)`:
   - A shape missing only its fall says to add a fall, and one missing only
     its rise says to add a rise.
-  - A melody with no legs, or a wave with too few, says to rise and fall.
+  - An arch or valley with no legs says to rise and fall.
+  - A wave with too few legs says to rise or fall by more than a step at
+    least three times.
   - A shape with extra legs and none missing says to rise and fall fewer
     times.
   - A mirror shape (a valley against an arch) says to reverse the rise and
@@ -309,7 +311,8 @@ row of `static_contour_melody` or of any non-contour guide changed.
        - `extra_legs`: extra legs only.
        - `missing_rise` or `missing_fall`: arch or valley missing exactly one
          leg.
-       - `missing_legs`: otherwise, including a wave with too few legs.
+       - `missing_legs`: arch or valley with no legs.
+       - `too_few_legs`: any wave miss.
      - Static keeps the default.
    - Templates interpolate only `%{contour}`. `guide_strings_spec` renders
      every declared key without `violation_values`, so a count or a leg name
@@ -348,7 +351,7 @@ mark, and the chosen violation key. The melodies are ABC:
 - **Valley:** `CDEG|EDC2|` is degree 2 (reversed_legs), and `CDEF|G4|` is
   degree 1 (missing_fall).
 - **Wave:** `CDEG|EDC2|`, `CDEF|G4|`, and `CDCD|C4|` are degrees 1, 2, and 3,
-  all missing_legs. The existing whole-step undulation example becomes φ⁻⁶.
+  all too_few_legs. The existing whole-step undulation example becomes φ⁻⁶.
 - **Ascending:**
 
   | Melody | Degree | Key |
@@ -430,9 +433,9 @@ Reviewed 2026-10-19 at commit `c8dab07b`, with a clean working tree.
 - ✅ **Static unchanged.** The strict test stays in `directional_endpoints?`.
   C4 D4 E4 D4 and E4 D4 E4 F4 E4 F4 E4 D4 E4 stay static, and no
   `static_contour_melody` corpus row moved.
-- ✅ **Closed key set.** 13 keys, each rendering from `%{contour}` alone. A
-  2000-melody random sweep showed the declared and producible keys match
-  exactly.
+- ✅ **Closed key set.** 14 keys (13 at review, plus `too_few_legs`), each
+  rendering from `%{contour}` alone. A 2000-melody random sweep at review
+  showed the declared and producible keys match exactly.
 - ✅ **Legs rename.** No `trend_directions` remains.
 - ✅ **Class comment.** States the shape, direction, and level split
   (`contoured.rb:7-9`).
@@ -454,17 +457,22 @@ Reviewed 2026-10-19 at commit `c8dab07b`, with a clean working tree.
    `wave_contour_melody`, which already rises and falls a fifth. What it lacks
    is one more leg. Suggested wording: "rise and fall more times, each by at
    least a minor third." Then re-snapshot the English strings.
+   **Resolved:** the wave now has its own key, `too_few_legs`: "rise or fall
+   by more than a step at least three times." Arch and valley keep
+   `missing_legs`, because "three times" would be wrong for them.
 2. **Ambiguous "one" in a comment (minor).** In `contoured.rb:89`, "too small
-   to make one" reads as a leg. Say "a direction".
+   to make one" reads as a leg. Say "a direction". **Resolved.**
 3. **Dangling phrase in a spec comment (minor).** In
    `contour_melody_spec.rb:254`, "Three legs too many, its broken
-   secondaries…" does not attach grammatically.
+   secondaries…" does not attach grammatically. **Resolved:** it now
+   says the sawtooth has three legs too many for an arch.
 4. **Zero-leg degree not pinned (test gap).** The single-note and two-note
    examples for arch, valley, and wave only assert `not_to be_adherent`. Pin
-   φ⁻⁴ and φ⁻⁶.
+   φ⁻⁴ and φ⁻⁶. **Resolved:** fitness and key are pinned for both.
 5. **Single notes fail directions (not in the story).** A single note now marks
    φ⁻² against ascending and descending, where it used to be adherent. This
-   follows from the net-rise rule, and it is pinned.
+   follows from the net-rise rule, and it is pinned. **Accepted** as
+   intended.
 
-No correctness bugs were found. `spec/head_music/style` passes (2027 examples),
-and rubocop is clean.
+No correctness bugs were found. After the fixes, `spec/head_music/style` passes
+(2033 examples) and rubocop is clean.
