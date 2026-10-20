@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-19T09:05:05-07:00
   planned_at:   2026-10-19T21:23:40-07:00
   finished_at:  2026-10-20T14:33:42-07:00
-  updated_at:   2026-10-20T14:33:42-07:00
+  updated_at:   2026-10-20T15:23:26-07:00
 -->
 
 # Grade Contour Misses by Degree
@@ -124,8 +124,10 @@ plays no part: what happens between the endpoints is shape, not direction.
 C4 D4 E4 C4 D4 E4 F4 D4 E4 G4 A4 is five legs (rise, fall, rise, fall, rise) and
 a full ascending match.
 
-The one-leg shape a scale has is left to its own guide, in
-[Straight Contour](../backlog/straight-contour.md).
+The one-leg shape a scale has was split into a Straight Contour story, later
+dropped: once the retrace check landed, a straight ascent differed from
+ascending only for a line dipping a third or more but under three quarters of
+its headway, which no exercise needed.
 
 The endpoint test allows the same tolerance as the legs: the first note may sit
 less than `TREND_REVERSAL_SEMITONES` above the lowest pitch, and the last less
