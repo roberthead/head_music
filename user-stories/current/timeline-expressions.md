@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-20T16:02:22-07:00
   planned_at:   2026-10-20T16:24:28-07:00
   finished_at:
-  updated_at:   2026-10-20T19:04:19-07:00
+  updated_at:   2026-10-20T19:39:47-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -128,7 +128,7 @@ MIDI
 
 - [ ] The hand-encoded chorale fixture (`satb_chorale.krn`) reads exactly two timeline fermatas, at 2:2 and 4:2, each a quarter, at the ends of its phrases
 - [ ] The Herzliebster fixture reads exactly four timeline fermatas from its sixteen `<fermata>` elements, and its meter has the symbol `:common`
-- [ ] Existing schema-5 documents read unchanged
+- [ ] Existing schema-5 documents read unchanged: the new keys are optional within schema 5, which no release has shipped yet
 - [ ] Maintains 90%+ test coverage
 
 ## Notes
@@ -252,10 +252,7 @@ Planned 2026-10-20 by the story planner (product-manager, two developers, best-p
 - Replace the `bar + 1000` guess and its silent fallback with a final segment that has no end.
 - Change `conductor_spec.rb:323-331` to expect 9.5 s, and add the inverse (9.5 s gives `6:1`).
 
-**Phase 2: Flow JSON schema 6 that still reads schema 5.**
-- `SCHEMA_VERSION = 6` and `READABLE_SCHEMA_VERSIONS = [5, 6]`, used by `Deserializer` and `Project.from_h`. `V4Upgrade` stamps documents as 6.
-- The specs for an unsupported version use 7. Add a spec that a schema-5 document reads unchanged.
-- The new keys arrive in Phases 3, 4, and 6; a schema-5 document simply lacks them.
+**Phase 2: dropped.** The plan bumped the schema to 6, but v22.0.0 wrote schema 4, so schema 5 first ships in 23.0.0, and this release's other new keys are optional within it. The new keys in Phases 3, 4, and 6 are optional within schema 5 too, and a document without them reads as before. (A schema-6 commit was written and then removed.)
 
 **Phase 3: Meter symbols.**
 - `Meter.new(top, bottom, symbol = nil)`, positional because `fetch_or_register` passes positional arguments (`base.rb:18-21`), with `attr_reader :symbol`. `NAMED` gives common time `:common` and cut time `:cut`.
@@ -399,13 +396,12 @@ Planned 2026-10-20 by the story planner (product-manager, two developers, best-p
   - `Flow#add_tempo_ramp`, `#add_a_tempo`, and `#add_fermata`, with their removers and lists.
   - `Flow#sounding_tempo_at` and `Flow#conductor`.
   - The `Conductor` converts through ramps and fermatas in both directions.
-  - Flow JSON schema 6. Schema-5 documents still read.
+  - Flow JSON keys for the above, optional within schema 5.
   - MIDI writes tempo steps through ramps and fermatas, and reads ramps and fermatas back.
   - One line per format.
 - **Changed:**
   - **Breaking.** `Tempo` compares by value, and `Tempo.get` keeps its word as text.
   - **Breaking.** `Meter.get` returns a `Meter` it is given unchanged.
-  - **Breaking.** `SCHEMA_VERSION` is 6.
   - **Breaking.** A plain LilyPond `\time 4/4` or `\time 2/2` reads as common or cut time, and the writer writes `\numericTimeSignature` before a numeric one.
   - **Breaking.** An ABC tune with no `M:` reads as a plain 4/4.
   - **Breaking.** `MIDI::ConductorTrack#tempo` becomes `#tempos`.
@@ -426,7 +422,7 @@ Planned 2026-10-20 by the story planner (product-manager, two developers, best-p
   - a fermata on the final event lengthens the total;
   - the round-trip bounds from Phase 5.
 - **Invariants:** one spec for each `ArgumentError` in decision 8, and one for each allowed case.
-- **JSON:** every new key round-trips; a schema-5 document reads with empty lists and no symbols or text; a symbol that disagrees with its numerals raises and names its path.
+- **JSON:** every new key round-trips; a document without the new keys reads with empty lists and no symbols or text; a symbol that disagrees with its numerals raises and names its path.
 - **Fermata marks:** `fermata_marks_spec.rb` covers a soprano quarter over a bass eighth pair, a held half note over a moving quarter, a general pause of rests, duplicate marks, fermatas that do not overlap, and carriers that began before the fermata.
 - **Format round trips:** `spec/support/timeline_expression_fixtures.rb` (Phase 9) builds ABC flows with `Q:`, `M:C`, `H`, a bass eighth pair staggered under a soprano quarter, and "rit. … a tempo". Its `expect_same_timeline` ignores what a format cannot hold: the stretch everywhere except JSON and MIDI, ramps in kern, and tempo text and meter symbols in MIDI.
 - **Fixtures:**
