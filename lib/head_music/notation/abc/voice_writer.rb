@@ -82,10 +82,11 @@ module HeadMusic::Notation::ABC
     end
 
     # Every voice states each change, so no reader has to carry one voice's
-    # field to another. The header's K: already names the first bar's key.
+    # field to another. A key is its part's own, which in a transposed plan
+    # changes where the player picks up an instrument in another key.
     def fields(bar_number)
       meter = plan.measure_time_changes[bar_number]
-      key = plan.measure_key_changes(voice.part)[bar_number] unless bar_number == plan.bar_numbers.first
+      key = plan.measure_key_at(bar_number, voice.part) if plan.key_field_bars.include?(bar_number)
       "#{"[M:#{Writer.meter_value(meter)}]" if meter}#{"[K:#{key}]" if key}"
     end
 

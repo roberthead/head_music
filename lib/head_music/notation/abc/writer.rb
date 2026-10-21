@@ -38,7 +38,7 @@ module HeadMusic::Notation::ABC
     private
 
     def validate!
-      RenderPreflight.check!(flow, transposed: transposed)
+      RenderPreflight.check!(flow)
       voice_writers.each(&:validate!)
     end
 

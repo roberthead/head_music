@@ -45,6 +45,27 @@ describe HeadMusic::Notation::ABC::RenderPlan do
     end
   end
 
+  describe "#key_field_bars" do
+    it "names each bar where the key changes, but not the first, which the header's K: names" do
+      flow = HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nV:1\nV:2\nK:C\nV:1\n[K:G]G4|[K:D]D4|\nV:2\nC4|C4|\n")
+      expect(described_class.new(flow).key_field_bars).to eq [2]
+    end
+
+    context "with parts that open in different written keys" do
+      subject(:plan) { described_class.new(flow, transposed: true) }
+
+      let(:flow) do
+        HeadMusic::Notation::ABC.parse("X:1\nM:4/4\nL:1/4\nV:1\nV:2\nK:C\nV:1\nC4|C4|\nV:2\nC4|C4|\n").tap do |flow|
+          flow.parts.first.change_instrument(1, "clarinet")
+        end
+      end
+
+      it "names the first bar" do
+        expect(plan.key_field_bars).to eq [1]
+      end
+    end
+  end
+
   it "refuses a key no K: field can name, before any writing" do
     flow.change_key_signature(1, "C harmonic_minor")
     expect { plan }.to raise_error HeadMusic::Notation::ABC::RenderError, /scale type/

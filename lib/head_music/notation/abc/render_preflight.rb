@@ -8,19 +8,17 @@ module HeadMusic::Notation::ABC
   class RenderPreflight
     include HeadMusic::Notation::PreflightChecks
 
-    def self.check!(flow, transposed: false)
-      new(flow, transposed).check!
+    def self.check!(flow)
+      new(flow).check!
     end
 
-    def initialize(flow, transposed)
+    def initialize(flow)
       @flow = flow
-      @transposed = transposed
     end
 
     def check!
       ensure_tuplets_within_bars(flow)
       ensure_changes_within_music
-      ensure_no_instrument_change
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
@@ -41,21 +39,6 @@ module HeadMusic::Notation::ABC
         bar_number = changes.keys.reject { |number| bar_numbers.cover?(number) }.min
         raise RenderError, "cannot render the #{subject} change at bar #{bar_number} in ABC output, where no voice sounds" if bar_number
       end
-    end
-
-    # A part that picks up an instrument reading in another key needs a
-    # second K: field -- the same limit as a mid-piece key change.
-    def ensure_no_instrument_change
-      return unless @transposed
-
-      refuse_change("instrument", flow.parts.flat_map { |part| part.instrument_changes.keys })
-    end
-
-    def refuse_change(subject, bar_numbers)
-      bar_number = bar_numbers.min
-      return unless bar_number
-
-      raise RenderError, "cannot render the #{subject} change at bar #{bar_number} in ABC output"
     end
 
     # A part's dynamics are written in its first voice, beside that voice's

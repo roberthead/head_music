@@ -29,4 +29,16 @@ describe HeadMusic::Notation::ABC, oracle: :abcm2ps do
       expect(engraving_problems(described_class.render(flow.call))).to eq [[], true]
     end
   end
+
+  def transposed_score
+    project = LayoutFixtures.clarinet_project(pitches: %w[F4 F4 F4 F4])
+    flow = project.flows.first
+    flow.parts.first.change_instrument(3, "clarinet_in_a")
+    flow.add_part(player: project.add_player(name: "Flute"), instrument: "flute").add_voice(role: "flute").place("1:1", :whole, "F4")
+    project.add_layout(kind: :score, players: project.players, concert_pitch: false)
+  end
+
+  it "engraves a transposed score whose clarinet changes instrument without warnings or errors" do
+    expect(engraving_problems(transposed_score.to_abc)).to eq [[], true]
+  end
 end

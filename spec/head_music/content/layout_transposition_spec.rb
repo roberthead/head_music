@@ -192,10 +192,21 @@ describe HeadMusic::Content::Layout do
       expect(xpath_texts(part, "measure/attributes/key/fifths")).to eq %w[0]
     end
 
-    it "refuses to write a tune that changes key partway in ABC" do
+    it "writes the part's new written key in ABC where the player picks up the other instrument" do
       clarinet_alone = project.add_layout(kind: :part, players: [project.players.first], concert_pitch: false)
-      expect { clarinet_alone.to_abc }
-        .to raise_error HeadMusic::Notation::RenderError, /instrument change at bar 3/
+      expect(clarinet_alone.to_abc.lines.last).to eq "D8|D8|[K:Eb]E8|E8|]\n"
+    end
+
+    context "with every player in an ABC score" do
+      let(:abc) { project.add_layout(kind: :score, players: project.players, concert_pitch: false).to_abc }
+
+      it "writes each voice's own written key where any part's key changes or the parts open apart" do
+        expect(abc.lines.last(4)).to eq ["V:clarinet\n", "[K:D]D8|D8|[K:Eb]E8|E8|]\n", "V:flute\n", "[K:C]C8|z8|[K:C]z8|z8|]\n"]
+      end
+
+      it "reads back each voice's written pitches" do
+        expect(HeadMusic::Notation::ABC.parse(abc).voices.map { |voice| voice.pitches.map(&:to_s) }).to eq [%w[D4 D4 E♭4 E♭4], %w[C4]]
+      end
     end
   end
 end
