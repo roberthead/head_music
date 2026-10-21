@@ -36,7 +36,7 @@ module HeadMusic::MIDI
 
     # +changes+ are [time, microseconds] pairs in time order, each differing
     # from the one before, which is +opening+ before the first. +onsets+ are
-    # the times notes start, sorted.
+    # the Onsets of the notes.
     def initialize(changes, layout, opening, onsets)
       @layout = layout
       @opening = opening
@@ -78,12 +78,12 @@ module HeadMusic::MIDI
       return unless slow > prior && slow > tempo && to - from <= @layout.bar_at(from).length
 
       if tempo == prior
-        :held unless downbeat?(from) && downbeat?(to) && onset_between?(from, to)
-      elsif downbeat?(from) && !downbeat?(to) && held?(to, following, through: true) && tempo != ramp_start(kept, start)
+        :held unless @layout.downbeat?(from) && @layout.downbeat?(to) && @onsets.between?(from, to)
+      elsif @layout.downbeat?(from) && !@layout.downbeat?(to) && held?(to, following, through: true) && tempo != ramp_start(kept, start)
         :changed
       elsif held?(to, following) && continues_ramp?(kept, [from, tempo])
         :changed
-      elsif !downbeat?(from) && downbeat?(to) && !continues_ramp?(kept, start)
+      elsif !@layout.downbeat?(from) && @layout.downbeat?(to) && !continues_ramp?(kept, start)
         :restored
       end
     end
@@ -102,7 +102,7 @@ module HeadMusic::MIDI
       first = tempos.length - 1
       first -= 1 while first > 1 && (tempos[first - 1] <=> tempos[first - 2]) == direction && in_step?(changes[first - 2], changes[first - 1])
       run = changes.last(tempos.length - first)
-      tempos[first - 1] if run.count { |time, _| !downbeat?(time) } >= 2
+      tempos[first - 1] if run.count { |time, _| !@layout.downbeat?(time) } >= 2
     end
 
     # Whether +after+ is a count or less after +before+, as steps under a
@@ -145,28 +145,19 @@ module HeadMusic::MIDI
       direction = changes[index].last <=> prior
       finish = index
       finish += 1 while finish + 1 < changes.length && (changes[finish + 1].last <=> changes[finish].last) == direction && in_step?(*changes.values_at(finish, finish + 1))
-      within_bars = changes[index..finish].count { |time, _| !downbeat?(time) }
+      within_bars = changes[index..finish].count { |time, _| !@layout.downbeat?(time) }
       finish if within_bars >= 2 && held?(changes[finish].first, changes[finish + 1])
     end
 
     def a_tempo?(time, microseconds)
       ramp = ramps.last
-      !ramp.nil? && !downbeat?(time) && microseconds == ramp.start_microseconds
-    end
-
-    def onset_between?(from, to)
-      onset = @onsets.bsearch { |candidate| candidate > from }
-      !onset.nil? && onset < to
-    end
-
-    def downbeat?(time)
-      time < @layout.end_time && @layout.bar_at(time).start == time
+      !ramp.nil? && !@layout.downbeat?(time) && microseconds == ramp.start_microseconds
     end
 
     # Whether a tempo at +time+ holds until the first downbeat at or after
     # it, or with +through+, past it.
     def held?(time, following, through: false)
-      return true if following.nil? || downbeat?(time)
+      return true if following.nil? || @layout.downbeat?(time)
 
       through ? following.first > @layout.bar_at(time).end_time : following.first >= @layout.bar_at(time).end_time
     end

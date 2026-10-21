@@ -32,7 +32,7 @@ module HeadMusic::MIDI
       @layout, @quantizer = quantize(notes)
       @parts = PartSource.new(sequence, notes, @quantizer).parts.map { |part| [part, part.voices] }
       Budget.check_voice_bars!(@parts.sum { |_part, voices| voices.length }, @layout.bars.length)
-      @timeline = TimelineReader.new(sequence.merged_events, @layout, @quantizer, @quantizer.notes.map(&:onset).uniq.sort)
+      @timeline = TimelineReader.new(sequence.merged_events, @layout, @quantizer, Onsets.new(@quantizer.notes.map(&:onset)))
       spelling = Spelling.new(@parts, @layout, @timeline.key_regions, key: key)
       @pitches = spelling.pitches
       @keys = spelling.keys

@@ -152,6 +152,10 @@ describe HeadMusic::MIDI::BarLayout do
       expect([0r, 1/8r, 1/4r, 5/4r, 9/4r].map { |time| bars.bar_at(time).number }).to eq [0, 0, 1, 2, 2]
     end
 
+    it "knows a downbeat, the end being none" do
+      expect([0r, 1/8r, 1/4r, 5/4r, 9/4r].map { |time| bars.downbeat?(time) }).to eq [true, false, true, true, false]
+    end
+
     it "gives the bar starts and the end" do
       expect([bars.bar_starts, bars.end_time]).to eq [{0 => 0r, 1 => 1/4r, 2 => 5/4r}, 9/4r]
     end

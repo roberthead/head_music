@@ -84,6 +84,11 @@ module HeadMusic::MIDI
       bars[[following - 1, 0].max]
     end
 
+    # Whether a bar starts at a time; the end is no downbeat.
+    def downbeat?(time)
+      time < end_time && bar_at(time).start == time
+    end
+
     def bar_starts
       @bar_starts ||= bars.to_h { |bar| [bar.number, bar.start] }.freeze
     end
