@@ -20,7 +20,9 @@ describe HeadMusic::Notation::LilyPond::TempoReader do
     "2 = 100-120" => ["half", 100, nil, true],
     %("Andante") => ["quarter", 78, "Andante", false],
     %(\\markup { \\italic Allegro moderato }) => ["quarter", 116, "Allegro moderato", false],
-    %(\\markup \\bold "Presto" 2 = 90) => ["half", 90, "Presto", true]
+    %(\\markup \\bold "Presto" 2 = 90) => ["half", 90, "Presto", true],
+    %(\\markup { \\center-column { Allegro } }) => ["quarter", 120, "Allegro", false],
+    %(\\markup { Andante \\general-align #Y #DOWN \\note {4} #1 " = 80" }) => ["quarter", 78, "Andante = 80", false]
   }.each do |source, expected|
     it "reads \\tempo #{source}" do
       expect(summary(source)).to eq expected

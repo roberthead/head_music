@@ -125,6 +125,8 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
       %(-"dolce") => ["dolce"],
       %(^\\markup \\italic "rit.") => ["rit."],
       %(^\\markup { \\italic poco rit. }) => ["poco rit."],
+      %(^\\markup { \\with-color #red rit. }) => ["rit."],
+      %(^\\markup { \\center-column { "a tempo" } }) => ["a tempo"],
       %(^"rit." \\p ^\\markup "molto") => ["rit.", "molto"]
     }.each do |source, texts|
       it "reads #{source} as #{texts.inspect}" do

@@ -23,6 +23,8 @@ module HeadMusic::Notation::LilyPond
     CLOSE_CHORD_PATTERN = />(#{DURATION_PATTERN})?(?:#{MULTIPLIER_PATTERN})?/o
     STRING_PATTERN = /"((?:[^"\\]|\\.)*)"/m
     COMMAND_PATTERN = /\\([A-Za-z]+)/
+    # Markup commands are named with hyphens, as \with-color is.
+    MARKUP_COMMAND_PATTERN = /\\([A-Za-z]+(?:-[A-Za-z]+)*)/
     AFTER_PATTERN = /\\after(?![A-Za-z])/
     AFTER_DURATION_PATTERN = /(#{DURATION_PATTERN})(?:#{MULTIPLIER_PATTERN})?/o
     TUPLET_PATTERN = /\\(tuplet|times)(?![A-Za-z])/
@@ -140,7 +142,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def command_token
-      consume(COMMAND_PATTERN) && token(:command, lexeme: scanner[1])
+      consume(@markup_depth ? MARKUP_COMMAND_PATTERN : COMMAND_PATTERN) && token(:command, lexeme: scanner[1])
     end
 
     # \after takes a duration, which may be dotted or multiplied, so it is

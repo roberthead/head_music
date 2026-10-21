@@ -59,11 +59,12 @@ module HeadMusic::Notation::LilyPond
     def markup_text
       advance
       advance while peek&.type == :command
-      case peek&.type
+      text = case peek&.type
       when :open_brace then braced_words("\\markup expects a string or a block").join(" ")
       when :string, :word then advance.lexeme
       else raise error("\\markup expects a string or a block", peek || peek(-1))
       end
+      text.squeeze(" ").strip
     end
 
     def skip_braces(message)
