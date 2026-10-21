@@ -10,10 +10,10 @@ module HeadMusic::Notation::MusicXML
   class PartReader
     include XmlReading
 
-    # The key, meter, and tempo a measure states on its downbeat; the extent
+    # The key and meter a measure states on its downbeat; the extent
     # its notes and forwards reach; and one division where it ends, the
     # rounding its extent may carry.
-    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tempo, :tolerance, :clefs)
+    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tolerance, :clefs)
     Reading = Struct.new(:document_part, :measures, :tracks, :staves, :part_symbol, :records) do
       def id
         document_part.id
@@ -61,8 +61,7 @@ module HeadMusic::Notation::MusicXML
       when "note" then read_note(element)
       when "backup" then read_move(element, -1)
       when "forward" then read_move(element, 1)
-      when "direction" then read_direction(element)
-      when "sound" then read_measure_sound(element)
+      when "direction", "sound" then record_direction(element)
       when "barline" then note_record(:barline, element)
       end
     end
@@ -92,27 +91,8 @@ module HeadMusic::Notation::MusicXML
       @durations = @durations.with(meter: @measure.meter = attributes.meter) if attributes.meter
     end
 
-    def read_direction(element)
-      record_direction(element)
-      sound = first_child(element, "sound")
-      offset = text(element, "offset", **@where)
-      read_sound(sound) if sound && (offset.nil? || rational(offset, "<offset>", **@where).zero?)
-    end
-
-    def read_measure_sound(element)
-      record_direction(element)
-      read_sound(element)
-    end
-
     def record_direction(element)
       @timing.direction(note_record(:direction, element, cursor: @cursor, divisions: @durations.divisions))
-    end
-
-    def read_sound(element)
-      tempo = rational(attribute(element, "tempo", **@where), "tempo", **@where)
-      return unless tempo&.positive? && @cursor.zero?
-
-      @measure.tempo ||= HeadMusic::Rudiment::Tempo.new("quarter", tempo)
     end
 
     def read_note(element)

@@ -44,6 +44,29 @@ describe HeadMusic::Notation::MusicXML::AttributesReader do
       end
     end
 
+    def symbol_meter(symbol, beats, beat_type)
+      parse_attributes(%(<divisions>1</divisions><time symbol="#{symbol}"><beats>#{beats}</beats><beat-type>#{beat_type}</beat-type></time>)).meter_at(1)
+    end
+
+    it "reads common time" do
+      meter = symbol_meter("common", 4, 4)
+      expect([meter.to_s, meter.symbol]).to eq ["4/4", :common]
+    end
+
+    it "reads cut time" do
+      meter = symbol_meter("cut", 2, 2)
+      expect([meter.to_s, meter.symbol]).to eq ["2/2", :cut]
+    end
+
+    it "drops a symbol that stands for another meter" do
+      meter = symbol_meter("cut", 4, 4)
+      expect([meter.to_s, meter.symbol]).to eq ["4/4", nil]
+    end
+
+    it "drops a symbol it does not hold, such as a single number" do
+      expect(symbol_meter("single-number", 4, 4).symbol).to be_nil
+    end
+
     it "refuses a beat type that names no note value, such as 3/3" do
       expect { parse_attributes(time_xml("<beats>3</beats>", "<beat-type>3</beat-type>")) }
         .to raise_error(unsupported, %r{The meter 3/3 is not supported \(measure 1 of part P1\)})

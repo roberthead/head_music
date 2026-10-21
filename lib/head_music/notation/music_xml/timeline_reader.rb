@@ -1,13 +1,25 @@
 # A namespace for MusicXML-notation reading helpers
 module HeadMusic::Notation::MusicXML
-  # Reads the flow's timeline: the meters from the bars, the keys from the
-  # first part, since the timeline holds one key, and the tempos from any
-  # part, the first in each bar winning. A key or tempo in the second half of
-  # a split bar falls mid-bar, so it is skipped.
+  # Reads the flow's timeline: the meters from the bars, with their symbols,
+  # the keys from the first part, since the timeline holds one key, and the
+  # opening tempo. A key in the second half of a split bar falls mid-bar, so
+  # it is skipped. TempoReader reads the later tempos once the flow's
+  # fermatas are known.
   class TimelineReader < HeadMusic::Notation::TimelineReading
-    def initialize(readings, bar_map)
+    def initialize(readings, bar_map, tempo_reader)
       super(bar_map)
       @readings = readings
+      @tempo_reader = tempo_reader
+    end
+
+    # A meter that differs only in its symbol is equal to the one in force,
+    # so it is changed here.
+    def apply(flow)
+      super
+      @bar_map.bar_numbers.drop(1).each do |bar|
+        meter = @bar_map.meter_at(bar)
+        flow.change_meter(bar, meter) unless flow.meter_at(bar).symbol == meter.symbol
+      end
     end
 
     # A signature with no <mode> reads as its major key, as kern reads one.
@@ -29,7 +41,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def tempos
-      @tempos ||= downbeat_values(@readings.flat_map(&:measures), &:tempo)
+      @tempos ||= {@bar_map.first_bar => @tempo_reader.opening}
     end
   end
 end

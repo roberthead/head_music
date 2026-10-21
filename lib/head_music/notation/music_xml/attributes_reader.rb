@@ -13,6 +13,8 @@ module HeadMusic::Notation::MusicXML
     # The clefs by staff number, a nil clef being one the catalog lacks.
     # The transpositions by staff number, nil for one that applies to every
     # staff.
+    SYMBOLS = {"common" => :common, "cut" => :cut}.freeze
+
     Attributes = Struct.new(:divisions, :key, :meter, :measure_repeat, :staves, :part_symbol, :clefs, :transpositions)
 
     def self.read(element, **where)
@@ -67,7 +69,8 @@ module HeadMusic::Notation::MusicXML
     # A meter of added beats, such as 3+2/8, would read as its first number
     # alone, so it raises instead, as does one such as 3/3, whose beat type
     # names no note value. A <time> with neither number, as <senza-misura/>,
-    # states no meter.
+    # states no meter. A common- or cut-time symbol is kept only on the meter
+    # it stands for.
     def meter(element)
       return unless first_child(element, "beats") || first_child(element, "beat-type")
 
@@ -81,7 +84,10 @@ module HeadMusic::Notation::MusicXML
       bottom = positive_integer(beat_type, "<beat-type>")
       raise UnsupportedFeatureError.new("The meter #{top}/#{bottom} is not supported", **where) unless HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(bottom)
 
-      HeadMusic::Rudiment::Meter.get("#{top}/#{bottom}")
+      meter = HeadMusic::Rudiment::Meter.get("#{top}/#{bottom}")
+      symbol = SYMBOLS[attribute(element, "symbol", **where)]
+      symbolic = symbol && HeadMusic::Rudiment::Meter.for_symbol(symbol)
+      (symbolic == meter) ? symbolic : meter
     end
 
     def positive_integer(text, label)

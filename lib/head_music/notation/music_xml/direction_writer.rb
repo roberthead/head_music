@@ -1,7 +1,8 @@
 # A namespace for MusicXML-notation rendering helpers
 module HeadMusic::Notation::MusicXML
   # Serializes a flow's dynamic events and hairpin ends as <direction>
-  # elements, a hairpin as a <wedge> start and stop. Directions add
+  # elements, a hairpin as a <wedge> start and stop, and its tempo marks
+  # through TempoWriter. Directions add
   # no duration, so placing them changes no <backup> or <forward> a Writer
   # computes; each carries its own exact position instead, as an <offset> in
   # divisions from wherever in the measure it is written. Which slot of the
@@ -22,7 +23,12 @@ module HeadMusic::Notation::MusicXML
 
       start = direction_plan.start(slot)
       numbers = [voice_number && "#{INDENT * 4}<voice>#{voice_number}</voice>", staff_number && "#{INDENT * 4}<staff>#{staff_number}</staff>"]
-      marks.flat_map { |mark| direction_lines(direction_type(slot.part, mark), offset_from(start, slot, mark), numbers) }
+      marks.flat_map do |mark|
+        offset = offset_from(start, slot, mark)
+        next plan.tempo_writer.lines(mark.item, offset, numbers.compact) if mark.type == :tempo
+
+        direction_lines(direction_type(slot.part, mark), offset, numbers)
+      end
     end
 
     private

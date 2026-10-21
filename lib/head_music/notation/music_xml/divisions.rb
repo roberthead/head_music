@@ -10,7 +10,7 @@ module HeadMusic::Notation::MusicXML
     end
 
     def self.denominators(flow)
-      meter_denominators(flow) + note_denominators(flow) + timed_mark_denominators(flow)
+      meter_denominators(flow) + note_denominators(flow) + timed_mark_denominators(flow) + tempo_mark_denominators(flow)
     end
     private_class_method :denominators
 
@@ -59,6 +59,13 @@ module HeadMusic::Notation::MusicXML
       end
     end
     private_class_method :timed_mark_denominators
+
+    # So can a tempo ramp's ends and an "a tempo".
+    def self.tempo_mark_denominators(flow)
+      positions = flow.tempo_ramps.flat_map { |ramp| [ramp.from, ramp.to] } + flow.a_tempos.map(&:position)
+      positions.map { |position| (HeadMusic::Notation::BarSplitter.mark_offset(flow, position, flow.voices) * 4).denominator }
+    end
+    private_class_method :tempo_mark_denominators
 
     def self.chain_denominators(rhythmic_value)
       rhythmic_value.tied_chain.map { |link| DurationWriter.sounding_quarter_fraction(link).denominator }

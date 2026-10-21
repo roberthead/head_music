@@ -7,7 +7,7 @@ module HeadMusic::Notation::MusicXML
   # Markings are read from a note's attack only, combined across its chord
   # tones. An accent dynamic there is the note's own, the first one winning,
   # and a level becomes the voice's dynamic at the note. Grace notes carry
-  # their own articulations from the core; fermatas, breath marks, caesuras,
+  # their own articulations from the core; breath marks, caesuras,
   # <technical>, and dynamics the gem does not know are skipped.
   class MarkingReader < MarkReader
     LEVELS_BY_ELEMENT = HeadMusic::Rudiment::Dynamic.levels.to_h { |level| [level.name_key, level] }.freeze

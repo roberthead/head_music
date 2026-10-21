@@ -16,6 +16,8 @@ describe HeadMusic::Notation::MusicXML::Writer do
     "Speed the Plough" => -> { HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH) },
     "the marked melody" => -> { MarkingFixtures.marked_melody },
     "the spanned piano" => -> { MarkingFixtures.spanned_piano },
+    "the timeline melody" => -> { TimelineExpressionFixtures.melody },
+    "the timeline chorale" => -> { TimelineExpressionFixtures.chorale },
     **HairpinFixtures.all.to_h { |name| ["the #{name} fixture", -> { HairpinFixtures.public_send(name) }] },
     **TupletFixtures.all.to_h { |name| ["the #{name} fixture", -> { TupletFixtures.public_send(name) }] },
     **TupletGenerator::SEEDS.to_h { |seed| ["seed #{seed}", -> { TupletGenerator.flow(seed) }] }

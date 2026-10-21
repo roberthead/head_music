@@ -108,8 +108,9 @@ module HeadMusic::Notation::MusicXML
     def time_lines(meter)
       return [] unless meter
 
+      symbol = meter.symbol && %( symbol="#{meter.symbol}")
       [
-        "#{INDENT * 4}<time>",
+        "#{INDENT * 4}<time#{symbol}>",
         "#{INDENT * 5}<beats>#{meter.top_number}</beats>",
         "#{INDENT * 5}<beat-type>#{meter.bottom_number}</beat-type>",
         "#{INDENT * 4}</time>"

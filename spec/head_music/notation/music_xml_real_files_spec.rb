@@ -139,8 +139,12 @@ describe HeadMusic::Notation::MusicXML do
     end
 
     readable = {
-      "31a-Directions" => ->(flow) { [flow.bars(2).map(&:to_h), flow.parts.first.dynamic_events.first(3).map(&:to_s)] },
-      "32a-Notations" => ->(flow) { flow.voices.first.voice_events.flat_map { |event| event.articulations.map(&:name_key) }.uniq },
+      "31a-Directions" => lambda do |flow|
+        [flow.bars(2).map(&:to_h), flow.parts.first.dynamic_events.first(3).map(&:to_s), flow.meter.symbol, flow.tempo_changes.transform_values(&:beats_per_minute)]
+      end,
+      "32a-Notations" => lambda do |flow|
+        [flow.voices.first.voice_events.flat_map { |event| event.articulations.map(&:name_key) }.uniq, flow.fermatas.map { |fermata| fermata.from.to_s }]
+      end,
       "33c-Spanners-Slurs" => ->(flow) { all_spans(flow).first(3) },
       "42b-MultiVoice-MidMeasureClefChange" => ->(flow) { [flow.voices.length, flow.parts.first.staff_system.staves.first.clef_changes] },
       "45b-RepeatWithAlternatives" => ->(flow) { flow.to_h["bars"] },
@@ -155,8 +159,10 @@ describe HeadMusic::Notation::MusicXML do
     }
 
     expected = {
-      "31a-Directions" => [[{"rehearsal_mark" => "A"}, {"segno" => true, "coda" => true}], ["p at 3:1:000", "pp at 3:2:000", "ppp at 3:3:000"]],
-      "32a-Notations" => %w[accent marcato staccato tenuto staccatissimo],
+      "31a-Directions" => [
+        [{"rehearsal_mark" => "A"}, {"segno" => true, "coda" => true}], ["p at 3:1:000", "pp at 3:2:000", "ppp at 3:3:000"], :common, {12 => 60.0}
+      ],
+      "32a-Notations" => [%w[accent marcato staccato tenuto staccatissimo], %w[1:1:000 1:2:000 1:3:000 1:4:000 2:1:000]],
       "33c-Spanners-Slurs" => ["slur from 1:1:000 to 1:2:000", "slur from 1:2:000 to 1:3:000", "slur from 1:3:000 to 1:4:000"],
       "42b-MultiVoice-MidMeasureClefChange" => [2, {}],
       "45b-RepeatWithAlternatives" => [{"number" => 2, "ends_repeat_after_num_plays" => 2, "plays_on_passes" => [1]}, {"number" => 3, "plays_on_passes" => [2]}],

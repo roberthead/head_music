@@ -71,6 +71,18 @@ describe HeadMusic::Notation::MusicXML::TimelineReader do
       expect(parse(musicxml_measures(whole_c, middle)).meter_changes).to be_empty
     end
 
+    it "keeps a change of the symbol alone" do
+      common = %(<attributes><time symbol="common"><beats>4</beats><beat-type>4</beat-type></time></attributes>)
+      flow = parse(musicxml_measures(whole_c, common + whole_c, "<attributes><time><beats>4</beats><beat-type>4</beat-type></time></attributes>" + whole_c))
+      expect([1, 2, 3].map { |bar| flow.meter_at(bar).symbol }).to eq [nil, :common, nil]
+    end
+
+    it "makes no change where the symbol in force is stated again" do
+      common = %(<attributes><time symbol="common"><beats>4</beats><beat-type>4</beat-type></time></attributes>)
+      flow = parse(musicxml_measures(common + whole_c, common + whole_c))
+      expect([flow.meter.symbol, flow.meter_changes]).to eq [:common, {}]
+    end
+
     it "refuses a meter of added beats, naming the measure" do
       xml = musicxml_measures(note_xml("C4", 5, "half", dots: 1), attributes: opening_attributes(divisions: 2, beats: "3+2", beat_type: 8))
       expect { parse(xml) }.to raise_error(HeadMusic::Notation::MusicXML::UnsupportedFeatureError, %r{3\+2/8.*\(measure 1 of part P1\)})

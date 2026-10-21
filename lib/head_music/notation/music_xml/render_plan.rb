@@ -55,6 +55,15 @@ module HeadMusic::Notation::MusicXML
       @tuplet_marks ||= TupletMarks.new(self)
     end
 
+    # The voice events that carry a fermata mark, each with its fermata.
+    def fermata_carriers
+      @fermata_carriers ||= HeadMusic::Notation::FermataMarks.carriers(flow)
+    end
+
+    def tempo_writer
+      @tempo_writer ||= TempoWriter.new(flow)
+    end
+
     def direction_plan(part)
       @direction_plans ||= {}.compare_by_identity
       @direction_plans[part] ||= DirectionPlan.new(part, self)

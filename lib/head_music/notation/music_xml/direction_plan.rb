@@ -8,8 +8,11 @@ module HeadMusic::Notation::MusicXML
   # Per bar: the part's slot; for each voice, a slot before each of its
   # segments, or one before the whole-measure rest that fills an empty bar,
   # and a trailing slot after its last content; and, in the last bar, a
-  # closing slot after every voice. Within a slot, marks at one position go
-  # hairpin stops first, then dynamics, then hairpin starts.
+  # closing slot after every voice. The first part's first voice also holds
+  # the flow's tempo marks, so that each is written where it sounds, since
+  # MuseScore places a tempo by where it is written and not by its <offset>.
+  # Within a slot, marks at one position go tempo marks first, then hairpin
+  # stops, then dynamics, then hairpin starts.
   class DirectionPlan
     Slot = Data.define(:kind, :part, :voice, :bar_number, :segment) do
       # The voices whose events the slot's marks are placed among.
@@ -20,6 +23,8 @@ module HeadMusic::Notation::MusicXML
 
     Mark = Data.define(:type, :position, :item) do
       def label
+        return TEMPO_LABELS.fetch(item.kind) if type == :tempo
+
         format(MARK_LABELS.fetch(type), item.name_key)
       end
     end
@@ -29,8 +34,9 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
-    MARK_ORDER = %i[stop dynamic start].freeze
+    MARK_ORDER = %i[tempo stop dynamic start].freeze
     MARK_LABELS = {dynamic: "dynamic %s", start: "%s start", stop: "%s end"}.freeze
+    TEMPO_LABELS = {tempo: "tempo change", ramp_start: "tempo ramp start", ramp_end: "tempo ramp end", a_tempo: %("a tempo")}.freeze
 
     attr_reader :part
 
@@ -112,7 +118,16 @@ module HeadMusic::Notation::MusicXML
 
     def marks_of(owner)
       owner.dynamic_events.map { |event| Mark.new(:dynamic, event.position, event) } +
-        owner.spans.select(&:hairpin?).flat_map { |span| [Mark.new(:stop, span.to, span), Mark.new(:start, span.from, span)] }
+        owner.spans.select(&:hairpin?).flat_map { |span| [Mark.new(:stop, span.to, span), Mark.new(:start, span.from, span)] } +
+        (owner.equal?(tempo_owner) ? tempo_marks : [])
+    end
+
+    def tempo_owner
+      part.voices.first || part if part.equal?(plan.flow.parts.first)
+    end
+
+    def tempo_marks
+      plan.tempo_writer.marks.map { |mark| Mark.new(:tempo, mark.position, mark) }
     end
 
     def in_writing_order(marks)

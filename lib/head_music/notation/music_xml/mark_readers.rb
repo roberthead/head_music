@@ -1,5 +1,5 @@
 require_relative "mark_records"
-%w[marking_reader lyric_reader direction_reader slur_reader beam_reader barline_reader navigation_reader].each do |file|
+%w[marking_reader lyric_reader direction_reader slur_reader beam_reader barline_reader navigation_reader fermata_reader].each do |file|
   require_relative file
 end
 
@@ -8,7 +8,7 @@ module HeadMusic::Notation::MusicXML
   # The mark readers the core runs over every part's records; see MarkReader
   # for what each may assume, and MarkRecords for the records.
   MARK_READERS = [
-    MarkingReader, LyricReader, DirectionReader, SlurReader, BeamReader, BarlineReader, NavigationReader
+    MarkingReader, LyricReader, DirectionReader, SlurReader, BeamReader, BarlineReader, NavigationReader, FermataReader
   ].freeze
 
   # Hands each record to a new instance of every reader, then has each apply
