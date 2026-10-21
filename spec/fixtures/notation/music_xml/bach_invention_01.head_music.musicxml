@@ -23,7 +23,7 @@
           <fifths>0</fifths>
           <mode>major</mode>
         </key>
-        <time>
+        <time symbol="common">
           <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
@@ -5850,6 +5850,9 @@
         <voice>1</voice>
         <type>whole</type>
         <staff>1</staff>
+        <notations>
+          <fermata type="upright"/>
+        </notations>
       </note>
       <note>
         <chord/>
@@ -5885,6 +5888,9 @@
         <voice>2</voice>
         <type>whole</type>
         <staff>2</staff>
+        <notations>
+          <fermata type="upright"/>
+        </notations>
       </note>
       <note>
         <chord/>
