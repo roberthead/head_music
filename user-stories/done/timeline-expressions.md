@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-25T14:05:53-07:00
   activated_at: 2026-10-20T16:02:22-07:00
   planned_at:   2026-10-20T16:24:28-07:00
-  finished_at:
-  updated_at:   2026-10-21T11:25:49-07:00
+  finished_at:  2026-10-21T11:31:30-07:00
+  updated_at:   2026-10-21T11:31:30-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -177,9 +177,20 @@ Where the work departed from the plan:
 Left open, for a later story or a decision:
 
 - **chor202.krn:** the tenor's `;` sits on the later link of a tied note, so kern reads two touching fermatas (2:4–3:1 and 3:1–3:1:480) where the music means one. This follows the criterion that a mark on a later link starts there; MIDI already treats touching fermatas of one stretch as one.
-- **MIDI inference residue:** a ramp starting at a bar that also changes tempo, a fermata inside a ramp, a ramp ending mid-bar followed by another change in that bar, and a whole-bar fermata followed by a new tempo do not round-trip through MIDI. A ramp another program writes with steps sparser than a count reads as downbeat tempos.
+- **MIDI inference residue:** a ramp starting at a bar that also changes tempo, a ramp ending mid-bar followed by another change in that bar, and a whole-bar fermata followed by a new tempo do not round-trip through MIDI. A ramp another program writes with steps sparser than a count reads as downbeat tempos.
 - **Fermata stretch** survives only JSON and MIDI.
 - **`references/content-schema.md`** is still marked "as of 21.1.0" apart from the new timeline keys.
+
+## Learnings
+
+- **Put timeline expressions beside the timeline's changes.** Ramps, "a tempo" points and fermatas need mid-bar positions, while tempo, meter and key changes stay on downbeats. Keeping the mid-bar items in a separate `TimelineSpans` collection left the downbeat rule intact.
+- **A fermata belongs to the timeline, not to its marks.** Treating it as a hold on the flow, from which each writer derives marks, gave every format one rule. The cost is deliberate normalization: a fermata marked in one voice comes back marked in all of them.
+- **Closed-form conversion paid off.** The `atanh`/`tanh` ramp formula and its inverse let MIDI export match `flow.conductor` to the nanosecond, so round trips can assert exact clock times instead of tolerances.
+- **MIDI inference is the fragile edge.** Export writes away information. A rit. turning into an accel. loses its turning step, and a fermata inside a ramp multiplies the ramp's step. The review found two shapes that misread, and fixing them took extrapolation and an exact solve from logarithmic means. A new ramp or fermata shape should get a MIDI round-trip spec before anything else.
+- **Reviewers on two halves of the code found real bugs.** One reviewer took the core model and one took the formats. Between them they found ten verified defects that the 18,490-example suite had missed. Most came from inputs that real files contain but round trips never produce: hyphenated LilyPond markup commands, playback-only `<sound>` steps, "Tempo I" after a step change, and fermatas on tie links inside a bar.
+- **Check agents' claims before acting on them.** The acceptance reviewer said kern, LilyPond and JSON lacked specs for symbol-only meter changes, but all three had them. Item 8's reported failure was right, but its cause was in `Position#+`, not `Flow#add_fermata`. Reproducing each finding first kept the fixes aimed at the right place.
+- **Watch for specs that pin a bug.** One MIDI spec expected the duplicate tempo change that finding 7 removed. When a fix breaks an existing expectation, first ask whether that expectation was ever right.
+- **Next time:** add "Tempo I", markup variants, and playback-only tempo events to the plan's edge cases from the start. The vocabulary of tempo words deserved its own design pass, rather than reusing "a tempo" for "Tempo I".
 
 ## Implementation Plan
 

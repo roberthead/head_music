@@ -17,7 +17,7 @@ I WANT ABC to write every voice of a flow and to read and write meter changes af
 
 SO THAT a chorale or a piece that changes meter survives an ABC round trip, fermatas and common- and cut-time symbols included
 
-Split from [Timeline Expressions](../current/timeline-expressions.md), whose criteria for fermatas in every voice and for symbol-only meter changes exclude ABC.
+Split from [Timeline Expressions](../done/timeline-expressions.md), whose criteria for fermatas in every voice and for symbol-only meter changes exclude ABC.
 
 ## Background
 
