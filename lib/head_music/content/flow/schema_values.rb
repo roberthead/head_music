@@ -13,6 +13,7 @@ class HeadMusic::Content::Flow
 
     delegate :staff_system, :staff, to: :staff_system_values
     delegate :voice_event_sounds, :voice_event_syllables, :catalog_keys, :note_dynamic, :grace_notes, to: :voice_event_values
+    delegate :meter, :key_signature, :fifths, :tonal_context, :tempo, :tempo_ramps, :a_tempos, :fermatas, to: :timeline_values
 
     # Position silently coerces garbage strings to "0:1:000", which would
     # mislocate content with no error, so the shape is validated up front.
@@ -27,48 +28,12 @@ class HeadMusic::Content::Flow
       value
     end
 
-    def key_signature(value, path)
-      return nil if value.nil?
-
-      known_key_signature(value, "key signature", path)
-    end
-
-    # A symbol is written beside the numerals it stands for, and must agree
-    # with them.
-    def meter(value, path, symbol = nil)
-      return nil if value.nil?
-
-      meter = attempt { HeadMusic::Rudiment::Meter.get(value) }
-      unless meter&.top_number&.positive? && meter.bottom_number.positive?
-        raise ArgumentError, "#{path}: unknown meter #{value.inspect}"
-      end
-      symbol.nil? ? meter : meter_with_symbol(meter, symbol, path)
-    end
-
     def rhythmic_value(value, path)
       rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(value)
       unless valid_rhythmic_value?(rhythmic_value)
         raise ArgumentError, "#{path}: unknown rhythmic value #{value.inspect}"
       end
       rhythmic_value
-    end
-
-    # A tempo serializes as its two parts rather than as a "quarter = 72"
-    # string, because Tempo.get reads the number by stripping non-digits and so
-    # would turn 72.5 into 725.
-    def tempo(value, path)
-      return nil if value.nil?
-
-      ensure_kind!(value, Hash, "tempo", path)
-      beats_per_minute = value["beats_per_minute"]
-      raise ArgumentError, "#{path}: beats_per_minute must be a positive number, got #{beats_per_minute.inspect}" unless positive_number?(beats_per_minute)
-
-      beat_value = rhythmic_value(value["beat_value"], "#{path}.beat_value")
-      HeadMusic::Rudiment::Tempo.new(
-        beat_value.to_s, beats_per_minute,
-        text: tempo_text(value["text"], path),
-        metronome_mark: boolean_value(value.fetch("metronome_mark", true), "#{path}.metronome_mark: ")
-      )
     end
 
     # An optional list of {"position" => ..., "level" => ...} hashes, answered
@@ -89,24 +54,6 @@ class HeadMusic::Content::Flow
       each_optional_element(values, "tuplets", path, &method(:tuplet))
     end
 
-    # An optional list of {"from", "to"} hashes, with an optional target
-    # "tempo" and "text", answered as [from, to, tempo, text].
-    def tempo_ramps(values, path)
-      each_optional_element(values, "tempo_ramps", path, &method(:tempo_ramp))
-    end
-
-    # An optional list of {"position", "text"} hashes, answered as
-    # [position, text]. A point written with no "text" says "a tempo".
-    def a_tempos(values, path)
-      each_optional_element(values, "a_tempos", path, &method(:a_tempo))
-    end
-
-    # An optional list of {"from", "to", "stretch"} hashes, answered as
-    # [from, to, stretch].
-    def fermatas(values, path)
-      each_optional_element(values, "fermatas", path, &method(:fermata))
-    end
-
     def bar_number(bar_hash, index, path = "bars")
       number = bar_hash["number"]
       unless number.is_a?(Integer) && number >= 0
@@ -122,22 +69,6 @@ class HeadMusic::Content::Flow
       return boolean_value(value) if BAR_FLAGS.include?(field)
 
       value
-    end
-
-    # Sharps positive, flats negative, and unbounded: a theoretical key such as
-    # G sharp major counts each double accidental twice and reaches eight.
-    def fifths(value, path)
-      raise ArgumentError, "#{path}: signature must be an Integer of fifths, got #{value.inspect}" unless value.is_a?(Integer)
-
-      value
-    end
-
-    # A Key, a Mode, or -- for a scale type neither can hold -- a KeySignature.
-    # Round-tripped by name, which is what each of the three parses back from.
-    def tonal_context(value, path)
-      return nil if value.nil?
-
-      HeadMusic::Content::Flow::Timeline.tonal_context_of(known_key_signature(value, "tonal context", path))
     end
 
     def instrument(value, path)
@@ -158,6 +89,13 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "#{path}: unknown player index #{value.inspect} (#{count} part players)"
     end
 
+    # The from and to positions a ranged element must have.
+    def ends(value, label, path)
+      %w[from to].map do |key|
+        position(value[key], "#{path}.#{key}") || raise(ArgumentError, "#{path}: a #{label} needs a #{key} position")
+      end
+    end
+
     private
 
     def bar_jump(value)
@@ -165,21 +103,6 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
 
       HeadMusic::Content::Jump.from_h(value)
-    end
-
-    def tempo_text(text, path)
-      return nil if text.nil?
-      raise ArgumentError, "#{path}.text: tempo text must be a non-empty String, got #{text.inspect}" unless non_empty_string?(text)
-
-      text
-    end
-
-    def meter_with_symbol(meter, symbol, path)
-      symbolic = attempt { HeadMusic::Rudiment::Meter.for_symbol(symbol) } if symbol.is_a?(String)
-      raise ArgumentError, "#{path}: unknown meter symbol #{symbol.inspect}" unless symbolic
-      raise ArgumentError, "#{path}: the #{symbol} symbol is #{symbolic}, not #{meter}" unless symbolic == meter
-
-      symbolic
     end
 
     def staff_system_values
@@ -190,17 +113,8 @@ class HeadMusic::Content::Flow
       @voice_event_values ||= VoiceEventValues.new
     end
 
-    # KeySignature.get returns a hollow object (nil tonic_spelling) for
-    # garbage rather than nil, so presence of the tonic is the real check.
-    def known_key_signature(value, label, path)
-      key_signature = attempt { HeadMusic::Rudiment::KeySignature.get(value) }
-      raise ArgumentError, "#{path}: unknown #{label} #{value.inspect}" unless key_signature&.tonic_spelling
-
-      key_signature
-    end
-
-    def positive_number?(value)
-      value.is_a?(Numeric) && value.positive?
+    def timeline_values
+      @timeline_values ||= TimelineValues.new(self)
     end
 
     # RhythmicValue.get returns a hollow object (nil unit) for garbage rather
@@ -236,38 +150,6 @@ class HeadMusic::Content::Flow
       ensure_kind!(value, Hash, "tuplet", path)
       unit = value["unit"]
       [*ends(value, "tuplet", path), unit && rhythmic_value(unit, "#{path}.unit")]
-    end
-
-    def tempo_ramp(value, path)
-      ensure_kind!(value, Hash, "tempo ramp", path)
-      [*ends(value, "tempo ramp", path), tempo(value["tempo"], "#{path}.tempo"), tempo_text(value["text"], path)]
-    end
-
-    def a_tempo(value, path)
-      ensure_kind!(value, Hash, "a tempo", path)
-      position = position(value["position"], path) || raise(ArgumentError, "#{path}: an a tempo needs a position")
-      [position, value.key?("text") ? tempo_text(value["text"], path) : "a tempo"]
-    end
-
-    def fermata(value, path)
-      ensure_kind!(value, Hash, "fermata", path)
-      stretch = value.fetch("stretch", HeadMusic::Time::Fermata::DEFAULT_STRETCH)
-      unless stretch.is_a?(Numeric) && stretch >= 1
-        raise ArgumentError, "#{path}.stretch: must be a number of at least 1, got #{stretch.inspect}"
-      end
-      [*ends(value, "fermata", path), stretch]
-    end
-
-    def ends(value, label, path)
-      %w[from to].map do |key|
-        position(value[key], "#{path}.#{key}") || raise(ArgumentError, "#{path}: a #{label} needs a #{key} position")
-      end
-    end
-
-    def boolean_value(value, prefix = "")
-      raise ArgumentError, "#{prefix}must be true or false, got #{value.inspect}" unless [true, false].include?(value)
-
-      value
     end
   end
 end

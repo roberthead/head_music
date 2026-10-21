@@ -43,5 +43,11 @@ class HeadMusic::Content::Flow
     def non_empty_string?(value)
       value.is_a?(String) && !value.empty?
     end
+
+    def boolean_value(value, prefix = "")
+      raise ArgumentError, "#{prefix}must be true or false, got #{value.inspect}" unless [true, false].include?(value)
+
+      value
+    end
   end
 end
