@@ -15,7 +15,8 @@ module Oracles
     musicxml_corpus: Oracle.new(-> { !folders("MUSICXML_CORPUS").empty? }, "set MUSICXML_CORPUS to local folders of MusicXML files"),
     mei_schema: Oracle.new(-> { ENV["MEI_SCHEMA"] }, "set MEI_SCHEMA to a local copy of mei-CMN.rng"),
     musicxml_xsd: Oracle.new(-> { ENV["MUSICXML_XSD"] }, "set MUSICXML_XSD to a local copy of musicxml.xsd"),
-    verovio: Oracle.new(-> { which("verovio") }, "install verovio on the PATH")
+    verovio: Oracle.new(-> { which("verovio") }, "install verovio on the PATH"),
+    abcm2ps: Oracle.new(-> { which("abcm2ps") }, "install abcm2ps on the PATH (brew install abcm2ps)")
   }.freeze
 
   module_function
