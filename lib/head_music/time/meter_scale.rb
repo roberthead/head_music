@@ -16,6 +16,7 @@ module HeadMusic
       end
 
       def subticks_at(position)
+        position = MusicalPosition.new(*position.to_a) unless position.is_a?(MusicalPosition)
         subticks_in(segment_for(position), position)
       end
 

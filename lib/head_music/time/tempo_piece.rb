@@ -18,14 +18,25 @@ module HeadMusic
         !slope.zero?
       end
 
+      def lasts?(nanoseconds)
+        finish.nil? || duration >= nanoseconds
+      end
+
+      # Where the piece reaches a clock time from its start, stopping at the
+      # finish.
+      def subticks_reached(nanoseconds)
+        [start + subticks_after(nanoseconds).round, finish].compact.min
+      end
+
       def speed_at(subticks)
         speed + slope * (subticks - start)
       end
 
+      # Clock time from the start to a point, stopping at the finish.
       # atanh(u / (2v + u)) is half of ln((v + u) / v) without the
       # cancellation of a logarithm near 1.
       def duration(upto = finish)
-        length = upto - start
+        length = [upto, finish].compact.min - start
         time = if ramp?
           change = slope * length
           (2 / slope) * Math.atanh(change / (2 * speed + change))

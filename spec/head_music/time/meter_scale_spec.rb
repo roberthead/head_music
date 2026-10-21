@@ -23,6 +23,10 @@ describe HeadMusic::Time::MeterScale do
       expect(scale.subticks_at(position(0, 4, 0, 0))).to eq(-quarter)
     end
 
+    it "measures a position given as its components" do
+      expect(scale.subticks_at([3, 2, 0, 0])).to eq 9 * quarter
+    end
+
     it "reads positions back" do
       expect(scale.position_at(9 * quarter + 5).to_a).to eq [3, 2, 0, 5]
     end
