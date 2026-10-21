@@ -68,7 +68,7 @@ module HeadMusic::MIDI
     def add_ramps(flow)
       inference.ramps.each do |ramp|
         to_tempo = self.class.tempo(ramp.microseconds, layout.bar_at(ramp.to).meter)
-        flow.add_tempo_ramp(from: position(flow, ramp.from), to: position(flow, ramp.to), to_tempo: to_tempo, text: ramp.slowing? ? "rit." : "accel.")
+        flow.add_tempo_ramp(from: position(flow, ramp.from), to: position(flow, ramp.to), to_tempo: to_tempo, text: ramp.text)
       end
     end
 

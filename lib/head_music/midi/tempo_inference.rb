@@ -23,8 +23,8 @@ module HeadMusic::MIDI
   # began from.
   class TempoInference
     Ramp = Data.define(:from, :to, :microseconds, :start_microseconds) do
-      def slowing?
-        microseconds > start_microseconds
+      def text
+        (microseconds > start_microseconds) ? "rit." : "accel."
       end
     end
 
@@ -49,104 +49,79 @@ module HeadMusic::MIDI
 
     private
 
-    # The changes left once each fermata's pair is taken out, keeping the
-    # tempo a fermata changes to at its downbeat, the next downbeat, or the
-    # end of the ramp before it.
+    # The changes left once each fermata's pair is replaced by the tempo
+    # under it at its start and the tempo it is restored to at its end, each
+    # kept only where it differs from the one before.
     def read_fermatas(changes)
-      kept = []
+      kept = TempoChanges.new(@layout, @opening)
       index = 0
       while index < changes.length
         start, restore = changes.values_at(index, index + 1)
-        kind = restore && fermata_kind(start, restore, kept, changes[index + 2])
-        if kind
-          held = (kind == :restored) ? kept.last&.last || @opening : restore.last
-          @fermatas << Fermata.new(start.first, restore.first, stretch(start.last, held))
-          kept << [start.first, restore.last] if kind == :changed
-          kept << restore if kind == :restored
-          index += 2
-        else
-          kept << start
-          index += 1
-        end
+        under = restore && tempo_under(start, restore, kept, changes[index + 2])
+        @fermatas << Fermata.new(start.first, restore.first, stretch(start.last, under)) if under
+        taken = under ? [[start.first, under], restore] : [start]
+        taken.each { |change| kept << change }
+        index += taken.length
       end
       kept
     end
 
-    def fermata_kind(start, restore, kept, following)
+    # The tempo a fermata from +start+ to +restore+ holds, if it is one.
+    def tempo_under(start, restore, kept, following)
       (from, slow), (to, tempo) = start, restore
-      prior = kept.last&.last || @opening
+      prior = kept.tempo_before
       return unless slow > prior && slow > tempo && to - from <= @layout.bar_at(from).length
 
+      on_from, on_to = @layout.downbeat?(from), @layout.downbeat?(to)
       if tempo == prior
-        :held unless @layout.downbeat?(from) && @layout.downbeat?(to) && @onsets.between?(from, to)
-      elsif @layout.downbeat?(from) && !@layout.downbeat?(to) && held?(to, following, through: true) && tempo != ramp_start(kept, start)
-        :changed
-      elsif held?(to, following) && continues_ramp?(kept, [from, tempo])
-        :changed
-      elsif !@layout.downbeat?(from) && @layout.downbeat?(to) && !continues_ramp?(kept, start)
-        :restored
+        prior unless on_from && on_to && @onsets.between?(from, to)
+      elsif (on_from && !on_to && held?(to, following, through: true) && tempo != ramp_start(kept, start)) || (held?(to, following) && continues_ramp?(kept, [from, tempo]))
+        tempo
+      elsif !on_from && on_to && !continues_ramp?(kept, start)
+        prior
       end
     end
 
     # Whether +change+ is the next step of a ramp's run after the changes
     # kept.
     def continues_ramp?(kept, change)
-      !kept.empty? && in_step?(kept.last, change) && !ramp_start(kept, change).nil?
+      !ramp_start(kept, change).nil?
     end
 
     # The tempo before the run of changes ending at +last+, if it is a ramp's.
     def ramp_start(kept, last)
-      changes = [*kept, last]
-      tempos = [@opening, *changes.map(&:last)]
-      direction = tempos[-1] <=> tempos[-2]
-      first = tempos.length - 1
-      first -= 1 while first > 1 && (tempos[first - 1] <=> tempos[first - 2]) == direction && in_step?(changes[first - 2], changes[first - 1])
-      run = changes.last(tempos.length - first)
-      tempos[first - 1] if run.count { |time, _| !@layout.downbeat?(time) } >= 2
-    end
-
-    # Whether +after+ is a count or less after +before+, as steps under a
-    # ramp are.
-    def in_step?(before, after)
-      after.first - before.first <= Rational(1, @layout.bar_at(before.first).meter.bottom_number)
-    end
-
-    def stretch(slow, tempo)
-      ratio = Rational(slow, tempo).round(STRETCH_DECIMALS)
-      (ratio.denominator == 1) ? ratio.to_i : ratio.to_f
+      changes = kept.with(last)
+      run = changes.run(kept.length, -1)
+      changes.tempo_before(run.begin) if changes.ramp?(run)
     end
 
     # The changes left once each ramp's run is taken out but for its target.
     # A tempo at the very start is the opening one, not a change in a run.
     def read_ramps(changes)
-      kept = []
-      index = 0
-      if changes.first&.first == @layout.bars.first.start
-        kept << changes.first
-        index = 1
-      end
+      index = (changes.first&.first == 0) ? 1 : 0
+      kept = changes.first(index)
       while index < changes.length
-        prior = kept.last&.last || @opening
-        finish = run_end(changes, index, prior)
+        finish = ramp_end(changes, index)
         if finish
-          @ramps << Ramp.new(changes[index].first, *changes[finish], prior)
-          kept << changes[finish]
-          index = finish + 1
-        else
-          @a_tempos << changes[index].first if a_tempo?(*changes[index])
-          kept << changes[index]
-          index += 1
+          @ramps << Ramp.new(changes[index].first, *changes[finish], changes.tempo_before(index))
+        elsif a_tempo?(*changes[index])
+          @a_tempos << changes[index].first
         end
+        index = finish || index
+        kept << changes[index]
+        index += 1
       end
       kept
     end
 
-    def run_end(changes, index, prior)
-      direction = changes[index].last <=> prior
-      finish = index
-      finish += 1 while finish + 1 < changes.length && (changes[finish + 1].last <=> changes[finish].last) == direction && in_step?(*changes.values_at(finish, finish + 1))
-      within_bars = changes[index..finish].count { |time, _| !@layout.downbeat?(time) }
-      finish if within_bars >= 2 && held?(changes[finish].first, changes[finish + 1])
+    def ramp_end(changes, index)
+      finish = changes.run(index, 1).end
+      finish if changes.ramp?(index..finish) && held?(changes[finish].first, changes[finish + 1])
+    end
+
+    def stretch(slow, tempo)
+      ratio = Rational(slow, tempo).round(STRETCH_DECIMALS)
+      (ratio.denominator == 1) ? ratio.to_i : ratio.to_f
     end
 
     def a_tempo?(time, microseconds)
