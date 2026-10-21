@@ -15,7 +15,7 @@ describe HeadMusic::Notation::TempoMarkReading do
     {
       "rit." => :ramp, "ritard." => :ramp, "ritardando" => :ramp, "rall." => :ramp, "rallentando" => :ramp,
       "accel." => :ramp, "Accelerando" => :ramp, "stringendo" => :ramp, "poco rit." => :ramp, "molto rall." => :ramp,
-      "a tempo" => :a_tempo, "Tempo primo" => :a_tempo, "Tempo I" => :a_tempo,
+      "a tempo" => :a_tempo, "Tempo primo" => :tempo_primo, "Tempo I" => :tempo_primo,
       "dolce" => nil, "Tempo II" => nil, "ritmico" => nil, "" => nil
     }.each do |text, kind|
       it "reads #{text.inspect} as #{kind.inspect}" do
@@ -131,6 +131,32 @@ describe HeadMusic::Notation::TempoMarkReading do
       reading.add(flow.final_barline_position, nil, "rit.")
       reading.apply(flow)
       expect(ramps).to be_empty
+    end
+  end
+
+  describe "a \"Tempo I\" word" do
+    it "returns to the opening tempo after a step change, keeping its text" do
+      reading.add(flow.position("1:1"), allegro)
+      reading.add(flow.position("2:1"), slower)
+      reading.add(flow.position("3:1"), nil, "Tempo I")
+      reading.apply(flow)
+      expect([flow.tempo_at(3).beats_per_minute, flow.tempo_at(3).text]).to eq [120.0, "Tempo I"]
+    end
+
+    it "keeps whether the opening tempo's number was written" do
+      reading.add(flow.position("1:1"), HeadMusic::Rudiment::Tempo.for_text("Andante"))
+      reading.add(flow.position("2:1"), slower)
+      reading.add(flow.position("3:1"), HeadMusic::Rudiment::Tempo.for_text("Tempo primo"))
+      reading.apply(flow)
+      expect([flow.tempo_at(3).beats_per_minute, flow.tempo_at(3).metronome_mark?]).to eq [78.0, false]
+    end
+
+    it "reads as \"a tempo\" in the middle of a bar" do
+      reading.add(flow.position("2:1"), nil, "rit.")
+      reading.add(flow.position("3:2"), nil, "Tempo I")
+      reading.apply(flow)
+      expect([ramps, flow.a_tempos.map { |a_tempo| [a_tempo.position.to_s, a_tempo.text] }])
+        .to eq [[["2:1:000", "3:2:000", nil, "rit."]], [["3:2:000", "Tempo I"]]]
     end
   end
 
