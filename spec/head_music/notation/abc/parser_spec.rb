@@ -198,6 +198,32 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(second_voice.voice_events.first.position.to_s).to eq "1:1:000"
     end
 
+    context "with a note tied across a line of another voice" do
+      subject(:flow) { parse(<<~ABC) }
+        X:1
+        L:1/4
+        M:4/4
+        V:1
+        V:2
+        K:C
+        V:1
+        C D E F-|
+        V:2
+        C, D, E, F,|
+        V:1
+        F G A B|
+      ABC
+
+      it "reads the tie as one note" do
+        expect(flow.voices.first.voice_events[3].to_s).to eq "quarter tied to quarter F4 at 1:4:000"
+      end
+    end
+
+    it "keeps a slur open across a line of another voice" do
+      flow = parse("X:1\nL:1/4\nM:4/4\nV:1\nV:2\nK:C\nV:1\nC D (E F|\nV:2\nC,4|\nV:1\nG) A B c|\n")
+      expect(flow.voices.first.spans.map(&:to_s)).to eq ["slur from 1:3:000 to 2:1:000"]
+    end
+
     context "with attributes on the V: lines" do
       subject(:flow) { parse(<<~ABC) }
         X:1
@@ -782,10 +808,11 @@ describe HeadMusic::Notation::ABC::Parser do
       expect([events(voice).last, groups(voice)]).to eq ["triplet eighth D5 at 1:4:320", []]
     end
 
-    it "drops the group of a tuplet a voice change ends inside" do
+    it "keeps a tuplet open across a line of another voice" do
       flow = parse("X:1\nM:4/4\nL:1/8\nK:C\nV:1\nC6 (3cd\nV:2\nC8|\nV:1\ne z2|\n")
-      expect([flow.voices.first.voice_events.last(3).first(2).map(&:to_s), flow.voices.first.tuplets])
-        .to eq [["triplet eighth D5 at 1:4:320", "eighth E5 at 1:4:640"], []]
+      voice = flow.voices.first
+      expect([voice.voice_events[3].to_s, voice.tuplets.map(&:to_s)])
+        .to eq ["triplet eighth E5 at 1:4:640", ["3:2 tuplet from 1:4:000 to 2:1:000"]]
     end
 
     it "reads a marker that changes no length, as (3:3, as plain notes" do

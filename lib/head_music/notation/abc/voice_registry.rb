@@ -49,5 +49,9 @@ module HeadMusic::Notation::ABC
     def switch_to(role)
       @current = state(role)
     end
+
+    def enter(state)
+      @current = state
+    end
   end
 end

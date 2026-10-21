@@ -11,10 +11,13 @@ module HeadMusic::Notation::ABC
       note: :handle_note, chord: :handle_chord, rest: :handle_rest, tie: :handle_tie,
       invisible_rest: :handle_invisible_rest, spacer: :handle_spacer, overlay: :handle_overlay,
       broken_rhythm: :handle_broken_rhythm, bar_line: :handle_bar_line, volta: :handle_volta,
-      voice_change: :handle_voice_change, beam_break: :handle_beam_break, decoration: :handle_decoration,
+      beam_break: :handle_beam_break, decoration: :handle_decoration,
       slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label,
       tuplet: :handle_tuplet, grace: :handle_grace, tempo: :handle_tempo, annotation: :handle_annotation
     }.freeze
+    # What a tune may hold before its first voice, marking the start of the
+    # music rather than a voice.
+    UNVOICED_TYPES = %i[tempo annotation part_label].freeze
 
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
@@ -49,7 +52,7 @@ module HeadMusic::Notation::ABC
       @fermata_marks = HeadMusic::Notation::FermataMarks.new
       @tempo_marks = HeadMusic::Notation::TempoMarkReading.new
       setup_voices(tokens)
-      tokens.each { |token| handle(token) }
+      replay(voice_streams(tokens))
       finish
       @building
     end
@@ -57,6 +60,34 @@ module HeadMusic::Notation::ABC
     def setup_voices(tokens)
       @voices = VoiceRegistry.new(@building, header.key_signature, duration_resolver, @fermata_marks)
       @voices.declare(header.voice_ids, default: tokens.none? { |token| token.type == :voice_change })
+    end
+
+    # The V: lines route each token to its voice, and are spent doing so.
+    def voice_streams(tokens)
+      streams = Hash.new { |hash, state| hash[state] = [] }
+      tokens.each do |token|
+        if token.type == :voice_change
+          @voices.switch_to(token.voice_id)
+        elsif @voices.any? || !UNVOICED_TYPES.include?(token.type)
+          streams[current_state] << token
+        else
+          handle(token)
+        end
+      end
+      @voices.map { |state| VoiceTokens.new(state, streams[state]) }
+    end
+
+    # The voices advance together rather than one line after another, so a
+    # field one voice states is in force before another places the bar it
+    # governs, and a tie, slur, or tuplet carries across a V: line.
+    def replay(queues)
+      queues = queues.reject(&:done?)
+      until queues.empty?
+        queue = queues.min_by(&:sort_key)
+        @voices.enter(queue.state)
+        handle(queue.take)
+        queues = queues.reject(&:done?)
+      end
     end
 
     def current_state
@@ -154,16 +185,6 @@ module HeadMusic::Notation::ABC
 
     def handle_volta(token)
       bar_marks.volta(current_state, token)
-    end
-
-    # Guarded so a leading V: line doesn't force a default voice into existence.
-    def handle_voice_change(token)
-      if @voices.any?
-        state = current_state
-        bar_marks.leave(state)
-        state.end_voice(token.line)
-      end
-      @voices.switch_to(token.voice_id)
     end
 
     def handle_tempo(token)
