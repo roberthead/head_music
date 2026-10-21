@@ -8,15 +8,17 @@ module HeadMusic::Notation
   # in force. A ramp word starts a ramp that ends at the next tempo mark,
   # "a tempo", fermata, or ramp word, or else at the end of the music; a
   # tempo mark ending it is its target. An "a tempo" word restores the tempo
-  # before the latest ramp. Anything else in the middle of a bar is dropped.
+  # before the latest ramp. A format that writes where a ramp ends, as
+  # MusicXML's <dashes> do, ends it there. Anything else in the middle of a
+  # bar is dropped.
   class TempoMarkReading
     MODIFIER = /(?:(?:poco a poco|un poco|poco|molto)\s+)?/i
     RAMP_WORD = /\A#{MODIFIER}(?:ritardando|ritard|rit|rallentando|rall|accelerando|accel|stringendo)(?![[:alnum:]])/i
     A_TEMPO_WORD = /\A(?:a tempo|tempo primo|tempo i)(?![[:alnum:]])/i
 
-    # At one position, a tempo ends a ramp before an "a tempo" or a fermata
-    # does, and a ramp starts last.
-    RANKS = {tempo: 0, a_tempo: 1, fermata: 1, ramp: 2}.freeze
+    # At one position, a tempo ends a ramp before an "a tempo", a fermata, or
+    # a written end does, and a ramp starts last.
+    RANKS = {tempo: 0, a_tempo: 1, fermata: 1, ramp_end: 1, ramp: 2}.freeze
 
     Step = Data.define(:position, :kind, :value)
 
@@ -43,6 +45,10 @@ module HeadMusic::Notation
       words = text || (tempo.text if tempo_word)
       kind = self.class.word(words)
       @steps << Step.new(position, kind, words.strip) if kind
+    end
+
+    def add_ramp_end(position)
+      @steps << Step.new(position, :ramp_end, nil)
     end
 
     def apply(flow)
@@ -76,6 +82,10 @@ module HeadMusic::Notation
     end
 
     def read_fermata(position, _value)
+      close_ramp(position)
+    end
+
+    def read_ramp_end(position, _value)
       close_ramp(position)
     end
 

@@ -112,6 +112,21 @@ describe HeadMusic::Notation::TempoMarkReading do
       expect([ramps, flow.tempo_changes]).to eq [[["4:1:000", "5:1:000", nil, "rit."]], {}]
     end
 
+    it "ends at a written end" do
+      reading.add(flow.position("2:1"), nil, "rit.")
+      reading.add_ramp_end(flow.position("3:2"))
+      reading.apply(flow)
+      expect(ramps).to eq [["2:1:000", "3:2:000", nil, "rit."]]
+    end
+
+    it "takes its target from a tempo mark at its written end" do
+      reading.add(flow.position("2:1"), nil, "rit.")
+      reading.add_ramp_end(flow.position("3:1"))
+      reading.add(flow.position("3:1"), slower)
+      reading.apply(flow)
+      expect([ramps, flow.tempo_changes]).to eq [[["2:1:000", "3:1:000", 80.0, "rit."]], {}]
+    end
+
     it "is dropped at the end of the music, where no ramp can run" do
       reading.add(flow.final_barline_position, nil, "rit.")
       reading.apply(flow)
