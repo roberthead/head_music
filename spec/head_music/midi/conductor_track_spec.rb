@@ -210,4 +210,54 @@ describe HeadMusic::MIDI::ConductorTrack do
       expect(signatures).to eq [[0, "6/8"], [Rational(2, 3), "6/8"]]
     end
   end
+
+  describe "tempo steps" do
+    let(:flow) do
+      HeadMusic::Content::Flow.new(name: "Steps", meter: "4/4", tempo: "quarter = 120").tap do |stepped|
+        voice = stepped.add_voice
+        (1..3).each { |bar| voice.place("#{bar}:1", :whole, "C4") }
+      end
+    end
+
+    def tempos
+      of(HeadMusic::MIDI::Tempo).map { |event| [event.tick, event.microseconds_per_quarter] }
+    end
+
+    context "with a ramp the music repeats back into" do
+      before do
+        flow.bar(2).starts_repeat = true
+        flow.bar(2).ends_repeat_after_num_plays = 2
+        flow.add_tempo_ramp(from: "1:3", to: "3:1", to_tempo: HeadMusic::Rudiment::Tempo.new("quarter", 80))
+      end
+
+      it "steps through the ramp at each count of each pass" do
+        expect(tempos.map(&:first)).to eq [0, Rational(1, 2), Rational(3, 4), *(4..11).map { |count| Rational(count, 4) }, 3]
+      end
+
+      it "resumes at the tempo sounding where the repeat lands" do
+        first_pass, second_pass = tempos.select { |tick, _| tick >= 1 && tick < 3 }.map(&:last).each_slice(4).to_a
+        expect(second_pass).to eq first_pass
+      end
+
+      it "reaches the target after the last pass" do
+        expect(tempos.last).to eq [3, 750_000]
+      end
+    end
+
+    context "with a fermata on the final bar" do
+      before { flow.add_fermata("3:1", :whole) }
+
+      it "holds the final bar and restores the tempo at the end" do
+        expect(tempos).to eq [[0, 500_000], [2, 1_000_000], [3, 500_000]]
+      end
+    end
+
+    context "with a fermata ending on a barline before the end" do
+      before { flow.add_fermata("1:4", :quarter) }
+
+      it "restores the tempo at the next downbeat, once" do
+        expect(tempos).to eq [[0, 500_000], [Rational(3, 4), 1_000_000], [1, 500_000]]
+      end
+    end
+  end
 end

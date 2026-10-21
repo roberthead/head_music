@@ -84,6 +84,75 @@ describe HeadMusic::MIDI::Parser do
       end
     end
 
+    describe "ramps, fermatas, and a tempo read from tempo changes" do
+      let(:quarters) { midi_line([60] * 16, 96) }
+
+      def ramps(flow)
+        flow.tempo_ramps.map { |ramp| [ramp.from.to_s, ramp.to.to_s, ramp.to_tempo.beats_per_minute, ramp.text] }
+      end
+
+      def fermatas(flow)
+        flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s, fermata.stretch] }
+      end
+
+      it "reads a slower tempo restored to the one before within a bar as a fermata" do
+        flow = parse([tempo(0, 500_000), tempo(96, 1_000_000), tempo(192, 500_000), *quarters])
+        expect([fermatas(flow), tempos(flow)]).to eq [[["1:2:000", "1:3:000", 2]], [[1, "quarter", 120.0]]]
+      end
+
+      it "reads a fermata held across a barline" do
+        flow = parse([tempo(0, 500_000), tempo(288, 750_000), tempo(bar + 96, 500_000), *quarters])
+        expect(fermatas(flow)).to eq [["1:4:000", "2:2:000", 1.5]]
+      end
+
+      it "reads a stretch to three decimals" do
+        flow = parse([time_signature(0, 6, 8), tempo(0, 666_667), tempo(144, 1_333_333), tempo(288, 666_667), *midi_line([60] * 4, 144)])
+        expect(fermatas(flow)).to eq [["1:4:000", "2:1:000", 2]]
+      end
+
+      it "reads a slower tempo from a downbeat, then a faster one held past the next, as a fermata on a tempo change" do
+        flow = parse([tempo(0, 500_000), tempo(bar, 1_200_000), tempo(bar + 96, 600_000), *quarters])
+        expect([fermatas(flow), tempos(flow)]).to eq [[["2:1:000", "2:2:000", 2]], [[1, "quarter", 120.0], [2, "quarter", 100.0]]]
+      end
+
+      it "reads a slower tempo for a whole bar between downbeats as tempo changes" do
+        flow = parse([tempo(0, 500_000), tempo(bar, 1_000_000), tempo(bar * 2, 500_000), *quarters])
+        expect([fermatas(flow), tempos(flow)]).to eq [[], [[1, "quarter", 120.0], [2, "quarter", 60.0], [3, "quarter", 120.0]]]
+      end
+
+      it "skips a slower tempo within a bar restored to another" do
+        flow = parse([tempo(0, 500_000), tempo(96, 1_000_000), tempo(192, 400_000), *quarters])
+        expect([fermatas(flow), tempos(flow)]).to eq [[], [[1, "quarter", 120.0], [2, "quarter", 150.0]]]
+      end
+
+      it "skips a slower tempo restored more than a bar later" do
+        flow = parse([tempo(0, 500_000), tempo(96, 1_000_000), tempo(bar + 192, 500_000), *quarters])
+        expect([fermatas(flow), tempos(flow)]).to eq [[], [[1, "quarter", 120.0], [2, "quarter", 60.0], [3, "quarter", 120.0]]]
+      end
+
+      it "reads a run of slower tempos within bars, settling into one held through the next downbeat, as a ramp" do
+        flow = parse([tempo(0, 500_000), tempo(192, 550_000), tempo(288, 600_000), tempo(bar, 650_000), tempo(bar + 96, 700_000), tempo(bar + 192, 750_000), *quarters])
+        expect([ramps(flow), tempos(flow), flow.tempo_at(3).beats_per_minute]).to eq [[["1:3:000", "2:3:000", 80.0, "rit."]], [[1, "quarter", 120.0]], 80.0]
+      end
+
+      it "reads a faster run as an accel., and the tempo it began from within a bar as a tempo" do
+        flow = parse([tempo(0, 600_000), tempo(96, 550_000), tempo(192, 500_000), tempo(bar + 96, 600_000), *quarters])
+        expect([ramps(flow), flow.a_tempos.map { |a_tempo| a_tempo.position.to_s }, tempos(flow)]).to eq [
+          [["1:2:000", "1:3:000", 120.0, "accel."]], ["2:2:000"], [[1, "quarter", 100.0], [3, "quarter", 100.0]]
+        ]
+      end
+
+      it "skips a run with only one change within a bar" do
+        flow = parse([tempo(0, 500_000), tempo(288, 600_000), tempo(bar, 700_000), *quarters])
+        expect([ramps(flow), tempos(flow)]).to eq [[], [[1, "quarter", 120.0], [2, "quarter", 85.714]]]
+      end
+
+      it "skips a run whose last tempo changes again before the next downbeat" do
+        flow = parse([tempo(0, 500_000), tempo(96, 550_000), tempo(192, 600_000), tempo(288, 500_000), *quarters])
+        expect([ramps(flow), tempos(flow)]).to eq [[], [[1, "quarter", 120.0]]]
+      end
+    end
+
     context "with a tempo no whole number of beats a minute writes back" do
       subject(:flow) { parse([tempo(0, 827_586), *midi_line([60], bar)]) }
 

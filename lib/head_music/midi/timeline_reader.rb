@@ -5,7 +5,8 @@ module HeadMusic::MIDI
   # only where one differs from the bar before.
   #
   # A tempo applies from the first downbeat at or after it, so a change
-  # within a bar is skipped. A key signature within a bar applies at its
+  # within a bar is skipped, unless it belongs to a ramp, fermata, or "a
+  # tempo" (see TempoInference). A key signature within a bar applies at its
   # downbeat when no note starts before it there, and otherwise at the next.
   class TimelineReader
     DEFAULT_MICROSECONDS = 500_000
@@ -51,11 +52,18 @@ module HeadMusic::MIDI
       {meter: first.meter, tempo: tempo_at(first), key_signature: keys.first&.key&.name}
     end
 
+    # Meters come first, so the positions of ramps and fermatas fall in the
+    # bars they will have, and ramps before tempo changes, so a tempo changes
+    # only where the flow does not already answer it.
     def apply(flow, keys)
-      layout.bars.each_cons(2) do |before, bar|
-        flow.change_meter(bar.number, bar.meter) unless bar.meter == before.meter
-        flow.change_tempo(bar.number, tempo_at(bar)) if tempos.key?(bar.number)
+      layout.bars.each_cons(2) { |before, bar| flow.change_meter(bar.number, bar.meter) unless bar.meter == before.meter }
+      add_ramps(flow)
+      layout.bars.drop(1).each do |bar|
+        tempo = tempo_at(bar)
+        flow.change_tempo(bar.number, tempo) unless Tempo.microseconds_per_quarter(flow.tempo_at(bar.number)) == Tempo.microseconds_per_quarter(tempo)
       end
+      inference.a_tempos.each { |time| flow.add_a_tempo(position(flow, time)) }
+      inference.fermatas.each { |fermata| flow.add_fermata(position(flow, fermata.from), to: position(flow, fermata.to), stretch: fermata.stretch) }
       keys.drop(1).each { |region| flow.change_key_signature(region.bar_number, region.key.name) }
     end
 
@@ -65,18 +73,40 @@ module HeadMusic::MIDI
       self.class.tempo(tempos.fetch(bar.number), bar.meter)
     end
 
+    def add_ramps(flow)
+      inference.ramps.each do |ramp|
+        to_tempo = self.class.tempo(ramp.microseconds, layout.bar_at(ramp.to).meter)
+        flow.add_tempo_ramp(from: position(flow, ramp.from), to: position(flow, ramp.to), to_tempo: to_tempo, text: ramp.slowing? ? "rit." : "accel.")
+      end
+    end
+
+    def position(flow, time)
+      bar = layout.bar_at(time)
+      HeadMusic::Notation::BarSplitter.position_at(flow, bar.number, bar.offset(time))
+    end
+
     def region(bar, fifths, minor)
       key = HeadMusic::Notation::MusicXML::KeyMapper.tonal_context(fifths, minor ? "minor" : "major")
       HeadMusic::Analysis::KeyRegion.new(bar_number: bar.number, onset: bar.start, key: key)
     end
 
-    # {bar number => microseconds} at the first bar and wherever it changes.
+    # {bar number => microseconds} at every bar's downbeat.
     def tempos
       @tempos ||= begin
-        changes = ChangeCursor.new(timed(Tempo), &:first)
-        microseconds = layout.bars.map { |bar| [bar.number, changes.at(bar.start)&.last&.microseconds_per_quarter || DEFAULT_MICROSECONDS] }
-        ChangeCursor.changes(microseconds).to_h
+        changes = ChangeCursor.new(inference.changes, &:first)
+        layout.bars.to_h { |bar| [bar.number, changes.at(bar.start)&.last || DEFAULT_MICROSECONDS] }
       end
+    end
+
+    def inference
+      @inference ||= TempoInference.new(tempo_changes, layout, DEFAULT_MICROSECONDS)
+    end
+
+    # [time, microseconds] wherever the tempo changes, the last at a time
+    # winning.
+    def tempo_changes
+      latest = timed(Tempo).to_h { |time, event| [time, event.microseconds_per_quarter] }
+      ChangeCursor.changes([[nil, DEFAULT_MICROSECONDS], *latest]).drop(1)
     end
 
     # {Bar => [fifths, minor]} in bar order, the last at a bar winning.

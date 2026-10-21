@@ -16,7 +16,12 @@ module HeadMusic::MIDI
       # The beats from the downbeat the bar counts from to a time. A short
       # bar is the end of a full one, so its downbeat lies before its start.
       def beat_count(time)
-        (time - downbeat) / beat
+        offset(time) / beat
+      end
+
+      # The whole notes from the downbeat the bar counts from to a time.
+      def offset(time)
+        time - downbeat
       end
 
       def beat_time(count)

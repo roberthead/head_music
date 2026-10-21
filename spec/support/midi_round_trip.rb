@@ -1,7 +1,9 @@
 # Compares a flow with what MIDI import reads from its export, as the import
 # story judges a round trip: per part, the multiset of each note's onset in
 # the file's time, its whole tied length, and its sorted keys; the meter,
-# key, tempo, and programs at every bar; and the lyrics. Voices are not
+# key, tempo, and programs at every bar; the tempo ramps and fermatas; and
+# the lyrics. Tempo text and meter symbols are not compared, since MIDI
+# cannot hold them. Voices are not
 # compared, since export writes a part's voices to one channel, so notes of
 # a part that start and end together count as one chord, and a key struck
 # twice at once as one. Spelling is compared apart, as the notes spelled
@@ -10,7 +12,17 @@ module MIDIRoundTrip
   module_function
 
   def music(flow)
-    {notes: notes(flow), bars: bars(flow), lyrics: lyrics(flow)}
+    {notes: notes(flow), bars: bars(flow), timeline: timeline(flow), lyrics: lyrics(flow)}
+  end
+
+  # Each ramp's ends and the microseconds a quarter of its target, resolved
+  # where none is written, and each fermata's ends and stretch.
+  def timeline(flow)
+    ramps = flow.tempo_ramps.empty? ? [] : flow.conductor.tempo_ramps
+    {
+      ramps: ramps.map { |ramp| [ramp.from.to_a, ramp.to.to_a, HeadMusic::MIDI::Tempo.microseconds_per_quarter(ramp.to_tempo)] },
+      fermatas: flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s, fermata.stretch] }
+    }
   end
 
   def notes(flow)

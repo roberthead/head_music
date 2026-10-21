@@ -1,23 +1,26 @@
 module HeadMusic::MIDI
-  # Track 0: the sequence name, and the meter, tempo, and key in force at each
+  # Track 0: the sequence name, and the meter, tempos, and key in force at each
   # played bar wherever they differ from the last written, so a jump back over
-  # a change restores what was in force there. Times are exact whole notes.
+  # a change restores what was in force there. Each pass through a bar writes
+  # its tempo steps, so a jump into a ramp resumes at the tempo sounding there.
+  # Times are exact whole notes.
   class ConductorTrack
     MINOR_QUALIFIERS = %i[minor aeolian].freeze
     MAX_PICKUP_DENOMINATOR = 64
 
-    attr_reader :flow, :timeline
+    attr_reader :flow, :timeline, :tempo_steps
 
-    def initialize(flow, timeline)
+    def initialize(flow, timeline, tempo_steps = TempoSteps.new(flow))
       @flow = flow
       @timeline = timeline
+      @tempo_steps = tempo_steps
     end
 
     def events
       written = {}
       events = flow.name.to_s.empty? ? [] : [Text.new(0, :sequence_name, flow.name)]
       timeline.spans.each do |span|
-        [time_signature(span), tempo(span), key_signature(span)].each do |event|
+        [time_signature(span), *tempos(span), key_signature(span)].each do |event|
           kind = event.class
           next if written[kind] == event.with(tick: 0)
 
@@ -46,8 +49,12 @@ module HeadMusic::MIDI
       HeadMusic::Rudiment::Meter.get("#{(span.length * denominator).to_i}/#{denominator}")
     end
 
-    def tempo(span)
-      Tempo.new(span.start, Tempo.microseconds_per_quarter(flow.tempo_at(span.bar_number)))
+    # A step on the closing barline is the next span's to write, except
+    # after the last, where it restores the tempo a fermata held.
+    def tempos(span)
+      steps = tempo_steps.in_bar(span.bar_number, from: span.window_from)
+      steps = steps.reject { |offset, _| offset >= span.window_from + span.length } unless span.equal?(timeline.spans.last)
+      steps.map { |offset, microseconds| Tempo.new(span.time_at(offset), microseconds) }
     end
 
     # A MIDI key signature holds -7..7 fifths, major or minor, so a key beyond

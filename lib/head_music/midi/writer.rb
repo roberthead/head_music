@@ -30,7 +30,7 @@ module HeadMusic::MIDI
     end
 
     def conductor_events
-      @conductor_events ||= ConductorTrack.new(flow, @timeline).events
+      @conductor_events ||= ConductorTrack.new(flow, @timeline, @preflight.tempo_steps).events
     end
 
     def meta_events

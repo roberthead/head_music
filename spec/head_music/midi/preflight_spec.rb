@@ -106,6 +106,26 @@ describe HeadMusic::MIDI::Preflight do
     expect(failure).to include("cannot hold quarter")
   end
 
+  it "refuses a fermata that slows a tempo past what MIDI can hold, naming where" do
+    voice.place("1:1", :whole, "C4")
+    flow.change_tempo(1, HeadMusic::Rudiment::Tempo.new("quarter", 4))
+    flow.add_fermata("1:3", :half)
+    expect(failure).to eq "a MIDI tempo cannot hold 30000000 microseconds a quarter at 1:3:000"
+  end
+
+  it "refuses a ramp to a tempo MIDI cannot hold" do
+    voice.place("1:1", :whole, "C4")
+    flow.add_tempo_ramp(from: "1:1", to: "2:1", to_tempo: HeadMusic::Rudiment::Tempo.new("quarter", 3))
+    expect(failure).to eq "a MIDI tempo cannot hold 20000000 microseconds a quarter at 2:1:000"
+  end
+
+  it "accepts a ramp and a fermata within what MIDI can hold" do
+    voice.place("1:1", :whole, "C4")
+    flow.add_tempo_ramp(from: "1:1", to: "1:3", to_tempo: HeadMusic::Rudiment::Tempo.new("quarter", 60))
+    flow.add_fermata("1:3", :half, stretch: 4)
+    expect(failure).to be_nil
+  end
+
   describe "text that cannot be written as UTF-8" do
     let(:binary) { "caf\xE9".b }
 

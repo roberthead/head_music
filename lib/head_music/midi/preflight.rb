@@ -33,6 +33,10 @@ module HeadMusic::MIDI
       end
     end
 
+    def tempo_steps
+      @tempo_steps ||= TempoSteps.new(flow)
+    end
+
     # Raises when the flow needs more pitched channels than MIDI has.
     def channels
       @channels ||= ChannelAllocator.new(flow)
@@ -76,6 +80,19 @@ module HeadMusic::MIDI
         next if microseconds.between?(1, MAX_MICROSECONDS_PER_QUARTER)
 
         raise RenderError, "a MIDI tempo cannot hold #{tempo.beat_value} = #{tempo.beats_per_minute} in bar #{number}"
+      end
+      check_tempo_steps
+    end
+
+    # Ramps and fermatas step the tempo within the bars they touch.
+    def check_tempo_steps
+      tempo_steps.touched_bar_numbers.each do |number|
+        tempo_steps.in_bar(number).each do |offset, microseconds|
+          next if microseconds.between?(1, MAX_MICROSECONDS_PER_QUARTER)
+
+          position = HeadMusic::Notation::BarSplitter.position_at(flow, number, offset)
+          raise RenderError, "a MIDI tempo cannot hold #{microseconds} microseconds a quarter at #{position}"
+        end
       end
     end
 

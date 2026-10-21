@@ -41,6 +41,46 @@ describe "HeadMusic::MIDI" do
     flow
   end
 
+  tune = ->(meter, music) { HeadMusic::Notation::ABC.parse("X:1\nT:Timeline\nM:#{meter}\nL:1/4\nK:G\n#{music}|]\n") }
+  tempo = ->(bpm, beat = "quarter") { HeadMusic::Rudiment::Tempo.new(beat, bpm) }
+
+  rit_then_a_tempo = lambda do
+    tune.call("4/4", "GABc|dcBA|GABc|d4").tap do |flow|
+      flow.change_tempo(1, tempo.call(120))
+      flow.add_tempo_ramp(from: "2:1", to: "3:1", to_tempo: tempo.call(80), text: "rit.")
+      flow.add_a_tempo("3:3")
+    end
+  end
+
+  accel_within_bars = lambda do
+    tune.call("3/4", "GAB|cde|dcB|G3").tap do |flow|
+      flow.change_tempo(1, tempo.call(72))
+      flow.add_tempo_ramp(from: "1:3", to: "3:2", to_tempo: tempo.call(96), text: "accel.")
+    end
+  end
+
+  mid_bar_fermata = lambda do
+    tune.call("3/4", "GAB|cBA|G3").tap do |flow|
+      flow.change_tempo(1, tempo.call(100))
+      flow.add_fermata("2:2", :quarter)
+    end
+  end
+
+  final_fermata = lambda do
+    tune.call("6/8", "G3|A3").tap do |flow|
+      flow.change_tempo(1, tempo.call(60, "dotted quarter"))
+      flow.add_fermata("2:1", to: "3:1", stretch: 1.5)
+    end
+  end
+
+  rit_into_final_fermata = lambda do
+    tune.call("4/4", "GABc|dcBA|G4").tap do |flow|
+      flow.change_tempo(1, tempo.call(108))
+      flow.add_tempo_ramp(from: "2:1", to: "3:1", to_tempo: tempo.call(72), text: "rit.")
+      flow.add_fermata("3:1", :whole)
+    end
+  end
+
   fixtures = {
     "ABC SPEED_THE_PLOUGH, its repeat taken out" => -> { MIDIRoundTrip.without_navigation(HeadMusic::Notation::ABC.parse(ABCFixtures::SPEED_THE_PLOUGH)) },
     "ABC CHROMATIC_AIR" => -> { HeadMusic::Notation::ABC.parse(ABCFixtures::CHROMATIC_AIR) },
@@ -50,7 +90,12 @@ describe "HeadMusic::MIDI" do
     "MuseScoreFixtures.two_verses, sung once" => -> { first_verse.call(MuseScoreFixtures.two_verses) },
     "MuseScoreFixtures.clarinet_changes" => -> { MuseScoreFixtures.clarinet_changes.flows.first },
     "a drum kit" => drum_kit,
-    "an eighth pickup in 3/4" => eighth_pickup
+    "an eighth pickup in 3/4" => eighth_pickup,
+    "a rit. ramp, then a tempo in the middle of a bar" => rit_then_a_tempo,
+    "an accel. ramp from the middle of a bar to the middle of a later one" => accel_within_bars,
+    "a fermata in the middle of a bar" => mid_bar_fermata,
+    "a fermata on the final event, at a dotted quarter of 60, stretched 1.5" => final_fermata,
+    "a rit. into a fermata on the final event" => rit_into_final_fermata
   }
 
   excluded = {
@@ -80,6 +125,32 @@ describe "HeadMusic::MIDI" do
       it "spells every note as written" do
         expect(MIDIRoundTrip.spelling_differences(written, flow)).to eq []
       end
+    end
+  end
+
+  describe "a ramp inside a repeat" do
+    let(:written) do
+      tune.call("4/4", "|:GABc|dcBA:|G4").tap do |flow|
+        flow.change_tempo(1, tempo.call(120))
+        flow.add_tempo_ramp(from: "1:3", to: "2:3", to_tempo: tempo.call(80), text: "rit.")
+      end
+    end
+    let(:played_out) do
+      tune.call("4/4", "GABc|dcBA|GABc|dcBA|G4").tap do |flow|
+        flow.change_tempo(1, tempo.call(120))
+        flow.add_tempo_ramp(from: "1:3", to: "2:3", to_tempo: tempo.call(80), text: "rit.")
+        flow.change_tempo(3, tempo.call(120))
+        flow.add_tempo_ramp(from: "3:3", to: "4:3", to_tempo: tempo.call(80), text: "rit.")
+      end
+    end
+    let(:bytes) { HeadMusic::MIDI.render(written) }
+
+    it "reads back a ramp on each pass" do
+      expect(MIDIRoundTrip.music(HeadMusic::MIDI.parse(bytes))).to eq MIDIRoundTrip.music(played_out)
+    end
+
+    it "writes the same tempos as the repeat played out" do
+      expect(MIDIRoundTrip.events(bytes).first).to eq MIDIRoundTrip.events(HeadMusic::MIDI.render(played_out)).first
     end
   end
 
