@@ -55,4 +55,22 @@ describe HeadMusic::MIDI::TempoChanges do
       expect([tempos.ramp?(0..1), tempos.ramp?(1..2)]).to eq [true, false]
     end
   end
+
+  describe "#next_step" do
+    it "carries a run of two or more on in a straight line in quarters a minute" do
+      expect(changes([1/4r, 600_000], [1/2r, 750_000]).next_step(3/4r)).to eq 1_000_000
+    end
+
+    it "is nil after a single change" do
+      expect(changes([1/4r, 600_000]).next_step(1/2r)).to be_nil
+    end
+
+    it "is nil more than a count after the run" do
+      expect(changes([1/4r, 600_000], [1/2r, 750_000]).next_step(1r)).to be_nil
+    end
+
+    it "is nil where the line falls to no tempo" do
+      expect(changes([1/4r, 600_000], [1/2r, 1_200_000]).next_step(3/4r)).to be_nil
+    end
+  end
 end

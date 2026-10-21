@@ -172,6 +172,28 @@ describe "HeadMusic::MIDI" do
     end
   end
 
+  {
+    "a rit. turning into an accel. with no step between them" => lambda do
+      tune.call("4/4", "GABc|dcBA|GABc|dcBA|G4").tap do |flow|
+        flow.change_tempo(1, tempo.call(100))
+        flow.add_tempo_ramp(from: "2:1", to: "3:1", to_tempo: tempo.call(70), text: "rit.")
+        flow.add_tempo_ramp(from: "3:1", to: "4:1", to_tempo: tempo.call(100), text: "accel.")
+      end
+    end,
+    "a fermata inside a ramp" => lambda do
+      tune.call("4/4", "GABc|dcBA|GABc|G4").tap do |flow|
+        flow.change_tempo(1, tempo.call(120))
+        flow.add_tempo_ramp(from: "2:1", to: "3:3", to_tempo: tempo.call(60), text: "rit.")
+        flow.add_fermata("2:3", :quarter)
+      end
+    end
+  }.each do |name, build|
+    it "reads back the timeline of #{name}" do
+      written = build.call
+      expect_same_timeline(written, HeadMusic::MIDI.parse(HeadMusic::MIDI.render(written)), except: %i[tempo_text meter_symbols])
+    end
+  end
+
   describe "a ramp inside a repeat" do
     let(:written) do
       tune.call("4/4", "|:GABc|dcBA:|G4").tap do |flow|

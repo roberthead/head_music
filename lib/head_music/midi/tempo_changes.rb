@@ -46,6 +46,23 @@ module HeadMusic::MIDI
       @changes[run].count { |time, _| !@layout.downbeat?(time) } >= 2
     end
 
+    # The step a run of at least two changes at the end would take at +time+,
+    # a count or less after its last, carried on in a straight line in beats
+    # a minute, as a ramp's steps run.
+    def next_step(time)
+      last = length - 1
+      return unless last >= 1 && run(last, -1).size >= 2 && in_step?(@changes[last], [time])
+
+      per_minute = 2 * per_minute(@changes[last].last) - per_minute(tempo_before(last))
+      per_minute(per_minute).round if per_minute.positive?
+    end
+
+    # Converts between microseconds a quarter and quarters a minute, either
+    # way.
+    def per_minute(value)
+      Rational(60_000_000, value)
+    end
+
     private
 
     # Whether +after+ is a count or less after +before+, as steps under a
