@@ -129,16 +129,16 @@ module HeadMusic::Notation::LilyPond
       marks.mark(voice_event) unless voice_event.rest?
       place_dynamics(voice_event.voice, voice_event.position, event)
       spans.apply(voice_event, marks.span_marks)
-      mark_fermata(voice_event, marks.fermata)
+      mark_fermatas(voice_event, marks.fermatas)
     end
 
     # A fermata on a later link of a tied note holds from where that link
     # starts.
-    def mark_fermata(voice_event, fermata)
-      return unless fermata
-
-      from = (fermata == true) ? voice_event.position : voice_event.position + fermata
-      @fermata_marks.add(voice_event, from: from)
+    def mark_fermatas(voice_event, fermatas)
+      fermatas.each do |fermata|
+        from = (fermata == true) ? voice_event.position : voice_event.position + fermata
+        @fermata_marks.add(voice_event, from: from)
+      end
     end
 
     # What was written between the halves of a tied note takes effect where it
@@ -150,7 +150,7 @@ module HeadMusic::Notation::LilyPond
 
       voice_event.note_dynamic ||= marks.note_dynamic unless voice_event.rest?
       spans.apply(voice_event, marks.span_marks)
-      mark_fermata(voice_event, marks.fermata)
+      mark_fermatas(voice_event, marks.fermatas)
     end
 
     def place_note(event, voice)

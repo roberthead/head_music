@@ -19,6 +19,11 @@ describe HeadMusic::Notation::ABC do
     end
   end
 
+  it "keeps both fermatas over a tied note held under them" do
+    original = TimelineExpressionFixtures.tied_under_two_fermatas(voices: 1)
+    expect_same_timeline(original, described_class.parse(described_class.render(original)))
+  end
+
   describe "a round trip of articulations, ornaments, and dynamics" do
     let(:original) { MarkingFixtures.marked_melody }
     let(:round_tripped) { described_class.parse(described_class.render(original)) }

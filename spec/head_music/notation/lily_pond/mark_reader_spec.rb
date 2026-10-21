@@ -10,7 +10,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   end
 
   def none
-    {articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [], fermata: nil, texts: []}
+    {articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [], fermatas: [], texts: []}
   end
 
   describe "slur and phrasing-slur marks" do
@@ -102,18 +102,19 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
     ].each do |command|
       it "reads \\#{command} as a fermata" do
         cursor = cursor_for("\\#{command} c'4")
-        expect(described_class.new(cursor).read.fermata).to be true
+        expect(described_class.new(cursor).read.fermatas).to eq [true]
         expect(cursor.peek.type).to eq :note
       end
     end
 
     it "reads a fermata after a direction sign" do
-      expect(marks("^\\fermata")[:fermata]).to be true
+      expect(marks("^\\fermata")[:fermatas]).to eq [true]
     end
 
-    it "keeps a tied note's first link's fermata" do
-      first = described_class::Marks.new(fermata: true)
-      expect(first.merge(described_class::Marks.new(fermata: HeadMusic::Rudiment::RhythmicValue.get(:half))).fermata).to be true
+    it "keeps the fermata of each link of a tied note" do
+      half = HeadMusic::Rudiment::RhythmicValue.get(:half)
+      first = described_class::Marks.new(fermatas: [true])
+      expect(first.merge(described_class::Marks.new(fermatas: [half])).fermatas).to eq [true, half]
     end
   end
 
@@ -211,7 +212,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
     end
 
     it "keeps only its level, hairpin marks, and texts as its dynamics" do
-      marks = described_class.new(articulations: ["staccato"], note_dynamic: "sfz", level: "p", hairpin_marks: [:crescendo], fermata: true, texts: ["rit."])
+      marks = described_class.new(articulations: ["staccato"], note_dynamic: "sfz", level: "p", hairpin_marks: [:crescendo], fermatas: [true], texts: ["rit."])
       expect(marks.dynamics).to eq described_class.new(level: "p", hairpin_marks: [:crescendo], texts: ["rit."])
     end
 

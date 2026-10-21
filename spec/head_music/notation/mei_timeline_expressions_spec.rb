@@ -47,4 +47,9 @@ describe HeadMusic::Notation::MEI do
     flow.change_meter(2, HeadMusic::Rudiment::Meter.cut_time)
     expect_same_timeline(flow, round_trip(flow))
   end
+
+  it "keeps both fermatas over a tied note held under them" do
+    flow = TimelineExpressionFixtures.tied_under_two_fermatas
+    expect_same_timeline(flow, round_trip(flow))
+  end
 end

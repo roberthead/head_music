@@ -12,7 +12,9 @@ module HeadMusic::Notation::MEI
     end
 
     def controls
-      HeadMusic::Notation::FermataMarks.carriers(plan.flow).map { |voice_event, fermata| control(voice_event, fermata.from) }
+      HeadMusic::Notation::FermataMarks.carriers(plan.flow).flat_map do |voice_event, fermatas|
+        fermatas.map { |fermata| control(voice_event, fermata.from) }
+      end
     end
 
     private

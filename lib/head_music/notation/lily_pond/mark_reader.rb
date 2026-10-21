@@ -29,11 +29,11 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    # A fermata is true where it marks the start of the event, and the
+    # Each fermata is true where it marks the start of the event, and the
     # rhythmic value before the tied link it marks otherwise.
-    Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks, :hairpin_marks, :fermata, :texts) do
+    Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks, :hairpin_marks, :fermatas, :texts) do
       def initialize(
-        articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [], fermata: nil, texts: []
+        articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [], fermatas: [], texts: []
       )
         super
       end
@@ -47,7 +47,7 @@ module HeadMusic::Notation::LilyPond
           level: level || other.level,
           span_marks: span_marks + other.span_marks,
           hairpin_marks: hairpin_marks + other.hairpin_marks,
-          fermata: fermata || other.fermata,
+          fermatas: fermatas + other.fermatas,
           texts: texts + other.texts
         )
       end
@@ -103,7 +103,7 @@ module HeadMusic::Notation::LilyPond
       **NOTE_DYNAMIC_COMMANDS.to_h { |key| [key, [:note_dynamic, key]] },
       **LEVEL_COMMANDS.to_h { |key| [key, [:level, key]] },
       **HAIRPINS_BY_COMMAND.transform_values { |mark| [:hairpin_marks, [mark]] },
-      **FERMATA_COMMANDS.to_h { |command| [command, [:fermata, true]] },
+      **FERMATA_COMMANDS.to_h { |command| [command, [:fermatas, [true]]] },
       **DROPPED_COMMANDS.to_h { |command| [command, nil] }
     }.freeze
 

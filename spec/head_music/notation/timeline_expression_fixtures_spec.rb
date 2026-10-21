@@ -88,4 +88,20 @@ describe TimelineExpressionFixtures do
       expect { described_class.timeline(original, except: [:stretches]) }.to raise_error(ArgumentError, /stretches/)
     end
   end
+
+  describe ".tied_under_two_fermatas" do
+    subject(:flow) { described_class.tied_under_two_fermatas }
+
+    it "holds the alto's tied note under both fermatas" do
+      alto = flow.voices.first.voice_events.map(&:to_s)
+      expect([alto, spans(flow.fermatas)]).to eq [
+        ["half C4 at 1:1:000", "half tied to half E4 at 1:3:000", "half F4 at 2:3:000"],
+        [["1:3:000", "2:1:000"], ["2:1:000", "2:3:000"]]
+      ]
+    end
+
+    it "writes the alto alone for one voice" do
+      expect(described_class.tied_under_two_fermatas(voices: 1).voices.length).to eq 1
+    end
+  end
 end

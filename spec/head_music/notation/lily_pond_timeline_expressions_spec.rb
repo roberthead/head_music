@@ -286,4 +286,20 @@ describe HeadMusic::Notation::LilyPond do
       end
     end
   end
+
+  context "with a tied note held under two fermatas" do
+    let(:original) { TimelineExpressionFixtures.tied_under_two_fermatas }
+    let(:rendered) { described_class.render(original) }
+
+    # LilyPond writes no fermata's stretch.
+    it "keeps both fermatas" do
+      expect_same_timeline(original, described_class.parse(rendered), except: %i[stretch])
+    end
+
+    it "compiles without warnings" do
+      skip "lilypond is not installed" unless installed_lilypond
+
+      expect(compile_warnings(rendered)).to be_empty
+    end
+  end
 end

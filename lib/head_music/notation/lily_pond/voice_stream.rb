@@ -31,7 +31,7 @@ module HeadMusic::Notation::LilyPond
 
       # A fermata on the link holds from where the link starts.
       def tied_to(link_value, link_marks)
-        link_marks = link_marks.with(fermata: rhythmic_value) if link_marks.fermata
+        link_marks = link_marks.with(fermatas: [rhythmic_value]) if link_marks.fermatas.any?
         with(rhythmic_value: rhythmic_value.append_tied(link_value), marks: marks.merge(link_marks))
       end
 

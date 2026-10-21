@@ -36,6 +36,12 @@ module TimelineExpressionFixtures
     D E F A,|B, G,/ HA,/ G,2|F, G, A, B,|G,2 HD,2|]
   ABC
 
+  # An alto half note tied over the bar line, held under two fermatas, as in
+  # chorale 202: one from its start, under the soprano's last note, and one
+  # from its later link, which only the alto sounds under. The alto comes
+  # first, so a format that writes one voice writes it.
+  TIED_UNDER_TWO_FERMATAS = {"A" => "C2 E2-|E2 F2|]", "S" => "c2 d2|]"}.freeze
+
   # What a format may leave out of the comparison:
   # - :stretch, a fermata's stretch, which only JSON and MIDI write;
   # - :ramps, the tempo ramps and "a tempo" points, leaving each bar's tempo;
@@ -53,6 +59,16 @@ module TimelineExpressionFixtures
 
   def chorale
     HeadMusic::Notation::ABC.parse(CHORALE)
+  end
+
+  def tied_under_two_fermatas(voices: 2)
+    bodies = TIED_UNDER_TWO_FERMATAS.first(voices)
+    declarations = bodies.map { |name, _| "V:#{name}\n" }.join
+    music = bodies.map { |name, body| "V:#{name}\n#{body}\n" }.join
+    HeadMusic::Notation::ABC.parse("X:1\nT:Tied Under Two Fermatas\nM:4/4\nL:1/4\n#{declarations}K:C\n#{music}").tap do |flow|
+      flow.add_fermata("1:3", :half)
+      flow.add_fermata("2:1", :half)
+    end
   end
 
   # By bar, the meter and the tempo as written; the ramps with their targets

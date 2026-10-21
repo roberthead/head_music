@@ -6,31 +6,33 @@ module HeadMusic::Notation
   # Marks whose sounding intervals overlap form one fermata, from the latest
   # of their starts to the earliest of their ends: the span in which every
   # marked event sounds together. A voice with no mark there is not consulted.
+  # A mark holds to the end of its event, or to the next mark on the event,
+  # so a tied note can carry one fermata per link.
   class FermataMarks
     Mark = Data.define(:from, :to)
 
     # The voice events sounding where each fermata begins, in every voice,
-    # rests included, each with the fermata it carries. An event sounding
-    # where two fermatas begin carries the first.
+    # rests included, each with the fermatas it carries in order. A long
+    # note can carry more than one, each beginning on a later link.
     def self.carriers(flow)
       flow.fermatas.each_with_object({}.compare_by_identity) do |fermata, carriers|
         flow.voices.each do |voice|
           voice_event = voice.voice_event_sounding_at(fermata.from)
           next unless voice_event && voice_event.position <= fermata.from
 
-          carriers[voice_event] ||= fermata
+          (carriers[voice_event] ||= []) << fermata
         end
       end
     end
 
     def initialize
-      @marks = []
+      @starts = {}.compare_by_identity
     end
 
     # A mark on a voice event, held from the start of the tied link it is
-    # written on to the end of the event.
+    # written on.
     def add(voice_event, from: voice_event.position)
-      @marks << Mark.new(from, voice_event.next_position)
+      (@starts[voice_event] ||= []) << from
     end
 
     # A mark anchored to a moment rather than an event: one on each event of
@@ -38,7 +40,7 @@ module HeadMusic::Notation
     def add_moment(position, voices)
       voices.each do |voice|
         voice_event = voice.voice_event_sounding_at(position)
-        @marks << Mark.new(position, voice_event.next_position) if voice_event && voice_event.position <= position
+        add(voice_event, from: position) if voice_event && voice_event.position <= position
       end
     end
 
@@ -54,9 +56,16 @@ module HeadMusic::Notation
 
     private
 
+    def marks
+      @starts.flat_map do |voice_event, starts|
+        starts = starts.uniq(&:to_a).sort_by(&:to_a)
+        starts.zip(starts.drop(1)).map { |from, following| Mark.new(from, following || voice_event.next_position) }
+      end
+    end
+
     def fermatas
-      marks = @marks.uniq { |mark| [mark.from.to_a, mark.to.to_a] }.sort_by { |mark| [mark.from.to_a, mark.to.to_a] }
-      marks.each_with_object([]) do |mark, spans|
+      sorted = marks.uniq { |mark| [mark.from.to_a, mark.to.to_a] }.sort_by { |mark| [mark.from.to_a, mark.to.to_a] }
+      sorted.each_with_object([]) do |mark, spans|
         latest = spans.last
         if latest && mark.from < latest[1]
           spans[-1] = [mark.from, [latest[1], mark.to].min]

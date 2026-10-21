@@ -52,11 +52,9 @@ module HeadMusic::Notation::ABC
     end
 
     def fermata(segment, start)
-      fermata = @fermatas[segment.voice_event]
-      return "" unless fermata && start <= fermata.from
-
       finish = segment.continues ? start.start_of_next_bar : segment.voice_event.next_position
-      (fermata.from < finish) ? "!fermata!" : ""
+      begins = @fermatas.fetch(segment.voice_event, []).any? { |fermata| start <= fermata.from && fermata.from < finish }
+      begins ? "!fermata!" : ""
     end
 
     def lead_in(voice_event)

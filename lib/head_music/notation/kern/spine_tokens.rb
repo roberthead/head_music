@@ -131,20 +131,16 @@ module HeadMusic::Notation::Kern
       end
     end
 
-    # The links sounding where each fermata begins. A tied voice event can
-    # carry more than one, one on each link, which
-    # HeadMusic::Notation::FermataMarks.carriers does not answer.
+    # The links sounding where each of the voice event's fermatas begins.
     def fermata_links(voice_event, links)
-      from = voice_event.position
-      to = voice_event.next_position
-      fermatas.select { |fermata| from <= fermata.from && fermata.from < to }.map do |fermata|
+      fermata_carriers.fetch(voice_event, []).map do |fermata|
         start = [fermata.from.bar_number, HeadMusic::Notation::BarSplitter.offset_in_bar(fermata.from)]
         links.rindex { |bar_number, _link, offset| ([bar_number, offset] <=> start) <= 0 }
       end
     end
 
-    def fermatas
-      @fermatas ||= voice.flow.fermatas
+    def fermata_carriers
+      @fermata_carriers ||= HeadMusic::Notation::FermataMarks.carriers(voice.flow)
     end
 
     def first_link(event, voice_event)

@@ -42,4 +42,9 @@ describe HeadMusic::Notation::MusicXML do
     flow.add_fermata("2:1", :half)
     expect_same_timeline(flow, round_trip(flow))
   end
+
+  it "round-trips a tied note held under two fermatas" do
+    flow = TimelineExpressionFixtures.tied_under_two_fermatas
+    expect_same_timeline(flow, round_trip(flow))
+  end
 end

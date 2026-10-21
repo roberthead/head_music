@@ -55,7 +55,7 @@ module HeadMusic::Notation::MusicXML
       @tuplet_marks ||= TupletMarks.new(self)
     end
 
-    # The voice events that carry a fermata mark, each with its fermata.
+    # The voice events that carry a fermata mark, each with its fermatas.
     def fermata_carriers
       @fermata_carriers ||= HeadMusic::Notation::FermataMarks.carriers(flow)
     end

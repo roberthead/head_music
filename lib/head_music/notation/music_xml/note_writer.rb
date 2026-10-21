@@ -29,10 +29,10 @@ module HeadMusic::Notation::MusicXML
 
       numbers = {voice_number: voice_number, staff_number: staff_number}
       graces = segment.elapsed.zero? ? grace_writer.lines(voice_event, **numbers) : []
-      fermata_index = fermata_component_index(segment)
+      fermata_indexes = fermata_component_indexes(segment)
       graces + components_by_segment[segment].each_with_index.flat_map do |component, component_index|
         beams = beam_annotations[[segment, component_index]] || []
-        marks = {tuplet_mark: tuplet_marks.at(segment, component_index), fermata: component_index == fermata_index}
+        marks = {tuplet_mark: tuplet_marks.at(segment, component_index), fermata: fermata_indexes.include?(component_index)}
         component_lines(voice_event, component, beams, marks, numbers)
       end
     end
@@ -58,11 +58,14 @@ module HeadMusic::Notation::MusicXML
 
     delegate :components_by_segment, :beam_annotations, :tuplet_marks, :fermata_carriers, to: :plan
 
-    # The written piece of a fermata's carrier that sounds where it begins.
-    def fermata_component_index(segment)
-      fermata = fermata_carriers[segment.voice_event]
-      return unless fermata && fermata.from.bar_number == segment.bar_number
+    # The written pieces of a fermata carrier that sound where its fermatas
+    # begin.
+    def fermata_component_indexes(segment)
+      fermatas = fermata_carriers.fetch(segment.voice_event, []).select { |fermata| fermata.from.bar_number == segment.bar_number }
+      fermatas.map { |fermata| fermata_component_index(segment, fermata) }
+    end
 
+    def fermata_component_index(segment, fermata)
       mark = HeadMusic::Notation::BarSplitter.mark_offset(plan.flow, fermata.from, [segment.voice_event.voice])
       start = segment.offset
       components_by_segment[segment].index do |component|

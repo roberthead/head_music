@@ -93,12 +93,12 @@ module HeadMusic::Notation::LilyPond
     # A fermata where the event starts goes on its first link, and one
     # beginning later on the link sounding there.
     def fermata_in?(voice_event, bar_number, from, to, first)
-      fermata = fermatas[voice_event]
-      return false unless fermata
-      return first if fermata.from == voice_event.position
+      fermatas.fetch(voice_event, []).any? do |fermata|
+        next first if fermata.from == voice_event.position
 
-      offset = HeadMusic::Notation::BarSplitter.offset_in_bar(fermata.from)
-      fermata.from.bar_number == bar_number && offset >= from && offset < to
+        offset = HeadMusic::Notation::BarSplitter.offset_in_bar(fermata.from)
+        fermata.from.bar_number == bar_number && offset >= from && offset < to
+      end
     end
 
     def grace_token(voice_event)

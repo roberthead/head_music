@@ -410,7 +410,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
 
     it "carries a note's marks on its stream event" do
       expect(first_marks("{ c'4-.\\trill\\sfz\\p }"))
-        .to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [], hairpin_marks: [], fermata: nil, texts: [])
+        .to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [], hairpin_marks: [], fermatas: [], texts: [])
     end
 
     it "carries a rest's marks on its stream event" do
@@ -429,11 +429,11 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
 
     it "marks a fermata on a tied note's later link with the time before it" do
       marks = read("{ c'2~ c'4~ c'4\\fermata }").streams.first.events.first.marks
-      expect(marks.fermata.to_s).to eq "half tied to quarter"
+      expect(marks.fermatas.map(&:to_s)).to eq ["half tied to quarter"]
     end
 
-    it "keeps a fermata on a tied note's first link as the note's own" do
-      expect(read("{ c'2\\fermata~ c'2\\fermata }").streams.first.events.first.marks.fermata).to be true
+    it "keeps a fermata on each link of a tied note" do
+      expect(read("{ c'2\\fermata~ c'2\\fermata }").streams.first.events.first.marks.fermatas.map(&:to_s)).to eq %w[true half]
     end
   end
 

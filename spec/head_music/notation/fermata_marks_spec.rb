@@ -64,6 +64,17 @@ describe HeadMusic::Notation::FermataMarks do
     end
   end
 
+  context "with a note tied into a later bar, marked on both links" do
+    let(:flow) { satb("c4-|c4|", "C4-|C4|") }
+
+    it "holds each mark until the next mark on the event" do
+      marks.add(event(0, "1:1"))
+      marks.add(event(0, "1:1"), from: flow.position("2:1"))
+      marks.apply(flow)
+      expect(fermata_spans).to eq [["1:1:000", "2:1:000"], ["2:1:000", "3:1:000"]]
+    end
+  end
+
   context "with marks that do not overlap" do
     let(:flow) { satb("c d e f|", "C D E F|") }
 
@@ -121,7 +132,7 @@ describe HeadMusic::Notation::FermataMarks do
       end
 
       it "maps each carrier to its fermata" do
-        expect(described_class.carriers(flow).values.uniq).to eq flow.fermatas
+        expect(described_class.carriers(flow).values).to eq [flow.fermatas] * 2
       end
 
       it "reads back the fermata it marks" do
@@ -133,6 +144,23 @@ describe HeadMusic::Notation::FermataMarks do
 
       def reread_event(reread, voice_event)
         reread.voices[flow.voices.index(voice_event.voice)].voice_event_at(reread.position(voice_event.position.to_s))
+      end
+    end
+
+    context "with a tied note sounding where two fermatas begin" do
+      let(:flow) do
+        satb("c2 d2|", "C2 E2-|E2 F2|").tap do |held|
+          held.add_fermata("1:3", :half)
+          held.add_fermata("2:1", :half)
+        end
+      end
+
+      it "maps the tied note to both fermatas, in order" do
+        expect(described_class.carriers(flow)[event(1, "1:3")]).to eq flow.fermatas
+      end
+
+      it "maps an event sounding where one begins to that one alone" do
+        expect(described_class.carriers(flow)[event(0, "1:3")]).to eq [flow.fermatas.first]
       end
     end
 
