@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-20T16:02:22-07:00
   planned_at:   2026-10-20T16:24:28-07:00
   finished_at:
-  updated_at:   2026-10-21T10:38:43-07:00
+  updated_at:   2026-10-21T11:25:49-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -73,14 +73,14 @@ flow.meter_at(1).symbol # => :common
 - [x] Overlapping fermatas raise `ArgumentError`
 - [x] The timeline's fermatas are kept through JSON
 - [x] Fermata marks on voice events whose sounding intervals overlap become one timeline fermata, from the latest of their starts to the earliest of their ends; a fermata marked in one voice only still holds the whole flow; a fermata on a rest holds like one on a note; a fermata on a tie's later link starts at that link
-- [x] Every text format writes a timeline fermata as a fermata mark on each voice event sounding when it begins, in every voice
+- [x] Every text format writes a timeline fermata as a fermata mark on each voice event sounding when it begins, in every voice; ABC, which writes one voice, marks that voice (see [ABC Voices and Meter Changes](../backlog/abc-voices-and-meter-changes.md))
 
 ### Meter symbols
 
 - [x] A meter can carry a common-time or cut-time symbol, and a meter with a symbol stays equal to its numeric meter for every calculation: `Meter.common_time.to_s` stays `"4/4"` and stays `==` to `Meter.get("4/4")`
 - [x] `Meter.get` given a meter answers that meter, so `Flow.new(meter:)` and `change_meter` keep its symbol
 - [x] The symbol is kept through JSON and through the timeline's meter changes
-- [x] A meter change that changes only the symbol is kept by every reader and written by every writer
+- [x] A meter change that changes only the symbol is kept by every reader and written by every writer except ABC's, which refuse every meter change after the opening (see [ABC Voices and Meter Changes](../backlog/abc-voices-and-meter-changes.md))
 
 ### Conductor
 
@@ -470,14 +470,14 @@ Suite: `bundle exec rake`: 18,490 examples, 0 failures; line coverage 99.77%, br
 
 ### Acceptance criteria
 
-All criteria are met except two that ABC meets only partially. In both, the limit predates this story and the Implementation Notes already state it.
+All criteria are met. Two were met only partially, because of ABC limits that predate this story; after the review they were reworded to exclude ABC, and the work moved to [ABC Voices and Meter Changes](../backlog/abc-voices-and-meter-changes.md).
 
 - ✅ **Tempo words (5/5).** Text through JSON; `Tempo.get` case and spelling; longest-name fallback, else ♩=120, unwritten; text distinguishes changes; each format's tempo construct, and the MusicXML `<words>` rule.
 - ✅ **Gradual tempo changes (7/7).** Mid-bar ramps; whole-notes-per-minute interpolation; closed-form `atanh`/`tanh` in both directions (one 4/4 bar from 120 to 80 takes 2,432,790,649 ns); default targets; "a tempo"; overlap rules; `tempo_at` against `sounding_tempo_at`.
 - ✅ **Fermatas: model (6/6).** Any position; stretch; inverse inside the span; tempo unchanged; overlap raises; JSON; mark grouping.
-- ⚠️ **Every text format writes timeline fermatas in every voice.** kern, LilyPond, MusicXML and MEI mark all carriers. ABC writes only one voice.
+- ✅ **Every text format writes timeline fermatas in every voice (reworded to exclude ABC).** kern, LilyPond, MusicXML and MEI mark all carriers. ABC writes only one voice.
 - ✅ **Meter symbols (3/4).** Equality and `to_s` unchanged; `Meter.get(meter)` passes the meter through; JSON and meter changes keep the symbol.
-- ⚠️ **A symbol-only meter change is kept by every reader and writer.** JSON, kern, LilyPond, MusicXML and MEI round-trip it. ABC refuses every mid-piece meter change. Only MEI and MusicXML have a spec that pins it.
+- ✅ **A symbol-only meter change is kept by every reader and writer (reworded to exclude ABC).** JSON, kern, LilyPond, MusicXML and MEI round-trip it, and each has a spec that pins it. The review first said only MEI and MusicXML did, but kern (`kern_timeline_expressions_spec.rb`, "reads back the change of sign alone"), LilyPond ("keeps a change of the symbol alone", plus the time-signature render context) and JSON (`flow_serialization_spec.rb`, "round-trips each meter change's symbol, and its absence") already pin it. ABC refuses every mid-piece meter change.
 - ✅ **Conductor (2/2).** `Flow#conductor`, with clock zero at the earliest bar; 6:1 after a 3/4 change at bar 5 is 9.5 s (*verified*).
 - ✅ **Formats (17/17).** ABC, LilyPond, MusicXML, kern, MEI and MIDI each check out, both in the agent's runs and in named specs. A MIDI export of a ramp and a stretch-3 fermata matches `flow.conductor` to the nanosecond.
 - ✅ **Fixtures and compatibility (4/4).** `satb_chorale.krn` has fermatas at 2:2 and 4:2; Herzliebster gives 4 fermatas from 16 `<fermata>` elements and `:common`; schema-5 documents without the new keys still read; coverage holds.
@@ -521,8 +521,4 @@ Findings 1–8 were each reproduced, then fixed with specs (suite: 18,510 exampl
 
 ### Blocking `finish`
 
-Nothing blocks it on the criteria. Before finishing, decide:
-
-- Fix 1–8 on this branch or defer them. Items 1, 3, 4 and 8 are small and reproduced.
-- Reword the two ABC criteria to exclude ABC, or keep them and defer them to a multi-voice ABC writer story.
-- Add symbol-only meter-change round-trip specs for kern and LilyPond.
+Nothing. Findings 1–8 are fixed (see above). The two ABC criteria now exclude ABC, with the work in [ABC Voices and Meter Changes](../backlog/abc-voices-and-meter-changes.md). The specs for symbol-only meter changes already existed.
