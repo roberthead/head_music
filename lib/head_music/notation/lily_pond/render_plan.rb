@@ -21,15 +21,6 @@ module HeadMusic::Notation::LilyPond
       music_end_fraction unless trailing_marks?
     end
 
-    # Where in the final bar every voice's music ends together, or nil where
-    # it ends at the barline.
-    def music_end_fraction
-      return @music_end_fraction if defined?(@music_end_fraction)
-
-      offset = music_end && HeadMusic::Notation::BarSplitter.offset_in_bar(music_end)
-      @music_end_fraction = (offset && !offset.zero?) ? offset : nil
-    end
-
     # Whether a short final bar is written full, so marks after the music have
     # spacers to go on.
     def filled_final_bar?(bar_number)
@@ -68,17 +59,6 @@ module HeadMusic::Notation::LilyPond
       @timed_marks[voice] ||= voice ? TimedMarks.voice(voice, lead: lead?(voice)) : TimedMarks.new([])
     end
 
-    # The flow's tempo marks are written in its first voice.
-    def lead?(voice)
-      voice.equal?(flow.voices.first)
-    end
-
-    # The voice events marked with each fermata they sound under where it
-    # begins.
-    def fermata_carriers
-      @fermata_carriers ||= HeadMusic::Notation::FermataMarks.carriers(flow)
-    end
-
     # What ends a hairpin on the final barline, after the owner's last link or
     # spacer: \after there prints "no broken bound" for a level, and a marker
     # with no duration reaches it cleanly. The first voice then writes the
@@ -111,12 +91,6 @@ module HeadMusic::Notation::LilyPond
     def part_marks(part)
       @part_marks ||= {}.compare_by_identity
       @part_marks[part] ||= TimedMarks.part(part)
-    end
-
-    def music_end
-      return @music_end if defined?(@music_end)
-
-      @music_end = flow.voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
     end
 
     def trailing_marks?

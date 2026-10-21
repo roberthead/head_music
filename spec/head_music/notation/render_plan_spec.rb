@@ -68,5 +68,30 @@ describe HeadMusic::Notation::RenderPlan do
       voice.place("2:1", :half, "D4")
       expect(plan.effective_meter(3)).to eq HeadMusic::Rudiment::Meter.get("3/4")
     end
+
+    context "with a tune whose voices end together inside the final bar" do
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nT:Short\nM:4/4\nL:1/4\nK:C\nV:1\nCDEF|GA|]\nV:2\nEFGA|Bc|]\n") }
+
+      it "leads with the first voice alone" do
+        expect(flow.voices.map { |voice| plan.lead?(voice) }).to eq [true, false]
+      end
+
+      it "answers where in the final bar the music ends" do
+        expect(plan.music_end_fraction).to eq Rational(1, 2)
+      end
+    end
+
+    it "answers no music end inside a bar where the music fills the final bar" do
+      flow.add_voice.place("1:1", :whole, "C4")
+      expect(plan.music_end_fraction).to be_nil
+    end
+
+    context "with a timeline fermata" do
+      let(:flow) { HeadMusic::Notation::ABC.parse("X:1\nT:Held\nM:4/4\nL:1/4\nK:C\nCDE!fermata!F|]\n") }
+
+      it "answers the voice events that carry it" do
+        expect(plan.fermata_carriers.keys).to eq [flow.voices.first.voice_events.last]
+      end
+    end
   end
 end

@@ -52,6 +52,26 @@ class HeadMusic::Notation::RenderPlan
     change_bar ? measure_time_changes[change_bar] : flow.meter
   end
 
+  # The flow's tempo marks are written in its first voice.
+  def lead?(voice)
+    voice.equal?(flow.voices.first)
+  end
+
+  # Where in the final bar every voice's music ends together, or nil where
+  # it ends at the barline.
+  def music_end_fraction
+    return @music_end_fraction if defined?(@music_end_fraction)
+
+    offset = music_end && HeadMusic::Notation::BarSplitter.offset_in_bar(music_end)
+    @music_end_fraction = (offset && !offset.zero?) ? offset : nil
+  end
+
+  # The voice events marked with each fermata they sound under where it
+  # begins.
+  def fermata_carriers
+    @fermata_carriers ||= HeadMusic::Notation::FermataMarks.carriers(flow)
+  end
+
   # What each bar holds of the voice, with a voice event that crosses a barline
   # appearing in every bar it sounds in.
   def segments_by_bar(voice)
@@ -60,6 +80,12 @@ class HeadMusic::Notation::RenderPlan
   end
 
   private
+
+  def music_end
+    return @music_end if defined?(@music_end)
+
+    @music_end = flow.voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
+  end
 
   # A subclass computes here whatever else must raise at construction, and
   # calls super for the signatures every format needs.
