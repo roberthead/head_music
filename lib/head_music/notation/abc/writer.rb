@@ -30,48 +30,16 @@ module HeadMusic::Notation::ABC
 
     def validate!
       RenderPreflight.check!(flow, transposed: transposed)
-      ensure_marks_reachable
-      slur_writer
+      voice_writer&.validate!
     end
 
-    # A mark inside a note or after the music is reached by invisible rests,
-    # which need a binary note value to span its offset, and which cannot
-    # carry a Q: field.
-    def ensure_marks_reachable
-      segments_by_bar.each do |bar_segments|
-        bar_marks = position_marks.bar_marks(bar_segments)
-        mark = bar_marks.unreachable
-        if mark
-          raise RenderError, "cannot place the #{mark.label} at #{mark.position} in ABC output: " \
-            "no binary note value reaches it"
-        end
-        field = bar_marks.inline_field_between_attacks
-        raise RenderError, "cannot place the #{field.label} at #{field.position} in ABC output, where no note starts" if field
-      end
+    def plan
+      @plan ||= RenderPlan.new(flow, transposed: transposed)
     end
 
-    def position_marks
-      @position_marks ||= PositionMarks.new(flow.voices.first)
-    end
-
-    def voice_events
+    def voice_writer
       voice = flow.voices.first
-      voice ? voice.voice_events : []
-    end
-
-    def slur_writer
-      @slur_writer ||= SlurWriter.new(flow.voices.first)
-    end
-
-    # No %%transpose directive is emitted: the pitches are already written, and
-    # abcm2ps would move them a second time.
-    def written_key_signature
-      @written_key_signature ||= transposition.key_signature(flow.key_signature)
-    end
-
-    def transposition
-      instrument = transposed ? (flow.voices.first&.part || flow.parts.first)&.instrument : nil
-      HeadMusic::Content::Layout::Transposition.for(instrument)
+      @voice_writer ||= voice && VoiceWriter.new(voice, plan)
     end
 
     def header_lines
@@ -100,48 +68,16 @@ module HeadMusic::Notation::ABC
       "L:#{UNIT_NOTE_LENGTH.numerator}/#{UNIT_NOTE_LENGTH.denominator}"
     end
 
+    # The parser requires K: to terminate the header. No %%transpose directive
+    # is emitted: the pitches are already written, and abcm2ps would move them
+    # a second time.
     def key_field
-      # The parser requires K: to terminate the header.
-      "K:#{KeyMapper.abc_value(written_key_signature)}"
+      "K:#{plan.first_measure_key(flow.voices.first&.part || flow.parts.first)}"
     end
 
     def body_lines
-      bar_strings.each_slice(BARS_PER_LINE).map(&:join)
-    end
-
-    def bar_strings
-      bars = written_bars
-      bars.each_with_index.map do |(bar, music), index|
-        previous = bars[index - 1]&.first if index.positive?
-        following = bars[index + 1]&.first
-        BarLineWriter.opening(bar, previous) + music + BarLineWriter.closing(bar, following)
-      end
-    end
-
-    # Each bar the voice sounds in, with its music.
-    def written_bars
-      bar_writer = BarWriter.new(
-        written_key_signature, UNIT_NOTE_LENGTH, slur_writer, position_marks, tuplet_writer,
-        HeadMusic::Notation::FermataMarks.carriers(flow)
-      )
-      segments = segments_by_bar.to_a
-      return [] if segments.empty?
-
-      segments.map { |bar_segments| [flow.bar(bar_segments.first.bar_number), bar_writer.bar(bar_segments)] }
-    end
-
-    # A voice event sounding across a bar line is written as one note per bar,
-    # tied, since ABC has no other way to cross the line.
-    def segments_by_bar
-      segments.chunk_while { |previous, current| previous.bar_number == current.bar_number }
-    end
-
-    def segments
-      @segments ||= HeadMusic::Notation::BarSplitter.segments(voice_events)
-    end
-
-    def tuplet_writer
-      TupletWriter.new(flow.voices.first, segments)
+      bars = voice_writer ? voice_writer.bars : []
+      bars.each_slice(BARS_PER_LINE).map(&:join)
     end
   end
 end
