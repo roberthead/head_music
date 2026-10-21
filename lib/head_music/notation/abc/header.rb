@@ -26,6 +26,25 @@ class HeadMusic::Notation::ABC::Header
     value.split.take_while { |word| !word.include?("=") }.join(" ")
   end
 
+  # The meter an M: field names, in the header or the body.
+  def self.meter(value, line_number)
+    # "C" and "C|" must be translated before calling Meter.get, which
+    # memoizes by identifier and would cache a meaningless "C" meter.
+    return HeadMusic::Rudiment::Meter.common_time if value == "C"
+    return HeadMusic::Rudiment::Meter.cut_time if value == "C|"
+
+    ensure_fraction!(value, "meter", line_number)
+    HeadMusic::Rudiment::Meter.get(value)
+  end
+
+  def self.ensure_fraction!(value, description, line_number)
+    return if FRACTION_PATTERN.match?(value)
+
+    raise HeadMusic::Notation::ABC::ParseError.new(
+      "Invalid #{description} #{value.inspect}", line_number: line_number, snippet: value
+    )
+  end
+
   def flow_attributes
     {name: title, key_signature: key_signature, meter: meter, tempo: tempo, composer: composer, origin: origin, comments: annotations}
   end
@@ -110,26 +129,12 @@ class HeadMusic::Notation::ABC::Header
   end
 
   def resolve_meter(value, line_number)
-    # "C" and "C|" must be translated before calling Meter.get, which
-    # memoizes by identifier and would cache a meaningless "C" meter.
-    return HeadMusic::Rudiment::Meter.common_time if value == "C"
-    return HeadMusic::Rudiment::Meter.cut_time if value == "C|"
-
-    ensure_fraction!(value, "meter", line_number)
-    HeadMusic::Rudiment::Meter.get(value)
+    self.class.meter(value, line_number)
   end
 
   def resolve_unit_note_length(value, line_number)
-    ensure_fraction!(value, "unit note length", line_number)
+    self.class.ensure_fraction!(value, "unit note length", line_number)
     Rational(value)
-  end
-
-  def ensure_fraction!(value, description, line_number)
-    return if FRACTION_PATTERN.match?(value)
-
-    raise HeadMusic::Notation::ABC::ParseError.new(
-      "Invalid #{description} #{value.inspect}", line_number: line_number, snippet: value
-    )
   end
 
   def apply_defaults

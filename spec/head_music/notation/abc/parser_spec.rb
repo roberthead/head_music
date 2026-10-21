@@ -1130,6 +1130,68 @@ describe HeadMusic::Notation::ABC::Parser do
     end
   end
 
+  describe "meter changes" do
+    def meter_changes(flow)
+      flow.meter_changes.transform_values { |meter| [meter.to_s, meter.symbol] }
+    end
+
+    def two_voices(first, second)
+      parse("X:1\nL:1/4\nM:4/4\nV:1\nV:2\nK:C\nV:1\n#{first}\nV:2\n#{second}\n")
+    end
+
+    it "reads a body M: line as a meter change at the bar it opens" do
+      flow = parse_body("C D E F|\nM:3/4\nG A B|c3|")
+      expect([meter_changes(flow), flow.voices.first.voice_events.last.position.to_s]).to eq [{2 => ["3/4", nil]}, "3:1:000"]
+    end
+
+    it "reads an inline [M:] field as a meter change at the bar it opens" do
+      expect(meter_changes(parse_body("C D E F|[M:3/4]G A B|c3|"))).to eq({2 => ["3/4", nil]})
+    end
+
+    it "reads [M:C] after M:4/4 as a change of symbol" do
+      expect(meter_changes(parse_body("C D E F|[M:C]G A B c|"))).to eq({2 => ["4/4", :common]})
+    end
+
+    it "reads [M:C|] after M:2/2 as a change of symbol" do
+      flow = parse("X:1\nM:2/2\nL:1/4\nK:C\nC D E F|[M:C|]G A B c|\n")
+      expect(meter_changes(flow)).to eq({2 => ["2/2", :cut]})
+    end
+
+    it "makes no change for a field that restates the meter in force" do
+      expect(meter_changes(parse_body("C D E F|[M:4/4]G A B c|"))).to eq({})
+    end
+
+    it "takes a field partway through a bar at the next downbeat" do
+      flow = parse_body("C D [M:3/4]E F|G A B|")
+      expect([meter_changes(flow), flow.voices.first.voice_events.last.position.to_s]).to eq [{2 => ["3/4", nil]}, "2:3:000"]
+    end
+
+    it "reads a field before any voice at the first bar" do
+      flow = parse("X:1\nL:1/4\nM:4/4\nK:C\nM:3/4\nV:1\nC D E|\n")
+      expect(meter_changes(flow)).to eq({1 => ["3/4", nil]})
+    end
+
+    it "places an earlier voice's bar in the meter a later voice states" do
+      flow = two_voices("C D E F|G A B|c3|", "C, D, E, F,|[M:3/4]G, A, B,|C3|")
+      expect(flow.voices.map { |voice| voice.voice_events.last.position.to_s }).to eq %w[3:1:000 3:1:000]
+    end
+
+    it "makes one change of a field every voice states" do
+      flow = two_voices("C D E F|[M:3/4]G A B|", "C, D, E, F,|[M:3/4]G, A, B,|")
+      expect(meter_changes(flow)).to eq({2 => ["3/4", nil]})
+    end
+
+    it "keeps the first of two voices' meters for one bar" do
+      flow = two_voices("C D E F|[M:3/4]G A B|", "C, D, E, F,|[M:2/4]G, A,|")
+      expect(meter_changes(flow)).to eq({2 => ["3/4", nil]})
+    end
+
+    it "counts a tuplet by the meter of its bar" do
+      flow = parse("X:1\nM:4/4\nL:1/8\nK:C\nC8|[M:6/8](5CDEFG c3|\n")
+      expect(flow.voices.first.tuplets.map(&:to_s)).to eq ["5:3 tuplet from 2:1:000 to 2:4:000"]
+    end
+  end
+
   describe "tempo marks" do
     let(:flow) { parse_body(body) }
 

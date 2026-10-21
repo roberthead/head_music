@@ -6,6 +6,10 @@ module HeadMusic::Notation
   # restatement makes no change. A meter's symbol and a tempo's text count,
   # so a change to either alone is a change. Subclasses answer +keys+ and +tempos+.
   class TimelineReading
+    def self.same_meter?(meter, other)
+      meter == other && meter.symbol == other.symbol
+    end
+
     def initialize(bar_map)
       @bar_map = bar_map
     end
@@ -26,7 +30,7 @@ module HeadMusic::Notation
     def apply(flow)
       @bar_map.bar_numbers.drop(1).each do |bar|
         meter = @bar_map.meter_at(bar)
-        flow.change_meter(bar, meter) unless same_meter?(flow.meter_at(bar), meter)
+        flow.change_meter(bar, meter) unless self.class.same_meter?(flow.meter_at(bar), meter)
         change_key(flow, bar, keys[bar]) if keys[bar]
         tempo = tempos[bar]
         flow.change_tempo(bar, tempo) if tempo && !same_tempo?(flow.tempo_at(bar), tempo)
@@ -41,10 +45,6 @@ module HeadMusic::Notation
       return if event.signature == fifths && event.key_signature.name == key_signature.name
 
       flow.change_key_signature(bar, key_signature)
-    end
-
-    def same_meter?(meter, other)
-      meter == other && meter.symbol == other.symbol
     end
 
     def same_tempo?(tempo, other)

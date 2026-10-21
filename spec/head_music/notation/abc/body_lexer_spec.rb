@@ -113,6 +113,12 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
   end
 
+  describe "meter fields" do
+    it "lexes an M: line as a meter field" do
+      expect(tokens_for("M:6/8 % compound").first.to_h).to include(type: :meter, lexeme: "6/8")
+    end
+  end
+
   describe "part labels" do
     it "lexes a P: line as a part label" do
       expect(tokens_for("P:B").first.to_h).to include(type: :part_label, lexeme: "B")
@@ -358,6 +364,14 @@ describe HeadMusic::Notation::ABC::BodyLexer do
 
       it "lexes [1 as a volta" do
         expect(tokens_for("[1").first.type).to eq(:volta)
+      end
+
+      it "lexes [M:3/4] as a meter field" do
+        expect(tokens_for("[M:3/4]").first.to_h).to include(type: :meter, lexeme: "3/4")
+      end
+
+      it "lexes [M:C|] as a meter field, not a bar line" do
+        expect(tokens_for("[M:C|]").first.to_h).to include(type: :meter, lexeme: "C|")
       end
 
       it "lexes [K:G] as an unsupported inline field" do

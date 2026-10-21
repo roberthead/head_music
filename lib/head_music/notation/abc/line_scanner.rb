@@ -16,6 +16,7 @@ module HeadMusic::Notation::ABC
     NOTE_PATTERN = %r{(\^\^|\^|__|_|=)?([A-Ga-g])([',]*)([\d/]*)}
     PART_LABEL_PATTERN = /\[P:([^\]]*)\]/
     TEMPO_FIELD_PATTERN = /\[Q:([^\]]*)\]/
+    METER_FIELD_PATTERN = /\[M:([^\]]*)\]/
     # An inline field ("[K:...]"), tried closed before its unterminated fallback.
     INLINE_FIELD_PATTERNS = [/\[[A-Za-z]:[^\]]*\]/, /\[[A-Za-z]:[^\]]*/].freeze
     ANNOTATION_PATTERN = /"(?:[\^_<>]|@-?[\d.]+,-?[\d.]+)([^"]*)"/
@@ -135,6 +136,7 @@ module HeadMusic::Notation::ABC
       return add_volta(@scanner[1], column) if @scanner.scan(/\[(\d[\d,-]*)/)
       return add(:part_label, column: column, lexeme: @scanner[1].strip) if @scanner.scan(PART_LABEL_PATTERN)
       return add(:tempo, column: column, lexeme: @scanner[1].strip) if @scanner.scan(TEMPO_FIELD_PATTERN)
+      return add(:meter, column: column, lexeme: @scanner[1].strip) if @scanner.scan(METER_FIELD_PATTERN)
 
       inline_field = scan_first(INLINE_FIELD_PATTERNS)
       return add_unsupported(inline_field, column) if inline_field
