@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-21T11:52:19-07:00
   planned_at:   2026-10-21T14:38:30-07:00
   finished_at:
-  updated_at:   2026-10-21T14:38:30-07:00
+  updated_at:   2026-10-21T15:47:41-07:00
 -->
 
 # Story: ABC Voices, Meter Changes, and Key Changes
@@ -33,51 +33,57 @@ Split from [Timeline Expressions](../done/timeline-expressions.md), whose criter
 
 ### Writing voices
 
-- [ ] The writer writes each voice under its own `V:` field, with the parts' dynamics in the voice that sounds them
-- [ ] A flow of one voice is written exactly as before, with no `V:` field
-- [ ] A voice's `V:` id is its role when the role is non-empty, holds no whitespace or `]`, and no other voice has it; otherwise it is the voice's position in the flow (`V:1`, `V:2`, …)
-- [ ] The writer declares each voice in the header in the flow's voice order, and the voices read back in that order with their roles
-- [ ] The writer interleaves the voices by line, switching voice on each line of bars, as a score is laid out in systems
-- [ ] Every voice breaks its lines at the same bars; a bar in which a voice has no music, before it enters or after it ends, is written as a whole-bar `z` lasting that bar's meter, and reads back as a rest
-- [ ] Bar lines, repeats, and voltas are written in every voice; `[Q:]` fields, tempo annotations, `[P:]` labels, and navigation decorations are written in the first voice only
-- [ ] A part's dynamics and hairpins are written in that part's first voice; two voices may each hold a hairpin at the same time
-- [ ] A timeline fermata is written as `!fermata!` on each voice event sounding when it begins, in every voice
+- [x] The writer writes each voice under its own `V:` field, with the parts' dynamics in the voice that sounds them
+- [x] A flow of one voice is written exactly as before, with no `V:` field
+- [x] A voice's `V:` id is its role when the role is non-empty, holds no whitespace, `]`, `%`, or `=`, and no other voice has it; otherwise it is the voice's position in the flow (`V:1`, `V:2`, …)
+- [x] The writer declares each voice in the header in the flow's voice order, and the voices read back in that order with their roles
+- [x] The writer interleaves the voices by line, switching voice on each line of bars, as a score is laid out in systems
+- [x] Every voice breaks its lines at the same bars; a bar in which a voice has no music, before it enters or after it ends, is written as a whole-bar `z` lasting that bar's meter, and reads back as a rest
+- [x] Bar lines, repeats, and voltas are written in every voice; `[Q:]` fields, tempo annotations, `[P:]` labels, and navigation decorations are written in the first voice only
+- [x] A part's dynamics and hairpins are written in that part's first voice; two voices may each hold a hairpin at the same time
+- [x] A timeline fermata is written as `!fermata!` on each voice event sounding when it begins, in every voice
 
 ### Reading meter and key changes
 
-- [ ] The reader reads a body `M:` line and an inline `[M:…]` field, including `M:C` and `M:C|`, as a meter change at the bar where it appears
-- [ ] The reader reads a body `K:` line and an inline `[K:…]` field as a key signature change at the bar where it appears
-- [ ] A meter or key field in any one voice changes the flow's meter or key at that bar, even when the other voices do not repeat it
-- [ ] A meter or key field stated only in a voice read after another voice places and spells the earlier voice's music in the changed meter and key, as if every voice had stated it
-- [ ] A meter or key field that restates what is in force makes no change; `[M:C]` after `M:4/4` and `[K:Bm]` after `K:D` are changes
-- [ ] When two voices state different meters, or different keys, for the same bar, the flow takes the first one read, and a voice that states its own key keeps it for spelling its own pitches
-- [ ] A meter field in the middle of a bar takes effect at the next downbeat; a key field in the middle of a bar respells that voice's following pitches at once and changes the flow's key at the next bar line
-- [ ] After a key change, each voice spells its pitches in the new key, and a note tied across the bar line into the change reads back at its pitch
-- [ ] A tie, slur, or tuplet continues across a `V:` switch
-- [ ] The reader reads a body `V:` line by its first word, so `V:S clef=bass` continues voice `S`
-- [ ] A `K:` value holding `clef=` or other `name=value` terms reads only its key, and `[K:clef=bass]` changes nothing
+- [x] The reader reads a body `M:` line and an inline `[M:…]` field, including `M:C` and `M:C|`, as a meter change at the bar where it appears
+- [x] The reader reads a body `K:` line and an inline `[K:…]` field as a key signature change at the bar where it appears
+- [x] A meter or key field in any one voice changes the flow's meter or key at that bar, even when the other voices do not repeat it
+- [x] A meter or key field stated only in a voice read after another voice places and spells the earlier voice's music in the changed meter and key, as if every voice had stated it
+- [x] A meter or key field that restates what is in force makes no change; `[M:C]` after `M:4/4` and `[K:Bm]` after `K:D` are changes
+- [x] When two voices state different meters, or different keys, for the same bar, the flow takes the first one read, and a voice that states its own key keeps it for spelling its own pitches
+- [x] A meter field in the middle of a bar takes effect at the next downbeat; a key field in the middle of a bar respells that voice's following pitches at once and changes the flow's key at the next bar line
+- [x] After a key change, each voice spells its pitches in the new key, and a note tied across the bar line into the change reads back at its pitch
+- [x] A tie, slur, or tuplet continues across a `V:` switch
+- [x] The reader reads a `V:` voice id, in the header and the body alike, as the words before its `name=value` terms, so `V:S clef=bass` continues voice `S` and `V:cantus firmus` keeps both words
+- [x] A `K:` value holding `clef=` or other `name=value` terms reads only its key, and `[K:clef=bass]` changes nothing
 
 ### Writing meter and key changes
 
-- [ ] The writer writes each meter change, including one that changes only the symbol, and each key change, in every voice, and they read back the same
-- [ ] Meter and key changes are written as inline `[M:…]` and `[K:…]` fields at the start of the bar, after any volta and part label, never as body `M:` or `K:` lines
-- [ ] A meter or key change at a bar the writer does not write raises instead of being dropped
-- [ ] A transposed part that changes instrument is written with a `[K:…]` field in that part's voices, instead of raising
-- [ ] In transposed output, each voice's opening key and key changes are its own part's written key
+- [x] The writer writes each meter change, including one that changes only the symbol, and each key change, in every voice, and they read back the same
+- [x] Meter and key changes are written as inline `[M:…]` and `[K:…]` fields at the start of the bar, after any volta and part label, never as body `M:` or `K:` lines
+- [x] A meter or key change at a bar the writer does not write raises instead of being dropped
+- [x] A transposed part that changes instrument is written with a `[K:…]` field in that part's voices, instead of raising, and every other voice writes its own part's key at that bar, so each reads back spelled in its own key
+- [x] In transposed output, each voice's opening key and key changes are its own part's written key
 
 ### Round trips and oracles
 
-- [ ] The ABC round-trip comparison checks voices in order with their roles, and the meter changes (with symbols) and key changes by bar
-- [ ] `TimelineExpressionFixtures.chorale` round-trips through ABC, as does a fixture with meter and key changes in more than one voice
-- [ ] Fixtures left out of the ABC round-trip specs only for having more than one voice are included (`tuplets_in_two_voices`, and the two-voice variants of `tied_under_two_fermatas` and the hairpin generator)
-- [ ] Oracle specs render the multi-voice, meter-change, and key-change output with abcm2ps and fail when it exits non-zero or prints a line containing `warning` or `error`, skipping with setup instructions (`brew install abcm2ps`) when it is missing
+- [x] The ABC round-trip comparison checks voices in order with their roles, and the meter changes (with symbols) and key changes by bar
+- [x] `TimelineExpressionFixtures.chorale` round-trips through ABC, as does a fixture with meter and key changes in more than one voice
+- [x] Fixtures left out of the ABC round-trip specs only for having more than one voice are included (`tuplets_in_two_voices`, and the two-voice variants of `tied_under_two_fermatas` and the hairpin generator)
+- [x] Oracle specs render the multi-voice, meter-change, and key-change output with abcm2ps and fail when it exits non-zero or prints a line containing `warning` or `error`, skipping with setup instructions (`brew install abcm2ps`) when it is missing
 
 ## Notes
 
 - Multi-voice ABC needs a policy for voices that disagree on where a bar line falls. A flow's bars are shared, so this should not happen, but the writer should check it.
 - The reader is lenient on purpose: many tunes write `M:` or `K:` in the first voice only, and ABC tools differ on whether such a field reaches the other voices. The writer is strict on purpose, putting the field in every voice so that no tool has to guess.
-- The `[K:…]` for an instrument change goes in that part's voices only, and under the any-voice rule it reads back as a key change of the flow. Transposed output is not expected to round-trip; a spec pins what it reads as.
+- Under the any-voice rule, a `[K:…]` one voice writes would respell the other voices on reading back. So wherever any part's key changes, or the parts open in different written keys, as a transposed score's do, every voice writes its own part's key. Each voice then reads back in its own key, while the flow takes the first one read.
 - A voice padded with `z` bars reads back with rests the original lacked, as kern's padded voices do.
+
+### Found while building
+
+- **Multi-word voice ids.** The species fixtures name voices `V:cantus firmus`, so the reader takes a `V:` id as the words before its `name=value` terms rather than its first word alone. The writer still writes a role holding a space by its place, so a species flow written to ABC reads back with roles `1` and `counterpoint`, losing `cantus firmus`.
+- **`!fp!` is not standard ABC.** abcm2ps rejects the writer's `!fp!` decoration, which ABC 2.1 does not define, so the marked melody stays out of the abcm2ps oracle. This predates the story.
+- **A single voice that enters late** is now written with whole-bar rests before it, where it had been written from its first bar and read back a bar or more early.
 
 ### Deferred
 
