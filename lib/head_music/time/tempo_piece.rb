@@ -10,7 +10,7 @@ module HeadMusic
 
     class TempoPiece
       def self.speed_of(tempo)
-        tempo.beats_per_minute.to_r * tempo.ticks_per_beat * HeadMusic::Time::SUBTICKS_PER_TICK /
+        tempo.beats_per_minute.to_r * tempo.ticks_per_beat.to_r * HeadMusic::Time::SUBTICKS_PER_TICK /
           HeadMusic::Rudiment::Tempo::NANOSECONDS_PER_MINUTE
       end
 
