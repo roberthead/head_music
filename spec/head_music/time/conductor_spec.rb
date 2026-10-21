@@ -320,14 +320,28 @@ describe HeadMusic::Time::Conductor do
         expect(clock.to_seconds).to be_within(0.01).of(8.0)
       end
 
-      it "calculates in second meter segment" do
-        # Bars 1-4 in 4/4: 16 beats = 8 seconds
-        # Bar 5 in 3/4: 4 beats (calculated as full bar) = 2 seconds
-        # Total: 10 seconds
-        # Note: Current implementation calculates each bar independently
+      it "counts a bar of 3/4 as three beats" do
         position = HeadMusic::Time::MusicalPosition.new(6, 1, 0, 0)
         clock = conductor.musical_to_clock(position)
-        expect(clock.to_seconds).to be_within(0.01).of(10.0)
+        expect(clock.to_seconds).to eq 9.5
+      end
+
+      it "counts each meter's bars in the third segment" do
+        # 16 beats of 4/4, 12 of 3/4, then a bar of 6/8 (two dotted-quarter counts)
+        position = HeadMusic::Time::MusicalPosition.new(10, 1, 0, 0)
+        expect(conductor.musical_to_clock(position).to_seconds).to eq 15.5
+      end
+    end
+
+    describe "#clock_to_musical" do
+      it "finds a position in the second meter segment" do
+        position = conductor.clock_to_musical(HeadMusic::Time::ClockPosition.new(9_500_000_000))
+        expect(position.to_a).to eq [6, 1, 0, 0]
+      end
+
+      it "finds a position past a thousand bars" do
+        position = HeadMusic::Time::MusicalPosition.new(1200, 2, 0, 0)
+        expect(conductor.clock_to_musical(conductor.musical_to_clock(position)).to_a).to eq position.to_a
       end
     end
   end

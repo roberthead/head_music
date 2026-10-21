@@ -183,6 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `RhythmicValue` defines `eql?` and `hash` to match `==`, so `uniq` and `tally` count equal values together. `NotesSameLength` now finds the most common value in a line, rather than taking the first note's, and marks fewer notes in lines of mixed values.
 - The MusicXML writer resets `<transpose>` to nothing where a transposed part changes back to an instrument in C, rather than leaving the old transposition in force; writes a clef change (`Staff#change_clef`) as a `<clef>` in the measure it falls in, numbered for its staff; and writes `<clef-octave-change>` for octave clefs such as the tenor's treble clef.
 - `Flow#performance_order` plays the bar a final tied note reaches, rather than stopping at the bar it starts in.
+- `Conductor#musical_to_clock` counts each bar in its own meter: 6:1 after a change from 4/4 to 3/4 at bar 5 is 9.5 s at ♩=120, not 10.0 s. `Conductor#clock_to_musical` no longer stops a thousand bars past the start.
 
 ### Security
 
