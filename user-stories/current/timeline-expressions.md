@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-20T16:02:22-07:00
   planned_at:   2026-10-20T16:24:28-07:00
   finished_at:
-  updated_at:   2026-10-20T19:39:47-07:00
+  updated_at:   2026-10-20T19:59:12-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -42,7 +42,7 @@ flow.change_meter(1, HeadMusic::Rudiment::Meter.common_time)   # remembers its s
 flow.add_fermata("4:3", :half)                                   # holds a half note's span at 4:3
 
 flow.tempo_at(1).text # => "Allegro"
-flow.meter.symbol     # => :common
+flow.meter_at(1).symbol # => :common
 ```
 
 ## Acceptance Criteria
@@ -231,7 +231,7 @@ Planned 2026-10-20 by the story planner (product-manager, two developers, best-p
    - a step tempo change at a ramp's start (it sets the starting tempo) or at its end (decision 5);
    - a meter change inside a ramp.
 
-   `change_meter` re-checks the fermatas, since a meter change can move a fermata's end.
+   `change_meter` and `remove_meter_change` raise `ArgumentError`, and put the previous meter back, when a ramp, "a tempo", or fermata would sit on a count or tick its bar no longer has. Readers therefore set meters before adding these items. (Validation of a ramp's `from >= to` and target, and of a fermata's stretch, lives in the value types, so it holds everywhere.)
 9. **Reading fermata marks.** Marks whose sounding intervals overlap form one fermata, from the latest of their starts to the earliest of their ends: the span in which every marked event sounds together. Unmarked voices are ignored. Writers mark the carriers, so this round-trips. Ending at the latest end instead was rejected, because a marked event could then start inside the fermata.
 10. **Reading tempo text.** Text is tempo text because of where a format writes it, not because of its words:
     - Whatever sits in ABC `Q:`, LilyPond `\tempo`, MEI `<tempo>`, kern `!!!OMD`, or kern `*MM[…]` is tempo text.
