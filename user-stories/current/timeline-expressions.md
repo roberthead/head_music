@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-20T16:02:22-07:00
   planned_at:   2026-10-20T16:24:28-07:00
   finished_at:
-  updated_at:   2026-10-21T08:21:04-07:00
+  updated_at:   2026-10-21T10:38:43-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -505,6 +505,19 @@ Lower severity:
 - `same_tempo?` in `notation/timeline_reading.rb` compares text but not `metronome_mark?`.
 - Duplicated helpers: `MusicalPosition.new(*position.to_a)` appears three times, and there are three versions of the "strictly inside" span check. `TempoPieces#advance` orders events with bare 0/1/2. Several new files carry long "what" comments, against the minimal-comments convention.
 - Conventions otherwise hold: no assignments inside conditions, no stdout assertions, and specs use `described_class`.
+
+### Resolved after review
+
+Findings 1–8 were each reproduced, then fixed with specs (suite: 18,510 examples, 0 failures):
+
+1. `08ff2502`: "Tempo I" at a downbeat changes to the opening tempo with its text; in the middle of a bar it still reads as "a tempo".
+2. `ffda82d2`: a MusicXML `<metronome>` beside ramp, "a tempo", or "Tempo I" words makes them the text of a tempo.
+3. `0ac81cb9`: MIDI import finds a ramp's turn a count after its last step, solving the turning tempo from the logarithmic means of the last two steps. A fermata inside a ramp holds the extrapolated step. Both round-trip exactly.
+4. `0a0f593c`: ABC writes a fermata on a tied note's later link as `D2-!fermata!D2`.
+5. `0dafa807`: a bare `<sound tempo>` inside a ramp's open dashes plays the ramp instead of ending it.
+6. `f2dae8bc`: LilyPond markup lexes hyphenated commands whole, and squeezes spaces in its text.
+7. `e7884c87`: MIDI "a tempo" points are applied before step changes. This corrects a spec that had pinned the duplicate change.
+8. `00a791a5`: `Position#+` reads rhythmic value names with `RhythmicValue.get`.
 
 ### Blocking `finish`
 
