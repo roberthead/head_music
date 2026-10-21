@@ -311,7 +311,7 @@ module LilyPondFixtures
           \\new Voice {
             \\clef treble
             \\key g \\major
-            \\time 4/4
+            \\numericTimeSignature \\time 4/4
             g'4 a'4 b'4 c''4 |
             d''2 g'2 \\bar "|." |
           }

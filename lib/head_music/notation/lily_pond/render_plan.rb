@@ -65,15 +65,29 @@ module HeadMusic::Notation::LilyPond
     # are placed among its links. A nil voice is a staff nobody is written on.
     def timed_marks(voice)
       @timed_marks ||= {}.compare_by_identity
-      @timed_marks[voice] ||= voice ? TimedMarks.voice(voice) : TimedMarks.new([])
+      @timed_marks[voice] ||= voice ? TimedMarks.voice(voice, lead: lead?(voice)) : TimedMarks.new([])
+    end
+
+    # The flow's tempo marks are written in its first voice.
+    def lead?(voice)
+      voice.equal?(flow.voices.first)
+    end
+
+    # The voice events marked with each fermata they sound under where it
+    # begins.
+    def fermata_carriers
+      @fermata_carriers ||= HeadMusic::Notation::FermataMarks.carriers(flow)
     end
 
     # What ends a hairpin on the final barline, after the owner's last link or
     # spacer: \after there prints "no broken bound" for a level, and a marker
-    # with no duration reaches it cleanly.
+    # with no duration reaches it cleanly. The first voice then writes the
+    # tempo marks there, as a ramp's target.
     def final_barline_marks(owner)
       final_barline = flow.final_barline_position
-      "<>\\!" if owner&.spans&.any? { |span| span.hairpin? && span.to == final_barline }
+      hairpin_end = "<>\\!" if owner&.spans&.any? { |span| span.hairpin? && span.to == final_barline }
+      marks = [hairpin_end, *(final_tempo_marks if owner && lead?(owner))].compact
+      marks.join(" ") unless marks.empty?
     end
 
     def bar_length(bar_number)
@@ -120,7 +134,15 @@ module HeadMusic::Notation::LilyPond
 
     def segment_tokens(voice)
       @segment_tokens ||= {}.compare_by_identity
-      @segment_tokens[voice] ||= SegmentTokens.new(voice, segments_by_bar(voice).values.flatten, timed_marks(voice))
+      @segment_tokens[voice] ||= SegmentTokens.new(voice, segments_by_bar(voice).values.flatten, timed_marks(voice), fermata_carriers)
+    end
+
+    def final_tempo_marks
+      final_barline = flow.final_barline_position
+      HeadMusic::Notation::TempoMarks.new(flow).select { |mark| mark.position == final_barline }.filter_map do |mark|
+        token, rank = TimedMarks.tempo_token(mark)
+        (rank == TimedMarks::BEFORE_RANK) ? token : token && "<>#{token}"
+      end
     end
   end
 end

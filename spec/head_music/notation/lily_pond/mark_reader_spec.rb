@@ -10,7 +10,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   end
 
   def none
-    {articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: []}
+    {articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [], fermata: nil, texts: []}
   end
 
   describe "slur and phrasing-slur marks" do
@@ -87,12 +87,55 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
       expect(described_class::DROPPED_COMMANDS & HeadMusic::Rudiment::Dynamic.all.map(&:name_key)).to be_empty
     end
 
-    %w[-_ -+ \\fermata \\arpeggio \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff ^\\fermata].each do |source|
+    %w[-_ -+ \\arpeggio \\upbow \\downbow \\breathe \\portato \\stopped \\sfp \\spp \\sff \\fz \\pppp \\ffff].each do |source|
       it "consumes and drops #{source}" do
         cursor = cursor_for("#{source} c'4")
         expect(described_class.new(cursor).read.to_h).to eq none
         expect(cursor.peek.type).to eq :note
       end
+    end
+  end
+
+  describe "fermatas" do
+    %w[
+      fermata shortfermata longfermata verylongfermata veryshortfermata henzeshortfermata henzelongfermata
+    ].each do |command|
+      it "reads \\#{command} as a fermata" do
+        cursor = cursor_for("\\#{command} c'4")
+        expect(described_class.new(cursor).read.fermata).to be true
+        expect(cursor.peek.type).to eq :note
+      end
+    end
+
+    it "reads a fermata after a direction sign" do
+      expect(marks("^\\fermata")[:fermata]).to be true
+    end
+
+    it "keeps a tied note's first link's fermata" do
+      first = described_class::Marks.new(fermata: true)
+      expect(first.merge(described_class::Marks.new(fermata: HeadMusic::Rudiment::RhythmicValue.get(:half))).fermata).to be true
+    end
+  end
+
+  describe "text after a direction sign" do
+    {
+      %(^"rit.") => ["rit."],
+      %(_"a tempo") => ["a tempo"],
+      %(-"dolce") => ["dolce"],
+      %(^\\markup \\italic "rit.") => ["rit."],
+      %(^\\markup { \\italic poco rit. }) => ["poco rit."],
+      %(^"rit." \\p ^\\markup "molto") => ["rit.", "molto"]
+    }.each do |source, texts|
+      it "reads #{source} as #{texts.inspect}" do
+        cursor = cursor_for("#{source} c'4")
+        expect(described_class.new(cursor).read.texts).to eq texts
+        expect(cursor.peek.type).to eq :note
+      end
+    end
+
+    it "keeps a tied note's texts in order" do
+      first = described_class::Marks.new(texts: ["rit."])
+      expect(first.merge(described_class::Marks.new(texts: ["a tempo"])).texts).to eq ["rit.", "a tempo"]
     end
   end
 
@@ -128,7 +171,7 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
   describe "a run of marks" do
     it "reads every mark in order until something else" do
       cursor = cursor_for("-.\\trill->\\sfz\\p c'4")
-      expect(described_class.new(cursor).read.to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [], hairpin_marks: [])
+      expect(described_class.new(cursor).read.to_h).to eq none.merge(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "p")
       expect(cursor.peek.type).to eq :note
     end
 
@@ -164,12 +207,12 @@ describe HeadMusic::Notation::LilyPond::MarkReader do
     it "merges a tied note's marks, keeping the first dynamics" do
       first = described_class.new(articulations: ["staccato"], note_dynamic: "sf", level: "p")
       second = described_class.new(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sfz", level: "f")
-      expect(first.merge(second).to_h).to eq(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sf", level: "p", span_marks: [], hairpin_marks: [])
+      expect(first.merge(second).to_h).to eq none.merge(articulations: %w[staccato accent], ornaments: ["trill"], note_dynamic: "sf", level: "p")
     end
 
-    it "keeps only its level and hairpin marks as its dynamics" do
-      marks = described_class.new(articulations: ["staccato"], note_dynamic: "sfz", level: "p", hairpin_marks: [:crescendo])
-      expect(marks.dynamics).to eq described_class.new(level: "p", hairpin_marks: [:crescendo])
+    it "keeps only its level, hairpin marks, and texts as its dynamics" do
+      marks = described_class.new(articulations: ["staccato"], note_dynamic: "sfz", level: "p", hairpin_marks: [:crescendo], fermata: true, texts: ["rit."])
+      expect(marks.dynamics).to eq described_class.new(level: "p", hairpin_marks: [:crescendo], texts: ["rit."])
     end
 
     it "marks a note event with its articulations, ornaments, and accent" do

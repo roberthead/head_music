@@ -3,7 +3,7 @@ require "spec_helper"
 # Bach's Invention No. 1, BWV 772, from the Bach-Gesellschaft text. Its notes
 # match the Mutopia and Humdrum encodings, and its ornaments the 1723
 # autograph. The reader drops what the model cannot hold yet: the left hand's
-# treble clef in bars 9-12, the fermatas and arpeggios, and the opus number.
+# treble clef in bars 9-12, the arpeggios, and the opus number.
 describe HeadMusic::Notation::LilyPond do
   subject(:flow) { described_class.parse(File.read(File.expand_path("../../fixtures/notation/lily_pond/bach_invention_01.ly", __dir__))) }
 
@@ -26,8 +26,12 @@ describe HeadMusic::Notation::LilyPond do
       .to eq [1, ["right hand", "left hand"], :brace, %w[treble_clef bass_clef]]
   end
 
-  it "reads the key and the meter" do
-    expect([flow.key_signature.name, flow.meter.to_s]).to eq ["C major", "4/4"]
+  it "reads the key and the meter, which LilyPond prints as common time" do
+    expect([flow.key_signature.name, flow.meter.to_s, flow.meter.symbol]).to eq ["C major", "4/4", :common]
+  end
+
+  it "reads the fermatas over the final chords as one fermata spanning a whole note" do
+    expect(flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s] }).to eq [["22:1:000", "23:1:000"]]
   end
 
   it "reads every note and rest of both hands" do
@@ -70,6 +74,16 @@ describe HeadMusic::Notation::LilyPond do
 
   it "reads back to itself from the LilyPond it writes" do
     expect(described_class.parse(described_class.render(flow)).to_h).to eq flow.to_h
+  end
+
+  it "writes a fermata on both hands' final chords" do
+    expect(described_class.render(flow).scan(/<[^<>]*>1\\fermata/)).to eq ["<e' g' c''>1\\fermata", "<c, c>1\\fermata"]
+  end
+
+  it "writes LilyPond that compiles without warnings" do
+    skip "lilypond is not installed" unless installed_lilypond
+
+    expect(compile_warnings(described_class.render(flow))).to be_empty
   end
 
   it "keeps every event through Kern, which has no voice names" do

@@ -59,6 +59,11 @@ module HeadMusic::Notation::LilyPond
       fraction
     end
 
+    # The beat of a \tempo's metronome mark, which is its own duration.
+    def beat_value(token)
+      build(token.duration, token)
+    end
+
     private
 
     def own_fraction(token)

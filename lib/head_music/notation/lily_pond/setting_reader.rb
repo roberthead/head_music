@@ -1,13 +1,20 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
-  # Reads the \key, \time, and \clef commands among a context's music. With
-  # no stream to change, as in a \new Dynamics, which only repeats the
-  # staves' settings, a setting is read for its syntax alone.
+  # Reads the \key, \time, \clef, and \tempo commands among a context's
+  # music. With no stream to change, as in a \new Dynamics, which only
+  # repeats the staves' settings, a setting is read for its syntax alone.
+  #
+  # LilyPond prints a plain \time 4/4 or 2/2 as common or cut time, so it
+  # reads as one, until \numericTimeSignature asks for the numerals, and
+  # again after \defaultTimeSignature.
   class SettingReader
-    COMMANDS = %w[key time clef].freeze
+    TIME_SIGNATURE_STYLES = {"numericTimeSignature" => true, "defaultTimeSignature" => false}.freeze
+    COMMANDS = (%w[key time clef tempo] + TIME_SIGNATURE_STYLES.keys).freeze
+    SYMBOLS_BY_METER = {"4/4" => :common, "2/2" => :cut}.freeze
 
     def initialize(cursor)
       @cursor = cursor
+      @tempo_reader = TempoReader.new(cursor)
     end
 
     def read(stream = nil)
@@ -16,12 +23,14 @@ module HeadMusic::Notation::LilyPond
       when "key" then read_key(command, stream)
       when "time" then read_time(command, stream)
       when "clef" then read_clef(command, stream)
+      when "tempo" then read_tempo(command, stream)
+      else stream&.numeric_time_signature = TIME_SIGNATURE_STYLES.fetch(command.lexeme)
       end
     end
 
     private
 
-    attr_reader :cursor
+    attr_reader :cursor, :tempo_reader
 
     def read_key(command, stream)
       pitch_token = cursor.advance
@@ -36,8 +45,18 @@ module HeadMusic::Notation::LilyPond
       meter_token = cursor.advance
       located(command) do
         meter = MeterReader.meter(meter_token)
-        stream&.change_meter(meter, command.line)
+        stream&.change_meter(symbolized(meter, stream), command.line)
       end
+    end
+
+    def symbolized(meter, stream)
+      symbol = SYMBOLS_BY_METER[meter.to_s]
+      (symbol && !stream&.numeric_time_signature) ? HeadMusic::Rudiment::Meter.for_symbol(symbol) : meter
+    end
+
+    def read_tempo(command, stream)
+      tempo = tempo_reader.read(command)
+      stream&.change_tempo(tempo, command.line)
     end
 
     def read_clef(command, stream)

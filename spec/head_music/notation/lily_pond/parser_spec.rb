@@ -260,7 +260,7 @@ describe HeadMusic::Notation::LilyPond::Parser do
       expect(levels("{ c'2~ c'4\\p~ c'4 | c'1\\f }")).to eq [%w[1:3:000 p], %w[2:1:000 f]]
     end
 
-    it "drops a fermata, a bowing, and a breath mark" do
+    it "puts no fermata on the note, and drops a bowing and a breath mark" do
       expect(markings("{ c'4\\fermata d'4\\upbow e'4^\\downbow f'4 \\breathe }")).to eq [[nil]] * 4
     end
 

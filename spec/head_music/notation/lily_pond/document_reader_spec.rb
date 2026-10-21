@@ -358,7 +358,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
         .to raise_error(HeadMusic::Notation::LilyPond::ParseError, /Unexpected \\score inside music/)
     end
 
-    %w[chordmode lyricmode addlyrics partial tempo repeat transpose fixed language melody].each do |command|
+    %w[chordmode lyricmode addlyrics partial repeat transpose fixed language melody].each do |command|
       it "raises for \\#{command} as unsupported" do
         expect { read("{ c'4 \\#{command} }") }
           .to raise_error(HeadMusic::Notation::LilyPond::UnsupportedFeatureError, /Unsupported LilyPond feature "\\#{command}"/)
@@ -409,7 +409,8 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
     end
 
     it "carries a note's marks on its stream event" do
-      expect(first_marks("{ c'4-.\\trill\\sfz\\p }")).to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [], hairpin_marks: [])
+      expect(first_marks("{ c'4-.\\trill\\sfz\\p }"))
+        .to eq(articulations: ["staccato"], ornaments: ["trill"], note_dynamic: "sfz", level: "p", span_marks: [], hairpin_marks: [], fermata: nil, texts: [])
     end
 
     it "carries a rest's marks on its stream event" do
@@ -419,6 +420,39 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
     it "holds a level on a tied note's later link inside the tie" do
       inner = read("{ c'2~ c'2\\f }").streams.first.events.first.inner_events.first
       expect([inner.elapsed.to_s, inner.event.kind, inner.event.marks.level]).to eq ["half", :dynamics, "f"]
+    end
+
+    it "holds text on a tied note's later link inside the tie" do
+      inner = read(%({ c'2~ c'2^"rit." })).streams.first.events.first.inner_events.first
+      expect([inner.elapsed.to_s, inner.event.kind, inner.event.marks.texts]).to eq ["half", :dynamics, ["rit."]]
+    end
+
+    it "marks a fermata on a tied note's later link with the time before it" do
+      marks = read("{ c'2~ c'4~ c'4\\fermata }").streams.first.events.first.marks
+      expect(marks.fermata.to_s).to eq "half tied to quarter"
+    end
+
+    it "keeps a fermata on a tied note's first link as the note's own" do
+      expect(read("{ c'2\\fermata~ c'2\\fermata }").streams.first.events.first.marks.fermata).to be true
+    end
+  end
+
+  describe "tempo" do
+    it "records a tempo change with its line" do
+      event = read(%({\n\\tempo "Adagio" 4 = 60 c'1 })).streams.first.events.first
+      expect([event.kind, event.tempo.text, event.tempo.beats_per_minute, event.line]).to eq [:tempo, "Adagio", 60, 2]
+    end
+
+    it "exposes the first tempo" do
+      expect(read(%({ \\tempo 4 = 90 c'1 })).first_tempo.beats_per_minute).to eq 90
+    end
+
+    it "does not take ramp words alone as the first tempo" do
+      expect(read(%({ \\tempo "rit." c'1 })).first_tempo).to be_nil
+    end
+
+    it "ignores a tempo that follows music when seeding" do
+      expect(read(%({ c'1 | \\tempo 4 = 90 c'1 })).first_tempo).to be_nil
     end
   end
 end

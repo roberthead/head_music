@@ -56,6 +56,12 @@ module HeadMusic::Notation::LilyPond
       leading_event(:time)&.meter
     end
 
+    # A \tempo of ramp or "a tempo" words alone is read as those words.
+    def first_tempo
+      tempo = leading_event(:tempo)&.tempo
+      tempo unless tempo && !tempo.metronome_mark? && HeadMusic::Notation::TempoMarkReading.word(tempo.text)
+    end
+
     private
 
     # The first command of a kind that precedes any music in its stream,

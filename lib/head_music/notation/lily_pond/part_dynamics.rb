@@ -33,6 +33,7 @@ module HeadMusic::Notation::LilyPond
     attr_reader :flow, :layout, :placer
 
     def place_dynamics(parts, position, event)
+      placer.place_texts(position, event)
       parts.each do |part|
         placer.place_level(part, position, event)
         place_accent(part, position, event.marks.note_dynamic)

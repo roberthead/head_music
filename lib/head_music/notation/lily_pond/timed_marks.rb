@@ -10,7 +10,12 @@ module HeadMusic::Notation::LilyPond
   #
   # At one position, a hairpin's end comes first, then a level or accent, then
   # a hairpin's start, so one hairpin can end where the next begins.
+  #
+  # The lead voice also carries the flow's tempo marks: a \tempo is music
+  # rather than a mark, so it is written before the link that attacks where
+  # it falls, and a ramp's or "a tempo"'s words are written as a level is.
   class TimedMarks
+    BEFORE_RANK = -1
     END_RANK = 0
     LEVEL_RANK = 1
     START_RANK = 2
@@ -22,13 +27,40 @@ module HeadMusic::Notation::LilyPond
       def initialize(bar_number:, offset:, token:, label:, rank: LEVEL_RANK, onset: false)
         super
       end
+
+      def before?
+        rank == BEFORE_RANK
+      end
     end
+
+    TEMPO_LABELS = {tempo: "tempo change", ramp_start: "tempo ramp start", ramp_end: "tempo ramp end", a_tempo: %("a tempo")}.freeze
 
     # The voice's levels and hairpins. LilyPond ends a hairpin at a level or
     # accent in its voice, so a hairpin is written in pieces that meet there.
-    def self.voice(voice)
+    def self.voice(voice, lead: false)
       accents = voice.voice_events.select(&:note_dynamic).map(&:position)
-      new(level_marks(voice) + hairpin_marks(voice.spans, voice.dynamic_events.map(&:position) + accents, [voice]))
+      tempo_marks = lead ? tempo_marks(voice) : []
+      new(level_marks(voice) + hairpin_marks(voice.spans, voice.dynamic_events.map(&:position) + accents, [voice]) + tempo_marks)
+    end
+
+    # Those on the final barline are written after the music instead.
+    def self.tempo_marks(voice)
+      final_barline = voice.flow.final_barline_position
+      HeadMusic::Notation::TempoMarks.new(voice.flow).filter_map do |tempo_mark|
+        next if tempo_mark.position == final_barline
+
+        token, rank = tempo_token(tempo_mark)
+        token && mark(tempo_mark.position, token, TEMPO_LABELS.fetch(tempo_mark.kind), rank: rank, voices: [voice])
+      end
+    end
+
+    # A ramp's end writes its target, where it has one.
+    def self.tempo_token(tempo_mark)
+      if %i[tempo ramp_end].include?(tempo_mark.kind)
+        [TempoWriter.token(tempo_mark.tempo), BEFORE_RANK] if tempo_mark.tempo
+      else
+        [TempoWriter.text_mark(tempo_mark.text), LEVEL_RANK]
+      end
     end
 
     # A part's levels and hairpins, the hairpins cut at its own levels.
@@ -79,7 +111,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def initialize(marks)
-      @marks_by_bar = marks.sort_by { |mark| [mark.offset, mark.rank] }.group_by(&:bar_number)
+      @marks_by_bar = marks.each_with_index.sort_by { |mark, index| [mark.offset, mark.rank, index] }.map(&:first).group_by(&:bar_number)
     end
 
     # A link's word with the marks inside it before and those where it
@@ -87,19 +119,28 @@ module HeadMusic::Notation::LilyPond
     # The factor is the link's tuplet ratio, inside whose bracket an \after
     # reaches in written time.
     def around(bar_number, from, to, word, own = "", factor: 1)
-      "#{afters(bar_number, from, to, factor: factor)}#{word}#{attacks(bar_number, from, own)}"
+      "#{befores(bar_number, from)}#{afters(bar_number, from, to, factor: factor)}#{word}#{attacks(bar_number, from, own)}"
+    end
+
+    # The commands written before the link that starts at the offset.
+    def befores(bar_number, offset)
+      marks_in(bar_number).select { |mark| mark.before? && mark.offset == offset }.map { |mark| "#{mark.token} " }.join
     end
 
     # What follows the link that starts at the offset: ends and levels, the
     # link's own marks, then starts.
     def attacks(bar_number, offset, own = "")
-      starts, others = marks_in(bar_number).select { |mark| mark.offset == offset }.partition { |mark| mark.rank == START_RANK }
+      starts, others = marks_in(bar_number).select { |mark| !mark.before? && mark.offset == offset }.partition { |mark| mark.rank == START_RANK }
       "#{others.map(&:token).join}#{own}#{starts.map(&:token).join}"
     end
 
     # What precedes the link: an \after for each mark inside it.
     def afters(bar_number, from, to, factor: 1)
-      marks_in(bar_number).select { |mark| mark.offset > from && mark.offset < to }
+      inside = marks_in(bar_number).select { |mark| mark.offset > from && mark.offset < to }
+      command = inside.find(&:before?)
+      raise RenderError, "cannot place the #{command.label} in LilyPond output, where no note of the first voice starts" if command
+
+      inside
         .map { |mark| "\\after #{self.class.duration((mark.offset - from) / factor)} #{mark.token} " }.join
     end
 

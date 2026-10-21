@@ -716,6 +716,8 @@ describe HeadMusic::Content::Flow do
 
     it "round-trips to the same hash and the same LilyPond" do
       expect(restored.to_h).to eq flow.to_h
+      # LilyPond writes only whole beats per minute.
+      [flow, restored].each { |changed| changed.timeline.remove_tempo_change(3) }
       expect(restored.to_lilypond).to eq flow.to_lilypond
     end
 

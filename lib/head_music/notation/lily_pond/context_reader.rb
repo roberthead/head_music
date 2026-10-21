@@ -73,6 +73,7 @@ module HeadMusic::Notation::LilyPond
       child = VoiceContext.new(
         document, role(context, type, name), explicit: true, group_staff: group_staff(context, type, name)
       )
+      child.stream.numeric_time_signature = context.stream.numeric_time_signature
       music.nested(opener) { music.read_expression(child) }
       child.close
       context.preceding_staff = document.streams - streams_before if type.lexeme == "Staff"

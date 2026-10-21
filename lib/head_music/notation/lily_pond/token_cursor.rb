@@ -50,24 +50,39 @@ module HeadMusic::Notation::LilyPond
     # A markup is free text the model cannot hold: its function commands,
     # then a string, a word, or a block.
     def skip_markup
-      advance
-      advance while peek&.type == :command
-      case peek&.type
-      when :open_brace then skip_braces("\\markup expects a string or a block")
-      when :string, :word then advance
-      else raise error("\\markup expects a string or a block", peek || peek(-1))
-      end
+      markup_text
       nil
     end
 
+    # The plain words of a markup, its strings and words in order, without
+    # the commands that set them.
+    def markup_text
+      advance
+      advance while peek&.type == :command
+      case peek&.type
+      when :open_brace then braced_words("\\markup expects a string or a block").join(" ")
+      when :string, :word then advance.lexeme
+      else raise error("\\markup expects a string or a block", peek || peek(-1))
+      end
+    end
+
     def skip_braces(message)
+      braced_words(message)
+      nil
+    end
+
+    # The strings and words of a balanced block, which it consumes.
+    def braced_words(message)
       expect(:open_brace, message)
       depth = 1
+      words = []
       while depth.positive?
         token = advance
         depth += 1 if token.type == :open_brace
         depth -= 1 if token.type == :close_brace
+        words << token.lexeme if %i[string word].include?(token.type)
       end
+      words
     end
 
     def error(message, token)

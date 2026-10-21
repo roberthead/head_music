@@ -27,11 +27,21 @@ module HeadMusic::Notation::LilyPond
       ensure_no_marks_inside_rounded_notes(flow)
       ensure_filled_final_bars
       ensure_pitched_voice_events(flow)
+      ensure_tempo_marks_writable
     end
 
     private
 
     attr_reader :flow
+
+    def ensure_tempo_marks_writable
+      marks = HeadMusic::Notation::TempoMarks.new(flow)
+      tempo = [marks.opening, *marks.filter_map(&:tempo)].find { |candidate| TempoWriter.problem(candidate) }
+      raise RenderError, "cannot write #{TempoWriter.problem(tempo)} in LilyPond output" if tempo
+
+      ramp = marks.unreadable_ramps.first
+      raise RenderError, "cannot write the tempo ramp from #{ramp.from} to #{ramp.to} in LilyPond output so that it reads back" if ramp
+    end
 
     def ensure_voices
       return unless flow.voices.empty?

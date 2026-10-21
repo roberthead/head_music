@@ -52,15 +52,25 @@ module HeadMusic::Notation::LilyPond
     # A change already in force at its bar is a no-op (the writer repeats
     # each change in every voice); a different explicit value at that bar,
     # or any disagreement with the seed at bar one, is a conflict.
+    #
+    # A meter that differs only in its symbol changes the meter where it is
+    # the first word on the bar, and is ignored where another staff has
+    # already spoken there, since only a staff's style differs.
     def apply_change(event, flow, position, command, attribute)
       value = event.public_send(attribute)
       bar_number = change_bar_number(event, position, command)
-      return if flow.public_send(:"#{attribute}_at", bar_number) == value
-      if bar_number == 1 || flow.public_send(:"#{attribute}_change_at", bar_number)
-        raise ParseError.new("Conflicting #{command} at bar #{bar_number}", line_number: event.line)
-      end
+      current = flow.public_send(:"#{attribute}_at", bar_number)
+      return if current == value && !symbol_change?(current, value)
+
+      settled = bar_number == 1 || flow.public_send(:"#{attribute}_change_at", bar_number)
+      return if settled && current == value
+      raise ParseError.new("Conflicting #{command} at bar #{bar_number}", line_number: event.line) if settled
 
       flow.public_send(:"change_#{attribute}", bar_number, value)
+    end
+
+    def symbol_change?(current, value)
+      value.is_a?(HeadMusic::Rudiment::Meter) && current.symbol != value.symbol
     end
 
     def change_bar_number(event, position, command)

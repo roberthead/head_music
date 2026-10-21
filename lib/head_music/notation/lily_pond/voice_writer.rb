@@ -24,12 +24,16 @@ module HeadMusic::Notation::LilyPond
     # \transposition names the sounding pitch of a written middle C.
     MIDDLE_C = "C4"
 
+    # LilyPond prints a plain \time 4/4 or 2/2 as common or cut time, so a
+    # numeric one asks for its numerals, until a symbol returns.
+    TIME_SIGNATURE_STYLES = SettingReader::TIME_SIGNATURE_STYLES.invert.freeze
+
     def initialize(plan)
       @plan = plan
     end
 
     def lines(voice, part_index: nil, staff: nil)
-      opening_lines(clef_name(voice, staff), voice.part) +
+      opening_lines(clef_name(voice, staff), voice.part) + opening_tempo_lines(voice) +
         plan.bar_numbers.map { |bar_number| bar_line(voice, bar_number, part_index) }
     end
 
@@ -38,7 +42,7 @@ module HeadMusic::Notation::LilyPond
     # key and time print and the bars line up.
     def silent_lines(staff, part: nil)
       opening_lines(clef_name(nil, staff), part) +
-        plan.bar_numbers.map { |bar_number| bar_check_after([whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)], bar_number) }
+        plan.bar_numbers.map { |bar_number| bar_check_after([*silent_style(bar_number), whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)], bar_number) }
     end
 
     # The lines inside a part's \new Dynamics, bar-checked like a voice's.
@@ -63,8 +67,17 @@ module HeadMusic::Notation::LilyPond
         "\\clef #{clef_name}",
         *transposition_line(part),
         plan.first_measure_key(part),
-        time_command(plan.first_measure_meter)
+        time_command(first_bar_number, plan.first_measure_meter)
       ]
+    end
+
+    # The first voice writes the opening tempo, unless it is the one a flow
+    # reads at when none is written.
+    def opening_tempo_lines(voice)
+      tempo = plan.flow.timeline.opening_tempo
+      return [] unless plan.lead?(voice) && tempo != TempoWriter::DEFAULT_TEMPO
+
+      [TempoWriter.token(tempo)]
     end
 
     # The selector is the fallback for a part whose staves were never authored.
@@ -75,8 +88,33 @@ module HeadMusic::Notation::LilyPond
       CLEF_NAMES.fetch(clef.name_key.to_sym)
     end
 
-    def time_command(meter)
-      "\\time #{meter}"
+    def time_command(bar_number, meter)
+      [time_signature_styles[bar_number], "\\time #{meter}"].compact.join(" ")
+    end
+
+    # A staff nobody is written on takes its meter changes from the others,
+    # but its style is its own.
+    def silent_style(bar_number)
+      (bar_number == first_bar_number) ? [] : [time_signature_styles[bar_number]].compact
+    end
+
+    # By bar, the style command that comes before its \time, where the style
+    # changes there.
+    def time_signature_styles
+      @time_signature_styles ||= begin
+        numeric = false
+        meters = {first_bar_number => plan.first_measure_meter}.merge(plan.measure_time_changes.except(first_bar_number))
+        meters.sort.to_h do |bar_number, meter|
+          wanted = numeric_meter?(meter) || (numeric && meter.symbol.nil?)
+          style = "\\#{TIME_SIGNATURE_STYLES.fetch(wanted)}" unless wanted == numeric
+          numeric = wanted
+          [bar_number, style]
+        end
+      end
+    end
+
+    def numeric_meter?(meter)
+      meter.symbol.nil? && SettingReader::SYMBOLS_BY_METER.key?(meter.to_s)
     end
 
     # What the written pitches sound like. A part carries this rather than a
@@ -126,7 +164,7 @@ module HeadMusic::Notation::LilyPond
       return [] if bar_number == first_bar_number
 
       meter = plan.measure_time_changes[bar_number]
-      [plan.measure_key_changes(part)[bar_number], meter && time_command(meter)].compact
+      [plan.measure_key_changes(part)[bar_number], meter && time_command(bar_number, meter)].compact
     end
 
     # Emitted at exactly the bars the voice's staff-assignment map holds events

@@ -50,7 +50,7 @@ module HeadMusic::Notation::LilyPond
 
       flow = HeadMusic::Content::Flow.new(
         name: document.title, composer: document.composer,
-        key_signature: document.first_key_signature, meter: document.first_meter
+        key_signature: document.first_key_signature, meter: document.first_meter, tempo: document.first_tempo
       )
       layout = PartLayout.new(flow, document)
       placer = EventPlacer.new(layout)
@@ -58,6 +58,7 @@ module HeadMusic::Notation::LilyPond
       placer.finish(flow)
       part_dynamics = PartDynamics.new(flow, layout, placer)
       document.dynamics_streams.each { |stream| part_dynamics.place(stream) }
+      placer.apply_timeline(flow)
       flow
     end
 

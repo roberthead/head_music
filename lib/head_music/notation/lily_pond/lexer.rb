@@ -30,6 +30,11 @@ module HeadMusic::Notation::LilyPond
     FRACTION_PATTERN = %r{\d+/\d+}
     WORD_PATTERN = /[A-Za-z_][A-Za-z0-9_]*/
     NUMBER_PATTERN = %r{\d+(?:/\d+)?}
+    # The metronome mark of a \tempo, as 4. = 60, or a range, as 4 = 100-120.
+    METRONOME_PATTERN = /(\d+\.*)\s*=\s*(\d+)(?:\s*-\s*(\d+))?/
+    # Inside a markup, a word runs to the next space, brace, quote, or
+    # command, so "rit." is one word.
+    MARKUP_WORD_PATTERN = /[^\s{}"\\#%\d][^\s{}"\\#%]*/
     # Quarter-tone names (cih, ceh, cisih, ceseh) are real LilyPond pitches
     # the model cannot hold, so they are named as unsupported rather than
     # falling through as stray words.
@@ -64,6 +69,7 @@ module HeadMusic::Notation::LilyPond
 
     def scan
       @scanner = SourceScanner.new(@source)
+      @markup_depth = nil
       tokens = []
       until scanner.eos?
         next if scanner.skip_insignificant
@@ -78,14 +84,42 @@ module HeadMusic::Notation::LilyPond
     def next_token
       @token_line = scanner.line
       @token_column = scanner.column
-      read_token || raise(scanner.unexpected_character_error)
+      token = (@markup_depth && markup_word_token) || read_token || raise(scanner.unexpected_character_error)
+      follow_markup(token)
+      token
     end
 
     def read_token
       string_token || simple_token || close_chord_token ||
         lexeme_token(UNSUPPORTED_PATTERN, :unsupported) || after_token || tuplet_token || tuplet_span_token || command_token ||
         note_token || rest_token || spacer_token ||
-        lexeme_token(WORD_PATTERN, :word) || lexeme_token(NUMBER_PATTERN, :number)
+        lexeme_token(WORD_PATTERN, :word) || metronome_token || lexeme_token(NUMBER_PATTERN, :number)
+    end
+
+    def markup_word_token
+      lexeme_token(MARKUP_WORD_PATTERN, :word)
+    end
+
+    # A markup is its commands and their Scheme arguments, then a string, a
+    # word, or a braced block, inside which words are markup words too.
+    def follow_markup(token)
+      if token.is?(:command, "markup")
+        @markup_depth ||= 0
+      elsif @markup_depth
+        @markup_depth += 1 if token.type == :open_brace
+        @markup_depth -= 1 if token.type == :close_brace
+        @markup_depth = nil if @markup_depth.zero? && !markup_argument?(token)
+      end
+    end
+
+    def markup_argument?(token)
+      %i[command open_brace].include?(token.type) || token.is?(:unsupported, /\A#/)
+    end
+
+    def metronome_token
+      return unless consume(METRONOME_PATTERN)
+
+      token(:metronome, lexeme: scanner.matched, duration: scanner[1])
     end
 
     def string_token

@@ -10,6 +10,10 @@ module HeadMusic::Notation::LilyPond
   # Hairpin marks are gathered wherever a voice's marks are read and paired
   # once the voice is placed, by time rather than written order, since the
   # later links of a tied note are placed before the note's own marks.
+  #
+  # Fermata marks, \tempo commands, and the text of annotations are gathered
+  # the same way, and become the flow's fermatas and tempo marks once every
+  # meter is in force.
   class EventPlacer
     SUBTICKS_PER_WHOLE_NOTE = HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
 
@@ -24,6 +28,8 @@ module HeadMusic::Notation::LilyPond
       @bar_marks = BarMarkPlacer.new
       @hairpin_marks = Hash.new { |hash, voice| hash[voice] = HairpinMarks.new }.compare_by_identity
       @marker_marks = {}.compare_by_identity
+      @fermata_marks = HeadMusic::Notation::FermataMarks.new
+      @tempo_marks = HeadMusic::Notation::TempoMarkReading.new
     end
 
     def place(event, voice)
@@ -47,6 +53,16 @@ module HeadMusic::Notation::LilyPond
         hairpin_marks.pair([voice], written_end: @written_end, final_barline: flow.final_barline_position)
       end
       bar_marks.finish(flow)
+    end
+
+    def apply_timeline(flow)
+      @fermata_marks.apply(flow)
+      @tempo_marks.apply(flow)
+    end
+
+    # Annotation text is read only for its tempo words.
+    def place_texts(position, event)
+      event.marks.texts.each { |text| @tempo_marks.add(position, nil, text) }
     end
 
     # Where the voices' written time ends, trailing spacers included, once
@@ -77,6 +93,7 @@ module HeadMusic::Notation::LilyPond
 
     def place_dynamics(voice, position, event)
       place_level(voice, position, event)
+      place_texts(position, event)
       @hairpin_marks[voice].add(position, event.marks)
     end
 
@@ -93,6 +110,7 @@ module HeadMusic::Notation::LilyPond
       when :bar_mark then bar_marks.hold(event, voice, position)
       when :tuplet_start then tuplets.start(voice, position, event.fraction)
       when :tuplet_end then tuplets.stop(voice, position)
+      when :tempo then @tempo_marks.add(position, event.tempo)
       end
     end
 
@@ -111,6 +129,16 @@ module HeadMusic::Notation::LilyPond
       marks.mark(voice_event) unless voice_event.rest?
       place_dynamics(voice_event.voice, voice_event.position, event)
       spans.apply(voice_event, marks.span_marks)
+      mark_fermata(voice_event, marks.fermata)
+    end
+
+    # A fermata on a later link of a tied note holds from where that link
+    # starts.
+    def mark_fermata(voice_event, fermata)
+      return unless fermata
+
+      from = (fermata == true) ? voice_event.position : voice_event.position + fermata
+      @fermata_marks.add(voice_event, from: from)
     end
 
     # What was written between the halves of a tied note takes effect where it
@@ -122,6 +150,7 @@ module HeadMusic::Notation::LilyPond
 
       voice_event.note_dynamic ||= marks.note_dynamic unless voice_event.rest?
       spans.apply(voice_event, marks.span_marks)
+      mark_fermata(voice_event, marks.fermata)
     end
 
     def place_note(event, voice)

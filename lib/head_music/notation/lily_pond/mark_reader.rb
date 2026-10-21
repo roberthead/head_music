@@ -3,9 +3,12 @@ module HeadMusic::Notation::LilyPond
   # Reads the marks written after a note, rest, or chord: articulation
   # shorthands such as -. and ->, and commands such as \trill, \sfz, and \p,
   # bare or after a direction sign. A mark the catalogs do not hold, such as a
-  # fermata or a bowing, is consumed and dropped, so it cannot fail a file
-  # that imports today. Anything else ends the run of marks and is left for
-  # the reader, so fingerings and stray signs still raise.
+  # bowing, is consumed and dropped, so it cannot fail a file that imports
+  # today. Anything else ends the run of marks and is left for the reader, so
+  # fingerings and stray signs still raise.
+  #
+  # A fermata, of any length, is kept as a flag. Text after a direction sign,
+  # a string or a markup's words, is kept for its tempo words.
   #
   # Slur and phrasing-slur marks are kept in the order written, each with
   # the name a \= gives it, for the placer to pair. So are hairpin marks:
@@ -26,8 +29,12 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks, :hairpin_marks) do
-      def initialize(articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [])
+    # A fermata is true where it marks the start of the event, and the
+    # rhythmic value before the tied link it marks otherwise.
+    Marks = Data.define(:articulations, :ornaments, :note_dynamic, :level, :span_marks, :hairpin_marks, :fermata, :texts) do
+      def initialize(
+        articulations: [], ornaments: [], note_dynamic: nil, level: nil, span_marks: [], hairpin_marks: [], fermata: nil, texts: []
+      )
         super
       end
 
@@ -39,12 +46,15 @@ module HeadMusic::Notation::LilyPond
           note_dynamic: note_dynamic || other.note_dynamic,
           level: level || other.level,
           span_marks: span_marks + other.span_marks,
-          hairpin_marks: hairpin_marks + other.hairpin_marks
+          hairpin_marks: hairpin_marks + other.hairpin_marks,
+          fermata: fermata || other.fermata,
+          texts: texts + other.texts
         )
       end
 
+      # What a tied note's later link holds where the link starts.
       def dynamics
-        Marks.new(level: level, hairpin_marks: hairpin_marks)
+        Marks.new(level: level, hairpin_marks: hairpin_marks, texts: texts)
       end
 
       # Levels, hairpins, and spans are placed on the voice instead.
@@ -65,7 +75,10 @@ module HeadMusic::Notation::LilyPond
     ARTICULATION_COMMANDS = ARTICULATIONS_BY_SHORTHAND.values.freeze
     NOTE_DYNAMIC_COMMANDS = HeadMusic::Rudiment::Dynamic.accents.map(&:name_key).freeze
     LEVEL_COMMANDS = HeadMusic::Rudiment::Dynamic.levels.map(&:name_key).freeze
-    DROPPED_COMMANDS = %w[fermata arpeggio upbow downbow breathe portato stopped sfp spp sff fz pppp ffff].freeze
+    FERMATA_COMMANDS = %w[
+      fermata shortfermata longfermata verylongfermata veryshortfermata henzeshortfermata henzelongfermata
+    ].freeze
+    DROPPED_COMMANDS = %w[arpeggio upbow downbow breathe portato stopped sfp spp sff fz pppp ffff].freeze
     HAIRPINS_BY_LEXEME = {"\\<" => :crescendo, "\\>" => :diminuendo, "\\!" => :end}.freeze
     # The text forms draw "cresc." and "dim." where a hairpin would be.
     HAIRPINS_BY_COMMAND = {
@@ -90,6 +103,7 @@ module HeadMusic::Notation::LilyPond
       **NOTE_DYNAMIC_COMMANDS.to_h { |key| [key, [:note_dynamic, key]] },
       **LEVEL_COMMANDS.to_h { |key| [key, [:level, key]] },
       **HAIRPINS_BY_COMMAND.transform_values { |mark| [:hairpin_marks, [mark]] },
+      **FERMATA_COMMANDS.to_h { |command| [command, [:fermata, true]] },
       **DROPPED_COMMANDS.to_h { |command| [command, nil] }
     }.freeze
 
@@ -116,6 +130,8 @@ module HeadMusic::Notation::LilyPond
 
     def read_mark(marks)
       cursor.advance if mark_token_count == 2
+      return marks.merge(Marks.new(texts: [read_text])) if text?(cursor.peek)
+
       add(marks, cursor.advance)
     end
 
@@ -123,7 +139,15 @@ module HeadMusic::Notation::LilyPond
       token = cursor.peek
       return 1 if token&.is?(:unsupported, SHORTHAND_PATTERN) || directable?(token)
 
-      2 if token&.is?(:unsupported, DIRECTION_PATTERN) && directable?(cursor.peek(1))
+      2 if token&.is?(:unsupported, DIRECTION_PATTERN) && (directable?(cursor.peek(1)) || text?(cursor.peek(1)))
+    end
+
+    def text?(token)
+      token&.type == :string || token&.is?(:command, "markup")
+    end
+
+    def read_text
+      (cursor.peek.type == :string) ? cursor.advance.lexeme : cursor.markup_text
     end
 
     def directable?(token)

@@ -12,11 +12,11 @@ module HeadMusic::Notation::LilyPond
 
     Event = Data.define(
       :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks,
-      :bar_mark, :tuplet, :graces
+      :bar_mark, :tuplet, :graces, :tempo
     ) do
       def initialize(
         kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil,
-        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil, graces: []
+        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil, graces: [], tempo: nil
       )
         super
       end
@@ -29,7 +29,9 @@ module HeadMusic::Notation::LilyPond
         music? || kind == :spacer
       end
 
+      # A fermata on the link holds from where the link starts.
       def tied_to(link_value, link_marks)
+        link_marks = link_marks.with(fermata: rhythmic_value) if link_marks.fermata
         with(rhythmic_value: rhythmic_value.append_tied(link_value), marks: marks.merge(link_marks))
       end
 
@@ -41,7 +43,7 @@ module HeadMusic::Notation::LilyPond
     UNFOLLOWED_TIE = "A tie must be followed by a note"
 
     attr_reader :role, :events, :opening_clef
-    attr_accessor :group_staff, :dynamics_target, :tuplet_span
+    attr_accessor :group_staff, :dynamics_target, :tuplet_span, :numeric_time_signature
 
     def initialize(role = nil)
       @role = role
@@ -138,6 +140,10 @@ module HeadMusic::Notation::LilyPond
       mark(line, kind: :time, meter: meter)
     end
 
+    def change_tempo(tempo, line)
+      mark(line, kind: :tempo, tempo: tempo)
+    end
+
     def change_staff(staff_name, line)
       mark(line, kind: :staff_change, staff_name: staff_name)
     end
@@ -217,13 +223,13 @@ module HeadMusic::Notation::LilyPond
     # Closes an open tie: the arriving note's value is appended at the deep
     # end of the pending note's chain, so the pair (and any longer chain)
     # becomes a single note. Its marks join the note's, except a dynamic
-    # level and hairpin marks, which are held where the link starts.
+    # level, hairpin marks, and text, which are held where the link starts.
     def extend_tie(pitches, rhythmic_value, line, marks)
       raise error("A tie must connect two notes of the same pitch", line) unless @pending_note.pitches.sort == pitches.sort
 
       @tie_open = false
       hold_link_dynamics(marks, line)
-      @pending_note = @pending_note.tied_to(rhythmic_value, marks.with(level: nil, hairpin_marks: []))
+      @pending_note = @pending_note.tied_to(rhythmic_value, marks.with(level: nil, hairpin_marks: [], texts: []))
     end
 
     def hold_link_dynamics(marks, line)

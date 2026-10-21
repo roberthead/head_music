@@ -1,7 +1,7 @@
 # A namespace for LilyPond-notation rendering helpers
 module HeadMusic::Notation::LilyPond
   # Spacers from one offset in a bar to another, each mark on the first
-  # spacer where it falls. Between marks where notes start, such as at
+  # spacer where it falls, and each command, such as a \tempo, before it. Between marks where notes start, such as at
   # tuplet onsets, a multiplied spacer reaches what no note value does.
   class SpacerRun
     def initialize(bar_number, from, to, marks)
@@ -22,7 +22,8 @@ module HeadMusic::Notation::LilyPond
     def spacers_between(start, finish)
       at_onsets = [start, finish].all? { |offset| marks_at(offset).all?(&:onset) }
       first, *later = spacers(finish - start, at_onsets) || raise_unreachable(marks_by_offset[finish] || marks_by_offset[start])
-      ["#{first}#{marks_at(start).map(&:token).join}", *later]
+      commands, marks = marks_at(start).partition(&:before?)
+      ["#{commands.map { |mark| "#{mark.token} " }.join}#{first}#{marks.map(&:token).join}", *later]
     end
 
     def marks_at(offset)

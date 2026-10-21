@@ -14,11 +14,15 @@ module HeadMusic::Notation::LilyPond
   #
   # Each tuplet bracket opens before its first link and closes after its
   # last, outside the link's marks and tie.
+  #
+  # A voice event sounding where a fermata begins carries \fermata on the
+  # link sounding there, so a reader finds it starting no later.
   class SegmentTokens
-    def initialize(voice, segments, timed_marks)
+    def initialize(voice, segments, timed_marks, fermatas = {})
       @voice = voice
       @segments = segments
       @timed_marks = timed_marks
+      @fermatas = fermatas
     end
 
     def to_h
@@ -39,7 +43,7 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :voice, :segments, :timed_marks
+    attr_reader :voice, :segments, :timed_marks, :fermatas
 
     def token(segment)
       voice_event = segment.voice_event
@@ -74,14 +78,27 @@ module HeadMusic::Notation::LilyPond
       own = starts?(segment) ? MarkWriter.token(voice_event) : ""
       graces = starts?(segment) ? grace_token(voice_event) : ""
       forced = starts?(segment)
+      first = starts?(segment)
       segment.rhythmic_value!(RenderError).tied_chain.map do |link|
         to = from + HeadMusic::Notation::DottedDuration.sounding_fraction(link)
+        own += "\\fermata" if fermata_in?(voice_event, bar_number, from, to, first)
         word = graces + timed_marks.around(bar_number, from, to, "#{body(voice_event, forced)}#{DurationWriter.token(link)}", own, factor: link.tuplet_ratio&.factor || 1)
         from = to
         own = graces = ""
-        forced = false
+        forced = first = false
         word
       end
+    end
+
+    # A fermata where the event starts goes on its first link, and one
+    # beginning later on the link sounding there.
+    def fermata_in?(voice_event, bar_number, from, to, first)
+      fermata = fermatas[voice_event]
+      return false unless fermata
+      return first if fermata.from == voice_event.position
+
+      offset = HeadMusic::Notation::BarSplitter.offset_in_bar(fermata.from)
+      fermata.from.bar_number == bar_number && offset >= from && offset < to
     end
 
     def grace_token(voice_event)
