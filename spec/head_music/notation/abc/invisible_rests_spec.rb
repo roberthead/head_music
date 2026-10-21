@@ -16,6 +16,14 @@ describe HeadMusic::Notation::ABC::InvisibleRests do
     expect(span.map(&:to_s)).to eq ["1:3:000", "1:4:000"]
   end
 
+  it "reaches past the last voice event's bar only once they cross a bar line" do
+    voice.place("1:1", :quarter, "C4")
+    rests.add(HeadMusic::Rudiment::RhythmicValue.new(:half))
+    within_bar = rests.past_last_bar?
+    rests.add(HeadMusic::Rudiment::RhythmicValue.new(:whole))
+    expect([within_bar, rests.past_last_bar?]).to eq [false, true]
+  end
+
   it "places them as rests" do
     rests.add(HeadMusic::Rudiment::RhythmicValue.new(:half))
     rests.place

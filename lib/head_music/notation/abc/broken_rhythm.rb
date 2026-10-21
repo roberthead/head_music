@@ -14,11 +14,15 @@ module HeadMusic::Notation::ABC
       !@right_scale.nil?
     end
 
-    # The left note's scale.
-    def break(direction, line)
+    # The left note, scaled. It cannot be a right note still awaited.
+    def break(left_note, direction, line)
+      if left_note.nil? || awaiting_note?
+        raise ParseError.new("Broken rhythm must appear between two notes", line_number: line, snippet: direction.to_s)
+      end
+
       left_scale, @right_scale = SCALES.fetch(direction)
       @line = line
-      left_scale
+      left_note.scaled(left_scale)
     end
 
     # The arriving note's scale, which is one unless a mark awaits it.

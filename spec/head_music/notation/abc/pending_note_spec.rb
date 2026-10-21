@@ -21,6 +21,10 @@ describe HeadMusic::Notation::ABC::PendingNote do
     expect(note.closing_slur.slur_marks).to eq %i[open close]
   end
 
+  it "takes decorations after its own" do
+    expect(note.with(decorations: [:accent]).decorated([:fermata]).decorations).to eq %i[accent fermata]
+  end
+
   it "scales its length" do
     expect(note.scaled(Rational(3, 2)).rhythmic_value(duration_resolver).to_s).to eq "dotted quarter"
   end

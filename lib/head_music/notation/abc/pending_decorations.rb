@@ -46,14 +46,25 @@ module HeadMusic::Notation::ABC
       )
     end
 
-    # A fermata on a tied note's later link holds from that link, once the
-    # note is placed.
-    def hold_link(position)
-      @held_links << position
+    # A tied note's later link, starting at the position, keeps its fermata
+    # and its level and hairpin marks where it starts: a fermata holds from
+    # there once the note is placed. Its other markings, returned, join the
+    # whole event's.
+    def mark_link(position, decorations)
+      fermatas, decorations = decorations.partition(&:fermata?)
+      @held_links << position if fermatas.any?
+      marks, markings = decorations.partition(&:positional?)
+      marks.each { |decoration| place_mark(position, decoration) }
+      markings
     end
 
     def hold(voice_event, from: voice_event.position)
       @fermata_marks.add(voice_event, from: from)
+    end
+
+    def hold_last
+      last_voice_event = @voice.last_voice_event
+      hold(last_voice_event) if last_voice_event
     end
 
     # A hairpin mark before a bar line or the end of the voice marks where

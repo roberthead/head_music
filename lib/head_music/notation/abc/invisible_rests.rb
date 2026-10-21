@@ -24,6 +24,12 @@ module HeadMusic::Notation::ABC
       @values.reduce(@voice.next_position) { |position, rhythmic_value| position + rhythmic_value }
     end
 
+    # Once they reach a bar past the last voice event's, that bar is part of
+    # the music, and they are rests.
+    def past_last_bar?
+      music_end.ending_bar_number > @voice.next_position.ending_bar_number
+    end
+
     def place
       @values.each { |rhythmic_value| @voice.place(@voice.next_position, rhythmic_value) }
       @values.clear

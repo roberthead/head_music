@@ -24,6 +24,10 @@ module HeadMusic::Notation::ABC
       with(slur_marks: slur_marks + [:close])
     end
 
+    def decorated(more_decorations)
+      with(decorations: decorations + more_decorations)
+    end
+
     def scaled(factor)
       with(scale: scale * factor)
     end

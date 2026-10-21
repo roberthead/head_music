@@ -174,20 +174,17 @@ module HeadMusic::Notation::ABC
       fermatas = @decorations.reject_dangling_decorations
       return if fermatas.empty?
 
-      last_voice_event = voice.last_voice_event
-      if pending_note
-        self.pending_note = pending_note.with(decorations: pending_note.decorations + fermatas)
-      elsif last_voice_event
-        @decorations.hold(last_voice_event)
-      end
+      return self.pending_note = pending_note.decorated(fermatas) if pending_note
+
+      @decorations.hold_last
     end
 
     def reject_open_tie(line)
       @tie.reject(line)
     end
 
-    # A tie or broken rhythm needs a note before it that is not itself
-    # waiting on a broken rhythm's right side.
+    # A tie needs a note before it that is not itself waiting on a broken
+    # rhythm's right side.
     def after_note?
       pending_note && !@broken_rhythm.awaiting_note?
     end
@@ -195,11 +192,7 @@ module HeadMusic::Notation::ABC
     def break_rhythm(direction, line)
       reject_open_tie(line)
       reject_dangling_decorations
-      unless after_note?
-        raise ParseError.new("Broken rhythm must appear between two notes", line_number: line, snippet: direction.to_s)
-      end
-
-      self.pending_note = pending_note.scaled(@broken_rhythm.break(direction, line))
+      self.pending_note = @broken_rhythm.break(pending_note, direction, line)
     end
 
     # Buffers a note or chord as the pending note, flushing whatever was
@@ -236,11 +229,7 @@ module HeadMusic::Notation::ABC
     # Places a note, chord, or rest (nil pitches) directly onto the voice,
     # bypassing the pending-note buffer, with the decorations waiting for it.
     def place(length, pitches, scale: ONE)
-      ratio, ends = @tuplets.count
-      note = PendingNote.new(
-        pitches: pitches, length: length, scale: scale, ratio: ratio, tuplet_ends: ends,
-        decorations: @decorations.take, slur_marks: @slurs.take
-      )
+      note = written_note(pitches, length, scale)
       place_next(note).tap { |voice_event| apply_marks(voice_event, note) }
     end
 
@@ -260,10 +249,9 @@ module HeadMusic::Notation::ABC
     end
 
     # Invisible rests left in the bar where the music ends hold only time for
-    # a level there. Once they reach a later bar, that bar is part of the
-    # music, and they are rests.
+    # a level there.
     def end_invisible_rests
-      return unless music_end.ending_bar_number > voice.next_position.ending_bar_number
+      return unless @invisible_rests.past_last_bar?
 
       @invisible_rests.place
       @tuplets.group_closed
@@ -281,10 +269,16 @@ module HeadMusic::Notation::ABC
     end
 
     def arriving_note(pitches, length, inner_scale)
+      written_note(pitches, length, @broken_rhythm.take_scale * inner_scale, graces: @graces.take)
+    end
+
+    # A note, chord, or rest with the tuplet count, decorations, and slur
+    # marks waiting for it.
+    def written_note(pitches, length, scale, graces: [])
       ratio, ends = @tuplets.count
       PendingNote.new(
-        pitches: pitches, length: length, scale: @broken_rhythm.take_scale * inner_scale, decorations: @decorations.take,
-        slur_marks: @slurs.take, ratio: ratio, tuplet_ends: ends, graces: @graces.take
+        pitches: pitches, length: length, scale: scale, ratio: ratio, tuplet_ends: ends,
+        decorations: @decorations.take, slur_marks: @slurs.take, graces: graces
       )
     end
 
@@ -292,18 +286,13 @@ module HeadMusic::Notation::ABC
     # so the pair (and any longer chain) resolves to a single voice event whose
     # rhythmic value carries the author's chosen split.
     #
-    # The tied link's markings join the whole event's, but a level or hairpin
-    # mark written on it takes effect where it is written, partway through the
-    # event.
+    # A mark written on the tied link takes effect where it is written,
+    # partway through the event.
     def tie_onto_pending(link)
       pending = pending_note
       @tie.ensure_ties(pending, link.pitches)
       prefix = pending.rhythmic_value(@duration_resolver)
-      link_start = pending_end_position
-      fermatas, decorations = link.decorations.partition(&:fermata?)
-      @decorations.hold_link(link_start) if fermatas.any?
-      marks, markings = decorations.partition(&:positional?)
-      marks.each { |decoration| @decorations.place_mark(link_start, decoration) }
+      markings = @decorations.mark_link(pending_end_position, link.decorations)
       close_tie
       fixed_ends = @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix)
       self.pending_note = pending.tied_to(link.with(decorations: markings), prefix, fixed_ends)
