@@ -9,7 +9,7 @@ module HeadMusic::Notation::ABC
     # The identity length scale, used wherever no stretching applies.
     ONE = Rational(1)
 
-    attr_reader :voice, :pitch_builder, :beams
+    attr_reader :voice, :beams
     attr_accessor :pending_note, :active_passes, :volta_start_bar
 
     def initialize(voice, pitch_builder, duration_resolver = nil, fermata_marks = HeadMusic::Notation::FermataMarks.new)
@@ -28,6 +28,19 @@ module HeadMusic::Notation::ABC
     end
 
     delegate :music_end, to: :@invisible_rests
+
+    # Spelling in the key in force where the next note starts.
+    def pitch_builder
+      @pitch_builder.tap { |builder| builder.key_signature = spelling_key }
+    end
+
+    # A voice spells in a key it states from that point on, even partway
+    # through a bar or where the flow keeps another voice's key, until the
+    # flow's key changes at a later bar.
+    def state_key(key_signature)
+      @stated_key = [key_signature, entered_bar_number]
+    end
+
     delegate :open?, :line, to: :@tie, prefix: :tie
     delegate :ensure_not_awaiting_note, to: :@broken_rhythm
     delegate :decorate, :take_navigation, :add_hairpins, to: :@decorations
@@ -300,6 +313,16 @@ module HeadMusic::Notation::ABC
 
     def pending_end_position
       music_end + pending_note.rhythmic_value(@duration_resolver)
+    end
+
+    def spelling_key
+      bar = entered_bar_number
+      flow = voice.flow
+      return flow.key_signature_at(bar) unless @stated_key
+
+      key_signature, stated_bar = @stated_key
+      changed = flow.key_signature_changes.keys.any? { |change_bar| change_bar > stated_bar && change_bar <= bar }
+      changed ? flow.key_signature_at(bar) : key_signature
     end
   end
 end

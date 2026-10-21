@@ -931,7 +931,7 @@ describe HeadMusic::Notation::ABC::Parser do
       "an unrecognized decoration" => ["!bogus!A|", "!bogus!"],
       "a double broken rhythm" => ["A>>B|", ">>"],
       "a multi-bar rest" => ["Z4|", "Z4"],
-      "an inline field" => ["[K:G]A|", "[K:G]"],
+      "an inline field" => ["[I:G]A|", "[I:G]"],
       "a lyrics line" => ["CDEF|\nw:la la la", "w:la la la"]
     }.each do |feature, (body, lexeme)|
       it "raises for #{feature}, naming the lexeme and line" do
@@ -1189,6 +1189,68 @@ describe HeadMusic::Notation::ABC::Parser do
     it "counts a tuplet by the meter of its bar" do
       flow = parse("X:1\nM:4/4\nL:1/8\nK:C\nC8|[M:6/8](5CDEFG c3|\n")
       expect(flow.voices.first.tuplets.map(&:to_s)).to eq ["5:3 tuplet from 2:1:000 to 2:4:000"]
+    end
+  end
+
+  describe "key changes" do
+    def key_changes(flow)
+      flow.key_signature_changes.transform_values { |event| event.key_signature.name }
+    end
+
+    def pitches(voice)
+      voice.pitches.map(&:to_s)
+    end
+
+    def two_voices(first, second)
+      parse("X:1\nL:1/4\nM:4/4\nV:1\nV:2\nK:C\nV:1\n#{first}\nV:2\n#{second}\n")
+    end
+
+    it "reads a body K: line as a key change at the bar it opens" do
+      flow = parse_body("C D E F|\nK:D\nF G A B|")
+      expect([key_changes(flow), pitches(flow.voices.first).last(4)]).to eq [{2 => "D major"}, %w[F♯4 G4 A4 B4]]
+    end
+
+    it "reads an inline [K:] field as a key change at the bar it opens" do
+      expect(key_changes(parse_body("C D E F|[K:Bb]B c d e|"))).to eq({2 => "B♭ major"})
+    end
+
+    it "makes no change for a field that restates the key in force" do
+      expect(key_changes(parse_body("C D E F|[K:C]G A B c|"))).to eq({})
+    end
+
+    it "reads a change of mode alone as a change" do
+      expect(key_changes(parse_body("C D E F|[K:Am]A B c d|"))).to eq({2 => "A minor"})
+    end
+
+    it "changes no key for a field holding only a clef" do
+      expect(key_changes(parse_body("C D E F|[K:clef=bass]G, A, B, C|"))).to eq({})
+    end
+
+    it "respells the rest of the stating voice's bar at once and changes the flow at the next bar" do
+      flow = parse_body("F F [K:D]F F|F G A B|")
+      expect([key_changes(flow), pitches(flow.voices.first).first(5)]).to eq [{2 => "D major"}, %w[F4 F4 F♯4 F♯4 F♯4]]
+    end
+
+    it "spells another voice's bar in the key one voice states" do
+      flow = two_voices("C D E F|[K:D]F G A B|", "C, D, E, F,|F, G, A, B,|")
+      expect(pitches(flow.voices.last).last(4)).to eq %w[F♯3 G3 A3 B3]
+    end
+
+    it "spells an earlier voice's bar in the key a later voice states" do
+      flow = two_voices("C D E F|F G A B|", "C, D, E, F,|[K:D]F, G, A, B,|")
+      expect(pitches(flow.voices.first).last(4)).to eq %w[F♯4 G4 A4 B4]
+    end
+
+    context "when two voices state different keys for one bar" do
+      subject(:flow) { two_voices("C D E F|[K:D]F G A B|F G A B|[K:G]F G A B|", "C, D, E, F,|[K:Bb]B, A, G, F,|B,4|B,4|") }
+
+      it "keeps the first for the flow" do
+        expect(key_changes(flow)).to eq({2 => "D major", 4 => "G major"})
+      end
+
+      it "spells the other voice in its own key until the flow's key changes" do
+        expect(pitches(flow.voices.last).last(6)).to eq %w[B♭3 A3 G3 F3 B♭3 B3]
+      end
     end
   end
 
@@ -1531,8 +1593,8 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "still rejects an inline field next to a chord as unsupported, not a chord" do
-      expect { parse_body("[CEG] [K:G] A|") }
-        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\[K:G\]/)
+      expect { parse_body("[CEG] [I:G] A|") }
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /\[I:G\]/)
     end
 
     it "persists an accidental inside a chord for the rest of the bar" do

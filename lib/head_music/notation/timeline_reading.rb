@@ -10,6 +10,12 @@ module HeadMusic::Notation
       meter == other && meter.symbol == other.symbol
     end
 
+    # A key restates the one in force when it has the same signature and
+    # the same name, so a change of mode alone is a change.
+    def self.same_key?(event, key_signature)
+      event.signature == HeadMusic::Content::Flow::Timeline.fifths_of(key_signature) && event.key_signature.name == key_signature.name
+    end
+
     def initialize(bar_map)
       @bar_map = bar_map
     end
@@ -40,9 +46,7 @@ module HeadMusic::Notation
     private
 
     def change_key(flow, bar, key_signature)
-      event = flow.timeline.key_signature_event_at(bar)
-      fifths = HeadMusic::Content::Flow::Timeline.fifths_of(key_signature)
-      return if event.signature == fifths && event.key_signature.name == key_signature.name
+      return if self.class.same_key?(flow.timeline.key_signature_event_at(bar), key_signature)
 
       flow.change_key_signature(bar, key_signature)
     end

@@ -138,4 +138,17 @@ describe HeadMusic::Notation::ABC::PitchBuilder do
       end
     end
   end
+
+  describe "#key_signature=" do
+    it "spells later unmarked notes in the new key" do
+      builder.key_signature = "D major"
+      expect(builder.pitch("F", "")).to eq pitch("F#4")
+    end
+
+    it "keeps the bar's accidentals in force" do
+      builder.pitch("F", "", "=")
+      builder.key_signature = "D major"
+      expect(builder.pitch("F", "")).to eq pitch("F4")
+    end
+  end
 end

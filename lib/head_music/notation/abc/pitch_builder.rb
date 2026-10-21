@@ -17,8 +17,13 @@ module HeadMusic::Notation::ABC
     attr_reader :key_signature
 
     def initialize(key_signature)
-      @key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature)
+      self.key_signature = key_signature
       start_new_bar
+    end
+
+    # A key change leaves the bar's accidentals in force.
+    def key_signature=(key_signature)
+      @key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature)
     end
 
     # letter: raw ABC letter preserving case ("A".."G" or "a".."g")

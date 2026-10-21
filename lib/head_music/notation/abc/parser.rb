@@ -14,11 +14,11 @@ module HeadMusic::Notation::ABC
       beam_break: :handle_beam_break, decoration: :handle_decoration,
       slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label,
       tuplet: :handle_tuplet, grace: :handle_grace, tempo: :handle_tempo, annotation: :handle_annotation,
-      meter: :handle_meter
+      meter: :handle_meter, key: :handle_key
     }.freeze
     # What a tune may hold before its first voice, marking the start of the
     # music rather than a voice.
-    UNVOICED_TYPES = %i[tempo annotation part_label meter].freeze
+    UNVOICED_TYPES = %i[tempo annotation part_label meter key].freeze
 
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
@@ -196,6 +196,10 @@ module HeadMusic::Notation::ABC
 
     def handle_meter(token)
       timeline_fields.meter((current_state if @voices.any?), token)
+    end
+
+    def handle_key(token)
+      timeline_fields.key((current_state if @voices.any?), token)
     end
 
     # Only an annotation's ramp and "a tempo" words are read.

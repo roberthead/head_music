@@ -113,9 +113,13 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
   end
 
-  describe "meter fields" do
+  describe "meter and key fields" do
     it "lexes an M: line as a meter field" do
       expect(tokens_for("M:6/8 % compound").first.to_h).to include(type: :meter, lexeme: "6/8")
+    end
+
+    it "lexes a K: line as a key field" do
+      expect(tokens_for("K:Bb clef=bass").first.to_h).to include(type: :key, lexeme: "Bb clef=bass")
     end
   end
 
@@ -374,8 +378,12 @@ describe HeadMusic::Notation::ABC::BodyLexer do
         expect(tokens_for("[M:C|]").first.to_h).to include(type: :meter, lexeme: "C|")
       end
 
-      it "lexes [K:G] as an unsupported inline field" do
-        expect(tokens_for("[K:G]").first.type).to eq(:unsupported)
+      it "lexes [K:G] as a key field" do
+        expect(tokens_for("[K:G]").first.to_h).to include(type: :key, lexeme: "G")
+      end
+
+      it "lexes [I:linebreak $] as an unsupported inline field" do
+        expect(tokens_for("[I:linebreak $]").first.type).to eq(:unsupported)
       end
 
       it "lexes [CEG] as a chord" do
@@ -559,7 +567,7 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
 
     it "lexes an inline field as unsupported" do
-      expect(tokens_for("[K:D] A").first.to_h).to include(type: :unsupported, lexeme: "[K:D]")
+      expect(tokens_for("[I:D] A").first.to_h).to include(type: :unsupported, lexeme: "[I:D]")
     end
 
     it "lexes a lyrics line as unsupported" do

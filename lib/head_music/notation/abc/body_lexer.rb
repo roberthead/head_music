@@ -49,8 +49,8 @@ module HeadMusic::Notation::ABC
     end
 
     # Lines that are fields rather than music: V: switches voices, P: labels
-    # a part, Q: sets the tempo, M: the meter; any other letter-colon line is
-    # a field we don't interpret in the body. A note followed by a repeat bar (e.g. "A:|") also puts a colon
+    # a part, Q: sets the tempo, M: the meter, K: the key; any other
+    # letter-colon line is a field we don't interpret in the body. A note followed by a repeat bar (e.g. "A:|") also puts a colon
     # after a letter at line start, so bar-line characters after the colon
     # disqualify.
     def field_token(line_text)
@@ -60,6 +60,7 @@ module HeadMusic::Notation::ABC
       when "P:" then {type: :part_label, lexeme: value}
       when "Q:" then {type: :tempo, lexeme: line_text[2..][UNCOMMENTED_PATTERN].strip}
       when "M:" then {type: :meter, lexeme: value}
+      when "K:" then {type: :key, lexeme: value}
       when /\A[A-Za-z]:/
         {type: :unsupported, lexeme: line_text.strip[0, SNIPPET_LENGTH]} unless ["|", ":"].include?(line_text[2])
       end
