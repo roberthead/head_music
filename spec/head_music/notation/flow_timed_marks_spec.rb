@@ -18,7 +18,28 @@ describe HeadMusic::Notation::FlowTimedMarks do
     expect(marks.map(&:voices)).to eq [flow.parts.first.voices, [voice]]
   end
 
+  context "with a fermata, a tempo ramp, and an \"a tempo\"" do
+    before do
+      flow.add_fermata("1:4", :quarter)
+      flow.add_tempo_ramp(from: "2:1", to: "2:3", text: "rit.")
+      flow.add_a_tempo("2:4")
+    end
+
+    it "answers the fermata's start, the ramp's start and end, and the \"a tempo\"" do
+      expect(marks.map(&:to_s)).to eq ["fermata at 1:4:000", "tempo ramp start at 2:1:000", "tempo ramp end at 2:3:000", '"a tempo" at 2:4:000']
+    end
+
+    it "marks every voice with each" do
+      expect(marks.map(&:voices)).to all(eq flow.voices)
+    end
+  end
+
   describe "Mark#after?" do
+    it "lets a tempo ramp's end reach the final barline" do
+      flow.add_tempo_ramp(from: "2:3", to: "3:1", text: "rit.")
+      expect(marks.map { |mark| mark.after?(2, flow.final_barline_position) }).to eq [false, false]
+    end
+
     it "lets only a hairpin's end reach the final barline" do
       voice.add_span(:crescendo, from: "2:1", to: "3:1")
       final_barline = flow.final_barline_position

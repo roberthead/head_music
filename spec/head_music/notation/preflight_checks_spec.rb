@@ -106,7 +106,9 @@ describe HeadMusic::Notation::PreflightChecks do
   {
     "a hairpin starting where the music ends" => [->(flow) { flow.parts.first.add_span(:crescendo, from: "3:1", to: "3:2") }, /crescendo start at 3:1:000 falls after the music ends in bar 2/],
     "a hairpin ending a beat past the music's end" => [->(flow) { flow.voices.first.add_span(:diminuendo, from: "2:1", to: "3:2") }, /diminuendo end at 3:2:000 falls after the music ends in bar 2/],
-    "a part hairpin starting before the music" => [->(flow) { flow.parts.first.add_span(:crescendo, from: "0:2", to: "1:3") }, /crescendo start at 0:2:000 falls before the music starts in bar 1/]
+    "a part hairpin starting before the music" => [->(flow) { flow.parts.first.add_span(:crescendo, from: "0:2", to: "1:3") }, /crescendo start at 0:2:000 falls before the music starts in bar 1/],
+    "a fermata where the music ends" => [->(flow) { flow.add_fermata("3:1", :quarter) }, /fermata at 3:1:000 falls after the music ends in bar 2/],
+    "a tempo ramp ending a beat past the music's end" => [->(flow) { flow.add_tempo_ramp(from: "2:1", to: "3:2", text: "rit.") }, /tempo ramp end at 3:2:000 falls after the music ends in bar 2/]
   }.each do |description, (placement, message)|
     context "with #{description}" do
       before { placement.call(flow) }
