@@ -45,16 +45,17 @@ module HeadMusic::MIDI
     end
 
     # Meters come first, so the positions of ramps and fermatas fall in the
-    # bars they will have, and ramps before tempo changes, so a tempo changes
-    # only where the flow does not already answer it.
+    # bars they will have, and ramps and "a tempo" points before tempo
+    # changes, so a tempo changes only where the flow does not already
+    # answer it.
     def apply(flow, keys)
       layout.bars.each_cons(2) { |before, bar| flow.change_meter(bar.number, bar.meter) unless bar.meter == before.meter }
       add_ramps(flow)
+      inference.a_tempos.each { |time| flow.add_a_tempo(position(flow, time)) }
       layout.bars.drop(1).each do |bar|
         tempo = tempo_at(bar)
         flow.change_tempo(bar.number, tempo) unless Tempo.microseconds_per_quarter(flow.tempo_at(bar.number)) == Tempo.microseconds_per_quarter(tempo)
       end
-      inference.a_tempos.each { |time| flow.add_a_tempo(position(flow, time)) }
       inference.fermatas.each { |fermata| flow.add_fermata(position(flow, fermata.from), to: position(flow, fermata.to), stretch: fermata.stretch) }
       keys.drop(1).each { |region| flow.change_key_signature(region.bar_number, region.key.name) }
     end

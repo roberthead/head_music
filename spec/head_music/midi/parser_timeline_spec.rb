@@ -155,10 +155,10 @@ describe HeadMusic::MIDI::Parser do
         expect([ramps(flow), tempos(flow), flow.tempo_at(3).beats_per_minute]).to eq [[["1:3:000", "2:3:000", 80.0, "rit."]], [[1, "quarter", 120.0]], 80.0]
       end
 
-      it "reads a faster run as an accel., and the tempo it began from within a bar as a tempo" do
+      it "reads a faster run as an accel., and the tempo it began from within a bar as a tempo, which later bars keep" do
         flow = parse([tempo(0, 600_000), tempo(96, 550_000), tempo(192, 500_000), tempo(bar + 96, 600_000), *quarters])
         expect([ramps(flow), flow.a_tempos.map { |a_tempo| a_tempo.position.to_s }, tempos(flow)]).to eq [
-          [["1:2:000", "1:3:000", 120.0, "accel."]], ["2:2:000"], [[1, "quarter", 100.0], [3, "quarter", 100.0]]
+          [["1:2:000", "1:3:000", 120.0, "accel."]], ["2:2:000"], [[1, "quarter", 100.0]]
         ]
       end
 
