@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-20T16:02:22-07:00
   planned_at:   2026-10-20T16:24:28-07:00
   finished_at:
-  updated_at:   2026-10-20T19:59:12-07:00
+  updated_at:   2026-10-20T20:22:23-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -403,8 +403,6 @@ Planned 2026-10-20 by the story planner (product-manager, two developers, best-p
   - **Breaking.** `Tempo` compares by value, and `Tempo.get` keeps its word as text.
   - **Breaking.** `Meter.get` returns a `Meter` it is given unchanged.
   - **Breaking.** A plain LilyPond `\time 4/4` or `\time 2/2` reads as common or cut time, and the writer writes `\numericTimeSignature` before a numeric one.
-  - **Breaking.** An ABC tune with no `M:` reads as a plain 4/4.
-  - **Breaking.** `MIDI::ConductorTrack#tempo` becomes `#tempos`.
 - **Fixed:**
   - The `Conductor`'s clock time across a meter change.
   - `Conductor#clock_to_musical` past 1000 bars.
