@@ -204,6 +204,14 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     it "trims the voice id" do
       expect(tokens_for("V: Tenor ").first.voice_id).to eq("Tenor")
     end
+
+    it "takes the voice id from the words before its name=value terms" do
+      expect(tokens_for("V:S clef=bass name=\"Soprano\"").first.voice_id).to eq("S")
+    end
+
+    it "keeps a voice id of more than one word" do
+      expect(tokens_for("V:cantus firmus").first.voice_id).to eq("cantus firmus")
+    end
   end
 
   describe "comments" do

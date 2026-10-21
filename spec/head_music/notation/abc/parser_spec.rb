@@ -198,6 +198,23 @@ describe HeadMusic::Notation::ABC::Parser do
       expect(second_voice.voice_events.first.position.to_s).to eq "1:1:000"
     end
 
+    context "with attributes on the V: lines" do
+      subject(:flow) { parse(<<~ABC) }
+        X:1
+        V:S clef=treble
+        V:B clef=bass
+        K:C
+        V:S clef=treble
+        CD
+        V:B clef=bass
+        C,D,
+      ABC
+
+      it "reads each voice by its first word" do
+        expect(flow.voices.map(&:role)).to eq %w[S B]
+      end
+    end
+
     context "when a body V: names an unknown voice" do
       subject(:flow) { parse("X:1\nK:C\nV:9\nCDE|\n") }
 

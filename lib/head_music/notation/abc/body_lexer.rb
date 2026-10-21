@@ -56,7 +56,7 @@ module HeadMusic::Notation::ABC
     def field_token(line_text)
       value = line_text[2..].to_s.split("%", 2).first.to_s.strip
       case line_text[0, 2]
-      when "V:" then {type: :voice_change, voice_id: value}
+      when "V:" then {type: :voice_change, voice_id: Header.voice_id(value)}
       when "P:" then {type: :part_label, lexeme: value}
       when "Q:" then {type: :tempo, lexeme: line_text[2..][UNCOMMENTED_PATTERN].strip}
       when /\A[A-Za-z]:/

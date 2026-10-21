@@ -53,6 +53,11 @@ describe HeadMusic::Notation::ABC::Header do
       expect(header.voice_ids).to eq %w[1 2]
     end
 
+    it "reads a V: voice id up to its name=value terms" do
+      header = described_class.new("X:1\nV:cantus firmus clef=bass\nK:C\n")
+      expect(header.voice_ids).to eq ["cantus firmus"]
+    end
+
     it "maps K: to a key signature" do
       expect(header.key_signature).to be_a(HeadMusic::Rudiment::KeySignature)
       expect(header.key_signature.name).to eq "G major"

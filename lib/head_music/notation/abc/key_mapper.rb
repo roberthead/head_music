@@ -76,9 +76,14 @@ class HeadMusic::Notation::ABC::KeyMapper
 
   attr_reader :value, :line_number
 
+  # Terms such as clef=bass describe the staff, not the key.
   def initialize(value, line_number: nil)
-    @value = value.to_s.strip
+    @value = value.to_s.split.reject { |word| word.include?("=") }.join(" ")
     @line_number = line_number
+  end
+
+  def key?
+    !value.empty?
   end
 
   def key_signature_name

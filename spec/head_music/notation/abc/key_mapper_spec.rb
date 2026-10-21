@@ -94,6 +94,20 @@ describe HeadMusic::Notation::ABC::KeyMapper do
       expect(key_signature).to be_a(HeadMusic::Rudiment::KeySignature)
       expect(key_signature.name).to eq "A dorian"
     end
+
+    it "skips the name=value terms that describe the staff" do
+      expect(described_class.new("D clef=bass middle=d").key_signature.name).to eq "D major"
+    end
+  end
+
+  describe "#key?" do
+    it "is true when the value names a key" do
+      expect(described_class.new("Bb clef=treble")).to be_key
+    end
+
+    it "is false when the value holds only name=value terms" do
+      expect(described_class.new("clef=bass")).not_to be_key
+    end
   end
 
   describe ".abc_value" do
