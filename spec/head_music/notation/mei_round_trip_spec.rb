@@ -88,10 +88,10 @@ describe HeadMusic::Notation::MEI do
       HeadMusic::Content::Flow.new(name: "Melody", meter: meter, tempo: tempo).tap { |flow| flow.add_voice }
     end
 
-    it "reads a tempo back as quarter notes a minute, which is all @midi.bpm holds" do
-      flow = melody(meter: "6/8", tempo: HeadMusic::Rudiment::Tempo.new("dotted quarter", 60))
-      flow.voices.first.place("1:1", :dotted_half, "C4")
-      expect(parse(render(flow)).to_h.dig("timeline", "tempo")).to eq("beat_value" => "quarter", "beats_per_minute" => 90.0)
+    it "reads a fermata's stretch back as the default, since MEI writes none" do
+      flow = melody.tap { |built| built.voices.first.place("1:1", :whole, "C4") }
+      flow.add_fermata("1:1", :whole, stretch: 3)
+      expect(parse(render(flow)).fermatas.map(&:stretch)).to eq [HeadMusic::Time::Fermata::DEFAULT_STRETCH]
     end
 
     it "reads an authored whole-bar rest at a voice's start or end back as absence" do

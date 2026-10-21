@@ -103,6 +103,25 @@ describe HeadMusic::Notation::MEI, oracle: :mei_schema do
     expect(schema_errors(described_class.render(flow), schema)).to eq []
   end
 
+  %i[melody chorale].each do |name|
+    it "renders the tempo text, ramps, \"a tempo\", fermatas, and meter symbol of the #{name} timeline fixture as valid MEI" do
+      expect(schema_errors(described_class.render(TimelineExpressionFixtures.public_send(name)), schema)).to eq []
+    end
+  end
+
+  it "renders a tempo of words alone and a ramp ending at the final barline as valid MEI" do
+    flow = HeadMusic::Content::Flow.new(tempo: HeadMusic::Rudiment::Tempo.for_text("Andante")).tap { |built| built.add_voice.place("1:1", :whole, "C4") }
+    flow.add_tempo_ramp(from: "1:3", to: "2:1", to_tempo: HeadMusic::Rudiment::Tempo.new("quarter", 60))
+    expect(schema_errors(described_class.render(flow), schema)).to eq []
+  end
+
+  %w[Bach-JS_Herzliebster_Jesu_BWV244-46.mei Bach-JS_Ein_feste_Burg.mei].each do |name|
+    it "renders the fermatas and meter symbol of #{name} as valid MEI" do
+      flow = described_class.parse(File.binread(File.join(MEIFixtures::DIRECTORY, "real", name)))
+      expect(schema_errors(described_class.render(flow), schema)).to eq []
+    end
+  end
+
   it "renders the part marks of the grand-staff piano as valid MEI" do
     expect(schema_errors(described_class.render(MuseScoreFixtures.piano_part_marks), schema)).to eq []
   end

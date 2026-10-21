@@ -1,13 +1,10 @@
 module HeadMusic::Notation::MEI
   # What changes after the opening bar: a <scoreDef> before a bar whose key or
-  # meter changes, a <staffDef> before a bar where a staff's clef, written key,
-  # or instrument changes, and a <tempo> where the tempo changes. In a
-  # transposed render a staff states its own written key wherever it differs
-  # from the score's, and its trans.* from the opening on.
+  # meter changes, its symbol included, and a <staffDef> before a bar where a
+  # staff's clef, written key, or instrument changes; TempoControls writes the
+  # tempos. In a transposed render a staff states its own written key wherever
+  # it differs from the score's, and its trans.* from the opening on.
   class TimelineChanges
-    # A tempo's beat unit is a note value written as @mm.unit and @mm.dots.
-    BEAT_UNIT_KEYS = {"dur" => "mm.unit", "dots" => "mm.dots"}.freeze
-
     def initialize(plan)
       @plan = plan
     end
@@ -26,12 +23,6 @@ module HeadMusic::Notation::MEI
       later_bars.flat_map do |bar_number|
         elements = [score_def_element(bar_number), *plan.staff_entries.map { |entry| staff_def_element(entry, bar_number) }]
         elements.compact.map { |element| BarElement.new(bar_number, element) }
-      end
-    end
-
-    def controls
-      plan.flow.tempo_changes.filter_map do |bar_number, tempo|
-        BarElement.new(bar_number, tempo_element(bar_number, tempo)) if later_bar?(bar_number)
       end
     end
 
@@ -62,7 +53,7 @@ module HeadMusic::Notation::MEI
 
       attributes = {
         "keysig" => key, "key.mode" => key && plan.key_mode_change(bar_number),
-        "meter.count" => meter&.top_number, "meter.unit" => meter&.bottom_number
+        "meter.count" => meter&.top_number, "meter.unit" => meter&.bottom_number, "meter.sym" => meter&.symbol&.to_s
       }
       Element.new("scoreDef", ids.container("scoredef", ids.bar_key(bar_number)), attributes)
     end
@@ -112,18 +103,6 @@ module HeadMusic::Notation::MEI
       {"trans.diat" => diatonic, "trans.semi" => semitones}
     end
 
-    def tempo_element(bar_number, tempo)
-      flow = plan.flow
-      attributes = {
-        "tstamp" => Tstamp.beat(flow, flow.position(bar_number, 1, 0, 0)),
-        "staff" => plan.staff_entries.first.number,
-        "midi.bpm" => plan.midi_bpm(tempo),
-        "mm" => Decimals.format(Rational(tempo.beats_per_minute.to_s)),
-        **Durations.attributes(tempo.beat_value).transform_keys(BEAT_UNIT_KEYS)
-      }
-      Element.new("tempo", ids.container("tempo", ids.bar_key(bar_number)), attributes)
-    end
-
     def clef_changes(staff)
       @clef_changes ||= {}.compare_by_identity
       @clef_changes[staff] ||= staff.clef_changes
@@ -137,5 +116,4 @@ module HeadMusic::Notation::MEI
 
   SectionWriter.pre_measure_sources << TimelineChanges
   ScoreDefWriter.staff_def_attribute_sources << TimelineChanges
-  MeasureWriter.control_sources << TimelineChanges
 end

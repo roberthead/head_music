@@ -17,7 +17,7 @@ module HeadMusic::Notation::MEI
 
     def check!
       ensure_voice_events
-      ensure_xml_text(flow_texts(flow) + part_texts + texts)
+      ensure_xml_text(flow_texts(flow) + part_texts + tempo_texts + texts)
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
@@ -41,6 +41,12 @@ module HeadMusic::Notation::MEI
         *flow.work&.credits&.map { |credit| credit.person.full_name },
         *flow.parts.flat_map { |part| [part.player&.name, *part.instruments.map(&:name)] }
       ]
+    end
+
+    def tempo_texts
+      [
+        flow.tempo, *flow.tempo_changes.values, *flow.tempo_ramps.map(&:to_tempo)
+      ].compact.map(&:text) + flow.tempo_ramps.map(&:text) + flow.a_tempos.map(&:text)
     end
 
     # A change would renumber the staves that control events name.

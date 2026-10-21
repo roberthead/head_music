@@ -68,7 +68,7 @@ module HeadMusic::Notation::MEI
       su sd fu fd nu nd xu ssu 1qf 3qf 1qs 3qs bs bf bms kms bmf kmf koron sori
     ].freeze
 
-    METERS_BY_SYMBOL = {"common" => "4/4", "cut" => "2/2"}.freeze
+    METER_SYMBOLS_BY_NAME = {"common" => :common, "cut" => :cut}.freeze
     METER_SYMBOLS = %w[common cut open norm].freeze
 
     module_function
@@ -164,10 +164,12 @@ module HeadMusic::Notation::MEI
       unit
     end
 
-    # The meter a symbol alone implies, or nil for one that implies none.
+    # The meter a symbol implies, which keeps the symbol, or nil for one that
+    # implies none.
     def meter_symbol(name, value, where)
       unreadable(name, value, where) unless METER_SYMBOLS.include?(value)
-      METERS_BY_SYMBOL[value] && HeadMusic::Rudiment::Meter.get(METERS_BY_SYMBOL[value])
+      symbol = METER_SYMBOLS_BY_NAME[value]
+      symbol && HeadMusic::Rudiment::Meter.for_symbol(symbol)
     end
 
     def rate(name, value, where)

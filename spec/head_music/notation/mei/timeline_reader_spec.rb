@@ -30,9 +30,29 @@ describe HeadMusic::Notation::MEI::TimelineReader do
     expect(tempos(parse(bar, %(#{bar}<tempo tstamp="1" midi.bpm="88"/>)))).to eq(2 => ["quarter", 88.0])
   end
 
-  it "skips a tempo in the middle of a bar, and one with text only" do
-    flow = parse(bar, %(#{bar}<tempo tstamp="3" midi.bpm="88"/>), %(#{bar}<tempo tstamp="1">Allegro</tempo>))
+  it "skips a tempo in the middle of a bar" do
+    expect(tempos(parse(bar, %(#{bar}<tempo tstamp="3" midi.bpm="88"/>)))).to be_empty
+  end
+
+  it "skips a tempo in the second half of a split bar, though it starts its measure" do
+    half = mei_staff(1, mei_note("C4", "2"))
+    flow = parse(bar, %(<measure n="2" metcon="false">#{half}</measure>), %(<measure n="3" metcon="false">#{half}<tempo midi.bpm="88"/></measure>))
     expect(tempos(flow)).to be_empty
+  end
+
+  it "reads a tempo of text alone as that text, with the number its words name and no metronome mark" do
+    tempo = parse(bar, %(#{bar}<tempo tstamp="1">Andante</tempo>)).tempo_at(2)
+    expect([tempo.text, tempo.beats_per_minute, tempo.metronome_mark?]).to eq ["Andante", 78.0, false]
+  end
+
+  it "reads the opening tempo's text, nested in <rend>" do
+    tempo = parse(%(#{bar}<tempo tstamp="1" mm="96"><rend fontstyle="italic">Allegro</rend> moderato</tempo>)).tempo
+    expect([tempo.text, tempo.beats_per_minute, tempo.metronome_mark?]).to eq ["Allegro moderato", 96.0, true]
+  end
+
+  it "reads a tempo of words alone at its @midi.bpm where that differs from what its words name" do
+    tempo = parse(%(#{bar}<tempo tstamp="1" midi.bpm="100">Allegro</tempo>)).tempo
+    expect([tempo.text, tempo.beats_per_minute, tempo.metronome_mark?]).to eq ["Allegro", 100.0, false]
   end
 
   it "opens with a tempo on the first downbeat over the scoreDef's" do
@@ -42,6 +62,11 @@ describe HeadMusic::Notation::MEI::TimelineReader do
   it "makes no change for a tempo restated" do
     flow = parse(bar, %(#{bar}<tempo tstamp="1" midi.bpm="88"/>), %(#{bar}<tempo tstamp="1" midi.bpm="88"/>))
     expect(tempos(flow).keys).to eq [2]
+  end
+
+  it "changes the meter where only its symbol changes" do
+    flow = parse(bar, %(<scoreDef meter.count="4" meter.unit="4" meter.sym="common"/>), bar, %(<scoreDef meter.count="4" meter.unit="4" meter.sym="common"/>), bar)
+    expect(flow.meter_changes.transform_values(&:symbol)).to eq(2 => :common)
   end
 
   it "makes no key change for a restatement" do

@@ -63,25 +63,12 @@ describe HeadMusic::Notation::MEI::TimelineChanges do
     end
   end
 
-  describe "a tempo change" do
-    let(:flow) do
-      whole_notes(3, tempo: "q = 100").tap { |flow| flow.change_tempo(2, "dotted quarter = 60") }
-    end
-
-    let(:document) { parse_mei(flow.to_mei) }
-
-    it "writes a tempo control event in quarters per minute and in the tempo's own unit" do
-      expect(mei_attributes(document, "//mei:measure[@n='2']/mei:tempo", "tstamp", "staff", "midi.bpm", "mm", "mm.unit", "mm.dots"))
-        .to eq [%w[1 1 90 60 4 1]]
-    end
-
-    it "leaves the opening tempo to the score definition" do
-      expect(mei_elements(document, "//mei:tempo").length).to eq 1
-    end
-
-    it "writes no dots for an undotted unit" do
-      flow.change_tempo(3, "q = 72")
-      expect(mei_attributes(parse_mei(flow.to_mei), "//mei:measure[@n='3']/mei:tempo", "mm", "mm.dots")).to eq [["72", nil]]
+  describe "a meter symbol" do
+    it "writes @meter.sym beside the numerals of a changed meter, and on a change of the symbol alone" do
+      flow = whole_notes(3, meter: "4/4")
+      [HeadMusic::Rudiment::Meter.cut_time, HeadMusic::Rudiment::Meter.get("2/2")].each.with_index(2) { |meter, bar| flow.change_meter(bar, meter) }
+      expect(mei_attributes(parse_mei(flow.to_mei), "//mei:section/mei:scoreDef", "meter.count", "meter.unit", "meter.sym"))
+        .to eq [%w[2 2 cut], ["2", "2", nil]]
     end
   end
 

@@ -43,8 +43,23 @@ describe HeadMusic::Notation::MEI::OpeningValues do
       expect(flow(%(<scoreDef>#{staff_grp(%( meter.count="2" meter.unit="4"))}</scoreDef>), music: "<mRest/>").meter.to_s).to eq "2/4"
     end
 
-    it "reads a meter symbol alone as 4/4 or 2/2" do
-      expect(%w[common cut].map { |symbol| flow(%(<scoreDef meter.sym="#{symbol}">#{staff_grp}</scoreDef>)).meter.to_s }).to eq %w[4/4 2/2]
+    it "reads a meter symbol alone as 4/4 or 2/2, keeping the symbol" do
+      meters = %w[common cut].map { |symbol| flow(%(<scoreDef meter.sym="#{symbol}">#{staff_grp}</scoreDef>)).meter }
+      expect(meters.map { |meter| [meter.to_s, meter.symbol] }).to eq [["4/4", :common], ["2/2", :cut]]
+    end
+
+    it "keeps @meter.sym beside the numerals it agrees with, and a <meterSig @sym>" do
+      meters = [%(<scoreDef meter.count="4" meter.unit="4" meter.sym="common">), %(<scoreDef><meterSig count="2" unit="2" sym="cut"/>)].map do |opening|
+        flow("#{opening}#{staff_grp}</scoreDef>").meter
+      end
+      expect(meters.map { |meter| [meter.to_s, meter.symbol] }).to eq [["4/4", :common], ["2/2", :cut]]
+    end
+
+    it "keeps the numerals and drops a symbol that disagrees with them, or that names no meter" do
+      meters = [%(<scoreDef meter.count="3" meter.unit="4" meter.sym="common">), %(<scoreDef meter.count="4" meter.unit="4" meter.sym="norm">)].map do |opening|
+        flow("#{opening}#{staff_grp}</scoreDef>", music: "<mRest/>").meter
+      end
+      expect(meters.map { |meter| [meter.to_s, meter.symbol] }).to eq [["3/4", nil], ["4/4", nil]]
     end
   end
 

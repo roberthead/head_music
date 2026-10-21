@@ -223,6 +223,20 @@ describe HeadMusic::Notation::MEI do
         expect(opening(flow)).to eq [[["B4"], ["B4"]], [["A4"], ["G4"]], [["F♯4"], ["E4"]], [["D♯3"], ["E3"]]]
       end
 
+      it "reads its meter in common time" do
+        expect(flow.meter.symbol).to eq :common
+      end
+
+      # Each staff marks each fermata twice, by @fermata and by <fermata>.
+      it "reads exactly four timeline fermatas from its sixteen <fermata> elements" do
+        expect(flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s] })
+          .to eq [%w[3:3:000 3:4:000], %w[6:3:000 6:4:000], %w[9:3:000 9:4:000], %w[11:1:000 11:4:000]]
+      end
+
+      it "keeps its timeline through a round trip" do
+        expect_same_timeline(flow, described_class.parse(described_class.render(flow)))
+      end
+
       it "keeps the music whole" do
         expect_mei_music_whole(flow)
       end
@@ -248,6 +262,29 @@ describe HeadMusic::Notation::MEI do
       it "reads both verses of the soprano's lyrics" do
         syllables = flow.voices.first.voice_events.map { |voice_event| voice_event.syllables.transform_values(&:text) }.reject(&:empty?)
         expect(syllables.first(3)).to eq [{1 => "Ein´", 2 => "Er"}, {1 => "fe", 2 => "hilft"}, {1 => "ste", 2 => "uns"}]
+      end
+
+      # Only the soprano and bass are marked, and several <fermata>s for the
+      # bass stand in a later measure than their note, as the one in the
+      # measure after the repeat for the bass at bar 4.
+      it "reads its fermatas from the outer voices' marks, across measures" do
+        expect(flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s] }).to eq [
+          %w[2:3:000 2:4:000], %w[4:3:000 4:4:000], %w[6:1:000 6:3:000], %w[7:3:000 7:4:000],
+          %w[8:3:000 8:4:000], %w[10:1:000 10:2:000], %w[12:3:000 12:4:000]
+        ]
+      end
+
+      it "reads the same fermatas from its <fermata> elements alone" do
+        controls_only = File.binread(real_path("Bach-JS_Ein_feste_Burg.mei")).gsub(/ fermata="(above|below)"/, "")
+        expect(described_class.parse(controls_only).fermatas).to eq flow.fermatas
+      end
+
+      it "reads its meter in common time" do
+        expect(flow.meter.symbol).to eq :common
+      end
+
+      it "keeps its timeline through a round trip" do
+        expect_same_timeline(flow, described_class.parse(described_class.render(flow)))
       end
 
       it "reads its slurs, placed by ids and beats both, by their ids" do

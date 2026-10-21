@@ -25,6 +25,18 @@ describe HeadMusic::Notation::MEI::Preflight do
     expect { described_class.check!(flow) }.to raise_error(error, /XML forbids/)
   end
 
+  it "raises for tempo text XML cannot hold" do
+    voice.place("1:1", :half, "C4")
+    flow.change_tempo(1, HeadMusic::Rudiment::Tempo.for_text("Lento\u0007"))
+    expect { described_class.check!(flow) }.to raise_error(error, /XML forbids/)
+  end
+
+  it "raises for ramp text XML cannot hold" do
+    voice.place("1:1", :half, "C4").voice.place("2:1", :half, "D4")
+    flow.add_tempo_ramp(from: "1:2", to: "2:1", text: "rit.\u0007")
+    expect { described_class.check!(flow) }.to raise_error(error, /XML forbids/)
+  end
+
   it "raises for text it is given that XML cannot hold" do
     voice.place("1:1", :half, "C4")
     expect { described_class.check!(flow, ["￿"]) }.to raise_error(error, /XML forbids/)

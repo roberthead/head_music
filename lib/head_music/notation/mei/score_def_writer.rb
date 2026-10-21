@@ -75,6 +75,7 @@ module HeadMusic::Notation::MEI
         "key.mode" => plan.first_measure_key_mode,
         "meter.count" => meter.top_number,
         "meter.unit" => meter.bottom_number,
+        "meter.sym" => meter.symbol&.to_s,
         "midi.bpm" => plan.midi_bpm(plan.flow.tempo_at(first_bar))
       }
     end

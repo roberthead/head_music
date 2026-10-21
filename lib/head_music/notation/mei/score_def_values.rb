@@ -53,12 +53,16 @@ module HeadMusic::Notation::MEI
       bpm && HeadMusic::Rudiment::Tempo.new("quarter", number(bpm))
     end
 
+    # A symbol that disagrees with the numerals beside it is not kept.
     def attribute_meter(element, prefix, **where)
       count = value(element, "#{prefix}count", **where)
       unit = value(element, "#{prefix}unit", **where)
-      return HeadMusic::Rudiment::Meter.get("#{count}/#{unit}") if count && unit
+      symbolic = value(element, "#{prefix}sym", **where)
+      return symbolic unless count || unit
+      return unless count && unit
 
-      value(element, "#{prefix}sym", **where) unless count || unit
+      numeric = HeadMusic::Rudiment::Meter.get("#{count}/#{unit}")
+      (symbolic == numeric) ? symbolic : numeric
     end
 
     def signature(element, names, **where)

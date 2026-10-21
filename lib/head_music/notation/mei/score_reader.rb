@@ -165,7 +165,7 @@ module HeadMusic::Notation::MEI
       bars = bar_count(contents, where)
       controls = contents.controls
       meter = @state.meter
-      tempo = DownbeatTempo.tempo(controls, contents.entries, meter, @source.index, **where)
+      tempo = DownbeatTempo.tempo(controls, contents.entries, meter, @source.index, @editorial, **where)
       index = @measures.length
       bars.times do |offset|
         measure = Measure.new(
