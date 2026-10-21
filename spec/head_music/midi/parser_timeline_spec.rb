@@ -125,9 +125,19 @@ describe HeadMusic::MIDI::Parser do
         expect([ramps(flow), fermatas(flow), tempos(flow)]).to eq [[["1:2:000", "1:4:000", 80.0, "rit."]], [["1:4:000", "2:1:000", 2]], [[1, "quarter", 120.0]]]
       end
 
-      it "reads a slower tempo for a whole bar between downbeats as tempo changes" do
+      it "reads a slower tempo for a whole bar between downbeats, with notes starting within it, as tempo changes" do
         flow = parse([tempo(0, 500_000), tempo(bar, 1_000_000), tempo(bar * 2, 500_000), *quarters])
         expect([fermatas(flow), tempos(flow)]).to eq [[], [[1, "quarter", 120.0], [2, "quarter", 60.0], [3, "quarter", 120.0]]]
+      end
+
+      it "reads a slower tempo for a whole bar between downbeats, with no note starting within it, as a fermata" do
+        flow = parse([tempo(0, 500_000), tempo(bar, 1_000_000), tempo(bar * 2, 500_000), *midi_line([60, 62, 64], bar)])
+        expect([fermatas(flow), tempos(flow)]).to eq [[["2:1:000", "3:1:000", 2]], [[1, "quarter", 120.0]]]
+      end
+
+      it "reads a slower tempo for a whole bar between downbeats, with a note starting within it in any part, as tempo changes" do
+        flow = parse([tempo(0, 500_000), tempo(bar, 750_000), tempo(bar * 2, 500_000), *midi_line([60, 62, 64], bar), *midi_note(bar + 288, 48, 96, channel: 1)])
+        expect([fermatas(flow), tempos(flow)]).to eq [[], [[1, "quarter", 120.0], [2, "quarter", 80.0], [3, "quarter", 120.0]]]
       end
 
       it "skips a slower tempo within a bar restored to another" do

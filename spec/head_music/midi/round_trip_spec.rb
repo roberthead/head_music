@@ -73,6 +73,35 @@ describe "HeadMusic::MIDI" do
     end
   end
 
+  whole_bar_fermata = lambda do
+    tune.call("3/4", "GAB|c3|BAG|G3").tap do |flow|
+      flow.change_tempo(1, tempo.call(100))
+      flow.add_fermata("2:1", to: "3:1")
+    end
+  end
+
+  final_whole_bar_fermata = lambda do
+    tune.call("3/4", "GAB|c3|BAG|G3").tap do |flow|
+      flow.change_tempo(1, tempo.call(100))
+      flow.add_fermata("4:1", to: "5:1")
+    end
+  end
+
+  one_bar_slower = lambda do
+    tune.call("3/4", "GAB|cBA|BAG|G3").tap do |flow|
+      flow.change_tempo(1, tempo.call(100))
+      flow.change_tempo(2, tempo.call(50))
+      flow.change_tempo(3, tempo.call(100))
+    end
+  end
+
+  abutting_fermatas = lambda do
+    tune.call("3/4", "GAB|cBA|G3").tap do |flow|
+      flow.add_fermata("2:2", :quarter)
+      flow.add_fermata("2:3", :quarter)
+    end
+  end
+
   rit_into_final_fermata = lambda do
     tune.call("4/4", "GABc|dcBA|G4").tap do |flow|
       flow.change_tempo(1, tempo.call(108))
@@ -94,6 +123,10 @@ describe "HeadMusic::MIDI" do
     "a rit. ramp, then a tempo in the middle of a bar" => rit_then_a_tempo,
     "an accel. ramp from the middle of a bar to the middle of a later one" => accel_within_bars,
     "a fermata in the middle of a bar" => mid_bar_fermata,
+    "a fermata over a whole bar in the middle of the piece" => whole_bar_fermata,
+    "a fermata over the whole final bar" => final_whole_bar_fermata,
+    "a slower tempo for one bar of moving notes, then the one before" => one_bar_slower,
+    "two fermatas abutting at one stretch, which read back as one" => abutting_fermatas,
     "a fermata on the final event, at a dotted quarter of 60, stretched 1.5" => final_fermata,
     "a rit. into a fermata on the final event" => rit_into_final_fermata,
     "TimelineExpressionFixtures.melody" => -> { TimelineExpressionFixtures.melody },

@@ -2,12 +2,12 @@
 # story judges a round trip: per part, the multiset of each note's onset in
 # the file's time, its whole tied length, and its sorted keys; the meter,
 # key, tempo, and programs at every bar; the tempo ramps and fermatas; and
-# the lyrics. Tempo text and meter symbols are not compared, since MIDI
-# cannot hold them. Voices are not
-# compared, since export writes a part's voices to one channel, so notes of
-# a part that start and end together count as one chord, and a key struck
-# twice at once as one. Spelling is compared apart, as the notes spelled
-# otherwise than written.
+# the lyrics. Tempo text, meter symbols, and the boundary between fermatas
+# that abut at one stretch are not compared, since MIDI cannot hold them.
+# Voices are not compared, since export writes a part's voices to one
+# channel, so notes of a part that start and end together count as one
+# chord, and a key struck twice at once as one. Spelling is compared apart,
+# as the notes spelled otherwise than written.
 module MIDIRoundTrip
   module_function
 
@@ -16,13 +16,19 @@ module MIDIRoundTrip
   end
 
   # Each ramp's ends and the microseconds a quarter of its target, resolved
-  # where none is written, and each fermata's ends and stretch.
+  # where none is written, and each fermata's ends and stretch, abutting
+  # fermatas at one stretch taken as one.
   def timeline(flow)
     ramps = flow.tempo_ramps.empty? ? [] : flow.conductor.tempo_ramps
     {
       ramps: ramps.map { |ramp| [ramp.from.to_a, ramp.to.to_a, HeadMusic::MIDI::Tempo.microseconds_per_quarter(ramp.to_tempo)] },
-      fermatas: flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s, fermata.stretch] }
+      fermatas: fermatas(flow)
     }
+  end
+
+  def fermatas(flow)
+    spans = flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s, fermata.stretch] }
+    spans.slice_when { |before, after| before[1] != after[0] || before[2] != after[2] }.map { |run| [run.first[0], run.last[1], run.first[2]] }
   end
 
   def notes(flow)

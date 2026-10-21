@@ -4,7 +4,8 @@ module HeadMusic::MIDI
   # is the start of a bar, and the end of the file is none.
   #
   # A fermata is a slower tempo, slower than the one before, restored within
-  # one bar: to the tempo before, unless both changes fall on downbeats, or
+  # one bar: to the tempo before, unless both changes fall on downbeats with
+  # a note starting between them, which is a bar at another tempo, or
   # from a downbeat to a tempo held past the next, which changes the
   # tempo at that downbeat, unless it is the tempo a ramp ending there began
   # from, which is an "a tempo". A fermata may also be restored to the next
@@ -34,10 +35,12 @@ module HeadMusic::MIDI
     attr_reader :changes, :ramps, :fermatas, :a_tempos
 
     # +changes+ are [time, microseconds] pairs in time order, each differing
-    # from the one before, which is +opening+ before the first.
-    def initialize(changes, layout, opening)
+    # from the one before, which is +opening+ before the first. +onsets+ are
+    # the times notes start, sorted.
+    def initialize(changes, layout, opening, onsets)
       @layout = layout
       @opening = opening
+      @onsets = onsets
       @ramps = []
       @fermatas = []
       @a_tempos = []
@@ -75,7 +78,7 @@ module HeadMusic::MIDI
       return unless slow > prior && slow > tempo && to - from <= @layout.bar_at(from).length
 
       if tempo == prior
-        :held unless downbeat?(from) && downbeat?(to)
+        :held unless downbeat?(from) && downbeat?(to) && onset_between?(from, to)
       elsif downbeat?(from) && !downbeat?(to) && held?(to, following, through: true) && tempo != ramp_start(kept, start)
         :changed
       elsif held?(to, following) && continues_ramp?(kept, [from, tempo])
@@ -149,6 +152,11 @@ module HeadMusic::MIDI
     def a_tempo?(time, microseconds)
       ramp = ramps.last
       !ramp.nil? && !downbeat?(time) && microseconds == ramp.start_microseconds
+    end
+
+    def onset_between?(from, to)
+      onset = @onsets.bsearch { |candidate| candidate > from }
+      !onset.nil? && onset < to
     end
 
     def downbeat?(time)

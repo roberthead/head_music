@@ -99,7 +99,7 @@ module HeadMusic::MIDI
     end
 
     def inference
-      @inference ||= TempoInference.new(tempo_changes, layout, DEFAULT_MICROSECONDS)
+      @inference ||= TempoInference.new(tempo_changes, layout, DEFAULT_MICROSECONDS, @onsets)
     end
 
     # [time, microseconds] wherever the tempo changes, the last at a time
