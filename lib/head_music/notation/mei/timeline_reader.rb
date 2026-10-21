@@ -17,15 +17,6 @@ module HeadMusic::Notation::MEI
       opening.merge(tempo: opening[:tempo] || @opening.tempo)
     end
 
-    # A meter's symbol changes where it does, though the meter stays equal.
-    def apply(flow)
-      super
-      @bar_map.bar_numbers.drop(1).each do |bar|
-        meter = @bar_map.meter_at(bar)
-        flow.change_meter(bar, meter) unless flow.meter_at(bar).symbol == meter.symbol
-      end
-    end
-
     private
 
     def keys

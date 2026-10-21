@@ -12,16 +12,6 @@ module HeadMusic::Notation::MusicXML
       @tempo_reader = tempo_reader
     end
 
-    # A meter that differs only in its symbol is equal to the one in force,
-    # so it is changed here.
-    def apply(flow)
-      super
-      @bar_map.bar_numbers.drop(1).each do |bar|
-        meter = @bar_map.meter_at(bar)
-        flow.change_meter(bar, meter) unless flow.meter_at(bar).symbol == meter.symbol
-      end
-    end
-
     # A signature with no <mode> reads as its major key, as kern reads one.
     def self.key_signature(fifths, mode, **where)
       tonal_context = KeyMapper.tonal_context(fifths, mode) || KeyMapper.tonal_context(fifths, "major")
