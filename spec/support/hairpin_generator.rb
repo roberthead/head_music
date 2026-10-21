@@ -12,7 +12,8 @@ class HairpinGenerator
   TICKS_PER_COUNT = HeadMusic::Rudiment::Rhythm::PPQN
 
   # With `one_line`, no two of a part's hairpins overlap across its owners,
-  # as ABC's single voice and kern's single **dynam spine need.
+  # as the ABC voice that writes its part's hairpins and kern's single
+  # **dynam spine need.
   def self.flow(seed, voices: 2, one_line: false, pickup: true)
     new(Random.new(seed), voices: voices, one_line: one_line, pickup: pickup).flow
   end

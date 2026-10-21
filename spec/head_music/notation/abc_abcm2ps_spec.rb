@@ -18,6 +18,9 @@ describe HeadMusic::Notation::ABC, oracle: :abcm2ps do
   {
     "the timeline melody" => -> { TimelineExpressionFixtures.melody },
     "the spanned melody" => -> { MarkingFixtures.spanned_melody },
+    "the chorale" => -> { TimelineExpressionFixtures.chorale },
+    "two voices with meter and key changes" => -> { LilyPondFixtures.key_and_meter_change },
+    "two voices tied into a key change" => -> { LilyPondFixtures.tie_into_key_change },
     "meter and key changes" => -> {
       described_class.parse("X:1\nT:Changes\nM:4/4\nL:1/8\nK:G\n|:G8|[1 G8:|[2 [M:3/4][K:D]F6|[M:C]=F8|[M:C|][K:Bb]B8|]\n")
     }

@@ -5,7 +5,9 @@ module HeadMusic::Notation::ABC
   # bar's segno or coda sign, and the bar line.
   #
   # A segno or coda sign before a bar line marks the bar it opens, which is
-  # how the parser reads it back.
+  # how the parser reads it back. Part labels and navigation belong to the
+  # flow, so only the lead voice writes them; every voice writes its repeats
+  # and voltas, which ABC reads per voice.
   module BarLineWriter
     BARLINES = {double: "||", final: "|]", dotted: ".|"}.freeze
     VOLTA_ENDING_TOKENS = [":|", "::", "||", "|]", "[|"].freeze
@@ -22,17 +24,18 @@ module HeadMusic::Notation::ABC
     module_function
 
     # The first bar has no bar line before it to carry its repeat or signs.
-    def opening(bar, previous, fields = "")
-      return volta(bar, previous) + part_label(bar) + fields if previous
+    def opening(bar, previous, fields = "", lead: true)
+      label = lead ? part_label(bar) : ""
+      return volta(bar, previous) + label + fields if previous
 
-      (bar.starts_repeat? ? "|:" : "") + volta(bar, nil) + part_label(bar) + fields + signs(bar)
+      (bar.starts_repeat? ? "|:" : "") + volta(bar, nil) + label + fields + (lead ? signs(bar) : "")
     end
 
-    def closing(bar, following)
-      navigation = decorations([("fine" if bar.fine?), ("dacoda" if bar.to_coda?), bar.jump && JUMPS.fetch(bar.jump.deconstruct)])
+    def closing(bar, following, lead: true)
+      navigation = lead ? decorations([("fine" if bar.fine?), ("dacoda" if bar.to_coda?), bar.jump && JUMPS.fetch(bar.jump.deconstruct)]) : ""
       return navigation + last_token(bar) unless following
 
-      navigation + signs(following) + token(bar, following)
+      navigation + (lead ? signs(following) : "") + token(bar, following)
     end
 
     # A repeat mark takes the place of a styled bar line, ABC has no dashed

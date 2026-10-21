@@ -305,8 +305,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "propagates render errors" do
-      flow.add_voice
-      flow.add_voice
+      flow.change_meter(flow.last_sounding_bar_number + 1, "3/4")
       expect { flow.to_abc }.to raise_error(HeadMusic::Notation::ABC::RenderError)
     end
   end

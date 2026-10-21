@@ -9,9 +9,20 @@ describe HeadMusic::Notation::ABC::RenderPreflight do
     expect { described_class.check!(tune) }.not_to raise_error
   end
 
-  it "refuses a second voice" do
-    flow = HeadMusic::Content::Flow.new.tap { |two_voices| 2.times { two_voices.add_voice } }
-    expect { described_class.check!(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /multi-voice/)
+  it "passes a tune of several voices" do
+    flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nV:S\nV:B\nK:C\nV:S\nc d e f|\nV:B\nC D E F|\n")
+    expect { described_class.check!(flow) }.not_to raise_error
+  end
+
+  it "refuses a part's and its first voice's different levels at one position" do
+    flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nV:S\nV:B\nK:C\nV:S\nc d !f!e f|\nV:B\nC D E F|\n")
+    flow.voices.first.part.place_dynamic("1:3", :p)
+    expect { described_class.check!(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /the p and the f at 1:3:000/)
+  end
+
+  it "passes two voices holding different levels at one position" do
+    flow = HeadMusic::Notation::ABC.parse("X:1\nL:1/4\nV:S\nV:B\nK:C\nV:S\nc d !f!e f|\nV:B\nC D !p!E F|\n")
+    expect { described_class.check!(flow) }.not_to raise_error
   end
 
   it "passes meter and key changes within the music" do

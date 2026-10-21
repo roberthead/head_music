@@ -1,8 +1,9 @@
 # A namespace for ABC-notation parsing helpers
 module HeadMusic::Notation::ABC
-  # The marks a voice places at a position rather than on a note: its own and
-  # its part's dynamics and hairpin starts and ends, and the flow's tempo
-  # marks, as Q: fields and annotations. In each bar, a mark goes on the note
+  # The marks a voice places at a position rather than on a note: its own
+  # dynamics and hairpin starts and ends, and its part's when it writes them,
+  # and the flow's tempo marks, as Q: fields and annotations, when it is the
+  # lead voice. In each bar, a mark goes on the note
   # or rest that attacks at its position, on an invisible rest in an overlay
   # of the bar when it falls inside one, or on an invisible rest after the
   # music when it follows the last note. A hairpin or ramp end on the final
@@ -59,9 +60,9 @@ module HeadMusic::Notation::ABC
       (position.count - 1 + ticks / Rational(meter.ticks_per_count)) / meter.bottom_number
     end
 
-    def initialize(voice)
+    def initialize(voice, lead: true, part: true)
       @flow = voice&.flow
-      @marks = voice ? (dynamic_marks(voice) + hairpin_marks(voice) + tempo_marks).sort_by { |mark| [mark.position, mark.rank] } : []
+      @marks = voice ? marks(voice, lead, part).sort_by { |mark| [mark.position, mark.rank] } : []
     end
 
     def bar_marks(bar_segments)
@@ -76,18 +77,29 @@ module HeadMusic::Notation::ABC
       BarMarks.new(attacks.group_by(&:position), overlay, trailing, closing_marks(bar_number), music_end_offset, length)
     end
 
+    # A bar the voice is silent in, where every mark follows its music.
+    def silent_bar_marks(bar_number)
+      marks = @marks.select { |mark| mark.position.bar_number == bar_number }
+      BarMarks.new({}, [], marks, closing_marks(bar_number), 0r, bar_length(bar_number))
+    end
+
     private
 
+    def marks(voice, lead, part)
+      holders = [voice, *(voice.part if part)]
+      dynamic_marks(holders) + hairpin_marks(holders) + (lead ? tempo_marks : [])
+    end
+
     # A voice and its part with the same level at one position write it once.
-    def dynamic_marks(voice)
-      (voice.dynamic_events + voice.part.dynamic_events)
+    def dynamic_marks(holders)
+      holders.flat_map(&:dynamic_events)
         .map { |event| Mark.new(event.position, "!#{event.name_key}!", "dynamic #{event.name_key}", LEVEL_RANK) }
         .uniq { |mark| [mark.position, mark.decoration] }
     end
 
     # The same hairpin from the voice and its part is written once.
-    def hairpin_marks(voice)
-      (voice.spans + voice.part.spans).select(&:hairpin?).uniq(&:to_h).flat_map do |hairpin|
+    def hairpin_marks(holders)
+      holders.flat_map(&:spans).select(&:hairpin?).uniq(&:to_h).flat_map do |hairpin|
         sign = HAIRPIN_SIGNS.fetch(hairpin.kind)
         [
           Mark.new(hairpin.from, "!#{sign}(!", "#{hairpin.name_key} start", START_RANK),

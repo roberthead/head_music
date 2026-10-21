@@ -3,8 +3,8 @@ module HeadMusic::Notation::ABC
   # Rejects flows that cannot be expressed in the supported ABC subset,
   # before the Writer assembles any output.
   #
-  # A tune is written as one voice, so a second voice is refused rather than
-  # dropped, as is a meter or key change at a bar no voice reaches.
+  # Refuses what the writer would otherwise drop, such as a meter or key
+  # change at a bar no voice reaches.
   class RenderPreflight
     include HeadMusic::Notation::PreflightChecks
 
@@ -18,7 +18,6 @@ module HeadMusic::Notation::ABC
     end
 
     def check!
-      ensure_single_voice
       ensure_tuplets_within_bars(flow)
       ensure_changes_within_music
       ensure_no_instrument_change
@@ -26,19 +25,13 @@ module HeadMusic::Notation::ABC
       ensure_markings_within_music(flow)
       ensure_timed_marks_within_music(flow)
       ensure_no_marks_inside_rounded_notes(flow)
-      ensure_dynamics_fit_one_voice
+      ensure_dynamics_fit_each_voice
       ensure_tempo_marks_writable
     end
 
     private
 
     attr_reader :flow
-
-    def ensure_single_voice
-      return if flow.voices.length <= 1
-
-      raise RenderError, "multi-voice ABC output is not supported"
-    end
 
     # A change is written as a field opening its bar, which a bar no voice
     # reaches does not have.
@@ -65,11 +58,15 @@ module HeadMusic::Notation::ABC
       raise RenderError, "cannot render the #{subject} change at bar #{bar_number} in ABC output"
     end
 
-    # The parts' dynamics are written in the one voice.
-    def ensure_dynamics_fit_one_voice
-      holders = flow.parts + flow.voices
-      ensure_one_level_per_position(holders, line: "an ABC voice")
-      ensure_one_hairpin_at_a_time(holders.flat_map(&:spans), line: "an ABC voice")
+    # A part's dynamics are written in its first voice, beside that voice's
+    # own.
+    def ensure_dynamics_fit_each_voice
+      flow.voices.each do |voice|
+        part = voice.part
+        holders = [*(part if voice.equal?(part.voices.first)), voice]
+        ensure_one_level_per_position(holders, line: "an ABC voice")
+        ensure_one_hairpin_at_a_time(holders.flat_map(&:spans), line: "an ABC voice")
+      end
     end
 
     def ensure_tempo_marks_writable

@@ -20,14 +20,22 @@ module HeadMusic::Notation::ABC
     # beamed to its predecessor; a true or nil beam_break_before keeps it, so
     # programmatic flows render with every-token spacing. Every bar token
     # re-lexes unambiguously with no separator, so dropping it is safe.
-    def bar(bar_segments, key_signature)
+    #
+    # A bar the music runs on past, where the voice ends, is filled with rests
+    # to +fill_to+, its length as a fraction of a whole note.
+    def bar(bar_segments, key_signature, fill_to: nil)
       @pitch_writer.start_new_bar(key_signature)
       bar_marks = @position_marks.bar_marks(bar_segments)
       music = bar_segments.map do |segment|
         token = token(segment, bar_marks)
         (segment.voice_event.beam_break_before == false) ? token : " #{token}"
       end.join.lstrip
-      music + trailing(bar_marks) + overlay(bar_marks)
+      music + trailing(bar_marks, fill_to) + overlay(bar_marks)
+    end
+
+    # A bar the voice is silent in, as rests carrying the marks there.
+    def silent_bar(bar_number, fill_to)
+      trailing(@position_marks.silent_bar_marks(bar_number), fill_to).lstrip
     end
 
     private
@@ -80,13 +88,19 @@ module HeadMusic::Notation::ABC
     end
 
     # A hairpin ending on the final barline goes on a spacer there, after
-    # invisible rests that fill a short bar.
-    def trailing(bar_marks)
+    # invisible rests that fill a short bar. A bar filled where the voice ends
+    # early is filled with rests instead.
+    def trailing(bar_marks, fill_to = nil)
       music_end = bar_marks.music_end
       length = bar_marks.length
       marks = bar_marks.trailing
       closing = bar_marks.closing.map(&:decoration).join
-      rests = invisible_rests(music_end, length, marks) if marks.any? || (!closing.empty? && music_end < length)
+      rests =
+        if fill_to && music_end < fill_to
+          rests(music_end, fill_to, marks, "z")
+        elsif marks.any? || (!closing.empty? && music_end < length)
+          rests(music_end, length, marks, "x")
+        end
       [rests, ("#{closing}y" unless closing.empty?)].compact.map { |text| " #{text}" }.join
     end
 
@@ -94,20 +108,20 @@ module HeadMusic::Notation::ABC
       marks = bar_marks.overlay
       return "" if marks.empty?
 
-      " & " + invisible_rests(0, bar_marks.trailing.empty? ? bar_marks.music_end : bar_marks.length, marks)
+      " & " + rests(0, bar_marks.trailing.empty? ? bar_marks.music_end : bar_marks.length, marks, "x")
     end
 
-    # From one offset to another, each mark on the invisible rest starting
-    # at its offset.
-    def invisible_rests(from, to, marks)
+    # From one offset to another, each mark on the rest starting at its
+    # offset, "x" for an invisible one.
+    def rests(from, to, marks, symbol)
       by_offset = marks.group_by(&:offset)
       starts = [from, *by_offset.keys].uniq
       starts.zip([*starts.drop(1), to]).map do |start, finish|
-        "#{by_offset.fetch(start, []).map(&:decoration).join}x#{invisible_multiplier(finish - start)}"
+        "#{by_offset.fetch(start, []).map(&:decoration).join}#{symbol}#{rest_multiplier(finish - start)}"
       end.join(" ")
     end
 
-    def invisible_multiplier(fraction)
+    def rest_multiplier(fraction)
       @duration_writer.multiplier_string_for_fraction(fraction, HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction))
     end
 

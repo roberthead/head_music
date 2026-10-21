@@ -87,13 +87,14 @@ class HeadMusic::Notation::RenderPlan
     @segments_by_bar[voice] ||= HeadMusic::Notation::BarSplitter.segments(voice.voice_events).group_by(&:bar_number)
   end
 
-  private
-
+  # Where the last voice's music ends.
   def music_end
     return @music_end if defined?(@music_end)
 
     @music_end = flow.voices.filter_map { |voice| voice.last_voice_event&.next_position }.max
   end
+
+  private
 
   # A subclass computes here whatever else must raise at construction, and
   # calls super for the signatures every format needs.

@@ -2,7 +2,7 @@
 # comparison of two flows' timelines that leaves out what a format cannot
 # hold.
 #
-# The melody is one voice, so ABC can write it: common time, an opening tempo
+# The melody is one voice: common time, an opening tempo
 # with text, a tempo change with text, a "rit." to a written target at a
 # downbeat, an "a tempo", an "accel." ending at a fermata on a rest, and a
 # fermata on a note. The chorale is two voices in cut time, counting half

@@ -20,13 +20,6 @@ describe HeadMusic::Notation::ABC do
   end
 
   describe "a round trip of meter and key changes" do
-    def changes(flow)
-      [
-        flow.meter_changes.transform_values { |meter| [meter.to_s, meter.symbol] },
-        flow.key_signature_changes.transform_values { |event| event.key_signature.name }
-      ]
-    end
-
     {
       "a meter and key change at one bar" => "K:G\nG8|G8|[M:3/4][K:D]F6|]",
       "a note tied into a key change" => "K:C\nC4 F4-|[K:G]=F4 F4|]",
@@ -38,7 +31,6 @@ describe HeadMusic::Notation::ABC do
         let(:rendered) { described_class.render(original) }
 
         it "keeps the changes and the music" do
-          expect(changes(described_class.parse(rendered))).to eq changes(original)
           expect_abc_round_trip(original)
         end
 
@@ -49,9 +41,46 @@ describe HeadMusic::Notation::ABC do
     end
   end
 
-  it "keeps both fermatas over a tied note held under them" do
-    original = TimelineExpressionFixtures.tied_under_two_fermatas(voices: 1)
-    expect_same_timeline(original, described_class.parse(described_class.render(original)))
+  %i[key_and_meter_change tie_into_key_change tie_into_meter_change].each do |fixture|
+    it "keeps the changes and every voice of the #{fixture} fixture, and reads back what it wrote" do
+      original = LilyPondFixtures.public_send(fixture)
+      rendered = described_class.render(original)
+      expect_abc_round_trip(original)
+      expect(described_class.render(described_class.parse(rendered))).to eq rendered
+    end
+  end
+
+  it "reads changes stated in the second voice alone as it reads them stated in every voice" do
+    voices = ->(first) { "V:1\nC D E F|#{first}G A B|[K:D]F G A B|\nV:2\nC, D, E, F,|[M:3/4]G, A, B,|[K:D]F, G, A, B,|" }
+    header = "X:1\nT:Changes\nM:4/4\nL:1/4\nV:1\nV:2\nK:C\n"
+    stated_once = described_class.parse(header + voices.call("").sub("|[K:D]F G", "|F G") + "\n")
+    stated_everywhere = described_class.parse(header + voices.call("[M:3/4]") + "\n")
+    expect(described_class.render(stated_once)).to eq described_class.render(stated_everywhere)
+  end
+
+  describe "a round trip of the chorale" do
+    let(:original) { TimelineExpressionFixtures.chorale }
+    let(:rendered) { described_class.render(original) }
+    let(:round_tripped) { described_class.parse(rendered) }
+
+    it "keeps the meter symbol, the tempo, the ramp, and the fermatas in every voice" do
+      expect_same_timeline(original, round_tripped)
+    end
+
+    it "keeps every voice, its role, and its music" do
+      expect_abc_round_trip(original)
+    end
+
+    it "reads back what it wrote" do
+      expect(described_class.render(round_tripped)).to eq rendered
+    end
+  end
+
+  [1, 2].each do |voices|
+    it "keeps both fermatas over a tied note held under them, in #{voices} voice#{"s" if voices > 1}" do
+      original = TimelineExpressionFixtures.tied_under_two_fermatas(voices: voices)
+      expect_same_timeline(original, described_class.parse(described_class.render(original)))
+    end
   end
 
   describe "a round trip of articulations, ornaments, and dynamics" do
@@ -179,6 +208,27 @@ describe HeadMusic::Notation::ABC do
         end
       end
     end
+
+    describe "of generated two-voice flows" do
+      # Each voice's hairpins, with its part's in the part's first voice,
+      # which is where ABC writes them.
+      def hairpins_by_voice(flow)
+        flow.voices.map do |voice|
+          owners = [voice, *(voice.part if voice.equal?(voice.part.voices.first))]
+          owners.flat_map(&:spans).select(&:hairpin?).map { |span| [span.name_key, span.from.to_s, span.to.to_s] }.uniq.sort
+        end
+      end
+
+      HairpinGenerator::SEEDS.each do |seed|
+        it "keeps each voice's hairpins of seed #{seed}, and reads back what it wrote" do
+          original = HairpinGenerator.flow(seed, voices: 2, one_line: true, pickup: false)
+          rendered = described_class.render(original)
+          round_tripped = described_class.parse(rendered)
+          expect(hairpins_by_voice(round_tripped)).to eq hairpins_by_voice(original)
+          expect(described_class.render(round_tripped)).to eq rendered
+        end
+      end
+    end
   end
 
   describe "a round trip of slurs and phrases" do
@@ -266,9 +316,9 @@ describe HeadMusic::Notation::ABC do
   end
 
   describe "a round trip of tuplets and grace notes" do
-    # ABC holds one voice, reads no pickup, and draws no tuplet across a
-    # barline, so those fixtures are checked on their own below.
-    single_bar_fixtures = TupletFixtures.all - TupletFixtures.crossing_barline - %i[tuplets_in_two_voices grace_notes_in_pickup]
+    # ABC reads no pickup and draws no tuplet across a barline, so those
+    # fixtures are checked on their own below.
+    single_bar_fixtures = TupletFixtures.all - TupletFixtures.crossing_barline - %i[grace_notes_in_pickup]
 
     single_bar_fixtures.each do |fixture|
       context "with the #{fixture} fixture" do
@@ -306,11 +356,6 @@ describe HeadMusic::Notation::ABC do
         expect { described_class.render(TupletFixtures.public_send(fixture)) }
           .to raise_error(HeadMusic::Notation::ABC::RenderError, /across the barline into bar 2/)
       end
-    end
-
-    it "refuses the tuplets_in_two_voices fixture, since ABC output holds one voice" do
-      expect { described_class.render(TupletFixtures.tuplets_in_two_voices) }
-        .to raise_error(HeadMusic::Notation::ABC::RenderError, /multi-voice/)
     end
 
     it "keeps the grace notes of the grace_notes_in_pickup fixture, a bar later, since ABC reads no pickup" do

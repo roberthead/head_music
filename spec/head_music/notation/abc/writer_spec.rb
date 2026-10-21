@@ -242,7 +242,7 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a multi-voice flow" do
+    context "with a flow of empty voices" do
       let(:flow) do
         HeadMusic::Content::Flow.new.tap do |flow|
           flow.add_voice
@@ -250,10 +250,8 @@ describe HeadMusic::Notation::ABC::Writer do
         end
       end
 
-      it "raises a RenderError" do
-        expect { described_class.new(flow).to_s }.to raise_error(
-          HeadMusic::Notation::ABC::RenderError, /multi-voice/
-        )
+      it "declares the voices and writes no bars" do
+        expect(described_class.new(flow).to_s.lines.last(3)).to eq ["V:1\n", "V:2\n", "K:C\n"]
       end
     end
 

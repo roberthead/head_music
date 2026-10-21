@@ -4,9 +4,8 @@ require "spec_helper"
 # (plus the to_json/from_json delegates). Each scenario
 # asserts persistence fidelity — from_h(to_h) reproduces the same hash — and,
 # where the notation renderers support the material, identical to_abc and
-# to_musicxml output. Renderer limitations (multi-voice ABC, mid-piece key or
-# meter changes in ABC, same-voice chords in MusicXML) never limit the hash
-# round trip itself.
+# to_musicxml output. Renderer limitations (same-voice chords in MusicXML)
+# never limit the hash round trip itself.
 describe HeadMusic::Content::Flow do
   def expect_lossless_round_trip(flow, abc: true, musicxml: true)
     hash = flow.to_h
@@ -631,9 +630,8 @@ describe HeadMusic::Content::Flow do
       expect(roles).to eq ["cantus_firmus", "counterpoint", "counterpoint", nil]
     end
 
-    # ABC output is single-voice only, so the render comparison is MusicXML.
     it "round-trips voices in order with their roles" do
-      restored = expect_lossless_round_trip(flow, abc: false)
+      restored = expect_lossless_round_trip(flow)
       expect(restored.voices.map { |voice| voice.role&.to_s }).to eq flow.voices.map { |voice| voice.role&.to_s }
       expect(restored.cantus_firmus_voice).to eq restored.voices.first
     end
@@ -870,9 +868,8 @@ describe HeadMusic::Content::Flow do
         .to eq [{"number" => 5, "signature" => 2, "tonal_context" => "D major"}]
     end
 
-    # ABC cannot render mid-piece key changes, so the render comparison is MusicXML.
     it "round-trips the key change" do
-      restored = expect_lossless_round_trip(flow, abc: false)
+      restored = expect_lossless_round_trip(flow)
       expect(restored.key_signature_at(6).name).to eq "D major"
     end
   end
@@ -936,7 +933,7 @@ describe HeadMusic::Content::Flow do
     end
 
     it "round-trips the 6/8 positions to the same strings" do
-      restored = expect_lossless_round_trip(flow, abc: false)
+      restored = expect_lossless_round_trip(flow)
       restored_positions = voices_in(restored.to_h).first["voice_events"].map { |voice_event| voice_event["position"] }
       expect(restored_positions).to eq positions
     end
@@ -1544,7 +1541,7 @@ describe HeadMusic::Content::Flow do
     let(:restored) { described_class.from_h(flow.to_h) }
 
     it "round-trips losslessly" do
-      expect_lossless_round_trip(flow, abc: false)
+      expect_lossless_round_trip(flow)
     end
 
     it "writes each distinct player once" do

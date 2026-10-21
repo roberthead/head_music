@@ -4,11 +4,16 @@ module HeadMusic::Notation::ABC
   # string assembly, so callers never receive a truncated tune. A repeat played
   # more than twice is written as a plain ":|", which ABC reads back as two
   # plays unless its endings name more passes.
+  #
+  # A flow of more than one voice declares each with a V: field, and writes
+  # the voices' lines in turn, as a score is laid out in systems.
   class Writer
     # A fixed unit note length keeps the L: field and the duration
     # multiplier arithmetic in sync.
     UNIT_NOTE_LENGTH = Rational(1, 8)
     BARS_PER_LINE = 4
+    # What would end, split, or comment out a V: field's voice id.
+    UNSAFE_VOICE_ID = /[\s\]%=]/
     METER_SYMBOLS = {common: "C", cut: "C|"}.freeze
     # A tune with no Q: field reads at this tempo.
     DEFAULT_TEMPO = HeadMusic::Rudiment::Tempo.new("quarter", 120)
@@ -34,16 +39,36 @@ module HeadMusic::Notation::ABC
 
     def validate!
       RenderPreflight.check!(flow, transposed: transposed)
-      voice_writer&.validate!
+      voice_writers.each(&:validate!)
     end
 
     def plan
       @plan ||= RenderPlan.new(flow, transposed: transposed)
     end
 
-    def voice_writer
-      voice = flow.voices.first
-      @voice_writer ||= voice && VoiceWriter.new(voice, plan)
+    def voice_writers
+      @voice_writers ||= flow.voices.map { |voice| VoiceWriter.new(voice, plan) }
+    end
+
+    # A voice is named for its role where the role can stand as an id, and
+    # otherwise by its place in the flow.
+    def voice_ids
+      @voice_ids ||= begin
+        roles = flow.voices.map { |voice| voice.role.to_s }
+        kept = roles.map { |role| role if !role.empty? && !role.match?(UNSAFE_VOICE_ID) && roles.count(role) == 1 }
+        used = kept.compact
+        kept.each_with_index.map { |id, index| id || numbered_id(index + 1, used) }
+      end
+    end
+
+    def numbered_id(number, used)
+      number += 1 while used.include?(number.to_s)
+      used << number.to_s
+      number.to_s
+    end
+
+    def multi_voice?
+      flow.voices.length > 1
     end
 
     def header_lines
@@ -55,6 +80,7 @@ module HeadMusic::Notation::ABC
         "M:#{self.class.meter_value(flow.meter)}",
         unit_note_length_field,
         tempo_field,
+        *(voice_ids.map { |id| "V:#{id}" } if multi_voice?),
         key_field
       ].compact
     end
@@ -79,9 +105,14 @@ module HeadMusic::Notation::ABC
       "K:#{plan.first_measure_key(flow.voices.first&.part || flow.parts.first)}"
     end
 
+    # A flow whose voices hold nothing writes no bars.
     def body_lines
-      bars = voice_writer ? voice_writer.bars : []
-      bars.each_slice(BARS_PER_LINE).map(&:join)
+      return [] if flow.voices.all? { |voice| voice.voice_events.empty? }
+
+      lines = voice_writers.map { |writer| writer.bars.each_slice(BARS_PER_LINE).map(&:join) }
+      return lines.first unless multi_voice?
+
+      lines.transpose.flat_map { |system| voice_ids.zip(system).flat_map { |id, line| ["V:#{id}", line] } }
     end
   end
 end
