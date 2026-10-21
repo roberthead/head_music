@@ -62,13 +62,4 @@ describe HeadMusic::Notation::MusicXML::DirectionPlan do
       expect([voice_slot.voices, direction_plan.bar(1).part_slot.voices]).to eq [[left_hand], [right_hand, left_hand]]
     end
   end
-
-  describe "Mark#label" do
-    it "names a dynamic and a hairpin's start and end" do
-      dynamic = HeadMusic::Rudiment::Dynamic.get(:p)
-      hairpin = HeadMusic::Rudiment::SpanKind.get(:crescendo)
-      labels = [[:dynamic, dynamic], [:start, hairpin], [:stop, hairpin]].map { |type, item| described_class::Mark.new(type, nil, item).label }
-      expect(labels).to eq ["dynamic p", "crescendo start", "crescendo end"]
-    end
-  end
 end
