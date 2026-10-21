@@ -75,9 +75,38 @@ module HeadMusic
         @printed_key_signature ||= agreeing_interpretation || same_tonic_key || conventional_reading
       end
 
-      # @return [Integer] the fifths a key signature prints
+      # @return [Integer] the fifths a key signature prints. Theoretical keys
+      #   count each double accidental twice, which is what MusicXML's <fifths>
+      #   means too.
       def self.fifths_of(key_signature)
         key_signature.num_sharps - key_signature.num_flats
+      end
+
+      # A KeySignature already carries a tonic and a scale type -- there is no
+      # signature-only diatonic context in the gem -- so the interpretation it
+      # was built from is recovered rather than discarded.
+      def self.from_key_signature(key_signature, position, tonal_context: nil)
+        new(position, fifths_of(key_signature), tonal_context: tonal_context || tonal_context_of(key_signature))
+      end
+
+      # Narrowed to a Key or a Mode where the scale type is one, and left as
+      # the key signature where it is not.
+      #
+      # The gem admits key signatures the two subclasses cannot hold -- a
+      # harmonic minor, a whole tone -- and those are constructible flows even
+      # though MusicXML cannot render them as a <key> element. Forcing every
+      # signature through Key or Mode would move that limit from render time to
+      # construction time and make such a flow unbuildable.
+      def self.tonal_context_of(key_signature)
+        scale_type = key_signature.scale_type.name.to_sym
+        name = "#{key_signature.tonic_spelling} #{scale_type}"
+        if HeadMusic::Rudiment::Key::QUALITIES.include?(scale_type)
+          HeadMusic::Rudiment::Key.get(name)
+        elsif HeadMusic::Rudiment::Mode::MODES.include?(scale_type)
+          HeadMusic::Rudiment::Mode.get(name)
+        else
+          key_signature
+        end
       end
 
       def to_s

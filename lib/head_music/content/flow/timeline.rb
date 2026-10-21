@@ -23,26 +23,22 @@ class HeadMusic::Content::Flow
     # @return [HeadMusic::Rudiment::Meter] the meter the flow opens in
     attr_reader :opening_meter
 
-    # @return [HeadMusic::Rudiment::Tempo] the tempo the flow opens in
-    attr_reader :opening_tempo
-
     # @return [HeadMusic::Time::KeySignatureEvent] the signature the flow opens in
     attr_reader :opening_key_signature_event
 
+    delegate :opening_tempo, :tempo_ramps, :a_tempos, :add_tempo_ramp, :add_a_tempo, :remove_tempo_ramp, :remove_a_tempo,
+      to: :@tempos
+
     def initialize(meter: nil, key_signature: nil, tempo: nil)
       @opening_meter = HeadMusic::Rudiment::Meter.get(meter || HeadMusic::Rudiment::Meter.default)
-      @opening_tempo = tempo ? self.class.tempo_for(tempo) : HeadMusic::Rudiment::Tempo.new("quarter", 120)
-      @opening_key_signature_event = self.class.event_for(
+      @opening_key_signature_event = HeadMusic::Time::KeySignatureEvent.from_key_signature(
         HeadMusic::Rudiment::KeySignature.get(key_signature || HeadMusic::Rudiment::KeySignature.default),
         downbeat_of(HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR)
       )
 
       @meter_map = HeadMusic::Time::EventMap.new(default: @opening_meter)
-      @tempo_map = HeadMusic::Time::EventMap.new(default: @opening_tempo)
       @key_signature_map = HeadMusic::Time::EventMap.new(default: @opening_key_signature_event)
-
-      @tempo_ramps = TimelineSpans.new("tempo ramp")
-      @a_tempos = TimelineSpans.new("a tempo")
+      @tempos = TimelineTempos.new(tempo)
       @fermatas = TimelineSpans.new("fermata")
     end
 
@@ -50,12 +46,9 @@ class HeadMusic::Content::Flow
       @meter_map.at(downbeat_of(bar_number))
     end
 
-    # The tempo as written, never interpolated, so that a reader's check for a
-    # restated tempo sees only what was written: in a bar that begins inside a
-    # ramp, the tempo at the ramp's start; at or after its end, its target; at
-    # or after an "a tempo", the tempo it restores.
+    # The tempo as written, never interpolated; see TimelineTempos#at.
     def tempo_at(bar_number)
-      authored_tempo_map.at(downbeat_of(bar_number))
+      @tempos.at(downbeat_of(bar_number))
     end
 
     def key_signature_event_at(bar_number)
@@ -74,15 +67,10 @@ class HeadMusic::Content::Flow
       key_signature_event_at(bar_number).tonal_context
     end
 
-    # Positions are fixed when an item is added, so a meter that would leave
-    # one on a count or tick its bar no longer has is refused.
     def change_meter(bar_number, meter)
       ensure_value!(meter, "meter", :remove_meter_change)
       position = downbeat_of(bar_number)
-      previous = @meter_map.change_at(position)&.value
-      @meter_map.add(position, HeadMusic::Rudiment::Meter.get(meter)).value.tap do
-        restore_meter_change(position, previous) { ensure_items_fit_meters! }
-      end
+      revising_meter(position) { @meter_map.add(position, HeadMusic::Rudiment::Meter.get(meter)).value }
     end
 
     # Meter and key signature changes are bar-aligned by definition: a time
@@ -99,21 +87,7 @@ class HeadMusic::Content::Flow
 
     def change_tempo(bar_number, tempo)
       ensure_value!(tempo, "tempo", :remove_tempo_change)
-      position = downbeat_of(bar_number)
-      ensure_outside_ramps!(position, "a tempo change at bar #{bar_number}")
-      tempos_changed
-      @tempo_map.add(position, self.class.tempo_for(tempo)).value
-    end
-
-    # @return [Array<HeadMusic::Time::TempoRamp>] the ramps, earliest first,
-    #   each with the target it was given, or nil
-    def tempo_ramps
-      @tempo_ramps.to_a
-    end
-
-    # @return [Array<HeadMusic::Time::ATempo>] the "a tempo" points, earliest first
-    def a_tempos
-      @a_tempos.to_a
+      @tempos.change(downbeat_of(bar_number), tempo)
     end
 
     # @return [Array<HeadMusic::Time::Fermata>] the fermatas, earliest first
@@ -121,36 +95,8 @@ class HeadMusic::Content::Flow
       @fermatas.to_a
     end
 
-    # A ramp may begin or end on a tempo change, but no tempo change or
-    # "a tempo" may fall strictly inside it.
-    def add_tempo_ramp(from:, to:, to_tempo: nil, text: nil)
-      ramp = HeadMusic::Time::TempoRamp.new(from: from, to: to, to_tempo: to_tempo && self.class.tempo_for(to_tempo), text: text)
-      inside = [*@tempo_map.events.map(&:position), *@a_tempos.map(&:position)].find { |position| strictly_inside?(ramp, position) }
-      raise ArgumentError, "the tempo ramp from #{from} to #{to} would hold the tempo set at #{inside}" if inside
-
-      tempos_changed
-      @tempo_ramps.add(ramp)
-    end
-
-    def add_a_tempo(position, text: "a tempo")
-      ensure_outside_ramps!(position, "an a tempo at #{position}")
-      a_tempo = HeadMusic::Time::ATempo.new(position: position, text: text)
-      tempos_changed
-      @a_tempos.add(a_tempo)
-    end
-
     def add_fermata(from:, to:, stretch: HeadMusic::Time::Fermata::DEFAULT_STRETCH)
       @fermatas.add(HeadMusic::Time::Fermata.new(from: from, to: to, stretch: stretch))
-    end
-
-    def remove_tempo_ramp(from)
-      tempos_changed
-      @tempo_ramps.remove(from)
-    end
-
-    def remove_a_tempo(position)
-      tempos_changed
-      @a_tempos.remove(position)
     end
 
     def remove_fermata(from)
@@ -158,27 +104,16 @@ class HeadMusic::Content::Flow
     end
 
     # A Conductor for the timeline, with clock zero at the downbeat of a bar.
-    # Ramp targets and "a tempo" points become tempo events, and the step
-    # changes are added last, so they win where they share a position; the
-    # Conductor itself knows only ramps and fermatas.
+    # The Conductor itself knows only ramps and fermatas.
     def conductor(starting_bar_number = HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR)
       start = downbeat_of(starting_bar_number)
       HeadMusic::Time::Conductor.new(
         starting_musical_position: start,
-        meter_map: conductor_meter_map(start),
-        tempo_map: conductor_tempo_map(start),
-        tempo_ramps: tempo_resolution.last,
+        meter_map: rebased(@meter_map, start) { |meter| HeadMusic::Time::MeterMap.new(starting_meter: meter, starting_position: start) },
+        tempo_map: rebased(@tempos.authored_map, start) { |tempo| HeadMusic::Time::TempoMap.new(starting_tempo: tempo, starting_position: start) },
+        tempo_ramps: @tempos.resolved_ramps,
         fermatas: fermatas.map { |fermata| fermata.with(from: musical(fermata.from), to: musical(fermata.to)) }
       )
-    end
-
-    # Meter.get and KeySignature.get accept one of their own instances;
-    # Tempo.get does not, and handed a Tempo would stringify it and answer the
-    # default, so the check lives here.
-    def self.tempo_for(tempo)
-      return tempo if tempo.is_a?(HeadMusic::Rudiment::Tempo)
-
-      HeadMusic::Rudiment::Tempo.get(tempo)
     end
 
     # @param signature [Integer, HeadMusic::Rudiment::KeySignature, String] fifths,
@@ -192,7 +127,7 @@ class HeadMusic::Content::Flow
           ensure_readable!(signature, tonal_context, bar_number)
           HeadMusic::Time::KeySignatureEvent.new(position, signature, tonal_context: tonal_context)
         else
-          self.class.event_for(HeadMusic::Rudiment::KeySignature.get(signature), position, tonal_context: tonal_context)
+          HeadMusic::Time::KeySignatureEvent.from_key_signature(HeadMusic::Rudiment::KeySignature.get(signature), position, tonal_context: tonal_context)
         end
       @key_signature_map.add(position, event).value
     end
@@ -209,7 +144,7 @@ class HeadMusic::Content::Flow
     end
 
     def tempo_change_at(bar_number)
-      @tempo_map.change_at(downbeat_of(bar_number))&.value
+      @tempos.change_at(downbeat_of(bar_number))
     end
 
     # Un-author a change. The value in force reverts to whatever the previous
@@ -217,9 +152,7 @@ class HeadMusic::Content::Flow
     # where nothing was authored in that bar.
     def remove_meter_change(bar_number)
       position = downbeat_of(bar_number)
-      @meter_map.remove(position)&.value&.tap do |removed|
-        restore_meter_change(position, removed) { ensure_items_fit_meters! }
-      end
+      revising_meter(position) { @meter_map.remove(position)&.value }
     end
 
     def remove_key_signature_change(bar_number)
@@ -227,89 +160,40 @@ class HeadMusic::Content::Flow
     end
 
     def remove_tempo_change(bar_number)
-      tempos_changed
-      @tempo_map.remove(downbeat_of(bar_number))&.value
+      @tempos.remove_change(downbeat_of(bar_number))
     end
 
     # The authored changes, by bar number. The {bar_number => value} shape is
     # what the writers already consume, so repointing them off the bars costs
     # nothing at the call site.
     def meter_changes
-      changes_by_bar(@meter_map)
+      changes_by_bar(@meter_map.events)
     end
 
     def key_signature_changes
-      changes_by_bar(@key_signature_map)
+      changes_by_bar(@key_signature_map.events)
     end
 
     def tempo_changes
-      changes_by_bar(@tempo_map)
+      changes_by_bar(@tempos.change_events)
     end
 
     # Every bar in which something was authored. Empty for a flow that merely
     # opens in a meter and a key.
     def changed_bar_numbers
-      (@meter_map.events + @tempo_map.events + @key_signature_map.events)
-        .map { |event| event.position.bar }.uniq.sort
+      [meter_changes, tempo_changes, key_signature_changes].flat_map(&:keys).uniq.sort
     end
 
-    # Both fields of a key signature event, always: the signature is what is
-    # printed at the clef, and the tonal context is the interpretation, and
-    # neither derives the other.
     def to_h
-      {
-        "meter" => opening_meter.to_s,
-        **meter_symbol_to_h("meter_symbol", opening_meter),
-        "key_signature" => opening_key_signature_event.key_signature.name,
-        "tempo" => tempo_to_h(opening_tempo),
-        "meter_changes" => meter_changes.map { |bar_number, value|
-          {"number" => bar_number, "meter" => value.to_s, **meter_symbol_to_h("symbol", value)}
-        },
-        "key_signature_changes" => key_signature_changes.map { |bar_number, event|
-          {"number" => bar_number, "signature" => event.signature, "tonal_context" => event.tonal_context&.name}
-        },
-        "tempo_changes" => tempo_changes.map { |bar_number, value| {"number" => bar_number, "tempo" => tempo_to_h(value)} },
-        "tempo_ramps" => tempo_ramps.map { |ramp| tempo_ramp_to_h(ramp) },
-        "a_tempos" => a_tempos.map { |a_tempo| {"position" => a_tempo.position.code, "text" => a_tempo.text} },
-        "fermatas" => fermatas.map { |fermata| fermata_to_h(fermata) }
-      }
+      TimelineSerializer.new(self).to_h
     end
 
-    # A KeySignature already carries a tonic and a scale type -- there is no
-    # signature-only diatonic context in the gem -- so the interpretation it was
-    # built from is recovered rather than discarded.
-    def self.event_for(key_signature, position, tonal_context: nil)
-      HeadMusic::Time::KeySignatureEvent.new(
-        position,
-        fifths_of(key_signature),
-        tonal_context: tonal_context || tonal_context_of(key_signature)
-      )
-    end
-
-    # Sharps positive, flats negative. Theoretical keys count each double
-    # accidental twice, which is what MusicXML's <fifths> means too.
     def self.fifths_of(key_signature)
-      key_signature.num_sharps - key_signature.num_flats
+      HeadMusic::Time::KeySignatureEvent.fifths_of(key_signature)
     end
 
-    # Narrowed to a Key or a Mode where the scale type is one, and left as the
-    # key signature where it is not.
-    #
-    # The gem admits key signatures the two subclasses cannot hold -- a
-    # harmonic minor, a whole tone -- and those are constructible flows even
-    # though MusicXML cannot render them as a <key> element. Forcing every
-    # signature through Key or Mode would move that limit from render time to
-    # construction time and make such a flow unbuildable.
     def self.tonal_context_of(key_signature)
-      scale_type = key_signature.scale_type.name.to_sym
-      name = "#{key_signature.tonic_spelling} #{scale_type}"
-      if HeadMusic::Rudiment::Key::QUALITIES.include?(scale_type)
-        HeadMusic::Rudiment::Key.get(name)
-      elsif HeadMusic::Rudiment::Mode::MODES.include?(scale_type)
-        HeadMusic::Rudiment::Mode.get(name)
-      else
-        key_signature
-      end
+      HeadMusic::Time::KeySignatureEvent.tonal_context_of(key_signature)
     end
 
     private
@@ -334,60 +218,26 @@ class HeadMusic::Content::Flow
         "a signature of #{signature} fifths at bar #{bar_number} has no conventional key; give it a tonal_context"
     end
 
-    # Two fields rather than a "quarter = 72" string, so that a fractional
-    # tempo survives: Tempo.get reads the number by stripping non-digits.
-    def tempo_to_h(tempo)
-      {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}.tap do |hash|
-        hash["text"] = tempo.text if tempo.text
-        hash["metronome_mark"] = false unless tempo.metronome_mark?
-      end
-    end
-
-    def tempo_ramp_to_h(ramp)
-      hash = {"from" => ramp.from.code, "to" => ramp.to.code}
-      hash["tempo"] = tempo_to_h(ramp.to_tempo) if ramp.to_tempo
-      hash["text"] = ramp.text if ramp.text
-      hash
-    end
-
-    def fermata_to_h(fermata)
-      stretch = fermata.stretch
-      {"from" => fermata.from.code, "to" => fermata.to.code, "stretch" => (stretch == stretch.to_i) ? stretch.to_i : stretch.to_f}
-    end
-
-    def meter_symbol_to_h(key, meter)
-      meter.symbol ? {key => meter.symbol.to_s} : {}
-    end
-
-    def changes_by_bar(map)
-      map.events.to_h { |event| [event.position.bar, event.value] }
+    def changes_by_bar(events)
+      events.to_h { |event| [event.position.bar, event.value] }
     end
 
     def musical(position)
       HeadMusic::Time::MusicalPosition.new(*position.to_a)
     end
 
-    def strictly_inside?(ramp, position)
-      tuple = position.to_a
-      (ramp.from.to_a <=> tuple).negative? && (tuple <=> ramp.to.to_a).negative?
-    end
-
-    def ensure_outside_ramps!(position, description)
-      ramp = @tempo_ramps.covering(position)
-      return if ramp.nil? || ramp.from.to_a == position.to_a
-
-      raise ArgumentError, "#{description} falls inside the tempo ramp from #{ramp.from} to #{ramp.to}"
-    end
-
-    def restore_meter_change(position, previous)
-      yield
+    # Positions are fixed when an item is added, so a meter change that would
+    # leave one on a count or tick its bar no longer has is undone and refused.
+    def revising_meter(position)
+      previous = @meter_map.change_at(position)&.value
+      yield.tap { ensure_items_fit_meters! }
     rescue ArgumentError
       previous ? @meter_map.add(position, previous) : @meter_map.remove(position)
       raise
     end
 
     def ensure_items_fit_meters!
-      [@tempo_ramps, @a_tempos, @fermatas].each do |items|
+      [*@tempos.spans, @fermatas].each do |items|
         items.each do |item|
           misfit = [item.from, item.to].find { |position| !fits_meter?(position) }
           raise ArgumentError, "the meter would leave no #{misfit} for the #{items.describe(item)}" if misfit
@@ -401,74 +251,11 @@ class HeadMusic::Content::Flow
       count.between?(1, meter.counts_per_bar) && tick < meter.ticks_per_count
     end
 
-    def tempos_changed
-      @authored_tempo_map = @tempo_resolution = nil
-    end
-
-    # A flow with no ramps and no "a tempo" answers from its step changes, as
-    # it always has.
-    def authored_tempo_map
-      return @tempo_map if @tempo_ramps.empty? && @a_tempos.empty?
-
-      @authored_tempo_map ||= HeadMusic::Time::EventMap.new(default: opening_tempo).tap do |map|
-        tempo_resolution.first.each { |position, tempo| map.add(position, tempo) }
-        @tempo_map.events.each { |event| map.add(event.position, event.value) }
-      end
-    end
-
-    # [[position, tempo] at each ramp end and "a tempo"], and the ramps with
-    # musical positions and their targets resolved: a target as given, else
-    # the tempo change where the ramp ends, else the default its text implies.
-    # At one position, a ramp ends, then an "a tempo" restores, then a tempo
-    # changes, then a ramp starts.
-    def tempo_resolution
-      @tempo_resolution ||= begin
-        points = []
-        resolved = {}
-        current = opening_tempo
-        restorable = nil
-        tempo_moments.each do |order, item|
-          case order
-          when 0
-            current = resolved[item.from.to_a].to_tempo
-            points << [musical(item.to), current]
-          when 1
-            next unless restorable
-
-            current = restorable
-            points << [musical(item.position), current]
-          when 2
-            current = item
-          else
-            restorable = current
-            resolved[item.from.to_a] = resolved_ramp(item, current)
-          end
-        end
-        [points, resolved.values]
-      end
-    end
-
-    def tempo_moments
-      moments = @tempo_ramps.flat_map { |ramp| [[ramp.from.to_a, 3, ramp], [ramp.to.to_a, 0, ramp]] } +
-        @a_tempos.map { |a_tempo| [a_tempo.position.to_a, 1, a_tempo] } +
-        @tempo_map.events.map { |event| [event.tuple, 2, event.value] }
-      moments.sort_by { |tuple, order, _item| [tuple, order] }.map { |_tuple, order, item| [order, item] }
-    end
-
-    def resolved_ramp(ramp, start_tempo)
-      target = ramp.to_tempo || @tempo_map.change_at(musical(ramp.to))&.value || ramp.default_target(start_tempo)
-      ramp.with(from: musical(ramp.from), to: musical(ramp.to), to_tempo: target)
-    end
-
-    def conductor_meter_map(start)
-      HeadMusic::Time::MeterMap.new(starting_meter: @meter_map.at(start), starting_position: start).tap do |map|
-        @meter_map.events.each { |event| map.add_change(event.position, event.value) if event.after?(start.to_a) }
-      end
-    end
-
-    def conductor_tempo_map(start)
-      HeadMusic::Time::TempoMap.new(starting_tempo: authored_tempo_map.at(start), starting_position: start).tap do |map|
-        authored_tempo_map.events.each { |event| map.add_change(event.position, event.value) if event.after?(start.to_a) }
+    # A change map for the Conductor, opening at its start with the value in
+    # force there.
+    def rebased(source, start)
+      yield(source.at(start)).tap do |map|
+        source.events.each { |event| map.add_change(event.position, event.value) if event.after?(start.to_a) }
       end
     end
 

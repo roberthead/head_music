@@ -220,22 +220,9 @@ describe HeadMusic::Content::Flow::Timeline do
   end
 
   describe ".tonal_context_of" do
-    it "narrows a major signature to a key" do
-      expect(described_class.tonal_context_of(HeadMusic::Rudiment::KeySignature.get("D major")))
-        .to be_a HeadMusic::Rudiment::Key
-    end
-
-    it "narrows a modal signature to a mode" do
-      expect(described_class.tonal_context_of(HeadMusic::Rudiment::KeySignature.get("D dorian")))
-        .to be_a HeadMusic::Rudiment::Mode
-    end
-
-    # Neither subclass can hold a harmonic minor, and refusing it here would
-    # make the flow unconstructable rather than merely unrenderable as a
-    # MusicXML <key> element.
-    it "keeps a scale type neither subclass can hold" do
-      expect(described_class.tonal_context_of(HeadMusic::Rudiment::KeySignature.get("C harmonic_minor")))
-        .to be_a HeadMusic::Rudiment::KeySignature
+    it "answers the key signature event's reading" do
+      key_signature = HeadMusic::Rudiment::KeySignature.get("D dorian")
+      expect(described_class.tonal_context_of(key_signature)).to eq HeadMusic::Time::KeySignatureEvent.tonal_context_of(key_signature)
     end
   end
 end

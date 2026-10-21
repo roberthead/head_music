@@ -56,4 +56,42 @@ describe HeadMusic::Time::KeySignatureEvent do
         .to raise_error ArgumentError, /no conventional key/
     end
   end
+
+  describe ".tonal_context_of" do
+    it "narrows a major signature to a key" do
+      expect(described_class.tonal_context_of(HeadMusic::Rudiment::KeySignature.get("D major")))
+        .to be_a HeadMusic::Rudiment::Key
+    end
+
+    it "narrows a modal signature to a mode" do
+      expect(described_class.tonal_context_of(HeadMusic::Rudiment::KeySignature.get("D dorian")))
+        .to be_a HeadMusic::Rudiment::Mode
+    end
+
+    # Neither subclass can hold a harmonic minor, and refusing it here would
+    # make the flow unconstructable rather than merely unrenderable as a
+    # MusicXML <key> element.
+    it "keeps a scale type neither subclass can hold" do
+      expect(described_class.tonal_context_of(HeadMusic::Rudiment::KeySignature.get("C harmonic_minor")))
+        .to be_a HeadMusic::Rudiment::KeySignature
+    end
+  end
+
+  describe ".from_key_signature" do
+    subject(:event) { described_class.from_key_signature(HeadMusic::Rudiment::KeySignature.get("E dorian"), position) }
+
+    it "counts the signature's fifths" do
+      expect(event.signature).to eq 2
+    end
+
+    it "recovers the interpretation the signature was built from" do
+      expect(event.tonal_context.name).to eq "E dorian"
+    end
+
+    it "prefers an interpretation it is given" do
+      a_major = HeadMusic::Rudiment::Key.get("A major")
+      expect(described_class.from_key_signature(HeadMusic::Rudiment::KeySignature.get("E dorian"), position, tonal_context: a_major).tonal_context)
+        .to be a_major
+    end
+  end
 end
