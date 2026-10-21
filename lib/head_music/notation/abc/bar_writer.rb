@@ -5,13 +5,14 @@ module HeadMusic::Notation::ABC
   class BarWriter
     include HeadMusic::Notation::VoiceEventValidation
 
-    def initialize(key_signature, unit_note_length, slur_writer, position_marks, tuplet_writer)
+    def initialize(key_signature, unit_note_length, slur_writer, position_marks, tuplet_writer, fermatas = {})
       @pitch_writer = PitchWriter.new(key_signature)
       @duration_writer = DurationWriter.new(unit_note_length)
       @decoration_writer = DecorationWriter.new
       @slur_writer = slur_writer
       @position_marks = position_marks
       @tuplet_writer = tuplet_writer
+      @fermatas = fermatas
       @grace_writer = GraceWriter.new(@pitch_writer, @duration_writer, @decoration_writer)
     end
 
@@ -35,8 +36,9 @@ module HeadMusic::Notation::ABC
     # and a slur closes after its last part. A tuplet marker comes first, then
     # a slur from the grace notes and the grace notes, then a slur from the
     # note, before the decorations, since ".(" would be a dotted slur. A mark
-    # at the start of a later part goes on that part. Grace notes are written
-    # before the note, so the accidentals they write hold for it.
+    # at the start of a later part goes on that part, as does a fermata
+    # beginning in it. Grace notes are written before the note, so the
+    # accidentals they write hold for it.
     def token(segment, bar_marks)
       voice_event = segment.voice_event
       bar_number = segment.bar_number
@@ -45,8 +47,16 @@ module HeadMusic::Notation::ABC
       graces, opens, decorations = first_part ? lead_in(voice_event) : ["", "", ""]
       marker, body = token_body(segment, first_part)
       start = first_part ? position : voice_event.flow.position(bar_number, 1, 0)
-      "#{marker}#{graces}#{opens}#{bar_marks.decorations_at(start)}#{decorations}#{body}" \
+      "#{marker}#{graces}#{opens}#{bar_marks.decorations_at(start)}#{fermata(segment, start)}#{decorations}#{body}" \
         "#{@slur_writer.closes(voice_event) unless segment.continues}"
+    end
+
+    def fermata(segment, start)
+      fermata = @fermatas[segment.voice_event]
+      return "" unless fermata && start <= fermata.from
+
+      finish = segment.continues ? start.start_of_next_bar : segment.voice_event.next_position
+      (fermata.from < finish) ? "!fermata!" : ""
     end
 
     def lead_in(voice_event)

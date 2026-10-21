@@ -3,10 +3,12 @@ module HeadMusic::Notation::ABC
   # The decorations written ahead of a voice's next note, chord, or rest, and
   # how each lands on the voice event it decorates.
   class PendingDecorations
-    def initialize(voice)
+    def initialize(voice, fermata_marks)
       @voice = voice
       @waiting = []
       @hairpin_marks = HairpinMarks.new(voice)
+      @fermata_marks = fermata_marks
+      @held_links = []
     end
 
     def decorate(decoration)
@@ -27,19 +29,31 @@ module HeadMusic::Notation::ABC
     end
 
     # A marking before a bar line, tie, or the end of the tune has nothing to
-    # mark. One the reader drops anyway, such as a !fermata! before a bar line,
-    # is let go. A hairpin mark waits for the next note: before a tie, that is
-    # the tie's later link, where the mark stands.
+    # mark. One the reader drops anyway, such as a bowing before a bar line,
+    # is let go, and a fermata is answered, for the note before it. A hairpin
+    # mark waits for the next note: before a tie, that is the tie's later
+    # link, where the mark stands.
     def reject_dangling_decorations
       hairpins, others = take.partition(&:hairpin?)
       @waiting = hairpins
+      fermatas, others = others.partition(&:fermata?)
       dangling = others.reject(&:dropped?).first
-      return unless dangling
+      return fermatas unless dangling
 
       raise ParseError.new(
         "A decoration must be followed by a note, chord, or rest",
         line_number: dangling.line, snippet: dangling.lexeme
       )
+    end
+
+    # A fermata on a tied note's later link holds from that link, once the
+    # note is placed.
+    def hold_link(position)
+      @held_links << position
+    end
+
+    def hold(voice_event, from: voice_event.position)
+      @fermata_marks.add(voice_event, from: from)
     end
 
     # A hairpin mark before a bar line or the end of the voice marks where
@@ -54,8 +68,12 @@ module HeadMusic::Notation::ABC
     end
 
     # A rest keeps only what marks a moment: a level, which becomes a dynamic
-    # event at the rest, and a hairpin mark.
+    # event at the rest, a hairpin mark, and a fermata.
     def apply(voice_event, decorations)
+      fermatas, decorations = decorations.partition(&:fermata?)
+      hold(voice_event) if fermatas.any?
+      @held_links.each { |from| hold(voice_event, from: from) }
+      @held_links = []
       decorations = decorations.select(&:positional?) if voice_event.rest?
       decorations.each { |decoration| apply_decoration(voice_event, decoration) }
     end

@@ -1,6 +1,24 @@
 require "spec_helper"
 
 describe HeadMusic::Notation::ABC do
+  describe "a round trip of timeline expressions" do
+    let(:original) { TimelineExpressionFixtures.melody }
+    let(:rendered) { described_class.render(original) }
+    let(:round_tripped) { described_class.parse(rendered) }
+
+    it "keeps the meter symbol, tempo text, tempo changes, ramps, \"a tempo\" points, and fermatas" do
+      expect_same_timeline(original, round_tripped)
+    end
+
+    it "keeps every voice event whole" do
+      expect_same_voice_events(original, round_tripped)
+    end
+
+    it "reads back what it wrote" do
+      expect(described_class.render(round_tripped)).to eq rendered
+    end
+  end
+
   describe "a round trip of articulations, ornaments, and dynamics" do
     let(:original) { MarkingFixtures.marked_melody }
     let(:round_tripped) { described_class.parse(described_class.render(original)) }

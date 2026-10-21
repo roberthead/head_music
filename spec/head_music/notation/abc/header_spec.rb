@@ -81,6 +81,27 @@ describe HeadMusic::Notation::ABC::Header do
     end
   end
 
+  describe "#tempo" do
+    it "reads Q: as the tempo" do
+      header = described_class.new(%(Q:"Allegro" 3/8=120\nK:C\n))
+      expect(header.tempo).to eq HeadMusic::Rudiment::Tempo.new("dotted quarter", 120, text: "Allegro")
+    end
+
+    it "counts a legacy Q: in the unit note length, even one given after it" do
+      header = described_class.new("Q:60\nL:1/4\nK:C\n")
+      expect(header.tempo).to eq HeadMusic::Rudiment::Tempo.new("quarter", 60)
+    end
+
+    it "is nil when Q: is absent" do
+      expect(described_class.new("K:C\n").tempo).to be_nil
+    end
+
+    it "raises a ParseError with the line number for an invalid tempo" do
+      expect { described_class.new("X:1\nQ:fast\nK:C\n").tempo }
+        .to raise_error(HeadMusic::Notation::ABC::ParseError, /tempo.*line 2/i)
+    end
+  end
+
   describe "#unit_note_length" do
     it "uses an explicit L: value" do
       header = described_class.new("M:4/4\nL:1/4\nK:C\n")
@@ -154,14 +175,14 @@ describe HeadMusic::Notation::ABC::Header do
     let(:abc) do
       <<~ABC
         X:1
-        Q:120
+        R:reel
         K:C
       ABC
     end
 
     it "raises an UnsupportedFeatureError naming the field and line number" do
       expect { described_class.new(abc) }
-        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"Q".*line 2/)
+        .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"R".*line 2/)
     end
   end
 
@@ -239,7 +260,7 @@ describe HeadMusic::Notation::ABC::Header do
 
   describe "start_line offset" do
     it "offsets header error line numbers" do
-      expect { described_class.new("X:1\nQ:120\nK:C\n", start_line: 10) }
+      expect { described_class.new("X:1\nR:reel\nK:C\n", start_line: 10) }
         .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /line 11/)
     end
 

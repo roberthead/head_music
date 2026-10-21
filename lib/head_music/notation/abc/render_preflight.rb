@@ -27,6 +27,7 @@ module HeadMusic::Notation::ABC
       ensure_timed_marks_within_music(flow)
       ensure_no_marks_inside_rounded_notes(flow)
       ensure_dynamics_fit_one_voice
+      ensure_tempo_marks_writable
     end
 
     private
@@ -64,6 +65,18 @@ module HeadMusic::Notation::ABC
       holders = flow.parts + flow.voices
       ensure_one_level_per_position(holders, line: "an ABC voice")
       ensure_one_hairpin_at_a_time(holders.flat_map(&:spans), line: "an ABC voice")
+    end
+
+    def ensure_tempo_marks_writable
+      marks = HeadMusic::Notation::TempoMarks.new(flow)
+      tempo = [marks.opening, *marks.filter_map(&:tempo)].find { |candidate| TempoField.problem(candidate) }
+      raise RenderError, "cannot write #{TempoField.problem(tempo)} in ABC output" if tempo
+
+      mark = marks.find { |candidate| candidate.text&.include?('"') }
+      raise RenderError, "cannot write the text #{mark.text.inspect}, which holds a double quote, in ABC output" if mark
+
+      ramp = marks.unreadable_ramps.first
+      raise RenderError, "cannot write the tempo ramp from #{ramp.from} to #{ramp.to} in ABC output so that it reads back" if ramp
     end
 
     def render_error_class

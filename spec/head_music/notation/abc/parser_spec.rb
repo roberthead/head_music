@@ -983,7 +983,7 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "lets a dropped decoration stand before a bar line" do
-      expect(voice_for("C4!fermata!|]").voice_events.length).to eq 1
+      expect(voice_for("C4!upbow!|]").voice_events.length).to eq 1
     end
 
     it "marks a tied note once, keeping markings from its tied note" do
@@ -1042,6 +1042,131 @@ describe HeadMusic::Notation::ABC::Parser do
     it "refuses a U: field that would redefine a shorthand" do
       expect { parse("X:1\nU:T=!fermata!\nK:C\nTC|\n") }
         .to raise_error(HeadMusic::Notation::ABC::UnsupportedFeatureError, /"U"/)
+    end
+  end
+
+  describe "fermatas" do
+    def fermatas(body)
+      parse_body(body).fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s] }
+    end
+
+    {
+      "H" => "C D HE F|", "!fermata!" => "C D !fermata!E F|", "+fermata+" => "C D +fermata+E F|",
+      "!invertedfermata!" => "C D !invertedfermata!E F|", "a fermata on a rest" => "C D Hz F|",
+      "a fermata on a chord" => "C D H[CEG] F|"
+    }.each do |description, body|
+      it "reads #{description} as a timeline fermata over the event" do
+        expect(fermatas(body)).to eq [["1:3:000", "1:4:000"]]
+      end
+    end
+
+    it "keeps the event's markings" do
+      expect(parse_body("C D H.E F|").voices.first.voice_event_at("1:3").articulations.map(&:name_key)).to eq ["staccato"]
+    end
+
+    it "reads a fermata before a bar line as one on the event before it" do
+      expect(fermatas("C D E F!fermata!|G4|")).to eq [["1:4:000", "2:1:000"]]
+    end
+
+    it "reads a fermata before the end of the tune as one on the last event" do
+      expect(fermatas("C D E z H")).to eq [["1:4:000", "2:1:000"]]
+    end
+
+    it "drops a fermata with no event before it" do
+      expect(fermatas("H|C4|")).to be_empty
+    end
+
+    it "starts a fermata on a tie's later link at that link" do
+      expect(fermatas("C2 D2-|HD2 E2|")).to eq [["2:1:000", "2:3:000"]]
+    end
+
+    it "forms one fermata from marks in two voices, where they sound together" do
+      flow = parse("X:1\nL:1/4\nK:C\nV:S\nc Hd e2|\nV:B\nC D/ HE/ F2|\n")
+      expect(flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s] }).to eq [["1:2:480", "1:3:000"]]
+    end
+  end
+
+  describe "tempo marks" do
+    let(:flow) { parse_body(body) }
+
+    def ramps
+      flow.tempo_ramps.map { |ramp| [ramp.from.to_s, ramp.to.to_s, ramp.to_tempo&.beats_per_minute, ramp.text] }
+    end
+
+    context "with a Q: in the header" do
+      let(:flow) { parse(%(X:1\nM:C|\nL:1/4\nQ:"Allegro" 1/2=80\nK:C\nC D E F|\n)) }
+
+      it "opens at its tempo" do
+        expect(flow.tempo_at(1)).to eq HeadMusic::Rudiment::Tempo.new("half", 80, text: "Allegro")
+      end
+
+      it "keeps the meter symbol" do
+        expect(flow.meter.symbol).to eq :cut
+      end
+    end
+
+    context "with an inline Q: at a downbeat" do
+      let(:body) { "C D E F|[Q:1/4=80]G A B c|" }
+
+      it "changes the tempo there" do
+        expect(flow.tempo_changes).to eq(2 => HeadMusic::Rudiment::Tempo.new("quarter", 80))
+      end
+    end
+
+    context "with a Q: line between lines of music" do
+      let(:body) { "C D E F|\nQ:\"Adagio\"\nG A B c|" }
+
+      it "changes the tempo where the music has reached" do
+        expect(flow.tempo_at(2).text).to eq "Adagio"
+      end
+    end
+
+    context "with a rit. annotation and a Q: at its end" do
+      let(:body) { "C D \"^rit.\"E F|G A [Q:1/4=80]B c|" }
+
+      it "reads a ramp to the tempo at its end" do
+        expect(ramps).to eq [["1:3:000", "2:3:000", 80.0, "rit."]]
+      end
+    end
+
+    context "with a rall. annotation and \"a tempo\"" do
+      let(:body) { "C D \"_rall.\"E F|\"^a tempo\"G A B c|" }
+
+      it "reads a ramp ending at the \"a tempo\"" do
+        expect([ramps, flow.a_tempos.map { |a_tempo| a_tempo.position.to_s }]).to eq [[["1:3:000", "2:1:000", nil, "rall."]], ["2:1:000"]]
+      end
+    end
+
+    context "with other annotation text" do
+      let(:body) { "\"^dolce\"C D E F|" }
+
+      it "drops it" do
+        expect([flow.tempo_ramps, flow.a_tempos, flow.tempo_changes]).to all(be_empty)
+      end
+    end
+
+    context "with an annotation in a voice overlay" do
+      let(:body) { "C4 & x2 \"^rit.\"x2|D4|" }
+
+      it "reads it where the overlay has reached" do
+        expect(ramps).to eq [["1:3:000", "3:1:000", nil, "rit."]]
+      end
+    end
+
+    context "with an empty inline Q:" do
+      let(:body) { "C D E F|[Q:]G A B c|" }
+
+      it "changes nothing" do
+        expect(flow.tempo_changes).to be_empty
+      end
+    end
+
+    context "with a Q: before any voice has begun" do
+      let(:flow) { parse("X:1\nL:1/4\nK:C\n[Q:1/4=60]\nV:1\nC D E F|\n") }
+
+      it "changes the tempo at the start of the music" do
+        expect(flow.tempo_changes.keys).to eq [1]
+      end
     end
   end
 

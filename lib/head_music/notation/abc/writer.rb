@@ -9,6 +9,9 @@ module HeadMusic::Notation::ABC
     # multiplier arithmetic in sync.
     UNIT_NOTE_LENGTH = Rational(1, 8)
     BARS_PER_LINE = 4
+    METER_SYMBOLS = {common: "C", cut: "C|"}.freeze
+    # A tune with no Q: field reads at this tempo.
+    DEFAULT_TEMPO = HeadMusic::Rudiment::Tempo.new("quarter", 120)
 
     attr_reader :flow, :reference_number, :transposed
 
@@ -32,14 +35,18 @@ module HeadMusic::Notation::ABC
     end
 
     # A mark inside a note or after the music is reached by invisible rests,
-    # which need a binary note value to span its offset.
+    # which need a binary note value to span its offset, and which cannot
+    # carry a Q: field.
     def ensure_marks_reachable
       segments_by_bar.each do |bar_segments|
-        mark = position_marks.bar_marks(bar_segments).unreachable
-        next unless mark
-
-        raise RenderError, "cannot place the #{mark.label} at #{mark.position} in ABC output: " \
-          "no binary note value reaches it"
+        bar_marks = position_marks.bar_marks(bar_segments)
+        mark = bar_marks.unreachable
+        if mark
+          raise RenderError, "cannot place the #{mark.label} at #{mark.position} in ABC output: " \
+            "no binary note value reaches it"
+        end
+        field = bar_marks.inline_field_between_attacks
+        raise RenderError, "cannot place the #{field.label} at #{field.position} in ABC output, where no note starts" if field
       end
     end
 
@@ -73,14 +80,20 @@ module HeadMusic::Notation::ABC
         "T:#{flow.name}",
         optional_field("C", flow.composer),
         optional_field("O", flow.origin),
-        "M:#{flow.meter}",
+        "M:#{METER_SYMBOLS.fetch(flow.meter.symbol, flow.meter.to_s)}",
         unit_note_length_field,
+        tempo_field,
         key_field
       ].compact
     end
 
     def optional_field(letter, value)
       "#{letter}:#{value}" if value
+    end
+
+    def tempo_field
+      tempo = flow.timeline.opening_tempo
+      "Q:#{TempoField.write(tempo)}" unless tempo == DEFAULT_TEMPO
     end
 
     def unit_note_length_field
@@ -107,7 +120,10 @@ module HeadMusic::Notation::ABC
 
     # Each bar the voice sounds in, with its music.
     def written_bars
-      bar_writer = BarWriter.new(written_key_signature, UNIT_NOTE_LENGTH, slur_writer, position_marks, tuplet_writer)
+      bar_writer = BarWriter.new(
+        written_key_signature, UNIT_NOTE_LENGTH, slur_writer, position_marks, tuplet_writer,
+        HeadMusic::Notation::FermataMarks.carriers(flow)
+      )
       segments = segments_by_bar.to_a
       return [] if segments.empty?
 

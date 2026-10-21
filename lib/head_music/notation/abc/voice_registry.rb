@@ -9,10 +9,11 @@ module HeadMusic::Notation::ABC
   class VoiceRegistry
     include Enumerable
 
-    def initialize(flow, key_signature, duration_resolver)
+    def initialize(flow, key_signature, duration_resolver, fermata_marks)
       @flow = flow
       @key_signature = key_signature
       @duration_resolver = duration_resolver
+      @fermata_marks = fermata_marks
       @states = {}
     end
 
@@ -33,7 +34,8 @@ module HeadMusic::Notation::ABC
       @states[role] ||= VoiceState.new(
         @flow.add_voice(role: role),
         PitchBuilder.new(@key_signature),
-        @duration_resolver
+        @duration_resolver,
+        @fermata_marks
       )
     end
 

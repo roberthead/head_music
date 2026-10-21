@@ -23,6 +23,10 @@ describe HeadMusic::Notation::ABC::DecorationMapper do
       "!uppermordent!" => [:ornament, "inverted_mordent"],
       "!pralltriller!" => [:ornament, "inverted_mordent"],
       "!turn!" => [:ornament, "turn"],
+      "H" => [:fermata, "fermata"],
+      "!fermata!" => [:fermata, "fermata"],
+      "+fermata+" => [:fermata, "fermata"],
+      "!invertedfermata!" => [:fermata, "fermata"],
       "!sf!" => [:note_dynamic, "sf"],
       "!sfz!" => [:note_dynamic, "sfz"],
       "!rfz!" => [:note_dynamic, "rfz"],
@@ -80,10 +84,10 @@ describe HeadMusic::Notation::ABC::DecorationMapper do
     end
 
     %w[
-      ~ H u v !roll! !turnx! !invertedturn! !invertedturnx! !arpeggio! !trill(! !trill)!
-      !fermata! !invertedfermata! !breath! !upbow! !downbow! !open! !thumb! !snap! !slide! !+! !plus!
+      ~ u v !roll! !turnx! !invertedturn! !invertedturnx! !arpeggio! !trill(! !trill)!
+      !breath! !upbow! !downbow! !open! !thumb! !snap! !slide! !+! !plus!
       !0! !1! !2! !3! !4! !5! !trem1! !trem2! !trem3! !trem4! !pppp! !ffff!
-      !shortphrase! !mediumphrase! !longphrase! !editorial! !courtesy! +fermata+
+      !shortphrase! !mediumphrase! !longphrase! !editorial! !courtesy! +breath+
     ].each do |lexeme|
       it "recognizes #{lexeme} and drops it" do
         expect(described_class.classify(lexeme)).to eq(kind: :dropped, key: nil)

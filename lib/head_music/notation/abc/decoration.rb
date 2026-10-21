@@ -29,5 +29,9 @@ module HeadMusic::Notation::ABC
     def navigation?
       kind == :navigation
     end
+
+    def fermata?
+      kind == :fermata
+    end
   end
 end

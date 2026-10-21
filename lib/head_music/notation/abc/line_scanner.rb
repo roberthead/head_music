@@ -15,8 +15,10 @@ module HeadMusic::Notation::ABC
 
     NOTE_PATTERN = %r{(\^\^|\^|__|_|=)?([A-Ga-g])([',]*)([\d/]*)}
     PART_LABEL_PATTERN = /\[P:([^\]]*)\]/
+    TEMPO_FIELD_PATTERN = /\[Q:([^\]]*)\]/
     # An inline field ("[K:...]"), tried closed before its unterminated fallback.
     INLINE_FIELD_PATTERNS = [/\[[A-Za-z]:[^\]]*\]/, /\[[A-Za-z]:[^\]]*/].freeze
+    ANNOTATION_PATTERN = /"(?:[\^_<>]|@-?[\d.]+,-?[\d.]+)([^"]*)"/
     REST_PATTERN = %r{z([\d/]*)}
     INVISIBLE_REST_PATTERN = %r{x([\d/]*)}
     # A spacer takes no time; a number after it only widens the gap.
@@ -100,9 +102,12 @@ module HeadMusic::Notation::ABC
       true
     end
 
-    # Quoted chord symbols are consumed whole so a "%" inside quotes is
-    # never mistaken for a comment.
+    # Quoted strings are consumed whole so a "%" inside quotes is never
+    # mistaken for a comment. An annotation's text follows its placement
+    # prefix, and a "@" placement's coordinates; a chord symbol has no prefix.
     def scan_quoted_string(column)
+      return add(:annotation, column: column, lexeme: @scanner[1]) if @scanner.scan(ANNOTATION_PATTERN)
+
       lexeme = @scanner.scan(/"[^"]*"/) || @scanner.scan(/"[^"]*/)
       lexeme && add_unsupported(lexeme, column)
     end
@@ -129,6 +134,7 @@ module HeadMusic::Notation::ABC
       return false unless @scanner.check(/\[/)
       return add_volta(@scanner[1], column) if @scanner.scan(/\[(\d[\d,-]*)/)
       return add(:part_label, column: column, lexeme: @scanner[1].strip) if @scanner.scan(PART_LABEL_PATTERN)
+      return add(:tempo, column: column, lexeme: @scanner[1].strip) if @scanner.scan(TEMPO_FIELD_PATTERN)
 
       inline_field = scan_first(INLINE_FIELD_PATTERNS)
       return add_unsupported(inline_field, column) if inline_field

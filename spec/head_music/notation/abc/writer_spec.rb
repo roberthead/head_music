@@ -1037,4 +1037,86 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
   end
+
+  describe "timeline expressions" do
+    def tune(body, header = "")
+      HeadMusic::Notation::ABC.parse("X:1\nT:Timeline\nM:4/4\nL:1/4\n#{header}K:C\n#{body}\n")
+    end
+
+    def body_of(flow)
+      described_class.new(flow).to_s.lines.drop_while { |line| !line.start_with?("K:") }.drop(1).join
+    end
+
+    let(:flow) { tune("C D E F|G A B c|") }
+    let(:slower) { HeadMusic::Rudiment::Tempo.new("quarter", 80) }
+
+    {common_time: "M:C", cut_time: "M:C|"}.each do |meter, field|
+      it "writes #{meter.to_s.tr("_", " ")} as #{field}" do
+        flow = HeadMusic::Content::Flow.new(meter: HeadMusic::Rudiment::Meter.public_send(meter)).tap { |held| held.add_voice.place("1:1", :whole, "C4") }
+        expect(described_class.new(flow).to_s.lines).to include("#{field}\n")
+      end
+    end
+
+    it "writes a 4/4 with no symbol as M:4/4" do
+      expect(described_class.new(flow).to_s.lines).to include("M:4/4\n")
+    end
+
+    it "writes the opening tempo as Q: before K:" do
+      lines = described_class.new(tune("C D E F|", %(Q:"Allegro" 1/4=132\n))).to_s.lines
+      expect(lines.each_cons(2).to_a).to include([%(Q:"Allegro" 1/4=132\n), "K:C\n"])
+    end
+
+    it "writes no Q: for a quarter at 120" do
+      expect(described_class.new(flow).to_s).not_to include("Q:")
+    end
+
+    it "writes a tempo change at its downbeat" do
+      flow.change_tempo(2, slower)
+      expect(body_of(flow)).to eq "C2 D2 E2 F2|[Q:1/4=80]G2 A2 B2 c2|]\n"
+    end
+
+    it "writes a ramp's text at its start and its target at its end" do
+      flow.add_tempo_ramp(from: "1:3", to: "2:3", to_tempo: slower, text: "rall.")
+      expect(body_of(flow)).to eq %(C2 D2 "^rall."E2 F2|G2 A2 [Q:1/4=80]B2 c2|]\n)
+    end
+
+    it "writes an \"a tempo\" as an annotation" do
+      flow.add_tempo_ramp(from: "1:3", to: "2:1", text: "rit.")
+      flow.add_a_tempo("2:1")
+      expect(body_of(flow)).to eq %(C2 D2 "^rit."E2 F2|"^a tempo"G2 A2 B2 c2|]\n)
+    end
+
+    it "writes a ramp's target on the final barline" do
+      flow.add_tempo_ramp(from: "2:1", to: "3:1", to_tempo: slower, text: "rit.")
+      expect(body_of(flow)).to eq %(C2 D2 E2 F2|"^rit."G2 A2 B2 c2 [Q:1/4=80]y|]\n)
+    end
+
+    it "writes a ramp starting inside a note in an overlay" do
+      flow = tune("C4|D4|").tap { |held| held.add_tempo_ramp(from: "1:3", to: "3:1", text: "rit.") }
+      expect(body_of(flow)).to eq %(C8 & x4 "^rit."x4|D8|]\n)
+    end
+
+    it "writes a fermata on the event where it begins, rests included" do
+      flow = tune("C D z F|").tap { |held| held.add_fermata("1:2", :quarter).then { held.add_fermata("1:3", :quarter) } }
+      expect(body_of(flow)).to eq "C2 !fermata!D2 !fermata!z2 F2|]\n"
+    end
+
+    it "writes a fermata beginning in a tied note's later bar on that bar's part" do
+      flow = tune("C2 D2-|D2 E2|").tap { |held| held.add_fermata("2:1", :half) }
+      expect(body_of(flow)).to eq "C4 D4-|!fermata!D4 E4|]\n"
+    end
+
+    {
+      "a fractional tempo" => [->(flow) { flow.change_tempo(2, HeadMusic::Rudiment::Tempo.new("quarter", 92.5)) }, /fractional tempo of 92.5/],
+      "tempo text holding a double quote" => [->(flow) { flow.change_tempo(2, HeadMusic::Rudiment::Tempo.new("quarter", 92, text: 'So "fast"')) }, /double quote/],
+      "an \"a tempo\" holding a double quote" => [->(flow) { flow.add_a_tempo("2:1", text: '"a tempo"') }, /double quote/],
+      "a ramp whose text is no ramp word" => [->(flow) { flow.add_tempo_ramp(from: "1:1", to: "2:1", to_tempo: HeadMusic::Rudiment::Tempo.new("quarter", 80), text: "allarg.") }, /tempo ramp from 1:1:000 to 2:1:000.*reads back/],
+      "a ramp's target where no note starts" => [->(flow) { flow.add_tempo_ramp(from: "1:1", to: "1:3:240", to_tempo: HeadMusic::Rudiment::Tempo.new("quarter", 80), text: "rit.") }, /tempo ramp end at 1:3:240 .*where no note starts/]
+    }.each do |description, (change, message)|
+      it "raises a RenderError for #{description}" do
+        change.call(flow)
+        expect { described_class.new(flow).to_s }.to raise_error(HeadMusic::Notation::ABC::RenderError, message)
+      end
+    end
+  end
 end

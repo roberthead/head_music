@@ -448,6 +448,26 @@ describe HeadMusic::Notation::ABC::BodyLexer do
     end
   end
 
+  describe "tempo fields and annotations" do
+    it "lexes an inline Q: field as a tempo" do
+      expect(tokens_for('[Q:"Andante" 1/4=80]A').first.to_h).to include(type: :tempo, lexeme: '"Andante" 1/4=80')
+    end
+
+    it "lexes a Q: line as a tempo, up to its comment" do
+      expect(tokens_for('Q:"50% faster" 1/4=180 % later').first.to_h).to include(type: :tempo, lexeme: '"50% faster" 1/4=180')
+    end
+
+    %w[^ _ < >].each do |prefix|
+      it "lexes a #{prefix} annotation as its text" do
+        expect(tokens_for(%("#{prefix}rit." A)).first.to_h).to include(type: :annotation, lexeme: "rit.")
+      end
+    end
+
+    it "lexes an @ annotation as its text after its coordinates" do
+      expect(tokens_for('"@-5,10.5a tempo"A').first.to_h).to include(type: :annotation, lexeme: "a tempo")
+    end
+  end
+
   describe "unsupported features" do
     it "lexes a quoted chord symbol as unsupported" do
       expect(tokens_for("\"G7\"").first.lexeme).to eq("\"G7\"")

@@ -13,7 +13,7 @@ module HeadMusic::Notation::ABC
       broken_rhythm: :handle_broken_rhythm, bar_line: :handle_bar_line, volta: :handle_volta,
       voice_change: :handle_voice_change, beam_break: :handle_beam_break, decoration: :handle_decoration,
       slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label,
-      tuplet: :handle_tuplet, grace: :handle_grace
+      tuplet: :handle_tuplet, grace: :handle_grace, tempo: :handle_tempo, annotation: :handle_annotation
     }.freeze
 
     # start_line offsets reported line numbers, so a tune parsed out of a
@@ -46,6 +46,8 @@ module HeadMusic::Notation::ABC
 
     def interpret(tokens)
       @building = HeadMusic::Content::Flow.new(**header.flow_attributes)
+      @fermata_marks = HeadMusic::Notation::FermataMarks.new
+      @tempo_marks = HeadMusic::Notation::TempoMarkReading.new
       setup_voices(tokens)
       tokens.each { |token| handle(token) }
       finish
@@ -53,7 +55,7 @@ module HeadMusic::Notation::ABC
     end
 
     def setup_voices(tokens)
-      @voices = VoiceRegistry.new(@building, header.key_signature, duration_resolver)
+      @voices = VoiceRegistry.new(@building, header.key_signature, duration_resolver, @fermata_marks)
       @voices.declare(header.voice_ids, default: tokens.none? { |token| token.type == :voice_change })
     end
 
@@ -164,6 +166,21 @@ module HeadMusic::Notation::ABC
       @voices.switch_to(token.voice_id)
     end
 
+    def handle_tempo(token)
+      tempo = TempoField.read(token.lexeme, header.unit_note_length, line_number: token.line)
+      @tempo_marks.add(mark_position, tempo) if tempo
+    end
+
+    # Only an annotation's ramp and "a tempo" words are read.
+    def handle_annotation(token)
+      @tempo_marks.add(mark_position, nil, token.lexeme)
+    end
+
+    # A mark before any voice has begun stands at the start of the music.
+    def mark_position
+      @voices.any? ? current_state.mark_position : @building.position(HeadMusic::Time::MusicalPosition::DEFAULT_FIRST_BAR)
+    end
+
     def handle_part_label(token)
       bar_marks.part_label((current_state if @voices.any?), token)
     end
@@ -176,6 +193,8 @@ module HeadMusic::Notation::ABC
         state.add_hairpins
       end
       bar_marks.finish(@voices)
+      @fermata_marks.apply(@building)
+      @tempo_marks.apply(@building)
     end
 
     def chord_reader

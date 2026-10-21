@@ -8,6 +8,8 @@ module HeadMusic::Notation::ABC
   # can raise UnsupportedFeatureError with knowledge of what it was.
   class BodyLexer
     SNIPPET_LENGTH = 20
+    # A field's value up to a comment, which a "%" in quotes does not begin.
+    UNCOMMENTED_PATTERN = /\A(?:[^"%]|"[^"]*")*/
 
     def initialize(body_text, start_line: 1)
       @body = body_text.to_s
@@ -47,8 +49,8 @@ module HeadMusic::Notation::ABC
     end
 
     # Lines that are fields rather than music: V: switches voices, P: labels
-    # a part; any other letter-colon line is a field we don't interpret in
-    # the body. A note followed by a repeat bar (e.g. "A:|") also puts a colon
+    # a part, Q: sets the tempo; any other letter-colon line is a field we
+    # don't interpret in the body. A note followed by a repeat bar (e.g. "A:|") also puts a colon
     # after a letter at line start, so bar-line characters after the colon
     # disqualify.
     def field_token(line_text)
@@ -56,6 +58,7 @@ module HeadMusic::Notation::ABC
       case line_text[0, 2]
       when "V:" then {type: :voice_change, voice_id: value}
       when "P:" then {type: :part_label, lexeme: value}
+      when "Q:" then {type: :tempo, lexeme: line_text[2..][UNCOMMENTED_PATTERN].strip}
       when /\A[A-Za-z]:/
         {type: :unsupported, lexeme: line_text.strip[0, SNIPPET_LENGTH]} unless ["|", ":"].include?(line_text[2])
       end

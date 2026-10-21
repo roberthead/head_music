@@ -3,8 +3,9 @@ module HeadMusic::Notation::ABC
   # Maps ABC decorations to the markings they stand for. A decoration the
   # catalogs hold becomes an articulation, ornament, note dynamic, level, or
   # hairpin start or end; a navigation sign or instruction marks its bar; a
-  # standard one they don't hold, such as a fermata or a bowing, is recognized
-  # and dropped; anything else is unrecognized.
+  # fermata, upright or inverted, marks a hold on the timeline; a standard one
+  # the model doesn't hold, such as a bowing, is recognized and dropped;
+  # anything else is unrecognized.
   #
   # !marcato!, !^!, !sf!, !rfz!, !fp!, and the !D.C.alfine! family are abcm2ps
   # and abc2svg extensions, read leniently.
@@ -30,6 +31,7 @@ module HeadMusic::Notation::ABC
       "T" => [:ornament, "trill"],
       "M" => [:ornament, "mordent"],
       "P" => [:ornament, "inverted_mordent"],
+      "H" => [:fermata, "fermata"],
       "S" => [:navigation, "segno"],
       "O" => [:navigation, "coda"]
     }.freeze
@@ -49,6 +51,8 @@ module HeadMusic::Notation::ABC
       "uppermordent" => [:ornament, "inverted_mordent"],
       "pralltriller" => [:ornament, "inverted_mordent"],
       "turn" => [:ornament, "turn"],
+      "fermata" => [:fermata, "fermata"],
+      "invertedfermata" => [:fermata, "fermata"],
       **HeadMusic::Rudiment::Dynamic.accents.to_h { |accent| [accent.name_key, [:note_dynamic, accent.name_key]] },
       **HeadMusic::Rudiment::Dynamic.levels.to_h { |level| [level.name_key, [:level, level.name_key]] },
       **NAVIGATION.transform_values { |key| [:navigation, key] },
@@ -62,11 +66,11 @@ module HeadMusic::Notation::ABC
       "diminuendo)" => [:hairpin_end, "diminuendo"]
     }.freeze
 
-    DROPPED_SHORTHANDS = %w[~ H u v].to_set.freeze
+    DROPPED_SHORTHANDS = %w[~ u v].to_set.freeze
 
     DROPPED_NAMES = %w[
       roll turnx invertedturn invertedturnx arpeggio trill( trill)
-      fermata invertedfermata breath upbow downbow open thumb snap slide + plus
+      breath upbow downbow open thumb snap slide + plus
       0 1 2 3 4 5 trem1 trem2 trem3 trem4 pppp ffff
       shortphrase mediumphrase longphrase editorial courtesy
     ].to_set.freeze

@@ -1,19 +1,23 @@
 # A namespace for ABC-notation parsing helpers
 module HeadMusic::Notation::ABC
   # The marks a voice places at a position rather than on a note: its own and
-  # its part's dynamics and hairpin starts and ends. In each bar, a mark goes
-  # on the note or rest that attacks at its position, on an invisible rest in
-  # an overlay of the bar when it falls inside one, or on an invisible rest
-  # after the music when it follows the last note. A hairpin end on the final
+  # its part's dynamics and hairpin starts and ends, and the flow's tempo
+  # marks, as Q: fields and annotations. In each bar, a mark goes on the note
+  # or rest that attacks at its position, on an invisible rest in an overlay
+  # of the bar when it falls inside one, or on an invisible rest after the
+  # music when it follows the last note. A hairpin or ramp end on the final
   # barline closes the last bar, on a spacer.
   #
   # At one position, hairpin ends come first, then levels, then starts, so a
-  # hairpin is closed before the next one opens.
+  # hairpin is closed before the next one opens, and then the tempo marks in
+  # their order.
   class PositionMarks
     HAIRPIN_SIGNS = {crescendo: "<", diminuendo: ">"}.freeze
     END_RANK = 0
     LEVEL_RANK = 1
     START_RANK = 2
+    TEMPO_RANK = 3
+    TEMPO_LABELS = {tempo: "tempo change", ramp_start: "tempo ramp start", ramp_end: "tempo ramp end", a_tempo: %("a tempo")}.freeze
 
     Mark = Data.define(:position, :decoration, :label, :rank) do
       def offset
@@ -24,6 +28,11 @@ module HeadMusic::Notation::ABC
       # inside a tuplet.
       def reachable?
         !HeadMusic::Notation::DottedDuration.rhythmic_value_for(offset).nil?
+      end
+
+      # An inline field stands only where a note starts or the music ends.
+      def inline_field?
+        decoration.start_with?("[")
       end
     end
 
@@ -37,6 +46,10 @@ module HeadMusic::Notation::ABC
       def unreachable
         (overlay + trailing).find { |mark| !mark.reachable? }
       end
+
+      def inline_field_between_attacks
+        (overlay + trailing).find(&:inline_field?)
+      end
     end
 
     # The fraction of a whole note from the start of the bar.
@@ -48,7 +61,7 @@ module HeadMusic::Notation::ABC
 
     def initialize(voice)
       @flow = voice&.flow
-      @marks = voice ? (dynamic_marks(voice) + hairpin_marks(voice)).sort_by { |mark| [mark.position, mark.rank] } : []
+      @marks = voice ? (dynamic_marks(voice) + hairpin_marks(voice) + tempo_marks).sort_by { |mark| [mark.position, mark.rank] } : []
     end
 
     def bar_marks(bar_segments)
@@ -81,6 +94,19 @@ module HeadMusic::Notation::ABC
           Mark.new(hairpin.to, "!#{sign})!", "#{hairpin.name_key} end", END_RANK)
         ]
       end
+    end
+
+    def tempo_marks
+      HeadMusic::Notation::TempoMarks.new(@flow).each_with_index.filter_map do |mark, index|
+        decoration = tempo_decoration(mark)
+        Mark.new(mark.position, decoration, TEMPO_LABELS.fetch(mark.kind), TEMPO_RANK + index) if decoration
+      end
+    end
+
+    def tempo_decoration(mark)
+      return %("^#{mark.text}") if mark.text && mark.kind != :tempo
+
+      "[Q:#{TempoField.write(mark.tempo)}]" if mark.tempo
     end
 
     def closing_marks(bar_number)

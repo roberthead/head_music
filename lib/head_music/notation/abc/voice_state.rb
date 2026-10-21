@@ -12,14 +12,14 @@ module HeadMusic::Notation::ABC
     attr_reader :voice, :pitch_builder, :beams
     attr_accessor :pending_note, :active_passes, :volta_start_bar
 
-    def initialize(voice, pitch_builder, duration_resolver = nil)
+    def initialize(voice, pitch_builder, duration_resolver = nil, fermata_marks = HeadMusic::Notation::FermataMarks.new)
       @voice = voice
       @pitch_builder = pitch_builder
       @duration_resolver = duration_resolver
       @beams = BeamAdjacency.new
       @broken_rhythm = BrokenRhythm.new
       @tie = PendingTie.new
-      @decorations = PendingDecorations.new(voice)
+      @decorations = PendingDecorations.new(voice, fermata_marks)
       @slurs = PendingSlurs.new(voice)
       @graces = PendingGraces.new(@slurs)
       @invisible_rests = InvisibleRests.new(voice)
@@ -30,7 +30,7 @@ module HeadMusic::Notation::ABC
     delegate :music_end, to: :@invisible_rests
     delegate :open?, :line, to: :@tie, prefix: :tie
     delegate :ensure_not_awaiting_note, to: :@broken_rhythm
-    delegate :decorate, :reject_dangling_decorations, :take_navigation, :add_hairpins, to: :@decorations
+    delegate :decorate, :take_navigation, :add_hairpins, to: :@decorations
 
     # "(" opens a slur on the next note, chord, or rest.
     def open_slur
@@ -168,6 +168,20 @@ module HeadMusic::Notation::ABC
       @tie.close
     end
 
+    # A fermata with no note after it, as before a bar line, marks the note
+    # before it.
+    def reject_dangling_decorations
+      fermatas = @decorations.reject_dangling_decorations
+      return if fermatas.empty?
+
+      last_voice_event = voice.last_voice_event
+      if pending_note
+        self.pending_note = pending_note.with(decorations: pending_note.decorations + fermatas)
+      elsif last_voice_event
+        @decorations.hold(last_voice_event)
+      end
+    end
+
     def reject_open_tie(line)
       @tie.reject(line)
     end
@@ -212,6 +226,11 @@ module HeadMusic::Notation::ABC
       voice_event = place_next(pending)
       pending.carry_onto(voice_event)
       apply_marks(voice_event, pending)
+    end
+
+    # Where a mark written now stands: in an overlay, at the overlay's cursor.
+    def mark_position
+      @overlay.cursor || cursor
     end
 
     # Places a note, chord, or rest (nil pitches) directly onto the voice,
@@ -261,10 +280,6 @@ module HeadMusic::Notation::ABC
       @tuplets.place_ends(voice_event, note.tuplet_ends, note.tied_prefix)
     end
 
-    def mark_position
-      @overlay.cursor || cursor
-    end
-
     def arriving_note(pitches, length, inner_scale)
       ratio, ends = @tuplets.count
       PendingNote.new(
@@ -284,8 +299,10 @@ module HeadMusic::Notation::ABC
       pending = pending_note
       @tie.ensure_ties(pending, link.pitches)
       prefix = pending.rhythmic_value(@duration_resolver)
-      marks, markings = link.decorations.partition(&:positional?)
       link_start = pending_end_position
+      fermatas, decorations = link.decorations.partition(&:fermata?)
+      @decorations.hold_link(link_start) if fermatas.any?
+      marks, markings = decorations.partition(&:positional?)
       marks.each { |decoration| @decorations.place_mark(link_start, decoration) }
       close_tie
       fixed_ends = @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix)
