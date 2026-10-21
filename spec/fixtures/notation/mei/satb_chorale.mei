@@ -175,6 +175,10 @@
                   <note xml:id="m1-p4v1-b2c3" pname="g" oct="3" dur="4"/>
                 </layer>
               </staff>
+              <fermata xml:id="m1-fermata-p1v1-b2c2" startid="#m1-p1v1-b2c2" staff="1"/>
+              <fermata xml:id="m1-fermata-p2v1-b2c2" startid="#m1-p2v1-b2c2" staff="2"/>
+              <fermata xml:id="m1-fermata-p3v1-b2c2" startid="#m1-p3v1-b2c2" staff="3"/>
+              <fermata xml:id="m1-fermata-p4v1-b2c2" startid="#m1-p4v1-b2c2" staff="4"/>
             </measure>
             <measure xml:id="m1-measure-b3" n="3">
               <staff xml:id="m1-staff-b3s1" n="1">
@@ -254,6 +258,10 @@
                   <note xml:id="m1-p4v1-b4c2" pname="g" oct="2" dur="4"/>
                 </layer>
               </staff>
+              <fermata xml:id="m1-fermata-p1v1-b4c2" startid="#m1-p1v1-b4c2" staff="1"/>
+              <fermata xml:id="m1-fermata-p2v1-b4c2" startid="#m1-p2v1-b4c2" staff="2"/>
+              <fermata xml:id="m1-fermata-p3v1-b4c2" startid="#m1-p3v1-b4c2" staff="3"/>
+              <fermata xml:id="m1-fermata-p4v1-b4c2" startid="#m1-p4v1-b4c2" staff="4"/>
             </measure>
           </section>
         </score>
