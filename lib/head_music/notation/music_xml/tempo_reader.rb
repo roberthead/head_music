@@ -11,7 +11,8 @@ module HeadMusic::Notation::MusicXML
   # preferred over a <sound tempo>, and tempo text in any of them is its
   # text, so words and a metronome mark written apart read together. A ramp
   # word starts a ramp, and the stop of the <dashes> started beside it ends
-  # it; a <sound tempo> beside a ramp or "a tempo" word only plays it.
+  # it; a <sound tempo> beside a ramp or "a tempo" word only plays it, as
+  # does one alone within a ramp's dashes.
   class TempoReader
     Moment = Data.define(:bar_number, :onset, :directions) do
       def tempo
@@ -30,6 +31,11 @@ module HeadMusic::Notation::MusicXML
 
       def words
         directions.select(&:word_kind).map(&:words)
+      end
+
+      # Only a <sound tempo>, with no words or metronome mark: playback.
+      def bare_sound?
+        directions.none? { |direction| direction.words || direction.metronome }
       end
 
       def ramp_dashes
@@ -70,7 +76,7 @@ module HeadMusic::Notation::MusicXML
         position = position_of(flow, moment)
         moment.dashes_stops.each { |number| reading.add_ramp_end(position) if open_dashes.delete(number) }
         tempo = moment.tempo
-        reading.add(position, tempo) if tempo
+        reading.add(position, tempo) if tempo && !(open_dashes.any? && moment.bare_sound?)
         moment.words.each { |words| reading.add(position, nil, words) }
         open_dashes.concat(moment.ramp_dashes)
       end

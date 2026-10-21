@@ -124,6 +124,12 @@ describe HeadMusic::Notation::MusicXML::TempoReader do
       expect(ramps(flow)).to eq [["1:1:000", "2:2:000", 80.0, "rit."]]
     end
 
+    it "plays a bare sound within its dashes without ending it" do
+      start = direction_xml(words("rit."), dashes("start"))
+      flow = parse(musicxml_measures(start + quarters("C4", "D4") + direction_xml(sound: 100) + quarters("E4", "F4"), quarters("G4", "A4") + direction_xml(dashes("stop"), metronome(60)) + quarters("B4", "C5")))
+      expect(ramps(flow)).to eq [["1:1:000", "2:3:000", 60.0, "rit."]]
+    end
+
     it "takes a metronome mark at its end as its target" do
       flow = parse(musicxml_measures(direction_xml(words("accel."), dashes("start")) + whole_c, direction_xml(dashes("stop"), metronome(144)) + whole_c))
       expect([ramps(flow), flow.tempo_ramps.first.to_tempo]).to eq [[["1:1:000", "2:1:000", 144.0, "accel."]], tempo("quarter", 144)]
