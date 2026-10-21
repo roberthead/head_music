@@ -60,6 +60,20 @@ class HeadMusic::Content::Flow
       each_timeline_change("tempo_changes") do |bar_number, change, path|
         flow.change_tempo(bar_number, values.tempo(change["tempo"], path))
       end
+      apply_timeline_expressions(flow)
+    end
+
+    # After the meter changes, whose bars a mid-bar position is counted in.
+    def apply_timeline_expressions(flow)
+      each_timeline_expression(:tempo_ramps) do |from, to, tempo, text|
+        flow.add_tempo_ramp(from: from, to: to, to_tempo: tempo, text: text)
+      end
+      each_timeline_expression(:a_tempos) { |position, text| flow.add_a_tempo(position, text: text) }
+      each_timeline_expression(:fermatas) { |from, to, stretch| flow.add_fermata(from, to: to, stretch: stretch) }
+    end
+
+    def each_timeline_expression(key, &)
+      each_placed(values.public_send(key, timeline_hash[key.to_s], "timeline"), key.to_s, "timeline", &)
     end
 
     def each_timeline_change(key, &block)

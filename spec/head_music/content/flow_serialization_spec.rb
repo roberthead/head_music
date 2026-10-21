@@ -782,6 +782,78 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "tempo ramps, a tempo points, and fermatas" do
+    let(:flow) do
+      described_class.new(name: "Held and Slowed", meter: "3/4").tap do |piece|
+        piece.add_voice.place("1:1", "dotted half", "C4")
+        piece.change_meter(3, "6/8")
+        piece.add_tempo_ramp(from: "2:2", to: "3:4", to_tempo: HeadMusic::Rudiment::Tempo.new("dotted quarter", 40), text: "rit.")
+        piece.add_tempo_ramp(from: "5:1", to: "6:1")
+        piece.add_a_tempo("4:1")
+        piece.add_a_tempo("7:1", text: "Tempo I")
+        piece.add_fermata("3:5", :eighth)
+        piece.add_fermata("6:1", to: "7:1", stretch: 1.5)
+      end
+    end
+
+    let(:timeline) { flow.to_h["timeline"] }
+    let(:restored) { described_class.from_json(flow.to_json) }
+
+    it "writes each ramp's ends, target, and text, leaving out a target that was not written" do
+      expect(timeline["tempo_ramps"]).to eq [
+        {"from" => "2:2:000", "to" => "3:4:000", "tempo" => {"beat_value" => "dotted quarter", "beats_per_minute" => 40.0}, "text" => "rit."},
+        {"from" => "5:1:000", "to" => "6:1:000"}
+      ]
+    end
+
+    it "writes each a tempo's position and text" do
+      expect(timeline["a_tempos"]).to eq [{"position" => "4:1:000", "text" => "a tempo"}, {"position" => "7:1:000", "text" => "Tempo I"}]
+    end
+
+    it "writes each fermata's ends and stretch, a whole stretch as an Integer" do
+      expect(timeline["fermatas"]).to eq [
+        {"from" => "3:5:000", "to" => "3:6:000", "stretch" => 2},
+        {"from" => "6:1:000", "to" => "7:1:000", "stretch" => 1.5}
+      ]
+    end
+
+    it "is JSON-safe" do
+      expect_json_safe(flow.to_h)
+    end
+
+    it "round-trips to the same hash" do
+      expect_lossless_round_trip(flow, abc: false, musicxml: false)
+    end
+
+    it "keeps a missing target missing" do
+      expect(restored.tempo_ramps.last.to_tempo).to be_nil
+    end
+
+    it "reads positions in the meters replayed before them" do
+      expect(restored.fermatas.first.from.to_a).to eq [3, 5, 0, 0]
+    end
+
+    it "writes empty lists for a flow with none" do
+      expect(described_class.new.to_h["timeline"].slice("tempo_ramps", "a_tempos", "fermatas"))
+        .to eq("tempo_ramps" => [], "a_tempos" => [], "fermatas" => [])
+    end
+
+    it "reads a schema-5 document without the keys as having none" do
+      restored = described_class.from_h({"schema_version" => 5, "timeline" => {"meter" => "4/4"}})
+      expect([restored.tempo_ramps, restored.a_tempos, restored.fermatas]).to eq [[], [], []]
+    end
+
+    it "reads an a tempo written without text as saying a tempo" do
+      restored = described_class.from_h({"schema_version" => 5, "timeline" => {"a_tempos" => [{"position" => "3:1"}]}})
+      expect(restored.a_tempos.first.text).to eq "a tempo"
+    end
+
+    it "reads a fermata written without a stretch as doubling its span" do
+      restored = described_class.from_h({"schema_version" => 5, "timeline" => {"fermatas" => [{"from" => "3:1", "to" => "3:2"}]}})
+      expect(restored.fermatas.first.stretch).to eq 2
+    end
+  end
+
   describe "mid-piece key signature change" do
     let(:flow) do
       described_class.new(name: "Modulation", key_signature: "G major").tap do |modulating|
@@ -1092,6 +1164,54 @@ describe HeadMusic::Content::Flow do
       hash = base_hash.merge("timeline" => {"tempo_changes" => [{"number" => 3, "tempo" => {"beat_value" => "quarter"}}]})
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /timeline\.tempo_changes\[0\]: beats_per_minute must be a positive number, got nil/)
+    end
+
+    it "raises ArgumentError with path context on a tempo ramp with no end" do
+      hash = base_hash.merge("timeline" => {"tempo_ramps" => [{"from" => "2:1"}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "timeline.tempo_ramps[0]: a tempo ramp needs a to position")
+    end
+
+    it "raises ArgumentError with path context on a tempo ramp's unwritable target" do
+      hash = base_hash.merge("timeline" => {"tempo_ramps" => [{"from" => "2:1", "to" => "3:1", "tempo" => {"beat_value" => "quarter", "beats_per_minute" => -1}}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /\Atimeline\.tempo_ramps\[0\]\.tempo: beats_per_minute must be a positive number/)
+    end
+
+    it "raises ArgumentError with path context on tempo ramps that overlap" do
+      ramps = [{"from" => "2:1", "to" => "4:1"}, {"from" => "3:1", "to" => "5:1"}]
+      expect { described_class.from_h(base_hash.merge("timeline" => {"tempo_ramps" => ramps})) }
+        .to raise_error(ArgumentError, /\Atimeline\.tempo_ramps\[1\]: the tempo ramp from 3:1:000 to 5:1:000 overlaps/)
+    end
+
+    it "raises ArgumentError with path context on an a tempo inside a tempo ramp" do
+      hash = base_hash.merge("timeline" => {"tempo_ramps" => [{"from" => "2:1", "to" => "4:1"}], "a_tempos" => [{"position" => "3:1"}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /\Atimeline\.a_tempos\[0\]: an a tempo at 3:1:000 falls inside the tempo ramp/)
+    end
+
+    it "raises ArgumentError with path context on blank a tempo text" do
+      hash = base_hash.merge("timeline" => {"a_tempos" => [{"position" => "3:1", "text" => ""}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /\Atimeline\.a_tempos\[0\]\.text: tempo text must be a non-empty String/)
+    end
+
+    it "raises ArgumentError with path context on a fermata's stretch below 1" do
+      hash = base_hash.merge("timeline" => {"fermatas" => [{"from" => "2:1", "to" => "3:1", "stretch" => 0.5}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "timeline.fermatas[0].stretch: must be a number of at least 1, got 0.5")
+    end
+
+    it "raises ArgumentError with path context on a fermata that ends before it begins" do
+      hash = base_hash.merge("timeline" => {"fermatas" => [{"from" => "3:1", "to" => "2:1"}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /\Atimeline\.fermatas\[0\]: a fermata ends after it begins/)
+    end
+
+    it "raises ArgumentError with path context on a fermata that is not a Hash" do
+      hash = base_hash.merge("timeline" => {"fermatas" => ["3:1"]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, /\Atimeline\.fermatas\[0\]: fermata must be a Hash/)
     end
 
     it "raises ArgumentError with path context on an opening meter symbol that disagrees with its numerals" do

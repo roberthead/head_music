@@ -89,6 +89,24 @@ class HeadMusic::Content::Flow
       each_optional_element(values, "tuplets", path, &method(:tuplet))
     end
 
+    # An optional list of {"from", "to"} hashes, with an optional target
+    # "tempo" and "text", answered as [from, to, tempo, text].
+    def tempo_ramps(values, path)
+      each_optional_element(values, "tempo_ramps", path, &method(:tempo_ramp))
+    end
+
+    # An optional list of {"position", "text"} hashes, answered as
+    # [position, text]. A point written with no "text" says "a tempo".
+    def a_tempos(values, path)
+      each_optional_element(values, "a_tempos", path, &method(:a_tempo))
+    end
+
+    # An optional list of {"from", "to", "stretch"} hashes, answered as
+    # [from, to, stretch].
+    def fermatas(values, path)
+      each_optional_element(values, "fermatas", path, &method(:fermata))
+    end
+
     def bar_number(bar_hash, index, path = "bars")
       number = bar_hash["number"]
       unless number.is_a?(Integer) && number >= 0
@@ -218,6 +236,26 @@ class HeadMusic::Content::Flow
       ensure_kind!(value, Hash, "tuplet", path)
       unit = value["unit"]
       [*ends(value, "tuplet", path), unit && rhythmic_value(unit, "#{path}.unit")]
+    end
+
+    def tempo_ramp(value, path)
+      ensure_kind!(value, Hash, "tempo ramp", path)
+      [*ends(value, "tempo ramp", path), tempo(value["tempo"], "#{path}.tempo"), tempo_text(value["text"], path)]
+    end
+
+    def a_tempo(value, path)
+      ensure_kind!(value, Hash, "a tempo", path)
+      position = position(value["position"], path) || raise(ArgumentError, "#{path}: an a tempo needs a position")
+      [position, value.key?("text") ? tempo_text(value["text"], path) : "a tempo"]
+    end
+
+    def fermata(value, path)
+      ensure_kind!(value, Hash, "fermata", path)
+      stretch = value.fetch("stretch", HeadMusic::Time::Fermata::DEFAULT_STRETCH)
+      unless stretch.is_a?(Numeric) && stretch >= 1
+        raise ArgumentError, "#{path}.stretch: must be a number of at least 1, got #{stretch.inspect}"
+      end
+      [*ends(value, "fermata", path), stretch]
     end
 
     def ends(value, label, path)

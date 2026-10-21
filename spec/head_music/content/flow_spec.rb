@@ -424,7 +424,10 @@ describe HeadMusic::Content::Flow do
         "tempo" => {"beat_value" => "quarter", "beats_per_minute" => 120.0},
         "meter_changes" => [{"number" => 2, "meter" => "6/8"}],
         "key_signature_changes" => [],
-        "tempo_changes" => []
+        "tempo_changes" => [],
+        "tempo_ramps" => [],
+        "a_tempos" => [],
+        "fermatas" => []
       }
     end
 

@@ -252,6 +252,7 @@ One identity, not one spelling of a name: two spellings of a composer are one `P
 | `opening_tempo` | `Rudiment::Tempo` | 1 |
 | `opening_key_signature_event` | `Time::KeySignatureEvent` | 1 |
 | `meter_map`, `tempo_map`, `key_signature_map` | event maps, see §2 | 0..* each |
+| `tempo_ramps`, `a_tempos`, `fermatas` | `Flow::TimelineSpans` of `Time::TempoRamp`, `Time::ATempo`, `Time::Fermata` | 0..* each |
 
 A key signature event holds a fifths `Integer` and an optional tonal context (`Key`, `Mode`, or `KeySignature`). A fifths value past ±7 with no tonal context is refused at authoring. Passing `nil` to a `change_*` method raises and points at the matching `remove_*_change`.
 
@@ -416,7 +417,10 @@ A rehearsal mark, segno, coda sign, and repeat start mark the start of the bar; 
         "key_signature_changes": [
           { "number": 5, "signature": -3, "tonal_context": "C dorian" }   // fifths Integer; context by name or null
         ],
-        "tempo_changes": [ { "number": 3, "tempo": { "beat_value": "half", "beats_per_minute": 72.5 } } ]
+        "tempo_changes": [ { "number": 3, "tempo": { "beat_value": "half", "beats_per_minute": 72.5 } } ],
+        "tempo_ramps": [ { "from": "12:1:000", "to": "13:1:000", "tempo"?: { … }, "text"?: "rit." } ],  // no "tempo" when no target was written
+        "a_tempos": [ { "position": "14:1:000", "text": "a tempo" } ],
+        "fermatas": [ { "from": "4:3:000", "to": "5:1:000", "stretch": 2 } ]   // a whole stretch is an Integer
       },
 
       "parts": [
@@ -497,7 +501,7 @@ A rehearsal mark, segno, coda sign, and repeat start mark the start of the bar; 
 | Publication | `title`, `edition`, `year`, `publisher`, `abbreviation`, `notes`, all nullable, and `credits` | `key`, written only by a catalog entry |
 | Credit | `role`, `person` | |
 | Person | `full_name`, `sort_name`, `birth_year` (nullable), `death_year` (nullable) | |
-| timeline | `meter`, `key_signature`, `tempo`, `meter_changes`, `key_signature_changes`, `tempo_changes` | |
+| timeline | `meter`, `key_signature`, `tempo`, `meter_changes`, `key_signature_changes`, `tempo_changes` | `tempo_ramps`, `a_tempos`, `fermatas` (always written, read after the meter changes) |
 | Part | `voices` | `player` (never inside a project document), `instrument`, `instrument_changes`, `staff_system`, `staff_system_changes` |
 | Voice | `role` (nullable), `voice_events` | `staff_assignments` |
 | VoiceEvent | `position`, `rhythmic_value`, `sounds` | `beam_break_before`, `syllables` |

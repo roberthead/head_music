@@ -19,6 +19,7 @@ class HeadMusic::Content::Flow
   delegate :meter_at, :key_signature_at, :tempo_at, to: :timeline
   delegate :meter_changes, :key_signature_changes, :tempo_changes, :meter_change_at, :tempo_change_at, to: :timeline
   delegate :remove_meter_change, :remove_key_signature_change, :remove_tempo_change, to: :timeline
+  delegate :tempo_ramps, :a_tempos, :fermatas, to: :timeline
 
   def self.from_h(hash)
     HashDeserializer.new(hash).flow
@@ -123,6 +124,57 @@ class HeadMusic::Content::Flow
     timeline.change_tempo(bar_number, tempo)
   end
 
+  # Ramps, "a tempo" points, and fermatas may fall in the middle of a bar, so
+  # they take positions, or codes for them, and allocate the bars they reach.
+  def add_tempo_ramp(from:, to:, to_tempo: nil, text: nil)
+    from = position_in_flow(from)
+    to = position_in_flow(to)
+    bars([from.bar_number, to.ending_bar_number].max)
+    timeline.add_tempo_ramp(from: from, to: to, to_tempo: to_tempo, text: text)
+  end
+
+  def add_a_tempo(position, text: "a tempo")
+    position = position_in_flow(position)
+    bars(position.bar_number)
+    timeline.add_a_tempo(position, text: text)
+  end
+
+  # A fermata holds a rhythmic value's span from its position, or else runs
+  # to a later position.
+  def add_fermata(position, span = nil, to: nil, stretch: HeadMusic::Time::Fermata::DEFAULT_STRETCH)
+    raise ArgumentError, "a fermata takes either a span or a to: position, not both" if span && to
+    raise ArgumentError, "a fermata takes a span or a to: position" unless span || to
+
+    from = position_in_flow(position)
+    to = span ? from + span : position_in_flow(to)
+    bars([from.bar_number, to.ending_bar_number].max)
+    timeline.add_fermata(from: from, to: to, stretch: stretch)
+  end
+
+  def remove_tempo_ramp(from)
+    timeline.remove_tempo_ramp(position_in_flow(from))
+  end
+
+  def remove_a_tempo(position)
+    timeline.remove_a_tempo(position_in_flow(position))
+  end
+
+  def remove_fermata(from)
+    timeline.remove_fermata(position_in_flow(from))
+  end
+
+  # The tempo sounding at a position, interpolated inside a ramp, where
+  # #tempo_at answers the tempo as written.
+  def sounding_tempo_at(position)
+    conductor.tempo_at(position_in_flow(position))
+  end
+
+  # Built afresh on each call, with clock zero at the downbeat of the earliest
+  # bar, pickup included.
+  def conductor
+    timeline.conductor(earliest_bar_number)
+  end
+
   # Bars can be allocated below the voices' earliest bar (e.g. a key or meter
   # change in a pickup bar), so the earliest bar reflects those allocations too.
   def earliest_bar_number
@@ -218,6 +270,10 @@ class HeadMusic::Content::Flow
   end
 
   private
+
+  def position_in_flow(position)
+    HeadMusic::Content::Position.for_flow(self, position)
+  end
 
   def ensure_work(work)
     return HeadMusic::Content::Work.from_h(work) if work.is_a?(Hash)
