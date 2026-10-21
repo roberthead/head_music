@@ -16,6 +16,16 @@ describe HeadMusic::Time::TempoEvent do
       expect(event.tempo.beats_per_minute).to eq 120.0
     end
 
+    context "with a tempo" do
+      subject(:event) { described_class.new(position, tempo) }
+
+      let(:tempo) { HeadMusic::Rudiment::Tempo.new("quarter", 72, text: "Lento") }
+
+      it "keeps the tempo itself" do
+        expect(event.tempo).to equal tempo
+      end
+    end
+
     context "with different tempo" do
       let(:beat_value) { "eighth" }
       let(:beats_per_minute) { 140 }

@@ -21,6 +21,11 @@ describe HeadMusic::Time::TempoMap do
       it "uses the provided tempo" do
         expect(tempo_map.events.first.tempo.beats_per_minute).to eq 96.0
       end
+
+      it "keeps the provided tempo itself, text and all" do
+        tempo = HeadMusic::Rudiment::Tempo.new("quarter", 96, text: "Andante", metronome_mark: false)
+        expect(described_class.new(starting_tempo: tempo).events.first.tempo).to equal tempo
+      end
     end
 
     context "with custom starting position" do
@@ -61,6 +66,13 @@ describe HeadMusic::Time::TempoMap do
       tempo_map.add_change(position, tempo)
 
       expect(tempo_map.events.last.tempo).to eq tempo
+    end
+
+    it "keeps a Tempo object itself, text and all" do
+      tempo = HeadMusic::Rudiment::Tempo.for_text("Adagio")
+      tempo_map.add_change(HeadMusic::Time::MusicalPosition.new(5, 1, 0, 0), tempo)
+
+      expect(tempo_map.events.last.tempo).to equal tempo
     end
 
     it "replaces an event at the same position" do

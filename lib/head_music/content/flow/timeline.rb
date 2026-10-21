@@ -245,7 +245,10 @@ class HeadMusic::Content::Flow
     # Two fields rather than a "quarter = 72" string, so that a fractional
     # tempo survives: Tempo.get reads the number by stripping non-digits.
     def tempo_to_h(tempo)
-      {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}
+      {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}.tap do |hash|
+        hash["text"] = tempo.text if tempo.text
+        hash["metronome_mark"] = false unless tempo.metronome_mark?
+      end
     end
 
     def meter_symbol_to_h(key, meter)

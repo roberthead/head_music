@@ -29,11 +29,18 @@ module HeadMusic
       # Create a new tempo change event
       #
       # @param position [MusicalPosition] where the tempo change occurs
-      # @param beat_value [String] the rhythmic value that gets the beat (e.g., "quarter", "eighth")
-      # @param beats_per_minute [Numeric] the tempo in beats per minute
-      def initialize(position, beat_value, beats_per_minute)
+      # @param beat_value_or_tempo [String, HeadMusic::Rudiment::Tempo] the rhythmic value
+      #   that gets the beat (e.g., "quarter", "eighth"), or a tempo, kept as given
+      # @param beats_per_minute [Numeric, nil] the tempo in beats per minute, when
+      #   given a beat value
+      def initialize(position, beat_value_or_tempo, beats_per_minute = nil)
         @position = position
-        @tempo = HeadMusic::Rudiment::Tempo.new(beat_value, beats_per_minute)
+        @tempo =
+          if beat_value_or_tempo.is_a?(HeadMusic::Rudiment::Tempo)
+            beat_value_or_tempo
+          else
+            HeadMusic::Rudiment::Tempo.new(beat_value_or_tempo, beats_per_minute)
+          end
       end
     end
   end

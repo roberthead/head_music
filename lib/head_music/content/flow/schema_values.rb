@@ -64,7 +64,11 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "#{path}: beats_per_minute must be a positive number, got #{beats_per_minute.inspect}" unless positive_number?(beats_per_minute)
 
       beat_value = rhythmic_value(value["beat_value"], "#{path}.beat_value")
-      HeadMusic::Rudiment::Tempo.new(beat_value.to_s, beats_per_minute)
+      HeadMusic::Rudiment::Tempo.new(
+        beat_value.to_s, beats_per_minute,
+        text: tempo_text(value["text"], path),
+        metronome_mark: boolean_value(value.fetch("metronome_mark", true), "#{path}.metronome_mark: ")
+      )
     end
 
     # An optional list of {"position" => ..., "level" => ...} hashes, answered
@@ -143,6 +147,13 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
 
       HeadMusic::Content::Jump.from_h(value)
+    end
+
+    def tempo_text(text, path)
+      return nil if text.nil?
+      raise ArgumentError, "#{path}.text: tempo text must be a non-empty String, got #{text.inspect}" unless non_empty_string?(text)
+
+      text
     end
 
     def meter_with_symbol(meter, symbol, path)

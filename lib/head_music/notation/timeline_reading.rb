@@ -43,7 +43,7 @@ module HeadMusic::Notation
     end
 
     def same_tempo?(tempo, other)
-      tempo.beat_value == other.beat_value && tempo.beats_per_minute == other.beats_per_minute
+      tempo.beat_value == other.beat_value && tempo.beats_per_minute == other.beats_per_minute && tempo.text == other.text
     end
 
     # By bar, the first value the measures state on a downbeat.

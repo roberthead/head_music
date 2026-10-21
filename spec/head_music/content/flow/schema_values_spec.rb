@@ -39,6 +39,16 @@ describe HeadMusic::Content::Flow::SchemaValues do
       expect([tempo.beat_value.to_s, tempo.beats_per_minute]).to eq ["half", 72.5]
     end
 
+    it "builds a tempo with text and no metronome mark" do
+      tempo = values.tempo({"beat_value" => "quarter", "beats_per_minute" => 78, "text" => "Andante", "metronome_mark" => false}, "path")
+      expect(tempo).to eq HeadMusic::Rudiment::Tempo.new("quarter", 78, text: "Andante", metronome_mark: false)
+    end
+
+    it "raises with path context on empty tempo text" do
+      expect { values.tempo({"beat_value" => "quarter", "beats_per_minute" => 78, "text" => ""}, "timeline.tempo") }
+        .to raise_error(ArgumentError, 'timeline.tempo.text: tempo text must be a non-empty String, got ""')
+    end
+
     it "raises on a non-Hash" do
       expect { values.tempo("quarter = 120", "timeline.tempo") }
         .to raise_error(ArgumentError, /timeline\.tempo: tempo must be a Hash/)

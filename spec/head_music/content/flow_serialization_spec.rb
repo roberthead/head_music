@@ -742,6 +742,46 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "tempo text" do
+    let(:flow) do
+      described_class.new(name: "Words", tempo: HeadMusic::Rudiment::Tempo.new("quarter", 120, text: "Allegro")).tap do |piece|
+        piece.add_voice.place("1:1", :whole, "C4")
+        piece.change_tempo(2, HeadMusic::Rudiment::Tempo.for_text("Adagio"))
+        piece.change_tempo(3, HeadMusic::Rudiment::Tempo.new("quarter", 60, text: "Adagio"))
+      end
+    end
+
+    let(:restored) { described_class.from_json(flow.to_json) }
+
+    it "writes text beside a metronome mark, and leaves the default mark out" do
+      expect(flow.to_h["timeline"]["tempo"]).to eq("beat_value" => "quarter", "beats_per_minute" => 120.0, "text" => "Allegro")
+    end
+
+    it "writes a tempo whose number was not written" do
+      expect(flow.to_h["timeline"]["tempo_changes"].first["tempo"]).to eq(
+        "beat_value" => "quarter", "beats_per_minute" => 60.0, "text" => "Adagio", "metronome_mark" => false
+      )
+    end
+
+    it "keeps two tempos that differ only in whether the number was written as two changes" do
+      expect(restored.tempo_changes.keys).to eq [2, 3]
+    end
+
+    it "round-trips the text and the metronome mark" do
+      expect(restored.tempo_changes.values).to eq flow.tempo_changes.values
+    end
+
+    it "round-trips to the same hash" do
+      expect(restored.to_h).to eq flow.to_h
+    end
+
+    it "reads a schema-5 tempo with no text and a metronome mark" do
+      schema5 = {"schema_version" => 5, "timeline" => {"tempo" => {"beat_value" => "quarter", "beats_per_minute" => 96}}}
+      tempo = described_class.from_h(schema5).tempo
+      expect([tempo.text, tempo.metronome_mark?]).to eq [nil, true]
+    end
+  end
+
   describe "mid-piece key signature change" do
     let(:flow) do
       described_class.new(name: "Modulation", key_signature: "G major").tap do |modulating|
@@ -1076,6 +1116,18 @@ describe HeadMusic::Content::Flow do
       hash = base_hash.merge("timeline" => {"meter" => "4/4", "meter_symbol" => 4})
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, "timeline.meter: unknown meter symbol 4")
+    end
+
+    it "raises ArgumentError with path context on tempo text that is not a String" do
+      hash = base_hash.merge("timeline" => {"tempo" => {"beat_value" => "quarter", "beats_per_minute" => 96, "text" => 7}})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "timeline.tempo.text: tempo text must be a non-empty String, got 7")
+    end
+
+    it "raises ArgumentError with path context on a metronome mark that is not a boolean" do
+      hash = base_hash.merge("timeline" => {"tempo_changes" => [{"number" => 2, "tempo" => {"beat_value" => "quarter", "beats_per_minute" => 96, "metronome_mark" => "no"}}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, 'timeline.tempo_changes[0].metronome_mark: must be true or false, got "no"')
     end
 
     it "raises ArgumentError with path context on a staff system change to nothing" do

@@ -142,6 +142,50 @@ describe HeadMusic::Rudiment::Tempo do
 
       its(:beat_value) { is_expected.to eq "quarter" }
       its(:beats_per_minute) { is_expected.to eq 120 }
+      its(:text) { is_expected.to be_nil }
+      it { is_expected.to be_metronome_mark }
+    end
+
+    context "with a named tempo" do
+      let(:identifier) { "allegro" }
+
+      its(:text) { is_expected.to eq "allegro" }
+      it { is_expected.not_to be_metronome_mark }
+    end
+
+    context "with a capitalized named tempo" do
+      let(:identifier) { "Andante" }
+
+      its(:beats_per_minute) { is_expected.to eq 78 }
+      its(:text) { is_expected.to eq "Andante" }
+    end
+
+    context "with a named tempo in capitals" do
+      let(:identifier) { "MODERATO" }
+
+      its(:beats_per_minute) { is_expected.to eq 108 }
+      its(:text) { is_expected.to eq "MODERATO" }
+    end
+
+    context "with a two-word named tempo written with an underscore" do
+      let(:identifier) { :allegro_moderato }
+
+      its(:beats_per_minute) { is_expected.to eq 116 }
+      its(:text) { is_expected.to eq "allegro moderato" }
+    end
+
+    context "with a two-word named tempo written with a space" do
+      let(:identifier) { "Molto Allegro" }
+
+      its(:beats_per_minute) { is_expected.to eq 132 }
+      its(:text) { is_expected.to eq "Molto Allegro" }
+    end
+
+    context "with a metronome mark" do
+      let(:identifier) { "q = 96" }
+
+      its(:text) { is_expected.to be_nil }
+      it { is_expected.to be_metronome_mark }
     end
 
     context "with edge cases" do
@@ -172,6 +216,98 @@ describe HeadMusic::Rudiment::Tempo do
         tempo2 = described_class.get("allegro")
         expect(tempo1).to be(tempo2)
       end
+
+      it "keeps spellings of one named tempo apart" do
+        expect(described_class.get("Allegro")).not_to eq described_class.get("allegro")
+      end
+    end
+  end
+
+  describe ".for_text" do
+    subject(:tempo) { described_class.for_text(text) }
+
+    context "with a named tempo" do
+      let(:text) { "Andante" }
+
+      its(:beats_per_minute) { is_expected.to eq 78 }
+      its(:text) { is_expected.to eq "Andante" }
+      it { is_expected.not_to be_metronome_mark }
+    end
+
+    context "with a named tempo among other words" do
+      let(:text) { "Allegro ma non troppo" }
+
+      its(:beats_per_minute) { is_expected.to eq 120 }
+      its(:text) { is_expected.to eq "Allegro ma non troppo" }
+    end
+
+    context "with two named tempos, one inside the other" do
+      let(:text) { "Allegro moderato e grazioso" }
+
+      its(:beats_per_minute) { is_expected.to eq 116 }
+    end
+
+    context "with a named tempo inside a longer word" do
+      let(:text) { "Allegretto" }
+
+      its(:beats_per_minute) { is_expected.to eq 112 }
+    end
+
+    context "with punctuation around the named tempo" do
+      let(:text) { "Più mosso, presto!" }
+
+      its(:beats_per_minute) { is_expected.to eq 180 }
+    end
+
+    context "with no named tempo" do
+      let(:text) { "dolce" }
+
+      its(:beat_value) { is_expected.to eq "quarter" }
+      its(:beats_per_minute) { is_expected.to eq 120 }
+      its(:text) { is_expected.to eq "dolce" }
+      it { is_expected.not_to be_metronome_mark }
+    end
+
+    context "with surrounding whitespace" do
+      let(:text) { "  Largo  " }
+
+      its(:text) { is_expected.to eq "Largo" }
+    end
+
+    it "is not memoized" do
+      expect(described_class.for_text("Largo")).not_to be described_class.for_text("Largo")
+    end
+
+    it "refuses blank text" do
+      expect { described_class.for_text(" ") }.to raise_error(ArgumentError, "tempo text must not be blank")
+    end
+  end
+
+  describe "equality" do
+    let(:tempo) { described_class.new("quarter", 120, text: "Allegro", metronome_mark: true) }
+
+    it "equals a tempo of the same fields" do
+      expect(tempo).to eq described_class.new("quarter", 120.0, text: "Allegro")
+    end
+
+    it "hashes as a tempo of the same fields" do
+      expect([tempo, described_class.new("quarter", 120, text: "Allegro")].uniq.length).to eq 1
+    end
+
+    it "differs from a tempo with other text" do
+      expect(tempo).not_to eq described_class.new("quarter", 120, text: "Vivo")
+    end
+
+    it "differs from a tempo with no text" do
+      expect(tempo).not_to eq described_class.new("quarter", 120)
+    end
+
+    it "differs from a tempo whose number was not written" do
+      expect(tempo).not_to eq described_class.new("quarter", 120, text: "Allegro", metronome_mark: false)
+    end
+
+    it "differs from a tempo in another beat value" do
+      expect(described_class.new("quarter", 60)).not_to eq described_class.new("half", 60)
     end
   end
 
@@ -322,6 +458,14 @@ describe HeadMusic::Rudiment::Tempo do
       its(:beat_duration_in_seconds) { is_expected.to eq 1.0 }
       its(:beat_duration_in_nanoseconds) { is_expected.to eq 1_000_000_000 }
       its(:ticks_per_beat) { is_expected.to eq 1920 }
+    end
+
+    context "with no text" do
+      let(:beat_value) { "quarter" }
+      let(:beats_per_minute) { 100 }
+
+      its(:text) { is_expected.to be_nil }
+      it { is_expected.to be_metronome_mark }
     end
 
     context "with integer beats_per_minute" do

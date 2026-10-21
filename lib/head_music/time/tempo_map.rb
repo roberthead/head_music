@@ -27,17 +27,11 @@ module HeadMusic
         starting_tempo ||= HeadMusic::Rudiment::Tempo.new("quarter", 120)
         starting_position ||= MusicalPosition.new
         # Converting a position to clock time needs a tempo from the beginning.
-        super(TempoEvent.new(starting_position, starting_tempo.beat_value.to_s, starting_tempo.beats_per_minute))
+        super(TempoEvent.new(starting_position, starting_tempo))
       end
 
       def add_change(position, beat_value_or_tempo, beats_per_minute = nil)
-        event = if beat_value_or_tempo.is_a?(HeadMusic::Rudiment::Tempo)
-          TempoEvent.new(position, beat_value_or_tempo.beat_value.to_s, beat_value_or_tempo.beats_per_minute).tap do |tempo_event|
-            tempo_event.tempo = beat_value_or_tempo
-          end
-        else
-          TempoEvent.new(position, beat_value_or_tempo, beats_per_minute)
-        end
+        event = TempoEvent.new(position, beat_value_or_tempo, beats_per_minute)
         @map.add(position, event)
         event
       end
