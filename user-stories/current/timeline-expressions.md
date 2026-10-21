@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-20T16:02:22-07:00
   planned_at:   2026-10-20T16:24:28-07:00
   finished_at:
-  updated_at:   2026-10-20T22:37:43-07:00
+  updated_at:   2026-10-21T08:21:04-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -461,3 +461,55 @@ Planned 2026-10-20 by the story planner (product-manager, two developers, best-p
 - **A fermata over a barline** reads as a fermata on the events that end there (see Notes).
 - **The stretch survives only through JSON and MIDI;** no text format writes it.
 - **`Flow#conductor` is rebuilt on every call,** so `TempoSteps` must reuse one instance. Caching clock time per piece can come later.
+
+## Review
+
+Reviewed 2026-10-21 at commit `7ffc32f1` (37 commits, 223 files; no uncommitted changes). Product-manager acceptance verification, plus two code reviews split between the core model (time, content, rudiment, MIDI) and the notation formats. Findings marked *verified* were reproduced independently of the reviewing agent.
+
+Suite: `bundle exec rake`: 18,490 examples, 0 failures; line coverage 99.77%, branch 95.15%. The `rake oracles` specs were not run in this review.
+
+### Acceptance criteria
+
+All criteria are met except two that ABC meets only partially. In both, the limit predates this story and the Implementation Notes already state it.
+
+- ✅ **Tempo words (5/5).** Text through JSON; `Tempo.get` case and spelling; longest-name fallback, else ♩=120, unwritten; text distinguishes changes; each format's tempo construct, and the MusicXML `<words>` rule.
+- ✅ **Gradual tempo changes (7/7).** Mid-bar ramps; whole-notes-per-minute interpolation; closed-form `atanh`/`tanh` in both directions (one 4/4 bar from 120 to 80 takes 2,432,790,649 ns); default targets; "a tempo"; overlap rules; `tempo_at` against `sounding_tempo_at`.
+- ✅ **Fermatas: model (6/6).** Any position; stretch; inverse inside the span; tempo unchanged; overlap raises; JSON; mark grouping.
+- ⚠️ **Every text format writes timeline fermatas in every voice.** kern, LilyPond, MusicXML and MEI mark all carriers. ABC writes only one voice.
+- ✅ **Meter symbols (3/4).** Equality and `to_s` unchanged; `Meter.get(meter)` passes the meter through; JSON and meter changes keep the symbol.
+- ⚠️ **A symbol-only meter change is kept by every reader and writer.** JSON, kern, LilyPond, MusicXML and MEI round-trip it. ABC refuses every mid-piece meter change. Only MEI and MusicXML have a spec that pins it.
+- ✅ **Conductor (2/2).** `Flow#conductor`, with clock zero at the earliest bar; 6:1 after a 3/4 change at bar 5 is 9.5 s (*verified*).
+- ✅ **Formats (17/17).** ABC, LilyPond, MusicXML, kern, MEI and MIDI each check out, both in the agent's runs and in named specs. A MIDI export of a ramp and a stretch-3 fermata matches `flow.conductor` to the nanosecond.
+- ✅ **Fixtures and compatibility (4/4).** `satb_chorale.krn` has fermatas at 2:2 and 4:2; Herzliebster gives 4 fermatas from 16 `<fermata>` elements and `:common`; schema-5 documents without the new keys still read; coverage holds.
+
+### Code review findings
+
+Ordered by severity. None of them breaks an acceptance criterion as written, but 1–5 are real misreadings that a reader would hit.
+
+1. **"Tempo I" / "Tempo primo" is read as "a tempo" in every format** (*verified*). `notation/tempo_mark_reading.rb:17`. "a tempo" restores the tempo before the latest ramp, while "Tempo I" restores the opening tempo. In LilyPond, `\tempo "Allegro" 4=120 | \tempo "Meno mosso" 4=90 | c'1^"Tempo I" | …` gives the bars `[120, 90, 90, 90]` where the last should be 120. Fix: take these words out of `A_TEMPO_WORD`, then resolve them to the opening tempo or keep them as tempo text.
+2. **MusicXML drops the metronome mark beside an "a tempo", "Tempo I" or ramp word.** `music_xml/tempo_reader.rb:18`, `tempo_direction.rb:49`. `<words>Tempo I</words><metronome>…120` reads as a bare "a tempo", so the tempo stays at 80. A step tempo with text "rit." comes back from MusicXML as ramps, while ABC, LilyPond and MEI keep it as a tempo. Fix: a direction that has a metronome mark becomes `Tempo.new(…, text:)`, the way `TempoMarkReading#add` already handles the other formats.
+3. **MIDI import misreads a rit. followed directly by an accel.** (*verified*). `midi/tempo_inference.rb:55-87`. The meeting point is taken as a fermata (stretch 1.102) and both ramps are cut short, so clock time at 5:1 drifts from 10.507 s to 10.565 s. The same happens with **a fermata inside a ramp** (*verified*): the ramp splits in two, the stretch reads as 1.789 instead of 2, and the drift is +36 ms. Fix: before calling a slow-then-faster pair a fermata, check whether the slow change continues a ramp already under way, as `continues_ramp?` already does for the restore side. Add both cases to the MIDI round-trip spec.
+4. **ABC moves a fermata on a tie's later link inside a bar** (*verified*). `abc/bar_writer.rb:54-58`. `C D- HD F` reads a fermata at 1:3 and writes it back at 1:2. The other four formats round-trip this case. The fixture ties across a bar line, which forces the split, so it misses the case. Fix: split the segment at the fermata (`D2-!fermata!D2`), or refuse it in `RenderPreflight`.
+5. **A mid-bar `<sound tempo>` inside a dashed MusicXML ramp cuts the ramp short.** `music_xml/tempo_reader.rb:72-73` → `tempo_mark_reading.rb:71-72`. A playback-only step inside a written "rit." ends the ramp there, and its real end and target are lost. Fix: while a dashed ramp is open, skip bare `<sound>`-only moments.
+6. **LilyPond markup splits hyphenated commands.** `lily_pond/lexer.rb:25`. `\with-color #red rit.` and `\center-column { "rit." }` read no ramp, and `\tempo \markup { \center-column { Allegro } }` reads its text as `"-column Allegro"`. Real files hit this; round trips don't, because the writer only uses `\italic`. Fix: match `\\([A-Za-z]+(?:-[A-Za-z]+)*)` inside markup.
+7. **MIDI import adds a duplicate tempo change after a mid-bar "a tempo"** (*verified*). `midi/timeline_reader.rb:53-57`. Step changes are applied before the "a tempo" points, so a rit. from 2:2 to 3:2 followed by "a tempo" at 4:2 reads back with an extra `{5 => 90}`. Clock time is unaffected. Fix: add the "a tempo" points right after `add_ramps`, as the method's comment intends.
+8. **`Flow#add_fermata("1:1", "dotted quarter")` raises `NoMethodError`** (*verified*). `content/flow.rb:149`. The span is never passed through `RhythmicValue.get`, although `voice.place` accepts the same string.
+9. **A `Conductor` built directly ignores the step change at the end of a ramp with no target.** `time/tempo_pieces.rb:67`. That ramp takes 4.30 s from `Conductor.new(tempo_map:, tempo_ramps:)` and 4.77 s from `flow.conductor`. Fix: resolve the target in one place.
+10. **`Tempo.get("Presto agitato")` answers 0 bpm, and `flow.conductor` then raises `ZeroDivisionError`** (*verified*). `rudiment/tempo.rb:74`: the pattern `/=|at/` matches inside "agitato". This predates the branch; format readers use `for_text` and avoid it. Fix: `/=|\bat\b/`.
+
+Lower severity:
+
+- MusicXML writes a ramp whose text isn't a ramp word (for example "slower"), with dashes, and reads it back as a step change. ABC and LilyPond refuse such ramps in preflight; MusicXML has no such check.
+- kern writes a ramp's unwritten default target as `*MM90`, which reads back as written.
+- `FermataMarks#fermatas` merges each mark only with the last span, which can chain past a mark already used in a merge. This needs an unusual three-voice layout.
+- `same_tempo?` in `notation/timeline_reading.rb` compares text but not `metronome_mark?`.
+- Duplicated helpers: `MusicalPosition.new(*position.to_a)` appears three times, and there are three versions of the "strictly inside" span check. `TempoPieces#advance` orders events with bare 0/1/2. Several new files carry long "what" comments, against the minimal-comments convention.
+- Conventions otherwise hold: no assignments inside conditions, no stdout assertions, and specs use `described_class`.
+
+### Blocking `finish`
+
+Nothing blocks it on the criteria. Before finishing, decide:
+
+- Fix 1–8 on this branch or defer them. Items 1, 3, 4 and 8 are small and reproduced.
+- Reword the two ABC criteria to exclude ABC, or keep them and defer them to a multi-voice ABC writer story.
+- Add symbol-only meter-change round-trip specs for kern and LilyPond.
