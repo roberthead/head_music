@@ -14,11 +14,8 @@ module HeadMusic::Notation::ABC
       beam_break: :handle_beam_break, decoration: :handle_decoration,
       slur_start: :handle_slur_start, slur_end: :handle_slur_end, part_label: :handle_part_label,
       tuplet: :handle_tuplet, grace: :handle_grace, tempo: :handle_tempo, annotation: :handle_annotation,
-      meter: :handle_meter, key: :handle_key
+      meter: :handle_timeline_field, key: :handle_timeline_field
     }.freeze
-    # What a tune may hold before its first voice, marking the start of the
-    # music rather than a voice.
-    UNVOICED_TYPES = %i[tempo annotation part_label meter key].freeze
 
     # start_line offsets reported line numbers, so a tune parsed out of a
     # larger book raises errors with book-relative line numbers.
@@ -53,7 +50,7 @@ module HeadMusic::Notation::ABC
       @fermata_marks = HeadMusic::Notation::FermataMarks.new
       @tempo_marks = HeadMusic::Notation::TempoMarkReading.new
       setup_voices(tokens)
-      replay(voice_streams(tokens))
+      VoiceReplay.new(@voices).each(tokens) { |token| handle(token) }
       finish
       @building
     end
@@ -61,34 +58,6 @@ module HeadMusic::Notation::ABC
     def setup_voices(tokens)
       @voices = VoiceRegistry.new(@building, header.key_signature, duration_resolver, @fermata_marks)
       @voices.declare(header.voice_ids, default: tokens.none? { |token| token.type == :voice_change })
-    end
-
-    # The V: lines route each token to its voice, and are spent doing so.
-    def voice_streams(tokens)
-      streams = Hash.new { |hash, state| hash[state] = [] }
-      tokens.each do |token|
-        if token.type == :voice_change
-          @voices.switch_to(token.voice_id)
-        elsif @voices.any? || !UNVOICED_TYPES.include?(token.type)
-          streams[current_state] << token
-        else
-          handle(token)
-        end
-      end
-      @voices.map { |state| VoiceTokens.new(state, streams[state]) }
-    end
-
-    # The voices advance together rather than one line after another, so a
-    # field one voice states is in force before another places the bar it
-    # governs, and a tie, slur, or tuplet carries across a V: line.
-    def replay(queues)
-      queues = queues.reject(&:done?)
-      until queues.empty?
-        queue = queues.min_by(&:sort_key)
-        @voices.enter(queue.state)
-        handle(queue.take)
-        queues = queues.reject(&:done?)
-      end
     end
 
     def current_state
@@ -194,12 +163,9 @@ module HeadMusic::Notation::ABC
       @tempo_marks.add(mark_position, tempo) if tempo
     end
 
-    def handle_meter(token)
-      timeline_fields.meter((current_state if @voices.any?), token)
-    end
-
-    def handle_key(token)
-      timeline_fields.key((current_state if @voices.any?), token)
+    # A meter or key field, read by TimelineFields#meter or #key.
+    def handle_timeline_field(token)
+      timeline_fields.public_send(token.type, (current_state if @voices.any?), token)
     end
 
     # Only an annotation's ramp and "a tempo" words are read.
