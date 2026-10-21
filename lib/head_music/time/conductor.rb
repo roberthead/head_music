@@ -46,6 +46,12 @@ module HeadMusic
       # @return [MeterMap] the meter map for this conductor
       attr_reader :meter_map
 
+      # @return [Array<TempoRamp>] the gradual tempo changes, each with its target
+      attr_reader :tempo_ramps
+
+      # @return [Array<Fermata>] the holds, each slowing clock time by its stretch
+      attr_reader :fermatas
+
       # @return [HeadMusic::Rudiment::Tempo] the initial tempo (delegates to tempo_map)
       def starting_tempo
         tempo_map.events.first.tempo
@@ -65,6 +71,9 @@ module HeadMusic
       # @param starting_meter [HeadMusic::Rudiment::Meter, String] initial meter (default: 4/4)
       # @param tempo_map [TempoMap] custom tempo map (optional, creates one from starting_tempo if not provided)
       # @param meter_map [MeterMap] custom meter map (optional, creates one from starting_meter if not provided)
+      # @param tempo_ramps [Array<TempoRamp>] gradual tempo changes; a ramp with no
+      #   target ramps to the default its text implies
+      # @param fermatas [Array<Fermata>] holds that slow clock time by their stretch
       def initialize(
         starting_musical_position: nil,
         starting_smpte_timecode: nil,
@@ -72,7 +81,9 @@ module HeadMusic
         starting_tempo: nil,
         starting_meter: nil,
         tempo_map: nil,
-        meter_map: nil
+        meter_map: nil,
+        tempo_ramps: [],
+        fermatas: []
       )
         @starting_musical_position = starting_musical_position || MusicalPosition.new
         @starting_smpte_timecode = starting_smpte_timecode || SmpteTimecode.new(0, 0, 0, 0, framerate: framerate)
@@ -87,6 +98,8 @@ module HeadMusic
           starting_meter: starting_meter || "4/4",
           starting_position: @starting_musical_position
         )
+        @tempo_ramps = tempo_ramps
+        @fermatas = fermatas
       end
 
       # Convert clock position to musical position
@@ -109,6 +122,16 @@ module HeadMusic
       # @return [ClockPosition] the corresponding clock time
       def musical_to_clock(musical_position)
         musical_time_converter.musical_to_clock(musical_position)
+      end
+
+      # The tempo sounding at a position: inside a ramp, interpolated and given
+      # in the beat value of the ramp's starting tempo. A fermata holds the
+      # tempo rather than changing it.
+      #
+      # @param musical_position [MusicalPosition] the position
+      # @return [HeadMusic::Rudiment::Tempo] the tempo sounding there
+      def tempo_at(musical_position)
+        musical_time_converter.tempo_at(musical_position)
       end
 
       # Convert clock position to SMPTE timecode
@@ -140,7 +163,9 @@ module HeadMusic
         MusicalTimeConverter.new(
           tempo_map: tempo_map,
           meter_map: meter_map,
-          starting_musical_position: starting_musical_position
+          starting_musical_position: starting_musical_position,
+          tempo_ramps: tempo_ramps,
+          fermatas: fermatas
         )
       end
 

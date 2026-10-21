@@ -391,4 +391,231 @@ describe HeadMusic::Time::Conductor do
       expect(conductor.meter_map.events.length).to eq 2
     end
   end
+
+  describe "through tempo ramps and fermatas" do
+    def position(*args)
+      HeadMusic::Time::MusicalPosition.new(*args)
+    end
+
+    def tempo(beats_per_minute, beat_value = "quarter")
+      HeadMusic::Rudiment::Tempo.new(beat_value, beats_per_minute)
+    end
+
+    def ramp(from, to, to_tempo = nil, text = nil)
+      HeadMusic::Time::TempoRamp.new(from: position(*from), to: position(*to), to_tempo: to_tempo, text: text)
+    end
+
+    def fermata(from, to, stretch = 2)
+      HeadMusic::Time::Fermata.new(from: position(*from), to: position(*to), stretch: stretch)
+    end
+
+    def clock(position)
+      conductor.musical_to_clock(position).nanoseconds
+    end
+
+    def musical(nanoseconds)
+      conductor.clock_to_musical(HeadMusic::Time::ClockPosition.new(nanoseconds)).to_a
+    end
+
+    def seconds(value)
+      (value * 1_000_000_000).round
+    end
+
+    let(:tempo_ramps) { [] }
+    let(:fermatas) { [] }
+    let(:conductor) { described_class.new(tempo_ramps: tempo_ramps, fermatas: fermatas) }
+
+    it "keeps its ramps and fermatas" do
+      expect([conductor.tempo_ramps, conductor.fermatas]).to eq [[], []]
+    end
+
+    context "with a 4/4 bar ramping from 120 to 80" do
+      let(:tempo_ramps) { [ramp([1], [2], tempo(80))] }
+
+      it "takes (L / delta) ln(v1 / v0) for the bar" do
+        expect(clock(position(2))).to eq 2_432_790_649
+      end
+
+      it "times a position inside the ramp in closed form" do
+        expect(clock(position(1, 3))).to eq seconds(6 * Math.log(1.2))
+      end
+
+      it "continues at the target after the ramp" do
+        expect(clock(position(3))).to eq 5_432_790_649
+      end
+
+      it "maps the ramp's clock time back to its end" do
+        expect(musical(2_432_790_649)).to eq [2, 1, 0, 0]
+      end
+
+      it "maps a clock time inside the ramp back into it" do
+        expect(musical(seconds(6 * Math.log(1.2)))).to eq [1, 3, 0, 0]
+      end
+
+      it "round-trips positions inside the ramp exactly" do
+        positions = [position(1, 1, 1, 7), position(1, 2, 480), position(1, 4, 959, 239), position(2, 1, 0, 1)]
+        expect(positions.map { |each| conductor.clock_to_musical(conductor.musical_to_clock(each)).to_a }).to eq positions.map(&:to_a)
+      end
+
+      it "round-trips clock times within one subtick" do
+        slowest_subtick = 60_000_000_000.0 / (80 * 960 * HeadMusic::Time::SUBTICKS_PER_TICK)
+        times = [1, 123_456_789, 1_000_000_007, 2_432_790_600]
+        expect(times.map { |time| (clock(conductor.clock_to_musical(HeadMusic::Time::ClockPosition.new(time))) - time).abs })
+          .to all(be <= slowest_subtick)
+      end
+
+      it "sounds the start tempo at the start" do
+        expect(conductor.tempo_at(position(1))).to eq tempo(120)
+      end
+
+      it "sounds the interpolated tempo inside the ramp" do
+        expect(conductor.tempo_at(position(1, 3)).beats_per_minute).to eq 100
+      end
+
+      it "sounds the target after the ramp" do
+        expect(conductor.tempo_at(position(5))).to eq tempo(80)
+      end
+    end
+
+    context "with a ramp whose two ends are equal" do
+      let(:tempo_ramps) { [ramp([1], [2], tempo(120))] }
+
+      it "keeps the tempo" do
+        expect(clock(position(2))).to eq 2_000_000_000
+      end
+    end
+
+    context "with a ramp across a meter change" do
+      let(:tempo_ramps) { [ramp([1], [3], tempo(50))] }
+
+      before { conductor.meter_map.add_change(position(2), "3/4") }
+
+      it "ramps over each bar in its own meter" do
+        expect(clock(position(3))).to eq seconds(6 * Math.log(2.4))
+      end
+
+      it "maps the end back" do
+        expect(musical(seconds(6 * Math.log(2.4)))).to eq [3, 1, 0, 0]
+      end
+    end
+
+    context "with a ramp between different beat values" do
+      let(:tempo_ramps) { [ramp([1], [2], tempo(40, "half"))] }
+
+      it "interpolates in whole notes per minute" do
+        expect(clock(position(2))).to eq 2_432_790_649
+      end
+
+      it "sounds the tempo in the starting beat value" do
+        expect(conductor.tempo_at(position(1, 3))).to have_attributes(beats_per_minute: 100, beat_value: HeadMusic::Rudiment::RhythmicValue.get("quarter"))
+      end
+    end
+
+    context "with a ramp that has no target" do
+      let(:tempo_ramps) { [ramp([1], [2], nil, text)] }
+      let(:text) { "rit." }
+
+      it "slows to three quarters of the start" do
+        expect(conductor.tempo_at(position(3)).beats_per_minute).to eq 90
+      end
+
+      context "with accel." do
+        let(:text) { "accel." }
+
+        it "speeds up to four thirds of the start" do
+          expect(conductor.tempo_at(position(3)).beats_per_minute).to eq 160
+        end
+      end
+    end
+
+    context "with a tempo change where a ramp ends" do
+      let(:tempo_ramps) { [ramp([1], [2], tempo(80))] }
+
+      before { conductor.tempo_map.add_change(position(2), tempo(60)) }
+
+      it "ramps to the target and then changes" do
+        expect(clock(position(3)) - clock(position(2))).to eq 4_000_000_000
+      end
+    end
+
+    context "with a tempo change where a ramp starts" do
+      let(:tempo_ramps) { [ramp([2], [3], tempo(40))] }
+
+      before { conductor.tempo_map.add_change(position(2), tempo(60)) }
+
+      it "ramps from the change" do
+        expect(clock(position(3)) - clock(position(2))).to eq seconds(12 * Math.log(1.5))
+      end
+    end
+
+    context "with a tempo change inside a ramp" do
+      let(:tempo_ramps) { [ramp([1], [3], tempo(80))] }
+
+      before { conductor.tempo_map.add_change(position(2), tempo(60)) }
+
+      it "yields to the ramp already under way" do
+        expect(conductor.tempo_at(position(2)).beats_per_minute).to eq 100
+      end
+    end
+
+    context "with ramps that touch" do
+      let(:tempo_ramps) { [ramp([1], [2], tempo(80)), ramp([2], [3], tempo(120))] }
+
+      it "starts the second from the first's target" do
+        expect(clock(position(3)) - clock(position(2))).to be_within(1).of(2_432_790_649)
+      end
+    end
+
+    context "with a chorale's fermata, at 100 in 3/4" do
+      let(:conductor) do
+        described_class.new(starting_tempo: tempo(100), starting_meter: "3/4", fermatas: [fermata([2, 2], [2, 3])])
+      end
+
+      it "lengthens the held count" do
+        expect(clock(position(2, 3))).to eq 3_600_000_000
+      end
+
+      it "leaves the counts after it at their tempo" do
+        expect(clock(position(3))).to eq 4_200_000_000
+      end
+
+      it "maps a clock time inside the fermata back into its span" do
+        expect(musical(3_000_000_000)).to eq [2, 2, 480, 0]
+      end
+
+      it "holds the tempo rather than changing it" do
+        expect(conductor.tempo_at(position(2, 2, 480))).to eq tempo(100)
+      end
+    end
+
+    context "with a fermata inside a ramp" do
+      let(:tempo_ramps) { [ramp([1], [2], tempo(80))] }
+      let(:fermatas) { [fermata([1, 2], [1, 3])] }
+
+      it "stretches the ramp's clock time under the fermata" do
+        expect(clock(position(2))).to eq seconds(6 * Math.log(1.5) + 6 * Math.log(1.1))
+      end
+
+      it "maps the end back" do
+        expect(musical(clock(position(2)))).to eq [2, 1, 0, 0]
+      end
+
+      it "maps a time inside the fermata back into its span" do
+        expect(musical(clock(position(1, 2, 480)))).to eq [1, 2, 480, 0]
+      end
+    end
+
+    context "with a fermata on the final count" do
+      let(:fermatas) { [fermata([4, 4], [5], 3)] }
+
+      it "lengthens the total by its stretch" do
+        expect(clock(position(5))).to eq 9_000_000_000
+      end
+    end
+
+    it "accepts a flow's positions" do
+      flow = HeadMusic::Content::Flow.new
+      expect(conductor.musical_to_clock(flow.position("2:1")).nanoseconds).to eq 2_000_000_000
+    end
+  end
 end
