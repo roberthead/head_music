@@ -15,6 +15,10 @@ module HeadMusic::Notation::ABC
 
     attr_reader :flow, :reference_number, :transposed
 
+    def self.meter_value(meter)
+      METER_SYMBOLS.fetch(meter.symbol, meter.to_s)
+    end
+
     def initialize(flow, reference_number: 1, transposed: false)
       @flow = flow
       @reference_number = reference_number
@@ -48,7 +52,7 @@ module HeadMusic::Notation::ABC
         "T:#{flow.name}",
         optional_field("C", flow.composer),
         optional_field("O", flow.origin),
-        "M:#{METER_SYMBOLS.fetch(flow.meter.symbol, flow.meter.to_s)}",
+        "M:#{self.class.meter_value(flow.meter)}",
         unit_note_length_field,
         tempo_field,
         key_field

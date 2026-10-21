@@ -257,31 +257,33 @@ describe HeadMusic::Notation::ABC::Writer do
       end
     end
 
-    context "with a mid-piece meter change" do
+    context "with mid-piece meter changes" do
       let(:flow) do
-        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\nC8|D8|E8|F8|\n").tap do |flow|
-          flow.change_meter(3, "3/4")
-        end
+        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\nC8|D8|[M:3/4]E6|[M:C]F8|\n")
       end
 
-      it "raises a RenderError" do
-        expect { described_class.new(flow).to_s }.to raise_error(
-          HeadMusic::Notation::ABC::RenderError, /meter change at bar 3/
-        )
+      it "writes each as an inline field opening its bar, a change of symbol alone included" do
+        expect(described_class.new(flow).to_s.lines.last).to eq "C8|D8|[M:3/4]E6|[M:C]F8|]\n"
       end
     end
 
     context "with a mid-piece key signature change" do
       let(:flow) do
-        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\nC8|D8|E8|F8|\n").tap do |flow|
-          flow.change_key_signature(2, "G major")
-        end
+        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\nF8|[K:G]F8|=F8|\n")
       end
 
-      it "raises a RenderError" do
-        expect { described_class.new(flow).to_s }.to raise_error(
-          HeadMusic::Notation::ABC::RenderError, /key signature change at bar 2/
-        )
+      it "writes it as an inline field and spells each bar in its key" do
+        expect(described_class.new(flow).to_s.lines.last).to eq "F8|[K:G]F8|=F8|]\n"
+      end
+    end
+
+    context "with a key change in a bar that opens a volta" do
+      let(:flow) do
+        HeadMusic::Notation::ABC.parse("X:1\nT:Test\nM:4/4\nL:1/8\nK:C\n|:C8|[1 D8:|[2 [K:G][M:3/4]G6|]\n")
+      end
+
+      it "writes the fields after the volta" do
+        expect(described_class.new(flow).to_s.lines.last).to eq "|:C8|[1 D8:|[2 [M:3/4][K:G]G6|]\n"
       end
     end
 

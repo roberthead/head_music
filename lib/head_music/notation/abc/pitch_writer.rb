@@ -36,8 +36,11 @@ module HeadMusic::Notation::ABC
       pitches.sort.map { |pitch| token(pitch, forced: clashing.include?(pitch)) }
     end
 
-    # In ABC, accidentals persist only to the end of the bar.
-    def start_new_bar
+    # In ABC, accidentals persist only to the end of the bar, and a bar may
+    # open in a new key.
+    def start_new_bar(key_signature = self.key_signature)
+      @key_signature = HeadMusic::Rudiment::KeySignature.get(key_signature)
+      oracle.key_signature = @key_signature
       oracle.start_new_bar
     end
 

@@ -43,6 +43,14 @@ class HeadMusic::Notation::RenderPlan
     keys_by_part[[:first, part]] ||= build_first_measure_key(part)
   end
 
+  # The key in force in the part at a bar: its latest change there or
+  # before, or else its first.
+  def measure_key_at(bar_number, part = nil)
+    changes = measure_key_changes(part)
+    change_bar = changes.keys.select { |number| number <= bar_number }.max
+    change_bar ? changes[change_bar] : first_measure_key(part)
+  end
+
   def first_measure_meter
     @first_measure_meter ||= effective_meter(bar_numbers.first)
   end

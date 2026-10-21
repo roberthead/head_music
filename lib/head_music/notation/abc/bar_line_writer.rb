@@ -1,7 +1,7 @@
 # Parses and renders ABC notation as HeadMusic::Content flows
 module HeadMusic::Notation::ABC
   # Writes the markings around a bar's music. Before it: its opening repeat,
-  # volta, and part label. After it: its Fine, To Coda, or jump, the next
+  # volta, part label, and the fields that change its meter or key. After it: its Fine, To Coda, or jump, the next
   # bar's segno or coda sign, and the bar line.
   #
   # A segno or coda sign before a bar line marks the bar it opens, which is
@@ -22,10 +22,10 @@ module HeadMusic::Notation::ABC
     module_function
 
     # The first bar has no bar line before it to carry its repeat or signs.
-    def opening(bar, previous)
-      return volta(bar, previous) + part_label(bar) if previous
+    def opening(bar, previous, fields = "")
+      return volta(bar, previous) + part_label(bar) + fields if previous
 
-      (bar.starts_repeat? ? "|:" : "") + volta(bar, nil) + part_label(bar) + signs(bar)
+      (bar.starts_repeat? ? "|:" : "") + volta(bar, nil) + part_label(bar) + fields + signs(bar)
     end
 
     def closing(bar, following)

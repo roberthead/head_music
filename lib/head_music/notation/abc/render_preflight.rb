@@ -3,8 +3,8 @@ module HeadMusic::Notation::ABC
   # Rejects flows that cannot be expressed in the supported ABC subset,
   # before the Writer assembles any output.
   #
-  # A tune is written as one voice with one M: and one K: field, so a second
-  # voice or a mid-piece change is refused rather than dropped.
+  # A tune is written as one voice, so a second voice is refused rather than
+  # dropped, as is a meter or key change at a bar no voice reaches.
   class RenderPreflight
     include HeadMusic::Notation::PreflightChecks
 
@@ -20,7 +20,7 @@ module HeadMusic::Notation::ABC
     def check!
       ensure_single_voice
       ensure_tuplets_within_bars(flow)
-      ensure_no_mid_piece_changes
+      ensure_changes_within_music
       ensure_no_instrument_change
       ensure_contiguous_voices(flow)
       ensure_markings_within_music(flow)
@@ -40,9 +40,14 @@ module HeadMusic::Notation::ABC
       raise RenderError, "multi-voice ABC output is not supported"
     end
 
-    def ensure_no_mid_piece_changes
-      refuse_change("meter", flow.meter_changes.keys)
-      refuse_change("key signature", flow.key_signature_changes.keys)
+    # A change is written as a field opening its bar, which a bar no voice
+    # reaches does not have.
+    def ensure_changes_within_music
+      bar_numbers = flow.earliest_bar_number..flow.last_sounding_bar_number
+      {"meter" => flow.meter_changes, "key signature" => flow.key_signature_changes}.each do |subject, changes|
+        bar_number = changes.keys.reject { |number| bar_numbers.cover?(number) }.min
+        raise RenderError, "cannot render the #{subject} change at bar #{bar_number} in ABC output, where no voice sounds" if bar_number
+      end
     end
 
     # A part that picks up an instrument reading in another key needs a

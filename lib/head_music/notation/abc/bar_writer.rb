@@ -20,8 +20,8 @@ module HeadMusic::Notation::ABC
     # beamed to its predecessor; a true or nil beam_break_before keeps it, so
     # programmatic flows render with every-token spacing. Every bar token
     # re-lexes unambiguously with no separator, so dropping it is safe.
-    def bar(bar_segments)
-      @pitch_writer.start_new_bar
+    def bar(bar_segments, key_signature)
+      @pitch_writer.start_new_bar(key_signature)
       bar_marks = @position_marks.bar_marks(bar_segments)
       music = bar_segments.map do |segment|
         token = token(segment, bar_marks)

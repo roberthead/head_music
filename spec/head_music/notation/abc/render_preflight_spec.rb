@@ -14,17 +14,25 @@ describe HeadMusic::Notation::ABC::RenderPreflight do
     expect { described_class.check!(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /multi-voice/)
   end
 
-  it "refuses the earliest mid-piece meter change" do
+  it "passes meter and key changes within the music" do
     flow = tune.tap do |changing|
       changing.change_meter(3, "3/4")
-      changing.change_meter(2, "2/4")
+      changing.change_key_signature(2, "G major")
     end
-    expect { described_class.check!(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /meter change at bar 2/)
+    expect { described_class.check!(flow) }.not_to raise_error
   end
 
-  it "refuses a mid-piece key signature change" do
-    flow = tune.tap { |changing| changing.change_key_signature(2, "G major") }
-    expect { described_class.check!(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /key signature change at bar 2/)
+  it "refuses the earliest meter change where no voice sounds" do
+    flow = tune.tap do |changing|
+      changing.change_meter(7, "3/4")
+      changing.change_meter(6, "2/4")
+    end
+    expect { described_class.check!(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /meter change at bar 6/)
+  end
+
+  it "refuses a key signature change where no voice sounds" do
+    flow = tune.tap { |changing| changing.change_key_signature(5, "G major") }
+    expect { described_class.check!(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /key signature change at bar 5/)
   end
 
   it "refuses a gap between voice events" do

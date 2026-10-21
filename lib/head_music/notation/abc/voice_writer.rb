@@ -17,10 +17,11 @@ module HeadMusic::Notation::ABC
 
     def bars
       bars = written_bars
-      bars.each_with_index.map do |(bar, music), index|
-        previous = bars[index - 1]&.first if index.positive?
-        following = bars[index + 1]&.first
-        BarLineWriter.opening(bar, previous) + music + BarLineWriter.closing(bar, following)
+      bars.each_with_index.map do |(bar_number, music), index|
+        bar = plan.bar(bar_number)
+        previous = plan.bar(bars[index - 1].first) if index.positive?
+        following = bars[index + 1] && plan.bar(bars[index + 1].first)
+        BarLineWriter.opening(bar, previous, fields(bar_number)) + music + BarLineWriter.closing(bar, following)
       end
     end
 
@@ -48,12 +49,23 @@ module HeadMusic::Notation::ABC
       plan.first_measure_key(voice.part).key_signature
     end
 
-    # Each bar the voice sounds in, with its music.
+    # Each bar the voice sounds in, with its music, spelled in the key in
+    # force there.
     def written_bars
       bar_writer = BarWriter.new(
         key_signature, Writer::UNIT_NOTE_LENGTH, slur_writer, position_marks, tuplet_writer, plan.fermata_carriers
       )
-      segments_by_bar.map { |bar_number, bar_segments| [plan.bar(bar_number), bar_writer.bar(bar_segments)] }
+      segments_by_bar.map do |bar_number, bar_segments|
+        [bar_number, bar_writer.bar(bar_segments, plan.measure_key_at(bar_number, voice.part).key_signature)]
+      end
+    end
+
+    # Every voice states each change, so no reader has to carry one voice's
+    # field to another. The header's K: already names the first bar's key.
+    def fields(bar_number)
+      meter = plan.measure_time_changes[bar_number]
+      key = plan.measure_key_changes(voice.part)[bar_number] unless bar_number == plan.bar_numbers.first
+      "#{"[M:#{Writer.meter_value(meter)}]" if meter}#{"[K:#{key}]" if key}"
     end
 
     # A voice event sounding across a bar line is written as one note per bar,

@@ -19,6 +19,36 @@ describe HeadMusic::Notation::ABC do
     end
   end
 
+  describe "a round trip of meter and key changes" do
+    def changes(flow)
+      [
+        flow.meter_changes.transform_values { |meter| [meter.to_s, meter.symbol] },
+        flow.key_signature_changes.transform_values { |event| event.key_signature.name }
+      ]
+    end
+
+    {
+      "a meter and key change at one bar" => "K:G\nG8|G8|[M:3/4][K:D]F6|]",
+      "a note tied into a key change" => "K:C\nC4 F4-|[K:G]=F4 F4|]",
+      "a note tied into a meter change" => "K:C\nC4 D4-|[M:3/4]D2 E4|]",
+      "a change of the meter's symbol alone" => "K:C\nC8|[M:C]D8|]"
+    }.each do |name, tune|
+      context "with #{name}" do
+        let(:original) { described_class.parse("X:1\nT:Changes\nM:4/4\nL:1/8\n#{tune}\n") }
+        let(:rendered) { described_class.render(original) }
+
+        it "keeps the changes and the music" do
+          expect(changes(described_class.parse(rendered))).to eq changes(original)
+          expect_abc_round_trip(original)
+        end
+
+        it "reads back what it wrote" do
+          expect(described_class.render(described_class.parse(rendered))).to eq rendered
+        end
+      end
+    end
+  end
+
   it "keeps both fermatas over a tied note held under them" do
     original = TimelineExpressionFixtures.tied_under_two_fermatas(voices: 1)
     expect_same_timeline(original, described_class.parse(described_class.render(original)))
