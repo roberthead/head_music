@@ -115,6 +115,16 @@ describe HeadMusic::MIDI::Parser do
         expect([fermatas(flow), tempos(flow)]).to eq [[["2:1:000", "2:2:000", 2]], [[1, "quarter", 120.0], [2, "quarter", 100.0]]]
       end
 
+      it "reads a slower tempo within a bar, then another at the next downbeat, as a fermata before a tempo change" do
+        flow = parse([tempo(0, 500_000), tempo(192, 1_000_000), tempo(bar, 625_000), *quarters])
+        expect([fermatas(flow), tempos(flow)]).to eq [[["1:3:000", "2:1:000", 2]], [[1, "quarter", 120.0], [2, "quarter", 96.0]]]
+      end
+
+      it "reads a run into a slower tempo restored to the run's next step as a ramp into a fermata" do
+        flow = parse([tempo(0, 500_000), tempo(96, 600_000), tempo(192, 700_000), tempo(288, 1_500_000), tempo(bar, 750_000), *quarters])
+        expect([ramps(flow), fermatas(flow), tempos(flow)]).to eq [[["1:2:000", "1:4:000", 80.0, "rit."]], [["1:4:000", "2:1:000", 2]], [[1, "quarter", 120.0]]]
+      end
+
       it "reads a slower tempo for a whole bar between downbeats as tempo changes" do
         flow = parse([tempo(0, 500_000), tempo(bar, 1_000_000), tempo(bar * 2, 500_000), *quarters])
         expect([fermatas(flow), tempos(flow)]).to eq [[], [[1, "quarter", 120.0], [2, "quarter", 60.0], [3, "quarter", 120.0]]]
@@ -140,6 +150,11 @@ describe HeadMusic::MIDI::Parser do
         expect([ramps(flow), flow.a_tempos.map { |a_tempo| a_tempo.position.to_s }, tempos(flow)]).to eq [
           [["1:2:000", "1:3:000", 120.0, "accel."]], ["2:2:000"], [[1, "quarter", 100.0], [3, "quarter", 100.0]]
         ]
+      end
+
+      it "reads only changes a count apart or less as one ramp's run" do
+        flow = parse([tempo(0, 500_000), tempo(96, 550_000), tempo(bar + 192, 600_000), tempo(bar + 288, 750_000), *quarters])
+        expect([ramps(flow), tempos(flow)]).to eq [[["2:3:000", "2:4:000", 80.0, "rit."]], [[1, "quarter", 120.0], [2, "quarter", 109.091]]]
       end
 
       it "skips a run with only one change within a bar" do

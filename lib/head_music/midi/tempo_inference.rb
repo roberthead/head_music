@@ -7,11 +7,14 @@ module HeadMusic::MIDI
   # one bar: to the tempo before, unless both changes fall on downbeats, or
   # from a downbeat to a tempo held past the next, which changes the
   # tempo at that downbeat, unless it is the tempo a ramp ending there began
-  # from, which is an "a tempo". The stretch is the ratio of the two, to
-  # three decimals.
+  # from, which is an "a tempo". A fermata may also be restored to the next
+  # step of the ramp before it, that ramp's target, or, from within a bar,
+  # to a new tempo at the next downbeat. The stretch is the ratio of the
+  # slower tempo to the one it holds, to three decimals.
   #
   # A ramp is a run of changes all faster or all slower than the one before,
-  # at least two of them within a bar, whose last holds until the next
+  # each a count or less after the one before, as export steps them, at
+  # least two of them within a bar, whose last holds until the next
   # downbeat. It ramps from the tempo before the run to that last tempo. The
   # tempo at the very start begins no run.
   #
@@ -44,7 +47,8 @@ module HeadMusic::MIDI
     private
 
     # The changes left once each fermata's pair is taken out, keeping the
-    # tempo a fermata changes to at its downbeat.
+    # tempo a fermata changes to at its downbeat, the next downbeat, or the
+    # end of the ramp before it.
     def read_fermatas(changes)
       kept = []
       index = 0
@@ -52,8 +56,10 @@ module HeadMusic::MIDI
         start, restore = changes.values_at(index, index + 1)
         kind = restore && fermata_kind(start, restore, kept, changes[index + 2])
         if kind
-          @fermatas << Fermata.new(start.first, restore.first, stretch(start.last, restore.last))
+          held = (kind == :restored) ? kept.last&.last || @opening : restore.last
+          @fermatas << Fermata.new(start.first, restore.first, stretch(start.last, held))
           kept << [start.first, restore.last] if kind == :changed
+          kept << restore if kind == :restored
           index += 2
         else
           kept << start
@@ -72,17 +78,34 @@ module HeadMusic::MIDI
         :held unless downbeat?(from) && downbeat?(to)
       elsif downbeat?(from) && !downbeat?(to) && held?(to, following, through: true) && tempo != ramp_start(kept, start)
         :changed
+      elsif held?(to, following) && continues_ramp?(kept, [from, tempo])
+        :changed
+      elsif !downbeat?(from) && downbeat?(to) && !continues_ramp?(kept, start)
+        :restored
       end
+    end
+
+    # Whether +change+ is the next step of a ramp's run after the changes
+    # kept.
+    def continues_ramp?(kept, change)
+      !kept.empty? && in_step?(kept.last, change) && !ramp_start(kept, change).nil?
     end
 
     # The tempo before the run of changes ending at +last+, if it is a ramp's.
     def ramp_start(kept, last)
-      tempos = [@opening, *kept.map(&:last), last.last]
+      changes = [*kept, last]
+      tempos = [@opening, *changes.map(&:last)]
       direction = tempos[-1] <=> tempos[-2]
       first = tempos.length - 1
-      first -= 1 while first > 1 && (tempos[first - 1] <=> tempos[first - 2]) == direction
-      run = [*kept, last].last(tempos.length - first)
+      first -= 1 while first > 1 && (tempos[first - 1] <=> tempos[first - 2]) == direction && in_step?(changes[first - 2], changes[first - 1])
+      run = changes.last(tempos.length - first)
       tempos[first - 1] if run.count { |time, _| !downbeat?(time) } >= 2
+    end
+
+    # Whether +after+ is a count or less after +before+, as steps under a
+    # ramp are.
+    def in_step?(before, after)
+      after.first - before.first <= Rational(1, @layout.bar_at(before.first).meter.bottom_number)
     end
 
     def stretch(slow, tempo)
@@ -118,7 +141,7 @@ module HeadMusic::MIDI
     def run_end(changes, index, prior)
       direction = changes[index].last <=> prior
       finish = index
-      finish += 1 while finish + 1 < changes.length && (changes[finish + 1].last <=> changes[finish].last) == direction
+      finish += 1 while finish + 1 < changes.length && (changes[finish + 1].last <=> changes[finish].last) == direction && in_step?(*changes.values_at(finish, finish + 1))
       within_bars = changes[index..finish].count { |time, _| !downbeat?(time) }
       finish if within_bars >= 2 && held?(changes[finish].first, changes[finish + 1])
     end

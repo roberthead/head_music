@@ -95,7 +95,9 @@ describe "HeadMusic::MIDI" do
     "an accel. ramp from the middle of a bar to the middle of a later one" => accel_within_bars,
     "a fermata in the middle of a bar" => mid_bar_fermata,
     "a fermata on the final event, at a dotted quarter of 60, stretched 1.5" => final_fermata,
-    "a rit. into a fermata on the final event" => rit_into_final_fermata
+    "a rit. into a fermata on the final event" => rit_into_final_fermata,
+    "TimelineExpressionFixtures.melody" => -> { TimelineExpressionFixtures.melody },
+    "TimelineExpressionFixtures.chorale" => -> { TimelineExpressionFixtures.chorale }
   }
 
   excluded = {
@@ -125,6 +127,15 @@ describe "HeadMusic::MIDI" do
       it "spells every note as written" do
         expect(MIDIRoundTrip.spelling_differences(written, flow)).to eq []
       end
+    end
+  end
+
+  # MIDI holds no words and no meter symbols; a tempo's beat it restates
+  # as the meter's.
+  {melody: "a tempo change at a fermata's end, a ramp into a fermata on a rest, and an a tempo", chorale: "a ramp into a final fermata, counting half notes"}.each do |name, holding|
+    it "reads back the timeline of TimelineExpressionFixtures.#{name}, with #{holding}" do
+      written = TimelineExpressionFixtures.public_send(name)
+      expect_same_timeline(written, HeadMusic::MIDI.parse(HeadMusic::MIDI.render(written)), except: %i[tempo_text meter_symbols])
     end
   end
 
