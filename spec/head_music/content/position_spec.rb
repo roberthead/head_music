@@ -187,6 +187,12 @@ describe HeadMusic::Content::Position do
       specify { expect(position + HeadMusic::Rudiment::RhythmicValue.new(:half, dots: 1)).to eq expected_position }
     end
 
+    context "when adding a rhythmic value by name" do
+      let(:expected_position) { described_class.new(flow, "4.1.480") }
+
+      specify { expect(position + "dotted half").to eq expected_position }
+    end
+
     context "when adding a value finer than a tick" do
       let(:downbeat) { described_class.new(flow, 1, 1, 0) }
 

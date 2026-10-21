@@ -74,6 +74,10 @@ describe HeadMusic::Content::Flow do
       expect(flow.add_fermata("4:3", to: "4:4:480").to.code).to eq "4:4:480"
     end
 
+    it "takes a span by name" do
+      expect(flow.add_fermata("4:3", "dotted quarter").to.code).to eq "4:4:480"
+    end
+
     it "keeps its stretch" do
       expect(flow.add_fermata("4:3", :quarter, stretch: 3).stretch).to eq 3
     end
