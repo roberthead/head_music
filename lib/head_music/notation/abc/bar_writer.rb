@@ -53,8 +53,23 @@ module HeadMusic::Notation::ABC
 
     def fermata(segment, start)
       finish = segment.continues ? start.start_of_next_bar : segment.voice_event.next_position
-      begins = @fermatas.fetch(segment.voice_event, []).any? { |fermata| start <= fermata.from && fermata.from < finish }
+      begins = @fermatas.fetch(segment.voice_event, []).any? do |fermata|
+        start <= fermata.from && fermata.from < finish && !fermata_split(segment)
+      end
       begins ? "!fermata!" : ""
+    end
+
+    # How far into a segment written whole a fermata begins, where it begins
+    # on a later link of its tied chain, so the segment is written tied there
+    # with the fermata on the second part.
+    def fermata_split(segment)
+      voice_event = segment.voice_event
+      length = segment.fraction || voice_event.rhythmic_value.fraction
+      boundaries = HeadMusic::Notation::BarSplitter.link_spans(voice_event).map { |_, from, _| from }
+      splits = @fermatas.fetch(voice_event, []).filter_map do |fermata|
+        HeadMusic::Notation::BarSplitter.offset_in_bar(fermata.from) - segment.offset if fermata.from.bar_number == segment.bar_number
+      end
+      splits.find { |split| split.positive? && split < length && boundaries.include?(segment.elapsed + split) }
     end
 
     def lead_in(voice_event)
@@ -105,10 +120,10 @@ module HeadMusic::Notation::ABC
       ensure_pitched_sounds(voice_event)
       parts = written_parts(segment)
       last_index = parts.length - 1
-      tokens = parts.each_with_index.map do |(marker, multiplier), index|
+      tokens = parts.each_with_index.map do |(marker, multiplier, decoration), index|
         first = index.zero?
         tie = "-" if (index < last_index || segment.continues) && !voice_event.rest?
-        "#{marker unless first}#{sounding_token(voice_event, multiplier, first_part && first)}#{tie}"
+        "#{marker unless first}#{decoration}#{sounding_token(voice_event, multiplier, first_part && first)}#{tie}"
       end
       [parts.first.first, tokens.join(voice_event.rest? ? " " : "")]
     end
@@ -118,9 +133,18 @@ module HeadMusic::Notation::ABC
       voice_event = segment.voice_event
       rhythmic_value = voice_event.rhythmic_value
       pieces = @tuplet_writer.pieces(segment)
-      return [["", multiplier_for(segment.fraction, rhythmic_value)]] unless pieces
+      return untupled_parts(segment) unless pieces
 
       pieces.map { |piece| [piece.marker, multiplier_for(piece.links.sum(&:written_fraction), rhythmic_value)] }
+    end
+
+    def untupled_parts(segment)
+      rhythmic_value = segment.voice_event.rhythmic_value
+      split = fermata_split(segment)
+      return [["", multiplier_for(segment.fraction, rhythmic_value)]] unless split
+
+      length = segment.fraction || rhythmic_value.fraction
+      [["", multiplier_for(split, rhythmic_value)], ["", multiplier_for(length - split, rhythmic_value), "!fermata!"]]
     end
 
     def sounding_token(voice_event, multiplier, forced)

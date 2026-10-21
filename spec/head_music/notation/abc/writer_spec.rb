@@ -1106,6 +1106,16 @@ describe HeadMusic::Notation::ABC::Writer do
       expect(body_of(flow)).to eq "C4 D4-|!fermata!D4 E4|]\n"
     end
 
+    it "writes a fermata on a tied note's later link within a bar on that link" do
+      flow = tune("C D- HD F|")
+      expect(body_of(flow)).to eq "C2 D2-!fermata!D2 F2|]\n"
+    end
+
+    it "keeps a fermata within an untied note on the note" do
+      flow = tune("C D2 F|").tap { |held| held.add_fermata("1:3", :quarter) }
+      expect(body_of(flow)).to eq "C2 !fermata!D4 F2|]\n"
+    end
+
     {
       "a fractional tempo" => [->(flow) { flow.change_tempo(2, HeadMusic::Rudiment::Tempo.new("quarter", 92.5)) }, /fractional tempo of 92.5/],
       "tempo text holding a double quote" => [->(flow) { flow.change_tempo(2, HeadMusic::Rudiment::Tempo.new("quarter", 92, text: 'So "fast"')) }, /double quote/],
