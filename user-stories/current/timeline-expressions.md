@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-20T16:02:22-07:00
   planned_at:   2026-10-20T16:24:28-07:00
   finished_at:
-  updated_at:   2026-10-20T20:22:23-07:00
+  updated_at:   2026-10-20T22:37:43-07:00
 -->
 
 # Story: Timeline Expressions: Tempo Words, Gradual Tempo Changes, Fermatas, and Meter Symbols
@@ -49,87 +49,87 @@ flow.meter_at(1).symbol # => :common
 
 ### Tempo words
 
-- [ ] A tempo can carry text, with or without a metronome mark, and keeps both through JSON
-- [ ] `Tempo.get` finds named tempos in any case and keeps the spelling it was given as its text: `Tempo.get("allegro").text` is `"allegro"`
-- [ ] Tempo text with no number still answers a beats-per-minute value, so the `Conductor` can run: that of the longest named tempo it contains ("Allegro ma non troppo" is an allegro), and otherwise ♩=120; the tempo records that the number was not written
-- [ ] Two tempos that differ only in text are different tempo changes
-- [ ] Text is tempo text when a format writes it in its tempo construct (ABC `Q:`, LilyPond `\tempo`, MEI `<tempo>`, kern `!!!OMD` and `*MM[…]`), whatever it says; MusicXML `<words>` is tempo text when its direction also has `<metronome>` or `<sound tempo>`, or when it begins with a named tempo or ramp word; other free text is dropped, pending text directions
+- [x] A tempo can carry text, with or without a metronome mark, and keeps both through JSON
+- [x] `Tempo.get` finds named tempos in any case and keeps the spelling it was given as its text: `Tempo.get("allegro").text` is `"allegro"`
+- [x] Tempo text with no number still answers a beats-per-minute value, so the `Conductor` can run: that of the longest named tempo it contains ("Allegro ma non troppo" is an allegro), and otherwise ♩=120; the tempo records that the number was not written
+- [x] Two tempos that differ only in text are different tempo changes
+- [x] Text is tempo text when a format writes it in its tempo construct (ABC `Q:`, LilyPond `\tempo`, MEI `<tempo>`, kern `!!!OMD` and `*MM[…]`), whatever it says; MusicXML `<words>` is tempo text when its direction also has `<metronome>` or `<sound tempo>`, or when it begins with a named tempo or ramp word; other free text is dropped, pending text directions
 
 ### Gradual tempo changes
 
-- [ ] A flow can hold a tempo ramp from one position to another, including in the middle of a bar, toward a target tempo, with optional text ("rit.", "accel.", "rall.")
-- [ ] A ramp's tempo changes linearly in beats per minute over musical position, from its start to its end; a ramp between different beat values interpolates in whole notes per minute
-- [ ] The `Conductor` converts positions to clock time through a ramp in closed form, not by sampling, and converts clock time back to positions
-- [ ] A ramp with no target tempo ramps to the tempo of a step change at its end, or else to ×3/4 of its start (×4/3 for accel. and stringendo), recorded as not written
-- [ ] "a tempo" may sit in the middle of a bar, restores the tempo in force at the start of the latest ramp before it, and round-trips
-- [ ] Overlapping ramps raise `ArgumentError`, and so does a step tempo change or an "a tempo" strictly inside a ramp; ramps that touch are allowed, and a fermata inside a ramp is allowed and stretches the ramp's clock time
-- [ ] `tempo_at(bar)` answers the authored tempo: inside a ramp, the tempo at its start; after it, its target; `Flow#sounding_tempo_at(position)` answers the interpolated tempo
+- [x] A flow can hold a tempo ramp from one position to another, including in the middle of a bar, toward a target tempo, with optional text ("rit.", "accel.", "rall.")
+- [x] A ramp's tempo changes linearly in beats per minute over musical position, from its start to its end; a ramp between different beat values interpolates in whole notes per minute
+- [x] The `Conductor` converts positions to clock time through a ramp in closed form, not by sampling, and converts clock time back to positions
+- [x] A ramp with no target tempo ramps to the tempo of a step change at its end, or else to ×3/4 of its start (×4/3 for accel. and stringendo), recorded as not written
+- [x] "a tempo" may sit in the middle of a bar, restores the tempo in force at the start of the latest ramp before it, and round-trips
+- [x] Overlapping ramps raise `ArgumentError`, and so does a step tempo change or an "a tempo" strictly inside a ramp; ramps that touch are allowed, and a fermata inside a ramp is allowed and stretches the ramp's clock time
+- [x] `tempo_at(bar)` answers the authored tempo: inside a ramp, the tempo at its start; after it, its target; `Flow#sounding_tempo_at(position)` answers the interpolated tempo
 
 ### Fermatas
 
-- [ ] A flow's timeline can hold a fermata at any position, including in the middle of a bar, spanning a rhythmic value, with a stretch that multiplies the clock time of its span (by default 2, so the span lasts twice as long)
-- [ ] The `Conductor` lengthens clock time through a fermata by its stretch and leaves every musical position unchanged; a clock time inside a fermata maps back to a position within its span
-- [ ] A fermata leaves the tempo in force unchanged: `tempo_at` answers the same before and after it
-- [ ] Overlapping fermatas raise `ArgumentError`
-- [ ] The timeline's fermatas are kept through JSON
-- [ ] Fermata marks on voice events whose sounding intervals overlap become one timeline fermata, from the latest of their starts to the earliest of their ends; a fermata marked in one voice only still holds the whole flow; a fermata on a rest holds like one on a note; a fermata on a tie's later link starts at that link
-- [ ] Every text format writes a timeline fermata as a fermata mark on each voice event sounding when it begins, in every voice
+- [x] A flow's timeline can hold a fermata at any position, including in the middle of a bar, spanning a rhythmic value, with a stretch that multiplies the clock time of its span (by default 2, so the span lasts twice as long)
+- [x] The `Conductor` lengthens clock time through a fermata by its stretch and leaves every musical position unchanged; a clock time inside a fermata maps back to a position within its span
+- [x] A fermata leaves the tempo in force unchanged: `tempo_at` answers the same before and after it
+- [x] Overlapping fermatas raise `ArgumentError`
+- [x] The timeline's fermatas are kept through JSON
+- [x] Fermata marks on voice events whose sounding intervals overlap become one timeline fermata, from the latest of their starts to the earliest of their ends; a fermata marked in one voice only still holds the whole flow; a fermata on a rest holds like one on a note; a fermata on a tie's later link starts at that link
+- [x] Every text format writes a timeline fermata as a fermata mark on each voice event sounding when it begins, in every voice
 
 ### Meter symbols
 
-- [ ] A meter can carry a common-time or cut-time symbol, and a meter with a symbol stays equal to its numeric meter for every calculation: `Meter.common_time.to_s` stays `"4/4"` and stays `==` to `Meter.get("4/4")`
-- [ ] `Meter.get` given a meter answers that meter, so `Flow.new(meter:)` and `change_meter` keep its symbol
-- [ ] The symbol is kept through JSON and through the timeline's meter changes
-- [ ] A meter change that changes only the symbol is kept by every reader and written by every writer
+- [x] A meter can carry a common-time or cut-time symbol, and a meter with a symbol stays equal to its numeric meter for every calculation: `Meter.common_time.to_s` stays `"4/4"` and stays `==` to `Meter.get("4/4")`
+- [x] `Meter.get` given a meter answers that meter, so `Flow.new(meter:)` and `change_meter` keep its symbol
+- [x] The symbol is kept through JSON and through the timeline's meter changes
+- [x] A meter change that changes only the symbol is kept by every reader and written by every writer
 
 ### Conductor
 
-- [ ] `Flow#conductor` answers a `Conductor` built from the flow's meters, tempos, ramps, "a tempo" points, and fermatas, with clock zero at the downbeat of the earliest bar
-- [ ] The `Conductor` computes clock time correctly across a meter change inside a tempo segment
+- [x] `Flow#conductor` answers a `Conductor` built from the flow's meters, tempos, ramps, "a tempo" points, and fermatas, with clock zero at the downbeat of the earliest bar
+- [x] The `Conductor` computes clock time correctly across a meter change inside a tempo segment
 
 ### Formats
 
 ABC
 
-- [ ] Reads and writes `Q:` and inline `[Q:…]`, including quoted tempo text, and `M:C` / `M:C|`
-- [ ] Reads `H` and `!fermata!` on notes and rests into timeline fermatas, and writes them
-- [ ] Reads "rit.", "rall.", "accel.", and "a tempo" from annotations (`"^rit."`) and drops other annotation text instead of raising; writes a ramp's text at its start and its target tempo at its end
+- [x] Reads and writes `Q:` and inline `[Q:…]`, including quoted tempo text, and `M:C` / `M:C|`
+- [x] Reads `H` and `!fermata!` on notes and rests into timeline fermatas, and writes them
+- [x] Reads "rit.", "rall.", "accel.", and "a tempo" from annotations (`"^rit."`) and drops other annotation text instead of raising; writes a ramp's text at its start and its target tempo at its end
 
 LilyPond
 
-- [ ] Reads and writes `\tempo` with text, a metronome mark, or both
-- [ ] Reads a plain `\time 4/4` or `\time 2/2` as common or cut time, since that is what LilyPond prints; reads `\numericTimeSignature` and `\defaultTimeSignature`; writes `\numericTimeSignature` before a 4/4 or 2/2 with no symbol
-- [ ] Reads `\fermata` into timeline fermatas, and writes it
-- [ ] Reads "rit.", "rall.", "accel.", and "a tempo" from annotations (`^"rit."`, `^\markup`) and drops other annotation text instead of raising; writes a ramp's text at its start and its target `\tempo` at its end
+- [x] Reads and writes `\tempo` with text, a metronome mark, or both
+- [x] Reads a plain `\time 4/4` or `\time 2/2` as common or cut time, since that is what LilyPond prints; reads `\numericTimeSignature` and `\defaultTimeSignature`; writes `\numericTimeSignature` before a 4/4 or 2/2 with no symbol
+- [x] Reads `\fermata` into timeline fermatas, and writes it
+- [x] Reads "rit.", "rall.", "accel.", and "a tempo" from annotations (`^"rit."`, `^\markup`) and drops other annotation text instead of raising; writes a ramp's text at its start and its target `\tempo` at its end
 
 MusicXML
 
-- [ ] Writes `<metronome>`, `<sound tempo>`, `<words>` for tempo text and ramps, `<fermata>`, and the time `symbol` attribute
-- [ ] Reads `<metronome>`, `<words>` as tempo text, `<sound tempo>` anywhere in a bar, ramps from ramp words with `<dashes>`, `<fermata>` on notes and rests, and `<time symbol>`, as the MusicXML Import story deferred to this one
+- [x] Writes `<metronome>`, `<sound tempo>`, `<words>` for tempo text and ramps, `<fermata>`, and the time `symbol` attribute
+- [x] Reads `<metronome>`, `<words>` as tempo text, `<sound tempo>` anywhere in a bar, ramps from ramp words with `<dashes>`, `<fermata>` on notes and rests, and `<time symbol>`, as the MusicXML Import story deferred to this one
 
 kern
 
-- [ ] Reads and writes `*met(c)` and `*met(c|)`, tempo text through `!!!OMD` for the opening tempo, and `;` fermatas
-- [ ] Reads `*MM[Andante]` as tempo text
-- [ ] Neither reads nor writes ramps, and does not raise on a flow that has them
+- [x] Reads and writes `*met(c)` and `*met(c|)`, tempo text through `!!!OMD` for the opening tempo, and `;` fermatas
+- [x] Reads `*MM[Andante]` as tempo text
+- [x] Neither reads nor writes ramps, and does not raise on a flow that has them
 
 MEI
 
-- [ ] Reads `<fermata>` and `@fermata` into timeline fermatas, `<tempo>` text, and `@meter.sym` / `<meterSig @sym>`
-- [ ] Writes `<fermata>`, tempo text in `<tempo>`, and `@meter.sym` for the common- and cut-time symbols
-- [ ] Reads and writes ramps as `<tempo func="continuous">` with `@tstamp2` or `@endid`
+- [x] Reads `<fermata>` and `@fermata` into timeline fermatas, `<tempo>` text, and `@meter.sym` / `<meterSig @sym>`
+- [x] Writes `<fermata>`, tempo text in `<tempo>`, and `@meter.sym` for the common- and cut-time symbols
+- [x] Reads and writes ramps as `<tempo func="continuous">` with `@tstamp2` or `@endid`
 
 MIDI
 
-- [ ] Writes a ramp as tempo events at each count boundary inside it, with total clock time matching `flow.conductor`, and a fermata as the tempo divided by its stretch over its span, then restored; ramps and fermatas apply on every pass of performance order
-- [ ] Reads a slower tempo restored within one bar as a fermata, and a monotonic run of mid-bar tempo events as a ramp; other mid-bar tempo events are still skipped
+- [x] Writes a ramp as tempo events at each count boundary inside it, with total clock time matching `flow.conductor`, and a fermata as the tempo divided by its stretch over its span, then restored; ramps and fermatas apply on every pass of performance order
+- [x] Reads a slower tempo restored within one bar as a fermata, and a monotonic run of mid-bar tempo events as a ramp; other mid-bar tempo events are still skipped
 
 ### Fixtures and compatibility
 
-- [ ] The hand-encoded chorale fixture (`satb_chorale.krn`) reads exactly two timeline fermatas, at 2:2 and 4:2, each a quarter, at the ends of its phrases
-- [ ] The Herzliebster fixture reads exactly four timeline fermatas from its sixteen `<fermata>` elements, and its meter has the symbol `:common`
-- [ ] Existing schema-5 documents read unchanged: the new keys are optional within schema 5, which no release has shipped yet
-- [ ] Maintains 90%+ test coverage
+- [x] The hand-encoded chorale fixture (`satb_chorale.krn`) reads exactly two timeline fermatas, at 2:2 and 4:2, each a quarter, at the ends of its phrases
+- [x] The Herzliebster fixture reads exactly four timeline fermatas from its sixteen `<fermata>` elements, and its meter has the symbol `:common`
+- [x] Existing schema-5 documents read unchanged: the new keys are optional within schema 5, which no release has shipped yet
+- [x] Maintains 90%+ test coverage
 
 ## Notes
 
@@ -158,6 +158,28 @@ Decided on 2026-10-20, with the plan:
 4. **MIDI ramps are inferred** from monotonic runs of mid-bar tempo events, accepting a heuristic for files the gem did not write.
 5. **A ramp with no written target** ramps to ×3/4 of its start (×4/3 for accel.), recorded as not written.
 6. **A plain LilyPond `\time 4/4`** reads as common time, as LilyPond prints it, even though every 4/4 rendering changes.
+
+## Implementation Notes
+
+Implemented 2026-10-20/21 on `story/timeline-expressions`: Phase 1 directly; Phases 3–9 by developer agents in sequence; Phases 10–13 and a MIDI follow-up by five worktree agents in parallel from the ABC commit, then cherry-picked; then two consolidation agents and six RubyCritic agents. `rake validate` passes (18,490 examples, coverage 99.77%, RubyCritic 83.75 with no file below C), and `rake oracles` with both schemas, MuseScore, and the 370 chorales passes (1,012 examples, 0 failures).
+
+Where the work departed from the plan:
+
+- **No schema bump.** Schema 5 has not shipped (v22.0.0 writes 4), so the new keys are optional within it (Phase 2 dropped).
+- **Meter changes refuse to strand** a ramp, "a tempo", or fermata on a count its bar no longer has, and restore the previous meter; readers set meters first.
+- **A fermata mark lasts until the next mark on the same voice event,** so a tied note can carry two fermatas (one per link) in every format, and LilyPond `c'2\fermata~ c'2\fermata` reads as two. `FermataMarks.carriers` maps each event to all its fermatas.
+- **MIDI import** reads a whole-bar slowdown as a fermata only when no note starts inside the bar (the tempo bytes cannot tell a fermata from a one-bar tempo change), and takes a ramp's run only from changes a count or less apart, as export writes them.
+- **`TempoMarkReading#add_ramp_end`** lets MusicXML `<dashes>` and MEI `@tstamp2` end a ramp where they say.
+- **ABC** writes one voice and no meter changes, as before, so the chorale fixture only reads from ABC, and the symbol-only meter change criterion does not apply to it.
+- **`Tempo.get("Moderato")`** answered ♩=0 (it contains "at"); fixed with the case bug.
+- **Constant tempo pieces are exact Rationals;** `Tempo#ticks_per_beat` is a Float, which had made them Floats.
+
+Left open, for a later story or a decision:
+
+- **chor202.krn:** the tenor's `;` sits on the later link of a tied note, so kern reads two touching fermatas (2:4–3:1 and 3:1–3:1:480) where the music means one. This follows the criterion that a mark on a later link starts there; MIDI already treats touching fermatas of one stretch as one.
+- **MIDI inference residue:** a ramp starting at a bar that also changes tempo, a fermata inside a ramp, a ramp ending mid-bar followed by another change in that bar, and a whole-bar fermata followed by a new tempo do not round-trip through MIDI. A ramp another program writes with steps sparser than a count reads as downbeat tempos.
+- **Fermata stretch** survives only JSON and MIDI.
+- **`references/content-schema.md`** is still marked "as of 21.1.0" apart from the new timeline keys.
 
 ## Implementation Plan
 
