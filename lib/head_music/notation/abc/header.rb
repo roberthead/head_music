@@ -118,7 +118,7 @@ class HeadMusic::Notation::ABC::Header
   end
 
   def apply_defaults
-    @meter ||= HeadMusic::Rudiment::Meter.common_time
+    @meter ||= HeadMusic::Rudiment::Meter.default
   end
 
   # ABC 2.1 default: when L: is absent, meters smaller than 3/4

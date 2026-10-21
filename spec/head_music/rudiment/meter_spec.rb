@@ -173,6 +173,65 @@ describe HeadMusic::Rudiment::Meter do
     specify { expect(described_class.cut_time).to eq described_class.get("2/2") }
   end
 
+  describe "symbols" do
+    it "gives common time the :common symbol" do
+      expect(described_class.common_time.symbol).to eq :common
+    end
+
+    it "gives cut time the :cut symbol" do
+      expect(described_class.cut_time.symbol).to eq :cut
+    end
+
+    it "gives a meter named by its numerals no symbol" do
+      expect(described_class.get("4/4").symbol).to be_nil
+    end
+
+    it "keeps the numerals as the name of a meter with a symbol" do
+      expect(described_class.common_time.to_s).to eq "4/4"
+    end
+
+    it "calculates with a symbol as with its numerals" do
+      expect(described_class.cut_time.counts_per_bar).to eq described_class.get("2/2").counts_per_bar
+    end
+
+    it "keeps the plain 4/4 apart from common time" do
+      described_class.common_time
+      expect(described_class.get("4/4")).not_to equal described_class.common_time
+    end
+
+    it "refuses a symbol that disagrees with its numerals" do
+      expect { described_class.new(3, 4, :common) }.to raise_error(ArgumentError, "the :common symbol is 4/4, not 3/4")
+    end
+
+    it "refuses an unknown symbol" do
+      expect { described_class.new(4, 4, :open) }.to raise_error(ArgumentError, /unknown meter symbol :open/)
+    end
+  end
+
+  describe ".get given a meter" do
+    it "answers that meter, symbol and all" do
+      expect(described_class.get(described_class.common_time)).to equal described_class.common_time
+    end
+  end
+
+  describe ".for_symbol" do
+    it "answers common time for :common" do
+      expect(described_class.for_symbol(:common)).to equal described_class.common_time
+    end
+
+    it "answers cut time for \"cut\"" do
+      expect(described_class.for_symbol("cut")).to equal described_class.cut_time
+    end
+
+    it "refuses anything else" do
+      expect { described_class.for_symbol(:open) }.to raise_error(ArgumentError, /unknown meter symbol :open/)
+    end
+
+    it "refuses nil" do
+      expect { described_class.for_symbol(nil) }.to raise_error(ArgumentError, /unknown meter symbol nil/)
+    end
+  end
+
   describe "#counts_per_quarter_note" do
     context "when given a 4/4 meter" do
       subject(:meter) { described_class.get("4/4") }

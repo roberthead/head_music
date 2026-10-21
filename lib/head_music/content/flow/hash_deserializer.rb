@@ -51,7 +51,7 @@ class HeadMusic::Content::Flow
 
     def apply_timeline_changes(flow)
       each_timeline_change("meter_changes") do |bar_number, change, path|
-        flow.change_meter(bar_number, values.meter(change["meter"], path))
+        flow.change_meter(bar_number, values.meter(change["meter"], path, change["symbol"]))
       end
       each_timeline_change("key_signature_changes") do |bar_number, change, path|
         tonal_context = values.tonal_context(change["tonal_context"], path)

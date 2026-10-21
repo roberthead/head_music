@@ -62,17 +62,17 @@ describe HeadMusic::Notation::ABC::Header do
   describe "#meter" do
     it "maps M:C to common time" do
       header = described_class.new("M:C\nK:C\n")
-      expect(header.meter).to eq HeadMusic::Rudiment::Meter.common_time
+      expect(header.meter).to equal HeadMusic::Rudiment::Meter.common_time
     end
 
     it "maps M:C| to cut time" do
       header = described_class.new("M:C|\nK:C\n")
-      expect(header.meter).to eq HeadMusic::Rudiment::Meter.cut_time
+      expect(header.meter).to equal HeadMusic::Rudiment::Meter.cut_time
     end
 
-    it "defaults to common time when M: is absent" do
+    it "defaults to a plain 4/4 when M: is absent" do
       header = described_class.new("K:C\n")
-      expect(header.meter).to eq HeadMusic::Rudiment::Meter.common_time
+      expect([header.meter.to_s, header.meter.symbol]).to eq ["4/4", nil]
     end
 
     it "raises a ParseError with the line number for an invalid meter" do

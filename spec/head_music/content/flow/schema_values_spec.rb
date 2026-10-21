@@ -101,6 +101,15 @@ describe HeadMusic::Content::Flow::SchemaValues do
       expect { values.meter("not a meter", "bars[0]") }
         .to raise_error(ArgumentError, /bars\[0\]: unknown meter "not a meter"/)
     end
+
+    it "answers the meter for a symbol that agrees with its numerals" do
+      expect(values.meter("4/4", "path", "common")).to equal HeadMusic::Rudiment::Meter.common_time
+    end
+
+    it "raises with path context on a symbol that disagrees with its numerals" do
+      expect { values.meter("6/8", "timeline.meter", "cut") }
+        .to raise_error(ArgumentError, "timeline.meter: the cut symbol is 2/2, not 6/8")
+    end
   end
 
   describe "#rhythmic_value" do

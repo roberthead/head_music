@@ -763,6 +763,36 @@ describe HeadMusic::Content::Flow do
     end
   end
 
+  describe "meter symbols" do
+    let(:flow) do
+      described_class.new(name: "Alla Breve", meter: HeadMusic::Rudiment::Meter.common_time).tap do |piece|
+        piece.add_voice.place("1:1", :whole, "C4")
+        piece.change_meter(2, HeadMusic::Rudiment::Meter.cut_time)
+        piece.change_meter(3, "2/2")
+      end
+    end
+
+    let(:restored) { described_class.from_json(flow.to_json) }
+
+    it "round-trips the opening meter's symbol" do
+      expect(restored.meter.symbol).to eq :common
+    end
+
+    it "round-trips each meter change's symbol, and its absence" do
+      expect(restored.meter_changes.transform_values(&:symbol)).to eq(2 => :cut, 3 => nil)
+    end
+
+    it "round-trips to the same hash" do
+      expect(restored.to_h).to eq flow.to_h
+    end
+
+    it "reads a schema-5 document's meters with no symbol" do
+      schema5 = {"schema_version" => 5, "timeline" => {"meter" => "4/4", "meter_changes" => [{"number" => 2, "meter" => "2/2"}]}}
+      restored = described_class.from_h(schema5)
+      expect([restored.meter.symbol, restored.meter_changes[2].symbol]).to eq [nil, nil]
+    end
+  end
+
   describe "mid-piece meter change" do
     let(:flow) do
       described_class.new(name: "Meter Shift", meter: "4/4").tap do |shifting|
@@ -1022,6 +1052,30 @@ describe HeadMusic::Content::Flow do
       hash = base_hash.merge("timeline" => {"tempo_changes" => [{"number" => 3, "tempo" => {"beat_value" => "quarter"}}]})
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /timeline\.tempo_changes\[0\]: beats_per_minute must be a positive number, got nil/)
+    end
+
+    it "raises ArgumentError with path context on an opening meter symbol that disagrees with its numerals" do
+      hash = base_hash.merge("timeline" => {"meter" => "3/4", "meter_symbol" => "common"})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "timeline.meter: the common symbol is 4/4, not 3/4")
+    end
+
+    it "raises ArgumentError with path context on a meter change symbol that disagrees with its numerals" do
+      hash = base_hash.merge("timeline" => {"meter_changes" => [{"number" => 2, "meter" => "4/4", "symbol" => "cut"}]})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "timeline.meter_changes[0]: the cut symbol is 2/2, not 4/4")
+    end
+
+    it "raises ArgumentError with path context on an unknown meter symbol" do
+      hash = base_hash.merge("timeline" => {"meter" => "4/4", "meter_symbol" => "open"})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, 'timeline.meter: unknown meter symbol "open"')
+    end
+
+    it "raises ArgumentError with path context on a meter symbol that is not a string" do
+      hash = base_hash.merge("timeline" => {"meter" => "4/4", "meter_symbol" => 4})
+      expect { described_class.from_h(hash) }
+        .to raise_error(ArgumentError, "timeline.meter: unknown meter symbol 4")
     end
 
     it "raises ArgumentError with path context on a staff system change to nothing" do

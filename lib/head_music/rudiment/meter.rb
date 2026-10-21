@@ -3,18 +3,33 @@ module HeadMusic::Rudiment; end
 
 # Meter is the rhythmic size of a measure, such as 4/4 or 6/8
 class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
-  attr_reader :top_number, :bottom_number
+  attr_reader :top_number, :bottom_number, :symbol
 
   NAMED = {
     common_time: "4/4",
     cut_time: "2/2"
   }.freeze
 
+  SYMBOLS = {
+    common: :common_time,
+    cut: :cut_time
+  }.freeze
+
+  # A meter passes through unchanged, so one written with a symbol keeps it.
   def self.get(identifier)
+    return identifier if identifier.is_a?(self)
+
     identifier = identifier.to_s
     hash_key = HeadMusic::Utilities::HashKey.for(identifier)
     time_signature_string = NAMED[hash_key] || identifier
-    fetch_or_register(hash_key, *time_signature_string.split("/"))
+    fetch_or_register(hash_key, *time_signature_string.split("/"), SYMBOLS.key(hash_key))
+  end
+
+  def self.for_symbol(symbol)
+    name = SYMBOLS[symbol.to_s.to_sym]
+    raise ArgumentError, "unknown meter symbol #{symbol.inspect}, expected one of #{SYMBOLS.keys.inspect}" unless name
+
+    get(name)
   end
 
   def self.default
@@ -29,9 +44,11 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
     get(:cut_time)
   end
 
-  def initialize(top_number, bottom_number)
+  def initialize(top_number, bottom_number, symbol = nil)
     @top_number = top_number.to_i
     @bottom_number = bottom_number.to_i
+    @symbol = symbol&.to_sym
+    ensure_symbol_matches!
   end
 
   def simple?
@@ -126,6 +143,16 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   end
 
   private
+
+  def ensure_symbol_matches!
+    return if symbol.nil?
+
+    name = SYMBOLS[symbol]
+    raise ArgumentError, "unknown meter symbol #{symbol.inspect}, expected one of #{SYMBOLS.keys.inspect}" unless name
+    return if NAMED[name] == to_s
+
+    raise ArgumentError, "the #{symbol.inspect} symbol is #{NAMED[name]}, not #{self}"
+  end
 
   # For simple meters with an eighth-or-shorter denominator (e.g. 2/8, 3/8),
   # the whole bar is a single beam group. A triple grouping (3/8) is a dotted

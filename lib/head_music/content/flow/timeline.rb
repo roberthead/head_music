@@ -170,9 +170,12 @@ class HeadMusic::Content::Flow
     def to_h
       {
         "meter" => opening_meter.to_s,
+        **meter_symbol_to_h("meter_symbol", opening_meter),
         "key_signature" => opening_key_signature_event.key_signature.name,
         "tempo" => tempo_to_h(opening_tempo),
-        "meter_changes" => meter_changes.map { |bar_number, value| {"number" => bar_number, "meter" => value.to_s} },
+        "meter_changes" => meter_changes.map { |bar_number, value|
+          {"number" => bar_number, "meter" => value.to_s, **meter_symbol_to_h("symbol", value)}
+        },
         "key_signature_changes" => key_signature_changes.map { |bar_number, event|
           {"number" => bar_number, "signature" => event.signature, "tonal_context" => event.tonal_context&.name}
         },
@@ -243,6 +246,10 @@ class HeadMusic::Content::Flow
     # tempo survives: Tempo.get reads the number by stripping non-digits.
     def tempo_to_h(tempo)
       {"beat_value" => tempo.beat_value.to_s, "beats_per_minute" => tempo.beats_per_minute}
+    end
+
+    def meter_symbol_to_h(key, meter)
+      meter.symbol ? {key => meter.symbol.to_s} : {}
     end
 
     def changes_by_bar(map)

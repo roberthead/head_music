@@ -33,14 +33,16 @@ class HeadMusic::Content::Flow
       known_key_signature(value, "key signature", path)
     end
 
-    def meter(value, path)
+    # A symbol is written beside the numerals it stands for, and must agree
+    # with them.
+    def meter(value, path, symbol = nil)
       return nil if value.nil?
 
       meter = attempt { HeadMusic::Rudiment::Meter.get(value) }
       unless meter&.top_number&.positive? && meter.bottom_number.positive?
         raise ArgumentError, "#{path}: unknown meter #{value.inspect}"
       end
-      meter
+      symbol.nil? ? meter : meter_with_symbol(meter, symbol, path)
     end
 
     def rhythmic_value(value, path)
@@ -141,6 +143,14 @@ class HeadMusic::Content::Flow
       raise ArgumentError, "must be a Hash, got #{value.inspect}" unless value.is_a?(Hash)
 
       HeadMusic::Content::Jump.from_h(value)
+    end
+
+    def meter_with_symbol(meter, symbol, path)
+      symbolic = attempt { HeadMusic::Rudiment::Meter.for_symbol(symbol) } if symbol.is_a?(String)
+      raise ArgumentError, "#{path}: unknown meter symbol #{symbol.inspect}" unless symbolic
+      raise ArgumentError, "#{path}: the #{symbol} symbol is #{symbolic}, not #{meter}" unless symbolic == meter
+
+      symbolic
     end
 
     def staff_system_values

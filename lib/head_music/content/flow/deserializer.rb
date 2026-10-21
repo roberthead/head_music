@@ -47,7 +47,7 @@ class HeadMusic::Content::Flow
       HeadMusic::Content::Flow.new(
         name: hash["name"],
         key_signature: opening_value(:key_signature),
-        meter: opening_value(:meter),
+        meter: opening_meter,
         tempo: opening_value(:tempo),
         composer: hash["composer"],
         origin: hash["origin"]
@@ -58,6 +58,10 @@ class HeadMusic::Content::Flow
     # the same name.
     def opening_value(key)
       values.public_send(key, timeline_hash[key.to_s], timeline_path(key))
+    end
+
+    def opening_meter
+      values.meter(timeline_hash["meter"], timeline_path(:meter), timeline_hash["meter_symbol"])
     end
 
     def bar_hashes

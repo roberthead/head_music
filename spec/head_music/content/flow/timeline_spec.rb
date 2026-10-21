@@ -53,6 +53,33 @@ describe HeadMusic::Content::Flow::Timeline do
     end
   end
 
+  describe "meter symbols" do
+    subject(:timeline) { described_class.new(meter: HeadMusic::Rudiment::Meter.common_time) }
+
+    it "keeps the opening meter's symbol" do
+      expect(timeline.opening_meter.symbol).to eq :common
+    end
+
+    it "keeps a meter change's symbol" do
+      timeline.change_meter(3, HeadMusic::Rudiment::Meter.cut_time)
+      expect(timeline.meter_change_at(3).symbol).to eq :cut
+    end
+
+    it "keeps a change that changes only the symbol" do
+      timeline.change_meter(3, "4/4")
+      expect([timeline.meter_at(2).symbol, timeline.meter_change_at(3).symbol]).to eq [:common, nil]
+    end
+
+    it "writes the opening symbol beside the numerals" do
+      expect(timeline.to_h.slice("meter", "meter_symbol")).to eq("meter" => "4/4", "meter_symbol" => "common")
+    end
+
+    it "writes a change's symbol beside its numerals" do
+      timeline.change_meter(3, HeadMusic::Rudiment::Meter.cut_time)
+      expect(timeline.to_h["meter_changes"]).to eq [{"number" => 3, "meter" => "2/2", "symbol" => "cut"}]
+    end
+  end
+
   describe "#change_tempo" do
     before { timeline.change_tempo(5, HeadMusic::Rudiment::Tempo.new("quarter", 96)) }
 
@@ -169,6 +196,10 @@ describe HeadMusic::Content::Flow::Timeline do
       timeline.change_meter(5, "3/4")
       timeline.change_key_signature(9, -3, tonal_context: HeadMusic::Rudiment::Mode.get("C dorian"))
       timeline.change_tempo(3, HeadMusic::Rudiment::Tempo.new("quarter", 72.5))
+    end
+
+    it "writes no meter symbol for a meter without one" do
+      expect(timeline.to_h).not_to have_key "meter_symbol"
     end
 
     it "writes the opening values" do
