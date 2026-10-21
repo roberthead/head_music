@@ -11,7 +11,8 @@ module HeadMusic::Notation::MusicXML
   # MusicXML has no slot for tempo text, so words are tempo text only where
   # the direction also has a <metronome> or <sound tempo>, or where they
   # begin with a named tempo. Words beginning with a ramp or "a tempo" word
-  # are read as that word instead.
+  # are read as that word instead, unless a <metronome> beside them makes
+  # them the text of a tempo, as any format's tempo construct does.
   class TempoDirection
     include XmlReading
 
@@ -40,9 +41,9 @@ module HeadMusic::Notation::MusicXML
       @words = nil if @words.empty?
     end
 
-    # :ramp, :a_tempo, or nil.
+    # :ramp, :a_tempo, :tempo_primo, or nil.
     def word_kind
-      HeadMusic::Notation::TempoMarkReading.word(words)
+      HeadMusic::Notation::TempoMarkReading.word(words) unless metronome
     end
 
     def tempo_text

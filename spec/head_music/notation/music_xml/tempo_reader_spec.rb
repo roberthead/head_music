@@ -95,6 +95,17 @@ describe HeadMusic::Notation::MusicXML::TempoReader do
       expect(flow.tempo_changes).to eq(2 => tempo("quarter", 60, text: "Adagio"))
     end
 
+    it "reads a ramp word beside a metronome mark as the text of a tempo, as other formats do" do
+      flow = parse(musicxml_measures(whole_c, direction_xml(words("rit."), metronome(100), sound: 100) + whole_c))
+      expect([flow.tempo_changes, flow.tempo_ramps]).to eq [{2 => tempo("quarter", 100, text: "rit.")}, []]
+    end
+
+    it "keeps the metronome mark beside a \"Tempo I\"" do
+      bars = [["Allegro", 120], ["Meno mosso", 80], ["Tempo I", 112]].map { |text, bpm| direction_xml(words(text), metronome(bpm)) + whole_c }
+      flow = parse(musicxml_measures(*bars))
+      expect(flow.tempo_at(3)).to eq tempo("quarter", 112, text: "Tempo I")
+    end
+
     it "refuses an unreadable sound tempo" do
       expect { parse(musicxml_measures(%(<sound tempo="fast"/>) + whole_c)) }
         .to raise_error(HeadMusic::Notation::MusicXML::ParseError, /Unreadable tempo "fast" \(measure 1 of part P1\)/)
