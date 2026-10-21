@@ -24,12 +24,9 @@ module HeadMusic::Notation::LilyPond
     # \transposition names the sounding pitch of a written middle C.
     MIDDLE_C = "C4"
 
-    # LilyPond prints a plain \time 4/4 or 2/2 as common or cut time, so a
-    # numeric one asks for its numerals, until a symbol returns.
-    TIME_SIGNATURE_STYLES = SettingReader::TIME_SIGNATURE_STYLES.invert.freeze
-
     def initialize(plan)
       @plan = plan
+      @time_signatures = TimeSignatureWriter.new(plan)
     end
 
     def lines(voice, part_index: nil, staff: nil)
@@ -42,7 +39,7 @@ module HeadMusic::Notation::LilyPond
     # key and time print and the bars line up.
     def silent_lines(staff, part: nil)
       opening_lines(clef_name(nil, staff), part) +
-        plan.bar_numbers.map { |bar_number| bar_check_after([*silent_style(bar_number), whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)], bar_number) }
+        plan.bar_numbers.map { |bar_number| bar_check_after([time_signatures.style(bar_number), whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)], bar_number) }
     end
 
     # The lines inside a part's \new Dynamics, bar-checked like a voice's.
@@ -52,7 +49,7 @@ module HeadMusic::Notation::LilyPond
 
     private
 
-    attr_reader :plan
+    attr_reader :plan, :time_signatures
 
     def first_bar_number
       plan.bar_numbers.first
@@ -67,7 +64,7 @@ module HeadMusic::Notation::LilyPond
         "\\clef #{clef_name}",
         *transposition_line(part),
         plan.first_measure_key(part),
-        time_command(first_bar_number, plan.first_measure_meter)
+        time_signatures.command(first_bar_number)
       ]
     end
 
@@ -88,35 +85,6 @@ module HeadMusic::Notation::LilyPond
       CLEF_NAMES.fetch(clef.name_key.to_sym)
     end
 
-    def time_command(bar_number, meter)
-      [time_signature_styles[bar_number], "\\time #{meter}"].compact.join(" ")
-    end
-
-    # A staff nobody is written on takes its meter changes from the others,
-    # but its style is its own.
-    def silent_style(bar_number)
-      (bar_number == first_bar_number) ? [] : [time_signature_styles[bar_number]].compact
-    end
-
-    # By bar, the style command that comes before its \time, where the style
-    # changes there.
-    def time_signature_styles
-      @time_signature_styles ||= begin
-        numeric = false
-        meters = {first_bar_number => plan.first_measure_meter}.merge(plan.measure_time_changes.except(first_bar_number))
-        meters.sort.to_h do |bar_number, meter|
-          wanted = numeric_meter?(meter) || (numeric && meter.symbol.nil?)
-          style = "\\#{TIME_SIGNATURE_STYLES.fetch(wanted)}" unless wanted == numeric
-          numeric = wanted
-          [bar_number, style]
-        end
-      end
-    end
-
-    def numeric_meter?(meter)
-      meter.symbol.nil? && SettingReader::SYMBOLS_BY_METER.key?(meter.to_s)
-    end
-
     # What the written pitches sound like. A part carries this rather than a
     # \transpose wrapper, which would move notes that are already written.
     def transposition_line(part)
@@ -133,7 +101,7 @@ module HeadMusic::Notation::LilyPond
     # and \mark, so each voice reads back with them.
     def bar_line(voice, bar_number, part_index)
       bar = plan.bar(bar_number)
-      lead = voice.equal?(plan.flow.voices.first)
+      lead = plan.lead?(voice)
       last = last_bar?(bar_number)
       bar_check_after([
         *BarMarkWriter.opening_tokens(bar, lead: lead),
@@ -163,8 +131,7 @@ module HeadMusic::Notation::LilyPond
     def change_commands(part, bar_number)
       return [] if bar_number == first_bar_number
 
-      meter = plan.measure_time_changes[bar_number]
-      [plan.measure_key_changes(part)[bar_number], meter && time_command(bar_number, meter)].compact
+      [plan.measure_key_changes(part)[bar_number], time_signatures.command(bar_number)].compact
     end
 
     # Emitted at exactly the bars the voice's staff-assignment map holds events
