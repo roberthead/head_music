@@ -53,9 +53,9 @@ module HeadMusic::Notation::Kern
       raise ParseError.new("Kern spines disagree on the length of #{bar}", line_number: line)
     end
 
-    def place(clock)
+    def place(clock, fermata_marks)
       finish_time = @layers.filter_map { |layer| layer.sounding_end_time(clock) }.max
-      @layers.each { |layer| layer.place(clock, finish_time) }
+      @layers.each { |layer| layer.place(clock, finish_time, fermata_marks) }
     end
 
     private

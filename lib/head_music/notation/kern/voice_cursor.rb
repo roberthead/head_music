@@ -6,7 +6,7 @@ module HeadMusic::Notation::Kern
   #
   # A tie chain ([, _, ]) becomes one voice event whose rhythmic value
   # carries each tied link, as ABC's tie handling does, and it may cross
-  # any number of barlines.
+  # any number of barlines. A fermata on a later link holds from that link.
   #
   # Grace notes go to the track's next note. Before a rest or a tie's later
   # link they are dropped, and their slurs begin or end on what they lead to;
@@ -58,7 +58,7 @@ module HeadMusic::Notation::Kern
       grace_opens, grace_marks = graces.empty? ? [[], queued.flat_map(&:span_marks)] : split_marks(graces)
       token = token.with(span_marks: grace_marks + token.span_marks)
       token = token.with(tie: TIED_IN.fetch(token.tie)) if graces.last&.tied
-      return continue_tie(token, line) if %i[middle end].include?(token.tie)
+      return continue_tie(token, time, line) if %i[middle end].include?(token.tie)
 
       ensure_tie_closed
       event = layer.add(time, token, graces, grace_opens)
@@ -93,7 +93,7 @@ module HeadMusic::Notation::Kern
       @tie_line = line
     end
 
-    def continue_tie(token, line)
+    def continue_tie(token, time, line)
       mark = (token.tie == :end) ? "]" : "_"
       raise ParseError.new("#{mark} continues a tie that was never opened", line_number: line, snippet: mark) unless @tie
       unless names(@tie.pitches) == names(token.pitches)
@@ -103,6 +103,7 @@ module HeadMusic::Notation::Kern
       @tie.rhythmic_value = @tie.rhythmic_value.append_tied(token.rhythmic_value)
       @tie.fraction += token.fraction
       @tie.span_marks += token.span_marks
+      @tie.fermatas += [time] if token.fermata
       @tie = nil if token.tie == :end
       nil
     end

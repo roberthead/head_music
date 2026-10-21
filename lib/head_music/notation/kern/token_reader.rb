@@ -5,15 +5,16 @@ module HeadMusic::Notation::Kern
   #
   # Articulations, ornaments, and the sforzando z are read as markings,
   # which a rest drops and a chord gathers from all its notes. Slur and
-  # phrase marks are kept as written, on notes and rests alike.
+  # phrase marks are kept as written, on notes and rests alike, and so is a
+  # fermata, which a chord holds when any of its notes does.
   #
   # A grace note is q, slashed, or Q or qq, unslashed. Its value is the
   # written one, an eighth when none is given, and it keeps its pitches,
   # articulations, tie, and span marks; its ornaments and sforzando are
   # dropped. A field of grace notes alone is one grace note, a chord when it
   # has several; one beside a note in a chord is dropped.
-  # Signifiers the gem does not model (beams, stems, fermatas, bowings,
-  # other ornaments, editorial marks) are dropped. Anything else is
+  # Signifiers the gem does not model (beams, stems, bowings, other
+  # ornaments, editorial marks) are dropped. Anything else is
   # rejected rather than guessed at.
   class TokenReader
     # A token's :type is :null, :grace, :rest, or :note (one or more
@@ -21,14 +22,16 @@ module HeadMusic::Notation::Kern
     # Its markings are catalog keys: sorted articulation and ornament
     # keys, and a note dynamic or nil. Its span marks are the slur and
     # phrase signifiers, such as "(", "}", or the elided "&(". A rest
-    # marked yy is invisible. A grace note has no fraction, since it takes
+    # marked yy is invisible. A note or rest marked ; holds a fermata, even
+    # one hidden as ;y. A grace note has no fraction, since it takes
     # no time, and may be slashed.
     Token = Data.define(
       :type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic, :span_marks, :invisible,
-      :slashed
+      :slashed, :fermata
     ) do
       def initialize(
-        articulations: [], ornaments: [], note_dynamic: nil, span_marks: [], invisible: false, slashed: false, **fields
+        articulations: [], ornaments: [], note_dynamic: nil, span_marks: [], invisible: false, slashed: false, fermata: false,
+        **fields
       )
         super
       end
@@ -42,8 +45,8 @@ module HeadMusic::Notation::Kern
     TIES = {"[" => :start, "_" => :middle, "]" => :end}.freeze
     GRACE_MARKS = %w[q Q].freeze
     DEFAULT_GRACE_VALUE = HeadMusic::Rudiment::RhythmicValue.get(:eighth)
-    # Beams and partial beams, stems, fermatas, the inverted turn and the
-    # ornament-ending turn, other ornaments, bowings, breath and arpeggio
+    # Beams and partial beams, stems, fermatas once read, the inverted turn
+    # and the ornament-ending turn, other ornaments, bowings, breath and arpeggio
     # marks, and editorial and visibility marks.
     IGNORED = %W[L J K k / \\ ; " , : & < > ? x X y $ O R u v].freeze
     SPAN_BRACKETS = "(){}"
@@ -84,8 +87,12 @@ module HeadMusic::Notation::Kern
       tie = read_tie(remaining, text)
       markings = MarkCodes.read!(remaining)
       ensure_consumed(remaining, text)
-      token = build(text, duration, pitches, rest, tie).with(span_marks: span_marks, invisible: invisible)
+      token = build(text, duration, pitches, rest, tie).with(span_marks: span_marks, invisible: invisible, fermata: fermata?(text))
       rest ? token : token.with(**markings)
+    end
+
+    def fermata?(text)
+      text.include?(";")
     end
 
     def grace(text, remaining, span_marks)

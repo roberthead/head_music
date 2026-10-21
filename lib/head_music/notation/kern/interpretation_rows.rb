@@ -16,7 +16,7 @@ module HeadMusic::Notation::Kern
         columns.kern_row_unless_null { |column| player_name(column) },
         section_row(first_bar),
         columns.kern_row_unless_null { |column| ClefCodes.clef_field(opening_clef(column.staff)) },
-        *context_rows(plan.first_measure_key, plan.first_measure_meter, flow.tempo_at(first_bar))
+        *context_rows(plan.first_measure_key, plan.first_measure_meter, opening_tempo_fields)
       ].compact
     end
 
@@ -27,7 +27,7 @@ module HeadMusic::Notation::Kern
         section_row(bar_number),
         columns.kern_row_unless_null { |column| staff_change(column, bar_number) },
         columns.kern_row_unless_null { |column| clef_change(column, bar_number) },
-        *context_rows(plan.measure_key_changes[bar_number], plan.measure_time_changes[bar_number], flow.tempo_changes[bar_number])
+        *context_rows(plan.measure_key_changes[bar_number], plan.measure_time_changes[bar_number], tempo_change_fields(bar_number))
       ].compact
     end
 
@@ -47,9 +47,27 @@ module HeadMusic::Notation::Kern
       mark && columns.uniform_row("*>#{mark.gsub(/\s+/, " ").tr("[]", "()")}")
     end
 
-    def context_rows(key, meter, tempo)
-      [key&.signature, key&.designation, meter && MeterReader.meter_field(meter), tempo && TempoReader.tempo_field(tempo)]
+    def context_rows(key, meter, tempo_fields)
+      [key&.signature, key&.designation, *meter_fields(meter), *tempo_fields]
         .map { |field| columns.kern_row_unless_null { field } }
+    end
+
+    def meter_fields(meter)
+      meter ? [MeterReader.meter_field(meter), MeterReader.symbol_field(meter)] : []
+    end
+
+    # The opening tempo's words are its !!!OMD record, so only its number,
+    # if it was written, is an interpretation.
+    def opening_tempo_fields
+      tempo = flow.tempo_at(first_bar)
+      (tempo.metronome_mark? || tempo.text.nil?) ? [TempoReader.tempo_field(tempo)] : []
+    end
+
+    # Kern has no ramps, so a bar is written with the tempo authored for it,
+    # wherever a ramp or "a tempo" changed it.
+    def tempo_change_fields(bar_number)
+      tempo = flow.tempo_at(bar_number)
+      (tempo == flow.tempo_at(bar_number - 1)) ? [] : TempoReader.tempo_fields(tempo)
     end
 
     def player_name(column)

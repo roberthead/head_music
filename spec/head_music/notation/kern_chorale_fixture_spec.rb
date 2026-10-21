@@ -30,6 +30,10 @@ describe HeadMusic::Notation::Kern do
     expect(flow.parts[1].voices.first.voice_events.map(&:to_s)).to include "quarter tied to eighth F♯4 at 1:3:000"
   end
 
+  it "reads the fermatas at the ends of its phrases, each a quarter" do
+    expect(flow.fermatas.map { |fermata| [fermata.from.to_s, fermata.to.to_s] }).to eq [%w[2:2:000 2:3:000], %w[4:2:000 4:3:000]]
+  end
+
   it "marks the repeat on the bar that holds it" do
     expect(flow.to_h["bars"]).to eq [{"number" => 2, "ends_repeat_after_num_plays" => 2}]
   end

@@ -34,6 +34,8 @@ module HeadMusic::Notation::Kern
 
     def initialize(records)
       @references = []
+      @opening_references = []
+      @music_started = false
       @rows = []
       @layout = nil
       records.each { |record| read(record) }
@@ -58,6 +60,12 @@ module HeadMusic::Notation::Kern
 
     def catalog_number
       reference("SCT")
+    end
+
+    # The first movement designation before the music, the opening tempo's
+    # text. One later in the file marks a later movement, which is not read.
+    def movement_designation
+      @opening_references.find { |key, value| key == "OMD" && !value.empty? }&.last
     end
 
     def date
@@ -85,10 +93,14 @@ module HeadMusic::Notation::Kern
       tracks = layout.tracks
       manipulations = SpineLayout.manipulator_row?(record) ? layout.apply(record) : []
       @rows << Row.new(record: record, tracks: tracks, manipulations: manipulations)
+      @music_started ||= record.kind == :data
     end
 
     def read_global(record)
-      @references << [record.reference_key, record.reference_value] if record.reference_key
+      return unless record.reference_key
+
+      @references << [record.reference_key, record.reference_value]
+      @opening_references << @references.last unless @music_started
     end
 
     def read_header(record)

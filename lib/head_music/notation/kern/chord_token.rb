@@ -2,8 +2,8 @@
 module HeadMusic::Notation::Kern
   # Joins the space-separated notes of one data field into one token. A
   # chord's notes must be as long, and tied alike, and it gathers the
-  # markings of all of them. A field of grace notes alone is one grace
-  # note, a chord when it has several, tied only where all its notes are.
+  # markings and fermatas of all of them. A field of grace notes alone is
+  # one grace note, a chord when it has several, tied only where all its notes are.
   class ChordToken
     def self.of_notes(subtokens, field:, line_number: nil)
       new(subtokens, field, line_number).of_notes
@@ -26,7 +26,9 @@ module HeadMusic::Notation::Kern
       raise unsupported("Chord notes with different durations are not supported") unless alike?(:fraction)
       raise unsupported("A chord tied only in part is not supported") unless alike?(:tie)
 
-      joined(ornaments: union(:ornaments), note_dynamic: @tokens.filter_map(&:note_dynamic).first)
+      joined(
+        ornaments: union(:ornaments), note_dynamic: @tokens.filter_map(&:note_dynamic).first, fermata: @tokens.any?(&:fermata)
+      )
     end
 
     def of_graces

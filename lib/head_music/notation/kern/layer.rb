@@ -16,7 +16,8 @@ module HeadMusic::Notation::Kern
   # rest, is dropped. A slur or phrase opening on a note event's first
   # grace note begins there, and its close may then come on that same note.
   # Tuplet groups, which kern does not write, are inferred
-  # then too; see TupletGroups.
+  # then too; see TupletGroups. So are fermata marks, each from the tied
+  # link it is written on, which FermataMarks makes the flow's fermatas.
   #
   # Invisible rests after a voice's last visible event, in the bar where its
   # music ends, add nothing, as they hold only time for dynamics after the
@@ -24,7 +25,7 @@ module HeadMusic::Notation::Kern
   # since that bar is written and the voice cannot hold a gap.
   class Layer
     TOKEN_FIELDS = %i[rhythmic_value fraction pitches articulations ornaments note_dynamic span_marks invisible].freeze
-    Event = Struct.new(:time, *TOKEN_FIELDS, :syllables, :graces, :grace_opens) do
+    Event = Struct.new(:time, *TOKEN_FIELDS, :syllables, :graces, :grace_opens, :fermatas) do
       def finish
         time + fraction
       end
@@ -51,10 +52,14 @@ module HeadMusic::Notation::Kern
       @events = []
     end
 
+    # Each of an event's fermatas is the time of the tied link that holds it.
     # The graces are VoiceCursor::Grace values, and grace_opens the span
     # marks that open on the first of them.
     def add(time, token, graces = [], grace_opens = [])
-      Event.new(time: time, **token.to_h.slice(*TOKEN_FIELDS), syllables: [], graces: graces, grace_opens: grace_opens)
+      Event.new(
+        time: time, **token.to_h.slice(*TOKEN_FIELDS), syllables: [], graces: graces, grace_opens: grace_opens,
+        fermatas: token.fermata ? [time] : []
+      )
         .tap { |event| @events << event }
     end
 
@@ -66,14 +71,14 @@ module HeadMusic::Notation::Kern
       sounding_events(clock).last&.finish
     end
 
-    def place(clock, finish_time)
+    def place(clock, finish_time, fermata_marks)
       first_bar = clock.bars.first
       number = first_bar.number
       assign_opening_staff(number)
       @position = voice.flow.position(number, 1, 0)
       @time = first_bar.start
       @span_marks = []
-      sounding_events(clock).each { |event| place_event(event, clock) }
+      sounding_events(clock).each { |event| place_event(event, clock, fermata_marks) }
       rest_until(finish_time, clock) if finish_time
       TupletGroups.apply(voice)
       add_spans
@@ -98,11 +103,12 @@ module HeadMusic::Notation::Kern
       voice.assign_staff(first_bar, @opening_staff)
     end
 
-    def place_event(event, clock)
+    def place_event(event, clock, fermata_marks)
       rest_until(event.time, clock)
       voice_event = voice.place(@position, event.rhythmic_value, event.pitches)
       rest = voice_event.rest?
       event.mark(voice_event) unless rest
+      event.fermatas.each { |time| fermata_marks.add(voice_event, from: position_at(time, event, voice_event, clock)) }
       @span_marks << [voice_event.position, event.span_marks, rest ? [] : event.grace_opens]
       @position = voice_event.next_position
       @time = event.finish
@@ -127,6 +133,13 @@ module HeadMusic::Notation::Kern
       voice.add_span(SPAN_KINDS.fetch(mark[-1]), from: from, to: to, from_grace: from_grace)
     rescue ArgumentError
       nil
+    end
+
+    def position_at(time, event, voice_event, clock)
+      return voice_event.position if time == event.time
+
+      bar = clock.bar_containing(time)
+      HeadMusic::Notation::BarSplitter.position_at(voice.flow, bar.number, time - bar.start)
     end
 
     def rest_until(time, clock)

@@ -1,7 +1,8 @@
 # A namespace for **kern rendering helpers
 module HeadMusic::Notation::Kern
   # The !!! reference records that open a kern file: its composers and
-  # their dates, its title, catalog number, and year.
+  # their dates, its title, the opening tempo's words, its catalog number,
+  # and year.
   class ReferenceRecords
     def self.lines(flow)
       new(flow).lines
@@ -16,6 +17,7 @@ module HeadMusic::Notation::Kern
         *composer_names.map { |name| "!!!COM: #{name}" },
         composer_dates && "!!!CDT: #{composer_dates}",
         title && "!!!OTL: #{title}",
+        movement_designation && "!!!OMD: #{movement_designation}",
         work&.catalog_number && "!!!SCT: #{work.catalog_number}",
         work&.year && "!!!ODT: #{work.year}"
       ].compact
@@ -27,6 +29,11 @@ module HeadMusic::Notation::Kern
 
     def work
       flow.work
+    end
+
+    # The opening tempo's words, on one line.
+    def movement_designation
+      flow.tempo_at(flow.earliest_bar_number).text&.gsub(/\s+/, " ")
     end
 
     # The default name is left out, since the reader gives it back to a file

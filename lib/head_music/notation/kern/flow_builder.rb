@@ -36,10 +36,13 @@ module HeadMusic::Notation::Kern
     end
 
     def finish
+      @timeline.flush
       time = @voices.current_time
       @dynamics.pass(time)
       clock.finish(time, document.rows.last.line)
-      @voices.place(clock)
+      fermata_marks = HeadMusic::Notation::FermataMarks.new
+      @voices.place(clock, fermata_marks)
+      fermata_marks.apply(@flow)
       @dynamics.place(@flow, clock)
       clock.mark(@flow)
       @parts.order_voices_by_staff
@@ -86,7 +89,10 @@ module HeadMusic::Notation::Kern
     def start_flow(row)
       citation = CitationReader.new(document)
       work = citation.work
-      @flow = @timeline.open_flow(name: document.title, work: work, composer: work ? nil : citation.composer)
+      @flow = @timeline.open_flow(
+        name: document.title, work: work, composer: work ? nil : citation.composer,
+        movement_designation: document.movement_designation
+      )
       @parts = PartRoster.new(@flow)
       @spine_changes = SpineChanges.new(voices: @voices, parts: @parts, tags: @tags, clock: clock)
       PartGrouping.new(row.tracks.select(&:kern?), @tags).parts.each do |plan|
@@ -100,6 +106,7 @@ module HeadMusic::Notation::Kern
     # of the note it leads to, so it bounds the rows that split the time.
     def read_data(row)
       start_flow(row) unless @flow
+      @timeline.flush
       line = row.line
       tokens = row.kern_fields.map { |track, field, column| [track, TokenReader.read(field, line_number: line), column] }
       row_tokens = tokens.map { |_track, token, _column| token }
@@ -124,6 +131,7 @@ module HeadMusic::Notation::Kern
 
       line = row.line
       barline = BarlineReader.read(fields.first[1], line_number: line)
+      @timeline.flush
       time = @voices.aligned_time(clock, line)
       @dynamics.pass(time)
       clock.barline(barline, time, line)

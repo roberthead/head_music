@@ -92,6 +92,14 @@ describe HeadMusic::Notation::Kern::Document do
     it "has no title without a title record" do
       expect(document(lines("**kern", "4c", "*-")).title).to be_nil
     end
+
+    it "keeps the first movement designation before the music, after the header too" do
+      expect(document(lines("**kern", "!!!OMD:", "!!!OMD: Largo", "!!!OMD: Presto", "4c", "*-")).movement_designation).to eq "Largo"
+    end
+
+    it "has no movement designation from one after the music starts" do
+      expect(document(lines("**kern", "4c", "!!!OMD: Presto", "4d", "*-")).movement_designation).to be_nil
+    end
   end
 
   describe "errors" do

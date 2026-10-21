@@ -26,6 +26,10 @@ describe HeadMusic::Notation::Kern::TokenReader do
     expect(summary("1rr")).to eq [:rest, [], "whole", nil]
   end
 
+  it "reads a fermata on a note, a hidden one, one on a rest, and one on a chord's later note" do
+    expect(["4c;", "4c;y", "4r;", "4c 4e;", "4c", "4r"].map { |field| read(field).fermata }).to eq [true, true, true, true, false, false]
+  end
+
   it "reads a rest marked yy as invisible, and one marked y as visible" do
     expect(%w[4ryy 4ry 4r 4cyy].map { |field| read(field).invisible }).to eq [true, false, false, false]
   end

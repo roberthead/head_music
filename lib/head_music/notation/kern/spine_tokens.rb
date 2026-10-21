@@ -9,7 +9,9 @@ module HeadMusic::Notation::Kern
   # must sound from its first row to its last, so every bar is filled with
   # rests wherever the voice is silent. Slur and phrase marks open on a
   # voice event's first link and close on its last, once per chord. A rest
-  # reads back as one rest per link, so it carries both on its first.
+  # reads back as one rest per link, so it carries both on its first. A
+  # voice event sounding where a timeline fermata begins marks the link
+  # sounding there with ;, as every voice does.
   #
   # Offsets are exact, so a rounded tuplet note sits at its exact onset, and
   # each link takes its sounding length.
@@ -20,8 +22,8 @@ module HeadMusic::Notation::Kern
   # Time written past the music's end, to hold a dynamic there, is filled
   # with invisible rests, which the reader leaves out.
   class SpineTokens
-    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes, :invisible, :graces) do
-      def initialize(opens: "", closes: "", invisible: false, graces: [], **fields)
+    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes, :invisible, :graces, :fermata) do
+      def initialize(opens: "", closes: "", invisible: false, graces: [], fermata: false, **fields)
         super
       end
 
@@ -40,14 +42,17 @@ module HeadMusic::Notation::Kern
       def token
         recip = DurationWriter.token(link)
         first, *others = if rest?
-          ["#{recip}r#{"yy" if invisible}"]
+          ["#{recip}r#{FERMATA if fermata}#{"yy" if invisible}"]
         else
-          pitches.sort.map { |pitch| "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{marks}#{TIE_CLOSING[tie]}" }
+          pitches.sort.map do |pitch|
+            "#{TIE_OPENING[tie]}#{recip}#{PitchWriter.token(pitch)}#{marks}#{FERMATA if fermata}#{TIE_CLOSING[tie]}"
+          end
         end
         ["#{opens}#{first}#{closes}", *others].join(" ")
       end
     end
 
+    FERMATA = ";"
     TIE_OPENING = {nil => "", :start => "[", :middle => "", :end => ""}.freeze
     TIE_CLOSING = {nil => "", :start => "", :middle => "_", :end => "]"}.freeze
     # A note a grace note is tied into continues the grace note's tie.
@@ -113,15 +118,33 @@ module HeadMusic::Notation::Kern
       last = links.length - 1
       rest = voice_event.rest?
       closing = rest ? 0 : last
+      fermata_indexes = fermata_links(voice_event, links)
       links.each_with_index.map do |(bar_number, link, offset), index|
         event = Event.new(
           offset: offset, link: link, pitches: (voice_event.pitches unless rest), tie: (tie_for(index, last) unless rest),
           syllables: {}, marks: ""
         )
         event = first_link(event, voice_event) if index.zero?
+        event = event.with(fermata: true) if fermata_indexes.include?(index)
         event = event.with(closes: span_marks.closes_at(voice_event.position)) if index == closing
         [bar_number, event]
       end
+    end
+
+    # The links sounding where each fermata begins. A tied voice event can
+    # carry more than one, one on each link, which
+    # HeadMusic::Notation::FermataMarks.carriers does not answer.
+    def fermata_links(voice_event, links)
+      from = voice_event.position
+      to = voice_event.next_position
+      fermatas.select { |fermata| from <= fermata.from && fermata.from < to }.map do |fermata|
+        start = [fermata.from.bar_number, HeadMusic::Notation::BarSplitter.offset_in_bar(fermata.from)]
+        links.rindex { |bar_number, _link, offset| ([bar_number, offset] <=> start) <= 0 }
+      end
+    end
+
+    def fermatas
+      @fermatas ||= voice.flow.fermatas
     end
 
     def first_link(event, voice_event)

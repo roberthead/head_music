@@ -8,14 +8,14 @@ describe HeadMusic::Notation::Kern::InterpretationReader do
   {
     "*MM100" => :tempo, "*M3/4" => :meter, "*k[f#]" => :signature, "*G:" => :designation,
     "*clefG2" => :clef, '*I"Alto' => :name, "*Ialto" => :code, "*part2" => :part, "*staff1" => :staff,
-    "*>A" => :section
+    "*>A" => :section, "*met(c)" => :meter_symbol, "*met(c|)" => :meter_symbol, "*MM[Andante]" => :tempo
   }.each do |field, expected|
     it "reads #{field} as #{expected}" do
       expect(kind(field)).to eq expected
     end
   end
 
-  ["*", "*>[A,A,B]", "*>norep[A,B]", "*>", "*> ", "*met(c)", "*ICvox", "*stem", "*^", "*-"].each do |field|
+  ["*", "*>[A,A,B]", "*>norep[A,B]", "*>", "*> ", "*met(C|)", "*met(O)", "*MM[rit.]", "*MM[]", "*ICvox", "*stem", "*^", "*-"].each do |field|
     it "ignores #{field}" do
       expect(kind(field)).to be_nil
     end

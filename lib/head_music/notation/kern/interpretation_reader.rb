@@ -2,8 +2,8 @@
 module HeadMusic::Notation::Kern
   # Classifies one tandem interpretation of a **kern spine as the kind of
   # thing it sets and its value. Interpretations the gem does not model
-  # (expansion lists, stem and beam directions, *met, and the rest) read
-  # as nil and are ignored.
+  # (expansion lists, stem and beam directions, mensuration signs other
+  # than common and cut time, and the rest) read as nil and are ignored.
   module InterpretationReader
     Interpretation = Data.define(:kind, :value, :field)
 
@@ -28,6 +28,7 @@ module HeadMusic::Notation::Kern
     def classify(field, line_number)
       if TempoReader.tempo?(field) then [:tempo, TempoReader.tempo(field)]
       elsif MeterReader.meter?(field) then [:meter, MeterReader.meter(field, line_number: line_number)]
+      elsif MeterReader.symbol?(field) then [:meter_symbol, MeterReader.symbol(field)]
       elsif KeyReader.signature?(field) then [:signature, KeyReader.fifths(field, line_number: line_number)]
       elsif KeyReader.designation?(field) then [:designation, KeyReader.tonal_context(field, line_number: line_number)]
       elsif ClefCodes.clef?(field) then [:clef, ClefCodes.clef(field)]

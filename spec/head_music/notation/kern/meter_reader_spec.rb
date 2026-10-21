@@ -16,6 +16,24 @@ describe HeadMusic::Notation::Kern::MeterReader do
     end
   end
 
+  it "recognizes the common- and cut-time signs but no other mensuration sign" do
+    expect(%w[*met(c) *met(c|) *met(C) *met(O) *M4/4].map { |field| described_class.symbol?(field) }).to eq [true, true, false, false, false]
+  end
+
+  it "joins a sign to the meter it draws" do
+    meter = described_class.with_symbol(described_class.meter("*M2/2"), described_class.symbol("*met(c|)"))
+    expect(meter.symbol).to eq :cut
+  end
+
+  it "leaves out a sign that draws another meter" do
+    expect(described_class.with_symbol(described_class.meter("*M3/4"), :common).symbol).to be_nil
+  end
+
+  it "writes the sign of a meter with one, and nothing for one without" do
+    expect([HeadMusic::Rudiment::Meter.common_time, HeadMusic::Rudiment::Meter.get("4/4")].map { |meter| described_class.symbol_field(meter) })
+      .to eq ["*met(c)", nil]
+  end
+
   it "writes a meter" do
     expect(described_class.meter_field(HeadMusic::Rudiment::Meter.get("6/8"))).to eq "*M6/8"
   end
