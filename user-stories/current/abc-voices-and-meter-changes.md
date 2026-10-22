@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-21T11:52:19-07:00
   planned_at:   2026-10-21T14:38:30-07:00
   finished_at:
-  updated_at:   2026-10-22T14:31:32-07:00
+  updated_at:   2026-10-22T15:10:41-07:00
 -->
 
 # Story: ABC Voices, Meter Changes, and Key Changes
@@ -245,5 +245,5 @@ Each finding below was reproduced, most severe first.
 - **Findings 3 and 4 fixed** (`403a29b4`). A `V:` field holding only `name=value` terms names no voice, so the music stays in the voice it was in. A header `K:` that names no key, whether empty or `K:clef=bass`, reads as C major, as abcm2ps engraves it.
 - **Finding 6 fixed** (`403a29b4` and this note). The CHANGELOG says "whitespace" and mentions the late-entering single voice. The Deferred note now says what `K:` does with explicit accidentals.
 - **Finding 7 fixed** (`7ba31ace`). The comments are rewrapped, and `VoiceState#pitch_builder` is renamed `#pitch_builder_in_key`.
-- **Finding 2 open.** The LilyPond reader takes a `\key` or `\time` at bar 1 as the opening rather than as a change (`lily_pond/bar_commands.rb:59-70`), so ABC should do the same. Doing so needs a pre-scan before the flow is built, since the flow's opening values are fixed when it is created.
+- **Finding 2 fixed** (`3526fd08`). A meter or key field that a voice states before its first note now sets the flow's opening value, as the LilyPond reader does, rather than a change at bar 1. A new `ABC::OpeningFields` scans the tokens before the flow is built. The first field stated wins, with the voices in the replay's order, and a voice that states its own key still spells in it.
 - **Finding 5 open.** This is first-read-wins working as specified, with polymeter deferred.
