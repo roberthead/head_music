@@ -1174,9 +1174,18 @@ describe HeadMusic::Notation::ABC::Parser do
       expect([meter_changes(flow), flow.voices.first.voice_events.last.position.to_s]).to eq [{2 => ["3/4", nil]}, "2:3:000"]
     end
 
-    it "reads a field before any voice at the first bar" do
+    it "opens in the meter a field before any voice states, with no change" do
       flow = parse("X:1\nL:1/4\nM:4/4\nK:C\nM:3/4\nV:1\nC D E|\n")
-      expect(meter_changes(flow)).to eq({1 => ["3/4", nil]})
+      expect([flow.meter.to_s, meter_changes(flow)]).to eq ["3/4", {}]
+    end
+
+    it "opens in the meter a voice states before its first note" do
+      flow = two_voices("C D E F|", "[M:C|]C, D, E, F,|")
+      expect([flow.meter.to_s, flow.meter.symbol, meter_changes(flow)]).to eq ["2/2", :cut, {}]
+    end
+
+    it "reads a field after a voice's first rest as a change" do
+      expect(meter_changes(parse_body("z4|[M:3/4]C D E|"))).to eq({2 => ["3/4", nil]})
     end
 
     it "places an earlier voice's bar in the meter a later voice states" do
@@ -1247,6 +1256,29 @@ describe HeadMusic::Notation::ABC::Parser do
     it "spells an earlier voice's bar in the key a later voice states" do
       flow = two_voices("C D E F|F G A B|", "C, D, E, F,|[K:D]F, G, A, B,|")
       expect(pitches(flow.voices.first).last(4)).to eq %w[F♯4 G4 A4 B4]
+    end
+
+    it "opens in the key a field before the first note states, with no change" do
+      flow = parse_body("[K:D]F G A B|")
+      expect([flow.key_signature.name, key_changes(flow), pitches(flow.voices.first)]).to eq ["D major", {}, %w[F♯4 G4 A4 B4]]
+    end
+
+    it "reads back the opening key it writes from a field before the first note" do
+      flow = parse_body("[K:D]F G A B|")
+      round_tripped = parse(HeadMusic::Notation::ABC::Writer.new(flow).to_s)
+      expect([round_tripped.key_signature.name, key_changes(round_tripped)]).to eq ["D major", {}]
+    end
+
+    context "when two voices state different keys at the opening" do
+      subject(:flow) { two_voices("[K:D]F G A B|", "[K:Bb]B, A, G, F,|") }
+
+      it "opens in the first voice's key" do
+        expect([flow.key_signature.name, key_changes(flow)]).to eq ["D major", {}]
+      end
+
+      it "spells the other voice in its own key" do
+        expect(pitches(flow.voices.last)).to eq %w[B♭3 A3 G3 F3]
+      end
     end
 
     context "when two voices state different keys for one bar" do

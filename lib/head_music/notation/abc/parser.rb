@@ -46,7 +46,7 @@ module HeadMusic::Notation::ABC
     end
 
     def interpret(tokens)
-      @building = HeadMusic::Content::Flow.new(**header.flow_attributes)
+      @building = HeadMusic::Content::Flow.new(**OpeningFields.new(header, tokens).flow_attributes)
       @fermata_marks = HeadMusic::Notation::FermataMarks.new
       @tempo_marks = HeadMusic::Notation::TempoMarkReading.new
       setup_voices(tokens)
@@ -56,7 +56,7 @@ module HeadMusic::Notation::ABC
     end
 
     def setup_voices(tokens)
-      @voices = VoiceRegistry.new(@building, header.key_signature, duration_resolver, @fermata_marks)
+      @voices = VoiceRegistry.new(@building, @building.key_signature, duration_resolver, @fermata_marks)
       @voices.declare(header.voice_ids, default: tokens.none? { |token| token.type == :voice_change })
     end
 
