@@ -80,7 +80,7 @@ module HeadMusic::Notation::ABC
 
     def handle_grace(token)
       state = current_state
-      state.add_graces(*grace_reader.read(token, state.pitch_builder))
+      state.add_graces(*grace_reader.read(token, state.pitch_builder_in_key))
     end
 
     def handle_tuplet(token)
@@ -98,14 +98,14 @@ module HeadMusic::Notation::ABC
     def handle_note(token)
       state = current_state
       bar_marks.at_note(state)
-      pitch = state.pitch_builder.pitch(token.letter, token.octave_marks, token.accidental)
+      pitch = state.pitch_builder_in_key.pitch(token.letter, token.octave_marks, token.accidental)
       state.defer_voice_event([pitch], token.length)
     end
 
     def handle_chord(token)
       state = current_state
       bar_marks.at_note(state)
-      pitches, inner_length = chord_reader.read(token, state.pitch_builder)
+      pitches, inner_length = chord_reader.read(token, state.pitch_builder_in_key)
       state.defer_voice_event(pitches, token.length, inner_length)
     end
 

@@ -50,9 +50,9 @@ module HeadMusic::Notation::ABC
 
     # Lines that are fields rather than music: V: switches voices, P: labels
     # a part, Q: sets the tempo, M: the meter, K: the key; any other
-    # letter-colon line is a field we don't interpret in the body. A note followed by a repeat bar (e.g. "A:|") also puts a colon
-    # after a letter at line start, so bar-line characters after the colon
-    # disqualify.
+    # letter-colon line is a field we don't interpret in the body. A note
+    # followed by a repeat bar (e.g. "A:|") also puts a colon after a letter
+    # at line start, so bar-line characters after the colon disqualify.
     def field_token(line_text)
       value = line_text[2..].to_s.split("%", 2).first.to_s.strip
       case line_text[0, 2]

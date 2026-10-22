@@ -29,8 +29,8 @@ module HeadMusic::Notation::ABC
 
     delegate :music_end, to: :@invisible_rests
 
-    # Spelling in the key in force where the next note starts.
-    def pitch_builder
+    # Set to spell in the key in force where the next note starts.
+    def pitch_builder_in_key
       @pitch_builder.tap { |builder| builder.key_signature = spelling_key }
     end
 

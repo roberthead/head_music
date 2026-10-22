@@ -23,7 +23,7 @@ module HeadMusic::Notation::ABC
       @navigation.record_at_bar_line(state)
       state.cross_bar_line(token.line)
       @repeats.bar_line(state, token.style)
-      state.pitch_builder.start_new_bar
+      state.pitch_builder_in_key.start_new_bar
     end
 
     def volta(state, token)

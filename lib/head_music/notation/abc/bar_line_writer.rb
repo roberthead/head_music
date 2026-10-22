@@ -1,8 +1,9 @@
 # Parses and renders ABC notation as HeadMusic::Content flows
 module HeadMusic::Notation::ABC
   # Writes the markings around a bar's music. Before it: its opening repeat,
-  # volta, part label, and the fields that change its meter or key. After it: its Fine, To Coda, or jump, the next
-  # bar's segno or coda sign, and the bar line.
+  # volta, part label, and the fields that change its meter or key. After
+  # it: its Fine, To Coda, or jump, the next bar's segno or coda sign, and
+  # the bar line.
   #
   # A segno or coda sign before a bar line marks the bar it opens, which is
   # how the parser reads it back. Part labels and navigation belong to the

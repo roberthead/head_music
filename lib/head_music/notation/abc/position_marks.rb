@@ -3,11 +3,11 @@ module HeadMusic::Notation::ABC
   # The marks a voice places at a position rather than on a note: its own
   # dynamics and hairpin starts and ends, and its part's when it writes them,
   # and the flow's tempo marks, as Q: fields and annotations, when it is the
-  # lead voice. In each bar, a mark goes on the note
-  # or rest that attacks at its position, on an invisible rest in an overlay
-  # of the bar when it falls inside one, or on an invisible rest after the
-  # music when it follows the last note. A hairpin or ramp end on the final
-  # barline closes the last bar, on a spacer.
+  # lead voice. In each bar, a mark goes on the note or rest that attacks at
+  # its position, on an invisible rest in an overlay of the bar when it falls
+  # inside one, or on an invisible rest after the music when it follows the
+  # last note. A hairpin or ramp end on the final barline closes the last
+  # bar, on a spacer.
   #
   # At one position, hairpin ends come first, then levels, then starts, so a
   # hairpin is closed before the next one opens, and then the tempo marks in
