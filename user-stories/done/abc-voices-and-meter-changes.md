@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-10-21T11:25:49-07:00
   activated_at: 2026-10-21T11:52:19-07:00
   planned_at:   2026-10-21T14:38:30-07:00
-  finished_at:
-  updated_at:   2026-10-22T15:10:41-07:00
+  finished_at:  2026-10-22T15:17:17-07:00
+  updated_at:   2026-10-22T15:17:17-07:00
 -->
 
 # Story: ABC Voices, Meter Changes, and Key Changes
@@ -247,3 +247,28 @@ Each finding below was reproduced, most severe first.
 - **Finding 7 fixed** (`7ba31ace`). The comments are rewrapped, and `VoiceState#pitch_builder` is renamed `#pitch_builder_in_key`.
 - **Finding 2 fixed** (`3526fd08`). A meter or key field that a voice states before its first note now sets the flow's opening value, as the LilyPond reader does, rather than a change at bar 1. A new `ABC::OpeningFields` scans the tokens before the flow is built. The first field stated wins, with the voices in the replay's order, and a voice that states its own key still spells in it.
 - **Finding 5 open.** This is first-read-wins working as specified, with polymeter deferred.
+
+## Learnings
+
+### What went well
+
+- **Reader steps before writer steps.** Building the reader first meant every writer step could be checked by a round trip from the moment it landed.
+- **Refactors that change no output.** The voice replay (step 3) and the move onto `RenderPlan` and `VoiceWriter` (step 6) each passed the existing ABC specs unchanged. That made it easy to tell structural changes from changes in behavior.
+- **abcm2ps as an oracle paid off at once.** It rejected the writer's nonstandard `!fp!`, and it confirmed the field order (`[1 [P:B][M:3/4][K:D]`) that the plan had listed as an unverified risk.
+- **Replaying the voices together in time order** made the any-voice rule, ties across `V:` lines, and fields stated only in a later voice fall out of one mechanism, rather than needing three special cases.
+
+### What was surprising
+
+- **The species fixtures' `V:cantus firmus`** forced multi-word voice ids. The plan had assumed "first word".
+- **A single voice that enters late had been written from its first note.** It read back a bar or more early, and nothing had caught it until silent bars had to be written as rests.
+- **The review found two gaps where the new code paths sat beside existing behavior:**
+  - Silent bars skipped the mark-reachability check, which ran only on bars with music.
+  - A field before the first note became a change at bar 1, while the LilyPond reader already took one as the opening.
+- **The story's own Deferred note was wrong.** It said `K:` with explicit accidentals raises, but `KeyMapper` has always dropped the accidentals silently.
+
+### What to do differently next time
+
+- **Check what the sibling readers and writers already do** with the same musical shape before settling a rule for a new one. LilyPond's handling of a `\key` or `\time` at bar 1 would have settled finding 2 at plan time.
+- **Route a new kind of output through the validation the old kind gets.** Silent bars should have gone through `ensure_marks_reachable` from the start.
+- **Probe a claim about current behavior before writing it into a story's Notes or Deferred list,** just as an agent's claims are checked.
+- **Write fallback criteria with collisions in mind.** "Its position in the flow" didn't anticipate a numbered id that clashes with another voice's role.

@@ -73,14 +73,14 @@ flow.meter_at(1).symbol # => :common
 - [x] Overlapping fermatas raise `ArgumentError`
 - [x] The timeline's fermatas are kept through JSON
 - [x] Fermata marks on voice events whose sounding intervals overlap become one timeline fermata, from the latest of their starts to the earliest of their ends; a fermata marked in one voice only still holds the whole flow; a fermata on a rest holds like one on a note; a fermata on a tie's later link starts at that link
-- [x] Every text format writes a timeline fermata as a fermata mark on each voice event sounding when it begins, in every voice; ABC, which writes one voice, marks that voice (see [ABC Voices and Meter Changes](../current/abc-voices-and-meter-changes.md))
+- [x] Every text format writes a timeline fermata as a fermata mark on each voice event sounding when it begins, in every voice; ABC, which writes one voice, marks that voice (see [ABC Voices and Meter Changes](abc-voices-and-meter-changes.md))
 
 ### Meter symbols
 
 - [x] A meter can carry a common-time or cut-time symbol, and a meter with a symbol stays equal to its numeric meter for every calculation: `Meter.common_time.to_s` stays `"4/4"` and stays `==` to `Meter.get("4/4")`
 - [x] `Meter.get` given a meter answers that meter, so `Flow.new(meter:)` and `change_meter` keep its symbol
 - [x] The symbol is kept through JSON and through the timeline's meter changes
-- [x] A meter change that changes only the symbol is kept by every reader and written by every writer except ABC's, which refuse every meter change after the opening (see [ABC Voices and Meter Changes](../current/abc-voices-and-meter-changes.md))
+- [x] A meter change that changes only the symbol is kept by every reader and written by every writer except ABC's, which refuse every meter change after the opening (see [ABC Voices and Meter Changes](abc-voices-and-meter-changes.md))
 
 ### Conductor
 
@@ -481,7 +481,7 @@ Suite: `bundle exec rake`: 18,490 examples, 0 failures; line coverage 99.77%, br
 
 ### Acceptance criteria
 
-All criteria are met. Two were met only partially, because of ABC limits that predate this story; after the review they were reworded to exclude ABC, and the work moved to [ABC Voices and Meter Changes](../current/abc-voices-and-meter-changes.md).
+All criteria are met. Two were met only partially, because of ABC limits that predate this story; after the review they were reworded to exclude ABC, and the work moved to [ABC Voices and Meter Changes](abc-voices-and-meter-changes.md).
 
 - ✅ **Tempo words (5/5).** Text through JSON; `Tempo.get` case and spelling; longest-name fallback, else ♩=120, unwritten; text distinguishes changes; each format's tempo construct, and the MusicXML `<words>` rule.
 - ✅ **Gradual tempo changes (7/7).** Mid-bar ramps; whole-notes-per-minute interpolation; closed-form `atanh`/`tanh` in both directions (one 4/4 bar from 120 to 80 takes 2,432,790,649 ns); default targets; "a tempo"; overlap rules; `tempo_at` against `sounding_tempo_at`.
@@ -532,4 +532,4 @@ Findings 1–8 were each reproduced, then fixed with specs (suite: 18,510 exampl
 
 ### Blocking `finish`
 
-Nothing. Findings 1–8 are fixed (see above). The two ABC criteria now exclude ABC, with the work in [ABC Voices and Meter Changes](../current/abc-voices-and-meter-changes.md). The specs for symbol-only meter changes already existed.
+Nothing. Findings 1–8 are fixed (see above). The two ABC criteria now exclude ABC, with the work in [ABC Voices and Meter Changes](abc-voices-and-meter-changes.md). The specs for symbol-only meter changes already existed.
