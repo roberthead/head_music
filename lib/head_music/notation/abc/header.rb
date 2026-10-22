@@ -21,9 +21,11 @@ class HeadMusic::Notation::ABC::Header
   end
 
   # A V: field names its voice before any name=value terms, such as
-  # clef=bass, so "V:cantus firmus" keeps both words.
+  # clef=bass, so "V:cantus firmus" keeps both words. One holding only
+  # terms names no voice.
   def self.voice_id(value)
-    value.split.take_while { |word| !word.include?("=") }.join(" ")
+    id = value.split.take_while { |word| !word.include?("=") }.join(" ")
+    id unless id.empty?
   end
 
   # The meter an M: field names, in the header or the body.
@@ -99,8 +101,11 @@ class HeadMusic::Notation::ABC::Header
     [match[1], match[2].strip]
   end
 
+  # A K: field naming no key, empty or holding only terms such as clef=bass,
+  # has no sharps or flats, as abcm2ps engraves it.
   def assign_key(value, line_number)
-    @key_signature = HeadMusic::Notation::ABC::KeyMapper.new(value, line_number: line_number).key_signature
+    mapper = HeadMusic::Notation::ABC::KeyMapper.new(value, line_number: line_number)
+    @key_signature = mapper.key? ? mapper.key_signature : HeadMusic::Rudiment::KeySignature.default
     true
   end
 
@@ -114,7 +119,7 @@ class HeadMusic::Notation::ABC::Header
     when "M" then @meter = resolve_meter(value, line_number)
     when "L" then @unit_note_length = resolve_unit_note_length(value, line_number)
     when "Q" then @tempo_field = [value, line_number]
-    when "V" then @voice_ids << self.class.voice_id(value)
+    when "V" then @voice_ids.concat([self.class.voice_id(value)].compact)
     when "P" then nil # a playing order, which the flow's own repeats and jumps already spell out
     else
       raise HeadMusic::Notation::ABC::UnsupportedFeatureError.new(

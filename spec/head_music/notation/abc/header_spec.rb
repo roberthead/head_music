@@ -58,6 +58,16 @@ describe HeadMusic::Notation::ABC::Header do
       expect(header.voice_ids).to eq ["cantus firmus"]
     end
 
+    it "declares no voice for a V: field holding only name=value terms" do
+      header = described_class.new("X:1\nV:clef=bass\nK:C\n")
+      expect(header.voice_ids).to be_empty
+    end
+
+    it "reads a K: field naming no key as C major" do
+      header = described_class.new("X:1\nK:clef=bass\n")
+      expect(header.key_signature).to eq HeadMusic::Rudiment::KeySignature.get("C major")
+    end
+
     it "maps K: to a key signature" do
       expect(header.key_signature).to be_a(HeadMusic::Rudiment::KeySignature)
       expect(header.key_signature.name).to eq "G major"

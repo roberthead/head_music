@@ -241,6 +241,14 @@ describe HeadMusic::Notation::ABC::Parser do
       end
     end
 
+    context "with a V: line holding only name=value terms" do
+      subject(:flow) { parse("X:1\nL:1/4\nV:clef=bass\nK:C\nC,D,|\nV:clef=bass\nE,F,|\n") }
+
+      it "names no voice, so the music stays in the voice it was in" do
+        expect(flow.voices.map { |voice| [voice.role, voice.notes.length] }).to eq [[nil, 4]]
+      end
+    end
+
     context "when a body V: names an unknown voice" do
       subject(:flow) { parse("X:1\nK:C\nV:9\nCDE|\n") }
 

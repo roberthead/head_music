@@ -32,7 +32,7 @@ module HeadMusic::Notation::ABC
       streams = Hash.new { |hash, state| hash[state] = [] }
       tokens.each do |token|
         if token.type == :voice_change
-          @voices.switch_to(token.voice_id)
+          @voices.switch_to(token.voice_id) if token.voice_id
         elsif @voices.any? || !UNVOICED_TYPES.include?(token.type)
           streams[@voices.current] << token
         else
