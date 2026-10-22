@@ -94,6 +94,11 @@ describe HeadMusic::Notation::ABC::Writer do
       flow.change_tempo(3, HeadMusic::Rudiment::Tempo.new("quarter", 90))
       expect(body_of(flow).lines[1]).to eq "c8|d4 z4|[Q:1/4=90]z8|]\n"
     end
+
+    it "refuses a mark no rest of a silent bar can reach before writing any bar" do
+      flow.voices.last.place_dynamic("1:1:320", :p)
+      expect { render(flow) }.to raise_error(HeadMusic::Notation::ABC::RenderError, /dynamic p at 1:1:320/)
+    end
   end
 
   describe "marks of the flow" do

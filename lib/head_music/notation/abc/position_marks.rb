@@ -25,10 +25,10 @@ module HeadMusic::Notation::ABC
         PositionMarks.offset(position)
       end
 
-      # Invisible rests can reach any offset in binary note values, but none
-      # inside a tuplet.
+      # Rests can reach any offset in binary note values, but none inside a
+      # tuplet. One starts on the downbeat.
       def reachable?
-        !HeadMusic::Notation::DottedDuration.rhythmic_value_for(offset).nil?
+        offset.zero? || !HeadMusic::Notation::DottedDuration.rhythmic_value_for(offset).nil?
       end
 
       # An inline field stands only where a note starts or the music ends.

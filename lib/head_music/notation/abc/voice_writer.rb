@@ -32,18 +32,22 @@ module HeadMusic::Notation::ABC
 
     # A mark inside a note or after the music is reached by invisible rests,
     # which need a binary note value to span its offset, and which cannot
-    # carry a Q: field.
+    # carry a Q: field. A bar the voice is silent in is all rests, so each of
+    # its marks starts one.
     def ensure_marks_reachable
-      segments_by_bar.each_value do |bar_segments|
-        bar_marks = position_marks.bar_marks(bar_segments)
-        mark = bar_marks.unreachable
-        if mark
-          raise RenderError, "cannot place the #{mark.label} at #{mark.position} in ABC output: " \
-            "no binary note value reaches it"
-        end
-        field = bar_marks.inline_field_between_attacks
+      plan.bar_numbers.each do |bar_number|
+        bar_segments = segments_by_bar[bar_number]
+        bar_marks = bar_segments ? position_marks.bar_marks(bar_segments) : position_marks.silent_bar_marks(bar_number)
+        ensure_reachable(bar_marks.unreachable)
+        field = bar_marks.inline_field_between_attacks if bar_segments
         raise RenderError, "cannot place the #{field.label} at #{field.position} in ABC output, where no note starts" if field
       end
+    end
+
+    def ensure_reachable(mark)
+      return unless mark
+
+      raise RenderError, "cannot place the #{mark.label} at #{mark.position} in ABC output: no binary note value reaches it"
     end
 
     # The flow's tempo marks, part labels, and navigation are written once,
