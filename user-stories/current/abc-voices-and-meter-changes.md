@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-21T11:52:19-07:00
   planned_at:   2026-10-21T14:38:30-07:00
   finished_at:
-  updated_at:   2026-10-21T15:57:19-07:00
+  updated_at:   2026-10-21T18:00:59-07:00
 -->
 
 # Story: ABC Voices, Meter Changes, and Key Changes
@@ -182,3 +182,59 @@ Each step is one commit with its CHANGELOG line, followed by `bundle exec ruboco
 - **Field order beside voltas and part labels.** Whether abcm2ps accepts `[M:]` and `[K:]` next to `[2` and `[P:]` is unverified; the oracle decides, and reordering is cheap.
 - **Numbered fallback ids lose the role.** `Violin I` reads back as `1` until the reader reads `nm=`.
 - **A transposed lead voice decides the flow's key on read-back** at a real key-change bar, since its written key is read first.
+
+## Review
+
+2026-10-21, at `8eb63ef4`. The full suite passes (18,714 examples, 0 failures) at 99.78% line coverage, RuboCop is clean, bundler-audit finds nothing, RubyCritic scores 83.67, and all 7 abcm2ps oracle examples pass.
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+| --- | --- | --- |
+| Each voice under its own `V:`, dynamics in the voice that sounds them | ✅ | `writer.rb:83,115`; `writer_voices_spec.rb:37`; chorale round trip |
+| One voice written as before, no `V:` | ✅ | `writer.rb:113`; `writer_voices_spec.rb:41`. A single voice that enters late now gets `z` bars, as Notes record |
+| `V:` id is the role, else the voice's position | ⚠️ | `writer.rb:16,55-68`; `writer_voices_spec.rb:53-73`. When a numbered id would clash with another voice's role, it skips ahead: roles `["2", "cantus firmus"]` give `V:2` and `V:3`. That's correct, but it isn't strictly "the voice's position" |
+| Header declares voices in order; roles read back | ✅ | `writer.rb:83`; `spec/support/abc_round_trip.rb:39-46` |
+| Voices interleaved by line | ✅ | `writer.rb:112-115` |
+| Same line breaks; silent bars as whole-bar `z` | ✅ | `voice_writer.rb:21-28,69-82`; `bar_writer.rb:36-39`. Probed: `z8\|[M:3/4]z6\|[M:6/8]C6\|`. A silent bar that carries a mark is split, e.g. `z4 !f!z4` |
+| Bar lines, repeats, and voltas in every voice; `[Q:]`, `[P:]`, and navigation in the lead voice only | ✅ | `bar_line_writer.rb:27-39`; `position_marks.rb`; `writer_voices_spec.rb:97-121` |
+| Dynamics in the part's first voice; simultaneous hairpins | ✅ | `voice_writer.rb:56`; `render_preflight.rb:46-53`; `writer_voices_spec.rb:123-141` |
+| Fermata in every voice | ✅ | `notation/render_plan.rb:79`; `writer_voices_spec.rb:45`; chorale round trip |
+| Body `M:` and inline `[M:]`, including `C` and `C\|` | ✅ | `body_lexer.rb`, `line_scanner.rb:140`, `timeline_fields.rb:16` |
+| Body `K:` and inline `[K:]` | ✅ | `timeline_fields.rb:26` |
+| A field in any one voice changes the flow | ✅ | `voice_replay.rb`, `voice_tokens.rb:25` |
+| A field stated only in a later voice governs earlier voices | ✅ | Probed: voice 2's `[M:3/4][K:D]` places voice 1 in 3/4 and spells its F as F♯4 |
+| A restatement makes no change; `[M:C]` and `[K:Bm]` do | ✅ | `timeline_reading.rb:9-17` |
+| First read wins; a voice keeps its own key | ✅ | `timeline_fields.rb:33`; `voice_state.rb` `spelling_key` |
+| Mid-bar meter and key fields | ✅ | `timeline_fields.rb:43-48` |
+| Respelling after a key change; tie into the change | ✅ | written as `F8-\|[K:D]=F4 ^F4\|]`, which reads back tied at F4 |
+| Tie, slur, and tuplet across a `V:` switch | ✅ | `voice_replay.rb`; `parser_spec.rb` |
+| `V:S clef=bass` and `V:cantus firmus` | ✅ | `header.rb:25`, `body_lexer.rb` |
+| `K:` with `name=value` terms; `[K:clef=bass]` | ⚠️ | `key_mapper.rb:79-81`. Both the body and inline forms meet the criterion. A header `K:clef=bass` raises with an empty quoted value, as the findings describe |
+| Each change written in every voice, symbol-only included | ✅ | `abc_round_trip_spec.rb`; `writer_voices_spec.rb:143` |
+| Inline fields after the volta and part label | ✅ | `bar_line_writer.rb:27-31`; abcm2ps accepts `[1 [P:B][M:3/4][K:D]` |
+| A change at an unwritten bar raises | ✅ | `render_preflight.rb:36-42`; `flow_spec.rb:308` |
+| A transposed instrument change writes `[K:]`; other voices write their own key | ✅ | `abc/render_plan.rb:16-24`; `voice_writer.rb:87-91`; `layout_transposition_spec.rb:195-211` |
+| Each voice's opening key is its part's written key | ✅ | Same evidence |
+| Round-trip comparison checks voices, roles, and changes by bar | ✅ | `spec/support/abc_round_trip.rb:15-28` |
+| Chorale and multi-voice change fixtures round-trip | ✅ | `abc_round_trip_spec.rb` |
+| Fixtures once excluded for having several voices are now included | ✅ | `tuplets_in_two_voices`, `tied_under_two_fermatas(voices: 2)`, two-voice hairpin generator |
+| abcm2ps oracle | ⚠️ | `abc_abcm2ps_spec.rb`; `spec/support/oracles.rb:19`. The spec passes `--linewarn 0`, which turns off abcm2ps's underfull-line warnings, so it doesn't fail on every line containing `warning`. The file documents why |
+
+None of the ⚠️ verdicts blocks `finish`. Each is a small difference from the criterion's wording, and the behavior itself is sound.
+
+### Findings
+
+Each finding below was reproduced, most severe first.
+
+1. **A mark in a silent bar skips the reachability check.** `ensure_marks_reachable` (`voice_writer.rb:36-47`) checks only bars where the voice has music, but `silent_bar` (`bar_writer.rb:36`) writes marks on rests. Take a part dynamic at `1:1:320` in a bar where the part's first voice is silent. It raises `RenderError: note length 1/12 is not expressible in binary note values: ` during assembly. In a bar with music, the same mark raises the clear message `cannot place the dynamic p at 1:1:320`. This contradicts `writer.rb:3`, which says problems raise before string assembly, but no truncated tune is returned.
+2. **A field before the first note becomes a change at bar 1, not the opening.** Reading `K:C` then `[K:D]F8|]` gives a flow in C with a key change at bar 1. A body `M:3/4` right after the header does the same for the meter. The writer folds the change into the header `K:D`, so the round trip reads D with no change. Multi-voice tunes that open each voice with `[K:…]` are the ones likely to hit this.
+3. **`V:clef=bass` makes a voice with an empty role.** The id is the words before the terms, and here there are none. On `main` the role was `clef=bass`. The id should probably fall back, perhaps to the voice's position.
+4. **A header `K:clef=bass` raises `Unrecognized key in K: field value ""`.** The terms are dropped before the error, so the message hides what the field held. ABC reads `K:clef=bass` as C major with a bass clef, so the reader could also take it as C.
+5. **Voices that disagree on meter drift without notice.** If voice 1 has `[M:3/4]` and voice 2 has `[M:2/4]` at the same bar, voice 1's meter wins as the criterion says. Voice 2's bar lines then fall out of line with it, and nothing reports it. Notes raise a bar-line agreement check for the writer only.
+6. **Docs.**
+   - Deferred says `KeyMapper` raises on explicit accidentals in `K:`, but `K:D ^g` reads as D major on `main`, and on this branch the new `name=value` filter drops `=c`.
+   - The CHANGELOG says a role "holds no space" where the code excludes any whitespace, and it doesn't mention that a single voice entering late is now padded with `z` bars.
+7. **Style.**
+   - Two class comments were rewrapped badly: `bar_line_writer.rb:4` runs to about 130 characters, and `position_marks.rb:6` breaks mid-sentence.
+   - `VoiceState#pitch_builder` is a reader that sets the builder's key on every call (`voice_state.rb:33`), a side effect its name hides.
