@@ -1,10 +1,10 @@
 <!--
 metadata:
   created_at:   2026-09-27T15:48:57-07:00
-  activated_at:
+  activated_at: 2026-10-23T21:10:12-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-15T14:45:59-07:00
+  updated_at:   2026-10-23T21:10:12-07:00
 -->
 
 # Story: Lyric Extenders
