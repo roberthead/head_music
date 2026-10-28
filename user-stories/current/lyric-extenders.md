@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-23T21:10:12-07:00
   planned_at:   2026-10-27T21:07:19-07:00
   finished_at:
-  updated_at:   2026-10-28T08:06:53-07:00
+  updated_at:   2026-10-28T09:26:41-07:00
 -->
 
 # Story: Lyric Extenders
@@ -39,7 +39,7 @@ Split from [Spans Across Notes](../done/spans-across-notes.md).
 - [x] MusicXML writes `<extend>` with the melisma's end marked, except after a hyphenated syllable, and reads it
 - [x] kern writes `Lord_` on a word-final syllable whose melisma continues and `.` on its held notes; it reads a trailing `_` as a line start, and a lone `_` or `|` as a held note
 - [x] MEI writes and reads `@con="u"`, and writes `"d"` on a hyphenated melisma, since `@con` holds one value
-- [x] A reader whose format marks only where a line starts (MEI `@con="u"`, kern `Lord_`, a bare MusicXML `<extend/>`), and every reader after a hyphenated syllable, marks each following note with nothing in that verse, and stops at the next sung note or rest
+- [x] A reader whose format marks only where a line starts (MEI `@con="u"`, kern `Lord_`, a bare MusicXML `<extend/>`), and every reader after a hyphenated syllable, marks each following note with nothing in that verse, passing through notes already held, and stops at the next sung note or rest; a MusicXML word whose `continue` or `stop` marks follow ends where they say
 - [x] Round trips assert where each melisma ends, where the format can say so; a melisma that stops before an unsung note is a named exclusion in MEI and kern
 
 ## Notes
@@ -146,12 +146,12 @@ Reviewed on 2026-10-28 at `844ff044`, by an independent agent whose findings wer
 | 1 | Held notes carry markers | ✅ `note_event.rb` `extend_syllable`; `voice_event_spec` extenders |
 | 2 | The event before a marker sings or holds the verse; no marker on a rest | ✅ `holdable?`, `rest_event.rb`; specs for both |
 | 3 | Markers may follow a hyphenated syllable | ✅ `voice_event_spec`; MusicXML `writer_spec` |
-| 4 | Consumers never take a marker for text | ⚠️ Safe by construction, and MIDI and `<syllabic>` are pinned, but no spec pins `MIDI::Preflight#check_texts` or `PreflightChecks#flow_texts`, as plan step 9 said one would |
+| 4 | Consumers never take a marker for text | ✅ After fixes; was ⚠️ until the preflight checks were pinned (`c4068c56`) |
 | 5 | Flow JSON `{"extend": true}` | ✅ `flow_serialization_spec`, including markers listed out of order |
-| 6 | MusicXML writes and reads `<extend>` | ⚠️ Writing is met; reading misses a bare `<extend/>` on a sung syllable (finding A) |
+| 6 | MusicXML writes and reads `<extend>` | ✅ After fixes; was ⚠️ for finding A |
 | 7 | kern `Lord_`, `.`, lone `_` and `\|` | ✅ kern `writer_spec`, `lyric_reader_spec`, round trip |
 | 8 | MEI `@con="u"` and `"d"` | ✅ MEI lyric writer and reader specs |
-| 9 | Readers fill to the next sung note or rest | ⚠️ The bare MusicXML `<extend/>` doesn't fill (A); a fill stops at an explicit marker (C) |
+| 9 | Readers fill to the next sung note or rest | ✅ After fixes; was ⚠️ for findings A and C |
 | 10 | Round trips assert melisma ends, with a named exclusion | ✅ MusicXML, MEI, and kern round-trip specs |
 
 ### Findings
@@ -169,3 +169,14 @@ Reviewed on 2026-10-28 at `844ff044`, by an independent agent whose findings wer
 - **D. A JSON extender error names `…syllables`, not the entry.** `deserializer.rb:116` passes `"#{path}.syllables"`, while shape errors name `syllables[i]`. Low severity.
 - **E. Two broad rescues.** `MusicXML::LyricReader#hold` and `Kern::Layer#hold` rescue every `ArgumentError`. Today they can only skip the two expected refusals. Low severity.
 - **F. Comment density.** About 40 new comment lines in lib, more than the minimal-comments convention suggests.
+
+### Resolutions
+
+Each finding was reproduced with a failing spec before it was fixed.
+
+- **A.** Fixed in `5c82ff4e`: an `<extend>` with no `type` attribute now counts as an extend.
+- **B.** Fixed in `4dbf0d45`: the reader checks for a held mark after stripping the leading hyphen.
+- **C.** Fixed in `35372112`: a fill passes through notes already held. A MusicXML word whose `continue` or `stop` marks follow ends where they say, and a hyphenated syllable still fills past them. Criterion 9 now says so.
+- **D.** Fixed in `776cf610`: each extender carries its entry's path.
+- **Criterion 4.** Pinned in `c4068c56`.
+- **E and F.** Left as they are.
