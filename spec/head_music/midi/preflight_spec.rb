@@ -151,6 +151,12 @@ describe HeadMusic::MIDI::Preflight do
       expect(failure).to include("a lyric at 1:1:000")
     end
 
+    it "checks a melisma's syllable, and finds no text on the notes holding it" do
+      voice.place("1:1", :half, "C4").sing("Lord")
+      voice.place("1:3", :half, "D4").extend_syllable
+      expect(failure).to be_nil
+    end
+
     it "accepts binary text that holds only ASCII" do
       voice.place("1:1", :whole, "C4").sing("cafe".b)
       expect(failure).to be_nil

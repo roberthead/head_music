@@ -56,6 +56,17 @@ describe HeadMusic::Notation::PreflightChecks do
     end
   end
 
+  describe "#flow_texts" do
+    let(:checker) { Class.new { include HeadMusic::Notation::PreflightChecks }.new }
+
+    it "takes a melisma's syllable, and nothing from the notes holding it" do
+      voice = flow.voices.first
+      voice.voice_events.first.sing("Lord")
+      voice.voice_events.last.extend_syllable
+      expect(checker.send(:flow_texts, flow).compact).to eq %w[Composition Lord]
+    end
+  end
+
   context "with a marking on a bar after the music" do
     before { flow.bar(3).jump = HeadMusic::Content::Jump.new(:da_capo) }
 
