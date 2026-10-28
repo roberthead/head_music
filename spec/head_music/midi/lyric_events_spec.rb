@@ -23,6 +23,12 @@ describe HeadMusic::MIDI::LyricEvents do
     expect(lyric_events.text_for(note, 1)).to be_nil
   end
 
+  it "sings nothing for a held note of a melisma" do
+    upper.place("1:1", :half, "C5").sing("Glo")
+    held = upper.place("1:3", :half, "D5").extend_syllable
+    expect(lyric_events.text_for(held, 1)).to be_nil
+  end
+
   describe "verses by pass" do
     let!(:first) { upper.place("1:1", :half, "C5").sing("one").sing("two", verse: 2) }
     let!(:second) { upper.place("1:3", :half, "D5").sing("three") }

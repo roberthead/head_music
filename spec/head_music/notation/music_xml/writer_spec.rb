@@ -333,6 +333,10 @@ describe HeadMusic::Notation::MusicXML::Writer do
           expect(extends(4) + extends(5)).to eq ["start", "stop", nil, nil]
         end
 
+        it "derives syllabic from the syllable before, across held notes" do
+          expect(xpath_texts(document, "//measure[@number<=3]/note/lyric/syllabic")).to eq %w[single single begin middle end]
+        end
+
         it "gives a held note's lyric no text or syllabic" do
           held = REXML::XPath.first(document, "//measure[@number='1']/note[2]/lyric")
           expect(held.elements.map(&:name)).to eq %w[extend]

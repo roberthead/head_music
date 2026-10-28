@@ -27,6 +27,12 @@ describe HeadMusic::MIDI::Writer do
     end
   end
 
+  context "with melismas" do
+    it "sings each syllable once, at its own note, and nothing on its held notes" do
+      expect(lyrics(MelismaFixtures.melismas).map(&:last)).to eq %w[Lord praise Glo- ri- a Lord God]
+    end
+  end
+
   describe "non-ASCII text" do
     let(:flow) { HeadMusic::Content::Flow.new(name: "Lyrics") }
 
