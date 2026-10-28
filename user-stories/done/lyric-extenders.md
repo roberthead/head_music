@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-09-27T15:48:57-07:00
   activated_at: 2026-10-23T21:10:12-07:00
   planned_at:   2026-10-27T21:07:19-07:00
-  finished_at:
-  updated_at:   2026-10-28T09:26:41-07:00
+  finished_at:  2026-10-28T09:28:48-07:00
+  updated_at:   2026-10-28T09:28:48-07:00
 -->
 
 # Story: Lyric Extenders
@@ -180,3 +180,24 @@ Each finding was reproduced with a failing spec before it was fixed.
 - **D.** Fixed in `776cf610`: each extender carries its entry's path.
 - **Criterion 4.** Pinned in `c4068c56`.
 - **E and F.** Left as they are.
+
+## Learnings
+
+### What went well
+
+- **Settling the model before planning.** Questioning the first sketches led to a marker on each held note instead of a stored end, or `"_"` as text. That one choice let every format map onto it, and it kept markers away from every consumer of syllable text.
+- **Readers built on one model and one helper.** With the model fixed first, the three format readers became small, parallel changes over a single `MelismaFill`.
+- **Outside checks.** Verovio's source and CLI settled the kern convention (`Lord_` with null held notes), and schema validation of the rendered MusicXML and MEI caught what the specs could not.
+- **Reproducing review findings first.** A failing spec for each finding kept every fix narrow. It also showed that C needed an exception for explicit MusicXML `stop` marks, which a blind fix would have broken.
+
+### What was surprising
+
+- **kern had a melisma convention already.** The reader was keeping `Lord_` as text, which was a latent bug.
+- **Implied ends and explicit marks interact.** Where a fill should stop depends on whether the file says where the line ends. MusicXML's `continue` and `stop` do; a hyphen, `Lord_`, and `@con="u"` don't.
+- **A missing attribute looked like a missing element.** The bare `<extend/>` was modeled as the element's `type` attribute, so an extend with no type read as no extend at all.
+
+### What to do differently
+
+- **Test each line-start form on a sung syllable.** For every form a criterion names, add a reader spec with the mark on a sung syllable, not only on a held one.
+- **Write specs for consumers that can actually fail.** A spec that would pass with or without the feature, like the MIDI `check_texts` pin, documents the feature but doesn't protect it.
+- **Put explicit-versus-implied precedence in the plan.** A plan that mixes stated and implied marks should say which wins before readers are built on it.
