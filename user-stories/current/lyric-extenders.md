@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-23T21:10:12-07:00
   planned_at:   2026-10-27T21:07:19-07:00
   finished_at:
-  updated_at:   2026-10-27T21:51:18-07:00
+  updated_at:   2026-10-28T08:06:53-07:00
 -->
 
 # Story: Lyric Extenders
@@ -136,3 +136,36 @@ Verovio's Humdrum importer (`iohumdrum.cpp`) reads a trailing `_` on a syllable 
 - A hyphenated syllable implies its held notes in every reader, and MusicXML writes no `<extend>` after one.
 - A JSON marker omits verse 1, as a syllable does.
 - Round trips assert melisma ends only where the format can say them.
+
+## Review
+
+Reviewed on 2026-10-28 at `844ff044`, by an independent agent whose findings were checked against the source.
+
+| # | Criterion | Verdict |
+|---|---|---|
+| 1 | Held notes carry markers | ✅ `note_event.rb` `extend_syllable`; `voice_event_spec` extenders |
+| 2 | The event before a marker sings or holds the verse; no marker on a rest | ✅ `holdable?`, `rest_event.rb`; specs for both |
+| 3 | Markers may follow a hyphenated syllable | ✅ `voice_event_spec`; MusicXML `writer_spec` |
+| 4 | Consumers never take a marker for text | ⚠️ Safe by construction, and MIDI and `<syllabic>` are pinned, but no spec pins `MIDI::Preflight#check_texts` or `PreflightChecks#flow_texts`, as plan step 9 said one would |
+| 5 | Flow JSON `{"extend": true}` | ✅ `flow_serialization_spec`, including markers listed out of order |
+| 6 | MusicXML writes and reads `<extend>` | ⚠️ Writing is met; reading misses a bare `<extend/>` on a sung syllable (finding A) |
+| 7 | kern `Lord_`, `.`, lone `_` and `\|` | ✅ kern `writer_spec`, `lyric_reader_spec`, round trip |
+| 8 | MEI `@con="u"` and `"d"` | ✅ MEI lyric writer and reader specs |
+| 9 | Readers fill to the next sung note or rest | ⚠️ The bare MusicXML `<extend/>` doesn't fill (A); a fill stops at an explicit marker (C) |
+| 10 | Round trips assert melisma ends, with a named exclusion | ✅ MusicXML, MEI, and kern round-trip specs |
+
+### Findings
+
+- **A. A bare MusicXML `<extend/>` on a sung syllable holds nothing.** Confirmed in the source.
+  - `music_xml/lyric_reader.rb` stores `extend && XmlReading.attribute(extend, "type")`, which is `nil` when there is no `type`, so `fill` returns early.
+  - Criterion 9 names this case, and MuseScore and Finale are expected to write it.
+  - The spec covers a bare `<extend/>` only on a text-less lyric.
+- **B. kern `-_` reads as an empty syllable `""`.** Confirmed in the source.
+  - `kern/lyric_reader.rb` checks `HELD` against the raw field, but checks for the trailing `_` after stripping the leading `-`.
+  - An empty syllable then reaches MIDI and the preflight checks. Before this branch it read as `"_"`.
+- **C. A fill stops early at an explicit marker.** For example, kern `Lord_ / _ / . / praise` leaves the third note unheld.
+  - It needs mixed input, and an explicit mark arguably wins.
+  - Either fill through, or reword criterion 9 to say a fill stops at a held note.
+- **D. A JSON extender error names `…syllables`, not the entry.** `deserializer.rb:116` passes `"#{path}.syllables"`, while shape errors name `syllables[i]`. Low severity.
+- **E. Two broad rescues.** `MusicXML::LyricReader#hold` and `Kern::Layer#hold` rescue every `ArgumentError`. Today they can only skip the two expected refusals. Low severity.
+- **F. Comment density.** About 40 new comment lines in lib, more than the minimal-comments convention suggests.
