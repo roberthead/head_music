@@ -3,7 +3,9 @@ module HeadMusic::Notation::MEI
   # in its <note>, and @syl, the last two as verse 1, as is a <verse> with no
   # @n. A verse's several <syl>s join with "‿", or a space where an <lb/>
   # parts them. Its last syllable's @wordpos "i" or "m", or @con "d", sets
-  # hyphen_after; the other @con values, as extenders, set nothing.
+  # hyphen_after. @con "u" starts a line, which MEI does not end, so a
+  # syllable with one, like a hyphenated one, holds the notes after it as
+  # MelismaFill places them. The other @con values set nothing.
   #
   # A Syllable's verse is an integer, so a part's verse @n values that are
   # not, as MEI's NMTOKEN allows, are ranked after its highest numbered verse
@@ -17,7 +19,7 @@ module HeadMusic::Notation::MEI
     HYPHEN_WORD_POSITIONS = %w[i m].freeze
     VERSE_NUMBER = /\A[1-9]\d{0,8}\z/
 
-    Sung = Data.define(:part, :voice_event, :label, :text, :hyphen_after)
+    Sung = Data.define(:part, :voice_event, :label, :text, :hyphen_after, :extended)
 
     def initialize(anchors)
       super
@@ -38,6 +40,7 @@ module HeadMusic::Notation::MEI
     end
 
     def apply(_flow)
+      held = []
       @sung.group_by(&:part).each_value do |sung|
         verses = verse_numbers(sung.map(&:label).uniq)
         sung.each do |syllable|
@@ -45,8 +48,10 @@ module HeadMusic::Notation::MEI
           next if syllable.voice_event.syllable(verse)
 
           syllable.voice_event.sing(syllable.text, verse: verse, hyphen_after: syllable.hyphen_after)
+          held << [syllable.voice_event, verse] if syllable.hyphen_after || syllable.extended
         end
       end
+      held.each { |voice_event, verse| HeadMusic::Notation::MelismaFill.fill(voice_event, verse) }
     end
 
     private
@@ -73,7 +78,7 @@ module HeadMusic::Notation::MEI
       return if syls.empty?
 
       text = joined(pieces)
-      @sung << Sung.new(part, voice_event, label, text, hyphen_after?(syls.last)) unless text.empty?
+      @sung << Sung.new(part, voice_event, label, text, hyphen_after?(syls.last), extended?(syls.last)) unless text.empty?
     end
 
     def joined(pieces)
@@ -97,9 +102,13 @@ module HeadMusic::Notation::MEI
         XmlReading.attribute(syl, "con", element: syl) == "d"
     end
 
+    def extended?(syl)
+      XmlReading.attribute(syl, "con", element: syl) == "u"
+    end
+
     def sing_attribute(part, voice_event, element)
       text = XmlReading.attribute(element, "syl", element: element).to_s.gsub(/\s+/, " ")
-      @sung << Sung.new(part, voice_event, "1", text, false) unless text.empty?
+      @sung << Sung.new(part, voice_event, "1", text, false, false) unless text.empty?
     end
   end
 end

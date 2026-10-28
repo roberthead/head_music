@@ -51,6 +51,32 @@ describe HeadMusic::Notation::MEI::LyricReader do
     expect(syllables(read(chord))).to eq [{1 => {"text" => "low"}}]
   end
 
+  describe "extenders" do
+    def holds(flow)
+      flow.voices.first.voice_events.map { |event| event.extends_syllable? }
+    end
+
+    it "holds the notes after @con u up to the next sung note" do
+      flow = read(note(%(<verse><syl con="u">Lord</syl></verse>)) + mei_note("D4", "4") + mei_note("E4", "4") + note(%(<verse><syl>praise</syl></verse>)))
+      expect(holds(flow)).to eq [false, true, true, false]
+    end
+
+    it "stops a line at a rest" do
+      flow = read(note(%(<verse><syl con="u">Lord</syl></verse>)) + mei_note("D4", "4") + %(<rest dur="4"/>) + mei_note("F4", "4"))
+      expect(holds(flow)).to eq [false, true, false, false]
+    end
+
+    it "holds the notes after a hyphenated syllable up to the next one" do
+      flow = read(note(%(<verse><syl wordpos="i" con="d">Glo</syl></verse>), "2") + mei_note("D4", "4") + note(%(<verse><syl wordpos="m" con="d">ri</syl></verse>)))
+      expect(holds(flow)).to eq [false, true, false]
+    end
+
+    it "holds nothing after a word-final syllable with no @con" do
+      flow = read(note(%(<verse><syl>Lord</syl></verse>), "2") + mei_note("D4", "2"))
+      expect(holds(flow)).to eq [false, false]
+    end
+  end
+
   describe "the lyrics it skips" do
     let(:content) do
       note(%(<verse><syl>grace</syl></verse>), "8", grace: "unacc") +

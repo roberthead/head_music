@@ -71,4 +71,24 @@ describe HeadMusic::Notation::MEI::LyricWriter do
     voice.place("1:1", :whole, "C4").sing("<&>")
     expect(lines(written)).to include(%(    <syl xml:id="m1-p1v1-b1c1-verse1-syl">&lt;&amp;&gt;</syl>))
   end
+
+  describe "extenders" do
+    def connectors
+      syls(written).map { |syl| syl.attributes["con"] }
+    end
+
+    it "writes @con u on a word-final syllable whose melisma continues, and nothing on its held notes" do
+      voice.place("1:1", :quarter, "C4").sing("Lord")
+      voice.place("1:2", :quarter, "D4").extend_syllable
+      voice.place("1:3", :half, "E4").sing("praise")
+      expect(connectors).to eq ["u", nil]
+    end
+
+    it "writes @con d on a hyphenated melisma, since @con holds one value" do
+      voice.place("1:1", :quarter, "C4").sing("Glo", hyphen_after: true)
+      voice.place("1:2", :quarter, "D4").extend_syllable
+      voice.place("1:3", :half, "E4").sing("ri")
+      expect(connectors).to eq ["d", nil]
+    end
+  end
 end

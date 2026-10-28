@@ -18,6 +18,7 @@ describe HeadMusic::Notation::MEI do
     **ABCFixtures.constants.sort.to_h { |name| ["ABCFixtures::#{name}", -> { HeadMusic::Notation::ABC.parse(ABCFixtures.const_get(name)) }] },
     **%i[piano_part_marks marked_dal_segno_al_coda marked_da_capo_al_fine clef_changes two_verses]
       .to_h { |name| ["MuseScoreFixtures.#{name}", -> { MuseScoreFixtures.public_send(name) }] },
+    **%i[melismas two_verse_melismas].to_h { |name| ["MelismaFixtures.#{name}", -> { MelismaFixtures.public_send(name) }] },
     "MuseScoreFixtures.clarinet_changes" => -> { MuseScoreFixtures.clarinet_changes.flows.first }
   }.except(*MEIHelpers::REFUSED_SAMPLES.keys)
 
@@ -102,6 +103,11 @@ describe HeadMusic::Notation::MEI do
     it "reads a note tied across a barline back as its written links" do
       flow = melody.tap { |built| built.voices.first.place("1:1", :half).then { built.voices.first.place("1:3", :whole, "C4") } }
       expect(parse(render(flow)).voices.first.voice_events.map(&:to_s)).to eq ["half rest at 1:1:000", "half tied to half C4 at 1:3:000"]
+    end
+
+    it "reads a melisma that stops before an unsung note back as held up to the next syllable, since @con names no end" do
+      flow = MelismaFixtures.short_melisma
+      expect(melisma_ends(parse(render(flow)))).to eq [[0, 1, "1:1:000", "1:3:000"]]
     end
 
     it "reads an unauthored clef back as the one the writer falls back to" do
