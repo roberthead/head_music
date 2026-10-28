@@ -73,4 +73,58 @@ describe HeadMusic::MIDI::TempoChanges do
       expect(changes([1/4r, 600_000], [1/2r, 1_200_000]).next_step(3/4r)).to be_nil
     end
   end
+
+  describe "#ramp_end" do
+    let(:steps) { [[1/4r, 550_000], [1/2r, 600_000], [3/4r, 650_000]] }
+
+    it "is the last index of a ramp's run whose last change holds to the next downbeat" do
+      expect(changes(*steps).ramp_end(0)).to eq 2
+    end
+
+    it "is nil when the run's last change gives way within its bar" do
+      expect(changes(*steps, [7/8r, 500_000]).ramp_end(0)).to be_nil
+    end
+  end
+
+  describe "#ramp_start" do
+    it "is the tempo before a ramp's run ending at the change added" do
+      expect(changes([1/4r, 550_000]).ramp_start([1/2r, 600_000])).to eq 500_000
+    end
+
+    it "is nil when the run is no ramp's" do
+      expect(changes.ramp_start([1/4r, 550_000])).to be_nil
+    end
+  end
+
+  describe "#ramp_through?" do
+    it "is false with no change after the restoring one" do
+      expect(changes([1/4r, 600_000], [1/2r, 750_000]).ramp_through?([3/4r, 1_000_000], [1r, 500_000], nil)).to be false
+    end
+  end
+
+  describe "#on_line?" do
+    subject(:tempos) { changes([1/4r, 600_000], [1/2r, 750_000]) }
+
+    it "is true of a tempo no further from the next step than halfway back to the last" do
+      expect([1_000_000, 1_200_000].map { |slow| tempos.on_line?(slow, 1_000_000) }).to eq [true, true]
+    end
+
+    it "is false of a tempo further off" do
+      expect(tempos.on_line?(1_500_000, 1_000_000)).to be false
+    end
+  end
+
+  describe "#held?" do
+    it "holds a tempo within a bar until a change at the next downbeat, but not past it" do
+      expect([changes.held?(1/4r, [1r, 600_000]), changes.held?(1/4r, [1r, 600_000], through: true)]).to eq [true, false]
+    end
+
+    it "holds a tempo through a downbeat when the next change comes after it" do
+      expect(changes.held?(1/4r, [5/4r, 600_000], through: true)).to be true
+    end
+
+    it "holds a tempo at a downbeat, or with no change after it" do
+      expect([changes.held?(1r, [5/4r, 600_000]), changes.held?(1/4r, nil)]).to eq [true, true]
+    end
+  end
 end

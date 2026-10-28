@@ -34,7 +34,6 @@ module HeadMusic::MIDI
     Fermata = Data.define(:from, :to, :stretch)
 
     STRETCH_DECIMALS = 3
-    TURN_ITERATIONS = 8
 
     attr_reader :changes, :ramps, :fermatas, :a_tempos
 
@@ -78,46 +77,18 @@ module HeadMusic::MIDI
 
       step = kept.next_step(from)
       if step
-        return if on_line?(kept, slow, step)
-        return step if within_ramp?(kept, [from, step], restore, following)
+        return if kept.on_line?(slow, step)
+        return step if kept.ramp_through?([from, step], restore, following)
       end
 
       on_from, on_to = @layout.downbeat?(from), @layout.downbeat?(to)
       if tempo == prior
         prior unless on_from && on_to && @onsets.between?(from, to)
-      elsif (on_from && !on_to && held?(to, following, through: true) && tempo != ramp_start(kept, start)) || (held?(to, following) && continues_ramp?(kept, [from, tempo]))
+      elsif (on_from && !on_to && kept.held?(to, following, through: true) && tempo != kept.ramp_start(start)) || (kept.held?(to, following) && kept.ramp_start([from, tempo]))
         tempo
-      elsif !on_from && on_to && !continues_ramp?(kept, start)
+      elsif !on_from && on_to && !kept.ramp_start(start)
         prior
       end
-    end
-
-    # Whether +slow+ is nearer the ramp's next +step+ than halfway back to
-    # its last, so a step of the ramp, not a fermata.
-    def on_line?(kept, slow, step)
-      2 * (kept.per_minute(slow) - kept.per_minute(step)).abs <= (kept.per_minute(step) - kept.per_minute(kept.tempo_before)).abs
-    end
-
-    # Whether a ramp's run goes on through +step+, under a fermata, to
-    # +restore+ and +following+ after it.
-    def within_ramp?(kept, step, restore, following)
-      return false unless following
-
-      changes = kept.with(step).with(restore).with(following)
-      changes.run(kept.length, 1).end == changes.length - 1 && changes.run(kept.length, -1).begin < kept.length
-    end
-
-    # Whether +change+ is the next step of a ramp's run after the changes
-    # kept.
-    def continues_ramp?(kept, change)
-      !ramp_start(kept, change).nil?
-    end
-
-    # The tempo before the run of changes ending at +last+, if it is a ramp's.
-    def ramp_start(kept, last)
-      changes = kept.with(last)
-      run = changes.run(kept.length, -1)
-      changes.tempo_before(run.begin) if changes.ramp?(run)
     end
 
     # The changes left once each ramp's run is taken out but for its target.
@@ -127,7 +98,7 @@ module HeadMusic::MIDI
       kept = changes.first(index)
       turn = nil
       while index < changes.length
-        finish = ramp_end(changes, index)
+        finish = changes.ramp_end(index)
         if finish
           from, start = turn || [changes[index].first, changes.tempo_before(index)]
           turn = turn(changes, finish)
@@ -148,39 +119,15 @@ module HeadMusic::MIDI
     # last change is a count before the turn and the next a count after.
     def turn(changes, finish)
       after = finish + 1
-      return unless after < changes.length && ramp_end(changes, after)
+      return unless after < changes.length && changes.ramp_end(after)
 
       time, last = changes[finish]
       count = Rational(1, @layout.bar_at(time).meter.bottom_number)
       before = changes.tempo_before(finish)
       return unless changes[after].first == time + 2 * count && (changes[after].last <=> last) == (before <=> last)
 
-      per_minute = turning_per_minute(changes.per_minute(last), changes.per_minute(before))
+      per_minute = RampTurn.per_minute(changes.per_minute(last), changes.per_minute(before))
       [time + count, (60_000_000 / per_minute).round] if per_minute.positive?
-    end
-
-    # A step holds the logarithmic mean of the tempos at its count's ends,
-    # so the tempo at the end of the last count is the one that, with the
-    # ramp's change a count, gives the last two steps those means.
-    def turning_per_minute(last, before)
-      last, before = last.to_f, before.to_f
-      change = before - last
-      tempo = last - change / 2
-      TURN_ITERATIONS.times do
-        error = last - logarithmic_mean(tempo + change, tempo)
-        change += before - logarithmic_mean(tempo + 2 * change, tempo + change) - error
-        tempo += error
-      end
-      tempo
-    end
-
-    def logarithmic_mean(a, b)
-      (a == b) ? a : (a - b) / Math.log(a / b)
-    end
-
-    def ramp_end(changes, index)
-      finish = changes.run(index, 1).end
-      finish if changes.ramp?(index..finish) && held?(changes[finish].first, changes[finish + 1])
     end
 
     def stretch(slow, tempo)
@@ -191,14 +138,6 @@ module HeadMusic::MIDI
     def a_tempo?(time, microseconds)
       ramp = ramps.last
       !ramp.nil? && !@layout.downbeat?(time) && microseconds == ramp.start_microseconds
-    end
-
-    # Whether a tempo at +time+ holds until the first downbeat at or after
-    # it, or with +through+, past it.
-    def held?(time, following, through: false)
-      return true if following.nil? || @layout.downbeat?(time)
-
-      through ? following.first > @layout.bar_at(time).end_time : following.first >= @layout.bar_at(time).end_time
     end
   end
 end

@@ -57,6 +57,45 @@ module HeadMusic::MIDI
       per_minute(per_minute).round if per_minute.positive?
     end
 
+    # The last index of the run from +index+, if it is a ramp's, whose last
+    # change holds until the next downbeat.
+    def ramp_end(index)
+      finish = run(index, 1).end
+      finish if ramp?(index..finish) && held?(@changes[finish].first, @changes[finish + 1])
+    end
+
+    # The tempo before the run ending at +last+, added after these, if it is
+    # a ramp's.
+    def ramp_start(last)
+      changes = with(last)
+      run = changes.run(length, -1)
+      changes.tempo_before(run.begin) if changes.ramp?(run)
+    end
+
+    # Whether a ramp's run goes on through +step+, under a fermata, to
+    # +restore+ and +following+ after it.
+    def ramp_through?(step, restore, following)
+      return false unless following
+
+      changes = with(step).with(restore).with(following)
+      changes.run(length, 1).end == changes.length - 1 && changes.run(length, -1).begin < length
+    end
+
+    # Whether +slow+ is nearer the ramp's next +step+ than halfway back to
+    # its last, so a step of the ramp, not a fermata.
+    def on_line?(slow, step)
+      2 * (per_minute(slow) - per_minute(step)).abs <= (per_minute(step) - per_minute(tempo_before)).abs
+    end
+
+    # Whether a tempo at +time+ holds until the first downbeat at or after
+    # it, or with +through+, past it, given the change +following+ it.
+    def held?(time, following, through: false)
+      return true if following.nil? || @layout.downbeat?(time)
+
+      end_time = @layout.bar_at(time).end_time
+      through ? following.first > end_time : following.first >= end_time
+    end
+
     # Converts between microseconds a quarter and quarters a minute, either
     # way.
     def per_minute(value)
