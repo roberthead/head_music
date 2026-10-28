@@ -8,9 +8,19 @@ module HeadMusic::Notation::Kern
   # Successive lyric spines for one kern spine are verses 1, 2, and so on.
   # Kern hyphenates a word across notes as "mei-" then "-nes"; the
   # trailing hyphen is kept as hyphen_after, and the leading one dropped.
+  #
+  # As Verovio reads it, a trailing underscore, as in "Lord_", starts a line
+  # over the notes after it, whose rows are null, so the syllable is kept as
+  # extended. A lone "_" or "|" marks a held note itself; one with no note
+  # attacking under it is skipped.
   class LyricReader
-    Syllable = Data.define(:track, :verse, :text, :hyphen_after, :column)
-    SKIPPED = %w[. | _].freeze
+    Syllable = Data.define(:track, :verse, :text, :hyphen_after, :extended, :column) do
+      def held?
+        text.nil?
+      end
+    end
+    NULL = "."
+    HELD = %w[_ |].freeze
 
     def initialize(row)
       @row = row
@@ -25,6 +35,8 @@ module HeadMusic::Notation::Kern
     def sing(events)
       syllables.each do |syllable|
         event = events[syllable.track]
+        next if syllable.held? && !event&.pitches&.any?
+
         unless event&.pitches&.any?
           raise ParseError.new(
             %(The syllable "#{syllable.text}" in spine #{syllable.column} has no note under it), line_number: @row.record.line
@@ -37,15 +49,18 @@ module HeadMusic::Notation::Kern
     private
 
     def syllable(index, field)
-      return if SKIPPED.include?(field)
+      return if field == NULL
 
       kern_index = nearest_kern_index(index)
       text = field.delete_prefix("-")
+      extended = !HELD.include?(field) && text.end_with?("_")
+      text = text.delete_suffix("_") if extended
       Syllable.new(
         track: @tracks[upper_sub_spine_index(kern_index)],
         verse: @tracks[(kern_index + 1)..index].count(&:lyric?),
-        text: text.delete_suffix("-"),
+        text: HELD.include?(field) ? nil : text.delete_suffix("-"),
         hyphen_after: text.end_with?("-"),
+        extended: extended,
         column: index + 1
       )
     end

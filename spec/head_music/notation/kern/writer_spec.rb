@@ -710,6 +710,20 @@ describe HeadMusic::Notation::Kern::Writer do
     end
   end
 
+  describe "melismas" do
+    def text_rows(flow)
+      body(flow).reject { |line| line.start_with?("=", "*") }.map { |line| line.split("\t")[1..] }
+    end
+
+    it "writes a trailing underscore on a word-final syllable whose melisma continues, and nulls on its held notes" do
+      expect(text_rows(MelismaFixtures.melismas).flatten).to eq %w[Lord_ . . praise Glo- . -ri- -a_ . . Lord_ . . God]
+    end
+
+    it "writes the underscore in each verse's own spine" do
+      expect(text_rows(MelismaFixtures.two_verse_melismas)).to eq [%w[Lord_ O], %w[. sing_], %w[praise_ .], %w[. now], %w[him all]]
+    end
+  end
+
   describe "errors" do
     it "refuses a flow with no voices" do
       expect { render(HeadMusic::Content::Flow.new) }

@@ -372,6 +372,20 @@ describe HeadMusic::Notation::Kern do
     end
   end
 
+  describe "the melisma fixtures" do
+    %i[melismas two_verse_melismas].each do |name|
+      it "keeps where each melisma of #{name} starts and ends" do
+        original = MelismaFixtures.public_send(name)
+        expect_same_melismas(original, expect_kern_round_trip(original))
+      end
+    end
+
+    it "reads a melisma that stops before an unsung note back as held up to the next syllable, since Lord_ names no end" do
+      reparsed = described_class.parse(described_class.render(MelismaFixtures.short_melisma))
+      expect(melisma_ends(reparsed)).to eq [[0, 1, "1:1:000", "1:3:000"]]
+    end
+  end
+
   describe "hairpins" do
     # The **dynam spine holds the hairpins of a part and its voices, and
     # Verovio drops a hairpin that a level or spine accent interrupts, so each

@@ -12,7 +12,8 @@
 # crossing a barline comes back split; it drops the rests at either end of a
 # voice and joins runs of rests, since the writer pads every spine to the
 # flow's length; it compares a tempo in quarter notes per minute; and an
-# unauthored clef counts as the one the writer falls back to.
+# unauthored clef counts as the one the writer falls back to. A melisma's
+# extenders are compared with the syllables.
 module KernRoundTripHelper
   def expect_kern_round_trip(flow)
     reparsed = HeadMusic::Notation::Kern.parse(HeadMusic::Notation::Kern.render(flow))
@@ -178,6 +179,7 @@ module KernRoundTripHelper
         "pitches" => voice_event.pitches.map(&:to_s).sort,
         "length" => voice_event.rhythmic_value.fraction,
         "syllables" => voice_event.syllables.transform_values(&:to_h),
+        "extended" => voice_event.extended_verses,
         "markings" => [voice_event.articulations, voice_event.ornaments, [voice_event.note_dynamic].compact].map { |markings| markings.map(&:name_key) }
       }
     end

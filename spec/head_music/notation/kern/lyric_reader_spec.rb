@@ -32,6 +32,11 @@ describe HeadMusic::Notation::Kern::LyricReader do
       expect(lyrics(sung, 2)).to eq [["From", false], ["the", false], nil, ["depths", false], nil]
     end
 
+    it "reads a lone | or _ as a held note of the verse it stands in" do
+      expect([1, 2].map { |verse| sung.voice_events.map { |voice_event| voice_event.extends_syllable?(verse) } })
+        .to eq [[false, false, false, true, false], [false, false, true, false, false]]
+    end
+
     it "leaves the kern spine on the right unsung" do
       expect(flow.parts.first.voices.first.voice_events.none?(&:sung?)).to be true
     end
@@ -45,6 +50,37 @@ describe HeadMusic::Notation::Kern::LyricReader do
   it "attaches a syllable to the whole of a tied note" do
     flow = parse("**kern  **text\n[2c  la\n2c]  .\n*-  *-")
     expect(flow.voices.first.voice_events.map { |voice_event| voice_event.syllable&.text }).to eq ["la"]
+  end
+
+  describe "extenders" do
+    def holds(flow)
+      flow.voices.first.voice_events.map { |voice_event| voice_event.extends_syllable? }
+    end
+
+    it "reads a trailing underscore as a line over the null rows after it, up to the next syllable" do
+      flow = parse("**kern  **text\n4c  Lord_\n4d  .\n4e  .\n4f  praise\n*-  *-")
+      expect([lyrics(flow.voices.first), holds(flow)]).to eq [[["Lord", false], nil, nil, ["praise", false]], [false, true, true, false]]
+    end
+
+    it "stops a line at a rest" do
+      flow = parse("**kern  **text\n4c  Lord_\n4d  .\n4r  .\n4f  .\n*-  *-")
+      expect(holds(flow)).to eq [false, true, false, false]
+    end
+
+    it "holds the null rows after a hyphenated syllable" do
+      flow = parse("**kern  **text\n4c  Glo-\n2d  .\n4e  -ri-\n*-  *-")
+      expect(holds(flow)).to eq [false, true, false]
+    end
+
+    it "holds nothing after a word-final syllable with no underscore" do
+      flow = parse("**kern  **text\n2c  Lord\n2d  .\n*-  *-")
+      expect(holds(flow)).to eq [false, false]
+    end
+
+    it "skips a lone underscore with nothing before it to hold, or no note under it" do
+      flow = parse("**kern  **text\n2c  _\n[2d  la\n2d]  _\n*-  *-")
+      expect([lyrics(flow.voices.first), holds(flow)]).to eq [[nil, ["la", false]], [false, false]]
+    end
   end
 
   describe "errors" do

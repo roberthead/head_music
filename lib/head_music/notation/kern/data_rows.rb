@@ -91,7 +91,7 @@ module HeadMusic::Notation::Kern
       key = [column.voice.object_id, column.verse]
       continued = hyphens[key]
       hyphens[key] = syllable.hyphen_after?
-      "#{"-" if continued}#{syllable.text}#{"-" if syllable.hyphen_after?}"
+      "#{"-" if continued}#{syllable.text}#{"-" if syllable.hyphen_after?}#{"_" if event.extended.include?(column.verse)}"
     end
 
     def hyphens

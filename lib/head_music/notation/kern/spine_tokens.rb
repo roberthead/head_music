@@ -22,8 +22,8 @@ module HeadMusic::Notation::Kern
   # Time written past the music's end, to hold a dynamic there, is filled
   # with invisible rests, which the reader leaves out.
   class SpineTokens
-    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :marks, :opens, :closes, :invisible, :graces, :fermata) do
-      def initialize(opens: "", closes: "", invisible: false, graces: [], fermata: false, **fields)
+    Event = Data.define(:offset, :link, :pitches, :tie, :syllables, :extended, :marks, :opens, :closes, :invisible, :graces, :fermata) do
+      def initialize(extended: [], opens: "", closes: "", invisible: false, graces: [], fermata: false, **fields)
         super
       end
 
@@ -148,8 +148,17 @@ module HeadMusic::Notation::Kern
       tie = event.tie
       event.with(
         tie: graces.tied_in? ? TIED_IN.fetch(tie) : tie, graces: graces.tokens, syllables: voice_event.syllables,
+        extended: extended_verses(voice_event),
         marks: MarkCodes.marks(voice_event), opens: span_marks.opens_at(voice_event.position)
       )
+    end
+
+    # The verses whose word-final syllable here starts a line, written
+    # "Lord_". A hyphenated syllable's held notes take hyphens instead.
+    def extended_verses(voice_event)
+      voice_event.syllables.values.filter_map do |syllable|
+        syllable.verse if !syllable.hyphen_after? && voice_event.melisma_continues_after?(syllable.verse)
+      end
     end
 
     def span_marks
