@@ -18,10 +18,7 @@ module HeadMusic::Notation::Kern
   # Tuplet groups, which kern does not write, are inferred
   # then too; see TupletGroups. So are fermata marks, each from the tied
   # link it is written on, which FermataMarks makes the flow's fermatas.
-  # So are a melisma's held notes: those a lone "_" or "|" marks, in order,
-  # then those after an extended or hyphenated syllable, which hold up to
-  # the next sung note or rest. A held mark with nothing before it to hold
-  # is dropped.
+  # So are a melisma's held notes; see Melismas.
   #
   # Invisible rests after a voice's last visible event, in the bar where its
   # music ends, add nothing, as they hold only time for dynamics after the
@@ -82,12 +79,12 @@ module HeadMusic::Notation::Kern
       @position = voice.flow.position(number, 1, 0)
       @time = first_bar.start
       @span_marks = []
-      @sung = []
+      @melismas = Melismas.new
       sounding_events(clock).each { |event| place_event(event, clock, fermata_marks) }
       rest_until(finish_time, clock) if finish_time
       TupletGroups.apply(voice)
       add_spans
-      add_melismas
+      @melismas.apply
     end
 
     private
@@ -114,7 +111,7 @@ module HeadMusic::Notation::Kern
       voice_event = voice.place(@position, event.rhythmic_value, event.pitches)
       rest = voice_event.rest?
       event.mark(voice_event) unless rest
-      @sung << [voice_event, event.syllables] unless rest || event.syllables.empty?
+      @melismas.add(voice_event, event.syllables) unless rest
       event.fermatas.each { |time| fermata_marks.add(voice_event, from: position_at(time, event, voice_event, clock)) }
       @span_marks << [voice_event.position, event.span_marks, rest ? [] : event.grace_opens]
       @position = voice_event.next_position
@@ -131,23 +128,6 @@ module HeadMusic::Notation::Kern
         closes.each { |mark| close_span(open[mark.tr(")}", "({")].pop, position, mark) }
         opens.each { |mark| open[mark] << [position, false] }
       end
-    end
-
-    def add_melismas
-      @sung.each do |voice_event, syllables|
-        syllables.select(&:held?).each { |syllable| hold(voice_event, syllable.verse) }
-      end
-      @sung.each do |voice_event, syllables|
-        syllables.select { |syllable| syllable.extended || syllable.hyphen_after }.each do |syllable|
-          HeadMusic::Notation::MelismaFill.fill(voice_event, syllable.verse)
-        end
-      end
-    end
-
-    def hold(voice_event, verse)
-      voice_event.extend_syllable(verse: verse)
-    rescue ArgumentError
-      nil
     end
 
     def close_span(opening, to, mark)
