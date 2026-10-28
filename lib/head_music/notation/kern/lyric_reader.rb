@@ -53,12 +53,13 @@ module HeadMusic::Notation::Kern
 
       kern_index = nearest_kern_index(index)
       text = field.delete_prefix("-")
-      extended = !HELD.include?(field) && text.end_with?("_")
+      held = HELD.include?(text)
+      extended = !held && text.end_with?("_")
       text = text.delete_suffix("_") if extended
       Syllable.new(
         track: @tracks[upper_sub_spine_index(kern_index)],
         verse: @tracks[(kern_index + 1)..index].count(&:lyric?),
-        text: HELD.include?(field) ? nil : text.delete_suffix("-"),
+        text: held ? nil : text.delete_suffix("-"),
         hyphen_after: text.end_with?("-"),
         extended: extended,
         column: index + 1

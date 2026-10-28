@@ -72,6 +72,11 @@ describe HeadMusic::Notation::Kern::LyricReader do
       expect(holds(flow)).to eq [false, true, false]
     end
 
+    it "reads a hyphenated lone underscore as a held note, not an empty syllable" do
+      flow = parse("**kern  **text\n4c  Glo-\n4d  -_\n4e  -ri\n*-  *-")
+      expect([lyrics(flow.voices.first), holds(flow)]).to eq [[["Glo", true], nil, ["ri", false]], [false, true, false]]
+    end
+
     it "holds nothing after a word-final syllable with no underscore" do
       flow = parse("**kern  **text\n2c  Lord\n2d  .\n*-  *-")
       expect(holds(flow)).to eq [false, false]
