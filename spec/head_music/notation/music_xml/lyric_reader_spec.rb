@@ -90,6 +90,11 @@ describe HeadMusic::Notation::MusicXML::LyricReader do
       expect(holds(flow)).to eq [false, true]
     end
 
+    it "holds the notes after a syllable with an <extend> of no type up to the next sung note" do
+      flow = parse(sung("C4", 1, "quarter", held("Lord")) + sung("D4", 2, "half") + sung("E4", 1, "quarter", lyric("praise")))
+      expect(holds(flow)).to eq [false, true, false]
+    end
+
     it "holds the notes after a line start with no stop up to the next sung note or rest" do
       flow = parse(
         sung("C4", 1, "quarter", held("Lord", extend: "start")) + sung("D4", 1, "quarter") + rest_xml(1, "quarter") + sung("F4", 1, "quarter")

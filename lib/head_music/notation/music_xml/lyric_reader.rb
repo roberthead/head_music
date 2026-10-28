@@ -35,7 +35,7 @@ module HeadMusic::Notation::MusicXML
         next if text.empty? && extend.nil?
 
         label = XmlReading.attribute(lyric, "number") || "1"
-        @sung << Sung.new(record.part, voice_event, label, text, hyphen_after?(lyric), extend && XmlReading.attribute(extend, "type"))
+        @sung << Sung.new(record.part, voice_event, label, text, hyphen_after?(lyric), extend_type(extend))
       end
     end
 
@@ -71,6 +71,12 @@ module HeadMusic::Notation::MusicXML
     # With an elision the last <syllabic> tells whether the word goes on.
     def hyphen_after?(lyric)
       SYLLABIC_HYPHENS.include?(XmlReading.text(XmlReading.children(lyric, "syllabic").last))
+    end
+
+    def extend_type(extend)
+      return unless extend
+
+      XmlReading.attribute(extend, "type") || "bare"
     end
 
     def verse_numbers(labels)
