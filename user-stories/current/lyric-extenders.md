@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-23T21:10:12-07:00
   planned_at:   2026-10-27T21:07:19-07:00
   finished_at:
-  updated_at:   2026-10-27T21:07:19-07:00
+  updated_at:   2026-10-27T21:51:18-07:00
 -->
 
 # Story: Lyric Extenders
@@ -31,16 +31,16 @@ Split from [Spans Across Notes](../done/spans-across-notes.md).
 
 ## Acceptance Criteria
 
-- [ ] Each held note of a melisma carries an extend marker in its verse's slot, in place of a syllable, and the melisma ends on the last marked note
-- [ ] The voice event just before a marker has a syllable or a marker in that verse, and a marker cannot sit on a rest
-- [ ] Markers may follow a hyphenated syllable; the syllable's `hyphen_after` decides whether a hyphen or a line is drawn
-- [ ] Code that reads sung words (MIDI lyric events, the MIDI and notation preflight checks, MusicXML `<syllabic>`) never takes a marker for text
-- [ ] Flow JSON writes a marker as `{"extend": true}` in `syllables`, adding `"verse"` when it is not 1 as a syllable does, and reading checks each marker against the voice event before it
-- [ ] MusicXML writes `<extend>` with the melisma's end marked, except after a hyphenated syllable, and reads it
-- [ ] kern writes `Lord_` on a word-final syllable whose melisma continues and `.` on its held notes; it reads a trailing `_` as a line start, and a lone `_` or `|` as a held note
-- [ ] MEI writes and reads `@con="u"`, and writes `"d"` on a hyphenated melisma, since `@con` holds one value
-- [ ] A reader whose format marks only where a line starts (MEI `@con="u"`, kern `Lord_`, a bare MusicXML `<extend/>`), and every reader after a hyphenated syllable, marks each following note with nothing in that verse, and stops at the next sung note or rest
-- [ ] Round trips assert where each melisma ends, where the format can say so; a melisma that stops before an unsung note is a named exclusion in MEI and kern
+- [x] Each held note of a melisma carries an extend marker in its verse's slot, in place of a syllable, and the melisma ends on the last marked note
+- [x] The voice event just before a marker has a syllable or a marker in that verse, and a marker cannot sit on a rest
+- [x] Markers may follow a hyphenated syllable; the syllable's `hyphen_after` decides whether a hyphen or a line is drawn
+- [x] Code that reads sung words (MIDI lyric events, the MIDI and notation preflight checks, MusicXML `<syllabic>`) never takes a marker for text
+- [x] Flow JSON writes a marker as `{"extend": true}` in `syllables`, adding `"verse"` when it is not 1 as a syllable does, and reading checks each marker against the voice event before it
+- [x] MusicXML writes `<extend>` with the melisma's end marked, except after a hyphenated syllable, and reads it
+- [x] kern writes `Lord_` on a word-final syllable whose melisma continues and `.` on its held notes; it reads a trailing `_` as a line start, and a lone `_` or `|` as a held note
+- [x] MEI writes and reads `@con="u"`, and writes `"d"` on a hyphenated melisma, since `@con` holds one value
+- [x] A reader whose format marks only where a line starts (MEI `@con="u"`, kern `Lord_`, a bare MusicXML `<extend/>`), and every reader after a hyphenated syllable, marks each following note with nothing in that verse, and stops at the next sung note or rest
+- [x] Round trips assert where each melisma ends, where the format can say so; a melisma that stops before an unsung note is a named exclusion in MEI and kern
 
 ## Notes
 
