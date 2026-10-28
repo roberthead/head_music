@@ -76,9 +76,16 @@ class HeadMusic::Content::Flow
       end
     end
 
+    # Extenders are added once every event is placed, in position order, so
+    # each finds the event before it whatever order the events are listed in.
     def build_voice_events(voice, voice_hash, voice_path)
-      Array(voice_hash["voice_events"]).each_with_index do |voice_event_hash, index|
+      extenders = Array(voice_hash["voice_events"]).each_with_index.flat_map do |voice_event_hash, index|
         build_voice_event(voice, voice_event_hash, "#{voice_path}.voice_events[#{index}]")
+      end
+      extenders.sort_by { |voice_event, _verse, _path| voice_event.position }.each do |voice_event, verse, path|
+        voice_event.extend_syllable(verse: verse)
+      rescue ArgumentError => error
+        raise ArgumentError, "#{path}: #{error.message}"
       end
     end
 
@@ -89,19 +96,24 @@ class HeadMusic::Content::Flow
         values.voice_event_sounds(voice_event_hash, path)
       )
       voice_event.beam_break_before = voice_event_hash["beam_break_before"] if voice_event_hash.key?("beam_break_before")
-      sing_syllables(voice_event, voice_event_hash, path)
+      extenders = sing_syllables(voice_event, voice_event_hash, path)
       apply_markings(voice_event, voice_event_hash, path)
       add_grace_notes(voice_event, voice_event_hash, path)
+      extenders
     end
 
+    # Sings the syllables, and answers the extenders left to add, each with
+    # its event and path.
     def sing_syllables(voice_event, voice_event_hash, path)
       syllables = values.voice_event_syllables(voice_event_hash, path)
-      return if syllables.empty?
+      return [] if syllables.empty?
 
       reject_rest(voice_event, "syllables", path)
-      syllables.each do |syllable|
+      extenders, sung = syllables.partition { |syllable| syllable.is_a?(VoiceEventValues::Extender) }
+      sung.each do |syllable|
         voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
       end
+      extenders.map { |extender| [voice_event, extender.verse, "#{path}.syllables"] }
     end
 
     # A rest would refuse these itself, but without the document path.

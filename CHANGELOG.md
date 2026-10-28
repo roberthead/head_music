@@ -151,6 +151,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The kern reader reads `;` fermatas on notes, rests, and chords into the timeline's fermatas, and the writer writes `;` on every voice event sounding where a fermata begins.
 - The kern reader and writer keep common and cut time as `*met(c)` and `*met(c|)`, including a change of sign alone.
 - The kern reader reads `!!!OMD` as the opening tempo's text and `*MM[Andante]` as tempo text, and the writer writes both; a flow with tempo ramps renders to kern at each bar's authored tempo.
+- A melisma's held notes carry extenders. `NoteEvent#extend_syllable(verse: 1)` marks a note as holding the syllable of the voice event just before it, which must sing or hold that verse and end where the note starts; a verse holds a syllable or an extender, never both. `#extends_syllable?` and `#extended_verses` answer them, and `VoiceEvent#melisma_continues_after?` whether the next event holds a verse. An extender is not sung, so nothing that reads syllable text sees one, and a rest refuses one with `ArgumentError`.
+- Flow JSON writes a held note's extenders among its `"syllables"`, by verse, as `{"extend": true}` with a `"verse"` other than 1, an optional entry within schema 5. Reading adds a voice's extenders after its events, so one listed before the syllable it holds reads back, and one with nothing before it to hold, or with text, raises `ArgumentError` naming its path.
 
 ### Changed
 

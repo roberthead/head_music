@@ -351,6 +351,90 @@ describe HeadMusic::Content::VoiceEvent do
     end
   end
 
+  describe "extenders" do
+    let(:lord) { voice.place("1:1", :quarter, "C4").sing("Lord") }
+    let(:held) { voice.place("1:2", :quarter, "D4") }
+    let(:again) { voice.place("1:3", :quarter, "E4") }
+
+    it "holds no verse by default" do
+      expect(held.extended_verses).to eq []
+      expect(held).not_to be_extends_syllable
+    end
+
+    it "holds the syllable of the note just before it" do
+      lord
+      held.extend_syllable
+      expect(held).to be_extends_syllable(1)
+      expect(lord).to be_melisma_continues_after(1)
+    end
+
+    it "holds a verse held by the note just before it" do
+      lord
+      held.extend_syllable
+      again.extend_syllable
+      expect(held).to be_melisma_continues_after
+      expect(again).not_to be_melisma_continues_after
+    end
+
+    it "returns self so calls chain, ignoring a verse held twice" do
+      lord.sing("O", verse: 2)
+      expect(held.extend_syllable.extend_syllable(verse: 2).extend_syllable).to be held
+      expect(held.extended_verses).to eq [1, 2]
+    end
+
+    it "is not sung, so readers of sung text never see it" do
+      lord
+      held.extend_syllable
+      expect(held).not_to be_sung
+      expect(held.syllables).to eq({})
+    end
+
+    it "may follow a hyphenated syllable" do
+      voice.place("1:1", :quarter, "C4").sing("glo", hyphen_after: true)
+      expect(held.extend_syllable).to be_extends_syllable
+    end
+
+    it "refuses a verse the note before neither sings nor holds" do
+      lord
+      expect { held.extend_syllable(verse: 2) }
+        .to raise_error(ArgumentError, "the note at 1:2:000 has no syllable before it to hold in verse 2")
+    end
+
+    it "refuses to follow a rest" do
+      voice.place("1:1", :quarter)
+      expect { held.extend_syllable }.to raise_error(ArgumentError, /no syllable before it/)
+    end
+
+    it "refuses to follow a gap" do
+      voice.place("1:1", :eighth, "C4").sing("Lord")
+      expect { held.extend_syllable }.to raise_error(ArgumentError, /no syllable before it/)
+    end
+
+    it "refuses the first note of a voice" do
+      expect { lord.extend_syllable(verse: 2) }.to raise_error(ArgumentError, /no syllable before it/)
+    end
+
+    it "shares a verse's slot with a syllable, never holding both" do
+      lord
+      held.sing("praise")
+      expect { held.extend_syllable }.to raise_error(ArgumentError, "the note at 1:2:000 already sings verse 1")
+    end
+
+    it "refuses a syllable for a verse it holds" do
+      lord
+      held.extend_syllable
+      expect { held.sing("praise") }.to raise_error(ArgumentError, "the note at 1:2:000 already holds verse 1")
+    end
+
+    it "keeps its extenders when a chord tone is merged in" do
+      lord
+      held.extend_syllable
+      voice.place("1:2", :quarter, "F4")
+      expect(held.pitches.map(&:to_s)).to eq %w[D4 F4]
+      expect(held).to be_extends_syllable
+    end
+  end
+
   describe "chords" do
     context "when given a single bare pitch" do
       it { is_expected.not_to be_chord }

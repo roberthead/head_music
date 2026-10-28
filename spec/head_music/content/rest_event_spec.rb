@@ -19,6 +19,13 @@ describe HeadMusic::Content::RestEvent do
     expect { rest.sing("la") }.to raise_error(ArgumentError, "a rest cannot sing; the syllable at 1:1:000 needs a note")
   end
 
+  its(:extended_verses) { is_expected.to eq [] }
+
+  it "refuses an extender" do
+    expect { rest.extend_syllable }
+      .to raise_error(ArgumentError, "a rest cannot hold a syllable; the extender at 1:1:000 needs a note")
+  end
+
   its(:articulations) { is_expected.to eq [] }
   its(:ornaments) { is_expected.to eq [] }
   its(:note_dynamic) { is_expected.to be_nil }

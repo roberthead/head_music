@@ -14,9 +14,30 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   end
 
   # Empty until sung. The MusicXML writer derives <syllabic> from these plus
-  # neighboring events; melisma is the absence of a syllable here.
+  # neighboring events.
   def syllables
     @syllables ||= {}
+  end
+
+  def extended_verses
+    extension_list.sort.freeze
+  end
+
+  def extends_syllable?(verse = 1)
+    extension_list.include?(verse)
+  end
+
+  # Marks this note as a held note of a melisma: it holds the verse's
+  # syllable from the voice event just before it, which sings or holds that
+  # verse. A verse's slot takes a syllable or an extender, never both. Returns
+  # self so calls chain.
+  def extend_syllable(verse: 1)
+    verse = Integer(verse)
+    raise ArgumentError, "the note at #{position} already sings verse #{verse}" if syllables.key?(verse)
+    raise ArgumentError, "the note at #{position} has no syllable before it to hold in verse #{verse}" unless holdable?(verse)
+
+    extension_list << verse unless extends_syllable?(verse)
+    self
   end
 
   # Assigns the syllable for a verse (default verse 1). Returns self so calls
@@ -25,6 +46,8 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   # keys never make syllables.keys.sort raise.
   def sing(text, verse: 1, hyphen_after: false)
     syllable = HeadMusic::Content::Syllable.new(text, verse: verse, hyphen_after: hyphen_after)
+    raise ArgumentError, "the note at #{position} already holds verse #{syllable.verse}" if extends_syllable?(syllable.verse)
+
     syllables[syllable.verse] = syllable
     self
   end
@@ -75,9 +98,9 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   # position holds at most one event, and answers whichever event holds it
   # afterward. A rest placed on a note leaves it as it was. The sound union
   # keeps the chord free of duplicates, making placing a sound again
-  # idempotent. Syllables, markings, and grace notes are left untouched: a
-  # chord sings one syllable per verse, and the receiver (the event already at
-  # this position) keeps its own.
+  # idempotent. Syllables, extenders, markings, and grace notes are left
+  # untouched: a chord sings one syllable per verse, and the receiver (the
+  # event already at this position) keeps its own.
   def merge(other)
     ensure_same_rhythmic_value!(other)
     return self if other.rest?
@@ -87,6 +110,17 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   end
 
   private
+
+  def holdable?(verse)
+    previous = voice.voice_event_preceding(position)
+    return false unless previous&.next_position == position
+
+    !previous.syllable(verse).nil? || previous.extends_syllable?(verse)
+  end
+
+  def extension_list
+    @extension_list ||= []
+  end
 
   def grace_note_list
     @grace_note_list ||= []

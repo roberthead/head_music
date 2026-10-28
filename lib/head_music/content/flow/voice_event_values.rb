@@ -5,6 +5,10 @@ class HeadMusic::Content::Flow
   class VoiceEventValues
     include SchemaValidation
 
+    # A held note of a melisma, read from "syllables" and applied after the
+    # voice's events, since it needs the event before it.
+    Extender = Data.define(:verse)
+
     # "sounds" is an array of sound data, empty for a rest. A pitched sound
     # is a pitch string; an unpitched sound is a one-key
     # {"unpitched" => name_key} hash. A nil element is never a rest, so it
@@ -17,9 +21,10 @@ class HeadMusic::Content::Flow
 
     # "syllables" is an optional array of sung-text data, one entry per verse.
     # Each entry is a {"text" => ..., "verse" => ..., "hyphen_after" => ...}
-    # hash; verse defaults to 1. Text must be a non-empty string, verse a
-    # positive integer, and no two entries may share a verse (a voice event holds
-    # at most one syllable per verse).
+    # hash, or an extender {"extend" => true, "verse" => ...}; verse defaults
+    # to 1. Text must be a non-empty string, verse a positive integer, and no
+    # two entries may share a verse (a voice event holds a syllable or an
+    # extender per verse).
     def voice_event_syllables(voice_event_hash, path)
       values = voice_event_hash["syllables"]
       return [] if values.nil?
@@ -101,11 +106,18 @@ class HeadMusic::Content::Flow
 
     def syllable(value, seen_verses, path)
       ensure_kind!(value, Hash, "syllable", path)
+      verse = syllable_verse(value, seen_verses, path)
+      return extender(value, verse, path) if value.key?("extend")
+
       text = value["text"]
       unless non_empty_string?(text)
         raise ArgumentError, "#{path}: syllable text must be a non-empty String, got #{text.inspect}"
       end
 
+      HeadMusic::Content::Syllable.from_h(value)
+    end
+
+    def syllable_verse(value, seen_verses, path)
       verse = value.fetch("verse", 1)
       unless verse.is_a?(Integer) && verse.positive?
         raise ArgumentError, "#{path}: verse must be a positive Integer, got #{verse.inspect}"
@@ -113,8 +125,16 @@ class HeadMusic::Content::Flow
 
       raise ArgumentError, "#{path}: duplicate verse #{verse}" if seen_verses.include?(verse)
       seen_verses << verse
+      verse
+    end
 
-      HeadMusic::Content::Syllable.from_h(value)
+    def extender(value, verse, path)
+      raise ArgumentError, "#{path}.extend: must be true, got #{value["extend"].inspect}" unless value["extend"] == true
+
+      sung = value.keys & %w[text hyphen_after]
+      raise ArgumentError, "#{path}: an extender carries no #{sung.join(" or ")}" if sung.any?
+
+      Extender.new(verse)
     end
 
     def sound(value, path)

@@ -5,8 +5,8 @@ module HeadMusic::Content; end
 # linguistic fact is stored: the text, its verse number, and whether the word
 # continues onto the next sung note (hyphen_after). The MusicXML `syllabic`
 # value (single/begin/middle/end) is derived from these at render time rather
-# than stored, and melisma is represented by the absence of a syllable on the
-# following voice events, so nothing here encodes it.
+# than stored. A melisma's held notes carry extenders in place of syllables;
+# see NoteEvent#extend_syllable.
 class HeadMusic::Content::Syllable
   attr_reader :text, :verse, :hyphen_after
 

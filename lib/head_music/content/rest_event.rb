@@ -23,6 +23,10 @@ class HeadMusic::Content::RestEvent < HeadMusic::Content::VoiceEvent
     raise ArgumentError, "a rest cannot sing; the syllable at #{position} needs a note"
   end
 
+  def extend_syllable(**)
+    raise ArgumentError, "a rest cannot hold a syllable; the extender at #{position} needs a note"
+  end
+
   def articulate(*)
     raise ArgumentError, "a rest cannot be articulated; the articulation at #{position} needs a note"
   end

@@ -58,6 +58,21 @@ class HeadMusic::Content::VoiceEvent
     syllables.any?
   end
 
+  # The verses a held note of a melisma carries over from the syllable
+  # before it. Only a NoteEvent holds one.
+  def extended_verses
+    []
+  end
+
+  def extends_syllable?(_verse = 1)
+    false
+  end
+
+  # Whether the voice event just after this one holds the verse.
+  def melisma_continues_after?(verse = 1)
+    voice.voice_event_at(next_position)&.extends_syllable?(verse) || false
+  end
+
   # Markings written on the event. Only a NoteEvent carries them; the rest
   # have none, so readers and writers need not ask which kind they hold.
   def articulations
@@ -170,12 +185,21 @@ class HeadMusic::Content::VoiceEvent
   def markings_to_h
     {
       "beam_break_before" => beam_break_before,
-      "syllables" => syllables.sort.map { |_verse, syllable| syllable.to_h },
+      "syllables" => syllable_entries,
       "articulations" => articulations.map(&:name_key),
       "ornaments" => ornaments.map(&:name_key),
       "note_dynamic" => note_dynamic&.name_key,
       "grace_notes" => grace_notes.map(&:to_h)
     }.reject { |_key, value| value.nil? || value == [] }
+  end
+
+  # A held note's extenders sit among its syllables, by verse.
+  def syllable_entries
+    entries = syllables.transform_values(&:to_h)
+    extended_verses.each do |verse|
+      entries[verse] = (verse == 1) ? {"extend" => true} : {"extend" => true, "verse" => verse}
+    end
+    entries.sort.map(&:last)
   end
 
   def ensure_same_rhythmic_value!(other)

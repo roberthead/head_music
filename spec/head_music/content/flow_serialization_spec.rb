@@ -229,7 +229,7 @@ describe HeadMusic::Content::Flow do
         voice = sung.add_voice(role: "soprano")
         voice.place("1:1:000", :quarter, "C4").sing("A", hyphen_after: true).sing("peace", verse: 2)
         voice.place("1:2:000", :quarter, "D4").sing("men").sing("ful", verse: 2)
-        voice.place("1:3:000", :half, "E4") # melisma tail: no syllable
+        voice.place("1:3:000", :half, "E4") # unsung
       end
     end
 
@@ -239,6 +239,45 @@ describe HeadMusic::Content::Flow do
       expect(first.syllable(1)).to eq HeadMusic::Content::Syllable.new("A", hyphen_after: true)
       expect(first.syllable(2)).to eq HeadMusic::Content::Syllable.new("peace", verse: 2)
       expect(restored.voices.first.voice_events.last).not_to be_sung
+    end
+  end
+
+  describe "a voice with melismas" do
+    let(:flow) do
+      described_class.new(name: "Held").tap do |held|
+        voice = held.add_voice
+        voice.place("1:1", :quarter, "C4").sing("Lord").sing("O", verse: 2)
+        voice.place("1:2", :quarter, "D4").extend_syllable.sing("praise", verse: 2)
+        voice.place("1:3", :quarter, "E4").extend_syllable.extend_syllable(verse: 2)
+        voice.place("1:4", :quarter, "F4").sing("praise").extend_syllable(verse: 2)
+      end
+    end
+
+    let(:entries) { voices_in(flow.to_h).first["voice_events"].map { |voice_event| voice_event["syllables"] } }
+
+    it "writes each extender among the syllables, by verse, naming a verse other than 1" do
+      expect(entries).to eq [
+        [{"text" => "Lord"}, {"text" => "O", "verse" => 2}], [{"extend" => true}, {"text" => "praise", "verse" => 2}],
+        [{"extend" => true}, {"extend" => true, "verse" => 2}], [{"text" => "praise"}, {"extend" => true, "verse" => 2}]
+      ]
+    end
+
+    it "round-trips the extenders" do
+      restored = expect_lossless_round_trip(flow, abc: false, musicxml: false)
+      expect(restored.voices.first.voice_events.map(&:extended_verses)).to eq [[], [1], [1, 2], [2]]
+    end
+
+    %i[melismas two_verse_melismas short_melisma].each do |name|
+      it "keeps where each melisma of MelismaFixtures.#{name} ends" do
+        original = MelismaFixtures.public_send(name)
+        expect_same_melismas(original, expect_lossless_round_trip(original, abc: false, musicxml: false))
+      end
+    end
+
+    it "reads extenders listed before the syllable they hold" do
+      hash = flow.to_h
+      voices_in(hash).first["voice_events"].reverse!
+      expect(described_class.from_h(hash).to_h).to eq flow.to_h
     end
   end
 
@@ -1274,6 +1313,50 @@ describe HeadMusic::Content::Flow do
       )
       expect { described_class.from_h(hash) }
         .to raise_error(ArgumentError, /voices\[0\]\.voice_events\[0\]: a rest cannot carry syllables/)
+    end
+
+    describe "extenders" do
+      let(:lord) { {"position" => "1:1:000", "rhythmic_value" => "quarter", "sounds" => ["C4"], "syllables" => [{"text" => "Lord"}]} }
+
+      def held(syllables, position: "1:2:000")
+        {"position" => position, "rhythmic_value" => "quarter", "sounds" => ["D4"], "syllables" => syllables}
+      end
+
+      def hash_with_voice_events(*voice_event_hashes)
+        base_hash.merge("parts" => [{"voices" => [{"role" => nil, "voice_events" => voice_event_hashes}]}])
+      end
+
+      it "raises ArgumentError with path context on an extender with nothing before it to hold" do
+        hash = hash_with_voice_events(lord, held([{"extend" => true, "verse" => 2}]))
+        expect { described_class.from_h(hash) }
+          .to raise_error(ArgumentError, /voice_events\[1\]\.syllables: the note at 1:2:000 has no syllable before it to hold in verse 2/)
+      end
+
+      it "raises ArgumentError on an extender after a gap" do
+        hash = hash_with_voice_events(lord, held([{"extend" => true}], position: "1:3:000"))
+        expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /voice_events\[1\]\.syllables: .*no syllable before it/)
+      end
+
+      it "raises ArgumentError on an extender on a rest" do
+        rest = {"position" => "1:2:000", "rhythmic_value" => "quarter", "sounds" => [], "syllables" => [{"extend" => true}]}
+        expect { described_class.from_h(hash_with_voice_events(lord, rest)) }
+          .to raise_error(ArgumentError, /voice_events\[1\]: a rest cannot carry syllables/)
+      end
+
+      it "raises ArgumentError on an extend flag that is not true" do
+        expect { described_class.from_h(hash_with_voice_events(lord, held([{"extend" => false}]))) }
+          .to raise_error(ArgumentError, /voice_events\[1\]\.syllables\[0\]\.extend: must be true, got false/)
+      end
+
+      it "raises ArgumentError on an extender that carries text" do
+        expect { described_class.from_h(hash_with_voice_events(lord, held([{"extend" => true, "text" => "_"}]))) }
+          .to raise_error(ArgumentError, /voice_events\[1\]\.syllables\[0\]: an extender carries no text/)
+      end
+
+      it "raises ArgumentError on an extender and a syllable in one verse" do
+        expect { described_class.from_h(hash_with_voice_events(lord, held([{"text" => "la"}, {"extend" => true}]))) }
+          .to raise_error(ArgumentError, /voice_events\[1\]\.syllables\[1\]: duplicate verse 1/)
+      end
     end
 
     it "raises ArgumentError when sounds is not an Array" do
