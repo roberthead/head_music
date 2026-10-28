@@ -113,7 +113,7 @@ class HeadMusic::Content::Flow
       sung.each do |syllable|
         voice_event.sing(syllable.text, verse: syllable.verse, hyphen_after: syllable.hyphen_after)
       end
-      extenders.map { |extender| [voice_event, extender.verse, "#{path}.syllables"] }
+      extenders.map { |extender| [voice_event, extender.verse, extender.path] }
     end
 
     # A rest would refuse these itself, but without the document path.

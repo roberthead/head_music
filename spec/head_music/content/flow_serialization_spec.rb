@@ -1327,14 +1327,14 @@ describe HeadMusic::Content::Flow do
       end
 
       it "raises ArgumentError with path context on an extender with nothing before it to hold" do
-        hash = hash_with_voice_events(lord, held([{"extend" => true, "verse" => 2}]))
+        hash = hash_with_voice_events(lord, held([{"text" => "la"}, {"extend" => true, "verse" => 2}]))
         expect { described_class.from_h(hash) }
-          .to raise_error(ArgumentError, /voice_events\[1\]\.syllables: the note at 1:2:000 has no syllable before it to hold in verse 2/)
+          .to raise_error(ArgumentError, /voice_events\[1\]\.syllables\[1\]: the note at 1:2:000 has no syllable before it to hold in verse 2/)
       end
 
       it "raises ArgumentError on an extender after a gap" do
         hash = hash_with_voice_events(lord, held([{"extend" => true}], position: "1:3:000"))
-        expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /voice_events\[1\]\.syllables: .*no syllable before it/)
+        expect { described_class.from_h(hash) }.to raise_error(ArgumentError, /voice_events\[1\]\.syllables\[0\]: .*no syllable before it/)
       end
 
       it "raises ArgumentError on an extender on a rest" do

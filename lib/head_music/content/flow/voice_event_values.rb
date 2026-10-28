@@ -7,7 +7,7 @@ class HeadMusic::Content::Flow
 
     # A held note of a melisma, read from "syllables" and applied after the
     # voice's events, since it needs the event before it.
-    Extender = Data.define(:verse)
+    Extender = Data.define(:verse, :path)
 
     # "sounds" is an array of sound data, empty for a rest. A pitched sound
     # is a pitch string; an unpitched sound is a one-key
@@ -134,7 +134,7 @@ class HeadMusic::Content::Flow
       sung = value.keys & %w[text hyphen_after]
       raise ArgumentError, "#{path}: an extender carries no #{sung.join(" or ")}" if sung.any?
 
-      Extender.new(verse)
+      Extender.new(verse, path)
     end
 
     def sound(value, path)
