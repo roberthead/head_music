@@ -24,6 +24,14 @@ describe HeadMusic::Notation::MusicXML, oracle: :musicxml_xsd do
         attributes: opening_attributes(extra: "<staves>2</staves>", clef: nil)
       )
     end,
+    "a melisma's extenders" => lambda do
+      sung = %(<lyric number="1"><syllabic>single</syllabic><text>Lord</text><extend type="start"/></lyric>)
+      held = ->(type) { %(<lyric number="1"><extend#{type && %( type="#{type}")}/></lyric>) }
+      musicxml_measures(
+        note_xml("C4", 1, "quarter", after: sung) + note_xml("D4", 1, "quarter", after: held["continue"]) +
+          note_xml("E4", 1, "quarter", after: held["stop"]) + note_xml("F4", 1, "quarter", after: held[nil])
+      )
+    end,
     "a forward gap" => -> { musicxml_measures(note_xml("C4", 2, "half", voice: "1") + forward_xml(2, voice: "1")) },
     "a whole-measure rest" => -> { musicxml_measures(measure_rest_xml(4), note_xml("C4", 4, "whole")) },
     "a pickup" => -> { musicxml_measures([note_xml("G4", 1, "quarter"), {number: "0", implicit: true}], note_xml("C5", 4, "whole")) },

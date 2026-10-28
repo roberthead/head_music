@@ -67,6 +67,57 @@ describe HeadMusic::Notation::MusicXML::LyricReader do
     expect(syllables(flow)).to eq [["1:2:000", 1, "held", false]]
   end
 
+  describe "extenders" do
+    def held(text, extend: nil, number: "1")
+      type = extend && %( type="#{extend}")
+      text ? lyric(text, number: number).sub("</lyric>", "<extend#{type}/></lyric>") : %(<lyric number="#{number}"><extend#{type}/></lyric>)
+    end
+
+    def holds(flow, verse = 1)
+      flow.voices.first.voice_events.map { |voice_event| voice_event.extends_syllable?(verse) }
+    end
+
+    it "holds the notes an <extend> continues and stops" do
+      flow = parse(
+        sung("C4", 1, "quarter", held("Lord", extend: "start")) + sung("D4", 1, "quarter", held(nil, extend: "continue")) +
+          sung("E4", 1, "quarter", held(nil, extend: "stop")) + sung("F4", 1, "quarter")
+      )
+      expect(holds(flow)).to eq [false, true, true, false]
+    end
+
+    it "holds a note whose lyric is an <extend> with no type, as older files write" do
+      flow = parse(sung("C4", 2, "half", held("Lord")) + sung("D4", 2, "half", held(nil)))
+      expect(holds(flow)).to eq [false, true]
+    end
+
+    it "holds the notes after a line start with no stop up to the next sung note or rest" do
+      flow = parse(
+        sung("C4", 1, "quarter", held("Lord", extend: "start")) + sung("D4", 1, "quarter") + rest_xml(1, "quarter") + sung("F4", 1, "quarter")
+      )
+      expect(holds(flow)).to eq [false, true, false, false]
+    end
+
+    it "holds the notes after a hyphenated syllable up to the next one" do
+      flow = parse(sung("C4", 1, "quarter", lyric("Glo", syllabic: "begin")) + sung("D4", 2, "half") + sung("E4", 1, "quarter", lyric("ri", syllabic: "middle")))
+      expect(holds(flow)).to eq [false, true, false]
+    end
+
+    it "holds each verse on its own" do
+      flow = parse(sung("C4", 2, "half", held("Lord", extend: "start"), lyric("O", number: "2")) + sung("D4", 2, "half", held(nil, extend: "stop")))
+      expect([holds(flow, 1), holds(flow, 2)]).to eq [[false, true], [false, false]]
+    end
+
+    it "skips a held note with nothing before it to hold" do
+      flow = parse(sung("C4", 2, "half") + sung("D4", 2, "half", held(nil, extend: "stop")))
+      expect(holds(flow)).to eq [false, false]
+    end
+
+    it "never takes an <extend> for a syllable" do
+      flow = parse(sung("C4", 2, "half", held("Lord", extend: "start")) + sung("D4", 2, "half", held(nil, extend: "stop")))
+      expect(syllables(flow)).to eq [["1:1:000", 1, "Lord", false]]
+    end
+  end
+
   describe "round trips" do
     def round_trip(flow)
       HeadMusic::Notation::MusicXML.parse(HeadMusic::Notation::MusicXML.render(flow))

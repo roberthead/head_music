@@ -24,6 +24,7 @@ describe HeadMusic::Notation::MusicXML do
     **fixture_names.call(NavigationFixtures).to_h { |name| ["NavigationFixtures.#{name}", -> { NavigationFixtures.public_send(name) }] },
     **HairpinFixtures.all.to_h { |name| ["HairpinFixtures.#{name}", -> { HairpinFixtures.public_send(name) }] },
     **TupletFixtures.all.to_h { |name| ["TupletFixtures.#{name}", -> { TupletFixtures.public_send(name) }] },
+    **fixture_names.call(MelismaFixtures).to_h { |name| ["MelismaFixtures.#{name}", -> { MelismaFixtures.public_send(name) }] },
     **%i[piano_part_marks marked_dal_segno_al_coda marked_da_capo_al_fine clef_changes two_verses]
       .to_h { |name| ["MuseScoreFixtures.#{name}", -> { MuseScoreFixtures.public_send(name) }] },
     "MuseScoreFixtures.clarinet_changes" => -> { MuseScoreFixtures.clarinet_changes.flows.first }

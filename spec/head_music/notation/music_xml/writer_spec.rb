@@ -293,17 +293,60 @@ describe HeadMusic::Notation::MusicXML::Writer do
         end
       end
 
-      context "with a melisma (a syllable held over several notes)" do
+      context "with a note after a syllable that neither sings nor holds it" do
         let(:flow) do
           flow = HeadMusic::Content::Flow.new(name: "Amen")
           voice = flow.add_voice
           voice.place("1:1", :half, "C4").sing("A")
-          voice.place("1:3", :half, "D4") # held: no syllable
+          voice.place("1:3", :half, "D4")
           flow
         end
 
         it "emits a lyric only on the attacked syllable" do
           expect(xpath_count(document, "//measure[@number='1']/note/lyric")).to eq 1
+          expect(xpath_count(document, "//extend")).to eq 0
+        end
+      end
+
+      context "with a melisma (a syllable held over several notes)" do
+        let(:flow) { MelismaFixtures.melismas }
+
+        def extends(measure)
+          REXML::XPath.match(document, "//measure[@number='#{measure}']/note").map do |note|
+            REXML::XPath.first(note, "lyric/extend")&.attributes&.[]("type")
+          end
+        end
+
+        it "starts the line on the syllable, continues it, and stops it on the last held note" do
+          expect(extends(1)).to eq ["start", "continue", "stop", nil]
+        end
+
+        it "writes no line after a hyphenated syllable" do
+          expect(extends(2)).to eq [nil, nil, nil]
+        end
+
+        it "stops a line before a rest" do
+          expect(extends(3)).to eq ["start", "stop", nil]
+        end
+
+        it "writes a held note tied across a barline once, on its first link" do
+          expect(extends(4) + extends(5)).to eq ["start", "stop", nil, nil]
+        end
+
+        it "gives a held note's lyric no text or syllabic" do
+          held = REXML::XPath.first(document, "//measure[@number='1']/note[2]/lyric")
+          expect(held.elements.map(&:name)).to eq %w[extend]
+        end
+      end
+
+      context "with melismas in two verses" do
+        let(:flow) { MelismaFixtures.two_verse_melismas }
+
+        it "writes each verse's line under its own number" do
+          lyrics = REXML::XPath.match(document, "//measure[@number='1']/note/lyric").map do |lyric|
+            [lyric.attributes["number"], REXML::XPath.first(lyric, "extend")&.attributes&.[]("type")]
+          end
+          expect(lyrics).to eq [%w[1 start], ["2", nil], %w[1 stop], %w[2 start], %w[1 start], %w[2 stop], %w[1 stop], ["2", nil]]
         end
       end
 
@@ -312,7 +355,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
           flow = HeadMusic::Content::Flow.new(name: "Gapped")
           voice = flow.add_voice
           voice.place("1:1", :quarter, "C4").sing("Ky", hyphen_after: true)
-          voice.place("1:2", :quarter, "D4") # held: no syllable
+          voice.place("1:2", :quarter, "D4") # unsung
           voice.place("1:3", :quarter, "E4").sing("ri", hyphen_after: true)
           voice.place("1:4", :quarter, "F4").sing("e")
           flow
