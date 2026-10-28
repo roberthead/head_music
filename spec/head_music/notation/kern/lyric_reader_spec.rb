@@ -77,6 +77,11 @@ describe HeadMusic::Notation::Kern::LyricReader do
       expect([lyrics(flow.voices.first), holds(flow)]).to eq [[["Glo", true], nil, ["ri", false]], [false, true, false]]
     end
 
+    it "holds a line on past a lone underscore up to the next syllable" do
+      flow = parse("**kern  **text\n4c  Lord_\n4d  _\n4e  .\n4f  praise\n*-  *-")
+      expect(holds(flow)).to eq [false, true, true, false]
+    end
+
     it "holds nothing after a word-final syllable with no underscore" do
       flow = parse("**kern  **text\n2c  Lord\n2d  .\n*-  *-")
       expect(holds(flow)).to eq [false, false]

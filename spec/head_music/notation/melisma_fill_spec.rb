@@ -40,12 +40,12 @@ describe HeadMusic::Notation::MelismaFill do
     expect([held(1), held(2)]).to eq [[false, true], [false, false]]
   end
 
-  it "stops at a note already holding the verse" do
+  it "holds on through a note already holding the verse" do
     lord = voice.place("1:1", :quarter, "C4").sing("Lord")
     voice.place("1:2", :quarter, "D4").extend_syllable
     voice.place("1:3", :quarter, "E4")
     described_class.fill(lord, 1)
-    expect(held).to eq [false, true, false]
+    expect(held).to eq [false, true, true]
   end
 
   it "holds a hyphenated syllable up to its next one" do

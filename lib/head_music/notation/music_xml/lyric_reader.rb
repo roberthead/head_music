@@ -98,6 +98,8 @@ module HeadMusic::Notation::MusicXML
     def fill(syllable, verse)
       return unless syllable.hyphen_after || syllable.extend
       return unless syllable.voice_event.syllable(verse)&.text == syllable.text
+      # A word's line ends where its continue and stop marks say.
+      return if !syllable.hyphen_after && syllable.voice_event.melisma_continues_after?(verse)
 
       HeadMusic::Notation::MelismaFill.fill(syllable.voice_event, verse)
     end

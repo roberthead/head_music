@@ -68,9 +68,9 @@ describe HeadMusic::Notation::MusicXML::LyricReader do
   end
 
   describe "extenders" do
-    def held(text, extend: nil, number: "1")
+    def held(text, extend: nil, number: "1", syllabic: nil)
       type = extend && %( type="#{extend}")
-      text ? lyric(text, number: number).sub("</lyric>", "<extend#{type}/></lyric>") : %(<lyric number="#{number}"><extend#{type}/></lyric>)
+      text ? lyric(text, number: number, syllabic: syllabic).sub("</lyric>", "<extend#{type}/></lyric>") : %(<lyric number="#{number}"><extend#{type}/></lyric>)
     end
 
     def holds(flow, verse = 1)
@@ -105,6 +105,14 @@ describe HeadMusic::Notation::MusicXML::LyricReader do
     it "holds the notes after a hyphenated syllable up to the next one" do
       flow = parse(sung("C4", 1, "quarter", lyric("Glo", syllabic: "begin")) + sung("D4", 2, "half") + sung("E4", 1, "quarter", lyric("ri", syllabic: "middle")))
       expect(holds(flow)).to eq [false, true, false]
+    end
+
+    it "holds the notes after a hyphenated syllable past an <extend> that stops early" do
+      flow = parse(
+        sung("C4", 1, "quarter", held("Glo", extend: "start", syllabic: "begin")) +
+          sung("D4", 1, "quarter", held(nil, extend: "stop")) + sung("E4", 1, "quarter") + sung("F4", 1, "quarter", lyric("ri", syllabic: "end"))
+      )
+      expect(holds(flow)).to eq [false, true, true, false]
     end
 
     it "holds each verse on its own" do
