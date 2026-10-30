@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-10-29T20:32:47-07:00
   activated_at: 2026-10-30T08:09:09-07:00
   planned_at:   2026-10-30T08:24:43-07:00
-  finished_at:
-  updated_at:   2026-10-30T10:19:11-07:00
+  finished_at:  2026-10-30T10:20:35-07:00
+  updated_at:   2026-10-30T10:20:35-07:00
 -->
 
 # Story: Rhythmic Duration
@@ -194,3 +194,27 @@ Reviewed 2026-10-30 at `a35b6555`, by an independent read of the diff against `m
 ### Resolution
 
 Findings 1–4 are fixed: `a4f9b1ad` (Note.get answers nil), `fc6cd2c1` (Content::Note raises), `645cba3f` (guideline specs, each shown to fail under the other rule), and `02a4e0df` (CHANGELOG). The full suite passes, 18,844 examples. Findings 5 and 6 are left as they are: the loose tie parsing matches `main`, and the style points are minor.
+
+## Learnings
+
+### What went well
+
+- Pinning the serialized form first, with a fixture written by the old code before any change, kept the compatibility criterion honest through every later step.
+- The temporary bridge, where `RhythmicDuration.get` unfolded a legacy tied value, let the holders, the chain readers, and the chain builders move in separate green commits, and was deleted in the last one.
+- Driving the spec migration from the suite's own failures, renaming only on the spec line each NoMethodError named, handled about 1,200 failures without a blanket search and replace that would have touched single-value uses.
+- Checking each new guideline spec against the other rule showed the specs can fail, and that Fux figure 73 already depended on judging a ligature by its attack.
+
+### What was surprising
+
+- `RhythmicValue.get` never answered nil for an unreadable name. It built a hollow value with no unit, which is why `&.unit` guards were scattered through the readers. Removing it surfaced crashes on `main` (`Note.get("F#4 garbage")`, `Tempo.new("garbage", 60)`) that the hollow value had been deferring.
+- `Meter` built hollow values on purpose for meters like 6/1, so a nil `beat_value` became part of the change.
+- The style guidelines silently judged a tied note by its first link. Writing "a tied quarter no longer passes as a plain quarter" into the decisions would have changed grading; the attack rule kept it.
+- `Array#one?` with no block counts truthy elements, so `[ratio, nil].one?` is true.
+- BSD `sed` has no `\b`, and a Ruby replacement string of `"\\1"` written through a shell heredoc came out as a literal `\x01` in a spec, caught only by rubocop's syntax check.
+
+### What to do differently next time
+
+- Survey every caller's assumption about nil before planning a "returns nil" criterion. The story assumed `.get` already returned nil for unknown names.
+- Write the specs the plan lists under "Tests to add" in the step that changes the behavior, not after. The review caught the missing guideline specs.
+- Read the CHANGELOG's unreleased entries for the names being changed, since unreleased text describing the old API needs the same update as the code.
+- Edit spec files with Ruby scripts from a file, or the Edit tool, rather than inline shell one-liners, when the replacement holds backslashes or capture groups.
