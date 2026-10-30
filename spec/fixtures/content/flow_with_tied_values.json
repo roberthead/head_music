@@ -1,0 +1,117 @@
+{
+  "schema_version": 5,
+  "name": "Tied Values",
+  "composer": null,
+  "origin": null,
+  "work": null,
+  "source": null,
+  "timeline": {
+    "meter": "4/4",
+    "key_signature": "C major",
+    "tempo": {
+      "beat_value": "quarter",
+      "beats_per_minute": 120.0
+    },
+    "meter_changes": [],
+    "key_signature_changes": [],
+    "tempo_changes": [],
+    "tempo_ramps": [],
+    "a_tempos": [],
+    "fermatas": []
+  },
+  "parts": [
+    {
+      "voices": [
+        {
+          "role": "melody",
+          "voice_events": [
+            {
+              "position": "1:1:000",
+              "rhythmic_value": "dotted quarter",
+              "sounds": [
+                "C4"
+              ]
+            },
+            {
+              "position": "1:2:480",
+              "rhythmic_value": "eighth",
+              "sounds": [
+                "D4"
+              ]
+            },
+            {
+              "position": "1:3:000",
+              "rhythmic_value": "half tied to eighth",
+              "sounds": [
+                "E4"
+              ]
+            },
+            {
+              "position": "2:1:480",
+              "rhythmic_value": "quarter",
+              "sounds": [
+                "F4"
+              ]
+            },
+            {
+              "position": "2:2:480",
+              "rhythmic_value": "dotted eighth",
+              "sounds": [
+                "G4"
+              ]
+            },
+            {
+              "position": "2:3:240",
+              "rhythmic_value": "sixteenth tied to quarter tied to eighth",
+              "sounds": [
+                "A4"
+              ]
+            },
+            {
+              "position": "3:1:000",
+              "rhythmic_value": "triplet eighth tied to triplet quarter",
+              "sounds": [
+                "B4"
+              ]
+            },
+            {
+              "position": "3:2:000",
+              "rhythmic_value": "triplet eighth",
+              "sounds": [
+                "C5"
+              ]
+            },
+            {
+              "position": "3:2:320",
+              "rhythmic_value": "triplet eighth tied to triplet eighth",
+              "sounds": [
+                "D5"
+              ]
+            },
+            {
+              "position": "3:3:000",
+              "rhythmic_value": "half",
+              "sounds": []
+            },
+            {
+              "position": "4:1:000",
+              "rhythmic_value": "whole tied to whole",
+              "sounds": [
+                "C5"
+              ]
+            }
+          ],
+          "tuplets": [
+            {
+              "from": "3:1:000",
+              "to": "3:3:000",
+              "unit": "quarter"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "bars": [],
+  "comments": []
+}
