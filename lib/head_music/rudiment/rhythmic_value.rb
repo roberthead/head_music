@@ -5,7 +5,7 @@ module HeadMusic::Rudiment; end
 # dots, an optional tuplet ratio, and a tied value. Each link of a tied chain
 # carries its own ratio.
 class HeadMusic::Rudiment::RhythmicValue
-  include Comparable
+  include HeadMusic::Rudiment::DurationComparison
 
   RhythmicUnit = HeadMusic::Rudiment::RhythmicUnit
 
@@ -159,7 +159,12 @@ class HeadMusic::Rudiment::RhythmicValue
   end
 
   def ==(other)
-    to_s == other.to_s
+    case other
+    when HeadMusic::Rudiment::RhythmicValue, String, Symbol
+      to_s == other.to_s
+    else
+      false
+    end
   end
 
   def eql?(other)
@@ -172,10 +177,6 @@ class HeadMusic::Rudiment::RhythmicValue
 
   def to_s
     name.tr("_", "-")
-  end
-
-  def <=>(other)
-    total_value <=> other.total_value
   end
 
   private

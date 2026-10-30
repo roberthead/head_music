@@ -159,7 +159,7 @@ describe HeadMusic::Rudiment::Meter do
       it "falls back to the count unit for 5/16" do
         meter = described_class.get("5/16")
         expect { meter.beam_group_unit }.not_to raise_error
-        expect(meter.beam_group_unit).to eq described_class.get("5/16").count_unit
+        expect(meter.beam_group_unit.unit).to eq described_class.get("5/16").count_unit
       end
 
       it "returns a valid rhythmic value for 7/8" do

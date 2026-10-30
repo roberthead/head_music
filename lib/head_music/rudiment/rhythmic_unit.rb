@@ -4,7 +4,7 @@ module HeadMusic::Rudiment; end
 # A rhythmic unit is a rudiment of duration consisting of doublings and divisions of a whole note.
 class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
   include HeadMusic::Named
-  include Comparable
+  include HeadMusic::Rudiment::DurationComparison
 
   RHYTHMIC_UNITS_DATA = YAML.load_file(File.expand_path("rhythmic_units.yml", __dir__)).freeze
 
@@ -115,10 +115,12 @@ class HeadMusic::Rudiment::RhythmicUnit < HeadMusic::Rudiment::Base
     AMERICAN_DIVISIONS_NAMES[0..6].include?(name) || BRITISH_DIVISIONS_NAMES[0..6].include?(name)
   end
 
-  def <=>(other)
-    return nil unless other.is_a?(self.class)
+  def fraction
+    Rational(numerator, denominator)
+  end
 
-    relative_value <=> other.relative_value
+  def ==(other)
+    other.is_a?(self.class) && fraction == other.fraction
   end
 
   def british_name
