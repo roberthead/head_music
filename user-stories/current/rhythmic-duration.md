@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-30T08:09:09-07:00
   planned_at:   2026-10-30T08:24:43-07:00
   finished_at:
-  updated_at:   2026-10-30T09:44:07-07:00
+  updated_at:   2026-10-30T10:01:27-07:00
 -->
 
 # Story: Rhythmic Duration
@@ -150,3 +150,43 @@ Add `RhythmicDuration` alongside today's class, then move everything onto it in 
 - **Step 2 is large** (~380 lib references, ~90 spec files). It's mechanical but it's one commit. If it stops being reviewable, the commit can be split by module (content, MIDI, then each format). A temporary `rhythmic_value` reader on the holders would keep each piece green, as long as it's deleted before step 4.
 - **Rounding:** `subticks` must still round once over the whole duration, not once per value, or 7:4 chains drift. The step 1 specs pin this.
 - **bardtheory** reads only strings and the JSON key, so its upgrade is the version bump plus any direct `RhythmicValue` use. That's to be confirmed when it moves to `~> 23.0`.
+
+## Review
+
+Reviewed 2026-10-30 at `a35b6555`, by an independent read of the diff against `main`, with each finding checked against the code.
+
+### Acceptance criteria
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| RhythmicValue is one written value, with no tie API | ✅ | `lib/head_music/rudiment/rhythmic_value.rb:22`, `spec/head_music/rudiment/rhythmic_value_spec.rb:124` |
+| `RhythmicValue.get` reads single names, nil for a tied name | ✅ | `lib/head_music/rudiment/rhythmic_value/name_reader.rb:8` |
+| nil for unreadable names, no `&.unit` guards | ✅ | `name_reader.rb:42`, `rhythmic_value.rb:51`; no `&.unit` left in `lib/` |
+| A value's fraction includes its ratio | ✅ | `rhythmic_value.rb:71` |
+| RhythmicDuration: ordered, non-empty list of values | ✅ | `lib/head_music/rudiment/rhythmic_duration.rb:39` |
+| Immutable, Comparable, fraction, subticks, ticks | ✅ | `rhythmic_duration.rb:43-65`; a 7:4 chain rounds once |
+| `RhythmicDuration.get` reads tied names, `to_s` round-trips | ✅ | `rhythmic_duration.rb:32`, `spec/head_music/rudiment/rhythmic_duration_spec.rb` |
+| Chain-level questions | ✅ | `rhythmic_duration.rb:71-90` |
+| `fraction` on unit, value, and duration | ✅ | `rhythmic_unit.rb:118`, `rhythmic_value.rb:71`, `rhythmic_duration.rb:44` |
+| `same_duration_as?` across types | ✅ | `lib/head_music/rudiment/duration_comparison.rb:14`, `spec/head_music/rudiment/duration_comparison_spec.rb` |
+| `<=>` across types, 0 where `==` is false | ✅ | `duration_comparison.rb:10` |
+| Voice events and rhythmic elements hold a RhythmicDuration | ✅ | `lib/head_music/content/voice_event.rb:36`, `lib/head_music/rudiment/rhythmic_element.rb:13` |
+| Single-value holders take a RhythmicValue, tie guards gone | ✅ | `content/grace_note.rb:57`, `content/tuplet_group.rb:108`, `rudiment/tempo.rb:87` |
+| Chain walkers iterate the duration's values | ✅ | `content/chain_link.rb:8`, `notation/bar_splitter.rb`, `midi/note_timing.rb:72` |
+| DottedDuration answers a tied or one-value duration | ✅ | `lib/head_music/notation/dotted_duration.rb:37` |
+| Flows from earlier releases load unchanged | ✅ | `spec/head_music/content/flow_fixture_compatibility_spec.rb`, fixture from commit `86a091f1` |
+| Format round-trip specs unchanged in what they read and write | ⚠️ | Spec diffs are renames only; 277 of 284 oracle specs pending without their corpora and schemas |
+| Ships as 23.0.0 with a CHANGELOG entry and migration | ⚠️ | Entry under Unreleased; the version bump is for the release; the entry has gaps (finding 4) |
+
+### Findings
+
+1. **Bug: `Rudiment::Note.get(pitch, "garbage")` builds a note with no duration** (`lib/head_music/rudiment/note.rb:32`). It never checks the nil that `RhythmicDuration.get` now returns, so it registers a note `"C4 "` under the key `"C4_"`, and its `#ticks` fails later. `Rest.get` and `UnpitchedNote.get` answer nil. It should answer nil too.
+2. **`Content::Note.new("C4", "garbage")` keeps a nil duration** (`lib/head_music/content/note.rb:14`). The failure surfaces only when its voice event is built. It should raise `ArgumentError`, as `VoiceEvent` does.
+3. **The guideline changes are untested.** No style guideline spec places a tied note. The plan called for pinning the attack rule in `AlwaysMove`, `MixSpeciesTextures`, and `PreferLongBeforeShort`, and the every-value rule in `AllowFifthSpeciesRhythmicValues`, which changes that guideline's grades for tied notes.
+4. **CHANGELOG gaps.**
+   - The unreleased Tuplet ratios entry still says `get` reads "triplet eighth tied to quarter" back, which only `RhythmicDuration.get` does now.
+   - The Breaking entry omits that `CantusFirmus::Example#to_flow(rhythmic_value:)`, released in 21.0.0, is now `to_flow(rhythmic_duration:)`.
+   - It also omits that `RhythmicElement` dropped `#tied_value` along with `#unit` and `#dots`.
+   - It also omits that "tied to" is now read in any case.
+5. **Loose tie parsing (low).** `RhythmicValue.get("half tied to")` and `"tied to half"` read as "half", as `RhythmicDuration.get("half tied to")` does. `main` behaves the same, but a dangling tie is no single value.
+6. **Style (low).** A comment in `lib/head_music/notation/music_xml/duration_writer.rb` runs to 117 characters after an edit, and the ABC and MusicXML duration writers accept either a value or a duration through `respond_to?(:values)` rather than one type.
