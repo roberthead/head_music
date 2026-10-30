@@ -11,7 +11,8 @@ class HeadMusic::Content::Note
 
   def initialize(pitch, rhythmic_duration, voice = nil, position = nil)
     @pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-    @rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(rhythmic_duration)
+    @rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(rhythmic_duration) ||
+      raise(ArgumentError, "unknown rhythmic duration: #{rhythmic_duration.inspect}")
     @voice = voice || HeadMusic::Content::Voice.new
     @position = position || HeadMusic::Content::Position.new(@voice.flow, "1:1")
   end
