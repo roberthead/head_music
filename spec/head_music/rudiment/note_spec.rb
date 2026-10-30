@@ -36,6 +36,10 @@ describe HeadMusic::Rudiment::Note do
       end
     end
 
+    it "is nil for a pitch with a duration it cannot read" do
+      expect(described_class.get("C4", "garbage")).to be_nil
+    end
+
     context "when given a Note instance" do
       let(:note) { described_class.get("A4", "eighth") }
 

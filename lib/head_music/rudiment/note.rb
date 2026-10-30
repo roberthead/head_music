@@ -30,6 +30,8 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
 
     pitch = HeadMusic::Rudiment::Pitch.get(pitch)
     rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(rhythmic_duration || :quarter)
+    return nil unless rhythmic_duration
+
     fetch_or_create(pitch, rhythmic_duration)
   end
 
