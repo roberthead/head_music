@@ -48,8 +48,28 @@ convention so far:
   sentence naming the bump and what a consumer must do to upgrade.
 - Set `VERSION` in `lib/head_music/version.rb`.
 - Run `bundle install` so `Gemfile.lock` records the new version.
+- Bump the fixtures that record the gem's version. The MEI goldens write it
+  as `<application version="X.Y.Z">` and the MusicXML renders as
+  `<software>head_music X.Y.Z</software>`, and specs compare them to a fresh
+  render, so a bump left there fails the suite here and in the release
+  workflow after the tag is pushed. Find them with
+  `grep -rlF 'OLD.VERSION' spec/fixtures` and replace only the head_music
+  version in those two forms:
+
+  ```bash
+  grep -rlF 'OLD.VERSION' spec/fixtures | xargs sed -i '' \
+    -e 's/<application version="OLD\.VERSION">/<application version="X.Y.Z">/' \
+    -e 's/head_music OLD\.VERSION/head_music X.Y.Z/'
+  ```
+
+  Do not run `rake music_xml:musescore_fixtures` for this: it reconverts
+  every fixture through MuseScore and churns far more than the version.
+  Check that every changed fixture line is a version line, and that the
+  grep now finds nothing. A match left over is a new format embedding the
+  version; bump it the same way and add its form here.
 - Run `bundle exec rake` and `bundle exec rubocop` again.
-- Show the user the diff: CHANGELOG, version file, lockfile, nothing else.
+- Show the user the diff: CHANGELOG, version file, lockfile, and the
+  fixtures' version lines, nothing else.
 
 ## 4. Commit and push
 
