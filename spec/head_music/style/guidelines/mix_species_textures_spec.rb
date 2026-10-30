@@ -123,6 +123,14 @@ describe HeadMusic::Style::Guidelines::MixSpeciesTextures do
     end
   end
 
+  context "with ligatures held as single tied notes" do
+    let(:abc) { "z2 d2-|d2 c2-|c2 B2-|B2 A2-|A2 G2|A B c d|e d c B|A4|]" }
+
+    it "judges each tied note by its attack, a half, so the run of ligatures is marked" do
+      expect([voice.notes.first.rhythmic_duration.to_s, marked_bars]).to eq ["half tied to half", [2, 3, 4, 5]]
+    end
+  end
+
   context "with a dotted half" do
     let(:abc) { "A2 d2|c2 B2|A3 G|A2 B2|c2 d2|e d c B|A B c d|e4|]" }
 

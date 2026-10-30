@@ -42,6 +42,40 @@ describe HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues do
     it { is_expected.to be_adherent }
   end
 
+  context "with a suspension held as a single tied note" do
+    before do
+      counterpoint.place("1:3", "half tied to half", "A4")
+      counterpoint.place("2:3", :half, "G4")
+      counterpoint.place("3:1", :half, "A4")
+      counterpoint.place("3:3", :half, "B4")
+      counterpoint.place("4:1", :whole, "A4")
+    end
+
+    it { is_expected.to be_adherent }
+  end
+
+  context "with a tied note whose later value is dotted" do
+    before do
+      counterpoint.place("1:3", "half tied to dotted quarter", "A4")
+      counterpoint.place("2:2:480", :eighth, "G4")
+    end
+
+    it "marks the tied note" do
+      expect(guideline.marks.map(&:code)).to include "1:3:000 to 2:2:480"
+    end
+  end
+
+  context "with a tied note whose later value is a sixteenth" do
+    before do
+      counterpoint.place("1:3", "half tied to sixteenth", "A4")
+      counterpoint.place("2:1:240", "dotted eighth", "G4")
+    end
+
+    it "marks the tied note" do
+      expect(guideline.marks.map(&:code)).to include "1:3:000 to 2:1:240"
+    end
+  end
+
   context "with a lone eighth note that has no preceding or following note" do
     before do
       # A single eighth note is the only note in the voice, so it has neither
