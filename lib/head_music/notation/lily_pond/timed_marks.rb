@@ -105,7 +105,7 @@ module HeadMusic::Notation::LilyPond
     # spans it, and a multiplied whole note otherwise.
     def self.duration(fraction)
       value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
-      return DurationWriter.token(value) if value && !value.tied_value
+      return DurationWriter.token(value) if value
 
       "1*#{fraction.numerator}/#{fraction.denominator}"
     end

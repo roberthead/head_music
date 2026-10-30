@@ -92,7 +92,7 @@ class HeadMusic::Content::Flow
     def build_voice_event(voice, voice_event_hash, path)
       voice_event = voice.place(
         values.position(voice_event_hash["position"], path),
-        values.rhythmic_value(voice_event_hash["rhythmic_value"], path),
+        values.rhythmic_duration(voice_event_hash["rhythmic_value"], path),
         values.voice_event_sounds(voice_event_hash, path)
       )
       voice_event.beam_break_before = voice_event_hash["beam_break_before"] if voice_event_hash.key?("beam_break_before")

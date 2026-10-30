@@ -1132,7 +1132,7 @@ describe HeadMusic::Content::Flow do
 
       it "round-trips the total duration" do
         restored = expect_lossless_round_trip(flow)
-        expect(restored.voices.first.voice_events.first.rhythmic_value.total_value).to eq tied.total_value
+        expect(restored.voices.first.voice_events.first.rhythmic_duration.total_value).to eq tied.total_value
       end
     end
   end

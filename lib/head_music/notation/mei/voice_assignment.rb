@@ -62,7 +62,7 @@ module HeadMusic::Notation::MEI
       staff = @definition.staff_index(layer.staff)
       layer.entries.each do |entry, sounds, pending|
         if entry.grace
-          grace = track.queue_grace(sounds: sounds.uniq, rhythmic_value: entry.rhythmic_value, slashed: entry.slashed, articulations: ArticReader.articulations([entry.element, *entry.notes].uniq, @editorial), tie_starts: [])
+          grace = track.queue_grace(sounds: sounds.uniq, rhythmic_value: entry.rhythmic_duration.single_value, slashed: entry.slashed, articulations: ArticReader.articulations([entry.element, *entry.notes].uniq, @editorial), tie_starts: [])
           fill(pending, track, grace: grace)
         else
           entry.track = track
@@ -78,7 +78,7 @@ module HeadMusic::Notation::MEI
       (entry.bars || 1).times.map do |offset|
         track.add(
           measure_index: index + offset, cursor: entry.cursor, tolerance: PartReading::TOLERANCE,
-          rhythmic_value: entry.fills_bar? ? nil : entry.rhythmic_value, duration: entry.duration || 0, sounds: sounds.uniq,
+          rhythmic_duration: entry.fills_bar? ? nil : entry.rhythmic_duration, duration: entry.duration || 0, sounds: sounds.uniq,
           fills_bar: entry.fills_bar?, cue: entry.cue, tie_starts: [], tie_stops: [], staff: staff
         )
       end.first

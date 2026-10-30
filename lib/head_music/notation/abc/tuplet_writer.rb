@@ -18,7 +18,7 @@ module HeadMusic::Notation::ABC
       end
       @counts = Hash.new(0).compare_by_identity
       segments.each do |segment|
-        next unless segment.voice_event.rhythmic_value.tuplet?
+        next unless segment.voice_event.rhythmic_duration.tuplet?
 
         split(segment).each { |_, _, bracket| @counts[bracket] += 1 if bracket }
       end
@@ -26,7 +26,7 @@ module HeadMusic::Notation::ABC
 
     # Nil for a segment with no tuplet value, which is written whole.
     def pieces(segment)
-      return unless segment.voice_event.rhythmic_value.tuplet?
+      return unless segment.voice_event.rhythmic_duration.tuplet?
 
       split(segment).map do |index, links, bracket|
         Piece.new(links, opens?(bracket, segment, index) ? marker(bracket) : "")
@@ -37,7 +37,7 @@ module HeadMusic::Notation::ABC
 
     # Each piece as [the index of its first link, its links, its bracket].
     def split(segment)
-      chain = segment.rhythmic_value!(RenderError).tied_chain
+      chain = segment.rhythmic_duration!(RenderError).values
       brackets = @brackets.fetch(segment, {})
       chain.each_index.chunk_while do |index, following|
         chain[index].tuplet_ratio == chain[following].tuplet_ratio && brackets[index].equal?(brackets[following])

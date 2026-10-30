@@ -6,7 +6,7 @@ describe HeadMusic::MIDI::TickResolution do
     timeline = HeadMusic::MIDI::PerformanceTimeline.new(flow)
     spans = timeline.spans.to_h { |span| [span.bar_number, span] }
     flow.voices.flat_map(&:voice_events).flat_map do |voice_event|
-      HeadMusic::MIDI::BarPieces.of(voice_event, 0, voice_event.rhythmic_value.fraction).flat_map do |piece|
+      HeadMusic::MIDI::BarPieces.of(voice_event, 0, voice_event.rhythmic_duration.fraction).flat_map do |piece|
         [spans[piece.bar_number].time_at(piece.from), spans[piece.bar_number].time_at(piece.to)]
       end
     end

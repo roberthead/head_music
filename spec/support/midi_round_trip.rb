@@ -33,7 +33,7 @@ module MIDIRoundTrip
 
   def notes(flow)
     each_sounding(flow).map do |part_events|
-      chords = part_events.group_by { |onset, voice_event| [onset, voice_event.rhythmic_value.fraction] }
+      chords = part_events.group_by { |onset, voice_event| [onset, voice_event.rhythmic_duration.fraction] }
       chords.map { |(onset, length), pairs| [onset, length, pairs.flat_map { |_onset, voice_event| keys(voice_event) }.uniq.sort] }.sort
     end
   end

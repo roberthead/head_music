@@ -30,7 +30,7 @@ class HeadMusic::Analysis::NoteInput
       voice_event.grace_notes.each_with_index do |grace_note, index|
         add_sounds(grace_note.sounds, [*entry.path, "grace_notes", index], entry.voice, onset, 0)
       end
-      add_sounds(voice_event.sounds, entry.path, entry.voice, onset, voice_event.rhythmic_value.fraction)
+      add_sounds(voice_event.sounds, entry.path, entry.voice, onset, voice_event.rhythmic_duration.fraction)
     end
 
     def add_sounds(sounds, path, voice, onset, duration)

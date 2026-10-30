@@ -167,9 +167,9 @@ module HeadMusic::Notation::LilyPond
 
     def short_bar_rest(marks, bar_number)
       from = 0r
-      rest = HeadMusic::Notation::DottedDuration.rhythmic_value_for(plan.music_end_fraction) ||
+      rest = HeadMusic::Notation::DottedDuration.rhythmic_duration_for(plan.music_end_fraction) ||
         raise(RenderError, "cannot rest through the short final bar #{bar_number} in LilyPond output: no binary note value spans it")
-      rest.tied_chain.map { |link|
+      rest.values.map { |link|
         to = from + HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link)
         word = marks.around(bar_number, from, to, "r#{DurationWriter.token(link)}")
         from = to

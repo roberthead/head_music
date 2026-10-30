@@ -62,7 +62,7 @@ module HeadMusic::Notation::Kern
       return [] unless to > from
 
       offset = from
-      HeadMusic::Notation::DottedDuration.rest_value(to - from).tied_chain.map do |link|
+      HeadMusic::Notation::DottedDuration.rest_duration(to - from).values.map do |link|
         Event.new(offset: offset, link: link, pitches: nil, tie: nil, syllables: {}, marks: "")
           .tap { offset += DurationWriter.fraction(link) }
       end
@@ -104,7 +104,7 @@ module HeadMusic::Notation::Kern
     def voice_event_links(voice_event)
       HeadMusic::Notation::BarSplitter.segments_of(voice_event).flat_map do |segment|
         offset = segment.offset
-        segment.rhythmic_value!(RenderError).tied_chain.map do |link|
+        segment.rhythmic_duration!(RenderError).values.map do |link|
           [segment.bar_number, link, offset].tap { offset += DurationWriter.fraction(link) }
         end
       end

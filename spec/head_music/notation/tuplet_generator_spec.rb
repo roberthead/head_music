@@ -20,8 +20,8 @@ describe TupletGenerator do
   def features(flows)
     voices = flows.flat_map(&:voices)
     {
-      ratios: voices.flat_map(&:voice_events).filter_map { |event| event.rhythmic_value.tuplet_ratio&.to_s }.uniq.sort,
-      ungrouped: voices.any? { |voice| voice.voice_events.any? { |event| event.rhythmic_value.tuplet? && voice.tuplet_at(event.position).nil? } },
+      ratios: voices.flat_map(&:voice_events).filter_map { |event| event.rhythmic_duration.values.first.tuplet_ratio&.to_s }.uniq.sort,
+      ungrouped: voices.any? { |voice| voice.voice_events.any? { |event| event.rhythmic_duration.tuplet? && voice.tuplet_at(event.position).nil? } },
       crossing: voices.any? { |voice| HeadMusic::Notation::TupletBrackets.for(voice).any?(&:crosses_barline?) },
       graces: voices.flat_map(&:note_events).flat_map(&:grace_notes).map(&:slashed?).uniq.sort_by(&:to_s),
       grace_slurs: voices.flat_map(&:spans).any?(&:from_grace?),

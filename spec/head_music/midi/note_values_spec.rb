@@ -31,31 +31,31 @@ describe HeadMusic::MIDI::NoteValues do
   end
 
   def value(name)
-    HeadMusic::Rudiment::RhythmicValue.get(name)
+    HeadMusic::Rudiment::RhythmicDuration.get(name)
   end
 
   def triplet(name)
-    HeadMusic::Rudiment::RhythmicValue.get(name, tuplet: "3:2")
+    HeadMusic::Rudiment::RhythmicDuration.get(name, tuplet: "3:2")
   end
 
   def rest_list(from, to)
-    note_values.rests(from, to).map { |time, rhythmic_value| [time, rhythmic_value.to_s] }
+    note_values.rests(from, to).map { |time, rhythmic_duration| [time, rhythmic_duration.to_s] }
   end
 
-  describe "#value" do
+  describe "#rhythmic_duration" do
     it "ties a triplet into the binary value after the beat" do
-      expect(note_values.value(Rational(1, 12), Rational(1, 2))).to eq triplet(:quarter).append_tied(value(:quarter))
+      expect(note_values.rhythmic_duration(Rational(1, 12), Rational(1, 2))).to eq triplet(:quarter).tied_to(value(:quarter))
     end
 
     it "keeps a dotted value whole within a bar and ties it over the barline" do
-      expect(note_values.value(Rational(1, 4), Rational(7, 4))).to eq value("dotted half").append_tied(value("dotted half"))
+      expect(note_values.rhythmic_duration(Rational(1, 4), Rational(7, 4))).to eq value("dotted half").tied_to(value("dotted half"))
     end
 
     context "with a pickup bar" do
       let(:pickup) { Rational(1, 4) }
 
       it "cuts at the barline after it" do
-        expect(note_values.value(0, Rational(1, 2))).to eq value(:quarter).append_tied(value(:quarter))
+        expect(note_values.rhythmic_duration(0, Rational(1, 2))).to eq value(:quarter).tied_to(value(:quarter))
       end
     end
 
@@ -63,31 +63,22 @@ describe HeadMusic::MIDI::NoteValues do
       let(:bar_meters) { %w[4/4 6/8] }
 
       it "fills each bar by its own meter" do
-        expect(note_values.value(Rational(1, 2), Rational(7, 4))).to eq value(:half).append_tied(value("dotted half"))
+        expect(note_values.rhythmic_duration(Rational(1, 2), Rational(7, 4))).to eq value(:half).tied_to(value("dotted half"))
       end
     end
 
     it "raises, naming the bar, when no rhythmic value spans the length" do
-      expect { note_values.value(1, Rational(1025, 1024)) }
+      expect { note_values.rhythmic_duration(1, Rational(1025, 1024)) }
         .to raise_error(HeadMusic::MIDI::UnsupportedFeatureError, /in bar 2/)
     end
 
     context "with a note held across 2,000 bars" do
       let(:bar_meters) { Array.new(2000, "4/4") }
-      let(:calls) { [] }
 
-      before do
-        # Every rebuilt link must be counted, and those are new instances.
-        allow_any_instance_of(HeadMusic::Rudiment::RhythmicValue).to receive(:append_tied).and_wrap_original do |original, *args| # rubocop:disable RSpec/AnyInstance
-          calls << original.receiver
-          original.call(*args)
-        end
-      end
+      it "writes one whole note per bar" do
+        values = note_values.rhythmic_duration(0, 2000).values
 
-      it "writes one whole note per bar, appending each link once" do
-        chain = note_values.value(0, 2000).tied_chain
-
-        expect([chain.length, chain.map(&:single_value_name).uniq, calls.length]).to eq [2000, ["whole"], 1999]
+        expect([values.length, values.map(&:to_s).uniq]).to eq [2000, ["whole"]]
       end
     end
   end

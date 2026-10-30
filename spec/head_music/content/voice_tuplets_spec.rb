@@ -32,7 +32,7 @@ describe HeadMusic::Content::Voice do
 
     it "gives a quarter and an eighth under 3:2 their exact subticks" do
       place_in_turn(value(:quarter, tuplet: "3:2"), triplet_eighth)
-      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_value.subticks }).to eq [153_600, 76_800]
+      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_duration.subticks }).to eq [153_600, 76_800]
     end
 
     it "counts six 6:4 sixteenths in sixteenths" do

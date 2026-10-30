@@ -99,10 +99,10 @@ module HeadMusic::Notation::ABC
     def skip(length)
       @decorations.place_at(mark_position)
       if overlay?
-        @overlay.advance(@duration_resolver.rhythmic_value(length))
+        @overlay.advance(@duration_resolver.rhythmic_duration(length))
       else
         ratio, ends = @tuplets.count
-        @tuplets.mark_ends(ends, *@invisible_rests.add(@duration_resolver.rhythmic_value(length, tuplet: ratio)))
+        @tuplets.mark_ends(ends, *@invisible_rests.add(@duration_resolver.rhythmic_duration(length, tuplet: ratio)))
       end
     end
 
@@ -272,7 +272,7 @@ module HeadMusic::Notation::ABC
 
     def place_next(note)
       @invisible_rests.place
-      voice.place(voice.next_position, note.rhythmic_value(@duration_resolver), note.pitches)
+      voice.place(voice.next_position, note.rhythmic_duration(@duration_resolver), note.pitches)
     end
 
     def apply_marks(voice_event, note)
@@ -297,14 +297,14 @@ module HeadMusic::Notation::ABC
 
     # Closes an open tie: the pending note becomes the new link's tied prefix,
     # so the pair (and any longer chain) resolves to a single voice event whose
-    # rhythmic value carries the author's chosen split.
+    # rhythmic duration carries the author's chosen split.
     #
     # A mark written on the tied link takes effect where it is written,
     # partway through the event.
     def tie_onto_pending(link)
       pending = pending_note
       @tie.ensure_ties(pending, link.pitches)
-      prefix = pending.rhythmic_value(@duration_resolver)
+      prefix = pending.rhythmic_duration(@duration_resolver)
       markings = @decorations.mark_link(pending_end_position, link.decorations)
       close_tie
       fixed_ends = @tuplets.fix_ends(pending.tuplet_ends, pending.tied_prefix, prefix)
@@ -312,7 +312,7 @@ module HeadMusic::Notation::ABC
     end
 
     def pending_end_position
-      music_end + pending_note.rhythmic_value(@duration_resolver)
+      music_end + pending_note.rhythmic_duration(@duration_resolver)
     end
 
     def spelling_key

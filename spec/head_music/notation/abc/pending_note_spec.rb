@@ -10,7 +10,7 @@ describe HeadMusic::Notation::ABC::PendingNote do
   end
 
   it "resolves its own length" do
-    expect(note.rhythmic_value(duration_resolver).to_s).to eq "quarter"
+    expect(note.rhythmic_duration(duration_resolver).to_s).to eq "quarter"
   end
 
   it "ties to the same letters in the same octaves, whatever their accidentals" do
@@ -26,7 +26,7 @@ describe HeadMusic::Notation::ABC::PendingNote do
   end
 
   it "scales its length" do
-    expect(note.scaled(Rational(3, 2)).rhythmic_value(duration_resolver).to_s).to eq "dotted quarter"
+    expect(note.scaled(Rational(3, 2)).rhythmic_duration(duration_resolver).to_s).to eq "dotted quarter"
   end
 
   it "carries its beam break and grace notes onto its voice event" do
@@ -40,14 +40,14 @@ describe HeadMusic::Notation::ABC::PendingNote do
     subject(:tied) { note.tied_to(link, prefix, [:fixed]) }
 
     let(:link) { described_class.new(pitches: [pitch("C4")], length: "1", scale: Rational(1), slur_marks: [:close], tuplet_ends: [:link_end]) }
-    let(:prefix) { note.rhythmic_value(duration_resolver) }
+    let(:prefix) { note.rhythmic_duration(duration_resolver) }
 
     it "keeps its own pitches and beam break" do
       expect([tied.pitches, tied.beam_break]).to eq [[pitch("C#4")], true]
     end
 
     it "renders the whole chain as one value" do
-      expect(tied.rhythmic_value(duration_resolver).to_s).to eq "quarter tied to eighth"
+      expect(tied.rhythmic_duration(duration_resolver).to_s).to eq "quarter tied to eighth"
     end
 
     it "gathers the link's marks after its own" do

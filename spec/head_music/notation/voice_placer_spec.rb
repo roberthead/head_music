@@ -238,8 +238,8 @@ describe HeadMusic::Notation::VoicePlacer do
       voice = flow.add_voice
       track = HeadMusic::Notation::VoiceTrack.new("1")
       events.each do |index, cursor, value, fills|
-        rhythmic_value = value && HeadMusic::Rudiment::RhythmicValue.get(value)
-        track.add(measure_index: index, cursor: cursor, tolerance: Rational(1, 1000), rhythmic_value: rhythmic_value, duration: rhythmic_value&.fraction || 0,
+        rhythmic_duration = value && HeadMusic::Rudiment::RhythmicDuration.get(value)
+        track.add(measure_index: index, cursor: cursor, tolerance: Rational(1, 1000), rhythmic_duration: rhythmic_duration, duration: rhythmic_duration&.fraction || 0,
           sounds: value ? [HeadMusic::Rudiment::Pitch.get("C4")] : [], fills_bar: fills, tie_starts: [], tie_stops: [], staff: 1)
       end
       described_class.new(voice, track, HeadMusic::Notation::BarMap.new([reading]), reading, tuplet_reader: HeadMusic::Notation::MusicXML::TupletReader, trim_edges: true).place

@@ -27,7 +27,7 @@ module HeadMusic
       def for(segments, error_class: RenderError)
         segments.flat_map do |segment|
           onset = segment.offset || BarSplitter.onset_in_bar(segment.voice_event)
-          segment.rhythmic_value!(error_class).tied_chain.each_with_index.map do |link, index|
+          segment.rhythmic_duration!(error_class).values.each_with_index.map do |link, index|
             Link.new(segment, index, link, [segment.bar_number, onset]).tap { onset += link.link_fraction }
           end
         end

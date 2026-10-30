@@ -40,7 +40,7 @@ describe HeadMusic::Content::VoiceEvent do
     context "when the rhythmic value is a thirty-second note" do
       let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.new(:"thirty-second") }
 
-      its(:rhythmic_value) { is_expected.to eq "thirty-second" }
+      its(:rhythmic_duration) { is_expected.to eq "thirty-second" }
     end
   end
 

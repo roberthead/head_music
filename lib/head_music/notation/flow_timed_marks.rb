@@ -30,7 +30,7 @@ module HeadMusic
           voice_event = voice.voice_event_sounding_at(position)
           return unless voice_event && voice_event.position < position
 
-          voice_event if voice_event.rhythmic_value.tied_chain.any? { |link| rounds?(link) }
+          voice_event if voice_event.rhythmic_duration.values.any? { |link| rounds?(link) }
         end
 
         def rounds?(link)

@@ -7,7 +7,7 @@ describe HeadMusic::Notation::Kern::TokenReader do
 
   def summary(field)
     token = read(field)
-    [token.type, token.pitches.map(&:to_s), token.rhythmic_value.to_s, token.tie]
+    [token.type, token.pitches.map(&:to_s), token.rhythmic_duration.to_s, token.tie]
   end
 
   it "reads a null token" do
@@ -67,7 +67,7 @@ describe HeadMusic::Notation::Kern::TokenReader do
   describe "grace notes" do
     def grace(field)
       token = read(field)
-      [token.type, token.pitches.map(&:to_s), token.rhythmic_value.to_s, token.slashed, token.tie, token.fraction]
+      [token.type, token.pitches.map(&:to_s), token.rhythmic_duration.to_s, token.slashed, token.tie, token.fraction]
     end
 
     it "reads q as a slashed grace note that takes no time" do

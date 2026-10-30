@@ -54,11 +54,11 @@ module HeadMusic
         # An example is a catalog datum -- a pitch list with a mode and a
         # citation -- not content, so rhythm and meter are the realization's
         # choice rather than the datum's, and are parameters.
-        def to_flow(rhythmic_value: :whole, meter: "4/4")
+        def to_flow(rhythmic_duration: :whole, meter: "4/4")
           flow = HeadMusic::Content::Flow.new(name: to_s, key_signature: key_signature_name, meter: meter)
           flow.source = source
           voice = flow.add_voice(role: "cantus firmus")
-          pitches.each_with_index { |pitch, index| voice.place("#{index + 1}:1", rhythmic_value, pitch) }
+          pitches.each_with_index { |pitch, index| voice.place("#{index + 1}:1", rhythmic_duration, pitch) }
           flow
         end
 

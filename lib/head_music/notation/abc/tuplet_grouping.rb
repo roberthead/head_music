@@ -55,7 +55,7 @@ module HeadMusic::Notation::ABC
 
     def place_ends(voice_event, ends, prefix = nil)
       ends.each do |tuplet, edge, links|
-        tuplet[edge] = link_position(voice_event, links || end_links(edge, prefix, voice_event.rhythmic_value))
+        tuplet[edge] = link_position(voice_event, links || end_links(edge, prefix, voice_event.rhythmic_duration))
       end
       group_closed
     end
@@ -87,7 +87,7 @@ module HeadMusic::Notation::ABC
     end
 
     def end_links(edge, prefix, chain)
-      (edge == :from) ? (prefix&.tied_chain&.length || 0) : chain.tied_chain.length
+      (edge == :from) ? (prefix&.values&.length || 0) : chain.values.length
     end
 
     def link_position(voice_event, index)

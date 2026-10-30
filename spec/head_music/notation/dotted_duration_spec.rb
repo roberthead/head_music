@@ -26,8 +26,8 @@ describe HeadMusic::Notation::DottedDuration do
       expect(described_class.tied([value("half"), value("quarter"), value("eighth")]).to_s).to eq "half tied to quarter tied to eighth"
     end
 
-    it "keeps a value's own tied chain inside the whole" do
-      head = described_class.rhythmic_value_for(Rational(5, 4))
+    it "keeps a duration's own ties inside the whole" do
+      head = described_class.rhythmic_duration_for(Rational(5, 4))
       expect(described_class.tied([head, value("half")]).to_s).to eq "whole tied to quarter tied to half"
     end
 
@@ -36,7 +36,7 @@ describe HeadMusic::Notation::DottedDuration do
     end
   end
 
-  describe ".rhythmic_value_for" do
+  describe ".rhythmic_duration_for" do
     {
       1 => "whole",
       Rational(1, 4) => "quarter",
@@ -49,12 +49,20 @@ describe HeadMusic::Notation::DottedDuration do
       8 => "maxima"
     }.each do |fraction, name|
       it "resolves #{fraction} to a #{name}" do
-        expect(described_class.rhythmic_value_for(fraction).to_s).to eq name
+        expect(described_class.rhythmic_duration_for(fraction).to_s).to eq name
       end
     end
 
     it "accepts an integer" do
-      expect(described_class.rhythmic_value_for(4).to_s).to eq "longa"
+      expect(described_class.rhythmic_duration_for(4).to_s).to eq "longa"
+    end
+
+    it "answers one value where no tie is needed, as .rhythmic_value_for does" do
+      expect(described_class.rhythmic_value_for(Rational(3, 4))).to eq HeadMusic::Rudiment::RhythmicValue.get("dotted half")
+    end
+
+    it "leaves .rhythmic_value_for nil where a tie is needed" do
+      expect(described_class.rhythmic_value_for(Rational(5, 4))).to be_nil
     end
 
     it "is nil for a fraction with a non-binary denominator" do
@@ -101,7 +109,7 @@ describe HeadMusic::Notation::DottedDuration do
     end
 
     it "puts the ratio on every link of a chain it builds" do
-      expect(described_class.rhythmic_value_for(Rational(5, 28), tuplet: "7:4").to_s).to eq "7:4 quarter tied to 7:4 sixteenth"
+      expect(described_class.rhythmic_duration_for(Rational(5, 28), tuplet: "7:4").to_s).to eq "7:4 quarter tied to 7:4 sixteenth"
     end
 
     it "answers nil where no value fits under the ratio" do
@@ -128,11 +136,11 @@ describe HeadMusic::Notation::DottedDuration do
 
   describe ".rest_value" do
     it "answers a plain value where one spans the fraction" do
-      expect(described_class.rest_value(Rational(3, 4)).to_s).to eq "dotted half"
+      expect(described_class.rest_duration(Rational(3, 4)).to_s).to eq "dotted half"
     end
 
     it "answers a value under the implied ratio where none does" do
-      expect(described_class.rest_value(Rational(1, 6)).to_s).to eq "triplet quarter"
+      expect(described_class.rest_duration(Rational(1, 6)).to_s).to eq "triplet quarter"
     end
   end
 end

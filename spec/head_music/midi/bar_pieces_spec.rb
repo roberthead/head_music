@@ -6,7 +6,7 @@ describe HeadMusic::MIDI::BarPieces do
 
   def pieces(position, value, from: 0, to: nil)
     voice_event = voice.place(position, value, "C4")
-    described_class.of(voice_event, from, to || voice_event.rhythmic_value.fraction)
+    described_class.of(voice_event, from, to || voice_event.rhythmic_duration.fraction)
   end
 
   def summary(list)

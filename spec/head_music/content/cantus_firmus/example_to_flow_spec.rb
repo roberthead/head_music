@@ -51,11 +51,11 @@ describe HeadMusic::Content::CantusFirmus::Example do
 
   describe "the realization's own choices" do
     it "uses whole notes by default" do
-      expect(flow.voices.first.voice_events.first.rhythmic_value.to_s).to eq "whole"
+      expect(flow.voices.first.voice_events.first.rhythmic_duration.to_s).to eq "whole"
     end
 
-    it "takes a rhythmic value" do
-      expect(example.to_flow(rhythmic_value: :half).voices.first.voice_events.first.rhythmic_value.to_s).to eq "half"
+    it "takes a rhythmic duration" do
+      expect(example.to_flow(rhythmic_duration: :half).voices.first.voice_events.first.rhythmic_duration.to_s).to eq "half"
     end
 
     it "takes a meter" do

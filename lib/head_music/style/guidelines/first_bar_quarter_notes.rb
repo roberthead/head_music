@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::FirstBarQuarterNotes < HeadMusic::Style::Guidelines::FirstBarEntry
   private
 
-  def expected_rhythmic_value
-    HeadMusic::Rudiment::RhythmicValue.get(:quarter)
+  def expected_rhythmic_duration
+    HeadMusic::Rudiment::RhythmicDuration.get(:quarter)
   end
 end

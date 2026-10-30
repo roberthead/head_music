@@ -14,14 +14,14 @@ module HeadMusic::Notation::ABC
     end
 
     # Where the rest starts and ends.
-    def add(rhythmic_value)
+    def add(rhythmic_duration)
       from = music_end
-      @values << rhythmic_value
+      @values << rhythmic_duration
       [from, music_end]
     end
 
     def music_end
-      @values.reduce(@voice.next_position) { |position, rhythmic_value| position + rhythmic_value }
+      @values.reduce(@voice.next_position) { |position, rhythmic_duration| position + rhythmic_duration }
     end
 
     # Once they reach a bar past the last voice event's, that bar is part of
@@ -31,7 +31,7 @@ module HeadMusic::Notation::ABC
     end
 
     def place
-      @values.each { |rhythmic_value| @voice.place(@voice.next_position, rhythmic_value) }
+      @values.each { |rhythmic_duration| @voice.place(@voice.next_position, rhythmic_duration) }
       @values.clear
     end
   end

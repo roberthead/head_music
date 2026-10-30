@@ -55,29 +55,29 @@ module HeadMusic::Notation::MusicXML
       whole_bar_rest?(note, duration) || (note.rest && !note.type && duration > bar_length && duration - bar_length <= division)
     end
 
-    def rhythmic_value(note, duration, **where)
+    def rhythmic_duration(note, duration, **where)
       written = NoteReader.written_value(note, **where)
-      return value_from_duration(note, duration, **where) unless written
+      return duration_from_duration(note, duration, **where) unless written
 
       if (written.link_fraction - duration).abs > division
         raise ParseError.new(
           "A <duration> of #{note.duration} disagrees with its #{written} at #{divisions} divisions", **where
         )
       end
-      written
+      HeadMusic::Rudiment::RhythmicDuration.get(written)
     end
 
     private
 
     # A note with no <type> takes its value from its <duration>, under its
     # <time-modification> or, failing that, the ratio its length implies.
-    def value_from_duration(note, duration, **where)
-      value = if note.ratio
-        HeadMusic::Notation::DottedDuration.rhythmic_value_for(duration, tuplet: note.ratio)
+    def duration_from_duration(note, duration, **where)
+      rhythmic_duration = if note.ratio
+        HeadMusic::Notation::DottedDuration.rhythmic_duration_for(duration, tuplet: note.ratio)
       else
-        HeadMusic::Notation::DottedDuration.rest_value(duration)
+        HeadMusic::Notation::DottedDuration.rest_duration(duration)
       end
-      value || raise(UnsupportedFeatureError.new("No note value spans a <duration> of #{note.duration}", **where))
+      rhythmic_duration || raise(UnsupportedFeatureError.new("No note value spans a <duration> of #{note.duration}", **where))
     end
   end
 end

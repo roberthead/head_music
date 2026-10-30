@@ -47,7 +47,7 @@ module HeadMusic::MIDI
       time = @layout.bars.first.start
       notes.each do |onset, release, sounds|
         add_rests(track, time, onset)
-        add(track, onset, @values.value(onset, release), sounds)
+        add(track, onset, @values.rhythmic_duration(onset, release), sounds)
         time = release
       end
       add_rests(track, time, @layout.end_time)
@@ -61,11 +61,11 @@ module HeadMusic::MIDI
       end
     end
 
-    def add(track, time, rhythmic_value, sounds, fills_bar: false)
+    def add(track, time, rhythmic_duration, sounds, fills_bar: false)
       bar = @layout.bar_at(time)
       track.add(
         measure_index: bar.number - @layout.first_number, cursor: time - bar.start, tolerance: 0,
-        rhythmic_value: rhythmic_value, sounds: sounds, fills_bar: fills_bar, staff: 1, tie_starts: [], tie_stops: []
+        rhythmic_duration: rhythmic_duration, sounds: sounds, fills_bar: fills_bar, staff: 1, tie_starts: [], tie_stops: []
       )
     end
   end

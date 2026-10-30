@@ -78,7 +78,9 @@ class HeadMusic::Style::Guidelines::MixSpeciesTextures < HeadMusic::Style::Guide
     note.position == downbeat_of(bar_number) && note.next_position >= downbeat_of(bar_number + 1)
   end
 
+  # A tied note is judged by its attack.
   def undotted?(note, unit_name)
-    note.rhythmic_value.unit_name == unit_name && note.rhythmic_value.dots.zero?
+    attack = note.rhythmic_duration.values.first
+    attack.unit_name == unit_name && attack.dots.zero?
   end
 end

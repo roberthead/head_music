@@ -11,22 +11,22 @@ describe HeadMusic::Rudiment::RhythmicElement do
     # We'll test this through a concrete subclass
     let(:test_class) do
       Class.new(described_class) do
-        def self.get(rhythmic_value)
-          new(rhythmic_value)
+        def self.get(rhythmic_duration)
+          new(rhythmic_duration)
         end
 
         public_class_method :new
       end
     end
 
-    let(:quarter_value) { HeadMusic::Rudiment::RhythmicValue.get(:quarter) }
-    let(:half_value) { HeadMusic::Rudiment::RhythmicValue.get(:half) }
+    let(:quarter_value) { HeadMusic::Rudiment::RhythmicDuration.get(:quarter) }
+    let(:half_value) { HeadMusic::Rudiment::RhythmicDuration.get(:half) }
 
     let(:element) { test_class.get(quarter_value) }
 
-    describe "#rhythmic_value" do
+    describe "#rhythmic_duration" do
       it "returns the rhythmic value" do
-        expect(element.rhythmic_value).to eq(quarter_value)
+        expect(element.rhythmic_duration).to eq(quarter_value)
       end
     end
 
@@ -36,22 +36,14 @@ describe HeadMusic::Rudiment::RhythmicElement do
       end
     end
 
-    describe "#unit" do
-      it "delegates to the rhythmic value" do
-        expect(element.unit).to eq(quarter_value.unit)
-      end
+    it "leaves unit and dots to the values of its duration, which may be tied" do
+      expect([element.respond_to?(:unit), element.respond_to?(:dots)]).to eq [false, false]
     end
 
-    describe "#dots" do
-      it "delegates to the rhythmic value" do
-        expect(element.dots).to eq(quarter_value.dots)
-      end
-    end
-
-    describe "#with_rhythmic_value" do
+    describe "#with_rhythmic_duration" do
       it "creates a new instance with the specified rhythmic value" do
-        new_element = element.with_rhythmic_value(half_value)
-        expect(new_element.rhythmic_value).to eq(half_value)
+        new_element = element.with_rhythmic_duration(half_value)
+        expect(new_element.rhythmic_duration).to eq(half_value)
         expect(new_element).not_to eq(element)
       end
     end
@@ -75,10 +67,10 @@ describe HeadMusic::Rudiment::RhythmicElement do
     end
 
     describe "comparison and sorting" do
-      let(:whole_element) { test_class.get(HeadMusic::Rudiment::RhythmicValue.get(:whole)) }
+      let(:whole_element) { test_class.get(HeadMusic::Rudiment::RhythmicDuration.get(:whole)) }
       let(:half_element) { test_class.get(half_value) }
       let(:quarter_element) { test_class.get(quarter_value) }
-      let(:eighth_element) { test_class.get(HeadMusic::Rudiment::RhythmicValue.get(:eighth)) }
+      let(:eighth_element) { test_class.get(HeadMusic::Rudiment::RhythmicDuration.get(:eighth)) }
 
       describe "#<=>" do
         it "compares by rhythmic value" do

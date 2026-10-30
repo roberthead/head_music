@@ -8,7 +8,7 @@ module HeadMusic::Content; end
 class HeadMusic::Content::VoiceEvent
   include Comparable
 
-  attr_reader :voice, :position, :rhythmic_value
+  attr_reader :voice, :position, :rhythmic_duration
 
   # Authored beam grouping relative to the previous voice event, set after
   # construction (the Bar-style side-metadata pattern). Tri-state: nil = use
@@ -23,17 +23,18 @@ class HeadMusic::Content::VoiceEvent
 
   private_class_method :new
 
-  def self.build(voice, position, rhythmic_value, sound_or_sounds = nil)
+  def self.build(voice, position, rhythmic_duration, sound_or_sounds = nil)
     sounds = HeadMusic::Content::SoundResolver.resolve(sound_or_sounds)
-    return HeadMusic::Content::RestEvent.new(voice, position, rhythmic_value) if sounds.empty?
+    return HeadMusic::Content::RestEvent.new(voice, position, rhythmic_duration) if sounds.empty?
 
-    HeadMusic::Content::NoteEvent.new(voice, position, rhythmic_value, sounds)
+    HeadMusic::Content::NoteEvent.new(voice, position, rhythmic_duration, sounds)
   end
 
-  def initialize(voice, position, rhythmic_value)
+  def initialize(voice, position, rhythmic_duration)
     @voice = voice
     @position = HeadMusic::Content::Position.get(flow, position)
-    @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
+    @rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(rhythmic_duration) ||
+      raise(ArgumentError, "unknown rhythmic duration: #{rhythmic_duration.inspect}")
   end
 
   def sounds
@@ -133,7 +134,7 @@ class HeadMusic::Content::VoiceEvent
   # Rounds the exact end to the nearest subtick, carrying the exact onset's
   # remainder, so that a run of a rounding ratio never drifts.
   def next_position
-    memoized[:next_position] ||= position.advance(subticks: (onset_remainder + rhythmic_value.exact_subticks).round)
+    memoized[:next_position] ||= position.advance(subticks: (onset_remainder + rhythmic_duration.exact_subticks).round)
   end
 
   # The exact onset less the position, in Rational subticks. Ratios such as
@@ -155,7 +156,7 @@ class HeadMusic::Content::VoiceEvent
   end
 
   def to_s
-    "#{rhythmic_value} #{sounds.any? ? sounds.map { |sound| sound_label(sound) }.join(" ") : "rest"} at #{position}"
+    "#{rhythmic_duration} #{sounds.any? ? sounds.map { |sound| sound_label(sound) }.join(" ") : "rest"} at #{position}"
   end
 
   def inspect
@@ -165,7 +166,7 @@ class HeadMusic::Content::VoiceEvent
   def to_h
     {
       "position" => position.to_s,
-      "rhythmic_value" => rhythmic_value.to_s,
+      "rhythmic_value" => rhythmic_duration.to_s,
       "sounds" => sounds.map { |sound| HeadMusic::Content::SoundResolver.datum(sound) }
     }.merge(markings_to_h)
   end
@@ -202,11 +203,11 @@ class HeadMusic::Content::VoiceEvent
     entries.sort.map(&:last)
   end
 
-  def ensure_same_rhythmic_value!(other)
-    other_value = other.rhythmic_value
-    return if rhythmic_value == other_value
+  def ensure_same_rhythmic_duration!(other)
+    other_duration = other.rhythmic_duration
+    return if rhythmic_duration == other_duration
 
-    raise ArgumentError, "cannot place a #{other_value} at #{position}: position occupied by a #{rhythmic_value}"
+    raise ArgumentError, "cannot place a #{other_duration} at #{position}: position occupied by a #{rhythmic_duration}"
   end
 
   # Unpitched names may be multi-word, so they are bracketed to keep the

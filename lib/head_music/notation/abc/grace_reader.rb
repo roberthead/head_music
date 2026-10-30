@@ -27,8 +27,8 @@ module HeadMusic::Notation::ABC
 
     def grace_note(item, pitch_builder, slashed, articulations)
       pitches, inner_length = @chord_reader.read(item, pitch_builder)
-      rhythmic_value = @duration_resolver.rhythmic_value(item.length, scale: inner_length)
-      return if rhythmic_value.tied_value
+      rhythmic_value = @duration_resolver.rhythmic_duration(item.length, scale: inner_length).single_value
+      return unless rhythmic_value
 
       HeadMusic::Content::GraceNote.new(
         sounds: pitches, rhythmic_value: rhythmic_value, slashed: slashed, tied: item.tied, articulations: articulations

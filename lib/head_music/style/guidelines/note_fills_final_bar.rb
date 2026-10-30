@@ -23,7 +23,7 @@ class HeadMusic::Style::Guidelines::NoteFillsFinalBar < HeadMusic::Style::Guidel
   end
 
   def fills_bar?(note)
-    note.rhythmic_value.total_value == bar_duration
+    note.rhythmic_duration.total_value == bar_duration
   end
 
   def bar_duration

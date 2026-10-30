@@ -20,7 +20,7 @@ describe HeadMusic::MIDI::PartReading do
     end
 
     it "writes the rests between notes, a whole bar's as filling its bar" do
-      expect(reading.tracks.first.events.map { |event| [event.measure_index, event.cursor, event.rhythmic_value.to_s, event.sounds, event.fills_bar] }).to eq [
+      expect(reading.tracks.first.events.map { |event| [event.measure_index, event.cursor, event.rhythmic_duration.to_s, event.sounds, event.fills_bar] }).to eq [
         [0, 0, "quarter", [], true], [1, 0, "quarter", ["C4"], false], [1, Rational(1, 4), "quarter", [], false], [1, Rational(1, 2), "quarter", [], false],
         [2, 0, "dotted half", [], true]
       ]

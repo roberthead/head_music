@@ -123,7 +123,7 @@ describe HeadMusic::Notation::MEI::FlowBuilder do
   it "folds a tie chain through four times the bars in at most 4.5 times the calls" do
     (small, _), (large, flow) = calls_to_read_tied(100), calls_to_read_tied(400)
     expect(large.fdiv(small)).to be < 4.5
-    expect(flow.voices.map { |voice| voice.voice_events.map { |event| event.rhythmic_value.tied_chain.length } }).to eq [[400], [400]]
+    expect(flow.voices.map { |voice| voice.voice_events.map { |event| event.rhythmic_duration.values.length } }).to eq [[400], [400]]
   end
 
   # Each bar's nine events in each part, and its controls but the <dir>

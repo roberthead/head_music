@@ -37,7 +37,7 @@ module HeadMusic::Notation::MEI
     end
 
     def self.segment_length(segment)
-      segment.fraction || segment.voice_event.rhythmic_value.fraction
+      segment.fraction || segment.voice_event.rhythmic_duration.fraction
     end
 
     attr_reader :plan
@@ -99,7 +99,7 @@ module HeadMusic::Notation::MEI
 
     def measure_rest?(segment)
       voice_event = segment.voice_event
-      voice_event.rest? && !voice_event.rhythmic_value.tuplet? &&
+      voice_event.rest? && !voice_event.rhythmic_duration.tuplet? &&
         self.class.segment_length(segment) == plan.bar_length(segment.bar_number)
     end
 

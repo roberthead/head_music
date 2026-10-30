@@ -60,8 +60,8 @@ module ABCRoundTripHelper
     reparsed_voice_events.zip(original_voice_events).each do |actual, expected|
       expect(actual.pitches.sort.map(&:to_s)).to eq expected.pitches.sort.map(&:to_s)
       expect(actual.position.to_s).to eq expected.position.to_s
-      expect(duration_writer.multiplier_string(actual.rhythmic_value))
-        .to eq duration_writer.multiplier_string(expected.rhythmic_value)
+      expect(duration_writer.multiplier_string(actual.rhythmic_duration))
+        .to eq duration_writer.multiplier_string(expected.rhythmic_duration)
     end
   end
 end

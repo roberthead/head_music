@@ -17,7 +17,7 @@ describe HeadMusic::Notation::TieFolding do
   # writer splits at a barline comes back as a chain of its pieces.
   def lengths(flow)
     flow.voices.map do |voice|
-      voice.voice_events.map { |event| [event.position.to_s, event.rhythmic_value.fraction, event.sounds.map(&:to_s)] }
+      voice.voice_events.map { |event| [event.position.to_s, event.rhythmic_duration.fraction, event.sounds.map(&:to_s)] }
     end
   end
 

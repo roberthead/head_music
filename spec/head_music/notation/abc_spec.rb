@@ -85,12 +85,12 @@ describe HeadMusic::Notation::ABC do
       end
 
       it "renders unmarked notes as eighths under L:1/8" do
-        expect(voice_events.first(4).map { |voice_event| voice_event.rhythmic_value.name }).to all(eq "eighth")
+        expect(voice_events.first(4).map { |voice_event| voice_event.rhythmic_duration.name }).to all(eq "eighth")
       end
 
       it "renders c2 as a quarter note" do
         # voice_events[16] is the c2 opening the third bar
-        expect(voice_events[16].rhythmic_value.name).to eq "quarter"
+        expect(voice_events[16].rhythmic_duration.name).to eq "quarter"
       end
 
       it "pitches c2 as C5" do
@@ -98,7 +98,7 @@ describe HeadMusic::Notation::ABC do
       end
 
       it "renders the final G4 as a half note" do
-        expect(voice_events.last.rhythmic_value.name).to eq "half"
+        expect(voice_events.last.rhythmic_duration.name).to eq "half"
       end
 
       it "sharpens the unmarked F under the key signature" do
@@ -144,7 +144,7 @@ describe HeadMusic::Notation::ABC do
       end
 
       it "fills the first bar with six eighth notes" do
-        expect(voice_events.first(6).map { |voice_event| voice_event.rhythmic_value.name }).to all(eq "eighth")
+        expect(voice_events.first(6).map { |voice_event| voice_event.rhythmic_duration.name }).to all(eq "eighth")
       end
 
       it "places the sixth eighth on the sixth beat" do
@@ -156,7 +156,7 @@ describe HeadMusic::Notation::ABC do
       end
 
       it "renders d2 as a quarter note" do
-        expect(voice_events[6].rhythmic_value.name).to eq "quarter"
+        expect(voice_events[6].rhythmic_duration.name).to eq "quarter"
       end
 
       it "sharpens the unmarked F under the key signature" do
@@ -172,13 +172,13 @@ describe HeadMusic::Notation::ABC do
       it "defaults the unit note length to a sixteenth when the meter is smaller than 3/4" do
         flow = described_class.parse("X:1\nM:2/4\nK:C\nC|\n")
         voice_event = flow.voices.first.voice_events.first
-        expect(voice_event.rhythmic_value.name).to eq "sixteenth"
+        expect(voice_event.rhythmic_duration.name).to eq "sixteenth"
       end
 
       it "defaults the unit note length to an eighth when the meter is 3/4 or larger" do
         flow = described_class.parse("X:1\nM:4/4\nK:C\nC|\n")
         voice_event = flow.voices.first.voice_events.first
-        expect(voice_event.rhythmic_value.name).to eq "eighth"
+        expect(voice_event.rhythmic_duration.name).to eq "eighth"
       end
     end
   end

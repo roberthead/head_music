@@ -29,8 +29,7 @@ module HeadMusic::Notation::MusicXML
       @divisions = divisions
     end
 
-    # A rhythmic value's own duration in quarter notes, ignoring any tied
-    # chain. Four quarter notes span a whole note, so the value's fraction
+    # A rhythmic value's own duration in quarter notes. Four quarter notes span a whole note, so the value's fraction
     # of its own unit is scaled by four.
     def self.single_quarter_fraction(rhythmic_value)
       HeadMusic::Notation::DottedDuration.dotted_unit_fraction(rhythmic_value) * 4
@@ -42,14 +41,14 @@ module HeadMusic::Notation::MusicXML
       HeadMusic::Notation::DottedDuration.sounding_fraction(link) * 4
     end
 
-    def components(rhythmic_value)
-      split_components([rhythmic_value]).first
+    def components(rhythmic_duration)
+      split_components([rhythmic_duration]).first
     end
 
     # One list of components per piece of a note split at barlines, tied
     # through from the first piece's attack to the last piece's release.
-    def split_components(rhythmic_values)
-      chains = rhythmic_values.map(&:tied_chain)
+    def split_components(rhythmic_durations)
+      chains = rhythmic_durations.map { |duration| duration.respond_to?(:values) ? duration.values : [duration] }
       length = chains.sum(&:length)
       index = -1
       chains.map do |links|

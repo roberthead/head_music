@@ -11,7 +11,7 @@ describe HeadMusic::Notation::VoiceTrack do
   end
 
   def add(names, tie_starts: [], tie_stops: [])
-    track.add(rhythmic_value: quarter, sounds: pitches(*names), tie_starts: tie_starts, tie_stops: tie_stops)
+    track.add(rhythmic_duration: quarter, sounds: pitches(*names), tie_starts: tie_starts, tie_stops: tie_stops)
   end
 
   def grace(names, tie_starts: [])
@@ -28,8 +28,8 @@ describe HeadMusic::Notation::VoiceTrack do
     end
 
     it "counts the links of the event's written value" do
-      value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(Rational(5, 4))
-      event = track.add(rhythmic_value: value, sounds: pitches("C4"), tie_starts: [], tie_stops: [])
+      duration = HeadMusic::Notation::DottedDuration.rhythmic_duration_for(Rational(5, 4))
+      event = track.add(rhythmic_duration: duration, sounds: pitches("C4"), tie_starts: [], tie_stops: [])
       expect(event.link_count).to eq 2
     end
   end

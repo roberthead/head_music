@@ -6,7 +6,7 @@ describe HeadMusic::Notation::LilyPond::TupletReader do
   end
 
   def events(source)
-    voice(source).voice_events.map { |event| [event.position.to_s, event.rhythmic_value.to_s] }
+    voice(source).voice_events.map { |event| [event.position.to_s, event.rhythmic_duration.to_s] }
   end
 
   def groups(source)
@@ -112,7 +112,7 @@ describe HeadMusic::Notation::LilyPond::TupletReader do
   it "scales a spacer inside it into a rest under the ratio" do
     source = "{ \\tuplet 3/2 { c'8 s e' } f'2. }"
     rest = voice(source).voice_events[1]
-    expect([rest.rest?, rest.rhythmic_value.to_s, rest.position.to_s]).to eq [true, "triplet eighth", "1:1:320"]
+    expect([rest.rest?, rest.rhythmic_duration.to_s, rest.position.to_s]).to eq [true, "triplet eighth", "1:1:320"]
   end
 
   it "scales an \\after inside it" do

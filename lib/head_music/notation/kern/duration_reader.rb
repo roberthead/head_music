@@ -17,7 +17,7 @@ module HeadMusic::Notation::Kern
   module DurationReader
     MAX_DOTS = 3
     LONG_VALUES = {"0" => 2, "00" => 4, "000" => 8}.freeze
-    Duration = Data.define(:rhythmic_value, :fraction)
+    Duration = Data.define(:rhythmic_duration, :fraction)
 
     module_function
 
@@ -31,25 +31,25 @@ module HeadMusic::Notation::Kern
       ratio = HeadMusic::Notation::DottedDuration.tuplet_ratio(base)
       return tuplet(fraction, ratio, context) if ratio
 
-      Duration.new(rational ? rational_value(fraction, recip, context) : reciprocal_value(base, recip, dots.length, context), fraction)
+      Duration.new(rational ? rational_duration(fraction, recip, context) : reciprocal_duration(base, recip, dots.length, context), fraction)
     end
 
     def tuplet(fraction, ratio, context)
-      rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction, tuplet: ratio)
-      unless rhythmic_value
+      rhythmic_duration = HeadMusic::Notation::DottedDuration.rhythmic_duration_for(fraction, tuplet: ratio)
+      unless rhythmic_duration
         raise UnsupportedFeatureError.new(
           "The #{ratio.to_a.join(":")} tuplet value in #{context[:snippet]} is outside the maxima to 256th", **context
         )
       end
 
-      Duration.new(rhythmic_value, fraction)
+      Duration.new(rhythmic_duration, fraction)
     end
 
-    def reciprocal_value(base, recip, dots, context)
+    def reciprocal_duration(base, recip, dots, context)
       unit = HeadMusic::Notation::DottedDuration.unit_for(base)
       raise ParseError.new(%(Unrecognized duration "#{recip}"), **context) unless unit
 
-      HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots)
+      HeadMusic::Rudiment::RhythmicDuration.new([HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots)])
     end
 
     def rational_base(recip, context)
@@ -57,11 +57,11 @@ module HeadMusic::Notation::Kern
       Rational(numerator, denominator)
     end
 
-    def rational_value(fraction, recip, context)
-      rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
-      raise ParseError.new(%(Unrecognized duration "#{recip}"), **context) unless rhythmic_value
+    def rational_duration(fraction, recip, context)
+      rhythmic_duration = HeadMusic::Notation::DottedDuration.rhythmic_duration_for(fraction)
+      raise ParseError.new(%(Unrecognized duration "#{recip}"), **context) unless rhythmic_duration
 
-      rhythmic_value
+      rhythmic_duration
     end
 
     def positive(number, context)

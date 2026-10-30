@@ -58,7 +58,7 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
 
       context "with a 2-link tied chain (half tied to eighth)" do
         let(:value) do
-          HeadMusic::Rudiment::RhythmicValue.new(:half, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth))
+          HeadMusic::Rudiment::RhythmicDuration.get("half tied to eighth")
         end
         let(:components) { writer.components(value) }
 
@@ -77,9 +77,7 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
 
       context "with a 3-link tied chain (quarter tied to eighth tied to eighth)" do
         let(:value) do
-          last = HeadMusic::Rudiment::RhythmicValue.get(:eighth)
-          middle = HeadMusic::Rudiment::RhythmicValue.new(:eighth, tied_value: last)
-          HeadMusic::Rudiment::RhythmicValue.new(:quarter, tied_value: middle)
+          HeadMusic::Rudiment::RhythmicDuration.get("quarter tied to eighth tied to eighth")
         end
         let(:components) { writer.components(value) }
 
@@ -147,7 +145,7 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
     end
 
     it "writes each link of a chain mixing ratios under its own" do
-      value = HeadMusic::Rudiment::RhythmicValue.get("triplet eighth tied to quarter")
+      value = HeadMusic::Rudiment::RhythmicDuration.get("triplet eighth tied to quarter")
       expect(writer.components(value).map(&:duration)).to eq [2, 6]
     end
   end
@@ -156,8 +154,8 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
     let(:divisions) { 2 }
     let(:pieces) do
       writer.split_components([
-        HeadMusic::Rudiment::RhythmicValue.get(:half),
-        HeadMusic::Rudiment::RhythmicValue.new(:quarter, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth))
+        HeadMusic::Rudiment::RhythmicDuration.get(:half),
+        HeadMusic::Rudiment::RhythmicDuration.get("quarter tied to eighth")
       ])
     end
 

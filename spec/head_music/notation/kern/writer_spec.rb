@@ -20,7 +20,7 @@ describe HeadMusic::Notation::Kern::Writer do
   end
 
   def length_of(voice_event)
-    [voice_event.position.to_s, voice_event.pitches.map(&:to_s), voice_event.rhythmic_value.total_value]
+    [voice_event.position.to_s, voice_event.pitches.map(&:to_s), voice_event.rhythmic_duration.total_value]
   end
 
   def music_of(flow)

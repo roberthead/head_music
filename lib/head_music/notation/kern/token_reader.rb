@@ -26,7 +26,7 @@ module HeadMusic::Notation::Kern
     # one hidden as ;y. A grace note has no fraction, since it takes
     # no time, and may be slashed.
     Token = Data.define(
-      :type, :pitches, :rhythmic_value, :fraction, :tie, :articulations, :ornaments, :note_dynamic, :span_marks, :invisible,
+      :type, :pitches, :rhythmic_duration, :fraction, :tie, :articulations, :ornaments, :note_dynamic, :span_marks, :invisible,
       :slashed, :fermata
     ) do
       def initialize(
@@ -41,10 +41,10 @@ module HeadMusic::Notation::Kern
       end
     end
 
-    NULL = Token.new(type: :null, pitches: [], rhythmic_value: nil, fraction: nil, tie: nil)
+    NULL = Token.new(type: :null, pitches: [], rhythmic_duration: nil, fraction: nil, tie: nil)
     TIES = {"[" => :start, "_" => :middle, "]" => :end}.freeze
     GRACE_MARKS = %w[q Q].freeze
-    DEFAULT_GRACE_VALUE = HeadMusic::Rudiment::RhythmicValue.get(:eighth)
+    DEFAULT_GRACE_DURATION = HeadMusic::Rudiment::RhythmicDuration.get(:eighth)
     # Beams and partial beams, stems, fermatas once read, the inverted turn
     # and the ornament-ending turn, other ornaments, bowings, breath and arpeggio
     # marks, and editorial and visibility marks.
@@ -106,20 +106,21 @@ module HeadMusic::Notation::Kern
       articulations = MarkCodes.read!(remaining)[:articulations]
       ensure_consumed(remaining, text)
       Token.new(
-        type: :grace, pitches: pitches, rhythmic_value: grace_value(duration), fraction: nil, tie: tie,
+        type: :grace, pitches: pitches, rhythmic_duration: grace_duration(duration), fraction: nil, tie: tie,
         articulations: articulations, span_marks: span_marks, slashed: slashed
       )
     end
 
     # A grace note takes no time, so a tuplet or tied value is written as its
-    # first link with no ratio.
-    def grace_value(duration)
-      return DEFAULT_GRACE_VALUE unless duration
+    # first value with no ratio.
+    def grace_duration(duration)
+      return DEFAULT_GRACE_DURATION unless duration
 
-      value = duration.rhythmic_value
-      return value unless value.tuplet? || value.tied_value
+      rhythmic_duration = duration.rhythmic_duration
+      return rhythmic_duration if rhythmic_duration.single_value && !rhythmic_duration.tuplet?
 
-      HeadMusic::Rudiment::RhythmicValue.new(value.unit, dots: value.dots)
+      first = rhythmic_duration.values.first
+      HeadMusic::Rudiment::RhythmicDuration.new([HeadMusic::Rudiment::RhythmicValue.new(first.unit, dots: first.dots)])
     end
 
     # Each slur or phrase mark with the & of each level of elision before it,
@@ -186,7 +187,7 @@ module HeadMusic::Notation::Kern
 
       Token.new(
         type: rest ? :rest : :note, pitches: rest ? [] : pitches,
-        rhythmic_value: duration.rhythmic_value, fraction: duration.fraction, tie: tie
+        rhythmic_duration: duration.rhythmic_duration, fraction: duration.fraction, tie: tie
       )
     end
 

@@ -192,7 +192,7 @@ describe HeadMusic::Notation::ABC do
       def note_summary(flow)
         duration_writer = HeadMusic::Notation::ABC::DurationWriter.new(Rational(1, 8))
         flow.voices.first.note_events.map do |note_event|
-          [note_event.position.to_s, note_event.pitches.map(&:to_s), duration_writer.multiplier_string(note_event.rhythmic_value)]
+          [note_event.position.to_s, note_event.pitches.map(&:to_s), duration_writer.multiplier_string(note_event.rhythmic_duration)]
         end
       end
 

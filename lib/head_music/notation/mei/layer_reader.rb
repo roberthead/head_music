@@ -21,7 +21,7 @@ module HeadMusic::Notation::MEI
     # <multiRest> fills.
     # +event+ and +track+ are where VoiceAssignment adds it.
     Entry = Struct.new(
-      :kind, :element, :notes, :cursor, :rhythmic_value, :duration, :grace, :slashed, :cue, :staff, :bars, :event, :track
+      :kind, :element, :notes, :cursor, :rhythmic_duration, :duration, :grace, :slashed, :cue, :staff, :bars, :event, :track
     ) do
       def fills_bar?
         %i[m_rest m_space multi_rest].include?(kind)
@@ -33,7 +33,7 @@ module HeadMusic::Notation::MEI
 
       # A <space> or <rest> whose length OpenSpaces decides.
       def open_space?
-        %i[space rest].include?(kind) && rhythmic_value.nil?
+        %i[space rest].include?(kind) && rhythmic_duration.nil?
       end
     end
 
@@ -147,7 +147,7 @@ module HeadMusic::Notation::MEI
     def add_grace(kind, element, notes, context)
       slashed = value(element, "grace")
       @entries << entry(
-        element, kind: kind, notes: notes, rhythmic_value: @durations.rhythmic_value(element, grace: true),
+        element, kind: kind, notes: notes, rhythmic_duration: HeadMusic::Rudiment::RhythmicDuration.get(@durations.rhythmic_value(element, grace: true)),
         grace: true, slashed: slashed.nil? ? context.slashed : slashed, staff: staff_of(element, notes)
       )
     end
@@ -166,7 +166,7 @@ module HeadMusic::Notation::MEI
     def add_timed(element, notes, context, **fields)
       span = @tuplets.enter(stream, [element, *notes], @where.merge(element: element))
       rhythmic = @durations.rhythmic_value(element, ratio: ratio(context, span, element))
-      advance(entry(element, rhythmic_value: rhythmic, duration: rhythmic.fraction, **fields), context, span)
+      advance(entry(element, rhythmic_duration: HeadMusic::Rudiment::RhythmicDuration.get(rhythmic), duration: rhythmic.fraction, **fields), context, span)
     end
 
     def entry(element, **fields)

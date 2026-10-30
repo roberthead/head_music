@@ -70,10 +70,10 @@ class HeadMusic::Analysis::NoteInput
   def self.duration_from(duration)
     return duration.to_r if duration.is_a?(Numeric)
 
-    rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(duration)
-    raise ArgumentError, "unknown duration #{duration.inspect}" unless rhythmic_value&.unit
+    rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(duration)
+    raise ArgumentError, "unknown duration #{duration.inspect}" unless rhythmic_duration
 
-    rhythmic_value.fraction
+    rhythmic_duration.fraction
   end
 
   def self.listed_bar_starts(bars, first_bar)

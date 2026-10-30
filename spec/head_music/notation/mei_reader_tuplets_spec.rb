@@ -78,7 +78,7 @@ describe HeadMusic::Notation::MEI do
       end
 
       def values(flow)
-        flow.voices.flat_map(&:voice_events).map { |event| event.rhythmic_value.to_s }.uniq
+        flow.voices.flat_map(&:voice_events).map { |event| event.rhythmic_duration.to_s }.uniq
       end
 
       it "scales nothing when the end comes before the start" do

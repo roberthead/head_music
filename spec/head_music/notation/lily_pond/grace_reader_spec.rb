@@ -77,7 +77,7 @@ describe HeadMusic::Notation::LilyPond::GraceReader do
   end
 
   it "carries the grace duration on" do
-    expect(voice("{ c'4 \\grace d'16 c' d'8. e'2 }").voice_events[1].rhythmic_value.to_s).to eq "sixteenth"
+    expect(voice("{ c'4 \\grace d'16 c' d'8. e'2 }").voice_events[1].rhythmic_duration.to_s).to eq "sixteenth"
   end
 
   it "reads grace pitches into \\relative" do

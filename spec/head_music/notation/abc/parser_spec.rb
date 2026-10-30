@@ -70,7 +70,7 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "places each note with its rhythmic value" do
-      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_value.name }.uniq).to eq ["quarter"]
+      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_duration.name }.uniq).to eq ["quarter"]
     end
 
     it "places the first note at the start of bar one" do
@@ -85,7 +85,7 @@ describe HeadMusic::Notation::ABC::Parser do
   describe "note lengths" do
     subject(:flow) { parse_body("C2 D E/|") }
 
-    let(:names) { flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_value.name } }
+    let(:names) { flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_duration.name } }
 
     it "resolves multipliers against the unit note length" do
       expect(names).to eq ["half", "quarter", "eighth"]
@@ -277,13 +277,13 @@ describe HeadMusic::Notation::ABC::Parser do
   describe "broken rhythm" do
     it "dots the left note and halves the right note for >" do
       flow = parse_body("A>B|")
-      names = flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_value.name }
+      names = flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_duration.name }
       expect(names).to eq ["dotted quarter", "eighth"]
     end
 
     it "halves the left note and dots the right note for <" do
       flow = parse_body("A<B|")
-      names = flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_value.name }
+      names = flow.voices.first.voice_events.map { |voice_event| voice_event.rhythmic_duration.name }
       expect(names).to eq ["eighth", "dotted quarter"]
     end
 
@@ -321,25 +321,25 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "honors the authored split instead of the greedy decomposition" do
-      value = parse_compound("E3-E2 G |]").voices.first.voice_events.first.rhythmic_value
+      value = parse_compound("E3-E2 G |]").voices.first.voice_events.first.rhythmic_duration
       expect(value.name).to eq "dotted quarter tied to quarter"
     end
 
     it "differs from the greedy split of the same total duration" do
-      greedy = parse_compound("E5 G |]").voices.first.voice_events.first.rhythmic_value
-      authored = parse_compound("E3-E2 G |]").voices.first.voice_events.first.rhythmic_value
+      greedy = parse_compound("E5 G |]").voices.first.voice_events.first.rhythmic_duration
+      authored = parse_compound("E3-E2 G |]").voices.first.voice_events.first.rhythmic_duration
       expect(greedy.name).to eq "half tied to eighth"
       expect(authored.total_value).to eq greedy.total_value
       expect(authored.name).not_to eq greedy.name
     end
 
     it "chains three tied notes into one nested value" do
-      value = parse_compound("C2-C2-C2 |]").voices.first.voice_events.first.rhythmic_value
+      value = parse_compound("C2-C2-C2 |]").voices.first.voice_events.first.rhythmic_duration
       expect(value.name).to eq "quarter tied to quarter tied to quarter"
     end
 
     it "ties a note across the whole bar in simple meter" do
-      value = parse_body("C3-C |").voices.first.voice_events.first.rhythmic_value
+      value = parse_body("C3-C |").voices.first.voice_events.first.rhythmic_duration
       expect(value.name).to eq "dotted half tied to quarter"
     end
 
@@ -356,7 +356,7 @@ describe HeadMusic::Notation::ABC::Parser do
     it "ties a note across a barline into one voice event" do
       voice_events = parse_compound("E3-|E3 |]").voices.first.voice_events
       expect(voice_events.length).to eq 1
-      expect(voice_events.first.rhythmic_value.name).to eq "dotted quarter tied to dotted quarter"
+      expect(voice_events.first.rhythmic_duration.name).to eq "dotted quarter tied to dotted quarter"
     end
 
     it "sustains a tie across a barline through the next downbeat" do
@@ -373,7 +373,7 @@ describe HeadMusic::Notation::ABC::Parser do
     it "carries an accidental across the barline with the tie" do
       note = parse_body("^D2-|D2 z2 |]").voices.first.notes.first
       expect(note.pitch.to_s).to eq "D♯4"
-      expect(note.rhythmic_value.name).to eq "half tied to half"
+      expect(note.rhythmic_duration.name).to eq "half tied to half"
     end
 
     it "tags a repeat opened after a tied barline on the right bar" do
@@ -1576,7 +1576,7 @@ describe HeadMusic::Notation::ABC::Parser do
     end
 
     it "applies the length after the bracket to the whole chord" do
-      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_value.name })
+      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_duration.name })
         .to eq ["half", "half", "whole"]
     end
 
@@ -1588,18 +1588,18 @@ describe HeadMusic::Notation::ABC::Parser do
 
     it "reads uniform per-note lengths as the chord's length" do
       voice_event = parse_body("[C2E2G2]|").voices.first.voice_events.first
-      expect(voice_event.rhythmic_value.name).to eq "half"
+      expect(voice_event.rhythmic_duration.name).to eq "half"
     end
 
     it "multiplies uniform inner lengths with the outer length (ABC 2.1 sec. 4.17)" do
       inner_outer = parse_body("[C2E2G2]3|").voices.first.voice_events.first
       outer_only = parse_body("[CEG]6|").voices.first.voice_events.first
-      expect(inner_outer.rhythmic_value).to eq outer_only.rhythmic_value
+      expect(inner_outer.rhythmic_duration).to eq outer_only.rhythmic_duration
     end
 
     it "treats differently-spelled equal inner lengths as uniform" do
       voice_event = parse_body("[C4/2E2G2]|").voices.first.voice_events.first
-      expect(voice_event.rhythmic_value.name).to eq "half"
+      expect(voice_event.rhythmic_duration.name).to eq "half"
     end
 
     it "raises when bracketed notes have unequal lengths" do
@@ -1623,7 +1623,7 @@ describe HeadMusic::Notation::ABC::Parser do
 
     it "applies broken rhythm across two chords" do
       voice_events = parse_body("[CEG]>[DFA]|").voices.first.voice_events
-      expect(voice_events.map { |voice_event| voice_event.rhythmic_value.name })
+      expect(voice_events.map { |voice_event| voice_event.rhythmic_duration.name })
         .to eq ["dotted quarter", "eighth"]
     end
 

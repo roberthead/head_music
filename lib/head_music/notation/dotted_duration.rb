@@ -1,7 +1,7 @@
 module HeadMusic
   module Notation
     # The exact written length of a (possibly dotted) rhythmic value as a
-    # fraction of a whole note, and the inverse: the rhythmic value a fraction
+    # fraction of a whole note, and the inverse: the rhythmic duration a fraction
     # of a whole note denotes. Exact fractions keep downstream arithmetic (ABC
     # multipliers, MusicXML divisions, LilyPond bar sums) exact.
     #
@@ -30,22 +30,28 @@ module HeadMusic
         link.link_fraction
       end
 
-      # The rhythmic value spanning a fraction of a whole note, or nil when no
-      # binary note value (or tied chain of them) can express it. Under a
-      # tuplet ratio, the fraction is the sounding length, and every link of
+      # The rhythmic duration spanning a fraction of a whole note, or nil when
+      # no binary note value (or tied chain of them) can express it. Under a
+      # tuplet ratio, the fraction is the sounding length, and every value of
       # the answer carries the ratio.
-      def rhythmic_value_for(fraction, tuplet: nil)
+      def rhythmic_duration_for(fraction, tuplet: nil)
         ratio = tuplet && HeadMusic::Rudiment::TupletRatio.get(tuplet)
         written = ratio ? Rational(fraction) / ratio.factor : Rational(fraction)
         return unless expressible?(written)
 
-        value = build_rhythmic_value(written)
-        ratio ? value&.with_tuplet(ratio) : value
+        values = build_values(written)
+        duration = values && HeadMusic::Rudiment::RhythmicDuration.new(values)
+        ratio ? duration&.with_tuplet(ratio) : duration
       end
 
-      # One value tying the given values together in order.
-      def tied(values)
-        values.reverse.reduce { |tail, head| head.append_tied(tail) }
+      # The one rhythmic value spanning a fraction, or nil when it takes ties.
+      def rhythmic_value_for(fraction, tuplet: nil)
+        rhythmic_duration_for(fraction, tuplet: tuplet)&.single_value
+      end
+
+      # One duration tying the given values and durations together in order.
+      def tied(pieces)
+        HeadMusic::Rudiment::RhythmicDuration.new(pieces.flat_map { |piece| HeadMusic::Rudiment::RhythmicDuration.get(piece).values })
       end
 
       # The ratio a non-binary undotted value sounds under, or nil. When the
@@ -65,8 +71,8 @@ module HeadMusic
 
       # A rest filling a stretch, under the ratio its length implies when no
       # plain value spans it, as after a voice's last triplet.
-      def rest_value(fraction)
-        rhythmic_value_for(fraction) || rhythmic_value_for(fraction, tuplet: tuplet_ratio(fraction))
+      def rest_duration(fraction)
+        rhythmic_duration_for(fraction) || rhythmic_duration_for(fraction, tuplet: tuplet_ratio(fraction))
       end
 
       def expressible?(fraction)
@@ -76,23 +82,22 @@ module HeadMusic
       # Fractions whose odd factor is one less than a power of two map onto a
       # single (possibly dotted) note; anything else becomes a chain of tied notes,
       # peeling off the largest dotted-expressible head each pass.
-      def build_rhythmic_value(fraction)
+      def build_values(fraction)
         dots = DOTS_BY_ODD_FACTOR[odd_factor(fraction.numerator)]
-        return single_value(fraction, dots) if dots
+        return single_value(fraction, dots)&.then { |value| [value] } if dots
 
         head = greedy_head(fraction)
-        tail = build_rhythmic_value(fraction - head)
-        return unless tail
-
-        single_value(head, DOTS_BY_ODD_FACTOR.fetch(odd_factor(head.numerator)), tied_value: tail)
+        head_value = single_value(head, DOTS_BY_ODD_FACTOR.fetch(odd_factor(head.numerator)))
+        tail = build_values(fraction - head)
+        [head_value, *tail] if head_value && tail
       end
 
-      def single_value(fraction, dots, tied_value: nil)
+      def single_value(fraction, dots)
         # A value with d dots spans (2^(d+1) - 1) / 2^d of its unit.
         unit = unit_for(fraction * Rational(2**dots, (2**(dots + 1)) - 1))
         return unless unit
 
-        HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots, tied_value: tied_value)
+        HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots)
       end
 
       # The largest leading run of set bits (capped at four, i.e. triple-dotted)

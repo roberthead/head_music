@@ -46,16 +46,16 @@ describe HeadMusic::Notation::MusicXML::PartDurations do
   end
 
   it "checks a written value against its duration" do
-    expect(durations.rhythmic_value(quarter, Rational(1, 4))).to eq HeadMusic::Rudiment::RhythmicValue.get(:quarter)
+    expect(durations.rhythmic_duration(quarter, Rational(1, 4))).to eq HeadMusic::Rudiment::RhythmicDuration.get(:quarter)
   end
 
   it "refuses a written value its duration disagrees with" do
-    expect { durations.rhythmic_value(quarter, Rational(1, 2)) }
+    expect { durations.rhythmic_duration(quarter, Rational(1, 2)) }
       .to raise_error(HeadMusic::Notation::MusicXML::ParseError, /A <duration> of 4 disagrees with its quarter/)
   end
 
   it "takes an untyped note's value from its duration" do
-    expect(durations.rhythmic_value(note("<note><rest/><duration>6</duration></note>"), Rational(3, 8)))
-      .to eq HeadMusic::Rudiment::RhythmicValue.get("dotted quarter")
+    expect(durations.rhythmic_duration(note("<note><rest/><duration>6</duration></note>"), Rational(3, 8)))
+      .to eq HeadMusic::Rudiment::RhythmicDuration.get("dotted quarter")
   end
 end

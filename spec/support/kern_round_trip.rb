@@ -50,7 +50,7 @@ module KernRoundTripHelper
     voice.voice_events.flat_map do |voice_event|
       HeadMusic::Notation::BarSplitter.segments_of(voice_event).flat_map do |segment|
         offset = segment.offset
-        segment.rhythmic_value.tied_chain.map do |link|
+        segment.rhythmic_duration.values.map do |link|
           [exact_point(segment.bar_number, offset), link, voice_event].tap { offset += link.link_fraction }
         end
       end
@@ -59,7 +59,7 @@ module KernRoundTripHelper
 
   def canonical_kern_value(link)
     recip, dots = HeadMusic::Notation::Kern::DurationWriter.token(link).match(/\A([\d%]+)(\.*)\z/).captures
-    HeadMusic::Notation::Kern::DurationReader.duration(recip, dots).rhythmic_value
+    HeadMusic::Notation::Kern::DurationReader.duration(recip, dots).rhythmic_duration
   end
 
   # Per voice, each group as [exact start, ratio, exact length].
@@ -101,7 +101,7 @@ module KernRoundTripHelper
     kern_link_entries(voice).each_with_index.map do |(onset, link, voice_event), index|
       value = canonical_kern_value(link)
       event = voice_event.rest? ? index : voice_event
-      [onset, HeadMusic::Notation::Kern::TupletGroups::Item.new(value.tuplet_ratio, value.fraction, event)]
+      [onset, HeadMusic::Notation::Kern::TupletGroups::Item.new(value.values.first.tuplet_ratio, value.fraction, event)]
     end
   end
 
@@ -177,7 +177,7 @@ module KernRoundTripHelper
       {
         "position" => voice_event.position.to_s,
         "pitches" => voice_event.pitches.map(&:to_s).sort,
-        "length" => voice_event.rhythmic_value.fraction,
+        "length" => voice_event.rhythmic_duration.fraction,
         "syllables" => voice_event.syllables.transform_values(&:to_h),
         "extended" => voice_event.extended_verses,
         "markings" => [voice_event.articulations, voice_event.ornaments, [voice_event.note_dynamic].compact].map { |markings| markings.map(&:name_key) }

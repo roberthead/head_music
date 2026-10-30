@@ -96,7 +96,7 @@ describe HeadMusic::Notation::LilyPond::Parser do
     end
 
     it "carries the eighth duration through the bar" do
-      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_value.to_s }.uniq).to eq ["eighth"]
+      expect(voice.voice_events.map { |voice_event| voice_event.rhythmic_duration.to_s }.uniq).to eq ["eighth"]
     end
 
     it "fills exactly one bar" do

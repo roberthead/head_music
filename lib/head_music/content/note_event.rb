@@ -7,8 +7,8 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
 
   public_class_method :new
 
-  def initialize(voice, position, rhythmic_value, sound_or_sounds)
-    super(voice, position, rhythmic_value)
+  def initialize(voice, position, rhythmic_duration, sound_or_sounds)
+    super(voice, position, rhythmic_duration)
     @sounds = HeadMusic::Content::SoundResolver.resolve(sound_or_sounds)
     raise ArgumentError, "a note event needs at least one sound; place a rest instead" if sounds.empty?
   end
@@ -102,7 +102,7 @@ class HeadMusic::Content::NoteEvent < HeadMusic::Content::VoiceEvent
   # untouched: a chord sings one syllable per verse, and the receiver (the
   # event already at this position) keeps its own.
   def merge(other)
-    ensure_same_rhythmic_value!(other)
+    ensure_same_rhythmic_duration!(other)
     return self if other.rest?
 
     @sounds = (sounds + other.sounds).uniq.freeze

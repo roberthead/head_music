@@ -29,12 +29,14 @@ class HeadMusic::Style::Guidelines::PreferLongBeforeShort < HeadMusic::Style::Gu
     first.position == downbeat_of(bar_number) &&
       undotted_quarter?(first) && undotted_quarter?(second) &&
       second.position == first.next_position && third.position == second.next_position &&
-      third.rhythmic_value.total_value >= half_value &&
+      third.rhythmic_duration.total_value >= half_value &&
       third.next_position == downbeat_of(bar_number + 1)
   end
 
+  # A tied note is judged by its attack.
   def undotted_quarter?(note)
-    note.rhythmic_value.unit_name == "quarter" && note.rhythmic_value.dots.zero?
+    attack = note.rhythmic_duration.values.first
+    attack.unit_name == "quarter" && attack.dots.zero?
   end
 
   def half_value

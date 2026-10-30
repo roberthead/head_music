@@ -79,7 +79,7 @@ module HeadMusic::Notation::LilyPond
       graces = starts?(segment) ? grace_token(voice_event) : ""
       forced = starts?(segment)
       first = starts?(segment)
-      segment.rhythmic_value!(RenderError).tied_chain.map do |link|
+      segment.rhythmic_duration!(RenderError).values.map do |link|
         to = from + HeadMusic::Notation::DottedDuration.sounding_fraction(link)
         own += "\\fermata" if fermata_in?(voice_event, bar_number, from, to, first)
         word = graces + timed_marks.around(bar_number, from, to, "#{body(voice_event, forced)}#{DurationWriter.token(link)}", own, factor: link.tuplet_ratio&.factor || 1)

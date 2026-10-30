@@ -3,7 +3,7 @@ module HeadMusic::Notation::ABC
   # A note or chord whose placing is deferred until we know whether a
   # broken-rhythm mark follows it. The pitches are computed eagerly so
   # bar-line accidental resets cannot corrupt them. `tied_prefix`, when
-  # present, is the already-built rhythmic value of everything tied ahead of
+  # present, is the already-built rhythmic duration of everything tied ahead of
   # this note.
   #
   # Its slur marks wait with it, in the order written, since its position
@@ -15,9 +15,9 @@ module HeadMusic::Notation::ABC
     end
 
     # The whole tie chain, so that it renders as one sounding note.
-    def rhythmic_value(duration_resolver)
-      own = duration_resolver.rhythmic_value(length, scale: scale, tuplet: ratio)
-      tied_prefix ? tied_prefix.append_tied(own) : own
+    def rhythmic_duration(duration_resolver)
+      own = duration_resolver.rhythmic_duration(length, scale: scale, tuplet: ratio)
+      tied_prefix ? tied_prefix.tied_to(own) : own
     end
 
     def closing_slur

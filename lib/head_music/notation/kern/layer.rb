@@ -25,7 +25,7 @@ module HeadMusic::Notation::Kern
   # music. Ones that reach a later bar, or are followed by music, are rests,
   # since that bar is written and the voice cannot hold a gap.
   class Layer
-    TOKEN_FIELDS = %i[rhythmic_value fraction pitches articulations ornaments note_dynamic span_marks invisible].freeze
+    TOKEN_FIELDS = %i[rhythmic_duration fraction pitches articulations ornaments note_dynamic span_marks invisible].freeze
     Event = Struct.new(:time, *TOKEN_FIELDS, :syllables, :graces, :grace_opens, :fermatas) do
       def finish
         time + fraction
@@ -108,7 +108,7 @@ module HeadMusic::Notation::Kern
 
     def place_event(event, clock, fermata_marks)
       rest_until(event.time, clock)
-      voice_event = voice.place(@position, event.rhythmic_value, event.pitches)
+      voice_event = voice.place(@position, event.rhythmic_duration, event.pitches)
       rest = voice_event.rest?
       event.mark(voice_event) unless rest
       @melismas.add(voice_event, event.syllables) unless rest
@@ -149,7 +149,7 @@ module HeadMusic::Notation::Kern
     def rest_until(time, clock)
       while @time < time
         segment_end = [clock.next_bar_start(@time), time].compact.min
-        rest = voice.place(@position, HeadMusic::Notation::DottedDuration.rest_value(segment_end - @time))
+        rest = voice.place(@position, HeadMusic::Notation::DottedDuration.rest_duration(segment_end - @time))
         @position = rest.next_position
         @time = segment_end
       end

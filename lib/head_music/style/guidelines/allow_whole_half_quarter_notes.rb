@@ -13,6 +13,6 @@ class HeadMusic::Style::Guidelines::AllowWholeHalfQuarterNotes < HeadMusic::Styl
   private
 
   def violating_notes
-    notes.reject { |note| ALLOWED_TOTAL_VALUES.include?(note.rhythmic_value.total_value) }
+    notes.reject { |note| ALLOWED_TOTAL_VALUES.include?(note.rhythmic_duration.total_value) }
   end
 end

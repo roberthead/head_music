@@ -48,7 +48,7 @@ describe "HeadMusic::MIDI" do
       written = written_time(voice_event.position)
       time = written if time.nil? || (time - written).abs > Rational(1, 1024)
       onset = time
-      time += voice_event.rhythmic_value.fraction
+      time += voice_event.rhythmic_duration.fraction
       [voice_event, onset, time]
     end
   end

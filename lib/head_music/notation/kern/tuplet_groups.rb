@@ -28,9 +28,9 @@ module HeadMusic::Notation::Kern
       end
     end
 
-    # The items of a value's links, as one voice event.
-    def items_of(rhythmic_value, event)
-      rhythmic_value.tied_chain.map { |link| Item.new(link.tuplet_ratio, link.link_fraction, event) }
+    # The items of a duration's values, as one voice event.
+    def items_of(rhythmic_duration, event)
+      rhythmic_duration.values.map { |link| Item.new(link.tuplet_ratio, link.link_fraction, event) }
     end
 
     # The index ranges of the items each group holds.

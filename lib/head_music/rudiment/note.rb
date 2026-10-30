@@ -24,38 +24,38 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   PITCH_PATTERN = /([A-G])((?:#{HeadMusic::Rudiment::Alteration::PATTERN.source})?)(-?\d+)?/i
   MATCHER = /^\s*(#{PITCH_PATTERN.source})\s+(.+)$/i
 
-  def self.get(pitch, rhythmic_value = nil)
+  def self.get(pitch, rhythmic_duration = nil)
     return pitch if pitch.is_a?(HeadMusic::Rudiment::Note)
-    return get_from_string(pitch) if rhythmic_value.nil? && pitch.is_a?(String)
+    return get_from_string(pitch) if rhythmic_duration.nil? && pitch.is_a?(String)
 
     pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-    rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value || :quarter)
-    fetch_or_create(pitch, rhythmic_value)
+    rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(rhythmic_duration || :quarter)
+    fetch_or_create(pitch, rhythmic_duration)
   end
 
-  # Parse a lone string as "pitch rhythmic_value" (e.g., "F#4 dotted-quarter"),
+  # Parse a lone string as "pitch rhythmic_duration" (e.g., "F#4 dotted-quarter"),
   # falling back to just a pitch with a default quarter note.
   def self.get_from_string(string)
     match = string.match(MATCHER)
     if match
       pitch_obj = HeadMusic::Rudiment::Pitch.get(match[1])
-      rhythmic_value_obj = HeadMusic::Rudiment::RhythmicValue.get(match[5])
-      return fetch_or_create(pitch_obj, rhythmic_value_obj) if pitch_obj && rhythmic_value_obj
+      rhythmic_duration_obj = HeadMusic::Rudiment::RhythmicDuration.get(match[5])
+      return fetch_or_create(pitch_obj, rhythmic_duration_obj) if pitch_obj && rhythmic_duration_obj
     end
 
     pitch_obj = HeadMusic::Rudiment::Pitch.get(string)
-    return fetch_or_create(pitch_obj, HeadMusic::Rudiment::RhythmicValue.get(:quarter)) if pitch_obj
+    return fetch_or_create(pitch_obj, HeadMusic::Rudiment::RhythmicDuration.get(:quarter)) if pitch_obj
 
     nil
   end
 
-  def self.fetch_or_create(pitch, rhythmic_value)
-    hash_key = [pitch.to_s, rhythmic_value.to_s].join("_")
-    fetch_or_register(hash_key, pitch, rhythmic_value)
+  def self.fetch_or_create(pitch, rhythmic_duration)
+    hash_key = [pitch.to_s, rhythmic_duration.to_s].join("_")
+    fetch_or_register(hash_key, pitch, rhythmic_duration)
   end
 
-  def initialize(pitch, rhythmic_value)
-    super(rhythmic_value)
+  def initialize(pitch, rhythmic_duration)
+    super(rhythmic_duration)
     @pitch = pitch
   end
 
@@ -63,7 +63,7 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
   public_class_method :new
 
   def name
-    "#{pitch} #{rhythmic_value}"
+    "#{pitch} #{rhythmic_duration}"
   end
 
   def to_s
@@ -79,29 +79,29 @@ class HeadMusic::Rudiment::Note < HeadMusic::Rudiment::RhythmicElement
     return nil unless other.is_a?(HeadMusic::Rudiment::RhythmicElement)
     return super unless other.is_a?(self.class)
 
-    [rhythmic_value, pitch] <=> [other.rhythmic_value, other.pitch]
+    [rhythmic_duration, pitch] <=> [other.rhythmic_duration, other.pitch]
   end
 
   # Transpose the note up by an interval or semitones
   def +(other)
     new_pitch = pitch + other
-    self.class.get(new_pitch, rhythmic_value)
+    self.class.get(new_pitch, rhythmic_duration)
   end
 
   # Transpose the note down by an interval or semitones
   def -(other)
     new_pitch = pitch - other
-    self.class.get(new_pitch, rhythmic_value)
+    self.class.get(new_pitch, rhythmic_duration)
   end
 
-  # Override to maintain pitch when changing rhythmic value
-  def with_rhythmic_value(new_rhythmic_value)
-    self.class.get(pitch, new_rhythmic_value)
+  # Override to maintain pitch when changing rhythmic duration
+  def with_rhythmic_duration(new_rhythmic_duration)
+    self.class.get(pitch, new_rhythmic_duration)
   end
 
-  # Change the pitch while keeping the same rhythmic value
+  # Change the pitch while keeping the same rhythmic duration
   def with_pitch(new_pitch)
-    self.class.get(new_pitch, rhythmic_value)
+    self.class.get(new_pitch, rhythmic_duration)
   end
 
   def sounded?

@@ -1,6 +1,6 @@
 # Parses and renders ABC notation as HeadMusic::Content flows
 module HeadMusic::Notation::ABC
-  # Converts a HeadMusic::Rudiment::RhythmicValue back into the ABC note-length
+  # Converts a HeadMusic::Rudiment::RhythmicDuration back into the ABC note-length
   # multiplier string relative to the tune's unit note length — the inverse of
   # DurationResolver.
   class DurationWriter
@@ -10,37 +10,36 @@ module HeadMusic::Notation::ABC
       @unit_note_length = Rational(unit_note_length)
     end
 
-    def multiplier_string(rhythmic_value)
-      multiplier_string_for_fraction(total_fraction(rhythmic_value), rhythmic_value)
+    def multiplier_string(rhythmic_duration)
+      multiplier_string_for_fraction(total_fraction(rhythmic_duration), rhythmic_duration)
     end
 
-    # For the part of a value that falls inside one bar; the rhythmic value is
-    # only named in the error.
-    def multiplier_string_for_fraction(fraction, rhythmic_value)
-      validate_fraction!(fraction, rhythmic_value)
+    # For the part of a duration that falls inside one bar; the rhythmic
+    # duration is only named in the error.
+    def multiplier_string_for_fraction(fraction, rhythmic_duration)
+      validate_fraction!(fraction, rhythmic_duration)
       format_multiplier(fraction / unit_note_length)
     end
 
     private
 
-    # RhythmicValue's own value methods return Floats; rebuild the fraction
-    # from integer parts so the multiplier arithmetic stays exact. A tied
-    # chain collapses to one multiplier, round-tripping tokens like "A5".
-    def total_fraction(rhythmic_value)
-      fraction = HeadMusic::Notation::DottedDuration.dotted_unit_fraction(rhythmic_value)
-      tied_value = rhythmic_value.tied_value
-      fraction += total_fraction(tied_value) if tied_value
-      fraction
+    # The written length, leaving out any tuplet ratio. A tied chain
+    # collapses to one multiplier, round-tripping tokens like "A5".
+    def total_fraction(rhythmic_duration)
+      values = rhythmic_duration.respond_to?(:values) ? rhythmic_duration.values : [rhythmic_duration]
+      values.sum do |value|
+        HeadMusic::Notation::DottedDuration.dotted_unit_fraction(value)
+      end
     end
 
-    def validate_fraction!(fraction, rhythmic_value)
+    def validate_fraction!(fraction, rhythmic_duration)
       max_fraction = DurationResolver::MAX_FRACTION
       if fraction > max_fraction
-        raise_error("note length exceeds #{max_fraction.to_i} whole notes", rhythmic_value)
+        raise_error("note length exceeds #{max_fraction.to_i} whole notes", rhythmic_duration)
       end
       return if HeadMusic::Notation::DottedDuration.power_of_two?(fraction.denominator)
 
-      raise_error("note length #{fraction} is not expressible in binary note values", rhythmic_value)
+      raise_error("note length #{fraction} is not expressible in binary note values", rhythmic_duration)
     end
 
     def format_multiplier(multiplier)
@@ -50,8 +49,8 @@ module HeadMusic::Notation::ABC
       "#{multiplier.numerator}/#{multiplier.denominator}"
     end
 
-    def raise_error(message, rhythmic_value)
-      raise HeadMusic::Notation::ABC::RenderError, "#{message}: #{rhythmic_value}"
+    def raise_error(message, rhythmic_duration)
+      raise HeadMusic::Notation::ABC::RenderError, "#{message}: #{rhythmic_duration}"
     end
   end
 end

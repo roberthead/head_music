@@ -15,7 +15,7 @@ describe HeadMusic::Notation::Kern::DurationReader do
   }.each do |(recip, dots), (name, fraction)|
     it "reads #{recip}#{dots} as a #{name}" do
       result = duration(recip, dots)
-      expect([result.rhythmic_value.to_s, result.fraction]).to eq [name, fraction]
+      expect([result.rhythmic_duration.to_s, result.fraction]).to eq [name, fraction]
     end
   end
 
@@ -31,12 +31,12 @@ describe HeadMusic::Notation::Kern::DurationReader do
     }.each do |(recip, dots), (name, fraction)|
       it "reads #{recip}#{dots} as a #{name}" do
         result = duration(recip, dots)
-        expect([result.rhythmic_value.to_s, result.fraction, result.rhythmic_value.fraction]).to eq [name, fraction, fraction]
+        expect([result.rhythmic_duration.to_s, result.fraction, result.rhythmic_duration.fraction]).to eq [name, fraction, fraction]
       end
     end
 
     it "reads a duplet, which sounds as a dotted value, as that value" do
-      expect(duration("8", ".").rhythmic_value).not_to be_tuplet
+      expect(duration("8", ".").rhythmic_duration).not_to be_tuplet
     end
 
     it "raises an unsupported-feature error for a tuplet unit shorter than a 256th" do

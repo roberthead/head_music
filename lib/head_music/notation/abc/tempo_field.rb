@@ -46,7 +46,7 @@ module HeadMusic::Notation::ABC
       raise ParseError.new("Invalid tempo #{numbers.inspect}", line_number: line_number, snippet: numbers) unless fraction && count.positive?
 
       beat = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
-      [beat, count] if beat&.tied_chain&.one?
+      [beat, count] if beat
     end
 
     def beat_fraction_and_count(numbers, unit_note_length)

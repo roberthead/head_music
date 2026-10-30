@@ -145,8 +145,8 @@ describe HeadMusic::Notation::ABC::Writer do
 
       it "round-trips to the same voice events" do
         reparsed = HeadMusic::Notation::ABC.parse(rendered).voices.first.voice_events
-        expect(reparsed.map { |voice_event| [voice_event.position.code, voice_event.rhythmic_value.total_value] })
-          .to eq flow.voices.first.voice_events.map { |voice_event| [voice_event.position.code, voice_event.rhythmic_value.total_value] }
+        expect(reparsed.map { |voice_event| [voice_event.position.code, voice_event.rhythmic_duration.total_value] })
+          .to eq flow.voices.first.voice_events.map { |voice_event| [voice_event.position.code, voice_event.rhythmic_duration.total_value] }
       end
     end
 

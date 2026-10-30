@@ -13,7 +13,7 @@ describe HeadMusic::Notation::Kern::DurationWriter do
 
     it "reads #{token} back as #{rhythmic_value}" do
       recip, dot_marks = token.match(/\A(\d+)(\.*)\z/).captures
-      expect(HeadMusic::Notation::Kern::DurationReader.duration(recip, dot_marks).rhythmic_value).to eq rhythmic_value
+      expect(HeadMusic::Notation::Kern::DurationReader.duration(recip, dot_marks).rhythmic_duration.single_value).to eq rhythmic_value
     end
   end
 

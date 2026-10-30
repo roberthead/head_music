@@ -229,7 +229,7 @@ module TupletExpectations
     flow.voices.map do |voice|
       voice.voice_events.map do |voice_event|
         onset = exact_point(voice_event.position.bar_number, HeadMusic::Notation::BarSplitter.onset_in_bar(voice_event))
-        [onset, voice_event.rhythmic_value.fraction, voice_event.sounds.map(&:to_s)]
+        [onset, voice_event.rhythmic_duration.fraction, voice_event.sounds.map(&:to_s)]
       end
     end
   end

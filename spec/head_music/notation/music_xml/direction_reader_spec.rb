@@ -351,7 +351,7 @@ describe HeadMusic::Notation::MusicXML::DirectionReader do
         let(:original) do
           TupletFixtures.public_send(fixture).tap do |tupleted|
             voice = tupleted.voices.first
-            positions = voice.voice_events.select { |event| event.rhythmic_value.tuplet? }.map(&:position)
+            positions = voice.voice_events.select { |event| event.rhythmic_duration.tuplet? }.map(&:position)
             voice.add_span(:crescendo, from: positions[1], to: positions[4])
             voice.place_dynamic(positions[2], :mp)
             voice.place_dynamic(positions[5], :f)

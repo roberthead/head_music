@@ -58,10 +58,10 @@ class HeadMusic::Content::Voice
     @staff_assignments.to_h
   end
 
-  def place(position, rhythmic_value, sound_or_sounds = nil)
+  def place(position, rhythmic_duration, sound_or_sounds = nil)
     # The melodic line is a snapshot of the notes, so placing anything invalidates it.
     @melodic_line = nil
-    voice_event = HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_value, sound_or_sounds)
+    voice_event = HeadMusic::Content::VoiceEvent.build(self, position, rhythmic_duration, sound_or_sounds)
     ensure_outside_tuplets(voice_event)
     # An event's timing depends only on the events before it, so appending
     # leaves every memo good, and reading a voice in order stays linear.
@@ -214,7 +214,7 @@ class HeadMusic::Content::Voice
     group = @tuplets.at(position)
     return unless group
 
-    raise ArgumentError, "cannot place a #{voice_event.rhythmic_value} at #{position} inside the #{group}"
+    raise ArgumentError, "cannot place a #{voice_event.rhythmic_duration} at #{position} inside the #{group}"
   end
 
   def pitches_string

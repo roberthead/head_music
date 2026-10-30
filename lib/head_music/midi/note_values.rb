@@ -1,6 +1,6 @@
 module HeadMusic::MIDI
-  # Writes spans of Rational whole notes as rhythmic values in the layout's
-  # bars.
+  # Writes spans of Rational whole notes as rhythmic durations in the
+  # layout's bars.
   class NoteValues
     MAX_PIECE = HeadMusic::Notation::DottedDuration::MAX_FRACTION
 
@@ -10,24 +10,24 @@ module HeadMusic::MIDI
       @layout = layout
     end
 
-    # One rhythmic value, a tied chain where no single value fits, for a note
+    # One rhythmic duration, tied where no single value fits, for a note
     # from its onset to its release. It is cut at barlines, and at beats where
     # its length within a bar is not binary.
-    def value(onset, release)
-      values = bar_segments(onset, release).flat_map do |bar, from, to|
+    def rhythmic_duration(onset, release)
+      durations = bar_segments(onset, release).flat_map do |bar, from, to|
         pieces = binary?(to - from) ? [[from, to]] : beat_pieces(bar, from, to)
-        pieces.map { |start, finish| piece_value(bar, start, finish) }
+        pieces.map { |start, finish| piece_duration(bar, start, finish) }
       end
-      raise UnsupportedFeatureError, "no rhythmic value spans #{release - onset} of a whole note" if values.empty?
+      raise UnsupportedFeatureError, "no rhythmic value spans #{release - onset} of a whole note" if durations.empty?
 
-      values.reverse.reduce { |tail, head| head.append_tied(tail) }
+      HeadMusic::Notation::DottedDuration.tied(durations)
     end
 
     # The rests filling a gap, each with the time it starts at. A whole empty
     # bar is one rest, and a gap within a bar is cut at beats.
     def rests(from, to)
       bar_segments(from, to).flat_map do |bar, start, finish|
-        rest_pieces(bar, start, finish).map { |piece_start, piece_end| [piece_start, piece_value(bar, piece_start, piece_end)] }
+        rest_pieces(bar, start, finish).map { |piece_start, piece_end| [piece_start, piece_duration(bar, piece_start, piece_end)] }
       end
     end
 
@@ -72,8 +72,7 @@ module HeadMusic::MIDI
     end
 
     def single?(duration)
-      value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(duration)
-      value && !value.tied_value
+      !HeadMusic::Notation::DottedDuration.rhythmic_value_for(duration).nil?
     end
 
     # The partial beat before the first beat inside the span, the whole beats,
@@ -86,10 +85,10 @@ module HeadMusic::MIDI
       [[from, first_beat], [first_beat, last_beat], [last_beat, to]].select { |start, finish| finish > start }
     end
 
-    def piece_value(bar, from, to)
+    def piece_duration(bar, from, to)
       duration = to - from
       tuplet = HeadMusic::Notation::DottedDuration.tuplet_ratio(duration)
-      HeadMusic::Notation::DottedDuration.rhythmic_value_for(duration, tuplet: tuplet) ||
+      HeadMusic::Notation::DottedDuration.rhythmic_duration_for(duration, tuplet: tuplet) ||
         raise(UnsupportedFeatureError, "no rhythmic value spans #{duration} of a whole note in bar #{bar.number}")
     end
 

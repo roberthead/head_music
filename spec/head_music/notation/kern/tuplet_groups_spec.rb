@@ -4,12 +4,12 @@ describe HeadMusic::Notation::Kern::TupletGroups do
   # Each field is a kern duration, read from a note token, and one voice event.
   def items(*durations)
     durations.each_with_index.flat_map do |duration, event|
-      described_class.items_of(HeadMusic::Notation::Kern::TokenReader.read("#{duration}c").rhythmic_value, event)
+      described_class.items_of(HeadMusic::Notation::Kern::TokenReader.read("#{duration}c").rhythmic_duration, event)
     end
   end
 
   def value(name)
-    HeadMusic::Rudiment::RhythmicValue.get(name)
+    HeadMusic::Rudiment::RhythmicDuration.get(name)
   end
 
   describe ".runs" do

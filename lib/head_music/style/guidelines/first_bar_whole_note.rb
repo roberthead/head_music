@@ -5,7 +5,7 @@ module HeadMusic::Style::Guidelines; end
 class HeadMusic::Style::Guidelines::FirstBarWholeNote < HeadMusic::Style::Guidelines::FirstBarEntry
   private
 
-  def expected_rhythmic_value
-    HeadMusic::Rudiment::RhythmicValue.get(:whole)
+  def expected_rhythmic_duration
+    HeadMusic::Rudiment::RhythmicDuration.get(:whole)
   end
 end

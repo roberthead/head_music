@@ -29,7 +29,7 @@ module HeadMusic::Notation::MusicXML
       track = track_for(note.voice)
       @lead = track.add(
         measure_index: measure_index, cursor: cursor, tolerance: durations.division, fills_bar: fills_bar,
-        rhythmic_value: fills_bar ? nil : durations.rhythmic_value(note, duration, **@where), duration: duration,
+        rhythmic_duration: fills_bar ? nil : durations.rhythmic_duration(note, duration, **@where), duration: duration,
         sounds: (note.rest || note.cue) ? [] : [sound(note)], cue: note.cue, tie_starts: [], tie_stops: [],
         staff: @staves.staff(note, **@where), ratio: note.ratio
       )
@@ -50,7 +50,7 @@ module HeadMusic::Notation::MusicXML
       return @lead if @lead.cue || note.cue
 
       duration = durations.of(note.duration, **@where)
-      unless duration == @lead.duration && durations.rhythmic_value(note, duration, **@where) == @lead.rhythmic_value
+      unless duration == @lead.duration && durations.rhythmic_duration(note, duration, **@where) == @lead.rhythmic_duration
         raise UnsupportedFeatureError.new("Chord tones of different lengths are not supported", **@where)
       end
       @lead.sounds |= [sound(note)]

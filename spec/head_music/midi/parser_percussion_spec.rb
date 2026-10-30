@@ -22,7 +22,7 @@ describe HeadMusic::MIDI::Parser do
       end
 
       it "groups notes struck together into one chord, whatever their releases" do
-        expect(flow.parts.last.voices.first.note_events.first.rhythmic_value.to_s).to eq "quarter"
+        expect(flow.parts.last.voices.first.note_events.first.rhythmic_duration.to_s).to eq "quarter"
       end
 
       it "gives the part a drum kit when its sounds are of several instruments" do

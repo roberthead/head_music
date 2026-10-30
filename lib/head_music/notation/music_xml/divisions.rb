@@ -41,8 +41,8 @@ module HeadMusic::Notation::MusicXML
     def self.note_denominators(flow)
       flow.voices.flat_map do |voice|
         voice.voice_events.flat_map do |voice_event|
-          pieces = HeadMusic::Notation::BarSplitter.segments_of(voice_event).filter_map(&:rhythmic_value)
-          [voice_event.rhythmic_value, *pieces].flat_map { |rhythmic_value| chain_denominators(rhythmic_value) }
+          pieces = HeadMusic::Notation::BarSplitter.segments_of(voice_event).filter_map(&:rhythmic_duration)
+          [voice_event.rhythmic_duration, *pieces].flat_map { |rhythmic_duration| chain_denominators(rhythmic_duration) }
         end
       end
     end
@@ -67,8 +67,8 @@ module HeadMusic::Notation::MusicXML
     end
     private_class_method :tempo_mark_denominators
 
-    def self.chain_denominators(rhythmic_value)
-      rhythmic_value.tied_chain.map { |link| DurationWriter.sounding_quarter_fraction(link).denominator }
+    def self.chain_denominators(rhythmic_duration)
+      rhythmic_duration.values.map { |link| DurationWriter.sounding_quarter_fraction(link).denominator }
     end
     private_class_method :chain_denominators
   end

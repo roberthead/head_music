@@ -31,7 +31,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def spacers(fraction, multiplied)
-      chain = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)&.tied_chain&.map { |link| "s#{DurationWriter.token(link)}" }
+      chain = HeadMusic::Notation::DottedDuration.rhythmic_duration_for(fraction)&.values&.map { |link| "s#{DurationWriter.token(link)}" }
       chain || (multiplied ? ["s1*#{fraction.numerator}/#{fraction.denominator}"] : nil)
     end
 

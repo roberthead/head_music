@@ -12,7 +12,7 @@ module HeadMusic::Notation
     # chain began with, from link_offset on; it is not placed. The voice
     # event is the one placed for its chain.
     Event = Struct.new(
-      :measure_index, :cursor, :tolerance, :rhythmic_value, :duration, :sounds, :fills_bar, :cue,
+      :measure_index, :cursor, :tolerance, :rhythmic_duration, :duration, :sounds, :fills_bar, :cue,
       :tie_starts, :tie_stops, :continuation, :link_offset, :link_count, :voice_event, :graces, :staff, :label, :time,
       :ratio
     ) do
@@ -36,7 +36,7 @@ module HeadMusic::Notation
       end
 
       def link_starts
-        @link_starts ||= rhythmic_value.tied_chain.each_with_object([0]) { |link, starts| starts << starts.last + link.link_fraction }
+        @link_starts ||= rhythmic_duration.values.each_with_object([0]) { |link, starts| starts << starts.last + link.link_fraction }
       end
 
       def rest?
@@ -58,7 +58,7 @@ module HeadMusic::Notation
       # Grace notes before a rest, or before a tie's later link, which is
       # never placed, are dropped.
       def place_on(voice, position)
-        self.voice_event = voice.place(position, rhythmic_value, sounds)
+        self.voice_event = voice.place(position, rhythmic_duration, sounds)
         voice_event.add_grace_notes(*graces.map(&:grace_note)) unless voice_event.rest?
         voice_event
       end
@@ -111,8 +111,9 @@ module HeadMusic::Notation
     def add(**attributes)
       graces = @queued_graces
       @queued_graces = []
-      link_count = attributes[:rhythmic_value]&.tied_chain&.length || 1
-      event = Event.new(**attributes, link_count: link_count, label: @label, graces: graces)
+      rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(attributes[:rhythmic_duration])
+      link_count = rhythmic_duration&.values&.length || 1
+      event = Event.new(**attributes, rhythmic_duration: rhythmic_duration, link_count: link_count, label: @label, graces: graces)
       graces.each { |grace| grace.event = event }
       @events << event
       event

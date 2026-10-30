@@ -873,7 +873,7 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
       end
 
       it "keeps the dotted triplet quarter that never fills a group" do
-        expect(flow.voices.first.voice_events.find { |voice_event| voice_event.position.to_s == "5:1:000" }.rhythmic_value.to_s)
+        expect(flow.voices.first.voice_events.find { |voice_event| voice_event.position.to_s == "5:1:000" }.rhythmic_duration.to_s)
           .to eq "triplet dotted quarter"
       end
     end
@@ -926,12 +926,12 @@ describe HeadMusic::Notation::Kern::FlowBuilder do
 
     it "ties the last grace note to a note of its pitch, ending no chain at the note's ]" do
       note_event = parse("**kern\n=1\n8Qc[\n1c]\n*-").voices.first.note_events.first
-      expect([note_event.rhythmic_value.to_s, note_event.grace_notes.map(&:tied?)]).to eq ["whole", [true]]
+      expect([note_event.rhythmic_duration.to_s, note_event.grace_notes.map(&:tied?)]).to eq ["whole", [true]]
     end
 
     it "continues a chain from a tied grace note at the note's _" do
       note_event = parse("**kern\n*M2/4\n=1\n8Qc[\n2c_\n=2\n2c]\n*-").voices.first.note_events.first
-      expect([note_event.rhythmic_value.to_s, note_event.grace_notes.map(&:tied?)]).to eq ["half tied to half", [true]]
+      expect([note_event.rhythmic_duration.to_s, note_event.grace_notes.map(&:tied?)]).to eq ["half tied to half", [true]]
     end
 
     it "keeps a grace note's articulations" do

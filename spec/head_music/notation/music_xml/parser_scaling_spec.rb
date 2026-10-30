@@ -52,7 +52,7 @@ describe HeadMusic::Notation::MusicXML::Parser do
   it "folds a tie chain through four times the bars in under 4.5 times the calls" do
     (small, _), (large, flow) = calls_to_read_tied(100), calls_to_read_tied(400)
     expect(large.fdiv(small)).to be < 4.5
-    expect(flow.voices.first.voice_events.map { |event| event.rhythmic_value.tied_chain.length }).to eq [400]
+    expect(flow.voices.first.voice_events.map { |event| event.rhythmic_duration.values.length }).to eq [400]
   end
 
   it "reads every mark of four times the bars in under 4.5 times the calls, leaving the voice unrevised" do

@@ -28,6 +28,10 @@ class HeadMusic::Content::Flow
       value
     end
 
+    def rhythmic_duration(value, path)
+      HeadMusic::Rudiment::RhythmicDuration.get(value) || raise(ArgumentError, "#{path}: unknown rhythmic value #{value.inspect}")
+    end
+
     def rhythmic_value(value, path)
       rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(value)
       unless valid_rhythmic_value?(rhythmic_value)

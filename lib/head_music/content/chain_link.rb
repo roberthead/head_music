@@ -5,7 +5,7 @@ module HeadMusic::Content; end
 # subticks from the event's position.
 HeadMusic::Content::ChainLink = Data.define(:voice_event, :rhythmic_value, :onset, :finish, :first, :last) do
   def self.of(voice_event)
-    chain = voice_event.rhythmic_value.tied_chain
+    chain = voice_event.rhythmic_duration.values
     onset = voice_event.onset_remainder
     chain.each_with_index.map do |link, index|
       finish = onset + link.link_fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE

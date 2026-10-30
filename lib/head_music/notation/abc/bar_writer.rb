@@ -73,7 +73,7 @@ module HeadMusic::Notation::ABC
     # with the fermata on the second part.
     def fermata_split(segment)
       voice_event = segment.voice_event
-      length = segment.fraction || voice_event.rhythmic_value.fraction
+      length = segment.fraction || voice_event.rhythmic_duration.fraction
       boundaries = HeadMusic::Notation::BarSplitter.link_spans(voice_event).map { |_, from, _| from }
       splits = @fermatas.fetch(voice_event, []).filter_map do |fermata|
         HeadMusic::Notation::BarSplitter.offset_in_bar(fermata.from) - segment.offset if fermata.from.bar_number == segment.bar_number
@@ -108,20 +108,20 @@ module HeadMusic::Notation::ABC
     # Each piece as [its tuplet marker, its multiplier].
     def written_parts(segment)
       voice_event = segment.voice_event
-      rhythmic_value = voice_event.rhythmic_value
+      rhythmic_duration = voice_event.rhythmic_duration
       pieces = @tuplet_writer.pieces(segment)
       return untupled_parts(segment) unless pieces
 
-      pieces.map { |piece| [piece.marker, multiplier_for(piece.links.sum(&:written_fraction), rhythmic_value)] }
+      pieces.map { |piece| [piece.marker, multiplier_for(piece.links.sum(&:written_fraction), rhythmic_duration)] }
     end
 
     def untupled_parts(segment)
-      rhythmic_value = segment.voice_event.rhythmic_value
+      rhythmic_duration = segment.voice_event.rhythmic_duration
       split = fermata_split(segment)
-      return [["", multiplier_for(segment.fraction, rhythmic_value)]] unless split
+      return [["", multiplier_for(segment.fraction, rhythmic_duration)]] unless split
 
-      length = segment.fraction || rhythmic_value.fraction
-      [["", multiplier_for(split, rhythmic_value)], ["", multiplier_for(length - split, rhythmic_value), "!fermata!"]]
+      length = segment.fraction || rhythmic_duration.fraction
+      [["", multiplier_for(split, rhythmic_duration)], ["", multiplier_for(length - split, rhythmic_duration), "!fermata!"]]
     end
 
     def sounding_token(voice_event, multiplier, forced)
@@ -131,10 +131,10 @@ module HeadMusic::Notation::ABC
       "#{@pitch_writer.token(voice_event.pitch)}#{multiplier}"
     end
 
-    def multiplier_for(fraction, rhythmic_value)
-      return @duration_writer.multiplier_string(rhythmic_value) unless fraction
+    def multiplier_for(fraction, rhythmic_duration)
+      return @duration_writer.multiplier_string(rhythmic_duration) unless fraction
 
-      @duration_writer.multiplier_string_for_fraction(fraction, rhythmic_value)
+      @duration_writer.multiplier_string_for_fraction(fraction, rhythmic_duration)
     end
 
     def render_error_class

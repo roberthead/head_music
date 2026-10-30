@@ -29,7 +29,7 @@ module HeadMusic::Notation::MusicXML
     def components_by_segment
       @components_by_segment ||= flow.voices.flat_map(&:voice_events).each_with_object({}) do |voice_event, components|
         segments = HeadMusic::Notation::BarSplitter.segments_of(voice_event)
-        pieces = duration_writer.split_components(segments.map { |segment| segment.rhythmic_value!(RenderError) })
+        pieces = duration_writer.split_components(segments.map { |segment| segment.rhythmic_duration!(RenderError) })
         segments.zip(pieces) { |segment, piece| components[segment] = piece }
       end
     end

@@ -19,7 +19,7 @@ describe HeadMusic::Analysis::PitchSpeller::Respelling do
 
     def timing(flow)
       flow.voices.flat_map do |voice|
-        voice.voice_events.map { |event| [event.position.to_s, event.rhythmic_value.to_s, event.sounds.map { |sound| sound.pitched? ? sound.midi_note_number : sound.to_s }] }
+        voice.voice_events.map { |event| [event.position.to_s, event.rhythmic_duration.to_s, event.sounds.map { |sound| sound.pitched? ? sound.midi_note_number : sound.to_s }] }
       end
     end
 

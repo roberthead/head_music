@@ -17,7 +17,7 @@ class HeadMusic::Style::Guidelines::FirstBarEntry < HeadMusic::Style::Guideline
 
   private
 
-  def expected_rhythmic_value
+  def expected_rhythmic_duration
     raise NotImplementedError
   end
 
@@ -29,7 +29,7 @@ class HeadMusic::Style::Guidelines::FirstBarEntry < HeadMusic::Style::Guideline
   end
 
   def all_correct_beat_unit?(bar_notes)
-    bar_notes.all? { |note| note.rhythmic_value == expected_rhythmic_value }
+    bar_notes.all? { |note| note.rhythmic_duration == expected_rhythmic_duration }
   end
 
   def valid_note_count?(bar_notes)
@@ -41,14 +41,14 @@ class HeadMusic::Style::Guidelines::FirstBarEntry < HeadMusic::Style::Guideline
   def expected_notes_in_first_bar
     meter = flow.meter_at(1)
     bar_duration = meter.count_unit.relative_value * meter.counts_per_bar
-    (bar_duration / expected_rhythmic_value.total_value).round
+    (bar_duration / expected_rhythmic_duration.total_value).round
   end
 
   def valid_rests?(bar_rests)
     bar_rests.empty? ||
       (bar_rests.length == 1 &&
         bar_rests.first.position.count == 1 &&
-        bar_rests.first.rhythmic_value == expected_rhythmic_value)
+        bar_rests.first.rhythmic_duration == expected_rhythmic_duration)
   end
 
   def notes_in_first_bar

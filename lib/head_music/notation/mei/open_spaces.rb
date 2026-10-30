@@ -26,16 +26,16 @@ module HeadMusic::Notation::MEI
     def fill(content, length)
       count = content.entries.count(&:open_space?)
       share = [length - (content.extent || 0), 0].max / count
-      value = share.positive? ? HeadMusic::Notation::DottedDuration.rest_value(share) : nil
+      rest = share.positive? ? HeadMusic::Notation::DottedDuration.rest_duration(share) : nil
       shift = 0
       content.entries.select! do |entry|
         entry.cursor += shift
         next true unless entry.open_space?
 
         shift += share
-        entry.rhythmic_value = value
+        entry.rhythmic_duration = rest
         entry.duration = share
-        !value.nil?
+        !rest.nil?
       end
       content.extent = (content.extent || 0) + share * count
     end

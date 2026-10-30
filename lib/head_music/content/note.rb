@@ -7,17 +7,17 @@ module HeadMusic::Content; end
 #   - always has a pitch
 #   - receives a voice and position if unspecified
 class HeadMusic::Content::Note
-  attr_accessor :pitch, :rhythmic_value, :voice, :position
+  attr_accessor :pitch, :rhythmic_duration, :voice, :position
 
-  def initialize(pitch, rhythmic_value, voice = nil, position = nil)
+  def initialize(pitch, rhythmic_duration, voice = nil, position = nil)
     @pitch = HeadMusic::Rudiment::Pitch.get(pitch)
-    @rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value)
+    @rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(rhythmic_duration)
     @voice = voice || HeadMusic::Content::Voice.new
     @position = position || HeadMusic::Content::Position.new(@voice.flow, "1:1")
   end
 
   def voice_event
-    @voice_event ||= HeadMusic::Content::NoteEvent.new(voice, position, rhythmic_value, pitch)
+    @voice_event ||= HeadMusic::Content::NoteEvent.new(voice, position, rhythmic_duration, pitch)
   end
 
   def to_s

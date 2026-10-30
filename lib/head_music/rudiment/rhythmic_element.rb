@@ -1,7 +1,7 @@
 # A module for music rudiments
 module HeadMusic::Rudiment; end
 
-# Abstract base class for rhythmic elements that have a rhythmic value.
+# Abstract base class for rhythmic elements that have a rhythmic duration.
 # This includes notes (pitched), rests (silence), and unpitched notes (percussion).
 class HeadMusic::Rudiment::RhythmicElement < HeadMusic::Rudiment::Base
   include Comparable
@@ -9,32 +9,31 @@ class HeadMusic::Rudiment::RhythmicElement < HeadMusic::Rudiment::Base
   LetterName = HeadMusic::Rudiment::LetterName
   Alteration = HeadMusic::Rudiment::Alteration
   Register = HeadMusic::Rudiment::Register
-  RhythmicValue = HeadMusic::Rudiment::RhythmicValue
 
-  attr_reader :rhythmic_value
+  attr_reader :rhythmic_duration
 
-  delegate :unit, :dots, :tied_value, :ticks, to: :rhythmic_value
+  delegate :ticks, to: :rhythmic_duration
 
   # Make new private to prevent direct instantiation of abstract class
   private_class_method :new
 
-  def initialize(rhythmic_value)
-    @rhythmic_value = rhythmic_value
+  def initialize(rhythmic_duration)
+    @rhythmic_duration = rhythmic_duration
   end
 
-  # Create a new instance with a different rhythmic value
-  def with_rhythmic_value(new_rhythmic_value)
-    self.class.get(new_rhythmic_value)
+  # Create a new instance with a different rhythmic duration
+  def with_rhythmic_duration(new_rhythmic_duration)
+    self.class.get(new_rhythmic_duration)
   end
 
   def ==(other)
     return false unless other.is_a?(self.class)
-    rhythmic_value == other.rhythmic_value
+    rhythmic_duration == other.rhythmic_duration
   end
 
   def <=>(other)
     return nil unless other.is_a?(HeadMusic::Rudiment::RhythmicElement)
-    rhythmic_value <=> other.rhythmic_value
+    rhythmic_duration <=> other.rhythmic_duration
   end
 
   def to_s

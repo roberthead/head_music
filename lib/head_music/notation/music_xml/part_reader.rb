@@ -114,7 +114,7 @@ module HeadMusic::Notation::MusicXML
       measure_rest = @durations.measure_rest?(note, duration)
       event = @tracks.add(note, @durations, measure_index: @measure.index, cursor: @cursor, duration: duration, fills_bar: measure_rest)
       note_record(:note, note.element, event: event, chord: false)
-      value = measure_rest ? @durations.bar_length : note.type && event.rhythmic_value.fraction
+      value = measure_rest ? @durations.bar_length : note.type && event.rhythmic_duration.fraction
       advance(duration, reaches: !measure_rest)
       @timing.note(note.voice, value, event, reaches: !measure_rest)
     end

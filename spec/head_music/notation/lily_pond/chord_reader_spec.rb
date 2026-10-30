@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe HeadMusic::Notation::LilyPond::ChordReader do
   def chords(source)
-    HeadMusic::Notation::LilyPond.parse(source).voices.first.voice_events.map { |event| [event.pitches.join(" "), event.rhythmic_value.to_s] }
+    HeadMusic::Notation::LilyPond.parse(source).voices.first.voice_events.map { |event| [event.pitches.join(" "), event.rhythmic_duration.to_s] }
   end
 
   it "reads the notes inside and the value on the closer" do

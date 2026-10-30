@@ -16,8 +16,8 @@ describe HeadMusic::Notation::MusicXML::VoiceTracks do
 
   it "adds a main note to its voice's track" do
     event = add(note("C", "<voice>2</voice>"))
-    expect([tracks.to_a.map(&:label), event.sounds.map(&:to_s), event.rhythmic_value]).to eq [
-      ["2"], ["C4"], HeadMusic::Rudiment::RhythmicValue.get(:quarter)
+    expect([tracks.to_a.map(&:label), event.sounds.map(&:to_s), event.rhythmic_duration]).to eq [
+      ["2"], ["C4"], HeadMusic::Rudiment::RhythmicDuration.get(:quarter)
     ]
   end
 

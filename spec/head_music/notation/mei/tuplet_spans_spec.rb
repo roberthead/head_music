@@ -5,8 +5,8 @@ describe HeadMusic::Notation::MEI::TupletSpans do
     let(:triplet) { HeadMusic::Rudiment::TupletRatio.get([3, 2]) }
     let(:track) { Object.new }
     let(:quintuplet) { HeadMusic::Rudiment::TupletRatio.get([5, 4]) }
-    let(:entry_class) { Struct.new(:rhythmic_value, :track, :event) }
-    let(:value_class) { Struct.new(:tuplet_ratio) }
+    let(:entry_class) { Struct.new(:rhythmic_duration, :track, :event) }
+    let(:value_class) { Struct.new(:uniform_tuplet_ratio) }
 
     def entry(ratio = triplet, track: self.track, event: Object.new)
       entry_class.new(value_class.new(ratio), track, event)

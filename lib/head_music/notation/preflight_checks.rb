@@ -117,7 +117,7 @@ module HeadMusic
           note = mark.rounded_note
           next if note.nil? || exact_onset?(flow, mark.position)
 
-          raise render_error_class, "the #{mark} falls inside the #{note.rhythmic_value} at #{note.position}, " \
+          raise render_error_class, "the #{mark} falls inside the #{note.rhythmic_duration} at #{note.position}, " \
             "whose ratio does not land on whole subticks, where no note starts"
         end
       end

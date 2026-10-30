@@ -34,7 +34,9 @@ class HeadMusic::Style::Guidelines::AlwaysMove < HeadMusic::Style::Guideline
     note.position.count == count && note.position.tick.zero?
   end
 
+  # A tied note is judged by its attack.
   def undotted_quarter?(note)
-    note.rhythmic_value.unit_name == "quarter" && note.rhythmic_value.dots.zero?
+    attack = note.rhythmic_duration.values.first
+    attack.unit_name == "quarter" && attack.dots.zero?
   end
 end

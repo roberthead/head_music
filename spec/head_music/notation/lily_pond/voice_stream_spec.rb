@@ -49,7 +49,7 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
   it "keeps the pitches, values, and lines on the events" do
     stream.add_note([c4], quarter, 7)
     event = stream.finish.events.first
-    expect([event.pitches, event.rhythmic_value, event.line]).to eq [[c4], quarter, 7]
+    expect([event.pitches, event.rhythmic_duration.single_value, event.line]).to eq [[c4], quarter, 7]
   end
 
   it "keeps a key signature on its event" do
@@ -93,11 +93,11 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
     it "folds a tied pair into one note" do
       events = tie_through(half, quarter)
       expect(events.length).to eq 1
-      expect(events.first.rhythmic_value.to_s).to eq "half tied to quarter"
+      expect(events.first.rhythmic_duration.to_s).to eq "half tied to quarter"
     end
 
     it "folds a longer chain" do
-      expect(tie_through(half, quarter, quarter).first.rhythmic_value.to_s).to eq "half tied to quarter tied to quarter"
+      expect(tie_through(half, quarter, quarter).first.rhythmic_duration.to_s).to eq "half tied to quarter tied to quarter"
     end
 
     it "ties chords with the same pitches in any order into one chord" do
@@ -105,7 +105,7 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
       stream.open_tie(1)
       stream.add_note([d4, c4], quarter, 1)
       events = stream.finish.events
-      expect(events.map { |event| [event.pitches, event.rhythmic_value.to_s] }).to eq [[[c4, d4], "half tied to quarter"]]
+      expect(events.map { |event| [event.pitches, event.rhythmic_duration.to_s] }).to eq [[[c4, d4], "half tied to quarter"]]
     end
 
     it "raises when the tied note differs in pitch" do
@@ -176,8 +176,8 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
     end
 
     it "records each in order, with how much of the note precedes it" do
-      expect(note.inner_events.map { |inner| [inner.event.kind, inner.elapsed, inner.event.line] })
-        .to eq [[:bar_check, half, 1], [:key, half, 2], [:time, half, 2]]
+      expect(note.inner_events.map { |inner| [inner.event.kind, inner.elapsed.to_s, inner.event.line] })
+        .to eq [[:bar_check, "half", 1], [:key, "half", 2], [:time, "half", 2]]
     end
   end
 
@@ -203,7 +203,7 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
     it "gives notes and rests inside one the ratio, and none after it closes" do
       [stream.add_note([c4], quarter, 1), stream.add_rest(quarter, 1), stream.close_tuplet(1)]
       stream.add_note([d4], quarter, 1)
-      expect(stream.finish.events.map { |event| [event.kind, event.rhythmic_value&.to_s] }).to eq [
+      expect(stream.finish.events.map { |event| [event.kind, event.rhythmic_duration&.to_s] }).to eq [
         [:tuplet_start, nil], [:note, "triplet quarter"], [:rest, "triplet quarter"], [:tuplet_end, nil], [:note, "quarter"]
       ]
     end
@@ -266,14 +266,14 @@ describe HeadMusic::Notation::LilyPond::VoiceStream do
   describe described_class::Event do
     subject(:note) do
       described_class.new(
-        kind: :note, line: 1, pitches: [c4], rhythmic_value: quarter,
+        kind: :note, line: 1, pitches: [c4], rhythmic_duration: HeadMusic::Rudiment::RhythmicDuration.get(quarter),
         marks: HeadMusic::Notation::LilyPond::MarkReader::Marks.new(articulations: ["staccato"])
       )
     end
 
     it "takes a tied link's value and marks" do
       tied = note.tied_to(half, HeadMusic::Notation::LilyPond::MarkReader::Marks.new(articulations: ["accent"]))
-      expect([tied.rhythmic_value.to_s, tied.marks.articulations]).to eq ["quarter tied to half", %w[staccato accent]]
+      expect([tied.rhythmic_duration.to_s, tied.marks.articulations]).to eq ["quarter tied to half", %w[staccato accent]]
     end
 
     it "holds an event where its value so far ends" do

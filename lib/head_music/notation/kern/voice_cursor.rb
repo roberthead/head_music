@@ -19,7 +19,7 @@ module HeadMusic::Notation::Kern
     Grace = Data.define(:token, :tied) do
       def grace_note
         HeadMusic::Content::GraceNote.new(
-          sounds: token.pitches, rhythmic_value: token.rhythmic_value, slashed: token.slashed, tied: tied, articulations: token.articulations
+          sounds: token.pitches, rhythmic_value: token.rhythmic_duration.single_value, slashed: token.slashed, tied: tied, articulations: token.articulations
         )
       end
     end
@@ -100,7 +100,7 @@ module HeadMusic::Notation::Kern
         raise ParseError.new("A tie must connect notes of the same pitch", line_number: line, snippet: mark)
       end
 
-      @tie.rhythmic_value = @tie.rhythmic_value.append_tied(token.rhythmic_value)
+      @tie.rhythmic_duration = @tie.rhythmic_duration.tied_to(token.rhythmic_duration)
       @tie.fraction += token.fraction
       @tie.span_marks += token.span_marks
       @tie.fermatas += [time] if token.fermata

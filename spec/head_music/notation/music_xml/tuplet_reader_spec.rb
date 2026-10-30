@@ -48,7 +48,7 @@ describe HeadMusic::Notation::MusicXML::TupletReader do
 
   it "leaves a run with no <tuplet> ungrouped, keeping its ratio" do
     flow = parse(musicxml_measures(triplet("C4") + triplet("D4") + triplet("E4") + rest_of_bar, attributes: attributes))
-    expect([flow.voices.first.tuplets, flow.voices.first.voice_events.first.rhythmic_value.to_s]).to eq [[], "triplet eighth"]
+    expect([flow.voices.first.tuplets, flow.voices.first.voice_events.first.rhythmic_duration.to_s]).to eq [[], "triplet eighth"]
   end
 
   it "leaves a start with no stop ungrouped" do
@@ -71,7 +71,7 @@ describe HeadMusic::Notation::MusicXML::TupletReader do
     end
 
     it "keeps the abandoned run's ratio" do
-      expect(flow.voices.first.voice_events.first.rhythmic_value.to_s).to eq "triplet eighth"
+      expect(flow.voices.first.voice_events.first.rhythmic_duration.to_s).to eq "triplet eighth"
     end
   end
 

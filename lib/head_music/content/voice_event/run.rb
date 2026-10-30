@@ -33,18 +33,18 @@ class HeadMusic::Content::VoiceEvent
     end
 
     def following_remainder(previous, remainder, current)
-      carried = remainder + previous.rhythmic_value.exact_subticks
+      carried = remainder + previous.rhythmic_duration.exact_subticks
       return 0 unless previous.position.advance(subticks: carried.round) == current.position
 
       carried - carried.round
     end
 
     def sharing_predecessor(current)
-      ratio = current.rhythmic_value.tuplet_ratio
+      ratio = current.rhythmic_duration.values.first.tuplet_ratio
       return unless ratio
 
       previous = current.voice.voice_event_preceding(current.position)
-      previous if previous && previous.rhythmic_value.tied_chain.last.tuplet_ratio == ratio
+      previous if previous && previous.rhythmic_duration.values.last.tuplet_ratio == ratio
     end
   end
 end

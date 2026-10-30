@@ -1,13 +1,13 @@
 require "spec_helper"
 
 describe HeadMusic::Notation::MusicXML::Writer do
-  def chain_length(rhythmic_value)
-    1 + (rhythmic_value.tied_value ? chain_length(rhythmic_value.tied_value) : 0)
+  def chain_length(rhythmic_duration)
+    rhythmic_duration.values.length
   end
 
   def pitched_note_count(flow)
     flow.voices.sum do |voice|
-      voice.voice_events.select(&:sounded?).sum { |voice_event| chain_length(voice_event.rhythmic_value) }
+      voice.voice_events.select(&:sounded?).sum { |voice_event| chain_length(voice_event.rhythmic_duration) }
     end
   end
 

@@ -85,7 +85,7 @@ module HeadMusic::Notation::LilyPond
 
     def in_pieces?(position)
       voice_event = @voice.voice_event_at(position)
-      !voice_event.rest? && HeadMusic::Notation::BarSplitter.segments_of(voice_event).sum { |segment| segment.rhythmic_value&.tied_chain&.length || 1 } > 1
+      !voice_event.rest? && HeadMusic::Notation::BarSplitter.segments_of(voice_event).sum { |segment| segment.rhythmic_duration&.values&.length || 1 } > 1
     end
   end
 end

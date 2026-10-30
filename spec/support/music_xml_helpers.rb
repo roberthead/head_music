@@ -240,7 +240,7 @@ module MusicXMLTupletHelpers
     each_flow_voice(flow) do |part_id, voice_number, voice|
       HeadMusic::Notation::BarSplitter.segments(voice.voice_events).each do |segment|
         onset = Rational(segment.offset) * 4
-        segment.rhythmic_value.tied_chain.each do |link|
+        segment.rhythmic_duration.values.each do |link|
           notes << [part_id, voice_number, segment.bar_number, onset, link.link_fraction * 4]
           onset += link.link_fraction * 4
         end

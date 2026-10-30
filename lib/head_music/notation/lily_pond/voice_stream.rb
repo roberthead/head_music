@@ -11,11 +11,11 @@ module HeadMusic::Notation::LilyPond
     InnerEvent = Data.define(:elapsed, :event)
 
     Event = Data.define(
-      :kind, :line, :pitches, :rhythmic_value, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks,
+      :kind, :line, :pitches, :rhythmic_duration, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks,
       :bar_mark, :tuplet, :graces, :tempo
     ) do
       def initialize(
-        kind:, line:, pitches: nil, rhythmic_value: nil, fraction: nil, key_signature: nil, meter: nil,
+        kind:, line:, pitches: nil, rhythmic_duration: nil, fraction: nil, key_signature: nil, meter: nil,
         staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil, graces: [], tempo: nil
       )
         super
@@ -31,12 +31,12 @@ module HeadMusic::Notation::LilyPond
 
       # A fermata on the link holds from where the link starts.
       def tied_to(link_value, link_marks)
-        link_marks = link_marks.with(fermatas: [rhythmic_value]) if link_marks.fermatas.any?
-        with(rhythmic_value: rhythmic_value.append_tied(link_value), marks: marks.merge(link_marks))
+        link_marks = link_marks.with(fermatas: [rhythmic_duration]) if link_marks.fermatas.any?
+        with(rhythmic_duration: rhythmic_duration.tied_to(link_value), marks: marks.merge(link_marks))
       end
 
       def holding(event)
-        with(inner_events: inner_events + [InnerEvent.new(elapsed: rhythmic_value, event: event)])
+        with(inner_events: inner_events + [InnerEvent.new(elapsed: rhythmic_duration, event: event)])
       end
     end
 
@@ -59,14 +59,14 @@ module HeadMusic::Notation::LilyPond
     end
 
     def add_note(pitches, rhythmic_value, line, marks = MarkReader::NONE)
-      rhythmic_value = under_tuplet(rhythmic_value)
+      rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(under_tuplet(rhythmic_value))
       graces = @pending_graces
       @pending_graces = GraceReader::NONE
-      return extend_tie(pitches, rhythmic_value, line, marks) if @tie_open
+      return extend_tie(pitches, rhythmic_duration, line, marks) if @tie_open
 
       flush_pending_note
       @pending_note = Event.new(
-        kind: :note, line: line, pitches: pitches, rhythmic_value: rhythmic_value,
+        kind: :note, line: line, pitches: pitches, rhythmic_duration: rhythmic_duration,
         marks: graces.main_marks(marks), graces: graces.before(pitches)
       )
     end
@@ -81,7 +81,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def add_rest(rhythmic_value, line, marks = MarkReader::NONE)
-      silent(line, kind: :rest, rhythmic_value: under_tuplet(rhythmic_value), marks: marks)
+      silent(line, kind: :rest, rhythmic_duration: HeadMusic::Rudiment::RhythmicDuration.get(under_tuplet(rhythmic_value)), marks: marks)
     end
 
     def add_whole_bar_rest(fraction, line, marks = MarkReader::NONE)
@@ -220,16 +220,16 @@ module HeadMusic::Notation::LilyPond
       @pending_note = nil
     end
 
-    # Closes an open tie: the arriving note's value is appended at the deep
-    # end of the pending note's chain, so the pair (and any longer chain)
+    # Closes an open tie: the arriving note's value is tied on at the end of
+    # the pending note's duration, so the pair (and any longer chain)
     # becomes a single note. Its marks join the note's, except a dynamic
     # level, hairpin marks, and text, which are held where the link starts.
-    def extend_tie(pitches, rhythmic_value, line, marks)
+    def extend_tie(pitches, rhythmic_duration, line, marks)
       raise error("A tie must connect two notes of the same pitch", line) unless @pending_note.pitches.sort == pitches.sort
 
       @tie_open = false
       hold_link_dynamics(marks, line)
-      @pending_note = @pending_note.tied_to(rhythmic_value, marks.with(level: nil, hairpin_marks: [], texts: []))
+      @pending_note = @pending_note.tied_to(rhythmic_duration, marks.with(level: nil, hairpin_marks: [], texts: []))
     end
 
     def hold_link_dynamics(marks, line)

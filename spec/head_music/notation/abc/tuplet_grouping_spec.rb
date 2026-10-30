@@ -9,7 +9,7 @@ describe HeadMusic::Notation::ABC::TupletGrouping do
 
   def place_eighth
     ratio, ends = grouping.count
-    rhythmic_value = HeadMusic::Notation::ABC::DurationResolver.new("1/8").rhythmic_value("1", tuplet: ratio)
+    rhythmic_value = HeadMusic::Notation::ABC::DurationResolver.new("1/8").rhythmic_duration("1", tuplet: ratio)
     voice_event = voice.place(voice.next_position, rhythmic_value, [pitch])
     grouping.place_ends(voice_event, ends)
   end

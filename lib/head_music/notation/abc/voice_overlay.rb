@@ -25,8 +25,8 @@ module HeadMusic::Notation::ABC
       @cursor = @bar_start || HeadMusic::Content::Position.new(@voice.flow, 1, 1, 0)
     end
 
-    def advance(rhythmic_value)
-      @cursor += rhythmic_value
+    def advance(rhythmic_duration)
+      @cursor += rhythmic_duration
     end
 
     def reject_music(token)

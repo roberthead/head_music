@@ -44,7 +44,7 @@ module HeadMusic::Notation::ABC
     end
 
     def rest_multiplier(fraction)
-      @duration_writer.multiplier_string_for_fraction(fraction, HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction))
+      @duration_writer.multiplier_string_for_fraction(fraction, HeadMusic::Notation::DottedDuration.rhythmic_duration_for(fraction))
     end
   end
 end

@@ -26,12 +26,12 @@ describe HeadMusic::Notation::ABC::DurationWriter do
     end
 
     context "with a tied chain summing to five eighths" do
-      subject(:value) { resolver.rhythmic_value("5") }
+      subject(:value) { resolver.rhythmic_duration("5") }
 
       let(:resolver) { HeadMusic::Notation::ABC::DurationResolver.new(unit_note_length) }
 
       it "arrives from the resolver as a tied chain" do
-        expect(value.tied_value).not_to be_nil
+        expect(value.values.length).to eq 2
       end
 
       it "collapses the chain back to a single multiplier" do
@@ -44,16 +44,14 @@ describe HeadMusic::Notation::ABC::DurationWriter do
 
       ["", "2", "3", "1/2", "3/2", "5", "7/2"].each do |multiplier|
         it "returns #{multiplier.inspect} unchanged" do
-          value = resolver.rhythmic_value(multiplier)
+          value = resolver.rhythmic_duration(multiplier)
           expect(writer.multiplier_string(value)).to eq multiplier
         end
       end
     end
 
     it "raises for a duration longer than a maxima" do
-      value = HeadMusic::Rudiment::RhythmicValue.new(
-        :maxima, tied_value: HeadMusic::Rudiment::RhythmicValue.new(:maxima)
-      )
+      value = HeadMusic::Rudiment::RhythmicDuration.get("maxima tied to maxima")
       expect { writer.multiplier_string(value) }
         .to raise_error(HeadMusic::Notation::ABC::RenderError, /exceeds 8 whole notes/)
     end

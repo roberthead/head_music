@@ -21,7 +21,7 @@ describe HeadMusic::MIDI::Parser do
     end
 
     it "places each note where it was written, with its value" do
-      expect(voice.voice_events.map { |event| [event.position.to_s, event.rhythmic_value.to_s] }).to eq written.voices.first.voice_events.map { |event| [event.position.to_s, event.rhythmic_value.to_s] }
+      expect(voice.voice_events.map { |event| [event.position.to_s, event.rhythmic_duration.to_s] }).to eq written.voices.first.voice_events.map { |event| [event.position.to_s, event.rhythmic_duration.to_s] }
     end
 
     it "reads the meter" do

@@ -255,7 +255,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
   describe "music items" do
     it "reads rests without pitches" do
       event = read("{ r4 }").streams.first.events.first
-      expect([event.kind, event.pitches, event.rhythmic_value.to_s]).to eq [:rest, nil, "quarter"]
+      expect([event.kind, event.pitches, event.rhythmic_duration.to_s]).to eq [:rest, nil, "quarter"]
     end
 
     it "reads a whole-bar rest's fraction" do
@@ -268,11 +268,11 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
     end
 
     it "puts the chord's duration on the event" do
-      expect(read("{ <c' e'>2. }").streams.first.events.first.rhythmic_value.to_s).to eq "dotted half"
+      expect(read("{ <c' e'>2. }").streams.first.events.first.rhythmic_duration.to_s).to eq "dotted half"
     end
 
     it "carries duration into and out of a chord" do
-      values = read("{ c'8 <c' e'> d'2 e' }").streams.first.events.map { |event| event.rhythmic_value.to_s }
+      values = read("{ c'8 <c' e'> d'2 e' }").streams.first.events.map { |event| event.rhythmic_duration.to_s }
       expect(values).to eq %w[eighth eighth half half]
     end
 
@@ -281,7 +281,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
     end
 
     it "folds a tie" do
-      expect(read("{ c'2~ c'4 }").streams.first.events.map { |event| event.rhythmic_value.to_s }).to eq ["half tied to quarter"]
+      expect(read("{ c'2~ c'4 }").streams.first.events.map { |event| event.rhythmic_duration.to_s }).to eq ["half tied to quarter"]
     end
 
     it "records bar checks" do
@@ -298,7 +298,7 @@ describe HeadMusic::Notation::LilyPond::DocumentReader do
 
     it "reads an empty chord as a marker that carries marks and takes no time" do
       events = read("{ c'1\\< <>4\\! d' }").streams.first.events
-      expect(events.map { |event| [event.kind, event.marks.hairpin_marks, event.rhythmic_value&.to_s] })
+      expect(events.map { |event| [event.kind, event.marks.hairpin_marks, event.rhythmic_duration&.to_s] })
         .to eq [[:note, [:crescendo], "whole"], [:dynamics, [:end], nil], [:note, [], "quarter"]]
     end
 

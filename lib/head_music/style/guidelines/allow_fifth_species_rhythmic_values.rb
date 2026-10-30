@@ -21,17 +21,17 @@ class HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues < HeadMusic:
   private
 
   def disallowed_unit_marks
-    mark_each(notes.reject { |note| PERMITTED_UNIT_NAMES.include?(note.rhythmic_value.unit_name) })
+    mark_each(notes.reject { |note| note.rhythmic_duration.values.all? { |value| PERMITTED_UNIT_NAMES.include?(value.unit_name) } })
   end
 
   def dotted_rhythm_marks
-    mark_each(notes.select { |note| note.rhythmic_value.dots > 0 })
+    mark_each(notes.select { |note| note.rhythmic_duration.values.any? { |value| value.dots > 0 } })
   end
 
   def whole_note_not_in_final_bar_marks
     mark_each(
       notes
-        .select { |note| note.rhythmic_value.unit_name == "whole" }
+        .select { |note| attack_unit_name(note) == "whole" }
         .reject { |note| note.position.bar_number == final_bar_number }
     )
   end
@@ -59,14 +59,14 @@ class HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues < HeadMusic:
   end
 
   def eighth_notes
-    @eighth_notes ||= notes.select { |note| note.rhythmic_value.unit_name == "eighth" }
+    @eighth_notes ||= notes.select { |note| attack_unit_name(note) == "eighth" }
   end
 
   def paired_eighth?(note)
     prev = preceding_note(note)
     foll = following_note(note)
-    (prev && prev.rhythmic_value.unit_name == "eighth") ||
-      (foll && foll.rhythmic_value.unit_name == "eighth")
+    (prev && attack_unit_name(prev) == "eighth") ||
+      (foll && attack_unit_name(foll) == "eighth")
   end
 
   def stepwise_eighth?(note)
@@ -86,6 +86,11 @@ class HeadMusic::Style::Guidelines::AllowFifthSpeciesRhythmicValues < HeadMusic:
 
   def eighth_notes_in_bar(bar_number)
     eighth_notes.select { |note| note.position.bar_number == bar_number }
+  end
+
+  # A tied note is judged by its attack.
+  def attack_unit_name(note)
+    note.rhythmic_duration.values.first.unit_name
   end
 
   def final_bar_number

@@ -42,13 +42,13 @@ class HeadMusic::Style::Guidelines::NoteCountPerBar < HeadMusic::Style::Guidelin
     options.fetch(:rhythmic_value) { self.class::RHYTHMIC_VALUE }
   end
 
-  def rhythmic_value
-    @rhythmic_value ||= HeadMusic::Rudiment::RhythmicValue.get(rhythmic_unit)
+  def rhythmic_duration
+    @rhythmic_duration ||= HeadMusic::Rudiment::RhythmicDuration.get(rhythmic_unit)
   end
 
   def check_middle_bar(bar_number)
     bar_notes = notes_in_bar(bar_number)
-    return if bar_notes.length == count && bar_notes.all? { |note| note.rhythmic_value == rhythmic_value }
+    return if bar_notes.length == count && bar_notes.all? { |note| note.rhythmic_duration == rhythmic_duration }
 
     mark_bar(bar_number)
   end

@@ -10,7 +10,7 @@ describe HeadMusic::Rudiment::Note do
       end
 
       it "creates a note with the given rhythmic value" do
-        expect(note.rhythmic_value).to eq HeadMusic::Rudiment::RhythmicValue.get("quarter")
+        expect(note.rhythmic_duration).to eq HeadMusic::Rudiment::RhythmicDuration.get("quarter")
       end
     end
 
@@ -18,13 +18,13 @@ describe HeadMusic::Rudiment::Note do
       it "parses 'C#4 quarter'" do
         note = described_class.get("C#4 quarter")
         expect(note.pitch.to_s).to eq "C♯4"
-        expect(note.rhythmic_value.to_s).to eq "quarter"
+        expect(note.rhythmic_duration.to_s).to eq "quarter"
       end
 
       it "parses 'Eb3 dotted half'" do
         note = described_class.get("Eb3 dotted half")
         expect(note.pitch.to_s).to eq "E♭3"
-        expect(note.rhythmic_value.to_s).to eq "dotted half"
+        expect(note.rhythmic_duration.to_s).to eq "dotted half"
       end
     end
 
@@ -39,7 +39,7 @@ describe HeadMusic::Rudiment::Note do
     context "with only a pitch" do
       it "defaults to quarter note" do
         note = described_class.get("G5")
-        expect(note.rhythmic_value.to_s).to eq "quarter"
+        expect(note.rhythmic_duration.to_s).to eq "quarter"
       end
     end
   end
@@ -109,7 +109,7 @@ describe HeadMusic::Rudiment::Note do
       it "transposes up by semitones" do
         transposed = note + 3
         expect(transposed.pitch.to_s).to eq "D♯4"
-        expect(transposed.rhythmic_value).to eq note.rhythmic_value
+        expect(transposed.rhythmic_duration).to eq note.rhythmic_duration
       end
     end
 
@@ -117,18 +117,18 @@ describe HeadMusic::Rudiment::Note do
       it "transposes down by semitones" do
         transposed = note - 2
         expect(transposed.pitch.to_s).to eq "A♯3"
-        expect(transposed.rhythmic_value).to eq note.rhythmic_value
+        expect(transposed.rhythmic_duration).to eq note.rhythmic_duration
       end
     end
   end
 
-  describe "#with_rhythmic_value" do
+  describe "#with_rhythmic_duration" do
     let(:note) { described_class.get("A4", "quarter") }
 
     it "returns a new note with the same pitch but different rhythm" do
-      new_note = note.with_rhythmic_value("eighth")
+      new_note = note.with_rhythmic_duration("eighth")
       expect(new_note.pitch).to eq note.pitch
-      expect(new_note.rhythmic_value.to_s).to eq "eighth"
+      expect(new_note.rhythmic_duration.to_s).to eq "eighth"
     end
   end
 
@@ -138,7 +138,7 @@ describe HeadMusic::Rudiment::Note do
     it "returns a new note with the same rhythm but different pitch" do
       new_note = note.with_pitch("F#3")
       expect(new_note.pitch.to_s).to eq "F♯3"
-      expect(new_note.rhythmic_value).to eq note.rhythmic_value
+      expect(new_note.rhythmic_duration).to eq note.rhythmic_duration
     end
   end
 
@@ -153,12 +153,11 @@ describe HeadMusic::Rudiment::Note do
     end
   end
 
-  describe "delegation to rhythmic_value" do
+  describe "delegation to rhythmic_duration" do
     let(:note) { described_class.get("C4", "dotted quarter") }
 
-    it "delegates rhythmic value methods" do
-      expect(note.dots).to eq 1
-      expect(note.unit.to_s).to eq "quarter"
+    it "holds a duration of one dotted quarter" do
+      expect(note.rhythmic_duration.single_value.to_s).to eq "dotted quarter"
     end
   end
 
@@ -166,7 +165,7 @@ describe HeadMusic::Rudiment::Note do
     it "parses note strings" do
       note = described_class.get("Ab3 sixteenth")
       expect(note.pitch.to_s).to eq "A♭3"
-      expect(note.rhythmic_value.to_s).to eq "sixteenth"
+      expect(note.rhythmic_duration.to_s).to eq "sixteenth"
     end
 
     it "returns nil for invalid strings" do

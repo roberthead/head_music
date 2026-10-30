@@ -237,7 +237,7 @@ describe HeadMusic::Notation::Kern do
     end
 
     def values(voice)
-      voice.voice_events.map { |voice_event| "#{voice_event.rhythmic_value} at #{voice_event.position}" }
+      voice.voice_events.map { |voice_event| "#{voice_event.rhythmic_duration} at #{voice_event.position}" }
     end
 
     def whole_note_flow(level_position)

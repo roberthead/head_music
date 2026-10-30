@@ -38,8 +38,7 @@ class HeadMusic::Content::TupletGroup
   end
 
   def self.single_value(fraction)
-    value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
-    value unless value.nil? || value.tied_value
+    HeadMusic::Notation::DottedDuration.rhythmic_value_for(fraction)
   end
 
   def self.fraction_gcd(one, other)

@@ -76,7 +76,7 @@ module LilyPondRoundTripHelper
   # By total duration rather than spelling, since a note the writer splits at
   # a barline reads back as a tied chain.
   def total_duration(voice_event)
-    voice_event.rhythmic_value.tied_chain.sum { |link| HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link) }
+    voice_event.rhythmic_duration.values.sum { |link| HeadMusic::Notation::DottedDuration.dotted_unit_fraction(link) }
   end
 end
 

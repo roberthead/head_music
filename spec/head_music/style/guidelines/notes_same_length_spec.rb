@@ -10,12 +10,12 @@ describe HeadMusic::Style::Guidelines::NotesSameLength do
 
     it "has no first most common rhythmic value" do
       analyzer = described_class.send(:new, voice)
-      expect(analyzer.first_most_common_rhythmic_value).to be_nil
+      expect(analyzer.first_most_common_rhythmic_duration).to be_nil
     end
 
     it "has no most common rhythmic values" do
       analyzer = described_class.send(:new, voice)
-      expect(analyzer.most_common_rhythmic_values).to be_empty
+      expect(analyzer.most_common_rhythmic_durations).to be_empty
     end
   end
 
@@ -85,7 +85,7 @@ describe HeadMusic::Style::Guidelines::NotesSameLength do
 
     it "finds the most common rhythmic value" do
       analyzer = described_class.send(:new, voice)
-      expect(analyzer.first_most_common_rhythmic_value).to eq HeadMusic::Rudiment::RhythmicValue.get(:whole)
+      expect(analyzer.first_most_common_rhythmic_duration).to eq HeadMusic::Rudiment::RhythmicDuration.get(:whole)
     end
 
     its(:marks_count) { is_expected.to eq 1 }

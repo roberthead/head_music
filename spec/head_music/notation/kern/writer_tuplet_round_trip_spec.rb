@@ -26,7 +26,7 @@ describe HeadMusic::Notation::Kern::Writer do
 
     it "reads a duplet back as dotted values" do
       reparsed = round_trip(TupletFixtures.duplet_in_six_eight)
-      expect(reparsed.voices.first.voice_events.first(2).map { |voice_event| voice_event.rhythmic_value.to_s }).to eq ["dotted eighth", "dotted eighth"]
+      expect(reparsed.voices.first.voice_events.first(2).map { |voice_event| voice_event.rhythmic_duration.to_s }).to eq ["dotted eighth", "dotted eighth"]
     end
   end
 

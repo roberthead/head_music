@@ -51,7 +51,7 @@ module MIDIBytes
   end
 
   def bar_events(voice)
-    voice.voice_events.map { |event| [event.position.to_s, event.rhythmic_value.to_s, event.rest? ? "rest" : event.sounds.join(" ")] }
+    voice.voice_events.map { |event| [event.position.to_s, event.rhythmic_duration.to_s, event.rest? ? "rest" : event.sounds.join(" ")] }
   end
 end
 

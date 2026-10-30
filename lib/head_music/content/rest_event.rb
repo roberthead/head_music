@@ -12,7 +12,7 @@ class HeadMusic::Content::RestEvent < HeadMusic::Content::VoiceEvent
   # A note placed on a rest takes the rest's place and its beaming; a rest
   # placed on a rest leaves it as it was. See NoteEvent#merge.
   def merge(other)
-    ensure_same_rhythmic_value!(other)
+    ensure_same_rhythmic_duration!(other)
     return self if other.rest?
 
     other.beam_break_before = beam_break_before

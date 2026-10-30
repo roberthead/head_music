@@ -39,7 +39,7 @@ module HeadMusic::Notation::LilyPond
       spacers.rest(voice)
       case event.kind
       when :note then place_note(event, voice)
-      when :rest then apply_marks(voice.place(voice.next_position, event.rhythmic_value), event)
+      when :rest then apply_marks(voice.place(voice.next_position, event.rhythmic_duration), event)
       when :whole_bar_rest then place_whole_bar_rest(event, voice)
       end
       bar_marks.music_placed(voice)
@@ -156,7 +156,7 @@ module HeadMusic::Notation::LilyPond
     def place_note(event, voice)
       position = voice.next_position
       event.inner_events.each { |inner| apply_marker(inner.event, voice, position + inner.elapsed) }
-      voice_event = voice.place(position, event.rhythmic_value, event.pitches)
+      voice_event = voice.place(position, event.rhythmic_duration, event.pitches)
       voice_event.add_grace_notes(*event.graces.map(&:grace_note))
       apply_marks(voice_event, event)
     end
@@ -172,12 +172,12 @@ module HeadMusic::Notation::LilyPond
 
       meter = position.meter
       bar_fraction = Rational(meter.top_number, meter.bottom_number)
-      rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(event.fraction)
-      unless event.fraction == bar_fraction && rhythmic_value
+      rhythmic_duration = HeadMusic::Notation::DottedDuration.rhythmic_duration_for(event.fraction)
+      unless event.fraction == bar_fraction && rhythmic_duration
         raise unsupported("Multi-bar rests are not yet supported (#{whole_notes(event.fraction)} whole notes in #{meter})", event)
       end
 
-      apply_marks(voice.place(position, rhythmic_value), event)
+      apply_marks(voice.place(position, rhythmic_duration), event)
     end
 
     def whole_notes(fraction)

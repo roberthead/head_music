@@ -7,18 +7,18 @@ describe HeadMusic::Rudiment::Rest do
 
       it "creates a rest with the specified rhythmic value" do
         expect(rest).to be_a(described_class)
-        expect(rest.rhythmic_value).to eq(HeadMusic::Rudiment::RhythmicValue.get(:quarter))
+        expect(rest.rhythmic_duration).to eq(HeadMusic::Rudiment::RhythmicDuration.get(:quarter))
       end
     end
 
-    context "with a RhythmicValue object" do
-      subject(:rest) { described_class.get(rhythmic_value) }
+    context "with a RhythmicDuration object" do
+      subject(:rest) { described_class.get(rhythmic_duration) }
 
-      let(:rhythmic_value) { HeadMusic::Rudiment::RhythmicValue.get(:half) }
+      let(:rhythmic_duration) { HeadMusic::Rudiment::RhythmicDuration.get(:half) }
 
       it "creates a rest with the specified rhythmic value" do
         expect(rest).to be_a(described_class)
-        expect(rest.rhythmic_value).to eq(rhythmic_value)
+        expect(rest.rhythmic_duration).to eq(rhythmic_duration)
       end
     end
 
@@ -27,8 +27,7 @@ describe HeadMusic::Rudiment::Rest do
 
       it "creates a rest with the parsed rhythmic value" do
         expect(rest).to be_a(described_class)
-        expect(rest.unit.name).to eq("eighth")
-        expect(rest.dots).to eq(1)
+        expect(rest.rhythmic_duration.single_value.to_s).to eq("dotted eighth")
       end
     end
 
@@ -85,13 +84,13 @@ describe HeadMusic::Rudiment::Rest do
     end
   end
 
-  describe "#with_rhythmic_value" do
+  describe "#with_rhythmic_duration" do
     let(:quarter_rest) { described_class.get(:quarter) }
-    let(:new_rest) { quarter_rest.with_rhythmic_value(:half) }
+    let(:new_rest) { quarter_rest.with_rhythmic_duration(:half) }
 
     it "creates a new rest with the specified rhythmic value" do
       expect(new_rest).to be_a(described_class)
-      expect(new_rest.rhythmic_value).to eq(HeadMusic::Rudiment::RhythmicValue.get(:half))
+      expect(new_rest.rhythmic_duration).to eq(HeadMusic::Rudiment::RhythmicDuration.get(:half))
       expect(new_rest).not_to eq(quarter_rest)
     end
   end
@@ -105,10 +104,8 @@ describe HeadMusic::Rudiment::Rest do
   describe "delegation" do
     subject(:rest) { described_class.get("dotted quarter") }
 
-    it "delegates rhythmic value methods" do
-      expect(rest.unit.name).to eq("quarter")
-      expect(rest.dots).to eq(1)
-      expect(rest.ticks).to be > 0
+    it "delegates ticks to its rhythmic duration" do
+      expect(rest.ticks).to eq rest.rhythmic_duration.ticks
     end
   end
 

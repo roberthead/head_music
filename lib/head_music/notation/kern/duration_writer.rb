@@ -21,7 +21,7 @@ module HeadMusic::Notation::Kern
       return "#{undotted.denominator}#{dots}" if undotted.numerator == 1
 
       plain = HeadMusic::Notation::DottedDuration.rhythmic_value_for(sounding)
-      return token(plain) if plain && !plain.tied_value
+      return token(plain) if plain
 
       "#{undotted.denominator}%#{undotted.numerator}#{dots}"
     end

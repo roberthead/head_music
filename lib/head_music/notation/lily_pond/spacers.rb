@@ -33,12 +33,12 @@ module HeadMusic::Notation::LilyPond
     def rest(voice)
       @ends.delete(voice)
       @held.delete(voice)&.each do |spacer|
-        rhythmic_value = HeadMusic::Notation::DottedDuration.rhythmic_value_for(spacer.fraction, tuplet: spacer.tuplet)
-        unless rhythmic_value
+        rhythmic_duration = HeadMusic::Notation::DottedDuration.rhythmic_duration_for(spacer.fraction, tuplet: spacer.tuplet)
+        unless rhythmic_duration
           raise UnsupportedFeatureError.new("A spacer of #{spacer.fraction} whole notes has no rest to stand for it", line_number: spacer.line)
         end
 
-        voice.place(voice.next_position, rhythmic_value)
+        voice.place(voice.next_position, rhythmic_duration)
       end
     end
 

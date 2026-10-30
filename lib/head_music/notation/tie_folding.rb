@@ -74,12 +74,11 @@ module HeadMusic::Notation
       chain << event
     end
 
-    # The head takes its chain's values once every link is known, since
-    # appending each link in turn rebuilds the chain so far.
+    # The head takes its chain's values once every link is known.
     def finish(chain)
       return if chain.nil? || chain.one?
 
-      chain.first.rhythmic_value = DottedDuration.tied(chain.map(&:rhythmic_value))
+      chain.first.rhythmic_duration = DottedDuration.tied(chain.map(&:rhythmic_duration))
       nil
     end
 

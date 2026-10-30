@@ -76,17 +76,17 @@ describe HeadMusic::Notation::BarSplitter do
     end
   end
 
-  describe "Segment#rhythmic_value!" do
+  describe "Segment#rhythmic_duration!" do
     let(:voice_event) { voice.place("1:1", :half, "C4") }
 
-    it "answers the segment's rhythmic value" do
+    it "answers the segment's rhythmic duration" do
       segment = described_class::Segment.new(voice_event, 1, Rational(3, 8), false)
-      expect(segment.rhythmic_value!(ArgumentError)).to eq HeadMusic::Rudiment::RhythmicValue.get("dotted quarter")
+      expect(segment.rhythmic_duration!(ArgumentError)).to eq HeadMusic::Rudiment::RhythmicDuration.get("dotted quarter")
     end
 
     it "raises the writer's error for a piece no binary note value spans" do
       segment = described_class::Segment.new(voice_event, 1, Rational(1, 3), false)
-      expect { segment.rhythmic_value!(ArgumentError) }
+      expect { segment.rhythmic_duration!(ArgumentError) }
         .to raise_error(ArgumentError, /cannot express the part of the note at 1:1:000 in bar 1 in binary note values/)
     end
   end
@@ -97,7 +97,7 @@ describe HeadMusic::Notation::BarSplitter do
     end
 
     def split(voice_event)
-      described_class.segments_of(voice_event).map { |segment| [segment.bar_number, segment.rhythmic_value.to_s] }
+      described_class.segments_of(voice_event).map { |segment| [segment.bar_number, segment.rhythmic_duration.to_s] }
     end
 
     let(:error) { HeadMusic::Notation::RenderError }
@@ -144,13 +144,13 @@ describe HeadMusic::Notation::BarSplitter do
       end
 
       it "raises, naming the ratio" do
-        expect { described_class.segments_of(duplets.voice_events.last).first.rhythmic_value!(error) }
+        expect { described_class.segments_of(duplets.voice_events.last).first.rhythmic_duration!(error) }
           .to raise_error(error, /cannot express the part of the note at 1:6:240 in bar 1 in binary note values under its 2:3 ratio/)
       end
 
       it "raises, naming the group" do
         duplets.group_tuplet(from: "1:5", to: "2:2")
-        expect { described_class.segments_of(duplets.voice_events.last).first.rhythmic_value!(error) }
+        expect { described_class.segments_of(duplets.voice_events.last).first.rhythmic_duration!(error) }
           .to raise_error(error, /under the 2:3 tuplet from 1:5:000 to 2:2:000/)
       end
     end

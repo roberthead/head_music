@@ -51,16 +51,16 @@ module HeadMusic::Notation
       end
       event.time = @time
       @position = event.place_on(@voice, @position).next_position
-      @time += event.rhythmic_value.fraction
+      @time += event.rhythmic_duration.fraction
     end
 
     def rest_until(time, event)
       while @time < time
         segment_end = [@bar_map.next_bar_start(@time), time].compact.min
-        value = HeadMusic::Notation::DottedDuration.rest_value(segment_end - @time)
-        raise @reading.errors::UnsupportedFeatureError.new("No rest fills the gap in voice #{@track.label}", **where(event)) unless value
+        rest = HeadMusic::Notation::DottedDuration.rest_duration(segment_end - @time)
+        raise @reading.errors::UnsupportedFeatureError.new("No rest fills the gap in voice #{@track.label}", **where(event)) unless rest
 
-        @position = @voice.place(@position, value).next_position
+        @position = @voice.place(@position, rest).next_position
         @time = segment_end
       end
     end
