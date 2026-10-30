@@ -23,7 +23,7 @@ module HeadMusic::Notation::LilyPond
     # beat no single dotted note value is.
     def problem(tempo)
       beat_value = tempo.beat_value
-      if beat_value.tied_value || beat_value.tuplet_ratio || !DurationWriter::DURATIONS_BY_UNIT_NAME.key?(beat_value.unit_name)
+      if beat_value.tuplet_ratio || !DurationWriter::DURATIONS_BY_UNIT_NAME.key?(beat_value.unit_name)
         "the tempo beat of a #{beat_value}"
       elsif tempo.beats_per_minute != tempo.beats_per_minute.round && (tempo.metronome_mark? || !tempo.text)
         "the fractional tempo of #{tempo.beats_per_minute} beats per minute"

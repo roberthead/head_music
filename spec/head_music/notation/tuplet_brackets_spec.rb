@@ -48,7 +48,7 @@ describe HeadMusic::Notation::TupletBrackets do
   end
 
   it "leaves a value without a ratio out of every bracket" do
-    place_in_turn(triplet_eighth, triplet_eighth, HeadMusic::Rudiment::RhythmicValue.get("triplet eighth tied to quarter"), :half)
+    place_in_turn(triplet_eighth, triplet_eighth, HeadMusic::Rudiment::RhythmicDuration.get("triplet eighth tied to quarter"), :half)
     voice.group_tuplet(from: "1:1", to: "1:2")
     expect(brackets.map { |bracket| bracket.links.map(&:index) }).to eq [[0, 0, 0]]
   end

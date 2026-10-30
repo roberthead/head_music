@@ -409,7 +409,7 @@ describe HeadMusic::Content::Position do
       end
 
       it "spends the leftover counts as time in the destination bar" do
-        expect((flow.position("1:1") + HeadMusic::Rudiment::RhythmicValue.get("dotted half tied to dotted half")).code).to eq "2:2:960"
+        expect((flow.position("1:1") + HeadMusic::Rudiment::RhythmicDuration.get("dotted half tied to dotted half")).code).to eq "2:2:960"
       end
 
       it "ends a note held across the change where the time says" do

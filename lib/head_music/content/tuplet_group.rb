@@ -107,7 +107,7 @@ class HeadMusic::Content::TupletGroup
 
   def unit_for(identifier)
     unit = HeadMusic::Rudiment::RhythmicValue.get(identifier)
-    unless unit&.unit && !unit.tied_value && !unit.tuplet?
+    if unit.nil? || unit.tuplet?
       raise ArgumentError, "the #{label} needs a plain or dotted value for its unit, not #{identifier.inspect}"
     end
 

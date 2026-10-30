@@ -98,7 +98,7 @@ module HeadMusic
       def link_spans(voice_event)
         from = 0
         voice_event.rhythmic_duration.values.map do |link|
-          to = from + link.link_fraction
+          to = from + link.fraction
           [link, from, to].tap { from = to }
         end
       end

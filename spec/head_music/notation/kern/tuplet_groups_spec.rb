@@ -74,7 +74,7 @@ describe HeadMusic::Notation::Kern::TupletGroups do
     let(:triplet) { HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "3:2") }
 
     before do
-      [[triplet.append_tied(triplet), "C4"], [triplet, nil], [:half, "D4"], [:quarter, "E4"]].each do |value, sounds|
+      [[HeadMusic::Rudiment::RhythmicDuration.new([triplet, triplet]), "C4"], [triplet, nil], [:half, "D4"], [:quarter, "E4"]].each do |value, sounds|
         voice.place(voice.next_position, value, sounds)
       end
     end

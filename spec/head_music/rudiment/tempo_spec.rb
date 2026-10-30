@@ -413,6 +413,14 @@ describe HeadMusic::Rudiment::Tempo do
   describe "#initialize" do
     subject(:tempo) { described_class.new(beat_value, beats_per_minute) }
 
+    it "raises for a beat it cannot read" do
+      expect { described_class.new("garbage", 60) }.to raise_error(ArgumentError, /unknown tempo beat/)
+    end
+
+    it "raises for a beat tied to another, which no one value is" do
+      expect { described_class.new("quarter tied to eighth", 60) }.to raise_error(ArgumentError, /unknown tempo beat/)
+    end
+
     context "with q = 120" do
       let(:beat_value) { "quarter" }
       let(:beats_per_minute) { 120 }

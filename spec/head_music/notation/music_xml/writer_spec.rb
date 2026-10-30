@@ -605,9 +605,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Tied")
         voice = flow.add_voice
-        value = HeadMusic::Rudiment::RhythmicValue.new(
-          :half, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
-        )
+        value = HeadMusic::Rudiment::RhythmicDuration.get("half tied to eighth")
         voice.place("1:1", value, "C4")
         flow
       end
@@ -984,9 +982,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(name: "Rest Chain")
         voice = flow.add_voice
-        value = HeadMusic::Rudiment::RhythmicValue.new(
-          :half, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
-        )
+        value = HeadMusic::Rudiment::RhythmicDuration.get("half tied to eighth")
         voice.place("1:1", value)
         flow
       end
@@ -1129,8 +1125,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
         HeadMusic::Content::Flow.new(meter: "12/1").tap do |flow|
           voice = flow.add_voice
           voice.place("1:1", :whole, "C4")
-          maxima = HeadMusic::Rudiment::RhythmicValue.get(:maxima)
-          voice.place("1:2", HeadMusic::Rudiment::RhythmicValue.new(:maxima, tied_value: maxima), "D4")
+          voice.place("1:2", "maxima tied to maxima", "D4")
         end
       end
 
@@ -1391,9 +1386,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       let(:flow) do
         flow = HeadMusic::Content::Flow.new(meter: "4/4")
         voice = flow.add_voice
-        value = HeadMusic::Rudiment::RhythmicValue.new(
-          :half, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
-        )
+        value = HeadMusic::Rudiment::RhythmicDuration.get("half tied to eighth")
         voice.place("1:1", value, %w[C4 E4 G4])
         flow
       end
@@ -1617,9 +1610,7 @@ describe HeadMusic::Notation::MusicXML::Writer do
       let(:flow) do
         HeadMusic::Content::Flow.new(meter: "2/4").tap do |flow|
           voice = flow.add_voice
-          value = HeadMusic::Rudiment::RhythmicValue.new(
-            :eighth, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:eighth)
-          )
+          value = HeadMusic::Rudiment::RhythmicDuration.get("eighth tied to eighth")
           voice.place(voice.next_position, value, "A4")
           voice.place(voice.next_position, :quarter, "B4")
         end

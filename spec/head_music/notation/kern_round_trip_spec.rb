@@ -3,8 +3,8 @@ require "spec_helper"
 # Flows written to kern and read back keep their music; see
 # spec/support/kern_round_trip.rb for what the comparison leaves out.
 describe HeadMusic::Notation::Kern do
-  def rhythmic_value(name)
-    HeadMusic::Rudiment::RhythmicValue.get(name)
+  def rhythmic_duration(name)
+    HeadMusic::Rudiment::RhythmicDuration.get(name)
   end
 
   # One note per bar from bar 1, each filling its bar.
@@ -19,7 +19,7 @@ describe HeadMusic::Notation::Kern do
           soprano = duet.add_part(player: HeadMusic::Content::Player.new(name: "Soprano"), instrument: "soprano_voice").add_voice
           %w[D5 E5 F5].each_with_index { |pitch, index| soprano.place("1:#{index + 1}", :quarter, pitch) }
           bass = duet.add_part(player: HeadMusic::Content::Player.new(name: "Bass"), instrument: "bass_voice").add_voice
-          bass.place("1:1", rhythmic_value("dotted half"), "D3")
+          bass.place("1:1", rhythmic_duration("dotted half"), "D3")
         end
       end
 
@@ -32,8 +32,8 @@ describe HeadMusic::Notation::Kern do
           voice = ties.add_voice
           voice.place("1:1", :quarter, %w[C4 E4 G4])
           voice.place("1:2", :eighth)
-          voice.place("1:2:480", rhythmic_value("dotted half"), "A4")
-          voice.place("2:1:480", rhythmic_value("whole tied to eighth"), "B4")
+          voice.place("1:2:480", rhythmic_duration("dotted half"), "A4")
+          voice.place("2:1:480", rhythmic_duration("whole tied to eighth"), "B4")
           voice.place("3:2", :half, "C5")
         end
       end
@@ -47,7 +47,7 @@ describe HeadMusic::Notation::Kern do
           voice = upbeat.add_voice
           voice.place("0:1", :half)
           voice.place("0:3", :quarter, "G4")
-          voice.place("1:1", rhythmic_value("dotted half"), "C5")
+          voice.place("1:1", rhythmic_duration("dotted half"), "C5")
           voice.place("2:1", :half, "B4")
         end
       end
@@ -61,7 +61,7 @@ describe HeadMusic::Notation::Kern do
           part = changing.add_part(staff_system: HeadMusic::Content::StaffSystem.single_staff(clef: :bass_clef))
           voice = part.add_voice
           voice.place("1:1", :whole, "C3")
-          voice.place("2:1", rhythmic_value("dotted half"), "F4")
+          voice.place("2:1", rhythmic_duration("dotted half"), "F4")
           changing.change_key_signature(2, -1, tonal_context: HeadMusic::Rudiment::Key.get("F major"))
           changing.change_meter(2, "3/4")
           changing.change_tempo(2, HeadMusic::Rudiment::Tempo.new("half", 40))
@@ -112,7 +112,7 @@ describe HeadMusic::Notation::Kern do
           voice = upbeat.add_voice
           voice.place("0:1", :half)
           voice.place("0:3", :quarter, "G4")
-          voice.place("1:1", rhythmic_value("dotted half"), "C5")
+          voice.place("1:1", rhythmic_duration("dotted half"), "C5")
           upbeat.bars(1).last.rehearsal_mark = "A"
           upbeat.bars(0).last.barline = :double
         end

@@ -36,7 +36,7 @@ module HeadMusic::Notation
       end
 
       def link_starts
-        @link_starts ||= rhythmic_duration.values.each_with_object([0]) { |link, starts| starts << starts.last + link.link_fraction }
+        @link_starts ||= rhythmic_duration.values.each_with_object([0]) { |link, starts| starts << starts.last + link.fraction }
       end
 
       def rest?

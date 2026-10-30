@@ -108,7 +108,7 @@ describe HeadMusic::Content::VoiceEvent do
     end
 
     it "continues a run through a chain ending in the ratio" do
-      voice.place("1:1", HeadMusic::Rudiment::RhythmicValue.get("eighth tied to 7:4 sixteenth"), "C4")
+      voice.place("1:1", HeadMusic::Rudiment::RhythmicDuration.get("eighth tied to 7:4 sixteenth"), "C4")
       expect(place_run(1).last.onset_remainder).to eq 2r / 7
     end
 

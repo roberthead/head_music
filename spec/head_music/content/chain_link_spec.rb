@@ -4,7 +4,7 @@ describe HeadMusic::Content::ChainLink do
   let(:flow) { HeadMusic::Content::Flow.new }
   let(:voice) { flow.add_voice }
   let(:triplet_eighth) { HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "3:2") }
-  let(:tied) { HeadMusic::Rudiment::RhythmicValue.get("triplet eighth tied to quarter") }
+  let(:tied) { HeadMusic::Rudiment::RhythmicDuration.get("triplet eighth tied to quarter") }
 
   describe ".of" do
     subject(:links) { described_class.of(voice.last_voice_event) }
@@ -12,7 +12,7 @@ describe HeadMusic::Content::ChainLink do
     before { voice.place("1:1", tied, "D4") }
 
     it "has one link per value of the tied chain" do
-      expect(links.map { |link| link.rhythmic_value.single_value_name }).to eq ["triplet eighth", "quarter"]
+      expect(links.map { |link| link.rhythmic_value.to_s }).to eq ["triplet eighth", "quarter"]
     end
 
     it "marks the first and last links" do

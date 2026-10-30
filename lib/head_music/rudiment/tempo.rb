@@ -84,7 +84,8 @@ class HeadMusic::Rudiment::Tempo
   private_class_method :from_identifier
 
   def initialize(beat_value, beats_per_minute, text: nil, metronome_mark: true)
-    @beat_value = HeadMusic::Rudiment::RhythmicValue.get(beat_value)
+    @beat_value = HeadMusic::Rudiment::RhythmicValue.get(beat_value) ||
+      raise(ArgumentError, "unknown tempo beat: #{beat_value.inspect}")
     @beats_per_minute = beats_per_minute.to_f
     @text = text
     @metronome_mark = metronome_mark
@@ -110,6 +111,6 @@ class HeadMusic::Rudiment::Tempo
 
     # Use RhythmicValue parser to handle all formats (shorthand, fractions, British names, dots, etc.)
     rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(unit)
-    rhythmic_value&.unit ? rhythmic_value.to_s : "quarter"
+    rhythmic_value ? rhythmic_value.to_s : "quarter"
   end
 end

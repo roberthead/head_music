@@ -20,7 +20,7 @@ module HeadMusic::Notation::Kern
     # voice refuses it, as where a rounding ratio's leftover comes first.
     def apply(voice)
       links = voice.voice_events.flat_map { |voice_event| HeadMusic::Content::TupletGroup.links_of(voice_event) }
-      items = links.map { |link| Item.new(link.ratio, link.rhythmic_value.link_fraction, link.voice_event) }
+      items = links.map { |link| Item.new(link.ratio, link.rhythmic_value.fraction, link.voice_event) }
       runs(items).each do |run|
         voice.group_tuplet(from: links[run.first].start_position, to: links[run.last].end_position)
       rescue ArgumentError
@@ -30,7 +30,7 @@ module HeadMusic::Notation::Kern
 
     # The items of a duration's values, as one voice event.
     def items_of(rhythmic_duration, event)
-      rhythmic_duration.values.map { |link| Item.new(link.tuplet_ratio, link.link_fraction, event) }
+      rhythmic_duration.values.map { |link| Item.new(link.tuplet_ratio, link.fraction, event) }
     end
 
     # The index ranges of the items each group holds.

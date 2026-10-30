@@ -176,7 +176,7 @@ module MusicXMLTupletHelpers
         brackets << [
           part_id, voice_number,
           [first.bar_number, in_divisions(plan, first.onset.last)],
-          [last.bar_number, in_divisions(plan, last.onset.last + last.rhythmic_value.link_fraction)],
+          [last.bar_number, in_divisions(plan, last.onset.last + last.rhythmic_value.fraction)],
           bracket.ratio.to_a.join(":")
         ]
       end
@@ -241,8 +241,8 @@ module MusicXMLTupletHelpers
       HeadMusic::Notation::BarSplitter.segments(voice.voice_events).each do |segment|
         onset = Rational(segment.offset) * 4
         segment.rhythmic_duration.values.each do |link|
-          notes << [part_id, voice_number, segment.bar_number, onset, link.link_fraction * 4]
-          onset += link.link_fraction * 4
+          notes << [part_id, voice_number, segment.bar_number, onset, link.fraction * 4]
+          onset += link.fraction * 4
         end
       end
     end

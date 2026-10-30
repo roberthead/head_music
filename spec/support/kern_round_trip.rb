@@ -51,7 +51,7 @@ module KernRoundTripHelper
       HeadMusic::Notation::BarSplitter.segments_of(voice_event).flat_map do |segment|
         offset = segment.offset
         segment.rhythmic_duration.values.map do |link|
-          [exact_point(segment.bar_number, offset), link, voice_event].tap { offset += link.link_fraction }
+          [exact_point(segment.bar_number, offset), link, voice_event].tap { offset += link.fraction }
         end
       end
     end
@@ -66,7 +66,7 @@ module KernRoundTripHelper
   def kern_groups(flow)
     flow.voices.map do |voice|
       voice.tuplets.map do |group|
-        [kern_group_start(group.links.first), group.ratio.to_s, group.links.sum { |link| link.rhythmic_value.link_fraction }]
+        [kern_group_start(group.links.first), group.ratio.to_s, group.links.sum { |link| link.rhythmic_value.fraction }]
       end
     end
   end

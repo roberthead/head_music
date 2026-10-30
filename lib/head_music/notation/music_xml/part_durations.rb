@@ -59,7 +59,7 @@ module HeadMusic::Notation::MusicXML
       written = NoteReader.written_value(note, **where)
       return duration_from_duration(note, duration, **where) unless written
 
-      if (written.link_fraction - duration).abs > division
+      if (written.fraction - duration).abs > division
         raise ParseError.new(
           "A <duration> of #{note.duration} disagrees with its #{written} at #{divisions} divisions", **where
         )

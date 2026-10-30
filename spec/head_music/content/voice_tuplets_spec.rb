@@ -8,7 +8,7 @@ describe HeadMusic::Content::Voice do
   let(:septuplet_sixteenth) { HeadMusic::Rudiment::RhythmicValue.get(:sixteenth, tuplet: "7:4") }
 
   def value(name, tuplet: nil)
-    HeadMusic::Rudiment::RhythmicValue.get(name, tuplet: tuplet)
+    HeadMusic::Rudiment::RhythmicDuration.get(name, tuplet: tuplet)
   end
 
   def place_in_turn(*values, sounds: "C4")

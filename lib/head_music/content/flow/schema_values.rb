@@ -33,11 +33,7 @@ class HeadMusic::Content::Flow
     end
 
     def rhythmic_value(value, path)
-      rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(value)
-      unless valid_rhythmic_value?(rhythmic_value)
-        raise ArgumentError, "#{path}: unknown rhythmic value #{value.inspect}"
-      end
-      rhythmic_value
+      HeadMusic::Rudiment::RhythmicValue.get(value) || raise(ArgumentError, "#{path}: unknown rhythmic value #{value.inspect}")
     end
 
     # An optional list of {"position" => ..., "level" => ...} hashes, answered
@@ -119,17 +115,6 @@ class HeadMusic::Content::Flow
 
     def timeline_values
       @timeline_values ||= TimelineValues.new(self)
-    end
-
-    # RhythmicValue.get returns a hollow object (nil unit) for garbage rather
-    # than nil, and a tied tail can be hollow while the head parses, so the
-    # whole tie chain is checked.
-    def valid_rhythmic_value?(rhythmic_value)
-      return false unless rhythmic_value.is_a?(HeadMusic::Rudiment::RhythmicValue)
-      return false unless rhythmic_value.unit
-
-      tied_value = rhythmic_value.tied_value
-      tied_value.nil? || valid_rhythmic_value?(tied_value)
     end
 
     def dynamic_event(value, path)

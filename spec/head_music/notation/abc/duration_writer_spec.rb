@@ -59,7 +59,7 @@ describe HeadMusic::Notation::ABC::DurationWriter do
     context "with a duration not expressible in binary note values" do
       let(:unit) { instance_double(HeadMusic::Rudiment::RhythmicUnit, numerator: 1, denominator: 3) }
       let(:value) do
-        instance_double(HeadMusic::Rudiment::RhythmicValue, unit: unit, dots: 0, tied_value: nil, written_fraction: Rational(1, 3))
+        instance_double(HeadMusic::Rudiment::RhythmicValue, unit: unit, dots: 0, written_fraction: Rational(1, 3))
       end
 
       it "raises a render error" do

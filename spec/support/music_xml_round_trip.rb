@@ -114,7 +114,7 @@ module MusicXMLRoundTripHelper
   end
 
   def musicxml_length(rhythmic_value)
-    HeadMusic::Rudiment::RhythmicValue.get(rhythmic_value).tied_chain.sum(&:link_fraction)
+    HeadMusic::Rudiment::RhythmicDuration.get(rhythmic_value).fraction
   end
 
   def musicxml_dynamics(dynamic_event_hashes)
@@ -144,7 +144,7 @@ module MusicXMLRoundTripHelper
   def musicxml_brackets(voice)
     list = HeadMusic::Notation::TupletBrackets.for(voice).map do |bracket|
       last = bracket.last
-      [bracket.first.onset, [last.onset.first, last.onset.last + last.rhythmic_value.link_fraction], bracket.ratio.to_s, bracket.unit.to_s]
+      [bracket.first.onset, [last.onset.first, last.onset.last + last.rhythmic_value.fraction], bracket.ratio.to_s, bracket.unit.to_s]
     end
     list unless list.empty?
   end

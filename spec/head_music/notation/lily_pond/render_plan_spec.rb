@@ -26,14 +26,14 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
 
     it "joins the links of a tied chain with tie marks" do
       flow = build_flow
-      value = HeadMusic::Rudiment::RhythmicValue.get("half tied to eighth")
+      value = HeadMusic::Rudiment::RhythmicDuration.get("half tied to eighth")
       voice_event = flow.add_voice.place("1:1", value, "C4")
       expect(tokens_for(flow, voice_event)).to eq "c'2~ c'8"
     end
 
     it "renders a tied chain of rests as consecutive untied rests" do
       flow = build_flow
-      value = HeadMusic::Rudiment::RhythmicValue.get("half tied to eighth")
+      value = HeadMusic::Rudiment::RhythmicDuration.get("half tied to eighth")
       voice_event = flow.add_voice.place("1:1", value)
       expect(tokens_for(flow, voice_event)).to eq "r2 r8"
     end
@@ -46,7 +46,7 @@ describe HeadMusic::Notation::LilyPond::RenderPlan do
 
     it "ties the whole chord across a tied chain" do
       flow = build_flow
-      value = HeadMusic::Rudiment::RhythmicValue.get("half tied to eighth")
+      value = HeadMusic::Rudiment::RhythmicDuration.get("half tied to eighth")
       voice_event = flow.add_voice.place("1:1", value, %w[C4 E4])
       expect(tokens_for(flow, voice_event)).to eq "<c' e'>2~ <c' e'>8"
     end

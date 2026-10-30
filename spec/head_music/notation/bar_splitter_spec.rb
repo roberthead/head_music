@@ -125,7 +125,7 @@ describe HeadMusic::Notation::BarSplitter do
 
     it "cuts a chain mixing ratios link by link" do
       place_in_turn(*Array.new(2, HeadMusic::Rudiment::RhythmicValue.get(:eighth, tuplet: "3:2")),
-        HeadMusic::Rudiment::RhythmicValue.get("triplet eighth tied to half"))
+        HeadMusic::Rudiment::RhythmicDuration.get("triplet eighth tied to half"))
       expect(split(voice.voice_events.last)).to eq [[1, "triplet eighth"], [2, "half"]]
     end
 

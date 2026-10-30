@@ -1,8 +1,8 @@
 # A namespace for LilyPond-notation rendering helpers
 module HeadMusic::Notation::LilyPond
-  # Converts one link of a rhythmic value into a LilyPond duration token.
-  # Ties between links are the caller's concern (RenderPlan joins links
-  # with the tie mark), so this writer ignores tied_value.
+  # Converts one rhythmic value into a LilyPond duration token. Ties between
+  # the values of a duration are the caller's concern (RenderPlan joins them
+  # with the tie mark).
   class DurationWriter
     # LilyPond durations are symbolic: a power-of-two number, or a named
     # command for the values longer than a whole note.

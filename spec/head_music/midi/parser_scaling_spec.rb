@@ -18,7 +18,7 @@ describe HeadMusic::MIDI::Parser do
       event_map_add: [HeadMusic::Time::EventMap, :add],
       bars_span: [HeadMusic::Content::Flow::Bars, :span],
       place: [HeadMusic::Content::Voice, :place],
-      append_tied: [HeadMusic::Rudiment::RhythmicValue, :append_tied],
+      rhythmic_duration: [HeadMusic::Rudiment::RhythmicDuration, :initialize],
       voice_distance: [HeadMusic::MIDI::VoiceSeparator.const_get(:Lane), :mean_key]
     }
   end

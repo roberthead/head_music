@@ -10,11 +10,6 @@ describe HeadMusic::Notation::DottedDuration do
       value = HeadMusic::Rudiment::RhythmicValue.get("dotted half")
       expect(described_class.dotted_unit_fraction(value)).to eq Rational(3, 4)
     end
-
-    it "ignores a tied value" do
-      value = HeadMusic::Rudiment::RhythmicValue.get("half tied to eighth")
-      expect(described_class.dotted_unit_fraction(value)).to eq Rational(1, 2)
-    end
   end
 
   describe ".tied" do
@@ -98,10 +93,6 @@ describe HeadMusic::Notation::DottedDuration do
 
     it "answers a tuplet value's sounding fraction, under its ratio" do
       expect(described_class.sounding_fraction(triplet_quarter)).to eq Rational(1, 6)
-    end
-
-    it "answers one link's sounding fraction, not its chain's" do
-      expect(described_class.sounding_fraction(HeadMusic::Rudiment::RhythmicValue.get("triplet quarter tied to half"))).to eq Rational(1, 6)
     end
 
     it "builds a value under a ratio from its sounding fraction" do

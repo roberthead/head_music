@@ -90,11 +90,13 @@ class HeadMusic::Content::Flow
       [sounds, grace_value(value["rhythmic_value"], path), options]
     end
 
+    # A tied name is passed on as written, so that the grace note can say why
+    # it refuses one.
     def grace_value(value, path)
-      rhythmic_value = HeadMusic::Rudiment::RhythmicValue.get(value) if value.is_a?(String)
-      raise ArgumentError, "#{path}: unknown rhythmic value #{value.inspect}" unless rhythmic_value&.unit
+      known = value.is_a?(String) && HeadMusic::Rudiment::RhythmicDuration.get(value)
+      raise ArgumentError, "#{path}: unknown rhythmic value #{value.inspect}" unless known
 
-      rhythmic_value
+      known.single_value || value
     end
 
     def flag(value, key, path)

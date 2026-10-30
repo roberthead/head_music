@@ -8,7 +8,7 @@ HeadMusic::Content::ChainLink = Data.define(:voice_event, :rhythmic_value, :onse
     chain = voice_event.rhythmic_duration.values
     onset = voice_event.onset_remainder
     chain.each_with_index.map do |link, index|
-      finish = onset + link.link_fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
+      finish = onset + link.fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE
       new(voice_event, link, onset, finish, index.zero?, index == chain.length - 1).tap { onset = finish }
     end
   end

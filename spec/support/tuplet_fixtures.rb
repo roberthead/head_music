@@ -5,7 +5,7 @@ module TupletFixtures
   module_function
 
   def value(name, tuplet = nil)
-    HeadMusic::Rudiment::RhythmicValue.get(name, tuplet: tuplet)
+    HeadMusic::Rudiment::RhythmicDuration.get(name, tuplet: tuplet)
   end
 
   def flow(name, meter: "4/4")
@@ -204,7 +204,7 @@ module TupletExpectations
     flow.voices.map do |voice|
       HeadMusic::Notation::TupletBrackets.for(voice).map do |bracket|
         last = bracket.last
-        finish = [last.onset.first, last.onset.last + last.rhythmic_value.link_fraction]
+        finish = [last.onset.first, last.onset.last + last.rhythmic_value.fraction]
         [exact_point(*bracket.first.onset), exact_point(*finish), bracket.ratio.to_s, bracket.unit.to_s]
       end
     end

@@ -53,10 +53,10 @@ HeadMusic::Content::GraceNote = Data.define(:sounds, :rhythmic_value, :slashed, 
   end
 
   # A grace note is written as one plain or dotted value, which takes no time,
-  # so neither a tie into a longer value nor a tuplet ratio means anything.
+  # so a tuplet ratio means nothing.
   def written_value(identifier)
     value = HeadMusic::Rudiment::RhythmicValue.get(identifier)
-    unless value&.unit && !value.tied_value && !value.tuplet?
+    if value.nil? || value.tuplet?
       raise ArgumentError, "a grace note needs a plain or dotted value, not #{identifier.inspect}"
     end
 

@@ -26,6 +26,14 @@ describe HeadMusic::Rudiment::Note do
         expect(note.pitch.to_s).to eq "E♭3"
         expect(note.rhythmic_duration.to_s).to eq "dotted half"
       end
+
+      it "parses a tied duration" do
+        expect(described_class.get("F#4 half tied to eighth").rhythmic_duration.to_s).to eq "half tied to eighth"
+      end
+
+      it "is nil for a duration it cannot read" do
+        expect(described_class.get("F#4 garbage")).to be_nil
+      end
     end
 
     context "when given a Note instance" do

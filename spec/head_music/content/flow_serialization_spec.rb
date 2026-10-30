@@ -1119,7 +1119,7 @@ describe HeadMusic::Content::Flow do
     end
 
     context "with a manually placed tied rhythmic value" do
-      let(:tied) { HeadMusic::Rudiment::RhythmicValue.get("half tied to eighth") }
+      let(:tied) { HeadMusic::Rudiment::RhythmicDuration.get("half tied to eighth") }
       let(:flow) do
         described_class.new(name: "Manual Tie").tap do |manual|
           manual.add_voice(role: "melody").place("1:1:000", tied, "G4")

@@ -175,7 +175,7 @@ class HeadMusic::Rudiment::Meter < HeadMusic::Rudiment::Base
   # dotted-quarter beat of a 6/8 meter for denominator 4).
   def dotted_denominator_value(denominator)
     unit = HeadMusic::Rudiment::RhythmicUnit.for_denominator_value(denominator)
-    HeadMusic::Rudiment::RhythmicValue.new(unit, dots: 1)
+    unit && HeadMusic::Rudiment::RhythmicValue.new(unit, dots: 1)
   end
 
   def downbeat?(count, tick = 0)

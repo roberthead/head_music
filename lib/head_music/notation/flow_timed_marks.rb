@@ -34,7 +34,7 @@ module HeadMusic
         end
 
         def rounds?(link)
-          (link.link_fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE).denominator != 1
+          (link.fraction * HeadMusic::Rudiment::Rhythm::SUBTICKS_PER_WHOLE).denominator != 1
         end
       end
 

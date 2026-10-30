@@ -13,16 +13,12 @@ describe HeadMusic::Rudiment::RhythmicValue::NameReader do
     expect(read("double-dotted half")).to eq "double-dotted half"
   end
 
-  it "reads a chain of tied values" do
-    expect(read("half tied to eighth tied to sixteenth")).to eq "half tied to eighth tied to sixteenth"
+  it "leaves a tied name to RhythmicDuration" do
+    expect(read("half tied to eighth tied to sixteenth")).to be_nil
   end
 
   it "reads a leading ratio word" do
     expect(read("5:4 sixteenth")).to eq "5:4 sixteenth"
-  end
-
-  it "reads a ratio word on each tied link" do
-    expect(read("triplet eighth tied to quarter")).to eq "triplet eighth tied to quarter"
   end
 
   it "reads the underscored word form" do

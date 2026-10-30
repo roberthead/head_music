@@ -32,7 +32,7 @@ module HeadMusic::Notation::MusicXML
     # A beat longer than any note value, as in 12/1, beams nothing.
     def self.beam_group_denominator(meter)
       unit = meter.beam_group_unit
-      unit&.unit ? DurationWriter.single_quarter_fraction(unit).denominator : 1
+      unit ? DurationWriter.single_quarter_fraction(unit).denominator : 1
     end
     private_class_method :beam_group_denominator
 

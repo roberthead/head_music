@@ -27,7 +27,7 @@ module HeadMusic
 
       # One link's length under its tuplet ratio.
       def sounding_fraction(link)
-        link.link_fraction
+        link.fraction
       end
 
       # The rhythmic duration spanning a fraction of a whole note, or nil when

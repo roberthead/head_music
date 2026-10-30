@@ -111,11 +111,9 @@ describe HeadMusic::Notation::MusicXML::DurationWriter do
       let(:value) do
         instance_double(
           HeadMusic::Rudiment::RhythmicValue,
-          unit: unit, dots: 0, tied_value: nil, unit_name: "whatsit", to_s: "whatsit", written_fraction: Rational(1), link_fraction: Rational(1)
+          unit: unit, dots: 0, unit_name: "whatsit", to_s: "whatsit", written_fraction: Rational(1), fraction: Rational(1)
         )
       end
-
-      before { allow(value).to receive(:tied_chain).and_return([value]) }
 
       it "raises a render error" do
         expect { writer.components(value) }

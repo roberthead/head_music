@@ -1,24 +1,13 @@
 class HeadMusic::Rudiment::RhythmicValue
-  # Reads a rhythmic value from its name: links tied with "tied to", a
-  # leading tuplet ratio word on each link, and the plain or dotted name the
-  # Parser reads, with the older underscored word form as a fallback.
+  # Reads a rhythmic value from its name: a leading tuplet ratio word, and
+  # the plain or dotted name the Parser reads, with the older underscored
+  # word form as a fallback. A tied name is a RhythmicDuration's, so it reads
+  # as nil, as any name it cannot read does.
   class NameReader
     def self.read(name)
-      # Handle tied values first, so "half tied to eighth" round-trips through #to_s
-      from_tied_words(name) || from_tuplet_words(name) || from_plain_name(name)
-    end
+      return if name.match?(TIE)
 
-    # Splits on the first " tied to " and recurses on the remainder,
-    # so chained ties ("half tied to eighth tied to sixteenth") nest naturally.
-    def self.from_tied_words(identifier)
-      head, tail = identifier.split(/\s+tied\s+to\s+/, 2)
-      return nil unless tail
-
-      head_value = HeadMusic::Rudiment::RhythmicValue.get(head)
-      tied_value = HeadMusic::Rudiment::RhythmicValue.get(tail)
-      return nil unless head_value && tied_value && !head_value.tied_value
-
-      HeadMusic::Rudiment::RhythmicValue.new(head_value.unit, dots: head_value.dots, tied_value: tied_value, tuplet: head_value.tuplet_ratio)
+      from_tuplet_words(name) || from_plain_name(name)
     end
 
     # Strips a leading ratio word before the other parsers see it, since they
@@ -29,7 +18,7 @@ class HeadMusic::Rudiment::RhythmicValue
 
       ratio = ratio_from_word(match[1])
       value = ratio && from_plain_name(match[2].strip)
-      value.with_tuplet(ratio) if value&.unit && !value.tuplet?
+      value.with_tuplet(ratio) if value && !value.tuplet?
     end
 
     def self.ratio_from_word(word)
@@ -51,7 +40,8 @@ class HeadMusic::Rudiment::RhythmicValue
     end
 
     def self.from_words(identifier)
-      HeadMusic::Rudiment::RhythmicValue.new(unit_from_words(identifier), dots: dots_from_words(identifier))
+      unit = HeadMusic::Rudiment::RhythmicUnit.get(unit_from_words(identifier))
+      HeadMusic::Rudiment::RhythmicValue.new(unit, dots: dots_from_words(identifier)) if unit
     end
 
     def self.unit_from_words(identifier)

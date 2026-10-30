@@ -116,103 +116,22 @@ describe HeadMusic::Rudiment::RhythmicValue do
       end
     end
 
-    context "when passed a second tied value" do
-      context "for an eighth tied to a dotted quarter" do
-        subject(:value) { described_class.new(:eighth, tied_value: second_value) }
+    it "raises for a unit it does not know" do
+      expect { described_class.new(:garbage) }.to raise_error(ArgumentError, /unknown rhythmic unit/)
+    end
 
-        let(:second_value) { described_class.new(:quarter, dots: 1) }
-
-        its(:name) { is_expected.to eq "eighth tied to dotted quarter" }
-        its(:ticks) { are_expected.to eq 1920 }
-        its(:relative_value) { is_expected.to eq 0.125 }
-        its(:total_value) { is_expected.to eq 0.5 }
-      end
-
-      context "for a half tied to a quarter tied to an eighth" do
-        subject(:value) { described_class.new(:half, tied_value: second_value) }
-
-        let(:second_value) { described_class.new(:quarter, tied_value: third_value) }
-        let(:third_value) { described_class.new(:eighth) }
-
-        its(:name) { is_expected.to eq "half tied to quarter tied to eighth" }
-        its(:ticks) { are_expected.to eq 960 * 4 * 7.0 / 8 }
-        its(:relative_value) { is_expected.to eq 0.5 }
-        its(:total_value) { is_expected.to eq 7.0 / 8 }
-      end
+    it "has no tied value" do
+      expect(described_class.new(:half)).not_to respond_to(:tied_value, :tied_chain, :append_tied)
     end
   end
 
-  describe "#append_tied" do
-    let(:quarter) { described_class.new(:quarter) }
-
-    it "ties the tail onto a single value" do
-      expect(described_class.new(:half).append_tied(quarter).to_s).to eq "half tied to quarter"
+  describe ".get" do
+    it "returns nil for a tied name, which is a RhythmicDuration's" do
+      expect(described_class.get("half tied to eighth")).to be_nil
     end
 
-    it "ties the tail onto the deep end of a chain" do
-      chain = described_class.new(:half, tied_value: described_class.new(:eighth))
-      expect(chain.append_tied(quarter).to_s).to eq "half tied to eighth tied to quarter"
-    end
-
-    it "keeps the head's dots" do
-      expect(described_class.new(:half, dots: 1).append_tied(quarter).to_s).to eq "dotted half tied to quarter"
-    end
-
-    it "does not change the receiver" do
-      chain = described_class.new(:half, tied_value: described_class.new(:eighth))
-      chain.append_tied(quarter)
-      expect(chain.to_s).to eq "half tied to eighth"
-    end
-  end
-
-  describe "string round-trips through .get" do
-    context "with a single tie" do
-      let(:value) { described_class.new(:half, tied_value: described_class.new(:eighth)) }
-
-      it "round-trips through to_s" do
-        expect(described_class.get(value.to_s)).to eq value
-      end
-
-      it "preserves the total value" do
-        expect(described_class.get("half tied to eighth").total_value).to eq value.total_value
-      end
-    end
-
-    context "with a chained tie" do
-      let(:value) do
-        described_class.new(
-          :half,
-          tied_value: described_class.new(:eighth, tied_value: described_class.new(:sixteenth))
-        )
-      end
-
-      it "round-trips through to_s" do
-        expect(described_class.get(value.to_s)).to eq value
-      end
-
-      it "preserves the total value" do
-        expect(described_class.get("half tied to eighth tied to sixteenth").total_value).to eq value.total_value
-      end
-    end
-
-    context "with a dotted head unit tied to another value" do
-      let(:value) { described_class.new(:quarter, dots: 1, tied_value: described_class.new(:sixteenth)) }
-
-      it "round-trips through to_s" do
-        expect(described_class.get(value.to_s)).to eq value
-      end
-
-      it "preserves the total value" do
-        expect(described_class.get("dotted quarter tied to sixteenth").total_value).to eq value.total_value
-      end
-    end
-
-    context "with a dotted tied value" do
-      let(:value) { described_class.new(:half, tied_value: described_class.new(:quarter, dots: 2)) }
-
-      it "round-trips through to_s" do
-        expect(described_class.get(value.to_s)).to eq value
-      end
+    it "returns nil for a name it cannot read" do
+      expect(described_class.get("garbage")).to be_nil
     end
 
     context "with plain and dotted values" do
@@ -334,18 +253,6 @@ describe HeadMusic::Rudiment::RhythmicValue do
     end
   end
 
-  describe "#tied_chain" do
-    it "returns just the value itself when nothing is tied" do
-      value = described_class.get(:quarter)
-      expect(value.tied_chain).to eq [value]
-    end
-
-    it "returns each link in order for a chained tie" do
-      value = described_class.get("half tied to eighth tied to sixteenth")
-      expect(value.tied_chain.map(&:unit_name)).to eq %w[half eighth sixteenth]
-    end
-  end
-
   describe "value equality" do
     it "collapses equal values in uniq" do
       values = [described_class.get(:quarter), described_class.get("quarter"), described_class.get("dotted quarter")]
@@ -358,8 +265,8 @@ describe HeadMusic::Rudiment::RhythmicValue do
     end
 
     it "is eql to an equal value with the same hash" do
-      one = described_class.get("half tied to eighth")
-      other = described_class.get("half tied to eighth")
+      one = described_class.get("dotted quarter")
+      other = described_class.get("dotted quarter")
       expect([one.eql?(other), one.hash == other.hash]).to eq [true, true]
     end
 
@@ -370,11 +277,6 @@ describe HeadMusic::Rudiment::RhythmicValue do
 
   describe "tuplet ratios" do
     let(:sixteenth_ratios) { %w[3:2 5:4 6:4 2:3 7:4 9:8] }
-
-    it "carries a ratio given to get on every link" do
-      value = described_class.get("quarter tied to eighth", tuplet: "3:2")
-      expect(value.tied_chain.map { |link| link.tuplet_ratio.to_s }).to eq %w[triplet triplet]
-    end
 
     it "names the ratio before the dots" do
       expect(described_class.get(:eighth, tuplet: "3:2").with_tuplet("3:2").to_s).to eq "triplet eighth"
@@ -387,17 +289,9 @@ describe HeadMusic::Rudiment::RhythmicValue do
       expect([value.dots, value.tuplet_ratio.to_s]).to eq [1, "triplet"]
     end
 
-    it "reads a chain mixing ratios link by link" do
-      value = described_class.get("triplet eighth tied to quarter")
-      expect(value.tied_chain.map(&:tuplet_ratio)).to eq [HeadMusic::Rudiment::TupletRatio.get("3:2"), nil]
-    end
-
-    it "round-trips every ratio, dot count, and chain through its name" do
-      chains = %w[3:2 5:4 6:4 2:3 7:4].product([0, 1, 2, 3]).flat_map do |ratio, dots|
-        link = described_class.new(:eighth, dots: dots, tuplet: ratio)
-        [link, link.append_tied(described_class.get(:quarter)), described_class.get(:half).append_tied(link)]
-      end
-      expect(chains.reject { |value| described_class.get(value.to_s).eql?(value) }).to be_empty
+    it "round-trips every ratio and dot count through its name" do
+      values = %w[3:2 5:4 6:4 2:3 7:4].product([0, 1, 2, 3]).map { |ratio, dots| described_class.new(:eighth, dots: dots, tuplet: ratio) }
+      expect(values.reject { |value| described_class.get(value.to_s).eql?(value) }).to be_empty
     end
 
     it "is nil for a ratio word whose value does not parse" do
@@ -431,11 +325,6 @@ describe HeadMusic::Rudiment::RhythmicValue do
       expect([value.exact_subticks, value.subticks]).to eq [Rational(230_400, 7), 32_914]
     end
 
-    it "rounds the chain once rather than each link" do
-      value = described_class.get("sixteenth tied to sixteenth", tuplet: "7:4")
-      expect(value.subticks).to eq 65_829
-    end
-
     it "keeps the ratio out of the written fraction and in the fraction" do
       value = described_class.get(:quarter, tuplet: "3:2")
       expect([value.written_fraction, value.fraction]).to eq [Rational(1, 4), Rational(1, 6)]
@@ -452,27 +341,13 @@ describe HeadMusic::Rudiment::RhythmicValue do
       expect([triplet <=> sextuplet, triplet == sextuplet]).to eq [0, false]
     end
 
-    describe "#uniform_tuplet_ratio" do
-      it "is the ratio every link carries" do
-        expect(described_class.get("triplet quarter tied to triplet eighth").uniform_tuplet_ratio.to_s).to eq "triplet"
-      end
-
-      it "is nil when the links differ" do
-        expect(described_class.get("triplet eighth tied to quarter").uniform_tuplet_ratio).to be_nil
-      end
-
-      it "is nil with no ratio" do
-        expect(described_class.get(:quarter).uniform_tuplet_ratio).to be_nil
-      end
-    end
-
     describe "#tuplet?" do
-      it "is true when any link carries a ratio" do
-        expect(described_class.get("quarter tied to triplet eighth")).to be_tuplet
+      it "is true under a ratio" do
+        expect(described_class.get("triplet eighth")).to be_tuplet
       end
 
       it "is false for a plain value" do
-        expect(described_class.get("quarter tied to eighth")).not_to be_tuplet
+        expect(described_class.get("quarter")).not_to be_tuplet
       end
     end
   end

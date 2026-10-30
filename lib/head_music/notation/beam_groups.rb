@@ -14,7 +14,7 @@ module HeadMusic
       # A beat longer than any note value, as in 12/1, beams nothing.
       def group_start?(onset, meter)
         unit = meter.beam_group_unit
-        return true unless unit&.unit
+        return true unless unit
 
         (onset % DottedDuration.dotted_unit_fraction(unit)).zero?
       end

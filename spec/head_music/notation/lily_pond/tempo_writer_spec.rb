@@ -32,11 +32,6 @@ describe HeadMusic::Notation::LilyPond::TempoWriter do
       expect(described_class.problem(tempo("quarter", 60.5, text: "Lento", metronome_mark: false))).to be_nil
     end
 
-    it "names a tied beat" do
-      beat = HeadMusic::Rudiment::RhythmicValue.new(:quarter, tied_value: HeadMusic::Rudiment::RhythmicValue.new(:eighth))
-      expect(described_class.problem(tempo(beat, 60))).to start_with "the tempo beat of"
-    end
-
     it "has nothing to say of a whole number of beats" do
       expect(described_class.problem(tempo("half", 60))).to be_nil
     end

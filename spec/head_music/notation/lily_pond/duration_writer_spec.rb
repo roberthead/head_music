@@ -25,11 +25,6 @@ describe HeadMusic::Notation::LilyPond::DurationWriter do
       expect(described_class.token(value)).to eq "\\breve."
     end
 
-    it "ignores the tied value, which the render plan joins with tie marks" do
-      value = HeadMusic::Rudiment::RhythmicValue.get("half tied to eighth")
-      expect(described_class.token(value)).to eq "2"
-    end
-
     it "raises a render error for a unit without a LilyPond duration" do
       value = instance_double(HeadMusic::Rudiment::RhythmicValue, unit_name: "whatsit", dots: 0)
       allow(HeadMusic::Rudiment::RhythmicValue).to receive(:get).and_return(value)

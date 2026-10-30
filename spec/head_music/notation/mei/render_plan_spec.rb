@@ -6,7 +6,7 @@ describe HeadMusic::Notation::MEI::RenderPlan do
   end
 
   def summary(items)
-    items.map { |item| [item.id, item.link.rhythmic_value.single_value_name, item.tie] }
+    items.map { |item| [item.id, item.link.rhythmic_value.to_s, item.tie] }
   end
 
   subject(:plan) { described_class.new(flow) }

@@ -37,8 +37,8 @@ describe HeadMusic::Notation::MusicXML::Parser do
   def tied_flow(bars)
     HeadMusic::Content::Flow.new(name: "Tied", key_signature: "C major", meter: "4/4").tap do |flow|
       voice = flow.add_voice
-      value = Array.new(bars) { HeadMusic::Rudiment::RhythmicValue.new(:whole) }.reduce { |tail, head| head.append_tied(tail) }
-      voice.place(flow.position(1, 1, 0), value, "C4")
+      duration = HeadMusic::Rudiment::RhythmicDuration.new(Array.new(bars) { HeadMusic::Rudiment::RhythmicValue.new(:whole) })
+      voice.place(flow.position(1, 1, 0), duration, "C4")
     end
   end
 

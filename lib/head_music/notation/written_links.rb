@@ -28,7 +28,7 @@ module HeadMusic
         segments.flat_map do |segment|
           onset = segment.offset || BarSplitter.onset_in_bar(segment.voice_event)
           segment.rhythmic_duration!(error_class).values.each_with_index.map do |link, index|
-            Link.new(segment, index, link, [segment.bar_number, onset]).tap { onset += link.link_fraction }
+            Link.new(segment, index, link, [segment.bar_number, onset]).tap { onset += link.fraction }
           end
         end
       end

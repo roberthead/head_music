@@ -45,7 +45,7 @@ module HeadMusic::MIDI
     # file may carry one, and it beats in dotted double wholes.
     def self.beat(meter)
       beat = meter.beat_value
-      return beat if beat.unit
+      return beat if beat
 
       HeadMusic::Rudiment::RhythmicValue.new(HeadMusic::Rudiment::RhythmicUnit.get("double whole"), dots: 1)
     end

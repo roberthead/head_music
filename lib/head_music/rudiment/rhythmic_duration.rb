@@ -8,8 +8,6 @@ class HeadMusic::Rudiment::RhythmicDuration
 
   RhythmicValue = HeadMusic::Rudiment::RhythmicValue
 
-  TIE = /\s+tied\s+to\s+/
-
   attr_reader :values, :fraction
 
   # With a tuplet ratio, every value carries it.
@@ -23,7 +21,7 @@ class HeadMusic::Rudiment::RhythmicDuration
     when HeadMusic::Rudiment::RhythmicDuration
       identifier
     when RhythmicValue
-      new(untied_links(identifier))
+      new([identifier])
     when HeadMusic::Rudiment::RhythmicUnit
       new([RhythmicValue.new(identifier)])
     when Symbol, String
@@ -32,16 +30,11 @@ class HeadMusic::Rudiment::RhythmicDuration
   end
 
   def self.from_name(name)
-    values = name.split(TIE).map { |piece| RhythmicValue.get(piece) }
-    new(values) if values.all? { |value| value&.unit }
+    values = name.split(RhythmicValue::TIE).map { |piece| RhythmicValue.get(piece) }
+    new(values) if values.any? && values.all?
   end
 
-  # A value still carrying a tied link is split into one value per link.
-  def self.untied_links(value)
-    value.tied_chain.map { |link| RhythmicValue.new(link.unit, dots: link.dots, tuplet: link.tuplet_ratio) }
-  end
-
-  private_class_method :from_identifier, :from_name, :untied_links
+  private_class_method :from_identifier, :from_name
 
   def initialize(values)
     raise ArgumentError, "a rhythmic duration needs at least one rhythmic value" if values.empty?

@@ -69,7 +69,7 @@ module HeadMusic::MIDI
       return Array.new(grace_notes.length, GRACE_LENGTH) if grace_notes.length > 1
       return [GRACE_LENGTH] if grace_notes.first.slashed?
 
-      [voice_event.rhythmic_duration.values.first.link_fraction / 2]
+      [voice_event.rhythmic_duration.values.first.fraction / 2]
     end
 
     def grace_end
@@ -81,7 +81,7 @@ module HeadMusic::MIDI
     def release
       @release ||= begin
         factor = length_factor
-        articulated = fraction - (1 - factor) * voice_event.rhythmic_duration.values.last.link_fraction
+        articulated = fraction - (1 - factor) * voice_event.rhythmic_duration.values.last.fraction
         (articulated > grace_end) ? articulated : grace_end + factor * (fraction - grace_end)
       end
     end

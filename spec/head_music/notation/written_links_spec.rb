@@ -20,7 +20,7 @@ describe HeadMusic::Notation::WrittenLinks do
   end
 
   it "steps through a tied chain link by link" do
-    place_in_turn(HeadMusic::Rudiment::RhythmicValue.new(:eighth, tied_value: HeadMusic::Rudiment::RhythmicValue.get(:sixteenth)))
+    place_in_turn("eighth tied to sixteenth")
     expect(summary(links)).to eq [[1, 0, 0, Rational(1, 8)], [1, Rational(1, 8), 1, Rational(1, 16)]]
   end
 
@@ -33,8 +33,7 @@ describe HeadMusic::Notation::WrittenLinks do
     let(:flow) { HeadMusic::Content::Flow.new(meter: "12/1") }
 
     before do
-      maxima = HeadMusic::Rudiment::RhythmicValue.get(:maxima)
-      place_in_turn(:whole, HeadMusic::Rudiment::RhythmicValue.new(:maxima, tied_value: maxima))
+      place_in_turn(:whole, "maxima tied to maxima")
     end
 
     it "raises the given error" do
