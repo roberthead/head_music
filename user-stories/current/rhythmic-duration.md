@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-30T08:09:09-07:00
   planned_at:
   finished_at:
-  updated_at:   2026-10-30T08:09:09-07:00
+  updated_at:   2026-10-30T08:20:46-07:00
 -->
 
 # Story: Rhythmic Duration
@@ -51,11 +51,13 @@ SO THAT the gem's vocabulary matches common music theory usage, and code that ne
 - Name: `RhythmicDuration` rather than `Duration`, because the gem already uses "duration" for plain Rational lengths (`Analysis::UnspelledNote#duration`, `Analysis::NoteInput`) and has `Notation::DottedDuration`. The prefix also pairs it with `RhythmicUnit` and `RhythmicValue`.
 - bardtheory pins `~> 21.1` and only passes single-value strings (`app/services/exercise_submission_grading_service.rb`, the analysis controllers), so its upgrade should be little more than the version bump.
 
-### Open questions for planning
+### Decisions (2026-10-30)
 
-- Should the event attribute be renamed from `rhythmic_value` to `rhythmic_duration`? Keeping the old name would hide the type change, but the rename touches every caller and serialized key. If it's renamed, is a deprecated alias worth keeping for one release?
-- Should `RhythmicValue.get` return nil for a tied name or raise with a pointer to `RhythmicDuration.get`? Nil matches how it treats other unknown names today.
-- Should `RhythmicDuration` delegate single-value readers (`unit`, `dots`) to its first value, as `RhythmicElement` delegates today, or should callers ask for the first value explicitly?
+- What `RhythmicValue` names today, ties included, becomes `RhythmicDuration`. `RhythmicValue` remains a class of its own: everything except ties. A typical duration is one untied value; it may also be a tied list of values.
+- Attributes follow the type. Anything that holds a possibly tied chain (voice events, notes, rests, unpitched notes, `with_rhythmic_value`) is renamed to `rhythmic_duration`. Anything limited to one written value (grace notes, tuplet group units, tempo beats, a `ChainLink`'s one link) keeps `rhythmic_value`. No deprecated alias, since 23.0.0 is major. The serialized flow key stays `"rhythmic_value"`.
+- `RhythmicValue.get` returns nil for a tied name, as it does for any name it cannot read.
+- `RhythmicDuration` does not delegate `unit`, `dots`, or `unit_name`. Callers ask for a value explicitly, and each style guideline decides what a tied note means, so a tied quarter no longer passes as a plain quarter.
+- Equality is per class: a duration equals a duration with the same `to_s`, and comparing with a String still works. A `RhythmicValue` and a one-value `RhythmicDuration` are not `==`.
 
 ## Scope Boundaries (Not in v1)
 
