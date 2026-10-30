@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-10-30T08:09:09-07:00
   planned_at:   2026-10-30T08:24:43-07:00
   finished_at:
-  updated_at:   2026-10-30T10:01:27-07:00
+  updated_at:   2026-10-30T10:19:11-07:00
 -->
 
 # Story: Rhythmic Duration
@@ -190,3 +190,7 @@ Reviewed 2026-10-30 at `a35b6555`, by an independent read of the diff against `m
    - It also omits that "tied to" is now read in any case.
 5. **Loose tie parsing (low).** `RhythmicValue.get("half tied to")` and `"tied to half"` read as "half", as `RhythmicDuration.get("half tied to")` does. `main` behaves the same, but a dangling tie is no single value.
 6. **Style (low).** A comment in `lib/head_music/notation/music_xml/duration_writer.rb` runs to 117 characters after an edit, and the ABC and MusicXML duration writers accept either a value or a duration through `respond_to?(:values)` rather than one type.
+
+### Resolution
+
+Findings 1–4 are fixed: `a4f9b1ad` (Note.get answers nil), `fc6cd2c1` (Content::Note raises), `645cba3f` (guideline specs, each shown to fail under the other rule), and `02a4e0df` (CHANGELOG). The full suite passes, 18,844 examples. Findings 5 and 6 are left as they are: the loose tie parsing matches `main`, and the style points are minor.
