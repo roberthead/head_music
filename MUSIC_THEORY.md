@@ -58,7 +58,7 @@ unpitched note
   - a sounded rhythmic value without a specific pitch
 
 tied duration
-  - combines multiple rhythmic values into one longer note
+  - combines multiple rhythmic values into one longer duration
   - ties allow rhythmic values to be combined across barlines or strong beats
 
 articulation
