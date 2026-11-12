@@ -7,6 +7,10 @@ RuboCop::RakeTask.new
 # The block runs when the task does, just before rspec is launched.
 RSpec::Core::RakeTask.new(:spec) { ENV["COVERAGE"] = "true" }
 
+# Coverage slows a run considerably, so validation leaves it to `rake spec` and CI.
+desc "Run RSpec code examples without coverage"
+RSpec::Core::RakeTask.new("spec:without_coverage")
+
 begin
   require "yard"
   YARD::Rake::YardocTask.new(:doc) do |t|
@@ -46,8 +50,8 @@ end
 
 task default: :spec
 
-desc "Run all validation checks (tests, linting, security audit, code quality)"
-task validate: [:spec, :rubocop, "bundle:audit:check", :rubycritic]
+desc "Run all validation checks (tests without coverage, linting, security audit, code quality)"
+task validate: ["spec:without_coverage", :rubocop, "bundle:audit:check", :rubycritic]
 
 desc "Open an irb session preloaded with this library"
 task :console do
