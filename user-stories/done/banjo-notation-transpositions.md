@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-11-08T08:10:10-08:00
   activated_at: 2026-11-12T10:46:47-05:00
   planned_at:   2026-11-12T11:48:18-05:00
-  finished_at:
-  updated_at:   2026-11-12T14:05:31-05:00
+  finished_at:  2026-11-12T14:16:21-05:00
+  updated_at:   2026-11-12T14:16:21-05:00
 -->
 
 # Banjo Notation Transpositions
@@ -324,3 +324,46 @@ and Read. Adler was checked by hand in the user's PDF.
      recorded.
 
 Nothing blocks `finish`.
+
+## Learnings
+
+### What went well
+
+- Checking each claim at its source changed the outcome twice:
+  - Running the banjo's alternate tunings through the gem showed that three
+    of the four had been producing wrong notes all along.
+  - Reading Adler in the user's own PDF turned up the one reference that
+    writes the five-string banjo at sounding pitch.
+
+  Neither would have come out of a summary.
+- LilyPond's `string-tunings-init.ly` was a ready local oracle for banjo
+  tunings, like its compile warnings for rendered output.
+- The ukulele family (`tenor_ukulele` beside `ukulele`) was a direct pattern
+  for adding instruments. The equivalence and integrity specs caught every
+  catalog file a new instrument has to appear in, and the MIDI instrument map
+  caught the shared General MIDI program.
+
+### What was surprising
+
+- The story's premise, that a lot of banjo music is written at sounding pitch,
+  held up only in Adler. The bardtheory claim that prompted the story ("written
+  an octave above where it sounds") was the banjo's own convention all along.
+- Named notation styles never reach output. Only `Instrument#notation(style:)`
+  reads them, which made adding a style for a historical convention a weaker
+  argument.
+- The research agent's "settled convention" verdict didn't survive the first
+  orchestration text checked by hand. Its "could not access" list was the part
+  that mattered most.
+- 23 of the 135 instruments have no MusicXML sound ID and come back from a
+  round trip with no instrument. That is now its own backlog story.
+
+### What to do differently next time
+
+- Before planning, check the references the story names, and any the user
+  owns; look on disk first. A local search would have found Adler at the
+  research stage instead of the review.
+- Keep the Decisions wording in line with what was verified. "Every source
+  found" claimed more than the checked sources supported.
+- The full suite took 10 to 20 minutes per `rake validate`. Until the
+  faster-test-suite story lands, run targeted specs while iterating and
+  `validate` once, before the final commit.
