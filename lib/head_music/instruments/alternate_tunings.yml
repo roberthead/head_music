@@ -1,7 +1,8 @@
 # Alternate tunings for stringed instruments.
 #
 # Each tuning is defined as semitone adjustments from standard tuning.
-# - First element = lowest course
+# - First element = first course in the stringing (for most instruments, the lowest;
+#   the banjo lists its short fifth string first)
 # - Missing elements = 0 (no change)
 # - Extra elements = ignored
 
@@ -51,11 +52,13 @@ banjo:
   open_g:
     semitones: [0, 0, 0, 0, 0]
   double_c:
-    semitones: [-2, -2, 0, -2, 0]
+    semitones: [0, -2, 0, 1, 0]
   sawmill:
-    semitones: [-2, -2, 0, 0, -2]
+    semitones: [0, 0, 0, 1, 0]
   open_d:
-    semitones: [-5, -2, -2, -1, -2]
+    semitones: [-1, 0, -1, -2, 0]
+  c_tuning:
+    semitones: [0, -2, 0, 0, 0]
 
 ukulele:
   low_g:

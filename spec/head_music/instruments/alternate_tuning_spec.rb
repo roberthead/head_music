@@ -115,6 +115,27 @@ describe HeadMusic::Instruments::AlternateTuning do
     end
   end
 
+  describe "banjo tunings" do
+    let(:stringing) { HeadMusic::Instruments::Stringing.for_instrument(:banjo) }
+
+    def pitches(name)
+      described_class.get(:banjo, name).apply_to(stringing).map(&:to_s)
+    end
+
+    # The banjo lists its short fifth string first, so offsets follow course order, not register.
+    {
+      open_g: %w[G4 D3 G3 B3 D4],
+      double_c: %w[G4 C3 G3 C4 D4],
+      sawmill: %w[G4 D3 G3 C4 D4],
+      open_d: %w[F♯4 D3 F♯3 A3 D4],
+      c_tuning: %w[G4 C3 G3 B3 D4]
+    }.each do |name, expected|
+      it "tunes #{name} to #{expected.join(" ")}" do
+        expect(pitches(name)).to eq expected
+      end
+    end
+  end
+
   describe "#==" do
     let(:drop_d) { described_class.get(:guitar, :drop_d) }
     let(:another_drop_d) { described_class.get(:guitar, :drop_d) }

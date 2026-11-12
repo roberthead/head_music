@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The banjo has a `c_tuning` alternate tuning (gCGBD), the tuning of the classic banjo.
+
+### Fixed
+
+- The banjo's alternate tunings sound the pitches they name. Their offsets had been written for the wrong strings, so `double_c` tuned to F4 C3 G3 A3 D4 instead of G4 C3 G3 C4 D4, `sawmill` to F4 C3 G3 B3 C4 instead of G4 D3 G3 C4 D4, and `open_d` to D4 C3 F3 A♯3 C4 instead of F♯4 D3 F♯3 A3 D4.
+
 ## [23.0.0] - 2026-10-30
 
 Eighteen stories since 22.0.0, most of them about getting music in and out. head_music now reads and writes MusicXML, MEI, MIDI, and Humdrum **kern beside ABC and LilyPond, infers a key and respells pitches for formats that carry none, and a flow holds the articulations, ornaments, dynamics, hairpins, bar markings, spans, tuplets, grace notes, tempo and meter changes, and lyric extenders those formats write. Underneath, a voice's contents are now voice events, notes and rests of their own classes, and a tied length is a `RhythmicDuration` rather than a chain hung off a `RhythmicValue`.

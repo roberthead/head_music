@@ -10,7 +10,7 @@ module HeadMusic::Instruments; end
 #   drop_d.semitones  # => [-2, 0, 0, 0, 0, 0]
 #
 # When applying a tuning:
-#   - First element applies to the lowest course
+#   - First element applies to the first course in the stringing
 #   - Missing elements are treated as 0 (no change)
 #   - Extra elements are ignored
 class HeadMusic::Instruments::AlternateTuning
