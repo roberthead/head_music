@@ -304,6 +304,10 @@ default:
     high_tom:
       staves:
       - clef: neutral_clef
+    irish_tenor_banjo:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -12
     lute:
       staves:
       - clef: treble_clef
@@ -439,6 +443,10 @@ default:
     temple_blocks:
       staves:
       - clef: neutral_clef
+    tenor_banjo:
+      staves:
+      - clef: treble_clef
+        sounding_transposition: -12
     tenor_drum:
       staves:
       - clef: neutral_clef

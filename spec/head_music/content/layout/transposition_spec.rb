@@ -49,6 +49,16 @@ describe HeadMusic::Content::Layout::Transposition do
     it "answers what the written pitch is heard as" do
       expect(clarinet.sounding("C4").to_s).to eq "B♭3"
     end
+
+    %w[banjo tenor_banjo irish_tenor_banjo].each do |name|
+      it "hears a #{name.tr("_", " ")}'s written D4 an octave lower" do
+        expect(described_class.for(instrument(name)).sounding("D4").to_s).to eq "D3"
+      end
+    end
+
+    it "writes the banjo's open G3 string as G4" do
+      expect(described_class.for(instrument("banjo")).written("G3").to_s).to eq "G4"
+    end
   end
 
   describe "#written_sound" do

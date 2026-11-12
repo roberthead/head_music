@@ -591,6 +591,35 @@ describe HeadMusic::Instruments::Instrument do
     end
   end
 
+  describe "banjo family" do
+    {
+      "banjo" => %w[G4 D3 G3 B3 D4],
+      "tenor banjo" => %w[C3 G3 D4 A4],
+      "Irish tenor banjo" => %w[G2 D3 A3 E4]
+    }.each do |name, pitch_names|
+      context "for the #{name}" do
+        subject(:instrument) { described_class.get(name) }
+
+        its(:family_key) { is_expected.to eq "banjo" }
+        its(:default_clefs) { is_expected.to eq [HeadMusic::Rudiment::Clef.get("treble_clef")] }
+        its(:sounding_transposition) { is_expected.to eq(-12) }
+
+        it "is strung #{pitch_names.join(" ")}" do
+          expect(instrument.stringing.standard_pitches.map(&:to_s)).to eq pitch_names
+        end
+      end
+    end
+
+    it "tells the Irish tenor banjo from the tenor banjo" do
+      expect(described_class.get("Irish tenor banjo")).not_to eq described_class.get("tenor banjo")
+    end
+
+    it "finds the tenor banjos by their German names" do
+      expect(described_class.get("Tenorbanjo").name_key).to eq :tenor_banjo
+      expect(described_class.get("irisches Tenorbanjo").name_key).to eq :irish_tenor_banjo
+    end
+  end
+
   describe "#stringing" do
     context "for a stringed instrument with stringing data" do
       subject(:instrument) { described_class.get("guitar") }

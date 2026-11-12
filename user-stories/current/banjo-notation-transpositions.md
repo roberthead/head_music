@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T10:46:47-05:00
   planned_at:   2026-11-12T11:48:18-05:00
   finished_at:
-  updated_at:   2026-11-12T12:04:47-05:00
+  updated_at:   2026-11-12T12:21:34-05:00
 -->
 
 # Banjo Notation Transpositions
@@ -255,3 +255,6 @@ Recorded 2026-11-12.
 - **No plectrum banjo.** No source was found for its notation, and MuseScore and
   Dorico don't include one.
 - **Open D is f#DF#AD**, the common teaching form, rather than LilyPond's aDF#AD.
+- **MIDI program 106 reads as the five-string banjo.** General MIDI has one
+  banjo program, and all three banjos share it, so `MIDI::InstrumentMap` pins it
+  the way it pins the other shared programs.

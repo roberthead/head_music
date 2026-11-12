@@ -16,6 +16,14 @@ describe HeadMusic::Notation::MusicXML::InstrumentSounds do
     expect(described_class.instrument("keyboard.piano.grand").name_key).to eq :piano
   end
 
+  it "reads the tenor banjo's sound as the tenor banjo, not the five-string" do
+    expect(described_class.instrument("pluck.banjo.tenor").name_key).to eq :tenor_banjo
+  end
+
+  it "writes no sound for the Irish tenor banjo, which has no standard id" do
+    expect(described_class.sound(HeadMusic::Instruments::Instrument.get("irish_tenor_banjo"))).to be_nil
+  end
+
   it "answers nil for a sound outside the table" do
     expect(described_class.instrument("voice.male")).to be_nil
   end

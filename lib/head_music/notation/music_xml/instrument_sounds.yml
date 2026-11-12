@@ -80,6 +80,7 @@ pluck.guitar.acoustic: guitar
 pluck.guitar.nylon-string: guitar
 pluck.bass.electric: bass_guitar
 pluck.banjo: banjo
+pluck.banjo.tenor: tenor_banjo
 pluck.mandolin: mandolin
 pluck.lute: lute
 pluck.ukulele: ukulele

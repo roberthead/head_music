@@ -396,6 +396,9 @@ high_tom:
   - small_tom
   - rack_tom_1
   gm_percussion_key: 50
+irish_tenor_banjo:
+  family_key: banjo
+  gm_program: 106
 lute:
   family_key: lute
   gm_program: 25
@@ -597,6 +600,11 @@ tambourine:
 temple_blocks:
   family_key: woodblock
   gm_percussion_key: 76
+tenor_banjo:
+  family_key: banjo
+  range_categories:
+  - tenor
+  gm_program: 106
 tenor_drum:
   family_key: tenor_drum
   gm_percussion_key: 45

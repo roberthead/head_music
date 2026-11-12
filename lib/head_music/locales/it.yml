@@ -122,6 +122,8 @@ it:
       arpeggione: arpeggione
       bagpipe: cornamusa
       banjo: banjo
+      irish_tenor_banjo: banjo tenore irlandese
+      tenor_banjo: banjo tenore
       baritone_horn: flicorno baritono
       baritone_oboe: oboe baritono
       baritone_saxophone: sassofono baritono

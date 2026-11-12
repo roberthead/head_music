@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The banjo has a `c_tuning` alternate tuning (gCGBD), the tuning of the classic banjo.
+- The tenor banjo (C3 G3 D4 A4) and the Irish tenor banjo (G2 D3 A3 E4) join the banjo family as instruments of their own. Both are written in treble clef an octave above sounding, like the five-string banjo. MusicXML's `pluck.banjo.tenor` reads as the tenor banjo; the Irish tenor banjo has no standard sound id, so it is written without one.
 
 ### Fixed
 

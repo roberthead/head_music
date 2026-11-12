@@ -20,7 +20,8 @@ module HeadMusic::MIDI
       71 => :bassoon,
       72 => :clarinet,
       74 => :flute,
-      75 => :recorder
+      75 => :recorder,
+      106 => :banjo
     }.freeze
 
     PINNED_PERCUSSION_KEYS = {

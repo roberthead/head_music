@@ -112,6 +112,20 @@ banjo:
     - pitch: B3
     - pitch: D4
 
+tenor_banjo:
+  courses:
+    - pitch: C3
+    - pitch: G3
+    - pitch: D4
+    - pitch: A4
+
+irish_tenor_banjo:
+  courses:
+    - pitch: G2
+    - pitch: D3
+    - pitch: A3
+    - pitch: E4
+
 violin:
   courses:
     - pitch: G3

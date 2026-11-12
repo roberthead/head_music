@@ -96,6 +96,30 @@
     "transposing": true,
     "transposing_at_the_octave": true
   },
+  "tenor_banjo": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
+  "irish_tenor_banjo": {
+    "clefs": [
+      "treble clef"
+    ],
+    "sounding_transposition": -12,
+    "staves_count": 1,
+    "single_staff": true,
+    "multiple_staves": false,
+    "pitched": true,
+    "transposing": true,
+    "transposing_at_the_octave": true
+  },
   "baritone_horn": {
     "clefs": [
       "bass clef"
