@@ -77,8 +77,6 @@ ru:
       alto_saxophone: альт-саксофон
       arpeggione: арпеджионе
       banjo: банджо
-      irish_tenor_banjo: ирландское тенор-банджо
-      tenor_banjo: тенор-банджо
       baritone_horn: баритон рог
       baritone_oboe: баритоновый гобой
       baritone_voice: баритон
@@ -143,6 +141,7 @@ ru:
       hi-hat: хай-хет
       high_tom: том высокий
       horn: валторна
+      irish_tenor_banjo: ирландское тенор-банджо
       kettledrum: тимпан
       kick_drum: бас-барабан
       lute: лютня
@@ -203,6 +202,7 @@ ru:
       tambourine: бубен
       temple_blocks: храмовые блоки
       tenor: тенор
+      tenor_banjo: тенор-банджо
       tenor_drum: теноровый барабан
       tenor_recorder: теноровая флейта
       tenor_saxophone: тенор-саксофон

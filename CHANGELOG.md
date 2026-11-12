@@ -10,11 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The banjo has a `c_tuning` alternate tuning (gCGBD), the tuning of the classic banjo.
-- The tenor banjo (C3 G3 D4 A4) and the Irish tenor banjo (G2 D3 A3 E4) join the banjo family as instruments of their own. Both are written in treble clef an octave above sounding, like the five-string banjo. MusicXML's `pluck.banjo.tenor` reads as the tenor banjo; the Irish tenor banjo has no standard sound id, so it is written without one.
+- The tenor banjo (C3 G3 D4 A4) and the Irish tenor banjo (G2 D3 A3 E4) join the banjo family as instruments of their own. Both are written in treble clef an octave above sounding, like the five-string banjo. MusicXML's `pluck.banjo.tenor` reads as the tenor banjo; the Irish tenor banjo has no standard sound id, so it is written without one and, like the other instruments without one, reads back with no instrument.
 
 ### Fixed
 
-- The banjo's alternate tunings sound the pitches they name. Their offsets had been written for the wrong strings, so `double_c` tuned to F4 C3 G3 A3 D4 instead of G4 C3 G3 C4 D4, `sawmill` to F4 C3 G3 B3 C4 instead of G4 D3 G3 C4 D4, and `open_d` to D4 C3 F3 A♯3 C4 instead of F♯4 D3 F♯3 A3 D4.
+- The banjo's alternate tunings sound the pitches they name. Their offsets were wrong, so `double_c` tuned to F4 C3 G3 A3 D4 instead of G4 C3 G3 C4 D4, `sawmill` to F4 C3 G3 B3 C4 instead of G4 D3 G3 C4 D4, and `open_d` to D4 C3 F3 A♯3 C4 instead of F♯4 D3 F♯3 A3 D4.
 
 ## [23.0.0] - 2026-10-30
 

@@ -122,8 +122,6 @@ de:
       arpeggione: Arpeggione
       bagpipe: Dudelsack
       banjo: Banjo
-      irish_tenor_banjo: irisches Tenorbanjo
-      tenor_banjo: Tenorbanjo
       baritone_horn: Baritonhorn
       baritone_oboe: Baritonoboe
       baritone_saxophone: Baritonsaxophon
@@ -198,6 +196,7 @@ de:
       hi-hat: Hi-Hat
       high_tom: High-Tom
       horn: Horn
+      irish_tenor_banjo: irisches Tenorbanjo
       kettledrum: Pauke
       kick_drum: Große Trommel
       lute: Laute
@@ -260,6 +259,7 @@ de:
       tam_tam: Tamtam
       temple_blocks: Tempelblock
       tenor: Tenor
+      tenor_banjo: Tenorbanjo
       tenor_drum: Tenortrommel
       tenor_recorder: Tenorblockflöte
       tenor_saxophone: Tenorsaxophon

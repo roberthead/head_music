@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T10:46:47-05:00
   planned_at:   2026-11-12T11:48:18-05:00
   finished_at:
-  updated_at:   2026-11-12T12:21:34-05:00
+  updated_at:   2026-11-12T14:05:31-05:00
 -->
 
 # Banjo Notation Transpositions
@@ -99,8 +99,15 @@ spec or a CHANGELOG line rests on them.
     sounding pitch (5-string 67 50 55 59 62; tenor 48 55 62 69; Irish tenor
     43 50 57 64). *Verified.*
   - LilyPond's banjo example uses `\clef "treble_8"`.
-- **Written at sounding pitch: no source found.** The Background's claim that
-  "a lot of banjo music is written at sounding pitch" is unsupported so far.
+- **Written at sounding pitch: one source, a major orchestration text.**
+  - Samuel Adler, *The Study of Orchestration*, 3rd ed. (Norton, 2002), p. 106,
+    Example 4-28 prints the five-string banjo's tuning at sounding pitch on a
+    bass staff (C3 G3, B3 or C4, D4), with the short string's g4 on a treble
+    staff, and footnotes the range: "The tenor banjo sounds an octave lower
+    than written." Appendix A, p. 787, gives the banjo's sounding range as "as
+    written, but tenor banjo sounds octave lower." *Verified* in the user's PDF.
+  - No banjo method, publisher, or notation program found so far follows
+    Adler. The Background's "a lot of banjo music" is still unsupported.
 - **Classic-banjo A notation versus C notation** (Hooks, quoting the primary
   sources):
   - The interval pattern is gCGBD, with the "pitch" named for the 4th (bass)
@@ -123,9 +130,21 @@ spec or a CHANGELOG line rests on them.
   no source found.
 - **Tab:** Peghead Nation, *Music Notation Guide*: "Dobro and banjo music has no
   notation, only tab."
-- **Not checked:** Gould's *Behind Bars*, Adler, Kennan, Read, Sibelius,
-  Dorico's definitions, and the octave notes in the Scruggs, Seeger, Mel Bay
-  5-string, and Hal Leonard methods.
+- **General references with no banjo rule.** All were searched in full text on
+  archive.org; Gould was spot-checked.
+  - Elaine Gould, *Behind Bars* (Faber, 2011): "banjo" does not appear. The
+    guitar rule, p. 373: "Guitar music is notated on a single stave in the
+    treble clef, sounding an octave lower than written." *Verified.*
+  - Gardner Read, *Music Notation* (1969, 1979): no banjo. The guitar rule:
+    "'Classical' guitar is conventionally notated on the treble staff, sounding
+    an octave lower than written." Read's *Thesaurus of Orchestral Devices* and
+    *Style and Orchestration* mention the banjo only as a playing effect, or not
+    at all.
+  - Kennan and Grantham, *The Technique of Orchestration* (1983, 2002): the
+    banjo appears only as "a guitar, mandolin, or banjo pick" for string
+    pizzicato.
+- **Not checked:** Sibelius, Dorico's definitions, and the octave notes in the
+  Scruggs, Seeger, Mel Bay 5-string, and Hal Leonard methods.
 
 ### Implications for planning
 
@@ -235,10 +254,17 @@ schema or class changes.
 Recorded 2026-11-12.
 
 - **Default convention: treble clef, sounding an octave below written (-12),
-  unchanged.** Every source found writes the banjo this way: Bradbury, Hooks
-  (ABF), Hugill, Mel Bay's tenor method, MuseScore, and LilyPond. No source
-  writes it at sounding pitch.
-- **No at-pitch style.** No convention to model was found.
+  unchanged.**
+  - The banjo's own literature and the notation software write it this way:
+    Bradbury (verified), the American Banjo Fraternity (Hooks), Hugill, Mel
+    Bay's tenor method, and MuseScore (verified).
+  - Gould and Read do not cover the banjo, but they give the same octave rule
+    for the guitar.
+  - Adler is the one dissent: he writes the five-string at sounding pitch, on
+    bass and treble staves.
+- **No at-pitch style.** Adler's is the only source for it, and no banjo method
+  or notation program follows it. Like any named style, it would change no
+  output today.
 - **No classic-banjo A-notation style.**
   - The convention died out by the early 1920s.
   - Its -9 transposition is derived rather than sourced.
@@ -258,3 +284,43 @@ Recorded 2026-11-12.
 - **MIDI program 106 reads as the five-string banjo.** General MIDI has one
   banjo program, and all three banjos share it, so `MIDI::InstrumentMap` pins it
   the way it pins the other shared programs.
+
+## Review
+
+2026-11-12, at `a283fc5d`, plus uncommitted fixes for findings 2 and 3 below.
+An independent agent reviewed the diff, and a second searched Gould, Kennan,
+and Read. Adler was checked by hand in the user's PDF.
+
+| Criterion | Verdict | Evidence |
+| --- | --- | --- |
+| Survey the conventions, with sources | ✅ | Research: banjo-specific sources, Adler pp. 106 and 787, Gould p. 373, Read, Kennan and Grantham |
+| Decide the default and record why | ✅ | Decisions: -12 kept, Adler recorded as the dissent |
+| Decide on other styles | ✅ | Decisions: no at-pitch style, no A-notation style |
+| Tenor and plectrum banjos | ✅ | `instruments.yml`, `stringings.yml`, `notation_styles.yml`; plectrum declined in Decisions |
+| Specs for any change to the default | ✅ | Default unchanged; pinned in `transposition_spec.rb` and `instrument_spec.rb` ("banjo family") |
+
+### Findings
+
+1. **An Irish tenor banjo part loses its instrument in a MusicXML round trip.**
+   The writer only writes `<score-instrument>` for an instrument with a standard
+   sound ID (`music_xml/writer.rb:97-100`), and the reader finds an instrument
+   only through that ID (`music_xml/identity_reader.rb:44-48`). This is
+   existing behavior for all 23 of the 135 instruments without an ID, including
+   transposing ones such as `clarinet_in_c` and `bass_trumpet_in_e_flat`.
+   Fixing it means changing how the reader resolves instruments, so it belongs
+   in a story of its own. The CHANGELOG now states the behavior.
+2. **Locale keys out of order** in de, es, fr, it, and ru. *Fixed:* the keys
+   are now sorted.
+3. **The CHANGELOG blamed "the wrong strings"** for the old tuning offsets, but
+   no string order produces the named tunings. *Fixed:* it now says the
+   offsets were wrong.
+4. **Adler contradicted the Decisions**, which had said no source writes the
+   banjo at sounding pitch. *Fixed:* the Research and Decisions now record him,
+   and the default is unchanged by the user's decision.
+5. **Minor:**
+   - Stringings are covered in `instrument_spec.rb` rather than
+     `stringing_spec.rb`, as the plan had said.
+   - The tenor banjos get no capo configuration. That is defensible, but not
+     recorded.
+
+Nothing blocks `finish`.

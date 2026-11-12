@@ -126,8 +126,6 @@ fr:
       arpeggione: arpeggione
       bagpipe: cornemuse
       banjo: banjo
-      irish_tenor_banjo: banjo ténor irlandais
-      tenor_banjo: banjo ténor
       baritone_horn: corne de baryton
       baritone_oboe: hautbois baryton
       baritone_saxophone: saxophone baryton
@@ -202,6 +200,7 @@ fr:
       hi-hat: charleston
       high_tom: tom aigu
       horn: cor
+      irish_tenor_banjo: banjo ténor irlandais
       kettledrum: timbale
       kick_drum: grosse caisse
       lute: luth
@@ -263,6 +262,7 @@ fr:
       tambourine: tambourin
       temple_blocks: blocs de temple
       tenor: ténor
+      tenor_banjo: banjo ténor
       tenor_drum: tambour ténor
       tenor_recorder: flûte à bec ténor
       tenor_saxophone: saxophone ténor

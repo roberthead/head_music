@@ -118,8 +118,6 @@ es:
       arpeggione: arpeggione
       bagpipe: gaita
       banjo: banjo
-      irish_tenor_banjo: banjo tenor irlandés
-      tenor_banjo: banjo tenor
       baritone_horn: bombardino barítono
       baritone_oboe: oboe barítono
       baritone_saxophone: saxofón barítono
@@ -195,6 +193,7 @@ es:
       hi-hat: charles
       high_tom: tom agudo
       horn: corno
+      irish_tenor_banjo: banjo tenor irlandés
       kettledrum: timbal
       kick_drum: bombo
       lute: laúd
@@ -257,6 +256,7 @@ es:
       tambourine: pandereta
       temple_blocks: bloques de templo
       tenor: tenor
+      tenor_banjo: banjo tenor
       tenor_drum: tambor tenor
       tenor_recorder: flauta dulce tenor
       tenor_saxophone: saxofón tenor

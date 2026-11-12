@@ -122,8 +122,6 @@ it:
       arpeggione: arpeggione
       bagpipe: cornamusa
       banjo: banjo
-      irish_tenor_banjo: banjo tenore irlandese
-      tenor_banjo: banjo tenore
       baritone_horn: flicorno baritono
       baritone_oboe: oboe baritono
       baritone_saxophone: sassofono baritono
@@ -197,6 +195,7 @@ it:
       hi-hat: hi-hat
       high_tom: tom acuto
       horn: corno
+      irish_tenor_banjo: banjo tenore irlandese
       kettledrum: timpano
       kick_drum: grancassa
       lute: liuto
@@ -256,6 +255,7 @@ it:
       tambourine: tamburello
       temple_blocks: blocchi di legno
       tenor: tenore
+      tenor_banjo: banjo tenore
       tenor_drum: tamburo tenore
       tenor_recorder: flauto dolce tenore
       tenor_saxophone: sassofono tenore
