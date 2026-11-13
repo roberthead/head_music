@@ -288,6 +288,12 @@ describe HeadMusic::Instruments::Instrument do
       expect(names).to include(:violin, :trumpet, :flute, :piano)
     end
 
+    it "lists each catalog instrument once, whatever names were looked up before" do
+      described_class.get("Horn")
+      described_class.get("no such instrument")
+      expect(all_instruments.map(&:name_key).sort).to eq described_class::INSTRUMENTS.keys.map(&:to_sym).sort
+    end
+
     it "is sorted alphabetically by name" do
       names = all_instruments.map { |i| i.name.downcase }
       expect(names).to eq(names.sort)

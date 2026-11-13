@@ -48,8 +48,7 @@ class HeadMusic::Instruments::Instrument
 
     def all
       HeadMusic::Instruments::InstrumentFamily.all # Ensure families are loaded first
-      INSTRUMENTS.map { |key, _data| get(key) }
-      @all ||= @instances.values.compact.sort_by { |instrument| instrument.name.downcase }
+      @all ||= INSTRUMENTS.keys.map { |key| get(key) }.sort_by { |instrument| instrument.name.downcase }
     end
 
     private

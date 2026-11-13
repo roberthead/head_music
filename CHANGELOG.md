@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `Instrument.all` lists each catalog instrument once. It listed every instance looked up before its first call, so a lookup by alias or translated name added a duplicate, and a lookup of an unknown name added an instrument with no `name_key`.
 - The banjo's alternate tunings sound the pitches they name. Their offsets were wrong, so `double_c` tuned to F4 C3 G3 A3 D4 instead of G4 C3 G3 C4 D4, `sawmill` to F4 C3 G3 B3 C4 instead of G4 D3 G3 C4 D4, and `open_d` to D4 C3 F3 A♯3 C4 instead of F♯4 D3 F♯3 A3 D4.
 
 ## [23.0.0] - 2026-10-30
