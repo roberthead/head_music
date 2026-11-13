@@ -18,8 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - The writer writes a `<score-instrument>` with an `<instrument-name>` for every instrument. An instrument without a sound of its own writes the nearest standard one, as MuseScore and Dorico do: `wind.reed.clarinet` for the clarinet in C, `pluck.banjo.tenor` for the Irish tenor banjo. Only the synthesizer writes no sound.
   - The soprillo writes and reads `wind.reed.saxophone.sopranissimo`, and the maracas `rattle.maraca`.
   - The reader takes the instrument from `<instrument-name>`, then `<part-name>`, then `<virtual-name>`, where the name is in the same family as `<instrument-sound>` or there is no sound, and from the sound otherwise. So a part named "Irish tenor banjo" with `pluck.banjo.tenor` reads as the Irish tenor banjo, and a part named "Soprano" with a soprano saxophone's sound reads as the saxophone.
-  - Names are read in the forms other programs write: "C Clarinet", "Trumpet in Bb", "Horn in F", "Violin 1".
-  - Where only the sound names the instrument, the part's first `<transpose>` picks among its variants, so `wind.reed.clarinet` transposing a minor third down reads as the clarinet in A.
+  - Names are read in the forms other programs write: "C Clarinet", "Trumpet in Bb", "Trumpet in B-flat", "Horn in F", "English Horn in F", "Violin 1".
+  - Where the instrument read has variants, as the clarinet does, the part's first `<transpose>` picks among them, so a part named "Clarinet", or with only `wind.reed.clarinet`, transposing a minor third down reads as the clarinet in A. A name with a key, such as "clarinet in C", keeps its instrument.
   - A part with no `<score-instrument>` still reads with no instrument, whatever its part name. None of the MusicXML fixtures in the specs reads differently.
 
 ### Fixed

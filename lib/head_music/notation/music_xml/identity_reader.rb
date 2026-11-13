@@ -41,12 +41,8 @@ module HeadMusic::Notation::MusicXML
       name && HeadMusic::Content::Player.new(name: name)
     end
 
-    # Read by name first, since a sound may be shared or generic, but only a
-    # name in the sound's family, since a part name such as "Soprano" may
-    # label a player. A part with no <score-instrument> has no instrument,
-    # whatever its part name says. Where only a sound names it, a first
-    # <transpose> may pick a variant: wind.reed.clarinet transposing a minor
-    # third down is the clarinet in A.
+    # A sound may be shared, so a name wins, but only one in the sound's
+    # family, since a part name such as "Soprano" may label a player.
     def instrument(document_part)
       score_part = document_part.score_part
       score_instrument = score_part && first_child(score_part, "score-instrument")
@@ -54,9 +50,8 @@ module HeadMusic::Notation::MusicXML
 
       sounded = InstrumentSounds.instrument(text(score_instrument, "instrument-sound"))
       named = instrument_names(score_part, score_instrument)
-      return named.first unless sounded
-
-      named.find { |instrument| same_family?(instrument, sounded) } || transposed_variant(sounded, document_part)
+      found = sounded ? named.find { |instrument| same_family?(instrument, sounded) } || sounded : named.first
+      found && transposed_variant(found, document_part)
     end
 
     private
@@ -74,6 +69,7 @@ module HeadMusic::Notation::MusicXML
       instrument.family_key && instrument.family_key == other.family_key
     end
 
+    # "Clarinet" transposing a minor third down is the clarinet in A.
     def transposed_variant(instrument, document_part)
       semitones = first_transposition(document_part)&.semitones
       return instrument if semitones.nil? || instrument.sounding_transposition == semitones

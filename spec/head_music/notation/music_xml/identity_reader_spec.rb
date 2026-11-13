@@ -142,7 +142,7 @@ describe HeadMusic::Notation::MusicXML::IdentityReader do
       expect(flow_with("", names: ["Bass"]).parts.first.instrument).to be_nil
     end
 
-    describe "picked by transposition, where only the sound names it" do
+    describe "picked by transposition" do
       it "reads the variant that transposes as the part does" do
         expect(instrument_for(sound: "wind.reed.clarinet", transpose: transpose(-3, -2))).to eq :clarinet_in_a
       end
@@ -153,6 +153,18 @@ describe HeadMusic::Notation::MusicXML::IdentityReader do
 
       it "keeps the sound's instrument where no variant transposes as the part does" do
         expect(instrument_for(sound: "wind.reed.clarinet", transpose: transpose(-5, -3))).to eq :clarinet
+      end
+
+      it "reads the variant where a name without a key names the instrument" do
+        expect(instrument_for(part_name: "Trumpet", sound: "brass.trumpet", transpose: transpose(3, 2))).to eq :trumpet_in_e_flat
+      end
+
+      it "reads the variant where a name without a key is all there is" do
+        expect(instrument_for(instrument_name: "Clarinet", transpose: transpose(-3, -2))).to eq :clarinet_in_a
+      end
+
+      it "keeps the instrument a name with a key names, whatever the transposition" do
+        expect(instrument_for(instrument_name: "clarinet in C", sound: "wind.reed.clarinet", transpose: transpose(-3, -2))).to eq :clarinet_in_c
       end
     end
   end
@@ -197,7 +209,7 @@ describe HeadMusic::Notation::MusicXML::IdentityReader do
       end
     end
 
-    it "reads back an instrument named in another language" do
+    it "reads back an instrument written in another locale" do
       instrument = HeadMusic::Instruments::Instrument.get("trumpet_in_e_flat")
       expect(round_trip(instrument, locale: :de)).to eq instrument
     end

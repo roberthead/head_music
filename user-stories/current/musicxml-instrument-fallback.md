@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-13T08:10:41-05:00
+  updated_at:   2026-11-13T08:12:28-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -242,8 +242,9 @@ None. One new YAML section, or file, for the written sounds.
   drops it when it names an instrument (e.g. "Grand Piano") against a
   different sound, but a wrong Finale sound still wins over a right
   part-name.
-- Writing the name in the current locale means a German export names the
-  instrument in German. head_music reads it back; other tools may not.
+- ~~Writing the name in the current locale means a German export names the
+  instrument in German.~~ Not so: `Named#name` defaults to en_US, so
+  `<instrument-name>` is English in every locale (review finding 4).
 - Existing documents change: every part with a sound-less instrument now gets
   a `<score-instrument>`, and the 8 parent-sound instruments gain a sound.
 
