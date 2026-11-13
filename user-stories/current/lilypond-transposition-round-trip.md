@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-13T09:54:36-05:00
   planned_at:   2026-11-13T10:03:14-05:00
   finished_at:
-  updated_at:   2026-11-13T16:15:45-05:00
+  updated_at:   2026-11-13T16:37:52-05:00
 -->
 
 # Story: LilyPond Transposition Round Trip
@@ -227,3 +227,51 @@ None. `VoiceStream` gains a transposition, which is reader state.
 - `\transposition` in a `\with` block is not LilyPond syntax (it would be
   `instrumentTransposition = #(ly:make-pitch …)`), so it is left to
   `AssignmentReader`'s existing error.
+
+## Review
+
+Reviewed 2026-11-13 at `87e857a6` by an independent agent; each finding below was
+reproduced before it was recorded here.
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| Transposed written flow parses back at concert pitch | ✅ | `setting_reader.rb` `read_transposition`, `voice_stream.rb` `change_transposition`; `lily_pond_transposition_spec.rb` round trip |
+| `\transposition` read wherever LilyPond allows it | ⚠️ | Voice start, mid-voice, `\relative`, tuplets, staff to voice, `\new Dynamics` all read; not staff-wide across voices (1), not inside `\grace { }` or mid-tie (3) |
+| Every transposing catalog instrument round-trips | ✅ | `lily_pond_transposition_spec.rb`, one example per instrument, plus the LilyPond MIDI check |
+| A part changing instrument round-trips, `\transposition` restated | ✅ | `render_plan.rb` `transposition_changes`, `voice_writer.rb` `change_commands`; silent staves excepted (4) |
+| Several voices on one staff read as one part, with roles | ✅ | `part_layout.rb` `ungrouped_voice`, `writer.rb` `single_staff_lines`; `lily_pond_shared_staff_spec.rb` |
+| Instrument from a several-voice staff's name, variant by opening `\transposition` | ✅ | `part_layout.rb` `staff_instrument`, `instrument_names.rb` `variant`; misses a `\transposition` in a later voice (1) |
+
+### Findings
+
+1. **Medium.** `\transposition` in one voice of a shared staff doesn't reach
+   the staff's other voices, though in LilyPond it is a Staff property.
+   `\new Staff << \new Voice = "a" { \transposition bes d''1 } \new Voice = "b" { e''1 } >>`
+   reads C5 and E5; LilyPond's MIDI plays C5 and D5. The variant pick reads
+   only the first voice's opening transposition, so it misses one in a later
+   voice. The gem's own writer restates it in every voice, so its round trip is
+   unaffected.
+2. **Low.** A concert key past seven sharps or flats is read silently, not
+   refused as planned: `{ \transposition bes \key ces \major ces''1 }` reads as
+   B𝄫 major (9 flats), which the writer then renders. Untested.
+3. **Low.** Valid LilyPond refused: `{ \grace { \transposition bes d''8 } c''1 }`
+   raises `UnsupportedFeatureError` (the grace reader doesn't route settings),
+   and `{ \transposition bes c''2~ \transposition c' c''2 }` raises "A tie must
+   connect two notes of the same pitch", since the tie now compares concert
+   pitches.
+4. **Low.** A silent staff (`VoiceWriter#silent_lines`) writes no
+   `\transposition` at an instrument change, nor a key change, which predates
+   this story. No pitches are lost.
+5. **Low, by design.** On a several-voice staff a name the catalog doesn't
+   know survives nowhere: `instrumentName = "Melody"` with two voices reads as
+   one part, no instrument, roles `[nil, nil]`. This is the CHANGELOG's
+   **Breaking.** entry.
+6. **Low.** Key resettling reaches back across spacers, since `Event#music?`
+   doesn't count them: `{ \key f \major s1 \transposition a f''1 }` reads the
+   bar-one key as D major. The writer never produces this.
+7. **Nits.** `Writer#part_name`'s comment now describes voice naming, which
+   happens in `single_staff_lines`; `PartLayout`'s header comment reads
+   awkwardly.
+
+Nothing blocks `finish` against the criteria as written, but 1 and 3 leave
+criterion 2 partial for files from elsewhere.
