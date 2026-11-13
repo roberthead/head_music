@@ -8,7 +8,7 @@
             <title type="main">Study</title>
          </titleStmt>
          <pubStmt>
-            <date isodate="2026-10-15T16:44:23" />
+            <date isodate="2026-11-13T09:28:20" />
          </pubStmt>
       </fileDesc>
    </meiHead>
@@ -32,49 +32,49 @@
                </scoreDef>
                <section xml:id="s1">
                   <pb />
-                  <measure xml:id="muvh3lq" n="1">
+                  <measure xml:id="mq3udvz" n="1">
                      <staff xml:id="m1s1" n="1">
                         <layer xml:id="m1s1l1" n="1">
-                           <note xml:id="nfzmttw" dur="1" pname="d" oct="4" />
+                           <note xml:id="n3ux494" dur="1" pname="d" oct="4" />
                         </layer>
                      </staff>
                   </measure>
-                  <measure xml:id="m1oa5lyq" n="2">
+                  <measure xml:id="m1qx071i" n="2">
                      <staff xml:id="m2s1" n="1">
                         <layer xml:id="m2s1l1" n="1">
-                           <note xml:id="n1ykmwqu" dur="1" pname="e" oct="4" />
+                           <note xml:id="n1njugsw" dur="1" pname="e" oct="4" />
                         </layer>
                      </staff>
                   </measure>
                   <scoreDef keysig="3f" />
-                  <measure xml:id="m1drpr71" n="3">
+                  <measure xml:id="mqtrx1l" n="3">
                      <staff xml:id="m3s1" n="1">
                         <layer xml:id="m3s1l1" n="1">
-                           <note xml:id="nygsepc" dur="1" pname="g" oct="4" />
+                           <note xml:id="n86pm2g" dur="1" pname="g" oct="4" />
                         </layer>
                      </staff>
                   </measure>
-                  <measure xml:id="m1yzwnek" n="4">
+                  <measure xml:id="meom6wa" n="4">
                      <staff xml:id="m4s1" n="1">
                         <layer xml:id="m4s1l1" n="1">
-                           <note xml:id="nga0xoe" dur="1" pname="a" oct="4">
+                           <note xml:id="n1jjcvnv" dur="1" pname="a" oct="4">
                               <accid accid.ges="f" />
                            </note>
                         </layer>
                      </staff>
                   </measure>
                   <scoreDef keysig="0" />
-                  <measure xml:id="mi5iy0d" n="5">
+                  <measure xml:id="m1ppmpk" n="5">
                      <staff xml:id="m5s1" n="1">
                         <layer xml:id="m5s1l1" n="1">
-                           <note xml:id="n1us317l" dur="1" pname="g" oct="4" />
+                           <note xml:id="n6cp45u" dur="1" pname="g" oct="4" />
                         </layer>
                      </staff>
                   </measure>
-                  <measure xml:id="m2ni4yi" right="end" n="6">
+                  <measure xml:id="m8zjpv0" right="end" n="6">
                      <staff xml:id="m6s1" n="1">
                         <layer xml:id="m6s1l1" n="1">
-                           <note xml:id="n1n8ntcz" dur="1" pname="a" oct="4" />
+                           <note xml:id="n1lt87wc" dur="1" pname="a" oct="4" />
                         </layer>
                      </staff>
                   </measure>

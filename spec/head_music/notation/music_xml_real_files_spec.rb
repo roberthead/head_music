@@ -97,15 +97,21 @@ describe HeadMusic::Notation::MusicXML do
         flow.voices.first.note_events.map { |note_event| note_event.pitches.first.midi_note_number }
       end
 
-      # MuseScore keeps only the B-flat clarinet's <transpose>, so the A
-      # clarinet's bars read a semitone high and the flute's a tone low.
-      it "reads the bars after the first instrument change as MuseScore's one <transpose> leaves them" do
+      # MuseScore writes the A clarinet's <transpose> but no return to concert
+      # pitch for the flute, so the flute's bars read a minor third low.
+      it "reads the flute's bars under the A clarinet's <transpose>, which MuseScore leaves in force" do
         offsets = semitones(theirs).zip(semitones(ours)).map { |their, our| their - our }
-        expect(offsets).to eq [0, 0, 1, 1, -2, -2]
+        expect(offsets).to eq [0, 0, 0, 0, -3, -3]
       end
 
-      it "reads each written key change as a change of concert key under the B-flat <transpose>" do
-        expect(theirs.key_signature_changes.transform_values(&:to_s)).to eq(3 => "-5 D♭ major", 5 => "-2 B♭ major")
+      # MuseScore writes each written key in an <attributes> before the one
+      # holding the bar's new <transpose>.
+      it "reads each written key change under the <transpose> in force before it" do
+        expect(theirs.key_signature_changes.transform_values(&:to_s)).to eq(3 => "-5 D♭ major", 5 => "3 A major")
+      end
+
+      it "reads the instrument changes" do
+        expect(theirs.parts.first.instrument_changes.transform_values(&:name_key)).to eq(3 => :clarinet_in_a, 5 => :flute)
       end
 
       it "reads everything else as the render it converted" do

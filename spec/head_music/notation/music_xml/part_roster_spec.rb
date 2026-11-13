@@ -130,4 +130,62 @@ describe HeadMusic::Notation::MusicXML::PartRoster do
       expect(round_trip(original).parts.first.staff_system.staves.last.clef_changes.transform_values(&:name_key)).to eq(3 => "tenor_clef")
     end
   end
+
+  describe "instrument changes" do
+    let(:part_list) do
+      %(<part-list><score-part id="P1"><part-name>Winds</part-name>) +
+        %(<score-instrument id="P1-I1"><instrument-name>Oboe</instrument-name></score-instrument>) +
+        %(<score-instrument id="P1-I2"><instrument-name>Flute</instrument-name></score-instrument></score-part></part-list>)
+    end
+
+    def note(instrument_id = nil)
+      instrument = instrument_id ? %(<instrument id="#{instrument_id}"/>) : ""
+      "<note><pitch><step>C</step><octave>5</octave></pitch><duration>4</duration>#{instrument}<type>whole</type></note>"
+    end
+
+    def change(instrument_id)
+      %(<sound><instrument-change id="#{instrument_id}"/></sound>)
+    end
+
+    def part_for(*measures)
+      xml = musicxml_measures(*measures).sub(%r{<part-list>.*</part-list>}m, part_list)
+      parse(xml).parts.first
+    end
+
+    def instruments_of(part)
+      [part.instrument&.name_key, part.instrument_changes.transform_values(&:name_key)]
+    end
+
+    it "reads a change from the instrument each note names" do
+      expect(instruments_of(part_for(note("P1-I1"), note("P1-I2"), note("P1-I2")))).to eq [:oboe, {2 => :flute}]
+    end
+
+    it "reads a change from an instrument change alone" do
+      expect(instruments_of(part_for(note, change("P1-I2") + note, note))).to eq [:oboe, {2 => :flute}]
+    end
+
+    it "reads a return to the first instrument" do
+      expect(instruments_of(part_for(note("P1-I1"), note("P1-I2"), note("P1-I1")))).to eq [:oboe, {2 => :flute, 3 => :oboe}]
+    end
+
+    it "opens with the instrument the first note names" do
+      expect(instruments_of(part_for(note("P1-I2"), note("P1-I2")))).to eq [:flute, {}]
+    end
+
+    context "when neither score instrument names an instrument" do
+      let(:part_list) do
+        %(<part-list><score-part id="P1"><part-name>Oboe</part-name>) +
+          %(<score-instrument id="P1-I1"><instrument-name>Reed 1</instrument-name></score-instrument>) +
+          %(<score-instrument id="P1-I2"><instrument-name>Reed 2</instrument-name></score-instrument></score-part></part-list>)
+      end
+
+      it "takes no instrument from the part name, which names the part, not each instrument" do
+        expect(part_for(note("P1-I1")).instrument).to be_nil
+      end
+    end
+
+    it "keeps the music of a part read with changes" do
+      expect(part_for(note("P1-I1"), note("P1-I2")).voices.first.notes.map { |played| played.pitch.to_s }).to eq %w[C5 C5]
+    end
+  end
 end

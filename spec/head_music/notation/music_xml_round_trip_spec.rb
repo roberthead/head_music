@@ -54,11 +54,6 @@ describe HeadMusic::Notation::MusicXML do
     MuseScoreFixtures.marked_da_capo_al_fine
   ]
 
-  # Instrument changes read back only as the concert pitch their
-  # <transpose>s give, so a layout of the flow read back writes no
-  # <transpose> after the first.
-  changes_instrument = %w[MuseScoreFixtures.clarinet_changes]
-
   def render(flow, **options)
     described_class.render(flow, **options)
   end
@@ -85,7 +80,6 @@ describe HeadMusic::Notation::MusicXML do
 
   it "finds every exclusion among the fixtures" do
     expect((padded + one_voice_marks) - flows.keys).to eq []
-    expect(changes_instrument - projects.keys).to eq []
   end
 
   flows.each do |name, build|
@@ -106,12 +100,10 @@ describe HeadMusic::Notation::MusicXML do
     describe "#{name}, transposed" do
       let(:project) { instance_exec(&build) }
 
-      unless changes_instrument.include?(name)
-        it "writes back each flow's transposed document from the flow it reads" do
-          project.flows.each do |flow|
-            rendered = render(written(flow), transposed: true)
-            expect(render(written(parse(rendered)), transposed: true)).to eq rendered
-          end
+      it "writes back each flow's transposed document from the flow it reads" do
+        project.flows.each do |flow|
+          rendered = render(written(flow), transposed: true)
+          expect(render(written(parse(rendered)), transposed: true)).to eq rendered
         end
       end
 

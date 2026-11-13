@@ -2137,4 +2137,43 @@ describe HeadMusic::Notation::MusicXML::Writer do
       expect(xpath_count(parse_musicxml(described_class.new(flow).to_s), "//score-instrument")).to eq 0
     end
   end
+
+  describe "an instrument change" do
+    let(:document) do
+      flow = HeadMusic::Content::Flow.new.tap do |changing|
+        part = changing.add_part(instrument: "clarinet")
+        voice = part.add_voice
+        voice.place("1:1", :whole, "C4")
+        voice.place("2:1", :half, "C4")
+        voice.place("2:3", :half, nil)
+        voice.place("3:1", :whole, %w[C4 E4])
+        part.change_instrument(2, "flute")
+        part.change_instrument(3, "clarinet")
+      end
+      parse_musicxml(described_class.new(flow).to_s)
+    end
+
+    it "writes a score instrument for each instrument the part plays, in the order it first plays them" do
+      ids_and_names = REXML::XPath.match(document, "//score-instrument").map { |element| [element.attributes["id"], xpath_text(element, "instrument-name")] }
+      expect(ids_and_names).to eq [%w[P1-I1 clarinet], %w[P1-I2 flute]]
+    end
+
+    it "names the instrument each sounding note is played on, chord tones included" do
+      expect(REXML::XPath.match(document, "//note[pitch]/instrument").map { |element| element.attributes["id"] }).to eq %w[P1-I1 P1-I2 P1-I1 P1-I1]
+    end
+
+    it "names no instrument on a rest" do
+      expect(xpath_count(document, "//note[rest]/instrument")).to eq 0
+    end
+
+    it "writes each change as a change to the instrument and its sound" do
+      changes = REXML::XPath.match(document, "//measure/sound/instrument-change").map { |element| [element.attributes["id"], xpath_text(element, "instrument-sound")] }
+      expect(changes).to eq [%w[P1-I2 wind.flutes.flute], %w[P1-I1 wind.reed.clarinet.bflat]]
+    end
+
+    it "names no instrument on the notes of a part that plays one" do
+      flow = HeadMusic::Content::Flow.new.tap { |single| single.add_part(instrument: "oboe").add_voice.place("1:1", :whole, "C4") }
+      expect(xpath_count(parse_musicxml(described_class.new(flow).to_s), "//note/instrument")).to eq 0
+    end
+  end
 end

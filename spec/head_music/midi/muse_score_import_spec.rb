@@ -11,8 +11,7 @@ describe "HeadMusic::MIDI", oracle: :musescore do
     "bach_invention_01" => "MuseScore plays each mordent as the notes it stands for",
     "marked_dal_segno_al_coda" => "MuseScore plays each ornament as the notes it stands for",
     "marked_da_capo_al_fine" => "MuseScore does not play the D.C. al Fine",
-    "grace_notes_before_downbeat" => "MuseScore plays the grace notes as notes",
-    "clarinet_changes_transposed" => "MuseScore keeps the first clarinet's transposition through the instrument changes"
+    "grace_notes_before_downbeat" => "MuseScore plays the grace notes as notes"
   }
 
   def import(source)
@@ -70,11 +69,6 @@ describe "HeadMusic::MIDI", oracle: :musescore do
   it "reads two_verses with the pickup head_music's MusicXML pads into a full first bar" do
     flow = import(MuseScoreFixtures.path("two_verses", "head_music"))
     expect(bar_events(flow.voices.first).first(2)).to eq [["1:1:000", "half", "rest"], ["1:3:000", "quarter", "C4"]]
-  end
-
-  it "reads clarinet_changes_transposed at the first clarinet's transposition throughout" do
-    flow = import(MuseScoreFixtures.path("clarinet_changes_transposed", "head_music"))
-    expect(imported_pitches(flow)).to eq [%w[C4 D4 F4 G♭4 F4 G4]]
   end
 
   describe "a tune in A minor" do

@@ -95,16 +95,15 @@ module HeadMusic::Notation::MusicXML
 
     # The name identifies the instrument; a sound alone may be shared.
     def score_instrument_lines(part, index)
-      instrument = part.instrument
-      return [] unless instrument
-
-      sound = InstrumentSounds.sound(instrument)
-      [
-        %(#{INDENT * 3}<score-instrument id="P#{index + 1}-I1">),
-        "#{INDENT * 4}<instrument-name>#{escape(instrument.name)}</instrument-name>",
-        sound && "#{INDENT * 4}<instrument-sound>#{sound}</instrument-sound>",
-        "#{INDENT * 3}</score-instrument>"
-      ].compact
+      part.instruments.each_with_index.flat_map do |instrument, instrument_index|
+        sound = InstrumentSounds.sound(instrument)
+        [
+          %(#{INDENT * 3}<score-instrument id="#{ScoreInstruments.id(index, instrument_index)}">),
+          "#{INDENT * 4}<instrument-name>#{escape(instrument.name)}</instrument-name>",
+          sound && "#{INDENT * 4}<instrument-sound>#{sound}</instrument-sound>",
+          "#{INDENT * 3}</score-instrument>"
+        ].compact
+      end
     end
 
     # A voice's role names the part only where the part holds a single voice, so

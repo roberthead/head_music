@@ -18,16 +18,33 @@ module HeadMusic::Notation::MusicXML
 
     def add(reading)
       document_part = reading.document_part
+      opening_id = reading.opening_instrument_id
       part = @flow.add_part(
         player: @identity.player(document_part),
-        instrument: @identity.instrument(document_part),
+        instrument: @identity.instrument(document_part, opening_id),
         staff_system: staff_system(reading)
       )
       HeadMusic::Notation::ClefChanges.apply(part, reading.measures, @bar_map)
+      change_instruments(part, reading, opening_id)
       part
     end
 
     private
+
+    # A change takes effect at its measure's downbeat, so one in the middle of a
+    # split bar waits for the next, as a clef change does.
+    def change_instruments(part, reading, opening_id)
+      instruments = @identity.instruments(reading.document_part)
+      id_in_force = opening_id || instruments.keys.first
+      reading.measures.each do |measure|
+        id = measure.instrument_id
+        bar = @bar_map.downbeat_bar(measure.index)
+        next if id.nil? || id == id_in_force || bar.nil? || !instruments.key?(id)
+
+        part.change_instrument(bar, instruments[id])
+        id_in_force = id
+      end
+    end
 
     BRACKETS_BY_PART_SYMBOL = {"bracket" => :bracket, "square" => :bracket, "none" => :none}.freeze
 

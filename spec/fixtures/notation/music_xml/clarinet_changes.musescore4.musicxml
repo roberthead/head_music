@@ -7,7 +7,7 @@
   <identification>
     <encoding>
       <software>MuseScore Studio 4.7.5</software>
-      <encoding-date>2026-10-15</encoding-date>
+      <encoding-date>2026-11-13</encoding-date>
       <supports element="accidental" type="yes"/>
       <supports element="beam" type="yes"/>
       <supports element="print" attribute="new-page" type="yes" value="yes"/>
@@ -15,7 +15,7 @@
       <supports element="stem" type="yes"/>
       </encoding>
     <miscellaneous>
-      <miscellaneous-field name="creationDate">2026-10-15</miscellaneous-field>
+      <miscellaneous-field name="creationDate">2026-11-13</miscellaneous-field>
       <miscellaneous-field name="platform">Apple Macintosh</miscellaneous-field>
       </miscellaneous>
     </identification>
@@ -79,10 +79,32 @@
         <instrument-name>clarinet</instrument-name>
         <instrument-sound>wind.reed.clarinet.bflat</instrument-sound>
         </score-instrument>
+      <score-instrument id="P1-I2">
+        <instrument-name>clarinet in A</instrument-name>
+        <instrument-sound>wind.reed.clarinet.a</instrument-sound>
+        </score-instrument>
+      <score-instrument id="P1-I3">
+        <instrument-name>flute</instrument-name>
+        <instrument-sound>wind.flutes.flute</instrument-sound>
+        </score-instrument>
       <midi-device id="P1-I1" port="1"></midi-device>
       <midi-instrument id="P1-I1">
         <midi-channel>1</midi-channel>
         <midi-program>72</midi-program>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-device id="P1-I2" port="1"></midi-device>
+      <midi-instrument id="P1-I2">
+        <midi-channel>2</midi-channel>
+        <midi-program>72</midi-program>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-device id="P1-I3" port="1"></midi-device>
+      <midi-instrument id="P1-I3">
+        <midi-channel>3</midi-channel>
+        <midi-program>74</midi-program>
         <volume>78.7402</volume>
         <pan>0</pan>
         </midi-instrument>
@@ -108,6 +130,7 @@
           <beats>4</beats>
           <beat-type>4</beat-type>
           </time>
+        <instruments>3</instruments>
         <clef>
           <sign>G</sign>
           <line>2</line>
@@ -119,6 +142,7 @@
           <octave>4</octave>
           </pitch>
         <duration>4</duration>
+        <instrument id="P1-I1"/>
         <voice>1</voice>
         <type>whole</type>
         </note>
@@ -130,17 +154,29 @@
           <octave>4</octave>
           </pitch>
         <duration>4</duration>
+        <instrument id="P1-I1"/>
         <voice>1</voice>
         <type>whole</type>
         </note>
       </measure>
     <measure number="3" width="149.94">
+      <print>
+        <part-name-display>
+          <display-text>Clarinet</display-text>
+          </part-name-display>
+        </print>
+      <sound>
+        <instrument-change id="P1-I2">
+          <instrument-sound>wind.reed.clarinet.a</instrument-sound>
+          </instrument-change>
+        </sound>
       <note default-x="12.5" default-y="-40">
         <pitch>
           <step>E</step>
           <octave>4</octave>
           </pitch>
         <duration>4</duration>
+        <instrument id="P1-I2"/>
         <voice>1</voice>
         <type>whole</type>
         </note>
@@ -152,17 +188,29 @@
           <octave>4</octave>
           </pitch>
         <duration>4</duration>
+        <instrument id="P1-I2"/>
         <voice>1</voice>
         <type>whole</type>
         </note>
       </measure>
     <measure number="5" width="149.94">
+      <print>
+        <part-name-display>
+          <display-text>Clarinet</display-text>
+          </part-name-display>
+        </print>
+      <sound>
+        <instrument-change id="P1-I3">
+          <instrument-sound>wind.flutes.flute</instrument-sound>
+          </instrument-change>
+        </sound>
       <note default-x="12.5" default-y="-30">
         <pitch>
           <step>G</step>
           <octave>4</octave>
           </pitch>
         <duration>4</duration>
+        <instrument id="P1-I3"/>
         <voice>1</voice>
         <type>whole</type>
         </note>
@@ -174,6 +222,7 @@
           <octave>4</octave>
           </pitch>
         <duration>4</duration>
+        <instrument id="P1-I3"/>
         <voice>1</voice>
         <type>whole</type>
         </note>

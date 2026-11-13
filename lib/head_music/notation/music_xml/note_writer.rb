@@ -30,9 +30,10 @@ module HeadMusic::Notation::MusicXML
       numbers = {voice_number: voice_number, staff_number: staff_number}
       graces = segment.elapsed.zero? ? grace_writer.lines(voice_event, **numbers) : []
       fermata_indexes = fermata_component_indexes(segment)
+      instrument_id = instrument_id(segment)
       graces + components_by_segment[segment].each_with_index.flat_map do |component, component_index|
         beams = beam_annotations[[segment, component_index]] || []
-        marks = {tuplet_mark: tuplet_marks.at(segment, component_index), fermata: fermata_indexes.include?(component_index)}
+        marks = {tuplet_mark: tuplet_marks.at(segment, component_index), fermata: fermata_indexes.include?(component_index), instrument_id: instrument_id}
         component_lines(voice_event, component, beams, marks, numbers)
       end
     end
@@ -97,10 +98,10 @@ module HeadMusic::Notation::MusicXML
     end
 
     # Element order inside <note> is fixed by the DTD: <chord/> comes first,
-    # <voice> follows the ties and precedes <type>, and <staff> follows the
+    # <instrument> and <voice> follow the ties and precede <type>, and <staff> follows the
     # dots and precedes the beams. Each is omitted where it does not apply, so
     # a one-voice, one-staff part writes none of them.
-    def element_lines(voice_event, component, pitch, chord:, beams:, tuplet_mark:, fermata:, voice_number:, staff_number:)
+    def element_lines(voice_event, component, pitch, chord:, beams:, tuplet_mark:, fermata:, instrument_id:, voice_number:, staff_number:)
       ties = ties(voice_event, component, pitch)
       [
         "#{INDENT * 3}<note>",
@@ -108,6 +109,7 @@ module HeadMusic::Notation::MusicXML
         *(pitch ? PitchWriter.lines(pitch) : ["#{INDENT * 4}<rest/>"]),
         "#{INDENT * 4}<duration>#{component.duration}</duration>",
         *tie_lines("tie", 4, ties),
+        (%(#{INDENT * 4}<instrument id="#{instrument_id}"/>) if pitch && instrument_id),
         number_line("voice", voice_number),
         "#{INDENT * 4}<type>#{component.type}</type>",
         *Array.new(component.dots) { "#{INDENT * 4}<dot/>" },
@@ -118,6 +120,14 @@ module HeadMusic::Notation::MusicXML
         *lyric_writer.lines(voice_event, component, chord: chord),
         "#{INDENT * 3}</note>"
       ].compact
+    end
+
+    # Which of its part's instruments plays a note, said only where the part
+    # plays more than one.
+    def instrument_id(segment)
+      part = segment.voice_event.voice&.part
+      part_index = part && plan.flow.parts.index { |candidate| candidate.equal?(part) }
+      part_index && ScoreInstruments.id_for(part, part_index, part.instrument_at(segment.bar_number))
     end
 
     # Rests take no ties; the links of a rest's tied chain render as

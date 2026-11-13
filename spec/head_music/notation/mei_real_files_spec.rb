@@ -52,7 +52,7 @@ describe HeadMusic::Notation::MEI do
       "triplets" => %i[added_piano_sound],
       "grace_notes_before_downbeat" => %i[added_piano_sound],
       "two_verses" => %i[added_piano_sound pickup_as_bar_one],
-      "clarinet_changes" => []
+      "clarinet_changes" => %i[dropped_instrument_changes]
     }
 
     def source(name)
@@ -71,6 +71,12 @@ describe HeadMusic::Notation::MEI do
 
     def added_piano_sound(summary, _flow)
       summary.merge("parts" => summary["parts"].map { |part| part.key?("instrument") ? part : part.merge("instrument" => "piano") })
+    end
+
+    # MuseScore's MEI export writes one <instrDef> for a part, whatever it
+    # changes to.
+    def dropped_instrument_changes(summary, _flow)
+      summary.merge("parts" => summary["parts"].map { |part| part.except("instrument_changes") })
     end
 
     def directions_on_staff(summary, _flow)
@@ -176,7 +182,7 @@ describe HeadMusic::Notation::MEI do
 
       it "reads everything else as the MusicXML it was exported from" do
         summaries = [ours, theirs].map do |flow|
-          mei_music(flow).then { |music| music.merge("timeline" => music["timeline"].except("key_signature_changes"), "parts" => music["parts"].map { |part| part.except("voices") }) }
+          mei_music(flow).then { |music| music.merge("timeline" => music["timeline"].except("key_signature_changes"), "parts" => music["parts"].map { |part| part.except("voices", "instrument_changes") }) }
         end
         expect(summaries.last).to eq summaries.first
       end

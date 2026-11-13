@@ -13,8 +13,8 @@ module HeadMusic::Notation::MusicXML
     # The key and meter a measure states on its downbeat; the extent
     # its notes and forwards reach; and one division where it ends, the
     # rounding its extent may carry.
-    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tolerance, :clefs)
-    Reading = Struct.new(:document_part, :measures, :tracks, :staves, :part_symbol, :records) do
+    Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tolerance, :clefs, :instrument_id)
+    Reading = Struct.new(:document_part, :measures, :tracks, :staves, :part_symbol, :records, :opening_instrument_id) do
       def id
         document_part.id
       end
@@ -38,7 +38,7 @@ module HeadMusic::Notation::MusicXML
 
     def read
       measures = @document_part.measures.each_with_index.map { |measure, index| read_measure(measure, index) }
-      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.to_a, staves: @staves.most, part_symbol: @staves.part_symbol, records: @records)
+      Reading.new(document_part: @document_part, measures: measures, tracks: @tracks.to_a, staves: @staves.most, part_symbol: @staves.part_symbol, records: @records, opening_instrument_id: @opening_instrument_id)
     end
 
     private
@@ -61,7 +61,8 @@ module HeadMusic::Notation::MusicXML
       when "note" then read_note(element)
       when "backup" then read_move(element, -1)
       when "forward" then read_move(element, 1)
-      when "direction", "sound" then record_direction(element)
+      when "direction" then record_direction(element)
+      when "sound" then read_sound(element)
       when "barline" then note_record(:barline, element)
       end
     end
@@ -91,11 +92,31 @@ module HeadMusic::Notation::MusicXML
       @durations = @durations.with(meter: @measure.meter = attributes.meter) if attributes.meter
     end
 
+    def read_sound(element)
+      change = first_child(element, "instrument-change")
+      play_instrument(attribute(change, "id")) if change
+      record_direction(element)
+    end
+
+    # A measure keeps the first instrument to come into force in it, by its
+    # <score-instrument> id, as an <instrument-change> or a note names it.
+    # The first named opens the part, unless a note sounded before it.
+    def play_instrument(id)
+      return if id.nil? || id == @instrument_id
+
+      @opening_instrument_id = id unless @instrument_id || @sounded_unnamed
+      @instrument_id = id
+      @measure.instrument_id ||= id
+    end
+
     def record_direction(element)
       @timing.direction(note_record(:direction, element, cursor: @cursor, divisions: @durations.divisions))
     end
 
     def read_note(element)
+      instrument = first_child(element, "instrument")
+      play_instrument(attribute(instrument, "id")) if instrument
+      @sounded_unnamed ||= instrument.nil? && first_child(element, "rest").nil?
       note = NoteReader.read(element, **@where)
       if note.hidden
         read_hidden(note)

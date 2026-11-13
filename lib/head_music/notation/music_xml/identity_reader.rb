@@ -41,21 +41,36 @@ module HeadMusic::Notation::MusicXML
       name && HeadMusic::Content::Player.new(name: name)
     end
 
-    # A sound may be shared, so a name wins, but only one in the sound's
-    # family, since a part name such as "Soprano" may label a player.
-    def instrument(document_part)
-      score_part = document_part.score_part
-      score_instrument = score_part && first_child(score_part, "score-instrument")
-      return unless score_instrument
-
-      sound = text(score_instrument, "instrument-sound")
-      sounded = InstrumentSounds.instrument(sound)
-      family_key = sounded&.family_key || InstrumentSounds.family_key(sound)
-      found = chosen(instrument_names(score_part, score_instrument), sounded, family_key)
+    # The instrument a part opens with: the one its <score-instrument> of that
+    # id names, or its first, picked among variants by the part's first
+    # <transpose>.
+    def instrument(document_part, id = nil)
+      instruments = instruments(document_part)
+      found = instruments.key?(id) ? instruments[id] : instruments.values.first
       found && transposed_variant(found, document_part)
     end
 
+    # Each <score-instrument>'s instrument by id, nil where none resolves. A
+    # sound may be shared, so a name wins, but only one in the sound's family,
+    # since a part name such as "Soprano" may label a player. The part name
+    # names the instrument only where the part has one.
+    def instruments(document_part)
+      score_part = document_part.score_part
+      score_instruments = score_part ? children(score_part, "score-instrument") : []
+      part_name = text(score_part, "part-name") if score_instruments.one?
+      score_instruments.to_h do |score_instrument|
+        [attribute(score_instrument, "id"), score_instrument_instrument(score_instrument, part_name)]
+      end
+    end
+
     private
+
+    def score_instrument_instrument(score_instrument, part_name)
+      sound = text(score_instrument, "instrument-sound")
+      sounded = InstrumentSounds.instrument(sound)
+      family_key = sounded&.family_key || InstrumentSounds.family_key(sound)
+      chosen(instrument_names(score_instrument, part_name), sounded, family_key)
+    end
 
     def chosen(named, sounded, family_key)
       return sounded || named.first unless family_key
@@ -63,11 +78,11 @@ module HeadMusic::Notation::MusicXML
       named.find { |instrument| instrument.family_key == family_key } || sounded
     end
 
-    def instrument_names(score_part, score_instrument)
+    def instrument_names(score_instrument, part_name)
       virtual_instrument = first_child(score_instrument, "virtual-instrument")
       [
         text(score_instrument, "instrument-name"),
-        text(score_part, "part-name"),
+        part_name,
         virtual_instrument && text(virtual_instrument, "virtual-name")
       ].filter_map { |name| InstrumentNames.instrument(name) }
     end

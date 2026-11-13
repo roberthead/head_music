@@ -14,7 +14,7 @@ module HeadMusic::Notation::MusicXML
     def lines(part, index)
       [
         %(#{INDENT}<part id="P#{index + 1}">),
-        *bar_numbers.flat_map { |bar_number| measure_lines(part, bar_number) },
+        *bar_numbers.flat_map { |bar_number| measure_lines(part, index, bar_number) },
         "#{INDENT}</part>"
       ]
     end
@@ -43,12 +43,13 @@ module HeadMusic::Notation::MusicXML
       @navigation_writer ||= NavigationWriter.new(plan)
     end
 
-    def measure_lines(part, bar_number)
+    def measure_lines(part, index, bar_number)
       bar = plan.direction_plan(part).bar(bar_number)
       [
         measure_open_tag(bar_number),
         *barline_writer.left_lines(bar_number),
         *attributes_writer.lines(part, bar_number),
+        *instrument_change_lines(part, index, bar_number),
         *direction_writer.slot_lines(bar.part_slot),
         *navigation_writer.opening_lines(bar_number),
         *part_content_lines(part, bar),
@@ -57,6 +58,23 @@ module HeadMusic::Notation::MusicXML
         *barline_writer.right_lines(bar_number),
         "#{INDENT * 2}</measure>"
       ]
+    end
+
+    # The <transpose> of a change is written with the attributes; this says
+    # which instrument now plays, and how it sounds.
+    def instrument_change_lines(part, index, bar_number)
+      instrument = part.instrument_changes[bar_number]
+      id = instrument && ScoreInstruments.id_for(part, index, instrument)
+      return [] unless id
+
+      sound = InstrumentSounds.sound(instrument)
+      [
+        "#{INDENT * 3}<sound>",
+        %(#{INDENT * 4}<instrument-change id="#{id}">),
+        sound && "#{INDENT * 5}<instrument-sound>#{sound}</instrument-sound>",
+        "#{INDENT * 4}</instrument-change>",
+        "#{INDENT * 3}</sound>"
+      ].compact
     end
 
     # A <backup> before each voice after the first is how MusicXML writes

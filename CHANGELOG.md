@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- MusicXML keeps a part's instrument changes. The writer writes a `<score-instrument>` for each instrument a part plays, an `<instrument id>` on each of its notes, and a `<sound><instrument-change>` where it changes, as MuseScore 4 does; a change used to be written as its `<transpose>` alone and read back as a change of transposition. The reader takes a change from either a note's `<instrument>` or an `<instrument-change>`, from the downbeat of the bar it comes in. A part with several `<score-instrument>`s no longer takes its instrument from its part name. MuseScore 4 now reads the gem's instrument changes, and plays a transposed render's at each instrument's transposition.
 - MusicXML keeps every catalog instrument through a write and a read, with its transposition. The 23 instruments without a standard sound of their own, such as the clarinet in C, the trumpet in E♭, the Irish tenor banjo, the ukuleles, and the toms, used to be written with no `<score-instrument>` and read back with no instrument.
   - The writer writes a `<score-instrument>` with an `<instrument-name>` for every instrument. An instrument without a sound of its own writes the nearest standard one, as MuseScore and Dorico do: `wind.reed.clarinet` for the clarinet in C, `pluck.banjo.tenor` for the Irish tenor banjo. Only the synthesizer writes no sound.
   - The soprillo writes and reads `wind.reed.saxophone.sopranissimo`, and the maracas `rattle.maraca`.
