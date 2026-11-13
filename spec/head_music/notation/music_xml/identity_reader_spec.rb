@@ -114,7 +114,7 @@ describe HeadMusic::Notation::MusicXML::IdentityReader do
       expect(instrument_for(instrument_name: "clarinet in C")).to eq :clarinet_in_c
     end
 
-    it "reads a part name where the instrument name names nothing, as Finale writes" do
+    it "reads a part name where the instrument name names no instrument" do
       expect(instrument_for(part_name: "Clarinet in A", instrument_name: "SmartMusic SoftSynth", sound: "wind.reed.clarinet.bflat")).to eq :clarinet_in_a
     end
 
