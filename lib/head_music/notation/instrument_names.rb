@@ -1,8 +1,8 @@
-# A namespace for MusicXML-notation reading helpers
-module HeadMusic::Notation::MusicXML
-  # Finds the catalog instrument an instrument or part name names, in the
-  # forms other programs write: "C Clarinet" for the catalog's "clarinet in
-  # C", "Trumpet in Bb" for "trumpet", and "Violin 1" for "violin".
+# A module for visual music notation
+module HeadMusic::Notation
+  # Finds the catalog instrument an instrument, part, or staff name names, in
+  # the forms other programs write: "C Clarinet" for the catalog's "clarinet
+  # in C", "Trumpet in Bb" for "trumpet", and "Violin 1" for "violin".
   module InstrumentNames
     KEY = "[A-G](?:b|#|♭|♯|[- ]?flat|[- ]?sharp)?"
     PLAYER_NUMBER = /\s+(?:\d+|[IVX]+)\.?\z/
@@ -45,6 +45,14 @@ module HeadMusic::Notation::MusicXML
     def in_own_key(instrument, key)
       sounding = SEMITONES.fetch(key[0]) + {"♭" => -1, "♯" => 1}.fetch(key[1], 0)
       instrument if instrument && (instrument.sounding_transposition - sounding) % 12 == 0
+    end
+
+    # "Clarinet" written to sound a minor third low is the clarinet in A.
+    def variant(instrument, semitones)
+      return instrument if semitones.nil? || instrument.sounding_transposition == semitones
+
+      variants = HeadMusic::Instruments::Instrument.all.select { |variant| variant.parent_key.to_s == instrument.name_key.to_s }
+      variants.find { |variant| variant.sounding_transposition == semitones } || instrument
     end
 
     def get(name)

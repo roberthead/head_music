@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe HeadMusic::Notation::MusicXML::InstrumentNames do
+describe HeadMusic::Notation::InstrumentNames do
   {
     "clarinet in C" => :clarinet_in_c,
     "C Clarinet" => :clarinet_in_c,
@@ -37,5 +37,25 @@ describe HeadMusic::Notation::MusicXML::InstrumentNames do
   it "reads no catalog instrument name as another" do
     misread = HeadMusic::Instruments::Instrument.all.reject { |instrument| described_class.instrument(instrument.name) == instrument }
     expect(misread.map(&:name_key)).to be_empty
+  end
+
+  describe ".variant" do
+    let(:clarinet) { HeadMusic::Instruments::Instrument.get("clarinet") }
+
+    it "picks the variant that sounds the transposition given" do
+      expect(described_class.variant(clarinet, -3).name_key).to eq :clarinet_in_a
+    end
+
+    it "keeps the instrument when it already sounds the transposition" do
+      expect(described_class.variant(clarinet, -2)).to eq clarinet
+    end
+
+    it "keeps the instrument when no transposition is given" do
+      expect(described_class.variant(clarinet, nil)).to eq clarinet
+    end
+
+    it "keeps the instrument when no variant sounds the transposition" do
+      expect(described_class.variant(clarinet, 5)).to eq clarinet
+    end
   end
 end

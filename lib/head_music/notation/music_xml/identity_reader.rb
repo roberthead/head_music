@@ -84,16 +84,11 @@ module HeadMusic::Notation::MusicXML
         text(score_instrument, "instrument-name"),
         part_name,
         virtual_instrument && text(virtual_instrument, "virtual-name")
-      ].filter_map { |name| InstrumentNames.instrument(name) }
+      ].filter_map { |name| HeadMusic::Notation::InstrumentNames.instrument(name) }
     end
 
-    # "Clarinet" transposing a minor third down is the clarinet in A.
     def transposed_variant(instrument, document_part)
-      semitones = first_transposition(document_part)&.semitones
-      return instrument if semitones.nil? || instrument.sounding_transposition == semitones
-
-      variants = HeadMusic::Instruments::Instrument.all.select { |variant| variant.parent_key.to_s == instrument.name_key.to_s }
-      variants.find { |variant| variant.sounding_transposition == semitones } || instrument
+      HeadMusic::Notation::InstrumentNames.variant(instrument, first_transposition(document_part)&.semitones)
     end
 
     def first_transposition(document_part)
