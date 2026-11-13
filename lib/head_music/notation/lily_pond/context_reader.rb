@@ -70,9 +70,12 @@ module HeadMusic::Notation::LilyPond
     # \new Dynamics after it governs.
     def read_staff_or_voice(opener, type, name, context)
       streams_before = document.streams.dup
+      instrument_name = with_role
       child = VoiceContext.new(
-        document, role(context, type, name), explicit: true, group_staff: group_staff(context, type, name)
+        document, role(context, type, name, instrument_name), explicit: true,
+        group_staff: group_staff(context, type, name), staff: ungrouped_staff(context, type, instrument_name)
       )
+      child.stream.voice_name = instrument_name || name if type.lexeme == "Voice"
       child.stream.numeric_time_signature = context.stream.numeric_time_signature
       child.stream.change_transposition(context.stream.transposition, nil) if context.stream.transposition
       music.nested(opener) { music.read_expression(child) }
@@ -102,8 +105,14 @@ module HeadMusic::Notation::LilyPond
     # A Voice with no name of its own belongs to the staff that holds it. In
     # a staff group, where staves carry no instrument name, a Voice's context
     # name is its role.
-    def role(context, type, name)
-      with_role || (voice_role(context, name) if type.lexeme == "Voice")
+    def role(context, type, name, instrument_name)
+      instrument_name || (voice_role(context, name) if type.lexeme == "Voice")
+    end
+
+    def ungrouped_staff(context, type, instrument_name)
+      return context.staff if type.lexeme == "Voice"
+
+      document.add_staff(instrument_name) unless context.group
     end
 
     def voice_role(context, name)

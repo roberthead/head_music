@@ -44,7 +44,10 @@ module HeadMusic::Notation::LilyPond
     UNFOLLOWED_TIE = "A tie must be followed by a note"
 
     attr_reader :role, :events, :opening_clef, :transposition, :opening_transposition
-    attr_accessor :group_staff, :dynamics_target, :tuplet_span, :numeric_time_signature
+    # A staff is the ungrouped \new Staff the voice is read in, and a voice
+    # name the Voice's own name, which is its role where its staff holds
+    # other voices too.
+    attr_accessor :group_staff, :dynamics_target, :tuplet_span, :numeric_time_signature, :staff, :voice_name
 
     def initialize(role = nil)
       @role = role

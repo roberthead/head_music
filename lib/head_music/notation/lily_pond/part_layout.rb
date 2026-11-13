@@ -1,9 +1,10 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # The parts, staves, and voices of a flow that a document's streams go to.
-  # A stream outside a staff group is a voice, and a part, of its own. A
-  # staff group is one part, whose staff system holds the group's staves in
-  # order.
+  # A stream outside a staff group is a voice, and a part, of its own, unless
+  # its staff holds other voices too: a staff is one part, named for its
+  # instrument, whose voices are named for their roles. A staff group is one
+  # part, whose staff system holds the group's staves in order.
   class PartLayout
     def initialize(flow, document)
       @flow = flow
@@ -12,6 +13,7 @@ module HeadMusic::Notation::LilyPond
       @parts_by_group = {}.compare_by_identity
       @staves_by_group_staff = {}.compare_by_identity
       @staves_by_name = {}.compare_by_identity
+      @parts_by_staff = {}.compare_by_identity
     end
 
     # A silent staff keeps its place in the system without a voice, since
@@ -33,20 +35,29 @@ module HeadMusic::Notation::LilyPond
       staves_by_name.fetch(part, {})[name]
     end
 
-    # A staff outside a group may hold several voices, each read as a part of
-    # its own, so its dynamics go to each of them.
     def dynamics_parts(target)
       return [parts_by_group[target]].compact if target.is_a?(Document::Group)
 
-      target.filter_map { |stream| voices_by_stream[stream]&.part }
+      target.filter_map { |stream| voices_by_stream[stream]&.part }.uniq
     end
 
     private
 
-    attr_reader :flow, :document, :voices_by_stream, :parts_by_group, :staves_by_group_staff, :staves_by_name
+    attr_reader :flow, :document, :voices_by_stream, :parts_by_group, :staves_by_group_staff, :staves_by_name, :parts_by_staff
 
     def ungrouped_voice(stream)
-      voices_by_stream[stream] = flow.add_voice(role: stream.role)
+      streams = stream.staff ? document.staff_streams(stream.staff) : [stream]
+      return voices_by_stream[stream] = flow.add_voice(role: stream.role) if streams.one?
+
+      part = parts_by_staff[stream.staff] ||= flow.add_part(instrument: staff_instrument(stream.staff, streams.first))
+      voices_by_stream[stream] = part.add_voice(role: stream.voice_name)
+    end
+
+    # The name may say only "Clarinet", leaving the opening \transposition to
+    # say which one.
+    def staff_instrument(staff, first_stream)
+      instrument = HeadMusic::Notation::InstrumentNames.instrument(staff.name)
+      instrument && HeadMusic::Notation::InstrumentNames.variant(instrument, first_stream.opening_transposition&.semitones)
     end
 
     def part_for(group)

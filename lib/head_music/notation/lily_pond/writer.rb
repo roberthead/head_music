@@ -134,12 +134,12 @@ module HeadMusic::Notation::LilyPond
       case part.voices.length
       when 0 then staff_block(staff_open(part_name(part), "{"), [voice_block(voice_writer.silent_lines(staff, part: part))], "}")
       when 1 then staff_block(staff_open(part.voices.first.role, "{"), [voice_block(voice_writer.lines(part.voices.first, staff: staff))], "}")
-      else staff_block(staff_open(part_name(part), "<<"), part.voices.map { |voice| voice_block(voice_writer.lines(voice, staff: staff)) }, ">>")
+      else staff_block(staff_open(part_name(part), "<<"), part.voices.map { |voice| voice_block(voice_writer.lines(voice, staff: staff), name: voice.role) }, ">>")
       end
     end
 
     # A staff of several voices, or of none, is named for its part rather than
-    # for any one voice's role.
+    # for any one voice's role, and each of several voices for its role.
     def part_name(part)
       part.player&.name || part.instrument&.name
     end

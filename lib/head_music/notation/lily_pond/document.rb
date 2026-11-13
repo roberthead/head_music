@@ -10,6 +10,9 @@ module HeadMusic::Notation::LilyPond
     # order. A staff's name is what a \change Staff command refers to.
     Group = Struct.new(:bracket, :staves)
     GroupStaff = Struct.new(:group, :name)
+    # A \new Staff outside a group, which is one part however many voices
+    # it holds. Its name is its instrumentName.
+    Staff = Struct.new(:name)
 
     attr_accessor :title, :composer
     attr_reader :streams, :groups, :dynamics_streams
@@ -26,6 +29,15 @@ module HeadMusic::Notation::LilyPond
 
     def add_group_staff(group, name)
       GroupStaff.new(group, name).tap { |staff| group.staves << staff }
+    end
+
+    def add_staff(name)
+      Staff.new(name)
+    end
+
+    # The voice streams read inside an ungrouped staff.
+    def staff_streams(staff)
+      streams.select { |stream| stream.staff.equal?(staff) }
     end
 
     def add_stream(role = nil)

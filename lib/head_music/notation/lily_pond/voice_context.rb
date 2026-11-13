@@ -6,18 +6,20 @@ module HeadMusic::Notation::LilyPond
   # \new Staff { } is a legitimate silent voice). A Dynamics context yields
   # dynamics for a part rather than a voice.
   class VoiceContext
-    attr_reader :role, :stream, :group, :group_staff
+    attr_reader :role, :stream, :group, :group_staff, :staff
     attr_accessor :children, :preceding_staff
 
     # A group is the \new PianoStaff or \new StaffGroup this context is; a
     # group staff is the staff of one that this context's music is written on.
     # The preceding staff is the last staff or group read among this context's
     # children, which a \new Dynamics beside it belongs to.
-    def initialize(document, role, explicit:, group: nil, group_staff: nil, dynamics_target: nil)
+    def initialize(document, role, explicit:, group: nil, group_staff: nil, staff: nil, dynamics_target: nil)
       @document = document
       @role = role
       @stream = dynamics_target ? document.add_dynamics_stream(dynamics_target) : document.add_stream(role)
       @stream.group_staff = group_staff
+      @stream.staff = staff
+      @staff = staff
       @explicit = explicit
       @group = group
       @group_staff = group_staff
