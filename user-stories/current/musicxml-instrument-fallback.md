@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-13T09:13:00-05:00
+  updated_at:   2026-11-13T09:24:32-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -45,6 +45,13 @@ SO THAT a part for an Irish tenor banjo, a clarinet in C, or a trumpet in E♭ r
   B♭" → trumpet, "Horn in F" → French horn).
 - The CHANGELOG notes the change, including any part that used to read as one
   instrument and now reads as another.
+- **Added 2026-11-13, from review finding 6:** a part that changes
+  instrument keeps every instrument through a MusicXML write and read, each
+  from the bar it starts in, at concert pitch and transposed. The writer
+  writes a `<score-instrument>` for each instrument the part plays, an
+  `<instrument id>` on each of its notes, and a `<sound><instrument-change>`
+  where it changes, as MuseScore 4 does. The reader takes a change from
+  either. MuseScore 4 reads the gem's render with its instrument changes.
 
 ## Notes
 
@@ -266,6 +273,62 @@ None. One new YAML section, or file, for the written sounds.
 - **Schema:** documents with a sound-less, a shared-sound, and a transposed
   instrument validate against the MusicXML 4.0 XSD, as does
   `writer_schema_spec.rb` with `MUSICXML_XSD` set.
+
+## Implementation Plan: Instrument Changes
+
+Added after review finding 6 showed that the only part in 693 real and
+fixture files whose `<transpose>` changes is one that changes instrument,
+and that MusicXML does not carry instrument changes (MEI does). The
+musicxml-import story left this as a follow-up.
+
+**How the format carries a change.** The schema's `<instrument-change>`
+(inside `<sound>`) points at a `<score-instrument>` and may restate its
+sound. MuseScore 4 exports a change as `<print>` with the new part name,
+`<attributes><transpose>`, and `<sound><instrument-change id="P1-I2">`, and
+writes `<instrument id>` on every note of a part with more than one
+instrument (`exportmusicxml.cpp` 4420, 8159). Its importer finds changes
+from the notes' `<instrument id>` alone (`importmusicxmlpass2.cpp` 690-745).
+
+### Steps
+
+1. **Ids.** One `<score-instrument>` per `Part#instruments` entry, in the
+   order first played, id `P{part}-I{n}`. Shared by writer and note writer.
+2. **Writer** (`writer.rb`, `score_instrument_lines`): a `<score-instrument>`
+   for each instrument.
+3. **Change** (`part_writer.rb`, after the attributes): at each bar in
+   `Part#instrument_changes`, `<sound><instrument-change id>` with the new
+   instrument's sound. The `<transpose>` change is already written.
+4. **Notes** (`note_writer.rb`, `element_lines`): `<instrument id>` after
+   the ties and before `<voice>` on each sounding note, chord members
+   included, when the part plays more than one instrument. Rests and grace
+   notes carry none.
+5. **Reader, identities** (`identity_reader.rb`): resolve every
+   `<score-instrument>` by its own name and sound, keyed by id. `<part-name>`
+   counts only for a part with one `<score-instrument>`, since it names the
+   part, not each instrument. The opening instrument keeps the
+   `<transpose>` variant pick.
+6. **Reader, changes** (`part_reader.rb`): each measure records the first
+   instrument id coming into force in it, from a `<sound><instrument-change>`
+   or a note's `<instrument>`.
+7. **Roster** (`part_roster.rb`): the opening instrument is the first id in
+   force, else the first `<score-instrument>`. A later id differing from the
+   one in force changes the instrument at that measure's downbeat bar,
+   through `BarMap#downbeat_bar` as `ClefChanges` does. A change inside a
+   split bar is skipped, as a clef change is.
+8. **Fixtures:** regenerate `clarinet_changes*.head_music.musicxml` and their
+   MuseScore 4 conversions (`rake music_xml:musescore_fixtures`), and update
+   the README's note on what MuseScore keeps.
+9. **Specs:** drop the round-trip spec's `changes_instrument` exclusion.
+   Writer specs for the ids, notes, and change; reader specs for changes from
+   `<instrument-change>` alone, from notes alone, and from a return to the
+   first instrument; the MuseScore 4 conversion reading the changes back.
+
+### Risks
+
+- A variant pick for a changed instrument by its `<transpose>` is left out.
+  A changed instrument resolves by its name and sound only.
+- Bar granularity: the model changes instruments at a bar, so a change in
+  the middle of a measure applies from that measure.
 
 ## Review
 
