@@ -4,12 +4,18 @@ require "rubocop/rake_task"
 
 RuboCop::RakeTask.new
 
-# The block runs when the task does, just before rspec is launched.
-RSpec::Core::RakeTask.new(:spec) { ENV["COVERAGE"] = "true" }
+# One process per core, each file placed by its runtime in the last run
+# (tmp/parallel_runtime_rspec.log); SimpleCov merges the processes' coverage.
+desc "Run the specs in parallel with coverage"
+task :spec do
+  sh({"COVERAGE" => "true"}, "bundle exec parallel_rspec spec")
+end
 
 # Coverage slows a run considerably, so validation leaves it to `rake spec` and CI.
-desc "Run RSpec code examples without coverage"
-RSpec::Core::RakeTask.new("spec:without_coverage")
+desc "Run the specs in parallel without coverage"
+task "spec:without_coverage" do
+  sh "bundle exec parallel_rspec spec"
+end
 
 begin
   require "yard"

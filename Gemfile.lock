@@ -103,6 +103,8 @@ GEM
       prism (>= 1.5, < 3)
     ostruct (0.6.3)
     parallel (2.3.0)
+    parallel_tests (5.9.0)
+      parallel
     parser (3.3.13.0)
       ast (~> 2.4.1)
       racc
@@ -220,6 +222,7 @@ DEPENDENCIES
   bundler-audit (~> 0.9, >= 0)
   head_music!
   kramdown
+  parallel_tests
   rake (~> 13.0)
   rspec (~> 3.0)
   rspec-its (~> 2.0)

@@ -58,7 +58,8 @@ module ConfiguredGuideHelper
 end
 
 RSpec.configure do |config|
-  config.example_status_persistence_file_path = "spec/examples.txt"
+  # parallel_rspec numbers its processes; the first, like a serial run, has none.
+  config.example_status_persistence_file_path = "spec/examples#{ENV["TEST_ENV_NUMBER"]}.txt"
   config.include ConfiguredGuidelineHelper
   config.include ConfiguredGuideHelper
 

@@ -6,7 +6,7 @@
 /pkg/
 /spec/reports/
 /tmp/
-/spec/examples.txt
+/spec/examples*.txt
 *.gem
 .DS_Store
 
