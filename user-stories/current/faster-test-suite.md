@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T14:25:06-05:00
   planned_at:   2026-11-12T16:44:02-05:00
   finished_at:
-  updated_at:   2026-11-12T21:05:15-05:00
+  updated_at:   2026-11-12T21:12:20-05:00
 -->
 
 # Story: Faster Test Suite
@@ -178,3 +178,52 @@ merged report, compared with the baseline.
   measure under the same load note as the baseline.
 - `--only-failures` reads one status file. With one file per process, it
   misses a parallel run's failures unless the files are read together.
+
+## Review
+
+Reviewed 2026-11-12 at `eb3e439d`, by an independent agent, with each
+finding confirmed in the source.
+
+| Criterion | Verdict | Evidence |
+| --- | --- | --- |
+| Baseline recorded | ⚠️ | `rake spec` and the profile are recorded. `rake validate` appears only as a sum of steps (about 5m20s), and the 3m45s "before" for `bin/validate` in `## After` is the uncovered serial run, which the Baseline section never lists. |
+| Where the time goes | ✅ | `## Where the Time Goes` |
+| `rake spec` under 90s | ✅ | 43s, and 47.6s on the reviewer's rerun at load 9 |
+| `bin/validate` under 2 minutes | ✅ | 49s, and 51.7s on the reviewer's rerun at load 32 |
+| No loss of coverage | ✅ | merged from 10 processes: 99.77% / 95.28%; `minimum_coverage 90` at `spec/spec_helper.rb:13`; a raised minimum fails the run |
+| CI stays serial | ✅ | `.github/workflows/ci.yml` unchanged; it never reads `.rspec_parallel` |
+| CLAUDE.md reflects the change | ⚠️ | `rake spec:without_coverage` is not listed, and two statements are inaccurate (findings 3 and 4) |
+
+### Findings
+
+1. **Stale comment.** `spec/spec_helper.rb:3-4` still says `rake validate`
+   sets `COVERAGE`.
+2. **`rake spec SPEC=...` is silently ignored.** The tasks are plain `sh`
+   calls, and parallel_tests never reads `SPEC`, so the whole suite runs.
+   `RSpec::Core::RakeTask` used to honor it.
+3. **The `--only-failures` note in CLAUDE.md is wrong.** RSpec keeps statuses
+   for files a run did not load. `spec/examples.txt` therefore holds 670
+   files: process 1's fresh results plus stale ones from the last serial
+   run. A rerun after a parallel run replays old failures and misses new
+   ones from processes 2–10.
+4. **Doc inaccuracies:**
+   - CI checks coverage only on pushes to `main` and on PRs, in one matrix
+     leg, not "on every push".
+   - Grouping by runtime falls back to file size when the log covers too
+     few files (`runtimes.size * 1.5 > tests.size`), which the `Rakefile`
+     comment does not say.
+   - Plan step 5's `--group-by runtime` flag was not used; auto-detection
+     is.
+5. **Stale coverage results.** A leftover serial coverage result in
+   `coverage/.resultset.json` caused 10 "older than merge_timeout"
+   warnings. If that result were newer than 10 minutes, it would be merged
+   into the total and could hide a drop. Inferred from SimpleCov's
+   behavior, not reproduced.
+6. **Minor:**
+   - `spec:without_coverage` inherits `COVERAGE` from the shell; the
+     `sh({"COVERAGE" => nil}, ...)` pattern already in the `Rakefile` would
+     prevent that.
+   - `parallel_tests` sits under the `Gemfile` comment about rubocop, which
+     reads as if it explains the new line.
+
+None blocks `finish` on the criteria. Findings 1–4 and 6 are small fixes.
