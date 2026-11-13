@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T14:25:06-05:00
   planned_at:   2026-11-12T16:44:02-05:00
   finished_at:
-  updated_at:   2026-11-12T21:12:20-05:00
+  updated_at:   2026-11-12T21:21:42-05:00
 -->
 
 # Story: Faster Test Suite
@@ -68,6 +68,7 @@ about 220% CPU throughout (load average near 5). Examples: 18,871.
 | `rake bundle:audit:check` | 0.6s |
 | `rake rubycritic` | 17s |
 | `rake validate` (sum of the above steps) | about 5m20s |
+| `bin/validate`, specs without coverage, still serial (after 5ba3c7de) | 3m45s |
 | Boot (`require "spec_helper"`) | 0.7s |
 
 The earlier 10m06s and 19m31s runs were under heavier, unrecorded load, so
@@ -142,8 +143,8 @@ the same change. `bundle exec rspec` stays serial for running a single file.
    streams are unreadable. Check whether `.rspec`'s `--format documentation`
    still applies under `parallel_rspec`; if it does, override it there
    rather than changing `.rspec`, which serves single-file runs.
-5. **Group by runtime.** Pass `--group-by runtime` with that log once it
-   exists, falling back to file size on the first run. The log stays in
+5. **Group by runtime.** Leave grouping to parallel_tests, which uses that
+   log when it covers enough files and file size otherwise. The log stays in
    `tmp/` (ignored); a stale or missing log only makes the split less even.
 6. **Point the tasks at it.** In `Rakefile`, make `spec` run
    `parallel_rspec spec` with `COVERAGE=true`, and make
@@ -227,3 +228,24 @@ finding confirmed in the source.
      reads as if it explains the new line.
 
 None blocks `finish` on the criteria. Findings 1–4 and 6 are small fixes.
+
+### Resolution
+
+Fixed in 72802b82, and verified by running each case:
+
+- `SPEC=path` narrows the run (4 processes for 4 files).
+- A planted failure from a parallel run is the one example
+  `rspec --only-failures` reruns, and its entry is dropped once the file
+  is gone.
+- The resultset is cleared before a coverage run, so the merge_timeout
+  warnings are gone.
+- `COVERAGE` is unset for `spec:without_coverage`.
+- The docs and comments are corrected, and the Baseline now lists the
+  3m45s run.
+
+Testing showed one more problem: a narrowed run replaced the runtime log
+with its own few files, so the next full `rake spec` grouped by file size
+and took 90s. A narrowed run now merges its timings into the log, which
+keeps all 656 entries. Afterward, `rake spec` took 45s and `bin/validate`
+57s (at load 30), with 18,871 examples, 0 failures, and coverage of
+99.77% / 95.28%.
