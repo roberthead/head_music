@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-13T09:24:32-05:00
+  updated_at:   2026-11-13T09:36:44-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -330,6 +330,23 @@ from the notes' `<instrument id>` alone (`importmusicxmlpass2.cpp` 690-745).
 - Bar granularity: the model changes instruments at a bar, so a change in
   the middle of a measure applies from that measure.
 
+### Implementation notes (`84730f04`)
+
+- **The opening instrument** is the first one named, unless a note sounded
+  before any was named. A file that names instruments only at
+  `<instrument-change>` opens with its first `<score-instrument>`.
+- **MuseScore 4 is the oracle.** Converting the new renders, it keeps all
+  three instruments, writing them back in its own form, and plays the
+  transposed render at each instrument's transposition. The round-trip
+  spec's exclusion and the MIDI oracle's exclusion are gone.
+- **What MuseScore's transposed conversion still loses:** it writes no
+  `<transpose>` back to 0 for the flute, so its bars read a minor third low,
+  and it writes bar 3's key before that bar's `<transpose>`, so the key reads
+  under the B-flat transposition. Both are pinned in
+  `music_xml_real_files_spec.rb`.
+- **MuseScore's MEI export** drops instrument changes (one `<instrDef>`), as
+  before; `mei_real_files_spec.rb` lists that loss.
+
 ## Review
 
 2026-11-13, at `aa0478f5`. An independent agent read the branch, and each finding
@@ -387,4 +404,7 @@ which settles 7. 3 in `3fba1552`: a general sound outside the table, such as
 `wind.reed.saxophone`, holds names to the family its more specific sounds
 share (only it, `drum.group`, and `pluck.bass` have one). 5 in `5b9518f3`:
 Instrument and InstrumentFamily keep nothing for a name that matches
-nothing. 6 is left as it is.
+nothing. 6: none of the 37 transposing parts in 693 corpus and fixture files has a
+numbered or later `<transpose>` but one, our own clarinet_changes, which
+changes instrument; MusicXML instrument changes were added to the story and
+implemented in `84730f04`.
