@@ -9,7 +9,17 @@ module HeadMusic::Named
       name = name.to_s
       @instances ||= {}
       key = HeadMusic::Utilities::HashKey.for(name)
-      @instances[key] ||= new(name)
+      @instances.fetch(key) do
+        instance = new(name)
+        @instances[key] = instance if recognized?(instance)
+        instance
+      end
+    end
+
+    # A class whose lookups can fail says so here, so that a name matching
+    # nothing is not kept.
+    def recognized?(_instance)
+      true
     end
   end
 

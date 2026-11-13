@@ -30,6 +30,10 @@ class HeadMusic::Instruments::InstrumentFamily
     result || new(name)
   end
 
+  def self.recognized?(family)
+    !family.name_key.nil?
+  end
+
   def self.all
     INSTRUMENT_FAMILIES.map { |key, _data| get(key) }
     @all ||= @instances.values.compact.sort_by(&:name)

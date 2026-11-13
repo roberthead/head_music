@@ -41,6 +41,10 @@ class HeadMusic::Instruments::Instrument
       find_valid_instrument(name_str) || find_valid_instrument(normalize_variant_name(name_str))
     end
 
+    def recognized?(instrument)
+      !instrument.name_key.nil?
+    end
+
     def find_valid_instrument(name)
       instrument = get_by_name(name)
       instrument&.name_key ? instrument : nil

@@ -1,6 +1,16 @@
 require "spec_helper"
 
 describe HeadMusic::Instruments::Instrument do
+  describe ".get_by_name" do
+    it "keeps a recognized instrument" do
+      expect(described_class.get_by_name("Oboe")).to be described_class.get_by_name("oboe")
+    end
+
+    it "keeps nothing for a name that matches no instrument" do
+      expect(described_class.get_by_name("no such instrument")).not_to be described_class.get_by_name("no such instrument")
+    end
+  end
+
   describe ".get" do
     subject(:result) { described_class.get(*arguments) }
 

@@ -2,6 +2,10 @@ require "spec_helper"
 
 describe HeadMusic::Instruments::InstrumentFamily do
   describe ".get" do
+    it "keeps nothing for a name that matches no family" do
+      expect(described_class.get("no such family")).not_to be described_class.get("no such family")
+    end
+
     context "when given an instance" do
       let(:instance) { described_class.get("oboe") }
 
