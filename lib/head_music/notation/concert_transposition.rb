@@ -11,6 +11,14 @@ module HeadMusic::Notation
   # +errors+ UnsupportedFeatureError.
   class ConcertTransposition
     Step = Data.define(:diatonic, :chromatic, :octaves) do
+      # The step that makes a written middle C sound the pitch given.
+      def self.sounding(pitch)
+        semitones = pitch.midi_note_number - 60
+        steps = PitchSpelling::STEPS.index(pitch.letter_name.to_s) + 7 * (pitch.register - 4)
+        octaves = semitones.abs.div(12) * (semitones <=> 0)
+        new(diatonic: steps - 7 * octaves, chromatic: semitones - 12 * octaves, octaves: octaves)
+      end
+
       def identity?
         diatonic.zero? && chromatic.zero? && octaves.zero?
       end

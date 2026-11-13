@@ -74,6 +74,7 @@ module HeadMusic::Notation::LilyPond
         document, role(context, type, name), explicit: true, group_staff: group_staff(context, type, name)
       )
       child.stream.numeric_time_signature = context.stream.numeric_time_signature
+      child.stream.change_transposition(context.stream.transposition, nil) if context.stream.transposition
       music.nested(opener) { music.read_expression(child) }
       child.close
       context.preceding_staff = document.streams - streams_before if type.lexeme == "Staff"

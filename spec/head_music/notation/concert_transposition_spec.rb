@@ -38,6 +38,22 @@ describe HeadMusic::Notation::ConcertTransposition do
     expect([transposition.concert(pitch("C4"), 1), transposition.concert(pitch("C4"), 2)].map(&:to_s)).to eq %w[C4 C3]
   end
 
+  describe "Step.sounding" do
+    {
+      "B♭3" => [-1, -2, 0], "A3" => [-2, -3, 0], "F3" => [-4, -7, 0], "E♭4" => [2, 3, 0],
+      "B♭2" => [-1, -2, -1], "C5" => [0, 0, 1], "C3" => [0, 0, -1], "C♭5" => [7, 11, 0], "B♯3" => [-1, 0, 0]
+    }.each do |name, (diatonic, chromatic, octaves)|
+      it "takes a written C4 to #{name}" do
+        expect(described_class::Step.sounding(pitch(name))).to eq step(diatonic, chromatic, octaves)
+      end
+    end
+
+    it "sounds a written C5 as B♭4 when C4 sounds B♭3" do
+      transposition.change(nil, described_class::Step.sounding(pitch("B♭3")))
+      expect(transposition.concert(pitch("C5"), 1).to_s).to eq "B♭4"
+    end
+  end
+
   it "moves a key round the circle of fifths" do
     transposition.change(nil, step(-1, -2))
     expect(transposition.concert_fifths(2)).to eq 0

@@ -12,11 +12,12 @@ module HeadMusic::Notation::LilyPond
 
     Event = Data.define(
       :kind, :line, :pitches, :rhythmic_duration, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks,
-      :bar_mark, :tuplet, :graces, :tempo
+      :bar_mark, :tuplet, :graces, :tempo, :written_key_signature
     ) do
       def initialize(
         kind:, line:, pitches: nil, rhythmic_duration: nil, fraction: nil, key_signature: nil, meter: nil,
-        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil, graces: [], tempo: nil
+        staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil, graces: [], tempo: nil,
+        written_key_signature: nil
       )
         super
       end
@@ -42,7 +43,7 @@ module HeadMusic::Notation::LilyPond
 
     UNFOLLOWED_TIE = "A tie must be followed by a note"
 
-    attr_reader :role, :events, :opening_clef
+    attr_reader :role, :events, :opening_clef, :transposition, :opening_transposition
     attr_accessor :group_staff, :dynamics_target, :tuplet_span, :numeric_time_signature
 
     def initialize(role = nil)
@@ -51,6 +52,7 @@ module HeadMusic::Notation::LilyPond
       @pending_note = nil
       @pending_graces = GraceReader::NONE
       @tie_open = false
+      @concert = HeadMusic::Notation::ConcertTransposition.new(errors: HeadMusic::Notation::LilyPond)
     end
 
     def music?
@@ -59,6 +61,7 @@ module HeadMusic::Notation::LilyPond
     end
 
     def add_note(pitches, rhythmic_value, line, marks = MarkReader::NONE)
+      pitches = concert(pitches, line)
       rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(under_tuplet(rhythmic_value))
       graces = @pending_graces
       @pending_graces = GraceReader::NONE
@@ -77,7 +80,7 @@ module HeadMusic::Notation::LilyPond
     def add_graces(graces)
       return if graces.graces.empty?
 
-      @pending_graces += graces
+      @pending_graces += graces.with(graces: graces.graces.map { |grace| grace.with(pitches: concert(grace.pitches)) })
     end
 
     def add_rest(rhythmic_value, line, marks = MarkReader::NONE)
@@ -132,8 +135,19 @@ module HeadMusic::Notation::LilyPond
       mark(line, kind: :bar_check)
     end
 
+    # A key is written, so it sounds where the transposition puts it.
     def change_key_signature(key_signature, line)
-      mark(line, kind: :key, key_signature: key_signature)
+      mark(line, kind: :key, key_signature: concert_key(key_signature, line), written_key_signature: key_signature)
+    end
+
+    # \transposition names where a written c' sounds, so the pitches written
+    # after it move by that much to sound. A key written just before it, with
+    # no music between, is the transposed instrument's, as LilyPond prints it.
+    def change_transposition(step, line)
+      @opening_transposition ||= step unless started?
+      @transposition = step
+      @concert.change(nil, step)
+      resettle_keys(line)
     end
 
     def change_meter(meter, line)
@@ -180,6 +194,32 @@ module HeadMusic::Notation::LilyPond
     end
 
     private
+
+    def started?
+      !@pending_note.nil? || events.any?(&:music?)
+    end
+
+    def concert(pitches, line = nil)
+      pitches.map { |pitch| @concert.concert(pitch, nil, line_number: line) }
+    end
+
+    def concert_key(key_signature, line)
+      return key_signature unless @transposition
+
+      tonic = @concert.concert(HeadMusic::Rudiment::Pitch.get("#{key_signature.tonic_spelling}4"), nil, line_number: line)
+      HeadMusic::Rudiment::KeySignature.new(tonic.spelling, key_signature.scale_type)
+    end
+
+    def resettle_keys(line)
+      return if @pending_note
+
+      index = events.length
+      index -= 1 while index.positive? && !events[index - 1].music?
+      (index...events.length).each do |position|
+        event = events[position]
+        events[position] = event.with(key_signature: concert_key(event.written_key_signature, line)) if event.kind == :key
+      end
+    end
 
     def silent(line, **attributes)
       @pending_graces = GraceReader::NONE

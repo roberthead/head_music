@@ -21,9 +21,6 @@ module HeadMusic::Notation::LilyPond
       neutral_clef: "percussion"
     }.freeze
 
-    # \transposition names the sounding pitch of a written middle C.
-    MIDDLE_C = "C4"
-
     def initialize(plan)
       @plan = plan
       @time_signatures = TimeSignatureWriter.new(plan)
@@ -93,8 +90,7 @@ module HeadMusic::Notation::LilyPond
       instrument = part&.instrument_at(first_bar_number)
       return [] unless instrument&.transposing?
 
-      sounding = HeadMusic::Content::Layout::Transposition.for(instrument).sounding(MIDDLE_C)
-      ["\\transposition #{PitchWriter.token(sounding)}"]
+      [plan.transposition_command(instrument)]
     end
 
     # A bar's marks are written in every voice, as LilyPond expects of \bar
@@ -131,7 +127,11 @@ module HeadMusic::Notation::LilyPond
     def change_commands(part, bar_number)
       return [] if bar_number == first_bar_number
 
-      [plan.measure_key_changes(part)[bar_number], time_signatures.command(bar_number)].compact
+      [
+        plan.transposition_changes(part)[bar_number],
+        plan.measure_key_changes(part)[bar_number],
+        time_signatures.command(bar_number)
+      ].compact
     end
 
     # Emitted at exactly the bars the voice's staff-assignment map holds events

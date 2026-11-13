@@ -6,6 +6,8 @@ module HeadMusic::Notation::LilyPond
   # on unmappable keys, durations, or alterations, so a RenderPlan that builds successfully
   # cannot fail assembly on those grounds.
   class RenderPlan < HeadMusic::Notation::RenderPlan
+    MIDDLE_C = "C4"
+
     def tokens_by_segment
       @tokens_by_segment ||= flow.voices.each_with_object({}) { |voice, tokens| tokens.merge!(segment_tokens(voice).to_h) }
     end
@@ -45,6 +47,25 @@ module HeadMusic::Notation::LilyPond
         text = SpacerRun.new(bar_number, 0r, bar_length(bar_number), part_marks(part).trailing(bar_number, 0r)).to_s
         [bar_number, [text, (bar_number == bar_numbers.last) ? final_barline_marks(part) : nil].compact.join(" ")]
       end
+    end
+
+    # Where a written c' sounds, restated wherever the part's instrument
+    # changes it, back to c' for an instrument in C.
+    def transposition_changes(part)
+      return {} unless transposed? && part
+
+      @transposition_changes ||= {}.compare_by_identity
+      @transposition_changes[part] ||= part.instrument_changes.keys
+        .select { |bar_number| bar_numbers.cover?(bar_number) && bar_number > bar_numbers.first }
+        .filter_map { |bar_number|
+          command = transposition_command(part.instrument_at(bar_number))
+          [bar_number, command] unless command == transposition_command(part.instrument_at(bar_number - 1))
+        }.to_h
+    end
+
+    def transposition_command(instrument)
+      sounding = HeadMusic::Content::Layout::Transposition.for(instrument).sounding(MIDDLE_C)
+      "\\transposition #{PitchWriter.token(sounding)}"
     end
 
     # Whether a part has a \new Dynamics to write.
