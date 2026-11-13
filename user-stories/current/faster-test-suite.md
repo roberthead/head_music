@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T14:25:06-05:00
   planned_at:   2026-11-12T16:44:02-05:00
   finished_at:
-  updated_at:   2026-11-12T16:44:02-05:00
+  updated_at:   2026-11-12T21:05:15-05:00
 -->
 
 # Story: Faster Test Suite
@@ -24,8 +24,13 @@ SO THAT `rake validate` can be run more frequently
   examples, slow files, repeated expensive setup, coverage overhead.
 - Cut `rake spec`, with coverage, from 4m59s to under 90 seconds on the same
   machine as the baseline; under 150 seconds is acceptable as a first step.
-- No loss of coverage: the same examples run, line and branch coverage hold
-  (99.77% and 95.28% at last count), and the 90% minimum still applies.
+- Cut `bin/validate`, which runs the specs without coverage, to under 2
+  minutes.
+- No loss of coverage: the same examples run, and under `rake spec` and CI
+  line and branch coverage hold (99.77% and 95.28% at last count) with the
+  90% minimum still applied. `rake validate` does not check coverage.
+- CI stays serial; parallelizing it is out of scope, since CI already fits
+  its timeout and no one waits on it locally.
 - Any change to how the suite runs (parallelism, tags, split tasks) is
   reflected in the CLAUDE.md commands.
 
@@ -67,6 +72,21 @@ about 220% CPU throughout (load average near 5). Examples: 18,871.
 
 The earlier 10m06s and 19m31s runs were under heavier, unrecorded load, so
 compare only against runs with a matching load note.
+
+## After
+
+Measured 2026-11-12 with `parallel_rspec` on 10 processes, the game still
+running (load average 5 to 7). Every run: 18,871 examples, 0 failures.
+
+| Run | Before | After |
+| --- | --- | --- |
+| `rake spec` (coverage, files placed by runtime) | 4m59s | 43s |
+| `rake spec:without_coverage` (files placed by size, no log yet) | 3m29s | 63s |
+| `bin/validate` (files placed by runtime) | 3m45s | 49s (specs 32s) |
+
+Coverage is unchanged: 99.77% line and 95.28% branch, merged from all ten
+processes. Raising `minimum_coverage` to 99.9 failed the run (exit 1), so
+the merged total is what the minimum checks.
 
 ## Where the Time Goes
 
