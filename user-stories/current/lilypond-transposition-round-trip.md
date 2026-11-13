@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-13T09:54:36-05:00
   planned_at:   2026-11-13T10:03:14-05:00
   finished_at:
-  updated_at:   2026-11-13T11:42:57-05:00
+  updated_at:   2026-11-13T15:10:14-05:00
 -->
 
 # Story: LilyPond Transposition Round Trip
@@ -30,6 +30,10 @@ SO THAT a part for a transposing instrument comes back at the right pitch instea
   `\transposition c'` back to concert.
 - A part of several voices on one staff reads back as one part, not one part
   per voice, and each voice keeps its own role.
+- Such a part reads its instrument from the staff's `instrumentName` when the
+  catalog knows the name, with the opening `\transposition` choosing among
+  the instrument's key variants (a staff named "Clarinet" holding
+  `\transposition a` reads as clarinet in A).
 
 ## Notes
 
@@ -144,11 +148,26 @@ out, as grouped staves already do.
    none, since the staff's name then names the part. `dynamics_parts` returns
    each part once, so a `\new Dynamics` beside a two-voice staff places its
    dynamics once.
-9. Update the comment in `MusicReader` that names `\transpose` as the
-   unsupported example, if the wording now misleads, and add CHANGELOG
-   entries under Unreleased (Fixed: the reader reads `\transposition`; the
-   writer restates it at instrument changes; several voices on one staff read
-   back as one part, with their roles).
+9. **Name the instrument.** Move `MusicXML::InstrumentNames` to
+   `HeadMusic::Notation::InstrumentNames` (`lib/head_music/notation/`), since
+   two readers now share it, and have `PartLayout` give a several-voice
+   staff's part the instrument its `instrumentName` names. A single-voice
+   staff keeps the name as its voice's role and gets no instrument, as today.
+   A name the catalog doesn't know is dropped.
+10. **Pick the variant.** Move the MusicXML `IdentityReader`'s variant pick
+    (instrument whose `sounding_transposition` matches, among the
+    `parent_key` siblings) to where both readers can call it, and apply it
+    with the semitones of the staff's opening `\transposition` (the first
+    one, in the first voice, before any music). Later `\transposition`s move
+    pitches only; they make no instrument change, since LilyPond doesn't say
+    which instrument the part changed to.
+11. Update the comment in `MusicReader` that names `\transpose` as the
+    unsupported example, if the wording now misleads, and add CHANGELOG
+    entries under Unreleased: Fixed (the reader reads `\transposition`; the
+    writer restates it at instrument changes), Changed (a several-voice
+    staff's name sets its part's instrument), and **Breaking.** (several
+    voices on one staff read back as one part, with their own roles, where
+    they used to read as a part each).
 
 ### Data model changes
 
@@ -178,6 +197,11 @@ None. `VoiceStream` gains a transposition, which is reader state.
   one part with the original roles. The reader specs cover a named staff whose
   voices are named, unnamed, and mixed, and a `\new Dynamics` beside it
   placing each dynamic once.
+- Instrument from the staff name: "Clarinet in A" and "A Clarinet" on a
+  two-voice staff give clarinet in A; "Clarinet" with `\transposition a`
+  gives clarinet in A, and with no `\transposition` the catalog's clarinet;
+  an unknown name gives no instrument; a single-voice staff gives none and
+  keeps the role. The MusicXML instrument specs keep passing after the move.
 - LilyPond MIDI oracle (skips when `lilypond` is not installed, like the
   writer's compile specs): compile the rendered transposed documents with a
   `\midi` block, read the MIDI with `HeadMusic::MIDI.parse`, and compare MIDI
@@ -189,18 +213,17 @@ None. `VoiceStream` gains a transposition, which is reader state.
 - A written key whose concert key needs double sharps or flats (rare, such
   as written C♭ major for a B♭ instrument) raises from `KeySignature`; it
   should surface as `UnsupportedFeatureError` with the line.
-- The reader recovers concert pitch only. LilyPond carries no instrument
-  identity, so the reparsed parts have no instrument and no instrument changes.
+- LilyPond carries no machine identity, so an instrument comes back only from
+  a several-voice staff's name the catalog knows, and never an instrument
+  change. A single-voice part comes back with no instrument.
+- A `\markup` instrument name, such as `\markup { "Clarinet in B" \flat }`,
+  reads as its plain words ("Clarinet in B") and names no instrument.
 - Reading a several-voice staff as one part changes what existing documents
   parse to: `\new Staff \with { instrumentName = "Melody" } << \new Voice …
   \new Voice … >>` used to give two parts with role "Melody" each, and will
   give one part whose voices have no role. Specs pinning the old shape
   (`lily_pond_dynamics_spec`, `flow_builder_spec`, round-trip dynamics cases)
   will need updating, and the CHANGELOG entry should say so.
-- With several voices, the staff's `instrumentName` is no longer kept
-  anywhere. It could name the part's instrument through
-  `MusicXML::InstrumentNames`, as MusicXML part names do. Left out unless
-  you want it; it would be identity recovery, beyond this story.
 - `\transposition` in a `\with` block is not LilyPond syntax (it would be
   `instrumentTransposition = #(ly:make-pitch …)`), so it is left to
   `AssignmentReader`'s existing error.
