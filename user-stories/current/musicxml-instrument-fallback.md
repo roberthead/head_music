@@ -319,4 +319,5 @@ Nothing blocks `finish`. Findings 1 and 4 are worth fixing first.
 
 Fixed after review: 1 and 4 in `0cb25ff0`, 2 in `f7f3ecea` (the cor anglais,
 the oboe d'amore, and spelled-out accidentals; abbreviations such as "Tpt."
-remain unread). 3, 5, 6, and 7 are left as they are.
+remain unread). Rewriting `#instrument` for 1 cut its comment to two lines,
+which settles 7. 3, 5, and 6 are left as they are.
