@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-11-12T12:40:44-05:00
   activated_at: 2026-11-12T14:25:06-05:00
   planned_at:   2026-11-12T16:44:02-05:00
-  finished_at:
-  updated_at:   2026-11-12T21:21:42-05:00
+  finished_at:  2026-11-12T21:30:15-05:00
+  updated_at:   2026-11-12T21:30:15-05:00
 -->
 
 # Story: Faster Test Suite
@@ -249,3 +249,41 @@ and took 90s. A narrowed run now merges its timings into the log, which
 keeps all 656 entries. Afterward, `rake spec` took 45s and `bin/validate`
 57s (at load 30), with 18,871 examples, 0 failures, and coverage of
 99.77% / 95.28%.
+
+## Learnings
+
+### What went well
+
+- Profiling before choosing a fix ruled out most of the candidates in the
+  notes. The YAML catalogs already loaded once, and the slow round-trip
+  examples were slow because of the work under test, not repeated setup.
+  That left parallelism as the one lever that mattered.
+- Parallelism alone met both targets with room to spare: `rake spec` went
+  from 4m59s to about 45s and `bin/validate` from 3m45s to about 50s. No
+  spec depended on another file running first.
+- SimpleCov 1.0.3 already coordinates `parallel_tests` itself. Reading the
+  installed gem's source settled that before any code was written.
+- Raising the coverage minimum on purpose proved that the merged total is
+  what the minimum checks, rather than assuming it.
+
+### What was surprising
+
+- The earlier 10- and 19-minute runs were mostly load. The quiet-ish
+  baseline was 4m59s, so the suite was never as slow as the story assumed.
+- The independent review found real side effects of swapping RSpec's rake
+  task for `parallel_rspec`: `SPEC=` silently ignored, `--only-failures`
+  reading a mix of fresh and stale statuses, and a stale coverage
+  resultset that could be merged into the total.
+- Fixing `SPEC=` exposed one more: a narrowed run replaced the runtime log
+  with its own few files, and the next full run doubled to 90s.
+
+### What to do differently next time
+
+- When replacing a tool's entry point, list what the old one did
+  implicitly (environment variables, status files, logs it rewrites) and
+  check each one, rather than relying on the timing and coverage results.
+- Record every measurement in the story when it's taken. The 3m45s
+  `bin/validate` run was missing from the Baseline until the review
+  caught it.
+- Note the machine's load with each timing; here it ran from 5 to 48, and
+  only the paired load notes made the numbers comparable.
