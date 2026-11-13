@@ -4,18 +4,59 @@ require "rubocop/rake_task"
 
 RuboCop::RakeTask.new
 
-# One process per core, each file placed by its runtime in the last run
-# (tmp/parallel_runtime_rspec.log); SimpleCov merges the processes' coverage.
-desc "Run the specs in parallel with coverage"
-task :spec do
-  sh({"COVERAGE" => "true"}, "bundle exec parallel_rspec spec")
+# One process per core. parallel_tests places each file by its runtime in
+# tmp/parallel_runtime_rspec.log, or by its size when that log covers too few
+# files, and SimpleCov merges the processes' coverage.
+module ParallelSpecs
+  extend Rake::FileUtilsExt
+
+  STATUS_FILE = "spec/examples.txt"
+  PROCESS_STATUS_FILES = "spec/examples[0-9]*.txt"
+  RUNTIME_LOG = "tmp/parallel_runtime_rspec.log"
+
+  def self.run(coverage:)
+    narrowed = ENV.key?("SPEC")
+    runtimes = narrowed ? runtimes_logged : {}
+    rm_f Dir[PROCESS_STATUS_FILES]
+    # SimpleCov would merge a serial result from the last ten minutes into the total.
+    rm_f %w[coverage/.resultset.json coverage/.resultset.json.lock] if coverage
+    # --first-is-1 gives every process a numbered status file to fold back in.
+    sh({"COVERAGE" => (coverage ? "true" : nil)}, "bundle exec parallel_rspec --first-is-1 #{ENV.fetch("SPEC", "spec")}")
+  ensure
+    fold_statuses
+    # A narrowed run logs only its own files, which would leave the next full run to group by size.
+    write_runtimes(runtimes.merge(runtimes_logged)) if narrowed
+  end
+
+  def self.runtimes_logged
+    return {} unless File.exist?(RUNTIME_LOG)
+
+    File.readlines(RUNTIME_LOG, chomp: true).to_h { |line| line.rpartition(":").values_at(0, 2) }
+  end
+
+  def self.write_runtimes(runtimes)
+    File.write(RUNTIME_LOG, runtimes.map { |file, time| "#{file}:#{time}\n" }.join)
+  end
+
+  # Keeps `rspec --only-failures` whole after a parallel run.
+  def self.fold_statuses
+    require "rspec/core"
+    files = Dir[PROCESS_STATUS_FILES]
+    this_run = files.flat_map { |file| RSpec::Core::ExampleStatusPersister.load_from(file) }
+    return if this_run.empty?
+
+    merged = RSpec::Core::ExampleStatusMerger.merge(this_run, RSpec::Core::ExampleStatusPersister.load_from(STATUS_FILE))
+    File.write(STATUS_FILE, RSpec::Core::ExampleStatusDumper.dump(merged))
+    rm_f files
+  end
 end
 
+desc "Run the specs in parallel with coverage (SPEC=path narrows the run)"
+task(:spec) { ParallelSpecs.run(coverage: true) }
+
 # Coverage slows a run considerably, so validation leaves it to `rake spec` and CI.
-desc "Run the specs in parallel without coverage"
-task "spec:without_coverage" do
-  sh "bundle exec parallel_rspec spec"
-end
+desc "Run the specs in parallel without coverage (SPEC=path narrows the run)"
+task("spec:without_coverage") { ParallelSpecs.run(coverage: false) }
 
 begin
   require "yard"

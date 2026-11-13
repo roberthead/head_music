@@ -1,7 +1,7 @@
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 
 # Opt-in, so a focused run is not failed by the suite-wide minimum. `rake spec`
-# (and so `rake` and `rake validate`) sets it.
+# (and so `rake`) sets it; `rake validate` does not.
 if ENV["COVERAGE"] == "true"
   require "simplecov"
 
@@ -58,7 +58,7 @@ module ConfiguredGuideHelper
 end
 
 RSpec.configure do |config|
-  # parallel_rspec numbers its processes; the first, like a serial run, has none.
+  # Each parallel process writes its own file, which `rake spec` folds back into this one.
   config.example_status_persistence_file_path = "spec/examples#{ENV["TEST_ENV_NUMBER"]}.txt"
   config.include ConfiguredGuidelineHelper
   config.include ConfiguredGuideHelper

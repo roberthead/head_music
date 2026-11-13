@@ -15,6 +15,7 @@ HeadMusic is a Ruby gem for Western music theory. It provides a comprehensive to
 ```bash
 bundle exec rake validate  # parallel tests without coverage, linting, security audit, code quality
 bundle exec rake           # parallel tests WITH coverage (the default task, same as `rake spec`)
+bundle exec rake spec:without_coverage  # parallel tests alone, as `rake validate` runs them
 bundle exec rspec          # serial tests WITHOUT coverage, so a single file can run on its own
 bundle exec rake coverage  # opens the last coverage report
 bundle exec rake oracles   # only the specs checked against outside tools and files, each missing one saying how to set it up
@@ -42,7 +43,7 @@ Do not use an assignment inside a condition.
 
 ### Testing
 
-Tests are written in RSpec and located in the `/spec` directory, mirroring the `/lib` structure. The project requires 90% code coverage minimum. Coverage is opt-in: `rake spec` sets `COVERAGE=true`, and `spec_helper.rb` starts SimpleCov only then. `rake spec` and `rake validate` run the specs with `parallel_rspec`, one process per core, and SimpleCov merges the processes before checking the minimum. Each process keeps its own `spec/examples*.txt` status file, so `rspec --only-failures` sees only the first process's failures after a parallel run. `rake validate` skips coverage to save time; run `rake spec` occasionally to check it, and CI checks it on every push.
+Tests are written in RSpec and located in the `/spec` directory, mirroring the `/lib` structure. The project requires 90% code coverage minimum. Coverage is opt-in: `rake spec` sets `COVERAGE=true`, and `spec_helper.rb` starts SimpleCov only then. `rake spec` and `rake validate` run the specs with `parallel_rspec`, one process per core, and SimpleCov merges the processes before checking the minimum. Both take `SPEC=path` to narrow the run. Each process writes its own status file, and the task folds them back into `spec/examples.txt`, so `rspec --only-failures` works after a parallel run. `rake validate` skips coverage to save time; run `rake spec` occasionally to check it. CI checks it on pushes to `main` and on pull requests.
 
 ## Architecture
 
