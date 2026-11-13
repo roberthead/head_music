@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-11-12T14:15:46-05:00
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
-  finished_at:
-  updated_at:   2026-11-13T09:48:27-05:00
+  finished_at:  2026-11-13T09:51:45-05:00
+  updated_at:   2026-11-13T09:51:45-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -408,3 +408,61 @@ nothing. 6: none of the 37 transposing parts in 693 corpus and fixture files has
 numbered or later `<transpose>` but one, our own clarinet_changes, which
 changes instrument; MusicXML instrument changes were added to the story and
 implemented in `84730f04`.
+
+## Learnings
+
+### What went well
+
+- **Research before planning paid off.** Reading MuseScore's importer and
+  exporter source, Dorico's bundled `instruments.xml`, and the MusicXML XSD
+  turned an open question ("which identification wins?") into a rule with
+  precedent: name first, sound as the check, as MuseScore weights them.
+- **Whole-catalog round trips.** Checking all 135 instruments in every
+  locale, at concert pitch and transposed, found failures no handpicked
+  example would have.
+- **A fixture baseline before the first change.** Recording what every
+  MusicXML fixture read as made "nothing else changed" a diff, not a claim,
+  and it caught the "Bass" part-name problem at once.
+- **MuseScore as the oracle.** Regenerating the fixtures through the
+  installed MuseScore confirmed the instrument-change encoding from the other
+  side: MuseScore now keeps the changes and plays the transposed render
+  right, which retired two named exclusions.
+- **Corpus evidence settled a review finding.** Counting `<transpose>`
+  placement across 693 files showed the narrow reading never mattered and
+  pointed at the real gap, instrument changes.
+
+### What was surprising
+
+- **The scope grew a long way from the story's first criteria**, through
+  review findings, into `Instrument.all`, `Named#get_by_name`, `Clef.get`,
+  the neutral clef's deserialization, MusicXML instrument changes, and the
+  key-and-transpose order. Each was found on the path and was small where it
+  was found, but together they make a long branch.
+- **A shared mixin hides different meanings of "failure".** A nil
+  `name_key` is a failed lookup for Instrument but a normal value for
+  ReferencePitch, whose objects compare by identity. A blanket rule in
+  `Named` would have broken equality there.
+- **Shared caches leak into unrelated results.** `Instrument.all` depended on
+  which names anything had looked up before it was first called, and it took
+  new specs' lookups to show it.
+- **The locale question was moot.** `Named#name` defaults to en_US, so
+  `<instrument-name>` was English in every locale. The plan's risk and one
+  spec rested on an assumption no one had checked.
+- **MuseScore's export quirks are their own category:** a key written before
+  its `<transpose>`, and no `<transpose>` back to 0 for a C instrument. One
+  had a principled fix; the other would need a guess.
+
+### What to do differently next time
+
+- **Probe the APIs a plan depends on before writing it.** Ten seconds of
+  `Instrument.get("Trumpet in Bb")` or `Named#name` under another locale would
+  have shaped the plan rather than the review.
+- **Check a test API's contract before calling a result a bug.**
+  `transposed: true` expects a flow already realized at written pitch; my
+  first probe skipped that and briefly looked like a pitch bug.
+- **Split a story when its scope doubles.** Instrument changes could have
+  been its own story on top of this branch, with its own review, rather than
+  an addendum after this one's review.
+- **Get the arithmetic of a spec's musical example right first.** The A
+  clarinet's written key for concert C is E♭ major, and a change to the
+  opening key records nothing; both cost a rerun.
