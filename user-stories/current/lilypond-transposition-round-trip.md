@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-13T09:54:36-05:00
   planned_at:   2026-11-13T10:03:14-05:00
   finished_at:
-  updated_at:   2026-11-13T10:03:14-05:00
+  updated_at:   2026-11-13T11:42:57-05:00
 -->
 
 # Story: LilyPond Transposition Round Trip
@@ -17,12 +17,19 @@ SO THAT a part for a transposing instrument comes back at the right pitch instea
 
 ## Acceptance Criteria
 
-- A flow with a transposing part, rendered with `transposed: true` and parsed
-  back, does not raise, and its pitches read back at concert pitch.
+- A flow with a transposing part, realized at written pitch and rendered with
+  `transposed: true`, parses back without raising, and its pitches read back
+  at concert pitch.
 - `\transposition` in a file from elsewhere is read, not refused, wherever
   LilyPond allows it (at the start of a staff or voice, and mid-voice).
 - A spec renders every transposing catalog instrument with `transposed: true`
   and reads it back.
+- A part that changes instrument mid-flow (for example clarinet in B♭ to
+  clarinet in A to flute) round-trips at concert pitch: the writer restates
+  `\transposition` where the transposition changes, including
+  `\transposition c'` back to concert.
+- A part of several voices on one staff reads back as one part, not one part
+  per voice, and each voice keeps its own role.
 
 ## Notes
 
@@ -36,9 +43,9 @@ SO THAT a part for a transposing instrument comes back at the right pitch instea
 - No spec renders LilyPond with `transposed: true` and reads it back.
 - Readers should skip valid notation the model cannot hold and raise only on
   unrecognized syntax; `\transposition` is valid LilyPond.
-- Side finding, cause not traced: a two-voice clarinet_in_a part written as
-  one `\new Staff \with { instrumentName = "clarinet in A" }` reads back as
-  two parts.
+- Side finding, folded into this story: a two-voice part written as one
+  `\new Staff \with { instrumentName = "…" }` reads back as two parts (cause
+  under Confirmed, below).
 - LilyPond carries no instrument identity, so the reader can't recover the
   instrument, only the pitches. `instrumentName` is read as a voice role.
 
@@ -71,7 +78,10 @@ SO THAT a part for a transposing instrument comes back at the right pitch instea
   multi-voice part on one `\new Staff << \new Voice … \new Voice … >>`. Any
   two-voice part splits (violin too, not only transposing parts), and each
   voice takes the staff's `instrumentName` as its role, losing its own.
-  Unrelated to transposition.
+  Unrelated to transposition. The writer also drops the roles: a single-staff
+  part of several voices writes each as an unnamed `\new Voice`
+  (`Writer#single_staff_lines`), though grouped staves already name each
+  voice for its role.
 
 ### Approach
 
@@ -79,7 +89,9 @@ Read `\transposition` as the written-to-sounding step in force on a voice
 stream, and convert each pitch and key to concert pitch as the stream
 collects it, reusing `HeadMusic::Notation::ConcertTransposition` (the MusicXML
 and MEI readers' helper). Have the writer restate `\transposition` wherever a
-part's instrument changes its transposition.
+part's instrument changes its transposition. Separately, read the voices of
+one ungrouped staff as one part, and name each voice for its role on the way
+out, as grouped staves already do.
 
 ### Steps
 
@@ -115,10 +127,28 @@ part's instrument changes its transposition.
    `\transposition c'` when the new instrument is in C. In
    `VoiceWriter#change_commands`, write it before the bar's `\key`. Empty
    unless `plan.transposed?`.
-6. Update the comment in `MusicReader` that names `\transpose` as the
+6. **Name voices on a shared staff.** In `Writer#single_staff_lines`, write
+   each voice of a several-voice staff as `\new Voice = "<role>"` when it has
+   a role, as `grouped_staff_lines` does. The staff keeps
+   `instrumentName` for the part.
+7. **Remember the staff.** Give `Document` an ungrouped-staff record
+   (`Document::Staff`, holding its `instrumentName`), and have
+   `ContextReader#read_staff_or_voice` tag each stream read inside a `\new
+   Staff` outside a group with it. A Voice's own context name is kept on the
+   stream apart from the staff's name.
+8. **One part per staff.** In `PartLayout#ungrouped_voice`, the first stream
+   of a staff makes the part (`flow.add_voice`), and later streams of the same
+   staff join it (`part.add_voice`). Role: a staff's only voice takes the
+   staff's `instrumentName` as today (`document_reader_spec` pins
+   `[["Melody", 1]]`); among several, each voice takes its own context name, or
+   none, since the staff's name then names the part. `dynamics_parts` returns
+   each part once, so a `\new Dynamics` beside a two-voice staff places its
+   dynamics once.
+9. Update the comment in `MusicReader` that names `\transpose` as the
    unsupported example, if the wording now misleads, and add CHANGELOG
    entries under Unreleased (Fixed: the reader reads `\transposition`; the
-   writer restates it at instrument changes).
+   writer restates it at instrument changes; several voices on one staff read
+   back as one part, with their roles).
 
 ### Data model changes
 
@@ -143,6 +173,11 @@ None. `VoiceStream` gains a transposition, which is reader state.
   written flow rendered with `transposed: true`, reads back with the concert
   flow's pitches and key. Also a part that changes from clarinet to clarinet in
   A to flute.
+- Several voices on one staff: a violin part with voices "upper" and
+  unnamed, and a two-voice clarinet in A rendered transposed, each read back as
+  one part with the original roles. The reader specs cover a named staff whose
+  voices are named, unnamed, and mixed, and a `\new Dynamics` beside it
+  placing each dynamic once.
 - LilyPond MIDI oracle (skips when `lilypond` is not installed, like the
   writer's compile specs): compile the rendered transposed documents with a
   `\midi` block, read the MIDI with `HeadMusic::MIDI.parse`, and compare MIDI
@@ -156,6 +191,16 @@ None. `VoiceStream` gains a transposition, which is reader state.
   should surface as `UnsupportedFeatureError` with the line.
 - The reader recovers concert pitch only. LilyPond carries no instrument
   identity, so the reparsed parts have no instrument and no instrument changes.
+- Reading a several-voice staff as one part changes what existing documents
+  parse to: `\new Staff \with { instrumentName = "Melody" } << \new Voice …
+  \new Voice … >>` used to give two parts with role "Melody" each, and will
+  give one part whose voices have no role. Specs pinning the old shape
+  (`lily_pond_dynamics_spec`, `flow_builder_spec`, round-trip dynamics cases)
+  will need updating, and the CHANGELOG entry should say so.
+- With several voices, the staff's `instrumentName` is no longer kept
+  anywhere. It could name the part's instrument through
+  `MusicXML::InstrumentNames`, as MusicXML part names do. Left out unless
+  you want it; it would be identity recovery, beyond this story.
 - `\transposition` in a `\with` block is not LilyPond syntax (it would be
   `instrumentTransposition = #(ly:make-pitch …)`), so it is left to
   `AssignmentReader`'s existing error.
