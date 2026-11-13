@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-13T08:02:54-05:00
+  updated_at:   2026-11-13T08:10:41-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -265,3 +265,53 @@ None. One new YAML section, or file, for the written sounds.
 - **Schema:** documents with a sound-less, a shared-sound, and a transposed
   instrument validate against the MusicXML 4.0 XSD, as does
   `writer_schema_spec.rb` with `MUSICXML_XSD` set.
+
+## Review
+
+2026-11-13, at `aa0478f5`. An independent agent read the branch, and each finding
+below was reproduced before being recorded.
+
+| Criterion | Verdict | Evidence |
+|---|---|---|
+| Every catalog instrument round-trips | ✅ | `shared_instrument_sounds.yml`, `writer.rb:97-108`; `identity_reader_spec.rb:181-197` (all 135, concert and transposed) |
+| Standard sounds still written and read | ✅ | `writer.rb:101,104`; `writer_spec.rb:2115-2133` |
+| Stated order of preference | ✅ | `identity_reader.rb:50-71`; `identity_reader_spec.rb:106-136`; CHANGELOG |
+| Nothing resolves: no instrument, no raise | ✅ | `identity_reader_spec.rb:138-144` |
+| Disagreement rule pinned | ✅ | `identity_reader_spec.rb:106-112` (Irish tenor banjo, Soprano) |
+| Transposition picks a variant | ✅ | `identity_reader.rb:77-92`; `identity_reader_spec.rb:146-158` |
+| Names in other programs' forms | ⚠️ | `instrument_names_spec.rb` covers every example in the criterion; see finding 2 |
+| CHANGELOG | ✅ | All 44 fixtures read the same instruments on main and on the branch |
+
+### Findings
+
+1. **A key-less name overrides `<transpose>`** (medium). The variant pick
+   runs only when no name resolves, so part-name "Trumpet" with
+   `brass.trumpet` and a +3 transposition reads as `trumpet`, not
+   `trumpet_in_e_flat`; "Clarinet" with -3 reads as `clarinet`, not
+   `clarinet_in_a`. This matches the criterion's wording, but MuseScore
+   reapplies `<transpose>` in this case. Fix: also pick by transposition when
+   the winning name is the sound's own instrument.
+2. **Normalizer gaps** (low).
+   - "English Horn in F", "Cor anglais in F", and "Oboe d'amore in A" read as
+     nil, because `in_own_key` compares the key with `pitch_key`, which
+     `cor_anglais` and `oboe_d_amore` lack. Comparing with
+     `sounding_transposition` would cover them.
+   - "Trumpet in B-flat" and "B flat" read as nil.
+   - No false matches were found.
+3. **An unmapped sound skips the family check** (low). Part-name "Soprano"
+   with `wind.reed.saxophone`, which is not in the table, reads as
+   `soprano_voice`.
+4. **The German round-trip spec tests English** (low). `Named#name` defaults
+   to en_US, so `<instrument-name>` is always English whatever the locale.
+   The spec at `identity_reader_spec.rb:199-202` passes on English input, and
+   the plan's locale risk does not apply. Retitle or drop the spec, and the
+   plan's risk.
+5. **The name cache grows with every name read** (low, predates the branch).
+   `get_by_name` caches an instance for each name looked up, valid or not,
+   and the reader now looks up every part and instrument name a file carries.
+6. **Transposition is read narrowly** (low). Only staff 1 or an unnumbered
+   `<transpose>` in measure 1's first `<attributes>` counts.
+7. **Comment length** (minor). The comment on `IdentityReader#instrument` runs
+   six lines.
+
+Nothing blocks `finish`. Findings 1 and 4 are worth fixing first.
