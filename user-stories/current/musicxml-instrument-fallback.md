@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-13T08:13:21-05:00
+  updated_at:   2026-11-13T09:13:00-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -320,4 +320,8 @@ Nothing blocks `finish`. Findings 1 and 4 are worth fixing first.
 Fixed after review: 1 and 4 in `0cb25ff0`, 2 in `f7f3ecea` (the cor anglais,
 the oboe d'amore, and spelled-out accidentals; abbreviations such as "Tpt."
 remain unread). Rewriting `#instrument` for 1 cut its comment to two lines,
-which settles 7. 3, 5, and 6 are left as they are.
+which settles 7. 3 in `3fba1552`: a general sound outside the table, such as
+`wind.reed.saxophone`, holds names to the family its more specific sounds
+share (only it, `drum.group`, and `pluck.bass` have one). 5 in `5b9518f3`:
+Instrument and InstrumentFamily keep nothing for a name that matches
+nothing. 6 is left as it is.
