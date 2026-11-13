@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-12T22:35:45-05:00
+  updated_at:   2026-11-13T05:41:09-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -33,6 +33,16 @@ SO THAT a part for an Irish tenor banjo, a clarinet in C, or a trumpet in E♭ r
 - Where the old and new answers differ (for example a file that says
   `pluck.banjo` but names an Irish tenor banjo), the rule for which one wins
   is decided and pinned in a spec.
+- When no name resolves and the file's first `<transpose>` disagrees with the
+  sound's instrument, the reader picks among that instrument and its catalog
+  variants (`parent_key`) by sounding transposition. For example,
+  `wind.reed.clarinet` with an A transposition reads as clarinet in A.
+- The reader normalizes the instrument names other programs write before the
+  catalog lookup: a leading key moves to the end ("C Clarinet" → clarinet in
+  C), "b" and "#" after a key letter become ♭ and ♯ ("Trumpet in Bb"), and a
+  trailing player number or numeral goes ("Violin 1", "Horn II"). A name
+  whose key is the instrument's own resolves to that instrument ("Trumpet in
+  B♭" → trumpet, "Horn in F" → French horn).
 - The CHANGELOG notes the change, including any part that used to read as one
   instrument and now reads as another.
 
@@ -149,7 +159,17 @@ coarser fallback) is the closest pattern.
       `<virtual-instrument>`'s `<virtual-name>`, and the `<score-part>`'s
       `<part-name>`.
    2. Resolve each name (instrument-name, part-name, virtual-name) through
-      `Instrument.get`, which takes keys, translated names, and aliases.
+      a new `InstrumentNames` helper (`music_xml/instrument_names.rb`), which
+      tries `Instrument.get` on the name as written, then on its normalized
+      form:
+      - strip a trailing player number or Roman numeral ("Violin 1",
+        "Horn II");
+      - move a leading key to the end ("C Clarinet", "Eb Trumpet" →
+        "Clarinet in C", "Trumpet in E♭");
+      - turn "b" or "#" after a key letter into ♭ or ♯ ("in Bb" → "in B♭");
+      - when "X in K" still fails, try "X" and keep it only if its
+        `pitch_key` is K ("Trumpet in B♭" → trumpet, "Horn in F" → French
+        horn, but not "Trumpet in G" → trumpet).
    3. Resolve the sound through `InstrumentSounds.instrument`.
    4. Pick: the first resolved name that agrees with the sound, then the
       sound, then the first resolved name when there is no sound. A name
@@ -157,7 +177,16 @@ coarser fallback) is the closest pattern.
       banjo" with `pluck.banjo.tenor` reads as irish_tenor_banjo, while a
       part named "Soprano" with `wind.reed.saxophone.soprano` reads as the
       saxophone, not the voice.
-   5. Nothing resolves: nil, as now.
+   5. When the sound decided it and the part's first `<transpose>` is
+      present but disagrees with that instrument's `sounding_transposition`
+      (chromatic plus 12 × octave-change), pick among the instrument and the
+      catalog instruments whose `parent_key` is it, by that transposition.
+      `wind.reed.clarinet` with chromatic -3 reads as clarinet_in_a; with no
+      match it stays clarinet. An absent `<transpose>` leaves the sound's
+      instrument alone, since a concert-pitch file carries none for any
+      instrument. Find where `PartStaves` reads `<transpose>`
+      (`part_staves.rb:21`) and share that reading rather than parse it twice.
+   6. Nothing resolves: nil, as now.
 5. **Docs.** Update the comments on `score_instrument_lines` and
    `InstrumentSounds`, and the CHANGELOG's Unreleased banjo entry, which
    says the Irish tenor banjo reads back with no instrument.
@@ -186,6 +215,13 @@ None. One new YAML section, or file, for the written sounds.
   - nothing resolves (nil, no raise).
   The pinned rule for a disagreement is the "Irish tenor banjo" with
   `pluck.banjo.tenor` case and the "Soprano" with a saxophone sound case.
+- `identity_reader_spec.rb`, transposition: `wind.reed.clarinet` with
+  chromatic -3 reads as clarinet_in_a, with no `<transpose>` as clarinet, and
+  with a transposition no variant has as clarinet.
+- `instrument_names_spec.rb`: "C Clarinet", "Eb Trumpet", "Trumpet in Bb",
+  "Clarinet in B♭", "Horn in F", "Violin 1", "Horn II", a name that is
+  already a catalog name, "Trumpet in G" (nil), and a non-name ("SmartMusic
+  SoftSynth", nil).
 - A round-trip spec over `Instrument.all`, concert and `transposed: true`:
   same `name_key` and `sounding_transposition` for all 135.
 - Writer spec: an instrument without a sound writes `<score-instrument>` with
@@ -197,8 +233,11 @@ None. One new YAML section, or file, for the written sounds.
 - A file whose `<part-name>` happens to be an instrument name in the same
   family as the sound, but meant as a player label, now reads as that named
   instrument. The family check limits this.
-- MuseScore's "C Clarinet" and Sibelius's "Trumpet in Bb" don't resolve by
-  name, so they read as clarinet and trumpet, as today.
+- The normalizer handles English only. A German "B-Klarinette" or Italian
+  "Clarinetto in Do" resolves only if the catalog's translations already
+  carry that form.
+- Stripping a trailing numeral could turn a real name into another ("Violin
+  II" is fine, but check that no catalog name ends in a number or numeral).
 - Finale's `<instrument-name>` is often a playback device; the family check
   drops it when it names an instrument (e.g. "Grand Piano") against a
   different sound, but a wrong Finale sound still wins over a right
