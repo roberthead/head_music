@@ -4,12 +4,12 @@ module HeadMusic::Notation::MusicXML
   # forms other programs write: "C Clarinet" for the catalog's "clarinet in
   # C", "Trumpet in Bb" for "trumpet", and "Violin 1" for "violin".
   module InstrumentNames
-    KEY = "[A-G](?:b|#|♭|♯)?"
+    KEY = "[A-G](?:b|#|♭|♯|[- ]?flat|[- ]?sharp)?"
     PLAYER_NUMBER = /\s+(?:\d+|[IVX]+)\.?\z/
     LEADING_KEY = /\A(#{KEY})\s+(.+)\z/
     IN_KEY = /\A(.+?)\s+in\s+(#{KEY})\z/i
-    ACCIDENTALS = {"b" => "♭", "#" => "♯", "♭" => "♭", "♯" => "♯"}.freeze
-    PITCH_KEY_SUFFIXES = {"♭" => "_flat", "♯" => "_sharp"}.freeze
+    ACCIDENTALS = {"b" => "♭", "#" => "♯", "♭" => "♭", "♯" => "♯", "flat" => "♭", "sharp" => "♯"}.freeze
+    SEMITONES = {"C" => 0, "D" => 2, "E" => 4, "F" => 5, "G" => 7, "A" => 9, "B" => 11}.freeze
 
     module_function
 
@@ -36,14 +36,15 @@ module HeadMusic::Notation::MusicXML
     end
 
     def spelled(key)
-      key[0].upcase + ACCIDENTALS.fetch(key[1..], "")
+      key[0].upcase + ACCIDENTALS.fetch(key[1..].downcase.delete("- "), "")
     end
 
     # The catalog names an instrument in its usual key without the key, as
-    # "trumpet" for the trumpet in B♭.
+    # "trumpet" for the trumpet in B♭. An instrument's key is where its
+    # written C sounds.
     def in_own_key(instrument, key)
-      pitch_key = key[0].downcase + PITCH_KEY_SUFFIXES.fetch(key[1..], "")
-      instrument if instrument&.pitch_key.to_s == pitch_key
+      sounding = SEMITONES.fetch(key[0]) + {"♭" => -1, "♯" => 1}.fetch(key[1], 0)
+      instrument if instrument && (instrument.sounding_transposition - sounding) % 12 == 0
     end
 
     def get(name)
