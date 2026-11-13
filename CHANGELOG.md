@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- MusicXML reads a written key and a `<transpose>` on the same downbeat together, whichever comes first. MuseScore 4 writes a bar's key in an `<attributes>` before the one holding its new `<transpose>`, so the key was read under the old transposition: an A clarinet's E♭ major after a B♭ clarinet read as D♭ major rather than C major.
 - `Clef.get` answers nil for a name no clef answers to, as the other catalogs do, instead of raising `NoMethodError`. A `Content::Staff` given an unknown clef, opening or as a change, raises `ArgumentError` naming it.
 - A serialized staff with the neutral (percussion) clef deserializes. It was refused as an unknown clef, since the check took a clef with no pitch for none at all.
 - An instrument or instrument family looked up by a name that matches nothing is no longer kept, so reading files with many unrecognized part names does not grow the lookup cache.

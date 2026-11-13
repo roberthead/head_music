@@ -105,9 +105,10 @@ describe HeadMusic::Notation::MusicXML do
       end
 
       # MuseScore writes each written key in an <attributes> before the one
-      # holding the bar's new <transpose>.
-      it "reads each written key change under the <transpose> in force before it" do
-        expect(theirs.key_signature_changes.transform_values(&:to_s)).to eq(3 => "-5 D♭ major", 5 => "3 A major")
+      # holding the bar's new <transpose>, which the reader takes together.
+      # The flute's C major reads as A major under the A clarinet's <transpose>.
+      it "reads the A clarinet's written key at concert pitch, and the flute's under the A clarinet's <transpose>" do
+        expect(theirs.key_signature_changes.transform_values(&:to_s)).to eq(5 => "3 A major")
       end
 
       it "reads the instrument changes" do

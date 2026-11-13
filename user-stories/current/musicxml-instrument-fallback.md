@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-13T09:36:44-05:00
+  updated_at:   2026-11-13T09:48:27-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -341,9 +341,9 @@ from the notes' `<instrument id>` alone (`importmusicxmlpass2.cpp` 690-745).
   spec's exclusion and the MIDI oracle's exclusion are gone.
 - **What MuseScore's transposed conversion still loses:** it writes no
   `<transpose>` back to 0 for the flute, so its bars read a minor third low,
-  and it writes bar 3's key before that bar's `<transpose>`, so the key reads
-  under the B-flat transposition. Both are pinned in
-  `music_xml_real_files_spec.rb`.
+  pinned in `music_xml_real_files_spec.rb`. It also writes bar 3's key before
+  that bar's `<transpose>`; the reader now takes a key and a `<transpose>` on
+  one downbeat together, whichever comes first.
 - **MuseScore's MEI export** drops instrument changes (one `<instrDef>`), as
   before; `mei_real_files_spec.rb` lists that loss.
 

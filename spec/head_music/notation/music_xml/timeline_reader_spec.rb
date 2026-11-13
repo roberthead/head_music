@@ -54,6 +54,18 @@ describe HeadMusic::Notation::MusicXML::TimelineReader do
       expect(flow.key_signature_changes).to be_empty
     end
 
+    it "reads a written key under the <transpose> stated after it on the same downbeat" do
+      a_clarinet = "<attributes><transpose><diatonic>-2</diatonic><chromatic>-3</chromatic></transpose></attributes>"
+      flow = parse(musicxml_measures(whole_c, key_attributes(-3) + a_clarinet + whole_c, attributes: opening_attributes(fifths: 2)))
+      expect(flow.key_signature_change_at(2).name).to eq "C major"
+    end
+
+    it "reads a written key under the <transpose> stated before it on the same downbeat" do
+      a_clarinet = "<attributes><transpose><diatonic>-2</diatonic><chromatic>-3</chromatic></transpose></attributes>"
+      flow = parse(musicxml_measures(whole_c, a_clarinet + key_attributes(-3) + whole_c, attributes: opening_attributes(fifths: 2)))
+      expect(flow.key_signature_change_at(2).name).to eq "C major"
+    end
+
     it "keeps the first part's key where parts disagree" do
       flow = parse(musicxml_document([opening_attributes(fifths: 1) + whole_c], [opening_attributes(fifths: 3) + whole_c], attributes: nil))
       expect(flow.key_signature.name).to eq "G major"

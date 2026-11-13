@@ -14,6 +14,7 @@ module HeadMusic::Notation::MusicXML
     # its notes and forwards reach; and one division where it ends, the
     # rounding its extent may carry.
     Measure = Struct.new(:index, :number, :implicit, :extent, :meter, :key, :tolerance, :clefs, :instrument_id)
+    MUSIC = %w[note backup forward].freeze
     Reading = Struct.new(:document_part, :measures, :tracks, :staves, :part_symbol, :records, :opening_instrument_id) do
       def id
         document_part.id
@@ -50,12 +51,14 @@ module HeadMusic::Notation::MusicXML
       @tracks.start_measure(@where)
       @timing = WrittenTiming.new
       measure.element.each_element { |element| read_element(element) }
+      settle_key
       @measure.tolerance = @durations.tolerance
       @measure.extent = @timing.extent if @durations.overfull?(@measure.extent) && @timing.retime(@durations.bar_length)
       @measure
     end
 
     def read_element(element)
+      settle_key if MUSIC.include?(element.name)
       case element.name
       when "attributes" then read_attributes(element)
       when "note" then read_note(element)
@@ -77,6 +80,13 @@ module HeadMusic::Notation::MusicXML
       end
     end
 
+    # A key and a <transpose> on the same downbeat apply together, in either
+    # order, so the key waits for the music to begin before it is heard.
+    def settle_key
+      @measure.key = @staves.concert_key(@written_key) if @written_key
+      @written_key = nil
+    end
+
     # The timeline changes only at a downbeat, so a key or time in the
     # middle of a bar is skipped; its divisions still apply from there on.
     def read_attributes(element)
@@ -88,7 +98,7 @@ module HeadMusic::Notation::MusicXML
       return unless @cursor.zero?
 
       @measure.clefs.merge!(attributes.clefs)
-      @measure.key = @staves.concert_key(attributes.key) if attributes.key
+      @written_key = attributes.key if attributes.key
       @durations = @durations.with(meter: @measure.meter = attributes.meter) if attributes.meter
     end
 
