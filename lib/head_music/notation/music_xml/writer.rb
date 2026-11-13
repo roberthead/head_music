@@ -93,18 +93,18 @@ module HeadMusic::Notation::MusicXML
       ["#{INDENT}<part-list>", *score_part_lines, "#{INDENT}</part-list>"]
     end
 
-    # Only an instrument with a standard sound id is written, since a reader
-    # can name no other.
+    # The name identifies the instrument; a sound alone may be shared.
     def score_instrument_lines(part, index)
-      sound = InstrumentSounds.sound(part.instrument)
-      return [] unless sound
+      instrument = part.instrument
+      return [] unless instrument
 
+      sound = InstrumentSounds.sound(instrument)
       [
         %(#{INDENT * 3}<score-instrument id="P#{index + 1}-I1">),
-        "#{INDENT * 4}<instrument-name>#{escape(part.instrument.name)}</instrument-name>",
-        "#{INDENT * 4}<instrument-sound>#{sound}</instrument-sound>",
+        "#{INDENT * 4}<instrument-name>#{escape(instrument.name)}</instrument-name>",
+        sound && "#{INDENT * 4}<instrument-sound>#{sound}</instrument-sound>",
         "#{INDENT * 3}</score-instrument>"
-      ]
+      ].compact
     end
 
     # A voice's role names the part only where the part holds a single voice, so

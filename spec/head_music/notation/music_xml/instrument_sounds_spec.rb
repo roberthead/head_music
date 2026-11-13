@@ -20,8 +20,27 @@ describe HeadMusic::Notation::MusicXML::InstrumentSounds do
     expect(described_class.instrument("pluck.banjo.tenor").name_key).to eq :tenor_banjo
   end
 
-  it "writes no sound for the Irish tenor banjo, which has no standard id" do
-    expect(described_class.sound(HeadMusic::Instruments::Instrument.get("irish_tenor_banjo"))).to be_nil
+  it "writes the tenor banjo's sound for the Irish tenor banjo, which has no standard id of its own" do
+    expect(described_class.sound(HeadMusic::Instruments::Instrument.get("irish_tenor_banjo"))).to eq "pluck.banjo.tenor"
+  end
+
+  it "writes the general clarinet's sound for the clarinet in C" do
+    expect(described_class.sound(HeadMusic::Instruments::Instrument.get("clarinet_in_c"))).to eq "wind.reed.clarinet"
+  end
+
+  it "writes a sound for every catalog instrument but the synthesizer" do
+    soundless = HeadMusic::Instruments::Instrument.all.reject { |instrument| described_class.sound(instrument) }
+    expect(soundless.map(&:name_key)).to eq [:synthesizer]
+  end
+
+  it "shares sounds only with catalog instruments that have none of their own" do
+    sharers = described_class::SHARED_SOUNDS_BY_NAME_KEY.keys
+    catalogued = sharers.select { |name_key| HeadMusic::Instruments::Instrument.get(name_key)&.name_key.to_s == name_key }
+    expect([catalogued, sharers & described_class::SOUNDS_BY_NAME_KEY.keys]).to eq [sharers, []]
+  end
+
+  it "reads the soprillo's and the maracas' own sounds" do
+    expect(%w[wind.reed.saxophone.sopranissimo rattle.maraca].map { |sound| described_class.instrument(sound).name_key }).to eq [:soprillo, :maracas]
   end
 
   it "answers nil for a sound outside the table" do

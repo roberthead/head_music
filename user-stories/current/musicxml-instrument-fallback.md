@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-13T05:41:09-05:00
+  updated_at:   2026-11-13T08:02:54-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -246,3 +246,22 @@ None. One new YAML section, or file, for the written sounds.
   instrument in German. head_music reads it back; other tools may not.
 - Existing documents change: every part with a sound-less instrument now gets
   a `<score-instrument>`, and the 8 parent-sound instruments gain a sound.
+
+### Implementation notes
+
+- **Names count only within a `<score-instrument>`.** head_music writes a
+  part with no instrument under its voice's role, so its own
+  `barline_styles` fixture has a part named "Bass" and no instrument. Read
+  by part name, it came back as the bass voice. The writer now writes a
+  `<score-instrument>` for every instrument, so a part without one has none.
+- **`drum.tom-tom` belongs to no instrument**, so the written-sound table is
+  `shared_instrument_sounds.yml`: a sound another instrument owns, or none
+  does.
+- **`Instrument.all` was fixed on the way** (its own commit). It listed every
+  cached instance, so the name lookups in the new specs added duplicates and
+  instruments with no `name_key` to it.
+- **Fixture baseline:** all 51 parts in the 44 MusicXML fixtures read the same
+  instrument before and after.
+- **Schema:** documents with a sound-less, a shared-sound, and a transposed
+  instrument validate against the MusicXML 4.0 XSD, as does
+  `writer_schema_spec.rb` with `MUSICXML_XSD` set.

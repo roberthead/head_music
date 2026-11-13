@@ -83,6 +83,80 @@ describe HeadMusic::Notation::MusicXML::IdentityReader do
     end
   end
 
+  describe "the instrument" do
+    def instrument_for(part_name: "Part", instrument_name: nil, sound: nil, virtual_name: nil, transpose: nil)
+      score_instrument = [
+        instrument_name && "<instrument-name>#{instrument_name}</instrument-name>",
+        sound && "<instrument-sound>#{sound}</instrument-sound>",
+        virtual_name && "<virtual-instrument><virtual-name>#{virtual_name}</virtual-name></virtual-instrument>"
+      ].compact.join
+      part_list = %(<part-list><score-part id="P1"><part-name>#{part_name}</part-name>) +
+        %(<score-instrument id="P1-I1">#{score_instrument}</score-instrument></score-part></part-list>)
+      xml = musicxml_measures(note_xml("C4", 4, "whole"))
+      xml = xml.sub(%r{<part-list>.*</part-list>}m, part_list)
+      xml = xml.sub("<divisions>", "#{transpose}<divisions>") if transpose
+      HeadMusic::Notation::MusicXML.parse(xml).parts.first.instrument&.name_key
+    end
+
+    def transpose(chromatic, diatonic)
+      "<transpose><diatonic>#{diatonic}</diatonic><chromatic>#{chromatic}</chromatic></transpose>"
+    end
+
+    it "reads the named instrument where the sound is its family's" do
+      expect(instrument_for(instrument_name: "Irish tenor banjo", sound: "pluck.banjo.tenor")).to eq :irish_tenor_banjo
+    end
+
+    it "reads the sound where the name is another family's, as a part name labeling a player" do
+      expect(instrument_for(part_name: "Soprano", sound: "wind.reed.saxophone.soprano")).to eq :soprano_saxophone
+    end
+
+    it "reads an instrument name with no sound" do
+      expect(instrument_for(instrument_name: "clarinet in C")).to eq :clarinet_in_c
+    end
+
+    it "reads a part name where the instrument name names nothing, as Finale writes" do
+      expect(instrument_for(part_name: "Clarinet in A", instrument_name: "SmartMusic SoftSynth", sound: "wind.reed.clarinet.bflat")).to eq :clarinet_in_a
+    end
+
+    it "reads a virtual instrument's name" do
+      expect(instrument_for(virtual_name: "Oboe")).to eq :oboe
+    end
+
+    it "reads a sound with no name" do
+      expect(instrument_for(sound: "brass.trumpet.bflat")).to eq :trumpet
+    end
+
+    it "reads a name in another language" do
+      expect(instrument_for(instrument_name: "Klarinette")).to eq :clarinet
+    end
+
+    it "reads a name in another program's form" do
+      expect(instrument_for(instrument_name: "C Clarinet", sound: "wind.reed.clarinet")).to eq :clarinet_in_c
+    end
+
+    it "gives a part no instrument where nothing resolves" do
+      expect(instrument_for(part_name: "Melody", instrument_name: "Grand Synth", sound: "voice.male")).to be_nil
+    end
+
+    it "gives a part with no score instrument none, whatever its part name" do
+      expect(flow_with("", names: ["Bass"]).parts.first.instrument).to be_nil
+    end
+
+    describe "picked by transposition, where only the sound names it" do
+      it "reads the variant that transposes as the part does" do
+        expect(instrument_for(sound: "wind.reed.clarinet", transpose: transpose(-3, -2))).to eq :clarinet_in_a
+      end
+
+      it "keeps the sound's instrument where no transposition is written" do
+        expect(instrument_for(sound: "wind.reed.clarinet")).to eq :clarinet
+      end
+
+      it "keeps the sound's instrument where no variant transposes as the part does" do
+        expect(instrument_for(sound: "wind.reed.clarinet", transpose: transpose(-5, -3))).to eq :clarinet
+      end
+    end
+  end
+
   describe "reading back what the writer writes" do
     let(:project) { LayoutFixtures.clarinet_project }
     let(:original) { project.flows.first }
@@ -101,6 +175,31 @@ describe HeadMusic::Notation::MusicXML::IdentityReader do
       cited = HeadMusic::Content::Flow.new(name: "Gigue", work: work).tap { |gigue| gigue.add_voice.place("1:1", :whole, "C4") }
       read = HeadMusic::Notation::MusicXML.parse(HeadMusic::Notation::MusicXML.render(cited))
       expect([read.name, read.work.title, read.composer]).to eq ["Gigue", "Suite", "J. S. Bach"]
+    end
+  end
+
+  describe "reading back every instrument the writer writes" do
+    def round_trip(instrument, transposed: false, locale: I18n.locale)
+      flow = HeadMusic::Content::Flow.new(name: "Round Trip").tap do |written|
+        written.add_part(instrument: instrument.name_key).add_voice.place("1:1", :whole, "C4")
+      end
+      xml = I18n.with_locale(locale) { HeadMusic::Notation::MusicXML.render(flow, transposed: transposed) }
+      HeadMusic::Notation::MusicXML.parse(xml).parts.first.instrument
+    end
+
+    [false, true].each do |transposed|
+      it "reads back every catalog instrument, with its transposition, #{transposed ? "transposed" : "at concert pitch"}" do
+        lost = HeadMusic::Instruments::Instrument.all.reject do |instrument|
+          read = round_trip(instrument, transposed: transposed)
+          read == instrument && read.sounding_transposition == instrument.sounding_transposition
+        end
+        expect(lost.map(&:name_key)).to be_empty
+      end
+    end
+
+    it "reads back an instrument named in another language" do
+      instrument = HeadMusic::Instruments::Instrument.get("trumpet_in_e_flat")
+      expect(round_trip(instrument, locale: :de)).to eq instrument
     end
   end
 end

@@ -2120,6 +2120,18 @@ describe HeadMusic::Notation::MusicXML::Writer do
       expect(xpath_text(document, "//score-part/score-instrument/instrument-name")).to eq "clarinet"
     end
 
+    it "names an instrument with no standard sound of its own, beside a shared one" do
+      flow = HeadMusic::Content::Flow.new.tap { |scored| scored.add_part(instrument: "clarinet_in_c").add_voice.place("1:1", :whole, "C4") }
+      document = parse_musicxml(described_class.new(flow).to_s)
+      expect(%w[instrument-name instrument-sound].map { |name| xpath_text(document, "//score-instrument/#{name}") }).to eq ["clarinet in C", "wind.reed.clarinet"]
+    end
+
+    it "names an instrument with no standard sound at all, and writes no sound" do
+      flow = HeadMusic::Content::Flow.new.tap { |scored| scored.add_part(instrument: "synthesizer").add_voice.place("1:1", :whole, "C4") }
+      document = parse_musicxml(described_class.new(flow).to_s)
+      expect([xpath_text(document, "//score-instrument/instrument-name"), xpath_count(document, "//instrument-sound")]).to eq ["synthesizer", 0]
+    end
+
     it "writes none for a part with no instrument" do
       flow = HeadMusic::Content::Flow.new.tap { |unscored| unscored.add_voice.place("1:1", :whole, "C4") }
       expect(xpath_count(parse_musicxml(described_class.new(flow).to_s), "//score-instrument")).to eq 0

@@ -1,0 +1,22 @@
+# Instruments with no W3C MusicXML standard sound of their own, and the
+# nearest one the writer writes for them, much as MuseScore and Dorico do.
+baritone_ukulele: pluck.ukulele
+bass_trumpet_in_c: brass.trumpet.bass
+bass_trumpet_in_e_flat: brass.trumpet.bass
+bass_tuba_in_e_flat: brass.tuba.bass
+bass_ukulele: pluck.ukulele
+bugle_in_b_flat: brass.bugle
+bugle_in_c: brass.bugle
+clarinet_in_c: wind.reed.clarinet
+concert_ukulele: pluck.ukulele
+cymbal: metal.cymbal.crash
+floor_tom: drum.tom-tom
+hackbrett: pitched-percussion.hammer-dulcimer
+high_tom: drum.tom-tom
+irish_tenor_banjo: pluck.banjo.tenor
+mid_tom: drum.tom-tom
+pocket_ukulele: pluck.ukulele
+sub_contrabass_recorder: wind.flutes.recorder.contrabass
+sub_great_bass_recorder: wind.flutes.recorder.contrabass
+trumpet_in_e_flat: brass.trumpet
+tuba_in_c: brass.tuba

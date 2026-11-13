@@ -10,7 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The banjo has a `c_tuning` alternate tuning (gCGBD), the tuning of the classic banjo.
-- The tenor banjo (C3 G3 D4 A4) and the Irish tenor banjo (G2 D3 A3 E4) join the banjo family as instruments of their own. Both are written in treble clef an octave above sounding, like the five-string banjo. MusicXML's `pluck.banjo.tenor` reads as the tenor banjo; the Irish tenor banjo has no standard sound id, so it is written without one and, like the other instruments without one, reads back with no instrument.
+- The tenor banjo (C3 G3 D4 A4) and the Irish tenor banjo (G2 D3 A3 E4) join the banjo family as instruments of their own. Both are written in treble clef an octave above sounding, like the five-string banjo. MusicXML's `pluck.banjo.tenor` reads as the tenor banjo, and as the Irish tenor banjo when the part names it.
+
+### Changed
+
+- MusicXML keeps every catalog instrument through a write and a read, with its transposition. The 23 instruments without a standard sound of their own, such as the clarinet in C, the trumpet in E♭, the Irish tenor banjo, the ukuleles, and the toms, used to be written with no `<score-instrument>` and read back with no instrument.
+  - The writer writes a `<score-instrument>` with an `<instrument-name>` for every instrument. An instrument without a sound of its own writes the nearest standard one, as MuseScore and Dorico do: `wind.reed.clarinet` for the clarinet in C, `pluck.banjo.tenor` for the Irish tenor banjo. Only the synthesizer writes no sound.
+  - The soprillo writes and reads `wind.reed.saxophone.sopranissimo`, and the maracas `rattle.maraca`.
+  - The reader takes the instrument from `<instrument-name>`, then `<part-name>`, then `<virtual-name>`, where the name is in the same family as `<instrument-sound>` or there is no sound, and from the sound otherwise. So a part named "Irish tenor banjo" with `pluck.banjo.tenor` reads as the Irish tenor banjo, and a part named "Soprano" with a soprano saxophone's sound reads as the saxophone.
+  - Names are read in the forms other programs write: "C Clarinet", "Trumpet in Bb", "Horn in F", "Violin 1".
+  - Where only the sound names the instrument, the part's first `<transpose>` picks among its variants, so `wind.reed.clarinet` transposing a minor third down reads as the clarinet in A.
+  - A part with no `<score-instrument>` still reads with no instrument, whatever its part name. None of the MusicXML fixtures in the specs reads differently.
 
 ### Fixed
 

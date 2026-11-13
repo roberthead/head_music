@@ -4,10 +4,12 @@ require "yaml"
 module HeadMusic::Notation::MusicXML
   # Maps the W3C standard sound ids of <instrument-sound> to catalog
   # instruments and back, for the writer and the reader alike. An id outside
-  # the table, such as voice.male, names no instrument.
+  # the table, such as voice.male, names no instrument. An instrument with no
+  # id of its own writes a shared one, which reads back as its owner, if any.
   module InstrumentSounds
     NAME_KEYS_BY_SOUND = YAML.load_file(File.expand_path("instrument_sounds.yml", __dir__)).freeze
     SOUNDS_BY_NAME_KEY = NAME_KEYS_BY_SOUND.each_with_object({}) { |(sound, name_key), sounds| sounds[name_key] ||= sound }.freeze
+    SHARED_SOUNDS_BY_NAME_KEY = YAML.load_file(File.expand_path("shared_instrument_sounds.yml", __dir__)).freeze
 
     module_function
 
@@ -17,7 +19,8 @@ module HeadMusic::Notation::MusicXML
     end
 
     def sound(instrument)
-      SOUNDS_BY_NAME_KEY[instrument&.name_key.to_s]
+      name_key = instrument&.name_key.to_s
+      SOUNDS_BY_NAME_KEY[name_key] || SHARED_SOUNDS_BY_NAME_KEY[name_key]
     end
   end
 end

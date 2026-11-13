@@ -41,14 +41,55 @@ module HeadMusic::Notation::MusicXML
       name && HeadMusic::Content::Player.new(name: name)
     end
 
+    # Read by name first, since a sound may be shared or generic, but only a
+    # name in the sound's family, since a part name such as "Soprano" may
+    # label a player. A part with no <score-instrument> has no instrument,
+    # whatever its part name says. Where only a sound names it, a first
+    # <transpose> may pick a variant: wind.reed.clarinet transposing a minor
+    # third down is the clarinet in A.
     def instrument(document_part)
       score_part = document_part.score_part
       score_instrument = score_part && first_child(score_part, "score-instrument")
-      sound = score_instrument && text(score_instrument, "instrument-sound")
-      InstrumentSounds.instrument(sound)
+      return unless score_instrument
+
+      sounded = InstrumentSounds.instrument(text(score_instrument, "instrument-sound"))
+      named = instrument_names(score_part, score_instrument)
+      return named.first unless sounded
+
+      named.find { |instrument| same_family?(instrument, sounded) } || transposed_variant(sounded, document_part)
     end
 
     private
+
+    def instrument_names(score_part, score_instrument)
+      virtual_instrument = first_child(score_instrument, "virtual-instrument")
+      [
+        text(score_instrument, "instrument-name"),
+        text(score_part, "part-name"),
+        virtual_instrument && text(virtual_instrument, "virtual-name")
+      ].filter_map { |name| InstrumentNames.instrument(name) }
+    end
+
+    def same_family?(instrument, other)
+      instrument.family_key && instrument.family_key == other.family_key
+    end
+
+    def transposed_variant(instrument, document_part)
+      semitones = first_transposition(document_part)&.semitones
+      return instrument if semitones.nil? || instrument.sounding_transposition == semitones
+
+      variants = HeadMusic::Instruments::Instrument.all.select { |variant| variant.parent_key.to_s == instrument.name_key.to_s }
+      variants.find { |variant| variant.sounding_transposition == semitones } || instrument
+    end
+
+    def first_transposition(document_part)
+      measure = document_part.measures.first
+      attributes = measure && first_child(measure.element, "attributes")
+      return unless attributes
+
+      transpositions = AttributesReader.read(attributes, measure: measure.number, part: document_part.id).transpositions
+      transpositions[nil] || transpositions[1]
+    end
 
     def movement_title
       present(text(@document.root, "movement-title"))

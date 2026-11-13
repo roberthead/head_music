@@ -39,6 +39,7 @@ wind.reed.clarinet.contrabass: contrabass_clarinet
 wind.reed.basset-horn: basset_horn
 wind.reed.bassoon: bassoon
 wind.reed.contrabassoon: contrabassoon
+wind.reed.saxophone.sopranissimo: soprillo
 wind.reed.saxophone.sopranino: sopranino_saxophone
 wind.reed.saxophone.soprano: soprano_saxophone
 wind.reed.saxophone.alto: alto_saxophone
@@ -113,6 +114,7 @@ metal.hi-hat: hi_hat
 metal.tamtam: tam_tam
 metal.bells.cowbell: cowbell
 wood.castanets: castanets
+rattle.maraca: maracas
 wood.wood-block: woodblock
 wood.temple-block: temple_blocks
 voice.soprano: soprano_voice
