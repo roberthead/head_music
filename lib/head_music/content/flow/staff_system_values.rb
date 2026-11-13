@@ -48,12 +48,8 @@ class HeadMusic::Content::Flow
     def clef(value, path)
       return nil if value.nil?
 
-      clef = begin
-        HeadMusic::Rudiment::Clef.get(value)
-      rescue
-        nil
-      end
-      raise ArgumentError, "#{path}: unknown clef #{value.inspect}" if clef&.pitch.nil?
+      clef = HeadMusic::Rudiment::Clef.get(value)
+      raise ArgumentError, "#{path}: unknown clef #{value.inspect}" unless clef
 
       clef
     end

@@ -300,7 +300,11 @@ describe HeadMusic::Content::Flow::SchemaValues do
         .to raise_error ArgumentError, /x: unknown bracket "squiggle"/
     end
 
-    # Clef.get raises rather than returning nil for an unrecognized key.
+    it "accepts the neutral clef, which has no pitch" do
+      staff = values.staff_system({"staves" => [{"clef" => "neutral_clef"}]}, "x").staves.first
+      expect(staff.clef.name_key).to eq "neutral_clef"
+    end
+
     it "rejects an unknown clef, naming the staff it was on" do
       expect { values.staff_system({"staves" => [{"clef" => "bogus clef"}]}, "x") }
         .to raise_error ArgumentError, /x\.staves\[0\]: unknown clef "bogus clef"/

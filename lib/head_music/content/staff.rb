@@ -21,7 +21,7 @@ class HeadMusic::Content::Staff
   def initialize(clef: nil, line_count: DEFAULT_LINE_COUNT, instruments_staff: nil)
     @line_count = line_count
     @instruments_staff = instruments_staff
-    @clef_map = HeadMusic::Time::EventMap.new(default: clef && HeadMusic::Rudiment::Clef.get(clef))
+    @clef_map = HeadMusic::Time::EventMap.new(default: clef && known_clef(clef))
   end
 
   # The clef in force at a bar, or nil where none was authored.
@@ -38,7 +38,7 @@ class HeadMusic::Content::Staff
   end
 
   def change_clef(bar_number, clef)
-    @clef_map.add(downbeat_of(bar_number), HeadMusic::Rudiment::Clef.get(clef)).value
+    @clef_map.add(downbeat_of(bar_number), known_clef(clef)).value
   end
 
   def clef_changes
@@ -64,6 +64,10 @@ class HeadMusic::Content::Staff
   end
 
   private
+
+  def known_clef(clef)
+    HeadMusic::Rudiment::Clef.get(clef) || raise(ArgumentError, "Unknown clef #{clef.inspect}")
+  end
 
   def downbeat_of(bar_number)
     HeadMusic::Time::MusicalPosition.new(bar_number, HeadMusic::Time::MusicalPosition::FIRST_COUNT, 0, 0)

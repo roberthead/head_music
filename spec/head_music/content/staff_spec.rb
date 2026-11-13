@@ -9,6 +9,16 @@ describe HeadMusic::Content::Staff do
 
   # Nil rather than a guess: choosing a clef from a voice's range needs a
   # voice, and a staff has no back-reference to one.
+  describe "an unknown clef" do
+    it "is refused when the staff opens with it" do
+      expect { described_class.new(clef: "no such clef") }.to raise_error ArgumentError, /Unknown clef "no such clef"/
+    end
+
+    it "is refused as a clef change" do
+      expect { described_class.new.change_clef(2, "no such clef") }.to raise_error ArgumentError, /Unknown clef/
+    end
+  end
+
   describe "a staff with no authored clef" do
     subject(:staff) { described_class.new }
 

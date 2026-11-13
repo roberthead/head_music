@@ -9,8 +9,14 @@ class HeadMusic::Rudiment::Clef < HeadMusic::Rudiment::Base
 
   RECORDS = YAML.load_file(File.expand_path("clefs.yml", __dir__)).freeze
 
+  # nil for a name no clef answers to.
   def self.get(name)
-    get_by_name(name)
+    clef = get_by_name(name)
+    clef if recognized?(clef)
+  end
+
+  def self.recognized?(clef)
+    !clef.name_key.nil?
   end
 
   # The clef that puts a pitch on a line, as "C4" on line 3 is the alto clef.
@@ -65,7 +71,7 @@ class HeadMusic::Rudiment::Clef < HeadMusic::Rudiment::Base
 
   def initialize(name)
     record = record_for_name(name)
-    initialize_data_from_record(record)
+    initialize_data_from_record(record) if record
   end
 
   def record_for_name(name)
