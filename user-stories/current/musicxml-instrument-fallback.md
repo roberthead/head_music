@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-12T22:13:11-05:00
   planned_at:   2026-11-12T22:35:45-05:00
   finished_at:
-  updated_at:   2026-11-13T08:12:28-05:00
+  updated_at:   2026-11-13T08:13:21-05:00
 -->
 
 # Story: MusicXML Instrument Fallback
@@ -316,3 +316,7 @@ below was reproduced before being recorded.
    six lines.
 
 Nothing blocks `finish`. Findings 1 and 4 are worth fixing first.
+
+Fixed after review: 1 and 4 in `0cb25ff0`, 2 in `f7f3ecea` (the cor anglais,
+the oboe d'amore, and spelled-out accidentals; abbreviations such as "Tpt."
+remain unread). 3, 5, 6, and 7 are left as they are.
