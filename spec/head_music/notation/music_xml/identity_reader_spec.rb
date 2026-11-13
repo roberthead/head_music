@@ -134,6 +134,18 @@ describe HeadMusic::Notation::MusicXML::IdentityReader do
       expect(instrument_for(instrument_name: "C Clarinet", sound: "wind.reed.clarinet")).to eq :clarinet_in_c
     end
 
+    it "reads a name in the family of a general sound outside the table" do
+      expect(instrument_for(part_name: "Alto Saxophone", sound: "wind.reed.saxophone")).to eq :alto_saxophone
+    end
+
+    it "gives a part no instrument where the name is outside a general sound's family" do
+      expect(instrument_for(part_name: "Soprano", sound: "wind.reed.saxophone")).to be_nil
+    end
+
+    it "reads the name where the sound names no family" do
+      expect(instrument_for(part_name: "Soprano", sound: "voice.male")).to eq :soprano_voice
+    end
+
     it "gives a part no instrument where nothing resolves" do
       expect(instrument_for(part_name: "Melody", instrument_name: "Grand Synth", sound: "voice.male")).to be_nil
     end

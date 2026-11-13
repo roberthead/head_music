@@ -18,6 +18,16 @@ module HeadMusic::Notation::MusicXML
       name_key && HeadMusic::Instruments::Instrument.get(name_key)
     end
 
+    # A general sound outside the table, such as wind.reed.saxophone, names
+    # the family its more specific sounds share.
+    def family_key(sound)
+      prefix = "#{sound.to_s.strip}."
+      families = NAME_KEYS_BY_SOUND.filter_map do |id, name_key|
+        HeadMusic::Instruments::Instrument.get(name_key).family_key if id.start_with?(prefix)
+      end
+      families.first if families.uniq.one?
+    end
+
     def sound(instrument)
       name_key = instrument&.name_key.to_s
       SOUNDS_BY_NAME_KEY[name_key] || SHARED_SOUNDS_BY_NAME_KEY[name_key]

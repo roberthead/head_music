@@ -48,13 +48,20 @@ module HeadMusic::Notation::MusicXML
       score_instrument = score_part && first_child(score_part, "score-instrument")
       return unless score_instrument
 
-      sounded = InstrumentSounds.instrument(text(score_instrument, "instrument-sound"))
-      named = instrument_names(score_part, score_instrument)
-      found = sounded ? named.find { |instrument| same_family?(instrument, sounded) } || sounded : named.first
+      sound = text(score_instrument, "instrument-sound")
+      sounded = InstrumentSounds.instrument(sound)
+      family_key = sounded&.family_key || InstrumentSounds.family_key(sound)
+      found = chosen(instrument_names(score_part, score_instrument), sounded, family_key)
       found && transposed_variant(found, document_part)
     end
 
     private
+
+    def chosen(named, sounded, family_key)
+      return sounded || named.first unless family_key
+
+      named.find { |instrument| instrument.family_key == family_key } || sounded
+    end
 
     def instrument_names(score_part, score_instrument)
       virtual_instrument = first_child(score_instrument, "virtual-instrument")
@@ -63,10 +70,6 @@ module HeadMusic::Notation::MusicXML
         text(score_part, "part-name"),
         virtual_instrument && text(virtual_instrument, "virtual-name")
       ].filter_map { |name| InstrumentNames.instrument(name) }
-    end
-
-    def same_family?(instrument, other)
-      instrument.family_key && instrument.family_key == other.family_key
     end
 
     # "Clarinet" transposing a minor third down is the clarinet in A.

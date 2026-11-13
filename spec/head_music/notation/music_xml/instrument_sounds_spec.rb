@@ -43,6 +43,18 @@ describe HeadMusic::Notation::MusicXML::InstrumentSounds do
     expect(%w[wind.reed.saxophone.sopranissimo rattle.maraca].map { |sound| described_class.instrument(sound).name_key }).to eq [:soprillo, :maracas]
   end
 
+  it "names the family a general sound's more specific sounds share" do
+    expect(described_class.family_key("wind.reed.saxophone")).to eq "saxophone"
+  end
+
+  it "names no family for a sound whose more specific sounds span several" do
+    expect(described_class.family_key("wind.reed")).to be_nil
+  end
+
+  it "names no family for a sound with no more specific sounds" do
+    expect(described_class.family_key("voice.male")).to be_nil
+  end
+
   it "answers nil for a sound outside the table" do
     expect(described_class.instrument("voice.male")).to be_nil
   end
