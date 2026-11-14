@@ -3,8 +3,8 @@ metadata:
   created_at:   2026-11-12T22:35:12-05:00
   activated_at: 2026-11-13T09:54:36-05:00
   planned_at:   2026-11-13T10:03:14-05:00
-  finished_at:
-  updated_at:   2026-11-13T20:18:30-05:00
+  finished_at:  2026-11-13T20:20:45-05:00
+  updated_at:   2026-11-13T20:20:45-05:00
 -->
 
 # Story: LilyPond Transposition Round Trip
@@ -285,3 +285,46 @@ were missing; the rendered score compiles in LilyPond without warnings. Finding 
 resolved by reading a several-voice staff's `instrumentName` as the part's
 player, as MusicXML, MEI, and kern read a part name, so "Melody" is kept and
 written back; one part per staff remains the **Breaking.** change.
+
+## Learnings
+
+### What went well
+
+- Using LilyPond's own MIDI output as an oracle settled the meaning of
+  `\transposition` up front: what it does inside `\relative`, how `c'`
+  resets it, and how far it reaches. Later checking six edge cases against
+  the same oracle caught no disagreements, so the fixes went in without
+  guessing.
+- Moving `InstrumentNames` into `Notation` let LilyPond read staff names the
+  way MusicXML reads part names, with no copying.
+- An independent review found real gaps in reading files written elsewhere.
+  The gem's own round trip had passed through all of them.
+
+### What was surprising
+
+- `\transposition` is a Staff property, not a Voice property. A stream
+  reader that converted pitches as it went could not apply one voice's
+  change to a voice read earlier. The fix was to read pitches as written
+  and convert them once the whole document is read
+  (`TranspositionWalk`), lining up each voice's changes by time.
+- Converting pitches during reading had quietly broken ties: a tie compared
+  concert pitches, so a change between the halves of a tied note raised an
+  error. Comparing written pitches is both simpler and what LilyPond does.
+- `stream&.change_transposition(read_step(...))` skips reading its
+  argument when the stream is nil, which left a pitch token unread inside
+  `\new Dynamics`.
+- MusicXML, MEI and kern already read a part name as the player's. The
+  LilyPond story had treated an unknown staff name as something to lose
+  until the review asked where else such a name lives.
+
+### What to do differently next time
+
+- When a format command sets a property on a wider context, such as a
+  Staff, model it at that scope from the start. Plan specs with several
+  voices, not just one.
+- Before recording a loss as **Breaking.**, check how the other readers
+  keep the same information. A sibling format often has the answer
+  already.
+- Write LilyPond spec strings with the Edit tool, not shell or Python
+  heredocs, because backslashes get mangled. It happened again here
+  (`\new` became a newline).
