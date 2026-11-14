@@ -1,8 +1,9 @@
 require "spec_helper"
 
 # A \new Staff outside a group is one part however many voices it holds. With
-# several, its instrumentName names the part's instrument and each voice's
-# own name its role; with one, the staff's name is still the voice's role.
+# several, its instrumentName names the part's player, and its instrument
+# where the catalog knows it, and each voice's own name its role; with one,
+# the staff's name is still the voice's role.
 describe HeadMusic::Notation::LilyPond do
   def parts(source)
     described_class.parse(source).parts.map { |part| [part.instrument&.name_key, part.voices.map(&:role)] }
@@ -50,6 +51,16 @@ describe HeadMusic::Notation::LilyPond do
       expect(parts(two_voices("Melody", "upper", "lower"))).to eq [[nil, %w[upper lower]]]
     end
 
+    it "reads the staff's name as the part's player" do
+      players = %w[Melody Violin].map { |name| described_class.parse(two_voices(name, "upper", "lower")).parts.first.player&.name }
+      expect(players).to eq %w[Melody Violin]
+    end
+
+    it "reads no player from a staff without a name" do
+      flow = described_class.parse(%(\\new Staff << \\new Voice = "a" { c''1 } \\new Voice = "b" { e'1 } >>))
+      expect(flow.parts.first.player).to be_nil
+    end
+
     it "keeps voices outside any staff as parts of their own" do
       expect(parts(%(<< \\new Voice = "a" { c''1 } \\new Voice = "b" { e'1 } >>)).length).to eq 2
     end
@@ -88,6 +99,11 @@ describe HeadMusic::Notation::LilyPond do
   end
 
   describe "a round trip" do
+    it "keeps a name the catalog does not know" do
+      flow = described_class.parse(described_class.render(described_class.parse(two_voices("Melody", "upper", "lower"))))
+      expect([flow.parts.first.player&.name, flow.parts.first.voices.map(&:role)]).to eq ["Melody", %w[upper lower]]
+    end
+
     it "reads a two-voice part back as one part with its roles" do
       flow = two_voice_flow(:violin, ["upper", nil])
       expect(music(described_class.parse(described_class.render(flow)))).to eq music(flow)

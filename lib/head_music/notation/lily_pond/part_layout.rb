@@ -1,8 +1,9 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # The parts, staves, and voices of a flow that a document's streams go to.
-  # A staff of several voices is one part, whose instrument its name gives
-  # and whose voices' names are their roles; a lone voice outside a staff
+  # A staff of several voices is one part, whose player its name names, and
+  # whose instrument too where the catalog knows it, and whose voices' names
+  # are their roles; a lone voice outside a staff
   # group is a part of its own. A staff group is one part, whose staff system
   # holds the group's staves in order.
   class PartLayout
@@ -49,8 +50,14 @@ module HeadMusic::Notation::LilyPond
       streams = stream.staff ? document.staff_streams(stream.staff) : [stream]
       return voices_by_stream[stream] = flow.add_voice(role: stream.role) if streams.one?
 
-      part = parts_by_staff[stream.staff] ||= flow.add_part(instrument: staff_instrument(stream.staff, streams.first))
+      part = parts_by_staff[stream.staff] ||= flow.add_part(player: staff_player(stream.staff), instrument: staff_instrument(stream.staff, streams.first))
       voices_by_stream[stream] = part.add_voice(role: stream.voice_name)
+    end
+
+    # A staff's name is its player's, as a MusicXML part name is, whether or
+    # not it also names an instrument.
+    def staff_player(staff)
+      staff.name && HeadMusic::Content::Player.new(name: staff.name)
     end
 
     # The name may say only "Clarinet", leaving the opening \transposition to
