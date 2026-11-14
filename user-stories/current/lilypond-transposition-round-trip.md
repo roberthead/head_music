@@ -4,7 +4,7 @@ metadata:
   activated_at: 2026-11-13T09:54:36-05:00
   planned_at:   2026-11-13T10:03:14-05:00
   finished_at:
-  updated_at:   2026-11-13T16:37:52-05:00
+  updated_at:   2026-11-13T19:48:57-05:00
 -->
 
 # Story: LilyPond Transposition Round Trip
@@ -275,3 +275,10 @@ reproduced before it was recorded here.
 
 Nothing blocks `finish` against the criteria as written, but 1 and 3 leave
 criterion 2 partial for files from elsewhere.
+
+### Resolution
+
+Findings 1, 2, 3, 6, and 7 were fixed in `715f2ff6`, which brings criterion 2
+to ✅. Each new reading of 1 and 3 was checked against LilyPond 2.26's MIDI.
+Finding 4 is left for the backlog, with the missing key changes on silent
+staves; 5 stands as the **Breaking.** entry.
