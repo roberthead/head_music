@@ -33,10 +33,11 @@ module HeadMusic::Notation::LilyPond
 
     # A staff nobody is written on still has to appear, or a tacet part loses
     # its line in the score. Its rest-filled voice opens like any other so the
-    # key and time print and the bars line up.
-    def silent_lines(staff, part: nil)
-      opening_lines(clef_name(nil, staff), part) +
-        plan.bar_numbers.map { |bar_number| bar_check_after([time_signatures.style(bar_number), whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)], bar_number) }
+    # key and time print and the bars line up. It restates the transposition
+    # and key where its part's instrument changes them, but takes its meter
+    # changes from the staves written on.
+    def silent_lines(staff, part:)
+      opening_lines(clef_name(nil, staff), part) + plan.bar_numbers.map { |bar_number| silent_bar(part, bar_number) }
     end
 
     # The lines inside a part's \new Dynamics, bar-checked like a voice's.
@@ -47,6 +48,10 @@ module HeadMusic::Notation::LilyPond
     private
 
     attr_reader :plan, :time_signatures
+
+    def silent_bar(part, bar_number)
+      bar_check_after([*key_changes(part, bar_number), time_signatures.style(bar_number), whole_bar_rest(nil, bar_number), *trailing_spacers(nil, bar_number)], bar_number)
+    end
 
     def first_bar_number
       plan.bar_numbers.first
@@ -127,11 +132,14 @@ module HeadMusic::Notation::LilyPond
     def change_commands(part, bar_number)
       return [] if bar_number == first_bar_number
 
-      [
-        plan.transposition_changes(part)[bar_number],
-        plan.measure_key_changes(part)[bar_number],
-        time_signatures.command(bar_number)
-      ].compact
+      [*key_changes(part, bar_number), time_signatures.command(bar_number)].compact
+    end
+
+    # The transposition comes first, so the key after it reads as written.
+    def key_changes(part, bar_number)
+      return [] if bar_number == first_bar_number
+
+      [plan.transposition_changes(part)[bar_number], plan.measure_key_changes(part)[bar_number]].compact
     end
 
     # Emitted at exactly the bars the voice's staff-assignment map holds events

@@ -172,6 +172,14 @@ describe HeadMusic::Notation::LilyPond do
       expect(voice_lines(flow_for(:clarinet, :trumpet)).scan("\\transposition").length).to eq 1
     end
 
+    it "restates it, and the key, on a staff nobody is written on" do
+      flow = flow_for(:flute)
+      flow.add_part(instrument: :clarinet).change_instrument(2, :clarinet_in_a)
+      flow.parts.first.voices.first.place("2:1", :whole, "D4")
+      staff = described_class.render(written(flow), transposed: true)[/\\new Staff[^\n]*clarinet.*?^\s*\}/mi]
+      expect(staff).to include("\\transposition a \\key f \\major R1")
+    end
+
     it "writes none at concert pitch" do
       expect(voice_lines(flow_for(:clarinet, :clarinet_in_a), transposed: false)).not_to include("\\transposition")
     end
