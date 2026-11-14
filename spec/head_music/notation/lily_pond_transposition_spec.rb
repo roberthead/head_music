@@ -83,9 +83,71 @@ describe HeadMusic::Notation::LilyPond do
       expect(pitches("<< \\new Staff { c'1 } \\new Dynamics { \\transposition bes s1\\f } >>")).to eq [%w[C4]]
     end
 
+    it "leaves a key alone when a spacer comes between" do
+      expect(key_name("{ \\key f \\major s1 \\transposition a f''1 }")).to eq "F major"
+    end
+
+    it "keeps a tie when the transposition changes between its notes" do
+      expect(pitches("{ \\transposition bes c''2~ \\transposition c' c''2 d''1 }")).to eq [%w[B♭4 D5]]
+    end
+
+    it "raises for a concert key past seven flats" do
+      expect { described_class.parse("{ \\transposition bes \\key ces \\major ces''1 }") }
+        .to raise_error(described_class::UnsupportedFeatureError, /B𝄫 major, needs more than seven sharps or flats/)
+    end
+
     it "raises without a pitch" do
       expect { described_class.parse("{ \\transposition c'1 }") }
         .to raise_error(described_class::ParseError, /\\transposition expects a pitch/)
+    end
+  end
+
+  describe "reading \\transposition among grace notes" do
+    def graced(source)
+      voice_event = described_class.parse(source).voices.first.voice_events.first
+      [voice_event.grace_notes.flat_map { |grace| grace.sounds.map(&:to_s) }, voice_event.pitches.map(&:to_s)]
+    end
+
+    it "moves the grace notes after it and the main note" do
+      expect(graced("{ \\grace { d''8 \\transposition bes d''8 } d''1 }")).to eq [%w[D5 C5], %w[C5]]
+    end
+
+    it "moves the main note after grace notes it follows" do
+      expect(graced("{ \\grace d''8 \\transposition bes d''1 }")).to eq [%w[D5], %w[C5]]
+    end
+
+    it "holds after grace notes dropped before a rest" do
+      expect(pitches("{ \\grace { \\transposition bes d''8 } r1 d''1 }")).to eq [%w[C5]]
+    end
+
+    it "holds after \\afterGrace's grace notes" do
+      expect(pitches("{ \\afterGrace d''1 { \\transposition bes e''8 } d''1 }")).to eq [%w[D5 C5]]
+    end
+  end
+
+  describe "reading \\transposition on a staff of several voices" do
+    def staff(first, second)
+      %(\\new Staff << \\new Voice = "a" { #{first} } \\new Voice = "b" { #{second} } >>)
+    end
+
+    it "moves the other voices too" do
+      expect(pitches(staff("\\transposition bes d''1", "e''1"))).to eq [%w[C5], %w[D5]]
+    end
+
+    it "moves a voice read before the one that has it" do
+      expect(pitches(staff("e''1", "\\transposition bes d''1"))).to eq [%w[D5], %w[C5]]
+    end
+
+    it "moves the other voices from the moment it is made" do
+      expect(pitches(staff("c''1 \\transposition bes d''1", "e''1 e''1"))).to eq [%w[C5 C5], %w[E5 D5]]
+    end
+
+    it "moves a key in another voice" do
+      expect(key_name(staff("\\transposition a f''1", "\\key f \\major f''1"))).to eq "D major"
+    end
+
+    it "leaves another staff alone" do
+      expect(pitches("<< \\new Staff { \\transposition bes d''1 } \\new Staff { d''1 } >>")).to eq [%w[C5], %w[D5]]
     end
   end
 

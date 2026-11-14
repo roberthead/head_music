@@ -129,6 +129,8 @@ module HeadMusic::Notation::LilyPond
       staff_block(%(\\new Staff = "#{Writer.staff_id(part_index, staff_index)}" <<), voices_blocks, ">>")
     end
 
+    # A staff of several voices, or of none, is named for its part rather than
+    # for any one voice's role, and each of several voices for its role.
     def single_staff_lines(part)
       staff = part.staff_system.first_staff
       case part.voices.length
@@ -138,8 +140,6 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    # A staff of several voices, or of none, is named for its part rather than
-    # for any one voice's role, and each of several voices for its role.
     def part_name(part)
       part.player&.name || part.instrument&.name
     end

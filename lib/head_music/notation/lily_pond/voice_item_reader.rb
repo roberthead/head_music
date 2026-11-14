@@ -74,7 +74,8 @@ module HeadMusic::Notation::LilyPond
       token = cursor.advance
       cursor.accept(:number)
       read_wrapped(context, token, "\\afterGrace")
-      items.skip_grace(token)
+      step = items.skip_grace(token).last_transposition
+      context.stream.change_transposition(step, token.line) if step
     end
 
     def read_wrapped(context, command, name)

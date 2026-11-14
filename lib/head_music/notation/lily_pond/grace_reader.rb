@@ -7,6 +7,9 @@ module HeadMusic::Notation::LilyPond
   #
   # \appoggiatura and \acciaccatura imply a slur from the first grace note to
   # the main note, unless the first grace note opens one of its own.
+  #
+  # A \transposition among them holds from the grace note after it, or from
+  # the main note when none follows.
   class GraceReader
     # Each command's [slashed, implied slur].
     COMMANDS_BY_NAME = {
@@ -17,7 +20,11 @@ module HeadMusic::Notation::LilyPond
     IMPLIED_SLUR_ID = :grace
     MUSIC_TYPES = %i[open_brace note open_chord].freeze
 
-    Grace = Data.define(:pitches, :rhythmic_value, :slashed, :tied, :marks) do
+    Grace = Data.define(:pitches, :rhythmic_value, :slashed, :tied, :marks, :transposition) do
+      def initialize(transposition: nil, **)
+        super
+      end
+
       # A tie holds only into a note of the same pitches.
       def before(follower)
         with(tied: tied && pitches.sort == follower.sort)
@@ -30,10 +37,24 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    # The grace notes waiting for their main note.
-    Graces = Data.define(:graces, :implied_slur) do
+    # The grace notes waiting for their main note, and the transposition
+    # that follows the last of them.
+    Graces = Data.define(:graces, :implied_slur, :transposition) do
+      def initialize(transposition: nil, **)
+        super
+      end
+
       def +(other)
-        with(graces: graces + other.graces, implied_slur: implied_slur || other.implied_slur)
+        following = other.graces
+        following = [following.first.with(transposition: following.first.transposition || transposition), *following.drop(1)] if following.any?
+        with(
+          graces: graces + following, implied_slur: implied_slur || other.implied_slur,
+          transposition: other.transposition || (transposition if following.empty?)
+        )
+      end
+
+      def last_transposition
+        transposition || graces.filter_map(&:transposition).last
       end
 
       def before(pitches)
@@ -72,12 +93,13 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
-    NONE = Graces.new(graces: [], implied_slur: false)
+    NONE = Graces.new(graces: [], implied_slur: false, transposition: nil)
 
     def initialize(cursor, items)
       @cursor = cursor
       @items = items
       @mark_reader = MarkReader.new(cursor)
+      @setting_reader = SettingReader.new(cursor)
     end
 
     # The grace notes the command at the cursor writes, or the music after a
@@ -85,13 +107,14 @@ module HeadMusic::Notation::LilyPond
     def read(command = cursor.advance)
       @slashed, implied_slur = COMMANDS_BY_NAME.fetch(command.lexeme, [false, false])
       @graces = []
+      @transposition = nil
       read_music(command)
-      Graces.new(graces: @graces, implied_slur: implied_slur)
+      Graces.new(graces: @graces, implied_slur: implied_slur, transposition: @transposition)
     end
 
     private
 
-    attr_reader :cursor, :items, :mark_reader
+    attr_reader :cursor, :items, :mark_reader, :setting_reader
 
     def read_music(command)
       token = cursor.peek
@@ -115,13 +138,19 @@ module HeadMusic::Notation::LilyPond
       when :open_brace then read_braces
       when :bar_check then cursor.advance
       when :tuplet then raise cursor.unsupported("Tuplets inside grace music are not supported", token)
-      else raise cursor.unexpected(token, %(Unexpected token "#{token.lexeme}" inside grace music))
+      else
+        return @transposition = setting_reader.read_transposition_step if token.type == :command && token.lexeme == "transposition"
+
+        raise cursor.unexpected(token, %(Unexpected token "#{token.lexeme}" inside grace music))
       end
     end
 
     def read_grace
       pitches, rhythmic_value, _line, marks, tie = items.read_marked_sounds
-      @graces << Grace.new(pitches: pitches, rhythmic_value: rhythmic_value, slashed: @slashed, tied: !tie.nil?, marks: marks)
+      @graces << Grace.new(
+        pitches: pitches, rhythmic_value: rhythmic_value, slashed: @slashed, tied: !tie.nil?, marks: marks, transposition: @transposition
+      )
+      @transposition = nil
     end
 
     def skip_silence

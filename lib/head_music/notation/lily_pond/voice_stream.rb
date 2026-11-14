@@ -5,19 +5,19 @@ module HeadMusic::Notation::LilyPond
   # marks, and key or meter commands. Ties fold here, so a tied pair reaches the builder
   # as one note whose rhythmic value carries the author's split.
   class VoiceStream
-    # A bar check, \key, \time, or \change Staff between the halves of a
+    # A bar check, \key, \time, \transposition, or \change Staff between the halves of a
     # tied note records how much of the note precedes it, so the builder can
     # apply it once the note has a position.
     InnerEvent = Data.define(:elapsed, :event)
 
     Event = Data.define(
       :kind, :line, :pitches, :rhythmic_duration, :fraction, :key_signature, :meter, :staff_name, :inner_events, :marks,
-      :bar_mark, :tuplet, :graces, :tempo, :written_key_signature
+      :bar_mark, :tuplet, :graces, :tempo, :written_key_signature, :transposition, :grace_transposition
     ) do
       def initialize(
         kind:, line:, pitches: nil, rhythmic_duration: nil, fraction: nil, key_signature: nil, meter: nil,
         staff_name: nil, inner_events: [], marks: MarkReader::NONE, bar_mark: nil, tuplet: nil, graces: [], tempo: nil,
-        written_key_signature: nil
+        written_key_signature: nil, transposition: nil, grace_transposition: nil
       )
         super
       end
@@ -43,6 +43,8 @@ module HeadMusic::Notation::LilyPond
 
     UNFOLLOWED_TIE = "A tie must be followed by a note"
 
+    # Pitches and keys are read as written, and reach concert pitch once the
+    # document is read, when the other voices of a staff have had their say.
     attr_reader :role, :events, :opening_clef, :transposition, :opening_transposition
     # A staff is the ungrouped \new Staff the voice is read in, and a voice
     # name the Voice's own name, which is its role where its staff holds
@@ -55,7 +57,6 @@ module HeadMusic::Notation::LilyPond
       @pending_note = nil
       @pending_graces = GraceReader::NONE
       @tie_open = false
-      @concert = HeadMusic::Notation::ConcertTransposition.new(errors: HeadMusic::Notation::LilyPond)
     end
 
     def music?
@@ -64,26 +65,24 @@ module HeadMusic::Notation::LilyPond
     end
 
     def add_note(pitches, rhythmic_value, line, marks = MarkReader::NONE)
-      pitches = concert(pitches, line)
       rhythmic_duration = HeadMusic::Rudiment::RhythmicDuration.get(under_tuplet(rhythmic_value))
-      graces = @pending_graces
-      @pending_graces = GraceReader::NONE
       return extend_tie(pitches, rhythmic_duration, line, marks) if @tie_open
 
+      graces = @pending_graces
+      @pending_graces = GraceReader::NONE
       flush_pending_note
       @pending_note = Event.new(
         kind: :note, line: line, pitches: pitches, rhythmic_duration: rhythmic_duration,
-        marks: graces.main_marks(marks), graces: graces.before(pitches)
+        marks: graces.main_marks(marks), graces: graces.before(pitches), grace_transposition: graces.transposition
       )
     end
 
     # Grace notes wait for the note they come before, and are dropped before
     # a rest, a spacer, the later link of a tied note, or the end of the voice,
-    # since the model holds them only on a note they lead to.
+    # since the model holds them only on a note they lead to. A \transposition
+    # among dropped grace notes still holds for what follows.
     def add_graces(graces)
-      return if graces.graces.empty?
-
-      @pending_graces += graces.with(graces: graces.graces.map { |grace| grace.with(pitches: concert(grace.pitches)) })
+      @pending_graces += graces
     end
 
     def add_rest(rhythmic_value, line, marks = MarkReader::NONE)
@@ -138,19 +137,32 @@ module HeadMusic::Notation::LilyPond
       mark(line, kind: :bar_check)
     end
 
-    # A key is written, so it sounds where the transposition puts it.
     def change_key_signature(key_signature, line)
-      mark(line, kind: :key, key_signature: concert_key(key_signature, line), written_key_signature: key_signature)
+      mark(line, kind: :key, key_signature: key_signature, written_key_signature: key_signature)
     end
 
     # \transposition names where a written c' sounds, so the pitches written
-    # after it move by that much to sound. A key written just before it, with
-    # no music between, is the transposed instrument's, as LilyPond prints it.
+    # after it move by that much to sound. One after grace notes waits with
+    # them, since they come before it.
     def change_transposition(step, line)
-      @opening_transposition ||= step unless started?
       @transposition = step
-      @concert.change(nil, step)
-      resettle_keys(line)
+      return @pending_graces = @pending_graces.with(transposition: step) if @pending_graces.graces.any?
+
+      mark(line, kind: :transposition, transposition: step)
+    end
+
+    # Where this voice's own transpositions fall, for the rest of its staff.
+    def transposition_changes
+      TranspositionWalk.changes(finish.events)
+    end
+
+    def resolve_transpositions(foreign_changes = [])
+      return if @resolved
+
+      walk = TranspositionWalk.new(foreign_changes)
+      @events = walk.resolve(finish.events)
+      @opening_transposition = walk.opening
+      @resolved = true
     end
 
     def change_meter(meter, line)
@@ -192,41 +204,21 @@ module HeadMusic::Notation::LilyPond
 
     def finish
       terminate(nil)
-      @pending_graces = GraceReader::NONE
+      drop_graces(nil)
       self
     end
 
     private
 
-    def started?
-      !@pending_note.nil? || events.any?(&:music?)
-    end
-
-    def concert(pitches, line = nil)
-      pitches.map { |pitch| @concert.concert(pitch, nil, line_number: line) }
-    end
-
-    def concert_key(key_signature, line)
-      return key_signature unless @transposition
-
-      tonic = @concert.concert(HeadMusic::Rudiment::Pitch.get("#{key_signature.tonic_spelling}4"), nil, line_number: line)
-      HeadMusic::Rudiment::KeySignature.new(tonic.spelling, key_signature.scale_type)
-    end
-
-    def resettle_keys(line)
-      return if @pending_note
-
-      index = events.length
-      index -= 1 while index.positive? && !events[index - 1].music?
-      (index...events.length).each do |position|
-        event = events[position]
-        events[position] = event.with(key_signature: concert_key(event.written_key_signature, line)) if event.kind == :key
-      end
-    end
-
     def silent(line, **attributes)
-      @pending_graces = GraceReader::NONE
+      drop_graces(line)
       append(line, **attributes)
+    end
+
+    def drop_graces(line)
+      step = @pending_graces.last_transposition
+      @pending_graces = GraceReader::NONE
+      mark(line, kind: :transposition, transposition: step) if step
     end
 
     def under_tuplet(rhythmic_value)
@@ -268,6 +260,7 @@ module HeadMusic::Notation::LilyPond
     # becomes a single note. Its marks join the note's, except a dynamic
     # level, hairpin marks, and text, which are held where the link starts.
     def extend_tie(pitches, rhythmic_duration, line, marks)
+      drop_graces(line)
       raise error("A tie must connect two notes of the same pitch", line) unless @pending_note.pitches.sort == pitches.sort
 
       @tie_open = false

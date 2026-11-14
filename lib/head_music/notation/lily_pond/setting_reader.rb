@@ -29,9 +29,25 @@ module HeadMusic::Notation::LilyPond
       end
     end
 
+    # Its pitch is absolute even inside \relative, and leaves the relative
+    # reference alone.
+    def read_transposition_step(command = cursor.advance)
+      token = cursor.advance
+      unless token&.type == :note && token.duration.nil? && token.multiplier.nil?
+        raise cursor.error("\\transposition expects a pitch", token || command)
+      end
+
+      HeadMusic::Notation::ConcertTransposition::Step.sounding(PitchReader.absolute.pitch(token))
+    end
+
     private
 
     attr_reader :cursor, :tempo_reader
+
+    def read_transposition(command, stream)
+      step = read_transposition_step(command)
+      stream&.change_transposition(step, command.line)
+    end
 
     def read_key(command, stream)
       pitch_token = cursor.advance
@@ -65,18 +81,6 @@ module HeadMusic::Notation::LilyPond
       raise cursor.error("\\clef expects a clef name", token || command) unless clef_name?(token)
 
       stream&.clef(token.lexeme)
-    end
-
-    # Its pitch is absolute even inside \relative, and leaves the relative
-    # reference alone.
-    def read_transposition(command, stream)
-      token = cursor.advance
-      unless token&.type == :note && token.duration.nil? && token.multiplier.nil?
-        raise cursor.error("\\transposition expects a pitch", token || command)
-      end
-
-      step = HeadMusic::Notation::ConcertTransposition::Step.sounding(PitchReader.absolute.pitch(token))
-      stream&.change_transposition(step, command.line)
     end
 
     def clef_name?(token)

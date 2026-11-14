@@ -1,10 +1,10 @@
 # A namespace for LilyPond-notation parsing helpers
 module HeadMusic::Notation::LilyPond
   # The parts, staves, and voices of a flow that a document's streams go to.
-  # A stream outside a staff group is a voice, and a part, of its own, unless
-  # its staff holds other voices too: a staff is one part, named for its
-  # instrument, whose voices are named for their roles. A staff group is one
-  # part, whose staff system holds the group's staves in order.
+  # A staff of several voices is one part, whose instrument its name gives
+  # and whose voices' names are their roles; a lone voice outside a staff
+  # group is a part of its own. A staff group is one part, whose staff system
+  # holds the group's staves in order.
   class PartLayout
     def initialize(flow, document)
       @flow = flow

@@ -60,6 +60,12 @@ module HeadMusic::Notation::LilyPond
       stream
     end
 
+    # \transposition is a Staff property, so each voice of a staff takes the
+    # changes the others make.
+    def resolve_transpositions
+      streams.each { |stream| stream.resolve_transpositions(foreign_changes(stream)) }
+    end
+
     def first_key_signature
       leading_event(:key)&.key_signature
     end
@@ -75,6 +81,13 @@ module HeadMusic::Notation::LilyPond
     end
 
     private
+
+    def foreign_changes(stream)
+      return [] unless stream.staff
+
+      changes = staff_streams(stream.staff).reject { |other| other.equal?(stream) }.flat_map(&:transposition_changes)
+      changes.each_with_index.sort_by { |(elapsed, _step), index| [elapsed, index] }.map(&:first)
+    end
 
     # The first command of a kind that precedes any music in its stream,
     # taken from the first stream that has one.

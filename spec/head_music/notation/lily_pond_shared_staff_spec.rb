@@ -76,6 +76,11 @@ describe HeadMusic::Notation::LilyPond do
       expect(parts(two_voices("Clarinet", "upper", "lower", opening: "\\transposition a")).first.first).to eq :clarinet_in_a
     end
 
+    it "reads a later voice's \\transposition as choosing the variant" do
+      source = %(\\new Staff \\with { instrumentName = "Clarinet" } << \\new Voice { c''1 } \\new Voice { \\transposition a e'1 } >>)
+      expect(parts(source).first.first).to eq :clarinet_in_a
+    end
+
     it "reads a staff's \\transposition as choosing the variant" do
       source = %(\\new Staff \\with { instrumentName = "Clarinet" } { \\transposition a << \\new Voice { c''1 } \\new Voice { e'1 } >> })
       expect(parts(source).first.first).to eq :clarinet_in_a

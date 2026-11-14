@@ -48,6 +48,8 @@ module HeadMusic::Notation::LilyPond
       streams = document.streams
       raise ParseError, "LilyPond input contains no music" if streams.empty?
 
+      document.resolve_transpositions
+
       flow = HeadMusic::Content::Flow.new(
         name: document.title, composer: document.composer,
         key_signature: document.first_key_signature, meter: document.first_meter, tempo: document.first_tempo
