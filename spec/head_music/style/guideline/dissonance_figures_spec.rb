@@ -55,6 +55,42 @@ describe HeadMusic::Style::Guideline::DissonanceFigures do
     end
   end
 
+  describe "#consonant_run?" do
+    let(:lower) { "C4|C4|]" }
+
+    context "with a passing tone" do
+      let(:upper) { "e f g2|e4|]" }
+
+      it "reads a stepwise run in one direction between consonances" do
+        expect(figures.consonant_run?(line.notes[1])).to be true
+      end
+    end
+
+    context "with a neighbor tone" do
+      let(:upper) { "e f e2|e4|]" }
+
+      it "reads a stepwise run returning to its starting pitch" do
+        expect(figures.consonant_run?(line.notes[1])).to be true
+      end
+    end
+
+    context "with a dissonance left by leap" do
+      let(:upper) { "e f a2|e4|]" }
+
+      it "does not read a run" do
+        expect(figures.consonant_run?(line.notes[1])).to be false
+      end
+    end
+
+    context "with a rest after the dissonance" do
+      let(:upper) { "e f z g|e4|]" }
+
+      it "breaks the run at the rest" do
+        expect(figures.consonant_run?(line.notes[1])).to be false
+      end
+    end
+  end
+
   context "with a double neighbor" do
     let(:upper) { "g a f g|e4|]" }
     let(:lower) { "C4|C4|]" }

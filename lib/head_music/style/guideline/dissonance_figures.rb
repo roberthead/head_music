@@ -36,7 +36,30 @@ class HeadMusic::Style::Guideline
       [1, 2].any? { |before| double_neighbor_figure?(figure_start(note, before)) }
     end
 
+    # A passing or neighbor figure of any length: the stepwise run through the
+    # note, out to the nearest consonant notes in both directions, moving in
+    # one direction (passing) or returning to its starting pitch (neighbor).
+    # A rest breaks the run.
+    def consonant_run?(note)
+      phrase = notes.slice_when { |earlier, later| earlier.next_position < later.position }.detect { |group| group.include?(note) }
+      index = phrase.index(note)
+      first = phrase.take(index).rindex { |candidate| consonant?(candidate) }
+      last = phrase.drop(index + 1).index { |candidate| consonant?(candidate) }
+      return false unless first && last
+
+      stepwise_run?(phrase[first..(index + 1 + last)])
+    end
+
     private
+
+    def stepwise_run?(run)
+      intervals = run.each_cons(2).map { |pair| HeadMusic::Analysis::MelodicInterval.new(*pair) }
+      intervals.all?(&:step?) && (intervals.map(&:direction).uniq.one? || run.first.pitch == run.last.pitch)
+    end
+
+    def consonant?(note)
+      !@dissonant.call(note)
+    end
 
     def stepwise_figure?(note, same_direction:)
       approach, departure = figure_intervals(figure_start(note, 1), 2)

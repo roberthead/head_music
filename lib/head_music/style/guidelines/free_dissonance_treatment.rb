@@ -86,35 +86,10 @@ class HeadMusic::Style::Guidelines::FreeDissonanceTreatment < HeadMusic::Style::
   end
 
   def explained_by_figure?(note)
-    line = note.voice
-    return consonant_run?(note) if after_dotted_quarter?(note)
+    figures = figures_for(note.voice)
+    return figures.consonant_run?(note) if after_dotted_quarter?(note)
 
-    consonant_run?(note) ||
-      figures_for(line).cambiata_dissonance?(note) ||
-      figures_for(line).double_neighbor_member?(note)
-  end
-
-  # A passing or neighbor figure: the stepwise run through the note, out to
-  # the nearest notes consonant with the other voice in both directions,
-  # moving in one direction (passing) or returning to its starting pitch
-  # (neighbor). A rest breaks the run.
-  def consonant_run?(note)
-    line_notes = unbroken_notes_around(note)
-    index = line_notes.index(note)
-    first = (0...index).reverse_each.detect { |i| consonant_note?(line_notes[i]) }
-    last = ((index + 1)...line_notes.length).detect { |i| consonant_note?(line_notes[i]) }
-    return false unless first && last
-
-    run = line_notes[first..last]
-    intervals = run.each_cons(2).map { |pair| HeadMusic::Analysis::MelodicInterval.new(*pair) }
-    return false unless intervals.all?(&:step?)
-
-    intervals.map(&:direction).uniq.one? || run.first.pitch == run.last.pitch
-  end
-
-  def unbroken_notes_around(note)
-    phrases = note.voice.notes.slice_when { |earlier, later| earlier.next_position < later.position }
-    phrases.detect { |phrase| phrase.include?(note) }
+    figures.consonant_run?(note) || figures.cambiata_dissonance?(note) || figures.double_neighbor_member?(note)
   end
 
   def after_dotted_quarter?(note)
