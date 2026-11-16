@@ -766,6 +766,13 @@ en:
             default:
               one: "Write at least %{number} note."
               other: "Write at least %{number} notes."
+        allow_free_species_rhythmic_values:
+          name: "Free species note values"
+          instruction: "Write in whole notes, half notes, quarter notes, and paired stepwise eighth notes on weak beats."
+          instruction_with_dotted_rhythms: "Write in whole notes, half notes, quarter notes, and paired stepwise eighth notes on weak beats; dot a half or whole note, or follow a dotted quarter with one eighth that steps on."
+          violations:
+            default: "Use only whole notes, half notes, quarter notes, and paired stepwise eighth notes on weak beats."
+            with_dotted_rhythms: "Use only whole notes, half notes, quarter notes, and paired stepwise eighth notes on weak beats, dotted halves and wholes, and a dotted quarter followed by one eighth that steps on."
         allow_fifth_species_rhythmic_values:
           name: "Fifth species note values"
           instruction: "Write in half notes, quarter notes, and paired stepwise eighth notes on weak beats, saving the whole note for the final bar."

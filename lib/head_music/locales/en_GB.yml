@@ -95,6 +95,12 @@ en_GB:
     # sentence changes shape, not only vocabulary.
     style:
       guidelines:
+        allow_free_species_rhythmic_values:
+          instruction: "Write in semibreves, minims, crotchets, and paired stepwise quavers on weak beats."
+          instruction_with_dotted_rhythms: "Write in semibreves, minims, crotchets, and paired stepwise quavers on weak beats; dot a minim or semibreve, or follow a dotted crotchet with one quaver that steps on."
+          violations:
+            default: "Use only semibreves, minims, crotchets, and paired stepwise quavers on weak beats."
+            with_dotted_rhythms: "Use only semibreves, minims, crotchets, and paired stepwise quavers on weak beats, dotted minims and semibreves, and a dotted crotchet followed by one quaver that steps on."
         allow_fifth_species_rhythmic_values:
           instruction: "Write in minims, crotchets, and paired stepwise quavers on weak beats, saving the semibreve for the final bar."
           violations:
